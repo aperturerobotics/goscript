@@ -1,6 +1,7 @@
 package compiler_test
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -135,5 +136,14 @@ func getParentGoModulePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(string(output)), nil
+	// note: in a go work configuration, go list -m can report multiple modules
+	// only one of which is the goscript case, so we need to filter:
+	pf := strings.Fields(strings.TrimSpace(string(output)))
+	pf = slices.DeleteFunc(pf, func(n string) bool {
+		return !strings.HasSuffix(n, "goscript")
+	})
+	if len(pf) != 1 {
+		return "", fmt.Errorf("'go list -m' did not have exactly 1 goscript package -- run in root of goscript package")
+	}
+	return pf[0], nil
 }
