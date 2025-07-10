@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -76,7 +77,17 @@ func getParentGoModulePath() (string, error) {
 			parentGoModulePathErr = fmt.Errorf("'go list -m' returned an empty string")
 			return
 		}
-		parentGoModulePath = path
+		// note: in a go work configuration, go list -m can report multiple modules
+		// only one of which is the goscript case, so we need to filter:
+		pf := strings.Fields(path)
+		pf = slices.DeleteFunc(pf, func(n string) bool {
+			return !strings.HasSuffix(n, "goscript")
+		})
+		if len(pf) != 1 {
+			parentGoModulePathErr = fmt.Errorf("'go list -m' did have exactly 1 goscript package -- run in root of goscript package")
+			return
+		}
+		parentGoModulePath = pf[0]
 	})
 	return parentGoModulePath, parentGoModulePathErr
 }

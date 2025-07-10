@@ -2,6 +2,13 @@
 
 This document outlines the compliance tests for the GoScript compiler, verifying its ability to correctly translate various Go language features into TypeScript.
 
+To run tests, you need to install [tsgo](https://github.com/microsoft/typescript-go) into `node_modules/.bin/tsgo` (e.g., create a symlink there to `~/go/bin/tsgo` after doing `go install` in `cmd/tsgo`)
+
+To run, in the package root, do:
+```sh
+go test ./compiler
+```
+
 ## Existing Compliance Tests
 
 The following tests are currently implemented in the `/compliance/tests` directory:
