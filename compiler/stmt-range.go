@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
+	"strings"
+
+	"go/token"
 
 	"github.com/pkg/errors"
 )
@@ -83,6 +86,10 @@ func (c *GoToTSCompiler) WriteStmtRange(exp *ast.RangeStmt) error {
 	// Handle interface types that may represent iterators
 	if _, ok := underlying.(*types.Interface); ok {
 		return c.writeInterfaceIteratorRange(exp)
+	}
+
+	if _, ok := underlying.(*types.Chan); ok {
+		return c.writeChannelRange(exp)
 	}
 
 	return errors.Errorf("unsupported range loop type: %T for expression %v", underlying, exp)
@@ -416,5 +423,74 @@ func (c *GoToTSCompiler) writeInterfaceIteratorRange(exp *ast.RangeStmt) error {
 	c.tsw.WriteLine("")
 	c.tsw.Indent(-1)
 	c.tsw.WriteLine("})()")
+	return nil
+}
+
+func (c *GoToTSCompiler) writeChannelRange(exp *ast.RangeStmt) error {
+	if exp.Value != nil {
+		return fmt.Errorf("channel range does not support two iteration variables")
+	}
+
+	c.tsw.WriteLiterally("for (;;) {")
+	c.tsw.Indent(1)
+	c.tsw.WriteLine("")
+
+	valueIsBlank := exp.Key == nil
+	valueName := "_"
+	if !valueIsBlank {
+		if valIdent, ok := exp.Key.(*ast.Ident); ok {
+			if valIdent.Name != "_" {
+				valueName = valIdent.Name
+			} else {
+				valueIsBlank = true
+			}
+		} else {
+			return fmt.Errorf("unsupported iteration variable in channel range: %T", exp.Key)
+		}
+	}
+
+	keyword := "const "
+	okVarName := "_ok"
+	if exp.Tok != token.DEFINE {
+		keyword = ""
+		c.tsw.WriteLiterally("let ")
+		c.tsw.WriteLiterally(okVarName)
+		c.tsw.WriteLine("")
+	}
+
+	patternParts := []string{}
+	if !valueIsBlank {
+		patternParts = append(patternParts, fmt.Sprintf("value: %s", valueName))
+	}
+	patternParts = append(patternParts, fmt.Sprintf("ok: %s", okVarName))
+	destructuringPattern := fmt.Sprintf("{ %s }", strings.Join(patternParts, ", "))
+
+	c.tsw.WriteLiterally(keyword)
+	if keyword == "" {
+		c.tsw.WriteLiterally(";(")
+	}
+	c.tsw.WriteLiterally(destructuringPattern)
+	c.tsw.WriteLiterally(" = await $.chanRecvWithOk(")
+	if err := c.WriteValueExpr(exp.X); err != nil {
+		return err
+	}
+	c.tsw.WriteLiterally(")")
+	if keyword == "" {
+		c.tsw.WriteLiterally(")")
+	}
+	c.tsw.WriteLine("")
+
+	c.tsw.WriteLiterally("if (!")
+	c.tsw.WriteLiterally(okVarName)
+	c.tsw.WriteLiterally(") break")
+	c.tsw.WriteLine("")
+
+	if err := c.WriteStmtBlock(exp.Body, false); err != nil {
+		return err
+	}
+
+	c.tsw.Indent(-1)
+	c.tsw.WriteLine("}")
+
 	return nil
 }
