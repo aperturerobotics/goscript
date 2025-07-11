@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "lib": [
+      "es2022",
+      "esnext.disposable",
+      "dom"
+    ],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "paths": {
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../compliance/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/compliance/tests/receiver_binding/*": [
+        "./*"
+      ]
+    },
+    "sourceMap": true,
+    "target": "es2022"
+  },
+  "extends": "../../../tsconfig.json",
+  "include": [
+    "index.ts",
+    "methods.gs.ts",
+    "storage.gs.ts"
+  ]
+}
