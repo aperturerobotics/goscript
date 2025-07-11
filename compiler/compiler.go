@@ -434,6 +434,24 @@ func (c *PackageCompiler) generateIndexFile(compiledFiles []string) error {
 				case *ast.FuncDecl:
 					if d.Recv == nil && d.Name.IsExported() {
 						valueSymbols = append(valueSymbols, sanitizeIdentifier(d.Name.Name))
+					} else if d.Recv != nil && len(d.Recv.List) == 1 && d.Name.IsExported() {
+						recvField := d.Recv.List[0]
+						recvTypeExpr := recvField.Type
+						if star, ok := recvTypeExpr.(*ast.StarExpr); ok {
+							recvTypeExpr = star.X
+						}
+						if ident, ok := recvTypeExpr.(*ast.Ident); ok {
+							typeObj := c.pkg.TypesInfo.ObjectOf(ident)
+							if typeObj != nil && typeObj.Exported() {
+								if typeName, ok := typeObj.(*types.TypeName); ok {
+									underlying := typeName.Type().Underlying()
+									if _, isStruct := underlying.(*types.Struct); !isStruct {
+										methodName := sanitizeIdentifier(ident.Name + "_" + d.Name.Name)
+										valueSymbols = append(valueSymbols, methodName)
+									}
+								}
+							}
+						}
 					}
 				case *ast.GenDecl:
 					for _, spec := range d.Specs {
