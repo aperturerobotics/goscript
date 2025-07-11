@@ -84,7 +84,7 @@ func getParentGoModulePath() (string, error) {
 			return !strings.HasSuffix(n, "goscript")
 		})
 		if len(pf) != 1 {
-			parentGoModulePathErr = fmt.Errorf("'go list -m' did have exactly 1 goscript package -- run in root of goscript package")
+			parentGoModulePathErr = fmt.Errorf("'go list -m' did not have exactly 1 goscript package -- run in root of goscript package")
 			return
 		}
 		parentGoModulePath = pf[0]
