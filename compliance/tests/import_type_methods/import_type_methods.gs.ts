@@ -13,30 +13,20 @@ export class parser {
 		this._fields.errors.value = value
 	}
 
-	public get astruct(): errlist.AStruct {
-		return this._fields.astruct.value
-	}
-	public set astruct(value: errlist.AStruct) {
-		this._fields.astruct.value = value
-	}
-
 	public _fields: {
 		errors: $.VarRef<errlist.ErrorList>;
-		astruct: $.VarRef<errlist.AStruct>;
 	}
 
-	constructor(init?: Partial<{astruct?: errlist.AStruct, errors?: errlist.ErrorList}>) {
+	constructor(init?: Partial<{errors?: errlist.ErrorList}>) {
 		this._fields = {
-			errors: $.varRef(init?.errors ?? null as errlist.ErrorList),
-			astruct: $.varRef(init?.astruct?.clone() ?? new errlist.AStruct())
+			errors: $.varRef(init?.errors ?? null as errlist.ErrorList)
 		}
 	}
 
 	public clone(): parser {
 		const cloned = new parser()
 		cloned._fields = {
-			errors: $.varRef(this._fields.errors.value),
-			astruct: $.varRef(this._fields.astruct.value?.clone() ?? null)
+			errors: $.varRef(this._fields.errors.value)
 		}
 		return cloned
 	}
@@ -47,18 +37,13 @@ export class parser {
 	  new parser(),
 	  [],
 	  parser,
-	  {"errors": "ErrorList", "astruct": "AStruct"}
+	  {"errors": "ErrorList"}
 	);
 }
 
 export async function main(): Promise<void> {
 	let p: parser = new parser()
-	// this Add method does not work:
-	errlist.ErrorList_Add(p.errors, "error")
+	p.errors = errlist.ErrorList_Add(p.errors, "error")
 	console.log(p.errors![0])
-
-	// but it does work for a struct type:
-	p.astruct.Set("astruct")
-	console.log(p.astruct.Msg)
 }
 
