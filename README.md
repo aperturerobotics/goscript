@@ -64,6 +64,41 @@ npm install -g goscript
 goscript compile --package . --output ./dist
 ```
 
+## 📦 Using Generated Code in Your Project
+
+After compiling your Go code to TypeScript, you'll need to set up your project to consume the generated files.
+
+### TypeScript Configuration
+
+Create or update your `tsconfig.json` with these settings:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "esnext.disposable", "dom"],
+    "baseUrl": "./",
+    "paths": {
+      "@goscript/*": ["./path/to/generated/output/@goscript/*"]
+    },
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true
+  }
+}
+```
+
+**Important requirements:**
+- **`target: "ES2022"` or newer** - Required for `Disposable` and other features
+- **`lib: ["esnext.disposable"]`** - Enables TypeScript's disposable types for resource management
+- **`baseUrl` and `paths`** - Allows TypeScript to resolve `@goscript/*` imports
+- **`moduleResolution: "bundler"`** - Recommended for modern bundlers
+
+You should be able to use any TypeScript bundler to compile the generated TypeScript.
+
 ## 💡 See It In Action
 
 ### Example: User Management
@@ -276,19 +311,7 @@ const searchUser = (email: string) => {
 - ⚡ Performance optimizations
 - 🔧 Better tooling integration
 
-Check our [compliance tests](./compliance/COMPLIANCE.md) for detailed progress.
-
-## 🤝 Real-World Use Cases
-
-**Fintech:** Share complex financial calculations between Go services and trading dashboards
-
-**Gaming:** Run the same game logic on servers and in browser clients
-
-**Data Processing:** Use identical algorithms for backend ETL and frontend analytics
-
-**Validation:** Keep business rules consistent across your entire stack
-
-Ready to eliminate code duplication? [Get started now](#-get-started-in-2-minutes) 🚀
+Check the [compliance tests](./compliance/COMPLIANCE.md) for detailed progress.
 
 ## License
 
