@@ -3,10 +3,9 @@ package compiler
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
 	"go/types"
 	"strings"
-
-	"go/token"
 
 	"github.com/pkg/errors"
 )
