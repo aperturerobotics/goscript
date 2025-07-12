@@ -357,7 +357,7 @@ func (c *GoToTSCompiler) writeWrapperTypeMethodCall(exp *ast.CallExpr, selectorE
 	if selection := c.pkg.TypesInfo.Selections[selectorExpr]; selection != nil {
 		if methodObj := selection.Obj(); methodObj != nil {
 			if methodFunc, ok := methodObj.(*types.Func); ok {
-				if sig := methodFunc.Type().(*types.Signature); sig != nil {
+				if sig, ok := methodFunc.Type().(*types.Signature); ok && sig != nil {
 					if recv := sig.Recv(); recv != nil {
 						if _, isPointer := recv.Type().(*types.Pointer); isPointer {
 							receiverNeedsVarRef = true
