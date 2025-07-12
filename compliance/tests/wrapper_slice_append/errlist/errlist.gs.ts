@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js";
 
 export type ErrorList = $.Slice<string>;
 
-export function ErrorList_Add(p: ErrorList, msg: string): void {
+export function ErrorList_Add(p: $.VarRef<ErrorList>, msg: string): void {
 	p!.value = $.append(p!.value, msg)
 }
 

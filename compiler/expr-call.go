@@ -349,9 +349,47 @@ func (c *GoToTSCompiler) writeWrapperTypeMethodCall(exp *ast.CallExpr, selectorE
 	c.tsw.WriteLiterally(selectorExpr.Sel.Name)
 	c.tsw.WriteLiterally("(")
 
-	// First argument is the receiver
-	if err := c.WriteValueExpr(selectorExpr.X); err != nil {
-		return true, fmt.Errorf("failed to write wrapper type method receiver: %w", err)
+	// Write the receiver (the object the method is called on)
+	// For pointer receiver methods, we need to pass the VarRef instead of the value
+	receiverNeedsVarRef := false
+
+	// Check if the method has a pointer receiver by looking at the method signature
+	if selection := c.pkg.TypesInfo.Selections[selectorExpr]; selection != nil {
+		if methodObj := selection.Obj(); methodObj != nil {
+			if methodFunc, ok := methodObj.(*types.Func); ok {
+				if sig, ok := methodFunc.Type().(*types.Signature); ok && sig != nil {
+					if recv := sig.Recv(); recv != nil {
+						if _, isPointer := recv.Type().(*types.Pointer); isPointer {
+							receiverNeedsVarRef = true
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if receiverNeedsVarRef {
+		// For pointer receivers, we need to pass the VarRef
+		// Convert p.field to p._fields.field
+		if selExpr, ok := selectorExpr.X.(*ast.SelectorExpr); ok {
+			if baseIdent, ok := selExpr.X.(*ast.Ident); ok {
+				c.tsw.WriteLiterally(baseIdent.Name)
+				c.tsw.WriteLiterally("._fields.")
+				c.tsw.WriteLiterally(selExpr.Sel.Name)
+			} else {
+				if err := c.WriteValueExpr(selectorExpr.X); err != nil {
+					return true, fmt.Errorf("failed to write wrapper type method receiver: %w", err)
+				}
+			}
+		} else {
+			if err := c.WriteValueExpr(selectorExpr.X); err != nil {
+				return true, fmt.Errorf("failed to write wrapper type method receiver: %w", err)
+			}
+		}
+	} else {
+		if err := c.WriteValueExpr(selectorExpr.X); err != nil {
+			return true, fmt.Errorf("failed to write wrapper type method receiver: %w", err)
+		}
 	}
 
 	// Add other arguments

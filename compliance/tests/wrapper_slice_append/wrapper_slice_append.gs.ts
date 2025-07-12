@@ -54,7 +54,7 @@ export class parser {
 export async function main(): Promise<void> {
 	let p: parser = new parser()
 	// this Add method does not work:
-	errlist.ErrorList_Add(p.errors, "error")
+	errlist.ErrorList_Add(p._fields.errors, "error")
 	console.log(p.errors![0])
 
 	// but it does work for a struct type:

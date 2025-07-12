@@ -376,8 +376,10 @@ func (c *GoToTSCompiler) WriteNamedTypeWithMethods(a *ast.TypeSpec) error {
 			}
 			recvField := funcDecl.Recv.List[0]
 			recvType := recvField.Type
+			isPointerReceiver := false
 			if starExpr, ok := recvType.(*ast.StarExpr); ok {
 				recvType = starExpr.X
+				isPointerReceiver = true
 			}
 
 			// Check for both simple identifiers (FileMode) and generic types (FileMode[T])
@@ -391,12 +393,7 @@ func (c *GoToTSCompiler) WriteNamedTypeWithMethods(a *ast.TypeSpec) error {
 			}
 
 			if recvTypeName == className {
-				if !isInsideFunction {
-					c.tsw.WriteLiterally("export ")
-				}
-
-				// Generate function signature: export function TypeName_MethodName(receiver: TypeName, ...args): ReturnType
-				c.tsw.WriteLiterally("function ")
+				c.tsw.WriteLiterally("export function ")
 				c.tsw.WriteLiterally(className)
 				c.tsw.WriteLiterally("_")
 				c.tsw.WriteLiterally(funcDecl.Name.Name)
@@ -413,7 +410,15 @@ func (c *GoToTSCompiler) WriteNamedTypeWithMethods(a *ast.TypeSpec) error {
 				}
 				c.tsw.WriteLiterally(receiverParamName)
 				c.tsw.WriteLiterally(": ")
-				c.tsw.WriteLiterally(className)
+
+				// For pointer receivers, use VarRef<T>
+				if isPointerReceiver {
+					c.tsw.WriteLiterally("$.VarRef<")
+					c.tsw.WriteLiterally(className)
+					c.tsw.WriteLiterally(">")
+				} else {
+					c.tsw.WriteLiterally(className)
+				}
 
 				// Add other parameters
 				if funcDecl.Type.Params != nil && len(funcDecl.Type.Params.List) > 0 {
