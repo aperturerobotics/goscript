@@ -66,7 +66,7 @@ goscript compile --package . --output ./dist
 
 ## 📦 Using Generated Code in Your Project
 
-After compiling your Go code to TypeScript, you'll need to set up your project to consume the generated files.
+After compiling your Go code to TypeScript, you'll need to set up your project appropriately.
 
 ### TypeScript Configuration
 
@@ -98,6 +98,73 @@ Create or update your `tsconfig.json` with these settings:
 - **`moduleResolution: "bundler"`** - Recommended for modern bundlers
 
 You should be able to use any TypeScript bundler to compile the generated TypeScript.
+
+## 🛠️ Integration & Usage
+
+### Command Line
+
+```bash
+goscript compile --package ./my-go-code --output ./dist
+```
+
+**Options:**
+- `--package <path>` - Go package to compile (default: ".")
+- `--output <dir>` - Output directory for TypeScript files
+
+### Programmatic API
+
+**Go:**
+```go
+import "github.com/aperturerobotics/goscript/compiler"
+
+conf := &compiler.Config{OutputPath: "./dist"}
+comp, err := compiler.NewCompiler(conf, logger, nil)
+_, err = comp.CompilePackages(ctx, "your/package/path")
+```
+
+**Node.js:**
+```typescript
+import { compile } from 'goscript'
+
+await compile({
+  pkg: './my-go-package',
+  output: './dist'
+})
+```
+
+### Frontend Frameworks
+
+**React + GoScript:**
+```typescript
+import { NewCalculator } from '@goscript/myapp/calculator'
+
+function CalculatorApp() {
+  const [calc] = useState(() => NewCalculator())
+  
+  const handleAdd = () => {
+    const result = calc.Add(5, 3)
+    setResult(result)
+  }
+
+  return <button onClick={handleAdd}>Add 5 + 3</button>
+}
+```
+
+**Vue + GoScript:**
+```vue
+<script setup lang="ts">
+import { NewUser, FindUserByEmail } from '@goscript/myapp/user'
+
+const users = ref([
+  NewUser(1, "Alice", "alice@example.com")
+])
+
+const searchUser = (email: string) => {
+  return FindUserByEmail(users.value, email)
+}
+</script>
+```
+
 
 ## 💡 See It In Action
 
@@ -229,72 +296,6 @@ async function handleMessages() {
     console.log(result) // "✓ hello", "✓ world", "✓ goscript"
   }
 }
-```
-
-## 🛠️ Integration & Usage
-
-### Command Line
-
-```bash
-goscript compile --package ./my-go-code --output ./dist
-```
-
-**Options:**
-- `--package <path>` - Go package to compile (default: ".")
-- `--output <dir>` - Output directory for TypeScript files
-
-### Programmatic API
-
-**Go:**
-```go
-import "github.com/aperturerobotics/goscript/compiler"
-
-conf := &compiler.Config{OutputPath: "./dist"}
-comp, err := compiler.NewCompiler(conf, logger, nil)
-_, err = comp.CompilePackages(ctx, "your/package/path")
-```
-
-**Node.js:**
-```typescript
-import { compile } from 'goscript'
-
-await compile({
-  pkg: './my-go-package',
-  output: './dist'
-})
-```
-
-### Frontend Frameworks
-
-**React + GoScript:**
-```typescript
-import { NewCalculator } from '@goscript/myapp/calculator'
-
-function CalculatorApp() {
-  const [calc] = useState(() => NewCalculator())
-  
-  const handleAdd = () => {
-    const result = calc.Add(5, 3)
-    setResult(result)
-  }
-
-  return <button onClick={handleAdd}>Add 5 + 3</button>
-}
-```
-
-**Vue + GoScript:**
-```vue
-<script setup lang="ts">
-import { NewUser, FindUserByEmail } from '@goscript/myapp/user'
-
-const users = ref([
-  NewUser(1, "Alice", "alice@example.com")
-])
-
-const searchUser = (email: string) => {
-  return FindUserByEmail(users.value, email)
-}
-</script>
 ```
 
 ## 🚀 What's Next?
