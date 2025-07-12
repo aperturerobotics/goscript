@@ -15,5 +15,65 @@ export async function main(): Promise<void> {
 			console.log("Not Expected: should be a string")
 		}
 	}
+
+	// this is from go/ast/filter.go, line 117
+	export class KV {
+		public get Key(): null | any {
+			return this._fields.Key.value
+		}
+		public set Key(value: null | any) {
+			this._fields.Key.value = value
+		}
+
+		public _fields: {
+			Key: $.VarRef<null | any>;
+		}
+
+		constructor(init?: Partial<{Key?: null | any}>) {
+			this._fields = {
+				Key: $.varRef(init?.Key ?? null)
+			}
+		}
+
+		public clone(): KV {
+			const cloned = new KV()
+			cloned._fields = {
+				Key: $.varRef(this._fields.Key.value)
+			}
+			return cloned
+		}
+
+		// Register this type with the runtime type system
+		static __typeInfo = $.registerStructType(
+		  'KV',
+		  new KV(),
+		  [],
+		  KV,
+		  {"Key": { kind: $.TypeKind.Interface, methods: [] }}
+		);
+	}
+
+	let list: $.Slice<null | any> = null
+	let kv = new KV({Key: "string"})
+	list = $.arrayToSlice<null | any>([kv])
+	for (let _i = 0; _i < $.len(list); _i++) {
+		const exp = list![_i]
+		{
+			$.typeSwitch(exp, [{ types: [{kind: $.TypeKind.Pointer, elemType: 'KV'}], body: (x) => {
+				const _temp_x = x
+				{
+					let x, let ok = $.mustTypeAssert<string>(x.Key, {kind: $.TypeKind.Basic, name: 'string'})
+					if (ok) {
+						console.log("got string:", x)
+					}
+					 else {
+						console.log("fail: should be string")
+					}
+				}
+			}}], () => {
+				console.log("fail: should be KV")
+			})
+		}
+	}
 }
 
