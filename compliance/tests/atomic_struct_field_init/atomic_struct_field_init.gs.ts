@@ -35,18 +35,18 @@ export class MyStruct {
 
 	constructor(init?: Partial<{closed?: atomic.Bool, count?: atomic.Int32, flag?: atomic.Uint32}>) {
 		this._fields = {
-			closed: $.varRef(init?.closed?.clone() ?? new atomic.Bool()),
-			count: $.varRef(init?.count?.clone() ?? new atomic.Int32()),
-			flag: $.varRef(init?.flag?.clone() ?? new atomic.Uint32())
+			closed: $.varRef(init?.closed ? $.markAsStructValue(init.closed.clone()) : new atomic.Bool()),
+			count: $.varRef(init?.count ? $.markAsStructValue(init.count.clone()) : new atomic.Int32()),
+			flag: $.varRef(init?.flag ? $.markAsStructValue(init.flag.clone()) : new atomic.Uint32())
 		}
 	}
 
 	public clone(): MyStruct {
 		const cloned = new MyStruct()
 		cloned._fields = {
-			closed: $.varRef(this._fields.closed.value?.clone() ?? null),
-			count: $.varRef(this._fields.count.value?.clone() ?? null),
-			flag: $.varRef(this._fields.flag.value?.clone() ?? null)
+			closed: $.varRef($.markAsStructValue(this._fields.closed.value.clone())),
+			count: $.varRef($.markAsStructValue(this._fields.count.value.clone())),
+			flag: $.varRef($.markAsStructValue(this._fields.flag.value.clone()))
 		}
 		return cloned
 	}
@@ -63,7 +63,7 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	// Test struct initialization with atomic fields
-	let s = new MyStruct({})
+	let s = $.markAsStructValue(new MyStruct({}))
 
 	// Test that the atomic fields work correctly
 	s.closed.Store(true)
@@ -75,7 +75,7 @@ export async function main(): Promise<void> {
 	console.log("flag:", s.flag.Load())
 
 	// Test struct initialization with init values
-	let s2 = new MyStruct({closed: new atomic.Bool({}), count: new atomic.Int32({}), flag: new atomic.Uint32({})})
+	let s2 = $.markAsStructValue(new MyStruct({closed: $.markAsStructValue(new atomic.Bool({})), count: $.markAsStructValue(new atomic.Int32({})), flag: $.markAsStructValue(new atomic.Uint32({}))}))
 
 	s2.closed.Store(false)
 	s2.count.Store(24)

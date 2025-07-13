@@ -51,11 +51,11 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
-	let dereferencedStructCopy = structPointer!.clone()
+	let dereferencedStructCopy = $.markAsStructValue(structPointer!.clone())
 	dereferencedStructCopy.MyString = "original dereferenced copy modified"
-	let valueCopy1 = dereferencedStructCopy.clone()
+	let valueCopy1 = $.markAsStructValue(dereferencedStructCopy.clone())
 	valueCopy1.MyString = "value copy 1"
-	let valueCopy2 = dereferencedStructCopy.clone()
+	let valueCopy2 = $.markAsStructValue(dereferencedStructCopy.clone())
 	valueCopy2.MyString = "value copy 2"
 	let pointerCopy = structPointer
 

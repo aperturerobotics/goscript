@@ -56,10 +56,12 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 
 			// Handle the RHS expression (potentially adding .clone() for structs)
 			if shouldApplyClone(c.pkg, rhs[0]) {
+				// When cloning for value assignment, mark the result as struct value
+				c.tsw.WriteLiterally("$.markAsStructValue(")
 				if err := c.WriteValueExpr(rhs[0]); err != nil {
 					return err
 				}
-				c.tsw.WriteLiterally(".clone()")
+				c.tsw.WriteLiterally(".clone())")
 			} else {
 				if err := c.WriteValueExpr(rhs[0]); err != nil {
 					return err
@@ -338,8 +340,37 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 			}
 		}
 
+		// Check for pointer-to-pointer assignment
+		if rhsIsIdent && rhsObj != nil && len(lhs) == 1 {
+			lhsType := c.pkg.TypesInfo.TypeOf(lhs[0])
+			rhsType := rhsObj.Type()
+
+			if lhsType != nil && rhsType != nil {
+				// Check if both LHS and RHS are pointer types
+				if _, lhsIsPtr := lhsType.(*types.Pointer); lhsIsPtr {
+					if _, rhsIsPtr := rhsType.(*types.Pointer); rhsIsPtr {
+						// This is pointer-to-pointer assignment
+						// The key question: is the RHS variable itself varref'd?
+						// - If RHS is varref'd (like pp1), use .value to get the actual pointer
+						// - If RHS is not varref'd (like p1), use the variable directly
+
+						if c.analysis.NeedsVarRef(rhsObj) {
+							// RHS variable is varref'd, so we need its .value to get the actual pointer
+							c.WriteIdent(rhsIdent, true) // Add .value access
+						} else {
+							// RHS variable is not varref'd, so it directly holds the pointer
+							c.WriteIdent(rhsIdent, false) // No .value access
+						}
+						continue
+					}
+				}
+			}
+		}
+
 		// Handle different cases for struct cloning
 		if shouldApplyClone(c.pkg, r) {
+			// When cloning for value assignment, mark the result as struct value
+			c.tsw.WriteLiterally("$.markAsStructValue(")
 			// For other expressions, we need to handle variable referenced access differently
 			if _, isIdent := r.(*ast.Ident); isIdent {
 				// For identifiers, WriteValueExpr already adds .value if needed
@@ -357,8 +388,39 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 				}
 			}
 
-			c.tsw.WriteLiterally(".clone()") // Always add clone for struct values
+			c.tsw.WriteLiterally(".clone())") // Always add clone for struct values
 		} else {
+			// Check if this is a pointer variable assignment to an interface type
+			if rhsIsIdent && rhsObj != nil {
+				// Check if LHS is interface type and RHS is a pointer variable
+				if len(lhs) == 1 {
+					lhsType := c.pkg.TypesInfo.TypeOf(lhs[0])
+					rhsType := rhsObj.Type()
+
+					if lhsType != nil && rhsType != nil {
+						// Check if LHS is interface and RHS is pointer
+						if _, isInterface := lhsType.Underlying().(*types.Interface); isInterface {
+							if ptrType, isPtr := rhsType.(*types.Pointer); isPtr {
+								// This is pointer-to-interface assignment
+								// For pointer variables that point to varrefed values, write without .value
+								// We want to pass the VarRef object itself to the interface, not its .value
+								if c.analysis.NeedsVarRefAccess(rhsObj) {
+									// Write the pointer variable without .value access
+									c.WriteIdent(rhsIdent, false)
+									continue
+								}
+
+								// Check if this is a struct pointer for the element type
+								if _, isStruct := ptrType.Elem().Underlying().(*types.Struct); isStruct {
+									// Struct pointer to interface - might need special handling
+									// Continue to normal WriteValueExpr handling
+								}
+							}
+						}
+					}
+				}
+			}
+
 			// Non-struct case: write RHS normally
 			if err := c.WriteValueExpr(r); err != nil { // RHS is a non-struct value
 				return err

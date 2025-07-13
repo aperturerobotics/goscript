@@ -60,7 +60,7 @@ export class printer {
 	public clone(): printer {
 		const cloned = new printer()
 		cloned._fields = {
-			buf: $.varRef(this._fields.buf.value)
+			buf: $.varRef(this._fields.buf.value ? $.markAsStructValue(this._fields.buf.value.clone()) : null)
 		}
 		return cloned
 	}

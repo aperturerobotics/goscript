@@ -239,24 +239,24 @@ func (c *GoToTSCompiler) writeMethodValue(exp *ast.SelectorExpr, selection *type
 		// The receiver should be a copy of the dereferenced value
 		c.tsw.WriteLiterally(".value.")
 		c.WriteIdent(exp.Sel, false)
-		c.tsw.WriteLiterally(".bind(")
+		c.tsw.WriteLiterally(".bind($.markAsStructValue(")
 		if err := c.WriteValueExpr(exp.X); err != nil {
 			return fmt.Errorf("failed to write method value receiver for binding: %w", err)
 		}
-		c.tsw.WriteLiterally("!.value.clone())")
+		c.tsw.WriteLiterally("!.value.clone()))")
 	} else if !isPointerReceiver && !baseIsPointer {
 		// Value receiver method on value type: t.Mv
 		// The receiver should be a copy of the value
 		c.tsw.WriteLiterally(".")
 		c.WriteIdent(exp.Sel, false)
-		c.tsw.WriteLiterally(".bind(")
+		c.tsw.WriteLiterally(".bind($.markAsStructValue(")
 		if err := c.WriteValueExpr(exp.X); err != nil {
 			return fmt.Errorf("failed to write method value receiver for binding: %w", err)
 		}
 		if baseIsPointer {
 			c.tsw.WriteLiterally("!")
 		}
-		c.tsw.WriteLiterally(".clone())")
+		c.tsw.WriteLiterally(".clone()))")
 	} else {
 		// Pointer receiver method on pointer type: pt.Mp
 		// The receiver should be the pointer itself

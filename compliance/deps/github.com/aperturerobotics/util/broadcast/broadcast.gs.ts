@@ -28,7 +28,7 @@ export class Broadcast {
 
 	constructor(init?: Partial<{ch?: $.Channel<{  }> | null, mtx?: sync.Mutex}>) {
 		this._fields = {
-			mtx: $.varRef(init?.mtx?.clone() ?? new sync.Mutex()),
+			mtx: $.varRef(init?.mtx ? $.markAsStructValue(init.mtx.clone()) : new sync.Mutex()),
 			ch: $.varRef(init?.ch ?? null)
 		}
 	}
@@ -36,7 +36,7 @@ export class Broadcast {
 	public clone(): Broadcast {
 		const cloned = new Broadcast()
 		cloned._fields = {
-			mtx: $.varRef(this._fields.mtx.value?.clone() ?? null),
+			mtx: $.varRef($.markAsStructValue(this._fields.mtx.value.clone())),
 			ch: $.varRef(this._fields.ch.value)
 		}
 		return cloned

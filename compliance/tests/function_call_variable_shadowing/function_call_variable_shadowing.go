@@ -18,8 +18,7 @@ func (fs MockFilesystem) Lstat(filename string) (os.FileInfo, error) {
 
 // Reproduce the exact variable shadowing scenario that causes the issue
 func walkWithShadowing(fs Filesystem, path string, info os.FileInfo, walkFn filepath.WalkFunc) error {
-	// This reproduces the exact pattern from the user's code
-	// where variable shadowing occurs with := assignment
+	// This reproduces the pattern where variable shadowing occurs with := assignment
 	fileInfo, err := fs.Lstat(path)
 	if err != nil {
 		// This is the problematic line that generates:

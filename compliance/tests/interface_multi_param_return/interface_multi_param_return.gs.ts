@@ -48,7 +48,7 @@ export class MyProcessor {
 }
 
 export async function main(): Promise<void> {
-	let processor: MultiParamReturner = new MyProcessor({})
+	let processor: MultiParamReturner = $.markAsStructValue(new MyProcessor({}))
 
 	let data = new Uint8Array([1, 2, 3])
 	let [success, ] = processor!.Process(data, 5, "unused")

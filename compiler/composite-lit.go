@@ -212,6 +212,7 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 			var structType *types.Struct
 			isStructLiteral := false
 			isAnonymousStruct := false
+			needsValueMarkerClose := false // Track if we need to close $.markAsStructValue()
 
 			if namedType, ok := litType.(*types.Named); ok {
 				if underlyingStruct, ok := namedType.Underlying().(*types.Struct); ok {
@@ -224,8 +225,14 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 							return err
 						}
 					} else {
-						// Named struct, use constructor
-						c.tsw.WriteLiterally("new ")
+						// Named struct value, use constructor
+						if !c.insideAddressOf {
+							// Only mark as struct value if not inside address-of operator
+							c.tsw.WriteLiterally("$.markAsStructValue(new ")
+							needsValueMarkerClose = true
+						} else {
+							c.tsw.WriteLiterally("new ")
+						}
 						c.WriteTypeExpr(exp.Type)
 					}
 				}
@@ -241,8 +248,14 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 							return err
 						}
 					} else {
-						// Type alias for struct, use constructor
-						c.tsw.WriteLiterally("new ")
+						// Type alias for struct value, use constructor
+						if !c.insideAddressOf {
+							// Only mark as struct value if not inside address-of operator
+							c.tsw.WriteLiterally("$.markAsStructValue(new ")
+							needsValueMarkerClose = true
+						} else {
+							c.tsw.WriteLiterally("new ")
+						}
 						c.WriteTypeExpr(exp.Type)
 					}
 				}
@@ -483,6 +496,10 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 					c.tsw.WriteLiterally("}")
 				} else {
 					c.tsw.WriteLiterally("})")
+					// Close markAsStructValue wrapper if we opened one
+					if needsValueMarkerClose {
+						c.tsw.WriteLiterally(")")
+					}
 				}
 
 			} else {

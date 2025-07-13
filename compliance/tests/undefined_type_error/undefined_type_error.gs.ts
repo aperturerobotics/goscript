@@ -173,7 +173,7 @@ export class printer {
 		this._fields = {
 			buf: $.varRef(init?.buf ?? new Uint8Array(0)),
 			arg: $.varRef(init?.arg ?? null),
-			fmt: $.varRef(init?.fmt?.clone() ?? new formatter())
+			fmt: $.varRef(init?.fmt ? $.markAsStructValue(init.fmt.clone()) : new formatter())
 		}
 	}
 
@@ -182,14 +182,14 @@ export class printer {
 		cloned._fields = {
 			buf: $.varRef(this._fields.buf.value),
 			arg: $.varRef(this._fields.arg.value),
-			fmt: $.varRef(this._fields.fmt.value?.clone() ?? null)
+			fmt: $.varRef($.markAsStructValue(this._fields.fmt.value.clone()))
 		}
 		return cloned
 	}
 
 	public init(): void {
 		const p = this
-		p.fmt = new formatter({})
+		p.fmt = $.markAsStructValue(new formatter({}))
 	}
 
 	public format(verb: number): void {

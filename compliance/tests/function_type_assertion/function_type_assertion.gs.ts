@@ -102,7 +102,7 @@ export async function main(): Promise<void> {
 	}
 
 	// 3. Type assertion of a function in a struct field
-	let container = new FuncContainer({myFunc: Object.assign(greet, { __goTypeName: 'Greeter' })})
+	let container = $.markAsStructValue(new FuncContainer({myFunc: Object.assign(greet, { __goTypeName: 'Greeter' })}))
 	let structFn: Greeter | null
 	({ value: structFn, ok: ok } = $.typeAssert<Greeter | null>(container.myFunc, {kind: $.TypeKind.Function, name: 'Greeter', params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }]}))
 	if (ok) {
@@ -112,7 +112,7 @@ export async function main(): Promise<void> {
 		console.log("Struct function assertion failed")
 	}
 
-	let adderContainer = new FuncContainer({myFunc: Object.assign(add, { __goTypeName: 'Adder' })})
+	let adderContainer = $.markAsStructValue(new FuncContainer({myFunc: Object.assign(add, { __goTypeName: 'Adder' })}))
 	let structAdderFn: Adder | null
 	({ value: structAdderFn, ok: ok } = $.typeAssert<Adder | null>(adderContainer.myFunc, {kind: $.TypeKind.Function, name: 'Adder', params: [{ kind: $.TypeKind.Basic, name: "number" }, { kind: $.TypeKind.Basic, name: "number" }], results: [{ kind: $.TypeKind.Basic, name: "number" }]}))
 	if (ok) {

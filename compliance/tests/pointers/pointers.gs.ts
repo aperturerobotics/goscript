@@ -40,8 +40,8 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
-	let s1 = $.varRef(new MyStruct({Val: 1})) // p1 takes the address of s1, so s1 is varrefed
-	let s2 = $.varRef(new MyStruct({Val: 2})) // p2 takes the address of s2, so s2 is varrefed
+	let s1 = $.varRef($.markAsStructValue(new MyStruct({Val: 1}))) // p1 takes the address of s1, so s1 is varrefed
+	let s2 = $.varRef($.markAsStructValue(new MyStruct({Val: 2}))) // p2 takes the address of s2, so s2 is varrefed
 
 	let p1 = $.varRef(s1) // *MyStruct, points to s1, pp1 takes the address of p1, so p1 is varrefed
 	let p2 = $.varRef(s1) // *MyStruct, points to s1, pp2 takes the address of p2, so p2 is varrefed
@@ -64,22 +64,22 @@ export async function main(): Promise<void> {
 
 	// --- Pointer Comparisons ---
 	console.log("\n--- Pointer Comparisons ---")
-	console.log("pp1==pp2:", (pp1!.value === pp2!.value)) // false
-	console.log("pp1==pp3:", (pp1!.value === pp3!.value)) // false
+	console.log("pp1==pp2:", (pp1!.value === pp2)) // false
+	console.log("pp1==pp3:", (pp1!.value === pp3)) // false
 	console.log("*pp1==*pp2:", (pp1!.value!.value === pp2!.value)) // true
 	console.log("*pp1==*pp3:", (pp1!.value!.value === pp3!.value)) // false
 	console.log("(**pp1).Val == (**pp2).Val:", pp1!.value!.value!!.value.Val == pp2!.value!!.value.Val) // true
 	console.log("(**pp1).Val == (**pp3).Val:", pp1!.value!.value!!.value.Val == pp3!.value!!.value.Val) // false
 
 	// Triple pointer comparisons
-	console.log("ppp1==ppp1:", (ppp1!.value === ppp1!.value)) // true
+	console.log("ppp1==ppp1:", (ppp1 === ppp1)) // true
 	console.log("*ppp1==pp1:", (ppp1!.value === pp1!.value)) // true
 	console.log("**ppp1==p1:", (ppp1!.value!.value === p1!.value)) // true
 	console.log("(***ppp1).Val == s1.Val:", ppp1!.value!.value!!.value.Val == s1!.value.Val) // true
 
 	// --- Modifications through Pointers ---
 	console.log("\n--- Modifications ---")
-	p1!.value!.value = new MyStruct({Val: 10}) // Modify s1 via p1
+	p1!.value!.value = $.markAsStructValue(new MyStruct({Val: 10})) // Modify s1 via p1
 	console.log("After *p1 = {Val: 10}:")
 	console.log("  s1.Val:", s1!.value.Val) // 10
 	console.log("  (*p2).Val:", p2!.value!!.value.Val) // 10
@@ -87,7 +87,7 @@ export async function main(): Promise<void> {
 	console.log("  (***ppp1).Val:", ppp1!.value!.value!!.value.Val) // 10
 	console.log("  s2.Val:", s2!.value.Val) // 2 (unmodified)
 
-	pp3!.value!.value = new MyStruct({Val: 20}) // Modify s2 via pp3 -> p3
+	pp3!.value!.value = $.markAsStructValue(new MyStruct({Val: 20})) // Modify s2 via pp3 -> p3
 	console.log("After **pp3 = {Val: 20}:")
 	console.log("  s2.Val:", s2!.value.Val) // 20
 	console.log("  (*p3).Val:", p3!.value!!.value.Val) // 20

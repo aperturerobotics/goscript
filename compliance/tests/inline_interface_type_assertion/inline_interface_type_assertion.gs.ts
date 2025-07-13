@@ -73,7 +73,7 @@ export class MyStringer {
 
 export async function main(): Promise<void> {
 	let i: null | any = null
-	i = new Greeter({})
+	i = $.markAsStructValue(new Greeter({}))
 
 	// Successful type assertion to an inline interface
 	let { value: g, ok: ok } = $.typeAssert<null | {
@@ -99,7 +99,7 @@ export async function main(): Promise<void> {
 
 	// Successful type assertion to a named interface, where the asserted value also implements an inline interface method
 	let j: null | any = null
-	j = new MyStringer({})
+	j = $.markAsStructValue(new MyStringer({}))
 
 	// Assert 'j' (which holds MyStringer) to an inline interface that MyStringer satisfies.
 	let { value: inlineMs, ok: ok4 } = $.typeAssert<null | {
@@ -114,7 +114,7 @@ export async function main(): Promise<void> {
 
 	// Test case: variable of named interface type, asserted to inline interface
 	let k: Stringer = null
-	k = new MyStringer({})
+	k = $.markAsStructValue(new MyStringer({}))
 
 	let { value: inlineK, ok: ok5 } = $.typeAssert<null | {
 		String(): string

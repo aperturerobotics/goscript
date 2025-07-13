@@ -40,13 +40,13 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
-	let s1 = new MyStruct({Value: 10})
+	let s1 = $.markAsStructValue(new MyStruct({Value: 10}))
 	let p: MyStruct | null = null
 	p = new MyStruct({Value: 20}) // Initialize p to point to something
 
 	// This assignment should trigger the .clone() on s1
 	// because s1 is a struct and *p is being assigned.
-	p!.value = s1.clone()
+	p!.value = $.markAsStructValue(s1.clone())
 
 	console.log(p.Value) // Expected: 10
 
@@ -57,7 +57,7 @@ export async function main(): Promise<void> {
 	// Test assignment from a pointer to a struct (should not clone)
 	let s2 = new MyStruct({Value: 40})
 	let p2 = new MyStruct({Value: 50})
-	p2!.value = s2!.clone() // Assigning the struct pointed to by s2 to the struct pointed to by p2
+	p2!.value = $.markAsStructValue(s2!.clone()) // Assigning the struct pointed to by s2 to the struct pointed to by p2
 	console.log(p2!.Value) // Expected: 40
 
 	s2!.Value = 60 // Modify original s2
@@ -67,20 +67,20 @@ export async function main(): Promise<void> {
 	console.log(p2!.Value) // Expected: 40 (because *s2 was cloned implicitly by Go's value semantics for struct assignment)
 
 	// Test assignment of a struct from a function call
-	let s3 = new MyStruct({Value: 70})
+	let s3 = $.markAsStructValue(new MyStruct({Value: 70}))
 	let p3 = new MyStruct({Value: 80})
-	p3!.value = getStruct().clone()
+	p3!.value = $.markAsStructValue(getStruct().clone())
 	console.log(p3!.Value) // Expected: 100
 	console.log(s3.Value) // Expected: 70
 
 	// Test assignment of a struct from a pointer returned by a function call
 	let p4 = new MyStruct({Value: 90})
-	p4!.value = getStructPointer()!.clone()
+	p4!.value = $.markAsStructValue(getStructPointer()!.clone())
 	console.log(p4!.Value) // Expected: 110
 }
 
 export function getStruct(): MyStruct {
-	return new MyStruct({Value: 100})
+	return $.markAsStructValue(new MyStruct({Value: 100}))
 }
 
 export function getStructPointer(): MyStruct | null {

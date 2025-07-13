@@ -92,21 +92,21 @@ export async function main(): Promise<void> {
 	console.log("Value from method via parameter:", value2)
 
 	// Test with value receiver methods
-	let counter2 = new Counter({value: 10})
+	let counter2 = $.markAsStructValue(new Counter({value: 10}))
 
 	console.log("Initial value2:", counter2.GetValueByValue())
 
 	// This should NOT modify the original counter2 since it's a value receiver
-	callFunction(counter2.IncrementValue.bind(counter2.clone()))
+	callFunction(counter2.IncrementValue.bind($.markAsStructValue(counter2.clone())))
 	console.log("After calling IncrementValue via parameter (should be unchanged):", counter2.GetValueByValue())
 
 	// This should also NOT modify the original counter2
-	let incrementValueFunc = counter2.IncrementValue.bind(counter2.clone())
+	let incrementValueFunc = counter2.IncrementValue.bind($.markAsStructValue(counter2.clone()))
 	incrementValueFunc!()
 	console.log("After calling IncrementValue via variable (should be unchanged):", counter2.GetValueByValue())
 
 	// Test method with return value on value receiver
-	let getValueByValueFunc = counter2.GetValueByValue.bind(counter2.clone())
+	let getValueByValueFunc = counter2.GetValueByValue.bind($.markAsStructValue(counter2.clone()))
 	let value3 = getValueByValueFunc!()
 	console.log("Value from assigned value method:", value3)
 }

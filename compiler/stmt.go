@@ -1023,30 +1023,74 @@ func (c *GoToTSCompiler) writeShadowedAssignment(stmt *ast.AssignStmt, shadowing
 // writeShadowedAssignmentWithoutTempVars writes an assignment statement that has variable shadowing,
 // but assumes temporary variables have already been created outside this scope.
 func (c *GoToTSCompiler) writeShadowedAssignmentWithoutTempVars(stmt *ast.AssignStmt, shadowingInfo *ShadowingInfo) error {
-	// Write the LHS variables (these are new declarations)
+	if len(stmt.Rhs) == 1 {
+		if typeAssert, isTypeAssert := stmt.Rhs[0].(*ast.TypeAssertExpr); isTypeAssert {
+			if len(stmt.Lhs) != 2 {
+				return fmt.Errorf("type assertion assignment requires 2 LHS, got %d", len(stmt.Lhs))
+			}
+			valueExpr := stmt.Lhs[0]
+			okExpr := stmt.Lhs[1]
+			valueIdent, valueIsIdent := valueExpr.(*ast.Ident)
+			okIdent, okIsIdent := okExpr.(*ast.Ident)
+			if valueIsIdent && okIsIdent {
+				valueName := valueIdent.Name
+				okName := okIdent.Name
+				valueIsBlank := valueName == "_"
+				okIsBlank := okName == "_"
+				if valueIsBlank && okIsBlank {
+					// Both blank, evaluate RHS for side effects
+					if err := c.writeShadowedRHSExpression(typeAssert.X, shadowingInfo); err != nil {
+						return err
+					}
+					c.tsw.WriteLine("")
+					return nil
+				}
+				c.tsw.WriteLiterally("let { ")
+				var parts []string
+				if !valueIsBlank {
+					parts = append(parts, "value: "+valueName)
+				}
+				if !okIsBlank {
+					parts = append(parts, "ok: "+okName)
+				}
+				c.tsw.WriteLiterally(strings.Join(parts, ", "))
+				c.tsw.WriteLiterally(" } = $.typeAssert<")
+				c.WriteTypeExpr(typeAssert.Type)
+				c.tsw.WriteLiterally(">(")
+				if err := c.writeShadowedRHSExpression(typeAssert.X, shadowingInfo); err != nil {
+					return err
+				}
+				c.tsw.WriteLiterally(", ")
+				c.writeTypeDescription(typeAssert.Type)
+				c.tsw.WriteLiterally(")")
+				c.tsw.WriteLine("")
+				return nil
+			}
+		}
+	}
+
+	var firstDecl = true
 	for i, lhsExpr := range stmt.Lhs {
 		if i > 0 {
 			c.tsw.WriteLiterally(", ")
 		}
-
 		if ident, ok := lhsExpr.(*ast.Ident); ok {
-			if ident.Name == "_" {
-				c.tsw.WriteLiterally("_")
+			if ident.Name != "_" {
+				if firstDecl {
+					c.tsw.WriteLiterally("let ")
+					firstDecl = false
+				}
+				c.WriteIdent(ident, false)
 			} else {
-				c.tsw.WriteLiterally("let ")
-				c.WriteIdent(ident, false) // Don't use temp variable for LHS
+				c.tsw.WriteLiterally("_")
 			}
 		} else {
-			// For non-identifier LHS (shouldn't happen in := assignments), write normally
 			if err := c.WriteValueExpr(lhsExpr); err != nil {
 				return err
 			}
 		}
 	}
-
 	c.tsw.WriteLiterally(" = ")
-
-	// Write RHS expressions - replace shadowed variables with temporary variables
 	for i, rhsExpr := range stmt.Rhs {
 		if i > 0 {
 			c.tsw.WriteLiterally(", ")
@@ -1055,7 +1099,6 @@ func (c *GoToTSCompiler) writeShadowedAssignmentWithoutTempVars(stmt *ast.Assign
 			return err
 		}
 	}
-
 	c.tsw.WriteLine("")
 	return nil
 }

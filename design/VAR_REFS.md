@@ -88,6 +88,66 @@ function unref<T>(varRef: VarRef<T>): T {
     return varRef.value;
 }
 ```
+
+### `markAsStructValue<T>(value: T): T`
+
+A function that marks a struct instance as representing a value (not a pointer value) for runtime type assertion purposes. This is used to distinguish between struct values and struct pointers when they are stored in interfaces.
+
+```typescript
+function markAsStructValue<T>(value: T): T {
+    if (typeof value === 'object' && value !== null) {
+        (value as any)[STRUCT_VALUE_MARKER] = true;
+    }
+    return value;
+}
+```
+
+**Purpose**: In Go, there's a crucial distinction between struct values and struct pointers for type assertions:
+- `i.(MyStruct)` should succeed when `i` contains a struct value
+- `i.(*MyStruct)` should succeed when `i` contains a struct pointer
+- `i.(MyStruct)` should fail when `i` contains a struct pointer
+- `i.(*MyStruct)` should fail when `i` contains a struct value
+
+However, in TypeScript, both struct values and struct pointers are represented as the same `MyStruct` instances. The `markAsStructValue` function adds a runtime marker to distinguish them.
+
+**Usage**: The compiler automatically applies this function when translating Go expressions that create struct values:
+- `MyStruct{field: value}` → `$.markAsStructValue(new MyStruct({field: value}))`
+- `&MyStruct{field: value}` → `new MyStruct({field: value})` (no marker)
+
+**Type Assertion Behavior**: The runtime type assertion system checks for this marker:
+- Value type assertions (`MyStruct`) only match struct instances with the marker
+- Pointer type assertions (`*MyStruct`) match struct instances without the marker or `VarRef` objects
+
+**Example**:
+```go
+// Go code
+s := MyStruct{Value: 10}  // struct value
+p := &MyStruct{Value: 20} // struct pointer
+var i interface{}
+
+i = s
+_, ok1 := i.(MyStruct)   // true - matches struct value
+_, ok2 := i.(*MyStruct)  // false - struct value doesn't match pointer assertion
+
+i = p
+_, ok3 := i.(MyStruct)   // false - struct pointer doesn't match value assertion
+_, ok4 := i.(*MyStruct)  // true - matches struct pointer
+```
+
+```typescript
+// Generated TypeScript
+let s = $.markAsStructValue(new MyStruct({Value: 10}));      // marked as value
+let p = new MyStruct({Value: 20});                           // no marker, represents pointer
+let i: any = null;
+
+i = s.clone();
+let { ok: ok1 } = $.typeAssert<MyStruct>(i, 'MyStruct');        // true
+let { ok: ok2 } = $.typeAssert<MyStruct>(i, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'}); // false
+
+i = p;
+let { ok: ok3 } = $.typeAssert<MyStruct>(i, 'MyStruct');        // false
+let { ok: ok4 } = $.typeAssert<MyStruct>(i, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'}); // true
+```
 ### `NeedsVarRef(obj types.Object) bool`
 
 This function, located in `compiler/analysis.go`, determines if a Go variable needs to be represented as a `$.VarRef` in TypeScript. A variable `NeedsVarRef` if its address is taken (`&var`) and that address is used or assigned.
@@ -310,9 +370,9 @@ A critical distinction exists between these two cases:
    ```
    Which generates:
    ```typescript
-   let val: VarRef<MyStruct> = varRef(new MyStruct({...}))
-   let ptrToVal = val
-   // Access should be: ptrToVal.value.MyInt
+   let val: VarRef<MyStruct> = $.varRef($.markAsStructValue(new MyStruct({...})))
+   let ptrToVal: MyStruct | null = val.value  // extract the instance
+   // Access should be: ptrToVal!.MyInt
    ```
 
 2. **Struct pointer from composite literal**:
@@ -321,17 +381,71 @@ A critical distinction exists between these two cases:
    ```
    Which generates:
    ```typescript
-   let ptr = new MyStruct({...})
-   // Access should be: ptr.MyInt
+   let ptr: MyStruct | null = new MyStruct({...})  // no marker
+   // Access should be: ptr!.MyInt
    ```
 
 The crucial difference is:
-- In case 1, `ptrToVal` points to a variable referenced struct variable, requiring `.value` to access the actual struct.
-- In case 2, `ptr` directly holds a struct reference, not requiring `.value`.
+- In case 1, `ptrToVal` holds the extracted MyStruct instance from the VarRef, requiring `!` for null assertion.
+- In case 2, `ptr` directly holds a struct reference (unmarked, representing pointer), also using `!` for access.
 
 The analysis tracks this distinction through the variable's assignment sources and usage patterns.
 When a pointer variable points to a variable referenced struct variable (a variable whose address is taken elsewhere),
 we need an additional `.value` dereference to access the contained struct value.
+
+### Runtime Struct Pointer Marking for Type Assertions
+
+While the variable reference system handles pointer semantics for variable access and dereferencing, type assertions require additional runtime information to distinguish between struct values and struct pointers when they are stored in interfaces.
+
+**Problem**: Both struct values and struct pointers are represented as the same `MyStruct` instances in TypeScript:
+- `MyStruct{field: value}` → `new MyStruct({field: value})`
+- `&MyStruct{field: value}` → `new MyStruct({field: value})`
+
+However, Go type assertions must distinguish between these cases:
+```go
+var i interface{}
+s := MyStruct{Value: 10}  // struct value
+p := &MyStruct{Value: 20} // struct pointer
+
+i = s
+_, ok1 := i.(MyStruct)   // true - matches struct value
+_, ok2 := i.(*MyStruct)  // false - struct value doesn't match pointer assertion
+
+i = p  
+_, ok3 := i.(MyStruct)   // true - pointer can match struct value assertion
+_, ok4 := i.(*MyStruct)  // true - matches struct pointer
+```
+
+**Solution**: The runtime uses a symbol-based marker system:
+1. **Composite literal pointers** (`&MyStruct{...}`) are automatically marked with `markAsStructValue()`
+2. **Struct values** (`MyStruct{...}`) are not marked
+3. **Type assertion logic** checks for the marker when evaluating pointer type assertions
+
+**Implementation**:
+- Compiler automatically wraps struct composite literals used with `&` operator:
+  ```go
+  ptr := &MyStruct{Value: 10}
+  ```
+  ```typescript
+  let ptr = $.markAsStructValue(new MyStruct({Value: 10}))
+  ```
+
+- Runtime type assertion checks for marker:
+  ```typescript
+  // Pointer type assertion only matches marked structs or VarRef objects
+  function matchesPointerType(value: any, info: TypeInfo): boolean {
+    // ... null checks ...
+    if (registered && registered.kind === TypeKind.Struct) {
+      return value instanceof registered.ctor && isMarkedAsStructPointer(value)
+    }
+    // ... VarRef handling ...
+  }
+  ```
+
+**Edge Cases**:
+- **Variable-referenced struct pointers**: When a struct pointer variable has its address taken, it becomes a `VarRef<MyStruct | null>`. The inner `MyStruct` instance retains its pointer marker.
+- **Cloned struct values**: When struct values are assigned to interfaces, they are cloned (`s.clone()`). The clone does not inherit the pointer marker, correctly representing a struct value.
+- **Mixed scenarios**: A struct value can be assigned to a pointer variable, and later that pointer can be assigned to an interface. The type assertion behavior depends on whether the original struct was marked as a pointer.
 
 ### Pointer Dereferencing Edge Cases
 
@@ -370,8 +484,8 @@ Dereferencing pointers correctly in TypeScript requires differentiating between 
    ps.field  // Field access through pointer (Go implicitly dereferences)
    ```
    TypeScript: 
-   - If ps is non-variable reference: `ps.field`
-   - If ps points to a variable referenced struct var: `ps.value.field`
+   - If ps points to a non-varref'd struct: `ps!.field`
+   - If ps points to a varref'd struct var: `ps!.field` (since ps holds the extracted instance)
 
 These distinctions are essential for generating correct TypeScript code that correctly mimics Go's pointer semantics.
 
@@ -680,3 +794,5 @@ export function main(): void {
     addrID!.value = 2;
     console.log(d.ID); // Output: 2 (accessed via getter)
 }
+
+```

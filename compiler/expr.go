@@ -382,9 +382,45 @@ func (c *GoToTSCompiler) WriteBinaryExpr(exp *ast.BinaryExpr) error {
 	// Compare the varRef objects directly using === or !==
 	if c.isPointerComparison(exp) {
 		c.tsw.WriteLiterally("(") // Wrap comparison
-		if err := c.WriteValueExpr(exp.X); err != nil {
-			return fmt.Errorf("failed to write binary expression left operand: %w", err)
+
+		// For pointer comparisons, we need to handle variable varref status
+		// If a variable is varref'd, we need its .value to get the actual pointer value
+
+		// Check if operands are varref'd variables
+		var leftObj, rightObj types.Object
+		leftIsVarRef := false
+		rightIsVarRef := false
+
+		if leftIdent, ok := exp.X.(*ast.Ident); ok {
+			leftObj = c.pkg.TypesInfo.ObjectOf(leftIdent)
+			if leftObj != nil {
+				leftIsVarRef = c.analysis.NeedsVarRef(leftObj)
+			}
 		}
+
+		if rightIdent, ok := exp.Y.(*ast.Ident); ok {
+			rightObj = c.pkg.TypesInfo.ObjectOf(rightIdent)
+			if rightObj != nil {
+				rightIsVarRef = c.analysis.NeedsVarRef(rightObj)
+			}
+		}
+
+		// Write left operand
+		if leftIdent, ok := exp.X.(*ast.Ident); ok {
+			if leftIsVarRef {
+				// Variable is varref'd, access its .value to get the pointer
+				c.WriteIdent(leftIdent, true)
+			} else {
+				// Variable is not varref'd, use it directly
+				c.WriteIdent(leftIdent, false)
+			}
+		} else {
+			// For non-identifiers, use WriteValueExpr
+			if err := c.WriteValueExpr(exp.X); err != nil {
+				return fmt.Errorf("failed to write binary expression left operand: %w", err)
+			}
+		}
+
 		c.tsw.WriteLiterally(" ")
 		// Use === for == and !== for !=
 		tokStr := ""
@@ -398,9 +434,23 @@ func (c *GoToTSCompiler) WriteBinaryExpr(exp *ast.BinaryExpr) error {
 		}
 		c.tsw.WriteLiterally(tokStr)
 		c.tsw.WriteLiterally(" ")
-		if err := c.WriteValueExpr(exp.Y); err != nil {
-			return fmt.Errorf("failed to write binary expression right operand: %w", err)
+
+		// Write right operand
+		if rightIdent, ok := exp.Y.(*ast.Ident); ok {
+			if rightIsVarRef {
+				// Variable is varref'd, access its .value to get the pointer
+				c.WriteIdent(rightIdent, true)
+			} else {
+				// Variable is not varref'd, use it directly
+				c.WriteIdent(rightIdent, false)
+			}
+		} else {
+			// For non-identifiers, use WriteValueExpr
+			if err := c.WriteValueExpr(exp.Y); err != nil {
+				return fmt.Errorf("failed to write binary expression right operand: %w", err)
+			}
 		}
+
 		c.tsw.WriteLiterally(")") // Close wrap
 		return nil
 	}
@@ -503,12 +553,21 @@ func (c *GoToTSCompiler) WriteUnaryExpr(exp *ast.UnaryExpr) error {
 			}
 		}
 
+		// Note: With inversion to markAsStructValue, we no longer mark &CompositeLit{}
+		// since we now mark the CompositeLit{} (struct values) instead of pointers
+
 		// Otherwise (&unvarrefedVar, &CompositeLit{}, &FuncCall(), etc.),
 		// the address-of operator in Go, when used to create a pointer,
 		// translates to simply evaluating the operand in TypeScript.
 		// The resulting value (e.g., a new object instance) acts as the "pointer".
 		// VarRefing decisions are handled at the assignment site based on the LHS variable.
-		if err := c.WriteValueExpr(exp.X); err != nil {
+
+		// Set context flag to prevent marking composite literals as struct values
+		c.insideAddressOf = true
+		err := c.WriteValueExpr(exp.X)
+		c.insideAddressOf = false
+
+		if err != nil {
 			return fmt.Errorf("failed to write &-operand: %w", err)
 		}
 

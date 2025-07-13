@@ -118,7 +118,7 @@ export class Container {
 }
 
 export async function main(): Promise<void> {
-	let iface: Interface = new ConcreteA({})
+	let iface: Interface = $.markAsStructValue(new ConcreteA({}))
 
 	let c = new Container({})
 

@@ -96,7 +96,7 @@ export class storage {
 }
 
 export async function main(): Promise<void> {
-	let s = new storage({children: $.makeMap<string, Map<string, file | null> | null>(), files: $.makeMap<string, file | null>()})
+	let s = $.markAsStructValue(new storage({children: $.makeMap<string, Map<string, file | null> | null>(), files: $.makeMap<string, file | null>()}))
 
 	let f = new file({data: $.stringToBytes("hello world"), name: "test.txt"})
 

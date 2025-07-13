@@ -56,8 +56,8 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let i: MyInterface = null
-	let s = new MyStruct({Value: 10})
-	i = s.clone()
+	let s = $.markAsStructValue(new MyStruct({Value: 10}))
+	i = $.markAsStructValue(s.clone())
 
 	let { ok: ok } = $.typeAssert<MyStruct>(i, 'MyStruct')
 	if (ok) {

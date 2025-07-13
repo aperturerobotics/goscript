@@ -52,7 +52,7 @@ export class MyStruct {
 export async function main(): Promise<void> {
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
 	// === Simple Dereference Assignment (Value Copy) ===
-	let simpleDereferencedCopy = structPointer!.clone()
+	let simpleDereferencedCopy = $.markAsStructValue(structPointer!.clone())
 	// Modifying the copy does not affect the original struct pointed to by structPointer.
 	simpleDereferencedCopy.MyString = "modified dereferenced copy"
 	// Expected: "hello world"

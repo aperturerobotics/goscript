@@ -75,7 +75,7 @@ export async function main(): Promise<void> {
 	console.log("ptr.myBool (assigned):", ptr!.myBool) // Expected: true
 
 	// Test assignment to a dereferenced new struct
-	let s: MyStruct = new MyStruct()!.clone()
+	let s: MyStruct = $.markAsStructValue(new MyStruct()!.clone())
 	console.log("s.MyInt (default):", s.MyInt) // Expected: 0
 	console.log("s.MyString (default):", s.MyString) // Expected: ""
 	console.log("s.myBool (default):", s.myBool) // Expected: false

@@ -50,7 +50,7 @@ export class MyStruct {
 }
 
 export function NewMyStruct(pub: string, priv: number): MyStruct {
-	return new MyStruct({privateField: priv, publicField: pub})
+	return $.markAsStructValue(new MyStruct({privateField: priv, publicField: pub}))
 }
 
 export function accessPrivateField(s: MyStruct): void {
@@ -60,7 +60,7 @@ export function accessPrivateField(s: MyStruct): void {
 }
 
 export async function main(): Promise<void> {
-	let s = NewMyStruct("hello", 123).clone()
+	let s = $.markAsStructValue(NewMyStruct("hello", 123).clone())
 	accessPrivateField(s)
 }
 

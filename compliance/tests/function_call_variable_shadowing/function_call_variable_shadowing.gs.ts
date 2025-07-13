@@ -48,8 +48,7 @@ export class MockFilesystem {
 
 // Reproduce the exact variable shadowing scenario that causes the issue
 export function walkWithShadowing(fs: Filesystem, path: string, info: os.FileInfo, walkFn: filepath.WalkFunc | null): $.GoError {
-	// This reproduces the exact pattern from the user's code
-	// where variable shadowing occurs with := assignment
+	// This reproduces the pattern where variable shadowing occurs with := assignment
 	let [fileInfo, err] = fs!.Lstat(path)
 
 	// This is the problematic line that generates:
@@ -125,7 +124,7 @@ export function testNoShadowing(walkFn: filepath.WalkFunc | null): $.GoError {
 }
 
 export async function main(): Promise<void> {
-	let fs = new MockFilesystem({})
+	let fs = $.markAsStructValue(new MockFilesystem({}))
 
 	let walkFunc = (path: string, info: os.FileInfo, err: $.GoError): $.GoError => {
 		if (err != null) {
