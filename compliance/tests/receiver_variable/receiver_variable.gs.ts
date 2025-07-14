@@ -39,7 +39,7 @@ export class content {
 		this._fields = {
 			name: $.varRef(init?.name ?? ""),
 			bytes: $.varRef(init?.bytes ?? new Uint8Array(0)),
-			m: $.varRef(init?.m?.clone() ?? new sync.RWMutex())
+			m: $.varRef(init?.m ? $.markAsStructValue(init.m.clone()) : new sync.RWMutex())
 		}
 	}
 
@@ -48,7 +48,7 @@ export class content {
 		cloned._fields = {
 			name: $.varRef(this._fields.name.value),
 			bytes: $.varRef(this._fields.bytes.value),
-			m: $.varRef(this._fields.m.value?.clone() ?? null)
+			m: $.varRef($.markAsStructValue(this._fields.m.value.clone()))
 		}
 		return cloned
 	}

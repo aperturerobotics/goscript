@@ -589,6 +589,12 @@ func (v *analysisVisitor) Visit(node ast.Node) ast.Visitor {
 
 	case *ast.TypeAssertExpr:
 		return v.visitTypeAssertExpr(n)
+
+	case *ast.CompositeLit:
+		// Traverse into composite literal elements to detect &variable expressions
+		// This is important for cases like: arr := []interface{}{value1, &value2}
+		// where value2 needs to be marked as NeedsVarRef due to the &value2 usage
+		return v.visitCompositeLit(n)
 	}
 
 	// For all other nodes, continue traversal
@@ -869,10 +875,89 @@ func (v *analysisVisitor) visitIfStmt(n *ast.IfStmt) ast.Visitor {
 	return v
 }
 
-// visitTypeAssertExpr handles type assertion expression analysis
-func (v *analysisVisitor) visitTypeAssertExpr(n *ast.TypeAssertExpr) ast.Visitor {
-	// Track interface implementations when we see type assertions
-	v.trackTypeAssertion(n)
+// visitTypeAssertExpr handles type assertion analysis for interface method implementations
+func (v *analysisVisitor) visitTypeAssertExpr(typeAssert *ast.TypeAssertExpr) ast.Visitor {
+	// Get the type being asserted to
+	assertedType := v.pkg.TypesInfo.TypeOf(typeAssert.Type)
+	if assertedType == nil {
+		return v
+	}
+
+	// Check if the asserted type is an interface
+	interfaceType, isInterface := assertedType.Underlying().(*types.Interface)
+	if !isInterface {
+		return v
+	}
+
+	// Get the type of the expression being asserted
+	exprType := v.pkg.TypesInfo.TypeOf(typeAssert.X)
+	if exprType == nil {
+		return v
+	}
+
+	// Handle pointer types by getting the element type
+	if ptrType, isPtr := exprType.(*types.Pointer); isPtr {
+		exprType = ptrType.Elem()
+	}
+
+	// Check if the expression type is a named struct type
+	namedType, isNamed := exprType.(*types.Named)
+	if !isNamed {
+		return v
+	}
+
+	// For each method in the interface, check if the struct implements it
+	for i := 0; i < interfaceType.NumExplicitMethods(); i++ {
+		interfaceMethod := interfaceType.ExplicitMethod(i)
+
+		// Find the corresponding method in the struct type
+		structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
+		if structMethod != nil {
+			// Determine if this struct method is async using unified system
+			isAsync := false
+			if obj := structMethod; obj != nil {
+				isAsync = v.analysis.IsAsyncFunc(obj)
+			}
+
+			// Track this interface implementation
+			v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod, isAsync)
+		}
+	}
+	return v
+}
+
+// visitCompositeLit analyzes composite literals for address-of expressions
+// This is important for detecting cases like: arr := []interface{}{value1, &value2}
+// where value2 needs to be marked as NeedsVarRef due to the &value2 usage
+func (v *analysisVisitor) visitCompositeLit(compLit *ast.CompositeLit) ast.Visitor {
+	// Analyze each element of the composite literal
+	for _, elt := range compLit.Elts {
+		// Handle both direct elements and key-value pairs
+		var expr ast.Expr
+		if kv, ok := elt.(*ast.KeyValueExpr); ok {
+			// For key-value pairs, analyze the value expression
+			expr = kv.Value
+		} else {
+			// For direct elements, analyze the element expression
+			expr = elt
+		}
+
+		// Check if this element is an address-of expression
+		if unaryExpr, ok := expr.(*ast.UnaryExpr); ok && unaryExpr.Op == token.AND {
+			// Found &something in the composite literal
+			if ident, ok := unaryExpr.X.(*ast.Ident); ok {
+				// Found &variable - mark the variable as needing VarRef
+				if obj := v.pkg.TypesInfo.ObjectOf(ident); obj != nil {
+					// Record that this variable has its address taken
+					usageInfo := v.getOrCreateUsageInfo(obj)
+					usageInfo.Destinations = append(usageInfo.Destinations, AssignmentInfo{
+						Object: nil, // No specific destination object for composite literals
+						Type:   AddressOfAssignment,
+					})
+				}
+			}
+		}
+	}
 	return v
 }
 

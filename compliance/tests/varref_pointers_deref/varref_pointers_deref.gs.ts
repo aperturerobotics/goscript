@@ -12,14 +12,14 @@ export async function main(): Promise<void> {
 	let p2 = x
 
 	// These should be different pointers but point to the same value
-	console.log("p1==p2:", (p1!.value === p2!.value)) // Should be false in our hardcoded case
+	console.log("p1==p2:", (p1 === p2)) // Should be false in our hardcoded case
 	console.log("*p1==*p2:", p1!.value == p2!.value) // Should be true
 
 	// Now create a third pointer that's a copy of p1
-	let p3 = p1!.value
+	let p3 = p1
 
 	// These should be the same pointer
-	console.log("p1==p3:", (p1!.value === p3)) // Should be true, but our solution would return false if p3 is varrefed differently
+	console.log("p1==p3:", (p1 === p3)) // Should be true, but our solution would return false if p3 is varrefed differently
 
 	// Now, let's create a scenario where one pointer is varrefed by taking its address
 	// but we compare it to itself through a different path

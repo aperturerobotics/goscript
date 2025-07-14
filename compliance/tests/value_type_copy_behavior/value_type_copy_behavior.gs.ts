@@ -72,7 +72,7 @@ export class NestedStruct {
 	constructor(init?: Partial<{InnerStruct?: MyStruct, Value?: number}>) {
 		this._fields = {
 			Value: $.varRef(init?.Value ?? 0),
-			InnerStruct: $.varRef(init?.InnerStruct?.clone() ?? new MyStruct())
+			InnerStruct: $.varRef(init?.InnerStruct ? $.markAsStructValue(init.InnerStruct.clone()) : new MyStruct())
 		}
 	}
 
@@ -80,7 +80,7 @@ export class NestedStruct {
 		const cloned = new NestedStruct()
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value),
-			InnerStruct: $.varRef(this._fields.InnerStruct.value?.clone() ?? null)
+			InnerStruct: $.varRef($.markAsStructValue(this._fields.InnerStruct.value.clone()))
 		}
 		return cloned
 	}
@@ -103,13 +103,13 @@ export async function main(): Promise<void> {
 
 	// original is the starting struct instance.
 	// We take its address later for pointerCopy, so it might be allocated on the heap (varrefed).
-	let original = $.varRef(new MyStruct({MyInt: 42, MyString: "original"}))
+	let original = $.varRef($.markAsStructValue(new MyStruct({MyInt: 42, MyString: "original"})))
 
 	// === Value-Type Copy Behavior ===
 	// Assigning a struct (value type) creates independent copies.
 	// valueCopy1 and valueCopy2 get their own copies of 'original's data.
-	let valueCopy1 = original!.value.clone()
-	let valueCopy2 = original!.value.clone()
+	let valueCopy1 = $.markAsStructValue(original!.value.clone())
+	let valueCopy2 = $.markAsStructValue(original!.value.clone())
 	// pointerCopy holds the memory address of 'original'.
 	let pointerCopy = original
 
@@ -145,11 +145,11 @@ export async function main(): Promise<void> {
 	// === Nested Struct Behavior ===
 	// Demonstrate copy behavior with structs containing other structs.
 	console.log("\nNested Struct Test:")
-	let nestedOriginal = new NestedStruct({InnerStruct: new MyStruct({MyInt: 20, MyString: "inner original"}), Value: 10})
+	let nestedOriginal = $.markAsStructValue(new NestedStruct({InnerStruct: $.markAsStructValue(new MyStruct({MyInt: 20, MyString: "inner original"})), Value: 10}))
 
 	// Create a value copy of the nested struct. This copies both the outer
 	// struct's fields (Value) and the inner struct (InnerStruct) by value.
-	let nestedCopy = nestedOriginal.clone()
+	let nestedCopy = $.markAsStructValue(nestedOriginal.clone())
 
 	// Modify the copy's fields, including fields within the nested InnerStruct.
 	nestedCopy.InnerStruct.MyString = "inner modified"

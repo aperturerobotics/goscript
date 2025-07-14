@@ -56,15 +56,15 @@ let totalMessages: number = 8
 // A worker function that will be called as a goroutine
 export async function worker(id: number): Promise<void> {
 	// Send worker starting message
-	await $.chanSend(messages, new Message({priority: 10 + id, text: "Worker " + $.runeOrStringToString(48 + id) + " starting"}))
+	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 10 + id, text: "Worker " + $.runeOrStringToString(48 + id) + " starting"})))
 
 	// Send worker done message
-	await $.chanSend(messages, new Message({priority: 20 + id, text: "Worker " + $.runeOrStringToString(48 + id) + " done"}))
+	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 20 + id, text: "Worker " + $.runeOrStringToString(48 + id) + " done"})))
 }
 
 // Another worker function to test multiple different goroutines
 export async function anotherWorker(name: string): Promise<void> {
-	await $.chanSend(messages, new Message({priority: 40, text: "Another worker: " + name}))
+	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 40, text: "Another worker: " + name})))
 }
 
 export async function main(): Promise<void> {
@@ -72,7 +72,7 @@ export async function main(): Promise<void> {
 	let allMessages = $.makeSlice<Message>(0, 8 + 3) // +3 for main thread messages
 
 	// Add initial message
-	allMessages = $.append(allMessages, new Message({priority: 0, text: "Main: Starting workers"}))
+	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 0, text: "Main: Starting workers"})))
 
 	// Start 3 worker goroutines
 
@@ -91,11 +91,11 @@ queueMicrotask(async () => {
 
 // Start an anonymous function worker
 queueMicrotask(async () => {
-	await $.chanSend(messages, new Message({priority: 50, text: "Anonymous function worker"}))
+	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 50, text: "Anonymous function worker"})))
 })
 
 // Add status message
-allMessages = $.append(allMessages, new Message({priority: 1, text: "Main: Workers started"}))
+allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 1, text: "Main: Workers started"})))
 
 // Collect all messages from goroutines
 for (let i = 0; i < 8; i++) {
@@ -103,7 +103,7 @@ for (let i = 0; i < 8; i++) {
 }
 
 // Add final message
-allMessages = $.append(allMessages, new Message({priority: 100, text: "Main: All workers completed"}))
+allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 100, text: "Main: All workers completed"})))
 
 // Sort messages by priority for deterministic order
 for (let i = 0; i < $.len(allMessages); i++) {

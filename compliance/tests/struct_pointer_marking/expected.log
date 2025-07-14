@@ -1,0 +1,35 @@
+=== Struct Pointer Marking Test ===
+
+--- Scenario 1: Composite Literal vs Value Variable ---
+struct value -> MyStruct assertion: true
+struct value -> *MyStruct assertion: false
+struct pointer -> MyStruct assertion: false
+struct pointer -> *MyStruct assertion: true
+
+--- Scenario 2: Variable Aliasing ---
+original value -> MyStruct assertion: true
+original value -> *MyStruct assertion: false
+alias pointer -> MyStruct assertion: false
+alias pointer -> *MyStruct assertion: true
+
+--- Scenario 3: Multiple Pointers to Same Variable ---
+first pointer -> *MyStruct assertion: true
+second pointer -> *MyStruct assertion: true
+shared modification check: 99
+
+--- Scenario 4: Mixed Assignment Patterns ---
+variable pointer -> *MyStruct assertion: true
+literal pointer -> *MyStruct assertion: true
+
+--- Scenario 5: Nested Type Assertions ---
+arr[ 0 ] is *MyStruct with value: 70
+arr[ 1 ] is MyStruct with value: 80
+arr[ 2 ] is *MyStruct with value: 80
+
+--- Scenario 6: Type Switch ---
+testItems[ 0 ] is MyStruct value: 100
+testItems[ 1 ] is *MyStruct pointer: 200
+testItems[ 2 ] is int: 300
+testItems[ 3 ] is string: string
+
+=== Test Complete ===

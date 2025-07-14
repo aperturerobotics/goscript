@@ -46,7 +46,7 @@ export class MyStorage {
 }
 
 export async function main(): Promise<void> {
-	let b: Basic = new MyStorage({})
+	let b: Basic = $.markAsStructValue(new MyStorage({}))
 	let [, err] = b!.Stat("test.txt")
 	if (err == null) {
 		console.log("Stat call successful")

@@ -17,7 +17,7 @@ export async function main(): Promise<void> {
 	}
 
 	// this is from go/ast/filter.go, line 117
-	export class KV {
+	class KV {
 		public get Key(): null | any {
 			return this._fields.Key.value
 		}
@@ -62,7 +62,7 @@ export async function main(): Promise<void> {
 			$.typeSwitch(exp, [{ types: [{kind: $.TypeKind.Pointer, elemType: 'KV'}], body: (x) => {
 				const _temp_x = x
 				{
-					let x, let ok = $.mustTypeAssert<string>(x.Key, {kind: $.TypeKind.Basic, name: 'string'})
+					let { value: x, ok: ok } = $.typeAssert<string>(_temp_x.Key, {kind: $.TypeKind.Basic, name: 'string'})
 					if (ok) {
 						console.log("got string:", x)
 					}

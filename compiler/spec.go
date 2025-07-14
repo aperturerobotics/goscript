@@ -130,7 +130,7 @@ func (c *GoToTSCompiler) writeRegularFieldInitializer(fieldName string, fieldTyp
 	// Check if this is a struct value type that needs cloning
 	if c.isStructValueType(fieldType) {
 		structTypeNameForClone := c.getTypeString(fieldType)
-		c.tsw.WriteLiterallyf("init?.%s?.clone() ?? new %s()", fieldName, structTypeNameForClone)
+		c.tsw.WriteLiterallyf("init?.%s ? $.markAsStructValue(init.%s.clone()) : new %s()", fieldName, fieldName, structTypeNameForClone)
 		return
 	}
 
@@ -664,7 +664,7 @@ func (c *GoToTSCompiler) writeClonedFieldInitializer(fieldName string, fieldType
 		if named, isNamed := trueType.(*types.Named); isNamed {
 			_, isUnderlyingStruct := named.Underlying().(*types.Struct)
 			if isUnderlyingStruct && !isPointerToStruct { // Is a value struct
-				c.tsw.WriteLiterallyf("this._fields.%s.value.clone()", fieldName)
+				c.tsw.WriteLiterallyf("$.markAsStructValue(this._fields.%s.value.clone())", fieldName)
 			} else { // Is a pointer to a struct, or not a struct
 				c.tsw.WriteLiterallyf("this._fields.%s.value", fieldName)
 			}
@@ -672,15 +672,30 @@ func (c *GoToTSCompiler) writeClonedFieldInitializer(fieldName string, fieldType
 			c.tsw.WriteLiterallyf("this._fields.%s.value", fieldName)
 		}
 	} else {
+		// Check if this is a pointer type (nullable) or value type (non-nullable)
+		isPointerType := false
+		actualType := fieldType
+		if ptr, ok := fieldType.(*types.Pointer); ok {
+			isPointerType = true
+			actualType = ptr.Elem()
+		}
+
+		// Check if the actual type (after dereferencing pointer) is a struct
 		isValueTypeStruct := false
-		if named, ok := fieldType.(*types.Named); ok {
+		if named, ok := actualType.(*types.Named); ok {
 			if _, isStruct := named.Underlying().(*types.Struct); isStruct {
 				isValueTypeStruct = true
 			}
 		}
 
 		if isValueTypeStruct {
-			c.tsw.WriteLiterallyf("this._fields.%s.value?.clone() ?? null", fieldName)
+			if isPointerType {
+				// Nullable struct pointer: field could be nil, use conditional
+				c.tsw.WriteLiterallyf("this._fields.%s.value ? $.markAsStructValue(this._fields.%s.value.clone()) : null", fieldName, fieldName)
+			} else {
+				// Non-nullable struct value: field is always present, no conditional needed
+				c.tsw.WriteLiterallyf("$.markAsStructValue(this._fields.%s.value.clone())", fieldName)
+			}
 		} else {
 			c.tsw.WriteLiterallyf("this._fields.%s.value", fieldName)
 		}

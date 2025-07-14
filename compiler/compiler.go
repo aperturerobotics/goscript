@@ -704,6 +704,9 @@ type GoToTSCompiler struct {
 	pkg *packages.Package
 
 	analysis *Analysis
+
+	// Context flags
+	insideAddressOf bool // true when processing operand of & operator
 }
 
 // It initializes the compiler with a `TSCodeWriter` for output,

@@ -1,0 +1,10 @@
+Scenario 1 - Composite literal pointer assertion: true
+Scenario 2 - Variable pointer assertion: true
+Scenario 3a - Multiple pointer 1 assertion: true
+Scenario 3b - Multiple pointer 2 assertion: true
+Scenario 4a - Mixed composite literal assertion: true
+Scenario 4b - Mixed variable pointer assertion: true
+Scenario 5 - Nested pointer assignment assertion: true
+Scenario 6a - Struct value to pointer assertion (should be false): false
+Scenario 6b - Struct pointer to pointer assertion (should be true): true
+Scenario 6c - Struct value to value assertion (should be true): true

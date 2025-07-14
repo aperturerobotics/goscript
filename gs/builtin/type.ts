@@ -445,7 +445,9 @@ function matchesStructType(value: any, info: TypeInfo): boolean {
 
   // For named struct types with constructors, use instanceof (nominal matching)
   if (info.ctor && value instanceof info.ctor) {
-    return true
+    // With inversion: struct value assertions should ONLY match structs marked as values
+    // In Go: j.(MyStruct) should only succeed if j contains a struct value (not pointer)
+    return isMarkedAsStructValue(value)
   }
 
   // For named struct types with constructors, if instanceof fails, return false
@@ -659,6 +661,24 @@ function matchesArrayOrSliceType(value: any, info: TypeInfo): boolean {
   return true
 }
 
+// Symbol used to mark struct instances that represent values (not pointers)
+const STRUCT_VALUE_MARKER = Symbol('structValue')
+
+// Mark a struct instance as representing a value (not pointer)
+export function markAsStructValue<T>(value: T): T {
+  if (typeof value === 'object' && value !== null) {
+    (value as any)[STRUCT_VALUE_MARKER] = true
+  }
+  return value
+}
+
+// Check if a struct instance is marked as a value
+function isMarkedAsStructValue(value: any): boolean {
+  return typeof value === 'object' && value !== null && value[STRUCT_VALUE_MARKER] === true
+}
+
+
+
 /**
  * Checks if a value matches a pointer type info.
  *
@@ -668,24 +688,48 @@ function matchesArrayOrSliceType(value: any, info: TypeInfo): boolean {
  */
 function matchesPointerType(value: any, info: TypeInfo): boolean {
   // Allow null/undefined values to match pointer types to support nil pointer assertions
-  // This enables Go's nil pointer type assertions like `ptr, ok := i.(*SomeType)` to work correctly
   if (value === null || value === undefined) {
     return true
   }
 
-  // Check if the value is a VarRef (has a 'value' property)
-  if (typeof value !== 'object' || !('value' in value)) {
+  if (typeof value !== 'object' || value === null) {
     return false
   }
 
   if (!isPointerTypeInfo(info)) return false
 
-  if (info.elemType) {
-    const elemTypeInfo = normalizeTypeInfo(info.elemType as string | TypeInfo)
-    return matchesType(value.value, elemTypeInfo)
+  if (!info.elemType) return false
+
+  let elem = info.elemType
+  let elemName: string
+  if (typeof elem === 'string') {
+    elemName = elem
+  } else if (elem.name) {
+    elemName = elem.name
+  } else {
+    return false
   }
 
-  return true
+  // Check if this is a registered struct type
+  const registered = typeRegistry.get(elemName)
+  if (registered && registered.kind === TypeKind.Struct && registered.ctor) {
+    // For struct types, check if the value is marked as a pointer or is a VarRef
+    if ('value' in value) {
+      // VarRef case - check the inner value
+      let elemTypeInfo = normalizeTypeInfo(elem)
+      return matchesType(value.value, elemTypeInfo)
+    }
+    
+    // Direct struct instance - with inversion, only match if NOT marked as value (i.e., is a pointer)
+    return value instanceof registered.ctor && !isMarkedAsStructValue(value)
+  } else {
+    // For non-struct types, only VarRef objects should match
+    if (!('value' in value)) {
+      return false
+    }
+    let elemTypeInfo = normalizeTypeInfo(elem)
+    return matchesType(value.value, elemTypeInfo)
+  }
 }
 
 /**
@@ -885,6 +929,12 @@ export function typeAssert<T>(
 
   const matches = matchesType(value, normalizedType)
   if (matches) {
+    // Special handling for pointer type assertions:
+    // If the value is a VarRef and we're asserting to a pointer type,
+    // return the inner value (value.value), not the VarRef object itself
+    if (isPointerTypeInfo(normalizedType) && typeof value === 'object' && value !== null && 'value' in value) {
+      return { value: value.value as T, ok: true }
+    }
     return { value: value as T, ok: true }
   }
 

@@ -20,9 +20,13 @@ import (
 //   - Wrapper methods for promoted fields and methods from embedded structs,
 //     ensuring correct access and behavior.
 func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType) error {
-	// Always export types for cross-file imports within the same package
-	// This allows unexported Go types to be imported by other files in the same package
-	c.tsw.WriteLiterally("export ")
+	isInsideFunction := false
+	if nodeInfo := c.analysis.NodeData[a]; nodeInfo != nil {
+		isInsideFunction = nodeInfo.IsInsideFunction
+	}
+	if !isInsideFunction {
+		c.tsw.WriteLiterally("export ")
+	}
 	c.tsw.WriteLiterally("class ")
 	if err := c.WriteValueExpr(a.Name); err != nil {
 		return err

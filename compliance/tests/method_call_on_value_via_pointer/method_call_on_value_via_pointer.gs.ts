@@ -47,7 +47,7 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	// Create a struct value
-	let msValue = $.varRef(new MyStruct({MyInt: 100}))
+	let msValue = $.varRef($.markAsStructValue(new MyStruct({MyInt: 100})))
 	// Create a pointer to the struct value
 	let msPointer = msValue
 

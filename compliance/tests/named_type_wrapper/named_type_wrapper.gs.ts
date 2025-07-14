@@ -63,7 +63,7 @@ export async function main(): Promise<void> {
 	console.log("Mode string:", MyFileMode_String(mode))
 
 	// Test using in struct
-	let status = new FileStatus({mode: (0o755 as MyFileMode), size: 1024})
+	let status = $.markAsStructValue(new FileStatus({mode: (0o755 as MyFileMode), size: 1024}))
 
 	console.log("Status mode:", status.mode)
 	console.log("Status size:", status.size)

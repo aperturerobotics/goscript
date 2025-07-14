@@ -41,7 +41,7 @@ export class Result {
 
 export async function main(): Promise<void> {
 	let x: null | any = 42
-	let result = new Result({})
+	let result = $.markAsStructValue(new Result({}))
 
 	// This should trigger the error: ok expression is not an identifier: *ast.SelectorExpr
 	// The 'ok' variable is result.ok (a selector expression) instead of a simple identifier

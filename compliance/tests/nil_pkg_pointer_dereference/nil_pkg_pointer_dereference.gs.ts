@@ -36,7 +36,7 @@ export class TestStruct {
 		const cloned = new TestStruct()
 		cloned._fields = {
 			Mode: $.varRef(this._fields.Mode.value),
-			File: $.varRef(this._fields.File.value)
+			File: $.varRef(this._fields.File.value ? $.markAsStructValue(this._fields.File.value.clone()) : null)
 		}
 		return cloned
 	}
@@ -55,7 +55,7 @@ export async function main(): Promise<void> {
 	// Test initialized struct
 
 	// 420 in decimal
-	let s = new TestStruct({File: null, Mode: 420})
+	let s = $.markAsStructValue(new TestStruct({File: null, Mode: 420}))
 
 	console.log("Mode:", $.int(s.Mode))
 	console.log("File is nil:", s.File == null)

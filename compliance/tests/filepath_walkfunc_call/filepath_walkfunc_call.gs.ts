@@ -80,7 +80,7 @@ export class MockFileInfo {
 	}
 
 	public ModTime(): time.Time {
-		return new time.Time({})
+		return $.markAsStructValue(new time.Time({}))
 	}
 
 	public IsDir(): boolean {
@@ -118,7 +118,7 @@ export class MockFilesystem {
 	}
 
 	public ReadDir(path: string): [$.Slice<os.FileInfo>, $.GoError] {
-		return [$.arrayToSlice<os.FileInfo>([new MockFileInfo({dir: false, name: "file1.txt", size: 100}), new MockFileInfo({dir: true, name: "subdir", size: 0})]), null]
+		return [$.arrayToSlice<os.FileInfo>([$.markAsStructValue(new MockFileInfo({dir: false, name: "file1.txt", size: 100})), $.markAsStructValue(new MockFileInfo({dir: true, name: "subdir", size: 0}))]), null]
 	}
 
 	// Register this type with the runtime type system
@@ -180,8 +180,8 @@ export function processPath(walkFn: filepath.WalkFunc | null): void {
 }
 
 export async function main(): Promise<void> {
-	let fs = new MockFilesystem({})
-	let fileInfo = new MockFileInfo({dir: false, name: "test.txt", size: 50})
+	let fs = $.markAsStructValue(new MockFilesystem({}))
+	let fileInfo = $.markAsStructValue(new MockFileInfo({dir: false, name: "test.txt", size: 50}))
 
 	// Test with actual filepath.WalkFunc
 	let walkFunc = (path: string, info: os.FileInfo, err: $.GoError): $.GoError => {

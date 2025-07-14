@@ -84,7 +84,7 @@ export class Employee {
 	public clone(): Employee {
 		const cloned = new Employee()
 		cloned._fields = {
-			Person: $.varRef(this._fields.Person.value.clone()),
+			Person: $.varRef($.markAsStructValue(this._fields.Person.value.clone())),
 			ID: $.varRef(this._fields.ID.value)
 		}
 		return cloned
@@ -258,9 +258,9 @@ export class Manager {
 	public clone(): Manager {
 		const cloned = new Manager()
 		cloned._fields = {
-			Person: $.varRef(this._fields.Person.value.clone()),
-			Address: $.varRef(this._fields.Address.value.clone()),
-			Contact: $.varRef(this._fields.Contact.value.clone()),
+			Person: $.varRef($.markAsStructValue(this._fields.Person.value.clone())),
+			Address: $.varRef($.markAsStructValue(this._fields.Address.value.clone())),
+			Contact: $.varRef($.markAsStructValue(this._fields.Contact.value.clone())),
 			Level: $.varRef(this._fields.Level.value)
 		}
 		return cloned
@@ -325,7 +325,7 @@ export class Manager {
 
 export async function main(): Promise<void> {
 	// --- Single Embedding Tests ---
-	let e = new Employee({ID: 123, Person: {Name: "Alice", Age: 30}})
+	let e = $.markAsStructValue(new Employee({ID: 123, Person: {Name: "Alice", Age: 30}}))
 
 	// Accessing embedded fields
 	console.log("Employee Name:", e.Name)
@@ -348,7 +348,7 @@ export async function main(): Promise<void> {
 
 	// --- Multiple Embedding Tests ---
 	console.log("\n--- Multiple Embedding ---")
-	let m = $.varRef(new Manager({Level: 5, Address: {Street: "123 Main St", City: "Anytown"}, Contact: {Phone: "555-1234"}, Person: {Name: "Charlie", Age: 40}}))
+	let m = $.varRef($.markAsStructValue(new Manager({Level: 5, Address: {Street: "123 Main St", City: "Anytown"}, Contact: {Phone: "555-1234"}, Person: {Name: "Charlie", Age: 40}})))
 
 	// Accessing fields from all embedded structs and the outer struct
 	console.log("Manager Name:", m!.value.Name) // From Person

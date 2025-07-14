@@ -62,14 +62,14 @@ export class MyStruct {
 
 // NewMyStruct creates a new MyStruct instance.
 export function NewMyStruct(s: string): MyStruct {
-	return new MyStruct({MyString: s})
+	return $.markAsStructValue(new MyStruct({MyString: s}))
 }
 
 export async function main(): Promise<void> {
 	// === Function Call Result Assignment (Value Copy) ===
 	// Assigning the result of a function that returns a struct creates a copy.
-	let structFromFunc = NewMyStruct("function result").clone()
-	let structFromFuncCopy = structFromFunc.clone()
+	let structFromFunc = $.markAsStructValue(NewMyStruct("function result").clone())
+	let structFromFuncCopy = $.markAsStructValue(structFromFunc.clone())
 	structFromFuncCopy.MyString = "modified function result copy"
 	// Expected: "function result"
 	console.log("Original struct from function: Expected: function result, Actual: " + structFromFunc.MyString)

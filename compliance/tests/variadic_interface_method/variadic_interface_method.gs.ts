@@ -53,7 +53,7 @@ export class PathJoiner {
 }
 
 export async function main(): Promise<void> {
-	let b: Basic = new PathJoiner({})
+	let b: Basic = $.markAsStructValue(new PathJoiner({}))
 
 	// Test with multiple arguments
 	let result1 = b!.Join("path", "to", "file")

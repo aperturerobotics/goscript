@@ -227,9 +227,8 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 						}
 					} else {
 						// Case: &compositeLiteral or &otherExpression
-						// For composite literals and other expressions, just write the expression directly
-						// Example: &MyStruct{} -> new MyStruct({})
-						if err := c.WriteValueExpr(unaryExpr.X); err != nil {
+						// Let WriteUnaryExpr handle this properly (note: markAsStructValue is now applied in WriteCompositeLit)
+						if err := c.WriteValueExpr(unaryExpr); err != nil {
 							return err
 						}
 					}
@@ -241,10 +240,12 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 						if isWrapperType {
 							// For wrapper types, no constructor wrapping needed
 							if shouldApplyClone(c.pkg, initializerExpr) {
+								// When cloning for value assignment, mark the result as struct value
+								c.tsw.WriteLiterally("$.markAsStructValue(")
 								if err := c.WriteValueExpr(initializerExpr); err != nil {
 									return err
 								}
-								c.tsw.WriteLiterally(".clone()")
+								c.tsw.WriteLiterally(".clone())")
 							} else {
 								if err := c.WriteValueExpr(initializerExpr); err != nil {
 									return err
@@ -292,12 +293,14 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 								} else {
 									// Regular initializer for named type (e.g., function call that returns the type)
 									if shouldApplyClone(c.pkg, initializerExpr) {
+										// When cloning for value assignment, mark the result as struct value
+										c.tsw.WriteLiterally("$.markAsStructValue(")
 										if err := c.WriteValueExpr(initializerExpr); err != nil {
 											return err
 										}
-										c.tsw.WriteLiterally(".clone()")
+										c.tsw.WriteLiterally(".clone())")
 									} else {
-										if err := c.WriteValueExpr(initializerExpr); err != nil {
+										if err := c.writeInitializerForInterface(initializerExpr, goType); err != nil {
 											return err
 										}
 									}
@@ -305,12 +308,14 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 							} else {
 								// Named type without methods, handle normally
 								if shouldApplyClone(c.pkg, initializerExpr) {
+									// When cloning for value assignment, mark the result as struct value
+									c.tsw.WriteLiterally("$.markAsStructValue(")
 									if err := c.WriteValueExpr(initializerExpr); err != nil {
 										return err
 									}
-									c.tsw.WriteLiterally(".clone()")
+									c.tsw.WriteLiterally(".clone())")
 								} else {
-									if err := c.WriteValueExpr(initializerExpr); err != nil {
+									if err := c.writeInitializerForInterface(initializerExpr, goType); err != nil {
 										return err
 									}
 								}
@@ -319,12 +324,15 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 					} else {
 						// Regular initializer, clone if needed
 						if shouldApplyClone(c.pkg, initializerExpr) {
+							// When cloning for value assignment, mark the result as struct value
+							c.tsw.WriteLiterally("$.markAsStructValue(")
 							if err := c.WriteValueExpr(initializerExpr); err != nil {
 								return err
 							}
-							c.tsw.WriteLiterally(".clone()")
+							c.tsw.WriteLiterally(".clone())")
 						} else {
-							if err := c.WriteValueExpr(initializerExpr); err != nil {
+							// Check if this is a pointer variable assigned to interface
+							if err := c.writeInitializerForInterface(initializerExpr, goType); err != nil {
 								return err
 							}
 						}
@@ -398,4 +406,27 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 	}
 	c.tsw.WriteLine("") // Use WriteLine instead of WriteLine(";")
 	return nil
+}
+
+// writeInitializerForInterface handles writing initializer expressions for interface variables,
+// with special handling for pointer variable assignments to avoid automatic .value dereferencing
+func (c *GoToTSCompiler) writeInitializerForInterface(initializerExpr ast.Expr, goType types.Type) error {
+	// Check if this is a pointer variable assigned to interface
+	if rhsIdent, isIdent := initializerExpr.(*ast.Ident); isIdent {
+		if rhsObj := c.pkg.TypesInfo.Uses[rhsIdent]; rhsObj != nil {
+			// Check if LHS is interface and RHS is pointer
+			if _, isInterface := goType.Underlying().(*types.Interface); isInterface {
+				if _, isPtr := rhsObj.Type().(*types.Pointer); isPtr {
+					// For pointer variables that point to varrefed values, write without .value
+					// We want to pass the VarRef object itself to the interface, not its .value
+					if c.analysis.NeedsVarRefAccess(rhsObj) {
+						c.WriteIdent(rhsIdent, false)
+						return nil
+					}
+				}
+			}
+		}
+	}
+	// Default case: use regular WriteValueExpr
+	return c.WriteValueExpr(initializerExpr)
 }

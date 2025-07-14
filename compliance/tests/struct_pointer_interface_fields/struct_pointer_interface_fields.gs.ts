@@ -60,7 +60,7 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
-	let s = new MyStruct({})
+	let s = $.markAsStructValue(new MyStruct({}))
 	console.log(s.PointerField == null)
 	console.log(s.interfaceField == null)
 

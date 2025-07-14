@@ -51,7 +51,7 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	// === Struct Field Access ===
-	let ms = new MyStruct({MyInt: 42, MyString: "foo"})
+	let ms = $.markAsStructValue(new MyStruct({MyInt: 42, MyString: "foo"}))
 	console.log("MyInt: Expected: 42, Actual:", ms.MyInt)
 	console.log("MyString: Expected: foo, Actual:", ms.MyString)
 }

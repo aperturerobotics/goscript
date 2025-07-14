@@ -71,7 +71,7 @@ export class Pair<T extends any> {
 
 // Generic function returning a generic struct
 export function makePair<T extends any>(a: T, b: T): Pair<T> {
-	return new Pair<T>({First: a, Second: b})
+	return $.markAsStructValue(new Pair<T>({First: a, Second: b}))
 }
 
 // Generic slice operations
@@ -104,12 +104,12 @@ export async function main(): Promise<void> {
 
 	// Test generic struct
 	console.log("=== Generic Struct ===")
-	let intPair = makePair(10, 20).clone()
+	let intPair = $.markAsStructValue(makePair(10, 20).clone())
 	console.log(intPair.GetFirst())
 	console.log(intPair.First)
 	console.log(intPair.Second)
 
-	let stringPair = makePair("foo", "bar").clone()
+	let stringPair = $.markAsStructValue(makePair("foo", "bar").clone())
 	console.log(stringPair.GetFirst())
 	console.log(stringPair.First)
 	console.log(stringPair.Second)
@@ -136,7 +136,7 @@ export async function main(): Promise<void> {
 
 	// Test type inference
 	console.log("=== Type Inference ===")
-	let result = makePair(100, 200).clone()
+	let result = $.markAsStructValue(makePair(100, 200).clone())
 	console.log(result.First)
 	console.log(result.Second)
 }
