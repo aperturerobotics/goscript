@@ -680,6 +680,12 @@ func (c *GoToTSCompiler) WriteStmtBlock(exp *ast.BlockStmt, suppressNewline bool
 					hasAsyncDefer = true
 					break
 				}
+			} else {
+				// Check if the deferred call is to an async function
+				if c.isCallAsyncInDefer(deferStmt.Call) {
+					hasAsyncDefer = true
+					break
+				}
 			}
 		}
 	}
@@ -877,6 +883,9 @@ func (c *GoToTSCompiler) WriteStmtDefer(exp *ast.DeferStmt) error {
 	isAsyncDeferred := false
 	if funcLit, ok := exp.Call.Fun.(*ast.FuncLit); ok {
 		isAsyncDeferred = c.analysis.IsFuncLitAsync(funcLit)
+	} else {
+		// Check if the deferred call is to an async function
+		isAsyncDeferred = c.isCallAsyncInDefer(exp.Call)
 	}
 
 	// Set async prefix based on pre-computed async status
@@ -912,6 +921,35 @@ func (c *GoToTSCompiler) WriteStmtDefer(exp *ast.DeferStmt) error {
 	c.tsw.WriteLine("});")
 
 	return nil
+}
+
+// isCallAsyncInDefer determines if a call expression in a defer statement is async
+func (c *GoToTSCompiler) isCallAsyncInDefer(callExpr *ast.CallExpr) bool {
+	switch fun := callExpr.Fun.(type) {
+	case *ast.Ident:
+		// Direct function call (e.g., defer myFunc())
+		if obj := c.pkg.TypesInfo.Uses[fun]; obj != nil {
+			return c.analysis.IsAsyncFunc(obj)
+		}
+	case *ast.SelectorExpr:
+		// Method call (e.g., defer handle.Release()) or package function call
+		if selection := c.pkg.TypesInfo.Selections[fun]; selection != nil {
+			// Method call on an object
+			if methodObj := selection.Obj(); methodObj != nil {
+				return c.analysis.IsAsyncFunc(methodObj)
+			}
+		} else if ident, ok := fun.X.(*ast.Ident); ok {
+			// Package-level function call (e.g., defer time.Sleep())
+			if obj := c.pkg.TypesInfo.Uses[ident]; obj != nil {
+				if pkgName, isPkg := obj.(*types.PkgName); isPkg {
+					methodName := fun.Sel.Name
+					pkgPath := pkgName.Imported().Path()
+					return c.analysis.IsMethodAsync(pkgPath, "", methodName)
+				}
+			}
+		}
+	}
+	return false
 }
 
 // WriteStmtLabeled handles labeled statements (ast.LabeledStmt), such as "label: statement".
