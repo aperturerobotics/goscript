@@ -1,0 +1,5 @@
+Node 1 value: 1
+Node 2 value: 2
+Person name: John
+Employee ID: 123
+Pointer circular references work fine!

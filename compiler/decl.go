@@ -55,7 +55,12 @@ func (c *GoToTSCompiler) WriteDecls(decls []ast.Decl) error {
 	// Sort type declarations by dependencies
 	sortedTypeSpecs, err := c.sortTypeSpecsByDependencies(typeSpecs)
 	if err != nil {
-		return fmt.Errorf("failed to sort type declarations: %w", err)
+		// If we encounter a circular dependency, fall back to original order
+		// This can happen with legitimate circular references involving pointers
+		// that don't actually cause initialization issues at runtime
+		c.tsw.WriteCommentLine("WARNING: Circular dependency detected, using original declaration order")
+		c.tsw.WriteCommentLinef("Error: %s", err.Error())
+		sortedTypeSpecs = typeSpecs
 	}
 
 	// Sort variable declarations by type dependencies
@@ -147,12 +152,20 @@ func (c *GoToTSCompiler) sortTypeSpecsByDependencies(typeSpecs []*ast.TypeSpec) 
 	return result, nil
 }
 
-// extractTypeDependencies extracts structural type dependencies from a type expression.
-// Only dependencies that affect class initialization order are considered:
-// - Struct field types (cause initialization order issues)
-// - Embedded types (directly affect struct layout)
-// - Type aliases (direct type references)
-// Method parameters and return types are ignored as they're just annotations.
+// extractTypeDependencies extracts only the dependencies that cause TypeScript initialization order issues.
+// These are dependencies where the constructor of one type directly instantiates another type.
+//
+// TRUE dependencies (cause initialization issues):
+// - Direct struct fields (non-pointer): type A struct { b B } -> A constructor calls new B()
+// - Embedded struct fields: type A struct { B } -> A constructor calls new B()
+// - Direct type aliases: type A B -> A directly wraps B
+// - Array/slice of structs: type A []B -> needs B for default values
+//
+// FALSE dependencies (don't cause initialization issues):
+// - Pointer fields: type A struct { b *B } -> just stores reference, no constructor call
+// - Interface fields: type A struct { b SomeInterface } -> stores interface, no concrete instantiation
+// - Map types: type A map[K]V -> map initialized empty, no constructor calls
+// - Array/slice of pointers: type A []*B -> array of pointers, no constructor calls
 func (c *GoToTSCompiler) extractTypeDependencies(typeExpr ast.Expr, typeSpecMap map[string]*ast.TypeSpec) []string {
 	var deps []string
 
@@ -164,35 +177,32 @@ func (c *GoToTSCompiler) extractTypeDependencies(typeExpr ast.Expr, typeSpecMap 
 		}
 
 	case *ast.StructType:
-		// Struct type - check field types only
+		// Struct type - check field types, but be more selective
 		if t.Fields != nil {
 			for _, field := range t.Fields.List {
-				fieldDeps := c.extractTypeDependencies(field.Type, typeSpecMap)
+				fieldDeps := c.extractStructFieldDependencies(field.Type, typeSpecMap)
 				deps = append(deps, fieldDeps...)
 			}
 		}
 
 	case *ast.ArrayType:
-		// Array type - check element type
-		elemDeps := c.extractTypeDependencies(t.Elt, typeSpecMap)
-		deps = append(deps, elemDeps...)
+		// Array/slice type - only depends on element type if element is a struct (not pointer)
+		if !c.isPointerType(t.Elt) {
+			elemDeps := c.extractTypeDependencies(t.Elt, typeSpecMap)
+			deps = append(deps, elemDeps...)
+		}
+		// Arrays of pointers don't create initialization dependencies
 
 	case *ast.StarExpr:
-		// Pointer type - check pointed-to type
-		ptrDeps := c.extractTypeDependencies(t.X, typeSpecMap)
-		deps = append(deps, ptrDeps...)
+		// Pointer types don't create initialization dependencies
+		// The pointed-to type doesn't need to be initialized when creating a pointer field
 
 	case *ast.MapType:
-		// Map type - check key and value types
-		keyDeps := c.extractTypeDependencies(t.Key, typeSpecMap)
-		valueDeps := c.extractTypeDependencies(t.Value, typeSpecMap)
-		deps = append(deps, keyDeps...)
-		deps = append(deps, valueDeps...)
+		// Map types don't create initialization dependencies
+		// Maps are initialized empty, no constructor calls needed
 
 	case *ast.InterfaceType:
-		// Interface type - methods don't create initialization dependencies
-		// Only embedded interfaces matter, but those are rare and complex to handle
-		// For now, interfaces are considered to have no dependencies
+		// Interface types don't create initialization dependencies
 
 	case *ast.FuncType:
 		// Function types don't create initialization dependencies
@@ -206,6 +216,50 @@ func (c *GoToTSCompiler) extractTypeDependencies(typeExpr ast.Expr, typeSpecMap 
 	// Sort dependencies for deterministic output
 	sort.Strings(deps)
 	return deps
+}
+
+// extractStructFieldDependencies extracts dependencies from struct field types
+func (c *GoToTSCompiler) extractStructFieldDependencies(fieldType ast.Expr, typeSpecMap map[string]*ast.TypeSpec) []string {
+	var deps []string
+
+	switch t := fieldType.(type) {
+	case *ast.Ident:
+		// Direct field type: struct { b B } - this requires B to be initialized
+		if _, isLocalType := typeSpecMap[t.Name]; isLocalType {
+			deps = append(deps, t.Name)
+		}
+
+	case *ast.StarExpr:
+		// Pointer field: struct { b *B } - this doesn't require B initialization
+		// Pointers are just references, no constructor call needed
+
+	case *ast.ArrayType:
+		// Array field: struct { b []B } or struct { b [5]B }
+		// Only create dependency if element type is not a pointer
+		if !c.isPointerType(t.Elt) {
+			elemDeps := c.extractTypeDependencies(t.Elt, typeSpecMap)
+			deps = append(deps, elemDeps...)
+		}
+
+	case *ast.MapType:
+		// Map field: struct { b map[K]V } - maps don't require initialization dependencies
+
+	case *ast.InterfaceType:
+		// Interface field: struct { b SomeInterface } - no concrete type dependency
+
+	case *ast.FuncType:
+		// Function field: struct { b func() } - no dependency
+
+		// Handle other field types as needed
+	}
+
+	return deps
+}
+
+// isPointerType checks if a type expression represents a pointer type
+func (c *GoToTSCompiler) isPointerType(expr ast.Expr) bool {
+	_, isPointer := expr.(*ast.StarExpr)
+	return isPointer
 }
 
 // sortVarSpecsByTypeDependencies sorts variable declarations based on their type dependencies
@@ -391,7 +445,21 @@ func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]st
 
 	// Check for cycles
 	if len(result) != len(dependencies) {
-		return nil, fmt.Errorf("circular dependency detected in type declarations")
+		// Find the remaining nodes to help debug the circular dependency
+		processed := make(map[string]bool)
+		for _, name := range result {
+			processed[name] = true
+		}
+
+		var remaining []string
+		for name := range dependencies {
+			if !processed[name] {
+				remaining = append(remaining, name)
+			}
+		}
+		sort.Strings(remaining)
+
+		return nil, fmt.Errorf("circular dependency detected in type declarations. Remaining types: %v", remaining)
 	}
 
 	return result, nil
