@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "allowImportingTsExtensions": true,
-    "baseUrl": ".",
     "lib": [
       "es2022",
       "esnext.disposable",
@@ -11,6 +10,9 @@
     "moduleResolution": "nodenext",
     "noEmit": true,
     "paths": {
+      "*": [
+        "./*"
+      ],
       "@goscript/*": [
         "../../../gs/*",
         "../../../compliance/deps/*"

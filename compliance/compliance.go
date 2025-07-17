@@ -679,13 +679,13 @@ func WriteTypeCheckConfig(t *testing.T, parentModulePath, workspaceDir, testDir 
 
 	testName := filepath.Base(testDir)
 	compilerOptions := maps.Clone(tsconfig["compilerOptions"].(map[string]interface{}))
-	compilerOptions["baseUrl"] = "." // testDir is baseUrl
 
 	// Alias for this test's own generated packages
 	builtinTsRelPath := filepath.ToSlash(filepath.Join(relWorkspacePath, "gs", "*"))
 	depsRelPath := filepath.ToSlash(filepath.Join(relWorkspacePath, "compliance", "deps", "*"))
 	testPkgGoPathPrefix := fmt.Sprintf("%s/compliance/tests/%s", parentModulePath, testName)
 	compilerOptions["paths"] = map[string][]string{
+		"*": {"./*"},
 		fmt.Sprintf("@goscript/%s/*", testPkgGoPathPrefix): {"./*"},
 		"@goscript/*": {builtinTsRelPath, depsRelPath},
 	}
@@ -816,8 +816,8 @@ func RunGoScriptTestDir(t *testing.T, workspaceDir, testDir string) {
 	// tsconfig.json for the runner execution in tempDir
 	runnerTsConfig := maps.Clone(baseTsConfig)
 	runnerCompilerOptions := maps.Clone(runnerTsConfig["compilerOptions"].(map[string]interface{}))
-	runnerCompilerOptions["baseUrl"] = "." // tempDir is baseUrl
 	runnerCompilerOptions["paths"] = map[string][]string{
+		"*":           {"./*"},
 		"@goscript/*": {"./output/@goscript/*", relGsBuiltinPath, relDepsPath},
 	}
 	runnerTsConfig["compilerOptions"] = runnerCompilerOptions
@@ -1024,17 +1024,18 @@ func WriteGlobalTypeCheckConfig(t *testing.T, parentModulePath, workspaceDir str
 	}
 
 	compilerOptions := maps.Clone(tsconfig["compilerOptions"].(map[string]interface{}))
-	compilerOptions["baseUrl"] = "." // typecheckDir is baseUrl
 
 	// Set up paths for module resolution
 	builtinTsRelPath := filepath.ToSlash(filepath.Join(relWorkspacePath, "gs", "*"))
-	testsPaths := make(map[string][]string)
 
 	// Add a wildcard path for all test modules
-	testsPaths[fmt.Sprintf("@goscript/%s/compliance/tests/*", parentModulePath)] = []string{
-		filepath.ToSlash(filepath.Join(relWorkspacePath, "compliance/tests/*")),
+	testsPaths := map[string][]string{
+		"*": {"./*"},
+		fmt.Sprintf("@goscript/%s/compliance/tests/*", parentModulePath): {
+			filepath.ToSlash(filepath.Join(relWorkspacePath, "compliance/tests/*")),
+		},
+		"@goscript/*": {builtinTsRelPath},
 	}
-	testsPaths["@goscript/*"] = []string{builtinTsRelPath}
 
 	compilerOptions["paths"] = testsPaths
 	tsconfig["compilerOptions"] = compilerOptions
