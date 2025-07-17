@@ -3,16 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
-export type MyInterface = null | {
-	Method1(): number
-}
-
-$.registerInterfaceType(
-  'MyInterface',
-  null, // Zero value for interface is null
-  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
-);
-
 export class MyStruct {
 	public get Value(): number {
 		return this._fields.Value.value
@@ -53,6 +43,16 @@ export class MyStruct {
 	  {"Value": { kind: $.TypeKind.Basic, name: "number" }}
 	);
 }
+
+export type MyInterface = null | {
+	Method1(): number
+}
+
+$.registerInterfaceType(
+  'MyInterface',
+  null, // Zero value for interface is null
+  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
+);
 
 export async function main(): Promise<void> {
 	let i: MyInterface = null

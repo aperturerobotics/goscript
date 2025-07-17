@@ -3,8 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
-export type ByteSize = number;
-
 // ignore first value by assigning to blank identifier
 
 export let KB: ByteSize = (1 << (10 * 0))
@@ -14,8 +12,6 @@ export let MB: ByteSize = 0
 export let GB: ByteSize = 0
 
 export let TB: ByteSize = 0
-
-export type Direction = number;
 
 export let North: Direction = 0
 
@@ -56,6 +52,10 @@ export let A: number = 0 * 2
 export let B: number = 0
 
 export let C: number = 0
+
+export type Direction = number;
+
+export type ByteSize = number;
 
 export async function main(): Promise<void> {
 	console.log("ByteSize constants:")

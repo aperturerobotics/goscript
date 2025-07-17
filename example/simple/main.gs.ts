@@ -1,6 +1,6 @@
-import * as $ from "@goscript/builtin";
+import * as $ from "@goscript/builtin/index.js";
 
-class MyStruct {
+export class MyStruct {
 	// MyInt is a public integer field, initialized to zero.
 	public get MyInt(): number {
 		return this._fields.MyInt.value
@@ -65,18 +65,18 @@ class MyStruct {
 	static __typeInfo = $.registerStructType(
 	  'MyStruct',
 	  new MyStruct(),
-	  new Set(["GetMyString", "GetMyBool"]),
+	  [{ name: "GetMyString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "GetMyBool", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
 	  MyStruct,
-	  {MyInt: "number", MyString: "string", myBool: "boolean"}
+	  {"MyInt": { kind: $.TypeKind.Basic, name: "number" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "boolean" }}
 	);
 }
 
 // NewMyStruct creates a new MyStruct instance.
 export function NewMyStruct(s: string): MyStruct {
-	return new MyStruct({MyString: s})
+	return $.markAsStructValue(new MyStruct({MyString: s}))
 }
 
-function vals(): [number, number] {
+export function vals(): [number, number] {
 	return [1, 2]
 }
 
@@ -93,17 +93,17 @@ export async function main(): Promise<void> {
 
 	// string(rune) conversion
 	let r: number = 88
-	let s = String.fromCharCode(r)
+	let s = $.runeOrStringToString(r)
 	console.log("string('X'):", s)
 
 	// 'y'
 	let r2: number = 121
-	let s2 = String.fromCharCode(r2)
+	let s2 = $.runeOrStringToString(r2)
 	console.log("string(121):", s2)
 
 	// '√'
 	let r3: number = 0x221A
-	let s3 = String.fromCharCode(r3)
+	let s3 = $.runeOrStringToString(r3)
 	console.log("string(0x221A):", s3)
 
 	// Arrays
@@ -115,12 +115,12 @@ export async function main(): Promise<void> {
 	console.log("Slice elements:", slice![0], slice![1], slice![2])
 	console.log("Slice length:", $.len(slice), "capacity:", $.cap(slice))
 
-	let sliceWithCap = $.makeSlice<number>(3, 5)
+	let sliceWithCap = $.makeSlice<number>(3, 5, 'number')
 	console.log("\nSlice created with make([]int, 3, 5):")
 	console.log("Length:", $.len(sliceWithCap), "Capacity:", $.cap(sliceWithCap))
 
 	console.log("\nAppend and capacity growth:")
-	let growingSlice = $.makeSlice<number>(0, 2)
+	let growingSlice = $.makeSlice<number>(0, 2, 'number')
 	console.log("Initial - Length:", $.len(growingSlice), "Capacity:", $.cap(growingSlice))
 
 	for (let i = 1; i <= 4; i++) {
@@ -163,27 +163,27 @@ export async function main(): Promise<void> {
 	console.log("Product via for:", prod)
 
 	// Struct, pointers, copy independence
-	let instance = NewMyStruct("go-script").clone()
+	let instance = $.markAsStructValue(NewMyStruct("go-script").clone())
 	console.log("instance.MyString:", instance.GetMyString())
 	instance.MyInt = 42
-	let copyInst = instance.clone()
+	let copyInst = $.markAsStructValue(instance.clone())
 	copyInst.MyInt = 7
 	console.log("instance.MyInt:", instance.MyInt, "copyInst.MyInt:", copyInst.MyInt)
 
 	// Pointer initialization and dereference assignment
-	let ptr = new(MyStruct)
-	ptr.MyInt = 9
-	console.log("ptr.MyInt:", ptr.MyInt)
-	let deref = ptr!.clone()
+	let ptr = new MyStruct()
+	ptr!.MyInt = 9
+	console.log("ptr.MyInt:", ptr!.MyInt)
+	let deref = $.markAsStructValue(ptr!.clone())
 	deref.MyInt = 8
-	console.log("After deref assign, ptr.MyInt:", ptr.MyInt, "deref.MyInt:", deref.MyInt)
+	console.log("After deref assign, ptr.MyInt:", ptr!.MyInt, "deref.MyInt:", deref.MyInt)
 
 	// Method calls on pointer receiver
-	ptr.myBool = true
-	console.log("ptr.GetMyBool():", ptr.GetMyBool())
+	ptr!.myBool = true
+	console.log("ptr.GetMyBool():", ptr!.GetMyBool())
 
 	// Composite literal assignment
-	let comp = new MyStruct({MyInt: 100, MyString: "composite", myBool: false})
+	let comp = $.markAsStructValue(new MyStruct({MyInt: 100, MyString: "composite", myBool: false}))
 	console.log("comp fields:", comp.MyInt, comp.GetMyString(), comp.GetMyBool())
 
 	// Multiple return values and blank identifier
@@ -194,7 +194,8 @@ export async function main(): Promise<void> {
 	// If/else
 	if (a > b) {
 		console.log("If branch: a>b")
-	} else {
+	}
+	 else {
 		console.log("Else branch: a<=b")
 	}
 
@@ -213,22 +214,22 @@ export async function main(): Promise<void> {
 	let ch = $.makeChannel<string>(0, "", 'both')
 	queueMicrotask(async () => {
 		console.log("Goroutine: Sending message")
-		await ch.send("Hello from goroutine!")
+		await $.chanSend(ch, "Hello from goroutine!")
 	})
 
-	let msg = await ch.receive()
+	let msg = await $.chanRecv(ch)
 	console.log("Main goroutine: Received message:", msg)
 
 	// Select statement
 	console.log("\nSelect statement:")
 	let selectCh = $.makeChannel<string>(0, "", 'both')
 	queueMicrotask(async () => {
-		await selectCh.send("Message from select goroutine!")
+		await $.chanSend(selectCh, "Message from select goroutine!")
 	})
 	let anotherCh = $.makeChannel<string>(0, "", 'both')
 
 	// Add another case
-	await $.selectStatement([
+	const [_select_has_return_5969, _select_value_5969] = await $.selectStatement([
 		{
 			id: 0,
 			isSend: false,
@@ -248,14 +249,17 @@ export async function main(): Promise<void> {
 			}
 		},
 	], false)
+	if (_select_has_return_5969) {
+		return _select_value_5969!
+	}
+	// If _select_has_return_5969 is false, continue execution
 
 	// Function Literals
 	console.log("\nFunction Literals:")
 	let add = (x: number, y: number): number => {
 		return x + y
 	}
-
-	sum = add(5, 7)
+	sum = add!(5, 7)
 	console.log("Function literal result:", sum)
 }
 

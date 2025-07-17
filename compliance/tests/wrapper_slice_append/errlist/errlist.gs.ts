@@ -3,13 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
-export type ErrorList = $.Slice<string>;
-
-export function ErrorList_Add(p: $.VarRef<ErrorList>, msg: string): void {
-	p!.value = $.append(p!.value, msg)
-}
-
-
 export class AStruct {
 	public get Msg(): string {
 		return this._fields.Msg.value
@@ -50,4 +43,11 @@ export class AStruct {
 	  {"Msg": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
+
+export type ErrorList = $.Slice<string>;
+
+export function ErrorList_Add(p: $.VarRef<ErrorList>, msg: string): void {
+	p!.value = $.append(p!.value, msg)
+}
+
 

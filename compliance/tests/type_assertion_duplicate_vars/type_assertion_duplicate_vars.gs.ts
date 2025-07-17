@@ -3,16 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
-export type Interface = null | {
-	Method(): string
-}
-
-$.registerInterfaceType(
-  'Interface',
-  null, // Zero value for interface is null
-  [{ name: "Method", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
-
 export class ConcreteA {
 	public _fields: {
 	}
@@ -116,6 +106,16 @@ export class Container {
 	  {"hasA": { kind: $.TypeKind.Basic, name: "boolean" }, "hasB": { kind: $.TypeKind.Basic, name: "boolean" }}
 	);
 }
+
+export type Interface = null | {
+	Method(): string
+}
+
+$.registerInterfaceType(
+  'Interface',
+  null, // Zero value for interface is null
+  [{ name: "Method", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+);
 
 export async function main(): Promise<void> {
 	let iface: Interface = $.markAsStructValue(new ConcreteA({}))

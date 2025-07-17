@@ -7,24 +7,6 @@ import * as io from "@goscript/io/index.js"
 
 import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/compliance/tests/interface_embedding/subpkg/index.js"
 
-export type File = null | {
-	// Lock locks the file like e.g. flock. It protects against access from
-	// other processes.
-	Lock(): $.GoError
-	// Name returns the name of the file as presented to Open.
-	Name(): string
-	// Truncate the file.
-	Truncate(size: number): $.GoError
-	// Unlock unlocks the file.
-	Unlock(): $.GoError
-} & io.Writer & io.Reader & io.ReaderAt & io.Seeker & io.Closer
-
-$.registerInterfaceType(
-  'File',
-  null, // Zero value for interface is null
-  [{ name: "Lock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Truncate", args: [{ name: "size", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Unlock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
-
 export class MockFile {
 	public get filename(): string {
 		return this._fields.filename.value
@@ -148,6 +130,82 @@ export class MockFile {
 	);
 }
 
+export class qualifiedFile {
+	public get metadata(): string {
+		return this._fields.metadata.value
+	}
+	public set metadata(value: string) {
+		this._fields.metadata.value = value
+	}
+
+	public get File(): subpkg.File {
+		return this._fields.File.value
+	}
+	public set File(value: subpkg.File) {
+		this._fields.File.value = value
+	}
+
+	public _fields: {
+		File: $.VarRef<subpkg.File>;
+		metadata: $.VarRef<string>;
+	}
+
+	constructor(init?: Partial<{File?: subpkg.File, metadata?: string}>) {
+		this._fields = {
+			File: $.varRef(init?.File ?? null),
+			metadata: $.varRef(init?.metadata ?? "")
+		}
+	}
+
+	public clone(): qualifiedFile {
+		const cloned = new qualifiedFile()
+		cloned._fields = {
+			File: $.varRef(this._fields.File.value),
+			metadata: $.varRef(this._fields.metadata.value)
+		}
+		return cloned
+	}
+
+	public Close(): $.GoError {
+		return this.File!.Close()
+	}
+
+	public Name(): string {
+		return this.File!.Name()
+	}
+
+	public Write(data: $.Bytes): [number, $.GoError] {
+		return this.File!.Write(data)
+	}
+
+	// Register this type with the runtime type system
+	static __typeInfo = $.registerStructType(
+	  'qualifiedFile',
+	  new qualifiedFile(),
+	  [],
+	  qualifiedFile,
+	  {"File": "File", "metadata": { kind: $.TypeKind.Basic, name: "string" }}
+	);
+}
+
+export type File = null | {
+	// Lock locks the file like e.g. flock. It protects against access from
+	// other processes.
+	Lock(): $.GoError
+	// Name returns the name of the file as presented to Open.
+	Name(): string
+	// Truncate the file.
+	Truncate(size: number): $.GoError
+	// Unlock unlocks the file.
+	Unlock(): $.GoError
+} & io.Writer & io.Reader & io.ReaderAt & io.Seeker & io.Closer
+
+$.registerInterfaceType(
+  'File',
+  null, // Zero value for interface is null
+  [{ name: "Lock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Truncate", args: [{ name: "size", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Unlock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
+);
+
 export class file {
 	public get name(): string {
 		return this._fields.name.value
@@ -228,64 +286,6 @@ export class file {
 	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  file,
 	  {"File": "File", "name": { kind: $.TypeKind.Basic, name: "string" }}
-	);
-}
-
-export class qualifiedFile {
-	public get metadata(): string {
-		return this._fields.metadata.value
-	}
-	public set metadata(value: string) {
-		this._fields.metadata.value = value
-	}
-
-	public get File(): subpkg.File {
-		return this._fields.File.value
-	}
-	public set File(value: subpkg.File) {
-		this._fields.File.value = value
-	}
-
-	public _fields: {
-		File: $.VarRef<subpkg.File>;
-		metadata: $.VarRef<string>;
-	}
-
-	constructor(init?: Partial<{File?: subpkg.File, metadata?: string}>) {
-		this._fields = {
-			File: $.varRef(init?.File ?? null),
-			metadata: $.varRef(init?.metadata ?? "")
-		}
-	}
-
-	public clone(): qualifiedFile {
-		const cloned = new qualifiedFile()
-		cloned._fields = {
-			File: $.varRef(this._fields.File.value),
-			metadata: $.varRef(this._fields.metadata.value)
-		}
-		return cloned
-	}
-
-	public Close(): $.GoError {
-		return this.File!.Close()
-	}
-
-	public Name(): string {
-		return this.File!.Name()
-	}
-
-	public Write(data: $.Bytes): [number, $.GoError] {
-		return this.File!.Write(data)
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'qualifiedFile',
-	  new qualifiedFile(),
-	  [],
-	  qualifiedFile,
-	  {"File": "File", "metadata": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

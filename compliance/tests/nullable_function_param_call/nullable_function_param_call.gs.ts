@@ -19,8 +19,6 @@ $.registerInterfaceType(
 
 export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoError) | null;
 
-export let SkipDir: $.GoError = os.ErrNotExist
-
 export type Filesystem = null | {
 	ReadDir(path: string): [$.Slice<FileInfo>, $.GoError]
 }
@@ -131,6 +129,10 @@ export class MockFilesystem {
 	);
 }
 
+export type ProcessFunc = ((data: string) => [string, $.GoError]) | null;
+
+export let SkipDir: $.GoError = os.ErrNotExist
+
 // walk is a simplified version of filepath.Walk that demonstrates the issue
 // walkFn is a nullable function parameter that needs non-null assertion when called
 export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc | null): $.GoError {
@@ -152,8 +154,6 @@ export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkF
 
 	return null
 }
-
-export type ProcessFunc = ((data: string) => [string, $.GoError]) | null;
 
 export function processWithCallback(input: string, processor: ProcessFunc | null): [string, $.GoError] {
 	// Test case 3: Function parameter with return values

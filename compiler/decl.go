@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
 	"go/types"
 )
 
@@ -17,31 +18,340 @@ import (
 //     variables, or type definitions: It iterates through `d.Specs` and calls
 //     `WriteSpec` for each specification.
 //
+// Type declarations are sorted by dependencies to ensure referenced types are
+// defined before types that reference them, avoiding initialization order issues.
 // A newline is added after each processed declaration or spec group for readability.
 // Unknown declaration types result in a printed diagnostic message.
 func (c *GoToTSCompiler) WriteDecls(decls []ast.Decl) error {
+	// Separate type declarations from other declarations for dependency sorting
+	var typeSpecs []*ast.TypeSpec
+	var varSpecs []*ast.ValueSpec
+	var otherDecls []ast.Decl
+	var otherSpecs []ast.Spec
+
 	for _, decl := range decls {
 		switch d := decl.(type) {
 		case *ast.FuncDecl:
 			// Only handle top-level functions here. Methods are handled within WriteTypeSpec.
 			if d.Recv == nil {
-				if err := c.WriteFuncDeclAsFunction(d); err != nil {
-					return err
-				}
-				c.tsw.WriteLine("") // Add space after function
+				otherDecls = append(otherDecls, d)
 			}
 		case *ast.GenDecl:
 			for _, spec := range d.Specs {
-				if err := c.WriteSpec(spec); err != nil {
-					return err
+				if typeSpec, ok := spec.(*ast.TypeSpec); ok {
+					typeSpecs = append(typeSpecs, typeSpec)
+				} else if varSpec, ok := spec.(*ast.ValueSpec); ok && d.Tok == token.VAR {
+					varSpecs = append(varSpecs, varSpec)
+				} else {
+					otherSpecs = append(otherSpecs, spec)
 				}
-				c.tsw.WriteLine("") // Add space after spec
 			}
+		default:
+			otherDecls = append(otherDecls, d)
+		}
+	}
+
+	// Sort type declarations by dependencies
+	sortedTypeSpecs, err := c.sortTypeSpecsByDependencies(typeSpecs)
+	if err != nil {
+		return fmt.Errorf("failed to sort type declarations: %w", err)
+	}
+
+	// Sort variable declarations by type dependencies
+	sortedVarSpecs, err := c.sortVarSpecsByTypeDependencies(varSpecs, typeSpecs)
+	if err != nil {
+		return fmt.Errorf("failed to sort variable declarations: %w", err)
+	}
+
+	// Write non-type, non-var declarations first (imports, constants)
+	for _, spec := range otherSpecs {
+		if err := c.WriteSpec(spec); err != nil {
+			return err
+		}
+		c.tsw.WriteLine("") // Add space after spec
+	}
+
+	// Write sorted type declarations
+	for _, typeSpec := range sortedTypeSpecs {
+		if err := c.WriteSpec(typeSpec); err != nil {
+			return err
+		}
+		c.tsw.WriteLine("") // Add space after spec
+	}
+
+	// Write sorted variable declarations
+	for _, varSpec := range sortedVarSpecs {
+		if err := c.WriteSpec(varSpec); err != nil {
+			return err
+		}
+		c.tsw.WriteLine("") // Add space after spec
+	}
+
+	// Write function declarations last
+	for _, decl := range otherDecls {
+		switch d := decl.(type) {
+		case *ast.FuncDecl:
+			if err := c.WriteFuncDeclAsFunction(d); err != nil {
+				return err
+			}
+			c.tsw.WriteLine("") // Add space after function
 		default:
 			return fmt.Errorf("unknown decl: %#v", decl)
 		}
 	}
+
 	return nil
+}
+
+// sortTypeSpecsByDependencies performs a topological sort of type specifications
+// based on their dependencies to ensure referenced types are defined before
+// types that reference them.
+func (c *GoToTSCompiler) sortTypeSpecsByDependencies(typeSpecs []*ast.TypeSpec) ([]*ast.TypeSpec, error) {
+	if len(typeSpecs) <= 1 {
+		return typeSpecs, nil
+	}
+
+	// Build dependency graph
+	dependencies := make(map[string][]string) // typeName -> list of types it depends on
+	typeSpecMap := make(map[string]*ast.TypeSpec)
+
+	// First pass: collect all type names
+	for _, typeSpec := range typeSpecs {
+		typeName := typeSpec.Name.Name
+		typeSpecMap[typeName] = typeSpec
+		dependencies[typeName] = []string{}
+	}
+
+	// Second pass: analyze dependencies
+	for _, typeSpec := range typeSpecs {
+		typeName := typeSpec.Name.Name
+		deps := c.extractTypeDependencies(typeSpec.Type, typeSpecMap)
+		dependencies[typeName] = deps
+	}
+
+	// Perform topological sort
+	sorted, err := c.topologicalSort(dependencies)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build result in sorted order
+	var result []*ast.TypeSpec
+	for _, typeName := range sorted {
+		if typeSpec, exists := typeSpecMap[typeName]; exists {
+			result = append(result, typeSpec)
+		}
+	}
+
+	return result, nil
+}
+
+// extractTypeDependencies extracts structural type dependencies from a type expression.
+// Only dependencies that affect class initialization order are considered:
+// - Struct field types (cause initialization order issues)
+// - Embedded types (directly affect struct layout)
+// - Type aliases (direct type references)
+// Method parameters and return types are ignored as they're just annotations.
+func (c *GoToTSCompiler) extractTypeDependencies(typeExpr ast.Expr, typeSpecMap map[string]*ast.TypeSpec) []string {
+	var deps []string
+
+	switch t := typeExpr.(type) {
+	case *ast.Ident:
+		// Direct type reference (e.g., type MyType OtherType)
+		if _, isLocalType := typeSpecMap[t.Name]; isLocalType {
+			deps = append(deps, t.Name)
+		}
+
+	case *ast.StructType:
+		// Struct type - check field types only
+		if t.Fields != nil {
+			for _, field := range t.Fields.List {
+				fieldDeps := c.extractTypeDependencies(field.Type, typeSpecMap)
+				deps = append(deps, fieldDeps...)
+			}
+		}
+
+	case *ast.ArrayType:
+		// Array type - check element type
+		elemDeps := c.extractTypeDependencies(t.Elt, typeSpecMap)
+		deps = append(deps, elemDeps...)
+
+	case *ast.StarExpr:
+		// Pointer type - check pointed-to type
+		ptrDeps := c.extractTypeDependencies(t.X, typeSpecMap)
+		deps = append(deps, ptrDeps...)
+
+	case *ast.MapType:
+		// Map type - check key and value types
+		keyDeps := c.extractTypeDependencies(t.Key, typeSpecMap)
+		valueDeps := c.extractTypeDependencies(t.Value, typeSpecMap)
+		deps = append(deps, keyDeps...)
+		deps = append(deps, valueDeps...)
+
+	case *ast.InterfaceType:
+		// Interface type - methods don't create initialization dependencies
+		// Only embedded interfaces matter, but those are rare and complex to handle
+		// For now, interfaces are considered to have no dependencies
+
+	case *ast.FuncType:
+		// Function types don't create initialization dependencies
+
+	case *ast.SelectorExpr:
+		// External package types don't create local dependencies
+
+		// Add other type expressions as needed
+	}
+
+	return deps
+}
+
+// sortVarSpecsByTypeDependencies sorts variable declarations based on their type dependencies
+func (c *GoToTSCompiler) sortVarSpecsByTypeDependencies(varSpecs []*ast.ValueSpec, typeSpecs []*ast.TypeSpec) ([]*ast.ValueSpec, error) {
+	if len(varSpecs) <= 1 {
+		return varSpecs, nil
+	}
+
+	// Build type name map
+	typeSpecMap := make(map[string]*ast.TypeSpec)
+	for _, typeSpec := range typeSpecs {
+		typeSpecMap[typeSpec.Name.Name] = typeSpec
+	}
+
+	// Variables that don't reference local types can go first
+	var independentVars []*ast.ValueSpec
+	var dependentVars []*ast.ValueSpec
+
+	for _, varSpec := range varSpecs {
+		hasDependency := false
+
+		// Check type annotation
+		if varSpec.Type != nil {
+			deps := c.extractTypeDependencies(varSpec.Type, typeSpecMap)
+			if len(deps) > 0 {
+				hasDependency = true
+			}
+		}
+
+		// Check initializer expressions for type usage
+		if !hasDependency {
+			for _, value := range varSpec.Values {
+				if c.hasTypeReferences(value, typeSpecMap) {
+					hasDependency = true
+					break
+				}
+			}
+		}
+
+		if hasDependency {
+			dependentVars = append(dependentVars, varSpec)
+		} else {
+			independentVars = append(independentVars, varSpec)
+		}
+	}
+
+	// Return independent variables first, then dependent ones
+	result := make([]*ast.ValueSpec, 0, len(varSpecs))
+	result = append(result, independentVars...)
+	result = append(result, dependentVars...)
+
+	return result, nil
+}
+
+// hasTypeReferences checks if an expression contains references to local types
+func (c *GoToTSCompiler) hasTypeReferences(expr ast.Expr, typeSpecMap map[string]*ast.TypeSpec) bool {
+	hasRef := false
+
+	ast.Inspect(expr, func(n ast.Node) bool {
+		switch t := n.(type) {
+		case *ast.CallExpr:
+			// Check function calls like new Message(), makeChannel<Message>()
+			if ident, ok := t.Fun.(*ast.Ident); ok {
+				if _, isLocalType := typeSpecMap[ident.Name]; isLocalType {
+					hasRef = true
+					return false
+				}
+			}
+			// Check type arguments in generic calls
+			if funcType, ok := t.Fun.(*ast.IndexExpr); ok {
+				if c.hasTypeReferences(funcType.Index, typeSpecMap) {
+					hasRef = true
+					return false
+				}
+			}
+		case *ast.CompositeLit:
+			// Check composite literals like Message{...}
+			if ident, ok := t.Type.(*ast.Ident); ok {
+				if _, isLocalType := typeSpecMap[ident.Name]; isLocalType {
+					hasRef = true
+					return false
+				}
+			}
+		case *ast.Ident:
+			// Check direct type references
+			if _, isLocalType := typeSpecMap[t.Name]; isLocalType {
+				hasRef = true
+				return false
+			}
+		}
+		return !hasRef // Stop walking if we found a reference
+	})
+
+	return hasRef
+}
+
+// topologicalSort performs a topological sort of the dependency graph
+func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]string, error) {
+	// Kahn's algorithm for topological sorting
+	inDegree := make(map[string]int)
+	graph := make(map[string][]string)
+
+	// Initialize in-degree counts and reverse graph
+	for node := range dependencies {
+		inDegree[node] = 0
+		graph[node] = []string{}
+	}
+
+	// Build reverse graph and count in-degrees
+	for node, deps := range dependencies {
+		for _, dep := range deps {
+			if _, exists := inDegree[dep]; exists {
+				graph[dep] = append(graph[dep], node)
+				inDegree[node]++
+			}
+		}
+	}
+
+	// Find nodes with no incoming edges
+	var queue []string
+	for node, degree := range inDegree {
+		if degree == 0 {
+			queue = append(queue, node)
+		}
+	}
+
+	var result []string
+
+	for len(queue) > 0 {
+		// Remove node from queue
+		current := queue[0]
+		queue = queue[1:]
+		result = append(result, current)
+
+		// Remove edges from current node
+		for _, neighbor := range graph[current] {
+			inDegree[neighbor]--
+			if inDegree[neighbor] == 0 {
+				queue = append(queue, neighbor)
+			}
+		}
+	}
+
+	// Check for cycles
+	if len(result) != len(dependencies) {
+		return nil, fmt.Errorf("circular dependency detected in type declarations")
+	}
+
+	return result, nil
 }
 
 // WriteFuncDeclAsFunction translates a Go function declaration (`ast.FuncDecl`)

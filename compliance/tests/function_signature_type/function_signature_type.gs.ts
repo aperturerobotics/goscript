@@ -5,19 +5,11 @@ import * as $ from "@goscript/builtin/index.js";
 
 export type Func1 = ((a: number, b: string) => [boolean, $.GoError]) | null;
 
-let fn1: Func1 | null = null
-
 export type Func2 = ((p0: number, p1: string) => boolean) | null;
-
-let fn2: Func2 | null = null
 
 export type Func3 = (() => void) | null;
 
-let fn3: Func3 | null = null
-
 export type Func4 = ((a: number, ...b: string[]) => void) | null;
-
-let fn4: Func4 | null = null
 
 export class MyError {
 	public get s(): string {
@@ -59,6 +51,14 @@ export class MyError {
 	  {"s": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
+
+let fn1: Func1 | null = null
+
+let fn2: Func2 | null = null
+
+let fn3: Func3 | null = null
+
+let fn4: Func4 | null = null
 
 export function NewMyError(text: string): MyError | null {
 	return new MyError({s: text})

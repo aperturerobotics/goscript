@@ -3,6 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
+let totalMessages: number = 8
+
 export class Message {
 	public get priority(): number {
 		return this._fields.priority.value
@@ -50,8 +52,6 @@ export class Message {
 }
 
 let messages: $.Channel<Message> | null = $.makeChannel<Message>(0, new Message(), 'both')
-
-let totalMessages: number = 8
 
 // A worker function that will be called as a goroutine
 export async function worker(id: number): Promise<void> {

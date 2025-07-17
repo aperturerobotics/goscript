@@ -3,6 +3,58 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
+export class StringValueContainer {
+	public get value(): string {
+		return this._fields.value.value
+	}
+	public set value(value: string) {
+		this._fields.value.value = value
+	}
+
+	public _fields: {
+		value: $.VarRef<string>;
+	}
+
+	constructor(init?: Partial<{value?: string}>) {
+		this._fields = {
+			value: $.varRef(init?.value ?? "")
+		}
+	}
+
+	public clone(): StringValueContainer {
+		const cloned = new StringValueContainer()
+		cloned._fields = {
+			value: $.varRef(this._fields.value.value)
+		}
+		return cloned
+	}
+
+	public Compare(other: string): number {
+		const s = this
+		if (s.value < other) {
+			return -1
+		}
+		 else if (s.value > other) {
+			return 1
+		}
+		return 0
+	}
+
+	public Equal(other: string): boolean {
+		const s = this
+		return s.value == other
+	}
+
+	// Register this type with the runtime type system
+	static __typeInfo = $.registerStructType(
+	  'StringValueContainer',
+	  new StringValueContainer(),
+	  [{ name: "Compare", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Equal", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
+	  StringValueContainer,
+	  {"value": { kind: $.TypeKind.Basic, name: "string" }}
+	);
+}
+
 export type Container<T extends any> = null | {
 	Get(): T
 	Set(_p0: T): void
@@ -85,58 +137,6 @@ export class ValueContainer<T extends any> {
 	  [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  ValueContainer,
 	  {"value": { kind: $.TypeKind.Interface, methods: [] }, "count": { kind: $.TypeKind.Basic, name: "number" }}
-	);
-}
-
-export class StringValueContainer {
-	public get value(): string {
-		return this._fields.value.value
-	}
-	public set value(value: string) {
-		this._fields.value.value = value
-	}
-
-	public _fields: {
-		value: $.VarRef<string>;
-	}
-
-	constructor(init?: Partial<{value?: string}>) {
-		this._fields = {
-			value: $.varRef(init?.value ?? "")
-		}
-	}
-
-	public clone(): StringValueContainer {
-		const cloned = new StringValueContainer()
-		cloned._fields = {
-			value: $.varRef(this._fields.value.value)
-		}
-		return cloned
-	}
-
-	public Compare(other: string): number {
-		const s = this
-		if (s.value < other) {
-			return -1
-		}
-		 else if (s.value > other) {
-			return 1
-		}
-		return 0
-	}
-
-	public Equal(other: string): boolean {
-		const s = this
-		return s.value == other
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'StringValueContainer',
-	  new StringValueContainer(),
-	  [{ name: "Compare", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Equal", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
-	  StringValueContainer,
-	  {"value": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

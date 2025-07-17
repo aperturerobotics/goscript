@@ -13,56 +13,6 @@ $.registerInterfaceType(
   [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
 
-export class MyReader {
-	public get name(): string {
-		return this._fields.name.value
-	}
-	public set name(value: string) {
-		this._fields.name.value = value
-	}
-
-	public get Reader(): Reader {
-		return this._fields.Reader.value
-	}
-	public set Reader(value: Reader) {
-		this._fields.Reader.value = value
-	}
-
-	public _fields: {
-		Reader: $.VarRef<Reader>;
-		name: $.VarRef<string>;
-	}
-
-	constructor(init?: Partial<{Reader?: Reader, name?: string}>) {
-		this._fields = {
-			Reader: $.varRef(init?.Reader ?? null),
-			name: $.varRef(init?.name ?? "")
-		}
-	}
-
-	public clone(): MyReader {
-		const cloned = new MyReader()
-		cloned._fields = {
-			Reader: $.varRef(this._fields.Reader.value),
-			name: $.varRef(this._fields.name.value)
-		}
-		return cloned
-	}
-
-	public Read(p: $.Bytes): [number, $.GoError] {
-		return this.Reader!.Read(p)
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'MyReader',
-	  new MyReader(),
-	  [],
-	  MyReader,
-	  {"Reader": "Reader", "name": { kind: $.TypeKind.Basic, name: "string" }}
-	);
-}
-
 export class StringReader {
 	public get data(): string {
 		return this._fields.data.value
@@ -116,6 +66,56 @@ export class StringReader {
 	  [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  StringReader,
 	  {"data": { kind: $.TypeKind.Basic, name: "string" }, "pos": { kind: $.TypeKind.Basic, name: "number" }}
+	);
+}
+
+export class MyReader {
+	public get name(): string {
+		return this._fields.name.value
+	}
+	public set name(value: string) {
+		this._fields.name.value = value
+	}
+
+	public get Reader(): Reader {
+		return this._fields.Reader.value
+	}
+	public set Reader(value: Reader) {
+		this._fields.Reader.value = value
+	}
+
+	public _fields: {
+		Reader: $.VarRef<Reader>;
+		name: $.VarRef<string>;
+	}
+
+	constructor(init?: Partial<{Reader?: Reader, name?: string}>) {
+		this._fields = {
+			Reader: $.varRef(init?.Reader ?? null),
+			name: $.varRef(init?.name ?? "")
+		}
+	}
+
+	public clone(): MyReader {
+		const cloned = new MyReader()
+		cloned._fields = {
+			Reader: $.varRef(this._fields.Reader.value),
+			name: $.varRef(this._fields.name.value)
+		}
+		return cloned
+	}
+
+	public Read(p: $.Bytes): [number, $.GoError] {
+		return this.Reader!.Read(p)
+	}
+
+	// Register this type with the runtime type system
+	static __typeInfo = $.registerStructType(
+	  'MyReader',
+	  new MyReader(),
+	  [],
+	  MyReader,
+	  {"Reader": "Reader", "name": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

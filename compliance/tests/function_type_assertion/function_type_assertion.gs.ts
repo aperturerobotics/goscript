@@ -7,22 +7,6 @@ export type Greeter = ((name: string) => string) | null;
 
 export type Adder = ((a: number, b: number) => number) | null;
 
-export function greet(name: string): string {
-	return "Hello, " + name
-}
-
-export function add(a: number, b: number): number {
-	return a + b
-}
-
-export function getGreeter(): null | any {
-	return Object.assign(greet, { __goTypeName: 'Greeter' })
-}
-
-export function getAdder(): null | any {
-	return Object.assign(add, { __goTypeName: 'Adder' })
-}
-
 export class FuncContainer {
 	public get myFunc(): null | any {
 		return this._fields.myFunc.value
@@ -57,6 +41,22 @@ export class FuncContainer {
 	  FuncContainer,
 	  {"myFunc": { kind: $.TypeKind.Interface, methods: [] }}
 	);
+}
+
+export function greet(name: string): string {
+	return "Hello, " + name
+}
+
+export function add(a: number, b: number): number {
+	return a + b
+}
+
+export function getGreeter(): null | any {
+	return Object.assign(greet, { __goTypeName: 'Greeter' })
+}
+
+export function getAdder(): null | any {
+	return Object.assign(add, { __goTypeName: 'Adder' })
 }
 
 export async function main(): Promise<void> {

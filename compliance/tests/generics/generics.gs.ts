@@ -3,21 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
-// Generic function with any constraint
-export function printVal<T extends any>(val: T): void {
-	console.log(val)
-}
-
-// Generic function with comparable constraint
-export function equal<T extends $.Comparable>(a: T, b: T): boolean {
-	return a == b
-}
-
-// Generic function with union constraint
-export function getLength<S extends string | $.Bytes>(s: S): number {
-	return $.len(s)
-}
-
 export class Pair<T extends any> {
 	public get First(): T {
 		return this._fields.First.value
@@ -67,6 +52,21 @@ export class Pair<T extends any> {
 	  Pair,
 	  {"First": { kind: $.TypeKind.Interface, methods: [] }, "Second": { kind: $.TypeKind.Interface, methods: [] }}
 	);
+}
+
+// Generic function with any constraint
+export function printVal<T extends any>(val: T): void {
+	console.log(val)
+}
+
+// Generic function with comparable constraint
+export function equal<T extends $.Comparable>(a: T, b: T): boolean {
+	return a == b
+}
+
+// Generic function with union constraint
+export function getLength<S extends string | $.Bytes>(s: S): number {
+	return $.len(s)
 }
 
 // Generic function returning a generic struct

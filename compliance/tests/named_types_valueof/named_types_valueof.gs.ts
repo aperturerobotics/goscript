@@ -5,21 +5,21 @@ import * as $ from "@goscript/builtin/index.js";
 
 import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/compliance/tests/named_types_valueof/subpkg/index.js"
 
-export type LocalInt = number;
+export type LocalFloat = number;
+
+export type LocalLevel3 = number;
 
 export type LocalUint = number;
 
-export type LocalFloat = number;
-
 export type LocalString = string;
+
+export type LocalInt = number;
 
 export type LocalBool = boolean;
 
-export type LocalLevel1 = LocalLevel2;
-
 export type LocalLevel2 = LocalLevel3;
 
-export type LocalLevel3 = number;
+export type LocalLevel1 = LocalLevel2;
 
 export async function main(): Promise<void> {
 	// Test basic named numeric types with bitwise operations

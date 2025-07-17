@@ -3,6 +3,98 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
+export class Address {
+	public get Street(): string {
+		return this._fields.Street.value
+	}
+	public set Street(value: string) {
+		this._fields.Street.value = value
+	}
+
+	public get City(): string {
+		return this._fields.City.value
+	}
+	public set City(value: string) {
+		this._fields.City.value = value
+	}
+
+	public _fields: {
+		Street: $.VarRef<string>;
+		City: $.VarRef<string>;
+	}
+
+	constructor(init?: Partial<{City?: string, Street?: string}>) {
+		this._fields = {
+			Street: $.varRef(init?.Street ?? ""),
+			City: $.varRef(init?.City ?? "")
+		}
+	}
+
+	public clone(): Address {
+		const cloned = new Address()
+		cloned._fields = {
+			Street: $.varRef(this._fields.Street.value),
+			City: $.varRef(this._fields.City.value)
+		}
+		return cloned
+	}
+
+	public FullAddress(): string {
+		const a = this
+		return a.Street + ", " + a.City
+	}
+
+	// Register this type with the runtime type system
+	static __typeInfo = $.registerStructType(
+	  'Address',
+	  new Address(),
+	  [{ name: "FullAddress", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+	  Address,
+	  {"Street": { kind: $.TypeKind.Basic, name: "string" }, "City": { kind: $.TypeKind.Basic, name: "string" }}
+	);
+}
+
+export class Contact {
+	public get Phone(): string {
+		return this._fields.Phone.value
+	}
+	public set Phone(value: string) {
+		this._fields.Phone.value = value
+	}
+
+	public _fields: {
+		Phone: $.VarRef<string>;
+	}
+
+	constructor(init?: Partial<{Phone?: string}>) {
+		this._fields = {
+			Phone: $.varRef(init?.Phone ?? "")
+		}
+	}
+
+	public clone(): Contact {
+		const cloned = new Contact()
+		cloned._fields = {
+			Phone: $.varRef(this._fields.Phone.value)
+		}
+		return cloned
+	}
+
+	public Call(): void {
+		const c = this
+		console.log("Calling " + c.Phone)
+	}
+
+	// Register this type with the runtime type system
+	static __typeInfo = $.registerStructType(
+	  'Contact',
+	  new Contact(),
+	  [{ name: "Call", args: [], returns: [] }],
+	  Contact,
+	  {"Phone": { kind: $.TypeKind.Basic, name: "string" }}
+	);
+}
+
 export class Person {
 	public get Name(): string {
 		return this._fields.Name.value
@@ -115,98 +207,6 @@ export class Employee {
 	  [],
 	  Employee,
 	  {"Person": "Person", "ID": { kind: $.TypeKind.Basic, name: "number" }}
-	);
-}
-
-export class Address {
-	public get Street(): string {
-		return this._fields.Street.value
-	}
-	public set Street(value: string) {
-		this._fields.Street.value = value
-	}
-
-	public get City(): string {
-		return this._fields.City.value
-	}
-	public set City(value: string) {
-		this._fields.City.value = value
-	}
-
-	public _fields: {
-		Street: $.VarRef<string>;
-		City: $.VarRef<string>;
-	}
-
-	constructor(init?: Partial<{City?: string, Street?: string}>) {
-		this._fields = {
-			Street: $.varRef(init?.Street ?? ""),
-			City: $.varRef(init?.City ?? "")
-		}
-	}
-
-	public clone(): Address {
-		const cloned = new Address()
-		cloned._fields = {
-			Street: $.varRef(this._fields.Street.value),
-			City: $.varRef(this._fields.City.value)
-		}
-		return cloned
-	}
-
-	public FullAddress(): string {
-		const a = this
-		return a.Street + ", " + a.City
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'Address',
-	  new Address(),
-	  [{ name: "FullAddress", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
-	  Address,
-	  {"Street": { kind: $.TypeKind.Basic, name: "string" }, "City": { kind: $.TypeKind.Basic, name: "string" }}
-	);
-}
-
-export class Contact {
-	public get Phone(): string {
-		return this._fields.Phone.value
-	}
-	public set Phone(value: string) {
-		this._fields.Phone.value = value
-	}
-
-	public _fields: {
-		Phone: $.VarRef<string>;
-	}
-
-	constructor(init?: Partial<{Phone?: string}>) {
-		this._fields = {
-			Phone: $.varRef(init?.Phone ?? "")
-		}
-	}
-
-	public clone(): Contact {
-		const cloned = new Contact()
-		cloned._fields = {
-			Phone: $.varRef(this._fields.Phone.value)
-		}
-		return cloned
-	}
-
-	public Call(): void {
-		const c = this
-		console.log("Calling " + c.Phone)
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'Contact',
-	  new Contact(),
-	  [{ name: "Call", args: [], returns: [] }],
-	  Contact,
-	  {"Phone": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

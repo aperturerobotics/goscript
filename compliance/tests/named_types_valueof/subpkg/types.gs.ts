@@ -3,22 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
-export type MyInt = number;
-
-export type MyUint = number;
-
-export type MyFloat = number;
-
-export type MyString = string;
-
-export type MyBool = boolean;
-
-export type Level1 = Level2;
-
-export type Level2 = Level3;
-
-export type Level3 = number;
-
 export let IntValue: MyInt = 42
 
 export let UintValue: MyUint = 0xFF
@@ -30,6 +14,22 @@ export let StringValue: MyString = "hello"
 export let BoolValue: MyBool = true
 
 export let LevelValue: Level1 = 0x1000
+
+export type MyInt = number;
+
+export type MyFloat = number;
+
+export type MyBool = boolean;
+
+export type MyString = string;
+
+export type Level3 = number;
+
+export type MyUint = number;
+
+export type Level2 = Level3;
+
+export type Level1 = Level2;
 
 // Helper function that uses bitwise operations
 export function GetCombinedFlags(): MyUint {
