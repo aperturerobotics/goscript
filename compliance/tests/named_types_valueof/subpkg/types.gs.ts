@@ -15,15 +15,15 @@ export let BoolValue: MyBool = true
 
 export let LevelValue: Level1 = 0x1000
 
-export type MyInt = number;
-
-export type MyFloat = number;
+export type Level3 = number;
 
 export type MyBool = boolean;
 
-export type MyString = string;
+export type MyFloat = number;
 
-export type Level3 = number;
+export type MyInt = number;
+
+export type MyString = string;
 
 export type MyUint = number;
 

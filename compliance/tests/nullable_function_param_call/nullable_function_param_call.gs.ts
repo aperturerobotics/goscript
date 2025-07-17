@@ -17,8 +17,6 @@ $.registerInterfaceType(
   [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );
 
-export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoError) | null;
-
 export type Filesystem = null | {
 	ReadDir(path: string): [$.Slice<FileInfo>, $.GoError]
 }
@@ -130,6 +128,8 @@ export class MockFilesystem {
 }
 
 export type ProcessFunc = ((data: string) => [string, $.GoError]) | null;
+
+export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoError) | null;
 
 export let SkipDir: $.GoError = os.ErrNotExist
 

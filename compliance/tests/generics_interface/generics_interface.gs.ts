@@ -3,6 +3,29 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
+export type Comparable<T extends $.Comparable> = null | {
+	Compare(_p0: T): number
+	Equal(_p0: T): boolean
+}
+
+$.registerInterfaceType(
+  'Comparable',
+  null, // Zero value for interface is null
+  [{ name: "Compare", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Equal", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }]
+);
+
+export type Container<T extends any> = null | {
+	Get(): T
+	Set(_p0: T): void
+	Size(): number
+}
+
+$.registerInterfaceType(
+  'Container',
+  null, // Zero value for interface is null
+  [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
+);
+
 export class StringValueContainer {
 	public get value(): string {
 		return this._fields.value.value
@@ -54,29 +77,6 @@ export class StringValueContainer {
 	  {"value": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
-
-export type Container<T extends any> = null | {
-	Get(): T
-	Set(_p0: T): void
-	Size(): number
-}
-
-$.registerInterfaceType(
-  'Container',
-  null, // Zero value for interface is null
-  [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
-);
-
-export type Comparable<T extends $.Comparable> = null | {
-	Compare(_p0: T): number
-	Equal(_p0: T): boolean
-}
-
-$.registerInterfaceType(
-  'Comparable',
-  null, // Zero value for interface is null
-  [{ name: "Compare", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Equal", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }]
-);
 
 export class ValueContainer<T extends any> {
 	public get value(): T {

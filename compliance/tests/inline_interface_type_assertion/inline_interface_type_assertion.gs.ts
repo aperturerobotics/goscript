@@ -32,16 +32,6 @@ export class Greeter {
 	);
 }
 
-export type Stringer = null | {
-	String(): string
-}
-
-$.registerInterfaceType(
-  'Stringer',
-  null, // Zero value for interface is null
-  [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
-
 export class MyStringer {
 	public _fields: {
 	}
@@ -70,6 +60,16 @@ export class MyStringer {
 	  {}
 	);
 }
+
+export type Stringer = null | {
+	String(): string
+}
+
+$.registerInterfaceType(
+  'Stringer',
+  null, // Zero value for interface is null
+  [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+);
 
 export async function main(): Promise<void> {
 	let i: null | any = null

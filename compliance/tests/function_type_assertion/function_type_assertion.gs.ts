@@ -3,8 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
-export type Greeter = ((name: string) => string) | null;
-
 export type Adder = ((a: number, b: number) => number) | null;
 
 export class FuncContainer {
@@ -42,6 +40,8 @@ export class FuncContainer {
 	  {"myFunc": { kind: $.TypeKind.Interface, methods: [] }}
 	);
 }
+
+export type Greeter = ((name: string) => string) | null;
 
 export function greet(name: string): string {
 	return "Hello, " + name

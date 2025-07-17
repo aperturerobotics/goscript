@@ -53,9 +53,9 @@ export let B: number = 0
 
 export let C: number = 0
 
-export type Direction = number;
-
 export type ByteSize = number;
+
+export type Direction = number;
 
 export async function main(): Promise<void> {
 	console.log("ByteSize constants:")

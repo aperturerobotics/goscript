@@ -5,17 +5,17 @@ import * as $ from "@goscript/builtin/index.js";
 
 import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/compliance/tests/named_types_valueof/subpkg/index.js"
 
+export type LocalBool = boolean;
+
 export type LocalFloat = number;
-
-export type LocalLevel3 = number;
-
-export type LocalUint = number;
-
-export type LocalString = string;
 
 export type LocalInt = number;
 
-export type LocalBool = boolean;
+export type LocalLevel3 = number;
+
+export type LocalString = string;
+
+export type LocalUint = number;
 
 export type LocalLevel2 = LocalLevel3;
 

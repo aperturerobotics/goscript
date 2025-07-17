@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"sort"
 )
 
 // WriteDecls iterates through a slice of Go top-level declarations (`ast.Decl`)
@@ -202,6 +203,8 @@ func (c *GoToTSCompiler) extractTypeDependencies(typeExpr ast.Expr, typeSpecMap 
 		// Add other type expressions as needed
 	}
 
+	// Sort dependencies for deterministic output
+	sort.Strings(deps)
 	return deps
 }
 
@@ -217,11 +220,22 @@ func (c *GoToTSCompiler) sortVarSpecsByTypeDependencies(varSpecs []*ast.ValueSpe
 		typeSpecMap[typeSpec.Name.Name] = typeSpec
 	}
 
-	// Variables that don't reference local types can go first
-	var independentVars []*ast.ValueSpec
-	var dependentVars []*ast.ValueSpec
+	// Group variables by dependency status with names for sorting
+	type namedVarSpec struct {
+		spec *ast.ValueSpec
+		name string
+	}
+
+	var independentVars []namedVarSpec
+	var dependentVars []namedVarSpec
 
 	for _, varSpec := range varSpecs {
+		// Get variable name for sorting
+		varName := ""
+		if len(varSpec.Names) > 0 {
+			varName = varSpec.Names[0].Name
+		}
+
 		hasDependency := false
 
 		// Check type annotation
@@ -242,17 +256,30 @@ func (c *GoToTSCompiler) sortVarSpecsByTypeDependencies(varSpecs []*ast.ValueSpe
 			}
 		}
 
+		namedVar := namedVarSpec{spec: varSpec, name: varName}
 		if hasDependency {
-			dependentVars = append(dependentVars, varSpec)
+			dependentVars = append(dependentVars, namedVar)
 		} else {
-			independentVars = append(independentVars, varSpec)
+			independentVars = append(independentVars, namedVar)
 		}
 	}
 
+	// Sort both groups by name for deterministic output
+	sort.Slice(independentVars, func(i, j int) bool {
+		return independentVars[i].name < independentVars[j].name
+	})
+	sort.Slice(dependentVars, func(i, j int) bool {
+		return dependentVars[i].name < dependentVars[j].name
+	})
+
 	// Return independent variables first, then dependent ones
 	result := make([]*ast.ValueSpec, 0, len(varSpecs))
-	result = append(result, independentVars...)
-	result = append(result, dependentVars...)
+	for _, namedVar := range independentVars {
+		result = append(result, namedVar.spec)
+	}
+	for _, namedVar := range dependentVars {
+		result = append(result, namedVar.spec)
+	}
 
 	return result, nil
 }
@@ -301,7 +328,7 @@ func (c *GoToTSCompiler) hasTypeReferences(expr ast.Expr, typeSpecMap map[string
 
 // topologicalSort performs a topological sort of the dependency graph
 func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]string, error) {
-	// Kahn's algorithm for topological sorting
+	// Kahn's algorithm for topological sorting with deterministic ordering
 	inDegree := make(map[string]int)
 	graph := make(map[string][]string)
 
@@ -313,7 +340,12 @@ func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]st
 
 	// Build reverse graph and count in-degrees
 	for node, deps := range dependencies {
-		for _, dep := range deps {
+		// Sort dependencies for consistent output
+		sortedDeps := make([]string, len(deps))
+		copy(sortedDeps, deps)
+		sort.Strings(sortedDeps)
+
+		for _, dep := range sortedDeps {
 			if _, exists := inDegree[dep]; exists {
 				graph[dep] = append(graph[dep], node)
 				inDegree[node]++
@@ -321,29 +353,40 @@ func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]st
 		}
 	}
 
-	// Find nodes with no incoming edges
+	// Sort neighbors in graph for consistency
+	for node := range graph {
+		sort.Strings(graph[node])
+	}
+
+	// Find nodes with no incoming edges and sort them
 	var queue []string
 	for node, degree := range inDegree {
 		if degree == 0 {
 			queue = append(queue, node)
 		}
 	}
+	sort.Strings(queue) // Sort initial queue for deterministic output
 
 	var result []string
 
 	for len(queue) > 0 {
-		// Remove node from queue
+		// Remove node from queue (already sorted)
 		current := queue[0]
 		queue = queue[1:]
 		result = append(result, current)
 
-		// Remove edges from current node
+		// Collect new zero-degree nodes
+		var newZeroNodes []string
 		for _, neighbor := range graph[current] {
 			inDegree[neighbor]--
 			if inDegree[neighbor] == 0 {
-				queue = append(queue, neighbor)
+				newZeroNodes = append(newZeroNodes, neighbor)
 			}
 		}
+
+		// Sort new zero-degree nodes and add to queue
+		sort.Strings(newZeroNodes)
+		queue = append(queue, newZeroNodes...)
 	}
 
 	// Check for cycles

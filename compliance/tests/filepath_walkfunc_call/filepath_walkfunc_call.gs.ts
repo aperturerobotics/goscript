@@ -9,6 +9,16 @@ import * as filepath from "@goscript/path/filepath/index.js"
 
 import * as time from "@goscript/time/index.js"
 
+export type Filesystem = null | {
+	ReadDir(path: string): [$.Slice<os.FileInfo>, $.GoError]
+}
+
+$.registerInterfaceType(
+  'Filesystem',
+  null, // Zero value for interface is null
+  [{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "ModTime", args: [], returns: [{ type: "Time" }] }, { name: "Mode", args: [], returns: [{ type: "FileMode" }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }] } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
+);
+
 export class MockFileInfo {
 	public get name(): string {
 		return this._fields.name.value
@@ -120,16 +130,6 @@ export class MockFilesystem {
 	  {}
 	);
 }
-
-export type Filesystem = null | {
-	ReadDir(path: string): [$.Slice<os.FileInfo>, $.GoError]
-}
-
-$.registerInterfaceType(
-  'Filesystem',
-  null, // Zero value for interface is null
-  [{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "ModTime", args: [], returns: [{ type: "Time" }] }, { name: "Mode", args: [], returns: [{ type: "FileMode" }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }] } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
 
 // This is the exact function signature from the user's example
 // walkFn is filepath.WalkFunc which should be nullable and need ! operator

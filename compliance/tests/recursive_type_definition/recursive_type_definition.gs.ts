@@ -3,6 +3,16 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
+export type A = null | {
+	MethodA(a: A): void
+}
+
+$.registerInterfaceType(
+  'A',
+  null, // Zero value for interface is null
+  [{ name: "MethodA", args: [{ name: "a", type: "A" }], returns: [] }]
+);
+
 export class B {
 	public _fields: {
 	}
@@ -49,16 +59,6 @@ $.registerInterfaceType(
   'D',
   null, // Zero value for interface is null
   [{ name: "MethodD", args: [{ name: "c", type: "C" }], returns: [] }]
-);
-
-export type A = null | {
-	MethodA(a: A): void
-}
-
-$.registerInterfaceType(
-  'A',
-  null, // Zero value for interface is null
-  [{ name: "MethodA", args: [{ name: "a", type: "A" }], returns: [] }]
 );
 
 export async function main(): Promise<void> {

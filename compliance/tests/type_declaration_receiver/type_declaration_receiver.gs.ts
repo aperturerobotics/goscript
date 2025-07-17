@@ -3,24 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
-export type FileMode = number;
-
-export function FileMode_String(fm: FileMode): string {
-	if (fm == 0) {
-		return "none"
-	}
-	return "some"
-}
-
-export function FileMode_IsZero(fm: FileMode): boolean {
-	return fm == 0
-}
-
-export function FileMode_Add(fm: FileMode, val: number): FileMode {
-	return (fm + val as FileMode)
-}
-
-
 export type CustomString = string;
 
 export function CustomString_Length(cs: CustomString): number {
@@ -45,6 +27,24 @@ export function CustomString_Upper(cs: CustomString): string {
 		}
 	}
 	return result
+}
+
+
+export type FileMode = number;
+
+export function FileMode_String(fm: FileMode): string {
+	if (fm == 0) {
+		return "none"
+	}
+	return "some"
+}
+
+export function FileMode_IsZero(fm: FileMode): boolean {
+	return fm == 0
+}
+
+export function FileMode_Add(fm: FileMode, val: number): FileMode {
+	return (fm + val as FileMode)
 }
 
 

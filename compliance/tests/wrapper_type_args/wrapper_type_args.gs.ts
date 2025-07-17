@@ -7,17 +7,6 @@ import * as fmt from "@goscript/fmt/index.js"
 
 import * as os from "@goscript/os/index.js"
 
-export type MyMode = os.FileMode;
-
-export function MyMode_IsExecutable(m: MyMode): boolean {
-	return ((m & 0o111)) != 0
-}
-
-export function MyMode_String(m: MyMode): string {
-	return fmt.Sprintf("%o", m)
-}
-
-
 export type DirInterface = null | {
 	MkdirAll(path: string, perm: os.FileMode): $.GoError
 }
@@ -57,6 +46,17 @@ export class MyDir {
 	  {}
 	);
 }
+
+export type MyMode = os.FileMode;
+
+export function MyMode_IsExecutable(m: MyMode): boolean {
+	return ((m & 0o111)) != 0
+}
+
+export function MyMode_String(m: MyMode): string {
+	return fmt.Sprintf("%o", m)
+}
+
 
 // Function that takes wrapper type directly
 export function TestFileMode(mode: os.FileMode): void {

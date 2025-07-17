@@ -3,17 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js";
 
-export type Reader = null | {
-	// Read reads data from the reader.
-	Read(_p0: $.Bytes): [number, $.GoError]
-}
-
-$.registerInterfaceType(
-  'Reader',
-  null, // Zero value for interface is null
-  [{ name: "Read", args: [{ name: "", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
-
 export type Closer = null | {
 	Close(): $.GoError
 }
@@ -22,14 +11,6 @@ $.registerInterfaceType(
   'Closer',
   null, // Zero value for interface is null
   [{ name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
-
-export type ReadCloser = null | Reader & Closer
-
-$.registerInterfaceType(
-  'ReadCloser',
-  null, // Zero value for interface is null
-  []
 );
 
 export class MyStruct {
@@ -64,6 +45,25 @@ export class MyStruct {
 	  {}
 	);
 }
+
+export type ReadCloser = null | Reader & Closer
+
+$.registerInterfaceType(
+  'ReadCloser',
+  null, // Zero value for interface is null
+  []
+);
+
+export type Reader = null | {
+	// Read reads data from the reader.
+	Read(_p0: $.Bytes): [number, $.GoError]
+}
+
+$.registerInterfaceType(
+  'Reader',
+  null, // Zero value for interface is null
+  [{ name: "Read", args: [{ name: "", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
+);
 
 export async function main(): Promise<void> {
 	let rwc: ReadCloser = null
