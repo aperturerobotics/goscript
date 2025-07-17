@@ -1,0 +1,8 @@
+Parse result: BasicLit: 42
+Parse result: BinaryExpr with operator: +
+Parse result: CallExpr: len
+Parse result: CompositeLit (composite literal)
+Parse result: Function: add
+Parse result: Function: main
+Parse result: Package: main
+go/parser test finished
