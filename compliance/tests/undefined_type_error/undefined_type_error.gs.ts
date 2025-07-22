@@ -189,15 +189,15 @@ export class printer {
 
 	public init(): void {
 		const p = this
-		p.fmt = $.markAsStructValue(new formatter({}))
+		p!.fmt = $.markAsStructValue(new formatter({}))
 	}
 
 	public format(verb: number): void {
 		const p = this
-		if (p.fmt.minus) {
+		if (p!.fmt.minus) {
 			console.log("minus flag set")
 		}
-		if (p.fmt.plus) {
+		if (p!.fmt.plus) {
 			console.log("plus flag set")
 		}
 	}
@@ -214,8 +214,8 @@ export class printer {
 
 export async function main(): Promise<void> {
 	let p = new printer({})
-	p.init()
-	p.format(100)
+	p!.init()
+	p!.format(100)
 	console.log("Formatter test completed")
 }
 

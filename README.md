@@ -1,4 +1,4 @@
-# GoScript
+# GoScript [Development Preview]
 
 [![GoDoc Widget]][GoDoc] [![Go Report Card Widget]][Go Report Card] [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/aperturerobotics/goscript)
 
@@ -7,43 +7,55 @@
 [Go Report Card Widget]: https://goreportcard.com/badge/github.com/aperturerobotics/goscript
 [Go Report Card]: https://goreportcard.com/report/github.com/aperturerobotics/goscript
 
+## ⚠️ Development Preview Notice
+
+**This project is currently in active development and should be considered experimental.** GoScript is a work-in-progress prototype that may have bugs, incomplete features, and breaking changes. We're actively iterating on the compiler and welcome your feedback!
+
+🐛 **Found an issue?** Please [open an issue](https://github.com/aperturerobotics/goscript/issues) and we'll fix it.
+
+🤖 **AI-Powered Development:** This project is heavily AI-written using advanced code generation techniques. We use Roo Code and Cursor AI modes for debugging and iterating on compliance tests. Once the prototype fully works on advanced use cases, we plan to manually review and clean up the entire codebase by hand.
+
 ## What is GoScript?
 
-GoScript is a **Go to TypeScript compiler** that translates Go code to TypeScript at the AST level. Perfect for sharing algorithms and business logic between Go backends and TypeScript frontends.
+GoScript is an experimental **Go to TypeScript compiler** that translates Go code to TypeScript at the AST level. The goal is to enable sharing algorithms and business logic between Go backends and TypeScript frontends.
 
 > Right now goscript looks pretty cool if you problem is "I want this self-sufficient algorithm be available in Go and JS runtimes". gopherjs's ambition, however, has always been "any valid Go program can run in a browser". There is a lot that goes on in gopherjs that is necessary for supporting the standard library, which goes beyond cross-language translation.
 >
 > &mdash; [nevkontakte](https://gophers.slack.com/archives/C039C0R2T/p1745870396945719), developer of [GopherJS](https://github.com/gopherjs/gopherjs)
 
-### 🎯 Why GoScript?
+### 🎯 Why GoScript? (When Complete)
 
-**Write once, run everywhere.** Share your Go algorithms, business logic, and data structures seamlessly between your backend and frontend without maintaining two codebases.
+**The vision:** Write once, run everywhere. Share your Go algorithms, business logic, and data structures seamlessly between your backend and frontend without maintaining two codebases.
 
-✅ **Perfect for:**
+🔬 **Experimental features being developed:**
 - Sharing business logic between Go services and web apps
 - Porting Go algorithms to run in browsers
 - Building TypeScript libraries from existing Go code
 - Full-stack teams that love Go's simplicity
 
-⚠️ **What's supported:**
-GoScript compiles a powerful subset of Go:
-- Structs, interfaces, methods, and functions
-- Channels and goroutines (translated to async/await)
-- Slices, maps, and most built-in types
-- Basic reflection support
-- Standard control flow (if, for, switch, etc.)
+⚠️ **Current development status:**
+GoScript is working on compiling a subset of Go:
+- ✅ Basic structs, interfaces, methods, and functions
+- 🚧 Channels and goroutines (translating to async/await)
+- 🚧 Slices, maps, and built-in types
+- 🚧 Basic reflection support
+- ✅ Standard control flow (if, for, switch, etc.)
 
-**Current limitations:**
+**Known limitations in this preview:**
 - Uses JavaScript `number` type (64-bit float, not Go's int types)
 - No pointer arithmetic (`uintptr`) or `unsafe` package
 - No complex numbers
-- Limited standard library (growing rapidly)
+- Very limited standard library (expanding)
+- Many edge cases not yet handled
+- Performance not yet optimized
 
-If you're building algorithms, business logic, or data processing code, GoScript has you covered! 🚀
+**This is a prototype!** Expect bugs and missing features. We're rapidly iterating to support more advanced use cases.
 
 📖 **Learn more:** [Design document](./design/DESIGN.md) | [Compliance tests](./compliance/COMPLIANCE.md)
 
-## 🚀 Get Started in 2 Minutes
+## 🚀 Try the Development Preview
+
+> **Warning:** This is experimental software. Features may be incomplete or broken. Please report any issues you encounter!
 
 ### Installation
 
@@ -52,17 +64,19 @@ If you're building algorithms, business logic, or data processing code, GoScript
 go install github.com/aperturerobotics/goscript/cmd/goscript@latest
 ```
 
-**Option 2: NPM**
+**Option 2: NPM** (if available)
 ```bash
 npm install -g goscript
 ```
 
-### Your First Compilation
+### Your First Compilation (Experimental)
 
 ```bash
-# Compile your Go package to TypeScript
+# Try compiling your Go package to TypeScript
 goscript compile --package . --output ./dist
 ```
+
+**Note:** Many Go packages may not compile successfully yet. Start with simple code and gradually test more complex features.
 
 ## 📦 Using Generated Code in Your Project
 
@@ -166,7 +180,9 @@ const searchUser = (email: string) => {
 ```
 
 
-## 💡 See It In Action
+## 💡 See It In Action (When Working)
+
+> **Disclaimer:** These examples represent the target functionality. Your mileage may vary with the current development preview.
 
 ### Example: User Management
 
@@ -298,21 +314,10 @@ async function handleMessages() {
 }
 ```
 
-## 🚀 What's Next?
-
-**Current Status:**
-- ✅ Core language features (structs, methods, interfaces)
-- ✅ Async/await for goroutines and channels  
-- ✅ Basic reflection support
-- ✅ Most control flow and data types
-
-**Coming Soon:**
-- 📦 Expanded standard library
-- 🧪 Go test → TypeScript test conversion
-- ⚡ Performance optimizations
-- 🔧 Better tooling integration
-
-Check the [compliance tests](./compliance/COMPLIANCE.md) for detailed progress.
+**How You Can Help:**
+- Try GoScript on your code and [report issues](https://github.com/aperturerobotics/goscript/issues)
+- Check the [compliance tests](./compliance/COMPLIANCE.md) for current progress
+- Contribute test cases for edge cases you discover
 
 ## License
 

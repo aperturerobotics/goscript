@@ -17,7 +17,7 @@
         "../../../gs/*",
         "../../../compliance/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/compliance/tests/async_method_missing_async/*": [
+      "@goscript/github.com/aperturerobotics/goscript/compliance/tests/promise_return_type/*": [
         "./*"
       ]
     },
@@ -26,7 +26,7 @@
   },
   "extends": "../../../tsconfig.json",
   "include": [
-    "async_method_missing_async.gs.ts",
-    "index.ts"
+    "index.ts",
+    "promise_return_type.gs.ts"
   ]
 }

@@ -2459,25 +2459,36 @@ func (v *analysisVisitor) isMethodAsyncFromSelection(selExpr *ast.SelectorExpr, 
 		return status
 	}
 
-	// Only try to analyze methods for packages that don't have metadata loaded
-	// If a package has metadata, we should rely solely on that metadata
-	if targetPkg := v.analysis.AllPackages[methodPkgPath]; targetPkg != nil {
-		// Check if this package has metadata loaded by checking if any method from this package
-		// exists in MethodAsyncStatus. If so, don't analyze - rely on metadata only.
-		hasMetadata := false
-		for key := range v.analysis.MethodAsyncStatus {
-			if key.PackagePath == methodPkgPath {
-				hasMetadata = true
-				break
+	// Check if this is a method in the same package we're currently analyzing
+	if methodPkgPath == v.pkg.Types.Path() {
+		// This is a method in the same package - we should analyze it if we haven't yet
+		if funcDecl := v.findMethodDecl(receiverType, methodObj.Name(), v.pkg); funcDecl != nil {
+			v.analyzeMethodAsync(funcDecl, v.pkg)
+			if status, exists := v.analysis.MethodAsyncStatus[methodKey]; exists {
+				return status
 			}
 		}
+	} else {
+		// Only try to analyze methods for packages that don't have metadata loaded
+		// If a package has metadata, we should rely solely on that metadata
+		if targetPkg := v.analysis.AllPackages[methodPkgPath]; targetPkg != nil {
+			// Check if this package has metadata loaded by checking if any method from this package
+			// exists in MethodAsyncStatus. If so, don't analyze - rely on metadata only.
+			hasMetadata := false
+			for key := range v.analysis.MethodAsyncStatus {
+				if key.PackagePath == methodPkgPath {
+					hasMetadata = true
+					break
+				}
+			}
 
-		// Only analyze if no metadata exists for this package
-		if !hasMetadata {
-			if funcDecl := v.findMethodDecl(receiverType, methodObj.Name(), targetPkg); funcDecl != nil {
-				v.analyzeMethodAsync(funcDecl, targetPkg)
-				if status, exists := v.analysis.MethodAsyncStatus[methodKey]; exists {
-					return status
+			// Only analyze if no metadata exists for this package
+			if !hasMetadata {
+				if funcDecl := v.findMethodDecl(receiverType, methodObj.Name(), targetPkg); funcDecl != nil {
+					v.analyzeMethodAsync(funcDecl, targetPkg)
+					if status, exists := v.analysis.MethodAsyncStatus[methodKey]; exists {
+						return status
+					}
 				}
 			}
 		}

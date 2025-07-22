@@ -49,9 +49,9 @@ export class Broadcast {
 	public async HoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null) => void) | null): Promise<void> {
 		const c = this
 		using __defer = new $.DisposableStack();
-		await c.mtx.Lock()
+		await c!.mtx.Lock()
 		__defer.defer(() => {
-			c.mtx.Unlock()
+			c!.mtx.Unlock()
 		});
 		cb!(c!.broadcastLocked.bind(c!), c!.getWaitChLocked.bind(c!))
 	}
@@ -61,11 +61,11 @@ export class Broadcast {
 	public TryHoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null) => void) | null): boolean {
 		const c = this
 		using __defer = new $.DisposableStack();
-		if (!c.mtx.TryLock()) {
+		if (!c!.mtx.TryLock()) {
 			return false
 		}
 		__defer.defer(() => {
-			c.mtx.Unlock()
+			c!.mtx.Unlock()
 		});
 		cb!(c!.broadcastLocked.bind(c!), c!.getWaitChLocked.bind(c!))
 		return true
@@ -79,15 +79,15 @@ export class Broadcast {
 		let holdBroadcastLock = async (lock: boolean): Promise<void> => {
 			using __defer = new $.DisposableStack();
 			if (lock) {
-				await c.mtx.Lock()
+				await c!.mtx.Lock()
 			}
 			// use defer to catch panic cases
 			__defer.defer(() => {
-				c.mtx.Unlock()
+				c!.mtx.Unlock()
 			});
 			cb!(c!.broadcastLocked.bind(c!), c!.getWaitChLocked.bind(c!))
 		}
-		if (c.mtx.TryLock()) {
+		if (c!.mtx.TryLock()) {
 			holdBroadcastLock!(false)
 		}
 		 else {
@@ -115,7 +115,7 @@ export class Broadcast {
 
 			let done: boolean = false
 			let err: $.GoError = null
-			await c.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
+			await c!.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 				;[done, err] = cb!(broadcast, getWaitCh)
 				if (!done && err == null) {
 					waitCh = getWaitCh!()
@@ -153,19 +153,19 @@ export class Broadcast {
 	// broadcastLocked is the implementation of Broadcast while mtx is locked.
 	public broadcastLocked(): void {
 		const c = this
-		if (c.ch != null) {
-			c.ch.close()
-			c.ch = null
+		if (c!.ch != null) {
+			c!.ch.close()
+			c!.ch = null
 		}
 	}
 
 	// getWaitChLocked is the implementation of GetWaitCh while mtx is locked.
 	public getWaitChLocked(): $.Channel<{  }> | null {
 		const c = this
-		if (c.ch == null) {
-			c.ch = $.makeChannel<{  }>(0, {}, 'both')
+		if (c!.ch == null) {
+			c!.ch = $.makeChannel<{  }>(0, {}, 'both')
 		}
-		return c.ch
+		return c!.ch
 	}
 
 	// Register this type with the runtime type system

@@ -1,0 +1,3 @@
+Original: [1 2 3 4 5]
+After delete: [1 4 5]
+Index: 2, Found: true

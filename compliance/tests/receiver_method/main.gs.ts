@@ -32,7 +32,7 @@ export class MyStruct {
 	// Method that uses the receiver
 	public UsesReceiver(): number {
 		const m = this
-		return m.Value
+		return m!.Value
 	}
 
 	// Method that doesn't use the receiver
@@ -52,7 +52,7 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let s = new MyStruct({Value: 10})
-	console.log(s.UsesReceiver())
-	console.log(s.DoesNotUseReceiver())
+	console.log(s!.UsesReceiver())
+	console.log(s!.DoesNotUseReceiver())
 }
 

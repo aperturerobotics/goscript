@@ -1,0 +1,23 @@
+# This test is expected to fail due to multiple issues in complex standard library package transpilation
+#
+# ISSUE: When using complex Go standard library packages like go/scanner and go/token,
+# the automatic transpilation reveals multiple fundamental issues:
+# 1. Async/await mismatches in generated TypeScript
+# 2. Missing imports within transpiled packages 
+# 3. Type definition issues (missing types, incorrect Promise handling)
+# 4. Variable scoping and destructuring problems
+#
+# This test demonstrates that transpiling complex Go packages like go/scanner exposes
+# cascading issues throughout the transpiler that need to be addressed systematically.
+#
+# The main error patterns include:
+# - "await" can only be used inside an "async" function
+# - Missing type definitions (serializedFileSet, etc.)
+# - Sort interface compatibility issues
+# - Promise type handling problems
+#
+# TO FIX: This requires systematic improvements to:
+# 1. Async propagation (partially fixed)
+# 2. Import generation for transpiled packages
+# 3. Type definition generation
+# 4. Promise/async handling throughout the transpiler 

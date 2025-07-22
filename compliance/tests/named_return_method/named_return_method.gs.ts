@@ -33,15 +33,15 @@ export class content {
 		const c = this
 		let n: number = 0
 		let err: $.GoError = null
-		if (off < 0 || off >= ($.len(c.bytes) as number)) {
+		if (off < 0 || off >= ($.len(c!.bytes) as number)) {
 			err = null // Simulate an error scenario
 			return [n, err]
 		}
 		let l = ($.len(b) as number)
-		if (off + l > ($.len(c.bytes) as number)) {
-			l = ($.len(c.bytes) as number) - off
+		if (off + l > ($.len(c!.bytes) as number)) {
+			l = ($.len(c!.bytes) as number) - off
 		}
-		let btr = $.goSlice(c.bytes, off, off + l)
+		let btr = $.goSlice(c!.bytes, off, off + l)
 		n = $.copy(b, btr)
 		return [n, err]
 	}
@@ -81,7 +81,7 @@ export async function main(): Promise<void> {
 
 	// Test ReadAt method
 	let buf = new Uint8Array(5)
-	let [n1, err1] = c.ReadAt(buf, 0)
+	let [n1, err1] = c!.ReadAt(buf, 0)
 	console.log(n1) // Expected: 5
 
 	// Expected: nil
@@ -95,7 +95,7 @@ export async function main(): Promise<void> {
 
 	// Test ReadAt with different offset
 	let buf2 = new Uint8Array(6)
-	let [n2, err2] = c.ReadAt(buf2, 7)
+	let [n2, err2] = c!.ReadAt(buf2, 7)
 	console.log(n2) // Expected: 6
 
 	// Expected: nil
@@ -108,17 +108,17 @@ export async function main(): Promise<void> {
 	console.log($.bytesToString(buf2)) // Expected: World!
 
 	// Test ProcessData method
-	let [r1, s1, v1] = c.ProcessData(15)
+	let [r1, s1, v1] = c!.ProcessData(15)
 	console.log(r1) // Expected: 30
 	console.log(s1) // Expected: high
 	console.log(v1) // Expected: true
 
-	let [r2, s2, v2] = c.ProcessData(5)
+	let [r2, s2, v2] = c!.ProcessData(5)
 	console.log(r2) // Expected: 10
 	console.log(s2) // Expected: low
 	console.log(v2) // Expected: true
 
-	let [r3, s3, v3] = c.ProcessData(-1)
+	let [r3, s3, v3] = c!.ProcessData(-1)
 	console.log(r3) // Expected: -2
 	console.log(s3) // Expected: invalid
 	console.log(v3) // Expected: false

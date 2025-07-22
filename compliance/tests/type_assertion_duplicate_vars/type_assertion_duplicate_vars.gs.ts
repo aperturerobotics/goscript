@@ -126,13 +126,13 @@ export async function main(): Promise<void> {
 	let _gs_ta_val_e051: ConcreteA
 	let _gs_ta_ok_e051: boolean
 	({ value: _gs_ta_val_e051, ok: _gs_ta_ok_e051 } = $.typeAssert<ConcreteA>(iface, 'ConcreteA'))
-	c.hasA = _gs_ta_ok_e051
+	c!.hasA = _gs_ta_ok_e051
 	let _gs_ta_val_d761: ConcreteB
 	let _gs_ta_ok_d761: boolean
 	({ value: _gs_ta_val_d761, ok: _gs_ta_ok_d761 } = $.typeAssert<ConcreteB>(iface, 'ConcreteB'))
-	c.hasB = _gs_ta_ok_d761
+	c!.hasB = _gs_ta_ok_d761
 
-	console.log("hasA:", c.hasA)
-	console.log("hasB:", c.hasB)
+	console.log("hasA:", c!.hasA)
+	console.log("hasB:", c!.hasB)
 }
 

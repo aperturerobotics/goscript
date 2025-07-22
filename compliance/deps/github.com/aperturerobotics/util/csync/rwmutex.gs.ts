@@ -79,19 +79,19 @@ export class RWMutex {
 		const m = this
 		let status: atomic.Int32 = new atomic.Int32()
 		let waitCh: $.Channel<{  }> | null = null
-		await m.bcast.HoldLock((_: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
+		await m!.bcast.HoldLock((_: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 			if (write) {
-				if (m.nreaders != 0 || m.writing) {
-					m.writeWaiting++
+				if (m!.nreaders != 0 || m!.writing) {
+					m!.writeWaiting++
 					waitCh = getWaitCh!()
 				}
 				 else {
-					m.writing = true
+					m!.writing = true
 					status.Store(1)
 				}
 			}
-			 else if (!m.writing && m.writeWaiting == 0) {
-				m.nreaders++
+			 else if (!m!.writing && m!.writeWaiting == 0) {
+				m!.nreaders++
 				status.Store(1)
 			}
 			 else {
@@ -107,7 +107,7 @@ export class RWMutex {
 			// 0: waiting for lock
 
 			// 1: we have the lock
-			await m.bcast.HoldLock((broadcast: (() => void) | null, _: (() => $.Channel<{  }> | null) | null): void => {
+			await m!.bcast.HoldLock((broadcast: (() => void) | null, _: (() => $.Channel<{  }> | null) | null): void => {
 
 				// 0: waiting for lock
 
@@ -115,16 +115,16 @@ export class RWMutex {
 				if (pre == 0) {
 					// 0: waiting for lock
 					if (write) {
-						m.writeWaiting--
+						m!.writeWaiting--
 					}
 				}
 				 else {
 					// 1: we have the lock
 					if (write) {
-						m.writing = false
+						m!.writing = false
 					}
 					 else {
-						m.nreaders--
+						m!.nreaders--
 					}
 					broadcast!()
 				}
@@ -157,19 +157,19 @@ export class RWMutex {
 			}
 			// If _select_has_return_a8db is false, continue execution
 
-			await m.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
+			await m!.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 				if (write) {
-					if (m.nreaders == 0 && !m.writing) {
-						m.writeWaiting--
-						m.writing = true
+					if (m!.nreaders == 0 && !m!.writing) {
+						m!.writeWaiting--
+						m!.writing = true
 						status.Store(1)
 					}
 					 else {
 						waitCh = getWaitCh!()
 					}
 				}
-				 else if (!m.writing && m.writeWaiting == 0) {
-					m.nreaders++
+				 else if (!m!.writing && m!.writeWaiting == 0) {
+					m!.nreaders++
 					status.Store(1)
 				}
 				 else {
@@ -190,17 +190,17 @@ export class RWMutex {
 	public async TryLock(write: boolean): Promise<[(() => void) | null, boolean]> {
 		const m = this
 		let unlocked: atomic.Bool = new atomic.Bool()
-		await m.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
+		await m!.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 			if (write) {
-				if (m.nreaders != 0 || m.writing) {
+				if (m!.nreaders != 0 || m!.writing) {
 					unlocked.Store(true)
 				}
 				 else {
-					m.writing = true
+					m!.writing = true
 				}
 			}
-			 else if (!m.writing && m.writeWaiting == 0) {
-				m.nreaders++
+			 else if (!m!.writing && m!.writeWaiting == 0) {
+				m!.nreaders++
 			}
 			 else {
 				unlocked.Store(true)
@@ -214,12 +214,12 @@ export class RWMutex {
 				return 
 			}
 
-			await m.bcast.HoldLock((broadcast: (() => void) | null, _: (() => $.Channel<{  }> | null) | null): void => {
+			await m!.bcast.HoldLock((broadcast: (() => void) | null, _: (() => $.Channel<{  }> | null) | null): void => {
 				if (write) {
-					m.writing = false
+					m!.writing = false
 				}
 				 else {
-					m.nreaders--
+					m!.nreaders--
 				}
 				broadcast!()
 			})
@@ -307,32 +307,32 @@ export class RWMutexLocker {
 	// Lock implements the sync.Locker interface.
 	public async Lock(): Promise<void> {
 		const l = this
-		let [release, err] = await l.m!.Lock(context.Background(), l.write)
+		let [release, err] = await l!.m!.Lock(context.Background(), l!.write)
 		if (err != null) {
 			$.panic(errors.Wrap(err, "csync: failed RWMutexLocker Lock"))
 		}
-		await l.mtx.Lock()
-		l.rels = $.append(l.rels, release)
-		l.mtx.Unlock()
+		await l!.mtx.Lock()
+		l!.rels = $.append(l!.rels, release)
+		l!.mtx.Unlock()
 	}
 
 	// Unlock implements the sync.Locker interface.
 	public async Unlock(): Promise<void> {
 		const l = this
-		await l.mtx.Lock()
-		if ($.len(l.rels) == 0) {
-			l.mtx.Unlock()
+		await l!.mtx.Lock()
+		if ($.len(l!.rels) == 0) {
+			l!.mtx.Unlock()
 			$.panic("csync: unlock of unlocked RWMutexLocker")
 		}
-		let rel = l.rels![$.len(l.rels) - 1]
-		if ($.len(l.rels) == 1) {
-			l.rels = null
+		let rel = l!.rels![$.len(l!.rels) - 1]
+		if ($.len(l!.rels) == 1) {
+			l!.rels = null
 		}
 		 else {
-			l.rels![$.len(l.rels) - 1] = null
-			l.rels = $.goSlice(l.rels, undefined, $.len(l.rels) - 1)
+			l!.rels![$.len(l!.rels) - 1] = null
+			l!.rels = $.goSlice(l!.rels, undefined, $.len(l!.rels) - 1)
 		}
-		l.mtx.Unlock()
+		l!.mtx.Unlock()
 		rel!()
 	}
 

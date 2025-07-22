@@ -51,11 +51,11 @@ export class StringReader {
 
 	public Read(p: $.Bytes): [number, $.GoError] {
 		const s = this
-		if (s.pos >= $.len(s.data)) {
+		if (s!.pos >= $.len(s!.data)) {
 			return [0, null]
 		}
-		let n = $.copy(p, $.stringToBytes($.sliceString(s.data, s.pos, undefined)))
-		s.pos += n
+		let n = $.copy(p, $.stringToBytes($.sliceString(s!.data, s!.pos, undefined)))
+		s!.pos += n
 		return [n, null]
 	}
 

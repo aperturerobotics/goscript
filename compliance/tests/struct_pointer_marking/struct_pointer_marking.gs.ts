@@ -169,7 +169,7 @@ export async function main(): Promise<void> {
 				console.log("testItems[", i, "] is MyStruct value:", v.Value)
 			}},
 			{ types: [{kind: $.TypeKind.Pointer, elemType: 'MyStruct'}], body: (v) => {
-				console.log("testItems[", i, "] is *MyStruct pointer:", v.Value)
+				console.log("testItems[", i, "] is *MyStruct pointer:", v!.Value)
 			}},
 			{ types: [{kind: $.TypeKind.Basic, name: 'number'}], body: (v) => {
 				console.log("testItems[", i, "] is int:", v)

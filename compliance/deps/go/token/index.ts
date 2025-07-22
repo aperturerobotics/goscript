@@ -1,0 +1,5 @@
+export { NewFileSet, NoPos, Pos_IsValid } from "./position.gs.js"
+export { File, FileSet, Position } from "./position.gs.js"
+export type { Pos } from "./position.gs.js"
+export { ADD, ADD_ASSIGN, AND, AND_ASSIGN, AND_NOT, AND_NOT_ASSIGN, ARROW, ASSIGN, BREAK, CASE, CHAN, CHAR, COLON, COMMA, COMMENT, CONST, CONTINUE, DEC, DEFAULT, DEFER, DEFINE, ELLIPSIS, ELSE, EOF, EQL, FALLTHROUGH, FLOAT, FOR, FUNC, GEQ, GO, GOTO, GTR, HighestPrec, IDENT, IF, ILLEGAL, IMAG, IMPORT, INC, INT, INTERFACE, IsExported, IsIdentifier, IsKeyword, LAND, LBRACE, LBRACK, LEQ, LOR, LPAREN, LSS, Lookup, LowestPrec, MAP, MUL, MUL_ASSIGN, NEQ, NOT, OR, OR_ASSIGN, PACKAGE, PERIOD, QUO, QUO_ASSIGN, RANGE, RBRACE, RBRACK, REM, REM_ASSIGN, RETURN, RPAREN, SELECT, SEMICOLON, SHL, SHL_ASSIGN, SHR, SHR_ASSIGN, STRING, STRUCT, SUB, SUB_ASSIGN, SWITCH, TILDE, TYPE, Token_IsKeyword, Token_IsLiteral, Token_IsOperator, Token_Precedence, Token_String, UnaryPrec, VAR, XOR, XOR_ASSIGN } from "./token.gs.js"
+export type { Token } from "./token.gs.js"

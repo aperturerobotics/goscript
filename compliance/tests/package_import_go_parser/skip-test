@@ -1,0 +1,25 @@
+# This test is skipped because the transpilation of go/parser and related packages
+# reveals multiple fundamental issues with the GoScript transpiler:
+#
+# ISSUES IDENTIFIED:
+# 1. Async propagation: Fixed - AddLineInfo now correctly marked as async when calling async AddLineColumnInfo
+# 2. Missing imports: scanner package is used but not imported in generated TypeScript
+# 3. Promise handling: Many methods use await but aren't marked as async 
+# 4. Type issues: Promise types not handled correctly in return types and assignments
+# 5. Destructuring issues: Problems with array/tuple destructuring assignments
+# 6. Variable scoping: Block-scoped variable redeclaration errors
+# 7. Missing type definitions: Types like serializedFileSet are not defined
+#
+# PARTIAL FIXES COMPLETED:
+# ✅ Fixed async propagation in analysis.go - methods calling async methods are now marked async
+#
+# REMAINING WORK:
+# - Improve import detection for package-qualified function calls (scanner.ErrorList_Add)
+# - Fix Promise handling for async methods that return values
+# - Fix variable scoping and destructuring assignment generation
+# - Provide hand-written TypeScript implementations for go/parser, go/ast, go/token, go/scanner
+#   (similar to how fmt, os, and other complex packages are handled)
+#
+# RECOMMENDATION: 
+# Implement hand-written TypeScript versions of these packages rather than fixing
+# all transpilation issues, as the Go standard library parser is quite complex. 

@@ -67,23 +67,23 @@ export class printer {
 
 	public free(): void {
 		const p = this
-		if ($.cap(p.buf!.data) > 64 * 1024) {
-			p.buf = null
+		if ($.cap(p!.buf!.data) > 64 * 1024) {
+			p!.buf = null
 		}
 		 else {
 			// Reset buffer
-			p.buf!.data = $.goSlice(p.buf!.data, undefined, 0)
+			p!.buf!.data = $.goSlice(p!.buf!.data, undefined, 0)
 		}
 	}
 
 	public checkCapacity(): number {
 		const p = this
-		return $.cap(p.buf!.data)
+		return $.cap(p!.buf!.data)
 	}
 
 	public getLength(): number {
 		const p = this
-		return $.len(p.buf!.data)
+		return $.len(p!.buf!.data)
 	}
 
 	// Register this type with the runtime type system
@@ -100,17 +100,17 @@ export async function main(): Promise<void> {
 	let buf = new buffer({data: $.makeSlice<number>(0, 100000, 'byte')})
 	let p = new printer({buf: buf})
 
-	console.log("Initial capacity:", p.checkCapacity())
-	console.log("Initial length:", p.getLength())
+	console.log("Initial capacity:", p!.checkCapacity())
+	console.log("Initial length:", p!.getLength())
 
 	// Add some data
-	p.buf!.data = $.append(p.buf!.data, ...$.stringToBytes("hello world"))
-	console.log("After append length:", p.getLength())
+	p!.buf!.data = $.append(p!.buf!.data, ...$.stringToBytes("hello world"))
+	console.log("After append length:", p!.getLength())
 
 	// Test free
-	p.free()
-	if (p.buf != null) {
-		console.log("Buffer not freed, capacity:", p.checkCapacity())
+	p!.free()
+	if (p!.buf != null) {
+		console.log("Buffer not freed, capacity:", p!.checkCapacity())
 	}
 	 else {
 		console.log("Buffer was freed")

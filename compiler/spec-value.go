@@ -366,19 +366,21 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 		return nil
 	}
 
-	// --- Multi-variable declaration (existing logic seems okay, but less common for pointers) ---
-	c.tsw.WriteLiterally("let ")
-	c.tsw.WriteLiterally("[") // Use array destructuring for multi-assign
-	for i, name := range a.Names {
-		if i != 0 {
-			c.tsw.WriteLiterally(", ")
-		}
-		c.tsw.WriteLiterally(c.sanitizeIdentifier(name.Name))
-		// TODO: Add type annotations for multi-var declarations if possible/needed
-	}
-	c.tsw.WriteLiterally("]")
+	// --- Multi-variable declaration with proper individual declarations ---
+	// Instead of using array destructuring which creates undefined types,
+	// generate individual variable declarations with proper types and zero values
 	if len(a.Values) > 0 {
-		// TODO: handle other kinds of assignment += -= etc.
+		// Has initializers - use array destructuring for multiple assignments
+		c.tsw.WriteLiterally("let ")
+		c.tsw.WriteLiterally("[") // Use array destructuring for multi-assign
+		for i, name := range a.Names {
+			if i != 0 {
+				c.tsw.WriteLiterally(", ")
+			}
+			c.tsw.WriteLiterally(c.sanitizeIdentifier(name.Name))
+		}
+		c.tsw.WriteLiterally("]")
+
 		c.tsw.WriteLiterally(" = ")
 		if len(a.Values) == 1 && len(a.Names) > 1 {
 			// Assign from a single multi-return value
@@ -398,13 +400,48 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 			}
 			c.tsw.WriteLiterally("]")
 		}
+		c.tsw.WriteLine("")
 	} else {
-		// No initializer, assign default values (complex for multi-assign)
-		// For simplicity, assign default array based on context (needs improvement)
-		c.tsw.WriteLiterally(" = []") // Placeholder
-		// TODO: Assign correct zero values based on types
+		// No initializers - generate individual variable declarations with zero values
+		for _, name := range a.Names {
+			// Skip underscore variables
+			if name.Name == "_" {
+				continue
+			}
+
+			obj := c.pkg.TypesInfo.Defs[name]
+			if obj == nil {
+				return fmt.Errorf("could not resolve type for variable %v", name.Name)
+			}
+
+			goType := obj.Type()
+
+			// Check if exported and not inside function
+			isInsideFunction := false
+			if nodeInfo := c.analysis.NodeData[a]; nodeInfo != nil {
+				isInsideFunction = nodeInfo.IsInsideFunction
+			}
+
+			if name.IsExported() && !isInsideFunction {
+				c.tsw.WriteLiterally("export ")
+			}
+
+			c.tsw.WriteLiterally("let ")
+			c.tsw.WriteLiterally(c.sanitizeIdentifier(name.Name))
+			c.tsw.WriteLiterally(": ")
+
+			// Write type annotation - use AST-based type if available, otherwise infer from goType
+			if a.Type != nil {
+				c.WriteTypeExpr(a.Type)
+			} else {
+				c.WriteGoType(goType, GoTypeContextGeneral)
+			}
+
+			c.tsw.WriteLiterally(" = ")
+			c.WriteZeroValueForType(goType)
+			c.tsw.WriteLine("")
+		}
 	}
-	c.tsw.WriteLine("") // Use WriteLine instead of WriteLine(";")
 	return nil
 }
 

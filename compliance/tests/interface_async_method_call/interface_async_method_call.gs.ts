@@ -42,8 +42,8 @@ export class ChannelProcessor {
 
 	public async Process(data: number): Promise<number> {
 		const p = this
-		await $.chanSend(p.ch, data)
-		let result = await $.chanRecv(p.ch)
+		await $.chanSend(p!.ch, data)
+		let result = await $.chanRecv(p!.ch)
 		return result * 2
 	}
 
@@ -93,7 +93,7 @@ export class SimpleProcessor {
 
 	public GetResult(): number {
 		const p = this
-		return p.value
+		return p!.value
 	}
 
 	// Register this type with the runtime type system
