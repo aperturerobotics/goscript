@@ -6,6 +6,8 @@ github.com/aperturerobotics/json-iterator-lite v1.0.1-0.20240713111131-be6bf89c3
 github.com/aperturerobotics/json-iterator-lite v1.0.1-0.20240713111131-be6bf89c3008/go.mod h1:snaApCEDtrHHP6UWSLKiYNOZU9A5NyzccKenx9oZEzg=
 github.com/aperturerobotics/protobuf-go-lite v0.9.1 h1:P1knXKnwLJpVE8fmeXYGckKu79IhqUvKRdCfJNR0MwQ=
 github.com/aperturerobotics/protobuf-go-lite v0.9.1/go.mod h1:fULrxQxEBWKQm7vvju9AfjTp9yfHoLgwMQWTiZQ2tg0=
+github.com/aperturerobotics/protobuf-go-lite v0.10.0 h1:0jsPifWk3LGH96zT9Vqapac5OkHKPjuj7QRJwyhRj0s=
+github.com/aperturerobotics/protobuf-go-lite v0.10.0/go.mod h1:fULrxQxEBWKQm7vvju9AfjTp9yfHoLgwMQWTiZQ2tg0=
 github.com/aperturerobotics/util v1.31.0 h1:094JjGljJCyd6uq5HfbFR//GGsMgN362TOhvEh78JyI=
 github.com/aperturerobotics/util v1.31.0/go.mod h1:vGqsy9755l+MpoPgNvXn40EQu/Xn2n+BQ7XBNKHBirs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
