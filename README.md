@@ -55,7 +55,7 @@ GoScript is working on compiling a subset of Go:
 
 ## 🚀 Try It
 
-> **Warning:** This is experimental software. Features may be incomplete or broken. Please report any issues you encounter!
+> **Warning:** This is experimental software. Features may be incomplete or broken. Please report any issues!
 
 ### Installation
 
@@ -219,7 +219,7 @@ func FindUserByEmail(users []*User, email string) *User {
 goscript compile --package . --output ./dist
 ```
 
-**Generated TypeScript** (`user.ts`):
+**Generated TypeScript** (`user.gs.ts`):
 ```typescript
 export class User {
   public ID: number = 0
@@ -314,7 +314,8 @@ async function handleMessages() {
 }
 ```
 
-**How You Can Help:**
+## 🤝 How You Can Help
+
 - Try GoScript on your code and [report issues](https://github.com/aperturerobotics/goscript/issues)
 - Check the [compliance tests](./compliance/COMPLIANCE.md) for current progress
 - Contribute test cases for edge cases you discover

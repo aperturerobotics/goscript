@@ -195,7 +195,9 @@ func (c *GoToTSCompiler) writeStringRange(exp *ast.RangeStmt) error {
 		if ident, ok := exp.Value.(*ast.Ident); ok && ident.Name != "_" {
 			c.tsw.WriteLiterally("const ")
 			c.WriteIdent(ident, false)
-			c.tsw.WriteLiterally(" = _runes[i]") // TODO: should be indexVarName?
+			c.tsw.WriteLiterally(" = _runes[")
+			c.tsw.WriteLiterally(indexVarName)
+			c.tsw.WriteLiterally("]")
 			c.tsw.WriteLine("")
 		}
 	}
