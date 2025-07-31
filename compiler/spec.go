@@ -6,7 +6,6 @@ import (
 	"go/types"
 	"strings"
 
-	// types provides type information for Go types.
 	"github.com/pkg/errors"
 )
 
@@ -156,7 +155,11 @@ func (c *GoToTSCompiler) writeRegularFieldInitializer(fieldName string, fieldTyp
 
 	// Priority 2: Handle imported types with basic underlying types (like os.FileMode)
 	if c.isImportedBasicType(fieldType) {
-		c.writeImportedBasicTypeZeroValue(fieldType)
+		if err := c.writeImportedBasicTypeZeroValue(fieldType); err != nil {
+			// Emit diagnostic and conservative zero value to avoid silent fallback
+			c.tsw.WriteCommentInlinef(" writeImportedBasicTypeZeroValue error: %v ", err)
+			c.WriteZeroValueForType(fieldType)
+		}
 		return
 	}
 
@@ -220,14 +223,14 @@ func (c *GoToTSCompiler) isImportedBasicType(fieldType types.Type) bool {
 	return false
 }
 
-func (c *GoToTSCompiler) writeImportedBasicTypeZeroValue(fieldType types.Type) {
+func (c *GoToTSCompiler) writeImportedBasicTypeZeroValue(fieldType types.Type) error {
 	if named, ok := fieldType.(*types.Named); ok {
 		underlying := named.Underlying()
 		// Write zero value of underlying type with type casting
 		c.WriteZeroValueForType(underlying)
 		c.tsw.WriteLiterally(" as ")
 		c.WriteGoType(fieldType, GoTypeContextGeneral)
-		return
+		return nil
 	}
 
 	if alias, ok := fieldType.(*types.Alias); ok {
@@ -236,11 +239,12 @@ func (c *GoToTSCompiler) writeImportedBasicTypeZeroValue(fieldType types.Type) {
 		c.WriteZeroValueForType(underlying)
 		c.tsw.WriteLiterally(" as ")
 		c.WriteGoType(fieldType, GoTypeContextGeneral)
-		return
+		return nil
 	}
 
-	// Fallback (should not happen if isImportedBasicType was correct)
-	c.WriteZeroValueForType(fieldType)
+	// Reaching here indicates an internal inconsistency between isImportedBasicType and field kind
+	// Return an error to surface the issue to callers
+	return fmt.Errorf("writeImportedBasicTypeZeroValue: unexpected non-named/alias type %T", fieldType)
 }
 
 func (c *GoToTSCompiler) writeNamedTypeZeroValue(named *types.Named) {

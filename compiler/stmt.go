@@ -139,7 +139,7 @@ func (c *GoToTSCompiler) WriteStmtDecl(stmt *ast.DeclStmt) error {
 					return fmt.Errorf("failed to write type spec in declaration statement: %w", err)
 				}
 			} else {
-				c.tsw.WriteCommentLinef("unhandled spec in DeclStmt: %T", spec)
+				return fmt.Errorf("unhandled spec in DeclStmt: %T", spec)
 			}
 		}
 	} else {
@@ -854,7 +854,7 @@ func (c *GoToTSCompiler) WriteStmtSwitch(exp *ast.SwitchStmt) error {
 				return fmt.Errorf("failed to write case clause in switch statement: %w", err)
 			}
 		} else {
-			c.tsw.WriteCommentLinef("unhandled statement in switch body: %T", stmt)
+			return fmt.Errorf("unhandled statement in switch body: %T", stmt)
 		}
 	}
 
@@ -1107,7 +1107,7 @@ func (c *GoToTSCompiler) writeShadowedAssignmentWithoutTempVars(stmt *ast.Assign
 		}
 	}
 
-	var firstDecl = true
+	firstDecl := true
 	for i, lhsExpr := range stmt.Lhs {
 		if i > 0 {
 			c.tsw.WriteLiterally(", ")

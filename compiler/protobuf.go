@@ -12,29 +12,70 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// isProtobufType checks if a given type is a protobuf type by examining its package and name
+// isProtobufType checks if a given type is a protobuf type by examining its methods
+// and, when available, by verifying it implements the protobuf-go-lite Message interface.
 func (c *GoToTSCompiler) isProtobufType(typ types.Type) bool {
-	if namedType, ok := typ.(*types.Named); ok {
-		obj := namedType.Obj()
-		if obj != nil && obj.Pkg() != nil {
-			// Check if the type is defined in the current package and has a corresponding .pb.ts file
-			if obj.Pkg() == c.pkg.Types {
-				// Check if there's a .pb.ts file in the package that exports this type
-				// For now, we'll use a simple heuristic: if the type name ends with "Msg"
-				// and there's a .pb.ts file in the package, assume it's a protobuf type
-				typeName := obj.Name()
-				if strings.HasSuffix(typeName, "Msg") {
-					// Check if there are any .pb.ts files in this package
-					for _, fileName := range c.pkg.CompiledGoFiles {
-						if strings.HasSuffix(fileName, ".pb.go") {
-							return true
-						}
-					}
-				}
-			}
+	// Normalize to a named type if possible
+	var named *types.Named
+	switch t := typ.(type) {
+	case *types.Named:
+		named = t
+	case *types.Pointer:
+		if n, ok := t.Elem().(*types.Named); ok {
+			named = n
 		}
 	}
+	if named == nil {
+		return false
+	}
+
+	// Prefer interface-based detection when the protobuf-go-lite package is loaded
+	if iface := c.getProtobufMessageInterface(); iface != nil {
+		if types.Implements(named, iface) || types.Implements(types.NewPointer(named), iface) {
+			return true
+		}
+	}
+
+	// Fallback: method-set detection for common protobuf-go-lite methods
+	// Check both value and pointer method sets
+	if c.typeHasMethods(named, "MarshalVT", "UnmarshalVT") || c.typeHasMethods(types.NewPointer(named), "MarshalVT", "UnmarshalVT") {
+		return true
+	}
+
 	return false
+}
+
+// getProtobufMessageInterface attempts to find the protobuf-go-lite Message interface
+// from the loaded packages in analysis. Returns nil if not found.
+func (c *GoToTSCompiler) getProtobufMessageInterface() *types.Interface {
+	if c.analysis == nil || c.analysis.AllPackages == nil {
+		return nil
+	}
+	pkg := c.analysis.AllPackages["github.com/aperturerobotics/protobuf-go-lite"]
+	if pkg == nil || pkg.Types == nil {
+		return nil
+	}
+	obj := pkg.Types.Scope().Lookup("Message")
+	if obj == nil {
+		return nil
+	}
+	if tn, ok := obj.(*types.TypeName); ok {
+		if iface, ok := tn.Type().Underlying().(*types.Interface); ok {
+			return iface
+		}
+	}
+	return nil
+}
+
+// typeHasMethods returns true if the given type's method set contains all the specified names.
+func (c *GoToTSCompiler) typeHasMethods(t types.Type, names ...string) bool {
+	mset := types.NewMethodSet(t)
+	for _, name := range names {
+		if mset.Lookup(nil, name) == nil {
+			return false
+		}
+	}
+	return true
 }
 
 // convertProtobufFieldName converts Go PascalCase field names to TypeScript camelCase
@@ -44,9 +85,11 @@ func (c *GoToTSCompiler) convertProtobufFieldName(goFieldName string) string {
 		return goFieldName
 	}
 
-	// Convert first character to lowercase
+	// Convert first character to lowercase if ASCII uppercase
 	runes := []rune(goFieldName)
-	runes[0] = runes[0] + ('a' - 'A')
+	if runes[0] >= 'A' && runes[0] <= 'Z' {
+		runes[0] = runes[0] + ('a' - 'A')
+	}
 	return string(runes)
 }
 
@@ -126,10 +169,7 @@ func (c *PackageCompiler) writeProtobufExports(indexFile *os.File, fileName stri
 	pbTsPath := filepath.Join(c.outputPath, fileName+".ts")
 	content, err := os.ReadFile(pbTsPath)
 	if err != nil {
-		// Fallback: preserve prior behavior if read fails
-		exportLine := fmt.Sprintf("export { ExampleMsg, protobufPackage } from \"./%s.js\"\n", fileName)
-		_, werr := indexFile.WriteString(exportLine)
-		return werr
+		return err
 	}
 
 	// Very simple export discovery: capture names from
@@ -178,9 +218,7 @@ func (c *PackageCompiler) writeProtobufExports(indexFile *os.File, fileName stri
 
 	// If nothing found, fallback to default
 	if len(exports) == 0 {
-		exportLine := fmt.Sprintf("export { ExampleMsg, protobufPackage } from \"./%s.js\"\n", fileName)
-		_, err := indexFile.WriteString(exportLine)
-		return err
+		return fmt.Errorf("no exported symbols discovered in %s.ts while generating protobuf exports", fileName)
 	}
 
 	// Deduplicate while preserving order
@@ -237,11 +275,59 @@ func (c *FileCompiler) addProtobufImports() error {
 			pbTsPath := filepath.Join(packageDir, pbTsFileName)
 
 			if _, err := os.Stat(pbTsPath); err == nil {
-				// .pb.ts file exists, add imports for protobuf types
+				// .pb.ts file exists, parse it for exports and add imports accordingly
 				pbBaseName := strings.TrimSuffix(baseFileName, ".pb.go")
-				c.codeWriter.WriteLinef("import { ExampleMsg } from \"./%s.pb.js\";", pbBaseName)
-				// Note: This is a simplified approach - in a full implementation,
-				// we would parse the .pb.ts file to extract all exported types
+
+				content, rerr := os.ReadFile(pbTsPath)
+				if rerr != nil {
+					return fmt.Errorf("failed to read %s for protobuf imports: %w", pbTsPath, rerr)
+				}
+
+				// Discover exported identifiers (const/interface/class/function)
+				var exports []string
+				for _, ln := range strings.Split(string(content), "\n") {
+					l := strings.TrimSpace(ln)
+					if strings.HasPrefix(l, "export const ") {
+						if name := takeIdent(strings.TrimPrefix(l, "export const ")); name != "" {
+							exports = append(exports, name)
+						}
+						continue
+					}
+					if strings.HasPrefix(l, "export interface ") {
+						if name := takeIdent(strings.TrimPrefix(l, "export interface ")); name != "" {
+							exports = append(exports, name)
+						}
+						continue
+					}
+					if strings.HasPrefix(l, "export class ") {
+						if name := takeIdent(strings.TrimPrefix(l, "export class ")); name != "" {
+							exports = append(exports, name)
+						}
+						continue
+					}
+					if strings.HasPrefix(l, "export function ") {
+						if name := takeIdent(strings.TrimPrefix(l, "export function ")); name != "" {
+							exports = append(exports, name)
+						}
+						continue
+					}
+				}
+
+				if len(exports) == 0 {
+					return fmt.Errorf("no exported symbols discovered in %s for protobuf imports", pbTsPath)
+				}
+
+				// Deduplicate
+				seen := map[string]bool{}
+				uniq := make([]string, 0, len(exports))
+				for _, n := range exports {
+					if !seen[n] {
+						seen[n] = true
+						uniq = append(uniq, n)
+					}
+				}
+
+				c.codeWriter.WriteLinef("import { %s } from \"./%s.pb.js\";", strings.Join(uniq, ", "), pbBaseName)
 				break
 			}
 		}

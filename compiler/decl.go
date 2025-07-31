@@ -55,12 +55,8 @@ func (c *GoToTSCompiler) WriteDecls(decls []ast.Decl) error {
 	// Sort type declarations by dependencies
 	sortedTypeSpecs, err := c.sortTypeSpecsByDependencies(typeSpecs)
 	if err != nil {
-		// If we encounter a circular dependency, fall back to original order
-		// This can happen with legitimate circular references involving pointers
-		// that don't actually cause initialization issues at runtime
-		c.tsw.WriteCommentLine("WARNING: Circular dependency detected, using original declaration order")
-		c.tsw.WriteCommentLinef("Error: %s", err.Error())
-		sortedTypeSpecs = typeSpecs
+		// Surface the error instead of silently falling back
+		return fmt.Errorf("circular dependency detected sorting type declarations: %w", err)
 	}
 
 	// Sort variable declarations by type dependencies

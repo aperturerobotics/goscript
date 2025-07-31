@@ -2,7 +2,7 @@
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
 import * as $ from "@goscript/builtin/index.js";
-import { ExampleMsg } from "./protobuf_lite_ts.pb.js";
+import { protobufPackage, ExampleMsg } from "./protobuf_lite_ts.pb.js";
 
 export async function main(): Promise<void> {
 	let msg = ExampleMsg.create({exampleField: $.stringToBytes("hello"), exampleText: "world"})

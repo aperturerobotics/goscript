@@ -1197,12 +1197,15 @@ export function stringToBytes(s: string): Uint8Array {
  * @returns The string representation
  */
 export function genericBytesOrStringToString(
-  value: string | Uint8Array,
+  value: string | import('./builtin.js').Bytes | null | undefined,
 ): string {
+  if (value === null || value === undefined) {
+    return ''
+  }
   if (typeof value === 'string') {
     return value
   }
-  return bytesToString(value as unknown as number[])
+  return bytesToString(value)
 }
 
 /**

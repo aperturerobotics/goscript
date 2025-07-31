@@ -667,17 +667,19 @@ const STRUCT_VALUE_MARKER = Symbol('structValue')
 // Mark a struct instance as representing a value (not pointer)
 export function markAsStructValue<T>(value: T): T {
   if (typeof value === 'object' && value !== null) {
-    (value as any)[STRUCT_VALUE_MARKER] = true
+    ;(value as any)[STRUCT_VALUE_MARKER] = true
   }
   return value
 }
 
 // Check if a struct instance is marked as a value
 function isMarkedAsStructValue(value: any): boolean {
-  return typeof value === 'object' && value !== null && value[STRUCT_VALUE_MARKER] === true
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    value[STRUCT_VALUE_MARKER] === true
+  )
 }
-
-
 
 /**
  * Checks if a value matches a pointer type info.
@@ -719,7 +721,7 @@ function matchesPointerType(value: any, info: TypeInfo): boolean {
       let elemTypeInfo = normalizeTypeInfo(elem)
       return matchesType(value.value, elemTypeInfo)
     }
-    
+
     // Direct struct instance - with inversion, only match if NOT marked as value (i.e., is a pointer)
     return value instanceof registered.ctor && !isMarkedAsStructValue(value)
   } else {
@@ -932,7 +934,12 @@ export function typeAssert<T>(
     // Special handling for pointer type assertions:
     // If the value is a VarRef and we're asserting to a pointer type,
     // return the inner value (value.value), not the VarRef object itself
-    if (isPointerTypeInfo(normalizedType) && typeof value === 'object' && value !== null && 'value' in value) {
+    if (
+      isPointerTypeInfo(normalizedType) &&
+      typeof value === 'object' &&
+      value !== null &&
+      'value' in value
+    ) {
       return { value: value.value as T, ok: true }
     }
     return { value: value as T, ok: true }

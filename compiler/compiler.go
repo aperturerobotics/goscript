@@ -249,10 +249,14 @@ func (c *Compiler) CompilePackages(ctx context.Context, patterns ...string) (*Co
 			}
 		}
 
-		// Skip packages that failed to load
+		// Fail fast on packages that failed to load to avoid hiding errors
 		if len(pkg.Errors) > 0 {
-			c.le.WithError(pkg.Errors[0]).Warnf("Skipping package %s due to errors", pkg.PkgPath)
-			continue
+			var msgs []string
+			for _, e := range pkg.Errors {
+				// packages.Error is a struct; collect all messages
+				msgs = append(msgs, e.Error())
+			}
+			return nil, fmt.Errorf("package %s has load errors: %s", pkg.PkgPath, strings.Join(msgs, "; "))
 		}
 
 		pkgCompiler, err := NewPackageCompiler(c.le, &c.config, pkg, allPackages)
@@ -641,28 +645,14 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 				// Filter out protobuf types - they should be imported from .pb.js files, not .gs.js files
 				var nonProtobufTypes []string
 				for _, typeName := range typeImports {
-					// Check if this type is a protobuf type by looking for it in the package
+					// Check if this type is a protobuf type by looking at its type info
 					isProtobuf := false
 					if typeObj := c.pkg.Types.Scope().Lookup(typeName); typeObj != nil {
 						objType := typeObj.Type()
 						if namedType, ok := objType.(*types.Named); ok {
-							obj := namedType.Obj()
-							if obj != nil && obj.Pkg() != nil {
-								// Check if the type is defined in the current package and has a corresponding .pb.go file
-								if obj.Pkg() == c.pkg.Types {
-									// Check if there's a .pb.go file in the package that exports this type
-									// For now, we'll use a simple heuristic: if the type name ends with "Msg"
-									// and there's a .pb.go file in the package, assume it's a protobuf type
-									if strings.HasSuffix(typeName, "Msg") {
-										// Check if there are any .pb.go files in this package
-										for _, fileName := range c.pkg.CompiledGoFiles {
-											if strings.HasSuffix(fileName, ".pb.go") {
-												isProtobuf = true
-												break
-											}
-										}
-									}
-								}
+							// Use the same detection logic as codegen
+							if goWriter.isProtobufType(namedType) {
+								isProtobuf = true
 							}
 						}
 					}
@@ -1143,8 +1133,11 @@ func (c *Compiler) ReadGsPackageMetadata(gsSourcePath string) (*GsPackageMetadat
 	metaFilePath := filepath.Join(gsSourcePath, "meta.json")
 	content, err := gs.GsOverrides.ReadFile(metaFilePath)
 	if err != nil {
-		// No meta.json file found, return empty metadata
-		return metadata, nil
+		// Only treat missing file as "no metadata"; surface other errors
+		if os.IsNotExist(err) {
+			return metadata, nil
+		}
+		return nil, fmt.Errorf("failed to read meta.json in %s: %w", gsSourcePath, err)
 	}
 
 	// Parse the JSON content
@@ -1181,8 +1174,8 @@ func (c *Compiler) copyGsPackageWithDependencies(packagePath string, processedPa
 	// Read metadata to get dependencies
 	metadata, err := c.ReadGsPackageMetadata(gsSourcePath)
 	if err != nil {
-		c.le.WithError(err).Warnf("Failed to read metadata for gs package %s, continuing without dependencies", packagePath)
-		metadata = &GsPackageMetadata{Dependencies: []string{}}
+		// Surface metadata errors instead of silently continuing
+		return fmt.Errorf("failed to read metadata for gs package %s: %w", packagePath, err)
 	}
 
 	// Log dependencies if any are found

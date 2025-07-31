@@ -180,14 +180,41 @@ func (c *GoToTSCompiler) writeStringConversion(exp *ast.CallExpr) error {
 
 		// Case 4: Argument is a generic type parameter (e.g., string | []byte)
 		if typeParam, isTypeParam := tv.Type.(*types.TypeParam); isTypeParam {
-			// Check if this is a []byte | string union constraint
+			// Check if this is a []byte | string union constraint precisely
 			constraint := typeParam.Constraint()
 			if constraint != nil {
-				// For now, assume any type parameter that could be string or []byte needs the helper
-				// This is a heuristic - in the future we could parse the constraint more precisely
+				hasString := constraintIncludesString(constraint)
+				hasBytes := constraintIncludesByteSlice(constraint)
+
+				if hasString && hasBytes {
+					c.tsw.WriteLiterally("$.genericBytesOrStringToString(")
+					if err := c.WriteValueExpr(arg); err != nil {
+						return fmt.Errorf("failed to write argument for string(generic union) conversion: %w", err)
+					}
+					c.tsw.WriteLiterally(")")
+					return nil
+				}
+				if hasString {
+					// string(T) where T is constrained to string: no-op
+					if err := c.WriteValueExpr(arg); err != nil {
+						return fmt.Errorf("failed to write argument for string(string-constrained) conversion: %w", err)
+					}
+					return nil
+				}
+				if hasBytes {
+					// string(T) where T is constrained to []byte
+					c.tsw.WriteLiterally("$.bytesToString(")
+					if err := c.WriteValueExpr(arg); err != nil {
+						return fmt.Errorf("failed to write argument for string([]byte-constrained) conversion: %w", err)
+					}
+					c.tsw.WriteLiterally(")")
+					return nil
+				}
+
+				// Fallback to previous behavior if we cannot determine precisely
 				c.tsw.WriteLiterally("$.genericBytesOrStringToString(")
 				if err := c.WriteValueExpr(arg); err != nil {
-					return fmt.Errorf("failed to write argument for string(generic) conversion: %w", err)
+					return fmt.Errorf("failed to write argument for string(generic fallback) conversion: %w", err)
 				}
 				c.tsw.WriteLiterally(")")
 				return nil
@@ -506,4 +533,63 @@ func (c *GoToTSCompiler) writeQualifiedTypeConversion(exp *ast.CallExpr, selecto
 	}
 
 	return false, nil
+}
+
+// Helper: detect if a constraint includes string or []byte
+func constraintIncludesString(t types.Type) bool {
+	iface, ok := t.Underlying().(*types.Interface)
+	if !ok {
+		return false
+	}
+	for i := 0; i < iface.NumEmbeddeds(); i++ {
+		embedded := iface.EmbeddedType(i)
+		if u, ok := embedded.(*types.Union); ok {
+			for j := 0; j < u.Len(); j++ {
+				term := u.Term(j)
+				if isStringBasic(term.Type().Underlying()) {
+					return true
+				}
+			}
+		} else if isStringBasic(embedded.Underlying()) {
+			return true
+		}
+	}
+	return false
+}
+
+func constraintIncludesByteSlice(t types.Type) bool {
+	iface, ok := t.Underlying().(*types.Interface)
+	if !ok {
+		return false
+	}
+	for i := 0; i < iface.NumEmbeddeds(); i++ {
+		embedded := iface.EmbeddedType(i)
+		if u, ok := embedded.(*types.Union); ok {
+			for j := 0; j < u.Len(); j++ {
+				term := u.Term(j)
+				if isByteSlice(term.Type().Underlying()) {
+					return true
+				}
+			}
+		} else if isByteSlice(embedded.Underlying()) {
+			return true
+		}
+	}
+	return false
+}
+
+func isStringBasic(t types.Type) bool {
+	if b, ok := t.(*types.Basic); ok {
+		return b.Kind() == types.String
+	}
+	return false
+}
+
+func isByteSlice(t types.Type) bool {
+	if s, ok := t.(*types.Slice); ok {
+		if b, ok := s.Elem().(*types.Basic); ok {
+			return b.Kind() == types.Uint8
+		}
+	}
+	return false
 }
