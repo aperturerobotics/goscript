@@ -28,10 +28,11 @@ Write once, run everywhere. Share your Go algorithms, business logic, and data s
 ⚠️ **Current development status:**
 GoScript is working on compiling a subset of Go:
 - ✅ Basic structs, interfaces, methods, and functions
-- 🚧 Channels and goroutines (translating to async/await)
-- 🚧 Slices, maps, and built-in types
+- ✅ Channels and goroutines (translating to async/await)
+- ✅ Slice semantics, maps, and built-in types
+- ✅ Standard control flow (if, for, switch, select, range, etc.)
 - 🚧 Basic reflection support
-- ✅ Standard control flow (if, for, switch, etc.)
+- 🚧 Standard library support
 
 **Known limitations in this preview:**
 - Uses JavaScript `number` type (64-bit float, not Go's int types)
