@@ -7,13 +7,13 @@
 [Go Report Card Widget]: https://goreportcard.com/badge/github.com/aperturerobotics/goscript
 [Go Report Card]: https://goreportcard.com/report/github.com/aperturerobotics/goscript
 
-## ⚠️ Development Preview Notice
+## ⚠️ Development Preview
 
 **This project is currently in active development and should be considered experimental.** GoScript is a work-in-progress prototype that may have bugs, incomplete features, and breaking changes. We're actively iterating on the compiler and welcome your feedback!
 
 🐛 **Found an issue?** Please [open an issue](https://github.com/aperturerobotics/goscript/issues) and we'll fix it.
 
-🤖 **AI-Powered Development:** This project is heavily AI-written using advanced code generation techniques. We use Roo Code and Cursor AI modes for debugging and iterating on compliance tests. Once the prototype fully works on advanced use cases, we plan to manually review and clean up the entire codebase by hand.
+🤖 **AI** This prototype is heavily AI-written, but I plan to manually rewrite the codebase by hand once it reaches a working state for advanced use cases. AI Producer, human Reducer.
 
 ## What is GoScript?
 
@@ -23,7 +23,7 @@ GoScript is an experimental **Go to TypeScript compiler** that translates Go cod
 >
 > &mdash; [nevkontakte](https://gophers.slack.com/archives/C039C0R2T/p1745870396945719), developer of [GopherJS](https://github.com/gopherjs/gopherjs)
 
-### 🎯 Why GoScript? (When Complete)
+### 🎯 Why GoScript?
 
 **The vision:** Write once, run everywhere. Share your Go algorithms, business logic, and data structures seamlessly between your backend and frontend without maintaining two codebases.
 
@@ -49,11 +49,11 @@ GoScript is working on compiling a subset of Go:
 - Many edge cases not yet handled
 - Performance not yet optimized
 
-**This is a prototype!** Expect bugs and missing features. We're rapidly iterating to support more advanced use cases.
+**This is a prototype!** Expect bugs and missing features. Please contribute!
 
 📖 **Learn more:** [Design document](./design/DESIGN.md) | [Compliance tests](./compliance/COMPLIANCE.md)
 
-## 🚀 Try the Development Preview
+## 🚀 Try It
 
 > **Warning:** This is experimental software. Features may be incomplete or broken. Please report any issues you encounter!
 
@@ -69,7 +69,7 @@ go install github.com/aperturerobotics/goscript/cmd/goscript@latest
 npm install -g goscript
 ```
 
-### Your First Compilation (Experimental)
+### Compilation
 
 ```bash
 # Try compiling your Go package to TypeScript
@@ -180,7 +180,7 @@ const searchUser = (email: string) => {
 ```
 
 
-## 💡 See It In Action (When Working)
+## 💡 See It In Action
 
 > **Disclaimer:** These examples represent the target functionality. Your mileage may vary with the current development preview.
 
