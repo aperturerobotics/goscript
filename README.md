@@ -1,4 +1,4 @@
-# GoScript [Development Preview]
+# GoScript
 
 [![GoDoc Widget]][GoDoc] [![Go Report Card Widget]][Go Report Card] [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/aperturerobotics/goscript)
 
@@ -6,14 +6,6 @@
 [GoDoc Widget]: https://godoc.org/github.com/aperturerobotics/goscript?status.svg
 [Go Report Card Widget]: https://goreportcard.com/badge/github.com/aperturerobotics/goscript
 [Go Report Card]: https://goreportcard.com/report/github.com/aperturerobotics/goscript
-
-## ⚠️ Development Preview
-
-**This project is currently in active development and should be considered experimental.** GoScript is a work-in-progress prototype that may have bugs, incomplete features, and breaking changes. We're actively iterating on the compiler and welcome your feedback!
-
-🐛 **Found an issue?** Please [open an issue](https://github.com/aperturerobotics/goscript/issues) and we'll fix it.
-
-🤖 **AI** This prototype is heavily AI-written, but I plan to manually rewrite the codebase by hand once it reaches a working state for advanced use cases. AI Producer, human Reducer.
 
 ## What is GoScript?
 
@@ -25,7 +17,7 @@ GoScript is an experimental **Go to TypeScript compiler** that translates Go cod
 
 ### 🎯 Why GoScript?
 
-**The vision:** Write once, run everywhere. Share your Go algorithms, business logic, and data structures seamlessly between your backend and frontend without maintaining two codebases.
+Write once, run everywhere. Share your Go algorithms, business logic, and data structures seamlessly between your backend and frontend without maintaining two codebases.
 
 🔬 **Experimental features being developed:**
 - Sharing business logic between Go services and web apps
@@ -45,11 +37,18 @@ GoScript is working on compiling a subset of Go:
 - Uses JavaScript `number` type (64-bit float, not Go's int types)
 - No pointer arithmetic (`uintptr`) or `unsafe` package
 - No complex numbers
-- Very limited standard library (expanding)
-- Many edge cases not yet handled
+- Limited standard library (working on it)
 - Performance not yet optimized
 
 **This is a prototype!** Expect bugs and missing features. Please contribute!
+
+### ⚠️ Development Preview
+
+**This project is currently in active development and should be considered experimental.** GoScript is a work-in-progress prototype that may have bugs, incomplete features, and breaking changes. We're actively iterating on the compiler and welcome your feedback!
+
+🐛 **Found an issue?** Please [open an issue](https://github.com/aperturerobotics/goscript/issues) and we'll fix it.
+
+🤖 **AI** This prototype is heavily AI-written, but I plan to manually rewrite the codebase by hand once it reaches a working state for advanced use cases. AI Producer, human Reducer.
 
 📖 **Learn more:** [Design document](./design/DESIGN.md) | [Compliance tests](./compliance/COMPLIANCE.md)
 
