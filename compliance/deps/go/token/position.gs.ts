@@ -80,9 +80,9 @@ export class FileSet {
 	// [FileSet.AddFile] when adding the next file.
 	public async Base(): Promise<number> {
 		const s = this
-		await s!.mutex.RLock()
-		let b = s!.base
-		s!.mutex.RUnlock()
+		await s.mutex.RLock()
+		let b = s.base
+		s.mutex.RUnlock()
 		return b
 	}
 
@@ -105,15 +105,15 @@ export class FileSet {
 		const s = this
 		using __defer = new $.DisposableStack();
 		let f = new File({lines: $.arrayToSlice<number>([0]), name: filename, size: size})
-		await s!.mutex.Lock()
+		await s.mutex.Lock()
 		__defer.defer(() => {
-			s!.mutex.Unlock()
+			s.mutex.Unlock()
 		});
 		if (base < 0) {
-			base = s!.base
+			base = s.base
 		}
-		if (base < s!.base) {
-			$.panic(fmt.Sprintf("invalid base %d (should be >= %d)", base, s!.base))
+		if (base < s.base) {
+			$.panic(fmt.Sprintf("invalid base %d (should be >= %d)", base, s.base))
 		}
 		f!.base = base
 		if (size < 0) {
@@ -123,9 +123,9 @@ export class FileSet {
 		if (base < 0) {
 			$.panic("token.Pos offset overflow (> 2G of source code in file set)")
 		}
-		s!.base = base
-		s!.files = $.append(s!.files, f)
-		s!.last.Store(f)
+		s.base = base
+		s.files = $.append(s.files, f)
+		s.last.Store(f)
 		return f
 	}
 
@@ -138,16 +138,16 @@ export class FileSet {
 	public async RemoveFile(file: File | null): Promise<void> {
 		const s = this
 		using __defer = new $.DisposableStack();
-		s!.last.CompareAndSwap(file, null) // clear last file cache
-		await s!.mutex.Lock()
+		s.last.CompareAndSwap(file, null) // clear last file cache
+		await s.mutex.Lock()
 		__defer.defer(() => {
-			s!.mutex.Unlock()
+			s.mutex.Unlock()
 		});
 		{
-			let i = searchFiles(s!.files, file!.base)
-			if (i >= 0 && (s!.files![i] === file)) {
-				let last = s!.files![$.len(s!.files) - 1]
-				s!.files = slices.Delete(s!.files, i, i + 1)
+			let i = searchFiles(s.files, file!.base)
+			if (i >= 0 && (s.files![i] === file)) {
+				let last = s.files![$.len(s.files) - 1]
+				s.files = slices.Delete(s.files, i, i + 1)
 				last!.value = null // don't prolong lifetime when popping last element
 			}
 		}
@@ -159,11 +159,11 @@ export class FileSet {
 		const s = this
 		for (let i = 0; ; i++) {
 			let file: File | null = null
-			await s!.mutex.RLock()
-			if (i < $.len(s!.files)) {
-				file = s!.files![i]
+			await s.mutex.RLock()
+			if (i < $.len(s.files)) {
+				file = s.files![i]
 			}
-			s!.mutex.RUnlock()
+			s.mutex.RUnlock()
 			if (file == null || !f!(file)) {
 				break
 			}
@@ -174,19 +174,19 @@ export class FileSet {
 		const s = this
 		using __defer = new $.DisposableStack();
 		{
-			let f = s!.last.Load()
+			let f = s.last.Load()
 			if (f != null && f!.base <= p && p <= f!.base + f!.size) {
 				return f
 			}
 		}
-		await s!.mutex.RLock()
+		await s.mutex.RLock()
 		__defer.defer(() => {
-			s!.mutex.RUnlock()
+			s.mutex.RUnlock()
 		});
 		{
-			let i = searchFiles(s!.files, p)
+			let i = searchFiles(s.files, p)
 			if (i >= 0) {
-				let f = s!.files![i]
+				let f = s.files![i]
 				// f.base <= int(p) by definition of searchFiles
 
 				// Update cache of last file. A race is ok,
@@ -194,7 +194,7 @@ export class FileSet {
 				if (p <= f!.base + f!.size) {
 					// Update cache of last file. A race is ok,
 					// but an exclusive lock causes heavy contention.
-					s!.last.Store(f)
+					s.last.Store(f)
 					return f
 				}
 			}
@@ -209,7 +209,7 @@ export class FileSet {
 		const s = this
 		let f: File | null = null
 		if (p != 0) {
-			f = await s!.file(p)
+			f = await s.file(p)
 		}
 		return f
 	}
@@ -223,7 +223,7 @@ export class FileSet {
 		let pos: Position = new Position()
 		if (p != 0) {
 			{
-				let f = await s!.file(p)
+				let f = await s.file(p)
 				if (f != null) {
 					return await f!.position(p, adjusted)
 				}
@@ -237,7 +237,7 @@ export class FileSet {
 	public async Position(p: Pos): Promise<Position> {
 		const s = this
 		let pos: Position = new Position()
-		return await s!.PositionFor(p, true)
+		return await s.PositionFor(p, true)
 	}
 
 	// Read calls decode to deserialize a file set into s; s must not be nil.
@@ -250,16 +250,16 @@ export class FileSet {
 				return err
 			}
 		}
-		await s!.mutex.Lock()
-		s!.base = ss.Base
+		await s.mutex.Lock()
+		s.base = ss.Base
 		let files = $.makeSlice<File | null>($.len(ss.Files))
 		for (let i = 0; i < $.len(ss.Files); i++) {
 			let f = ss.Files![i]
 			files![i] = new File({base: f!.Base, infos: f!.Infos, lines: f!.Lines, name: f!.Name, size: f!.Size})
 		}
-		s!.files = files
+		s.files = files
 		null
-		s!.mutex.Unlock()
+		s.mutex.Unlock()
 		return null
 	}
 
@@ -267,11 +267,11 @@ export class FileSet {
 	public async Write(encode: ((p0: null | any) => $.GoError) | null): Promise<$.GoError> {
 		const s = this
 		let ss: serializedFileSet = new serializedFileSet()
-		await s!.mutex.Lock()
-		ss.Base = s!.base
-		let files = $.makeSlice<serializedFile>($.len(s!.files))
-		for (let i = 0; i < $.len(s!.files); i++) {
-			const f = s!.files![i]
+		await s.mutex.Lock()
+		ss.Base = s.base
+		let files = $.makeSlice<serializedFile>($.len(s.files))
+		for (let i = 0; i < $.len(s.files); i++) {
+			const f = s.files![i]
 			{
 				await f!.mutex.Lock()
 				files![i] = $.markAsStructValue(new serializedFile({Base: f!.base, Infos: $.append(null, f!.infos), Lines: $.append(null, f!.lines), Name: f!.name, Size: f!.size}))
@@ -279,7 +279,7 @@ export class FileSet {
 			}
 		}
 		ss.Files = files
-		s!.mutex.Unlock()
+		s.mutex.Unlock()
 		return encode!(ss)
 	}
 
@@ -363,7 +363,7 @@ export class Position {
 	// IsValid reports whether the position is valid.
 	public IsValid(): boolean {
 		const pos = this
-		return pos!.Line > 0
+		return pos.Line > 0
 	}
 
 	// String returns a string in one of several forms:
@@ -553,27 +553,27 @@ export class File {
 	// Name returns the file name of file f as registered with AddFile.
 	public Name(): string {
 		const f = this
-		return f!.name
+		return f.name
 	}
 
 	// Base returns the base offset of file f as registered with AddFile.
 	public Base(): number {
 		const f = this
-		return f!.base
+		return f.base
 	}
 
 	// Size returns the size of file f as registered with AddFile.
 	public Size(): number {
 		const f = this
-		return f!.size
+		return f.size
 	}
 
 	// LineCount returns the number of lines in file f.
 	public async LineCount(): Promise<number> {
 		const f = this
-		await f!.mutex.Lock()
-		let n = $.len(f!.lines)
-		f!.mutex.Unlock()
+		await f.mutex.Lock()
+		let n = $.len(f.lines)
+		f.mutex.Unlock()
 		return n
 	}
 
@@ -582,14 +582,14 @@ export class File {
 	// and smaller than the file size; otherwise the line offset is ignored.
 	public async AddLine(offset: number): Promise<void> {
 		const f = this
-		await f!.mutex.Lock()
+		await f.mutex.Lock()
 		{
-			let i = $.len(f!.lines)
-			if ((i == 0 || f!.lines![i - 1] < offset) && offset < f!.size) {
-				f!.lines = $.append(f!.lines, offset)
+			let i = $.len(f.lines)
+			if ((i == 0 || f.lines![i - 1] < offset) && offset < f.size) {
+				f.lines = $.append(f.lines, offset)
 			}
 		}
-		f!.mutex.Unlock()
+		f.mutex.Unlock()
 	}
 
 	// MergeLine merges a line with the following line. It is akin to replacing
@@ -602,24 +602,24 @@ export class File {
 		if (line < 1) {
 			$.panic(fmt.Sprintf("invalid line number %d (should be >= 1)", line))
 		}
-		await f!.mutex.Lock()
+		await f.mutex.Lock()
 		__defer.defer(() => {
-			f!.mutex.Unlock()
+			f.mutex.Unlock()
 		});
-		if (line >= $.len(f!.lines)) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f!.lines)))
+		if (line >= $.len(f.lines)) {
+			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
 		}
-		$.copy($.goSlice(f!.lines, line, undefined), $.goSlice(f!.lines, line + 1, undefined))
-		f!.lines = $.goSlice(f!.lines, undefined, $.len(f!.lines) - 1)
+		$.copy($.goSlice(f.lines, line, undefined), $.goSlice(f.lines, line + 1, undefined))
+		f.lines = $.goSlice(f.lines, undefined, $.len(f.lines) - 1)
 	}
 
 	// Lines returns the effective line offset table of the form described by [File.SetLines].
 	// Callers must not mutate the result.
 	public async Lines(): Promise<$.Slice<number>> {
 		const f = this
-		await f!.mutex.Lock()
-		let lines = f!.lines
-		f!.mutex.Unlock()
+		await f.mutex.Lock()
+		let lines = f.lines
+		f.mutex.Unlock()
 		return lines
 	}
 
@@ -633,7 +633,7 @@ export class File {
 	// Callers must not mutate the provided slice after SetLines returns.
 	public async SetLines(lines: $.Slice<number>): Promise<boolean> {
 		const f = this
-		let size = f!.size
+		let size = f.size
 		for (let i = 0; i < $.len(lines); i++) {
 			const offset = lines![i]
 			{
@@ -642,9 +642,9 @@ export class File {
 				}
 			}
 		}
-		await f!.mutex.Lock()
-		f!.lines = lines
-		f!.mutex.Unlock()
+		await f.mutex.Lock()
+		f.lines = lines
+		f.mutex.Unlock()
 		return true
 	}
 
@@ -666,9 +666,9 @@ export class File {
 				}
 			}
 		}
-		await f!.mutex.Lock()
-		f!.lines = lines
-		f!.mutex.Unlock()
+		await f.mutex.Lock()
+		f.lines = lines
+		f.mutex.Unlock()
 	}
 
 	// LineStart returns the [Pos] value of the start of the specified line.
@@ -680,21 +680,21 @@ export class File {
 		if (line < 1) {
 			$.panic(fmt.Sprintf("invalid line number %d (should be >= 1)", line))
 		}
-		await f!.mutex.Lock()
+		await f.mutex.Lock()
 		__defer.defer(() => {
-			f!.mutex.Unlock()
+			f.mutex.Unlock()
 		});
-		if (line > $.len(f!.lines)) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f!.lines)))
+		if (line > $.len(f.lines)) {
+			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
 		}
-		return (f!.base + f!.lines![line - 1] as Pos)
+		return (f.base + f.lines![line - 1] as Pos)
 	}
 
 	// AddLineInfo is like [File.AddLineColumnInfo] with a column = 1 argument.
 	// It is here for backward-compatibility for code prior to Go 1.11.
 	public async AddLineInfo(offset: number, filename: string, line: number): Promise<void> {
 		const f = this
-		await f!.AddLineColumnInfo(offset, filename, line, 1)
+		await f.AddLineColumnInfo(offset, filename, line, 1)
 	}
 
 	// AddLineColumnInfo adds alternative file, line, and column number
@@ -707,14 +707,14 @@ export class File {
 	// information for line directives such as //line filename:line:column.
 	public async AddLineColumnInfo(offset: number, filename: string, line: number, column: number): Promise<void> {
 		const f = this
-		await f!.mutex.Lock()
+		await f.mutex.Lock()
 		{
-			let i = $.len(f!.infos)
-			if ((i == 0 || f!.infos![i - 1].Offset < offset) && offset < f!.size) {
-				f!.infos = $.append(f!.infos, $.markAsStructValue(new lineInfo({})))
+			let i = $.len(f.infos)
+			if ((i == 0 || f.infos![i - 1].Offset < offset) && offset < f.size) {
+				f.infos = $.append(f.infos, $.markAsStructValue(new lineInfo({})))
 			}
 		}
-		f!.mutex.Unlock()
+		f.mutex.Unlock()
 	}
 
 	// fixOffset fixes an out-of-bounds offset such that 0 <= offset <= f.size.
@@ -726,9 +726,9 @@ export class File {
 					return 0
 				}
 				break
-			case offset > f!.size:
+			case offset > f.size:
 				if (!false) {
-					return f!.size
+					return f.size
 				}
 				break
 			default:
@@ -738,7 +738,7 @@ export class File {
 		if (false) {
 
 			/* for symmetry */
-			$.panic(fmt.Sprintf("offset %d out of bounds [%d, %d] (position %d out of bounds [%d, %d])", 0, offset, f!.size, f!.base + offset, f!.base, f!.base + f!.size))
+			$.panic(fmt.Sprintf("offset %d out of bounds [%d, %d] (position %d out of bounds [%d, %d])", 0, offset, f.size, f.base + offset, f.base, f.base + f.size))
 		}
 		return 0
 	}
@@ -754,7 +754,7 @@ export class File {
 	// f.Pos(f.Offset(p)) == p.
 	public Pos(offset: number): Pos {
 		const f = this
-		return (f!.base + f!.fixOffset(offset) as Pos)
+		return (f.base + f.fixOffset(offset) as Pos)
 	}
 
 	// Offset returns the offset for the given file position p.
@@ -768,14 +768,14 @@ export class File {
 	// f.Offset(f.Pos(offset)) == offset
 	public Offset(p: Pos): number {
 		const f = this
-		return f!.fixOffset(p - f!.base)
+		return f.fixOffset(p - f.base)
 	}
 
 	// Line returns the line number for the given file position p;
 	// p must be a [Pos] value in that file or [NoPos].
 	public async Line(p: Pos): Promise<number> {
 		const f = this
-		return await f!.Position(p)!.Line
+		return await f.Position(p)!.Line
 	}
 
 	// unpack returns the filename and line and column number for a file offset.
@@ -786,15 +786,15 @@ export class File {
 		let filename: string = ""
 		let line: number = 0
 		let column: number = 0
-		await f!.mutex.Lock()
-		filename = f!.name
+		await f.mutex.Lock()
+		filename = f.name
 		{
-			let i = searchInts(f!.lines, offset)
+			let i = searchInts(f.lines, offset)
 			if (i >= 0) {
-				;[line, column] = [i + 1, offset - f!.lines![i] + 1]
+				;[line, column] = [i + 1, offset - f.lines![i] + 1]
 			}
 		}
-		if (adjusted && $.len(f!.infos) > 0) {
+		if (adjusted && $.len(f.infos) > 0) {
 			// few files have extra line infos
 
 			// i+1 is the line at which the alternative position was recorded
@@ -808,9 +808,9 @@ export class File {
 			// the alternative position base is on the current line
 			// => column is relative to alternative column
 			{
-				let i = searchLineInfos(f!.infos, offset)
+				let i = searchLineInfos(f.infos, offset)
 				if (i >= 0) {
-					let alt = f!.infos![i]
+					let alt = f.infos![i]
 					filename = alt!.Filename
 
 					// i+1 is the line at which the alternative position was recorded
@@ -824,7 +824,7 @@ export class File {
 					// the alternative position base is on the current line
 					// => column is relative to alternative column
 					{
-						let i = searchInts(f!.lines, alt!.Offset)
+						let i = searchInts(f.lines, alt!.Offset)
 						if (i >= 0) {
 							// i+1 is the line at which the alternative position was recorded
 							let d = line - (i + 1) // line distance from alternative position base
@@ -854,17 +854,17 @@ export class File {
 				}
 			}
 		}
-		f!.mutex.Unlock()
+		f.mutex.Unlock()
 		return [filename, line, column]
 	}
 
 	public async position(p: Pos, adjusted: boolean): Promise<Position> {
 		const f = this
 		let pos: Position = new Position()
-		let offset = f!.fixOffset(p - f!.base)
+		let offset = f.fixOffset(p - f.base)
 		pos.Offset = offset
 		{
-		  const _tmp = await f!.unpack(offset, adjusted)
+		  const _tmp = await f.unpack(offset, adjusted)
 		  pos.Filename = _tmp[0]
 		  pos.Line = _tmp[1]
 		  pos.Column = _tmp[2]
@@ -881,7 +881,7 @@ export class File {
 		const f = this
 		let pos: Position = new Position()
 		if (p != 0) {
-			pos = $.markAsStructValue(await f!.position(p, adjusted).clone())
+			pos = $.markAsStructValue(await f.position(p, adjusted).clone())
 		}
 		return pos
 	}
@@ -892,7 +892,7 @@ export class File {
 	public async Position(p: Pos): Promise<Position> {
 		const f = this
 		let pos: Position = new Position()
-		return await f!.PositionFor(p, true)
+		return await f.PositionFor(p, true)
 	}
 
 	// Register this type with the runtime type system

@@ -32,7 +32,7 @@ export class Foo {
 	public async Bar(): Promise<void> {
 		const f = this
 		console.log("Foo.Bar called")
-		await $.chanSend(f!.done, true)
+		await $.chanSend(f.done, true)
 	}
 
 	// Register this type with the runtime type system

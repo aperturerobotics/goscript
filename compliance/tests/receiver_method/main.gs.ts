@@ -32,7 +32,7 @@ export class MyStruct {
 	// Method that uses the receiver
 	public UsesReceiver(): number {
 		const m = this
-		return m!.Value
+		return m.Value
 	}
 
 	// Method that doesn't use the receiver

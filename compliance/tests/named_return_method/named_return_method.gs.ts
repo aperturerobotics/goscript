@@ -33,15 +33,15 @@ export class content {
 		const c = this
 		let n: number = 0
 		let err: $.GoError = null
-		if (off < 0 || off >= ($.len(c!.bytes) as number)) {
+		if (off < 0 || off >= ($.len(c.bytes) as number)) {
 			err = null // Simulate an error scenario
 			return [n, err]
 		}
 		let l = ($.len(b) as number)
-		if (off + l > ($.len(c!.bytes) as number)) {
-			l = ($.len(c!.bytes) as number) - off
+		if (off + l > ($.len(c.bytes) as number)) {
+			l = ($.len(c.bytes) as number) - off
 		}
-		let btr = $.goSlice(c!.bytes, off, off + l)
+		let btr = $.goSlice(c.bytes, off, off + l)
 		n = $.copy(b, btr)
 		return [n, err]
 	}

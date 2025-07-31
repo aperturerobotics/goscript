@@ -47,11 +47,11 @@ export class AsyncData {
 	public async GetValue(): Promise<number> {
 		const d = this
 		using __defer = new $.DisposableStack();
-		await d!.mu.Lock()
+		await d.mu.Lock()
 		__defer.defer(() => {
-			d!.mu.Unlock()
+			d.mu.Unlock()
 		});
-		return d!.value
+		return d.value
 	}
 
 	// Register this type with the runtime type system

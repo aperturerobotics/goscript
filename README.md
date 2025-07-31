@@ -23,7 +23,8 @@ Write once, run everywhere. Share your Go algorithms, business logic, and data s
 - Sharing business logic between Go services and web apps
 - Porting Go algorithms to run in browsers
 - Building TypeScript libraries from existing Go code
-- Full-stack teams that love Go's simplicity
+
+Go has powerful concurrency support and an excellent standard library. GoScript brings these capabilities to TypeScript with as simple and readable of a translation as possible.
 
 ⚠️ **Current development status:**
 GoScript is working on compiling a subset of Go:

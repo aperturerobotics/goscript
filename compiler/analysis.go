@@ -641,6 +641,22 @@ func (v *analysisVisitor) visitFuncDecl(n *ast.FuncDecl) ast.Visitor {
 							funcInfo := v.analysis.ensureFunctionData(obj)
 							funcInfo.ReceiverUsed = receiverUsed
 						}
+
+						// If receiver is used, mark all identifiers that refer to the receiver variable
+						if receiverUsed && n.Body != nil {
+							recvName := ident.Name
+							ast.Inspect(n.Body, func(nn ast.Node) bool {
+								id, ok := nn.(*ast.Ident)
+								if !ok {
+									return true
+								}
+								if obj := v.pkg.TypesInfo.Uses[id]; obj != nil && obj == vr {
+									ni := v.analysis.ensureNodeData(id)
+									ni.IdentifierMapping = recvName
+								}
+								return true
+							})
+						}
 					}
 				}
 			}

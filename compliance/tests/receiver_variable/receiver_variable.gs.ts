@@ -58,17 +58,17 @@ export class content {
 		if (off < 0) {
 			return [0, errors.New("negative offset")]
 		}
-		await c!.m.Lock()
-		let prev = $.len(c!.bytes)
+		await c.m.Lock()
+		let prev = $.len(c.bytes)
 		let diff = $.int(off) - prev
 		if (diff > 0) {
-			c!.bytes = $.append(c!.bytes, new Uint8Array(diff))
+			c.bytes = $.append(c.bytes, new Uint8Array(diff))
 		}
-		c!.bytes = $.append($.goSlice(c!.bytes, undefined, off), p)
-		if ($.len(c!.bytes) < prev) {
-			c!.bytes = $.goSlice(c!.bytes, undefined, prev)
+		c.bytes = $.append($.goSlice(c.bytes, undefined, off), p)
+		if ($.len(c.bytes) < prev) {
+			c.bytes = $.goSlice(c.bytes, undefined, prev)
 		}
-		c!.m.Unlock()
+		c.m.Unlock()
 		return [$.len(p), null]
 	}
 
@@ -79,47 +79,47 @@ export class content {
 		if (off < 0) {
 			return [0, errors.New("negative offset")]
 		}
-		await c!.m.RLock()
-		let size = ($.len(c!.bytes) as number)
+		await c.m.RLock()
+		let size = ($.len(c.bytes) as number)
 		if (off >= size) {
-			c!.m.RUnlock()
+			c.m.RUnlock()
 			return [0, errors.New("EOF")]
 		}
 		let l = ($.len(b) as number)
 		if (off + l > size) {
 			l = size - off
 		}
-		let btr = $.goSlice(c!.bytes, off, off + l)
+		let btr = $.goSlice(c.bytes, off, off + l)
 		n = $.copy(b, btr)
 		if ($.len(btr) < $.len(b)) {
 			err = errors.New("EOF")
 		}
-		c!.m.RUnlock()
+		c.m.RUnlock()
 		return [n, err]
 	}
 
 	public async Size(): Promise<number> {
 		const c = this
 		using __defer = new $.DisposableStack();
-		await c!.m.RLock()
+		await c.m.RLock()
 		__defer.defer(() => {
-			c!.m.RUnlock()
+			c.m.RUnlock()
 		});
-		return $.len(c!.bytes)
+		return $.len(c.bytes)
 	}
 
 	public async Clear(): Promise<void> {
 		const c = this
 		using __defer = new $.DisposableStack();
-		await c!.m.Lock()
+		await c.m.Lock()
 		__defer.defer(() => {
-			c!.m.Unlock()
+			c.m.Unlock()
 		});
 		const _temp_len = $.len
 		{
 			let len = _temp_len(c.bytes)
 			if (len > 0) {
-				c!.bytes = new Uint8Array(0)
+				c.bytes = new Uint8Array(0)
 			}
 		}
 	}
@@ -128,36 +128,36 @@ export class content {
 	public async ComplexMethod(): Promise<$.GoError> {
 		const c = this
 		using __defer = new $.DisposableStack();
-		await c!.m.Lock()
+		await c.m.Lock()
 		__defer.defer(() => {
-			c!.m.Unlock()
+			c.m.Unlock()
 		});
-		if ($.len(c!.bytes) == 0) {
-			c!.bytes = new Uint8Array(10)
+		if ($.len(c.bytes) == 0) {
+			c.bytes = new Uint8Array(10)
 		}
 		for (let i = 0; i < 3; i++) {
 
 			// Nested scope with receiver usage
 			{
-				let [data, err] = c!.getData(i)
+				let [data, err] = c.getData(i)
 				if (err == null) {
 					// Nested scope with receiver usage
 					if ($.len(data) > 0) {
-						c!.bytes = $.append(c!.bytes, data)
+						c.bytes = $.append(c.bytes, data)
 					}
 				}
 			}
 		}
 		{
-			let x = $.len(c!.bytes)
+			let x = $.len(c.bytes)
 			if (x > 20) {
 				// Use receiver in nested scope
-				c!.bytes = $.goSlice(c!.bytes, undefined, 20)
+				c.bytes = $.goSlice(c.bytes, undefined, 20)
 
 				// Nested function literal that might affect scoping
 				let fn = (): void => {
-					if ($.len(c!.bytes) > 0) {
-						c!.bytes![0] = 42
+					if ($.len(c.bytes) > 0) {
+						c.bytes![0] = 42
 					}
 				}
 				fn!()
@@ -176,12 +176,12 @@ export class content {
 	// Simple methods that should trigger receiver binding but might not
 	public Truncate(): void {
 		const c = this
-		c!.bytes = new Uint8Array(0)
+		c.bytes = new Uint8Array(0)
 	}
 
 	public Len(): number {
 		const c = this
-		return $.len(c!.bytes)
+		return $.len(c.bytes)
 	}
 
 	// Register this type with the runtime type system

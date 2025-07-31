@@ -31,7 +31,7 @@ export class AStruct {
 
 	public Set(msg: string): void {
 		const a = this
-		a!.Msg = msg
+		a.Msg = msg
 	}
 
 	// Register this type with the runtime type system

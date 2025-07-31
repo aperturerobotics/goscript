@@ -188,39 +188,39 @@ export class Scanner {
 	// s.scanIdentifier.
 	public next(): void {
 		const s = this
-		if (s!.rdOffset < $.len(s!.src)) {
-			s!.offset = s!.rdOffset
-			if (s!.ch == 10) {
-				s!.lineOffset = s!.offset
-				await s!.file!.AddLine(s!.offset)
+		if (s.rdOffset < $.len(s.src)) {
+			s.offset = s.rdOffset
+			if (s.ch == 10) {
+				s.lineOffset = s.offset
+				await s.file!.AddLine(s.offset)
 			}
-			let [r, w] = [(s!.src![s!.rdOffset] as number), 1]
+			let [r, w] = [(s.src![s.rdOffset] as number), 1]
 
 			// not ASCII
 			switch (true) {
 				case r == 0:
-					s!.error(s!.offset, "illegal character NUL")
+					s.error(s.offset, "illegal character NUL")
 					break
 				case r >= utf8.RuneSelf:
-					;[r, w] = utf8.DecodeRune($.goSlice(s!.src, s!.rdOffset, undefined))
+					;[r, w] = utf8.DecodeRune($.goSlice(s.src, s.rdOffset, undefined))
 					if (r == utf8.RuneError && w == 1) {
-						s!.error(s!.offset, "illegal UTF-8 encoding")
+						s.error(s.offset, "illegal UTF-8 encoding")
 					}
-					 else if (r == 65279 && s!.offset > 0) {
-						s!.error(s!.offset, "illegal byte order mark")
+					 else if (r == 65279 && s.offset > 0) {
+						s.error(s.offset, "illegal byte order mark")
 					}
 					break
 			}
-			s!.rdOffset += w
-			s!.ch = r
+			s.rdOffset += w
+			s.ch = r
 		}
 		 else {
-			s!.offset = $.len(s!.src)
-			if (s!.ch == 10) {
-				s!.lineOffset = s!.offset
-				await s!.file!.AddLine(s!.offset)
+			s.offset = $.len(s.src)
+			if (s.ch == 10) {
+				s.lineOffset = s.offset
+				await s.file!.AddLine(s.offset)
 			}
-			s!.ch = -1
+			s.ch = -1
 		}
 	}
 
@@ -228,8 +228,8 @@ export class Scanner {
 	// advancing the scanner. If the scanner is at EOF, peek returns 0.
 	public peek(): number {
 		const s = this
-		if (s!.rdOffset < $.len(s!.src)) {
-			return s!.src![s!.rdOffset]
+		if (s.rdOffset < $.len(s.src)) {
+			return s.src![s.rdOffset]
 		}
 		return 0
 	}
@@ -253,37 +253,37 @@ export class Scanner {
 		if (file!.Size() != $.len(src)) {
 			$.panic(fmt.Sprintf("file size (%d) does not match src len (%d)", file!.Size(), $.len(src)))
 		}
-		s!.file = file
+		s.file = file
 		{
 		  const _tmp = filepath.Split(file!.Name())
-		  s!.dir = _tmp[0]
+		  s.dir = _tmp[0]
 		}
-		s!.src = src
-		s!.err = err
-		s!.mode = mode
-		s!.ch = 32
-		s!.offset = 0
-		s!.rdOffset = 0
-		s!.lineOffset = 0
-		s!.insertSemi = false
-		s!.ErrorCount = 0
-		s!.next()
-		if (s!.ch == 65279) {
-			s!.next() // ignore BOM at file beginning
+		s.src = src
+		s.err = err
+		s.mode = mode
+		s.ch = 32
+		s.offset = 0
+		s.rdOffset = 0
+		s.lineOffset = 0
+		s.insertSemi = false
+		s.ErrorCount = 0
+		s.next()
+		if (s.ch == 65279) {
+			s.next() // ignore BOM at file beginning
 		}
 	}
 
 	public error(offs: number, msg: string): void {
 		const s = this
-		if (s!.err != null) {
-			s!.err!(await s!.file!.Position(s!.file!.Pos(offs)), msg)
+		if (s.err != null) {
+			s.err!(await s.file!.Position(s.file!.Pos(offs)), msg)
 		}
-		s!.ErrorCount++
+		s.ErrorCount++
 	}
 
 	public errorf(offs: number, format: string, ...args: any[]): void {
 		const s = this
-		s!.error(offs, fmt.Sprintf(format, ...(args ?? [])))
+		s.error(offs, fmt.Sprintf(format, ...(args ?? [])))
 	}
 
 	// scanComment returns the text of the comment and (if nonzero)
@@ -291,53 +291,53 @@ export class Scanner {
 	// /*...*/ comment.
 	public scanComment(): [string, number] {
 		const s = this
-		let offs = s!.offset - 1 // position of initial '/'
+		let offs = s.offset - 1 // position of initial '/'
 		let next = -1 // position immediately following the comment; < 0 means invalid comment
 		let numCR = 0
 		let nlOffset = 0 // offset of first newline within /*...*/ comment
-		if (s!.ch == 47) {
+		if (s.ch == 47) {
 			//-style comment
 			// (the final '\n' is not considered part of the comment)
-			s!.next()
-			for (; s!.ch != 10 && s!.ch >= 0; ) {
-				if (s!.ch == 13) {
+			s.next()
+			for (; s.ch != 10 && s.ch >= 0; ) {
+				if (s.ch == 13) {
 					numCR++
 				}
-				s!.next()
+				s.next()
 			}
 			// if we are at '\n', the position following the comment is afterwards
-			next = s!.offset
-			if (s!.ch == 10) {
+			next = s.offset
+			if (s.ch == 10) {
 				next++
 			}
 			// goto exit // goto statement skipped
 		}
-		s!.next()
-		for (; s!.ch >= 0; ) {
-			let ch = s!.ch
+		s.next()
+		for (; s.ch >= 0; ) {
+			let ch = s.ch
 			if (ch == 13) {
 				numCR++
 			}
 			 else if (ch == 10 && nlOffset == 0) {
-				nlOffset = s!.offset
+				nlOffset = s.offset
 			}
-			s!.next()
-			if (ch == 42 && s!.ch == 47) {
-				s!.next()
-				next = s!.offset
+			s.next()
+			if (ch == 42 && s.ch == 47) {
+				s.next()
+				next = s.offset
 				// goto exit // goto statement skipped
 			}
 		}
-		s!.error(offs, "comment not terminated")
+		s.error(offs, "comment not terminated")
 		exit: {
-			let lit = $.goSlice(s!.src, offs, s!.offset)
+			let lit = $.goSlice(s.src, offs, s.offset)
 		}
 		if (numCR > 0 && $.len(lit) >= 2 && lit![1] == 47 && lit![$.len(lit) - 1] == 13) {
 			lit = $.goSlice(lit, undefined, $.len(lit) - 1)
 			numCR--
 		}
-		if (next >= 0 && (lit![1] == 42 || offs == s!.lineOffset) && bytes.HasPrefix($.goSlice(lit, 2, undefined), prefix)) {
-			s!.updateLineInfo(next, offs, lit)
+		if (next >= 0 && (lit![1] == 42 || offs == s.lineOffset) && bytes.HasPrefix($.goSlice(lit, 2, undefined), prefix)) {
+			s.updateLineInfo(next, offs, lit)
 		}
 		if (numCR > 0) {
 			lit = stripCR(lit, lit![1] == 42)
@@ -361,7 +361,7 @@ export class Scanner {
 		}
 		if (!ok) {
 			// text has a suffix :xxx but xxx is not a number
-			s!.error(offs + i, "invalid line number: " + $.bytesToString($.goSlice(text, i, undefined)))
+			s.error(offs + i, "invalid line number: " + $.bytesToString($.goSlice(text, i, undefined)))
 			return 
 		}
 		let maxLineCol: number = (1 << 30)
@@ -373,7 +373,7 @@ export class Scanner {
 			;[i, i2] = [i2, i]
 			;[line, col] = [n2, n]
 			if (col == 0 || col > 1073741824) {
-				s!.error(offs + i2, "invalid column number: " + $.bytesToString($.goSlice(text, i2, undefined)))
+				s.error(offs + i2, "invalid column number: " + $.bytesToString($.goSlice(text, i2, undefined)))
 				return 
 			}
 			text = $.goSlice(text, undefined, i2 - 1) // lop off ":col"
@@ -383,12 +383,12 @@ export class Scanner {
 			line = n
 		}
 		if (line == 0 || line > 1073741824) {
-			s!.error(offs + i, "invalid line number: " + $.bytesToString($.goSlice(text, i, undefined)))
+			s.error(offs + i, "invalid line number: " + $.bytesToString($.goSlice(text, i, undefined)))
 			return 
 		}
 		let filename = $.bytesToString($.goSlice(text, undefined, i - 1)) // lop off ":line", and trim white space
 		if (filename == "" && ok2) {
-			filename = await s!.file!.Position(s!.file!.Pos(offs))!.Filename
+			filename = await s.file!.Position(s.file!.Pos(offs))!.Filename
 		}
 		 else if (filename != "") {
 			// Put a relative filename in the current directory.
@@ -396,10 +396,10 @@ export class Scanner {
 			// See issue 26671.
 			filename = filepath.Clean(filename)
 			if (!filepath.IsAbs(filename)) {
-				filename = filepath.Join(s!.dir, filename)
+				filename = filepath.Join(s.dir, filename)
 			}
 		}
-		await s!.file!.AddLineColumnInfo(next, filename, line, col)
+		await s.file!.AddLineColumnInfo(next, filename, line, col)
 	}
 
 	// scanIdentifier reads the string of valid identifier characters at s.offset.
@@ -409,9 +409,9 @@ export class Scanner {
 	// scanning performance significantly.
 	public scanIdentifier(): string {
 		const s = this
-		let offs = s!.offset
-		for (let rdOffset = 0; rdOffset < $.len($.goSlice(s!.src, s!.rdOffset, undefined)); rdOffset++) {
-			const b = $.goSlice(s!.src, s!.rdOffset, undefined)![rdOffset]
+		let offs = s.offset
+		for (let rdOffset = 0; rdOffset < $.len($.goSlice(s.src, s.rdOffset, undefined)); rdOffset++) {
+			const b = $.goSlice(s.src, s.rdOffset, undefined)![rdOffset]
 			{
 
 				// Avoid assigning a rune for the common case of an ascii character.
@@ -419,7 +419,7 @@ export class Scanner {
 					// Avoid assigning a rune for the common case of an ascii character.
 					continue
 				}
-				s!.rdOffset += rdOffset
+				s.rdOffset += rdOffset
 
 				// Optimization: we've encountered an ASCII character that's not a letter
 				// or number. Avoid the call into s.next() and corresponding set up.
@@ -434,25 +434,25 @@ export class Scanner {
 					// Note that s.next() does some line accounting if s.ch is '\n', so this
 					// shortcut is only possible because we know that the preceding character
 					// is not '\n'.
-					s!.ch = (b as number)
-					s!.offset = s!.rdOffset
-					s!.rdOffset++
+					s.ch = (b as number)
+					s.offset = s.rdOffset
+					s.rdOffset++
 					// goto exit // goto statement skipped
 				}
 				// We know that the preceding character is valid for an identifier because
 				// scanIdentifier is only called when s.ch is a letter, so calling s.next()
 				// at s.rdOffset resets the scanner state.
-				s!.next()
-				for (; isLetter(s!.ch) || isDigit(s!.ch); ) {
-					s!.next()
+				s.next()
+				for (; isLetter(s.ch) || isDigit(s.ch); ) {
+					s.next()
 				}
 				// goto exit // goto statement skipped
 			}
 		}
-		s!.offset = $.len(s!.src)
-		s!.rdOffset = $.len(s!.src)
-		s!.ch = -1
-		exit: return $.bytesToString($.goSlice(s!.src, offs, s!.offset))
+		s.offset = $.len(s.src)
+		s.rdOffset = $.len(s.src)
+		s.ch = -1
+		exit: return $.bytesToString($.goSlice(s.src, offs, s.offset))
 	}
 
 	// digits accepts the sequence { digit | '_' }.
@@ -468,28 +468,28 @@ export class Scanner {
 			let max = (48 + base as number)
 
 			// record invalid rune offset
-			for (; isDecimal(s!.ch) || s!.ch == 95; ) {
+			for (; isDecimal(s.ch) || s.ch == 95; ) {
 				let ds = 1
 
 				// record invalid rune offset
-				if (s!.ch == 95) {
+				if (s.ch == 95) {
 					ds = 2
 				}
-				 else if (s!.ch >= max && invalid!.value < 0) {
-					invalid!.value = s!.offset // record invalid rune offset
+				 else if (s.ch >= max && invalid!.value < 0) {
+					invalid!.value = s.offset // record invalid rune offset
 				}
 				digsep |= ds
-				s!.next()
+				s.next()
 			}
 		}
 		 else {
-			for (; isHex(s!.ch) || s!.ch == 95; ) {
+			for (; isHex(s.ch) || s.ch == 95; ) {
 				let ds = 1
-				if (s!.ch == 95) {
+				if (s.ch == 95) {
 					ds = 2
 				}
 				digsep |= ds
-				s!.next()
+				s.next()
 			}
 		}
 		return digsep
@@ -497,31 +497,31 @@ export class Scanner {
 
 	public scanNumber(): [token.Token, string] {
 		const s = this
-		let offs = s!.offset
+		let offs = s.offset
 		let tok = token.ILLEGAL
 		let base = 10 // number base
 		let prefix = (0 as number) // one of 0 (decimal), '0' (0-octal), 'x', 'o', or 'b'
 		let digsep = 0 // bit 0: digit present, bit 1: '_' present
 		let invalid = -1 // index of invalid digit in literal, or < 0
-		if (s!.ch != 46) {
+		if (s.ch != 46) {
 			tok = token.INT
 
 			// leading 0
-			if (s!.ch == 48) {
-				s!.next()
+			if (s.ch == 48) {
+				s.next()
 
 				// leading 0
-				switch (lower(s!.ch)) {
+				switch (lower(s.ch)) {
 					case 120:
-						s!.next()
+						s.next()
 						;[base, prefix] = [16, 120]
 						break
 					case 111:
-						s!.next()
+						s.next()
 						;[base, prefix] = [8, 111]
 						break
 					case 98:
-						s!.next()
+						s.next()
 						;[base, prefix] = [2, 98]
 						break
 					default:
@@ -530,58 +530,58 @@ export class Scanner {
 						break
 				}
 			}
-			digsep |= s!.digits(base, invalid)
+			digsep |= s.digits(base, invalid)
 		}
-		if (s!.ch == 46) {
+		if (s.ch == 46) {
 			tok = token.FLOAT
 			if (prefix == 111 || prefix == 98) {
-				s!.error(s!.offset, "invalid radix point in " + litname(prefix))
+				s.error(s.offset, "invalid radix point in " + litname(prefix))
 			}
-			s!.next()
-			digsep |= s!.digits(base, invalid)
+			s.next()
+			digsep |= s.digits(base, invalid)
 		}
 		if ((digsep & 1) == 0) {
-			s!.error(s!.offset, litname(prefix) + " has no digits")
+			s.error(s.offset, litname(prefix) + " has no digits")
 		}
 		{
-			let e = lower(s!.ch)
+			let e = lower(s.ch)
 			if (e == 101 || e == 112) {
 				switch (true) {
 					case e == 101 && prefix != 0 && prefix != 48:
-						s!.errorf(s!.offset, "%q exponent requires decimal mantissa", s!.ch)
+						s.errorf(s.offset, "%q exponent requires decimal mantissa", s.ch)
 						break
 					case e == 112 && prefix != 120:
-						s!.errorf(s!.offset, "%q exponent requires hexadecimal mantissa", s!.ch)
+						s.errorf(s.offset, "%q exponent requires hexadecimal mantissa", s.ch)
 						break
 				}
-				s!.next()
+				s.next()
 				tok = token.FLOAT
-				if (s!.ch == 43 || s!.ch == 45) {
-					s!.next()
+				if (s.ch == 43 || s.ch == 45) {
+					s.next()
 				}
-				let ds = s!.digits(10, null)
+				let ds = s.digits(10, null)
 				digsep |= ds
 				if ((ds & 1) == 0) {
-					s!.error(s!.offset, "exponent has no digits")
+					s.error(s.offset, "exponent has no digits")
 				}
 			}
 			 else if (prefix == 120 && tok == token.FLOAT) {
-				s!.error(s!.offset, "hexadecimal mantissa requires a 'p' exponent")
+				s.error(s.offset, "hexadecimal mantissa requires a 'p' exponent")
 			}
 		}
-		if (s!.ch == 105) {
+		if (s.ch == 105) {
 			tok = token.IMAG
-			s!.next()
+			s.next()
 		}
-		let lit = $.bytesToString($.goSlice(s!.src, offs, s!.offset))
+		let lit = $.bytesToString($.goSlice(s.src, offs, s.offset))
 		if (tok == token.INT && invalid >= 0) {
-			s!.errorf(invalid, "invalid digit %q in %s", $.indexString(lit, invalid - offs), litname(prefix))
+			s.errorf(invalid, "invalid digit %q in %s", $.indexString(lit, invalid - offs), litname(prefix))
 		}
 		if ((digsep & 2) != 0) {
 			{
 				let i = invalidSep(lit)
 				if (i >= 0) {
-					s!.error(offs + i, "'_' must separate successive digits")
+					s.error(offs + i, "'_' must separate successive digits")
 				}
 			}
 		}
@@ -594,11 +594,11 @@ export class Scanner {
 	// it returns true.
 	public scanEscape(quote: number): boolean {
 		const s = this
-		let offs = s!.offset
+		let offs = s.offset
 		let n: number = 0
 		let base: number = 0
 		let max: number = 0
-		switch (s!.ch) {
+		switch (s.ch) {
 			case 97:
 			case 98:
 			case 102:
@@ -608,7 +608,7 @@ export class Scanner {
 			case 118:
 			case 92:
 			case quote:
-				s!.next()
+				s.next()
 				return true
 				break
 			case 48:
@@ -622,43 +622,43 @@ export class Scanner {
 				;[n, base, max] = [3, 8, 255]
 				break
 			case 120:
-				s!.next()
+				s.next()
 				;[n, base, max] = [2, 16, 255]
 				break
 			case 117:
-				s!.next()
+				s.next()
 				;[n, base, max] = [4, 16, unicode.MaxRune]
 				break
 			case 85:
-				s!.next()
+				s.next()
 				;[n, base, max] = [8, 16, unicode.MaxRune]
 				break
 			default:
 				let msg = "unknown escape sequence"
-				if (s!.ch < 0) {
+				if (s.ch < 0) {
 					msg = "escape sequence not terminated"
 				}
-				s!.error(offs, msg)
+				s.error(offs, msg)
 				return false
 				break
 		}
 		let x: number = 0
 		for (; n > 0; ) {
-			let d = (digitVal(s!.ch) as number)
+			let d = (digitVal(s.ch) as number)
 			if (d >= base) {
-				let msg = fmt.Sprintf("illegal character %#U in escape sequence", s!.ch)
-				if (s!.ch < 0) {
+				let msg = fmt.Sprintf("illegal character %#U in escape sequence", s.ch)
+				if (s.ch < 0) {
 					msg = "escape sequence not terminated"
 				}
-				s!.error(s!.offset, msg)
+				s.error(s.offset, msg)
 				return false
 			}
 			x = x * base + d
-			s!.next()
+			s.next()
 			n--
 		}
 		if (x > max || 0xD800 <= x && x < 0xE000) {
-			s!.error(offs, "escape sequence is invalid Unicode code point")
+			s.error(offs, "escape sequence is invalid Unicode code point")
 			return false
 		}
 		return true
@@ -666,22 +666,22 @@ export class Scanner {
 
 	public scanRune(): string {
 		const s = this
-		let offs = s!.offset - 1
+		let offs = s.offset - 1
 		let valid = true
 		let n = 0
 		for (; ; ) {
-			let ch = s!.ch
+			let ch = s.ch
 
 			// only report error if we don't have one already
 			if (ch == 10 || ch < 0) {
 				// only report error if we don't have one already
 				if (valid) {
-					s!.error(offs, "rune literal not terminated")
+					s.error(offs, "rune literal not terminated")
 					valid = false
 				}
 				break
 			}
-			s!.next()
+			s.next()
 			if (ch == 39) {
 				break
 			}
@@ -691,49 +691,49 @@ export class Scanner {
 			if (ch == 92) {
 
 				// continue to read to closing quote
-				if (!s!.scanEscape(39)) {
+				if (!s.scanEscape(39)) {
 					valid = false
 				}
 				// continue to read to closing quote
 			}
 		}
 		if (valid && n != 1) {
-			s!.error(offs, "illegal rune literal")
+			s.error(offs, "illegal rune literal")
 		}
-		return $.bytesToString($.goSlice(s!.src, offs, s!.offset))
+		return $.bytesToString($.goSlice(s.src, offs, s.offset))
 	}
 
 	public scanString(): string {
 		const s = this
-		let offs = s!.offset - 1
+		let offs = s.offset - 1
 		for (; ; ) {
-			let ch = s!.ch
+			let ch = s.ch
 			if (ch == 10 || ch < 0) {
-				s!.error(offs, "string literal not terminated")
+				s.error(offs, "string literal not terminated")
 				break
 			}
-			s!.next()
+			s.next()
 			if (ch == 34) {
 				break
 			}
 			if (ch == 92) {
-				s!.scanEscape(34)
+				s.scanEscape(34)
 			}
 		}
-		return $.bytesToString($.goSlice(s!.src, offs, s!.offset))
+		return $.bytesToString($.goSlice(s.src, offs, s.offset))
 	}
 
 	public scanRawString(): string {
 		const s = this
-		let offs = s!.offset - 1
+		let offs = s.offset - 1
 		let hasCR = false
 		for (; ; ) {
-			let ch = s!.ch
+			let ch = s.ch
 			if (ch < 0) {
-				s!.error(offs, "raw string literal not terminated")
+				s.error(offs, "raw string literal not terminated")
 				break
 			}
-			s!.next()
+			s.next()
 			if (ch == 96) {
 				break
 			}
@@ -741,7 +741,7 @@ export class Scanner {
 				hasCR = true
 			}
 		}
-		let lit = $.goSlice(s!.src, offs, s!.offset)
+		let lit = $.goSlice(s.src, offs, s.offset)
 		if (hasCR) {
 			lit = stripCR(lit, false)
 		}
@@ -750,15 +750,15 @@ export class Scanner {
 
 	public skipWhitespace(): void {
 		const s = this
-		for (; s!.ch == 32 || s!.ch == 9 || s!.ch == 10 && !s!.insertSemi || s!.ch == 13; ) {
-			s!.next()
+		for (; s.ch == 32 || s.ch == 9 || s.ch == 10 && !s.insertSemi || s.ch == 13; ) {
+			s.next()
 		}
 	}
 
 	public switch2(tok0: token.Token, tok1: token.Token): token.Token {
 		const s = this
-		if (s!.ch == 61) {
-			s!.next()
+		if (s.ch == 61) {
+			s.next()
 			return tok1
 		}
 		return tok0
@@ -766,12 +766,12 @@ export class Scanner {
 
 	public switch3(tok0: token.Token, tok1: token.Token, ch2: number, tok2: token.Token): token.Token {
 		const s = this
-		if (s!.ch == 61) {
-			s!.next()
+		if (s.ch == 61) {
+			s.next()
 			return tok1
 		}
-		if (s!.ch == ch2) {
-			s!.next()
+		if (s.ch == ch2) {
+			s.next()
 			return tok2
 		}
 		return tok0
@@ -779,14 +779,14 @@ export class Scanner {
 
 	public switch4(tok0: token.Token, tok1: token.Token, ch2: number, tok2: token.Token, tok3: token.Token): token.Token {
 		const s = this
-		if (s!.ch == 61) {
-			s!.next()
+		if (s.ch == 61) {
+			s.next()
 			return tok1
 		}
-		if (s!.ch == ch2) {
-			s!.next()
-			if (s!.ch == 61) {
-				s!.next()
+		if (s.ch == ch2) {
+			s.next()
+			if (s.ch == 61) {
+				s.next()
 				return tok3
 			}
 			return tok2
@@ -829,20 +829,20 @@ export class Scanner {
 		let pos: token.Pos = 0
 		let tok: token.Token = 0
 		let lit: string = ""
-		scanAgain: if (token.Pos_IsValid(s!.nlPos)) {
+		scanAgain: if (token.Pos_IsValid(s.nlPos)) {
 			// Return artificial ';' token after /*...*/ comment
 			// containing newline, at position of first newline.
-			;[pos, tok, lit] = [s!.nlPos, token.SEMICOLON, "\n"]
-			s!.nlPos = token.NoPos
+			;[pos, tok, lit] = [s.nlPos, token.SEMICOLON, "\n"]
+			s.nlPos = token.NoPos
 			return [pos, tok, lit]
 		}
-		s!.skipWhitespace()
-		pos = s!.file!.Pos(s!.offset)
+		s.skipWhitespace()
+		pos = s.file!.Pos(s.offset)
 		let insertSemi = false
-		{let ch = s!.ch
+		{let ch = s.ch
 			switch (true) {
 				case isLetter(ch):
-					lit = s!.scanIdentifier()
+					lit = s.scanIdentifier()
 					if ($.len(lit) > 1) {
 						// keywords are longer than one letter - avoid lookup otherwise
 						tok = token.Lookup(lit)
@@ -861,47 +861,47 @@ export class Scanner {
 						tok = token.IDENT
 					}
 					break
-				case isDecimal(ch) || ch == 46 && isDecimal((s!.peek() as number)):
+				case isDecimal(ch) || ch == 46 && isDecimal((s.peek() as number)):
 					insertSemi = true
-					;[tok, lit] = s!.scanNumber()
+					;[tok, lit] = s.scanNumber()
 					break
 				default:
-					s!.next() // always make progress
+					s.next() // always make progress
 					switch (ch) {
 						case -1:
-							if (s!.insertSemi) {
-								s!.insertSemi = false // EOF consumed
+							if (s.insertSemi) {
+								s.insertSemi = false // EOF consumed
 								return [pos, token.SEMICOLON, "\n"]
 							}
 							tok = token.EOF
 							break
 						case 10:
-							s!.insertSemi = false // newline consumed
+							s.insertSemi = false // newline consumed
 							return [pos, token.SEMICOLON, "\n"]
 							break
 						case 34:
 							insertSemi = true
 							tok = token.STRING
-							lit = s!.scanString()
+							lit = s.scanString()
 							break
 						case 39:
 							insertSemi = true
 							tok = token.CHAR
-							lit = s!.scanRune()
+							lit = s.scanRune()
 							break
 						case 96:
 							insertSemi = true
 							tok = token.STRING
-							lit = s!.scanRawString()
+							lit = s.scanRawString()
 							break
 						case 58:
-							tok = s!.switch2(token.COLON, token.DEFINE)
+							tok = s.switch2(token.COLON, token.DEFINE)
 							break
 						case 46:
 							tok = token.PERIOD
-							if (s!.ch == 46 && s!.peek() == 46) {
-								s!.next()
-								s!.next() // consume last '.'
+							if (s.ch == 46 && s.peek() == 46) {
+								s.next()
+								s.next() // consume last '.'
 								tok = token.ELLIPSIS
 							}
 							break
@@ -934,41 +934,41 @@ export class Scanner {
 							tok = token.RBRACE
 							break
 						case 43:
-							tok = s!.switch3(token.ADD, token.ADD_ASSIGN, 43, token.INC)
+							tok = s.switch3(token.ADD, token.ADD_ASSIGN, 43, token.INC)
 							if (tok == token.INC) {
 								insertSemi = true
 							}
 							break
 						case 45:
-							tok = s!.switch3(token.SUB, token.SUB_ASSIGN, 45, token.DEC)
+							tok = s.switch3(token.SUB, token.SUB_ASSIGN, 45, token.DEC)
 							if (tok == token.DEC) {
 								insertSemi = true
 							}
 							break
 						case 42:
-							tok = s!.switch2(token.MUL, token.MUL_ASSIGN)
+							tok = s.switch2(token.MUL, token.MUL_ASSIGN)
 							break
 						case 47:
-							if (s!.ch == 47 || s!.ch == 42) {
+							if (s.ch == 47 || s.ch == 42) {
 								// comment
-								let [comment, nlOffset] = s!.scanComment()
+								let [comment, nlOffset] = s.scanComment()
 
 								// For /*...*/ containing \n, return
 								// COMMENT then artificial SEMICOLON.
 
 								// preserve insertSemi info
-								if (s!.insertSemi && nlOffset != 0) {
+								if (s.insertSemi && nlOffset != 0) {
 									// For /*...*/ containing \n, return
 									// COMMENT then artificial SEMICOLON.
-									s!.nlPos = s!.file!.Pos(nlOffset)
-									s!.insertSemi = false
+									s.nlPos = s.file!.Pos(nlOffset)
+									s.insertSemi = false
 								}
 								 else {
-									insertSemi = s!.insertSemi // preserve insertSemi info
+									insertSemi = s.insertSemi // preserve insertSemi info
 								}
 
 								// skip comment
-								if ((s!.mode & 1) == 0) {
+								if ((s.mode & 1) == 0) {
 									// skip comment
 									// goto scanAgain // goto statement skipped
 								}
@@ -977,44 +977,44 @@ export class Scanner {
 							}
 							 else {
 								// division
-								tok = s!.switch2(token.QUO, token.QUO_ASSIGN)
+								tok = s.switch2(token.QUO, token.QUO_ASSIGN)
 							}
 							break
 						case 37:
-							tok = s!.switch2(token.REM, token.REM_ASSIGN)
+							tok = s.switch2(token.REM, token.REM_ASSIGN)
 							break
 						case 94:
-							tok = s!.switch2(token.XOR, token.XOR_ASSIGN)
+							tok = s.switch2(token.XOR, token.XOR_ASSIGN)
 							break
 						case 60:
-							if (s!.ch == 45) {
-								s!.next()
+							if (s.ch == 45) {
+								s.next()
 								tok = token.ARROW
 							}
 							 else {
-								tok = s!.switch4(token.LSS, token.LEQ, 60, token.SHL, token.SHL_ASSIGN)
+								tok = s.switch4(token.LSS, token.LEQ, 60, token.SHL, token.SHL_ASSIGN)
 							}
 							break
 						case 62:
-							tok = s!.switch4(token.GTR, token.GEQ, 62, token.SHR, token.SHR_ASSIGN)
+							tok = s.switch4(token.GTR, token.GEQ, 62, token.SHR, token.SHR_ASSIGN)
 							break
 						case 61:
-							tok = s!.switch2(token.ASSIGN, token.EQL)
+							tok = s.switch2(token.ASSIGN, token.EQL)
 							break
 						case 33:
-							tok = s!.switch2(token.NOT, token.NEQ)
+							tok = s.switch2(token.NOT, token.NEQ)
 							break
 						case 38:
-							if (s!.ch == 94) {
-								s!.next()
-								tok = s!.switch2(token.AND_NOT, token.AND_NOT_ASSIGN)
+							if (s.ch == 94) {
+								s.next()
+								tok = s.switch2(token.AND_NOT, token.AND_NOT_ASSIGN)
 							}
 							 else {
-								tok = s!.switch3(token.AND, token.AND_ASSIGN, 38, token.LAND)
+								tok = s.switch3(token.AND, token.AND_ASSIGN, 38, token.LAND)
 							}
 							break
 						case 124:
-							tok = s!.switch3(token.OR, token.OR_ASSIGN, 124, token.LOR)
+							tok = s.switch3(token.OR, token.OR_ASSIGN, 124, token.LOR)
 							break
 						case 126:
 							tok = token.TILDE
@@ -1024,21 +1024,21 @@ export class Scanner {
 								// Report an informative error for U+201[CD] quotation
 								// marks, which are easily introduced via copy and paste.
 								if (ch == 8220 || ch == 8221) {
-									s!.errorf(s!.file!.Offset(pos), "curly quotation mark %q (use neutral %q)", ch, 34)
+									s.errorf(s.file!.Offset(pos), "curly quotation mark %q (use neutral %q)", ch, 34)
 								}
 								 else {
-									s!.errorf(s!.file!.Offset(pos), "illegal character %#U", ch)
+									s.errorf(s.file!.Offset(pos), "illegal character %#U", ch)
 								}
 							}
-							insertSemi = s!.insertSemi // preserve insertSemi info
+							insertSemi = s.insertSemi // preserve insertSemi info
 							tok = token.ILLEGAL
 							lit = $.runeOrStringToString(ch)
 							break
 					}
 					break
 			}
-		}if ((s!.mode & 2) == 0) {
-			s!.insertSemi = insertSemi
+		}if ((s.mode & 2) == 0) {
+			s.insertSemi = insertSemi
 		}
 		return [pos, tok, lit]
 	}

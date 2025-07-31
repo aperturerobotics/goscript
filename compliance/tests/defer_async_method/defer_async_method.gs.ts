@@ -37,7 +37,7 @@ export class AsyncResource {
 			await $.chanSend(ch, true)
 		})
 		await $.chanRecv(ch)
-		console.log("Released", r!.name)
+		console.log("Released", r.name)
 	}
 
 	// Register this type with the runtime type system

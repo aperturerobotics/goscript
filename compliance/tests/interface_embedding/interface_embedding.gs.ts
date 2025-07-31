@@ -73,32 +73,32 @@ export class MockFile {
 
 	public Name(): string {
 		const m = this
-		return m!.filename
+		return m.filename
 	}
 
 	public Write(p: $.Bytes): [number, $.GoError] {
 		const m = this
-		m!.content = $.append(m!.content, p)
+		m.content = $.append(m.content, p)
 		return [$.len(p), null]
 	}
 
 	public Read(p: $.Bytes): [number, $.GoError] {
 		const m = this
-		let remaining = $.len(m!.content) - $.int(m!.position)
+		let remaining = $.len(m.content) - $.int(m.position)
 		if (remaining <= 0) {
 			return [0, io.EOF]
 		}
-		let n = $.copy(p, $.goSlice(m!.content, m!.position, undefined))
-		m!.position += (n as number)
+		let n = $.copy(p, $.goSlice(m.content, m.position, undefined))
+		m.position += (n as number)
 		return [n, null]
 	}
 
 	public ReadAt(p: $.Bytes, off: number): [number, $.GoError] {
 		const m = this
-		if (off >= ($.len(m!.content) as number)) {
+		if (off >= ($.len(m.content) as number)) {
 			return [0, io.EOF]
 		}
-		let n = $.copy(p, $.goSlice(m!.content, off, undefined))
+		let n = $.copy(p, $.goSlice(m.content, off, undefined))
 		return [n, null]
 	}
 
@@ -106,16 +106,16 @@ export class MockFile {
 		const m = this
 		switch (whence) {
 			case 0:
-				m!.position = offset
+				m.position = offset
 				break
 			case 1:
-				m!.position += offset
+				m.position += offset
 				break
 			case 2:
-				m!.position = ($.len(m!.content) as number) + offset
+				m.position = ($.len(m.content) as number) + offset
 				break
 		}
-		return [m!.position, null]
+		return [m.position, null]
 	}
 
 	public Close(): $.GoError {
@@ -132,8 +132,8 @@ export class MockFile {
 
 	public Truncate(size: number): $.GoError {
 		const m = this
-		if (size < ($.len(m!.content) as number)) {
-			m!.content = $.goSlice(m!.content, undefined, size)
+		if (size < ($.len(m.content) as number)) {
+			m.content = $.goSlice(m.content, undefined, size)
 		}
 		return null
 	}
@@ -244,7 +244,7 @@ export class file {
 
 	public Name(): string {
 		const f = this
-		return f!.name
+		return f.name
 	}
 
 	public Close(): $.GoError {

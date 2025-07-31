@@ -67,23 +67,23 @@ export class printer {
 
 	public free(): void {
 		const p = this
-		if ($.cap(p!.buf!.data) > 64 * 1024) {
-			p!.buf = null
+		if ($.cap(p.buf!.data) > 64 * 1024) {
+			p.buf = null
 		}
 		 else {
 			// Reset buffer
-			p!.buf!.data = $.goSlice(p!.buf!.data, undefined, 0)
+			p.buf!.data = $.goSlice(p.buf!.data, undefined, 0)
 		}
 	}
 
 	public checkCapacity(): number {
 		const p = this
-		return $.cap(p!.buf!.data)
+		return $.cap(p.buf!.data)
 	}
 
 	public getLength(): number {
 		const p = this
-		return $.len(p!.buf!.data)
+		return $.len(p.buf!.data)
 	}
 
 	// Register this type with the runtime type system

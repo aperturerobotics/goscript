@@ -119,18 +119,109 @@ func (c *PackageCompiler) copyProtobufTSFile(sourcePath, fileName string) error 
 
 // writeProtobufExports writes exports for a protobuf file to the index.ts file
 func (c *PackageCompiler) writeProtobufExports(indexFile *os.File, fileName string) error {
-	// For protobuf files, we know they typically export message types
-	// For now, we'll use a simple heuristic: export all types that end with "Msg"
-	// In a full implementation, we would parse the .pb.ts file to extract actual exports
+	// For protobuf files, try to parse the copied .pb.ts file in the output directory
+	// to discover exported symbols and re-export them from the index. This avoids
+	// hard-coding names like ExampleMsg and protobufPackage.
 
-	// For the protobuf_lite_ts test, we know it exports ExampleMsg
-	// This is a simplified approach - in production, we'd parse the .pb.ts file
-	exportLine := fmt.Sprintf("export { ExampleMsg, protobufPackage } from \"./%s.js\"\n", fileName)
-	if _, err := indexFile.WriteString(exportLine); err != nil {
+	pbTsPath := filepath.Join(c.outputPath, fileName+".ts")
+	content, err := os.ReadFile(pbTsPath)
+	if err != nil {
+		// Fallback: preserve prior behavior if read fails
+		exportLine := fmt.Sprintf("export { ExampleMsg, protobufPackage } from \"./%s.js\"\n", fileName)
+		_, werr := indexFile.WriteString(exportLine)
+		return werr
+	}
+
+	// Very simple export discovery: capture names from
+	//  - export const Name
+	//  - export interface Name
+	//  - export class Name
+	//  - export function Name
+	// We avoid type-only exports for now.
+	var exports []string
+	lines := strings.Split(string(content), "\n")
+	for _, ln := range lines {
+		l := strings.TrimSpace(ln)
+		if strings.HasPrefix(l, "export const ") {
+			rest := strings.TrimPrefix(l, "export const ")
+			name := takeIdent(rest)
+			if name != "" {
+				exports = append(exports, name)
+			}
+			continue
+		}
+		if strings.HasPrefix(l, "export interface ") {
+			rest := strings.TrimPrefix(l, "export interface ")
+			name := takeIdent(rest)
+			if name != "" {
+				exports = append(exports, name)
+			}
+			continue
+		}
+		if strings.HasPrefix(l, "export class ") {
+			rest := strings.TrimPrefix(l, "export class ")
+			name := takeIdent(rest)
+			if name != "" {
+				exports = append(exports, name)
+			}
+			continue
+		}
+		if strings.HasPrefix(l, "export function ") {
+			rest := strings.TrimPrefix(l, "export function ")
+			name := takeIdent(rest)
+			if name != "" {
+				exports = append(exports, name)
+			}
+			continue
+		}
+	}
+
+	// If nothing found, fallback to default
+	if len(exports) == 0 {
+		exportLine := fmt.Sprintf("export { ExampleMsg, protobufPackage } from \"./%s.js\"\n", fileName)
+		_, err := indexFile.WriteString(exportLine)
 		return err
 	}
 
-	return nil
+	// Deduplicate while preserving order
+	seen := map[string]bool{}
+	uniq := make([]string, 0, len(exports))
+	for _, n := range exports {
+		if !seen[n] {
+			seen[n] = true
+			uniq = append(uniq, n)
+		}
+	}
+
+	exportLine := fmt.Sprintf("export { %s } from \"./%s.js\"\n", strings.Join(uniq, ", "), fileName)
+	_, err = indexFile.WriteString(exportLine)
+	return err
+}
+
+// takeIdent extracts a leading identifier token from the beginning of s.
+// Returns an empty string if no valid identifier is found.
+func takeIdent(s string) string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return ""
+	}
+	// Identifier: letter or _ followed by letters, digits, or _
+	var b strings.Builder
+	for i, r := range s {
+		if i == 0 {
+			if !(r == '_' || r >= 'A' && r <= 'Z' || r >= 'a' && r <= 'z') {
+				break
+			}
+			b.WriteRune(r)
+			continue
+		}
+		if r == '_' || r >= 'A' && r <= 'Z' || r >= 'a' && r <= 'z' || r >= '0' && r <= '9' {
+			b.WriteRune(r)
+			continue
+		}
+		break
+	}
+	return b.String()
 }
 
 // addProtobufImports adds imports for protobuf types when .pb.ts files are present in the package

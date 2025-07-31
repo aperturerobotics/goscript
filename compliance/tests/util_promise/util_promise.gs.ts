@@ -64,14 +64,14 @@ export class PromiseType<T extends any> {
 	// SetResult sets the result of the promise
 	public SetResult(val: T, err: $.GoError): boolean {
 		const p = this
-		if (p!.isResolved) {
+		if (p.isResolved) {
 			return false
 		}
-		p!.result = val
-		p!.err = err
-		p!.isResolved = true
-		if (p!.ch != null) {
-			p!.ch.close()
+		p.result = val
+		p.err = err
+		p.isResolved = true
+		if (p.ch != null) {
+			p.ch.close()
 		}
 		return true
 	}
@@ -81,16 +81,16 @@ export class PromiseType<T extends any> {
 		const p = this
 		let val: T = null as any
 		let err: $.GoError = null
-		if (p!.isResolved) {
-			return [p!.result, p!.err]
+		if (p.isResolved) {
+			return [p.result, p.err]
 		}
 		const [_select_has_return_7e31, _select_value_7e31] = await $.selectStatement([
 			{
 				id: 0,
 				isSend: false,
-				channel: p!.ch,
+				channel: p.ch,
 				onSelected: async (result) => {
-					return [p!.result, p!.err]
+					return [p.result, p.err]
 				}
 			},
 			{

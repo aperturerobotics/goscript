@@ -54,13 +54,13 @@ export class Mutex {
 		const m = this
 		let status: atomic.Int32 = new atomic.Int32()
 		let waitCh: $.Channel<{  }> | null = null
-		await m!.bcast.HoldLock((_: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
+		await m.bcast.HoldLock((_: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 
 			// keep waiting
 
 			// 0: waiting for lock
 			// 1: have the lock
-			if (m!.locked) {
+			if (m.locked) {
 				// keep waiting
 				waitCh = getWaitCh!()
 			}
@@ -69,7 +69,7 @@ export class Mutex {
 				// 1: have the lock
 				let swapped = status.CompareAndSwap(0, 1)
 				if (swapped) {
-					m!.locked = true
+					m.locked = true
 				}
 			}
 		})
@@ -81,8 +81,8 @@ export class Mutex {
 			}
 
 			// unlock
-			await m!.bcast.HoldLock((broadcast: (() => void) | null, _: (() => $.Channel<{  }> | null) | null): void => {
-				m!.locked = false
+			await m.bcast.HoldLock((broadcast: (() => void) | null, _: (() => $.Channel<{  }> | null) | null): void => {
+				m.locked = false
 				broadcast!()
 			})
 		}
@@ -117,9 +117,9 @@ export class Mutex {
 
 			// 0: waiting for lock
 			// 1: have the lock
-			await m!.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
+			await m.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 				// keep waiting for the lock
-				if (m!.locked) {
+				if (m.locked) {
 					waitCh = getWaitCh!()
 					return 
 				}
@@ -128,7 +128,7 @@ export class Mutex {
 				// 1: have the lock
 				let swapped = status.CompareAndSwap(0, 1)
 				if (swapped) {
-					m!.locked = true
+					m.locked = true
 				}
 			})
 
@@ -149,12 +149,12 @@ export class Mutex {
 	public async TryLock(): Promise<[(() => void) | null, boolean]> {
 		const m = this
 		let unlocked: atomic.Bool = new atomic.Bool()
-		await m!.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
-			if (m!.locked) {
+		await m.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
+			if (m.locked) {
 				unlocked.Store(true)
 			}
 			 else {
-				m!.locked = true
+				m.locked = true
 			}
 		})
 		if (unlocked.Load()) {
@@ -165,8 +165,8 @@ export class Mutex {
 				return 
 			}
 
-			await m!.bcast.HoldLock((broadcast: (() => void) | null, _: (() => $.Channel<{  }> | null) | null): void => {
-				m!.locked = false
+			await m.bcast.HoldLock((broadcast: (() => void) | null, _: (() => $.Channel<{  }> | null) | null): void => {
+				m.locked = false
 				broadcast!()
 			})
 		}, true]
@@ -227,11 +227,11 @@ export class MutexLocker {
 	// Lock implements the sync.Locker interface.
 	public async Lock(): Promise<void> {
 		const l = this
-		let [release, err] = await l!.m!.Lock(context.Background())
+		let [release, err] = await l.m!.Lock(context.Background())
 		if (err != null) {
 			$.panic(errors.Wrap(err, "csync: failed MutexLocker Lock"))
 		}
-		l!.rel.Store(release)
+		l.rel.Store(release)
 	}
 
 	// Unlock implements the sync.Locker interface.

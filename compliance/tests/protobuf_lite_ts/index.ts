@@ -1,1 +1,1 @@
-export { ExampleMsg, protobufPackage } from "./protobuf_lite_ts.pb.js"
+export { protobufPackage, ExampleMsg } from "./protobuf_lite_ts.pb.js"

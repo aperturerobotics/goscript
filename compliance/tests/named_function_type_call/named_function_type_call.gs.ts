@@ -75,17 +75,17 @@ export class MockFileInfo {
 
 	public Name(): string {
 		const m = this
-		return m!.name
+		return m.name
 	}
 
 	public Size(): number {
 		const m = this
-		return m!.size
+		return m.size
 	}
 
 	public IsDir(): boolean {
 		const m = this
-		return m!.isDir
+		return m.isDir
 	}
 
 	// Register this type with the runtime type system

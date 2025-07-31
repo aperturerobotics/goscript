@@ -31,17 +31,17 @@ export class buffer {
 
 	public write(p: $.Bytes): void {
 		const b = this
-		b!.data = $.append(b!.data, p)
+		b.data = $.append(b.data, p)
 	}
 
 	public writeString(s: string): void {
 		const b = this
-		b!.data = $.append(b!.data, ...$.stringToBytes(s))
+		b.data = $.append(b.data, ...$.stringToBytes(s))
 	}
 
 	public writeByte(c: number): void {
 		const b = this
-		b!.data = $.append(b!.data, c)
+		b.data = $.append(b.data, c)
 	}
 
 	// Register this type with the runtime type system
