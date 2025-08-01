@@ -99,19 +99,25 @@ function defaultFormat(value: any): string {
     ) {
       try {
         return (value as any).GoString()
-      } catch {}
+      } catch {
+        // Ignore error by continuing to next case.
+      }
     }
     // Prefer error interface if present
     if ((value as any).Error && typeof (value as any).Error === 'function') {
       try {
         return (value as any).Error()
-      } catch {}
+      } catch {
+        // Ignore error by continuing to next case.
+      }
     }
     // Check for Stringer interface
     if ((value as any).String && typeof (value as any).String === 'function') {
       try {
         return (value as any).String()
-      } catch {}
+      } catch {
+        // Ignore error by continuing to next case.
+      }
     }
     // Basic Map/Set rendering
     if (value instanceof Map) {

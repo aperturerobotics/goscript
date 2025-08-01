@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import * as fmt from './fmt.js'
 
 // Helper to capture stdout via internal stdout.write
