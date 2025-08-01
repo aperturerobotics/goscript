@@ -145,7 +145,6 @@ describe('fmt spacing rules', () => {
     expect(err).toBeNull()
     expect(n).toBe(5) // "1 2x3".length
     expect(new TextDecoder().decode(chunks[0])).toBe('1 2x3')
-
     ;[n, err] = fmt.Fprintln(writer, 'hi', 'there', 1, 2)
     expect(err).toBeNull()
     expect(new TextDecoder().decode(chunks[1])).toBe('hi there 1 2\n')

@@ -73,7 +73,8 @@ function formatValue(value: any, verb: string): string {
         return JSON.stringify(ch)
       }
       return JSON.stringify(String(value))
-    case 'p': { // pointer (address)
+    case 'p': {
+      // pointer (address)
       const addr = (value as any)?.__address
       if (typeof addr === 'number') return '0x' + addr.toString(16)
       return '0x0'
