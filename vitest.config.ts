@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 
 export default defineConfig({
   test: {
-    exclude: [...configDefaults.exclude, 'dist', 'vendor'],
+    exclude: [...configDefaults.exclude, 'dist', 'vendor', '**/vendor'],
   },
   resolve: {
     alias: [

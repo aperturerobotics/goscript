@@ -34,7 +34,7 @@ function formatValue(value: any, verb: string): string {
     case 'v': // default format
       return defaultFormat(value)
     case 'd': // decimal integer
-      return String(Math.floor(Number(value)))
+      return String(Math.trunc(Number(value)))
     case 'f': // decimal point, no exponent
       return Number(value).toString()
     case 's': // string
@@ -66,10 +66,18 @@ function formatValue(value: any, verb: string): string {
       return Number(value).toPrecision()
     case 'G': // %E for large exponents, %F otherwise
       return Number(value).toPrecision().toUpperCase()
-    case 'q': // quoted string
+    case 'q': // quoted string / rune
+      if (typeof value === 'number' && Number.isInteger(value)) {
+        // emulate quoted rune for integers in basic range
+        const ch = String.fromCodePoint(value)
+        return JSON.stringify(ch)
+      }
       return JSON.stringify(String(value))
-    case 'p': // pointer (address)
-      return '0x' + (value as any)?.__address?.toString(16) || '0'
+    case 'p': { // pointer (address)
+      const addr = (value as any)?.__address
+      if (typeof addr === 'number') return '0x' + addr.toString(16)
+      return '0x0'
+    }
     default:
       return String(value)
   }
@@ -83,6 +91,15 @@ function defaultFormat(value: any): string {
   if (Array.isArray(value))
     return '[' + value.map(defaultFormat).join(' ') + ']'
   if (typeof value === 'object') {
+    // Prefer GoStringer if present
+    if (
+      (value as any).GoString &&
+      typeof (value as any).GoString === 'function'
+    ) {
+      try {
+        return (value as any).GoString()
+      } catch {}
+    }
     // Prefer error interface if present
     if ((value as any).Error && typeof (value as any).Error === 'function') {
       try {
@@ -95,8 +112,26 @@ function defaultFormat(value: any): string {
         return (value as any).String()
       } catch {}
     }
+    // Basic Map/Set rendering
+    if (value instanceof Map) {
+      const parts: string[] = []
+      for (const [k, v] of (value as Map<any, any>).entries()) {
+        parts.push(`${defaultFormat(k)}:${defaultFormat(v)}`)
+      }
+      return `{${parts.join(' ')}}`
+    }
+    if (value instanceof Set) {
+      const parts: string[] = []
+      for (const v of (value as Set<any>).values()) {
+        parts.push(defaultFormat(v))
+      }
+      return '[' + parts.join(' ') + ']'
+    }
     // Default object representation
-    if ((value as any).constructor?.name && (value as any).constructor.name !== 'Object') {
+    if (
+      (value as any).constructor?.name &&
+      (value as any).constructor.name !== 'Object'
+    ) {
       return `{${Object.entries(value as Record<string, any>)
         .map(([k, v]) => `${k}:${defaultFormat(v)}`)
         .join(' ')}}`
@@ -300,9 +335,18 @@ export function Sprintln(...a: any[]): string {
 
 // Fprint functions (write to Writer) - simplified implementation
 export function Fprint(w: any, ...a: any[]): [number, $.GoError | null] {
-  const result = a.map(defaultFormat).join(' ')
+  // Same spacing as Print
+  let out = ''
+  for (let i = 0; i < a.length; i++) {
+    if (i > 0) {
+      const prevIsString = typeof a[i - 1] === 'string'
+      const currIsString = typeof a[i] === 'string'
+      if (!prevIsString && !currIsString) out += ' '
+    }
+    out += defaultFormat(a[i])
+  }
   if (w && w.Write) {
-    return w.Write(new TextEncoder().encode(result))
+    return w.Write(new TextEncoder().encode(out))
   }
   return [0, $.newError('Writer does not implement Write method')]
 }
@@ -320,7 +364,9 @@ export function Fprintf(
 }
 
 export function Fprintln(w: any, ...a: any[]): [number, $.GoError | null] {
-  const result = a.map(defaultFormat).join(' ') + '\n'
+  // Same behavior as Println
+  const body = a.map(defaultFormat).join(' ')
+  const result = body + '\n'
   if (w && w.Write) {
     return w.Write(new TextEncoder().encode(result))
   }

@@ -2,6 +2,7 @@
     "recommendations": [
         "github.copilot-chat",
         "golang.go",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "vitest.explorer"
     ]
 }
