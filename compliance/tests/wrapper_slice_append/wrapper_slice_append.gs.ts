@@ -1,7 +1,7 @@
 // Generated file based on wrapper_slice_append.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 import * as errlist from "@goscript/github.com/aperturerobotics/goscript/compliance/tests/wrapper_slice_append/errlist/index.js"
 

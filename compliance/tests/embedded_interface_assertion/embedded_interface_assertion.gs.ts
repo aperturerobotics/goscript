@@ -1,7 +1,7 @@
 // Generated file based on embedded_interface_assertion.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 export type Closer = null | {
 	Close(): $.GoError

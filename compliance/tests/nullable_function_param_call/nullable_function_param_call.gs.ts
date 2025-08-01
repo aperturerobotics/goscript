@@ -1,7 +1,7 @@
 // Generated file based on nullable_function_param_call.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 import * as os from "@goscript/os/index.js"
 

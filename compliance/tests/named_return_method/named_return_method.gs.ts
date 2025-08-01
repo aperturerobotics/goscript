@@ -1,7 +1,7 @@
 // Generated file based on named_return_method.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 export class content {
 	public get bytes(): $.Bytes {

@@ -1,4 +1,4 @@
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 import { Mutex } from "./mutex.gs.js";
 
 import * as context from "@goscript/context/index.js"

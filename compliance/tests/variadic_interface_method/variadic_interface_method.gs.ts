@@ -1,7 +1,7 @@
 // Generated file based on variadic_interface_method.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 export type Basic = null | {
 	Join(...elem: string[]): string

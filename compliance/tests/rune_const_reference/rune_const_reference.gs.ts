@@ -1,7 +1,7 @@
 // Generated file based on rune_const_reference.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/compliance/tests/rune_const_reference/subpkg/index.js"
 

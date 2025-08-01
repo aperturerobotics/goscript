@@ -298,12 +298,13 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 		} else {
 			tokStr, ok := TokenToTs(tok) // Use explicit gstypes alias
 			if !ok {
-				c.tsw.WriteLiterally("?= ")
+				// Fallback to simple assignment to keep output valid
+				c.tsw.WriteLiterally("= ")
 				c.tsw.WriteCommentLine("Unknown token " + tok.String())
 			} else {
 				c.tsw.WriteLiterally(tokStr)
+				c.tsw.WriteLiterally(" ")
 			}
-			c.tsw.WriteLiterally(" ")
 		}
 	}
 

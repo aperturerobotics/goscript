@@ -1,7 +1,7 @@
 // Generated file based on function_type_assertion.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 export type Adder = ((a: number, b: number) => number) | null;
 

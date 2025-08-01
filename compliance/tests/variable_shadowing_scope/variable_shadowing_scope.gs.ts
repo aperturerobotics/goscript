@@ -1,7 +1,7 @@
 // Generated file based on variable_shadowing_scope.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 export function firstFunc(): [string, number] {
 	return ["", 42]

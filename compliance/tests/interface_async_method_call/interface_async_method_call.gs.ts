@@ -1,7 +1,7 @@
 // Generated file based on interface_async_method_call.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 export type AsyncProcessor = null | {
 	GetResult(): number

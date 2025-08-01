@@ -1,7 +1,7 @@
 // Generated file based on storage.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 import { file } from "./memory.gs.js";
 
 export class storage {

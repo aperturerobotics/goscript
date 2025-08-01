@@ -1,7 +1,7 @@
 // Generated file based on for_range_channel.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
 	let c = $.makeChannel<number>(1, 0, 'both')

@@ -1,4 +1,4 @@
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 import * as cmp from "@goscript/cmp/index.js"
 

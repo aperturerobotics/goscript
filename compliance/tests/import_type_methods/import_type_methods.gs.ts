@@ -1,7 +1,7 @@
 // Generated file based on import_type_methods.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 import * as errlist from "@goscript/github.com/aperturerobotics/goscript/compliance/tests/import_type_methods/errlist/index.js"
 

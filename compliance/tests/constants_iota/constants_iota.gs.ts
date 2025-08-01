@@ -1,7 +1,7 @@
 // Generated file based on constants_iota.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 // ignore first value by assigning to blank identifier
 

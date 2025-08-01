@@ -1,7 +1,7 @@
 // Generated file based on if_type_assert.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
 	let a: null | any = null

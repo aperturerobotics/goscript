@@ -1,4 +1,4 @@
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 import { File, FileSet, lineInfo } from "./position.gs.js";
 
 export class serializedFile {
