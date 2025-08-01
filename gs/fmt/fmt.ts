@@ -41,7 +41,12 @@ function formatValue(value: any, verb: string): string {
       return String(value)
     case 't': // boolean
       return value ? 'true' : 'false'
-    case 'T': // type
+    case 'T': // type (approximate Go names for primitives we need)
+      if (typeof value === 'number') {
+        return Number.isInteger(value) ? 'int' : 'float64'
+      }
+      if (typeof value === 'boolean') return 'bool'
+      if (typeof value === 'string') return 'string'
       return typeof value
     case 'c': // character (Unicode code point)
       return String.fromCharCode(Number(value))
@@ -78,17 +83,29 @@ function defaultFormat(value: any): string {
   if (Array.isArray(value))
     return '[' + value.map(defaultFormat).join(' ') + ']'
   if (typeof value === 'object') {
+    // Prefer error interface if present
+    if ((value as any).Error && typeof (value as any).Error === 'function') {
+      try {
+        return (value as any).Error()
+      } catch {}
+    }
     // Check for Stringer interface
-    if (value.String && typeof value.String === 'function') {
-      return value.String()
+    if ((value as any).String && typeof (value as any).String === 'function') {
+      try {
+        return (value as any).String()
+      } catch {}
     }
     // Default object representation
-    if (value.constructor?.name && value.constructor.name !== 'Object') {
-      return `{${Object.entries(value)
+    if ((value as any).constructor?.name && (value as any).constructor.name !== 'Object') {
+      return `{${Object.entries(value as Record<string, any>)
         .map(([k, v]) => `${k}:${defaultFormat(v)}`)
         .join(' ')}}`
     }
-    return JSON.stringify(value)
+    try {
+      return JSON.stringify(value)
+    } catch {
+      return String(value)
+    }
   }
   return String(value)
 }
@@ -227,9 +244,18 @@ let stdout = {
 
 // Print functions
 export function Print(...a: any[]): [number, $.GoError | null] {
-  const result = a.map(defaultFormat).join(' ')
-  stdout.write(result)
-  return [result.length, null]
+  // Go rule: add spaces between operands only when neither is a string
+  let out = ''
+  for (let i = 0; i < a.length; i++) {
+    if (i > 0) {
+      const prevIsString = typeof a[i - 1] === 'string'
+      const currIsString = typeof a[i] === 'string'
+      if (!prevIsString && !currIsString) out += ' '
+    }
+    out += defaultFormat(a[i])
+  }
+  stdout.write(out)
+  return [out.length, null]
 }
 
 export function Printf(
@@ -242,14 +268,26 @@ export function Printf(
 }
 
 export function Println(...a: any[]): [number, $.GoError | null] {
-  const result = a.map(defaultFormat).join(' ') + '\n'
+  // Go Println: always space-separate operands, then newline
+  const body = a.map(defaultFormat).join(' ')
+  const result = body + '\n'
   stdout.write(result)
   return [result.length, null]
 }
 
 // Sprint functions (return strings)
 export function Sprint(...a: any[]): string {
-  return a.map(defaultFormat).join(' ')
+  // Go rule: add spaces between operands only when neither is a string
+  let out = ''
+  for (let i = 0; i < a.length; i++) {
+    if (i > 0) {
+      const prevIsString = typeof a[i - 1] === 'string'
+      const currIsString = typeof a[i] === 'string'
+      if (!prevIsString && !currIsString) out += ' '
+    }
+    out += defaultFormat(a[i])
+  }
+  return out
 }
 
 export function Sprintf(format: string, ...a: any[]): string {
