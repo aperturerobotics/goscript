@@ -4,7 +4,7 @@ go 1.24.4
 
 require (
 	github.com/aperturerobotics/cli v1.0.0
-	github.com/aperturerobotics/protobuf-go-lite v0.10.0
+	github.com/aperturerobotics/protobuf-go-lite v0.10.1
 	github.com/aperturerobotics/util v1.31.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
