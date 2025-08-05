@@ -139,6 +139,50 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 				}
 			}
 
+			// Check for shadowing with type assertion
+			// When we have: s := s.(*ast.ImportSpec)
+			// We need to use a temporary variable to avoid self-referencing
+			if lhsIdent != nil && len(rhs) == 1 {
+				if typeAssertExpr, ok := rhs[0].(*ast.TypeAssertExpr); ok {
+					// Check if the RHS expression is an identifier with the same name as LHS
+					if rhsIdent, ok := typeAssertExpr.X.(*ast.Ident); ok && rhsIdent.Name == lhsIdent.Name {
+						// Generate unique temporary variable name
+						tempName := fmt.Sprintf("_gs_ta_%s", c.getDeterministicID(typeAssertExpr.Pos()))
+
+						// Declare temp variable with type assertion result
+						c.tsw.WriteLiterally("let ")
+						c.tsw.WriteLiterally(tempName)
+						c.tsw.WriteLiterally(" = $.mustTypeAssert<")
+						c.WriteTypeExpr(typeAssertExpr.Type)
+						c.tsw.WriteLiterally(">(")
+						if err := c.WriteValueExpr(typeAssertExpr.X); err != nil {
+							return fmt.Errorf("failed to write interface expression in type assertion: %w", err)
+						}
+						c.tsw.WriteLiterally(", ")
+
+						// Unwrap parenthesized expressions
+						typeExpr := typeAssertExpr.Type
+						for {
+							if parenExpr, ok := typeExpr.(*ast.ParenExpr); ok {
+								typeExpr = parenExpr.X
+							} else {
+								break
+							}
+						}
+						c.writeTypeDescription(typeExpr)
+						c.tsw.WriteLiterally(")")
+						c.tsw.WriteLine("")
+
+						// Now assign temp to the actual variable
+						c.tsw.WriteLiterally("let ")
+						c.tsw.WriteLiterally(c.sanitizeIdentifier(lhsIdent.Name))
+						c.tsw.WriteLiterally(" = ")
+						c.tsw.WriteLiterally(tempName)
+						return nil
+					}
+				}
+			}
+
 			// Handle short declaration of variable referenced variables
 			if isLHSVarRefed && lhsIdent != nil {
 				c.tsw.WriteLiterally("let ")

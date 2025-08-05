@@ -689,12 +689,22 @@ function isMarkedAsStructValue(value: any): boolean {
  * @returns True if the value matches the pointer type, false otherwise.
  */
 function matchesPointerType(value: any, info: TypeInfo): boolean {
-  // Allow null/undefined values to match pointer types to support nil pointer assertions
+  // IMPORTANT: In Go, a nil interface value should NOT match a concrete pointer type.
+  // Only a non-nil interface containing a typed nil pointer should match.
+  // For example:
+  // - var i interface{} = nil        -> i.(*MyType) returns ok=false
+  // - var i interface{} = (*MyType)(nil) -> i.(*MyType) returns ok=true
+  //
+  // In TypeScript/JavaScript, we can't distinguish between these two cases perfectly,
+  // but we should NOT allow plain null/undefined values to match pointer types.
+  // The only null values that should match are those that are already wrapped in
+  // a properly typed object (like a VarRef with a null value).
+  
   if (value === null || value === undefined) {
-    return true
+    return false  // Changed from true to false - nil interface should not match
   }
 
-  if (typeof value !== 'object' || value === null) {
+  if (typeof value !== 'object') {
     return false
   }
 
@@ -874,12 +884,6 @@ export function typeAssert<T>(
   typeInfo: string | TypeInfo,
 ): TypeAssertResult<T> {
   const normalizedType = normalizeTypeInfo(typeInfo)
-  if (isPointerTypeInfo(normalizedType) && value === null) {
-    return { value: null as unknown as T, ok: true }
-  }
-
-  // Removed struct matching logic - struct types should use nominal matching
-  // via matchesStructType in matchesType, not structural matching here
 
   if (
     isMapTypeInfo(normalizedType) &&

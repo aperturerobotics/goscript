@@ -1,7 +1,7 @@
 // Generated file based on package_import_go_parser.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from "@goscript/builtin/index.js"
 
 import * as ast from "@goscript/go/ast/index.js"
 
@@ -25,7 +25,7 @@ export async function main(): Promise<void> {
 	for (let _i = 0; _i < $.len(expressions); _i++) {
 		const expr = expressions![_i]
 		{
-			let [node, err] = parser.ParseExpr(expr)
+			let [node, err] = await parser.ParseExpr(expr)
 			if (err != null) {
 				results = $.append(results, "Error parsing " + expr + ": " + err!.Error())
 				continue
@@ -33,14 +33,14 @@ export async function main(): Promise<void> {
 
 			// Extract type information from the parsed expression
 			$.typeSwitch(node, [{ types: [{kind: $.TypeKind.Pointer, elemType: 'ast.BasicLit'}], body: (n) => {
-				results = $.append(results, "BasicLit: " + n.Value)
+				results = $.append(results, "BasicLit: " + n!.Value)
 			}},
 			{ types: [{kind: $.TypeKind.Pointer, elemType: 'ast.BinaryExpr'}], body: (n) => {
-				results = $.append(results, "BinaryExpr with operator: " + token.Token_String(n.Op))
+				results = $.append(results, "BinaryExpr with operator: " + token.Token_String(n!.Op))
 			}},
 			{ types: [{kind: $.TypeKind.Pointer, elemType: 'ast.CallExpr'}], body: (n) => {
 				{
-					let { value: ident, ok: ok } = $.typeAssert<ast.Ident | null>(n.Fun, {kind: $.TypeKind.Pointer, elemType: 'ast.Ident'})
+					let { value: ident, ok: ok } = $.typeAssert<ast.Ident | null>(n!.Fun, {kind: $.TypeKind.Pointer, elemType: 'ast.Ident'})
 					if (ok) {
 						results = $.append(results, "CallExpr: " + ident!.Name)
 					}
@@ -67,7 +67,7 @@ func main() {
 }`
 
 	// Parse the source code
-	let [file, err] = parser.ParseFile(fset, "test.go", src, parser.ParseComments)
+	let [file, err] = await parser.ParseFile(fset, "test.go", src, parser.ParseComments)
 
 	// Extract function names
 

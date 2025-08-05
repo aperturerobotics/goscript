@@ -93,8 +93,14 @@ func (c *GoToTSCompiler) writeTypeAssert(lhs []ast.Expr, typeAssertExpr *ast.Typ
 			}
 		}
 
-		// For selector expressions as ok, we need to use temporary variables approach
-		if okIsSelectorExpr {
+		// Check for shadowing: if the RHS expression is an identifier with the same name as LHS
+		var isShadowing bool
+		if rhsIdent, ok := interfaceExpr.(*ast.Ident); ok && valueIsNewInDefine && rhsIdent.Name == valueName {
+			isShadowing = true
+		}
+
+		// For selector expressions as ok OR when there's shadowing, we need to use temporary variables approach
+		if okIsSelectorExpr || isShadowing {
 			// Use temporary variables approach similar to SelectorExpr case
 			tempValName := fmt.Sprintf("_gs_ta_val_%s", c.getDeterministicID(typeAssertExpr.Pos())) // Unique name based on deterministic position
 			tempOkName := fmt.Sprintf("_gs_ta_ok_%s", c.getDeterministicID(typeAssertExpr.Pos()))   // Unique name based on deterministic position
@@ -140,13 +146,22 @@ func (c *GoToTSCompiler) writeTypeAssert(lhs []ast.Expr, typeAssertExpr *ast.Typ
 				c.tsw.WriteLine("")
 			}
 
-			// Assign temporary ok to the selector expression:
-			if err := c.WriteValueExpr(okSelectorExpr); err != nil {
-				return fmt.Errorf("failed to write ok selector expression in type assertion: %w", err)
+			// Assign temporary ok to the ok variable or selector expression:
+			if okIsSelectorExpr {
+				if err := c.WriteValueExpr(okSelectorExpr); err != nil {
+					return fmt.Errorf("failed to write ok selector expression in type assertion: %w", err)
+				}
+			} else if !okIsBlank {
+				if okIsNewInDefine {
+					c.tsw.WriteLiterally("let ")
+				}
+				c.tsw.WriteLiterally(okIdent.Name)
 			}
-			c.tsw.WriteLiterally(" = ")
-			c.tsw.WriteLiterally(tempOkName)
-			c.tsw.WriteLine("")
+			if !okIsBlank {
+				c.tsw.WriteLiterally(" = ")
+				c.tsw.WriteLiterally(tempOkName)
+				c.tsw.WriteLine("")
+			}
 
 			return nil
 		}
