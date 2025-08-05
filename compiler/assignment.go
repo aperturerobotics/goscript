@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -45,14 +46,54 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 			return nil
 		}
 
-		// Handle the special case of "*p = val" (assignment to dereferenced pointer)
+		// Handle the special case of "*p = val" or "*p += val" (assignment to dereferenced pointer)
 		if starExpr, ok := lhs[0].(*ast.StarExpr); ok {
 			// For *p = val, we need to set p's .value property
-			// Write "p!.value = " for the underlying value
-			if err := c.WriteValueExpr(starExpr.X); err != nil { // p in *p
-				return err
+			// Check if the pointer variable itself needs VarRef access
+			if ident, ok := starExpr.X.(*ast.Ident); ok {
+				// Get the object for this identifier
+				var obj types.Object
+				obj = c.pkg.TypesInfo.Uses[ident]
+				if obj == nil {
+					obj = c.pkg.TypesInfo.Defs[ident]
+				}
+
+				// Check if this pointer variable itself is varrefed
+				if obj != nil && c.analysis.NeedsVarRef(obj) {
+					// The pointer variable itself is varrefed (e.g., p1 in varref_deref_set)
+					// Write p1.value to get the actual pointer, then dereference with !.value
+					c.WriteIdent(ident, true) // This adds .value for the varrefed variable
+					c.tsw.WriteLiterally("!.value")
+				} else {
+					// The pointer variable is not varrefed (e.g., p in star_compound_assign)
+					// Write p, then dereference with !.value
+					c.WriteIdent(ident, false)
+					c.tsw.WriteLiterally("!.value")
+				}
+			} else {
+				// For other expressions, use WriteValueExpr
+				if err := c.WriteValueExpr(starExpr.X); err != nil {
+					return err
+				}
+				// The WriteValueExpr should handle VarRef access if needed
+				// We just add the dereference
+				c.tsw.WriteLiterally("!.value")
 			}
-			c.tsw.WriteLiterally("!.value = ") // Add non-null assertion for TS safety
+
+			// Handle the assignment operator
+			if tok == token.AND_NOT_ASSIGN {
+				// Special handling for &^= (bitwise AND NOT assignment)
+				// Transform *p &^= y to p!.value &= ~(y)
+				c.tsw.WriteLiterally(" &= ~(")
+			} else {
+				c.tsw.WriteLiterally(" ")
+				tokStr, ok := TokenToTs(tok)
+				if !ok {
+					return fmt.Errorf("unknown assignment token: %s", tok.String())
+				}
+				c.tsw.WriteLiterally(tokStr)
+				c.tsw.WriteLiterally(" ")
+			}
 
 			// Handle the RHS expression (potentially adding .clone() for structs)
 			if shouldApplyClone(c.pkg, rhs[0]) {
@@ -67,6 +108,12 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 					return err
 				}
 			}
+
+			// Close the parenthesis for &^= transformation
+			if tok == token.AND_NOT_ASSIGN {
+				c.tsw.WriteLiterally(")")
+			}
+
 			return nil
 		}
 
@@ -298,13 +345,10 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 		} else {
 			tokStr, ok := TokenToTs(tok) // Use explicit gstypes alias
 			if !ok {
-				// Fallback to simple assignment to keep output valid
-				c.tsw.WriteLiterally("= ")
-				c.tsw.WriteCommentLine("Unknown token " + tok.String())
-			} else {
-				c.tsw.WriteLiterally(tokStr)
-				c.tsw.WriteLiterally(" ")
+				return fmt.Errorf("unknown assignment token: %s", tok.String())
 			}
+			c.tsw.WriteLiterally(tokStr)
+			c.tsw.WriteLiterally(" ")
 		}
 	}
 
