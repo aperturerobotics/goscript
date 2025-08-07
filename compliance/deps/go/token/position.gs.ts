@@ -775,7 +775,7 @@ export class File {
 	// p must be a [Pos] value in that file or [NoPos].
 	public async Line(p: Pos): Promise<number> {
 		const f = this
-		return await f.Position(p)!.Line
+		return (await f.Position(p))!.Line
 	}
 
 	// unpack returns the filename and line and column number for a file offset.

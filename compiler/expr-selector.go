@@ -122,8 +122,20 @@ func (c *GoToTSCompiler) WriteSelectorExpr(exp *ast.SelectorExpr) error {
 
 	// Fallback / Normal Case (e.g., obj.Field, pkg.Var, method calls)
 	// WriteValueExpr handles adding .value for the base variable itself if it's varrefed.
+	// If the base is a call expression, wrap it in parentheses to ensure correct precedence
+	// especially when the call may be prefixed with `await`.
+	needParens := false
+	if _, isCall := exp.X.(*ast.CallExpr); isCall {
+		needParens = true
+		c.tsw.WriteLiterally("(")
+	}
+
 	if err := c.WriteValueExpr(exp.X); err != nil {
 		return fmt.Errorf("failed to write selector base expression: %w", err)
+	}
+
+	if needParens {
+		c.tsw.WriteLiterally(")")
 	}
 
 	// Add null assertion for selector expressions when accessing fields/methods on nullable types

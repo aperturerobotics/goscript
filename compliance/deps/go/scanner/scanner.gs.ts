@@ -388,7 +388,7 @@ export class Scanner {
 		}
 		let filename = $.bytesToString($.goSlice(text, undefined, i - 1)) // lop off ":line", and trim white space
 		if (filename == "" && ok2) {
-			filename = await s.file!.Position(s.file!.Pos(offs))!.Filename
+			filename = (await s.file!.Position(s.file!.Pos(offs)))!.Filename
 		}
 		 else if (filename != "") {
 			// Put a relative filename in the current directory.
