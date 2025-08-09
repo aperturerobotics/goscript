@@ -127,13 +127,11 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 					if ident, ok := lhsExpr.(*ast.Ident); ok && ident.Name != "_" && newVars[i] {
 						c.tsw.WriteLiterally("let ")
 						c.WriteIdent(ident, false)
-
 						// Add type annotation if we have type information
 						if i < len(resultTypes) {
 							c.tsw.WriteLiterally(": ")
 							c.WriteGoType(resultTypes[i].Type(), GoTypeContextGeneral)
 						}
-
 						c.tsw.WriteLine("")
 					}
 				}
@@ -141,21 +139,7 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 		}
 
 		// First, collect all the selector expressions to identify variables that need to be initialized
-		hasSelectors := false
-		for _, lhsExpr := range lhs {
-			if _, ok := lhsExpr.(*ast.SelectorExpr); ok {
-				hasSelectors = true
-				break
-			}
-			if _, ok := lhsExpr.(*ast.StarExpr); ok {
-				hasSelectors = true
-				break
-			}
-			if _, ok := lhsExpr.(*ast.IndexExpr); ok {
-				hasSelectors = true
-				break
-			}
-		}
+		hasSelectors := c.lhsHasComplexTargets(lhs)
 
 		// If we have selector expressions, we need to ensure variables are initialized
 		// before the destructuring assignment
@@ -540,4 +524,15 @@ func (c *GoToTSCompiler) writeLHSTarget(lhsExpr ast.Expr) error {
 	default:
 		return errors.Errorf("unhandled LHS expression in assignment: %T", lhsExpr)
 	}
+}
+
+// lhsHasComplexTargets returns true if any LHS expression is a selector, star (dereference), or index expression.
+func (c *GoToTSCompiler) lhsHasComplexTargets(lhs []ast.Expr) bool {
+	for _, e := range lhs {
+		switch e.(type) {
+		case *ast.SelectorExpr, *ast.StarExpr, *ast.IndexExpr:
+			return true
+		}
+	}
+	return false
 }
