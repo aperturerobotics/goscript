@@ -47,290 +47,6 @@ import (
 // It correctly applies `let` for `:=` (define) tokens and handles varRefing and
 // cloning semantics based on type information and analysis.
 func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
-	// writeMultiVarAssignFromCall handles multi-variable assignment from a single function call.
-	writeMultiVarAssignFromCall := func(lhs []ast.Expr, callExpr *ast.CallExpr, tok token.Token) error {
-		// For token.DEFINE (:=), we need to check if any of the variables are already declared
-		// In Go, := can be used for redeclaration if at least one variable is new
-		if tok == token.DEFINE {
-			// For token.DEFINE (:=), we need to handle variable declarations differently
-			// In Go, := can redeclare existing variables if at least one is new
-
-			// First, identify which variables are new vs existing
-			newVars := make([]bool, len(lhs))
-			anyNewVars := false
-			allNewVars := true
-
-			// For multi-variable assignments with :=, we need to determine which variables
-			// are already in scope and which are new declarations
-			for i, lhsExpr := range lhs {
-				if ident, ok := lhsExpr.(*ast.Ident); ok && ident.Name != "_" {
-					// In Go, variables declared with := can be redeclared if at least one is new
-					// For TypeScript, we need to separately declare new variables
-
-					// Check if this variable is already in scope
-					// - If the variable is used elsewhere before this point, it's existing
-					// - Otherwise, it's a new variable being declared
-					isNew := true
-
-					// Check if the variable is used elsewhere in the code
-					if obj := c.pkg.TypesInfo.Uses[ident]; obj != nil {
-						// If it's in Uses, it's referenced elsewhere, so it exists
-						isNew = false
-						allNewVars = false
-					}
-
-					newVars[i] = isNew
-					if isNew {
-						anyNewVars = true
-					}
-				}
-			}
-
-			// Get function return types if available
-			var resultTypes []*types.Var
-			if callExpr.Fun != nil {
-				if funcType, ok := c.pkg.TypesInfo.TypeOf(callExpr.Fun).Underlying().(*types.Signature); ok {
-					if funcType.Results() != nil && funcType.Results().Len() > 0 {
-						for i := 0; i < funcType.Results().Len(); i++ {
-							resultTypes = append(resultTypes, funcType.Results().At(i))
-						}
-					}
-				}
-			}
-
-			if allNewVars && anyNewVars {
-				c.tsw.WriteLiterally("let [")
-
-				for i, lhsExpr := range lhs {
-					if i != 0 {
-						c.tsw.WriteLiterally(", ")
-					}
-
-					if ident, ok := lhsExpr.(*ast.Ident); ok {
-						if ident.Name == "_" {
-							// For underscore variables, use empty slots in destructuring pattern
-						} else {
-							c.WriteIdent(ident, false)
-						}
-					} else {
-						c.WriteValueExpr(lhsExpr)
-					}
-				}
-				c.tsw.WriteLiterally("] = ")
-				c.WriteValueExpr(callExpr)
-				c.tsw.WriteLine("")
-				return nil
-			} else if anyNewVars {
-				// If only some variables are new, declare them separately before the assignment
-				// Declare each new variable with appropriate type
-				for i, lhsExpr := range lhs {
-					if ident, ok := lhsExpr.(*ast.Ident); ok && ident.Name != "_" && newVars[i] {
-						c.tsw.WriteLiterally("let ")
-						c.WriteIdent(ident, false)
-						// Add type annotation if we have type information
-						if i < len(resultTypes) {
-							c.tsw.WriteLiterally(": ")
-							c.WriteGoType(resultTypes[i].Type(), GoTypeContextGeneral)
-						}
-						c.tsw.WriteLine("")
-					}
-				}
-			}
-		}
-
-		// First, collect all the selector expressions to identify variables that need to be initialized
-		hasSelectors := c.lhsHasComplexTargets(lhs)
-
-		// If we have selector expressions, we need to ensure variables are initialized
-		// before the destructuring assignment
-		if hasSelectors {
-			c.tsw.WriteLiterally("{")
-			c.tsw.WriteLine("")
-
-			// Write a temporary variable to hold the function call result
-			c.tsw.WriteLiterally("  const _tmp = ")
-			if err := c.WriteValueExpr(callExpr); err != nil {
-				return fmt.Errorf("failed to write RHS call expression in assignment: %w", err)
-			}
-			c.tsw.WriteLine("")
-
-			for i, lhsExpr := range lhs {
-				// Skip underscore variables
-				if ident, ok := lhsExpr.(*ast.Ident); ok && ident.Name == "_" {
-					continue
-				}
-
-				// Write the LHS with indentation
-				c.tsw.WriteLiterally("  ")
-				if err := c.writeLHSTarget(lhsExpr); err != nil {
-					return err
-				}
-
-				// Write the assignment
-				c.tsw.WriteLiterallyf(" = _tmp[%d]", i)
-				// Always add a newline after each assignment
-				c.tsw.WriteLine("")
-			}
-
-			// Close the block scope
-			c.tsw.WriteLiterally("}")
-			c.tsw.WriteLine("")
-
-			return nil
-		}
-
-		// For simple cases without selector expressions, use array destructuring
-		// Add semicolon before destructuring assignment to prevent TypeScript
-		// from interpreting it as array access on the previous line
-		if tok != token.DEFINE {
-			c.tsw.WriteLiterally(";")
-		}
-		c.tsw.WriteLiterally("[")
-
-		// Find the last non-blank identifier to avoid trailing commas
-		lastNonBlankIndex := -1
-		for i := len(lhs) - 1; i >= 0; i-- {
-			if ident, ok := lhs[i].(*ast.Ident); !ok || ident.Name != "_" {
-				lastNonBlankIndex = i
-				break
-			}
-		}
-
-		for i, lhsExpr := range lhs {
-			// Write comma before non-first elements
-			if i > 0 {
-				c.tsw.WriteLiterally(", ")
-			}
-
-			if ident, ok := lhsExpr.(*ast.Ident); ok {
-				// For underscore variables, use empty slots in destructuring pattern
-				if ident.Name != "_" {
-					c.WriteIdent(ident, false)
-				}
-				// For blank identifiers, we write nothing (empty slot)
-			} else {
-				if err := c.writeLHSTarget(lhsExpr); err != nil {
-					return err
-				}
-			}
-
-			// Stop writing if we've reached the last non-blank element
-			if i == lastNonBlankIndex {
-				break
-			}
-		}
-		c.tsw.WriteLiterally("] = ")
-
-		c.WriteValueExpr(callExpr)
-
-		c.tsw.WriteLine("")
-		return nil
-	}
-
-	// writeMapLookupWithExists handles the map comma-ok idiom: value, exists := myMap[key]
-	// Uses array destructuring with the tuple-returning $.mapGet function
-	writeMapLookupWithExists := func(lhs []ast.Expr, indexExpr *ast.IndexExpr, tok token.Token) error {
-		// First check that we have exactly two LHS expressions (value and exists)
-		if len(lhs) != 2 {
-			return fmt.Errorf("map comma-ok idiom requires exactly 2 variables on LHS, got %d", len(lhs))
-		}
-
-		// Check for blank identifiers
-		valueIsBlank := false
-		existsIsBlank := false
-
-		if valIdent, ok := lhs[0].(*ast.Ident); ok && valIdent.Name == "_" {
-			valueIsBlank = true
-		}
-		if existsIdent, ok := lhs[1].(*ast.Ident); ok && existsIdent.Name == "_" {
-			existsIsBlank = true
-		}
-
-		// Use array destructuring with mapGet tuple return
-		if tok == token.DEFINE {
-			c.tsw.WriteLiterally("let ")
-		} else {
-			// Add semicolon before destructuring assignment to prevent TypeScript
-			// from interpreting it as array access on the previous line
-			c.tsw.WriteLiterally(";")
-		}
-
-		c.tsw.WriteLiterally("[")
-
-		// Write LHS variables, handling blanks
-		if !valueIsBlank {
-			if err := c.WriteValueExpr(lhs[0]); err != nil {
-				return err
-			}
-		}
-		// Note: for blank identifiers, we just omit the variable name entirely
-
-		c.tsw.WriteLiterally(", ")
-
-		if !existsIsBlank {
-			if err := c.WriteValueExpr(lhs[1]); err != nil {
-				return err
-			}
-		}
-		// Note: for blank identifiers, we just omit the variable name entirely
-
-		c.tsw.WriteLiterally("] = $.mapGet(")
-
-		// Write map expression
-		if err := c.WriteValueExpr(indexExpr.X); err != nil {
-			return err
-		}
-
-		c.tsw.WriteLiterally(", ")
-
-		// Write key expression
-		if err := c.WriteValueExpr(indexExpr.Index); err != nil {
-			return err
-		}
-
-		c.tsw.WriteLiterally(", ")
-
-		// Write the zero value for the map's value type
-		if tv, ok := c.pkg.TypesInfo.Types[indexExpr.X]; ok {
-			if mapType, isMap := tv.Type.Underlying().(*types.Map); isMap {
-				c.WriteZeroValueForType(mapType.Elem())
-			} else if typeParam, isTypeParam := tv.Type.(*types.TypeParam); isTypeParam {
-				// Handle type parameter constrained to be a map type
-				constraint := typeParam.Constraint()
-				if constraint != nil {
-					underlying := constraint.Underlying()
-					if iface, isInterface := underlying.(*types.Interface); isInterface {
-						if hasMapConstraint(iface) {
-							// Get the value type from the constraint
-							mapValueType := getMapValueTypeFromConstraint(iface)
-							if mapValueType != nil {
-								c.WriteZeroValueForType(mapValueType)
-							} else {
-								c.tsw.WriteLiterally("null")
-							}
-						} else {
-							c.tsw.WriteLiterally("null")
-						}
-					} else {
-						c.tsw.WriteLiterally("null")
-					}
-				} else {
-					c.tsw.WriteLiterally("null")
-				}
-			} else {
-				// Fallback zero value if type info is missing or not a map
-				c.tsw.WriteLiterally("null")
-			}
-		} else {
-			c.tsw.WriteLiterally("null")
-		}
-
-		c.tsw.WriteLiterally(")")
-		c.tsw.WriteLine("")
-
-		return nil
-	}
-
 	// Handle multi-variable assignment from a single expression.
 	if len(exp.Lhs) > 1 && len(exp.Rhs) == 1 {
 		rhsExpr := exp.Rhs[0]
@@ -354,7 +70,7 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 				return nil
 			}
 			// Handle general function calls that return multiple values
-			return writeMultiVarAssignFromCall(exp.Lhs, callExpr, exp.Tok)
+			return c.writeMultiVarAssignFromCall(exp.Lhs, callExpr, exp.Tok)
 		}
 
 		if typeAssertExpr, ok := rhsExpr.(*ast.TypeAssertExpr); ok {
@@ -368,7 +84,7 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 					if ok {
 						// Check if it's a concrete map type
 						if _, isMap := v.Type.Underlying().(*types.Map); isMap {
-							return writeMapLookupWithExists(exp.Lhs, indexExpr, exp.Tok)
+							return c.writeMapLookupWithExists(exp.Lhs, indexExpr, exp.Tok)
 						}
 						// Check if it's a type parameter constrained to be a map type
 						if typeParam, isTypeParam := v.Type.(*types.TypeParam); isTypeParam {
@@ -377,7 +93,7 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 								underlying := constraint.Underlying()
 								if iface, isInterface := underlying.(*types.Interface); isInterface {
 									if hasMapConstraint(iface) {
-										return writeMapLookupWithExists(exp.Lhs, indexExpr, exp.Tok)
+										return c.writeMapLookupWithExists(exp.Lhs, indexExpr, exp.Tok)
 									}
 								}
 							}
@@ -535,4 +251,288 @@ func (c *GoToTSCompiler) lhsHasComplexTargets(lhs []ast.Expr) bool {
 		}
 	}
 	return false
+}
+
+// writeMultiVarAssignFromCall handles multi-variable assignment from a single function call.
+func (c *GoToTSCompiler) writeMultiVarAssignFromCall(lhs []ast.Expr, callExpr *ast.CallExpr, tok token.Token) error {
+	// For token.DEFINE (:=), we need to check if any of the variables are already declared
+	// In Go, := can be used for redeclaration if at least one variable is new
+	if tok == token.DEFINE {
+		// For token.DEFINE (:=), we need to handle variable declarations differently
+		// In Go, := can redeclare existing variables if at least one is new
+
+		// First, identify which variables are new vs existing
+		newVars := make([]bool, len(lhs))
+		anyNewVars := false
+		allNewVars := true
+
+		// For multi-variable assignments with :=, we need to determine which variables
+		// are already in scope and which are new declarations
+		for i, lhsExpr := range lhs {
+			if ident, ok := lhsExpr.(*ast.Ident); ok && ident.Name != "_" {
+				// In Go, variables declared with := can be redeclared if at least one is new
+				// For TypeScript, we need to separately declare new variables
+
+				// Check if this variable is already in scope
+				// - If the variable is used elsewhere before this point, it's existing
+				// - Otherwise, it's a new variable being declared
+				isNew := true
+
+				// Check if the variable is used elsewhere in the code
+				if obj := c.pkg.TypesInfo.Uses[ident]; obj != nil {
+					// If it's in Uses, it's referenced elsewhere, so it exists
+					isNew = false
+					allNewVars = false
+				}
+
+				newVars[i] = isNew
+				if isNew {
+					anyNewVars = true
+				}
+			}
+		}
+
+		// Get function return types if available
+		var resultTypes []*types.Var
+		if callExpr.Fun != nil {
+			if funcType, ok := c.pkg.TypesInfo.TypeOf(callExpr.Fun).Underlying().(*types.Signature); ok {
+				if funcType.Results() != nil && funcType.Results().Len() > 0 {
+					for i := 0; i < funcType.Results().Len(); i++ {
+						resultTypes = append(resultTypes, funcType.Results().At(i))
+					}
+				}
+			}
+		}
+
+		if allNewVars && anyNewVars {
+			c.tsw.WriteLiterally("let [")
+
+			for i, lhsExpr := range lhs {
+				if i != 0 {
+					c.tsw.WriteLiterally(", ")
+				}
+
+				if ident, ok := lhsExpr.(*ast.Ident); ok {
+					if ident.Name == "_" {
+						// For underscore variables, use empty slots in destructuring pattern
+					} else {
+						c.WriteIdent(ident, false)
+					}
+				} else {
+					c.WriteValueExpr(lhsExpr)
+				}
+			}
+			c.tsw.WriteLiterally("] = ")
+			c.WriteValueExpr(callExpr)
+			c.tsw.WriteLine("")
+			return nil
+		} else if anyNewVars {
+			// If only some variables are new, declare them separately before the assignment
+			// Declare each new variable with appropriate type
+			for i, lhsExpr := range lhs {
+				if ident, ok := lhsExpr.(*ast.Ident); ok && ident.Name != "_" && newVars[i] {
+					c.tsw.WriteLiterally("let ")
+					c.WriteIdent(ident, false)
+					// Add type annotation if we have type information
+					if i < len(resultTypes) {
+						c.tsw.WriteLiterally(": ")
+						c.WriteGoType(resultTypes[i].Type(), GoTypeContextGeneral)
+					}
+					c.tsw.WriteLine("")
+				}
+			}
+		}
+	}
+
+	// First, collect all the selector expressions to identify variables that need to be initialized
+	hasSelectors := c.lhsHasComplexTargets(lhs)
+
+	// If we have selector expressions, we need to ensure variables are initialized
+	// before the destructuring assignment
+	if hasSelectors {
+		c.tsw.WriteLiterally("{")
+		c.tsw.WriteLine("")
+
+		// Write a temporary variable to hold the function call result
+		c.tsw.WriteLiterally("  const _tmp = ")
+		if err := c.WriteValueExpr(callExpr); err != nil {
+			return fmt.Errorf("failed to write RHS call expression in assignment: %w", err)
+		}
+		c.tsw.WriteLine("")
+
+		for i, lhsExpr := range lhs {
+			// Skip underscore variables
+			if ident, ok := lhsExpr.(*ast.Ident); ok && ident.Name == "_" {
+				continue
+			}
+
+			// Write the LHS with indentation
+			c.tsw.WriteLiterally("  ")
+			if err := c.writeLHSTarget(lhsExpr); err != nil {
+				return err
+			}
+
+			// Write the assignment
+			c.tsw.WriteLiterallyf(" = _tmp[%d]", i)
+			// Always add a newline after each assignment
+			c.tsw.WriteLine("")
+		}
+
+		// Close the block scope
+		c.tsw.WriteLiterally("}")
+		c.tsw.WriteLine("")
+
+		return nil
+	}
+
+	// For simple cases without selector expressions, use array destructuring
+	// Add semicolon before destructuring assignment to prevent TypeScript
+	// from interpreting it as array access on the previous line
+	if tok != token.DEFINE {
+		c.tsw.WriteLiterally(";")
+	}
+	c.tsw.WriteLiterally("[")
+
+	// Find the last non-blank identifier to avoid trailing commas
+	lastNonBlankIndex := -1
+	for i := len(lhs) - 1; i >= 0; i-- {
+		if ident, ok := lhs[i].(*ast.Ident); !ok || ident.Name != "_" {
+			lastNonBlankIndex = i
+			break
+		}
+	}
+
+	for i, lhsExpr := range lhs {
+		// Write comma before non-first elements
+		if i > 0 {
+			c.tsw.WriteLiterally(", ")
+		}
+
+		if ident, ok := lhsExpr.(*ast.Ident); ok {
+			// For underscore variables, use empty slots in destructuring pattern
+			if ident.Name != "_" {
+				c.WriteIdent(ident, false)
+			}
+			// For blank identifiers, we write nothing (empty slot)
+		} else {
+			if err := c.writeLHSTarget(lhsExpr); err != nil {
+				return err
+			}
+		}
+
+		// Stop writing if we've reached the last non-blank element
+		if i == lastNonBlankIndex {
+			break
+		}
+	}
+	c.tsw.WriteLiterally("] = ")
+
+	c.WriteValueExpr(callExpr)
+
+	c.tsw.WriteLine("")
+	return nil
+}
+
+// writeMapLookupWithExists handles the map comma-ok idiom: value, exists := myMap[key]
+// Uses array destructuring with the tuple-returning $.mapGet function
+func (c *GoToTSCompiler) writeMapLookupWithExists(lhs []ast.Expr, indexExpr *ast.IndexExpr, tok token.Token) error {
+	// First check that we have exactly two LHS expressions (value and exists)
+	if len(lhs) != 2 {
+		return fmt.Errorf("map comma-ok idiom requires exactly 2 variables on LHS, got %d", len(lhs))
+	}
+
+	// Check for blank identifiers
+	valueIsBlank := false
+	existsIsBlank := false
+
+	if valIdent, ok := lhs[0].(*ast.Ident); ok && valIdent.Name == "_" {
+		valueIsBlank = true
+	}
+	if existsIdent, ok := lhs[1].(*ast.Ident); ok && existsIdent.Name == "_" {
+		existsIsBlank = true
+	}
+
+	// Use array destructuring with mapGet tuple return
+	if tok == token.DEFINE {
+		c.tsw.WriteLiterally("let ")
+	} else {
+		// Add semicolon before destructuring assignment to prevent TypeScript
+		// from interpreting it as array access on the previous line
+		c.tsw.WriteLiterally(";")
+	}
+
+	c.tsw.WriteLiterally("[")
+
+	// Write LHS variables, handling blanks
+	if !valueIsBlank {
+		if err := c.WriteValueExpr(lhs[0]); err != nil {
+			return err
+		}
+	}
+	// Note: for blank identifiers, we just omit the variable name entirely
+
+	c.tsw.WriteLiterally(", ")
+
+	if !existsIsBlank {
+		if err := c.WriteValueExpr(lhs[1]); err != nil {
+			return err
+		}
+	}
+	// Note: for blank identifiers, we just omit the variable name entirely
+
+	c.tsw.WriteLiterally("] = $.mapGet(")
+
+	// Write map expression
+	if err := c.WriteValueExpr(indexExpr.X); err != nil {
+		return err
+	}
+
+	c.tsw.WriteLiterally(", ")
+
+	// Write key expression
+	if err := c.WriteValueExpr(indexExpr.Index); err != nil {
+		return err
+	}
+
+	c.tsw.WriteLiterally(", ")
+
+	// Write the zero value for the map's value type
+	if tv, ok := c.pkg.TypesInfo.Types[indexExpr.X]; ok {
+		if mapType, isMap := tv.Type.Underlying().(*types.Map); isMap {
+			c.WriteZeroValueForType(mapType.Elem())
+		} else if typeParam, isTypeParam := tv.Type.(*types.TypeParam); isTypeParam {
+			// Handle type parameter constrained to be a map type
+			constraint := typeParam.Constraint()
+			if constraint != nil {
+				underlying := constraint.Underlying()
+				if iface, isInterface := underlying.(*types.Interface); isInterface {
+					if hasMapConstraint(iface) {
+						// Get the value type from the constraint
+						mapValueType := getMapValueTypeFromConstraint(iface)
+						if mapValueType != nil {
+							c.WriteZeroValueForType(mapValueType)
+						} else {
+							c.tsw.WriteLiterally("null")
+						}
+					} else {
+						c.tsw.WriteLiterally("null")
+					}
+				} else {
+					c.tsw.WriteLiterally("null")
+				}
+			} else {
+				c.tsw.WriteLiterally("null")
+			}
+		} else {
+			// Fallback zero value if type info is missing or not a map
+			c.tsw.WriteLiterally("null")
+		}
+	} else {
+		c.tsw.WriteLiterally("null")
+	}
+
+	c.tsw.WriteLiterally(")")
+	c.tsw.WriteLine("")
+
+	return nil
 }
