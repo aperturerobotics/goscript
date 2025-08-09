@@ -282,7 +282,7 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 					if unaryExprXIdent, ok := unaryExpr.X.(*ast.Ident); ok {
 						// Case: &variable
 						// Check if the variable is varrefed
-						innerObj := c.pkg.TypesInfo.Uses[unaryExprXIdent]
+						innerObj := c.objectOfIdent(unaryExprXIdent)
 						needsVarRefOperand := innerObj != nil && c.analysis.NeedsVarRef(innerObj)
 
 						// If variable is varrefed, assign the varRef itself (variable)
@@ -336,7 +336,7 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 									// Check if it's a simple identifier (not a function call or complex expression)
 									if expr.Name != "nil" {
 										// Check if this identifier refers to a value of the underlying type
-										if obj := c.pkg.TypesInfo.Uses[expr]; obj != nil {
+										if obj := c.objectOfIdent(expr); obj != nil {
 											if objType := obj.Type(); objType != nil {
 												// If the identifier's type matches the underlying type, wrap it
 												if types.Identical(objType, namedType.Underlying()) {
@@ -523,7 +523,7 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 func (c *GoToTSCompiler) writeInitializerForInterface(initializerExpr ast.Expr, goType types.Type) error {
 	// Check if this is a pointer variable assigned to interface
 	if rhsIdent, isIdent := initializerExpr.(*ast.Ident); isIdent {
-		if rhsObj := c.pkg.TypesInfo.Uses[rhsIdent]; rhsObj != nil {
+		if rhsObj := c.objectOfIdent(rhsIdent); rhsObj != nil {
 			// Check if LHS is interface and RHS is pointer
 			if _, isInterface := goType.Underlying().(*types.Interface); isInterface {
 				if _, isPtr := rhsObj.Type().(*types.Pointer); isPtr {
