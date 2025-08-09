@@ -5,7 +5,80 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+
+	"golang.org/x/tools/go/packages"
 )
+
+// shouldApplyClone determines whether a `.clone()` method call should be appended
+// to the TypeScript translation of a Go expression `rhs` when it appears on the
+// right-hand side of an assignment. This is primarily to emulate Go's value
+// semantics for struct assignments, where assigning one struct variable to another
+// creates a copy of the struct.
+//
+// It uses `go/types` information (`pkg.TypesInfo`) to determine the type of `rhs`.
+//   - If `rhs` is identified as a struct type (either directly, as a named type
+//     whose underlying type is a struct, or an unnamed type whose underlying type
+//     is a struct), it returns `true`.
+//   - An optimization: if `rhs` is a composite literal (`*ast.CompositeLit`),
+//     it returns `false` because a composite literal already produces a new value,
+//     so cloning is unnecessary.
+//   - If type information is unavailable or `rhs` is not a struct type, it returns `false`.
+//
+// This function is crucial for ensuring that assignments of struct values in
+// TypeScript behave like copies, as they do in Go, rather than reference assignments.
+func shouldApplyClone(pkg *packages.Package, rhs ast.Expr) bool {
+	if pkg == nil || pkg.TypesInfo == nil {
+		// Cannot determine type without type info, default to no clone
+		return false
+	}
+
+	// Get the type of the RHS expression
+	var exprType types.Type
+
+	// Handle identifiers (variables) directly - the most common case
+	if ident, ok := rhs.(*ast.Ident); ok {
+		if obj := pkg.TypesInfo.Uses[ident]; obj != nil {
+			// Get the type directly from the object
+			exprType = obj.Type()
+		} else if obj := pkg.TypesInfo.Defs[ident]; obj != nil {
+			// Also check Defs map for definitions
+			exprType = obj.Type()
+		}
+	}
+
+	// If we couldn't get the type from Uses/Defs, try getting it from Types
+	if exprType == nil {
+		if tv, found := pkg.TypesInfo.Types[rhs]; found && tv.Type != nil {
+			exprType = tv.Type
+		}
+	}
+
+	// No type information available
+	if exprType == nil {
+		return false
+	}
+
+	// Optimization: If it's a composite literal for a struct, no need to clone
+	// as it's already a fresh value
+	if _, isCompositeLit := rhs.(*ast.CompositeLit); isCompositeLit {
+		return false
+	}
+
+	// Check if it's a struct type (directly, through named type, or underlying)
+	if named, ok := exprType.(*types.Named); ok {
+		if _, isStruct := named.Underlying().(*types.Struct); isStruct {
+			return true // Named struct type
+		}
+	} else if _, ok := exprType.(*types.Struct); ok {
+		return true // Direct struct type
+	} else if underlying := exprType.Underlying(); underlying != nil {
+		if _, isStruct := underlying.(*types.Struct); isStruct {
+			return true // Underlying is a struct
+		}
+	}
+
+	return false // Not a struct, do not apply clone
+}
 
 // WriteValueSpec translates a Go value specification (`ast.ValueSpec`),
 // which represents `var` or `const` declarations, into TypeScript `let`

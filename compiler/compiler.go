@@ -710,6 +710,21 @@ func NewGoToTSCompiler(tsw *TSCodeWriter, pkg *packages.Package, analysis *Analy
 	}
 }
 
+// objectOfIdent returns the types.Object associated with the identifier.
+// It checks Uses first, then Defs, and returns nil if neither is found.
+func (c *GoToTSCompiler) objectOfIdent(ident *ast.Ident) types.Object {
+	if ident == nil || c.pkg == nil || c.pkg.TypesInfo == nil {
+		return nil
+	}
+	if obj := c.pkg.TypesInfo.Uses[ident]; obj != nil {
+		return obj
+	}
+	if obj := c.pkg.TypesInfo.Defs[ident]; obj != nil {
+		return obj
+	}
+	return nil
+}
+
 // getDeterministicID generates a deterministic unique ID based on file position
 // This replaces the non-deterministic Pos() values to ensure reproducible builds
 func (c *GoToTSCompiler) getDeterministicID(pos token.Pos) string {
