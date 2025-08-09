@@ -232,7 +232,7 @@ func (c *GoToTSCompiler) writeTypeConversion(exp *ast.CallExpr, funIdent *ast.Id
 		return false, nil
 	}
 
-	if obj := c.pkg.TypesInfo.Uses[funIdent]; obj != nil {
+	if obj := c.objectOfIdent(funIdent); obj != nil {
 		// Check if the object is a type name
 		if typeName, isType := obj.(*types.TypeName); isType {
 			// Make sure we have exactly one argument
@@ -425,7 +425,7 @@ func (c *GoToTSCompiler) writeIntConversion(exp *ast.CallExpr) error {
 // writeQualifiedTypeConversion handles qualified type conversions like os.FileMode(value)
 func (c *GoToTSCompiler) writeQualifiedTypeConversion(exp *ast.CallExpr, selectorExpr *ast.SelectorExpr) (handled bool, err error) {
 	// Check if this is a type conversion by looking up the selector in the type info
-	if obj := c.pkg.TypesInfo.Uses[selectorExpr.Sel]; obj != nil {
+	if obj := c.objectOfIdent(selectorExpr.Sel); obj != nil {
 		// Check if the object is a type name
 		if typeName, isType := obj.(*types.TypeName); isType {
 			// Make sure we have exactly one argument

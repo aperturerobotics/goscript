@@ -12,7 +12,7 @@ func (c *GoToTSCompiler) writeAsyncCallIfNeeded(exp *ast.CallExpr) bool {
 	switch fun := exp.Fun.(type) {
 	case *ast.Ident:
 		// Function call (e.g., func())
-		if obj := c.pkg.TypesInfo.Uses[fun]; obj != nil {
+		if obj := c.objectOfIdent(fun); obj != nil {
 			if c.analysis.IsAsyncFunc(obj) {
 				c.tsw.WriteLiterally("await ")
 				return true
@@ -29,13 +29,13 @@ func (c *GoToTSCompiler) writeAsyncCallIfNeeded(exp *ast.CallExpr) bool {
 		switch x := fun.X.(type) {
 		case *ast.Ident:
 			// Direct identifier: obj.method()
-			obj = c.pkg.TypesInfo.Uses[x]
+			obj = c.objectOfIdent(x)
 			objOk = obj != nil
 
 		case *ast.StarExpr:
 			// Pointer dereference: (*p).method() or p.method() where p is a pointer
 			if id, isIdent := x.X.(*ast.Ident); isIdent {
-				obj = c.pkg.TypesInfo.Uses[id]
+				obj = c.objectOfIdent(id)
 				objOk = obj != nil
 			}
 
@@ -151,7 +151,7 @@ func (c *GoToTSCompiler) addNonNullAssertion(expFun ast.Expr) {
 			// Check if this is a function parameter identifier that needs not-null assertion
 			if ident, isIdent := expFun.(*ast.Ident); isIdent {
 				// Check if this identifier is a function parameter
-				if obj := c.pkg.TypesInfo.Uses[ident]; obj != nil {
+				if obj := c.objectOfIdent(ident); obj != nil {
 					if _, isVar := obj.(*types.Var); isVar {
 						// This is a variable (including function parameters)
 						// Function parameters that are function types need ! assertion

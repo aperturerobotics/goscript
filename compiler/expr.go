@@ -19,7 +19,7 @@ func (c *GoToTSCompiler) WriteIndexExpr(exp *ast.IndexExpr) error {
 			// Check if the index is a type expression (identifier that refers to a type)
 			if indexIdent, isIdent := exp.Index.(*ast.Ident); isIdent {
 				// Check if this identifier refers to a type
-				if obj := c.pkg.TypesInfo.Uses[indexIdent]; obj != nil {
+				if obj := c.objectOfIdent(indexIdent); obj != nil {
 					if _, isTypeName := obj.(*types.TypeName); isTypeName {
 						// This is a generic function instantiation: f[T] -> f<T>
 						if err := c.WriteValueExpr(exp.X); err != nil {

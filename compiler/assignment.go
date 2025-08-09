@@ -357,10 +357,7 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 		// Check if RHS is an identifier (variable name)
 		rhsIdent, rhsIsIdent := r.(*ast.Ident)
 		if rhsIsIdent {
-			rhsObj = c.pkg.TypesInfo.Uses[rhsIdent]
-			if rhsObj == nil {
-				rhsObj = c.pkg.TypesInfo.Defs[rhsIdent]
-			}
+			rhsObj = c.objectOfIdent(rhsIdent)
 
 			// Important: For struct copying, we need to check if the variable itself is variable referenced
 			// Important: For struct copying, we need to check if the variable needs variable referenced access

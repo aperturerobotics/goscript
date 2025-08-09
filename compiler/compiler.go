@@ -783,11 +783,7 @@ func (c *GoToTSCompiler) WriteIdent(exp *ast.Ident, accessVarRefedValue bool) {
 	}
 
 	// Use TypesInfo to find the object associated with the identifier
-	var obj types.Object
-	obj = c.pkg.TypesInfo.Uses[exp]
-	if obj == nil {
-		obj = c.pkg.TypesInfo.Defs[exp]
-	}
+	obj := c.objectOfIdent(exp)
 
 	// Check if this identifier refers to a constant
 	if obj != nil {

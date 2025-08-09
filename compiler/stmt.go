@@ -213,7 +213,7 @@ func (c *GoToTSCompiler) WriteStmtGo(exp *ast.GoStmt) error {
 	case *ast.Ident:
 		// Handle named functions: go namedFunc(args)
 		// Get the object for this function
-		obj := c.pkg.TypesInfo.Uses[fun]
+		obj := c.objectOfIdent(fun)
 		if obj == nil {
 			return errors.Errorf("could not find object for function: %s", fun.Name)
 		}
@@ -255,7 +255,7 @@ func (c *GoToTSCompiler) WriteStmtGo(exp *ast.GoStmt) error {
 	case *ast.SelectorExpr:
 		// Handle selector expressions: go x.Method(args)
 		// Get the object for the selected method
-		obj := c.pkg.TypesInfo.Uses[fun.Sel]
+		obj := c.objectOfIdent(fun.Sel)
 		if obj == nil {
 			return errors.Errorf("could not find object for selected method: %s", fun.Sel.Name)
 		}
@@ -940,7 +940,7 @@ func (c *GoToTSCompiler) isCallAsyncInDefer(callExpr *ast.CallExpr) bool {
 			}
 		} else if ident, ok := fun.X.(*ast.Ident); ok {
 			// Package-level function call (e.g., defer time.Sleep())
-			if obj := c.pkg.TypesInfo.Uses[ident]; obj != nil {
+			if obj := c.objectOfIdent(ident); obj != nil {
 				if pkgName, isPkg := obj.(*types.PkgName); isPkg {
 					methodName := fun.Sel.Name
 					pkgPath := pkgName.Imported().Path()
