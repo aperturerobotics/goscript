@@ -53,7 +53,7 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 		// In Go, := can be used for redeclaration if at least one variable is new
 		if tok == token.DEFINE {
 			// For token.DEFINE (:=), we need to handle variable declarations differently
-			// In Go, := can redeclare existing variables if at least one variable is new
+			// In Go, := can redeclare existing variables if at least one is new
 
 			// First, identify which variables are new vs existing
 			newVars := make([]bool, len(lhs))
@@ -178,34 +178,8 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 
 				// Write the LHS with indentation
 				c.tsw.WriteLiterally("  ")
-				if ident, ok := lhsExpr.(*ast.Ident); ok {
-					c.WriteIdent(ident, false)
-				} else if selectorExpr, ok := lhsExpr.(*ast.SelectorExpr); ok {
-					if err := c.WriteValueExpr(selectorExpr); err != nil {
-						return fmt.Errorf("failed to write selector expression in LHS: %w", err)
-					}
-				} else if starExpr, ok := lhsExpr.(*ast.StarExpr); ok {
-					// Handle pointer dereference assignment: *p = value becomes p!.value = value
-					// Write the pointer variable directly without using WriteValueExpr
-					// because we don't want automatic .value access here
-					switch operand := starExpr.X.(type) {
-					case *ast.Ident:
-						// Write identifier without .value access
-						c.WriteIdent(operand, false)
-					default:
-						// For other expressions, use WriteValueExpr
-						if err := c.WriteValueExpr(starExpr.X); err != nil {
-							return fmt.Errorf("failed to write star expression X in LHS: %w", err)
-						}
-					}
-					c.tsw.WriteLiterally("!.value")
-				} else if indexExpr, ok := lhsExpr.(*ast.IndexExpr); ok {
-					// Handle index expressions (e.g., arr[i], slice[j]) by using WriteValueExpr
-					if err := c.WriteValueExpr(indexExpr); err != nil {
-						return fmt.Errorf("failed to write index expression in LHS: %w", err)
-					}
-				} else {
-					return errors.Errorf("unhandled LHS expression in assignment: %T", lhsExpr)
+				if err := c.writeLHSTarget(lhsExpr); err != nil {
+					return err
 				}
 
 				// Write the assignment
@@ -250,34 +224,10 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 					c.WriteIdent(ident, false)
 				}
 				// For blank identifiers, we write nothing (empty slot)
-			} else if selectorExpr, ok := lhsExpr.(*ast.SelectorExpr); ok {
-				// Handle selector expressions (e.g., a.b) by using WriteValueExpr
-				if err := c.WriteValueExpr(selectorExpr); err != nil {
-					return fmt.Errorf("failed to write selector expression in LHS: %w", err)
-				}
-			} else if starExpr, ok := lhsExpr.(*ast.StarExpr); ok {
-				// Handle pointer dereference in destructuring: *p becomes p!.value
-				// Write the pointer variable directly without using WriteValueExpr
-				// because we don't want automatic .value access here
-				switch operand := starExpr.X.(type) {
-				case *ast.Ident:
-					// Write identifier without .value access
-					c.WriteIdent(operand, false)
-				default:
-					// For other expressions, use WriteValueExpr
-					if err := c.WriteValueExpr(starExpr.X); err != nil {
-						return fmt.Errorf("failed to write star expression X in destructuring: %w", err)
-					}
-				}
-				c.tsw.WriteLiterally("!.value")
-			} else if indexExpr, ok := lhsExpr.(*ast.IndexExpr); ok {
-				// Handle index expressions (e.g., arr[i], slice[j]) by using WriteValueExpr
-				if err := c.WriteValueExpr(indexExpr); err != nil {
-					return fmt.Errorf("failed to write index expression in destructuring: %w", err)
-				}
 			} else {
-				// Should not happen for valid Go code in this context, but handle defensively
-				return errors.Errorf("unhandled LHS expression in destructuring: %T", lhsExpr)
+				if err := c.writeLHSTarget(lhsExpr); err != nil {
+					return err
+				}
 			}
 
 			// Stop writing if we've reached the last non-blank element
@@ -430,14 +380,14 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 			if len(exp.Lhs) == 2 {
 				// Get the type of the indexed expression
 				if c.pkg != nil && c.pkg.TypesInfo != nil {
-					tv, ok := c.pkg.TypesInfo.Types[indexExpr.X]
+					v, ok := c.pkg.TypesInfo.Types[indexExpr.X]
 					if ok {
 						// Check if it's a concrete map type
-						if _, isMap := tv.Type.Underlying().(*types.Map); isMap {
+						if _, isMap := v.Type.Underlying().(*types.Map); isMap {
 							return writeMapLookupWithExists(exp.Lhs, indexExpr, exp.Tok)
 						}
 						// Check if it's a type parameter constrained to be a map type
-						if typeParam, isTypeParam := tv.Type.(*types.TypeParam); isTypeParam {
+						if typeParam, isTypeParam := v.Type.(*types.TypeParam); isTypeParam {
 							constraint := typeParam.Constraint()
 							if constraint != nil {
 								underlying := constraint.Underlying()
@@ -552,5 +502,42 @@ func (c *GoToTSCompiler) writeInlineComment(node ast.Node) {
 			c.tsw.WriteLiterally(" // " + commentText)
 			return // Only write the first inline comment found
 		}
+	}
+}
+
+// writeLHSTarget writes an LHS target expression for assignment contexts.
+// It preserves the exact behavior used in WriteStmtAssign for selector, star, and index expressions,
+// and avoids adding .value on identifiers.
+func (c *GoToTSCompiler) writeLHSTarget(lhsExpr ast.Expr) error {
+	switch t := lhsExpr.(type) {
+	case *ast.Ident:
+		// Caller should have handled blank identifiers; write name without .value
+		c.WriteIdent(t, false)
+		return nil
+	case *ast.SelectorExpr:
+		if err := c.WriteValueExpr(t); err != nil {
+			return fmt.Errorf("failed to write selector expression in LHS: %w", err)
+		}
+		return nil
+	case *ast.StarExpr:
+		// Handle pointer dereference assignment: *p = value becomes p!.value = value
+		// Write the pointer variable directly without using WriteValueExpr when it's an identifier
+		switch operand := t.X.(type) {
+		case *ast.Ident:
+			c.WriteIdent(operand, false)
+		default:
+			if err := c.WriteValueExpr(t.X); err != nil {
+				return fmt.Errorf("failed to write star expression X in LHS: %w", err)
+			}
+		}
+		c.tsw.WriteLiterally("!.value")
+		return nil
+	case *ast.IndexExpr:
+		if err := c.WriteValueExpr(t); err != nil {
+			return fmt.Errorf("failed to write index expression in LHS: %w", err)
+		}
+		return nil
+	default:
+		return errors.Errorf("unhandled LHS expression in assignment: %T", lhsExpr)
 	}
 }
