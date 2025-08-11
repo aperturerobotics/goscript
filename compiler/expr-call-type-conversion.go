@@ -160,6 +160,16 @@ func (c *GoToTSCompiler) writeStringConversion(exp *ast.CallExpr) error {
 			return nil
 		}
 
+		if basic, isBasic := tv.Type.Underlying().(*types.Basic); isBasic && basic.Kind() == types.Uint8 {
+			// Translate string(byte_val) to $.runeOrStringToString(byte_val)
+			c.tsw.WriteLiterally("$.runeOrStringToString(")
+			if err := c.WriteValueExpr(arg); err != nil {
+				return fmt.Errorf("failed to write argument for string(byte) conversion: %w", err)
+			}
+			c.tsw.WriteLiterally(")")
+			return nil
+		}
+
 		// Case 3: Argument is a slice of runes or bytes string([]rune{...}) or string([]byte{...})
 		if c.isByteSliceType(tv.Type) {
 			c.tsw.WriteLiterally("$.bytesToString(")

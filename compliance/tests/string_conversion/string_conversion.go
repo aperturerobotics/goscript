@@ -41,4 +41,31 @@ func main() {
 	mutableRunes[8] = 's'
 	modifiedString := string(mutableRunes)
 	println(modifiedString)
+
+	// === Test cases that might trigger "unhandled string conversion" ===
+
+	// string([]byte) conversion
+	bytes := []byte{72, 101, 108, 108, 111}
+	bytesString := string(bytes)
+	println(bytesString)
+
+	// string(int32) conversion
+	i32 := int32(66)
+	i32String := string(i32)
+	println(i32String)
+
+	// Test with interface{} type assertion
+	var v interface{} = "interface test"
+	interfaceString := string(v.(string))
+	println(interfaceString)
+
+	// Test with type conversion through variable
+	var myString string = "variable test"
+	convertedString := string(myString)
+	println(convertedString)
+
+	// === Test string(byte) conversion ===
+	var b byte = 65
+	byteString := string(b)
+	println(byteString)
 }

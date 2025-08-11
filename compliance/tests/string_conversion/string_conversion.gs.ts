@@ -46,5 +46,32 @@ export async function main(): Promise<void> {
 	mutableRunes![8] = 115
 	let modifiedString = $.runesToString(mutableRunes)
 	console.log(modifiedString)
+
+	// === Test cases that might trigger "unhandled string conversion" ===
+
+	// string([]byte) conversion
+	let bytes = new Uint8Array([72, 101, 108, 108, 111])
+	let bytesString = $.bytesToString(bytes)
+	console.log(bytesString)
+
+	// string(int32) conversion
+	let i32 = (66 as number)
+	let i32String = $.runeOrStringToString(i32)
+	console.log(i32String)
+
+	// Test with interface{} type assertion
+	let v: null | any = "interface test"
+	let interfaceString = $.mustTypeAssert<string>(v, {kind: $.TypeKind.Basic, name: 'string'})
+	console.log(interfaceString)
+
+	// Test with type conversion through variable
+	let myString: string = "variable test"
+	let convertedString = myString
+	console.log(convertedString)
+
+	// === Test string(byte) conversion ===
+	let b: number = 65
+	let byteString = $.runeOrStringToString(b)
+	console.log(byteString)
 }
 
