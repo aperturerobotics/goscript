@@ -43,7 +43,7 @@ func (c *GoToTSCompiler) writeArrayTypeConversion(exp *ast.CallExpr) (handled bo
 		if len(exp.Args) == 1 {
 			arg := exp.Args[0]
 			if tv, ok := c.pkg.TypesInfo.Types[arg]; ok && tv.Type != nil {
-				if basic, isBasic := tv.Type.Underlying().(*types.Basic); isBasic && basic.Kind() == types.String {
+				if c.isStringType(tv.Type) {
 					// Translate []rune(stringValue) to $.stringToRunes(stringValue)
 					c.tsw.WriteLiterally("$.stringToRunes(")
 					if err := c.WriteValueExpr(arg); err != nil {
@@ -81,7 +81,7 @@ func (c *GoToTSCompiler) writeArrayTypeConversion(exp *ast.CallExpr) (handled bo
 			// Check if the argument is a named type with a slice underlying type
 			if namedArgType, isNamed := argType.(*types.Named); isNamed {
 				// Check if the named type has receiver methods (is a wrapper type)
-				if c.analysis.IsNamedBasicType(namedArgType) {
+				if c.isWrapperType(namedArgType) {
 					// Check if the underlying type matches the target slice type
 					if sliceUnderlying, isSlice := namedArgType.Underlying().(*types.Slice); isSlice {
 						// Get the target slice type
@@ -235,6 +235,156 @@ func (c *GoToTSCompiler) writeStringConversion(exp *ast.CallExpr) error {
 	return fmt.Errorf("unhandled string conversion: %s", exp.Fun)
 }
 
+// handleTypeConversionCommon contains the shared logic for type conversions
+func (c *GoToTSCompiler) handleTypeConversionCommon(
+	typeName *types.TypeName,
+	arg ast.Expr,
+	typeNameStr string,
+	writeTypeNameFunc func() error,
+) error {
+	// Check if we're converting FROM a type with receiver methods TO its underlying type
+	if argType := c.pkg.TypesInfo.TypeOf(arg); argType != nil {
+		if namedArgType, isNamed := argType.(*types.Named); isNamed {
+			// Check if the argument type is a wrapper type
+			if c.isWrapperType(namedArgType) {
+				// Check if we're converting to the underlying type
+				targetType := typeName.Type()
+				underlyingType := namedArgType.Underlying()
+				if types.Identical(targetType, underlyingType) {
+					// This is a conversion from a wrapper type to its underlying type
+					// Since wrapper types are now type aliases, just write the value directly
+					return c.WriteValueExpr(arg)
+				}
+			}
+		}
+	}
+
+	// Check if this is a function type
+	if _, isFuncType := typeName.Type().Underlying().(*types.Signature); isFuncType {
+		// For function types, we need to add a __goTypeName property
+		c.tsw.WriteLiterally("Object.assign(")
+
+		// Write the argument first
+		if err := c.WriteValueExpr(arg); err != nil {
+			return fmt.Errorf("failed to write argument for function type cast: %w", err)
+		}
+
+		// Add the __goTypeName property with the function type name
+		c.tsw.WriteLiterallyf(", { __goTypeName: '%s' })", typeNameStr)
+		return nil
+	}
+
+	// Check if this is a wrapper type
+	if c.isWrapperType(typeName.Type()) {
+		// For wrapper types, use type casting instead of constructor calls
+		c.tsw.WriteLiterally("(")
+		if err := c.WriteValueExpr(arg); err != nil {
+			return fmt.Errorf("failed to write argument for wrapper type cast: %w", err)
+		}
+		c.tsw.WriteLiterally(" as ")
+		c.WriteGoType(typeName.Type(), GoTypeContextGeneral)
+		c.tsw.WriteLiterally(")")
+		return nil
+	}
+
+	// Check if this is a simple named type (no methods, not struct, not interface)
+	if namedType, ok := typeName.Type().(*types.Named); ok {
+		// Don't use constructors for simple named types without methods
+		if namedType.NumMethods() == 0 {
+			// Exclude struct and interface types - they should still use constructors
+			if _, isStruct := namedType.Underlying().(*types.Struct); !isStruct {
+				if _, isInterface := namedType.Underlying().(*types.Interface); !isInterface {
+					// Simple named type without methods - use type casting
+					c.tsw.WriteLiterally("(")
+					if err := c.WriteValueExpr(arg); err != nil {
+						return fmt.Errorf("failed to write argument for simple named type cast: %w", err)
+					}
+					c.tsw.WriteLiterally(" as ")
+					c.WriteGoType(typeName.Type(), GoTypeContextGeneral)
+					c.tsw.WriteLiterally(")")
+					return nil
+				}
+			}
+		}
+	}
+
+	// Check if this type has receiver methods
+	if c.hasReceiverMethods(typeNameStr) {
+		// For types with methods that are NOT wrapper types, still use class constructor
+		c.tsw.WriteLiterally("new ")
+		if err := writeTypeNameFunc(); err != nil {
+			return fmt.Errorf("failed to write type name: %w", err)
+		}
+		c.tsw.WriteLiterally("(")
+
+		// Use auto-wrapping for the constructor argument (only if writeTypeNameFunc writes a simple identifier)
+		// The constructor parameter type is the underlying type of the named type
+		// For MyMode (which is type MyMode os.FileMode), the constructor expects os.FileMode
+		constructorParamType := typeName.Type()
+		if namedType, ok := typeName.Type().(*types.Named); ok {
+			// For named types, the constructor expects the underlying type
+			constructorParamType = namedType.Underlying()
+		}
+
+		if err := c.writeAutoWrappedArgument(arg, constructorParamType); err != nil {
+			return fmt.Errorf("failed to write argument for type constructor: %w", err)
+		}
+		c.tsw.WriteLiterally(")")
+		return nil
+	}
+
+	// Determine if this type should use constructor syntax
+	shouldUseConstructor := false
+
+	// Check if it's a type alias (like os.FileMode)
+	if alias, isAlias := typeName.Type().(*types.Alias); isAlias {
+		// For type aliases, check the underlying type
+		if _, isInterface := alias.Underlying().(*types.Interface); !isInterface {
+			if _, isStruct := alias.Underlying().(*types.Struct); !isStruct {
+				// For non-struct, non-interface type aliases, use constructor
+				shouldUseConstructor = true
+			}
+		}
+	} else if namedType, isNamed := typeName.Type().(*types.Named); isNamed {
+		// For named types, check if they have receiver methods in the current package
+		// or if they follow the pattern of non-struct, non-interface named types
+		if c.hasReceiverMethods(typeNameStr) {
+			shouldUseConstructor = true
+		} else if _, isInterface := namedType.Underlying().(*types.Interface); !isInterface {
+			if _, isStruct := namedType.Underlying().(*types.Struct); !isStruct {
+				// For non-struct, non-interface named types, use constructor
+				shouldUseConstructor = true
+			}
+		}
+	}
+
+	if shouldUseConstructor {
+		// For types that should use constructors, use class constructor
+		c.tsw.WriteLiterally("new ")
+		if err := writeTypeNameFunc(); err != nil {
+			return fmt.Errorf("failed to write type name: %w", err)
+		}
+		c.tsw.WriteLiterally("(")
+		if err := c.WriteValueExpr(arg); err != nil {
+			return fmt.Errorf("failed to write argument for type constructor: %w", err)
+		}
+		c.tsw.WriteLiterally(")")
+		return nil
+	}
+
+	// For types that don't need constructors, use the TypeScript "as" operator
+	c.tsw.WriteLiterally("(")
+	if err := c.WriteValueExpr(arg); err != nil {
+		return fmt.Errorf("failed to write argument for type cast: %w", err)
+	}
+
+	// Then use the TypeScript "as" operator with the mapped type name
+	c.tsw.WriteLiterally(" as ")
+	c.WriteGoType(typeName.Type(), GoTypeContextGeneral)
+	c.tsw.WriteLiterally(")")
+	return nil
+}
+
 // writeTypeConversion handles named type conversions
 func (c *GoToTSCompiler) writeTypeConversion(exp *ast.CallExpr, funIdent *ast.Ident) (handled bool, err error) {
 	// Check if this is a type conversion to a function type
@@ -247,149 +397,11 @@ func (c *GoToTSCompiler) writeTypeConversion(exp *ast.CallExpr, funIdent *ast.Id
 		if typeName, isType := obj.(*types.TypeName); isType {
 			// Make sure we have exactly one argument
 			if len(exp.Args) == 1 {
-				arg := exp.Args[0]
-
-				// Check if we're converting FROM a type with receiver methods TO its underlying type
-				if argType := c.pkg.TypesInfo.TypeOf(arg); argType != nil {
-					if namedArgType, isNamed := argType.(*types.Named); isNamed {
-						// Check if the argument type is a wrapper type
-						if c.analysis.IsNamedBasicType(namedArgType) {
-							// Check if we're converting to the underlying type
-							targetType := typeName.Type()
-							underlyingType := namedArgType.Underlying()
-							if types.Identical(targetType, underlyingType) {
-								// This is a conversion from a wrapper type to its underlying type
-								// Since wrapper types are now type aliases, just write the value directly
-								if err := c.WriteValueExpr(arg); err != nil {
-									return true, fmt.Errorf("failed to write argument for type conversion: %w", err)
-								}
-								return true, nil
-							}
-						}
-					}
-				}
-
-				// Check if this is a function type
-				if _, isFuncType := typeName.Type().Underlying().(*types.Signature); isFuncType {
-					// For function types, we need to add a __goTypeName property
-					c.tsw.WriteLiterally("Object.assign(")
-
-					// Write the argument first
-					if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-						return true, fmt.Errorf("failed to write argument for function type cast: %w", err)
-					}
-
-					// Add the __goTypeName property with the function type name
-					c.tsw.WriteLiterallyf(", { __goTypeName: '%s' })", funIdent.String())
-					return true, nil
-				} else {
-					// Check if this is a wrapper type
-					isWrapperType := c.analysis.IsNamedBasicType(typeName.Type())
-					if isWrapperType {
-						// For wrapper types, use type casting instead of constructor calls
-						c.tsw.WriteLiterally("(")
-						if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-							return true, fmt.Errorf("failed to write argument for wrapper type cast: %w", err)
-						}
-						c.tsw.WriteLiterally(" as ")
-						c.WriteGoType(typeName.Type(), GoTypeContextGeneral)
-						c.tsw.WriteLiterally(")")
-						return true, nil
-					}
-
-					// Check if this is a simple named type (no methods, not struct, not interface)
-					if namedType, ok := typeName.Type().(*types.Named); ok {
-						// Don't use constructors for simple named types without methods
-						if namedType.NumMethods() == 0 {
-							// Exclude struct and interface types - they should still use constructors
-							if _, isStruct := namedType.Underlying().(*types.Struct); !isStruct {
-								if _, isInterface := namedType.Underlying().(*types.Interface); !isInterface {
-									// Simple named type without methods - use type casting
-									c.tsw.WriteLiterally("(")
-									if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-										return true, fmt.Errorf("failed to write argument for simple named type cast: %w", err)
-									}
-									c.tsw.WriteLiterally(" as ")
-									c.WriteGoType(typeName.Type(), GoTypeContextGeneral)
-									c.tsw.WriteLiterally(")")
-									return true, nil
-								}
-							}
-						}
-					}
-
-					// Check if this type has receiver methods
-					if c.hasReceiverMethods(funIdent.String()) {
-						// For types with methods that are NOT wrapper types, still use class constructor
-						c.tsw.WriteLiterally("new ")
-						c.tsw.WriteLiterally(funIdent.String())
-						c.tsw.WriteLiterally("(")
-
-						// Use auto-wrapping for the constructor argument
-						// The constructor parameter type is the underlying type of the named type
-						// For MyMode (which is type MyMode os.FileMode), the constructor expects os.FileMode
-						constructorParamType := typeName.Type()
-						if namedType, ok := typeName.Type().(*types.Named); ok {
-							// For named types, the constructor expects the underlying type
-							constructorParamType = namedType.Underlying()
-						}
-
-						if err := c.writeAutoWrappedArgument(exp.Args[0], constructorParamType); err != nil {
-							return true, fmt.Errorf("failed to write argument for type constructor: %w", err)
-						}
-						c.tsw.WriteLiterally(")")
-						return true, nil
-					} else {
-						// Determine if this type should use constructor syntax
-						shouldUseConstructor := false
-
-						// Check if it's a type alias (like os.FileMode)
-						if alias, isAlias := typeName.Type().(*types.Alias); isAlias {
-							// For type aliases, check the underlying type
-							if _, isInterface := alias.Underlying().(*types.Interface); !isInterface {
-								if _, isStruct := alias.Underlying().(*types.Struct); !isStruct {
-									// For non-struct, non-interface type aliases, use constructor
-									shouldUseConstructor = true
-								}
-							}
-						} else if namedType, isNamed := typeName.Type().(*types.Named); isNamed {
-							// For named types, check if they have receiver methods in the current package
-							// or if they follow the pattern of non-struct, non-interface named types
-							if c.hasReceiverMethods(funIdent.String()) {
-								shouldUseConstructor = true
-							} else if _, isInterface := namedType.Underlying().(*types.Interface); !isInterface {
-								if _, isStruct := namedType.Underlying().(*types.Struct); !isStruct {
-									// For non-struct, non-interface named types, use constructor
-									shouldUseConstructor = true
-								}
-							}
-						}
-
-						if shouldUseConstructor {
-							// For types that should use constructors, use class constructor
-							c.tsw.WriteLiterally("new ")
-							c.tsw.WriteLiterally(funIdent.String())
-							c.tsw.WriteLiterally("(")
-							if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-								return true, fmt.Errorf("failed to write argument for type constructor: %w", err)
-							}
-							c.tsw.WriteLiterally(")")
-							return true, nil
-						} else {
-							// For types that don't need constructors, use the TypeScript "as" operator
-							c.tsw.WriteLiterally("(")
-							if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-								return true, fmt.Errorf("failed to write argument for type cast: %w", err)
-							}
-
-							// Then use the TypeScript "as" operator with the mapped type name
-							c.tsw.WriteLiterally(" as ")
-							c.WriteGoType(typeName.Type(), GoTypeContextGeneral)
-							c.tsw.WriteLiterally(")")
-							return true, nil
-						}
-					}
-				}
+				err := c.handleTypeConversionCommon(typeName, exp.Args[0], funIdent.String(), func() error {
+					c.tsw.WriteLiterally(funIdent.String())
+					return nil
+				})
+				return true, err
 			}
 		}
 	}
@@ -409,7 +421,7 @@ func (c *GoToTSCompiler) writeIntConversion(exp *ast.CallExpr) error {
 	if argType := c.pkg.TypesInfo.TypeOf(arg); argType != nil {
 		if namedArgType, isNamed := argType.(*types.Named); isNamed {
 			// Check if the argument type is a wrapper type
-			if c.analysis.IsNamedBasicType(namedArgType) {
+			if c.isWrapperType(namedArgType) {
 				// Check if we're converting to int (the underlying type)
 				if types.Identical(types.Typ[types.Int], namedArgType.Underlying()) {
 					// This is a conversion from a wrapper type to int
@@ -440,104 +452,10 @@ func (c *GoToTSCompiler) writeQualifiedTypeConversion(exp *ast.CallExpr, selecto
 		if typeName, isType := obj.(*types.TypeName); isType {
 			// Make sure we have exactly one argument
 			if len(exp.Args) == 1 {
-				arg := exp.Args[0]
-
-				// Check if we're converting FROM a type with receiver methods TO its underlying type
-				if argType := c.pkg.TypesInfo.TypeOf(arg); argType != nil {
-					if namedArgType, isNamed := argType.(*types.Named); isNamed {
-						// Check if the argument type is a wrapper type
-						if c.analysis.IsNamedBasicType(namedArgType) {
-							// Check if we're converting to the underlying type
-							targetType := typeName.Type()
-							underlyingType := namedArgType.Underlying()
-							if types.Identical(targetType, underlyingType) {
-								// This is a conversion from a wrapper type to its underlying type
-								// Since wrapper types are now type aliases, just write the value directly
-								if err := c.WriteValueExpr(arg); err != nil {
-									return true, fmt.Errorf("failed to write argument for type conversion: %w", err)
-								}
-								return true, nil
-							}
-						}
-					}
-				}
-
-				// Check if this is a function type
-				if _, isFuncType := typeName.Type().Underlying().(*types.Signature); isFuncType {
-					// For function types, we need to add a __goTypeName property
-					c.tsw.WriteLiterally("Object.assign(")
-
-					// Write the argument first
-					if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-						return true, fmt.Errorf("failed to write argument for function type cast: %w", err)
-					}
-
-					// Add the __goTypeName property with the function type name
-					c.tsw.WriteLiterallyf(", { __goTypeName: '%s' })", selectorExpr.Sel.Name)
-					return true, nil
-				} else {
-					// Check if this is a wrapper type
-					isWrapperType := c.analysis.IsNamedBasicType(typeName.Type())
-					if isWrapperType {
-						// For wrapper types, use type casting instead of constructor calls
-						c.tsw.WriteLiterally("(")
-						if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-							return true, fmt.Errorf("failed to write argument for wrapper type cast: %w", err)
-						}
-						c.tsw.WriteLiterally(" as ")
-						c.WriteGoType(typeName.Type(), GoTypeContextGeneral)
-						c.tsw.WriteLiterally(")")
-						return true, nil
-					}
-
-					// Check if this is a simple named type (no methods, not struct, not interface)
-					if namedType, ok := typeName.Type().(*types.Named); ok {
-						// Don't use constructors for simple named types without methods
-						if namedType.NumMethods() == 0 {
-							// Exclude struct and interface types - they should still use constructors
-							if _, isStruct := namedType.Underlying().(*types.Struct); !isStruct {
-								if _, isInterface := namedType.Underlying().(*types.Interface); !isInterface {
-									// Simple named type without methods - use type casting
-									c.tsw.WriteLiterally("(")
-									if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-										return true, fmt.Errorf("failed to write argument for simple named type cast: %w", err)
-									}
-									c.tsw.WriteLiterally(" as ")
-									c.WriteGoType(typeName.Type(), GoTypeContextGeneral)
-									c.tsw.WriteLiterally(")")
-									return true, nil
-								}
-							}
-						}
-					}
-
-					// Check if this type has receiver methods
-					if c.hasReceiverMethods(selectorExpr.Sel.Name) {
-						// For types with methods that are NOT wrapper types, still use class constructor
-						c.tsw.WriteLiterally("new ")
-						if err := c.WriteSelectorExpr(selectorExpr); err != nil {
-							return true, fmt.Errorf("failed to write qualified type name: %w", err)
-						}
-						c.tsw.WriteLiterally("(")
-						if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-							return true, fmt.Errorf("failed to write argument for type constructor: %w", err)
-						}
-						c.tsw.WriteLiterally(")")
-						return true, nil
-					} else {
-						// For types that don't need constructors, use the TypeScript "as" operator
-						c.tsw.WriteLiterally("(")
-						if err := c.WriteValueExpr(exp.Args[0]); err != nil {
-							return true, fmt.Errorf("failed to write argument for type cast: %w", err)
-						}
-
-						// Then use the TypeScript "as" operator with the mapped type name
-						c.tsw.WriteLiterally(" as ")
-						c.WriteGoType(typeName.Type(), GoTypeContextGeneral)
-						c.tsw.WriteLiterally(")")
-						return true, nil
-					}
-				}
+				err := c.handleTypeConversionCommon(typeName, exp.Args[0], selectorExpr.Sel.Name, func() error {
+					return c.WriteSelectorExpr(selectorExpr)
+				})
+				return true, err
 			}
 		}
 	}
@@ -551,20 +469,7 @@ func constraintIncludesString(t types.Type) bool {
 	if !ok {
 		return false
 	}
-	for i := 0; i < iface.NumEmbeddeds(); i++ {
-		embedded := iface.EmbeddedType(i)
-		if u, ok := embedded.(*types.Union); ok {
-			for j := 0; j < u.Len(); j++ {
-				term := u.Term(j)
-				if isStringBasic(term.Type().Underlying()) {
-					return true
-				}
-			}
-		} else if isStringBasic(embedded.Underlying()) {
-			return true
-		}
-	}
-	return false
+	return analyzeConstraint(iface).HasString
 }
 
 func constraintIncludesByteSlice(t types.Type) bool {
@@ -572,34 +477,5 @@ func constraintIncludesByteSlice(t types.Type) bool {
 	if !ok {
 		return false
 	}
-	for i := 0; i < iface.NumEmbeddeds(); i++ {
-		embedded := iface.EmbeddedType(i)
-		if u, ok := embedded.(*types.Union); ok {
-			for j := 0; j < u.Len(); j++ {
-				term := u.Term(j)
-				if isByteSlice(term.Type().Underlying()) {
-					return true
-				}
-			}
-		} else if isByteSlice(embedded.Underlying()) {
-			return true
-		}
-	}
-	return false
-}
-
-func isStringBasic(t types.Type) bool {
-	if b, ok := t.(*types.Basic); ok {
-		return b.Kind() == types.String
-	}
-	return false
-}
-
-func isByteSlice(t types.Type) bool {
-	if s, ok := t.(*types.Slice); ok {
-		if b, ok := s.Elem().(*types.Basic); ok {
-			return b.Kind() == types.Uint8
-		}
-	}
-	return false
+	return analyzeConstraint(iface).HasByteSlice
 }

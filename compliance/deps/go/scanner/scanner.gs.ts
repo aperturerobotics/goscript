@@ -151,7 +151,7 @@ export class Scanner {
 			dir: $.varRef(init?.dir ?? ""),
 			src: $.varRef(init?.src ?? new Uint8Array(0)),
 			err: $.varRef(init?.err ?? new ErrorHandler | null(null)),
-			mode: $.varRef(init?.mode ?? new Mode(0)),
+			mode: $.varRef(init?.mode ?? 0 as Mode),
 			ch: $.varRef(init?.ch ?? 0),
 			offset: $.varRef(init?.offset ?? 0),
 			rdOffset: $.varRef(init?.rdOffset ?? 0),
@@ -197,6 +197,11 @@ export class Scanner {
 			let [r, w] = [(s.src![s.rdOffset] as number), 1]
 
 			// not ASCII
+
+			// U+FEFF BOM at start of file, encoded as big- or little-endian
+			// UCS-2 (i.e. 2-byte UTF-16). Give specific error (go.dev/issue/71950).
+
+			// consume all input to avoid error cascade
 			switch (true) {
 				case r == 0:
 					s.error(s.offset, "illegal character NUL")
@@ -204,7 +209,21 @@ export class Scanner {
 				case r >= utf8.RuneSelf:
 					;[r, w] = utf8.DecodeRune($.goSlice(s.src, s.rdOffset, undefined))
 					if (r == utf8.RuneError && w == 1) {
-						s.error(s.offset, "illegal UTF-8 encoding")
+						let _in = $.goSlice(s.src, s.rdOffset, undefined)
+
+						// U+FEFF BOM at start of file, encoded as big- or little-endian
+						// UCS-2 (i.e. 2-byte UTF-16). Give specific error (go.dev/issue/71950).
+
+						// consume all input to avoid error cascade
+						if (s.offset == 0 && $.len(_in) >= 2 && (_in![0] == 0xFF && _in![1] == 0xFE || _in![0] == 0xFE && _in![1] == 0xFF)) {
+							// U+FEFF BOM at start of file, encoded as big- or little-endian
+							// UCS-2 (i.e. 2-byte UTF-16). Give specific error (go.dev/issue/71950).
+							s.error(s.offset, "illegal UTF-8 encoding (got UTF-16)")
+							s.rdOffset += $.len(_in) // consume all input to avoid error cascade
+						}
+						 else {
+							s.error(s.offset, "illegal UTF-8 encoding")
+						}
 					}
 					 else if (r == 65279 && s.offset > 0) {
 						s.error(s.offset, "illegal byte order mark")

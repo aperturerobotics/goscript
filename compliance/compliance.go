@@ -550,18 +550,14 @@ func WriteTypeScriptRunner(t *testing.T, parentModulePath, testDir, tempDir stri
 //     The `tsx` command is executed from this directory.
 //   - tsRunner: The path to the "runner.ts" file, typically within tempDir.
 //
-// The function sets up the PATH environment variable to include the local `node_modules/.bin`
-// directory so `tsx` can be found. It then runs the script and returns its stdout.
+// The function uses the local `node_modules/.bin/tsx` executable directly.
+// It then runs the script and returns its stdout.
 // If the script execution fails, it calls t.Fatalf.
 func RunTypeScriptRunner(t *testing.T, workspaceDir, tempDir, tsRunner string) string {
 	t.Helper()
-	cmd := exec.Command("tsx", tsRunner)
+	tsxPath := filepath.Join(workspaceDir, "node_modules", ".bin", "tsx")
+	cmd := exec.Command(tsxPath, tsRunner)
 	cmd.Dir = tempDir
-
-	nodeBinDir := filepath.Join(workspaceDir, "node_modules", ".bin")
-	currentPath := os.Getenv("PATH")
-	newPath := nodeBinDir + string(os.PathListSeparator) + currentPath
-	cmd.Env = append(os.Environ(), "PATH="+newPath)
 
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = io.MultiWriter(&outBuf, os.Stdout) // Changed to os.Stdout for easier debugging

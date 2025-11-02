@@ -136,7 +136,7 @@ func (c *GoToTSCompiler) writeRegularFieldInitializer(fieldName string, fieldTyp
 	c.tsw.WriteLiterallyf("init?.%s ?? ", fieldName)
 
 	// Priority 1: Check if this is a wrapper type
-	if c.analysis.IsNamedBasicType(fieldType) {
+	if c.isWrapperType(fieldType) {
 		// For wrapper types, use the zero value of the underlying type with type casting
 		if named, ok := fieldType.(*types.Named); ok {
 			c.WriteZeroValueForType(named.Underlying())
@@ -249,7 +249,7 @@ func (c *GoToTSCompiler) writeImportedBasicTypeZeroValue(fieldType types.Type) e
 
 func (c *GoToTSCompiler) writeNamedTypeZeroValue(named *types.Named) {
 	// Check if this is a wrapper type first
-	if c.analysis.IsNamedBasicType(named) {
+	if c.isWrapperType(named) {
 		// For wrapper types, use the zero value of the underlying type with type casting
 		c.WriteZeroValueForType(named.Underlying())
 		c.tsw.WriteLiterally(" as ")
@@ -279,7 +279,7 @@ func (c *GoToTSCompiler) writeNamedTypeZeroValue(named *types.Named) {
 
 func (c *GoToTSCompiler) writeTypeAliasZeroValue(alias *types.Alias, astType ast.Expr) {
 	// Check if this is a wrapper type first
-	if c.analysis.IsNamedBasicType(alias) {
+	if c.isWrapperType(alias) {
 		// For wrapper types, use the zero value of the underlying type with type casting
 		c.WriteZeroValueForType(alias.Underlying())
 		c.tsw.WriteLiterally(" as ")

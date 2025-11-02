@@ -55,7 +55,7 @@ func (c *GoToTSCompiler) WriteStmtRange(exp *ast.RangeStmt) error {
 
 	// Handle basic types (string, integer)
 	if basic, ok := underlying.(*types.Basic); ok {
-		if basic.Info()&types.IsString != 0 {
+		if c.isStringType(iterType) {
 			return c.writeStringRange(exp)
 		} else if basic.Info()&types.IsInteger != 0 {
 			return c.writeIntegerRange(exp)

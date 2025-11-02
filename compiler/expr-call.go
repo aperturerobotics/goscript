@@ -169,7 +169,7 @@ func (c *GoToTSCompiler) writeCallArguments(exp *ast.CallExpr) error {
 func (c *GoToTSCompiler) writeArgumentWithTypeHandling(arg ast.Expr, funcSig *types.Signature, argIndex int) error {
 	if funcSig != nil && argIndex < funcSig.Params().Len() {
 		paramType := funcSig.Params().At(argIndex).Type()
-		isWrapper := c.analysis.IsNamedBasicType(paramType)
+		isWrapper := c.isWrapperType(paramType)
 
 		if isWrapper {
 			// For wrapper types (now type aliases), no auto-wrapping is needed
@@ -202,7 +202,52 @@ func (c *GoToTSCompiler) writeArgumentWithTypeHandling(arg ast.Expr, funcSig *ty
 	return nil
 }
 
+// resolveImportAlias returns the import alias for a given package
+// This is the single source of truth for import alias resolution
+func (c *GoToTSCompiler) resolveImportAlias(pkg *types.Package) (alias string, found bool) {
+	if c.analysis == nil || pkg == nil {
+		return "", false
+	}
+
+	pkgName := pkg.Name()
+
+	// Try to match by the actual package name
+	if _, exists := c.analysis.Imports[pkgName]; exists {
+		return pkgName, true
+	}
+
+	return "", false
+}
+
+// getQualifiedTypeName returns the qualified type name for a Named or Alias type
+// Returns empty string if the type is not Named or Alias, or has no valid object
+func (c *GoToTSCompiler) getQualifiedTypeName(t types.Type) string {
+	var obj *types.TypeName
+
+	if namedType, ok := t.(*types.Named); ok {
+		obj = namedType.Obj()
+	} else if aliasType, ok := t.(*types.Alias); ok {
+		obj = aliasType.Obj()
+	}
+
+	if obj == nil || obj.Pkg() == nil {
+		return ""
+	}
+
+	if obj.Pkg() != c.pkg.Types {
+		// Imported type
+		if alias, found := c.resolveImportAlias(obj.Pkg()); found {
+			return alias + "." + obj.Name()
+		}
+		return obj.Name()
+	}
+
+	// Local type
+	return obj.Name()
+}
+
 // getImportAlias returns the import alias for a given package path
+// Deprecated: use resolveImportAlias instead for better type safety
 func (c *GoToTSCompiler) getImportAlias(pkgPath string) string {
 	if c.analysis == nil {
 		return ""
@@ -234,7 +279,7 @@ func (c *GoToTSCompiler) getImportAlias(pkgPath string) string {
 func (c *GoToTSCompiler) writeAutoWrappedArgument(arg ast.Expr, expectedType types.Type) error {
 	// For wrapper types (now type aliases), no auto-wrapping is needed
 	// Just use type casting if the types don't match exactly
-	if c.analysis.IsNamedBasicType(expectedType) {
+	if c.isWrapperType(expectedType) {
 		argType := c.pkg.TypesInfo.TypeOf(arg)
 
 		// Only add type casting if needed
@@ -272,73 +317,12 @@ func (c *GoToTSCompiler) writeWrapperTypeMethodCall(exp *ast.CallExpr, selectorE
 	}
 
 	// Check if this is a wrapper type using the analysis
-	isWrapperType := c.analysis.IsNamedBasicType(baseType)
-
-	// Special handling for type aliases to basic types that might have wrapper functions
-	// Even if IsNamedBasicType returns false, we should check for known wrapper type patterns
-	var typeName string
-	if !isWrapperType {
-		// Check if this is a type alias to a basic type that might have wrapper methods
-		if aliasType, ok := baseType.(*types.Alias); ok {
-			if aliasType.Obj() != nil && aliasType.Obj().Pkg() != nil {
-				// Check if the underlying type is a basic type
-				underlying := aliasType.Underlying()
-				if _, isBasic := underlying.(*types.Basic); isBasic {
-					// This is a type alias to a basic type - treat it as a potential wrapper type
-					isWrapperType = true
-					if aliasType.Obj().Pkg() != c.pkg.Types {
-						// Imported type alias like os.FileMode
-						if importAlias := c.getImportAlias(aliasType.Obj().Pkg().Path()); importAlias != "" {
-							typeName = importAlias + "." + aliasType.Obj().Name()
-						} else {
-							typeName = aliasType.Obj().Name()
-						}
-					} else {
-						// Local type alias
-						typeName = aliasType.Obj().Name()
-					}
-				}
-			}
-		}
-	}
-
-	if !isWrapperType {
+	if !c.isWrapperType(baseType) {
 		return false, nil
 	}
 
-	// Get the type name for the function call if not already set
-	if typeName == "" {
-		if namedType, ok := baseType.(*types.Named); ok {
-			if obj := namedType.Obj(); obj != nil {
-				if obj.Pkg() != nil && obj.Pkg() != c.pkg.Types {
-					// Imported type like os.FileMode
-					if importAlias := c.getImportAlias(obj.Pkg().Path()); importAlias != "" {
-						typeName = importAlias + "." + obj.Name()
-					} else {
-						typeName = obj.Name()
-					}
-				} else {
-					// Local type
-					typeName = obj.Name()
-				}
-			}
-		} else if aliasType, ok := baseType.(*types.Alias); ok {
-			if obj := aliasType.Obj(); obj != nil {
-				if obj.Pkg() != nil && obj.Pkg() != c.pkg.Types {
-					// Imported type alias
-					if importAlias := c.getImportAlias(obj.Pkg().Path()); importAlias != "" {
-						typeName = importAlias + "." + obj.Name()
-					} else {
-						typeName = obj.Name()
-					}
-				} else {
-					// Local type alias
-					typeName = obj.Name()
-				}
-			}
-		}
-	}
-
+	// Get the qualified type name for the function call
+	typeName := c.getQualifiedTypeName(baseType)
 	if typeName == "" {
 		return false, nil
 	}

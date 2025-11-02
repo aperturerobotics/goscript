@@ -49,7 +49,7 @@ func TestBuildRunExampleSimple(t *testing.T) {
 	t.Log(string(outFile))
 
 	// Run the compiled TypeScript file
-	cmd := exec.Command("tsx", "--tsconfig", "./tsconfig.json", "./main.ts")
+	cmd := exec.Command("../../node_modules/.bin/tsx", "--tsconfig", "./tsconfig.json", "./main.ts")
 	cmd.Dir = projectDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

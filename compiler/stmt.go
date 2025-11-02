@@ -451,31 +451,7 @@ func (c *GoToTSCompiler) WriteStmtIf(exp *ast.IfStmt) error {
 		if c.analysis.HasVariableShadowing(exp) {
 			shadowingInfo := c.analysis.GetShadowingInfo(exp)
 			if shadowingInfo != nil {
-				// Handle variable shadowing by creating temporary variables
-				for varName, tempVarName := range shadowingInfo.TempVariables {
-					c.tsw.WriteLiterally("const ")
-					c.tsw.WriteLiterally(tempVarName)
-					c.tsw.WriteLiterally(" = ")
-
-					// Check if this is a built-in function and handle it directly
-					if c.isBuiltinFunction(varName) {
-						c.tsw.WriteLiterally("$.")
-						c.tsw.WriteLiterally(varName)
-					} else {
-						// Get the original object for this shadowed variable
-						if originalObj, exists := shadowingInfo.ShadowedVariables[varName]; exists {
-							// Create an identifier with the original name and use WriteValueExpr to properly resolve it
-							originalIdent := &ast.Ident{Name: varName}
-							// Set the identifier in the Uses map so WriteValueExpr can find the object
-							c.pkg.TypesInfo.Uses[originalIdent] = originalObj
-							c.WriteValueExpr(originalIdent)
-						} else {
-							// Fallback to literal name if no object found (shouldn't happen in normal cases)
-							c.tsw.WriteLiterally(varName)
-						}
-					}
-					c.tsw.WriteLine("")
-				}
+				c.writeTempVariablesForShadowing(shadowingInfo)
 			}
 		}
 
@@ -924,32 +900,9 @@ func (c *GoToTSCompiler) WriteStmtDefer(exp *ast.DeferStmt) error {
 }
 
 // isCallAsyncInDefer determines if a call expression in a defer statement is async
+// isCallAsyncInDefer checks if a call expression in a defer statement is async
 func (c *GoToTSCompiler) isCallAsyncInDefer(callExpr *ast.CallExpr) bool {
-	switch fun := callExpr.Fun.(type) {
-	case *ast.Ident:
-		// Direct function call (e.g., defer myFunc())
-		if obj := c.pkg.TypesInfo.Uses[fun]; obj != nil {
-			return c.analysis.IsAsyncFunc(obj)
-		}
-	case *ast.SelectorExpr:
-		// Method call (e.g., defer handle.Release()) or package function call
-		if selection := c.pkg.TypesInfo.Selections[fun]; selection != nil {
-			// Method call on an object
-			if methodObj := selection.Obj(); methodObj != nil {
-				return c.analysis.IsAsyncFunc(methodObj)
-			}
-		} else if ident, ok := fun.X.(*ast.Ident); ok {
-			// Package-level function call (e.g., defer time.Sleep())
-			if obj := c.objectOfIdent(ident); obj != nil {
-				if pkgName, isPkg := obj.(*types.PkgName); isPkg {
-					methodName := fun.Sel.Name
-					pkgPath := pkgName.Imported().Path()
-					return c.analysis.IsMethodAsync(pkgPath, "", methodName)
-				}
-			}
-		}
-	}
-	return false
+	return c.isCallExprAsync(callExpr)
 }
 
 // WriteStmtLabeled handles labeled statements (ast.LabeledStmt), such as "label: statement".
@@ -992,10 +945,8 @@ func (c *GoToTSCompiler) WriteStmtLabeled(stmt *ast.LabeledStmt) error {
 	return nil
 }
 
-// writeShadowedAssignment writes an assignment statement that has variable shadowing,
-// using pre-computed identifier mappings from analysis instead of dynamic context.
-func (c *GoToTSCompiler) writeShadowedAssignment(stmt *ast.AssignStmt, shadowingInfo *ShadowingInfo) error {
-	// First, create temporary variables for the shadowed variables
+// writeTempVariablesForShadowing creates temporary variables for shadowed variables
+func (c *GoToTSCompiler) writeTempVariablesForShadowing(shadowingInfo *ShadowingInfo) {
 	for varName, tempVarName := range shadowingInfo.TempVariables {
 		c.tsw.WriteLiterally("const ")
 		c.tsw.WriteLiterally(tempVarName)
@@ -1020,6 +971,12 @@ func (c *GoToTSCompiler) writeShadowedAssignment(stmt *ast.AssignStmt, shadowing
 		}
 		c.tsw.WriteLine("")
 	}
+}
+
+// writeShadowedAssignment writes an assignment statement that has variable shadowing,
+// using pre-computed identifier mappings from analysis instead of dynamic context.
+func (c *GoToTSCompiler) writeShadowedAssignment(stmt *ast.AssignStmt, shadowingInfo *ShadowingInfo) error {
+	c.writeTempVariablesForShadowing(shadowingInfo)
 
 	// Now write the LHS variables (these are new declarations)
 	for i, lhsExpr := range stmt.Lhs {
@@ -1229,22 +1186,5 @@ func (c *GoToTSCompiler) writeShadowedRHSExpression(expr ast.Expr, shadowingInfo
 
 // isBuiltinFunction checks if the given name is a Go built-in function
 func (c *GoToTSCompiler) isBuiltinFunction(name string) bool {
-	builtins := map[string]bool{
-		"len":     true,
-		"cap":     true,
-		"make":    true,
-		"new":     true,
-		"append":  true,
-		"copy":    true,
-		"delete":  true,
-		"complex": true,
-		"real":    true,
-		"imag":    true,
-		"close":   true,
-		"panic":   true,
-		"recover": true,
-		"print":   true,
-		"println": true,
-	}
-	return builtins[name]
+	return builtinFunctions[name]
 }

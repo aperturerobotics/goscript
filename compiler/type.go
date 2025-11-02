@@ -76,31 +76,12 @@ func (c *GoToTSCompiler) WriteGoType(typ types.Type, context GoTypeContext) {
 		aliasObj := t.Obj()
 		if aliasObj != nil && aliasObj.Pkg() != nil && aliasObj.Pkg() != c.pkg.Types {
 			// This type alias is from an imported package, find the import alias
-			aliasPkg := aliasObj.Pkg()
-			aliasPkgPath := aliasPkg.Path()
-			aliasPkgName := aliasPkg.Name() // Get the actual package name
-
-			// Try to find the import alias by matching the package name or path
-			for importAlias := range c.analysis.Imports {
-				// First, try to match by the actual package name
-				if importAlias == aliasPkgName {
-					// Write the qualified name: importAlias.TypeName
-					c.tsw.WriteLiterally(importAlias)
-					c.tsw.WriteLiterally(".")
-					c.tsw.WriteLiterally(aliasObj.Name())
-					return
-				}
-
-				// Fallback: try to match by path-based package name (for backwards compatibility)
-				pts := strings.Split(aliasPkgPath, "/")
-				defaultPkgName := pts[len(pts)-1]
-				if importAlias == defaultPkgName || importAlias == aliasPkgPath {
-					// Write the qualified name: importAlias.TypeName
-					c.tsw.WriteLiterally(importAlias)
-					c.tsw.WriteLiterally(".")
-					c.tsw.WriteLiterally(aliasObj.Name())
-					return
-				}
+			if alias, found := c.resolveImportAlias(aliasObj.Pkg()); found {
+				// Write the qualified name: importAlias.TypeName
+				c.tsw.WriteLiterally(alias)
+				c.tsw.WriteLiterally(".")
+				c.tsw.WriteLiterally(aliasObj.Name())
+				return
 			}
 		}
 		// For local type aliases or unmatched imports, expand to underlying type
@@ -202,7 +183,7 @@ func (c *GoToTSCompiler) WriteZeroValueForType(typ any) {
 		c.WriteZeroValueForType(t.Underlying())
 	case *types.Slice:
 		// Check if it's a []byte slice
-		if elem, ok := t.Elem().(*types.Basic); ok && elem.Kind() == types.Uint8 {
+		if c.isByteSliceType(t) {
 			c.tsw.WriteLiterally("new Uint8Array(0)")
 			return
 		}
@@ -268,64 +249,29 @@ func (c *GoToTSCompiler) WriteNamedType(t *types.Named) {
 	typePkg := t.Obj().Pkg()
 	if typePkg != nil && typePkg != c.pkg.Types {
 		// This type is from an imported package, find the import alias
-		typePkgPath := typePkg.Path()
-		typePkgName := typePkg.Name() // Get the actual package name
+		if alias, found := c.resolveImportAlias(typePkg); found {
+			// Write the qualified name: importAlias.TypeName
+			c.tsw.WriteLiterally(alias)
+			c.tsw.WriteLiterally(".")
+			c.tsw.WriteLiterally(c.sanitizeIdentifier(t.Obj().Name()))
 
-		// Try to find the import alias by matching the package name or path
-		for importAlias := range c.analysis.Imports {
-			// First, try to match by the actual package name
-			if importAlias == typePkgName {
-				// Write the qualified name: importAlias.TypeName
-				c.tsw.WriteLiterally(importAlias)
-				c.tsw.WriteLiterally(".")
-				c.tsw.WriteLiterally(c.sanitizeIdentifier(t.Obj().Name()))
-
-				// For generic types, include type arguments
-				if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
-					c.tsw.WriteLiterally("<")
-					for i := 0; i < t.TypeArgs().Len(); i++ {
-						if i > 0 {
-							c.tsw.WriteLiterally(", ")
-						}
-						c.WriteGoType(t.TypeArgs().At(i), GoTypeContextGeneral)
+			// For generic types, include type arguments
+			if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
+				c.tsw.WriteLiterally("<")
+				for i := 0; i < t.TypeArgs().Len(); i++ {
+					if i > 0 {
+						c.tsw.WriteLiterally(", ")
 					}
-					c.tsw.WriteLiterally(">")
+					c.WriteGoType(t.TypeArgs().At(i), GoTypeContextGeneral)
 				}
-
-				// Check if the underlying type is a function signature and add | null
-				if _, isSignature := t.Underlying().(*types.Signature); isSignature {
-					c.tsw.WriteLiterally(" | null")
-				}
-				return
+				c.tsw.WriteLiterally(">")
 			}
 
-			// Fallback: try to match by path-based package name (for backwards compatibility)
-			pts := strings.Split(typePkgPath, "/")
-			defaultPkgName := pts[len(pts)-1]
-			if importAlias == defaultPkgName || importAlias == typePkgPath {
-				// Write the qualified name: importAlias.TypeName
-				c.tsw.WriteLiterally(importAlias)
-				c.tsw.WriteLiterally(".")
-				c.tsw.WriteLiterally(c.sanitizeIdentifier(t.Obj().Name()))
-
-				// For generic types, include type arguments
-				if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
-					c.tsw.WriteLiterally("<")
-					for i := 0; i < t.TypeArgs().Len(); i++ {
-						if i > 0 {
-							c.tsw.WriteLiterally(", ")
-						}
-						c.WriteGoType(t.TypeArgs().At(i), GoTypeContextGeneral)
-					}
-					c.tsw.WriteLiterally(">")
-				}
-
-				// Check if the underlying type is a function signature and add | null
-				if _, isSignature := t.Underlying().(*types.Signature); isSignature {
-					c.tsw.WriteLiterally(" | null")
-				}
-				return
+			// Check if the underlying type is a function signature and add | null
+			if _, isSignature := t.Underlying().(*types.Signature); isSignature {
+				c.tsw.WriteLiterally(" | null")
 			}
+			return
 		}
 	}
 
@@ -388,7 +334,7 @@ func (c *GoToTSCompiler) WritePointerType(t *types.Pointer, context GoTypeContex
 // For []byte, it generates Uint8Array.
 func (c *GoToTSCompiler) WriteSliceType(t *types.Slice) {
 	// Check if it's a []byte slice
-	if elem, ok := t.Elem().(*types.Basic); ok && elem.Kind() == types.Uint8 {
+	if c.isByteSliceType(t) {
 		c.tsw.WriteLiterally("$.Bytes")
 		return
 	}
@@ -855,4 +801,30 @@ func (c *GoToTSCompiler) WriteTypeConstraint(constraint ast.Expr) {
 		// Fallback: use the standard type expression writer
 		c.WriteTypeExpr(constraint)
 	}
+}
+
+// isWrapperType checks if a type should be treated as a wrapper type (type alias with basic underlying type).
+// Wrapper types are rendered as TypeScript type aliases rather than classes with constructors.
+// Examples: os.FileMode (uint32), MyString (string), etc.
+func (c *GoToTSCompiler) isWrapperType(t types.Type) bool {
+	// Check analysis cache first (for types with methods in analyzed packages)
+	if c.analysis.IsNamedBasicType(t) {
+		return true
+	}
+
+	// For external package types, check if it's a named type with a basic underlying type
+	if namedType, ok := t.(*types.Named); ok {
+		if _, ok := namedType.Underlying().(*types.Basic); ok {
+			return true
+		}
+	}
+
+	// Also check for type aliases with basic underlying types
+	if aliasType, ok := t.(*types.Alias); ok {
+		if _, ok := aliasType.Underlying().(*types.Basic); ok {
+			return true
+		}
+	}
+
+	return false
 }

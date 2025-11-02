@@ -1,4 +1,5 @@
 import * as $ from "@goscript/builtin/index.js"
+import { key, tree } from "./tree.gs.js";
 
 import * as cmp from "@goscript/cmp/index.js"
 
@@ -33,12 +34,12 @@ export class FileSet {
 		this._fields.base.value = value
 	}
 
-	// list of files in the order added to the set
-	public get files(): $.Slice<File | null> {
-		return this._fields.files.value
+	// tree of files in ascending base order
+	public get tree(): tree {
+		return this._fields.tree.value
 	}
-	public set files(value: $.Slice<File | null>) {
-		this._fields.files.value = value
+	public set tree(value: tree) {
+		this._fields.tree.value = value
 	}
 
 	// cache of last file looked up
@@ -52,15 +53,15 @@ export class FileSet {
 	public _fields: {
 		mutex: $.VarRef<sync.RWMutex>;
 		base: $.VarRef<number>;
-		files: $.VarRef<$.Slice<File | null>>;
+		tree: $.VarRef<tree>;
 		last: $.VarRef<atomic.Pointer<File>>;
 	}
 
-	constructor(init?: Partial<{base?: number, files?: $.Slice<File | null>, last?: atomic.Pointer<File>, mutex?: sync.RWMutex}>) {
+	constructor(init?: Partial<{base?: number, last?: atomic.Pointer<File>, mutex?: sync.RWMutex, tree?: tree}>) {
 		this._fields = {
 			mutex: $.varRef(init?.mutex ? $.markAsStructValue(init.mutex.clone()) : new sync.RWMutex()),
 			base: $.varRef(init?.base ?? 0),
-			files: $.varRef(init?.files ?? null),
+			tree: $.varRef(init?.tree ? $.markAsStructValue(init.tree.clone()) : new tree()),
 			last: $.varRef(init?.last ? $.markAsStructValue(init.last.clone()) : new atomic.Pointer<File>())
 		}
 	}
@@ -70,7 +71,7 @@ export class FileSet {
 		cloned._fields = {
 			mutex: $.varRef($.markAsStructValue(this._fields.mutex.value.clone())),
 			base: $.varRef(this._fields.base.value),
-			files: $.varRef(this._fields.files.value),
+			tree: $.varRef($.markAsStructValue(this._fields.tree.value.clone())),
 			last: $.varRef($.markAsStructValue(this._fields.last.value.clone()))
 		}
 		return cloned
@@ -124,9 +125,29 @@ export class FileSet {
 			$.panic("token.Pos offset overflow (> 2G of source code in file set)")
 		}
 		s.base = base
-		s.files = $.append(s.files, f)
+		s.tree.add(f)
 		s.last.Store(f)
 		return f
+	}
+
+	// AddExistingFiles adds the specified files to the
+	// FileSet if they are not already present.
+	// The caller must ensure that no pair of Files that
+	// would appear in the resulting FileSet overlap.
+	public async AddExistingFiles(...files: File | null[]): Promise<void> {
+		const s = this
+		using __defer = new $.DisposableStack();
+		await s.mutex.Lock()
+		__defer.defer(() => {
+			s.mutex.Unlock()
+		});
+		for (let _i = 0; _i < $.len(files); _i++) {
+			const f = files![_i]
+			{
+				s.tree.add(f)
+				s.base = max(s.base, f!.Base() + f!.Size() + 1)
+			}
+		}
 	}
 
 	// RemoveFile removes a file from the [FileSet] so that subsequent
@@ -143,31 +164,29 @@ export class FileSet {
 		__defer.defer(() => {
 			s.mutex.Unlock()
 		});
-		{
-			let i = searchFiles(s.files, file!.base)
-			if (i >= 0 && (s.files![i] === file)) {
-				let last = s.files![$.len(s.files) - 1]
-				s.files = slices.Delete(s.files, i, i + 1)
-				last!.value = null // don't prolong lifetime when popping last element
-			}
+		let [pn, ] = s.tree.locate(file!.key())
+		if (pn!.value != null && ((pn!.value)!.file === file)) {
+			s.tree._delete(pn)
 		}
 	}
 
-	// Iterate calls f for the files in the file set in the order they were added
-	// until f returns false.
-	public async Iterate(f: ((p0: File | null) => boolean) | null): Promise<void> {
+	// Iterate calls yield for the files in the file set in ascending Base
+	// order until yield returns false.
+	public async Iterate(_yield: ((p0: File | null) => boolean) | null): Promise<void> {
 		const s = this
-		for (let i = 0; ; i++) {
-			let file: File | null = null
-			await s.mutex.RLock()
-			if (i < $.len(s.files)) {
-				file = s.files![i]
-			}
+		using __defer = new $.DisposableStack();
+		await s.mutex.RLock()
+		__defer.defer(() => {
 			s.mutex.RUnlock()
-			if (file == null || !f!(file)) {
-				break
-			}
-		}
+		});
+		s.tree.all()!(async (f: File | null): Promise<boolean> => {
+			await using __defer = new $.AsyncDisposableStack();
+			s.mutex.RUnlock()
+			__defer.defer(async () => {
+				await s.mutex.RLock()
+			});
+			return _yield!(f)
+		})
 	}
 
 	public async file(p: Pos): Promise<File | null> {
@@ -183,20 +202,14 @@ export class FileSet {
 		__defer.defer(() => {
 			s.mutex.RUnlock()
 		});
+		let [pn, ] = s.tree.locate($.markAsStructValue(new key({})))
 		{
-			let i = searchFiles(s.files, p)
-			if (i >= 0) {
-				let f = s.files![i]
-				// f.base <= int(p) by definition of searchFiles
-
+			let n = pn!.value
+			if (n != null) {
 				// Update cache of last file. A race is ok,
 				// but an exclusive lock causes heavy contention.
-				if (p <= f!.base + f!.size) {
-					// Update cache of last file. A race is ok,
-					// but an exclusive lock causes heavy contention.
-					s.last.Store(f)
-					return f
-				}
+				s.last.Store(n!.file)
+				return n!.file
 			}
 		}
 		return null
@@ -252,12 +265,12 @@ export class FileSet {
 		}
 		await s.mutex.Lock()
 		s.base = ss.Base
-		let files = $.makeSlice<File | null>($.len(ss.Files))
-		for (let i = 0; i < $.len(ss.Files); i++) {
-			let f = ss.Files![i]
-			files![i] = new File({base: f!.Base, infos: f!.Infos, lines: f!.Lines, name: f!.Name, size: f!.Size})
+		for (let _i = 0; _i < $.len(ss.Files); _i++) {
+			const f = ss.Files![_i]
+			{
+				s.tree.add(new File({base: f.Base, infos: f.Infos, lines: f.Lines, name: f.Name, size: f.Size}))
+			}
 		}
-		s.files = files
 		null
 		s.mutex.Unlock()
 		return null
@@ -269,15 +282,18 @@ export class FileSet {
 		let ss: serializedFileSet = new serializedFileSet()
 		await s.mutex.Lock()
 		ss.Base = s.base
-		let files = $.makeSlice<serializedFile>($.len(s.files))
-		for (let i = 0; i < $.len(s.files); i++) {
-			const f = s.files![i]
-			{
-				await f!.mutex.Lock()
-				files![i] = $.markAsStructValue(new serializedFile({Base: f!.base, Infos: $.append(null, f!.infos), Lines: $.append(null, f!.lines), Name: f!.name, Size: f!.size}))
-				f!.mutex.Unlock()
-			}
-		}
+		let files: $.Slice<serializedFile> = null
+		;(() => {
+			let shouldContinue = true
+			s.tree.all()!((v) => {
+				{
+					await f!.mutex.Lock()
+					files = $.append(files, $.markAsStructValue(new serializedFile({Base: f!.base, Infos: slices.Clone(f!.infos), Lines: slices.Clone(f!.lines), Name: f!.name, Size: f!.size})))
+					f!.mutex.Unlock()
+				}
+				return shouldContinue
+			})
+		})()
 		ss.Files = files
 		s.mutex.Unlock()
 		return encode!(ss)
@@ -287,9 +303,9 @@ export class FileSet {
 	static __typeInfo = $.registerStructType(
 	  'FileSet',
 	  new FileSet(),
-	  [{ name: "Base", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "AddFile", args: [{ name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "base", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "size", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "File" } }] }, { name: "RemoveFile", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "File" } }], returns: [] }, { name: "Iterate", args: [{ name: "f", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "File" }], results: [{ kind: $.TypeKind.Basic, name: "boolean" }] } }], returns: [] }, { name: "file", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "File" } }] }, { name: "File", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "File" } }] }, { name: "PositionFor", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: "Position" }] }, { name: "Position", args: [{ name: "p", type: "Pos" }], returns: [{ type: "Position" }] }, { name: "Read", args: [{ name: "decode", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Interface, methods: [] }], results: [{ kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Write", args: [{ name: "encode", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Interface, methods: [] }], results: [{ kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
+	  [{ name: "Base", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "AddFile", args: [{ name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "base", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "size", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "File" } }] }, { name: "AddExistingFiles", args: [{ name: "files", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "File" } } }], returns: [] }, { name: "RemoveFile", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "File" } }], returns: [] }, { name: "Iterate", args: [{ name: "yield", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "File" }], results: [{ kind: $.TypeKind.Basic, name: "boolean" }] } }], returns: [] }, { name: "file", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "File" } }] }, { name: "File", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "File" } }] }, { name: "PositionFor", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: "Position" }] }, { name: "Position", args: [{ name: "p", type: "Pos" }], returns: [{ type: "Position" }] }, { name: "Read", args: [{ name: "decode", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Interface, methods: [] }], results: [{ kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Write", args: [{ name: "encode", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Interface, methods: [] }], results: [{ kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  FileSet,
-	  {"mutex": "RWMutex", "base": { kind: $.TypeKind.Basic, name: "number" }, "files": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "File" } }, "last": "Pointer"}
+	  {"mutex": "RWMutex", "base": { kind: $.TypeKind.Basic, name: "number" }, "tree": "tree", "last": "Pointer"}
 	);
 }
 
@@ -895,11 +911,16 @@ export class File {
 		return await f.PositionFor(p, true)
 	}
 
+	public key(): key {
+		const f = this
+		return $.markAsStructValue(new key({}))
+	}
+
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
 	  'File',
 	  new File(),
-	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Base", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "LineCount", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "MergeLine", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "Lines", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }] }, { name: "SetLines", args: [{ name: "lines", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "SetLinesForContent", args: [{ name: "content", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [] }, { name: "LineStart", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: "Pos" }] }, { name: "AddLineInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "AddLineColumnInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "column", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "fixOffset", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Pos", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: "Pos" }] }, { name: "Offset", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Line", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "unpack", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "position", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: "Position" }] }, { name: "PositionFor", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: "Position" }] }, { name: "Position", args: [{ name: "p", type: "Pos" }], returns: [{ type: "Position" }] }],
+	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Base", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "LineCount", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "MergeLine", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "Lines", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }] }, { name: "SetLines", args: [{ name: "lines", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "SetLinesForContent", args: [{ name: "content", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [] }, { name: "LineStart", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: "Pos" }] }, { name: "AddLineInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "AddLineColumnInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "column", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "fixOffset", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Pos", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: "Pos" }] }, { name: "Offset", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Line", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "unpack", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "position", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: "Position" }] }, { name: "PositionFor", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: "Position" }] }, { name: "Position", args: [{ name: "p", type: "Pos" }], returns: [{ type: "Position" }] }, { name: "key", args: [], returns: [{ type: "key" }] }],
 	  File,
 	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "base": { kind: $.TypeKind.Basic, name: "number" }, "size": { kind: $.TypeKind.Basic, name: "number" }, "mutex": "Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "infos": { kind: $.TypeKind.Slice, elemType: "lineInfo" }}
 	);
@@ -925,21 +946,6 @@ export function NewFileSet(): FileSet | null {
 
 	// 0 == NoPos
 	return new FileSet({base: 1})
-}
-
-export function searchFiles(a: $.Slice<File | null>, x: number): number {
-	let [i, found] = slices.BinarySearchFunc(a, x, (a: File | null, x: number): number => {
-		return cmp.Compare(a!.base, x)
-	})
-
-	// We want the File containing x, but if we didn't
-	// find x then i is the next one.
-	if (!found) {
-		// We want the File containing x, but if we didn't
-		// find x then i is the next one.
-		i--
-	}
-	return i
 }
 
 export function searchInts(a: $.Slice<number>, x: number): number {

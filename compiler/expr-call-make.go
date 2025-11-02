@@ -8,95 +8,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// hasSliceConstraint checks if an interface constraint includes slice types
-// For constraints like ~[]E, this returns true
-func hasSliceConstraint(iface *types.Interface) bool {
-	// Check if the interface has type terms that include slice types
-	for i := 0; i < iface.NumEmbeddeds(); i++ {
-		embedded := iface.EmbeddedType(i)
-		if union, ok := embedded.(*types.Union); ok {
-			for j := 0; j < union.Len(); j++ {
-				term := union.Term(j)
-				if _, isSlice := term.Type().Underlying().(*types.Slice); isSlice {
-					return true
-				}
-			}
-		} else if _, isSlice := embedded.Underlying().(*types.Slice); isSlice {
-			return true
-		}
-	}
-	return false
-}
-
-// getSliceElementTypeFromConstraint extracts the element type from a slice constraint
-// For constraints like ~[]E, this returns E
-func getSliceElementTypeFromConstraint(iface *types.Interface) types.Type {
-	// Check if the interface has type terms that include slice types
-	for i := 0; i < iface.NumEmbeddeds(); i++ {
-		embedded := iface.EmbeddedType(i)
-		if union, ok := embedded.(*types.Union); ok {
-			for j := 0; j < union.Len(); j++ {
-				term := union.Term(j)
-				if sliceType, isSlice := term.Type().Underlying().(*types.Slice); isSlice {
-					return sliceType.Elem()
-				}
-			}
-		} else if sliceType, isSlice := embedded.Underlying().(*types.Slice); isSlice {
-			return sliceType.Elem()
-		}
-	}
-	return nil
-}
-
-// hasMixedStringByteConstraint checks if an interface constraint includes both string and []byte types
-// For constraints like string | []byte, this returns true
-// For pure slice constraints like ~[]E, this returns false
-func hasMixedStringByteConstraint(iface *types.Interface) bool {
-	hasString := false
-	hasByteSlice := false
-
-	// Check if the interface has type terms that include both string and []byte
-	for i := 0; i < iface.NumEmbeddeds(); i++ {
-		embedded := iface.EmbeddedType(i)
-		if union, ok := embedded.(*types.Union); ok {
-			for j := 0; j < union.Len(); j++ {
-				term := union.Term(j)
-				termType := term.Type().Underlying()
-
-				// Check for string type
-				if basicType, isBasic := termType.(*types.Basic); isBasic && (basicType.Info()&types.IsString) != 0 {
-					hasString = true
-				}
-
-				// Check for []byte type
-				if sliceType, isSlice := termType.(*types.Slice); isSlice {
-					if elemType, isBasic := sliceType.Elem().(*types.Basic); isBasic && elemType.Kind() == types.Uint8 {
-						hasByteSlice = true
-					}
-				}
-			}
-		} else {
-			// Handle non-union embedded types
-			termType := embedded.Underlying()
-
-			// Check for string type
-			if basicType, isBasic := termType.(*types.Basic); isBasic && (basicType.Info()&types.IsString) != 0 {
-				hasString = true
-			}
-
-			// Check for []byte type
-			if sliceType, isSlice := termType.(*types.Slice); isSlice {
-				if elemType, isBasic := sliceType.Elem().(*types.Basic); isBasic && elemType.Kind() == types.Uint8 {
-					hasByteSlice = true
-				}
-			}
-		}
-	}
-
-	// Return true only if we have both string and []byte in the constraint
-	return hasString && hasByteSlice
-}
-
 // getTypeHintForSliceElement returns the appropriate type hint for makeSlice based on the Go element type
 func (c *GoToTSCompiler) getTypeHintForSliceElement(elemType types.Type) string {
 	if basicType, isBasic := elemType.(*types.Basic); isBasic {
@@ -116,6 +27,81 @@ func (c *GoToTSCompiler) getTypeHintForSliceElement(elemType types.Type) string 
 	return ""
 }
 
+// writeMakeChannel writes the TypeScript code for creating a channel with $.makeChannel
+// It handles buffer size, zero value, and direction parameters
+func (c *GoToTSCompiler) writeMakeChannel(chanType *types.Chan, bufferArg ast.Expr) error {
+	c.tsw.WriteLiterally("$.makeChannel<")
+	c.WriteGoType(chanType.Elem(), GoTypeContextGeneral)
+	c.tsw.WriteLiterally(">(")
+
+	// If buffer size is provided, add it
+	if bufferArg != nil {
+		if err := c.WriteValueExpr(bufferArg); err != nil {
+			return fmt.Errorf("failed to write buffer size in makeChannel: %w", err)
+		}
+	} else {
+		// Default to 0 (unbuffered channel)
+		c.tsw.WriteLiterally("0")
+	}
+
+	c.tsw.WriteLiterally(", ") // Add comma for zero value argument
+
+	// Write the zero value for the channel's element type
+	if chanType.Elem().String() == "struct{}" {
+		c.tsw.WriteLiterally("{}")
+	} else {
+		c.WriteZeroValueForType(chanType.Elem())
+	}
+
+	// Add direction parameter
+	c.tsw.WriteLiterally(", ")
+
+	// Determine channel direction
+	switch chanType.Dir() {
+	case types.SendRecv:
+		c.tsw.WriteLiterally("'both'")
+	case types.SendOnly:
+		c.tsw.WriteLiterally("'send'")
+	case types.RecvOnly:
+		c.tsw.WriteLiterally("'receive'")
+	default:
+		c.tsw.WriteLiterally("'both'") // Default to bidirectional
+	}
+
+	c.tsw.WriteLiterally(")")
+	return nil
+}
+
+// writeMakeSlice writes the TypeScript code for creating a slice
+// It handles []byte special case and generic slice creation
+func (c *GoToTSCompiler) writeMakeSlice(sliceType *types.Slice, exp *ast.CallExpr) error {
+	goElemType := sliceType.Elem()
+
+	// Check if it's []byte
+	if c.isByteSliceType(sliceType) {
+		var lengthArg, capacityArg interface{}
+		if len(exp.Args) >= 2 {
+			lengthArg = exp.Args[1]
+		}
+		if len(exp.Args) == 3 {
+			capacityArg = exp.Args[2]
+		}
+		return c.writeByteSliceCreation(lengthArg, capacityArg)
+	}
+
+	// Handle other slice types
+	var lengthArg, capacityArg interface{}
+	if len(exp.Args) >= 2 {
+		lengthArg = exp.Args[1]
+	}
+	if len(exp.Args) == 3 {
+		capacityArg = exp.Args[2]
+	} else if len(exp.Args) > 3 {
+		return errors.New("makeSlice expects 2 or 3 arguments")
+	}
+	return c.writeGenericSliceCreation(goElemType, lengthArg, capacityArg)
+}
+
 // WriteCallExprMake handles make() function calls and translates them to TypeScript.
 // It handles channel, map, and slice creation with different type patterns including:
 // - Channel creation with different directions
@@ -126,46 +112,11 @@ func (c *GoToTSCompiler) WriteCallExprMake(exp *ast.CallExpr) error {
 	if typ := c.pkg.TypesInfo.TypeOf(exp.Args[0]); typ != nil {
 		if chanType, ok := typ.Underlying().(*types.Chan); ok {
 			// Handle channel creation: make(chan T, bufferSize) or make(chan T)
-			c.tsw.WriteLiterally("$.makeChannel<")
-			c.WriteGoType(chanType.Elem(), GoTypeContextGeneral)
-			c.tsw.WriteLiterally(">(")
-
-			// If buffer size is provided, add it
+			var bufferArg ast.Expr
 			if len(exp.Args) >= 2 {
-				if err := c.WriteValueExpr(exp.Args[1]); err != nil {
-					return fmt.Errorf("failed to write buffer size in makeChannel: %w", err)
-				}
-			} else {
-				// Default to 0 (unbuffered channel)
-				c.tsw.WriteLiterally("0")
+				bufferArg = exp.Args[1]
 			}
-
-			c.tsw.WriteLiterally(", ") // Add comma for zero value argument
-
-			// Write the zero value for the channel's element type
-			if chanType.Elem().String() == "struct{}" {
-				c.tsw.WriteLiterally("{}")
-			} else {
-				c.WriteZeroValueForType(chanType.Elem())
-			}
-
-			// Add direction parameter
-			c.tsw.WriteLiterally(", ")
-
-			// Determine channel direction
-			switch chanType.Dir() {
-			case types.SendRecv:
-				c.tsw.WriteLiterally("'both'")
-			case types.SendOnly:
-				c.tsw.WriteLiterally("'send'")
-			case types.RecvOnly:
-				c.tsw.WriteLiterally("'receive'")
-			default:
-				c.tsw.WriteLiterally("'both'") // Default to bidirectional
-			}
-
-			c.tsw.WriteLiterally(")")
-			return nil // Handled make for channel
+			return c.writeMakeChannel(chanType, bufferArg)
 		}
 	}
 	// Handle make for slices: make([]T, len, cap) or make([]T, len)
@@ -191,25 +142,12 @@ func (c *GoToTSCompiler) WriteCallExprMake(exp *ast.CallExpr) error {
 			if !ok {
 				return errors.New("expected slice type for make call")
 			}
-			goElemType := goUnderlyingType.Elem()
-
-			// Check if it's make([]byte, ...)
-			if c.isByteSliceType(sliceType) {
-				var lengthArg, capacityArg interface{}
-				if len(exp.Args) >= 2 {
-					lengthArg = exp.Args[1]
-				}
-				if len(exp.Args) == 3 {
-					capacityArg = exp.Args[2]
-				}
-				return c.writeByteSliceCreation(lengthArg, capacityArg)
-			}
 
 			// Check if the element type is a generic type parameter
-			if _, isTypeParam := goElemType.(*types.TypeParam); isTypeParam {
+			if _, isTypeParam := goUnderlyingType.Elem().(*types.TypeParam); isTypeParam {
 				// This is make([]E, n) where E is a type parameter
 				c.tsw.WriteLiterally("$.makeSlice<")
-				c.WriteGoType(goElemType, GoTypeContextGeneral) // Write the element type parameter
+				c.WriteGoType(goUnderlyingType.Elem(), GoTypeContextGeneral) // Write the element type parameter
 				c.tsw.WriteLiterally(">(")
 
 				if len(exp.Args) >= 2 {
@@ -232,17 +170,7 @@ func (c *GoToTSCompiler) WriteCallExprMake(exp *ast.CallExpr) error {
 				return nil // Handled make for []E where E is type parameter
 			}
 
-			var lengthArg, capacityArg interface{}
-			if len(exp.Args) >= 2 {
-				lengthArg = exp.Args[1]
-			}
-			if len(exp.Args) == 3 {
-				capacityArg = exp.Args[2]
-			} else if len(exp.Args) > 3 {
-				return errors.New("makeSlice expects 2 or 3 arguments")
-			}
-
-			return c.writeGenericSliceCreation(goElemType, lengthArg, capacityArg)
+			return c.writeMakeSlice(goUnderlyingType, exp)
 		}
 
 		// Handle generic type parameter make calls: make(S, len, cap) where S ~[]E
@@ -291,34 +219,9 @@ func (c *GoToTSCompiler) WriteCallExprMake(exp *ast.CallExpr) error {
 						}
 					} else {
 						// Handle named types with slice underlying types: make(NamedSliceType, len, cap)
-						// This handles cases like: type appendSliceWriter []byte; make(appendSliceWriter, 0, len(s))
 						namedType := typeName.Type()
 						if sliceType, isSlice := namedType.Underlying().(*types.Slice); isSlice {
-							goElemType := sliceType.Elem()
-
-							// Check if it's a named type with []byte underlying type
-							if c.isByteSliceType(sliceType) {
-								var lengthArg, capacityArg interface{}
-								if len(exp.Args) >= 2 {
-									lengthArg = exp.Args[1]
-								}
-								if len(exp.Args) == 3 {
-									capacityArg = exp.Args[2]
-								}
-								return c.writeByteSliceCreation(lengthArg, capacityArg)
-							}
-
-							// Handle other named slice types
-							var lengthArg, capacityArg interface{}
-							if len(exp.Args) >= 2 {
-								lengthArg = exp.Args[1]
-							}
-							if len(exp.Args) == 3 {
-								capacityArg = exp.Args[2]
-							} else if len(exp.Args) > 3 {
-								return errors.New("makeSlice expects 2 or 3 arguments")
-							}
-							return c.writeGenericSliceCreation(goElemType, lengthArg, capacityArg)
+							return c.writeMakeSlice(sliceType, exp)
 						}
 
 						// Handle named types with map underlying types: make(NamedMapType)
@@ -333,46 +236,11 @@ func (c *GoToTSCompiler) WriteCallExprMake(exp *ast.CallExpr) error {
 
 						// Handle named types with channel underlying types: make(NamedChannelType, bufferSize)
 						if chanType, isChan := namedType.Underlying().(*types.Chan); isChan {
-							c.tsw.WriteLiterally("$.makeChannel<")
-							c.WriteGoType(chanType.Elem(), GoTypeContextGeneral)
-							c.tsw.WriteLiterally(">(")
-
-							// If buffer size is provided, add it
+							var bufferArg ast.Expr
 							if len(exp.Args) >= 2 {
-								if err := c.WriteValueExpr(exp.Args[1]); err != nil {
-									return fmt.Errorf("failed to write buffer size in makeChannel: %w", err)
-								}
-							} else {
-								// Default to 0 (unbuffered channel)
-								c.tsw.WriteLiterally("0")
+								bufferArg = exp.Args[1]
 							}
-
-							c.tsw.WriteLiterally(", ") // Add comma for zero value argument
-
-							// Write the zero value for the channel's element type
-							if chanType.Elem().String() == "struct{}" {
-								c.tsw.WriteLiterally("{}")
-							} else {
-								c.WriteZeroValueForType(chanType.Elem())
-							}
-
-							// Add direction parameter
-							c.tsw.WriteLiterally(", ")
-
-							// Determine channel direction
-							switch chanType.Dir() {
-							case types.SendRecv:
-								c.tsw.WriteLiterally("'both'")
-							case types.SendOnly:
-								c.tsw.WriteLiterally("'send'")
-							case types.RecvOnly:
-								c.tsw.WriteLiterally("'receive'")
-							default:
-								c.tsw.WriteLiterally("'both'") // Default to bidirectional
-							}
-
-							c.tsw.WriteLiterally(")")
-							return nil // Handled make for named channel type
+							return c.writeMakeChannel(chanType, bufferArg)
 						}
 					}
 				}
@@ -399,75 +267,16 @@ func (c *GoToTSCompiler) WriteCallExprMake(exp *ast.CallExpr) error {
 
 			// Handle instantiated generic slice types: make(GenericSlice[T], len, cap)
 			if sliceType, isSlice := underlying.(*types.Slice); isSlice {
-				goElemType := sliceType.Elem()
-
-				// Check if it's an instantiated generic type with []byte underlying type
-				if c.isByteSliceType(types.NewSlice(goElemType)) {
-					var lengthArg, capacityArg interface{}
-					if len(exp.Args) >= 2 {
-						lengthArg = exp.Args[1]
-					}
-					if len(exp.Args) == 3 {
-						capacityArg = exp.Args[2]
-					}
-					return c.writeByteSliceCreation(lengthArg, capacityArg)
-				}
-
-				// Handle other instantiated generic slice types
-				var lengthArg, capacityArg interface{}
-				if len(exp.Args) >= 2 {
-					lengthArg = exp.Args[1]
-				}
-				if len(exp.Args) == 3 {
-					capacityArg = exp.Args[2]
-				} else if len(exp.Args) > 3 {
-					return errors.New("makeSlice expects 2 or 3 arguments")
-				}
-				return c.writeGenericSliceCreation(goElemType, lengthArg, capacityArg)
+				return c.writeMakeSlice(sliceType, exp)
 			}
 
 			// Handle instantiated generic channel types: make(GenericChannel[T], bufferSize)
 			if chanType, isChan := underlying.(*types.Chan); isChan {
-				c.tsw.WriteLiterally("$.makeChannel<")
-				c.WriteGoType(chanType.Elem(), GoTypeContextGeneral)
-				c.tsw.WriteLiterally(">(")
-
-				// If buffer size is provided, add it
+				var bufferArg ast.Expr
 				if len(exp.Args) >= 2 {
-					if err := c.WriteValueExpr(exp.Args[1]); err != nil {
-						return fmt.Errorf("failed to write buffer size in makeChannel: %w", err)
-					}
-				} else {
-					// Default to 0 (unbuffered channel)
-					c.tsw.WriteLiterally("0")
+					bufferArg = exp.Args[1]
 				}
-
-				c.tsw.WriteLiterally(", ") // Add comma for zero value argument
-
-				// Write the zero value for the channel's element type
-				if chanType.Elem().String() == "struct{}" {
-					c.tsw.WriteLiterally("{}")
-				} else {
-					c.WriteZeroValueForType(chanType.Elem())
-				}
-
-				// Add direction parameter
-				c.tsw.WriteLiterally(", ")
-
-				// Determine channel direction
-				switch chanType.Dir() {
-				case types.SendRecv:
-					c.tsw.WriteLiterally("'both'")
-				case types.SendOnly:
-					c.tsw.WriteLiterally("'send'")
-				case types.RecvOnly:
-					c.tsw.WriteLiterally("'receive'")
-				default:
-					c.tsw.WriteLiterally("'both'") // Default to bidirectional
-				}
-
-				c.tsw.WriteLiterally(")")
-				return nil // Handled make for instantiated generic channel type
+				return c.writeMakeChannel(chanType, bufferArg)
 			}
 		}
 	}
@@ -491,75 +300,16 @@ func (c *GoToTSCompiler) WriteCallExprMake(exp *ast.CallExpr) error {
 
 			// Handle selector expression slice types: make(pkg.SliceType, len, cap)
 			if sliceType, isSlice := underlying.(*types.Slice); isSlice {
-				goElemType := sliceType.Elem()
-
-				// Check if it's a selector expression with []byte underlying type
-				if c.isByteSliceType(sliceType) {
-					var lengthArg, capacityArg interface{}
-					if len(exp.Args) >= 2 {
-						lengthArg = exp.Args[1]
-					}
-					if len(exp.Args) == 3 {
-						capacityArg = exp.Args[2]
-					}
-					return c.writeByteSliceCreation(lengthArg, capacityArg)
-				}
-
-				// Handle other selector expression slice types
-				var lengthArg, capacityArg interface{}
-				if len(exp.Args) >= 2 {
-					lengthArg = exp.Args[1]
-				}
-				if len(exp.Args) == 3 {
-					capacityArg = exp.Args[2]
-				} else if len(exp.Args) > 3 {
-					return errors.New("makeSlice expects 2 or 3 arguments")
-				}
-				return c.writeGenericSliceCreation(goElemType, lengthArg, capacityArg)
+				return c.writeMakeSlice(sliceType, exp)
 			}
 
 			// Handle selector expression channel types: make(pkg.ChannelType, bufferSize)
 			if chanType, isChan := underlying.(*types.Chan); isChan {
-				c.tsw.WriteLiterally("$.makeChannel<")
-				c.WriteGoType(chanType.Elem(), GoTypeContextGeneral)
-				c.tsw.WriteLiterally(">(")
-
-				// If buffer size is provided, add it
+				var bufferArg ast.Expr
 				if len(exp.Args) >= 2 {
-					if err := c.WriteValueExpr(exp.Args[1]); err != nil {
-						return fmt.Errorf("failed to write buffer size in makeChannel: %w", err)
-					}
-				} else {
-					// Default to 0 (unbuffered channel)
-					c.tsw.WriteLiterally("0")
+					bufferArg = exp.Args[1]
 				}
-
-				c.tsw.WriteLiterally(", ") // Add comma for zero value argument
-
-				// Write the zero value for the channel's element type
-				if chanType.Elem().String() == "struct{}" {
-					c.tsw.WriteLiterally("{}")
-				} else {
-					c.WriteZeroValueForType(chanType.Elem())
-				}
-
-				// Add direction parameter
-				c.tsw.WriteLiterally(", ")
-
-				// Determine channel direction
-				switch chanType.Dir() {
-				case types.SendRecv:
-					c.tsw.WriteLiterally("'both'")
-				case types.SendOnly:
-					c.tsw.WriteLiterally("'send'")
-				case types.RecvOnly:
-					c.tsw.WriteLiterally("'receive'")
-				default:
-					c.tsw.WriteLiterally("'both'") // Default to bidirectional
-				}
-
-				c.tsw.WriteLiterally(")")
-				return nil // Handled make for selector expression channel type
+				return c.writeMakeChannel(chanType, bufferArg)
 			}
 		}
 	}

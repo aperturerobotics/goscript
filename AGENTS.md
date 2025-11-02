@@ -7,10 +7,12 @@ This document contains guidelines and rules for AI agents working on the GoScrip
 - Try to keep things in one function unless composable or reusable
 - DO NOT use `else` statements unless necessary
 - DO NOT make git commits
-- AVOID `else` statements
+- AVOID `else` statements or "fallback" cases
 - PREFER single word variable names where possible
 - DO NOT maintain backwards compatibility - this is an experimental project
 - Remove any "for backwards compatibility" comments and fallback logic
+- NEVER hardcode things: examples include function names, builtins, etc.
+- Actively try to improve the codebase to conform to the above when the opportunity arises
 
 ## Project Overview
 
@@ -50,6 +52,8 @@ When working on compliance tests:
    - Repeat: update compiler code and/or `compliance/WIP.md` until the compliance test passes successfully
    - If you make two or more edits and the test still does not pass, ask the user how to proceed providing several options
    - After fixing a specific test, re-run the top level compliance test to verify everything works properly: `go test -v ./compiler`
+
+Once the issue is fixed and the compliance test passes you may delete WIP.md without updating it with a final summary.
 
 ## Design Patterns & Code Style
 

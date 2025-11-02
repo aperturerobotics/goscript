@@ -1,6 +1,8 @@
 import * as $ from "@goscript/builtin/index.js"
 import { File, FileSet, lineInfo } from "./position.gs.js";
 
+import * as slices from "@goscript/slices/index.js"
+
 export class serializedFile {
 	// fields correspond 1:1 to fields with same (lower-case) name in File
 	public get Name(): string {

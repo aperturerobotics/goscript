@@ -8,6 +8,25 @@ import (
 	"github.com/pkg/errors"
 )
 
+// builtinFunctions is the definitive list of Go builtin functions handled by the compiler
+var builtinFunctions = map[string]bool{
+	"len":     true,
+	"cap":     true,
+	"make":    true,
+	"new":     true,
+	"append":  true,
+	"copy":    true,
+	"delete":  true,
+	"complex": true,
+	"real":    true,
+	"imag":    true,
+	"close":   true,
+	"panic":   true,
+	"recover": true,
+	"print":   true,
+	"println": true,
+}
+
 // writeBuiltinFunction handles built-in Go functions
 func (c *GoToTSCompiler) writeBuiltinFunction(exp *ast.CallExpr, funName string) (handled bool, err error) {
 	switch funName {

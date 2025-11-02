@@ -79,11 +79,7 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 			// Check if it's a []byte literal
 			isByteSliceLiteral := false
 			if typInfo := c.pkg.TypesInfo.TypeOf(exp.Type); typInfo != nil {
-				if sliceT, ok := typInfo.Underlying().(*types.Slice); ok {
-					if basicElem, ok := sliceT.Elem().(*types.Basic); ok && basicElem.Kind() == types.Uint8 {
-						isByteSliceLiteral = true
-					}
-				}
+				isByteSliceLiteral = c.isByteSliceType(typInfo)
 			}
 
 			if isByteSliceLiteral {

@@ -57,7 +57,7 @@ func (c *GoToTSCompiler) WriteIndexExpr(exp *ast.IndexExpr) error {
 		}
 
 		// Check if it's a string type
-		if basicType, isBasic := underlyingType.(*types.Basic); isBasic && (basicType.Info()&types.IsString) != 0 {
+		if c.isStringType(tv.Type) {
 			c.tsw.WriteLiterally("$.indexString(")
 			if err := c.WriteValueExpr(exp.X); err != nil {
 				return err
@@ -628,9 +628,7 @@ func (c *GoToTSCompiler) WriteSliceExpr(exp *ast.SliceExpr) error {
 	isString := false
 	isTypeParam := false
 	if tv != nil {
-		if basicType, isBasic := tv.Underlying().(*types.Basic); isBasic && (basicType.Info()&types.IsString) != 0 {
-			isString = true
-		}
+		isString = c.isStringType(tv)
 		if _, isTP := tv.(*types.TypeParam); isTP {
 			isTypeParam = true
 		}
@@ -752,46 +750,6 @@ func (c *GoToTSCompiler) WriteKeyValueExpr(exp *ast.KeyValueExpr) error {
 	c.tsw.WriteLiterally(": ")
 	if err := c.WriteValueExpr(exp.Value); err != nil {
 		return fmt.Errorf("failed to write key-value expression value: %w", err)
-	}
-	return nil
-}
-
-// hasMapConstraint checks if an interface constraint includes map types
-// For constraints like ~map[K]V, this returns true
-func hasMapConstraint(iface *types.Interface) bool {
-	// Check if the interface has type terms that include map types
-	for i := 0; i < iface.NumEmbeddeds(); i++ {
-		embedded := iface.EmbeddedType(i)
-		if union, ok := embedded.(*types.Union); ok {
-			for j := 0; j < union.Len(); j++ {
-				term := union.Term(j)
-				if _, isMap := term.Type().Underlying().(*types.Map); isMap {
-					return true
-				}
-			}
-		} else if _, isMap := embedded.Underlying().(*types.Map); isMap {
-			return true
-		}
-	}
-	return false
-}
-
-// getMapValueTypeFromConstraint extracts the value type from a map constraint
-// For constraints like ~map[K]V, this returns V
-func getMapValueTypeFromConstraint(iface *types.Interface) types.Type {
-	// Check if the interface has type terms that include map types
-	for i := 0; i < iface.NumEmbeddeds(); i++ {
-		embedded := iface.EmbeddedType(i)
-		if union, ok := embedded.(*types.Union); ok {
-			for j := 0; j < union.Len(); j++ {
-				term := union.Term(j)
-				if mapType, isMap := term.Type().Underlying().(*types.Map); isMap {
-					return mapType.Elem()
-				}
-			}
-		} else if mapType, isMap := embedded.Underlying().(*types.Map); isMap {
-			return mapType.Elem()
-		}
 	}
 	return nil
 }

@@ -6,17 +6,13 @@ import (
 	"strings"
 )
 
-// writeAsyncCallIfNeeded writes the await prefix for async function or method calls
-// Returns true if await was written, false otherwise
-func (c *GoToTSCompiler) writeAsyncCallIfNeeded(exp *ast.CallExpr) bool {
+// isCallExprAsync determines if a CallExpr represents an async function/method call
+func (c *GoToTSCompiler) isCallExprAsync(exp *ast.CallExpr) bool {
 	switch fun := exp.Fun.(type) {
 	case *ast.Ident:
 		// Function call (e.g., func())
 		if obj := c.objectOfIdent(fun); obj != nil {
-			if c.analysis.IsAsyncFunc(obj) {
-				c.tsw.WriteLiterally("await ")
-				return true
-			}
+			return c.analysis.IsAsyncFunc(obj)
 		}
 		return false
 
@@ -43,8 +39,6 @@ func (c *GoToTSCompiler) writeAsyncCallIfNeeded(exp *ast.CallExpr) bool {
 			// Field access: obj.field.method()
 			// Get the type of the field access expression
 			if fieldType := c.pkg.TypesInfo.TypeOf(x); fieldType != nil {
-				// For field access, we create a synthetic object representing the field type
-				// We'll handle this case below when we determine the method's type
 				objOk = true
 			}
 
@@ -61,13 +55,7 @@ func (c *GoToTSCompiler) writeAsyncCallIfNeeded(exp *ast.CallExpr) bool {
 			if pkgName, isPkg := obj.(*types.PkgName); isPkg {
 				methodName := fun.Sel.Name
 				pkgPath := pkgName.Imported().Path()
-
-				// Check if this package-level function is async (empty TypeName)
-				if c.analysis.IsMethodAsync(pkgPath, "", methodName) {
-					c.tsw.WriteLiterally("await ")
-					return true
-				}
-				return false
+				return c.analysis.IsMethodAsync(pkgPath, "", methodName)
 			}
 		}
 
@@ -83,7 +71,6 @@ func (c *GoToTSCompiler) writeAsyncCallIfNeeded(exp *ast.CallExpr) bool {
 			}
 		} else {
 			// Field access case: obj.field.method()
-			// Get the type of the field access expression
 			targetType = c.pkg.TypesInfo.TypeOf(fun.X)
 			if targetType == nil {
 				return false
@@ -94,12 +81,7 @@ func (c *GoToTSCompiler) writeAsyncCallIfNeeded(exp *ast.CallExpr) bool {
 
 		// Check if target type is an interface
 		if interfaceType, isInterface := targetType.Underlying().(*types.Interface); isInterface {
-			// Interface method call: use interface method async analysis
-			if c.analysis.IsInterfaceMethodAsync(interfaceType, methodName) {
-				c.tsw.WriteLiterally("await ")
-				return true
-			}
-			return false
+			return c.analysis.IsInterfaceMethodAsync(interfaceType, methodName)
 		}
 
 		// Get the named type from the target type
@@ -128,20 +110,24 @@ func (c *GoToTSCompiler) writeAsyncCallIfNeeded(exp *ast.CallExpr) bool {
 		if typePkg != nil {
 			pkgPath = typePkg.Path()
 		} else {
-			// Fallback to current package
 			pkgPath = c.pkg.Types.Path()
 		}
 
-		// Check if this method is async using unified analysis
-		if c.analysis.IsMethodAsync(pkgPath, typeName, methodName) {
-			c.tsw.WriteLiterally("await ")
-			return true
-		}
-		return false
+		return c.analysis.IsMethodAsync(pkgPath, typeName, methodName)
 
 	default:
 		return false
 	}
+}
+
+// writeAsyncCallIfNeeded writes the await prefix for async function or method calls
+// Returns true if await was written, false otherwise
+func (c *GoToTSCompiler) writeAsyncCallIfNeeded(exp *ast.CallExpr) bool {
+	if c.isCallExprAsync(exp) {
+		c.tsw.WriteLiterally("await ")
+		return true
+	}
+	return false
 }
 
 // addNonNullAssertion adds ! for function calls that might return null

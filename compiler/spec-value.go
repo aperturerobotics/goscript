@@ -309,8 +309,7 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 					// Check if this is a named type with methods and the initializer is a basic value
 					if namedType, isNamed := goType.(*types.Named); isNamed {
 						// Check if this is a wrapper type first
-						isWrapperType := c.analysis.IsNamedBasicType(namedType)
-						if isWrapperType {
+						if c.isWrapperType(namedType) {
 							// For wrapper types, no constructor wrapping needed
 							if shouldApplyClone(c.pkg, initializerExpr) {
 								// When cloning for value assignment, mark the result as struct value
@@ -415,8 +414,7 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 				// No initializer, use the zero value directly
 				// Check if this is a wrapper type first
 				if namedType, isNamed := goType.(*types.Named); isNamed {
-					isWrapperType := c.analysis.IsNamedBasicType(namedType)
-					if isWrapperType {
+					if c.isWrapperType(namedType) {
 						// For wrapper types, just use zero value directly
 						c.WriteZeroValueForType(goType)
 					} else {

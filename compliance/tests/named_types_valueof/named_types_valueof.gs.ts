@@ -45,17 +45,17 @@ export async function main(): Promise<void> {
 	// Test multi-level indirection
 	let level: LocalLevel1 = 100
 	let result5 = (level | 7)
-	console.log("LocalLevel1 | 7:", $.int(result5))
+	console.log("LocalLevel1 | 7:", result5)
 
 	// Test cross-package named types
 	console.log("\nCross-package operations:")
 
 	// Test imported constants
-	console.log("subpkg.IntValue:", $.int(subpkg.IntValue))
+	console.log("subpkg.IntValue:", subpkg.IntValue)
 	console.log("subpkg.UintValue:", $.int(subpkg.UintValue))
-	console.log("subpkg.FloatValue:", (subpkg.FloatValue as number))
+	console.log("subpkg.FloatValue:", subpkg.FloatValue)
 	console.log("subpkg.StringValue:", subpkg.StringValue)
-	console.log("subpkg.BoolValue:", (subpkg.BoolValue as boolean))
+	console.log("subpkg.BoolValue:", subpkg.BoolValue)
 
 	// Test bitwise operations with imported types
 	let result6 = (subpkg.UintValue | 0x20)
@@ -95,13 +95,13 @@ export async function main(): Promise<void> {
 	let s: LocalString = "test"
 	let b: LocalBool = true
 
-	console.log("LocalFloat:", (f as number))
+	console.log("LocalFloat:", f)
 	console.log("LocalString:", s)
-	console.log("LocalBool:", (b as boolean))
+	console.log("LocalBool:", b)
 
 	// Test arithmetic operations that might need valueOf
 	let f2 = f * 2.0
-	console.log("LocalFloat * 2.0:", (f2 as number))
+	console.log("LocalFloat * 2.0:", f2)
 
 	console.log("test finished")
 }
