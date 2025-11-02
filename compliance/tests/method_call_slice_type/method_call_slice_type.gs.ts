@@ -11,11 +11,11 @@ export function MySlice_Add(s: $.VarRef<MySlice>, val: number): void {
 
 
 export async function main(): Promise<void> {
-	let myList: MySlice = null
+	let myList: $.VarRef<MySlice> = $.varRef(null)
 	MySlice_Add(myList, 10)
 	MySlice_Add(myList, 20)
-	console.log("length:", $.len(myList))
-	console.log("first:", myList![0])
-	console.log("second:", myList![1])
+	console.log("length:", $.len(myList!.value))
+	console.log("first:", myList!.value![0])
+	console.log("second:", myList!.value![1])
 }
 

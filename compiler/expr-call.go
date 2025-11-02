@@ -353,9 +353,26 @@ func (c *GoToTSCompiler) writeWrapperTypeMethodCall(exp *ast.CallExpr, selectorE
 	}
 
 	if receiverNeedsVarRef {
-		// For pointer receivers, we need to pass the VarRef
-		// Convert p.field to p._fields.field
-		if selExpr, ok := selectorExpr.X.(*ast.SelectorExpr); ok {
+		// For pointer receivers, we need to pass the VarRef (not the value)
+		// Check if the receiver expression is an identifier that's already a VarRef
+		if ident, ok := selectorExpr.X.(*ast.Ident); ok {
+			if obj := c.pkg.TypesInfo.ObjectOf(ident); obj != nil {
+				if c.analysis != nil && c.analysis.NeedsVarRef(obj) {
+					// This variable is already a VarRef, pass it directly
+					c.tsw.WriteLiterally(ident.Name)
+				} else {
+					// Not a VarRef, write the value expression
+					if err := c.WriteValueExpr(selectorExpr.X); err != nil {
+						return true, fmt.Errorf("failed to write wrapper type method receiver: %w", err)
+					}
+				}
+			} else {
+				if err := c.WriteValueExpr(selectorExpr.X); err != nil {
+					return true, fmt.Errorf("failed to write wrapper type method receiver: %w", err)
+				}
+			}
+		} else if selExpr, ok := selectorExpr.X.(*ast.SelectorExpr); ok {
+			// Convert p.field to p._fields.field for struct field access
 			if baseIdent, ok := selExpr.X.(*ast.Ident); ok {
 				c.tsw.WriteLiterally(baseIdent.Name)
 				c.tsw.WriteLiterally("._fields.")

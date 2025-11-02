@@ -775,7 +775,90 @@ func (v *analysisVisitor) visitCallExpr(n *ast.CallExpr) ast.Visitor {
 	// Track interface implementations from function call arguments
 	v.trackInterfaceCallArguments(n)
 
+	// Check for implicit address-taking in method calls with pointer receivers
+	v.checkImplicitAddressTaking(n)
+
 	return v
+}
+
+// checkImplicitAddressTaking detects when a method call with a pointer receiver
+// is called on a non-pointer variable, which requires implicit address-taking.
+// Example: var s MySlice; s.Add(10) where Add has receiver *MySlice
+// This is equivalent to (&s).Add(10), so s needs to be marked as NeedsVarRef
+func (v *analysisVisitor) checkImplicitAddressTaking(callExpr *ast.CallExpr) {
+	// Check if this is a method call (selector expression)
+	selExpr, ok := callExpr.Fun.(*ast.SelectorExpr)
+	if !ok {
+		return
+	}
+
+	// Get the selection information
+	selection := v.pkg.TypesInfo.Selections[selExpr]
+	if selection == nil || selection.Kind() != types.MethodVal {
+		return
+	}
+
+	// Get the method object
+	methodObj := selection.Obj()
+	if methodObj == nil {
+		return
+	}
+
+	// Get the method's signature to check the receiver type
+	methodFunc, ok := methodObj.(*types.Func)
+	if !ok {
+		return
+	}
+
+	sig := methodFunc.Type().(*types.Signature)
+	recv := sig.Recv()
+	if recv == nil {
+		return
+	}
+
+	// Check if the method has a pointer receiver
+	recvType := recv.Type()
+	_, hasPointerReceiver := recvType.(*types.Pointer)
+	if !hasPointerReceiver {
+		return
+	}
+
+	// Get the type of the receiver expression (the thing before the dot)
+	exprType := v.pkg.TypesInfo.TypeOf(selExpr.X)
+	if exprType == nil {
+		return
+	}
+
+	// Check if the receiver expression is NOT already a pointer
+	_, exprIsPointer := exprType.(*types.Pointer)
+	if exprIsPointer {
+		// Expression is already a pointer, no implicit address-taking needed
+		return
+	}
+
+	// At this point, we have:
+	// - A method with a pointer receiver
+	// - Being called on a non-pointer expression
+	// This means Go will implicitly take the address
+
+	// Check if the receiver expression is an identifier (variable)
+	ident, ok := selExpr.X.(*ast.Ident)
+	if !ok {
+		return
+	}
+
+	// Get the variable object
+	obj := v.pkg.TypesInfo.ObjectOf(ident)
+	if obj == nil {
+		return
+	}
+
+	// Mark this variable as needing VarRef (its address is being taken)
+	usageInfo := v.getOrCreateUsageInfo(obj)
+	usageInfo.Destinations = append(usageInfo.Destinations, AssignmentInfo{
+		Object: nil, // No specific destination for method calls
+		Type:   AddressOfAssignment,
+	})
 }
 
 // visitSelectorExpr handles selector expression analysis
