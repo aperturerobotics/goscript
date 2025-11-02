@@ -447,40 +447,22 @@ func (c *GoToTSCompiler) WriteStmtSend(exp *ast.SendStmt) error {
 func (c *GoToTSCompiler) WriteStmtIf(exp *ast.IfStmt) error {
 	// Handle optional initialization statement
 	if exp.Init != nil {
-		// Check for variable shadowing in the initialization first
-		if c.analysis.HasVariableShadowing(exp) {
-			shadowingInfo := c.analysis.GetShadowingInfo(exp)
-			if shadowingInfo != nil {
-				c.writeTempVariablesForShadowing(shadowingInfo)
-			}
+		shadowingInfo := c.analysis.GetShadowingInfo(exp)
+
+		// Write temp variables if shadowing detected
+		if shadowingInfo != nil {
+			c.writeShadowingTempVars(shadowingInfo)
 		}
 
 		c.tsw.WriteLine("{")
 		c.tsw.Indent(1)
 
-		// Handle the initialization with or without shadowing support
-		if c.analysis.HasVariableShadowing(exp) {
-			shadowingInfo := c.analysis.GetShadowingInfo(exp)
-			if shadowingInfo != nil {
-				// Handle the initialization with shadowing support
-				if assignStmt, ok := exp.Init.(*ast.AssignStmt); ok {
-					if err := c.writeShadowedAssignmentWithoutTempVars(assignStmt, shadowingInfo); err != nil {
-						return fmt.Errorf("failed to write shadowed assignment in if init: %w", err)
-					}
-				} else {
-					// Non-assignment initialization statement
-					if err := c.WriteStmt(exp.Init); err != nil {
-						return fmt.Errorf("failed to write if initialization statement: %w", err)
-					}
-				}
-			} else {
-				// No shadowing info, write normally
-				if err := c.WriteStmt(exp.Init); err != nil {
-					return fmt.Errorf("failed to write if initialization statement: %w", err)
-				}
+		// Write initialization with shadowing support if needed
+		if assignStmt, ok := exp.Init.(*ast.AssignStmt); ok && shadowingInfo != nil {
+			if err := c.writeAssignmentWithShadowing(assignStmt, shadowingInfo); err != nil {
+				return fmt.Errorf("failed to write shadowed assignment in if init: %w", err)
 			}
 		} else {
-			// No variable shadowing, write initialization normally
 			if err := c.WriteStmt(exp.Init); err != nil {
 				return fmt.Errorf("failed to write if initialization statement: %w", err)
 			}
@@ -942,8 +924,10 @@ func (c *GoToTSCompiler) WriteStmtLabeled(stmt *ast.LabeledStmt) error {
 	return nil
 }
 
-// writeTempVariablesForShadowing creates temporary variables for shadowed variables
-func (c *GoToTSCompiler) writeTempVariablesForShadowing(shadowingInfo *ShadowingInfo) {
+// ============ Variable Shadowing Support ============
+
+// writeShadowingTempVars creates temporary variables for shadowed variables
+func (c *GoToTSCompiler) writeShadowingTempVars(shadowingInfo *ShadowingInfo) {
 	for varName, tempVarName := range shadowingInfo.TempVariables {
 		c.tsw.WriteLiterally("const ")
 		c.tsw.WriteLiterally(tempVarName)
@@ -970,97 +954,17 @@ func (c *GoToTSCompiler) writeTempVariablesForShadowing(shadowingInfo *Shadowing
 	}
 }
 
-// writeShadowedAssignment writes an assignment statement that has variable shadowing,
-// using pre-computed identifier mappings from analysis instead of dynamic context.
-func (c *GoToTSCompiler) writeShadowedAssignment(stmt *ast.AssignStmt, shadowingInfo *ShadowingInfo) error {
-	c.writeTempVariablesForShadowing(shadowingInfo)
-
-	// Now write the LHS variables (these are new declarations)
-	for i, lhsExpr := range stmt.Lhs {
-		if i > 0 {
-			c.tsw.WriteLiterally(", ")
-		}
-
-		if ident, ok := lhsExpr.(*ast.Ident); ok {
-			if ident.Name == "_" {
-				c.tsw.WriteLiterally("_")
-			} else {
-				c.tsw.WriteLiterally("let ")
-				c.WriteIdent(ident, false) // Don't use temp variable for LHS
-			}
-		} else {
-			// For non-identifier LHS (shouldn't happen in := assignments), write normally
-			if err := c.WriteValueExpr(lhsExpr); err != nil {
-				return err
-			}
+// writeAssignmentWithShadowing writes an assignment statement that has variable shadowing.
+// Handles both regular assignments and type assertions, with optional temp variable creation.
+func (c *GoToTSCompiler) writeAssignmentWithShadowing(stmt *ast.AssignStmt, shadowingInfo *ShadowingInfo) error {
+	// Check for type assertion special case
+	if len(stmt.Rhs) == 1 && len(stmt.Lhs) == 2 {
+		if typeAssert, ok := stmt.Rhs[0].(*ast.TypeAssertExpr); ok {
+			return c.writeTypeAssertWithShadowing(stmt, typeAssert, shadowingInfo)
 		}
 	}
 
-	c.tsw.WriteLiterally(" = ")
-
-	// Write RHS expressions - but we need to replace shadowed variables with temporary variables
-	for i, rhsExpr := range stmt.Rhs {
-		if i > 0 {
-			c.tsw.WriteLiterally(", ")
-		}
-		if err := c.writeShadowedRHSExpression(rhsExpr, shadowingInfo); err != nil {
-			return err
-		}
-	}
-
-	c.tsw.WriteLine("")
-	return nil
-}
-
-// writeShadowedAssignmentWithoutTempVars writes an assignment statement that has variable shadowing,
-// but assumes temporary variables have already been created outside this scope.
-func (c *GoToTSCompiler) writeShadowedAssignmentWithoutTempVars(stmt *ast.AssignStmt, shadowingInfo *ShadowingInfo) error {
-	if len(stmt.Rhs) == 1 {
-		if typeAssert, isTypeAssert := stmt.Rhs[0].(*ast.TypeAssertExpr); isTypeAssert {
-			if len(stmt.Lhs) != 2 {
-				return fmt.Errorf("type assertion assignment requires 2 LHS, got %d", len(stmt.Lhs))
-			}
-			valueExpr := stmt.Lhs[0]
-			okExpr := stmt.Lhs[1]
-			valueIdent, valueIsIdent := valueExpr.(*ast.Ident)
-			okIdent, okIsIdent := okExpr.(*ast.Ident)
-			if valueIsIdent && okIsIdent {
-				valueName := valueIdent.Name
-				okName := okIdent.Name
-				valueIsBlank := valueName == "_"
-				okIsBlank := okName == "_"
-				if valueIsBlank && okIsBlank {
-					// Both blank, evaluate RHS for side effects
-					if err := c.writeShadowedRHSExpression(typeAssert.X, shadowingInfo); err != nil {
-						return err
-					}
-					c.tsw.WriteLine("")
-					return nil
-				}
-				c.tsw.WriteLiterally("let { ")
-				var parts []string
-				if !valueIsBlank {
-					parts = append(parts, "value: "+valueName)
-				}
-				if !okIsBlank {
-					parts = append(parts, "ok: "+okName)
-				}
-				c.tsw.WriteLiterally(strings.Join(parts, ", "))
-				c.tsw.WriteLiterally(" } = $.typeAssert<")
-				c.WriteTypeExpr(typeAssert.Type)
-				c.tsw.WriteLiterally(">(")
-				if err := c.writeShadowedRHSExpression(typeAssert.X, shadowingInfo); err != nil {
-					return err
-				}
-				c.tsw.WriteLiterally(", ")
-				c.writeTypeDescription(typeAssert.Type)
-				c.tsw.WriteLiterally(")")
-				c.tsw.WriteLine("")
-				return nil
-			}
-		}
-	}
-
+	// Regular assignment: write LHS declarations
 	firstDecl := true
 	for i, lhsExpr := range stmt.Lhs {
 		if i > 0 {
@@ -1082,12 +986,14 @@ func (c *GoToTSCompiler) writeShadowedAssignmentWithoutTempVars(stmt *ast.Assign
 			}
 		}
 	}
+
+	// Write RHS with shadowed variable substitution
 	c.tsw.WriteLiterally(" = ")
 	for i, rhsExpr := range stmt.Rhs {
 		if i > 0 {
 			c.tsw.WriteLiterally(", ")
 		}
-		if err := c.writeShadowedRHSExpression(rhsExpr, shadowingInfo); err != nil {
+		if err := c.substituteExprForShadowing(rhsExpr, shadowingInfo); err != nil {
 			return err
 		}
 	}
@@ -1095,8 +1001,54 @@ func (c *GoToTSCompiler) writeShadowedAssignmentWithoutTempVars(stmt *ast.Assign
 	return nil
 }
 
-// writeShadowedRHSExpression writes a RHS expression, replacing shadowed variables with temporary variables
-func (c *GoToTSCompiler) writeShadowedRHSExpression(expr ast.Expr, shadowingInfo *ShadowingInfo) error {
+// writeTypeAssertWithShadowing writes a type assertion assignment (v, ok := x.(T)) with shadowing support
+func (c *GoToTSCompiler) writeTypeAssertWithShadowing(stmt *ast.AssignStmt, typeAssert *ast.TypeAssertExpr, shadowingInfo *ShadowingInfo) error {
+	valueIdent, valueIsIdent := stmt.Lhs[0].(*ast.Ident)
+	okIdent, okIsIdent := stmt.Lhs[1].(*ast.Ident)
+
+	if !valueIsIdent || !okIsIdent {
+		return fmt.Errorf("type assertion LHS must be identifiers")
+	}
+
+	valueName := valueIdent.Name
+	okName := okIdent.Name
+	valueIsBlank := valueName == "_"
+	okIsBlank := okName == "_"
+
+	if valueIsBlank && okIsBlank {
+		// Both blank, evaluate RHS for side effects only
+		if err := c.substituteExprForShadowing(typeAssert.X, shadowingInfo); err != nil {
+			return err
+		}
+		c.tsw.WriteLine("")
+		return nil
+	}
+
+	// Destructure into value and ok
+	c.tsw.WriteLiterally("let { ")
+	var parts []string
+	if !valueIsBlank {
+		parts = append(parts, "value: "+valueName)
+	}
+	if !okIsBlank {
+		parts = append(parts, "ok: "+okName)
+	}
+	c.tsw.WriteLiterally(strings.Join(parts, ", "))
+	c.tsw.WriteLiterally(" } = $.typeAssert<")
+	c.WriteTypeExpr(typeAssert.Type)
+	c.tsw.WriteLiterally(">(")
+	if err := c.substituteExprForShadowing(typeAssert.X, shadowingInfo); err != nil {
+		return err
+	}
+	c.tsw.WriteLiterally(", ")
+	c.writeTypeDescription(typeAssert.Type)
+	c.tsw.WriteLiterally(")")
+	c.tsw.WriteLine("")
+	return nil
+}
+
+// substituteExprForShadowing writes an expression, replacing shadowed variables with temporary variables
+func (c *GoToTSCompiler) substituteExprForShadowing(expr ast.Expr, shadowingInfo *ShadowingInfo) error {
 	switch e := expr.(type) {
 	case *ast.Ident:
 		// Check if this identifier is a shadowed variable
@@ -1111,7 +1063,7 @@ func (c *GoToTSCompiler) writeShadowedRHSExpression(expr ast.Expr, shadowingInfo
 
 	case *ast.CallExpr:
 		// Handle function calls - replace identifiers in arguments with temp variables
-		if err := c.writeShadowedRHSExpression(e.Fun, shadowingInfo); err != nil {
+		if err := c.substituteExprForShadowing(e.Fun, shadowingInfo); err != nil {
 			return err
 		}
 
@@ -1123,7 +1075,7 @@ func (c *GoToTSCompiler) writeShadowedRHSExpression(expr ast.Expr, shadowingInfo
 			if i > 0 {
 				c.tsw.WriteLiterally(", ")
 			}
-			if err := c.writeShadowedRHSExpression(arg, shadowingInfo); err != nil {
+			if err := c.substituteExprForShadowing(arg, shadowingInfo); err != nil {
 				return err
 			}
 		}
@@ -1132,7 +1084,7 @@ func (c *GoToTSCompiler) writeShadowedRHSExpression(expr ast.Expr, shadowingInfo
 
 	case *ast.SelectorExpr:
 		// Handle selector expressions (e.g., obj.Method)
-		if err := c.writeShadowedRHSExpression(e.X, shadowingInfo); err != nil {
+		if err := c.substituteExprForShadowing(e.X, shadowingInfo); err != nil {
 			return err
 		}
 		c.tsw.WriteLiterally(".")
@@ -1141,11 +1093,11 @@ func (c *GoToTSCompiler) writeShadowedRHSExpression(expr ast.Expr, shadowingInfo
 
 	case *ast.IndexExpr:
 		// Handle index expressions (e.g., arr[i])
-		if err := c.writeShadowedRHSExpression(e.X, shadowingInfo); err != nil {
+		if err := c.substituteExprForShadowing(e.X, shadowingInfo); err != nil {
 			return err
 		}
 		c.tsw.WriteLiterally("[")
-		if err := c.writeShadowedRHSExpression(e.Index, shadowingInfo); err != nil {
+		if err := c.substituteExprForShadowing(e.Index, shadowingInfo); err != nil {
 			return err
 		}
 		c.tsw.WriteLiterally("]")
@@ -1154,22 +1106,22 @@ func (c *GoToTSCompiler) writeShadowedRHSExpression(expr ast.Expr, shadowingInfo
 	case *ast.UnaryExpr:
 		// Handle unary expressions (e.g., &x, -x)
 		c.tsw.WriteLiterally(e.Op.String())
-		return c.writeShadowedRHSExpression(e.X, shadowingInfo)
+		return c.substituteExprForShadowing(e.X, shadowingInfo)
 
 	case *ast.BinaryExpr:
 		// Handle binary expressions (e.g., x + y)
-		if err := c.writeShadowedRHSExpression(e.X, shadowingInfo); err != nil {
+		if err := c.substituteExprForShadowing(e.X, shadowingInfo); err != nil {
 			return err
 		}
 		c.tsw.WriteLiterally(" ")
 		c.tsw.WriteLiterally(e.Op.String())
 		c.tsw.WriteLiterally(" ")
-		return c.writeShadowedRHSExpression(e.Y, shadowingInfo)
+		return c.substituteExprForShadowing(e.Y, shadowingInfo)
 
 	case *ast.ParenExpr:
 		// Handle parenthesized expressions
 		c.tsw.WriteLiterally("(")
-		if err := c.writeShadowedRHSExpression(e.X, shadowingInfo); err != nil {
+		if err := c.substituteExprForShadowing(e.X, shadowingInfo); err != nil {
 			return err
 		}
 		c.tsw.WriteLiterally(")")
