@@ -658,7 +658,7 @@ func (c *GoToTSCompiler) WriteStmtBlock(exp *ast.BlockStmt, suppressNewline bool
 				}
 			} else {
 				// Check if the deferred call is to an async function
-				if c.isCallAsyncInDefer(deferStmt.Call) {
+				if c.isCallExprAsync(deferStmt.Call) {
 					hasAsyncDefer = true
 					break
 				}
@@ -861,7 +861,7 @@ func (c *GoToTSCompiler) WriteStmtDefer(exp *ast.DeferStmt) error {
 		isAsyncDeferred = c.analysis.IsFuncLitAsync(funcLit)
 	} else {
 		// Check if the deferred call is to an async function
-		isAsyncDeferred = c.isCallAsyncInDefer(exp.Call)
+		isAsyncDeferred = c.isCallExprAsync(exp.Call)
 	}
 
 	// Set async prefix based on pre-computed async status
@@ -897,12 +897,6 @@ func (c *GoToTSCompiler) WriteStmtDefer(exp *ast.DeferStmt) error {
 	c.tsw.WriteLine("});")
 
 	return nil
-}
-
-// isCallAsyncInDefer determines if a call expression in a defer statement is async
-// isCallAsyncInDefer checks if a call expression in a defer statement is async
-func (c *GoToTSCompiler) isCallAsyncInDefer(callExpr *ast.CallExpr) bool {
-	return c.isCallExprAsync(callExpr)
 }
 
 // WriteStmtLabeled handles labeled statements (ast.LabeledStmt), such as "label: statement".

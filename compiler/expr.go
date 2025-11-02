@@ -279,21 +279,6 @@ func (c *GoToTSCompiler) getFinalUnderlyingType(t types.Type) (types.Type, bool)
 	}
 }
 
-// isNamedNumericType checks if a given type is a named type with an underlying numeric type.
-func (c *GoToTSCompiler) isNamedNumericType(t types.Type) bool {
-	finalType, wasNamed := c.getFinalUnderlyingType(t)
-	if !wasNamed {
-		return false
-	}
-
-	if basicType, isBasic := finalType.(*types.Basic); isBasic {
-		info := basicType.Info()
-		return (info&types.IsInteger) != 0 || (info&types.IsFloat) != 0
-	}
-
-	return false
-}
-
 // WriteBinaryExpr translates a Go binary expression (`ast.BinaryExpr`) into its
 // TypeScript equivalent.
 // It handles several cases:

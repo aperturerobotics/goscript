@@ -12,39 +12,6 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// isProtobufType checks if a given type is a protobuf type by examining its methods
-// and, when available, by verifying it implements the protobuf-go-lite Message interface.
-func (c *GoToTSCompiler) isProtobufType(typ types.Type) bool {
-	// Normalize to a named type if possible
-	var named *types.Named
-	switch t := typ.(type) {
-	case *types.Named:
-		named = t
-	case *types.Pointer:
-		if n, ok := t.Elem().(*types.Named); ok {
-			named = n
-		}
-	}
-	if named == nil {
-		return false
-	}
-
-	// Prefer interface-based detection when the protobuf-go-lite package is loaded
-	if iface := c.getProtobufMessageInterface(); iface != nil {
-		if types.Implements(named, iface) || types.Implements(types.NewPointer(named), iface) {
-			return true
-		}
-	}
-
-	// Fallback: method-set detection for common protobuf-go-lite methods
-	// Check both value and pointer method sets
-	if c.typeHasMethods(named, "MarshalVT", "UnmarshalVT") || c.typeHasMethods(types.NewPointer(named), "MarshalVT", "UnmarshalVT") {
-		return true
-	}
-
-	return false
-}
-
 // getProtobufMessageInterface attempts to find the protobuf-go-lite Message interface
 // from the loaded packages in analysis. Returns nil if not found.
 func (c *GoToTSCompiler) getProtobufMessageInterface() *types.Interface {

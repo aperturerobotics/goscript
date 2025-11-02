@@ -7,34 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// isByteSliceType checks if a type is []byte (slice of uint8)
-func (c *GoToTSCompiler) isByteSliceType(t types.Type) bool {
-	if sliceType, isSlice := t.Underlying().(*types.Slice); isSlice {
-		if basicElem, isBasic := sliceType.Elem().(*types.Basic); isBasic && basicElem.Kind() == types.Uint8 {
-			return true
-		}
-	}
-	return false
-}
-
-// isRuneSliceType checks if a type is []rune (slice of int32)
-func (c *GoToTSCompiler) isRuneSliceType(t types.Type) bool {
-	if sliceType, isSlice := t.Underlying().(*types.Slice); isSlice {
-		if basicElem, isBasic := sliceType.Elem().(*types.Basic); isBasic && basicElem.Kind() == types.Int32 {
-			return true
-		}
-	}
-	return false
-}
-
-// isStringType checks if a type is string
-func (c *GoToTSCompiler) isStringType(t types.Type) bool {
-	if basic, isBasic := t.Underlying().(*types.Basic); isBasic {
-		return basic.Kind() == types.String || basic.Kind() == types.UntypedString
-	}
-	return false
-}
-
 // writeByteSliceCreation handles the creation of []byte slices with proper Uint8Array handling
 func (c *GoToTSCompiler) writeByteSliceCreation(lengthArg, capacityArg interface{}) error {
 	return c.writeSliceCreationForType(lengthArg, capacityArg, true)

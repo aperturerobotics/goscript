@@ -802,29 +802,3 @@ func (c *GoToTSCompiler) WriteTypeConstraint(constraint ast.Expr) {
 		c.WriteTypeExpr(constraint)
 	}
 }
-
-// isWrapperType checks if a type should be treated as a wrapper type (type alias with basic underlying type).
-// Wrapper types are rendered as TypeScript type aliases rather than classes with constructors.
-// Examples: os.FileMode (uint32), MyString (string), etc.
-func (c *GoToTSCompiler) isWrapperType(t types.Type) bool {
-	// Check analysis cache first (for types with methods in analyzed packages)
-	if c.analysis.IsNamedBasicType(t) {
-		return true
-	}
-
-	// For external package types, check if it's a named type with a basic underlying type
-	if namedType, ok := t.(*types.Named); ok {
-		if _, ok := namedType.Underlying().(*types.Basic); ok {
-			return true
-		}
-	}
-
-	// Also check for type aliases with basic underlying types
-	if aliasType, ok := t.(*types.Alias); ok {
-		if _, ok := aliasType.Underlying().(*types.Basic); ok {
-			return true
-		}
-	}
-
-	return false
-}

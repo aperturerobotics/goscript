@@ -178,51 +178,6 @@ func (c *GoToTSCompiler) writeRegularFieldInitializer(fieldName string, fieldTyp
 	c.WriteZeroValueForType(fieldType)
 }
 
-func (c *GoToTSCompiler) isStructValueType(fieldType types.Type) bool {
-	if named, ok := fieldType.(*types.Named); ok {
-		if _, isStruct := named.Underlying().(*types.Struct); isStruct {
-			return true
-		}
-	}
-	return false
-}
-
-func (c *GoToTSCompiler) isImportedBasicType(fieldType types.Type) bool {
-	// Handle named types
-	if named, isNamed := fieldType.(*types.Named); isNamed {
-		obj := named.Obj()
-		if obj == nil || obj.Pkg() == nil || obj.Pkg() == c.pkg.Types {
-			return false // Not imported or is local
-		}
-
-		underlying := named.Underlying()
-		if underlying == nil {
-			return false
-		}
-
-		_, isBasic := underlying.(*types.Basic)
-		return isBasic
-	}
-
-	// Handle type aliases (like os.FileMode = fs.FileMode)
-	if alias, isAlias := fieldType.(*types.Alias); isAlias {
-		obj := alias.Obj()
-		if obj == nil || obj.Pkg() == nil || obj.Pkg() == c.pkg.Types {
-			return false // Not imported or is local
-		}
-
-		underlying := alias.Underlying()
-		if underlying == nil {
-			return false
-		}
-
-		_, isBasic := underlying.(*types.Basic)
-		return isBasic
-	}
-
-	return false
-}
-
 func (c *GoToTSCompiler) writeImportedBasicTypeZeroValue(fieldType types.Type) error {
 	if named, ok := fieldType.(*types.Named); ok {
 		underlying := named.Underlying()

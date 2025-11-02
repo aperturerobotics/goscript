@@ -35,7 +35,13 @@ When working on compliance tests:
 2. **Running Tests**: To run a specific test, use this template:
 
    ```bash
-   go test -timeout 30s -run ^TestCompliance/if_statement$ ./compiler
+   go test -timeout 60s -run ^TestCompliance/if_statement$ ./compiler
+   ```
+
+   To run the full compliance test suite:
+
+   ```bash
+   go test -timeout 10m ./compiler
    ```
 
 3. **Analysis Process**:

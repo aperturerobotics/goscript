@@ -252,12 +252,6 @@ func (c *GoToTSCompiler) extractStructFieldDependencies(fieldType ast.Expr, type
 	return deps
 }
 
-// isPointerType checks if a type expression represents a pointer type
-func (c *GoToTSCompiler) isPointerType(expr ast.Expr) bool {
-	_, isPointer := expr.(*ast.StarExpr)
-	return isPointer
-}
-
 // sortVarSpecsByTypeDependencies sorts variable declarations based on their type dependencies
 func (c *GoToTSCompiler) sortVarSpecsByTypeDependencies(varSpecs []*ast.ValueSpec, typeSpecs []*ast.TypeSpec) ([]*ast.ValueSpec, error) {
 	if len(varSpecs) <= 1 {

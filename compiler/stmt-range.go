@@ -96,28 +96,6 @@ func (c *GoToTSCompiler) WriteStmtRange(exp *ast.RangeStmt) error {
 
 // Helper functions
 
-func (c *GoToTSCompiler) isMapType(iterType, underlying types.Type) bool {
-	if _, ok := underlying.(*types.Map); ok {
-		return true
-	}
-	if typeParam, isTypeParam := iterType.(*types.TypeParam); isTypeParam {
-		constraint := typeParam.Constraint()
-		if constraint != nil {
-			constraintUnderlying := constraint.Underlying()
-			if iface, isInterface := constraintUnderlying.(*types.Interface); isInterface {
-				return hasMapConstraint(iface)
-			}
-		}
-	}
-	return false
-}
-
-func (c *GoToTSCompiler) isArrayOrSlice(underlying types.Type) bool {
-	_, isSlice := underlying.(*types.Slice)
-	_, isArray := underlying.(*types.Array)
-	return isArray || isSlice
-}
-
 func (c *GoToTSCompiler) isIteratorSignature(sig *types.Signature) bool {
 	params := sig.Params()
 	if params.Len() != 1 {
