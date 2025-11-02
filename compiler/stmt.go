@@ -651,6 +651,9 @@ func (c *GoToTSCompiler) WriteStmtBlock(exp *ast.BlockStmt, suppressNewline bool
 	hasAsyncDefer := false
 	for _, stmt := range exp.List {
 		if deferStmt, ok := stmt.(*ast.DeferStmt); ok {
+			if deferStmt.Call == nil || deferStmt.Call.Fun == nil {
+				continue
+			}
 			if funcLit, ok := deferStmt.Call.Fun.(*ast.FuncLit); ok {
 				if c.analysis.IsFuncLitAsync(funcLit) {
 					hasAsyncDefer = true

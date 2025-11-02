@@ -283,96 +283,12 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 
 			if isStructLiteral && structType != nil {
 				// --- Struct Literal Handling (Nested) ---
-				directFields := make(map[string]ast.Expr)
-				embeddedFields := make(map[string]map[string]ast.Expr) // map[EmbeddedPropName]map[FieldName]ValueExpr
-				explicitEmbedded := make(map[string]ast.Expr)          // Tracks explicitly initialized embedded structs
-
-				// Pre-populate embeddedFields map keys using the correct property name
-				for i := 0; i < structType.NumFields(); i++ {
-					field := structType.Field(i)
-					if field.Anonymous() {
-						fieldType := field.Type()
-						if ptr, ok := fieldType.(*types.Pointer); ok {
-							fieldType = ptr.Elem()
-						}
-						if named, ok := fieldType.(*types.Named); ok {
-							// Use the type name as the property name in TS
-							embeddedPropName := named.Obj().Name()
-							embeddedFields[embeddedPropName] = make(map[string]ast.Expr)
-						}
-					}
-				}
-
-				// Group literal elements by direct vs embedded fields
-				for _, elt := range exp.Elts {
-					kv, ok := elt.(*ast.KeyValueExpr)
-					if !ok {
-						continue
-					} // Skip non-key-value
-					keyIdent, ok := kv.Key.(*ast.Ident)
-					if !ok {
-						continue
-					} // Skip non-ident keys
-					keyName := keyIdent.Name
-
-					// Check if this is an explicit embedded struct initialization
-					// e.g., Person: Person{...} or Person: personVar
-					if _, isEmbedded := embeddedFields[keyName]; isEmbedded {
-						// This is an explicit initialization of an embedded struct
-						explicitEmbedded[keyName] = kv.Value
-						continue
-					}
-
-					isDirectField := false
-					for i := range structType.NumFields() {
-						field := structType.Field(i)
-						if field.Name() == keyName {
-							isDirectField = true
-							directFields[keyName] = kv.Value
-							break
-						}
-					}
-
-					// For anonymous structs, all fields are direct fields
-					if isAnonymousStruct {
-						directFields[keyName] = kv.Value
-						isDirectField = true
-					}
-
-					// If not a direct field, return an error
-					if !isDirectField {
-						// This field was not found as a direct field in the struct
-						return fmt.Errorf("field %s not found in type %s for composite literal",
-							keyName, litType.String())
-					}
-				}
-
-				// Handle the case where an anonymous struct has values without keys
-				// This block processes non-key-value elements and associates them with struct fields.
-				if isAnonymousStruct && len(exp.Elts) > 0 && len(directFields) == 0 {
-					// Check if any elements in the composite literal are not key-value pairs.
-					hasNonKeyValueElts := false
-					for _, elt := range exp.Elts {
-						// If an element is not a key-value pair, set the flag to true.
-						if _, isKV := elt.(*ast.KeyValueExpr); !isKV {
-							hasNonKeyValueElts = true
-							break
-						}
-					}
-
-					if hasNonKeyValueElts {
-						// Get the fields from the struct type
-						for i := 0; i < structType.NumFields(); i++ {
-							field := structType.Field(i)
-							// If we have a value for this field position
-							if i < len(exp.Elts) {
-								// Check if it's not a key-value pair
-								if _, isKV := exp.Elts[i].(*ast.KeyValueExpr); !isKV {
-									directFields[field.Name()] = exp.Elts[i]
-								}
-							}
-						}
-					}
+				// Categorize fields into direct, embedded, and explicit embedded
+				directFields, embeddedFields, explicitEmbedded, err := c.categorizeStructFields(
+					exp, structType, litType, isAnonymousStruct,
+				)
+				if err != nil {
+					return err
 				}
 
 				// Write the object literal
@@ -384,107 +300,9 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 					c.tsw.WriteLiterally("({")
 				}
 
-				firstFieldWritten := false
-
-				// Write direct fields that aren't embedded struct names
-				directKeys := make([]string, 0, len(directFields))
-				for k := range directFields {
-					// Skip embedded struct names - we'll handle those separately
-					if _, isEmbedded := embeddedFields[k]; !isEmbedded {
-						directKeys = append(directKeys, k)
-					}
-				}
-				slices.Sort(directKeys)
-				for _, keyName := range directKeys {
-					if firstFieldWritten {
-						c.tsw.WriteLiterally(", ")
-					}
-
-					// Convert field name for protobuf types
-					fieldName := c.convertProtobufFieldNameInLiteral(keyName, litType)
-
-					c.tsw.WriteLiterally(fieldName)
-					c.tsw.WriteLiterally(": ")
-					if err := c.WriteVarRefedValue(directFields[keyName]); err != nil {
-						return err
-					}
-					firstFieldWritten = true
-				}
-
-				// Write explicitly initialized embedded structs
-				explicitKeys := make([]string, 0, len(explicitEmbedded))
-				for k := range explicitEmbedded {
-					explicitKeys = append(explicitKeys, k)
-				}
-				slices.Sort(explicitKeys)
-				for _, embeddedName := range explicitKeys {
-					if firstFieldWritten {
-						c.tsw.WriteLiterally(", ")
-					}
-					c.tsw.WriteLiterally(embeddedName)
-					c.tsw.WriteLiterally(": ")
-
-					// Check if the embedded value is a composite literal for a struct
-					// If so, extract the fields and write them directly
-					if compLit, ok := explicitEmbedded[embeddedName].(*ast.CompositeLit); ok {
-						// Write initialization fields directly without the 'new Constructor'
-						c.tsw.WriteLiterally("{")
-						for i, elem := range compLit.Elts {
-							if i > 0 {
-								c.tsw.WriteLiterally(", ")
-							}
-							if err := c.WriteVarRefedValue(elem); err != nil {
-								return err
-							}
-						}
-						c.tsw.WriteLiterally("}")
-					} else {
-						// Not a composite literal, write it normally
-						if err := c.WriteVarRefedValue(explicitEmbedded[embeddedName]); err != nil {
-							return err
-						}
-					}
-					firstFieldWritten = true
-				}
-
-				// Write embedded fields for structs that weren't explicitly initialized
-				embeddedKeys := make([]string, 0, len(embeddedFields))
-				for k := range embeddedFields {
-					// Skip embedded structs that were explicitly initialized
-					if _, wasExplicit := explicitEmbedded[k]; !wasExplicit {
-						embeddedKeys = append(embeddedKeys, k)
-					}
-				}
-				slices.Sort(embeddedKeys)
-				for _, embeddedPropName := range embeddedKeys {
-					fieldsMap := embeddedFields[embeddedPropName]
-					if len(fieldsMap) == 0 {
-						continue
-					} // Skip empty embedded initializers
-
-					if firstFieldWritten {
-						c.tsw.WriteLiterally(", ")
-					}
-					c.tsw.WriteLiterally(embeddedPropName) // Use the Type name as the property key
-					c.tsw.WriteLiterally(": {")
-
-					innerKeys := make([]string, 0, len(fieldsMap))
-					for k := range fieldsMap {
-						innerKeys = append(innerKeys, k)
-					}
-					slices.Sort(innerKeys)
-					for i, keyName := range innerKeys {
-						if i > 0 {
-							c.tsw.WriteLiterally(", ")
-						}
-						c.tsw.WriteLiterally(keyName) // Field name within the embedded struct
-						c.tsw.WriteLiterally(": ")
-						if err := c.WriteVarRefedValue(fieldsMap[keyName]); err != nil {
-							return err
-						}
-					}
-					c.tsw.WriteLiterally("}")
-					firstFieldWritten = true
+				// Write all fields
+				if err := c.writeStructLiteralFields(directFields, embeddedFields, explicitEmbedded, litType); err != nil {
+					return err
 				}
 
 				// Close the object literal
@@ -708,5 +526,228 @@ func (c *GoToTSCompiler) evaluateConstantExpr(expr ast.Expr) interface{} {
 			return constant.BoolVal(tv.Value)
 		}
 	}
+	return nil
+}
+
+// categorizeStructFields organizes the elements of a struct composite literal into
+// three categories: direct fields, embedded fields, and explicitly initialized embedded structs.
+// Returns maps for direct fields, embedded fields (nested map), and explicit embedded initializations.
+func (c *GoToTSCompiler) categorizeStructFields(
+	exp *ast.CompositeLit,
+	structType *types.Struct,
+	litType types.Type,
+	isAnonymousStruct bool,
+) (
+	directFields map[string]ast.Expr,
+	embeddedFields map[string]map[string]ast.Expr,
+	explicitEmbedded map[string]ast.Expr,
+	err error,
+) {
+	directFields = make(map[string]ast.Expr)
+	embeddedFields = make(map[string]map[string]ast.Expr)
+	explicitEmbedded = make(map[string]ast.Expr)
+
+	// Pre-populate embeddedFields map keys using the correct property name
+	for i := 0; i < structType.NumFields(); i++ {
+		field := structType.Field(i)
+		if field.Anonymous() {
+			fieldType := field.Type()
+			if ptr, ok := fieldType.(*types.Pointer); ok {
+				fieldType = ptr.Elem()
+			}
+			if named, ok := fieldType.(*types.Named); ok {
+				// Use the type name as the property name in TS
+				embeddedPropName := named.Obj().Name()
+				embeddedFields[embeddedPropName] = make(map[string]ast.Expr)
+			}
+		}
+	}
+
+	// Group literal elements by direct vs embedded fields
+	for _, elt := range exp.Elts {
+		kv, ok := elt.(*ast.KeyValueExpr)
+		if !ok {
+			continue
+		} // Skip non-key-value
+		keyIdent, ok := kv.Key.(*ast.Ident)
+		if !ok {
+			continue
+		} // Skip non-ident keys
+		keyName := keyIdent.Name
+
+		// Check if this is an explicit embedded struct initialization
+		// e.g., Person: Person{...} or Person: personVar
+		if _, isEmbedded := embeddedFields[keyName]; isEmbedded {
+			// This is an explicit initialization of an embedded struct
+			explicitEmbedded[keyName] = kv.Value
+			continue
+		}
+
+		isDirectField := false
+		for i := range structType.NumFields() {
+			field := structType.Field(i)
+			if field.Name() == keyName {
+				isDirectField = true
+				directFields[keyName] = kv.Value
+				break
+			}
+		}
+
+		// For anonymous structs, all fields are direct fields
+		if isAnonymousStruct {
+			directFields[keyName] = kv.Value
+			isDirectField = true
+		}
+
+		// If not a direct field, return an error
+		if !isDirectField {
+			return nil, nil, nil, fmt.Errorf("field %s not found in type %s for composite literal",
+				keyName, litType.String())
+		}
+	}
+
+	// Handle the case where an anonymous struct has values without keys
+	// This block processes non-key-value elements and associates them with struct fields.
+	if isAnonymousStruct && len(exp.Elts) > 0 && len(directFields) == 0 {
+		// Check if any elements in the composite literal are not key-value pairs.
+		hasNonKeyValueElts := false
+		for _, elt := range exp.Elts {
+			// If an element is not a key-value pair, set the flag to true.
+			if _, isKV := elt.(*ast.KeyValueExpr); !isKV {
+				hasNonKeyValueElts = true
+				break
+			}
+		}
+
+		if hasNonKeyValueElts {
+			// Get the fields from the struct type
+			for i := 0; i < structType.NumFields(); i++ {
+				field := structType.Field(i)
+				// If we have a value for this field position
+				if i < len(exp.Elts) {
+					// Check if it's not a key-value pair
+					if _, isKV := exp.Elts[i].(*ast.KeyValueExpr); !isKV {
+						directFields[field.Name()] = exp.Elts[i]
+					}
+				}
+			}
+		}
+	}
+
+	return directFields, embeddedFields, explicitEmbedded, nil
+}
+
+// writeStructLiteralFields writes the field initializations for a struct composite literal.
+// It handles direct fields, explicitly initialized embedded structs, and implicitly initialized
+// embedded fields, writing them in sorted order.
+func (c *GoToTSCompiler) writeStructLiteralFields(
+	directFields map[string]ast.Expr,
+	embeddedFields map[string]map[string]ast.Expr,
+	explicitEmbedded map[string]ast.Expr,
+	litType types.Type,
+) error {
+	firstFieldWritten := false
+
+	// Write direct fields that aren't embedded struct names
+	directKeys := make([]string, 0, len(directFields))
+	for k := range directFields {
+		// Skip embedded struct names - we'll handle those separately
+		if _, isEmbedded := embeddedFields[k]; !isEmbedded {
+			directKeys = append(directKeys, k)
+		}
+	}
+	slices.Sort(directKeys)
+	for _, keyName := range directKeys {
+		if firstFieldWritten {
+			c.tsw.WriteLiterally(", ")
+		}
+
+		// Convert field name for protobuf types
+		fieldName := c.convertProtobufFieldNameInLiteral(keyName, litType)
+
+		c.tsw.WriteLiterally(fieldName)
+		c.tsw.WriteLiterally(": ")
+		if err := c.WriteVarRefedValue(directFields[keyName]); err != nil {
+			return err
+		}
+		firstFieldWritten = true
+	}
+
+	// Write explicitly initialized embedded structs
+	explicitKeys := make([]string, 0, len(explicitEmbedded))
+	for k := range explicitEmbedded {
+		explicitKeys = append(explicitKeys, k)
+	}
+	slices.Sort(explicitKeys)
+	for _, embeddedName := range explicitKeys {
+		if firstFieldWritten {
+			c.tsw.WriteLiterally(", ")
+		}
+		c.tsw.WriteLiterally(embeddedName)
+		c.tsw.WriteLiterally(": ")
+
+		// Check if the embedded value is a composite literal for a struct
+		// If so, extract the fields and write them directly
+		if compLit, ok := explicitEmbedded[embeddedName].(*ast.CompositeLit); ok {
+			// Write initialization fields directly without the 'new Constructor'
+			c.tsw.WriteLiterally("{")
+			for i, elem := range compLit.Elts {
+				if i > 0 {
+					c.tsw.WriteLiterally(", ")
+				}
+				if err := c.WriteVarRefedValue(elem); err != nil {
+					return err
+				}
+			}
+			c.tsw.WriteLiterally("}")
+		} else {
+			// Not a composite literal, write it normally
+			if err := c.WriteVarRefedValue(explicitEmbedded[embeddedName]); err != nil {
+				return err
+			}
+		}
+		firstFieldWritten = true
+	}
+
+	// Write embedded fields for structs that weren't explicitly initialized
+	embeddedKeys := make([]string, 0, len(embeddedFields))
+	for k := range embeddedFields {
+		// Skip embedded structs that were explicitly initialized
+		if _, wasExplicit := explicitEmbedded[k]; !wasExplicit {
+			embeddedKeys = append(embeddedKeys, k)
+		}
+	}
+	slices.Sort(embeddedKeys)
+	for _, embeddedPropName := range embeddedKeys {
+		fieldsMap := embeddedFields[embeddedPropName]
+		if len(fieldsMap) == 0 {
+			continue
+		} // Skip empty embedded initializers
+
+		if firstFieldWritten {
+			c.tsw.WriteLiterally(", ")
+		}
+		c.tsw.WriteLiterally(embeddedPropName) // Use the Type name as the property key
+		c.tsw.WriteLiterally(": {")
+
+		innerKeys := make([]string, 0, len(fieldsMap))
+		for k := range fieldsMap {
+			innerKeys = append(innerKeys, k)
+		}
+		slices.Sort(innerKeys)
+		for i, keyName := range innerKeys {
+			if i > 0 {
+				c.tsw.WriteLiterally(", ")
+			}
+			c.tsw.WriteLiterally(keyName) // Field name within the embedded struct
+			c.tsw.WriteLiterally(": ")
+			if err := c.WriteVarRefedValue(fieldsMap[keyName]); err != nil {
+				return err
+			}
+		}
+		c.tsw.WriteLiterally("}")
+		firstFieldWritten = true
+	}
+
 	return nil
 }
