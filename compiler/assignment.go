@@ -36,113 +36,19 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 	// Handle blank identifier (_) on the LHS for single assignments
 	if len(lhs) == 1 && len(rhs) == 1 {
 		if ident, ok := lhs[0].(*ast.Ident); ok && ident.Name == "_" {
-			// Evaluate the RHS expression for side effects, but don't assign it
-			c.tsw.WriteLiterally("/* _ = */ ")
-			if err := c.WriteValueExpr(rhs[0]); err != nil {
-				return err
-			}
-			return nil
+			return c.writeBlankIdentifierAssign(rhs[0])
 		}
 
 		// Handle the special case of "*p = val" or "*p += val" (assignment to dereferenced pointer)
 		if starExpr, ok := lhs[0].(*ast.StarExpr); ok {
-			// For *p = val, we need to set p's .value property
-			// Check if the pointer variable itself needs VarRef access
-			if ident, ok := starExpr.X.(*ast.Ident); ok {
-				// Get the object for this identifier
-				obj := c.objectOfIdent(ident)
-
-				// Check if this pointer variable itself is varrefed
-				if obj != nil && c.analysis.NeedsVarRef(obj) {
-					// The pointer variable itself is varrefed (e.g., p1 in varref_deref_set)
-					// Write p1.value to get the actual pointer, then dereference with !.value
-					c.WriteIdent(ident, true) // This adds .value for the varrefed variable
-					c.tsw.WriteLiterally("!.value")
-				} else {
-					// The pointer variable is not varrefed (e.g., p in star_compound_assign)
-					// Write p, then dereference with !.value
-					c.WriteIdent(ident, false)
-					c.tsw.WriteLiterally("!.value")
-				}
-			} else {
-				// For other expressions, use WriteValueExpr
-				if err := c.WriteValueExpr(starExpr.X); err != nil {
-					return err
-				}
-				// The WriteValueExpr should handle VarRef access if needed
-				// We just add the dereference
-				c.tsw.WriteLiterally("!.value")
-			}
-
-			// Handle the assignment operator
-			if tok == token.AND_NOT_ASSIGN {
-				// Special handling for &^= (bitwise AND NOT assignment)
-				// Transform *p &^= y to p!.value &= ~(y)
-				c.tsw.WriteLiterally(" &= ~(")
-			} else {
-				c.tsw.WriteLiterally(" ")
-				tokStr, ok := TokenToTs(tok)
-				if !ok {
-					return fmt.Errorf("unknown assignment token: %s", tok.String())
-				}
-				c.tsw.WriteLiterally(tokStr)
-				c.tsw.WriteLiterally(" ")
-			}
-
-			// Handle the RHS expression (potentially adding .clone() for structs)
-			if shouldApplyClone(c.pkg, rhs[0]) {
-				// When cloning for value assignment, mark the result as struct value
-				c.tsw.WriteLiterally("$.markAsStructValue(")
-				if err := c.WriteValueExpr(rhs[0]); err != nil {
-					return err
-				}
-				c.tsw.WriteLiterally(".clone())")
-			} else {
-				if err := c.WriteValueExpr(rhs[0]); err != nil {
-					return err
-				}
-			}
-
-			// Close the parenthesis for &^= transformation
-			if tok == token.AND_NOT_ASSIGN {
-				c.tsw.WriteLiterally(")")
-			}
-
-			return nil
+			return c.writePointerDerefAssign(starExpr, rhs[0], tok)
 		}
 
 		// Handle variable referenced variables in declarations
 		if addDeclaration && tok == token.DEFINE {
-			// Determine if LHS is variable referenced
-			isLHSVarRefed := false
-			var lhsIdent *ast.Ident
-			var lhsObj types.Object
-
-			if ident, ok := lhs[0].(*ast.Ident); ok {
-				lhsIdent = ident
-				// Get the types.Object from the identifier
-				lhsObj = c.objectOfIdent(ident)
-
-				// Check if this variable needs to be variable referenced
-				if lhsObj != nil && c.analysis.NeedsVarRef(lhsObj) {
-					isLHSVarRefed = true
-				}
-			}
-
-			// Handle short declaration of variable referenced variables
-			if isLHSVarRefed && lhsIdent != nil {
-				c.tsw.WriteLiterally("let ")
-				// Just write the identifier name without .value
-				c.tsw.WriteLiterally(c.sanitizeIdentifier(lhsIdent.Name))
-				// No type annotation, allow TypeScript to infer it from varRef.
-				c.tsw.WriteLiterally(" = ")
-
-				// Create the variable reference for the initializer
-				c.tsw.WriteLiterally("$.varRef(")
-				if err := c.WriteValueExpr(rhs[0]); err != nil {
-					return err
-				}
-				c.tsw.WriteLiterally(")")
+			if handled, err := c.writeVarRefShortDecl(lhs[0], rhs[0]); err != nil {
+				return err
+			} else if handled {
 				return nil
 			}
 
@@ -152,82 +58,7 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 
 	// Special case for multi-variable assignment to handle array element swaps
 	if len(lhs) > 1 && len(rhs) > 1 {
-		// Check if this is an array element swap pattern (common pattern a[i], a[j] = a[j], a[i])
-		// Identify if we're dealing with array index expressions that might need null assertions
-		allIndexExprs := true
-		for _, expr := range append(lhs, rhs...) {
-			_, isIndexExpr := expr.(*ast.IndexExpr)
-			if !isIndexExpr {
-				allIndexExprs = false
-				break
-			}
-		}
-
-		// Add semicolon before destructuring assignment to prevent TypeScript
-		// from interpreting it as array access on the previous line
-		if tok != token.DEFINE {
-			c.tsw.WriteLiterally(";")
-		}
-
-		// Use array destructuring for multi-variable assignments
-		c.tsw.WriteLiterally("[")
-		for i, l := range lhs {
-			if i != 0 {
-				c.tsw.WriteLiterally(", ")
-			}
-
-			// Handle blank identifier
-			if ident, ok := l.(*ast.Ident); ok && ident.Name == "_" {
-				// If it's a blank identifier, we write nothing,
-				// leaving an empty slot in the destructuring array.
-			} else if indexExpr, ok := l.(*ast.IndexExpr); ok && allIndexExprs { // MODIFICATION: Added 'else if'
-				// Note: We don't use WriteIndexExpr here because we need direct array access for swapping
-				if err := c.WriteValueExpr(indexExpr.X); err != nil {
-					return err
-				}
-				c.tsw.WriteLiterally("!") // non-null assertion
-				c.tsw.WriteLiterally("[")
-				if err := c.WriteValueExpr(indexExpr.Index); err != nil {
-					return err
-				}
-				c.tsw.WriteLiterally("]")
-			} else {
-				// Normal case - write the entire expression
-				if err := c.WriteValueExpr(l); err != nil {
-					return err
-				}
-			}
-		}
-		c.tsw.WriteLiterally("] = [")
-		for i, r := range rhs {
-			if i != 0 {
-				c.tsw.WriteLiterally(", ")
-			}
-			if indexExpr, ok := r.(*ast.IndexExpr); ok && allIndexExprs {
-				// Note: We don't use WriteIndexExpr here because we need direct array access for swapping
-				if err := c.WriteValueExpr(indexExpr.X); err != nil {
-					return err
-				}
-				c.tsw.WriteLiterally("!")
-				c.tsw.WriteLiterally("[")
-				if err := c.WriteValueExpr(indexExpr.Index); err != nil {
-					return err
-				}
-				c.tsw.WriteLiterally("]")
-			} else if callExpr, isCallExpr := r.(*ast.CallExpr); isCallExpr {
-				// If the RHS is a function call, write it as a call
-				if err := c.WriteCallExpr(callExpr); err != nil {
-					return err
-				}
-			} else {
-				// Normal case - write the entire expression
-				if err := c.WriteValueExpr(r); err != nil {
-					return err
-				}
-			}
-		}
-		c.tsw.WriteLiterally("]")
-		return nil
+		return c.writeMultiVarAssign(lhs, rhs, tok)
 	}
 
 	// --- Logic for assignments ---
@@ -322,18 +153,8 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 		// Continue, we've already written part of the mapSet() function call
 	} else {
 		c.tsw.WriteLiterally(" ")
-
-		// Special handling for &^= (bitwise AND NOT assignment)
-		if tok == token.AND_NOT_ASSIGN {
-			// Transform x &^= y to x &= ~(y)
-			c.tsw.WriteLiterally("&= ~(")
-		} else {
-			tokStr, ok := TokenToTs(tok) // Use explicit gstypes alias
-			if !ok {
-				return fmt.Errorf("unknown assignment token: %s", tok.String())
-			}
-			c.tsw.WriteLiterally(tokStr)
-			c.tsw.WriteLiterally(" ")
+		if err := c.writeAssignmentOperator(tok); err != nil {
+			return err
 		}
 	}
 
@@ -464,5 +285,174 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 	if isMapIndexLHS && len(lhs) == 1 {
 		c.tsw.WriteLiterally(")")
 	}
+	return nil
+}
+
+// writeBlankIdentifierAssign handles assignment to blank identifier (_)
+func (c *GoToTSCompiler) writeBlankIdentifierAssign(rhs ast.Expr) error {
+	c.tsw.WriteLiterally("/* _ = */ ")
+	return c.WriteValueExpr(rhs)
+}
+
+// writePointerDerefAssign handles assignments to dereferenced pointers (*p = val)
+func (c *GoToTSCompiler) writePointerDerefAssign(starExpr *ast.StarExpr, rhs ast.Expr, tok token.Token) error {
+	// Write pointer dereference
+	if ident, ok := starExpr.X.(*ast.Ident); ok {
+		obj := c.objectOfIdent(ident)
+		if obj != nil && c.analysis.NeedsVarRef(obj) {
+			c.WriteIdent(ident, true)
+			c.tsw.WriteLiterally("!.value")
+		} else {
+			c.WriteIdent(ident, false)
+			c.tsw.WriteLiterally("!.value")
+		}
+	} else {
+		if err := c.WriteValueExpr(starExpr.X); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally("!.value")
+	}
+
+	// Write assignment operator
+	if tok == token.AND_NOT_ASSIGN {
+		c.tsw.WriteLiterally(" &= ~(")
+	} else {
+		c.tsw.WriteLiterally(" ")
+		tokStr, ok := TokenToTs(tok)
+		if !ok {
+			return fmt.Errorf("unknown assignment token: %s", tok.String())
+		}
+		c.tsw.WriteLiterally(tokStr)
+		c.tsw.WriteLiterally(" ")
+	}
+
+	// Write RHS with cloning if needed
+	if shouldApplyClone(c.pkg, rhs) {
+		c.tsw.WriteLiterally("$.markAsStructValue(")
+		if err := c.WriteValueExpr(rhs); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally(".clone())")
+	} else {
+		if err := c.WriteValueExpr(rhs); err != nil {
+			return err
+		}
+	}
+
+	if tok == token.AND_NOT_ASSIGN {
+		c.tsw.WriteLiterally(")")
+	}
+
+	return nil
+}
+
+// writeVarRefShortDecl handles short declarations of varrefed variables
+// Returns true if handled, false otherwise
+func (c *GoToTSCompiler) writeVarRefShortDecl(lhs, rhs ast.Expr) (bool, error) {
+	ident, ok := lhs.(*ast.Ident)
+	if !ok {
+		return false, nil
+	}
+
+	obj := c.objectOfIdent(ident)
+	if obj == nil || !c.analysis.NeedsVarRef(obj) {
+		return false, nil
+	}
+
+	c.tsw.WriteLiterally("let ")
+	c.tsw.WriteLiterally(c.sanitizeIdentifier(ident.Name))
+	c.tsw.WriteLiterally(" = $.varRef(")
+	if err := c.WriteValueExpr(rhs); err != nil {
+		return false, err
+	}
+	c.tsw.WriteLiterally(")")
+	return true, nil
+}
+
+// writeMultiVarAssign handles multi-variable assignments with array destructuring
+func (c *GoToTSCompiler) writeMultiVarAssign(lhs, rhs []ast.Expr, tok token.Token) error {
+	// Check if all expressions are index expressions (for swap optimization)
+	allIndexExprs := true
+	for _, expr := range append(lhs, rhs...) {
+		if _, isIndexExpr := expr.(*ast.IndexExpr); !isIndexExpr {
+			allIndexExprs = false
+			break
+		}
+	}
+
+	// Add semicolon to prevent TypeScript parsing issues
+	if tok != token.DEFINE {
+		c.tsw.WriteLiterally(";")
+	}
+
+	// Write LHS array destructuring pattern
+	c.tsw.WriteLiterally("[")
+	for i, l := range lhs {
+		if i != 0 {
+			c.tsw.WriteLiterally(", ")
+		}
+
+		if ident, ok := l.(*ast.Ident); ok && ident.Name == "_" {
+			// Blank identifier - leave empty slot
+		} else if indexExpr, ok := l.(*ast.IndexExpr); ok && allIndexExprs {
+			if err := c.WriteValueExpr(indexExpr.X); err != nil {
+				return err
+			}
+			c.tsw.WriteLiterally("![")
+			if err := c.WriteValueExpr(indexExpr.Index); err != nil {
+				return err
+			}
+			c.tsw.WriteLiterally("]")
+		} else {
+			if err := c.WriteValueExpr(l); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Write RHS array
+	c.tsw.WriteLiterally("] = [")
+	for i, r := range rhs {
+		if i != 0 {
+			c.tsw.WriteLiterally(", ")
+		}
+
+		if indexExpr, ok := r.(*ast.IndexExpr); ok && allIndexExprs {
+			if err := c.WriteValueExpr(indexExpr.X); err != nil {
+				return err
+			}
+			c.tsw.WriteLiterally("![")
+			if err := c.WriteValueExpr(indexExpr.Index); err != nil {
+				return err
+			}
+			c.tsw.WriteLiterally("]")
+		} else if callExpr, isCallExpr := r.(*ast.CallExpr); isCallExpr {
+			if err := c.WriteCallExpr(callExpr); err != nil {
+				return err
+			}
+		} else {
+			if err := c.WriteValueExpr(r); err != nil {
+				return err
+			}
+		}
+	}
+	c.tsw.WriteLiterally("]")
+
+	return nil
+}
+
+// writeAssignmentOperator writes the TypeScript assignment operator
+func (c *GoToTSCompiler) writeAssignmentOperator(tok token.Token) error {
+	if tok == token.AND_NOT_ASSIGN {
+		c.tsw.WriteLiterally("&= ~(")
+		return nil
+	}
+
+	tokStr, ok := TokenToTs(tok)
+	if !ok {
+		return fmt.Errorf("unknown assignment token: %s", tok.String())
+	}
+	c.tsw.WriteLiterally(tokStr)
+	c.tsw.WriteLiterally(" ")
 	return nil
 }
