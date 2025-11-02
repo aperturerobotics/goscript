@@ -14,7 +14,7 @@ This document contains guidelines and rules for AI agents working on the GoScrip
 - NEVER hardcode things: examples include function names, builtins, etc.
 - Actively try to improve the codebase to conform to the above when the opportunity arises
 - Go standard library sources are located at "go env GOROOT" (shell command)
-- Leverage adding more tests, for example in compiler/analysis_test.go, instead of debug logging, for diagnosing issues or investigating hypotheses
+- Leverage adding more tests, for example in `compiler/analysis_test.go`, instead of debug logging, for diagnosing issues or investigating hypotheses. If the new test case is temporary and you plan to remove it later, add a `tmp_test.go` file or similar to keep things separated.
 
 ## Project Overview
 

@@ -271,7 +271,7 @@ export class tree {
 		{
 			let prev = (pos!.value)!.file
 			if ((prev !== file)) {
-				$.panic(fmt.Sprintf("file %s (%d-%d) overlaps with file %s (%d-%d)", prev!.Name(), prev!.Base(), prev!.Base() + prev!.Size(), file!.Name(), file!.Base(), file!.Base() + file!.Size()))
+				$.panic(await fmt.Sprintf("file %s (%d-%d) overlaps with file %s (%d-%d)", prev!.Name(), prev!.Base(), prev!.Base() + prev!.Size(), file!.Name(), file!.Base(), file!.Base() + file!.Size()))
 			}
 		}
 	}
@@ -496,7 +496,7 @@ export class node {
 			$.panic("bad node.balance")
 		}
 		if (!(-2 <= balance && balance <= +2)) {
-			$.panic(fmt.Sprintf("node.balance out of range: %d", balance))
+			$.panic(await fmt.Sprintf("node.balance out of range: %d", balance))
 		}
 		let h = 1 + max(lheight, rheight)
 		if (h != n.height) {

@@ -186,7 +186,7 @@ export class Scanner {
 	//
 	// For optimization, there is some overlap between this method and
 	// s.scanIdentifier.
-	public next(): void {
+	public async next(): Promise<void> {
 		const s = this
 		if (s.rdOffset < $.len(s.src)) {
 			s.offset = s.rdOffset
@@ -204,7 +204,7 @@ export class Scanner {
 			// consume all input to avoid error cascade
 			switch (true) {
 				case r == 0:
-					s.error(s.offset, "illegal character NUL")
+					await s.error(s.offset, "illegal character NUL")
 					break
 				case r >= utf8.RuneSelf:
 					;[r, w] = utf8.DecodeRune($.goSlice(s.src, s.rdOffset, undefined))
@@ -218,15 +218,15 @@ export class Scanner {
 						if (s.offset == 0 && $.len(_in) >= 2 && (_in![0] == 0xFF && _in![1] == 0xFE || _in![0] == 0xFE && _in![1] == 0xFF)) {
 							// U+FEFF BOM at start of file, encoded as big- or little-endian
 							// UCS-2 (i.e. 2-byte UTF-16). Give specific error (go.dev/issue/71950).
-							s.error(s.offset, "illegal UTF-8 encoding (got UTF-16)")
+							await s.error(s.offset, "illegal UTF-8 encoding (got UTF-16)")
 							s.rdOffset += $.len(_in) // consume all input to avoid error cascade
 						}
 						 else {
-							s.error(s.offset, "illegal UTF-8 encoding")
+							await s.error(s.offset, "illegal UTF-8 encoding")
 						}
 					}
 					 else if (r == 65279 && s.offset > 0) {
-						s.error(s.offset, "illegal byte order mark")
+						await s.error(s.offset, "illegal byte order mark")
 					}
 					break
 			}
@@ -267,10 +267,10 @@ export class Scanner {
 	//
 	// Note that Init may call err if there is an error in the first character
 	// of the file.
-	public Init(file: token.File | null, src: $.Bytes, err: ErrorHandler | null, mode: Mode): void {
+	public async Init(file: token.File | null, src: $.Bytes, err: ErrorHandler | null, mode: Mode): Promise<void> {
 		const s = this
 		if (file!.Size() != $.len(src)) {
-			$.panic(fmt.Sprintf("file size (%d) does not match src len (%d)", file!.Size(), $.len(src)))
+			$.panic(await fmt.Sprintf("file size (%d) does not match src len (%d)", file!.Size(), $.len(src)))
 		}
 		s.file = file
 		{
@@ -286,13 +286,13 @@ export class Scanner {
 		s.lineOffset = 0
 		s.insertSemi = false
 		s.ErrorCount = 0
-		s.next()
+		await s.next()
 		if (s.ch == 65279) {
-			s.next() // ignore BOM at file beginning
+			await s.next() // ignore BOM at file beginning
 		}
 	}
 
-	public error(offs: number, msg: string): void {
+	public async error(offs: number, msg: string): Promise<void> {
 		const s = this
 		if (s.err != null) {
 			s.err!(await s.file!.Position(s.file!.Pos(offs)), msg)
@@ -300,15 +300,15 @@ export class Scanner {
 		s.ErrorCount++
 	}
 
-	public errorf(offs: number, format: string, ...args: any[]): void {
+	public async errorf(offs: number, format: string, ...args: any[]): Promise<void> {
 		const s = this
-		s.error(offs, fmt.Sprintf(format, ...(args ?? [])))
+		await s.error(offs, await fmt.Sprintf(format, ...(args ?? [])))
 	}
 
 	// scanComment returns the text of the comment and (if nonzero)
 	// the offset of the first newline within it, which implies a
 	// /*...*/ comment.
-	public scanComment(): [string, number] {
+	public async scanComment(): Promise<[string, number]> {
 		const s = this
 		let offs = s.offset - 1 // position of initial '/'
 		let next = -1 // position immediately following the comment; < 0 means invalid comment
@@ -317,12 +317,12 @@ export class Scanner {
 		if (s.ch == 47) {
 			//-style comment
 			// (the final '\n' is not considered part of the comment)
-			s.next()
+			await s.next()
 			for (; s.ch != 10 && s.ch >= 0; ) {
 				if (s.ch == 13) {
 					numCR++
 				}
-				s.next()
+				await s.next()
 			}
 			// if we are at '\n', the position following the comment is afterwards
 			next = s.offset
@@ -331,7 +331,7 @@ export class Scanner {
 			}
 			// goto exit // goto statement skipped
 		}
-		s.next()
+		await s.next()
 		for (; s.ch >= 0; ) {
 			let ch = s.ch
 			if (ch == 13) {
@@ -340,14 +340,14 @@ export class Scanner {
 			 else if (ch == 10 && nlOffset == 0) {
 				nlOffset = s.offset
 			}
-			s.next()
+			await s.next()
 			if (ch == 42 && s.ch == 47) {
-				s.next()
+				await s.next()
 				next = s.offset
 				// goto exit // goto statement skipped
 			}
 		}
-		s.error(offs, "comment not terminated")
+		await s.error(offs, "comment not terminated")
 		exit: {
 			let lit = $.goSlice(s.src, offs, s.offset)
 		}
@@ -356,7 +356,7 @@ export class Scanner {
 			numCR--
 		}
 		if (next >= 0 && (lit![1] == 42 || offs == s.lineOffset) && bytes.HasPrefix($.goSlice(lit, 2, undefined), prefix)) {
-			s.updateLineInfo(next, offs, lit)
+			await s.updateLineInfo(next, offs, lit)
 		}
 		if (numCR > 0) {
 			lit = stripCR(lit, lit![1] == 42)
@@ -367,7 +367,7 @@ export class Scanner {
 	// updateLineInfo parses the incoming comment text at offset offs
 	// as a line directive. If successful, it updates the line info table
 	// for the position next per the line directive.
-	public updateLineInfo(next: number, offs: number, text: $.Bytes): void {
+	public async updateLineInfo(next: number, offs: number, text: $.Bytes): Promise<void> {
 		const s = this
 		if (text![1] == 42) {
 			text = $.goSlice(text, undefined, $.len(text) - 2) // lop off trailing "*/"
@@ -380,7 +380,7 @@ export class Scanner {
 		}
 		if (!ok) {
 			// text has a suffix :xxx but xxx is not a number
-			s.error(offs + i, "invalid line number: " + $.bytesToString($.goSlice(text, i, undefined)))
+			await s.error(offs + i, "invalid line number: " + $.bytesToString($.goSlice(text, i, undefined)))
 			return 
 		}
 		let maxLineCol: number = (1 << 30)
@@ -392,7 +392,7 @@ export class Scanner {
 			;[i, i2] = [i2, i]
 			;[line, col] = [n2, n]
 			if (col == 0 || col > 1073741824) {
-				s.error(offs + i2, "invalid column number: " + $.bytesToString($.goSlice(text, i2, undefined)))
+				await s.error(offs + i2, "invalid column number: " + $.bytesToString($.goSlice(text, i2, undefined)))
 				return 
 			}
 			text = $.goSlice(text, undefined, i2 - 1) // lop off ":col"
@@ -402,7 +402,7 @@ export class Scanner {
 			line = n
 		}
 		if (line == 0 || line > 1073741824) {
-			s.error(offs + i, "invalid line number: " + $.bytesToString($.goSlice(text, i, undefined)))
+			await s.error(offs + i, "invalid line number: " + $.bytesToString($.goSlice(text, i, undefined)))
 			return 
 		}
 		let filename = $.bytesToString($.goSlice(text, undefined, i - 1)) // lop off ":line", and trim white space
@@ -426,7 +426,7 @@ export class Scanner {
 	//
 	// Be careful when making changes to this function: it is optimized and affects
 	// scanning performance significantly.
-	public scanIdentifier(): string {
+	public async scanIdentifier(): Promise<string> {
 		const s = this
 		let offs = s.offset
 		for (let rdOffset = 0; rdOffset < $.len($.goSlice(s.src, s.rdOffset, undefined)); rdOffset++) {
@@ -461,9 +461,9 @@ export class Scanner {
 				// We know that the preceding character is valid for an identifier because
 				// scanIdentifier is only called when s.ch is a letter, so calling s.next()
 				// at s.rdOffset resets the scanner state.
-				s.next()
+				await s.next()
 				for (; isLetter(s.ch) || isDigit(s.ch); ) {
-					s.next()
+					await s.next()
 				}
 				// goto exit // goto statement skipped
 			}
@@ -480,7 +480,7 @@ export class Scanner {
 	// in *invalid, if *invalid < 0.
 	// digits returns a bitset describing whether the sequence contained
 	// digits (bit 0 is set), or separators '_' (bit 1 is set).
-	public digits(base: number, invalid: $.VarRef<number> | null): number {
+	public async digits(base: number, invalid: $.VarRef<number> | null): Promise<number> {
 		const s = this
 		let digsep: number = 0
 		if (base <= 10) {
@@ -498,7 +498,7 @@ export class Scanner {
 					invalid!.value = s.offset // record invalid rune offset
 				}
 				digsep |= ds
-				s.next()
+				await s.next()
 			}
 		}
 		 else {
@@ -508,13 +508,13 @@ export class Scanner {
 					ds = 2
 				}
 				digsep |= ds
-				s.next()
+				await s.next()
 			}
 		}
 		return digsep
 	}
 
-	public scanNumber(): [token.Token, string] {
+	public async scanNumber(): Promise<[token.Token, string]> {
 		const s = this
 		let offs = s.offset
 		let tok = token.ILLEGAL
@@ -527,20 +527,20 @@ export class Scanner {
 
 			// leading 0
 			if (s.ch == 48) {
-				s.next()
+				await s.next()
 
 				// leading 0
 				switch (lower(s.ch)) {
 					case 120:
-						s.next()
+						await s.next()
 						;[base, prefix] = [16, 120]
 						break
 					case 111:
-						s.next()
+						await s.next()
 						;[base, prefix] = [8, 111]
 						break
 					case 98:
-						s.next()
+						await s.next()
 						;[base, prefix] = [2, 98]
 						break
 					default:
@@ -549,58 +549,58 @@ export class Scanner {
 						break
 				}
 			}
-			digsep |= s.digits(base, invalid)
+			digsep |= await s.digits(base, invalid)
 		}
 		if (s.ch == 46) {
 			tok = token.FLOAT
 			if (prefix == 111 || prefix == 98) {
-				s.error(s.offset, "invalid radix point in " + litname(prefix))
+				await s.error(s.offset, "invalid radix point in " + litname(prefix))
 			}
-			s.next()
-			digsep |= s.digits(base, invalid)
+			await s.next()
+			digsep |= await s.digits(base, invalid)
 		}
 		if ((digsep & 1) == 0) {
-			s.error(s.offset, litname(prefix) + " has no digits")
+			await s.error(s.offset, litname(prefix) + " has no digits")
 		}
 		{
 			let e = lower(s.ch)
 			if (e == 101 || e == 112) {
 				switch (true) {
 					case e == 101 && prefix != 0 && prefix != 48:
-						s.errorf(s.offset, "%q exponent requires decimal mantissa", s.ch)
+						await s.errorf(s.offset, "%q exponent requires decimal mantissa", s.ch)
 						break
 					case e == 112 && prefix != 120:
-						s.errorf(s.offset, "%q exponent requires hexadecimal mantissa", s.ch)
+						await s.errorf(s.offset, "%q exponent requires hexadecimal mantissa", s.ch)
 						break
 				}
-				s.next()
+				await s.next()
 				tok = token.FLOAT
 				if (s.ch == 43 || s.ch == 45) {
-					s.next()
+					await s.next()
 				}
-				let ds = s.digits(10, null)
+				let ds = await s.digits(10, null)
 				digsep |= ds
 				if ((ds & 1) == 0) {
-					s.error(s.offset, "exponent has no digits")
+					await s.error(s.offset, "exponent has no digits")
 				}
 			}
 			 else if (prefix == 120 && tok == token.FLOAT) {
-				s.error(s.offset, "hexadecimal mantissa requires a 'p' exponent")
+				await s.error(s.offset, "hexadecimal mantissa requires a 'p' exponent")
 			}
 		}
 		if (s.ch == 105) {
 			tok = token.IMAG
-			s.next()
+			await s.next()
 		}
 		let lit = $.bytesToString($.goSlice(s.src, offs, s.offset))
 		if (tok == token.INT && invalid >= 0) {
-			s.errorf(invalid, "invalid digit %q in %s", $.indexString(lit, invalid - offs), litname(prefix))
+			await s.errorf(invalid, "invalid digit %q in %s", $.indexString(lit, invalid - offs), litname(prefix))
 		}
 		if ((digsep & 2) != 0) {
 			{
 				let i = invalidSep(lit)
 				if (i >= 0) {
-					s.error(offs + i, "'_' must separate successive digits")
+					await s.error(offs + i, "'_' must separate successive digits")
 				}
 			}
 		}
@@ -611,7 +611,7 @@ export class Scanner {
 	// escaped quote. In case of a syntax error, it stops at the offending
 	// character (without consuming it) and returns false. Otherwise
 	// it returns true.
-	public scanEscape(quote: number): boolean {
+	public async scanEscape(quote: number): Promise<boolean> {
 		const s = this
 		let offs = s.offset
 		let n: number = 0
@@ -627,7 +627,7 @@ export class Scanner {
 			case 118:
 			case 92:
 			case quote:
-				s.next()
+				await s.next()
 				return true
 				break
 			case 48:
@@ -641,15 +641,15 @@ export class Scanner {
 				;[n, base, max] = [3, 8, 255]
 				break
 			case 120:
-				s.next()
+				await s.next()
 				;[n, base, max] = [2, 16, 255]
 				break
 			case 117:
-				s.next()
+				await s.next()
 				;[n, base, max] = [4, 16, unicode.MaxRune]
 				break
 			case 85:
-				s.next()
+				await s.next()
 				;[n, base, max] = [8, 16, unicode.MaxRune]
 				break
 			default:
@@ -657,7 +657,7 @@ export class Scanner {
 				if (s.ch < 0) {
 					msg = "escape sequence not terminated"
 				}
-				s.error(offs, msg)
+				await s.error(offs, msg)
 				return false
 				break
 		}
@@ -665,25 +665,25 @@ export class Scanner {
 		for (; n > 0; ) {
 			let d = (digitVal(s.ch) as number)
 			if (d >= base) {
-				let msg = fmt.Sprintf("illegal character %#U in escape sequence", s.ch)
+				let msg = await fmt.Sprintf("illegal character %#U in escape sequence", s.ch)
 				if (s.ch < 0) {
 					msg = "escape sequence not terminated"
 				}
-				s.error(s.offset, msg)
+				await s.error(s.offset, msg)
 				return false
 			}
 			x = x * base + d
-			s.next()
+			await s.next()
 			n--
 		}
 		if (x > max || 0xD800 <= x && x < 0xE000) {
-			s.error(offs, "escape sequence is invalid Unicode code point")
+			await s.error(offs, "escape sequence is invalid Unicode code point")
 			return false
 		}
 		return true
 	}
 
-	public scanRune(): string {
+	public async scanRune(): Promise<string> {
 		const s = this
 		let offs = s.offset - 1
 		let valid = true
@@ -695,12 +695,12 @@ export class Scanner {
 			if (ch == 10 || ch < 0) {
 				// only report error if we don't have one already
 				if (valid) {
-					s.error(offs, "rune literal not terminated")
+					await s.error(offs, "rune literal not terminated")
 					valid = false
 				}
 				break
 			}
-			s.next()
+			await s.next()
 			if (ch == 39) {
 				break
 			}
@@ -710,49 +710,49 @@ export class Scanner {
 			if (ch == 92) {
 
 				// continue to read to closing quote
-				if (!s.scanEscape(39)) {
+				if (!await s.scanEscape(39)) {
 					valid = false
 				}
 				// continue to read to closing quote
 			}
 		}
 		if (valid && n != 1) {
-			s.error(offs, "illegal rune literal")
+			await s.error(offs, "illegal rune literal")
 		}
 		return $.bytesToString($.goSlice(s.src, offs, s.offset))
 	}
 
-	public scanString(): string {
+	public async scanString(): Promise<string> {
 		const s = this
 		let offs = s.offset - 1
 		for (; ; ) {
 			let ch = s.ch
 			if (ch == 10 || ch < 0) {
-				s.error(offs, "string literal not terminated")
+				await s.error(offs, "string literal not terminated")
 				break
 			}
-			s.next()
+			await s.next()
 			if (ch == 34) {
 				break
 			}
 			if (ch == 92) {
-				s.scanEscape(34)
+				await s.scanEscape(34)
 			}
 		}
 		return $.bytesToString($.goSlice(s.src, offs, s.offset))
 	}
 
-	public scanRawString(): string {
+	public async scanRawString(): Promise<string> {
 		const s = this
 		let offs = s.offset - 1
 		let hasCR = false
 		for (; ; ) {
 			let ch = s.ch
 			if (ch < 0) {
-				s.error(offs, "raw string literal not terminated")
+				await s.error(offs, "raw string literal not terminated")
 				break
 			}
-			s.next()
+			await s.next()
 			if (ch == 96) {
 				break
 			}
@@ -767,45 +767,45 @@ export class Scanner {
 		return $.bytesToString(lit)
 	}
 
-	public skipWhitespace(): void {
+	public async skipWhitespace(): Promise<void> {
 		const s = this
 		for (; s.ch == 32 || s.ch == 9 || s.ch == 10 && !s.insertSemi || s.ch == 13; ) {
-			s.next()
+			await s.next()
 		}
 	}
 
-	public switch2(tok0: token.Token, tok1: token.Token): token.Token {
+	public async switch2(tok0: token.Token, tok1: token.Token): Promise<token.Token> {
 		const s = this
 		if (s.ch == 61) {
-			s.next()
+			await s.next()
 			return tok1
 		}
 		return tok0
 	}
 
-	public switch3(tok0: token.Token, tok1: token.Token, ch2: number, tok2: token.Token): token.Token {
+	public async switch3(tok0: token.Token, tok1: token.Token, ch2: number, tok2: token.Token): Promise<token.Token> {
 		const s = this
 		if (s.ch == 61) {
-			s.next()
+			await s.next()
 			return tok1
 		}
 		if (s.ch == ch2) {
-			s.next()
+			await s.next()
 			return tok2
 		}
 		return tok0
 	}
 
-	public switch4(tok0: token.Token, tok1: token.Token, ch2: number, tok2: token.Token, tok3: token.Token): token.Token {
+	public async switch4(tok0: token.Token, tok1: token.Token, ch2: number, tok2: token.Token, tok3: token.Token): Promise<token.Token> {
 		const s = this
 		if (s.ch == 61) {
-			s.next()
+			await s.next()
 			return tok1
 		}
 		if (s.ch == ch2) {
-			s.next()
+			await s.next()
 			if (s.ch == 61) {
-				s.next()
+				await s.next()
 				return tok3
 			}
 			return tok2
@@ -843,7 +843,7 @@ export class Scanner {
 	// Scan adds line information to the file added to the file
 	// set with Init. Token positions are relative to that file
 	// and thus relative to the file set.
-	public Scan(): [token.Pos, token.Token, string] {
+	public async Scan(): Promise<[token.Pos, token.Token, string]> {
 		const s = this
 		let pos: token.Pos = 0
 		let tok: token.Token = 0
@@ -855,13 +855,13 @@ export class Scanner {
 			s.nlPos = token.NoPos
 			return [pos, tok, lit]
 		}
-		s.skipWhitespace()
+		await s.skipWhitespace()
 		pos = s.file!.Pos(s.offset)
 		let insertSemi = false
 		{let ch = s.ch
 			switch (true) {
 				case isLetter(ch):
-					lit = s.scanIdentifier()
+					lit = await s.scanIdentifier()
 					if ($.len(lit) > 1) {
 						// keywords are longer than one letter - avoid lookup otherwise
 						tok = token.Lookup(lit)
@@ -882,10 +882,10 @@ export class Scanner {
 					break
 				case isDecimal(ch) || ch == 46 && isDecimal((s.peek() as number)):
 					insertSemi = true
-					;[tok, lit] = s.scanNumber()
+					;[tok, lit] = await s.scanNumber()
 					break
 				default:
-					s.next() // always make progress
+					await s.next() // always make progress
 					switch (ch) {
 						case -1:
 							if (s.insertSemi) {
@@ -901,26 +901,26 @@ export class Scanner {
 						case 34:
 							insertSemi = true
 							tok = token.STRING
-							lit = s.scanString()
+							lit = await s.scanString()
 							break
 						case 39:
 							insertSemi = true
 							tok = token.CHAR
-							lit = s.scanRune()
+							lit = await s.scanRune()
 							break
 						case 96:
 							insertSemi = true
 							tok = token.STRING
-							lit = s.scanRawString()
+							lit = await s.scanRawString()
 							break
 						case 58:
-							tok = s.switch2(token.COLON, token.DEFINE)
+							tok = await s.switch2(token.COLON, token.DEFINE)
 							break
 						case 46:
 							tok = token.PERIOD
 							if (s.ch == 46 && s.peek() == 46) {
-								s.next()
-								s.next() // consume last '.'
+								await s.next()
+								await s.next() // consume last '.'
 								tok = token.ELLIPSIS
 							}
 							break
@@ -953,24 +953,24 @@ export class Scanner {
 							tok = token.RBRACE
 							break
 						case 43:
-							tok = s.switch3(token.ADD, token.ADD_ASSIGN, 43, token.INC)
+							tok = await s.switch3(token.ADD, token.ADD_ASSIGN, 43, token.INC)
 							if (tok == token.INC) {
 								insertSemi = true
 							}
 							break
 						case 45:
-							tok = s.switch3(token.SUB, token.SUB_ASSIGN, 45, token.DEC)
+							tok = await s.switch3(token.SUB, token.SUB_ASSIGN, 45, token.DEC)
 							if (tok == token.DEC) {
 								insertSemi = true
 							}
 							break
 						case 42:
-							tok = s.switch2(token.MUL, token.MUL_ASSIGN)
+							tok = await s.switch2(token.MUL, token.MUL_ASSIGN)
 							break
 						case 47:
 							if (s.ch == 47 || s.ch == 42) {
 								// comment
-								let [comment, nlOffset] = s.scanComment()
+								let [comment, nlOffset] = await s.scanComment()
 
 								// For /*...*/ containing \n, return
 								// COMMENT then artificial SEMICOLON.
@@ -996,44 +996,44 @@ export class Scanner {
 							}
 							 else {
 								// division
-								tok = s.switch2(token.QUO, token.QUO_ASSIGN)
+								tok = await s.switch2(token.QUO, token.QUO_ASSIGN)
 							}
 							break
 						case 37:
-							tok = s.switch2(token.REM, token.REM_ASSIGN)
+							tok = await s.switch2(token.REM, token.REM_ASSIGN)
 							break
 						case 94:
-							tok = s.switch2(token.XOR, token.XOR_ASSIGN)
+							tok = await s.switch2(token.XOR, token.XOR_ASSIGN)
 							break
 						case 60:
 							if (s.ch == 45) {
-								s.next()
+								await s.next()
 								tok = token.ARROW
 							}
 							 else {
-								tok = s.switch4(token.LSS, token.LEQ, 60, token.SHL, token.SHL_ASSIGN)
+								tok = await s.switch4(token.LSS, token.LEQ, 60, token.SHL, token.SHL_ASSIGN)
 							}
 							break
 						case 62:
-							tok = s.switch4(token.GTR, token.GEQ, 62, token.SHR, token.SHR_ASSIGN)
+							tok = await s.switch4(token.GTR, token.GEQ, 62, token.SHR, token.SHR_ASSIGN)
 							break
 						case 61:
-							tok = s.switch2(token.ASSIGN, token.EQL)
+							tok = await s.switch2(token.ASSIGN, token.EQL)
 							break
 						case 33:
-							tok = s.switch2(token.NOT, token.NEQ)
+							tok = await s.switch2(token.NOT, token.NEQ)
 							break
 						case 38:
 							if (s.ch == 94) {
-								s.next()
-								tok = s.switch2(token.AND_NOT, token.AND_NOT_ASSIGN)
+								await s.next()
+								tok = await s.switch2(token.AND_NOT, token.AND_NOT_ASSIGN)
 							}
 							 else {
-								tok = s.switch3(token.AND, token.AND_ASSIGN, 38, token.LAND)
+								tok = await s.switch3(token.AND, token.AND_ASSIGN, 38, token.LAND)
 							}
 							break
 						case 124:
-							tok = s.switch3(token.OR, token.OR_ASSIGN, 124, token.LOR)
+							tok = await s.switch3(token.OR, token.OR_ASSIGN, 124, token.LOR)
 							break
 						case 126:
 							tok = token.TILDE
@@ -1043,10 +1043,10 @@ export class Scanner {
 								// Report an informative error for U+201[CD] quotation
 								// marks, which are easily introduced via copy and paste.
 								if (ch == 8220 || ch == 8221) {
-									s.errorf(s.file!.Offset(pos), "curly quotation mark %q (use neutral %q)", ch, 34)
+									await s.errorf(s.file!.Offset(pos), "curly quotation mark %q (use neutral %q)", ch, 34)
 								}
 								 else {
-									s.errorf(s.file!.Offset(pos), "illegal character %#U", ch)
+									await s.errorf(s.file!.Offset(pos), "illegal character %#U", ch)
 								}
 							}
 							insertSemi = s.insertSemi // preserve insertSemi info

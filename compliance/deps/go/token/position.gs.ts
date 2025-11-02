@@ -114,11 +114,11 @@ export class FileSet {
 			base = s.base
 		}
 		if (base < s.base) {
-			$.panic(fmt.Sprintf("invalid base %d (should be >= %d)", base, s.base))
+			$.panic(await fmt.Sprintf("invalid base %d (should be >= %d)", base, s.base))
 		}
 		f!.base = base
 		if (size < 0) {
-			$.panic(fmt.Sprintf("invalid size %d (should be >= 0)", size))
+			$.panic(await fmt.Sprintf("invalid size %d (should be >= 0)", size))
 		}
 		base += size + 1 // +1 because EOF also has a position
 		if (base < 0) {
@@ -399,7 +399,7 @@ export class Position {
 			}
 			s += strconv.Itoa(pos.Line)
 			if (pos.Column != 0) {
-				s += fmt.Sprintf(":%d", pos.Column)
+				s += await fmt.Sprintf(":%d", pos.Column)
 			}
 		}
 		if (s == "") {
@@ -616,14 +616,14 @@ export class File {
 		const f = this
 		using __defer = new $.DisposableStack();
 		if (line < 1) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be >= 1)", line))
+			$.panic(await fmt.Sprintf("invalid line number %d (should be >= 1)", line))
 		}
 		await f.mutex.Lock()
 		__defer.defer(() => {
 			f.mutex.Unlock()
 		});
 		if (line >= $.len(f.lines)) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
+			$.panic(await fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
 		}
 		$.copy($.goSlice(f.lines, line, undefined), $.goSlice(f.lines, line + 1, undefined))
 		f.lines = $.goSlice(f.lines, undefined, $.len(f.lines) - 1)
@@ -694,14 +694,14 @@ export class File {
 		const f = this
 		using __defer = new $.DisposableStack();
 		if (line < 1) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be >= 1)", line))
+			$.panic(await fmt.Sprintf("invalid line number %d (should be >= 1)", line))
 		}
 		await f.mutex.Lock()
 		__defer.defer(() => {
 			f.mutex.Unlock()
 		});
 		if (line > $.len(f.lines)) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
+			$.panic(await fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
 		}
 		return (f.base + f.lines![line - 1] as Pos)
 	}
@@ -754,7 +754,7 @@ export class File {
 		if (false) {
 
 			/* for symmetry */
-			$.panic(fmt.Sprintf("offset %d out of bounds [%d, %d] (position %d out of bounds [%d, %d])", 0, offset, f.size, f.base + offset, f.base, f.base + f.size))
+			$.panic(await fmt.Sprintf("offset %d out of bounds [%d, %d] (position %d out of bounds [%d, %d])", 0, offset, f.size, f.base + offset, f.base, f.base + f.size))
 		}
 		return 0
 	}

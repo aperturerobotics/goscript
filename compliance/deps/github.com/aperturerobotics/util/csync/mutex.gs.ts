@@ -52,7 +52,7 @@ export class Mutex {
 	// Returns a lock release function or an error.
 	public async Lock(ctx: context.Context): Promise<[(() => void) | null, $.GoError]> {
 		const m = this
-		let status: atomic.Int32 = new atomic.Int32()
+		let status: $.VarRef<atomic.Int32> = $.varRef(new atomic.Int32())
 		let waitCh: $.Channel<{  }> | null = null
 		await m.bcast.HoldLock((_: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 
@@ -67,14 +67,14 @@ export class Mutex {
 			 else {
 				// 0: waiting for lock
 				// 1: have the lock
-				let swapped = status.CompareAndSwap(0, 1)
+				let swapped = status!.value.CompareAndSwap(0, 1)
 				if (swapped) {
 					m.locked = true
 				}
 			}
 		})
 		let release = async (): Promise<void> => {
-			let pre = status.Swap(2)
+			let pre = status!.value.Swap(2)
 			// 1: we have the lock
 			if (pre != 1) {
 				return 
@@ -86,7 +86,7 @@ export class Mutex {
 				broadcast!()
 			})
 		}
-		if (status.Load() == 1) {
+		if (status!.value.Load() == 1) {
 			return [release, null]
 		}
 		for (; ; ) {
@@ -126,13 +126,13 @@ export class Mutex {
 
 				// 0: waiting for lock
 				// 1: have the lock
-				let swapped = status.CompareAndSwap(0, 1)
+				let swapped = status!.value.CompareAndSwap(0, 1)
 				if (swapped) {
 					m.locked = true
 				}
 			})
 
-			let nstatus = status.Load()
+			let nstatus = status!.value.Load()
 			switch (nstatus) {
 				case 1:
 					return [release, null]
@@ -148,20 +148,20 @@ export class Mutex {
 	// Returns a lock release function or nil if the lock could not be grabbed.
 	public async TryLock(): Promise<[(() => void) | null, boolean]> {
 		const m = this
-		let unlocked: atomic.Bool = new atomic.Bool()
+		let unlocked: $.VarRef<atomic.Bool> = $.varRef(new atomic.Bool())
 		await m.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 			if (m.locked) {
-				unlocked.Store(true)
+				unlocked!.value.Store(true)
 			}
 			 else {
 				m.locked = true
 			}
 		})
-		if (unlocked.Load()) {
+		if (unlocked!.value.Load()) {
 			return [null, false]
 		}
 		return [async (): Promise<void> => {
-			if (unlocked.Swap(true)) {
+			if (unlocked!.value.Swap(true)) {
 				return 
 			}
 

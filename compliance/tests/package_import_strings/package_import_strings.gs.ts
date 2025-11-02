@@ -8,12 +8,12 @@ import * as strings from "@goscript/strings/index.js"
 export async function main(): Promise<void> {
 	// This should trigger the unhandled make call error
 	// strings.Builder uses make internally for its buffer
-	let builder: strings.Builder = new strings.Builder()
-	builder.WriteString("Hello")
-	builder.WriteString(" ")
-	builder.WriteString("World")
+	let builder: $.VarRef<strings.Builder> = $.varRef(new strings.Builder())
+	builder!.value.WriteString("Hello")
+	builder!.value.WriteString(" ")
+	builder!.value.WriteString("World")
 
-	let result = builder.String()
+	let result = builder!.value.String()
 	console.log("Result:", result)
 
 	// Also test direct make with strings.Builder

@@ -81,20 +81,20 @@ export async function main(): Promise<void> {
 	console.log("ReplaceAll result:", $.bytesToString(replacedAll))
 
 	// Test Buffer
-	let buf: bytes.Buffer = new bytes.Buffer()
-	buf.WriteString("Hello ")
-	buf.WriteString("World")
-	console.log("Buffer content:", buf.String())
-	console.log("Buffer length:", buf.Len())
+	let buf: $.VarRef<bytes.Buffer> = $.varRef(new bytes.Buffer())
+	buf!.value.WriteString("Hello ")
+	buf!.value.WriteString("World")
+	console.log("Buffer content:", buf!.value.String())
+	console.log("Buffer length:", buf!.value.Len())
 
 	// Test Buffer Read
 	let data = new Uint8Array(5)
-	let [n, ] = buf.Read(data)
+	let [n, ] = buf!.value.Read(data)
 	console.log("Read", n, "bytes:", $.bytesToString(data))
 
 	// Test Buffer Reset
-	buf.Reset()
-	console.log("Buffer after reset, length:", buf.Len())
+	buf!.value.Reset()
+	console.log("Buffer after reset, length:", buf!.value.Len())
 
 	console.log("test finished")
 }

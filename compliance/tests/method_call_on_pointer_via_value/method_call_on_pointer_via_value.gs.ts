@@ -53,15 +53,15 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	// Create a struct value
-	let msValue = $.markAsStructValue(new MyStruct({MyInt: 100}))
+	let msValue = $.varRef($.markAsStructValue(new MyStruct({MyInt: 100})))
 
 	// === Method Call on Pointer Receiver via Value ===
 	// Call the pointer-receiver method using the value variable.
 	// Go implicitly takes the address of msValue (&msValue) to call SetValue.
-	msValue.SetValue(200)
+	msValue!.value.SetValue(200)
 
 	// Verify the value was modified through the method call.
 	// Expected: 200
-	console.log("Value after pointer method call via value: Expected: 200, Actual:", msValue.GetValue())
+	console.log("Value after pointer method call via value: Expected: 200, Actual:", msValue!.value.GetValue())
 }
 

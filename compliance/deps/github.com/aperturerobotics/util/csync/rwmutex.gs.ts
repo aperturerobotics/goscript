@@ -77,7 +77,7 @@ export class RWMutex {
 	// If a writer is waiting to lock, readers will wait for it.
 	public async Lock(ctx: context.Context, write: boolean): Promise<[(() => void) | null, $.GoError]> {
 		const m = this
-		let status: atomic.Int32 = new atomic.Int32()
+		let status: $.VarRef<atomic.Int32> = $.varRef(new atomic.Int32())
 		let waitCh: $.Channel<{  }> | null = null
 		await m.bcast.HoldLock((_: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 			if (write) {
@@ -87,19 +87,19 @@ export class RWMutex {
 				}
 				 else {
 					m.writing = true
-					status.Store(1)
+					status!.value.Store(1)
 				}
 			}
 			 else if (!m.writing && m.writeWaiting == 0) {
 				m.nreaders++
-				status.Store(1)
+				status!.value.Store(1)
 			}
 			 else {
 				waitCh = getWaitCh!()
 			}
 		})
 		let release = async (): Promise<void> => {
-			let pre = status.Swap(2)
+			let pre = status!.value.Swap(2)
 			if (pre == 2) {
 				return 
 			}
@@ -130,7 +130,7 @@ export class RWMutex {
 				}
 			})
 		}
-		if (status.Load() == 1) {
+		if (status!.value.Load() == 1) {
 			return [release, null]
 		}
 		for (; ; ) {
@@ -162,7 +162,7 @@ export class RWMutex {
 					if (m.nreaders == 0 && !m.writing) {
 						m.writeWaiting--
 						m.writing = true
-						status.Store(1)
+						status!.value.Store(1)
 					}
 					 else {
 						waitCh = getWaitCh!()
@@ -170,14 +170,14 @@ export class RWMutex {
 				}
 				 else if (!m.writing && m.writeWaiting == 0) {
 					m.nreaders++
-					status.Store(1)
+					status!.value.Store(1)
 				}
 				 else {
 					waitCh = getWaitCh!()
 				}
 			})
 
-			if (status.Load() == 1) {
+			if (status!.value.Load() == 1) {
 				return [release, null]
 			}
 		}
@@ -189,11 +189,11 @@ export class RWMutex {
 	// If a writer is waiting to lock, readers will wait for it.
 	public async TryLock(write: boolean): Promise<[(() => void) | null, boolean]> {
 		const m = this
-		let unlocked: atomic.Bool = new atomic.Bool()
+		let unlocked: $.VarRef<atomic.Bool> = $.varRef(new atomic.Bool())
 		await m.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 			if (write) {
 				if (m.nreaders != 0 || m.writing) {
-					unlocked.Store(true)
+					unlocked!.value.Store(true)
 				}
 				 else {
 					m.writing = true
@@ -203,14 +203,14 @@ export class RWMutex {
 				m.nreaders++
 			}
 			 else {
-				unlocked.Store(true)
+				unlocked!.value.Store(true)
 			}
 		})
-		if (unlocked.Load()) {
+		if (unlocked!.value.Load()) {
 			return [null, false]
 		}
 		return [async (): Promise<void> => {
-			if (unlocked.Swap(true)) {
+			if (unlocked!.value.Swap(true)) {
 				return 
 			}
 

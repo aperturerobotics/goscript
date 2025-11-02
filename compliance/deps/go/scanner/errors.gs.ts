@@ -129,7 +129,7 @@ export function ErrorList_Error(p: ErrorList): string {
 			return p![0]!.Error()
 			break
 	}
-	return fmt.Sprintf("%s (and %d more errors)", p![0], $.len(p) - 1)
+	return await fmt.Sprintf("%s (and %d more errors)", p![0], $.len(p) - 1)
 }
 
 export function ErrorList_Err(p: ErrorList): $.GoError {
@@ -150,12 +150,12 @@ export function PrintError(w: io.Writer, err: $.GoError): void {
 			for (let _i = 0; _i < $.len(list); _i++) {
 				const e = list![_i]
 				{
-					fmt.Fprintf(w, "%s\n", e)
+					await fmt.Fprintf(w, "%s\n", e)
 				}
 			}
 		}
 		 else if (err != null) {
-			fmt.Fprintf(w, "%s\n", err)
+			await fmt.Fprintf(w, "%s\n", err)
 		}
 	}
 }

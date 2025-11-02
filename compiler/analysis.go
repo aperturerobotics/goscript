@@ -2333,13 +2333,12 @@ func (v *analysisVisitor) analyzeMethodAsync(funcDecl *ast.FuncDecl, pkg *packag
 	isExternalPackage := pkg.Types != v.pkg.Types && v.analysis.AllPackages[pkg.Types.Path()] == nil
 
 	if isExternalPackage {
-		// Truly external package: check metadata first, fall back to body analysis
+		// Truly external package: check metadata first
 		isAsync = v.checkExternalMethodMetadata(methodKey.PackagePath, methodKey.ReceiverType, methodKey.MethodName)
-	} else {
-		// Local package or package being compiled: analyze method body
-		if funcDecl.Body != nil {
-			isAsync = v.containsAsyncOperationsComplete(funcDecl.Body, pkg)
-		}
+	}
+	// If not determined async yet and body exists, analyze it
+	if !isAsync && funcDecl.Body != nil {
+		isAsync = v.containsAsyncOperationsComplete(funcDecl.Body, pkg)
 	}
 
 	// Store result in MethodAsyncStatus
@@ -2568,26 +2567,13 @@ func (v *analysisVisitor) isMethodAsyncFromSelection(selExpr *ast.SelectorExpr, 
 			}
 		}
 	} else {
-		// Only try to analyze methods for packages that don't have metadata loaded
-		// If a package has metadata, we should rely solely on that metadata
+		// For methods in other packages that we're compiling together
 		if targetPkg := v.analysis.AllPackages[methodPkgPath]; targetPkg != nil {
-			// Check if this package has metadata loaded by checking if any method from this package
-			// exists in MethodAsyncStatus. If so, don't analyze - rely on metadata only.
-			hasMetadata := false
-			for key := range v.analysis.MethodAsyncStatus {
-				if key.PackagePath == methodPkgPath {
-					hasMetadata = true
-					break
-				}
-			}
-
-			// Only analyze if no metadata exists for this package
-			if !hasMetadata {
-				if funcDecl := v.findMethodDecl(receiverType, methodObj.Name(), targetPkg); funcDecl != nil {
-					v.analyzeMethodAsync(funcDecl, targetPkg)
-					if status, exists := v.analysis.MethodAsyncStatus[methodKey]; exists {
-						return status
-					}
+			// Try to analyze the method if we haven't already
+			if funcDecl := v.findMethodDecl(receiverType, methodObj.Name(), targetPkg); funcDecl != nil {
+				v.analyzeMethodAsync(funcDecl, targetPkg)
+				if status, exists := v.analysis.MethodAsyncStatus[methodKey]; exists {
+					return status
 				}
 			}
 		}
