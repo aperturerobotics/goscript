@@ -13,6 +13,8 @@ This document contains guidelines and rules for AI agents working on the GoScrip
 - Remove any "for backwards compatibility" comments and fallback logic
 - NEVER hardcode things: examples include function names, builtins, etc.
 - Actively try to improve the codebase to conform to the above when the opportunity arises
+- Go standard library sources are located at "go env GOROOT" (shell command)
+- Leverage adding more tests, for example in compiler/analysis_test.go, instead of debug logging, for diagnosing issues or investigating hypotheses
 
 ## Project Overview
 
@@ -49,6 +51,11 @@ When working on compliance tests:
    - If not, review the output to see why
    - Deeply consider the generated TypeScript from the source Go code
    - Think about what the correct TypeScript output would look like with as minimal of a change as possible
+   - **If the test is too complex** (many cascading errors, large dependencies, or unclear root cause):
+     - Create a new, simpler compliance test that isolates a specific subset of the problem
+     - Name it descriptively (e.g., `method_async_call` for async method invocation issues)
+     - Focus on reproducing just one aspect of the failure in minimal code
+     - Fix the isolated test first, then return to the original complex test
 
 4. **Implementation Workflow**:
    - Review the code under `compiler/*.go` to determine what needs to be changed
