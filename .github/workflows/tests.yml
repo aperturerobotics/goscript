@@ -36,9 +36,6 @@ jobs:
       - name: Yarn install
         run: yarn install
 
-      - name: Install tsx
-        run: npm i -g tsx
-
       - name: Test Go
         run: go test -timeout=10m -v ./...
 
