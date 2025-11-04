@@ -20,7 +20,7 @@ export class Decoder {
 
 	// value is async because it uses channels
 	public async value(): Promise<$.GoError> {
-		let ch = $.makeChannel<number>(0, 0, 'both')
+		let ch = $.makeChannel<number>(1, 0, 'both') // Buffered channel to avoid deadlock
 		await $.chanSend(ch, 42)
 		return null
 	}
