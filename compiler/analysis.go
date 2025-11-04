@@ -152,10 +152,6 @@ type Analysis struct {
 	// This is used to determine interface method async status based on implementations
 	InterfaceImplementations map[InterfaceMethodKey][]ImplementationInfo
 
-	// InterfaceMethodAsyncStatus caches the async status determination for interface methods
-	// This is computed once during analysis and reused during code generation
-	InterfaceMethodAsyncStatus map[InterfaceMethodKey]bool
-
 	// MethodAsyncStatus stores the async status of all methods analyzed
 	// This is computed once during analysis and reused during code generation
 	MethodAsyncStatus map[MethodKey]bool
@@ -195,11 +191,10 @@ func NewAnalysis(allPackages map[string]*packages.Package) *Analysis {
 		ReflectedFunctions:  make(map[ast.Node]*ReflectedFunctionInfo),
 		FunctionAssignments: make(map[types.Object]ast.Node),
 		// PackageMetadata removed - using MethodAsyncStatus only
-		NamedBasicTypes:            make(map[types.Type]bool),
-		AllPackages:                allPackages,
-		InterfaceImplementations:   make(map[InterfaceMethodKey][]ImplementationInfo),
-		InterfaceMethodAsyncStatus: make(map[InterfaceMethodKey]bool),
-		MethodAsyncStatus:          make(map[MethodKey]bool),
+		NamedBasicTypes:          make(map[types.Type]bool),
+		AllPackages:              allPackages,
+		InterfaceImplementations: make(map[InterfaceMethodKey][]ImplementationInfo),
+		MethodAsyncStatus:        make(map[MethodKey]bool),
 	}
 }
 
@@ -1010,14 +1005,8 @@ func (v *analysisVisitor) visitTypeAssertExpr(typeAssert *ast.TypeAssertExpr) as
 		// Find the corresponding method in the struct type
 		structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
 		if structMethod != nil {
-			// Determine if this struct method is async using unified system
-			isAsync := false
-			if obj := structMethod; obj != nil {
-				isAsync = v.analysis.IsAsyncFunc(obj)
-			}
-
 			// Track this interface implementation
-			v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod, isAsync)
+			v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod)
 		}
 	}
 	return v
@@ -1694,7 +1683,7 @@ func (v *analysisVisitor) findVariableUsageInExpr(expr ast.Expr, lhsVarNames map
 }
 
 // trackInterfaceImplementation records that a struct type implements an interface method
-func (a *Analysis) trackInterfaceImplementation(interfaceType *types.Interface, structType *types.Named, method *types.Func, isAsync bool) {
+func (a *Analysis) trackInterfaceImplementation(interfaceType *types.Interface, structType *types.Named, method *types.Func) {
 	key := InterfaceMethodKey{
 		InterfaceType: interfaceType.String(),
 		MethodName:    method.Name(),
@@ -1715,37 +1704,25 @@ func (a *Analysis) IsInterfaceMethodAsync(interfaceType *types.Interface, method
 		MethodName:    methodName,
 	}
 
-	// Check if we've already computed this
-	if result, exists := a.InterfaceMethodAsyncStatus[key]; exists {
-		return result
-	}
-
 	// Find all implementations of this interface method
 	implementations, exists := a.InterfaceImplementations[key]
 	if !exists {
-		// No implementations found, default to sync
-		a.InterfaceMethodAsyncStatus[key] = false
 		return false
 	}
 
 	// If ANY implementation is async, the interface method is async
 	for _, impl := range implementations {
-		// Create method key for this implementation
 		methodKey := MethodKey{
 			PackagePath:  impl.StructType.Obj().Pkg().Path(),
 			ReceiverType: impl.StructType.Obj().Name(),
 			MethodName:   impl.Method.Name(),
 		}
 
-		// Check if this implementation is async
 		if isAsync, exists := a.MethodAsyncStatus[methodKey]; exists && isAsync {
-			a.InterfaceMethodAsyncStatus[key] = true
 			return true
 		}
 	}
 
-	// All implementations are sync
-	a.InterfaceMethodAsyncStatus[key] = false
 	return false
 }
 
@@ -1868,14 +1845,8 @@ func (v *analysisVisitor) trackTypeAssertion(typeAssert *ast.TypeAssertExpr) {
 		// Find the corresponding method in the struct type
 		structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
 		if structMethod != nil {
-			// Determine if this struct method is async using unified system
-			isAsync := false
-			if obj := structMethod; obj != nil {
-				isAsync = v.analysis.IsAsyncFunc(obj)
-			}
-
 			// Track this interface implementation
-			v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod, isAsync)
+			v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod)
 		}
 	}
 }
@@ -1992,10 +1963,7 @@ func (v *analysisVisitor) trackInterfaceAssignments(assignStmt *ast.AssignStmt) 
 
 			structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
 			if structMethod != nil {
-				// Determine if this struct method is async using unified system
-				isAsync := v.analysis.IsAsyncFunc(structMethod)
-
-				v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod, isAsync)
+				v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod)
 			}
 		}
 	}
@@ -2054,9 +2022,7 @@ func (v *analysisVisitor) trackInterfaceCallArguments(callExpr *ast.CallExpr) {
 
 			structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
 			if structMethod != nil {
-				// Note: Don't determine async status here - it will be determined later after method analysis
-				// For now, just track the implementation relationship without async status
-				v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod, false)
+				v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod)
 			}
 		}
 	}
@@ -2202,10 +2168,7 @@ func (v *interfaceImplementationVisitor) trackImplementation(interfaceType *type
 		// Find the method in the implementing type
 		structMethod := v.findMethodInType(namedType, interfaceMethod.Name())
 		if structMethod != nil {
-			// Determine if this implementation is async using unified system
-			isAsync := v.analysis.IsAsyncFunc(structMethod)
-
-			v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod, isAsync)
+			v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod)
 		}
 	}
 }
