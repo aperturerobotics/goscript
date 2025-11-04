@@ -1472,6 +1472,14 @@ func (a *Analysis) loadGsMetadata(metaFilePath string) *GsMetadata {
 	return &metadata
 }
 
+// isHandwrittenPackage checks if a package path corresponds to a handwritten package in gs/
+func (a *Analysis) isHandwrittenPackage(pkgPath string) bool {
+	// Check if the package exists in the embedded gs/ directory
+	metaFilePath := filepath.Join("gs", pkgPath, "meta.json")
+	_, err := goscript.GsOverrides.ReadFile(metaFilePath)
+	return err == nil
+}
+
 // IsMethodAsync checks if a method call is async based on package metadata
 func (a *Analysis) IsMethodAsync(pkgPath, typeName, methodName string) bool {
 	// First, check pre-computed method async status
@@ -2329,17 +2337,29 @@ func (v *analysisVisitor) analyzeMethodAsync(funcDecl *ast.FuncDecl, pkg *packag
 	// Determine if method is async
 	isAsync := false
 
-	// Determine if this is a truly external package vs a package being compiled locally
-	isExternalPackage := pkg.Types != v.pkg.Types && v.analysis.AllPackages[pkg.Types.Path()] == nil
+	// Determine if this is a handwritten package (from gs/ directory)
+	// Handwritten packages should not have their bodies analyzed
+	isHandwrittenPackage := v.analysis.isHandwrittenPackage(methodKey.PackagePath)
 
-	if isExternalPackage {
-		// Truly external package: check metadata first
-		isAsync = v.checkExternalMethodMetadata(methodKey.PackagePath, methodKey.ReceiverType, methodKey.MethodName)
+	// Check if we have pre-loaded metadata for this method (from handwritten gs/ packages)
+	metadataKey := MethodKey{
+		PackagePath:  methodKey.PackagePath,
+		ReceiverType: methodKey.ReceiverType,
+		MethodName:   methodKey.MethodName,
 	}
-	// If not determined async yet and body exists, analyze it
-	if !isAsync && funcDecl.Body != nil {
+	metadataIsAsync, hasMetadata := v.analysis.MethodAsyncStatus[metadataKey]
+
+	if hasMetadata {
+		// Use explicit metadata from handwritten packages (gs/)
+		isAsync = metadataIsAsync
+	} else if isHandwrittenPackage {
+		// Handwritten package but no explicit metadata: assume sync
+		isAsync = false
+	} else if funcDecl.Body != nil {
+		// Not a handwritten package and has body: analyze for async operations
 		isAsync = v.containsAsyncOperationsComplete(funcDecl.Body, pkg)
 	}
+	// Otherwise leave isAsync as false
 
 	// Store result in MethodAsyncStatus
 	v.analysis.MethodAsyncStatus[methodKey] = isAsync

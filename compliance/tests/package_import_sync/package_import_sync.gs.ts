@@ -45,14 +45,14 @@ export async function main(): Promise<void> {
 	console.log("Final counter:", counter)
 
 	// Test OnceFunc
-	let onceFunc = await sync.OnceFunc((): void => {
+	let onceFunc = sync.OnceFunc((): void => {
 		console.log("OnceFunc executed")
 	})
 	onceFunc!()
 	onceFunc!() // Should not execute again
 
 	// Test OnceValue
-	let onceValue = await sync.OnceValue((): number => {
+	let onceValue = sync.OnceValue((): number => {
 		console.log("OnceValue function executed")
 		return 42
 	})
@@ -98,10 +98,10 @@ export async function main(): Promise<void> {
 		return "new object"
 	}})
 
-	let obj1 = await pool!.Get()
+	let obj1 = pool!.Get()
 	console.log("Got from pool:", obj1)
-	await pool!.Put("reused object")
-	let obj2 = await pool!.Get()
+	pool!.Put("reused object")
+	let obj2 = pool!.Get()
 	console.log("Got from pool:", obj2)
 
 	console.log("test finished")

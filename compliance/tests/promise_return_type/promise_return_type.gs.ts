@@ -68,7 +68,7 @@ export class AsyncData {
 export async function processData(d: AsyncData | null): Promise<void> {
 	// This should await the async method call
 	let result = await d!.GetValue()
-	await fmt.Printf("Result: %d\n", result)
+	fmt.Printf("Result: %d\n", result)
 }
 
 export async function main(): Promise<void> {

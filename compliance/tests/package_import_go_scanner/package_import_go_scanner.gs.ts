@@ -1,4 +1,4 @@
-// Generated file based on main.go
+// Generated file based on package_import_go_scanner.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
 import * as $ from "@goscript/builtin/index.js"
@@ -17,6 +17,6 @@ export async function main(): Promise<void> {
 	let pos = $.markAsStructValue(new token.Position({Column: 1, Filename: "test.go", Line: 1}))
 	scanner.ErrorList_Add(errorList, pos, "test error")
 
-	await fmt.Printf("ErrorList length: %d\n", $.len(errorList!.value))
+	fmt.Printf("ErrorList length: %d\n", $.len(errorList!.value))
 }
 

@@ -270,7 +270,7 @@ export class Scanner {
 	public async Init(file: token.File | null, src: $.Bytes, err: ErrorHandler | null, mode: Mode): Promise<void> {
 		const s = this
 		if (file!.Size() != $.len(src)) {
-			$.panic(await fmt.Sprintf("file size (%d) does not match src len (%d)", file!.Size(), $.len(src)))
+			$.panic(fmt.Sprintf("file size (%d) does not match src len (%d)", file!.Size(), $.len(src)))
 		}
 		s.file = file
 		{
@@ -302,7 +302,7 @@ export class Scanner {
 
 	public async errorf(offs: number, format: string, ...args: any[]): Promise<void> {
 		const s = this
-		await s.error(offs, await fmt.Sprintf(format, ...(args ?? [])))
+		await s.error(offs, fmt.Sprintf(format, ...(args ?? [])))
 	}
 
 	// scanComment returns the text of the comment and (if nonzero)
@@ -665,7 +665,7 @@ export class Scanner {
 		for (; n > 0; ) {
 			let d = (digitVal(s.ch) as number)
 			if (d >= base) {
-				let msg = await fmt.Sprintf("illegal character %#U in escape sequence", s.ch)
+				let msg = fmt.Sprintf("illegal character %#U in escape sequence", s.ch)
 				if (s.ch < 0) {
 					msg = "escape sequence not terminated"
 				}
