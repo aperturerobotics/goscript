@@ -122,12 +122,14 @@ export function ErrorList_RemoveMultiples(p: $.VarRef<ErrorList>): void {
 
 export function ErrorList_Error(p: ErrorList): string {
 	switch ($.len(p)) {
-		case 0:
+		case 0: {
 			return "no errors"
 			break
-		case 1:
+		}
+		case 1: {
 			return p![0]!.Error()
 			break
+		}
 	}
 	return fmt.Sprintf("%s (and %d more errors)", p![0], $.len(p) - 1)
 }

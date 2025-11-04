@@ -105,15 +105,18 @@ export class MockFile {
 	public Seek(offset: number, whence: number): [number, $.GoError] {
 		const m = this
 		switch (whence) {
-			case 0:
+			case 0: {
 				m.position = offset
 				break
-			case 1:
+			}
+			case 1: {
 				m.position += offset
 				break
-			case 2:
+			}
+			case 2: {
 				m.position = ($.len(m.content) as number) + offset
 				break
+			}
 		}
 		return [m.position, null]
 	}

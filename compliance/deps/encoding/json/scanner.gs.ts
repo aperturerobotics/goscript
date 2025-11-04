@@ -334,38 +334,46 @@ export function stateBeginValue(s: scanner | null, c: number): number {
 
 	// beginning of null
 	switch (c) {
-		case 123:
+		case 123: {
 			s!.step = stateBeginStringOrEmpty
 			return s!.pushParseState(c, 0, 2)
 			break
-		case 91:
+		}
+		case 91: {
 			s!.step = stateBeginValueOrEmpty
 			return s!.pushParseState(c, 2, 6)
 			break
-		case 34:
+		}
+		case 34: {
 			s!.step = stateInString
 			return 1
 			break
-		case 45:
+		}
+		case 45: {
 			s!.step = stateNeg
 			return 1
 			break
-		case 48:
+		}
+		case 48: {
 			s!.step = state0
 			return 1
 			break
-		case 116:
+		}
+		case 116: {
 			s!.step = stateT
 			return 1
 			break
-		case 102:
+		}
+		case 102: {
 			s!.step = stateF
 			return 1
 			break
-		case 110:
+		}
+		case 110: {
 			s!.step = stateN
 			return 1
 			break
+		}
 	}
 	// beginning of 1234.5
 	if (49 <= c && c <= 57) {
@@ -419,7 +427,7 @@ export function stateEndValue(s: scanner | null, c: number): number {
 	}
 	let ps = s!.parseState![n - 1]
 	switch (ps) {
-		case 0:
+		case 0: {
 			if (c == 58) {
 				s!.parseState![n - 1] = 1
 				s!.step = stateBeginValue
@@ -427,7 +435,8 @@ export function stateEndValue(s: scanner | null, c: number): number {
 			}
 			return s!.error(c, "after object key")
 			break
-		case 1:
+		}
+		case 1: {
 			if (c == 44) {
 				s!.parseState![n - 1] = 0
 				s!.step = stateBeginString
@@ -439,7 +448,8 @@ export function stateEndValue(s: scanner | null, c: number): number {
 			}
 			return s!.error(c, "after object key:value pair")
 			break
-		case 2:
+		}
+		case 2: {
 			if (c == 44) {
 				s!.step = stateBeginValue
 				return 7
@@ -450,6 +460,7 @@ export function stateEndValue(s: scanner | null, c: number): number {
 			}
 			return s!.error(c, "after array element")
 			break
+		}
 	}
 	return s!.error(c, "")
 }
@@ -493,14 +504,16 @@ export function stateInStringEsc(s: scanner | null, c: number): number {
 		case 116:
 		case 92:
 		case 47:
-		case 34:
+		case 34: {
 			s!.step = stateInString
 			return 0
 			break
-		case 117:
+		}
+		case 117: {
 			s!.step = stateInStringEscU
 			return 0
 			break
+		}
 	}
 	return s!.error(c, "in string escape code")
 }

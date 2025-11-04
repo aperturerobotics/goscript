@@ -7,47 +7,57 @@ export async function main(): Promise<void> {
 	let i = 2
 	console.log("Integer switch:")
 	switch (i) {
-		case 1:
+		case 1: {
 			console.log("one")
 			break
-		case 2:
+		}
+		case 2: {
 			console.log("two")
 			break
-		case 3:
+		}
+		case 3: {
 			console.log("three")
 			break
-		default:
+		}
+		default: {
 			console.log("other integer")
 			break
+		}
 	}
 
 	let s = "hello"
 	console.log("\nString switch:")
 	switch (s) {
-		case "world":
+		case "world": {
 			console.log("world")
 			break
-		case "hello":
+		}
+		case "hello": {
 			console.log("hello")
 			break
-		default:
+		}
+		default: {
 			console.log("other string")
 			break
+		}
 	}
 	let x = -5
 	console.log("\nSwitch without expression:")
 
 	// x > 0
 	switch (true) {
-		case x < 0:
+		case x < 0: {
 			console.log("negative")
 			break
-		case x == 0:
+		}
+		case x == 0: {
 			console.log("zero")
 			break
-		default:
+		}
+		default: {
 			console.log("positive")
 			break
+		}
 	}
 
 	x = 0
@@ -55,15 +65,18 @@ export async function main(): Promise<void> {
 
 	// x > 0
 	switch (true) {
-		case x < 0:
+		case x < 0: {
 			console.log("negative")
 			break
-		case x == 0:
+		}
+		case x == 0: {
 			console.log("zero")
 			break
-		default:
+		}
+		default: {
 			console.log("positive")
 			break
+		}
 	}
 
 	x = 10
@@ -71,15 +84,18 @@ export async function main(): Promise<void> {
 
 	// x > 0
 	switch (true) {
-		case x < 0:
+		case x < 0: {
 			console.log("negative")
 			break
-		case x == 0:
+		}
+		case x == 0: {
 			console.log("zero")
 			break
-		default:
+		}
+		default: {
 			console.log("positive")
 			break
+		}
 	}
 }
 

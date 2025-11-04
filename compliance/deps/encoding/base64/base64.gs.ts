@@ -93,12 +93,14 @@ export class Encoding {
 	public WithPadding(padding: number): Encoding | null {
 		const enc = this
 		switch (true) {
-			case padding < -1 || padding == 13 || padding == 10 || padding > 0xff:
+			case padding < -1 || padding == 13 || padding == 10 || padding > 0xff: {
 				$.panic("invalid padding")
 				break
-			case padding != -1 && enc.decodeMap![$.byte(padding)] != 255:
+			}
+			case padding != -1 && enc.decodeMap![$.byte(padding)] != 255: {
 				$.panic("padding contained in alphabet")
 				break
+			}
 		}
 		enc.padChar = padding
 		return enc
@@ -153,18 +155,20 @@ export class Encoding {
 		dst![di + 0] = enc.encode![((val >> 18) & 0x3F)]
 		dst![di + 1] = enc.encode![((val >> 12) & 0x3F)]
 		switch (remain) {
-			case 2:
+			case 2: {
 				dst![di + 2] = enc.encode![((val >> 6) & 0x3F)]
 				if (enc.padChar != -1) {
 					dst![di + 3] = $.byte(enc.padChar)
 				}
 				break
-			case 1:
+			}
+			case 1: {
 				if (enc.padChar != -1) {
 					dst![di + 2] = $.byte(enc.padChar)
 					dst![di + 3] = $.byte(enc.padChar)
 				}
 				break
+			}
 		}
 	}
 
@@ -212,13 +216,15 @@ export class Encoding {
 		for (let j = 0; j < $.len(dbuf); j++) {
 			if ($.len(src) == si) {
 				switch (true) {
-					case j == 0:
+					case j == 0: {
 						return [si, 0, null]
 						break
+					}
 					case j == 1:
-					case enc.padChar != -1:
+					case enc.padChar != -1: {
 						return [si, 0, (si - j as CorruptInputError)]
 						break
+					}
 				}
 				dlen = j
 				break
@@ -253,10 +259,11 @@ export class Encoding {
 			// incorrect padding
 			switch (j) {
 				case 0:
-				case 1:
+				case 1: {
 					return [si, 0, (si - 1 as CorruptInputError)]
 					break
-				case 2:
+				}
+				case 2: {
 					for (; si < $.len(src) && (src![si] == 10 || src![si] == 13); ) {
 						si++
 					}
@@ -270,6 +277,7 @@ export class Encoding {
 					}
 					si++
 					break
+				}
 			}
 
 			// skip over newlines
@@ -288,12 +296,13 @@ export class Encoding {
 		let val = (((((dbuf![0] as number) << 18) | ((dbuf![1] as number) << 12)) | ((dbuf![2] as number) << 6)) | (dbuf![3] as number))
 		;[dbuf![2], dbuf![1], dbuf![0]] = [$.byte((val >> 0)), $.byte((val >> 8)), $.byte((val >> 16))]
 		switch (dlen) {
-			case 4:
+			case 4: {
 				dst![2] = dbuf![2]
 				dbuf![2] = 0
 				// fallthrough // fallthrough statement skipped
 				break
-			case 3:
+			}
+			case 3: {
 				dst![1] = dbuf![1]
 				if (enc.strict && dbuf![2] != 0) {
 					return [si, 0, (si - 1 as CorruptInputError)]
@@ -301,12 +310,14 @@ export class Encoding {
 				dbuf![1] = 0
 				// fallthrough // fallthrough statement skipped
 				break
-			case 2:
+			}
+			case 2: {
 				dst![0] = dbuf![0]
 				if (enc.strict && (dbuf![1] != 0 || dbuf![2] != 0)) {
 					return [si, 0, (si - 2 as CorruptInputError)]
 				}
 				break
+			}
 		}
 		return [si, dlen - 1, err]
 	}
@@ -860,12 +871,14 @@ export function NewEncoding(encoder: string): Encoding | null {
 		// the padding character, we do not enforce it since we do not know
 		// if the caller intends to switch the padding from StdPadding later.
 		switch (true) {
-			case $.indexString(encoder, i) == 10 || $.indexString(encoder, i) == 13:
+			case $.indexString(encoder, i) == 10 || $.indexString(encoder, i) == 13: {
 				$.panic("encoding alphabet contains newline character")
 				break
-			case e!.decodeMap![$.indexString(encoder, i)] != 255:
+			}
+			case e!.decodeMap![$.indexString(encoder, i)] != 255: {
 				$.panic("encoding alphabet includes duplicate symbols")
 				break
+			}
 		}
 		e!.decodeMap![$.indexString(encoder, i)] = (i as number)
 	}

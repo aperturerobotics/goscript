@@ -178,19 +178,22 @@ export function appendIndent(dst: $.Bytes, src: $.Bytes, prefix: string, indent:
 			// suppress indent in empty object/array
 			switch (c) {
 				case 123:
-				case 91:
+				case 91: {
 					needIndent = true
 					dst = $.append(dst, c)
 					break
-				case 44:
+				}
+				case 44: {
 					dst = $.append(dst, c)
 					dst = appendNewline(dst, prefix, indent, depth)
 					break
-				case 58:
+				}
+				case 58: {
 					dst = $.append(dst, c, 32)
 					break
+				}
 				case 125:
-				case 93:
+				case 93: {
 					if (needIndent) {
 						// suppress indent in empty object/array
 						needIndent = false
@@ -201,9 +204,11 @@ export function appendIndent(dst: $.Bytes, src: $.Bytes, prefix: string, indent:
 					}
 					dst = $.append(dst, c)
 					break
-				default:
+				}
+				default: {
 					dst = $.append(dst, c)
 					break
+				}
 			}
 		}
 	}

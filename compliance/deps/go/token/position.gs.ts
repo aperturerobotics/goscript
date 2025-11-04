@@ -737,19 +737,22 @@ export class File {
 	public fixOffset(offset: number): number {
 		const f = this
 		switch (true) {
-			case offset < 0:
+			case offset < 0: {
 				if (!false) {
 					return 0
 				}
 				break
-			case offset > f.size:
+			}
+			case offset > f.size: {
 				if (!false) {
 					return f.size
 				}
 				break
-			default:
+			}
+			default: {
 				return offset
 				break
+			}
 		}
 		if (false) {
 

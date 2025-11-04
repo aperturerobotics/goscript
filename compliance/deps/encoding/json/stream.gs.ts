@@ -220,21 +220,24 @@ export class Decoder {
 				// We might block trying to get that byte from src,
 				// so instead invent a space byte.
 				switch (dec.scan.step(dec.scan, c)) {
-					case 10:
+					case 10: {
 						dec.scan.bytes--
 						break
 						break
+					}
 					case 5:
-					case 8:
+					case 8: {
 						if (stateEndValue(dec.scan, 32) == 10) {
 							scanp++
 							break
 						}
 						break
-					case 11:
+					}
+					case 11: {
 						dec.err = dec.scan.err
 						return [0, dec.scan.err]
 						break
+					}
 				}
 			}
 
@@ -283,7 +286,7 @@ export class Decoder {
 	public tokenPrepareForDecode(): $.GoError {
 		const dec = this
 		switch (dec.tokenState) {
-			case 3:
+			case 3: {
 				let [c, err] = dec.peek()
 				if (err != null) {
 					return err
@@ -294,7 +297,8 @@ export class Decoder {
 				dec.scanp++
 				dec.tokenState = 2
 				break
-			case 6:
+			}
+			case 6: {
 				let [c, err] = dec.peek()
 				if (err != null) {
 					return err
@@ -305,6 +309,7 @@ export class Decoder {
 				dec.scanp++
 				dec.tokenState = 7
 				break
+			}
 		}
 		return null
 	}
@@ -315,9 +320,10 @@ export class Decoder {
 			case 0:
 			case 1:
 			case 2:
-			case 7:
+			case 7: {
 				return true
 				break
+			}
 		}
 		return false
 	}
@@ -326,12 +332,14 @@ export class Decoder {
 		const dec = this
 		switch (dec.tokenState) {
 			case 1:
-			case 2:
+			case 2: {
 				dec.tokenState = 3
 				break
-			case 7:
+			}
+			case 7: {
 				dec.tokenState = 8
 				break
+			}
 		}
 	}
 
@@ -354,7 +362,7 @@ export class Decoder {
 				return [null, err]
 			}
 			switch (c) {
-				case 91:
+				case 91: {
 					if (!dec.tokenValueAllowed()) {
 						return dec.tokenError(c)
 					}
@@ -363,7 +371,8 @@ export class Decoder {
 					dec.tokenState = 1
 					return [(91 as Delim), null]
 					break
-				case 93:
+				}
+				case 93: {
 					if (dec.tokenState != 1 && dec.tokenState != 3) {
 						return dec.tokenError(c)
 					}
@@ -373,7 +382,8 @@ export class Decoder {
 					dec.tokenValueEnd()
 					return [(93 as Delim), null]
 					break
-				case 123:
+				}
+				case 123: {
 					if (!dec.tokenValueAllowed()) {
 						return dec.tokenError(c)
 					}
@@ -382,7 +392,8 @@ export class Decoder {
 					dec.tokenState = 4
 					return [(123 as Delim), null]
 					break
-				case 125:
+				}
+				case 125: {
 					if (dec.tokenState != 4 && dec.tokenState != 8) {
 						return dec.tokenError(c)
 					}
@@ -392,7 +403,8 @@ export class Decoder {
 					dec.tokenValueEnd()
 					return [(125 as Delim), null]
 					break
-				case 58:
+				}
+				case 58: {
 					if (dec.tokenState != 6) {
 						return dec.tokenError(c)
 					}
@@ -400,7 +412,8 @@ export class Decoder {
 					dec.tokenState = 7
 					continue
 					break
-				case 44:
+				}
+				case 44: {
 					if (dec.tokenState == 3) {
 						dec.scanp++
 						dec.tokenState = 2
@@ -413,7 +426,8 @@ export class Decoder {
 					}
 					return dec.tokenError(c)
 					break
-				case 34:
+				}
+				case 34: {
 					if (dec.tokenState == 4 || dec.tokenState == 5) {
 						let x: string = ""
 						let old = dec.tokenState
@@ -428,7 +442,8 @@ export class Decoder {
 					}
 					// fallthrough // fallthrough statement skipped
 					break
-				default:
+				}
+				default: {
 					if (!dec.tokenValueAllowed()) {
 						return dec.tokenError(c)
 					}
@@ -441,6 +456,7 @@ export class Decoder {
 					}
 					return [x, null]
 					break
+				}
 			}
 		}
 	}
@@ -449,26 +465,32 @@ export class Decoder {
 		const dec = this
 		let context: string = ""
 		switch (dec.tokenState) {
-			case 0:
+			case 0: {
 				context = " looking for beginning of value"
 				break
+			}
 			case 1:
 			case 2:
-			case 7:
+			case 7: {
 				context = " looking for beginning of value"
 				break
-			case 3:
+			}
+			case 3: {
 				context = " after array element"
 				break
-			case 5:
+			}
+			case 5: {
 				context = " looking for beginning of object key string"
 				break
-			case 6:
+			}
+			case 6: {
 				context = " after object key"
 				break
-			case 8:
+			}
+			case 8: {
 				context = " after object key:value pair"
 				break
+			}
 		}
 		return [null, new SyntaxError({})]
 	}

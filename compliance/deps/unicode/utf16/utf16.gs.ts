@@ -53,15 +53,18 @@ export function EncodeRune(r: number): number {
 export function RuneLen(r: number): number {
 	switch (true) {
 		case 0 <= r && r < 55296:
-		case 57344 <= r && r < 65536:
+		case 57344 <= r && r < 65536: {
 			return 1
 			break
-		case 65536 <= r && r <= 1114111:
+		}
+		case 65536 <= r && r <= 1114111: {
 			return 2
 			break
-		default:
+		}
+		default: {
 			return -1
 			break
+		}
 	}
 }
 
@@ -91,20 +94,23 @@ export function Encode(s: $.Slice<number>): $.Slice<number> {
 
 			// needs surrogate sequence
 			switch (RuneLen(v)) {
-				case 1:
+				case 1: {
 					a![n] = (v as number)
 					n++
 					break
-				case 2:
+				}
+				case 2: {
 					let [r1, r2] = EncodeRune(v)
 					a![n] = (r1 as number)
 					a![n + 1] = (r2 as number)
 					n += 2
 					break
-				default:
+				}
+				default: {
 					a![n] = (65533 as number)
 					n++
 					break
+				}
 			}
 		}
 	}
@@ -122,13 +128,15 @@ export function AppendRune(a: $.Slice<number>, r: number): $.Slice<number> {
 	// needs surrogate sequence
 	switch (true) {
 		case 0 <= r && r < 55296:
-		case 57344 <= r && r < 65536:
+		case 57344 <= r && r < 65536: {
 			return $.append(a, (r as number))
 			break
-		case 65536 <= r && r <= 1114111:
+		}
+		case 65536 <= r && r <= 1114111: {
 			let [r1, r2] = EncodeRune(r)
 			return $.append(a, (r1 as number), (r2 as number))
 			break
+		}
 	}
 	return $.append(a, 65533)
 }
@@ -162,16 +170,19 @@ export function decode(s: $.Slice<number>, buf: $.Slice<number>): $.Slice<number
 		{let r = s![i]
 			switch (true) {
 				case r < 55296:
-				case 57344 <= r:
+				case 57344 <= r: {
 					ar = (r as number)
 					break
-				case 55296 <= r && r < 56320 && i + 1 < $.len(s) && 56320 <= s![i + 1] && s![i + 1] < 57344:
+				}
+				case 55296 <= r && r < 56320 && i + 1 < $.len(s) && 56320 <= s![i + 1] && s![i + 1] < 57344: {
 					ar = DecodeRune((r as number), (s![i + 1] as number))
 					i++
 					break
-				default:
+				}
+				default: {
 					ar = 65533
 					break
+				}
 			}
 		}buf = $.append(buf, ar)
 	}

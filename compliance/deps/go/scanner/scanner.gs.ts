@@ -203,10 +203,11 @@ export class Scanner {
 
 			// consume all input to avoid error cascade
 			switch (true) {
-				case r == 0:
+				case r == 0: {
 					await s.error(s.offset, "illegal character NUL")
 					break
-				case r >= utf8.RuneSelf:
+				}
+				case r >= utf8.RuneSelf: {
 					;[r, w] = utf8.DecodeRune($.goSlice(s.src, s.rdOffset, undefined))
 					if (r == utf8.RuneError && w == 1) {
 						let _in = $.goSlice(s.src, s.rdOffset, undefined)
@@ -229,6 +230,7 @@ export class Scanner {
 						await s.error(s.offset, "illegal byte order mark")
 					}
 					break
+				}
 			}
 			s.rdOffset += w
 			s.ch = r
@@ -531,22 +533,26 @@ export class Scanner {
 
 				// leading 0
 				switch (lower(s.ch)) {
-					case 120:
+					case 120: {
 						await s.next()
 						;[base, prefix] = [16, 120]
 						break
-					case 111:
+					}
+					case 111: {
 						await s.next()
 						;[base, prefix] = [8, 111]
 						break
-					case 98:
+					}
+					case 98: {
 						await s.next()
 						;[base, prefix] = [2, 98]
 						break
-					default:
+					}
+					default: {
 						;[base, prefix] = [8, 48]
 						digsep = 1
 						break
+					}
 				}
 			}
 			digsep |= await s.digits(base, invalid)
@@ -566,12 +572,14 @@ export class Scanner {
 			let e = lower(s.ch)
 			if (e == 101 || e == 112) {
 				switch (true) {
-					case e == 101 && prefix != 0 && prefix != 48:
+					case e == 101 && prefix != 0 && prefix != 48: {
 						await s.errorf(s.offset, "%q exponent requires decimal mantissa", s.ch)
 						break
-					case e == 112 && prefix != 120:
+					}
+					case e == 112 && prefix != 120: {
 						await s.errorf(s.offset, "%q exponent requires hexadecimal mantissa", s.ch)
 						break
+					}
 				}
 				await s.next()
 				tok = token.FLOAT
@@ -626,10 +634,11 @@ export class Scanner {
 			case 116:
 			case 118:
 			case 92:
-			case quote:
+			case quote: {
 				await s.next()
 				return true
 				break
+			}
 			case 48:
 			case 49:
 			case 50:
@@ -637,22 +646,26 @@ export class Scanner {
 			case 52:
 			case 53:
 			case 54:
-			case 55:
+			case 55: {
 				;[n, base, max] = [3, 8, 255]
 				break
-			case 120:
+			}
+			case 120: {
 				await s.next()
 				;[n, base, max] = [2, 16, 255]
 				break
-			case 117:
+			}
+			case 117: {
 				await s.next()
 				;[n, base, max] = [4, 16, unicode.MaxRune]
 				break
-			case 85:
+			}
+			case 85: {
 				await s.next()
 				;[n, base, max] = [8, 16, unicode.MaxRune]
 				break
-			default:
+			}
+			default: {
 				let msg = "unknown escape sequence"
 				if (s.ch < 0) {
 					msg = "escape sequence not terminated"
@@ -660,6 +673,7 @@ export class Scanner {
 				await s.error(offs, msg)
 				return false
 				break
+			}
 		}
 		let x: number = 0
 		for (; n > 0; ) {
@@ -860,7 +874,7 @@ export class Scanner {
 		let insertSemi = false
 		{let ch = s.ch
 			switch (true) {
-				case isLetter(ch):
+				case isLetter(ch): {
 					lit = await s.scanIdentifier()
 					if ($.len(lit) > 1) {
 						// keywords are longer than one letter - avoid lookup otherwise
@@ -870,9 +884,10 @@ export class Scanner {
 							case token.BREAK:
 							case token.CONTINUE:
 							case token.FALLTHROUGH:
-							case token.RETURN:
+							case token.RETURN: {
 								insertSemi = true
 								break
+							}
 						}
 					}
 					 else {
@@ -880,43 +895,51 @@ export class Scanner {
 						tok = token.IDENT
 					}
 					break
-				case isDecimal(ch) || ch == 46 && isDecimal((s.peek() as number)):
+				}
+				case isDecimal(ch) || ch == 46 && isDecimal((s.peek() as number)): {
 					insertSemi = true
 					;[tok, lit] = await s.scanNumber()
 					break
-				default:
+				}
+				default: {
 					await s.next() // always make progress
 					switch (ch) {
-						case -1:
+						case -1: {
 							if (s.insertSemi) {
 								s.insertSemi = false // EOF consumed
 								return [pos, token.SEMICOLON, "\n"]
 							}
 							tok = token.EOF
 							break
-						case 10:
+						}
+						case 10: {
 							s.insertSemi = false // newline consumed
 							return [pos, token.SEMICOLON, "\n"]
 							break
-						case 34:
+						}
+						case 34: {
 							insertSemi = true
 							tok = token.STRING
 							lit = await s.scanString()
 							break
-						case 39:
+						}
+						case 39: {
 							insertSemi = true
 							tok = token.CHAR
 							lit = await s.scanRune()
 							break
-						case 96:
+						}
+						case 96: {
 							insertSemi = true
 							tok = token.STRING
 							lit = await s.scanRawString()
 							break
-						case 58:
+						}
+						case 58: {
 							tok = await s.switch2(token.COLON, token.DEFINE)
 							break
-						case 46:
+						}
+						case 46: {
 							tok = token.PERIOD
 							if (s.ch == 46 && s.peek() == 46) {
 								await s.next()
@@ -924,50 +947,62 @@ export class Scanner {
 								tok = token.ELLIPSIS
 							}
 							break
-						case 44:
+						}
+						case 44: {
 							tok = token.COMMA
 							break
-						case 59:
+						}
+						case 59: {
 							tok = token.SEMICOLON
 							lit = ";"
 							break
-						case 40:
+						}
+						case 40: {
 							tok = token.LPAREN
 							break
-						case 41:
+						}
+						case 41: {
 							insertSemi = true
 							tok = token.RPAREN
 							break
-						case 91:
+						}
+						case 91: {
 							tok = token.LBRACK
 							break
-						case 93:
+						}
+						case 93: {
 							insertSemi = true
 							tok = token.RBRACK
 							break
-						case 123:
+						}
+						case 123: {
 							tok = token.LBRACE
 							break
-						case 125:
+						}
+						case 125: {
 							insertSemi = true
 							tok = token.RBRACE
 							break
-						case 43:
+						}
+						case 43: {
 							tok = await s.switch3(token.ADD, token.ADD_ASSIGN, 43, token.INC)
 							if (tok == token.INC) {
 								insertSemi = true
 							}
 							break
-						case 45:
+						}
+						case 45: {
 							tok = await s.switch3(token.SUB, token.SUB_ASSIGN, 45, token.DEC)
 							if (tok == token.DEC) {
 								insertSemi = true
 							}
 							break
-						case 42:
+						}
+						case 42: {
 							tok = await s.switch2(token.MUL, token.MUL_ASSIGN)
 							break
-						case 47:
+						}
+						case 47: {
 							if (s.ch == 47 || s.ch == 42) {
 								// comment
 								let [comment, nlOffset] = await s.scanComment()
@@ -999,13 +1034,16 @@ export class Scanner {
 								tok = await s.switch2(token.QUO, token.QUO_ASSIGN)
 							}
 							break
-						case 37:
+						}
+						case 37: {
 							tok = await s.switch2(token.REM, token.REM_ASSIGN)
 							break
-						case 94:
+						}
+						case 94: {
 							tok = await s.switch2(token.XOR, token.XOR_ASSIGN)
 							break
-						case 60:
+						}
+						case 60: {
 							if (s.ch == 45) {
 								await s.next()
 								tok = token.ARROW
@@ -1014,16 +1052,20 @@ export class Scanner {
 								tok = await s.switch4(token.LSS, token.LEQ, 60, token.SHL, token.SHL_ASSIGN)
 							}
 							break
-						case 62:
+						}
+						case 62: {
 							tok = await s.switch4(token.GTR, token.GEQ, 62, token.SHR, token.SHR_ASSIGN)
 							break
-						case 61:
+						}
+						case 61: {
 							tok = await s.switch2(token.ASSIGN, token.EQL)
 							break
-						case 33:
+						}
+						case 33: {
 							tok = await s.switch2(token.NOT, token.NEQ)
 							break
-						case 38:
+						}
+						case 38: {
 							if (s.ch == 94) {
 								await s.next()
 								tok = await s.switch2(token.AND_NOT, token.AND_NOT_ASSIGN)
@@ -1032,13 +1074,16 @@ export class Scanner {
 								tok = await s.switch3(token.AND, token.AND_ASSIGN, 38, token.LAND)
 							}
 							break
-						case 124:
+						}
+						case 124: {
 							tok = await s.switch3(token.OR, token.OR_ASSIGN, 124, token.LOR)
 							break
-						case 126:
+						}
+						case 126: {
 							tok = token.TILDE
 							break
-						default:
+						}
+						default: {
 							if (ch != 65279) {
 								// Report an informative error for U+201[CD] quotation
 								// marks, which are easily introduced via copy and paste.
@@ -1053,8 +1098,10 @@ export class Scanner {
 							tok = token.ILLEGAL
 							lit = $.runeOrStringToString(ch)
 							break
+						}
 					}
 					break
+				}
 			}
 		}if ((s.mode & 2) == 0) {
 			s.insertSemi = insertSemi
@@ -1096,12 +1143,14 @@ export function isDigit(ch: number): boolean {
 
 export function digitVal(ch: number): number {
 	switch (true) {
-		case 48 <= ch && ch <= 57:
+		case 48 <= ch && ch <= 57: {
 			return $.int(ch - 48)
 			break
-		case 97 <= lower(ch) && lower(ch) <= 102:
+		}
+		case 97 <= lower(ch) && lower(ch) <= 102: {
 			return $.int(lower(ch) - 97 + 10)
 			break
+		}
 	}
 	return 16
 }
@@ -1120,16 +1169,19 @@ export function isHex(ch: number): boolean {
 
 export function litname(prefix: number): string {
 	switch (prefix) {
-		case 120:
+		case 120: {
 			return "hexadecimal literal"
 			break
+		}
 		case 111:
-		case 48:
+		case 48: {
 			return "octal literal"
 			break
-		case 98:
+		}
+		case 98: {
 			return "binary literal"
 			break
+		}
 	}
 	return "decimal literal"
 }
@@ -1156,20 +1208,23 @@ export function invalidSep(x: string): number {
 		let p = d // previous digit
 		d = ($.indexString(x, i) as number)
 		switch (true) {
-			case d == 95:
+			case d == 95: {
 				if (p != 48) {
 					return i
 				}
 				break
-			case isDecimal(d) || x1 == 120 && isHex(d):
+			}
+			case isDecimal(d) || x1 == 120 && isHex(d): {
 				d = 48
 				break
-			default:
+			}
+			default: {
 				if (p == 95) {
 					return i - 1
 				}
 				d = 46
 				break
+			}
 		}
 	}
 	if (d == 95) {

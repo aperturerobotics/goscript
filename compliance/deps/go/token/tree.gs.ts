@@ -142,18 +142,22 @@ export class tree {
 	// (pos, parent), a result pair from [tree.locate].
 	public nextAfter(pos: $.VarRef<node | null> | null, parent: node | null): node | null {
 		switch (true) {
-			case pos!.value != null:
+			case pos!.value != null: {
 				return (pos!.value)!.next()
 				break
-			case parent == null:
+			}
+			case parent == null: {
 				return null
 				break
-			case (pos === parent!.left):
+			}
+			case (pos === parent!.left): {
 				return parent
 				break
-			default:
+			}
+			default: {
 				return parent!.next()
 				break
+			}
 		}
 	}
 
@@ -168,21 +172,25 @@ export class tree {
 	public replaceChild(parent: node | null, old: node | null, _new: node | null): void {
 		const t = this
 		switch (true) {
-			case parent == null:
+			case parent == null: {
 				if ((t.root !== old)) {
 					$.panic("corrupt tree")
 				}
 				t.setRoot(_new)
 				break
-			case (parent!.left === old):
+			}
+			case (parent!.left === old): {
 				parent!.setLeft(_new)
 				break
-			case (parent!.right === old):
+			}
+			case (parent!.right === old): {
 				parent!.setRight(_new)
 				break
-			default:
+			}
+			default: {
 				$.panic("corrupt tree")
 				break
+			}
 		}
 	}
 
@@ -198,18 +206,20 @@ export class tree {
 			let h = x!.height
 			x!.update()
 			switch (x!.balance) {
-				case -2:
+				case -2: {
 					if (x!.left!.balance == 1) {
 						t.rotateLeft(x!.left)
 					}
 					x = t.rotateRight(x)
 					break
-				case +2:
+				}
+				case +2: {
 					if (x!.right!.balance == -1) {
 						t.rotateRight(x!.right)
 					}
 					x = t.rotateLeft(x)
 					break
+				}
 			}
 
 			// x's height has not changed, so the height
@@ -304,13 +314,14 @@ export class tree {
 		null
 		let x = pos!.value
 		switch (true) {
-			case x == null:
+			case x == null: {
 				if (true) {
 					$.panic("unreachable according to current FileSet requirements")
 				}
 				return 
 				break
-			case x!.left == null:
+			}
+			case x!.left == null: {
 				{
 					pos!.value = x!.right
 					if (pos!.value != null) {
@@ -319,14 +330,17 @@ export class tree {
 				}
 				t.rebalanceUp(x!.parent)
 				break
-			case x!.right == null:
+			}
+			case x!.right == null: {
 				pos!.value = x!.left
 				x!.left!.parent = x!.parent
 				t.rebalanceUp(x!.parent)
 				break
-			default:
+			}
+			default: {
 				t.deleteSwap(pos)
 				break
+			}
 		}
 		x!.balance = -100
 		x!.parent = null
@@ -571,12 +585,14 @@ export class node {
 // even at the start or end of a file.
 export function compareKey(x: key, y: key): number {
 	switch (true) {
-		case x.end < y.start:
+		case x.end < y.start: {
 			return -1
 			break
-		case y.end < x.start:
+		}
+		case y.end < x.start: {
 			return +1
 			break
+		}
 	}
 	return 0
 }

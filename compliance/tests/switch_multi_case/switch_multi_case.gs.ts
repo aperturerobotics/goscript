@@ -24,37 +24,43 @@ export async function main(): Promise<void> {
 
 	switch (std) {
 		case stdNumMonth:
-		case stdZeroMonth:
+		case stdZeroMonth: {
 			;[month, value, err] = getnum!(value, std == stdZeroMonth)
 			if (err != null) {
 				console.log("Error:", err!.Error())
 			}
 			console.log("Month:", month, "Value:", value)
 			break
-		case 3:
+		}
+		case 3: {
 			console.log("Std is 3")
 			break
-		default:
+		}
+		default: {
 			console.log("Default case")
 			break
+		}
 	}
 
 	std = 1
 	switch (std) {
 		case stdNumMonth:
-		case stdZeroMonth:
+		case stdZeroMonth: {
 			;[month, value, err] = getnum!(value, std == stdZeroMonth)
 			if (err != null) {
 				console.log("Error:", err!.Error())
 			}
 			console.log("Month:", month, "Value:", value)
 			break
-		case 3:
+		}
+		case 3: {
 			console.log("Std is 3")
 			break
-		default:
+		}
+		default: {
 			console.log("Default case")
 			break
+		}
 	}
 }
 

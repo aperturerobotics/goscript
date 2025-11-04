@@ -844,7 +844,7 @@ func (c *GoToTSCompiler) WriteCaseClause(exp *ast.CaseClause) error {
 	if exp.List == nil {
 		// Default case
 		c.tsw.WriteLiterally("default:")
-		c.tsw.WriteLine("")
+		c.tsw.WriteLine(" {")
 	} else {
 		// Case with expressions
 		// For Go's `case expr1, expr2:`, we translate to:
@@ -852,18 +852,23 @@ func (c *GoToTSCompiler) WriteCaseClause(exp *ast.CaseClause) error {
 		// case expr2:
 		// ... body ...
 		// break
-		for _, caseExpr := range exp.List {
+		for i, caseExpr := range exp.List {
 			c.tsw.WriteLiterally("case ")
 			if err := c.WriteValueExpr(caseExpr); err != nil {
 				return fmt.Errorf("failed to write case clause expression: %w", err)
 			}
 			c.tsw.WriteLiterally(":")
-			c.tsw.WriteLine("")
+			// Only add opening brace after the last case label
+			if i == len(exp.List)-1 {
+				c.tsw.WriteLine(" {")
+			} else {
+				c.tsw.WriteLine("")
+			}
 		}
 	}
 
 	// The body is written once, after all case labels for this clause.
-	// Indentation for the body starts here.
+	// Wrap in block to provide Go-like case scope semantics.
 	c.tsw.Indent(1)
 	for _, stmt := range exp.Body {
 		if err := c.WriteStmt(stmt); err != nil {
@@ -873,6 +878,7 @@ func (c *GoToTSCompiler) WriteCaseClause(exp *ast.CaseClause) error {
 	// Add break statement (Go's switch has implicit breaks, TS needs explicit break)
 	c.tsw.WriteLine("break")
 	c.tsw.Indent(-1)
+	c.tsw.WriteLine("}")
 	return nil
 }
 

@@ -466,23 +466,26 @@ export class decodeState {
 		const d = this
 		let [data, i] = [d.data, d.off]
 		Switch: switch (data![i - 1]) {
-			case 34:
+			case 34: {
 				for (; i < $.len(data); i++) {
 
 					// escaped char
 
 					// tokenize the closing quote too
 					switch (data![i]) {
-						case 92:
+						case 92: {
 							i++
 							break
-						case 34:
+						}
+						case 34: {
 							i++
 							break
 							break
+						}
 					}
 				}
 				break
+			}
 			case 48:
 			case 49:
 			case 50:
@@ -493,7 +496,7 @@ export class decodeState {
 			case 55:
 			case 56:
 			case 57:
-			case 45:
+			case 45: {
 				for (; i < $.len(data); i++) {
 					switch (data![i]) {
 						case 48:
@@ -510,23 +513,29 @@ export class decodeState {
 						case 101:
 						case 69:
 						case 43:
-						case 45:
+						case 45: {
 							break
-						default:
+						}
+						default: {
 							break
 							break
+						}
 					}
 				}
 				break
-			case 116:
+			}
+			case 116: {
 				i += $.len("rue")
 				break
-			case 102:
+			}
+			case 102: {
 				i += $.len("alse")
 				break
-			case 110:
+			}
+			case 110: {
 				i += $.len("ull")
 				break
+			}
 		}
 		if (i < $.len(data)) {
 			d.opcode = stateEndValue(d.scan, data![i])
@@ -543,10 +552,11 @@ export class decodeState {
 	public async value(v: reflect.Value): Promise<$.GoError> {
 		const d = this
 		switch (d.opcode) {
-			default:
+			default: {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 				break
-			case 6:
+			}
+			case 6: {
 				if (v.IsValid()) {
 					{
 						let err = await d.array(v)
@@ -560,7 +570,8 @@ export class decodeState {
 				}
 				d.scanNext()
 				break
-			case 2:
+			}
+			case 2: {
 				if (v.IsValid()) {
 					{
 						let err = await d._object(v)
@@ -574,7 +585,8 @@ export class decodeState {
 				}
 				d.scanNext()
 				break
-			case 1:
+			}
+			case 1: {
 				let start = d.readIndex()
 				d.rescanLiteral()
 				if (v.IsValid()) {
@@ -586,6 +598,7 @@ export class decodeState {
 					}
 				}
 				break
+			}
 		}
 		return null
 	}
@@ -597,20 +610,23 @@ export class decodeState {
 	public valueQuoted(): null | any {
 		const d = this
 		switch (d.opcode) {
-			default:
+			default: {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 				break
+			}
 			case 6:
-			case 2:
+			case 2: {
 				d.skip()
 				d.scanNext()
 				break
-			case 1:
+			}
+			case 1: {
 				let v = d.literalInterface()
 				$.typeSwitch(v, [{ types: ['nil', {kind: $.TypeKind.Basic, name: 'string'}], body: () => {
 					return v
 				}}])
 				break
+			}
 		}
 		return $.markAsStructValue(new unquotedValue({}))
 	}
@@ -632,7 +648,7 @@ export class decodeState {
 		}
 		v = $.markAsStructValue(pv.clone())
 		switch (v.Kind()) {
-			case reflect.Interface:
+			case reflect.Interface: {
 				if (v.NumMethod() == 0) {
 					// Decoding into nil interface? Switch to non-reflect code.
 					let ai = d.arrayInterface()
@@ -641,15 +657,18 @@ export class decodeState {
 				}
 				// fallthrough // fallthrough statement skipped
 				break
-			default:
+			}
+			default: {
 				d.saveError(new UnmarshalTypeError({Offset: (d.off as number), Type: v.Type(), Value: "array"}))
 				d.skip()
 				return null
 				break
+			}
 			case reflect.Array:
-			case reflect.Slice:
+			case reflect.Slice: {
 				break
 				break
+			}
 		}
 		let i = 0
 		for (; ; ) {
@@ -749,7 +768,7 @@ export class decodeState {
 		}
 		let fields: structFields = new structFields()
 		switch (v.Kind()) {
-			case reflect.Map:
+			case reflect.Map: {
 				switch (t!.Key()!.Kind()) {
 					case reflect.String:
 					case reflect.Int:
@@ -762,28 +781,33 @@ export class decodeState {
 					case reflect.Uint16:
 					case reflect.Uint32:
 					case reflect.Uint64:
-					case reflect.Uintptr:
+					case reflect.Uintptr: {
 						break
-					default:
+					}
+					default: {
 						if (!reflect.PointerTo(t!.Key())!.Implements(textUnmarshalerType)) {
 							d.saveError(new UnmarshalTypeError({Offset: (d.off as number), Type: t, Value: "object"}))
 							d.skip()
 							return null
 						}
 						break
+					}
 				}
 				if (v.IsNil()) {
 					v.Set(reflect.MakeMap(t))
 				}
 				break
-			case reflect.Struct:
+			}
+			case reflect.Struct: {
 				fields = $.markAsStructValue(await cachedTypeFields(t).clone())
 				break
-			default:
+			}
+			default: {
 				d.saveError(new UnmarshalTypeError({Offset: (d.off as number), Type: t, Value: "object"}))
 				d.skip()
 				return null
 				break
+			}
 		}
 		let mapElem: reflect.Value = new reflect.Value()
 		let origErrorContext: errorContext = new errorContext()
@@ -981,15 +1005,16 @@ export class decodeState {
 
 					// should never occur
 					switch (kt!.Kind()) {
-						case reflect.String:
+						case reflect.String: {
 							kv = $.markAsStructValue(reflect.New(kt)!.Elem().clone())
 							kv.SetString($.bytesToString(key))
 							break
+						}
 						case reflect.Int:
 						case reflect.Int8:
 						case reflect.Int16:
 						case reflect.Int32:
-						case reflect.Int64:
+						case reflect.Int64: {
 							let s = $.bytesToString(key)
 							let [n, err] = strconv.ParseInt(s, 10, 64)
 							if (err != null || kt!.OverflowInt(n)) {
@@ -999,12 +1024,13 @@ export class decodeState {
 							kv = $.markAsStructValue(reflect.New(kt)!.Elem().clone())
 							kv.SetInt(n)
 							break
+						}
 						case reflect.Uint:
 						case reflect.Uint8:
 						case reflect.Uint16:
 						case reflect.Uint32:
 						case reflect.Uint64:
-						case reflect.Uintptr:
+						case reflect.Uintptr: {
 							let s = $.bytesToString(key)
 							let [n, err] = strconv.ParseUint(s, 10, 64)
 							if (err != null || kt!.OverflowUint(n)) {
@@ -1014,9 +1040,11 @@ export class decodeState {
 							kv = $.markAsStructValue(reflect.New(kt)!.Elem().clone())
 							kv.SetUint(n)
 							break
-						default:
+						}
+						default: {
 							$.panic("json: Unexpected key type")
 							break
+						}
 					}
 				}
 				if (kv.IsValid()) {
@@ -1088,13 +1116,15 @@ export class decodeState {
 				}
 				let val = "number"
 				switch (item![0]) {
-					case 110:
+					case 110: {
 						val = "null"
 						break
+					}
 					case 116:
-					case 102:
+					case 102: {
 						val = "bool"
 						break
+					}
 				}
 				d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: val}))
 				return null
@@ -1111,7 +1141,7 @@ export class decodeState {
 		v = $.markAsStructValue(pv.clone())
 		{let c = item![0]
 			switch (c) {
-				case 110:
+				case 110: {
 					if (fromQuoted && $.bytesToString(item) != "null") {
 						d.saveError(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type()))
 						break
@@ -1120,20 +1150,22 @@ export class decodeState {
 						case reflect.Interface:
 						case reflect.Pointer:
 						case reflect.Map:
-						case reflect.Slice:
+						case reflect.Slice: {
 							v.SetZero()
 							break
+						}
 					}
 					break
+				}
 				case 116:
-				case 102:
+				case 102: {
 					let value = item![0] == 116
 					if (fromQuoted && $.bytesToString(item) != "true" && $.bytesToString(item) != "false") {
 						d.saveError(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type()))
 						break
 					}
 					switch (v.Kind()) {
-						default:
+						default: {
 							if (fromQuoted) {
 								d.saveError(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type()))
 							}
@@ -1141,10 +1173,12 @@ export class decodeState {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "bool"}))
 							}
 							break
-						case reflect.Bool:
+						}
+						case reflect.Bool: {
 							v.SetBool(value)
 							break
-						case reflect.Interface:
+						}
+						case reflect.Interface: {
 							if (v.NumMethod() == 0) {
 								v.Set(reflect.ValueOf(value))
 							}
@@ -1152,9 +1186,11 @@ export class decodeState {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "bool"}))
 							}
 							break
+						}
 					}
 					break
-				case 34:
+				}
+				case 34: {
 					let [s, ok] = unquoteBytes(item)
 					if (!ok) {
 						if (fromQuoted) {
@@ -1163,10 +1199,11 @@ export class decodeState {
 						$.panic("JSON decoder out of sync - data changing underfoot?")
 					}
 					switch (v.Kind()) {
-						default:
+						default: {
 							d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "string"}))
 							break
-						case reflect.Slice:
+						}
+						case reflect.Slice: {
 							if (v.Type()!.Elem()!.Kind() != reflect.Uint8) {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "string"}))
 								break
@@ -1179,14 +1216,16 @@ export class decodeState {
 							}
 							v.SetBytes($.goSlice(b, undefined, n))
 							break
-						case reflect.String:
+						}
+						case reflect.String: {
 							let t = $.bytesToString(s)
 							if (v.Type() == numberType && !isValidNumber(t)) {
 								return fmt.Errorf("json: invalid number literal, trying to unmarshal %q into Number", item)
 							}
 							v.SetString(t)
 							break
-						case reflect.Interface:
+						}
+						case reflect.Interface: {
 							if (v.NumMethod() == 0) {
 								v.Set(reflect.ValueOf($.bytesToString(s)))
 							}
@@ -1194,9 +1233,11 @@ export class decodeState {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "string"}))
 							}
 							break
+						}
 					}
 					break
-				default:
+				}
+				default: {
 					if (c != 45 && (c < 48 || c > 57)) {
 						if (fromQuoted) {
 							return fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type())
@@ -1204,7 +1245,7 @@ export class decodeState {
 						$.panic("JSON decoder out of sync - data changing underfoot?")
 					}
 					switch (v.Kind()) {
-						default:
+						default: {
 							if (v.Kind() == reflect.String && v.Type() == numberType) {
 								// s must be a valid number, because it's
 								// already been tokenized.
@@ -1216,7 +1257,8 @@ export class decodeState {
 							}
 							d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "number"}))
 							break
-						case reflect.Interface:
+						}
+						case reflect.Interface: {
 							let [n, err] = d.convertNumber($.bytesToString(item))
 							if (err != null) {
 								d.saveError(err)
@@ -1228,11 +1270,12 @@ export class decodeState {
 							}
 							v.Set(reflect.ValueOf(n))
 							break
+						}
 						case reflect.Int:
 						case reflect.Int8:
 						case reflect.Int16:
 						case reflect.Int32:
-						case reflect.Int64:
+						case reflect.Int64: {
 							let [n, err] = strconv.ParseInt($.bytesToString(item), 10, 64)
 							if (err != null || v.OverflowInt(n)) {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "number " + $.bytesToString(item)}))
@@ -1240,12 +1283,13 @@ export class decodeState {
 							}
 							v.SetInt(n)
 							break
+						}
 						case reflect.Uint:
 						case reflect.Uint8:
 						case reflect.Uint16:
 						case reflect.Uint32:
 						case reflect.Uint64:
-						case reflect.Uintptr:
+						case reflect.Uintptr: {
 							let [n, err] = strconv.ParseUint($.bytesToString(item), 10, 64)
 							if (err != null || v.OverflowUint(n)) {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "number " + $.bytesToString(item)}))
@@ -1253,8 +1297,9 @@ export class decodeState {
 							}
 							v.SetUint(n)
 							break
+						}
 						case reflect.Float32:
-						case reflect.Float64:
+						case reflect.Float64: {
 							let [n, err] = strconv.ParseFloat($.bytesToString(item), v.Type()!.Bits())
 							if (err != null || v.OverflowFloat(n)) {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "number " + $.bytesToString(item)}))
@@ -1262,8 +1307,10 @@ export class decodeState {
 							}
 							v.SetFloat(n)
 							break
+						}
 					}
 					break
+				}
 			}
 		}return null
 	}
@@ -1273,20 +1320,24 @@ export class decodeState {
 		const d = this
 		let val: null | any = null
 		switch (d.opcode) {
-			default:
+			default: {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 				break
-			case 6:
+			}
+			case 6: {
 				val = d.arrayInterface()
 				d.scanNext()
 				break
-			case 2:
+			}
+			case 2: {
 				val = d.objectInterface()
 				d.scanNext()
 				break
-			case 1:
+			}
+			case 1: {
 				val = d.literalInterface()
 				break
+			}
 		}
 		return val
 	}
@@ -1380,21 +1431,24 @@ export class decodeState {
 		let item = $.goSlice(d.data, start, d.readIndex())
 		{let c = item![0]
 			switch (c) {
-				case 110:
+				case 110: {
 					return null
 					break
+				}
 				case 116:
-				case 102:
+				case 102: {
 					return c == 116
 					break
-				case 34:
+				}
+				case 34: {
 					let [s, ok] = unquote(item)
 					if (!ok) {
 						$.panic("JSON decoder out of sync - data changing underfoot?")
 					}
 					return s
 					break
-				default:
+				}
+				default: {
 					if (c != 45 && (c < 48 || c > 57)) {
 						$.panic("JSON decoder out of sync - data changing underfoot?")
 					}
@@ -1404,6 +1458,7 @@ export class decodeState {
 					}
 					return n
 					break
+				}
 			}
 		}}
 
@@ -1691,18 +1746,22 @@ export function getu4(s: $.Bytes): number {
 		const c = $.goSlice(s, 2, 6)![_i]
 		{
 			switch (true) {
-				case 48 <= c && c <= 57:
+				case 48 <= c && c <= 57: {
 					c = c - 48
 					break
-				case 97 <= c && c <= 102:
+				}
+				case 97 <= c && c <= 102: {
 					c = c - 97 + 10
 					break
-				case 65 <= c && c <= 70:
+				}
+				case 65 <= c && c <= 70: {
 					c = c - 65 + 10
 					break
-				default:
+				}
+				default: {
 					return -1
 					break
+				}
 			}
 			r = r * 16 + (c as number)
 		}
@@ -1800,49 +1859,56 @@ export function unquoteBytes(s: $.Bytes): [$.Bytes, boolean] {
 			// Coerce to well-formed UTF-8.
 			{let c = s![r]
 				switch (true) {
-					case c == 92:
+					case c == 92: {
 						r++
 						if (r >= $.len(s)) {
 							return [t, ok]
 						}
 						switch (s![r]) {
-							default:
+							default: {
 								return [t, ok]
 								break
+							}
 							case 34:
 							case 92:
 							case 47:
-							case 39:
+							case 39: {
 								b![w] = s![r]
 								r++
 								w++
 								break
-							case 98:
+							}
+							case 98: {
 								b![w] = 8
 								r++
 								w++
 								break
-							case 102:
+							}
+							case 102: {
 								b![w] = 12
 								r++
 								w++
 								break
-							case 110:
+							}
+							case 110: {
 								b![w] = 10
 								r++
 								w++
 								break
-							case 114:
+							}
+							case 114: {
 								b![w] = 13
 								r++
 								w++
 								break
-							case 116:
+							}
+							case 116: {
 								b![w] = 9
 								r++
 								w++
 								break
-							case 117:
+							}
+							case 117: {
 								r--
 								let rr = getu4($.goSlice(s, r, undefined))
 								if (rr < 0) {
@@ -1867,22 +1933,27 @@ export function unquoteBytes(s: $.Bytes): [$.Bytes, boolean] {
 								}
 								w += utf8.EncodeRune($.goSlice(b, w, undefined), rr)
 								break
+							}
 						}
 						break
+					}
 					case c == 34:
-					case c < 32:
+					case c < 32: {
 						return [t, ok]
 						break
-					case c < utf8.RuneSelf:
+					}
+					case c < utf8.RuneSelf: {
 						b![w] = c
 						r++
 						w++
 						break
-					default:
+					}
+					default: {
 						let [rr, size] = utf8.DecodeRune($.goSlice(s, r, undefined))
 						r += size
 						w += utf8.EncodeRune($.goSlice(b, w, undefined), rr)
 						break
+					}
 				}
 			}}
 		return [$.goSlice(b, 0, w), true]

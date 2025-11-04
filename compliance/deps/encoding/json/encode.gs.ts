@@ -1360,9 +1360,10 @@ export function isEmptyValue(v: reflect.Value): boolean {
 		case reflect.Array:
 		case reflect.Map:
 		case reflect.Slice:
-		case reflect.String:
+		case reflect.String: {
 			return v.Len() == 0
 			break
+		}
 		case reflect.Bool:
 		case reflect.Int:
 		case reflect.Int8:
@@ -1378,9 +1379,10 @@ export function isEmptyValue(v: reflect.Value): boolean {
 		case reflect.Float32:
 		case reflect.Float64:
 		case reflect.Interface:
-		case reflect.Pointer:
+		case reflect.Pointer: {
 			return v.IsZero()
 			break
+		}
 	}
 	return false
 }
@@ -1442,54 +1444,67 @@ export async function newTypeEncoder(t: reflect.Type, allowAddr: boolean): Promi
 	}
 
 	switch (t!.Kind()) {
-		case reflect.Bool:
+		case reflect.Bool: {
 			return boolEncoder
 			break
+		}
 		case reflect.Int:
 		case reflect.Int8:
 		case reflect.Int16:
 		case reflect.Int32:
-		case reflect.Int64:
+		case reflect.Int64: {
 			return intEncoder
 			break
+		}
 		case reflect.Uint:
 		case reflect.Uint8:
 		case reflect.Uint16:
 		case reflect.Uint32:
 		case reflect.Uint64:
-		case reflect.Uintptr:
+		case reflect.Uintptr: {
 			return uintEncoder
 			break
-		case reflect.Float32:
+		}
+		case reflect.Float32: {
 			return float32Encoder
 			break
-		case reflect.Float64:
+		}
+		case reflect.Float64: {
 			return float64Encoder
 			break
-		case reflect.String:
+		}
+		case reflect.String: {
 			return stringEncoder
 			break
-		case reflect.Interface:
+		}
+		case reflect.Interface: {
 			return interfaceEncoder
 			break
-		case reflect.Struct:
+		}
+		case reflect.Struct: {
 			return await newStructEncoder(t)
 			break
-		case reflect.Map:
+		}
+		case reflect.Map: {
 			return await newMapEncoder(t)
 			break
-		case reflect.Slice:
+		}
+		case reflect.Slice: {
 			return await newSliceEncoder(t)
 			break
-		case reflect.Array:
+		}
+		case reflect.Array: {
 			return await newArrayEncoder(t)
 			break
-		case reflect.Pointer:
+		}
+		case reflect.Pointer: {
 			return await newPtrEncoder(t)
 			break
-		default:
+		}
+		default: {
 			return unsupportedTypeEncoder
 			break
+		}
 	}
 }
 
@@ -1659,18 +1674,21 @@ export function isValidNumber(s: string): boolean {
 
 	// Digits
 	switch (true) {
-		default:
+		default: {
 			return false
 			break
-		case $.indexString(s, 0) == 48:
+		}
+		case $.indexString(s, 0) == 48: {
 			s = $.sliceString(s, 1, undefined)
 			break
-		case 49 <= $.indexString(s, 0) && $.indexString(s, 0) <= 57:
+		}
+		case 49 <= $.indexString(s, 0) && $.indexString(s, 0) <= 57: {
 			s = $.sliceString(s, 1, undefined)
 			for (; $.len(s) > 0 && 48 <= $.indexString(s, 0) && $.indexString(s, 0) <= 57; ) {
 				s = $.sliceString(s, 1, undefined)
 			}
 			break
+		}
 	}
 
 	// . followed by 1 or more digits.
@@ -1730,13 +1748,15 @@ export async function newMapEncoder(t: reflect.Type): Promise<encoderFunc | null
 		case reflect.Uint16:
 		case reflect.Uint32:
 		case reflect.Uint64:
-		case reflect.Uintptr:
+		case reflect.Uintptr: {
 			break
-		default:
+		}
+		default: {
 			if (!t!.Key()!.Implements(textMarshalerType)) {
 				return unsupportedTypeEncoder
 			}
 			break
+		}
 	}
 	let me = $.markAsStructValue(new mapEncoder({}))
 	return me.encode.bind($.markAsStructValue(me.clone()))
@@ -1803,11 +1823,13 @@ export function isValidTag(s: string): boolean {
 				// otherwise any punctuation chars are allowed
 				// in a tag name.
 				switch (true) {
-					case strings.ContainsRune("!#$%&()*+-./:;<=>?@[]^_{|}~ ", c):
+					case strings.ContainsRune("!#$%&()*+-./:;<=>?@[]^_{|}~ ", c): {
 						break
-					case !unicode.IsLetter(c) && !unicode.IsDigit(c):
+					}
+					case !unicode.IsLetter(c) && !unicode.IsDigit(c): {
 						return false
 						break
+					}
 				}
 			}
 		}
@@ -1847,17 +1869,19 @@ export function resolveKeyName(k: reflect.Value): [string, $.GoError] {
 		case reflect.Int8:
 		case reflect.Int16:
 		case reflect.Int32:
-		case reflect.Int64:
+		case reflect.Int64: {
 			return [strconv.FormatInt(k.Int(), 10), null]
 			break
+		}
 		case reflect.Uint:
 		case reflect.Uint8:
 		case reflect.Uint16:
 		case reflect.Uint32:
 		case reflect.Uint64:
-		case reflect.Uintptr:
+		case reflect.Uintptr: {
 			return [strconv.FormatUint(k.Uint(), 10), null]
 			break
+		}
 	}
 	$.panic("unexpected map key type")
 }
@@ -1907,27 +1931,34 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 				// and served to some browsers.
 				switch (b) {
 					case 92:
-					case 34:
+					case 34: {
 						dst = $.append(dst, 92, b)
 						break
-					case 8:
+					}
+					case 8: {
 						dst = $.append(dst, 92, 98)
 						break
-					case 12:
+					}
+					case 12: {
 						dst = $.append(dst, 92, 102)
 						break
-					case 10:
+					}
+					case 10: {
 						dst = $.append(dst, 92, 110)
 						break
-					case 13:
+					}
+					case 13: {
 						dst = $.append(dst, 92, 114)
 						break
-					case 9:
+					}
+					case 9: {
 						dst = $.append(dst, 92, 116)
 						break
-					default:
+					}
+					default: {
 						dst = $.append(dst, 92, 117, 48, 48, $.indexString("0123456789abcdef", (b >> 4)), $.indexString("0123456789abcdef", (b & 0xF)))
 						break
+					}
 				}
 				i++
 				start = i
@@ -2171,9 +2202,10 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 							case reflect.Uintptr:
 							case reflect.Float32:
 							case reflect.Float64:
-							case reflect.String:
+							case reflect.String: {
 								quoted = true
 								break
+							}
 						}
 					}
 
@@ -2226,25 +2258,28 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 
 							// Temporarily box v so we can take the address.
 							switch (true) {
-								case t!.Kind() == reflect.Interface && t!.Implements(isZeroerType):
+								case t!.Kind() == reflect.Interface && t!.Implements(isZeroerType): {
 									field.isZero = (v: reflect.Value): boolean => {
 										// Avoid panics calling IsZero on a nil interface or
 										// non-nil interface with nil pointer.
 										return v.IsNil() || (v.Elem()!.Kind() == reflect.Pointer && v.Elem()!.IsNil()) || $.mustTypeAssert<isZeroer>(v.Interface(), 'isZeroer')!.IsZero()
 									}
 									break
-								case t!.Kind() == reflect.Pointer && t!.Implements(isZeroerType):
+								}
+								case t!.Kind() == reflect.Pointer && t!.Implements(isZeroerType): {
 									field.isZero = (v: reflect.Value): boolean => {
 										// Avoid panics calling IsZero on nil pointer.
 										return v.IsNil() || $.mustTypeAssert<isZeroer>(v.Interface(), 'isZeroer')!.IsZero()
 									}
 									break
-								case t!.Implements(isZeroerType):
+								}
+								case t!.Implements(isZeroerType): {
 									field.isZero = (v: reflect.Value): boolean => {
 										return $.mustTypeAssert<isZeroer>(v.Interface(), 'isZeroer')!.IsZero()
 									}
 									break
-								case reflect.PointerTo(t)!.Implements(isZeroerType):
+								}
+								case reflect.PointerTo(t)!.Implements(isZeroerType): {
 									field.isZero = (v: reflect.Value): boolean => {
 
 										// Temporarily box v so we can take the address.
@@ -2257,6 +2292,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 										return $.mustTypeAssert<isZeroer>(v.Addr()!.Interface(), 'isZeroer')!.IsZero()
 									}
 									break
+								}
 							}
 						}
 

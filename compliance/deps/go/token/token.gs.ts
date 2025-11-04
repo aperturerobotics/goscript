@@ -267,35 +267,40 @@ export function Token_String(tok: Token): string {
 
 export function Token_Precedence(op: Token): number {
 	switch (op) {
-		case 35:
+		case 35: {
 			return 1
 			break
-		case 34:
+		}
+		case 34: {
 			return 2
 			break
+		}
 		case 39:
 		case 44:
 		case 40:
 		case 45:
 		case 41:
-		case 46:
+		case 46: {
 			return 3
 			break
+		}
 		case 12:
 		case 13:
 		case 18:
-		case 19:
+		case 19: {
 			return 4
 			break
+		}
 		case 14:
 		case 15:
 		case 16:
 		case 20:
 		case 21:
 		case 17:
-		case 22:
+		case 22: {
 			return 5
 			break
+		}
 	}
 	return 0
 }

@@ -134,12 +134,14 @@ export class Mutex {
 
 			let nstatus = status!.value.Load()
 			switch (nstatus) {
-				case 1:
+				case 1: {
 					return [release, null]
 					break
-				case 2:
+				}
+				case 2: {
 					return [null, context.Canceled]
 					break
+				}
 			}
 		}
 	}
