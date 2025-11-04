@@ -1,46 +1,35 @@
-# Async Propagation Bug - missing_import_issue
+# Issue: Method `array()` not marked as async despite calling async method `value()`
 
-## Current Error
+## Root Cause Confirmed
 
-`errors.gs.ts:132` - `ErrorList.Error()` method has `await fmt.Sprintf()` but the function itself isn't marked as `async`.
+Debug output shows the exact problem:
 
-## Key Finding: The Paradox
+```
+DEBUG: Analyzing method decodeState.array async status
+DEBUG: Checking call to value: isAsync=false  <- array() checks value() but it's not analyzed yet
+DEBUG: Method decodeState.array analyzed as async=false  <- array() marked as sync
+DEBUG: Method decodeState.value analyzed as async=true  <- value() marked as async AFTER array()
+```
 
-**Test Results:**
+**The Problem**: Methods are analyzed in a single pass. When `array()` is analyzed, `value()` hasn't been analyzed yet, so `value()` appears to be sync. Later when `value()` is marked as async, `array()` is never re-analyzed.
 
-- `TestIsCallExprAsyncWithFmtSprintf`: ✅ PASS - `isCallExprAsync(fmt.Sprintf)` correctly returns `false`
-- When we create a new Analysis and load metadata, fmt.Sprintf is NOT in MethodAsyncStatus
+## Solution: Fixed-Point Iteration
 
-**The Paradox:**
+Implement a multi-pass algorithm in `analyzeAllMethodsAsync()`:
 
-- The compiler's `isCallExprAsync()` function correctly identifies `fmt.Sprintf` as synchronous
-- Yet the generated code still has `await fmt.Sprintf(...)`
+1. Do an initial pass analyzing all methods
+2. Keep track of which methods changed from sync to async
+3. If any methods changed, do another pass (only re-analyzing methods that depend on changed ones)
+4. Repeat until no methods change (fixed point reached)
 
-## New Theory: Timing Issue with MethodAsyncStatus
+This is similar to how dataflow analysis works in compilers.
 
-**Hypothesis:** During multi-package compilation (main + go/token + go/scanner), something is adding `fmt.Sprintf` to `MethodAsyncStatus` as async.
+## Implementation Plan
 
-Possible scenarios:
+Modify `analyzeAllMethodsAsync()` to:
 
-1. **Analysis propagation bug**: When analyzing `go/scanner.ErrorList.Error()`, the analysis might incorrectly mark `fmt.Sprintf` as async
-2. **Multiple Analysis instances**: Different Analysis instances might be used during analysis vs code generation
-3. **Side effect during analysis**: The act of analyzing methods that call `fmt.Sprintf` might be modifying `MethodAsyncStatus`
-
-## Code Flow
-
-For `fmt.Sprintf(...)` where `exp.Fun` is `*ast.SelectorExpr`:
-
-1. `WriteCallExpr()` line 89-98: Check for type conversions/wrapper methods
-2. Line 102: `writeAsyncCallIfNeeded(exp)` is called
-3. This calls `isCallExprAsync(exp)`
-4. For selector expression with package identifier (fmt.Sprintf):
-   - Line 54-60 in `expr-call-async.go`: Detects it's a package-level function
-   - Line 58: Returns `c.analysis.IsMethodAsync(pkgPath, "", methodName)`
-5. `IsMethodAsync` checks `MethodAsyncStatus[{PackagePath: "fmt", ReceiverType: "", MethodName: "Sprintf"}]`
-6. If not found, returns `false`
-
-**The question:** Is something adding fmt.Sprintf to MethodAsyncStatus between analysis and code generation?
-
-## Next Diagnostic Step
-
-Need to check if `fmt.Sprintf` is in `MethodAsyncStatus` during the ACTUAL compliance test compilation, not just in isolated unit tests.
+1. Loop until no changes occur
+2. Clear the `MethodAsyncStatus` map at the start of each iteration (or track previous values)
+3. Re-analyze all methods in each iteration
+4. Compare new results with previous iteration
+5. Stop when nothing changes

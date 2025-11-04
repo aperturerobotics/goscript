@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"encoding/json"
-	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -2254,13 +2253,49 @@ func (v *analysisVisitor) analyzeAllMethodsAsync() {
 	// Initialize visitingMethods map
 	v.visitingMethods = make(map[MethodKey]bool)
 
-	// Analyze methods in current package
-	v.analyzePackageMethodsAsync(v.pkg)
+	// Fixed-point iteration: keep analyzing until nothing changes
+	// This handles cases where method A calls method B, but B is analyzed after A
+	maxIterations := 10
+	for iteration := 0; iteration < maxIterations; iteration++ {
+		// Clear visitingMethods map for this iteration
+		v.visitingMethods = make(map[MethodKey]bool)
 
-	// Analyze methods in all dependency packages
-	for _, pkg := range v.analysis.AllPackages {
-		if pkg != v.pkg {
-			v.analyzePackageMethodsAsync(pkg)
+		// Track if anything changed in this iteration
+		changed := false
+
+		// Save previous state
+		previousState := make(map[MethodKey]bool)
+		for k, v := range v.analysis.MethodAsyncStatus {
+			previousState[k] = v
+		}
+
+		// Re-analyze methods in current package
+		v.analyzePackageMethodsAsync(v.pkg)
+
+		// Re-analyze methods in all dependency packages
+		for _, pkg := range v.analysis.AllPackages {
+			if pkg != v.pkg {
+				v.analyzePackageMethodsAsync(pkg)
+			}
+		}
+
+		// Check if anything changed
+		for k, newValue := range v.analysis.MethodAsyncStatus {
+			oldValue, existed := previousState[k]
+			if !existed {
+				// New method added - check if it's async (if sync, no need to re-analyze dependents)
+				if newValue {
+					changed = true
+				}
+			} else if oldValue != newValue {
+				// Method changed from sync to async (or vice versa)
+				changed = true
+			}
+		}
+
+		// If nothing changed, we've reached a fixed point
+		if !changed {
+			break
 		}
 	}
 
@@ -2319,11 +2354,6 @@ func (v *analysisVisitor) analyzeFunctionLiteralAsync(funcLit *ast.FuncLit, pkg 
 func (v *analysisVisitor) analyzeMethodAsync(funcDecl *ast.FuncDecl, pkg *packages.Package) {
 	methodKey := v.getMethodKey(funcDecl, pkg)
 
-	// Check if already analyzed
-	if _, exists := v.analysis.MethodAsyncStatus[methodKey]; exists {
-		return
-	}
-
 	// Check for cycles
 	if v.visitingMethods[methodKey] {
 		// Cycle detected, assume sync to break recursion
@@ -2341,22 +2371,25 @@ func (v *analysisVisitor) analyzeMethodAsync(funcDecl *ast.FuncDecl, pkg *packag
 	// Handwritten packages should not have their bodies analyzed
 	isHandwrittenPackage := v.analysis.isHandwrittenPackage(methodKey.PackagePath)
 
-	// Check if we have pre-loaded metadata for this method (from handwritten gs/ packages)
-	metadataKey := MethodKey{
-		PackagePath:  methodKey.PackagePath,
-		ReceiverType: methodKey.ReceiverType,
-		MethodName:   methodKey.MethodName,
-	}
-	metadataIsAsync, hasMetadata := v.analysis.MethodAsyncStatus[metadataKey]
+	if isHandwrittenPackage {
+		// For handwritten packages, check if we have pre-loaded metadata
+		metadataKey := MethodKey{
+			PackagePath:  methodKey.PackagePath,
+			ReceiverType: methodKey.ReceiverType,
+			MethodName:   methodKey.MethodName,
+		}
+		metadataIsAsync, hasMetadata := v.analysis.MethodAsyncStatus[metadataKey]
 
-	if hasMetadata {
-		// Use explicit metadata from handwritten packages (gs/)
-		isAsync = metadataIsAsync
-	} else if isHandwrittenPackage {
-		// Handwritten package but no explicit metadata: assume sync
-		isAsync = false
+		if hasMetadata {
+			// Use explicit metadata from handwritten packages (gs/)
+			isAsync = metadataIsAsync
+		} else {
+			// Handwritten package but no explicit metadata: assume sync
+			isAsync = false
+		}
 	} else if funcDecl.Body != nil {
-		// Not a handwritten package and has body: analyze for async operations
+		// Not a handwritten package and has body: always analyze for async operations
+		// This allows fixed-point iteration to update results
 		isAsync = v.containsAsyncOperationsComplete(funcDecl.Body, pkg)
 	}
 	// Otherwise leave isAsync as false
@@ -2437,16 +2470,8 @@ func (v *analysisVisitor) containsAsyncOperationsComplete(node ast.Node, pkg *pa
 
 		case *ast.CallExpr:
 			// Check if we're calling a function known to be async
-			isCallAsyncResult := v.isCallAsync(s, pkg)
-			if isCallAsyncResult {
+			if v.isCallAsync(s, pkg) {
 				hasAsync = true
-				callName := ""
-				if ident, ok := s.Fun.(*ast.Ident); ok {
-					callName = ident.Name
-				} else if sel, ok := s.Fun.(*ast.SelectorExpr); ok {
-					callName = sel.Sel.Name
-				}
-				asyncReasons = append(asyncReasons, fmt.Sprintf("async call: %s", callName))
 				return false
 			}
 		}

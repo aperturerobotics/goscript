@@ -17,7 +17,7 @@
         "../../../gs/*",
         "../../../compliance/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/compliance/tests/package_import_encoding_json/*": [
+      "@goscript/github.com/aperturerobotics/goscript/compliance/tests/method_async_dependency/*": [
         "./*"
       ]
     },
@@ -27,6 +27,6 @@
   "extends": "../../../tsconfig.json",
   "include": [
     "index.ts",
-    "package_import_encoding_json.gs.ts"
+    "method_async_dependency.gs.ts"
   ]
 }
