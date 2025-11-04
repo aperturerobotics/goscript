@@ -528,16 +528,8 @@ func (c *GoToTSCompiler) WriteStmtReturn(exp *ast.ReturnStmt) error {
 	nodeInfo := c.analysis.NodeData[exp]
 	if nodeInfo != nil && nodeInfo.IsBareReturn {
 		var namedReturns []string
-		if nodeInfo.EnclosingFuncDecl != nil {
-			if obj := c.pkg.TypesInfo.ObjectOf(nodeInfo.EnclosingFuncDecl.Name); obj != nil {
-				if funcInfo := c.analysis.FunctionData[obj]; funcInfo != nil {
-					namedReturns = funcInfo.NamedReturns
-				}
-			}
-		} else if nodeInfo.EnclosingFuncLit != nil {
-			if funcInfo := c.analysis.FuncLitData[nodeInfo.EnclosingFuncLit]; funcInfo != nil {
-				namedReturns = funcInfo.NamedReturns
-			}
+		if funcInfo := c.analysis.GetFunctionInfoFromContext(nodeInfo, c.pkg); funcInfo != nil {
+			namedReturns = funcInfo.NamedReturns
 		}
 
 		if len(namedReturns) == 1 {
