@@ -106,9 +106,8 @@ type MethodKey struct {
 
 // ImplementationInfo tracks information about a struct that implements an interface method
 type ImplementationInfo struct {
-	StructType    *types.Named // The struct type that implements the interface
-	Method        *types.Func  // The method object
-	IsAsyncByFlow bool         // Whether this implementation is async based on control flow analysis
+	StructType *types.Named // The struct type that implements the interface
+	Method     *types.Func  // The method object
 }
 
 // Analysis holds information gathered during the analysis phase of the Go code compilation.
@@ -1702,9 +1701,8 @@ func (a *Analysis) trackInterfaceImplementation(interfaceType *types.Interface, 
 	}
 
 	implementation := ImplementationInfo{
-		StructType:    structType,
-		Method:        method,
-		IsAsyncByFlow: isAsync,
+		StructType: structType,
+		Method:     method,
 	}
 
 	a.InterfaceImplementations[key] = append(a.InterfaceImplementations[key], implementation)
@@ -1730,10 +1728,8 @@ func (a *Analysis) IsInterfaceMethodAsync(interfaceType *types.Interface, method
 		return false
 	}
 
-	// Update implementations with current async status before checking
-	for i := range implementations {
-		impl := &implementations[i]
-
+	// If ANY implementation is async, the interface method is async
+	for _, impl := range implementations {
 		// Create method key for this implementation
 		methodKey := MethodKey{
 			PackagePath:  impl.StructType.Obj().Pkg().Path(),
@@ -1741,18 +1737,8 @@ func (a *Analysis) IsInterfaceMethodAsync(interfaceType *types.Interface, method
 			MethodName:   impl.Method.Name(),
 		}
 
-		// Update with current async status from method analysis
-		if isAsync, exists := a.MethodAsyncStatus[methodKey]; exists {
-			impl.IsAsyncByFlow = isAsync
-		}
-	}
-
-	// Store the updated implementations back to the map
-	a.InterfaceImplementations[key] = implementations
-
-	// If ANY implementation is async, the interface method is async
-	for _, impl := range implementations {
-		if impl.IsAsyncByFlow {
+		// Check if this implementation is async
+		if isAsync, exists := a.MethodAsyncStatus[methodKey]; exists && isAsync {
 			a.InterfaceMethodAsyncStatus[key] = true
 			return true
 		}
@@ -2707,12 +2693,6 @@ func (v *analysisVisitor) updateInterfaceImplementationAsyncStatus() {
 			methodKey := impl.StructType.Obj().Name() + "." + key.MethodName
 			if !seenMethods[methodKey] {
 				seenMethods[methodKey] = true
-
-				// Now that method async analysis is complete, get the correct async status
-				isAsync := v.analysis.IsAsyncFunc(impl.Method)
-
-				// Update the implementation with the correct async status
-				impl.IsAsyncByFlow = isAsync
 				uniqueImplementations = append(uniqueImplementations, impl)
 			}
 		}

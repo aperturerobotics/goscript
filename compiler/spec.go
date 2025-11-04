@@ -121,7 +121,7 @@ func (c *GoToTSCompiler) writeEmbeddedFieldInitializer(fieldName string, fieldTy
 	}
 
 	// For structs, instantiate with provided fields
-	typeForNew := fieldName
+	typeForNew := c.getTypeString(fieldType)
 	c.tsw.WriteLiterallyf("new %s(init?.%s)", typeForNew, fieldName)
 }
 
@@ -224,6 +224,12 @@ func (c *GoToTSCompiler) writeNamedTypeZeroValue(named *types.Named) {
 		return
 	}
 
+	// Check if underlying type is a function
+	if _, isFunc := named.Underlying().(*types.Signature); isFunc {
+		c.tsw.WriteLiterally("null")
+		return
+	}
+
 	// For non-struct, non-interface named types, use constructor
 	c.tsw.WriteLiterally("new ")
 	c.WriteNamedType(named)
@@ -251,6 +257,12 @@ func (c *GoToTSCompiler) writeTypeAliasZeroValue(alias *types.Alias, astType ast
 	// Check if underlying type is a struct
 	if _, isStruct := alias.Underlying().(*types.Struct); isStruct {
 		c.WriteZeroValueForType(alias)
+		return
+	}
+
+	// Check if underlying type is a function
+	if _, isFunc := alias.Underlying().(*types.Signature); isFunc {
+		c.tsw.WriteLiterally("null")
 		return
 	}
 

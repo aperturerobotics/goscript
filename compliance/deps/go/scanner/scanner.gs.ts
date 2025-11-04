@@ -150,7 +150,7 @@ export class Scanner {
 			file: $.varRef(init?.file ?? null),
 			dir: $.varRef(init?.dir ?? ""),
 			src: $.varRef(init?.src ?? new Uint8Array(0)),
-			err: $.varRef(init?.err ?? new ErrorHandler | null(null)),
+			err: $.varRef(init?.err ?? null),
 			mode: $.varRef(init?.mode ?? 0 as Mode),
 			ch: $.varRef(init?.ch ?? 0),
 			offset: $.varRef(init?.offset ?? 0),

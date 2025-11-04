@@ -335,7 +335,7 @@ export class encodeState {
 
 	constructor(init?: Partial<{Buffer?: Partial<ConstructorParameters<typeof Buffer>[0]>, ptrLevel?: number, ptrSeen?: Map<null | any, {  }> | null}>) {
 		this._fields = {
-			Buffer: $.varRef(new Buffer(init?.Buffer)),
+			Buffer: $.varRef(new bytes.Buffer(init?.Buffer)),
 			ptrLevel: $.varRef(init?.ptrLevel ?? 0),
 			ptrSeen: $.varRef(init?.ptrSeen ?? null)
 		}
@@ -538,7 +538,7 @@ export class arrayEncoder {
 
 	constructor(init?: Partial<{elemEnc?: encoderFunc | null}>) {
 		this._fields = {
-			elemEnc: $.varRef(init?.elemEnc ?? new encoderFunc | null(null))
+			elemEnc: $.varRef(init?.elemEnc ?? null)
 		}
 	}
 
@@ -595,8 +595,8 @@ export class condAddrEncoder {
 
 	constructor(init?: Partial<{canAddrEnc?: encoderFunc | null, elseEnc?: encoderFunc | null}>) {
 		this._fields = {
-			canAddrEnc: $.varRef(init?.canAddrEnc ?? new encoderFunc | null(null)),
-			elseEnc: $.varRef(init?.elseEnc ?? new encoderFunc | null(null))
+			canAddrEnc: $.varRef(init?.canAddrEnc ?? null),
+			elseEnc: $.varRef(init?.elseEnc ?? null)
 		}
 	}
 
@@ -745,7 +745,7 @@ export class field {
 			omitZero: $.varRef(init?.omitZero ?? false),
 			isZero: $.varRef(init?.isZero ?? null),
 			quoted: $.varRef(init?.quoted ?? false),
-			encoder: $.varRef(init?.encoder ?? new encoderFunc | null(null))
+			encoder: $.varRef(init?.encoder ?? null)
 		}
 	}
 
@@ -792,7 +792,7 @@ export class mapEncoder {
 
 	constructor(init?: Partial<{elemEnc?: encoderFunc | null}>) {
 		this._fields = {
-			elemEnc: $.varRef(init?.elemEnc ?? new encoderFunc | null(null))
+			elemEnc: $.varRef(init?.elemEnc ?? null)
 		}
 	}
 
@@ -889,7 +889,7 @@ export class ptrEncoder {
 
 	constructor(init?: Partial<{elemEnc?: encoderFunc | null}>) {
 		this._fields = {
-			elemEnc: $.varRef(init?.elemEnc ?? new encoderFunc | null(null))
+			elemEnc: $.varRef(init?.elemEnc ?? null)
 		}
 	}
 
@@ -955,7 +955,7 @@ export class sliceEncoder {
 
 	constructor(init?: Partial<{arrayEnc?: encoderFunc | null}>) {
 		this._fields = {
-			arrayEnc: $.varRef(init?.arrayEnc ?? new encoderFunc | null(null))
+			arrayEnc: $.varRef(init?.arrayEnc ?? null)
 		}
 	}
 

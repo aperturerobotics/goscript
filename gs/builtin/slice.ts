@@ -874,10 +874,8 @@ export function copy<T>(
  * Helper: Copy from string to any destination type
  */
 function copyFromString<T>(dst: Slice<T> | Uint8Array, src: string): number {
-  const encoder = new TextEncoder()
-  const srcBytes = encoder.encode(src)
   const dstLen = dst instanceof Uint8Array ? dst.length : len(dst)
-  const count = Math.min(dstLen, srcBytes.length)
+  const count = Math.min(dstLen, src.length)
 
   if (count === 0) {
     return 0
@@ -885,17 +883,18 @@ function copyFromString<T>(dst: Slice<T> | Uint8Array, src: string): number {
 
   if (dst instanceof Uint8Array) {
     for (let i = 0; i < count; i++) {
-      dst[i] = srcBytes[i]
+      dst[i] = src.charCodeAt(i)
     }
   } else if (isComplexSlice(dst)) {
     const dstMeta = dst.__meta__
     for (let i = 0; i < count; i++) {
-      dstMeta.backing[dstMeta.offset + i] = srcBytes[i] as unknown as T
-      ;(dst as any)[i] = srcBytes[i]
+      const byteVal = src.charCodeAt(i)
+      dstMeta.backing[dstMeta.offset + i] = byteVal as unknown as T
+      ;(dst as any)[i] = byteVal
     }
   } else if (Array.isArray(dst)) {
     for (let i = 0; i < count; i++) {
-      dst[i] = srcBytes[i] as unknown as T
+      dst[i] = src.charCodeAt(i) as unknown as T
     }
   }
 
