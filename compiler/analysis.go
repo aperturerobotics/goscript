@@ -230,6 +230,22 @@ func (a *Analysis) ensureFunctionData(obj types.Object) *FunctionInfo {
 	return a.FunctionData[obj]
 }
 
+// GetFunctionInfoFromContext returns FunctionInfo based on the enclosing function context
+func (a *Analysis) GetFunctionInfoFromContext(nodeInfo *NodeInfo, pkg *packages.Package) *FunctionInfo {
+	if nodeInfo == nil {
+		return nil
+	}
+	if nodeInfo.EnclosingFuncDecl != nil {
+		if obj := pkg.TypesInfo.ObjectOf(nodeInfo.EnclosingFuncDecl.Name); obj != nil {
+			return a.FunctionData[obj]
+		}
+	}
+	if nodeInfo.EnclosingFuncLit != nil {
+		return a.FuncLitData[nodeInfo.EnclosingFuncLit]
+	}
+	return nil
+}
+
 // NeedsDefer returns whether the given node needs defer handling.
 func (a *Analysis) NeedsDefer(node ast.Node) bool {
 	if node == nil {
@@ -916,18 +932,8 @@ func (v *analysisVisitor) visitReturnStmt(n *ast.ReturnStmt) ast.Visitor {
 
 	// Check if it's a bare return
 	if len(n.Results) == 0 {
-		if v.currentFuncDecl != nil {
-			// Check if the enclosing function declaration has named returns
-			if obj := v.pkg.TypesInfo.ObjectOf(v.currentFuncDecl.Name); obj != nil {
-				if _, ok := v.analysis.FunctionData[obj]; ok {
-					nodeInfo.IsBareReturn = true
-				}
-			}
-		} else if v.currentFuncLit != nil {
-			// Check if the enclosing function literal has named returns
-			if _, ok := v.analysis.FuncLitData[v.currentFuncLit]; ok {
-				nodeInfo.IsBareReturn = true
-			}
+		if v.analysis.GetFunctionInfoFromContext(nodeInfo, v.pkg) != nil {
+			nodeInfo.IsBareReturn = true
 		}
 	}
 	return v
