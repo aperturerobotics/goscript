@@ -1545,9 +1545,9 @@ export class unquotedValue {
 
 let nullLiteral: $.Bytes = $.stringToBytes("null")
 
-let textUnmarshalerType: reflect.Type = reflect.TypeFor![encoding.TextUnmarshaler]()
-
 let numberType: reflect.Type = reflect.TypeFor<Number>()
+
+let textUnmarshalerType: reflect.Type = reflect.TypeFor![encoding.TextUnmarshaler]()
 
 // Unmarshal parses the JSON-encoded data and stores the result
 // in the value pointed to by v. If v is nil or not a pointer,

@@ -1156,8 +1156,6 @@ let encoderCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 // map[reflect.Type]structFields
 let fieldCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 
-let textMarshalerType: reflect.Type = reflect.TypeFor![encoding.TextMarshaler]()
-
 let float32Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = ((32 as floatEncoder)).encode.bind($.markAsStructValue(((32 as floatEncoder)).clone()))
 
 let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = ((64 as floatEncoder)).encode.bind($.markAsStructValue(((64 as floatEncoder)).clone()))
@@ -1165,6 +1163,8 @@ let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) =>
 let isZeroerType: reflect.Type = reflect.TypeFor<isZeroer>()
 
 let marshalerType: reflect.Type = reflect.TypeFor<Marshaler>()
+
+let textMarshalerType: reflect.Type = reflect.TypeFor![encoding.TextMarshaler]()
 
 // Marshal returns the JSON encoding of v.
 //

@@ -718,7 +718,6 @@ export function RawMessage_UnmarshalJSON(m: $.VarRef<RawMessage>, data: $.Bytes)
 export type Token = null | any;
 
 
-
 // NewDecoder returns a new decoder that reads from r.
 //
 // The decoder introduces its own buffering and may

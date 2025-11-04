@@ -252,80 +252,82 @@ func (c *GoToTSCompiler) extractStructFieldDependencies(fieldType ast.Expr, type
 	return deps
 }
 
-// sortVarSpecsByTypeDependencies sorts variable declarations based on their type dependencies
+// sortVarSpecsByTypeDependencies sorts variable declarations based on their value dependencies
+// to ensure that variables are initialized in the correct order (respecting JavaScript's TDZ).
+// For example: var StdEncoding = NewEncoding(...) must come before var RawStdEncoding = StdEncoding.WithPadding(...)
 func (c *GoToTSCompiler) sortVarSpecsByTypeDependencies(varSpecs []*ast.ValueSpec, typeSpecs []*ast.TypeSpec) ([]*ast.ValueSpec, error) {
 	if len(varSpecs) <= 1 {
 		return varSpecs, nil
 	}
 
-	// Build type name map
-	typeSpecMap := make(map[string]*ast.TypeSpec)
-	for _, typeSpec := range typeSpecs {
-		typeSpecMap[typeSpec.Name.Name] = typeSpec
-	}
-
-	// Group variables by dependency status with names for sorting
-	type namedVarSpec struct {
-		spec *ast.ValueSpec
-		name string
-	}
-
-	var independentVars []namedVarSpec
-	var dependentVars []namedVarSpec
-
+	// Build a map of variable names to their specs
+	varSpecMap := make(map[string]*ast.ValueSpec)
+	varNames := []string{}
 	for _, varSpec := range varSpecs {
-		// Get variable name for sorting
-		varName := ""
 		if len(varSpec.Names) > 0 {
-			varName = varSpec.Names[0].Name
-		}
-
-		hasDependency := false
-
-		// Check type annotation
-		if varSpec.Type != nil {
-			deps := c.extractTypeDependencies(varSpec.Type, typeSpecMap)
-			if len(deps) > 0 {
-				hasDependency = true
-			}
-		}
-
-		// Check initializer expressions for type usage
-		if !hasDependency {
-			for _, value := range varSpec.Values {
-				if c.hasTypeReferences(value, typeSpecMap) {
-					hasDependency = true
-					break
-				}
-			}
-		}
-
-		namedVar := namedVarSpec{spec: varSpec, name: varName}
-		if hasDependency {
-			dependentVars = append(dependentVars, namedVar)
-		} else {
-			independentVars = append(independentVars, namedVar)
+			name := varSpec.Names[0].Name
+			varSpecMap[name] = varSpec
+			varNames = append(varNames, name)
 		}
 	}
 
-	// Sort both groups by name for deterministic output
-	sort.Slice(independentVars, func(i, j int) bool {
-		return independentVars[i].name < independentVars[j].name
-	})
-	sort.Slice(dependentVars, func(i, j int) bool {
-		return dependentVars[i].name < dependentVars[j].name
-	})
+	// Build dependency graph: varName -> list of variables it depends on
+	dependencies := make(map[string][]string)
+	for _, name := range varNames {
+		dependencies[name] = []string{}
+	}
 
-	// Return independent variables first, then dependent ones
+	// Extract value dependencies from initializer expressions
+	for _, varSpec := range varSpecs {
+		if len(varSpec.Names) == 0 {
+			continue
+		}
+		varName := varSpec.Names[0].Name
+
+		// Check initializer expressions for variable references
+		for _, value := range varSpec.Values {
+			deps := c.extractVarDependencies(value, varSpecMap)
+			dependencies[varName] = append(dependencies[varName], deps...)
+		}
+	}
+
+	// Perform topological sort
+	sorted, err := c.topologicalSort(dependencies)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build result in sorted order
 	result := make([]*ast.ValueSpec, 0, len(varSpecs))
-	for _, namedVar := range independentVars {
-		result = append(result, namedVar.spec)
-	}
-	for _, namedVar := range dependentVars {
-		result = append(result, namedVar.spec)
+	for _, varName := range sorted {
+		if spec, exists := varSpecMap[varName]; exists {
+			result = append(result, spec)
+		}
 	}
 
 	return result, nil
+}
+
+// extractVarDependencies extracts variable dependencies from an initializer expression.
+// It returns a list of variable names that the expression depends on.
+func (c *GoToTSCompiler) extractVarDependencies(expr ast.Expr, varSpecMap map[string]*ast.ValueSpec) []string {
+	var deps []string
+	seen := make(map[string]bool)
+
+	ast.Inspect(expr, func(n ast.Node) bool {
+		if ident, ok := n.(*ast.Ident); ok {
+			// Check if this identifier refers to a package-level variable
+			if _, isVar := varSpecMap[ident.Name]; isVar {
+				if !seen[ident.Name] {
+					deps = append(deps, ident.Name)
+					seen[ident.Name] = true
+				}
+			}
+		}
+		return true
+	})
+
+	return deps
 }
 
 // hasTypeReferences checks if an expression contains references to local types

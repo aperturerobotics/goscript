@@ -838,13 +838,13 @@ export class newlineFilteringReader {
 	);
 }
 
-export let RawStdEncoding: Encoding | null = StdEncoding!.WithPadding(-1)
-
-export let RawURLEncoding: Encoding | null = URLEncoding!.WithPadding(-1)
-
 export let StdEncoding: Encoding | null = NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 
 export let URLEncoding: Encoding | null = NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_")
+
+export let RawStdEncoding: Encoding | null = StdEncoding!.WithPadding(-1)
+
+export let RawURLEncoding: Encoding | null = URLEncoding!.WithPadding(-1)
 
 // NewEncoding returns a new padded Encoding defined by the given alphabet,
 // which must be a 64-byte string that contains unique byte values and
