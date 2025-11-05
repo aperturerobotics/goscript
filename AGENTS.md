@@ -101,7 +101,7 @@ Once the issue is fixed and the compliance test passes you may delete WIP.md wit
 
 When working with golangci-lint:
 
-1. **Running the Linter**: Use `golangci-lint run ./...` to check for linter errors
+1. **Running the Linter**: Use `yarn lint` to run the linter, `yarn lint:go` for go and `yarn lint:js` for js
 2. **Fixing Errors**: Address linter errors in the affected code files
 3. **Iterating**: Repeat the linting process until no errors remain
 4. **Ignoring Warnings**: You can ignore linter errors with inline comments when the warning is unnecessarily strict:
@@ -109,6 +109,8 @@ When working with golangci-lint:
    defer f.Close() //nolint:errcheck
    ```
    This is appropriate for cases like deferring Close without checking the error return value, which can often be safely ignored.
+
+Make sure that `yarn test` and `yarn lint` both pass before suggesting a task is complete.
 
 ## Specialized Workflows
 

@@ -5,7 +5,6 @@ import {
   TypeKind,
   isStructTypeInfo,
   isInterfaceTypeInfo,
-  type MethodSignature,
 } from '../builtin/type.js'
 
 // rtype is the common implementation of most values
