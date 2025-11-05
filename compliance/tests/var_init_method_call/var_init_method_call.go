@@ -12,8 +12,10 @@ func (t *T) WithDelta(delta int) *T {
 	return &T{val: t.val + delta}
 }
 
-var Base = NewT(10)
-var Derived = Base.WithDelta(5)
+var (
+	Base    = NewT(10)
+	Derived = Base.WithDelta(5)
+)
 
 func main() {
 	println("Base:", Base.val)

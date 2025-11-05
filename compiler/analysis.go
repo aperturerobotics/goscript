@@ -2116,9 +2116,56 @@ func (v *analysisVisitor) analyzeAllMethodsAsync() {
 	// Topologically sort methods by their dependencies
 	sorted, cycles := v.topologicalSortMethods(methodCalls)
 
-	// Mark methods in cycles as sync to break circular dependencies
-	for _, methodKey := range cycles {
-		v.analysis.MethodAsyncStatus[methodKey] = false
+	// Mark methods in cycles - check if they contain async operations
+	// We can't rely on the call graph for methods in cycles (circular dependency),
+	// but we can still detect if they call async external methods
+	//
+	// We need to iterate multiple times because methods in cycles can call each other,
+	// and we need to propagate async status until no changes occur
+	maxIterations := 10
+	for iteration := 0; iteration < maxIterations; iteration++ {
+		changed := false
+
+		for _, methodKey := range cycles {
+			// For methods in cycles, we need to check their body directly for async operations
+			pkg := v.analysis.AllPackages[methodKey.PackagePath]
+			if pkg == nil && methodKey.PackagePath == v.pkg.Types.Path() {
+				pkg = v.pkg
+			}
+
+			if pkg != nil {
+				var funcDecl *ast.FuncDecl
+				if methodKey.ReceiverType == "" {
+					funcDecl = v.findFunctionDecl(methodKey.MethodName, pkg)
+				} else {
+					funcDecl = v.findMethodDecl(methodKey.ReceiverType, methodKey.MethodName, pkg)
+				}
+
+				if funcDecl != nil && funcDecl.Body != nil {
+					// Check if the method contains async operations (including calls to async external methods)
+					isAsync := v.containsAsyncOperationsComplete(funcDecl.Body, pkg)
+
+					// Check if status changed
+					if oldStatus, exists := v.analysis.MethodAsyncStatus[methodKey]; !exists || oldStatus != isAsync {
+						changed = true
+					}
+
+					v.analysis.MethodAsyncStatus[methodKey] = isAsync
+					continue
+				}
+			}
+
+			// Fallback: mark as sync if we can't analyze the body
+			if _, exists := v.analysis.MethodAsyncStatus[methodKey]; !exists {
+				v.analysis.MethodAsyncStatus[methodKey] = false
+				changed = true
+			}
+		}
+
+		// If no changes in this iteration, we're done
+		if !changed {
+			break
+		}
 	}
 
 	// Analyze methods in dependency order (dependencies analyzed before dependents)

@@ -1,0 +1,3 @@
+getFromCache found: 42
+getFromCacheInline found: 42
+Not found as expected

@@ -156,7 +156,7 @@ export class FileSet {
 	// encounters an unbounded stream of files.
 	//
 	// Removing a file that does not belong to the set has no effect.
-	public RemoveFile(file: File | null): void {
+	public async RemoveFile(file: File | null): Promise<void> {
 		const s = this
 		using __defer = new $.DisposableStack();
 		s.last.CompareAndSwap(file, null) // clear last file cache
