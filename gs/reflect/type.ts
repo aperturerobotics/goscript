@@ -1051,7 +1051,7 @@ export function ChanOf(dir: ChanDir, t: Type): Type {
   return new ChannelType(t, dir)
 }
 
-export function TypeFor<T>(): Type {
+export function TypeFor(): Type {
   return new InterfaceType('interface{}')
 }
 

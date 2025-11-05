@@ -15,13 +15,14 @@ This document contains guidelines and rules for AI agents working on the GoScrip
 - Actively try to improve the codebase to conform to the above when the opportunity arises
 - Go standard library sources are located at "go env GOROOT" (shell command)
 - Leverage adding more tests, for example in `compiler/analysis_test.go`, instead of debug logging, for diagnosing issues or investigating hypotheses. If the new test case is temporary and you plan to remove it later, add a `tmp_test.go` file or similar to keep things separated.
+- AVOID type arguments unless necessary (prefer type inference)
 - When making Git commits use the existing commit message pattern and Linux-kernel style commit message bodies.
 
 ## Project Overview
 
 GoScript is an experimental Go to TypeScript transpiler that enables developers to convert high-level Go code into maintainable TypeScript. It translates Go constructs—such as structs, functions, and pointer semantics—into idiomatic TypeScript code while preserving Go's value semantics and type safety. It is designed to bridge the gap between the robust type system of Go and the flexible ecosystem of TypeScript.
 
-**This is an experimental project** - we do not maintain backwards compatibility and prioritize simplicity and correctness over legacy support.
+**This is an experimental project** - we do not maintain backwards compatibility and prioritize simplicity and correctness over legacy support. You may sometimes encounter a problem that requires a complete re-design or re-think or re-architecting of an aspect of goscript, which is perfectly okay, in this case write a design to `compliance/WIP.md` and think it through extensively before performing your refactor. It's perfectly OK to delete large swaths of code as needed. Focus on correctness.
 
 The GoScript runtime, located in `gs/builtin/builtin.ts`, provides necessary helper functions and is imported in generated code using the `@goscript/builtin` alias.
 
