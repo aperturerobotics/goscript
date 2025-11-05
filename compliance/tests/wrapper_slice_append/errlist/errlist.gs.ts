@@ -36,7 +36,7 @@ export class AStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'AStruct',
+	  'github.com/aperturerobotics/goscript/compliance/tests/wrapper_slice_append/errlist.AStruct',
 	  new AStruct(),
 	  [{ name: "Set", args: [{ name: "msg", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }],
 	  AStruct,

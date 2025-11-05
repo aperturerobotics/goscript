@@ -43,7 +43,7 @@ export class key {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'key',
+	  'go/token.key',
 	  new key(),
 	  [],
 	  key,
@@ -387,7 +387,7 @@ export class tree {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'tree',
+	  'go/token.tree',
 	  new tree(),
 	  [{ name: "locate", args: [{ name: "k", type: "key" }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }, { type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "all", args: [], returns: [{ type: "Seq" }] }, { name: "nextAfter", args: [{ name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }, { name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "setRoot", args: [{ name: "x", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "replaceChild", args: [{ name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }, { name: "old", type: { kind: $.TypeKind.Pointer, elemType: "node" } }, { name: "new", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "rebalanceUp", args: [{ name: "x", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "rotateRight", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "rotateLeft", args: [{ name: "x", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "add", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "File" } }], returns: [] }, { name: "set", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "File" } }, { name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }, { name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "delete", args: [{ name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }], returns: [] }, { name: "deleteSwap", args: [{ name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }], returns: [] }, { name: "deleteMin", args: [{ name: "zpos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }],
 	  tree,
@@ -566,7 +566,7 @@ export class node {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'node',
+	  'go/token.node',
 	  new node(),
 	  [{ name: "check", args: [{ name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "checkBalance", args: [], returns: [] }, { name: "next", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "setLeft", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "setRight", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "safeHeight", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "update", args: [], returns: [] }],
 	  node,

@@ -37,7 +37,7 @@ export class Foo {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Foo',
+	  'main.Foo',
 	  new Foo(),
 	  [{ name: "Bar", args: [], returns: [] }],
 	  Foo,

@@ -42,7 +42,7 @@ export class Employee {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Employee',
+	  'main.Employee',
 	  new Employee(),
 	  [],
 	  Employee,
@@ -111,7 +111,7 @@ export class Node {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Node',
+	  'main.Node',
 	  new Node(),
 	  [],
 	  Node,
@@ -158,7 +158,7 @@ export class Person {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Person',
+	  'main.Person',
 	  new Person(),
 	  [],
 	  Person,
@@ -228,7 +228,7 @@ export class TreeNode {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'TreeNode',
+	  'main.TreeNode',
 	  new TreeNode(),
 	  [],
 	  TreeNode,

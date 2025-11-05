@@ -301,7 +301,7 @@ export class FileSet {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'FileSet',
+	  'go/token.FileSet',
 	  new FileSet(),
 	  [{ name: "Base", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "AddFile", args: [{ name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "base", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "size", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "File" } }] }, { name: "AddExistingFiles", args: [{ name: "files", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "File" } } }], returns: [] }, { name: "RemoveFile", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "File" } }], returns: [] }, { name: "Iterate", args: [{ name: "yield", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "File" }], results: [{ kind: $.TypeKind.Basic, name: "boolean" }] } }], returns: [] }, { name: "file", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "File" } }] }, { name: "File", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "File" } }] }, { name: "PositionFor", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: "Position" }] }, { name: "Position", args: [{ name: "p", type: "Pos" }], returns: [{ type: "Position" }] }, { name: "Read", args: [{ name: "decode", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Interface, methods: [] }], results: [{ kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Write", args: [{ name: "encode", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Interface, methods: [] }], results: [{ kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  FileSet,
@@ -410,7 +410,7 @@ export class Position {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Position',
+	  'go/token.Position',
 	  new Position(),
 	  [{ name: "IsValid", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  Position,
@@ -477,7 +477,7 @@ export class lineInfo {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'lineInfo',
+	  'go/token.lineInfo',
 	  new lineInfo(),
 	  [],
 	  lineInfo,
@@ -921,7 +921,7 @@ export class File {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'File',
+	  'go/token.File',
 	  new File(),
 	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Base", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "LineCount", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "MergeLine", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "Lines", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }] }, { name: "SetLines", args: [{ name: "lines", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "SetLinesForContent", args: [{ name: "content", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [] }, { name: "LineStart", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: "Pos" }] }, { name: "AddLineInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "AddLineColumnInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "column", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "fixOffset", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Pos", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: "Pos" }] }, { name: "Offset", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Line", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "unpack", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "position", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: "Position" }] }, { name: "PositionFor", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: "Position" }] }, { name: "Position", args: [{ name: "p", type: "Pos" }], returns: [{ type: "Position" }] }, { name: "key", args: [], returns: [{ type: "key" }] }],
 	  File,

@@ -8,7 +8,7 @@ export type MultiParamReturner = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/interface_multi_param_return.MultiParamReturner',
+  'main.MultiParamReturner',
   null, // Zero value for interface is null
   [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -39,7 +39,7 @@ export class MyProcessor {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyProcessor',
+	  'main.MyProcessor',
 	  new MyProcessor(),
 	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  MyProcessor,

@@ -182,7 +182,7 @@ export class Mutex {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Mutex',
+	  'github.com/aperturerobotics/util/csync.Mutex',
 	  new Mutex(),
 	  [{ name: "Lock", args: [{ name: "ctx", type: "Context" }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "TryLock", args: [], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Locker", args: [], returns: [{ type: "Locker" }] }],
 	  Mutex,
@@ -248,7 +248,7 @@ export class MutexLocker {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MutexLocker',
+	  'github.com/aperturerobotics/util/csync.MutexLocker',
 	  new MutexLocker(),
 	  [{ name: "Lock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 	  MutexLocker,

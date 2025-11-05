@@ -8,7 +8,7 @@ export type MyInterface = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/interface_to_interface_type_assertion.MyInterface',
+  'main.MyInterface',
   null, // Zero value for interface is null
   [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );
@@ -18,7 +18,7 @@ export type MyOtherInterface = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/interface_to_interface_type_assertion.MyOtherInterface',
+  'main.MyOtherInterface',
   null, // Zero value for interface is null
   [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );
@@ -56,7 +56,7 @@ export class MyStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStruct',
+	  'main.MyStruct',
 	  new MyStruct(),
 	  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  MyStruct,
@@ -69,7 +69,7 @@ export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.markAsStructValue(s.clone())
 
-	let { ok: ok } = $.typeAssert<MyOtherInterface>(i, 'MyOtherInterface')
+	let { ok: ok } = $.typeAssert<MyOtherInterface>(i, 'main.MyOtherInterface')
 	if (ok) {
 		console.log("Type assertion successful")
 	}

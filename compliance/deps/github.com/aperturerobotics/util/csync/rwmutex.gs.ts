@@ -240,7 +240,7 @@ export class RWMutex {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'RWMutex',
+	  'github.com/aperturerobotics/util/csync.RWMutex',
 	  new RWMutex(),
 	  [{ name: "Lock", args: [{ name: "ctx", type: "Context" }, { name: "write", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "TryLock", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Locker", args: [], returns: [{ type: "Locker" }] }, { name: "RLocker", args: [], returns: [{ type: "Locker" }] }],
 	  RWMutex,
@@ -338,7 +338,7 @@ export class RWMutexLocker {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'RWMutexLocker',
+	  'github.com/aperturerobotics/util/csync.RWMutexLocker',
 	  new RWMutexLocker(),
 	  [{ name: "Lock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 	  RWMutexLocker,

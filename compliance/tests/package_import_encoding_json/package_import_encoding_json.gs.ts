@@ -55,7 +55,7 @@ export class Person {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Person',
+	  'main.Person',
 	  new Person(),
 	  [],
 	  Person,

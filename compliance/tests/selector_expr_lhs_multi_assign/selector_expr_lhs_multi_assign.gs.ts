@@ -41,7 +41,7 @@ export class Point {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Point',
+	  'main.Point',
 	  new Point(),
 	  [],
 	  Point,

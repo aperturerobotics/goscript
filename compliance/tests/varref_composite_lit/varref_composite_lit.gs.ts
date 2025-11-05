@@ -36,7 +36,7 @@ export class MockInode {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MockInode',
+	  'main.MockInode',
 	  new MockInode(),
 	  [{ name: "getValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  MockInode,

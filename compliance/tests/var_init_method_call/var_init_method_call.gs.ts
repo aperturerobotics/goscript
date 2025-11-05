@@ -36,7 +36,7 @@ export class T {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'T',
+	  'main.T',
 	  new T(),
 	  [{ name: "WithDelta", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "T" } }] }],
 	  T,

@@ -12,7 +12,7 @@ export type FileInfo = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/nullable_function_param_call.FileInfo',
+  'main.FileInfo',
   null, // Zero value for interface is null
   [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );
@@ -22,7 +22,7 @@ export type Filesystem = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/nullable_function_param_call.Filesystem',
+  'main.Filesystem',
   null, // Zero value for interface is null
   [{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "FileInfo" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -90,7 +90,7 @@ export class MockFileInfo {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MockFileInfo',
+	  'main.MockFileInfo',
 	  new MockFileInfo(),
 	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
 	  MockFileInfo,
@@ -119,7 +119,7 @@ export class MockFilesystem {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MockFilesystem',
+	  'main.MockFilesystem',
 	  new MockFilesystem(),
 	  [{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "FileInfo" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  MockFilesystem,

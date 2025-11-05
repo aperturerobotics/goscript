@@ -71,7 +71,7 @@ export class storage {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'storage',
+	  'main.storage',
 	  new storage(),
 	  [{ name: "Len", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Truncate", args: [], returns: [] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "SetName", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "IsEmpty", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
 	  storage,

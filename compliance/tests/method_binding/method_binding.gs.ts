@@ -51,7 +51,7 @@ export class Counter {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Counter',
+	  'main.Counter',
 	  new Counter(),
 	  [{ name: "Increment", args: [], returns: [] }, { name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "IncrementValue", args: [], returns: [] }, { name: "GetValueByValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  Counter,

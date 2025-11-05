@@ -51,7 +51,7 @@ export class FileTracker {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'FileTracker',
+	  'main.FileTracker',
 	  new FileTracker(),
 	  [{ name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }],
 	  FileTracker,
@@ -93,7 +93,7 @@ export class Scanner {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Scanner',
+	  'main.Scanner',
 	  new Scanner(),
 	  [{ name: "next", args: [], returns: [] }],
 	  Scanner,

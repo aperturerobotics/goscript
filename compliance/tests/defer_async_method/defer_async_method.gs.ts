@@ -42,7 +42,7 @@ export class AsyncResource {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'AsyncResource',
+	  'main.AsyncResource',
 	  new AsyncResource(),
 	  [{ name: "Release", args: [], returns: [] }],
 	  AsyncResource,

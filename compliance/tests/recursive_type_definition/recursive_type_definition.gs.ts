@@ -8,7 +8,7 @@ export type A = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/recursive_type_definition.A',
+  'main.A',
   null, // Zero value for interface is null
   [{ name: "MethodA", args: [{ name: "a", type: "A" }], returns: [] }]
 );
@@ -33,7 +33,7 @@ export class B {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'B',
+	  'main.B',
 	  new B(),
 	  [{ name: "MethodB", args: [{ name: "valB", type: { kind: $.TypeKind.Pointer, elemType: "B" } }], returns: [] }],
 	  B,
@@ -46,7 +46,7 @@ export type C = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/recursive_type_definition.C',
+  'main.C',
   null, // Zero value for interface is null
   [{ name: "MethodC", args: [{ name: "d", type: "D" }], returns: [] }]
 );
@@ -56,7 +56,7 @@ export type D = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/recursive_type_definition.D',
+  'main.D',
   null, // Zero value for interface is null
   [{ name: "MethodD", args: [{ name: "c", type: "C" }], returns: [] }]
 );

@@ -8,7 +8,7 @@ export type Closer = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/embedded_interface_assertion.Closer',
+  'main.Closer',
   null, // Zero value for interface is null
   [{ name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -38,7 +38,7 @@ export class MyStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStruct',
+	  'main.MyStruct',
 	  new MyStruct(),
 	  [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  MyStruct,
@@ -49,7 +49,7 @@ export class MyStruct {
 export type ReadCloser = null | Reader & Closer
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/embedded_interface_assertion.ReadCloser',
+  'main.ReadCloser',
   null, // Zero value for interface is null
   []
 );
@@ -60,7 +60,7 @@ export type Reader = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/embedded_interface_assertion.Reader',
+  'main.Reader',
   null, // Zero value for interface is null
   [{ name: "Read", args: [{ name: "", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -70,7 +70,7 @@ export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({}))
 	rwc = $.markAsStructValue(s.clone())
 
-	let { ok: ok } = $.typeAssert<ReadCloser>(rwc, 'ReadCloser')
+	let { ok: ok } = $.typeAssert<ReadCloser>(rwc, 'main.ReadCloser')
 	if (ok) {
 		console.log("Embedded interface assertion successful")
 	}

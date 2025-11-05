@@ -98,7 +98,7 @@ export class SyntaxError {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'SyntaxError',
+	  'encoding/json.SyntaxError',
 	  new SyntaxError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  SyntaxError,
@@ -247,7 +247,7 @@ export class scanner {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'scanner',
+	  'encoding/json.scanner',
 	  new scanner(),
 	  [{ name: "reset", args: [], returns: [] }, { name: "eof", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "pushParseState", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "newParseState", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "successState", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "popParseState", args: [], returns: [] }, { name: "error", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "context", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  scanner,
@@ -290,7 +290,7 @@ export function checkValid(data: $.Bytes, scan: scanner | null): $.GoError {
 }
 
 export function newScanner(): scanner | null {
-	let scan = $.mustTypeAssert<scanner | null>(scannerPool!.value.Get(), {kind: $.TypeKind.Pointer, elemType: 'scanner'})
+	let scan = $.mustTypeAssert<scanner | null>(scannerPool!.value.Get(), {kind: $.TypeKind.Pointer, elemType: 'encoding/json.scanner'})
 	// scan.reset by design doesn't set bytes to zero
 	scan!.bytes = 0
 	scan!.reset()

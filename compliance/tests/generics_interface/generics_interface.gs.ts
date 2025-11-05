@@ -9,7 +9,7 @@ export type Comparable<T extends $.Comparable> = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/generics_interface.Comparable',
+  'main.Comparable',
   null, // Zero value for interface is null
   [{ name: "Compare", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Equal", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }]
 );
@@ -21,7 +21,7 @@ export type Container<T extends any> = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/generics_interface.Container',
+  'main.Container',
   null, // Zero value for interface is null
   [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );
@@ -70,7 +70,7 @@ export class StringValueContainer {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'StringValueContainer',
+	  'main.StringValueContainer',
 	  new StringValueContainer(),
 	  [{ name: "Compare", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Equal", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
 	  StringValueContainer,
@@ -132,7 +132,7 @@ export class ValueContainer<T extends any> {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'ValueContainer',
+	  'main.ValueContainer',
 	  new ValueContainer(),
 	  [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  ValueContainer,

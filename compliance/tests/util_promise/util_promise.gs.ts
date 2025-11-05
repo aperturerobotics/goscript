@@ -112,7 +112,7 @@ export class PromiseType<T extends any> {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'PromiseType',
+	  'main.PromiseType',
 	  new PromiseType(),
 	  [{ name: "SetResult", args: [{ name: "val", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Await", args: [{ name: "ctx", type: "Context" }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  PromiseType,

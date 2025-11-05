@@ -46,7 +46,7 @@ export class Address {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Address',
+	  'main.Address',
 	  new Address(),
 	  [{ name: "FullAddress", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  Address,
@@ -87,7 +87,7 @@ export class Contact {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Contact',
+	  'main.Contact',
 	  new Contact(),
 	  [{ name: "Call", args: [], returns: [] }],
 	  Contact,
@@ -138,7 +138,7 @@ export class Person {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Person',
+	  'main.Person',
 	  new Person(),
 	  [{ name: "Greet", args: [], returns: [] }],
 	  Person,
@@ -202,7 +202,7 @@ export class Employee {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Employee',
+	  'main.Employee',
 	  new Employee(),
 	  [],
 	  Employee,
@@ -315,7 +315,7 @@ export class Manager {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Manager',
+	  'main.Manager',
 	  new Manager(),
 	  [],
 	  Manager,

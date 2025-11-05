@@ -31,7 +31,7 @@ export class MyStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStruct',
+	  'main.MyStruct',
 	  new MyStruct(),
 	  [],
 	  MyStruct,
@@ -45,7 +45,7 @@ export async function main(): Promise<void> {
 
 	let jAlias: null | any = pAlias
 
-	let { ok: ok } = $.typeAssert<MyStruct | null>(jAlias, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+	let { ok: ok } = $.typeAssert<MyStruct | null>(jAlias, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 	console.log("pointer assertion result:", ok)
 }
 

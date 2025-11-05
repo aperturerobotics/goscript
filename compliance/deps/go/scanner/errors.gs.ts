@@ -57,7 +57,7 @@ export class Error {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Error',
+	  'go/scanner.Error',
 	  new Error(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  Error,
@@ -147,7 +147,7 @@ export function ErrorList_Err(p: ErrorList): $.GoError {
 // it prints the err string.
 export function PrintError(w: io.Writer, err: $.GoError): void {
 	{
-		let { value: list, ok: ok } = $.typeAssert<ErrorList>(err, 'ErrorList')
+		let { value: list, ok: ok } = $.typeAssert<ErrorList>(err, 'go/scanner.ErrorList')
 		if (ok) {
 			for (let _i = 0; _i < $.len(list); _i++) {
 				const e = list![_i]

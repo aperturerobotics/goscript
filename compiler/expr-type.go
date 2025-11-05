@@ -134,11 +134,47 @@ func (c *GoToTSCompiler) writeTypeDescription(typeExpr ast.Expr) {
 				c.tsw.WriteLiterally("}")
 			}
 		} else {
-			// For named types, just use the name string
+			// For named types, use the fully qualified name with package path
+			if goType != nil {
+				if namedType, isNamed := goType.(*types.Named); isNamed {
+					typeName := namedType.Obj().Name()
+					if pkg := namedType.Obj().Pkg(); pkg != nil {
+						pkgPath := pkg.Path()
+						pkgName := pkg.Name()
+						if pkgPath != "" && pkgName != "main" {
+							typeName = pkgPath + "." + typeName
+						} else if pkgName == "main" {
+							typeName = "main." + typeName
+						}
+					}
+					c.tsw.WriteLiterallyf("'%s'", typeName)
+					return
+				}
+			}
+			// Fallback to short name if type info unavailable
 			c.tsw.WriteLiterallyf("'%s'", t.Name)
 		}
 	case *ast.SelectorExpr:
 		if ident, ok := t.X.(*ast.Ident); ok {
+			// Use type info to get the actual package path
+			goType := c.pkg.TypesInfo.TypeOf(t)
+			if goType != nil {
+				if namedType, isNamed := goType.(*types.Named); isNamed {
+					typeName := namedType.Obj().Name()
+					if pkg := namedType.Obj().Pkg(); pkg != nil {
+						pkgPath := pkg.Path()
+						pkgName := pkg.Name()
+						if pkgPath != "" && pkgName != "main" {
+							typeName = pkgPath + "." + typeName
+						} else if pkgName == "main" {
+							typeName = "main." + typeName
+						}
+					}
+					c.tsw.WriteLiterallyf("'%s'", typeName)
+					return
+				}
+			}
+			// Fallback to using the identifier name (package alias)
 			c.tsw.WriteLiterallyf("'%s.%s'", ident.Name, t.Sel.Name)
 		}
 	case *ast.ArrayType:

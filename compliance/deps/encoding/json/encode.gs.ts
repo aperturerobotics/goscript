@@ -71,7 +71,7 @@ export class InvalidUTF8Error {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'InvalidUTF8Error',
+	  'encoding/json.InvalidUTF8Error',
 	  new InvalidUTF8Error(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  InvalidUTF8Error,
@@ -152,7 +152,7 @@ export class MarshalerError {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MarshalerError',
+	  'encoding/json.MarshalerError',
 	  new MarshalerError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Unwrap", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  MarshalerError,
@@ -193,7 +193,7 @@ export class UnsupportedTypeError {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'UnsupportedTypeError',
+	  'encoding/json.UnsupportedTypeError',
 	  new UnsupportedTypeError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  UnsupportedTypeError,
@@ -244,7 +244,7 @@ export class UnsupportedValueError {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'UnsupportedValueError',
+	  'encoding/json.UnsupportedValueError',
 	  new UnsupportedValueError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  UnsupportedValueError,
@@ -292,7 +292,7 @@ export class encOpts {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'encOpts',
+	  'encoding/json.encOpts',
 	  new encOpts(),
 	  [],
 	  encOpts,
@@ -360,7 +360,7 @@ export class encodeState {
 				let r = $.recover()
 				if (r != null) {
 					{
-						let { value: je, ok: ok } = $.typeAssert<jsonError>(r, 'jsonError')
+						let { value: je, ok: ok } = $.typeAssert<jsonError>(r, 'encoding/json.jsonError')
 						if (ok) {
 							err = je.error
 						}
@@ -387,7 +387,7 @@ export class encodeState {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'encodeState',
+	  'encoding/json.encodeState',
 	  new encodeState(),
 	  [{ name: "marshal", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "opts", type: "encOpts" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "error", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [] }, { name: "reflectValue", args: [{ name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
 	  encodeState,
@@ -470,7 +470,7 @@ export class jsonError {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'jsonError',
+	  'encoding/json.jsonError',
 	  new jsonError(),
 	  [],
 	  jsonError,
@@ -516,7 +516,7 @@ export class reflectWithString {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'reflectWithString',
+	  'encoding/json.reflectWithString',
 	  new reflectWithString(),
 	  [],
 	  reflectWithString,
@@ -565,7 +565,7 @@ export class arrayEncoder {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'arrayEncoder',
+	  'encoding/json.arrayEncoder',
 	  new arrayEncoder(),
 	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
 	  arrayEncoder,
@@ -621,7 +621,7 @@ export class condAddrEncoder {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'condAddrEncoder',
+	  'encoding/json.condAddrEncoder',
 	  new condAddrEncoder(),
 	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
 	  condAddrEncoder,
@@ -770,7 +770,7 @@ export class field {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'field',
+	  'encoding/json.field',
 	  new field(),
 	  [],
 	  field,
@@ -867,7 +867,7 @@ export class mapEncoder {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'mapEncoder',
+	  'encoding/json.mapEncoder',
 	  new mapEncoder(),
 	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
 	  mapEncoder,
@@ -933,7 +933,7 @@ export class ptrEncoder {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'ptrEncoder',
+	  'encoding/json.ptrEncoder',
 	  new ptrEncoder(),
 	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
 	  ptrEncoder,
@@ -1003,7 +1003,7 @@ export class sliceEncoder {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'sliceEncoder',
+	  'encoding/json.sliceEncoder',
 	  new sliceEncoder(),
 	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
 	  sliceEncoder,
@@ -1059,7 +1059,7 @@ export class structFields {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'structFields',
+	  'encoding/json.structFields',
 	  new structFields(),
 	  [],
 	  structFields,
@@ -1140,7 +1140,7 @@ export class structEncoder {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'structEncoder',
+	  'encoding/json.structEncoder',
 	  new structEncoder(),
 	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
 	  structEncoder,
@@ -1343,7 +1343,7 @@ export function newEncodeState(): encodeState | null {
 	{
 		let v = encodeStatePool!.value.Get()
 		if (v != null) {
-			let e = $.mustTypeAssert<encodeState | null>(v, {kind: $.TypeKind.Pointer, elemType: 'encodeState'})
+			let e = $.mustTypeAssert<encodeState | null>(v, {kind: $.TypeKind.Pointer, elemType: 'encoding/json.encodeState'})
 			e!.Reset()
 			if ($.len(e!.ptrSeen) > 0) {
 				$.panic("ptrEncoder.encode should have emptied ptrSeen via defers")
@@ -1517,7 +1517,7 @@ export function marshalerEncoder(e: encodeState | null, v: reflect.Value, opts: 
 		e!.WriteString("null")
 		return 
 	}
-	let { value: m, ok: ok } = $.typeAssert<Marshaler>(v.Interface(), 'Marshaler')
+	let { value: m, ok: ok } = $.typeAssert<Marshaler>(v.Interface(), 'encoding/json.Marshaler')
 	if (!ok) {
 		e!.WriteString("null")
 		return 
@@ -1540,7 +1540,7 @@ export function addrMarshalerEncoder(e: encodeState | null, v: reflect.Value, op
 		e!.WriteString("null")
 		return 
 	}
-	let m = $.mustTypeAssert<Marshaler>(va.Interface(), 'Marshaler')
+	let m = $.mustTypeAssert<Marshaler>(va.Interface(), 'encoding/json.Marshaler')
 	let [b, err] = m!.MarshalJSON()
 	if (err == null) {
 		e!.Grow($.len(b))
@@ -2262,20 +2262,20 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 									field.isZero = (v: reflect.Value): boolean => {
 										// Avoid panics calling IsZero on a nil interface or
 										// non-nil interface with nil pointer.
-										return v.IsNil() || (v.Elem()!.Kind() == reflect.Ptr && v.Elem()!.IsNil()) || $.mustTypeAssert<isZeroer>(v.Interface(), 'isZeroer')!.IsZero()
+										return v.IsNil() || (v.Elem()!.Kind() == reflect.Ptr && v.Elem()!.IsNil()) || $.mustTypeAssert<isZeroer>(v.Interface(), 'encoding/json.isZeroer')!.IsZero()
 									}
 									break
 								}
 								case t!.Kind() == reflect.Ptr && t!.Implements(isZeroerType): {
 									field.isZero = (v: reflect.Value): boolean => {
 										// Avoid panics calling IsZero on nil pointer.
-										return v.IsNil() || $.mustTypeAssert<isZeroer>(v.Interface(), 'isZeroer')!.IsZero()
+										return v.IsNil() || $.mustTypeAssert<isZeroer>(v.Interface(), 'encoding/json.isZeroer')!.IsZero()
 									}
 									break
 								}
 								case t!.Implements(isZeroerType): {
 									field.isZero = (v: reflect.Value): boolean => {
-										return $.mustTypeAssert<isZeroer>(v.Interface(), 'isZeroer')!.IsZero()
+										return $.mustTypeAssert<isZeroer>(v.Interface(), 'encoding/json.isZeroer')!.IsZero()
 									}
 									break
 								}
@@ -2289,7 +2289,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 											v2.Set(v)
 											v = $.markAsStructValue(v2.clone())
 										}
-										return $.mustTypeAssert<isZeroer>(v.Addr()!.Interface(), 'isZeroer')!.IsZero()
+										return $.mustTypeAssert<isZeroer>(v.Addr()!.Interface(), 'encoding/json.isZeroer')!.IsZero()
 									}
 									break
 								}
@@ -2437,11 +2437,11 @@ export async function cachedTypeFields(t: reflect.Type): Promise<structFields> {
 	{
 		let [f, ok] = await fieldCache!.value.Load(t)
 		if (ok) {
-			return $.mustTypeAssert<structFields>(f, 'structFields')
+			return $.mustTypeAssert<structFields>(f, 'encoding/json.structFields')
 		}
 	}
 	let [f, ] = await fieldCache!.value.LoadOrStore(t, await typeFields(t))
-	return $.mustTypeAssert<structFields>(f, 'structFields')
+	return $.mustTypeAssert<structFields>(f, 'encoding/json.structFields')
 }
 
 export function mayAppendQuote(b: $.Bytes, quoted: boolean): $.Bytes {

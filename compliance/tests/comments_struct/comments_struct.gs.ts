@@ -43,7 +43,7 @@ export class TestStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'TestStruct',
+	  'main.TestStruct',
 	  new TestStruct(),
 	  [],
 	  TestStruct,

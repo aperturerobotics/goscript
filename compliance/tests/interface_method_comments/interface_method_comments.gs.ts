@@ -9,7 +9,7 @@ export type MyInterface = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/interface_method_comments.MyInterface',
+  'main.MyInterface',
   null, // Zero value for interface is null
   [{ name: "MyMethod", args: [], returns: [] }]
 );

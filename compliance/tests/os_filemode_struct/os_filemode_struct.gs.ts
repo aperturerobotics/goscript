@@ -43,7 +43,7 @@ export class file {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'file',
+	  'main.file',
 	  new file(),
 	  [],
 	  file,

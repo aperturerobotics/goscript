@@ -43,7 +43,7 @@ export class Person {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Person',
+	  'main.Person',
 	  new Person(),
 	  [],
 	  Person,
@@ -56,7 +56,7 @@ export type Stringer = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/package_import_reflect.Stringer',
+  'main.Stringer',
   null, // Zero value for interface is null
   [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );

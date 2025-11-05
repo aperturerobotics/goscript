@@ -8,7 +8,7 @@ export type MyInterface = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/struct_pointer_interface_fields.MyInterface',
+  'main.MyInterface',
   null, // Zero value for interface is null
   [{ name: "Method", args: [], returns: [] }]
 );
@@ -51,7 +51,7 @@ export class MyStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStruct',
+	  'main.MyStruct',
 	  new MyStruct(),
 	  [],
 	  MyStruct,

@@ -72,7 +72,7 @@ export class serializedFile {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'serializedFile',
+	  'go/token.serializedFile',
 	  new serializedFile(),
 	  [],
 	  serializedFile,
@@ -118,7 +118,7 @@ export class serializedFileSet {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'serializedFileSet',
+	  'go/token.serializedFileSet',
 	  new serializedFileSet(),
 	  [],
 	  serializedFileSet,

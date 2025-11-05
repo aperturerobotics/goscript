@@ -45,7 +45,7 @@ export async function main(): Promise<void> {
 
 		// Register this type with the runtime type system
 		static __typeInfo = $.registerStructType(
-		  'KV',
+		  'main.KV',
 		  new KV(),
 		  [],
 		  KV,
@@ -59,7 +59,7 @@ export async function main(): Promise<void> {
 	for (let _i = 0; _i < $.len(list); _i++) {
 		const exp = list![_i]
 		{
-			$.typeSwitch(exp, [{ types: [{kind: $.TypeKind.Pointer, elemType: 'KV'}], body: (x) => {
+			$.typeSwitch(exp, [{ types: [{kind: $.TypeKind.Pointer, elemType: 'main.KV'}], body: (x) => {
 				const _temp_x = x
 				{
 					let { value: x, ok: ok } = $.typeAssert<string>(_temp_x.Key, {kind: $.TypeKind.Basic, name: 'string'})

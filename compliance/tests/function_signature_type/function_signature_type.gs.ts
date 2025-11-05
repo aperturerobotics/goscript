@@ -44,7 +44,7 @@ export class MyError {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyError',
+	  'main.MyError',
 	  new MyError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  MyError,

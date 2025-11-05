@@ -248,7 +248,11 @@ func (c *GoToTSCompiler) writeNamedTypeFor(t types.Type) error {
 			obj := named.Obj()
 			pkgPath := ""
 			if pkg := obj.Pkg(); pkg != nil {
-				pkgPath = pkg.Path() + "."
+				if pkg.Name() == "main" {
+					pkgPath = "main."
+				} else if pkg.Path() != "" {
+					pkgPath = pkg.Path() + "."
+				}
 			}
 			typeName := pkgPath + obj.Name()
 			c.tsw.WriteLiterally("reflect.getInterfaceTypeByName(\"" + typeName + "\")")

@@ -24,7 +24,7 @@ export class ConcreteA {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'ConcreteA',
+	  'main.ConcreteA',
 	  new ConcreteA(),
 	  [{ name: "Method", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  ConcreteA,
@@ -53,7 +53,7 @@ export class ConcreteB {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'ConcreteB',
+	  'main.ConcreteB',
 	  new ConcreteB(),
 	  [{ name: "Method", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  ConcreteB,
@@ -99,7 +99,7 @@ export class Container {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Container',
+	  'main.Container',
 	  new Container(),
 	  [],
 	  Container,
@@ -112,7 +112,7 @@ export type Interface = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/type_assertion_duplicate_vars.Interface',
+  'main.Interface',
   null, // Zero value for interface is null
   [{ name: "Method", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );
@@ -125,11 +125,11 @@ export async function main(): Promise<void> {
 	// Multiple type assertions that should generate unique variable names
 	let _gs_ta_val_e051: ConcreteA
 	let _gs_ta_ok_e051: boolean
-	({ value: _gs_ta_val_e051, ok: _gs_ta_ok_e051 } = $.typeAssert<ConcreteA>(iface, 'ConcreteA'))
+	({ value: _gs_ta_val_e051, ok: _gs_ta_ok_e051 } = $.typeAssert<ConcreteA>(iface, 'main.ConcreteA'))
 	c!.hasA = _gs_ta_ok_e051
 	let _gs_ta_val_d761: ConcreteB
 	let _gs_ta_ok_d761: boolean
-	({ value: _gs_ta_val_d761, ok: _gs_ta_ok_d761 } = $.typeAssert<ConcreteB>(iface, 'ConcreteB'))
+	({ value: _gs_ta_val_d761, ok: _gs_ta_ok_d761 } = $.typeAssert<ConcreteB>(iface, 'main.ConcreteB'))
 	c!.hasB = _gs_ta_ok_d761
 
 	console.log("hasA:", c!.hasA)

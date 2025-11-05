@@ -31,7 +31,7 @@ export class buffer {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'buffer',
+	  'main.buffer',
 	  new buffer(),
 	  [],
 	  buffer,
@@ -88,7 +88,7 @@ export class printer {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'printer',
+	  'main.printer',
 	  new printer(),
 	  [{ name: "free", args: [], returns: [] }, { name: "checkCapacity", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "getLength", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  printer,

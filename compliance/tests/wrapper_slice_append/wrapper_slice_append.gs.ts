@@ -43,7 +43,7 @@ export class parser {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'parser',
+	  'main.parser',
 	  new parser(),
 	  [],
 	  parser,

@@ -46,7 +46,7 @@ export class buffer {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'buffer',
+	  'main.buffer',
 	  new buffer(),
 	  [{ name: "write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [] }, { name: "writeString", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "writeByte", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }],
 	  buffer,

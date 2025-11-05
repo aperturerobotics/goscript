@@ -46,7 +46,7 @@ export class Pair<T extends any> {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Pair',
+	  'main.Pair',
 	  new Pair(),
 	  [{ name: "GetFirst", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }],
 	  Pair,

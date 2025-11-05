@@ -43,7 +43,7 @@ export class Message {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Message',
+	  'main.Message',
 	  new Message(),
 	  [],
 	  Message,

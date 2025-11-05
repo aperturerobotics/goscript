@@ -24,7 +24,7 @@ export class Greeter {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'Greeter',
+	  'main.Greeter',
 	  new Greeter(),
 	  [{ name: "Greet", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  Greeter,
@@ -53,7 +53,7 @@ export class MyStringer {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStringer',
+	  'main.MyStringer',
 	  new MyStringer(),
 	  [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  MyStringer,
@@ -66,7 +66,7 @@ export type Stringer = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/inline_interface_type_assertion.Stringer',
+  'main.Stringer',
   null, // Zero value for interface is null
   [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );

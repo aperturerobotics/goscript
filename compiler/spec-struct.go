@@ -429,8 +429,19 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 	// Add code to register the type with the runtime type system
 	c.tsw.WriteLine("")
 	c.tsw.WriteLinef("// Register this type with the runtime type system")
+
+	// Build full package path name for registration
+	structName := className
+	pkgPath := c.pkg.Types.Path()
+	pkgName := c.pkg.Types.Name()
+	if pkgPath != "" && pkgName != "main" {
+		structName = pkgPath + "." + className
+	} else if pkgName == "main" {
+		structName = "main." + className
+	}
+
 	c.tsw.WriteLinef("static __typeInfo = $.registerStructType(")
-	c.tsw.WriteLinef("  '%s',", className)
+	c.tsw.WriteLinef("  '%s',", structName)
 	c.tsw.WriteLinef("  new %s(),", className)
 	c.tsw.WriteLiterally("  [")
 	// Collect methods for the struct type

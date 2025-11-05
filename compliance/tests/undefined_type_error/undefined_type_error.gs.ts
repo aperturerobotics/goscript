@@ -140,7 +140,7 @@ export class formatter {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'formatter',
+	  'main.formatter',
 	  new formatter(),
 	  [],
 	  formatter,
@@ -215,7 +215,7 @@ export class printer {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'printer',
+	  'main.printer',
 	  new printer(),
 	  [{ name: "init", args: [], returns: [] }, { name: "format", args: [{ name: "verb", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }],
 	  printer,

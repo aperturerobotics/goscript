@@ -10,7 +10,7 @@ export type MyInterface = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/reflect_typefor.MyInterface',
+  'main.MyInterface',
   null, // Zero value for interface is null
   [{ name: "SomeMethod", args: [], returns: [] }]
 );
@@ -53,7 +53,7 @@ export class MyStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStruct',
+	  'main.MyStruct',
 	  new MyStruct(),
 	  [],
 	  MyStruct,
@@ -63,7 +63,7 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	// Test TypeFor with named interface type
-	let t1 = reflect.getInterfaceTypeByName("github.com/aperturerobotics/goscript/compliance/tests/reflect_typefor.MyInterface")
+	let t1 = reflect.getInterfaceTypeByName("main.MyInterface")
 	console.log("TypeFor interface:", t1!.String())
 
 	// Test TypeFor with struct type

@@ -31,7 +31,7 @@ export class MyStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStruct',
+	  'main.MyStruct',
 	  new MyStruct(),
 	  [],
 	  MyStruct,
@@ -49,15 +49,15 @@ export async function main(): Promise<void> {
 
 	// Type assertions - struct value
 	let i: null | any = $.markAsStructValue(s.clone())
-	let { ok: ok1 } = $.typeAssert<MyStruct>(i, 'MyStruct')
-	let { ok: ok2 } = $.typeAssert<MyStruct | null>(i, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+	let { ok: ok1 } = $.typeAssert<MyStruct>(i, 'main.MyStruct')
+	let { ok: ok2 } = $.typeAssert<MyStruct | null>(i, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 	console.log("struct value -> MyStruct assertion:", ok1) // Expected: true
 	console.log("struct value -> *MyStruct assertion:", ok2) // Expected: false
 
 	// Type assertions - struct pointer
 	let j: null | any = p
-	let { ok: ok3 } = $.typeAssert<MyStruct>(j, 'MyStruct')
-	let { ok: ok4 } = $.typeAssert<MyStruct | null>(j, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+	let { ok: ok3 } = $.typeAssert<MyStruct>(j, 'main.MyStruct')
+	let { ok: ok4 } = $.typeAssert<MyStruct | null>(j, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 	console.log("struct pointer -> MyStruct assertion:", ok3) // Expected: false
 	console.log("struct pointer -> *MyStruct assertion:", ok4) // Expected: true
 
@@ -71,13 +71,13 @@ export async function main(): Promise<void> {
 	// struct pointer in interface
 	let jAlias: null | any = pAlias
 
-	let { ok: ok5 } = $.typeAssert<MyStruct>(iOriginal, 'MyStruct')
-	let { ok: ok6 } = $.typeAssert<MyStruct | null>(iOriginal, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+	let { ok: ok5 } = $.typeAssert<MyStruct>(iOriginal, 'main.MyStruct')
+	let { ok: ok6 } = $.typeAssert<MyStruct | null>(iOriginal, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 	console.log("original value -> MyStruct assertion:", ok5) // Expected: true
 	console.log("original value -> *MyStruct assertion:", ok6) // Expected: false
 
-	let { ok: ok7 } = $.typeAssert<MyStruct>(jAlias, 'MyStruct')
-	let { ok: ok8 } = $.typeAssert<MyStruct | null>(jAlias, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+	let { ok: ok7 } = $.typeAssert<MyStruct>(jAlias, 'main.MyStruct')
+	let { ok: ok8 } = $.typeAssert<MyStruct | null>(jAlias, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 	console.log("alias pointer -> MyStruct assertion:", ok7) // Expected: false
 	console.log("alias pointer -> *MyStruct assertion:", ok8) // Expected: true
 
@@ -90,8 +90,8 @@ export async function main(): Promise<void> {
 	let i1: null | any = p1
 	let i2: null | any = p2
 
-	let { ok: ok9 } = $.typeAssert<MyStruct | null>(i1, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
-	let { ok: ok10 } = $.typeAssert<MyStruct | null>(i2, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+	let { ok: ok9 } = $.typeAssert<MyStruct | null>(i1, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
+	let { ok: ok10 } = $.typeAssert<MyStruct | null>(i2, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 	console.log("first pointer -> *MyStruct assertion:", ok9) // Expected: true
 	console.log("second pointer -> *MyStruct assertion:", ok10) // Expected: true
 
@@ -99,12 +99,12 @@ export async function main(): Promise<void> {
 
 	// Expected: 99
 	{
-		let { value: structPtr1, ok: ok } = $.typeAssert<MyStruct | null>(i1, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+		let { value: structPtr1, ok: ok } = $.typeAssert<MyStruct | null>(i1, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 		if (ok) {
 
 			// Expected: 99
 			{
-				let { value: structPtr2, ok: ok } = $.typeAssert<MyStruct | null>(i2, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+				let { value: structPtr2, ok: ok } = $.typeAssert<MyStruct | null>(i2, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 				if (ok) {
 					structPtr1!.Value = 99
 					console.log("shared modification check:", structPtr2!.Value) // Expected: 99
@@ -124,8 +124,8 @@ export async function main(): Promise<void> {
 	// marked struct in interface
 	let iLit: null | any = pLit
 
-	let { ok: ok11 } = $.typeAssert<MyStruct | null>(iVar, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
-	let { ok: ok12 } = $.typeAssert<MyStruct | null>(iLit, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+	let { ok: ok11 } = $.typeAssert<MyStruct | null>(iVar, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
+	let { ok: ok12 } = $.typeAssert<MyStruct | null>(iLit, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 	console.log("variable pointer -> *MyStruct assertion:", ok11) // Expected: true
 	console.log("literal pointer -> *MyStruct assertion:", ok12) // Expected: true
 
@@ -141,12 +141,12 @@ export async function main(): Promise<void> {
 		const item = arr![i]
 		{
 			{
-				let { value: val, ok: ok } = $.typeAssert<MyStruct>(item, 'MyStruct')
+				let { value: val, ok: ok } = $.typeAssert<MyStruct>(item, 'main.MyStruct')
 				if (ok) {
 					console.log("arr[", i, "] is MyStruct with value:", val.Value)
 				}
 				 else {
-					let { value: ptr, ok: ok } = $.typeAssert<MyStruct | null>(item, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'})
+					let { value: ptr, ok: ok } = $.typeAssert<MyStruct | null>(item, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 					if (ok) {
 						console.log("arr[", i, "] is *MyStruct with value:", ptr!.Value)
 					}
@@ -165,10 +165,10 @@ export async function main(): Promise<void> {
 	for (let i = 0; i < $.len(testItems); i++) {
 		const item = testItems![i]
 		{
-			$.typeSwitch(item, [{ types: ['MyStruct'], body: (v) => {
+			$.typeSwitch(item, [{ types: ['main.MyStruct'], body: (v) => {
 				console.log("testItems[", i, "] is MyStruct value:", v.Value)
 			}},
-			{ types: [{kind: $.TypeKind.Pointer, elemType: 'MyStruct'}], body: (v) => {
+			{ types: [{kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'}], body: (v) => {
 				console.log("testItems[", i, "] is *MyStruct pointer:", v!.Value)
 			}},
 			{ types: [{kind: $.TypeKind.Basic, name: 'number'}], body: (v) => {

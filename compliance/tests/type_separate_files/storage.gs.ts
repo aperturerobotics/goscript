@@ -42,7 +42,7 @@ export class storage {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'storage',
+	  'main.storage',
 	  new storage(),
 	  [],
 	  storage,

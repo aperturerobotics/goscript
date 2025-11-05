@@ -42,7 +42,7 @@ export class MyStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStruct',
+	  'main.MyStruct',
 	  new MyStruct(),
 	  [{ name: "UsesReceiver", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "DoesNotUseReceiver", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  MyStruct,

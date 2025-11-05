@@ -33,7 +33,7 @@ export class FuncContainer {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'FuncContainer',
+	  'main.FuncContainer',
 	  new FuncContainer(),
 	  [],
 	  FuncContainer,

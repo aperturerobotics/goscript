@@ -536,8 +536,11 @@ func (c *GoToTSCompiler) WriteInterfaceTypeSpec(a *ast.TypeSpec, t *ast.Interfac
 	// Build full package path name for registration
 	interfaceName := a.Name.Name
 	pkgPath := c.pkg.Types.Path()
-	if pkgPath != "" {
+	pkgName := c.pkg.Types.Name()
+	if pkgPath != "" && pkgName != "main" {
 		interfaceName = pkgPath + "." + interfaceName
+	} else if pkgName == "main" {
+		interfaceName = "main." + interfaceName
 	}
 	c.tsw.WriteLine("")
 	c.tsw.WriteLinef("$.registerInterfaceType(")

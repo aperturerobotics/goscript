@@ -41,7 +41,7 @@ export class MyStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStruct',
+	  'main.MyStruct',
 	  new MyStruct(),
 	  [],
 	  MyStruct,
@@ -87,7 +87,7 @@ export class NestedStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'NestedStruct',
+	  'main.NestedStruct',
 	  new NestedStruct(),
 	  [],
 	  NestedStruct,

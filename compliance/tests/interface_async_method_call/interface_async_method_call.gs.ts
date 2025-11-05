@@ -9,7 +9,7 @@ export type AsyncProcessor = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/interface_async_method_call.AsyncProcessor',
+  'main.AsyncProcessor',
   null, // Zero value for interface is null
   [{ name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );
@@ -53,7 +53,7 @@ export class ChannelProcessor {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'ChannelProcessor',
+	  'main.ChannelProcessor',
 	  new ChannelProcessor(),
 	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  ChannelProcessor,
@@ -98,7 +98,7 @@ export class SimpleProcessor {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'SimpleProcessor',
+	  'main.SimpleProcessor',
 	  new SimpleProcessor(),
 	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  SimpleProcessor,

@@ -56,7 +56,7 @@ export class AsyncData {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'AsyncData',
+	  'main.AsyncData',
 	  new AsyncData(),
 	  [{ name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  AsyncData,

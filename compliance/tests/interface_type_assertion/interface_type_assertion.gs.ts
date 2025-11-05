@@ -8,7 +8,7 @@ export type MyInterface = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/compliance/tests/interface_type_assertion.MyInterface',
+  'main.MyInterface',
   null, // Zero value for interface is null
   [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );
@@ -46,7 +46,7 @@ export class MyStruct {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'MyStruct',
+	  'main.MyStruct',
 	  new MyStruct(),
 	  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  MyStruct,
@@ -59,7 +59,7 @@ export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.markAsStructValue(s.clone())
 
-	let { ok: ok } = $.typeAssert<MyStruct>(i, 'MyStruct')
+	let { ok: ok } = $.typeAssert<MyStruct>(i, 'main.MyStruct')
 	if (ok) {
 		console.log("Type assertion successful")
 	}
@@ -68,7 +68,7 @@ export async function main(): Promise<void> {
 	}
 
 	// try a second time since this generates something different when using = and not :=
-	({ ok: ok } = $.typeAssert<MyStruct | null>(i, {kind: $.TypeKind.Pointer, elemType: 'MyStruct'}))
+	({ ok: ok } = $.typeAssert<MyStruct | null>(i, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'}))
 
 	// expected
 	if (ok) {
@@ -80,7 +80,7 @@ export async function main(): Promise<void> {
 	}
 
 	// assign result to a variable
-	let { value: val, ok: ok2 } = $.typeAssert<MyStruct>(i, 'MyStruct')
+	let { value: val, ok: ok2 } = $.typeAssert<MyStruct>(i, 'main.MyStruct')
 	if (!ok2) {
 		console.log("type assertion failed")
 	}

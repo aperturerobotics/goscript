@@ -48,7 +48,7 @@ export class FileStatus {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'FileStatus',
+	  'main.FileStatus',
 	  new FileStatus(),
 	  [],
 	  FileStatus,
