@@ -117,14 +117,26 @@ func (c *GoToTSCompiler) WriteCallExpr(exp *ast.CallExpr) error {
 		}
 		c.tsw.WriteLiterally(")")
 	} else {
+		// Check if this is a function call that returns a function (e.g., simpleIterator(m)())
+		// and if the inner call is async, wrap it in parentheses
+		innerCallExpr, isCallExpr := expFun.(*ast.CallExpr)
+		needsParens := isCallExpr && c.isCallExprAsync(innerCallExpr)
+
+		if needsParens {
+			c.tsw.WriteLiterally("(")
+		}
+
 		// Not an identifier (e.g., method call on a value, function call result)
 		if err := c.WriteValueExpr(expFun); err != nil {
 			return fmt.Errorf("failed to write method expression in call: %w", err)
 		}
 
-		// Check if this is a function call that returns a function (e.g., simpleIterator(m)())
+		if needsParens {
+			c.tsw.WriteLiterally(")")
+		}
+
 		// Add non-null assertion since the returned function could be null
-		if _, isCallExpr := expFun.(*ast.CallExpr); isCallExpr {
+		if isCallExpr {
 			c.tsw.WriteLiterally("!")
 		} else {
 			c.addNonNullAssertion(expFun)

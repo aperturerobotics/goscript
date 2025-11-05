@@ -382,7 +382,7 @@ export class encodeState {
 
 	public async reflectValue(v: reflect.Value, opts: encOpts): Promise<void> {
 		const e = this
-		await valueEncoder(v)!(e, v, opts)
+		(await valueEncoder(v))!(e, v, opts)
 	}
 
 	// Register this type with the runtime type system

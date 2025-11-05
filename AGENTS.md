@@ -24,6 +24,8 @@ GoScript is an experimental Go to TypeScript transpiler that enables developers 
 
 **This is an experimental project** - we do not maintain backwards compatibility and prioritize simplicity and correctness over legacy support. You may sometimes encounter a problem that requires a complete re-design or re-think or re-architecting of an aspect of goscript, which is perfectly okay, in this case write a design to `compliance/WIP.md` and think it through extensively before performing your refactor. It's perfectly OK to delete large swaths of code as needed. Focus on correctness.
 
+If you want to overwrite WIP.md you must `rm` it first.
+
 The GoScript runtime, located in `gs/builtin/builtin.ts`, provides necessary helper functions and is imported in generated code using the `@goscript/builtin` alias.
 
 **Output Style**: Generated TypeScript should not use semicolons and should always focus on code clarity and correctness.
