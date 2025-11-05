@@ -35,6 +35,7 @@ export { Swapper } from './swapper.js'
 // Export new types and constants
 export {
   StructTag,
+  StructField,
   ValueError,
   SelectDir,
   SelectSend,
@@ -45,7 +46,6 @@ export {
 export type {
   uintptr,
   Pointer,
-  StructField,
   Method,
   SelectCase,
   SliceHeader,
