@@ -1,0 +1,3 @@
+Before Grow: len= 3 cap= 3
+After Grow: len= 3 cap= 8
+slices.Grow test finished

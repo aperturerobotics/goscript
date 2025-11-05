@@ -63,6 +63,43 @@ export function Delete<T>(s: $.Slice<T>, i: number, j: number): $.Slice<T> {
 }
 
 /**
+ * Grow increases the slice's capacity, if necessary, to guarantee space for
+ * another n elements. After Grow(n), at least n elements can be appended
+ * to the slice without another allocation. If n is negative or too large to
+ * allocate the memory, Grow panics.
+ * This is equivalent to Go's slices.Grow function.
+ * @param s The slice to grow
+ * @param n The number of additional elements to guarantee space for
+ * @returns The slice with increased capacity
+ */
+export function Grow<T>(s: $.Slice<T>, n: number): $.Slice<T> {
+  if (n < 0) {
+    throw new Error(`slices.Grow: negative n: ${n}`)
+  }
+  const currentLen = $.len(s)
+  const currentCap = $.cap(s)
+  const neededCap = currentLen + n
+
+  if (neededCap <= currentCap) {
+    return s
+  }
+
+  // Create new slice with increased capacity
+  // Go's growth strategy typically doubles capacity when needed
+  let newCap = currentCap * 2
+  if (newCap < neededCap) {
+    newCap = neededCap
+  }
+
+  const newSlice = $.makeSlice<T>(currentLen, newCap)
+  for (let i = 0; i < currentLen; i++) {
+    ;(newSlice as any)[i] = (s as any)[i]
+  }
+
+  return newSlice
+}
+
+/**
  * BinarySearchFunc works like BinarySearch, but uses a custom comparison function.
  * The slice must be sorted in increasing order, where "increasing" is defined by cmp.
  * cmp should return 0 if the slice element matches the target, a negative number if
