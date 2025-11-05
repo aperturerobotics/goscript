@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"go/types"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/aperturerobotics/goscript"
@@ -380,7 +381,7 @@ func (a *Analysis) NeedsVarRefAccess(obj types.Object) bool {
 	}
 
 	// For pointer variables, check if they point to a variable-referenced value
-	if ptrType, ok := obj.Type().(*types.Pointer); ok {
+	if _, ok := obj.Type().(*types.Pointer); ok {
 		// Check all assignments to this pointer variable
 		for varObj, info := range a.VariableUsage {
 			if varObj == obj {
@@ -392,11 +393,6 @@ func (a *Analysis) NeedsVarRefAccess(obj types.Object) bool {
 				}
 			}
 		}
-
-		// Handle direct pointer initialization like: var p *int = &x
-		// Check if the pointer type's element type requires variable referencing
-		_ = ptrType.Elem()
-		// For now, conservatively return false for untracked cases
 	}
 
 	return false
@@ -463,9 +459,6 @@ type analysisVisitor struct {
 
 	// currentFuncLit tracks the *ast.FuncLit of the function literal we're currently analyzing.
 	currentFuncLit *ast.FuncLit
-
-	// visitingMethods tracks methods currently being analyzed to prevent infinite recursion
-	visitingMethods map[MethodKey]bool
 }
 
 // getOrCreateUsageInfo retrieves or creates the VariableUsageInfo for a given object.
@@ -1176,9 +1169,8 @@ func AnalyzePackageFiles(pkg *packages.Package, allPackages map[string]*packages
 
 	// Create visitor for the entire package
 	visitor := &analysisVisitor{
-		analysis:        analysis,
-		pkg:             pkg,
-		visitingMethods: make(map[MethodKey]bool),
+		analysis: analysis,
+		pkg:      pkg,
 	}
 
 	// First pass: analyze all declarations and statements across all files
@@ -1270,13 +1262,7 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 
 					// Check if this function is defined in the current file
 					currentFileFuncs := analysis.FunctionDefs[baseFileName]
-					isDefinedInCurrentFile := false
-					for _, f := range currentFileFuncs {
-						if f == funcName {
-							isDefinedInCurrentFile = true
-							break
-						}
-					}
+					isDefinedInCurrentFile := slices.Contains(currentFileFuncs, funcName)
 
 					// If not defined in current file, find which file defines it
 					if !isDefinedInCurrentFile {
@@ -1284,24 +1270,15 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 							if sourceFile == baseFileName {
 								continue // Skip current file
 							}
-							for _, f := range funcs {
-								if f == funcName {
-									// Found the function in another file
-									if callsFromOtherFiles[sourceFile] == nil {
-										callsFromOtherFiles[sourceFile] = []string{}
-									}
-									// Check if already added to avoid duplicates
-									found := false
-									for _, existing := range callsFromOtherFiles[sourceFile] {
-										if existing == funcName {
-											found = true
-											break
-										}
-									}
-									if !found {
-										callsFromOtherFiles[sourceFile] = append(callsFromOtherFiles[sourceFile], funcName)
-									}
-									break
+							if slices.Contains(funcs, funcName) {
+								// Found the function in another file
+								if callsFromOtherFiles[sourceFile] == nil {
+									callsFromOtherFiles[sourceFile] = []string{}
+								}
+								// Check if already added to avoid duplicates
+								found := slices.Contains(callsFromOtherFiles[sourceFile], funcName)
+								if !found {
+									callsFromOtherFiles[sourceFile] = append(callsFromOtherFiles[sourceFile], funcName)
 								}
 							}
 						}
@@ -1334,13 +1311,7 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 
 						// Check if this type is defined in the current file
 						currentFileTypes := analysis.TypeDefs[baseFileName]
-						isDefinedInCurrentFile := false
-						for _, t := range currentFileTypes {
-							if t == typeName {
-								isDefinedInCurrentFile = true
-								break
-							}
-						}
+						isDefinedInCurrentFile := slices.Contains(currentFileTypes, typeName)
 
 						// If not defined in current file, find which file defines it
 						if !isDefinedInCurrentFile {
@@ -1348,24 +1319,15 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 								if sourceFile == baseFileName {
 									continue // Skip current file
 								}
-								for _, t := range types {
-									if t == typeName {
-										// Found the type in another file
-										if typeRefsFromOtherFiles[sourceFile] == nil {
-											typeRefsFromOtherFiles[sourceFile] = []string{}
-										}
-										// Check if already added to avoid duplicates
-										found := false
-										for _, existing := range typeRefsFromOtherFiles[sourceFile] {
-											if existing == typeName {
-												found = true
-												break
-											}
-										}
-										if !found {
-											typeRefsFromOtherFiles[sourceFile] = append(typeRefsFromOtherFiles[sourceFile], typeName)
-										}
-										break
+								if slices.Contains(types, typeName) {
+									// Found the type in another file
+									if typeRefsFromOtherFiles[sourceFile] == nil {
+										typeRefsFromOtherFiles[sourceFile] = []string{}
+									}
+									// Check if already added to avoid duplicates
+									found := slices.Contains(typeRefsFromOtherFiles[sourceFile], typeName)
+									if !found {
+										typeRefsFromOtherFiles[sourceFile] = append(typeRefsFromOtherFiles[sourceFile], typeName)
 									}
 								}
 							}
@@ -1813,50 +1775,6 @@ func (a *Analysis) GetIdentifierMapping(ident *ast.Ident) string {
 	return ""
 }
 
-// trackTypeAssertion analyzes type assertions and records interface implementations
-func (v *analysisVisitor) trackTypeAssertion(typeAssert *ast.TypeAssertExpr) {
-	// Get the type being asserted to
-	assertedType := v.pkg.TypesInfo.TypeOf(typeAssert.Type)
-	if assertedType == nil {
-		return
-	}
-
-	// Check if the asserted type is an interface
-	interfaceType, isInterface := assertedType.Underlying().(*types.Interface)
-	if !isInterface {
-		return
-	}
-
-	// Get the type of the expression being asserted
-	exprType := v.pkg.TypesInfo.TypeOf(typeAssert.X)
-	if exprType == nil {
-		return
-	}
-
-	// Handle pointer types by getting the element type
-	if ptrType, isPtr := exprType.(*types.Pointer); isPtr {
-		exprType = ptrType.Elem()
-	}
-
-	// Check if the expression type is a named struct type
-	namedType, isNamed := exprType.(*types.Named)
-	if !isNamed {
-		return
-	}
-
-	// For each method in the interface, check if the struct implements it
-	for i := 0; i < interfaceType.NumExplicitMethods(); i++ {
-		interfaceMethod := interfaceType.ExplicitMethod(i)
-
-		// Find the corresponding method in the struct type
-		structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
-		if structMethod != nil {
-			// Track this interface implementation
-			v.analysis.trackInterfaceImplementation(interfaceType, namedType, structMethod)
-		}
-	}
-}
-
 // findStructMethod finds a method with the given name on a named type
 func (v *analysisVisitor) findStructMethod(namedType *types.Named, methodName string) *types.Func {
 	// Check methods directly on the type
@@ -2190,68 +2108,22 @@ func (v *interfaceImplementationVisitor) findMethodInType(namedType *types.Named
 	return nil
 }
 
-// getNamedReturns retrieves the named returns for a function
-func (v *analysisVisitor) getNamedReturns(funcDecl *ast.FuncDecl) []string {
-	var namedReturns []string
-	if funcDecl.Type != nil && funcDecl.Type.Results != nil {
-		for _, field := range funcDecl.Type.Results.List {
-			for _, name := range field.Names {
-				namedReturns = append(namedReturns, name.Name)
-			}
-		}
-	}
-	return namedReturns
-}
-
-// analyzeAllMethodsAsync performs comprehensive async analysis on all methods in all packages
+// analyzeAllMethodsAsync performs comprehensive async analysis on all methods in all packages using topological sort
 func (v *analysisVisitor) analyzeAllMethodsAsync() {
-	// Initialize visitingMethods map
-	v.visitingMethods = make(map[MethodKey]bool)
+	// Build the method call graph for all packages
+	methodCalls := v.buildMethodCallGraph()
 
-	// Fixed-point iteration: keep analyzing until nothing changes
-	// This handles cases where method A calls method B, but B is analyzed after A
-	maxIterations := 10
-	for iteration := 0; iteration < maxIterations; iteration++ {
-		// Clear visitingMethods map for this iteration
-		v.visitingMethods = make(map[MethodKey]bool)
+	// Topologically sort methods by their dependencies
+	sorted, cycles := v.topologicalSortMethods(methodCalls)
 
-		// Track if anything changed in this iteration
-		changed := false
+	// Mark methods in cycles as sync to break circular dependencies
+	for _, methodKey := range cycles {
+		v.analysis.MethodAsyncStatus[methodKey] = false
+	}
 
-		// Save previous state
-		previousState := make(map[MethodKey]bool)
-		for k, v := range v.analysis.MethodAsyncStatus {
-			previousState[k] = v
-		}
-
-		// Re-analyze methods in current package
-		v.analyzePackageMethodsAsync(v.pkg)
-
-		// Re-analyze methods in all dependency packages
-		for _, pkg := range v.analysis.AllPackages {
-			if pkg != v.pkg {
-				v.analyzePackageMethodsAsync(pkg)
-			}
-		}
-
-		// Check if anything changed
-		for k, newValue := range v.analysis.MethodAsyncStatus {
-			oldValue, existed := previousState[k]
-			if !existed {
-				// New method added - check if it's async (if sync, no need to re-analyze dependents)
-				if newValue {
-					changed = true
-				}
-			} else if oldValue != newValue {
-				// Method changed from sync to async (or vice versa)
-				changed = true
-			}
-		}
-
-		// If nothing changed, we've reached a fixed point
-		if !changed {
-			break
-		}
+	// Analyze methods in dependency order (dependencies analyzed before dependents)
+	for _, methodKey := range sorted {
+		v.analyzeMethodAsyncTopological(methodKey, methodCalls[methodKey])
 	}
 
 	// Finally, analyze function literals in the current package only
@@ -2259,19 +2131,7 @@ func (v *analysisVisitor) analyzeAllMethodsAsync() {
 	v.analyzeFunctionLiteralsAsync(v.pkg)
 }
 
-// analyzePackageMethodsAsync analyzes all methods in a specific package
-func (v *analysisVisitor) analyzePackageMethodsAsync(pkg *packages.Package) {
-	// Analyze function declarations
-	for _, file := range pkg.Syntax {
-		for _, decl := range file.Decls {
-			if funcDecl, ok := decl.(*ast.FuncDecl); ok {
-				v.analyzeMethodAsync(funcDecl, pkg)
-			}
-		}
-	}
-}
-
-// analyzeFunctionLiteralsAsync analyzes all function literals in a package for async operations
+// buildMethodCallGraph builds a graph of which methods call which other methods
 func (v *analysisVisitor) analyzeFunctionLiteralsAsync(pkg *packages.Package) {
 	for _, file := range pkg.Syntax {
 		ast.Inspect(file, func(n ast.Node) bool {
@@ -2305,55 +2165,320 @@ func (v *analysisVisitor) analyzeFunctionLiteralAsync(funcLit *ast.FuncLit, pkg 
 	nodeInfo.InAsyncContext = isAsync
 }
 
-// analyzeMethodAsync determines if a method is async and stores the result
-func (v *analysisVisitor) analyzeMethodAsync(funcDecl *ast.FuncDecl, pkg *packages.Package) {
-	methodKey := v.getMethodKey(funcDecl, pkg)
+// buildMethodCallGraph builds a graph of which methods call which other methods
+func (v *analysisVisitor) buildMethodCallGraph() map[MethodKey][]MethodKey {
+	methodCalls := make(map[MethodKey][]MethodKey)
 
-	// Check for cycles
-	if v.visitingMethods[methodKey] {
-		// Cycle detected, assume sync to break recursion
-		v.analysis.MethodAsyncStatus[methodKey] = false
-		return
+	// Iterate through all packages
+	allPkgs := []*packages.Package{v.pkg}
+	for _, pkg := range v.analysis.AllPackages {
+		if pkg != v.pkg {
+			allPkgs = append(allPkgs, pkg)
+		}
 	}
 
-	// Mark as visiting
-	v.visitingMethods[methodKey] = true
+	for _, pkg := range allPkgs {
+		for _, file := range pkg.Syntax {
+			for _, decl := range file.Decls {
+				if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+					methodKey := v.getMethodKey(funcDecl, pkg)
 
-	// Determine if method is async
-	isAsync := false
+					// Initialize the entry for this method
+					if _, exists := methodCalls[methodKey]; !exists {
+						methodCalls[methodKey] = []MethodKey{}
+					}
 
-	// Determine if this is a handwritten package (from gs/ directory)
-	// Handwritten packages should not have their bodies analyzed
+					// Extract method calls from the function body
+					if funcDecl.Body != nil {
+						callees := v.extractMethodCalls(funcDecl.Body, pkg)
+						methodCalls[methodKey] = callees
+					}
+				}
+			}
+		}
+	}
+
+	return methodCalls
+}
+
+// extractMethodCalls extracts all method and function calls from a node
+func (v *analysisVisitor) extractMethodCalls(node ast.Node, pkg *packages.Package) []MethodKey {
+	var calls []MethodKey
+	seen := make(map[MethodKey]bool)
+
+	ast.Inspect(node, func(n ast.Node) bool {
+		if n == nil {
+			return false
+		}
+
+		if callExpr, ok := n.(*ast.CallExpr); ok {
+			methodKeys := v.extractMethodKeysFromCall(callExpr, pkg)
+			for _, methodKey := range methodKeys {
+				if !seen[methodKey] {
+					seen[methodKey] = true
+					calls = append(calls, methodKey)
+				}
+			}
+		}
+
+		return true
+	})
+
+	return calls
+}
+
+// extractMethodKeysFromCall extracts MethodKeys from a call expression
+// Returns multiple keys for interface method calls (one for each implementation)
+func (v *analysisVisitor) extractMethodKeysFromCall(callExpr *ast.CallExpr, pkg *packages.Package) []MethodKey {
+	singleKey := v.extractMethodKeyFromCall(callExpr, pkg)
+	if singleKey != nil {
+		return []MethodKey{*singleKey}
+	}
+
+	// Check if this is an interface method call
+	if selExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok {
+		if receiverType := pkg.TypesInfo.TypeOf(selExpr.X); receiverType != nil {
+			if interfaceType, isInterface := receiverType.Underlying().(*types.Interface); isInterface {
+				methodName := selExpr.Sel.Name
+				// Find all implementations of this interface method
+				key := InterfaceMethodKey{
+					InterfaceType: interfaceType.String(),
+					MethodName:    methodName,
+				}
+				if implementations, exists := v.analysis.InterfaceImplementations[key]; exists {
+					var keys []MethodKey
+					for _, impl := range implementations {
+						keys = append(keys, MethodKey{
+							PackagePath:  impl.StructType.Obj().Pkg().Path(),
+							ReceiverType: impl.StructType.Obj().Name(),
+							MethodName:   impl.Method.Name(),
+						})
+					}
+					return keys
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// extractMethodKeyFromCall extracts a MethodKey from a call expression
+func (v *analysisVisitor) extractMethodKeyFromCall(callExpr *ast.CallExpr, pkg *packages.Package) *MethodKey {
+	switch fun := callExpr.Fun.(type) {
+	case *ast.Ident:
+		// Direct function call
+		if obj := pkg.TypesInfo.Uses[fun]; obj != nil {
+			if funcObj, ok := obj.(*types.Func); ok {
+				pkgPath := pkg.Types.Path()
+				if funcObj.Pkg() != nil {
+					pkgPath = funcObj.Pkg().Path()
+				}
+				return &MethodKey{
+					PackagePath:  pkgPath,
+					ReceiverType: "",
+					MethodName:   funcObj.Name(),
+				}
+			}
+		}
+
+	case *ast.SelectorExpr:
+		// Package-level function call (e.g., time.Sleep)
+		if ident, ok := fun.X.(*ast.Ident); ok {
+			if obj := pkg.TypesInfo.Uses[ident]; obj != nil {
+				if pkgName, isPkg := obj.(*types.PkgName); isPkg {
+					return &MethodKey{
+						PackagePath:  pkgName.Imported().Path(),
+						ReceiverType: "",
+						MethodName:   fun.Sel.Name,
+					}
+				}
+			}
+		}
+
+		// Check if this is an interface method call - if so, return nil
+		// so extractMethodKeysFromCall can expand it to all implementations
+		if receiverType := pkg.TypesInfo.TypeOf(fun.X); receiverType != nil {
+			if _, isInterface := receiverType.Underlying().(*types.Interface); isInterface {
+				// This is an interface method call - return nil to let
+				// extractMethodKeysFromCall handle expanding to implementations
+				return nil
+			}
+		}
+
+		// Method call on concrete objects
+		if selection := pkg.TypesInfo.Selections[fun]; selection != nil {
+			if methodObj := selection.Obj(); methodObj != nil {
+				receiverType := ""
+				methodPkgPath := ""
+
+				// Get receiver type
+				switch x := fun.X.(type) {
+				case *ast.Ident:
+					if obj := pkg.TypesInfo.Uses[x]; obj != nil {
+						if varObj, ok := obj.(*types.Var); ok {
+							receiverType = v.getTypeName(varObj.Type())
+						}
+					}
+				case *ast.SelectorExpr:
+					if typeExpr := pkg.TypesInfo.TypeOf(x); typeExpr != nil {
+						receiverType = v.getTypeName(typeExpr)
+					}
+				}
+
+				// Get method's package path
+				if methodFunc, ok := methodObj.(*types.Func); ok {
+					if methodFunc.Pkg() != nil {
+						methodPkgPath = methodFunc.Pkg().Path()
+					}
+				}
+
+				if methodPkgPath == "" {
+					methodPkgPath = pkg.Types.Path()
+				}
+
+				return &MethodKey{
+					PackagePath:  methodPkgPath,
+					ReceiverType: receiverType,
+					MethodName:   methodObj.Name(),
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// topologicalSortMethods performs a topological sort of methods based on their call dependencies
+// Returns sorted methods and methods involved in cycles
+func (v *analysisVisitor) topologicalSortMethods(methodCalls map[MethodKey][]MethodKey) ([]MethodKey, []MethodKey) {
+	// Kahn's algorithm for topological sorting
+	inDegree := make(map[MethodKey]int)
+	graph := make(map[MethodKey][]MethodKey)
+
+	// Initialize in-degree counts and reverse graph
+	for method := range methodCalls {
+		inDegree[method] = 0
+		graph[method] = []MethodKey{}
+	}
+
+	// Build reverse graph and count in-degrees
+	// graph[dependency] = methods that depend on it
+	for method, callees := range methodCalls {
+		for _, callee := range callees {
+			// Only create dependency edges for callees that exist in the call graph
+			// This automatically excludes handwritten packages that aren't being compiled
+			if _, exists := inDegree[callee]; exists {
+				// Additionally, skip if the callee is from a handwritten package
+				// This prevents our code from being blocked by unresolved handwritten package dependencies
+				if !v.analysis.isHandwrittenPackage(callee.PackagePath) {
+					graph[callee] = append(graph[callee], method)
+					inDegree[method]++
+				}
+			}
+		}
+	}
+
+	// Find methods with no dependencies (in-degree == 0)
+	var queue []MethodKey
+	for method, degree := range inDegree {
+		if degree == 0 {
+			queue = append(queue, method)
+		}
+	}
+
+	var sorted []MethodKey
+
+	for len(queue) > 0 {
+		// Remove method from queue
+		current := queue[0]
+		queue = queue[1:]
+		sorted = append(sorted, current)
+
+		// For each method that depends on current
+		for _, dependent := range graph[current] {
+			inDegree[dependent]--
+			if inDegree[dependent] == 0 {
+				queue = append(queue, dependent)
+			}
+		}
+	}
+
+	// Find methods in cycles (not in sorted list)
+	var cycles []MethodKey
+	if len(sorted) != len(methodCalls) {
+		for method := range methodCalls {
+			found := slices.Contains(sorted, method)
+			if !found {
+				cycles = append(cycles, method)
+			}
+		}
+	}
+
+	return sorted, cycles
+}
+
+// analyzeMethodAsyncTopological analyzes a single method for async operations in topological order
+func (v *analysisVisitor) analyzeMethodAsyncTopological(methodKey MethodKey, callees []MethodKey) {
+	// Check if method is from handwritten package
 	isHandwrittenPackage := v.analysis.isHandwrittenPackage(methodKey.PackagePath)
 
 	if isHandwrittenPackage {
 		// For handwritten packages, check if we have pre-loaded metadata
-		metadataKey := MethodKey{
-			PackagePath:  methodKey.PackagePath,
-			ReceiverType: methodKey.ReceiverType,
-			MethodName:   methodKey.MethodName,
-		}
-		metadataIsAsync, hasMetadata := v.analysis.MethodAsyncStatus[metadataKey]
-
+		_, hasMetadata := v.analysis.MethodAsyncStatus[methodKey]
 		if hasMetadata {
-			// Use explicit metadata from handwritten packages (gs/)
-			isAsync = metadataIsAsync
-		} else {
-			// Handwritten package but no explicit metadata: assume sync
-			isAsync = false
+			// Already set from metadata, don't override
+			return
 		}
-	} else if funcDecl.Body != nil {
-		// Not a handwritten package and has body: always analyze for async operations
-		// This allows fixed-point iteration to update results
-		isAsync = v.containsAsyncOperationsComplete(funcDecl.Body, pkg)
+		// No metadata means assume sync
+		v.analysis.MethodAsyncStatus[methodKey] = false
+		return
 	}
-	// Otherwise leave isAsync as false
 
-	// Store result in MethodAsyncStatus
+	// Find the method declaration
+	pkg := v.analysis.AllPackages[methodKey.PackagePath]
+	if pkg == nil {
+		if methodKey.PackagePath == v.pkg.Types.Path() {
+			pkg = v.pkg
+		}
+	}
+
+	if pkg == nil {
+		// Can't find package, assume sync
+		v.analysis.MethodAsyncStatus[methodKey] = false
+		return
+	}
+
+	var funcDecl *ast.FuncDecl
+	if methodKey.ReceiverType == "" {
+		// Package-level function
+		funcDecl = v.findFunctionDecl(methodKey.MethodName, pkg)
+	} else {
+		// Method with receiver
+		funcDecl = v.findMethodDecl(methodKey.ReceiverType, methodKey.MethodName, pkg)
+	}
+
+	if funcDecl == nil || funcDecl.Body == nil {
+		// No body to analyze, assume sync
+		v.analysis.MethodAsyncStatus[methodKey] = false
+		return
+	}
+
+	// Check if method contains async operations (including calls to async external methods)
+	isAsync := v.containsAsyncOperationsComplete(funcDecl.Body, pkg)
+
+	// If not directly async, check if any callee from the call graph is async
+	// (This catches calls to other methods in the same codebase)
+	if !isAsync {
+		for _, callee := range callees {
+			if calleeAsync, exists := v.analysis.MethodAsyncStatus[callee]; exists && calleeAsync {
+				isAsync = true
+				break
+			}
+		}
+	}
+
 	v.analysis.MethodAsyncStatus[methodKey] = isAsync
-
-	// Unmark as visiting
-	delete(v.visitingMethods, methodKey)
 }
 
 // getMethodKey creates a unique key for a method
@@ -2363,13 +2488,18 @@ func (v *analysisVisitor) getMethodKey(funcDecl *ast.FuncDecl, pkg *packages.Pac
 	receiverType := ""
 
 	if funcDecl.Recv != nil && len(funcDecl.Recv.List) > 0 {
-		// Get receiver type name
-		if len(funcDecl.Recv.List[0].Names) > 0 {
+		// Try to get receiver type from TypesInfo first
+		if len(funcDecl.Recv.List[0].Names) > 0 && pkg.TypesInfo != nil {
 			if def := pkg.TypesInfo.Defs[funcDecl.Recv.List[0].Names[0]]; def != nil {
 				if vr, ok := def.(*types.Var); ok {
 					receiverType = v.getTypeName(vr.Type())
 				}
 			}
+		}
+
+		// Fallback to AST if TypesInfo is unavailable or failed
+		if receiverType == "" {
+			receiverType = v.getReceiverTypeFromAST(funcDecl.Recv.List[0].Type)
 		}
 	}
 
@@ -2389,6 +2519,23 @@ func (v *analysisVisitor) getTypeName(t types.Type) string {
 		return v.getTypeName(typ.Elem())
 	default:
 		return typ.String()
+	}
+}
+
+// getReceiverTypeFromAST extracts the receiver type name from AST when TypesInfo is unavailable
+func (v *analysisVisitor) getReceiverTypeFromAST(expr ast.Expr) string {
+	switch t := expr.(type) {
+	case *ast.StarExpr:
+		// Pointer receiver: *Type
+		return v.getReceiverTypeFromAST(t.X)
+	case *ast.Ident:
+		// Simple type name
+		return t.Name
+	case *ast.SelectorExpr:
+		// Qualified type: pkg.Type
+		return t.Sel.Name
+	default:
+		return ""
 	}
 }
 
@@ -2444,7 +2591,8 @@ func (v *analysisVisitor) isCallAsync(callExpr *ast.CallExpr, pkg *packages.Pack
 		// Direct function call
 		if obj := pkg.TypesInfo.Uses[fun]; obj != nil {
 			if funcObj, ok := obj.(*types.Func); ok {
-				return v.isFunctionAsync(funcObj, pkg)
+				result := v.isFunctionAsync(funcObj, pkg)
+				return result
 			}
 		}
 
@@ -2467,14 +2615,16 @@ func (v *analysisVisitor) isCallAsync(callExpr *ast.CallExpr, pkg *packages.Pack
 			if interfaceType, isInterface := receiverType.Underlying().(*types.Interface); isInterface {
 				methodName := fun.Sel.Name
 				// For interface method calls, check if the interface method is async
-				return v.analysis.IsInterfaceMethodAsync(interfaceType, methodName)
+				result := v.analysis.IsInterfaceMethodAsync(interfaceType, methodName)
+				return result
 			}
 		}
 
 		// Method call on concrete objects
 		if selection := pkg.TypesInfo.Selections[fun]; selection != nil {
 			if methodObj := selection.Obj(); methodObj != nil {
-				return v.isMethodAsyncFromSelection(fun, methodObj, pkg)
+				result := v.isMethodAsyncFromSelection(fun, methodObj, pkg)
+				return result
 			}
 		}
 	}
@@ -2489,7 +2639,7 @@ func (v *analysisVisitor) isFunctionAsync(funcObj *types.Func, pkg *packages.Pac
 		return v.analysis.IsMethodAsync(funcObj.Pkg().Path(), "", funcObj.Name())
 	}
 
-	// Check internal method status
+	// Check internal method status (should already be computed during analysis)
 	methodKey := MethodKey{
 		PackagePath:  pkg.Types.Path(),
 		ReceiverType: "",
@@ -2500,14 +2650,7 @@ func (v *analysisVisitor) isFunctionAsync(funcObj *types.Func, pkg *packages.Pac
 		return status
 	}
 
-	// Not analyzed yet, analyze now
-	if funcDecl := v.findFunctionDecl(funcObj.Name(), pkg); funcDecl != nil {
-		v.analyzeMethodAsync(funcDecl, pkg)
-		if status, exists := v.analysis.MethodAsyncStatus[methodKey]; exists {
-			return status
-		}
-	}
-
+	// Not found - should have been analyzed during analyzeAllMethodsAsync
 	return false
 }
 
@@ -2527,7 +2670,12 @@ func (v *analysisVisitor) isMethodAsyncFromSelection(selExpr *ast.SelectorExpr, 
 			}
 		}
 	case *ast.SelectorExpr:
-		// Field access (e.g., l.m.Lock())
+		// Field access (e.g., l.m.Lock() or d.mu.Lock())
+		if typeExpr := pkg.TypesInfo.TypeOf(x); typeExpr != nil {
+			receiverType = v.getTypeName(typeExpr)
+		}
+	default:
+		// For other cases, try to get type directly
 		if typeExpr := pkg.TypesInfo.TypeOf(x); typeExpr != nil {
 			receiverType = v.getTypeName(typeExpr)
 		}
@@ -2540,7 +2688,6 @@ func (v *analysisVisitor) isMethodAsyncFromSelection(selExpr *ast.SelectorExpr, 
 		}
 	}
 
-	// If no package path found, use current package
 	if methodPkgPath == "" {
 		methodPkgPath = pkg.Types.Path()
 	}
@@ -2557,28 +2704,7 @@ func (v *analysisVisitor) isMethodAsyncFromSelection(selExpr *ast.SelectorExpr, 
 		return status
 	}
 
-	// Check if this is a method in the same package we're currently analyzing
-	if methodPkgPath == v.pkg.Types.Path() {
-		// This is a method in the same package - we should analyze it if we haven't yet
-		if funcDecl := v.findMethodDecl(receiverType, methodObj.Name(), v.pkg); funcDecl != nil {
-			v.analyzeMethodAsync(funcDecl, v.pkg)
-			if status, exists := v.analysis.MethodAsyncStatus[methodKey]; exists {
-				return status
-			}
-		}
-	} else {
-		// For methods in other packages that we're compiling together
-		if targetPkg := v.analysis.AllPackages[methodPkgPath]; targetPkg != nil {
-			// Try to analyze the method if we haven't already
-			if funcDecl := v.findMethodDecl(receiverType, methodObj.Name(), targetPkg); funcDecl != nil {
-				v.analyzeMethodAsync(funcDecl, targetPkg)
-				if status, exists := v.analysis.MethodAsyncStatus[methodKey]; exists {
-					return status
-				}
-			}
-		}
-	}
-
+	// Not found - should have been analyzed during analyzeAllMethodsAsync
 	return false
 }
 
@@ -2618,22 +2744,6 @@ func (v *analysisVisitor) findMethodDecl(receiverType, methodName string, pkg *p
 	return nil
 }
 
-// checkExternalMethodMetadata checks if an external method is async based on pre-loaded metadata
-func (v *analysisVisitor) checkExternalMethodMetadata(pkgPath, receiverType, methodName string) bool {
-	// Use MethodKey to check pre-loaded metadata in MethodAsyncStatus
-	key := MethodKey{
-		PackagePath:  pkgPath,
-		ReceiverType: receiverType,
-		MethodName:   methodName,
-	}
-
-	if isAsync, exists := v.analysis.MethodAsyncStatus[key]; exists {
-		return isAsync
-	}
-
-	return false
-}
-
 // IsLocalMethodAsync checks if a local method is async using pre-computed analysis
 func (a *Analysis) IsLocalMethodAsync(pkgPath, receiverType, methodName string) bool {
 	methodKey := MethodKey{
@@ -2647,26 +2757,4 @@ func (a *Analysis) IsLocalMethodAsync(pkgPath, receiverType, methodName string) 
 	}
 
 	return false
-}
-
-// updateInterfaceImplementationAsyncStatus updates interface implementations with correct async status
-// This runs after method async analysis is complete
-func (v *analysisVisitor) updateInterfaceImplementationAsyncStatus() {
-	// Iterate through all tracked interface implementations and update their async status
-	for key, implementations := range v.analysis.InterfaceImplementations {
-		// Remove duplicates first
-		seenMethods := make(map[string]bool)
-		uniqueImplementations := []ImplementationInfo{}
-
-		for _, impl := range implementations {
-			methodKey := impl.StructType.Obj().Name() + "." + key.MethodName
-			if !seenMethods[methodKey] {
-				seenMethods[methodKey] = true
-				uniqueImplementations = append(uniqueImplementations, impl)
-			}
-		}
-
-		// Store the updated implementations without duplicates
-		v.analysis.InterfaceImplementations[key] = uniqueImplementations
-	}
 }

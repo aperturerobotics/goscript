@@ -74,7 +74,7 @@ export class Node {
 		this._fields.parent.value = value
 	}
 
-	// Slice of pointers - also should NOT create a dependency
+	//nolint:unused // Slice of pointers - also should NOT create a dependency
 	public get children(): $.Slice<Node | null> {
 		return this._fields.children.value
 	}
@@ -167,6 +167,7 @@ export class Person {
 }
 
 export class TreeNode {
+	//nolint:unused
 	public get data(): string {
 		return this._fields.data.value
 	}
@@ -174,6 +175,7 @@ export class TreeNode {
 		this._fields.data.value = value
 	}
 
+	//nolint:unused
 	public get left(): TreeNode | null {
 		return this._fields.left.value
 	}
@@ -181,6 +183,7 @@ export class TreeNode {
 		this._fields.left.value = value
 	}
 
+	//nolint:unused
 	public get right(): TreeNode | null {
 		return this._fields.right.value
 	}
@@ -188,6 +191,7 @@ export class TreeNode {
 		this._fields.right.value = value
 	}
 
+	//nolint:unused
 	public get parent(): TreeNode | null {
 		return this._fields.parent.value
 	}

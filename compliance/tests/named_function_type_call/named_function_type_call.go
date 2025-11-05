@@ -42,7 +42,7 @@ type WalkFunc func(path string, info FileInfo, err error) error
 
 // walk demonstrates the issue with named function types
 // This uses filepath.WalkFunc which is a named function type from external package
-func walk(fs Filesystem, path string, info FileInfo, walkFn filepath.WalkFunc) error {
+func walk(fs Filesystem, path string, info FileInfo, walkFn filepath.WalkFunc) error { //nolint:unused
 	// Test case 1: Direct call to named function type parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !

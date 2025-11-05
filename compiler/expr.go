@@ -251,34 +251,6 @@ func (c *GoToTSCompiler) getTypeNameString(typeExpr ast.Expr) string {
 	return "unknown"
 }
 
-// getFinalUnderlyingType traverses the chain of named types to find the ultimate underlying type.
-// This handles cases like: type A B; type B C; type C string.
-// Returns the final underlying type and whether the original type was a named type.
-func (c *GoToTSCompiler) getFinalUnderlyingType(t types.Type) (types.Type, bool) {
-	if t == nil {
-		return nil, false
-	}
-
-	// Check if this is a named type
-	namedType, isNamed := t.(*types.Named)
-	if !isNamed {
-		return t, false
-	}
-
-	// Follow the chain of named types to find the ultimate underlying type
-	ultimate := namedType
-	for {
-		underlying := ultimate.Underlying()
-		if underlyingNamed, isNamedUnderlying := underlying.(*types.Named); isNamedUnderlying {
-			// Continue following the chain
-			ultimate = underlyingNamed
-		} else {
-			// We've reached the final underlying type
-			return underlying, true
-		}
-	}
-}
-
 // WriteBinaryExpr translates a Go binary expression (`ast.BinaryExpr`) into its
 // TypeScript equivalent.
 // It handles several cases:

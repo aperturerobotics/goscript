@@ -8,14 +8,14 @@ type Node struct {
 	value    int
 	next     *Node   // Pointer to Node - this should NOT create a dependency
 	parent   *Node   // Another pointer - also should NOT create a dependency
-	children []*Node // Slice of pointers - also should NOT create a dependency
+	children []*Node //nolint:unused // Slice of pointers - also should NOT create a dependency
 }
 
 type TreeNode struct {
-	data   string
-	left   *TreeNode
-	right  *TreeNode
-	parent *TreeNode
+	data   string    //nolint:unused
+	left   *TreeNode //nolint:unused
+	right  *TreeNode //nolint:unused
+	parent *TreeNode //nolint:unused
 }
 
 // This creates a mutual circular reference through pointers

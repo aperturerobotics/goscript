@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export class formatter {
+	//nolint:unused
 	public get wid(): number {
 		return this._fields.wid.value
 	}
@@ -11,6 +12,7 @@ export class formatter {
 		this._fields.wid.value = value
 	}
 
+	//nolint:unused
 	public get prec(): number {
 		return this._fields.prec.value
 	}
@@ -18,6 +20,7 @@ export class formatter {
 		this._fields.prec.value = value
 	}
 
+	//nolint:unused
 	public get widPresent(): boolean {
 		return this._fields.widPresent.value
 	}
@@ -25,6 +28,7 @@ export class formatter {
 		this._fields.widPresent.value = value
 	}
 
+	//nolint:unused
 	public get precPresent(): boolean {
 		return this._fields.precPresent.value
 	}
@@ -46,6 +50,7 @@ export class formatter {
 		this._fields.plus.value = value
 	}
 
+	//nolint:unused
 	public get sharp(): boolean {
 		return this._fields.sharp.value
 	}
@@ -53,6 +58,7 @@ export class formatter {
 		this._fields.sharp.value = value
 	}
 
+	//nolint:unused
 	public get space(): boolean {
 		return this._fields.space.value
 	}
@@ -60,6 +66,7 @@ export class formatter {
 		this._fields.space.value = value
 	}
 
+	//nolint:unused
 	public get zero(): boolean {
 		return this._fields.zero.value
 	}
@@ -67,6 +74,7 @@ export class formatter {
 		this._fields.zero.value = value
 	}
 
+	//nolint:unused
 	public get plusV(): boolean {
 		return this._fields.plusV.value
 	}
@@ -74,6 +82,7 @@ export class formatter {
 		this._fields.plusV.value = value
 	}
 
+	//nolint:unused
 	public get sharpV(): boolean {
 		return this._fields.sharpV.value
 	}
@@ -140,6 +149,7 @@ export class formatter {
 }
 
 export class printer {
+	//nolint:unused
 	public get buf(): $.Bytes {
 		return this._fields.buf.value
 	}
@@ -147,6 +157,7 @@ export class printer {
 		this._fields.buf.value = value
 	}
 
+	//nolint:unused
 	public get arg(): null | any {
 		return this._fields.arg.value
 	}

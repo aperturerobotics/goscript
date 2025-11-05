@@ -330,48 +330,6 @@ func (c *GoToTSCompiler) extractVarDependencies(expr ast.Expr, varSpecMap map[st
 	return deps
 }
 
-// hasTypeReferences checks if an expression contains references to local types
-func (c *GoToTSCompiler) hasTypeReferences(expr ast.Expr, typeSpecMap map[string]*ast.TypeSpec) bool {
-	hasRef := false
-
-	ast.Inspect(expr, func(n ast.Node) bool {
-		switch t := n.(type) {
-		case *ast.CallExpr:
-			// Check function calls like new Message(), makeChannel<Message>()
-			if ident, ok := t.Fun.(*ast.Ident); ok {
-				if _, isLocalType := typeSpecMap[ident.Name]; isLocalType {
-					hasRef = true
-					return false
-				}
-			}
-			// Check type arguments in generic calls
-			if funcType, ok := t.Fun.(*ast.IndexExpr); ok {
-				if c.hasTypeReferences(funcType.Index, typeSpecMap) {
-					hasRef = true
-					return false
-				}
-			}
-		case *ast.CompositeLit:
-			// Check composite literals like Message{...}
-			if ident, ok := t.Type.(*ast.Ident); ok {
-				if _, isLocalType := typeSpecMap[ident.Name]; isLocalType {
-					hasRef = true
-					return false
-				}
-			}
-		case *ast.Ident:
-			// Check direct type references
-			if _, isLocalType := typeSpecMap[t.Name]; isLocalType {
-				hasRef = true
-				return false
-			}
-		}
-		return !hasRef // Stop walking if we found a reference
-	})
-
-	return hasRef
-}
-
 // topologicalSort performs a topological sort of the dependency graph
 func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]string, error) {
 	// Kahn's algorithm for topological sorting with deterministic ordering
