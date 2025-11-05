@@ -1156,9 +1156,9 @@ let encoderCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 // map[reflect.Type]structFields
 let fieldCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 
-let float32Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = ((32 as floatEncoder)).encode.bind($.markAsStructValue(((32 as floatEncoder)).clone()))
+let float32Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = (() => floatEncoder_encode(((32 as floatEncoder))))
 
-let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = ((64 as floatEncoder)).encode.bind($.markAsStructValue(((64 as floatEncoder)).clone()))
+let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = (() => floatEncoder_encode(((64 as floatEncoder))))
 
 let isZeroerType: reflect.Type = reflect.TypeFor<isZeroer>()
 

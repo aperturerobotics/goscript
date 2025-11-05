@@ -189,6 +189,35 @@ func (c *GoToTSCompiler) writeMethodValue(exp *ast.SelectorExpr, selection *type
 		baseIsPointer = true
 	}
 
+	// Check if the receiver is a primitive/wrapper type
+	underlyingRecvType := recvType
+	if ptr, ok := recvType.(*types.Pointer); ok {
+		underlyingRecvType = ptr.Elem()
+	}
+	isPrimitiveReceiver := c.isWrapperType(underlyingRecvType)
+
+	// For primitive types, generate a closure that captures the receiver and calls the free function
+	if isPrimitiveReceiver {
+		// Get the type name for the free function
+		typeName := c.getQualifiedTypeName(underlyingRecvType)
+		if typeName == "" {
+			return fmt.Errorf("failed to get qualified type name for primitive receiver")
+		}
+
+		// Generate: () => TypeName_MethodName(receiverValue)
+		c.tsw.WriteLiterally("(() => ")
+		c.tsw.WriteLiterally(typeName)
+		c.tsw.WriteLiterally("_")
+		c.tsw.WriteLiterally(exp.Sel.Name)
+		c.tsw.WriteLiterally("(")
+		if err := c.WriteValueExpr(exp.X); err != nil {
+			return fmt.Errorf("failed to write method value receiver: %w", err)
+		}
+		c.tsw.WriteLiterally("))")
+
+		return nil
+	}
+
 	// Write the receiver expression
 	if err := c.WriteValueExpr(exp.X); err != nil {
 		return fmt.Errorf("failed to write method value receiver: %w", err)
