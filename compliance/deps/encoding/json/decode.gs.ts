@@ -59,7 +59,7 @@ export class InvalidUnmarshalError {
 		if (e.Type == null) {
 			return "json: Unmarshal(nil)"
 		}
-		if (e.Type!.Kind() != reflect.Pointer) {
+		if (e.Type!.Kind() != reflect.Ptr) {
 			return "json: Unmarshal(non-pointer " + e.Type!.String() + ")"
 		}
 		return "json: Unmarshal(nil " + e.Type!.String() + ")"
@@ -245,7 +245,7 @@ export type Unmarshaler = null | {
 }
 
 $.registerInterfaceType(
-  'Unmarshaler',
+  'encoding/json.Unmarshaler',
   null, // Zero value for interface is null
   [{ name: "UnmarshalJSON", args: [{ name: "", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -351,7 +351,7 @@ export class decodeState {
 	public async unmarshal(v: null | any): Promise<$.GoError> {
 		const d = this
 		let rv = $.markAsStructValue(reflect.ValueOf(v).clone())
-		if (rv.Kind() != reflect.Pointer || rv.IsNil()) {
+		if (rv.Kind() != reflect.Ptr || rv.IsNil()) {
 			return new InvalidUnmarshalError({})
 		}
 		d.scan.reset()
@@ -899,7 +899,7 @@ export class decodeState {
 
 							// Invalidate subv to ensure d.value(subv) skips over
 							// the JSON value without assigning it to subv.
-							if (subv.Kind() == reflect.Pointer) {
+							if (subv.Kind() == reflect.Ptr) {
 
 								// If a struct embeds a pointer to an unexported type,
 								// it is not possible to set a newly allocated value
@@ -1086,7 +1086,7 @@ export class decodeState {
 		}
 		let [f, err] = strconv.ParseFloat(s, 64)
 		if (err != null) {
-			return [null, new UnmarshalTypeError({Offset: (d.off as number), Type: reflect.TypeFor<number>(), Value: "number " + s})]
+			return [null, new UnmarshalTypeError({Offset: (d.off as number), Type: reflect.TypeOf(0), Value: "number " + s})]
 		}
 		return [f, null]
 	}
@@ -1148,7 +1148,7 @@ export class decodeState {
 					}
 					switch (v.Kind()) {
 						case reflect.Interface:
-						case reflect.Pointer:
+						case reflect.Ptr:
 						case reflect.Map:
 						case reflect.Slice: {
 							v.SetZero()
@@ -1545,9 +1545,9 @@ export class unquotedValue {
 
 let nullLiteral: $.Bytes = $.stringToBytes("null")
 
-let numberType: reflect.Type = reflect.TypeFor<Number>()
+let numberType: reflect.Type = reflect.TypeOf("")
 
-let textUnmarshalerType: reflect.Type = reflect.TypeFor![encoding.TextUnmarshaler]()
+let textUnmarshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding.TextUnmarshaler")
 
 // Unmarshal parses the JSON-encoded data and stores the result
 // in the value pointed to by v. If v is nil or not a pointer,
@@ -1663,7 +1663,7 @@ export function indirect(v: reflect.Value, decodingNull: boolean): [Unmarshaler,
 	// If v is a named type and is addressable,
 	// start with its address, so that if the type has pointer methods,
 	// we find them.
-	if (v.Kind() != reflect.Pointer && v.Type()!.Name() != "" && v.CanAddr()) {
+	if (v.Kind() != reflect.Ptr && v.Type()!.Name() != "" && v.CanAddr()) {
 		haveAddr = true
 		v = $.markAsStructValue(v.Addr().clone())
 	}
@@ -1681,14 +1681,14 @@ export function indirect(v: reflect.Value, decodingNull: boolean): [Unmarshaler,
 		// usefully addressable.
 		if (v.Kind() == reflect.Interface && !v.IsNil()) {
 			let e = $.markAsStructValue(v.Elem().clone())
-			if (e.Kind() == reflect.Pointer && !e.IsNil() && (!decodingNull || e.Elem()!.Kind() == reflect.Pointer)) {
+			if (e.Kind() == reflect.Ptr && !e.IsNil() && (!decodingNull || e.Elem()!.Kind() == reflect.Ptr)) {
 				haveAddr = false
 				v = $.markAsStructValue(e.clone())
 				continue
 			}
 		}
 
-		if (v.Kind() != reflect.Pointer) {
+		if (v.Kind() != reflect.Ptr) {
 			break
 		}
 

@@ -8,7 +8,7 @@ export type Closer = null | {
 }
 
 $.registerInterfaceType(
-  'Closer',
+  'github.com/aperturerobotics/goscript/compliance/tests/embedded_interface_assertion.Closer',
   null, // Zero value for interface is null
   [{ name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -49,7 +49,7 @@ export class MyStruct {
 export type ReadCloser = null | Reader & Closer
 
 $.registerInterfaceType(
-  'ReadCloser',
+  'github.com/aperturerobotics/goscript/compliance/tests/embedded_interface_assertion.ReadCloser',
   null, // Zero value for interface is null
   []
 );
@@ -60,7 +60,7 @@ export type Reader = null | {
 }
 
 $.registerInterfaceType(
-  'Reader',
+  'github.com/aperturerobotics/goscript/compliance/tests/embedded_interface_assertion.Reader',
   null, // Zero value for interface is null
   [{ name: "Read", args: [{ name: "", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );

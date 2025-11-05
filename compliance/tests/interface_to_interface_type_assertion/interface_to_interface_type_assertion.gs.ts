@@ -8,7 +8,7 @@ export type MyInterface = null | {
 }
 
 $.registerInterfaceType(
-  'MyInterface',
+  'github.com/aperturerobotics/goscript/compliance/tests/interface_to_interface_type_assertion.MyInterface',
   null, // Zero value for interface is null
   [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );
@@ -18,7 +18,7 @@ export type MyOtherInterface = null | {
 }
 
 $.registerInterfaceType(
-  'MyOtherInterface',
+  'github.com/aperturerobotics/goscript/compliance/tests/interface_to_interface_type_assertion.MyOtherInterface',
   null, // Zero value for interface is null
   [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );

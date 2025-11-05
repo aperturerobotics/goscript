@@ -12,7 +12,7 @@ export type DirInterface = null | {
 }
 
 $.registerInterfaceType(
-  'DirInterface',
+  'github.com/aperturerobotics/goscript/compliance/tests/wrapper_type_args.DirInterface',
   null, // Zero value for interface is null
   [{ name: "MkdirAll", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "perm", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );

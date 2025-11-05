@@ -234,6 +234,14 @@ export const registerInterfaceType = (
 }
 
 /**
+ * Gets a registered type by name from the type registry.
+ * Returns undefined if the type is not registered.
+ */
+export const getTypeByName = (name: string): TypeInfo | undefined => {
+  return typeRegistry.get(name)
+}
+
+/**
  * Represents the result of a type assertion.
  */
 export interface TypeAssertResult<T> {

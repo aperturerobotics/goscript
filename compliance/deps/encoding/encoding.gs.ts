@@ -9,7 +9,7 @@ export type BinaryAppender = null | {
 }
 
 $.registerInterfaceType(
-  'BinaryAppender',
+  'encoding.BinaryAppender',
   null, // Zero value for interface is null
   [{ name: "AppendBinary", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -19,7 +19,7 @@ export type BinaryMarshaler = null | {
 }
 
 $.registerInterfaceType(
-  'BinaryMarshaler',
+  'encoding.BinaryMarshaler',
   null, // Zero value for interface is null
   [{ name: "MarshalBinary", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -29,7 +29,7 @@ export type BinaryUnmarshaler = null | {
 }
 
 $.registerInterfaceType(
-  'BinaryUnmarshaler',
+  'encoding.BinaryUnmarshaler',
   null, // Zero value for interface is null
   [{ name: "UnmarshalBinary", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -43,7 +43,7 @@ export type TextAppender = null | {
 }
 
 $.registerInterfaceType(
-  'TextAppender',
+  'encoding.TextAppender',
   null, // Zero value for interface is null
   [{ name: "AppendText", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -53,7 +53,7 @@ export type TextMarshaler = null | {
 }
 
 $.registerInterfaceType(
-  'TextMarshaler',
+  'encoding.TextMarshaler',
   null, // Zero value for interface is null
   [{ name: "MarshalText", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -63,7 +63,7 @@ export type TextUnmarshaler = null | {
 }
 
 $.registerInterfaceType(
-  'TextUnmarshaler',
+  'encoding.TextUnmarshaler',
   null, // Zero value for interface is null
   [{ name: "UnmarshalText", args: [{ name: "text", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );

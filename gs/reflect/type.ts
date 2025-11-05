@@ -1,5 +1,9 @@
 import { ReflectValue, StructField } from './types.js'
 import { MapIter } from './map.js'
+import {
+  getTypeByName as builtinGetTypeByName,
+  TypeKind,
+} from '../builtin/type.js'
 
 // rtype is the common implementation of most values
 export class rtype {
@@ -183,6 +187,15 @@ export interface Type {
 
   // Field returns a struct type's i'th field.
   Field?(i: number): StructField | null
+
+  // Key returns a map type's key type (returns null for non-map types).
+  Key?(): Type | null
+
+  // Name returns the type's name within its package.
+  Name?(): string
+
+  // Implements reports whether the type implements the interface type u.
+  Implements?(u: Type): boolean
 
   // common returns the common type implementation.
   common?(): rtype
@@ -756,6 +769,51 @@ class ChannelType implements Type {
   }
 }
 
+// Interface type implementation
+class InterfaceType implements Type {
+  constructor(private _name: string = 'interface{}') {}
+
+  public String(): string {
+    return this._name
+  }
+
+  public Kind(): Kind {
+    return Interface
+  }
+
+  public Size(): number {
+    return 16
+  }
+
+  public Elem(): Type | null {
+    return null
+  }
+
+  public NumField(): number {
+    return 0
+  }
+
+  public PkgPath?(): string {
+    return ''
+  }
+
+  public Name?(): string {
+    return this._name
+  }
+
+  public Field?(_: number): StructField | null {
+    return null
+  }
+
+  public Implements?(_u: Type): boolean {
+    return false
+  }
+
+  public common?(): rtype {
+    return new rtype(this.Kind())
+  }
+}
+
 function getTypeOf(value: ReflectValue): Type {
   if (value === null || value === undefined) {
     return new BasicType(Interface, 'interface{}', 16)
@@ -991,6 +1049,45 @@ export function MapOf(key: Type, elem: Type): Type {
 
 export function ChanOf(dir: ChanDir, t: Type): Type {
   return new ChannelType(t, dir)
+}
+
+export function TypeFor<T>(): Type {
+  return new InterfaceType('interface{}')
+}
+
+/**
+ * getInterfaceTypeByName looks up a registered interface type by name
+ * and returns a Type for it. Returns an interface{} type if not found.
+ */
+export function getInterfaceTypeByName(name: string): Type {
+  const typeInfo = builtinGetTypeByName(name)
+  if (typeInfo && typeInfo.kind === TypeKind.Interface) {
+    // InterfaceTypeInfo
+    const methods = (typeInfo as any).methods || []
+    if (methods.length > 0) {
+      // Build interface signature with methods
+      const methodSigs = methods
+        .map((m: any) => {
+          const args =
+            m.args
+              ?.map((a: any) => (typeof a === 'string' ? a : 'any'))
+              .join(', ') || ''
+          const returns = m.returns?.map((r: any) =>
+            typeof r === 'string' ? r : 'any',
+          )
+          let returnSig = ''
+          if (returns && returns.length === 1) {
+            returnSig = ` ${returns[0]}`
+          } else if (returns && returns.length > 1) {
+            returnSig = ` (${returns.join(', ')})`
+          }
+          return `${m.name}(${args})${returnSig}`
+        })
+        .join('; ')
+      return new InterfaceType(`interface { ${methodSigs} }`)
+    }
+  }
+  return new InterfaceType('interface{}')
 }
 
 // Additional functions from merged files

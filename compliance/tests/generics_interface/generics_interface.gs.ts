@@ -9,7 +9,7 @@ export type Comparable<T extends $.Comparable> = null | {
 }
 
 $.registerInterfaceType(
-  'Comparable',
+  'github.com/aperturerobotics/goscript/compliance/tests/generics_interface.Comparable',
   null, // Zero value for interface is null
   [{ name: "Compare", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Equal", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }]
 );
@@ -21,7 +21,7 @@ export type Container<T extends any> = null | {
 }
 
 $.registerInterfaceType(
-  'Container',
+  'github.com/aperturerobotics/goscript/compliance/tests/generics_interface.Container',
   null, // Zero value for interface is null
   [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );

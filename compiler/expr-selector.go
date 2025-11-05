@@ -27,10 +27,18 @@ func (c *GoToTSCompiler) WriteSelectorExpr(exp *ast.SelectorExpr) error {
 	// Check if this is a package selector (e.g., time.Now)
 	if pkgIdent, isPkgIdent := exp.X.(*ast.Ident); isPkgIdent {
 		if obj := c.pkg.TypesInfo.ObjectOf(pkgIdent); obj != nil {
-			if _, isPkg := obj.(*types.PkgName); isPkg {
+			if pkgName, isPkg := obj.(*types.PkgName); isPkg {
 				// Package selectors should never use .value on the package name
 				c.tsw.WriteLiterally(pkgIdent.Name)
 				c.tsw.WriteLiterally(".")
+
+				// Special case: reflect.Pointer should be translated to reflect.Ptr
+				// (Go has both names for the same Kind constant)
+				if pkgName.Imported().Path() == "reflect" && exp.Sel.Name == "Pointer" {
+					c.tsw.WriteLiterally("Ptr")
+					return nil
+				}
+
 				// Write the selected identifier, allowing .value if it's a varrefed package variable
 				c.WriteIdent(exp.Sel, true)
 				return nil

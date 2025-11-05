@@ -84,7 +84,7 @@ export type Marshaler = null | {
 }
 
 $.registerInterfaceType(
-  'Marshaler',
+  'encoding/json.Marshaler',
   null, // Zero value for interface is null
   [{ name: "MarshalJSON", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -433,7 +433,7 @@ export type isZeroer = null | {
 }
 
 $.registerInterfaceType(
-  'isZeroer',
+  'encoding/json.isZeroer',
   null, // Zero value for interface is null
   [{ name: "IsZero", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }]
 );
@@ -1105,7 +1105,7 @@ export class structEncoder {
 				for (let _i = 0; _i < $.len(f!.index); _i++) {
 					const i = f!.index![_i]
 					{
-						if (fv.Kind() == reflect.Pointer) {
+						if (fv.Kind() == reflect.Ptr) {
 							if (fv.IsNil()) {
 								continue
 							}
@@ -1160,11 +1160,11 @@ let float32Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) =>
 
 let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = (() => floatEncoder_encode(((64 as floatEncoder))))
 
-let isZeroerType: reflect.Type = reflect.TypeFor<isZeroer>()
+let isZeroerType: reflect.Type = reflect.getInterfaceTypeByName("encoding/json.isZeroer")
 
-let marshalerType: reflect.Type = reflect.TypeFor<Marshaler>()
+let marshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding/json.Marshaler")
 
-let textMarshalerType: reflect.Type = reflect.TypeFor![encoding.TextMarshaler]()
+let textMarshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding.TextMarshaler")
 
 // Marshal returns the JSON encoding of v.
 //
@@ -1379,7 +1379,7 @@ export function isEmptyValue(v: reflect.Value): boolean {
 		case reflect.Float32:
 		case reflect.Float64:
 		case reflect.Interface:
-		case reflect.Pointer: {
+		case reflect.Ptr: {
 			return v.IsZero()
 			break
 		}
@@ -1430,13 +1430,13 @@ export async function newTypeEncoder(t: reflect.Type, allowAddr: boolean): Promi
 	// Marshaler with a value receiver, then we're better off taking
 	// the address of the value - otherwise we end up with an
 	// allocation as we cast the value to an interface.
-	if (t!.Kind() != reflect.Pointer && allowAddr && reflect.PointerTo(t)!.Implements(marshalerType)) {
+	if (t!.Kind() != reflect.Ptr && allowAddr && reflect.PointerTo(t)!.Implements(marshalerType)) {
 		return newCondAddrEncoder(addrMarshalerEncoder, await newTypeEncoder(t, false))
 	}
 	if (t!.Implements(marshalerType)) {
 		return marshalerEncoder
 	}
-	if (t!.Kind() != reflect.Pointer && allowAddr && reflect.PointerTo(t)!.Implements(textMarshalerType)) {
+	if (t!.Kind() != reflect.Ptr && allowAddr && reflect.PointerTo(t)!.Implements(textMarshalerType)) {
 		return newCondAddrEncoder(addrTextMarshalerEncoder, await newTypeEncoder(t, false))
 	}
 	if (t!.Implements(textMarshalerType)) {
@@ -1497,7 +1497,7 @@ export async function newTypeEncoder(t: reflect.Type, allowAddr: boolean): Promi
 			return await newArrayEncoder(t)
 			break
 		}
-		case reflect.Pointer: {
+		case reflect.Ptr: {
 			return await newPtrEncoder(t)
 			break
 		}
@@ -1513,7 +1513,7 @@ export function invalidValueEncoder(e: encodeState | null, v: reflect.Value, _: 
 }
 
 export function marshalerEncoder(e: encodeState | null, v: reflect.Value, opts: encOpts): void {
-	if (v.Kind() == reflect.Pointer && v.IsNil()) {
+	if (v.Kind() == reflect.Ptr && v.IsNil()) {
 		e!.WriteString("null")
 		return 
 	}
@@ -1554,7 +1554,7 @@ export function addrMarshalerEncoder(e: encodeState | null, v: reflect.Value, op
 }
 
 export function textMarshalerEncoder(e: encodeState | null, v: reflect.Value, opts: encOpts): void {
-	if (v.Kind() == reflect.Pointer && v.IsNil()) {
+	if (v.Kind() == reflect.Ptr && v.IsNil()) {
 		e!.WriteString("null")
 		return 
 	}
@@ -1841,7 +1841,7 @@ export function typeByIndex(t: reflect.Type, index: $.Slice<number>): reflect.Ty
 	for (let _i = 0; _i < $.len(index); _i++) {
 		const i = index![_i]
 		{
-			if (t!.Kind() == reflect.Pointer) {
+			if (t!.Kind() == reflect.Ptr) {
 				t = t!.Elem()
 			}
 			t = t!.Field(i)!.Type
@@ -1857,7 +1857,7 @@ export function resolveKeyName(k: reflect.Value): [string, $.GoError] {
 	{
 		let { value: tm, ok: ok } = $.typeAssert<encoding.TextMarshaler>(k.Interface(), 'encoding.TextMarshaler')
 		if (ok) {
-			if (k.Kind() == reflect.Pointer && k.IsNil()) {
+			if (k.Kind() == reflect.Ptr && k.IsNil()) {
 				return ["", null]
 			}
 			let [buf, err] = tm!.MarshalText()
@@ -2149,7 +2149,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 					// Ignore unexported non-embedded fields.
 					if (sf.Anonymous) {
 						let t = sf.Type
-						if (t!.Kind() == reflect.Pointer) {
+						if (t!.Kind() == reflect.Ptr) {
 							t = t!.Elem()
 						}
 
@@ -2179,7 +2179,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 					let ft = sf.Type
 
 					// Follow pointer.
-					if (ft!.Name() == "" && ft!.Kind() == reflect.Pointer) {
+					if (ft!.Name() == "" && ft!.Kind() == reflect.Ptr) {
 						// Follow pointer.
 						ft = ft!.Elem()
 					}
@@ -2262,11 +2262,11 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 									field.isZero = (v: reflect.Value): boolean => {
 										// Avoid panics calling IsZero on a nil interface or
 										// non-nil interface with nil pointer.
-										return v.IsNil() || (v.Elem()!.Kind() == reflect.Pointer && v.Elem()!.IsNil()) || $.mustTypeAssert<isZeroer>(v.Interface(), 'isZeroer')!.IsZero()
+										return v.IsNil() || (v.Elem()!.Kind() == reflect.Ptr && v.Elem()!.IsNil()) || $.mustTypeAssert<isZeroer>(v.Interface(), 'isZeroer')!.IsZero()
 									}
 									break
 								}
-								case t!.Kind() == reflect.Pointer && t!.Implements(isZeroerType): {
+								case t!.Kind() == reflect.Ptr && t!.Implements(isZeroerType): {
 									field.isZero = (v: reflect.Value): boolean => {
 										// Avoid panics calling IsZero on nil pointer.
 										return v.IsNil() || $.mustTypeAssert<isZeroer>(v.Interface(), 'isZeroer')!.IsZero()

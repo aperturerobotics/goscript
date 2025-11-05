@@ -8,7 +8,7 @@ export type MyInterface = null | {
 }
 
 $.registerInterfaceType(
-  'MyInterface',
+  'github.com/aperturerobotics/goscript/compliance/tests/struct_pointer_interface_fields.MyInterface',
   null, // Zero value for interface is null
   [{ name: "Method", args: [], returns: [] }]
 );

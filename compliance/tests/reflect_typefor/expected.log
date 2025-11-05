@@ -1,0 +1,7 @@
+TypeFor interface: interface { SomeMethod() }
+TypeFor struct: main.MyStruct
+TypeFor struct kind: true
+TypeFor int: int
+TypeFor int kind: true
+Pointer constant: true
+reflect_typefor test finished

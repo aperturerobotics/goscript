@@ -96,6 +96,15 @@ func (c *GoToTSCompiler) WriteCallExpr(exp *ast.CallExpr) error {
 		}
 	}
 
+	// Handle reflect.TypeFor[T]() - Fun is IndexExpr where X is SelectorExpr
+	if indexExpr, ok := expFun.(*ast.IndexExpr); ok {
+		if selectorExpr, ok := indexExpr.X.(*ast.SelectorExpr); ok {
+			if handled, err := c.writeReflectTypeFor(exp, selectorExpr); handled {
+				return err
+			}
+		}
+	}
+
 	// Handle non-identifier function expressions (method calls, function literals, etc.)
 	// Check if this is an async method call (e.g., mu.Lock())
 	c.writeAsyncCallIfNeeded(exp)

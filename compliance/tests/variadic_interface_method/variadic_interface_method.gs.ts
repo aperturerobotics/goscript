@@ -8,7 +8,7 @@ export type Basic = null | {
 }
 
 $.registerInterfaceType(
-  'Basic',
+  'github.com/aperturerobotics/goscript/compliance/tests/variadic_interface_method.Basic',
   null, // Zero value for interface is null
   [{ name: "Join", args: [{ name: "elem", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );

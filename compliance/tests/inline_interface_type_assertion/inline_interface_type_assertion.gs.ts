@@ -66,7 +66,7 @@ export type Stringer = null | {
 }
 
 $.registerInterfaceType(
-  'Stringer',
+  'github.com/aperturerobotics/goscript/compliance/tests/inline_interface_type_assertion.Stringer',
   null, // Zero value for interface is null
   [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );

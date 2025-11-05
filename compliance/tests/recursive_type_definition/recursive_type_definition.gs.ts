@@ -8,7 +8,7 @@ export type A = null | {
 }
 
 $.registerInterfaceType(
-  'A',
+  'github.com/aperturerobotics/goscript/compliance/tests/recursive_type_definition.A',
   null, // Zero value for interface is null
   [{ name: "MethodA", args: [{ name: "a", type: "A" }], returns: [] }]
 );
@@ -46,7 +46,7 @@ export type C = null | {
 }
 
 $.registerInterfaceType(
-  'C',
+  'github.com/aperturerobotics/goscript/compliance/tests/recursive_type_definition.C',
   null, // Zero value for interface is null
   [{ name: "MethodC", args: [{ name: "d", type: "D" }], returns: [] }]
 );
@@ -56,7 +56,7 @@ export type D = null | {
 }
 
 $.registerInterfaceType(
-  'D',
+  'github.com/aperturerobotics/goscript/compliance/tests/recursive_type_definition.D',
   null, // Zero value for interface is null
   [{ name: "MethodD", args: [{ name: "c", type: "C" }], returns: [] }]
 );

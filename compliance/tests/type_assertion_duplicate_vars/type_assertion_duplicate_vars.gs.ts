@@ -112,7 +112,7 @@ export type Interface = null | {
 }
 
 $.registerInterfaceType(
-  'Interface',
+  'github.com/aperturerobotics/goscript/compliance/tests/type_assertion_duplicate_vars.Interface',
   null, // Zero value for interface is null
   [{ name: "Method", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );

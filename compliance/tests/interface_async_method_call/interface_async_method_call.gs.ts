@@ -9,7 +9,7 @@ export type AsyncProcessor = null | {
 }
 
 $.registerInterfaceType(
-  'AsyncProcessor',
+  'github.com/aperturerobotics/goscript/compliance/tests/interface_async_method_call.AsyncProcessor',
   null, // Zero value for interface is null
   [{ name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
 );

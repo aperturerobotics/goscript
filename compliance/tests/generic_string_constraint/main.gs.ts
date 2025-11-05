@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 export type StrOrBytes = null | string | $.Bytes
 
 $.registerInterfaceType(
-  'StrOrBytes',
+  'github.com/aperturerobotics/goscript/compliance/tests/generic_string_constraint.StrOrBytes',
   null, // Zero value for interface is null
   []
 );

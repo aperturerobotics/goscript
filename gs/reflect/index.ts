@@ -1,6 +1,7 @@
 // Export the main reflect functions organized like Go stdlib
 export {
   TypeOf,
+  TypeFor,
   ValueOf,
   Value,
   Kind_String,
@@ -14,6 +15,7 @@ export {
   RecvDir,
   SendDir,
   BothDir,
+  getInterfaceTypeByName,
 } from './type.js'
 export type { Type, ChanDir, Kind } from './type.js'
 export { DeepEqual } from './deepequal.js'
