@@ -142,3 +142,13 @@ When updating design documents:
 5. Ensure updates accurately reflect the user's instructions and align with project goals
 6. Note any divergences from the Go specification clearly
 7. Follow any already-noted divergences carefully
+
+### Eliminate Dead Code
+
+When eliminating dead code if requested by the user:
+
+1. Receive instructions from the user
+2. Run `golangci-lint run --no-config --enable-only=unused`
+3. Remove any unused code in `./compiler` ignoring ./compliance
+4. Any line which is unused in `./compliance` add a `//nolint:unused` comment at the end.
+5. Rerun the golangci-lint command to ensure we got everything.
