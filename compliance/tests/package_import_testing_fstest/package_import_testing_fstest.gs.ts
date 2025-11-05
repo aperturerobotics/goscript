@@ -1,7 +1,7 @@
 // Generated file based on package_import_testing_fstest.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/builtin.js";
+import * as $ from "@goscript/builtin/index.js"
 
 import * as fstest from "@goscript/testing/fstest/index.js"
 
@@ -14,7 +14,7 @@ export async function main(): Promise<void> {
 	let fsys = ({"hello.txt": new fstest.MapFile({Data: $.stringToBytes("Hello, World!")}), "dir/subfile.txt": new fstest.MapFile({Data: $.stringToBytes("This is a subfile")}), "dir": new fstest.MapFile({Mode: (0o755 | ((1 << (32 - 1 - 20))))}), "binary.bin": new fstest.MapFile({Data: new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]), ModTime: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)})})
 
 	// Test Open and read a file
-	let [file, err] = fsys.Open("hello.txt")
+	let [file, err] = fstest.MapFS_Open(fsys, "hello.txt")
 	if (err != null) {
 		console.log("Error opening hello.txt:", err!.Error())
 		return 
@@ -32,7 +32,7 @@ export async function main(): Promise<void> {
 
 	// Test ReadFile
 	let content: $.Bytes
-	[content, err] = fsys.ReadFile("dir/subfile.txt")
+	[content, err] = fstest.MapFS_ReadFile(fsys, "dir/subfile.txt")
 	if (err != null) {
 		console.log("Error reading dir/subfile.txt:", err!.Error())
 		return 
@@ -41,7 +41,7 @@ export async function main(): Promise<void> {
 
 	// Test Stat
 	let info: FileInfo
-	[info, err] = fsys.Stat("hello.txt")
+	[info, err] = fstest.MapFS_Stat(fsys, "hello.txt")
 	if (err != null) {
 		console.log("Error stating hello.txt:", err!.Error())
 		return 
@@ -51,7 +51,7 @@ export async function main(): Promise<void> {
 
 	// Test ReadDir
 	let entries: $.Slice<DirEntry>
-	[entries, err] = fsys.ReadDir(".")
+	[entries, err] = fstest.MapFS_ReadDir(fsys, ".")
 	if (err != null) {
 		console.log("Error reading directory:", err!.Error())
 		return 
@@ -66,7 +66,7 @@ export async function main(): Promise<void> {
 
 	// Test ReadDir on subdirectory
 	let dirEntries: $.Slice<DirEntry>
-	[dirEntries, err] = fsys.ReadDir("dir")
+	[dirEntries, err] = fstest.MapFS_ReadDir(fsys, "dir")
 	if (err != null) {
 		console.log("Error reading dir:", err!.Error())
 		return 
@@ -81,7 +81,7 @@ export async function main(): Promise<void> {
 
 	// Test Glob
 	let matches: $.Slice<string>
-	[matches, err] = fsys.Glob("*.txt")
+	[matches, err] = fstest.MapFS_Glob(fsys, "*.txt")
 	if (err != null) {
 		console.log("Error globbing *.txt:", err!.Error())
 		return 
@@ -96,7 +96,7 @@ export async function main(): Promise<void> {
 
 	// Test Sub
 	let subFS: FS
-	[subFS, err] = fsys.Sub("dir")
+	[subFS, err] = fstest.MapFS_Sub(fsys, "dir")
 	if (err != null) {
 		console.log("Error creating sub filesystem:", err!.Error())
 		return 
