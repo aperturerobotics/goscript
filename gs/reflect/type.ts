@@ -3,6 +3,9 @@ import { MapIter } from './map.js'
 import {
   getTypeByName as builtinGetTypeByName,
   TypeKind,
+  isStructTypeInfo,
+  isInterfaceTypeInfo,
+  type MethodSignature,
 } from '../builtin/type.js'
 
 // rtype is the common implementation of most values
@@ -195,7 +198,7 @@ export interface Type {
   Name?(): string
 
   // Implements reports whether the type implements the interface type u.
-  Implements?(u: Type): boolean
+  Implements(u: Type | null): boolean
 
   // common returns the common type implementation.
   common?(): rtype
@@ -477,6 +480,16 @@ export class BasicType implements Type {
     return null
   }
 
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== Interface) {
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    return false
+  }
+
   public common?(): rtype {
     return new rtype(this._kind)
   }
@@ -508,6 +521,16 @@ class SliceType implements Type {
 
   public PkgPath?(): string {
     return ''
+  }
+
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== Interface) {
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    return false
   }
 }
 
@@ -550,6 +573,16 @@ class ArrayType implements Type {
     return null
   }
 
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== Interface) {
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    return false
+  }
+
   public common?(): rtype {
     return new rtype(this.Kind())
   }
@@ -587,6 +620,18 @@ class PointerType implements Type {
     return null
   }
 
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== Interface) {
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    // For pointer types, check if the element type implements the interface
+    const elemTypeName = this._elemType.String()
+    return typeImplementsInterface(elemTypeName, u)
+  }
+
   public common?(): rtype {
     return new rtype(this.Kind())
   }
@@ -622,6 +667,16 @@ class FunctionType implements Type {
 
   public Field?(_i: number): StructField | null {
     return null
+  }
+
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== Interface) {
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    return false
   }
 
   public common?(): rtype {
@@ -668,12 +723,73 @@ class MapType implements Type {
     return null
   }
 
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== Interface) {
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    return false
+  }
+
   public common?(): rtype {
     return new rtype(this.Kind())
   }
 }
 
 // Struct type implementation
+/**
+ * Helper function to check if a type's method set contains all methods
+ * required by an interface.
+ * 
+ * @param typeName The name of the type to check (e.g., "main.MyType")
+ * @param interfaceType The interface type that must be implemented
+ * @returns True if the type implements the interface, false otherwise
+ */
+function typeImplementsInterface(typeName: string, interfaceType: Type): boolean {
+  // Get the interface name and look it up in the type registry
+  const interfaceName = interfaceType.String()
+  const interfaceTypeInfo = builtinGetTypeByName(interfaceName)
+  
+  if (!interfaceTypeInfo || !isInterfaceTypeInfo(interfaceTypeInfo)) {
+    return false
+  }
+  
+  // Get the type info for the struct/type
+  const typeInfo = builtinGetTypeByName(typeName)
+  
+  if (!typeInfo || !isStructTypeInfo(typeInfo)) {
+    return false
+  }
+  
+  // Check if the type has all required methods
+  const requiredMethods = interfaceTypeInfo.methods || []
+  const typeMethods = typeInfo.methods || []
+  
+  // For each required method, check if the type has a matching method
+  for (const requiredMethod of requiredMethods) {
+    const typeMethod = typeMethods.find(m => m.name === requiredMethod.name)
+    
+    if (!typeMethod) {
+      return false
+    }
+    
+    // Check if method signatures match (simplified - just check counts)
+    if (typeMethod.args.length !== requiredMethod.args.length) {
+      return false
+    }
+    
+    if (typeMethod.returns.length !== requiredMethod.returns.length) {
+      return false
+    }
+    
+    // Could add deeper type checking here, but for now this is sufficient
+  }
+  
+  return true
+}
+
 class StructType implements Type {
   constructor(
     private _name: string,
@@ -708,6 +824,16 @@ class StructType implements Type {
   public Field?(_i: number): any {
     // Stub implementation
     return null
+  }
+
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== Interface) {
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    return typeImplementsInterface(this._name, u)
   }
 
   public common?(): rtype {
@@ -760,6 +886,16 @@ class ChannelType implements Type {
     return null
   }
 
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== Interface) {
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    return false
+  }
+
   public common?(): rtype {
     return new rtype(this.Kind())
   }
@@ -805,7 +941,7 @@ class InterfaceType implements Type {
     return null
   }
 
-  public Implements?(_u: Type): boolean {
+  public Implements(_u: Type | null): boolean {
     return false
   }
 
@@ -815,6 +951,22 @@ class InterfaceType implements Type {
 }
 
 function getTypeOf(value: ReflectValue): Type {
+  // Check for typed nil before checking for plain null
+  // Typed nils are created by $.typedNil() and have __goType and __isTypedNil properties
+  if (value && typeof value === 'object' && (value as any).__isTypedNil) {
+    const typeName = (value as any).__goType
+    if (typeName && typeof typeName === 'string') {
+      // Parse the type name to construct the appropriate Type
+      // For pointer types like "*main.Stringer", extract the element type
+      if (typeName.startsWith('*')) {
+        const elemTypeName = typeName.slice(1) // Remove the '*' prefix
+        // Create an InterfaceType for the element (works for interfaces and other types)
+        const elemType = new InterfaceType(elemTypeName)
+        return new PointerType(elemType)
+      }
+    }
+  }
+
   if (value === null || value === undefined) {
     return new BasicType(Interface, 'interface{}', 16)
   }

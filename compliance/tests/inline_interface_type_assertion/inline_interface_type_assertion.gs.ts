@@ -127,7 +127,7 @@ export async function main(): Promise<void> {
 	}
 
 	// Test case: nil value of an inline interface type assigned to interface{}
-	let l: null | any = null
+	let l: null | any = $.typedNil("*struct{Name string}")
 
 	let { value: ptr, ok: ok6 } = $.typeAssert<{ Name?: string } | null>(l, {kind: $.TypeKind.Pointer, elemType: {kind: $.TypeKind.Struct, fields: {'Name': {kind: $.TypeKind.Basic, name: 'string'}}, methods: []}})
 	if (ok6) {

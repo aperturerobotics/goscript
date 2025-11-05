@@ -35,6 +35,17 @@ class MapType implements Type {
   public NumField(): number {
     return 0
   }
+
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== 20) {
+      // Interface kind
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    return false
+  }
 }
 
 /**

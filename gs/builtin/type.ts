@@ -869,6 +869,105 @@ function matchesType(value: any, info: TypeInfo): boolean {
 }
 
 /**
+ * Compares a Go type string (from typedNil) with a TypeInfo object.
+ * Used to check if a typed nil pointer matches a type assertion target.
+ *
+ * @param typeStr The Go type string (e.g., "*struct{Name string}")
+ * @param typeInfo The normalized TypeInfo to compare against
+ * @returns True if the types match, false otherwise
+ */
+function compareTypeStringWithTypeInfo(
+  typeStr: string,
+  typeInfo: TypeInfo,
+): boolean {
+  // For pointer types, strip the leading * and compare element types
+  if (isPointerTypeInfo(typeInfo)) {
+    if (!typeStr.startsWith('*')) {
+      return false
+    }
+    const elemStr = typeStr.slice(1)
+    const elemType = typeInfo.elemType
+    if (!elemType) {
+      return false
+    }
+    
+    // Handle struct types
+    if (elemStr.startsWith('struct{')) {
+      const elemTypeInfo = normalizeTypeInfo(elemType)
+      if (!isStructTypeInfo(elemTypeInfo)) {
+        return false
+      }
+      
+      // For anonymous structs, compare the type string representation
+      // Extract field definitions from the string
+      const fieldsMatch = elemStr.match(/^struct{(.+)}$/)
+      if (!fieldsMatch) {
+        return false
+      }
+      
+      const fieldStr = fieldsMatch[1]
+      // Parse fields like "Name string" or "X int; Y string"
+      const fieldParts = fieldStr.split(';').map(s => s.trim())
+      const parsedFields: Record<string, string> = {}
+      
+      for (const part of fieldParts) {
+        // Handle "Name string" format
+        const match = part.match(/^(\w+)\s+(.+)$/)
+        if (match) {
+          const [, fieldName, fieldType] = match
+          parsedFields[fieldName] = fieldType.trim()
+        }
+      }
+      
+      // Compare fields
+      const typeInfoFields = elemTypeInfo.fields || {}
+      const typeInfoFieldNames = Object.keys(typeInfoFields)
+      const parsedFieldNames = Object.keys(parsedFields)
+      
+      if (typeInfoFieldNames.length !== parsedFieldNames.length) {
+        return false
+      }
+      
+      // Check if all field names match and types are compatible
+      for (const fieldName of typeInfoFieldNames) {
+        if (!(fieldName in parsedFields)) {
+          return false
+        }
+        
+        const typeInfoFieldType = normalizeTypeInfo(typeInfoFields[fieldName])
+        const parsedFieldType = parsedFields[fieldName]
+        
+        // Compare basic types
+        if (isBasicTypeInfo(typeInfoFieldType)) {
+          const expectedTypeName = typeInfoFieldType.name || ''
+          // Map Go types to TypeScript/runtime types
+          if (expectedTypeName === 'string' && parsedFieldType === 'string') {
+            continue
+          }
+          if ((expectedTypeName === 'int' || expectedTypeName === 'number') && 
+              (parsedFieldType === 'int' || parsedFieldType === 'number')) {
+            continue
+          }
+          return false
+        }
+      }
+      
+      return true
+    }
+    
+    // Handle named types
+    if (typeof elemType === 'string') {
+      return elemStr === elemType
+    }
+    if (elemType.name) {
+      return elemStr === elemType.name
+    }
+  }
+  
+  return false
+}
+
+/**
  * Performs a type assertion on a value against a specified type.
  * Returns an object containing the value (cast to type T) and a boolean indicating success.
  * This is used to implement Go's type assertion with comma-ok idiom: value, ok := x.(Type)
@@ -882,6 +981,21 @@ export function typeAssert<T>(
   typeInfo: string | TypeInfo,
 ): TypeAssertResult<T> {
   const normalizedType = normalizeTypeInfo(typeInfo)
+  
+  // Handle typed nil pointers (created by typedNil() for conversions like (*T)(nil))
+  if (typeof value === 'object' && value !== null && value.__isTypedNil) {
+    // For typed nils, we need to compare the stored type with the expected type
+    if (isPointerTypeInfo(normalizedType)) {
+      // Parse the stored type string and compare with expected type
+      const storedTypeStr = value.__goType as string
+      if (compareTypeStringWithTypeInfo(storedTypeStr, normalizedType)) {
+        return { value: null as unknown as T, ok: true }
+      }
+      return { value: null as unknown as T, ok: false }
+    }
+    return { value: null as unknown as T, ok: false }
+  }
+  
   if (isPointerTypeInfo(normalizedType) && value === null) {
     return { value: null as unknown as T, ok: true }
   }
@@ -1060,4 +1174,19 @@ export function typeSwitch(
   if (defaultCase) {
     defaultCase()
   }
+}
+
+/**
+ * Creates a typed nil pointer with type metadata for reflection.
+ * This is used for type conversions like (*Interface)(nil) where we need
+ * to preserve the pointer type information even though the value is null.
+ * 
+ * @param typeName The full Go type name (e.g., "*main.Stringer")
+ * @returns An object that represents a typed nil with reflection metadata
+ */
+export function typedNil(typeName: string): any {
+  return Object.assign(Object.create(null), {
+    __goType: typeName,
+    __isTypedNil: true,
+  })
 }

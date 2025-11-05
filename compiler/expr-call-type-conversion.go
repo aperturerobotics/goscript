@@ -18,14 +18,25 @@ func (c *GoToTSCompiler) writeNilConversion(exp *ast.CallExpr) (handled bool, er
 		return false, nil
 	}
 
-	// Handle nil pointer to struct type conversions: (*struct{})(nil)
-	if starExpr, isStarExpr := exp.Fun.(*ast.StarExpr); isStarExpr {
-		if _, isStructType := starExpr.X.(*ast.StructType); isStructType {
-			c.tsw.WriteLiterally("null")
+	// Get the type being converted to
+	if typ := c.pkg.TypesInfo.TypeOf(exp.Fun); typ != nil {
+		// For pointer types, create a typed nil that preserves type information
+		if ptrType, ok := typ.(*types.Pointer); ok {
+			// Use a qualifier that returns the package name for local types
+			// This matches Go's reflect output format (e.g., "main.Stringer")
+			qualifier := func(pkg *types.Package) string {
+				if pkg == nil {
+					return ""
+				}
+				return pkg.Name()
+			}
+			typeName := types.TypeString(ptrType, qualifier)
+			c.tsw.WriteLiterallyf("$.typedNil(%q)", typeName)
 			return true, nil
 		}
 	}
 
+	// For non-pointer types (or if type info is unavailable), use plain null
 	c.tsw.WriteLiterally("null")
 	return true, nil
 }

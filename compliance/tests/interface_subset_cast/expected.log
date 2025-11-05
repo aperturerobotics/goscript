@@ -1,0 +1,5 @@
+i1.MyString1(): hello
+i1.MyString2(): world
+i2.MyString1(): hello
+Type assertion successful
+i3.MyString1(): hello
