@@ -5,22 +5,22 @@ package main
 
 // This should generate a proper type reference, not an undefined fmt type
 type formatter struct {
-	wid         int
-	prec        int
-	widPresent  bool
-	precPresent bool
+	wid         int  //nolint:unused
+	prec        int  //nolint:unused
+	widPresent  bool //nolint:unused
+	precPresent bool //nolint:unused
 	minus       bool
 	plus        bool
-	sharp       bool
-	space       bool
-	zero        bool
-	plusV       bool
-	sharpV      bool
+	sharp       bool //nolint:unused
+	space       bool //nolint:unused
+	zero        bool //nolint:unused
+	plusV       bool //nolint:unused
+	sharpV      bool //nolint:unused
 }
 
 type printer struct {
-	buf []byte
-	arg interface{}
+	buf []byte      //nolint:unused
+	arg interface{} //nolint:unused
 	// This line causes the issue: fmt: $.VarRef<fmt>; where fmt is undefined
 	// Should generate proper type reference
 	fmt formatter

@@ -132,6 +132,7 @@ export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoEr
 // walk demonstrates the issue with named function types
 // This uses filepath.WalkFunc which is a named function type from external package
 export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: filepath.WalkFunc | null): $.GoError {
+	//nolint:unused
 	// Test case 1: Direct call to named function type parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !

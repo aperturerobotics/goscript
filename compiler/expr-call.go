@@ -5,7 +5,6 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
-	"strings"
 )
 
 // WriteCallExpr translates a Go function call expression (`ast.CallExpr`)
@@ -244,35 +243,6 @@ func (c *GoToTSCompiler) getQualifiedTypeName(t types.Type) string {
 
 	// Local type
 	return obj.Name()
-}
-
-// getImportAlias returns the import alias for a given package path
-// Deprecated: use resolveImportAlias instead for better type safety
-func (c *GoToTSCompiler) getImportAlias(pkgPath string) string {
-	if c.analysis == nil {
-		return ""
-	}
-
-	// First try to find by exact package path
-	for importAlias := range c.analysis.Imports {
-		if importInfo := c.analysis.Imports[importAlias]; importInfo != nil {
-			if importInfo.importPath == pkgPath {
-				return importAlias
-			}
-		}
-	}
-
-	// Fallback: try to match by package name extracted from path
-	parts := strings.Split(pkgPath, "/")
-	defaultPkgName := parts[len(parts)-1]
-
-	for importAlias := range c.analysis.Imports {
-		if importAlias == defaultPkgName {
-			return importAlias
-		}
-	}
-
-	return ""
 }
 
 // writeAutoWrappedArgument writes an argument, auto-wrapping it if needed based on the expected parameter type

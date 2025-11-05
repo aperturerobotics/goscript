@@ -72,21 +72,6 @@ func (c *GoToTSCompiler) isProtobufType(typ types.Type) bool {
 	return false
 }
 
-// isNamedNumericType checks if a given type is a named type with an underlying numeric type.
-func (c *GoToTSCompiler) isNamedNumericType(t types.Type) bool {
-	finalType, wasNamed := c.getFinalUnderlyingType(t)
-	if !wasNamed {
-		return false
-	}
-
-	if basicType, isBasic := finalType.(*types.Basic); isBasic {
-		info := basicType.Info()
-		return (info&types.IsInteger) != 0 || (info&types.IsFloat) != 0
-	}
-
-	return false
-}
-
 // isWrapperType checks if a type should be treated as a wrapper type (type alias with basic underlying type).
 // Wrapper types are rendered as TypeScript type aliases rather than classes with constructors.
 // Examples: os.FileMode (uint32), MyString (string), etc.
