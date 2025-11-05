@@ -38,3 +38,43 @@ export function LEUint64(b: $.Bytes): number {
   let high = LEUint32($.goSlice(b, 4, undefined))
   return low + high * 0x100000000
 }
+
+// Big Endian Put functions
+export function BEPutUint16(b: $.Bytes, v: number): void {
+  b![0] = (v >> 8) & 0xff
+  b![1] = v & 0xff
+}
+
+export function BEPutUint32(b: $.Bytes, v: number): void {
+  b![0] = (v >> 24) & 0xff
+  b![1] = (v >> 16) & 0xff
+  b![2] = (v >> 8) & 0xff
+  b![3] = v & 0xff
+}
+
+export function BEPutUint64(b: $.Bytes, v: number): void {
+  const high = Math.floor(v / 0x100000000)
+  const low = v >>> 0
+  BEPutUint32(b, high)
+  BEPutUint32($.goSlice(b, 4, undefined), low)
+}
+
+// Little Endian Put functions
+export function LEPutUint16(b: $.Bytes, v: number): void {
+  b![0] = v & 0xff
+  b![1] = (v >> 8) & 0xff
+}
+
+export function LEPutUint32(b: $.Bytes, v: number): void {
+  b![0] = v & 0xff
+  b![1] = (v >> 8) & 0xff
+  b![2] = (v >> 16) & 0xff
+  b![3] = (v >> 24) & 0xff
+}
+
+export function LEPutUint64(b: $.Bytes, v: number): void {
+  const low = v >>> 0
+  const high = Math.floor(v / 0x100000000)
+  LEPutUint32(b, low)
+  LEPutUint32($.goSlice(b, 4, undefined), high)
+}
