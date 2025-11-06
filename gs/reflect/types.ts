@@ -106,24 +106,24 @@ export interface Channel<T = unknown> {
 }
 
 // Select case for channel operations
-export interface SelectCase {
-  Dir: SelectDir
-  Chan?: Value // Value representing a channel - optional since default cases don't need it
-  Send?: Value // Value to send (if Dir is SendDir) - optional since only needed for send cases
-}
+export class SelectCase {
+  public Dir!: SelectDir
+  public Chan?: Value // Value representing a channel - optional since default cases don't need it
+  public Send?: Value // Value to send (if Dir is SendDir) - optional since only needed for send cases
 
-// Select direction constants
-export class SelectDir {
-  constructor(private _value: number) {}
-
-  valueOf(): number {
-    return this._value
+  constructor(init?: Partial<SelectCase>) {
+    if (init) {
+      Object.assign(this, init)
+    }
   }
 }
 
-export const SelectSend = new SelectDir(1)
-export const SelectRecv = new SelectDir(2)
-export const SelectDefault = new SelectDir(3)
+// Select direction constants - SelectDir is just an int in Go
+export type SelectDir = number
+
+export const SelectSend: SelectDir = 1
+export const SelectRecv: SelectDir = 2
+export const SelectDefault: SelectDir = 3
 
 // Slice header (internal representation)
 export interface SliceHeader {
