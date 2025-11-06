@@ -276,7 +276,7 @@ export async function main(): Promise<void> {
 	// Send values to only the string channel to make select deterministic
 	strChan.Send(reflect.ValueOf("hello"))
 
-	let cases = $.arrayToSlice<reflect.SelectCase>([{Chan: intChan, Dir: reflect.SelectRecv}, {Chan: strChan, Dir: reflect.SelectRecv}, {Dir: reflect.SelectDefault}])
+	let cases = $.arrayToSlice<reflect.SelectCase>([$.markAsStructValue(new reflect.SelectCase({Chan: intChan, Dir: reflect.SelectRecv})), $.markAsStructValue(new reflect.SelectCase({Chan: strChan, Dir: reflect.SelectRecv})), $.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectDefault}))])
 	let [chosen, recv, recvOK] = reflect.Select(cases)
 	console.log("Select chosen:", chosen, "recvOK:", recvOK)
 
