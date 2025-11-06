@@ -345,15 +345,21 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 			}
 		}
 
-		// Promoted methods
-		embeddedMethodSet := types.NewMethodSet(embeddedFieldType) // Use original field type for method set
-		for k := range embeddedMethodSet.Len() {
-			methodSelection := embeddedMethodSet.At(k)
-			method := methodSelection.Obj().(*types.Func)
-			methodName := method.Name()
+	// Promoted methods
+	// Use pointer to embedded type to get both value and pointer receiver methods
+	// This matches Go's behavior where embedding T promotes both T and *T methods
+	methodSetType := embeddedFieldType
+	if _, isPtr := embeddedFieldType.(*types.Pointer); !isPtr {
+		methodSetType = types.NewPointer(embeddedFieldType)
+	}
+	embeddedMethodSet := types.NewMethodSet(methodSetType)
+	for k := range embeddedMethodSet.Len() {
+		methodSelection := embeddedMethodSet.At(k)
+		method := methodSelection.Obj().(*types.Func)
+		methodName := method.Name()
 
-			// Skip if it's not a promoted method (indirect) or if it's shadowed by a direct method or an already processed promoted method
-			if len(methodSelection.Index()) == 1 && !directMethods[methodName] && !seenPromotedFields[methodName] {
+		// Skip if it's not a promoted method (indirect) or if it's shadowed by a direct method or an already processed promoted method
+		if len(methodSelection.Index()) == 1 && !directMethods[methodName] && !seenPromotedFields[methodName] {
 				// Check for conflict with outer struct's own fields
 				conflictWithField := false
 				for k_idx := 0; k_idx < underlyingStruct.NumFields(); k_idx++ {
@@ -543,15 +549,16 @@ func (c *GoToTSCompiler) generateFlattenedInitTypeString(structType *types.Named
 				fieldType = ptr.Elem()
 			}
 
-			if named, ok := fieldType.(*types.Named); ok {
-				embeddedName := named.Obj().Name()
+			if _, ok := fieldType.(*types.Named); ok {
 				// Check if the embedded type is an interface
 				if _, isInterface := fieldType.Underlying().(*types.Interface); isInterface {
 					// For embedded interfaces, use the full qualified interface type
 					embeddedTypeMap[c.getEmbeddedFieldKeyName(field.Type())] = c.getTypeString(field.Type())
 				} else {
 					// For embedded structs, use ConstructorParameters for field-based initialization
-					embeddedTypeMap[c.getEmbeddedFieldKeyName(field.Type())] = fmt.Sprintf("Partial<ConstructorParameters<typeof %s>[0]>", embeddedName)
+					// Use getTypeString to get the qualified type name (e.g., bytes.Buffer not just Buffer)
+					qualifiedTypeName := c.getTypeString(fieldType)
+					embeddedTypeMap[c.getEmbeddedFieldKeyName(field.Type())] = fmt.Sprintf("Partial<ConstructorParameters<typeof %s>[0]>", qualifiedTypeName)
 				}
 			}
 			continue

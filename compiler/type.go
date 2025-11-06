@@ -249,7 +249,8 @@ func (c *GoToTSCompiler) WriteNamedType(t *types.Named) {
 	typePkg := t.Obj().Pkg()
 	if typePkg != nil && typePkg != c.pkg.Types {
 		// This type is from an imported package, find the import alias
-		if alias, found := c.resolveImportAlias(typePkg); found {
+		alias, found := c.resolveImportAlias(typePkg)
+		if found && alias != "" {
 			// Write the qualified name: importAlias.TypeName
 			c.tsw.WriteLiterally(alias)
 			c.tsw.WriteLiterally(".")

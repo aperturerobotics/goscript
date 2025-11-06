@@ -1,4 +1,9 @@
 import * as $ from "@goscript/builtin/index.js"
+import * as bytes from "bytes/index.js"
+import * as filepath from "path/filepath/index.js"
+import * as strconv from "strconv/index.js"
+import * as unicode from "unicode/index.js"
+import * as utf8 from "unicode/utf8/index.js"
 
 import * as fmt from "@goscript/fmt/index.js"
 

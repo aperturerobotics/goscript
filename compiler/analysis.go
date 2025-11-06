@@ -1207,7 +1207,143 @@ func AnalyzePackageFiles(pkg *packages.Package, allPackages map[string]*packages
 	// Interface implementation async status is now updated on-demand in IsInterfaceMethodAsync
 	visitor.analyzeAllMethodsAsync()
 
+	// Fourth pass: collect imports needed by promoted methods from embedded structs
+	analysis.addImportsForPromotedMethods(pkg)
+
 	return analysis
+}
+
+// addImportsForPromotedMethods scans all struct types in the package for embedded fields
+// and adds imports for any packages referenced by the promoted methods' parameter/return types.
+func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
+	// Collect all package names we need to add
+	packagesToAdd := make(map[string]*types.Package)
+
+	// Iterate through all type definitions in the package
+	scope := pkg.Types.Scope()
+	for _, name := range scope.Names() {
+		obj := scope.Lookup(name)
+		if obj == nil {
+			continue
+		}
+
+		// Check if it's a type definition
+		typeName, ok := obj.(*types.TypeName)
+		if !ok {
+			continue
+		}
+
+		// Get the underlying type
+		namedType, ok := typeName.Type().(*types.Named)
+		if !ok {
+			continue
+		}
+
+		// Check if it's a struct
+		structType, ok := namedType.Underlying().(*types.Struct)
+		if !ok {
+			continue
+		}
+
+		// Look for embedded fields
+		for i := 0; i < structType.NumFields(); i++ {
+			field := structType.Field(i)
+			if !field.Embedded() {
+				continue
+			}
+
+			// Get the type of the embedded field
+			embeddedType := field.Type()
+			
+			// Handle pointer to embedded type
+			if ptr, ok := embeddedType.(*types.Pointer); ok {
+				embeddedType = ptr.Elem()
+			}
+
+			// Get named type to access methods
+			embeddedNamed, ok := embeddedType.(*types.Named)
+			if !ok {
+				continue
+			}
+
+			// Scan all methods of the embedded type
+			for j := 0; j < embeddedNamed.NumMethods(); j++ {
+				method := embeddedNamed.Method(j)
+				sig, ok := method.Type().(*types.Signature)
+				if !ok {
+					continue
+				}
+
+				// Scan parameters
+				if sig.Params() != nil {
+					for k := 0; k < sig.Params().Len(); k++ {
+						param := sig.Params().At(k)
+						a.collectPackageFromType(param.Type(), pkg.Types, packagesToAdd)
+					}
+				}
+
+				// Scan results
+				if sig.Results() != nil {
+					for k := 0; k < sig.Results().Len(); k++ {
+						result := sig.Results().At(k)
+						a.collectPackageFromType(result.Type(), pkg.Types, packagesToAdd)
+					}
+				}
+			}
+		}
+	}
+
+	// Add collected packages to imports
+	for pkgName, pkgObj := range packagesToAdd {
+		if _, exists := a.Imports[pkgName]; !exists {
+			tsImportPath := "@goscript/" + pkgObj.Path()
+			a.Imports[pkgName] = &fileImport{
+				importPath: tsImportPath,
+				importVars: make(map[string]struct{}),
+			}
+		}
+	}
+}
+
+// collectPackageFromType recursively collects packages referenced by a type.
+func (a *Analysis) collectPackageFromType(t types.Type, currentPkg *types.Package, packagesToAdd map[string]*types.Package) {
+	switch typ := t.(type) {
+	case *types.Named:
+		pkg := typ.Obj().Pkg()
+		if pkg != nil && pkg != currentPkg {
+			packagesToAdd[pkg.Name()] = pkg
+		}
+		// Check type arguments for generics
+		if typ.TypeArgs() != nil {
+			for i := 0; i < typ.TypeArgs().Len(); i++ {
+				a.collectPackageFromType(typ.TypeArgs().At(i), currentPkg, packagesToAdd)
+			}
+		}
+	case *types.Pointer:
+		a.collectPackageFromType(typ.Elem(), currentPkg, packagesToAdd)
+	case *types.Slice:
+		a.collectPackageFromType(typ.Elem(), currentPkg, packagesToAdd)
+	case *types.Array:
+		a.collectPackageFromType(typ.Elem(), currentPkg, packagesToAdd)
+	case *types.Map:
+		a.collectPackageFromType(typ.Key(), currentPkg, packagesToAdd)
+		a.collectPackageFromType(typ.Elem(), currentPkg, packagesToAdd)
+	case *types.Chan:
+		a.collectPackageFromType(typ.Elem(), currentPkg, packagesToAdd)
+	case *types.Signature:
+		// Collect from parameters
+		if typ.Params() != nil {
+			for i := 0; i < typ.Params().Len(); i++ {
+				a.collectPackageFromType(typ.Params().At(i).Type(), currentPkg, packagesToAdd)
+			}
+		}
+		// Collect from results
+		if typ.Results() != nil {
+			for i := 0; i < typ.Results().Len(); i++ {
+				a.collectPackageFromType(typ.Results().At(i).Type(), currentPkg, packagesToAdd)
+			}
+		}
+	}
 }
 
 // AnalyzePackageImports performs package-level analysis to collect function definitions

@@ -3,6 +3,13 @@
 
 import * as $ from "@goscript/builtin/index.js"
 import { protobufPackage, ExampleMsg } from "./protobuf_lite_ts.pb.js";
+import * as base64 from "encoding/base64/index.js"
+import * as fmt from "fmt/index.js"
+import * as io from "io/index.js"
+import * as json from "github.com/aperturerobotics/protobuf-go-lite/json/index.js"
+import * as protobuf_go_lite from "github.com/aperturerobotics/protobuf-go-lite/index.js"
+import * as strconv from "strconv/index.js"
+import * as strings from "strings/index.js"
 
 export async function main(): Promise<void> {
 	let msg = ExampleMsg.create({exampleField: $.stringToBytes("hello"), exampleText: "world"})

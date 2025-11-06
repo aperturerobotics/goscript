@@ -243,7 +243,7 @@ export class MutexLocker {
 		if (rel == null) {
 			$.panic("csync: unlock of unlocked MutexLocker")
 		}
-		(rel!.value)()
+		;(rel!.value)()
 	}
 
 	// Register this type with the runtime type system

@@ -1,0 +1,58 @@
+// Generated file based on method_receiver_paren_line.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+export class Thing {
+	public get value(): number {
+		return this._fields.value.value
+	}
+	public set value(value: number) {
+		this._fields.value.value = value
+	}
+
+	public _fields: {
+		value: $.VarRef<number>;
+	}
+
+	constructor(init?: Partial<{value?: number}>) {
+		this._fields = {
+			value: $.varRef(init?.value ?? 0)
+		}
+	}
+
+	public clone(): Thing {
+		const cloned = new Thing()
+		cloned._fields = {
+			value: $.varRef(this._fields.value.value)
+		}
+		return cloned
+	}
+
+	public callIt(x: number): void {
+		const t = this
+		;getFunc()!(t, x)
+	}
+
+	// Register this type with the runtime type system
+	static __typeInfo = $.registerStructType(
+	  'main.Thing',
+	  new Thing(),
+	  [{ name: "callIt", args: [{ name: "x", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }],
+	  Thing,
+	  {"value": { kind: $.TypeKind.Basic, name: "number" }}
+	);
+}
+
+export function getFunc(): ((p0: Thing | null, p1: number) => void) | null {
+	return (t: Thing | null, x: number): void => {
+		t!.value += x
+	}
+}
+
+export async function main(): Promise<void> {
+	let thing = new Thing({value: 10})
+	thing!.callIt(32)
+	console.log("Result:", thing!.value)
+}
+

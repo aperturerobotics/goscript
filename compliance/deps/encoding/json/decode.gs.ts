@@ -4,6 +4,13 @@ import { foldName } from "./fold.gs.js";
 import { checkValid, stateEndValue } from "./scanner.gs.js";
 import { structFields } from "./encode.gs.js";
 import { scanner } from "./scanner.gs.js";
+import * as bytes from "bytes/index.js"
+import * as cmp from "cmp/index.js"
+import * as errors from "errors/index.js"
+import * as io from "io/index.js"
+import * as math from "math/index.js"
+import * as slices from "slices/index.js"
+import * as sync from "sync/index.js"
 
 import * as encoding from "@goscript/encoding/index.js"
 

@@ -1,5 +1,8 @@
 import * as $ from "@goscript/builtin/index.js"
 import { key, tree } from "./tree.gs.js";
+import * as iter from "iter/index.js"
+import * as unicode from "unicode/index.js"
+import * as utf8 from "unicode/utf8/index.js"
 
 import * as cmp from "@goscript/cmp/index.js"
 
@@ -179,7 +182,7 @@ export class FileSet {
 		__defer.defer(() => {
 			s.mutex.RUnlock()
 		});
-		s.tree.all()!(async (f: File | null): Promise<boolean> => {
+		;s.tree.all()!(async (f: File | null): Promise<boolean> => {
 			await using __defer = new $.AsyncDisposableStack();
 			s.mutex.RUnlock()
 			__defer.defer(async () => {

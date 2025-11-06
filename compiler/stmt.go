@@ -368,6 +368,15 @@ func (c *GoToTSCompiler) WriteStmtExpr(exp *ast.ExprStmt) error {
 		return nil
 	}
 
+	// Defensive semicolon: if the expression will start with '(' in TypeScript,
+	// prepend a semicolon to prevent JavaScript from treating the previous line
+	// as a function call. This happens when:
+	// 1. CallExpr where Fun itself will be parenthesized (e.g., (await fn())())
+	// 2. Array/slice literals starting with '['
+	if c.needsDefensiveSemicolon(exp.X) {
+		c.tsw.WriteLiterally(";")
+	}
+
 	// Handle other expression statements
 	if err := c.WriteValueExpr(exp.X); err != nil { // Expression statement evaluates a value
 		return err
@@ -1128,4 +1137,39 @@ func (c *GoToTSCompiler) substituteExprForShadowing(expr ast.Expr, shadowingInfo
 // isBuiltinFunction checks if the given name is a Go built-in function
 func (c *GoToTSCompiler) isBuiltinFunction(name string) bool {
 	return builtinFunctions[name]
+}
+
+// needsDefensiveSemicolon determines if an expression will generate TypeScript
+// code starting with '(' or '[', which would require a defensive semicolon to
+// prevent JavaScript from treating the previous line as a function call.
+func (c *GoToTSCompiler) needsDefensiveSemicolon(expr ast.Expr) bool {
+	switch e := expr.(type) {
+	case *ast.CallExpr:
+		// Check if the function being called will be parenthesized
+		// This happens when Fun is itself a CallExpr, TypeAssertExpr, or other complex expression
+		switch e.Fun.(type) {
+		case *ast.CallExpr:
+			// (fn())() - needs defensive semicolon
+			return true
+		case *ast.TypeAssertExpr:
+			// (x.(T))() - needs defensive semicolon
+			return true
+		case *ast.IndexExpr:
+			// Could generate (arr[i])() if indexed result is called
+			// But typically doesn't need defensive semicolon as arr[i]() is fine
+			return false
+		case *ast.ParenExpr:
+			// Already parenthesized - needs defensive semicolon
+			return true
+		}
+	case *ast.CompositeLit:
+		// Array/slice literals start with '['
+		if _, isArray := e.Type.(*ast.ArrayType); isArray {
+			return true
+		}
+	case *ast.ParenExpr:
+		// Parenthesized expressions start with '('
+		return true
+	}
+	return false
 }

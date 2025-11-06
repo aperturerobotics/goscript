@@ -105,10 +105,6 @@ export class MyReader {
 		return cloned
 	}
 
-	public Read(p: $.Bytes): [number, $.GoError] {
-		return this.Reader!.Read(p)
-	}
-
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
 	  'main.MyReader',

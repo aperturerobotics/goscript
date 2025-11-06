@@ -676,6 +676,36 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 		}
 	}
 
+	// Write any imports that were added during analysis (e.g., for promoted methods)
+	// but don't appear in the source AST
+	writtenImports := make(map[string]bool)
+	// Track imports that will be written from the AST
+	for _, imp := range f.Imports {
+		if imp.Path != nil {
+			path := imp.Path.Value[1 : len(imp.Path.Value)-1] // Remove quotes
+			if imp.Name != nil && imp.Name.Name != "" {
+				writtenImports[imp.Name.Name] = true
+			} else {
+				// Use the actual package name
+				if actualName, err := getActualPackageName(path, c.pkg.Imports); err == nil {
+					writtenImports[actualName] = true
+				}
+			}
+		}
+	}
+	// Write imports from analysis that aren't in the AST
+	var additionalImports []string
+	for pkgName := range c.Analysis.Imports {
+		if !writtenImports[pkgName] && pkgName != "$" {
+			additionalImports = append(additionalImports, pkgName)
+		}
+	}
+	sort.Strings(additionalImports)
+	for _, pkgName := range additionalImports {
+		fileImp := c.Analysis.Imports[pkgName]
+		c.codeWriter.WriteImport(pkgName, fileImp.importPath+"/index.js")
+	}
+
 	c.codeWriter.WriteLine("") // Add a newline after imports
 
 	if err := goWriter.WriteDecls(f.Decls); err != nil {

@@ -3,6 +3,9 @@ import { indirect } from "./decode.gs.js";
 import { foldName } from "./fold.gs.js";
 import { appendCompact, appendHTMLEscape, appendIndent } from "./indent.gs.js";
 import { parseTag } from "./tags.gs.js";
+import * as errors from "errors/index.js"
+import * as io from "io/index.js"
+import * as utf16 from "@goscript/unicode/utf16/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
@@ -333,7 +336,7 @@ export class encodeState {
 		ptrSeen: $.VarRef<Map<null | any, {  }> | null>;
 	}
 
-	constructor(init?: Partial<{Buffer?: Partial<ConstructorParameters<typeof Buffer>[0]>, ptrLevel?: number, ptrSeen?: Map<null | any, {  }> | null}>) {
+	constructor(init?: Partial<{Buffer?: Partial<ConstructorParameters<typeof bytes.Buffer>[0]>, ptrLevel?: number, ptrSeen?: Map<null | any, {  }> | null}>) {
 		this._fields = {
 			Buffer: $.varRef(new bytes.Buffer(init?.Buffer)),
 			ptrLevel: $.varRef(init?.ptrLevel ?? 0),
@@ -382,7 +385,115 @@ export class encodeState {
 
 	public async reflectValue(v: reflect.Value, opts: encOpts): Promise<void> {
 		const e = this
-		(await valueEncoder(v))!(e, v, opts)
+		;(await valueEncoder(v))!(e, v, opts)
+	}
+
+	public Available(): number {
+		return this.Buffer.Available()
+	}
+
+	public AvailableBuffer(): $.Bytes {
+		return this.Buffer.AvailableBuffer()
+	}
+
+	public Bytes(): $.Bytes {
+		return this.Buffer.Bytes()
+	}
+
+	public Cap(): number {
+		return this.Buffer.Cap()
+	}
+
+	public Grow(n: number): void {
+		this.Buffer.Grow(n)
+	}
+
+	public Len(): number {
+		return this.Buffer.Len()
+	}
+
+	public Next(n: number): $.Bytes {
+		return this.Buffer.Next(n)
+	}
+
+	public Read(p: $.Bytes): [number, $.GoError] {
+		return this.Buffer.Read(p)
+	}
+
+	public ReadByte(): [number, $.GoError] {
+		return this.Buffer.ReadByte()
+	}
+
+	public ReadBytes(delim: number): [$.Bytes, $.GoError] {
+		return this.Buffer.ReadBytes(delim)
+	}
+
+	public ReadFrom(r: io.Reader): [number, $.GoError] {
+		return this.Buffer.ReadFrom(r)
+	}
+
+	public ReadRune(): [number, number, $.GoError] {
+		return this.Buffer.ReadRune()
+	}
+
+	public ReadString(delim: number): [string, $.GoError] {
+		return this.Buffer.ReadString(delim)
+	}
+
+	public Reset(): void {
+		this.Buffer.Reset()
+	}
+
+	public String(): string {
+		return this.Buffer.String()
+	}
+
+	public Truncate(n: number): void {
+		this.Buffer.Truncate(n)
+	}
+
+	public UnreadByte(): $.GoError {
+		return this.Buffer.UnreadByte()
+	}
+
+	public UnreadRune(): $.GoError {
+		return this.Buffer.UnreadRune()
+	}
+
+	public Write(p: $.Bytes): [number, $.GoError] {
+		return this.Buffer.Write(p)
+	}
+
+	public WriteByte(c: number): $.GoError {
+		return this.Buffer.WriteByte(c)
+	}
+
+	public WriteRune(r: number): [number, $.GoError] {
+		return this.Buffer.WriteRune(r)
+	}
+
+	public WriteString(s: string): [number, $.GoError] {
+		return this.Buffer.WriteString(s)
+	}
+
+	public WriteTo(w: io.Writer): [number, $.GoError] {
+		return this.Buffer.WriteTo(w)
+	}
+
+	public empty(): boolean {
+		return this.Buffer.empty()
+	}
+
+	public grow(n: number): number {
+		return this.Buffer.grow(n)
+	}
+
+	public readSlice(delim: number): [$.Bytes, $.GoError] {
+		return this.Buffer.readSlice(delim)
+	}
+
+	public tryGrowByReslice(n: number): [number, boolean] {
+		return this.Buffer.tryGrowByReslice(n)
 	}
 
 	// Register this type with the runtime type system
@@ -462,10 +573,6 @@ export class jsonError {
 			error: $.varRef(this._fields.error.value)
 		}
 		return cloned
-	}
-
-	public Error(): string {
-		return this.error!.Error()
 	}
 
 	// Register this type with the runtime type system
@@ -1412,7 +1519,7 @@ export async function typeEncoder(t: reflect.Type): Promise<encoderFunc | null> 
 		return await newTypeEncoder(t, true)
 	})
 	let [fi, loaded] = await encoderCache!.value.LoadOrStore(t, Object.assign((e: encodeState | null, v: reflect.Value, opts: encOpts): void => {
-		indirect!()!(e, v, opts)
+		;indirect!()!(e, v, opts)
 	}, { __goTypeName: 'encoderFunc' }))
 	if (loaded) {
 		return $.mustTypeAssert<encoderFunc | null>(fi, {kind: $.TypeKind.Function, name: 'encoderFunc', params: [{ kind: $.TypeKind.Pointer, elemType: "encodeState" }, "Value", "encOpts"], results: []})
