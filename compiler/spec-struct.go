@@ -345,21 +345,24 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 			}
 		}
 
-	// Promoted methods
-	// Use pointer to embedded type to get both value and pointer receiver methods
-	// This matches Go's behavior where embedding T promotes both T and *T methods
-	methodSetType := embeddedFieldType
-	if _, isPtr := embeddedFieldType.(*types.Pointer); !isPtr {
-		methodSetType = types.NewPointer(embeddedFieldType)
-	}
-	embeddedMethodSet := types.NewMethodSet(methodSetType)
-	for k := range embeddedMethodSet.Len() {
-		methodSelection := embeddedMethodSet.At(k)
-		method := methodSelection.Obj().(*types.Func)
-		methodName := method.Name()
+		// Promoted methods
+		// Use pointer to embedded type to get both value and pointer receiver methods
+		// This matches Go's behavior where embedding T promotes both T and *T methods
+		// Exception: For interfaces, use the interface directly as pointer-to-interface has no methods
+		methodSetType := embeddedFieldType
+		if _, isPtr := embeddedFieldType.(*types.Pointer); !isPtr {
+			if _, isInterface := embeddedFieldType.Underlying().(*types.Interface); !isInterface {
+				methodSetType = types.NewPointer(embeddedFieldType)
+			}
+		}
+		embeddedMethodSet := types.NewMethodSet(methodSetType)
+		for k := range embeddedMethodSet.Len() {
+			methodSelection := embeddedMethodSet.At(k)
+			method := methodSelection.Obj().(*types.Func)
+			methodName := method.Name()
 
-		// Skip if it's not a promoted method (indirect) or if it's shadowed by a direct method or an already processed promoted method
-		if len(methodSelection.Index()) == 1 && !directMethods[methodName] && !seenPromotedFields[methodName] {
+			// Skip if it's not a promoted method (indirect) or if it's shadowed by a direct method or an already processed promoted method
+			if len(methodSelection.Index()) == 1 && !directMethods[methodName] && !seenPromotedFields[methodName] {
 				// Check for conflict with outer struct's own fields
 				conflictWithField := false
 				for k_idx := 0; k_idx < underlyingStruct.NumFields(); k_idx++ {

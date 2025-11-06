@@ -9,7 +9,7 @@ type field struct {
 func main() {
 	var fields []field
 	println("fields before:", fields)
-	
+
 	slices.SortFunc(fields, func(a, b field) int {
 		if a.name < b.name {
 			return -1
@@ -19,6 +19,6 @@ func main() {
 		}
 		return 0
 	})
-	
+
 	println("fields after:", fields)
 }

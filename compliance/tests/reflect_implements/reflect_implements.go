@@ -16,7 +16,7 @@ func main() {
 	t := reflect.TypeOf(MyType{})
 	ptr := reflect.PointerTo(t)
 	iface := reflect.TypeOf((*Stringer)(nil)).Elem()
-	
+
 	println("MyType implements Stringer:", t.Implements(iface))
 	println("*MyType implements Stringer:", ptr.Implements(iface))
 }

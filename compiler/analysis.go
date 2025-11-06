@@ -1254,21 +1254,26 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 
 			// Get the type of the embedded field
 			embeddedType := field.Type()
-			
+
 			// Handle pointer to embedded type
 			if ptr, ok := embeddedType.(*types.Pointer); ok {
 				embeddedType = ptr.Elem()
 			}
 
-			// Get named type to access methods
-			embeddedNamed, ok := embeddedType.(*types.Named)
-			if !ok {
-				continue
+			// Use method set to get all promoted methods including pointer receiver methods
+			// This matches Go's behavior where embedding T promotes both T and *T methods
+			methodSetType := embeddedType
+			if _, isPtr := embeddedType.(*types.Pointer); !isPtr {
+				if _, isInterface := embeddedType.Underlying().(*types.Interface); !isInterface {
+					methodSetType = types.NewPointer(embeddedType)
+				}
 			}
+			embeddedMethodSet := types.NewMethodSet(methodSetType)
 
-			// Scan all methods of the embedded type
-			for j := 0; j < embeddedNamed.NumMethods(); j++ {
-				method := embeddedNamed.Method(j)
+			// Scan all methods in the method set
+			for j := 0; j < embeddedMethodSet.Len(); j++ {
+				selection := embeddedMethodSet.At(j)
+				method := selection.Obj()
 				sig, ok := method.Type().(*types.Signature)
 				if !ok {
 					continue
@@ -1318,6 +1323,15 @@ func (a *Analysis) collectPackageFromType(t types.Type, currentPkg *types.Packag
 			for i := 0; i < typ.TypeArgs().Len(); i++ {
 				a.collectPackageFromType(typ.TypeArgs().At(i), currentPkg, packagesToAdd)
 			}
+		}
+	case *types.Interface:
+		// For interfaces, we need to check embedded interfaces and method signatures
+		for i := 0; i < typ.NumEmbeddeds(); i++ {
+			a.collectPackageFromType(typ.EmbeddedType(i), currentPkg, packagesToAdd)
+		}
+		for i := 0; i < typ.NumExplicitMethods(); i++ {
+			method := typ.ExplicitMethod(i)
+			a.collectPackageFromType(method.Type(), currentPkg, packagesToAdd)
 		}
 	case *types.Pointer:
 		a.collectPackageFromType(typ.Elem(), currentPkg, packagesToAdd)

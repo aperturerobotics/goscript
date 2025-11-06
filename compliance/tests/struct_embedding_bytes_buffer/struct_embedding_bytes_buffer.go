@@ -9,13 +9,13 @@ type MyWriter struct {
 
 func main() {
 	var w MyWriter
-	
+
 	// Call promoted method WriteString from bytes.Buffer
 	w.WriteString("Hello ")
 	w.WriteString("World")
-	
+
 	println("Content:", w.String())
 	println("Length:", w.Len())
-	
+
 	println("test finished")
 }

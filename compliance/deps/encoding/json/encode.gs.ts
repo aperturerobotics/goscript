@@ -575,6 +575,10 @@ export class jsonError {
 		return cloned
 	}
 
+	public Error(): string {
+		return this.error!.Error()
+	}
+
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.jsonError',

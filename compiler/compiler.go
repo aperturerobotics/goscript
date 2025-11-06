@@ -678,6 +678,8 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 
 	// Write any imports that were added during analysis (e.g., for promoted methods)
 	// but don't appear in the source AST
+	// Note: c.Analysis.Imports is package-wide, so we need to filter to only imports
+	// that are actually used in this specific file
 	writtenImports := make(map[string]bool)
 	// Track imports that will be written from the AST
 	for _, imp := range f.Imports {
@@ -693,17 +695,47 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 			}
 		}
 	}
-	// Write imports from analysis that aren't in the AST
-	var additionalImports []string
-	for pkgName := range c.Analysis.Imports {
-		if !writtenImports[pkgName] && pkgName != "$" {
-			additionalImports = append(additionalImports, pkgName)
+	// Write any imports that were added during analysis (e.g., for promoted methods)
+	// Check if this file defines any structs with embedded fields
+	fileHasEmbeddedStructs := false
+	for _, decl := range f.Decls {
+		genDecl, ok := decl.(*ast.GenDecl)
+		if !ok || genDecl.Tok != token.TYPE {
+			continue
+		}
+		for _, spec := range genDecl.Specs {
+			typeSpec, ok := spec.(*ast.TypeSpec)
+			if !ok {
+				continue
+			}
+			structType, ok := typeSpec.Type.(*ast.StructType)
+			if !ok {
+				continue
+			}
+			// Check if any field is embedded
+			for _, field := range structType.Fields.List {
+				if len(field.Names) == 0 { // Embedded field
+					fileHasEmbeddedStructs = true
+					break
+				}
+			}
+			if fileHasEmbeddedStructs {
+				break
+			}
+		}
+		if fileHasEmbeddedStructs {
+			break
 		}
 	}
-	sort.Strings(additionalImports)
-	for _, pkgName := range additionalImports {
-		fileImp := c.Analysis.Imports[pkgName]
-		c.codeWriter.WriteImport(pkgName, fileImp.importPath+"/index.js")
+
+	// If this file has embedded structs, write imports from analysis that aren't in AST
+	if fileHasEmbeddedStructs {
+		for pkgName, fileImport := range c.Analysis.Imports {
+			if !writtenImports[pkgName] {
+				c.codeWriter.WriteLinef("import * as %s from \"%s/index.js\"", pkgName, fileImport.importPath)
+				writtenImports[pkgName] = true
+			}
+		}
 	}
 
 	c.codeWriter.WriteLine("") // Add a newline after imports

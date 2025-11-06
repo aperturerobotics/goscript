@@ -9,12 +9,12 @@ type Stringer interface {
 func main() {
 	// Create a typed nil pointer to interface
 	var nilPtr *Stringer = (*Stringer)(nil)
-	
+
 	// Get the type
 	t := reflect.TypeOf(nilPtr)
 	println("Type:", t.String())
 	println("Kind:", t.Kind())
-	
+
 	// Get the element type (the interface type itself)
 	elem := t.Elem()
 	println("Elem Type:", elem.String())

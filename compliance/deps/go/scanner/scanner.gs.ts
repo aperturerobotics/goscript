@@ -1,6 +1,4 @@
 import * as $ from "@goscript/builtin/index.js"
-import * as io from "@goscript/io/index.js"
-import * as sort from "@goscript/sort/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 

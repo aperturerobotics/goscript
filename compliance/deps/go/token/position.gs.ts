@@ -1,8 +1,5 @@
 import * as $ from "@goscript/builtin/index.js"
 import { key, tree } from "./tree.gs.js";
-import * as iter from "iter/index.js"
-import * as unicode from "unicode/index.js"
-import * as utf8 from "unicode/utf8/index.js"
 
 import * as cmp from "@goscript/cmp/index.js"
 

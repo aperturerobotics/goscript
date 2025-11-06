@@ -35,18 +35,18 @@ func processInterface(i any) {
 
 func main() {
 	s := MyStruct{Value1: "hello", Value2: "world"}
-	
+
 	// Test with MyInterface1
 	var i1 MyInterface1 = s
 	processInterface(i1)
-	
+
 	// Test with MyInterface2
 	var i2 MyInterface2 = s
 	processInterface(i2)
-	
+
 	// Test with concrete type
 	processInterface(s)
-	
+
 	// Type switch with subset casting
 	var i3 any = i1
 	switch v := i3.(type) {

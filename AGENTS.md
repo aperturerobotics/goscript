@@ -154,7 +154,7 @@ When updating design documents:
 When eliminating dead code if requested by the user:
 
 1. Receive instructions from the user
-2. Run `golangci-lint run --no-config --enable-only=unused`
+2. Run `golangci-lint run --no-config --enable-only=unused` (exactly this command)
 3. Remove any unused code in `./compiler` ignoring ./compliance
 4. Any line which is unused in `./compliance` add a `//nolint:unused` comment at the end.
 5. Rerun the golangci-lint command to ensure we got everything.

@@ -187,6 +187,18 @@ export class qualifiedFile {
 		return cloned
 	}
 
+	public Close(): $.GoError {
+		return this.File!.Close()
+	}
+
+	public Name(): string {
+		return this.File!.Name()
+	}
+
+	public Write(data: $.Bytes): [number, $.GoError] {
+		return this.File!.Write(data)
+	}
+
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
 	  'main.qualifiedFile',
@@ -236,6 +248,38 @@ export class file {
 	public Name(): string {
 		const f = this
 		return f.name
+	}
+
+	public Close(): $.GoError {
+		return this.File!.Close()
+	}
+
+	public Lock(): $.GoError {
+		return this.File!.Lock()
+	}
+
+	public Read(p: $.Bytes): [number, $.GoError] {
+		return this.File!.Read(p)
+	}
+
+	public ReadAt(p: $.Bytes, off: number): [number, $.GoError] {
+		return this.File!.ReadAt(p, off)
+	}
+
+	public Seek(offset: number, whence: number): [number, $.GoError] {
+		return this.File!.Seek(offset, whence)
+	}
+
+	public Truncate(size: number): $.GoError {
+		return this.File!.Truncate(size)
+	}
+
+	public Unlock(): $.GoError {
+		return this.File!.Unlock()
+	}
+
+	public Write(p: $.Bytes): [number, $.GoError] {
+		return this.File!.Write(p)
 	}
 
 	// Register this type with the runtime type system

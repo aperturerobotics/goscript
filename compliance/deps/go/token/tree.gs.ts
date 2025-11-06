@@ -1,12 +1,5 @@
 import * as $ from "@goscript/builtin/index.js"
 import { File } from "./position.gs.js";
-import * as atomic from "@goscript/sync/atomic/index.js"
-import * as cmp from "@goscript/cmp/index.js"
-import * as slices from "@goscript/slices/index.js"
-import * as strconv from "@goscript/strconv/index.js"
-import * as sync from "@goscript/sync/index.js"
-import * as unicode from "@goscript/unicode/index.js"
-import * as utf8 from "@goscript/unicode/utf8/index.js"
 
 import * as fmt from "@goscript/fmt/index.js"
 
