@@ -100,6 +100,24 @@ export function Grow<T>(s: $.Slice<T>, n: number): $.Slice<T> {
 }
 
 /**
+ * SortFunc sorts the slice using the provided comparison function.
+ * The comparison function should return a negative number if a < b, zero if a == b, or a positive number if a > b.
+ * This is equivalent to Go's slices.SortFunc function.
+ * @param s The slice to sort in place
+ * @param cmp Comparison function
+ */
+export function SortFunc<T>(
+  s: $.Slice<T>,
+  cmp: (a: T, b: T) => number,
+): void {
+  if (s === null || s === undefined) {
+    return
+  }
+  const arr = s as any as T[]
+  arr.sort(cmp)
+}
+
+/**
  * BinarySearchFunc works like BinarySearch, but uses a custom comparison function.
  * The slice must be sorted in increasing order, where "increasing" is defined by cmp.
  * cmp should return 0 if the slice element matches the target, a negative number if

@@ -392,8 +392,24 @@ export const goSlice = <T>( // T can be number for Uint8Array case
     }
   }
 
+  // Handle nil slices - in Go, slicing a nil slice with valid bounds returns nil
   if (s === null || s === undefined) {
-    throw new Error('Cannot slice nil')
+    low = low ?? 0
+    high = high ?? 0
+    
+    if (low < 0 || high < low) {
+      throw new Error(`Invalid slice indices: ${low}:${high}`)
+    }
+    
+    if (low !== 0 || high !== 0) {
+      throw new Error(`runtime error: slice bounds out of range [:${high}] with capacity 0`)
+    }
+    
+    if (max !== undefined && max !== 0) {
+      throw new Error(`runtime error: slice bounds out of range [::${max}] with capacity 0`)
+    }
+    
+    return null as Slice<T>
   }
 
   const slen = len(s)

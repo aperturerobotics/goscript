@@ -17,6 +17,7 @@ This document contains guidelines and rules for AI agents working on the GoScrip
 - Leverage adding more tests, for example in `compiler/analysis_test.go`, instead of debug logging, for diagnosing issues or investigating hypotheses. If the new test case is temporary and you plan to remove it later, add a `tmp_test.go` file or similar to keep things separated.
 - AVOID type arguments unless necessary (prefer type inference)
 - When making Git commits use the existing commit message pattern and Linux-kernel style commit message bodies.
+- When you would normally add a new compliance test check if a very-similar compliance test already exists and if so extend that one instead. For example testing another function in the same package.
 
 ## Project Overview
 

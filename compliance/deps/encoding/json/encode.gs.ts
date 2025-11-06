@@ -2015,7 +2015,7 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 export async function typeFields(t: reflect.Type): Promise<structFields> {
 	// Anonymous fields to explore at the current level and the next.
 	let current = $.arrayToSlice<field>([])
-	let next = $.arrayToSlice<field>([{typ: t}])
+	let next = $.arrayToSlice<field>([$.markAsStructValue(new field({typ: t}))])
 
 	// Count of queued names for current level and the next.
 	let count: Map<reflect.Type, number> | null = null

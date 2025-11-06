@@ -1,0 +1,5 @@
+s == nil: true
+s[0:0] == nil: true
+s[:0] == nil: true
+s[:] == nil: true
+slice_nil test passed

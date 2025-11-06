@@ -341,7 +341,7 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 		case *types.Map, *types.Struct:
 			// Handle struct directly with the struct literal logic
 			if structType, ok := underlying.(*types.Struct); ok {
-				return c.writeUntypedStructLiteral(exp, structType) // true = anonymous
+				return c.writeUntypedStructLiteral(exp, tv.Type, structType)
 			}
 			// Map case would be handled here
 			return fmt.Errorf("untyped map composite literals not yet supported")
@@ -356,7 +356,7 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 				// This is an anonymous struct literal with inferred pointer type
 				// Just create the struct object directly - no var-refing needed
 				// Anonymous literals are not variables, so they don't get var-refed
-				return c.writeUntypedStructLiteral(exp, elemType) // true = anonymous
+				return c.writeUntypedStructLiteral(exp, ptrType.Elem(), elemType)
 			default:
 				return fmt.Errorf("unhandled pointer composite literal element type: %T", elemType)
 			}
@@ -384,7 +384,7 @@ func (c *GoToTSCompiler) writeUntypedArrayLiteral(exp *ast.CompositeLit) error {
 }
 
 // writeUntypedStructLiteral handles untyped composite literals that are structs or pointers to structs
-func (c *GoToTSCompiler) writeUntypedStructLiteral(exp *ast.CompositeLit, structType *types.Struct) error {
+func (c *GoToTSCompiler) writeUntypedStructLiteral(exp *ast.CompositeLit, actualType types.Type, structType *types.Struct) error {
 	// Create field mapping like the typed struct case
 	directFields := make(map[string]ast.Expr)
 
@@ -408,8 +408,23 @@ func (c *GoToTSCompiler) writeUntypedStructLiteral(exp *ast.CompositeLit, struct
 		}
 	}
 
-	// Write the object literal (always anonymous for untyped)
-	c.tsw.WriteLiterally("{")
+	// Check if this is a named type
+	isNamed := false
+	if _, ok := actualType.(*types.Named); ok {
+		isNamed = true
+	}
+
+	// Write the object literal
+	if isNamed {
+		// For named structs, use constructor
+		c.tsw.WriteLiterally("$.markAsStructValue(new ")
+		// Write the type name
+		c.WriteGoType(actualType, GoTypeContextGeneral)
+		c.tsw.WriteLiterally("({")
+	} else {
+		// For truly anonymous structs, just write a simple object literal
+		c.tsw.WriteLiterally("{")
+	}
 
 	firstFieldWritten := false
 	// Write fields in order
@@ -434,7 +449,12 @@ func (c *GoToTSCompiler) writeUntypedStructLiteral(exp *ast.CompositeLit, struct
 		firstFieldWritten = true
 	}
 
-	c.tsw.WriteLiterally("}")
+	// Close the object literal
+	if isNamed {
+		c.tsw.WriteLiterally("}))")
+	} else {
+		c.tsw.WriteLiterally("}")
+	}
 	return nil
 }
 
