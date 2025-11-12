@@ -62,6 +62,10 @@ export class StructField {
       Anonymous: this.Anonymous,
     })
   }
+
+  public IsExported(): boolean {
+    return this.Name !== '' && this.Name[0] !== '_'
+  }
 }
 
 // Struct tag type
@@ -86,6 +90,11 @@ export class StructTag {
     }
     return ''
   }
+}
+
+// Wrapper function for GoScript naming convention
+export function StructTag_Get(tag: StructTag, key: string): string {
+  return tag.Get(key)
 }
 
 // Method representation

@@ -400,12 +400,21 @@ func (c *GoToTSCompiler) WriteFuncType(exp *ast.FuncType, isAsync bool) {
 		} else {
 			// Multiple return types -> tuple
 			c.tsw.WriteLiterally("[")
-			for i, field := range exp.Results.List {
-				if i > 0 {
-					c.tsw.WriteLiterally(", ")
+			first := true
+			for _, field := range exp.Results.List {
+				// Each field may represent multiple return values (e.g., "a, b int")
+				count := len(field.Names)
+				if count == 0 {
+					count = 1 // Unnamed return value
 				}
-				// Use WriteTypeExpr to preserve qualified names like os.FileInfo
-				c.WriteTypeExpr(field.Type)
+				for j := 0; j < count; j++ {
+					if !first {
+						c.tsw.WriteLiterally(", ")
+					}
+					first = false
+					// Use WriteTypeExpr to preserve qualified names like os.FileInfo
+					c.WriteTypeExpr(field.Type)
+				}
 			}
 			c.tsw.WriteLiterally("]")
 		}

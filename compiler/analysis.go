@@ -175,6 +175,14 @@ type PackageAnalysis struct {
 	// TypeCalls maps file names to the types they reference from other files
 	// Key: filename (without .go extension), Value: map[sourceFile][]typeNames
 	TypeCalls map[string]map[string][]string
+
+	// VariableDefs maps file names to the package-level variables defined in that file
+	// Key: filename (without .go extension), Value: list of variable names
+	VariableDefs map[string][]string
+
+	// VariableCalls maps file names to the package-level variables they reference from other files
+	// Key: filename (without .go extension), Value: map[sourceFile][]variableNames
+	VariableCalls map[string]map[string][]string
 }
 
 // NewAnalysis creates a new Analysis instance.
@@ -206,6 +214,8 @@ func NewPackageAnalysis() *PackageAnalysis {
 		FunctionCalls: make(map[string]map[string][]string),
 		TypeDefs:      make(map[string][]string),
 		TypeCalls:     make(map[string]map[string][]string),
+		VariableDefs:  make(map[string][]string),
+		VariableCalls: make(map[string]map[string][]string),
 	}
 }
 
@@ -1372,6 +1382,7 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 
 		var functions []string
 		var types []string
+		var variables []string
 		for _, decl := range syntax.Decls {
 			if funcDecl, ok := decl.(*ast.FuncDecl); ok {
 				// Only collect top-level functions (not methods)
@@ -1385,6 +1396,12 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 					if typeSpec, ok := spec.(*ast.TypeSpec); ok {
 						types = append(types, typeSpec.Name.Name)
 					}
+					// Collect variable/constant declarations
+					if valueSpec, ok := spec.(*ast.ValueSpec); ok {
+						for _, name := range valueSpec.Names {
+							variables = append(variables, name.Name)
+						}
+					}
 				}
 			}
 		}
@@ -1394,6 +1411,9 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 		}
 		if len(types) > 0 {
 			analysis.TypeDefs[baseFileName] = types
+		}
+		if len(variables) > 0 {
+			analysis.VariableDefs[baseFileName] = variables
 		}
 	}
 
@@ -1490,6 +1510,90 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 
 		if len(typeRefsFromOtherFiles) > 0 {
 			analysis.TypeCalls[baseFileName] = typeRefsFromOtherFiles
+		}
+	}
+
+	// Fourth pass: analyze variable references and determine which need imports
+	for i, syntax := range pkg.Syntax {
+		fileName := pkg.CompiledGoFiles[i]
+		baseFileName := strings.TrimSuffix(filepath.Base(fileName), ".go")
+
+		// Find all variable references in this file
+		varRefsFromOtherFiles := make(map[string][]string)
+
+		ast.Inspect(syntax, func(n ast.Node) bool {
+			// Look for identifier references
+			if ident, ok := n.(*ast.Ident); ok {
+				// Check if this identifier refers to a package-level variable
+				if obj := pkg.TypesInfo.Uses[ident]; obj != nil {
+					if varObj, ok := obj.(*types.Var); ok {
+						// Only track package-level variables (not function parameters or local vars)
+						if varObj.Parent() == pkg.Types.Scope() {
+							varName := ident.Name
+
+							// Check if this variable is defined in the current file
+							currentFileVars := analysis.VariableDefs[baseFileName]
+							isDefinedInCurrentFile := slices.Contains(currentFileVars, varName)
+
+							// If not defined in current file, find which file defines it
+							if !isDefinedInCurrentFile {
+								for sourceFile, vars := range analysis.VariableDefs {
+									if sourceFile == baseFileName {
+										continue // Skip current file
+									}
+									if slices.Contains(vars, varName) {
+										// Found the variable in another file
+										if varRefsFromOtherFiles[sourceFile] == nil {
+											varRefsFromOtherFiles[sourceFile] = []string{}
+										}
+										// Check if already added to avoid duplicates
+										found := slices.Contains(varRefsFromOtherFiles[sourceFile], varName)
+										if !found {
+											varRefsFromOtherFiles[sourceFile] = append(varRefsFromOtherFiles[sourceFile], varName)
+										}
+									}
+								}
+							}
+						}
+					}
+					// Also check for constants
+					if constObj, ok := obj.(*types.Const); ok {
+						// Only track package-level constants
+						if constObj.Parent() == pkg.Types.Scope() {
+							constName := ident.Name
+
+							// Check if this constant is defined in the current file
+							currentFileVars := analysis.VariableDefs[baseFileName]
+							isDefinedInCurrentFile := slices.Contains(currentFileVars, constName)
+
+							// If not defined in current file, find which file defines it
+							if !isDefinedInCurrentFile {
+								for sourceFile, vars := range analysis.VariableDefs {
+									if sourceFile == baseFileName {
+										continue // Skip current file
+									}
+									if slices.Contains(vars, constName) {
+										// Found the constant in another file
+										if varRefsFromOtherFiles[sourceFile] == nil {
+											varRefsFromOtherFiles[sourceFile] = []string{}
+										}
+										// Check if already added to avoid duplicates
+										found := slices.Contains(varRefsFromOtherFiles[sourceFile], constName)
+										if !found {
+											varRefsFromOtherFiles[sourceFile] = append(varRefsFromOtherFiles[sourceFile], constName)
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return true
+		})
+
+		if len(varRefsFromOtherFiles) > 0 {
+			analysis.VariableCalls[baseFileName] = varRefsFromOtherFiles
 		}
 	}
 

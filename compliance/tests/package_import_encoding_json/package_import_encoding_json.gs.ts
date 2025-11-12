@@ -107,7 +107,7 @@ export async function main(): Promise<void> {
 	slices.Sort(results)
 
 	for (let _i = 0; _i < $.len(results); _i++) {
-		const r = results![_i]
+		let r = results![_i]
 		{
 			console.log("JSON result:", r)
 		}

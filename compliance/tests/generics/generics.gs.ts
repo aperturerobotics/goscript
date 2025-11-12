@@ -119,7 +119,7 @@ export async function main(): Promise<void> {
 	let nums = $.arrayToSlice<number>([1, 2, 3])
 	nums = append2(nums, 4)
 	for (let _i = 0; _i < $.len(nums); _i++) {
-		const n = nums![_i]
+		let n = nums![_i]
 		{
 			console.log(n)
 		}
@@ -128,7 +128,7 @@ export async function main(): Promise<void> {
 	let words = $.arrayToSlice<string>(["a", "b"])
 	words = append2(words, "c")
 	for (let _i = 0; _i < $.len(words); _i++) {
-		const w = words![_i]
+		let w = words![_i]
 		{
 			console.log(w)
 		}

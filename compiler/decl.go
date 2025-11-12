@@ -5,7 +5,7 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
-	"sort"
+	"slices"
 )
 
 // WriteDecls iterates through a slice of Go top-level declarations (`ast.Decl`)
@@ -210,7 +210,7 @@ func (c *GoToTSCompiler) extractTypeDependencies(typeExpr ast.Expr, typeSpecMap 
 	}
 
 	// Sort dependencies for deterministic output
-	sort.Strings(deps)
+	slices.Sort(deps)
 	return deps
 }
 
@@ -347,7 +347,7 @@ func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]st
 		// Sort dependencies for consistent output
 		sortedDeps := make([]string, len(deps))
 		copy(sortedDeps, deps)
-		sort.Strings(sortedDeps)
+		slices.Sort(sortedDeps)
 
 		for _, dep := range sortedDeps {
 			if _, exists := inDegree[dep]; exists {
@@ -359,7 +359,7 @@ func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]st
 
 	// Sort neighbors in graph for consistency
 	for node := range graph {
-		sort.Strings(graph[node])
+		slices.Sort(graph[node])
 	}
 
 	// Find nodes with no incoming edges and sort them
@@ -369,7 +369,7 @@ func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]st
 			queue = append(queue, node)
 		}
 	}
-	sort.Strings(queue) // Sort initial queue for deterministic output
+	slices.Sort(queue) // Sort initial queue for deterministic output
 
 	var result []string
 
@@ -389,7 +389,7 @@ func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]st
 		}
 
 		// Sort new zero-degree nodes and add to queue
-		sort.Strings(newZeroNodes)
+		slices.Sort(newZeroNodes)
 		queue = append(queue, newZeroNodes...)
 	}
 
@@ -407,7 +407,7 @@ func (c *GoToTSCompiler) topologicalSort(dependencies map[string][]string) ([]st
 				remaining = append(remaining, name)
 			}
 		}
-		sort.Strings(remaining)
+		slices.Sort(remaining)
 
 		return nil, fmt.Errorf("circular dependency detected in type declarations. Remaining types: %v", remaining)
 	}
@@ -622,11 +622,20 @@ func (c *GoToTSCompiler) writeMethodSignature(decl *ast.FuncDecl) (bool, error) 
 		} else {
 			// Multiple return values -> tuple type
 			c.tsw.WriteLiterally("[")
-			for i, field := range funcType.Results.List {
-				if i > 0 {
-					c.tsw.WriteLiterally(", ")
+			first := true
+			for _, field := range funcType.Results.List {
+				// Each field may represent multiple return values (e.g., "a, b int")
+				count := len(field.Names)
+				if count == 0 {
+					count = 1 // Unnamed return value
 				}
-				c.WriteTypeExpr(field.Type)
+				for j := 0; j < count; j++ {
+					if !first {
+						c.tsw.WriteLiterally(", ")
+					}
+					first = false
+					c.WriteTypeExpr(field.Type)
+				}
 			}
 			c.tsw.WriteLiterally("]")
 		}

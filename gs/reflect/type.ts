@@ -1,4 +1,4 @@
-import { ReflectValue, StructField } from './types.js'
+import { ReflectValue, StructField, ValueError } from './types.js'
 import { MapIter } from './map.js'
 import {
   getTypeByName as builtinGetTypeByName,
@@ -6,6 +6,9 @@ import {
   isStructTypeInfo,
   isInterfaceTypeInfo,
 } from '../builtin/type.js'
+import { Zero } from './value.js'
+import { DeepEqual } from './deepequal.js'
+import * as $ from '../builtin/index.js'
 
 // rtype is the common implementation of most values
 export class rtype {
@@ -188,7 +191,7 @@ export interface Type {
   PkgPath?(): string
 
   // Field returns a struct type's i'th field.
-  Field?(i: number): StructField | null
+  Field(i: number): StructField | null
 
   // Key returns a map type's key type (returns null for non-map types).
   Key?(): Type | null
@@ -201,6 +204,21 @@ export interface Type {
 
   // common returns the common type implementation.
   common?(): rtype
+
+  // OverflowInt reports whether the int64 x cannot be represented by the type
+  OverflowInt?(x: number): boolean
+
+  // OverflowUint reports whether the uint64 x cannot be represented by the type
+  OverflowUint?(x: number): boolean
+
+  // OverflowFloat reports whether the float64 x cannot be represented by the type
+  OverflowFloat?(x: number): boolean
+
+  // NumMethod returns the number of methods in the type's method set
+  NumMethod?(): number
+
+  // Bits returns the size of the type in bits
+  Bits?(): number
 }
 
 // Value is the reflection interface to a Go value - consolidated from all implementations
@@ -361,9 +379,21 @@ export class Value {
     return this._type.NumField()
   }
 
-  public Field(_i: number): Value {
-    // Simplified implementation for struct field access
-    return new Value(null, this._type)
+  public Field(i: number): Value {
+    if (this.Kind() !== Struct) {
+      throw new ValueError({ Kind: this.Kind(), Method: 'Field' })
+    }
+
+    const field = this.Type().Field(i)
+    if (!field) {
+      throw new Error('reflect: struct field index out of range')
+    }
+
+    let fieldVal = (this._value as Record<string, any>)[field.Name]
+    if (fieldVal === undefined) {
+      fieldVal = null
+    }
+    return new Value(fieldVal, field.Type)
   }
 
   // Additional methods needed by various parts of the codebase
@@ -390,7 +420,42 @@ export class Value {
     return new Value(this._value, t)
   }
 
+  public CanAddr(): boolean {
+    return this.Kind() !== Ptr && this._value !== null // Simplified
+  }
+
+  public Addr(): Value {
+    if (!this.CanAddr()) {
+      throw new Error('reflect: call of reflect.Value.Addr on invalid Value')
+    }
+    const ptrType = PointerTo(this.Type())
+    return new Value(this, ptrType) // Simplified
+  }
+
+  public CanSet(): boolean {
+    return this.IsValid() && this.Kind() !== Ptr // Simplified
+  }
+
+  public Set(x: Value): void {
+    if (!this.CanSet()) {
+      throw new Error('reflect: assign to invalid value')
+    }
+    if (this.Type() !== x.Type()) {
+      throw new Error('reflect: assign to wrong type')
+    }
+    this._value = x.value
+  }
+
   // Additional methods from deleted reflect.gs.ts
+  public Interface(): any {
+    return this._value
+  }
+
+  public IsZero(): boolean {
+    const zeroVal = Zero(this.Type()).value
+    return DeepEqual(this._value, zeroVal)
+  }
+
   public typ(): rtype | null {
     return new rtype(this._type.Kind())
   }
@@ -441,6 +506,269 @@ export class Value {
       channelObj._sendQueue.push(valueToSend)
     }
   }
+
+  // SetString sets v's underlying value to x
+  public SetString(x: string): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetString on unaddressable value',
+      )
+    }
+    if (this.Kind() !== String) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetString on ' + this.Kind() + ' Value',
+      )
+    }
+    this._value = x
+  }
+
+  // SetInt sets v's underlying value to x
+  public SetInt(x: number): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetInt on unaddressable value',
+      )
+    }
+    const k = this.Kind()
+    if (k !== Int && k !== Int8 && k !== Int16 && k !== Int32 && k !== Int64) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetInt on ' + k + ' Value',
+      )
+    }
+    this._value = x
+  }
+
+  // SetUint sets v's underlying value to x
+  public SetUint(x: number): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetUint on unaddressable value',
+      )
+    }
+    const k = this.Kind()
+    if (
+      k !== Uint &&
+      k !== Uint8 &&
+      k !== Uint16 &&
+      k !== Uint32 &&
+      k !== Uint64 &&
+      k !== Uintptr
+    ) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetUint on ' + k + ' Value',
+      )
+    }
+    this._value = x
+  }
+
+  // SetBool sets v's underlying value to x
+  public SetBool(x: boolean): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetBool on unaddressable value',
+      )
+    }
+    if (this.Kind() !== Bool) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetBool on ' + this.Kind() + ' Value',
+      )
+    }
+    this._value = x
+  }
+
+  // SetFloat sets v's underlying value to x
+  public SetFloat(x: number): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetFloat on unaddressable value',
+      )
+    }
+    const k = this.Kind()
+    if (k !== Float32 && k !== Float64) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetFloat on ' + k + ' Value',
+      )
+    }
+    this._value = x
+  }
+
+  // SetBytes sets v's underlying value to x
+  public SetBytes(x: $.Slice<number>): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetBytes on unaddressable value',
+      )
+    }
+    if (this.Kind() !== Slice) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetBytes on ' + this.Kind() + ' Value',
+      )
+    }
+    // Convert Uint8Array or slice to array
+    if (x instanceof Uint8Array) {
+      this._value = globalThis.Array.from(x)
+    } else if (globalThis.Array.isArray(x)) {
+      this._value = x
+    } else {
+      this._value = x
+    }
+  }
+
+  // SetZero sets v to be the zero value of v's type
+  public SetZero(): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetZero on unaddressable value',
+      )
+    }
+    const zeroVal = Zero(this.Type())
+    this._value = (zeroVal as unknown as { value: ReflectValue }).value
+  }
+
+  // SetLen sets v's length to n
+  public SetLen(n: number): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetLen on unaddressable value',
+      )
+    }
+    if (this.Kind() !== Slice) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetLen on ' + this.Kind() + ' Value',
+      )
+    }
+    if (globalThis.Array.isArray(this._value)) {
+      this._value.length = n
+    }
+  }
+
+  // SetMapIndex sets the element associated with key in the map v to elem
+  public SetMapIndex(key: Value, elem: Value): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetMapIndex on unaddressable value',
+      )
+    }
+    if (this.Kind() !== Map) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetMapIndex on ' +
+          this.Kind() +
+          ' Value',
+      )
+    }
+    const mapObj = this._value as globalThis.Map<unknown, unknown>
+    const keyVal = (key as unknown as { value: ReflectValue }).value
+    const elemVal = (elem as unknown as { value: ReflectValue }).value
+    mapObj.set(keyVal, elemVal)
+  }
+
+  // Grow increases the slice's capacity, if necessary
+  public Grow(n: number): void {
+    if (this.Kind() !== Slice) {
+      throw new Error(
+        'reflect: call of reflect.Value.Grow on ' + this.Kind() + ' Value',
+      )
+    }
+    if (!globalThis.Array.isArray(this._value)) {
+      return
+    }
+    // JavaScript arrays grow automatically, but we ensure capacity
+    const currentLen = this._value.length
+    const targetCap = currentLen + n
+    if (this._value.length < targetCap) {
+      this._value.length = targetCap
+      this._value.length = currentLen // Reset to original length
+    }
+  }
+
+  // Cap returns v's capacity
+  public Cap(): number {
+    const k = this.Kind()
+    if (k === Slice || k === Array) {
+      if (globalThis.Array.isArray(this._value)) {
+        return this._value.length
+      }
+      return 0
+    }
+    if (k === Chan) {
+      return 0 // Simplified
+    }
+    throw new Error('reflect: call of reflect.Value.Cap on ' + k + ' Value')
+  }
+
+  // NumMethod returns the number of methods in the value's method set
+  public NumMethod(): number {
+    return 0 // Simplified - methods not fully implemented
+  }
+
+  // Equal reports whether v is equal to u
+  public Equal(u: Value): boolean {
+    return DeepEqual(
+      this._value,
+      (u as unknown as { value: ReflectValue }).value,
+    )
+  }
+
+  // CanInterface reports whether Interface can be used without panicking
+  public CanInterface(): boolean {
+    return this.IsValid()
+  }
+
+  // OverflowInt reports whether the int64 x cannot be represented by v's type
+  public OverflowInt(x: number): boolean {
+    const k = this.Kind()
+    switch (k) {
+      case Int8:
+        return x < -128 || x > 127
+      case Int16:
+        return x < -32768 || x > 32767
+      case Int32:
+        return x < -2147483648 || x > 2147483647
+      case Int:
+      case Int64:
+        return x < Number.MIN_SAFE_INTEGER || x > Number.MAX_SAFE_INTEGER
+      default:
+        throw new Error(
+          'reflect: call of reflect.Value.OverflowInt on ' + k + ' Value',
+        )
+    }
+  }
+
+  // OverflowUint reports whether the uint64 x cannot be represented by v's type
+  public OverflowUint(x: number): boolean {
+    const k = this.Kind()
+    switch (k) {
+      case Uint8:
+        return x < 0 || x > 255
+      case Uint16:
+        return x < 0 || x > 65535
+      case Uint32:
+        return x < 0 || x > 4294967295
+      case Uint:
+      case Uint64:
+      case Uintptr:
+        return x < 0 || x > Number.MAX_SAFE_INTEGER
+      default:
+        throw new Error(
+          'reflect: call of reflect.Value.OverflowUint on ' + k + ' Value',
+        )
+    }
+  }
+
+  // OverflowFloat reports whether the float64 x cannot be represented by v's type
+  public OverflowFloat(x: number): boolean {
+    const k = this.Kind()
+    if (k === Float32) {
+      const f32max = 3.4028234663852886e38
+      return Math.abs(x) > f32max && !isNaN(x) && !!isFinite(x)
+    }
+    if (k === Float64) {
+      return false // float64 can represent any JavaScript number
+    }
+    throw new Error(
+      'reflect: call of reflect.Value.OverflowFloat on ' + k + ' Value',
+    )
+  }
 }
 
 // Basic type implementation - exported for compatibility
@@ -475,7 +803,7 @@ export class BasicType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -491,6 +819,99 @@ export class BasicType implements Type {
 
   public common?(): rtype {
     return new rtype(this._kind)
+  }
+
+  public OverflowInt?(x: number): boolean {
+    const k = this._kind
+    switch (k) {
+      case Int8:
+        return x < -128 || x > 127
+      case Int16:
+        return x < -32768 || x > 32767
+      case Int32:
+        return x < -2147483648 || x > 2147483647
+      case Int:
+      case Int64:
+        return x < Number.MIN_SAFE_INTEGER || x > Number.MAX_SAFE_INTEGER
+      default:
+        throw new Error(
+          'reflect: call of reflect.Type.OverflowInt on ' +
+            Kind_String(k) +
+            ' Type',
+        )
+    }
+  }
+
+  public OverflowUint?(x: number): boolean {
+    const k = this._kind
+    switch (k) {
+      case Uint8:
+        return x < 0 || x > 255
+      case Uint16:
+        return x < 0 || x > 65535
+      case Uint32:
+        return x < 0 || x > 4294967295
+      case Uint:
+      case Uint64:
+      case Uintptr:
+        return x < 0 || x > Number.MAX_SAFE_INTEGER
+      default:
+        throw new Error(
+          'reflect: call of reflect.Type.OverflowUint on ' +
+            Kind_String(k) +
+            ' Type',
+        )
+    }
+  }
+
+  public OverflowFloat?(x: number): boolean {
+    const k = this._kind
+    if (k === Float32) {
+      const f32max = 3.4028234663852886e38
+      return Math.abs(x) > f32max && !isNaN(x) && !!isFinite(x)
+    }
+    if (k === Float64) {
+      return false
+    }
+    throw new Error(
+      'reflect: call of reflect.Type.OverflowFloat on ' +
+        Kind_String(k) +
+        ' Type',
+    )
+  }
+
+  public NumMethod?(): number {
+    return 0
+  }
+
+  public Bits?(): number {
+    const k = this._kind
+    switch (k) {
+      case Bool:
+        return 1
+      case Int8:
+      case Uint8:
+        return 8
+      case Int16:
+      case Uint16:
+        return 16
+      case Int32:
+      case Uint32:
+      case Float32:
+        return 32
+      case Int64:
+      case Uint64:
+      case Float64:
+        return 64
+      case Int:
+      case Uint:
+      case Uintptr:
+        return 64 // Assuming 64-bit architecture
+      default:
+        throw new Error(
+          'reflect: call of reflect.Type.Bits on ' + Kind_String(k) + ' Type',
+        )
+    }
   }
 }
 
@@ -522,6 +943,10 @@ class SliceType implements Type {
     return ''
   }
 
+  public Field(i: number): StructField | null {
+    return null
+  }
+
   public Implements(u: Type | null): boolean {
     if (!u) {
       return false
@@ -530,6 +955,26 @@ class SliceType implements Type {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
     return false
+  }
+
+  public OverflowInt?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowInt on slice Type')
+  }
+
+  public OverflowUint?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowUint on slice Type')
+  }
+
+  public OverflowFloat?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowFloat on slice Type')
+  }
+
+  public NumMethod?(): number {
+    return 0
+  }
+
+  public Bits?(): number {
+    throw new Error('reflect: call of reflect.Type.Bits on slice Type')
   }
 }
 
@@ -568,7 +1013,7 @@ class ArrayType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -584,6 +1029,26 @@ class ArrayType implements Type {
 
   public common?(): rtype {
     return new rtype(this.Kind())
+  }
+
+  public OverflowInt?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowInt on array Type')
+  }
+
+  public OverflowUint?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowUint on array Type')
+  }
+
+  public OverflowFloat?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowFloat on array Type')
+  }
+
+  public NumMethod?(): number {
+    return 0
+  }
+
+  public Bits?(): number {
+    throw new Error('reflect: call of reflect.Type.Bits on array Type')
   }
 }
 
@@ -615,7 +1080,7 @@ class PointerType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -633,6 +1098,30 @@ class PointerType implements Type {
 
   public common?(): rtype {
     return new rtype(this.Kind())
+  }
+
+  public OverflowInt?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowInt on pointer Type')
+  }
+
+  public OverflowUint?(x: number): boolean {
+    throw new Error(
+      'reflect: call of reflect.Type.OverflowUint on pointer Type',
+    )
+  }
+
+  public OverflowFloat?(x: number): boolean {
+    throw new Error(
+      'reflect: call of reflect.Type.OverflowFloat on pointer Type',
+    )
+  }
+
+  public NumMethod?(): number {
+    return 0
+  }
+
+  public Bits?(): number {
+    throw new Error('reflect: call of reflect.Type.Bits on pointer Type')
   }
 }
 
@@ -664,7 +1153,7 @@ class FunctionType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -680,6 +1169,26 @@ class FunctionType implements Type {
 
   public common?(): rtype {
     return new rtype(this.Kind())
+  }
+
+  public OverflowInt?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowInt on func Type')
+  }
+
+  public OverflowUint?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowUint on func Type')
+  }
+
+  public OverflowFloat?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowFloat on func Type')
+  }
+
+  public NumMethod?(): number {
+    return 0
+  }
+
+  public Bits?(): number {
+    throw new Error('reflect: call of reflect.Type.Bits on func Type')
   }
 }
 
@@ -718,7 +1227,7 @@ class MapType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -735,57 +1244,80 @@ class MapType implements Type {
   public common?(): rtype {
     return new rtype(this.Kind())
   }
+
+  public OverflowInt?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowInt on map Type')
+  }
+
+  public OverflowUint?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowUint on map Type')
+  }
+
+  public OverflowFloat?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowFloat on map Type')
+  }
+
+  public NumMethod?(): number {
+    return 0
+  }
+
+  public Bits?(): number {
+    throw new Error('reflect: call of reflect.Type.Bits on map Type')
+  }
 }
 
 // Struct type implementation
 /**
  * Helper function to check if a type's method set contains all methods
  * required by an interface.
- * 
+ *
  * @param typeName The name of the type to check (e.g., "main.MyType")
  * @param interfaceType The interface type that must be implemented
  * @returns True if the type implements the interface, false otherwise
  */
-function typeImplementsInterface(typeName: string, interfaceType: Type): boolean {
+function typeImplementsInterface(
+  typeName: string,
+  interfaceType: Type,
+): boolean {
   // Get the interface name and look it up in the type registry
   const interfaceName = interfaceType.String()
   const interfaceTypeInfo = builtinGetTypeByName(interfaceName)
-  
+
   if (!interfaceTypeInfo || !isInterfaceTypeInfo(interfaceTypeInfo)) {
     return false
   }
-  
+
   // Get the type info for the struct/type
   const typeInfo = builtinGetTypeByName(typeName)
-  
+
   if (!typeInfo || !isStructTypeInfo(typeInfo)) {
     return false
   }
-  
+
   // Check if the type has all required methods
   const requiredMethods = interfaceTypeInfo.methods || []
   const typeMethods = typeInfo.methods || []
-  
+
   // For each required method, check if the type has a matching method
   for (const requiredMethod of requiredMethods) {
-    const typeMethod = typeMethods.find(m => m.name === requiredMethod.name)
-    
+    const typeMethod = typeMethods.find((m) => m.name === requiredMethod.name)
+
     if (!typeMethod) {
       return false
     }
-    
+
     // Check if method signatures match (simplified - just check counts)
     if (typeMethod.args.length !== requiredMethod.args.length) {
       return false
     }
-    
+
     if (typeMethod.returns.length !== requiredMethod.returns.length) {
       return false
     }
-    
+
     // Could add deeper type checking here, but for now this is sufficient
   }
-  
+
   return true
 }
 
@@ -820,9 +1352,15 @@ class StructType implements Type {
     return ''
   }
 
-  public Field?(_i: number): any {
-    // Stub implementation
-    return null
+  public Field(i: number): StructField | null {
+    if (i < 0 || i >= this.NumField()) {
+      return null
+    }
+    const f = this._fields[i]
+    return new StructField({
+      Name: f.name,
+      Type: f.type,
+    })
   }
 
   public Implements(u: Type | null): boolean {
@@ -837,6 +1375,54 @@ class StructType implements Type {
 
   public common?(): rtype {
     return new rtype(this.Kind())
+  }
+
+  public OverflowInt?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowInt on struct Type')
+  }
+
+  public OverflowUint?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowUint on struct Type')
+  }
+
+  public OverflowFloat?(x: number): boolean {
+    throw new Error(
+      'reflect: call of reflect.Type.OverflowFloat on struct Type',
+    )
+  }
+
+  public NumMethod?(): number {
+    return 0
+  }
+
+  public Bits?(): number {
+    throw new Error('reflect: call of reflect.Type.Bits on struct Type')
+  }
+
+  static createTypeFromFieldInfo(ti: any): Type {
+    if (typeof ti === 'string') {
+      switch (ti) {
+        case 'string':
+          return new BasicType(String, ti, 16)
+        case 'int':
+        case 'int32':
+        case 'int64':
+          return new BasicType(Int, ti, 8)
+        case 'bool':
+          return new BasicType(Bool, ti, 1)
+        case 'float64':
+          return new BasicType(Float64, ti, 8)
+        case 'uint':
+        case 'uint32':
+        case 'uint64':
+          return new BasicType(Uint, ti, 8)
+        default:
+          return new BasicType(Invalid, ti, 8)
+      }
+    } else if (ti && ti.kind) {
+      return new BasicType(Invalid, ti.name || ti.kind, 8)
+    }
+    return new BasicType(Invalid, 'unknown', 8)
   }
 }
 
@@ -881,7 +1467,7 @@ class ChannelType implements Type {
     return ''
   }
 
-  public Field?(_: number): any {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -901,6 +1487,26 @@ class ChannelType implements Type {
 
   public ChanDir(): ChanDir {
     return this._dir
+  }
+
+  public OverflowInt?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowInt on chan Type')
+  }
+
+  public OverflowUint?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowUint on chan Type')
+  }
+
+  public OverflowFloat?(x: number): boolean {
+    throw new Error('reflect: call of reflect.Type.OverflowFloat on chan Type')
+  }
+
+  public NumMethod?(): number {
+    return 0
+  }
+
+  public Bits?(): number {
+    throw new Error('reflect: call of reflect.Type.Bits on chan Type')
   }
 }
 
@@ -936,7 +1542,7 @@ class InterfaceType implements Type {
     return this._name
   }
 
-  public Field?(_: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -946,6 +1552,32 @@ class InterfaceType implements Type {
 
   public common?(): rtype {
     return new rtype(this.Kind())
+  }
+
+  public OverflowInt?(x: number): boolean {
+    throw new Error(
+      'reflect: call of reflect.Type.OverflowInt on interface Type',
+    )
+  }
+
+  public OverflowUint?(x: number): boolean {
+    throw new Error(
+      'reflect: call of reflect.Type.OverflowUint on interface Type',
+    )
+  }
+
+  public OverflowFloat?(x: number): boolean {
+    throw new Error(
+      'reflect: call of reflect.Type.OverflowFloat on interface Type',
+    )
+  }
+
+  public NumMethod?(): number {
+    return 0
+  }
+
+  public Bits?(): number {
+    throw new Error('reflect: call of reflect.Type.Bits on interface Type')
   }
 }
 
@@ -1146,23 +1778,32 @@ function getTypeOf(value: ReflectValue): Type {
           value.constructor as { __typeInfo?: { name?: string } }
         ).__typeInfo
         if (typeInfo && typeInfo.name) {
-          // Add package prefix for struct types if not already present
           const typeName =
             typeInfo.name.includes('.') ?
               typeInfo.name
             : `main.${typeInfo.name}`
-          return new StructType(typeName)
+          const regTypeInfo = builtinGetTypeByName(typeName)
+          let fields: Array<{ name: string; type: Type }> = []
+          if (regTypeInfo && isStructTypeInfo(regTypeInfo)) {
+            fields = Object.entries(regTypeInfo.fields || {}).map(
+              ([name, ti]) => ({
+                name,
+                type: StructType.createTypeFromFieldInfo(ti),
+              }),
+            )
+          }
+          return new StructType(typeName, fields)
         }
       }
 
       // Check if it has a constructor name we can use (fallback)
       const constructorName = (value as object).constructor?.name
       if (constructorName && constructorName !== 'Object') {
-        return new StructType(constructorName)
+        return new StructType(constructorName, [])
       }
 
       // Default to struct type for plain objects
-      return new StructType('struct')
+      return new StructType('struct', [])
     }
     default:
       return new BasicType(Interface, 'interface{}', 16)

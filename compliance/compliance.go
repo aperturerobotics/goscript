@@ -539,31 +539,35 @@ func WriteTypeScriptRunner(t *testing.T, parentModulePath, testDir, tempDir stri
 	return tsRunner
 }
 
-// RunTypeScriptRunner executes the generated "runner.ts" script using `tsx`.
+// RunTypeScriptRunner executes the generated "runner.ts" script using `bun run`.
 // It captures and returns the standard output of the script.
 //
 // Parameters:
 //   - t: The testing.T instance for logging and assertions.
-//   - workspaceDir: The root directory of the goscript workspace. This is used to find
-//     the `tsx` executable in `node_modules/.bin`.
+//   - workspaceDir: The root directory of the goscript workspace (unused but kept for API compatibility).
 //   - tempDir: The directory where "runner.ts" and its `tsconfig.json` are located.
-//     The `tsx` command is executed from this directory.
+//     The command is executed from this directory.
 //   - tsRunner: The path to the "runner.ts" file, typically within tempDir.
 //
-// The function uses the local `node_modules/.bin/tsx` executable directly.
-// It then runs the script and returns its stdout.
+// The function requires `bun` to be installed on the system.
+// It runs the script and returns its stdout.
 // If the script execution fails, it calls t.Fatalf.
 func RunTypeScriptRunner(t *testing.T, workspaceDir, tempDir, tsRunner string) string {
 	t.Helper()
-	tsxPath := filepath.Join(workspaceDir, "node_modules", ".bin", "tsx")
-	cmd := exec.Command(tsxPath, tsRunner)
+	
+	// Check if bun is available
+	if _, err := exec.LookPath("bun"); err != nil {
+		t.Fatalf("bun is required but not found in PATH. Please install bun: https://bun.sh")
+	}
+	
+	cmd := exec.Command("bun", "run", tsRunner)
 	cmd.Dir = tempDir
 
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = io.MultiWriter(&outBuf, os.Stdout) // Changed to os.Stdout for easier debugging
 	cmd.Stderr = io.MultiWriter(&errBuf, os.Stderr) // Keep stderr going to test output
 	if err := cmd.Run(); err != nil {
-		t.Fatalf("run failed: %v\nstdout: %s\nstderr: %s", err, outBuf.String(), errBuf.String())
+		t.Fatalf("bun run failed: %v\nstdout: %s\nstderr: %s", err, outBuf.String(), errBuf.String())
 	}
 	return outBuf.String()
 }

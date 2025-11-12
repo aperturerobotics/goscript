@@ -35,6 +35,7 @@ export { Swapper } from './swapper.js'
 // Export new types and constants
 export {
   StructTag,
+  StructTag_Get,
   StructField,
   ValueError,
   SelectSend,

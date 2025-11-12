@@ -13,7 +13,7 @@ export let EOF: Token = 0
 
 export let COMMENT: Token = 0
 
-let literal_beg: Token = 0
+export let literal_beg: Token = 0
 
 // Identifiers and basic type literals
 // (these tokens stand for classes of literals)
@@ -35,9 +35,9 @@ export let CHAR: Token = 0
 // "abc"
 export let STRING: Token = 0
 
-let literal_end: Token = 0
+export let literal_end: Token = 0
 
-let operator_beg: Token = 0
+export let operator_beg: Token = 0
 
 // Operators and delimiters
 // +
@@ -181,9 +181,9 @@ export let SEMICOLON: Token = 0
 // :
 export let COLON: Token = 0
 
-let operator_end: Token = 0
+export let operator_end: Token = 0
 
-let keyword_beg: Token = 0
+export let keyword_beg: Token = 0
 
 // Keywords
 export let BREAK: Token = 0
@@ -236,14 +236,14 @@ export let TYPE: Token = 0
 
 export let VAR: Token = 0
 
-let keyword_end: Token = 0
+export let keyword_end: Token = 0
 
-let additional_beg: Token = 0
+export let additional_beg: Token = 0
 
 // additional tokens, handled in an ad-hoc manner
 export let TILDE: Token = 0
 
-let additional_end: Token = 0
+export let additional_end: Token = 0
 
 // non-operators
 export let LowestPrec: number = 0
@@ -318,9 +318,9 @@ export function Token_IsKeyword(tok: Token): boolean {
 }
 
 
-let keywords: Map<string, Token> | null = null
+export let keywords: Map<string, Token> | null = null
 
-let tokens = $.arrayToSlice<string>(["ILLEGAL", "EOF", "COMMENT", "", "IDENT", "INT", "FLOAT", "IMAG", "CHAR", "STRING", "", "", "+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "&^", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "&^=", "&&", "||", "<-", "++", "--", "==", "<", ">", "=", "!", "!=", "<=", ">=", ":=", "...", "(", "[", "{", ",", ".", ")", "]", "}", ";", ":", "", "", "break", "case", "chan", "const", "continue", "default", "defer", "else", "fallthrough", "for", "func", "go", "goto", "if", "import", "interface", "map", "package", "range", "return", "select", "struct", "switch", "type", "var", "", "", "~"])
+export let tokens = $.arrayToSlice<string>(["ILLEGAL", "EOF", "COMMENT", "", "IDENT", "INT", "FLOAT", "IMAG", "CHAR", "STRING", "", "", "+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "&^", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "&^=", "&&", "||", "<-", "++", "--", "==", "<", ">", "=", "!", "!=", "<=", ">=", ":=", "...", "(", "[", "{", ",", ".", ")", "]", "}", ";", ":", "", "", "break", "case", "chan", "const", "continue", "default", "defer", "else", "fallthrough", "for", "func", "go", "goto", "if", "import", "interface", "map", "package", "range", "return", "select", "struct", "switch", "type", "var", "", "", "~"])
 
 export function init(): void {
 	keywords = $.makeMap<string, Token>()
@@ -363,7 +363,7 @@ export function IsIdentifier(name: string): boolean {
 	{
 		const _runes = $.stringToRunes(name)
 		for (let i = 0; i < _runes.length; i++) {
-			const c = _runes[i]
+			let c = _runes[i]
 			{
 				if (!unicode.IsLetter(c) && c != 95 && (i == 0 || !unicode.IsDigit(c))) {
 					return false

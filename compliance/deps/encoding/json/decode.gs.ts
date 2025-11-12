@@ -4,13 +4,7 @@ import { foldName } from "./fold.gs.js";
 import { checkValid, stateEndValue } from "./scanner.gs.js";
 import { structFields } from "./encode.gs.js";
 import { scanner } from "./scanner.gs.js";
-import * as bytes from "bytes/index.js"
-import * as cmp from "cmp/index.js"
-import * as errors from "errors/index.js"
-import * as io from "io/index.js"
-import * as math from "math/index.js"
-import * as slices from "slices/index.js"
-import * as sync from "sync/index.js"
+import { scanArrayValue, scanBeginArray, scanBeginLiteral, scanBeginObject, scanEnd, scanEndArray, scanEndObject, scanObjectKey, scanObjectValue, scanSkipSpace } from "./scanner.gs.js";
 
 import * as encoding from "@goscript/encoding/index.js"
 
@@ -33,7 +27,7 @@ import * as utf8 from "@goscript/unicode/utf8/index.js"
 // for linkname
 import * as _ from "@goscript/unsafe/index.js"
 
-let phasePanicMsg: string = "JSON decoder out of sync - data changing underfoot?"
+export let phasePanicMsg: string = "JSON decoder out of sync - data changing underfoot?"
 
 export class InvalidUnmarshalError {
 	public get Type(): reflect.Type {
@@ -895,7 +889,7 @@ export class decodeState {
 					// Invalidate subv to ensure d.value(subv) skips over
 					// the JSON value without assigning it to subv.
 					for (let i = 0; i < $.len(f!.index); i++) {
-						const ind = f!.index![i]
+						let ind = f!.index![i]
 						{
 
 							// If a struct embeds a pointer to an unexported type,
@@ -1550,11 +1544,11 @@ export class unquotedValue {
 	);
 }
 
-let nullLiteral: $.Bytes = $.stringToBytes("null")
+export let nullLiteral: $.Bytes = $.stringToBytes("null")
 
-let numberType: reflect.Type = reflect.TypeOf("")
+export let numberType: reflect.Type = reflect.TypeOf("")
 
-let textUnmarshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding.TextUnmarshaler")
+export let textUnmarshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding.TextUnmarshaler")
 
 // Unmarshal parses the JSON-encoded data and stores the result
 // in the value pointed to by v. If v is nil or not a pointer,
@@ -1750,7 +1744,7 @@ export function getu4(s: $.Bytes): number {
 	}
 	let r: number = 0
 	for (let _i = 0; _i < $.len($.goSlice(s, 2, 6)); _i++) {
-		const c = $.goSlice(s, 2, 6)![_i]
+		let c = $.goSlice(s, 2, 6)![_i]
 		{
 			switch (true) {
 				case 48 <= c && c <= 57: {

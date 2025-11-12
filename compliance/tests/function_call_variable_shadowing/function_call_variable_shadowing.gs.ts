@@ -103,7 +103,7 @@ export function testShadowing3(walkFn: filepath.WalkFunc | null): $.GoError {
 	// Case 3: Shadowing in for loop
 	let errorList = $.arrayToSlice<$.GoError>([null, os.ErrNotExist]) // Use os.ErrNotExist instead of errors.New
 	for (let _i = 0; _i < $.len(errorList); _i++) {
-		const err = errorList![_i]
+		let err = errorList![_i]
 		{
 			const _temp_err = err
 			{

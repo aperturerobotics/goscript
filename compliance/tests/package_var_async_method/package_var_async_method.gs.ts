@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as sync from "@goscript/sync/index.js"
 
-let cache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
+export let cache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 
 // This function calls an async method on a package-level variable
 export async function getValueFromCache(key: string): Promise<[null | any, boolean]> {

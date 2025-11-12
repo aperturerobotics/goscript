@@ -7,7 +7,7 @@ export async function main(): Promise<void> {
 	let nums = $.arrayToSlice<number>([2, 3, 4])
 	let sum = 0
 	for (let _i = 0; _i < $.len(nums); _i++) {
-		const num = nums![_i]
+		let num = nums![_i]
 		{
 			sum += num
 		}
@@ -15,7 +15,7 @@ export async function main(): Promise<void> {
 	console.log("sum:", sum)
 
 	for (let i = 0; i < $.len(nums); i++) {
-		const num = nums![i]
+		let num = nums![i]
 		{
 			console.log("index:", i, "value:", num)
 		}
@@ -24,7 +24,7 @@ export async function main(): Promise<void> {
 	// Test ranging over an array
 	let arr = $.arrayToSlice<string>(["a", "b", "c"])
 	for (let i = 0; i < $.len(arr); i++) {
-		const s = arr![i]
+		let s = arr![i]
 		{
 			console.log("index:", i, "value:", s)
 		}
@@ -37,7 +37,7 @@ export async function main(): Promise<void> {
 	{
 		const _runes = $.stringToRunes(str)
 		for (let i = 0; i < _runes.length; i++) {
-			const c = _runes[i]
+			let c = _runes[i]
 			{
 				console.log("index:", i, "value:", c) // Note: c will be a rune (int32)
 			}

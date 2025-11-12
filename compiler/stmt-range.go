@@ -171,7 +171,7 @@ func (c *GoToTSCompiler) writeStringRange(exp *ast.RangeStmt) error {
 
 	if exp.Value != nil {
 		if ident, ok := exp.Value.(*ast.Ident); ok && ident.Name != "_" {
-			c.tsw.WriteLiterally("const ")
+			c.tsw.WriteLiterally("let ")
 			c.WriteIdent(ident, false)
 			c.tsw.WriteLiterally(" = _runes[")
 			c.tsw.WriteLiterally(indexVarName)
@@ -236,7 +236,7 @@ func (c *GoToTSCompiler) writeArraySliceWithKeyValue(exp *ast.RangeStmt, indexVa
 	c.tsw.WriteLine("")
 
 	if ident, ok := exp.Value.(*ast.Ident); ok && ident.Name != "_" {
-		c.tsw.WriteLiterally("const ")
+		c.tsw.WriteLiterally("let ")
 		c.WriteIdent(ident, false)
 		c.tsw.WriteLiterally(" = ")
 		if err := c.writeArraySliceExpression(exp.X, isPointer); err != nil {

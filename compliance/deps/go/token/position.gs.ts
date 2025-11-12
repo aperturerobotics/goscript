@@ -13,7 +13,7 @@ import * as sync from "@goscript/sync/index.js"
 
 import * as atomic from "@goscript/sync/atomic/index.js"
 
-let debug: boolean = false
+export let debug: boolean = false
 
 export let NoPos: Pos = 0
 
@@ -142,7 +142,7 @@ export class FileSet {
 			s.mutex.Unlock()
 		});
 		for (let _i = 0; _i < $.len(files); _i++) {
-			const f = files![_i]
+			let f = files![_i]
 			{
 				s.tree.add(f)
 				s.base = max(s.base, f!.Base() + f!.Size() + 1)
@@ -266,7 +266,7 @@ export class FileSet {
 		await s.mutex.Lock()
 		s.base = ss.Base
 		for (let _i = 0; _i < $.len(ss.Files); _i++) {
-			const f = ss.Files![_i]
+			let f = ss.Files![_i]
 			{
 				s.tree.add(new File({base: f.Base, infos: f.Infos, lines: f.Lines, name: f.Name, size: f.Size}))
 			}
@@ -651,7 +651,7 @@ export class File {
 		const f = this
 		let size = f.size
 		for (let i = 0; i < $.len(lines); i++) {
-			const offset = lines![i]
+			let offset = lines![i]
 			{
 				if (i > 0 && offset <= lines![i - 1] || size <= offset) {
 					return false
@@ -671,7 +671,7 @@ export class File {
 		let lines: $.Slice<number> = null
 		let line = 0
 		for (let offset = 0; offset < $.len(content); offset++) {
-			const b = content![offset]
+			let b = content![offset]
 			{
 				if (line >= 0) {
 					lines = $.append(lines, line)

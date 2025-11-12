@@ -143,11 +143,20 @@ func (c *GoToTSCompiler) WriteFuncLitValue(exp *ast.FuncLit) error {
 			c.WriteTypeExpr(exp.Type.Results.List[0].Type)
 		} else {
 			c.tsw.WriteLiterally("[")
-			for i, field := range exp.Type.Results.List {
-				if i > 0 {
-					c.tsw.WriteLiterally(", ")
+			first := true
+			for _, field := range exp.Type.Results.List {
+				// Each field may represent multiple return values (e.g., "a, b int")
+				count := len(field.Names)
+				if count == 0 {
+					count = 1 // Unnamed return value
 				}
-				c.WriteTypeExpr(field.Type)
+				for j := 0; j < count; j++ {
+					if !first {
+						c.tsw.WriteLiterally(", ")
+					}
+					first = false
+					c.WriteTypeExpr(field.Type)
+				}
 			}
 			c.tsw.WriteLiterally("]")
 		}

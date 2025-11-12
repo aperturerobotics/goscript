@@ -15,7 +15,7 @@ export function CustomString_Upper(cs: CustomString): string {
 	{
 		const _runes = $.stringToRunes(s)
 		for (let i = 0; i < _runes.length; i++) {
-			const r = _runes[i]
+			let r = _runes[i]
 			{
 				if (r >= 97 && r <= 122) {
 					result += $.runeOrStringToString(r - 32)

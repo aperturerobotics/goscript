@@ -164,7 +164,7 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 			isInsideFunction = nodeInfo.IsInsideFunction
 		}
 
-		if name.IsExported() && !isInsideFunction {
+		if !isInsideFunction {
 			c.tsw.WriteLiterally("export ")
 		}
 		c.tsw.WriteLiterally("let ")
@@ -493,7 +493,7 @@ func (c *GoToTSCompiler) WriteValueSpec(a *ast.ValueSpec) error {
 				isInsideFunction = nodeInfo.IsInsideFunction
 			}
 
-			if name.IsExported() && !isInsideFunction {
+			if !isInsideFunction {
 				c.tsw.WriteLiterally("export ")
 			}
 

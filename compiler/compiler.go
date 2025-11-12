@@ -13,7 +13,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
 
 	gs "github.com/aperturerobotics/goscript"
@@ -487,7 +486,7 @@ func (c *PackageCompiler) generateIndexFile(compiledFiles []string) error {
 
 		// Write exports if this file has exported symbols
 		if len(valueSymbols) > 0 {
-			sort.Strings(valueSymbols)
+			slices.Sort(valueSymbols)
 			exportLine := fmt.Sprintf("export { %s } from \"./%s.js\"\n",
 				strings.Join(valueSymbols, ", "), fileName)
 			if _, err := indexFile.WriteString(exportLine); err != nil {
@@ -497,7 +496,7 @@ func (c *PackageCompiler) generateIndexFile(compiledFiles []string) error {
 
 		// Write struct exports (both as types and values)
 		if len(structSymbols) > 0 {
-			sort.Strings(structSymbols)
+			slices.Sort(structSymbols)
 			// Export classes as values (which makes them available as both types and values in TypeScript)
 			exportLine := fmt.Sprintf("export { %s } from \"./%s.js\"\n",
 				strings.Join(structSymbols, ", "), fileName)
@@ -507,7 +506,7 @@ func (c *PackageCompiler) generateIndexFile(compiledFiles []string) error {
 		}
 
 		if len(typeSymbols) > 0 {
-			sort.Strings(typeSymbols)
+			slices.Sort(typeSymbols)
 			exportLine := fmt.Sprintf("export type { %s } from \"./%s.js\"\n",
 				strings.Join(typeSymbols, ", "), fileName)
 			if _, err := indexFile.WriteString(exportLine); err != nil {
@@ -612,7 +611,7 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 		for sourceFile := range imports {
 			sourceFiles = append(sourceFiles, sourceFile)
 		}
-		sort.Strings(sourceFiles)
+		slices.Sort(sourceFiles)
 
 		for _, sourceFile := range sourceFiles {
 			functions := imports[sourceFile]
@@ -623,7 +622,7 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 					sanitizedFunctions = append(sanitizedFunctions, sanitizeIdentifier(fn))
 				}
 				// Sort functions for consistent output
-				sort.Strings(sanitizedFunctions)
+				slices.Sort(sanitizedFunctions)
 				c.codeWriter.WriteLinef("import { %s } from \"./%s.gs.js\";",
 					strings.Join(sanitizedFunctions, ", "), sourceFile)
 			}
@@ -637,7 +636,7 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 		for sourceFile := range typeImports {
 			sourceFiles = append(sourceFiles, sourceFile)
 		}
-		sort.Strings(sourceFiles)
+		slices.Sort(sourceFiles)
 
 		for _, sourceFile := range sourceFiles {
 			typeImports := typeImports[sourceFile]
@@ -668,7 +667,7 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 						sanitizedTypes = append(sanitizedTypes, sanitizeIdentifier(typeName))
 					}
 					// Sort types for consistent output
-					sort.Strings(sanitizedTypes)
+					slices.Sort(sanitizedTypes)
 					c.codeWriter.WriteLinef("import { %s } from \"./%s.gs.js\";",
 						strings.Join(sanitizedTypes, ", "), sourceFile)
 				}
@@ -676,67 +675,34 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 		}
 	}
 
-	// Write any imports that were added during analysis (e.g., for promoted methods)
-	// but don't appear in the source AST
-	// Note: c.Analysis.Imports is package-wide, so we need to filter to only imports
-	// that are actually used in this specific file
-	writtenImports := make(map[string]bool)
-	// Track imports that will be written from the AST
-	for _, imp := range f.Imports {
-		if imp.Path != nil {
-			path := imp.Path.Value[1 : len(imp.Path.Value)-1] // Remove quotes
-			if imp.Name != nil && imp.Name.Name != "" {
-				writtenImports[imp.Name.Name] = true
-			} else {
-				// Use the actual package name
-				if actualName, err := getActualPackageName(path, c.pkg.Imports); err == nil {
-					writtenImports[actualName] = true
+	// Generate auto-imports for variables from other files in the same package
+	if varImports := c.PackageAnalysis.VariableCalls[currentFileName]; varImports != nil {
+		// Sort source files for consistent import order
+		var sourceFiles []string
+		for sourceFile := range varImports {
+			sourceFiles = append(sourceFiles, sourceFile)
+		}
+		slices.Sort(sourceFiles)
+
+		for _, sourceFile := range sourceFiles {
+			variables := varImports[sourceFile]
+			if len(variables) > 0 {
+				// Apply sanitization to variable names
+				var sanitizedVariables []string
+				for _, varName := range variables {
+					sanitizedVariables = append(sanitizedVariables, sanitizeIdentifier(varName))
 				}
+				// Sort variables for consistent output
+				slices.Sort(sanitizedVariables)
+				c.codeWriter.WriteLinef("import { %s } from \"./%s.gs.js\";",
+					strings.Join(sanitizedVariables, ", "), sourceFile)
 			}
-		}
-	}
-	// Write any imports that were added during analysis (e.g., for promoted methods)
-	// Check if this file defines any structs with embedded fields
-	fileHasEmbeddedStructs := false
-	for _, decl := range f.Decls {
-		genDecl, ok := decl.(*ast.GenDecl)
-		if !ok || genDecl.Tok != token.TYPE {
-			continue
-		}
-		for _, spec := range genDecl.Specs {
-			typeSpec, ok := spec.(*ast.TypeSpec)
-			if !ok {
-				continue
-			}
-			structType, ok := typeSpec.Type.(*ast.StructType)
-			if !ok {
-				continue
-			}
-			// Check if any field is embedded
-			for _, field := range structType.Fields.List {
-				if len(field.Names) == 0 { // Embedded field
-					fileHasEmbeddedStructs = true
-					break
-				}
-			}
-			if fileHasEmbeddedStructs {
-				break
-			}
-		}
-		if fileHasEmbeddedStructs {
-			break
 		}
 	}
 
-	// If this file has embedded structs, write imports from analysis that aren't in AST
-	if fileHasEmbeddedStructs {
-		for pkgName, fileImport := range c.Analysis.Imports {
-			if !writtenImports[pkgName] {
-				c.codeWriter.WriteLinef("import * as %s from \"%s/index.js\"", pkgName, fileImport.importPath)
-				writtenImports[pkgName] = true
-			}
-		}
-	}
+	// Note: We don't need to write extra imports for embedded structs here.
+	// The Go compiler already includes necessary imports in the AST when methods
+	// from embedded fields are used in the source code.
 
 	c.codeWriter.WriteLine("") // Add a newline after imports
 

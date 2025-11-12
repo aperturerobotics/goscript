@@ -1,0 +1,2 @@
+String marshal: "\"hello\""
+Int marshal: "42"

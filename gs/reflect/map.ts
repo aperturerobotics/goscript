@@ -36,6 +36,10 @@ class MapType implements Type {
     return 0
   }
 
+  public Field(_i: number): null {
+    return null
+  }
+
   public Implements(u: Type | null): boolean {
     if (!u) {
       return false

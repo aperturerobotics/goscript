@@ -52,13 +52,13 @@ export class MyError {
 	);
 }
 
-let fn1: Func1 | null = null
+export let fn1: Func1 | null = null
 
-let fn2: Func2 | null = null
+export let fn2: Func2 | null = null
 
-let fn3: Func3 | null = null
+export let fn3: Func3 | null = null
 
-let fn4: Func4 | null = null
+export let fn4: Func4 | null = null
 
 export function NewMyError(text: string): MyError | null {
 	return new MyError({s: text})
@@ -86,7 +86,7 @@ export async function main(): Promise<void> {
 	fn4 = (a: number, ...b: string[]): void => {
 		console.log("fn4 called with: ", a)
 		for (let _i = 0; _i < $.len(b); _i++) {
-			const s = b![_i]
+			let s = b![_i]
 			{
 				console.log(" ", s)
 			}

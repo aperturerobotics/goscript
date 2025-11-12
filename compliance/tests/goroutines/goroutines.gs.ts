@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-let totalMessages: number = 8
+export let totalMessages: number = 8
 
 export class Message {
 	public get priority(): number {
@@ -51,7 +51,7 @@ export class Message {
 	);
 }
 
-let messages: $.Channel<Message> | null = $.makeChannel<Message>(0, new Message(), 'both')
+export let messages: $.Channel<Message> | null = $.makeChannel<Message>(0, new Message(), 'both')
 
 // A worker function that will be called as a goroutine
 export async function worker(id: number): Promise<void> {
@@ -118,7 +118,7 @@ for (let i = 0; i < $.len(allMessages); i++) {
 
 // Print all messages in deterministic order
 for (let _i = 0; _i < $.len(allMessages); _i++) {
-	const msg = allMessages![_i]
+	let msg = allMessages![_i]
 	{
 		console.log(msg.priority, msg.text)
 	}

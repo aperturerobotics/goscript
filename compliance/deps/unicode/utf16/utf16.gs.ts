@@ -1,21 +1,21 @@
 import * as $ from "@goscript/builtin/index.js"
 
 // Unicode replacement character
-let replacementChar: number = 65533
+export let replacementChar: number = 65533
 
 // Maximum valid Unicode code point.
-let maxRune: number = 1114111
+export let maxRune: number = 1114111
 
 // 0xd800-0xdc00 encodes the high 10 bits of a pair.
 // 0xdc00-0xe000 encodes the low 10 bits of a pair.
 // the value is those 20 bits plus 0x10000.
-let surr1: number = 0xd800
+export let surr1: number = 0xd800
 
-let surr2: number = 0xdc00
+export let surr2: number = 0xdc00
 
-let surr3: number = 0xe000
+export let surr3: number = 0xe000
 
-let surrSelf: number = 0x10000
+export let surrSelf: number = 0x10000
 
 // IsSurrogate reports whether the specified Unicode code point
 // can appear in a surrogate pair.
@@ -72,7 +72,7 @@ export function RuneLen(r: number): number {
 export function Encode(s: $.Slice<number>): $.Slice<number> {
 	let n = $.len(s)
 	for (let _i = 0; _i < $.len(s); _i++) {
-		const v = s![_i]
+		let v = s![_i]
 		{
 			if (v >= 65536) {
 				n++
@@ -87,7 +87,7 @@ export function Encode(s: $.Slice<number>): $.Slice<number> {
 
 	// needs surrogate sequence
 	for (let _i = 0; _i < $.len(s); _i++) {
-		const v = s![_i]
+		let v = s![_i]
 		{
 
 			// normal rune

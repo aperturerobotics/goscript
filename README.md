@@ -58,6 +58,15 @@ GoScript is working on compiling a subset of Go:
 
 > **Warning:** This is experimental software. Features may be incomplete or broken. Please report any issues!
 
+### Prerequisites
+
+GoScript requires [Bun](https://bun.sh) to be installed for running compliance tests:
+
+```bash
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
+```
+
 ### Installation
 
 **Option 1: Go Install**

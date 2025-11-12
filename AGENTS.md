@@ -4,7 +4,23 @@ This document contains guidelines and rules for AI agents working on the GoScrip
 
 ## IMPORTANT
 
+Fix anything that you come across in the project while working that violates any of these guidelines as you encounter it.
+
+**CRITICAL: When asked to update AGENTS.md:**
+
+- ALWAYS read the ENTIRE file first before making edits
+- Check for duplicate information across sections
+- Condense and consolidate duplicates into a single authoritative section
+- Ensure guidelines are clear and non-contradictory
+
+Remember to always delete dead code when changing things - for example if you changed something and a function is no longer used anywhere, delete that function.
+
+### General Rules
+
 - Try to keep things in one function unless composable or reusable
+- PREFER one exported struct per `.go` file (file named after the struct, e.g., `type-info.go` for `TypeInfo`)
+  - Multiple unexported (internal) structs in the same file are acceptable
+  - Constants and type aliases can be co-located with the struct that uses them
 - DO NOT use `else` statements unless necessary
 - DO NOT make git commits
 - AVOID `else` statements or "fallback" cases
@@ -102,7 +118,7 @@ Once the issue is fixed and the compliance test passes you may delete WIP.md wit
 
 When working with golangci-lint:
 
-1. **Running the Linter**: Use `yarn lint` to run the linter, `yarn lint:go` for go and `yarn lint:js` for js
+1. **Running the Linter**: Use `bun lint` to run the linter, `bun lint:go` for go and `bun lint:js` for js
 2. **Fixing Errors**: Address linter errors in the affected code files
 3. **Iterating**: Repeat the linting process until no errors remain
 4. **Ignoring Warnings**: You can ignore linter errors with inline comments when the warning is unnecessarily strict:
@@ -111,7 +127,7 @@ When working with golangci-lint:
    ```
    This is appropriate for cases like deferring Close without checking the error return value, which can often be safely ignored.
 
-Make sure that `yarn test` and `yarn lint` both pass before suggesting a task is complete.
+Make sure that `bun test` and `bun lint` both pass before suggesting a task is complete.
 
 ## Specialized Workflows
 
@@ -158,3 +174,32 @@ When eliminating dead code if requested by the user:
 3. Remove any unused code in `./compiler` ignoring ./compliance
 4. Any line which is unused in `./compliance` add a `//nolint:unused` comment at the end.
 5. Rerun the golangci-lint command to ensure we got everything.
+
+## Comments
+
+When adding comments to functions, structs, or files:
+
+- Use the format: `// FunctionName does something specific.`
+- Start with the function/struct/type name followed by a verb
+- End with a period
+- Keep it concise and descriptive
+
+Example:
+
+```go
+// WriteFuncDecl converts a Go function declaration to TypeScript.
+func (c *GoToTSCompiler) WriteFuncDecl(decl *ast.FuncDecl) error {
+  ...
+}
+```
+
+### Go Type Assertions
+
+When using type assertion syntax in Go, add a comment line just before:
+
+```go
+// _ is a type assertion
+var _ SomeInterface = (*SomeStruct)(nil)
+```
+
+This verifies at compile-time that `SomeStruct` implements `SomeInterface`.

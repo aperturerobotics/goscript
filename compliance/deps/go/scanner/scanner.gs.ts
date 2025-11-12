@@ -15,16 +15,16 @@ import * as unicode from "@goscript/unicode/index.js"
 import * as utf8 from "@goscript/unicode/utf8/index.js"
 
 // byte order mark, only permitted as very first character
-let bom: number = 0xFEFF
+export let bom: number = 0xFEFF
 
 // end of file
-let eof: number = -1
+export let eof: number = -1
 
 // return comments as COMMENT tokens
 export let ScanComments: Mode = (1 << 0)
 
 // do not automatically insert semicolons - for testing only
-let dontInsertSemis: Mode = 0
+export let dontInsertSemis: Mode = 0
 
 export type ErrorHandler = ((pos: token.Position, msg: string) => void) | null;
 
@@ -432,7 +432,7 @@ export class Scanner {
 		const s = this
 		let offs = s.offset
 		for (let rdOffset = 0; rdOffset < $.len($.goSlice(s.src, s.rdOffset, undefined)); rdOffset++) {
-			const b = $.goSlice(s.src, s.rdOffset, undefined)![rdOffset]
+			let b = $.goSlice(s.src, s.rdOffset, undefined)![rdOffset]
 			{
 
 				// Avoid assigning a rune for the common case of an ascii character.
@@ -1119,7 +1119,7 @@ export class Scanner {
 	);
 }
 
-let prefix: $.Bytes = $.stringToBytes("line ")
+export let prefix: $.Bytes = $.stringToBytes("line ")
 
 export function trailingDigits(text: $.Bytes): [number, number, boolean] {
 	let i = bytes.LastIndexByte(text, 58) // look from right (Windows filenames may contain ':')
@@ -1244,7 +1244,7 @@ export function stripCR(b: $.Bytes, comment: boolean): $.Bytes {
 	// is immediately following the opening /* in which case
 	// it's ok because /*/ is not closed yet (issue #11151).
 	for (let j = 0; j < $.len(b); j++) {
-		const ch = b![j]
+		let ch = b![j]
 		{
 			// In a /*-style comment, don't strip \r from *\r/ (incl.
 			// sequences of \r from *\r\r...\r/) since the resulting

@@ -57,7 +57,7 @@ export async function main(): Promise<void> {
 	let kv = new KV({Key: "string"})
 	list = $.arrayToSlice<null | any>([kv])
 	for (let _i = 0; _i < $.len(list); _i++) {
-		const exp = list![_i]
+		let exp = list![_i]
 		{
 			$.typeSwitch(exp, [{ types: [{kind: $.TypeKind.Pointer, elemType: 'main.KV'}], body: (x) => {
 				const _temp_x = x

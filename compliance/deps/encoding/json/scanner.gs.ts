@@ -1,19 +1,4 @@
 import * as $ from "@goscript/builtin/index.js"
-import * as _ from "@goscript/unsafe/index.js"
-import * as base64 from "@goscript/encoding/base64/index.js"
-import * as bytes from "@goscript/bytes/index.js"
-import * as cmp from "@goscript/cmp/index.js"
-import * as encoding from "@goscript/encoding/index.js"
-import * as errors from "errors/index.js"
-import * as fmt from "@goscript/fmt/index.js"
-import * as io from "io/index.js"
-import * as math from "@goscript/math/index.js"
-import * as reflect from "@goscript/reflect/index.js"
-import * as slices from "@goscript/slices/index.js"
-import * as strings from "@goscript/strings/index.js"
-import * as unicode from "@goscript/unicode/index.js"
-import * as utf16 from "@goscript/unicode/utf16/index.js"
-import * as utf8 from "@goscript/unicode/utf8/index.js"
 
 import * as strconv from "@goscript/strconv/index.js"
 
@@ -21,52 +6,52 @@ import * as sync from "@goscript/sync/index.js"
 
 // Continue.
 // uninteresting byte
-let scanContinue: number = 0
+export let scanContinue: number = 0
 
 // end implied by next result != scanContinue
-let scanBeginLiteral: number = 0
+export let scanBeginLiteral: number = 0
 
 // begin object
-let scanBeginObject: number = 0
+export let scanBeginObject: number = 0
 
 // just finished object key (string)
-let scanObjectKey: number = 0
+export let scanObjectKey: number = 0
 
 // just finished non-last object value
-let scanObjectValue: number = 0
+export let scanObjectValue: number = 0
 
 // end object (implies scanObjectValue if possible)
-let scanEndObject: number = 0
+export let scanEndObject: number = 0
 
 // begin array
-let scanBeginArray: number = 0
+export let scanBeginArray: number = 0
 
 // just finished array value
-let scanArrayValue: number = 0
+export let scanArrayValue: number = 0
 
 // end array (implies scanArrayValue if possible)
-let scanEndArray: number = 0
+export let scanEndArray: number = 0
 
 // space byte; can skip; known to be last "continue" result
-let scanSkipSpace: number = 0
+export let scanSkipSpace: number = 0
 
 // Stop.
 // top-level value ended *before* this byte; known to be first "stop" result
-let scanEnd: number = 0
+export let scanEnd: number = 0
 
 // hit an error, scanner.err.
-let scanError: number = 0
+export let scanError: number = 0
 
 // parsing object key (before colon)
-let parseObjectKey: number = 0
+export let parseObjectKey: number = 0
 
 // parsing object value (after colon)
-let parseObjectValue: number = 0
+export let parseObjectValue: number = 0
 
 // parsing array value
-let parseArrayValue: number = 0
+export let parseArrayValue: number = 0
 
-let maxNestingDepth: number = 10000
+export let maxNestingDepth: number = 10000
 
 export class SyntaxError {
 	// description of error
@@ -270,7 +255,7 @@ export class scanner {
 	);
 }
 
-let scannerPool: $.VarRef<sync.Pool> = $.varRef($.markAsStructValue(new sync.Pool({New: (): null | any => {
+export let scannerPool: $.VarRef<sync.Pool> = $.varRef($.markAsStructValue(new sync.Pool({New: (): null | any => {
 	return new scanner({})
 }})))
 
@@ -290,7 +275,7 @@ export function Valid(data: $.Bytes): boolean {
 export function checkValid(data: $.Bytes, scan: scanner | null): $.GoError {
 	scan!.reset()
 	for (let _i = 0; _i < $.len(data); _i++) {
-		const c = data![_i]
+		let c = data![_i]
 		{
 			scan!.bytes++
 			if (scan!.step(scan, c) == 11) {
