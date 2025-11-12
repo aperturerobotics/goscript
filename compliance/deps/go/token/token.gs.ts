@@ -363,7 +363,7 @@ export function IsIdentifier(name: string): boolean {
 	{
 		const _runes = $.stringToRunes(name)
 		for (let i = 0; i < _runes.length; i++) {
-			const c = _runes[i]
+			let c = _runes[i]
 			{
 				if (!unicode.IsLetter(c) && c != 95 && (i == 0 || !unicode.IsDigit(c))) {
 					return false

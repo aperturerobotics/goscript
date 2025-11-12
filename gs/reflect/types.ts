@@ -62,6 +62,10 @@ export class StructField {
       Anonymous: this.Anonymous,
     })
   }
+
+  public IsExported(): boolean {
+    return this.Name !== '' && this.Name[0] !== '_'
+  }
 }
 
 // Struct tag type

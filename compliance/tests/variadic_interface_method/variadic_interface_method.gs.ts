@@ -31,7 +31,7 @@ export class PathJoiner {
 	public Join(...elem: string[]): string {
 		let result = ""
 		for (let i = 0; i < $.len(elem); i++) {
-			const e = elem![i]
+			let e = elem![i]
 			{
 				if (i > 0) {
 					result += "/"

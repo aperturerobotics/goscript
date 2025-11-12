@@ -65,7 +65,7 @@ export async function main(): Promise<void> {
 
 	// Print sorted results
 	for (let _i = 0; _i < $.len(results); _i++) {
-		const result = results![_i]
+		let result = results![_i]
 		{
 			console.log("Result:", result)
 		}

@@ -86,7 +86,7 @@ export async function main(): Promise<void> {
 	fn4 = (a: number, ...b: string[]): void => {
 		console.log("fn4 called with: ", a)
 		for (let _i = 0; _i < $.len(b); _i++) {
-			const s = b![_i]
+			let s = b![_i]
 			{
 				console.log(" ", s)
 			}

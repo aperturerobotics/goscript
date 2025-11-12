@@ -8,7 +8,7 @@ export async function main(): Promise<void> {
 	let arrPtr = arr
 
 	for (let i = 0; i < $.len(arrPtr!.value); i++) {
-		const v = arrPtr!.value![i]
+		let v = arrPtr!.value![i]
 		{
 			console.log("index:", i, "value:", v)
 		}

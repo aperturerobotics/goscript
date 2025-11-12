@@ -12,7 +12,7 @@ export function testVariadicInterface(name: string, ...values: any[]): void {
 	// We can't do much with interface{} values in the compiled output
 	// but we can at least check they're passed correctly
 	for (let i = 0; i < $.len(values); i++) {
-		const v = values![i]
+		let v = values![i]
 		{
 			// We can't do much with interface{} values in the compiled output
 			// but we can at least check they're passed correctly

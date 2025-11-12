@@ -17,7 +17,7 @@ export function testFS(fsys: string, ...expected: string[]): $.GoError {
 	}
 
 	for (let i = 0; i < $.len(expected); i++) {
-		const exp = expected![i]
+		let exp = expected![i]
 		{
 			console.log("Expected[" + $.runeOrStringToString(i + 48) + "]: " + exp)
 		}

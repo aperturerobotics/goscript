@@ -5,20 +5,8 @@ import { isSpace, quoteChar, stateEndValue } from "./scanner.gs.js";
 import { Unmarshaler, decodeState } from "./decode.gs.js";
 import { Marshaler, encOpts } from "./encode.gs.js";
 import { SyntaxError, scanner } from "./scanner.gs.js";
-import * as _ from "@goscript/unsafe/index.js"
-import * as base64 from "@goscript/encoding/base64/index.js"
-import * as cmp from "@goscript/cmp/index.js"
-import * as encoding from "@goscript/encoding/index.js"
-import * as fmt from "@goscript/fmt/index.js"
-import * as math from "@goscript/math/index.js"
-import * as reflect from "@goscript/reflect/index.js"
-import * as slices from "@goscript/slices/index.js"
-import * as strconv from "@goscript/strconv/index.js"
-import * as strings from "@goscript/strings/index.js"
-import * as sync from "@goscript/sync/index.js"
-import * as unicode from "@goscript/unicode/index.js"
-import * as utf16 from "@goscript/unicode/utf16/index.js"
-import * as utf8 from "@goscript/unicode/utf8/index.js"
+import { encodeStatePool } from "./encode.gs.js";
+import { scanEnd, scanEndArray, scanEndObject, scanError } from "./scanner.gs.js";
 
 import * as bytes from "@goscript/bytes/index.js"
 
@@ -26,23 +14,23 @@ import * as errors from "@goscript/errors/index.js"
 
 import * as io from "@goscript/io/index.js"
 
-let tokenTopValue: number = 0
+export let tokenTopValue: number = 0
 
-let tokenArrayStart: number = 0
+export let tokenArrayStart: number = 0
 
-let tokenArrayValue: number = 0
+export let tokenArrayValue: number = 0
 
-let tokenArrayComma: number = 0
+export let tokenArrayComma: number = 0
 
-let tokenObjectStart: number = 0
+export let tokenObjectStart: number = 0
 
-let tokenObjectKey: number = 0
+export let tokenObjectKey: number = 0
 
-let tokenObjectColon: number = 0
+export let tokenObjectColon: number = 0
 
-let tokenObjectValue: number = 0
+export let tokenObjectValue: number = 0
 
-let tokenObjectComma: number = 0
+export let tokenObjectComma: number = 0
 
 export class Decoder {
 	public get r(): io.Reader {
@@ -742,7 +730,7 @@ export function NewDecoder(r: io.Reader): Decoder | null {
 
 export function nonSpace(b: $.Bytes): boolean {
 	for (let _i = 0; _i < $.len(b); _i++) {
-		const c = b![_i]
+		let c = b![_i]
 		{
 			if (!isSpace(c)) {
 				return true

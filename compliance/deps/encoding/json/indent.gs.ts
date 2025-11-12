@@ -1,25 +1,11 @@
 import * as $ from "@goscript/builtin/index.js"
 import { freeScanner, newScanner } from "./scanner.gs.js";
-import * as _ from "@goscript/unsafe/index.js"
-import * as base64 from "@goscript/encoding/base64/index.js"
-import * as cmp from "@goscript/cmp/index.js"
-import * as encoding from "@goscript/encoding/index.js"
-import * as errors from "errors/index.js"
-import * as fmt from "@goscript/fmt/index.js"
-import * as io from "io/index.js"
-import * as math from "@goscript/math/index.js"
-import * as reflect from "@goscript/reflect/index.js"
-import * as slices from "@goscript/slices/index.js"
-import * as strconv from "@goscript/strconv/index.js"
-import * as strings from "@goscript/strings/index.js"
-import * as sync from "@goscript/sync/index.js"
-import * as unicode from "@goscript/unicode/index.js"
-import * as utf16 from "@goscript/unicode/utf16/index.js"
-import * as utf8 from "@goscript/unicode/utf8/index.js"
+import { hex } from "./encode.gs.js";
+import { scanContinue, scanEndArray, scanEndObject, scanError, scanSkipSpace } from "./scanner.gs.js";
 
 import * as bytes from "@goscript/bytes/index.js"
 
-let indentGrowthFactor: number = 2
+export let indentGrowthFactor: number = 2
 
 // HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
 // characters inside string literals changed to \u003c, \u003e, \u0026, \u2028, \u2029
@@ -38,7 +24,7 @@ export function appendHTMLEscape(dst: $.Bytes, src: $.Bytes): $.Bytes {
 
 	// Convert U+2028 and U+2029 (E2 80 A8 and E2 80 A9).
 	for (let i = 0; i < $.len(src); i++) {
-		const c = src![i]
+		let c = src![i]
 		{
 			if (c == 60 || c == 62 || c == 38) {
 				dst = $.append(dst, $.goSlice(src, start, i))
@@ -78,7 +64,7 @@ export function appendCompact(dst: $.Bytes, src: $.Bytes, escape: boolean): [$.B
 
 	// Convert U+2028 and U+2029 (E2 80 A8 and E2 80 A9).
 	for (let i = 0; i < $.len(src); i++) {
-		const c = src![i]
+		let c = src![i]
 		{
 			if (escape && (c == 60 || c == 62 || c == 38)) {
 				if (start < i) {
@@ -164,7 +150,7 @@ export function appendIndent(dst: $.Bytes, src: $.Bytes, prefix: string, indent:
 
 	// suppress indent in empty object/array
 	for (let _i = 0; _i < $.len(src); _i++) {
-		const c = src![_i]
+		let c = src![_i]
 		{
 			scan!.bytes++
 			let v = scan!.step(scan, c)

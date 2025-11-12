@@ -7,7 +7,7 @@ export async function main(): Promise<void> {
 	let s = $.arrayToSlice<number>([10, 20, 30])
 	let sum = 0
 	for (let _i = 0; _i < $.len(s); _i++) {
-		const v = s![_i]
+		let v = s![_i]
 		{
 			sum += v
 			console.log(v)
@@ -18,7 +18,7 @@ export async function main(): Promise<void> {
 	let arr = $.arrayToSlice<string>(["a", "b", "c"])
 	let concat = ""
 	for (let _i = 0; _i < $.len(arr); _i++) {
-		const val = arr![_i]
+		let val = arr![_i]
 		{
 			concat += val
 			console.log(val)

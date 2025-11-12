@@ -108,7 +108,7 @@ export function ErrorList_RemoveMultiples(p: $.VarRef<ErrorList>): void {
 	let last: token.Position = new token.Position()
 	let i = 0
 	for (let _i = 0; _i < $.len(p!.value); _i++) {
-		const e = p!.value![_i]
+		let e = p!.value![_i]
 		{
 			if (e!.Pos.Filename != last.Filename || e!.Pos.Line != last.Line) {
 				last = $.markAsStructValue(e!.Pos.clone())
@@ -150,7 +150,7 @@ export function PrintError(w: io.Writer, err: $.GoError): void {
 		let { value: list, ok: ok } = $.typeAssert<ErrorList>(err, 'go/scanner.ErrorList')
 		if (ok) {
 			for (let _i = 0; _i < $.len(list); _i++) {
-				const e = list![_i]
+				let e = list![_i]
 				{
 					fmt.Fprintf(w, "%s\n", e)
 				}

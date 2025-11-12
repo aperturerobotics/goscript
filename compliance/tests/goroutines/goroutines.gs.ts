@@ -118,7 +118,7 @@ for (let i = 0; i < $.len(allMessages); i++) {
 
 // Print all messages in deterministic order
 for (let _i = 0; _i < $.len(allMessages); _i++) {
-	const msg = allMessages![_i]
+	let msg = allMessages![_i]
 	{
 		console.log(msg.priority, msg.text)
 	}

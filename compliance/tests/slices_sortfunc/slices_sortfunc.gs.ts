@@ -65,7 +65,7 @@ export async function main(): Promise<void> {
 	})
 
 	for (let _i = 0; _i < $.len(people); _i++) {
-		const p = people![_i]
+		let p = people![_i]
 		{
 			console.log(p.Name, p.Age)
 		}

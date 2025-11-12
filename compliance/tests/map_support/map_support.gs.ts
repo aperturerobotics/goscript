@@ -69,7 +69,7 @@ export async function main(): Promise<void> {
 	}
 
 	for (let _i = 0; _i < $.len(scoreResults); _i++) {
-		const result = scoreResults![_i]
+		let result = scoreResults![_i]
 		{
 			console.log(result)
 		}

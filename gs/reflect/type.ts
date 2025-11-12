@@ -1,4 +1,4 @@
-import { ReflectValue, StructField } from './types.js'
+import { ReflectValue, StructField, ValueError } from './types.js'
 import { MapIter } from './map.js'
 import {
   getTypeByName as builtinGetTypeByName,
@@ -6,6 +6,8 @@ import {
   isStructTypeInfo,
   isInterfaceTypeInfo,
 } from '../builtin/type.js'
+import { Zero } from './value.js'
+import { DeepEqual } from './deepequal.js'
 
 // rtype is the common implementation of most values
 export class rtype {
@@ -188,7 +190,7 @@ export interface Type {
   PkgPath?(): string
 
   // Field returns a struct type's i'th field.
-  Field?(i: number): StructField | null
+  Field(i: number): StructField | null
 
   // Key returns a map type's key type (returns null for non-map types).
   Key?(): Type | null
@@ -361,9 +363,21 @@ export class Value {
     return this._type.NumField()
   }
 
-  public Field(_i: number): Value {
-    // Simplified implementation for struct field access
-    return new Value(null, this._type)
+  public Field(i: number): Value {
+    if (this.Kind() !== Struct) {
+      throw new ValueError({ Kind: this.Kind(), Method: 'Field' })
+    }
+
+    const field = this.Type().Field(i)
+    if (!field) {
+      throw new Error('reflect: struct field index out of range')
+    }
+
+    let fieldVal = (this._value as Record<string, any>)[field.Name]
+    if (fieldVal === undefined) {
+      fieldVal = null
+    }
+    return new Value(fieldVal, field.Type)
   }
 
   // Additional methods needed by various parts of the codebase
@@ -390,7 +404,42 @@ export class Value {
     return new Value(this._value, t)
   }
 
+  public CanAddr(): boolean {
+    return this.Kind() !== Ptr && this._value !== null // Simplified
+  }
+
+  public Addr(): Value {
+    if (!this.CanAddr()) {
+      throw new Error('reflect: call of reflect.Value.Addr on invalid Value')
+    }
+    const ptrType = PointerTo(this.Type())
+    return new Value(this, ptrType) // Simplified
+  }
+
+  public CanSet(): boolean {
+    return this.IsValid() && this.Kind() !== Ptr // Simplified
+  }
+
+  public Set(x: Value): void {
+    if (!this.CanSet()) {
+      throw new Error('reflect: assign to invalid value')
+    }
+    if (this.Type() !== x.Type()) {
+      throw new Error('reflect: assign to wrong type')
+    }
+    this._value = x.value
+  }
+
   // Additional methods from deleted reflect.gs.ts
+  public Interface(): any {
+    return this._value
+  }
+
+  public IsZero(): boolean {
+    const zeroVal = Zero(this.Type()).value
+    return DeepEqual(this._value, zeroVal)
+  }
+
   public typ(): rtype | null {
     return new rtype(this._type.Kind())
   }
@@ -475,7 +524,7 @@ export class BasicType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -520,6 +569,10 @@ class SliceType implements Type {
 
   public PkgPath?(): string {
     return ''
+  }
+
+  public Field(i: number): StructField | null {
+    return null
   }
 
   public Implements(u: Type | null): boolean {
@@ -568,7 +621,7 @@ class ArrayType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -615,7 +668,7 @@ class PointerType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -664,7 +717,7 @@ class FunctionType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -718,7 +771,7 @@ class MapType implements Type {
     return ''
   }
 
-  public Field?(_i: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -741,51 +794,54 @@ class MapType implements Type {
 /**
  * Helper function to check if a type's method set contains all methods
  * required by an interface.
- * 
+ *
  * @param typeName The name of the type to check (e.g., "main.MyType")
  * @param interfaceType The interface type that must be implemented
  * @returns True if the type implements the interface, false otherwise
  */
-function typeImplementsInterface(typeName: string, interfaceType: Type): boolean {
+function typeImplementsInterface(
+  typeName: string,
+  interfaceType: Type,
+): boolean {
   // Get the interface name and look it up in the type registry
   const interfaceName = interfaceType.String()
   const interfaceTypeInfo = builtinGetTypeByName(interfaceName)
-  
+
   if (!interfaceTypeInfo || !isInterfaceTypeInfo(interfaceTypeInfo)) {
     return false
   }
-  
+
   // Get the type info for the struct/type
   const typeInfo = builtinGetTypeByName(typeName)
-  
+
   if (!typeInfo || !isStructTypeInfo(typeInfo)) {
     return false
   }
-  
+
   // Check if the type has all required methods
   const requiredMethods = interfaceTypeInfo.methods || []
   const typeMethods = typeInfo.methods || []
-  
+
   // For each required method, check if the type has a matching method
   for (const requiredMethod of requiredMethods) {
-    const typeMethod = typeMethods.find(m => m.name === requiredMethod.name)
-    
+    const typeMethod = typeMethods.find((m) => m.name === requiredMethod.name)
+
     if (!typeMethod) {
       return false
     }
-    
+
     // Check if method signatures match (simplified - just check counts)
     if (typeMethod.args.length !== requiredMethod.args.length) {
       return false
     }
-    
+
     if (typeMethod.returns.length !== requiredMethod.returns.length) {
       return false
     }
-    
+
     // Could add deeper type checking here, but for now this is sufficient
   }
-  
+
   return true
 }
 
@@ -820,9 +876,15 @@ class StructType implements Type {
     return ''
   }
 
-  public Field?(_i: number): any {
-    // Stub implementation
-    return null
+  public Field(i: number): StructField | null {
+    if (i < 0 || i >= this.NumField()) {
+      return null
+    }
+    const f = this._fields[i]
+    return new StructField({
+      Name: f.name,
+      Type: f.type,
+    })
   }
 
   public Implements(u: Type | null): boolean {
@@ -837,6 +899,32 @@ class StructType implements Type {
 
   public common?(): rtype {
     return new rtype(this.Kind())
+  }
+
+  static createTypeFromFieldInfo(ti: any): Type {
+    if (typeof ti === 'string') {
+      switch (ti) {
+        case 'string':
+          return new BasicType(String, ti, 16)
+        case 'int':
+        case 'int32':
+        case 'int64':
+          return new BasicType(Int, ti, 8)
+        case 'bool':
+          return new BasicType(Bool, ti, 1)
+        case 'float64':
+          return new BasicType(Float64, ti, 8)
+        case 'uint':
+        case 'uint32':
+        case 'uint64':
+          return new BasicType(Uint, ti, 8)
+        default:
+          return new BasicType(Invalid, ti, 8)
+      }
+    } else if (ti && ti.kind) {
+      return new BasicType(Invalid, ti.name || ti.kind, 8)
+    }
+    return new BasicType(Invalid, 'unknown', 8)
   }
 }
 
@@ -881,7 +969,7 @@ class ChannelType implements Type {
     return ''
   }
 
-  public Field?(_: number): any {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -936,7 +1024,7 @@ class InterfaceType implements Type {
     return this._name
   }
 
-  public Field?(_: number): StructField | null {
+  public Field(i: number): StructField | null {
     return null
   }
 
@@ -1146,23 +1234,32 @@ function getTypeOf(value: ReflectValue): Type {
           value.constructor as { __typeInfo?: { name?: string } }
         ).__typeInfo
         if (typeInfo && typeInfo.name) {
-          // Add package prefix for struct types if not already present
           const typeName =
             typeInfo.name.includes('.') ?
               typeInfo.name
             : `main.${typeInfo.name}`
-          return new StructType(typeName)
+          const regTypeInfo = builtinGetTypeByName(typeName)
+          let fields: Array<{ name: string; type: Type }> = []
+          if (regTypeInfo && isStructTypeInfo(regTypeInfo)) {
+            fields = Object.entries(regTypeInfo.fields || {}).map(
+              ([name, ti]) => ({
+                name,
+                type: StructType.createTypeFromFieldInfo(ti),
+              }),
+            )
+          }
+          return new StructType(typeName, fields)
         }
       }
 
       // Check if it has a constructor name we can use (fallback)
       const constructorName = (value as object).constructor?.name
       if (constructorName && constructorName !== 'Object') {
-        return new StructType(constructorName)
+        return new StructType(constructorName, [])
       }
 
       // Default to struct type for plain objects
-      return new StructType('struct')
+      return new StructType('struct', [])
     }
     default:
       return new BasicType(Interface, 'interface{}', 16)

@@ -3,9 +3,9 @@ import { indirect } from "./decode.gs.js";
 import { foldName } from "./fold.gs.js";
 import { appendCompact, appendHTMLEscape, appendIndent } from "./indent.gs.js";
 import { parseTag } from "./tags.gs.js";
-import * as errors from "errors/index.js"
-import * as io from "io/index.js"
-import * as utf16 from "@goscript/unicode/utf16/index.js"
+import { numberType } from "./decode.gs.js";
+import { indentGrowthFactor } from "./indent.gs.js";
+import { htmlSafeSet, safeSet } from "./tables.gs.js";
 
 import * as bytes from "@goscript/bytes/index.js"
 
@@ -36,9 +36,9 @@ import * as utf8 from "@goscript/unicode/utf8/index.js"
 // for linkname
 import * as _ from "@goscript/unsafe/index.js"
 
-let hex: string = "0123456789abcdef"
+export let hex: string = "0123456789abcdef"
 
-let startDetectingCyclesAfter: number = 1000
+export let startDetectingCyclesAfter: number = 1000
 
 export class InvalidUTF8Error {
 	// the whole string value that caused the error
@@ -962,7 +962,7 @@ export class mapEncoder {
 			return strings.Compare(i.ks, j.ks)
 		})
 		for (let i = 0; i < $.len(sv); i++) {
-			const kv = sv![i]
+			let kv = sv![i]
 			{
 				if (i > 0) {
 					e!.WriteByte(44)
@@ -1214,7 +1214,7 @@ export class structEncoder {
 				// Find the nested struct field by following f.index.
 				let fv = $.markAsStructValue(v.clone())
 				for (let _i = 0; _i < $.len(f!.index); _i++) {
-					const i = f!.index![_i]
+					let i = f!.index![_i]
 					{
 						if (fv.Kind() == reflect.Ptr) {
 							if (fv.IsNil()) {
@@ -1259,23 +1259,23 @@ export class structEncoder {
 	);
 }
 
-let encodeStatePool: $.VarRef<sync.Pool> = $.varRef(new sync.Pool())
+export let encodeStatePool: $.VarRef<sync.Pool> = $.varRef(new sync.Pool())
 
 // map[reflect.Type]encoderFunc
-let encoderCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
+export let encoderCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 
 // map[reflect.Type]structFields
-let fieldCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
+export let fieldCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 
-let float32Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = (() => floatEncoder_encode(((32 as floatEncoder))))
+export let float32Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = (() => floatEncoder_encode(((32 as floatEncoder))))
 
-let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = (() => floatEncoder_encode(((64 as floatEncoder))))
+export let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = (() => floatEncoder_encode(((64 as floatEncoder))))
 
-let isZeroerType: reflect.Type = reflect.getInterfaceTypeByName("encoding/json.isZeroer")
+export let isZeroerType: reflect.Type = reflect.getInterfaceTypeByName("encoding/json.isZeroer")
 
-let marshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding/json.Marshaler")
+export let marshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding/json.Marshaler")
 
-let textMarshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding.TextMarshaler")
+export let textMarshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding.TextMarshaler")
 
 // Marshal returns the JSON encoding of v.
 //
@@ -1927,7 +1927,7 @@ export function isValidTag(s: string): boolean {
 	{
 		const _runes = $.stringToRunes(s)
 		for (let i = 0; i < _runes.length; i++) {
-			const c = _runes[i]
+			let c = _runes[i]
 			{
 
 				// Backslash and quote chars are reserved, but
@@ -1950,7 +1950,7 @@ export function isValidTag(s: string): boolean {
 
 export function typeByIndex(t: reflect.Type, index: $.Slice<number>): reflect.Type {
 	for (let _i = 0; _i < $.len(index); _i++) {
-		const i = index![_i]
+		let i = index![_i]
 		{
 			if (t!.Kind() == reflect.Ptr) {
 				t = t!.Elem()
@@ -2210,7 +2210,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 
 		// Record new anonymous struct to explore in next round.
 		for (let _i = 0; _i < $.len(current); _i++) {
-			const f = current![_i]
+			let f = current![_i]
 			{
 				if ($.mapGet(visited, f.typ, false)[0]) {
 					continue
@@ -2512,7 +2512,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 
 	// For historical reasons, first folded match takes precedence.
 	for (let i = 0; i < $.len(fields); i++) {
-		const field = fields![i]
+		let field = fields![i]
 		{
 			$.mapSet(exactNameIndex, field.name, fields![i])
 			// For historical reasons, first folded match takes precedence.

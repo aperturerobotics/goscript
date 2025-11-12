@@ -138,7 +138,7 @@ export async function main(): Promise<void> {
 	let arr = $.arrayToSlice<null | any>([nested1, nested2!.value, nested2])
 
 	for (let i = 0; i < $.len(arr); i++) {
-		const item = arr![i]
+		let item = arr![i]
 		{
 			{
 				let { value: val, ok: ok } = $.typeAssert<MyStruct>(item, 'main.MyStruct')
@@ -163,7 +163,7 @@ export async function main(): Promise<void> {
 	let testItems = $.arrayToSlice<null | any>([$.markAsStructValue(new MyStruct({Value: 100})), new MyStruct({Value: 200}), 300, "string"])
 
 	for (let i = 0; i < $.len(testItems); i++) {
-		const item = testItems![i]
+		let item = testItems![i]
 		{
 			$.typeSwitch(item, [{ types: ['main.MyStruct'], body: (v) => {
 				console.log("testItems[", i, "] is MyStruct value:", v.Value)

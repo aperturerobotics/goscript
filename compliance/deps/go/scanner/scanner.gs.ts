@@ -432,7 +432,7 @@ export class Scanner {
 		const s = this
 		let offs = s.offset
 		for (let rdOffset = 0; rdOffset < $.len($.goSlice(s.src, s.rdOffset, undefined)); rdOffset++) {
-			const b = $.goSlice(s.src, s.rdOffset, undefined)![rdOffset]
+			let b = $.goSlice(s.src, s.rdOffset, undefined)![rdOffset]
 			{
 
 				// Avoid assigning a rune for the common case of an ascii character.
@@ -1244,7 +1244,7 @@ export function stripCR(b: $.Bytes, comment: boolean): $.Bytes {
 	// is immediately following the opening /* in which case
 	// it's ok because /*/ is not closed yet (issue #11151).
 	for (let j = 0; j < $.len(b); j++) {
-		const ch = b![j]
+		let ch = b![j]
 		{
 			// In a /*-style comment, don't strip \r from *\r/ (incl.
 			// sequences of \r from *\r\r...\r/) since the resulting

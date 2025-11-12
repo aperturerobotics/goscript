@@ -78,7 +78,7 @@ export async function main(): Promise<void> {
 	let split = filepath.SplitList(pathList)
 	console.log("SplitList length:", $.len(split))
 	for (let i = 0; i < $.len(split); i++) {
-		const p = split![i]
+		let p = split![i]
 		{
 			console.log("SplitList", i, ":", p)
 		}

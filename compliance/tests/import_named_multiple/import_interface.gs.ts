@@ -20,7 +20,7 @@ export async function main(): Promise<void> {
 	console.log("baz.Split length:", $.len(result3))
 	console.log("baz.Count:", baz.Count("a,b,c", ","))
 	for (let i = 0; i < $.len(result3); i++) {
-		const v = result3![i]
+		let v = result3![i]
 		{
 			console.log("baz.Split[", i, "]:", v)
 		}
