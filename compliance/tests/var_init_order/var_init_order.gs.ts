@@ -3,11 +3,11 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-let a: number = 10
+export let a: number = 10
 
-let b: number = a + 5
+export let b: number = a + 5
 
-let c: number = b * 2
+export let c: number = b * 2
 
 export async function main(): Promise<void> {
 	console.log("a:", a)

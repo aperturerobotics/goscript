@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as sync from "@goscript/sync/index.js"
 
-let cache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
+export let cache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 
 // Async function that returns a function
 export async function getCallback(): Promise<((p0: string) => void) | null> {

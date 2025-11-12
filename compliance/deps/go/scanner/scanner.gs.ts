@@ -15,16 +15,16 @@ import * as unicode from "@goscript/unicode/index.js"
 import * as utf8 from "@goscript/unicode/utf8/index.js"
 
 // byte order mark, only permitted as very first character
-let bom: number = 0xFEFF
+export let bom: number = 0xFEFF
 
 // end of file
-let eof: number = -1
+export let eof: number = -1
 
 // return comments as COMMENT tokens
 export let ScanComments: Mode = (1 << 0)
 
 // do not automatically insert semicolons - for testing only
-let dontInsertSemis: Mode = 0
+export let dontInsertSemis: Mode = 0
 
 export type ErrorHandler = ((pos: token.Position, msg: string) => void) | null;
 
@@ -1119,7 +1119,7 @@ export class Scanner {
 	);
 }
 
-let prefix: $.Bytes = $.stringToBytes("line ")
+export let prefix: $.Bytes = $.stringToBytes("line ")
 
 export function trailingDigits(text: $.Bytes): [number, number, boolean] {
 	let i = bytes.LastIndexByte(text, 58) // look from right (Windows filenames may contain ':')

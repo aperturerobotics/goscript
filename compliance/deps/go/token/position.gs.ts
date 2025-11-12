@@ -13,7 +13,7 @@ import * as sync from "@goscript/sync/index.js"
 
 import * as atomic from "@goscript/sync/atomic/index.js"
 
-let debug: boolean = false
+export let debug: boolean = false
 
 export let NoPos: Pos = 0
 
