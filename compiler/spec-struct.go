@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
-	"sort"
+	"slices"
 	"strings"
 )
 
@@ -583,7 +583,7 @@ func (c *GoToTSCompiler) generateFlattenedInitTypeString(structType *types.Named
 	for name := range fieldMap {
 		fieldNames = append(fieldNames, name)
 	}
-	sort.Strings(fieldNames)
+	slices.Sort(fieldNames)
 
 	var fieldDefs []string
 	for _, fieldName := range fieldNames {

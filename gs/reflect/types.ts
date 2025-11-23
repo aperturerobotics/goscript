@@ -92,6 +92,11 @@ export class StructTag {
   }
 }
 
+// Wrapper function for GoScript naming convention
+export function StructTag_Get(tag: StructTag, key: string): string {
+  return tag.Get(key)
+}
+
 // Method representation
 export interface Method {
   Name: string

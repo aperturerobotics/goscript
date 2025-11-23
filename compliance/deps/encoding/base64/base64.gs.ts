@@ -205,7 +205,7 @@ export class Encoding {
 	// source buffer si.
 	// It returns the number of bytes read from src, the number of bytes written
 	// to dst, and an error, if any.
-	public decodeQuantum(dst: $.Bytes, src: $.Bytes, si: number): [number, $.GoError] {
+	public decodeQuantum(dst: $.Bytes, src: $.Bytes, si: number): [number, number, $.GoError] {
 		const enc = this
 		let nsi: number = 0
 		let n: number = 0

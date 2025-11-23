@@ -1,5 +1,45 @@
 // TypeScript implementation of Go's slices package
 import * as $ from '@goscript/builtin/index.js'
+import * as cmp from '../cmp/index.js'
+
+/**
+ * Compare compares the elements of s1 and s2 using cmp.Compare.
+ * The elements are compared sequentially, starting at index 0,
+ * until one element is not equal to the other.
+ * The result of comparing the first non-matching elements is returned.
+ * If both slices are equal until one of them ends, the shorter slice is
+ * considered less than the longer one.
+ * The result is 0 if s1 == s2, -1 if s1 < s2, and +1 if s1 > s2.
+ * @param s1 First slice
+ * @param s2 Second slice
+ * @returns -1, 0, or 1
+ */
+export function Compare<T extends string | number>(
+  s1: $.Slice<T>,
+  s2: $.Slice<T>,
+): number {
+  const len1 = $.len(s1)
+  const len2 = $.len(s2)
+  const minLen = len1 < len2 ? len1 : len2
+
+  for (let i = 0; i < minLen; i++) {
+    const v1 = (s1 as any)[i] as T
+    const v2 = (s2 as any)[i] as T
+    const result = cmp.Compare(v1, v2)
+    if (result !== 0) {
+      return result
+    }
+  }
+
+  // All elements are equal up to minLen, compare lengths
+  if (len1 < len2) {
+    return -1
+  }
+  if (len1 > len2) {
+    return 1
+  }
+  return 0
+}
 
 /**
  * All returns an iterator over index-value pairs in the slice.
@@ -106,10 +146,7 @@ export function Grow<T>(s: $.Slice<T>, n: number): $.Slice<T> {
  * @param s The slice to sort in place
  * @param cmp Comparison function
  */
-export function SortFunc<T>(
-  s: $.Slice<T>,
-  cmp: (a: T, b: T) => number,
-): void {
+export function SortFunc<T>(s: $.Slice<T>, cmp: (a: T, b: T) => number): void {
   if (s === null || s === undefined) {
     return
   }
