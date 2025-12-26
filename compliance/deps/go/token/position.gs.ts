@@ -800,7 +800,7 @@ export class File {
 	// unpack returns the filename and line and column number for a file offset.
 	// If adjusted is set, unpack will return the filename and line information
 	// possibly adjusted by //line comments; otherwise those comments are ignored.
-	public async unpack(offset: number, adjusted: boolean): Promise<[string, number]> {
+	public async unpack(offset: number, adjusted: boolean): Promise<[string, number, number]> {
 		const f = this
 		let filename: string = ""
 		let line: number = 0
