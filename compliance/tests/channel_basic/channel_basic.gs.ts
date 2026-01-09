@@ -11,6 +11,6 @@ export async function main(): Promise<void> {
 	})
 
 	let msg = await $.chanRecv(messages)
-	console.log(msg)
+	$.println(msg)
 }
 

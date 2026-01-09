@@ -2,7 +2,7 @@ import * as $ from "@goscript/builtin/index.js"
 import { indirect } from "./decode.gs.js";
 import { foldName } from "./fold.gs.js";
 import { appendCompact, appendHTMLEscape, appendIndent } from "./indent.gs.js";
-import { parseTag } from "./tags.gs.js";
+import { parseTag, tagOptions_Contains } from "./tags.gs.js";
 import { numberType } from "./decode.gs.js";
 import { indentGrowthFactor } from "./indent.gs.js";
 import { htmlSafeSet, safeSet } from "./tables.gs.js";
@@ -2080,7 +2080,7 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 		// For now, cast only a small portion of byte slices to a string
 		// so that it can be stack allocated. This slows down []byte slightly
 		// due to the extra copy, but keeps string performance roughly the same.
-		let n = min($.len(src) - i, utf8.UTFMax)
+		let n = Math.min($.len(src) - i, utf8.UTFMax)
 		let [c, size] = utf8.DecodeRuneInString($.genericBytesOrStringToString($.sliceStringOrBytes(src, i, i + n)))
 		if (c == utf8.RuneError && size == 1) {
 			dst = $.append(dst, $.sliceStringOrBytes(src, start, i))

@@ -11,8 +11,8 @@ export async function main(): Promise<void> {
 	// Test creating a PathError using composite literal syntax
 	let err = new os.PathError({Err: fmt.Errorf("not a symlink"), Op: "readlink", Path: "/some/path"})
 
-	console.log(err!.Op)
-	console.log(err!.Path)
-	console.log(err!.Err!.Error())
+	$.println(err!.Op)
+	$.println(err!.Path)
+	$.println(err!.Err!.Error())
 }
 

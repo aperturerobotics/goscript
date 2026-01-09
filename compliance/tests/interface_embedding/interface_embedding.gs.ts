@@ -300,26 +300,26 @@ export async function main(): Promise<void> {
 	let f = new file({name: "custom_name.txt", File: mockFile})
 
 	// Test accessing the custom Name() method
-	console.log("Custom name:", f!.Name())
+	$.println("Custom name:", f!.Name())
 
 	// Test accessing embedded interface methods - these should have null assertions
-	console.log("File name:", f!.File!.Name())
+	$.println("File name:", f!.File!.Name())
 
 	// Test other embedded methods
 	let err = f!.Lock()
 	if (err != null) {
-		console.log("Lock error:", err!.Error())
+		$.println("Lock error:", err!.Error())
 	}
 	 else {
-		console.log("Lock successful")
+		$.println("Lock successful")
 	}
 
 	err = f!.Unlock()
 	if (err != null) {
-		console.log("Unlock error:", err!.Error())
+		$.println("Unlock error:", err!.Error())
 	}
 	 else {
-		console.log("Unlock successful")
+		$.println("Unlock successful")
 	}
 
 	// Test Write
@@ -327,82 +327,82 @@ export async function main(): Promise<void> {
 	let n: number
 	[n, err] = f!.Write(data)
 	if (err != null) {
-		console.log("Write error:", err!.Error())
+		$.println("Write error:", err!.Error())
 	}
 	 else {
-		console.log("Wrote bytes:", n)
+		$.println("Wrote bytes:", n)
 	}
 
 	// Test Read
 	let buf = new Uint8Array(5)
 	;[n, err] = f!.Read(buf)
 	if (err != null) {
-		console.log("Read error:", err!.Error())
+		$.println("Read error:", err!.Error())
 	}
 	 else {
-		console.log("Read bytes:", n)
+		$.println("Read bytes:", n)
 	}
 
 	// Test ReadAt
 	let buf2 = new Uint8Array(5)
 	;[n, err] = f!.ReadAt(buf2, 0)
 	if (err != null) {
-		console.log("ReadAt error:", err!.Error())
+		$.println("ReadAt error:", err!.Error())
 	}
 	 else {
-		console.log("ReadAt bytes:", n)
+		$.println("ReadAt bytes:", n)
 	}
 
 	// Test Seek
 	let pos: number
 	[pos, err] = f!.Seek(0, 0)
 	if (err != null) {
-		console.log("Seek error:", err!.Error())
+		$.println("Seek error:", err!.Error())
 	}
 	 else {
-		console.log("Seek position:", pos)
+		$.println("Seek position:", pos)
 	}
 
 	// Test Truncate
 	err = f!.Truncate(5)
 	if (err != null) {
-		console.log("Truncate error:", err!.Error())
+		$.println("Truncate error:", err!.Error())
 	}
 	 else {
-		console.log("Truncate successful")
+		$.println("Truncate successful")
 	}
 
 	// Test Close
 	err = f!.Close()
 	if (err != null) {
-		console.log("Close error:", err!.Error())
+		$.println("Close error:", err!.Error())
 	}
 	 else {
-		console.log("Close successful")
+		$.println("Close successful")
 	}
 
 	// Test the qualified interface embedding
 	let qualifiedMock = subpkg.NewMockFile("qualified.txt")
 	let qf = new qualifiedFile({metadata: "test metadata", File: qualifiedMock})
 
-	console.log("Qualified file name:", qf!.Name())
+	$.println("Qualified file name:", qf!.Name())
 
 	err = qf!.Close()
 	if (err != null) {
-		console.log("Qualified close error:", err!.Error())
+		$.println("Qualified close error:", err!.Error())
 	}
 	 else {
-		console.log("Qualified close successful")
+		$.println("Qualified close successful")
 	}
 
 	// Test qualified write
 	let qn: number
 	[qn, err] = qf!.Write($.stringToBytes("qualified data"))
 	if (err != null) {
-		console.log("Qualified write error:", err!.Error())
+		$.println("Qualified write error:", err!.Error())
 	}
 	 else {
-		console.log("Qualified wrote bytes:", qn)
+		$.println("Qualified wrote bytes:", qn)
 	}
 }
 

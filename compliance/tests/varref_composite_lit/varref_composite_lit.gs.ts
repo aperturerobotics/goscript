@@ -51,7 +51,7 @@ export async function main(): Promise<void> {
 	let childInode: MockInode | null = new MockInode({Value: 42})
 
 	// Use the pointer
-	console.log("childInode.Value:", childInode!.Value)
-	console.log("childInode.getValue():", childInode!.getValue())
+	$.println("childInode.Value:", childInode!.Value)
+	$.println("childInode.getValue():", childInode!.getValue())
 }
 

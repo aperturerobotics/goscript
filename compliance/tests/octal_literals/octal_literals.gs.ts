@@ -10,11 +10,11 @@ export async function main(): Promise<void> {
 	let perm3 = 0o644
 	let perm4 = 0o755
 
-	console.log("perm1:", perm1)
-	console.log("perm2:", perm2)
-	console.log("perm3:", perm3)
-	console.log("perm4:", perm4)
+	$.println("perm1:", perm1)
+	$.println("perm2:", perm2)
+	$.println("perm3:", perm3)
+	$.println("perm4:", perm4)
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

@@ -49,7 +49,7 @@ export async function main(): Promise<void> {
 	let ptr = reflect.PointerTo(t)
 	let iface = reflect.TypeOf($.typedNil("*main.Stringer"))!.Elem()
 
-	console.log("MyType implements Stringer:", t!.Implements(iface))
-	console.log("*MyType implements Stringer:", ptr!.Implements(iface))
+	$.println("MyType implements Stringer:", t!.Implements(iface))
+	$.println("*MyType implements Stringer:", ptr!.Implements(iface))
 }
 

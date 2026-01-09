@@ -21,12 +21,12 @@ export async function main(): Promise<void> {
 
 	// Get the type
 	let t = reflect.TypeOf(nilPtr)
-	console.log("Type:", t!.String())
-	console.log("Kind:", t!.Kind())
+	$.println("Type:", t!.String())
+	$.println("Kind:", t!.Kind())
 
 	// Get the element type (the interface type itself)
 	let elem = t!.Elem()
-	console.log("Elem Type:", elem!.String())
-	console.log("Elem Kind:", elem!.Kind())
+	$.println("Elem Type:", elem!.String())
+	$.println("Elem Kind:", elem!.Kind())
 }
 

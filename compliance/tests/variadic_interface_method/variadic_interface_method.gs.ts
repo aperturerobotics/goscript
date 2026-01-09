@@ -57,19 +57,19 @@ export async function main(): Promise<void> {
 
 	// Test with multiple arguments
 	let result1 = b!.Join("path", "to", "file")
-	console.log("Result1:", result1)
+	$.println("Result1:", result1)
 
 	// Test with single argument
 	let result2 = b!.Join("single")
-	console.log("Result2:", result2)
+	$.println("Result2:", result2)
 
 	// Test with no arguments
 	let result3 = b!.Join()
-	console.log("Result3:", result3)
+	$.println("Result3:", result3)
 
 	// Test with slice expansion
 	let parts = $.arrayToSlice<string>(["another", "path", "here"])
 	let result4 = b!.Join(...(parts ?? []))
-	console.log("Result4:", result4)
+	$.println("Result4:", result4)
 }
 

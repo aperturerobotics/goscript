@@ -37,7 +37,7 @@ export class AsyncResource {
 			await $.chanSend(ch, true)
 		})
 		await $.chanRecv(ch)
-		console.log("Released", r.name)
+		$.println("Released", r.name)
 	}
 
 	// Register this type with the runtime type system
@@ -56,6 +56,6 @@ export async function main(): Promise<void> {
 	__defer.defer(async () => {
 		await res!.Release()
 	});
-	console.log("main function")
+	$.println("main function")
 }
 

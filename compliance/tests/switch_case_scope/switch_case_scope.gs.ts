@@ -9,16 +9,16 @@ export async function main(): Promise<void> {
 	switch (x) {
 		case 1: {
 			let [y, z] = [10, 20]
-			console.log(y + z)
+			$.println(y + z)
 			break
 		}
 		case 2: {
 			let [y, z] = [30, 40]
-			console.log(y + z)
+			$.println(y + z)
 			break
 		}
 	}
 
-	console.log("done")
+	$.println("done")
 }
 

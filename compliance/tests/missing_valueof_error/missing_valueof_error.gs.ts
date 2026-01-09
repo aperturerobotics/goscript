@@ -100,20 +100,20 @@ export async function main(): Promise<void> {
 	let buf = new buffer({data: $.makeSlice<number>(0, 100000, 'byte')})
 	let p = new printer({buf: buf})
 
-	console.log("Initial capacity:", p!.checkCapacity())
-	console.log("Initial length:", p!.getLength())
+	$.println("Initial capacity:", p!.checkCapacity())
+	$.println("Initial length:", p!.getLength())
 
 	// Add some data
 	p!.buf!.data = $.append(p!.buf!.data, ...$.stringToBytes("hello world"))
-	console.log("After append length:", p!.getLength())
+	$.println("After append length:", p!.getLength())
 
 	// Test free
 	p!.free()
 	if (p!.buf != null) {
-		console.log("Buffer not freed, capacity:", p!.checkCapacity())
+		$.println("Buffer not freed, capacity:", p!.checkCapacity())
 	}
 	 else {
-		console.log("Buffer was freed")
+		$.println("Buffer was freed")
 	}
 }
 

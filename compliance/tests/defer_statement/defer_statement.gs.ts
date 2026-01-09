@@ -6,8 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 export async function main(): Promise<void> {
 	using __defer = new $.DisposableStack();
 	__defer.defer(() => {
-		console.log("deferred")
+		$.println("deferred")
 	});
-	console.log("main")
+	$.println("main")
 }
 

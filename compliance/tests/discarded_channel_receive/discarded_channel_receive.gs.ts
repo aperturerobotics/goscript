@@ -12,6 +12,6 @@ export async function main(): Promise<void> {
 		ch.close() // Close the channel to allow the main goroutine to exit
 	})
 	await $.chanRecv(ch)
-	console.log("done") // Add a print statement to verify execution
+	$.println("done") // Add a print statement to verify execution
 }
 

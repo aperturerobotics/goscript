@@ -13,7 +13,7 @@ export async function main(): Promise<void> {
 				if (c >= 97) {
 					c = c - 97 + 10
 				}
-				console.log($.int(c))
+				$.println($.int(c))
 			}
 		}
 	}

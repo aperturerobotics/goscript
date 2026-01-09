@@ -27,17 +27,17 @@ export async function main(): Promise<void> {
 		case stdZeroMonth: {
 			;[month, value, err] = getnum!(value, std == stdZeroMonth)
 			if (err != null) {
-				console.log("Error:", err!.Error())
+				$.println("Error:", err!.Error())
 			}
-			console.log("Month:", month, "Value:", value)
+			$.println("Month:", month, "Value:", value)
 			break
 		}
 		case 3: {
-			console.log("Std is 3")
+			$.println("Std is 3")
 			break
 		}
 		default: {
-			console.log("Default case")
+			$.println("Default case")
 			break
 		}
 	}
@@ -48,17 +48,17 @@ export async function main(): Promise<void> {
 		case stdZeroMonth: {
 			;[month, value, err] = getnum!(value, std == stdZeroMonth)
 			if (err != null) {
-				console.log("Error:", err!.Error())
+				$.println("Error:", err!.Error())
 			}
-			console.log("Month:", month, "Value:", value)
+			$.println("Month:", month, "Value:", value)
 			break
 		}
 		case 3: {
-			console.log("Std is 3")
+			$.println("Std is 3")
 			break
 		}
 		default: {
-			console.log("Default case")
+			$.println("Default case")
 			break
 		}
 	}

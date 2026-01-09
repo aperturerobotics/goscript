@@ -62,6 +62,6 @@ export async function main(): Promise<void> {
 	  p.X = _tmp[0]
 	  p.Y = _tmp[1]
 	}
-	console.log(p.X, p.Y)
+	$.println(p.X, p.Y)
 }
 

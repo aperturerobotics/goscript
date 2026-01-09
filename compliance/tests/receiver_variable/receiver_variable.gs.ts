@@ -201,11 +201,11 @@ export async function main(): Promise<void> {
 	{
 		let err = await c!.ComplexMethod()
 		if (err != null) {
-			console.log("Error:", err!.Error())
+			$.println("Error:", err!.Error())
 			return 
 		}
 	}
 
-	console.log("Complex method completed, size:", await c!.Size())
+	$.println("Complex method completed, size:", await c!.Size())
 }
 

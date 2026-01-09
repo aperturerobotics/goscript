@@ -132,7 +132,7 @@ export async function main(): Promise<void> {
 	({ value: _gs_ta_val_d761, ok: _gs_ta_ok_d761 } = $.typeAssert<ConcreteB>(iface, 'main.ConcreteB'))
 	c!.hasB = _gs_ta_ok_d761
 
-	console.log("hasA:", c!.hasA)
-	console.log("hasB:", c!.hasB)
+	$.println("hasA:", c!.hasA)
+	$.println("hasB:", c!.hasB)
 }
 

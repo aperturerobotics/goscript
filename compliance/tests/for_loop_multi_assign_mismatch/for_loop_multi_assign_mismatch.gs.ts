@@ -12,10 +12,10 @@ export async function main(): Promise<void> {
 	// where lhs has 2 variables but rhs has 1 expression that returns 2 values
 	// but is not a map access
 	for (let [value, ok] = getValues(); ok; ) {
-		console.log("value:", value)
+		$.println("value:", value)
 		break
 	}
 
-	console.log("done")
+	$.println("done")
 }
 

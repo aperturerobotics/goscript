@@ -15,9 +15,9 @@ export async function main(): Promise<void> {
 	let slice = $.arrayToSlice<number>([1, 2, 3])
 	modifyGenericSlice(slice, 1, 42)
 
-	console.log("slice[0]:", slice![0])
-	console.log("slice[1]:", slice![1])
-	console.log("slice[2]:", slice![2])
-	console.log("test finished")
+	$.println("slice[0]:", slice![0])
+	$.println("slice[1]:", slice![1])
+	$.println("slice[2]:", slice![2])
+	$.println("test finished")
 }
 

@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export function printVal<T extends any>(val: T): void {
-	console.log(val)
+	$.println(val)
 }
 
 export async function main(): Promise<void> {

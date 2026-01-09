@@ -93,7 +93,10 @@ export class StructTag {
 }
 
 // Wrapper function for GoScript naming convention
-export function StructTag_Get(tag: StructTag, key: string): string {
+export function StructTag_Get(tag: StructTag | undefined, key: string): string {
+  if (!tag) {
+    return ''
+  }
   return tag.Get(key)
 }
 

@@ -168,16 +168,16 @@ export async function main(): Promise<void> {
 
 	// Test the walk function with a callback
 	let walkFunc = (path: string, info: FileInfo, err: $.GoError): $.GoError => {
-		console.log("Walking:", path, "size:", info!.Size())
+		$.println("Walking:", path, "size:", info!.Size())
 		if (err != null) {
-			console.log("Error:", err!.Error())
+			$.println("Error:", err!.Error())
 		}
 		return null
 	}
 
 	let err = walk(fs, "/test", fileInfo, walkFunc)
 	if (err != null) {
-		console.log("Walk error:", err!.Error())
+		$.println("Walk error:", err!.Error())
 	}
 
 	// Test the process function with a callback
@@ -187,10 +187,10 @@ export async function main(): Promise<void> {
 
 	let [result, err2] = processWithCallback("hello", processFunc)
 	if (err2 != null) {
-		console.log("Process error:", err2!.Error())
+		$.println("Process error:", err2!.Error())
 	}
 	 else {
-		console.log("Process result:", result)
+		$.println("Process result:", result)
 	}
 }
 

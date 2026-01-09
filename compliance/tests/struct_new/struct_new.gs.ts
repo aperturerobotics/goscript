@@ -62,30 +62,30 @@ export class MyStruct {
 export async function main(): Promise<void> {
 	// Test new(MyStruct)
 	let ptr = new MyStruct()
-	console.log("ptr.MyInt (default):", ptr!.MyInt) // Expected: 0
-	console.log("ptr.MyString (default):", ptr!.MyString) // Expected: ""
-	console.log("ptr.myBool (default):", ptr!.myBool) // Expected: false
+	$.println("ptr.MyInt (default):", ptr!.MyInt) // Expected: 0
+	$.println("ptr.MyString (default):", ptr!.MyString) // Expected: ""
+	$.println("ptr.myBool (default):", ptr!.myBool) // Expected: false
 
 	ptr!.MyInt = 42
 	ptr!.MyString = "hello"
 	ptr!.myBool = true
 
-	console.log("ptr.MyInt (assigned):", ptr!.MyInt) // Expected: 42
-	console.log("ptr.MyString (assigned):", ptr!.MyString) // Expected: "hello"
-	console.log("ptr.myBool (assigned):", ptr!.myBool) // Expected: true
+	$.println("ptr.MyInt (assigned):", ptr!.MyInt) // Expected: 42
+	$.println("ptr.MyString (assigned):", ptr!.MyString) // Expected: "hello"
+	$.println("ptr.myBool (assigned):", ptr!.myBool) // Expected: true
 
 	// Test assignment to a dereferenced new struct
 	let s: MyStruct = $.markAsStructValue(new MyStruct()!.clone())
-	console.log("s.MyInt (default):", s.MyInt) // Expected: 0
-	console.log("s.MyString (default):", s.MyString) // Expected: ""
-	console.log("s.myBool (default):", s.myBool) // Expected: false
+	$.println("s.MyInt (default):", s.MyInt) // Expected: 0
+	$.println("s.MyString (default):", s.MyString) // Expected: ""
+	$.println("s.myBool (default):", s.myBool) // Expected: false
 
 	s.MyInt = 100
 	s.MyString = "world"
 	s.myBool = false // though private, it's in the same package
 
-	console.log("s.MyInt (assigned):", s.MyInt) // Expected: 100
-	console.log("s.MyString (assigned):", s.MyString) // Expected: "world"
-	console.log("s.myBool (assigned):", s.myBool) // Expected: false
+	$.println("s.MyInt (assigned):", s.MyInt) // Expected: 100
+	$.println("s.MyString (assigned):", s.MyString) // Expected: "world"
+	$.println("s.myBool (assigned):", s.myBool) // Expected: false
 }
 

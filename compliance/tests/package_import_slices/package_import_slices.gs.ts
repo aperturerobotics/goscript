@@ -14,12 +14,12 @@ export async function main(): Promise<void> {
 		let shouldContinue = true
 		slices.All(s)!((i, v) => {
 			{
-				console.log("index:", i, "value:", v)
+				$.println("index:", i, "value:", v)
 			}
 			return shouldContinue
 		})
 	})()
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

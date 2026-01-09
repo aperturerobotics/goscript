@@ -16,7 +16,7 @@ export async function main(): Promise<void> {
 			channel: ch1,
 			onSelected: async (result) => {
 				const msg = result.value
-				console.log("TEST1: Received unexpected value:", msg)
+				$.println("TEST1: Received unexpected value:", msg)
 			}
 		},
 		{
@@ -24,7 +24,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("TEST1: Default case hit correctly")
+				$.println("TEST1: Default case hit correctly")
 			}
 		},
 	], true)
@@ -44,7 +44,7 @@ export async function main(): Promise<void> {
 			channel: ch1,
 			onSelected: async (result) => {
 				const msg = result.value
-				console.log("TEST2: Received expected value:", msg)
+				$.println("TEST2: Received expected value:", msg)
 			}
 		},
 		{
@@ -52,7 +52,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("TEST2: Default case hit unexpectedly")
+				$.println("TEST2: Default case hit unexpectedly")
 			}
 		},
 	], true)
@@ -76,10 +76,10 @@ export async function main(): Promise<void> {
 				const val = result.value
 				const ok = result.ok
 				if (ok) {
-					console.log("TEST3: Received buffered value with ok==true:", val)
+					$.println("TEST3: Received buffered value with ok==true:", val)
 				}
 				 else {
-					console.log("TEST3: Unexpected ok==false")
+					$.println("TEST3: Unexpected ok==false")
 				}
 			}
 		},
@@ -88,7 +88,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("TEST3: Default hit unexpectedly")
+				$.println("TEST3: Default hit unexpectedly")
 			}
 		},
 	], true)
@@ -107,10 +107,10 @@ export async function main(): Promise<void> {
 				const val = result.value
 				const ok = result.ok
 				if (ok) {
-					console.log("TEST4: Unexpected ok==true:", val)
+					$.println("TEST4: Unexpected ok==true:", val)
 				}
 				 else {
-					console.log("TEST4: Received zero value with ok==false:", val)
+					$.println("TEST4: Received zero value with ok==false:", val)
 				}
 			}
 		},
@@ -119,7 +119,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("TEST4: Default hit unexpectedly")
+				$.println("TEST4: Default hit unexpectedly")
 			}
 		},
 	], true)
@@ -139,7 +139,7 @@ export async function main(): Promise<void> {
 			channel: ch3,
 			value: 5,
 			onSelected: async (result) => {
-				console.log("TEST5: Sent value successfully")
+				$.println("TEST5: Sent value successfully")
 			}
 		},
 		{
@@ -147,7 +147,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("TEST5: Default hit unexpectedly")
+				$.println("TEST5: Default hit unexpectedly")
 			}
 		},
 	], true)
@@ -164,7 +164,7 @@ export async function main(): Promise<void> {
 			channel: ch3,
 			value: 10,
 			onSelected: async (result) => {
-				console.log("TEST6: Sent unexpectedly")
+				$.println("TEST6: Sent unexpectedly")
 			}
 		},
 		{
@@ -172,7 +172,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("TEST6: Default hit correctly (channel full)")
+				$.println("TEST6: Default hit correctly (channel full)")
 			}
 		},
 	], true)
@@ -195,7 +195,7 @@ export async function main(): Promise<void> {
 			channel: ch4,
 			onSelected: async (result) => {
 				const msg = result.value
-				console.log("TEST7: Selected ch4 correctly:", msg)
+				$.println("TEST7: Selected ch4 correctly:", msg)
 			}
 		},
 		{
@@ -204,7 +204,7 @@ export async function main(): Promise<void> {
 			channel: ch5,
 			onSelected: async (result) => {
 				const msg = result.value
-				console.log("TEST7: Selected ch5 unexpectedly:", msg)
+				$.println("TEST7: Selected ch5 unexpectedly:", msg)
 			}
 		},
 	], false)
@@ -224,7 +224,7 @@ export async function main(): Promise<void> {
 			channel: ch4,
 			onSelected: async (result) => {
 				const msg = result.value
-				console.log("TEST8: Selected ch4 unexpectedly:", msg)
+				$.println("TEST8: Selected ch4 unexpectedly:", msg)
 			}
 		},
 		{
@@ -233,7 +233,7 @@ export async function main(): Promise<void> {
 			channel: ch5,
 			onSelected: async (result) => {
 				const msg = result.value
-				console.log("TEST8: Selected ch5 correctly:", msg)
+				$.println("TEST8: Selected ch5 correctly:", msg)
 			}
 		},
 	], false)
@@ -247,10 +247,10 @@ export async function main(): Promise<void> {
 	chClose.close()
 	const { value: val, ok: ok } = await $.chanRecvWithOk(chClose)
 	if (!ok) {
-		console.log("TEST9: Channel is closed, ok is false, val:", val)
+		$.println("TEST9: Channel is closed, ok is false, val:", val)
 	}
 	 else {
-		console.log("TEST9: Channel reports as not closed")
+		$.println("TEST9: Channel reports as not closed")
 	}
 }
 

@@ -59,14 +59,14 @@ export async function main(): Promise<void> {
 
 	// Test write
 	buf!.write($.stringToBytes("hello"))
-	console.log("After write:", $.bytesToString(buf!.data))
+	$.println("After write:", $.bytesToString(buf!.data))
 
 	// Test writeString
 	buf!.writeString(" world")
-	console.log("After writeString:", $.bytesToString(buf!.data))
+	$.println("After writeString:", $.bytesToString(buf!.data))
 
 	// Test writeByte
 	buf!.writeByte(33)
-	console.log("After writeByte:", $.bytesToString(buf!.data))
+	$.println("After writeByte:", $.bytesToString(buf!.data))
 }
 

@@ -4,6 +4,6 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export function testGeneric(): void {
-	console.log("Generic code compiled - CORRECT")
+	$.println("Generic code compiled - CORRECT")
 }
 

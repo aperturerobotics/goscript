@@ -10,10 +10,10 @@ export async function main(): Promise<void> {
 		let v = s![_i]
 		{
 			sum += v
-			console.log(v)
+			$.println(v)
 		}
 	}
-	console.log(sum)
+	$.println(sum)
 
 	let arr = $.arrayToSlice<string>(["a", "b", "c"])
 	let concat = ""
@@ -21,13 +21,13 @@ export async function main(): Promise<void> {
 		let val = arr![_i]
 		{
 			concat += val
-			console.log(val)
+			$.println(val)
 		}
 	}
-	console.log(concat)
+	$.println(concat)
 
 	// Test with blank identifier for value (should still iterate)
-	console.log("Ranging with blank identifier for value:")
+	$.println("Ranging with blank identifier for value:")
 	let count = 0
 	// Both key and value are blank identifiers
 	for (let _i = 0; _i < $.len(s); _i++) {
@@ -36,6 +36,6 @@ export async function main(): Promise<void> {
 			count++
 		}
 	}
-	console.log(count) // Should be 3
+	$.println(count) // Should be 3
 }
 

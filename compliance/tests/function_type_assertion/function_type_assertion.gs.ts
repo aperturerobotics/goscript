@@ -64,20 +64,20 @@ export async function main(): Promise<void> {
 	let i: null | any = Object.assign(greet, { __goTypeName: 'Greeter' })
 	let { value: fn, ok: ok } = $.typeAssert<Greeter | null>(i, {kind: $.TypeKind.Function, name: 'Greeter', params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }]})
 	if (ok) {
-		console.log(fn!("World"))
+		$.println(fn!("World"))
 	}
 	 else {
-		console.log("Simple assertion failed")
+		$.println("Simple assertion failed")
 	}
 
 	let j: null | any = Object.assign(add, { __goTypeName: 'Adder' })
 	let addFn: Adder | null
 	({ value: addFn, ok: ok } = $.typeAssert<Adder | null>(j, {kind: $.TypeKind.Function, name: 'Adder', params: [{ kind: $.TypeKind.Basic, name: "number" }, { kind: $.TypeKind.Basic, name: "number" }], results: [{ kind: $.TypeKind.Basic, name: "number" }]}))
 	if (ok) {
-		console.log(addFn!(5, 3))
+		$.println(addFn!(5, 3))
 	}
 	 else {
-		console.log("Simple adder assertion failed")
+		$.println("Simple adder assertion failed")
 	}
 
 	// 2. Type assertion of a function returned from another function
@@ -85,20 +85,20 @@ export async function main(): Promise<void> {
 	let greetFn: Greeter | null
 	({ value: greetFn, ok: ok } = $.typeAssert<Greeter | null>(returnedFn, {kind: $.TypeKind.Function, name: 'Greeter', params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }]}))
 	if (ok) {
-		console.log(greetFn!("Gopher"))
+		$.println(greetFn!("Gopher"))
 	}
 	 else {
-		console.log("Returned function assertion failed")
+		$.println("Returned function assertion failed")
 	}
 
 	let returnedAdder = getAdder()
 	let addFnFromFunc: Adder | null
 	({ value: addFnFromFunc, ok: ok } = $.typeAssert<Adder | null>(returnedAdder, {kind: $.TypeKind.Function, name: 'Adder', params: [{ kind: $.TypeKind.Basic, name: "number" }, { kind: $.TypeKind.Basic, name: "number" }], results: [{ kind: $.TypeKind.Basic, name: "number" }]}))
 	if (ok) {
-		console.log(addFnFromFunc!(10, 20))
+		$.println(addFnFromFunc!(10, 20))
 	}
 	 else {
-		console.log("Returned adder assertion failed")
+		$.println("Returned adder assertion failed")
 	}
 
 	// 3. Type assertion of a function in a struct field
@@ -106,20 +106,20 @@ export async function main(): Promise<void> {
 	let structFn: Greeter | null
 	({ value: structFn, ok: ok } = $.typeAssert<Greeter | null>(container.myFunc, {kind: $.TypeKind.Function, name: 'Greeter', params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }]}))
 	if (ok) {
-		console.log(structFn!("Struct"))
+		$.println(structFn!("Struct"))
 	}
 	 else {
-		console.log("Struct function assertion failed")
+		$.println("Struct function assertion failed")
 	}
 
 	let adderContainer = $.markAsStructValue(new FuncContainer({myFunc: Object.assign(add, { __goTypeName: 'Adder' })}))
 	let structAdderFn: Adder | null
 	({ value: structAdderFn, ok: ok } = $.typeAssert<Adder | null>(adderContainer.myFunc, {kind: $.TypeKind.Function, name: 'Adder', params: [{ kind: $.TypeKind.Basic, name: "number" }, { kind: $.TypeKind.Basic, name: "number" }], results: [{ kind: $.TypeKind.Basic, name: "number" }]}))
 	if (ok) {
-		console.log(structAdderFn!(7, 8))
+		$.println(structAdderFn!(7, 8))
 	}
 	 else {
-		console.log("Struct adder assertion failed")
+		$.println("Struct adder assertion failed")
 	}
 
 	// 4. Type assertion of a function in a map
@@ -130,19 +130,19 @@ export async function main(): Promise<void> {
 	let mapFn: Greeter | null
 	({ value: mapFn, ok: ok } = $.typeAssert<Greeter | null>($.mapGet(funcMap, "greeter", null)[0], {kind: $.TypeKind.Function, name: 'Greeter', params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }]}))
 	if (ok) {
-		console.log(mapFn!("Map"))
+		$.println(mapFn!("Map"))
 	}
 	 else {
-		console.log("Map function assertion failed")
+		$.println("Map function assertion failed")
 	}
 
 	let mapAdderFn: Adder | null
 	({ value: mapAdderFn, ok: ok } = $.typeAssert<Adder | null>($.mapGet(funcMap, "adder", null)[0], {kind: $.TypeKind.Function, name: 'Adder', params: [{ kind: $.TypeKind.Basic, name: "number" }, { kind: $.TypeKind.Basic, name: "number" }], results: [{ kind: $.TypeKind.Basic, name: "number" }]}))
 	if (ok) {
-		console.log(mapAdderFn!(1, 2))
+		$.println(mapAdderFn!(1, 2))
 	}
 	 else {
-		console.log("Map adder assertion failed")
+		$.println("Map adder assertion failed")
 	}
 
 	// 5. Type assertion of a function in a slice
@@ -153,31 +153,31 @@ export async function main(): Promise<void> {
 	let sliceFn: Greeter | null
 	({ value: sliceFn, ok: ok } = $.typeAssert<Greeter | null>(funcSlice![0], {kind: $.TypeKind.Function, name: 'Greeter', params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }]}))
 	if (ok) {
-		console.log(sliceFn!("Slice"))
+		$.println(sliceFn!("Slice"))
 	}
 	 else {
-		console.log("Slice function assertion failed")
+		$.println("Slice function assertion failed")
 	}
 	let sliceAdderFn: Adder | null
 	({ value: sliceAdderFn, ok: ok } = $.typeAssert<Adder | null>(funcSlice![1], {kind: $.TypeKind.Function, name: 'Adder', params: [{ kind: $.TypeKind.Basic, name: "number" }, { kind: $.TypeKind.Basic, name: "number" }], results: [{ kind: $.TypeKind.Basic, name: "number" }]}))
 	if (ok) {
-		console.log(sliceAdderFn!(9, 9))
+		$.println(sliceAdderFn!(9, 9))
 	}
 	 else {
-		console.log("Slice adder assertion failed")
+		$.println("Slice adder assertion failed")
 	}
 
 	// 6. Type assertion with ok variable (successful and failing)
 	let k: null | any = Object.assign(greet, { __goTypeName: 'Greeter' })
 	let { ok: ok1 } = $.typeAssert<Greeter | null>(k, {kind: $.TypeKind.Function, name: 'Greeter', params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }]})
-	console.log(ok1) // true
+	$.println(ok1) // true
 
 	let { ok: ok2 } = $.typeAssert<Adder | null>(k, {kind: $.TypeKind.Function, name: 'Adder', params: [{ kind: $.TypeKind.Basic, name: "number" }, { kind: $.TypeKind.Basic, name: "number" }], results: [{ kind: $.TypeKind.Basic, name: "number" }]})
-	console.log(ok2) // false
+	$.println(ok2) // false
 
 	let l: null | any = "not a function"
 	let { ok: ok3 } = $.typeAssert<Greeter | null>(l, {kind: $.TypeKind.Function, name: 'Greeter', params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }]})
-	console.log(ok3) // false
+	$.println(ok3) // false
 
 	// 7. Type assertion that should panic (commented out for now to allow test to run)
 	// defer func() {
@@ -193,20 +193,20 @@ export async function main(): Promise<void> {
 	let nilInterface: null | any = null
 	let { value: nilFn, ok: okNil } = $.typeAssert<Greeter | null>(nilInterface, {kind: $.TypeKind.Function, name: 'Greeter', params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }]})
 	if (!okNil && nilFn == null) {
-		console.log("Nil interface assertion correct")
+		$.println("Nil interface assertion correct")
 	}
 	 else {
-		console.log("Nil interface assertion failed")
+		$.println("Nil interface assertion failed")
 	}
 
 	// Test assertion to wrong function type
 	let wrongFnInterface: null | any = Object.assign(greet, { __goTypeName: 'Greeter' })
 	let { value: wrongFn, ok: okWrong } = $.typeAssert<Adder | null>(wrongFnInterface, {kind: $.TypeKind.Function, name: 'Adder', params: [{ kind: $.TypeKind.Basic, name: "number" }, { kind: $.TypeKind.Basic, name: "number" }], results: [{ kind: $.TypeKind.Basic, name: "number" }]})
 	if (!okWrong && wrongFn == null) {
-		console.log("Wrong function type assertion correct")
+		$.println("Wrong function type assertion correct")
 	}
 	 else {
-		console.log("Wrong function type assertion failed")
+		$.println("Wrong function type assertion failed")
 	}
 }
 

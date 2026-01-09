@@ -122,6 +122,10 @@ type Analysis struct {
 	// Imports stores the imports for the file
 	Imports map[string]*fileImport
 
+	// SyntheticImports stores imports that need to be written but were not in the source file.
+	// These are typically needed for promoted methods from embedded structs.
+	SyntheticImports map[string]*fileImport
+
 	// Cmap stores the comment map for the file
 	Cmap ast.CommentMap
 
@@ -194,6 +198,7 @@ func NewAnalysis(allPackages map[string]*packages.Package) *Analysis {
 	return &Analysis{
 		VariableUsage:       make(map[types.Object]*VariableUsageInfo),
 		Imports:             make(map[string]*fileImport),
+		SyntheticImports:    make(map[string]*fileImport),
 		FunctionData:        make(map[types.Object]*FunctionInfo),
 		NodeData:            make(map[ast.Node]*NodeInfo),
 		FuncLitData:         make(map[*ast.FuncLit]*FunctionInfo),
@@ -1308,14 +1313,17 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 		}
 	}
 
-	// Add collected packages to imports
+	// Add collected packages to imports (both regular and synthetic)
 	for pkgName, pkgObj := range packagesToAdd {
 		if _, exists := a.Imports[pkgName]; !exists {
 			tsImportPath := "@goscript/" + pkgObj.Path()
-			a.Imports[pkgName] = &fileImport{
+			fileImp := &fileImport{
 				importPath: tsImportPath,
 				importVars: make(map[string]struct{}),
 			}
+			a.Imports[pkgName] = fileImp
+			// Also add to SyntheticImports so we know to write it
+			a.SyntheticImports[pkgName] = fileImp
 		}
 	}
 }
@@ -1381,20 +1389,44 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 		baseFileName := strings.TrimSuffix(filepath.Base(fileName), ".go")
 
 		var functions []string
-		var types []string
+		var typeNames []string
 		var variables []string
 		for _, decl := range syntax.Decls {
 			if funcDecl, ok := decl.(*ast.FuncDecl); ok {
-				// Only collect top-level functions (not methods)
+				// Collect top-level functions (not methods)
 				if funcDecl.Recv == nil {
 					functions = append(functions, funcDecl.Name.Name)
+				} else {
+					// Check if this is a method on a wrapper type (named basic type)
+					// If so, it will be compiled as TypeName_MethodName function
+					if len(funcDecl.Recv.List) > 0 {
+						recvType := funcDecl.Recv.List[0].Type
+						// Handle pointer receiver (*Type)
+						if starExpr, ok := recvType.(*ast.StarExpr); ok {
+							recvType = starExpr.X
+						}
+						if recvIdent, ok := recvType.(*ast.Ident); ok {
+							// Check if this receiver type is a wrapper type
+							if obj := pkg.TypesInfo.Uses[recvIdent]; obj != nil {
+								if typeName, ok := obj.(*types.TypeName); ok {
+									if namedType, ok := typeName.Type().(*types.Named); ok {
+										if _, ok := namedType.Underlying().(*types.Basic); ok {
+											// This is a method on a wrapper type
+											funcName := recvIdent.Name + "_" + funcDecl.Name.Name
+											functions = append(functions, funcName)
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 			if genDecl, ok := decl.(*ast.GenDecl); ok {
 				// Collect type declarations
 				for _, spec := range genDecl.Specs {
 					if typeSpec, ok := spec.(*ast.TypeSpec); ok {
-						types = append(types, typeSpec.Name.Name)
+						typeNames = append(typeNames, typeSpec.Name.Name)
 					}
 					// Collect variable/constant declarations
 					if valueSpec, ok := spec.(*ast.ValueSpec); ok {
@@ -1409,8 +1441,8 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 		if len(functions) > 0 {
 			analysis.FunctionDefs[baseFileName] = functions
 		}
-		if len(types) > 0 {
-			analysis.TypeDefs[baseFileName] = types
+		if len(typeNames) > 0 {
+			analysis.TypeDefs[baseFileName] = typeNames
 		}
 		if len(variables) > 0 {
 			analysis.VariableDefs[baseFileName] = variables
@@ -1595,6 +1627,88 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 		if len(varRefsFromOtherFiles) > 0 {
 			analysis.VariableCalls[baseFileName] = varRefsFromOtherFiles
 		}
+	}
+
+	// Fifth pass: analyze method calls on wrapper types (named basic types with methods)
+	// These generate TypeName_MethodName function calls that need to be imported
+	for i, syntax := range pkg.Syntax {
+		fileName := pkg.CompiledGoFiles[i]
+		baseFileName := strings.TrimSuffix(filepath.Base(fileName), ".go")
+
+		// Find all method calls on wrapper types in this file
+		ast.Inspect(syntax, func(n ast.Node) bool {
+			callExpr, ok := n.(*ast.CallExpr)
+			if !ok {
+				return true
+			}
+
+			// Check if this is a method call (selector expression)
+			selectorExpr, ok := callExpr.Fun.(*ast.SelectorExpr)
+			if !ok {
+				return true
+			}
+
+			// Get the type of the receiver
+			receiverType := pkg.TypesInfo.TypeOf(selectorExpr.X)
+			if receiverType == nil {
+				return true
+			}
+
+			// Check if this is a wrapper type (named type with basic underlying type and methods)
+			namedType, ok := receiverType.(*types.Named)
+			if !ok {
+				return true
+			}
+
+			// Check if it has a basic underlying type
+			if _, ok := namedType.Underlying().(*types.Basic); !ok {
+				return true
+			}
+
+			// Check if this type is defined in the same package
+			obj := namedType.Obj()
+			if obj == nil || obj.Pkg() == nil || obj.Pkg() != pkg.Types {
+				return true // Not from this package
+			}
+
+			// Check if this type has the method being called
+			methodName := selectorExpr.Sel.Name
+			found := false
+			for j := 0; j < namedType.NumMethods(); j++ {
+				if namedType.Method(j).Name() == methodName {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return true
+			}
+
+			// Generate the function name: TypeName_MethodName
+			funcName := obj.Name() + "_" + methodName
+
+			// Find which file defines this function
+			for sourceFile, funcs := range analysis.FunctionDefs {
+				if sourceFile == baseFileName {
+					continue // Skip current file
+				}
+				if slices.Contains(funcs, funcName) {
+					// Found the function in another file
+					if analysis.FunctionCalls[baseFileName] == nil {
+						analysis.FunctionCalls[baseFileName] = make(map[string][]string)
+					}
+					if analysis.FunctionCalls[baseFileName][sourceFile] == nil {
+						analysis.FunctionCalls[baseFileName][sourceFile] = []string{}
+					}
+					// Check if already added to avoid duplicates
+					if !slices.Contains(analysis.FunctionCalls[baseFileName][sourceFile], funcName) {
+						analysis.FunctionCalls[baseFileName][sourceFile] = append(analysis.FunctionCalls[baseFileName][sourceFile], funcName)
+					}
+				}
+			}
+
+			return true
+		})
 	}
 
 	return analysis

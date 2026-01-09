@@ -7,9 +7,9 @@ import * as slices from "@goscript/slices/index.js"
 
 export async function main(): Promise<void> {
 	let s = $.arrayToSlice<number>([1, 2, 3])
-	console.log("Before Grow: len=", $.len(s), "cap=", $.cap(s))
+	$.println("Before Grow: len=", $.len(s), "cap=", $.cap(s))
 	s = slices.Grow(s, 5)
-	console.log("After Grow: len=", $.len(s), "cap=", $.cap(s))
-	console.log("slices.Grow test finished")
+	$.println("After Grow: len=", $.len(s), "cap=", $.cap(s))
+	$.println("slices.Grow test finished")
 }
 

@@ -51,25 +51,25 @@ export function FileMode_Add(fm: FileMode, val: number): FileMode {
 export async function main(): Promise<void> {
 	// Test FileMode type with receiver methods
 	let fm: FileMode = 0
-	console.log("FileMode(0).String():", FileMode_String(fm))
-	console.log("FileMode(0).IsZero():", FileMode_IsZero(fm))
+	$.println("FileMode(0).String():", FileMode_String(fm))
+	$.println("FileMode(0).IsZero():", FileMode_IsZero(fm))
 
 	// Test method calls on type conversion
-	console.log("FileMode(5).String():", FileMode_String((5 as FileMode)))
-	console.log("FileMode(5).IsZero():", FileMode_IsZero((5 as FileMode)))
+	$.println("FileMode(5).String():", FileMode_String((5 as FileMode)))
+	$.println("FileMode(5).IsZero():", FileMode_IsZero((5 as FileMode)))
 
 	// Test method chaining
 	let result = FileMode_Add((3 as FileMode), 2)
-	console.log("FileMode(3).Add(2):", result)
-	console.log("FileMode(3).Add(2).String():", FileMode_String(result))
+	$.println("FileMode(3).Add(2):", result)
+	$.println("FileMode(3).Add(2).String():", FileMode_String(result))
 
 	// Test CustomString type
 	let cs: CustomString = "hello"
-	console.log("CustomString(\"hello\").Length():", CustomString_Length(cs))
-	console.log("CustomString(\"hello\").Upper():", CustomString_Upper(cs))
+	$.println("CustomString(\"hello\").Length():", CustomString_Length(cs))
+	$.println("CustomString(\"hello\").Upper():", CustomString_Upper(cs))
 
 	// Test method calls on type conversion
-	console.log("CustomString(\"world\").Length():", CustomString_Length(("world" as CustomString)))
-	console.log("CustomString(\"world\").Upper():", CustomString_Upper(("world" as CustomString)))
+	$.println("CustomString(\"world\").Length():", CustomString_Length(("world" as CustomString)))
+	$.println("CustomString(\"world\").Upper():", CustomString_Upper(("world" as CustomString)))
 }
 

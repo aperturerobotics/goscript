@@ -9,15 +9,15 @@ export function multipleReturnValues(): [number, string, boolean] {
 
 export async function main(): Promise<void> {
 	let [a, b, c] = multipleReturnValues()
-	console.log(a)
-	console.log(b)
-	console.log(c)
+	$.println(a)
+	$.println(b)
+	$.println(c)
 
 	let [x, , z] = multipleReturnValues()
-	console.log(x)
-	console.log(z)
+	$.println(x)
+	$.println(z)
 
 	let [, y, ] = multipleReturnValues()
-	console.log(y)
+	$.println(y)
 }
 

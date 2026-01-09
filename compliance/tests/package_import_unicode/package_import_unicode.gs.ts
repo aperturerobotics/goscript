@@ -7,71 +7,71 @@ import * as unicode from "@goscript/unicode/index.js"
 
 export async function main(): Promise<void> {
 	// Test character classification functions
-	console.log("Testing character classification:")
+	$.println("Testing character classification:")
 
 	// Test IsLetter
-	console.log("IsLetter('A'):", unicode.IsLetter(65))
-	console.log("IsLetter('1'):", unicode.IsLetter(49))
+	$.println("IsLetter('A'):", unicode.IsLetter(65))
+	$.println("IsLetter('1'):", unicode.IsLetter(49))
 
 	// Test IsDigit
-	console.log("IsDigit('5'):", unicode.IsDigit(53))
-	console.log("IsDigit('a'):", unicode.IsDigit(97))
+	$.println("IsDigit('5'):", unicode.IsDigit(53))
+	$.println("IsDigit('a'):", unicode.IsDigit(97))
 
 	// Test IsUpper
-	console.log("IsUpper('Z'):", unicode.IsUpper(90))
-	console.log("IsUpper('z'):", unicode.IsUpper(122))
+	$.println("IsUpper('Z'):", unicode.IsUpper(90))
+	$.println("IsUpper('z'):", unicode.IsUpper(122))
 
 	// Test IsLower
-	console.log("IsLower('b'):", unicode.IsLower(98))
-	console.log("IsLower('B'):", unicode.IsLower(66))
+	$.println("IsLower('b'):", unicode.IsLower(98))
+	$.println("IsLower('B'):", unicode.IsLower(66))
 
 	// Test IsSpace
-	console.log("IsSpace(' '):", unicode.IsSpace(32))
-	console.log("IsSpace('x'):", unicode.IsSpace(120))
+	$.println("IsSpace(' '):", unicode.IsSpace(32))
+	$.println("IsSpace('x'):", unicode.IsSpace(120))
 
 	// Test IsPunct
-	console.log("IsPunct('!'):", unicode.IsPunct(33))
-	console.log("IsPunct('a'):", unicode.IsPunct(97))
+	$.println("IsPunct('!'):", unicode.IsPunct(33))
+	$.println("IsPunct('a'):", unicode.IsPunct(97))
 
 	// Test case conversion functions
-	console.log("\nTesting case conversion:")
+	$.println("\nTesting case conversion:")
 
 	// Test ToUpper
-	console.log("ToUpper('a'):", $.runeOrStringToString(unicode.ToUpper(97)))
-	console.log("ToUpper('Z'):", $.runeOrStringToString(unicode.ToUpper(90)))
+	$.println("ToUpper('a'):", $.runeOrStringToString(unicode.ToUpper(97)))
+	$.println("ToUpper('Z'):", $.runeOrStringToString(unicode.ToUpper(90)))
 
 	// Test ToLower
-	console.log("ToLower('A'):", $.runeOrStringToString(unicode.ToLower(65)))
-	console.log("ToLower('z'):", $.runeOrStringToString(unicode.ToLower(122)))
+	$.println("ToLower('A'):", $.runeOrStringToString(unicode.ToLower(65)))
+	$.println("ToLower('z'):", $.runeOrStringToString(unicode.ToLower(122)))
 
 	// Test ToTitle
-	console.log("ToTitle('a'):", $.runeOrStringToString(unicode.ToTitle(97)))
+	$.println("ToTitle('a'):", $.runeOrStringToString(unicode.ToTitle(97)))
 
 	// Test To function with constants
-	console.log("To(UpperCase, 'b'):", $.runeOrStringToString(unicode.To(unicode.UpperCase, 98)))
-	console.log("To(LowerCase, 'C'):", $.runeOrStringToString(unicode.To(unicode.LowerCase, 67)))
+	$.println("To(UpperCase, 'b'):", $.runeOrStringToString(unicode.To(unicode.UpperCase, 98)))
+	$.println("To(LowerCase, 'C'):", $.runeOrStringToString(unicode.To(unicode.LowerCase, 67)))
 
 	// Test SimpleFold
-	console.log("SimpleFold('A'):", $.runeOrStringToString(unicode.SimpleFold(65)))
-	console.log("SimpleFold('a'):", $.runeOrStringToString(unicode.SimpleFold(97)))
+	$.println("SimpleFold('A'):", $.runeOrStringToString(unicode.SimpleFold(65)))
+	$.println("SimpleFold('a'):", $.runeOrStringToString(unicode.SimpleFold(97)))
 
 	// Test constants
-	console.log("\nTesting constants:")
-	console.log("MaxRune:", unicode.MaxRune)
-	console.log("Version:", unicode.Version)
+	$.println("\nTesting constants:")
+	$.println("MaxRune:", unicode.MaxRune)
+	$.println("Version:", unicode.Version)
 
 	// Test range tables with Is function
-	console.log("\nTesting range tables:")
-	console.log("Is(Letter, 'A'):", unicode.Is(unicode.Letter, 65))
-	console.log("Is(Letter, '1'):", unicode.Is(unicode.Letter, 49))
-	console.log("Is(Digit, '5'):", unicode.Is(unicode.Digit, 53))
-	console.log("Is(Digit, 'x'):", unicode.Is(unicode.Digit, 120))
+	$.println("\nTesting range tables:")
+	$.println("Is(Letter, 'A'):", unicode.Is(unicode.Letter, 65))
+	$.println("Is(Letter, '1'):", unicode.Is(unicode.Letter, 49))
+	$.println("Is(Digit, '5'):", unicode.Is(unicode.Digit, 53))
+	$.println("Is(Digit, 'x'):", unicode.Is(unicode.Digit, 120))
 
 	// Test In function
-	console.log("In('A', Letter, Digit):", unicode.In(65, unicode.Letter, unicode.Digit))
-	console.log("In('5', Letter, Digit):", unicode.In(53, unicode.Letter, unicode.Digit))
-	console.log("In('!', Letter, Digit):", unicode.In(33, unicode.Letter, unicode.Digit))
+	$.println("In('A', Letter, Digit):", unicode.In(65, unicode.Letter, unicode.Digit))
+	$.println("In('5', Letter, Digit):", unicode.In(53, unicode.Letter, unicode.Digit))
+	$.println("In('!', Letter, Digit):", unicode.In(33, unicode.Letter, unicode.Digit))
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

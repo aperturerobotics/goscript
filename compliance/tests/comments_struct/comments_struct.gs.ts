@@ -53,7 +53,7 @@ export class TestStruct {
 
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new TestStruct({IntField: 42, StringField: "hello"}))
-	console.log("IntField:", s.IntField)
-	console.log("StringField:", s.StringField)
+	$.println("IntField:", s.IntField)
+	$.println("StringField:", s.StringField)
 }
 

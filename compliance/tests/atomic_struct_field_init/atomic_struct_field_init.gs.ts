@@ -70,9 +70,9 @@ export async function main(): Promise<void> {
 	s.count.Store(42)
 	s.flag.Store(100)
 
-	console.log("closed:", s.closed.Load())
-	console.log("count:", s.count.Load())
-	console.log("flag:", s.flag.Load())
+	$.println("closed:", s.closed.Load())
+	$.println("count:", s.count.Load())
+	$.println("flag:", s.flag.Load())
 
 	// Test struct initialization with init values
 	let s2 = $.markAsStructValue(new MyStruct({closed: $.markAsStructValue(new atomic.Bool({})), count: $.markAsStructValue(new atomic.Int32({})), flag: $.markAsStructValue(new atomic.Uint32({}))}))
@@ -81,10 +81,10 @@ export async function main(): Promise<void> {
 	s2.count.Store(24)
 	s2.flag.Store(50)
 
-	console.log("s2 closed:", s2.closed.Load())
-	console.log("s2 count:", s2.count.Load())
-	console.log("s2 flag:", s2.flag.Load())
+	$.println("s2 closed:", s2.closed.Load())
+	$.println("s2 count:", s2.count.Load())
+	$.println("s2 flag:", s2.flag.Load())
 
-	console.log("atomic struct field test finished")
+	$.println("atomic struct field test finished")
 }
 

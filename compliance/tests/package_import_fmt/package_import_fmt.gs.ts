@@ -49,6 +49,6 @@ export async function main(): Promise<void> {
 	fmt.Printf("Precision: '%.2f'\n", 3.14159)
 	fmt.Printf("Both: '%5.2f'\n", 3.14159)
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

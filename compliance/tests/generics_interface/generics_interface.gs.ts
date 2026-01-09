@@ -152,25 +152,25 @@ export function checkEqual<T extends $.Comparable>(c: Comparable<T>, val: T): bo
 }
 
 export async function main(): Promise<void> {
-	console.log("=== Generic Interface Test ===")
+	$.println("=== Generic Interface Test ===")
 
 	// Test ValueContainer implementing Container
 	let intValueContainer = new ValueContainer<number>({})
 	let result = useContainer(intValueContainer, 42)
-	console.log("Int ValueContainer result:", result)
-	console.log("Int ValueContainer size:", intValueContainer!.Size())
+	$.println("Int ValueContainer result:", result)
+	$.println("Int ValueContainer size:", intValueContainer!.Size())
 
 	let stringValueContainer = new ValueContainer<string>({})
 	let strResult = useContainer(stringValueContainer, "hello")
-	console.log("String ValueContainer result:", strResult)
-	console.log("String ValueContainer size:", stringValueContainer!.Size())
+	$.println("String ValueContainer result:", strResult)
+	$.println("String ValueContainer size:", stringValueContainer!.Size())
 
 	// Test StringValueContainer implementing Comparable
 	let sb = new StringValueContainer({value: "test"})
-	console.log("String comparison equal:", checkEqual(sb, "test"))
-	console.log("String comparison not equal:", checkEqual(sb, "other"))
-	console.log("String comparison -1:", sb!.Compare("zebra"))
-	console.log("String comparison 1:", sb!.Compare("alpha"))
-	console.log("String comparison 0:", sb!.Compare("test"))
+	$.println("String comparison equal:", checkEqual(sb, "test"))
+	$.println("String comparison not equal:", checkEqual(sb, "other"))
+	$.println("String comparison -1:", sb!.Compare("zebra"))
+	$.println("String comparison 1:", sb!.Compare("alpha"))
+	$.println("String comparison 0:", sb!.Compare("test"))
 }
 

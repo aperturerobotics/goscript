@@ -11,8 +11,8 @@ export async function main(): Promise<void> {
 	let newline: number = subpkg.Newline
 
 	// This should use the variable name instead of evaluating to numeric literal
-	console.log("separator used in function:", useInFunction(47))
-	console.log("newline used in function:", useInFunction(10))
+	$.println("separator used in function:", useInFunction(47))
+	$.println("newline used in function:", useInFunction(10))
 }
 
 export function useInFunction(r: number): number {

@@ -6,12 +6,12 @@ import * as $ from "@goscript/builtin/index.js"
 export async function main(): Promise<void> {
 	let i = 0
 	for (; ; ) {
-		console.log("Looping forever...")
+		$.println("Looping forever...")
 		i++
 		if (i >= 3) {
 			break
 		}
 	}
-	console.log("Loop finished")
+	$.println("Loop finished")
 }
 

@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
 	/* Another single-line block comment */
-	console.log("testing block comments")
+	$.println("testing block comments")
 
 	/*
 	 *
@@ -15,6 +15,6 @@ export async function main(): Promise<void> {
 	 */
 
 	let x = 42 // inline block comment
-	console.log("x =", x)
+	$.println("x =", x)
 }
 

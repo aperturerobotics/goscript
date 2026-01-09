@@ -138,7 +138,7 @@ export async function main(): Promise<void> {
 	let ctx = context.Background()
 
 	// Test 1: Basic Promise with string
-	console.log("Test 1: Basic Promise with string")
+	$.println("Test 1: Basic Promise with string")
 	let p1 = NewPromise<string>()
 
 	// Set result in goroutine
@@ -148,50 +148,50 @@ export async function main(): Promise<void> {
 
 	let [result1, err1] = await p1!.Await(ctx)
 	if (err1 != null) {
-		console.log("Error:", err1!.Error())
+		$.println("Error:", err1!.Error())
 	}
 	 else {
-		console.log("Result:", result1)
+		$.println("Result:", result1)
 	}
 
 	// Test 2: Pre-resolved Promise with int
-	console.log("Test 2: Pre-resolved Promise with int")
+	$.println("Test 2: Pre-resolved Promise with int")
 	let p2 = NewPromiseWithResult<number>(42, null)
 	let [result2, err2] = await p2!.Await(ctx)
 	if (err2 != null) {
-		console.log("Error:", err2!.Error())
+		$.println("Error:", err2!.Error())
 	}
 	 else {
-		console.log("Result:", result2)
+		$.println("Result:", result2)
 	}
 
 	// Test 3: Promise with error
-	console.log("Test 3: Promise with error")
+	$.println("Test 3: Promise with error")
 	let p3 = NewPromiseWithResult<boolean>(false, context.DeadlineExceeded)
 	let [result3, err3] = await p3!.Await(ctx)
 	if (err3 != null) {
-		console.log("Error:", err3!.Error())
+		$.println("Error:", err3!.Error())
 	}
 	 else {
-		console.log("Result:", result3)
+		$.println("Result:", result3)
 	}
 
 	// Test 4: Cannot set result twice
-	console.log("Test 4: Cannot set result twice")
+	$.println("Test 4: Cannot set result twice")
 	let p4 = NewPromise<number>()
 	let success1 = p4!.SetResult(100, null)
 	let success2 = p4!.SetResult(200, null)
-	console.log("First set success:", success1)
-	console.log("Second set success:", success2)
+	$.println("First set success:", success1)
+	$.println("Second set success:", success2)
 
 	let [result4, err4] = await p4!.Await(ctx)
 	if (err4 != null) {
-		console.log("Error:", err4!.Error())
+		$.println("Error:", err4!.Error())
 	}
 	 else {
-		console.log("Final result:", result4)
+		$.println("Final result:", result4)
 	}
 
-	console.log("All tests completed")
+	$.println("All tests completed")
 }
 

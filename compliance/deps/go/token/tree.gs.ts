@@ -512,7 +512,7 @@ export class node {
 		if (!(-2 <= balance && balance <= +2)) {
 			$.panic(fmt.Sprintf("node.balance out of range: %d", balance))
 		}
-		let h = 1 + max(lheight, rheight)
+		let h = 1 + Math.max(lheight, rheight)
 		if (h != n.height) {
 			$.panic("bad node.height")
 		}
@@ -560,7 +560,7 @@ export class node {
 	public update(): void {
 		const n = this
 		let [lheight, rheight] = [n.left!.safeHeight(), n.right!.safeHeight()]
-		n.height = max(lheight, rheight) + 1
+		n.height = Math.max(lheight, rheight) + 1
 		n.balance = rheight - lheight
 	}
 

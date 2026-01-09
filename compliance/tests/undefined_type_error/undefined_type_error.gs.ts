@@ -206,10 +206,10 @@ export class printer {
 	public format(verb: number): void {
 		const p = this
 		if (p.fmt.minus) {
-			console.log("minus flag set")
+			$.println("minus flag set")
 		}
 		if (p.fmt.plus) {
-			console.log("plus flag set")
+			$.println("plus flag set")
 		}
 	}
 
@@ -227,6 +227,6 @@ export async function main(): Promise<void> {
 	let p = new printer({})
 	p!.init()
 	p!.format(100)
-	console.log("Formatter test completed")
+	$.println("Formatter test completed")
 }
 

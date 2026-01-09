@@ -23,10 +23,10 @@ export function ByName_Swap(a: ByName, i: number, j: number): void {
 export async function main(): Promise<void> {
 	// Create a ByName instance to test the wrapper
 	let files: ByName = $.makeSlice<os.FileInfo>(2)
-	console.log("Length:", ByName_Len(files))
+	$.println("Length:", ByName_Len(files))
 
 	// Test type conversion
 	let slice: $.Slice<os.FileInfo> = files
-	console.log("Slice length:", $.len(slice))
+	$.println("Slice length:", $.len(slice))
 }
 

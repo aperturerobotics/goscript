@@ -32,14 +32,14 @@ export async function WrapperWithError(ctx: context.Context): Promise<[string, $
 export async function main(): Promise<void> {
 	// These calls should work properly with async/await
 	let result1 = await SyncWrapper()
-	console.log("Result1:", result1)
+	$.println("Result1:", result1)
 
 	let ctx = context.Background()
 	let [result2, err] = await WrapperWithError(ctx)
 	if (err != null) {
-		console.log("Error:", err!.Error())
+		$.println("Error:", err!.Error())
 		return 
 	}
-	console.log("Result2:", result2)
+	$.println("Result2:", result2)
 }
 

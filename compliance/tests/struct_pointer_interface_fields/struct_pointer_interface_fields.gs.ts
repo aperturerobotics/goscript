@@ -61,18 +61,18 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({}))
-	console.log(s.PointerField == null)
-	console.log(s.interfaceField == null)
+	$.println(s.PointerField == null)
+	$.println(s.interfaceField == null)
 
 	let i = $.varRef(10)
 	s.PointerField = i
-	console.log(s.PointerField != null)
-	console.log(s.PointerField!.value)
+	$.println(s.PointerField != null)
+	$.println(s.PointerField!.value)
 	i!.value = 15
-	console.log(s.PointerField!.value)
+	$.println(s.PointerField!.value)
 
 	let mi: MyInterface = null
 	s.interfaceField = mi
-	console.log(s.interfaceField == null)
+	$.println(s.interfaceField == null)
 }
 

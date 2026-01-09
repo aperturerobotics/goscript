@@ -9,6 +9,6 @@ export async function main(): Promise<void> {
 	queueMicrotask(async () => {
 		await $.chanSend(msgs, "anonymous function worker")
 	})
-	console.log(await $.chanRecv(msgs))
+	$.println(await $.chanRecv(msgs))
 }
 

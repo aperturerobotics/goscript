@@ -15,7 +15,7 @@ export async function main(): Promise<void> {
 	let castedGreeter = Object.assign(theInlineVar, { __goTypeName: 'Greeter' })
 
 	// 4. Call that
-	console.log(castedGreeter!("Inline World"))
+	$.println(castedGreeter!("Inline World"))
 
 	// Test with a different signature
 	type Adder = ((a: number, b: number) => number) | null;
@@ -23,6 +23,6 @@ export async function main(): Promise<void> {
 		return a + b
 	}
 	let castedAdder = Object.assign(theInlineAdder, { __goTypeName: 'Adder' })
-	console.log(castedAdder!(5, 7))
+	$.println(castedAdder!(5, 7))
 }
 

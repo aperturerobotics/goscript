@@ -44,6 +44,6 @@ export async function main(): Promise<void> {
 	let intVar: $.VarRef<number> = $.varRef(10)
 	myStruct!.myPrivate = intVar
 	intVar!.value = 15
-	console.log(myStruct!.myPrivate!.value)
+	$.println(myStruct!.myPrivate!.value)
 }
 

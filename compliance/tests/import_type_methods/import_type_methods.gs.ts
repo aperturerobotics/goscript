@@ -44,6 +44,6 @@ export class parser {
 export async function main(): Promise<void> {
 	let p: parser = new parser()
 	p.errors = errlist.ErrorList_Add(p.errors, "error")
-	console.log(p.errors![0])
+	$.println(p.errors![0])
 }
 

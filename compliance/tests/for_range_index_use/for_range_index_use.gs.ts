@@ -10,9 +10,9 @@ export async function main(): Promise<void> {
 		let val = slice![idx]
 		{
 			sum += val
-			console.log("Range idx:", idx, "val:", val)
+			$.println("Range idx:", idx, "val:", val)
 		}
 	}
-	console.log("Sum:", sum)
+	$.println("Sum:", sum)
 }
 

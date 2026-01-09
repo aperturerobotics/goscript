@@ -22,7 +22,7 @@ export async function main(): Promise<void> {
 	  pB!.value = _tmp[1]
 	}
 
-	console.log("a:", a!.value)
-	console.log("b:", b!.value)
+	$.println("a:", a!.value)
+	$.println("b:", b!.value)
 }
 

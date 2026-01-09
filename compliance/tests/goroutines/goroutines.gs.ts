@@ -120,9 +120,9 @@ for (let i = 0; i < $.len(allMessages); i++) {
 for (let _i = 0; _i < $.len(allMessages); _i++) {
 	let msg = allMessages![_i]
 	{
-		console.log(msg.priority, msg.text)
+		$.println(msg.priority, msg.text)
 	}
 }
-console.log("done")
+$.println("done")
 }
 

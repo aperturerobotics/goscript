@@ -53,6 +53,6 @@ export function getProcessor(): ((p0: State | null) => void) | null {
 export async function main(): Promise<void> {
 	let state = new State({})
 	state!.Process()
-	console.log("value:", state!.value)
+	$.println("value:", state!.value)
 }
 

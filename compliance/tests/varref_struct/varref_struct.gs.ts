@@ -45,10 +45,10 @@ export async function main(): Promise<void> {
 	let ptrToVal = val
 
 	// Accessing pointer value, should use .value
-	console.log("ptrToVal.MyInt:", ptrToVal!.value!.MyInt)
+	$.println("ptrToVal.MyInt:", ptrToVal!.value!.MyInt)
 
 	// Accessing pointer value, should use .value
 	let myIntVal = ptrToVal!.value!.MyInt
-	console.log("myIntVal:", myIntVal)
+	$.println("myIntVal:", myIntVal)
 }
 

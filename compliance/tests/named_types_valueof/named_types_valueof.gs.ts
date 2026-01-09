@@ -27,82 +27,82 @@ export async function main(): Promise<void> {
 	let myUint: LocalUint = 5
 
 	// Test bitwise operations with local named types
-	console.log("Local bitwise operations:")
+	$.println("Local bitwise operations:")
 	let result1 = (myInt | 3)
-	console.log("LocalInt | 3:", $.int(result1))
+	$.println("LocalInt | 3:", $.int(result1))
 
 	let result2 = (myUint & 7)
-	console.log("LocalUint & 7:", $.int(result2))
+	$.println("LocalUint & 7:", $.int(result2))
 
 	let result3 = (myInt ^ 15)
-	console.log("LocalInt ^ 15:", $.int(result3))
+	$.println("LocalInt ^ 15:", $.int(result3))
 
 	// Test with constants
 	let localConst: LocalInt = 20
 	let result4 = (20 | myInt)
-	console.log("localConst | myInt:", $.int(result4))
+	$.println("localConst | myInt:", $.int(result4))
 
 	// Test multi-level indirection
 	let level: LocalLevel1 = 100
 	let result5 = (level | 7)
-	console.log("LocalLevel1 | 7:", result5)
+	$.println("LocalLevel1 | 7:", result5)
 
 	// Test cross-package named types
-	console.log("\nCross-package operations:")
+	$.println("\nCross-package operations:")
 
 	// Test imported constants
-	console.log("subpkg.IntValue:", subpkg.IntValue)
-	console.log("subpkg.UintValue:", $.int(subpkg.UintValue))
-	console.log("subpkg.FloatValue:", subpkg.FloatValue)
-	console.log("subpkg.StringValue:", subpkg.StringValue)
-	console.log("subpkg.BoolValue:", subpkg.BoolValue)
+	$.println("subpkg.IntValue:", subpkg.IntValue)
+	$.println("subpkg.UintValue:", $.int(subpkg.UintValue))
+	$.println("subpkg.FloatValue:", subpkg.FloatValue)
+	$.println("subpkg.StringValue:", subpkg.StringValue)
+	$.println("subpkg.BoolValue:", subpkg.BoolValue)
 
 	// Test bitwise operations with imported types
 	let result6 = (subpkg.UintValue | 0x20)
-	console.log("subpkg.UintValue | 0x20:", $.int(result6))
+	$.println("subpkg.UintValue | 0x20:", $.int(result6))
 
 	let result7 = (subpkg.LevelValue & 0xFFF)
-	console.log("subpkg.LevelValue & 0xFFF:", $.int(result7))
+	$.println("subpkg.LevelValue & 0xFFF:", $.int(result7))
 
 	// Test function calls that return named types
 	let combined = subpkg.GetCombinedFlags()
-	console.log("subpkg.GetCombinedFlags():", $.int(combined))
+	$.println("subpkg.GetCombinedFlags():", $.int(combined))
 
 	// Test multi-level indirection directly
 	let directLevel = (subpkg.LevelValue | 0x0F)
-	console.log("subpkg.LevelValue | 0x0F:", $.int(directLevel))
+	$.println("subpkg.LevelValue | 0x0F:", $.int(directLevel))
 
 	// Test mixed operations between local and imported types
 	let mixedResult = ((subpkg.UintValue as LocalUint) | myUint)
-	console.log("Mixed operation result:", $.int(mixedResult))
+	$.println("Mixed operation result:", $.int(mixedResult))
 
 	// Test various bitwise operators
-	console.log("\nTesting all bitwise operators:")
+	$.println("\nTesting all bitwise operators:")
 	let base = (42 as LocalInt)
 
-	console.log("base:", $.int(base))
-	console.log("base | 8:", $.int((base | 8)))
-	console.log("base & 15:", $.int((base & 15)))
-	console.log("base ^ 31:", $.int((base ^ 31)))
-	console.log("base << 2:", $.int((base << 2)))
-	console.log("base >> 1:", $.int((base >> 1)))
-	console.log("base &^ 7:", $.int((base & ~ 7))) // AND NOT
+	$.println("base:", $.int(base))
+	$.println("base | 8:", $.int((base | 8)))
+	$.println("base & 15:", $.int((base & 15)))
+	$.println("base ^ 31:", $.int((base ^ 31)))
+	$.println("base << 2:", $.int((base << 2)))
+	$.println("base >> 1:", $.int((base >> 1)))
+	$.println("base &^ 7:", $.int((base & ~ 7))) // AND NOT
 
 	// Test with different underlying types
-	console.log("\nDifferent underlying types:")
+	$.println("\nDifferent underlying types:")
 
 	let f: LocalFloat = 2.5
 	let s: LocalString = "test"
 	let b: LocalBool = true
 
-	console.log("LocalFloat:", f)
-	console.log("LocalString:", s)
-	console.log("LocalBool:", b)
+	$.println("LocalFloat:", f)
+	$.println("LocalString:", s)
+	$.println("LocalBool:", b)
 
 	// Test arithmetic operations that might need valueOf
 	let f2 = f * 2.0
-	console.log("LocalFloat * 2.0:", f2)
+	$.println("LocalFloat * 2.0:", f2)
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

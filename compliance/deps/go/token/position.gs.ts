@@ -145,7 +145,7 @@ export class FileSet {
 			let f = files![_i]
 			{
 				s.tree.add(f)
-				s.base = max(s.base, f!.Base() + f!.Size() + 1)
+				s.base = Math.max(s.base, f!.Base() + f!.Size() + 1)
 			}
 		}
 	}

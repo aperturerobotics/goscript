@@ -53,7 +53,7 @@ export function NewT(v: number): T | null {
 }
 
 export async function main(): Promise<void> {
-	console.log("Base:", Base!.val)
-	console.log("Derived:", Derived!.val)
+	$.println("Base:", Base!.val)
+	$.println("Derived:", Derived!.val)
 }
 

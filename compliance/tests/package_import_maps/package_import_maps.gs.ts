@@ -67,10 +67,10 @@ export async function main(): Promise<void> {
 	for (let _i = 0; _i < $.len(results); _i++) {
 		let result = results![_i]
 		{
-			console.log("Result:", result)
+			$.println("Result:", result)
 		}
 	}
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

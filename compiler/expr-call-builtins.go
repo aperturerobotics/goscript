@@ -25,6 +25,9 @@ var builtinFunctions = map[string]bool{
 	"recover": true,
 	"print":   true,
 	"println": true,
+	"min":     true,
+	"max":     true,
+	"clear":   true,
 }
 
 // writeBuiltinFunction handles built-in Go functions
@@ -34,7 +37,7 @@ func (c *GoToTSCompiler) writeBuiltinFunction(exp *ast.CallExpr, funName string)
 		c.tsw.WriteLiterally("$.panic")
 		return true, nil
 	case "println":
-		c.tsw.WriteLiterally("console.log")
+		c.tsw.WriteLiterally("$.println")
 		return true, nil
 	case "len":
 		if len(exp.Args) != 1 {
@@ -89,6 +92,46 @@ func (c *GoToTSCompiler) writeBuiltinFunction(exp *ast.CallExpr, funName string)
 		return true, nil
 	case "append":
 		return true, c.writeAppendCall(exp)
+	case "min":
+		if len(exp.Args) < 1 {
+			return true, errors.New("unhandled min call with no arguments")
+		}
+		c.tsw.WriteLiterally("Math.min(")
+		for i, arg := range exp.Args {
+			if i > 0 {
+				c.tsw.WriteLiterally(", ")
+			}
+			if err := c.WriteValueExpr(arg); err != nil {
+				return true, fmt.Errorf("failed to write argument %d in min call: %w", i, err)
+			}
+		}
+		c.tsw.WriteLiterally(")")
+		return true, nil
+	case "max":
+		if len(exp.Args) < 1 {
+			return true, errors.New("unhandled max call with no arguments")
+		}
+		c.tsw.WriteLiterally("Math.max(")
+		for i, arg := range exp.Args {
+			if i > 0 {
+				c.tsw.WriteLiterally(", ")
+			}
+			if err := c.WriteValueExpr(arg); err != nil {
+				return true, fmt.Errorf("failed to write argument %d in max call: %w", i, err)
+			}
+		}
+		c.tsw.WriteLiterally(")")
+		return true, nil
+	case "clear":
+		if len(exp.Args) != 1 {
+			return true, errors.Errorf("unhandled clear call with incorrect number of arguments: %d != 1", len(exp.Args))
+		}
+		c.tsw.WriteLiterally("$.clear(")
+		if err := c.WriteValueExpr(exp.Args[0]); err != nil {
+			return true, fmt.Errorf("failed to write argument in clear call: %w", err)
+		}
+		c.tsw.WriteLiterally(")")
+		return true, nil
 	case "byte":
 		if len(exp.Args) != 1 {
 			return true, errors.Errorf("unhandled byte call with incorrect number of arguments: %d != 1", len(exp.Args))

@@ -4,6 +4,6 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
-	console.log("Hello world!")
+	$.println("Hello world!")
 }
 

@@ -20,6 +20,6 @@ export async function main(): Promise<void> {
 		decodeMap![$.indexString(encoder, i)] = $.byte(i)
 	}
 
-	console.log("Success: no duplicates")
+	$.println("Success: no duplicates")
 }
 

@@ -42,6 +42,6 @@ export class MyStruct {
 export async function main(): Promise<void> {
 	let myStruct = new MyStruct({myPrivate: 4})
 	myStruct!.myPrivate = 10
-	console.log(myStruct!.myPrivate)
+	$.println(myStruct!.myPrivate)
 }
 

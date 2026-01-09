@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 export async function main(): Promise<void> {
 	// Create map using make
 	let scores = $.makeMap<string, number>()
-	console.log("Empty map created: Expected: true, Actual:", $.len(scores) == 0)
+	$.println("Empty map created: Expected: true, Actual:", $.len(scores) == 0)
 
 	// Add key-value pairs
 	$.mapSet(scores, "Alice", 90)
@@ -14,33 +14,33 @@ export async function main(): Promise<void> {
 	$.mapSet(scores, "Charlie", 92)
 
 	// Map size
-	console.log("Map size after adding 3 items: Expected: 3, Actual:", $.len(scores))
+	$.println("Map size after adding 3 items: Expected: 3, Actual:", $.len(scores))
 
 	// Access values
-	console.log("Alice's score: Expected: 90, Actual:", $.mapGet(scores, "Alice", 0)[0])
-	console.log("Bob's score: Expected: 85, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	$.println("Alice's score: Expected: 90, Actual:", $.mapGet(scores, "Alice", 0)[0])
+	$.println("Bob's score: Expected: 85, Actual:", $.mapGet(scores, "Bob", 0)[0])
 
 	// Modify a value
 	$.mapSet(scores, "Bob", 88)
-	console.log("Bob's updated score: Expected: 88, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	$.println("Bob's updated score: Expected: 88, Actual:", $.mapGet(scores, "Bob", 0)[0])
 
 	// Check if key exists (comma-ok idiom)
 	let [value, exists] = $.mapGet(scores, "David", 0)
-	console.log("Does David exist in map? Expected: false, Actual:", exists)
-	console.log("Value for non-existent key: Expected: 0, Actual:", value)
+	$.println("Does David exist in map? Expected: false, Actual:", exists)
+	$.println("Value for non-existent key: Expected: 0, Actual:", value)
 
 	// Delete a key
 	$.deleteMapEntry(scores, "Charlie")
 	;[, exists] = $.mapGet(scores, "Charlie", 0)
-	console.log("After delete, does Charlie exist? Expected: false, Actual:", exists)
+	$.println("After delete, does Charlie exist? Expected: false, Actual:", exists)
 
 	// Create map with literal syntax
 	let colors = new Map([["red", "#ff0000"], ["green", "#00ff00"], ["blue", "#0000ff"]])
-	console.log("Map literal size: Expected: 3, Actual:", $.len(colors))
-	console.log("Color code for red: Expected: #ff0000, Actual:", $.mapGet(colors, "red", "")[0])
+	$.println("Map literal size: Expected: 3, Actual:", $.len(colors))
+	$.println("Color code for red: Expected: #ff0000, Actual:", $.mapGet(colors, "red", "")[0])
 
 	// Iterate over a map with range
-	console.log("Iterating over scores map:")
+	$.println("Iterating over scores map:")
 
 	// Create a new map with string keys and string values for testing iteration
 	let stringMap = new Map([["Alice", "A+"], ["Bob", "B+"], ["Charlie", "A"]])
@@ -71,7 +71,7 @@ export async function main(): Promise<void> {
 	for (let _i = 0; _i < $.len(scoreResults); _i++) {
 		let result = scoreResults![_i]
 		{
-			console.log(result)
+			$.println(result)
 		}
 	}
 }

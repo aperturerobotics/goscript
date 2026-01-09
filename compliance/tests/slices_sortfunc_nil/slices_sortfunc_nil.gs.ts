@@ -43,7 +43,7 @@ export class field {
 
 export async function main(): Promise<void> {
 	let fields: $.Slice<field> = null
-	console.log("fields before:", fields)
+	$.println("fields before:", fields)
 
 	slices.SortFunc(fields, (a: field, b: field): number => {
 		if (a.name < b.name) {
@@ -55,6 +55,6 @@ export async function main(): Promise<void> {
 		return 0
 	})
 
-	console.log("fields after:", fields)
+	$.println("fields after:", fields)
 }
 

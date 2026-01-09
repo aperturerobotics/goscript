@@ -21,17 +21,17 @@ export async function main(): Promise<void> {
 
 	let [val1, ok1] = await getFromCache("test")
 	if (ok1) {
-		console.log("getFromCache found:", $.mustTypeAssert<number>(val1, {kind: $.TypeKind.Basic, name: 'number'}))
+		$.println("getFromCache found:", $.mustTypeAssert<number>(val1, {kind: $.TypeKind.Basic, name: 'number'}))
 	}
 
 	let [val2, ok2] = await getFromCacheInline("test")
 	if (ok2) {
-		console.log("getFromCacheInline found:", $.mustTypeAssert<number>(val2, {kind: $.TypeKind.Basic, name: 'number'}))
+		$.println("getFromCacheInline found:", $.mustTypeAssert<number>(val2, {kind: $.TypeKind.Basic, name: 'number'}))
 	}
 
 	let [, ok3] = await getFromCache("missing")
 	if (!ok3) {
-		console.log("Not found as expected")
+		$.println("Not found as expected")
 	}
 }
 

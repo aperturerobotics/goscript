@@ -11,7 +11,7 @@ export let cache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 export async function getCallback(): Promise<((p0: string) => void) | null> {
 	await cache!.value.Load(1)
 	return (msg: string): void => {
-		console.log("Callback:", msg)
+		$.println("Callback:", msg)
 	}
 }
 

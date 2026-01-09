@@ -27,14 +27,14 @@ export function toStringGeneric<T extends StrOrBytes>(v: T): string {
 
 export async function main(): Promise<void> {
 	// string-only
-	console.log(toStringString("hello"))
+	$.println(toStringString("hello"))
 
 	// bytes-only
-	console.log(toStringBytes(new Uint8Array([119, 111, 114, 108, 100])))
+	$.println(toStringBytes(new Uint8Array([119, 111, 114, 108, 100])))
 
 	// union: string
-	console.log(toStringGeneric("foo"))
+	$.println(toStringGeneric("foo"))
 	// union: []byte
-	console.log(toStringGeneric(new Uint8Array([98, 97, 114])))
+	$.println(toStringGeneric(new Uint8Array([98, 97, 114])))
 }
 

@@ -62,6 +62,6 @@ $.registerInterfaceType(
 );
 
 export async function main(): Promise<void> {
-	console.log("recursive type definition test")
+	$.println("recursive type definition test")
 }
 

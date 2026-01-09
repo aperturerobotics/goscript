@@ -128,16 +128,16 @@ export async function main(): Promise<void> {
 
 	let walkFunc = (path: string, info: os.FileInfo, err: $.GoError): $.GoError => {
 		if (err != null) {
-			console.log("Error:", err!.Error())
+			$.println("Error:", err!.Error())
 		}
-		console.log("Walking:", path)
+		$.println("Walking:", path)
 		return null
 	}
 
 	// Test the shadowing scenario
 	let err = walkWithShadowing(fs, "/test", null, walkFunc)
 	if (err != null) {
-		console.log("Error:", err!.Error())
+		$.println("Error:", err!.Error())
 	}
 
 	// Test other shadowing cases

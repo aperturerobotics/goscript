@@ -9,6 +9,6 @@ export async function main(): Promise<void> {
 	}
 
 	let message = greet!("world")
-	console.log(message)
+	$.println(message)
 }
 

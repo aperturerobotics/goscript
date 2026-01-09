@@ -14,7 +14,7 @@ export async function main(): Promise<void> {
 	results![0] = _gs_ta_val_29a8
 	ok = _gs_ta_ok_29a8
 	if (ok) {
-		console.log("slice[1] as int:", $.mustTypeAssert<number>(results![0], {kind: $.TypeKind.Basic, name: 'number'}))
+		$.println("slice[1] as int:", $.mustTypeAssert<number>(results![0], {kind: $.TypeKind.Basic, name: 'number'}))
 	}
 
 	// Test type assertion assignment with map indexed LHS using regular assignment
@@ -28,7 +28,7 @@ export async function main(): Promise<void> {
 	$.mapSet(mapResults, "result", _gs_ta_val_e602)
 	ok2 = _gs_ta_ok_e602
 	if (ok2) {
-		console.log("m[key2] as int:", $.mustTypeAssert<number>($.mapGet(mapResults, "result", null)[0], {kind: $.TypeKind.Basic, name: 'number'}))
+		$.println("m[key2] as int:", $.mustTypeAssert<number>($.mapGet(mapResults, "result", null)[0], {kind: $.TypeKind.Basic, name: 'number'}))
 	}
 }
 

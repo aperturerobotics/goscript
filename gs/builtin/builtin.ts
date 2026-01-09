@@ -6,7 +6,12 @@ import { isSliceProxy } from './slice.js'
  * @param args Arguments to print
  */
 export function println(...args: any[]): void {
-  console.log(...args)
+  if (args.length === 0) {
+    // Bun's console.log() with no args doesn't print a newline, so we explicitly print an empty string
+    console.log('')
+  } else {
+    console.log(...args)
+  }
 }
 
 /**
@@ -15,6 +20,26 @@ export function println(...args: any[]): void {
  */
 export function panic(...args: any[]): void {
   throw new Error(`panic: ${args.map((arg) => String(arg)).join(' ')}`)
+}
+
+/**
+ * Implementation of Go's built-in clear function.
+ * For slices, it sets all elements to their zero value.
+ * For maps, it deletes all entries.
+ * @param v The slice or map to clear
+ */
+export function clear<T>(v: T[] | Map<unknown, unknown> | null): void {
+  if (v === null || v === undefined) {
+    return
+  }
+  if (v instanceof Map) {
+    v.clear()
+    return
+  }
+  if (Array.isArray(v)) {
+    v.fill(null as T)
+    return
+  }
 }
 
 // Bytes represents all valid []byte representations in TypeScript

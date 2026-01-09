@@ -12,7 +12,7 @@ import * as filepath from "@goscript/path/filepath/index.js"
 export function walkFunction(path: string, info: os.FileInfo, walkFn: filepath.WalkFunc | null): $.GoError {
 	// Simple test function that takes os.FileInfo as parameter
 	if (info != null) {
-		console.log("File:", info!.Name())
+		$.println("File:", info!.Name())
 	}
 	;[, ] = [path, walkFn]
 	return null
@@ -25,12 +25,12 @@ export function getFileInfo(): [os.FileInfo, $.GoError] {
 
 export async function main(): Promise<void> {
 	// Test os.FileInfo interface is preserved in function signatures
-	console.log("Testing os.FileInfo interface preservation")
+	$.println("Testing os.FileInfo interface preservation")
 	walkFunction(".", null, null)
 
 	let [info, err] = getFileInfo()
 	if (err == null && info != null) {
-		console.log("Got FileInfo:", info!.Name())
+		$.println("Got FileInfo:", info!.Name())
 	}
 }
 

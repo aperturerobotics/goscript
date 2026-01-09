@@ -52,7 +52,7 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let s = new MyStruct({Value: 10})
-	console.log(s!.UsesReceiver())
-	console.log(s!.DoesNotUseReceiver())
+	$.println(s!.UsesReceiver())
+	$.println(s!.DoesNotUseReceiver())
 }
 

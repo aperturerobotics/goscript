@@ -71,10 +71,10 @@ export async function main(): Promise<void> {
 
 	let { ok: ok } = $.typeAssert<MyOtherInterface>(i, 'main.MyOtherInterface')
 	if (ok) {
-		console.log("Type assertion successful")
+		$.println("Type assertion successful")
 	}
 	 else {
-		console.log("Type assertion failed")
+		$.println("Type assertion failed")
 	}
 }
 

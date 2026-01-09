@@ -39,19 +39,19 @@ export function leadingInt<bytes extends $.Bytes | string>(s: bytes): [number, b
 
 export async function main(): Promise<void> {
 	let [x1, rem1, err1] = leadingInt($.stringToBytes("123abc456"))
-	console.log(x1, $.bytesToString(rem1), err1)
+	$.println(x1, $.bytesToString(rem1), err1)
 
 	let [x2, rem2, err2] = leadingInt("456def123")
-	console.log(x2, rem2, err2)
+	$.println(x2, rem2, err2)
 
 	let [x3, rem3, err3] = leadingInt("abc")
-	console.log(x3, rem3, err3)
+	$.println(x3, rem3, err3)
 
 	// Test overflow
 	let [x4, rem4, err4] = leadingInt("999999999999999999999999999999")
-	console.log(x4, rem4, err4)
+	$.println(x4, rem4, err4)
 
 	let [x5, rem5, err5] = leadingInt<string>("123")
-	console.log(x5, rem5, err5)
+	$.println(x5, rem5, err5)
 }
 

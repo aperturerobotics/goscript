@@ -14,11 +14,11 @@ export async function main(): Promise<void> {
 	builder!.value.WriteString("World")
 
 	let result = builder!.value.String()
-	console.log("Result:", result)
+	$.println("Result:", result)
 
 	// Also test direct make with strings.Builder
 	let builderPtr = new strings.Builder({})
 	builderPtr!.WriteString("Direct make test")
-	console.log("Direct:", builderPtr!.String())
+	$.println("Direct:", builderPtr!.String())
 }
 

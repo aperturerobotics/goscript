@@ -6,7 +6,7 @@ import { testGeneric } from "./build_tags_generic.gs.js";
 import { testJSWasm } from "./build_tags_js.gs.js";
 
 export async function main(): Promise<void> {
-	console.log("=== Build Tags Test ===")
+	$.println("=== Build Tags Test ===")
 
 	// Test that platform-specific files are handled correctly
 	// This should only compile files with js/wasm build tags
@@ -15,6 +15,6 @@ export async function main(): Promise<void> {
 	testJSWasm()
 	testGeneric()
 
-	console.log("=== End Build Tags Test ===")
+	$.println("=== End Build Tags Test ===")
 }
 

@@ -64,21 +64,21 @@ export class MyStruct {
 export async function main(): Promise<void> {
 	// Test TypeFor with named interface type
 	let t1 = reflect.getInterfaceTypeByName("main.MyInterface")
-	console.log("TypeFor interface:", t1!.String())
+	$.println("TypeFor interface:", t1!.String())
 
 	// Test TypeFor with struct type
 	let t2 = reflect.TypeOf(new MyStruct())
-	console.log("TypeFor struct:", t2!.String())
-	console.log("TypeFor struct kind:", t2!.Kind() == reflect.Struct)
+	$.println("TypeFor struct:", t2!.String())
+	$.println("TypeFor struct kind:", t2!.Kind() == reflect.Struct)
 
 	// Test TypeFor with int type
 	let t3 = reflect.TypeOf(0)
-	console.log("TypeFor int:", t3!.String())
-	console.log("TypeFor int kind:", t3!.Kind() == reflect.Int)
+	$.println("TypeFor int:", t3!.String())
+	$.println("TypeFor int kind:", t3!.Kind() == reflect.Int)
 
 	// Test Pointer constant (should be same as Ptr)
-	console.log("Pointer constant:", reflect.Ptr == reflect.Ptr)
+	$.println("Pointer constant:", reflect.Ptr == reflect.Ptr)
 
-	console.log("reflect_typefor test finished")
+	$.println("reflect_typefor test finished")
 }
 

@@ -31,7 +31,7 @@ export class Foo {
 
 	public async Bar(): Promise<void> {
 		const f = this
-		console.log("Foo.Bar called")
+		$.println("Foo.Bar called")
 		await $.chanSend(f.done, true)
 	}
 
@@ -55,6 +55,6 @@ export async function main(): Promise<void> {
 		await f!.Bar()
 	})
 	await $.chanRecv(f!.done)
-	console.log("main done")
+	$.println("main done")
 }
 

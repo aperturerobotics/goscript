@@ -12,7 +12,7 @@ export async function main(): Promise<void> {
 	// Receive with both value and ok discarded
 	await $.chanRecvWithOk(ch)
 
-	console.log("received and discarded value and ok")
+	$.println("received and discarded value and ok")
 
 	// Close the channel
 	ch.close()
@@ -20,6 +20,6 @@ export async function main(): Promise<void> {
 	// Receive from closed channel with both discarded
 	await $.chanRecvWithOk(ch)
 
-	console.log("received from closed channel, both discarded")
+	$.println("received from closed channel, both discarded")
 }
 

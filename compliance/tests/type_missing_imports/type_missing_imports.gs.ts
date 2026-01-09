@@ -102,6 +102,6 @@ export async function main(): Promise<void> {
 
 	$.mapSet(s.files, "test", f)
 
-	console.log("Created storage with file:", $.mapGet(s.files, "test", null)[0]!.name)
+	$.println("Created storage with file:", $.mapGet(s.files, "test", null)[0]!.name)
 }
 

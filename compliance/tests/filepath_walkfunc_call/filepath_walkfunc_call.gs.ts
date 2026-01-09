@@ -175,7 +175,7 @@ export function processPath(walkFn: filepath.WalkFunc | null): void {
 	// Test case: function call in if condition
 	// Should generate: if walkFn!("test", nil, nil) != nil
 	if (walkFn!("test", null, null) != null) {
-		console.log("Error occurred")
+		$.println("Error occurred")
 	}
 }
 
@@ -186,10 +186,10 @@ export async function main(): Promise<void> {
 	// Test with actual filepath.WalkFunc
 	let walkFunc = (path: string, info: os.FileInfo, err: $.GoError): $.GoError => {
 		if (info != null) {
-			console.log("Walking:", path, "size:", info!.Size())
+			$.println("Walking:", path, "size:", info!.Size())
 		}
 		if (err != null) {
-			console.log("Error:", err!.Error())
+			$.println("Error:", err!.Error())
 		}
 		return null
 	}
@@ -197,13 +197,13 @@ export async function main(): Promise<void> {
 	// Test the walk function
 	let err = walk(fs, "/test", fileInfo, walkFunc)
 	if (err != null) {
-		console.log("Walk error:", err!.Error())
+		$.println("Walk error:", err!.Error())
 	}
 
 	// Test walkFiles
 	let err2 = walkFiles("/root", walkFunc)
 	if (err2 != null) {
-		console.log("WalkFiles error:", err2!.Error())
+		$.println("WalkFiles error:", err2!.Error())
 	}
 
 	// Test processPath

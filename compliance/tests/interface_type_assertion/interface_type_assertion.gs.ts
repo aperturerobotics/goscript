@@ -61,10 +61,10 @@ export async function main(): Promise<void> {
 
 	let { ok: ok } = $.typeAssert<MyStruct>(i, 'main.MyStruct')
 	if (ok) {
-		console.log("Type assertion successful")
+		$.println("Type assertion successful")
 	}
 	 else {
-		console.log("Type assertion failed")
+		$.println("Type assertion failed")
 	}
 
 	// try a second time since this generates something different when using = and not :=
@@ -72,20 +72,20 @@ export async function main(): Promise<void> {
 
 	// expected
 	if (ok) {
-		console.log("Type assertion successful")
+		$.println("Type assertion successful")
 	}
 	 else {
 		// expected
-		console.log("Type assertion failed")
+		$.println("Type assertion failed")
 	}
 
 	// assign result to a variable
 	let { value: val, ok: ok2 } = $.typeAssert<MyStruct>(i, 'main.MyStruct')
 	if (!ok2) {
-		console.log("type assertion failed")
+		$.println("type assertion failed")
 	}
 	 else {
-		console.log("type assertion success", val.Value)
+		$.println("type assertion success", val.Value)
 	}
 }
 

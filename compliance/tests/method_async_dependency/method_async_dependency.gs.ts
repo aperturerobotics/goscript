@@ -52,10 +52,10 @@ export async function main(): Promise<void> {
 	{
 		let err = await d!.array()
 		if (err != null) {
-			console.log("Error:", err!.Error())
+			$.println("Error:", err!.Error())
 		}
 		 else {
-			console.log("Success")
+			$.println("Success")
 		}
 	}
 }

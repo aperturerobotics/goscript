@@ -46,6 +46,6 @@ export async function main(): Promise<void> {
 	let jAlias: null | any = pAlias
 
 	let { ok: ok } = $.typeAssert<MyStruct | null>(jAlias, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
-	console.log("pointer assertion result:", ok)
+	$.println("pointer assertion result:", ok)
 }
 

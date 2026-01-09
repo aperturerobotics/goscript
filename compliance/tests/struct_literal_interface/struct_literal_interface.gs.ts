@@ -8,7 +8,7 @@ import * as reflect from "@goscript/reflect/index.js"
 export async function main(): Promise<void> {
 	// Test creating reflect.SelectCase struct literals
 	let cases = $.arrayToSlice<reflect.SelectCase>([$.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectDefault}))])
-	console.log("Cases len:", $.len(cases))
-	console.log("First case dir:", cases![0].Dir)
+	$.println("Cases len:", $.len(cases))
+	$.println("First case dir:", cases![0].Dir)
 }
 

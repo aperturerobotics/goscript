@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export function init_func(): void {
-	console.log("init_func called")
+	$.println("init_func called")
 }
 
 export async function main(): Promise<void> {
@@ -12,8 +12,8 @@ export async function main(): Promise<void> {
 	// The condition is false to prevent the loop body from executing during the test,
 	// focusing only on the init part's translation and execution.
 	for (init_func(); false; ) {
-		console.log("loop body (should not be printed)")
+		$.println("loop body (should not be printed)")
 	}
-	console.log("done")
+	$.println("done")
 }
 

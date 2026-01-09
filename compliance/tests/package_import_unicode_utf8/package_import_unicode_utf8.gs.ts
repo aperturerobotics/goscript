@@ -11,47 +11,47 @@ export async function main(): Promise<void> {
 
 	// Test RuneCountInString
 	let count = utf8.RuneCountInString(s)
-	console.log("Rune count:", count)
+	$.println("Rune count:", count)
 
 	// Test DecodeRuneInString
 	let [r, size] = utf8.DecodeRuneInString(s)
-	console.log("First rune:", r, "size:", size)
+	$.println("First rune:", r, "size:", size)
 
 	// Test ValidString
 	let valid = utf8.ValidString(s)
-	console.log("Valid UTF-8:", valid)
+	$.println("Valid UTF-8:", valid)
 
 	// Test with bytes
 	let b = $.stringToBytes(s)
 
 	// Test RuneCount
 	let byteCount = utf8.RuneCount(b)
-	console.log("Byte rune count:", byteCount)
+	$.println("Byte rune count:", byteCount)
 
 	// Test DecodeRune
 	let [br, bsize] = utf8.DecodeRune(b)
-	console.log("First rune from bytes:", br, "size:", bsize)
+	$.println("First rune from bytes:", br, "size:", bsize)
 
 	// Test Valid
 	let bvalid = utf8.Valid(b)
-	console.log("Valid UTF-8 bytes:", bvalid)
+	$.println("Valid UTF-8 bytes:", bvalid)
 
 	// Test EncodeRune
 	let buf: number[] = [0, 0, 0, 0]
 	let n = utf8.EncodeRune($.goSlice(buf, undefined, undefined), 19990)
-	console.log("Encoded rune size:", n)
+	$.println("Encoded rune size:", n)
 
 	// Test RuneLen
 	let runeLen = utf8.RuneLen(19990)
-	console.log("Rune length:", runeLen)
+	$.println("Rune length:", runeLen)
 
 	// Test ValidRune
 	let validRune = utf8.ValidRune(19990)
-	console.log("Valid rune:", validRune)
+	$.println("Valid rune:", validRune)
 
 	// Test constants
-	console.log("RuneSelf:", utf8.RuneSelf)
-	console.log("MaxRune:", utf8.MaxRune)
-	console.log("UTFMax:", utf8.UTFMax)
+	$.println("RuneSelf:", utf8.RuneSelf)
+	$.println("MaxRune:", utf8.MaxRune)
+	$.println("UTFMax:", utf8.UTFMax)
 }
 

@@ -54,11 +54,11 @@ export class file {
 export async function main(): Promise<void> {
 	let f = $.markAsStructValue(new file({mode: (0o644 as os.FileMode), name: "test.txt"}))
 
-	console.log("File mode:", $.int(f.mode))
-	console.log("File name:", f.name)
+	$.println("File mode:", $.int(f.mode))
+	$.println("File name:", f.name)
 
 	// Test type assertion
 	let mode: os.FileMode = (0o755 as os.FileMode)
-	console.log("Mode type:", $.int(mode))
+	$.println("Mode type:", $.int(mode))
 }
 

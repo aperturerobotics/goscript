@@ -82,14 +82,14 @@ export class storage {
 export async function main(): Promise<void> {
 	let s = new storage({bytes: new Uint8Array(5), name: "test"})
 
-	console.log("Name:", s!.Name())
-	console.log("Length:", s!.Len())
-	console.log("Empty:", s!.IsEmpty())
+	$.println("Name:", s!.Name())
+	$.println("Length:", s!.Len())
+	$.println("Empty:", s!.IsEmpty())
 
 	s!.Truncate()
-	console.log("Length after truncate:", s!.Len())
+	$.println("Length after truncate:", s!.Len())
 
 	s!.SetName("new_name")
-	console.log("New name:", s!.Name())
+	$.println("New name:", s!.Name())
 }
 

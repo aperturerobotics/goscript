@@ -89,6 +89,8 @@ When working on compliance tests:
 
 Once the issue is fixed and the compliance test passes you may delete WIP.md without updating it with a final summary.
 
+NOTE: `./compliance/deps/` contains library dependencies compiled by the goscript compiler! do not edit! they will be re-generated when running the tests.
+
 ## Design Patterns & Code Style
 
 ### Core Principles

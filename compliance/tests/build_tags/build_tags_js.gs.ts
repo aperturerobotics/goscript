@@ -4,6 +4,6 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export function testJSWasm(): void {
-	console.log("JS/WASM specific code compiled - CORRECT")
+	$.println("JS/WASM specific code compiled - CORRECT")
 }
 

@@ -10,17 +10,17 @@ export async function main(): Promise<void> {
 	let err1 = errors.New("first error")
 	let err2 = errors.New("second error")
 
-	console.log("err1:", err1!.Error())
-	console.log("err2:", err2!.Error())
+	$.println("err1:", err1!.Error())
+	$.println("err2:", err2!.Error())
 
 	// Test error comparison
-	console.log("err1 == err2:", err1 == err2)
-	console.log("err1 == nil:", err1 == null)
+	$.println("err1 == err2:", err1 == err2)
+	$.println("err1 == nil:", err1 == null)
 
 	// Test nil error
 	let nilErr: $.GoError = null
-	console.log("nilErr == nil:", nilErr == null)
+	$.println("nilErr == nil:", nilErr == null)
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

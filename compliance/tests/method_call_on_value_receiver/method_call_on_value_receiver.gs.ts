@@ -57,6 +57,6 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let ms = $.markAsStructValue(new MyStruct({MyInt: 1, MyString: "bar"}))
-	console.log("Method call on value: Expected: bar, Actual:", ms.GetMyString())
+	$.println("Method call on value: Expected: bar, Actual:", ms.GetMyString())
 }
 

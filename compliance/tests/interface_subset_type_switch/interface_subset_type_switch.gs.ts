@@ -82,12 +82,12 @@ export class MyStruct {
 
 export function processInterface(i: null | any): void {
 	$.typeSwitch(i, [{ types: ['main.MyInterface1'], body: (v) => {
-		console.log("MyInterface1:", v!.MyString1(), v!.MyString2())
+		$.println("MyInterface1:", v!.MyString1(), v!.MyString2())
 	}},
 	{ types: ['main.MyInterface2'], body: (v) => {
-		console.log("MyInterface2:", v!.MyString1())
+		$.println("MyInterface2:", v!.MyString1())
 	}}], () => {
-		console.log("Unknown type")
+		$.println("Unknown type")
 	})
 }
 
@@ -108,12 +108,12 @@ export async function main(): Promise<void> {
 	// Type switch with subset casting
 	let i3: null | any = i1
 	$.typeSwitch(i3, [{ types: ['main.MyInterface2'], body: (v) => {
-		console.log("Matched MyInterface2 from i1:", v!.MyString1())
+		$.println("Matched MyInterface2 from i1:", v!.MyString1())
 	}},
 	{ types: ['main.MyInterface1'], body: (v) => {
-		console.log("Matched MyInterface1 from i1:", v!.MyString1(), v!.MyString2())
+		$.println("Matched MyInterface1 from i1:", v!.MyString1(), v!.MyString2())
 	}}], () => {
-		console.log("No match")
+		$.println("No match")
 	})
 }
 

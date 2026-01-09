@@ -7,7 +7,7 @@ export async function main(): Promise<void> {
 	// Test nil channel operations
 
 	// Test 1: Using nil channel in select with default
-	console.log("Test 1: Select with nil channel and default")
+	$.println("Test 1: Select with nil channel and default")
 	let nilCh: $.Channel<number> | null = null
 
 	const [_select_has_return_f917, _select_value_f917] = await $.selectStatement([
@@ -17,7 +17,7 @@ export async function main(): Promise<void> {
 			channel: nilCh,
 			value: 42,
 			onSelected: async (result) => {
-				console.log("ERROR: Should not send to nil channel")
+				$.println("ERROR: Should not send to nil channel")
 			}
 		},
 		{
@@ -25,7 +25,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: nilCh,
 			onSelected: async (result) => {
-				console.log("ERROR: Should not receive from nil channel")
+				$.println("ERROR: Should not receive from nil channel")
 			}
 		},
 		{
@@ -33,7 +33,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("PASS: Default case executed correctly")
+				$.println("PASS: Default case executed correctly")
 			}
 		},
 	], true)
@@ -43,7 +43,7 @@ export async function main(): Promise<void> {
 	// If _select_has_return_f917 is false, continue execution
 
 	// Test 2: Multiple nil channels in select with default
-	console.log("\nTest 2: Select with multiple nil channels and default")
+	$.println("\nTest 2: Select with multiple nil channels and default")
 	let nilCh1: $.Channel<string> | null = null
 	let nilCh2: $.Channel<string> | null = null
 
@@ -54,7 +54,7 @@ export async function main(): Promise<void> {
 			channel: nilCh1,
 			value: "test",
 			onSelected: async (result) => {
-				console.log("ERROR: Should not send to nil channel 1")
+				$.println("ERROR: Should not send to nil channel 1")
 			}
 		},
 		{
@@ -62,7 +62,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: nilCh2,
 			onSelected: async (result) => {
-				console.log("ERROR: Should not receive from nil channel 2")
+				$.println("ERROR: Should not receive from nil channel 2")
 			}
 		},
 		{
@@ -71,7 +71,7 @@ export async function main(): Promise<void> {
 			channel: nilCh1,
 			onSelected: async (result) => {
 				const msg = result.value
-				console.log("ERROR: Should not receive from nil channel 1:", msg)
+				$.println("ERROR: Should not receive from nil channel 1:", msg)
 			}
 		},
 		{
@@ -79,7 +79,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("PASS: Default case executed with multiple nil channels")
+				$.println("PASS: Default case executed with multiple nil channels")
 			}
 		},
 	], true)
@@ -89,7 +89,7 @@ export async function main(): Promise<void> {
 	// If _select_has_return_9ae8 is false, continue execution
 
 	// Test 3: Mix of nil and valid channels in select
-	console.log("\nTest 3: Select with mix of nil and valid channels")
+	$.println("\nTest 3: Select with mix of nil and valid channels")
 	let nilCh3: $.Channel<boolean> | null = null
 	let validCh = $.makeChannel<boolean>(1, false, 'both')
 	await $.chanSend(validCh, true)
@@ -101,7 +101,7 @@ export async function main(): Promise<void> {
 			channel: nilCh3,
 			value: true,
 			onSelected: async (result) => {
-				console.log("ERROR: Should not send to nil channel")
+				$.println("ERROR: Should not send to nil channel")
 			}
 		},
 		{
@@ -109,7 +109,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: nilCh3,
 			onSelected: async (result) => {
-				console.log("ERROR: Should not receive from nil channel")
+				$.println("ERROR: Should not receive from nil channel")
 			}
 		},
 		{
@@ -118,7 +118,7 @@ export async function main(): Promise<void> {
 			channel: validCh,
 			onSelected: async (result) => {
 				const val = result.value
-				console.log("PASS: Received from valid channel:", val)
+				$.println("PASS: Received from valid channel:", val)
 			}
 		},
 		{
@@ -126,7 +126,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("ERROR: Should not hit default with valid channel ready")
+				$.println("ERROR: Should not hit default with valid channel ready")
 			}
 		},
 	], true)
@@ -135,6 +135,6 @@ export async function main(): Promise<void> {
 	}
 	// If _select_has_return_1657 is false, continue execution
 
-	console.log("\nAll nil channel tests completed")
+	$.println("\nAll nil channel tests completed")
 }
 

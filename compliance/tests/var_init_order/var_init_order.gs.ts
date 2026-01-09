@@ -10,8 +10,8 @@ export let b: number = a + 5
 export let c: number = b * 2
 
 export async function main(): Promise<void> {
-	console.log("a:", a)
-	console.log("b:", b)
-	console.log("c:", c)
+	$.println("a:", a)
+	$.println("b:", b)
+	$.println("c:", c)
 }
 

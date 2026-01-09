@@ -68,8 +68,8 @@ export async function main(): Promise<void> {
 	let structLiteralCopy = $.markAsStructValue(structLiteral.clone())
 	structLiteralCopy.MyString = "modified composite literal copy"
 	// Expected: "composite literal"
-	console.log("Original struct literal: Expected: composite literal, Actual: " + structLiteral.MyString)
+	$.println("Original struct literal: Expected: composite literal, Actual: " + structLiteral.MyString)
 	// Expected: "modified composite literal copy"
-	console.log("Modified struct literal copy: Expected: modified composite literal copy, Actual: " + structLiteralCopy.MyString)
+	$.println("Modified struct literal copy: Expected: modified composite literal copy, Actual: " + structLiteralCopy.MyString)
 }
 

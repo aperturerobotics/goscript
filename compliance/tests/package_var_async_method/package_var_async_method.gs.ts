@@ -17,7 +17,7 @@ export async function main(): Promise<void> {
 
 	let [val, ok] = await getValueFromCache("hello")
 	if (ok) {
-		console.log("Found:", $.mustTypeAssert<string>(val, {kind: $.TypeKind.Basic, name: 'string'}))
+		$.println("Found:", $.mustTypeAssert<string>(val, {kind: $.TypeKind.Basic, name: 'string'}))
 	}
 }
 

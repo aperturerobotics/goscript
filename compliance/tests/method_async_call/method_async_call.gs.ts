@@ -105,6 +105,6 @@ export async function main(): Promise<void> {
 	let tracker = new FileTracker({lines: $.arrayToSlice<number>([])})
 	let scanner = new Scanner({file: tracker})
 	await scanner!.next()
-	console.log($.len(tracker!.lines))
+	$.println($.len(tracker!.lines))
 }
 

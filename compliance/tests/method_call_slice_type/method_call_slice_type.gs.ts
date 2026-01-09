@@ -14,8 +14,8 @@ export async function main(): Promise<void> {
 	let myList: $.VarRef<MySlice> = $.varRef(null)
 	MySlice_Add(myList, 10)
 	MySlice_Add(myList, 20)
-	console.log("length:", $.len(myList!.value))
-	console.log("first:", myList!.value![0])
-	console.log("second:", myList!.value![1])
+	$.println("length:", $.len(myList!.value))
+	$.println("first:", myList!.value![0])
+	$.println("second:", myList!.value![1])
 }
 

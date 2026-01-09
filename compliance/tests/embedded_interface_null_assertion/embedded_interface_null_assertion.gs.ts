@@ -121,18 +121,18 @@ export class MyReader {
 
 export async function main(): Promise<void> {
 	let mr1 = new MyReader({name: "test1"})
-	console.log(mr1!.Reader == null)
+	$.println(mr1!.Reader == null)
 
 	let sr = new StringReader({data: "hello", pos: 0})
 	let mr2 = new MyReader({name: "test2", Reader: sr})
-	console.log(mr2!.Reader != null)
+	$.println(mr2!.Reader != null)
 
 	let buf = new Uint8Array(5)
 	let [n, ] = mr2!.Read(buf)
-	console.log(n == 5)
+	$.println(n == 5)
 
-	console.log(10)
-	console.log(15)
-	console.log(true)
+	$.println(10)
+	$.println(15)
+	$.println(true)
 }
 

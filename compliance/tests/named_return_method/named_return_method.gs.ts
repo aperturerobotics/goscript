@@ -82,45 +82,45 @@ export async function main(): Promise<void> {
 	// Test ReadAt method
 	let buf = new Uint8Array(5)
 	let [n1, err1] = c!.ReadAt(buf, 0)
-	console.log(n1) // Expected: 5
+	$.println(n1) // Expected: 5
 
 	// Expected: nil
 	if (err1 == null) {
-		console.log("nil") // Expected: nil
+		$.println("nil") // Expected: nil
 	}
 	 else {
-		console.log("error")
+		$.println("error")
 	}
-	console.log($.bytesToString(buf)) // Expected: Hello
+	$.println($.bytesToString(buf)) // Expected: Hello
 
 	// Test ReadAt with different offset
 	let buf2 = new Uint8Array(6)
 	let [n2, err2] = c!.ReadAt(buf2, 7)
-	console.log(n2) // Expected: 6
+	$.println(n2) // Expected: 6
 
 	// Expected: nil
 	if (err2 == null) {
-		console.log("nil") // Expected: nil
+		$.println("nil") // Expected: nil
 	}
 	 else {
-		console.log("error")
+		$.println("error")
 	}
-	console.log($.bytesToString(buf2)) // Expected: World!
+	$.println($.bytesToString(buf2)) // Expected: World!
 
 	// Test ProcessData method
 	let [r1, s1, v1] = c!.ProcessData(15)
-	console.log(r1) // Expected: 30
-	console.log(s1) // Expected: high
-	console.log(v1) // Expected: true
+	$.println(r1) // Expected: 30
+	$.println(s1) // Expected: high
+	$.println(v1) // Expected: true
 
 	let [r2, s2, v2] = c!.ProcessData(5)
-	console.log(r2) // Expected: 10
-	console.log(s2) // Expected: low
-	console.log(v2) // Expected: true
+	$.println(r2) // Expected: 10
+	$.println(s2) // Expected: low
+	$.println(v2) // Expected: true
 
 	let [r3, s3, v3] = c!.ProcessData(-1)
-	console.log(r3) // Expected: -2
-	console.log(s3) // Expected: invalid
-	console.log(v3) // Expected: false
+	$.println(r3) // Expected: -2
+	$.println(s3) // Expected: invalid
+	$.println(v3) // Expected: false
 }
 

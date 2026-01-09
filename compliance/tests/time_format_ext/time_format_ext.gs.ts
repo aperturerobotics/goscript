@@ -10,41 +10,41 @@ export async function main(): Promise<void> {
 	let locPDT = time.FixedZone("PDT", -7 * 60 * 60) // -07:00
 	let t1 = $.markAsStructValue(time.Date(2025, time.May, 25, 17, 42, 56, 123456789, locPDT).clone())
 
-	console.log("--- Specific Time (2025-05-25 17:42:56.123456789 -0700 PDT) ---")
+	$.println("--- Specific Time (2025-05-25 17:42:56.123456789 -0700 PDT) ---")
 	// Timezone patterns
-	console.log("Layout Z07:00  -> " + t1.Format("2006-01-02 15:04:05 Z07:00"))
-	console.log("Layout -07:00  -> " + t1.Format("2006-01-02 15:04:05 -07:00"))
-	console.log("Layout -0700   -> " + t1.Format("2006-01-02 15:04:05 -0700"))
-	console.log("Layout -07     -> " + t1.Format("2006-01-02 15:04:05 -07"))
-	console.log("Layout Z       -> " + t1.Format("2006-01-02 15:04:05 Z"))
-	console.log("Layout MST     -> " + t1.Format("2006-01-02 15:04:05 MST")) // Go: -0700 (since not MST zone), TS: MST (literal)
+	$.println("Layout Z07:00  -> " + t1.Format("2006-01-02 15:04:05 Z07:00"))
+	$.println("Layout -07:00  -> " + t1.Format("2006-01-02 15:04:05 -07:00"))
+	$.println("Layout -0700   -> " + t1.Format("2006-01-02 15:04:05 -0700"))
+	$.println("Layout -07     -> " + t1.Format("2006-01-02 15:04:05 -07"))
+	$.println("Layout Z       -> " + t1.Format("2006-01-02 15:04:05 Z"))
+	$.println("Layout MST     -> " + t1.Format("2006-01-02 15:04:05 MST")) // Go: -0700 (since not MST zone), TS: MST (literal)
 
 	// Nanosecond patterns (fixed)
-	console.log("Layout .000000000 -> " + t1.Format("15:04:05.000000000"))
-	console.log("Layout .000000   -> " + t1.Format("15:04:05.000000"))
-	console.log("Layout .000      -> " + t1.Format("15:04:05.000"))
+	$.println("Layout .000000000 -> " + t1.Format("15:04:05.000000000"))
+	$.println("Layout .000000   -> " + t1.Format("15:04:05.000000"))
+	$.println("Layout .000      -> " + t1.Format("15:04:05.000"))
 
 	// Nanosecond patterns (trimming)
-	console.log("Layout .999999999 -> " + t1.Format("15:04:05.999999999"))
-	console.log("Layout .999999   -> " + t1.Format("15:04:05.999999"))
-	console.log("Layout .999      -> " + t1.Format("15:04:05.999"))
+	$.println("Layout .999999999 -> " + t1.Format("15:04:05.999999999"))
+	$.println("Layout .999999   -> " + t1.Format("15:04:05.999999"))
+	$.println("Layout .999      -> " + t1.Format("15:04:05.999"))
 
 	// Combined layout
-	console.log("Layout Combined  -> " + t1.Format("Mon Jan _2 15:04:05.999999999 Z07:00 2006"))
+	$.println("Layout Combined  -> " + t1.Format("Mon Jan _2 15:04:05.999999999 Z07:00 2006"))
 
 	// Fixed time with zero nanoseconds for trimming tests
 	let locPST = time.FixedZone("PST", -8 * 60 * 60) // -08:00
 	let t2 = $.markAsStructValue(time.Date(2025, time.May, 25, 17, 42, 56, 0, locPST).clone())
-	console.log("--- Specific Time (2025-05-25 17:42:56.000 -0800 PST) ---")
-	console.log("Layout .999 (zero ns) -> " + t2.Format("15:04:05.999"))
-	console.log("Layout .000 (zero ns) -> " + t2.Format("15:04:05.000"))
+	$.println("--- Specific Time (2025-05-25 17:42:56.000 -0800 PST) ---")
+	$.println("Layout .999 (zero ns) -> " + t2.Format("15:04:05.999"))
+	$.println("Layout .000 (zero ns) -> " + t2.Format("15:04:05.000"))
 
 	// Fixed UTC time for Z and Z07:00 patterns
 	let t3 = $.markAsStructValue(time.Date(2025, time.May, 25, 17, 42, 56, 123456789, time.UTC).clone())
-	console.log("--- UTC Time (2025-05-25 17:42:56.123456789 Z) ---")
-	console.log("Layout Z07:00 (UTC) -> " + t3.Format("2006-01-02 15:04:05 Z07:00"))
-	console.log("Layout Z (UTC)      -> " + t3.Format("2006-01-02 15:04:05 Z"))
-	console.log("Layout -07:00 (UTC) -> " + t3.Format("2006-01-02 15:04:05 -07:00"))
-	console.log("Layout MST (UTC)    -> " + t3.Format("2006-01-02 15:04:05 MST")) // Go: +0000, TS: MST
+	$.println("--- UTC Time (2025-05-25 17:42:56.123456789 Z) ---")
+	$.println("Layout Z07:00 (UTC) -> " + t3.Format("2006-01-02 15:04:05 Z07:00"))
+	$.println("Layout Z (UTC)      -> " + t3.Format("2006-01-02 15:04:05 Z"))
+	$.println("Layout -07:00 (UTC) -> " + t3.Format("2006-01-02 15:04:05 -07:00"))
+	$.println("Layout MST (UTC)    -> " + t3.Format("2006-01-02 15:04:05 MST")) // Go: +0000, TS: MST
 }
 

@@ -26,7 +26,7 @@ export async function run(ctx: context.Context): Promise<void> {
 			isSend: false,
 			channel: myCh,
 			onSelected: async (result) => {
-				console.log("myCh should not be readable yet")
+				$.println("myCh should not be readable yet")
 			}
 		},
 		{
@@ -34,7 +34,7 @@ export async function run(ctx: context.Context): Promise<void> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("myCh is not be readable yet")
+				$.println("myCh is not be readable yet")
 			}
 		},
 	], true)
@@ -49,13 +49,13 @@ export async function run(ctx: context.Context): Promise<void> {
 	// Now myCh should become readable
 	await $.chanRecv(myCh)
 
-	console.log("read successfully")
+	$.println("read successfully")
 }
 
 export async function main(): Promise<void> {
 	let ctx = context.Background()
 	await run(ctx)
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

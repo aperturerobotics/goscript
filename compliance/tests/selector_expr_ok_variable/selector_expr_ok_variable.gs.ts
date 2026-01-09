@@ -50,6 +50,6 @@ export async function main(): Promise<void> {
 	({ value: _gs_ta_val_ee16, ok: _gs_ta_ok_ee16 } = $.typeAssert<number>(x, {kind: $.TypeKind.Basic, name: 'number'}))
 	result.ok = _gs_ta_ok_ee16
 
-	console.log("Type assertion successful:", result.ok)
+	$.println("Type assertion successful:", result.ok)
 }
 

@@ -57,12 +57,12 @@ export async function main(): Promise<void> {
 	// 420 in decimal
 	let s = $.markAsStructValue(new TestStruct({File: null, Mode: 420}))
 
-	console.log("Mode:", $.int(s.Mode))
-	console.log("File is nil:", s.File == null)
+	$.println("Mode:", $.int(s.Mode))
+	$.println("File is nil:", s.File == null)
 
 	// Test zero values
 	let zero: TestStruct = new TestStruct()
-	console.log("Zero Mode:", $.int(zero.Mode))
-	console.log("Zero File is nil:", zero.File == null)
+	$.println("Zero Mode:", $.int(zero.Mode))
+	$.println("Zero File is nil:", zero.File == null)
 }
 

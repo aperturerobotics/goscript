@@ -7,20 +7,20 @@ import * as io from "@goscript/io/index.js"
 
 export async function main(): Promise<void> {
 	// Test basic error variables
-	console.log("EOF:", io.EOF!.Error())
-	console.log("ErrClosedPipe:", io.ErrClosedPipe!.Error())
-	console.log("ErrShortWrite:", io.ErrShortWrite!.Error())
-	console.log("ErrUnexpectedEOF:", io.ErrUnexpectedEOF!.Error())
+	$.println("EOF:", io.EOF!.Error())
+	$.println("ErrClosedPipe:", io.ErrClosedPipe!.Error())
+	$.println("ErrShortWrite:", io.ErrShortWrite!.Error())
+	$.println("ErrUnexpectedEOF:", io.ErrUnexpectedEOF!.Error())
 
 	// Test seek constants
-	console.log("SeekStart:", io.SeekStart)
-	console.log("SeekCurrent:", io.SeekCurrent)
-	console.log("SeekEnd:", io.SeekEnd)
+	$.println("SeekStart:", io.SeekStart)
+	$.println("SeekCurrent:", io.SeekCurrent)
+	$.println("SeekEnd:", io.SeekEnd)
 
 	// Test Discard writer
 	let [n, err] = io.WriteString(io.Discard, "hello world")
-	console.log("WriteString to Discard - bytes:", n, "err:", err == null)
+	$.println("WriteString to Discard - bytes:", n, "err:", err == null)
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

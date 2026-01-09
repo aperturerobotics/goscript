@@ -9,7 +9,7 @@ export function firstFunc(): [string, number] {
 
 export function secondFunc(x: number): number {
 	if (x != 0) {
-		console.log("Got value:", x)
+		$.println("Got value:", x)
 		return 0
 	}
 	return 99
@@ -22,10 +22,10 @@ export async function main(): Promise<void> {
 	{
 		let x = secondFunc(_temp_x)
 		if (x != 0) {
-			console.log("Function returned value")
+			$.println("Function returned value")
 			return 
 		}
 	}
-	console.log("Completed successfully")
+	$.println("Completed successfully")
 }
 

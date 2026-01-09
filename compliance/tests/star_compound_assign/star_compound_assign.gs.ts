@@ -8,10 +8,10 @@ export async function main(): Promise<void> {
 	let p: $.VarRef<number> | null = x
 
 	p!.value += 3
-	console.log(x!.value) // Expected: 5
+	$.println(x!.value) // Expected: 5
 
 	p!.value &= ~(1)
 	// 5 (0101) &^ 1 (0001) = 4 (0100)
-	console.log(x!.value) // Expected: 4
+	$.println(x!.value) // Expected: 4
 }
 

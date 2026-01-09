@@ -18,8 +18,8 @@ export async function main(): Promise<void> {
 
 	// Compare the pointers - they should be different pointers
 	// but point to the same value
-	console.log("p1==p2:", (p1!.value === p2))
-	console.log("*p1==*p2:", p1!.value!.value == p2!.value)
-	console.log("pp1 deref:", pp1!.value!.value)
+	$.println("p1==p2:", (p1!.value === p2))
+	$.println("*p1==*p2:", p1!.value!.value == p2!.value)
+	$.println("pp1 deref:", pp1!.value!.value)
 }
 

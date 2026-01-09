@@ -10,15 +10,15 @@ export async function main(): Promise<void> {
 	let _class: string = "test"
 	let _typeof: boolean = true
 
-	console.log("new:", _new)
-	console.log("class:", _class)
-	console.log("typeof:", _typeof)
+	$.println("new:", _new)
+	$.println("class:", _class)
+	$.println("typeof:", _typeof)
 
 	// Test function with named return that uses reserved word
 	let result = testNamedReturn()
-	console.log("named return result:", result)
+	$.println("named return result:", result)
 
-	console.log("test finished")
+	$.println("test finished")
 }
 
 export function testNamedReturn(): number {

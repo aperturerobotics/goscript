@@ -28,14 +28,14 @@ export function processValues(input: number): [number, string, boolean] {
 
 export async function main(): Promise<void> {
 	let [n1, t1, o1] = processValues(10)
-	console.log(n1) // Expected: 20
-	console.log(t1) // Expected: greater than five
-	console.log(o1) // Expected: true
+	$.println(n1) // Expected: 20
+	$.println(t1) // Expected: greater than five
+	$.println(o1) // Expected: true
 
 	let [n2, t2, o2] = processValues(3)
-	console.log(n2) // Expected: 6
-	console.log(t2) // Expected: five or less
-	console.log(o2) // Expected: false
+	$.println(n2) // Expected: 6
+	$.println(t2) // Expected: five or less
+	$.println(o2) // Expected: false
 
 	// Test with an anonymous function and potentially unassigned named returns
 
@@ -70,9 +70,9 @@ export async function main(): Promise<void> {
 			return [resInt, resStr, resBool]
 		}})(1)
 
-	console.log(n3) // Expected: 100
-	console.log(t3) // Expected: "" (empty string)
-	console.log(o3) // Expected: false
+	$.println(n3) // Expected: 100
+	$.println(t3) // Expected: "" (empty string)
+	$.println(o3) // Expected: false
 
 	// resBool is not assigned
 
@@ -100,9 +100,9 @@ export async function main(): Promise<void> {
 			return [resInt, resStr, resBool]
 		}})(2)
 
-	console.log(n4) // Expected: 200
-	console.log(t4) // Expected: "set string for val 2"
-	console.log(o4) // Expected: false
+	$.println(n4) // Expected: 200
+	$.println(t4) // Expected: "set string for val 2"
+	$.println(o4) // Expected: false
 
 	// all are unassigned here, so will take zero values
 	let [n5, t5, o5] = ((val: number): [number, string, boolean] => {
@@ -125,8 +125,8 @@ export async function main(): Promise<void> {
 			return [resInt, resStr, resBool]
 		}})(3)
 
-	console.log(n5) // Expected: 0
-	console.log(t5) // Expected: ""
-	console.log(o5) // Expected: false
+	$.println(n5) // Expected: 0
+	$.println(t5) // Expected: ""
+	$.println(o5) // Expected: false
 }
 

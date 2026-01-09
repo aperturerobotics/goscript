@@ -24,28 +24,28 @@ export function keyValueIterator(_yield: ((p0: number, p1: string) => boolean) |
 }
 
 export async function main(): Promise<void> {
-	console.log("Testing single value iterator:")
+	$.println("Testing single value iterator:")
 	;(() => {
 		let shouldContinue = true
 		simpleIterator!((v) => {
 			{
-				console.log("value:", v)
+				$.println("value:", v)
 			}
 			return shouldContinue
 		})
 	})()
 
-	console.log("Testing key-value iterator:")
+	$.println("Testing key-value iterator:")
 	;(() => {
 		let shouldContinue = true
 		keyValueIterator!((k, v) => {
 			{
-				console.log("key:", k, "value:", v)
+				$.println("key:", k, "value:", v)
 			}
 			return shouldContinue
 		})
 	})()
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

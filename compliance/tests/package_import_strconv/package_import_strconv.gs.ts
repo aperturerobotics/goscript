@@ -9,68 +9,68 @@ export async function main(): Promise<void> {
 	// Test Atoi
 	let [i, err] = strconv.Atoi("42")
 	if (err == null) {
-		console.log("Atoi result:", i)
+		$.println("Atoi result:", i)
 	}
 
 	// Test Itoa
 	let s = strconv.Itoa(123)
-	console.log("Itoa result:", s)
+	$.println("Itoa result:", s)
 
 	// Test ParseInt
 	let i64: number
 	[i64, err] = strconv.ParseInt("456", 10, 64)
 	if (err == null) {
-		console.log("ParseInt result:", i64)
+		$.println("ParseInt result:", i64)
 	}
 
 	// Test FormatInt
 	let formatted = strconv.FormatInt(789, 10)
-	console.log("FormatInt result:", formatted)
+	$.println("FormatInt result:", formatted)
 
 	// Test ParseFloat
 	let f: number
 	[f, err] = strconv.ParseFloat("3.14", 64)
 	if (err == null) {
-		console.log("ParseFloat result:", f)
+		$.println("ParseFloat result:", f)
 	}
 
 	// Test FormatFloat
 	let floatStr = strconv.FormatFloat(2.718, 102, 3, 64)
-	console.log("FormatFloat result:", floatStr)
+	$.println("FormatFloat result:", floatStr)
 
 	// Test ParseBool
 	let b: boolean
 	[b, err] = strconv.ParseBool("true")
 	if (err == null) {
-		console.log("ParseBool result:", b)
+		$.println("ParseBool result:", b)
 	}
 
 	// Test FormatBool
 	let boolStr = strconv.FormatBool(false)
-	console.log("FormatBool result:", boolStr)
+	$.println("FormatBool result:", boolStr)
 
 	// Test Quote
 	let quoted = strconv.Quote("hello world")
-	console.log("Quote result:", quoted)
+	$.println("Quote result:", quoted)
 
 	// Test Unquote
 	let unquoted: string
 	[unquoted, err] = strconv.Unquote(`"hello world"`)
 	if (err == null) {
-		console.log("Unquote result:", unquoted)
+		$.println("Unquote result:", unquoted)
 	}
 
 	// Test error cases
 	;[, err] = strconv.Atoi("invalid")
 	if (err != null) {
-		console.log("Atoi error handled")
+		$.println("Atoi error handled")
 	}
 
 	;[, err] = strconv.ParseFloat("invalid", 64)
 	if (err != null) {
-		console.log("ParseFloat error handled")
+		$.println("ParseFloat error handled")
 	}
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

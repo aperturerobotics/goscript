@@ -5,8 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
 	for (let i = 0; i < 1; i++) {
-		console.log(i)
+		$.println(i)
 	}
-	console.log("done")
+	$.println("done")
 }
 

@@ -23,8 +23,8 @@ export async function main(): Promise<void> {
 	  stringSlice![1] = _tmp[1]
 	}
 
-	console.log("intArray[0]:", intArray![0])
-	console.log("stringSlice[1]:", stringSlice![1])
+	$.println("intArray[0]:", intArray![0])
+	$.println("stringSlice[1]:", stringSlice![1])
 
 	// Test with more complex index expressions
 	let matrix: number[][] = [[0, 0], [0, 0]]
@@ -36,7 +36,7 @@ export async function main(): Promise<void> {
 	  intArray![1] = _tmp[1]
 	}
 
-	console.log("matrix[0][1]:", matrix![0]![1])
-	console.log("intArray[1]:", intArray![1])
+	$.println("matrix[0][1]:", matrix![0]![1])
+	$.println("intArray[1]:", intArray![1])
 }
 

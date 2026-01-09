@@ -34,7 +34,7 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 			isSend: false,
 			channel: ctx!.Done(),
 			onSelected: async (result) => {
-				console.log("Context done, returning")
+				$.println("Context done, returning")
 				return "context_done"
 			}
 		},
@@ -44,7 +44,7 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 			channel: ch1,
 			onSelected: async (result) => {
 				const msg = result.value
-				console.log("Received from ch1:", msg)
+				$.println("Received from ch1:", msg)
 				return "ch1_result"
 			}
 		},
@@ -54,8 +54,8 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 			channel: ch2,
 			onSelected: async (result) => {
 				const num = result.value
-				console.log("Received from ch2:", num)
-				console.log("Processing ch2 value...")
+				$.println("Received from ch2:", num)
+				$.println("Processing ch2 value...")
 			}
 		},
 		{
@@ -64,7 +64,7 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 			channel: ch3,
 			onSelected: async (result) => {
 				const flag = result.value
-				console.log("Received from ch3:", flag)
+				$.println("Received from ch3:", flag)
 				return "ch3_result"
 			}
 		},
@@ -74,8 +74,8 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 			channel: ch4,
 			onSelected: async (result) => {
 				const val = result.value
-				console.log("Received from ch4:", val)
-				console.log("Processing ch4 value...")
+				$.println("Received from ch4:", val)
+				$.println("Processing ch4 value...")
 			}
 		},
 		{
@@ -83,8 +83,8 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 			isSend: false,
 			channel: ch5,
 			onSelected: async (result) => {
-				console.log("Received from ch5")
-				console.log("Processing ch5 data...")
+				$.println("Received from ch5")
+				$.println("Processing ch5 data...")
 			}
 		},
 		{
@@ -92,7 +92,7 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("No channels ready, using default")
+				$.println("No channels ready, using default")
 			}
 		},
 	], true)
@@ -102,8 +102,8 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 	// If _select_has_return_db2a is false, continue execution
 
 	// This code should execute when cases 2, 4, 5, or default are selected
-	console.log("Continuing execution after select")
-	console.log("Performing additional work...")
+	$.println("Continuing execution after select")
+	$.println("Performing additional work...")
 
 	// Simulate some work
 	await time.Sleep(10 * time.Millisecond)
@@ -139,7 +139,7 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 			channel: ch1,
 			onSelected: async (result) => {
 				const msg = result.value
-				console.log("Received from ch1:", msg)
+				$.println("Received from ch1:", msg)
 				return "ch1_result"
 			}
 		},
@@ -149,8 +149,8 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 			channel: ch2,
 			onSelected: async (result) => {
 				const num = result.value
-				console.log("Received from ch2:", num)
-				console.log("Processing ch2 value...")
+				$.println("Received from ch2:", num)
+				$.println("Processing ch2 value...")
 			}
 		},
 		{
@@ -159,7 +159,7 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 			channel: ch3,
 			onSelected: async (result) => {
 				const flag = result.value
-				console.log("Received from ch3:", flag)
+				$.println("Received from ch3:", flag)
 				return "ch3_result"
 			}
 		},
@@ -169,8 +169,8 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 			channel: ch4,
 			onSelected: async (result) => {
 				const val = result.value
-				console.log("Received from ch4:", val)
-				console.log("Processing ch4 value...")
+				$.println("Received from ch4:", val)
+				$.println("Processing ch4 value...")
 			}
 		},
 		{
@@ -178,8 +178,8 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 			isSend: false,
 			channel: ch5,
 			onSelected: async (result) => {
-				console.log("Received from ch5")
-				console.log("Processing ch5 data...")
+				$.println("Received from ch5")
+				$.println("Processing ch5 data...")
 			}
 		},
 		{
@@ -187,7 +187,7 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 			isSend: false,
 			channel: null,
 			onSelected: async (result) => {
-				console.log("No channels ready, using default")
+				$.println("No channels ready, using default")
 			}
 		},
 	], true)
@@ -197,8 +197,8 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 	// If _select_has_return_2dfa is false, continue execution
 
 	// This code should NOT execute for ch1 case (which returns)
-	console.log("Continuing execution after select")
-	console.log("Performing additional work...")
+	$.println("Continuing execution after select")
+	$.println("Performing additional work...")
 
 	// Simulate some work
 	await time.Sleep(10 * time.Millisecond)
@@ -209,16 +209,16 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 export async function main(): Promise<void> {
 	let ctx = context.Background()
 
-	console.log("Test 1: Non-returning case (ch2)")
+	$.println("Test 1: Non-returning case (ch2)")
 	let result1 = await testMixedReturns(ctx)
-	console.log("Final result:", result1)
+	$.println("Final result:", result1)
 
-	console.log()
-	console.log("Test 2: Returning case (ch1)")
+	$.println()
+	$.println("Test 2: Returning case (ch1)")
 	let result2 = await testReturnCase(ctx)
-	console.log("Final result:", result2)
+	$.println("Final result:", result2)
 
-	console.log()
-	console.log("All tests completed")
+	$.println()
+	$.println("All tests completed")
 }
 

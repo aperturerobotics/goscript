@@ -87,18 +87,18 @@ export async function main(): Promise<void> {
 	// Cast from larger interface to smaller interface (subset)
 	let i2: MyInterface2 = i1
 
-	console.log("i1.MyString1():", i1!.MyString1())
-	console.log("i1.MyString2():", i1!.MyString2())
-	console.log("i2.MyString1():", i2!.MyString1())
+	$.println("i1.MyString1():", i1!.MyString1())
+	$.println("i1.MyString2():", i1!.MyString2())
+	$.println("i2.MyString1():", i2!.MyString1())
 
 	// Type assertion from larger to smaller interface
 	let { value: i3, ok: ok } = $.typeAssert<MyInterface2>(i1, 'main.MyInterface2')
 	if (ok) {
-		console.log("Type assertion successful")
-		console.log("i3.MyString1():", i3!.MyString1())
+		$.println("Type assertion successful")
+		$.println("i3.MyString1():", i3!.MyString1())
 	}
 	 else {
-		console.log("Type assertion failed")
+		$.println("Type assertion failed")
 	}
 }
 

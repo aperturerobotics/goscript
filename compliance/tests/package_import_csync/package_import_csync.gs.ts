@@ -45,7 +45,7 @@ export async function main(): Promise<void> {
 		// Try to acquire the lock
 		let [relLock, err] = await mtx!.value.Lock(ctx)
 		if (err != null) {
-			console.log("worker", id, "failed to acquire lock:", err!.Error())
+			$.println("worker", id, "failed to acquire lock:", err!.Error())
 			return 
 		}
 		__defer.defer(() => {
@@ -82,7 +82,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: done,
 			onSelected: async (result) => {
-				console.log("All workers completed successfully")
+				$.println("All workers completed successfully")
 			}
 		},
 		{
@@ -90,7 +90,7 @@ export async function main(): Promise<void> {
 			isSend: false,
 			channel: ctx!.Done(),
 			onSelected: async (result) => {
-				console.log("Test timed out:", ctx!.Err()!.Error())
+				$.println("Test timed out:", ctx!.Err()!.Error())
 			}
 		},
 	], false)
@@ -99,11 +99,11 @@ export async function main(): Promise<void> {
 	}
 	// If _select_has_return_08c5 is false, continue execution
 
-	console.log("Final counter value:", counter)
+	$.println("Final counter value:", counter)
 	if (counter != numWorkers) {
 		$.panic("counter does not match expected value")
 	}
 
-	console.log("success: csync.Mutex test completed")
+	$.println("success: csync.Mutex test completed")
 }
 

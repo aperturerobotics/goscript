@@ -6,8 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 // testVariadicInterface tests the TypeScript generation for functions
 // with variadic ...interface{} parameters
 export function testVariadicInterface(name: string, ...values: any[]): void {
-	console.log("Name:", name)
-	console.log("Values count:", $.len(values))
+	$.println("Name:", name)
+	$.println("Values count:", $.len(values))
 
 	// We can't do much with interface{} values in the compiled output
 	// but we can at least check they're passed correctly
@@ -17,10 +17,10 @@ export function testVariadicInterface(name: string, ...values: any[]): void {
 			// We can't do much with interface{} values in the compiled output
 			// but we can at least check they're passed correctly
 			if (v != null) {
-				console.log("Value", i, "is not nil")
+				$.println("Value", i, "is not nil")
 			}
 			 else {
-				console.log("Value", i, "is nil")
+				$.println("Value", i, "is nil")
 			}
 		}
 	}

@@ -16,8 +16,8 @@ $.registerInterfaceType(
 
 export async function main(): Promise<void> {
 	// This test verifies that comments on interface methods are preserved.
-	console.log("Test started")
+	$.println("Test started")
 	// No actual execution needed, just compilation check.
-	console.log("Test finished")
+	$.println("Test finished")
 }
 

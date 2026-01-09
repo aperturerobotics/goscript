@@ -2,6 +2,7 @@
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
 import * as $ from "@goscript/builtin/index.js"
+import * as io from "@goscript/io/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
@@ -166,9 +167,9 @@ export async function main(): Promise<void> {
 	w!.value.WriteString("Hello ")
 	w!.value.WriteString("World")
 
-	console.log("Content:", w!.value.String())
-	console.log("Length:", w!.value.Len())
+	$.println("Content:", w!.value.String())
+	$.println("Length:", w!.value.Len())
 
-	console.log("test finished")
+	$.println("test finished")
 }
 

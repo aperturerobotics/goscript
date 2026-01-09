@@ -53,6 +53,6 @@ export function getFunc(): ((p0: Thing | null, p1: number) => number) | null {
 export async function main(): Promise<void> {
 	let thing = new Thing({value: 10})
 	let result = thing!.callIt(32)
-	console.log("Result:", result)
+	$.println("Result:", result)
 }
 

@@ -10,39 +10,39 @@ export async function main(): Promise<void> {
 	const data = ExampleMsg.toBinary(msg)
 	let err: $.GoError | null = null as $.GoError | null
 	if (err != null) {
-		console.log("error marshalling:", err!.Error())
+		$.println("error marshalling:", err!.Error())
 		return 
 	}
 
-	console.log("data:", data)
+	$.println("data:", data)
 
 	let out = ExampleMsg.create({})
 	out = ExampleMsg.fromBinary($.normalizeBytes(data))
 	err = null as $.GoError | null
 	if (err != null) {
-		console.log("error unmarshalling:", err!.Error())
+		$.println("error unmarshalling:", err!.Error())
 		return 
 	}
 
-	console.log("out:", out)
+	$.println("out:", out)
 
 	const jdata = ExampleMsg.toJsonString(msg)
 	err = null as $.GoError | null
 	if (err != null) {
-		console.log("error marshalling to json:", err!.Error())
+		$.println("error marshalling to json:", err!.Error())
 		return 
 	}
 
-	console.log("json marshaled:", $.bytesToString(jdata))
+	$.println("json marshaled:", $.bytesToString(jdata))
 
 	out = ExampleMsg.create({})
 	out = ExampleMsg.fromJsonString(jdata)
 	let err2: $.GoError | null = null as $.GoError | null
 	if (err2 != null) {
-		console.log("error unmarshalling from json:", err!.Error())
+		$.println("error unmarshalling from json:", err!.Error())
 		return 
 	}
 
-	console.log("json unmarshaled:", out)
+	$.println("json unmarshaled:", out)
 }
 

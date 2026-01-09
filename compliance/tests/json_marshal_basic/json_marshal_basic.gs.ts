@@ -65,10 +65,10 @@ export async function main(): Promise<void> {
 	let p = $.markAsStructValue(new Person({Active: true, Age: 30, Name: "Alice"}))
 	let [b, err] = await json.Marshal(p)
 	if (err != null) {
-		console.log("Marshal error:", err!.Error())
+		$.println("Marshal error:", err!.Error())
 	}
 	 else {
-		console.log("Marshal:", $.bytesToString(b))
+		$.println("Marshal:", $.bytesToString(b))
 	}
 }
 

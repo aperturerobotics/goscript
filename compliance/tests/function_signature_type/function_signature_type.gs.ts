@@ -66,7 +66,7 @@ export function NewMyError(text: string): MyError | null {
 
 export async function main(): Promise<void> {
 	fn1 = (a: number, b: string): [boolean, $.GoError] => {
-		console.log("fn1 called with:", a, b)
+		$.println("fn1 called with:", a, b)
 		if (a > 0) {
 			return [true, null]
 		}
@@ -74,49 +74,49 @@ export async function main(): Promise<void> {
 	}
 
 	fn2 = (p0: number, p1: string): boolean => {
-		console.log("fn2 called with:", p0, p1)
+		$.println("fn2 called with:", p0, p1)
 		return p0 == $.len(p1)
 	}
 
 	fn3 = (): void => {
-		console.log("fn3 called")
+		$.println("fn3 called")
 	}
 
 	// Newline after all strings
 	fn4 = (a: number, ...b: string[]): void => {
-		console.log("fn4 called with: ", a)
+		$.println("fn4 called with: ", a)
 		for (let _i = 0; _i < $.len(b); _i++) {
 			let s = b![_i]
 			{
-				console.log(" ", s)
+				$.println(" ", s)
 			}
 		}
-		console.log() // Newline after all strings
+		$.println() // Newline after all strings
 	}
 
 	let [res1, err1] = fn1!(10, "hello")
-	console.log("fn1 result 1: ", res1, " ")
+	$.println("fn1 result 1: ", res1, " ")
 	if (err1 != null) {
-		console.log(err1!.Error())
+		$.println(err1!.Error())
 	}
 	 else {
-		console.log("nil")
+		$.println("nil")
 	}
 
 	let [res1_2, err1_2] = fn1!(-5, "world")
-	console.log("fn1 result 2: ", res1_2, " ")
+	$.println("fn1 result 2: ", res1_2, " ")
 	if (err1_2 != null) {
-		console.log(err1_2!.Error())
+		$.println(err1_2!.Error())
 	}
 	 else {
-		console.log("nil")
+		$.println("nil")
 	}
 
 	let res2 = fn2!(5, "hello")
-	console.log("fn2 result 1:", res2)
+	$.println("fn2 result 1:", res2)
 
 	let res2_2 = fn2!(3, "hey")
-	console.log("fn2 result 2:", res2_2)
+	$.println("fn2 result 2:", res2_2)
 
 	fn3!()
 

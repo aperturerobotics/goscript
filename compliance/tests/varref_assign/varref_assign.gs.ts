@@ -21,6 +21,6 @@ export async function main(): Promise<void> {
 	// should be: p1.value = y
 	p1!.value = y
 
-	console.log("***p3 ==", p3!.value!.value!.value)
+	$.println("***p3 ==", p3!.value!.value!.value)
 }
 

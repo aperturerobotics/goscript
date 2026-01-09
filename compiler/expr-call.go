@@ -61,7 +61,8 @@ func (c *GoToTSCompiler) WriteCallExpr(exp *ast.CallExpr) error {
 			// For built-ins that don't return early, write the arguments
 			if funIdent.String() != "new" && funIdent.String() != "close" && funIdent.String() != "make" &&
 				funIdent.String() != "string" && funIdent.String() != "append" && funIdent.String() != "byte" &&
-				funIdent.String() != "int" {
+				funIdent.String() != "int" && funIdent.String() != "min" && funIdent.String() != "max" &&
+				funIdent.String() != "clear" {
 				return c.writeCallArguments(exp)
 			}
 			return nil

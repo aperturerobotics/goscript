@@ -124,12 +124,12 @@ export async function main(): Promise<void> {
 	// Test with ChannelProcessor (naturally async)
 	let channelProc = new ChannelProcessor({ch: ch})
 	let result1 = await processViaInterface(channelProc, 5)
-	console.log("ChannelProcessor result:", result1) // Expected: 52 (5*2 + 42)
+	$.println("ChannelProcessor result:", result1) // Expected: 52 (5*2 + 42)
 
 	// Test with SimpleProcessor (forced async for compatibility)
 	let simpleProc = new SimpleProcessor({value: 100})
 	let result2 = await processViaInterface(simpleProc, 5)
-	console.log("SimpleProcessor result:", result2) // Expected: 115 (5+10 + 100)
+	$.println("SimpleProcessor result:", result2) // Expected: 115 (5+10 + 100)
 
 	ch.close()
 }

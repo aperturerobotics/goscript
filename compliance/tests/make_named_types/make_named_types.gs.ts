@@ -10,12 +10,12 @@ export async function main(): Promise<void> {
 
 	type MySlice = $.Slice<number>;
 	let s: MySlice = $.makeSlice<number>(5, undefined, 'number')
-	console.log("Length:", $.len(s))
+	$.println("Length:", $.len(s))
 
 	// Test make() with named map type
 	type MyMap = Map<string, number> | null;
 	let m: MyMap = $.makeMap<string, number>()
 	$.mapSet(m, "test", 42)
-	console.log("Value:", $.mapGet(m, "test", 0)[0])
+	$.println("Value:", $.mapGet(m, "test", 0)[0])
 }
 

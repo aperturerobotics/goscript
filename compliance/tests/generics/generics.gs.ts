@@ -56,7 +56,7 @@ export class Pair<T extends any> {
 
 // Generic function with any constraint
 export function printVal<T extends any>(val: T): void {
-	console.log(val)
+	$.println(val)
 }
 
 // Generic function with comparable constraint
@@ -81,47 +81,47 @@ export function append2<T extends any>(slice: $.Slice<T>, elem: T): $.Slice<T> {
 
 export async function main(): Promise<void> {
 	// Test basic generic function
-	console.log("=== Basic Generic Function ===")
+	$.println("=== Basic Generic Function ===")
 	printVal(42)
 	printVal("hello")
 	printVal(true)
 
 	// Test comparable constraint
-	console.log("=== Comparable Constraint ===")
-	console.log(equal(1, 1))
-	console.log(equal(1, 2))
-	console.log(equal("hello", "hello"))
-	console.log(equal("hello", "world"))
+	$.println("=== Comparable Constraint ===")
+	$.println(equal(1, 1))
+	$.println(equal(1, 2))
+	$.println(equal("hello", "hello"))
+	$.println(equal("hello", "world"))
 
 	// Test union constraint with string
-	console.log("=== Union Constraint ===")
+	$.println("=== Union Constraint ===")
 	let str = "hello"
-	console.log(getLength(str))
+	$.println(getLength(str))
 
 	// Test union constraint with []byte
 	let bytes = $.stringToBytes("world")
-	console.log(getLength(bytes))
+	$.println(getLength(bytes))
 
 	// Test generic struct
-	console.log("=== Generic Struct ===")
+	$.println("=== Generic Struct ===")
 	let intPair = $.markAsStructValue(makePair(10, 20).clone())
-	console.log(intPair.GetFirst())
-	console.log(intPair.First)
-	console.log(intPair.Second)
+	$.println(intPair.GetFirst())
+	$.println(intPair.First)
+	$.println(intPair.Second)
 
 	let stringPair = $.markAsStructValue(makePair("foo", "bar").clone())
-	console.log(stringPair.GetFirst())
-	console.log(stringPair.First)
-	console.log(stringPair.Second)
+	$.println(stringPair.GetFirst())
+	$.println(stringPair.First)
+	$.println(stringPair.Second)
 
 	// Test generic slice operations
-	console.log("=== Generic Slice Operations ===")
+	$.println("=== Generic Slice Operations ===")
 	let nums = $.arrayToSlice<number>([1, 2, 3])
 	nums = append2(nums, 4)
 	for (let _i = 0; _i < $.len(nums); _i++) {
 		let n = nums![_i]
 		{
-			console.log(n)
+			$.println(n)
 		}
 	}
 
@@ -130,14 +130,14 @@ export async function main(): Promise<void> {
 	for (let _i = 0; _i < $.len(words); _i++) {
 		let w = words![_i]
 		{
-			console.log(w)
+			$.println(w)
 		}
 	}
 
 	// Test type inference
-	console.log("=== Type Inference ===")
+	$.println("=== Type Inference ===")
 	let result = $.markAsStructValue(makePair(100, 200).clone())
-	console.log(result.First)
-	console.log(result.Second)
+	$.println(result.First)
+	$.println(result.Second)
 }
 

@@ -700,9 +700,17 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 		}
 	}
 
-	// Note: We don't need to write extra imports for embedded structs here.
-	// The Go compiler already includes necessary imports in the AST when methods
-	// from embedded fields are used in the source code.
+	// Write synthetic imports (for promoted methods from embedded structs)
+	// Sort by package name for consistent output
+	var syntheticPkgNames []string
+	for pkgName := range c.Analysis.SyntheticImports {
+		syntheticPkgNames = append(syntheticPkgNames, pkgName)
+	}
+	slices.Sort(syntheticPkgNames)
+	for _, pkgName := range syntheticPkgNames {
+		imp := c.Analysis.SyntheticImports[pkgName]
+		c.codeWriter.WriteImport(pkgName, imp.importPath+"/index.js")
+	}
 
 	c.codeWriter.WriteLine("") // Add a newline after imports
 

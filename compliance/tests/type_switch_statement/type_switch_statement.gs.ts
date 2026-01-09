@@ -7,47 +7,47 @@ export async function main(): Promise<void> {
 	// Basic type switch with variable and default case
 	let i: null | any = "hello"
 	$.typeSwitch(i, [{ types: [{kind: $.TypeKind.Basic, name: 'number'}], body: (v) => {
-		console.log("int", v)
+		$.println("int", v)
 	}},
 	{ types: [{kind: $.TypeKind.Basic, name: 'string'}], body: (v) => {
-		console.log("string", v)
+		$.println("string", v)
 	}}], () => {
-		console.log("unknown")
+		$.println("unknown")
 	})
 
 	// Type switch without variable
 	let x: null | any = 123
 	$.typeSwitch(x, [{ types: [{kind: $.TypeKind.Basic, name: 'boolean'}], body: () => {
-		console.log("bool")
+		$.println("bool")
 	}},
 	{ types: [{kind: $.TypeKind.Basic, name: 'number'}], body: () => {
-		console.log("int")
+		$.println("int")
 	}}])
 
 	// Type switch with multiple types in a case
 	let y: null | any = true
 	$.typeSwitch(y, [{ types: [{kind: $.TypeKind.Basic, name: 'number'}, {kind: $.TypeKind.Basic, name: 'number'}], body: (v) => {
-		console.log("number", v)
+		$.println("number", v)
 	}},
 	{ types: [{kind: $.TypeKind.Basic, name: 'string'}, {kind: $.TypeKind.Basic, name: 'boolean'}], body: (v) => {
-		console.log("string or bool", v)
+		$.println("string or bool", v)
 	}}])
 
 	// Type switch with initialization statement
 	{
 		let z = getInterface()
 		$.typeSwitch(z, [{ types: [{kind: $.TypeKind.Basic, name: 'number'}], body: (v) => {
-			console.log("z is int", v)
+			$.println("z is int", v)
 		}}])
 	}
 
 	// Default-only type switch
 	let w: null | any = "test"
 	$.typeSwitch(w, [], () => {
-		console.log("default only")
+		$.println("default only")
 	})
 	$.typeSwitch(w, [], () => {
-		console.log("default only, value is", $.mustTypeAssert<string>(w, {kind: $.TypeKind.Basic, name: 'string'}))
+		$.println("default only, value is", $.mustTypeAssert<string>(w, {kind: $.TypeKind.Basic, name: 'string'}))
 	})
 }
 

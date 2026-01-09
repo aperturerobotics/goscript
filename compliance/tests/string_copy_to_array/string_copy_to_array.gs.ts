@@ -14,6 +14,6 @@ export async function main(): Promise<void> {
 			$.panic("copy failed")
 		}
 	}
-	console.log("Copy succeeded")
+	$.println("Copy succeeded")
 }
 

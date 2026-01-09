@@ -22,10 +22,10 @@ export function getAsyncAdder(x: number): ((p0: number) => number) | null {
 export async function main(): Promise<void> {
 	// Direct call of returned function - not async
 	let result1 = getAdder(5)!(3)
-	console.log("Result 1:", result1)
+	$.println("Result 1:", result1)
 
 	// Direct call of returned function - with async call inside
 	let result2 = getAsyncAdder(10)!(7)
-	console.log("Result 2:", result2)
+	$.println("Result 2:", result2)
 }
 

@@ -56,7 +56,7 @@ export function NewMyStruct(pub: string, priv: number): MyStruct {
 export function accessPrivateField(s: MyStruct): void {
 	// Accessing privateField directly from a function in the same package
 	// This should trigger the generation of the _private field
-	console.log("Accessing privateField:", s.privateField)
+	$.println("Accessing privateField:", s.privateField)
 }
 
 export async function main(): Promise<void> {

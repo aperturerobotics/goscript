@@ -6,9 +6,9 @@ import * as $ from "@goscript/builtin/index.js"
 export async function main(): Promise<void> {
 	let i = 0
 	for (; i < 3; ) {
-		console.log("Current value:", i)
+		$.println("Current value:", i)
 		i = i + 1
 	}
-	console.log("Loop finished")
+	$.println("Loop finished")
 }
 

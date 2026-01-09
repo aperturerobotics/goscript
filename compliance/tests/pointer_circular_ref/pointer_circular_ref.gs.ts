@@ -243,8 +243,8 @@ export async function main(): Promise<void> {
 	node1!.next = node2
 	node2!.parent = node1
 
-	console.log("Node 1 value:", node1!.value)
-	console.log("Node 2 value:", node2!.value)
+	$.println("Node 1 value:", node1!.value)
+	$.println("Node 2 value:", node2!.value)
 
 	// Create person/employee relationship
 	let person = new Person({name: "John"})
@@ -252,9 +252,9 @@ export async function main(): Promise<void> {
 	person!.spouse = employee
 	employee!.person = person
 
-	console.log("Person name:", person!.name)
-	console.log("Employee ID:", employee!.id)
+	$.println("Person name:", person!.name)
+	$.println("Employee ID:", employee!.id)
 
-	console.log("Pointer circular references work fine!")
+	$.println("Pointer circular references work fine!")
 }
 

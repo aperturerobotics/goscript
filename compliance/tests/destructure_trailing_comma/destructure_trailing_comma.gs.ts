@@ -14,6 +14,6 @@ export async function main(): Promise<void> {
 	let nref: number = 0
 	;[nref] = returnTwoValues()
 
-	console.log("nref:", nref)
+	$.println("nref:", nref)
 }
 

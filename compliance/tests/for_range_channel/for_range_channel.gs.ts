@@ -12,7 +12,7 @@ export async function main(): Promise<void> {
 		const { value: x, ok: _ok } = await $.chanRecvWithOk(c)
 		if (!_ok) break
 		{
-			console.log(x)
+			$.println(x)
 		}
 	}
 
@@ -27,7 +27,7 @@ export async function main(): Promise<void> {
 		;({ value: y, ok: _ok } = await $.chanRecvWithOk(c))
 		if (!_ok) break
 		{
-			console.log(y)
+			$.println(y)
 		}
 	}
 }

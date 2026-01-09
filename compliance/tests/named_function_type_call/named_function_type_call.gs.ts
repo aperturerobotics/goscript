@@ -205,34 +205,34 @@ export async function main(): Promise<void> {
 	// Test the walk function with custom WalkFunc
 	let walkFunc = (path: string, info: FileInfo, err: $.GoError): $.GoError => {
 		if (info != null) {
-			console.log("Walking:", path, "size:", info!.Size())
+			$.println("Walking:", path, "size:", info!.Size())
 		}
 		if (err != null) {
-			console.log("Error:", err!.Error())
+			$.println("Error:", err!.Error())
 		}
 		return null
 	}
 
 	let err = walkWithCustomFunc(fs, "/test", fileInfo, walkFunc)
 	if (err != null) {
-		console.log("Walk error:", err!.Error())
+		$.println("Walk error:", err!.Error())
 	}
 
 	// Test with processFiles
 	let processFunc = (pattern: string): $.GoError => {
-		console.log("Processing pattern:", pattern)
+		$.println("Processing pattern:", pattern)
 		return null
 	}
 
 	let err2 = processFiles("*.go", processFunc)
 	if (err2 != null) {
-		console.log("Process error:", err2!.Error())
+		$.println("Process error:", err2!.Error())
 	}
 
 	// Test with multiCallback
 	let err3 = multiCallback(walkFunc, processFunc)
 	if (err3 != null) {
-		console.log("Multi callback error:", err3!.Error())
+		$.println("Multi callback error:", err3!.Error())
 	}
 }
 
