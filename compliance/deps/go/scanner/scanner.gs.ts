@@ -190,7 +190,7 @@ export class Scanner {
 		const s = this
 		if (s.rdOffset < $.len(s.src)) {
 			s.offset = s.rdOffset
-			if (s.ch == 10) {
+			if (Number(s.ch) == 10) {
 				s.lineOffset = s.offset
 				await s.file!.AddLine(s.offset)
 			}
@@ -216,7 +216,7 @@ export class Scanner {
 						// UCS-2 (i.e. 2-byte UTF-16). Give specific error (go.dev/issue/71950).
 
 						// consume all input to avoid error cascade
-						if (s.offset == 0 && $.len(_in) >= 2 && (_in![0] == 0xFF && _in![1] == 0xFE || _in![0] == 0xFE && _in![1] == 0xFF)) {
+						if (Number(s.offset) == 0 && $.len(_in) >= 2 && (_in![0] == 0xFF && _in![1] == 0xFE || _in![0] == 0xFE && _in![1] == 0xFF)) {
 							// U+FEFF BOM at start of file, encoded as big- or little-endian
 							// UCS-2 (i.e. 2-byte UTF-16). Give specific error (go.dev/issue/71950).
 							await s.error(s.offset, "illegal UTF-8 encoding (got UTF-16)")
@@ -237,7 +237,7 @@ export class Scanner {
 		}
 		 else {
 			s.offset = $.len(s.src)
-			if (s.ch == 10) {
+			if (Number(s.ch) == 10) {
 				s.lineOffset = s.offset
 				await s.file!.AddLine(s.offset)
 			}
@@ -289,7 +289,7 @@ export class Scanner {
 		s.insertSemi = false
 		s.ErrorCount = 0
 		await s.next()
-		if (s.ch == 65279) {
+		if (Number(s.ch) == 65279) {
 			await s.next() // ignore BOM at file beginning
 		}
 	}
@@ -316,19 +316,19 @@ export class Scanner {
 		let next = -1 // position immediately following the comment; < 0 means invalid comment
 		let numCR = 0
 		let nlOffset = 0 // offset of first newline within /*...*/ comment
-		if (s.ch == 47) {
+		if (Number(s.ch) == 47) {
 			//-style comment
 			// (the final '\n' is not considered part of the comment)
 			await s.next()
-			for (; s.ch != 10 && s.ch >= 0; ) {
-				if (s.ch == 13) {
+			for (; Number(s.ch) != 10 && s.ch >= 0; ) {
+				if (Number(s.ch) == 13) {
 					numCR++
 				}
 				await s.next()
 			}
 			// if we are at '\n', the position following the comment is afterwards
 			next = s.offset
-			if (s.ch == 10) {
+			if (Number(s.ch) == 10) {
 				next++
 			}
 			// goto exit // goto statement skipped
@@ -343,7 +343,7 @@ export class Scanner {
 				nlOffset = s.offset
 			}
 			await s.next()
-			if (ch == 42 && s.ch == 47) {
+			if (ch == 42 && Number(s.ch) == 47) {
 				await s.next()
 				next = s.offset
 				// goto exit // goto statement skipped
@@ -409,7 +409,7 @@ export class Scanner {
 		}
 		let filename = $.bytesToString($.goSlice(text, undefined, i - 1)) // lop off ":line", and trim white space
 		if (filename == "" && ok2) {
-			filename = await s.file!.Position(s.file!.Pos(offs))!.Filename
+			filename = (await s.file!.Position(s.file!.Pos(offs)))!.Filename
 		}
 		 else if (filename != "") {
 			// Put a relative filename in the current directory.
@@ -489,11 +489,11 @@ export class Scanner {
 			let max = (48 + base as number)
 
 			// record invalid rune offset
-			for (; isDecimal(s.ch) || s.ch == 95; ) {
+			for (; isDecimal(s.ch) || Number(s.ch) == 95; ) {
 				let ds = 1
 
 				// record invalid rune offset
-				if (s.ch == 95) {
+				if (Number(s.ch) == 95) {
 					ds = 2
 				}
 				 else if (s.ch >= max && invalid!.value < 0) {
@@ -504,9 +504,9 @@ export class Scanner {
 			}
 		}
 		 else {
-			for (; isHex(s.ch) || s.ch == 95; ) {
+			for (; isHex(s.ch) || Number(s.ch) == 95; ) {
 				let ds = 1
-				if (s.ch == 95) {
+				if (Number(s.ch) == 95) {
 					ds = 2
 				}
 				digsep |= ds
@@ -524,11 +524,11 @@ export class Scanner {
 		let prefix = (0 as number) // one of 0 (decimal), '0' (0-octal), 'x', 'o', or 'b'
 		let digsep = 0 // bit 0: digit present, bit 1: '_' present
 		let invalid = -1 // index of invalid digit in literal, or < 0
-		if (s.ch != 46) {
+		if (Number(s.ch) != 46) {
 			tok = token.INT
 
 			// leading 0
-			if (s.ch == 48) {
+			if (Number(s.ch) == 48) {
 				await s.next()
 
 				// leading 0
@@ -557,7 +557,7 @@ export class Scanner {
 			}
 			digsep |= await s.digits(base, invalid)
 		}
-		if (s.ch == 46) {
+		if (Number(s.ch) == 46) {
 			tok = token.FLOAT
 			if (prefix == 111 || prefix == 98) {
 				await s.error(s.offset, "invalid radix point in " + litname(prefix))
@@ -583,7 +583,7 @@ export class Scanner {
 				}
 				await s.next()
 				tok = token.FLOAT
-				if (s.ch == 43 || s.ch == 45) {
+				if (Number(s.ch) == 43 || Number(s.ch) == 45) {
 					await s.next()
 				}
 				let ds = await s.digits(10, null)
@@ -596,7 +596,7 @@ export class Scanner {
 				await s.error(s.offset, "hexadecimal mantissa requires a 'p' exponent")
 			}
 		}
-		if (s.ch == 105) {
+		if (Number(s.ch) == 105) {
 			tok = token.IMAG
 			await s.next()
 		}
@@ -783,14 +783,14 @@ export class Scanner {
 
 	public async skipWhitespace(): Promise<void> {
 		const s = this
-		for (; s.ch == 32 || s.ch == 9 || s.ch == 10 && !s.insertSemi || s.ch == 13; ) {
+		for (; Number(s.ch) == 32 || Number(s.ch) == 9 || Number(s.ch) == 10 && !s.insertSemi || Number(s.ch) == 13; ) {
 			await s.next()
 		}
 	}
 
 	public async switch2(tok0: token.Token, tok1: token.Token): Promise<token.Token> {
 		const s = this
-		if (s.ch == 61) {
+		if (Number(s.ch) == 61) {
 			await s.next()
 			return tok1
 		}
@@ -799,7 +799,7 @@ export class Scanner {
 
 	public async switch3(tok0: token.Token, tok1: token.Token, ch2: number, tok2: token.Token): Promise<token.Token> {
 		const s = this
-		if (s.ch == 61) {
+		if (Number(s.ch) == 61) {
 			await s.next()
 			return tok1
 		}
@@ -812,13 +812,13 @@ export class Scanner {
 
 	public async switch4(tok0: token.Token, tok1: token.Token, ch2: number, tok2: token.Token, tok3: token.Token): Promise<token.Token> {
 		const s = this
-		if (s.ch == 61) {
+		if (Number(s.ch) == 61) {
 			await s.next()
 			return tok1
 		}
 		if (s.ch == ch2) {
 			await s.next()
-			if (s.ch == 61) {
+			if (Number(s.ch) == 61) {
 				await s.next()
 				return tok3
 			}
@@ -941,7 +941,7 @@ export class Scanner {
 						}
 						case 46: {
 							tok = token.PERIOD
-							if (s.ch == 46 && s.peek() == 46) {
+							if (Number(s.ch) == 46 && s.peek() == 46) {
 								await s.next()
 								await s.next() // consume last '.'
 								tok = token.ELLIPSIS
@@ -1003,7 +1003,7 @@ export class Scanner {
 							break
 						}
 						case 47: {
-							if (s.ch == 47 || s.ch == 42) {
+							if (Number(s.ch) == 47 || Number(s.ch) == 42) {
 								// comment
 								let [comment, nlOffset] = await s.scanComment()
 
@@ -1044,7 +1044,7 @@ export class Scanner {
 							break
 						}
 						case 60: {
-							if (s.ch == 45) {
+							if (Number(s.ch) == 45) {
 								await s.next()
 								tok = token.ARROW
 							}
@@ -1066,7 +1066,7 @@ export class Scanner {
 							break
 						}
 						case 38: {
-							if (s.ch == 94) {
+							if (Number(s.ch) == 94) {
 								await s.next()
 								tok = await s.switch2(token.AND_NOT, token.AND_NOT_ASSIGN)
 							}

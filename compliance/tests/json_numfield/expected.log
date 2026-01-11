@@ -1,0 +1,8 @@
+TypeOf(Person{}):
+  Name: Person
+  Kind: struct
+  NumField: 3
+ValueOf(Person{}).Type():
+  Name: Person
+  Kind: struct
+  NumField: 3

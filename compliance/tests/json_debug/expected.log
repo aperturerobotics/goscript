@@ -1,0 +1,19 @@
+NumField: 3
+Field 0
+  Name: Name
+  Anonymous: false
+  IsExported: true
+  Tag.Get(json): name
+  Parsed name: name
+Field 1
+  Name: Age
+  Anonymous: false
+  IsExported: true
+  Tag.Get(json): age
+  Parsed name: age
+Field 2
+  Name: Active
+  Anonymous: false
+  IsExported: true
+  Tag.Get(json): active
+  Parsed name: active

@@ -18,6 +18,14 @@ func (c *GoToTSCompiler) writeNilConversion(exp *ast.CallExpr) (handled bool, er
 		return false, nil
 	}
 
+	// Check if this is actually a type conversion, not a method/function call
+	// For type conversions, exp.Fun is a type expression (IsType() is true)
+	// For method calls like s.ptr.Swap(nil), exp.Fun is a selector expression (IsType() is false)
+	if tv, ok := c.pkg.TypesInfo.Types[exp.Fun]; !ok || !tv.IsType() {
+		// This is not a type conversion, let the normal call handling proceed
+		return false, nil
+	}
+
 	// Get the type being converted to
 	if typ := c.pkg.TypesInfo.TypeOf(exp.Fun); typ != nil {
 		// For pointer types, create a typed nil that preserves type information
@@ -152,8 +160,21 @@ func (c *GoToTSCompiler) writeStringConversion(exp *ast.CallExpr) error {
 
 	// Handle direct string(int32) conversion
 	if tv, ok := c.pkg.TypesInfo.Types[arg]; ok {
-		// Case 3a: Argument is already a string - no-op
+		// Case 3a: Argument is already a string - no-op (unless it's a named type with toString)
 		if c.isStringType(tv.Type) {
+			// Check if this is a named type from the reflect package (like StructTag)
+			// which is implemented as a class in TypeScript with a toString() method
+			if namedType, isNamed := tv.Type.(*types.Named); isNamed {
+				obj := namedType.Obj()
+				if obj != nil && obj.Pkg() != nil && obj.Pkg().Path() == "reflect" && obj.Name() == "StructTag" {
+					// Call toString() for reflect.StructTag
+					if err := c.WriteValueExpr(arg); err != nil {
+						return fmt.Errorf("failed to write argument for string(reflect.StructTag) conversion: %w", err)
+					}
+					c.tsw.WriteLiterally(".toString()")
+					return nil
+				}
+			}
 			// Translate string(stringValue) to stringValue (no-op)
 			if err := c.WriteValueExpr(arg); err != nil {
 				return fmt.Errorf("failed to write argument for string(string) no-op conversion: %w", err)

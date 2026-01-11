@@ -77,7 +77,7 @@ export class PromiseType<T extends any> {
 	}
 
 	// Await waits for the result to be set or for ctx to be canceled
-	public async Await(ctx: context.Context): Promise<[T, $.GoError]> {
+	public async Await(ctx: null | context.Context): Promise<[T, $.GoError]> {
 		const p = this
 		let val: T = null as any
 		let err: $.GoError = null

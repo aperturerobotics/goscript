@@ -57,6 +57,7 @@ func (c *GoToTSCompiler) getEmbeddedFieldKeyName(fieldType types.Type) string {
 
 func (c *GoToTSCompiler) writeGetterSetter(fieldName string, fieldType types.Type, doc, comment *ast.CommentGroup, astType ast.Expr) {
 	// Use AST type information if available to preserve qualified names
+	// Note: getASTTypeString/getTypeString already includes "null |" for interface types
 	var fieldTypeStr string
 	if astType != nil {
 		fieldTypeStr = c.getASTTypeString(astType, fieldType)
@@ -632,6 +633,13 @@ func (c *GoToTSCompiler) WriteImportSpec(a *ast.ImportSpec) {
 	c.analysis.Imports[impName] = &fileImport{
 		importPath: tsImportPath,
 		importVars: make(map[string]struct{}),
+	}
+
+	// Skip writing the import if it was already written as a synthetic import
+	// This prevents duplicate imports when a file needs an import both from
+	// its AST and for promoted methods from embedded structs
+	if _, isSynthetic := c.analysis.SyntheticImports[impName]; isSynthetic {
+		return
 	}
 
 	c.tsw.WriteImport(impName, tsImportPath+"/index.js")

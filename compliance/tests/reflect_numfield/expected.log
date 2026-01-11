@@ -1,0 +1,12 @@
+Type: Person
+Kind: struct
+NumField: 3
+Field 0 Name: Name
+Field 0 Tag: json:"name"
+Field 0 JsonTag: name
+Field 1 Name: Age
+Field 1 Tag: json:"age"
+Field 1 JsonTag: age
+Field 2 Name: Active
+Field 2 Tag: json:"active"
+Field 2 JsonTag: active

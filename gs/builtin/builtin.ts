@@ -18,7 +18,7 @@ export function println(...args: any[]): void {
  * Implementation of Go's built-in panic function
  * @param args Arguments passed to panic
  */
-export function panic(...args: any[]): void {
+export function panic(...args: any[]): never {
   throw new Error(`panic: ${args.map((arg) => String(arg)).join(' ')}`)
 }
 

@@ -168,6 +168,21 @@ func (c *GoToTSCompiler) WriteStmtAssign(exp *ast.AssignStmt) error {
 
 	// Handle single assignment using writeAssignmentCore
 	if len(exp.Lhs) == 1 {
+		// Check for type shadowing (e.g., field := field{...})
+		// In this case, we need to rename the variable to avoid TypeScript shadowing
+		if nodeInfo := c.analysis.NodeData[exp]; nodeInfo != nil && nodeInfo.ShadowingInfo != nil {
+			if lhsIdent, ok := exp.Lhs[0].(*ast.Ident); ok && lhsIdent.Name != "_" {
+				if renamedVar, hasTypeShadow := nodeInfo.ShadowingInfo.TypeShadowedVars[lhsIdent.Name]; hasTypeShadow {
+					if err := c.writeTypeShadowedAssignment(exp, lhsIdent.Name, renamedVar); err != nil {
+						return err
+					}
+					c.writeInlineComment(exp)
+					c.tsw.WriteLine("")
+					return nil
+				}
+			}
+		}
+
 		addDeclaration := exp.Tok == token.DEFINE
 		if err := c.writeAssignmentCore(exp.Lhs, exp.Rhs, exp.Tok, addDeclaration); err != nil {
 			return err
@@ -533,6 +548,62 @@ func (c *GoToTSCompiler) writeMapLookupWithExists(lhs []ast.Expr, indexExpr *ast
 
 	c.tsw.WriteLiterally(")")
 	c.tsw.WriteLine("")
+
+	return nil
+}
+
+// writeTypeShadowedAssignment handles the case where a variable name shadows a type name
+// used in its initialization (e.g., field := field{...}).
+// In TypeScript, `let field = new field({...})` fails because the variable shadows the class
+// before initialization due to the Temporal Dead Zone (TDZ). The TDZ extends from the
+// start of the block scope to the point of initialization, so even capturing the type
+// reference before the `let` declaration doesn't work - they're in the same block.
+//
+// We solve this by renaming the variable to avoid the conflict entirely:
+//
+//	let field_ = $.markAsStructValue(new field({...}));
+//
+// Then we need to track that all subsequent references to `field` should use `field_`.
+// This is stored in the analysis NodeInfo.IdentifierMapping.
+func (c *GoToTSCompiler) writeTypeShadowedAssignment(exp *ast.AssignStmt, origName, renamedVar string) error {
+	if len(exp.Lhs) != 1 || len(exp.Rhs) != 1 {
+		return fmt.Errorf("type shadowing assignment must have exactly 1 LHS and 1 RHS")
+	}
+
+	lhsIdent, ok := exp.Lhs[0].(*ast.Ident)
+	if !ok {
+		return fmt.Errorf("type shadowing assignment LHS must be an identifier")
+	}
+
+	// Check if this variable needs VarRef
+	obj := c.objectOfIdent(lhsIdent)
+	needsVarRef := obj != nil && c.analysis.NeedsVarRef(obj)
+
+	// Store the mapping so that subsequent references to this variable use the renamed version
+	if obj != nil {
+		c.renamedVars[obj] = renamedVar
+	}
+
+	if needsVarRef {
+		// For VarRef'd variables:
+		// let field_ = $.varRef($.markAsStructValue(new field({...})))
+		c.tsw.WriteLiterally("let ")
+		c.tsw.WriteLiterally(c.sanitizeIdentifier(renamedVar))
+		c.tsw.WriteLiterally(" = $.varRef(")
+		if err := c.WriteValueExpr(exp.Rhs[0]); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally(")")
+	} else {
+		// For non-VarRef variables:
+		// let field_ = $.markAsStructValue(new field({...}))
+		c.tsw.WriteLiterally("let ")
+		c.tsw.WriteLiterally(c.sanitizeIdentifier(renamedVar))
+		c.tsw.WriteLiterally(" = ")
+		if err := c.WriteValueExpr(exp.Rhs[0]); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

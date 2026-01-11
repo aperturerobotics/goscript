@@ -1,0 +1,16 @@
+Type: Person Kind: struct NumField: 3
+Field 0 : Name
+  Anonymous: false
+  IsExported: true
+  Tag.Get("json"): name
+  -> Name after parsing: name
+Field 1 : Age
+  Anonymous: false
+  IsExported: true
+  Tag.Get("json"): age
+  -> Name after parsing: age
+Field 2 : Active
+  Anonymous: false
+  IsExported: true
+  Tag.Get("json"): active
+  -> Name after parsing: active

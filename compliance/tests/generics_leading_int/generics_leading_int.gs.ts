@@ -15,7 +15,7 @@ export function leadingInt<bytes extends $.Bytes | string>(s: bytes): [number, b
 
 		// overflow
 		for (; i < $.len(s); i++) {
-			let c = $.indexStringOrBytes(s, i)
+			let c = $.indexString(s, i)
 			if (c < 48 || c > 57) {
 				break
 			}

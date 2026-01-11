@@ -40,7 +40,7 @@ export async function main(): Promise<void> {
 	$.println("Cause error:", cause!.Error())
 
 	// Test nil handling
-	let nilErr = null
+	let nilErr = errors.WithStack(null)
 	if (nilErr == null) {
 		$.println("WithStack with nil returns nil")
 	}

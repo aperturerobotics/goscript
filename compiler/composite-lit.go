@@ -626,9 +626,10 @@ func (c *GoToTSCompiler) categorizeStructFields(
 		}
 	}
 
-	// Handle the case where an anonymous struct has values without keys
+	// Handle the case where a struct has values without keys (positional initialization)
 	// This block processes non-key-value elements and associates them with struct fields.
-	if isAnonymousStruct && len(exp.Elts) > 0 && len(directFields) == 0 {
+	// This applies to both named and anonymous structs.
+	if len(exp.Elts) > 0 && len(directFields) == 0 {
 		// Check if any elements in the composite literal are not key-value pairs.
 		hasNonKeyValueElts := false
 		for _, elt := range exp.Elts {

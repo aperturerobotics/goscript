@@ -12,7 +12,15 @@ func (c *GoToTSCompiler) isCallExprAsync(exp *ast.CallExpr) bool {
 	case *ast.Ident:
 		// Function call (e.g., func())
 		if obj := c.objectOfIdent(fun); obj != nil {
-			return c.analysis.IsAsyncFunc(obj)
+			// Check if this is a known async function
+			if c.analysis.IsAsyncFunc(obj) {
+				return true
+			}
+			// Check if this is a variable that returns async values
+			// (e.g., indirect := sync.OnceValue(asyncFunc))
+			if c.analysis.IsAsyncReturningVar(obj) {
+				return true
+			}
 		}
 		return false
 
@@ -39,6 +47,13 @@ func (c *GoToTSCompiler) isCallExprAsync(exp *ast.CallExpr) bool {
 			// Field access: obj.field.method()
 			// Get the type of the field access expression
 			if fieldType := c.pkg.TypesInfo.TypeOf(x); fieldType != nil {
+				objOk = true
+			}
+
+		case *ast.CallExpr:
+			// Method call on function result: funcCall().method()
+			// Get the type of the function call result
+			if callType := c.pkg.TypesInfo.TypeOf(x); callType != nil {
 				objOk = true
 			}
 
@@ -141,6 +156,16 @@ func (c *GoToTSCompiler) addNonNullAssertion(expFun ast.Expr) {
 					if _, isVar := obj.(*types.Var); isVar {
 						// This is a variable (including function parameters)
 						// Function parameters that are function types need ! assertion
+						c.tsw.WriteLiterally("!")
+					}
+				}
+			} else if selectorExpr, isSelectorExpr := expFun.(*ast.SelectorExpr); isSelectorExpr {
+				// Check if this is a field access that returns a function type
+				// e.g., s.step where step is a function-typed field
+				if selection := c.pkg.TypesInfo.Selections[selectorExpr]; selection != nil {
+					// This is a field or method selection
+					if selection.Kind() == types.FieldVal {
+						// It's a field - function-typed fields may be nil
 						c.tsw.WriteLiterally("!")
 					}
 				}

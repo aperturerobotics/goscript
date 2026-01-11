@@ -7,12 +7,12 @@ import { Marshaler, encOpts } from "./encode.gs.js";
 import { SyntaxError, scanner } from "./scanner.gs.js";
 import { encodeStatePool } from "./encode.gs.js";
 import { scanEnd, scanEndArray, scanEndObject, scanError } from "./scanner.gs.js";
+import * as io from "@goscript/io/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
 import * as errors from "@goscript/errors/index.js"
 
-import * as io from "@goscript/io/index.js"
 
 export let tokenTopValue: number = 0
 
@@ -33,10 +33,10 @@ export let tokenObjectValue: number = 0
 export let tokenObjectComma: number = 0
 
 export class Decoder {
-	public get r(): io.Reader {
+	public get r(): null | io.Reader {
 		return this._fields.r.value
 	}
-	public set r(value: io.Reader) {
+	public set r(value: null | io.Reader) {
 		this._fields.r.value = value
 	}
 
@@ -99,7 +99,7 @@ export class Decoder {
 	}
 
 	public _fields: {
-		r: $.VarRef<io.Reader>;
+		r: $.VarRef<null | io.Reader>;
 		buf: $.VarRef<$.Bytes>;
 		d: $.VarRef<decodeState>;
 		scanp: $.VarRef<number>;
@@ -110,7 +110,7 @@ export class Decoder {
 		tokenStack: $.VarRef<$.Slice<number>>;
 	}
 
-	constructor(init?: Partial<{buf?: $.Bytes, d?: decodeState, err?: $.GoError, r?: io.Reader, scan?: scanner, scanned?: number, scanp?: number, tokenStack?: $.Slice<number>, tokenState?: number}>) {
+	constructor(init?: Partial<{buf?: $.Bytes, d?: decodeState, err?: $.GoError, r?: null | io.Reader, scan?: scanner, scanned?: number, scanp?: number, tokenStack?: $.Slice<number>, tokenState?: number}>) {
 		this._fields = {
 			r: $.varRef(init?.r ?? null),
 			buf: $.varRef(init?.buf ?? new Uint8Array(0)),
@@ -187,7 +187,7 @@ export class Decoder {
 
 	// Buffered returns a reader of the data remaining in the Decoder's
 	// buffer. The reader is valid until the next call to [Decoder.Decode].
-	public Buffered(): io.Reader {
+	public Buffered(): null | io.Reader {
 		const dec = this
 		return bytes.NewReader($.goSlice(dec.buf, dec.scanp, undefined))
 	}
@@ -221,7 +221,7 @@ export class Decoder {
 				// scanEnd is delayed one byte.
 				// We might block trying to get that byte from src,
 				// so instead invent a space byte.
-				switch (dec.scan.step(dec.scan, c)) {
+				switch (dec.scan.step!(dec.scan, c)) {
 					case 10: {
 						dec.scan.bytes--
 						break
@@ -247,7 +247,7 @@ export class Decoder {
 			// Delayed until now to allow buffer scan.
 			if (err != null) {
 				if (err == io.EOF) {
-					if (dec.scan.step(dec.scan, 32) == 10) {
+					if (dec.scan.step!(dec.scan, 32) == 10) {
 						break
 					}
 					if (nonSpace(dec.buf)) {
@@ -294,7 +294,7 @@ export class Decoder {
 					return err
 				}
 				if (c != 44) {
-					return new SyntaxError({})
+					return new SyntaxError({Offset: dec.InputOffset(), msg: "expected comma after array element"})
 				}
 				dec.scanp++
 				dec.tokenState = 2
@@ -306,7 +306,7 @@ export class Decoder {
 					return err
 				}
 				if (c != 58) {
-					return new SyntaxError({})
+					return new SyntaxError({Offset: dec.InputOffset(), msg: "expected colon after object key"})
 				}
 				dec.scanp++
 				dec.tokenState = 7
@@ -375,7 +375,7 @@ export class Decoder {
 					break
 				}
 				case 93: {
-					if (dec.tokenState != 1 && dec.tokenState != 3) {
+					if (Number(dec.tokenState) != 1 && Number(dec.tokenState) != 3) {
 						return dec.tokenError(c)
 					}
 					dec.scanp++
@@ -396,7 +396,7 @@ export class Decoder {
 					break
 				}
 				case 125: {
-					if (dec.tokenState != 4 && dec.tokenState != 8) {
+					if (Number(dec.tokenState) != 4 && Number(dec.tokenState) != 8) {
 						return dec.tokenError(c)
 					}
 					dec.scanp++
@@ -407,7 +407,7 @@ export class Decoder {
 					break
 				}
 				case 58: {
-					if (dec.tokenState != 6) {
+					if (Number(dec.tokenState) != 6) {
 						return dec.tokenError(c)
 					}
 					dec.scanp++
@@ -416,12 +416,12 @@ export class Decoder {
 					break
 				}
 				case 44: {
-					if (dec.tokenState == 3) {
+					if (Number(dec.tokenState) == 3) {
 						dec.scanp++
 						dec.tokenState = 2
 						continue
 					}
-					if (dec.tokenState == 8) {
+					if (Number(dec.tokenState) == 8) {
 						dec.scanp++
 						dec.tokenState = 5
 						continue
@@ -430,7 +430,7 @@ export class Decoder {
 					break
 				}
 				case 34: {
-					if (dec.tokenState == 4 || dec.tokenState == 5) {
+					if (Number(dec.tokenState) == 4 || Number(dec.tokenState) == 5) {
 						let x: string = ""
 						let old = dec.tokenState
 						dec.tokenState = 0
@@ -494,7 +494,7 @@ export class Decoder {
 				break
 			}
 		}
-		return [null, new SyntaxError({})]
+		return [null, new SyntaxError({Offset: dec.InputOffset(), msg: "invalid character " + quoteChar(c) + context})]
 	}
 
 	// More reports whether there is another element in the
@@ -551,10 +551,10 @@ export function Delim_String(d: Delim): string {
 
 
 export class Encoder {
-	public get w(): io.Writer {
+	public get w(): null | io.Writer {
 		return this._fields.w.value
 	}
-	public set w(value: io.Writer) {
+	public set w(value: null | io.Writer) {
 		this._fields.w.value = value
 	}
 
@@ -594,7 +594,7 @@ export class Encoder {
 	}
 
 	public _fields: {
-		w: $.VarRef<io.Writer>;
+		w: $.VarRef<null | io.Writer>;
 		err: $.VarRef<$.GoError>;
 		escapeHTML: $.VarRef<boolean>;
 		indentBuf: $.VarRef<$.Bytes>;
@@ -602,7 +602,7 @@ export class Encoder {
 		indentValue: $.VarRef<string>;
 	}
 
-	constructor(init?: Partial<{err?: $.GoError, escapeHTML?: boolean, indentBuf?: $.Bytes, indentPrefix?: string, indentValue?: string, w?: io.Writer}>) {
+	constructor(init?: Partial<{err?: $.GoError, escapeHTML?: boolean, indentBuf?: $.Bytes, indentPrefix?: string, indentValue?: string, w?: null | io.Writer}>) {
 		this._fields = {
 			w: $.varRef(init?.w ?? null),
 			err: $.varRef(init?.err ?? null),
@@ -712,7 +712,7 @@ export function RawMessage_UnmarshalJSON(m: $.VarRef<RawMessage>, data: $.Bytes)
 	if (m == null) {
 		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
 	}
-	m!.value = $.append($.goSlice((m!.value), 0, 0), data)
+	m!.value = $.append($.goSlice((m!.value), 0, 0), ...(data || []))
 	return null
 }
 
@@ -724,7 +724,7 @@ export type Token = null | any;
 //
 // The decoder introduces its own buffering and may
 // read data from r beyond the JSON values requested.
-export function NewDecoder(r: io.Reader): Decoder | null {
+export function NewDecoder(r: null | io.Reader): Decoder | null {
 	return new Decoder({r: r})
 }
 
@@ -741,7 +741,7 @@ export function nonSpace(b: $.Bytes): boolean {
 }
 
 // NewEncoder returns a new encoder that writes to w.
-export function NewEncoder(w: io.Writer): Encoder | null {
+export function NewEncoder(w: null | io.Writer): Encoder | null {
 	return new Encoder({escapeHTML: true, w: w})
 }
 

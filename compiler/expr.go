@@ -441,8 +441,45 @@ func (c *GoToTSCompiler) WriteBinaryExpr(exp *ast.BinaryExpr) error {
 		c.tsw.WriteLiterally("(") // Add opening parenthesis for bitwise operations
 	}
 
+	// Check if this is a comparison that might trigger TypeScript's control flow narrowing.
+	// When a numeric field is compared to a literal, TypeScript may narrow the field type
+	// to that literal, causing subsequent comparisons to appear unintentional.
+	// We cast to number to widen the type and avoid these false positives.
+	needsNumberCast := false
+	if (exp.Op == token.EQL || exp.Op == token.NEQ) && c.pkg != nil && c.pkg.TypesInfo != nil {
+		// Check if left side is a selector expression (field access) and right is a literal or constant
+		_, leftIsSelector := exp.X.(*ast.SelectorExpr)
+		_, rightIsLiteral := exp.Y.(*ast.BasicLit)
+		// Also check if right side is an identifier referring to a constant
+		rightIsConstant := false
+		if rightIdent, ok := exp.Y.(*ast.Ident); ok {
+			if obj := c.pkg.TypesInfo.Uses[rightIdent]; obj != nil {
+				if _, isConst := obj.(*types.Const); isConst {
+					rightIsConstant = true
+				}
+			}
+		}
+		if leftIsSelector && (rightIsLiteral || rightIsConstant) {
+			leftType := c.pkg.TypesInfo.TypeOf(exp.X)
+			if leftType != nil {
+				if basic, ok := leftType.Underlying().(*types.Basic); ok {
+					// Check if it's a numeric type
+					if basic.Info()&types.IsNumeric != 0 {
+						needsNumberCast = true
+					}
+				}
+			}
+		}
+	}
+
+	if needsNumberCast {
+		c.tsw.WriteLiterally("Number(")
+	}
 	if err := c.WriteValueExpr(exp.X); err != nil {
 		return fmt.Errorf("failed to write binary expression left operand: %w", err)
+	}
+	if needsNumberCast {
+		c.tsw.WriteLiterally(")")
 	}
 
 	c.tsw.WriteLiterally(" ")

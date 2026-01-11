@@ -733,6 +733,10 @@ type GoToTSCompiler struct {
 
 	// Context flags
 	insideAddressOf bool // true when processing operand of & operator
+
+	// renamedVars tracks variables that have been renamed to avoid type shadowing
+	// Key: types.Object of the original variable, Value: new name to use
+	renamedVars map[types.Object]string
 }
 
 // It initializes the compiler with a `TSCodeWriter` for output,
@@ -740,9 +744,10 @@ type GoToTSCompiler struct {
 // analysis results (`Analysis`) to guide the translation process.
 func NewGoToTSCompiler(tsw *TSCodeWriter, pkg *packages.Package, analysis *Analysis) *GoToTSCompiler {
 	return &GoToTSCompiler{
-		tsw:      tsw,
-		pkg:      pkg,
-		analysis: analysis,
+		tsw:         tsw,
+		pkg:         pkg,
+		analysis:    analysis,
+		renamedVars: make(map[types.Object]string),
 	}
 }
 
@@ -820,6 +825,18 @@ func (c *GoToTSCompiler) WriteIdent(exp *ast.Ident, accessVarRefedValue bool) {
 
 	// Use TypesInfo to find the object associated with the identifier
 	obj := c.objectOfIdent(exp)
+
+	// Check if this variable has been renamed to avoid type shadowing
+	if obj != nil {
+		if renamedName, ok := c.renamedVars[obj]; ok {
+			c.tsw.WriteLiterally(c.sanitizeIdentifier(renamedName))
+			// Determine if we need to access .value based on analysis data
+			if accessVarRefedValue && c.analysis.NeedsVarRefAccess(obj) {
+				c.tsw.WriteLiterally("!.value")
+			}
+			return
+		}
+	}
 
 	// Check if this identifier refers to a constant
 	if obj != nil {

@@ -42,7 +42,7 @@ export async function main(): Promise<void> {
 	$.println("b5 after append:", b5)
 	$.println("len(b5):", $.len(b5), "cap(b5):", $.cap(b5))
 
-	let b6 = $.append(b5, $.stringToBytes(" GoScript"))
+	let b6 = $.append(b5, ...($.stringToBytes(" GoScript") || []))
 	$.println("b6 after append slice:", b6)
 	$.println("len(b6):", $.len(b6), "cap(b6):", $.cap(b6))
 }

@@ -1,0 +1,2 @@
+mayFail(5): no error
+mayFail(-1): error occurred

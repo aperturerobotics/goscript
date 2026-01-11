@@ -23,3 +23,15 @@ export function toGoError(err: Error): GoError {
     Error: () => err.message,
   } as GoError
 }
+
+// wrapPrimitiveError wraps a primitive value that implements the error interface
+// by creating an object with an Error() method that calls the type's Error function.
+// This is needed for types like `type MyError int` with `func (e MyError) Error() string`
+export function wrapPrimitiveError<T>(
+  value: T,
+  errorFn: (v: T) => string,
+): GoError {
+  return {
+    Error: () => errorFn(value),
+  }
+}

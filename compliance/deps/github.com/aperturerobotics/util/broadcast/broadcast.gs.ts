@@ -102,7 +102,7 @@ export class Broadcast {
 	// When the broadcast channel is broadcasted, re-calls cb again to re-check the value.
 	// cb is called while the mutex is locked.
 	// Returns context.Canceled if ctx is canceled.
-	public async Wait(ctx: context.Context, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
+	public async Wait(ctx: null | context.Context, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
 		const c = this
 		if (cb == null || ctx == null) {
 			return errors.New("cb and ctx must be set")

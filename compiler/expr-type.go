@@ -26,13 +26,23 @@ func (c *GoToTSCompiler) WriteTypeExpr(a ast.Expr) {
 			// Check if this is a package selector (e.g., os.FileInfo)
 			if obj := c.pkg.TypesInfo.Uses[pkgIdent]; obj != nil {
 				if _, isPkg := obj.(*types.PkgName); isPkg {
-					// This is a package.Type reference - write the qualified name
+					// This is a package.Type reference
+					typ := c.pkg.TypesInfo.TypeOf(a)
+
+					// Check if this is an interface type and add null | prefix
+					if typ != nil {
+						if _, isInterface := typ.Underlying().(*types.Interface); isInterface {
+							c.tsw.WriteLiterally("null | ")
+						}
+					}
+
+					// Write the qualified name
 					c.tsw.WriteLiterally(pkgIdent.Name)
 					c.tsw.WriteLiterally(".")
 					c.tsw.WriteLiterally(selectorExpr.Sel.Name)
 
 					// Check if this is a function type and add | null
-					if typ := c.pkg.TypesInfo.TypeOf(a); typ != nil {
+					if typ != nil {
 						if namedType, isNamed := typ.(*types.Named); isNamed {
 							if _, isSignature := namedType.Underlying().(*types.Signature); isSignature {
 								c.tsw.WriteLiterally(" | null")

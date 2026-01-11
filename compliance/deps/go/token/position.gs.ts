@@ -202,7 +202,7 @@ export class FileSet {
 		__defer.defer(() => {
 			s.mutex.RUnlock()
 		});
-		let [pn, ] = s.tree.locate($.markAsStructValue(new key({})))
+		let [pn, ] = s.tree.locate($.markAsStructValue(new key({end: p, start: p})))
 		{
 			let n = pn!.value
 			if (n != null) {
@@ -271,7 +271,7 @@ export class FileSet {
 				s.tree.add(new File({base: f.Base, infos: f.Infos, lines: f.Lines, name: f.Name, size: f.Size}))
 			}
 		}
-		null
+		s.last.Store(null)
 		s.mutex.Unlock()
 		return null
 	}
@@ -398,7 +398,7 @@ export class Position {
 				s += ":"
 			}
 			s += strconv.Itoa(pos.Line)
-			if (pos.Column != 0) {
+			if (Number(pos.Column) != 0) {
 				s += fmt.Sprintf(":%d", pos.Column)
 			}
 		}
@@ -727,7 +727,7 @@ export class File {
 		{
 			let i = $.len(f.infos)
 			if ((i == 0 || f.infos![i - 1].Offset < offset) && offset < f.size) {
-				f.infos = $.append(f.infos, $.markAsStructValue(new lineInfo({})))
+				f.infos = $.append(f.infos, $.markAsStructValue(new lineInfo({Column: column, Filename: filename, Line: line, Offset: offset})))
 			}
 		}
 		f.mutex.Unlock()
@@ -794,7 +794,7 @@ export class File {
 	// p must be a [Pos] value in that file or [NoPos].
 	public async Line(p: Pos): Promise<number> {
 		const f = this
-		return await f.Position(p)!.Line
+		return (await f.Position(p))!.Line
 	}
 
 	// unpack returns the filename and line and column number for a file offset.
@@ -856,7 +856,7 @@ export class File {
 
 							// the alternative position base is on the current line
 							// => column is relative to alternative column
-							if (alt!.Column == 0) {
+							if (Number(alt!.Column) == 0) {
 								// alternative column is unknown => relative column is unknown
 								// (the current specification for line directives requires
 								// this to apply until the next PosBase/line directive,
@@ -900,7 +900,7 @@ export class File {
 		const f = this
 		let pos: Position = new Position()
 		if (p != 0) {
-			pos = $.markAsStructValue(await f.position(p, adjusted).clone())
+			pos = $.markAsStructValue((await f.position(p, adjusted)).clone())
 		}
 		return pos
 	}
@@ -916,7 +916,7 @@ export class File {
 
 	public key(): key {
 		const f = this
-		return $.markAsStructValue(new key({}))
+		return $.markAsStructValue(new key({end: f.base + f.size, start: f.base}))
 	}
 
 	// Register this type with the runtime type system

@@ -8,7 +8,7 @@ import * as os from "@goscript/os/index.js"
 import * as filepath from "@goscript/path/filepath/index.js"
 
 export type Filesystem = null | {
-	Lstat(filename: string): [os.FileInfo, $.GoError]
+	Lstat(filename: string): [null | os.FileInfo, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -32,7 +32,7 @@ export class MockFilesystem {
 		return cloned
 	}
 
-	public Lstat(filename: string): [os.FileInfo, $.GoError] {
+	public Lstat(filename: string): [null | os.FileInfo, $.GoError] {
 		return [null, null]
 	}
 
@@ -47,7 +47,7 @@ export class MockFilesystem {
 }
 
 // Reproduce the exact variable shadowing scenario that causes the issue
-export function walkWithShadowing(fs: Filesystem, path: string, info: os.FileInfo, walkFn: filepath.WalkFunc | null): $.GoError {
+export function walkWithShadowing(fs: Filesystem, path: string, info: null | os.FileInfo, walkFn: filepath.WalkFunc | null): $.GoError {
 	// This reproduces the pattern where variable shadowing occurs with := assignment
 	let [fileInfo, err] = fs!.Lstat(path)
 
@@ -126,7 +126,7 @@ export function testNoShadowing(walkFn: filepath.WalkFunc | null): $.GoError {
 export async function main(): Promise<void> {
 	let fs = $.markAsStructValue(new MockFilesystem({}))
 
-	let walkFunc = (path: string, info: os.FileInfo, err: $.GoError): $.GoError => {
+	let walkFunc = (path: string, info: null | os.FileInfo, err: $.GoError): $.GoError => {
 		if (err != null) {
 			$.println("Error:", err!.Error())
 		}

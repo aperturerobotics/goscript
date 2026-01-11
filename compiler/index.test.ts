@@ -24,6 +24,8 @@ describe("GoScript Compiler API", () => {
     };
 
     await expect(compile(config)).resolves.toBeUndefined();
-    await expect(fs.access(expectedOutputFile)).resolves.toBeUndefined();
+    // fs.access resolves to undefined/null on success - verify file exists
+    const fileExists = await fs.access(expectedOutputFile).then(() => true).catch(() => false);
+    expect(fileExists).toBe(true);
   }, 30000); // 30 second timeout for compilation
 });

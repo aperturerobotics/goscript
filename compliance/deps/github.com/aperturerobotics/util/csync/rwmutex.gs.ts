@@ -75,13 +75,13 @@ export class RWMutex {
 	// Returns a lock release function or an error.
 	// A single writer OR many readers can hold Lock at a time.
 	// If a writer is waiting to lock, readers will wait for it.
-	public async Lock(ctx: context.Context, write: boolean): Promise<[(() => void) | null, $.GoError]> {
+	public async Lock(ctx: null | context.Context, write: boolean): Promise<[(() => void) | null, $.GoError]> {
 		const m = this
 		let status: $.VarRef<atomic.Int32> = $.varRef(new atomic.Int32())
 		let waitCh: $.Channel<{  }> | null = null
 		await m.bcast.HoldLock((_: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 			if (write) {
-				if (m.nreaders != 0 || m.writing) {
+				if (Number(m.nreaders) != 0 || m.writing) {
 					m.writeWaiting++
 					waitCh = getWaitCh!()
 				}
@@ -90,7 +90,7 @@ export class RWMutex {
 					status!.value.Store(1)
 				}
 			}
-			 else if (!m.writing && m.writeWaiting == 0) {
+			 else if (!m.writing && Number(m.writeWaiting) == 0) {
 				m.nreaders++
 				status!.value.Store(1)
 			}
@@ -159,7 +159,7 @@ export class RWMutex {
 
 			await m.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 				if (write) {
-					if (m.nreaders == 0 && !m.writing) {
+					if (Number(m.nreaders) == 0 && !m.writing) {
 						m.writeWaiting--
 						m.writing = true
 						status!.value.Store(1)
@@ -168,7 +168,7 @@ export class RWMutex {
 						waitCh = getWaitCh!()
 					}
 				}
-				 else if (!m.writing && m.writeWaiting == 0) {
+				 else if (!m.writing && Number(m.writeWaiting) == 0) {
 					m.nreaders++
 					status!.value.Store(1)
 				}
@@ -192,14 +192,14 @@ export class RWMutex {
 		let unlocked: $.VarRef<atomic.Bool> = $.varRef(new atomic.Bool())
 		await m.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 			if (write) {
-				if (m.nreaders != 0 || m.writing) {
+				if (Number(m.nreaders) != 0 || m.writing) {
 					unlocked!.value.Store(true)
 				}
 				 else {
 					m.writing = true
 				}
 			}
-			 else if (!m.writing && m.writeWaiting == 0) {
+			 else if (!m.writing && Number(m.writeWaiting) == 0) {
 				m.nreaders++
 			}
 			 else {
@@ -227,13 +227,13 @@ export class RWMutex {
 	}
 
 	// Locker returns an RWMutexLocker that uses context.Background to write lock the RWMutex.
-	public Locker(): sync.Locker {
+	public Locker(): null | sync.Locker {
 		const m = this
 		return new RWMutexLocker({m: m, write: true})
 	}
 
 	// RLocker returns an RWMutexLocker that uses context.Background to read lock the RWMutex.
-	public RLocker(): sync.Locker {
+	public RLocker(): null | sync.Locker {
 		const m = this
 		return new RWMutexLocker({m: m, write: false})
 	}

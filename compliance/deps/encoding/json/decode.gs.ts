@@ -5,6 +5,7 @@ import { checkValid, stateEndValue } from "./scanner.gs.js";
 import { structFields } from "./encode.gs.js";
 import { scanner } from "./scanner.gs.js";
 import { scanArrayValue, scanBeginArray, scanBeginLiteral, scanBeginObject, scanEnd, scanEndArray, scanEndObject, scanObjectKey, scanObjectValue, scanSkipSpace } from "./scanner.gs.js";
+import * as io from "@goscript/io/index.js"
 
 import * as encoding from "@goscript/encoding/index.js"
 
@@ -30,18 +31,18 @@ import * as _ from "@goscript/unsafe/index.js"
 export let phasePanicMsg: string = "JSON decoder out of sync - data changing underfoot?"
 
 export class InvalidUnmarshalError {
-	public get Type(): reflect.Type {
+	public get Type(): null | reflect.Type {
 		return this._fields.Type.value
 	}
-	public set Type(value: reflect.Type) {
+	public set Type(value: null | reflect.Type) {
 		this._fields.Type.value = value
 	}
 
 	public _fields: {
-		Type: $.VarRef<reflect.Type>;
+		Type: $.VarRef<null | reflect.Type>;
 	}
 
-	constructor(init?: Partial<{Type?: reflect.Type}>) {
+	constructor(init?: Partial<{Type?: null | reflect.Type}>) {
 		this._fields = {
 			Type: $.varRef(init?.Type ?? null)
 		}
@@ -99,10 +100,10 @@ export class UnmarshalFieldError {
 		this._fields.Key.value = value
 	}
 
-	public get Type(): reflect.Type {
+	public get Type(): null | reflect.Type {
 		return this._fields.Type.value
 	}
-	public set Type(value: reflect.Type) {
+	public set Type(value: null | reflect.Type) {
 		this._fields.Type.value = value
 	}
 
@@ -115,11 +116,11 @@ export class UnmarshalFieldError {
 
 	public _fields: {
 		Key: $.VarRef<string>;
-		Type: $.VarRef<reflect.Type>;
+		Type: $.VarRef<null | reflect.Type>;
 		Field: $.VarRef<reflect.StructField>;
 	}
 
-	constructor(init?: Partial<{Field?: reflect.StructField, Key?: string, Type?: reflect.Type}>) {
+	constructor(init?: Partial<{Field?: reflect.StructField, Key?: string, Type?: null | reflect.Type}>) {
 		this._fields = {
 			Key: $.varRef(init?.Key ?? ""),
 			Type: $.varRef(init?.Type ?? null),
@@ -162,10 +163,10 @@ export class UnmarshalTypeError {
 	}
 
 	// type of Go value it could not be assigned to
-	public get Type(): reflect.Type {
+	public get Type(): null | reflect.Type {
 		return this._fields.Type.value
 	}
-	public set Type(value: reflect.Type) {
+	public set Type(value: null | reflect.Type) {
 		this._fields.Type.value = value
 	}
 
@@ -195,13 +196,13 @@ export class UnmarshalTypeError {
 
 	public _fields: {
 		Value: $.VarRef<string>;
-		Type: $.VarRef<reflect.Type>;
+		Type: $.VarRef<null | reflect.Type>;
 		Offset: $.VarRef<number>;
 		Struct: $.VarRef<string>;
 		Field: $.VarRef<string>;
 	}
 
-	constructor(init?: Partial<{Field?: string, Offset?: number, Struct?: string, Type?: reflect.Type, Value?: string}>) {
+	constructor(init?: Partial<{Field?: string, Offset?: number, Struct?: string, Type?: null | reflect.Type, Value?: string}>) {
 		this._fields = {
 			Value: $.varRef(init?.Value ?? ""),
 			Type: $.varRef(init?.Type ?? null),
@@ -353,7 +354,7 @@ export class decodeState {
 		const d = this
 		let rv = $.markAsStructValue(reflect.ValueOf(v).clone())
 		if (rv.Kind() != reflect.Ptr || rv.IsNil()) {
-			return new InvalidUnmarshalError({})
+			return new InvalidUnmarshalError({Type: reflect.TypeOf(v)})
 		}
 		d.scan.reset()
 		d.scanWhile(9)
@@ -414,7 +415,7 @@ export class decodeState {
 		let [s, data, i] = [d.scan, d.data, d.off]
 		let depth = $.len(s!.parseState)
 		for (; ; ) {
-			let op = s!.step(s, data![i])
+			let op = s!.step!(s, data![i])
 			i++
 			if ($.len(s!.parseState) < depth) {
 				d.off = i
@@ -428,7 +429,7 @@ export class decodeState {
 	public scanNext(): void {
 		const d = this
 		if (d.off < $.len(d.data)) {
-			d.opcode = d.scan.step(d.scan, d.data![d.off])
+			d.opcode = d.scan.step!(d.scan, d.data![d.off])
 			d.off++
 		}
 		 else {
@@ -443,7 +444,7 @@ export class decodeState {
 		const d = this
 		let [s, data, i] = [d.scan, d.data, d.off]
 		for (; i < $.len(data); ) {
-			let newOp = s!.step(s, data![i])
+			let newOp = s!.step!(s, data![i])
 			i++
 			if (newOp != op) {
 				d.opcode = newOp
@@ -675,7 +676,7 @@ export class decodeState {
 		for (; ; ) {
 			// Look ahead for ] - can only happen on first iteration.
 			d.scanWhile(9)
-			if (d.opcode == 8) {
+			if (Number(d.opcode) == 8) {
 				break
 			}
 
@@ -713,13 +714,13 @@ export class decodeState {
 			i++
 
 			// Next token must be , or ].
-			if (d.opcode == 9) {
+			if (Number(d.opcode) == 9) {
 				d.scanWhile(9)
 			}
-			if (d.opcode == 8) {
+			if (Number(d.opcode) == 8) {
 				break
 			}
-			if (d.opcode != 7) {
+			if (Number(d.opcode) != 7) {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 			}
 		}
@@ -800,7 +801,7 @@ export class decodeState {
 				break
 			}
 			case reflect.Struct: {
-				fields = $.markAsStructValue(await cachedTypeFields(t).clone())
+				fields = $.markAsStructValue((await cachedTypeFields(t)).clone())
 				break
 			}
 			default: {
@@ -820,11 +821,11 @@ export class decodeState {
 			d.scanWhile(9)
 
 			// closing } - can only happen on first iteration.
-			if (d.opcode == 5) {
+			if (Number(d.opcode) == 5) {
 				// closing } - can only happen on first iteration.
 				break
 			}
-			if (d.opcode != 1) {
+			if (Number(d.opcode) != 1) {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 			}
 
@@ -946,10 +947,10 @@ export class decodeState {
 			}
 
 			// Read : before value.
-			if (d.opcode == 9) {
+			if (Number(d.opcode) == 9) {
 				d.scanWhile(9)
 			}
-			if (d.opcode != 3) {
+			if (Number(d.opcode) != 3) {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 			}
 			d.scanWhile(9)
@@ -1054,7 +1055,7 @@ export class decodeState {
 			}
 
 			// Next token must be , or }.
-			if (d.opcode == 9) {
+			if (Number(d.opcode) == 9) {
 				d.scanWhile(9)
 			}
 
@@ -1068,10 +1069,10 @@ export class decodeState {
 				d.errorContext!.FieldStack = $.goSlice(d.errorContext!.FieldStack, undefined, $.len(origErrorContext.FieldStack))
 				d.errorContext!.Struct = origErrorContext.Struct
 			}
-			if (d.opcode == 5) {
+			if (Number(d.opcode) == 5) {
 				break
 			}
-			if (d.opcode != 4) {
+			if (Number(d.opcode) != 4) {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 			}
 		}
@@ -1350,20 +1351,20 @@ export class decodeState {
 		for (; ; ) {
 			// Look ahead for ] - can only happen on first iteration.
 			d.scanWhile(9)
-			if (d.opcode == 8) {
+			if (Number(d.opcode) == 8) {
 				break
 			}
 
 			v = $.append(v, d.valueInterface())
 
 			// Next token must be , or ].
-			if (d.opcode == 9) {
+			if (Number(d.opcode) == 9) {
 				d.scanWhile(9)
 			}
-			if (d.opcode == 8) {
+			if (Number(d.opcode) == 8) {
 				break
 			}
-			if (d.opcode != 7) {
+			if (Number(d.opcode) != 7) {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 			}
 		}
@@ -1379,11 +1380,11 @@ export class decodeState {
 			d.scanWhile(9)
 
 			// closing } - can only happen on first iteration.
-			if (d.opcode == 5) {
+			if (Number(d.opcode) == 5) {
 				// closing } - can only happen on first iteration.
 				break
 			}
-			if (d.opcode != 1) {
+			if (Number(d.opcode) != 1) {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 			}
 
@@ -1397,10 +1398,10 @@ export class decodeState {
 			}
 
 			// Read : before value.
-			if (d.opcode == 9) {
+			if (Number(d.opcode) == 9) {
 				d.scanWhile(9)
 			}
-			if (d.opcode != 3) {
+			if (Number(d.opcode) != 3) {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 			}
 			d.scanWhile(9)
@@ -1409,13 +1410,13 @@ export class decodeState {
 			$.mapSet(m, key, d.valueInterface())
 
 			// Next token must be , or }.
-			if (d.opcode == 9) {
+			if (Number(d.opcode) == 9) {
 				d.scanWhile(9)
 			}
-			if (d.opcode == 5) {
+			if (Number(d.opcode) == 5) {
 				break
 			}
-			if (d.opcode != 4) {
+			if (Number(d.opcode) != 4) {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
 			}
 		}
@@ -1474,10 +1475,10 @@ export class decodeState {
 }
 
 export class errorContext {
-	public get Struct(): reflect.Type {
+	public get Struct(): null | reflect.Type {
 		return this._fields.Struct.value
 	}
-	public set Struct(value: reflect.Type) {
+	public set Struct(value: null | reflect.Type) {
 		this._fields.Struct.value = value
 	}
 
@@ -1489,11 +1490,11 @@ export class errorContext {
 	}
 
 	public _fields: {
-		Struct: $.VarRef<reflect.Type>;
+		Struct: $.VarRef<null | reflect.Type>;
 		FieldStack: $.VarRef<$.Slice<string>>;
 	}
 
-	constructor(init?: Partial<{FieldStack?: $.Slice<string>, Struct?: reflect.Type}>) {
+	constructor(init?: Partial<{FieldStack?: $.Slice<string>, Struct?: null | reflect.Type}>) {
 		this._fields = {
 			Struct: $.varRef(init?.Struct ?? null),
 			FieldStack: $.varRef(init?.FieldStack ?? null)
@@ -1646,7 +1647,7 @@ export async function Unmarshal(data: $.Bytes, v: null | any): Promise<$.GoError
 // If it encounters an Unmarshaler, indirect stops and returns that.
 // If decodingNull is true, indirect stops at the first settable pointer so it
 // can be set to nil.
-export function indirect(v: reflect.Value, decodingNull: boolean): [Unmarshaler, encoding.TextUnmarshaler, reflect.Value] {
+export function indirect(v: reflect.Value, decodingNull: boolean): [Unmarshaler, null | encoding.TextUnmarshaler, reflect.Value] {
 	// Issue #24153 indicates that it is generally not a guaranteed property
 	// that you may round-trip a reflect.Value by calling Value.Addr().Elem()
 	// and expect the value to still be settable for values derived from
@@ -1716,7 +1717,7 @@ export function indirect(v: reflect.Value, decodingNull: boolean): [Unmarshaler,
 			}
 			if (!decodingNull) {
 				{
-					let { value: u, ok: ok } = $.typeAssert<encoding.TextUnmarshaler>(v.Interface(), 'encoding.TextUnmarshaler')
+					let { value: u, ok: ok } = $.typeAssert<null | encoding.TextUnmarshaler>(v.Interface(), 'encoding.TextUnmarshaler')
 					if (ok) {
 						return [null, u, $.markAsStructValue(new reflect.Value({}))]
 					}

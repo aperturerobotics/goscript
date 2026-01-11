@@ -19,13 +19,13 @@ export async function SyncWrapper(): Promise<string> {
 }
 
 // AnotherAsyncFunction simulates another async function
-export async function AnotherAsyncFunction(ctx: context.Context): Promise<[string, $.GoError]> {
+export async function AnotherAsyncFunction(ctx: null | context.Context): Promise<[string, $.GoError]> {
 	await time.Sleep(5 * time.Millisecond)
 	return ["async result", null]
 }
 
 // WrapperWithError directly returns result of async function with error - should be async
-export async function WrapperWithError(ctx: context.Context): Promise<[string, $.GoError]> {
+export async function WrapperWithError(ctx: null | context.Context): Promise<[string, $.GoError]> {
 	return await AnotherAsyncFunction(ctx)
 }
 

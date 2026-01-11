@@ -36,7 +36,7 @@ export function DecodeRune(r1: number, r2: number): number {
 // EncodeRune returns the UTF-16 surrogate pair r1, r2 for the given rune.
 // If the rune is not a valid Unicode code point or does not need encoding,
 // EncodeRune returns U+FFFD, U+FFFD.
-export function EncodeRune(r: number): number {
+export function EncodeRune(r: number): [number, number] {
 	let r1: number = 0
 	let r2: number = 0
 	{

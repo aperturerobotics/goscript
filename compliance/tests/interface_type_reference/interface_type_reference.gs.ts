@@ -7,7 +7,7 @@ import * as os from "@goscript/os/index.js"
 
 export type Basic = null | {
 	// Stat returns a FileInfo describing the named file.
-	Stat(filename: string): [os.FileInfo, $.GoError]
+	Stat(filename: string): [null | os.FileInfo, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -31,7 +31,7 @@ export class MyStorage {
 		return cloned
 	}
 
-	public Stat(filename: string): [os.FileInfo, $.GoError] {
+	public Stat(filename: string): [null | os.FileInfo, $.GoError] {
 		return [null, null]
 	}
 

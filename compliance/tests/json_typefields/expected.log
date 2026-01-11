@@ -1,0 +1,20 @@
+Type: Person
+Processing field 0 : Name
+  Anonymous: false
+  IsExported: true
+  Tag.Get(json): name
+  Final name: name
+Processing field 1 : Age
+  Anonymous: false
+  IsExported: true
+  Tag.Get(json): age
+  Final name: age
+Processing field 2 : Active
+  Anonymous: false
+  IsExported: true
+  Tag.Get(json): active
+  Final name: active
+=== Fields found ===
+Field 0 name: name tagged: true
+Field 1 name: age tagged: true
+Field 2 name: active tagged: true
