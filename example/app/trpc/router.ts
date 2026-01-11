@@ -1,16 +1,15 @@
-import { initTRPC } from "@trpc/server"
-import { z } from "zod"
-import { eq } from "drizzle-orm"
-import { db, todos } from "../db"
+import { initTRPC } from '@trpc/server'
+import { z } from 'zod'
+import { eq } from 'drizzle-orm'
+import { db, todos } from '../db'
 
 // Import GoScript-compiled todo logic
 import {
   Validate,
   ValidateDescription,
-  ParsePriority,
   PriorityString,
   type Priority,
-} from "@goscript/github.com/aperturerobotics/goscript/example/app/todo/index.js"
+} from '@goscript/github.com/aperturerobotics/goscript/example/app/todo/index.js'
 
 // Priority constants (matching Go's iota values)
 // Note: GoScript iota support is being improved - for now we define these manually
@@ -22,12 +21,12 @@ const PriorityHigh: Priority = 2
 const t = initTRPC.create()
 
 // Zod schemas for validation
-const prioritySchema = z.enum(["low", "medium", "high"])
+const prioritySchema = z.enum(['low', 'medium', 'high'])
 
 const createTodoSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
-  priority: prioritySchema.optional().default("medium"),
+  priority: prioritySchema.optional().default('medium'),
 })
 
 const updateTodoSchema = z.object({
@@ -45,10 +44,10 @@ export const appRouter = t.router({
     .input(
       z
         .object({
-          filter: z.enum(["all", "active", "completed"]).optional(),
+          filter: z.enum(['all', 'active', 'completed']).optional(),
           priority: prioritySchema.optional(),
         })
-        .optional()
+        .optional(),
     )
     .query(async ({ input }) => {
       let query = db.select().from(todos)
@@ -58,9 +57,9 @@ export const appRouter = t.router({
       // Apply filters using GoScript logic concepts
       let filtered = results
 
-      if (input?.filter === "active") {
+      if (input?.filter === 'active') {
         filtered = results.filter((t) => !t.completed)
-      } else if (input?.filter === "completed") {
+      } else if (input?.filter === 'completed') {
         filtered = results.filter((t) => t.completed)
       }
 
@@ -72,22 +71,24 @@ export const appRouter = t.router({
     }),
 
   // Get a single todo by ID
-  get: t.procedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
-    const result = await db.select().from(todos).where(eq(todos.id, input.id))
-    return result[0] ?? null
-  }),
+  get: t.procedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      const result = await db.select().from(todos).where(eq(todos.id, input.id))
+      return result[0] ?? null
+    }),
 
   // Create a new todo
   create: t.procedure.input(createTodoSchema).mutation(async ({ input }) => {
     // Use GoScript validation
     const titleError = Validate(input.title)
-    if (titleError !== "") {
+    if (titleError !== '') {
       throw new Error(titleError)
     }
 
     if (input.description) {
       const descError = ValidateDescription(input.description)
-      if (descError !== "") {
+      if (descError !== '') {
         throw new Error(descError)
       }
     }
@@ -96,7 +97,7 @@ export const appRouter = t.router({
       .insert(todos)
       .values({
         title: input.title,
-        description: input.description ?? "",
+        description: input.description ?? '',
         priority: input.priority,
       })
       .returning()
@@ -111,14 +112,14 @@ export const appRouter = t.router({
     // Use GoScript validation if title is being updated
     if (updates.title) {
       const titleError = Validate(updates.title)
-      if (titleError !== "") {
+      if (titleError !== '') {
         throw new Error(titleError)
       }
     }
 
     if (updates.description) {
       const descError = ValidateDescription(updates.description)
-      if (descError !== "") {
+      if (descError !== '') {
         throw new Error(descError)
       }
     }
@@ -136,37 +137,50 @@ export const appRouter = t.router({
   }),
 
   // Toggle todo completion status
-  toggle: t.procedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
-    // First get the current todo
-    const current = await db.select().from(todos).where(eq(todos.id, input.id))
+  toggle: t.procedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      // First get the current todo
+      const current = await db
+        .select()
+        .from(todos)
+        .where(eq(todos.id, input.id))
 
-    if (!current[0]) {
-      throw new Error("Todo not found")
-    }
+      if (!current[0]) {
+        throw new Error('Todo not found')
+      }
 
-    // Toggle the completed status
-    const result = await db
-      .update(todos)
-      .set({
-        completed: !current[0].completed,
-        updatedAt: new Date(),
-      })
-      .where(eq(todos.id, input.id))
-      .returning()
+      // Toggle the completed status
+      const result = await db
+        .update(todos)
+        .set({
+          completed: !current[0].completed,
+          updatedAt: new Date(),
+        })
+        .where(eq(todos.id, input.id))
+        .returning()
 
-    return result[0]
-  }),
+      return result[0]
+    }),
 
   // Delete a todo
-  delete: t.procedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
-    const result = await db.delete(todos).where(eq(todos.id, input.id)).returning()
+  delete: t.procedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const result = await db
+        .delete(todos)
+        .where(eq(todos.id, input.id))
+        .returning()
 
-    return result[0] ?? null
-  }),
+      return result[0] ?? null
+    }),
 
   // Clear all completed todos
   clearCompleted: t.procedure.mutation(async () => {
-    const result = await db.delete(todos).where(eq(todos.completed, true)).returning()
+    const result = await db
+      .delete(todos)
+      .where(eq(todos.completed, true))
+      .returning()
 
     return { deleted: result.length }
   }),
@@ -180,9 +194,9 @@ export const appRouter = t.router({
       active: allTodos.filter((t) => !t.completed).length,
       completed: allTodos.filter((t) => t.completed).length,
       byPriority: {
-        low: allTodos.filter((t) => t.priority === "low").length,
-        medium: allTodos.filter((t) => t.priority === "medium").length,
-        high: allTodos.filter((t) => t.priority === "high").length,
+        low: allTodos.filter((t) => t.priority === 'low').length,
+        medium: allTodos.filter((t) => t.priority === 'medium').length,
+        high: allTodos.filter((t) => t.priority === 'high').length,
       },
     }
 
@@ -196,12 +210,12 @@ export const appRouter = t.router({
       // Validate all items using GoScript
       for (const item of input) {
         const titleError = Validate(item.title)
-        if (titleError !== "") {
+        if (titleError !== '') {
           throw new Error(`Validation error: ${titleError}`)
         }
         if (item.description) {
           const descError = ValidateDescription(item.description)
-          if (descError !== "") {
+          if (descError !== '') {
             throw new Error(`Validation error: ${descError}`)
           }
         }
@@ -209,7 +223,7 @@ export const appRouter = t.router({
 
       const values = input.map((item) => ({
         title: item.title,
-        description: item.description ?? "",
+        description: item.description ?? '',
         priority: item.priority,
       }))
 
