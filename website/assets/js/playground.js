@@ -194,26 +194,30 @@ exampleSelect.addEventListener('change', () => {
 runBtn.addEventListener('click', runCode)
 clearBtn.addEventListener('click', () => {
   outputBody.textContent = ''
-  outputBody.className = 'output-body'
+  outputBody.className = 'panel-body output-panel'
 })
 
 async function runCode() {
-  const tsCode = tsEditor.value
+  if (!tsEditor) {
+    outputBody.textContent = 'Editor not ready yet.'
+    return
+  }
+  const tsCode = tsEditor.getValue()
   if (!tsCode.trim()) {
     outputBody.textContent = 'No TypeScript code to run.'
     return
   }
 
   outputBody.textContent = 'Running...'
-  outputBody.className = 'output-body'
+  outputBody.className = 'panel-body output-panel'
 
   try {
     const output = await runTypeScript(tsCode)
     outputBody.textContent = output || '(no output)'
-    outputBody.className = 'output-body'
+    outputBody.className = 'panel-body output-panel'
   } catch (err) {
     outputBody.textContent = `Error: ${err.message}`
-    outputBody.className = 'output-body error'
+    outputBody.className = 'panel-body output-panel error'
   }
 }
 
