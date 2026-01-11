@@ -11,20 +11,21 @@ describe('MapIter', () => {
     const iter = new MapIter<string, number>(map)
 
     expect(iter.current?.done === false).toBe(true)
-    expect(iter.Key()).toBe('one')
-    expect(iter.Value()).toBe(1)
+    // Key() and Value() return reflect.Value objects now
+    expect(iter.Key().Interface()).toBe('one')
+    expect(iter.Value().Interface()).toBe(1)
 
     expect(iter.Next()).toBe(true)
     expect(iter.current?.done === false).toBe(true)
-    expect(typeof iter.Key()).toBe('string')
-    expect(typeof iter.Value()).toBe('number')
+    expect(iter.Key().Kind()).toBe(24) // String kind
+    expect(iter.Value().Kind()).toBe(2) // Int kind
 
     const newMap = new Map<string, number>()
     newMap.set('reset', 100)
     iter.Reset(newMap)
 
     expect(iter.current?.done === false).toBe(true)
-    expect(iter.Key()).toBe('reset')
-    expect(iter.Value()).toBe(100)
+    expect(iter.Key().Interface()).toBe('reset')
+    expect(iter.Value().Interface()).toBe(100)
   })
 })

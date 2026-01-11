@@ -40,13 +40,21 @@ export interface MethodSignature {
 }
 
 /**
+ * Information about a struct field including type and optional tag
+ */
+export interface StructFieldInfo {
+  type: TypeInfo | string // The field's type
+  tag?: string // The struct field tag (e.g., `json:"name,omitempty"`)
+}
+
+/**
  * Type information for struct types
  */
 export interface StructTypeInfo extends BaseTypeInfo {
   kind: TypeKind.Struct
   methods: MethodSignature[] // Array of method signatures
   ctor?: new (...args: any[]) => any
-  fields: Record<string, TypeInfo | string> // Field names and types for struct fields
+  fields: Record<string, TypeInfo | string | StructFieldInfo> // Field names and types for struct fields
 }
 
 /**
@@ -171,6 +179,21 @@ export function isChannelTypeInfo(info: TypeInfo): info is ChannelTypeInfo {
 }
 
 /**
+ * Type guard to check if a field value is a StructFieldInfo (has 'type' property)
+ * vs a direct TypeInfo or string
+ */
+export function isStructFieldInfo(
+  fieldValue: TypeInfo | string | StructFieldInfo,
+): fieldValue is StructFieldInfo {
+  return (
+    typeof fieldValue === 'object' &&
+    fieldValue !== null &&
+    'type' in fieldValue &&
+    !('kind' in fieldValue)
+  )
+}
+
+/**
  * Comparable interface for Go's comparable constraint.
  * Types that implement this can be compared with == and !=.
  */
@@ -196,7 +219,7 @@ export const registerStructType = (
   zeroValue: any,
   methods: MethodSignature[],
   ctor: new (...args: any[]) => any,
-  fields: Record<string, TypeInfo | string> = {},
+  fields: Record<string, TypeInfo | string | StructFieldInfo> = {},
 ): StructTypeInfo => {
   const typeInfo: StructTypeInfo = {
     name,
@@ -934,7 +957,12 @@ function compareTypeStringWithTypeInfo(
           return false
         }
         
-        const typeInfoFieldType = normalizeTypeInfo(typeInfoFields[fieldName])
+        const fieldValue = typeInfoFields[fieldName]
+        // Handle StructFieldInfo (which has 'type' and optional 'tag' properties)
+        const fieldTypeInfo: TypeInfo | string = isStructFieldInfo(fieldValue)
+          ? fieldValue.type
+          : fieldValue
+        const typeInfoFieldType = normalizeTypeInfo(fieldTypeInfo)
         const parsedFieldType = parsedFields[fieldName]
         
         // Compare basic types

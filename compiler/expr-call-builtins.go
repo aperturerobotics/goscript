@@ -162,13 +162,16 @@ func (c *GoToTSCompiler) writeAppendCall(exp *ast.CallExpr) error {
 	}
 
 	// The remaining arguments are the elements to append
-	for i, arg := range exp.Args[1:] {
+	elemsToAppend := exp.Args[1:]
+	for i, arg := range elemsToAppend {
 		if i > 0 || len(exp.Args) > 1 {
 			c.tsw.WriteLiterally(", ")
 		}
 
-		// Special case: append([]byte, string...) should convert string to bytes
-		if exp.Ellipsis != token.NoPos && i == 0 { // This is the first element after slice and has ellipsis
+		// Handle ellipsis (spread) for the last argument: append(slice, elems...)
+		// The ellipsis can only appear on the last argument, so check if this is the last element
+		isLastElement := i == len(elemsToAppend)-1
+		if exp.Ellipsis != token.NoPos && isLastElement {
 			// Check if the slice is []byte and the argument is a string
 			sliceType := c.pkg.TypesInfo.TypeOf(exp.Args[0])
 			argType := c.pkg.TypesInfo.TypeOf(arg)
@@ -184,6 +187,16 @@ func (c *GoToTSCompiler) writeAppendCall(exp *ast.CallExpr) error {
 					continue
 				}
 			}
+
+			// For other slice types with ellipsis, use spread operator
+			// append(slice, anotherSlice...) -> $.append(slice, ...(anotherSlice || []))
+			// The || [] handles the case where anotherSlice is null (nil in Go)
+			c.tsw.WriteLiterally("...(")
+			if err := c.WriteValueExpr(arg); err != nil {
+				return fmt.Errorf("failed to write spread argument in append call: %w", err)
+			}
+			c.tsw.WriteLiterally(" || [])")
+			continue
 		}
 
 		if err := c.WriteValueExpr(arg); err != nil {

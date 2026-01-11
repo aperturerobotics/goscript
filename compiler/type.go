@@ -21,6 +21,9 @@ const (
 	// GoTypeContextVariadicParam is used when translating types for variadic parameter elements.
 	// This affects how interface{} types are handled (no null prefix).
 	GoTypeContextVariadicParam
+	// GoTypeContextGenericTypeArg is used when translating type arguments for generic types.
+	// This affects how function types are handled (no | null suffix for func() types).
+	GoTypeContextGenericTypeArg
 )
 
 // WriteGoType is the main dispatcher for translating Go types to their TypeScript
@@ -68,7 +71,7 @@ func (c *GoToTSCompiler) WriteGoType(typ types.Type, context GoTypeContext) {
 			c.WriteInterfaceType(t, nil) // No ast.InterfaceType available here
 		}
 	case *types.Signature:
-		c.WriteSignatureType(t)
+		c.WriteSignatureType(t, context)
 	case *types.Struct:
 		c.WriteStructType(t)
 	case *types.Alias:
@@ -263,7 +266,8 @@ func (c *GoToTSCompiler) WriteNamedType(t *types.Named) {
 					if i > 0 {
 						c.tsw.WriteLiterally(", ")
 					}
-					c.WriteGoType(t.TypeArgs().At(i), GoTypeContextGeneral)
+					// Use GenericTypeArg context to avoid adding | null to function types
+					c.WriteGoType(t.TypeArgs().At(i), GoTypeContextGenericTypeArg)
 				}
 				c.tsw.WriteLiterally(">")
 			}
@@ -286,7 +290,8 @@ func (c *GoToTSCompiler) WriteNamedType(t *types.Named) {
 			if i > 0 {
 				c.tsw.WriteLiterally(", ")
 			}
-			c.WriteGoType(t.TypeArgs().At(i), GoTypeContextGeneral)
+			// Use GenericTypeArg context to avoid adding | null to function types
+			c.WriteGoType(t.TypeArgs().At(i), GoTypeContextGenericTypeArg)
 		}
 		c.tsw.WriteLiterally(">")
 	}
@@ -393,7 +398,18 @@ func (c *GoToTSCompiler) WriteFuncType(exp *ast.FuncType, isAsync bool) {
 		if isAsync {
 			c.tsw.WriteLiterally("Promise<")
 		}
-		if len(exp.Results.List) == 1 {
+
+		// Count total number of return values (each field may have multiple names like "a, b int")
+		totalResults := 0
+		for _, field := range exp.Results.List {
+			count := len(field.Names)
+			if count == 0 {
+				count = 1 // Unnamed return value
+			}
+			totalResults += count
+		}
+
+		if totalResults == 1 {
 			// Single return type (named or unnamed)
 			// Use WriteTypeExpr to preserve qualified names like os.FileInfo
 			c.WriteTypeExpr(exp.Results.List[0].Type)
@@ -450,7 +466,11 @@ func (c *GoToTSCompiler) WriteInterfaceType(t *types.Interface, astNode *ast.Int
 
 // WriteSignatureType translates a Go function signature to its TypeScript equivalent.
 // It generates (param1: type1, param2: type2, ...): returnType for function types.
-func (c *GoToTSCompiler) WriteSignatureType(t *types.Signature) {
+// The context parameter determines whether to add | null suffix:
+// - GoTypeContextGeneral: Add | null (function values can be nil in Go)
+// - GoTypeContextFunctionReturn: Add | null (function return values can be nil)
+// - Other contexts (like type arguments): Don't add | null
+func (c *GoToTSCompiler) WriteSignatureType(t *types.Signature, context GoTypeContext) {
 	c.tsw.WriteLiterally("(")
 	c.tsw.WriteLiterally("(")
 	params := t.Params()
@@ -502,7 +522,15 @@ func (c *GoToTSCompiler) WriteSignatureType(t *types.Signature) {
 		}
 		c.tsw.WriteLiterally("]")
 	}
-	c.tsw.WriteLiterally(") | null")
+	c.tsw.WriteLiterally(")")
+
+	// In Go, function values (not pointers to functions) can be nil.
+	// Add | null for general contexts and function return contexts.
+	// Don't add | null for other contexts like type arguments to avoid
+	// issues with generic types like atomic.Pointer[func()].
+	if context == GoTypeContextGeneral || context == GoTypeContextFunctionReturn {
+		c.tsw.WriteLiterally(" | null")
+	}
 }
 
 // writeInterfaceStructure translates a Go `types.Interface` into its TypeScript structural representation.

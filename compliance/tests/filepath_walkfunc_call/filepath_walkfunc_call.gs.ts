@@ -10,7 +10,7 @@ import * as filepath from "@goscript/path/filepath/index.js"
 import * as time from "@goscript/time/index.js"
 
 export type Filesystem = null | {
-	ReadDir(path: string): [$.Slice<os.FileInfo>, $.GoError]
+	ReadDir(path: string): [$.Slice<null | os.FileInfo>, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -117,8 +117,8 @@ export class MockFilesystem {
 		return cloned
 	}
 
-	public ReadDir(path: string): [$.Slice<os.FileInfo>, $.GoError] {
-		return [$.arrayToSlice<os.FileInfo>([$.markAsStructValue(new MockFileInfo({dir: false, name: "file1.txt", size: 100})), $.markAsStructValue(new MockFileInfo({dir: true, name: "subdir", size: 0}))]), null]
+	public ReadDir(path: string): [$.Slice<null | os.FileInfo>, $.GoError] {
+		return [$.arrayToSlice<null | os.FileInfo>([$.markAsStructValue(new MockFileInfo({dir: false, name: "file1.txt", size: 100})), $.markAsStructValue(new MockFileInfo({dir: true, name: "subdir", size: 0}))]), null]
 	}
 
 	// Register this type with the runtime type system
@@ -133,7 +133,7 @@ export class MockFilesystem {
 
 // This is the exact function signature from the user's example
 // walkFn is filepath.WalkFunc which should be nullable and need ! operator
-export function walk(fs: Filesystem, path: string, info: os.FileInfo, walkFn: filepath.WalkFunc | null): $.GoError {
+export function walk(fs: Filesystem, path: string, info: null | os.FileInfo, walkFn: filepath.WalkFunc | null): $.GoError {
 	let filename = path + "/" + info!.Name()
 	let fileInfo = info
 
@@ -184,7 +184,7 @@ export async function main(): Promise<void> {
 	let fileInfo = $.markAsStructValue(new MockFileInfo({dir: false, name: "test.txt", size: 50}))
 
 	// Test with actual filepath.WalkFunc
-	let walkFunc = (path: string, info: os.FileInfo, err: $.GoError): $.GoError => {
+	let walkFunc = (path: string, info: null | os.FileInfo, err: $.GoError): $.GoError => {
 		if (info != null) {
 			$.println("Walking:", path, "size:", info!.Size())
 		}

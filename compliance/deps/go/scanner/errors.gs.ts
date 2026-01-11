@@ -68,7 +68,7 @@ export class Error {
 export type ErrorList = $.Slice<Error | null>;
 
 export function ErrorList_Add(p: $.VarRef<ErrorList>, pos: token.Position, msg: string): void {
-	p!.value = $.append(p!.value, new Error({}))
+	p!.value = $.append(p!.value, new Error({Msg: msg, Pos: pos}))
 }
 
 export function ErrorList_Reset(p: $.VarRef<ErrorList>): void {
@@ -138,14 +138,14 @@ export function ErrorList_Err(p: ErrorList): $.GoError {
 	if ($.len(p) == 0) {
 		return null
 	}
-	return p
+	return $.wrapPrimitiveError(p, ErrorList_Error)
 }
 
 
 // PrintError is a utility function that prints a list of errors to w,
 // one error per line, if the err parameter is an [ErrorList]. Otherwise
 // it prints the err string.
-export function PrintError(w: io.Writer, err: $.GoError): void {
+export function PrintError(w: null | io.Writer, err: $.GoError): void {
 	{
 		let { value: list, ok: ok } = $.typeAssert<ErrorList>(err, 'go/scanner.ErrorList')
 		if (ok) {

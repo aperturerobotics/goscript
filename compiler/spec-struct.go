@@ -109,8 +109,10 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 		}
 
 		// Use AST-based type string when available, fall back to types-based
+		// Note: getASTTypeString already includes "null |" for interface types
 		astType := fieldASTTypes[fieldKeyName]
 		fieldTsType := c.getASTTypeString(astType, field.Type())
+
 		c.tsw.WriteLinef("%s: $.VarRef<%s>;", fieldKeyName, fieldTsType)
 	}
 	c.tsw.Indent(-1)
@@ -488,13 +490,23 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 		if fieldKeyName == "_" {
 			continue
 		}
-		// fieldTsType := c.getTypeString(field.Type())
 		if !firstField {
 			c.tsw.WriteLiterally(", ")
 		}
 		firstField = false
 		c.tsw.WriteLiterallyf("%q: ", fieldKeyName)
-		c.writeTypeInfoObject(field.Type()) // Use writeTypeInfoObject for field types
+
+		// Get the struct tag for this field
+		tag := underlyingStruct.Tag(i)
+		if tag != "" {
+			// Write field info with tag as StructFieldInfo object
+			c.tsw.WriteLiterally("{ type: ")
+			c.writeTypeInfoObject(field.Type())
+			c.tsw.WriteLiterallyf(", tag: %q }", tag)
+		} else {
+			// No tag, write type info directly for backwards compatibility
+			c.writeTypeInfoObject(field.Type())
+		}
 	}
 	c.tsw.WriteLiterally("}")
 	c.tsw.WriteLine("")

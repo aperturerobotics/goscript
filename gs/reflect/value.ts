@@ -34,7 +34,10 @@ interface ChannelObject {
 }
 
 // Zero returns a Value representing the zero value for the specified type.
-export function Zero(typ: Type): Value {
+export function Zero(typ: Type | null): Value {
+  if (typ === null) {
+    return new Value() // Return invalid value for null type
+  }
   let zeroValue: ReflectValue
 
   switch (typ.Kind()) {
@@ -129,7 +132,10 @@ export function Indirect(v: Value): Value {
 }
 
 // New returns a Value representing a pointer to a new zero value for the specified type.
-export function New(typ: Type): Value {
+export function New(typ: Type | null): Value {
+  if (typ === null) {
+    return new Value() // Return invalid value for null type
+  }
   const ptrType = PointerTo(typ)
   // For the pointer value, we'll use the zero value but with pointer type
   // In a real implementation, this would be a pointer to the zero value
@@ -137,8 +143,8 @@ export function New(typ: Type): Value {
 }
 
 // MakeSlice returns a Value representing a new slice with the specified type, length, and capacity.
-export function MakeSlice(typ: Type, len: number, _cap: number): Value {
-  if (typ.Kind() !== Slice) {
+export function MakeSlice(typ: Type | null, len: number, _cap: number): Value {
+  if (typ === null || typ.Kind() !== Slice) {
     throw new Error('reflect.MakeSlice of non-slice type')
   }
 
@@ -156,8 +162,8 @@ export function MakeSlice(typ: Type, len: number, _cap: number): Value {
 }
 
 // MakeMap returns a Value representing a new map with the specified type.
-export function MakeMap(typ: Type): Value {
-  if (typ.Kind() !== Map) {
+export function MakeMap(typ: Type | null): Value {
+  if (typ === null || typ.Kind() !== Map) {
     throw new Error('reflect.MakeMap of non-map type')
   }
 

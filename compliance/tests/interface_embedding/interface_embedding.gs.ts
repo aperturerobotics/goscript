@@ -78,7 +78,7 @@ export class MockFile {
 
 	public Write(p: $.Bytes): [number, $.GoError] {
 		const m = this
-		m.content = $.append(m.content, p)
+		m.content = $.append(m.content, ...(p || []))
 		return [$.len(p), null]
 	}
 

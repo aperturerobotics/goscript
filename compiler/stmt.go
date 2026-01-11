@@ -583,6 +583,12 @@ func (c *GoToTSCompiler) WriteStmtReturn(exp *ast.ReturnStmt) error {
 					}
 				}
 			}
+
+			// Special handling for primitive types that implement error interface
+			if c.writePrimitiveErrorWrapperIfNeeded(exp, res, i) {
+				continue
+			}
+
 			if err := c.WriteValueExpr(res); err != nil { // Return results are values
 				return err
 			}
@@ -593,6 +599,84 @@ func (c *GoToTSCompiler) WriteStmtReturn(exp *ast.ReturnStmt) error {
 	}
 	c.tsw.WriteLine("")
 	return nil
+}
+
+// writePrimitiveErrorWrapperIfNeeded checks if a return value is a primitive type
+// that implements the error interface, and if so, wraps it with $.wrapPrimitiveError.
+// Returns true if the wrapper was written, false otherwise.
+func (c *GoToTSCompiler) writePrimitiveErrorWrapperIfNeeded(retStmt *ast.ReturnStmt, res ast.Expr, resultIndex int) bool {
+	// Get the expected return type for this position
+	nodeInfo := c.analysis.NodeData[retStmt]
+	if nodeInfo == nil || nodeInfo.EnclosingFuncDecl == nil {
+		return false
+	}
+
+	funcDecl := nodeInfo.EnclosingFuncDecl
+	if funcDecl.Type.Results == nil {
+		return false
+	}
+
+	// Find the expected return type for this result index
+	var expectedType types.Type
+	resultIdx := 0
+	for _, field := range funcDecl.Type.Results.List {
+		count := len(field.Names)
+		if count == 0 {
+			count = 1
+		}
+		for j := 0; j < count; j++ {
+			if resultIdx == resultIndex {
+				expectedType = c.pkg.TypesInfo.TypeOf(field.Type)
+				break
+			}
+			resultIdx++
+		}
+		if expectedType != nil {
+			break
+		}
+	}
+
+	if expectedType == nil {
+		return false
+	}
+
+	// Check if the expected type is the error interface
+	if iface, ok := expectedType.Underlying().(*types.Interface); !ok || iface.String() != "interface{Error() string}" {
+		return false
+	}
+
+	// Get the actual type of the return expression
+	actualType := c.pkg.TypesInfo.TypeOf(res)
+	if actualType == nil {
+		return false
+	}
+
+	// Check if the actual type is a wrapper type (named type with basic underlying type)
+	if !c.isWrapperType(actualType) {
+		return false
+	}
+
+	// Check if the actual type has an Error() method
+	if !c.typeHasMethods(actualType, "Error") {
+		return false
+	}
+
+	// Get the qualified type name for the Error function
+	typeName := c.getQualifiedTypeName(actualType)
+	if typeName == "" {
+		return false
+	}
+
+	// Write: $.wrapPrimitiveError(value, TypeName_Error)
+	c.tsw.WriteLiterally("$.wrapPrimitiveError(")
+	if err := c.WriteValueExpr(res); err != nil {
+		return false
+	}
+	c.tsw.WriteLiterally(", ")
+	c.tsw.WriteLiterally(typeName)
+	c.tsw.WriteLiterally("_Error)")
+
+	return true
 }
 
 // WriteStmtBlock translates a Go block statement (`ast.BlockStmt`), typically

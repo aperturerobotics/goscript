@@ -6,6 +6,7 @@ import { parseTag, tagOptions_Contains } from "./tags.gs.js";
 import { numberType } from "./decode.gs.js";
 import { indentGrowthFactor } from "./indent.gs.js";
 import { htmlSafeSet, safeSet } from "./tables.gs.js";
+import * as io from "@goscript/io/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
@@ -93,10 +94,10 @@ $.registerInterfaceType(
 );
 
 export class MarshalerError {
-	public get Type(): reflect.Type {
+	public get Type(): null | reflect.Type {
 		return this._fields.Type.value
 	}
-	public set Type(value: reflect.Type) {
+	public set Type(value: null | reflect.Type) {
 		this._fields.Type.value = value
 	}
 
@@ -115,12 +116,12 @@ export class MarshalerError {
 	}
 
 	public _fields: {
-		Type: $.VarRef<reflect.Type>;
+		Type: $.VarRef<null | reflect.Type>;
 		Err: $.VarRef<$.GoError>;
 		sourceFunc: $.VarRef<string>;
 	}
 
-	constructor(init?: Partial<{Err?: $.GoError, Type?: reflect.Type, sourceFunc?: string}>) {
+	constructor(init?: Partial<{Err?: $.GoError, Type?: null | reflect.Type, sourceFunc?: string}>) {
 		this._fields = {
 			Type: $.varRef(init?.Type ?? null),
 			Err: $.varRef(init?.Err ?? null),
@@ -164,18 +165,18 @@ export class MarshalerError {
 }
 
 export class UnsupportedTypeError {
-	public get Type(): reflect.Type {
+	public get Type(): null | reflect.Type {
 		return this._fields.Type.value
 	}
-	public set Type(value: reflect.Type) {
+	public set Type(value: null | reflect.Type) {
 		this._fields.Type.value = value
 	}
 
 	public _fields: {
-		Type: $.VarRef<reflect.Type>;
+		Type: $.VarRef<null | reflect.Type>;
 	}
 
-	constructor(init?: Partial<{Type?: reflect.Type}>) {
+	constructor(init?: Partial<{Type?: null | reflect.Type}>) {
 		this._fields = {
 			Type: $.varRef(init?.Type ?? null)
 		}
@@ -514,7 +515,7 @@ export type floatEncoder = number;
 export function floatEncoder_encode(bits: floatEncoder, e: encodeState | null, v: reflect.Value, opts: encOpts): void {
 	let f = v.Float()
 	if (math.IsInf(f, 0) || math.IsNaN(f)) {
-		e!.error(new UnsupportedValueError({}))
+		e!.error(new UnsupportedValueError({Str: strconv.FormatFloat(f, 103, -1, bits), Value: v}))
 	}
 	let b = e!.AvailableBuffer()
 	b = mayAppendQuote(b, opts.quoted)
@@ -786,10 +787,10 @@ export class field {
 		this._fields.index.value = value
 	}
 
-	public get typ(): reflect.Type {
+	public get typ(): null | reflect.Type {
 		return this._fields.typ.value
 	}
-	public set typ(value: reflect.Type) {
+	public set typ(value: null | reflect.Type) {
 		this._fields.typ.value = value
 	}
 
@@ -835,7 +836,7 @@ export class field {
 		nameEscHTML: $.VarRef<string>;
 		tag: $.VarRef<boolean>;
 		index: $.VarRef<$.Slice<number>>;
-		typ: $.VarRef<reflect.Type>;
+		typ: $.VarRef<null | reflect.Type>;
 		omitEmpty: $.VarRef<boolean>;
 		omitZero: $.VarRef<boolean>;
 		isZero: $.VarRef<((p0: reflect.Value) => boolean) | null>;
@@ -843,7 +844,7 @@ export class field {
 		encoder: $.VarRef<encoderFunc | null>;
 	}
 
-	constructor(init?: Partial<{encoder?: encoderFunc | null, index?: $.Slice<number>, isZero?: ((p0: reflect.Value) => boolean) | null, name?: string, nameBytes?: $.Bytes, nameEscHTML?: string, nameNonEsc?: string, omitEmpty?: boolean, omitZero?: boolean, quoted?: boolean, tag?: boolean, typ?: reflect.Type}>) {
+	constructor(init?: Partial<{encoder?: encoderFunc | null, index?: $.Slice<number>, isZero?: ((p0: reflect.Value) => boolean) | null, name?: string, nameBytes?: $.Bytes, nameEscHTML?: string, nameNonEsc?: string, omitEmpty?: boolean, omitZero?: boolean, quoted?: boolean, tag?: boolean, typ?: null | reflect.Type}>) {
 		this._fields = {
 			name: $.varRef(init?.name ?? ""),
 			nameBytes: $.varRef(init?.nameBytes ?? new Uint8Array(0)),
@@ -932,7 +933,7 @@ export class mapEncoder {
 				{
 					let [, ok] = $.mapGet(e!.ptrSeen, ptr, {})
 					if (ok) {
-						e!.error(new UnsupportedValueError({}))
+						e!.error(new UnsupportedValueError({Str: fmt.Sprintf("encountered a cycle via %s", v.Type()), Value: v}))
 					}
 				}
 				$.mapSet(e!.ptrSeen, ptr, {})
@@ -1029,7 +1030,7 @@ export class ptrEncoder {
 				{
 					let [, ok] = $.mapGet(e!.ptrSeen, ptr, {})
 					if (ok) {
-						e!.error(new UnsupportedValueError({}))
+						e!.error(new UnsupportedValueError({Str: fmt.Sprintf("encountered a cycle via %s", v.Type()), Value: v}))
 					}
 				}
 				$.mapSet(e!.ptrSeen, ptr, {})
@@ -1099,7 +1100,7 @@ export class sliceEncoder {
 				{
 					let [, ok] = $.mapGet(e!.ptrSeen, ptr, {})
 					if (ok) {
-						e!.error(new UnsupportedValueError({}))
+						e!.error(new UnsupportedValueError({Str: fmt.Sprintf("encountered a cycle via %s", v.Type()), Value: v}))
 					}
 				}
 				$.mapSet(e!.ptrSeen, ptr, {})
@@ -1226,7 +1227,7 @@ export class structEncoder {
 					}
 				}
 
-				if ((f!.omitEmpty && isEmptyValue(fv)) || (f!.omitZero && (f!.isZero == null && fv.IsZero() || (f!.isZero != null && f!.isZero(fv))))) {
+				if ((f!.omitEmpty && isEmptyValue(fv)) || (f!.omitZero && (f!.isZero == null && fv.IsZero() || (f!.isZero != null && f!.isZero!(fv))))) {
 					continue
 				}
 				e!.WriteByte(next)
@@ -1267,9 +1268,9 @@ export let encoderCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 // map[reflect.Type]structFields
 export let fieldCache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 
-export let float32Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = (() => floatEncoder_encode(((32 as floatEncoder))))
+export let float32Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = ((_p0: encodeState | null, _p1: reflect.Value, _p2: encOpts) => floatEncoder_encode(((32 as floatEncoder)), _p0, _p1, _p2))
 
-export let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = (() => floatEncoder_encode(((64 as floatEncoder))))
+export let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = ((_p0: encodeState | null, _p1: reflect.Value, _p2: encOpts) => floatEncoder_encode(((64 as floatEncoder)), _p0, _p1, _p2))
 
 export let isZeroerType: reflect.Type = reflect.getInterfaceTypeByName("encoding/json.isZeroer")
 
@@ -1429,7 +1430,7 @@ export async function Marshal(v: null | any): Promise<[$.Bytes, $.GoError]> {
 	if (err != null) {
 		return [null, err]
 	}
-	let buf = $.append(null, e!.Bytes())
+	let buf = $.append(null, ...(e!.Bytes() || []))
 
 	return [buf, null]
 }
@@ -1505,7 +1506,7 @@ export async function valueEncoder(v: reflect.Value): Promise<encoderFunc | null
 	return await typeEncoder(v.Type())
 }
 
-export async function typeEncoder(t: reflect.Type): Promise<encoderFunc | null> {
+export async function typeEncoder(t: null | reflect.Type): Promise<encoderFunc | null> {
 	{
 		let [fi, ok] = await encoderCache!.value.Load(t)
 		if (ok) {
@@ -1522,21 +1523,21 @@ export async function typeEncoder(t: reflect.Type): Promise<encoderFunc | null> 
 	let indirect = sync.OnceValue(async (): Promise<encoderFunc | null> => {
 		return await newTypeEncoder(t, true)
 	})
-	let [fi, loaded] = await encoderCache!.value.LoadOrStore(t, Object.assign((e: encodeState | null, v: reflect.Value, opts: encOpts): void => {
-		;indirect!()!(e, v, opts)
+	let [fi, loaded] = await encoderCache!.value.LoadOrStore(t, Object.assign(async (e: encodeState | null, v: reflect.Value, opts: encOpts): Promise<void> => {
+		;(await indirect!())!(e, v, opts)
 	}, { __goTypeName: 'encoderFunc' }))
 	if (loaded) {
 		return $.mustTypeAssert<encoderFunc | null>(fi, {kind: $.TypeKind.Function, name: 'encoderFunc', params: [{ kind: $.TypeKind.Pointer, elemType: "encodeState" }, "Value", "encOpts"], results: []})
 	}
 
-	let f = indirect!()
+	let f = await indirect!()
 	await encoderCache!.value.Store(t, f)
 	return f
 }
 
 // newTypeEncoder constructs an encoderFunc for a type.
 // The returned encoder only checks CanAddr when allowAddr is true.
-export async function newTypeEncoder(t: reflect.Type, allowAddr: boolean): Promise<encoderFunc | null> {
+export async function newTypeEncoder(t: null | reflect.Type, allowAddr: boolean): Promise<encoderFunc | null> {
 	// If we have a non-pointer value whose type implements
 	// Marshaler with a value receiver, then we're better off taking
 	// the address of the value - otherwise we end up with an
@@ -1641,7 +1642,7 @@ export function marshalerEncoder(e: encodeState | null, v: reflect.Value, opts: 
 		e!.Buffer.Write(out)
 	}
 	if (err != null) {
-		e!.error(new MarshalerError({}))
+		e!.error(new MarshalerError({Err: err, Type: v.Type(), sourceFunc: "MarshalJSON"}))
 	}
 }
 
@@ -1660,7 +1661,7 @@ export function addrMarshalerEncoder(e: encodeState | null, v: reflect.Value, op
 		e!.Buffer.Write(out)
 	}
 	if (err != null) {
-		e!.error(new MarshalerError({}))
+		e!.error(new MarshalerError({Err: err, Type: v.Type(), sourceFunc: "MarshalJSON"}))
 	}
 }
 
@@ -1669,14 +1670,14 @@ export function textMarshalerEncoder(e: encodeState | null, v: reflect.Value, op
 		e!.WriteString("null")
 		return 
 	}
-	let { value: m, ok: ok } = $.typeAssert<encoding.TextMarshaler>(v.Interface(), 'encoding.TextMarshaler')
+	let { value: m, ok: ok } = $.typeAssert<null | encoding.TextMarshaler>(v.Interface(), 'encoding.TextMarshaler')
 	if (!ok) {
 		e!.WriteString("null")
 		return 
 	}
 	let [b, err] = m!.MarshalText()
 	if (err != null) {
-		e!.error(new MarshalerError({}))
+		e!.error(new MarshalerError({Err: err, Type: v.Type(), sourceFunc: "MarshalText"}))
 	}
 	e!.Write(appendString(e!.AvailableBuffer(), b, opts.escapeHTML))
 }
@@ -1687,10 +1688,10 @@ export function addrTextMarshalerEncoder(e: encodeState | null, v: reflect.Value
 		e!.WriteString("null")
 		return 
 	}
-	let m = $.mustTypeAssert<encoding.TextMarshaler>(va.Interface(), 'encoding.TextMarshaler')
+	let m = $.mustTypeAssert<null | encoding.TextMarshaler>(va.Interface(), 'encoding.TextMarshaler')
 	let [b, err] = m!.MarshalText()
 	if (err != null) {
-		e!.error(new MarshalerError({}))
+		e!.error(new MarshalerError({Err: err, Type: v.Type(), sourceFunc: "MarshalText"}))
 	}
 	e!.Write(appendString(e!.AvailableBuffer(), b, opts.escapeHTML))
 }
@@ -1838,15 +1839,15 @@ export async function interfaceEncoder(e: encodeState | null, v: reflect.Value, 
 }
 
 export function unsupportedTypeEncoder(e: encodeState | null, v: reflect.Value, _: encOpts): void {
-	e!.error(new UnsupportedTypeError({}))
+	e!.error(new UnsupportedTypeError({Type: v.Type()}))
 }
 
-export async function newStructEncoder(t: reflect.Type): Promise<encoderFunc | null> {
+export async function newStructEncoder(t: null | reflect.Type): Promise<encoderFunc | null> {
 	let se = $.markAsStructValue(new structEncoder({fields: await cachedTypeFields(t)}))
 	return se.encode.bind($.markAsStructValue(se.clone()))
 }
 
-export async function newMapEncoder(t: reflect.Type): Promise<encoderFunc | null> {
+export async function newMapEncoder(t: null | reflect.Type): Promise<encoderFunc | null> {
 	switch (t!.Key()!.Kind()) {
 		case reflect.String:
 		case reflect.Int:
@@ -1869,7 +1870,7 @@ export async function newMapEncoder(t: reflect.Type): Promise<encoderFunc | null
 			break
 		}
 	}
-	let me = $.markAsStructValue(new mapEncoder({}))
+	let me = $.markAsStructValue(new mapEncoder({elemEnc: await typeEncoder(t!.Elem())}))
 	return me.encode.bind($.markAsStructValue(me.clone()))
 }
 
@@ -1887,7 +1888,7 @@ export function encodeByteSlice(e: encodeState | null, v: reflect.Value, _: encO
 	e!.Write(b)
 }
 
-export async function newSliceEncoder(t: reflect.Type): Promise<encoderFunc | null> {
+export async function newSliceEncoder(t: null | reflect.Type): Promise<encoderFunc | null> {
 	// Byte slices get special treatment; arrays don't.
 	if (t!.Elem()!.Kind() == reflect.Uint8) {
 		let p = reflect.PointerTo(t!.Elem())
@@ -1895,17 +1896,17 @@ export async function newSliceEncoder(t: reflect.Type): Promise<encoderFunc | nu
 			return encodeByteSlice
 		}
 	}
-	let enc = $.markAsStructValue(new sliceEncoder({}))
+	let enc = $.markAsStructValue(new sliceEncoder({arrayEnc: await newArrayEncoder(t)}))
 	return enc.encode.bind($.markAsStructValue(enc.clone()))
 }
 
-export async function newArrayEncoder(t: reflect.Type): Promise<encoderFunc | null> {
-	let enc = $.markAsStructValue(new arrayEncoder({}))
+export async function newArrayEncoder(t: null | reflect.Type): Promise<encoderFunc | null> {
+	let enc = $.markAsStructValue(new arrayEncoder({elemEnc: await typeEncoder(t!.Elem())}))
 	return enc.encode.bind($.markAsStructValue(enc.clone()))
 }
 
-export async function newPtrEncoder(t: reflect.Type): Promise<encoderFunc | null> {
-	let enc = $.markAsStructValue(new ptrEncoder({}))
+export async function newPtrEncoder(t: null | reflect.Type): Promise<encoderFunc | null> {
+	let enc = $.markAsStructValue(new ptrEncoder({elemEnc: await typeEncoder(t!.Elem())}))
 	return enc.encode.bind($.markAsStructValue(enc.clone()))
 }
 
@@ -1948,7 +1949,7 @@ export function isValidTag(s: string): boolean {
 	return true
 }
 
-export function typeByIndex(t: reflect.Type, index: $.Slice<number>): reflect.Type {
+export function typeByIndex(t: null | reflect.Type, index: $.Slice<number>): null | reflect.Type {
 	for (let _i = 0; _i < $.len(index); _i++) {
 		let i = index![_i]
 		{
@@ -1966,7 +1967,7 @@ export function resolveKeyName(k: reflect.Value): [string, $.GoError] {
 		return [k.String(), null]
 	}
 	{
-		let { value: tm, ok: ok } = $.typeAssert<encoding.TextMarshaler>(k.Interface(), 'encoding.TextMarshaler')
+		let { value: tm, ok: ok } = $.typeAssert<null | encoding.TextMarshaler>(k.Interface(), 'encoding.TextMarshaler')
 		if (ok) {
 			if (k.Kind() == reflect.Ptr && k.IsNil()) {
 				return ["", null]
@@ -2027,13 +2028,13 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 		// user-controlled strings are rendered into JSON
 		// and served to some browsers.
 		{
-			let b = $.indexStringOrBytes(src, i)
+			let b = $.indexString(src, i)
 			if (b < utf8.RuneSelf) {
 				if (htmlSafeSet![b] || (!escapeHTML && safeSet![b])) {
 					i++
 					continue
 				}
-				dst = $.append(dst, $.sliceStringOrBytes(src, start, i))
+				dst = $.append(dst, ...$.stringToBytes($.sliceStringOrBytes(src, start, i)))
 
 				// This encodes bytes < 0x20 except for \b, \f, \n, \r and \t.
 				// If escapeHTML is set, it also escapes <, >, and &
@@ -2081,9 +2082,9 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 		// so that it can be stack allocated. This slows down []byte slightly
 		// due to the extra copy, but keeps string performance roughly the same.
 		let n = Math.min($.len(src) - i, utf8.UTFMax)
-		let [c, size] = utf8.DecodeRuneInString($.genericBytesOrStringToString($.sliceStringOrBytes(src, i, i + n)))
+		let [c, size] = utf8.DecodeRuneInString($.sliceStringOrBytes(src, i, i + n))
 		if (c == utf8.RuneError && size == 1) {
-			dst = $.append(dst, $.sliceStringOrBytes(src, start, i))
+			dst = $.append(dst, ...$.stringToBytes($.sliceStringOrBytes(src, start, i)))
 			dst = $.append(dst, ...$.stringToBytes("\\ufffd"))
 			i += size
 			start = i
@@ -2097,7 +2098,7 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 		// escape them, so we do so unconditionally.
 		// See https://en.wikipedia.org/wiki/JSON#Safety.
 		if (c == 8232 || c == 8233) {
-			dst = $.append(dst, $.sliceStringOrBytes(src, start, i))
+			dst = $.append(dst, ...$.stringToBytes($.sliceStringOrBytes(src, start, i)))
 			dst = $.append(dst, 92, 117, 50, 48, 50, $.indexString("0123456789abcdef", (c & 0xF)))
 			i += size
 			start = i
@@ -2105,7 +2106,7 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 		}
 		i += size
 	}
-	dst = $.append(dst, $.sliceStringOrBytes(src, start, undefined))
+	dst = $.append(dst, ...$.stringToBytes($.sliceStringOrBytes(src, start, undefined)))
 	dst = $.append(dst, 34)
 	return dst
 }
@@ -2123,7 +2124,7 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 // See go.dev/issue/67401.
 //
 //go:linkname typeFields
-export async function typeFields(t: reflect.Type): Promise<structFields> {
+export async function typeFields(t: null | reflect.Type): Promise<structFields> {
 	// Anonymous fields to explore at the current level and the next.
 	let current = $.arrayToSlice<field>([])
 	let next = $.arrayToSlice<field>([$.markAsStructValue(new field({typ: t}))])
@@ -2342,13 +2343,13 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 						if (name == "") {
 							name = sf.Name
 						}
-						let field = $.markAsStructValue(new field({index: index, name: name, omitEmpty: tagOptions_Contains(opts, "omitempty"), omitZero: tagOptions_Contains(opts, "omitzero"), quoted: quoted, tag: tagged, typ: ft}))
-						field.nameBytes = $.stringToBytes(field.name)
+						let field_ = $.markAsStructValue(new field({index: index, name: name, omitEmpty: tagOptions_Contains(opts, "omitempty"), omitZero: tagOptions_Contains(opts, "omitzero"), quoted: quoted, tag: tagged, typ: ft}))
+						field_.nameBytes = $.stringToBytes(field_.name)
 
 						// Build nameEscHTML and nameNonEsc ahead of time.
-						nameEscBuf = appendHTMLEscape($.goSlice(nameEscBuf, undefined, 0), field.nameBytes)
-						field.nameEscHTML = `"` + $.bytesToString(nameEscBuf) + `":`
-						field.nameNonEsc = `"` + field.name + `":`
+						nameEscBuf = appendHTMLEscape($.goSlice(nameEscBuf, undefined, 0), field_.nameBytes)
+						field_.nameEscHTML = `"` + $.bytesToString(nameEscBuf) + `":`
+						field_.nameNonEsc = `"` + field_.name + `":`
 
 						// Provide a function that uses a type's IsZero method.
 
@@ -2358,7 +2359,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 						// Avoid panics calling IsZero on nil pointer.
 
 						// Temporarily box v so we can take the address.
-						if (field.omitZero) {
+						if (field_.omitZero) {
 							let t = sf.Type
 							// Provide a function that uses a type's IsZero method.
 
@@ -2370,7 +2371,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 							// Temporarily box v so we can take the address.
 							switch (true) {
 								case t!.Kind() == reflect.Interface && t!.Implements(isZeroerType): {
-									field.isZero = (v: reflect.Value): boolean => {
+									field_.isZero = (v: reflect.Value): boolean => {
 										// Avoid panics calling IsZero on a nil interface or
 										// non-nil interface with nil pointer.
 										return v.IsNil() || (v.Elem()!.Kind() == reflect.Ptr && v.Elem()!.IsNil()) || $.mustTypeAssert<isZeroer>(v.Interface(), 'encoding/json.isZeroer')!.IsZero()
@@ -2378,20 +2379,20 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 									break
 								}
 								case t!.Kind() == reflect.Ptr && t!.Implements(isZeroerType): {
-									field.isZero = (v: reflect.Value): boolean => {
+									field_.isZero = (v: reflect.Value): boolean => {
 										// Avoid panics calling IsZero on nil pointer.
 										return v.IsNil() || $.mustTypeAssert<isZeroer>(v.Interface(), 'encoding/json.isZeroer')!.IsZero()
 									}
 									break
 								}
 								case t!.Implements(isZeroerType): {
-									field.isZero = (v: reflect.Value): boolean => {
+									field_.isZero = (v: reflect.Value): boolean => {
 										return $.mustTypeAssert<isZeroer>(v.Interface(), 'encoding/json.isZeroer')!.IsZero()
 									}
 									break
 								}
 								case reflect.PointerTo(t)!.Implements(isZeroerType): {
-									field.isZero = (v: reflect.Value): boolean => {
+									field_.isZero = (v: reflect.Value): boolean => {
 
 										// Temporarily box v so we can take the address.
 										if (!v.CanAddr()) {
@@ -2407,7 +2408,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 							}
 						}
 
-						fields = $.append(fields, field)
+						fields = $.append(fields, field_)
 
 						// If there were multiple instances, add a second,
 						// so that the annihilation code will see a duplicate.
@@ -2524,7 +2525,7 @@ export async function typeFields(t: reflect.Type): Promise<structFields> {
 			}
 		}
 	}
-	return $.markAsStructValue(new structFields({}))
+	return $.markAsStructValue(new structFields({byExactName: exactNameIndex, byFoldedName: foldedNameIndex, list: fields}))
 }
 
 // dominantField looks through the fields, all of which are known to
@@ -2544,7 +2545,7 @@ export function dominantField(fields: $.Slice<field>): [field, boolean] {
 }
 
 // cachedTypeFields is like typeFields but uses a cache to avoid repeated work.
-export async function cachedTypeFields(t: reflect.Type): Promise<structFields> {
+export async function cachedTypeFields(t: null | reflect.Type): Promise<structFields> {
 	{
 		let [f, ok] = await fieldCache!.value.Load(t)
 		if (ok) {

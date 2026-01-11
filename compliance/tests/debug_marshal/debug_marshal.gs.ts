@@ -59,7 +59,7 @@ export class Person {
 	  new Person(),
 	  [],
 	  Person,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "number" }, "Active": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "number" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "boolean" }, tag: "json:\"active\"" }}
 	);
 }
 

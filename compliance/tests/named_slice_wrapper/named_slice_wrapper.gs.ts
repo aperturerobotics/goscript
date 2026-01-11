@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as os from "@goscript/os/index.js"
 
-export type ByName = $.Slice<os.FileInfo>;
+export type ByName = $.Slice<null | os.FileInfo>;
 
 export function ByName_Len(a: ByName): number {
 	return $.len(a)
@@ -26,7 +26,7 @@ export async function main(): Promise<void> {
 	$.println("Length:", ByName_Len(files))
 
 	// Test type conversion
-	let slice: $.Slice<os.FileInfo> = files
+	let slice: $.Slice<null | os.FileInfo> = files
 	$.println("Slice length:", $.len(slice))
 }
 

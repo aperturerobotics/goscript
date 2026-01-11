@@ -1,0 +1,12 @@
+Initial next len: 1
+next[0].typ: Person
+next[0].typ.NumField(): 3
+Loop iteration, current len: 1
+Processing field, typ: Person
+  NumField: 3
+  Struct field 0 : Name
+    Tag: name
+  Struct field 1 : Age
+    Tag: age
+  Struct field 2 : Active
+    Tag: active

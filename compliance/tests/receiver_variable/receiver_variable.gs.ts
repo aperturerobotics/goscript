@@ -62,9 +62,9 @@ export class content {
 		let prev = $.len(c.bytes)
 		let diff = $.int(off) - prev
 		if (diff > 0) {
-			c.bytes = $.append(c.bytes, new Uint8Array(diff))
+			c.bytes = $.append(c.bytes, ...(new Uint8Array(diff) || []))
 		}
-		c.bytes = $.append($.goSlice(c.bytes, undefined, off), p)
+		c.bytes = $.append($.goSlice(c.bytes, undefined, off), ...(p || []))
 		if ($.len(c.bytes) < prev) {
 			c.bytes = $.goSlice(c.bytes, undefined, prev)
 		}
@@ -143,7 +143,7 @@ export class content {
 				if (err == null) {
 					// Nested scope with receiver usage
 					if ($.len(data) > 0) {
-						c.bytes = $.append(c.bytes, data)
+						c.bytes = $.append(c.bytes, ...(data || []))
 					}
 				}
 			}

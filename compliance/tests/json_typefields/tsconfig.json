@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "lib": [
+      "es2022",
+      "esnext.disposable",
+      "dom"
+    ],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../compliance/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/compliance/tests/json_typefields/*": [
+        "./*"
+      ]
+    },
+    "sourceMap": true,
+    "target": "es2022"
+  },
+  "extends": "../../../tsconfig.json",
+  "include": [
+    "index.ts",
+    "json_typefields.gs.ts"
+  ]
+}

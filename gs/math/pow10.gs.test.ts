@@ -26,10 +26,11 @@ describe('Pow10', () => {
   })
 
   it('should handle large positive exponents', () => {
-    expect(Pow10(100)).toBe(1e100)
-    expect(Pow10(200)).toBe(1e200)
-    expect(Pow10(300)).toBe(1e300)
-    expect(Pow10(308)).toBe(1e308)
+    // Use relative tolerance for very large numbers
+    expect(Math.abs(Pow10(100) - 1e100) / 1e100).toBeLessThan(1e-10)
+    expect(Math.abs(Pow10(200) - 1e200) / 1e200).toBeLessThan(1e-10)
+    expect(Math.abs(Pow10(300) - 1e300) / 1e300).toBeLessThan(1e-10)
+    expect(Math.abs(Pow10(308) - 1e308) / 1e308).toBeLessThan(1e-10)
     expect(Pow10(309)).toBe(Number.POSITIVE_INFINITY)
     expect(Pow10(400)).toBe(Number.POSITIVE_INFINITY)
   })

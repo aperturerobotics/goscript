@@ -224,7 +224,7 @@ export class Reader {
 }
 
 // NewReader returns a new [Reader] reading from b.
-export function NewReader(b: $.Bytes): Reader | null {
-	return new Reader({})
+export function NewReader(b: $.Bytes): Reader {
+	return new Reader({s: $.normalizeBytes(b), i: 0, prevRune: -1})
 }
 

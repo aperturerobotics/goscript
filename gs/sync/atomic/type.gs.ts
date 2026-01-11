@@ -106,15 +106,24 @@ export class Pointer<T> {
 	}
 
 	// Store atomically stores val into x.
-	public Store(val: T): void {
+	// In Go, this takes *T which can be nil, so we accept T | null
+	public Store(val: T | null): void {
 		const x = this
-		const varRef = $.varRef(val)
-		StorePointer(x._fields.v, unsafe.Pointer(varRef))
+		if (val === null) {
+			StorePointer(x._fields.v, null)
+		} else {
+			const varRef = $.varRef(val)
+			StorePointer(x._fields.v, unsafe.Pointer(varRef))
+		}
 	}
 
 	// Swap atomically stores new into x and returns the previous value.
-	public Swap(_new: T): $.VarRef<T> | null {
+	// In Go, this takes *T which can be nil, so we accept T | null
+	public Swap(_new: T | null): $.VarRef<T> | null {
 		const x = this
+		if (_new === null) {
+			return SwapPointer(x._fields.v, null) as $.VarRef<T> | null
+		}
 		const varRef = $.varRef(_new)
 		return SwapPointer(x._fields.v, unsafe.Pointer(varRef)) as $.VarRef<T> | null
 	}

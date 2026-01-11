@@ -219,6 +219,15 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 		if shouldApplyClone(c.pkg, r) {
 			// When cloning for value assignment, mark the result as struct value
 			c.tsw.WriteLiterally("$.markAsStructValue(")
+
+			// Check if RHS is an async call - if so, wrap in parentheses so .clone() binds correctly
+			// Example: (await asyncFunc()).clone() instead of await asyncFunc().clone()
+			needsParensForAsync := false
+			if callExpr, isCall := r.(*ast.CallExpr); isCall && c.isCallExprAsync(callExpr) {
+				needsParensForAsync = true
+				c.tsw.WriteLiterally("(")
+			}
+
 			// For other expressions, we need to handle variable referenced access differently
 			if _, isIdent := r.(*ast.Ident); isIdent {
 				// For identifiers, WriteValueExpr already adds .value if needed
@@ -236,6 +245,9 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 				}
 			}
 
+			if needsParensForAsync {
+				c.tsw.WriteLiterally(")")
+			}
 			c.tsw.WriteLiterally(".clone())") // Always add clone for struct values
 		} else {
 			// Check if this is a pointer variable assignment to an interface type
@@ -270,6 +282,11 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 			}
 
 			// Non-struct case: write RHS normally
+			// Check if this is a primitive error type being assigned to an error interface
+			if c.writePrimitiveErrorWrapperForAssign(lhs, r, i) {
+				continue
+			}
+
 			if err := c.WriteValueExpr(r); err != nil { // RHS is a non-struct value
 				return err
 			}
@@ -286,6 +303,61 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 		c.tsw.WriteLiterally(")")
 	}
 	return nil
+}
+
+// writePrimitiveErrorWrapperForAssign checks if an RHS value is a primitive type
+// that implements the error interface being assigned to an error-typed LHS,
+// and if so, wraps it with $.wrapPrimitiveError.
+// Returns true if the wrapper was written, false otherwise.
+func (c *GoToTSCompiler) writePrimitiveErrorWrapperForAssign(lhs []ast.Expr, rhs ast.Expr, rhsIndex int) bool {
+	// Only handle single assignments for now
+	if len(lhs) != 1 || rhsIndex != 0 {
+		return false
+	}
+
+	// Get the LHS type
+	lhsType := c.pkg.TypesInfo.TypeOf(lhs[0])
+	if lhsType == nil {
+		return false
+	}
+
+	// Check if the LHS type is the error interface
+	if iface, ok := lhsType.Underlying().(*types.Interface); !ok || iface.String() != "interface{Error() string}" {
+		return false
+	}
+
+	// Get the actual type of the RHS expression
+	rhsType := c.pkg.TypesInfo.TypeOf(rhs)
+	if rhsType == nil {
+		return false
+	}
+
+	// Check if the RHS type is a wrapper type (named type with basic underlying type)
+	if !c.isWrapperType(rhsType) {
+		return false
+	}
+
+	// Check if the RHS type has an Error() method
+	if !c.typeHasMethods(rhsType, "Error") {
+		return false
+	}
+
+	// Get the qualified type name for the Error function
+	typeName := c.getQualifiedTypeName(rhsType)
+	if typeName == "" {
+		return false
+	}
+
+	// Write: $.wrapPrimitiveError(value, TypeName_Error)
+	c.tsw.WriteLiterally("$.wrapPrimitiveError(")
+	if err := c.WriteValueExpr(rhs); err != nil {
+		return false
+	}
+	c.tsw.WriteLiterally(", ")
+	c.tsw.WriteLiterally(typeName)
+	c.tsw.WriteLiterally("_Error)")
+
+	return true
 }
 
 // writeBlankIdentifierAssign handles assignment to blank identifier (_)

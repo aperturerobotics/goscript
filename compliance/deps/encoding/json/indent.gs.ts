@@ -2,6 +2,7 @@ import * as $ from "@goscript/builtin/index.js"
 import { freeScanner, newScanner } from "./scanner.gs.js";
 import { hex } from "./encode.gs.js";
 import { scanContinue, scanEndArray, scanEndObject, scanError, scanSkipSpace } from "./scanner.gs.js";
+import * as io from "@goscript/io/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
@@ -27,19 +28,19 @@ export function appendHTMLEscape(dst: $.Bytes, src: $.Bytes): $.Bytes {
 		let c = src![i]
 		{
 			if (c == 60 || c == 62 || c == 38) {
-				dst = $.append(dst, $.goSlice(src, start, i))
+				dst = $.append(dst, ...($.goSlice(src, start, i) || []))
 				dst = $.append(dst, 92, 117, 48, 48, $.indexString("0123456789abcdef", (c >> 4)), $.indexString("0123456789abcdef", (c & 0xF)))
 				start = i + 1
 			}
 			// Convert U+2028 and U+2029 (E2 80 A8 and E2 80 A9).
 			if (c == 0xE2 && i + 2 < $.len(src) && src![i + 1] == 0x80 && (src![i + 2] & ~ 1) == 0xA8) {
-				dst = $.append(dst, $.goSlice(src, start, i))
+				dst = $.append(dst, ...($.goSlice(src, start, i) || []))
 				dst = $.append(dst, 92, 117, 50, 48, 50, $.indexString("0123456789abcdef", (src![i + 2] & 0xF)))
 				start = i + $.len("\u2029")
 			}
 		}
 	}
-	return $.append(dst, $.goSlice(src, start, undefined))
+	return $.append(dst, ...($.goSlice(src, start, undefined) || []))
 }
 
 // Compact appends to dst the JSON-encoded src with
@@ -68,7 +69,7 @@ export function appendCompact(dst: $.Bytes, src: $.Bytes, escape: boolean): [$.B
 		{
 			if (escape && (c == 60 || c == 62 || c == 38)) {
 				if (start < i) {
-					dst = $.append(dst, $.goSlice(src, start, i))
+					dst = $.append(dst, ...($.goSlice(src, start, i) || []))
 				}
 				dst = $.append(dst, 92, 117, 48, 48, $.indexString("0123456789abcdef", (c >> 4)), $.indexString("0123456789abcdef", (c & 0xF)))
 				start = i + 1
@@ -76,18 +77,18 @@ export function appendCompact(dst: $.Bytes, src: $.Bytes, escape: boolean): [$.B
 			// Convert U+2028 and U+2029 (E2 80 A8 and E2 80 A9).
 			if (escape && c == 0xE2 && i + 2 < $.len(src) && src![i + 1] == 0x80 && (src![i + 2] & ~ 1) == 0xA8) {
 				if (start < i) {
-					dst = $.append(dst, $.goSlice(src, start, i))
+					dst = $.append(dst, ...($.goSlice(src, start, i) || []))
 				}
 				dst = $.append(dst, 92, 117, 50, 48, 50, $.indexString("0123456789abcdef", (src![i + 2] & 0xF)))
 				start = i + 3
 			}
-			let v = scan!.step(scan, c)
+			let v = scan!.step!(scan, c)
 			if (v >= 9) {
 				if (v == 11) {
 					break
 				}
 				if (start < i) {
-					dst = $.append(dst, $.goSlice(src, start, i))
+					dst = $.append(dst, ...($.goSlice(src, start, i) || []))
 				}
 				start = i + 1
 			}
@@ -97,7 +98,7 @@ export function appendCompact(dst: $.Bytes, src: $.Bytes, escape: boolean): [$.B
 		return [$.goSlice(dst, undefined, origLen), scan!.err]
 	}
 	if (start < $.len(src)) {
-		dst = $.append(dst, $.goSlice(src, start, undefined))
+		dst = $.append(dst, ...($.goSlice(src, start, undefined) || []))
 	}
 	return [dst, null]
 }
@@ -153,7 +154,7 @@ export function appendIndent(dst: $.Bytes, src: $.Bytes, prefix: string, indent:
 		let c = src![_i]
 		{
 			scan!.bytes++
-			let v = scan!.step(scan, c)
+			let v = scan!.step!(scan, c)
 			if (v == 9) {
 				continue
 			}

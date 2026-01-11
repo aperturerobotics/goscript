@@ -26,7 +26,7 @@ jobs:
       matrix:
         language: [ 'go' ]
         go: ['1.25.3']
-        node: [25.x]
+        bun: ['latest']
 
     steps:
     - name: Checkout repository
@@ -37,11 +37,10 @@ jobs:
       with:
         go-version: ${{ matrix.go }}
 
-    - name: Setup Node.JS ${{ matrix.node }}
-      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+    - name: Setup Bun ${{ matrix.bun }}
+      uses: oven-sh/setup-bun@v2
       with:
-        node-version: ${{ matrix.node }}
-        cache: 'yarn'
+        bun-version: ${{ matrix.bun }}
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9

@@ -269,12 +269,26 @@ export const makeSlice = <T>(
  * @param high Ending index (defaults to s.length)
  * @param max Capacity limit (defaults to original capacity)
  */
-export const goSlice = <T>( // T can be number for Uint8Array case
+// Overload for Uint8Array - returns Slice<number> (which includes Uint8Array)
+export function goSlice(
+  s: Uint8Array,
+  low?: number,
+  high?: number,
+  max?: number,
+): Slice<number>
+// Generic overload for other slice types
+export function goSlice<T>(
   s: Slice<T>,
   low?: number,
   high?: number,
   max?: number,
-): Slice<T> => {
+): Slice<T>
+export function goSlice<T>( // T can be number for Uint8Array case
+  s: Slice<T> | Uint8Array,
+  low?: number,
+  high?: number,
+  max?: number,
+): Slice<T> {
   const handler = {
     get(target: any, prop: string | symbol): any {
       if (typeof prop === 'string' && /^\d+$/.test(prop)) {
@@ -684,9 +698,11 @@ export const cap = <T>(obj: Slice<T> | Uint8Array): number => {
  * @returns The modified or new slice.
  */
 export function append(slice: Uint8Array, ...elements: any[]): Uint8Array
+// Overload for null slice with number elements - returns number slice (Bytes compatible)
+export function append(slice: null, ...elements: number[]): Slice<number>
 export function append<T>(slice: Slice<T>, ...elements: any[]): Slice<T>
 export function append<T>(
-  slice: Slice<T> | Uint8Array,
+  slice: Slice<T> | Uint8Array | null,
   ...elements: any[]
 ): Slice<T> {
   // 1. Flatten all elements from the varargs `...elements` into `varargsElements`.
@@ -1094,7 +1110,28 @@ export const byte = (n: number): number => {
  * @returns The byte value (0-255) at the specified index.
  * @throws Error if index is out of bounds.
  */
-export const indexString = (str: string, index: number): number => {
+export const indexString = (str: string | import('./builtin.js').Bytes, index: number): number => {
+  if (typeof str !== 'string') {
+    // Bytes - access directly
+    if (str instanceof Uint8Array) {
+      if (index < 0 || index >= str.length) {
+        throw new Error(
+          `runtime error: index out of range [${index}] with length ${str.length}`,
+        )
+      }
+      return str[index]
+    }
+    // Array or null
+    if (str === null || str === undefined) {
+      throw new Error(`runtime error: index out of range [${index}] with length 0`)
+    }
+    if (index < 0 || index >= str.length) {
+      throw new Error(
+        `runtime error: index out of range [${index}] with length ${str.length}`,
+      )
+    }
+    return str[index]
+  }
   const bytes = new TextEncoder().encode(str)
   if (index < 0 || index >= bytes.length) {
     throw new Error(
@@ -1201,8 +1238,19 @@ export const bytesToString = (
  * @param s The input string.
  * @returns A Uint8Array representing the UTF-8 bytes of the string.
  */
-export function stringToBytes(s: string): Uint8Array {
-  return new TextEncoder().encode(s)
+export function stringToBytes(s: string | import('./builtin.js').Bytes): Uint8Array {
+  if (typeof s === 'string') {
+    return new TextEncoder().encode(s)
+  }
+  // Already bytes - normalize to Uint8Array
+  if (s instanceof Uint8Array) {
+    return s
+  }
+  if (s === null || s === undefined) {
+    return new Uint8Array(0)
+  }
+  // Handle array or slice types
+  return new Uint8Array(Array.isArray(s) ? s : [])
 }
 
 /**

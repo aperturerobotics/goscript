@@ -207,7 +207,7 @@ export class tree {
 			x!.update()
 			switch (x!.balance) {
 				case -2: {
-					if (x!.left!.balance == 1) {
+					if (Number(x!.left!.balance) == 1) {
 						t.rotateLeft(x!.left)
 					}
 					x = t.rotateRight(x)
@@ -311,7 +311,7 @@ export class tree {
 	// delete deletes the node at pos.
 	public _delete(pos: $.VarRef<node | null> | null): void {
 		const t = this
-		null
+		t.root!.check(null)
 		let x = pos!.value
 		switch (true) {
 			case x == null: {
@@ -347,7 +347,7 @@ export class tree {
 		x!.left = null
 		x!.right = null
 		x!.height = -1
-		null
+		t.root!.check(null)
 	}
 
 	// deleteSwap deletes a node that has two children by replacing

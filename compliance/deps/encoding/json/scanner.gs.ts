@@ -1,4 +1,5 @@
 import * as $ from "@goscript/builtin/index.js"
+import * as io from "@goscript/io/index.js"
 
 import * as strconv from "@goscript/strconv/index.js"
 
@@ -201,12 +202,12 @@ export class scanner {
 		if (s.endTop) {
 			return 10
 		}
-		s.step(s, 32)
+		s.step!(s, 32)
 		if (s.endTop) {
 			return 10
 		}
 		if (s.err == null) {
-			s.err = new SyntaxError({})
+			s.err = new SyntaxError({Offset: s.bytes, msg: "unexpected end of JSON input"})
 		}
 		return 11
 	}
@@ -241,7 +242,7 @@ export class scanner {
 	public error(c: number, context: string): number {
 		const s = this
 		s.step = stateError
-		s.err = new SyntaxError({})
+		s.err = new SyntaxError({Offset: s.bytes, msg: "invalid character " + quoteChar(c) + " " + context})
 		return 11
 	}
 
@@ -278,7 +279,7 @@ export function checkValid(data: $.Bytes, scan: scanner | null): $.GoError {
 		let c = data![_i]
 		{
 			scan!.bytes++
-			if (scan!.step(scan, c) == 11) {
+			if (scan!.step!(scan, c) == 11) {
 				return scan!.err
 			}
 		}

@@ -157,13 +157,13 @@ export class Encoding {
 		switch (remain) {
 			case 2: {
 				dst![di + 2] = enc.encode![((val >> 6) & 0x3F)]
-				if (enc.padChar != -1) {
+				if (Number(enc.padChar) != -1) {
 					dst![di + 3] = $.byte(enc.padChar)
 				}
 				break
 			}
 			case 1: {
-				if (enc.padChar != -1) {
+				if (Number(enc.padChar) != -1) {
 					dst![di + 2] = $.byte(enc.padChar)
 					dst![di + 3] = $.byte(enc.padChar)
 				}
@@ -194,7 +194,7 @@ export class Encoding {
 	// of an input buffer of length n.
 	public EncodedLen(n: number): number {
 		const enc = this
-		if (enc.padChar == -1) {
+		if (Number(enc.padChar) == -1) {
 			return n / 3 * 4 + (n % 3 * 8 + 5) / 6
 		}
 		return (n + 2) / 3 * 4
@@ -221,8 +221,8 @@ export class Encoding {
 						break
 					}
 					case j == 1:
-					case enc.padChar != -1: {
-						return [si, 0, (si - j as CorruptInputError)]
+					case Number(enc.padChar) != -1: {
+						return [si, 0, $.wrapPrimitiveError((si - j as CorruptInputError), CorruptInputError_Error)]
 						break
 					}
 				}
@@ -244,7 +244,7 @@ export class Encoding {
 			}
 
 			if ((_in as number) != enc.padChar) {
-				return [si, 0, (si - 1 as CorruptInputError)]
+				return [si, 0, $.wrapPrimitiveError((si - 1 as CorruptInputError), CorruptInputError_Error)]
 			}
 
 			// We've reached the end and there's padding
@@ -260,7 +260,7 @@ export class Encoding {
 			switch (j) {
 				case 0:
 				case 1: {
-					return [si, 0, (si - 1 as CorruptInputError)]
+					return [si, 0, $.wrapPrimitiveError((si - 1 as CorruptInputError), CorruptInputError_Error)]
 					break
 				}
 				case 2: {
@@ -269,11 +269,11 @@ export class Encoding {
 					}
 					if (si == $.len(src)) {
 						// not enough padding
-						return [si, 0, ($.len(src) as CorruptInputError)]
+						return [si, 0, $.wrapPrimitiveError(($.len(src) as CorruptInputError), CorruptInputError_Error)]
 					}
 					if ((src![si] as number) != enc.padChar) {
 						// incorrect padding
-						return [si, 0, (si - 1 as CorruptInputError)]
+						return [si, 0, $.wrapPrimitiveError((si - 1 as CorruptInputError), CorruptInputError_Error)]
 					}
 					si++
 					break
@@ -288,7 +288,7 @@ export class Encoding {
 			// trailing garbage
 			if (si < $.len(src)) {
 				// trailing garbage
-				err = (si as CorruptInputError)
+				err = $.wrapPrimitiveError((si as CorruptInputError), CorruptInputError_Error)
 			}
 			dlen = j
 			break
@@ -305,7 +305,7 @@ export class Encoding {
 			case 3: {
 				dst![1] = dbuf![1]
 				if (enc.strict && dbuf![2] != 0) {
-					return [si, 0, (si - 1 as CorruptInputError)]
+					return [si, 0, $.wrapPrimitiveError((si - 1 as CorruptInputError), CorruptInputError_Error)]
 				}
 				dbuf![1] = 0
 				// fallthrough // fallthrough statement skipped
@@ -314,7 +314,7 @@ export class Encoding {
 			case 2: {
 				dst![0] = dbuf![0]
 				if (enc.strict && (dbuf![1] != 0 || dbuf![2] != 0)) {
-					return [si, 0, (si - 2 as CorruptInputError)]
+					return [si, 0, $.wrapPrimitiveError((si - 2 as CorruptInputError), CorruptInputError_Error)]
 				}
 				break
 			}
@@ -453,10 +453,10 @@ export class decoder {
 		this._fields.enc.value = value
 	}
 
-	public get r(): io.Reader {
+	public get r(): null | io.Reader {
 		return this._fields.r.value
 	}
-	public set r(value: io.Reader) {
+	public set r(value: null | io.Reader) {
 		this._fields.r.value = value
 	}
 
@@ -494,14 +494,14 @@ export class decoder {
 		err: $.VarRef<$.GoError>;
 		readErr: $.VarRef<$.GoError>;
 		enc: $.VarRef<Encoding | null>;
-		r: $.VarRef<io.Reader>;
+		r: $.VarRef<null | io.Reader>;
 		buf: $.VarRef<number[]>;
 		nbuf: $.VarRef<number>;
 		out: $.VarRef<$.Bytes>;
 		outbuf: $.VarRef<number[]>;
 	}
 
-	constructor(init?: Partial<{buf?: number[], enc?: Encoding | null, err?: $.GoError, nbuf?: number, out?: $.Bytes, outbuf?: number[], r?: io.Reader, readErr?: $.GoError}>) {
+	constructor(init?: Partial<{buf?: number[], enc?: Encoding | null, err?: $.GoError, nbuf?: number, out?: $.Bytes, outbuf?: number[], r?: null | io.Reader, readErr?: $.GoError}>) {
 		this._fields = {
 			err: $.varRef(init?.err ?? null),
 			readErr: $.varRef(init?.readErr ?? null),
@@ -559,7 +559,7 @@ export class decoder {
 		if (d.nbuf < 4) {
 
 			// Decode final fragment, without padding.
-			if (d.enc!.padChar == -1 && d.nbuf > 0) {
+			if (Number(d.enc!.padChar) == -1 && d.nbuf > 0) {
 				// Decode final fragment, without padding.
 				let nw: number = 0
 				{
@@ -633,10 +633,10 @@ export class encoder {
 		this._fields.enc.value = value
 	}
 
-	public get w(): io.Writer {
+	public get w(): null | io.Writer {
 		return this._fields.w.value
 	}
-	public set w(value: io.Writer) {
+	public set w(value: null | io.Writer) {
 		this._fields.w.value = value
 	}
 
@@ -667,13 +667,13 @@ export class encoder {
 	public _fields: {
 		err: $.VarRef<$.GoError>;
 		enc: $.VarRef<Encoding | null>;
-		w: $.VarRef<io.Writer>;
+		w: $.VarRef<null | io.Writer>;
 		buf: $.VarRef<number[]>;
 		nbuf: $.VarRef<number>;
 		out: $.VarRef<number[]>;
 	}
 
-	constructor(init?: Partial<{buf?: number[], enc?: Encoding | null, err?: $.GoError, nbuf?: number, out?: number[], w?: io.Writer}>) {
+	constructor(init?: Partial<{buf?: number[], enc?: Encoding | null, err?: $.GoError, nbuf?: number, out?: number[], w?: null | io.Writer}>) {
 		this._fields = {
 			err: $.varRef(init?.err ?? null),
 			enc: $.varRef(init?.enc ?? null),
@@ -778,18 +778,18 @@ export class encoder {
 }
 
 export class newlineFilteringReader {
-	public get wrapped(): io.Reader {
+	public get wrapped(): null | io.Reader {
 		return this._fields.wrapped.value
 	}
-	public set wrapped(value: io.Reader) {
+	public set wrapped(value: null | io.Reader) {
 		this._fields.wrapped.value = value
 	}
 
 	public _fields: {
-		wrapped: $.VarRef<io.Reader>;
+		wrapped: $.VarRef<null | io.Reader>;
 	}
 
-	constructor(init?: Partial<{wrapped?: io.Reader}>) {
+	constructor(init?: Partial<{wrapped?: null | io.Reader}>) {
 		this._fields = {
 			wrapped: $.varRef(init?.wrapped ?? null)
 		}
@@ -890,7 +890,7 @@ export function NewEncoding(encoder: string): Encoding | null {
 // Base64 encodings operate in 4-byte blocks; when finished
 // writing, the caller must Close the returned encoder to flush any
 // partially written blocks.
-export function NewEncoder(enc: Encoding | null, w: io.Writer): io.WriteCloser {
+export function NewEncoder(enc: Encoding | null, w: null | io.Writer): null | io.WriteCloser {
 	return new encoder({enc: enc, w: w})
 }
 
@@ -927,8 +927,8 @@ export function assemble64(n1: number, n2: number, n3: number, n4: number, n5: n
 }
 
 // NewDecoder constructs a new base64 stream decoder.
-export function NewDecoder(enc: Encoding | null, r: io.Reader): io.Reader {
-	return new decoder({enc: enc, r: new newlineFilteringReader({})})
+export function NewDecoder(enc: Encoding | null, r: null | io.Reader): null | io.Reader {
+	return new decoder({enc: enc, r: new newlineFilteringReader({wrapped: r})})
 }
 
 export function decodedLen(n: number, padChar: number): number {

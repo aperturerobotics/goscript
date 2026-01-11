@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         go: ['1.25.3']
-        node: [25.x]
+        bun: ['latest']
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -27,27 +27,26 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
-      - name: Setup Node.JS ${{ matrix.node }}
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+      - name: Setup Bun ${{ matrix.bun }}
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          bun-version: ${{ matrix.bun }}
 
-      - name: Yarn install
-        run: yarn install
+      - name: Bun install
+        run: bun install
 
       - name: Test Go
         run: go test -timeout=10m -v ./...
 
       - name: Typecheck Js
-        run: yarn typecheck
+        run: bun typecheck
 
       - name: Test Js
-        run: yarn test:js
+        run: bun test
 
       - name: Lint Js
-        run: yarn lint:js
-        
+        run: bun lint:js
+
       - name: Check for git-dirty files in compliance directory
         run: |
           git status --porcelain=v1 compliance/ | grep -q "^" && {

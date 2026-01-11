@@ -130,8 +130,21 @@ func (c *GoToTSCompiler) WriteSelectorExpr(exp *ast.SelectorExpr) error {
 
 	// Fallback / Normal Case (e.g., obj.Field, pkg.Var, method calls)
 	// WriteValueExpr handles adding .value for the base variable itself if it's varrefed.
+
+	// Check if the base expression is an async call - if so, we need to wrap it in parentheses
+	// so that await binds correctly: (await asyncFn()).method instead of await asyncFn().method
+	needsParensForAsync := false
+	if callExpr, isCall := exp.X.(*ast.CallExpr); isCall && c.isCallExprAsync(callExpr) {
+		needsParensForAsync = true
+		c.tsw.WriteLiterally("(")
+	}
+
 	if err := c.WriteValueExpr(exp.X); err != nil {
 		return fmt.Errorf("failed to write selector base expression: %w", err)
+	}
+
+	if needsParensForAsync {
+		c.tsw.WriteLiterally(")")
 	}
 
 	// Add null assertion for selector expressions when accessing fields/methods on nullable types
@@ -212,14 +225,34 @@ func (c *GoToTSCompiler) writeMethodValue(exp *ast.SelectorExpr, selection *type
 			return fmt.Errorf("failed to get qualified type name for primitive receiver")
 		}
 
-		// Generate: () => TypeName_MethodName(receiverValue)
-		c.tsw.WriteLiterally("(() => ")
+		// Get the method parameters to forward them
+		params := sig.Params()
+		paramNames := make([]string, params.Len())
+		for i := 0; i < params.Len(); i++ {
+			paramNames[i] = fmt.Sprintf("_p%d", i)
+		}
+
+		// Generate: ((_p0: type0, _p1: type1, ...) => TypeName_MethodName(receiverValue, _p0, _p1, ...))
+		c.tsw.WriteLiterally("((")
+		for i, name := range paramNames {
+			if i > 0 {
+				c.tsw.WriteLiterally(", ")
+			}
+			c.tsw.WriteLiterally(name)
+			c.tsw.WriteLiterally(": ")
+			c.WriteGoType(params.At(i).Type(), GoTypeContextGeneral)
+		}
+		c.tsw.WriteLiterally(") => ")
 		c.tsw.WriteLiterally(typeName)
 		c.tsw.WriteLiterally("_")
 		c.tsw.WriteLiterally(exp.Sel.Name)
 		c.tsw.WriteLiterally("(")
 		if err := c.WriteValueExpr(exp.X); err != nil {
 			return fmt.Errorf("failed to write method value receiver: %w", err)
+		}
+		for _, name := range paramNames {
+			c.tsw.WriteLiterally(", ")
+			c.tsw.WriteLiterally(name)
 		}
 		c.tsw.WriteLiterally("))")
 

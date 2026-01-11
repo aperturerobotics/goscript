@@ -25,10 +25,49 @@ func (c *GoToTSCompiler) isRuneSliceType(t types.Type) bool {
 	return false
 }
 
-// isStringType checks if a type is string
+// isStringType checks if a type is string or could be string (e.g., type parameter)
 func (c *GoToTSCompiler) isStringType(t types.Type) bool {
 	if basic, isBasic := t.Underlying().(*types.Basic); isBasic {
 		return basic.Kind() == types.String || basic.Kind() == types.UntypedString
+	}
+	// Handle type parameters (e.g., Bytes ~[]byte | ~string)
+	if typeParam, isTypeParam := t.(*types.TypeParam); isTypeParam {
+		constraint := typeParam.Constraint()
+		if constraintIface, ok := constraint.(*types.Interface); ok {
+			return c.constraintIncludesString(constraintIface)
+		}
+	}
+	return false
+}
+
+// constraintIncludesString checks if a type constraint includes string
+func (c *GoToTSCompiler) constraintIncludesString(constraint *types.Interface) bool {
+	// Check if the constraint has type terms that include string
+	if constraint.IsMethodSet() {
+		return false // Pure method interface, no type terms
+	}
+	// For union constraints like []byte | string, check each term
+	for i := 0; i < constraint.NumEmbeddeds(); i++ {
+		embedded := constraint.EmbeddedType(i)
+		// Check if embedded is a union
+		if union, isUnion := embedded.(*types.Union); isUnion {
+			for j := 0; j < union.Len(); j++ {
+				term := union.Term(j)
+				termType := term.Type()
+				// Check if term is string or ~string
+				if basic, isBasic := termType.Underlying().(*types.Basic); isBasic {
+					if basic.Kind() == types.String {
+						return true
+					}
+				}
+			}
+		}
+		// Check direct embedded type
+		if basic, isBasic := embedded.Underlying().(*types.Basic); isBasic {
+			if basic.Kind() == types.String {
+				return true
+			}
+		}
 	}
 	return false
 }

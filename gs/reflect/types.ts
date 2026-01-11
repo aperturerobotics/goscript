@@ -41,10 +41,10 @@ import { Type, Kind, Value, Kind_String, ChanDir } from './type.js'
 export class StructField {
   public Name: string = ''
   public Type!: Type
-  public Tag?: StructTag
-  public Offset?: uintptr
-  public Index?: number[]
-  public Anonymous?: boolean
+  public Tag: StructTag = new StructTag('')
+  public Offset: uintptr = 0
+  public Index: number[] = []
+  public Anonymous: boolean = false
 
   constructor(init?: Partial<StructField>) {
     if (init) {
@@ -58,7 +58,7 @@ export class StructField {
       Type: this.Type,
       Tag: this.Tag,
       Offset: this.Offset,
-      Index: this.Index ? [...this.Index] : undefined,
+      Index: [...this.Index],
       Anonymous: this.Anonymous,
     })
   }
@@ -151,12 +151,13 @@ export interface StringHeader {
 }
 
 // Map iterator with proper typing
+// Key() and Value() return reflect.Value to match Go's reflect.MapIter
 export interface MapIter<K = unknown, V = unknown> {
   map: Map<K, V>
   iterator: Iterator<[K, V]>
   current: IteratorResult<[K, V]> | null
-  Key(): K | null
-  Value(): V | null
+  Key(): Value
+  Value(): Value
   Next(): boolean
   Reset(m: Map<K, V>): void
 }

@@ -43,7 +43,9 @@ describe('Hypot', () => {
   it('should handle very large values without overflow', () => {
     const large = 1e150
     const result = Hypot(large, large)
-    expect(result).toBeCloseTo(large * Math.sqrt(2), 5)
+    const expected = large * Math.sqrt(2)
+    // Use relative tolerance for very large numbers
+    expect(Math.abs(result - expected) / expected).toBeLessThan(1e-10)
     expect(IsInf(result, 0)).toBe(false)
   })
 

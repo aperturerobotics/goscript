@@ -52,6 +52,10 @@ type ShadowingInfo struct {
 	ShadowedVariables map[string]types.Object
 	// TempVariables maps shadowed variable names to temporary variable names
 	TempVariables map[string]string
+	// TypeShadowedVars maps variable names that shadow type names to their renamed identifier
+	// This happens when a variable name matches a type name used in its initialization
+	// e.g., field := field{...} where the variable 'field' shadows the type 'field'
+	TypeShadowedVars map[string]string
 }
 
 // FunctionTypeInfo represents Go function type information for reflection
@@ -145,6 +149,11 @@ type Analysis struct {
 	// FunctionAssignments tracks which function literals are assigned to which variables
 	FunctionAssignments map[types.Object]ast.Node
 
+	// AsyncReturningVars tracks variables whose function type returns async values
+	// This happens when a variable is assigned from a higher-order function (like sync.OnceValue)
+	// that receives an async function literal as an argument
+	AsyncReturningVars map[types.Object]bool
+
 	// NamedBasicTypes tracks types that should be implemented as type aliases with standalone functions
 	// This includes named types with basic underlying types (like uint32, string) that have methods
 	NamedBasicTypes map[types.Type]bool
@@ -196,17 +205,17 @@ func NewAnalysis(allPackages map[string]*packages.Package) *Analysis {
 	}
 
 	return &Analysis{
-		VariableUsage:       make(map[types.Object]*VariableUsageInfo),
-		Imports:             make(map[string]*fileImport),
-		SyntheticImports:    make(map[string]*fileImport),
-		FunctionData:        make(map[types.Object]*FunctionInfo),
-		NodeData:            make(map[ast.Node]*NodeInfo),
-		FuncLitData:         make(map[*ast.FuncLit]*FunctionInfo),
-		ReflectedFunctions:  make(map[ast.Node]*ReflectedFunctionInfo),
-		FunctionAssignments: make(map[types.Object]ast.Node),
-		// PackageMetadata removed - using MethodAsyncStatus only
-		NamedBasicTypes:          make(map[types.Type]bool),
-		AllPackages:              allPackages,
+		VariableUsage:        make(map[types.Object]*VariableUsageInfo),
+		Imports:              make(map[string]*fileImport),
+		SyntheticImports:     make(map[string]*fileImport),
+		FunctionData:         make(map[types.Object]*FunctionInfo),
+		NodeData:             make(map[ast.Node]*NodeInfo),
+		FuncLitData:          make(map[*ast.FuncLit]*FunctionInfo),
+		ReflectedFunctions:   make(map[ast.Node]*ReflectedFunctionInfo),
+		FunctionAssignments:  make(map[types.Object]ast.Node),
+		AsyncReturningVars:   make(map[types.Object]bool),
+		NamedBasicTypes:      make(map[types.Type]bool),
+		AllPackages:          allPackages,
 		InterfaceImplementations: make(map[InterfaceMethodKey][]ImplementationInfo),
 		MethodAsyncStatus:        make(map[MethodKey]bool),
 	}
@@ -326,6 +335,15 @@ func (a *Analysis) IsAsyncFunc(obj types.Object) bool {
 		return isAsync
 	}
 	return false
+}
+
+// IsAsyncReturningVar returns whether the given variable holds a function that returns async values.
+// This is true when the variable is assigned from a higher-order function that receives an async function literal.
+func (a *Analysis) IsAsyncReturningVar(obj types.Object) bool {
+	if obj == nil {
+		return false
+	}
+	return a.AsyncReturningVars[obj]
 }
 
 func (a *Analysis) IsReceiverUsed(obj types.Object) bool {
@@ -924,7 +942,61 @@ func (v *analysisVisitor) visitAssignStmt(n *ast.AssignStmt) ast.Visitor {
 		}
 	}
 
+	// NOTE: Async-returning variable tracking (trackAsyncReturningVar) is done in a separate pass
+	// after function literals are analyzed for async status. See trackAsyncReturningVarsAllFiles.
+
 	return v
+}
+
+// trackAsyncReturningVar tracks variables that are assigned from higher-order function calls
+// where one of the arguments is an async function literal.
+// Pattern: x := higherOrderFunc(asyncFuncLit)
+// This is needed because when sync.OnceValue(asyncFunc) is called, the result is a function
+// that returns a Promise, and callers of x() need to await the result.
+func (v *analysisVisitor) trackAsyncReturningVar(lhs ast.Expr, rhs ast.Expr) {
+	// LHS must be an identifier
+	lhsIdent, ok := lhs.(*ast.Ident)
+	if !ok {
+		return
+	}
+
+	// RHS must be a call expression
+	callExpr, ok := rhs.(*ast.CallExpr)
+	if !ok {
+		return
+	}
+
+	// The result type of the call must be a function type
+	rhsType := v.pkg.TypesInfo.TypeOf(rhs)
+	if rhsType == nil {
+		return
+	}
+	_, isFunc := rhsType.Underlying().(*types.Signature)
+	if !isFunc {
+		return
+	}
+
+	// Check if any argument is an async function literal
+	// Use containsAsyncOperationsComplete to check the function body directly
+	// rather than relying on the InAsyncContext flag which may not be set yet
+	hasAsyncArg := false
+	for _, arg := range callExpr.Args {
+		if funcLit, ok := arg.(*ast.FuncLit); ok {
+			if funcLit.Body != nil && v.containsAsyncOperationsComplete(funcLit.Body, v.pkg) {
+				hasAsyncArg = true
+				break
+			}
+		}
+	}
+
+	if !hasAsyncArg {
+		return
+	}
+
+	// Mark the LHS variable as returning async values
+	if obj := v.pkg.TypesInfo.ObjectOf(lhsIdent); obj != nil {
+		v.analysis.AsyncReturningVars[obj] = true
+	}
 }
 
 // visitReturnStmt handles return statement analysis
@@ -1314,16 +1386,19 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 	}
 
 	// Add collected packages to imports (both regular and synthetic)
+	// Always add to SyntheticImports - the file compiler will check if
+	// the import was already written from the AST to avoid duplicates
 	for pkgName, pkgObj := range packagesToAdd {
+		tsImportPath := "@goscript/" + pkgObj.Path()
+		fileImp := &fileImport{
+			importPath: tsImportPath,
+			importVars: make(map[string]struct{}),
+		}
+		// Add to SyntheticImports unconditionally
+		a.SyntheticImports[pkgName] = fileImp
+		// Also add to Imports if not already present
 		if _, exists := a.Imports[pkgName]; !exists {
-			tsImportPath := "@goscript/" + pkgObj.Path()
-			fileImp := &fileImport{
-				importPath: tsImportPath,
-				importVars: make(map[string]struct{}),
-			}
 			a.Imports[pkgName] = fileImp
-			// Also add to SyntheticImports so we know to write it
-			a.SyntheticImports[pkgName] = fileImp
 		}
 	}
 }
@@ -1914,6 +1989,7 @@ func (v *analysisVisitor) detectVariableShadowing(assignStmt *ast.AssignStmt) *S
 	shadowingInfo := &ShadowingInfo{
 		ShadowedVariables: make(map[string]types.Object),
 		TempVariables:     make(map[string]string),
+		TypeShadowedVars:  make(map[string]string),
 	}
 
 	hasShadowing := false
@@ -1931,10 +2007,58 @@ func (v *analysisVisitor) detectVariableShadowing(assignStmt *ast.AssignStmt) *S
 		v.findVariableUsageInExpr(rhsExpr, lhsVarNames, shadowingInfo, &hasShadowing)
 	}
 
+	// Check for type shadowing: variable name matches a type name used in its initialization
+	// e.g., field := field{...} where the variable 'field' shadows the type 'field'
+	if assignStmt.Tok == token.DEFINE {
+		for i, lhsExpr := range assignStmt.Lhs {
+			if i < len(assignStmt.Rhs) {
+				if lhsIdent, ok := lhsExpr.(*ast.Ident); ok && lhsIdent.Name != "_" {
+					if typeName := v.findTypeShadowing(lhsIdent.Name, assignStmt.Rhs[i]); typeName != "" {
+						shadowingInfo.TypeShadowedVars[lhsIdent.Name] = lhsIdent.Name + "_"
+						hasShadowing = true
+					}
+				}
+			}
+		}
+	}
+
 	if hasShadowing {
 		return shadowingInfo
 	}
 	return nil
+}
+
+// findTypeShadowing checks if the given variable name matches a type name used in the RHS expression.
+// Returns the type name if shadowing is detected, empty string otherwise.
+func (v *analysisVisitor) findTypeShadowing(varName string, rhsExpr ast.Expr) string {
+	// Handle address-of expressions: field := &field{...}
+	if unary, ok := rhsExpr.(*ast.UnaryExpr); ok && unary.Op == token.AND {
+		rhsExpr = unary.X
+	}
+
+	// Check if RHS is a composite literal with a type name matching varName
+	compLit, ok := rhsExpr.(*ast.CompositeLit)
+	if !ok {
+		return ""
+	}
+
+	// Get the type name from the composite literal
+	var typeName string
+	switch t := compLit.Type.(type) {
+	case *ast.Ident:
+		typeName = t.Name
+	case *ast.SelectorExpr:
+		// pkg.Type - just use the type name part
+		typeName = t.Sel.Name
+	default:
+		return ""
+	}
+
+	// Check if variable name matches type name
+	if typeName == varName {
+		return typeName
+	}
+	return ""
 }
 
 // findVariableUsageInExpr recursively searches for variable usage in an expression
@@ -2541,8 +2665,17 @@ func (v *analysisVisitor) analyzeAllMethodsAsync() {
 		v.analyzeMethodAsyncTopological(methodKey, methodCalls[methodKey])
 	}
 
+	// Track async-returning variables BEFORE analyzing function literals
+	// This detects variables assigned from higher-order functions with async function literal args
+	// e.g., indirect := sync.OnceValue(asyncFunc)
+	// This must happen first so that function literals containing calls to these variables
+	// will be correctly identified as async.
+	v.trackAsyncReturningVarsAllFiles()
+
 	// Finally, analyze function literals in the current package only
 	// (external packages' function literals are not accessible)
+	// This must run AFTER trackAsyncReturningVarsAllFiles so that function literals
+	// containing calls to async-returning variables are correctly marked as async.
 	v.analyzeFunctionLiteralsAsync(v.pkg)
 }
 
@@ -2552,6 +2685,21 @@ func (v *analysisVisitor) analyzeFunctionLiteralsAsync(pkg *packages.Package) {
 		ast.Inspect(file, func(n ast.Node) bool {
 			if funcLit, ok := n.(*ast.FuncLit); ok {
 				v.analyzeFunctionLiteralAsync(funcLit, pkg)
+			}
+			return true
+		})
+	}
+}
+
+// trackAsyncReturningVarsAllFiles scans all files for assignment statements
+// and marks variables that are assigned from higher-order functions with async function literal args
+func (v *analysisVisitor) trackAsyncReturningVarsAllFiles() {
+	for _, file := range v.pkg.Syntax {
+		ast.Inspect(file, func(n ast.Node) bool {
+			if assignStmt, ok := n.(*ast.AssignStmt); ok {
+				if len(assignStmt.Lhs) == 1 && len(assignStmt.Rhs) == 1 {
+					v.trackAsyncReturningVar(assignStmt.Lhs[0], assignStmt.Rhs[0])
+				}
 			}
 			return true
 		})
@@ -3008,6 +3156,11 @@ func (v *analysisVisitor) isCallAsync(callExpr *ast.CallExpr, pkg *packages.Pack
 			if funcObj, ok := obj.(*types.Func); ok {
 				result := v.isFunctionAsync(funcObj, pkg)
 				return result
+			}
+			// Check if this is a variable that returns async values
+			// (e.g., indirect := sync.OnceValue(asyncFunc))
+			if v.analysis.IsAsyncReturningVar(obj) {
+				return true
 			}
 		}
 

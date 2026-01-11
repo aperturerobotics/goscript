@@ -15,12 +15,13 @@ export const MaxRune = 0x10ffff
 export const UTFMax = 4
 
 // AppendRune appends the UTF-8 encoding of r to the end of p and returns the extended buffer.
-export function AppendRune(p: Uint8Array, r: number): Uint8Array {
+export function AppendRune(p: $.Bytes, r: number): Uint8Array {
+  const bytes = $.normalizeBytes(p)
   const temp = new Uint8Array(UTFMax)
   const n = EncodeRune(temp, r)
-  const result = new Uint8Array(p.length + n)
-  result.set(p)
-  result.set(temp.slice(0, n), p.length)
+  const result = new Uint8Array(bytes.length + n)
+  result.set(bytes)
+  result.set(temp.slice(0, n), bytes.length)
   return result
 }
 
@@ -90,18 +91,21 @@ export function DecodeRune(p: $.Bytes): [number, number] {
 }
 
 // DecodeRuneInString is like DecodeRune but its input is a string.
-export function DecodeRuneInString(s: string): [number, number] {
-  if (s.length === 0) {
+// Also accepts Bytes for Go's []byte to string conversion pattern.
+export function DecodeRuneInString(s: string | $.Bytes): [number, number] {
+  // Convert Bytes to string if necessary
+  const str = typeof s === 'string' ? s : $.bytesToString(s)
+  if (str.length === 0) {
     return [RuneError, 0]
   }
 
-  const c = s.charCodeAt(0)
+  const c = str.charCodeAt(0)
   if (c < RuneSelf) {
     return [c, 1]
   }
 
   // Use JavaScript's built-in Unicode handling
-  const codePoint = s.codePointAt(0) || RuneError
+  const codePoint = str.codePointAt(0) || RuneError
   const char = String.fromCodePoint(codePoint)
   const encoder = new TextEncoder()
   const encoded = encoder.encode(char)

@@ -50,7 +50,7 @@ export class Mutex {
 
 	// Lock attempts to hold a lock on the Mutex.
 	// Returns a lock release function or an error.
-	public async Lock(ctx: context.Context): Promise<[(() => void) | null, $.GoError]> {
+	public async Lock(ctx: null | context.Context): Promise<[(() => void) | null, $.GoError]> {
 		const m = this
 		let status: $.VarRef<atomic.Int32> = $.varRef(new atomic.Int32())
 		let waitCh: $.Channel<{  }> | null = null
@@ -175,7 +175,7 @@ export class Mutex {
 	}
 
 	// Locker returns a MutexLocker that uses context.Background to lock the Mutex.
-	public Locker(): sync.Locker {
+	public Locker(): null | sync.Locker {
 		const m = this
 		return new MutexLocker({m: m})
 	}
@@ -198,22 +198,22 @@ export class MutexLocker {
 		this._fields.m.value = value
 	}
 
-	public get rel(): atomic.Pointer<(() => void) | null> {
+	public get rel(): atomic.Pointer<(() => void)> {
 		return this._fields.rel.value
 	}
-	public set rel(value: atomic.Pointer<(() => void) | null>) {
+	public set rel(value: atomic.Pointer<(() => void)>) {
 		this._fields.rel.value = value
 	}
 
 	public _fields: {
 		m: $.VarRef<Mutex | null>;
-		rel: $.VarRef<atomic.Pointer<(() => void) | null>>;
+		rel: $.VarRef<atomic.Pointer<(() => void)>>;
 	}
 
-	constructor(init?: Partial<{m?: Mutex | null, rel?: atomic.Pointer<(() => void) | null>}>) {
+	constructor(init?: Partial<{m?: Mutex | null, rel?: atomic.Pointer<(() => void)>}>) {
 		this._fields = {
 			m: $.varRef(init?.m ?? null),
-			rel: $.varRef(init?.rel ? $.markAsStructValue(init.rel.clone()) : new atomic.Pointer<(() => void) | null>())
+			rel: $.varRef(init?.rel ? $.markAsStructValue(init.rel.clone()) : new atomic.Pointer<(() => void)>())
 		}
 	}
 
@@ -239,7 +239,7 @@ export class MutexLocker {
 	// Unlock implements the sync.Locker interface.
 	public Unlock(): void {
 		const l = this
-		let rel = null
+		let rel = l.rel.Swap(null)
 		if (rel == null) {
 			$.panic("csync: unlock of unlocked MutexLocker")
 		}

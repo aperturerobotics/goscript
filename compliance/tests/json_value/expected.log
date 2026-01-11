@@ -1,0 +1,15 @@
+Type: Person
+Kind: struct
+NumField: 3
+Field 0 : Name
+  FieldValue Kind: string
+  FieldValue CanInterface: true
+  Value: Alice
+Field 1 : Age
+  FieldValue Kind: int
+  FieldValue CanInterface: true
+  Value: 30
+Field 2 : Active
+  FieldValue Kind: bool
+  FieldValue CanInterface: true
+  Value: true

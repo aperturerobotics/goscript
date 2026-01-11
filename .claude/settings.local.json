@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go test:*)",
+      "Bash(go env:*)",
+      "Bash(gh api:*)",
+      "Bash(gh pr view:*)",
+      "Bash(go build:*)",
+      "Bash(go run:*)",
+      "Bash(xargs sed:*)"
+    ]
+  }
+}
