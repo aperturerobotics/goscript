@@ -1,7 +1,7 @@
-import { createHTTPServer } from "@trpc/server/adapters/standalone"
-import { appRouter } from "./trpc/router"
-import { db, todos } from "./db"
-import { sql } from "drizzle-orm"
+import { createHTTPServer } from '@trpc/server/adapters/standalone'
+import { appRouter } from './trpc/router'
+import { db } from './db'
+import { sql } from 'drizzle-orm'
 
 // Initialize the database table
 function initDb() {
@@ -17,7 +17,7 @@ function initDb() {
       updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
     )
   `)
-  console.log("Database initialized")
+  console.log('Database initialized')
 }
 
 // Create the HTTP server
@@ -33,32 +33,30 @@ function main() {
 
   server.listen(PORT)
   console.log(`Todo API server running at http://localhost:${PORT}`)
-  console.log("")
-  console.log("Available tRPC procedures:")
-  console.log("  - list: Get all todos (filter by status/priority)")
-  console.log("  - get: Get a single todo by ID")
-  console.log("  - create: Create a new todo")
-  console.log("  - update: Update a todo")
-  console.log("  - toggle: Toggle todo completion")
-  console.log("  - delete: Delete a todo")
-  console.log("  - clearCompleted: Clear all completed todos")
-  console.log("  - stats: Get todo statistics")
-  console.log("  - bulkCreate: Create multiple todos")
-  console.log("  - priorities: Get priority definitions from GoScript")
-  console.log("")
-  console.log("Example curl commands:")
-  console.log("")
-  console.log("Create a todo:")
-  console.log(
-    `  curl -X POST http://localhost:${PORT}/create \\`
-  )
+  console.log('')
+  console.log('Available tRPC procedures:')
+  console.log('  - list: Get all todos (filter by status/priority)')
+  console.log('  - get: Get a single todo by ID')
+  console.log('  - create: Create a new todo')
+  console.log('  - update: Update a todo')
+  console.log('  - toggle: Toggle todo completion')
+  console.log('  - delete: Delete a todo')
+  console.log('  - clearCompleted: Clear all completed todos')
+  console.log('  - stats: Get todo statistics')
+  console.log('  - bulkCreate: Create multiple todos')
+  console.log('  - priorities: Get priority definitions from GoScript')
+  console.log('')
+  console.log('Example curl commands:')
+  console.log('')
+  console.log('Create a todo:')
+  console.log(`  curl -X POST http://localhost:${PORT}/create \\`)
   console.log('    -H "Content-Type: application/json" \\')
   console.log('    -d \'{"title":"Buy groceries","priority":"high"}\'')
-  console.log("")
-  console.log("List all todos:")
+  console.log('')
+  console.log('List all todos:')
   console.log(`  curl http://localhost:${PORT}/list`)
-  console.log("")
-  console.log("Get stats:")
+  console.log('')
+  console.log('Get stats:')
   console.log(`  curl http://localhost:${PORT}/stats`)
 }
 

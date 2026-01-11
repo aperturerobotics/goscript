@@ -320,6 +320,59 @@ func (c *GoToTSCompiler) writeMultiVarAssignFromCall(lhs []ast.Expr, callExpr *a
 		}
 
 		if allNewVars && anyNewVars {
+			// Check if any variable needs VarRef - if so, we need a different approach
+			anyNeedsVarRef := false
+			needsVarRefVars := make([]bool, len(lhs))
+			for i, lhsExpr := range lhs {
+				if ident, ok := lhsExpr.(*ast.Ident); ok && ident.Name != "_" {
+					if obj := c.pkg.TypesInfo.Defs[ident]; obj != nil {
+						if c.analysis.NeedsVarRef(obj) {
+							needsVarRefVars[i] = true
+							anyNeedsVarRef = true
+						}
+					}
+				}
+			}
+
+			if anyNeedsVarRef {
+				// Use temp variables for destructuring, then wrap in VarRef as needed
+				c.tsw.WriteLiterally("let [")
+				for i, lhsExpr := range lhs {
+					if i != 0 {
+						c.tsw.WriteLiterally(", ")
+					}
+					if ident, ok := lhsExpr.(*ast.Ident); ok {
+						if ident.Name == "_" {
+							// Empty slot for blank identifier
+						} else if needsVarRefVars[i] {
+							c.tsw.WriteLiterally("_varref_tmp_")
+							c.tsw.WriteLiterally(ident.Name)
+						} else {
+							c.WriteIdent(ident, false)
+						}
+					} else {
+						c.WriteValueExpr(lhsExpr)
+					}
+				}
+				c.tsw.WriteLiterally("] = ")
+				c.WriteValueExpr(callExpr)
+				c.tsw.WriteLine("")
+
+				// Now declare the VarRef-wrapped variables
+				for i, lhsExpr := range lhs {
+					if ident, ok := lhsExpr.(*ast.Ident); ok && ident.Name != "_" && needsVarRefVars[i] {
+						c.tsw.WriteLiterally("let ")
+						c.WriteIdent(ident, false)
+						c.tsw.WriteLiterally(" = $.varRef(_varref_tmp_")
+						c.tsw.WriteLiterally(ident.Name)
+						// Add non-null assertion to handle cases where the tuple type includes null
+						c.tsw.WriteLiterally("!)")
+						c.tsw.WriteLine("")
+					}
+				}
+				return nil
+			}
+
 			c.tsw.WriteLiterally("let [")
 
 			for i, lhsExpr := range lhs {

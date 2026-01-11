@@ -227,7 +227,8 @@ export class MutexLocker {
 	// Lock implements the sync.Locker interface.
 	public async Lock(): Promise<void> {
 		const l = this
-		let [release, err] = await l.m!.Lock(context.Background())
+		let [_varref_tmp_release, err] = await l.m!.Lock(context.Background())
+		let release = $.varRef(_varref_tmp_release!)
 		if (err != null) {
 			$.panic(errors.Wrap(err, "csync: failed MutexLocker Lock"))
 		}
