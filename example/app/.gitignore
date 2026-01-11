@@ -1,0 +1,6 @@
+node_modules/
+output/
+*.db
+drizzle/
+bun.lock
+dist/

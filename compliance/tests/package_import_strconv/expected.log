@@ -2,7 +2,7 @@ Atoi result: 42
 Itoa result: 123
 ParseInt result: 456
 FormatInt result: 789
-ParseFloat result: +3.140000e+000
+ParseFloat result: 3.14
 FormatFloat result: 2.718
 ParseBool result: true
 FormatBool result: false

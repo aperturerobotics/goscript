@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "baseUrl": "./",
+    "paths": {
+      "@goscript/*": ["output/@goscript/*", "../../gs/*"]
+    },
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "lib": ["ESNext"]
+  },
+  "exclude": ["node_modules", "vendor", "dist"]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "@example/app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bash build.bash",
+    "build:frontend": "vite build",
+    "start": "bun run server.ts",
+    "dev": "concurrently \"bun run server.ts\" \"vite\"",
+    "dev:server": "bun --watch run server.ts",
+    "dev:frontend": "vite",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.64.2",
+    "@trpc/client": "^11.0.0-rc.718",
+    "@trpc/react-query": "^11.0.0-rc.718",
+    "@trpc/server": "^11.0.0-rc.718",
+    "drizzle-orm": "^0.38.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.5",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "drizzle-kit": "^0.30.5",
+    "typescript": "^5.8.3",
+    "vite": "^6.0.0"
+  }
+}

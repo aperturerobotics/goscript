@@ -8,7 +8,13 @@
       "Bash(go build:*)",
       "Bash(go run:*)",
       "Bash(xargs sed:*)",
-      "Bash(go clean:*)"
+      "Bash(go clean:*)",
+      "Bash(chmod:*)",
+      "Bash(go mod tidy:*)",
+      "Bash(bash build.bash:*)",
+      "Bash(timeout 5 bun run:*)",
+      "Bash(bun install:*)",
+      "Bash(pkill:*)"
     ]
   }
 }

@@ -31,7 +31,7 @@ export async function main(): Promise<void> {
 	let f: number
 	[f, err] = strconv.ParseFloat("3.14", 64)
 	if (err == null) {
-		$.println("ParseFloat result:", f)
+		$.println("ParseFloat result:", strconv.FormatFloat(f, 102, 2, 64))
 	}
 
 	// Test FormatFloat

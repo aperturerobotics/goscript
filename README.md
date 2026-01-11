@@ -19,44 +19,41 @@ GoScript is an experimental **Go to TypeScript compiler** that translates Go cod
 
 Write once, run everywhere. Share your Go algorithms, business logic, and data structures seamlessly between your backend and frontend without maintaining two codebases.
 
-🔬 **Experimental features being developed:**
+**Use cases:**
+
 - Sharing business logic between Go services and web apps
 - Porting Go algorithms to run in browsers
 - Building TypeScript libraries from existing Go code
 
 Go has powerful concurrency support and an excellent standard library. GoScript brings these capabilities to TypeScript with as simple and readable of a translation as possible.
 
-⚠️ **Current development status:**
-GoScript is working on compiling a subset of Go:
-- ✅ Basic structs, interfaces, methods, and functions
-- ✅ Channels and goroutines (translating to async/await)
-- ✅ Slice semantics, maps, and built-in types
-- ✅ Standard control flow (if, for, switch, select, range, etc.)
-- 🚧 Basic reflection support
-- 🚧 Standard library support
+**✅ What works:**
 
-**Known limitations in this preview:**
+- Structs, interfaces, methods, and functions with full value semantics
+- Channels and goroutines (translated to async/await with function coloring)
+- Pointers and addressability (via VarRef system)
+- Slices, maps, and built-in types
+- Control flow (if, for, switch, select, range, defer, etc.)
+- Type assertions and interface implementations
+- Closures and anonymous functions
+
+**🚧 In progress:**
+
+- Reflection support
+- Standard library coverage
+- Generics
+
+**Known limitations:**
+
 - Uses JavaScript `number` type (64-bit float, not Go's int types)
 - No pointer arithmetic (`uintptr`) or `unsafe` package
 - No complex numbers
-- Limited standard library (working on it)
-- Performance not yet optimized
 
-**This is a prototype!** Expect bugs and missing features. Please contribute!
+📖 **Learn more:** [Design document](./design/DESIGN.md) | [Architecture explainer](./docs/explainer.md) | [Compliance tests](./compliance/COMPLIANCE.md)
 
-### ⚠️ Development Preview
-
-**This project is currently in active development and should be considered experimental.** GoScript is a work-in-progress prototype that may have bugs, incomplete features, and breaking changes. We're actively iterating on the compiler and welcome your feedback!
-
-🐛 **Found an issue?** Please [open an issue](https://github.com/aperturerobotics/goscript/issues) and we'll fix it.
-
-🤖 **AI** This prototype is heavily AI-written, but I plan to manually rewrite the codebase by hand once it reaches a working state for advanced use cases. AI Producer, human Reducer.
-
-📖 **Learn more:** [Design document](./design/DESIGN.md) | [Compliance tests](./compliance/COMPLIANCE.md)
+🐛 **Found an issue?** Please [open an issue](https://github.com/aperturerobotics/goscript/issues).
 
 ## 🚀 Try It
-
-> **Warning:** This is experimental software. Features may be incomplete or broken. Please report any issues!
 
 ### Prerequisites
 
@@ -70,11 +67,13 @@ curl -fsSL https://bun.sh/install | bash
 ### Installation
 
 **Option 1: Go Install**
+
 ```bash
 go install github.com/aperturerobotics/goscript/cmd/goscript@latest
 ```
 
 **Option 2: NPM** (if available)
+
 ```bash
 npm install -g goscript
 ```
@@ -85,8 +84,6 @@ npm install -g goscript
 # Try compiling your Go package to TypeScript
 goscript compile --package . --output ./dist
 ```
-
-**Note:** Many Go packages may not compile successfully yet. Start with simple code and gradually test more complex features.
 
 ## 📦 Using Generated Code in Your Project
 
@@ -116,6 +113,7 @@ Create or update your `tsconfig.json` with these settings:
 ```
 
 **Important requirements:**
+
 - **`target: "ES2022"` or newer** - Required for `Disposable` and other features
 - **`lib: ["esnext.disposable"]`** - Enables TypeScript's disposable types for resource management
 - **`baseUrl` and `paths`** - Allows TypeScript to resolve `@goscript/*` imports
@@ -132,12 +130,14 @@ goscript compile --package ./my-go-code --output ./dist
 ```
 
 **Options:**
+
 - `--package <path>` - Go package to compile (default: ".")
 - `--output <dir>` - Output directory for TypeScript files
 
 ### Programmatic API
 
 **Go:**
+
 ```go
 import "github.com/aperturerobotics/goscript/compiler"
 
@@ -147,24 +147,26 @@ _, err = comp.CompilePackages(ctx, "your/package/path")
 ```
 
 **Node.js:**
+
 ```typescript
 import { compile } from 'goscript'
 
 await compile({
   pkg: './my-go-package',
-  output: './dist'
+  output: './dist',
 })
 ```
 
 ### Frontend Frameworks
 
 **React + GoScript:**
+
 ```typescript
 import { NewCalculator } from '@goscript/myapp/calculator'
 
 function CalculatorApp() {
   const [calc] = useState(() => NewCalculator())
-  
+
   const handleAdd = () => {
     const result = calc.Add(5, 3)
     setResult(result)
@@ -175,13 +177,12 @@ function CalculatorApp() {
 ```
 
 **Vue + GoScript:**
+
 ```vue
 <script setup lang="ts">
 import { NewUser, FindUserByEmail } from '@goscript/myapp/user'
 
-const users = ref([
-  NewUser(1, "Alice", "alice@example.com")
-])
+const users = ref([NewUser(1, 'Alice', 'alice@example.com')])
 
 const searchUser = (email: string) => {
   return FindUserByEmail(users.value, email)
@@ -189,14 +190,14 @@ const searchUser = (email: string) => {
 </script>
 ```
 
-
 ## 💡 See It In Action
 
-> **Disclaimer:** These examples represent the target functionality. Your mileage may vary with the current development preview.
+See the [example/app](./example/app) for a full todo list application using GoScript with tRPC, Drizzle ORM, and React, or [example/simple](./example/simple) for a comprehensive demo of language features.
 
 ### Example: User Management
 
 **Go Code** (`user.go`):
+
 ```go
 package main
 
@@ -225,20 +226,22 @@ func FindUserByEmail(users []*User, email string) *User {
 ```
 
 **Compile it:**
+
 ```bash
 goscript compile --package . --output ./dist
 ```
 
 **Generated TypeScript** (`user.gs.ts`):
+
 ```typescript
 export class User {
   public ID: number = 0
-  public Name: string = ""
-  public Email: string = ""
+  public Name: string = ''
+  public Email: string = ''
 
   public IsValid(): boolean {
     const u = this
-    return u.Name !== "" && u.Email !== ""
+    return u.Name !== '' && u.Email !== ''
   }
 
   constructor(init?: Partial<User>) {
@@ -261,26 +264,28 @@ export function FindUserByEmail(users: User[], email: string): User | null {
 ```
 
 **Use in your frontend:**
+
 ```typescript
 import { NewUser, FindUserByEmail } from '@goscript/myapp/user'
 
 // Same logic, now in TypeScript!
 const users = [
-  NewUser(1, "Alice", "alice@example.com"),
-  NewUser(2, "Bob", "bob@example.com")
+  NewUser(1, 'Alice', 'alice@example.com'),
+  NewUser(2, 'Bob', 'bob@example.com'),
 ]
 
-const alice = FindUserByEmail(users, "alice@example.com")
+const alice = FindUserByEmail(users, 'alice@example.com')
 console.log(alice?.IsValid()) // true
 ```
 
 ### Example: Async Processing with Channels
 
 **Go Code:**
+
 ```go
 func ProcessMessages(messages []string) chan string {
     results := make(chan string, len(messages))
-    
+
     for _, msg := range messages {
         go func(m string) {
             // Simulate processing
@@ -288,34 +293,36 @@ func ProcessMessages(messages []string) chan string {
             results <- processed
         }(msg)
     }
-    
+
     return results
 }
 ```
 
 **Generated TypeScript:**
+
 ```typescript
 export function ProcessMessages(messages: string[]): $.Channel<string> {
-  let results = $.makeChannel<string>(messages.length, "")
-  
+  let results = $.makeChannel<string>(messages.length, '')
+
   for (let msg of messages) {
     queueMicrotask(async (m: string) => {
-      let processed = "✓ " + m
+      let processed = '✓ ' + m
       await results.send(processed)
     })(msg)
   }
-  
+
   return results
 }
 ```
 
 **Use with async/await:**
+
 ```typescript
 import { ProcessMessages } from '@goscript/myapp/processor'
 
 async function handleMessages() {
-  const channel = ProcessMessages(["hello", "world", "goscript"])
-  
+  const channel = ProcessMessages(['hello', 'world', 'goscript'])
+
   // Receive processed messages
   for (let i = 0; i < 3; i++) {
     const result = await channel.receive()

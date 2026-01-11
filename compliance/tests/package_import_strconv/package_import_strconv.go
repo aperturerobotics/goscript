@@ -26,7 +26,7 @@ func main() {
 	// Test ParseFloat
 	f, err := strconv.ParseFloat("3.14", 64)
 	if err == nil {
-		println("ParseFloat result:", f)
+		println("ParseFloat result:", strconv.FormatFloat(f, 'f', 2, 64))
 	}
 
 	// Test FormatFloat

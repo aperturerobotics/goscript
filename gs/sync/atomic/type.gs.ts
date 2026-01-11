@@ -106,34 +106,30 @@ export class Pointer<T> {
 	}
 
 	// Store atomically stores val into x.
-	// In Go, this takes *T which can be nil, so we accept T | null
-	public Store(val: T | null): void {
+	// In Go, this takes *T which can be nil, so we accept VarRef<T> | null
+	public Store(val: $.VarRef<T> | null): void {
 		const x = this
 		if (val === null) {
 			StorePointer(x._fields.v, null)
 		} else {
-			const varRef = $.varRef(val)
-			StorePointer(x._fields.v, unsafe.Pointer(varRef))
+			StorePointer(x._fields.v, unsafe.Pointer(val))
 		}
 	}
 
 	// Swap atomically stores new into x and returns the previous value.
-	// In Go, this takes *T which can be nil, so we accept T | null
-	public Swap(_new: T | null): $.VarRef<T> | null {
+	// In Go, this takes *T which can be nil, so we accept VarRef<T> | null
+	public Swap(_new: $.VarRef<T> | null): $.VarRef<T> | null {
 		const x = this
 		if (_new === null) {
 			return SwapPointer(x._fields.v, null) as $.VarRef<T> | null
 		}
-		const varRef = $.varRef(_new)
-		return SwapPointer(x._fields.v, unsafe.Pointer(varRef)) as $.VarRef<T> | null
+		return SwapPointer(x._fields.v, unsafe.Pointer(_new)) as $.VarRef<T> | null
 	}
 
 	// CompareAndSwap executes the compare-and-swap operation for x.
-	public CompareAndSwap(old: T, _new: T): boolean {
+	public CompareAndSwap(old: $.VarRef<T> | null, _new: $.VarRef<T> | null): boolean {
 		const x = this
-		const oldVarRef = $.varRef(old)
-		const newVarRef = $.varRef(_new)
-		return CompareAndSwapPointer(x._fields.v, unsafe.Pointer(oldVarRef), unsafe.Pointer(newVarRef))
+		return CompareAndSwapPointer(x._fields.v, old ? unsafe.Pointer(old) : null, _new ? unsafe.Pointer(_new) : null)
 	}
 
 	// Register this type with the runtime type system
