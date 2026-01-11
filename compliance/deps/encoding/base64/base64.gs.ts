@@ -131,7 +131,7 @@ export class Encoding {
 		}
 		/* _ = */ enc.encode
 		let [di, si] = [0, 0]
-		let n = ($.len(src) / 3) * 3
+		let n = (Math.trunc($.len(src) / 3)) * 3
 		for (; si < n; ) {
 			// Convert 3x 8bit source bytes into 4 bytes
 			let val = ((((src![si + 0] as number) << 16) | ((src![si + 1] as number) << 8)) | (src![si + 2] as number))
@@ -195,9 +195,9 @@ export class Encoding {
 	public EncodedLen(n: number): number {
 		const enc = this
 		if (Number(enc.padChar) == -1) {
-			return n / 3 * 4 + (n % 3 * 8 + 5) / 6
+			return Math.trunc(n / 3) * 4 + Math.trunc((n % 3 * 8 + 5) / 6)
 		}
-		return (n + 2) / 3 * 4
+		return Math.trunc((n + 2) / 3) * 4
 	}
 
 	// decodeQuantum decodes up to 4 base64 bytes. The received parameters are
@@ -372,8 +372,7 @@ export class Encoding {
 					byteorder.BEPutUint64($.goSlice(dst, n, undefined), dn)
 					n += 6
 					si += 8
-				}
-				 else {
+				} else {
 					let ninc: number = 0
 					;[si, ninc, err] = enc.decodeQuantum($.goSlice(dst, n, undefined), src, si)
 					n += ninc
@@ -391,8 +390,7 @@ export class Encoding {
 					byteorder.BEPutUint32($.goSlice(dst, n, undefined), dn)
 					n += 3
 					si += 4
-				}
-				 else {
+				} else {
 					let ninc: number = 0
 					;[si, ninc, err] = enc.decodeQuantum($.goSlice(dst, n, undefined), src, si)
 					n += ninc
@@ -424,9 +422,9 @@ export class Encoding {
 	static __typeInfo = $.registerStructType(
 	  'encoding/base64.Encoding',
 	  new Encoding(),
-	  [{ name: "WithPadding", args: [{ name: "padding", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "Encoding" } }] }, { name: "Strict", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "Encoding" } }] }, { name: "Encode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [] }, { name: "AppendEncode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }] }, { name: "EncodeToString", args: [{ name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "EncodedLen", args: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "decodeQuantum", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "si", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "AppendDecode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "DecodeString", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Decode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "DecodedLen", args: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "WithPadding", args: [{ name: "padding", type: { kind: $.TypeKind.Basic, name: "rune" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "Encoding" } }] }, { name: "Strict", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "Encoding" } }] }, { name: "Encode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [] }, { name: "AppendEncode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }] }, { name: "EncodeToString", args: [{ name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "EncodedLen", args: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "decodeQuantum", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "si", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "AppendDecode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "DecodeString", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Decode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "DecodedLen", args: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  Encoding,
-	  {"encode": { kind: $.TypeKind.Array, length: 64, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "decodeMap": { kind: $.TypeKind.Array, length: 256, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "padChar": { kind: $.TypeKind.Basic, name: "number" }, "strict": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"encode": { kind: $.TypeKind.Array, length: 64, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "decodeMap": { kind: $.TypeKind.Array, length: 256, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "padChar": { kind: $.TypeKind.Basic, name: "rune" }, "strict": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 
@@ -542,7 +540,7 @@ export class decoder {
 			return [0, d.err]
 		}
 		for (; d.nbuf < 4 && d.readErr == null; ) {
-			let nn = $.len(p) / 3 * 4
+			let nn = Math.trunc($.len(p) / 3) * 4
 			if (nn < 4) {
 				nn = 4
 			}
@@ -584,8 +582,8 @@ export class decoder {
 			}
 			return [0, d.err]
 		}
-		let nr = d.nbuf / 4 * 4
-		let nw = d.nbuf / 4 * 3
+		let nr = Math.trunc(d.nbuf / 4) * 4
+		let nw = Math.trunc(d.nbuf / 4) * 3
 		if (nw > $.len(p)) {
 			{
 			  const _tmp = d.enc!.Decode($.goSlice(d.outbuf, undefined, undefined), $.goSlice(d.buf, undefined, nr))
@@ -595,8 +593,7 @@ export class decoder {
 			d.out = $.goSlice(d.outbuf, undefined, nw)
 			n = $.copy(p, d.out)
 			d.out = $.goSlice(d.out, n, undefined)
-		}
-		 else {
+		} else {
 			{
 			  const _tmp = d.enc!.Decode(p, $.goSlice(d.buf, undefined, nr))
 			  n = _tmp[0]
@@ -612,9 +609,9 @@ export class decoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/base64.decoder',
 	  new decoder(),
-	  [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
+	  [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  decoder,
-	  {"err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "readErr": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "enc": { kind: $.TypeKind.Pointer, elemType: "Encoding" }, "r": "Reader", "buf": { kind: $.TypeKind.Array, length: 1024, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "nbuf": { kind: $.TypeKind.Basic, name: "number" }, "out": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "outbuf": { kind: $.TypeKind.Array, length: 768, elemType: { kind: $.TypeKind.Basic, name: "number" } }}
+	  {"err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "readErr": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "enc": { kind: $.TypeKind.Pointer, elemType: "Encoding" }, "r": "Reader", "buf": { kind: $.TypeKind.Array, length: 1024, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "nbuf": { kind: $.TypeKind.Basic, name: "int" }, "out": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "outbuf": { kind: $.TypeKind.Array, length: 768, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
 	);
 }
 
@@ -728,7 +725,7 @@ export class encoder {
 			e.nbuf = 0
 		}
 		for (; $.len(p) >= 3; ) {
-			let nn = $.len(e.out) / 4 * 3
+			let nn = Math.trunc($.len(e.out) / 4) * 3
 			if (nn > $.len(p)) {
 				nn = $.len(p)
 				nn -= nn % 3
@@ -736,7 +733,7 @@ export class encoder {
 			e.enc!.Encode($.goSlice(e.out, undefined, undefined), $.goSlice(p, undefined, nn))
 			{
 				{
-				  const _tmp = e.w!.Write($.goSlice(e.out, 0, nn / 3 * 4))
+				  const _tmp = e.w!.Write($.goSlice(e.out, 0, Math.trunc(nn / 3) * 4))
 				  e.err = _tmp[1]
 				}
 				if (e.err != null) {
@@ -771,9 +768,9 @@ export class encoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/base64.encoder',
 	  new encoder(),
-	  [{ name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
+	  [{ name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  encoder,
-	  {"err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "enc": { kind: $.TypeKind.Pointer, elemType: "Encoding" }, "w": "Writer", "buf": { kind: $.TypeKind.Array, length: 3, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "nbuf": { kind: $.TypeKind.Basic, name: "number" }, "out": { kind: $.TypeKind.Array, length: 1024, elemType: { kind: $.TypeKind.Basic, name: "number" } }}
+	  {"err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "enc": { kind: $.TypeKind.Pointer, elemType: "Encoding" }, "w": "Writer", "buf": { kind: $.TypeKind.Array, length: 3, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "nbuf": { kind: $.TypeKind.Basic, name: "int" }, "out": { kind: $.TypeKind.Array, length: 1024, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
 	);
 }
 
@@ -832,7 +829,7 @@ export class newlineFilteringReader {
 	static __typeInfo = $.registerStructType(
 	  'encoding/base64.newlineFilteringReader',
 	  new newlineFilteringReader(),
-	  [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
+	  [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  newlineFilteringReader,
 	  {"wrapped": "Reader"}
 	);
@@ -936,9 +933,9 @@ export function decodedLen(n: number, padChar: number): number {
 	// Unpadded data may end with partial block of 2-3 characters.
 	if (padChar == -1) {
 		// Unpadded data may end with partial block of 2-3 characters.
-		return n / 4 * 3 + n % 4 * 6 / 8
+		return Math.trunc(n / 4) * 3 + Math.trunc(n % 4 * 6 / 8)
 	}
 	// Padded base64 should always be a multiple of 4 characters in length.
-	return n / 4 * 3
+	return Math.trunc(n / 4) * 3
 }
 

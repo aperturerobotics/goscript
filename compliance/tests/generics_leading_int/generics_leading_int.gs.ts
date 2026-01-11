@@ -21,7 +21,7 @@ export function leadingInt<bytes extends $.Bytes | string>(s: bytes): [number, b
 			}
 
 			// overflow
-			if (x > Number.MAX_SAFE_INTEGER / 10) {
+			if (x > Math.trunc(Number.MAX_SAFE_INTEGER / 10)) {
 				// overflow
 				return [0, $.sliceStringOrBytes(s, $.len(s), undefined), true]
 			}

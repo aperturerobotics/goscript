@@ -81,8 +81,7 @@ export async function main(): Promise<void> {
 	}>(i, {kind: $.TypeKind.Interface, methods: [{ name: 'Greet', args: [], returns: [{ type: {kind: $.TypeKind.Basic, name: 'string'} }] }]})
 	if (ok) {
 		$.println("Greet assertion successful:", g!.Greet())
-	}
-	 else {
+	} else {
 		$.println("Greet assertion failed")
 	}
 
@@ -92,8 +91,7 @@ export async function main(): Promise<void> {
 	}>(i, {kind: $.TypeKind.Interface, methods: [{ name: 'NonExistentMethod', args: [], returns: [{ type: {kind: $.TypeKind.Basic, name: 'number'} }] }]})
 	if (ok2) {
 		$.println("NonExistentMethod assertion successful (unexpected):", s!.NonExistentMethod())
-	}
-	 else {
+	} else {
 		$.println("NonExistentMethod assertion failed as expected")
 	}
 
@@ -107,8 +105,7 @@ export async function main(): Promise<void> {
 	}>(j, {kind: $.TypeKind.Interface, methods: [{ name: 'String', args: [], returns: [{ type: {kind: $.TypeKind.Basic, name: 'string'} }] }]})
 	if (ok4) {
 		$.println("Inline String assertion successful:", inlineMs!.String())
-	}
-	 else {
+	} else {
 		$.println("Inline String assertion failed")
 	}
 
@@ -121,8 +118,7 @@ export async function main(): Promise<void> {
 	}>(k, {kind: $.TypeKind.Interface, methods: [{ name: 'String', args: [], returns: [{ type: {kind: $.TypeKind.Basic, name: 'string'} }] }]})
 	if (ok5) {
 		$.println("k.(interface{ String() string }) successful:", inlineK!.String())
-	}
-	 else {
+	} else {
 		$.println("k.(interface{ String() string }) failed")
 	}
 
@@ -133,12 +129,10 @@ export async function main(): Promise<void> {
 	if (ok6) {
 		if (ptr == null) {
 			$.println("l.(*struct{ Name string }) successful, ptr is nil as expected")
-		}
-		 else {
+		} else {
 			$.println("l.(*struct{ Name string }) successful, but ptr is not nil (unexpected)")
 		}
-	}
-	 else {
+	} else {
 		$.println("l.(*struct{ Name string }) failed (unexpected)")
 	}
 }

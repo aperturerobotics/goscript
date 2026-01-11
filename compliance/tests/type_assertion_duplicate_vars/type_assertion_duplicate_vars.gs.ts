@@ -103,7 +103,7 @@ export class Container {
 	  new Container(),
 	  [],
 	  Container,
-	  {"hasA": { kind: $.TypeKind.Basic, name: "boolean" }, "hasB": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"hasA": { kind: $.TypeKind.Basic, name: "bool" }, "hasB": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 

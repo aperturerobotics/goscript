@@ -11,8 +11,7 @@ export async function main(): Promise<void> {
 		let [wd, err] = os.Getwd()
 		if (err == null) {
 			$.println("Current working directory:", wd)
-		}
-		 else {
+		} else {
 			$.println("Error getting working directory:", err!.Error())
 		}
 	}
@@ -41,8 +40,7 @@ export async function main(): Promise<void> {
 		let [hostname, err] = os.Hostname()
 		if (err == null) {
 			$.println("Hostname:", hostname)
-		}
-		 else {
+		} else {
 			$.println("Error getting hostname:", err!.Error())
 		}
 	}

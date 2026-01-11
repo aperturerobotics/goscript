@@ -638,8 +638,10 @@ func (c *GoToTSCompiler) WriteImportSpec(a *ast.ImportSpec) {
 	// Skip writing the import if it was already written as a synthetic import
 	// This prevents duplicate imports when a file needs an import both from
 	// its AST and for promoted methods from embedded structs
-	if _, isSynthetic := c.analysis.SyntheticImports[impName]; isSynthetic {
-		return
+	if syntheticImports := c.analysis.SyntheticImportsPerFile[c.currentFilePath]; syntheticImports != nil {
+		if _, isSynthetic := syntheticImports[impName]; isSynthetic {
+			return
+		}
 	}
 
 	c.tsw.WriteImport(impName, tsImportPath+"/index.js")

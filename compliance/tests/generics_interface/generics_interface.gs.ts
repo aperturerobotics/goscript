@@ -11,7 +11,7 @@ export type Comparable<T extends $.Comparable> = null | {
 $.registerInterfaceType(
   'main.Comparable',
   null, // Zero value for interface is null
-  [{ name: "Compare", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Equal", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }]
+  [{ name: "Compare", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Equal", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }]
 );
 
 export type Container<T extends any> = null | {
@@ -23,7 +23,7 @@ export type Container<T extends any> = null | {
 $.registerInterfaceType(
   'main.Container',
   null, // Zero value for interface is null
-  [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
+  [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export class StringValueContainer {
@@ -56,8 +56,7 @@ export class StringValueContainer {
 		const s = this
 		if (s.value < other) {
 			return -1
-		}
-		 else if (s.value > other) {
+		} else if (s.value > other) {
 			return 1
 		}
 		return 0
@@ -72,7 +71,7 @@ export class StringValueContainer {
 	static __typeInfo = $.registerStructType(
 	  'main.StringValueContainer',
 	  new StringValueContainer(),
-	  [{ name: "Compare", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Equal", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
+	  [{ name: "Compare", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Equal", args: [{ name: "other", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 	  StringValueContainer,
 	  {"value": { kind: $.TypeKind.Basic, name: "string" }}
 	);
@@ -134,9 +133,9 @@ export class ValueContainer<T extends any> {
 	static __typeInfo = $.registerStructType(
 	  'main.ValueContainer',
 	  new ValueContainer(),
-	  [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "Get", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Set", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  ValueContainer,
-	  {"value": { kind: $.TypeKind.Interface, methods: [] }, "count": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"value": { kind: $.TypeKind.Interface, methods: [] }, "count": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

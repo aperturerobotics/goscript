@@ -41,7 +41,7 @@ export class Foo {
 	  new Foo(),
 	  [{ name: "Bar", args: [], returns: [] }],
 	  Foo,
-	  {"done": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "boolean" } }}
+	  {"done": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }}
 	);
 }
 

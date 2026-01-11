@@ -57,7 +57,7 @@ export class Person {
 	  new Person(),
 	  [],
 	  Person,
-	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "number" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "boolean" }, tag: "json:\"active\"" }}
+	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
 	);
 }
 
@@ -66,8 +66,7 @@ export async function main(): Promise<void> {
 	let [b, err] = await json.Marshal(p)
 	if (err != null) {
 		$.println("Marshal error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Marshal:", $.bytesToString(b))
 	}
 }

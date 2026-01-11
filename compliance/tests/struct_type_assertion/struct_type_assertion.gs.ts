@@ -9,16 +9,14 @@ export async function main(): Promise<void> {
 	let { value: s, ok: ok } = $.typeAssert<{ Name?: string; Number?: number }>(i, {kind: $.TypeKind.Struct, fields: {'Name': {kind: $.TypeKind.Basic, name: 'string'}, 'Number': {kind: $.TypeKind.Basic, name: 'number'}}, methods: []})
 	if (ok) {
 		$.println("Name:", s.Name, "Number:", s.Number)
-	}
-	 else {
+	} else {
 		$.println("Type assertion failed")
 	}
 
 	let { value: j, ok: ok2 } = $.typeAssert<{ Age?: number }>(i, {kind: $.TypeKind.Struct, fields: {'Age': {kind: $.TypeKind.Basic, name: 'number'}}, methods: []})
 	if (ok2) {
 		$.println("Age:", j.Age)
-	}
-	 else {
+	} else {
 		$.println("Second type assertion failed as expected")
 	}
 }

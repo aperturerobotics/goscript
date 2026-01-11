@@ -73,9 +73,9 @@ export class storage {
 	static __typeInfo = $.registerStructType(
 	  'main.storage',
 	  new storage(),
-	  [{ name: "Len", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Truncate", args: [], returns: [] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "SetName", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "IsEmpty", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
+	  [{ name: "Len", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Truncate", args: [], returns: [] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "SetName", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "IsEmpty", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 	  storage,
-	  {"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "name": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "name": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

@@ -148,9 +148,32 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 		}
 	}
 
+	// Check for integer division compound assignment (i /= n)
+	// Go's integer division truncates, but JavaScript's /= doesn't
+	// We need to convert `i /= n` to `i = Math.trunc(i / n)`
+	isIntegerDivisionAssign := false
+	if tok == token.QUO_ASSIGN && len(lhs) == 1 && len(rhs) == 1 {
+		if lhsType := c.pkg.TypesInfo.TypeOf(lhs[0]); lhsType != nil {
+			if basic, ok := lhsType.Underlying().(*types.Basic); ok {
+				if basic.Info()&types.IsInteger != 0 {
+					isIntegerDivisionAssign = true
+				}
+			}
+		}
+	}
+
 	// Only write the assignment operator for regular variables, not for map assignments handled by mapSet
 	if isMapIndexLHS && len(lhs) == 1 { // Only skip operator if it's a single map assignment
 		// Continue, we've already written part of the mapSet() function call
+	} else if isIntegerDivisionAssign {
+		// For integer division compound assignment, convert `i /= n` to `i = Math.trunc(i / n)`
+		c.tsw.WriteLiterally(" = Math.trunc(")
+		// Write LHS again as first operand of division
+		if err := c.WriteValueExpr(lhs[0]); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally(" / ")
+		// RHS will be written below, then we close the parenthesis
 	} else {
 		c.tsw.WriteLiterally(" ")
 		if err := c.writeAssignmentOperator(tok); err != nil {
@@ -295,6 +318,11 @@ func (c *GoToTSCompiler) writeAssignmentCore(lhs, rhs []ast.Expr, tok token.Toke
 
 	// Close the parenthesis for &^= transformation
 	if tok == token.AND_NOT_ASSIGN && !(isMapIndexLHS && len(lhs) == 1) {
+		c.tsw.WriteLiterally(")")
+	}
+
+	// Close the parenthesis for integer division compound assignment
+	if isIntegerDivisionAssign {
 		c.tsw.WriteLiterally(")")
 	}
 

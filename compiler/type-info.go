@@ -26,11 +26,9 @@ func (c *GoToTSCompiler) writeTypeInfoObject(typ types.Type) {
 	underlying := typ.Underlying()
 	switch t := underlying.(type) {
 	case *types.Basic:
-		tsTypeName, _ := GoBuiltinToTypescript(t.Name())
-		if tsTypeName == "" {
-			tsTypeName = t.Name() // Fallback
-		}
-		c.tsw.WriteLiterallyf("{ kind: $.TypeKind.Basic, name: %q }", tsTypeName)
+		// Use Go type name (e.g., "int") not TypeScript type name (e.g., "number")
+		// The reflect system needs Go type names to correctly determine Kind()
+		c.tsw.WriteLiterallyf("{ kind: $.TypeKind.Basic, name: %q }", t.Name())
 	// Note: The original 'case *types.Named:' here for 'underlying' is intentionally omitted.
 	// If typ.Underlying() is *types.Named (e.g. type T1 MyInt; type T2 T1;),
 	// then writeTypeInfoObject(typ.Underlying()) would be called in some contexts,

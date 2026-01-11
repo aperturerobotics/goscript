@@ -14,7 +14,7 @@ export type FileInfo = null | {
 $.registerInterfaceType(
   'main.FileInfo',
   null, // Zero value for interface is null
-  [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
+  [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }]
 );
 
 export type Filesystem = null | {
@@ -92,9 +92,9 @@ export class MockFileInfo {
 	static __typeInfo = $.registerStructType(
 	  'main.MockFileInfo',
 	  new MockFileInfo(),
-	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
+	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 	  MockFileInfo,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "size": { kind: $.TypeKind.Basic, name: "number" }, "isDir": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "size": { kind: $.TypeKind.Basic, name: "int64" }, "isDir": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 
@@ -188,8 +188,7 @@ export async function main(): Promise<void> {
 	let [result, err2] = processWithCallback("hello", processFunc)
 	if (err2 != null) {
 		$.println("Process error:", err2!.Error())
-	}
-	 else {
+	} else {
 		$.println("Process result:", result)
 	}
 }

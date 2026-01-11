@@ -734,7 +734,7 @@ func RunTypeScriptTypeCheck(t *testing.T, workspaceDir, testDir string, tsconfig
 }
 
 const runnerContentTemplate = `import { main } from %q;
-// NOTE: To debug: add a breakpoint, open a JavaScript Debug Terminal, and tsx runner.ts
+// NOTE: To debug: add a breakpoint, open a JavaScript Debug Terminal, and bun runner.ts
 await (async () => {
   await main();
   await new Promise(resolve => setTimeout(resolve, 100)); // Allow microtasks to settle
@@ -753,7 +753,7 @@ await (async () => {
 //   - Generated .gs.ts and index.ts files are copied back to testDir.
 //     6. Writing a "runner.ts" script in the "run" directory to execute the compiled test.
 //     7. If an "expect-fail" file is not present in testDir:
-//     a. Running the "runner.ts" script using `tsx`.
+//     a. Running the "runner.ts" script using `bun`.
 //     b. Comparing its output against "expected.log" (generating it from `go run ./` if it doesn't exist).
 //   - If outputs differ, "actual.log" is written to testDir.
 //     8. If "skip-typecheck" or "expect-typecheck-fail" files are not present:

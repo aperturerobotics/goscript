@@ -11,22 +11,19 @@ export async function main(): Promise<void> {
 	let flag = ((1 | 64) | 1024)
 	if ((flag & 1024) != 0) {
 		$.println("O_APPEND is set: Expected: O_APPEND is set, Actual: O_APPEND is set")
-	}
-	 else {
+	} else {
 		$.println("O_APPEND is not set: Expected: (no output)")
 	}
 	if ((flag & 512) != 0) {
 		$.println("O_TRUNC is set: Expected: (no output)")
-	}
-	 else {
+	} else {
 		$.println("O_TRUNC is not set: Expected: O_TRUNC is not set, Actual: O_TRUNC is not set")
 	}
 
 	flag = (1 | 64)
 	if ((flag & 1024) != 0) {
 		$.println("O_APPEND is set: Expected: (no output)")
-	}
-	 else {
+	} else {
 		$.println("O_APPEND is not set: Expected: O_APPEND is not set, Actual: O_APPEND is not set")
 	}
 }

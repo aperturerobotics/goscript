@@ -47,7 +47,7 @@ export class Person {
 	  new Person(),
 	  [],
 	  Person,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 
@@ -286,12 +286,10 @@ export async function main(): Promise<void> {
 		// Print the actual received value
 		if (chosen == 0) {
 			$.println("Select recv value:", recv.Int())
-		}
-		 else if (chosen == 1) {
+		} else if (chosen == 1) {
 			$.println("Select recv value:", recv.String())
 		}
-	}
-	 else {
+	} else {
 		$.println("Select recv type: invalid")
 	}
 }

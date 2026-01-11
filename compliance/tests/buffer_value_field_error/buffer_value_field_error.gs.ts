@@ -48,9 +48,9 @@ export class buffer {
 	static __typeInfo = $.registerStructType(
 	  'main.buffer',
 	  new buffer(),
-	  [{ name: "write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [] }, { name: "writeString", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "writeByte", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }],
+	  [{ name: "write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [] }, { name: "writeString", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "writeByte", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "byte" } }], returns: [] }],
 	  buffer,
-	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }}
+	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
 	);
 }
 

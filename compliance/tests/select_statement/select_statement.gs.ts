@@ -77,8 +77,7 @@ export async function main(): Promise<void> {
 				const ok = result.ok
 				if (ok) {
 					$.println("TEST3: Received buffered value with ok==true:", val)
-				}
-				 else {
+				} else {
 					$.println("TEST3: Unexpected ok==false")
 				}
 			}
@@ -108,8 +107,7 @@ export async function main(): Promise<void> {
 				const ok = result.ok
 				if (ok) {
 					$.println("TEST4: Unexpected ok==true:", val)
-				}
-				 else {
+				} else {
 					$.println("TEST4: Received zero value with ok==false:", val)
 				}
 			}
@@ -248,8 +246,7 @@ export async function main(): Promise<void> {
 	const { value: val, ok: ok } = await $.chanRecvWithOk(chClose)
 	if (!ok) {
 		$.println("TEST9: Channel is closed, ok is false, val:", val)
-	}
-	 else {
+	} else {
 		$.println("TEST9: Channel reports as not closed")
 	}
 }

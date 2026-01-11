@@ -593,7 +593,7 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 	c.codeWriter = NewTSCodeWriter(of)
 
 	// Pass analysis to compiler
-	goWriter := NewGoToTSCompiler(c.codeWriter, c.pkg, c.Analysis)
+	goWriter := NewGoToTSCompiler(c.codeWriter, c.pkg, c.Analysis, c.fullPath)
 
 	// Add import for the goscript runtime using namespace import and alias
 	c.codeWriter.WriteLinef("import * as $ from %q", "@goscript/builtin/index.js")
@@ -701,15 +701,18 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 	}
 
 	// Write synthetic imports (for promoted methods from embedded structs)
-	// Sort by package name for consistent output
-	var syntheticPkgNames []string
-	for pkgName := range c.Analysis.SyntheticImports {
-		syntheticPkgNames = append(syntheticPkgNames, pkgName)
-	}
-	slices.Sort(syntheticPkgNames)
-	for _, pkgName := range syntheticPkgNames {
-		imp := c.Analysis.SyntheticImports[pkgName]
-		c.codeWriter.WriteImport(pkgName, imp.importPath+"/index.js")
+	// Use per-file synthetic imports to avoid adding unused imports
+	if syntheticImports := c.Analysis.SyntheticImportsPerFile[c.fullPath]; syntheticImports != nil {
+		// Sort by package name for consistent output
+		var syntheticPkgNames []string
+		for pkgName := range syntheticImports {
+			syntheticPkgNames = append(syntheticPkgNames, pkgName)
+		}
+		slices.Sort(syntheticPkgNames)
+		for _, pkgName := range syntheticPkgNames {
+			imp := syntheticImports[pkgName]
+			c.codeWriter.WriteImport(pkgName, imp.importPath+"/index.js")
+		}
 	}
 
 	c.codeWriter.WriteLine("") // Add a newline after imports
@@ -731,6 +734,10 @@ type GoToTSCompiler struct {
 
 	analysis *Analysis
 
+	// currentFilePath is the path of the file being compiled
+	// Used for looking up per-file synthetic imports
+	currentFilePath string
+
 	// Context flags
 	insideAddressOf bool // true when processing operand of & operator
 
@@ -739,15 +746,15 @@ type GoToTSCompiler struct {
 	renamedVars map[types.Object]string
 }
 
-// It initializes the compiler with a `TSCodeWriter` for output,
-// Go package information (`packages.Package`), and pre-computed
-// analysis results (`Analysis`) to guide the translation process.
-func NewGoToTSCompiler(tsw *TSCodeWriter, pkg *packages.Package, analysis *Analysis) *GoToTSCompiler {
+// NewGoToTSCompiler creates a new GoToTSCompiler with a TSCodeWriter for output,
+// Go package information, pre-computed analysis results, and the current file path.
+func NewGoToTSCompiler(tsw *TSCodeWriter, pkg *packages.Package, analysis *Analysis, filePath string) *GoToTSCompiler {
 	return &GoToTSCompiler{
-		tsw:         tsw,
-		pkg:         pkg,
-		analysis:    analysis,
-		renamedVars: make(map[types.Object]string),
+		tsw:             tsw,
+		pkg:             pkg,
+		analysis:        analysis,
+		currentFilePath: filePath,
+		renamedVars:     make(map[types.Object]string),
 	}
 }
 

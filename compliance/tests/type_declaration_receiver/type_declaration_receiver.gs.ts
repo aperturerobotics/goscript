@@ -19,8 +19,7 @@ export function CustomString_Upper(cs: CustomString): string {
 			{
 				if (r >= 97 && r <= 122) {
 					result += $.runeOrStringToString(r - 32)
-				}
-				 else {
+				} else {
 					result += $.runeOrStringToString(r)
 				}
 			}

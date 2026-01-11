@@ -57,7 +57,7 @@ export class Person {
 	  new Person(),
 	  [],
 	  Person,
-	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "number" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "boolean" }, tag: "json:\"active\"" }}
+	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
 	);
 }
 
@@ -109,7 +109,7 @@ export async function main(): Promise<void> {
 		  new field(),
 		  [],
 		  field,
-		  {"name": { kind: $.TypeKind.Basic, name: "string" }, "tag": { kind: $.TypeKind.Basic, name: "boolean" }}
+		  {"name": { kind: $.TypeKind.Basic, name: "string" }, "tag": { kind: $.TypeKind.Basic, name: "bool" }}
 		);
 	}
 

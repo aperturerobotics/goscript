@@ -40,7 +40,7 @@ export class State {
 	  new State(),
 	  [{ name: "Process", args: [], returns: [] }],
 	  State,
-	  {"value": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"value": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

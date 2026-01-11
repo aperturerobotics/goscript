@@ -47,7 +47,7 @@ export class TestStruct {
 	  new TestStruct(),
 	  [],
 	  TestStruct,
-	  {"IntField": { kind: $.TypeKind.Basic, name: "number" }, "StringField": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"IntField": { kind: $.TypeKind.Basic, name: "int" }, "StringField": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

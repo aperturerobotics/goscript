@@ -42,7 +42,7 @@ When a compliance test runs, the following steps occur:
 
 ### 3. Execution (unless `expect-fail` present)
 - Generates a `runner.ts` script that imports and executes the main function
-- Runs the TypeScript code using `tsx`
+- Runs the TypeScript code using `bun`
 - Captures stdout output
 
 ### 4. Comparison (unless `expect-fail` present)

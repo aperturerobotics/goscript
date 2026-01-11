@@ -55,7 +55,7 @@ export class MyStruct {
 	  new MyStruct(),
 	  [],
 	  MyStruct,
-	  {"PointerField": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "interfaceField": "MyInterface"}
+	  {"PointerField": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "interfaceField": "MyInterface"}
 	);
 }
 

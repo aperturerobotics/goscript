@@ -53,9 +53,9 @@ export class FileTracker {
 	static __typeInfo = $.registerStructType(
 	  'main.FileTracker',
 	  new FileTracker(),
-	  [{ name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }],
+	  [{ name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
 	  FileTracker,
-	  {"mutex": "Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }}
+	  {"mutex": "Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
 	);
 }
 

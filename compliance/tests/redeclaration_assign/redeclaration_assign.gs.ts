@@ -21,8 +21,7 @@ export async function main(): Promise<void> {
 	if (err) {
 		// Use err
 		$.println("err is true")
-	}
-	 else {
+	} else {
 		$.println("err is false")
 	}
 }

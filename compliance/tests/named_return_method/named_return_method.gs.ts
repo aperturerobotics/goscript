@@ -54,12 +54,10 @@ export class content {
 		if (input > 10) {
 			status = "high"
 			valid = true
-		}
-		 else if (input > 0) {
+		} else if (input > 0) {
 			status = "low"
 			valid = true
-		}
-		 else {
+		} else {
 			// status and valid will be zero values
 			status = "invalid"
 		}
@@ -70,9 +68,9 @@ export class content {
 	static __typeInfo = $.registerStructType(
 	  'main.content',
 	  new content(),
-	  [{ name: "ReadAt", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "ProcessData", args: [{ name: "input", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
+	  [{ name: "ReadAt", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "ProcessData", args: [{ name: "input", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 	  content,
-	  {"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }}
+	  {"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
 	);
 }
 
@@ -87,8 +85,7 @@ export async function main(): Promise<void> {
 	// Expected: nil
 	if (err1 == null) {
 		$.println("nil") // Expected: nil
-	}
-	 else {
+	} else {
 		$.println("error")
 	}
 	$.println($.bytesToString(buf)) // Expected: Hello
@@ -101,8 +98,7 @@ export async function main(): Promise<void> {
 	// Expected: nil
 	if (err2 == null) {
 		$.println("nil") // Expected: nil
-	}
-	 else {
+	} else {
 		$.println("error")
 	}
 	$.println($.bytesToString(buf2)) // Expected: World!

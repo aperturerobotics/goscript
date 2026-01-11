@@ -35,7 +35,7 @@ export class MyStruct {
 	  new MyStruct(),
 	  [],
 	  MyStruct,
-	  {"Value": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"Value": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 
@@ -144,13 +144,11 @@ export async function main(): Promise<void> {
 				let { value: val, ok: ok } = $.typeAssert<MyStruct>(item, 'main.MyStruct')
 				if (ok) {
 					$.println("arr[", i, "] is MyStruct with value:", val.Value)
-				}
-				 else {
+				} else {
 					let { value: ptr, ok: ok } = $.typeAssert<MyStruct | null>(item, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
 					if (ok) {
 						$.println("arr[", i, "] is *MyStruct with value:", ptr!.Value)
-					}
-					 else {
+					} else {
 						$.println("arr[", i, "] is unknown type")
 					}
 				}

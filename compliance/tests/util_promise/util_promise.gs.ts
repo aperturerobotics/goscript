@@ -114,9 +114,9 @@ export class PromiseType<T extends any> {
 	static __typeInfo = $.registerStructType(
 	  'main.PromiseType',
 	  new PromiseType(),
-	  [{ name: "SetResult", args: [{ name: "val", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Await", args: [{ name: "ctx", type: "Context" }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
+	  [{ name: "SetResult", args: [{ name: "val", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Await", args: [{ name: "ctx", type: "Context" }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  PromiseType,
-	  {"result": { kind: $.TypeKind.Interface, methods: [] }, "err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "isResolved": { kind: $.TypeKind.Basic, name: "boolean" }, "ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, fields: {}, methods: [] } }}
+	  {"result": { kind: $.TypeKind.Interface, methods: [] }, "err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "isResolved": { kind: $.TypeKind.Basic, name: "bool" }, "ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, fields: {}, methods: [] } }}
 	);
 }
 
@@ -149,8 +149,7 @@ export async function main(): Promise<void> {
 	let [result1, err1] = await p1!.Await(ctx)
 	if (err1 != null) {
 		$.println("Error:", err1!.Error())
-	}
-	 else {
+	} else {
 		$.println("Result:", result1)
 	}
 
@@ -160,8 +159,7 @@ export async function main(): Promise<void> {
 	let [result2, err2] = await p2!.Await(ctx)
 	if (err2 != null) {
 		$.println("Error:", err2!.Error())
-	}
-	 else {
+	} else {
 		$.println("Result:", result2)
 	}
 
@@ -171,8 +169,7 @@ export async function main(): Promise<void> {
 	let [result3, err3] = await p3!.Await(ctx)
 	if (err3 != null) {
 		$.println("Error:", err3!.Error())
-	}
-	 else {
+	} else {
 		$.println("Result:", result3)
 	}
 
@@ -187,8 +184,7 @@ export async function main(): Promise<void> {
 	let [result4, err4] = await p4!.Await(ctx)
 	if (err4 != null) {
 		$.println("Error:", err4!.Error())
-	}
-	 else {
+	} else {
 		$.println("Final result:", result4)
 	}
 

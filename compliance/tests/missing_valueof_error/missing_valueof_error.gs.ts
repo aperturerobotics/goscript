@@ -35,7 +35,7 @@ export class buffer {
 	  new buffer(),
 	  [],
 	  buffer,
-	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }}
+	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
 	);
 }
 
@@ -69,8 +69,7 @@ export class printer {
 		const p = this
 		if ($.cap(p.buf!.data) > 64 * 1024) {
 			p.buf = null
-		}
-		 else {
+		} else {
 			// Reset buffer
 			p.buf!.data = $.goSlice(p.buf!.data, undefined, 0)
 		}
@@ -90,7 +89,7 @@ export class printer {
 	static __typeInfo = $.registerStructType(
 	  'main.printer',
 	  new printer(),
-	  [{ name: "free", args: [], returns: [] }, { name: "checkCapacity", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "getLength", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "free", args: [], returns: [] }, { name: "checkCapacity", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "getLength", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  printer,
 	  {"buf": { kind: $.TypeKind.Pointer, elemType: "buffer" }}
 	);
@@ -111,8 +110,7 @@ export async function main(): Promise<void> {
 	p!.free()
 	if (p!.buf != null) {
 		$.println("Buffer not freed, capacity:", p!.checkCapacity())
-	}
-	 else {
+	} else {
 		$.println("Buffer was freed")
 	}
 }

@@ -221,12 +221,10 @@ export class Scanner {
 							// UCS-2 (i.e. 2-byte UTF-16). Give specific error (go.dev/issue/71950).
 							await s.error(s.offset, "illegal UTF-8 encoding (got UTF-16)")
 							s.rdOffset += $.len(_in) // consume all input to avoid error cascade
-						}
-						 else {
+						} else {
 							await s.error(s.offset, "illegal UTF-8 encoding")
 						}
-					}
-					 else if (r == 65279 && s.offset > 0) {
+					} else if (r == 65279 && s.offset > 0) {
 						await s.error(s.offset, "illegal byte order mark")
 					}
 					break
@@ -234,8 +232,7 @@ export class Scanner {
 			}
 			s.rdOffset += w
 			s.ch = r
-		}
-		 else {
+		} else {
 			s.offset = $.len(s.src)
 			if (Number(s.ch) == 10) {
 				s.lineOffset = s.offset
@@ -338,8 +335,7 @@ export class Scanner {
 			let ch = s.ch
 			if (ch == 13) {
 				numCR++
-			}
-			 else if (ch == 10 && nlOffset == 0) {
+			} else if (ch == 10 && nlOffset == 0) {
 				nlOffset = s.offset
 			}
 			await s.next()
@@ -398,8 +394,7 @@ export class Scanner {
 				return 
 			}
 			text = $.goSlice(text, undefined, i2 - 1) // lop off ":col"
-		}
-		 else {
+		} else {
 			//line filename:line
 			line = n
 		}
@@ -410,8 +405,7 @@ export class Scanner {
 		let filename = $.bytesToString($.goSlice(text, undefined, i - 1)) // lop off ":line", and trim white space
 		if (filename == "" && ok2) {
 			filename = (await s.file!.Position(s.file!.Pos(offs)))!.Filename
-		}
-		 else if (filename != "") {
+		} else if (filename != "") {
 			// Put a relative filename in the current directory.
 			// This is for compatibility with earlier releases.
 			// See issue 26671.
@@ -495,15 +489,13 @@ export class Scanner {
 				// record invalid rune offset
 				if (Number(s.ch) == 95) {
 					ds = 2
-				}
-				 else if (s.ch >= max && invalid!.value < 0) {
+				} else if (s.ch >= max && invalid!.value < 0) {
 					invalid!.value = s.offset // record invalid rune offset
 				}
 				digsep |= ds
 				await s.next()
 			}
-		}
-		 else {
+		} else {
 			for (; isHex(s.ch) || Number(s.ch) == 95; ) {
 				let ds = 1
 				if (Number(s.ch) == 95) {
@@ -523,7 +515,7 @@ export class Scanner {
 		let base = 10 // number base
 		let prefix = (0 as number) // one of 0 (decimal), '0' (0-octal), 'x', 'o', or 'b'
 		let digsep = 0 // bit 0: digit present, bit 1: '_' present
-		let invalid = -1 // index of invalid digit in literal, or < 0
+		let invalid = $.varRef(-1) // index of invalid digit in literal, or < 0
 		if (Number(s.ch) != 46) {
 			tok = token.INT
 
@@ -591,8 +583,7 @@ export class Scanner {
 				if ((ds & 1) == 0) {
 					await s.error(s.offset, "exponent has no digits")
 				}
-			}
-			 else if (prefix == 120 && tok == token.FLOAT) {
+			} else if (prefix == 120 && tok == token.FLOAT) {
 				await s.error(s.offset, "hexadecimal mantissa requires a 'p' exponent")
 			}
 		}
@@ -601,8 +592,8 @@ export class Scanner {
 			await s.next()
 		}
 		let lit = $.bytesToString($.goSlice(s.src, offs, s.offset))
-		if (tok == token.INT && invalid >= 0) {
-			await s.errorf(invalid, "invalid digit %q in %s", $.indexString(lit, invalid - offs), litname(prefix))
+		if (tok == token.INT && invalid!.value >= 0) {
+			await s.errorf(invalid!.value, "invalid digit %q in %s", $.indexString(lit, invalid!.value - offs), litname(prefix))
 		}
 		if ((digsep & 2) != 0) {
 			{
@@ -889,8 +880,7 @@ export class Scanner {
 								break
 							}
 						}
-					}
-					 else {
+					} else {
 						insertSemi = true
 						tok = token.IDENT
 					}
@@ -1016,8 +1006,7 @@ export class Scanner {
 									// COMMENT then artificial SEMICOLON.
 									s.nlPos = s.file!.Pos(nlOffset)
 									s.insertSemi = false
-								}
-								 else {
+								} else {
 									insertSemi = s.insertSemi // preserve insertSemi info
 								}
 
@@ -1028,8 +1017,7 @@ export class Scanner {
 								}
 								tok = token.COMMENT
 								lit = comment
-							}
-							 else {
+							} else {
 								// division
 								tok = await s.switch2(token.QUO, token.QUO_ASSIGN)
 							}
@@ -1047,8 +1035,7 @@ export class Scanner {
 							if (Number(s.ch) == 45) {
 								await s.next()
 								tok = token.ARROW
-							}
-							 else {
+							} else {
 								tok = await s.switch4(token.LSS, token.LEQ, 60, token.SHL, token.SHL_ASSIGN)
 							}
 							break
@@ -1069,8 +1056,7 @@ export class Scanner {
 							if (Number(s.ch) == 94) {
 								await s.next()
 								tok = await s.switch2(token.AND_NOT, token.AND_NOT_ASSIGN)
-							}
-							 else {
+							} else {
 								tok = await s.switch3(token.AND, token.AND_ASSIGN, 38, token.LAND)
 							}
 							break
@@ -1089,8 +1075,7 @@ export class Scanner {
 								// marks, which are easily introduced via copy and paste.
 								if (ch == 8220 || ch == 8221) {
 									await s.errorf(s.file!.Offset(pos), "curly quotation mark %q (use neutral %q)", ch, 34)
-								}
-								 else {
+								} else {
 									await s.errorf(s.file!.Offset(pos), "illegal character %#U", ch)
 								}
 							}
@@ -1113,9 +1098,9 @@ export class Scanner {
 	static __typeInfo = $.registerStructType(
 	  'go/scanner.Scanner',
 	  new Scanner(),
-	  [{ name: "next", args: [], returns: [] }, { name: "peek", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Init", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "File" } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "err", type: "ErrorHandler" }, { name: "mode", type: "Mode" }], returns: [] }, { name: "error", args: [{ name: "offs", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "msg", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "errorf", args: [{ name: "offs", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "format", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "args", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } } }], returns: [] }, { name: "scanComment", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "updateLineInfo", args: [{ name: "next", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "offs", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "text", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [] }, { name: "scanIdentifier", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "digits", args: [{ name: "base", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "invalid", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "scanNumber", args: [], returns: [{ type: "Token" }, { type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanEscape", args: [{ name: "quote", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "scanRune", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanRawString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "skipWhitespace", args: [], returns: [] }, { name: "switch2", args: [{ name: "tok0", type: "Token" }, { name: "tok1", type: "Token" }], returns: [{ type: "Token" }] }, { name: "switch3", args: [{ name: "tok0", type: "Token" }, { name: "tok1", type: "Token" }, { name: "ch2", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "tok2", type: "Token" }], returns: [{ type: "Token" }] }, { name: "switch4", args: [{ name: "tok0", type: "Token" }, { name: "tok1", type: "Token" }, { name: "ch2", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "tok2", type: "Token" }, { name: "tok3", type: "Token" }], returns: [{ type: "Token" }] }, { name: "Scan", args: [], returns: [{ type: "Pos" }, { type: "Token" }, { type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+	  [{ name: "next", args: [], returns: [] }, { name: "peek", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "byte" } }] }, { name: "Init", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "File" } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "err", type: "ErrorHandler" }, { name: "mode", type: "Mode" }], returns: [] }, { name: "error", args: [{ name: "offs", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "msg", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "errorf", args: [{ name: "offs", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "format", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "args", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } } }], returns: [] }, { name: "scanComment", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "updateLineInfo", args: [{ name: "next", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "offs", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "text", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [] }, { name: "scanIdentifier", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "digits", args: [{ name: "base", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "invalid", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "scanNumber", args: [], returns: [{ type: "Token" }, { type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanEscape", args: [{ name: "quote", type: { kind: $.TypeKind.Basic, name: "rune" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "scanRune", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanRawString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "skipWhitespace", args: [], returns: [] }, { name: "switch2", args: [{ name: "tok0", type: "Token" }, { name: "tok1", type: "Token" }], returns: [{ type: "Token" }] }, { name: "switch3", args: [{ name: "tok0", type: "Token" }, { name: "tok1", type: "Token" }, { name: "ch2", type: { kind: $.TypeKind.Basic, name: "rune" } }, { name: "tok2", type: "Token" }], returns: [{ type: "Token" }] }, { name: "switch4", args: [{ name: "tok0", type: "Token" }, { name: "tok1", type: "Token" }, { name: "ch2", type: { kind: $.TypeKind.Basic, name: "rune" } }, { name: "tok2", type: "Token" }, { name: "tok3", type: "Token" }], returns: [{ type: "Token" }] }, { name: "Scan", args: [], returns: [{ type: "Pos" }, { type: "Token" }, { type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  Scanner,
-	  {"file": { kind: $.TypeKind.Pointer, elemType: "File" }, "dir": { kind: $.TypeKind.Basic, name: "string" }, "src": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "err": "ErrorHandler", "mode": "Mode", "ch": { kind: $.TypeKind.Basic, name: "number" }, "offset": { kind: $.TypeKind.Basic, name: "number" }, "rdOffset": { kind: $.TypeKind.Basic, name: "number" }, "lineOffset": { kind: $.TypeKind.Basic, name: "number" }, "insertSemi": { kind: $.TypeKind.Basic, name: "boolean" }, "nlPos": "Pos", "ErrorCount": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"file": { kind: $.TypeKind.Pointer, elemType: "File" }, "dir": { kind: $.TypeKind.Basic, name: "string" }, "src": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "err": "ErrorHandler", "mode": "Mode", "ch": { kind: $.TypeKind.Basic, name: "rune" }, "offset": { kind: $.TypeKind.Basic, name: "int" }, "rdOffset": { kind: $.TypeKind.Basic, name: "int" }, "lineOffset": { kind: $.TypeKind.Basic, name: "int" }, "insertSemi": { kind: $.TypeKind.Basic, name: "bool" }, "nlPos": "Pos", "ErrorCount": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

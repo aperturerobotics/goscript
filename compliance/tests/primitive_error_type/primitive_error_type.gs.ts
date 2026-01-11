@@ -25,16 +25,14 @@ export async function main(): Promise<void> {
 	let err = mayFail(5)
 	if (err == null) {
 		$.println("mayFail(5): no error")
-	}
-	 else {
+	} else {
 		$.println("mayFail(5):", err!.Error())
 	}
 
 	err = mayFail(-1)
 	if (err == null) {
 		$.println("mayFail(-1): no error")
-	}
-	 else {
+	} else {
 		$.println("mayFail(-1):", err!.Error())
 	}
 }

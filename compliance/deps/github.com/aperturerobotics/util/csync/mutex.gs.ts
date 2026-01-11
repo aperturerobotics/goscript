@@ -63,8 +63,7 @@ export class Mutex {
 			if (m.locked) {
 				// keep waiting
 				waitCh = getWaitCh!()
-			}
-			 else {
+			} else {
 				// 0: waiting for lock
 				// 1: have the lock
 				let swapped = status!.value.CompareAndSwap(0, 1)
@@ -154,8 +153,7 @@ export class Mutex {
 		await m.bcast.HoldLock((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
 			if (m.locked) {
 				unlocked!.value.Store(true)
-			}
-			 else {
+			} else {
 				m.locked = true
 			}
 		})
@@ -184,9 +182,9 @@ export class Mutex {
 	static __typeInfo = $.registerStructType(
 	  'github.com/aperturerobotics/util/csync.Mutex',
 	  new Mutex(),
-	  [{ name: "Lock", args: [{ name: "ctx", type: "Context" }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "TryLock", args: [], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Locker", args: [], returns: [{ type: "Locker" }] }],
+	  [{ name: "Lock", args: [{ name: "ctx", type: "Context" }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "TryLock", args: [], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Locker", args: [], returns: [{ type: "Locker" }] }],
 	  Mutex,
-	  {"bcast": "Broadcast", "locked": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"bcast": "Broadcast", "locked": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 

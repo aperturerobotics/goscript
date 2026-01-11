@@ -718,7 +718,7 @@ func (c *GoToTSCompiler) writeInterfaceStructure(iface *types.Interface, astNode
 func (c *GoToTSCompiler) getTypeString(goType types.Type) string {
 	var typeStr strings.Builder
 	writer := NewTSCodeWriter(&typeStr)
-	tempCompiler := NewGoToTSCompiler(writer, c.pkg, c.analysis)
+	tempCompiler := NewGoToTSCompiler(writer, c.pkg, c.analysis, c.currentFilePath)
 	tempCompiler.WriteGoType(goType, GoTypeContextGeneral)
 	return typeStr.String()
 }
@@ -730,7 +730,7 @@ func (c *GoToTSCompiler) getTypeString(goType types.Type) string {
 func (c *GoToTSCompiler) getASTTypeString(astType ast.Expr, goType types.Type) string {
 	var typeStr strings.Builder
 	writer := NewTSCodeWriter(&typeStr)
-	tempCompiler := NewGoToTSCompiler(writer, c.pkg, c.analysis)
+	tempCompiler := NewGoToTSCompiler(writer, c.pkg, c.analysis, c.currentFilePath)
 
 	if astType != nil {
 		// Use AST-based type writing to preserve qualified names

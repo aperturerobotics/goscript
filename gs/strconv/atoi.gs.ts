@@ -164,7 +164,15 @@ export function ParseUint(s: string, base: number, bitSize: number): [number, $.
 	}
 
 	// Check range for the specified bit size
-	const maxVal = (1 << bitSize) - 1;
+	// Note: JavaScript bitwise operators only work on 32-bit integers,
+	// so we use Math.pow() for larger bit sizes
+	let maxVal: number;
+	if (bitSize >= 53) {
+		// For 53+ bits, use MAX_SAFE_INTEGER as JavaScript can't represent larger integers accurately
+		maxVal = Number.MAX_SAFE_INTEGER;
+	} else {
+		maxVal = Math.pow(2, bitSize) - 1;
+	}
 	if (result > maxVal) {
 		return [0, rangeError("ParseUint", s0)];
 	}
@@ -200,7 +208,15 @@ export function ParseInt(s: string, base: number, bitSize: number): [number, $.G
 		bitSize = 64;
 	}
 
-	const cutoff = 1 << (bitSize - 1);
+	// Note: JavaScript bitwise operators only work on 32-bit integers,
+	// so we use Math.pow() for larger bit sizes
+	let cutoff: number;
+	if (bitSize >= 53) {
+		// For 53+ bits, use MAX_SAFE_INTEGER as JavaScript can't represent larger integers accurately
+		cutoff = Number.MAX_SAFE_INTEGER;
+	} else {
+		cutoff = Math.pow(2, bitSize - 1);
+	}
 	if (!neg && un >= cutoff) {
 		return [0, rangeError("ParseInt", s)];
 	}

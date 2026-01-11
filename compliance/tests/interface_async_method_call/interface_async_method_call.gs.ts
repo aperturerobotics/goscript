@@ -11,7 +11,7 @@ export type AsyncProcessor = null | {
 $.registerInterfaceType(
   'main.AsyncProcessor',
   null, // Zero value for interface is null
-  [{ name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
+  [{ name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export class ChannelProcessor {
@@ -55,9 +55,9 @@ export class ChannelProcessor {
 	static __typeInfo = $.registerStructType(
 	  'main.ChannelProcessor',
 	  new ChannelProcessor(),
-	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  ChannelProcessor,
-	  {"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "number" } }}
+	  {"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
 	);
 }
 
@@ -100,9 +100,9 @@ export class SimpleProcessor {
 	static __typeInfo = $.registerStructType(
 	  'main.SimpleProcessor',
 	  new SimpleProcessor(),
-	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  SimpleProcessor,
-	  {"value": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"value": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

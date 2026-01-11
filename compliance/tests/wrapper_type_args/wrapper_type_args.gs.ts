@@ -14,7 +14,7 @@ export type DirInterface = null | {
 $.registerInterfaceType(
   'main.DirInterface',
   null, // Zero value for interface is null
-  [{ name: "MkdirAll", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "perm", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
+  [{ name: "MkdirAll", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "perm", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
 
 export class MyDir {
@@ -41,7 +41,7 @@ export class MyDir {
 	static __typeInfo = $.registerStructType(
 	  'main.MyDir',
 	  new MyDir(),
-	  [{ name: "MkdirAll", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "perm", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
+	  [{ name: "MkdirAll", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "perm", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  MyDir,
 	  {}
 	);

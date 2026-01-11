@@ -47,7 +47,7 @@ export class TestStruct {
 	  new TestStruct(),
 	  [],
 	  TestStruct,
-	  {"Mode": { kind: $.TypeKind.Basic, name: "number" }, "File": { kind: $.TypeKind.Pointer, elemType: "File" }}
+	  {"Mode": { kind: $.TypeKind.Basic, name: "uint32" }, "File": { kind: $.TypeKind.Pointer, elemType: "File" }}
 	);
 }
 

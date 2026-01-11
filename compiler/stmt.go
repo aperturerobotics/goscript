@@ -167,9 +167,17 @@ func (c *GoToTSCompiler) WriteStmtIncDec(stmt *ast.IncDecStmt) error {
 func (c *GoToTSCompiler) WriteStmtBranch(stmt *ast.BranchStmt) error {
 	switch stmt.Tok {
 	case token.BREAK:
-		c.tsw.WriteLine("break") // No semicolon needed
+		if stmt.Label != nil {
+			c.tsw.WriteLinef("break %s", stmt.Label.Name)
+		} else {
+			c.tsw.WriteLine("break")
+		}
 	case token.CONTINUE:
-		c.tsw.WriteLine("continue") // No semicolon needed
+		if stmt.Label != nil {
+			c.tsw.WriteLinef("continue %s", stmt.Label.Name)
+		} else {
+			c.tsw.WriteLine("continue")
+		}
 	case token.GOTO:
 		// TypeScript doesn't support goto, but we can handle it by skipping it
 		// since the labeled statement restructuring should handle the control flow
@@ -484,15 +492,8 @@ func (c *GoToTSCompiler) WriteStmtIf(exp *ast.IfStmt) error {
 		}
 		c.tsw.WriteLiterally(") ")
 
-		if err := c.WriteStmt(exp.Body); err != nil {
+		if err := c.writeIfBody(exp); err != nil {
 			return err
-		}
-
-		if exp.Else != nil {
-			c.tsw.WriteLiterally(" else ")
-			if err := c.WriteStmt(exp.Else); err != nil {
-				return err
-			}
 		}
 
 		c.tsw.Indent(-1)
@@ -507,14 +508,31 @@ func (c *GoToTSCompiler) WriteStmtIf(exp *ast.IfStmt) error {
 	}
 	c.tsw.WriteLiterally(") ")
 
-	if err := c.WriteStmt(exp.Body); err != nil {
+	return c.writeIfBody(exp)
+}
+
+// writeIfBody writes the if body and optional else clause, handling newline suppression.
+func (c *GoToTSCompiler) writeIfBody(exp *ast.IfStmt) error {
+	hasElse := exp.Else != nil
+	if err := c.WriteStmtBlock(exp.Body, hasElse); err != nil {
 		return err
 	}
 
-	if exp.Else != nil {
+	if hasElse {
 		c.tsw.WriteLiterally(" else ")
-		if err := c.WriteStmt(exp.Else); err != nil {
-			return err
+		switch elseStmt := exp.Else.(type) {
+		case *ast.BlockStmt:
+			if err := c.WriteStmtBlock(elseStmt, false); err != nil {
+				return err
+			}
+		case *ast.IfStmt:
+			if err := c.WriteStmtIf(elseStmt); err != nil {
+				return err
+			}
+		default:
+			if err := c.WriteStmt(exp.Else); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -22,8 +22,7 @@ export async function main(): Promise<void> {
 				const ok = result.ok
 				if (ok) {
 					$.println("Received value with ok==true:", val) // Should not be reached
-				}
-				 else {
+				} else {
 					$.println("Received zero value with ok==false:", val) // Should be reached
 				}
 			}

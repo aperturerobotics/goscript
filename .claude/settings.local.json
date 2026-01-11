@@ -7,7 +7,8 @@
       "Bash(gh pr view:*)",
       "Bash(go build:*)",
       "Bash(go run:*)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(go clean:*)"
     ]
   }
 }

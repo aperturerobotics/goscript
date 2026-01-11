@@ -59,7 +59,7 @@ export class Person {
 	  new Person(),
 	  [],
 	  Person,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "number" }, "Active": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
 	);
 }
 
@@ -71,34 +71,31 @@ export async function main(): Promise<void> {
 	let [b, err] = await json.Marshal(p)
 	if (err != null) {
 		results = $.append(results, "Marshal error: " + err!.Error())
-	}
-	 else {
+	} else {
 		results = $.append(results, "Marshal: " + $.bytesToString(b))
 	}
 
 	// Unmarshal into a struct
-	let q: Person = new Person()
+	let q: $.VarRef<Person> = $.varRef(new Person())
 	{
 		let err = await json.Unmarshal($.stringToBytes(`{"name":"Bob","age":25,"active":false}`), q)
 		if (err != null) {
 			results = $.append(results, "Unmarshal struct error: " + err!.Error())
-		}
-		 else {
-			results = $.append(results, "Unmarshal struct: Name=" + q.Name + ", Age=" + itoa(q.Age) + ", Active=" + boolstr(q.Active))
+		} else {
+			results = $.append(results, "Unmarshal struct: Name=" + q!.value.Name + ", Age=" + itoa(q!.value.Age) + ", Active=" + boolstr(q!.value.Active))
 		}
 	}
 
 	// Unmarshal into a map[string]any
-	let m: Map<string, null | any> | null = null
+	let m: $.VarRef<Map<string, null | any> | null> = $.varRef(null)
 	{
 		let err = await json.Unmarshal($.stringToBytes(`{"name":"Carol","age":22,"active":true}`), m)
 		if (err != null) {
 			results = $.append(results, "Unmarshal map error: " + err!.Error())
-		}
-		 else {
-			let name = $.mustTypeAssert<string>($.mapGet(m, "name", null)[0], {kind: $.TypeKind.Basic, name: 'string'})
-			let age = $.int($.mustTypeAssert<number>($.mapGet(m, "age", null)[0], {kind: $.TypeKind.Basic, name: 'number'}))
-			let active = $.mustTypeAssert<boolean>($.mapGet(m, "active", null)[0], {kind: $.TypeKind.Basic, name: 'boolean'})
+		} else {
+			let name = $.mustTypeAssert<string>($.mapGet(m!.value, "name", null)[0], {kind: $.TypeKind.Basic, name: 'string'})
+			let age = $.int($.mustTypeAssert<number>($.mapGet(m!.value, "age", null)[0], {kind: $.TypeKind.Basic, name: 'number'}))
+			let active = $.mustTypeAssert<boolean>($.mapGet(m!.value, "active", null)[0], {kind: $.TypeKind.Basic, name: 'boolean'})
 			results = $.append(results, "Unmarshal map: name=" + name + ", age=" + itoa(age) + ", active=" + boolstr(active))
 		}
 	}
@@ -109,11 +106,11 @@ export async function main(): Promise<void> {
 	for (let _i = 0; _i < $.len(results); _i++) {
 		let r = results![_i]
 		{
-			console.log("JSON result:", r)
+			$.println("JSON result:", r)
 		}
 	}
 
-	console.log("encoding/json test finished")
+	$.println("encoding/json test finished")
 }
 
 // minimal helpers to avoid imports
@@ -131,7 +128,7 @@ export function itoa(i: number): string {
 	for (; i > 0; ) {
 		let d = $.byte(i % 10)
 		buf = $.append(buf, 48 + d)
-		i /= 10
+		i = Math.trunc(i / 10)
 	}
 	// reverse
 	for (let l = 0, r = $.len(buf) - 1; l < r; [l, r] = [l + 1, r - 1]) {

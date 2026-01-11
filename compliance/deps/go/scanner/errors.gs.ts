@@ -155,8 +155,7 @@ export function PrintError(w: null | io.Writer, err: $.GoError): void {
 					fmt.Fprintf(w, "%s\n", e)
 				}
 			}
-		}
-		 else if (err != null) {
+		} else if (err != null) {
 			fmt.Fprintf(w, "%s\n", err)
 		}
 	}

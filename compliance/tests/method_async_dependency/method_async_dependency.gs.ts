@@ -53,8 +53,7 @@ export async function main(): Promise<void> {
 		let err = await d!.array()
 		if (err != null) {
 			$.println("Error:", err!.Error())
-		}
-		 else {
+		} else {
 			$.println("Success")
 		}
 	}

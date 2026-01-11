@@ -7,12 +7,12 @@ import { Marshaler, encOpts } from "./encode.gs.js";
 import { SyntaxError, scanner } from "./scanner.gs.js";
 import { encodeStatePool } from "./encode.gs.js";
 import { scanEnd, scanEndArray, scanEndObject, scanError } from "./scanner.gs.js";
-import * as io from "@goscript/io/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
 import * as errors from "@goscript/errors/index.js"
 
+import * as io from "@goscript/io/index.js"
 
 export let tokenTopValue: number = 0
 
@@ -224,14 +224,14 @@ export class Decoder {
 				switch (dec.scan.step!(dec.scan, c)) {
 					case 10: {
 						dec.scan.bytes--
-						break
+						break Input
 						break
 					}
 					case 5:
 					case 8: {
 						if (stateEndValue(dec.scan, 32) == 10) {
 							scanp++
-							break
+							break Input
 						}
 						break
 					}
@@ -248,7 +248,7 @@ export class Decoder {
 			if (err != null) {
 				if (err == io.EOF) {
 					if (dec.scan.step!(dec.scan, 32) == 10) {
-						break
+						break Input
 					}
 					if (nonSpace(dec.buf)) {
 						err = io.ErrUnexpectedEOF
@@ -431,7 +431,7 @@ export class Decoder {
 				}
 				case 34: {
 					if (Number(dec.tokenState) == 4 || Number(dec.tokenState) == 5) {
-						let x: string = ""
+						let x: $.VarRef<string> = $.varRef("")
 						let old = dec.tokenState
 						dec.tokenState = 0
 						let err = await dec.Decode(x)
@@ -440,7 +440,7 @@ export class Decoder {
 							return [null, err]
 						}
 						dec.tokenState = 6
-						return [x, null]
+						return [x!.value, null]
 					}
 					// fallthrough // fallthrough statement skipped
 					break
@@ -449,14 +449,14 @@ export class Decoder {
 					if (!dec.tokenValueAllowed()) {
 						return dec.tokenError(c)
 					}
-					let x: null | any = null
+					let x: $.VarRef<null | any> = $.varRef(null)
 					{
 						let err = await dec.Decode(x)
 						if (err != null) {
 							return [null, err]
 						}
 					}
-					return [x, null]
+					return [x!.value, null]
 					break
 				}
 			}
@@ -537,9 +537,9 @@ export class Decoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.Decoder',
 	  new Decoder(),
-	  [{ name: "UseNumber", args: [], returns: [] }, { name: "DisallowUnknownFields", args: [], returns: [] }, { name: "Decode", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Buffered", args: [], returns: [{ type: "Reader" }] }, { name: "readValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "refill", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "tokenPrepareForDecode", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "tokenValueAllowed", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "tokenValueEnd", args: [], returns: [] }, { name: "Token", args: [], returns: [{ type: "Token" }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "tokenError", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: "Token" }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "More", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "peek", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "InputOffset", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "UseNumber", args: [], returns: [] }, { name: "DisallowUnknownFields", args: [], returns: [] }, { name: "Decode", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Buffered", args: [], returns: [{ type: "Reader" }] }, { name: "readValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "refill", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "tokenPrepareForDecode", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "tokenValueAllowed", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "tokenValueEnd", args: [], returns: [] }, { name: "Token", args: [], returns: [{ type: "Token" }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "tokenError", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "byte" } }], returns: [{ type: "Token" }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "More", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "peek", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "byte" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "InputOffset", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }],
 	  Decoder,
-	  {"r": "Reader", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "d": "decodeState", "scanp": { kind: $.TypeKind.Basic, name: "number" }, "scanned": { kind: $.TypeKind.Basic, name: "number" }, "scan": "scanner", "err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "tokenState": { kind: $.TypeKind.Basic, name: "number" }, "tokenStack": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }}
+	  {"r": "Reader", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "d": "decodeState", "scanp": { kind: $.TypeKind.Basic, name: "int" }, "scanned": { kind: $.TypeKind.Basic, name: "int64" }, "scan": "scanner", "err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "tokenState": { kind: $.TypeKind.Basic, name: "int" }, "tokenStack": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
 	);
 }
 
@@ -693,9 +693,9 @@ export class Encoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.Encoder',
 	  new Encoder(),
-	  [{ name: "Encode", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "SetIndent", args: [{ name: "prefix", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "indent", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "SetEscapeHTML", args: [{ name: "on", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [] }],
+	  [{ name: "Encode", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "SetIndent", args: [{ name: "prefix", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "indent", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "SetEscapeHTML", args: [{ name: "on", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [] }],
 	  Encoder,
-	  {"w": "Writer", "err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "escapeHTML": { kind: $.TypeKind.Basic, name: "boolean" }, "indentBuf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "indentPrefix": { kind: $.TypeKind.Basic, name: "string" }, "indentValue": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"w": "Writer", "err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "escapeHTML": { kind: $.TypeKind.Basic, name: "bool" }, "indentBuf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "indentPrefix": { kind: $.TypeKind.Basic, name: "string" }, "indentValue": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

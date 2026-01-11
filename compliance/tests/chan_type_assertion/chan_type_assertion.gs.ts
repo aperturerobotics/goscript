@@ -14,8 +14,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<$.Channel<number> | null>(i, {kind: $.TypeKind.Channel, elemType: 'number', direction: 'both'})
 		if (ok) {
 			$.println("i is chan int: ok")
-		}
-		 else {
+		} else {
 			$.println("i is chan int: failed")
 		}
 	}
@@ -25,8 +24,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<$.Channel<string> | null>(s, {kind: $.TypeKind.Channel, elemType: 'string', direction: 'send'})
 		if (ok) {
 			$.println("s is chan<- string: ok")
-		}
-		 else {
+		} else {
 			$.println("s is chan<- string: failed")
 		}
 	}
@@ -36,8 +34,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<$.Channel<number> | null>(r, {kind: $.TypeKind.Channel, elemType: 'number', direction: 'receive'})
 		if (ok) {
 			$.println("r is <-chan float64: ok")
-		}
-		 else {
+		} else {
 			$.println("r is <-chan float64: failed")
 		}
 	}
@@ -47,8 +44,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<$.Channel<{  }> | null>(e, {kind: $.TypeKind.Channel, elemType: {kind: $.TypeKind.Struct, fields: {}, methods: []}, direction: 'both'})
 		if (ok) {
 			$.println("e is chan struct{}: ok")
-		}
-		 else {
+		} else {
 			$.println("e is chan struct{}: failed")
 		}
 	}
@@ -57,8 +53,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<$.Channel<string> | null>(i, {kind: $.TypeKind.Channel, elemType: 'string', direction: 'both'})
 		if (ok) {
 			$.println("i is chan string: incorrect")
-		}
-		 else {
+		} else {
 			$.println("i is chan string: correctly failed")
 		}
 	}
@@ -67,8 +62,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<$.Channel<number> | null>(i, {kind: $.TypeKind.Channel, elemType: 'number', direction: 'send'})
 		if (ok) {
 			$.println("i is chan<- int: incorrect")
-		}
-		 else {
+		} else {
 			$.println("i is chan<- int: correctly failed")
 		}
 	}
@@ -77,8 +71,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<$.Channel<number> | null>(i, {kind: $.TypeKind.Channel, elemType: 'number', direction: 'receive'})
 		if (ok) {
 			$.println("i is <-chan int: incorrect")
-		}
-		 else {
+		} else {
 			$.println("i is <-chan int: correctly failed")
 		}
 	}
@@ -87,8 +80,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<$.Channel<number> | null>(i, {kind: $.TypeKind.Channel, elemType: 'number', direction: 'send'})
 		if (ok) {
 			$.println("bidirectional can be used as send-only: ok")
-		}
-		 else {
+		} else {
 			$.println("bidirectional can be used as send-only: failed")
 		}
 	}
@@ -97,8 +89,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<$.Channel<number> | null>(i, {kind: $.TypeKind.Channel, elemType: 'number', direction: 'receive'})
 		if (ok) {
 			$.println("bidirectional can be used as receive-only: ok")
-		}
-		 else {
+		} else {
 			$.println("bidirectional can be used as receive-only: failed")
 		}
 	}

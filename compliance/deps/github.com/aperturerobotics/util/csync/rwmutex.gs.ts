@@ -84,17 +84,14 @@ export class RWMutex {
 				if (Number(m.nreaders) != 0 || m.writing) {
 					m.writeWaiting++
 					waitCh = getWaitCh!()
-				}
-				 else {
+				} else {
 					m.writing = true
 					status!.value.Store(1)
 				}
-			}
-			 else if (!m.writing && Number(m.writeWaiting) == 0) {
+			} else if (!m.writing && Number(m.writeWaiting) == 0) {
 				m.nreaders++
 				status!.value.Store(1)
-			}
-			 else {
+			} else {
 				waitCh = getWaitCh!()
 			}
 		})
@@ -117,13 +114,11 @@ export class RWMutex {
 					if (write) {
 						m.writeWaiting--
 					}
-				}
-				 else {
+				} else {
 					// 1: we have the lock
 					if (write) {
 						m.writing = false
-					}
-					 else {
+					} else {
 						m.nreaders--
 					}
 					broadcast!()
@@ -163,16 +158,13 @@ export class RWMutex {
 						m.writeWaiting--
 						m.writing = true
 						status!.value.Store(1)
-					}
-					 else {
+					} else {
 						waitCh = getWaitCh!()
 					}
-				}
-				 else if (!m.writing && Number(m.writeWaiting) == 0) {
+				} else if (!m.writing && Number(m.writeWaiting) == 0) {
 					m.nreaders++
 					status!.value.Store(1)
-				}
-				 else {
+				} else {
 					waitCh = getWaitCh!()
 				}
 			})
@@ -194,15 +186,12 @@ export class RWMutex {
 			if (write) {
 				if (Number(m.nreaders) != 0 || m.writing) {
 					unlocked!.value.Store(true)
-				}
-				 else {
+				} else {
 					m.writing = true
 				}
-			}
-			 else if (!m.writing && Number(m.writeWaiting) == 0) {
+			} else if (!m.writing && Number(m.writeWaiting) == 0) {
 				m.nreaders++
-			}
-			 else {
+			} else {
 				unlocked!.value.Store(true)
 			}
 		})
@@ -217,8 +206,7 @@ export class RWMutex {
 			await m.bcast.HoldLock((broadcast: (() => void) | null, _: (() => $.Channel<{  }> | null) | null): void => {
 				if (write) {
 					m.writing = false
-				}
-				 else {
+				} else {
 					m.nreaders--
 				}
 				broadcast!()
@@ -242,9 +230,9 @@ export class RWMutex {
 	static __typeInfo = $.registerStructType(
 	  'github.com/aperturerobotics/util/csync.RWMutex',
 	  new RWMutex(),
-	  [{ name: "Lock", args: [{ name: "ctx", type: "Context" }, { name: "write", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "TryLock", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Locker", args: [], returns: [{ type: "Locker" }] }, { name: "RLocker", args: [], returns: [{ type: "Locker" }] }],
+	  [{ name: "Lock", args: [{ name: "ctx", type: "Context" }, { name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "TryLock", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Locker", args: [], returns: [{ type: "Locker" }] }, { name: "RLocker", args: [], returns: [{ type: "Locker" }] }],
 	  RWMutex,
-	  {"bcast": "Broadcast", "nreaders": { kind: $.TypeKind.Basic, name: "number" }, "writing": { kind: $.TypeKind.Basic, name: "boolean" }, "writeWaiting": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"bcast": "Broadcast", "nreaders": { kind: $.TypeKind.Basic, name: "int" }, "writing": { kind: $.TypeKind.Basic, name: "bool" }, "writeWaiting": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 
@@ -327,8 +315,7 @@ export class RWMutexLocker {
 		let rel = l.rels![$.len(l.rels) - 1]
 		if ($.len(l.rels) == 1) {
 			l.rels = null
-		}
-		 else {
+		} else {
 			l.rels![$.len(l.rels) - 1] = null
 			l.rels = $.goSlice(l.rels, undefined, $.len(l.rels) - 1)
 		}
@@ -342,7 +329,7 @@ export class RWMutexLocker {
 	  new RWMutexLocker(),
 	  [{ name: "Lock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 	  RWMutexLocker,
-	  {"m": { kind: $.TypeKind.Pointer, elemType: "RWMutex" }, "write": { kind: $.TypeKind.Basic, name: "boolean" }, "mtx": "Mutex", "rels": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Function, params: [], results: [] } }}
+	  {"m": { kind: $.TypeKind.Pointer, elemType: "RWMutex" }, "write": { kind: $.TypeKind.Basic, name: "bool" }, "mtx": "Mutex", "rels": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Function, params: [], results: [] } }}
 	);
 }
 

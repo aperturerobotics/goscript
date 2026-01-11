@@ -53,9 +53,9 @@ export class Counter {
 	static __typeInfo = $.registerStructType(
 	  'main.Counter',
 	  new Counter(),
-	  [{ name: "Increment", args: [], returns: [] }, { name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "IncrementValue", args: [], returns: [] }, { name: "GetValueByValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "Increment", args: [], returns: [] }, { name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "IncrementValue", args: [], returns: [] }, { name: "GetValueByValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  Counter,
-	  {"value": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"value": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

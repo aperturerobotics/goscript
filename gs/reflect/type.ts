@@ -281,8 +281,19 @@ const invalidTypeInstance = new InvalidTypeClass()
 export class Value {
   private _value: ReflectValue
   private _type: Type
+  // _parentVarRef tracks the VarRef this value was dereferenced from (for Set support)
+  private _parentVarRef?: $.VarRef<ReflectValue>
+  // _parentStruct and _fieldName track the parent struct and field name for struct field Set() support
+  private _parentStruct?: Record<string, any>
+  private _fieldName?: string
 
-  constructor(value?: ReflectValue | Record<string, never>, type?: Type | null) {
+  constructor(
+    value?: ReflectValue | Record<string, never>,
+    type?: Type | null,
+    parentVarRef?: $.VarRef<ReflectValue>,
+    parentStruct?: Record<string, any>,
+    fieldName?: string,
+  ) {
     // Handle zero-value initialization: new Value({}) or new Value()
     // This corresponds to reflect.Value{} in Go which is an invalid/zero value
     if (
@@ -300,10 +311,20 @@ export class Value {
       this._value = value as ReflectValue
       this._type = type
     }
+    this._parentVarRef = parentVarRef
+    this._parentStruct = parentStruct
+    this._fieldName = fieldName
   }
 
   public clone(): Value {
-    return new Value(this._value, this._type)
+    const cloned = new Value(
+      this._value,
+      this._type,
+      this._parentVarRef,
+      this._parentStruct,
+      this._fieldName,
+    )
+    return cloned
   }
 
   // Methods required by godoc.txt and used throughout the codebase
@@ -415,7 +436,10 @@ export class Value {
   }
 
   public IsValid(): boolean {
-    return this._value !== null && this._value !== undefined
+    // In Go, a Value is valid if it was properly constructed (not the zero Value{}).
+    // A valid Value can have a nil underlying value (e.g., nil map, nil pointer).
+    // We check if the type is valid (not the invalid type sentinel).
+    return this._type !== invalidTypeInstance
   }
 
   public IsNil(): boolean {
@@ -445,8 +469,14 @@ export class Value {
   }
 
   public Elem(): Value {
-    // For pointers and interfaces, return the element
-    return new Value(this._value, this._type)
+    // For pointers, unwrap the VarRef and return the element, tracking the parent
+    if (this._type.Kind() === Ptr && $.isVarRef(this._value)) {
+      const varRef = this._value as $.VarRef<ReflectValue>
+      const elemType = this._type.Elem()
+      return new Value(varRef.value, elemType, varRef)
+    }
+    // For interfaces, return the underlying value
+    return new Value(this._value, this._type, this._parentVarRef)
   }
 
   public NumField(): number {
@@ -463,11 +493,13 @@ export class Value {
       throw new Error('reflect: struct field index out of range')
     }
 
-    let fieldVal = (this._value as Record<string, any>)[field.Name]
+    const parentObj = this._value as Record<string, any>
+    let fieldVal = parentObj[field.Name]
     if (fieldVal === undefined) {
       fieldVal = null
     }
-    return new Value(fieldVal, field.Type)
+    // Pass parent struct and field name so Set() can update the struct
+    return new Value(fieldVal, field.Type, undefined, parentObj, field.Name)
   }
 
   // Additional methods needed by various parts of the codebase
@@ -507,17 +539,43 @@ export class Value {
   }
 
   public CanSet(): boolean {
-    return this.IsValid() && this.Kind() !== Ptr // Simplified
+    // Simplified: all valid values are settable in GoScript since we handle
+    // pointer semantics through VarRef. This enables JSON unmarshaling to work.
+    return this.IsValid()
   }
 
   public Set(x: Value): void {
     if (!this.CanSet()) {
       throw new Error('reflect: assign to invalid value')
     }
-    if (this.Type() !== x.Type()) {
+    // Interface types can accept any value
+    if (this.Kind() === Interface) {
+      this._value = x.value
+      // Also update the parent VarRef if we were dereferenced from one
+      if (this._parentVarRef) {
+        this._parentVarRef.value = x.value
+      }
+      // Also update the parent struct field if this is a struct field
+      if (this._parentStruct && this._fieldName) {
+        this._parentStruct[this._fieldName] = x.value
+      }
+      return
+    }
+    // For other types, check if types are compatible (simplified check)
+    const thisType = this.Type()
+    const xType = x.Type()
+    if (thisType.Kind() !== xType.Kind()) {
       throw new Error('reflect: assign to wrong type')
     }
     this._value = x.value
+    // Also update the parent VarRef if we were dereferenced from one
+    if (this._parentVarRef) {
+      this._parentVarRef.value = x.value
+    }
+    // Also update the parent struct field if this is a struct field
+    if (this._parentStruct && this._fieldName) {
+      this._parentStruct[this._fieldName] = x.value
+    }
   }
 
   // Additional methods from deleted reflect.gs.ts
@@ -594,6 +652,12 @@ export class Value {
       )
     }
     this._value = x
+    if (this._parentVarRef) {
+      this._parentVarRef.value = x
+    }
+    if (this._parentStruct && this._fieldName) {
+      this._parentStruct[this._fieldName] = x
+    }
   }
 
   // SetInt sets v's underlying value to x
@@ -610,6 +674,12 @@ export class Value {
       )
     }
     this._value = x
+    if (this._parentVarRef) {
+      this._parentVarRef.value = x
+    }
+    if (this._parentStruct && this._fieldName) {
+      this._parentStruct[this._fieldName] = x
+    }
   }
 
   // SetUint sets v's underlying value to x
@@ -633,6 +703,12 @@ export class Value {
       )
     }
     this._value = x
+    if (this._parentVarRef) {
+      this._parentVarRef.value = x
+    }
+    if (this._parentStruct && this._fieldName) {
+      this._parentStruct[this._fieldName] = x
+    }
   }
 
   // SetBool sets v's underlying value to x
@@ -648,6 +724,12 @@ export class Value {
       )
     }
     this._value = x
+    if (this._parentVarRef) {
+      this._parentVarRef.value = x
+    }
+    if (this._parentStruct && this._fieldName) {
+      this._parentStruct[this._fieldName] = x
+    }
   }
 
   // SetFloat sets v's underlying value to x
@@ -664,6 +746,12 @@ export class Value {
       )
     }
     this._value = x
+    if (this._parentVarRef) {
+      this._parentVarRef.value = x
+    }
+    if (this._parentStruct && this._fieldName) {
+      this._parentStruct[this._fieldName] = x
+    }
   }
 
   // SetBytes sets v's underlying value to x
@@ -1885,6 +1973,12 @@ function getTypeOf(value: ReflectValue): Type {
     case 'object': {
       if (value === null) {
         return new BasicType(Interface, 'interface{}', 16)
+      }
+
+      // Check for VarRef (pointer type in GoScript)
+      if ($.isVarRef(value)) {
+        const elemType = getTypeOf(value.value as ReflectValue)
+        return new PointerType(elemType)
       }
 
       // Check for arrays

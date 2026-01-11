@@ -27,6 +27,58 @@ export type Slice<T> =
   | null
   | (T extends number ? Uint8Array : never)
 
+/**
+ * wrapSliceProxy wraps a SliceProxy in a Proxy to intercept index access
+ * and route it through the backing array.
+ */
+function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
+  const handler = {
+    get(target: any, prop: string | symbol): any {
+      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+        const index = Number(prop)
+        if (index >= 0 && index < target.__meta__.length) {
+          return target.__meta__.backing[target.__meta__.offset + index]
+        }
+        throw new Error(
+          `Slice index out of range: ${index} >= ${target.__meta__.length}`,
+        )
+      }
+
+      if (prop === 'length') {
+        return target.__meta__.length
+      }
+
+      if (prop === '__meta__') {
+        return target.__meta__
+      }
+
+      return Reflect.get(target, prop)
+    },
+
+    set(target: any, prop: string | symbol, value: any): boolean {
+      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+        const index = Number(prop)
+        if (index >= 0 && index < target.__meta__.length) {
+          target.__meta__.backing[target.__meta__.offset + index] = value
+          target[index] = value // Also update the proxy target for consistency
+          return true
+        }
+        throw new Error(
+          `Slice index out of range: ${index} >= ${target.__meta__.length}`,
+        )
+      }
+
+      if (prop === 'length' || prop === '__meta__') {
+        return false
+      }
+
+      return Reflect.set(target, prop, value)
+    },
+  }
+
+  return new Proxy(proxy, handler) as SliceProxy<T>
+}
+
 // asArray converts a slice to a JavaScript array.
 export function asArray<T>(slice: Slice<T>): T[] {
   if (slice === null || slice === undefined) {
@@ -114,52 +166,7 @@ export const makeSlice = <T>(
       capacity: actualCapacity,
     }
 
-    // Create a proper Proxy with the handler for SliceProxy behavior
-    const handler = {
-      get(target: any, prop: string | symbol): any {
-        if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-          const index = Number(prop)
-          if (index >= 0 && index < target.__meta__.length) {
-            return target.__meta__.backing[target.__meta__.offset + index]
-          }
-          throw new Error(
-            `Slice index out of range: ${index} >= ${target.__meta__.length}`,
-          )
-        }
-
-        if (prop === 'length') {
-          return target.__meta__.length
-        }
-
-        if (prop === '__meta__') {
-          return target.__meta__
-        }
-
-        return Reflect.get(target, prop)
-      },
-
-      set(target: any, prop: string | symbol, value: any): boolean {
-        if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-          const index = Number(prop)
-          if (index >= 0 && index < target.__meta__.length) {
-            target.__meta__.backing[target.__meta__.offset + index] = value
-            target[index] = value // Also update the proxy target for consistency
-            return true
-          }
-          throw new Error(
-            `Slice index out of range: ${index} >= ${target.__meta__.length}`,
-          )
-        }
-
-        if (prop === 'length' || prop === '__meta__') {
-          return false
-        }
-
-        return Reflect.set(target, prop, value)
-      },
-    }
-
-    return new Proxy(proxy, handler) as Slice<T>
+    return wrapSliceProxy(proxy) as Slice<T>
   }
 
   const actualCapacity = capacity === undefined ? length : capacity
@@ -810,7 +817,7 @@ export function append<T>(
       length: newLength,
       capacity: oldCapacity,
     }
-    return resultProxy as any
+    return wrapSliceProxy(resultProxy) as any
   }
 
   // Case 2: Reallocation is needed.
@@ -842,7 +849,7 @@ export function append<T>(
     length: newLength,
     capacity: newCapacity,
   }
-  return resultProxy as any
+  return wrapSliceProxy(resultProxy) as any
 }
 
 /**

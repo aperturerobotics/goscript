@@ -96,8 +96,7 @@ export async function main(): Promise<void> {
 	if (ok) {
 		$.println("Type assertion successful")
 		$.println("i3.MyString1():", i3!.MyString1())
-	}
-	 else {
+	} else {
 		$.println("Type assertion failed")
 	}
 }

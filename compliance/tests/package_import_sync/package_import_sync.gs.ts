@@ -17,8 +17,7 @@ export async function main(): Promise<void> {
 	if (mu!.value.TryLock()) {
 		$.println("TryLock succeeded")
 		mu!.value.Unlock()
-	}
-	 else {
+	} else {
 		$.println("TryLock failed")
 	}
 

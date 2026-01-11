@@ -5,7 +5,6 @@ import { checkValid, stateEndValue } from "./scanner.gs.js";
 import { structFields } from "./encode.gs.js";
 import { scanner } from "./scanner.gs.js";
 import { scanArrayValue, scanBeginArray, scanBeginLiteral, scanBeginObject, scanEnd, scanEndArray, scanEndObject, scanObjectKey, scanObjectValue, scanSkipSpace } from "./scanner.gs.js";
-import * as io from "@goscript/io/index.js"
 
 import * as encoding from "@goscript/encoding/index.js"
 
@@ -238,7 +237,7 @@ export class UnmarshalTypeError {
 	  new UnmarshalTypeError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  UnmarshalTypeError,
-	  {"Value": { kind: $.TypeKind.Basic, name: "string" }, "Type": "Type", "Offset": { kind: $.TypeKind.Basic, name: "number" }, "Struct": { kind: $.TypeKind.Basic, name: "string" }, "Field": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"Value": { kind: $.TypeKind.Basic, name: "string" }, "Type": "Type", "Offset": { kind: $.TypeKind.Basic, name: "int64" }, "Struct": { kind: $.TypeKind.Basic, name: "string" }, "Field": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 
@@ -249,7 +248,7 @@ export type Unmarshaler = null | {
 $.registerInterfaceType(
   'encoding/json.Unmarshaler',
   null, // Zero value for interface is null
-  [{ name: "UnmarshalJSON", args: [{ name: "", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
+  [{ name: "UnmarshalJSON", args: [{ name: "", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
 
 export class decodeState {
@@ -431,8 +430,7 @@ export class decodeState {
 		if (d.off < $.len(d.data)) {
 			d.opcode = d.scan.step!(d.scan, d.data![d.off])
 			d.off++
-		}
-		 else {
+		} else {
 			d.opcode = d.scan.eof()
 			d.off = $.len(d.data) + 1 // mark processed EOF with len+1
 		}
@@ -481,7 +479,7 @@ export class decodeState {
 						}
 						case 34: {
 							i++
-							break
+							break Switch
 							break
 						}
 					}
@@ -519,7 +517,7 @@ export class decodeState {
 							break
 						}
 						default: {
-							break
+							break Switch
 							break
 						}
 					}
@@ -541,8 +539,7 @@ export class decodeState {
 		}
 		if (i < $.len(data)) {
 			d.opcode = stateEndValue(d.scan, data![i])
-		}
-		 else {
+		} else {
 			d.opcode = 10
 		}
 		d.off = i + 1
@@ -566,8 +563,7 @@ export class decodeState {
 							return err
 						}
 					}
-				}
-				 else {
+				} else {
 					d.skip()
 				}
 				d.scanNext()
@@ -581,8 +577,7 @@ export class decodeState {
 							return err
 						}
 					}
-				}
-				 else {
+				} else {
 					d.skip()
 				}
 				d.scanNext()
@@ -701,8 +696,7 @@ export class decodeState {
 						return err
 					}
 				}
-			}
-			 else {
+			} else {
 				// Ran out of fixed array: skip.
 				{
 					let err = await d.value($.markAsStructValue(new reflect.Value({})))
@@ -735,8 +729,7 @@ export class decodeState {
 				for (; i < v.Len(); i++) {
 					v.Index(i)!.SetZero() // zero remainder of array
 				}
-			}
-			 else {
+			} else {
 				v.SetLen(i) // truncate the slice
 			}
 		}
@@ -854,13 +847,11 @@ export class decodeState {
 				let elemType = t!.Elem()
 				if (!mapElem.IsValid()) {
 					mapElem = $.markAsStructValue(reflect.New(elemType)!.Elem().clone())
-				}
-				 else {
+				} else {
 					mapElem.SetZero()
 				}
 				subv = $.markAsStructValue(mapElem.clone())
-			}
-			 else {
+			} else {
 				let f = $.mapGet(fields.byExactName, $.bytesToString(key), null)[0]
 				if (f == null) {
 					f = $.mapGet(fields.byFoldedName, $.bytesToString(foldName(key)), null)[0]
@@ -940,8 +931,7 @@ export class decodeState {
 					}
 					d.errorContext!.Struct = t
 					d.errorContext!.FieldStack = $.append(d.errorContext!.FieldStack, f!.name)
-				}
-				 else if (d.disallowUnknownFields) {
+				} else if (d.disallowUnknownFields) {
 					d.saveError(fmt.Errorf("json: unknown field %q", key))
 				}
 			}
@@ -974,8 +964,7 @@ export class decodeState {
 				}}], () => {
 					d.saveError(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal unquoted value into %v", subv.Type()))
 				})
-			}
-			 else {
+			} else {
 				{
 					let err = await d.value(subv)
 					if (err != null) {
@@ -1002,8 +991,7 @@ export class decodeState {
 						}
 					}
 					kv = $.markAsStructValue(kv.Elem().clone())
-				}
-				 else {
+				} else {
 
 					// should never occur
 					switch (kt!.Kind()) {
@@ -1170,8 +1158,7 @@ export class decodeState {
 						default: {
 							if (fromQuoted) {
 								d.saveError(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type()))
-							}
-							 else {
+							} else {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "bool"}))
 							}
 							break
@@ -1183,8 +1170,7 @@ export class decodeState {
 						case reflect.Interface: {
 							if (v.NumMethod() == 0) {
 								v.Set(reflect.ValueOf(value))
-							}
-							 else {
+							} else {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "bool"}))
 							}
 							break
@@ -1230,8 +1216,7 @@ export class decodeState {
 						case reflect.Interface: {
 							if (v.NumMethod() == 0) {
 								v.Set(reflect.ValueOf($.bytesToString(s)))
-							}
-							 else {
+							} else {
 								d.saveError(new UnmarshalTypeError({Offset: (d.readIndex() as number), Type: v.Type(), Value: "string"}))
 							}
 							break
@@ -1468,9 +1453,9 @@ export class decodeState {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.decodeState',
 	  new decodeState(),
-	  [{ name: "unmarshal", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "readIndex", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "init", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "decodeState" } }] }, { name: "saveError", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [] }, { name: "addErrorContext", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "skip", args: [], returns: [] }, { name: "scanNext", args: [], returns: [] }, { name: "scanWhile", args: [{ name: "op", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "rescanLiteral", args: [], returns: [] }, { name: "value", args: [{ name: "v", type: "Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "valueQuoted", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "array", args: [{ name: "v", type: "Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "object", args: [{ name: "v", type: "Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "convertNumber", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "literalStore", args: [{ name: "item", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "v", type: "Value" }, { name: "fromQuoted", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "valueInterface", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "arrayInterface", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "objectInterface", args: [], returns: [{ type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "literalInterface", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }],
+	  [{ name: "unmarshal", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "readIndex", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "init", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "decodeState" } }] }, { name: "saveError", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [] }, { name: "addErrorContext", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "skip", args: [], returns: [] }, { name: "scanNext", args: [], returns: [] }, { name: "scanWhile", args: [{ name: "op", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "rescanLiteral", args: [], returns: [] }, { name: "value", args: [{ name: "v", type: "Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "valueQuoted", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "array", args: [{ name: "v", type: "Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "object", args: [{ name: "v", type: "Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "convertNumber", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "literalStore", args: [{ name: "item", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "v", type: "Value" }, { name: "fromQuoted", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "valueInterface", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "arrayInterface", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "objectInterface", args: [], returns: [{ type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "literalInterface", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }],
 	  decodeState,
-	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "off": { kind: $.TypeKind.Basic, name: "number" }, "opcode": { kind: $.TypeKind.Basic, name: "number" }, "scan": "scanner", "errorContext": { kind: $.TypeKind.Pointer, elemType: "errorContext" }, "savedError": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "useNumber": { kind: $.TypeKind.Basic, name: "boolean" }, "disallowUnknownFields": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "off": { kind: $.TypeKind.Basic, name: "int" }, "opcode": { kind: $.TypeKind.Basic, name: "int" }, "scan": "scanner", "errorContext": { kind: $.TypeKind.Pointer, elemType: "errorContext" }, "savedError": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "useNumber": { kind: $.TypeKind.Basic, name: "bool" }, "disallowUnknownFields": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 
@@ -1729,8 +1714,7 @@ export function indirect(v: reflect.Value, decodingNull: boolean): [Unmarshaler,
 		if (haveAddr) {
 			v = $.markAsStructValue(v0.clone()) // restore original value after round-trip Value.Addr().Elem()
 			haveAddr = false
-		}
-		 else {
+		} else {
 			v = $.markAsStructValue(v.Elem().clone())
 		}
 	}

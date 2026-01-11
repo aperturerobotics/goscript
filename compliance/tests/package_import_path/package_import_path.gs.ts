@@ -39,8 +39,7 @@ export async function main(): Promise<void> {
 	let [matched, err] = path.Match("*.txt", "file.txt")
 	if (err != null) {
 		$.println("Match error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Match result:", matched)
 	}
 

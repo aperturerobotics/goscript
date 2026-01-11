@@ -47,7 +47,7 @@ export class key {
 	  new key(),
 	  [],
 	  key,
-	  {"start": { kind: $.TypeKind.Basic, name: "number" }, "end": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"start": { kind: $.TypeKind.Basic, name: "int" }, "end": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 
@@ -90,11 +90,9 @@ export class tree {
 			let sign = compareKey(k, x!.key)
 			if (sign < 0) {
 				;[pos, x, parent] = [x!.left, x!.left, x]
-			}
-			 else if (sign > 0) {
+			} else if (sign > 0) {
 				;[pos, x, parent] = [x!.right, x!.right, x]
-			}
-			 else {
+			} else {
 				break
 			}
 		}
@@ -129,8 +127,7 @@ export class tree {
 				if (x!.height >= 0) {
 					// still in tree
 					x = x!.next()
-				}
-				 else {
+				} else {
 					// deleted
 					x = t.nextAfter(t.locate(x!.key))
 				}
@@ -568,9 +565,9 @@ export class node {
 	static __typeInfo = $.registerStructType(
 	  'go/token.node',
 	  new node(),
-	  [{ name: "check", args: [{ name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "checkBalance", args: [], returns: [] }, { name: "next", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "setLeft", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "setRight", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "safeHeight", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "update", args: [], returns: [] }],
+	  [{ name: "check", args: [{ name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "checkBalance", args: [], returns: [] }, { name: "next", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "setLeft", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "setRight", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "safeHeight", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int32" } }] }, { name: "update", args: [], returns: [] }],
 	  node,
-	  {"parent": { kind: $.TypeKind.Pointer, elemType: "node" }, "left": { kind: $.TypeKind.Pointer, elemType: "node" }, "right": { kind: $.TypeKind.Pointer, elemType: "node" }, "file": { kind: $.TypeKind.Pointer, elemType: "File" }, "key": "key", "balance": { kind: $.TypeKind.Basic, name: "number" }, "height": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"parent": { kind: $.TypeKind.Pointer, elemType: "node" }, "left": { kind: $.TypeKind.Pointer, elemType: "node" }, "right": { kind: $.TypeKind.Pointer, elemType: "node" }, "file": { kind: $.TypeKind.Pointer, elemType: "File" }, "key": "key", "balance": { kind: $.TypeKind.Basic, name: "int32" }, "height": { kind: $.TypeKind.Basic, name: "int32" }}
 	);
 }
 

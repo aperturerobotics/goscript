@@ -35,7 +35,7 @@ export class Result {
 	  new Result(),
 	  [],
 	  Result,
-	  {"ok": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"ok": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 

@@ -2,12 +2,10 @@
 set -eo pipefail
 set -x
 
-pkgs=( "." )
-for pkg in ${pkgs[@]}; do
-    go run -v github.com/aperturerobotics/goscript/cmd/goscript \
-         compile \
-         --package $pkg
-done
+go run -v github.com/aperturerobotics/goscript/cmd/goscript \
+     compile \
+     --all-dependencies \
+     --package .
 
 # Copy for reference
 cp ./output/@goscript/example/main.gs.ts ./main.gs.ts

@@ -22,7 +22,7 @@ export type File = null | {
 $.registerInterfaceType(
   'main.File',
   null, // Zero value for interface is null
-  [{ name: "Lock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Truncate", args: [{ name: "size", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Unlock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
+  [{ name: "Lock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Truncate", args: [{ name: "size", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Unlock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
 
 export class MockFile {
@@ -145,9 +145,9 @@ export class MockFile {
 	static __typeInfo = $.registerStructType(
 	  'main.MockFile',
 	  new MockFile(),
-	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "ReadAt", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Seek", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "whence", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Lock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Unlock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Truncate", args: [{ name: "size", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
+	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "ReadAt", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Seek", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "whence", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Lock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Unlock", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Truncate", args: [{ name: "size", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  MockFile,
-	  {"filename": { kind: $.TypeKind.Basic, name: "string" }, "content": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "position": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"filename": { kind: $.TypeKind.Basic, name: "string" }, "content": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "position": { kind: $.TypeKind.Basic, name: "int64" }}
 	);
 }
 
@@ -309,16 +309,14 @@ export async function main(): Promise<void> {
 	let err = f!.Lock()
 	if (err != null) {
 		$.println("Lock error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Lock successful")
 	}
 
 	err = f!.Unlock()
 	if (err != null) {
 		$.println("Unlock error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Unlock successful")
 	}
 
@@ -328,8 +326,7 @@ export async function main(): Promise<void> {
 	[n, err] = f!.Write(data)
 	if (err != null) {
 		$.println("Write error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Wrote bytes:", n)
 	}
 
@@ -338,8 +335,7 @@ export async function main(): Promise<void> {
 	;[n, err] = f!.Read(buf)
 	if (err != null) {
 		$.println("Read error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Read bytes:", n)
 	}
 
@@ -348,8 +344,7 @@ export async function main(): Promise<void> {
 	;[n, err] = f!.ReadAt(buf2, 0)
 	if (err != null) {
 		$.println("ReadAt error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("ReadAt bytes:", n)
 	}
 
@@ -358,8 +353,7 @@ export async function main(): Promise<void> {
 	[pos, err] = f!.Seek(0, 0)
 	if (err != null) {
 		$.println("Seek error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Seek position:", pos)
 	}
 
@@ -367,8 +361,7 @@ export async function main(): Promise<void> {
 	err = f!.Truncate(5)
 	if (err != null) {
 		$.println("Truncate error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Truncate successful")
 	}
 
@@ -376,8 +369,7 @@ export async function main(): Promise<void> {
 	err = f!.Close()
 	if (err != null) {
 		$.println("Close error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Close successful")
 	}
 
@@ -390,8 +382,7 @@ export async function main(): Promise<void> {
 	err = qf!.Close()
 	if (err != null) {
 		$.println("Qualified close error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Qualified close successful")
 	}
 
@@ -400,8 +391,7 @@ export async function main(): Promise<void> {
 	[qn, err] = qf!.Write($.stringToBytes("qualified data"))
 	if (err != null) {
 		$.println("Qualified write error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Qualified wrote bytes:", qn)
 	}
 }

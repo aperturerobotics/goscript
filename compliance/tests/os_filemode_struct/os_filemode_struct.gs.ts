@@ -47,7 +47,7 @@ export class file {
 	  new file(),
 	  [],
 	  file,
-	  {"mode": { kind: $.TypeKind.Basic, name: "number" }, "name": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"mode": { kind: $.TypeKind.Basic, name: "uint32" }, "name": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

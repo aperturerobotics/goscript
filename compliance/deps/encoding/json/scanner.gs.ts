@@ -1,5 +1,4 @@
 import * as $ from "@goscript/builtin/index.js"
-import * as io from "@goscript/io/index.js"
 
 import * as strconv from "@goscript/strconv/index.js"
 
@@ -103,7 +102,7 @@ export class SyntaxError {
 	  new SyntaxError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  SyntaxError,
-	  {"msg": { kind: $.TypeKind.Basic, name: "string" }, "Offset": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"msg": { kind: $.TypeKind.Basic, name: "string" }, "Offset": { kind: $.TypeKind.Basic, name: "int64" }}
 	);
 }
 
@@ -232,8 +231,7 @@ export class scanner {
 		if (n == 0) {
 			s.step = stateEndTop
 			s.endTop = true
-		}
-		 else {
+		} else {
 			s.step = stateEndValue
 		}
 	}
@@ -250,9 +248,9 @@ export class scanner {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.scanner',
 	  new scanner(),
-	  [{ name: "reset", args: [], returns: [] }, { name: "eof", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "pushParseState", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "newParseState", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "successState", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "popParseState", args: [], returns: [] }, { name: "error", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "context", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "reset", args: [], returns: [] }, { name: "eof", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "pushParseState", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "byte" } }, { name: "newParseState", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "successState", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "popParseState", args: [], returns: [] }, { name: "error", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "byte" } }, { name: "context", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  scanner,
-	  {"step": { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "scanner" }, { kind: $.TypeKind.Basic, name: "number" }], results: [{ kind: $.TypeKind.Basic, name: "number" }] }, "endTop": { kind: $.TypeKind.Basic, name: "boolean" }, "parseState": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "bytes": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"step": { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "scanner" }, { kind: $.TypeKind.Basic, name: "byte" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] }, "endTop": { kind: $.TypeKind.Basic, name: "bool" }, "parseState": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "bytes": { kind: $.TypeKind.Basic, name: "int64" }}
 	);
 }
 

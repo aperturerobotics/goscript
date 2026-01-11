@@ -126,10 +126,6 @@ type Analysis struct {
 	// Imports stores the imports for the file
 	Imports map[string]*fileImport
 
-	// SyntheticImports stores imports that need to be written but were not in the source file.
-	// These are typically needed for promoted methods from embedded structs.
-	SyntheticImports map[string]*fileImport
-
 	// Cmap stores the comment map for the file
 	Cmap ast.CommentMap
 
@@ -169,6 +165,16 @@ type Analysis struct {
 	// MethodAsyncStatus stores the async status of all methods analyzed
 	// This is computed once during analysis and reused during code generation
 	MethodAsyncStatus map[MethodKey]bool
+
+	// ReferencedTypesPerFile tracks which named types are referenced in each file.
+	// This is used to filter synthetic imports to only include packages needed
+	// by types actually used in each specific file, not all types in the package.
+	// Key: file path, Value: set of named types referenced in that file
+	ReferencedTypesPerFile map[string]map[*types.Named]bool
+
+	// SyntheticImportsPerFile stores synthetic imports needed per file.
+	// Key: file path, Value: map of package name to import info
+	SyntheticImportsPerFile map[string]map[string]*fileImport
 }
 
 // PackageAnalysis holds cross-file analysis data for a package
@@ -205,19 +211,20 @@ func NewAnalysis(allPackages map[string]*packages.Package) *Analysis {
 	}
 
 	return &Analysis{
-		VariableUsage:        make(map[types.Object]*VariableUsageInfo),
-		Imports:              make(map[string]*fileImport),
-		SyntheticImports:     make(map[string]*fileImport),
-		FunctionData:         make(map[types.Object]*FunctionInfo),
-		NodeData:             make(map[ast.Node]*NodeInfo),
-		FuncLitData:          make(map[*ast.FuncLit]*FunctionInfo),
-		ReflectedFunctions:   make(map[ast.Node]*ReflectedFunctionInfo),
-		FunctionAssignments:  make(map[types.Object]ast.Node),
-		AsyncReturningVars:   make(map[types.Object]bool),
-		NamedBasicTypes:      make(map[types.Type]bool),
-		AllPackages:          allPackages,
-		InterfaceImplementations: make(map[InterfaceMethodKey][]ImplementationInfo),
-		MethodAsyncStatus:        make(map[MethodKey]bool),
+		VariableUsage:            make(map[types.Object]*VariableUsageInfo),
+		Imports:                  make(map[string]*fileImport),
+		FunctionData:             make(map[types.Object]*FunctionInfo),
+		NodeData:                 make(map[ast.Node]*NodeInfo),
+		FuncLitData:              make(map[*ast.FuncLit]*FunctionInfo),
+		ReflectedFunctions:       make(map[ast.Node]*ReflectedFunctionInfo),
+		FunctionAssignments:      make(map[types.Object]ast.Node),
+		AsyncReturningVars:       make(map[types.Object]bool),
+		NamedBasicTypes:          make(map[types.Type]bool),
+		AllPackages:              allPackages,
+		InterfaceImplementations:  make(map[InterfaceMethodKey][]ImplementationInfo),
+		MethodAsyncStatus:         make(map[MethodKey]bool),
+		ReferencedTypesPerFile:    make(map[string]map[*types.Named]bool),
+		SyntheticImportsPerFile:   make(map[string]map[string]*fileImport),
 	}
 }
 
@@ -492,6 +499,10 @@ type analysisVisitor struct {
 
 	// currentFuncLit tracks the *ast.FuncLit of the function literal we're currently analyzing.
 	currentFuncLit *ast.FuncLit
+
+	// currentFilePath tracks the file path of the file we're currently analyzing.
+	// This is used to track which types are referenced in each file.
+	currentFilePath string
 }
 
 // getOrCreateUsageInfo retrieves or creates the VariableUsageInfo for a given object.
@@ -524,6 +535,18 @@ func (v *analysisVisitor) Visit(node ast.Node) ast.Visitor {
 		if n.Tok == token.VAR {
 			for _, spec := range n.Specs {
 				if valueSpec, ok := spec.(*ast.ValueSpec); ok {
+					// Track type references from variable declarations for synthetic import filtering
+					if valueSpec.Type != nil {
+						if t := v.pkg.TypesInfo.TypeOf(valueSpec.Type); t != nil {
+							v.trackTypeReference(t)
+						}
+					}
+					for _, name := range valueSpec.Names {
+						if obj := v.pkg.TypesInfo.ObjectOf(name); obj != nil {
+							v.trackTypeReference(obj.Type())
+						}
+					}
+
 					// Process each declared variable (LHS)
 					for i, lhsIdent := range valueSpec.Names {
 						if lhsIdent.Name == "_" {
@@ -813,7 +836,28 @@ func (v *analysisVisitor) visitCallExpr(n *ast.CallExpr) ast.Visitor {
 	// Check for implicit address-taking in method calls with pointer receivers
 	v.checkImplicitAddressTaking(n)
 
+	// Check for address-of expressions in function arguments
+	v.checkAddressOfInArguments(n)
+
 	return v
+}
+
+// checkAddressOfInArguments detects when &variable is passed as a function argument.
+// Example: json.Unmarshal(data, &person) where person needs to be marked as NeedsVarRef
+func (v *analysisVisitor) checkAddressOfInArguments(callExpr *ast.CallExpr) {
+	for _, arg := range callExpr.Args {
+		if unaryExpr, ok := arg.(*ast.UnaryExpr); ok && unaryExpr.Op == token.AND {
+			if ident, ok := unaryExpr.X.(*ast.Ident); ok {
+				if obj := v.pkg.TypesInfo.ObjectOf(ident); obj != nil {
+					usageInfo := v.getOrCreateUsageInfo(obj)
+					usageInfo.Destinations = append(usageInfo.Destinations, AssignmentInfo{
+						Object: nil,
+						Type:   AddressOfAssignment,
+					})
+				}
+			}
+		}
+	}
 }
 
 // checkImplicitAddressTaking detects when a method call with a pointer receiver
@@ -1027,11 +1071,27 @@ func (v *analysisVisitor) visitDeclStmt(n *ast.DeclStmt) ast.Visitor {
 		// Check if we're inside a function (either FuncDecl or FuncLit)
 		isInsideFunction := v.currentFuncDecl != nil || v.currentFuncLit != nil
 
-		if isInsideFunction {
-			// Mark all specs in this declaration as being inside a function
-			for _, spec := range genDecl.Specs {
+		for _, spec := range genDecl.Specs {
+			if isInsideFunction {
+				// Mark all specs in this declaration as being inside a function
 				nodeInfo := v.analysis.ensureNodeData(spec)
 				nodeInfo.IsInsideFunction = true
+			}
+
+			// Track type references from variable declarations (e.g., var w MyWriter)
+			if valueSpec, ok := spec.(*ast.ValueSpec); ok {
+				// Track explicit type if present
+				if valueSpec.Type != nil {
+					if t := v.pkg.TypesInfo.TypeOf(valueSpec.Type); t != nil {
+						v.trackTypeReference(t)
+					}
+				}
+				// Also track types inferred from values
+				for _, name := range valueSpec.Names {
+					if obj := v.pkg.TypesInfo.ObjectOf(name); obj != nil {
+						v.trackTypeReference(obj.Type())
+					}
+				}
 			}
 		}
 	}
@@ -1060,6 +1120,9 @@ func (v *analysisVisitor) visitTypeAssertExpr(typeAssert *ast.TypeAssertExpr) as
 	if assertedType == nil {
 		return v
 	}
+
+	// Track the asserted type for synthetic import filtering
+	v.trackTypeReference(assertedType)
 
 	// Check if the asserted type is an interface
 	interfaceType, isInterface := assertedType.Underlying().(*types.Interface)
@@ -1098,10 +1161,36 @@ func (v *analysisVisitor) visitTypeAssertExpr(typeAssert *ast.TypeAssertExpr) as
 	return v
 }
 
+// trackTypeReference records that a named type is referenced in the current file.
+// This is used to filter synthetic imports to only include packages actually needed.
+func (v *analysisVisitor) trackTypeReference(t types.Type) {
+	if t == nil || v.currentFilePath == "" {
+		return
+	}
+	// Unwrap pointers
+	if ptr, ok := t.(*types.Pointer); ok {
+		t = ptr.Elem()
+	}
+	// Track named types per file
+	if named, ok := t.(*types.Named); ok {
+		if v.analysis.ReferencedTypesPerFile[v.currentFilePath] == nil {
+			v.analysis.ReferencedTypesPerFile[v.currentFilePath] = make(map[*types.Named]bool)
+		}
+		v.analysis.ReferencedTypesPerFile[v.currentFilePath][named] = true
+	}
+}
+
 // visitCompositeLit analyzes composite literals for address-of expressions
 // This is important for detecting cases like: arr := []interface{}{value1, &value2}
 // where value2 needs to be marked as NeedsVarRef due to the &value2 usage
 func (v *analysisVisitor) visitCompositeLit(compLit *ast.CompositeLit) ast.Visitor {
+	// Track the type of this composite literal for synthetic import filtering
+	if compLit.Type != nil {
+		if t := v.pkg.TypesInfo.TypeOf(compLit.Type); t != nil {
+			v.trackTypeReference(t)
+		}
+	}
+
 	// Analyze each element of the composite literal
 	for _, elt := range compLit.Elts {
 		// Handle both direct elements and key-value pairs
@@ -1261,7 +1350,11 @@ func AnalyzePackageFiles(pkg *packages.Package, allPackages map[string]*packages
 	}
 
 	// First pass: analyze all declarations and statements across all files
-	for _, file := range pkg.Syntax {
+	for i, file := range pkg.Syntax {
+		// Set the current file path for per-file type tracking
+		if i < len(pkg.CompiledGoFiles) {
+			visitor.currentFilePath = pkg.CompiledGoFiles[i]
+		}
 		ast.Walk(visitor, file)
 	}
 
@@ -1300,105 +1393,93 @@ func AnalyzePackageFiles(pkg *packages.Package, allPackages map[string]*packages
 	return analysis
 }
 
-// addImportsForPromotedMethods scans all struct types in the package for embedded fields
+// addImportsForPromotedMethods scans struct types that are actually referenced in each file
 // and adds imports for any packages referenced by the promoted methods' parameter/return types.
+// This generates per-file synthetic imports to avoid adding unused imports.
 func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
-	// Collect all package names we need to add
-	packagesToAdd := make(map[string]*types.Package)
+	// Process each file's referenced types separately
+	for filePath, referencedTypes := range a.ReferencedTypesPerFile {
+		// Collect package imports needed for this specific file
+		packagesToAdd := make(map[string]*types.Package)
 
-	// Iterate through all type definitions in the package
-	scope := pkg.Types.Scope()
-	for _, name := range scope.Names() {
-		obj := scope.Lookup(name)
-		if obj == nil {
-			continue
-		}
-
-		// Check if it's a type definition
-		typeName, ok := obj.(*types.TypeName)
-		if !ok {
-			continue
-		}
-
-		// Get the underlying type
-		namedType, ok := typeName.Type().(*types.Named)
-		if !ok {
-			continue
-		}
-
-		// Check if it's a struct
-		structType, ok := namedType.Underlying().(*types.Struct)
-		if !ok {
-			continue
-		}
-
-		// Look for embedded fields
-		for i := 0; i < structType.NumFields(); i++ {
-			field := structType.Field(i)
-			if !field.Embedded() {
+		// Only process types that are actually referenced in this file
+		// and are defined in the current package
+		for namedType := range referencedTypes {
+			// Skip types from other packages - we only need to process types defined in this package
+			if namedType.Obj().Pkg() != pkg.Types {
 				continue
 			}
 
-			// Get the type of the embedded field
-			embeddedType := field.Type()
-
-			// Handle pointer to embedded type
-			if ptr, ok := embeddedType.(*types.Pointer); ok {
-				embeddedType = ptr.Elem()
+			// Check if it's a struct
+			structType, ok := namedType.Underlying().(*types.Struct)
+			if !ok {
+				continue
 			}
 
-			// Use method set to get all promoted methods including pointer receiver methods
-			// This matches Go's behavior where embedding T promotes both T and *T methods
-			methodSetType := embeddedType
-			if _, isPtr := embeddedType.(*types.Pointer); !isPtr {
-				if _, isInterface := embeddedType.Underlying().(*types.Interface); !isInterface {
-					methodSetType = types.NewPointer(embeddedType)
-				}
-			}
-			embeddedMethodSet := types.NewMethodSet(methodSetType)
-
-			// Scan all methods in the method set
-			for j := 0; j < embeddedMethodSet.Len(); j++ {
-				selection := embeddedMethodSet.At(j)
-				method := selection.Obj()
-				sig, ok := method.Type().(*types.Signature)
-				if !ok {
+			// Look for embedded fields
+			for i := 0; i < structType.NumFields(); i++ {
+				field := structType.Field(i)
+				if !field.Embedded() {
 					continue
 				}
 
-				// Scan parameters
-				if sig.Params() != nil {
-					for k := 0; k < sig.Params().Len(); k++ {
-						param := sig.Params().At(k)
-						a.collectPackageFromType(param.Type(), pkg.Types, packagesToAdd)
-					}
+				// Get the type of the embedded field
+				embeddedType := field.Type()
+
+				// Handle pointer to embedded type
+				if ptr, ok := embeddedType.(*types.Pointer); ok {
+					embeddedType = ptr.Elem()
 				}
 
-				// Scan results
-				if sig.Results() != nil {
-					for k := 0; k < sig.Results().Len(); k++ {
-						result := sig.Results().At(k)
-						a.collectPackageFromType(result.Type(), pkg.Types, packagesToAdd)
+				// Use method set to get all promoted methods including pointer receiver methods
+				// This matches Go's behavior where embedding T promotes both T and *T methods
+				methodSetType := embeddedType
+				if _, isPtr := embeddedType.(*types.Pointer); !isPtr {
+					if _, isInterface := embeddedType.Underlying().(*types.Interface); !isInterface {
+						methodSetType = types.NewPointer(embeddedType)
+					}
+				}
+				embeddedMethodSet := types.NewMethodSet(methodSetType)
+
+				// Scan all methods in the method set
+				for j := 0; j < embeddedMethodSet.Len(); j++ {
+					selection := embeddedMethodSet.At(j)
+					method := selection.Obj()
+					sig, ok := method.Type().(*types.Signature)
+					if !ok {
+						continue
+					}
+
+					// Scan parameters
+					if sig.Params() != nil {
+						for k := 0; k < sig.Params().Len(); k++ {
+							param := sig.Params().At(k)
+							a.collectPackageFromType(param.Type(), pkg.Types, packagesToAdd)
+						}
+					}
+
+					// Scan results
+					if sig.Results() != nil {
+						for k := 0; k < sig.Results().Len(); k++ {
+							result := sig.Results().At(k)
+							a.collectPackageFromType(result.Type(), pkg.Types, packagesToAdd)
+						}
 					}
 				}
 			}
 		}
-	}
 
-	// Add collected packages to imports (both regular and synthetic)
-	// Always add to SyntheticImports - the file compiler will check if
-	// the import was already written from the AST to avoid duplicates
-	for pkgName, pkgObj := range packagesToAdd {
-		tsImportPath := "@goscript/" + pkgObj.Path()
-		fileImp := &fileImport{
-			importPath: tsImportPath,
-			importVars: make(map[string]struct{}),
-		}
-		// Add to SyntheticImports unconditionally
-		a.SyntheticImports[pkgName] = fileImp
-		// Also add to Imports if not already present
-		if _, exists := a.Imports[pkgName]; !exists {
-			a.Imports[pkgName] = fileImp
+		// Store the synthetic imports for this file
+		if len(packagesToAdd) > 0 {
+			fileImports := make(map[string]*fileImport)
+			for pkgName, pkgObj := range packagesToAdd {
+				tsImportPath := "@goscript/" + pkgObj.Path()
+				fileImports[pkgName] = &fileImport{
+					importPath: tsImportPath,
+					importVars: make(map[string]struct{}),
+				}
+			}
+			a.SyntheticImportsPerFile[filePath] = fileImports
 		}
 	}
 }

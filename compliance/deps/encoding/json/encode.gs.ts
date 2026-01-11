@@ -90,7 +90,7 @@ export type Marshaler = null | {
 $.registerInterfaceType(
   'encoding/json.Marshaler',
   null, // Zero value for interface is null
-  [{ name: "MarshalJSON", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
+  [{ name: "MarshalJSON", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
 
 export class MarshalerError {
@@ -300,7 +300,7 @@ export class encOpts {
 	  new encOpts(),
 	  [],
 	  encOpts,
-	  {"quoted": { kind: $.TypeKind.Basic, name: "boolean" }, "escapeHTML": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"quoted": { kind: $.TypeKind.Basic, name: "bool" }, "escapeHTML": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 
@@ -367,8 +367,7 @@ export class encodeState {
 						let { value: je, ok: ok } = $.typeAssert<jsonError>(r, 'encoding/json.jsonError')
 						if (ok) {
 							err = je.error
-						}
-						 else {
+						} else {
 							$.panic(r)
 						}
 					}
@@ -503,7 +502,7 @@ export class encodeState {
 	  new encodeState(),
 	  [{ name: "marshal", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "opts", type: "encOpts" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "error", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [] }, { name: "reflectValue", args: [{ name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
 	  encodeState,
-	  {"Buffer": "Buffer", "ptrLevel": { kind: $.TypeKind.Basic, name: "number" }, "ptrSeen": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Struct, fields: {}, methods: [] } }}
+	  {"Buffer": "Buffer", "ptrLevel": { kind: $.TypeKind.Basic, name: "uint" }, "ptrSeen": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Struct, fields: {}, methods: [] } }}
 	);
 }
 
@@ -547,7 +546,7 @@ export type isZeroer = null | {
 $.registerInterfaceType(
   'encoding/json.isZeroer',
   null, // Zero value for interface is null
-  [{ name: "IsZero", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }]
+  [{ name: "IsZero", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }]
 );
 
 export class jsonError {
@@ -725,8 +724,7 @@ export class condAddrEncoder {
 		const ce = this
 		if (v.CanAddr()) {
 			ce.canAddrEnc!(e, v, opts)
-		}
-		 else {
+		} else {
 			ce.elseEnc!(e, v, opts)
 		}
 	}
@@ -886,7 +884,7 @@ export class field {
 	  new field(),
 	  [],
 	  field,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "nameBytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "nameNonEsc": { kind: $.TypeKind.Basic, name: "string" }, "nameEscHTML": { kind: $.TypeKind.Basic, name: "string" }, "tag": { kind: $.TypeKind.Basic, name: "boolean" }, "index": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "typ": "Type", "omitEmpty": { kind: $.TypeKind.Basic, name: "boolean" }, "omitZero": { kind: $.TypeKind.Basic, name: "boolean" }, "isZero": { kind: $.TypeKind.Function, params: ["Value"], results: [{ kind: $.TypeKind.Basic, name: "boolean" }] }, "quoted": { kind: $.TypeKind.Basic, name: "boolean" }, "encoder": "encoderFunc"}
+	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "nameBytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "nameNonEsc": { kind: $.TypeKind.Basic, name: "string" }, "nameEscHTML": { kind: $.TypeKind.Basic, name: "string" }, "tag": { kind: $.TypeKind.Basic, name: "bool" }, "index": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "typ": "Type", "omitEmpty": { kind: $.TypeKind.Basic, name: "bool" }, "omitZero": { kind: $.TypeKind.Basic, name: "bool" }, "isZero": { kind: $.TypeKind.Function, params: ["Value"], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }, "quoted": { kind: $.TypeKind.Basic, name: "bool" }, "encoder": "encoderFunc"}
 	);
 }
 
@@ -1219,7 +1217,7 @@ export class structEncoder {
 					{
 						if (fv.Kind() == reflect.Ptr) {
 							if (fv.IsNil()) {
-								continue
+								continue FieldLoop
 							}
 							fv = $.markAsStructValue(fv.Elem().clone())
 						}
@@ -1234,8 +1232,7 @@ export class structEncoder {
 				next = 44
 				if (opts.escapeHTML) {
 					e!.WriteString(f!.nameEscHTML)
-				}
-				 else {
+				} else {
 					e!.WriteString(f!.nameNonEsc)
 				}
 				opts.quoted = f!.quoted
@@ -1244,8 +1241,7 @@ export class structEncoder {
 		}
 		if (next == 123) {
 			e!.WriteString("{}")
-		}
-		 else {
+		} else {
 			e!.WriteByte(125)
 		}
 	}
@@ -1750,8 +1746,7 @@ export function stringEncoder(e: encodeState | null, v: reflect.Value, opts: enc
 	if (opts.quoted) {
 		let b = appendString(null, v.String(), opts.escapeHTML)
 		e!.Write(appendString(e!.AvailableBuffer(), b, false)) // no need to escape again since it is already escaped
-	}
-	 else {
+	} else {
 		e!.Write(appendString(e!.AvailableBuffer(), v.String(), opts.escapeHTML))
 	}
 }
@@ -2271,8 +2266,7 @@ export async function typeFields(t: null | reflect.Type): Promise<structFields> 
 							continue
 						}
 
-					}
-					 else if (!sf.IsExported()) {
+					} else if (!sf.IsExported()) {
 						// Ignore unexported non-embedded fields.
 						continue
 					}

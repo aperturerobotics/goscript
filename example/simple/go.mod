@@ -5,7 +5,7 @@ go 1.25.3
 replace github.com/aperturerobotics/goscript => ../../
 
 require (
-	github.com/aperturerobotics/goscript v0.0.59-0.20251102214329-35e6525849ad
+	github.com/aperturerobotics/goscript v0.0.62-0.20260111070024-969f9456831b
 	github.com/sirupsen/logrus v1.9.3
 )
 

@@ -47,7 +47,7 @@ export class Message {
 	  new Message(),
 	  [],
 	  Message,
-	  {"priority": { kind: $.TypeKind.Basic, name: "number" }, "text": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"priority": { kind: $.TypeKind.Basic, name: "int" }, "text": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

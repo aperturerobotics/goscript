@@ -37,7 +37,7 @@ export class Simple {
 	  new Simple(),
 	  [],
 	  Simple,
-	  {"X": { type: { kind: $.TypeKind.Basic, name: "number" }, tag: "json:\"x\"" }}
+	  {"X": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"x\"" }}
 	);
 }
 
@@ -46,8 +46,7 @@ export async function main(): Promise<void> {
 	let [b, err] = await json.Marshal(s)
 	if (err != null) {
 		$.println("Error:", err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Result:", $.bytesToString(b))
 	}
 }

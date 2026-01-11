@@ -46,7 +46,7 @@ export class Employee {
 	  new Employee(),
 	  [],
 	  Employee,
-	  {"id": { kind: $.TypeKind.Basic, name: "number" }, "person": { kind: $.TypeKind.Pointer, elemType: "Person" }}
+	  {"id": { kind: $.TypeKind.Basic, name: "int" }, "person": { kind: $.TypeKind.Pointer, elemType: "Person" }}
 	);
 }
 
@@ -115,7 +115,7 @@ export class Node {
 	  new Node(),
 	  [],
 	  Node,
-	  {"value": { kind: $.TypeKind.Basic, name: "number" }, "next": { kind: $.TypeKind.Pointer, elemType: "Node" }, "parent": { kind: $.TypeKind.Pointer, elemType: "Node" }, "children": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "Node" } }}
+	  {"value": { kind: $.TypeKind.Basic, name: "int" }, "next": { kind: $.TypeKind.Pointer, elemType: "Node" }, "parent": { kind: $.TypeKind.Pointer, elemType: "Node" }, "children": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "Node" } }}
 	);
 }
 

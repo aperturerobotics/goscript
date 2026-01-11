@@ -10,8 +10,7 @@ export async function main(): Promise<void> {
 		let { ok: ok } = $.typeAssert<string>(a, {kind: $.TypeKind.Basic, name: 'string'})
 		if (ok) {
 			$.println("Expected: string")
-		}
-		 else {
+		} else {
 			$.println("Not Expected: should be a string")
 		}
 	}
@@ -65,8 +64,7 @@ export async function main(): Promise<void> {
 					let { value: x, ok: ok } = $.typeAssert<string>(_temp_x.Key, {kind: $.TypeKind.Basic, name: 'string'})
 					if (ok) {
 						$.println("got string:", x)
-					}
-					 else {
+					} else {
 						$.println("fail: should be string")
 					}
 				}

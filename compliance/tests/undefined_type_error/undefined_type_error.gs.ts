@@ -144,7 +144,7 @@ export class formatter {
 	  new formatter(),
 	  [],
 	  formatter,
-	  {"wid": { kind: $.TypeKind.Basic, name: "number" }, "prec": { kind: $.TypeKind.Basic, name: "number" }, "widPresent": { kind: $.TypeKind.Basic, name: "boolean" }, "precPresent": { kind: $.TypeKind.Basic, name: "boolean" }, "minus": { kind: $.TypeKind.Basic, name: "boolean" }, "plus": { kind: $.TypeKind.Basic, name: "boolean" }, "sharp": { kind: $.TypeKind.Basic, name: "boolean" }, "space": { kind: $.TypeKind.Basic, name: "boolean" }, "zero": { kind: $.TypeKind.Basic, name: "boolean" }, "plusV": { kind: $.TypeKind.Basic, name: "boolean" }, "sharpV": { kind: $.TypeKind.Basic, name: "boolean" }}
+	  {"wid": { kind: $.TypeKind.Basic, name: "int" }, "prec": { kind: $.TypeKind.Basic, name: "int" }, "widPresent": { kind: $.TypeKind.Basic, name: "bool" }, "precPresent": { kind: $.TypeKind.Basic, name: "bool" }, "minus": { kind: $.TypeKind.Basic, name: "bool" }, "plus": { kind: $.TypeKind.Basic, name: "bool" }, "sharp": { kind: $.TypeKind.Basic, name: "bool" }, "space": { kind: $.TypeKind.Basic, name: "bool" }, "zero": { kind: $.TypeKind.Basic, name: "bool" }, "plusV": { kind: $.TypeKind.Basic, name: "bool" }, "sharpV": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 
@@ -217,9 +217,9 @@ export class printer {
 	static __typeInfo = $.registerStructType(
 	  'main.printer',
 	  new printer(),
-	  [{ name: "init", args: [], returns: [] }, { name: "format", args: [{ name: "verb", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }],
+	  [{ name: "init", args: [], returns: [] }, { name: "format", args: [{ name: "verb", type: { kind: $.TypeKind.Basic, name: "rune" } }], returns: [] }],
 	  printer,
-	  {"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } }, "arg": { kind: $.TypeKind.Interface, methods: [] }, "fmt": "formatter"}
+	  {"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "arg": { kind: $.TypeKind.Interface, methods: [] }, "fmt": "formatter"}
 	);
 }
 

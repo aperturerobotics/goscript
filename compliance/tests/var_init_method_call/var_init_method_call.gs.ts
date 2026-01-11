@@ -38,9 +38,9 @@ export class T {
 	static __typeInfo = $.registerStructType(
 	  'main.T',
 	  new T(),
-	  [{ name: "WithDelta", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "T" } }] }],
+	  [{ name: "WithDelta", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "T" } }] }],
 	  T,
-	  {"val": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"val": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

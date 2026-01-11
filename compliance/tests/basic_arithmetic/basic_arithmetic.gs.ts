@@ -8,7 +8,7 @@ export async function main(): Promise<void> {
 	let add = 2 + 3
 	let sub = 10 - 4
 	let mul = 6 * 7
-	let div = 20 / 5
+	let div = Math.trunc(20 / 5)
 	let mod = 17 % 3
 	$.println("Addition: Expected: 5, Actual:", add)
 	$.println("Subtraction: Expected: 6, Actual:", sub)

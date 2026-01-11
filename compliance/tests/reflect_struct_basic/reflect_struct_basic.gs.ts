@@ -49,7 +49,7 @@ export class Person {
 	  new Person(),
 	  [],
 	  Person,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

@@ -13,8 +13,7 @@ export async function main(): Promise<void> {
 	let [b1, err1] = await json.Marshal(s)
 	if (err1 != null) {
 		fmt.Println("String marshal error:", err1)
-	}
-	 else {
+	} else {
 		fmt.Printf("String marshal: %q\n", $.bytesToString(b1))
 	}
 
@@ -22,8 +21,7 @@ export async function main(): Promise<void> {
 	let [b2, err2] = await json.Marshal(n)
 	if (err2 != null) {
 		fmt.Println("Int marshal error:", err2)
-	}
-	 else {
+	} else {
 		fmt.Printf("Int marshal: %q\n", $.bytesToString(b2))
 	}
 }

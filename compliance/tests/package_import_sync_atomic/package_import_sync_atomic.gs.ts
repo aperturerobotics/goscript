@@ -52,8 +52,8 @@ export async function main(): Promise<void> {
 
 	// Test atomic.Pointer
 	let ptr: $.VarRef<atomic.Pointer<string>> = $.varRef(new atomic.Pointer<string>())
-	let str1 = "hello"
-	let str2 = "world"
+	let str1 = $.varRef("hello")
+	let str2 = $.varRef("world")
 
 	ptr!.value.Store(str1)
 	let loaded = ptr!.value.Load()

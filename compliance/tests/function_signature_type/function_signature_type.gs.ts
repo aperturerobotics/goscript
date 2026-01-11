@@ -98,8 +98,7 @@ export async function main(): Promise<void> {
 	$.println("fn1 result 1: ", res1, " ")
 	if (err1 != null) {
 		$.println(err1!.Error())
-	}
-	 else {
+	} else {
 		$.println("nil")
 	}
 
@@ -107,8 +106,7 @@ export async function main(): Promise<void> {
 	$.println("fn1 result 2: ", res1_2, " ")
 	if (err1_2 != null) {
 		$.println(err1_2!.Error())
-	}
-	 else {
+	} else {
 		$.println("nil")
 	}
 

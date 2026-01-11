@@ -10,7 +10,7 @@ export type MyInterface = null | {
 $.registerInterfaceType(
   'main.MyInterface',
   null, // Zero value for interface is null
-  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
+  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export type MyOtherInterface = null | {
@@ -20,7 +20,7 @@ export type MyOtherInterface = null | {
 $.registerInterfaceType(
   'main.MyOtherInterface',
   null, // Zero value for interface is null
-  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }]
+  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export class MyStruct {
@@ -58,9 +58,9 @@ export class MyStruct {
 	static __typeInfo = $.registerStructType(
 	  'main.MyStruct',
 	  new MyStruct(),
-	  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  MyStruct,
-	  {"Value": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"Value": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 
@@ -72,8 +72,7 @@ export async function main(): Promise<void> {
 	let { ok: ok } = $.typeAssert<MyOtherInterface>(i, 'main.MyOtherInterface')
 	if (ok) {
 		$.println("Type assertion successful")
-	}
-	 else {
+	} else {
 		$.println("Type assertion failed")
 	}
 }

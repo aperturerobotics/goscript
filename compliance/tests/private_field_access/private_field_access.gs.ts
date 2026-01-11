@@ -45,7 +45,7 @@ export class MyStruct {
 	  new MyStruct(),
 	  [],
 	  MyStruct,
-	  {"publicField": { kind: $.TypeKind.Basic, name: "string" }, "privateField": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"publicField": { kind: $.TypeKind.Basic, name: "string" }, "privateField": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

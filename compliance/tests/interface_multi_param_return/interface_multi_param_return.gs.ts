@@ -10,7 +10,7 @@ export type MultiParamReturner = null | {
 $.registerInterfaceType(
   'main.MultiParamReturner',
   null, // Zero value for interface is null
-  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
+  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
 
 export class MyProcessor {
@@ -41,7 +41,7 @@ export class MyProcessor {
 	static __typeInfo = $.registerStructType(
 	  'main.MyProcessor',
 	  new MyProcessor(),
-	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
+	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  MyProcessor,
 	  {}
 	);
@@ -55,8 +55,7 @@ export async function main(): Promise<void> {
 
 	if (success) {
 		$.println("Main: Success reported")
-	}
-	 else {
+	} else {
 		$.println("Main: Failure reported")
 	}
 
@@ -64,8 +63,7 @@ export async function main(): Promise<void> {
 	;[success] = processor!.Process(data, 5, "unused")
 	if (success) {
 		$.println("Main: Success reported")
-	}
-	 else {
+	} else {
 		$.println("Main: Failure reported")
 	}
 }

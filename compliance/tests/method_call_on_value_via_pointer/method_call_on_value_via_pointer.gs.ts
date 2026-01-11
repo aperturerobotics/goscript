@@ -39,9 +39,9 @@ export class MyStruct {
 	static __typeInfo = $.registerStructType(
 	  'main.MyStruct',
 	  new MyStruct(),
-	  [{ name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

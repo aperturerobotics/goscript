@@ -2,7 +2,6 @@ import * as $ from "@goscript/builtin/index.js"
 import { freeScanner, newScanner } from "./scanner.gs.js";
 import { hex } from "./encode.gs.js";
 import { scanContinue, scanEndArray, scanEndObject, scanError, scanSkipSpace } from "./scanner.gs.js";
-import * as io from "@goscript/io/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
@@ -200,8 +199,7 @@ export function appendIndent(dst: $.Bytes, src: $.Bytes, prefix: string, indent:
 					if (needIndent) {
 						// suppress indent in empty object/array
 						needIndent = false
-					}
-					 else {
+					} else {
 						depth--
 						dst = appendNewline(dst, prefix, indent, depth)
 					}

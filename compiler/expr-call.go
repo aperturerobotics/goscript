@@ -223,8 +223,8 @@ func (c *GoToTSCompiler) writeArgumentWithTypeHandling(arg ast.Expr, funcSig *ty
 	return nil
 }
 
-// resolveImportAlias returns the import alias for a given package
-// This is the single source of truth for import alias resolution
+// resolveImportAlias returns the import alias for a given package.
+// This is the single source of truth for import alias resolution.
 func (c *GoToTSCompiler) resolveImportAlias(pkg *types.Package) (alias string, found bool) {
 	if c.analysis == nil || pkg == nil {
 		return "", false
@@ -232,9 +232,16 @@ func (c *GoToTSCompiler) resolveImportAlias(pkg *types.Package) (alias string, f
 
 	pkgName := pkg.Name()
 
-	// Try to match by the actual package name
+	// Try to match by the actual package name in regular imports
 	if _, exists := c.analysis.Imports[pkgName]; exists {
 		return pkgName, true
+	}
+
+	// Also check synthetic imports for the current file
+	if syntheticImports := c.analysis.SyntheticImportsPerFile[c.currentFilePath]; syntheticImports != nil {
+		if _, exists := syntheticImports[pkgName]; exists {
+			return pkgName, true
+		}
 	}
 
 	return "", false

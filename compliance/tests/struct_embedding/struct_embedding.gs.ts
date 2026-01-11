@@ -142,7 +142,7 @@ export class Person {
 	  new Person(),
 	  [{ name: "Greet", args: [], returns: [] }],
 	  Person,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 
@@ -206,7 +206,7 @@ export class Employee {
 	  new Employee(),
 	  [],
 	  Employee,
-	  {"Person": "Person", "ID": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"Person": "Person", "ID": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 
@@ -319,7 +319,7 @@ export class Manager {
 	  new Manager(),
 	  [],
 	  Manager,
-	  {"Person": "Person", "Address": "Address", "Contact": "Contact", "Level": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"Person": "Person", "Address": "Address", "Contact": "Contact", "Level": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

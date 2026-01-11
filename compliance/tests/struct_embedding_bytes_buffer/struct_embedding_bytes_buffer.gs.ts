@@ -156,7 +156,7 @@ export class MyWriter {
 	  new MyWriter(),
 	  [],
 	  MyWriter,
-	  {"Buffer": "Buffer", "count": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"Buffer": "Buffer", "count": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

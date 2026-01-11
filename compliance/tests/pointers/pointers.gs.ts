@@ -35,7 +35,7 @@ export class MyStruct {
 	  new MyStruct(),
 	  [],
 	  MyStruct,
-	  {"Val": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"Val": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

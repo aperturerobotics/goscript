@@ -35,8 +35,7 @@ export async function main(): Promise<void> {
 
 	if (err != null) {
 		$.println("Error: " + err!.Error())
-	}
-	 else {
+	} else {
 		$.println("Success!")
 	}
 }

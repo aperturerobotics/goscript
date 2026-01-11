@@ -18,8 +18,7 @@ export function testVariadicInterface(name: string, ...values: any[]): void {
 			// but we can at least check they're passed correctly
 			if (v != null) {
 				$.println("Value", i, "is not nil")
-			}
-			 else {
+			} else {
 				$.println("Value", i, "is nil")
 			}
 		}

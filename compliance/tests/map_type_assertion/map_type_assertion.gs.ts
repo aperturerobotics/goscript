@@ -10,8 +10,7 @@ export async function main(): Promise<void> {
 	let { value: m, ok: ok } = $.typeAssert<Map<string, number> | null>(i, {kind: $.TypeKind.Map, keyType: {kind: $.TypeKind.Basic, name: 'string'}, elemType: {kind: $.TypeKind.Basic, name: 'number'}})
 	if (ok) {
 		$.println("Age:", $.mapGet(m, "age", 0)[0])
-	}
-	 else {
+	} else {
 		$.println("Type assertion failed")
 	}
 
@@ -27,8 +26,7 @@ export async function main(): Promise<void> {
 		// accessing n["key"] might panic if n is nil.
 		// For safety and clarity, we'll just print a generic message if it passes unexpectedly.
 		$.println("Unexpected success for map[string]string assertion")
-	}
-	 else {
+	} else {
 		$.println("Second type assertion (map[string]string) failed as expected")
 	}
 
@@ -38,8 +36,7 @@ export async function main(): Promise<void> {
 	if (ok3) {
 		// Similar to the above, this block should not be reached.
 		$.println("Unexpected success for map[int]int assertion")
-	}
-	 else {
+	} else {
 		$.println("Third type assertion (map[int]int) failed as expected")
 	}
 }

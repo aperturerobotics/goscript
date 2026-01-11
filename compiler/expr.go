@@ -472,6 +472,26 @@ func (c *GoToTSCompiler) WriteBinaryExpr(exp *ast.BinaryExpr) error {
 		}
 	}
 
+	// Check if this is integer division (Go's / operator truncates for integers)
+	isIntegerDivision := false
+	if exp.Op == token.QUO && c.pkg != nil && c.pkg.TypesInfo != nil {
+		leftType := c.pkg.TypesInfo.TypeOf(exp.X)
+		rightType := c.pkg.TypesInfo.TypeOf(exp.Y)
+		if leftType != nil && rightType != nil {
+			leftBasic, leftIsBasic := leftType.Underlying().(*types.Basic)
+			rightBasic, rightIsBasic := rightType.Underlying().(*types.Basic)
+			if leftIsBasic && rightIsBasic {
+				// Check if both are integer types (not floating point)
+				isIntegerDivision = (leftBasic.Info()&types.IsInteger != 0) && (rightBasic.Info()&types.IsInteger != 0)
+			}
+		}
+	}
+
+	if isIntegerDivision {
+		// Wrap integer division in Math.trunc() to match Go's integer division behavior
+		c.tsw.WriteLiterally("Math.trunc(")
+	}
+
 	if needsNumberCast {
 		c.tsw.WriteLiterally("Number(")
 	}
@@ -493,6 +513,10 @@ func (c *GoToTSCompiler) WriteBinaryExpr(exp *ast.BinaryExpr) error {
 
 	if err := c.WriteValueExpr(exp.Y); err != nil {
 		return fmt.Errorf("failed to write binary expression right operand: %w", err)
+	}
+
+	if isIntegerDivision {
+		c.tsw.WriteLiterally(")") // Close Math.trunc()
 	}
 
 	if isBitwise {

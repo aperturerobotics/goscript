@@ -45,7 +45,7 @@ export class Point {
 	  new Point(),
 	  [],
 	  Point,
-	  {"X": { kind: $.TypeKind.Basic, name: "number" }, "Y": { kind: $.TypeKind.Basic, name: "number" }}
+	  {"X": { kind: $.TypeKind.Basic, name: "int" }, "Y": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

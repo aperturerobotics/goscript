@@ -1,5 +1,7 @@
 package main
 
+import "encoding/json"
+
 // MyStruct demonstrates a simple struct with public and private fields.
 // It will be converted into a TypeScript class by goscript.
 type MyStruct struct {
@@ -183,4 +185,30 @@ func main() {
 	}
 	sum = add(5, 7)
 	println("Function literal result:", sum)
+
+	// JSON encoding/decoding
+	println("\nJSON encoding/decoding:")
+	type Person struct {
+		Name string `json:"name"`
+		Age  int    `json:"age"`
+	}
+
+	// Marshal struct to JSON
+	person := Person{Name: "Alice", Age: 30}
+	jsonData, err := json.Marshal(person)
+	if err != nil {
+		println("Marshal error:", err.Error())
+	} else {
+		println("Marshaled JSON:", string(jsonData))
+	}
+
+	// Unmarshal JSON to struct
+	jsonStr := `{"name":"Bob","age":25}`
+	var person2 Person
+	err = json.Unmarshal([]byte(jsonStr), &person2)
+	if err != nil {
+		println("Unmarshal error:", err.Error())
+	} else {
+		println("Unmarshaled:", person2.Name, person2.Age)
+	}
 }

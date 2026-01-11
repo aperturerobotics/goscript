@@ -15,8 +15,7 @@ export function processValues(input: number): [number, string, boolean] {
 		if (input > 5) {
 			text = "greater than five"
 			ok = true
-		}
-		 else {
+		} else {
 
 			// ok remains false (its zero value)
 			text = "five or less"
@@ -56,13 +55,11 @@ export async function main(): Promise<void> {
 			if (val == 1) {
 				resInt = 100
 
-			}
-			 else if (val == 2) {
+			} else if (val == 2) {
 				resInt = 200
 				resStr = "set string"
 
-			}
-			 else {
+			} else {
 
 			}
 			// all are unassigned, should be zero values
@@ -86,13 +83,11 @@ export async function main(): Promise<void> {
 			// resBool is not assigned
 			if (val == 1) {
 				resInt = 100
-			}
-			 else if (val == 2) {
+			} else if (val == 2) {
 				resInt = 200
 				resStr = "set string for val 2"
 
-			}
-			 else {
+			} else {
 
 			}
 			// all are unassigned
@@ -112,12 +107,10 @@ export async function main(): Promise<void> {
 		{
 			if (val == 1) {
 				resInt = 100
-			}
-			 else if (val == 2) {
+			} else if (val == 2) {
 				resInt = 200
 				resStr = "set string for val 2"
-			}
-			 else {
+			} else {
 
 			}
 			// all are unassigned here, so will take zero values

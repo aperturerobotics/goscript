@@ -13,7 +13,7 @@ export async function main(): Promise<void> {
 	$.println(b) // Expected output: 8
 
 	let c: number = 16
-	c /= 4
+	c = Math.trunc(c / 4)
 	$.println(c) // Expected output: 4
 
 	let d: number = 3
