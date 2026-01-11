@@ -264,10 +264,10 @@ metadataPackages := []string{
 
 ### Compliance Tests
 
-Create compliance tests in `compliance/tests/package_import_{package}/`:
+Create compliance tests in `tests/tests/package_import_{package}/`:
 
 ```
-compliance/tests/package_import_{package}/
+tests/tests/package_import_{package}/
 ├── package_import_{package}.go    # Go test code
 ├── expected.log                   # Expected output
 ├── index.ts                       # Empty file

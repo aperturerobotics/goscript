@@ -69,7 +69,7 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
             // Go: for _, v := range myString { ... } // iterating runes
             // TS: for (let v of $.rangeString(myString)) { ... }
             ```
-        *   **Divergence:** This translation *intentionally diverges* from Go's exact variable reuse semantic. By creating a new binding per iteration (`let`), the generated TypeScript code avoids the common Go pitfall where closures accidentally capture the final loop variable value. This results in code that is often more correct and aligns better with JavaScript/TypeScript developers' expectations. The compliance test `compliance/tests/for_range/` demonstrates this behavior.
+        *   **Divergence:** This translation *intentionally diverges* from Go's exact variable reuse semantic. By creating a new binding per iteration (`let`), the generated TypeScript code avoids the common Go pitfall where closures accidentally capture the final loop variable value. This results in code that is often more correct and aligns better with JavaScript/TypeScript developers' expectations. The compliance test `tests/tests/for_range/` demonstrates this behavior.
 *   **`defer`:** Translated using a `try...finally` block and a helper stack/array managed by the runtime (`$.defer`). See `DESIGN_DEFER.md` (TODO: Create this file).
 *   **`go`:** Translated using asynchronous functions (`async`/`await`) and potentially runtime helpers (`$.go`). See `DESIGN_CONCURRENCY.md` (TODO: Create this file).
 *   **`select`:** Translated using runtime helpers, likely involving `Promise.race` or similar mechanisms. See `DESIGN_CONCURRENCY.md` (TODO: Create this file).
@@ -187,7 +187,7 @@ After reviewing the code and tests, some important implementation considerations
    * **Pointer Types:** Go pointer types are mapped to potentially nullable `VarRef` types in TypeScript. See the "Type Mapping" section for details.
    * **Multi-level Pointers:** A variable (which can itself be a pointer) becomes a variable reference if its own address is taken.
      ```go
-     // Go (Example from compliance/tests/varRef/varRef.go)
+     // Go (Example from tests/tests/varRef/varRef.go)
      var x int = 10      // x is a variable reference because p1 takes its address
      var p1 *int = &x    // p1 is a variable reference because p2 takes its address
      var p2 **int = &p1  // p2 is a variable reference because p3 takes its address
@@ -317,7 +317,7 @@ After reviewing the code and tests, some important implementation considerations
     -   **Comma-Ok Assertion (`v, ok := i.(T)`):** This form checks if the assertion holds and returns the asserted value (or zero value) and a boolean status. Handled in assignment logic.
         -   **Interface-to-Concrete Example:**
             ```go
-            // Go code (from compliance/tests/interface_type_assertion)
+            // Go code (from tests/tests/interface_type_assertion)
             var i MyInterface
             s := MyStruct{Value: 10}
             i = s
@@ -340,7 +340,7 @@ After reviewing the code and tests, some important implementation considerations
             ```
         -   **Interface-to-Interface Example:**
             ```go
-            // Go code (from compliance/tests/embedded_interface_assertion)
+            // Go code (from tests/tests/embedded_interface_assertion)
             var rwc ReadCloser
             s := MyStruct{} // MyStruct implements ReadCloser
             rwc = s
@@ -626,7 +626,7 @@ Go operators are generally mapped directly to their TypeScript equivalents:
     - Dereferencing a pointer to a struct depends on the context (see `design/VAR_REFS.md`).
     - **Multi-level Dereferencing:** Involves chaining `.value` accesses, corresponding to each level of variable reference for the intermediate pointers.
       ```go
-      // Go (from compliance/tests/varRef/varRef.go)
+      // Go (from tests/tests/varRef/varRef.go)
       // var x int = 10; var p1 *int = &x; var p2 **int = &p1; var p3 ***int = &p2;
       // x is $.VarRef<number>
       // p1 is $.VarRef<$.VarRef<number> | null>

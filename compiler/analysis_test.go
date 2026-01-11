@@ -12,7 +12,7 @@ import (
 )
 
 // TestAnalysisVarRefLogic verifies that the analysis correctly identifies
-// which variables need variable references based on actual compliance test cases
+// which variables need variable references based on actual tests test cases
 func TestAnalysisVarRefLogic(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -235,8 +235,8 @@ func main() {
 
 // TestWrapperTypeDetection verifies that the analysis correctly identifies wrapper types
 func TestWrapperTypeDetection(t *testing.T) {
-	// Use the actual compliance test case
-	testPath := "../compliance/tests/wrapper_type_args"
+	// Use the actual tests test case
+	testPath := "../tests/tests/wrapper_type_args"
 
 	// Load the package using the packages config like the main compiler does
 	cfg := &packages.Config{

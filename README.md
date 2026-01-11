@@ -49,7 +49,7 @@ Go has powerful concurrency support and an excellent standard library. GoScript 
 - No pointer arithmetic (`uintptr`) or `unsafe` package
 - No complex numbers
 
-📖 **Learn more:** [Design document](./design/DESIGN.md) | [Architecture explainer](./docs/explainer.md) | [Compliance tests](./compliance/COMPLIANCE.md)
+📖 **Learn more:** [Design document](./design/DESIGN.md) | [Architecture explainer](./docs/explainer.md) | [Compliance tests](./tests/README.md)
 
 🐛 **Found an issue?** Please [open an issue](https://github.com/aperturerobotics/goscript/issues).
 
@@ -334,7 +334,7 @@ async function handleMessages() {
 ## 🤝 How You Can Help
 
 - Try GoScript on your code and [report issues](https://github.com/aperturerobotics/goscript/issues)
-- Check the [compliance tests](./compliance/COMPLIANCE.md) for current progress
+- Check the [compliance tests](./tests/README.md) for current progress
 - Contribute test cases for edge cases you discover
 
 ## License

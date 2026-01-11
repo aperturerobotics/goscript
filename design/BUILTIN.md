@@ -326,10 +326,10 @@ var mu mysync.Mutex
 
 ### Compliance Tests
 
-Each builtin package should have compliance tests in `compliance/tests/package_import_{package}/`:
+Each builtin package should have compliance tests in `tests/tests/package_import_{package}/`:
 
 ```
-compliance/tests/package_import_sync/
+tests/tests/package_import_sync/
 ├── package_import_sync.go    # Go test code
 ├── expected.log              # Expected output
 └── package_import_sync.gs.ts # Generated TypeScript (auto-generated)

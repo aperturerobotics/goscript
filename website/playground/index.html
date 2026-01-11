@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground - GoScript</title>
+    <meta
+      name="description"
+      content="Interactive GoScript playground - compile Go to TypeScript and run it in your browser."
+    />
+    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔄</text></svg>"
+    />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">
+            <a
+              href="../"
+              style="display: flex; align-items: center; gap: 0.75rem"
+            >
+              <svg
+                class="logo-icon"
+                viewBox="0 0 100 100"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M50 5 L95 25 L95 75 L50 95 L5 75 L5 25 Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                />
+                <text
+                  x="50"
+                  y="65"
+                  font-size="40"
+                  text-anchor="middle"
+                  fill="currentColor"
+                  font-family="sans-serif"
+                  font-weight="bold"
+                >
+                  GS
+                </text>
+              </svg>
+              <span>GoScript</span>
+            </a>
+            <span
+              class="tagline"
+              style="
+                margin-left: 1rem;
+                padding-left: 1rem;
+                border-left: 1px solid var(--color-border);
+              "
+              >Playground</span
+            >
+          </div>
+          <nav class="nav">
+            <a href="../" class="nav-link bracket">Home</a>
+            <a href="../tests/" class="nav-link bracket">Tests</a>
+            <a
+              href="https://github.com/aperturerobotics/goscript"
+              class="nav-link bracket"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <div class="toolbar">
+        <select id="example-select" class="select-input">
+          <option value="">Load Example...</option>
+        </select>
+        <div style="flex: 1"></div>
+        <span
+          id="compiler-status"
+          style="
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--color-text-muted);
+            margin-right: 1rem;
+          "
+          >Loading compiler...</span
+        >
+        <button id="run-btn" class="btn btn-primary btn-sm" disabled>
+          Run Code
+        </button>
+      </div>
+
+      <div class="editor-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <span style="color: var(--color-go)">Go Input</span>
+            <span class="code-filename" id="go-filename">main.go</span>
+          </div>
+          <div id="go-editor" class="panel-body monaco-container"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span style="color: var(--color-ts)">TypeScript Output</span>
+            <span class="code-filename" id="ts-filename">main.gs.ts</span>
+          </div>
+          <div id="ts-editor" class="panel-body monaco-container"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="height: 200px; flex: none">
+        <div class="panel-header">
+          <span style="color: var(--color-primary)">Console Output</span>
+          <button
+            id="clear-btn"
+            class="btn btn-secondary btn-sm"
+            style="height: 24px; padding: 0 8px; font-size: 10px"
+          >
+            Clear
+          </button>
+        </div>
+        <pre id="output-body" class="panel-body output-panel">Select an example or enter Go code to get started.</pre>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/esbuild-wasm@0.27.2/lib/browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+    <script>
+      require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' }});
+      window.MonacoEnvironment = { getWorkerUrl: () => proxy };
+      let proxy = URL.createObjectURL(new Blob([`
+        self.MonacoEnvironment = { baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/' };
+        importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/base/worker/workerMain.js');
+      `], { type: 'text/javascript' }));
+      require(['vs/editor/editor.main'], function() {
+        window.monacoReady = true;
+        window.dispatchEvent(new Event('monaco-ready'));
+      });
+    </script>
+    <script src="../assets/js/playground.js" type="module"></script>
+  </body>
+</html>

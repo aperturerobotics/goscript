@@ -39,7 +39,7 @@ Remember to always delete dead code when changing things - for example if you ch
 
 GoScript is an experimental Go to TypeScript transpiler that enables developers to convert high-level Go code into maintainable TypeScript. It translates Go constructs—such as structs, functions, and pointer semantics—into idiomatic TypeScript code while preserving Go's value semantics and type safety. It is designed to bridge the gap between the robust type system of Go and the flexible ecosystem of TypeScript.
 
-**This is an experimental project** - we do not maintain backwards compatibility and prioritize simplicity and correctness over legacy support. You may sometimes encounter a problem that requires a complete re-design or re-think or re-architecting of an aspect of goscript, which is perfectly okay, in this case write a design to `compliance/WIP.md` and think it through extensively before performing your refactor. It's perfectly OK to delete large swaths of code as needed. Focus on correctness.
+**This is an experimental project** - we do not maintain backwards compatibility and prioritize simplicity and correctness over legacy support. You may sometimes encounter a problem that requires a complete re-design or re-think or re-architecting of an aspect of goscript, which is perfectly okay, in this case write a design to `tests/WIP.md` and think it through extensively before performing your refactor. It's perfectly OK to delete large swaths of code as needed. Focus on correctness.
 
 If you want to overwrite WIP.md you must `rm` it first.
 
@@ -53,7 +53,7 @@ The GoScript runtime, located in `gs/builtin/builtin.ts`, provides necessary hel
 
 When working on compliance tests:
 
-1. **Test Location**: Compliance tests are located at `./compliance/tests/{testname}/testname.go` with a package main and using `println()` only for output, trying to not import anything.
+1. **Test Location**: Compliance tests are located at `./tests/tests/{testname}/testname.go` with a package main and using `println()` only for output, trying to not import anything.
 
 2. **Running Tests**: To run a specific test, use this template:
 
@@ -80,16 +80,16 @@ When working on compliance tests:
 
 4. **Implementation Workflow**:
    - Review the code under `compiler/*.go` to determine what needs to be changed
-   - Write your analysis and info about the task at hand to `compliance/WIP.md` (overwrite any existing contents)
+   - Write your analysis and info about the task at hand to `tests/WIP.md` (overwrite any existing contents)
    - Apply the planned changes to the `compiler/` code
    - Run the integration test again
-   - Repeat: update compiler code and/or `compliance/WIP.md` until the compliance test passes successfully
+   - Repeat: update compiler code and/or `tests/WIP.md` until the compliance test passes successfully
    - If you make two or more edits and the test still does not pass, ask the user how to proceed providing several options
    - After fixing a specific test, re-run the top level compliance test to verify everything works properly: `go test -v ./compiler`
 
 Once the issue is fixed and the compliance test passes you may delete WIP.md without updating it with a final summary.
 
-NOTE: `./compliance/deps/` contains library dependencies compiled by the goscript compiler! do not edit! they will be re-generated when running the tests.
+NOTE: `./tests/deps/` contains library dependencies compiled by the goscript compiler! do not edit! they will be re-generated when running the tests.
 
 NOTE: to avoid overwhelming yourself with too much output, run the tests first without -v, grep for FAIL, then run specifically the failing tests with -v.
 
@@ -152,7 +152,7 @@ When squashing commits on the `wip` branch:
 When updating design documentation from integration tests:
 
 1. Read `design/DESIGN.md` for the initial state
-2. List available tests with `ls ./compliance/tests/*.gs.ts` (each .gs.ts corresponds to a .go file)
+2. List available tests with `ls ./tests/tests/*.gs.ts` (each .gs.ts corresponds to a .go file)
 3. Read the .go and .gs.ts files
 4. Update `design/DESIGN.md` with any previously undocumented behavior from the tests
 5. Skip integration tests that are obviously already represented in the design
@@ -175,8 +175,8 @@ When eliminating dead code if requested by the user:
 
 1. Receive instructions from the user
 2. Run `golangci-lint run --no-config --enable-only=unused` (exactly this command)
-3. Remove any unused code in `./compiler` ignoring ./compliance
-4. Any line which is unused in `./compliance` add a `//nolint:unused` comment at the end.
+3. Remove any unused code in `./compiler` ignoring ./tests
+4. Any line which is unused in `./tests` add a `//nolint:unused` comment at the end.
 5. Rerun the golangci-lint command to ensure we got everything.
 
 ## Comments

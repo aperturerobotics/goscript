@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "lib": [
+      "es2022",
+      "esnext.disposable",
+      "dom"
+    ],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_go_scanner/*": [
+        "./*"
+      ]
+    },
+    "sourceMap": true,
+    "target": "es2022"
+  },
+  "extends": "../../../tsconfig.json",
+  "include": [
+    "index.ts",
+    "main.gs.ts"
+  ]
+}

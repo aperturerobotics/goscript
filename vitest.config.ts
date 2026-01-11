@@ -4,20 +4,32 @@ import { fileURLToPath } from 'url'
 
 export default defineConfig({
   test: {
-    exclude: [...configDefaults.exclude, 'dist', 'vendor', '**/vendor'],
+    exclude: [
+      ...configDefaults.exclude,
+      'dist',
+      'vendor',
+      '**/vendor',
+      '**/tests.browser.test.ts',
+    ],
   },
   resolve: {
     alias: [
       // Map @goscript/*.js to gs/*.ts
       {
         find: /^@goscript\/(.*)\.js$/,
-        replacement: resolve(fileURLToPath(new URL('.', import.meta.url)), 'gs/$1.ts')
+        replacement: resolve(
+          fileURLToPath(new URL('.', import.meta.url)),
+          'gs/$1.ts',
+        ),
       },
       // Map @goscript/* to gs/*
       {
         find: /^@goscript\/(.*)$/,
-        replacement: resolve(fileURLToPath(new URL('.', import.meta.url)), 'gs/$1')
-      }
-    ]
-  }
+        replacement: resolve(
+          fileURLToPath(new URL('.', import.meta.url)),
+          'gs/$1',
+        ),
+      },
+    ],
+  },
 })

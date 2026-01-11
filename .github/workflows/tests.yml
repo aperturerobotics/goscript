@@ -47,14 +47,14 @@ jobs:
       - name: Lint Js
         run: bun lint:js
 
-      - name: Check for git-dirty files in compliance directory
+      - name: Check for git-dirty files in tests directory
         run: |
-          git status --porcelain=v1 compliance/ | grep -q "^" && {
-            echo "Error: Found git-dirty files in compliance/ directory"
-            git status --porcelain=v1 compliance/
+          git status --porcelain=v1 tests/ | grep -q "^" && {
+            echo "Error: Found git-dirty files in tests/ directory"
+            git status --porcelain=v1 tests/
             echo "=== Git diff for modified files ==="
-            git diff compliance/
+            git diff tests/
             echo "=== Git diff --stat ==="
-            git diff --stat compliance/
+            git diff --stat tests/
             exit 1
-          } || echo "No git-dirty files found in compliance/ directory"
+          } || echo "No git-dirty files found in tests/ directory"

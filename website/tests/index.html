@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compliance Tests - GoScript</title>
+    <meta
+      name="description"
+      content="Browse GoScript compliance tests - see how Go code is translated to TypeScript."
+    />
+    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔄</text></svg>"
+    />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">
+            <a
+              href="../"
+              style="display: flex; align-items: center; gap: 0.75rem"
+            >
+              <svg
+                class="logo-icon"
+                viewBox="0 0 100 100"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M50 5 L95 25 L95 75 L50 95 L5 75 L5 25 Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                />
+                <text
+                  x="50"
+                  y="65"
+                  font-size="40"
+                  text-anchor="middle"
+                  fill="currentColor"
+                  font-family="sans-serif"
+                  font-weight="bold"
+                >
+                  GS
+                </text>
+              </svg>
+              <span>GoScript</span>
+            </a>
+            <span
+              class="tagline"
+              style="
+                margin-left: 1rem;
+                padding-left: 1rem;
+                border-left: 1px solid var(--color-border);
+              "
+              >Compliance</span
+            >
+          </div>
+          <nav class="nav">
+            <a href="../" class="nav-link bracket">Home</a>
+            <a href="../playground/" class="nav-link bracket">Playground</a>
+            <a
+              href="https://github.com/aperturerobotics/goscript"
+              class="nav-link bracket"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="tests-layout">
+      <div class="sidebar">
+        <div
+          class="panel-header"
+          style="
+            background: var(--color-bg-subtle);
+            border-bottom: 1px solid var(--color-border);
+          "
+        >
+          <div style="flex: 1">TEST SUITE</div>
+          <div id="test-count" style="font-weight: 400; opacity: 0.6">...</div>
+        </div>
+        <div
+          style="
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          "
+        >
+          <input
+            type="text"
+            id="test-search"
+            class="search-input"
+            style="width: 100%; min-width: 0"
+            placeholder="Filter tests..."
+          />
+          <div style="display: flex; gap: 0.5rem">
+            <button
+              id="run-all-btn"
+              class="btn btn-secondary btn-sm"
+              style="flex: 1"
+            >
+              Run All
+            </button>
+            <button
+              id="stop-btn"
+              class="btn btn-secondary btn-sm"
+              style="flex: 1; display: none"
+            >
+              Stop
+            </button>
+          </div>
+        </div>
+        <div
+          id="stats-bar"
+          style="
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            display: none;
+          "
+        >
+          <span id="stats-passed" style="color: #27c93f">0 passed</span>
+          <span style="color: var(--color-text-subtle); margin: 0 0.25rem"
+            >|</span
+          >
+          <span id="stats-failed" style="color: #ff5f56">0 failed</span>
+          <span style="color: var(--color-text-subtle); margin: 0 0.25rem"
+            >|</span
+          >
+          <span id="stats-skipped" style="color: var(--color-text-muted)"
+            >0 skipped</span
+          >
+        </div>
+        <div
+          id="compiler-status"
+          style="
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--color-text-muted);
+          "
+        >
+          <span id="compiler-status-text">Loading TypeScript compiler...</span>
+        </div>
+        <div
+          id="progress-bar"
+          style="height: 2px; background: var(--color-border); display: none"
+        >
+          <div
+            id="progress-fill"
+            style="
+              height: 100%;
+              width: 0%;
+              background: var(--color-go);
+              transition: width 0.1s;
+            "
+          ></div>
+        </div>
+        <div id="test-list" class="test-list">
+          <div class="loading">Loading tests...</div>
+        </div>
+      </div>
+
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          overflow: hidden;
+        "
+      >
+        <div
+          class="panel"
+          style="
+            flex: none;
+            background: var(--color-bg-card);
+            padding: 0.75rem;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+          "
+        >
+          <span
+            id="test-name"
+            style="font-weight: 600; color: var(--color-text-main)"
+            >Select a test</span
+          >
+          <button id="run-btn" class="btn btn-primary btn-sm" disabled>
+            Run Test
+          </button>
+        </div>
+
+        <div class="editor-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <span style="color: var(--color-go)">Go Source</span>
+            </div>
+            <div id="go-editor" class="panel-body monaco-container"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <span style="color: var(--color-ts)">TypeScript Output</span>
+            </div>
+            <div id="ts-editor" class="panel-body monaco-container"></div>
+          </div>
+        </div>
+
+        <div class="editor-grid" style="flex: none; height: 180px">
+          <div class="panel">
+            <div class="panel-header">
+              <span style="color: var(--color-text-muted)">Expected Output</span>
+            </div>
+            <pre id="expected-output" class="panel-body output-panel">-</pre>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <span style="color: var(--color-text-muted)">Actual Output</span>
+            </div>
+            <pre id="actual-output" class="panel-body output-panel">Click "Run" to execute</pre>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/esbuild-wasm@0.27.2/lib/browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+    <script>
+      require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' }});
+      window.MonacoEnvironment = { getWorkerUrl: () => proxy };
+      let proxy = URL.createObjectURL(new Blob([`
+        self.MonacoEnvironment = { baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/' };
+        importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/base/worker/workerMain.js');
+      `], { type: 'text/javascript' }));
+      require(['vs/editor/editor.main'], function() {
+        window.monacoReady = true;
+        window.dispatchEvent(new Event('monaco-ready'));
+      });
+    </script>
+    <script src="../assets/js/tests.js" type="module"></script>
+  </body>
+</html>
