@@ -24,7 +24,7 @@ func TestEmitBuiltinOption(t *testing.T) {
 	log.SetLevel(logrus.DebugLevel)
 	le := logrus.NewEntry(log)
 
-	// Case 1: DisableEmitBuiltin = true (default behavior in compliance tests)
+	// Case 1: DisableEmitBuiltin = true (default behavior in tests tests)
 	t.Run("DisableEmitBuiltin=true", func(t *testing.T) {
 		outputDir := filepath.Join(tempDir, "disabled")
 		config := &Config{

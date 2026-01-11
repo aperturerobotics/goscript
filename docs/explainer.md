@@ -869,7 +869,7 @@ goscript/
 │   ├── ASYNC.md           # Async design
 │   ├── VAR_REFS.md        # VarRef design
 │   └── ...
-├── compliance/            # Compliance test suite
+├── tests/                 # Compliance test suite
 │   └── tests/             # 260+ test cases
 └── docs/
     └── explainer.md       # This file

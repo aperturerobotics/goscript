@@ -12,10 +12,10 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/aperturerobotics/goscript/compliance"
+	"github.com/aperturerobotics/goscript/tests"
 )
 
-// NOTE: this is here instead of compliance/compliance_test.go so coverage ends up in this package.
+// NOTE: this is here instead of tests/tests_test.go so coverage ends up in this package.
 
 func TestCompliance(t *testing.T) {
 	// Get workspace directory (project root)
@@ -26,7 +26,7 @@ func TestCompliance(t *testing.T) {
 	workspaceDir = filepath.Join(workspaceDir, "..")
 
 	// First collect all test paths
-	testsDir := filepath.Join(workspaceDir, "compliance/tests")
+	testsDir := filepath.Join(workspaceDir, "tests/tests")
 	dirs, err := os.ReadDir(testsDir)
 	if err != nil {
 		t.Fatalf("failed to read tests dir: %v", err)
@@ -71,7 +71,7 @@ func TestCompliance(t *testing.T) {
 				defer func() {
 					simulLimit <- struct{}{}
 				}()
-				compliance.RunGoScriptTestDir(t, workspaceDir, path) // Pass workspaceDir
+				tests.RunGoScriptTestDir(t, workspaceDir, path) // Pass workspaceDir
 
 				// Remove dir if everything passed
 				if !t.Failed() {
@@ -89,13 +89,13 @@ func TestCompliance(t *testing.T) {
 	t.Run("typecheck", func(t *testing.T) {
 		t.Helper()
 		if failed {
-			t.Log("at least one compliance test failed: skipping typecheck")
+			t.Log("at least one tests test failed: skipping typecheck")
 			t.SkipNow()
 		}
 
 		// NOTE: typecheck does not yet pass, so we skip for now.
 		if ranTests.Load() != 0 {
-			t.Log("at least one compliance test ran: skipping typecheck")
+			t.Log("at least one tests test ran: skipping typecheck")
 			t.SkipNow()
 		}
 
@@ -106,7 +106,7 @@ func TestCompliance(t *testing.T) {
 		}
 
 		// Create global typecheck tsconfig
-		tsconfigPath := compliance.WriteGlobalTypeCheckConfig(t, parentModPath, workspaceDir)
+		tsconfigPath := tests.WriteGlobalTypeCheckConfig(t, parentModPath, workspaceDir)
 
 		// Run TypeScript type checking
 		typecheckDir := filepath.Dir(tsconfigPath)
@@ -129,7 +129,7 @@ func TestCompliance(t *testing.T) {
 }
 
 // getParentGoModulePath is a helper function to get the parent Go module path
-// This is similar to the one in compliance.go but simplified for use in tests
+// This is similar to the one in tests.go but simplified for use in tests
 func getParentGoModulePath() (string, error) {
 	cmd := exec.Command("go", "list", "-m")
 	output, err := cmd.Output()

@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GoScript - Go to TypeScript Compiler</title>
+    <meta
+      name="description"
+      content="GoScript is an experimental Go to TypeScript compiler that translates Go code at the AST level."
+    />
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔄</text></svg>"
+    />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">
+            <svg
+              class="logo-icon"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M50 5 L95 25 L95 75 L50 95 L5 75 L5 25 Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="8"
+              />
+              <text
+                x="50"
+                y="65"
+                font-size="40"
+                text-anchor="middle"
+                fill="currentColor"
+                font-family="sans-serif"
+                font-weight="bold"
+              >
+                GS
+              </text>
+            </svg>
+            <span>GoScript</span>
+          </div>
+          <nav class="nav">
+            <a href="playground/" class="nav-link bracket">Playground</a>
+            <a href="tests/" class="nav-link bracket">Tests</a>
+            <a
+              href="https://github.com/aperturerobotics/goscript"
+              class="nav-link bracket"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <h2>Go to TypeScript compiler</h2>
+          <p class="hero-description">
+            GoScript compiles Go to TypeScript at the AST level. Share
+            algorithms and business logic between your Go backend and TypeScript
+            frontend.
+          </p>
+          <div class="hero-actions">
+            <a href="playground/" class="btn btn-primary">Playground</a>
+            <a
+              href="https://github.com/aperturerobotics/goscript"
+              class="btn btn-secondary"
+              target="_blank"
+              rel="noopener"
+              >Source</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <section class="demo">
+        <div class="container">
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dot"></div>
+              <div class="terminal-dot"></div>
+              <div class="terminal-dot"></div>
+              <span class="terminal-title">goscript-demo</span>
+            </div>
+            <div class="code-comparison">
+              <div class="code-panel">
+                <div class="panel-label">
+                  <span>Input</span>
+                  <span>main.go</span>
+                </div>
+                <div class="code-content">
+                  <pre><code class="language-go">package main
+
+type Counter struct {
+    value int
+}
+
+func (c *Counter) Increment() {
+    c.value++
+}
+
+func main() {
+    c := &Counter{}
+    c.Increment()
+    println("Count:", c.value)
+}</code></pre>
+                </div>
+              </div>
+              <div class="comparison-divider"></div>
+              <div class="code-panel">
+                <div class="panel-label">
+                  <span>Output</span>
+                  <span>main.ts</span>
+                </div>
+                <div class="code-content">
+                  <pre><code class="language-typescript">import * as $ from "@goscript/builtin"
+
+export class Counter {
+  public value: number = 0
+
+  public Increment(): void {
+    this.value++
+  }
+}
+
+const c = new Counter()
+c.Increment()
+$.println("Count:", c.value)</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="features">
+        <div class="container">
+          <h3 class="section-title">Status</h3>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">🎯</div>
+              <h4>Goal</h4>
+              <p>
+                Share algorithms and business logic between Go and TypeScript
+                without maintaining separate implementations.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">✅</div>
+              <h4>What works</h4>
+              <p>
+                Structs, interfaces, methods, generics, channels, goroutines,
+                pointers, slices, maps, closures, and control flow.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🧪</div>
+              <h4>Tests</h4>
+              <p>
+                Verified by a compliance suite that compiles Go code and
+                executes the generated TypeScript.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🚧</div>
+              <h4>In progress</h4>
+              <p>Reflection, standard library coverage.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">⚠️</div>
+              <h4>Limitations</h4>
+              <p>
+                Uses JS <code>number</code> (64-bit float). No
+                <code>unsafe</code>, <code>uintptr</code>, or complex numbers.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📖</div>
+              <h4>Docs</h4>
+              <div class="doc-links">
+                <a
+                  href="https://github.com/aperturerobotics/goscript/blob/master/design/DESIGN.md"
+                  target="_blank"
+                  rel="noopener"
+                  >Design</a
+                >
+                <a
+                  href="https://github.com/aperturerobotics/goscript/blob/master/design/GENERICS.md"
+                  target="_blank"
+                  rel="noopener"
+                  >Generics</a
+                >
+                <a
+                  href="https://github.com/aperturerobotics/goscript/blob/master/docs/explainer.md"
+                  target="_blank"
+                  rel="noopener"
+                  >Architecture</a
+                >
+                <a href="tests/">Tests</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="install-section">
+        <div class="container install-container">
+          <h3 class="section-title">Install</h3>
+
+          <div class="install-tabs" data-component="tabs">
+            <div class="tab-list" role="tablist">
+              <button
+                class="tab active"
+                data-tab="go"
+                role="tab"
+                aria-selected="true"
+              >
+                go
+              </button>
+              <button
+                class="tab"
+                data-tab="npm"
+                role="tab"
+                aria-selected="false"
+              >
+                npm
+              </button>
+              <button
+                class="tab"
+                data-tab="npx"
+                role="tab"
+                aria-selected="false"
+              >
+                npx
+              </button>
+              <button
+                class="tab"
+                data-tab="bunx"
+                role="tab"
+                aria-selected="false"
+              >
+                bunx
+              </button>
+            </div>
+            <div class="tab-panels">
+              <div class="tab-panel active" data-panel="go">
+                <button
+                  class="command"
+                  data-copy="go install github.com/aperturerobotics/goscript/cmd/goscript@latest"
+                >
+                  <span class="command-text"
+                    >go install
+                    github.com/aperturerobotics/goscript/cmd/goscript@latest</span
+                  >
+                  <span class="copy-icon"></span>
+                </button>
+              </div>
+              <div class="tab-panel" data-panel="npm">
+                <button class="command" data-copy="npm install -g goscript">
+                  <span class="command-text">npm install -g goscript</span>
+                  <span class="copy-icon"></span>
+                </button>
+              </div>
+              <div class="tab-panel" data-panel="npx">
+                <button class="command" data-copy="npx goscript">
+                  <span class="command-text">npx goscript</span>
+                  <span class="copy-icon"></span>
+                </button>
+              </div>
+              <div class="tab-panel" data-panel="bunx">
+                <button class="command" data-copy="bunx goscript">
+                  <span class="command-text">bunx goscript</span>
+                  <span class="copy-icon"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="install-steps">
+            <div class="install-step">
+              <span class="step-label">compile</span>
+              <button
+                class="command"
+                data-copy="goscript compile --package . --output ./dist"
+              >
+                <span class="command-text"
+                  >goscript compile --package . --output ./dist</span
+                >
+                <span class="copy-icon"></span>
+              </button>
+            </div>
+            <div class="install-step">
+              <span class="step-label">run</span>
+              <button class="command" data-copy="bun run ./dist/main.js">
+                <span class="command-text">bun run ./dist/main.js</span>
+                <span class="copy-icon"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <a href="https://github.com/aperturerobotics/goscript">GitHub</a>
+        <span class="sep">·</span>
+        <a href="https://aperture.us">Aperture Robotics</a>
+        <span class="copyright">© 2025 Aperture Robotics, LLC</span>
+      </div>
+    </footer>
+
+    <script>
+      // Tabs
+      document.querySelectorAll('.tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.dataset.tab
+          const container = tab.closest('[data-component="tabs"]')
+          container.querySelectorAll('.tab').forEach((t) => {
+            t.classList.toggle('active', t.dataset.tab === tabId)
+            t.setAttribute('aria-selected', t.dataset.tab === tabId)
+          })
+          container.querySelectorAll('.tab-panel').forEach((p) => {
+            p.classList.toggle('active', p.dataset.panel === tabId)
+          })
+        })
+      })
+
+      // Copy
+      document.querySelectorAll('.command').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          navigator.clipboard.writeText(btn.dataset.copy)
+          btn.classList.add('copied')
+          setTimeout(() => btn.classList.remove('copied'), 2000)
+        })
+      })
+    </script>
+  </body>
+</html>

@@ -17,6 +17,6 @@
       "@goscript/*": ["./gs/*"]
     }
   },
-  "include": ["compiler", "gs", "compliance"],
+  "include": ["compiler", "gs", "tests"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

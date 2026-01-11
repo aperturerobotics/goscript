@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "lib": [
+      "es2022",
+      "esnext.disposable",
+      "dom"
+    ],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/json_typefields_flow/*": [
+        "./*"
+      ]
+    },
+    "sourceMap": true,
+    "target": "es2022"
+  },
+  "extends": "../../../tsconfig.json",
+  "include": [
+    "index.ts",
+    "json_typefields_flow.gs.ts"
+  ]
+}

@@ -336,7 +336,7 @@ p!.value = 20; // assert non-null during assignment
       ```
     - If the pointer variable `p1` *is itself* variable reference (because `&p1` was taken):
       ```go
-      // Go (from compliance/tests/varRef/varRef.go)
+      // Go (from tests/tests/varRef/varRef.go)
       // var x int = 10 // (defined earlier, x is VarRef<number>)
       // var p1 *int = &x // (p1 is VarRef<VarRef<number>|null> because &p1 is taken later)
       var y int = 15   // y is VarRef<number>

@@ -8,7 +8,13 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
-    ignores: ['**/*.gs.ts', 'dist', 'vendor', 'compliance/tests/*/run'],
+    ignores: [
+      '**/*.gs.ts',
+      'dist',
+      'vendor',
+      'tests/tests/*/run',
+      'website/**/*.js',
+    ],
   },
   {
     languageOptions: {
