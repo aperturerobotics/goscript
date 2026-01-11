@@ -6,8 +6,12 @@ import (
 	"github.com/aperturerobotics/cli"
 )
 
+// version is set by goreleaser via ldflags
+var version = "dev"
+
 func main() {
 	app := cli.NewApp()
+	app.Version = version
 
 	app.Authors = []*cli.Author{
 		{Name: "Christian Stewart", Email: "christian@aperture.us"},

@@ -1,0 +1,93 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: goscript
+    main: ./cmd/goscript
+    binary: goscript
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: ['tar.gz']
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        formats: ['zip']
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Performance
+      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Other
+      order: 999
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+      - '^.github:'
+      - '^hack:'
+      - Merge pull request
+      - Merge branch
+
+release:
+  github:
+    owner: aperturerobotics
+    name: goscript
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## GoScript {{ .Tag }}
+
+    Go to TypeScript transpiler release.
+  footer: |
+    **Full Changelog**: https://github.com/aperturerobotics/goscript/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    ---
+
+    ### Installation
+
+    **npm:**
+    ```bash
+    npm install goscript@{{ .Version }}
+    ```
+
+    **Binary:**
+    Download the appropriate binary for your platform from the assets below.
