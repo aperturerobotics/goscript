@@ -1,6 +1,11 @@
 // GoScript Test Browser - JavaScript
 // This displays pre-generated compliance test data and runs them using esbuild-wasm
 
+import * as goscriptRuntime from '@goscript/builtin'
+
+// Make runtime available globally for executed code
+window.$ = goscriptRuntime
+
 let tests = []
 let filteredTests = []
 let currentTest = null
@@ -418,224 +423,58 @@ async function runTypeScript(code) {
     throw new Error('esbuild-wasm not ready')
   }
 
-  // Capture output
+  // Capture output by intercepting console.log (used by runtime's println)
   const outputLines = []
-
-  // Create a mock runtime with println capture
-  const mockRuntime = createMockRuntime((line) => {
-    outputLines.push(line)
-  })
-
-  // Remove imports - we'll provide the runtime as a parameter
-  let processedCode = code
-    .replace(/import \* as \$ from ["']@goscript\/builtin\/index\.js["']/g, '')
-    .replace(/import \* as \$ from ["']@goscript\/builtin["']/g, '')
-    // Remove other imports for now
-    .replace(/import .* from ["'][^"']+["']/g, '')
-
-  // Use esbuild to compile TypeScript to JavaScript
-  let jsCode
-  try {
-    const result = await window.esbuild.transform(processedCode, {
-      loader: 'ts',
-      format: 'esm',
-      target: 'es2022',
-    })
-    jsCode = result.code
-  } catch (err) {
-    throw new Error(`TypeScript compilation error: ${err.message}`)
+  const originalConsoleLog = console.log
+  console.log = (...args) => {
+    outputLines.push(args.map(formatValue).join(' '))
   }
 
-  // Remove any remaining export keywords (esbuild preserves them)
-  jsCode = jsCode.replace(/^export /gm, '')
-
-  // Add a call to main() at the end if it exists
-  if (/async function main\s*\(/.test(jsCode)) {
-    jsCode += '\nawait main();'
-  } else if (/function main\s*\(/.test(jsCode)) {
-    jsCode += '\nmain();'
-  }
-
-  // Create an async function to run the code
-  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
-
   try {
+    // Remove imports - we use the global runtime
+    let processedCode = code
+      .replace(/import \* as \$ from ["']@goscript\/builtin\/index\.js["']/g, '')
+      .replace(/import \* as \$ from ["']@goscript\/builtin["']/g, '')
+      .replace(/import .* from ["'][^"']+["']/g, '')
+
+    // Use esbuild to compile TypeScript to JavaScript
+    let jsCode
+    try {
+      const result = await window.esbuild.transform(processedCode, {
+        loader: 'ts',
+        format: 'esm',
+        target: 'es2022',
+      })
+      jsCode = result.code
+    } catch (err) {
+      throw new Error(`TypeScript compilation error: ${err.message}`)
+    }
+
+    // Remove any remaining export keywords (esbuild preserves them)
+    jsCode = jsCode.replace(/^export /gm, '')
+
+    // Add a call to main() at the end if it exists
+    if (/async function main\s*\(/.test(jsCode)) {
+      jsCode += '\nawait main();'
+    } else if (/function main\s*\(/.test(jsCode)) {
+      jsCode += '\nmain();'
+    }
+
+    // Create an async function to run the code
+    const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
+
+    // Run with the global runtime
     const fn = new AsyncFunction('$', jsCode)
-    await fn(mockRuntime)
-  } catch (err) {
-    throw new Error(`Runtime error: ${err.message}`)
-  }
+    await fn(window.$)
 
-  return outputLines.join('\n')
-}
-
-// Create a mock runtime (same as playground)
-function createMockRuntime(onPrint) {
-  return {
-    println: (...args) => {
-      onPrint(args.map(formatValue).join(' '))
-    },
-    print: (...args) => {
-      onPrint(args.map(formatValue).join(''))
-    },
-    makeSlice: (len = 0, cap) => {
-      const arr = new Array(len).fill(null)
-      arr._cap = cap || len
-      return arr
-    },
-    sliceCopy: (dst, src) => {
-      const len = Math.min(dst.length, src.length)
-      for (let i = 0; i < len; i++) dst[i] = src[i]
-      return len
-    },
-    append: (slice, ...items) => [...(slice || []), ...items],
-    len: (v) => {
-      if (v === null || v === undefined) return 0
-      if (typeof v === 'string') return v.length
-      if (Array.isArray(v)) return v.length
-      if (v instanceof Map) return v.size
-      return 0
-    },
-    cap: (v) => {
-      if (v === null || v === undefined) return 0
-      if (Array.isArray(v)) return v._cap || v.length
-      return 0
-    },
-    makeMap: () => new Map(),
-    mapGet: (m, k, defaultVal) => {
-      if (!m) return [defaultVal, false]
-      const has = m.has(k)
-      return [has ? m.get(k) : defaultVal, has]
-    },
-    deleteMapEntry: (m, k) => {
-      if (m) m.delete(k)
-    },
-    makeChan: (cap = 0) => ({ _buffer: [], _cap: cap, _closed: false }),
-    chanSend: async (ch, val) => {
-      if (ch._closed) throw new Error('send on closed channel')
-      ch._buffer.push(val)
-    },
-    chanRecv: async (ch) => (ch._buffer.length > 0 ? ch._buffer.shift() : null),
-    chanRecvWithOk: async (ch) => {
-      if (ch._buffer.length > 0) return { value: ch._buffer.shift(), ok: true }
-      if (ch._closed) return { value: null, ok: false }
-      return { value: null, ok: true }
-    },
-    closeChan: (ch) => {
-      ch._closed = true
-    },
-    range: function* (v) {
-      if (Array.isArray(v)) {
-        for (let i = 0; i < v.length; i++) yield [i, v[i]]
-      } else if (v instanceof Map) {
-        for (const [k, val] of v) yield [k, val]
-      } else if (typeof v === 'string') {
-        for (let i = 0; i < v.length; i++) yield [i, v.charCodeAt(i)]
-      }
-    },
-    varRef: (val) => ({ value: val }),
-    typeAssert: (val) => val,
-    typeAssertOk: (val) => [val, val !== null && val !== undefined],
-    error: null,
-    newError: (msg) => new Error(msg),
-    panic: (msg) => {
-      throw new Error(String(msg))
-    },
-    recover: () => null,
-    stringToBytes: (s) => [...s].map((c) => c.charCodeAt(0)),
-    bytesToString: (b) => String.fromCharCode(...b),
-    stringToRunes: (s) => [...s].map((c) => c.codePointAt(0)),
-    runesToString: (r) => String.fromCodePoint(...r),
-    intDiv: (a, b) => Math.trunc(a / b),
-    intMod: (a, b) => a % b,
-    deferStack: () => ({
-      _stack: [],
-      defer: function (fn) {
-        this._stack.push(fn)
-      },
-      runDefers: async function () {
-        while (this._stack.length > 0) {
-          const fn = this._stack.pop()
-          try {
-            await fn()
-          } catch (e) {
-            console.error('defer error:', e)
-          }
-        }
-      },
-    }),
-    go: (fn) => {
-      setTimeout(() => fn().catch(console.error), 0)
-    },
-    select: async (cases) => {
-      for (const c of cases) {
-        if (c.recv && c.ch._buffer.length > 0) {
-          const val = c.ch._buffer.shift()
-          if (c.fn) c.fn(val)
-          return
-        }
-        if (c.send && c.ch._buffer.length < c.ch._cap) {
-          c.ch._buffer.push(c.val)
-          if (c.fn) c.fn()
-          return
-        }
-        if (c.default) {
-          if (c.fn) c.fn()
-          return
-        }
-      }
-    },
-    zero: (type) => {
-      switch (type) {
-        case 'int':
-        case 'int8':
-        case 'int16':
-        case 'int32':
-        case 'int64':
-        case 'uint':
-        case 'uint8':
-        case 'uint16':
-        case 'uint32':
-        case 'uint64':
-        case 'float32':
-        case 'float64':
-        case 'byte':
-        case 'rune':
-          return 0
-        case 'string':
-          return ''
-        case 'bool':
-          return false
-        default:
-          return null
-      }
-    },
-    arrayToSlice: (arr) => arr,
-    markAsStructValue: (v) => v,
-    registerStructType: () => {},
-    TypeKind: {
-      Basic: 'basic',
-      Pointer: 'pointer',
-      Struct: 'struct',
-      Interface: 'interface',
-      Slice: 'slice',
-      Array: 'array',
-      Map: 'map',
-      Chan: 'chan',
-      Func: 'func',
-    },
-    typeSwitch: (val, cases, defaultCase) => {
-      for (const c of cases) {
-        if (c.body) {
-          c.body(val)
-          return
-        }
-      }
-      if (defaultCase) defaultCase()
-    },
+    return outputLines.join('\n')
+  } finally {
+    // Restore console.log
+    console.log = originalConsoleLog
   }
 }
 
+// Format a value for display
 function formatValue(v) {
   if (v === null || v === undefined) return '<nil>'
   if (typeof v === 'object') {

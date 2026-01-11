@@ -66,10 +66,11 @@
     "lint:go": "golangci-lint run .",
     "lint:js": "eslint -c eslint.config.mjs ./",
     "lint:js:fix": "eslint -c eslint.config.mjs ./ --fix",
-    "website:build": "bun run website:manifest && bun run website:examples",
+    "website:build": "bun run website:manifest && bun run website:examples && cd website && bun run build",
     "website:manifest": "bun run scripts/generate-test-manifest.ts",
     "website:examples": "bun run scripts/generate-examples.ts",
-    "website:serve": "cd website && python3 -m http.server 5173",
+    "website:dev": "cd website && bun run dev",
+    "website:serve": "cd website && bun run preview",
     "prepare": "husky",
     "precommit": "lint-staged"
   },
