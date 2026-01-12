@@ -566,7 +566,7 @@ func (c *GoToTSCompiler) WriteUnaryExpr(exp *ast.UnaryExpr) error {
 			}
 			if obj != nil && c.analysis.NeedsVarRef(obj) {
 				// &varRefVar -> varRefVar (the variable reference itself)
-				c.tsw.WriteLiterally(ident.Name) // Write the identifier name (which holds the variable reference)
+				c.tsw.WriteLiterally(c.sanitizeIdentifier(ident.Name)) // Write the identifier name (which holds the variable reference)
 				return nil
 			}
 		}

@@ -602,12 +602,17 @@ func (c *GoToTSCompiler) WriteImportSpec(a *ast.ImportSpec) {
 
 	// Determine the import name to use in TypeScript
 	var impName string
-	if a.Name != nil && a.Name.Name != "" {
+	if a.Name != nil && a.Name.Name != "" && a.Name.Name != "." && a.Name.Name != "_" {
 		// Explicit alias provided: import alias "path/to/pkg"
+		// Skip dot imports (. "pkg") and blank imports (_ "pkg")
 		impName = a.Name.Name
+	} else if a.Name != nil && a.Name.Name == "_" {
+		// Blank import (_ "pkg") - skip entirely, these are for side effects only
+		return
 	} else {
-		// No explicit alias, use the actual package name from type information
+		// No explicit alias, or dot import - use the actual package name from type information
 		// This handles cases where package name differs from the last path segment
+		// For dot imports, we still need a valid identifier for the import
 		if actualName, err := getActualPackageName(goPath, c.pkg.Imports); err == nil {
 			impName = actualName
 		} else {

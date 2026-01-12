@@ -25,7 +25,6 @@ import * as utf16 from "@goscript/unicode/utf16/index.js"
 import * as utf8 from "@goscript/unicode/utf8/index.js"
 
 // for linkname
-import * as _ from "@goscript/unsafe/index.js"
 
 export let phasePanicMsg: string = "JSON decoder out of sync - data changing underfoot?"
 

@@ -38,7 +38,14 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 
 	if exp.Type != nil {
 		// Handle map literals: map[K]V{k1: v1, k2: v2}
-		if _, isMapType := exp.Type.(*ast.MapType); isMapType {
+		// Also handle type alias for map: type OpNames map[K]V; OpNames{k1: v1}
+		isMapType := false
+		if _, astMapType := exp.Type.(*ast.MapType); astMapType {
+			isMapType = true
+		} else if litType != nil {
+			_, isMapType = litType.Underlying().(*types.Map)
+		}
+		if isMapType {
 			c.tsw.WriteLiterally("new Map([")
 
 			// Add each key-value pair as an entry

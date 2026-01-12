@@ -35,7 +35,6 @@ import * as unicode from "@goscript/unicode/index.js"
 import * as utf8 from "@goscript/unicode/utf8/index.js"
 
 // for linkname
-import * as _ from "@goscript/unsafe/index.js"
 
 export let hex: string = "0123456789abcdef"
 
