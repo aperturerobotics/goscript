@@ -1,14 +1,5 @@
 {
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "lib": [
-      "es2022",
-      "esnext.disposable",
-      "dom"
-    ],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "noEmit": true,
     "paths": {
       "*": [
         "./*"
@@ -20,11 +11,9 @@
       "@goscript/github.com/aperturerobotics/goscript/tests/tests/call_async_returned_function/*": [
         "./*"
       ]
-    },
-    "sourceMap": true,
-    "target": "es2022"
+    }
   },
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tests/tsconfig.base.json",
   "include": [
     "call_async_returned_function.gs.ts",
     "index.ts"

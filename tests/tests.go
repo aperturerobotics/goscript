@@ -20,19 +20,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// baseTsConfig is the base tsconfig.json content.
-// It provides common TypeScript compiler options used across different tsconfig.json files
-// generated during testing, such as for running the compiled code and for type-checking.
+// baseTsConfig is the base tsconfig.json content for generated test tsconfigs.
+// The compiler options are inherited from tests/tsconfig.base.json.
 var baseTsConfig = map[string]any{
-	"compilerOptions": map[string]any{
-		"target":                     "es2022",
-		"lib":                        []string{"es2022", "esnext.disposable", "dom"},
-		"module":                     "nodenext",
-		"moduleResolution":           "nodenext",
-		"allowImportingTsExtensions": true,
-		"noEmit":                     true,
-		"sourceMap":                  true,
-	},
+	"compilerOptions": map[string]any{},
 }
 
 // TestCase defines a single Go-to-TypeScript compliance test.
@@ -666,10 +657,10 @@ func WriteTypeCheckConfig(t *testing.T, parentModulePath, workspaceDir, testDir 
 	if err != nil {
 		t.Fatalf("failed to get relative path from %s to %s: %v", absTestDir, absWorkspaceDir, err)
 	}
-	rootTsConfigPath := filepath.ToSlash(filepath.Join(relWorkspacePath, "tsconfig.json"))
+	baseTsConfigPath := filepath.ToSlash(filepath.Join(relWorkspacePath, "tests", "tsconfig.base.json"))
 
 	tsconfig := maps.Clone(baseTsConfig)
-	tsconfig["extends"] = rootTsConfigPath
+	tsconfig["extends"] = baseTsConfigPath
 	if len(includes) > 0 {
 		tsconfig["include"] = includes
 	} else {

@@ -1,14 +1,5 @@
 {
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "lib": [
-      "es2022",
-      "esnext.disposable",
-      "dom"
-    ],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "noEmit": true,
     "paths": {
       "*": [
         "./*"
@@ -20,11 +11,9 @@
       "@goscript/github.com/aperturerobotics/goscript/tests/tests/destructure_trailing_comma/*": [
         "./*"
       ]
-    },
-    "sourceMap": true,
-    "target": "es2022"
+    }
   },
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tests/tsconfig.base.json",
   "include": [
     "destructure_trailing_comma.gs.ts",
     "index.ts"
