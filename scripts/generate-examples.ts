@@ -54,7 +54,8 @@ const CURATED_EXAMPLES: [string, string, string][] = [
   ['interface_type_assertion', 'Type Assertion', 'Type assertions'],
   ['generics_basic', 'Generics', 'Generic types and functions'],
   ['async_basic', 'Async/Await', 'Async function translation'],
-  ['json_marshal_basic', 'JSON', 'JSON encoding with encoding/json'],
+  // TODO: Enable once playground supports compiling dependencies
+  // ['json_marshal_basic', 'JSON', 'JSON encoding with encoding/json'],
 ]
 
 function generateExamples(): void {

@@ -180,6 +180,14 @@ When eliminating dead code if requested by the user:
 4. Any line which is unused in `./tests` add a `//nolint:unused` comment at the end.
 5. Rerun the golangci-lint command to ensure we got everything.
 
+## Website Playground
+
+The playground at `website/` compiles Go to TypeScript using a WASM build of the compiler. **It only supports single-file compilation without external dependencies.**
+
+- Playground examples are defined in `scripts/generate-examples.ts` (the `CURATED_EXAMPLES` array)
+- Do NOT add examples that import packages beyond `@goscript/builtin` (e.g., `encoding/json`) until dependency bundling is implemented
+- Run `bun run scripts/generate-examples.ts` then `cd website && bun run build` to update
+
 ## Comments
 
 When adding comments to functions, structs, or files:
