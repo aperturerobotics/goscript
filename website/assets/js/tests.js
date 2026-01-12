@@ -2,6 +2,10 @@
 // This displays pre-generated compliance test data and runs them using esbuild-wasm
 
 import * as goscriptRuntime from '@goscript/builtin'
+import {
+  ready as wasmReady,
+  compileGoToTypeScript,
+} from './goscript-wasm.js'
 
 // Make runtime available globally for executed code
 window.$ = goscriptRuntime
@@ -13,6 +17,7 @@ let testResults = new Map() // name -> 'passed' | 'failed' | 'skipped' | 'runnin
 let isRunning = false
 let shouldStop = false
 let esbuildReady = false
+let goscriptReady = false
 
 // DOM Elements
 const testSearch = document.getElementById('test-search')
@@ -23,6 +28,7 @@ const goEditorContainer = document.getElementById('go-editor')
 const tsEditorContainer = document.getElementById('ts-editor')
 const expectedOutput = document.getElementById('expected-output')
 const actualOutput = document.getElementById('actual-output')
+const compileBtn = document.getElementById('compile-btn')
 const runBtn = document.getElementById('run-btn')
 const runAllBtn = document.getElementById('run-all-btn')
 const stopBtn = document.getElementById('stop-btn')
@@ -95,43 +101,28 @@ if (window.monacoReady) {
   window.addEventListener('monaco-ready', initMonaco)
 }
 
+// Initialize GoScript WASM compiler
+async function initGoscript() {
+  try {
+    await wasmReady
+    goscriptReady = true
+    updateCompilerStatus()
+  } catch (err) {
+    console.error('Failed to initialize GoScript WASM compiler:', err)
+  }
+}
+
 // Initialize esbuild-wasm (loaded via script tag)
 async function initEsbuild() {
-  // Show loading status
-  if (compilerStatusText) {
-    compilerStatusText.textContent = 'Loading TypeScript compiler...'
-  }
-  if (runBtn) {
-    runBtn.disabled = true
-  }
-  if (runAllBtn) {
-    runAllBtn.disabled = true
-  }
-
   try {
-    // esbuild is loaded globally via script tag
     if (!window.esbuild) {
       throw new Error('esbuild not loaded')
-    }
-    if (compilerStatusText) {
-      compilerStatusText.textContent = 'Initializing WebAssembly...'
     }
     await window.esbuild.initialize({
       wasmURL: 'https://cdn.jsdelivr.net/npm/esbuild-wasm@0.27.2/esbuild.wasm',
     })
     esbuildReady = true
-    console.log('esbuild-wasm initialized')
-
-    // Hide status bar and enable buttons
-    if (compilerStatus) {
-      compilerStatus.style.display = 'none'
-    }
-    if (runBtn) {
-      runBtn.disabled = !currentTest?.tsCode
-    }
-    if (runAllBtn) {
-      runAllBtn.disabled = false
-    }
+    updateCompilerStatus()
   } catch (err) {
     console.error('Failed to initialize esbuild-wasm:', err)
     if (compilerStatusText) {
@@ -141,9 +132,39 @@ async function initEsbuild() {
   }
 }
 
+function updateCompilerStatus() {
+  if (goscriptReady && esbuildReady) {
+    if (compilerStatus) {
+      compilerStatus.style.display = 'none'
+    }
+    if (compileBtn) {
+      compileBtn.disabled = !currentTest?.goCode
+    }
+    if (runBtn) {
+      runBtn.disabled = !currentTest?.tsCode
+    }
+    if (runAllBtn) {
+      runAllBtn.disabled = false
+    }
+  } else if (goscriptReady) {
+    if (compilerStatusText) {
+      compilerStatusText.textContent = 'Loading TypeScript runner...'
+    }
+  } else if (esbuildReady) {
+    if (compilerStatusText) {
+      compilerStatusText.textContent = 'Loading GoScript compiler...'
+    }
+  } else {
+    if (compilerStatusText) {
+      compilerStatusText.textContent = 'Loading compilers...'
+    }
+  }
+}
+
 // Initialize
 async function init() {
-  // Start loading esbuild in parallel
+  // Start loading compilers in parallel
+  const goscriptPromise = initGoscript()
   const esbuildPromise = initEsbuild()
 
   try {
@@ -170,8 +191,8 @@ async function init() {
     testCount.textContent = 'Error loading tests'
   }
 
-  // Wait for esbuild to be ready
-  await esbuildPromise
+  // Wait for compilers to be ready
+  await Promise.all([goscriptPromise, esbuildPromise])
 }
 
 function getStatusIcon(status) {
@@ -272,6 +293,7 @@ function selectTest(test) {
     tsEditor.setValue(test.tsCode || '// No TypeScript output')
   }
 
+  compileBtn.disabled = !test.goCode || !goscriptReady
   runBtn.disabled = !test.tsCode || !esbuildReady
 }
 
@@ -289,6 +311,28 @@ testSearch.addEventListener('input', () => {
 
   renderTestList()
   updateTestCount()
+})
+
+compileBtn.addEventListener('click', async () => {
+  if (!currentTest || !currentTest.goCode || !goscriptReady) return
+
+  actualOutput.textContent = 'Compiling...'
+  actualOutput.style.color = ''
+
+  try {
+    const tsCode = await compileGoToTypeScript(currentTest.goCode, 'main')
+    if (tsEditor) {
+      tsEditor.setValue(tsCode)
+    }
+    // Update the test's tsCode in memory so Run works
+    currentTest.tsCode = tsCode
+    runBtn.disabled = false
+    actualOutput.textContent = 'Compiled successfully!'
+    actualOutput.style.color = '#27c93f'
+  } catch (err) {
+    actualOutput.textContent = `Compile Error: ${err.message}`
+    actualOutput.style.color = '#ff5f56'
+  }
 })
 
 runBtn.addEventListener('click', async () => {

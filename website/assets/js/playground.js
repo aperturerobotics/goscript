@@ -1,7 +1,11 @@
 // GoScript Playground - Main JavaScript
-// This loads pre-compiled examples and allows running them in the browser using esbuild-wasm
+// This loads the GoScript WASM compiler and allows running Go code in the browser
 
 import * as goscriptRuntime from '@goscript/builtin'
+import {
+  ready as wasmReady,
+  compileGoToTypeScript,
+} from './goscript-wasm.js'
 
 // Make runtime available globally for executed code
 window.$ = goscriptRuntime
@@ -9,6 +13,7 @@ window.$ = goscriptRuntime
 let examples = []
 let currentExample = null
 let esbuildReady = false
+let goscriptReady = false
 
 // Monaco editors
 let goEditor = null
@@ -19,6 +24,7 @@ const goEditorContainer = document.getElementById('go-editor')
 const tsEditorContainer = document.getElementById('ts-editor')
 const outputBody = document.getElementById('output-body')
 const exampleSelect = document.getElementById('example-select')
+const compileBtn = document.getElementById('compile-btn')
 const runBtn = document.getElementById('run-btn')
 const clearBtn = document.getElementById('clear-btn')
 const compilerStatus = document.getElementById('compiler-status')
@@ -75,41 +81,56 @@ function initMonaco() {
   })
 }
 
-// Initialize esbuild-wasm (loaded via script tag)
-async function initEsbuild() {
+// Initialize GoScript WASM compiler
+async function initGoscript() {
   if (compilerStatus) {
-    compilerStatus.textContent = 'Loading TypeScript compiler...'
-  }
-  if (runBtn) {
-    runBtn.disabled = true
+    compilerStatus.textContent = 'Loading GoScript compiler...'
   }
 
   try {
-    // esbuild is loaded globally via script tag
+    await wasmReady
+    goscriptReady = true
+    updateButtonStates()
+  } catch (err) {
+    console.error('Failed to initialize GoScript WASM compiler:', err)
+    if (compilerStatus) {
+      compilerStatus.textContent = 'GoScript compiler failed to load'
+      compilerStatus.style.color = '#ff5f56'
+    }
+  }
+}
+
+// Initialize esbuild-wasm (loaded via script tag)
+async function initEsbuild() {
+  try {
     if (!window.esbuild) {
       throw new Error('esbuild not loaded')
-    }
-    if (compilerStatus) {
-      compilerStatus.textContent = 'Initializing WebAssembly...'
     }
     await window.esbuild.initialize({
       wasmURL: 'https://cdn.jsdelivr.net/npm/esbuild-wasm@0.27.2/esbuild.wasm',
     })
     esbuildReady = true
-    console.log('esbuild-wasm initialized')
-
-    // Hide status and enable button
-    if (compilerStatus) {
-      compilerStatus.style.display = 'none'
-    }
-    if (runBtn) {
-      runBtn.disabled = false
-    }
+    updateButtonStates()
   } catch (err) {
     console.error('Failed to initialize esbuild-wasm:', err)
-    if (compilerStatus) {
-      compilerStatus.textContent = 'Compiler failed to load'
-      compilerStatus.style.color = '#ff5f56'
+  }
+}
+
+// Update button states based on what's ready
+function updateButtonStates() {
+  if (compileBtn) {
+    compileBtn.disabled = !goscriptReady
+  }
+  if (runBtn) {
+    runBtn.disabled = !esbuildReady
+  }
+  if (compilerStatus) {
+    if (goscriptReady && esbuildReady) {
+      compilerStatus.style.display = 'none'
+    } else if (goscriptReady) {
+      compilerStatus.textContent = 'Loading TypeScript runner...'
+    } else if (esbuildReady) {
+      compilerStatus.textContent = 'Loading GoScript compiler...'
     }
   }
 }
@@ -127,7 +148,8 @@ function waitForMonaco() {
 
 // Initialize
 async function init() {
-  // Start loading esbuild and Monaco in parallel
+  // Start loading all dependencies in parallel
+  const goscriptPromise = initGoscript()
   const esbuildPromise = initEsbuild()
   const monacoPromise = waitForMonaco().then(() => initMonaco())
 
@@ -157,10 +179,11 @@ async function init() {
     loadExample(examples[0])
   }
 
-  // Wait for esbuild to be ready
-  await esbuildPromise
+  // Wait for both compilers to be ready
+  await Promise.all([goscriptPromise, esbuildPromise])
 
-  // Auto-run the code on page load
+  // Auto-compile and run the code on page load
+  await compileCode()
   runCode()
 }
 
@@ -189,7 +212,13 @@ function loadExample(example) {
     goEditor.setValue(example.goCode || example.go || '')
   }
   if (tsEditor) {
-    tsEditor.setValue(example.tsCode || example.typescript || '')
+    // Show pre-compiled TypeScript if available, otherwise show placeholder
+    const tsCode = example.tsCode || example.typescript || ''
+    if (tsCode) {
+      tsEditor.setValue(tsCode)
+    } else {
+      tsEditor.setValue('// Click "Compile" to generate TypeScript')
+    }
   }
   outputBody.textContent = ''
   outputBody.className = 'panel-body output-panel'
@@ -204,20 +233,71 @@ exampleSelect.addEventListener('change', () => {
   }
 })
 
-runBtn.addEventListener('click', runCode)
+compileBtn.addEventListener('click', () => compileCode())
+runBtn.addEventListener('click', () => runCode())
 clearBtn.addEventListener('click', () => {
   outputBody.textContent = ''
   outputBody.className = 'panel-body output-panel'
 })
 
-async function runCode() {
-  if (!tsEditor) {
+async function compileCode() {
+  if (!goEditor) {
     outputBody.textContent = 'Editor not ready yet.'
     return
   }
+  if (!goscriptReady) {
+    outputBody.textContent = 'GoScript compiler not ready yet.'
+    return
+  }
+
+  const goCode = goEditor.getValue()
+  if (!goCode.trim()) {
+    outputBody.textContent = 'No Go code to compile.'
+    return
+  }
+
+  outputBody.textContent = 'Compiling...'
+  outputBody.className = 'panel-body output-panel'
+
+  try {
+    const tsCode = await compileGoToTypeScript(goCode, 'main')
+    if (tsEditor) {
+      tsEditor.setValue(tsCode)
+    }
+    outputBody.textContent = 'Compiled successfully!'
+    outputBody.className = 'panel-body output-panel'
+  } catch (err) {
+    outputBody.textContent = `Compile Error: ${err.message}`
+    outputBody.className = 'panel-body output-panel error'
+  }
+}
+
+async function runCode() {
+  if (!tsEditor || !goEditor) {
+    outputBody.textContent = 'Editor not ready yet.'
+    return
+  }
+
+  // Always compile first to ensure TypeScript matches the Go code
+  if (goscriptReady) {
+    const goCode = goEditor.getValue()
+    if (goCode.trim() && !goCode.startsWith('// Select an example')) {
+      outputBody.textContent = 'Compiling...'
+      outputBody.className = 'panel-body output-panel'
+      try {
+        const tsCode = await compileGoToTypeScript(goCode, 'main')
+        tsEditor.setValue(tsCode)
+      } catch (err) {
+        outputBody.textContent = `Compile Error: ${err.message}`
+        outputBody.className = 'panel-body output-panel error'
+        return
+      }
+    }
+  }
+
   const tsCode = tsEditor.getValue()
-  if (!tsCode.trim()) {
-    outputBody.textContent = 'No TypeScript code to run.'
+  if (!tsCode.trim() || tsCode.startsWith('// Click "Compile"') || tsCode.startsWith('// TypeScript output')) {
+    outputBody.textContent = 'No TypeScript code to run. Enter Go code first.'
     return
   }
 
@@ -244,6 +324,31 @@ async function runTypeScript(code) {
     throw new Error('GoScript runtime not loaded')
   }
 
+  // Remove ALL import statements - we use the global runtime ($)
+  let processedCode = code
+    .replace(/^\s*import\s+.*from\s+["'][^"']*["'];?\s*$/gm, '')
+    .replace(/import\s+\*\s+as\s+\w+\s+from\s+["'][^"']*["'];?/g, '')
+    .replace(/import\s+{[^}]*}\s+from\s+["'][^"']*["'];?/g, '')
+
+  // Use esbuild to compile TypeScript to JavaScript
+  let jsCode
+  try {
+    const result = await window.esbuild.transform(processedCode, {
+      loader: 'ts',
+      format: 'esm',
+      target: 'es2022',
+    })
+    jsCode = result.code
+  } catch (err) {
+    throw new Error(`TypeScript compilation error: ${err.message}`)
+  }
+
+  // Remove any remaining export keywords and imports from JS output
+  jsCode = jsCode
+    .replace(/^export /gm, '')
+    .replace(/^\s*import\s+.*from\s+["'][^"']*["'];?\s*$/gm, '')
+    .replace(/import\s*\([^)]*\)/g, '')
+
   // Capture output by intercepting console.log (used by runtime's println)
   const outputLines = []
   const originalConsoleLog = console.log
@@ -252,28 +357,6 @@ async function runTypeScript(code) {
   }
 
   try {
-    // Remove imports - we use the global runtime
-    let processedCode = code
-      .replace(/import \* as \$ from ["']@goscript\/builtin\/index\.js["']/g, '')
-      .replace(/import \* as \$ from ["']@goscript\/builtin["']/g, '')
-      .replace(/import .* from ["'][^"']+["']/g, '')
-
-    // Use esbuild to compile TypeScript to JavaScript
-    let jsCode
-    try {
-      const result = await window.esbuild.transform(processedCode, {
-        loader: 'ts',
-        format: 'esm',
-        target: 'es2022',
-      })
-      jsCode = result.code
-    } catch (err) {
-      throw new Error(`TypeScript compilation error: ${err.message}`)
-    }
-
-    // Remove any remaining export keywords (esbuild preserves them)
-    jsCode = jsCode.replace(/^export /gm, '')
-
     // Add a call to main() at the end if it exists
     if (/async function main\s*\(/.test(jsCode)) {
       jsCode += '\nawait main();'
@@ -329,9 +412,6 @@ function getBuiltinExamples() {
 func main() {
     println("Hello, World!")
 }`,
-      typescript: `import * as $ from "@goscript/builtin/index.js"
-
-$.println("Hello, World!")`,
     },
     {
       name: 'Variables',
@@ -345,14 +425,6 @@ func main() {
     println("y =", y)
     println("x + y =", z)
 }`,
-      typescript: `import * as $ from "@goscript/builtin/index.js"
-
-let x: number = 10
-let y: number = 20
-let z: number = x + y
-$.println("x =", x)
-$.println("y =", y)
-$.println("x + y =", z)`,
     },
     {
       name: 'Struct',
@@ -374,26 +446,6 @@ func main() {
     p.Move(5, 5)
     println("After:", p.X, p.Y)
 }`,
-      typescript: `import * as $ from "@goscript/builtin/index.js"
-
-class Point {
-  public X: number = 0
-  public Y: number = 0
-
-  constructor(init?: Partial<Point>) {
-    if (init) Object.assign(this, init)
-  }
-
-  public Move(dx: number, dy: number): void {
-    this.X += dx
-    this.Y += dy
-  }
-}
-
-const p = new Point({ X: 10, Y: 20 })
-$.println("Before:", p.X, p.Y)
-p.Move(5, 5)
-$.println("After:", p.X, p.Y)`,
     },
     {
       name: 'Slice Operations',
@@ -410,17 +462,6 @@ func main() {
         println("  nums[", i, "] =", v)
     }
 }`,
-      typescript: `import * as $ from "@goscript/builtin/index.js"
-
-let nums: number[] = [1, 2, 3]
-$.println("Initial:", nums[0], nums[1], nums[2])
-
-nums = $.append(nums, 4, 5)
-$.println("After append:", $.len(nums), "elements")
-
-for (const [i, v] of $.range(nums)) {
-  $.println("  nums[", i, "] =", v)
-}`,
     },
     {
       name: 'Map',
@@ -436,17 +477,6 @@ func main() {
     for name, age := range ages {
         println(name, "is", age, "years old")
     }
-}`,
-      typescript: `import * as $ from "@goscript/builtin/index.js"
-
-const ages = new Map<string, number>()
-ages.set("Alice", 30)
-ages.set("Bob", 25)
-
-$.println("Alice is", ages.get("Alice"))
-
-for (const [name, age] of ages) {
-  $.println(name, "is", age, "years old")
 }`,
     },
     {
@@ -468,21 +498,6 @@ func main() {
     x, y := swap(1, 2)
     println("swap(1, 2) =", x, y)
 }`,
-      typescript: `import * as $ from "@goscript/builtin/index.js"
-
-function add(a: number, b: number): number {
-  return a + b
-}
-
-function swap(a: number, b: number): [number, number] {
-  return [b, a]
-}
-
-const sum = add(3, 4)
-$.println("3 + 4 =", sum)
-
-const [x, y] = swap(1, 2)
-$.println("swap(1, 2) =", x, y)`,
     },
     {
       name: 'Interface',
@@ -518,44 +533,6 @@ func main() {
         println(animal.Speak())
     }
 }`,
-      typescript: `import * as $ from "@goscript/builtin/index.js"
-
-interface Speaker {
-  Speak(): string
-}
-
-class Dog implements Speaker {
-  public Name: string = ""
-
-  constructor(init?: Partial<Dog>) {
-    if (init) Object.assign(this, init)
-  }
-
-  public Speak(): string {
-    return this.Name + " says woof!"
-  }
-}
-
-class Cat implements Speaker {
-  public Name: string = ""
-
-  constructor(init?: Partial<Cat>) {
-    if (init) Object.assign(this, init)
-  }
-
-  public Speak(): string {
-    return this.Name + " says meow!"
-  }
-}
-
-const animals: Speaker[] = [
-  new Dog({ Name: "Rex" }),
-  new Cat({ Name: "Whiskers" })
-]
-
-for (const [_, animal] of $.range(animals)) {
-  $.println(animal.Speak())
-}`,
     },
     {
       name: 'Defer',
@@ -566,17 +543,6 @@ func main() {
     defer println("Deferred 1")
     defer println("Deferred 2")
     println("End")
-}`,
-      typescript: `import * as $ from "@goscript/builtin/index.js"
-
-const _defers = $.deferStack()
-try {
-  $.println("Start")
-  _defers.defer(() => $.println("Deferred 1"))
-  _defers.defer(() => $.println("Deferred 2"))
-  $.println("End")
-} finally {
-  await _defers.runDefers()
 }`,
     },
   ]

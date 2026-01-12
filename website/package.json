@@ -5,10 +5,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:browser": "vitest run --browser"
   },
   "devDependencies": {
+    "@vitest/browser": "^4.0.16",
+    "@vitest/browser-playwright": "^4.0.16",
     "esbuild": "^0.27.2",
-    "vite": "^6.0.0"
+    "playwright": "^1.57.0",
+    "vite": "^6.0.0",
+    "vitest": "^4.0.16"
   }
 }

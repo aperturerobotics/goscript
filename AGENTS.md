@@ -12,6 +12,7 @@ Fix anything that you come across in the project while working that violates any
 - Check for duplicate information across sections
 - Condense and consolidate duplicates into a single authoritative section
 - Ensure guidelines are clear and non-contradictory
+- NEVER run the vite dev server or anything that listens on any port yourself! Ask the user to do it!
 
 Remember to always delete dead code when changing things - for example if you changed something and a function is no longer used anywhere, delete that function.
 

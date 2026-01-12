@@ -37,6 +37,16 @@ jobs:
       - name: Run compliance tests to generate output
         run: go test -timeout=10m ./compiler
 
+      - name: Build WASM compiler
+        run: |
+          GOOS=js GOARCH=wasm go build -ldflags="-s -w" -trimpath -o website/public/goscript.wasm ./cmd/goscript-wasm
+          cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" website/public/
+
+      - name: Optimize WASM
+        run: |
+          sudo apt-get update && sudo apt-get install -y binaryen
+          wasm-opt --enable-bulk-memory -Oz --strip-debug --strip-producers --strip-dwarf --zero-filled-memory website/public/goscript.wasm -o website/public/goscript.wasm
+
       - name: Build website data
         run: bun run website:build
 
