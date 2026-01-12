@@ -27,6 +27,7 @@ const OUTPUT_FILE = path.join(
   import.meta.dirname,
   '..',
   'website',
+  'public',
   'data',
   'examples.json',
 )
