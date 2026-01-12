@@ -34,9 +34,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Run compliance tests to generate output
-        run: go test -timeout=10m ./compiler
-
       - name: Build WASM compiler
         run: |
           GOOS=js GOARCH=wasm go build -ldflags="-s -w" -trimpath -o website/public/goscript.wasm ./cmd/goscript-wasm
