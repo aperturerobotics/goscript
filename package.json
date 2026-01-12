@@ -61,7 +61,7 @@
     "release:version": "npm version patch -m \"release: v%s\" --no-git-tag-version",
     "release:version:minor": "npm version minor -m \"release: v%s\" --no-git-tag-version",
     "release:commit": "git reset && git add package.json && git commit -s -m \"release: v$(node -p \"require('./package.json').version\")\" && git tag v$(node -p \"require('./package.json').version\")",
-    "release:publish": "git push && git push --tags && npm run build && npm publish",
+    "release:publish": "git push && git push --tags",
     "lint": "npm run lint:go && npm run lint:js",
     "lint:go": "golangci-lint run .",
     "lint:js": "eslint -c eslint.config.mjs ./",
