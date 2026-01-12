@@ -10,6 +10,7 @@ export default defineConfig({
       'vendor',
       '**/vendor',
       '**/tests.browser.test.ts',
+      'website/tests/**', // Browser-only tests, run separately with website/vitest.config.ts
     ],
   },
   resolve: {

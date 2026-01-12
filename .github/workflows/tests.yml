@@ -42,7 +42,7 @@ jobs:
         run: bun typecheck
 
       - name: Test Js
-        run: bun test
+        run: bun run test:js
 
       - name: Lint Js
         run: bun lint:js
