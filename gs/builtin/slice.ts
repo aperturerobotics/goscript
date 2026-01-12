@@ -417,19 +417,23 @@ export function goSlice<T>( // T can be number for Uint8Array case
   if (s === null || s === undefined) {
     low = low ?? 0
     high = high ?? 0
-    
+
     if (low < 0 || high < low) {
       throw new Error(`Invalid slice indices: ${low}:${high}`)
     }
-    
+
     if (low !== 0 || high !== 0) {
-      throw new Error(`runtime error: slice bounds out of range [:${high}] with capacity 0`)
+      throw new Error(
+        `runtime error: slice bounds out of range [:${high}] with capacity 0`,
+      )
     }
-    
+
     if (max !== undefined && max !== 0) {
-      throw new Error(`runtime error: slice bounds out of range [::${max}] with capacity 0`)
+      throw new Error(
+        `runtime error: slice bounds out of range [::${max}] with capacity 0`,
+      )
     }
-    
+
     return null as Slice<T>
   }
 
@@ -1117,7 +1121,10 @@ export const byte = (n: number): number => {
  * @returns The byte value (0-255) at the specified index.
  * @throws Error if index is out of bounds.
  */
-export const indexString = (str: string | import('./builtin.js').Bytes, index: number): number => {
+export const indexString = (
+  str: string | import('./builtin.js').Bytes,
+  index: number,
+): number => {
   if (typeof str !== 'string') {
     // Bytes - access directly
     if (str instanceof Uint8Array) {
@@ -1130,7 +1137,9 @@ export const indexString = (str: string | import('./builtin.js').Bytes, index: n
     }
     // Array or null
     if (str === null || str === undefined) {
-      throw new Error(`runtime error: index out of range [${index}] with length 0`)
+      throw new Error(
+        `runtime error: index out of range [${index}] with length 0`,
+      )
     }
     if (index < 0 || index >= str.length) {
       throw new Error(
@@ -1245,7 +1254,9 @@ export const bytesToString = (
  * @param s The input string.
  * @returns A Uint8Array representing the UTF-8 bytes of the string.
  */
-export function stringToBytes(s: string | import('./builtin.js').Bytes): Uint8Array {
+export function stringToBytes(
+  s: string | import('./builtin.js').Bytes,
+): Uint8Array {
   if (typeof s === 'string') {
     return new TextEncoder().encode(s)
   }

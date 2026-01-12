@@ -1,4 +1,11 @@
-import { Type, Kind, Value, Map as MapKind, StructField, TypeOf } from './type.js'
+import {
+  Type,
+  Kind,
+  Value,
+  Map as MapKind,
+  StructField,
+  TypeOf,
+} from './type.js'
 
 // Simple MapOf implementation using JavaScript Map
 export function MapOf(key: Type, elem: Type): Type {

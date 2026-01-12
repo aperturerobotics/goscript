@@ -1580,7 +1580,9 @@ class StructType implements Type {
 
   public Field(i: number): StructField {
     if (i < 0 || i >= this.NumField()) {
-      throw new Error(`reflect: Field index out of range [${i}] with length ${this.NumField()}`)
+      throw new Error(
+        `reflect: Field index out of range [${i}] with length ${this.NumField()}`,
+      )
     }
     const f = this._fields[i]
     return new StructField({
@@ -1676,12 +1678,16 @@ class StructType implements Type {
           }
         case 'slice':
           if (ti.elemType) {
-            return new SliceType(StructType.createTypeFromFieldInfo(ti.elemType))
+            return new SliceType(
+              StructType.createTypeFromFieldInfo(ti.elemType),
+            )
           }
           return new SliceType(new BasicType(Invalid, 'unknown', 8))
         case 'pointer':
           if (ti.elemType) {
-            return new PointerType(StructType.createTypeFromFieldInfo(ti.elemType))
+            return new PointerType(
+              StructType.createTypeFromFieldInfo(ti.elemType),
+            )
           }
           return new PointerType(new BasicType(Invalid, 'unknown', 8))
         case 'interface':

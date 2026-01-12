@@ -310,10 +310,12 @@ func (c *GoToTSCompiler) writeMultiVarAssignFromCall(lhs []ast.Expr, callExpr *a
 		// Get function return types if available
 		var resultTypes []*types.Var
 		if callExpr.Fun != nil {
-			if funcType, ok := c.pkg.TypesInfo.TypeOf(callExpr.Fun).Underlying().(*types.Signature); ok {
-				if funcType.Results() != nil && funcType.Results().Len() > 0 {
-					for i := 0; i < funcType.Results().Len(); i++ {
-						resultTypes = append(resultTypes, funcType.Results().At(i))
+			if funType := c.pkg.TypesInfo.TypeOf(callExpr.Fun); funType != nil {
+				if funcType, ok := funType.Underlying().(*types.Signature); ok {
+					if funcType.Results() != nil && funcType.Results().Len() > 0 {
+						for i := 0; i < funcType.Results().Len(); i++ {
+							resultTypes = append(resultTypes, funcType.Results().At(i))
+						}
 					}
 				}
 			}

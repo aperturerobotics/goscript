@@ -264,7 +264,14 @@ func (c *GoToTSCompiler) writeStringConversion(exp *ast.CallExpr) error {
 		}
 	}
 
-	return fmt.Errorf("unhandled string conversion: %s", exp.Fun)
+	// Fallback: when type info is not available (e.g., in WASM context),
+	// use a generic conversion that handles both []byte and string
+	c.tsw.WriteLiterally("$.genericBytesOrStringToString(")
+	if err := c.WriteValueExpr(arg); err != nil {
+		return fmt.Errorf("failed to write argument for string(unknown type) conversion: %w", err)
+	}
+	c.tsw.WriteLiterally(")")
+	return nil
 }
 
 // handleTypeConversionCommon contains the shared logic for type conversions

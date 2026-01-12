@@ -1,18 +1,18 @@
-import { useState } from "react"
-import { trpc } from "./trpc"
+import { useState } from 'react'
+import { trpc } from './trpc'
 
-type Filter = "all" | "active" | "completed"
-type Priority = "low" | "medium" | "high"
+type Filter = 'all' | 'active' | 'completed'
+type Priority = 'low' | 'medium' | 'high'
 
 export default function App() {
-  const [newTodo, setNewTodo] = useState("")
-  const [priority, setPriority] = useState<Priority>("medium")
-  const [filter, setFilter] = useState<Filter>("all")
+  const [newTodo, setNewTodo] = useState('')
+  const [priority, setPriority] = useState<Priority>('medium')
+  const [filter, setFilter] = useState<Filter>('all')
 
   const utils = trpc.useUtils()
 
   const { data: todos, isLoading } = trpc.list.useQuery(
-    filter === "all" ? undefined : { filter }
+    filter === 'all' ? undefined : { filter },
   )
 
   const { data: stats } = trpc.stats.useQuery()
@@ -21,7 +21,7 @@ export default function App() {
     onSuccess: () => {
       utils.list.invalidate()
       utils.stats.invalidate()
-      setNewTodo("")
+      setNewTodo('')
     },
   })
 
@@ -76,48 +76,55 @@ export default function App() {
             <option value="medium">Medium</option>
             <option value="high">High</option>
           </select>
-          <button type="submit" disabled={createMutation.isPending || !newTodo.trim()}>
+          <button
+            type="submit"
+            disabled={createMutation.isPending || !newTodo.trim()}
+          >
             Add
           </button>
         </form>
 
         <div className="filters">
           <button
-            className={filter === "all" ? "active" : ""}
-            onClick={() => setFilter("all")}
+            className={filter === 'all' ? 'active' : ''}
+            onClick={() => setFilter('all')}
           >
             All
           </button>
           <button
-            className={filter === "active" ? "active" : ""}
-            onClick={() => setFilter("active")}
+            className={filter === 'active' ? 'active' : ''}
+            onClick={() => setFilter('active')}
           >
             Active
           </button>
           <button
-            className={filter === "completed" ? "active" : ""}
-            onClick={() => setFilter("completed")}
+            className={filter === 'completed' ? 'active' : ''}
+            onClick={() => setFilter('completed')}
           >
             Completed
           </button>
         </div>
 
-        {isLoading ? (
+        {isLoading ?
           <div className="loading">Loading...</div>
-        ) : todos && todos.length > 0 ? (
+        : todos && todos.length > 0 ?
           <ul className="todo-list">
             {todos.map((todo) => (
               <li key={todo.id} className="todo-item">
                 <div
-                  className={`todo-checkbox ${todo.completed ? "checked" : ""}`}
+                  className={`todo-checkbox ${todo.completed ? 'checked' : ''}`}
                   onClick={() => toggleMutation.mutate({ id: todo.id })}
                 />
                 <div className="todo-content">
-                  <div className={`todo-title ${todo.completed ? "completed" : ""}`}>
+                  <div
+                    className={`todo-title ${todo.completed ? 'completed' : ''}`}
+                  >
                     {todo.title}
                   </div>
                   <div className="todo-meta">
-                    <span className={`priority-badge priority-${todo.priority}`}>
+                    <span
+                      className={`priority-badge priority-${todo.priority}`}
+                    >
                       {todo.priority}
                     </span>
                   </div>
@@ -132,22 +139,21 @@ export default function App() {
               </li>
             ))}
           </ul>
-        ) : (
-          <div className="empty-state">
+        : <div className="empty-state">
             <p>
-              {filter === "all"
-                ? "No todos yet. Add one above!"
-                : filter === "active"
-                ? "No active todos!"
-                : "No completed todos!"}
+              {filter === 'all' ?
+                'No todos yet. Add one above!'
+              : filter === 'active' ?
+                'No active todos!'
+              : 'No completed todos!'}
             </p>
           </div>
-        )}
+        }
 
         {stats && stats.total > 0 && (
           <div className="stats">
             <span>
-              {stats.active} item{stats.active !== 1 ? "s" : ""} left
+              {stats.active} item{stats.active !== 1 ? 's' : ''} left
             </span>
             {stats.completed > 0 && (
               <button onClick={() => clearCompletedMutation.mutate()}>
@@ -159,8 +165,9 @@ export default function App() {
       </div>
 
       <div className="powered-by">
-        Built with <a href="https://github.com/aperturerobotics/goscript">GoScript</a>
-        {" "}- Go business logic compiled to TypeScript
+        Built with{' '}
+        <a href="https://github.com/aperturerobotics/goscript">GoScript</a> - Go
+        business logic compiled to TypeScript
       </div>
     </div>
   )

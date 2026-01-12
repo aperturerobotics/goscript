@@ -545,12 +545,12 @@ func WriteTypeScriptRunner(t *testing.T, parentModulePath, testDir, tempDir stri
 // If the script execution fails, it calls t.Fatalf.
 func RunTypeScriptRunner(t *testing.T, workspaceDir, tempDir, tsRunner string) string {
 	t.Helper()
-	
+
 	// Check if bun is available
 	if _, err := exec.LookPath("bun"); err != nil {
 		t.Fatalf("bun is required but not found in PATH. Please install bun: https://bun.sh")
 	}
-	
+
 	cmd := exec.Command("bun", "run", tsRunner)
 	cmd.Dir = tempDir
 

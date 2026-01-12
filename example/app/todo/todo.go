@@ -105,7 +105,7 @@ func (t *Todo) IsOverdue(deadline int64) bool {
 
 // TodoList manages a collection of todos.
 type TodoList struct {
-	todos []*Todo
+	todos  []*Todo
 	nextID int64
 }
 
@@ -228,16 +228,16 @@ func (tl *TodoList) ClearCompleted() int {
 
 // Stats holds statistics about the todo list.
 type Stats struct {
-	Total     int
-	Active    int
-	Completed int
+	Total      int
+	Active     int
+	Completed  int
 	ByPriority map[string]int
 }
 
 // GetStats returns statistics about the todo list.
 func (tl *TodoList) GetStats() Stats {
 	stats := Stats{
-		Total:     len(tl.todos),
+		Total:      len(tl.todos),
 		ByPriority: make(map[string]int),
 	}
 

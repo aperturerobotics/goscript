@@ -97,7 +97,6 @@ export class stringFinder {
       for (
         ;
         j >= 0 && $.indexString(text, i) == $.indexString(f!.pattern, j);
-
       ) {
         i--
         j--

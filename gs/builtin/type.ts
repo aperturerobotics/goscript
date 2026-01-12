@@ -913,26 +913,26 @@ function compareTypeStringWithTypeInfo(
     if (!elemType) {
       return false
     }
-    
+
     // Handle struct types
     if (elemStr.startsWith('struct{')) {
       const elemTypeInfo = normalizeTypeInfo(elemType)
       if (!isStructTypeInfo(elemTypeInfo)) {
         return false
       }
-      
+
       // For anonymous structs, compare the type string representation
       // Extract field definitions from the string
       const fieldsMatch = elemStr.match(/^struct{(.+)}$/)
       if (!fieldsMatch) {
         return false
       }
-      
+
       const fieldStr = fieldsMatch[1]
       // Parse fields like "Name string" or "X int; Y string"
-      const fieldParts = fieldStr.split(';').map(s => s.trim())
+      const fieldParts = fieldStr.split(';').map((s) => s.trim())
       const parsedFields: Record<string, string> = {}
-      
+
       for (const part of fieldParts) {
         // Handle "Name string" format
         const match = part.match(/^(\w+)\s+(.+)$/)
@@ -941,30 +941,29 @@ function compareTypeStringWithTypeInfo(
           parsedFields[fieldName] = fieldType.trim()
         }
       }
-      
+
       // Compare fields
       const typeInfoFields = elemTypeInfo.fields || {}
       const typeInfoFieldNames = Object.keys(typeInfoFields)
       const parsedFieldNames = Object.keys(parsedFields)
-      
+
       if (typeInfoFieldNames.length !== parsedFieldNames.length) {
         return false
       }
-      
+
       // Check if all field names match and types are compatible
       for (const fieldName of typeInfoFieldNames) {
         if (!(fieldName in parsedFields)) {
           return false
         }
-        
+
         const fieldValue = typeInfoFields[fieldName]
         // Handle StructFieldInfo (which has 'type' and optional 'tag' properties)
-        const fieldTypeInfo: TypeInfo | string = isStructFieldInfo(fieldValue)
-          ? fieldValue.type
-          : fieldValue
+        const fieldTypeInfo: TypeInfo | string =
+          isStructFieldInfo(fieldValue) ? fieldValue.type : fieldValue
         const typeInfoFieldType = normalizeTypeInfo(fieldTypeInfo)
         const parsedFieldType = parsedFields[fieldName]
-        
+
         // Compare basic types
         if (isBasicTypeInfo(typeInfoFieldType)) {
           const expectedTypeName = typeInfoFieldType.name || ''
@@ -972,17 +971,19 @@ function compareTypeStringWithTypeInfo(
           if (expectedTypeName === 'string' && parsedFieldType === 'string') {
             continue
           }
-          if ((expectedTypeName === 'int' || expectedTypeName === 'number') && 
-              (parsedFieldType === 'int' || parsedFieldType === 'number')) {
+          if (
+            (expectedTypeName === 'int' || expectedTypeName === 'number') &&
+            (parsedFieldType === 'int' || parsedFieldType === 'number')
+          ) {
             continue
           }
           return false
         }
       }
-      
+
       return true
     }
-    
+
     // Handle named types
     if (typeof elemType === 'string') {
       return elemStr === elemType
@@ -991,7 +992,7 @@ function compareTypeStringWithTypeInfo(
       return elemStr === elemType.name
     }
   }
-  
+
   return false
 }
 
@@ -1009,7 +1010,7 @@ export function typeAssert<T>(
   typeInfo: string | TypeInfo,
 ): TypeAssertResult<T> {
   const normalizedType = normalizeTypeInfo(typeInfo)
-  
+
   // Handle typed nil pointers (created by typedNil() for conversions like (*T)(nil))
   if (typeof value === 'object' && value !== null && value.__isTypedNil) {
     // For typed nils, we need to compare the stored type with the expected type
@@ -1023,7 +1024,7 @@ export function typeAssert<T>(
     }
     return { value: null as unknown as T, ok: false }
   }
-  
+
   if (isPointerTypeInfo(normalizedType) && value === null) {
     return { value: null as unknown as T, ok: true }
   }
@@ -1208,7 +1209,7 @@ export function typeSwitch(
  * Creates a typed nil pointer with type metadata for reflection.
  * This is used for type conversions like (*Interface)(nil) where we need
  * to preserve the pointer type information even though the value is null.
- * 
+ *
  * @param typeName The full Go type name (e.g., "*main.Stringer")
  * @returns An object that represents a typed nil with reflection metadata
  */

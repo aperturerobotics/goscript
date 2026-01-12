@@ -221,10 +221,10 @@ func NewAnalysis(allPackages map[string]*packages.Package) *Analysis {
 		AsyncReturningVars:       make(map[types.Object]bool),
 		NamedBasicTypes:          make(map[types.Type]bool),
 		AllPackages:              allPackages,
-		InterfaceImplementations:  make(map[InterfaceMethodKey][]ImplementationInfo),
-		MethodAsyncStatus:         make(map[MethodKey]bool),
-		ReferencedTypesPerFile:    make(map[string]map[*types.Named]bool),
-		SyntheticImportsPerFile:   make(map[string]map[string]*fileImport),
+		InterfaceImplementations: make(map[InterfaceMethodKey][]ImplementationInfo),
+		MethodAsyncStatus:        make(map[MethodKey]bool),
+		ReferencedTypesPerFile:   make(map[string]map[*types.Named]bool),
+		SyntheticImportsPerFile:  make(map[string]map[string]*fileImport),
 	}
 }
 
