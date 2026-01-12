@@ -64,7 +64,7 @@ function goscriptRuntimePlugin(): Plugin {
 }
 
 export default defineConfig({
-  base: '/goscript/',
+  base: '/',
   plugins: [goscriptRuntimePlugin()],
   build: {
     outDir: 'dist',
