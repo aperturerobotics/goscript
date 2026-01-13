@@ -6,9 +6,13 @@ import {
   ready as wasmReady,
   compileGoToTypeScript,
 } from './goscript-wasm.js'
+import { packages as goscriptPackages } from 'virtual:goscript-packages'
 
 // Make runtime available globally for executed code
 window.$ = goscriptRuntime
+
+// Store pre-bundled packages for the esbuild plugin
+window.__goscriptPackages = goscriptPackages
 
 let examples = []
 let currentExample = null
@@ -314,6 +318,59 @@ async function runCode() {
   }
 }
 
+// Create an esbuild plugin that resolves @goscript/* imports
+function createGoscriptPlugin() {
+  return {
+    name: 'goscript-resolver',
+    setup(build) {
+      // Resolve @goscript/builtin to a virtual module
+      build.onResolve({ filter: /^@goscript\/builtin/ }, (args) => ({
+        path: args.path,
+        namespace: 'goscript-builtin',
+      }))
+
+      // Resolve other @goscript/* packages
+      build.onResolve({ filter: /^@goscript\// }, (args) => {
+        // Normalize: remove /index.js suffix for lookup
+        let pkgName = args.path.replace(/\/index\.js$/, '')
+        if (pkgName === '@goscript/builtin') {
+          return { path: args.path, namespace: 'goscript-builtin' }
+        }
+        return { path: pkgName, namespace: 'goscript-packages' }
+      })
+
+      // Load @goscript/builtin - return a shim that uses the global
+      build.onLoad({ filter: /.*/, namespace: 'goscript-builtin' }, () => ({
+        contents: 'module.exports = globalThis.$',
+        loader: 'js',
+      }))
+
+      // Load other @goscript/* packages from pre-bundled code
+      build.onLoad({ filter: /.*/, namespace: 'goscript-packages' }, (args) => {
+        const pkgCode = window.__goscriptPackages[args.path]
+        if (!pkgCode) {
+          return {
+            contents: `throw new Error("Package not available in playground: ${args.path}")`,
+            loader: 'js',
+          }
+        }
+        // The pre-bundled code has external references to @goscript/builtin
+        // We need to rewrite those to use the global
+        const rewritten = pkgCode
+          .replace(
+            /import\s*\*\s*as\s+\$\s+from\s*["']@goscript\/builtin(?:\/index\.js)?["']/g,
+            'const $ = globalThis.$',
+          )
+          .replace(
+            /from\s*["']@goscript\/builtin(?:\/index\.js)?["']/g,
+            'from "goscript-builtin-shim"',
+          )
+        return { contents: rewritten, loader: 'js' }
+      })
+    },
+  }
+}
+
 async function runTypeScript(code) {
   if (!esbuildReady) {
     throw new Error('esbuild-wasm not ready yet, please wait...')
@@ -324,31 +381,6 @@ async function runTypeScript(code) {
     throw new Error('GoScript runtime not loaded')
   }
 
-  // Remove ALL import statements - we use the global runtime ($)
-  let processedCode = code
-    .replace(/^\s*import\s+.*from\s+["'][^"']*["'];?\s*$/gm, '')
-    .replace(/import\s+\*\s+as\s+\w+\s+from\s+["'][^"']*["'];?/g, '')
-    .replace(/import\s+{[^}]*}\s+from\s+["'][^"']*["'];?/g, '')
-
-  // Use esbuild to compile TypeScript to JavaScript
-  let jsCode
-  try {
-    const result = await window.esbuild.transform(processedCode, {
-      loader: 'ts',
-      format: 'esm',
-      target: 'es2022',
-    })
-    jsCode = result.code
-  } catch (err) {
-    throw new Error(`TypeScript compilation error: ${err.message}`)
-  }
-
-  // Remove any remaining export keywords and imports from JS output
-  jsCode = jsCode
-    .replace(/^export /gm, '')
-    .replace(/^\s*import\s+.*from\s+["'][^"']*["'];?\s*$/gm, '')
-    .replace(/import\s*\([^)]*\)/g, '')
-
   // Capture output by intercepting console.log (used by runtime's println)
   const outputLines = []
   const originalConsoleLog = console.log
@@ -357,6 +389,29 @@ async function runTypeScript(code) {
   }
 
   try {
+    // Use esbuild.build() with our plugin to properly resolve imports
+    let jsCode
+    try {
+      const result = await window.esbuild.build({
+        stdin: {
+          contents: code,
+          loader: 'ts',
+          resolveDir: '/',
+        },
+        bundle: true,
+        format: 'esm',
+        target: 'es2022',
+        write: false,
+        plugins: [createGoscriptPlugin()],
+      })
+      jsCode = result.outputFiles[0].text
+    } catch (err) {
+      throw new Error(`TypeScript compilation error: ${err.message}`)
+    }
+
+    // Remove any remaining export keywords (esbuild preserves them)
+    jsCode = jsCode.replace(/^export /gm, '')
+
     // Add a call to main() at the end if it exists
     if (/async function main\s*\(/.test(jsCode)) {
       jsCode += '\nawait main();'
