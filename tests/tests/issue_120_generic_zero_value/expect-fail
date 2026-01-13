@@ -1,0 +1,7 @@
+https://github.com/aperturerobotics/goscript/issues/120
+
+Generic constraints with methods have incorrect zero value and method resolution.
+Type constraints on generics that include methods are handled as interfaces,
+which leads to incorrect behavior when the underlying type is a primitive.
+The zero value becomes null instead of the correct zero value for the type
+(e.g., 0 for int-based types, "" for string-based types).

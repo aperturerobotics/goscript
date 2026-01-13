@@ -1,0 +1,6 @@
+https://github.com/aperturerobotics/goscript/issues/119
+
+Non-nil interface with nil underlying value not handled correctly.
+GoScript treats Go interfaces like TypeScript interfaces, but in Go interfaces
+are actually objects with both a type and a value. This means it's possible
+to have a non-nil interface that points to a nil value.

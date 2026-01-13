@@ -1,0 +1,8 @@
+ZeroValue[IntVal]: 0
+ZeroValue[StringVal]:
+CallString on zero IntVal: 0
+CallString on zero StringVal:
+Sum[IntVal](): 0
+Sum[StringVal]():
+zeroInt == 0: true
+zeroStr == "": true

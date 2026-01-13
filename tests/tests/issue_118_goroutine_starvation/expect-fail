@@ -1,0 +1,9 @@
+https://github.com/aperturerobotics/goscript/issues/118
+
+Goroutine loops can starve other goroutines.
+GoScript uses async/await for concurrency, which is cooperative multitasking.
+A tight loop in a goroutine without await points (channel operations, etc.)
+will block the JavaScript event loop and prevent other goroutines from running.
+
+This test would likely HANG or TIMEOUT in GoScript because worker1's tight
+loop never yields control, starving worker2.
