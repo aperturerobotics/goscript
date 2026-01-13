@@ -60,11 +60,11 @@ Go's type constraints map to TypeScript's `extends` clause:
 2. **Type Sets**: Approximated using union types or helper interfaces
 3. **Built-in Constraints**: Mapped to runtime helpers in the `@goscript/builtin` package
 
-| Go Constraint | TypeScript Equivalent |
-|---------------|------------------------|
-| `any`         | `any` |
-| `comparable`  | `$.Comparable` |
-| `constraints.Ordered` | `$.Ordered` |
+| Go Constraint         | TypeScript Equivalent |
+|-----------------------|-----------------------|
+| `any`                 | `any`                 |
+| `comparable`          | `$.Comparable`        |
+| `constraints.Ordered` | `$.Ordered`           |
 
 ## Generic Types
 
@@ -275,12 +275,12 @@ function leadingInt<bytes extends Uint8Array | string>(s: bytes): [number, bytes
 
 When a type parameter is constrained by a union of types (e.g., `S string | []byte`), common operations require specialized runtime helpers to ensure consistent Go semantics:
 
-| Operation | Go Code | TypeScript Helper | Return Type |
-|-----------|---------|-------------------|-------------|
-| Length | `len(s)` | `$.len(s)` | `number` |
-| Indexing | `s[i]` | `$.indexStringOrBytes(s, i)` | `number` (byte value) |
-| Slicing | `s[i:j]` | `$.sliceStringOrBytes(s, i, j)` | Same as input type |
-| String conversion | `string(s)` | `$.genericBytesOrStringToString(s)` | `string` |
+| Operation         | Go Code     | TypeScript Helper                    | Return Type           |
+|-------------------|-------------|--------------------------------------|-----------------------|
+| Length            | `len(s)`    | `$.len(s)`                           | `number`              |
+| Indexing          | `s[i]`      | `$.indexStringOrBytes(s, i)`         | `number` (byte value) |
+| Slicing           | `s[i:j]`    | `$.sliceStringOrBytes(s, i, j)`      | Same as input type    |
+| String conversion | `string(s)` | `$.genericBytesOrStringToString(s)`  | `string`              |
 
 ### Type Constraint Interfaces
 

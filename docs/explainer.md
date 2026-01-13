@@ -434,20 +434,20 @@ After analysis, the compiler traverses the AST and generates TypeScript.
 
 ### Type Mapping Table
 
-| Go Type | TypeScript Type | Notes |
-|---------|-----------------|-------|
-| `int`, `int32`, `int64` | `number` | JavaScript number |
-| `float64`, `float32` | `number` | IEEE 754 64-bit |
-| `string` | `string` | Direct mapping |
-| `bool` | `boolean` | Direct mapping |
-| `rune` | `number` | Unicode code point |
-| `byte` | `number` | Byte value |
-| `error` | `$.error \| null` | Runtime interface |
-| `[]T` | `T[] \| null` | With `__capacity` |
-| `map[K]V` | `Map<K, V> \| null` | Standard Map |
-| `chan T` | `$.Channel<T>` | Runtime class |
-| `*T` | `T \| null` or `$.VarRef<T> \| null` | Depends on addressability |
-| `interface{}` | `any` | Or specific interface |
+| Go Type                 | TypeScript Type                      | Notes                    |
+|-------------------------|--------------------------------------|--------------------------|
+| `int`, `int32`, `int64` | `number`                             | JavaScript number        |
+| `float64`, `float32`    | `number`                             | IEEE 754 64-bit          |
+| `string`                | `string`                             | Direct mapping           |
+| `bool`                  | `boolean`                            | Direct mapping           |
+| `rune`                  | `number`                             | Unicode code point       |
+| `byte`                  | `number`                             | Byte value               |
+| `error`                 | `$.error \| null`                    | Runtime interface        |
+| `[]T`                   | `T[] \| null`                        | With `__capacity`        |
+| `map[K]V`               | `Map<K, V> \| null`                  | Standard Map             |
+| `chan T`                | `$.Channel<T>`                       | Runtime class            |
+| `*T`                    | `T \| null` or `$.VarRef<T> \| null` | Depends on addressability|
+| `interface{}`           | `any`                                | Or specific interface    |
 
 ### Struct Translation
 

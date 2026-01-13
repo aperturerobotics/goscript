@@ -6,13 +6,13 @@ This document explores the fundamental connection between Issues 119 and 120, an
 
 Go and TypeScript have fundamentally different relationships with types at runtime:
 
-| Aspect | Go | TypeScript |
-|--------|----|-----------|
-| Runtime type info | Always available via reflection | Erased completely |
-| Interface representation | Fat pointer: (type, value) | Just the value |
-| Generic instantiation | Stenciled or dictionary-based | Erased to `any` |
-| Method dispatch | Via type's method table | Direct property access |
-| Zero values | Known from type | Only for primitives |
+| Aspect                   | Go                             | TypeScript             |
+|--------------------------|--------------------------------|------------------------|
+| Runtime type info        | Always available via reflection| Erased completely      |
+| Interface representation | Fat pointer: (type, value)     | Just the value         |
+| Generic instantiation    | Stenciled or dictionary-based  | Erased to `any`        |
+| Method dispatch          | Via type's method table        | Direct property access |
+| Zero values              | Known from type                | Only for primitives    |
 
 This difference is the root cause of both Issue 119 and Issue 120.
 
@@ -63,12 +63,12 @@ function Sum<T extends Stringer>(...vals: T[]): T {
 
 **Both problems require carrying runtime type information that TypeScript would otherwise erase.**
 
-| Problem | Type Info Needed For |
-|---------|---------------------|
-| Interface nil check | Knowing if type component is nil |
-| Interface method call on nil | Dispatching to correct method with nil receiver |
-| Generic zero value | Looking up zero value for concrete type |
-| Generic method call | Dispatching to method implementation for concrete type |
+| Problem                       | Type Info Needed For                                 |
+|-------------------------------|------------------------------------------------------|
+| Interface nil check           | Knowing if type component is nil                     |
+| Interface method call on nil  | Dispatching to correct method with nil receiver      |
+| Generic zero value            | Looking up zero value for concrete type              |
+| Generic method call           | Dispatching to method implementation for concrete type|
 
 This suggests a **unified type information system** could solve both issues.
 
@@ -208,15 +208,15 @@ function callMethod<R>(
 
 Not every value needs to be wrapped. GoValue is needed when:
 
-| Scenario | Needs GoValue? | Reason |
-|----------|---------------|--------|
-| Local `int` variable | No | No methods, zero value is 0 |
-| Local `*Dog` variable | No | Can be null, methods on Dog |
-| Interface variable | **Yes** | Need to track type separate from value |
-| Generic type parameter | **Yes** | Need zero value and method dispatch |
-| Named type with methods (`type IntVal int`) | Maybe | If used with generics or interfaces |
-| Struct field of interface type | **Yes** | Same as interface variable |
-| Return value of interface type | **Yes** | Caller needs type info |
+| Scenario                                     | Needs GoValue? | Reason                                  |
+|----------------------------------------------|----------------|-----------------------------------------|
+| Local `int` variable                         | No             | No methods, zero value is 0             |
+| Local `*Dog` variable                        | No             | Can be null, methods on Dog             |
+| Interface variable                           | **Yes**        | Need to track type separate from value  |
+| Generic type parameter                       | **Yes**        | Need zero value and method dispatch     |
+| Named type with methods (`type IntVal int`)  | Maybe          | If used with generics or interfaces     |
+| Struct field of interface type               | **Yes**        | Same as interface variable              |
+| Return value of interface type               | **Yes**        | Caller needs type info                  |
 
 ### Optimization: Unwrapping
 
@@ -254,12 +254,12 @@ dog.Bark()  // Direct method call
 
 ### Performance Considerations
 
-| Operation | Overhead |
-|-----------|----------|
-| GoValue creation | Object allocation |
-| Type lookup | Map lookup (fast) |
-| Method dispatch | Indirect call via registry |
-| Nil check | Property access |
+| Operation        | Overhead                   |
+|------------------|----------------------------|
+| GoValue creation | Object allocation          |
+| Type lookup      | Map lookup (fast)          |
+| Method dispatch  | Indirect call via registry |
+| Nil check        | Property access            |
 
 Mitigation strategies:
 - Cache type metadata locally in hot paths

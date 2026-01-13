@@ -111,18 +111,18 @@ The Vite dev server proxies `/api` requests to the backend server.
 
 All endpoints are tRPC procedures accessible via HTTP:
 
-| Procedure | Type | Description |
-|-----------|------|-------------|
-| `list` | Query | List all todos (filterable by status/priority) |
-| `get` | Query | Get a single todo by ID |
-| `create` | Mutation | Create a new todo |
-| `update` | Mutation | Update a todo |
-| `toggle` | Mutation | Toggle todo completion |
-| `delete` | Mutation | Delete a todo |
-| `clearCompleted` | Mutation | Clear all completed todos |
-| `stats` | Query | Get todo statistics |
-| `bulkCreate` | Mutation | Create multiple todos at once |
-| `priorities` | Query | Get priority definitions from GoScript |
+| Procedure        | Type     | Description                                    |
+|------------------|----------|------------------------------------------------|
+| `list`           | Query    | List all todos (filterable by status/priority) |
+| `get`            | Query    | Get a single todo by ID                        |
+| `create`         | Mutation | Create a new todo                              |
+| `update`         | Mutation | Update a todo                                  |
+| `toggle`         | Mutation | Toggle todo completion                         |
+| `delete`         | Mutation | Delete a todo                                  |
+| `clearCompleted` | Mutation | Clear all completed todos                      |
+| `stats`          | Query    | Get todo statistics                            |
+| `bulkCreate`     | Mutation | Create multiple todos at once                  |
+| `priorities`     | Query    | Get priority definitions from GoScript         |
 
 ## Example Usage
 

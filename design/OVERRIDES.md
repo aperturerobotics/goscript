@@ -298,14 +298,14 @@ go test -timeout 30s -run ^TestCompliance/package_import_{package}$ ./compiler
 
 ## Current Override Packages
 
-| Package | Status | Description |
-|---------|--------|-------------|
-| `sync` | ✅ Implemented | Synchronization primitives (Mutex, WaitGroup, etc.) |
-| `unicode` | ✅ Implemented | Unicode character classification and conversion |
-| `time` | ✅ Implemented | Time and duration handling |
-| `errors` | ✅ Implemented | Error creation and handling |
-| `context` | ✅ Implemented | Context for cancellation and timeouts |
-| `slices` | ✅ Implemented | Slice utility functions |
+| Package   | Status         | Description                                          |
+|-----------|----------------|------------------------------------------------------|
+| `sync`    | ✅ Implemented | Synchronization primitives (Mutex, WaitGroup, etc.) |
+| `unicode` | ✅ Implemented | Unicode character classification and conversion      |
+| `time`    | ✅ Implemented | Time and duration handling                           |
+| `errors`  | ✅ Implemented | Error creation and handling                          |
+| `context` | ✅ Implemented | Context for cancellation and timeouts                |
+| `slices`  | ✅ Implemented | Slice utility functions                              |
 
 ## Benefits of Override System
 
