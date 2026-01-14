@@ -34,29 +34,29 @@ GoScript translates Go code at the AST (Abstract Syntax Tree) level, producing r
 ## High-Level Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                          GoScript Compiler                               │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐              │
-│  │ Go Source    │───▶│ Package      │───▶│ Analysis     │              │
-│  │ Files        │    │ Loading      │    │ Phase        │              │
-│  └──────────────┘    └──────────────┘    └──────────────┘              │
-│                                                 │                        │
-│                                                 ▼                        │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐              │
-│  │ TypeScript   │◀───│ Code         │◀───│ Analysis     │              │
-│  │ Output       │    │ Generation   │    │ Results      │              │
-│  └──────────────┘    └──────────────┘    └──────────────┘              │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│                           GoScript Compiler                           │
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
+│  │ Go Source    │───▶│ Package      │───▶│ Analysis     │             │
+│  │ Files        │    │ Loading      │    │ Phase        │             │
+│  └──────────────┘    └──────────────┘    └──────────────┘             │
+│                                                 │                     │
+│                                                 ▼                     │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
+│  │ TypeScript   │◀───│ Code         │◀───│ Analysis     │             │
+│  │ Output       │    │ Generation   │    │ Results      │             │
+│  └──────────────┘    └──────────────┘    └──────────────┘             │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
                                   │
                                   ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      @goscript/builtin Runtime                           │
-├─────────────────────────────────────────────────────────────────────────┤
-│  varRef.ts │ slice.ts │ channel.ts │ map.ts │ type.ts │ defer.ts       │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│                        @goscript/builtin Runtime                      │
+├───────────────────────────────────────────────────────────────────────┤
+│  varRef.ts │ slice.ts │ channel.ts │ map.ts │ type.ts │ defer.ts      │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -66,59 +66,59 @@ GoScript translates Go code at the AST (Abstract Syntax Tree) level, producing r
 ### State Machine: Overall Compilation Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      COMPILATION STATE MACHINE                           │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                   COMPILATION STATE MACHINE                   │
+└───────────────────────────────────────────────────────────────┘
 
     ┌─────────┐
     │  START  │
     └────┬────┘
          │
          ▼
-┌─────────────────┐
-│ LOAD PACKAGES   │─────────────────────────────────────────────┐
-│                 │  Uses golang.org/x/tools/go/packages         │
-│ - Parse Go code │  Mode: LoadAllSyntax                         │
-│ - Type check    │  Env: GOOS=js, GOARCH=wasm                   │
-│ - Build AST     │                                              │
-└────────┬────────┘                                              │
-         │                                                       │
-         ▼                                                       │
-┌─────────────────┐                                              │
-│ CHECK OVERRIDES │◀─────────────────────────────────────────────┘
-│                 │
-│ gs/{pkg}/ exists?│───Yes──▶ Copy handwritten TS package
-│                 │                    │
-└────────┬────────┘                    │
-         │ No                          │
-         ▼                             │
-┌─────────────────┐                    │
-│ ANALYSIS PHASE  │                    │
-│                 │                    │
-│ - Variable refs │                    │
-│ - Async funcs   │                    │
-│ - Defer blocks  │                    │
-│ - Type info     │                    │
-└────────┬────────┘                    │
-         │                             │
-         ▼                             │
-┌─────────────────┐                    │
-│ CODE GENERATION │                    │
-│                 │                    │
-│ - Write imports │                    │
-│ - Write decls   │                    │
-│ - Write funcs   │                    │
-└────────┬────────┘                    │
-         │                             │
-         ▼                             │
-┌─────────────────┐                    │
-│ GENERATE INDEX  │◀───────────────────┘
-│                 │
-│ - Re-export     │
-│   public symbols│
-└────────┬────────┘
-         │
-         ▼
+┌───────────────────┐
+│ LOAD PACKAGES     │───────────────────────────────────────┐
+│                   │  Uses golang.org/x/tools/go/packages  │
+│ - Parse Go code   │  Mode: LoadAllSyntax                  │
+│ - Type check      │  Env: GOOS=js, GOARCH=wasm            │
+│ - Build AST       │                                       │
+└─────────┬─────────┘                                       │
+          │                                                 │
+          ▼                                                 │
+┌───────────────────┐                                       │
+│ CHECK OVERRIDES   │◀──────────────────────────────────────┘
+│                   │
+│ gs/{pkg}/ exists? │───Yes──▶ Copy handwritten TS package
+│                   │                    │
+└─────────┬─────────┘                    │
+          │ No                           │
+          ▼                              │
+┌───────────────────┐                    │
+│ ANALYSIS PHASE    │                    │
+│                   │                    │
+│ - Variable refs   │                    │
+│ - Async funcs     │                    │
+│ - Defer blocks    │                    │
+│ - Type info       │                    │
+└─────────┬─────────┘                    │
+          │                              │
+          ▼                              │
+┌───────────────────┐                    │
+│ CODE GENERATION   │                    │
+│                   │                    │
+│ - Write imports   │                    │
+│ - Write decls     │                    │
+│ - Write funcs     │                    │
+└─────────┬─────────┘                    │
+          │                              │
+          ▼                              │
+┌───────────────────┐                    │
+│ GENERATE INDEX    │◀───────────────────┘
+│                   │
+│ - Re-export       │
+│   public symbols  │
+└─────────┬─────────┘
+          │
+          ▼
     ┌─────────┐
     │   END   │
     └─────────┘
@@ -133,80 +133,80 @@ GoScript uses a hierarchical compiler structure:
 ### Component Hierarchy
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         COMPILER HIERARCHY                               │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                        COMPILER HIERARCHY                         │
+└───────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           Compiler                                       │
-│  - Root compiler for entire project                                      │
-│  - Orchestrates package loading                                          │
-│  - Manages project-wide configuration                                    │
-│  - Uses packages.Load() for Go package info                              │
-├─────────────────────────────────────────────────────────────────────────┤
-│  Methods:                                                                │
-│  • NewCompiler(config, logger, opts)                                     │
-│  • CompilePackages(ctx, patterns...) → CompilationResult                 │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                            Compiler                               │
+│  - Root compiler for entire project                               │
+│  - Orchestrates package loading                                   │
+│  - Manages project-wide configuration                             │
+│  - Uses packages.Load() for Go package info                       │
+├───────────────────────────────────────────────────────────────────┤
+│  Methods:                                                         │
+│  • NewCompiler(config, logger, opts)                              │
+│  • CompilePackages(ctx, patterns...) → CompilationResult          │
+└───────────────────────────────────────────────────────────────────┘
                                     │
                                     │ creates one per package
                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        PackageCompiler                                   │
-│  - Compiles entire Go package to TypeScript module                       │
-│  - Manages file compilation within package                               │
-│  - Generates index.ts re-exports                                         │
-│  - Handles protobuf file detection                                       │
-├─────────────────────────────────────────────────────────────────────────┤
-│  Methods:                                                                │
-│  • NewPackageCompiler(logger, config, pkg, allPackages)                  │
-│  • Compile(ctx) → error                                                  │
-│  • generateIndexFile(compiledFiles)                                      │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                          PackageCompiler                          │
+│  - Compiles entire Go package to TypeScript module                │
+│  - Manages file compilation within package                        │
+│  - Generates index.ts re-exports                                  │
+│  - Handles protobuf file detection                                │
+├───────────────────────────────────────────────────────────────────┤
+│  Methods:                                                         │
+│  • NewPackageCompiler(logger, config, pkg, allPackages)           │
+│  • Compile(ctx) → error                                           │
+│  • generateIndexFile(compiledFiles)                               │
+└───────────────────────────────────────────────────────────────────┘
                                     │
                                     │ creates one per file
                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                          FileCompiler                                    │
-│  - Compiles single Go source file (ast.File)                             │
-│  - Creates output .gs.ts file                                            │
-│  - Initializes TSCodeWriter                                              │
-│  - Manages imports for the file                                          │
-├─────────────────────────────────────────────────────────────────────────┤
-│  Methods:                                                                │
-│  • NewFileCompiler(config, pkg, ast, path, analysis, pkgAnalysis)        │
-│  • Compile(ctx) → error                                                  │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                           FileCompiler                            │
+│  - Compiles single Go source file (ast.File)                      │
+│  - Creates output .gs.ts file                                     │
+│  - Initializes TSCodeWriter                                       │
+│  - Manages imports for the file                                   │
+├───────────────────────────────────────────────────────────────────┤
+│  Methods:                                                         │
+│  • NewFileCompiler(config, pkg, ast, path, analysis, pkgAnalysis) │
+│  • Compile(ctx) → error                                           │
+└───────────────────────────────────────────────────────────────────┘
                                     │
                                     │ uses for AST translation
                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        GoToTSCompiler                                    │
-│  - Core AST-to-TypeScript translator                                     │
-│  - Translates expressions, statements, declarations                      │
-│  - Uses TSCodeWriter for output                                          │
-│  - Queries Analysis for code generation decisions                        │
-├─────────────────────────────────────────────────────────────────────────┤
-│  Key Methods:                                                            │
-│  • WriteDecls(decls) - Top-level declarations                            │
-│  • WriteStmt(stmt) - Statements                                          │
-│  • WriteValueExpr(expr) - Value expressions                              │
-│  • WriteGoType(type) - Type expressions                                  │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                          GoToTSCompiler                           │
+│  - Core AST-to-TypeScript translator                              │
+│  - Translates expressions, statements, declarations               │
+│  - Uses TSCodeWriter for output                                   │
+│  - Queries Analysis for code generation decisions                 │
+├───────────────────────────────────────────────────────────────────┤
+│  Key Methods:                                                     │
+│  • WriteDecls(decls) - Top-level declarations                     │
+│  • WriteStmt(stmt) - Statements                                   │
+│  • WriteValueExpr(expr) - Value expressions                       │
+│  • WriteGoType(type) - Type expressions                           │
+└───────────────────────────────────────────────────────────────────┘
                                     │
                                     │ writes to
                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         TSCodeWriter                                     │
-│  - Outputs formatted TypeScript code                                     │
-│  - Manages indentation                                                   │
-│  - Handles line breaks and formatting                                    │
-├─────────────────────────────────────────────────────────────────────────┤
-│  Methods:                                                                │
-│  • WriteLine(line) - Write line with newline                             │
-│  • WriteLiterally(text) - Write raw text                                 │
-│  • Indent(delta) - Adjust indentation level                              │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                           TSCodeWriter                            │
+│  - Outputs formatted TypeScript code                              │
+│  - Manages indentation                                            │
+│  - Handles line breaks and formatting                             │
+├───────────────────────────────────────────────────────────────────┤
+│  Methods:                                                         │
+│  • WriteLine(line) - Write line with newline                      │
+│  • WriteLiterally(text) - Write raw text                          │
+│  • Indent(delta) - Adjust indentation level                       │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -218,9 +218,9 @@ The analysis phase pre-computes all information needed for code generation. This
 ### Analysis State Machine
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                       ANALYSIS STATE MACHINE                             │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                    ANALYSIS STATE MACHINE                     │
+└───────────────────────────────────────────────────────────────┘
 
     ┌─────────┐
     │  START  │
@@ -334,9 +334,9 @@ After analysis, the compiler traverses the AST and generates TypeScript.
 ### Code Generation State Machine
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    CODE GENERATION STATE MACHINE                         │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                 CODE GENERATION STATE MACHINE                 │
+└───────────────────────────────────────────────────────────────┘
 
     ┌─────────┐
     │  START  │
@@ -384,9 +384,9 @@ After analysis, the compiler traverses the AST and generates TypeScript.
 ### Expression Translation Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    EXPRESSION TRANSLATION FLOW                           │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                  EXPRESSION TRANSLATION FLOW                  │
+└───────────────────────────────────────────────────────────────┘
 
                     WriteValueExpr(expr)
                            │
@@ -452,9 +452,9 @@ After analysis, the compiler traverses the AST and generates TypeScript.
 ### Struct Translation
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                       STRUCT TRANSLATION                                 │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│                          STRUCT TRANSLATION                           │
+└───────────────────────────────────────────────────────────────────────┘
 
 Go Source:
 ┌─────────────────────────────────────┐
@@ -470,55 +470,55 @@ Go Source:
                     ▼
 
 TypeScript Output:
-┌─────────────────────────────────────────────────────────────────────────┐
-│ export class Person {                                                    │
-│     // Getters/setters for clean API                                     │
-│     public get Name(): string {                                          │
-│         return this._fields.Name.value                                   │
-│     }                                                                    │
-│     public set Name(value: string) {                                     │
-│         this._fields.Name.value = value                                  │
-│     }                                                                    │
-│     public get Age(): number {                                           │
-│         return this._fields.Age.value                                    │
-│     }                                                                    │
-│     public set Age(value: number) {                                      │
-│         this._fields.Age.value = value                                   │
-│     }                                                                    │
-│     public get addr(): Address | null {                                  │
-│         return this._fields.addr.value                                   │
-│     }                                                                    │
-│     public set addr(value: Address | null) {                             │
-│         this._fields.addr.value = value                                  │
-│     }                                                                    │
-│                                                                          │
-│     // Internal storage with VarRefs for addressability                  │
-│     public _fields: {                                                    │
-│         Name: $.VarRef<string>                                           │
-│         Age: $.VarRef<number>                                            │
-│         addr: $.VarRef<Address | null>                                   │
-│     }                                                                    │
-│                                                                          │
-│     constructor(init?: Partial<{Name?: string, Age?: number, ...}>) {    │
-│         this._fields = {                                                 │
-│             Name: $.varRef(init?.Name ?? ""),                            │
-│             Age: $.varRef(init?.Age ?? 0),                               │
-│             addr: $.varRef(init?.addr ?? null)                           │
-│         }                                                                │
-│     }                                                                    │
-│                                                                          │
-│     // Clone for value semantics                                         │
-│     public clone(): Person {                                             │
-│         const cloned = new Person()                                      │
-│         cloned._fields = {                                               │
-│             Name: $.varRef(this._fields.Name.value),                     │
-│             Age: $.varRef(this._fields.Age.value),                       │
-│             addr: $.varRef(this._fields.addr.value)                      │
-│         }                                                                │
-│         return cloned                                                    │
-│     }                                                                    │
-│ }                                                                        │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│ export class Person {                                                 │
+│     // Getters/setters for clean API                                  │
+│     public get Name(): string {                                       │
+│         return this._fields.Name.value                                │
+│     }                                                                 │
+│     public set Name(value: string) {                                  │
+│         this._fields.Name.value = value                               │
+│     }                                                                 │
+│     public get Age(): number {                                        │
+│         return this._fields.Age.value                                 │
+│     }                                                                 │
+│     public set Age(value: number) {                                   │
+│         this._fields.Age.value = value                                │
+│     }                                                                 │
+│     public get addr(): Address | null {                               │
+│         return this._fields.addr.value                                │
+│     }                                                                 │
+│     public set addr(value: Address | null) {                          │
+│         this._fields.addr.value = value                               │
+│     }                                                                 │
+│                                                                       │
+│     // Internal storage with VarRefs for addressability               │
+│     public _fields: {                                                 │
+│         Name: $.VarRef<string>                                        │
+│         Age: $.VarRef<number>                                         │
+│         addr: $.VarRef<Address | null>                                │
+│     }                                                                 │
+│                                                                       │
+│     constructor(init?: Partial<{Name?: string, Age?: number, ...}>) { │
+│         this._fields = {                                              │
+│             Name: $.varRef(init?.Name ?? ""),                         │
+│             Age: $.varRef(init?.Age ?? 0),                            │
+│             addr: $.varRef(init?.addr ?? null)                        │
+│         }                                                             │
+│     }                                                                 │
+│                                                                       │
+│     // Clone for value semantics                                      │
+│     public clone(): Person {                                          │
+│         const cloned = new Person()                                   │
+│         cloned._fields = {                                            │
+│             Name: $.varRef(this._fields.Name.value),                  │
+│             Age: $.varRef(this._fields.Age.value),                    │
+│             addr: $.varRef(this._fields.addr.value)                   │
+│         }                                                             │
+│         return cloned                                                 │
+│     }                                                                 │
+│ }                                                                     │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -530,31 +530,31 @@ The `@goscript/builtin` runtime provides essential helpers:
 ### Runtime Components
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        @goscript/builtin                                 │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
-│  │ varRef.ts   │  │ slice.ts    │  │ channel.ts  │  │ map.ts      │    │
-│  │             │  │             │  │             │  │             │    │
-│  │ VarRef<T>   │  │ makeSlice   │  │ Channel<T>  │  │ makeMap     │    │
-│  │ varRef()    │  │ slice()     │  │ makeChannel │  │ mapSet      │    │
-│  │ unref()     │  │ append()    │  │ selectStmt  │  │ mapGet      │    │
-│  └─────────────┘  │ copy()      │  │ chanSend    │  │ deleteMap   │    │
-│                   │ len()       │  │ chanRecv    │  │ Entry       │    │
-│                   │ cap()       │  └─────────────┘  └─────────────┘    │
-│                   └─────────────┘                                       │
-│                                                                          │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
-│  │ type.ts     │  │ defer.ts    │  │ errors.ts   │  │ builtin.ts  │    │
-│  │             │  │             │  │             │  │             │    │
-│  │ registerType│  │ Disposable  │  │ error type  │  │ println     │    │
-│  │ typeAssert  │  │ Stack       │  │ panic       │  │ print       │    │
-│  │ TypeInfo    │  │ AsyncDisp.  │  │ recover     │  │ bitwise ops │    │
-│  │ TypeKind    │  │ Stack       │  │             │  │ int(), byte │    │
-│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘    │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│                           @goscript/builtin                           │
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
+│  │ varRef.ts   │  │ slice.ts    │  │ channel.ts  │  │ map.ts      │  │
+│  │             │  │             │  │             │  │             │  │
+│  │ VarRef<T>   │  │ makeSlice   │  │ Channel<T>  │  │ makeMap     │  │
+│  │ varRef()    │  │ slice()     │  │ makeChannel │  │ mapSet      │  │
+│  │ unref()     │  │ append()    │  │ selectStmt  │  │ mapGet      │  │
+│  └─────────────┘  │ copy()      │  │ chanSend    │  │ deleteMap   │  │
+│                   │ len()       │  │ chanRecv    │  │ Entry       │  │
+│                   │ cap()       │  └─────────────┘  └─────────────┘  │
+│                   └─────────────┘                                    │
+│                                                                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
+│  │ type.ts     │  │ defer.ts    │  │ errors.ts   │  │ builtin.ts  │  │
+│  │             │  │             │  │             │  │             │  │
+│  │ registerType│  │ Disposable  │  │ error type  │  │ println     │  │
+│  │ typeAssert  │  │ Stack       │  │ panic       │  │ print       │  │
+│  │ TypeInfo    │  │ AsyncDisp.  │  │ recover     │  │ bitwise ops │  │
+│  │ TypeKind    │  │ Stack       │  │             │  │ int(), byte │  │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
 ### VarRef (Variable Reference) System
@@ -563,7 +563,7 @@ The VarRef system enables Go's pointer semantics in TypeScript:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                        VARREF SYSTEM                                     │
+│                              VARREF SYSTEM                              │
 └─────────────────────────────────────────────────────────────────────────┘
 
 Go Code:
@@ -588,20 +588,20 @@ TypeScript Output:
 
 Memory Model Visualization:
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                                                                          │
-│   x ─────────────────┐                                                   │
-│                      │                                                   │
-│                      ▼                                                   │
-│              ┌─────────────────┐                                         │
-│              │   VarRef<number>│                                         │
-│              │   ┌───────────┐ │                                         │
-│              │   │ value: 20 │ │                                         │
-│              │   └───────────┘ │                                         │
-│              └─────────────────┘                                         │
-│                      ▲                                                   │
-│                      │                                                   │
-│   p ─────────────────┘                                                   │
-│                                                                          │
+│                                                                         │
+│   x ─────────────────┐                                                  │
+│                      │                                                  │
+│                      ▼                                                  │
+│              ┌─────────────────┐                                        │
+│              │   VarRef<number>│                                        │
+│              │   ┌───────────┐ │                                        │
+│              │   │ value: 20 │ │                                        │
+│              │   └───────────┘ │                                        │
+│              └─────────────────┘                                        │
+│                      ▲                                                  │
+│                      │                                                  │
+│   p ─────────────────┘                                                  │
+│                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -615,7 +615,7 @@ GoScript translates Go's concurrency to TypeScript async/await:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                     FUNCTION COLORING ALGORITHM                          │
+│                       FUNCTION COLORING ALGORITHM                       │
 └─────────────────────────────────────────────────────────────────────────┘
 
 Phase 1: Identify Async Roots
@@ -666,7 +666,7 @@ Phase 3: Code Generation
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                       CHANNEL TRANSLATION                                │
+│                           CHANNEL TRANSLATION                           │
 └─────────────────────────────────────────────────────────────────────────┘
 
 Go Code:                              TypeScript Output:
@@ -727,7 +727,7 @@ GoScript preserves Go's value semantics for structs:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                     VALUE SEMANTICS TRANSLATION                          │
+│                       VALUE SEMANTICS TRANSLATION                       │
 └─────────────────────────────────────────────────────────────────────────┘
 
 Go Code:
@@ -771,7 +771,7 @@ Clone Implementation:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                       FOR LOOP TRANSLATION                               │
+│                          FOR LOOP TRANSLATION                           │
 └─────────────────────────────────────────────────────────────────────────┘
 
 Standard For:
@@ -805,7 +805,7 @@ For-Range (String):
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         DEFER TRANSLATION                                │
+│                           DEFER TRANSLATION                             │
 └─────────────────────────────────────────────────────────────────────────┘
 
 Sync Defer:
