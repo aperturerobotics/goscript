@@ -9,6 +9,7 @@ buildtarget
 output
 out
 .claude
+.tmp
 tests/tests/tests.browser.test.ts
 tests/tests/__screenshots__
 website/public/goscript.wasm

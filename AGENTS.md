@@ -66,16 +66,16 @@ When working on compliance tests:
    **For the full suite (RECOMMENDED approach for detecting failures):**
    ```bash
    # Run once, capture to file, check result
-   go test -timeout 10m ./compiler 2>&1 > /tmp/test_output.txt; echo "Exit code: $?"
+   mkdir -p .tmp && go test -timeout 10m ./compiler 2>&1 > .tmp/test_output.txt; echo "Exit code: $?"
 
    # If exit code is non-zero, find all failing tests:
-   grep -E "^--- FAIL:" /tmp/test_output.txt
+   grep -E "^--- FAIL:" .tmp/test_output.txt
 
    # Then run specific failing tests with -v for details:
    go test -v -timeout 60s -run ^TestCompliance/failing_test_name$ ./compiler
    ```
 
-   **IMPORTANT:** Do NOT pipe test output directly to grep/tail during the test run. The test framework may produce verbose output that looks like errors but isn't. Always check the exit code first, then analyze the output file if needed.
+   **IMPORTANT:** Do NOT pipe test output directly to grep/tail during the test run. The test framework may produce verbose output that looks like errors but isn't. Always check the exit code first, then analyze the output file if needed. The `.tmp/` directory is gitignored.
 
 3. **Analysis Process**:
    - Run the compliance test to check if it passes
