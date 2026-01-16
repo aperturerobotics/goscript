@@ -94,6 +94,12 @@ type CompilationResult struct {
 // resolveReplaceDirectives transforms local path patterns (like ./subpkg) to their
 // corresponding module paths using replace directives from go.mod.
 // This allows users to specify local paths that are mapped via replace directives.
+// For example, if go.mod has:
+//
+//	replace github.com/example/lib => ./local/lib
+//
+// And the user runs: goscript compile ./local/lib
+// This function transforms ./local/lib to github.com/example/lib
 func (c *Compiler) resolveReplaceDirectives(patterns []string) ([]string, error) {
 	dir := c.config.Dir
 	if dir == "" {
@@ -115,19 +121,27 @@ func (c *Compiler) resolveReplaceDirectives(patterns []string) ([]string, error)
 	}
 
 	// Build replace map: local path -> module path
+	// The replace directive syntax is: replace old => new
+	// For local replacements: replace github.com/example/lib => ./local/lib
+	// So r.Old.Path = "github.com/example/lib" (the module path)
+	// And r.New.Path = "./local/lib" (the local replacement path)
 	replaceMap := make(map[string]string)
 	for _, r := range modFile.Replace {
 		if r.New.Version == "" { // Local path replacements have no version
-			localPath := r.New.Path
+			// Normalize the path for consistent comparison across platforms
+			localPath := filepath.Clean(r.New.Path)
 			replaceMap[localPath] = r.Old.Path
 		}
 	}
 
-	// Transform patterns
+	// Transform patterns that are local paths to their module path equivalents
 	result := make([]string, len(patterns))
 	for i, pattern := range patterns {
-		if strings.HasPrefix(pattern, "./") || strings.HasPrefix(pattern, "../") {
-			if modulePath, ok := replaceMap[pattern]; ok {
+		// Check if this is a filesystem path (relative or absolute)
+		if filepath.IsAbs(pattern) || strings.HasPrefix(pattern, "./") || strings.HasPrefix(pattern, "../") {
+			// Normalize the pattern for consistent comparison
+			normalizedPattern := filepath.Clean(pattern)
+			if modulePath, ok := replaceMap[normalizedPattern]; ok {
 				result[i] = modulePath
 				continue
 			}
