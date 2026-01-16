@@ -56,17 +56,26 @@ When working on compliance tests:
 
 1. **Test Location**: Compliance tests are located at `./tests/tests/{testname}/testname.go` with a package main and using `println()` only for output, trying to not import anything.
 
-2. **Running Tests**: To run a specific test, use this template:
+2. **Running Tests**:
 
+   **For a specific test:**
    ```bash
    go test -timeout 60s -run ^TestCompliance/if_statement$ ./compiler
    ```
 
-   To run the full compliance test suite:
-
+   **For the full suite (RECOMMENDED approach for detecting failures):**
    ```bash
-   go test -timeout 10m ./compiler
+   # Run once, capture to file, check result
+   go test -timeout 10m ./compiler 2>&1 > /tmp/test_output.txt; echo "Exit code: $?"
+
+   # If exit code is non-zero, find all failing tests:
+   grep -E "^--- FAIL:" /tmp/test_output.txt
+
+   # Then run specific failing tests with -v for details:
+   go test -v -timeout 60s -run ^TestCompliance/failing_test_name$ ./compiler
    ```
+
+   **IMPORTANT:** Do NOT pipe test output directly to grep/tail during the test run. The test framework may produce verbose output that looks like errors but isn't. Always check the exit code first, then analyze the output file if needed.
 
 3. **Analysis Process**:
    - Run the compliance test to check if it passes
@@ -86,13 +95,11 @@ When working on compliance tests:
    - Run the integration test again
    - Repeat: update compiler code and/or `tests/WIP.md` until the compliance test passes successfully
    - If you make two or more edits and the test still does not pass, ask the user how to proceed providing several options
-   - After fixing a specific test, re-run the top level compliance test to verify everything works properly: `go test -v ./compiler`
+   - After fixing a specific test, re-run the full compliance test to verify everything works properly
 
 Once the issue is fixed and the compliance test passes you may delete WIP.md without updating it with a final summary.
 
 NOTE: `./tests/deps/` contains library dependencies compiled by the goscript compiler! do not edit! they will be re-generated when running the tests.
-
-NOTE: to avoid overwhelming yourself with too much output, run the tests first without -v, grep for FAIL, then run specifically the failing tests with -v.
 
 ## Design Patterns & Code Style
 
