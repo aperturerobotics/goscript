@@ -36,14 +36,18 @@ Go has powerful concurrency support and an excellent standard library. GoScript 
 - Control flow (if, for, switch, select, range, defer, etc.)
 - Type assertions and interface implementations
 - Closures and anonymous functions
+- Generics
+- Reflection
+- Encoding: encoding/json
+- Most of the standard library
 
 **🚧 In progress:**
 
-- Reflection support
-- Standard library coverage
-- Generics
+- Reflection edge cases
+- Full standard library coverage
+- Various other edge cases (see GitHub issues)
 
-**Known limitations:**
+**Important Notes**
 
 - Uses JavaScript `number` type (64-bit float, not Go's int types)
 - No pointer arithmetic (`uintptr`) or `unsafe` package
