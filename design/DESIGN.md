@@ -23,20 +23,21 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
 
 ### Types
 
-*   **Basic Types:** Go basic types (`int`, `string`, `bool`, `float64`, etc.) are mapped to corresponding TypeScript types or custom types provided by the runtime (`@goscript/builtin`).
-    *   `int`, `uint`, `int64`, etc. -> `$.int` (currently represented as `number` or `bigint` depending on configuration/needs, potentially using a custom class for overflow checks).
+*   **Basic Types:** Go basic types (`int`, `string`, `bool`, `float64`, etc.) are mapped to corresponding TypeScript types.
+    *   `int`, `uint`, `int8`, `int16`, `int32`, `uint8`, `uint16`, `uint32` -> `number`
+    *   `int64`, `uint64` -> `number` (currently; BigInt support is planned)
     *   `float64`, `float32` -> `number`
     *   `string` -> `string`
     *   `bool` -> `boolean`
-    *   `rune` -> `$.rune` (likely `number`)
-    *   `byte` -> `$.byte` (likely `number`)
-    *   `error` -> `$.error` (interface, typically `Error | null`)
+    *   `rune` -> `number` (Unicode code point)
+    *   `byte` -> `number`
+    *   `error` -> `$.GoError` (interface `{ Error(): string } | null`)
 *   **Composite Types:**
     *   **Structs:** Translated to TypeScript classes. Fields are mapped to class properties. Value semantics are maintained by cloning instances on assignment or passing as arguments, unless pointers are used. See `DESIGN_STRUCTS.md` (TODO: Create this file).
     *   **Arrays:** Translated to TypeScript arrays (`T[]`). Go's fixed-size nature might require runtime checks or specific handling if strictness is needed.
-    *   **Slices:** Translated to a custom `$.Slice<T>` type/class from the runtime to handle Go's slice semantics (length, capacity, underlying array).
+    *   **Slices:** Translated to the `$.Slice<T>` type which is a union: `T[] | SliceProxy<T> | null`. For `[]byte`, the type `$.Bytes` (which is `Uint8Array | $.Slice<number>`) is used. The runtime provides helper functions for slice operations.
     *   **Maps:** Translated to TypeScript `Map<K, V>`.
-    *   **Channels:** Translated using helper classes/functions from the runtime (`$.Chan<T>`) potentially leveraging async iterators or libraries like `csp-ts`. See `DESIGN_CONCURRENCY.md` (TODO: Create this file).
+    *   **Channels:** Translated using the `$.Channel<T>` interface from the runtime. Channel operations (`send`, `receive`, `receiveWithOk`) are async and use Promises.
     *   **Interfaces:** Translated to TypeScript interfaces. Type assertions and type switches require runtime type information or helper functions. See `DESIGN_INTERFACES.md` (TODO: Create this file).
     *   **Pointers:** Translated using a `$.VarRef<T>` wrapper type from the runtime. See [VarRefes and Pointers](#varRefes-and-pointers).
 *   **Function Types:** Translated to TypeScript function types.
@@ -55,22 +56,28 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
     *   Standard `for` loops (`for init; cond; post`) are translated directly to TypeScript `for` loops.
     *   `for cond` loops are translated to TypeScript `while (cond)`.
     *   `for {}` loops are translated to `while (true)`.
-    *   **`for range`:** Translated to TypeScript `for...of` loops.
-        *   **Go Behavior:** Go's `for range` reuses the same loop variable(s) for each iteration. If these variables are captured by a closure (e.g., inside a goroutine or `defer`), the closure will reference the final value of the variable after the loop finishes, which is a common source of bugs.
-        *   **TypeScript `for...of` Behavior:** When using `let` or `const` with `for...of`, TypeScript (and modern JavaScript) creates a *new binding* for the loop variable(s) in each iteration. This avoids the closure capture pitfall common in Go.
-        *   **GoScript Translation:** GoScript translates Go `for range` loops into TypeScript `for...of` loops using `let` for the loop variables.
+    *   **`for range`:** Translated to indexed `for` loops or `for...of` depending on the type being ranged over.
+        *   **Arrays/Slices:** Translated to indexed `for` loops using `$.len()`:
             ```typescript
             // Go: for i, v := range mySlice { ... }
-            // TS: for (let [i, v] of $.range(mySlice)) { ... } // or similar helper
+            // TS: for (let i = 0; i < $.len(mySlice); i++) { let v = mySlice![i]; ... }
 
-            // Go: for k := range myMap { ... }
-            // TS: for (let k of myMap.keys()) { ... } // or $.rangeMapKeys(myMap)
-
-            // Go: for _, v := range myString { ... } // iterating runes
-            // TS: for (let v of $.rangeString(myString)) { ... }
+            // Go: for i := range mySlice { ... }
+            // TS: for (let i = 0; i < $.len(mySlice); i++) { ... }
             ```
-        *   **Divergence:** This translation *intentionally diverges* from Go's exact variable reuse semantic. By creating a new binding per iteration (`let`), the generated TypeScript code avoids the common Go pitfall where closures accidentally capture the final loop variable value. This results in code that is often more correct and aligns better with JavaScript/TypeScript developers' expectations. The compliance test `tests/tests/for_range/` demonstrates this behavior.
-*   **`defer`:** Translated using a `try...finally` block and a helper stack/array managed by the runtime (`$.defer`). See `DESIGN_DEFER.md` (TODO: Create this file).
+        *   **Maps:** Translated using `.entries()`:
+            ```typescript
+            // Go: for k, v := range myMap { ... }
+            // TS: for (const [k, v] of myMap?.entries() ?? []) { ... }
+            ```
+        *   **Strings:** Translated using `$.stringToRunes()` to properly iterate over Unicode code points:
+            ```typescript
+            // Go: for i, r := range myString { ... }
+            // TS: { const _runes = $.stringToRunes(myString); for (let i = 0; i < _runes.length; i++) { let r = _runes[i]; ... } }
+            ```
+        *   **Integers (Go 1.22+):** `for i := range N` translates to `for (let i = 0; i < N; i++)`.
+        *   **Channels:** Translated to infinite loops with `$.chanRecvWithOk()` that break when the channel is closed.
+*   **`defer`:** Translated using TypeScript's `using` declarations with `$.DisposableStack` (for sync defers) or `await using` with `$.AsyncDisposableStack` (for async defers). Deferred functions are added via `.defer()` and execute in LIFO order when the scope exits.
 *   **`go`:** Translated using asynchronous functions (`async`/`await`) and potentially runtime helpers (`$.go`). See `DESIGN_CONCURRENCY.md` (TODO: Create this file).
 *   **`select`:** Translated using runtime helpers, likely involving `Promise.race` or similar mechanisms. See `DESIGN_CONCURRENCY.md` (TODO: Create this file).
 
@@ -97,15 +104,21 @@ Go's explicit error return values are maintained. Functions returning an error t
 
 ### Builtin Functions
 
-*   `len()`: Mapped to `.length` for arrays/strings/slices, `.size` for maps, or runtime helpers.
-*   `cap()`: Mapped to runtime helpers for slices/channels.
-*   `append()`: Mapped to a runtime helper function `$.append()`.
-*   `make()`: Mapped to runtime helper functions (`$.makeSlice()`, `$.makeMap()`, `$.makeChan()`).
-*   `new()`: Mapped to `$.varRef(new T())` or similar, returning a pointer (`$.VarRef<T>`) to a zero value.
-*   `copy()`: Mapped to a runtime helper function `$.copy()`.
-*   `delete()`: Mapped to `map.delete()`.
-*   `panic()`/`recover()`: Mapped to throwing exceptions and `try...catch` with runtime helpers (`$.panic()`, `$.recover()`). See `DESIGN_PANIC_RECOVER.md` (TODO: Create this file).
-*   `print()`/`println()`: Mapped to `console.log` or similar.
+*   `len()`: Mapped to `$.len()` runtime helper which handles arrays, slices, maps, strings, and channels.
+*   `cap()`: Mapped to `$.cap()` runtime helper for slices and channels.
+*   `append()`: Mapped to `$.append()` runtime helper.
+*   `make()`: Mapped to runtime helper functions (`$.makeSlice()`, `$.makeMap()`, `$.makeChannel()`).
+*   `new()`: Mapped to `new T()`, returning a new instance of the zero value.
+*   `copy()`: Mapped to `$.copy()` runtime helper.
+*   `delete()`: Mapped to `$.deleteMapEntry()` runtime helper.
+*   `close()`: Mapped to `channel.close()` method call.
+*   `panic()`: Mapped to `$.panic()` which throws an Error.
+*   `recover()`: Mapped to `$.recover()` (simplified implementation, returns null).
+*   `print()`/`println()`: Mapped to `$.println()` which uses `console.log`.
+*   `min()`/`max()`: Mapped directly to `Math.min()` and `Math.max()`.
+*   `clear()`: Mapped to `$.clear()` which empties maps or zeroes slice elements.
+*   `byte()`: Mapped to `$.byte()` for byte conversion.
+*   `int()`: Mapped to `$.int()` which uses `Math.trunc()` for integer truncation.
 
 ### Variable References and Pointers
 
@@ -122,9 +135,17 @@ Value types (structs, basic types) are copied on assignment unless they are vari
 
 The runtime provides:
 
-*   Helper types (`$.int`, `$.error`, `$.Slice`, `$.Chan`, `$.VarRef`, etc.).
-*   Helper functions (`$.makeSlice`, `$.append`, `$.copy`, `$.panic`, `$.recover`, `$.go`, `$.defer`, bitwise operations, etc.).
-*   Runtime type information utilities (for type assertions/switches).
+*   Helper types (`$.GoError`, `$.Slice`, `$.Bytes`, `$.Channel`, `$.VarRef`, `$.DisposableStack`, `$.AsyncDisposableStack`, etc.).
+*   Helper functions:
+    *   Slice operations: `$.makeSlice`, `$.goSlice`, `$.append`, `$.copy`, `$.len`, `$.cap`, `$.clear`
+    *   Map operations: `$.makeMap`, `$.mapGet`, `$.mapSet`, `$.deleteMapEntry`
+    *   Channel operations: `$.makeChannel`, `$.chanSend`, `$.chanRecv`, `$.chanRecvWithOk`, `$.selectStatement`
+    *   String operations: `$.stringToRunes`, `$.stringToBytes`, `$.bytesToString`, `$.runeOrStringToString`
+    *   Pointer/value operations: `$.varRef`, `$.unref`, `$.isVarRef`
+    *   Type operations: `$.typeAssert`, `$.mustTypeAssert`, `$.typeSwitch`, `$.is`, `$.typedNil`
+    *   Control flow: `$.panic`, `$.recover`, `$.println`
+    *   Math: `$.int`, `$.byte`
+*   Runtime type information utilities (`$.registerStructType`, `$.registerInterfaceType`, `$.getTypeByName`, `$.TypeKind`).
 
 ## Known Divergences
 
@@ -302,15 +323,16 @@ After reviewing the code and tests, some important implementation considerations
         interface ReadCloser extends Reader, Closer {
         }
         ```
-    - **Runtime Registration:** When registering an interface type with the runtime (`$.registerType`), the set of method names includes all methods from the interface itself *and* all methods from any embedded interfaces.
+    - **Runtime Registration:** When registering an interface type with the runtime (`$.registerInterfaceType`), the method signatures include all methods from the interface itself *and* all methods from any embedded interfaces.
         ```typescript
         // Example registration for ReadCloser
-        const ReadCloser__typeInfo = $.registerType(
+        const ReadCloser__typeInfo = $.registerInterfaceType(
           'ReadCloser',
-          $.TypeKind.Interface,
-          null,
-          new Set(['Close', 'Read']), // Includes methods from Reader and Closer
-          undefined
+          null, // zero value
+          [
+            { name: 'Close', args: [], returns: [{ type: 'error' }] },
+            { name: 'Read', args: [{ type: { kind: 'slice', elemType: 'number' } }], returns: [{ type: 'number' }, { type: 'error' }] }
+          ]
         );
         ```
 - **Type Assertions:** Go's type assertion syntax (`i.(T)`) allows checking if an interface variable `i` holds a value of a specific concrete type `T` or implements another interface `T`. This is translated using the `$.typeAssert` runtime helper function.
@@ -369,8 +391,8 @@ After reviewing the code and tests, some important implementation considerations
             3.  Object destructuring is used to extract the `value` and `ok` properties into the corresponding variables from the Go code (e.g., `let { value: v, ok } = ...`). If a variable is the blank identifier (`_`), it's assigned using `value: _` in the destructuring pattern.
 
     -   **Panic Assertion (`v := i.(T)`):** This form asserts that `i` holds type `T` and panics if it doesn't. Handled in expression logic (`WriteTypeAssertExpr`). The translation uses the same `$.typeAssert` helper but wraps it in an IIFE that checks `ok` and throws an error if false, otherwise returns the `value`.
-- **Slices:** Go slices (`[]T`) are mapped to standard TypeScript arrays (`T[]`) augmented with a hidden `__capacity` property to emulate Go's slice semantics. Runtime helpers from `@goscript/builtin` are crucial for correct behavior.
-    -   **Representation:** A Go slice is represented in TypeScript as `Array<T> & { __capacity?: number }`. The `__capacity` property stores the slice's capacity.
+- **Slices:** Go slices (`[]T`) are mapped to the `$.Slice<T>` type which is a union: `T[] | SliceProxy<T> | null`. For complex slicing operations, a `SliceProxy<T>` is used which wraps the backing array with metadata for offset, length, and capacity. Runtime helpers from `@goscript/builtin` are crucial for correct behavior.
+    -   **Representation:** A Go slice is represented in TypeScript as `$.Slice<T>` which can be a plain array, a `SliceProxy<T>` (for slices with non-zero offset or capacity different from length), or `null` (for nil slices). The `SliceProxy` uses a `__meta__` property containing `{ backing: T[], offset: number, length: number, capacity: number }`.
     -   **Creation (`make`):** `make([]T, len)` and `make([]T, len, cap)` are translated using the generic runtime helper `$.makeSlice<T>(len, cap?)`.
         ```go
         s1 := make([]int, 5)       // len 5, cap 5
@@ -382,7 +404,7 @@ After reviewing the code and tests, some important implementation considerations
         import * as $ from "@goscript/builtin"
         let s1 = $.makeSlice<number>(5)      // Creates array len 5, sets __capacity = 5
         let s2 = $.makeSlice<number>(5, 10) // Creates array len 5, sets __capacity = 10
-        let s3: string[] = []                     // Represents nil slice as empty array
+        let s3: $.Slice<string> = null            // Represents nil slice as null
         ```
     -   **Literals:** Slice literals are translated directly to TypeScript array literals. The capacity of a slice created from a literal is equal to its length.
         ```go
@@ -395,12 +417,12 @@ After reviewing the code and tests, some important implementation considerations
     -   **Length (`len(s)`):** Uses the runtime helper `$.len(s)`. Returns `0` for nil (empty array) slices.
     -   **Capacity (`cap(s)`):** Uses the runtime helper `$.cap(s)`. This helper reads the `__capacity` property or defaults to the array's `length` if `__capacity` is not set (e.g., for plain array literals). Returns `0` for nil (empty array) slices.
     -   **Access/Assignment (`s[i]`):** Translated directly using standard TypeScript array indexing (`s[i]`). Out-of-bounds access will likely throw a runtime error in TypeScript, similar to Go's panic.
-    -   **Slicing (`a[low:high]`, `a[low:high:max]`):** Slicing operations create a *new* slice header (a new TypeScript array object with its own `__capacity`) that shares the *same underlying data* as the original array or slice. This is done using the `$.slice` runtime helper.
-        -   `a[low:high]` translates to `$.slice(a, low, high)`. The new slice has length `high - low` and capacity `original_capacity - low`.
-        -   `a[:high]` translates to `$.slice(a, undefined, high)`.
-        -   `a[low:]` translates to `$.slice(a, low, undefined)`.
-        -   `a[:]` translates to `$.slice(a, undefined, undefined)`.
-        -   `a[low:high:max]` translates to `$.slice(a, low, high, max)`. The new slice has length `high - low` and capacity `max - low`.
+    -   **Slicing (`a[low:high]`, `a[low:high:max]`):** Slicing operations create a *new* slice header (a new TypeScript array object with its own `__capacity`) that shares the *same underlying data* as the original array or slice. This is done using the `$.goSlice` runtime helper.
+        -   `a[low:high]` translates to `$.goSlice(a, low, high)`. The new slice has length `high - low` and capacity `original_capacity - low`.
+        -   `a[:high]` translates to `$.goSlice(a, undefined, high)`.
+        -   `a[low:]` translates to `$.goSlice(a, low, undefined)`.
+        -   `a[:]` translates to `$.goSlice(a, undefined, undefined)`.
+        -   `a[low:high:max]` translates to `$.goSlice(a, low, high, max)`. The new slice has length `high - low` and capacity `max - low`.
         ```go
         arr := [5]int{0, 1, 2, 3, 4} // Array (len 5, cap 5)
         s1 := arr[1:4]      // [1, 2, 3], len 3, cap 4 (5-1)
@@ -410,9 +432,9 @@ After reviewing the code and tests, some important implementation considerations
         becomes:
         ```typescript
         let arr = [0, 1, 2, 3, 4]
-        let s1 = $.slice(arr, 1, 4)      // len 3, __capacity 4
-        let s2 = $.slice(s1, 1, 2)       // len 1, __capacity 3
-        let s3 = $.slice(arr, 0, 2, 3)   // len 2, __capacity 3
+        let s1 = $.goSlice(arr, 1, 4)      // len 3, __capacity 4
+        let s2 = $.goSlice(s1, 1, 2)       // len 1, __capacity 3
+        let s3 = $.goSlice(arr, 0, 2, 3)   // len 2, __capacity 3
         ```
         *Important:* Modifications made through a slice affect the underlying data. As demonstrated in the compliance tests (e.g., "Slicing a slice"), changes made via one slice variable (like `subSlice2` modifying index 0) are visible through other slice variables (`subSlice1`, `baseSlice`) that share the same underlying memory region.
     -   **Append (`append(s, ...)`):** Translated using the `$.append` runtime helper. Crucially, the result of `$.append` *must* be assigned back to the slice variable, as `append` may return a new slice instance if reallocation occurs.
@@ -429,7 +451,7 @@ After reviewing the code and tests, some important implementation considerations
             -   If appending fits within the existing capacity (`len(s) + num_elements <= cap(s)`), elements are added to the underlying array, and the original slice header's length is updated (potentially modifying the same object `s` refers to). The underlying array is modified.
             -   If appending exceeds the capacity, a *new*, larger underlying array is allocated, the existing elements plus the new elements are copied to it, and `append` returns a *new* slice header referencing this new array. The original underlying array is *not* modified beyond its bounds.
             -   Appending to a nil slice allocates a new underlying array.
-- **Arrays:** Go arrays (e.g., `[5]int`) have a fixed size known at compile time. They are also mapped to TypeScript arrays (`T[]`), but their fixed-size nature is enforced during compilation (e.g., preventing `append`). Slicing an array (`arr[:]`, `arr[low:high]`, etc.) uses the `$.slice` helper, resulting in a Go-style slice backed by the original array data.
+- **Arrays:** Go arrays (e.g., `[5]int`) have a fixed size known at compile time. They are also mapped to TypeScript arrays (`T[]`), but their fixed-size nature is enforced during compilation (e.g., preventing `append`). Slicing an array (`arr[:]`, `arr[low:high]`, etc.) uses the `$.goSlice` helper, resulting in a Go-style slice backed by the original array data.
     -   **Sparse Array Literals:** For Go array literals with specific indices (e.g., `[5]int{1: 10, 3: 30}`), unspecified indices are filled with the zero value of the element type in the generated TypeScript. For example, `[5]int{1: 10, 3: 30}` becomes `[0, 10, 0, 30, 0]`.
 
 *Note: The distinction between slices and arrays in Go is important. While both often map to TypeScript arrays, runtime helpers (`makeSlice`, `slice`, `len`, `cap`, `append`) and the `__capacity` property are essential for emulating Go's slice semantics accurately.*
@@ -724,9 +746,9 @@ Go has a single `for` construct. We map it to TypeScript's `for` and `while` loo
     ```
 
 *   **`for range` loop:**
-    The Go specification states that the range expression (the collection being iterated over) is evaluated *once* before the loop begins. The loop iterates over a snapshot of the collection's elements (or at least, its length and elements are fixed).
+    The Go specification states that the range expression (the collection being iterated over) is evaluated *once* before the loop begins.
 
-    *   **Slices:**
+    *   **Slices and Arrays:**
         ```go
         s := []int{10, 20, 30}
         for i, v := range s {
@@ -735,74 +757,83 @@ Go has a single `for` construct. We map it to TypeScript's `for` and `while` loo
         for i := range s {
             // ... use i
         }
-        for _, v := range s {
-            // ... use v
-        }
         ```
-        To ensure the "evaluate once" semantic, a helper function `__gs_range` (defined in `@goscript/builtin`) is used. This function takes the slice and returns an iterable yielding `[index, value]` pairs based on the slice's state when `__gs_range` was called.
+        Translated using indexed `for` loops with `$.len()`:
         ```typescript
-        import { __gs_range } from "@goscript/builtin"
+        import * as $ from "@goscript/builtin"
 
-        const s: number[] = [10, 20, 30] // Assuming slice maps to array
+        let s: number[] = [10, 20, 30]
         // index and value
-        for (const [i, v] of __gs_range(s)) {
+        for (let i = 0; i < $.len(s); i++) {
+            let v = s![i]
             // ... use i and v
         }
         // index only
-        for (const [i] of __gs_range(s)) { // Or potentially optimized helper
+        for (let i = 0; i < $.len(s); i++) {
             // ... use i
-        }
-        // value only
-        for (const [, v] of __gs_range(s)) {
-            // ... use v
         }
         ```
 
-    *   **Arrays:**
-        Go arrays have a fixed size. The "evaluate once" semantic applies similarly, meaning the loop iterates over the elements as they were when the loop started, even if the array's elements are modified during iteration.
+    *   **Maps:**
         ```go
-        var a [3]int = [3]int{10, 20, 30}
-        for i, v := range a {
-            // ... use i and v
-        }
-        for i := range a {
-            // ... use i
+        m := map[string]int{"a": 1, "b": 2}
+        for k, v := range m {
+            // ... use k and v
         }
         ```
-        To achieve this, a *copy* of the array is made before the loop begins.
+        Translated using `.entries()`:
         ```typescript
-        // Assume 'a' is the TypeScript representation of the Go array
-        const __copy_a = [...a] // Create a copy
-
-        // index and value
-        const __len_a = __copy_a.length // Length evaluated once
-        for (let i = 0; i < __len_a; i++) {
-            const v = __copy_a[i] // Use value from the copy
-            // ... use i and v
+        let m = new Map([["a", 1], ["b", 2]])
+        for (const [k, v] of m?.entries() ?? []) {
+            // ... use k and v
         }
+        ```
 
-        // index only
-        // Note: Current implementation uses for...in on the copy
-        for (const i_str in __copy_a) {
-             const i = parseInt(i_str) // Index from string key
-             if (isNaN(i)) { continue } // Skip non-numeric keys if any
-             // ... use i
+    *   **Strings:**
+        ```go
+        s := "hello"
+        for i, r := range s {
+            // ... use i (byte index) and r (rune)
         }
-        // Alternative (potentially cleaner):
-        // const __len_a = __copy_a.length
-        // for (let i = 0; i < __len_a; i++) {
-        //     // ... use i
-        // }
+        ```
+        Translated using `$.stringToRunes()`:
+        ```typescript
+        {
+            const _runes = $.stringToRunes(s)
+            for (let i = 0; i < _runes.length; i++) {
+                let r = _runes[i]
+                // ... use i and r
+            }
+        }
+        ```
 
-
-        // value only
-        const __len_a_val = __copy_a.length
-        for (let i = 0; i < __len_a_val; i++) {
-            const v = __copy_a[i] // Use value from the copy
+    *   **Channels:**
+        ```go
+        for v := range ch {
             // ... use v
         }
         ```
-        The copy ensures that modifications to the original array `a` during the loop do not affect the iteration range or the values yielded by the loop, matching Go's behavior. The index-only iteration currently uses `for...in` on the copy; while functional, using a standard indexed `for` loop might be considered for consistency.
+        Translated to an infinite loop with receive:
+        ```typescript
+        for (;;) {
+            const { value: v, ok: _ok } = await $.chanRecvWithOk(ch)
+            if (!_ok) break
+            // ... use v
+        }
+        ```
+
+    *   **Integers (Go 1.22+):**
+        ```go
+        for i := range 10 {
+            // ... use i
+        }
+        ```
+        Translated directly:
+        ```typescript
+        for (let i = 0; i < 10; i++) {
+            // ... use i
+        }
+        ```
 
 ### Break and Continue
 
@@ -866,6 +897,46 @@ Go's `switch` statement is translated into a standard TypeScript `switch` statem
     }
     ```
 -   **Fallthrough:** Go's explicit `fallthrough` keyword is *not* currently supported and would require specific handling if implemented.
+
+-   **Type Switch:** Go's type switch statement, which switches on the dynamic type of an interface value, is translated using the `$.typeSwitch` runtime helper.
+    ```go
+    switch v := i.(type) {
+    case int:
+        // v is int
+    case string:
+        // v is string
+    case MyStruct:
+        // v is MyStruct
+    default:
+        // v is the original interface value
+    }
+    ```
+    becomes:
+    ```typescript
+    $.typeSwitch(i, [
+        {
+            types: [{ kind: 'basic', name: 'int' }],
+            body: (v: number) => {
+                // v is number
+            }
+        },
+        {
+            types: [{ kind: 'basic', name: 'string' }],
+            body: (v: string) => {
+                // v is string
+            }
+        },
+        {
+            types: ['MyStruct'],  // Registered type name
+            body: (v: MyStruct) => {
+                // v is MyStruct
+            }
+        }
+    ], () => {
+        // default case
+    })
+    ```
+    The `$.typeSwitch` helper iterates through cases and executes the body of the first matching type. For single-type cases, `$.typeAssert` is used internally to get the typed value. For multi-type cases (`case int, string:`), `$.is` is used to check if any type matches.
 
 ## Control Flow: `select` Statements
 
@@ -1028,9 +1099,9 @@ By performing these analyses ahead of time, the compiler simplifies the code gen
 Channel operations are translated as follows:
 
 -   **Creation:** `make(chan T, capacity)` is translated to `$.makeChannel<T>(capacity, zeroValueOfTypeT)`. For unbuffered channels (`make(chan T)`), the capacity is `0`.
--   **Receive:** `val := <-ch` is translated to `val = await ch.receive()`.
--   **Receive (comma-ok):** `val, ok := <-ch` is translated to `const { value: val, ok } = await ch.receiveWithOk()`.
--   **Send:** `ch <- val` is translated to `await ch.send(val)`.
+-   **Receive:** `val := <-ch` is translated to `val = await $.chanRecv(ch)`. The `$.chanRecv` helper handles nil channels (blocks forever).
+-   **Receive (comma-ok):** `val, ok := <-ch` is translated to `const { value: val, ok } = await $.chanRecvWithOk(ch)`.
+-   **Send:** `ch <- val` is translated to `await $.chanSend(ch, val)`. The `$.chanSend` helper handles nil channels (blocks forever).
 -   **Close:** `close(ch)` is translated to `ch.close()`.
 
 ### Goroutines
