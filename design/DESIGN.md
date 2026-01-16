@@ -18,7 +18,7 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
 
 *   Go packages are translated into TypeScript modules (ES modules).
 *   Each Go file within a package is typically translated into a corresponding TypeScript file.
-*   The `main` package and `main` function have special handling to produce an executable entry point (details TBD).
+*   The `main` package is translated like any other package. The `main` function is exported as `export async function main(): Promise<void>` to serve as the entry point. Since most Go programs use concurrency features (channels, goroutines), the main function is always generated as async.
 *   Imports are translated to TypeScript `import` statements. The GoScript runtime is imported as `@goscript/builtin`.
 
 ### Types
@@ -33,18 +33,18 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
     *   `byte` -> `number`
     *   `error` -> `$.GoError` (interface `{ Error(): string } | null`)
 *   **Composite Types:**
-    *   **Structs:** Translated to TypeScript classes. Fields are mapped to class properties. Value semantics are maintained by cloning instances on assignment or passing as arguments, unless pointers are used. See `DESIGN_STRUCTS.md` (TODO: Create this file).
+    *   **Structs:** Translated to TypeScript classes. Fields are mapped to class properties. Value semantics are maintained by cloning instances on assignment or passing as arguments, unless pointers are used. See the [Type Mapping](#type-mapping) section for detailed struct translation rules.
     *   **Arrays:** Translated to TypeScript arrays (`T[]`). Go's fixed-size nature might require runtime checks or specific handling if strictness is needed.
     *   **Slices:** Translated to the `$.Slice<T>` type which is a union: `T[] | SliceProxy<T> | null`. For `[]byte`, the type `$.Bytes` (which is `Uint8Array | $.Slice<number>`) is used. The runtime provides helper functions for slice operations.
     *   **Maps:** Translated to TypeScript `Map<K, V>`.
     *   **Channels:** Translated using the `$.Channel<T>` interface from the runtime. Channel operations (`send`, `receive`, `receiveWithOk`) are async and use Promises.
-    *   **Interfaces:** Translated to TypeScript interfaces. Type assertions and type switches require runtime type information or helper functions. See `DESIGN_INTERFACES.md` (TODO: Create this file).
+    *   **Interfaces:** Translated to TypeScript interfaces. Type assertions and type switches require runtime type information or helper functions. See the [Type Mapping](#type-mapping) section for detailed interface translation rules including embedded interfaces and type assertions.
     *   **Pointers:** Translated using a `$.VarRef<T>` wrapper type from the runtime. See [VarRefes and Pointers](#varRefes-and-pointers).
 *   **Function Types:** Translated to TypeScript function types.
 
 ### Variables and Constants
 
-*   `var` declarations are translated to `let` or `var` (TBD, likely `let`). Type inference is used where possible. Zero values are assigned explicitly.
+*   `var` declarations are translated to `let`. Type inference is used where possible. Zero values are assigned explicitly.
 *   `const` declarations are translated to `const`.
 *   Short variable declarations (`:=`) are translated to `let` with type inference.
 
@@ -78,8 +78,8 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
         *   **Integers (Go 1.22+):** `for i := range N` translates to `for (let i = 0; i < N; i++)`.
         *   **Channels:** Translated to infinite loops with `$.chanRecvWithOk()` that break when the channel is closed.
 *   **`defer`:** Translated using TypeScript's `using` declarations with `$.DisposableStack` (for sync defers) or `await using` with `$.AsyncDisposableStack` (for async defers). Deferred functions are added via `.defer()` and execute in LIFO order when the scope exits.
-*   **`go`:** Translated using asynchronous functions (`async`/`await`) and potentially runtime helpers (`$.go`). See `DESIGN_CONCURRENCY.md` (TODO: Create this file).
-*   **`select`:** Translated using runtime helpers, likely involving `Promise.race` or similar mechanisms. See `DESIGN_CONCURRENCY.md` (TODO: Create this file).
+*   **`go`:** Translated to `queueMicrotask(async () => { ... })`. See [Goroutines](#goroutines) for details.
+*   **`select`:** Translated using the `$.selectStatement()` runtime helper. See [Control Flow: `select` Statements](#control-flow-select-statements) for details.
 
 ### Functions and Methods
 
@@ -96,7 +96,7 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
 
 ### Concurrency
 
-See `DESIGN_CONCURRENCY.md` (TODO: Create this file). Go's goroutines and channels are mapped to TypeScript's `async/await` and custom runtime implementations for channels.
+Go's goroutines and channels are mapped to TypeScript's `async/await` and custom runtime implementations for channels. See [Asynchronous Operations](#asynchronous-operations-asyncawait) for detailed coverage of function coloring, channel operations, goroutines, and the `select` statement.
 
 ### Error Handling
 

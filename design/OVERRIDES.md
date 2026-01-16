@@ -12,7 +12,7 @@ Override packages are located in the `gs/` directory with the following structur
 gs/
 ├── {package}/
 │   ├── {package}.ts      # Main TypeScript implementation
-│   ├── {package}.go      # Metadata file with function information
+│   ├── meta.json         # Metadata file with async methods and dependencies
 │   └── index.ts          # Export file
 ```
 
@@ -20,94 +20,74 @@ gs/
 ```
 gs/sync/
 ├── sync.ts               # TypeScript implementation of sync primitives
-├── sync.go               # Metadata defining which functions are async
+├── meta.json             # Metadata defining which functions are async
 └── index.ts              # Exports from ./sync.js
 ```
 
 ## Metadata System
 
 ### Purpose
-The metadata system allows defining which functions/methods are asynchronous and other compiler-relevant information without modifying the main compiler logic.
+The metadata system allows defining which functions/methods are asynchronous, package dependencies, and other compiler-relevant information without modifying the main compiler logic.
 
 ### Metadata File Format
 
-Each override package includes a `.go` file that defines metadata using the `compiler.FunctionInfo` struct:
+Each override package includes a `meta.json` file that defines metadata:
 
-```go
-package sync
-
-import "github.com/aperturerobotics/goscript/compiler"
-
-// Metadata for sync package functions
-// This defines which functions/methods are async for the compiler analysis
-
-// Mutex methods
-var MutexLockInfo = compiler.FunctionInfo{IsAsync: true}
-var MutexUnlockInfo = compiler.FunctionInfo{IsAsync: false}
-var MutexTryLockInfo = compiler.FunctionInfo{IsAsync: false}
-
-// WaitGroup methods  
-var WaitGroupAddInfo = compiler.FunctionInfo{IsAsync: false}
-var WaitGroupDoneInfo = compiler.FunctionInfo{IsAsync: false}
-var WaitGroupWaitInfo = compiler.FunctionInfo{IsAsync: true}
-```
-
-### Naming Convention
-
-Metadata variables follow the pattern: `{Type}{Method}Info`
-
-Examples:
-- `MutexLockInfo` - for `Mutex.Lock()` method
-- `WaitGroupWaitInfo` - for `WaitGroup.Wait()` method
-- `MapLoadInfo` - for `Map.Load()` method
-- `OnceFuncInfo` - for `OnceFunc()` function
-
-### FunctionInfo Structure
-
-```go
-type FunctionInfo struct {
-    IsAsync      bool     // Whether the function is asynchronous
-    NamedReturns []string // Named return parameters (if any)
+```json
+{
+  "dependencies": ["package1", "package2"],
+  "asyncMethods": {
+    "TypeName.MethodName": true,
+    "OtherType.Method": false
+  }
 }
 ```
 
-Currently, only `IsAsync` is used to determine if a function should be called with `await`.
+### Fields
+
+- **dependencies**: Array of package paths this package depends on (relative to `gs/` directory)
+- **asyncMethods**: Object mapping `TypeName.MethodName` to boolean indicating if async
+
+### Example: sync package metadata
+
+```json
+{
+  "dependencies": ["unsafe"],
+  "asyncMethods": {
+    "Mutex.Lock": true,
+    "RWMutex.Lock": true,
+    "RWMutex.RLock": true,
+    "WaitGroup.Wait": true,
+    "Once.Do": true,
+    "Cond.Wait": true,
+    "Map.Delete": true,
+    "Map.Load": true,
+    "Map.LoadAndDelete": true,
+    "Map.LoadOrStore": true,
+    "Map.Range": true,
+    "Map.Store": true
+  }
+}
+```
 
 ## Compiler Integration
 
 ### Analysis Phase
 
-The override system integrates with the compiler's analysis phase (`compiler/analysis.go`):
+The override system integrates with the compiler's analysis phase:
 
-1. **LoadPackageMetadata()**: Loads metadata from gs packages during analysis
+1. **Metadata Loading**: Reads `meta.json` files from gs packages
 2. **IsMethodAsync()**: Checks if a method call should be async based on metadata
 3. **Function Coloring**: Propagates async status through the call chain
-
-### Metadata Loading Process
-
-```go
-func (a *Analysis) LoadPackageMetadata() {
-    // List of gs packages that have metadata
-    metadataPackages := []string{
-        "github.com/aperturerobotics/goscript/gs/sync",
-        "github.com/aperturerobotics/goscript/gs/unicode",
-    }
-
-    for _, pkgPath := range metadataPackages {
-        // Load package and extract metadata variables
-        // Store in PackageMetadata map with keys like "sync.MutexLock"
-    }
-}
-```
+4. **Dependency Resolution**: Automatically resolves and copies package dependencies
 
 ### Method Call Detection
 
 When the compiler encounters a method call like `mu.Lock()`, it:
 
 1. Determines the receiver type and package
-2. Constructs a metadata key: `{package}.{Type}{Method}`
-3. Looks up the metadata to determine if it's async
-4. Generates appropriate `await` if needed
+2. Looks up the method in the `asyncMethods` map from `meta.json`
+3. Generates appropriate `await` if the method is marked async
 
 Example:
 ```go
@@ -228,16 +208,16 @@ Create `gs/{package}/{package}.ts` with the TypeScript implementation following 
 
 ### Step 3: Create Metadata File
 
-Create `gs/{package}/{package}.go`:
+Create `gs/{package}/meta.json`:
 
-```go
-package {package}
-
-import "github.com/aperturerobotics/goscript/compiler"
-
-// Define metadata for each function/method
-var SomeFunctionInfo = compiler.FunctionInfo{IsAsync: false}
-var SomeAsyncMethodInfo = compiler.FunctionInfo{IsAsync: true}
+```json
+{
+  "dependencies": ["other-package-if-needed"],
+  "asyncMethods": {
+    "SomeType.AsyncMethod": true,
+    "SomeType.SyncMethod": false
+  }
+}
 ```
 
 ### Step 4: Create Export File
@@ -248,17 +228,7 @@ Create `gs/{package}/index.ts`:
 export * from "./{package}.js"
 ```
 
-### Step 5: Update Metadata Loading
-
-Add the package path to `LoadPackageMetadata()` in `compiler/analysis.go`:
-
-```go
-metadataPackages := []string{
-    "github.com/aperturerobotics/goscript/gs/sync",
-    "github.com/aperturerobotics/goscript/gs/unicode",
-    "github.com/aperturerobotics/goscript/gs/{package}", // Add new package
-}
-```
+The compiler will automatically detect and use the package when it encounters imports of that package.
 
 ## Testing Override Packages
 

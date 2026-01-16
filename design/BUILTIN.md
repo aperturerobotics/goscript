@@ -11,7 +11,7 @@ This is usually used when a package is either too complex to transpile with gosc
 The builtin packages system consists of three main components:
 
 1. **Package Implementations** (`gs/{package}/`): Hand-written TypeScript code implementing Go standard library functionality
-2. **Metadata System** (`gs/{package}/{package}.go`): Go files defining function async/sync behavior and other compiler hints
+2. **Metadata System** (`gs/{package}/meta.json`): JSON files defining function async/sync behavior, dependencies, and other compiler hints
 3. **Compiler Integration** (`compiler/analysis.go`): Analysis passes that load metadata and apply it during compilation
 
 ## Directory Structure
@@ -20,7 +20,7 @@ The builtin packages system consists of three main components:
 gs/
 ├── {package}/
 │   ├── {package}.ts      # Main TypeScript implementation
-│   ├── {package}.go      # Metadata file with function information
+│   ├── meta.json         # Metadata file with async methods and dependencies
 │   └── index.ts          # Export file (re-exports from {package}.ts)
 ├── builtin/
 │   ├── builtin.ts        # Core runtime functions (varRef, makeSlice, etc.)
@@ -34,7 +34,7 @@ gs/
 ```
 gs/sync/
 ├── sync.ts               # TypeScript implementation of sync primitives
-├── sync.go               # Metadata defining which functions are async
+├── meta.json             # Metadata defining which functions are async
 └── index.ts              # Exports everything from sync.ts
 ```
 
@@ -42,66 +42,50 @@ gs/sync/
 
 ### Purpose
 
-The metadata system allows defining compiler hints for builtin packages without modifying the main compiler code. The primary use case is specifying which functions/methods should be treated as asynchronous.
+The metadata system allows defining compiler hints for builtin packages without modifying the main compiler code. The primary use case is specifying which functions/methods should be treated as asynchronous and declaring package dependencies.
 
 ### Metadata File Structure
 
-Each builtin package contains a `{package}.go` file with the following structure:
+Each builtin package contains a `meta.json` file with the following structure:
 
-```go
-package {packagename}
-
-import "github.com/aperturerobotics/goscript/compiler"
-
-// Type method metadata
-var {Type}{Method}Info = compiler.FunctionInfo{IsAsync: bool}
-
-// Package function metadata  
-var {Function}Info = compiler.FunctionInfo{IsAsync: bool}
-```
-
-### Naming Convention
-
-The metadata uses a strict naming convention for automatic discovery:
-
-- **Type Methods**: `{TypeName}{MethodName}Info`
-  - Example: `MutexLockInfo`, `WaitGroupWaitInfo`, `RWMutexRLockInfo`
-- **Package Functions**: `{FunctionName}Info`
-  - Example: `NewCondInfo`, `OnceFuncInfo`, `OnceValueInfo`
-
-### FunctionInfo Structure
-
-```go
-type FunctionInfo struct {
-    IsAsync bool  // Whether the function/method should be treated as async
-    // Future: Additional metadata fields can be added here
+```json
+{
+  "dependencies": ["package1", "package2"],
+  "asyncMethods": {
+    "TypeName.MethodName": true,
+    "OtherType.Method": false
+  }
 }
 ```
 
+### Fields
+
+- **dependencies**: Array of package paths that this package depends on (relative to `gs/` directory)
+- **asyncMethods**: Object mapping method names to boolean values indicating if they're async
+  - Method names use the format `TypeName.MethodName` (e.g., `Mutex.Lock`)
+
 ### Example: sync package metadata
 
-```go
-package sync
-
-import "github.com/aperturerobotics/goscript/compiler"
-
-// Mutex methods
-var MutexLockInfo = compiler.FunctionInfo{IsAsync: true}
-var MutexUnlockInfo = compiler.FunctionInfo{IsAsync: false}
-var MutexTryLockInfo = compiler.FunctionInfo{IsAsync: false}
-
-// WaitGroup methods
-var WaitGroupAddInfo = compiler.FunctionInfo{IsAsync: false}
-var WaitGroupDoneInfo = compiler.FunctionInfo{IsAsync: false}
-var WaitGroupWaitInfo = compiler.FunctionInfo{IsAsync: true}
-
-// Once methods
-var OnceDoInfo = compiler.FunctionInfo{IsAsync: true}
-
-// Functions
-var OnceFuncInfo = compiler.FunctionInfo{IsAsync: false}
-var OnceValueInfo = compiler.FunctionInfo{IsAsync: false}
-var NewCondInfo = compiler.FunctionInfo{IsAsync: false}
+```json
+{
+  "dependencies": [
+    "unsafe"
+  ],
+  "asyncMethods": {
+    "Mutex.Lock": true,
+    "RWMutex.Lock": true,
+    "RWMutex.RLock": true,
+    "WaitGroup.Wait": true,
+    "Once.Do": true,
+    "Cond.Wait": true,
+    "Map.Delete": true,
+    "Map.Load": true,
+    "Map.LoadAndDelete": true,
+    "Map.LoadOrStore": true,
+    "Map.Range": true,
+    "Map.Store": true
+  }
+}
 ```
 
 ## Compiler Integration
@@ -110,41 +94,17 @@ var NewCondInfo = compiler.FunctionInfo{IsAsync: false}
 
 The compiler loads metadata during the analysis phase in `compiler/analysis.go`:
 
-1. **Package Detection**: `LoadPackageMetadata()` checks if a package has builtin overrides
-2. **Metadata Loading**: Uses Go's reflection to discover and load `*Info` variables
-3. **Storage**: Metadata is stored in `PackageMetadata` map for later use
-
-```go
-type PackageMetadata struct {
-    Functions map[string]FunctionInfo  // function name -> info
-    Methods   map[string]FunctionInfo  // "Type.Method" -> info
-}
-
-func LoadPackageMetadata(pkgPath string) (*PackageMetadata, error) {
-    // Load the metadata .go file and extract FunctionInfo variables
-    // Store in maps using the naming convention
-}
-```
+1. **Package Detection**: Checks if a package has a `meta.json` file in the `gs/` directory
+2. **Metadata Loading**: Parses the JSON file to extract async methods and dependencies
+3. **Storage**: Metadata is stored for later use during compilation
 
 ### Compilation Phase
 
 During compilation, the metadata is used to determine async behavior:
 
-1. **Method Calls**: `IsMethodAsync()` checks if a method should be async
-2. **Function Calls**: `IsFunctionAsync()` checks if a function should be async  
-3. **Code Generation**: Async calls get `await` keywords, sync calls don't
-
-```go
-func (c *Compiler) IsMethodAsync(pkg, typeName, methodName string) bool {
-    if meta := c.packageMetadata[pkg]; meta != nil {
-        key := typeName + methodName
-        if info, exists := meta.Methods[key]; exists {
-            return info.IsAsync
-        }
-    }
-    return false // Default to sync
-}
-```
+1. **Method Calls**: Checks if a method should be async based on the `asyncMethods` map
+2. **Code Generation**: Async calls get `await` keywords, sync calls don't
+3. **Dependency Resolution**: Dependencies are automatically copied when the package is used
 
 ## TypeScript Implementation Guidelines
 
