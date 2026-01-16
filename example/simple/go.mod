@@ -6,7 +6,7 @@ replace github.com/aperturerobotics/goscript => ../../
 
 require (
 	github.com/aperturerobotics/goscript v0.0.62-0.20260111070024-969f9456831b
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 )
 
 require (
