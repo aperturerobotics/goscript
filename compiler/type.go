@@ -451,6 +451,10 @@ func (c *GoToTSCompiler) WriteFuncType(exp *ast.FuncType, isAsync bool) {
 // This is used for type annotations where we need (params) => ReturnType format
 // instead of function(params): ReturnType format.
 // Example: (name: string, age: number) => boolean
+//
+// This helper does not perform any async detection and never wraps the
+// return type in Promise<>. The generated arrow function type reflects the
+// Go function's translated result types directly.
 func (c *GoToTSCompiler) WriteFuncTypeAsArrow(exp *ast.FuncType) {
 	c.tsw.WriteLiterally("(")
 	c.WriteFieldList(exp.Params, true) // true = arguments

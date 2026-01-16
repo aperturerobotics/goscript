@@ -9,9 +9,8 @@ import (
 	"strings"
 )
 
-// linknameInfo holds parsed //go:linkname directive information
+// linknameInfo holds parsed //go:linkname directive information.
 type linknameInfo struct {
-	localName  string // local function name
 	targetPkg  string // target package path (e.g., "github.com/example/package")
 	targetName string // target symbol name (e.g., "CanHaveDecorators")
 }
@@ -28,13 +27,11 @@ func parseLinknameDirective(doc *ast.CommentGroup) *linknameInfo {
 			// Format: //go:linkname localname importpath.name
 			parts := strings.Fields(text)
 			if len(parts) >= 3 {
-				localName := parts[1]
 				target := parts[2]
 				// Split target into package path and symbol name
 				lastDot := strings.LastIndex(target, ".")
 				if lastDot > 0 {
 					return &linknameInfo{
-						localName:  localName,
 						targetPkg:  target[:lastDot],
 						targetName: target[lastDot+1:],
 					}
@@ -540,12 +537,18 @@ func (c *GoToTSCompiler) WriteFuncDeclAsFunction(decl *ast.FuncDecl) error {
 
 // writeLinknameFunction generates a TypeScript const re-export for a //go:linkname function.
 // It generates: export const LocalName: (params) => ReturnType = alias.TargetName
+//
+// Unlike Go's //go:linkname, which does not perform type checking between the
+// local declaration and the target symbol, the generated TypeScript code includes an
+// explicit function type annotation. This means the TypeScript compiler will enforce
+// that the declared parameter and return types match the actual target function type.
+// Any mismatch will result in a TypeScript compilation error.
 func (c *GoToTSCompiler) writeLinknameFunction(decl *ast.FuncDecl, info *linknameInfo) error {
 	// Find the import alias for the target package
 	alias := c.findImportAlias(info.targetPkg)
 	if alias == "" {
 		// Package not imported, write a comment and fall back to empty function
-		c.tsw.WriteLinef("// go:linkname target %s not found in imports", info.targetPkg)
+		c.tsw.WriteLinef("//go:linkname target %s not found in imports", info.targetPkg)
 		c.tsw.WriteLiterally("export function ")
 		c.tsw.WriteLiterally(c.sanitizeIdentifier(decl.Name.Name))
 		c.WriteFuncType(decl.Type, false)
