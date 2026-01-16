@@ -447,6 +447,53 @@ func (c *GoToTSCompiler) WriteFuncType(exp *ast.FuncType, isAsync bool) {
 	}
 }
 
+// WriteFuncTypeAsArrow writes a function type using arrow function syntax.
+// This is used for type annotations where we need (params) => ReturnType format
+// instead of function(params): ReturnType format.
+// Example: (name: string, age: number) => boolean
+func (c *GoToTSCompiler) WriteFuncTypeAsArrow(exp *ast.FuncType) {
+	c.tsw.WriteLiterally("(")
+	c.WriteFieldList(exp.Params, true) // true = arguments
+	c.tsw.WriteLiterally(")")
+	c.tsw.WriteLiterally(" => ")
+
+	if exp.Results != nil && len(exp.Results.List) > 0 {
+		// Count total number of return values
+		totalResults := 0
+		for _, field := range exp.Results.List {
+			count := len(field.Names)
+			if count == 0 {
+				count = 1
+			}
+			totalResults += count
+		}
+
+		if totalResults == 1 {
+			c.WriteTypeExpr(exp.Results.List[0].Type)
+		} else {
+			// Multiple return types -> tuple
+			c.tsw.WriteLiterally("[")
+			first := true
+			for _, field := range exp.Results.List {
+				count := len(field.Names)
+				if count == 0 {
+					count = 1
+				}
+				for j := 0; j < count; j++ {
+					if !first {
+						c.tsw.WriteLiterally(", ")
+					}
+					first = false
+					c.WriteTypeExpr(field.Type)
+				}
+			}
+			c.tsw.WriteLiterally("]")
+		}
+	} else {
+		c.tsw.WriteLiterally("void")
+	}
+}
+
 // WriteInterfaceType translates a Go interface type to its TypeScript equivalent.
 // It specially handles the error interface as $.GoError, and delegates to
 // writeInterfaceStructure for other interface types, prepending "null | ".

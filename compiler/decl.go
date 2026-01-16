@@ -6,7 +6,44 @@ import (
 	"go/token"
 	"go/types"
 	"slices"
+	"strings"
 )
+
+// linknameInfo holds parsed //go:linkname directive information
+type linknameInfo struct {
+	localName  string // local function name
+	targetPkg  string // target package path (e.g., "github.com/example/package")
+	targetName string // target symbol name (e.g., "CanHaveDecorators")
+}
+
+// parseLinknameDirective checks if a doc comment contains a //go:linkname directive
+// and returns the parsed information if found.
+func parseLinknameDirective(doc *ast.CommentGroup) *linknameInfo {
+	if doc == nil {
+		return nil
+	}
+	for _, comment := range doc.List {
+		text := strings.TrimSpace(comment.Text)
+		if strings.HasPrefix(text, "//go:linkname ") {
+			// Format: //go:linkname localname importpath.name
+			parts := strings.Fields(text)
+			if len(parts) >= 3 {
+				localName := parts[1]
+				target := parts[2]
+				// Split target into package path and symbol name
+				lastDot := strings.LastIndex(target, ".")
+				if lastDot > 0 {
+					return &linknameInfo{
+						localName:  localName,
+						targetPkg:  target[:lastDot],
+						targetName: target[lastDot+1:],
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
 
 // WriteDecls iterates through a slice of Go top-level declarations (`ast.Decl`)
 // and translates each one into its TypeScript equivalent.
@@ -436,6 +473,12 @@ func (c *GoToTSCompiler) WriteFuncDeclAsFunction(decl *ast.FuncDecl) error {
 		return nil
 	}
 
+	// Check for //go:linkname directive on functions without a body
+	if linkInfo := parseLinknameDirective(decl.Doc); linkInfo != nil && decl.Body == nil {
+		// This is a linkname function - generate a re-export with type annotation
+		return c.writeLinknameFunction(decl, linkInfo)
+	}
+
 	if decl.Doc != nil {
 		c.WriteDoc(decl.Doc)
 	}
@@ -493,6 +536,53 @@ func (c *GoToTSCompiler) WriteFuncDeclAsFunction(decl *ast.FuncDecl) error {
 	}
 
 	return nil
+}
+
+// writeLinknameFunction generates a TypeScript const re-export for a //go:linkname function.
+// It generates: export const LocalName: (params) => ReturnType = alias.TargetName
+func (c *GoToTSCompiler) writeLinknameFunction(decl *ast.FuncDecl, info *linknameInfo) error {
+	// Find the import alias for the target package
+	alias := c.findImportAlias(info.targetPkg)
+	if alias == "" {
+		// Package not imported, write a comment and fall back to empty function
+		c.tsw.WriteLinef("// go:linkname target %s not found in imports", info.targetPkg)
+		c.tsw.WriteLiterally("export function ")
+		c.tsw.WriteLiterally(c.sanitizeIdentifier(decl.Name.Name))
+		c.WriteFuncType(decl.Type, false)
+		c.tsw.WriteLine(" {}")
+		return nil
+	}
+
+	// Generate: export const LocalName: (params) => ReturnType = alias.TargetName
+	c.tsw.WriteLiterally("export const ")
+	c.tsw.WriteLiterally(c.sanitizeIdentifier(decl.Name.Name))
+	c.tsw.WriteLiterally(": ")
+
+	// Write the function type as an arrow function type
+	c.WriteFuncTypeAsArrow(decl.Type)
+
+	c.tsw.WriteLiterally(" = ")
+	c.tsw.WriteLiterally(alias)
+	c.tsw.WriteLiterally(".")
+	c.tsw.WriteLiterally(info.targetName)
+	c.tsw.WriteLine("")
+
+	return nil
+}
+
+// findImportAlias finds the import alias used for a Go package path in the current file.
+// Returns empty string if the package is not imported.
+func (c *GoToTSCompiler) findImportAlias(pkgPath string) string {
+	// The importPath in analysis.Imports is stored as the TypeScript path (e.g., @goscript/pkg/path)
+	// We need to convert the Go package path to match
+	tsPath := "@goscript/" + pkgPath
+
+	for alias, imp := range c.analysis.Imports {
+		if imp.importPath == tsPath {
+			return alias
+		}
+	}
+	return ""
 }
 
 // WriteFuncDeclAsMethod translates a Go function declaration (`ast.FuncDecl`)
