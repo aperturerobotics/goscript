@@ -369,6 +369,16 @@ pre {
   line-height: 1.6;
 }
 
+.code-content pre {
+  margin: 0;
+  background: transparent;
+}
+
+.code-content code.hljs {
+  background: transparent;
+  padding: 0;
+}
+
 /* Features Grid */
 .features {
   padding: 4rem 0;
