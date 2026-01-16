@@ -17,6 +17,7 @@ import (
 
 	gs "github.com/aperturerobotics/goscript"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/mod/modfile"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -90,6 +91,53 @@ type CompilationResult struct {
 	OriginalPackages []string
 }
 
+// resolveReplaceDirectives transforms local path patterns (like ./subpkg) to their
+// corresponding module paths using replace directives from go.mod.
+// This allows users to specify local paths that are mapped via replace directives.
+func (c *Compiler) resolveReplaceDirectives(patterns []string) ([]string, error) {
+	dir := c.config.Dir
+	if dir == "" {
+		dir = "."
+	}
+	goModPath := filepath.Join(dir, "go.mod")
+
+	data, err := os.ReadFile(goModPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return patterns, nil
+		}
+		return nil, err
+	}
+
+	modFile, err := modfile.Parse(goModPath, data, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build replace map: local path -> module path
+	replaceMap := make(map[string]string)
+	for _, r := range modFile.Replace {
+		if r.New.Version == "" { // Local path replacements have no version
+			localPath := r.New.Path
+			replaceMap[localPath] = r.Old.Path
+		}
+	}
+
+	// Transform patterns
+	result := make([]string, len(patterns))
+	for i, pattern := range patterns {
+		if strings.HasPrefix(pattern, "./") || strings.HasPrefix(pattern, "../") {
+			if modulePath, ok := replaceMap[pattern]; ok {
+				result[i] = modulePath
+				continue
+			}
+		}
+		result[i] = pattern
+	}
+
+	return result, nil
+}
+
 // CompilePackages loads Go packages based on the provided patterns and
 // then compiles each loaded package into TypeScript. It uses the context for
 // cancellation and applies the compiler's configured options during package loading.
@@ -102,9 +150,15 @@ func (c *Compiler) CompilePackages(ctx context.Context, patterns ...string) (*Co
 	opts := c.opts
 	opts.Context = ctx
 
+	// Resolve local path patterns using replace directives from go.mod
+	resolvedPatterns, err := c.resolveReplaceDirectives(patterns)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve replace directives: %w", err)
+	}
+
 	// First, load the initial packages with NeedImports to get all dependencies
 	opts.Mode |= packages.NeedImports
-	pkgs, err := packages.Load(&opts, patterns...)
+	pkgs, err := packages.Load(&opts, resolvedPatterns...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load packages: %w", err)
 	}
