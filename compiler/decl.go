@@ -216,12 +216,10 @@ func (c *GoToTSCompiler) extractTypeDependencies(typeExpr ast.Expr, typeSpecMap 
 		}
 
 	case *ast.ArrayType:
-		// Array/slice type - only depends on element type if element is a struct (not pointer)
-		if !c.isPointerType(t.Elt) {
-			elemDeps := c.extractTypeDependencies(t.Elt, typeSpecMap)
-			deps = append(deps, elemDeps...)
-		}
-		// Arrays of pointers don't create initialization dependencies
+		// Array/slice types don't create initialization dependencies
+		// Slices are reference types (initialized to null/empty), and arrays of structs
+		// don't require the element type constructor at declaration time.
+		// This allows circular references like: type A struct { BB []B }; type B struct { AA []A }
 
 	case *ast.StarExpr:
 		// Pointer types don't create initialization dependencies
@@ -264,12 +262,10 @@ func (c *GoToTSCompiler) extractStructFieldDependencies(fieldType ast.Expr, type
 		// Pointers are just references, no constructor call needed
 
 	case *ast.ArrayType:
-		// Array field: struct { b []B } or struct { b [5]B }
-		// Only create dependency if element type is not a pointer
-		if !c.isPointerType(t.Elt) {
-			elemDeps := c.extractTypeDependencies(t.Elt, typeSpecMap)
-			deps = append(deps, elemDeps...)
-		}
+		// Array/slice fields don't create initialization dependencies
+		// Slices are reference types (initialized to null/empty), and arrays of structs
+		// don't require the element type constructor at declaration time.
+		// This allows circular references like: type A struct { BB []B }; type B struct { AA []A }
 
 	case *ast.MapType:
 		// Map field: struct { b map[K]V } - maps don't require initialization dependencies

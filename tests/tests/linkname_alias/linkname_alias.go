@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/aperturerobotics/goscript/tests/tests/linkname_alias/target"
 	_ "unsafe"
+
+	"github.com/aperturerobotics/goscript/tests/tests/linkname_alias/target"
 )
 
 // Test //go:linkname to alias a function from another package

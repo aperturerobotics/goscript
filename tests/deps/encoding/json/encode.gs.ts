@@ -634,6 +634,62 @@ export class reflectWithString {
 	);
 }
 
+export class structFields {
+	public get list(): $.Slice<field> {
+		return this._fields.list.value
+	}
+	public set list(value: $.Slice<field>) {
+		this._fields.list.value = value
+	}
+
+	public get byExactName(): Map<string, field | null> | null {
+		return this._fields.byExactName.value
+	}
+	public set byExactName(value: Map<string, field | null> | null) {
+		this._fields.byExactName.value = value
+	}
+
+	public get byFoldedName(): Map<string, field | null> | null {
+		return this._fields.byFoldedName.value
+	}
+	public set byFoldedName(value: Map<string, field | null> | null) {
+		this._fields.byFoldedName.value = value
+	}
+
+	public _fields: {
+		list: $.VarRef<$.Slice<field>>;
+		byExactName: $.VarRef<Map<string, field | null> | null>;
+		byFoldedName: $.VarRef<Map<string, field | null> | null>;
+	}
+
+	constructor(init?: Partial<{byExactName?: Map<string, field | null> | null, byFoldedName?: Map<string, field | null> | null, list?: $.Slice<field>}>) {
+		this._fields = {
+			list: $.varRef(init?.list ?? null),
+			byExactName: $.varRef(init?.byExactName ?? null),
+			byFoldedName: $.varRef(init?.byFoldedName ?? null)
+		}
+	}
+
+	public clone(): structFields {
+		const cloned = new structFields()
+		cloned._fields = {
+			list: $.varRef(this._fields.list.value),
+			byExactName: $.varRef(this._fields.byExactName.value),
+			byFoldedName: $.varRef(this._fields.byFoldedName.value)
+		}
+		return cloned
+	}
+
+	// Register this type with the runtime type system
+	static __typeInfo = $.registerStructType(
+	  'encoding/json.structFields',
+	  new structFields(),
+	  [],
+	  structFields,
+	  {"list": { kind: $.TypeKind.Slice, elemType: "field" }, "byExactName": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "field" } }, "byFoldedName": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "field" } }}
+	);
+}
+
 export class arrayEncoder {
 	public get elemEnc(): encoderFunc | null {
 		return this._fields.elemEnc.value
@@ -1117,62 +1173,6 @@ export class sliceEncoder {
 	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
 	  sliceEncoder,
 	  {"arrayEnc": "encoderFunc"}
-	);
-}
-
-export class structFields {
-	public get list(): $.Slice<field> {
-		return this._fields.list.value
-	}
-	public set list(value: $.Slice<field>) {
-		this._fields.list.value = value
-	}
-
-	public get byExactName(): Map<string, field | null> | null {
-		return this._fields.byExactName.value
-	}
-	public set byExactName(value: Map<string, field | null> | null) {
-		this._fields.byExactName.value = value
-	}
-
-	public get byFoldedName(): Map<string, field | null> | null {
-		return this._fields.byFoldedName.value
-	}
-	public set byFoldedName(value: Map<string, field | null> | null) {
-		this._fields.byFoldedName.value = value
-	}
-
-	public _fields: {
-		list: $.VarRef<$.Slice<field>>;
-		byExactName: $.VarRef<Map<string, field | null> | null>;
-		byFoldedName: $.VarRef<Map<string, field | null> | null>;
-	}
-
-	constructor(init?: Partial<{byExactName?: Map<string, field | null> | null, byFoldedName?: Map<string, field | null> | null, list?: $.Slice<field>}>) {
-		this._fields = {
-			list: $.varRef(init?.list ?? null),
-			byExactName: $.varRef(init?.byExactName ?? null),
-			byFoldedName: $.varRef(init?.byFoldedName ?? null)
-		}
-	}
-
-	public clone(): structFields {
-		const cloned = new structFields()
-		cloned._fields = {
-			list: $.varRef(this._fields.list.value),
-			byExactName: $.varRef(this._fields.byExactName.value),
-			byFoldedName: $.varRef(this._fields.byFoldedName.value)
-		}
-		return cloned
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'encoding/json.structFields',
-	  new structFields(),
-	  [],
-	  structFields,
-	  {"list": { kind: $.TypeKind.Slice, elemType: "field" }, "byExactName": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "field" } }, "byFoldedName": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "field" } }}
 	);
 }
 
