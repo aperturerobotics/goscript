@@ -17,6 +17,449 @@ export let debug: boolean = false
 
 export let NoPos: Pos = 0
 
+export class File {
+	// file name as provided to AddFile
+	public get name(): string {
+		return this._fields.name.value
+	}
+	public set name(value: string) {
+		this._fields.name.value = value
+	}
+
+	// Pos value range for this file is [base...base+size]
+	public get base(): number {
+		return this._fields.base.value
+	}
+	public set base(value: number) {
+		this._fields.base.value = value
+	}
+
+	// file size as provided to AddFile
+	public get size(): number {
+		return this._fields.size.value
+	}
+	public set size(value: number) {
+		this._fields.size.value = value
+	}
+
+	// lines and infos are protected by mutex
+	public get mutex(): sync.Mutex {
+		return this._fields.mutex.value
+	}
+	public set mutex(value: sync.Mutex) {
+		this._fields.mutex.value = value
+	}
+
+	// lines contains the offset of the first character for each line (the first entry is always 0)
+	public get lines(): $.Slice<number> {
+		return this._fields.lines.value
+	}
+	public set lines(value: $.Slice<number>) {
+		this._fields.lines.value = value
+	}
+
+	public get infos(): $.Slice<lineInfo> {
+		return this._fields.infos.value
+	}
+	public set infos(value: $.Slice<lineInfo>) {
+		this._fields.infos.value = value
+	}
+
+	public _fields: {
+		name: $.VarRef<string>;
+		base: $.VarRef<number>;
+		size: $.VarRef<number>;
+		mutex: $.VarRef<sync.Mutex>;
+		lines: $.VarRef<$.Slice<number>>;
+		infos: $.VarRef<$.Slice<lineInfo>>;
+	}
+
+	constructor(init?: Partial<{base?: number, infos?: $.Slice<lineInfo>, lines?: $.Slice<number>, mutex?: sync.Mutex, name?: string, size?: number}>) {
+		this._fields = {
+			name: $.varRef(init?.name ?? ""),
+			base: $.varRef(init?.base ?? 0),
+			size: $.varRef(init?.size ?? 0),
+			mutex: $.varRef(init?.mutex ? $.markAsStructValue(init.mutex.clone()) : new sync.Mutex()),
+			lines: $.varRef(init?.lines ?? null),
+			infos: $.varRef(init?.infos ?? null)
+		}
+	}
+
+	public clone(): File {
+		const cloned = new File()
+		cloned._fields = {
+			name: $.varRef(this._fields.name.value),
+			base: $.varRef(this._fields.base.value),
+			size: $.varRef(this._fields.size.value),
+			mutex: $.varRef($.markAsStructValue(this._fields.mutex.value.clone())),
+			lines: $.varRef(this._fields.lines.value),
+			infos: $.varRef(this._fields.infos.value)
+		}
+		return cloned
+	}
+
+	// Name returns the file name of file f as registered with AddFile.
+	public Name(): string {
+		const f = this
+		return f.name
+	}
+
+	// Base returns the base offset of file f as registered with AddFile.
+	public Base(): number {
+		const f = this
+		return f.base
+	}
+
+	// Size returns the size of file f as registered with AddFile.
+	public Size(): number {
+		const f = this
+		return f.size
+	}
+
+	// LineCount returns the number of lines in file f.
+	public async LineCount(): Promise<number> {
+		const f = this
+		await f.mutex.Lock()
+		let n = $.len(f.lines)
+		f.mutex.Unlock()
+		return n
+	}
+
+	// AddLine adds the line offset for a new line.
+	// The line offset must be larger than the offset for the previous line
+	// and smaller than the file size; otherwise the line offset is ignored.
+	public async AddLine(offset: number): Promise<void> {
+		const f = this
+		await f.mutex.Lock()
+		{
+			let i = $.len(f.lines)
+			if ((i == 0 || f.lines![i - 1] < offset) && offset < f.size) {
+				f.lines = $.append(f.lines, offset)
+			}
+		}
+		f.mutex.Unlock()
+	}
+
+	// MergeLine merges a line with the following line. It is akin to replacing
+	// the newline character at the end of the line with a space (to not change the
+	// remaining offsets). To obtain the line number, consult e.g. [Position.Line].
+	// MergeLine will panic if given an invalid line number.
+	public async MergeLine(line: number): Promise<void> {
+		const f = this
+		using __defer = new $.DisposableStack();
+		if (line < 1) {
+			$.panic(fmt.Sprintf("invalid line number %d (should be >= 1)", line))
+		}
+		await f.mutex.Lock()
+		__defer.defer(() => {
+			f.mutex.Unlock()
+		});
+		if (line >= $.len(f.lines)) {
+			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
+		}
+		$.copy($.goSlice(f.lines, line, undefined), $.goSlice(f.lines, line + 1, undefined))
+		f.lines = $.goSlice(f.lines, undefined, $.len(f.lines) - 1)
+	}
+
+	// Lines returns the effective line offset table of the form described by [File.SetLines].
+	// Callers must not mutate the result.
+	public async Lines(): Promise<$.Slice<number>> {
+		const f = this
+		await f.mutex.Lock()
+		let lines = f.lines
+		f.mutex.Unlock()
+		return lines
+	}
+
+	// SetLines sets the line offsets for a file and reports whether it succeeded.
+	// The line offsets are the offsets of the first character of each line;
+	// for instance for the content "ab\nc\n" the line offsets are {0, 3}.
+	// An empty file has an empty line offset table.
+	// Each line offset must be larger than the offset for the previous line
+	// and smaller than the file size; otherwise SetLines fails and returns
+	// false.
+	// Callers must not mutate the provided slice after SetLines returns.
+	public async SetLines(lines: $.Slice<number>): Promise<boolean> {
+		const f = this
+		let size = f.size
+		for (let i = 0; i < $.len(lines); i++) {
+			let offset = lines![i]
+			{
+				if (i > 0 && offset <= lines![i - 1] || size <= offset) {
+					return false
+				}
+			}
+		}
+		await f.mutex.Lock()
+		f.lines = lines
+		f.mutex.Unlock()
+		return true
+	}
+
+	// SetLinesForContent sets the line offsets for the given file content.
+	// It ignores position-altering //line comments.
+	public async SetLinesForContent(content: $.Bytes): Promise<void> {
+		const f = this
+		let lines: $.Slice<number> = null
+		let line = 0
+		for (let offset = 0; offset < $.len(content); offset++) {
+			let b = content![offset]
+			{
+				if (line >= 0) {
+					lines = $.append(lines, line)
+				}
+				line = -1
+				if (b == 10) {
+					line = offset + 1
+				}
+			}
+		}
+		await f.mutex.Lock()
+		f.lines = lines
+		f.mutex.Unlock()
+	}
+
+	// LineStart returns the [Pos] value of the start of the specified line.
+	// It ignores any alternative positions set using [File.AddLineColumnInfo].
+	// LineStart panics if the 1-based line number is invalid.
+	public async LineStart(line: number): Promise<Pos> {
+		const f = this
+		using __defer = new $.DisposableStack();
+		if (line < 1) {
+			$.panic(fmt.Sprintf("invalid line number %d (should be >= 1)", line))
+		}
+		await f.mutex.Lock()
+		__defer.defer(() => {
+			f.mutex.Unlock()
+		});
+		if (line > $.len(f.lines)) {
+			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
+		}
+		return (f.base + f.lines![line - 1] as Pos)
+	}
+
+	// AddLineInfo is like [File.AddLineColumnInfo] with a column = 1 argument.
+	// It is here for backward-compatibility for code prior to Go 1.11.
+	public async AddLineInfo(offset: number, filename: string, line: number): Promise<void> {
+		const f = this
+		await f.AddLineColumnInfo(offset, filename, line, 1)
+	}
+
+	// AddLineColumnInfo adds alternative file, line, and column number
+	// information for a given file offset. The offset must be larger
+	// than the offset for the previously added alternative line info
+	// and smaller than the file size; otherwise the information is
+	// ignored.
+	//
+	// AddLineColumnInfo is typically used to register alternative position
+	// information for line directives such as //line filename:line:column.
+	public async AddLineColumnInfo(offset: number, filename: string, line: number, column: number): Promise<void> {
+		const f = this
+		await f.mutex.Lock()
+		{
+			let i = $.len(f.infos)
+			if ((i == 0 || f.infos![i - 1].Offset < offset) && offset < f.size) {
+				f.infos = $.append(f.infos, $.markAsStructValue(new lineInfo({Column: column, Filename: filename, Line: line, Offset: offset})))
+			}
+		}
+		f.mutex.Unlock()
+	}
+
+	// fixOffset fixes an out-of-bounds offset such that 0 <= offset <= f.size.
+	public fixOffset(offset: number): number {
+		const f = this
+		switch (true) {
+			case offset < 0: {
+				if (!false) {
+					return 0
+				}
+				break
+			}
+			case offset > f.size: {
+				if (!false) {
+					return f.size
+				}
+				break
+			}
+			default: {
+				return offset
+				break
+			}
+		}
+		if (false) {
+
+			/* for symmetry */
+			$.panic(fmt.Sprintf("offset %d out of bounds [%d, %d] (position %d out of bounds [%d, %d])", 0, offset, f.size, f.base + offset, f.base, f.base + f.size))
+		}
+		return 0
+	}
+
+	// Pos returns the Pos value for the given file offset.
+	//
+	// If offset is negative, the result is the file's start
+	// position; if the offset is too large, the result is
+	// the file's end position (see also go.dev/issue/57490).
+	//
+	// The following invariant, though not true for Pos values
+	// in general, holds for the result p:
+	// f.Pos(f.Offset(p)) == p.
+	public Pos(offset: number): Pos {
+		const f = this
+		return (f.base + f.fixOffset(offset) as Pos)
+	}
+
+	// Offset returns the offset for the given file position p.
+	//
+	// If p is before the file's start position (or if p is NoPos),
+	// the result is 0; if p is past the file's end position,
+	// the result is the file size (see also go.dev/issue/57490).
+	//
+	// The following invariant, though not true for offset values
+	// in general, holds for the result offset:
+	// f.Offset(f.Pos(offset)) == offset
+	public Offset(p: Pos): number {
+		const f = this
+		return f.fixOffset(p - f.base)
+	}
+
+	// Line returns the line number for the given file position p;
+	// p must be a [Pos] value in that file or [NoPos].
+	public async Line(p: Pos): Promise<number> {
+		const f = this
+		return (await f.Position(p))!.Line
+	}
+
+	// unpack returns the filename and line and column number for a file offset.
+	// If adjusted is set, unpack will return the filename and line information
+	// possibly adjusted by //line comments; otherwise those comments are ignored.
+	public async unpack(offset: number, adjusted: boolean): Promise<[string, number, number]> {
+		const f = this
+		let filename: string = ""
+		let line: number = 0
+		let column: number = 0
+		await f.mutex.Lock()
+		filename = f.name
+		{
+			let i = searchInts(f.lines, offset)
+			if (i >= 0) {
+				;[line, column] = [i + 1, offset - f.lines![i] + 1]
+			}
+		}
+		if (adjusted && $.len(f.infos) > 0) {
+			// few files have extra line infos
+
+			// i+1 is the line at which the alternative position was recorded
+			// line distance from alternative position base
+
+			// alternative column is unknown => relative column is unknown
+			// (the current specification for line directives requires
+			// this to apply until the next PosBase/line directive,
+			// not just until the new newline)
+
+			// the alternative position base is on the current line
+			// => column is relative to alternative column
+			{
+				let i = searchLineInfos(f.infos, offset)
+				if (i >= 0) {
+					let alt = f.infos![i]
+					filename = alt!.Filename
+
+					// i+1 is the line at which the alternative position was recorded
+					// line distance from alternative position base
+
+					// alternative column is unknown => relative column is unknown
+					// (the current specification for line directives requires
+					// this to apply until the next PosBase/line directive,
+					// not just until the new newline)
+
+					// the alternative position base is on the current line
+					// => column is relative to alternative column
+					{
+						let i = searchInts(f.lines, alt!.Offset)
+						if (i >= 0) {
+							// i+1 is the line at which the alternative position was recorded
+							let d = line - (i + 1) // line distance from alternative position base
+							line = alt!.Line + d
+
+							// alternative column is unknown => relative column is unknown
+							// (the current specification for line directives requires
+							// this to apply until the next PosBase/line directive,
+							// not just until the new newline)
+
+							// the alternative position base is on the current line
+							// => column is relative to alternative column
+							if (Number(alt!.Column) == 0) {
+								// alternative column is unknown => relative column is unknown
+								// (the current specification for line directives requires
+								// this to apply until the next PosBase/line directive,
+								// not just until the new newline)
+								column = 0
+							} else if (d == 0) {
+								// the alternative position base is on the current line
+								// => column is relative to alternative column
+								column = alt!.Column + (offset - alt!.Offset)
+							}
+						}
+					}
+				}
+			}
+		}
+		f.mutex.Unlock()
+		return [filename, line, column]
+	}
+
+	public async position(p: Pos, adjusted: boolean): Promise<Position> {
+		const f = this
+		let pos: Position = new Position()
+		let offset = f.fixOffset(p - f.base)
+		pos.Offset = offset
+		{
+		  const _tmp = await f.unpack(offset, adjusted)
+		  pos.Filename = _tmp[0]
+		  pos.Line = _tmp[1]
+		  pos.Column = _tmp[2]
+		}
+		return pos
+	}
+
+	// PositionFor returns the Position value for the given file position p.
+	// If p is out of bounds, it is adjusted to match the File.Offset behavior.
+	// If adjusted is set, the position may be adjusted by position-altering
+	// //line comments; otherwise those comments are ignored.
+	// p must be a Pos value in f or NoPos.
+	public async PositionFor(p: Pos, adjusted: boolean): Promise<Position> {
+		const f = this
+		let pos: Position = new Position()
+		if (p != 0) {
+			pos = $.markAsStructValue((await f.position(p, adjusted)).clone())
+		}
+		return pos
+	}
+
+	// Position returns the Position value for the given file position p.
+	// If p is out of bounds, it is adjusted to match the File.Offset behavior.
+	// Calling f.Position(p) is equivalent to calling f.PositionFor(p, true).
+	public async Position(p: Pos): Promise<Position> {
+		const f = this
+		let pos: Position = new Position()
+		return await f.PositionFor(p, true)
+	}
+
+	public key(): key {
+		const f = this
+		return $.markAsStructValue(new key({end: f.base + f.size, start: f.base}))
+	}
+
+	// Register this type with the runtime type system
+	static __typeInfo = $.registerStructType(
+	  'go/token.File',
+	  new File(),
+	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Base", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "LineCount", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "MergeLine", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "Lines", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }] }, { name: "SetLines", args: [{ name: "lines", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "SetLinesForContent", args: [{ name: "content", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [] }, { name: "LineStart", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: "Pos" }] }, { name: "AddLineInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "AddLineColumnInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "column", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "fixOffset", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Pos", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: "Pos" }] }, { name: "Offset", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Line", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "unpack", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "position", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: "Position" }] }, { name: "PositionFor", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: "Position" }] }, { name: "Position", args: [{ name: "p", type: "Pos" }], returns: [{ type: "Position" }] }, { name: "key", args: [], returns: [{ type: "key" }] }],
+	  File,
+	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "base": { kind: $.TypeKind.Basic, name: "int" }, "size": { kind: $.TypeKind.Basic, name: "int" }, "mutex": "Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "infos": { kind: $.TypeKind.Slice, elemType: "lineInfo" }}
+	);
+}
+
 export class FileSet {
 	// protects the file set
 	public get mutex(): sync.RWMutex {
@@ -482,449 +925,6 @@ export class lineInfo {
 	  [],
 	  lineInfo,
 	  {"Offset": { kind: $.TypeKind.Basic, name: "int" }, "Filename": { kind: $.TypeKind.Basic, name: "string" }, "Line": { kind: $.TypeKind.Basic, name: "int" }, "Column": { kind: $.TypeKind.Basic, name: "int" }}
-	);
-}
-
-export class File {
-	// file name as provided to AddFile
-	public get name(): string {
-		return this._fields.name.value
-	}
-	public set name(value: string) {
-		this._fields.name.value = value
-	}
-
-	// Pos value range for this file is [base...base+size]
-	public get base(): number {
-		return this._fields.base.value
-	}
-	public set base(value: number) {
-		this._fields.base.value = value
-	}
-
-	// file size as provided to AddFile
-	public get size(): number {
-		return this._fields.size.value
-	}
-	public set size(value: number) {
-		this._fields.size.value = value
-	}
-
-	// lines and infos are protected by mutex
-	public get mutex(): sync.Mutex {
-		return this._fields.mutex.value
-	}
-	public set mutex(value: sync.Mutex) {
-		this._fields.mutex.value = value
-	}
-
-	// lines contains the offset of the first character for each line (the first entry is always 0)
-	public get lines(): $.Slice<number> {
-		return this._fields.lines.value
-	}
-	public set lines(value: $.Slice<number>) {
-		this._fields.lines.value = value
-	}
-
-	public get infos(): $.Slice<lineInfo> {
-		return this._fields.infos.value
-	}
-	public set infos(value: $.Slice<lineInfo>) {
-		this._fields.infos.value = value
-	}
-
-	public _fields: {
-		name: $.VarRef<string>;
-		base: $.VarRef<number>;
-		size: $.VarRef<number>;
-		mutex: $.VarRef<sync.Mutex>;
-		lines: $.VarRef<$.Slice<number>>;
-		infos: $.VarRef<$.Slice<lineInfo>>;
-	}
-
-	constructor(init?: Partial<{base?: number, infos?: $.Slice<lineInfo>, lines?: $.Slice<number>, mutex?: sync.Mutex, name?: string, size?: number}>) {
-		this._fields = {
-			name: $.varRef(init?.name ?? ""),
-			base: $.varRef(init?.base ?? 0),
-			size: $.varRef(init?.size ?? 0),
-			mutex: $.varRef(init?.mutex ? $.markAsStructValue(init.mutex.clone()) : new sync.Mutex()),
-			lines: $.varRef(init?.lines ?? null),
-			infos: $.varRef(init?.infos ?? null)
-		}
-	}
-
-	public clone(): File {
-		const cloned = new File()
-		cloned._fields = {
-			name: $.varRef(this._fields.name.value),
-			base: $.varRef(this._fields.base.value),
-			size: $.varRef(this._fields.size.value),
-			mutex: $.varRef($.markAsStructValue(this._fields.mutex.value.clone())),
-			lines: $.varRef(this._fields.lines.value),
-			infos: $.varRef(this._fields.infos.value)
-		}
-		return cloned
-	}
-
-	// Name returns the file name of file f as registered with AddFile.
-	public Name(): string {
-		const f = this
-		return f.name
-	}
-
-	// Base returns the base offset of file f as registered with AddFile.
-	public Base(): number {
-		const f = this
-		return f.base
-	}
-
-	// Size returns the size of file f as registered with AddFile.
-	public Size(): number {
-		const f = this
-		return f.size
-	}
-
-	// LineCount returns the number of lines in file f.
-	public async LineCount(): Promise<number> {
-		const f = this
-		await f.mutex.Lock()
-		let n = $.len(f.lines)
-		f.mutex.Unlock()
-		return n
-	}
-
-	// AddLine adds the line offset for a new line.
-	// The line offset must be larger than the offset for the previous line
-	// and smaller than the file size; otherwise the line offset is ignored.
-	public async AddLine(offset: number): Promise<void> {
-		const f = this
-		await f.mutex.Lock()
-		{
-			let i = $.len(f.lines)
-			if ((i == 0 || f.lines![i - 1] < offset) && offset < f.size) {
-				f.lines = $.append(f.lines, offset)
-			}
-		}
-		f.mutex.Unlock()
-	}
-
-	// MergeLine merges a line with the following line. It is akin to replacing
-	// the newline character at the end of the line with a space (to not change the
-	// remaining offsets). To obtain the line number, consult e.g. [Position.Line].
-	// MergeLine will panic if given an invalid line number.
-	public async MergeLine(line: number): Promise<void> {
-		const f = this
-		using __defer = new $.DisposableStack();
-		if (line < 1) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be >= 1)", line))
-		}
-		await f.mutex.Lock()
-		__defer.defer(() => {
-			f.mutex.Unlock()
-		});
-		if (line >= $.len(f.lines)) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
-		}
-		$.copy($.goSlice(f.lines, line, undefined), $.goSlice(f.lines, line + 1, undefined))
-		f.lines = $.goSlice(f.lines, undefined, $.len(f.lines) - 1)
-	}
-
-	// Lines returns the effective line offset table of the form described by [File.SetLines].
-	// Callers must not mutate the result.
-	public async Lines(): Promise<$.Slice<number>> {
-		const f = this
-		await f.mutex.Lock()
-		let lines = f.lines
-		f.mutex.Unlock()
-		return lines
-	}
-
-	// SetLines sets the line offsets for a file and reports whether it succeeded.
-	// The line offsets are the offsets of the first character of each line;
-	// for instance for the content "ab\nc\n" the line offsets are {0, 3}.
-	// An empty file has an empty line offset table.
-	// Each line offset must be larger than the offset for the previous line
-	// and smaller than the file size; otherwise SetLines fails and returns
-	// false.
-	// Callers must not mutate the provided slice after SetLines returns.
-	public async SetLines(lines: $.Slice<number>): Promise<boolean> {
-		const f = this
-		let size = f.size
-		for (let i = 0; i < $.len(lines); i++) {
-			let offset = lines![i]
-			{
-				if (i > 0 && offset <= lines![i - 1] || size <= offset) {
-					return false
-				}
-			}
-		}
-		await f.mutex.Lock()
-		f.lines = lines
-		f.mutex.Unlock()
-		return true
-	}
-
-	// SetLinesForContent sets the line offsets for the given file content.
-	// It ignores position-altering //line comments.
-	public async SetLinesForContent(content: $.Bytes): Promise<void> {
-		const f = this
-		let lines: $.Slice<number> = null
-		let line = 0
-		for (let offset = 0; offset < $.len(content); offset++) {
-			let b = content![offset]
-			{
-				if (line >= 0) {
-					lines = $.append(lines, line)
-				}
-				line = -1
-				if (b == 10) {
-					line = offset + 1
-				}
-			}
-		}
-		await f.mutex.Lock()
-		f.lines = lines
-		f.mutex.Unlock()
-	}
-
-	// LineStart returns the [Pos] value of the start of the specified line.
-	// It ignores any alternative positions set using [File.AddLineColumnInfo].
-	// LineStart panics if the 1-based line number is invalid.
-	public async LineStart(line: number): Promise<Pos> {
-		const f = this
-		using __defer = new $.DisposableStack();
-		if (line < 1) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be >= 1)", line))
-		}
-		await f.mutex.Lock()
-		__defer.defer(() => {
-			f.mutex.Unlock()
-		});
-		if (line > $.len(f.lines)) {
-			$.panic(fmt.Sprintf("invalid line number %d (should be < %d)", line, $.len(f.lines)))
-		}
-		return (f.base + f.lines![line - 1] as Pos)
-	}
-
-	// AddLineInfo is like [File.AddLineColumnInfo] with a column = 1 argument.
-	// It is here for backward-compatibility for code prior to Go 1.11.
-	public async AddLineInfo(offset: number, filename: string, line: number): Promise<void> {
-		const f = this
-		await f.AddLineColumnInfo(offset, filename, line, 1)
-	}
-
-	// AddLineColumnInfo adds alternative file, line, and column number
-	// information for a given file offset. The offset must be larger
-	// than the offset for the previously added alternative line info
-	// and smaller than the file size; otherwise the information is
-	// ignored.
-	//
-	// AddLineColumnInfo is typically used to register alternative position
-	// information for line directives such as //line filename:line:column.
-	public async AddLineColumnInfo(offset: number, filename: string, line: number, column: number): Promise<void> {
-		const f = this
-		await f.mutex.Lock()
-		{
-			let i = $.len(f.infos)
-			if ((i == 0 || f.infos![i - 1].Offset < offset) && offset < f.size) {
-				f.infos = $.append(f.infos, $.markAsStructValue(new lineInfo({Column: column, Filename: filename, Line: line, Offset: offset})))
-			}
-		}
-		f.mutex.Unlock()
-	}
-
-	// fixOffset fixes an out-of-bounds offset such that 0 <= offset <= f.size.
-	public fixOffset(offset: number): number {
-		const f = this
-		switch (true) {
-			case offset < 0: {
-				if (!false) {
-					return 0
-				}
-				break
-			}
-			case offset > f.size: {
-				if (!false) {
-					return f.size
-				}
-				break
-			}
-			default: {
-				return offset
-				break
-			}
-		}
-		if (false) {
-
-			/* for symmetry */
-			$.panic(fmt.Sprintf("offset %d out of bounds [%d, %d] (position %d out of bounds [%d, %d])", 0, offset, f.size, f.base + offset, f.base, f.base + f.size))
-		}
-		return 0
-	}
-
-	// Pos returns the Pos value for the given file offset.
-	//
-	// If offset is negative, the result is the file's start
-	// position; if the offset is too large, the result is
-	// the file's end position (see also go.dev/issue/57490).
-	//
-	// The following invariant, though not true for Pos values
-	// in general, holds for the result p:
-	// f.Pos(f.Offset(p)) == p.
-	public Pos(offset: number): Pos {
-		const f = this
-		return (f.base + f.fixOffset(offset) as Pos)
-	}
-
-	// Offset returns the offset for the given file position p.
-	//
-	// If p is before the file's start position (or if p is NoPos),
-	// the result is 0; if p is past the file's end position,
-	// the result is the file size (see also go.dev/issue/57490).
-	//
-	// The following invariant, though not true for offset values
-	// in general, holds for the result offset:
-	// f.Offset(f.Pos(offset)) == offset
-	public Offset(p: Pos): number {
-		const f = this
-		return f.fixOffset(p - f.base)
-	}
-
-	// Line returns the line number for the given file position p;
-	// p must be a [Pos] value in that file or [NoPos].
-	public async Line(p: Pos): Promise<number> {
-		const f = this
-		return (await f.Position(p))!.Line
-	}
-
-	// unpack returns the filename and line and column number for a file offset.
-	// If adjusted is set, unpack will return the filename and line information
-	// possibly adjusted by //line comments; otherwise those comments are ignored.
-	public async unpack(offset: number, adjusted: boolean): Promise<[string, number, number]> {
-		const f = this
-		let filename: string = ""
-		let line: number = 0
-		let column: number = 0
-		await f.mutex.Lock()
-		filename = f.name
-		{
-			let i = searchInts(f.lines, offset)
-			if (i >= 0) {
-				;[line, column] = [i + 1, offset - f.lines![i] + 1]
-			}
-		}
-		if (adjusted && $.len(f.infos) > 0) {
-			// few files have extra line infos
-
-			// i+1 is the line at which the alternative position was recorded
-			// line distance from alternative position base
-
-			// alternative column is unknown => relative column is unknown
-			// (the current specification for line directives requires
-			// this to apply until the next PosBase/line directive,
-			// not just until the new newline)
-
-			// the alternative position base is on the current line
-			// => column is relative to alternative column
-			{
-				let i = searchLineInfos(f.infos, offset)
-				if (i >= 0) {
-					let alt = f.infos![i]
-					filename = alt!.Filename
-
-					// i+1 is the line at which the alternative position was recorded
-					// line distance from alternative position base
-
-					// alternative column is unknown => relative column is unknown
-					// (the current specification for line directives requires
-					// this to apply until the next PosBase/line directive,
-					// not just until the new newline)
-
-					// the alternative position base is on the current line
-					// => column is relative to alternative column
-					{
-						let i = searchInts(f.lines, alt!.Offset)
-						if (i >= 0) {
-							// i+1 is the line at which the alternative position was recorded
-							let d = line - (i + 1) // line distance from alternative position base
-							line = alt!.Line + d
-
-							// alternative column is unknown => relative column is unknown
-							// (the current specification for line directives requires
-							// this to apply until the next PosBase/line directive,
-							// not just until the new newline)
-
-							// the alternative position base is on the current line
-							// => column is relative to alternative column
-							if (Number(alt!.Column) == 0) {
-								// alternative column is unknown => relative column is unknown
-								// (the current specification for line directives requires
-								// this to apply until the next PosBase/line directive,
-								// not just until the new newline)
-								column = 0
-							} else if (d == 0) {
-								// the alternative position base is on the current line
-								// => column is relative to alternative column
-								column = alt!.Column + (offset - alt!.Offset)
-							}
-						}
-					}
-				}
-			}
-		}
-		f.mutex.Unlock()
-		return [filename, line, column]
-	}
-
-	public async position(p: Pos, adjusted: boolean): Promise<Position> {
-		const f = this
-		let pos: Position = new Position()
-		let offset = f.fixOffset(p - f.base)
-		pos.Offset = offset
-		{
-		  const _tmp = await f.unpack(offset, adjusted)
-		  pos.Filename = _tmp[0]
-		  pos.Line = _tmp[1]
-		  pos.Column = _tmp[2]
-		}
-		return pos
-	}
-
-	// PositionFor returns the Position value for the given file position p.
-	// If p is out of bounds, it is adjusted to match the File.Offset behavior.
-	// If adjusted is set, the position may be adjusted by position-altering
-	// //line comments; otherwise those comments are ignored.
-	// p must be a Pos value in f or NoPos.
-	public async PositionFor(p: Pos, adjusted: boolean): Promise<Position> {
-		const f = this
-		let pos: Position = new Position()
-		if (p != 0) {
-			pos = $.markAsStructValue((await f.position(p, adjusted)).clone())
-		}
-		return pos
-	}
-
-	// Position returns the Position value for the given file position p.
-	// If p is out of bounds, it is adjusted to match the File.Offset behavior.
-	// Calling f.Position(p) is equivalent to calling f.PositionFor(p, true).
-	public async Position(p: Pos): Promise<Position> {
-		const f = this
-		let pos: Position = new Position()
-		return await f.PositionFor(p, true)
-	}
-
-	public key(): key {
-		const f = this
-		return $.markAsStructValue(new key({end: f.base + f.size, start: f.base}))
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'go/token.File',
-	  new File(),
-	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Base", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "LineCount", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "MergeLine", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "Lines", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }] }, { name: "SetLines", args: [{ name: "lines", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "SetLinesForContent", args: [{ name: "content", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [] }, { name: "LineStart", args: [{ name: "line", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: "Pos" }] }, { name: "AddLineInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "AddLineColumnInfo", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "line", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "column", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "fixOffset", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Pos", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: "Pos" }] }, { name: "Offset", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Line", args: [{ name: "p", type: "Pos" }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "unpack", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "position", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: "Position" }] }, { name: "PositionFor", args: [{ name: "p", type: "Pos" }, { name: "adjusted", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: "Position" }] }, { name: "Position", args: [{ name: "p", type: "Pos" }], returns: [{ type: "Position" }] }, { name: "key", args: [], returns: [{ type: "key" }] }],
-	  File,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "base": { kind: $.TypeKind.Basic, name: "int" }, "size": { kind: $.TypeKind.Basic, name: "int" }, "mutex": "Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "infos": { kind: $.TypeKind.Slice, elemType: "lineInfo" }}
 	);
 }
 

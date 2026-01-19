@@ -3,8 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as target from "@goscript/github.com/aperturerobotics/goscript/tests/tests/linkname_alias/target/index.js"
 
+import * as target from "@goscript/github.com/aperturerobotics/goscript/tests/tests/linkname_alias/target/index.js"
 
 export const greet: (name: string) => string = target.Greet
 
