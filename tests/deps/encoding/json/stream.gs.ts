@@ -225,7 +225,6 @@ export class Decoder {
 					case 10: {
 						dec.scan.bytes--
 						break Input
-						break
 					}
 					case 5:
 					case 8: {
@@ -238,7 +237,6 @@ export class Decoder {
 					case 11: {
 						dec.err = dec.scan.err
 						return [0, dec.scan.err]
-						break
 					}
 				}
 			}
@@ -324,7 +322,6 @@ export class Decoder {
 			case 2:
 			case 7: {
 				return true
-				break
 			}
 		}
 		return false
@@ -372,7 +369,6 @@ export class Decoder {
 					dec.tokenStack = $.append(dec.tokenStack, dec.tokenState)
 					dec.tokenState = 1
 					return [(91 as Delim), null]
-					break
 				}
 				case 93: {
 					if (Number(dec.tokenState) != 1 && Number(dec.tokenState) != 3) {
@@ -383,7 +379,6 @@ export class Decoder {
 					dec.tokenStack = $.goSlice(dec.tokenStack, undefined, $.len(dec.tokenStack) - 1)
 					dec.tokenValueEnd()
 					return [(93 as Delim), null]
-					break
 				}
 				case 123: {
 					if (!dec.tokenValueAllowed()) {
@@ -393,7 +388,6 @@ export class Decoder {
 					dec.tokenStack = $.append(dec.tokenStack, dec.tokenState)
 					dec.tokenState = 4
 					return [(123 as Delim), null]
-					break
 				}
 				case 125: {
 					if (Number(dec.tokenState) != 4 && Number(dec.tokenState) != 8) {
@@ -404,7 +398,6 @@ export class Decoder {
 					dec.tokenStack = $.goSlice(dec.tokenStack, undefined, $.len(dec.tokenStack) - 1)
 					dec.tokenValueEnd()
 					return [(125 as Delim), null]
-					break
 				}
 				case 58: {
 					if (Number(dec.tokenState) != 6) {
@@ -413,7 +406,6 @@ export class Decoder {
 					dec.scanp++
 					dec.tokenState = 7
 					continue
-					break
 				}
 				case 44: {
 					if (Number(dec.tokenState) == 3) {
@@ -427,7 +419,6 @@ export class Decoder {
 						continue
 					}
 					return dec.tokenError(c)
-					break
 				}
 				case 34: {
 					if (Number(dec.tokenState) == 4 || Number(dec.tokenState) == 5) {
@@ -443,7 +434,6 @@ export class Decoder {
 						return [x!.value, null]
 					}
 					// fallthrough // fallthrough statement skipped
-					break
 				}
 				default: {
 					if (!dec.tokenValueAllowed()) {
@@ -457,7 +447,6 @@ export class Decoder {
 						}
 					}
 					return [x!.value, null]
-					break
 				}
 			}
 		}

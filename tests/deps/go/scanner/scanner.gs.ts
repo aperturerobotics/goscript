@@ -628,7 +628,6 @@ export class Scanner {
 			case quote: {
 				await s.next()
 				return true
-				break
 			}
 			case 48:
 			case 49:
@@ -663,7 +662,6 @@ export class Scanner {
 				}
 				await s.error(offs, msg)
 				return false
-				break
 			}
 		}
 		let x: number = 0
@@ -905,7 +903,6 @@ export class Scanner {
 						case 10: {
 							s.insertSemi = false // newline consumed
 							return [pos, token.SEMICOLON, "\n"]
-							break
 						}
 						case 34: {
 							insertSemi = true
@@ -1130,11 +1127,9 @@ export function digitVal(ch: number): number {
 	switch (true) {
 		case 48 <= ch && ch <= 57: {
 			return $.int(ch - 48)
-			break
 		}
 		case 97 <= lower(ch) && lower(ch) <= 102: {
 			return $.int(lower(ch) - 97 + 10)
-			break
 		}
 	}
 	return 16
@@ -1156,16 +1151,13 @@ export function litname(prefix: number): string {
 	switch (prefix) {
 		case 120: {
 			return "hexadecimal literal"
-			break
 		}
 		case 111:
 		case 48: {
 			return "octal literal"
-			break
 		}
 		case 98: {
 			return "binary literal"
-			break
 		}
 	}
 	return "decimal literal"

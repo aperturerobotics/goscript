@@ -479,7 +479,6 @@ export class decodeState {
 						case 34: {
 							i++
 							break Switch
-							break
 						}
 					}
 				}
@@ -517,7 +516,6 @@ export class decodeState {
 						}
 						default: {
 							break Switch
-							break
 						}
 					}
 				}
@@ -552,7 +550,6 @@ export class decodeState {
 		switch (d.opcode) {
 			default: {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
-				break
 			}
 			case 6: {
 				if (v.IsValid()) {
@@ -608,7 +605,6 @@ export class decodeState {
 		switch (d.opcode) {
 			default: {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
-				break
 			}
 			case 6:
 			case 2: {
@@ -652,17 +648,14 @@ export class decodeState {
 					return null
 				}
 				// fallthrough // fallthrough statement skipped
-				break
 			}
 			default: {
 				d.saveError(new UnmarshalTypeError({Offset: (d.off as number), Type: v.Type(), Value: "array"}))
 				d.skip()
 				return null
-				break
 			}
 			case reflect.Array:
 			case reflect.Slice: {
-				break
 				break
 			}
 		}
@@ -800,7 +793,6 @@ export class decodeState {
 				d.saveError(new UnmarshalTypeError({Offset: (d.off as number), Type: t, Value: "object"}))
 				d.skip()
 				return null
-				break
 			}
 		}
 		let mapElem: reflect.Value = new reflect.Value()
@@ -1032,7 +1024,6 @@ export class decodeState {
 						}
 						default: {
 							$.panic("json: Unexpected key type")
-							break
 						}
 					}
 				}
@@ -1308,7 +1299,6 @@ export class decodeState {
 		switch (d.opcode) {
 			default: {
 				$.panic("JSON decoder out of sync - data changing underfoot?")
-				break
 			}
 			case 6: {
 				val = d.arrayInterface()
@@ -1419,12 +1409,10 @@ export class decodeState {
 			switch (c) {
 				case 110: {
 					return null
-					break
 				}
 				case 116:
 				case 102: {
 					return c == 116
-					break
 				}
 				case 34: {
 					let [s, ok] = unquote(item)
@@ -1432,7 +1420,6 @@ export class decodeState {
 						$.panic("JSON decoder out of sync - data changing underfoot?")
 					}
 					return s
-					break
 				}
 				default: {
 					if (c != 45 && (c < 48 || c > 57)) {
@@ -1443,7 +1430,6 @@ export class decodeState {
 						d.saveError(err)
 					}
 					return n
-					break
 				}
 			}
 		}}
@@ -1745,7 +1731,6 @@ export function getu4(s: $.Bytes): number {
 				}
 				default: {
 					return -1
-					break
 				}
 			}
 			r = r * 16 + (c as number)
@@ -1852,7 +1837,6 @@ export function unquoteBytes(s: $.Bytes): [$.Bytes, boolean] {
 						switch (s![r]) {
 							default: {
 								return [t, ok]
-								break
 							}
 							case 34:
 							case 92:
@@ -1925,7 +1909,6 @@ export function unquoteBytes(s: $.Bytes): [$.Bytes, boolean] {
 					case c == 34:
 					case c < 32: {
 						return [t, ok]
-						break
 					}
 					case c < utf8.RuneSelf: {
 						b![w] = c

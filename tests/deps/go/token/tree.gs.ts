@@ -141,19 +141,15 @@ export class tree {
 		switch (true) {
 			case pos!.value != null: {
 				return (pos!.value)!.next()
-				break
 			}
 			case parent == null: {
 				return null
-				break
 			}
 			case (pos === parent!.left): {
 				return parent
-				break
 			}
 			default: {
 				return parent!.next()
-				break
 			}
 		}
 	}
@@ -186,7 +182,6 @@ export class tree {
 			}
 			default: {
 				$.panic("corrupt tree")
-				break
 			}
 		}
 	}
@@ -316,7 +311,6 @@ export class tree {
 					$.panic("unreachable according to current FileSet requirements")
 				}
 				return 
-				break
 			}
 			case x!.left == null: {
 				{
@@ -584,11 +578,9 @@ export function compareKey(x: key, y: key): number {
 	switch (true) {
 		case x.end < y.start: {
 			return -1
-			break
 		}
 		case y.end < x.start: {
 			return +1
-			break
 		}
 	}
 	return 0

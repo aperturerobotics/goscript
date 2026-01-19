@@ -1275,3 +1275,34 @@ func (c *GoToTSCompiler) needsDefensiveSemicolon(expr ast.Expr) bool {
 	}
 	return false
 }
+
+// isTerminatingStmt checks if a statement terminates control flow, meaning
+// code after it would be unreachable. This includes return, panic, continue,
+// break, goto, and fallthrough statements.
+func isTerminatingStmt(stmt ast.Stmt) bool {
+	switch s := stmt.(type) {
+	case *ast.ReturnStmt:
+		return true
+	case *ast.BranchStmt:
+		// break, continue, goto, fallthrough all terminate the current block
+		return true
+	case *ast.ExprStmt:
+		// Check for panic() calls
+		if call, ok := s.X.(*ast.CallExpr); ok {
+			if ident, ok := call.Fun.(*ast.Ident); ok {
+				if ident.Name == "panic" {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// endsWithTerminatingStmt checks if a statement list ends with a terminating statement.
+func endsWithTerminatingStmt(stmts []ast.Stmt) bool {
+	if len(stmts) == 0 {
+		return false
+	}
+	return isTerminatingStmt(stmts[len(stmts)-1])
+}

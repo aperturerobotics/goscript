@@ -135,11 +135,9 @@ export class Mutex {
 			switch (nstatus) {
 				case 1: {
 					return [release, null]
-					break
 				}
 				case 2: {
 					return [null, context.Canceled]
-					break
 				}
 			}
 		}
