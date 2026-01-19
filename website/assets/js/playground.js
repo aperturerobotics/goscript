@@ -32,6 +32,67 @@ const compileBtn = document.getElementById('compile-btn')
 const runBtn = document.getElementById('run-btn')
 const clearBtn = document.getElementById('clear-btn')
 const compilerStatus = document.getElementById('compiler-status')
+const shareBtn = document.getElementById('share-btn')
+
+// URL sharing functions
+function encodeCodeToUrl(code) {
+  const bytes = new TextEncoder().encode(code)
+  const base64 = btoa(String.fromCharCode(...bytes))
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function decodeCodeFromUrl(encoded) {
+  // Restore standard base64
+  let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/')
+  // Add padding if needed
+  while (base64.length % 4) {
+    base64 += '='
+  }
+  const binary = atob(base64)
+  const bytes = new Uint8Array([...binary].map(c => c.charCodeAt(0)))
+  return new TextDecoder().decode(bytes)
+}
+
+function getCodeFromUrl() {
+  const hash = window.location.hash
+  if (!hash || !hash.startsWith('#p=')) {
+    return null
+  }
+  try {
+    return decodeCodeFromUrl(hash.slice(3))
+  } catch (err) {
+    console.warn('Failed to decode URL:', err)
+    return null
+  }
+}
+
+function updateUrlWithCode(code) {
+  const encoded = encodeCodeToUrl(code)
+  const newUrl = `${window.location.pathname}#p=${encoded}`
+  window.history.replaceState(null, '', newUrl)
+}
+
+async function shareCode() {
+  if (!goEditor) return
+
+  const code = goEditor.getValue()
+  if (!code.trim()) {
+    outputBody.textContent = 'No code to share.'
+    return
+  }
+
+  updateUrlWithCode(code)
+
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+    outputBody.textContent = 'Link copied to clipboard!'
+    outputBody.className = 'panel-body output-panel'
+  } catch (err) {
+    // Fallback for browsers that don't support clipboard API
+    outputBody.textContent = `Share URL: ${window.location.href}`
+    outputBody.className = 'panel-body output-panel'
+  }
+}
 
 // Initialize Monaco editors
 function initMonaco() {
@@ -177,8 +238,15 @@ async function init() {
   // Wait for Monaco to be ready before loading example
   await monacoPromise
 
-  // Select first example by default
-  if (examples.length > 0) {
+  // Check if there's code in the URL hash
+  const urlCode = getCodeFromUrl()
+  if (urlCode) {
+    currentExample = null
+    goEditor.setValue(urlCode)
+    tsEditor.setValue('// Click "Compile" to generate TypeScript')
+    exampleSelect.value = ''
+  } else if (examples.length > 0) {
+    // Select first example by default
     exampleSelect.value = examples[0].name
     loadExample(examples[0])
   }
@@ -242,6 +310,20 @@ runBtn.addEventListener('click', () => runCode())
 clearBtn.addEventListener('click', () => {
   outputBody.textContent = ''
   outputBody.className = 'panel-body output-panel'
+})
+shareBtn.addEventListener('click', () => shareCode())
+
+// Handle browser back/forward navigation
+window.addEventListener('hashchange', () => {
+  const urlCode = getCodeFromUrl()
+  if (urlCode && goEditor) {
+    currentExample = null
+    goEditor.setValue(urlCode)
+    tsEditor.setValue('// Click "Compile" to generate TypeScript')
+    exampleSelect.value = ''
+    outputBody.textContent = ''
+    outputBody.className = 'panel-body output-panel'
+  }
 })
 
 async function compileCode() {
