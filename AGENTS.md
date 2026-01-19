@@ -23,7 +23,8 @@ Remember to always delete dead code when changing things - for example if you ch
   - Multiple unexported (internal) structs in the same file are acceptable
   - Constants and type aliases can be co-located with the struct that uses them
 - DO NOT use `else` statements unless necessary
-- DO NOT make git commits
+- DO NOT make git commits unless asked
+- When making Git commits referencing issues use the short form: Fixes #128 (for example)
 - AVOID `else` statements or "fallback" cases
 - PREFER single word variable names where possible
 - DO NOT maintain backwards compatibility - this is an experimental project

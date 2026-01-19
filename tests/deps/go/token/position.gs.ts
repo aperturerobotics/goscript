@@ -283,7 +283,6 @@ export class File {
 			}
 			default: {
 				return offset
-				break
 			}
 		}
 		if (false) {

@@ -1003,8 +1003,12 @@ func (c *GoToTSCompiler) WriteCaseClause(exp *ast.CaseClause) error {
 			return fmt.Errorf("failed to write statement in case clause body: %w", err)
 		}
 	}
-	// Add break statement (Go's switch has implicit breaks, TS needs explicit break)
-	c.tsw.WriteLine("break")
+	// Add break statement only if the case body doesn't end with a terminating statement
+	// (return, panic, continue, break, goto, fallthrough). Go's switch has implicit breaks,
+	// but TS needs explicit break - however, adding break after return is unreachable code.
+	if !endsWithTerminatingStmt(exp.Body) {
+		c.tsw.WriteLine("break")
+	}
 	c.tsw.Indent(-1)
 	c.tsw.WriteLine("}")
 	return nil

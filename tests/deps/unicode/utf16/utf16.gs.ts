@@ -55,15 +55,12 @@ export function RuneLen(r: number): number {
 		case 0 <= r && r < 55296:
 		case 57344 <= r && r < 65536: {
 			return 1
-			break
 		}
 		case 65536 <= r && r <= 1114111: {
 			return 2
-			break
 		}
 		default: {
 			return -1
-			break
 		}
 	}
 }
@@ -130,12 +127,10 @@ export function AppendRune(a: $.Slice<number>, r: number): $.Slice<number> {
 		case 0 <= r && r < 55296:
 		case 57344 <= r && r < 65536: {
 			return $.append(a, (r as number))
-			break
 		}
 		case 65536 <= r && r <= 1114111: {
 			let [r1, r2] = EncodeRune(r)
 			return $.append(a, (r1 as number), (r2 as number))
-			break
 		}
 	}
 	return $.append(a, 65533)

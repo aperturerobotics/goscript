@@ -1469,7 +1469,6 @@ export function isEmptyValue(v: reflect.Value): boolean {
 		case reflect.Slice:
 		case reflect.String: {
 			return v.Len() == 0
-			break
 		}
 		case reflect.Bool:
 		case reflect.Int:
@@ -1488,7 +1487,6 @@ export function isEmptyValue(v: reflect.Value): boolean {
 		case reflect.Interface:
 		case reflect.Ptr: {
 			return v.IsZero()
-			break
 		}
 	}
 	return false
@@ -1553,7 +1551,6 @@ export async function newTypeEncoder(t: null | reflect.Type, allowAddr: boolean)
 	switch (t!.Kind()) {
 		case reflect.Bool: {
 			return boolEncoder
-			break
 		}
 		case reflect.Int:
 		case reflect.Int8:
@@ -1561,7 +1558,6 @@ export async function newTypeEncoder(t: null | reflect.Type, allowAddr: boolean)
 		case reflect.Int32:
 		case reflect.Int64: {
 			return intEncoder
-			break
 		}
 		case reflect.Uint:
 		case reflect.Uint8:
@@ -1570,47 +1566,36 @@ export async function newTypeEncoder(t: null | reflect.Type, allowAddr: boolean)
 		case reflect.Uint64:
 		case reflect.Uintptr: {
 			return uintEncoder
-			break
 		}
 		case reflect.Float32: {
 			return float32Encoder
-			break
 		}
 		case reflect.Float64: {
 			return float64Encoder
-			break
 		}
 		case reflect.String: {
 			return stringEncoder
-			break
 		}
 		case reflect.Interface: {
 			return interfaceEncoder
-			break
 		}
 		case reflect.Struct: {
 			return await newStructEncoder(t)
-			break
 		}
 		case reflect.Map: {
 			return await newMapEncoder(t)
-			break
 		}
 		case reflect.Slice: {
 			return await newSliceEncoder(t)
-			break
 		}
 		case reflect.Array: {
 			return await newArrayEncoder(t)
-			break
 		}
 		case reflect.Ptr: {
 			return await newPtrEncoder(t)
-			break
 		}
 		default: {
 			return unsupportedTypeEncoder
-			break
 		}
 	}
 }
@@ -1782,7 +1767,6 @@ export function isValidNumber(s: string): boolean {
 	switch (true) {
 		default: {
 			return false
-			break
 		}
 		case $.indexString(s, 0) == 48: {
 			s = $.sliceString(s, 1, undefined)
@@ -1934,7 +1918,6 @@ export function isValidTag(s: string): boolean {
 					}
 					case !unicode.IsLetter(c) && !unicode.IsDigit(c): {
 						return false
-						break
 					}
 				}
 			}
@@ -1977,7 +1960,6 @@ export function resolveKeyName(k: reflect.Value): [string, $.GoError] {
 		case reflect.Int32:
 		case reflect.Int64: {
 			return [strconv.FormatInt(k.Int(), 10), null]
-			break
 		}
 		case reflect.Uint:
 		case reflect.Uint8:
@@ -1986,7 +1968,6 @@ export function resolveKeyName(k: reflect.Value): [string, $.GoError] {
 		case reflect.Uint64:
 		case reflect.Uintptr: {
 			return [strconv.FormatUint(k.Uint(), 10), null]
-			break
 		}
 	}
 	$.panic("unexpected map key type")

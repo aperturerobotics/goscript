@@ -95,11 +95,9 @@ export class Encoding {
 		switch (true) {
 			case padding < -1 || padding == 13 || padding == 10 || padding > 0xff: {
 				$.panic("invalid padding")
-				break
 			}
 			case padding != -1 && enc.decodeMap![$.byte(padding)] != 255: {
 				$.panic("padding contained in alphabet")
-				break
 			}
 		}
 		enc.padChar = padding
@@ -218,12 +216,10 @@ export class Encoding {
 				switch (true) {
 					case j == 0: {
 						return [si, 0, null]
-						break
 					}
 					case j == 1:
 					case Number(enc.padChar) != -1: {
 						return [si, 0, $.wrapPrimitiveError((si - j as CorruptInputError), CorruptInputError_Error)]
-						break
 					}
 				}
 				dlen = j
@@ -261,7 +257,6 @@ export class Encoding {
 				case 0:
 				case 1: {
 					return [si, 0, $.wrapPrimitiveError((si - 1 as CorruptInputError), CorruptInputError_Error)]
-					break
 				}
 				case 2: {
 					for (; si < $.len(src) && (src![si] == 10 || src![si] == 13); ) {
@@ -300,7 +295,6 @@ export class Encoding {
 				dst![2] = dbuf![2]
 				dbuf![2] = 0
 				// fallthrough // fallthrough statement skipped
-				break
 			}
 			case 3: {
 				dst![1] = dbuf![1]
@@ -309,7 +303,6 @@ export class Encoding {
 				}
 				dbuf![1] = 0
 				// fallthrough // fallthrough statement skipped
-				break
 			}
 			case 2: {
 				dst![0] = dbuf![0]
@@ -870,11 +863,9 @@ export function NewEncoding(encoder: string): Encoding | null {
 		switch (true) {
 			case $.indexString(encoder, i) == 10 || $.indexString(encoder, i) == 13: {
 				$.panic("encoding alphabet contains newline character")
-				break
 			}
 			case e!.decodeMap![$.indexString(encoder, i)] != 255: {
 				$.panic("encoding alphabet includes duplicate symbols")
-				break
 			}
 		}
 		e!.decodeMap![$.indexString(encoder, i)] = (i as number)
