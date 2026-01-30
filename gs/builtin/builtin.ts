@@ -42,6 +42,35 @@ export function clear<T>(v: T[] | Map<unknown, unknown> | null): void {
   }
 }
 
+/**
+ * assignStruct copies all field values from source struct to target struct.
+ * Used for pointer dereference assignment: *p = value
+ * Copies the _fields contents from source to target.
+ */
+export function assignStruct<T>(target: T, source: T): void {
+  if (
+    target === null ||
+    target === undefined ||
+    source === null ||
+    source === undefined
+  ) {
+    return
+  }
+  const targetFields = (target as any)._fields
+  const sourceFields = (source as any)._fields
+  if (!targetFields || !sourceFields) {
+    return
+  }
+  // Copy each field's value from source to target
+  for (const key of Object.keys(sourceFields)) {
+    const sourceField = sourceFields[key]
+    const targetField = targetFields[key]
+    if (sourceField && targetField && sourceField.value !== undefined) {
+      targetField.value = sourceField.value
+    }
+  }
+}
+
 // Bytes represents all valid []byte representations in TypeScript
 // This includes Uint8Array (the preferred representation) and $.Slice<number> (which includes null)
 export type Bytes = Uint8Array | Slice<number>

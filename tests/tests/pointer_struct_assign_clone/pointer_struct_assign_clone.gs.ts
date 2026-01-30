@@ -46,7 +46,7 @@ export async function main(): Promise<void> {
 
 	// This assignment should trigger the .clone() on s1
 	// because s1 is a struct and *p is being assigned.
-	p!.value = $.markAsStructValue(s1.clone())
+	$.assignStruct(p!, $.markAsStructValue(s1.clone()))
 
 	$.println(p!.Value) // Expected: 10
 
@@ -57,7 +57,7 @@ export async function main(): Promise<void> {
 	// Test assignment from a pointer to a struct (should not clone)
 	let s2 = new MyStruct({Value: 40})
 	let p2 = new MyStruct({Value: 50})
-	p2!.value = $.markAsStructValue(s2!.clone()) // Assigning the struct pointed to by s2 to the struct pointed to by p2
+	$.assignStruct(p2!, $.markAsStructValue(s2!.clone())) // Assigning the struct pointed to by s2 to the struct pointed to by p2
 	$.println(p2!.Value) // Expected: 40
 
 	s2!.Value = 60 // Modify original s2
@@ -69,13 +69,13 @@ export async function main(): Promise<void> {
 	// Test assignment of a struct from a function call
 	let s3 = $.markAsStructValue(new MyStruct({Value: 70}))
 	let p3 = new MyStruct({Value: 80})
-	p3!.value = $.markAsStructValue(getStruct().clone())
+	$.assignStruct(p3!, $.markAsStructValue(getStruct().clone()))
 	$.println(p3!.Value) // Expected: 100
 	$.println(s3.Value) // Expected: 70
 
 	// Test assignment of a struct from a pointer returned by a function call
 	let p4 = new MyStruct({Value: 90})
-	p4!.value = $.markAsStructValue(getStructPointer()!.clone())
+	$.assignStruct(p4!, $.markAsStructValue(getStructPointer()!.clone()))
 	$.println(p4!.Value) // Expected: 110
 }
 

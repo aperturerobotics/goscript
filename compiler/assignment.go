@@ -396,7 +396,37 @@ func (c *GoToTSCompiler) writeBlankIdentifierAssign(rhs ast.Expr) error {
 
 // writePointerDerefAssign handles assignments to dereferenced pointers (*p = val)
 func (c *GoToTSCompiler) writePointerDerefAssign(starExpr *ast.StarExpr, rhs ast.Expr, tok token.Token) error {
-	// Write pointer dereference
+	// Check if RHS is a struct - if so, use $.assignStruct() to copy fields
+	if shouldApplyClone(c.pkg, rhs) {
+		// For struct assignments, use $.assignStruct(target, source)
+		// This copies all fields from source to target
+		c.tsw.WriteLiterally("$.assignStruct(")
+
+		// Write the pointer as the target
+		if ident, ok := starExpr.X.(*ast.Ident); ok {
+			obj := c.objectOfIdent(ident)
+			if obj != nil && c.analysis.NeedsVarRef(obj) {
+				c.WriteIdent(ident, true)
+			} else {
+				c.WriteIdent(ident, false)
+			}
+		} else {
+			if err := c.WriteValueExpr(starExpr.X); err != nil {
+				return err
+			}
+		}
+		c.tsw.WriteLiterally("!, ")
+
+		// Write the RHS with clone as the source
+		c.tsw.WriteLiterally("$.markAsStructValue(")
+		if err := c.WriteValueExpr(rhs); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally(".clone()))")
+		return nil
+	}
+
+	// For non-struct types, use the original p!.value = val approach
 	if ident, ok := starExpr.X.(*ast.Ident); ok {
 		obj := c.objectOfIdent(ident)
 		if obj != nil && c.analysis.NeedsVarRef(obj) {
@@ -426,17 +456,9 @@ func (c *GoToTSCompiler) writePointerDerefAssign(starExpr *ast.StarExpr, rhs ast
 		c.tsw.WriteLiterally(" ")
 	}
 
-	// Write RHS with cloning if needed
-	if shouldApplyClone(c.pkg, rhs) {
-		c.tsw.WriteLiterally("$.markAsStructValue(")
-		if err := c.WriteValueExpr(rhs); err != nil {
-			return err
-		}
-		c.tsw.WriteLiterally(".clone())")
-	} else {
-		if err := c.WriteValueExpr(rhs); err != nil {
-			return err
-		}
+	// Write RHS
+	if err := c.WriteValueExpr(rhs); err != nil {
+		return err
 	}
 
 	if tok == token.AND_NOT_ASSIGN {
