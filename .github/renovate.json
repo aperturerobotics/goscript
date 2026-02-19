@@ -16,6 +16,11 @@
     {
       "matchPackageNames": ["github.com/aperturerobotics/goscript"],
       "enabled": false
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["golang"],
+      "enabled": false
     }
   ]
 }
