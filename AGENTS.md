@@ -1,40 +1,20 @@
 # Agent Rules for GoScript
 
-This document contains guidelines and rules for AI agents working on the GoScript project.
-
 ## IMPORTANT
 
-Fix anything that you come across in the project while working that violates any of these guidelines as you encounter it.
-
-**CRITICAL: When asked to update AGENTS.md:**
-
-- ALWAYS read the ENTIRE file first before making edits
-- Check for duplicate information across sections
-- Condense and consolidate duplicates into a single authoritative section
-- Ensure guidelines are clear and non-contradictory
 - NEVER run the vite dev server or anything that listens on any port yourself! Ask the user to do it!
 - Read `docs/explainer.md` for an overview of the project if you need it
 
-Remember to always delete dead code when changing things - for example if you changed something and a function is no longer used anywhere, delete that function.
+### Project-Specific Rules
 
-### General Rules
-
-- Try to keep things in one function unless composable or reusable
-- PREFER one exported struct per `.go` file (file named after the struct, e.g., `type-info.go` for `TypeInfo`)
-  - Multiple unexported (internal) structs in the same file are acceptable
-  - Constants and type aliases can be co-located with the struct that uses them
-- DO NOT use `else` statements unless necessary
-- DO NOT make git commits unless asked
-- When making Git commits referencing issues use the short form: Fixes #128 (for example)
-- AVOID `else` statements or "fallback" cases
-- PREFER single word variable names where possible
 - DO NOT maintain backwards compatibility - this is an experimental project
 - Remove any "for backwards compatibility" comments and fallback logic
 - NEVER hardcode things: examples include function names, builtins, etc.
-- Actively try to improve the codebase to conform to the above when the opportunity arises
+- Actively try to improve the codebase to conform to these rules when the opportunity arises
 - Go standard library sources are located at "go env GOROOT" (shell command)
-- Leverage adding more tests, for example in `compiler/analysis_test.go`, instead of debug logging, for diagnosing issues or investigating hypotheses. If the new test case is temporary and you plan to remove it later, add a `tmp_test.go` file or similar to keep things separated.
+- Leverage adding more tests (e.g., `compiler/analysis_test.go`) instead of debug logging for diagnosing issues. If the new test case is temporary, add a `tmp_test.go` file to keep things separated.
 - AVOID type arguments unless necessary (prefer type inference)
+- When making Git commits referencing issues use the short form: Fixes #128 (for example)
 - When making Git commits use the existing commit message pattern and Linux-kernel style commit message bodies.
 - When you would normally add a new compliance test check if a very-similar compliance test already exists and if so extend that one instead. For example testing another function in the same package.
 
@@ -114,17 +94,11 @@ NOTE: `./tests/deps/` contains library dependencies compiled by the goscript com
    - Try to make a 1-1 match between AST type and function name
    - Avoid hiding logic in unexported functions
 
-3. **Function Organization**:
-   - Avoid splitting functions unless:
-     - The logic is reused elsewhere
-     - The function becomes excessively long and complex
-     - Doing so adheres to existing patterns in the codebase
-
-4. **Implementation Completeness**:
+3. **Implementation Completeness**:
    - Avoid leaving undecided implementation details in the code
    - Make a decision and add a comment explaining the choice if necessary
 
-5. **Struct Field Policy**:
+4. **Struct Field Policy**:
    - You **may not** add new fields to `GoToTSCompiler`
    - You **may** add new fields to `Analysis` if you are adding ahead-of-time analysis only
 
@@ -139,7 +113,6 @@ When working with golangci-lint:
    ```go
    defer f.Close() //nolint:errcheck
    ```
-   This is appropriate for cases like deferring Close without checking the error return value, which can often be safely ignored.
 
 Make sure that `bun test` and `bun lint` both pass before suggesting a task is complete.
 
@@ -196,32 +169,3 @@ The playground at `website/` compiles Go to TypeScript using a WASM build of the
 - Playground examples are defined in `scripts/generate-examples.ts` (the `CURATED_EXAMPLES` array)
 - Do NOT add examples that import packages beyond `@goscript/builtin` (e.g., `encoding/json`) until dependency bundling is implemented
 - Run `bun run scripts/generate-examples.ts` then `cd website && bun run build` to update
-
-## Comments
-
-When adding comments to functions, structs, or files:
-
-- Use the format: `// FunctionName does something specific.`
-- Start with the function/struct/type name followed by a verb
-- End with a period
-- Keep it concise and descriptive
-
-Example:
-
-```go
-// WriteFuncDecl converts a Go function declaration to TypeScript.
-func (c *GoToTSCompiler) WriteFuncDecl(decl *ast.FuncDecl) error {
-  ...
-}
-```
-
-### Go Type Assertions
-
-When using type assertion syntax in Go, add a comment line just before:
-
-```go
-// _ is a type assertion
-var _ SomeInterface = (*SomeStruct)(nil)
-```
-
-This verifies at compile-time that `SomeStruct` implements `SomeInterface`.
