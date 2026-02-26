@@ -7,7 +7,7 @@ require (
 	github.com/aperturerobotics/protobuf-go-lite v0.11.0
 	github.com/aperturerobotics/util v1.32.0
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.9.4
+	github.com/sirupsen/logrus v1.9.5-0.20260226151524-34027eac4204
 	golang.org/x/mod v0.32.0
 	golang.org/x/tools v0.41.0
 )
