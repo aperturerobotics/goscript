@@ -80,6 +80,7 @@
     "cmd",
     "compiler",
     "gs",
+    "gs.go",
     "!tests",
     "go.mod",
     "go.sum",

@@ -7,24 +7,60 @@ import { dirname } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// Go up two levels from cmd/goscript/ to the project root
+// Go up two levels from cmd/goscript/ to the goscript module root
 const projectRoot = path.join(__dirname, '..', '..');
+
+// The user's working directory (where they invoked the command)
+const userCwd = process.cwd();
 
 // Get arguments passed to the script, excluding node executable and script path
 const args = process.argv.slice(2);
 
-// Construct the go run command with the absolute path to the goscript executable
-// Use path.join for robustness
-const goscriptCmd = `go run ./cmd/goscript`;
+// Resolve --output and --dir paths relative to the user's cwd, since the
+// go run process executes from the goscript module root, not the user's project.
+const resolvedArgs = [];
+let hasDir = false;
+for (let i = 0; i < args.length; i++) {
+  const arg = args[i];
+  if (arg === '--dir') {
+    hasDir = true;
+    resolvedArgs.push(arg);
+    if (i + 1 < args.length) {
+      i++;
+      resolvedArgs.push(path.resolve(userCwd, args[i]));
+    }
+  } else if (arg.startsWith('--dir=')) {
+    hasDir = true;
+    const val = arg.slice('--dir='.length);
+    resolvedArgs.push('--dir=' + path.resolve(userCwd, val));
+  } else if (arg === '--output' || arg === '-o') {
+    resolvedArgs.push(arg);
+    if (i + 1 < args.length) {
+      i++;
+      resolvedArgs.push(path.resolve(userCwd, args[i]));
+    }
+  } else if (arg.startsWith('--output=')) {
+    const val = arg.slice('--output='.length);
+    resolvedArgs.push('--output=' + path.resolve(userCwd, val));
+  } else {
+    resolvedArgs.push(arg);
+  }
+}
 
-// Combine the goscript command with the arguments
-const command = `${goscriptCmd} ${args.join(" ")}`;
+// Inject --dir with user's cwd if not explicitly provided, so the compiler
+// loads packages from the user's project instead of the goscript module root.
+if (!hasDir) {
+  resolvedArgs.push('--dir', userCwd);
+}
 
-// Execute the command
+// Build the command: go run from the goscript module root
+const command = `go run ./cmd/goscript ${resolvedArgs.join(' ')}`;
+
+// Execute from the goscript module root so Go can resolve the module
 const child = spawn(command, {
-  shell: true, // Use shell to correctly parse the command string
-  stdio: 'inherit', // Inherit stdin, stdout, and stderr
-  cwd: projectRoot, // Execute in the current working directory where the script is run
+  shell: true,
+  stdio: 'inherit',
+  cwd: projectRoot,
 });
 
 child.on('error', (error) => {
@@ -33,5 +69,5 @@ child.on('error', (error) => {
 });
 
 child.on('exit', (code) => {
-  process.exit(code ?? 0); // Exit with the child process's exit code
+  process.exit(code ?? 0);
 });
