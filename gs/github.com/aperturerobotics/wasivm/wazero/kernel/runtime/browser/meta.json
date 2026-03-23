@@ -1,0 +1,12 @@
+{
+  "dependencies": [],
+  "asyncMethods": {
+    "Runtime.Compile": true,
+    "Runtime.Close": true,
+    "Module.Instantiate": true,
+    "Module.Close": true,
+    "Instance.Call": true,
+    "Instance.Close": true,
+    "Function.Call": true
+  }
+}
