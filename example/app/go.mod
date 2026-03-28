@@ -7,13 +7,12 @@ replace github.com/aperturerobotics/goscript => ../../
 require github.com/aperturerobotics/goscript v0.0.0-00010101000000-000000000000
 
 require (
-	github.com/aperturerobotics/cli v1.0.1 // indirect
-	github.com/aperturerobotics/common v0.24.0 // indirect
+	github.com/aperturerobotics/cli v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/sirupsen/logrus v1.9.5-0.20260226151524-34027eac4204 // indirect
+	github.com/sirupsen/logrus v1.9.5-0.20260309202648-9f0600962f75 // indirect
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
-	golang.org/x/mod v0.32.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
-	golang.org/x/tools v0.41.0 // indirect
+	golang.org/x/mod v0.34.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/tools v0.43.0 // indirect
 )
