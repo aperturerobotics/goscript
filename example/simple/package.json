@@ -2,6 +2,6 @@
   "name": "@example/simple",
   "private": true,
   "devDependencies": {
-    "typescript": "^5.4.2"
+    "typescript": "^6.0.0"
   }
 }

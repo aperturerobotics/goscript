@@ -5,7 +5,7 @@ go 1.25.3
 require (
 	github.com/aperturerobotics/cli v1.1.0
 	github.com/aperturerobotics/protobuf-go-lite v0.12.2
-	github.com/aperturerobotics/util v1.32.5
+	github.com/aperturerobotics/util v1.33.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.5-0.20260309202648-9f0600962f75
 	golang.org/x/mod v0.34.0

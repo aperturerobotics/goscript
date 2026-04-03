@@ -92,23 +92,23 @@
     "./{src,builtin,example}/**/(*.ts|*.tsx|*.html|*.css|*.scss)": "prettier --config .prettierrc.yaml --write"
   },
   "devDependencies": {
-    "@aptre/protobuf-es-lite": "^1.0.0",
+    "@aptre/protobuf-es-lite": "^1.0.2",
     "@eslint/js": "^10.0.0",
-    "@types/node": "^25.0.3",
-    "@typescript-eslint/eslint-plugin": "^8.50.1",
-    "@typescript-eslint/parser": "^8.50.1",
-    "@typescript/native-preview": "^7.0.0-dev.20251226.1",
-    "@vitest/browser": "^4.0.16",
-    "@vitest/browser-playwright": "^4.0.16",
-    "@vitest/browser-preview": "^4.0.16",
-    "eslint": "^10.0.0",
+    "@types/node": "^25.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "@typescript-eslint/parser": "^8.58.0",
+    "@typescript/native-preview": "^7.0.0-dev.20260404.1",
+    "@vitest/browser": "^4.1.2",
+    "@vitest/browser-playwright": "^4.1.2",
+    "@vitest/browser-preview": "^4.1.2",
+    "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.0.2",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
-    "prettier": "^3.7.4",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.50.1",
-    "vitest": "^4.0.16"
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.0",
+    "typescript-eslint": "^8.58.0",
+    "vitest": "^4.1.2"
   },
   "dependencies": {
     "globals": "^17.4.0"
