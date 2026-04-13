@@ -1,8 +1,13 @@
 import { expect, test, describe, beforeAll } from 'vitest'
 import { ready, compileGoToTypeScript, isCompilerReady } from '../assets/js/goscript-wasm.js'
 
+const describeWasm =
+  typeof window === 'undefined' || typeof document === 'undefined'
+    ? describe.skip
+    : describe
+
 // This test actually loads the WASM compiler and tests compilation
-describe('WASM Integration', () => {
+describeWasm('WASM Integration', () => {
   beforeAll(async () => {
     // Wait for WASM to be ready with a longer timeout
     await ready

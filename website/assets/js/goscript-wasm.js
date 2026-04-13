@@ -3,9 +3,15 @@
 
 let wasmReady = false
 let wasmError = null
+const hasBrowserRuntime =
+  typeof window !== 'undefined' && typeof document !== 'undefined'
 
 // Initialize the Go WASM runtime
 async function initGoWasm() {
+  if (!hasBrowserRuntime) {
+    return
+  }
+
   // Load wasm_exec.js if not already loaded
   if (!window.Go) {
     await new Promise((resolve, reject) => {
@@ -58,6 +64,9 @@ async function initGoWasm() {
 
 // Compile Go source code to TypeScript
 export async function compileGoToTypeScript(goSource, packageName = 'main') {
+  if (!hasBrowserRuntime) {
+    throw new Error('GoScript WASM compiler requires a browser runtime')
+  }
   if (!wasmReady) {
     if (wasmError) {
       throw wasmError
@@ -85,8 +94,10 @@ export function getCompilerError() {
 }
 
 // Initialize and export a promise that resolves when ready
-export const ready = initGoWasm().catch((err) => {
-  wasmError = err
-  console.error('Failed to initialize GoScript WASM compiler:', err)
-  throw err
-})
+export const ready = hasBrowserRuntime
+  ? initGoWasm().catch((err) => {
+      wasmError = err
+      console.error('Failed to initialize GoScript WASM compiler:', err)
+      throw err
+    })
+  : Promise.resolve()
