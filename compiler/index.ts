@@ -65,15 +65,30 @@ export async function compile(config: CompileConfig): Promise<void> {
       // Go compiler often prints status messages to stderr, treat as info unless exit code is non-zero
       console.info(`GoScript stderr:\n${stderr}`);
     }
-  } catch (error: any) {  
-    console.error(`GoScript compilation failed: ${error.message}`);
-    if (error.stderr) {
+  } catch (error: unknown) {
+    const compileErr =
+      error instanceof Error ? error : new Error(String(error));
+
+    console.error(`GoScript compilation failed: ${compileErr.message}`);
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "stderr" in error &&
+      typeof error.stderr === "string"
+    ) {
       console.error(`GoScript stderr:\n${error.stderr}`);
     }
-    if (error.stdout) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "stdout" in error &&
+      typeof error.stdout === "string"
+    ) {
       console.error(`GoScript stdout:\n${error.stdout}`);
     }
-    throw new Error(`GoScript compilation failed: ${error.message}`);
+    throw new Error(`GoScript compilation failed: ${compileErr.message}`, {
+      cause: error,
+    });
   }
 }
 

@@ -165,7 +165,7 @@ export class Reader {
   public Seek(offset: number, whence: number): [number, $.GoError] {
     const r = this
     r!.prevRune = -1
-    let abs: number = 0
+    let abs: number
     switch (whence) {
       case io.SeekStart:
         abs = offset

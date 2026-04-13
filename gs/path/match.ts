@@ -45,13 +45,7 @@ export function Match(pattern: string, name: string): [boolean, $.GoError] {
     // Before returning false with no error,
     // check that the remainder of the pattern is syntactically valid.
     Pattern: for (; $.len(pattern) > 0; ) {
-      let star: boolean = false
-      let chunk: string = ''
-      let rest: string = ''
-      let scanResult = scanChunk(pattern)
-      star = scanResult[0]
-      chunk = scanResult[1]
-      rest = scanResult[2]
+      const [star, chunk, rest] = scanChunk(pattern)
       pattern = rest
 
       // Trailing * matches rest of string unless it has a /.
@@ -104,13 +98,7 @@ export function Match(pattern: string, name: string): [boolean, $.GoError] {
       // Before returning false with no error,
       // check that the remainder of the pattern is syntactically valid.
       for (; $.len(pattern) > 0; ) {
-        // let star2: boolean = false
-        let chunk2: string = ''
-        let rest2: string = ''
-        let scanResult2 = scanChunk(pattern)
-        // star2 = scanResult2[0]
-        chunk2 = scanResult2[1]
-        rest2 = scanResult2[2]
+        const [, chunk2, rest2] = scanChunk(pattern)
         pattern = rest2
         {
           let [, , err] = matchChunk(chunk2, '')
@@ -135,7 +123,7 @@ export function scanChunk(pattern: string): [boolean, string, string] {
       star = true
     }
     let inrange = false
-    let i: number = 0
+    let i: number
 
     // error check handled in matchChunk: bad pattern.
     Scan: for (i = 0; i < $.len(pattern); i++) {
@@ -174,7 +162,7 @@ export function matchChunk(
   chunk: string,
   s: string,
 ): [string, boolean, $.GoError] {
-  let err: $.GoError = null
+  let err: $.GoError
   {
     // failed records whether the match has failed.
     // After the match fails, the loop continues on processing chunk,
@@ -200,10 +188,9 @@ export function matchChunk(
         case 91: {
           let r: number = 0
           if (!failed) {
-            let n: number = 0
-            let decoded = utf8.DecodeRuneInString(s)
+            const decoded = utf8.DecodeRuneInString(s)
             r = decoded[0]
-            n = decoded[1]
+            const n = decoded[1]
             s = $.sliceString(s, n, undefined)
           }
           chunk = $.sliceString(chunk, 1, undefined)
@@ -223,10 +210,10 @@ export function matchChunk(
               chunk = $.sliceString(chunk, 1, undefined)
               break
             }
-            let lo: number = 0
-            let hi: number = 0
+            let lo: number
+            let hi: number
             {
-              let escResult = getEsc(chunk)
+              const escResult = getEsc(chunk)
               lo = escResult[0]
               chunk = escResult[1]
               err = escResult[2]

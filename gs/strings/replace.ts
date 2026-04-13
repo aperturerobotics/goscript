@@ -395,15 +395,13 @@ class trieNode {
         // First byte differs, start a new lookup table here. Looking up
         // what is currently t.prefix[0] will lead to prefixNode, and
         // looking up key[0] will lead to keyNode.
-        let prefixNode: trieNode | null = null
-        if ($.len(t!.prefix) == 1) {
-          prefixNode = t!.next
-        } else {
-          prefixNode = new trieNode({
-            next: t!.next,
-            prefix: $.sliceString(t!.prefix, 1, undefined),
-          })
-        }
+        const prefixNode =
+          $.len(t!.prefix) == 1
+            ? t!.next
+            : new trieNode({
+                next: t!.next,
+                prefix: $.sliceString(t!.prefix, 1, undefined),
+              })
         let keyNode = new trieNode()
         t!.table = $.makeSlice<trieNode | null>(r!.tableSize)
         t!.table![r!.mapping![$.indexString(t!.prefix, 0)]] = prefixNode
@@ -578,9 +576,7 @@ class genericReplacer {
     const r = this
     let sw = getStringWriter(w)
     let last: number = 0
-    let wn: number = 0
     let n: number = 0
-    let err: $.GoError | null = null
     let prevMatchEmpty: boolean = false
     for (let i = 0; i <= $.len(s); ) {
       // Fast path: s[i] is not a prefix of any pattern.
@@ -599,7 +595,7 @@ class genericReplacer {
       )
       prevMatchEmpty = match && keylen == 0
       if (match) {
-        ;[wn, err] = sw!.WriteString($.sliceString(s, last, i))
+        let [wn, err] = sw!.WriteString($.sliceString(s, last, i))
         n += wn
         if (err != null) {
           return [n, err]
@@ -616,10 +612,11 @@ class genericReplacer {
       i++
     }
     if (last != $.len(s)) {
-      ;[wn, err] = sw!.WriteString($.sliceString(s, last, undefined))
+      const [wn, err] = sw!.WriteString($.sliceString(s, last, undefined))
       n += wn
+      return [n, err]
     }
-    return [n, err]
+    return [n, null]
   }
 }
 
@@ -761,15 +758,13 @@ class singleStringReplacer {
     const r = this
     let sw = getStringWriter(w)
     let i: number = 0
-    let wn: number = 0
     let n: number = 0
-    let err: $.GoError | null = null
     for (;;) {
       let match = r!.finder!.next($.sliceString(s, i, undefined))
       if (match == -1) {
         break
       }
-      ;[wn, err] = sw!.WriteString($.sliceString(s, i, i + match))
+      let [wn, err] = sw!.WriteString($.sliceString(s, i, i + match))
       n += wn
       if (err != null) {
         return [n, err]
@@ -781,7 +776,7 @@ class singleStringReplacer {
       }
       i += match + $.len(r!.finder!.pattern)
     }
-    ;[wn, err] = sw!.WriteString($.sliceString(s, i, undefined))
+    const [wn, err] = sw!.WriteString($.sliceString(s, i, undefined))
     n += wn
     return [n, err]
   }

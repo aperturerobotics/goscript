@@ -108,7 +108,7 @@ export class Instance implements vmruntime.VmInstance {
   ): Promise<number[] | null> {
     const fn = this.exports[name]
     if (typeof fn !== 'function') return null
-    const result = (fn as Function)(...args)
+    const result = (fn as (...args: number[]) => unknown)(...args)
     if (result === undefined) return null
     return [result as number]
   }
@@ -124,7 +124,7 @@ export class Instance implements vmruntime.VmInstance {
   ExportedFunction(name: string): BrowserFunction | null {
     const fn = this.exports[name]
     if (typeof fn !== 'function') return null
-    return new BrowserFunction(fn as Function)
+    return new BrowserFunction(fn as (...args: number[]) => unknown)
   }
 
   // ExportedGlobal returns a reference to an exported global.
@@ -142,7 +142,7 @@ export class Instance implements vmruntime.VmInstance {
 
 // BrowserFunction wraps a WebAssembly exported function.
 export class BrowserFunction implements vmruntime.VmFunction {
-  constructor(private readonly fn: Function) {}
+  constructor(private readonly fn: (...args: number[]) => unknown) {}
 
   async Call(_ctx: any, ...args: number[]): Promise<number[] | null> {
     const result = this.fn(...args)

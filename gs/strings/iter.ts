@@ -25,7 +25,7 @@ const asciiSpace: { [key: number]: boolean } = {
 export function Lines(s: string): iter.Seq<string> {
   return (_yield: ((p0: string) => boolean) | null): void => {
     for (; $.len(s) > 0; ) {
-      let line: string = ''
+      let line: string
       {
         let i = IndexByte(s, 10)
         if (i >= 0) {

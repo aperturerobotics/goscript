@@ -16,12 +16,9 @@ export function FormatFileInfo(info: FileInfo): string {
   b.push(' ')
 
   let size = info!.Size()
-  let usize: number = 0
-  if (size >= 0) {
-    usize = size as number
-  } else {
+  const usize = size >= 0 ? size : -size
+  if (size < 0) {
     b.push('-')
-    usize = -size as number
   }
 
   b.push(usize.toString())

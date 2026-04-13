@@ -70,7 +70,6 @@ export function globWithLimit(
   depth: number,
 ): [$.Slice<string>, $.GoError] {
   let matches: $.Slice<string> = null
-  let err: $.GoError = null
   {
     // This limit is added to prevent stack exhaustion issues. See
     // CVE-2022-30630.
@@ -87,15 +86,15 @@ export function globWithLimit(
 
     // Check pattern is well-formed.
     {
-      let [, err] = path.Match(pattern, '')
-      if (err != null) {
-        return [null, err]
+      const [, matchErr] = path.Match(pattern, '')
+      if (matchErr != null) {
+        return [null, matchErr]
       }
     }
     if (!hasMeta(pattern)) {
       {
-        ;[, err] = Stat(fsys, pattern)
-        if (err != null) {
+        const [, statErr] = Stat(fsys, pattern)
+        if (statErr != null) {
           return [null, null]
         }
       }
@@ -114,21 +113,21 @@ export function globWithLimit(
       return [null, path.ErrBadPattern]
     }
 
-    let m: $.Slice<string>
-    ;[m, err] = globWithLimit(fsys, dir, depth + 1)
-    if (err != null) {
-      return [null, err]
+    const [dirs, dirErr] = globWithLimit(fsys, dir, depth + 1)
+    if (dirErr != null) {
+      return [null, dirErr]
     }
-    for (let _i = 0; _i < $.len(m); _i++) {
-      const d = m![_i]
+    for (let _i = 0; _i < $.len(dirs); _i++) {
+      const d = dirs![_i]
       {
-        ;[matches, err] = glob(fsys, d, file, matches)
-        if (err != null) {
-          return [matches, err]
+        const [nextMatches, globErr] = glob(fsys, d, file, matches)
+        matches = nextMatches
+        if (globErr != null) {
+          return [matches, globErr]
         }
       }
     }
-    return [matches, err]
+    return [matches, null]
   }
 }
 
@@ -155,15 +154,13 @@ export function glob(
   pattern: string,
   matches: $.Slice<string>,
 ): [$.Slice<string>, $.GoError] {
-  let m: $.Slice<string> = null
-  let e: $.GoError = null
+  let m = matches
   {
-    m = matches
     let [infos, err] = ReadDir(fs, dir)
 
     // ignore I/O error
     if (err != null) {
-      return [m, e]
+      return [m, null]
     }
 
     for (let _i = 0; _i < $.len(infos); _i++) {
@@ -179,7 +176,7 @@ export function glob(
         }
       }
     }
-    return [m, e]
+    return [m, null]
   }
 }
 

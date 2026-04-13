@@ -215,9 +215,9 @@ export class Time {
     const ampmLower = ampmUpper.toLowerCase()
 
     // Timezone offset calculation - use the location's offset if available
-    let tzOffsetSeconds = 0
+    let tzOffsetSeconds: number
     let tzName = this._location.name
-    let isUTC = false
+    let isUTC: boolean
 
     if (this._location.offsetSeconds !== undefined) {
       // Use the fixed offset from the location

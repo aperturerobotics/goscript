@@ -623,13 +623,8 @@ function matchesMapType(value: any, info: TypeInfo): boolean {
   if (!isMapTypeInfo(info)) return false
 
   if (info.keyType || info.elemType) {
-    let entries: [any, any][] = []
-
-    if (value instanceof Map) {
-      entries = Array.from(value.entries())
-    } else {
-      entries = Object.entries(value)
-    }
+    const entries =
+      value instanceof Map ? Array.from(value.entries()) : Object.entries(value)
 
     if (entries.length === 0) return true // Empty map matches any map type
 
@@ -1038,13 +1033,10 @@ export function typeAssert<T>(
     value !== null
   ) {
     if (normalizedType.keyType || normalizedType.elemType) {
-      let entries: [any, any][] = []
-
-      if (value instanceof Map) {
-        entries = Array.from(value.entries())
-      } else {
-        entries = Object.entries(value)
-      }
+      const entries =
+        value instanceof Map
+          ? Array.from(value.entries())
+          : Object.entries(value)
 
       if (entries.length === 0) {
         return { value: value as T, ok: true }
