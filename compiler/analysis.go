@@ -240,6 +240,53 @@ func NewPackageAnalysis() *PackageAnalysis {
 	}
 }
 
+// collectZeroValueTypeNames records named struct types whose zero value emits a
+// runtime constructor call.
+func collectZeroValueTypeNames(typ types.Type, names map[string]struct{}) {
+	switch t := typ.(type) {
+	case *types.Array:
+		collectZeroValueTypeNames(t.Elem(), names)
+	case *types.Named:
+		if _, isStruct := t.Underlying().(*types.Struct); isStruct {
+			names[t.Obj().Name()] = struct{}{}
+			return
+		}
+		collectZeroValueTypeNames(t.Underlying(), names)
+	case *types.Alias:
+		collectZeroValueTypeNames(t.Underlying(), names)
+	}
+}
+
+// addTypeRefsFromZeroValue adds same-package type imports needed when code
+// generation synthesizes a zero value without an explicit AST type reference.
+func addTypeRefsFromZeroValue(analysis *PackageAnalysis, currentFileName string, typ types.Type, refs map[string][]string) {
+	typeNames := make(map[string]struct{})
+	collectZeroValueTypeNames(typ, typeNames)
+	if len(typeNames) == 0 {
+		return
+	}
+
+	currentFileTypes := analysis.TypeDefs[currentFileName]
+	for typeName := range typeNames {
+		if slices.Contains(currentFileTypes, typeName) {
+			continue
+		}
+
+		for sourceFile, types := range analysis.TypeDefs {
+			if sourceFile == currentFileName || !slices.Contains(types, typeName) {
+				continue
+			}
+
+			if refs[sourceFile] == nil {
+				refs[sourceFile] = []string{}
+			}
+			if !slices.Contains(refs[sourceFile], typeName) {
+				refs[sourceFile] = append(refs[sourceFile], typeName)
+			}
+		}
+	}
+}
+
 // ensureNodeData ensures that NodeData exists for a given node and returns it
 func (a *Analysis) ensureNodeData(node ast.Node) *NodeInfo {
 	if node == nil {
@@ -1148,8 +1195,8 @@ func (v *analysisVisitor) visitTypeAssertExpr(typeAssert *ast.TypeAssertExpr) as
 	}
 
 	// For each method in the interface, check if the struct implements it
-	for i := 0; i < interfaceType.NumExplicitMethods(); i++ {
-		interfaceMethod := interfaceType.ExplicitMethod(i)
+	for interfaceMethod := range interfaceType.ExplicitMethods() {
+		interfaceMethod := interfaceMethod
 
 		// Find the corresponding method in the struct type
 		structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
@@ -1417,8 +1464,8 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 			}
 
 			// Look for embedded fields
-			for i := 0; i < structType.NumFields(); i++ {
-				field := structType.Field(i)
+			for field := range structType.Fields() {
+				field := field
 				if !field.Embedded() {
 					continue
 				}
@@ -1442,8 +1489,8 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 				embeddedMethodSet := types.NewMethodSet(methodSetType)
 
 				// Scan all methods in the method set
-				for j := 0; j < embeddedMethodSet.Len(); j++ {
-					selection := embeddedMethodSet.At(j)
+				for selection := range embeddedMethodSet.Methods() {
+					selection := selection
 					method := selection.Obj()
 					sig, ok := method.Type().(*types.Signature)
 					if !ok {
@@ -1452,16 +1499,16 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 
 					// Scan parameters
 					if sig.Params() != nil {
-						for k := 0; k < sig.Params().Len(); k++ {
-							param := sig.Params().At(k)
+						for param := range sig.Params().Variables() {
+							param := param
 							a.collectPackageFromType(param.Type(), pkg.Types, packagesToAdd)
 						}
 					}
 
 					// Scan results
 					if sig.Results() != nil {
-						for k := 0; k < sig.Results().Len(); k++ {
-							result := sig.Results().At(k)
+						for result := range sig.Results().Variables() {
+							result := result
 							a.collectPackageFromType(result.Type(), pkg.Types, packagesToAdd)
 						}
 					}
@@ -1494,17 +1541,17 @@ func (a *Analysis) collectPackageFromType(t types.Type, currentPkg *types.Packag
 		}
 		// Check type arguments for generics
 		if typ.TypeArgs() != nil {
-			for i := 0; i < typ.TypeArgs().Len(); i++ {
-				a.collectPackageFromType(typ.TypeArgs().At(i), currentPkg, packagesToAdd)
+			for t := range typ.TypeArgs().Types() {
+				a.collectPackageFromType(t, currentPkg, packagesToAdd)
 			}
 		}
 	case *types.Interface:
 		// For interfaces, we need to check embedded interfaces and method signatures
-		for i := 0; i < typ.NumEmbeddeds(); i++ {
-			a.collectPackageFromType(typ.EmbeddedType(i), currentPkg, packagesToAdd)
+		for etyp := range typ.EmbeddedTypes() {
+			a.collectPackageFromType(etyp, currentPkg, packagesToAdd)
 		}
-		for i := 0; i < typ.NumExplicitMethods(); i++ {
-			method := typ.ExplicitMethod(i)
+		for method := range typ.ExplicitMethods() {
+			method := method
 			a.collectPackageFromType(method.Type(), currentPkg, packagesToAdd)
 		}
 	case *types.Pointer:
@@ -1521,14 +1568,14 @@ func (a *Analysis) collectPackageFromType(t types.Type, currentPkg *types.Packag
 	case *types.Signature:
 		// Collect from parameters
 		if typ.Params() != nil {
-			for i := 0; i < typ.Params().Len(); i++ {
-				a.collectPackageFromType(typ.Params().At(i).Type(), currentPkg, packagesToAdd)
+			for v := range typ.Params().Variables() {
+				a.collectPackageFromType(v.Type(), currentPkg, packagesToAdd)
 			}
 		}
 		// Collect from results
 		if typ.Results() != nil {
-			for i := 0; i < typ.Results().Len(); i++ {
-				a.collectPackageFromType(typ.Results().At(i).Type(), currentPkg, packagesToAdd)
+			for v := range typ.Results().Variables() {
+				a.collectPackageFromType(v.Type(), currentPkg, packagesToAdd)
 			}
 		}
 	}
@@ -1693,6 +1740,37 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 					}
 				}
 			}
+
+			if callExpr, ok := n.(*ast.CallExpr); ok {
+				if funIdent, ok := callExpr.Fun.(*ast.Ident); ok && funIdent.Name == "make" && len(callExpr.Args) > 0 {
+					if typ := pkg.TypesInfo.TypeOf(callExpr.Args[0]); typ != nil {
+						if chanType, ok := typ.Underlying().(*types.Chan); ok {
+							addTypeRefsFromZeroValue(analysis, baseFileName, chanType.Elem(), typeRefsFromOtherFiles)
+						}
+					}
+				}
+			}
+
+			if indexExpr, ok := n.(*ast.IndexExpr); ok {
+				if tv, ok := pkg.TypesInfo.Types[indexExpr.X]; ok {
+					if mapType, ok := tv.Type.Underlying().(*types.Map); ok {
+						addTypeRefsFromZeroValue(analysis, baseFileName, mapType.Elem(), typeRefsFromOtherFiles)
+						return true
+					}
+
+					if typeParam, ok := tv.Type.(*types.TypeParam); ok {
+						constraint := typeParam.Constraint()
+						if constraint == nil {
+							return true
+						}
+						if iface, ok := constraint.Underlying().(*types.Interface); ok && hasMapConstraint(iface) {
+							if mapValueType := getMapValueTypeFromConstraint(iface); mapValueType != nil {
+								addTypeRefsFromZeroValue(analysis, baseFileName, mapValueType, typeRefsFromOtherFiles)
+							}
+						}
+					}
+				}
+			}
 			return true
 		})
 
@@ -1830,8 +1908,8 @@ func AnalyzePackageImports(pkg *packages.Package) *PackageAnalysis {
 			// Check if this type has the method being called
 			methodName := selectorExpr.Sel.Name
 			found := false
-			for j := 0; j < namedType.NumMethods(); j++ {
-				if namedType.Method(j).Name() == methodName {
+			for method := range namedType.Methods() {
+				if method.Name() == methodName {
 					found = true
 					break
 				}
@@ -2351,8 +2429,8 @@ func (a *Analysis) GetIdentifierMapping(ident *ast.Ident) string {
 // findStructMethod finds a method with the given name on a named type
 func (v *analysisVisitor) findStructMethod(namedType *types.Named, methodName string) *types.Func {
 	// Check methods directly on the type
-	for i := 0; i < namedType.NumMethods(); i++ {
-		method := namedType.Method(i)
+	for method := range namedType.Methods() {
+		method := method
 		if method.Name() == methodName {
 			return method
 		}
@@ -2455,8 +2533,8 @@ func (v *analysisVisitor) trackInterfaceAssignments(assignStmt *ast.AssignStmt) 
 		}
 
 		// Track implementations for all interface methods
-		for j := 0; j < interfaceType.NumExplicitMethods(); j++ {
-			interfaceMethod := interfaceType.ExplicitMethod(j)
+		for interfaceMethod := range interfaceType.ExplicitMethods() {
+			interfaceMethod := interfaceMethod
 
 			structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
 			if structMethod != nil {
@@ -2514,8 +2592,8 @@ func (v *analysisVisitor) trackInterfaceCallArguments(callExpr *ast.CallExpr) {
 		}
 
 		// Track implementations for all interface methods
-		for j := 0; j < interfaceType.NumExplicitMethods(); j++ {
-			interfaceMethod := interfaceType.ExplicitMethod(j)
+		for interfaceMethod := range interfaceType.ExplicitMethods() {
+			interfaceMethod := interfaceMethod
 
 			structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
 			if structMethod != nil {
@@ -2659,8 +2737,8 @@ func (v *interfaceImplementationVisitor) findImplementationsInPackage(interfaceT
 // trackImplementation records that a named type implements an interface
 func (v *interfaceImplementationVisitor) trackImplementation(interfaceType *types.Interface, namedType *types.Named) {
 	// For each method in the interface, find the corresponding implementation
-	for i := 0; i < interfaceType.NumExplicitMethods(); i++ {
-		interfaceMethod := interfaceType.ExplicitMethod(i)
+	for interfaceMethod := range interfaceType.ExplicitMethods() {
+		interfaceMethod := interfaceMethod
 
 		// Find the method in the implementing type
 		structMethod := v.findMethodInType(namedType, interfaceMethod.Name())
@@ -2672,8 +2750,8 @@ func (v *interfaceImplementationVisitor) trackImplementation(interfaceType *type
 
 // findMethodInType finds a method with the given name in a named type
 func (v *interfaceImplementationVisitor) findMethodInType(namedType *types.Named, methodName string) *types.Func {
-	for i := 0; i < namedType.NumMethods(); i++ {
-		method := namedType.Method(i)
+	for method := range namedType.Methods() {
+		method := method
 		if method.Name() == methodName {
 			return method
 		}
@@ -2696,7 +2774,7 @@ func (v *analysisVisitor) analyzeAllMethodsAsync() {
 	// We need to iterate multiple times because methods in cycles can call each other,
 	// and we need to propagate async status until no changes occur
 	maxIterations := 10
-	for iteration := 0; iteration < maxIterations; iteration++ {
+	for range maxIterations {
 		changed := false
 
 		for _, methodKey := range cycles {
