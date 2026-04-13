@@ -42,7 +42,7 @@ jobs:
       - name: Optimize WASM
         run: |
           sudo apt-get update && sudo apt-get install -y binaryen
-          wasm-opt --enable-bulk-memory -Oz --strip-debug --strip-producers --strip-dwarf --zero-filled-memory website/public/goscript.wasm -o website/public/goscript.wasm
+          wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int -Oz --strip-debug --strip-producers --strip-dwarf --zero-filled-memory website/public/goscript.wasm -o website/public/goscript.wasm
 
       - name: Build website data
         run: bun run website:build
