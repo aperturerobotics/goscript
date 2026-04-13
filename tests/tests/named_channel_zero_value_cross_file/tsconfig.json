@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/named_channel_zero_value_cross_file/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "create.gs.ts",
+    "index.ts",
+    "named_channel_zero_value_cross_file.gs.ts",
+    "types.gs.ts"
+  ]
+}
