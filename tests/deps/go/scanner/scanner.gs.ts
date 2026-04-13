@@ -4,8 +4,6 @@ import * as bytes from "@goscript/bytes/index.js"
 
 import * as fmt from "@goscript/fmt/index.js"
 
-import * as scannerhooks from "@goscript/go/internal/scannerhooks/index.js"
-
 import * as token from "@goscript/go/token/index.js"
 
 import * as filepath from "@goscript/path/filepath/index.js"
@@ -123,14 +121,6 @@ export class Scanner {
 		this._fields.nlPos.value = value
 	}
 
-	// end position; defined only for STRING tokens
-	public get stringEnd(): token.Pos {
-		return this._fields.stringEnd.value
-	}
-	public set stringEnd(value: token.Pos) {
-		this._fields.stringEnd.value = value
-	}
-
 	// public state - ok to modify
 	// number of errors encountered
 	public get ErrorCount(): number {
@@ -152,11 +142,10 @@ export class Scanner {
 		lineOffset: $.VarRef<number>;
 		insertSemi: $.VarRef<boolean>;
 		nlPos: $.VarRef<token.Pos>;
-		stringEnd: $.VarRef<token.Pos>;
 		ErrorCount: $.VarRef<number>;
 	}
 
-	constructor(init?: Partial<{ErrorCount?: number, ch?: number, dir?: string, err?: ErrorHandler | null, file?: token.File | null, insertSemi?: boolean, lineOffset?: number, mode?: Mode, nlPos?: token.Pos, offset?: number, rdOffset?: number, src?: $.Bytes, stringEnd?: token.Pos}>) {
+	constructor(init?: Partial<{ErrorCount?: number, ch?: number, dir?: string, err?: ErrorHandler | null, file?: token.File | null, insertSemi?: boolean, lineOffset?: number, mode?: Mode, nlPos?: token.Pos, offset?: number, rdOffset?: number, src?: $.Bytes}>) {
 		this._fields = {
 			file: $.varRef(init?.file ?? null),
 			dir: $.varRef(init?.dir ?? ""),
@@ -169,7 +158,6 @@ export class Scanner {
 			lineOffset: $.varRef(init?.lineOffset ?? 0),
 			insertSemi: $.varRef(init?.insertSemi ?? false),
 			nlPos: $.varRef(init?.nlPos ?? 0 as token.Pos),
-			stringEnd: $.varRef(init?.stringEnd ?? 0 as token.Pos),
 			ErrorCount: $.varRef(init?.ErrorCount ?? 0)
 		}
 	}
@@ -188,7 +176,6 @@ export class Scanner {
 			lineOffset: $.varRef(this._fields.lineOffset.value),
 			insertSemi: $.varRef(this._fields.insertSemi.value),
 			nlPos: $.varRef(this._fields.nlPos.value),
-			stringEnd: $.varRef(this._fields.stringEnd.value),
 			ErrorCount: $.varRef(this._fields.ErrorCount.value)
 		}
 		return cloned
@@ -758,7 +745,7 @@ export class Scanner {
 		return $.bytesToString($.goSlice(s.src, offs, s.offset))
 	}
 
-	public async scanRawString(): Promise<[string, number]> {
+	public async scanRawString(): Promise<string> {
 		const s = this
 		let offs = s.offset - 1
 		let hasCR = false
@@ -777,11 +764,10 @@ export class Scanner {
 			}
 		}
 		let lit = $.goSlice(s.src, offs, s.offset)
-		let rawLen = $.len(lit)
 		if (hasCR) {
 			lit = stripCR(lit, false)
 		}
-		return [$.bytesToString(lit), rawLen]
+		return $.bytesToString(lit)
 	}
 
 	public async skipWhitespace(): Promise<void> {
@@ -922,7 +908,6 @@ export class Scanner {
 							insertSemi = true
 							tok = token.STRING
 							lit = await s.scanString()
-							s.stringEnd = pos + ($.len(lit) as token.Pos)
 							break
 						}
 						case 39: {
@@ -934,9 +919,7 @@ export class Scanner {
 						case 96: {
 							insertSemi = true
 							tok = token.STRING
-							let rawLen: number = 0
-							;[lit, rawLen] = await s.scanRawString()
-							s.stringEnd = pos + (rawLen as token.Pos)
+							lit = await s.scanRawString()
 							break
 						}
 						case 58: {
@@ -1112,20 +1095,13 @@ export class Scanner {
 	static __typeInfo = $.registerStructType(
 	  'go/scanner.Scanner',
 	  new Scanner(),
-	  [{ name: "next", args: [], returns: [] }, { name: "peek", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "byte" } }] }, { name: "Init", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "go/token.File" } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "err", type: "go/scanner.ErrorHandler" }, { name: "mode", type: "go/scanner.Mode" }], returns: [] }, { name: "error", args: [{ name: "offs", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "msg", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "errorf", args: [{ name: "offs", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "format", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "args", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } } }], returns: [] }, { name: "scanComment", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "updateLineInfo", args: [{ name: "next", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "offs", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "text", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [] }, { name: "scanIdentifier", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "digits", args: [{ name: "base", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "invalid", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "scanNumber", args: [], returns: [{ type: "go/token.Token" }, { type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanEscape", args: [{ name: "quote", type: { kind: $.TypeKind.Basic, name: "rune" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "scanRune", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanRawString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "skipWhitespace", args: [], returns: [] }, { name: "switch2", args: [{ name: "tok0", type: "go/token.Token" }, { name: "tok1", type: "go/token.Token" }], returns: [{ type: "go/token.Token" }] }, { name: "switch3", args: [{ name: "tok0", type: "go/token.Token" }, { name: "tok1", type: "go/token.Token" }, { name: "ch2", type: { kind: $.TypeKind.Basic, name: "rune" } }, { name: "tok2", type: "go/token.Token" }], returns: [{ type: "go/token.Token" }] }, { name: "switch4", args: [{ name: "tok0", type: "go/token.Token" }, { name: "tok1", type: "go/token.Token" }, { name: "ch2", type: { kind: $.TypeKind.Basic, name: "rune" } }, { name: "tok2", type: "go/token.Token" }, { name: "tok3", type: "go/token.Token" }], returns: [{ type: "go/token.Token" }] }, { name: "Scan", args: [], returns: [{ type: "go/token.Pos" }, { type: "go/token.Token" }, { type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+	  [{ name: "next", args: [], returns: [] }, { name: "peek", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "byte" } }] }, { name: "Init", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "go/token.File" } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "err", type: "go/scanner.ErrorHandler" }, { name: "mode", type: "go/scanner.Mode" }], returns: [] }, { name: "error", args: [{ name: "offs", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "msg", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "errorf", args: [{ name: "offs", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "format", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "args", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } } }], returns: [] }, { name: "scanComment", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "updateLineInfo", args: [{ name: "next", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "offs", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "text", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [] }, { name: "scanIdentifier", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "digits", args: [{ name: "base", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "invalid", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "scanNumber", args: [], returns: [{ type: "go/token.Token" }, { type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanEscape", args: [{ name: "quote", type: { kind: $.TypeKind.Basic, name: "rune" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "scanRune", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "scanRawString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "skipWhitespace", args: [], returns: [] }, { name: "switch2", args: [{ name: "tok0", type: "go/token.Token" }, { name: "tok1", type: "go/token.Token" }], returns: [{ type: "go/token.Token" }] }, { name: "switch3", args: [{ name: "tok0", type: "go/token.Token" }, { name: "tok1", type: "go/token.Token" }, { name: "ch2", type: { kind: $.TypeKind.Basic, name: "rune" } }, { name: "tok2", type: "go/token.Token" }], returns: [{ type: "go/token.Token" }] }, { name: "switch4", args: [{ name: "tok0", type: "go/token.Token" }, { name: "tok1", type: "go/token.Token" }, { name: "ch2", type: { kind: $.TypeKind.Basic, name: "rune" } }, { name: "tok2", type: "go/token.Token" }, { name: "tok3", type: "go/token.Token" }], returns: [{ type: "go/token.Token" }] }, { name: "Scan", args: [], returns: [{ type: "go/token.Pos" }, { type: "go/token.Token" }, { type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  Scanner,
-	  {"file": { kind: $.TypeKind.Pointer, elemType: "go/token.File" }, "dir": { kind: $.TypeKind.Basic, name: "string" }, "src": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "err": "go/scanner.ErrorHandler", "mode": "go/scanner.Mode", "ch": { kind: $.TypeKind.Basic, name: "rune" }, "offset": { kind: $.TypeKind.Basic, name: "int" }, "rdOffset": { kind: $.TypeKind.Basic, name: "int" }, "lineOffset": { kind: $.TypeKind.Basic, name: "int" }, "insertSemi": { kind: $.TypeKind.Basic, name: "bool" }, "nlPos": "go/token.Pos", "stringEnd": "go/token.Pos", "ErrorCount": { kind: $.TypeKind.Basic, name: "int" }}
+	  {"file": { kind: $.TypeKind.Pointer, elemType: "go/token.File" }, "dir": { kind: $.TypeKind.Basic, name: "string" }, "src": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "err": "go/scanner.ErrorHandler", "mode": "go/scanner.Mode", "ch": { kind: $.TypeKind.Basic, name: "rune" }, "offset": { kind: $.TypeKind.Basic, name: "int" }, "rdOffset": { kind: $.TypeKind.Basic, name: "int" }, "lineOffset": { kind: $.TypeKind.Basic, name: "int" }, "insertSemi": { kind: $.TypeKind.Basic, name: "bool" }, "nlPos": "go/token.Pos", "ErrorCount": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 
 export let prefix: $.Bytes = $.stringToBytes("line ")
-
-// Provide go/parser with backdoor access to the StringEnd information.
-export function init(): void {
-	scannerhooks.StringEnd = (scanner: null | any): token.Pos => {
-		return $.mustTypeAssert<Scanner | null>(scanner, {kind: $.TypeKind.Pointer, elemType: 'go/scanner.Scanner'})!.stringEnd
-	}
-}
 
 export function trailingDigits(text: $.Bytes): [number, number, boolean] {
 	let i = bytes.LastIndexByte(text, 58) // look from right (Windows filenames may contain ':')

@@ -1680,14 +1680,14 @@ export function indirect(v: reflect.Value, decodingNull: boolean): [Unmarshaler,
 		}
 		if (v.Type()!.NumMethod() > 0 && v.CanInterface()) {
 			{
-				let [u, ok] = $.typeAssertTuple<Unmarshaler>(v.Interface(), "encoding/json.Unmarshaler")
+				let { value: u, ok: ok } = $.typeAssert<Unmarshaler>(v.Interface(), 'encoding/json.Unmarshaler')
 				if (ok) {
 					return [u, null, $.markAsStructValue(new reflect.Value({}))]
 				}
 			}
 			if (!decodingNull) {
 				{
-					let [u, ok] = $.typeAssertTuple<encoding.TextUnmarshaler>(v.Interface(), "encoding.TextUnmarshaler")
+					let { value: u, ok: ok } = $.typeAssert<null | encoding.TextUnmarshaler>(v.Interface(), 'encoding.TextUnmarshaler')
 					if (ok) {
 						return [null, u, $.markAsStructValue(new reflect.Value({}))]
 					}
@@ -1751,6 +1751,15 @@ export function unquote(s: $.Bytes): [string, boolean] {
 	}
 }
 
+// unquoteBytes should be an internal detail,
+// but widely used packages access it using linkname.
+// Notable members of the hall of shame include:
+//   - github.com/bytedance/sonic
+//
+// Do not remove or change the type signature.
+// See go.dev/issue/67401.
+//
+//go:linkname unquoteBytes
 export function unquoteBytes(s: $.Bytes): [$.Bytes, boolean] {
 	let t: $.Bytes = new Uint8Array(0)
 	let ok: boolean = false
@@ -1768,6 +1777,10 @@ export function unquoteBytes(s: $.Bytes): [$.Bytes, boolean] {
 			let c = s![r]
 			if (c == 92 || c == 34 || c < 32) {
 				break
+			}
+			if (c < utf8.RuneSelf) {
+				r++
+				continue
 			}
 			let [rr, size] = utf8.DecodeRune($.goSlice(s, r, undefined))
 			if (rr == utf8.RuneError && size == 1) {

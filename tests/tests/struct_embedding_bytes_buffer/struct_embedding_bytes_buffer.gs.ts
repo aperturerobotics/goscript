@@ -70,10 +70,6 @@ export class MyWriter {
 		return this.Buffer.Next(n)
 	}
 
-	public Peek(n: number): [$.Bytes, $.GoError] {
-		return this.Buffer.Peek(n)
-	}
-
 	public Read(p: $.Bytes): [number, $.GoError] {
 		return this.Buffer.Read(p)
 	}
