@@ -91,7 +91,7 @@ export class printer {
 	  new printer(),
 	  [{ name: "free", args: [], returns: [] }, { name: "checkCapacity", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "getLength", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  printer,
-	  {"buf": { kind: $.TypeKind.Pointer, elemType: "buffer" }}
+	  {"buf": { kind: $.TypeKind.Pointer, elemType: "main.buffer" }}
 	);
 }
 

@@ -5,7 +5,7 @@ type Result struct {
 }
 
 func main() {
-	var x interface{} = 42
+	var x any = 42
 	result := Result{}
 
 	// This should trigger the error: ok expression is not an identifier: *ast.SelectorExpr

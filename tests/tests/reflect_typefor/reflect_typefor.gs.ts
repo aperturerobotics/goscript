@@ -63,7 +63,7 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	// Test TypeFor with named interface type
-	let t1 = reflect.getInterfaceTypeByName("main.MyInterface")
+	let t1 = reflect.getInterfaceLiteralTypeByName("main.MyInterface")
 	$.println("TypeFor interface:", t1!.String())
 
 	// Test TypeFor with struct type

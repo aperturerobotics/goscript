@@ -1,7 +1,7 @@
 package main
 
 func main() {
-	var i interface{}
+	var i any
 	i = map[string]int{"age": 30}
 
 	m, ok := i.(map[string]int)

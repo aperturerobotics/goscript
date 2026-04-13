@@ -605,8 +605,7 @@ func (c *GoToTSCompiler) writeInterfaceStructure(iface *types.Interface, astNode
 		c.tsw.Indent(1)
 		c.tsw.WriteLine("") // Newline after opening brace, before the first method
 
-		for i := 0; i < iface.NumExplicitMethods(); i++ {
-			method := iface.ExplicitMethod(i)
+		for method := range iface.ExplicitMethods() {
 			sig := method.Type().(*types.Signature)
 
 			// Find corresponding ast.Field for comments if astNode is available
@@ -745,14 +744,14 @@ func (c *GoToTSCompiler) writeInterfaceStructure(iface *types.Interface, astNode
 
 	// Handle embedded types
 	if iface.NumEmbeddeds() > 0 {
-		for i := 0; i < iface.NumEmbeddeds(); i++ {
+		for etyp := range iface.EmbeddedTypes() {
 			if firstPartWritten {
 				c.tsw.WriteLiterally(" & ")
 			} else {
 				// This is the first part being written (no explicit methods, only embedded)
 				firstPartWritten = true
 			}
-			embeddedType := iface.EmbeddedType(i)
+			embeddedType := etyp
 			// When WriteGoType encounters an interface, it will call WriteInterfaceType
 			// which will pass nil for astNode, so comments for deeply embedded interface literals
 			// might not be available unless they are named types.

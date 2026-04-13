@@ -63,7 +63,7 @@ export class Person {
 
 export async function main(): Promise<void> {
 	let p: Person = new Person()
-	let t = reflect.TypeOf(p)
+	let t = reflect.TypeOf(new Person())
 	$.println("TypeOf(Person{}):")
 	$.println("  Name:", t!.Name())
 	$.println("  Kind:", reflect.Kind_String(t!.Kind()))

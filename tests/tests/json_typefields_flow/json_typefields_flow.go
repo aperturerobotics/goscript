@@ -16,7 +16,7 @@ type field struct {
 }
 
 func main() {
-	t := reflect.TypeOf(Person{})
+	t := reflect.TypeFor[Person]()
 
 	// Mimic the exact flow of typeFields
 	next := []field{{typ: t}}

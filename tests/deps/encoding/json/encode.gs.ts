@@ -159,7 +159,7 @@ export class MarshalerError {
 	  new MarshalerError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Unwrap", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  MarshalerError,
-	  {"Type": "Type", "Err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "sourceFunc": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"Type": "reflect.Type", "Err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "sourceFunc": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 
@@ -200,7 +200,7 @@ export class UnsupportedTypeError {
 	  new UnsupportedTypeError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  UnsupportedTypeError,
-	  {"Type": "Type"}
+	  {"Type": "reflect.Type"}
 	);
 }
 
@@ -251,7 +251,7 @@ export class UnsupportedValueError {
 	  new UnsupportedValueError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  UnsupportedValueError,
-	  {"Value": "Value", "Str": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"Value": "reflect.Value", "Str": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 
@@ -415,6 +415,10 @@ export class encodeState {
 		return this.Buffer.Next(n)
 	}
 
+	public Peek(n: number): [$.Bytes, $.GoError] {
+		return this.Buffer.Peek(n)
+	}
+
 	public Read(p: $.Bytes): [number, $.GoError] {
 		return this.Buffer.Read(p)
 	}
@@ -499,9 +503,9 @@ export class encodeState {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.encodeState',
 	  new encodeState(),
-	  [{ name: "marshal", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "opts", type: "encOpts" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "error", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [] }, { name: "reflectValue", args: [{ name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
+	  [{ name: "marshal", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "opts", type: "encoding/json.encOpts" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "error", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [] }, { name: "reflectValue", args: [{ name: "v", type: "reflect.Value" }, { name: "opts", type: "encoding/json.encOpts" }], returns: [] }],
 	  encodeState,
-	  {"Buffer": "Buffer", "ptrLevel": { kind: $.TypeKind.Basic, name: "uint" }, "ptrSeen": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Struct, fields: {}, methods: [] } }}
+	  {"Buffer": "bytes.Buffer", "ptrLevel": { kind: $.TypeKind.Basic, name: "uint" }, "ptrSeen": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Struct, fields: {}, methods: [] } }}
 	);
 }
 
@@ -630,7 +634,7 @@ export class reflectWithString {
 	  new reflectWithString(),
 	  [],
 	  reflectWithString,
-	  {"v": "Value", "ks": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"v": "reflect.Value", "ks": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 
@@ -686,7 +690,7 @@ export class structFields {
 	  new structFields(),
 	  [],
 	  structFields,
-	  {"list": { kind: $.TypeKind.Slice, elemType: "field" }, "byExactName": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "field" } }, "byFoldedName": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "field" } }}
+	  {"list": { kind: $.TypeKind.Slice, elemType: "encoding/json.field" }, "byExactName": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "encoding/json.field" } }, "byFoldedName": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "encoding/json.field" } }}
 	);
 }
 
@@ -733,9 +737,9 @@ export class arrayEncoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.arrayEncoder',
 	  new arrayEncoder(),
-	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
+	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encoding/json.encodeState" } }, { name: "v", type: "reflect.Value" }, { name: "opts", type: "encoding/json.encOpts" }], returns: [] }],
 	  arrayEncoder,
-	  {"elemEnc": "encoderFunc"}
+	  {"elemEnc": "encoding/json.encoderFunc"}
 	);
 }
 
@@ -788,9 +792,9 @@ export class condAddrEncoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.condAddrEncoder',
 	  new condAddrEncoder(),
-	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
+	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encoding/json.encodeState" } }, { name: "v", type: "reflect.Value" }, { name: "opts", type: "encoding/json.encOpts" }], returns: [] }],
 	  condAddrEncoder,
-	  {"canAddrEnc": "encoderFunc", "elseEnc": "encoderFunc"}
+	  {"canAddrEnc": "encoding/json.encoderFunc", "elseEnc": "encoding/json.encoderFunc"}
 	);
 }
 
@@ -939,7 +943,7 @@ export class field {
 	  new field(),
 	  [],
 	  field,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "nameBytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "nameNonEsc": { kind: $.TypeKind.Basic, name: "string" }, "nameEscHTML": { kind: $.TypeKind.Basic, name: "string" }, "tag": { kind: $.TypeKind.Basic, name: "bool" }, "index": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "typ": "Type", "omitEmpty": { kind: $.TypeKind.Basic, name: "bool" }, "omitZero": { kind: $.TypeKind.Basic, name: "bool" }, "isZero": { kind: $.TypeKind.Function, params: ["Value"], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }, "quoted": { kind: $.TypeKind.Basic, name: "bool" }, "encoder": "encoderFunc"}
+	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "nameBytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "nameNonEsc": { kind: $.TypeKind.Basic, name: "string" }, "nameEscHTML": { kind: $.TypeKind.Basic, name: "string" }, "tag": { kind: $.TypeKind.Basic, name: "bool" }, "index": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "typ": "reflect.Type", "omitEmpty": { kind: $.TypeKind.Basic, name: "bool" }, "omitZero": { kind: $.TypeKind.Basic, name: "bool" }, "isZero": { kind: $.TypeKind.Function, params: ["reflect.Value"], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }, "quoted": { kind: $.TypeKind.Basic, name: "bool" }, "encoder": "encoding/json.encoderFunc"}
 	);
 }
 
@@ -1034,9 +1038,9 @@ export class mapEncoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.mapEncoder',
 	  new mapEncoder(),
-	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
+	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encoding/json.encodeState" } }, { name: "v", type: "reflect.Value" }, { name: "opts", type: "encoding/json.encOpts" }], returns: [] }],
 	  mapEncoder,
-	  {"elemEnc": "encoderFunc"}
+	  {"elemEnc": "encoding/json.encoderFunc"}
 	);
 }
 
@@ -1100,9 +1104,9 @@ export class ptrEncoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.ptrEncoder',
 	  new ptrEncoder(),
-	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
+	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encoding/json.encodeState" } }, { name: "v", type: "reflect.Value" }, { name: "opts", type: "encoding/json.encOpts" }], returns: [] }],
 	  ptrEncoder,
-	  {"elemEnc": "encoderFunc"}
+	  {"elemEnc": "encoding/json.encoderFunc"}
 	);
 }
 
@@ -1170,9 +1174,9 @@ export class sliceEncoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.sliceEncoder',
 	  new sliceEncoder(),
-	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
+	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encoding/json.encodeState" } }, { name: "v", type: "reflect.Value" }, { name: "opts", type: "encoding/json.encOpts" }], returns: [] }],
 	  sliceEncoder,
-	  {"arrayEnc": "encoderFunc"}
+	  {"arrayEnc": "encoding/json.encoderFunc"}
 	);
 }
 
@@ -1249,9 +1253,9 @@ export class structEncoder {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.structEncoder',
 	  new structEncoder(),
-	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encodeState" } }, { name: "v", type: "Value" }, { name: "opts", type: "encOpts" }], returns: [] }],
+	  [{ name: "encode", args: [{ name: "e", type: { kind: $.TypeKind.Pointer, elemType: "encoding/json.encodeState" } }, { name: "v", type: "reflect.Value" }, { name: "opts", type: "encoding/json.encOpts" }], returns: [] }],
 	  structEncoder,
-	  {"fields": "structFields"}
+	  {"fields": "encoding/json.structFields"}
 	);
 }
 
@@ -1267,11 +1271,11 @@ export let float32Encoder: ((e: encodeState | null, v: reflect.Value, opts: encO
 
 export let float64Encoder: ((e: encodeState | null, v: reflect.Value, opts: encOpts) => void) | null = ((_p0: encodeState | null, _p1: reflect.Value, _p2: encOpts) => floatEncoder_encode(((64 as floatEncoder)), _p0, _p1, _p2))
 
-export let isZeroerType: reflect.Type = reflect.getInterfaceTypeByName("encoding/json.isZeroer")
+export let isZeroerType: reflect.Type = reflect.getInterfaceLiteralTypeByName("encoding/json.isZeroer")
 
-export let marshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding/json.Marshaler")
+export let marshalerType: reflect.Type = reflect.getInterfaceLiteralTypeByName("encoding/json.Marshaler")
 
-export let textMarshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding.TextMarshaler")
+export let textMarshalerType: reflect.Type = reflect.getInterfaceLiteralTypeByName("encoding.TextMarshaler")
 
 // Marshal returns the JSON encoding of v.
 //
@@ -1503,7 +1507,7 @@ export async function typeEncoder(t: null | reflect.Type): Promise<encoderFunc |
 	{
 		let [fi, ok] = await encoderCache!.value.Load(t)
 		if (ok) {
-			return $.mustTypeAssert<encoderFunc | null>(fi, {kind: $.TypeKind.Function, name: 'encoderFunc', params: [{ kind: $.TypeKind.Pointer, elemType: "encodeState" }, "Value", "encOpts"], results: []})
+			return $.mustTypeAssert<encoderFunc | null>(fi, {kind: $.TypeKind.Function, name: 'encoderFunc', params: [{ kind: $.TypeKind.Pointer, elemType: "encoding/json.encodeState" }, "reflect.Value", "encoding/json.encOpts"], results: []})
 		}
 	}
 
@@ -1520,7 +1524,7 @@ export async function typeEncoder(t: null | reflect.Type): Promise<encoderFunc |
 		;(await indirect!())!(e, v, opts)
 	}, { __goTypeName: 'encoderFunc' }))
 	if (loaded) {
-		return $.mustTypeAssert<encoderFunc | null>(fi, {kind: $.TypeKind.Function, name: 'encoderFunc', params: [{ kind: $.TypeKind.Pointer, elemType: "encodeState" }, "Value", "encOpts"], results: []})
+		return $.mustTypeAssert<encoderFunc | null>(fi, {kind: $.TypeKind.Function, name: 'encoderFunc', params: [{ kind: $.TypeKind.Pointer, elemType: "encoding/json.encodeState" }, "reflect.Value", "encoding/json.encOpts"], results: []})
 	}
 
 	let f = await indirect!()
@@ -1609,7 +1613,7 @@ export function marshalerEncoder(e: encodeState | null, v: reflect.Value, opts: 
 		e!.WriteString("null")
 		return 
 	}
-	let { value: m, ok: ok } = $.typeAssert<Marshaler>(v.Interface(), 'encoding/json.Marshaler')
+	let [m, ok] = $.typeAssertTuple<Marshaler>(v.Interface(), "encoding/json.Marshaler")
 	if (!ok) {
 		e!.WriteString("null")
 		return 
@@ -1632,7 +1636,7 @@ export function addrMarshalerEncoder(e: encodeState | null, v: reflect.Value, op
 		e!.WriteString("null")
 		return 
 	}
-	let m = $.mustTypeAssert<Marshaler>(va.Interface(), 'encoding/json.Marshaler')
+	let [m, ] = $.typeAssertTuple<Marshaler>(va.Interface(), "encoding/json.Marshaler")
 	let [b, err] = m!.MarshalJSON()
 	if (err == null) {
 		e!.Grow($.len(b))
@@ -1650,7 +1654,7 @@ export function textMarshalerEncoder(e: encodeState | null, v: reflect.Value, op
 		e!.WriteString("null")
 		return 
 	}
-	let { value: m, ok: ok } = $.typeAssert<null | encoding.TextMarshaler>(v.Interface(), 'encoding.TextMarshaler')
+	let [m, ok] = $.typeAssertTuple<encoding.TextMarshaler>(v.Interface(), "encoding.TextMarshaler")
 	if (!ok) {
 		e!.WriteString("null")
 		return 
@@ -1668,7 +1672,7 @@ export function addrTextMarshalerEncoder(e: encodeState | null, v: reflect.Value
 		e!.WriteString("null")
 		return 
 	}
-	let m = $.mustTypeAssert<null | encoding.TextMarshaler>(va.Interface(), 'encoding.TextMarshaler')
+	let [m, ] = $.typeAssertTuple<encoding.TextMarshaler>(va.Interface(), "encoding.TextMarshaler")
 	let [b, err] = m!.MarshalText()
 	if (err != null) {
 		e!.error(new MarshalerError({Err: err, Type: v.Type(), sourceFunc: "MarshalText"}))
@@ -1735,17 +1739,6 @@ export function stringEncoder(e: encodeState | null, v: reflect.Value, opts: enc
 	}
 }
 
-// isValidNumber reports whether s is a valid JSON number literal.
-//
-// isValidNumber should be an internal detail,
-// but widely used packages access it using linkname.
-// Notable members of the hall of shame include:
-//   - github.com/bytedance/sonic
-//
-// Do not remove or change the type signature.
-// See go.dev/issue/67401.
-//
-//go:linkname isValidNumber
 export function isValidNumber(s: string): boolean {
 	// This function implements the JSON numbers grammar.
 	// See https://tools.ietf.org/html/rfc7159#section-6
@@ -1944,7 +1937,7 @@ export function resolveKeyName(k: reflect.Value): [string, $.GoError] {
 		return [k.String(), null]
 	}
 	{
-		let { value: tm, ok: ok } = $.typeAssert<null | encoding.TextMarshaler>(k.Interface(), 'encoding.TextMarshaler')
+		let [tm, ok] = $.typeAssertTuple<encoding.TextMarshaler>(k.Interface(), "encoding.TextMarshaler")
 		if (ok) {
 			if (k.Kind() == reflect.Ptr && k.IsNil()) {
 				return ["", null]
@@ -2086,19 +2079,6 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 	return dst
 }
 
-// typeFields returns a list of fields that JSON should recognize for the given type.
-// The algorithm is breadth-first search over the set of structs to include - the top struct
-// and then any reachable anonymous structs.
-//
-// typeFields should be an internal detail,
-// but widely used packages access it using linkname.
-// Notable members of the hall of shame include:
-//   - github.com/bytedance/sonic
-//
-// Do not remove or change the type signature.
-// See go.dev/issue/67401.
-//
-//go:linkname typeFields
 export async function typeFields(t: null | reflect.Type): Promise<structFields> {
 	// Anonymous fields to explore at the current level and the next.
 	let current = $.arrayToSlice<field>([])

@@ -2,6 +2,23 @@ package compiler
 
 import "go/types"
 
+func qualifiedTypeName(namedType *types.Named) string {
+	if namedType == nil || namedType.Obj() == nil {
+		return ""
+	}
+
+	typeName := namedType.Obj().Name()
+	if pkg := namedType.Obj().Pkg(); pkg != nil {
+		switch {
+		case pkg.Name() == "main":
+			typeName = "main." + typeName
+		case pkg.Path() != "":
+			typeName = pkg.Path() + "." + typeName
+		}
+	}
+	return typeName
+}
+
 // writeTypeInfoObject writes a TypeScript TypeInfo object literal for a given Go type.
 func (c *GoToTSCompiler) writeTypeInfoObject(typ types.Type) {
 	if typ == nil {
@@ -17,7 +34,7 @@ func (c *GoToTSCompiler) writeTypeInfoObject(typ types.Type) {
 			// For all other named types, output their name as a string literal.
 			// This relies on the type being registered elsewhere (e.g., via registerStructType or registerInterfaceType)
 			// so the TypeScript runtime can resolve the reference.
-			c.tsw.WriteLiterallyf("%q", namedType.Obj().Name())
+			c.tsw.WriteLiterallyf("%q", qualifiedTypeName(namedType))
 		}
 		return // Return after handling the named type by reference.
 	}
@@ -64,8 +81,8 @@ func (c *GoToTSCompiler) writeTypeInfoObject(typ types.Type) {
 	case *types.Interface: // Anonymous interface or underlying of a non-named type alias
 		c.tsw.WriteLiterally("{ kind: $.TypeKind.Interface, methods: [")
 		var methods []*types.Func
-		for i := 0; i < t.NumExplicitMethods(); i++ {
-			methods = append(methods, t.ExplicitMethod(i))
+		for method := range t.ExplicitMethods() {
+			methods = append(methods, method)
 		}
 		// TODO: Handle embedded methods for anonymous interfaces if needed.
 		c.writeMethodSignatures(methods) // Calls writeMethodSignatures -> writeTypeInfoObject

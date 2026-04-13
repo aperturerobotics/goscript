@@ -43,7 +43,7 @@ func main() {
 	}
 
 	// Start worker goroutines
-	for i := 0; i < numWorkers; i++ {
+	for i := range numWorkers {
 		go worker(i)
 	}
 

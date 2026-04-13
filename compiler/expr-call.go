@@ -100,6 +100,9 @@ func (c *GoToTSCompiler) WriteCallExpr(exp *ast.CallExpr) error {
 	// Handle reflect.TypeFor[T]() - Fun is IndexExpr where X is SelectorExpr
 	if indexExpr, ok := expFun.(*ast.IndexExpr); ok {
 		if selectorExpr, ok := indexExpr.X.(*ast.SelectorExpr); ok {
+			if handled, err := c.writeReflectTypeAssert(exp, selectorExpr); handled {
+				return err
+			}
 			if handled, err := c.writeReflectTypeFor(exp, selectorExpr); handled {
 				return err
 			}

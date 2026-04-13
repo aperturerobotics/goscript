@@ -12,7 +12,7 @@ type Person struct {
 
 func main() {
 	var p Person
-	t := reflect.TypeOf(p)
+	t := reflect.TypeFor[Person]()
 	println("TypeOf(Person{}):")
 	println("  Name:", t.Name())
 	println("  Kind:", t.Kind().String())

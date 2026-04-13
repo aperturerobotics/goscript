@@ -4,11 +4,12 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export function simpleIterator(_yield: ((p0: number) => boolean) | null): void {
-	for (let i = 0; i < 3; i++) {
+	for (let i = 0; i < 3; i++) {{
 		if (!_yield!(i)) {
 			return 
 		}
 	}
+}
 }
 
 export function keyValueIterator(_yield: ((p0: number, p1: string) => boolean) | null): void {

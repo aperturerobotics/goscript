@@ -400,6 +400,27 @@ export class Buffer {
 		return data
 	}
 
+	// Peek returns the next n bytes without advancing the buffer.
+	// If fewer than n bytes are available, it returns the unread bytes and io.EOF.
+	public Peek(n: number): [$.Bytes, $.GoError] {
+		const b = this
+		if (n < 0) {
+			return [null, errors.New("bytes.Buffer.Peek: negative count")]
+		}
+		if (b.empty()) {
+			b.Reset()
+			if (n == 0) {
+				return [new Uint8Array(0), null]
+			}
+			return [new Uint8Array(0), io.EOF]
+		}
+		let unread = $.goSlice(b.buf, b.off, undefined)
+		if (n > $.len(unread)) {
+			return [unread, io.EOF]
+		}
+		return [$.goSlice(b.buf, b.off, b.off + n), null]
+	}
+
 	// ReadByte reads and returns the next byte from the buffer.
 	// If no byte is available, it returns error [io.EOF].
 	public ReadByte(): [number, $.GoError] {
@@ -611,4 +632,3 @@ export function NewBuffer(buf: $.Bytes): Buffer | null {
 export function NewBufferString(s: string): Buffer | null {
 	return new Buffer({buf: $.stringToBytes(s)})
 }
-

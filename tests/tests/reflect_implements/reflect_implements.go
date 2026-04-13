@@ -13,9 +13,9 @@ func (m MyType) String() string {
 }
 
 func main() {
-	t := reflect.TypeOf(MyType{})
+	t := reflect.TypeFor[MyType]()
 	ptr := reflect.PointerTo(t)
-	iface := reflect.TypeOf((*Stringer)(nil)).Elem()
+	iface := reflect.TypeFor[Stringer]()
 
 	println("MyType implements Stringer:", t.Implements(iface))
 	println("*MyType implements Stringer:", ptr.Implements(iface))

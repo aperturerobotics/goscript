@@ -560,8 +560,8 @@ func (c *GoToTSCompiler) WriteInterfaceTypeSpec(a *ast.TypeSpec, t *ast.Interfac
 	// Collect methods for the interface type
 	var interfaceMethods []*types.Func
 	if ifaceType != nil { // ifaceType is *types.Interface
-		for i := range ifaceType.NumExplicitMethods() {
-			interfaceMethods = append(interfaceMethods, ifaceType.ExplicitMethod(i))
+		for method := range ifaceType.ExplicitMethods() {
+			interfaceMethods = append(interfaceMethods, method)
 		}
 		// TODO: Handle embedded interface methods if necessary for full signature collection.
 		// For now, explicit methods are covered.

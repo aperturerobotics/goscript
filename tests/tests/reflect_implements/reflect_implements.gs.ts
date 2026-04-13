@@ -45,9 +45,9 @@ $.registerInterfaceType(
 );
 
 export async function main(): Promise<void> {
-	let t = reflect.TypeOf($.markAsStructValue(new MyType({})))
+	let t = reflect.TypeOf(new MyType())
 	let ptr = reflect.PointerTo(t)
-	let iface = reflect.TypeOf($.typedNil("*main.Stringer"))!.Elem()
+	let iface = reflect.getInterfaceLiteralTypeByName("main.Stringer")
 
 	$.println("MyType implements Stringer:", t!.Implements(iface))
 	$.println("*MyType implements Stringer:", ptr!.Implements(iface))

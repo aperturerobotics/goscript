@@ -8,12 +8,12 @@ import (
 )
 
 // writeByteSliceCreation handles the creation of []byte slices with proper Uint8Array handling
-func (c *GoToTSCompiler) writeByteSliceCreation(lengthArg, capacityArg interface{}) error {
+func (c *GoToTSCompiler) writeByteSliceCreation(lengthArg, capacityArg any) error {
 	return c.writeSliceCreationForType(lengthArg, capacityArg, true)
 }
 
 // writeSliceCreationForType handles slice creation with special handling for byte slices
-func (c *GoToTSCompiler) writeSliceCreationForType(lengthArg, capacityArg interface{}, isByteSlice bool) error {
+func (c *GoToTSCompiler) writeSliceCreationForType(lengthArg, capacityArg any, isByteSlice bool) error {
 	hasCapacity := capacityArg != nil
 
 	if isByteSlice && !hasCapacity {
@@ -52,7 +52,7 @@ func (c *GoToTSCompiler) writeSliceCreationForType(lengthArg, capacityArg interf
 }
 
 // writeGenericSliceCreation handles the creation of generic slices with proper type hints
-func (c *GoToTSCompiler) writeGenericSliceCreation(elemType types.Type, lengthArg, capacityArg interface{}) error {
+func (c *GoToTSCompiler) writeGenericSliceCreation(elemType types.Type, lengthArg, capacityArg any) error {
 	hasCapacity := capacityArg != nil
 
 	c.tsw.WriteLiterally("$.makeSlice<")
@@ -90,7 +90,7 @@ func (c *GoToTSCompiler) writeSliceTypeHint(elemType types.Type, hasCapacity boo
 }
 
 // writeExprOrDefault writes an expression if it's not nil, otherwise writes a default value
-func (c *GoToTSCompiler) writeExprOrDefault(expr interface{}, defaultValue string) error {
+func (c *GoToTSCompiler) writeExprOrDefault(expr any, defaultValue string) error {
 	if expr == nil {
 		c.tsw.WriteLiterally(defaultValue)
 		return nil
@@ -149,11 +149,67 @@ func (c *GoToTSCompiler) writeReflectTypeFor(exp *ast.CallExpr, selectorExpr *as
 	typeArg := instance.TypeArgs.At(0)
 	// fmt.Printf("DEBUG: Type argument: %v\n", typeArg)
 
+	if named, ok := typeArg.(*types.Named); ok {
+		if _, isInterface := named.Underlying().(*types.Interface); isInterface {
+			typeName := qualifiedTypeName(named)
+			c.tsw.WriteLiterally("reflect.getInterfaceLiteralTypeByName(\"" + typeName + "\")")
+			return true, nil
+		}
+	}
+
 	// Generate TypeScript code to create a Type for this type
 	if err := c.writeTypeForTypeArg(typeArg); err != nil {
 		return true, err
 	}
 
+	return true, nil
+}
+
+// writeReflectTypeAssert handles reflect.TypeAssert[T](v) calls.
+func (c *GoToTSCompiler) writeReflectTypeAssert(exp *ast.CallExpr, selectorExpr *ast.SelectorExpr) (handled bool, err error) {
+	if selectorExpr.Sel.Name != "TypeAssert" {
+		return false, nil
+	}
+
+	xIdent, ok := selectorExpr.X.(*ast.Ident)
+	if !ok {
+		return false, nil
+	}
+
+	obj := c.objectOfIdent(xIdent)
+	if obj == nil {
+		return false, nil
+	}
+
+	pkgName, ok := obj.(*types.PkgName)
+	if !ok || pkgName.Imported().Path() != "reflect" {
+		return false, nil
+	}
+
+	if len(exp.Args) != 1 {
+		return false, errors.New("reflect.TypeAssert called with unexpected argument count")
+	}
+
+	if c.pkg.TypesInfo.Instances == nil {
+		return false, errors.New("reflect.TypeAssert called but no type instances available")
+	}
+
+	instance, hasInstance := c.pkg.TypesInfo.Instances[selectorExpr.Sel]
+	if !hasInstance || instance.TypeArgs == nil || instance.TypeArgs.Len() == 0 {
+		return false, errors.New("reflect.TypeAssert called without type arguments")
+	}
+
+	typeArg := instance.TypeArgs.At(0)
+
+	c.tsw.WriteLiterally("$.typeAssertTuple<")
+	c.WriteGoType(typeArg, GoTypeContextGeneral)
+	c.tsw.WriteLiterally(">(")
+	if err := c.WriteValueExpr(exp.Args[0]); err != nil {
+		return true, err
+	}
+	c.tsw.WriteLiterally(".Interface(), ")
+	c.writeTypeInfoObject(typeArg)
+	c.tsw.WriteLiterally(")")
 	return true, nil
 }
 
@@ -175,12 +231,46 @@ func (c *GoToTSCompiler) writeTypeForTypeArg(t types.Type) error {
 		c.tsw.WriteLiterally(")")
 		return nil
 	case *types.Slice:
-		// For slice types, use TypeOf with an empty slice
-		c.tsw.WriteLiterally("reflect.TypeOf([])")
+		c.tsw.WriteLiterally("reflect.SliceOf(")
+		if err := c.writeTypeForTypeArg(underlying.Elem()); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally(")")
 		return nil
 	case *types.Array:
-		// For array types, use TypeOf with an empty array
-		c.tsw.WriteLiterally("reflect.TypeOf([])")
+		c.tsw.WriteLiterally("reflect.ArrayOf(")
+		c.tsw.WriteLiterallyf("%d, ", underlying.Len())
+		if err := c.writeTypeForTypeArg(underlying.Elem()); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally(")")
+		return nil
+	case *types.Map:
+		c.tsw.WriteLiterally("reflect.MapOf(")
+		if err := c.writeTypeForTypeArg(underlying.Key()); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally(", ")
+		if err := c.writeTypeForTypeArg(underlying.Elem()); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally(")")
+		return nil
+	case *types.Chan:
+		c.tsw.WriteLiterally("reflect.ChanOf(")
+		switch underlying.Dir() {
+		case types.RecvOnly:
+			c.tsw.WriteLiterally("reflect.RecvDir")
+		case types.SendOnly:
+			c.tsw.WriteLiterally("reflect.SendDir")
+		default:
+			c.tsw.WriteLiterally("reflect.BothDir")
+		}
+		c.tsw.WriteLiterally(", ")
+		if err := c.writeTypeForTypeArg(underlying.Elem()); err != nil {
+			return err
+		}
+		c.tsw.WriteLiterally(")")
 		return nil
 	case *types.Struct:
 		// For struct types, use TypeOf with zero value

@@ -107,7 +107,7 @@ func (c *GoToTSCompiler) WriteCompositeLit(exp *ast.CompositeLit) error {
 			// Use type info to get array length and element type
 			var arrayLen int
 			var elemType ast.Expr
-			var goElemType interface{}
+			var goElemType any
 			if typ := c.pkg.TypesInfo.TypeOf(exp.Type); typ != nil {
 				if at, ok := typ.Underlying().(*types.Array); ok {
 					arrayLen = int(at.Len())
@@ -534,7 +534,7 @@ func (c *GoToTSCompiler) WriteVarRefedValue(expr ast.Expr) error {
 // evaluateConstantExpr attempts to evaluate a Go expression as a compile-time constant.
 // It returns the constant value if successful, or nil if the expression is not a constant.
 // This is used for evaluating array literal keys that are constant expressions.
-func (c *GoToTSCompiler) evaluateConstantExpr(expr ast.Expr) interface{} {
+func (c *GoToTSCompiler) evaluateConstantExpr(expr ast.Expr) any {
 	// Use the type checker's constant evaluation
 	if tv, ok := c.pkg.TypesInfo.Types[expr]; ok && tv.Value != nil {
 		// The expression has a constant value
@@ -575,8 +575,7 @@ func (c *GoToTSCompiler) categorizeStructFields(
 	explicitEmbedded = make(map[string]ast.Expr)
 
 	// Pre-populate embeddedFields map keys using the correct property name
-	for i := 0; i < structType.NumFields(); i++ {
-		field := structType.Field(i)
+	for field := range structType.Fields() {
 		if field.Anonymous() {
 			fieldType := field.Type()
 			if ptr, ok := fieldType.(*types.Pointer); ok {
@@ -611,8 +610,7 @@ func (c *GoToTSCompiler) categorizeStructFields(
 		}
 
 		isDirectField := false
-		for i := range structType.NumFields() {
-			field := structType.Field(i)
+		for field := range structType.Fields() {
 			if field.Name() == keyName {
 				isDirectField = true
 				directFields[keyName] = kv.Value

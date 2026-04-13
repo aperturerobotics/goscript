@@ -1,7 +1,7 @@
 package main
 
 func main() {
-	var x interface{} = func() {
+	var x any = func() {
 		println("goroutine executed")
 	}
 	go x.(func())()

@@ -2,8 +2,8 @@ package main
 
 func main() {
 	// Test type assertion assignment with indexed LHS using regular assignment
-	var slice []interface{} = []interface{}{"hello", 42, true}
-	var results [2]interface{}
+	var slice []any = []any{"hello", 42, true}
+	var results [2]any
 	var ok bool
 	results[0], ok = slice[1].(int)
 	if ok {
@@ -11,9 +11,9 @@ func main() {
 	}
 
 	// Test type assertion assignment with map indexed LHS using regular assignment
-	var m map[string]interface{} = make(map[string]interface{})
+	var m map[string]any = make(map[string]any)
 	m["key2"] = 123
-	var mapResults map[string]interface{} = make(map[string]interface{})
+	var mapResults map[string]any = make(map[string]any)
 	var ok2 bool
 	mapResults["result"], ok2 = m["key2"].(int)
 	if ok2 {

@@ -69,7 +69,7 @@ func main() {
 		println("Stored key2:", val)
 	}
 
-	m.Range(func(key, value interface{}) bool {
+	m.Range(func(key, value any) bool {
 		println("Range:", key, "->", value)
 		return true
 	})
@@ -81,7 +81,7 @@ func main() {
 
 	// Test Pool
 	pool := &sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			println("Pool creating new object")
 			return "new object"
 		},

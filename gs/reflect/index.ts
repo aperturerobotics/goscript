@@ -16,6 +16,7 @@ export {
   SendDir,
   BothDir,
   getInterfaceTypeByName,
+  getInterfaceLiteralTypeByName,
 } from './type.js'
 export type { Type, ChanDir, Kind } from './type.js'
 export { DeepEqual } from './deepequal.js'

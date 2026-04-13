@@ -76,7 +76,7 @@ export class serializedFile {
 	  new serializedFile(),
 	  [],
 	  serializedFile,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Base": { kind: $.TypeKind.Basic, name: "int" }, "Size": { kind: $.TypeKind.Basic, name: "int" }, "Lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "Infos": { kind: $.TypeKind.Slice, elemType: "lineInfo" }}
+	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Base": { kind: $.TypeKind.Basic, name: "int" }, "Size": { kind: $.TypeKind.Basic, name: "int" }, "Lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "Infos": { kind: $.TypeKind.Slice, elemType: "go/token.lineInfo" }}
 	);
 }
 
@@ -122,7 +122,7 @@ export class serializedFileSet {
 	  new serializedFileSet(),
 	  [],
 	  serializedFileSet,
-	  {"Base": { kind: $.TypeKind.Basic, name: "int" }, "Files": { kind: $.TypeKind.Slice, elemType: "serializedFile" }}
+	  {"Base": { kind: $.TypeKind.Basic, name: "int" }, "Files": { kind: $.TypeKind.Slice, elemType: "go/token.serializedFile" }}
 	);
 }
 

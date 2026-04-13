@@ -219,7 +219,7 @@ export class printer {
 	  new printer(),
 	  [{ name: "init", args: [], returns: [] }, { name: "format", args: [{ name: "verb", type: { kind: $.TypeKind.Basic, name: "rune" } }], returns: [] }],
 	  printer,
-	  {"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "arg": { kind: $.TypeKind.Interface, methods: [] }, "fmt": "formatter"}
+	  {"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "arg": { kind: $.TypeKind.Interface, methods: [] }, "fmt": "main.formatter"}
 	);
 }
 

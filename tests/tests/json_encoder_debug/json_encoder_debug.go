@@ -12,7 +12,7 @@ type Person struct {
 
 // Simplified version of what encoding/json typeFields does
 func main() {
-	t := reflect.TypeOf(Person{})
+	t := reflect.TypeFor[Person]()
 	println("Type:", t.Name(), "Kind:", t.Kind().String(), "NumField:", t.NumField())
 
 	// Iterate over fields like typeFields does

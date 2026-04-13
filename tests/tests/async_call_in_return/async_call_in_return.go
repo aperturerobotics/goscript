@@ -6,12 +6,12 @@ import (
 
 var cache sync.Map
 
-func getFromCache(key string) (interface{}, bool) {
+func getFromCache(key string) (any, bool) {
 	val, ok := cache.Load(key)
 	return val, ok
 }
 
-func getFromCacheInline(key string) (interface{}, bool) {
+func getFromCacheInline(key string) (any, bool) {
 	return cache.Load(key)
 }
 

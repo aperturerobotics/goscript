@@ -8,10 +8,9 @@ type Stringer interface {
 
 func main() {
 	// Create a typed nil pointer to interface
-	var nilPtr *Stringer = (*Stringer)(nil)
 
 	// Get the type
-	t := reflect.TypeOf(nilPtr)
+	t := reflect.TypeFor[*Stringer]()
 	println("Type:", t.String())
 	println("Kind:", t.Kind())
 

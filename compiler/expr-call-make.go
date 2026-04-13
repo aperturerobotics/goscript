@@ -79,7 +79,7 @@ func (c *GoToTSCompiler) writeMakeSlice(sliceType *types.Slice, exp *ast.CallExp
 
 	// Check if it's []byte
 	if c.isByteSliceType(sliceType) {
-		var lengthArg, capacityArg interface{}
+		var lengthArg, capacityArg any
 		if len(exp.Args) >= 2 {
 			lengthArg = exp.Args[1]
 		}
@@ -90,7 +90,7 @@ func (c *GoToTSCompiler) writeMakeSlice(sliceType *types.Slice, exp *ast.CallExp
 	}
 
 	// Handle other slice types
-	var lengthArg, capacityArg interface{}
+	var lengthArg, capacityArg any
 	if len(exp.Args) >= 2 {
 		lengthArg = exp.Args[1]
 	}
@@ -193,7 +193,7 @@ func (c *GoToTSCompiler) WriteCallExprMake(exp *ast.CallExpr) error {
 									if elemType != nil {
 										// Check if it's make(S, ...) where S constrains to []byte
 										if c.isByteSliceType(types.NewSlice(elemType)) {
-											var lengthArg, capacityArg interface{}
+											var lengthArg, capacityArg any
 											if len(exp.Args) >= 2 {
 												lengthArg = exp.Args[1]
 											}
@@ -203,7 +203,7 @@ func (c *GoToTSCompiler) WriteCallExprMake(exp *ast.CallExpr) error {
 											return c.writeByteSliceCreation(lengthArg, capacityArg)
 										}
 
-										var lengthArg, capacityArg interface{}
+										var lengthArg, capacityArg any
 										if len(exp.Args) >= 2 {
 											lengthArg = exp.Args[1]
 										}

@@ -17,7 +17,7 @@ func (ms MyStringer) String() string {
 }
 
 func main() {
-	var i interface{}
+	var i any
 	i = Greeter{}
 
 	// Successful type assertion to an inline interface
@@ -37,7 +37,7 @@ func main() {
 	}
 
 	// Successful type assertion to a named interface, where the asserted value also implements an inline interface method
-	var j interface{}
+	var j any
 	j = MyStringer{}
 
 	// Assert 'j' (which holds MyStringer) to an inline interface that MyStringer satisfies.

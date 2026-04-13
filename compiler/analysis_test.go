@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"go/types"
 	"os"
+	"slices"
 	"testing"
 
 	"golang.org/x/tools/go/packages"
@@ -329,13 +330,7 @@ func TestDiscoverGsPackages(t *testing.T) {
 	// Check for some known packages that should exist
 	expectedPackages := []string{"sync", "bytes", "strings"}
 	for _, expected := range expectedPackages {
-		found := false
-		for _, pkg := range packages {
-			if pkg == expected {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(packages, expected)
 		if !found {
 			t.Logf("Expected package '%s' not found in discovered packages: %v", expected, packages)
 		}

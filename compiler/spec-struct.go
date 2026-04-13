@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
+	"maps"
 	"slices"
 	"strings"
 )
@@ -72,8 +73,7 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 	}
 
 	// Generate getters and setters for EMBEDDED struct fields themselves
-	for i := range underlyingStruct.NumFields() {
-		field := underlyingStruct.Field(i)
+	for field := range underlyingStruct.Fields() {
 		if field.Anonymous() {
 			fieldKeyName := c.getEmbeddedFieldKeyName(field.Type())
 			c.writeGetterSetter(fieldKeyName, field.Type(), nil, nil, nil)
@@ -95,8 +95,7 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 	c.tsw.Indent(1)
 	c.tsw.WriteLine("")
 
-	for i := 0; i < underlyingStruct.NumFields(); i++ {
-		field := underlyingStruct.Field(i)
+	for field := range underlyingStruct.Fields() {
 		var fieldKeyName string
 		if field.Anonymous() {
 			fieldKeyName = c.getEmbeddedFieldKeyName(field.Type())
@@ -166,25 +165,26 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 	c.tsw.WriteLine("")
 
 	// Generate the clone method
-	cloneReturnType := className
+	var cloneReturnType strings.Builder
+	cloneReturnType.WriteString(className)
 	if a.TypeParams != nil && len(a.TypeParams.List) > 0 {
-		cloneReturnType += "<"
+		cloneReturnType.WriteString("<")
 		first := true
 		for _, field := range a.TypeParams.List {
 			for _, name := range field.Names {
 				if !first {
-					cloneReturnType += ", "
+					cloneReturnType.WriteString(", ")
 				}
 				first = false
-				cloneReturnType += name.Name
+				cloneReturnType.WriteString(name.Name)
 			}
 		}
-		cloneReturnType += ">"
+		cloneReturnType.WriteString(">")
 	}
 
-	c.tsw.WriteLinef("public clone(): %s {", cloneReturnType)
+	c.tsw.WriteLinef("public clone(): %s {", cloneReturnType.String())
 	c.tsw.Indent(1)
-	c.tsw.WriteLinef("const cloned = new %s()", cloneReturnType)
+	c.tsw.WriteLinef("const cloned = new %s()", cloneReturnType.String())
 	c.tsw.WriteLine("cloned._fields = {")
 	c.tsw.Indent(1)
 
@@ -257,8 +257,7 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 	seenPromotedFields := make(map[string]bool)
 	directMethods := make(map[string]bool)
 	// Populate directMethods (methods defined directly on this struct type)
-	for i := range goStructType.NumMethods() {
-		method := goStructType.Method(i)
+	for method := range goStructType.Methods() {
 		sig := method.Type().(*types.Signature)
 		if sig.Recv() != nil {
 			recvType := sig.Recv().Type()
@@ -272,8 +271,7 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 		}
 	}
 
-	for i := range underlyingStruct.NumFields() {
-		field := underlyingStruct.Field(i)
+	for field := range underlyingStruct.Fields() {
 		if !field.Anonymous() {
 			continue
 		}
@@ -293,8 +291,7 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 		// Promoted fields
 		if namedEmbedded, ok := trueEmbeddedType.(*types.Named); ok {
 			if underlyingEmbeddedStruct, ok := namedEmbedded.Underlying().(*types.Struct); ok {
-				for j := 0; j < underlyingEmbeddedStruct.NumFields(); j++ {
-					promotedField := underlyingEmbeddedStruct.Field(j)
+				for promotedField := range underlyingEmbeddedStruct.Fields() {
 					if !promotedField.Exported() && promotedField.Pkg() != c.pkg.Types {
 						continue
 					}
@@ -304,8 +301,8 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 					}
 					// Check for conflicts with outer struct's own fields or other promoted fields
 					conflict := false
-					for k := 0; k < underlyingStruct.NumFields(); k++ {
-						if !underlyingStruct.Field(k).Anonymous() && underlyingStruct.Field(k).Name() == promotedFieldName {
+					for field := range underlyingStruct.Fields() {
+						if !field.Anonymous() && field.Name() == promotedFieldName {
 							conflict = true
 							break
 						}
@@ -358,8 +355,7 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 			}
 		}
 		embeddedMethodSet := types.NewMethodSet(methodSetType)
-		for k := range embeddedMethodSet.Len() {
-			methodSelection := embeddedMethodSet.At(k)
+		for methodSelection := range embeddedMethodSet.Methods() {
 			method := methodSelection.Obj().(*types.Func)
 			methodName := method.Name()
 
@@ -367,8 +363,8 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 			if len(methodSelection.Index()) == 1 && !directMethods[methodName] && !seenPromotedFields[methodName] {
 				// Check for conflict with outer struct's own fields
 				conflictWithField := false
-				for k_idx := 0; k_idx < underlyingStruct.NumFields(); k_idx++ {
-					if !underlyingStruct.Field(k_idx).Anonymous() && underlyingStruct.Field(k_idx).Name() == methodName {
+				for field := range underlyingStruct.Fields() {
+					if !field.Anonymous() && field.Name() == methodName {
 						conflictWithField = true
 						break
 					}
@@ -457,8 +453,7 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 	c.tsw.WriteLiterally("  [")
 	// Collect methods for the struct type
 	var structMethods []*types.Func
-	for i := range goStructType.NumMethods() {
-		method := goStructType.Method(i)
+	for method := range goStructType.Methods() {
 		// Ensure it's a method directly on this type (not promoted here, promotion handled separately)
 		// Check if receiver is *T or T where T is goStructType
 		sig := method.Type().(*types.Signature)
@@ -545,8 +540,7 @@ func (c *GoToTSCompiler) generateFlattenedInitTypeString(structType *types.Named
 	}
 
 	// First add the direct fields and track embedded types
-	for i := 0; i < underlying.NumFields(); i++ {
-		field := underlying.Field(i)
+	for field := range underlying.Fields() {
 		fieldName := field.Name()
 
 		// Skip underscore fields
@@ -587,9 +581,7 @@ func (c *GoToTSCompiler) generateFlattenedInitTypeString(structType *types.Named
 	// not typically set directly in `init?` unless the embedded struct itself is named in `init?`.
 
 	// Add embedded types to the field map (these are the names of the embedded structs themselves)
-	for embeddedName, embeddedTSType := range embeddedTypeMap {
-		fieldMap[embeddedName] = embeddedTSType
-	}
+	maps.Copy(fieldMap, embeddedTypeMap)
 
 	var fieldNames []string
 	for name := range fieldMap {

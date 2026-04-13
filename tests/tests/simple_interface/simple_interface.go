@@ -8,7 +8,7 @@ func main() {
 	original := MyStruct{Value: 30}
 	pAlias := &original
 
-	var jAlias interface{} = pAlias
+	var jAlias any = pAlias
 
 	_, ok := jAlias.(*MyStruct)
 	println("pointer assertion result:", ok)

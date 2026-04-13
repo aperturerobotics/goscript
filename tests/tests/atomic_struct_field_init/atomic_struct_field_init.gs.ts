@@ -57,7 +57,7 @@ export class MyStruct {
 	  new MyStruct(),
 	  [],
 	  MyStruct,
-	  {"closed": "Bool", "count": "Int32", "flag": "Uint32"}
+	  {"closed": "sync/atomic.Bool", "count": "sync/atomic.Int32", "flag": "sync/atomic.Uint32"}
 	);
 }
 

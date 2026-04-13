@@ -63,47 +63,48 @@ export async function main(): Promise<void> {
 	}
 
 	// Start worker goroutines
-	for (let i = 0; i < numWorkers; i++) {
+	for (let i = 0; i < numWorkers; i++) {{
 		queueMicrotask(() => {
 			worker(i)
 		})
 	}
+}
 
-	// Wait for all workers to complete or context timeout
-	let done = $.makeChannel<{  }>(0, {}, 'both')
-	queueMicrotask(async () => {
-		await wg!.value.Wait()
-		done.close()
-	})
+// Wait for all workers to complete or context timeout
+let done = $.makeChannel<{  }>(0, {}, 'both')
+queueMicrotask(async () => {
+	await wg!.value.Wait()
+	done.close()
+})
 
-	const [_select_has_return_11d7, _select_value_11d7] = await $.selectStatement([
-		{
-			id: 0,
-			isSend: false,
-			channel: done,
-			onSelected: async (result) => {
-				$.println("All workers completed successfully")
-			}
-		},
-		{
-			id: 1,
-			isSend: false,
-			channel: ctx!.Done(),
-			onSelected: async (result) => {
-				$.println("Test timed out:", ctx!.Err()!.Error())
-			}
-		},
-	], false)
-	if (_select_has_return_11d7) {
-		return _select_value_11d7!
-	}
-	// If _select_has_return_11d7 is false, continue execution
+const [_select_has_return_11d7, _select_value_11d7] = await $.selectStatement([
+	{
+		id: 0,
+		isSend: false,
+		channel: done,
+		onSelected: async (result) => {
+			$.println("All workers completed successfully")
+		}
+	},
+	{
+		id: 1,
+		isSend: false,
+		channel: ctx!.Done(),
+		onSelected: async (result) => {
+			$.println("Test timed out:", ctx!.Err()!.Error())
+		}
+	},
+], false)
+if (_select_has_return_11d7) {
+	return _select_value_11d7!
+}
+// If _select_has_return_11d7 is false, continue execution
 
-	$.println("Final counter value:", counter)
-	if (counter != numWorkers) {
-		$.panic("counter does not match expected value")
-	}
+$.println("Final counter value:", counter)
+if (counter != numWorkers) {
+	$.panic("counter does not match expected value")
+}
 
-	$.println("success: csync.Mutex test completed")
+$.println("success: csync.Mutex test completed")
 }
 

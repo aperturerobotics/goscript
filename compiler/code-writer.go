@@ -59,8 +59,8 @@ func (w *TSCodeWriter) WriteImport(symbolName, importPath string) {
 
 // WriteCommentLine writes a comment as a // line.
 func (w *TSCodeWriter) WriteCommentLine(commentText string) {
-	lines := strings.Split(commentText, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(commentText, "\n")
+	for line := range lines {
 		w.WriteLinef("// %s", line)
 	}
 }

@@ -37,7 +37,7 @@ export class parser {
 	  new parser(),
 	  [],
 	  parser,
-	  {"errors": "ErrorList"}
+	  {"errors": "github.com/aperturerobotics/goscript/tests/tests/import_type_methods/errlist.ErrorList"}
 	);
 }
 

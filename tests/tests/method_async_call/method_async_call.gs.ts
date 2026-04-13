@@ -55,7 +55,7 @@ export class FileTracker {
 	  new FileTracker(),
 	  [{ name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
 	  FileTracker,
-	  {"mutex": "Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	  {"mutex": "sync.Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
 	);
 }
 
@@ -97,7 +97,7 @@ export class Scanner {
 	  new Scanner(),
 	  [{ name: "next", args: [], returns: [] }],
 	  Scanner,
-	  {"file": { kind: $.TypeKind.Pointer, elemType: "FileTracker" }}
+	  {"file": { kind: $.TypeKind.Pointer, elemType: "main.FileTracker" }}
 	);
 }
 

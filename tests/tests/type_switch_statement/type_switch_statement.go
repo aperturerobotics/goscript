@@ -2,7 +2,7 @@ package main
 
 func main() {
 	// Basic type switch with variable and default case
-	var i interface{} = "hello"
+	var i any = "hello"
 	switch v := i.(type) {
 	case int:
 		println("int", v)
@@ -13,7 +13,7 @@ func main() {
 	}
 
 	// Type switch without variable
-	var x interface{} = 123
+	var x any = 123
 	switch x.(type) {
 	case bool:
 		println("bool")
@@ -22,7 +22,7 @@ func main() {
 	}
 
 	// Type switch with multiple types in a case
-	var y interface{} = true
+	var y any = true
 	switch v := y.(type) {
 	case int, float64:
 		println("number", v)
@@ -37,7 +37,7 @@ func main() {
 	}
 
 	// Default-only type switch
-	var w interface{} = "test"
+	var w any = "test"
 	switch w.(type) {
 	default:
 		println("default only")
@@ -48,6 +48,6 @@ func main() {
 	}
 }
 
-func getInterface() interface{} {
+func getInterface() any {
 	return 42
 }

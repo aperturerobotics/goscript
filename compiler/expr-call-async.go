@@ -169,6 +169,10 @@ func (c *GoToTSCompiler) addNonNullAssertion(expFun ast.Expr) {
 						c.tsw.WriteLiterally("!")
 					}
 				}
+			} else if _, isParenExpr := expFun.(*ast.ParenExpr); isParenExpr {
+				// Parenthesized function expressions often come from pointer dereferences
+				// like (*rel)(), which remain nullable in TypeScript.
+				c.tsw.WriteLiterally("!")
 			} else if _, isNamed := funType.(*types.Named); isNamed {
 				c.tsw.WriteLiterally("!")
 			}

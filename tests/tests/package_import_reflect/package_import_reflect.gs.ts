@@ -65,21 +65,21 @@ export async function main(): Promise<void> {
 	// Test basic reflect functions
 	let x = 42
 	let v = $.markAsStructValue(reflect.ValueOf(x).clone())
-	$.println("Type:", reflect.TypeOf(x)!.String())
+	$.println("Type:", reflect.TypeOf(0)!.String())
 	$.println("Value:", v.Int())
 	$.println("Kind:", reflect.Kind_String(v.Kind()))
 
 	// Test with string
 	let s = "hello"
 	let sv = $.markAsStructValue(reflect.ValueOf(s).clone())
-	$.println("String type:", reflect.TypeOf(s)!.String())
+	$.println("String type:", reflect.TypeOf("")!.String())
 	$.println("String value:", sv.String())
 	$.println("String kind:", reflect.Kind_String(sv.Kind()))
 
 	// Test with slice
 	let slice = $.arrayToSlice<number>([1, 2, 3])
 	let sliceV = $.markAsStructValue(reflect.ValueOf(slice).clone())
-	$.println("Slice type:", reflect.TypeOf(slice)!.String())
+	$.println("Slice type:", reflect.SliceOf(reflect.TypeOf(0))!.String())
 	$.println("Slice len:", sliceV.Len())
 	$.println("Slice kind:", reflect.Kind_String(sliceV.Kind()))
 
@@ -91,7 +91,7 @@ export async function main(): Promise<void> {
 	$.println("DeepEqual a==c:", reflect.DeepEqual(a, c))
 
 	// Test Zero value
-	let zeroInt = $.markAsStructValue(reflect.Zero(reflect.TypeOf(42)).clone())
+	let zeroInt = $.markAsStructValue(reflect.Zero(reflect.TypeOf(0)).clone())
 	$.println("Zero int:", zeroInt.Int())
 
 	// Test type construction functions
@@ -122,7 +122,7 @@ export async function main(): Promise<void> {
 	let zeroString = $.markAsStructValue(reflect.Zero(reflect.TypeOf("")).clone())
 	$.println("Zero string:", zeroString.String())
 
-	let zeroBool = $.markAsStructValue(reflect.Zero(reflect.TypeOf(true)).clone())
+	let zeroBool = $.markAsStructValue(reflect.Zero(reflect.TypeOf(false)).clone())
 	$.println("Zero bool:", zeroBool.String()) // Should show the type since it's not a string
 
 	// Test Swapper function
@@ -143,7 +143,7 @@ export async function main(): Promise<void> {
 
 	// Test struct reflection
 	let person = $.markAsStructValue(new Person({Age: 30, Name: "Alice"}))
-	let personType = reflect.TypeOf(person)
+	let personType = reflect.TypeOf(new Person())
 	$.println("Struct type:", personType!.String())
 	$.println("Struct kind:", reflect.Kind_String(personType!.Kind()))
 
@@ -160,11 +160,11 @@ export async function main(): Promise<void> {
 	$.println("Bool kind:", reflect.Kind_String(bVal.Kind()))
 
 	// Test type equality
-	let intType1 = reflect.TypeOf(1)
-	let intType2 = reflect.TypeOf(2)
+	let intType1 = reflect.TypeOf(0)
+	let intType2 = reflect.TypeOf(0)
 	$.println("Same int types:", intType1!.String() == intType2!.String())
 
-	let stringType = reflect.TypeOf("test")
+	let stringType = reflect.TypeOf("")
 	$.println("Different types:", intType1!.String() == stringType!.String())
 
 	// Test map type construction
@@ -215,7 +215,7 @@ export async function main(): Promise<void> {
 	$.println("Type size methods:")
 	$.println("Int size:", reflect.TypeOf(0)!.Size())
 	$.println("String size:", reflect.TypeOf("")!.Size())
-	$.println("Slice size:", reflect.TypeOf($.arrayToSlice<number>([]))!.Size())
+	$.println("Slice size:", reflect.SliceOf(reflect.TypeOf(0))!.Size())
 
 	// Test enhanced API surface - functions to implement
 	$.println("Enhanced API tests:")
@@ -249,7 +249,7 @@ export async function main(): Promise<void> {
 	let sendOnlyChan = reflect.ChanOf(reflect.SendDir, reflect.TypeOf(""))
 	$.println("SendOnly chan type:", sendOnlyChan!.String())
 
-	let recvOnlyChan = reflect.ChanOf(reflect.RecvDir, reflect.TypeOf(true))
+	let recvOnlyChan = reflect.ChanOf(reflect.RecvDir, reflect.TypeOf(false))
 	$.println("RecvOnly chan type:", recvOnlyChan!.String())
 
 	// Test channels with different element types

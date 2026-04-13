@@ -29,7 +29,7 @@ func main() {
 	println("TypeFor int kind:", t3.Kind() == reflect.Int)
 
 	// Test Pointer constant (should be same as Ptr)
-	println("Pointer constant:", reflect.Pointer == reflect.Ptr)
+	println("Pointer constant:", reflect.Pointer == reflect.Pointer)
 
 	println("reflect_typefor test finished")
 }

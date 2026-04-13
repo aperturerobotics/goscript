@@ -98,8 +98,9 @@ queueMicrotask(async () => {
 allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 1, text: "Main: Workers started"})))
 
 // Collect all messages from goroutines
-for (let i = 0; i < 8; i++) {
+for (let _i = 0; _i < 8; _i++) {{
 	allMessages = $.append(allMessages, await $.chanRecv(messages))
+}
 }
 
 // Add final message

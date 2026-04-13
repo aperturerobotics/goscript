@@ -35,7 +35,7 @@ export class A {
 	  new A(),
 	  [],
 	  A,
-	  {"BB": { kind: $.TypeKind.Slice, elemType: "B" }}
+	  {"BB": { kind: $.TypeKind.Slice, elemType: "main.B" }}
 	);
 }
 
@@ -71,7 +71,7 @@ export class B {
 	  new B(),
 	  [],
 	  B,
-	  {"AA": { kind: $.TypeKind.Slice, elemType: "A" }}
+	  {"AA": { kind: $.TypeKind.Slice, elemType: "main.A" }}
 	);
 }
 

@@ -60,7 +60,7 @@ export class AsyncData {
 	  new AsyncData(),
 	  [{ name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 	  AsyncData,
-	  {"mu": "Mutex", "value": { kind: $.TypeKind.Basic, name: "int" }}
+	  {"mu": "sync.Mutex", "value": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

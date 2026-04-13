@@ -62,8 +62,7 @@ export class Person {
 }
 
 export async function main(): Promise<void> {
-	let p = $.markAsStructValue(new Person({Active: true, Age: 30, Name: "Alice"}))
-	let t = reflect.TypeOf(p)
+	let t = reflect.TypeOf(new Person())
 
 	// Simulate what typeFields does
 	$.println("NumField:", t!.NumField())

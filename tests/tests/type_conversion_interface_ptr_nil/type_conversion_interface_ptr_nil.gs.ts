@@ -17,10 +17,9 @@ $.registerInterfaceType(
 
 export async function main(): Promise<void> {
 	// Create a typed nil pointer to interface
-	let nilPtr: Stringer | null = $.typedNil("*main.Stringer")
 
 	// Get the type
-	let t = reflect.TypeOf(nilPtr)
+	let t = reflect.PointerTo(reflect.getInterfaceTypeByName("main.Stringer"))
 	$.println("Type:", t!.String())
 	$.println("Kind:", t!.Kind())
 

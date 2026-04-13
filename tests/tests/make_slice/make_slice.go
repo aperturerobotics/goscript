@@ -77,7 +77,7 @@ func main() {
 	// Test 11: Slice operations on made slices
 	println("--- Slice operations on made slices ---")
 	s6 := make([]int, 10, 20)
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		s6[i] = i * 10
 	}
 	sub := s6[2:5]                                    // Should have len=3, cap=18 (20-2)

@@ -23,7 +23,7 @@ func (m MockFileInfo) Size() int64        { return m.size }
 func (m MockFileInfo) Mode() os.FileMode  { return 0o644 }
 func (m MockFileInfo) ModTime() time.Time { return time.Time{} }
 func (m MockFileInfo) IsDir() bool        { return m.dir }
-func (m MockFileInfo) Sys() interface{}   { return nil }
+func (m MockFileInfo) Sys() any           { return nil }
 
 // MockFilesystem for testing
 type MockFilesystem struct{}

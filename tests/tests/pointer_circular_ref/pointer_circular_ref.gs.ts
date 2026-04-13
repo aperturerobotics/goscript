@@ -46,7 +46,7 @@ export class Employee {
 	  new Employee(),
 	  [],
 	  Employee,
-	  {"id": { kind: $.TypeKind.Basic, name: "int" }, "person": { kind: $.TypeKind.Pointer, elemType: "Person" }}
+	  {"id": { kind: $.TypeKind.Basic, name: "int" }, "person": { kind: $.TypeKind.Pointer, elemType: "main.Person" }}
 	);
 }
 
@@ -115,7 +115,7 @@ export class Node {
 	  new Node(),
 	  [],
 	  Node,
-	  {"value": { kind: $.TypeKind.Basic, name: "int" }, "next": { kind: $.TypeKind.Pointer, elemType: "Node" }, "parent": { kind: $.TypeKind.Pointer, elemType: "Node" }, "children": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "Node" } }}
+	  {"value": { kind: $.TypeKind.Basic, name: "int" }, "next": { kind: $.TypeKind.Pointer, elemType: "main.Node" }, "parent": { kind: $.TypeKind.Pointer, elemType: "main.Node" }, "children": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "main.Node" } }}
 	);
 }
 
@@ -162,7 +162,7 @@ export class Person {
 	  new Person(),
 	  [],
 	  Person,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "spouse": { kind: $.TypeKind.Pointer, elemType: "Employee" }}
+	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "spouse": { kind: $.TypeKind.Pointer, elemType: "main.Employee" }}
 	);
 }
 
@@ -232,7 +232,7 @@ export class TreeNode {
 	  new TreeNode(),
 	  [],
 	  TreeNode,
-	  {"data": { kind: $.TypeKind.Basic, name: "string" }, "left": { kind: $.TypeKind.Pointer, elemType: "TreeNode" }, "right": { kind: $.TypeKind.Pointer, elemType: "TreeNode" }, "parent": { kind: $.TypeKind.Pointer, elemType: "TreeNode" }}
+	  {"data": { kind: $.TypeKind.Basic, name: "string" }, "left": { kind: $.TypeKind.Pointer, elemType: "main.TreeNode" }, "right": { kind: $.TypeKind.Pointer, elemType: "main.TreeNode" }, "parent": { kind: $.TypeKind.Pointer, elemType: "main.TreeNode" }}
 	);
 }
 

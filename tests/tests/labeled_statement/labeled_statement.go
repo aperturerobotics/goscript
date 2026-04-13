@@ -5,7 +5,7 @@ func main() {
 
 	// Label with a for loop and continue
 label1:
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		if i == 1 {
 			continue label1
 		}
@@ -28,7 +28,7 @@ label2:
 
 	// Label with a for loop and break
 label3:
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		if i == 3 {
 			break label3
 		}
@@ -37,9 +37,9 @@ label3:
 
 	// Nested labels
 outer:
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 	inner:
-		for j := 0; j < 3; j++ {
+		for j := range 3 {
 			if i == 1 && j == 1 {
 				break outer
 			}

@@ -89,7 +89,7 @@ func (c *content) ComplexMethod() error {
 	}
 
 	// Variable shadowing in a loop
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		if data, err := c.getData(i); err == nil {
 			// Nested scope with receiver usage
 			if len(data) > 0 {

@@ -19,8 +19,8 @@ type formatter struct {
 }
 
 type printer struct {
-	buf []byte      //nolint:unused
-	arg interface{} //nolint:unused
+	buf []byte //nolint:unused
+	arg any    //nolint:unused
 	// This line causes the issue: fmt: $.VarRef<fmt>; where fmt is undefined
 	// Should generate proper type reference
 	fmt formatter

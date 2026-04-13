@@ -10,7 +10,7 @@ const (
 )
 
 // Nothing has untyped null
-var Nothing = interface{}(nil)
+var Nothing = any(nil)
 
 func main() {
 	println(Pi)

@@ -135,7 +135,7 @@ export class content {
 		if ($.len(c.bytes) == 0) {
 			c.bytes = new Uint8Array(10)
 		}
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < 3; i++) {{
 
 			// Nested scope with receiver usage
 			{
@@ -148,50 +148,51 @@ export class content {
 				}
 			}
 		}
-		{
-			let x = $.len(c.bytes)
-			if (x > 20) {
-				// Use receiver in nested scope
-				c.bytes = $.goSlice(c.bytes, undefined, 20)
+	}
+	{
+		let x = $.len(c.bytes)
+		if (x > 20) {
+			// Use receiver in nested scope
+			c.bytes = $.goSlice(c.bytes, undefined, 20)
 
-				// Nested function literal that might affect scoping
-				let fn = (): void => {
-					if ($.len(c.bytes) > 0) {
-						c.bytes![0] = 42
-					}
+			// Nested function literal that might affect scoping
+			let fn = (): void => {
+				if ($.len(c.bytes) > 0) {
+					c.bytes![0] = 42
 				}
-				fn!()
 			}
+			fn!()
 		}
-		return null
 	}
+	return null
+}
 
-	public getData(index: number): [$.Bytes, $.GoError] {
-		if (index < 0) {
-			return [null, errors.New("invalid index")]
-		}
-		return [new Uint8Array([$.byte(index), $.byte(index + 1)]), null]
+public getData(index: number): [$.Bytes, $.GoError] {
+	if (index < 0) {
+		return [null, errors.New("invalid index")]
 	}
+	return [new Uint8Array([$.byte(index), $.byte(index + 1)]), null]
+}
 
-	// Simple methods that should trigger receiver binding but might not
-	public Truncate(): void {
-		const c = this
-		c.bytes = new Uint8Array(0)
-	}
+// Simple methods that should trigger receiver binding but might not
+public Truncate(): void {
+	const c = this
+	c.bytes = new Uint8Array(0)
+}
 
-	public Len(): number {
-		const c = this
-		return $.len(c.bytes)
-	}
+public Len(): number {
+	const c = this
+	return $.len(c.bytes)
+}
 
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'main.content',
-	  new content(),
-	  [{ name: "WriteAt", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "ReadAt", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Clear", args: [], returns: [] }, { name: "ComplexMethod", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "getData", args: [{ name: "index", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Truncate", args: [], returns: [] }, { name: "Len", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  content,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "m": "RWMutex"}
-	);
+// Register this type with the runtime type system
+static __typeInfo = $.registerStructType(
+  'main.content',
+  new content(),
+  [{ name: "WriteAt", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "ReadAt", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Clear", args: [], returns: [] }, { name: "ComplexMethod", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "getData", args: [{ name: "index", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Truncate", args: [], returns: [] }, { name: "Len", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+  content,
+  {"name": { kind: $.TypeKind.Basic, name: "string" }, "bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "m": "sync.RWMutex"}
+);
 }
 
 export async function main(): Promise<void> {

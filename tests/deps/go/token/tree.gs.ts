@@ -103,7 +103,7 @@ export class tree {
 	// If t is modified during the iteration,
 	// some files may not be visited.
 	// No file will be visited multiple times.
-	public all(): iter.Seq<File | null> | null {
+	public all(): iter.Seq<File | null> {
 		const t = this
 		return (_yield: ((p0: File | null) => boolean) | null): void => {
 			if (t == null) {
@@ -273,7 +273,7 @@ export class tree {
 		{
 			let prev = (pos!.value)!.file
 			if ((prev !== file)) {
-				$.panic(fmt.Sprintf("file %s (%d-%d) overlaps with file %s (%d-%d)", prev!.Name(), prev!.Base(), prev!.Base() + prev!.Size(), file!.Name(), file!.Base(), file!.Base() + file!.Size()))
+				$.panic(fmt.Sprintf("file %s (%d-%d) overlaps with file %s (%d-%d)", prev!.Name(), prev!.Base(), prev!.End(), file!.Name(), file!.Base(), file!.End()))
 			}
 		}
 	}
@@ -288,7 +288,9 @@ export class tree {
 				// This code path isn't currently needed
 				// because FileSet never updates an existing entry.
 				// Remove this assertion if things change.
+				// defeat vet's unreachable pass
 				if (true) {
+					// defeat vet's unreachable pass
 					$.panic("unreachable according to current FileSet requirements")
 				}
 				x!.file = file
@@ -308,6 +310,7 @@ export class tree {
 		switch (true) {
 			case x == null: {
 				if (true) {
+					// defeat vet's unreachable pass
 					$.panic("unreachable according to current FileSet requirements")
 				}
 				return 
@@ -380,9 +383,9 @@ export class tree {
 	static __typeInfo = $.registerStructType(
 	  'go/token.tree',
 	  new tree(),
-	  [{ name: "locate", args: [{ name: "k", type: "key" }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }, { type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "all", args: [], returns: [{ type: "Seq" }] }, { name: "nextAfter", args: [{ name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }, { name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "setRoot", args: [{ name: "x", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "replaceChild", args: [{ name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }, { name: "old", type: { kind: $.TypeKind.Pointer, elemType: "node" } }, { name: "new", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "rebalanceUp", args: [{ name: "x", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "rotateRight", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "rotateLeft", args: [{ name: "x", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "add", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "File" } }], returns: [] }, { name: "set", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "File" } }, { name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }, { name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "delete", args: [{ name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }], returns: [] }, { name: "deleteSwap", args: [{ name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }], returns: [] }, { name: "deleteMin", args: [{ name: "zpos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "node" } } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }],
+	  [{ name: "locate", args: [{ name: "k", type: "go/token.key" }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } } }, { type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }] }, { name: "all", args: [], returns: [{ type: "iter.Seq" }] }, { name: "nextAfter", args: [{ name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } } }, { name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }] }, { name: "setRoot", args: [{ name: "x", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [] }, { name: "replaceChild", args: [{ name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }, { name: "old", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }, { name: "new", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [] }, { name: "rebalanceUp", args: [{ name: "x", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [] }, { name: "rotateRight", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }] }, { name: "rotateLeft", args: [{ name: "x", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }] }, { name: "add", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "go/token.File" } }], returns: [] }, { name: "set", args: [{ name: "file", type: { kind: $.TypeKind.Pointer, elemType: "go/token.File" } }, { name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } } }, { name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [] }, { name: "delete", args: [{ name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } } }], returns: [] }, { name: "deleteSwap", args: [{ name: "pos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } } }], returns: [] }, { name: "deleteMin", args: [{ name: "zpos", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }] }],
 	  tree,
-	  {"root": { kind: $.TypeKind.Pointer, elemType: "node" }}
+	  {"root": { kind: $.TypeKind.Pointer, elemType: "go/token.node" }}
 	);
 }
 
@@ -559,9 +562,9 @@ export class node {
 	static __typeInfo = $.registerStructType(
 	  'go/token.node',
 	  new node(),
-	  [{ name: "check", args: [{ name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "checkBalance", args: [], returns: [] }, { name: "next", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "node" } }] }, { name: "setLeft", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "setRight", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "node" } }], returns: [] }, { name: "safeHeight", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int32" } }] }, { name: "update", args: [], returns: [] }],
+	  [{ name: "check", args: [{ name: "parent", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [] }, { name: "checkBalance", args: [], returns: [] }, { name: "next", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }] }, { name: "setLeft", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [] }, { name: "setRight", args: [{ name: "y", type: { kind: $.TypeKind.Pointer, elemType: "go/token.node" } }], returns: [] }, { name: "safeHeight", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int32" } }] }, { name: "update", args: [], returns: [] }],
 	  node,
-	  {"parent": { kind: $.TypeKind.Pointer, elemType: "node" }, "left": { kind: $.TypeKind.Pointer, elemType: "node" }, "right": { kind: $.TypeKind.Pointer, elemType: "node" }, "file": { kind: $.TypeKind.Pointer, elemType: "File" }, "key": "key", "balance": { kind: $.TypeKind.Basic, name: "int32" }, "height": { kind: $.TypeKind.Basic, name: "int32" }}
+	  {"parent": { kind: $.TypeKind.Pointer, elemType: "go/token.node" }, "left": { kind: $.TypeKind.Pointer, elemType: "go/token.node" }, "right": { kind: $.TypeKind.Pointer, elemType: "go/token.node" }, "file": { kind: $.TypeKind.Pointer, elemType: "go/token.File" }, "key": "go/token.key", "balance": { kind: $.TypeKind.Basic, name: "int32" }, "height": { kind: $.TypeKind.Basic, name: "int32" }}
 	);
 }
 

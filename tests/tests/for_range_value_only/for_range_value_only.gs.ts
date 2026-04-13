@@ -3,6 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+import * as strings from "@goscript/strings/index.js"
+
 export async function main(): Promise<void> {
 	let s = $.arrayToSlice<number>([10, 20, 30])
 	let sum = 0
@@ -16,15 +18,15 @@ export async function main(): Promise<void> {
 	$.println(sum)
 
 	let arr = $.arrayToSlice<string>(["a", "b", "c"])
-	let concat = ""
+	let concat: $.VarRef<strings.Builder> = $.varRef(new strings.Builder())
 	for (let _i = 0; _i < $.len(arr); _i++) {
 		let val = arr![_i]
 		{
-			concat += val
+			concat!.value.WriteString(val)
 			$.println(val)
 		}
 	}
-	$.println(concat)
+	$.println(concat!.value.String())
 
 	// Test with blank identifier for value (should still iterate)
 	$.println("Ranging with blank identifier for value:")

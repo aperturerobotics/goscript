@@ -2,7 +2,7 @@ package main
 
 // testVariadicInterface tests the TypeScript generation for functions
 // with variadic ...interface{} parameters
-func testVariadicInterface(name string, values ...interface{}) {
+func testVariadicInterface(name string, values ...any) {
 	println("Name:", name)
 	println("Values count:", len(values))
 	for i, v := range values {
@@ -23,6 +23,6 @@ func main() {
 	testVariadicInterface("test3")
 
 	// Test with slice expansion
-	values := []interface{}{"a", "b", "c"}
+	values := []any{"a", "b", "c"}
 	testVariadicInterface("test4", values...)
 }

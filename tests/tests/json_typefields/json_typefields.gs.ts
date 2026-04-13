@@ -63,7 +63,7 @@ export class Person {
 
 // Simulate what encoding/json typeFields does
 export async function main(): Promise<void> {
-	let t = reflect.TypeOf($.markAsStructValue(new Person({})))
+	let t = reflect.TypeOf(new Person())
 	$.println("Type:", t!.Name())
 
 	// Simulate typeFields logic

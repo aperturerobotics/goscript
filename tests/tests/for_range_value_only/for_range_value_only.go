@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 func main() {
 	s := []int{10, 20, 30}
 	sum := 0
@@ -10,12 +12,12 @@ func main() {
 	println(sum)
 
 	arr := [3]string{"a", "b", "c"}
-	concat := ""
+	var concat strings.Builder
 	for _, val := range arr {
-		concat += val
+		concat.WriteString(val)
 		println(val)
 	}
-	println(concat)
+	println(concat.String())
 
 	// Test with blank identifier for value (should still iterate)
 	println("Ranging with blank identifier for value:")

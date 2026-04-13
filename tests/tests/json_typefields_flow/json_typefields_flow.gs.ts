@@ -103,12 +103,12 @@ export class field {
 	  new field(),
 	  [],
 	  field,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "typ": "Type"}
+	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "typ": "reflect.Type"}
 	);
 }
 
 export async function main(): Promise<void> {
-	let t = reflect.TypeOf($.markAsStructValue(new Person({})))
+	let t = reflect.TypeOf(new Person())
 
 	// Mimic the exact flow of typeFields
 	let next = $.arrayToSlice<field>([$.markAsStructValue(new field({typ: t}))])

@@ -1492,7 +1492,10 @@ function typeImplementsInterface(
   interfaceType: Type,
 ): boolean {
   // Get the interface name and look it up in the type registry
-  const interfaceName = interfaceType.String()
+  const interfaceName =
+    interfaceType instanceof InterfaceType ?
+      interfaceType.registeredName() || interfaceType.String()
+    : interfaceType.String()
   const interfaceTypeInfo = builtinGetTypeByName(interfaceName)
 
   if (!interfaceTypeInfo || !isInterfaceTypeInfo(interfaceTypeInfo)) {
@@ -1797,7 +1800,10 @@ class ChannelType implements Type {
 
 // Interface type implementation
 class InterfaceType implements Type {
-  constructor(private _name: string = 'interface{}') {}
+  constructor(
+    private _name: string = 'interface{}',
+    private _registeredName?: string,
+  ) {}
 
   public String(): string {
     return this._name
@@ -1820,10 +1826,30 @@ class InterfaceType implements Type {
   }
 
   public PkgPath?(): string {
+    if (
+      this._name === 'interface{}' ||
+      this._name.startsWith('interface {')
+    ) {
+      return ''
+    }
+    const dotIndex = this._name.lastIndexOf('.')
+    if (dotIndex > 0) {
+      return this._name.substring(0, dotIndex)
+    }
     return ''
   }
 
   public Name(): string {
+    if (
+      this._name === 'interface{}' ||
+      this._name.startsWith('interface {')
+    ) {
+      return this._name
+    }
+    const dotIndex = this._name.lastIndexOf('.')
+    if (dotIndex >= 0) {
+      return this._name.substring(dotIndex + 1)
+    }
     return this._name
   }
 
@@ -1867,6 +1893,10 @@ class InterfaceType implements Type {
 
   public Bits(): number {
     throw new Error('reflect: call of reflect.Type.Bits on interface Type')
+  }
+
+  public registeredName(): string | undefined {
+    return this._registeredName
   }
 }
 
@@ -2161,30 +2191,37 @@ export function TypeFor(): Type {
 export function getInterfaceTypeByName(name: string): Type {
   const typeInfo = builtinGetTypeByName(name)
   if (typeInfo && typeInfo.kind === TypeKind.Interface) {
-    // InterfaceTypeInfo
+    return new InterfaceType(name, name)
+  }
+  return new InterfaceType('interface{}')
+}
+
+export function getInterfaceLiteralTypeByName(name: string): Type {
+  const typeInfo = builtinGetTypeByName(name)
+  if (typeInfo && typeInfo.kind === TypeKind.Interface) {
     const methods = (typeInfo as any).methods || []
-    if (methods.length > 0) {
-      // Build interface signature with methods
-      const methodSigs = methods
-        .map((m: any) => {
-          const args =
-            m.args
-              ?.map((a: any) => (typeof a === 'string' ? a : 'any'))
-              .join(', ') || ''
-          const returns = m.returns?.map((r: any) =>
-            typeof r === 'string' ? r : 'any',
-          )
-          let returnSig = ''
-          if (returns && returns.length === 1) {
-            returnSig = ` ${returns[0]}`
-          } else if (returns && returns.length > 1) {
-            returnSig = ` (${returns.join(', ')})`
-          }
-          return `${m.name}(${args})${returnSig}`
-        })
-        .join('; ')
-      return new InterfaceType(`interface { ${methodSigs} }`)
+    if (methods.length === 0) {
+      return new InterfaceType('interface{}', name)
     }
+    const methodSigs = methods
+      .map((m: any) => {
+        const args =
+          m.args
+            ?.map((a: any) => (typeof a === 'string' ? a : 'any'))
+            .join(', ') || ''
+        const returns = m.returns?.map((r: any) =>
+          typeof r === 'string' ? r : 'any',
+        )
+        let returnSig = ''
+        if (returns && returns.length === 1) {
+          returnSig = ` ${returns[0]}`
+        } else if (returns && returns.length > 1) {
+          returnSig = ` (${returns.join(', ')})`
+        }
+        return `${m.name}(${args})${returnSig}`
+      })
+      .join('; ')
+    return new InterfaceType(`interface { ${methodSigs} }`, name)
   }
   return new InterfaceType('interface{}')
 }

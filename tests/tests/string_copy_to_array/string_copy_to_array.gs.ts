@@ -9,11 +9,12 @@ export async function main(): Promise<void> {
 	$.copy($.goSlice(arr, undefined, undefined), decodeMapInitialize)
 
 	// Check that arr is initialized with 255 values
-	for (let i = 0; i < $.len(arr); i++) {
+	for (let i = 0; i < $.len(arr); i++) {{
 		if (arr![i] != 255) {
 			$.panic("copy failed")
 		}
 	}
-	$.println("Copy succeeded")
+}
+$.println("Copy succeeded")
 }
 

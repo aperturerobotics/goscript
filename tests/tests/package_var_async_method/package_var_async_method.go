@@ -7,7 +7,7 @@ import (
 var cache sync.Map
 
 // This function calls an async method on a package-level variable
-func getValueFromCache(key string) (interface{}, bool) {
+func getValueFromCache(key string) (any, bool) {
 	return cache.Load(key)
 }
 

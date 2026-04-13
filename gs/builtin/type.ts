@@ -1102,6 +1102,14 @@ export function typeAssert<T>(
   return { value: null as unknown as T, ok: false }
 }
 
+export function typeAssertTuple<T>(
+  value: any,
+  typeInfo: string | TypeInfo,
+): [T, boolean] {
+  const { value: assertedValue, ok } = typeAssert<T>(value, typeInfo)
+  return [assertedValue, ok]
+}
+
 /**
  * Performs a type assertion on a value against a specified type.
  * Returns the value (cast to type T) if the assertion is successful,

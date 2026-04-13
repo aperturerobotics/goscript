@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 type FileMode int
 
 // String returns a string representation of the FileMode
@@ -30,15 +32,15 @@ func (cs CustomString) Length() int {
 // Upper converts to uppercase
 func (cs CustomString) Upper() string {
 	s := string(cs)
-	result := ""
+	var result strings.Builder
 	for _, r := range s {
 		if r >= 'a' && r <= 'z' {
-			result += string(r - 32)
+			result.WriteString(string(r - 32))
 		} else {
-			result += string(r)
+			result.WriteString(string(r))
 		}
 	}
-	return result
+	return result.String()
 }
 
 func main() {

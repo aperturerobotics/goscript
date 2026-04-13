@@ -146,35 +146,35 @@ func (c *PackageCompiler) writeProtobufExports(indexFile *os.File, fileName stri
 	//  - export function Name
 	// We avoid type-only exports for now.
 	var exports []string
-	lines := strings.Split(string(content), "\n")
-	for _, ln := range lines {
+	lines := strings.SplitSeq(string(content), "\n")
+	for ln := range lines {
 		l := strings.TrimSpace(ln)
-		if strings.HasPrefix(l, "export const ") {
-			rest := strings.TrimPrefix(l, "export const ")
+		if after, ok := strings.CutPrefix(l, "export const "); ok {
+			rest := after
 			name := takeIdent(rest)
 			if name != "" {
 				exports = append(exports, name)
 			}
 			continue
 		}
-		if strings.HasPrefix(l, "export interface ") {
-			rest := strings.TrimPrefix(l, "export interface ")
+		if after, ok := strings.CutPrefix(l, "export interface "); ok {
+			rest := after
 			name := takeIdent(rest)
 			if name != "" {
 				exports = append(exports, name)
 			}
 			continue
 		}
-		if strings.HasPrefix(l, "export class ") {
-			rest := strings.TrimPrefix(l, "export class ")
+		if after, ok := strings.CutPrefix(l, "export class "); ok {
+			rest := after
 			name := takeIdent(rest)
 			if name != "" {
 				exports = append(exports, name)
 			}
 			continue
 		}
-		if strings.HasPrefix(l, "export function ") {
-			rest := strings.TrimPrefix(l, "export function ")
+		if after, ok := strings.CutPrefix(l, "export function "); ok {
+			rest := after
 			name := takeIdent(rest)
 			if name != "" {
 				exports = append(exports, name)
@@ -236,9 +236,9 @@ func (c *FileCompiler) addProtobufImports() error {
 
 	for _, fileName := range c.pkg.CompiledGoFiles {
 		baseFileName := filepath.Base(fileName)
-		if strings.HasSuffix(baseFileName, ".pb.go") {
+		if before, ok := strings.CutSuffix(baseFileName, ".pb.go"); ok {
 			// Check if there's a corresponding .pb.ts file
-			pbTsFileName := strings.TrimSuffix(baseFileName, ".pb.go") + ".pb.ts"
+			pbTsFileName := before + ".pb.ts"
 			pbTsPath := filepath.Join(packageDir, pbTsFileName)
 
 			if _, err := os.Stat(pbTsPath); err == nil {
@@ -252,28 +252,28 @@ func (c *FileCompiler) addProtobufImports() error {
 
 				// Discover exported identifiers (const/interface/class/function)
 				var exports []string
-				for _, ln := range strings.Split(string(content), "\n") {
+				for ln := range strings.SplitSeq(string(content), "\n") {
 					l := strings.TrimSpace(ln)
-					if strings.HasPrefix(l, "export const ") {
-						if name := takeIdent(strings.TrimPrefix(l, "export const ")); name != "" {
+					if after, ok := strings.CutPrefix(l, "export const "); ok {
+						if name := takeIdent(after); name != "" {
 							exports = append(exports, name)
 						}
 						continue
 					}
-					if strings.HasPrefix(l, "export interface ") {
-						if name := takeIdent(strings.TrimPrefix(l, "export interface ")); name != "" {
+					if after, ok := strings.CutPrefix(l, "export interface "); ok {
+						if name := takeIdent(after); name != "" {
 							exports = append(exports, name)
 						}
 						continue
 					}
-					if strings.HasPrefix(l, "export class ") {
-						if name := takeIdent(strings.TrimPrefix(l, "export class ")); name != "" {
+					if after, ok := strings.CutPrefix(l, "export class "); ok {
+						if name := takeIdent(after); name != "" {
 							exports = append(exports, name)
 						}
 						continue
 					}
-					if strings.HasPrefix(l, "export function ") {
-						if name := takeIdent(strings.TrimPrefix(l, "export function ")); name != "" {
+					if after, ok := strings.CutPrefix(l, "export function "); ok {
+						if name := takeIdent(after); name != "" {
 							exports = append(exports, name)
 						}
 						continue

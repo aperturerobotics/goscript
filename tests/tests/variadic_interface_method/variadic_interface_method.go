@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 type Basic interface {
 	Join(elem ...string) string
 }
@@ -7,14 +9,14 @@ type Basic interface {
 type PathJoiner struct{}
 
 func (p PathJoiner) Join(elem ...string) string {
-	result := ""
+	var result strings.Builder
 	for i, e := range elem {
 		if i > 0 {
-			result += "/"
+			result.WriteString("/")
 		}
-		result += e
+		result.WriteString(e)
 	}
-	return result
+	return result.String()
 }
 
 func main() {

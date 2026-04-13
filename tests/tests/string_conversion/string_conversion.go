@@ -55,7 +55,7 @@ func main() {
 	println(i32String)
 
 	// Test with interface{} type assertion
-	var v interface{} = "interface test"
+	var v any = "interface test"
 	interfaceString := string(v.(string))
 	println(interfaceString)
 

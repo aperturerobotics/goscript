@@ -115,7 +115,7 @@ export class MyReader {
 	  new MyReader(),
 	  [],
 	  MyReader,
-	  {"Reader": "Reader", "name": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"Reader": "main.Reader", "name": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

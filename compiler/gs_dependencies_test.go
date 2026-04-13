@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -36,13 +37,7 @@ func TestReadGsPackageMetadata(t *testing.T) {
 	}
 
 	// Check for the specific "iter" dependency
-	foundIter := false
-	for _, dep := range metadata.Dependencies {
-		if dep == "iter" {
-			foundIter = true
-			break
-		}
-	}
+	foundIter := slices.Contains(metadata.Dependencies, "iter")
 
 	if !foundIter {
 		t.Errorf("Expected to find 'iter' dependency, got dependencies: %v", metadata.Dependencies)
@@ -51,13 +46,7 @@ func TestReadGsPackageMetadata(t *testing.T) {
 	// Also check for other expected dependencies from the bytes package
 	expectedDeps := []string{"errors", "io", "iter", "unicode", "unicode/utf8", "unsafe"}
 	for _, expected := range expectedDeps {
-		found := false
-		for _, dep := range metadata.Dependencies {
-			if dep == expected {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(metadata.Dependencies, expected)
 		if !found {
 			t.Errorf("Expected to find dependency '%s', got dependencies: %v", expected, metadata.Dependencies)
 		}

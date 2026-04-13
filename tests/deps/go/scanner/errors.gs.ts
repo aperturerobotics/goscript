@@ -61,7 +61,7 @@ export class Error {
 	  new Error(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  Error,
-	  {"Pos": "Position", "Msg": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"Pos": "go/token.Position", "Msg": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

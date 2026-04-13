@@ -16,11 +16,9 @@ type ConstraintInfo struct {
 func analyzeConstraint(iface *types.Interface) ConstraintInfo {
 	info := ConstraintInfo{}
 
-	for i := 0; i < iface.NumEmbeddeds(); i++ {
-		embedded := iface.EmbeddedType(i)
+	for embedded := range iface.EmbeddedTypes() {
 		if union, ok := embedded.(*types.Union); ok {
-			for j := 0; j < union.Len(); j++ {
-				term := union.Term(j)
+			for term := range union.Terms() {
 				checkType(term.Type(), &info)
 			}
 		} else {

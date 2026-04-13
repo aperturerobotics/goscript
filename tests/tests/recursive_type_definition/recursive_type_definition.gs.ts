@@ -10,7 +10,7 @@ export type A = null | {
 $.registerInterfaceType(
   'main.A',
   null, // Zero value for interface is null
-  [{ name: "MethodA", args: [{ name: "a", type: "A" }], returns: [] }]
+  [{ name: "MethodA", args: [{ name: "a", type: "main.A" }], returns: [] }]
 );
 
 export class B {
@@ -35,7 +35,7 @@ export class B {
 	static __typeInfo = $.registerStructType(
 	  'main.B',
 	  new B(),
-	  [{ name: "MethodB", args: [{ name: "valB", type: { kind: $.TypeKind.Pointer, elemType: "B" } }], returns: [] }],
+	  [{ name: "MethodB", args: [{ name: "valB", type: { kind: $.TypeKind.Pointer, elemType: "main.B" } }], returns: [] }],
 	  B,
 	  {}
 	);
@@ -48,7 +48,7 @@ export type C = null | {
 $.registerInterfaceType(
   'main.C',
   null, // Zero value for interface is null
-  [{ name: "MethodC", args: [{ name: "d", type: "D" }], returns: [] }]
+  [{ name: "MethodC", args: [{ name: "d", type: "main.D" }], returns: [] }]
 );
 
 export type D = null | {
@@ -58,7 +58,7 @@ export type D = null | {
 $.registerInterfaceType(
   'main.D',
   null, // Zero value for interface is null
-  [{ name: "MethodD", args: [{ name: "c", type: "C" }], returns: [] }]
+  [{ name: "MethodD", args: [{ name: "c", type: "main.C" }], returns: [] }]
 );
 
 export async function main(): Promise<void> {

@@ -11,8 +11,7 @@ type Person struct {
 }
 
 func main() {
-	p := Person{Name: "Alice", Age: 30, Active: true}
-	t := reflect.TypeOf(p)
+	t := reflect.TypeFor[Person]()
 
 	// Simulate what typeFields does
 	println("NumField:", t.NumField())

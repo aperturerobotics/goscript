@@ -206,7 +206,7 @@ export class Employee {
 	  new Employee(),
 	  [],
 	  Employee,
-	  {"Person": "Person", "ID": { kind: $.TypeKind.Basic, name: "int" }}
+	  {"Person": "main.Person", "ID": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 
@@ -319,7 +319,7 @@ export class Manager {
 	  new Manager(),
 	  [],
 	  Manager,
-	  {"Person": "Person", "Address": "Address", "Contact": "Contact", "Level": { kind: $.TypeKind.Basic, name: "int" }}
+	  {"Person": "main.Person", "Address": "main.Address", "Contact": "main.Contact", "Level": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

@@ -1196,7 +1196,6 @@ func (v *analysisVisitor) visitTypeAssertExpr(typeAssert *ast.TypeAssertExpr) as
 
 	// For each method in the interface, check if the struct implements it
 	for interfaceMethod := range interfaceType.ExplicitMethods() {
-		interfaceMethod := interfaceMethod
 
 		// Find the corresponding method in the struct type
 		structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
@@ -1465,7 +1464,6 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 
 			// Look for embedded fields
 			for field := range structType.Fields() {
-				field := field
 				if !field.Embedded() {
 					continue
 				}
@@ -1490,7 +1488,6 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 
 				// Scan all methods in the method set
 				for selection := range embeddedMethodSet.Methods() {
-					selection := selection
 					method := selection.Obj()
 					sig, ok := method.Type().(*types.Signature)
 					if !ok {
@@ -1500,7 +1497,6 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 					// Scan parameters
 					if sig.Params() != nil {
 						for param := range sig.Params().Variables() {
-							param := param
 							a.collectPackageFromType(param.Type(), pkg.Types, packagesToAdd)
 						}
 					}
@@ -1508,7 +1504,6 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 					// Scan results
 					if sig.Results() != nil {
 						for result := range sig.Results().Variables() {
-							result := result
 							a.collectPackageFromType(result.Type(), pkg.Types, packagesToAdd)
 						}
 					}
@@ -1551,7 +1546,6 @@ func (a *Analysis) collectPackageFromType(t types.Type, currentPkg *types.Packag
 			a.collectPackageFromType(etyp, currentPkg, packagesToAdd)
 		}
 		for method := range typ.ExplicitMethods() {
-			method := method
 			a.collectPackageFromType(method.Type(), currentPkg, packagesToAdd)
 		}
 	case *types.Pointer:
@@ -2430,7 +2424,6 @@ func (a *Analysis) GetIdentifierMapping(ident *ast.Ident) string {
 func (v *analysisVisitor) findStructMethod(namedType *types.Named, methodName string) *types.Func {
 	// Check methods directly on the type
 	for method := range namedType.Methods() {
-		method := method
 		if method.Name() == methodName {
 			return method
 		}
@@ -2534,7 +2527,6 @@ func (v *analysisVisitor) trackInterfaceAssignments(assignStmt *ast.AssignStmt) 
 
 		// Track implementations for all interface methods
 		for interfaceMethod := range interfaceType.ExplicitMethods() {
-			interfaceMethod := interfaceMethod
 
 			structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
 			if structMethod != nil {
@@ -2593,7 +2585,6 @@ func (v *analysisVisitor) trackInterfaceCallArguments(callExpr *ast.CallExpr) {
 
 		// Track implementations for all interface methods
 		for interfaceMethod := range interfaceType.ExplicitMethods() {
-			interfaceMethod := interfaceMethod
 
 			structMethod := v.findStructMethod(namedType, interfaceMethod.Name())
 			if structMethod != nil {
@@ -2738,7 +2729,6 @@ func (v *interfaceImplementationVisitor) findImplementationsInPackage(interfaceT
 func (v *interfaceImplementationVisitor) trackImplementation(interfaceType *types.Interface, namedType *types.Named) {
 	// For each method in the interface, find the corresponding implementation
 	for interfaceMethod := range interfaceType.ExplicitMethods() {
-		interfaceMethod := interfaceMethod
 
 		// Find the method in the implementing type
 		structMethod := v.findMethodInType(namedType, interfaceMethod.Name())
@@ -2751,7 +2741,6 @@ func (v *interfaceImplementationVisitor) trackImplementation(interfaceType *type
 // findMethodInType finds a method with the given name in a named type
 func (v *interfaceImplementationVisitor) findMethodInType(namedType *types.Named, methodName string) *types.Func {
 	for method := range namedType.Methods() {
-		method := method
 		if method.Name() == methodName {
 			return method
 		}

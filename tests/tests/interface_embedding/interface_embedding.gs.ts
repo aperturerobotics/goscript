@@ -205,7 +205,7 @@ export class qualifiedFile {
 	  new qualifiedFile(),
 	  [],
 	  qualifiedFile,
-	  {"File": "File", "metadata": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"File": "github.com/aperturerobotics/goscript/tests/tests/interface_embedding/subpkg.File", "metadata": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 
@@ -288,7 +288,7 @@ export class file {
 	  new file(),
 	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  file,
-	  {"File": "File", "name": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"File": "main.File", "name": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

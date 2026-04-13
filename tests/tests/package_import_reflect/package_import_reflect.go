@@ -17,21 +17,21 @@ func main() {
 	// Test basic reflect functions
 	x := 42
 	v := reflect.ValueOf(x)
-	println("Type:", reflect.TypeOf(x).String())
+	println("Type:", reflect.TypeFor[int]().String())
 	println("Value:", v.Int())
 	println("Kind:", v.Kind().String())
 
 	// Test with string
 	s := "hello"
 	sv := reflect.ValueOf(s)
-	println("String type:", reflect.TypeOf(s).String())
+	println("String type:", reflect.TypeFor[string]().String())
 	println("String value:", sv.String())
 	println("String kind:", sv.Kind().String())
 
 	// Test with slice
 	slice := []int{1, 2, 3}
 	sliceV := reflect.ValueOf(slice)
-	println("Slice type:", reflect.TypeOf(slice).String())
+	println("Slice type:", reflect.TypeFor[[]int]().String())
 	println("Slice len:", sliceV.Len())
 	println("Slice kind:", sliceV.Kind().String())
 
@@ -43,11 +43,11 @@ func main() {
 	println("DeepEqual a==c:", reflect.DeepEqual(a, c))
 
 	// Test Zero value
-	zeroInt := reflect.Zero(reflect.TypeOf(42))
+	zeroInt := reflect.Zero(reflect.TypeFor[int]())
 	println("Zero int:", zeroInt.Int())
 
 	// Test type construction functions
-	intType := reflect.TypeOf(0)
+	intType := reflect.TypeFor[int]()
 	sliceType := reflect.SliceOf(intType)
 	println("SliceOf int:", sliceType.String())
 	println("SliceOf kind:", sliceType.Kind().String())
@@ -71,10 +71,10 @@ func main() {
 	println("Indirect type:", indirectVal.Type().String())
 
 	// Test Zero values for different types
-	zeroString := reflect.Zero(reflect.TypeOf(""))
+	zeroString := reflect.Zero(reflect.TypeFor[string]())
 	println("Zero string:", zeroString.String())
 
-	zeroBool := reflect.Zero(reflect.TypeOf(true))
+	zeroBool := reflect.Zero(reflect.TypeFor[bool]())
 	println("Zero bool:", zeroBool.String()) // Should show the type since it's not a string
 
 	// Test Swapper function
@@ -95,7 +95,7 @@ func main() {
 
 	// Test struct reflection
 	person := Person{Name: "Alice", Age: 30}
-	personType := reflect.TypeOf(person)
+	personType := reflect.TypeFor[Person]()
 	println("Struct type:", personType.String())
 	println("Struct kind:", personType.Kind().String())
 
@@ -112,15 +112,15 @@ func main() {
 	println("Bool kind:", bVal.Kind().String())
 
 	// Test type equality
-	intType1 := reflect.TypeOf(1)
-	intType2 := reflect.TypeOf(2)
+	intType1 := reflect.TypeFor[int]()
+	intType2 := reflect.TypeFor[int]()
 	println("Same int types:", intType1.String() == intType2.String())
 
-	stringType := reflect.TypeOf("test")
+	stringType := reflect.TypeFor[string]()
 	println("Different types:", intType1.String() == stringType.String())
 
 	// Test map type construction
-	mapType := reflect.MapOf(reflect.TypeOf(""), reflect.TypeOf(0))
+	mapType := reflect.MapOf(reflect.TypeFor[string](), reflect.TypeFor[int]())
 	println("MapOf string->int:", mapType.String())
 	println("MapOf kind:", mapType.Kind().String())
 
@@ -135,7 +135,7 @@ func main() {
 	// println("Pointer kind:", ptrVal.Kind().String())
 
 	// Test interface type
-	var iface interface{} = "hello"
+	var iface any = "hello"
 	ifaceVal := reflect.ValueOf(iface)
 	println("Interface value type:", ifaceVal.Type().String())
 	println("Interface kind:", ifaceVal.Kind().String())
@@ -155,21 +155,21 @@ func main() {
 
 	// Test type methods
 	println("Type size methods:")
-	println("Int size:", reflect.TypeOf(0).Size())
-	println("String size:", reflect.TypeOf("").Size())
-	println("Slice size:", reflect.TypeOf([]int{}).Size())
+	println("Int size:", reflect.TypeFor[int]().Size())
+	println("String size:", reflect.TypeFor[string]().Size())
+	println("Slice size:", reflect.TypeFor[[]int]().Size())
 
 	// Test enhanced API surface - functions to implement
 	println("Enhanced API tests:")
 
 	// Test MakeSlice
-	sliceTypeInt := reflect.SliceOf(reflect.TypeOf(0))
+	sliceTypeInt := reflect.SliceOf(reflect.TypeFor[int]())
 	newSlice := reflect.MakeSlice(sliceTypeInt, 3, 5)
 	println("MakeSlice len:", newSlice.Len())
 	println("MakeSlice type:", newSlice.Type().String())
 
 	// Test MakeMap
-	mapTypeStr := reflect.MapOf(reflect.TypeOf(""), reflect.TypeOf(0))
+	mapTypeStr := reflect.MapOf(reflect.TypeFor[string](), reflect.TypeFor[int]())
 	newMap := reflect.MakeMap(mapTypeStr)
 	println("MakeMap type:", newMap.Type().String())
 
@@ -179,7 +179,7 @@ func main() {
 	println("Append result len:", appendedSlice.Len())
 
 	// Test channel types
-	chanType := reflect.ChanOf(reflect.BothDir, reflect.TypeOf(0))
+	chanType := reflect.ChanOf(reflect.BothDir, reflect.TypeFor[int]())
 	println("ChanOf type:", chanType.String())
 	println("ChanOf kind:", chanType.Kind().String())
 
@@ -188,14 +188,14 @@ func main() {
 	println("MakeChan type:", newChan.Type().String())
 
 	// Test different channel directions
-	sendOnlyChan := reflect.ChanOf(reflect.SendDir, reflect.TypeOf(""))
+	sendOnlyChan := reflect.ChanOf(reflect.SendDir, reflect.TypeFor[string]())
 	println("SendOnly chan type:", sendOnlyChan.String())
 
-	recvOnlyChan := reflect.ChanOf(reflect.RecvDir, reflect.TypeOf(true))
+	recvOnlyChan := reflect.ChanOf(reflect.RecvDir, reflect.TypeFor[bool]())
 	println("RecvOnly chan type:", recvOnlyChan.String())
 
 	// Test channels with different element types
-	stringChanType := reflect.ChanOf(reflect.BothDir, reflect.TypeOf(""))
+	stringChanType := reflect.ChanOf(reflect.BothDir, reflect.TypeFor[string]())
 	stringChan := reflect.MakeChan(stringChanType, 5)
 	println("String chan type:", stringChan.Type().String())
 	println("String chan elem type:", stringChan.Type().Elem().String())
@@ -212,8 +212,8 @@ func main() {
 	println("Chan size:", chanType.Size())
 
 	// Test Select functionality
-	intChan := reflect.MakeChan(reflect.ChanOf(reflect.BothDir, reflect.TypeOf(0)), 1)
-	strChan := reflect.MakeChan(reflect.ChanOf(reflect.BothDir, reflect.TypeOf("")), 1)
+	intChan := reflect.MakeChan(reflect.ChanOf(reflect.BothDir, reflect.TypeFor[int]()), 1)
+	strChan := reflect.MakeChan(reflect.ChanOf(reflect.BothDir, reflect.TypeFor[string]()), 1)
 
 	// Send values to only the string channel to make select deterministic
 	strChan.Send(reflect.ValueOf("hello"))

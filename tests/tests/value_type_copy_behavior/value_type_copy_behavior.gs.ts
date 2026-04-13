@@ -91,7 +91,7 @@ export class NestedStruct {
 	  new NestedStruct(),
 	  [],
 	  NestedStruct,
-	  {"Value": { kind: $.TypeKind.Basic, name: "int" }, "InnerStruct": "MyStruct"}
+	  {"Value": { kind: $.TypeKind.Basic, name: "int" }, "InnerStruct": "main.MyStruct"}
 	);
 }
 

@@ -69,7 +69,7 @@ func main() {
 	})
 
 	// Collect all messages from goroutines
-	for i := 0; i < totalMessages; i++ {
+	for range totalMessages {
 		allMessages = append(allMessages, <-messages)
 	}
 

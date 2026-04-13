@@ -1,5 +1,7 @@
 package main
 
+import "slices"
+
 import "sort"
 
 func main() {
@@ -51,9 +53,7 @@ func main() {
 
 	// Test Slice function with custom comparator
 	testSlice := []int{5, 2, 8, 1, 9}
-	sort.Slice(testSlice, func(i, j int) bool {
-		return testSlice[i] < testSlice[j]
-	})
+	slices.Sort(testSlice)
 	println("Custom sorted slice:", testSlice[0], testSlice[1], testSlice[2], testSlice[3], testSlice[4])
 
 	// Test SliceIsSorted

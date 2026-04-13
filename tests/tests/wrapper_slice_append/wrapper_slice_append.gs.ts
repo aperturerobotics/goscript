@@ -47,7 +47,7 @@ export class parser {
 	  new parser(),
 	  [],
 	  parser,
-	  {"errors": "ErrorList", "astruct": "AStruct"}
+	  {"errors": "github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist.ErrorList", "astruct": "github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist.AStruct"}
 	);
 }
 

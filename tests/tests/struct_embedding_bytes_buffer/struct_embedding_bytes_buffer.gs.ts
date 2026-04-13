@@ -70,6 +70,10 @@ export class MyWriter {
 		return this.Buffer.Next(n)
 	}
 
+	public Peek(n: number): [$.Bytes, $.GoError] {
+		return this.Buffer.Peek(n)
+	}
+
 	public Read(p: $.Bytes): [number, $.GoError] {
 		return this.Buffer.Read(p)
 	}
@@ -156,7 +160,7 @@ export class MyWriter {
 	  new MyWriter(),
 	  [],
 	  MyWriter,
-	  {"Buffer": "Buffer", "count": { kind: $.TypeKind.Basic, name: "int" }}
+	  {"Buffer": "bytes.Buffer", "count": { kind: $.TypeKind.Basic, name: "int" }}
 	);
 }
 

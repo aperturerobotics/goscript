@@ -13,21 +13,21 @@ func add(a, b int) int {
 	return a + b
 }
 
-func getGreeter() interface{} {
+func getGreeter() any {
 	return Greeter(greet)
 }
 
-func getAdder() interface{} {
+func getAdder() any {
 	return Adder(add)
 }
 
 type FuncContainer struct {
-	myFunc interface{}
+	myFunc any
 }
 
 func main() {
 	// 1. Simple function type assertion
-	var i interface{} = Greeter(greet)
+	var i any = Greeter(greet)
 	fn, ok := i.(Greeter)
 	if ok {
 		println(fn("World"))
@@ -35,7 +35,7 @@ func main() {
 		println("Simple assertion failed")
 	}
 
-	var j interface{} = Adder(add)
+	var j any = Adder(add)
 	addFn, ok := j.(Adder)
 	if ok {
 		println(addFn(5, 3))
@@ -78,7 +78,7 @@ func main() {
 	}
 
 	// 4. Type assertion of a function in a map
-	funcMap := make(map[string]interface{})
+	funcMap := make(map[string]any)
 	funcMap["greeter"] = Greeter(greet)
 	funcMap["adder"] = Adder(add)
 
@@ -97,7 +97,7 @@ func main() {
 	}
 
 	// 5. Type assertion of a function in a slice
-	funcSlice := make([]interface{}, 2)
+	funcSlice := make([]any, 2)
 	funcSlice[0] = Greeter(greet)
 	funcSlice[1] = Adder(add)
 
@@ -115,14 +115,14 @@ func main() {
 	}
 
 	// 6. Type assertion with ok variable (successful and failing)
-	var k interface{} = Greeter(greet)
+	var k any = Greeter(greet)
 	_, ok1 := k.(Greeter)
 	println(ok1) // true
 
 	_, ok2 := k.(Adder)
 	println(ok2) // false
 
-	var l interface{} = "not a function"
+	var l any = "not a function"
 	_, ok3 := l.(Greeter)
 	println(ok3) // false
 
@@ -137,7 +137,7 @@ func main() {
 	// println("This line should not be reached if panic test is active")
 
 	// Test with nil interface
-	var nilInterface interface{}
+	var nilInterface any
 	nilFn, okNil := nilInterface.(Greeter)
 	if !okNil && nilFn == nil {
 		println("Nil interface assertion correct")
@@ -146,7 +146,7 @@ func main() {
 	}
 
 	// Test assertion to wrong function type
-	var wrongFnInterface interface{} = Greeter(greet)
+	var wrongFnInterface any = Greeter(greet)
 	wrongFn, okWrong := wrongFnInterface.(Adder)
 	if !okWrong && wrongFn == nil {
 		println("Wrong function type assertion correct")

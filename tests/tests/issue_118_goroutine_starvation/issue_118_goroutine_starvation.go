@@ -24,26 +24,22 @@ func main() {
 	// Worker 1: Does a tight loop (CPU-bound work)
 	// In Go: Will be preempted, allowing other goroutines to run
 	// In GoScript: Would block forever, starving other goroutines
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		sum := 0
 		// Simulate CPU-bound work with a tight loop
 		// In real code this might be a computation without I/O
-		for i := 0; i < 1000000; i++ {
+		for i := range 1000000 {
 			sum += i
 		}
 		result <- sum
-	}()
+	})
 
 	// Worker 2: Quick task that should complete
 	// In Go: Will run concurrently with worker1
 	// In GoScript: Would never run if worker1 starves the event loop
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		result <- 42
-	}()
+	})
 
 	// Wait for both workers with a timeout
 	go func() {
@@ -55,7 +51,7 @@ func main() {
 	results := []int{}
 	timeout := time.After(5 * time.Second)
 
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		select {
 		case r := <-result:
 			results = append(results, r)

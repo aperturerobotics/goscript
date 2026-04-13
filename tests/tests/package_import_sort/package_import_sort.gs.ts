@@ -3,6 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+import * as slices from "@goscript/slices/index.js"
+
 import * as sort from "@goscript/sort/index.js"
 
 export async function main(): Promise<void> {
@@ -54,9 +56,7 @@ export async function main(): Promise<void> {
 
 	// Test Slice function with custom comparator
 	let testSlice = $.arrayToSlice<number>([5, 2, 8, 1, 9])
-	sort.Slice(testSlice, (i: number, j: number): boolean => {
-		return testSlice![i] < testSlice![j]
-	})
+	slices.Sort(testSlice)
 	$.println("Custom sorted slice:", testSlice![0], testSlice![1], testSlice![2], testSlice![3], testSlice![4])
 
 	// Test SliceIsSorted

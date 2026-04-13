@@ -20,6 +20,48 @@ import (
 // - Interface types -> TypeScript interface types or "any"
 // - Function types -> TypeScript function signatures
 func (c *GoToTSCompiler) WriteTypeExpr(a ast.Expr) {
+	// Handle qualified generic type references (e.g., pkg.Type[T]) preserving the package alias.
+	if indexExpr, ok := a.(*ast.IndexExpr); ok {
+		if selectorExpr, ok := indexExpr.X.(*ast.SelectorExpr); ok {
+			if pkgIdent, ok := selectorExpr.X.(*ast.Ident); ok {
+				if obj := c.pkg.TypesInfo.Uses[pkgIdent]; obj != nil {
+					if _, isPkg := obj.(*types.PkgName); isPkg {
+						c.tsw.WriteLiterally(pkgIdent.Name)
+						c.tsw.WriteLiterally(".")
+						c.tsw.WriteLiterally(selectorExpr.Sel.Name)
+						c.tsw.WriteLiterally("<")
+						c.WriteTypeExpr(indexExpr.Index)
+						c.tsw.WriteLiterally(">")
+						return
+					}
+				}
+			}
+		}
+	}
+
+	if indexListExpr, ok := a.(*ast.IndexListExpr); ok {
+		if selectorExpr, ok := indexListExpr.X.(*ast.SelectorExpr); ok {
+			if pkgIdent, ok := selectorExpr.X.(*ast.Ident); ok {
+				if obj := c.pkg.TypesInfo.Uses[pkgIdent]; obj != nil {
+					if _, isPkg := obj.(*types.PkgName); isPkg {
+						c.tsw.WriteLiterally(pkgIdent.Name)
+						c.tsw.WriteLiterally(".")
+						c.tsw.WriteLiterally(selectorExpr.Sel.Name)
+						c.tsw.WriteLiterally("<")
+						for i, index := range indexListExpr.Indices {
+							if i > 0 {
+								c.tsw.WriteLiterally(", ")
+							}
+							c.WriteTypeExpr(index)
+						}
+						c.tsw.WriteLiterally(">")
+						return
+					}
+				}
+			}
+		}
+	}
+
 	// Handle selector expressions (e.g., os.FileInfo) specially to preserve qualified names
 	if selectorExpr, ok := a.(*ast.SelectorExpr); ok {
 		if pkgIdent, ok := selectorExpr.X.(*ast.Ident); ok {

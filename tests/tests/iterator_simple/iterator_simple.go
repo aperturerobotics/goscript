@@ -1,7 +1,7 @@
 package main
 
 func simpleIterator(yield func(int) bool) {
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		if !yield(i) {
 			return
 		}

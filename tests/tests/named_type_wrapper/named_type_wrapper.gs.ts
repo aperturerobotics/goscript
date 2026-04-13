@@ -52,7 +52,7 @@ export class FileStatus {
 	  new FileStatus(),
 	  [],
 	  FileStatus,
-	  {"mode": "MyFileMode", "size": { kind: $.TypeKind.Basic, name: "int64" }}
+	  {"mode": "main.MyFileMode", "size": { kind: $.TypeKind.Basic, name: "int64" }}
 	);
 }
 

@@ -3,6 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+import * as strings from "@goscript/strings/index.js"
+
 export type Basic = null | {
 	Join(...elem: string[]): string
 }
@@ -29,17 +31,17 @@ export class PathJoiner {
 	}
 
 	public Join(...elem: string[]): string {
-		let result = ""
+		let result: $.VarRef<strings.Builder> = $.varRef(new strings.Builder())
 		for (let i = 0; i < $.len(elem); i++) {
 			let e = elem![i]
 			{
 				if (i > 0) {
-					result += "/"
+					result!.value.WriteString("/")
 				}
-				result += e
+				result!.value.WriteString(e)
 			}
 		}
-		return result
+		return result!.value.String()
 	}
 
 	// Register this type with the runtime type system

@@ -414,9 +414,9 @@ func (c *PackageCompiler) Compile(ctx context.Context) error {
 
 		// Check if this is a .pb.go file that should be skipped
 		baseFileName := filepath.Base(fileName)
-		if strings.HasSuffix(baseFileName, ".pb.go") {
+		if before, ok := strings.CutSuffix(baseFileName, ".pb.go"); ok {
 			// Check if there's a corresponding .pb.ts file
-			pbTsFileName := strings.TrimSuffix(baseFileName, ".pb.go") + ".pb.ts"
+			pbTsFileName := before + ".pb.ts"
 			packageDir := filepath.Dir(fileName)
 			pbTsPath := filepath.Join(packageDir, pbTsFileName)
 
@@ -1131,10 +1131,10 @@ func (c *GoToTSCompiler) WriteDoc(doc *ast.CommentGroup) {
 		// Preserve original comment style (// or /*)
 		if strings.HasPrefix(comment.Text, "//") {
 			c.tsw.WriteLine(comment.Text)
-		} else if strings.HasPrefix(comment.Text, "/*") {
+		} else if after, ok := strings.CutPrefix(comment.Text, "/*"); ok {
 			// Write block comments potentially spanning multiple lines
 			// Remove /* and */, then split by newline
-			content := strings.TrimSuffix(strings.TrimPrefix(comment.Text, "/*"), "*/")
+			content := strings.TrimSuffix(after, "*/")
 			lines := strings.Split(content, "\n") // Use \n as Split expects a separator string
 
 			if len(lines) == 1 && !strings.Contains(lines[0], "\n") { // Check again for internal newlines just in case

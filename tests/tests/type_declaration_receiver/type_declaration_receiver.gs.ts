@@ -3,6 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+import * as strings from "@goscript/strings/index.js"
+
 export type CustomString = string;
 
 export function CustomString_Length(cs: CustomString): number {
@@ -11,21 +13,21 @@ export function CustomString_Length(cs: CustomString): number {
 
 export function CustomString_Upper(cs: CustomString): string {
 	let s = cs
-	let result = ""
+	let result: $.VarRef<strings.Builder> = $.varRef(new strings.Builder())
 	{
 		const _runes = $.stringToRunes(s)
 		for (let i = 0; i < _runes.length; i++) {
 			let r = _runes[i]
 			{
 				if (r >= 97 && r <= 122) {
-					result += $.runeOrStringToString(r - 32)
+					result!.value.WriteString($.runeOrStringToString(r - 32))
 				} else {
-					result += $.runeOrStringToString(r)
+					result!.value.WriteString($.runeOrStringToString(r))
 				}
 			}
 		}
 	}
-	return result
+	return result!.value.String()
 }
 
 

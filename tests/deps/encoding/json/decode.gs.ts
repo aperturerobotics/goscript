@@ -71,7 +71,7 @@ export class InvalidUnmarshalError {
 	  new InvalidUnmarshalError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  InvalidUnmarshalError,
-	  {"Type": "Type"}
+	  {"Type": "reflect.Type"}
 	);
 }
 
@@ -147,7 +147,7 @@ export class UnmarshalFieldError {
 	  new UnmarshalFieldError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  UnmarshalFieldError,
-	  {"Key": { kind: $.TypeKind.Basic, name: "string" }, "Type": "Type", "Field": "StructField"}
+	  {"Key": { kind: $.TypeKind.Basic, name: "string" }, "Type": "reflect.Type", "Field": "reflect.StructField"}
 	);
 }
 
@@ -236,7 +236,7 @@ export class UnmarshalTypeError {
 	  new UnmarshalTypeError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 	  UnmarshalTypeError,
-	  {"Value": { kind: $.TypeKind.Basic, name: "string" }, "Type": "Type", "Offset": { kind: $.TypeKind.Basic, name: "int64" }, "Struct": { kind: $.TypeKind.Basic, name: "string" }, "Field": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"Value": { kind: $.TypeKind.Basic, name: "string" }, "Type": "reflect.Type", "Offset": { kind: $.TypeKind.Basic, name: "int64" }, "Struct": { kind: $.TypeKind.Basic, name: "string" }, "Field": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 
@@ -1438,9 +1438,9 @@ export class decodeState {
 	static __typeInfo = $.registerStructType(
 	  'encoding/json.decodeState',
 	  new decodeState(),
-	  [{ name: "unmarshal", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "readIndex", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "init", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "decodeState" } }] }, { name: "saveError", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [] }, { name: "addErrorContext", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "skip", args: [], returns: [] }, { name: "scanNext", args: [], returns: [] }, { name: "scanWhile", args: [{ name: "op", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "rescanLiteral", args: [], returns: [] }, { name: "value", args: [{ name: "v", type: "Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "valueQuoted", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "array", args: [{ name: "v", type: "Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "object", args: [{ name: "v", type: "Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "convertNumber", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "literalStore", args: [{ name: "item", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "v", type: "Value" }, { name: "fromQuoted", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "valueInterface", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "arrayInterface", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "objectInterface", args: [], returns: [{ type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "literalInterface", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }],
+	  [{ name: "unmarshal", args: [{ name: "v", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "readIndex", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "init", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "encoding/json.decodeState" } }] }, { name: "saveError", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [] }, { name: "addErrorContext", args: [{ name: "err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "skip", args: [], returns: [] }, { name: "scanNext", args: [], returns: [] }, { name: "scanWhile", args: [{ name: "op", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "rescanLiteral", args: [], returns: [] }, { name: "value", args: [{ name: "v", type: "reflect.Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "valueQuoted", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "array", args: [{ name: "v", type: "reflect.Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "object", args: [{ name: "v", type: "reflect.Value" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "convertNumber", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "literalStore", args: [{ name: "item", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "v", type: "reflect.Value" }, { name: "fromQuoted", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "valueInterface", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "arrayInterface", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "objectInterface", args: [], returns: [{ type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "literalInterface", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }],
 	  decodeState,
-	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "off": { kind: $.TypeKind.Basic, name: "int" }, "opcode": { kind: $.TypeKind.Basic, name: "int" }, "scan": "scanner", "errorContext": { kind: $.TypeKind.Pointer, elemType: "errorContext" }, "savedError": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "useNumber": { kind: $.TypeKind.Basic, name: "bool" }, "disallowUnknownFields": { kind: $.TypeKind.Basic, name: "bool" }}
+	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "off": { kind: $.TypeKind.Basic, name: "int" }, "opcode": { kind: $.TypeKind.Basic, name: "int" }, "scan": "encoding/json.scanner", "errorContext": { kind: $.TypeKind.Pointer, elemType: "encoding/json.errorContext" }, "savedError": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "useNumber": { kind: $.TypeKind.Basic, name: "bool" }, "disallowUnknownFields": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 
@@ -1486,7 +1486,7 @@ export class errorContext {
 	  new errorContext(),
 	  [],
 	  errorContext,
-	  {"Struct": "Type", "FieldStack": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }}
+	  {"Struct": "reflect.Type", "FieldStack": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }}
 	);
 }
 
@@ -1519,7 +1519,7 @@ export let nullLiteral: $.Bytes = $.stringToBytes("null")
 
 export let numberType: reflect.Type = reflect.TypeOf("")
 
-export let textUnmarshalerType: reflect.Type = reflect.getInterfaceTypeByName("encoding.TextUnmarshaler")
+export let textUnmarshalerType: reflect.Type = reflect.getInterfaceLiteralTypeByName("encoding.TextUnmarshaler")
 
 // Unmarshal parses the JSON-encoded data and stores the result
 // in the value pointed to by v. If v is nil or not a pointer,
@@ -1680,14 +1680,14 @@ export function indirect(v: reflect.Value, decodingNull: boolean): [Unmarshaler,
 		}
 		if (v.Type()!.NumMethod() > 0 && v.CanInterface()) {
 			{
-				let { value: u, ok: ok } = $.typeAssert<Unmarshaler>(v.Interface(), 'encoding/json.Unmarshaler')
+				let [u, ok] = $.typeAssertTuple<Unmarshaler>(v.Interface(), "encoding/json.Unmarshaler")
 				if (ok) {
 					return [u, null, $.markAsStructValue(new reflect.Value({}))]
 				}
 			}
 			if (!decodingNull) {
 				{
-					let { value: u, ok: ok } = $.typeAssert<null | encoding.TextUnmarshaler>(v.Interface(), 'encoding.TextUnmarshaler')
+					let [u, ok] = $.typeAssertTuple<encoding.TextUnmarshaler>(v.Interface(), "encoding.TextUnmarshaler")
 					if (ok) {
 						return [null, u, $.markAsStructValue(new reflect.Value({}))]
 					}
@@ -1751,15 +1751,6 @@ export function unquote(s: $.Bytes): [string, boolean] {
 	}
 }
 
-// unquoteBytes should be an internal detail,
-// but widely used packages access it using linkname.
-// Notable members of the hall of shame include:
-//   - github.com/bytedance/sonic
-//
-// Do not remove or change the type signature.
-// See go.dev/issue/67401.
-//
-//go:linkname unquoteBytes
 export function unquoteBytes(s: $.Bytes): [$.Bytes, boolean] {
 	let t: $.Bytes = new Uint8Array(0)
 	let ok: boolean = false
@@ -1777,10 +1768,6 @@ export function unquoteBytes(s: $.Bytes): [$.Bytes, boolean] {
 			let c = s![r]
 			if (c == 92 || c == 34 || c < 32) {
 				break
-			}
-			if (c < utf8.RuneSelf) {
-				r++
-				continue
 			}
 			let [rr, size] = utf8.DecodeRune($.goSlice(s, r, undefined))
 			if (rr == utf8.RuneError && size == 1) {

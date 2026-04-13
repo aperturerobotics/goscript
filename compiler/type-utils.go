@@ -47,12 +47,10 @@ func (c *GoToTSCompiler) constraintIncludesString(constraint *types.Interface) b
 		return false // Pure method interface, no type terms
 	}
 	// For union constraints like []byte | string, check each term
-	for i := 0; i < constraint.NumEmbeddeds(); i++ {
-		embedded := constraint.EmbeddedType(i)
+	for embedded := range constraint.EmbeddedTypes() {
 		// Check if embedded is a union
 		if union, isUnion := embedded.(*types.Union); isUnion {
-			for j := 0; j < union.Len(); j++ {
-				term := union.Term(j)
+			for term := range union.Terms() {
 				termType := term.Type()
 				// Check if term is string or ~string
 				if basic, isBasic := termType.Underlying().(*types.Basic); isBasic {

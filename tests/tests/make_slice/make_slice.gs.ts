@@ -80,23 +80,24 @@ export async function main(): Promise<void> {
 	// Test 11: Slice operations on made slices
 	$.println("--- Slice operations on made slices ---")
 	let s6 = $.makeSlice<number>(10, 20, 'number')
-	for (let i = 0; i < 10; i++) {
+	for (let i = 0; i < 10; i++) {{
 		s6![i] = i * 10
 	}
-	let sub = $.goSlice(s6, 2, 5) // Should have len=3, cap=18 (20-2)
-	$.println("sub - len:", $.len(sub), "cap:", $.cap(sub)) // len: 3, cap: 18
-	$.println("sub[0]:", sub![0]) // 20
-	$.println("sub[2]:", sub![2]) // 40
+}
+let sub = $.goSlice(s6, 2, 5) // Should have len=3, cap=18 (20-2)
+$.println("sub - len:", $.len(sub), "cap:", $.cap(sub)) // len: 3, cap: 18
+$.println("sub[0]:", sub![0]) // 20
+$.println("sub[2]:", sub![2]) // 40
 
-	// Test 12: String slices with capacity
-	$.println("--- String slices with capacity ---")
-	let str = $.makeSlice<string>(3, 8, 'string')
-	str![0] = "hello"
-	str![1] = "world"
-	str![2] = "test"
-	$.println("str - len:", $.len(str), "cap:", $.cap(str)) // len: 3, cap: 8
-	$.println("str[1]:", str![1]) // world
+// Test 12: String slices with capacity
+$.println("--- String slices with capacity ---")
+let str = $.makeSlice<string>(3, 8, 'string')
+str![0] = "hello"
+str![1] = "world"
+str![2] = "test"
+$.println("str - len:", $.len(str), "cap:", $.cap(str)) // len: 3, cap: 8
+$.println("str[1]:", str![1]) // world
 
-	$.println("--- All tests completed ---")
+$.println("--- All tests completed ---")
 }
 

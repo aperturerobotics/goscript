@@ -180,9 +180,9 @@ export class Mutex {
 	static __typeInfo = $.registerStructType(
 	  'github.com/aperturerobotics/util/csync.Mutex',
 	  new Mutex(),
-	  [{ name: "Lock", args: [{ name: "ctx", type: "Context" }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "TryLock", args: [], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Locker", args: [], returns: [{ type: "Locker" }] }],
+	  [{ name: "Lock", args: [{ name: "ctx", type: "context.Context" }], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "TryLock", args: [], returns: [{ type: { kind: $.TypeKind.Function, params: [], results: [] } }, { type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Locker", args: [], returns: [{ type: "sync.Locker" }] }],
 	  Mutex,
-	  {"bcast": "Broadcast", "locked": { kind: $.TypeKind.Basic, name: "bool" }}
+	  {"bcast": "github.com/aperturerobotics/util/broadcast.Broadcast", "locked": { kind: $.TypeKind.Basic, name: "bool" }}
 	);
 }
 
@@ -194,19 +194,19 @@ export class MutexLocker {
 		this._fields.m.value = value
 	}
 
-	public get rel(): atomic.Pointer<(() => void)> {
+	public get rel(): atomic.Pointer<(() => void) | null> {
 		return this._fields.rel.value
 	}
-	public set rel(value: atomic.Pointer<(() => void)>) {
+	public set rel(value: atomic.Pointer<(() => void) | null>) {
 		this._fields.rel.value = value
 	}
 
 	public _fields: {
 		m: $.VarRef<Mutex | null>;
-		rel: $.VarRef<atomic.Pointer<(() => void)>>;
+		rel: $.VarRef<atomic.Pointer<(() => void) | null>>;
 	}
 
-	constructor(init?: Partial<{m?: Mutex | null, rel?: atomic.Pointer<(() => void)>}>) {
+	constructor(init?: Partial<{m?: Mutex | null, rel?: atomic.Pointer<(() => void) | null>}>) {
 		this._fields = {
 			m: $.varRef(init?.m ?? null),
 			rel: $.varRef(init?.rel ? $.markAsStructValue(init.rel.clone()) : new atomic.Pointer<(() => void)>())
@@ -240,7 +240,7 @@ export class MutexLocker {
 		if (rel == null) {
 			$.panic("csync: unlock of unlocked MutexLocker")
 		}
-		;(rel!.value)()
+		;(rel!.value)!()
 	}
 
 	// Register this type with the runtime type system
@@ -249,7 +249,7 @@ export class MutexLocker {
 	  new MutexLocker(),
 	  [{ name: "Lock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 	  MutexLocker,
-	  {"m": { kind: $.TypeKind.Pointer, elemType: "Mutex" }, "rel": "Pointer"}
+	  {"m": { kind: $.TypeKind.Pointer, elemType: "github.com/aperturerobotics/util/csync.Mutex" }, "rel": "sync/atomic.Pointer"}
 	);
 }
 

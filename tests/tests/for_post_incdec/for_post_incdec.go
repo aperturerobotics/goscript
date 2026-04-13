@@ -1,7 +1,7 @@
 package main
 
 func main() {
-	for i := 0; i < 1; i++ {
+	for i := range 1 {
 		println(i)
 	}
 	println("done")

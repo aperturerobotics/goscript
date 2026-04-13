@@ -557,6 +557,10 @@ func RunTypeScriptRunner(t *testing.T, workspaceDir, tempDir, tsRunner string) s
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = io.MultiWriter(&outBuf, os.Stdout) // Changed to os.Stdout for easier debugging
 	cmd.Stderr = io.MultiWriter(&errBuf, os.Stderr) // Keep stderr going to test output
+
+	depsCopyMutex.Lock()
+	defer depsCopyMutex.Unlock()
+
 	if err := cmd.Run(); err != nil {
 		t.Fatalf("bun run failed: %v\nstdout: %s\nstderr: %s", err, outBuf.String(), errBuf.String())
 	}
@@ -669,7 +673,7 @@ func WriteTypeCheckConfig(t *testing.T, parentModulePath, workspaceDir, testDir 
 	}
 
 	testName := filepath.Base(testDir)
-	compilerOptions := maps.Clone(tsconfig["compilerOptions"].(map[string]interface{}))
+	compilerOptions := maps.Clone(tsconfig["compilerOptions"].(map[string]any))
 
 	// Alias for this test's own generated packages
 	builtinTsRelPath := filepath.ToSlash(filepath.Join(relWorkspacePath, "gs", "*"))
@@ -716,6 +720,9 @@ func RunTypeScriptTypeCheck(t *testing.T, workspaceDir, testDir string, tsconfig
 		nodeBinDir := filepath.Join(workspaceDir, "node_modules", ".bin")
 		cmd := exec.Command(filepath.Join(nodeBinDir, "tsgo"), "--project", filepath.Base(tsconfigPath)) // Use "tsconfig.json"
 		cmd.Dir = testDir                                                                                // Run tsc from the test directory where tsconfig.json is located
+
+		depsCopyMutex.Lock()
+		defer depsCopyMutex.Unlock()
 
 		output, err := cmd.CombinedOutput() // Capture both stdout and stderr
 		if err != nil {
@@ -806,7 +813,7 @@ func RunGoScriptTestDir(t *testing.T, workspaceDir, testDir string) {
 
 	// tsconfig.json for the runner execution in tempDir
 	runnerTsConfig := maps.Clone(baseTsConfig)
-	runnerCompilerOptions := maps.Clone(runnerTsConfig["compilerOptions"].(map[string]interface{}))
+	runnerCompilerOptions := maps.Clone(runnerTsConfig["compilerOptions"].(map[string]any))
 	runnerCompilerOptions["paths"] = map[string][]string{
 		"*":           {"./*"},
 		"@goscript/*": {"./output/@goscript/*", relGsBuiltinPath, relDepsPath},
@@ -1014,7 +1021,7 @@ func WriteGlobalTypeCheckConfig(t *testing.T, parentModulePath, workspaceDir str
 		tsconfig["files"] = []string{}
 	}
 
-	compilerOptions := maps.Clone(tsconfig["compilerOptions"].(map[string]interface{}))
+	compilerOptions := maps.Clone(tsconfig["compilerOptions"].(map[string]any))
 
 	// Set up paths for module resolution
 	builtinTsRelPath := filepath.ToSlash(filepath.Join(relWorkspacePath, "gs", "*"))
