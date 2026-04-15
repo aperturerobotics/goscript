@@ -370,13 +370,6 @@ func (c *GoToTSCompiler) WriteNamedTypeWithMethods(a *ast.TypeSpec) error {
 				if obj := c.pkg.TypesInfo.Defs[funcDecl.Name]; obj != nil {
 					isAsync = c.analysis.IsAsyncFunc(obj)
 				}
-				if !isAsync {
-					bodyNeedsAsync, err := c.funcBodyNeedsAsync(funcDecl, false)
-					if err != nil {
-						return err
-					}
-					isAsync = bodyNeedsAsync
-				}
 				if isAsync {
 					c.tsw.WriteLiterally("async ")
 				}

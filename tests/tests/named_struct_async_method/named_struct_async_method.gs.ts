@@ -39,9 +39,21 @@ export class coder {
 	);
 }
 
-export class decoder extends coder {
-	constructor(init?: any) {
-		super(init)
+export class decoder {
+	public get ch(): $.Channel<number> | null {
+		return this._fields.ch.value
+	}
+	public set ch(value: $.Channel<number> | null) {
+		this._fields.ch.value = value
+	}
+
+	public _fields: {
+		ch: $.VarRef<$.Channel<number> | null>;
+	}
+
+	constructor(init?: Partial<{ch?: $.Channel<number> | null}>) {
+		const base = new coder(init)
+		this._fields = base._fields
 	}
 
 	public clone(): decoder {
@@ -60,7 +72,7 @@ export class decoder extends coder {
 	public async value(n: number): Promise<void> {
 		const d = this
 		for (let i = 0; i < n; i++) {
-			d.value(0)
+			await d.value(0)
 		}
 		await d.next()
 	}
@@ -79,7 +91,7 @@ export async function main(): Promise<void> {
 	let d = new decoder({ch: $.makeChannel<number>(2, 0, 'both')})
 	await $.chanSend(d!.ch, 1)
 	await $.chanSend(d!.ch, 2)
-	d!.value(1)
+	await d!.value(1)
 	$.println("ok")
 }
 

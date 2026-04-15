@@ -513,7 +513,8 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 }
 
 // WriteNamedStructTypeSpec generates a TypeScript class for a named type whose
-// underlying type is a struct defined elsewhere.
+// underlying type is another named struct. The emitted class copies the field
+// layout without inheriting the underlying named type's prototype methods.
 func (c *GoToTSCompiler) WriteNamedStructTypeSpec(a *ast.TypeSpec, named *types.Named) error {
 	isInsideFunction := false
 	if nodeInfo := c.analysis.NodeData[a]; nodeInfo != nil {
@@ -531,8 +532,6 @@ func (c *GoToTSCompiler) WriteNamedStructTypeSpec(a *ast.TypeSpec, named *types.
 		c.WriteTypeParameters(a.TypeParams)
 	}
 
-	c.tsw.WriteLiterally(" extends ")
-	c.WriteTypeExpr(a.Type)
 	c.tsw.WriteLiterally(" ")
 	c.tsw.WriteLine("{")
 	c.tsw.Indent(1)
@@ -543,16 +542,77 @@ func (c *GoToTSCompiler) WriteNamedStructTypeSpec(a *ast.TypeSpec, named *types.
 		return fmt.Errorf("underlying type of %s is not a struct", a.Name.Name)
 	}
 
-	c.tsw.WriteLine("constructor(init?: any) {")
+	underlyingType := c.pkg.TypesInfo.TypeOf(a.Type)
+	underlyingInitType := "{}"
+	if underlyingNamed, ok := underlyingType.(*types.Named); ok {
+		underlyingInitType = c.generateFlattenedInitTypeString(underlyingNamed, nil)
+	}
+	underlyingTypeName := c.getASTTypeString(a.Type, underlyingType)
+
+	for i := 0; i < underlyingStruct.NumFields(); i++ {
+		field := underlyingStruct.Field(i)
+		if field.Anonymous() {
+			continue
+		}
+		if !field.Exported() && field.Pkg() != c.pkg.Types {
+			continue
+		}
+		c.writeGetterSetter(field.Name(), field.Type(), nil, nil, nil)
+	}
+
+	for field := range underlyingStruct.Fields() {
+		if field.Anonymous() {
+			fieldKeyName := c.getEmbeddedFieldKeyName(field.Type())
+			c.writeGetterSetter(fieldKeyName, field.Type(), nil, nil, nil)
+		}
+	}
+
+	c.tsw.WriteLiterally("public _fields: {")
 	c.tsw.Indent(1)
-	c.tsw.WriteLine("super(init)")
+	c.tsw.WriteLine("")
+	for i := 0; i < underlyingStruct.NumFields(); i++ {
+		field := underlyingStruct.Field(i)
+		fieldKeyName := field.Name()
+		if field.Anonymous() {
+			fieldKeyName = c.getEmbeddedFieldKeyName(field.Type())
+		}
+		if fieldKeyName == "_" {
+			continue
+		}
+		c.tsw.WriteLinef("%s: $.VarRef<%s>;", fieldKeyName, c.getTypeString(field.Type()))
+	}
 	c.tsw.Indent(-1)
 	c.tsw.WriteLine("}")
 	c.tsw.WriteLine("")
 
-	c.tsw.WriteLinef("public clone(): %s {", className)
+	c.tsw.WriteLinef("constructor(init?: Partial<%s>) {", underlyingInitType)
 	c.tsw.Indent(1)
-	c.tsw.WriteLinef("const cloned = new %s()", className)
+	c.tsw.WriteLinef("const base = new %s(init)", underlyingTypeName)
+	c.tsw.WriteLine("this._fields = base._fields")
+	c.tsw.Indent(-1)
+	c.tsw.WriteLine("}")
+	c.tsw.WriteLine("")
+
+	var cloneReturnType strings.Builder
+	cloneReturnType.WriteString(className)
+	if a.TypeParams != nil && len(a.TypeParams.List) > 0 {
+		cloneReturnType.WriteString("<")
+		first := true
+		for _, field := range a.TypeParams.List {
+			for _, name := range field.Names {
+				if !first {
+					cloneReturnType.WriteString(", ")
+				}
+				first = false
+				cloneReturnType.WriteString(name.Name)
+			}
+		}
+		cloneReturnType.WriteString(">")
+	}
+
+	c.tsw.WriteLinef("public clone(): %s {", cloneReturnType.String())
+	c.tsw.Indent(1)
+	c.tsw.WriteLinef("const cloned = new %s()", cloneReturnType.String())
 	c.tsw.WriteLine("cloned._fields = {")
 	c.tsw.Indent(1)
 
@@ -560,11 +620,9 @@ func (c *GoToTSCompiler) WriteNamedStructTypeSpec(a *ast.TypeSpec, named *types.
 	for i := 0; i < underlyingStruct.NumFields(); i++ {
 		field := underlyingStruct.Field(i)
 		fieldType := field.Type()
-		var fieldKeyName string
+		fieldKeyName := field.Name()
 		if field.Anonymous() {
 			fieldKeyName = c.getEmbeddedFieldKeyName(field.Type())
-		} else {
-			fieldKeyName = field.Name()
 		}
 		if fieldKeyName == "_" {
 			continue
@@ -615,6 +673,174 @@ func (c *GoToTSCompiler) WriteNamedStructTypeSpec(a *ast.TypeSpec, named *types.
 		}
 	}
 
+	seenPromotedFields := make(map[string]bool)
+	directMethods := make(map[string]bool)
+	for method := range named.Methods() {
+		sig := method.Type().(*types.Signature)
+		if sig.Recv() != nil {
+			recvType := sig.Recv().Type()
+			if namedRecv, ok := recvType.(*types.Named); ok && namedRecv.Obj() == named.Obj() {
+				directMethods[method.Name()] = true
+			} else if ptrRecv, ok := recvType.(*types.Pointer); ok {
+				if namedElem, ok := ptrRecv.Elem().(*types.Named); ok && namedElem.Obj() == named.Obj() {
+					directMethods[method.Name()] = true
+				}
+			}
+		}
+	}
+
+	for field := range underlyingStruct.Fields() {
+		if !field.Anonymous() {
+			continue
+		}
+
+		embeddedFieldType := field.Type()
+		embeddedFieldKeyName := c.getEmbeddedFieldKeyName(field.Type())
+
+		trueEmbeddedType := embeddedFieldType
+		if ptr, isPtr := trueEmbeddedType.(*types.Pointer); isPtr {
+			trueEmbeddedType = ptr.Elem()
+		}
+		if _, isNamed := trueEmbeddedType.(*types.Named); !isNamed {
+			continue
+		}
+
+		if namedEmbedded, ok := trueEmbeddedType.(*types.Named); ok {
+			if underlyingEmbeddedStruct, ok := namedEmbedded.Underlying().(*types.Struct); ok {
+				for promotedField := range underlyingEmbeddedStruct.Fields() {
+					if !promotedField.Exported() && promotedField.Pkg() != c.pkg.Types {
+						continue
+					}
+					promotedFieldName := promotedField.Name()
+					if seenPromotedFields[promotedFieldName] {
+						continue
+					}
+					conflict := false
+					for field := range underlyingStruct.Fields() {
+						if !field.Anonymous() && field.Name() == promotedFieldName {
+							conflict = true
+							break
+						}
+					}
+					if conflict {
+						continue
+					}
+
+					seenPromotedFields[promotedFieldName] = true
+					tsPromotedFieldType := c.getTypeString(promotedField.Type())
+					c.tsw.WriteLine("")
+					c.tsw.WriteLinef("public get %s(): %s {", promotedFieldName, tsPromotedFieldType)
+					c.tsw.Indent(1)
+					embeddedFieldTypeUnderlying := embeddedFieldType
+					if ptr, isPtr := embeddedFieldTypeUnderlying.(*types.Pointer); isPtr {
+						embeddedFieldTypeUnderlying = ptr.Elem()
+					}
+					if named, isNamed := embeddedFieldTypeUnderlying.(*types.Named); isNamed {
+						embeddedFieldTypeUnderlying = named.Underlying()
+					}
+					if _, isInterface := embeddedFieldTypeUnderlying.(*types.Interface); isInterface {
+						c.tsw.WriteLinef("return this.%s!.%s", embeddedFieldKeyName, promotedFieldName)
+					} else {
+						c.tsw.WriteLinef("return this.%s.%s", embeddedFieldKeyName, promotedFieldName)
+					}
+					c.tsw.Indent(-1)
+					c.tsw.WriteLine("}")
+					c.tsw.WriteLinef("public set %s(value: %s) {", promotedFieldName, tsPromotedFieldType)
+					c.tsw.Indent(1)
+					if _, isInterface := embeddedFieldTypeUnderlying.(*types.Interface); isInterface {
+						c.tsw.WriteLinef("this.%s!.%s = value", embeddedFieldKeyName, promotedFieldName)
+					} else {
+						c.tsw.WriteLinef("this.%s.%s = value", embeddedFieldKeyName, promotedFieldName)
+					}
+					c.tsw.Indent(-1)
+					c.tsw.WriteLine("}")
+				}
+			}
+		}
+
+		methodSetType := embeddedFieldType
+		if _, isPtr := embeddedFieldType.(*types.Pointer); !isPtr {
+			if _, isInterface := embeddedFieldType.Underlying().(*types.Interface); !isInterface {
+				methodSetType = types.NewPointer(embeddedFieldType)
+			}
+		}
+		embeddedMethodSet := types.NewMethodSet(methodSetType)
+		for methodSelection := range embeddedMethodSet.Methods() {
+			method := methodSelection.Obj().(*types.Func)
+			methodName := method.Name()
+
+			if len(methodSelection.Index()) == 1 && !directMethods[methodName] && !seenPromotedFields[methodName] {
+				conflictWithField := false
+				for field := range underlyingStruct.Fields() {
+					if !field.Anonymous() && field.Name() == methodName {
+						conflictWithField = true
+						break
+					}
+				}
+				if conflictWithField {
+					continue
+				}
+
+				seenPromotedFields[methodName] = true
+				sig := method.Type().(*types.Signature)
+				c.tsw.WriteLine("")
+				c.tsw.WriteLiterally("public ")
+				c.tsw.WriteLiterally(methodName)
+				c.tsw.WriteLiterally("(")
+				params := sig.Params()
+				paramNames := make([]string, params.Len())
+				for j := 0; j < params.Len(); j++ {
+					param := params.At(j)
+					paramName := param.Name()
+					if paramName == "" || paramName == "_" {
+						paramName = fmt.Sprintf("_p%d", j)
+					}
+					paramNames[j] = paramName
+					if j > 0 {
+						c.tsw.WriteLiterally(", ")
+					}
+					c.tsw.WriteLiterally(paramName)
+					c.tsw.WriteLiterally(": ")
+					c.WriteGoType(param.Type(), GoTypeContextGeneral)
+				}
+				c.tsw.WriteLiterally(")")
+				results := sig.Results()
+				if results.Len() > 0 {
+					c.tsw.WriteLiterally(": ")
+					if results.Len() == 1 {
+						c.WriteGoType(results.At(0).Type(), GoTypeContextFunctionReturn)
+					} else {
+						c.tsw.WriteLiterally("[")
+						for j := 0; j < results.Len(); j++ {
+							if j > 0 {
+								c.tsw.WriteLiterally(", ")
+							}
+							c.WriteGoType(results.At(j).Type(), GoTypeContextFunctionReturn)
+						}
+						c.tsw.WriteLiterally("]")
+					}
+				} else {
+					c.tsw.WriteLiterally(": void")
+				}
+				c.tsw.WriteLine(" {")
+				c.tsw.Indent(1)
+				if results.Len() > 0 {
+					c.tsw.WriteLiterally("return ")
+				}
+
+				assertionPrefix := "this.%s"
+				if _, isInterface := embeddedFieldType.Underlying().(*types.Interface); isInterface {
+					assertionPrefix = "this.%s!"
+				}
+				c.tsw.WriteLiterallyf(assertionPrefix+".%s(%s)", embeddedFieldKeyName, methodName, strings.Join(paramNames, ", "))
+
+				c.tsw.WriteLine("")
+				c.tsw.Indent(-1)
+				c.tsw.WriteLine("}")
+			}
+		}
+	}
+
 	c.tsw.WriteLine("")
 	c.tsw.WriteLine("// Register this type with the runtime type system")
 
@@ -652,11 +878,9 @@ func (c *GoToTSCompiler) WriteNamedStructTypeSpec(a *ast.TypeSpec, named *types.
 	firstField := true
 	for i := 0; i < underlyingStruct.NumFields(); i++ {
 		field := underlyingStruct.Field(i)
-		var fieldKeyName string
+		fieldKeyName := field.Name()
 		if field.Anonymous() {
 			fieldKeyName = c.getEmbeddedFieldKeyName(field.Type())
-		} else {
-			fieldKeyName = field.Name()
 		}
 		if fieldKeyName == "_" {
 			continue

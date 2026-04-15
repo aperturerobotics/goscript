@@ -2756,23 +2756,25 @@ func (v *analysisVisitor) analyzeAllMethodsAsync() {
 	// Topologically sort methods by their dependencies
 	sorted, cycles := v.topologicalSortMethods(methodCalls)
 
-	// Mark methods in cycles - check if they contain async operations
-	// We can't rely on the call graph for methods in cycles (circular dependency),
-	// but we can still detect if they call async external methods
-	//
-	// We need to iterate multiple times because methods in cycles can call each other,
-	// and we need to propagate async status until no changes occur
+	// Analyze methods in dependency order (dependencies analyzed before dependents)
+	for _, methodKey := range sorted {
+		v.analyzeMethodAsyncTopological(methodKey, methodCalls[methodKey])
+	}
+
+	// Analyze methods in cycles after the acyclic portion of the graph is known.
+	// This lets recursive methods observe async callees outside the cycle while
+	// still converging over recursive edges inside the cycle.
 	maxIterations := 10
 	for range maxIterations {
 		changed := false
 
 		for _, methodKey := range cycles {
-			// For methods in cycles, we need to check their body directly for async operations
 			pkg := v.analysis.AllPackages[methodKey.PackagePath]
 			if pkg == nil && methodKey.PackagePath == v.pkg.Types.Path() {
 				pkg = v.pkg
 			}
 
+			isAsync := false
 			if pkg != nil {
 				var funcDecl *ast.FuncDecl
 				if methodKey.ReceiverType == "" {
@@ -2782,35 +2784,27 @@ func (v *analysisVisitor) analyzeAllMethodsAsync() {
 				}
 
 				if funcDecl != nil && funcDecl.Body != nil {
-					// Check if the method contains async operations (including calls to async external methods)
-					isAsync := v.containsAsyncOperationsComplete(funcDecl.Body, pkg)
-
-					// Check if status changed
-					if oldStatus, exists := v.analysis.MethodAsyncStatus[methodKey]; !exists || oldStatus != isAsync {
-						changed = true
+					isAsync = v.containsAsyncOperationsComplete(funcDecl.Body, pkg)
+					if !isAsync {
+						for _, callee := range methodCalls[methodKey] {
+							if calleeAsync, exists := v.analysis.MethodAsyncStatus[callee]; exists && calleeAsync {
+								isAsync = true
+								break
+							}
+						}
 					}
-
-					v.analysis.MethodAsyncStatus[methodKey] = isAsync
-					continue
 				}
 			}
 
-			// Fallback: mark as sync if we can't analyze the body
-			if _, exists := v.analysis.MethodAsyncStatus[methodKey]; !exists {
-				v.analysis.MethodAsyncStatus[methodKey] = false
+			if oldStatus, exists := v.analysis.MethodAsyncStatus[methodKey]; !exists || oldStatus != isAsync {
 				changed = true
 			}
+			v.analysis.MethodAsyncStatus[methodKey] = isAsync
 		}
 
-		// If no changes in this iteration, we're done
 		if !changed {
 			break
 		}
-	}
-
-	// Analyze methods in dependency order (dependencies analyzed before dependents)
-	for _, methodKey := range sorted {
-		v.analyzeMethodAsyncTopological(methodKey, methodCalls[methodKey])
 	}
 
 	// Track async-returning variables BEFORE analyzing function literals
@@ -3258,6 +3252,11 @@ func (v *analysisVisitor) containsAsyncOperationsComplete(node ast.Node, pkg *pa
 	ast.Inspect(node, func(n ast.Node) bool {
 		if n == nil {
 			return false
+		}
+		if n != node {
+			if _, ok := n.(*ast.FuncLit); ok {
+				return false
+			}
 		}
 
 		switch s := n.(type) {

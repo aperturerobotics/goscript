@@ -1,0 +1,2 @@
+base implements Stringer: true
+derived implements Stringer: false
