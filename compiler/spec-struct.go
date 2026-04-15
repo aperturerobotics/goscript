@@ -512,6 +512,179 @@ func (c *GoToTSCompiler) WriteStructTypeSpec(a *ast.TypeSpec, t *ast.StructType)
 	return nil
 }
 
+// WriteNamedStructTypeSpec generates a TypeScript class for a named type whose
+// underlying type is a struct defined elsewhere.
+func (c *GoToTSCompiler) WriteNamedStructTypeSpec(a *ast.TypeSpec, named *types.Named) error {
+	isInsideFunction := false
+	if nodeInfo := c.analysis.NodeData[a]; nodeInfo != nil {
+		isInsideFunction = nodeInfo.IsInsideFunction
+	}
+	if !isInsideFunction {
+		c.tsw.WriteLiterally("export ")
+	}
+	c.tsw.WriteLiterally("class ")
+	if err := c.WriteValueExpr(a.Name); err != nil {
+		return err
+	}
+
+	if a.TypeParams != nil {
+		c.WriteTypeParameters(a.TypeParams)
+	}
+
+	c.tsw.WriteLiterally(" extends ")
+	c.WriteTypeExpr(a.Type)
+	c.tsw.WriteLiterally(" ")
+	c.tsw.WriteLine("{")
+	c.tsw.Indent(1)
+
+	className := sanitizeIdentifier(a.Name.Name)
+	underlyingStruct, ok := named.Underlying().(*types.Struct)
+	if !ok {
+		return fmt.Errorf("underlying type of %s is not a struct", a.Name.Name)
+	}
+
+	c.tsw.WriteLine("constructor(init?: any) {")
+	c.tsw.Indent(1)
+	c.tsw.WriteLine("super(init)")
+	c.tsw.Indent(-1)
+	c.tsw.WriteLine("}")
+	c.tsw.WriteLine("")
+
+	c.tsw.WriteLinef("public clone(): %s {", className)
+	c.tsw.Indent(1)
+	c.tsw.WriteLinef("const cloned = new %s()", className)
+	c.tsw.WriteLine("cloned._fields = {")
+	c.tsw.Indent(1)
+
+	firstFieldWritten := false
+	for i := 0; i < underlyingStruct.NumFields(); i++ {
+		field := underlyingStruct.Field(i)
+		fieldType := field.Type()
+		var fieldKeyName string
+		if field.Anonymous() {
+			fieldKeyName = c.getEmbeddedFieldKeyName(field.Type())
+		} else {
+			fieldKeyName = field.Name()
+		}
+		if fieldKeyName == "_" {
+			continue
+		}
+
+		if firstFieldWritten {
+			c.tsw.WriteLine(",")
+		}
+		c.writeClonedFieldInitializer(fieldKeyName, fieldType, field.Anonymous())
+		firstFieldWritten = true
+	}
+	if firstFieldWritten {
+		c.tsw.WriteLine("")
+	}
+
+	c.tsw.Indent(-1)
+	c.tsw.WriteLine("}")
+	c.tsw.WriteLine("return cloned")
+	c.tsw.Indent(-1)
+	c.tsw.WriteLine("}")
+
+	for _, fileSyntax := range c.pkg.Syntax {
+		for _, decl := range fileSyntax.Decls {
+			funcDecl, isFunc := decl.(*ast.FuncDecl)
+			if !isFunc || funcDecl.Recv == nil || len(funcDecl.Recv.List) == 0 {
+				continue
+			}
+			recvType := funcDecl.Recv.List[0].Type
+			if starExpr, ok := recvType.(*ast.StarExpr); ok {
+				recvType = starExpr.X
+			}
+
+			var recvTypeName string
+			if ident, ok := recvType.(*ast.Ident); ok {
+				recvTypeName = sanitizeIdentifier(ident.Name)
+			} else if indexExpr, ok := recvType.(*ast.IndexExpr); ok {
+				if ident, ok := indexExpr.X.(*ast.Ident); ok {
+					recvTypeName = sanitizeIdentifier(ident.Name)
+				}
+			}
+
+			if recvTypeName == className {
+				c.tsw.WriteLine("")
+				if err := c.WriteFuncDeclAsMethod(funcDecl); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	c.tsw.WriteLine("")
+	c.tsw.WriteLine("// Register this type with the runtime type system")
+
+	structName := className
+	pkgPath := c.pkg.Types.Path()
+	pkgName := c.pkg.Types.Name()
+	if pkgPath != "" && pkgName != "main" {
+		structName = pkgPath + "." + className
+	} else if pkgName == "main" {
+		structName = "main." + className
+	}
+
+	c.tsw.WriteLine("static __typeInfo = $.registerStructType(")
+	c.tsw.WriteLinef("  %q,", structName)
+	c.tsw.WriteLinef("  new %s(),", className)
+	c.tsw.WriteLiterally("  [")
+
+	var structMethods []*types.Func
+	for method := range named.Methods() {
+		sig := method.Type().(*types.Signature)
+		recv := sig.Recv().Type()
+		if ptr, ok := recv.(*types.Pointer); ok {
+			recv = ptr.Elem()
+		}
+		if namedRecv, ok := recv.(*types.Named); ok && namedRecv.Obj() == named.Obj() {
+			structMethods = append(structMethods, method)
+		}
+	}
+	c.writeMethodSignatures(structMethods)
+	c.tsw.WriteLiterally("],")
+	c.tsw.WriteLine("")
+
+	c.tsw.WriteLinef("  %s,", className)
+	c.tsw.WriteLiterally("  {")
+	firstField := true
+	for i := 0; i < underlyingStruct.NumFields(); i++ {
+		field := underlyingStruct.Field(i)
+		var fieldKeyName string
+		if field.Anonymous() {
+			fieldKeyName = c.getEmbeddedFieldKeyName(field.Type())
+		} else {
+			fieldKeyName = field.Name()
+		}
+		if fieldKeyName == "_" {
+			continue
+		}
+		if !firstField {
+			c.tsw.WriteLiterally(", ")
+		}
+		firstField = false
+		c.tsw.WriteLiterallyf("%q: ", fieldKeyName)
+
+		tag := underlyingStruct.Tag(i)
+		if tag != "" {
+			c.tsw.WriteLiterally("{ type: ")
+			c.writeTypeInfoObject(field.Type())
+			c.tsw.WriteLiterallyf(", tag: %q }", tag)
+		} else {
+			c.writeTypeInfoObject(field.Type())
+		}
+	}
+	c.tsw.WriteLiterally("}")
+	c.tsw.WriteLine("")
+	c.tsw.WriteLine(");")
+
+	c.tsw.Indent(-1)
+	c.tsw.WriteLine("}")
+	return nil
+}
+
 // generateFlattenedInitTypeString generates a TypeScript type string for the
 // initialization object passed to a Go struct's constructor (`_init` method in TypeScript).
 // The generated type is a `Partial`-like structure, `"{ Field1?: Type1, Field2?: Type2, ... }"`,

@@ -366,6 +366,20 @@ func (c *GoToTSCompiler) WriteNamedTypeWithMethods(a *ast.TypeSpec) error {
 
 			if recvTypeName == className {
 				c.tsw.WriteLiterally("export function ")
+				var isAsync bool
+				if obj := c.pkg.TypesInfo.Defs[funcDecl.Name]; obj != nil {
+					isAsync = c.analysis.IsAsyncFunc(obj)
+				}
+				if !isAsync {
+					bodyNeedsAsync, err := c.funcBodyNeedsAsync(funcDecl, false)
+					if err != nil {
+						return err
+					}
+					isAsync = bodyNeedsAsync
+				}
+				if isAsync {
+					c.tsw.WriteLiterally("async ")
+				}
 				c.tsw.WriteLiterally(className)
 				c.tsw.WriteLiterally("_")
 				c.tsw.WriteLiterally(funcDecl.Name.Name)
@@ -403,6 +417,9 @@ func (c *GoToTSCompiler) WriteNamedTypeWithMethods(a *ast.TypeSpec) error {
 				// Add return type
 				if funcDecl.Type.Results != nil && len(funcDecl.Type.Results.List) > 0 {
 					c.tsw.WriteLiterally(": ")
+					if isAsync {
+						c.tsw.WriteLiterally("Promise<")
+					}
 					if len(funcDecl.Type.Results.List) == 1 {
 						c.WriteTypeExpr(funcDecl.Type.Results.List[0].Type)
 					} else {
@@ -424,8 +441,15 @@ func (c *GoToTSCompiler) WriteNamedTypeWithMethods(a *ast.TypeSpec) error {
 						}
 						c.tsw.WriteLiterally("]")
 					}
+					if isAsync {
+						c.tsw.WriteLiterally(">")
+					}
 				} else {
-					c.tsw.WriteLiterally(": void")
+					if isAsync {
+						c.tsw.WriteLiterally(": Promise<void>")
+					} else {
+						c.tsw.WriteLiterally(": void")
+					}
 				}
 
 				c.tsw.WriteLine(" {")
@@ -476,6 +500,11 @@ func (c *GoToTSCompiler) WriteTypeSpec(a *ast.TypeSpec) error {
 	default:
 		// Check if this type has receiver methods
 		if c.hasReceiverMethods(a.Name.Name) {
+			if named, ok := c.pkg.TypesInfo.Defs[a.Name].Type().(*types.Named); ok {
+				if _, isStruct := named.Underlying().(*types.Struct); isStruct {
+					return c.WriteNamedStructTypeSpec(a, named)
+				}
+			}
 			return c.WriteNamedTypeWithMethods(a)
 		}
 

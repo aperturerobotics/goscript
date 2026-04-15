@@ -273,7 +273,7 @@ export class tree {
 		{
 			let prev = (pos!.value)!.file
 			if ((prev !== file)) {
-				$.panic(fmt.Sprintf("file %s (%d-%d) overlaps with file %s (%d-%d)", prev!.Name(), prev!.Base(), prev!.Base() + prev!.Size(), file!.Name(), file!.Base(), file!.Base() + file!.Size()))
+				$.panic(fmt.Sprintf("file %s (%d-%d) overlaps with file %s (%d-%d)", prev!.Name(), prev!.Base(), prev!.End(), file!.Name(), file!.Base(), file!.End()))
 			}
 		}
 	}
@@ -288,7 +288,9 @@ export class tree {
 				// This code path isn't currently needed
 				// because FileSet never updates an existing entry.
 				// Remove this assertion if things change.
+				// defeat vet's unreachable pass
 				if (true) {
+					// defeat vet's unreachable pass
 					$.panic("unreachable according to current FileSet requirements")
 				}
 				x!.file = file
@@ -308,6 +310,7 @@ export class tree {
 		switch (true) {
 			case x == null: {
 				if (true) {
+					// defeat vet's unreachable pass
 					$.panic("unreachable according to current FileSet requirements")
 				}
 				return 

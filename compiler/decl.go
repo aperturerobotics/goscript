@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/token"
@@ -677,6 +678,14 @@ func (c *GoToTSCompiler) writeMethodSignature(decl *ast.FuncDecl) (bool, error) 
 		}
 	}
 
+	if !isAsync {
+		bodyNeedsAsync, err := c.funcBodyNeedsAsync(decl, true)
+		if err != nil {
+			return false, err
+		}
+		isAsync = bodyNeedsAsync
+	}
+
 	// Methods are typically public in the TS output
 	c.tsw.WriteLiterally("public ")
 
@@ -742,6 +751,31 @@ func (c *GoToTSCompiler) writeMethodSignature(decl *ast.FuncDecl) (bool, error) 
 
 	c.tsw.WriteLiterally(" ")
 	return isAsync, nil
+}
+
+// funcBodyNeedsAsync checks whether emitting a function body would generate await.
+func (c *GoToTSCompiler) funcBodyNeedsAsync(decl *ast.FuncDecl, isMethod bool) (bool, error) {
+	if decl.Body == nil {
+		return false, nil
+	}
+
+	var body strings.Builder
+	writer := NewTSCodeWriter(&body)
+	tempCompiler := NewGoToTSCompiler(writer, c.pkg, c.analysis, c.currentFilePath)
+
+	if isMethod {
+		if err := tempCompiler.writeMethodBodyWithReceiverBinding(decl, "this"); err != nil {
+			return false, err
+		}
+	} else {
+		for _, stmt := range decl.Body.List {
+			if err := tempCompiler.WriteStmt(stmt); err != nil {
+				return false, err
+			}
+		}
+	}
+
+	return bytes.Contains([]byte(body.String()), []byte("await")), nil
 }
 
 // writeMethodBodyWithReceiverBinding writes the method body with optional receiver binding

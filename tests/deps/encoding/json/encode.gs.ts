@@ -34,8 +34,6 @@ import * as unicode from "@goscript/unicode/index.js"
 
 import * as utf8 from "@goscript/unicode/utf8/index.js"
 
-// for linkname
-
 export let hex: string = "0123456789abcdef"
 
 export let startDetectingCyclesAfter: number = 1000
@@ -413,6 +411,10 @@ export class encodeState {
 
 	public Next(n: number): $.Bytes {
 		return this.Buffer.Next(n)
+	}
+
+	public Peek(n: number): [$.Bytes, $.GoError] {
+		return this.Buffer.Peek(n)
 	}
 
 	public Read(p: $.Bytes): [number, $.GoError] {
@@ -1609,7 +1611,7 @@ export function marshalerEncoder(e: encodeState | null, v: reflect.Value, opts: 
 		e!.WriteString("null")
 		return 
 	}
-	let { value: m, ok: ok } = $.typeAssert<Marshaler>(v.Interface(), 'encoding/json.Marshaler')
+	let [m, ok] = $.typeAssertTuple<Marshaler>(v.Interface(), "encoding/json.Marshaler")
 	if (!ok) {
 		e!.WriteString("null")
 		return 
@@ -1632,7 +1634,7 @@ export function addrMarshalerEncoder(e: encodeState | null, v: reflect.Value, op
 		e!.WriteString("null")
 		return 
 	}
-	let m = $.mustTypeAssert<Marshaler>(va.Interface(), 'encoding/json.Marshaler')
+	let [m, ] = $.typeAssertTuple<Marshaler>(va.Interface(), "encoding/json.Marshaler")
 	let [b, err] = m!.MarshalJSON()
 	if (err == null) {
 		e!.Grow($.len(b))
@@ -1650,7 +1652,7 @@ export function textMarshalerEncoder(e: encodeState | null, v: reflect.Value, op
 		e!.WriteString("null")
 		return 
 	}
-	let { value: m, ok: ok } = $.typeAssert<null | encoding.TextMarshaler>(v.Interface(), 'encoding.TextMarshaler')
+	let [m, ok] = $.typeAssertTuple<encoding.TextMarshaler>(v.Interface(), "encoding.TextMarshaler")
 	if (!ok) {
 		e!.WriteString("null")
 		return 
@@ -1668,7 +1670,7 @@ export function addrTextMarshalerEncoder(e: encodeState | null, v: reflect.Value
 		e!.WriteString("null")
 		return 
 	}
-	let m = $.mustTypeAssert<null | encoding.TextMarshaler>(va.Interface(), 'encoding.TextMarshaler')
+	let [m, ] = $.typeAssertTuple<encoding.TextMarshaler>(va.Interface(), "encoding.TextMarshaler")
 	let [b, err] = m!.MarshalText()
 	if (err != null) {
 		e!.error(new MarshalerError({Err: err, Type: v.Type(), sourceFunc: "MarshalText"}))
@@ -1735,17 +1737,6 @@ export function stringEncoder(e: encodeState | null, v: reflect.Value, opts: enc
 	}
 }
 
-// isValidNumber reports whether s is a valid JSON number literal.
-//
-// isValidNumber should be an internal detail,
-// but widely used packages access it using linkname.
-// Notable members of the hall of shame include:
-//   - github.com/bytedance/sonic
-//
-// Do not remove or change the type signature.
-// See go.dev/issue/67401.
-//
-//go:linkname isValidNumber
 export function isValidNumber(s: string): boolean {
 	// This function implements the JSON numbers grammar.
 	// See https://tools.ietf.org/html/rfc7159#section-6
@@ -1944,7 +1935,7 @@ export function resolveKeyName(k: reflect.Value): [string, $.GoError] {
 		return [k.String(), null]
 	}
 	{
-		let { value: tm, ok: ok } = $.typeAssert<null | encoding.TextMarshaler>(k.Interface(), 'encoding.TextMarshaler')
+		let [tm, ok] = $.typeAssertTuple<encoding.TextMarshaler>(k.Interface(), "encoding.TextMarshaler")
 		if (ok) {
 			if (k.Kind() == reflect.Ptr && k.IsNil()) {
 				return ["", null]
@@ -2086,19 +2077,6 @@ export function appendString<Bytes extends $.Bytes | string>(dst: $.Bytes, src: 
 	return dst
 }
 
-// typeFields returns a list of fields that JSON should recognize for the given type.
-// The algorithm is breadth-first search over the set of structs to include - the top struct
-// and then any reachable anonymous structs.
-//
-// typeFields should be an internal detail,
-// but widely used packages access it using linkname.
-// Notable members of the hall of shame include:
-//   - github.com/bytedance/sonic
-//
-// Do not remove or change the type signature.
-// See go.dev/issue/67401.
-//
-//go:linkname typeFields
 export async function typeFields(t: null | reflect.Type): Promise<structFields> {
 	// Anonymous fields to explore at the current level and the next.
 	let current = $.arrayToSlice<field>([])
