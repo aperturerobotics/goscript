@@ -34,8 +34,6 @@ import * as unicode from "@goscript/unicode/index.ts"
 
 import * as utf8 from "@goscript/unicode/utf8/index.ts"
 
-// for linkname
-
 export let hex: string = "0123456789abcdef"
 
 export let startDetectingCyclesAfter: number = 1000

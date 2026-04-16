@@ -2,6 +2,8 @@ module github.com/aperturerobotics/goscript
 
 go 1.25.3
 
+toolchain go1.26.2
+
 require (
 	github.com/aperturerobotics/cli v1.1.0
 	github.com/aperturerobotics/protobuf-go-lite v0.12.2
