@@ -1,6 +1,9 @@
 package compiler
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"slices"
 	"testing"
 
@@ -124,5 +127,47 @@ func TestReadGsPackageMetadataNonExistent(t *testing.T) {
 
 	if len(metadata.AsyncMethods) != 0 {
 		t.Errorf("Expected empty async methods for non-existent package, got: %v", metadata.AsyncMethods)
+	}
+}
+
+func TestCompilePackagesCopiesHandwrittenDependencies(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "goscript-gs-deps")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
+
+	config := &Config{
+		OutputPath:         tempDir,
+		Dir:                filepath.Dir(wd),
+		AllDependencies:    true,
+		DisableEmitBuiltin: false,
+	}
+
+	logger := logrus.New()
+	logger.SetLevel(logrus.WarnLevel)
+	le := logrus.NewEntry(logger)
+
+	comp, err := NewCompiler(config, le, nil)
+	if err != nil {
+		t.Fatalf("Failed to create compiler: %v", err)
+	}
+
+	_, err = comp.CompilePackages(
+		context.Background(),
+		"github.com/aperturerobotics/goscript/tests/tests/package_import_slices",
+	)
+	if err != nil {
+		t.Fatalf("Compilation failed: %v", err)
+	}
+
+	cmpPath := filepath.Join(tempDir, "@goscript", "cmp", "index.ts")
+	if _, err := os.Stat(cmpPath); err != nil {
+		t.Fatalf("Expected handwritten dependency at %s: %v", cmpPath, err)
 	}
 }
