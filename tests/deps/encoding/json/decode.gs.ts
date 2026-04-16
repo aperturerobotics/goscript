@@ -24,6 +24,8 @@ import * as utf16 from "@goscript/unicode/utf16/index.ts"
 
 import * as utf8 from "@goscript/unicode/utf8/index.ts"
 
+// for linkname
+
 export let phasePanicMsg: string = "JSON decoder out of sync - data changing underfoot?"
 
 export class InvalidUnmarshalError {
