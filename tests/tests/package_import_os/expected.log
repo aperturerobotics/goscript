@@ -1,5 +1,15 @@
-Current working directory: /
+Current working directory ok
 Set environment variable TEST_VAR
 Got environment variable TEST_VAR: test_value
 Environment variable TEST_VAR unset successfully
 Hostname: goscript
+stdout write works
+Stdout write bytes: 19
+WriteFile ok
+ReadFile data: runtime file contents
+Stat name: os-runtime-file.txt
+Stat size: 21
+Remove ok
+MkdirTemp ok
+CreateTemp ok
+CreateTemp name empty: false

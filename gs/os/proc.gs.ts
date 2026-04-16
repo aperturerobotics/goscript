@@ -1,5 +1,6 @@
 import * as $ from "@goscript/builtin/index.js";
 import { NewSyscallError, ErrUnimplemented } from "./error.gs.js";
+import { runtime_args as hostRuntimeArgs, runtime_beforeExit as hostRuntimeBeforeExit } from "./proc_js.gs.js";
 
 import * as runtime from "@goscript/runtime/index.js"
 
@@ -13,7 +14,7 @@ export function init(): void {
 }
 
 export function runtime_args(): $.Slice<string> {
-	return $.arrayToSlice<string>([])
+	return hostRuntimeArgs()
 }
 
 // Getuid returns the numeric user id of the caller.
@@ -59,7 +60,7 @@ export function Getgroups(): [$.Slice<number>, $.GoError] {
 // For portability, the status code should be in the range [0, 125].
 export function Exit(code: number): void {
 
-	// Testlog functionality not available in JavaScript - stub
+	// Testlog functionality is not available in JavaScript.
 	// if (code == 0 && testlog.PanicOnExit0()) {
 	//	$.panic("unexpected call to os.Exit(0) during test")
 	// }
@@ -80,5 +81,6 @@ export function Exit(code: number): void {
 	}
 }
 
-export function runtime_beforeExit(exitCode: number): void {}
-
+export function runtime_beforeExit(exitCode: number): void {
+	hostRuntimeBeforeExit(exitCode)
+}

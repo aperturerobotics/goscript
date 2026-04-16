@@ -1,5 +1,5 @@
 import * as $ from "@goscript/builtin/index.js";
-import { ErrUnimplemented } from "./error.gs.js";
+import { MkdirAll as mkdirAllPath, RemoveAll as removeAllPath } from "./file_js.gs.js";
 import { IsPathSeparator } from "./path_unix.gs.js";
 
 // MkdirAll creates a directory named path,
@@ -10,7 +10,7 @@ import { IsPathSeparator } from "./path_unix.gs.js";
 // If path is already a directory, MkdirAll does nothing
 // and returns nil.
 export function MkdirAll(path: string, perm: number): $.GoError {
-	return ErrUnimplemented
+	return mkdirAllPath(path, perm)
 }
 
 // RemoveAll removes path and any children it contains.
@@ -19,7 +19,7 @@ export function MkdirAll(path: string, perm: number): $.GoError {
 // returns nil (no error).
 // If there is an error, it will be of type [*PathError].
 export function RemoveAll(path: string): $.GoError {
-	return ErrUnimplemented
+	return removeAllPath(path)
 }
 
 // endsWithDot reports whether the final component of path is ".".
@@ -32,4 +32,3 @@ export function endsWithDot(path: string): boolean {
 	}
 	return false
 }
-

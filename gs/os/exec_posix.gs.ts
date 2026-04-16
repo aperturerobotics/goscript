@@ -36,7 +36,7 @@ export class ProcessState {
 		return cloned
 	}
 
-	// All methods return stub values for JavaScript environment
+	// JavaScript does not expose process timing and wait status details.
 	public UserTime(): any {
 		return 0 // Duration not available
 	}
@@ -92,4 +92,3 @@ export class ProcessState {
 		{ "pid": { kind: $.TypeKind.Basic, name: "number" } }
 	);
 }
-

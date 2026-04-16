@@ -1,77 +1,116 @@
 import * as $ from "@goscript/builtin/index.js";
-import { ErrUnimplemented } from "./error.gs.js";
+import { ErrInvalid } from "./error.gs.js";
+import { Create, Mkdir, Open, OpenFile, Remove } from "./file_js.gs.js";
+import { Lstat as lstatPath, Stat as statPath } from "./stat_js.gs.js";
 import { File } from "./types_js.gs.js";
 
 import * as fs from "@goscript/io/fs/index.js"
+import { ValidPath } from "@goscript/io/fs/index.js"
 
-// JavaScript-specific implementations for root filesystem operations
-// These functions stub operations that cannot be implemented in JavaScript
-
-// OpenInRoot opens the file name in the directory dir - stub implementation
-export function OpenInRoot(dir: string, name: string): [File | null, $.GoError] {
-	return [null, ErrUnimplemented]
+function isValidRootName(name: string): boolean {
+	if (name === ".") {
+		return true
+	}
+	return ValidPath(name)
 }
 
-// Root represents a root filesystem - stub implementation
+function joinRootPath(dir: string, name: string): [string, $.GoError] {
+	if (!isValidRootName(name)) {
+		return ["", ErrInvalid]
+	}
+	if (name === ".") {
+		return [dir, null]
+	}
+	return [dir.replace(/\/+$/, "") + "/" + name, null]
+}
+
+export function OpenInRoot(dir: string, name: string): [File | null, $.GoError] {
+	const [path, err] = joinRootPath(dir, name)
+	if (err !== null) {
+		return [null, err]
+	}
+	return Open(path)
+}
+
 export class Root {
-	constructor() {}
+	public name: string
 
-	// Name returns the name of the directory presented to OpenRoot
+	constructor(init?: Partial<{name?: string}>) {
+		this.name = init?.name ?? "."
+	}
+
 	public Name(): string {
-		return ""
+		return this.name
 	}
 
-	// Close closes the Root
 	public Close(): $.GoError {
-		return ErrUnimplemented
+		return null
 	}
 
-	// Open opens the named file in the root for reading
 	public Open(name: string): [File | null, $.GoError] {
-		return [null, ErrUnimplemented]
+		return OpenInRoot(this.name, name)
 	}
 
-	// Create creates or truncates the named file in the root
 	public Create(name: string): [File | null, $.GoError] {
-		return [null, ErrUnimplemented]
+		const [path, err] = joinRootPath(this.name, name)
+		if (err !== null) {
+			return [null, err]
+		}
+		return Create(path)
 	}
 
-	// OpenFile opens the named file in the root
 	public OpenFile(name: string, flag: number, perm: number): [File | null, $.GoError] {
-		return [null, ErrUnimplemented]
+		const [path, err] = joinRootPath(this.name, name)
+		if (err !== null) {
+			return [null, err]
+		}
+		return OpenFile(path, flag, perm)
 	}
 
-	// OpenRoot opens the named directory in the root
 	public OpenRoot(name: string): [RootType | null, $.GoError] {
-		return [null, ErrUnimplemented]
+		const [path, err] = joinRootPath(this.name, name)
+		if (err !== null) {
+			return [null, err]
+		}
+		return OpenRoot(path)
 	}
 
-	// Mkdir creates a new directory in the root
 	public Mkdir(name: string, perm: number): $.GoError {
-		return ErrUnimplemented
+		const [path, err] = joinRootPath(this.name, name)
+		if (err !== null) {
+			return err
+		}
+		return Mkdir(path, perm)
 	}
 
-	// Remove removes the named file or directory in the root
 	public Remove(name: string): $.GoError {
-		return ErrUnimplemented
+		const [path, err] = joinRootPath(this.name, name)
+		if (err !== null) {
+			return err
+		}
+		return Remove(path)
 	}
 
-	// Stat returns a FileInfo describing the named file in the root
 	public Stat(name: string): [fs.FileInfo | null, $.GoError] {
-		return [null, ErrUnimplemented]
+		const [path, err] = joinRootPath(this.name, name)
+		if (err !== null) {
+			return [null, err]
+		}
+		return statPath(path)
 	}
 
-	// Lstat returns a FileInfo describing the named file in the root
 	public Lstat(name: string): [fs.FileInfo | null, $.GoError] {
-		return [null, ErrUnimplemented]
+		const [path, err] = joinRootPath(this.name, name)
+		if (err !== null) {
+			return [null, err]
+		}
+		return lstatPath(path)
 	}
 
-	// FS returns a file system for the tree of files in the root
 	public FS(): fs.FS {
-		return new stubFS()
+		return new rootFS({ root: this })
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
 		'Root',
 		new Root(),
@@ -80,32 +119,45 @@ export class Root {
 			{ name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }
 		],
 		Root,
-		{}
+		{ "name": { kind: $.TypeKind.Basic, name: "string" } }
 	);
 }
 
-// Type alias to avoid conflicts
 export type RootType = Root
 
-// OpenRoot opens a root filesystem - stub implementation
 export function OpenRoot(name: string): [Root | null, $.GoError] {
-	return [null, ErrUnimplemented]
+	const [info, err] = statPath(name)
+	if (err !== null) {
+		return [null, err]
+	}
+	if (!info?.IsDir()) {
+		return [null, ErrInvalid]
+	}
+	return [new Root({ name }), null]
 }
 
-// splitPathInRoot splits a path in root - stub implementation
 export function splitPathInRoot(s: string, prefix: $.Slice<string> | null, suffix: $.Slice<string> | null): [$.Slice<string>, string, $.GoError] {
-	return [null, "", ErrUnimplemented]
+	if (!isValidRootName(s)) {
+		return [null, "", ErrInvalid]
+	}
+	const parts = s === "." ? [] : s.split("/").filter((part) => part !== "")
+	const head = $.arrayToSlice<string>(parts.slice(0, Math.max(0, parts.length - 1)))
+	const tail = parts.length === 0 ? "." : parts[parts.length - 1]
+	return [head, tail, null]
 }
 
-// isValidRootFSPath checks if a path is valid for root filesystem - stub implementation
 export function isValidRootFSPath(name: string): boolean {
-	return false
+	return isValidRootName(name)
 }
 
-// Internal stub filesystem
-class stubFS {
+class rootFS {
+	public root: Root
+
+	constructor(init?: Partial<{root?: Root}>) {
+		this.root = init?.root ?? new Root()
+	}
+
 	public Open(name: string): [fs.File, $.GoError] {
-		return [null, ErrUnimplemented]
+		return this.root.Open(name)
 	}
 }
-

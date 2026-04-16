@@ -137,7 +137,7 @@ export class ProcAttr {
 	);
 }
 
-// Stub ProcessState for JavaScript environment
+// ProcessState mirrors the minimal JavaScript process surface.
 export class ProcessState {
 	public _fields: {}
 
@@ -159,14 +159,13 @@ export class ProcessState {
 	);
 }
 
-// Signal interface stub
+// Signal matches the Go signal interface shape when available.
 export type Signal = null | {
 	Signal(): void
 	String(): string
 }
 export const Signal = null as any;
 
-// Stub functions that return ErrUnimplemented
 export function Getpid(): number {
 	return -1 // Not available in JavaScript
 }
@@ -195,4 +194,3 @@ export function newHandleProcess(pid: number, handle: number): Process {
 export function newPIDProcess(pid: number): Process {
 	return new Process({Pid: pid})
 }
-

@@ -1,9 +1,6 @@
 import * as $ from "@goscript/builtin/index.js";
-import { ErrUnimplemented } from "./error.gs.js";
-
-// JavaScript-specific stub for removeall operations
-// These operations cannot be implemented in JavaScript environments
+import { RemoveAll as removeAllPath } from "./file_js.gs.js";
 
 export function RemoveAll(path: string): $.GoError {
-	return ErrUnimplemented
-} 
+	return removeAllPath(path)
+}

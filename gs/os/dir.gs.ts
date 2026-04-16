@@ -1,42 +1,54 @@
 import * as $ from "@goscript/builtin/index.js";
 import { ErrUnimplemented } from "./error.gs.js";
+import { createFileInfo, getDeno, getNodeFS, newHostError } from "./types_js.gs.js";
+import { FileInfoToDirEntry } from "@goscript/io/fs/readdir.js";
 
 import * as fs from "@goscript/io/fs/index.js"
 
 type DirEntry = fs.DirEntry;
 
-// ReadDir reads the named directory,
-// returning all its directory entries sorted by filename.
-// If an error occurs reading the directory,
-// ReadDir returns the entries it was able to read before the error,
-// along with the error.
 export function ReadDir(name: string): [$.Slice<DirEntry>, $.GoError] {
-	// Directory reading not supported in JavaScript environment
+	const denoObj = getDeno()
+	if (denoObj?.readDirSync) {
+		try {
+			const entries: DirEntry[] = []
+			for (const entry of denoObj.readDirSync(name)) {
+				const dirEntry = FileInfoToDirEntry(createFileInfo(entry.name, {
+					isDirectory: () => entry.isDirectory,
+					isSymbolicLink: () => entry.isSymlink,
+					mode: 0,
+					size: 0,
+				}))
+				if (dirEntry !== null) {
+					entries.push(dirEntry)
+				}
+			}
+			entries.sort((a, b) => (a?.Name() ?? "").localeCompare(b?.Name() ?? ""))
+			return [$.arrayToSlice(entries), null]
+		} catch (err) {
+			return [null, newHostError(err)]
+		}
+	}
+	const nodeFS = getNodeFS()
+	if (nodeFS?.readdirSync) {
+		try {
+			const entries = nodeFS.readdirSync(name, { withFileTypes: true }).map((entry: any) =>
+				FileInfoToDirEntry(createFileInfo(entry.name, {
+					isDirectory: () => typeof entry.isDirectory === "function" ? entry.isDirectory() : false,
+					isSymbolicLink: () => typeof entry.isSymbolicLink === "function" ? entry.isSymbolicLink() : false,
+					mode: 0,
+					size: 0,
+				}))
+			).filter((entry: DirEntry | null): entry is DirEntry => entry !== null)
+			entries.sort((a, b) => (a?.Name() ?? "").localeCompare(b?.Name() ?? ""))
+			return [$.arrayToSlice(entries), null]
+		} catch (err) {
+			return [null, newHostError(err)]
+		}
+	}
 	return [null, ErrUnimplemented]
 }
 
-// CopyFS copies the file system fsys into the directory dir,
-// creating dir if necessary.
-//
-// Files are created with mode 0o666 plus any execute permissions
-// from the source, and directories are created with mode 0o777
-// (before umask).
-//
-// CopyFS will not overwrite existing files. If a file name in fsys
-// already exists in the destination, CopyFS will return an error
-// such that errors.Is(err, fs.ErrExist) will be true.
-//
-// Symbolic links in fsys are not supported. A *PathError with Err set
-// to ErrInvalid is returned when copying from a symbolic link.
-//
-// Symbolic links in dir are followed.
-//
-// New files added to fsys (including if dir is a subdirectory of fsys)
-// while CopyFS is running are not guaranteed to be copied.
-//
-// Copying stops at and returns the first error encountered.
 export function CopyFS(dir: string, fsys: fs.FS): $.GoError {
-	// File system copying not supported in JavaScript environment
 	return ErrUnimplemented
 }
-

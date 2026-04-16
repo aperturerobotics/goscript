@@ -1,15 +1,18 @@
 import * as $ from "@goscript/builtin/index.js";
-import { ErrUnimplemented } from "./error.gs.js";
+import { getDeno } from "./types_js.gs.js";
 
-// JavaScript-specific process functions
-
-// runtime_args returns command line arguments (stub for JS)
 export function runtime_args(): $.Slice<string> {
-	// In JavaScript environment, return empty args or process.argv equivalent
+	const denoObj = getDeno()
+	if (Array.isArray(denoObj?.args)) {
+		return $.arrayToSlice<string>(denoObj.args)
+	}
+	const processObj = (globalThis as any).process
+	if (Array.isArray(processObj?.argv)) {
+		return $.arrayToSlice<string>(processObj.argv.slice(2))
+	}
 	return $.arrayToSlice<string>([])
 }
 
-// runtime_beforeExit is called before exit (stub for JS)
 export function runtime_beforeExit(exitCode: number): void {
-	// No-op in JavaScript
-} 
+	// No-op in JavaScript.
+}

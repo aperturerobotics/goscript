@@ -1,45 +1,38 @@
 import * as $ from "@goscript/builtin/index.js";
-import { underlyingError, ErrUnimplemented } from "./error.gs.js";
-import { Root } from "./root_js.gs.js";
+import { Mkdir, OpenFile, Remove } from "./file_js.gs.js";
+import { Root, OpenRoot } from "./root_js.gs.js";
+import { Lstat, Stat } from "./stat_js.gs.js";
 import { File } from "./types_js.gs.js";
 
-import * as errors from "@goscript/errors/index.js"
 import * as fs from "@goscript/io/fs/index.js"
 
-// Stub functions for JavaScript environment - these operations cannot be implemented properly
-
-// openRootNolog is OpenRoot - stub implementation
 export function openRootNolog(name: string): [Root | null, $.GoError] {
-	return [null, ErrUnimplemented]
+	return OpenRoot(name)
 }
 
-// openRootInRoot is Root.OpenRoot - stub implementation  
 export function openRootInRoot(r: Root | null, name: string): [Root | null, $.GoError] {
-	return [null, ErrUnimplemented]
+	return r?.OpenRoot(name) ?? [null, null]
 }
 
-// newRoot returns a new Root - stub implementation
 export function newRoot(name: string): [Root | null, $.GoError] {
-	return [null, ErrUnimplemented]
+	return OpenRoot(name)
 }
 
-// rootOpenFileNolog is Root.OpenFile - stub implementation
 export function rootOpenFileNolog(r: Root | null, name: string, flag: number, perm: number): [File | null, $.GoError] {
-	return [null, ErrUnimplemented]
+	return r?.OpenFile(name, flag, perm) ?? OpenFile(name, flag, perm)
 }
 
-// rootStat - stub implementation
 export function rootStat(r: Root | null, name: string, lstat: boolean): [fs.FileInfo | null, $.GoError] {
-	return [null, ErrUnimplemented]
+	if (r !== null) {
+		return lstat ? r.Lstat(name) : r.Stat(name)
+	}
+	return lstat ? Lstat(name) : Stat(name)
 }
 
-// rootMkdir - stub implementation  
 export function rootMkdir(r: Root | null, name: string, perm: number): $.GoError {
-	return ErrUnimplemented
+	return r?.Mkdir(name, perm) ?? Mkdir(name, perm)
 }
 
-// rootRemove - stub implementation
 export function rootRemove(r: Root | null, name: string): $.GoError {
-	return ErrUnimplemented
+	return r?.Remove(name) ?? Remove(name)
 }
-

@@ -1,8 +1,16 @@
 import * as $ from "@goscript/builtin/index.js";
 import { ErrUnimplemented } from "./error.gs.js";
+import { getDeno, getEnv, getNodeFS, getPlatform, newHostError } from "./types_js.gs.js";
 
-// JavaScript-specific stubs for file constants and operations
-// These provide the required constants and stub implementations
+function pickFirstEnv(keys: string[]): string {
+	for (const key of keys) {
+		const value = getEnv(key)
+		if (value !== "") {
+			return value
+		}
+	}
+	return ""
+}
 
 // File open flags - using values compatible with typical Unix systems
 export const O_RDONLY = 0
@@ -19,7 +27,7 @@ export const SEEK_SET = 0
 export const SEEK_CUR = 1
 export const SEEK_END = 2
 
-// LinkError stub for compatibility
+// LinkError carries details for link-related path errors.
 export class LinkError {
 	public get Op(): string {
 		return this._fields.Op.value
@@ -76,23 +84,77 @@ export class LinkError {
 	}
 }
 
-// Directory and file operation stubs
 export function Readlink(name: string): [string, $.GoError] {
+	const denoObj = getDeno()
+	if (denoObj?.readLinkSync) {
+		try {
+			return [denoObj.readLinkSync(name), null]
+		} catch (err) {
+			return ["", newHostError(err)]
+		}
+	}
+	const nodeFS = getNodeFS()
+	if (nodeFS?.readlinkSync) {
+		try {
+			return [nodeFS.readlinkSync(name), null]
+		} catch (err) {
+			return ["", newHostError(err)]
+		}
+	}
 	return ["", ErrUnimplemented]
 }
 
 export function TempDir(): string {
-	return "/tmp"
+	const value = pickFirstEnv(["TMPDIR", "TEMP", "TMP"])
+	if (value !== "") {
+		return value
+	}
+	return getPlatform() === "win32" ? "." : "/tmp"
 }
 
 export function UserCacheDir(): [string, $.GoError] {
-	return ["", ErrUnimplemented]
+	if (getPlatform() === "win32") {
+		const value = pickFirstEnv(["LOCALAPPDATA", "APPDATA", "USERPROFILE"])
+		if (value !== "") {
+			return [value, null]
+		}
+		return ["", ErrUnimplemented]
+	}
+	const value = pickFirstEnv(["XDG_CACHE_HOME"])
+	if (value !== "") {
+		return [value, null]
+	}
+	const [home, err] = UserHomeDir()
+	if (err !== null || home === "") {
+		return ["", err ?? ErrUnimplemented]
+	}
+	return [home.replace(/\/+$/, "") + "/.cache", null]
 }
 
 export function UserConfigDir(): [string, $.GoError] {
-	return ["", ErrUnimplemented]
+	if (getPlatform() === "win32") {
+		const value = pickFirstEnv(["APPDATA", "USERPROFILE"])
+		if (value !== "") {
+			return [value, null]
+		}
+		return ["", ErrUnimplemented]
+	}
+	const value = pickFirstEnv(["XDG_CONFIG_HOME"])
+	if (value !== "") {
+		return [value, null]
+	}
+	const [home, err] = UserHomeDir()
+	if (err !== null || home === "") {
+		return ["", err ?? ErrUnimplemented]
+	}
+	return [home.replace(/\/+$/, "") + "/.config", null]
 }
 
 export function UserHomeDir(): [string, $.GoError] {
+	const keys = getPlatform() === "win32" ? ["USERPROFILE", "HOMEDRIVE", "HOME"] : ["HOME"]
+	const value = pickFirstEnv(keys)
+	if (value !== "") {
+		return [value, null]
+	}
 	return ["", ErrUnimplemented]
-} 
+}
