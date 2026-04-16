@@ -1021,7 +1021,7 @@ export function typeAssert<T>(
   }
 
   if (isPointerTypeInfo(normalizedType) && value === null) {
-    return { value: null as unknown as T, ok: true }
+    return { value: null as unknown as T, ok: false }
   }
 
   // Removed struct matching logic - struct types should use nominal matching

@@ -41,4 +41,12 @@ func main() {
 	} else {
 		println("type assertion success", val.Value)
 	}
+
+	var nilInterface MyInterface
+	nilVal, ok3 := nilInterface.(*MyStruct)
+	if ok3 && nilVal.Value == 0 {
+		println("nil interface pointer assertion succeeded")
+	} else {
+		println("nil interface pointer assertion failed")
+	}
 }

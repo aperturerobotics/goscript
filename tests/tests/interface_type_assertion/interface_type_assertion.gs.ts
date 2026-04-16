@@ -84,5 +84,13 @@ export async function main(): Promise<void> {
 	} else {
 		$.println("type assertion success", val.Value)
 	}
+
+	let nilInterface: MyInterface = null
+	let { value: nilVal, ok: ok3 } = $.typeAssert<MyStruct | null>(nilInterface, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
+	if (ok3 && Number(nilVal!.Value) == 0) {
+		$.println("nil interface pointer assertion succeeded")
+	} else {
+		$.println("nil interface pointer assertion failed")
+	}
 }
 
