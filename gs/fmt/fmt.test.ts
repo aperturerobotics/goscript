@@ -1,38 +1,49 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { resetHostRuntimeForTests } from '@goscript/builtin/hostio.js'
 import * as fmt from './fmt.js'
 
-// Helper to capture stdout via internal stdout.write
-// We will monkey-patch global process.stdout.write if available
+const originalDeno = (globalThis as any).Deno
+const originalProcess = (globalThis as any).process
+
+afterEach(() => {
+  if (originalDeno === undefined) {
+    delete (globalThis as any).Deno
+  } else {
+    ;(globalThis as any).Deno = originalDeno
+  }
+
+  if (originalProcess === undefined) {
+    delete (globalThis as any).process
+  } else {
+    ;(globalThis as any).process = originalProcess
+  }
+
+  resetHostRuntimeForTests()
+})
+
+// Helper to capture stdout via the hostio text output path.
 function captureStdout(run: () => void): string {
   let buf = ''
-  const hasProcess =
-    typeof process !== 'undefined' &&
-    (process as any).stdout &&
-    typeof (process as any).stdout.write === 'function'
-
-  if (hasProcess) {
-    const orig = (process as any).stdout.write
-    ;(process as any).stdout.write = (chunk: any) => {
-      buf += typeof chunk === 'string' ? chunk : String(chunk)
-      return true
-    }
-    try {
-      run()
-    } finally {
-      ;(process as any).stdout.write = orig
-    }
-  } else {
-    // Fallback: spy on console.log for environments without process
-    const origLog = console.log
-    ;(console as any).log = (msg: any) => {
-      buf += String(msg) + '\n'
-    }
-    try {
-      run()
-    } finally {
-      console.log = origLog
-    }
+  delete (globalThis as any).Deno
+  ;(globalThis as any).process = {
+    getBuiltinModule: vi.fn(() => ({
+      readSync: vi.fn(),
+      writeSync: vi.fn(
+        (
+          _fd: number,
+          chunk: Uint8Array,
+          _offset?: number,
+          length?: number,
+          _position?: number | null,
+        ) => {
+          buf += new TextDecoder().decode(chunk.subarray(0, length ?? chunk.length))
+          return length ?? chunk.length
+        },
+      ),
+    })),
   }
+  resetHostRuntimeForTests()
+  run()
 
   return buf
 }

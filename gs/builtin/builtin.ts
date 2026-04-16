@@ -1,4 +1,6 @@
 import type { Slice, SliceProxy } from './slice.js'
+import { writeHostStdoutText } from './hostio.js'
+import { formatPrintedArgs } from './print.js'
 import { isSliceProxy } from './slice.js'
 
 /**
@@ -6,12 +8,8 @@ import { isSliceProxy } from './slice.js'
  * @param args Arguments to print
  */
 export function println(...args: any[]): void {
-  if (args.length === 0) {
-    // Bun's console.log() with no args doesn't print a newline, so we explicitly print an empty string
-    console.log('')
-  } else {
-    console.log(...args)
-  }
+  const message = (args.length === 0 ? '' : formatPrintedArgs(args)) + '\n'
+  writeHostStdoutText(message)
 }
 
 /**

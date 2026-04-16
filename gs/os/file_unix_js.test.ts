@@ -4,6 +4,7 @@ import * as io from '@goscript/io/index.js'
 
 import { NewFile, Stderr, Stdin, Stdout } from './file_unix_js.gs.js'
 import { ErrClosed } from './error.gs.js'
+import { createHostFile, resetHostRuntimeForTests } from './types_js.gs.js'
 
 const originalDeno = (globalThis as any).Deno
 const originalProcess = (globalThis as any).process
@@ -20,6 +21,8 @@ afterEach(() => {
   } else {
     ;(globalThis as any).process = originalProcess
   }
+
+  resetHostRuntimeForTests()
 })
 
 describe('os stdio', () => {
@@ -45,6 +48,7 @@ describe('os stdio', () => {
       stdout: { writeSync: stdoutWriteSync },
     }
     delete (globalThis as any).process
+    resetHostRuntimeForTests()
 
     const input = NewFile(0, 'stdin')
     const output = NewFile(1, 'stdout')
@@ -93,6 +97,7 @@ describe('os stdio', () => {
         writeSync,
       })),
     }
+    resetHostRuntimeForTests()
 
     const input = NewFile(0, 'stdin')
     const output = NewFile(1, 'stdout')
@@ -117,6 +122,7 @@ describe('os stdio', () => {
       stdin: { readSync: stdinReadSync },
     }
     delete (globalThis as any).process
+    resetHostRuntimeForTests()
 
     const input = NewFile(0, 'stdin')!
     const [readN, readErr] = input.Read(new Uint8Array(1))
@@ -127,5 +133,52 @@ describe('os stdio', () => {
     const [closedN, closedErr] = input.Read(new Uint8Array(1))
     expect(closedN).toBe(0)
     expect(closedErr).toBe(ErrClosed)
+  })
+
+  it('retries short writes until the full buffer is written', () => {
+    const writeSync = vi
+      .fn<(buffer: Uint8Array) => number>()
+      .mockImplementationOnce((_buffer: Uint8Array) => 2)
+      .mockImplementationOnce((buffer: Uint8Array) => buffer.length)
+
+    ;(globalThis as any).Deno = {
+      stdout: { writeSync },
+    }
+    delete (globalThis as any).process
+    resetHostRuntimeForTests()
+
+    const output = NewFile(1, 'stdout')!
+    const [writeN, writeErr] = output.Write(new Uint8Array([1, 2, 3, 4, 5]))
+    expect(writeN).toBe(5)
+    expect(writeErr).toBeNull()
+    expect(writeSync).toHaveBeenCalledTimes(2)
+    expect(Array.from(writeSync.mock.calls[1][0])).toEqual([3, 4, 5])
+  })
+
+  it('prefers direct handle read and write methods when available', () => {
+    const handle = {
+      readSync: vi.fn((buffer: Uint8Array) => {
+        buffer.set([11, 12, 13], 0)
+        return 3
+      }),
+      writeSync: vi
+        .fn<(buffer: Uint8Array) => number>()
+        .mockImplementationOnce((_buffer: Uint8Array) => 1)
+        .mockImplementationOnce((buffer: Uint8Array) => buffer.length),
+    }
+
+    const file = createHostFile('host-file', 99, handle)
+    const readBuf = new Uint8Array(4)
+
+    const [readN, readErr] = file.Read(readBuf)
+    expect(readN).toBe(3)
+    expect(readErr).toBeNull()
+    expect(Array.from(readBuf.slice(0, 3))).toEqual([11, 12, 13])
+
+    const [writeN, writeErr] = file.Write(new Uint8Array([21, 22, 23]))
+    expect(writeN).toBe(3)
+    expect(writeErr).toBeNull()
+    expect(handle.writeSync).toHaveBeenCalledTimes(2)
+    expect(Array.from(handle.writeSync.mock.calls[1][0])).toEqual([22, 23])
   })
 })

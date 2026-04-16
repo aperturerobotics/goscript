@@ -5,49 +5,15 @@ import * as fs from "@goscript/io/fs/index.js"
 import * as io from "@goscript/io/index.js"
 import * as time from "@goscript/time/index.js"
 import * as syscall from "@goscript/syscall/index.js"
+import {
+	DenoFileLike,
+	DenoStream,
+	HostUnsupportedError,
+	hostRuntime,
+	NodeFSModule,
+	resetHostRuntimeForTests,
+} from "@goscript/builtin/hostio.js"
 import { newRawConn } from "./rawconn_js.gs.js"
-
-export type NodeFSModule = {
-	readSync(fd: number, buffer: Uint8Array, offset?: number, length?: number, position?: number | null): number
-	writeSync(fd: number, buffer: Uint8Array, offset?: number, length?: number, position?: number | null): number
-	closeSync?(fd: number): void
-	fstatSync?(fd: number): HostStatLike
-	fsyncSync?(fd: number): void
-	ftruncateSync?(fd: number, len?: number): void
-	openSync?(path: string, flags: number | string, mode?: number): number
-	chmodSync?(path: string, mode: number): void
-	chownSync?(path: string, uid: number, gid: number): void
-	lchownSync?(path: string, uid: number, gid: number): void
-	linkSync?(existingPath: string, newPath: string): void
-	lstatSync?(path: string): HostStatLike
-	mkdirSync?(path: string, options?: number | { mode?: number, recursive?: boolean }): void
-	readFileSync?(path: string): Uint8Array
-	readdirSync?(path: string, options?: { withFileTypes?: boolean }): any[]
-	readlinkSync?(path: string): string
-	renameSync?(oldPath: string, newPath: string): void
-	rmSync?(path: string, options?: { force?: boolean, recursive?: boolean }): void
-	rmdirSync?(path: string): void
-	statSync?(path: string): HostStatLike
-	symlinkSync?(target: string, path: string): void
-	truncateSync?(path: string, len?: number): void
-	unlinkSync?(path: string): void
-	utimesSync?(path: string, atime: Date | number, mtime: Date | number): void
-	writeFileSync?(path: string, data: Uint8Array, options?: { mode?: number }): void
-}
-
-export type DenoStream = {
-	readSync?(buffer: Uint8Array): number | null
-	writeSync?(buffer: Uint8Array): number
-}
-
-export type DenoFileLike = DenoStream & {
-	close?(): void
-	rid?: number
-	seekSync?(offset: number, whence: number): number
-	syncSync?(): void
-	statSync?(): HostStatLike
-	truncateSync?(len?: number): void
-}
 
 export type HostStatLike = {
 	isDirectory(): boolean
@@ -66,90 +32,24 @@ export function newHostError(err: unknown): $.GoError {
 	return { Error: () => message }
 }
 
-export function getDynamicRequire(): ((specifier: string) => unknown) | null {
-	try {
-		return Function(
-			"return typeof require !== 'undefined' ? require : null",
-		)() as ((specifier: string) => unknown) | null
-	} catch {
-		return null
-	}
-}
-
 export function getNodeFS(): NodeFSModule | null {
-	const processObj = (globalThis as any).process
-	if (processObj && typeof processObj.getBuiltinModule === "function") {
-		const module = processObj.getBuiltinModule("fs")
-		if (module && typeof module.readSync === "function" && typeof module.writeSync === "function") {
-			return module as NodeFSModule
-		}
-	}
-
-	const requireFn = getDynamicRequire()
-	if (requireFn) {
-		for (const specifier of ["node:fs", "fs"]) {
-			try {
-				const module = requireFn(specifier) as NodeFSModule | null
-				if (module && typeof module.readSync === "function" && typeof module.writeSync === "function") {
-					return module
-				}
-			} catch {
-				// Try the next fallback.
-			}
-		}
-	}
-
-	return null
+	return hostRuntime.nodeFS
 }
 
 export function getDeno(): any | null {
-	return (globalThis as any).Deno ?? null
+	return hostRuntime.deno
 }
 
 export function getPlatform(): string {
-	const denoObj = getDeno()
-	if (denoObj?.build?.os) {
-		return denoObj.build.os
-	}
-
-	const processObj = (globalThis as any).process
-	if (processObj?.platform) {
-		return processObj.platform
-	}
-
-	return "unknown"
+	return hostRuntime.platform
 }
 
 export function getEnv(name: string): string {
-	const denoObj = getDeno()
-	if (denoObj?.env?.get) {
-		try {
-			return denoObj.env.get(name) ?? ""
-		} catch {
-			return ""
-		}
-	}
-
-	const processObj = (globalThis as any).process
-	return processObj?.env?.[name] ?? ""
+	return hostRuntime.getEnv(name)
 }
 
 export function getDenoStream(fd: number): DenoStream | null {
-	const denoObj = getDeno()
-	if (!denoObj) {
-		return null
-	}
-
-	switch (fd) {
-		case 0:
-			return denoObj.stdin ?? null
-		case 1:
-			return denoObj.stdout ?? null
-		case 2:
-			return denoObj.stderr ?? null
-		default:
-			return null
-	}
+	return hostRuntime.getStdioHandle(fd)
 }
 
 function readFD(fd: number, b: Uint8Array): [number, $.GoError] {
@@ -157,33 +57,18 @@ function readFD(fd: number, b: Uint8Array): [number, $.GoError] {
 		return [0, null]
 	}
 
-	const denoStream = getDenoStream(fd)
-	if (denoStream && typeof denoStream.readSync === "function") {
-		try {
-			const n = denoStream.readSync(b)
-			if (n === null || n === 0) {
-				return [0, io.EOF]
-			}
-			return [n, null]
-		} catch (err) {
-			return [0, newHostError(err)]
+	try {
+		const n = hostRuntime.readFD(fd, b)
+		if (n === null || n === 0) {
+			return [0, io.EOF]
 		}
-	}
-
-	const nodeFS = getNodeFS()
-	if (nodeFS) {
-		try {
-			const n = nodeFS.readSync(fd, b, 0, b.length, null)
-			if (n === 0) {
-				return [0, io.EOF]
-			}
-			return [n, null]
-		} catch (err) {
-			return [0, newHostError(err)]
+		return [n, null]
+	} catch (err) {
+		if (err instanceof HostUnsupportedError) {
+			return [0, ErrUnimplemented]
 		}
+		return [0, newHostError(err)]
 	}
-
-	return [0, ErrUnimplemented]
 }
 
 function writeFD(fd: number, b: Uint8Array): [number, $.GoError] {
@@ -191,25 +76,51 @@ function writeFD(fd: number, b: Uint8Array): [number, $.GoError] {
 		return [0, null]
 	}
 
-	const denoStream = getDenoStream(fd)
-	if (denoStream && typeof denoStream.writeSync === "function") {
-		try {
-			return [denoStream.writeSync(b), null]
-		} catch (err) {
-			return [0, newHostError(err)]
+	try {
+		return [hostRuntime.writeFD(fd, b), null]
+	} catch (err) {
+		if (err instanceof HostUnsupportedError) {
+			return [0, ErrUnimplemented]
 		}
+		return [0, newHostError(err)]
 	}
+}
 
-	const nodeFS = getNodeFS()
-	if (nodeFS) {
-		try {
-			return [nodeFS.writeSync(fd, b, 0, b.length, null), null]
-		} catch (err) {
-			return [0, newHostError(err)]
+function readHandle(handle: DenoFileLike, b: Uint8Array): [number, $.GoError] {
+	if (typeof handle.readSync !== "function") {
+		return [0, ErrUnimplemented]
+	}
+	try {
+		const n = handle.readSync(b)
+		if (n === null || n === 0) {
+			return [0, io.EOF]
 		}
+		return [n, null]
+	} catch (err) {
+		return [0, newHostError(err)]
 	}
+}
 
-	return [0, ErrUnimplemented]
+function writeHandle(handle: DenoFileLike, b: Uint8Array): [number, $.GoError] {
+	if (typeof handle.writeSync !== "function") {
+		return [0, ErrUnimplemented]
+	}
+	try {
+		let offset = 0
+		while (offset < b.length) {
+			const n = handle.writeSync(b.subarray(offset))
+			if (!Number.isFinite(n) || n < 0) {
+				throw new Error(`invalid write result: ${n}`)
+			}
+			if (n === 0) {
+				throw new Error("short write")
+			}
+			offset += n
+		}
+		return [b.length, null]
+	} catch (err) {
+		return [0, newHostError(err)]
+	}
 }
 
 class hostFileInfo {
@@ -281,10 +192,12 @@ export function createFileInfo(name: string, stat: HostStatLike): fs.FileInfo {
 export function createHostFile(name: string, fd: number = -1, handle: DenoFileLike | null = null): File {
 	return new File({
 		fd,
-		file: new file({ handle, path: name }),
+		file: new file({ handle: handle ?? hostRuntime.getStdioHandle(fd), path: name }),
 		name,
 	})
 }
+
+export { resetHostRuntimeForTests }
 
 // Re-export essential types
 export type Time = time.Time;
@@ -371,7 +284,11 @@ export class File {
 			return [0, null]
 		}
 		const buf = $.bytesToUint8Array(b)
-		const [n, err] = readFD(this.fd, buf)
+		const handle = this.file?.handle
+		const [n, err] =
+			handle && typeof handle.readSync === "function"
+				? readHandle(handle, buf)
+				: readFD(this.fd, buf)
 		if (!(b instanceof Uint8Array) && n > 0) {
 			$.copy(b, buf.subarray(0, n))
 		}
@@ -408,7 +325,11 @@ export class File {
 		if (b === null) {
 			return [0, null]
 		}
-		return writeFD(this.fd, $.bytesToUint8Array(b))
+		const buf = $.bytesToUint8Array(b)
+		const handle = this.file?.handle
+		return handle && typeof handle.writeSync === "function"
+			? writeHandle(handle, buf)
+			: writeFD(this.fd, buf)
 	}
 
 	public WriteAt(b: $.Bytes, off: number): [number, $.GoError] {
