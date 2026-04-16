@@ -76,3 +76,7 @@ export async function main(): Promise<void> {
 	await processData(data)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

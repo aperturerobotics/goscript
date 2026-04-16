@@ -74,3 +74,7 @@ export async function main(): Promise<void> {
 	$.println("CustomString(\"world\").Upper():", CustomString_Upper(("world" as CustomString)))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

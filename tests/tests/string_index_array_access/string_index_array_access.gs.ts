@@ -23,3 +23,7 @@ export async function main(): Promise<void> {
 	$.println("Success: no duplicates")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

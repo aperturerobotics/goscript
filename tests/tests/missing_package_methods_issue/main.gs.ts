@@ -30,3 +30,7 @@ export async function main(): Promise<void> {
 	fmt.Printf("Index: %d, Found: %t\n", index, found)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

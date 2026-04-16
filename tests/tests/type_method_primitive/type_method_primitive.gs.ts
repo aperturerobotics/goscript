@@ -20,3 +20,7 @@ export async function main(): Promise<void> {
 	$.println("Method ref call:", fn!())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

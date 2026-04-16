@@ -183,3 +183,7 @@ export async function main(): Promise<void> {
 	$.println("\n=== Test Complete ===")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

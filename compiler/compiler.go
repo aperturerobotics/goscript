@@ -788,7 +788,32 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 		return fmt.Errorf("failed to write declarations: %w", err)
 	}
 
+	if c.pkg.Name == "main" && fileDefinesMainFunction(f) {
+		c.codeWriter.WriteLine("")
+		c.codeWriter.WriteLine("if ($.isMainScript(import.meta)) {")
+		c.codeWriter.Indent(1)
+		c.codeWriter.WriteLine("await main()")
+		c.codeWriter.Indent(-1)
+		c.codeWriter.WriteLine("}")
+	}
+
 	return nil
+}
+
+func fileDefinesMainFunction(file *ast.File) bool {
+	for _, decl := range file.Decls {
+		funcDecl, ok := decl.(*ast.FuncDecl)
+		if !ok {
+			continue
+		}
+		if funcDecl.Recv != nil {
+			continue
+		}
+		if funcDecl.Name.Name == "main" {
+			return true
+		}
+	}
+	return false
 }
 
 // GoToTSCompiler is the core component responsible for translating Go AST nodes

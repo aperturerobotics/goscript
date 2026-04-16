@@ -22,3 +22,7 @@ export async function main(): Promise<void> {
 	$.println("String exists:", exists2)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

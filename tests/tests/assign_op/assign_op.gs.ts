@@ -50,3 +50,7 @@ export async function main(): Promise<void> {
 	$.println(k) // Expected output: 2
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

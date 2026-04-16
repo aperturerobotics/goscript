@@ -18,3 +18,7 @@ export async function main(): Promise<void> {
 	$.println("final x:", x)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

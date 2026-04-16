@@ -28,3 +28,7 @@ export async function main(): Promise<void> {
 	myChan.close()
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

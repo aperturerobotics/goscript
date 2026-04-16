@@ -24,3 +24,7 @@ export async function main(): Promise<void> {
 	$.println("***p3 ==", p3!.value!.value!.value)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

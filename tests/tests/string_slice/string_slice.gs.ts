@@ -60,3 +60,7 @@ export async function main(): Promise<void> {
 	$.println(s1, s2, s3) // Expected: a b c
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

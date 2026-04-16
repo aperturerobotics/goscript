@@ -29,3 +29,7 @@ export async function main(): Promise<void> {
 	fmt.Printf("a=%d, b=%d\n", a, b)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

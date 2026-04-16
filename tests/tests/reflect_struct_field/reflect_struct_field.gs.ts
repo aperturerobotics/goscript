@@ -12,3 +12,7 @@ export async function main(): Promise<void> {
 	$.println("StructField Type:", field.Type!.String())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

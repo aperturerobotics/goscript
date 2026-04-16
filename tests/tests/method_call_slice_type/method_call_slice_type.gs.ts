@@ -19,3 +19,7 @@ export async function main(): Promise<void> {
 	$.println("second:", myList!.value![1])
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

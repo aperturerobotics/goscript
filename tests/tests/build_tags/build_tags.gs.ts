@@ -18,3 +18,7 @@ export async function main(): Promise<void> {
 	$.println("=== End Build Tags Test ===")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

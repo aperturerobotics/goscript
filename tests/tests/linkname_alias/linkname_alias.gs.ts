@@ -19,3 +19,7 @@ export async function main(): Promise<void> {
 	$.println(target.Greet("Direct"))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -29,3 +29,7 @@ export async function main(): Promise<void> {
 	$.println("Result 2:", result2)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

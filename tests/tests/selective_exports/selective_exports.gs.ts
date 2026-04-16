@@ -32,3 +32,7 @@ export function unexportedFunc(): void {
 	$.println("unexportedFunc called")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

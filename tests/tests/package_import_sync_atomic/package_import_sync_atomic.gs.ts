@@ -109,3 +109,7 @@ export async function main(): Promise<void> {
 	$.println("atomic test finished")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

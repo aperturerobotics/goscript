@@ -273,6 +273,45 @@ func TestCompilePackagesEmitTypeScriptImportSpecifiers(t *testing.T) {
 			"index.js",
 		},
 	)
+
+	assertFileContains(t,
+		filepath.Join(
+			tempDir,
+			"@goscript",
+			"github.com",
+			"aperturerobotics",
+			"goscript",
+			"tests",
+			"tests",
+			"package_import",
+			"package_import.gs.ts",
+		),
+		[]string{
+			`if ($.isMainScript(import.meta)) {`,
+			`await main()`,
+		},
+		nil,
+	)
+
+	assertFileContains(t,
+		filepath.Join(
+			tempDir,
+			"@goscript",
+			"github.com",
+			"aperturerobotics",
+			"goscript",
+			"tests",
+			"tests",
+			"package_import",
+			"subpkg",
+			"subpkg.gs.ts",
+		),
+		nil,
+		[]string{
+			`if ($.isMainScript(import.meta)) {`,
+			`await main()`,
+		},
+	)
 }
 
 func assertFileContains(t *testing.T, path string, want []string, wantAbsent []string) {

@@ -26,3 +26,7 @@ export async function main(): Promise<void> {
 	$.println(castedAdder!(5, 7))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

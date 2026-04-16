@@ -51,3 +51,7 @@ export async function main(): Promise<void> {
 	$.println("strings.HasSuffix:", strings.HasSuffix("hello", "lo"))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -88,3 +88,7 @@ export async function main(): Promise<void> {
 	$.println("atomic struct field test finished")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

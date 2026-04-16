@@ -19,3 +19,7 @@ export async function main(): Promise<void> {
 	$.println("Value:", $.mapGet(m, "test", 0)[0])
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

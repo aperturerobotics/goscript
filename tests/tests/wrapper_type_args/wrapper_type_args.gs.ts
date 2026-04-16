@@ -91,3 +91,7 @@ export async function main(): Promise<void> {
 	fmt.Println("Test completed")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

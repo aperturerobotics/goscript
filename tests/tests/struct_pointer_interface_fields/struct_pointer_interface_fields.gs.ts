@@ -76,3 +76,7 @@ export async function main(): Promise<void> {
 	$.println(s.interfaceField == null)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

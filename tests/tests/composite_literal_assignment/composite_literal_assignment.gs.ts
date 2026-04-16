@@ -73,3 +73,7 @@ export async function main(): Promise<void> {
 	$.println("Modified struct literal copy: Expected: modified composite literal copy, Actual: " + structLiteralCopy.MyString)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

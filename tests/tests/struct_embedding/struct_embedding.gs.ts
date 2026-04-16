@@ -378,3 +378,7 @@ export async function main(): Promise<void> {
 	$.println("Modified Manager City:", m!.value.City)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

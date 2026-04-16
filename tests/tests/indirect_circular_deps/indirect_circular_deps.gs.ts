@@ -88,3 +88,7 @@ export async function main(): Promise<void> {
 	$.println("b2 has", $.len(b2.AA), "A items")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -26,3 +26,7 @@ export async function main(): Promise<void> {
 	$.println("GC called successfully")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

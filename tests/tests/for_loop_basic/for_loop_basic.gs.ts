@@ -21,3 +21,7 @@ for (let _i = 0; _i < 5; _i++) {{
 $.println("Loop finished")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

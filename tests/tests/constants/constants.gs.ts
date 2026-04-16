@@ -23,3 +23,7 @@ export async function main(): Promise<void> {
 	$.println($.byte(4))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

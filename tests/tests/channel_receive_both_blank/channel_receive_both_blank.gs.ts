@@ -23,3 +23,7 @@ export async function main(): Promise<void> {
 	$.println("received from closed channel, both discarded")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

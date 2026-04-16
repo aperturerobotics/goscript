@@ -57,3 +57,7 @@ export async function main(): Promise<void> {
 	$.println("StringField:", s.StringField)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

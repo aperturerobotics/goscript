@@ -56,3 +56,7 @@ export async function main(): Promise<void> {
 	$.println("MyString: Expected: foo, Actual:", ms.MyString)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

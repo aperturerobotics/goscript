@@ -80,3 +80,7 @@ export async function main(): Promise<void> {
 	await $.chanSend(w!.ch, 1)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -77,3 +77,7 @@ export async function main(): Promise<void> {
 	$.println("Modified struct from function copy: Expected: modified function result copy, Actual: " + structFromFuncCopy.MyString)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

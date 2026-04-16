@@ -69,3 +69,7 @@ export async function main(): Promise<void> {
 	/* _ = */ dereferencedStructCopy
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

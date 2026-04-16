@@ -13,3 +13,7 @@ export async function main(): Promise<void> {
 	printVal(true)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

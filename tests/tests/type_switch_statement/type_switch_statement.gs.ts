@@ -55,3 +55,7 @@ export function getInterface(): null | any {
 	return 42
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -16,3 +16,7 @@ export async function main(): Promise<void> {
 	$.println("Sum:", sum)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

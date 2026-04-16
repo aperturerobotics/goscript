@@ -51,3 +51,7 @@ export async function main(): Promise<void> {
 	}
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

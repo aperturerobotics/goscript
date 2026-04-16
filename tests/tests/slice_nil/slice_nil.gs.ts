@@ -20,3 +20,7 @@ export async function main(): Promise<void> {
 	$.println("slice_nil test passed")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

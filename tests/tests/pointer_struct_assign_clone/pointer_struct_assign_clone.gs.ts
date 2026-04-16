@@ -87,3 +87,7 @@ export function getStructPointer(): MyStruct | null {
 	return new MyStruct({Value: 110})
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

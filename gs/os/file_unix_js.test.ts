@@ -115,6 +115,56 @@ describe('os stdio', () => {
     expect(writeSync).toHaveBeenCalledTimes(1)
   })
 
+  it('falls back to process builtin fs when Deno lacks sync stdio', () => {
+    const readSync = vi.fn(
+      (
+        _fd: number,
+        buffer: Uint8Array,
+        _offset?: number,
+        _length?: number,
+        _position?: number | null,
+      ) => {
+        buffer.set([5, 6], 0)
+        return 2
+      },
+    )
+    const writeSync = vi.fn(
+      (
+        _fd: number,
+        _buffer: Uint8Array,
+        _offset?: number,
+        length?: number,
+        _position?: number | null,
+      ) => length ?? 0,
+    )
+
+    ;(globalThis as any).Deno = {
+      stdin: {},
+      stdout: {},
+    }
+    ;(globalThis as any).process = {
+      getBuiltinModule: vi.fn(() => ({
+        readSync,
+        writeSync,
+      })),
+    }
+    resetHostRuntimeForTests()
+
+    const input = NewFile(0, 'stdin')
+    const output = NewFile(1, 'stdout')
+    const readBuf = new Uint8Array(2)
+
+    const [readN, readErr] = input!.Read(readBuf)
+    expect(readN).toBe(2)
+    expect(readErr).toBeNull()
+    expect(Array.from(readBuf)).toEqual([5, 6])
+
+    const [writeN, writeErr] = output!.Write(new Uint8Array([7, 8, 9]))
+    expect(writeN).toBe(3)
+    expect(writeErr).toBeNull()
+    expect(writeSync).toHaveBeenCalledTimes(1)
+  })
+
   it('returns EOF on zero-byte reads and ErrClosed after Close', () => {
     const stdinReadSync = vi.fn(() => 0)
 

@@ -30,3 +30,7 @@ export async function main(): Promise<void> {
 	$.println("Slice length:", $.len(slice))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

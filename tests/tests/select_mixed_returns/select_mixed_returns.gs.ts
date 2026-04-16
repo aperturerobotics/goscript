@@ -222,3 +222,7 @@ export async function main(): Promise<void> {
 	$.println("All tests completed")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

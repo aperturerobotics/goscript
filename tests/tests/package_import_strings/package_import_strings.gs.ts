@@ -22,3 +22,7 @@ export async function main(): Promise<void> {
 	$.println("Direct:", builderPtr!.String())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

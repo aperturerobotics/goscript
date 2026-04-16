@@ -258,3 +258,7 @@ export async function main(): Promise<void> {
 	$.println("Pointer circular references work fine!")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

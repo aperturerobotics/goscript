@@ -7,3 +7,7 @@ export async function main(): Promise<void> {
 	$.println("Hello world!")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

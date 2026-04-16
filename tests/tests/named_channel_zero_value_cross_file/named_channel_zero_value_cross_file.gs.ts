@@ -9,3 +9,7 @@ export async function main(): Promise<void> {
 	$.println(jobs != null)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

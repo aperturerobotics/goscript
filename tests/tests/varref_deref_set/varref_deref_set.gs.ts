@@ -26,3 +26,7 @@ export async function main(): Promise<void> {
 	p1!.value!.value = 20
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

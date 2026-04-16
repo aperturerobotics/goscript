@@ -45,3 +45,7 @@ export async function main(): Promise<void> {
 	$.println("**savedPP1:", savedPP1!.value!.value)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

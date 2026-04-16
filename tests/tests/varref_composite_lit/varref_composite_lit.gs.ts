@@ -55,3 +55,7 @@ export async function main(): Promise<void> {
 	$.println("childInode.getValue():", childInode!.getValue())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

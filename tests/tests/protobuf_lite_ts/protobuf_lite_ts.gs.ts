@@ -46,3 +46,7 @@ export async function main(): Promise<void> {
 	$.println("json unmarshaled:", out)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -100,3 +100,7 @@ export async function main(): Promise<void> {
 	$.println("Scenario 6c - Struct value to value assertion (should be true):", ok6c)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

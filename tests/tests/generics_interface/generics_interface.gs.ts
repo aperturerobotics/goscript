@@ -173,3 +173,7 @@ export async function main(): Promise<void> {
 	$.println("String comparison 0:", sb!.Compare("test"))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

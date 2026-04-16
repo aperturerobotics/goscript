@@ -14,3 +14,7 @@ export async function main(): Promise<void> {
 	$.println("*p2:", p2!.value) // Should be 10
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

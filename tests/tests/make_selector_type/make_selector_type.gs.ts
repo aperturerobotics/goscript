@@ -14,3 +14,7 @@ export async function main(): Promise<void> {
 	$.println("Content:", $.bytesToString($.mapGet(mfs, "test.txt", new Uint8Array(0))[0]))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

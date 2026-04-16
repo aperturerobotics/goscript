@@ -33,3 +33,7 @@ export async function main(): Promise<void> {
 	// 1
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -123,3 +123,7 @@ export async function main(): Promise<void> {
 	$.println(o5) // Expected: false
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

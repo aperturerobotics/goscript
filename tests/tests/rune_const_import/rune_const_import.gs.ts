@@ -32,3 +32,7 @@ export async function main(): Promise<void> {
 	$.println("space - 1:", 32 - 1)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -48,3 +48,7 @@ export async function main(): Promise<void> {
 	$.println("Layout MST (UTC)    -> " + t3.Format("2006-01-02 15:04:05 MST")) // Go: +0000, TS: MST
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

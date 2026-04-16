@@ -70,3 +70,7 @@ export async function main(): Promise<void> {
 	$.println("valueCopy2: Expected: value copy 2, Actual: " + valueCopy2.MyString)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

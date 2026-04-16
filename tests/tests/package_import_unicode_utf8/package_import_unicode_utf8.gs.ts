@@ -55,3 +55,7 @@ export async function main(): Promise<void> {
 	$.println("UTFMax:", utf8.UTFMax)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

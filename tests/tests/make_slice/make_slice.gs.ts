@@ -101,3 +101,7 @@ $.println("str[1]:", str![1]) // world
 $.println("--- All tests completed ---")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

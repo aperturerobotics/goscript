@@ -62,3 +62,7 @@ export async function main(): Promise<void> {
 	$.println(p.astruct.Msg)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

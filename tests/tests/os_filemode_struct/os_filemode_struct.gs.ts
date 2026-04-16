@@ -62,3 +62,7 @@ export async function main(): Promise<void> {
 	$.println("Mode type:", $.int(mode))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -17,3 +17,7 @@ export async function main(): Promise<void> {
 	$.println("Modulus: Expected: 2, Actual:", mod)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

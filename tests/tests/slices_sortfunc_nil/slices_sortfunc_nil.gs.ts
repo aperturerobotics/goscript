@@ -58,3 +58,7 @@ export async function main(): Promise<void> {
 	$.println("fields after:", fields)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

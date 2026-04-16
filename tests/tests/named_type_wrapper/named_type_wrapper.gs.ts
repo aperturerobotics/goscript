@@ -73,3 +73,7 @@ export async function main(): Promise<void> {
 	$.println("Generic mode:", genericMode)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

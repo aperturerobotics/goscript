@@ -23,3 +23,7 @@ export async function main(): Promise<void> {
 	$.println("pp1 deref:", pp1!.value!.value)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

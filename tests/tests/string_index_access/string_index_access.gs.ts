@@ -22,3 +22,7 @@ export async function main(): Promise<void> {
 	$.println("Byte from myStr2[3]:", $.indexString(myStr2, 3)) // Expected: E5 (byte value 229) - First byte of '好'
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

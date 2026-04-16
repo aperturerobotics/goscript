@@ -57,3 +57,7 @@ export async function main(): Promise<void> {
 	$.println("Initial MyString (via pointer): Expected: hello world, Actual: " + structPointer!.MyString)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

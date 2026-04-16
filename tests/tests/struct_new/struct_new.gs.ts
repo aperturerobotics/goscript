@@ -89,3 +89,7 @@ export async function main(): Promise<void> {
 	$.println("s.myBool (assigned):", s.myBool) // Expected: false
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

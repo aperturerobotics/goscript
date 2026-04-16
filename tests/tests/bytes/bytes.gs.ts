@@ -47,3 +47,7 @@ export async function main(): Promise<void> {
 	$.println("len(b6):", $.len(b6), "cap(b6):", $.cap(b6))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

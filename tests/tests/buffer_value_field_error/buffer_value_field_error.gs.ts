@@ -70,3 +70,7 @@ export async function main(): Promise<void> {
 	$.println("After writeByte:", $.bytesToString(buf!.data))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

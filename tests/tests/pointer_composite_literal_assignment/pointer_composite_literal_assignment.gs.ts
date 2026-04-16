@@ -66,3 +66,7 @@ export async function main(): Promise<void> {
 	$.println("MyInt after modification: Expected: 99, Actual:", structPointer!.MyInt)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

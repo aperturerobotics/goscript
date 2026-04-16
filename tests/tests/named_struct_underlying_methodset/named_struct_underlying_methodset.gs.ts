@@ -82,3 +82,7 @@ export async function main(): Promise<void> {
 	$.println("derived implements Stringer:", derivedOK)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

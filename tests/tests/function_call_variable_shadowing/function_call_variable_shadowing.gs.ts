@@ -147,3 +147,7 @@ export async function main(): Promise<void> {
 	testNoShadowing(walkFunc)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

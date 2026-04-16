@@ -66,3 +66,7 @@ export async function main(): Promise<void> {
 	$.println("Zero File is nil:", zero.File == null)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

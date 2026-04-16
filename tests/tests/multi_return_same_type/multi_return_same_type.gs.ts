@@ -46,3 +46,7 @@ export async function main(): Promise<void> {
 	$.println("minmax(7, 3):", min, max) // 3, 7
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

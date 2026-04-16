@@ -71,3 +71,7 @@ export async function main(): Promise<void> {
 	$.println("Original value after pointer copy modification: Expected: 20, Actual:", original!.MyInt)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

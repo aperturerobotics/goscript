@@ -20,3 +20,7 @@ for (;;) {
 }
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

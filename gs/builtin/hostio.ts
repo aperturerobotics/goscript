@@ -75,6 +75,11 @@ export type HostRuntime = {
   writeStdoutText: HostTextWrite
 }
 
+export type MainScriptMeta = {
+  url: string
+  main?: boolean
+}
+
 const encoder = new TextEncoder()
 
 function getDynamicRequire(): ((specifier: string) => unknown) | null {
@@ -149,12 +154,65 @@ function detectNodeFS(processObj: any | null): NodeFSModule | null {
   return null
 }
 
-function unsupportedReadFD(_fd: number, _buffer: Uint8Array): number | null {
-  throw new HostUnsupportedError()
+function hasURLScheme(path: string): boolean {
+  return /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(path)
 }
 
-function unsupportedWriteFD(_fd: number, _buffer: Uint8Array): number {
-  throw new HostUnsupportedError()
+function isAbsoluteScriptPath(path: string): boolean {
+  return path.startsWith('/') || /^[A-Za-z]:[\\/]/.test(path)
+}
+
+function normalizePath(path: string): string {
+  return path.replace(/\\/g, '/')
+}
+
+function absolutePathToFileURL(path: string, isDirectory: boolean): string {
+  const normalized = normalizePath(path)
+  const suffix = isDirectory && !normalized.endsWith('/') ? '/' : ''
+  if (/^[A-Za-z]:\//.test(normalized)) {
+    return new URL(`file:///${normalized}${suffix}`).href
+  }
+  return new URL(`file://${normalized}${suffix}`).href
+}
+
+function getCurrentWorkingDirectory(): string | null {
+  try {
+    if (typeof hostRuntime?.processObj?.cwd === 'function') {
+      return hostRuntime.processObj.cwd()
+    }
+  } catch {
+    // Fall through to Deno cwd.
+  }
+
+  try {
+    if (typeof hostRuntime?.deno?.cwd === 'function') {
+      return hostRuntime.deno.cwd()
+    }
+  } catch {
+    // No cwd fallback available.
+  }
+
+  return null
+}
+
+function fileURLFromScriptPath(path: string): string | null {
+  try {
+    if (hasURLScheme(path)) {
+      return new URL(path).href
+    }
+
+    if (isAbsoluteScriptPath(path)) {
+      return absolutePathToFileURL(path, false)
+    }
+
+    const cwd = getCurrentWorkingDirectory()
+    if (!cwd) {
+      return null
+    }
+    return new URL(normalizePath(path), absolutePathToFileURL(cwd, true)).href
+  } catch {
+    return null
+  }
 }
 
 function fallbackConsoleWriter(method: 'error' | 'log'): HostTextWrite {
@@ -209,64 +267,62 @@ function detectHostRuntime(): HostRuntime {
     return processObj?.env?.[name] ?? ''
   }
 
-  let readFD: HostReadFD = unsupportedReadFD
-  let writeFD: HostWriteFD = unsupportedWriteFD
-  let writeStdoutText: HostTextWrite = fallbackConsoleWriter('log')
-  let writeStderrText: HostTextWrite = fallbackConsoleWriter('error')
-
-  if (deno) {
-    readFD = (fd: number, buffer: Uint8Array): number | null => {
-      const handle = getStdioHandle(fd)
-      if (!handle || typeof handle.readSync !== 'function') {
-        throw new HostUnsupportedError()
-      }
+  const readFD: HostReadFD = (fd: number, buffer: Uint8Array): number | null => {
+    const handle = getStdioHandle(fd)
+    if (handle && typeof handle.readSync === 'function') {
       return handle.readSync(buffer)
     }
-    writeFD = (fd: number, buffer: Uint8Array): number => {
-      const handle = getStdioHandle(fd)
-      if (!handle || typeof handle.writeSync !== 'function') {
-        throw new HostUnsupportedError()
-      }
+    if (nodeFS) {
+      return nodeFS.readSync(fd, buffer, 0, buffer.length, null)
+    }
+    throw new HostUnsupportedError()
+  }
+  const writeFD: HostWriteFD = (fd: number, buffer: Uint8Array): number => {
+    const handle = getStdioHandle(fd)
+    if (handle && typeof handle.writeSync === 'function') {
       return writeAllSync(
         (chunk: Uint8Array) => handle.writeSync!(chunk),
         buffer,
       )
     }
-    writeStdoutText = (data: string) => {
-      const handle = getStdioHandle(1)
-      if (!handle || typeof handle.writeSync !== 'function') {
-        fallbackConsoleWriter('log')(data)
-        return
-      }
-      writeAllText((chunk: Uint8Array) => handle.writeSync!(chunk), data)
-    }
-    writeStderrText = (data: string) => {
-      const handle = getStdioHandle(2)
-      if (!handle || typeof handle.writeSync !== 'function') {
-        fallbackConsoleWriter('error')(data)
-        return
-      }
-      writeAllText((chunk: Uint8Array) => handle.writeSync!(chunk), data)
-    }
-  } else if (nodeFS) {
-    readFD = (fd: number, buffer: Uint8Array): number | null =>
-      nodeFS.readSync(fd, buffer, 0, buffer.length, null)
-    writeFD = (fd: number, buffer: Uint8Array): number =>
-      writeAllSync(
+    if (nodeFS) {
+      return writeAllSync(
         (chunk: Uint8Array) =>
           nodeFS.writeSync(fd, chunk, 0, chunk.length, null),
         buffer,
       )
-    writeStdoutText = (data: string) =>
+    }
+    throw new HostUnsupportedError()
+  }
+  const writeStdoutText: HostTextWrite = (data: string) => {
+    const handle = getStdioHandle(1)
+    if (handle && typeof handle.writeSync === 'function') {
+      writeAllText((chunk: Uint8Array) => handle.writeSync!(chunk), data)
+      return
+    }
+    if (nodeFS) {
       writeAllText(
         (chunk: Uint8Array) => nodeFS.writeSync(1, chunk, 0, chunk.length, null),
         data,
       )
-    writeStderrText = (data: string) =>
+      return
+    }
+    fallbackConsoleWriter('log')(data)
+  }
+  const writeStderrText: HostTextWrite = (data: string) => {
+    const handle = getStdioHandle(2)
+    if (handle && typeof handle.writeSync === 'function') {
+      writeAllText((chunk: Uint8Array) => handle.writeSync!(chunk), data)
+      return
+    }
+    if (nodeFS) {
       writeAllText(
         (chunk: Uint8Array) => nodeFS.writeSync(2, chunk, 0, chunk.length, null),
         data,
       )
+      return
+    }
+    fallbackConsoleWriter('error')(data)
   }
 
   return {
@@ -295,4 +351,26 @@ export function writeHostStdoutText(data: string): void {
 
 export function writeHostStderrText(data: string): void {
   hostRuntime.writeStderrText(data)
+}
+
+export function isMainScript(meta: MainScriptMeta): boolean {
+  if (meta.main === true) {
+    return true
+  }
+
+  const entryPath = hostRuntime.processObj?.argv?.[1]
+  if (typeof entryPath !== 'string' || entryPath === '') {
+    return false
+  }
+
+  const entryURL = fileURLFromScriptPath(entryPath)
+  if (!entryURL) {
+    return false
+  }
+
+  try {
+    return new URL(meta.url).href === entryURL
+  } catch {
+    return meta.url === entryURL
+  }
 }

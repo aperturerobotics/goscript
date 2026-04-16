@@ -55,3 +55,7 @@ export async function main(): Promise<void> {
 	$.println(x5, rem5, err5)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -134,3 +134,7 @@ export async function main(): Promise<void> {
 	ch.close()
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -12,3 +12,7 @@ export async function main(): Promise<void> {
 	$.println("Loop finished")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

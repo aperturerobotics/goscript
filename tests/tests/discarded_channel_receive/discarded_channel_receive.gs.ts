@@ -15,3 +15,7 @@ export async function main(): Promise<void> {
 	$.println("done") // Add a print statement to verify execution
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

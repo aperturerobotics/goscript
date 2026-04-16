@@ -79,3 +79,7 @@ export async function main(): Promise<void> {
 	$.println("  NumField:", t2!.NumField())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

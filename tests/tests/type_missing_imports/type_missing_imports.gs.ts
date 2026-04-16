@@ -105,3 +105,7 @@ export async function main(): Promise<void> {
 	$.println("Created storage with file:", $.mapGet(s.files, "test", null)[0]!.name)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

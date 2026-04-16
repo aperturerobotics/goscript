@@ -34,3 +34,7 @@ export async function main(): Promise<void> {
 $.println(numCount) // Expected output: 5
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

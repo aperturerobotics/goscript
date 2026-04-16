@@ -344,3 +344,7 @@ export async function main(): Promise<void> {
 	$.println("emptySliceOfSlices[0][0]:", emptySliceOfSlices![0]![0]) // 40000
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

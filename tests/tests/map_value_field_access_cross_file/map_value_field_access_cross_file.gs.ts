@@ -8,3 +8,7 @@ export async function main(): Promise<void> {
 	$.println(ReadValue("foo"))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

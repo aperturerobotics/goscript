@@ -53,3 +53,7 @@ export async function main(): Promise<void> {
 	$.println("Type assertion successful:", result.ok)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

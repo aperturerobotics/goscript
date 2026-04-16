@@ -210,3 +210,7 @@ export async function main(): Promise<void> {
 	processPath(walkFunc)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

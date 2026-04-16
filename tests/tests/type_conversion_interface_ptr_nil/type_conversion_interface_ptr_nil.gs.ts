@@ -29,3 +29,7 @@ export async function main(): Promise<void> {
 	$.println("Elem Kind:", elem!.Kind())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

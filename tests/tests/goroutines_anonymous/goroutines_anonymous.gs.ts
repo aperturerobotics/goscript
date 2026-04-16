@@ -12,3 +12,7 @@ export async function main(): Promise<void> {
 	$.println(await $.chanRecv(msgs))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

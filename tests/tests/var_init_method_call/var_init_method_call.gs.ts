@@ -57,3 +57,7 @@ export async function main(): Promise<void> {
 	$.println("Derived:", Derived!.val)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -53,3 +53,7 @@ export async function main(): Promise<void> {
 	$.println("*MyType implements Stringer:", ptr!.Implements(iface))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

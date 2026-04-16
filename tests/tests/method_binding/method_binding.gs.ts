@@ -111,3 +111,7 @@ export async function main(): Promise<void> {
 	$.println("Value from assigned value method:", value3)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

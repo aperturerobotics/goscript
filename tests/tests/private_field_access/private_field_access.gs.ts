@@ -64,3 +64,7 @@ export async function main(): Promise<void> {
 	accessPrivateField(s)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

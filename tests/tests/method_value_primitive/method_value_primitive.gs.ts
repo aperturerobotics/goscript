@@ -30,3 +30,7 @@ export async function main(): Promise<void> {
 	$.println("addFn2(7):", addFn2!(7)) // Should print 17
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -65,3 +65,7 @@ export async function main(): Promise<void> {
 	$.println("Value via pointer call after modification: Expected: 200, Actual:", msPointer!.value!.GetValue())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

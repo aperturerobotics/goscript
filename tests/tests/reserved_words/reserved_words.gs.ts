@@ -29,3 +29,7 @@ export function testNamedReturn(): number {
 	}
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

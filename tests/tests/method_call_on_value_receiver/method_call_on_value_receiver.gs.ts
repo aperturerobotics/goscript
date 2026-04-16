@@ -60,3 +60,7 @@ export async function main(): Promise<void> {
 	$.println("Method call on value: Expected: bar, Actual:", ms.GetMyString())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

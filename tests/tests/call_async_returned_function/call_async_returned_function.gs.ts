@@ -22,3 +22,7 @@ export async function main(): Promise<void> {
 	;(await getCallback())!("hello")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

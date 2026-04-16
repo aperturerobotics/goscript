@@ -82,3 +82,7 @@ export async function main(): Promise<void> {
 	$.println("reflect_typefor test finished")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

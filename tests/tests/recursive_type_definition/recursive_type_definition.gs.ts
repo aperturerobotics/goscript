@@ -65,3 +65,7 @@ export async function main(): Promise<void> {
 	$.println("recursive type definition test")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

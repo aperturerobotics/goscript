@@ -32,3 +32,7 @@ export async function main(): Promise<void> {
 	$.println("location", setTime.Location()!.String())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

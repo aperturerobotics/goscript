@@ -38,3 +38,7 @@ export async function main(): Promise<void> {
 	$.println(toStringGeneric(new Uint8Array([98, 97, 114])))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

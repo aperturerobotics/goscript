@@ -61,3 +61,7 @@ export async function main(): Promise<void> {
 	$.println("Simple Dereferenced Copy: Expected: modified dereferenced copy, Actual: " + simpleDereferencedCopy.MyString)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

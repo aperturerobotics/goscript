@@ -108,3 +108,7 @@ if (counter != numWorkers) {
 $.println("success: csync.Mutex test completed")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

@@ -25,3 +25,7 @@ export async function main(): Promise<void> {
 	$.println("done", "final counter:", counter)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

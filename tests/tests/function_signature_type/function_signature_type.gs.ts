@@ -123,3 +123,7 @@ export async function main(): Promise<void> {
 	fn4!(3, "two", "three")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

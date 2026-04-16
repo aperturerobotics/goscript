@@ -45,3 +45,7 @@ export async function main(): Promise<void> {
 	$.println(myStruct!.myPrivate)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

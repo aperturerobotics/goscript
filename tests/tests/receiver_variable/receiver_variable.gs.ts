@@ -210,3 +210,7 @@ export async function main(): Promise<void> {
 	$.println("Complex method completed, size:", await c!.Size())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

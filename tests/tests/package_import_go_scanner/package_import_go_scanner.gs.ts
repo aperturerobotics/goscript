@@ -20,3 +20,7 @@ export async function main(): Promise<void> {
 	fmt.Printf("ErrorList length: %d\n", $.len(errorList!.value))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

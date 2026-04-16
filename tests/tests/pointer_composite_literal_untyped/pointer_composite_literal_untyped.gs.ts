@@ -18,3 +18,7 @@ export async function main(): Promise<void> {
 	$.println("Second element x:", data![1]!.x)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

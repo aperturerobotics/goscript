@@ -147,3 +147,7 @@ export function boolstr(b: boolean): string {
 	return "false"
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

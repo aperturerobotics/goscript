@@ -18,3 +18,7 @@ export async function main(): Promise<void> {
 $.println("Copy succeeded")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

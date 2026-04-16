@@ -90,3 +90,7 @@ $.println("worker2 completed")
 $.println("no starvation detected")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

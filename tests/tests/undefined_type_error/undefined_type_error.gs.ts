@@ -230,3 +230,7 @@ export async function main(): Promise<void> {
 	$.println("Formatter test completed")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

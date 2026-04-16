@@ -93,3 +93,7 @@ export async function main(): Promise<void> {
 	$.println("New name:", s!.Name())
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

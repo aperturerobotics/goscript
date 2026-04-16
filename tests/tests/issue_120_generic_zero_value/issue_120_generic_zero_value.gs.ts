@@ -74,3 +74,7 @@ export async function main(): Promise<void> {
 	$.println("zeroStr == \"\":", zeroStr == "")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

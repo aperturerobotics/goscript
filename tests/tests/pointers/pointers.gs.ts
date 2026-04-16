@@ -109,3 +109,7 @@ export async function main(): Promise<void> {
 	$.println("  *npp == nil:", npp!.value == null) // true
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

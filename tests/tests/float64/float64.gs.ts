@@ -31,3 +31,7 @@ export async function main(): Promise<void> {
 	$.println("(a + b) * (c - d) / a =", e)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

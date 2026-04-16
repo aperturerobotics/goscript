@@ -47,3 +47,7 @@ export async function main(): Promise<void> {
 	$.println(myStruct!.myPrivate!.value)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

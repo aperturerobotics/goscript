@@ -127,3 +127,7 @@ for (let _i = 0; _i < $.len(allMessages); _i++) {
 $.println("done")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

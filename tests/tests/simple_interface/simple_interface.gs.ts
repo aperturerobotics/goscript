@@ -49,3 +49,7 @@ export async function main(): Promise<void> {
 	$.println("pointer assertion result:", ok)
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

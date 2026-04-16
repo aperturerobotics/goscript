@@ -138,3 +138,7 @@ export async function main(): Promise<void> {
 	$.println("\nAll nil channel tests completed")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

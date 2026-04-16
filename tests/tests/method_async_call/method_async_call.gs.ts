@@ -108,3 +108,7 @@ export async function main(): Promise<void> {
 	$.println($.len(tracker!.lines))
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

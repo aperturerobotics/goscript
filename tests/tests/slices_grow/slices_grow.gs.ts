@@ -13,3 +13,7 @@ export async function main(): Promise<void> {
 	$.println("slices.Grow test finished")
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

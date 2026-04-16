@@ -34,3 +34,7 @@ export async function main(): Promise<void> {
 	// If _select_has_return_3efe is false, continue execution
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

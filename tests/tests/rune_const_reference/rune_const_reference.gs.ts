@@ -19,3 +19,7 @@ export function useInFunction(r: number): number {
 	return r + 1
 }
 
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}
