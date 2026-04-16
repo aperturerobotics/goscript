@@ -1,10 +1,10 @@
 // Generated file based on struct_embedding_bytes_buffer.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
-import * as io from "@goscript/io/index.js"
+import * as $ from "@goscript/builtin/index.ts"
+import * as io from "@goscript/io/index.ts"
 
-import * as bytes from "@goscript/bytes/index.js"
+import * as bytes from "@goscript/bytes/index.ts"
 
 export class MyWriter {
 	public get count(): number {

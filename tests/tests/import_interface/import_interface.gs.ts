@@ -1,11 +1,11 @@
 // Generated file based on import_interface.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as os from "@goscript/os/index.js"
+import * as os from "@goscript/os/index.ts"
 
-import * as filepath from "@goscript/path/filepath/index.js"
+import * as filepath from "@goscript/path/filepath/index.ts"
 
 // This test demonstrates the issue where os.FileInfo gets expanded
 // to its full type definition instead of preserving the interface name

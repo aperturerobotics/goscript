@@ -1,1 +1,1 @@
-export { MyStruct } from "./struct_pointer_marking.gs.js"
+export { MyStruct } from "./struct_pointer_marking.gs.ts"

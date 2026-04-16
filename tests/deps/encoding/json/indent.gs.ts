@@ -1,9 +1,9 @@
-import * as $ from "@goscript/builtin/index.js"
-import { freeScanner, newScanner } from "./scanner.gs.js";
-import { hex } from "./encode.gs.js";
-import { scanContinue, scanEndArray, scanEndObject, scanError, scanSkipSpace } from "./scanner.gs.js";
+import * as $ from "@goscript/builtin/index.ts"
+import { freeScanner, newScanner } from "./scanner.gs.ts";
+import { hex } from "./encode.gs.ts";
+import { scanContinue, scanEndArray, scanEndObject, scanError, scanSkipSpace } from "./scanner.gs.ts";
 
-import * as bytes from "@goscript/bytes/index.js"
+import * as bytes from "@goscript/bytes/index.ts"
 
 export let indentGrowthFactor: number = 2
 

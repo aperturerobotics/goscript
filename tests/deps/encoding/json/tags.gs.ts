@@ -1,6 +1,6 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as strings from "@goscript/strings/index.js"
+import * as strings from "@goscript/strings/index.ts"
 
 export type tagOptions = string;
 

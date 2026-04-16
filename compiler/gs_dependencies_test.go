@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -169,5 +170,129 @@ func TestCompilePackagesCopiesHandwrittenDependencies(t *testing.T) {
 	cmpPath := filepath.Join(tempDir, "@goscript", "cmp", "index.ts")
 	if _, err := os.Stat(cmpPath); err != nil {
 		t.Fatalf("Expected handwritten dependency at %s: %v", cmpPath, err)
+	}
+}
+
+func TestCompilePackagesEmitTypeScriptImportSpecifiers(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "goscript-ts-imports")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
+
+	config := &Config{
+		OutputPath:         tempDir,
+		Dir:                filepath.Dir(wd),
+		AllDependencies:    true,
+		DisableEmitBuiltin: false,
+	}
+
+	logger := logrus.New()
+	logger.SetLevel(logrus.WarnLevel)
+	le := logrus.NewEntry(logger)
+
+	comp, err := NewCompiler(config, le, nil)
+	if err != nil {
+		t.Fatalf("Failed to create compiler: %v", err)
+	}
+
+	_, err = comp.CompilePackages(
+		context.Background(),
+		"github.com/aperturerobotics/goscript/tests/tests/package_import",
+		"github.com/aperturerobotics/goscript/tests/tests/map_value_field_access_cross_file",
+	)
+	if err != nil {
+		t.Fatalf("Compilation failed: %v", err)
+	}
+
+	assertFileContains(t,
+		filepath.Join(
+			tempDir,
+			"@goscript",
+			"github.com",
+			"aperturerobotics",
+			"goscript",
+			"tests",
+			"tests",
+			"package_import",
+			"package_import.gs.ts",
+		),
+		[]string{
+			`@goscript/builtin/index.ts`,
+			`@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import/subpkg/index.ts`,
+		},
+		[]string{
+			".js",
+		},
+	)
+
+	assertFileContains(t,
+		filepath.Join(
+			tempDir,
+			"@goscript",
+			"github.com",
+			"aperturerobotics",
+			"goscript",
+			"tests",
+			"tests",
+			"package_import",
+			"subpkg",
+			"index.ts",
+		),
+		[]string{
+			`"./subpkg.gs.ts"`,
+		},
+		[]string{
+			".gs.js",
+		},
+	)
+
+	assertFileContains(t,
+		filepath.Join(
+			tempDir,
+			"@goscript",
+			"github.com",
+			"aperturerobotics",
+			"goscript",
+			"tests",
+			"tests",
+			"map_value_field_access_cross_file",
+			"read.gs.ts",
+		),
+		[]string{
+			`"./types.gs.ts"`,
+			`@goscript/builtin/index.ts`,
+		},
+		[]string{
+			".gs.js",
+			"index.js",
+		},
+	)
+}
+
+func assertFileContains(t *testing.T, path string, want []string, wantAbsent []string) {
+	t.Helper()
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("Failed to read %s: %v", path, err)
+	}
+	text := string(data)
+
+	for _, s := range want {
+		if !strings.Contains(text, s) {
+			t.Fatalf("Expected %s to contain %q\n%s", path, s, text)
+		}
+	}
+
+	for _, s := range wantAbsent {
+		if strings.Contains(text, s) {
+			t.Fatalf("Expected %s to omit %q\n%s", path, s, text)
+		}
 	}
 }

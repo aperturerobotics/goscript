@@ -1,6 +1,6 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as utf8 from "@goscript/unicode/utf8/index.js"
+import * as utf8 from "@goscript/unicode/utf8/index.ts"
 
 export let htmlSafeSet = $.arrayToSlice<boolean>([false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, false, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true])
 

@@ -1,9 +1,9 @@
 // Generated file based on package_import_unicode.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as unicode from "@goscript/unicode/index.js"
+import * as unicode from "@goscript/unicode/index.ts"
 
 export async function main(): Promise<void> {
 	// Test character classification functions

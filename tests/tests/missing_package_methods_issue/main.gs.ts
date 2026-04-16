@@ -1,11 +1,11 @@
 // Generated file based on main.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as fmt from "@goscript/fmt/index.js"
+import * as fmt from "@goscript/fmt/index.ts"
 
-import * as slices from "@goscript/slices/index.js"
+import * as slices from "@goscript/slices/index.ts"
 
 export async function main(): Promise<void> {
 	// Test slices.Delete which was missing in the error output

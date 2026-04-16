@@ -1,9 +1,9 @@
 // Generated file based on package_import_fmt.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as fmt from "@goscript/fmt/index.js"
+import * as fmt from "@goscript/fmt/index.ts"
 
 export async function main(): Promise<void> {
 	// Test basic Print functions

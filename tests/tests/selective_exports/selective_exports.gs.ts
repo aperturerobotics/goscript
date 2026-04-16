@@ -1,8 +1,8 @@
 // Generated file based on selective_exports.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
-import { ExportedFromUtils, unexportedFromUtils } from "./utils.gs.js";
+import * as $ from "@goscript/builtin/index.ts"
+import { ExportedFromUtils, unexportedFromUtils } from "./utils.gs.ts";
 
 export async function main(): Promise<void> {
 	$.println("=== Selective Exports Test ===")

@@ -1,9 +1,9 @@
 // Generated file based on package_import_os.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as os from "@goscript/os/index.js"
+import * as os from "@goscript/os/index.ts"
 
 export async function main(): Promise<void> {
 	// Test Getwd - works with mock data

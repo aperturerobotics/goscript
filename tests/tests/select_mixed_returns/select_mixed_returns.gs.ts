@@ -1,11 +1,11 @@
 // Generated file based on select_mixed_returns.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as context from "@goscript/context/index.js"
+import * as context from "@goscript/context/index.ts"
 
-import * as time from "@goscript/time/index.js"
+import * as time from "@goscript/time/index.ts"
 
 export async function testMixedReturns(ctx: null | context.Context): Promise<string> {
 	let ch1 = $.makeChannel<string>(1, "", 'both')

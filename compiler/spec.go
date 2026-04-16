@@ -650,12 +650,7 @@ func (c *GoToTSCompiler) WriteImportSpec(a *ast.ImportSpec) {
 	// All Go package imports are mapped to the @goscript/ scope.
 	// The TypeScript compiler will resolve these using tsconfig paths to either
 	// handwritten versions (in .goscript-assets) or transpiled versions (in goscript).
-	var tsImportPath string
-	if goPath == "github.com/aperturerobotics/goscript/builtin" {
-		tsImportPath = "@goscript/builtin/index.js"
-	} else {
-		tsImportPath = "@goscript/" + goPath
-	}
+	tsImportPath := translateGoImportPathToTypescriptModulePath(goPath)
 
 	c.analysis.Imports[impName] = &fileImport{
 		importPath: tsImportPath,
@@ -671,7 +666,7 @@ func (c *GoToTSCompiler) WriteImportSpec(a *ast.ImportSpec) {
 		}
 	}
 
-	c.tsw.WriteImport(impName, tsImportPath+"/index.js")
+	c.tsw.WriteImport(impName, translateTypescriptModulePathToIndexImportPath(tsImportPath))
 }
 
 func (c *GoToTSCompiler) writeClonedFieldInitializer(fieldName string, fieldType types.Type, isEmbedded bool) {

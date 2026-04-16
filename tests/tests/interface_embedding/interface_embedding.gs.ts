@@ -1,11 +1,11 @@
 // Generated file based on interface_embedding.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as io from "@goscript/io/index.js"
+import * as io from "@goscript/io/index.ts"
 
-import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedding/subpkg/index.js"
+import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedding/subpkg/index.ts"
 
 export type File = null | {
 	// Lock locks the file like e.g. flock. It protects against access from

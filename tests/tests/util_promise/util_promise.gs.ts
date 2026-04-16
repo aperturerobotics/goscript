@@ -1,9 +1,9 @@
 // Generated file based on util_promise.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as context from "@goscript/context/index.js"
+import * as context from "@goscript/context/index.ts"
 
 export class PromiseType<T extends any> {
 	public get result(): T {

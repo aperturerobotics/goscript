@@ -1,1 +1,1 @@
-export { StringEnd } from "./hooks.gs.js"
+export { StringEnd } from "./hooks.gs.ts"

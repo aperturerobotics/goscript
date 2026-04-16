@@ -1,4 +1,4 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 export type BinaryAppender = null | {
 	// AppendBinary appends the binary representation of itself to the end of b

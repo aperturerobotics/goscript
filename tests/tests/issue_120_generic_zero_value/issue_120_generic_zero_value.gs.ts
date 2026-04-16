@@ -1,9 +1,9 @@
 // Generated file based on issue_120_generic_zero_value.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as strconv from "@goscript/strconv/index.js"
+import * as strconv from "@goscript/strconv/index.ts"
 
 export type IntVal = number;
 

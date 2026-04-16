@@ -1,8 +1,8 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as strconv from "@goscript/strconv/index.js"
+import * as strconv from "@goscript/strconv/index.ts"
 
-import * as sync from "@goscript/sync/index.js"
+import * as sync from "@goscript/sync/index.ts"
 
 // Continue.
 // uninteresting byte

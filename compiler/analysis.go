@@ -1515,7 +1515,7 @@ func (a *Analysis) addImportsForPromotedMethods(pkg *packages.Package) {
 		if len(packagesToAdd) > 0 {
 			fileImports := make(map[string]*fileImport)
 			for pkgName, pkgObj := range packagesToAdd {
-				tsImportPath := "@goscript/" + pkgObj.Path()
+				tsImportPath := translateGoImportPathToTypescriptModulePath(pkgObj.Path())
 				fileImports[pkgName] = &fileImport{
 					importPath: tsImportPath,
 					importVars: make(map[string]struct{}),

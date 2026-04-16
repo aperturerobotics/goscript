@@ -1,9 +1,9 @@
 // Generated file based on package_var_async_method.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as sync from "@goscript/sync/index.js"
+import * as sync from "@goscript/sync/index.ts"
 
 export let cache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
 

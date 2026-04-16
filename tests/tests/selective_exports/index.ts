@@ -1,2 +1,2 @@
-export { ExportedFunc } from "./selective_exports.gs.js"
-export { ExportedFromUtils } from "./utils.gs.js"
+export { ExportedFunc } from "./selective_exports.gs.ts"
+export { ExportedFromUtils } from "./utils.gs.ts"

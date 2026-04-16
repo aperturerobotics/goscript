@@ -1,9 +1,9 @@
 // Generated file based on package_import_time.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as time from "@goscript/time/index.js"
+import * as time from "@goscript/time/index.ts"
 
 export async function main(): Promise<void> {
 	let now = $.markAsStructValue(time.Now().clone())

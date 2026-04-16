@@ -1,13 +1,13 @@
 // Generated file based on package_import_go_scanner.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as fmt from "@goscript/fmt/index.js"
+import * as fmt from "@goscript/fmt/index.ts"
 
-import * as scanner from "@goscript/go/scanner/index.js"
+import * as scanner from "@goscript/go/scanner/index.ts"
 
-import * as token from "@goscript/go/token/index.js"
+import * as token from "@goscript/go/token/index.ts"
 
 export async function main(): Promise<void> {
 	// Use scanner package functionality that should generate imports

@@ -1,18 +1,18 @@
-import * as $ from "@goscript/builtin/index.js"
-import { newEncodeState } from "./encode.gs.js";
-import { appendIndent } from "./indent.gs.js";
-import { isSpace, quoteChar, stateEndValue } from "./scanner.gs.js";
-import { Unmarshaler, decodeState } from "./decode.gs.js";
-import { Marshaler, encOpts } from "./encode.gs.js";
-import { SyntaxError, scanner } from "./scanner.gs.js";
-import { encodeStatePool } from "./encode.gs.js";
-import { scanEnd, scanEndArray, scanEndObject, scanError } from "./scanner.gs.js";
+import * as $ from "@goscript/builtin/index.ts"
+import { newEncodeState } from "./encode.gs.ts";
+import { appendIndent } from "./indent.gs.ts";
+import { isSpace, quoteChar, stateEndValue } from "./scanner.gs.ts";
+import { Unmarshaler, decodeState } from "./decode.gs.ts";
+import { Marshaler, encOpts } from "./encode.gs.ts";
+import { SyntaxError, scanner } from "./scanner.gs.ts";
+import { encodeStatePool } from "./encode.gs.ts";
+import { scanEnd, scanEndArray, scanEndObject, scanError } from "./scanner.gs.ts";
 
-import * as bytes from "@goscript/bytes/index.js"
+import * as bytes from "@goscript/bytes/index.ts"
 
-import * as errors from "@goscript/errors/index.js"
+import * as errors from "@goscript/errors/index.ts"
 
-import * as io from "@goscript/io/index.js"
+import * as io from "@goscript/io/index.ts"
 
 export let tokenTopValue: number = 0
 

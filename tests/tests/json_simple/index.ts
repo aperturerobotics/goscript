@@ -1,1 +1,1 @@
-export { Simple } from "./json_simple.gs.js"
+export { Simple } from "./json_simple.gs.ts"

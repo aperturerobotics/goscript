@@ -1,2 +1,2 @@
-export { Broadcast } from "./broadcast.gs.js"
-export { WatchBroadcast, WatchBroadcastVT, WatchBroadcastWithEqual } from "./watch.gs.js"
+export { Broadcast } from "./broadcast.gs.ts"
+export { WatchBroadcast, WatchBroadcastVT, WatchBroadcastWithEqual } from "./watch.gs.ts"

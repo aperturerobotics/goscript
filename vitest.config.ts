@@ -15,7 +15,7 @@ export default defineConfig({
   },
   resolve: {
     alias: [
-      // Map @goscript/*.js to gs/*.ts
+      // Map @goscript/*.js to gs/*.ts for existing handwritten sources
       {
         find: /^@goscript\/(.*)\.js$/,
         replacement: resolve(
@@ -23,7 +23,7 @@ export default defineConfig({
           'gs/$1.ts',
         ),
       },
-      // Map @goscript/* to gs/*
+      // Map @goscript/* to gs/*, including explicit .ts specifiers from compiler output
       {
         find: /^@goscript\/(.*)$/,
         replacement: resolve(

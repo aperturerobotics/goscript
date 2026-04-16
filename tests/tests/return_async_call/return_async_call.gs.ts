@@ -1,11 +1,11 @@
 // Generated file based on return_async_call.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as context from "@goscript/context/index.js"
+import * as context from "@goscript/context/index.ts"
 
-import * as time from "@goscript/time/index.js"
+import * as time from "@goscript/time/index.ts"
 
 // AsyncFunction simulates an async function
 export async function AsyncFunction(): Promise<string> {

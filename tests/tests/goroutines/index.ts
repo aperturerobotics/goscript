@@ -1,1 +1,1 @@
-export { Message } from "./goroutines.gs.js"
+export { Message } from "./goroutines.gs.ts"

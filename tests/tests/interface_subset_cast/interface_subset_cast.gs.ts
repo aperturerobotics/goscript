@@ -1,7 +1,7 @@
 // Generated file based on interface_subset_cast.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 export type MyInterface1 = null | {
 	MyString1(): string

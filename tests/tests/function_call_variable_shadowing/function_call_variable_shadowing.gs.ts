@@ -1,11 +1,11 @@
 // Generated file based on function_call_variable_shadowing.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as os from "@goscript/os/index.js"
+import * as os from "@goscript/os/index.ts"
 
-import * as filepath from "@goscript/path/filepath/index.js"
+import * as filepath from "@goscript/path/filepath/index.ts"
 
 export type Filesystem = null | {
 	Lstat(filename: string): [null | os.FileInfo, $.GoError]

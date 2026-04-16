@@ -1,1 +1,1 @@
-export { TestStruct } from "./nil_pkg_pointer_dereference.gs.js"
+export { TestStruct } from "./nil_pkg_pointer_dereference.gs.ts"

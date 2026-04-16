@@ -1,1 +1,1 @@
-export { Decoder } from "./method_async_dependency.gs.js"
+export { Decoder } from "./method_async_dependency.gs.ts"

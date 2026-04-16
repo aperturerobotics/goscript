@@ -1,9 +1,9 @@
 // Generated file based on package_import_unicode_utf8.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as utf8 from "@goscript/unicode/utf8/index.js"
+import * as utf8 from "@goscript/unicode/utf8/index.ts"
 
 export async function main(): Promise<void> {
 	// Test basic UTF-8 functions

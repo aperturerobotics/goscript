@@ -1,13 +1,13 @@
 // Generated file based on filepath_walkfunc_call.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as os from "@goscript/os/index.js"
+import * as os from "@goscript/os/index.ts"
 
-import * as filepath from "@goscript/path/filepath/index.js"
+import * as filepath from "@goscript/path/filepath/index.ts"
 
-import * as time from "@goscript/time/index.js"
+import * as time from "@goscript/time/index.ts"
 
 export type Filesystem = null | {
 	ReadDir(path: string): [$.Slice<null | os.FileInfo>, $.GoError]

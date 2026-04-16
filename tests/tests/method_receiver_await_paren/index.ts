@@ -1,1 +1,1 @@
-export { Thing } from "./method_receiver_await_paren.gs.js"
+export { Thing } from "./method_receiver_await_paren.gs.ts"

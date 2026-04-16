@@ -1,7 +1,7 @@
 // Generated file based on nested_async_method_value.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 export type Spawner = null | {
 	Spawn(): $.GoError

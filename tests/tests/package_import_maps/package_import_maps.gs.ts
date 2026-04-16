@@ -1,11 +1,11 @@
 // Generated file based on package_import_maps.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as maps from "@goscript/maps/index.js"
+import * as maps from "@goscript/maps/index.ts"
 
-import * as slices from "@goscript/slices/index.js"
+import * as slices from "@goscript/slices/index.ts"
 
 export function getValue(): [string, number] {
 	return ["test", 42]

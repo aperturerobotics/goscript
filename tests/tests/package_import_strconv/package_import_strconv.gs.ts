@@ -1,9 +1,9 @@
 // Generated file based on package_import_strconv.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as strconv from "@goscript/strconv/index.js"
+import * as strconv from "@goscript/strconv/index.ts"
 
 export async function main(): Promise<void> {
 	// Test Atoi

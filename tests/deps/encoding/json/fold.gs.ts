@@ -1,8 +1,8 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as unicode from "@goscript/unicode/index.js"
+import * as unicode from "@goscript/unicode/index.ts"
 
-import * as utf8 from "@goscript/unicode/utf8/index.js"
+import * as utf8 from "@goscript/unicode/utf8/index.ts"
 
 // foldName returns a folded string such that foldName(x) == foldName(y)
 // is identical to bytes.EqualFold(x, y).

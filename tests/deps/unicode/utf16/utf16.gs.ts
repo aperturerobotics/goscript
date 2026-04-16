@@ -1,4 +1,4 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 // Unicode replacement character
 export let replacementChar: number = 65533

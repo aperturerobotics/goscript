@@ -1,7 +1,7 @@
 // Generated file based on method_receiver_with_call_expr.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 export class State {
 	public get value(): number {

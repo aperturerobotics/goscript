@@ -1,1 +1,1 @@
-export { Add, Greet } from "./target.gs.js"
+export { Add, Greet } from "./target.gs.ts"

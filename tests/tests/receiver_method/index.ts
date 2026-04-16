@@ -1,1 +1,1 @@
-export { MyStruct } from "./main.gs.js"
+export { MyStruct } from "./main.gs.ts"

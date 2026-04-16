@@ -1,9 +1,9 @@
 // Generated file based on slices_sortfunc_nil.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as slices from "@goscript/slices/index.js"
+import * as slices from "@goscript/slices/index.ts"
 
 export class field {
 	public get name(): string {

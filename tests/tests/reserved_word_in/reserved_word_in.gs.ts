@@ -1,7 +1,7 @@
 // Generated file based on reserved_word_in.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 export function double(_in: number): number {
 	return _in * 2

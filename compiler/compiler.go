@@ -474,11 +474,7 @@ func (c *PackageCompiler) generateIndexFile(compiledFiles []string) error {
 		// Check if this is a protobuf file
 		if strings.HasSuffix(fileName, ".pb") {
 			// For protobuf files, add a simple re-export
-			pbTsFileName := fileName + ".ts"
-			if err := func() error {
-				var _ string = pbTsFileName
-				return c.writeProtobufExports(indexFile, fileName)
-			}(); err != nil {
+			if err := c.writeProtobufExports(indexFile, fileName); err != nil {
 				return err
 			}
 			continue
@@ -555,8 +551,8 @@ func (c *PackageCompiler) generateIndexFile(compiledFiles []string) error {
 		// Write exports if this file has exported symbols
 		if len(valueSymbols) > 0 {
 			slices.Sort(valueSymbols)
-			exportLine := fmt.Sprintf("export { %s } from \"./%s.js\"\n",
-				strings.Join(valueSymbols, ", "), fileName)
+			exportLine := fmt.Sprintf("export { %s } from %q\n",
+				strings.Join(valueSymbols, ", "), translateGeneratedFileToImportPath(fileName))
 			if _, err := indexFile.WriteString(exportLine); err != nil {
 				return err
 			}
@@ -566,8 +562,8 @@ func (c *PackageCompiler) generateIndexFile(compiledFiles []string) error {
 		if len(structSymbols) > 0 {
 			slices.Sort(structSymbols)
 			// Export classes as values (which makes them available as both types and values in TypeScript)
-			exportLine := fmt.Sprintf("export { %s } from \"./%s.js\"\n",
-				strings.Join(structSymbols, ", "), fileName)
+			exportLine := fmt.Sprintf("export { %s } from %q\n",
+				strings.Join(structSymbols, ", "), translateGeneratedFileToImportPath(fileName))
 			if _, err := indexFile.WriteString(exportLine); err != nil {
 				return err
 			}
@@ -575,8 +571,8 @@ func (c *PackageCompiler) generateIndexFile(compiledFiles []string) error {
 
 		if len(typeSymbols) > 0 {
 			slices.Sort(typeSymbols)
-			exportLine := fmt.Sprintf("export type { %s } from \"./%s.js\"\n",
-				strings.Join(typeSymbols, ", "), fileName)
+			exportLine := fmt.Sprintf("export type { %s } from %q\n",
+				strings.Join(typeSymbols, ", "), translateGeneratedFileToImportPath(fileName))
 			if _, err := indexFile.WriteString(exportLine); err != nil {
 				return err
 			}
@@ -664,7 +660,10 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 	goWriter := NewGoToTSCompiler(c.codeWriter, c.pkg, c.Analysis, c.fullPath)
 
 	// Add import for the goscript runtime using namespace import and alias
-	c.codeWriter.WriteLinef("import * as $ from %q", "@goscript/builtin/index.js")
+	c.codeWriter.WriteLinef(
+		"import * as $ from %q",
+		translateTypescriptModulePathToIndexImportPath("@goscript/builtin"),
+	)
 
 	// Check if there are any .pb.go files in this package and add imports for them
 	if err := c.addProtobufImports(); err != nil {
@@ -691,8 +690,8 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 				}
 				// Sort functions for consistent output
 				slices.Sort(sanitizedFunctions)
-				c.codeWriter.WriteLinef("import { %s } from \"./%s.gs.js\";",
-					strings.Join(sanitizedFunctions, ", "), sourceFile)
+				c.codeWriter.WriteLinef("import { %s } from %q;",
+					strings.Join(sanitizedFunctions, ", "), translateGeneratedGoFileToImportPath(sourceFile))
 			}
 		}
 	}
@@ -709,7 +708,7 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 		for _, sourceFile := range sourceFiles {
 			typeImports := typeImports[sourceFile]
 			if len(typeImports) > 0 {
-				// Filter out protobuf types - they should be imported from .pb.js files, not .gs.js files
+				// Filter out protobuf types - they should be imported from .pb.ts files, not .gs.ts files
 				var nonProtobufTypes []string
 				for _, typeName := range typeImports {
 					// Check if this type is a protobuf type by looking at its type info
@@ -736,8 +735,8 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 					}
 					// Sort types for consistent output
 					slices.Sort(sanitizedTypes)
-					c.codeWriter.WriteLinef("import { %s } from \"./%s.gs.js\";",
-						strings.Join(sanitizedTypes, ", "), sourceFile)
+					c.codeWriter.WriteLinef("import { %s } from %q;",
+						strings.Join(sanitizedTypes, ", "), translateGeneratedGoFileToImportPath(sourceFile))
 				}
 			}
 		}
@@ -762,8 +761,8 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 				}
 				// Sort variables for consistent output
 				slices.Sort(sanitizedVariables)
-				c.codeWriter.WriteLinef("import { %s } from \"./%s.gs.js\";",
-					strings.Join(sanitizedVariables, ", "), sourceFile)
+				c.codeWriter.WriteLinef("import { %s } from %q;",
+					strings.Join(sanitizedVariables, ", "), translateGeneratedGoFileToImportPath(sourceFile))
 			}
 		}
 	}
@@ -779,7 +778,7 @@ func (c *FileCompiler) Compile(ctx context.Context) error {
 		slices.Sort(syntheticPkgNames)
 		for _, pkgName := range syntheticPkgNames {
 			imp := syntheticImports[pkgName]
-			c.codeWriter.WriteImport(pkgName, imp.importPath+"/index.js")
+			c.codeWriter.WriteImport(pkgName, translateTypescriptModulePathToIndexImportPath(imp.importPath))
 		}
 	}
 

@@ -1,9 +1,9 @@
 // Generated file based on package_import_runtime.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as runtime from "@goscript/runtime/index.js"
+import * as runtime from "@goscript/runtime/index.ts"
 
 export async function main(): Promise<void> {
 	// Test basic runtime functions

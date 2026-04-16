@@ -1,1 +1,1 @@
-export { Person } from "./json_typefields.gs.js"
+export { Person } from "./json_typefields.gs.ts"

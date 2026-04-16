@@ -1,15 +1,15 @@
 // Generated file based on package_import_csync.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as context from "@goscript/context/index.js"
+import * as context from "@goscript/context/index.ts"
 
-import * as sync from "@goscript/sync/index.js"
+import * as sync from "@goscript/sync/index.ts"
 
-import * as time from "@goscript/time/index.js"
+import * as time from "@goscript/time/index.ts"
 
-import * as csync from "@goscript/github.com/aperturerobotics/util/csync/index.js"
+import * as csync from "@goscript/github.com/aperturerobotics/util/csync/index.ts"
 
 export async function main(): Promise<void> {
 	using __defer = new $.DisposableStack();

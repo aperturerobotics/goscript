@@ -1,14 +1,14 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as context from "@goscript/context/index.js"
+import * as context from "@goscript/context/index.ts"
 
-import * as sync from "@goscript/sync/index.js"
+import * as sync from "@goscript/sync/index.ts"
 
-import * as atomic from "@goscript/sync/atomic/index.js"
+import * as atomic from "@goscript/sync/atomic/index.ts"
 
-import * as broadcast from "@goscript/github.com/aperturerobotics/util/broadcast/index.js"
+import * as broadcast from "@goscript/github.com/aperturerobotics/util/broadcast/index.ts"
 
-import * as errors from "@goscript/github.com/pkg/errors/index.js"
+import * as errors from "@goscript/github.com/pkg/errors/index.ts"
 
 export class Mutex {
 	// bcast is broadcast when below fields change

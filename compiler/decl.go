@@ -574,7 +574,7 @@ func (c *GoToTSCompiler) writeLinknameFunction(decl *ast.FuncDecl, info *linknam
 func (c *GoToTSCompiler) findImportAlias(pkgPath string) string {
 	// The importPath in analysis.Imports is stored as the TypeScript path (e.g., @goscript/pkg/path)
 	// We need to convert the Go package path to match
-	tsPath := "@goscript/" + pkgPath
+	tsPath := translateGoImportPathToTypescriptModulePath(pkgPath)
 
 	for alias, imp := range c.analysis.Imports {
 		if imp.importPath == tsPath {

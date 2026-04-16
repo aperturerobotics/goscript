@@ -1,10 +1,10 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as context from "@goscript/context/index.js"
+import * as context from "@goscript/context/index.ts"
 
-import * as errors from "@goscript/errors/index.js"
+import * as errors from "@goscript/errors/index.ts"
 
-import * as sync from "@goscript/sync/index.js"
+import * as sync from "@goscript/sync/index.ts"
 
 export class Broadcast {
 	public get mtx(): sync.Mutex {

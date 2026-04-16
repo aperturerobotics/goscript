@@ -110,7 +110,10 @@ func (c *FileCompiler) CompileToWriter(w io.Writer) error {
 	goWriter := NewGoToTSCompiler(c.codeWriter, c.pkg, c.Analysis, c.fullPath)
 
 	// Add import for the goscript runtime using namespace import and alias
-	c.codeWriter.WriteLinef("import * as $ from %q", "@goscript/builtin/index.js")
+	c.codeWriter.WriteLinef(
+		"import * as $ from %q",
+		translateTypescriptModulePathToIndexImportPath("@goscript/builtin"),
+	)
 
 	c.codeWriter.WriteLine("") // Add a newline after imports
 

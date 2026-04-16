@@ -1,12 +1,12 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as byteorder from "@goscript/internal/byteorder/index.js"
+import * as byteorder from "@goscript/internal/byteorder/index.ts"
 
-import * as io from "@goscript/io/index.js"
+import * as io from "@goscript/io/index.ts"
 
-import * as slices from "@goscript/slices/index.js"
+import * as slices from "@goscript/slices/index.ts"
 
-import * as strconv from "@goscript/strconv/index.js"
+import * as strconv from "@goscript/strconv/index.ts"
 
 // Standard padding character
 export let StdPadding: number = 61
@@ -128,40 +128,42 @@ export class Encoding {
 			return 
 		}
 		/* _ = */ enc.encode
-		for (; $.len(src) >= 3; ) {
+		let [di, si] = [0, 0]
+		let n = (Math.trunc($.len(src) / 3)) * 3
+		for (; si < n; ) {
 			// Convert 3x 8bit source bytes into 4 bytes
-			let val = ((((src![0] as number) << 16) | ((src![1] as number) << 8)) | (src![2] as number))
+			let val = ((((src![si + 0] as number) << 16) | ((src![si + 1] as number) << 8)) | (src![si + 2] as number))
 
-			/* _ = */ dst![3] // Eliminate bounds checks below.
-			dst![0] = enc.encode![((val >> 18) & 0x3F)]
-			dst![1] = enc.encode![((val >> 12) & 0x3F)]
-			dst![2] = enc.encode![((val >> 6) & 0x3F)]
-			dst![3] = enc.encode![(val & 0x3F)]
+			dst![di + 0] = enc.encode![((val >> 18) & 0x3F)]
+			dst![di + 1] = enc.encode![((val >> 12) & 0x3F)]
+			dst![di + 2] = enc.encode![((val >> 6) & 0x3F)]
+			dst![di + 3] = enc.encode![(val & 0x3F)]
 
-			src = $.goSlice(src, 3, undefined)
-			dst = $.goSlice(dst, 4, undefined)
+			si += 3
+			di += 4
 		}
-		switch ($.len(src)) {
-			case 0: {
-				return 
-			}
-			case 1: {
-				let val = ((src![0] as number) << 16)
-				dst![0] = enc.encode![((val >> 18) & 0x3F)]
-				dst![1] = enc.encode![((val >> 12) & 0x3F)]
+		let remain = $.len(src) - si
+		if (remain == 0) {
+			return 
+		}
+		let val = ((src![si + 0] as number) << 16)
+		if (remain == 2) {
+			val |= ((src![si + 1] as number) << 8)
+		}
+		dst![di + 0] = enc.encode![((val >> 18) & 0x3F)]
+		dst![di + 1] = enc.encode![((val >> 12) & 0x3F)]
+		switch (remain) {
+			case 2: {
+				dst![di + 2] = enc.encode![((val >> 6) & 0x3F)]
 				if (Number(enc.padChar) != -1) {
-					dst![2] = $.byte(enc.padChar)
-					dst![3] = $.byte(enc.padChar)
+					dst![di + 3] = $.byte(enc.padChar)
 				}
 				break
 			}
-			case 2: {
-				let val = (((src![0] as number) << 16) | ((src![1] as number) << 8))
-				dst![0] = enc.encode![((val >> 18) & 0x3F)]
-				dst![1] = enc.encode![((val >> 12) & 0x3F)]
-				dst![2] = enc.encode![((val >> 6) & 0x3F)]
+			case 1: {
 				if (Number(enc.padChar) != -1) {
-					dst![3] = $.byte(enc.padChar)
+					dst![di + 2] = $.byte(enc.padChar)
+					dst![di + 3] = $.byte(enc.padChar)
 				}
 				break
 			}

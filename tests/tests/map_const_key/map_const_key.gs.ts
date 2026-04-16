@@ -1,7 +1,7 @@
 // Generated file based on map_const_key.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 export let Add: Operation = 0
 

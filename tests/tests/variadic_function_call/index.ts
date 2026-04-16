@@ -1,1 +1,1 @@
-export { TestFS } from "./variadic_function_call.gs.js"
+export { TestFS } from "./variadic_function_call.gs.ts"

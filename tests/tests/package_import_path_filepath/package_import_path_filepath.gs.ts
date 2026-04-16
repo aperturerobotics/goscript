@@ -1,9 +1,9 @@
 // Generated file based on package_import_path_filepath.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as filepath from "@goscript/path/filepath/index.js"
+import * as filepath from "@goscript/path/filepath/index.ts"
 
 export async function main(): Promise<void> {
 	// Test Basic path operations

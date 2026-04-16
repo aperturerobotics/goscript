@@ -1,12 +1,12 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as fmt from "@goscript/fmt/index.js"
+import * as fmt from "@goscript/fmt/index.ts"
 
-import * as token from "@goscript/go/token/index.js"
+import * as token from "@goscript/go/token/index.ts"
 
-import * as io from "@goscript/io/index.js"
+import * as io from "@goscript/io/index.ts"
 
-import * as sort from "@goscript/sort/index.js"
+import * as sort from "@goscript/sort/index.ts"
 
 export class Error {
 	public get Pos(): token.Position {

@@ -1,9 +1,9 @@
 // Generated file based on type_declaration_receiver.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as strings from "@goscript/strings/index.js"
+import * as strings from "@goscript/strings/index.ts"
 
 export type CustomString = string;
 

@@ -1,7 +1,7 @@
 // Generated file based on range_const_reassign.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let s = "abc"

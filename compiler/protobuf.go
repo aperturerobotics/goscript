@@ -294,7 +294,8 @@ func (c *FileCompiler) addProtobufImports() error {
 					}
 				}
 
-				c.codeWriter.WriteLinef("import { %s } from \"./%s.pb.js\";", strings.Join(uniq, ", "), pbBaseName)
+				c.codeWriter.WriteLinef("import { %s } from %q;",
+					strings.Join(uniq, ", "), translateGeneratedProtobufFileToImportPath(pbBaseName))
 				break
 			}
 		}

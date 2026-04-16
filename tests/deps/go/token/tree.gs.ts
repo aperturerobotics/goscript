@@ -1,9 +1,9 @@
-import * as $ from "@goscript/builtin/index.js"
-import { File } from "./position.gs.js";
+import * as $ from "@goscript/builtin/index.ts"
+import { File } from "./position.gs.ts";
 
-import * as fmt from "@goscript/fmt/index.js"
+import * as fmt from "@goscript/fmt/index.ts"
 
-import * as iter from "@goscript/iter/index.js"
+import * as iter from "@goscript/iter/index.ts"
 
 export class key {
 	public get start(): number {

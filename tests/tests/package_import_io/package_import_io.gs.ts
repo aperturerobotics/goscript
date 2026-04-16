@@ -1,9 +1,9 @@
 // Generated file based on package_import_io.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as io from "@goscript/io/index.js"
+import * as io from "@goscript/io/index.ts"
 
 export async function main(): Promise<void> {
 	// Test basic error variables

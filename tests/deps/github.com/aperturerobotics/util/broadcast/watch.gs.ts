@@ -1,9 +1,9 @@
-import * as $ from "@goscript/builtin/index.js"
-import { Broadcast } from "./broadcast.gs.js";
+import * as $ from "@goscript/builtin/index.ts"
+import { Broadcast } from "./broadcast.gs.ts";
 
-import * as context from "@goscript/context/index.js"
+import * as context from "@goscript/context/index.ts"
 
-import * as proto from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
+import * as proto from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.ts"
 
 // WatchBroadcast watches a broadcast for changes and sends snapshots.
 //

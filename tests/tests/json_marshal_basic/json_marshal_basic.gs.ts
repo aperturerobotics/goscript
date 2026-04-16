@@ -1,9 +1,9 @@
 // Generated file based on json_marshal_basic.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as json from "@goscript/encoding/json/index.js"
+import * as json from "@goscript/encoding/json/index.ts"
 
 export class Person {
 	public get Name(): string {

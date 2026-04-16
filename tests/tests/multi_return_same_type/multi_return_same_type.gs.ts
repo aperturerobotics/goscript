@@ -1,7 +1,7 @@
 // Generated file based on multi_return_same_type.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 // addSub returns sum and difference with named returns of same type
 export function addSub(a: number, b: number): [number, number] {

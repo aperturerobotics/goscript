@@ -1,10 +1,10 @@
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as strconv from "@goscript/strconv/index.js"
+import * as strconv from "@goscript/strconv/index.ts"
 
-import * as unicode from "@goscript/unicode/index.js"
+import * as unicode from "@goscript/unicode/index.ts"
 
-import * as utf8 from "@goscript/unicode/utf8/index.js"
+import * as utf8 from "@goscript/unicode/utf8/index.ts"
 
 // Special tokens
 export let ILLEGAL: Token = 0

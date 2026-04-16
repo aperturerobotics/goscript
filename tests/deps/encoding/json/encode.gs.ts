@@ -1,38 +1,40 @@
-import * as $ from "@goscript/builtin/index.js"
-import { indirect } from "./decode.gs.js";
-import { foldName } from "./fold.gs.js";
-import { appendCompact, appendHTMLEscape, appendIndent } from "./indent.gs.js";
-import { parseTag, tagOptions_Contains } from "./tags.gs.js";
-import { numberType } from "./decode.gs.js";
-import { indentGrowthFactor } from "./indent.gs.js";
-import { htmlSafeSet, safeSet } from "./tables.gs.js";
-import * as io from "@goscript/io/index.js"
+import * as $ from "@goscript/builtin/index.ts"
+import { indirect } from "./decode.gs.ts";
+import { foldName } from "./fold.gs.ts";
+import { appendCompact, appendHTMLEscape, appendIndent } from "./indent.gs.ts";
+import { parseTag, tagOptions_Contains } from "./tags.gs.ts";
+import { numberType } from "./decode.gs.ts";
+import { indentGrowthFactor } from "./indent.gs.ts";
+import { htmlSafeSet, safeSet } from "./tables.gs.ts";
+import * as io from "@goscript/io/index.ts"
 
-import * as bytes from "@goscript/bytes/index.js"
+import * as bytes from "@goscript/bytes/index.ts"
 
-import * as cmp from "@goscript/cmp/index.js"
+import * as cmp from "@goscript/cmp/index.ts"
 
-import * as encoding from "@goscript/encoding/index.js"
+import * as encoding from "@goscript/encoding/index.ts"
 
-import * as base64 from "@goscript/encoding/base64/index.js"
+import * as base64 from "@goscript/encoding/base64/index.ts"
 
-import * as fmt from "@goscript/fmt/index.js"
+import * as fmt from "@goscript/fmt/index.ts"
 
-import * as math from "@goscript/math/index.js"
+import * as math from "@goscript/math/index.ts"
 
-import * as reflect from "@goscript/reflect/index.js"
+import * as reflect from "@goscript/reflect/index.ts"
 
-import * as slices from "@goscript/slices/index.js"
+import * as slices from "@goscript/slices/index.ts"
 
-import * as strconv from "@goscript/strconv/index.js"
+import * as strconv from "@goscript/strconv/index.ts"
 
-import * as strings from "@goscript/strings/index.js"
+import * as strings from "@goscript/strings/index.ts"
 
-import * as sync from "@goscript/sync/index.js"
+import * as sync from "@goscript/sync/index.ts"
 
-import * as unicode from "@goscript/unicode/index.js"
+import * as unicode from "@goscript/unicode/index.ts"
 
-import * as utf8 from "@goscript/unicode/utf8/index.js"
+import * as utf8 from "@goscript/unicode/utf8/index.ts"
+
+// for linkname
 
 export let hex: string = "0123456789abcdef"
 

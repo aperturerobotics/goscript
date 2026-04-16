@@ -1,7 +1,7 @@
 // Generated file based on issue_119_interface_nil_value.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
 export type Animal = null | {
 	Name(): string

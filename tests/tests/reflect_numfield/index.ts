@@ -1,1 +1,1 @@
-export { Person } from "./reflect_numfield.gs.js"
+export { Person } from "./reflect_numfield.gs.ts"

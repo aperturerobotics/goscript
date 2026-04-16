@@ -1,28 +1,30 @@
-import * as $ from "@goscript/builtin/index.js"
-import { cachedTypeFields, isValidNumber } from "./encode.gs.js";
-import { foldName } from "./fold.gs.js";
-import { checkValid, stateEndValue } from "./scanner.gs.js";
-import { structFields } from "./encode.gs.js";
-import { scanner } from "./scanner.gs.js";
-import { scanArrayValue, scanBeginArray, scanBeginLiteral, scanBeginObject, scanEnd, scanEndArray, scanEndObject, scanObjectKey, scanObjectValue, scanSkipSpace } from "./scanner.gs.js";
+import * as $ from "@goscript/builtin/index.ts"
+import { cachedTypeFields, isValidNumber } from "./encode.gs.ts";
+import { foldName } from "./fold.gs.ts";
+import { checkValid, stateEndValue } from "./scanner.gs.ts";
+import { structFields } from "./encode.gs.ts";
+import { scanner } from "./scanner.gs.ts";
+import { scanArrayValue, scanBeginArray, scanBeginLiteral, scanBeginObject, scanEnd, scanEndArray, scanEndObject, scanObjectKey, scanObjectValue, scanSkipSpace } from "./scanner.gs.ts";
 
-import * as encoding from "@goscript/encoding/index.js"
+import * as encoding from "@goscript/encoding/index.ts"
 
-import * as base64 from "@goscript/encoding/base64/index.js"
+import * as base64 from "@goscript/encoding/base64/index.ts"
 
-import * as fmt from "@goscript/fmt/index.js"
+import * as fmt from "@goscript/fmt/index.ts"
 
-import * as reflect from "@goscript/reflect/index.js"
+import * as reflect from "@goscript/reflect/index.ts"
 
-import * as strconv from "@goscript/strconv/index.js"
+import * as strconv from "@goscript/strconv/index.ts"
 
-import * as strings from "@goscript/strings/index.js"
+import * as strings from "@goscript/strings/index.ts"
 
-import * as unicode from "@goscript/unicode/index.js"
+import * as unicode from "@goscript/unicode/index.ts"
 
-import * as utf16 from "@goscript/unicode/utf16/index.js"
+import * as utf16 from "@goscript/unicode/utf16/index.ts"
 
-import * as utf8 from "@goscript/unicode/utf8/index.js"
+import * as utf8 from "@goscript/unicode/utf8/index.ts"
+
+// for linkname
 
 export let phasePanicMsg: string = "JSON decoder out of sync - data changing underfoot?"
 

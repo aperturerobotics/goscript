@@ -1,1 +1,1 @@
-export { Person } from "./slices_sortfunc.gs.js"
+export { Person } from "./slices_sortfunc.gs.ts"

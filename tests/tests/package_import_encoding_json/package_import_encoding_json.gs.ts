@@ -1,11 +1,11 @@
 // Generated file based on package_import_encoding_json.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as json from "@goscript/encoding/json/index.js"
+import * as json from "@goscript/encoding/json/index.ts"
 
-import * as slices from "@goscript/slices/index.js"
+import * as slices from "@goscript/slices/index.ts"
 
 export class Person {
 	public get Name(): string {

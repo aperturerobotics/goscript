@@ -1,11 +1,11 @@
 // Generated file based on wrapper_type_args.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.js"
+import * as $ from "@goscript/builtin/index.ts"
 
-import * as fmt from "@goscript/fmt/index.js"
+import * as fmt from "@goscript/fmt/index.ts"
 
-import * as os from "@goscript/os/index.js"
+import * as os from "@goscript/os/index.ts"
 
 export type DirInterface = null | {
 	MkdirAll(path: string, perm: os.FileMode): $.GoError
