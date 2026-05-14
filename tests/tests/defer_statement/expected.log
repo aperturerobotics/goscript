@@ -1,2 +1,6 @@
+func body first
+func deferred first
+func body second
+func deferred second
 main
 deferred

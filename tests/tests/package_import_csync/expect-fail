@@ -1,8 +1,6 @@
 Expected v2 failure: github.com/aperturerobotics/util/csync now compiles and
-generated dependency TypeScript qualifies imported types and method-value
-closures, but the fixture still exposes remaining function/nullability and
-async-lifecycle gaps: select callbacks with no return infer void where an error
-or tuple can return, nil function values are not accepted by function-typed
-parameters/results, atomic.Pointer[func()] stores need a VarRef-compatible
-address value, and function-literal defers run on the outer stack so the mutex
-release waits until the main function exits.
+the generated runtime output completes, but type checking still exposes
+function/nullability gaps in dependency output: select callbacks with no return
+infer void where an error or tuple can return, nil function values are not
+accepted by function-typed parameters/results, and atomic.Pointer[func()] stores
+need a VarRef-compatible address value.

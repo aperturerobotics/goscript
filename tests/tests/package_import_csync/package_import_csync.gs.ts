@@ -21,6 +21,7 @@ export async function main(): Promise<void> {
 	let numWorkers = 5
 	wg.value.Add(numWorkers)
 	let worker = $.functionValue(async (id: number): Promise<void> => {
+	using __defer = new $.DisposableStack()
 	__defer.defer(() => { wg.value.Done() })
 	let [relLock, err] = await mtx.value.Lock(ctx)
 	if (err != null) {

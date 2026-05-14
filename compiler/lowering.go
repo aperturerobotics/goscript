@@ -1661,10 +1661,12 @@ func lowerBasicLit(lit *ast.BasicLit) string {
 
 func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (string, bool, []Diagnostic) {
 	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
-	body, diagnostics := o.lowerBlock(ctx.withSignature(signature), lit.Body)
+	deferState := &loweredDeferState{}
+	body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withDeferState(deferState), lit.Body)
 	var rendered strings.Builder
+	renderDeferStack(&rendered, deferState, 1)
 	renderStmts(&rendered, body, 1)
-	async := stmtsContainAwait(body)
+	async := stmtsContainAwait(body) || deferState.async
 	prefix := ""
 	if async {
 		prefix = "async "

@@ -917,6 +917,11 @@ func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
 			"  release := func() { println(\"release\") }",
 			"  rel := &release",
 			"  (*rel)()",
+			"  wrapped := func() {",
+			"    defer println(\"wrapped deferred\")",
+			"    println(\"wrapped body\")",
+			"  }",
+			"  wrapped()",
 			"}",
 			"",
 		}, "\n"),
@@ -942,6 +947,9 @@ func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
 		"let local = \"two-three\"",
 		"switch (true) {",
 		"($.pointerValue(rel))()",
+		"$.functionValue((): void => {\n\tusing __defer = new $.DisposableStack()",
+		"__defer.defer(() => { $.println(\"wrapped deferred\") })",
+		"$.println(\"wrapped body\")",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
