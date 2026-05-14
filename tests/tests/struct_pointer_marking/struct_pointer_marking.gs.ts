@@ -103,7 +103,7 @@ export async function main(): Promise<void> {
 	let nested2 = $.varRef($.markAsStructValue(new MyStruct({Value: 80})))
 	let arr = [nested1, $.markAsStructValue(nested2.value.clone()), nested2]
 	for (let i = 0; i < $.len(arr); i++) {
-		let item = arr[i]
+		let item = arr![i]
 		{
 			let [val, ok] = $.typeAssertTuple<MyStruct>(item, "main.MyStruct")
 			if (ok) {
@@ -123,7 +123,7 @@ export async function main(): Promise<void> {
 	$.println("\n--- Scenario 6: Type Switch ---")
 	let testItems = [$.markAsStructValue($.markAsStructValue(new MyStruct({Value: 100})).clone()), new MyStruct({Value: 200}), 300, "string"]
 	for (let i = 0; i < $.len(testItems); i++) {
-		let item = testItems[i]
+		let item = testItems![i]
 		$.typeSwitch(
 			item,
 			[

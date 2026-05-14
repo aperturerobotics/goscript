@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as strings from "@goscript/strings/index.ts"
 
 export type Basic = null | {
-	Join(...elem: $.Slice<string>): string
+	Join(elem: $.Slice<string>): string
 }
 
 $.registerInterfaceType(
@@ -35,7 +35,7 @@ export class PathJoiner {
 		const p = this
 		let result: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
 		for (let i = 0; i < $.len(elem); i++) {
-			let e = elem[i]
+			let e = elem![i]
 			if (i > 0) {
 				result.value.WriteString("/")
 			}
@@ -55,11 +55,11 @@ export class PathJoiner {
 
 export async function main(): Promise<void> {
 	let b: Basic = $.markAsStructValue($.markAsStructValue(new PathJoiner()).clone())
-	let result1 = b.Join("path", "to", "file")
+	let result1 = b.Join($.arrayToSlice<string>(["path", "to", "file"]))
 	$.println("Result1:", result1)
-	let result2 = b.Join("single")
+	let result2 = b.Join($.arrayToSlice<string>(["single"]))
 	$.println("Result2:", result2)
-	let result3 = b.Join()
+	let result3 = b.Join(null)
 	$.println("Result3:", result3)
 	let parts = ["another", "path", "here"]
 	let result4 = b.Join(parts)

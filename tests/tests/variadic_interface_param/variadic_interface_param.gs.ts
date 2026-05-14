@@ -7,7 +7,7 @@ export function testVariadicInterface(name: string, values: $.Slice<any>): void 
 	$.println("Name:", name)
 	$.println("Values count:", $.len(values))
 	for (let i = 0; i < $.len(values); i++) {
-		let v = values[i]
+		let v = values![i]
 		if (v != null) {
 			$.println("Value", i, "is not nil")
 		} else {
@@ -17,9 +17,9 @@ export function testVariadicInterface(name: string, values: $.Slice<any>): void 
 }
 
 export async function main(): Promise<void> {
-	testVariadicInterface("test1", "hello", 42, true)
-	testVariadicInterface("test2", null, "world")
-	testVariadicInterface("test3")
+	testVariadicInterface("test1", $.arrayToSlice<any>(["hello", 42, true]))
+	testVariadicInterface("test2", $.arrayToSlice<any>([null, "world"]))
+	testVariadicInterface("test3", null)
 	let values = ["a", "b", "c"]
 	testVariadicInterface("test4", values)
 }

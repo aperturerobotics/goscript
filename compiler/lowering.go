@@ -1179,7 +1179,11 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 	}
 	children := body
 	if valueName != "" {
-		children = append([]loweredStmt{{text: "let " + valueName + " = " + rangeValue + "[" + indexName + "]"}}, body...)
+		indexTarget := rangeValue
+		if isNilableType(rangeType) {
+			indexTarget += "!"
+		}
+		children = append([]loweredStmt{{text: "let " + valueName + " = " + indexTarget + "[" + indexName + "]"}}, body...)
 	}
 	return loweredStmt{
 		text:     "for (let " + indexName + " = 0; " + indexName + " < " + o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + rangeValue + "); " + indexName + "++)",
@@ -1529,13 +1533,7 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 		return o.lowerConversionExpr(ctx, expr, targetType)
 	}
 
-	args := make([]string, 0, len(expr.Args))
-	var diagnostics []Diagnostic
-	for _, arg := range expr.Args {
-		lowered, argDiagnostics := o.lowerExpr(ctx, arg)
-		diagnostics = append(diagnostics, argDiagnostics...)
-		args = append(args, lowered)
-	}
+	args, diagnostics := o.lowerCallArgs(ctx, expr, callTargetSignature(ctx, expr.Fun))
 
 	switch fun := expr.Fun.(type) {
 	case *ast.Ident:
@@ -1636,6 +1634,102 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 		return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported call target"))
 	}
 	return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported call target"))
+}
+
+func (o *LoweringOwner) lowerCallArgs(
+	ctx lowerFileContext,
+	expr *ast.CallExpr,
+	signature *types.Signature,
+) ([]string, []Diagnostic) {
+	if signature == nil || !signature.Variadic() ||
+		isBuiltinCallTarget(ctx, expr.Fun) ||
+		o.variadicCallUsesOverrideRest(ctx, expr.Fun) {
+		return o.lowerExprList(ctx, expr.Args)
+	}
+	params := signature.Params()
+	if params == nil || params.Len() == 0 {
+		return o.lowerExprList(ctx, expr.Args)
+	}
+
+	fixedCount := params.Len() - 1
+	args := make([]string, 0, params.Len())
+	var variadicArgs []string
+	var diagnostics []Diagnostic
+	for idx, arg := range expr.Args {
+		lowered, argDiagnostics := o.lowerExpr(ctx, arg)
+		diagnostics = append(diagnostics, argDiagnostics...)
+		if idx < fixedCount {
+			args = append(args, lowered)
+			continue
+		}
+		if expr.Ellipsis != token.NoPos && idx == len(expr.Args)-1 {
+			args = append(args, lowered)
+			continue
+		}
+		variadicArgs = append(variadicArgs, lowered)
+	}
+	if len(expr.Args) < fixedCount || (expr.Ellipsis != token.NoPos && len(args) == params.Len()) {
+		return args, diagnostics
+	}
+	if len(variadicArgs) == 0 {
+		args = append(args, "null")
+		return args, diagnostics
+	}
+
+	elemType := "any"
+	if slice, ok := types.Unalias(params.At(fixedCount).Type()).Underlying().(*types.Slice); ok {
+		elemType = o.tsTypeFor(ctx, slice.Elem())
+	}
+	args = append(args, o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayToSlice)+
+		"<"+elemType+">(["+strings.Join(variadicArgs, ", ")+"])")
+	return args, diagnostics
+}
+
+func (o *LoweringOwner) lowerExprList(ctx lowerFileContext, exprs []ast.Expr) ([]string, []Diagnostic) {
+	args := make([]string, 0, len(exprs))
+	var diagnostics []Diagnostic
+	for _, expr := range exprs {
+		lowered, exprDiagnostics := o.lowerExpr(ctx, expr)
+		diagnostics = append(diagnostics, exprDiagnostics...)
+		args = append(args, lowered)
+	}
+	return args, diagnostics
+}
+
+func callTargetSignature(ctx lowerFileContext, expr ast.Expr) *types.Signature {
+	if ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return nil
+	}
+	typ := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	if typ == nil {
+		return nil
+	}
+	if signature, ok := typ.(*types.Signature); ok {
+		return signature
+	}
+	signature, _ := types.Unalias(typ).Underlying().(*types.Signature)
+	return signature
+}
+
+func isBuiltinCallTarget(ctx lowerFileContext, expr ast.Expr) bool {
+	ident, ok := expr.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	_, ok = objectForIdent(ctx, ident).(*types.Builtin)
+	return ok
+}
+
+func (o *LoweringOwner) variadicCallUsesOverrideRest(ctx lowerFileContext, expr ast.Expr) bool {
+	if o.overrideOwner == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	fn := calledFunction(ctx.semPkg.source, expr)
+	if fn == nil || fn.Pkg() == nil {
+		return false
+	}
+	_, ok := o.overrideOwner.importPackageRoot(fn.Pkg().Path())
+	return ok
 }
 
 func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) (string, []Diagnostic) {
@@ -2336,6 +2430,9 @@ func tsType(typ types.Type) string {
 	if typ == nil {
 		return "unknown"
 	}
+	if isBuiltinErrorType(typ) {
+		return "$.GoError"
+	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
 		if _, ok := named.Underlying().(*types.Struct); ok {
 			return named.Obj().Name()
@@ -2395,11 +2492,7 @@ func tsSignatureParams(signature *types.Signature) string {
 		if name == "" {
 			name = "_p" + strconv.Itoa(idx)
 		}
-		prefix := ""
-		if signature.Variadic() && idx == signature.Params().Len()-1 {
-			prefix = "..."
-		}
-		params = append(params, prefix+name+": "+tsType(param.Type()))
+		params = append(params, name+": "+tsType(param.Type()))
 	}
 	return strings.Join(params, ", ")
 }
@@ -2436,6 +2529,9 @@ func (o *LoweringOwner) tsVariableTypeFor(ctx lowerFileContext, typ types.Type, 
 func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	if typ == nil {
 		return "unknown"
+	}
+	if isBuiltinErrorType(typ) {
+		return "$.GoError"
 	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
 		return o.namedTypeExpr(ctx, named)
@@ -2522,6 +2618,17 @@ func namedFunctionType(typ types.Type) *types.Named {
 		return nil
 	}
 	return named
+}
+
+func isBuiltinErrorType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
+	named, _ := types.Unalias(typ).(*types.Named)
+	if named == nil || named.Obj() == nil {
+		return false
+	}
+	return named.Obj().Pkg() == nil && named.Obj().Name() == "error"
 }
 
 func receiverTypeParam(typ types.Type) *types.TypeParam {

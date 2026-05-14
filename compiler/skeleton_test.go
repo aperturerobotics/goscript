@@ -426,6 +426,10 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 			"  return zero",
 			"}",
 			"func CallString[T Stringer](v T) string { return v.String() }",
+			"func Sum[T Stringer](vals ...T) T {",
+			"  var zero T",
+			"  return zero",
+			"}",
 			"func main() {",
 			"  box := NewBox(7)",
 			"  println(box.Get())",
@@ -433,6 +437,8 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 			"  seen[1] = struct{}{}",
 			"  zero := ZeroValue[MyInt]()",
 			"  println(CallString(zero))",
+			"  sum := Sum[MyInt]()",
+			"  println(CallString(sum))",
 			"}",
 			"",
 		}, "\n"),
@@ -461,6 +467,80 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 		"$.callGenericMethod(__typeArgs, \"T\", \"String\", v)",
 		"ZeroValue({T: { zero: () => 0, methods: {String: MyInt_String} }})",
 		"CallString({T: { zero: () => 0, methods: {String: MyInt_String} }}, zero)",
+		"Sum({T: { zero: () => 0, methods: {String: MyInt_String} }}, null)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/variadic\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Collector func(label string, parts ...string) string",
+			"type Joiner interface {",
+			"  Join(parts ...string) string",
+			"}",
+			"type Path struct{}",
+			"func collect(label string, parts ...string) string {",
+			"  for _, part := range parts {",
+			"    if part == \"\" {",
+			"      return label",
+			"    }",
+			"  }",
+			"  return label + string(rune(len(parts)+'0'))",
+			"}",
+			"func maybeErr(parts ...string) error { return nil }",
+			"func (Path) Join(parts ...string) string {",
+			"  return collect(\"method\", parts...)",
+			"}",
+			"func main() {",
+			"  parts := []string{\"a\", \"b\"}",
+			"  collect(\"none\")",
+			"  collect(\"two\", \"a\", \"b\")",
+			"  collect(\"spread\", parts...)",
+			"  parts = append(parts, \"c\", \"d\")",
+			"  maybeErr(\"ok\")",
+			"  var fn Collector = collect",
+			"  fn(\"fn\", \"x\")",
+			"  var joiner Joiner = Path{}",
+			"  joiner.Join(\"q\", \"r\")",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "variadic", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export type Collector = (label: string, parts: $.Slice<string>) => string",
+		"Join(parts: $.Slice<string>): string",
+		"export function collect(label: string, parts: $.Slice<string>): string",
+		"let part = parts![__rangeIndex]",
+		"export function maybeErr(parts: $.Slice<string>): $.GoError",
+		"public Join(parts: $.Slice<string>): string",
+		"collect(\"none\", null)",
+		"collect(\"two\", $.arrayToSlice<string>([\"a\", \"b\"]))",
+		"collect(\"spread\", parts)",
+		"$.append(parts, \"c\", \"d\")",
+		"maybeErr($.arrayToSlice<string>([\"ok\"]))",
+		"fn(\"fn\", $.arrayToSlice<string>([\"x\"]))",
+		"joiner.Join($.arrayToSlice<string>([\"q\", \"r\"]))",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

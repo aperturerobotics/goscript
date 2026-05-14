@@ -53,18 +53,18 @@ func main() {
 
 	// Test 2: Zero value of StringVal should be ""
 	zeroStr := ZeroValue[StringVal]()
-	println("ZeroValue[StringVal]:", zeroStr.String())
+	println("ZeroValue[StringVal] len:", len(zeroStr.String()))
 
 	// Test 3: CallString on zero value
 	println("CallString on zero IntVal:", CallString(zeroInt))
-	println("CallString on zero StringVal:", CallString(zeroStr))
+	println("CallString on zero StringVal len:", len(CallString(zeroStr)))
 
 	// Test 4: Sum returns zero value
 	sumInt := Sum[IntVal]()
 	println("Sum[IntVal]():", sumInt.String())
 
 	sumStr := Sum[StringVal]()
-	println("Sum[StringVal]():", sumStr.String())
+	println("Sum[StringVal]() len:", len(sumStr.String()))
 
 	// Test 5: Verify the actual values
 	println("zeroInt == 0:", zeroInt == 0)

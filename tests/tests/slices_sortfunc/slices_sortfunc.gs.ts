@@ -62,7 +62,7 @@ export async function main(): Promise<void> {
 	return 0
 })
 	for (let __rangeIndex = 0; __rangeIndex < $.len(people); __rangeIndex++) {
-		let p = people[__rangeIndex]
+		let p = people![__rangeIndex]
 		$.println(p.Name, p.Age)
 	}
 }

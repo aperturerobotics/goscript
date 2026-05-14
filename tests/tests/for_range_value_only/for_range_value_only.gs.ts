@@ -9,7 +9,7 @@ export async function main(): Promise<void> {
 	let s = [10, 20, 30]
 	let sum = 0
 	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {
-		let v = s[__rangeIndex]
+		let v = s![__rangeIndex]
 		sum += v
 		$.println(v)
 	}

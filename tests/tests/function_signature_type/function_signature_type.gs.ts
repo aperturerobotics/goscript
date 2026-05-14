@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export type Func1 = (a: number, b: string) => [boolean, error]
+export type Func1 = (a: number, b: string) => [boolean, $.GoError]
 
 export let fn1: Func1 = null
 
@@ -15,7 +15,7 @@ export type Func3 = () => void
 
 export let fn3: Func3 = null
 
-export type Func4 = (a: number, ...b: $.Slice<string>) => void
+export type Func4 = (a: number, b: $.Slice<string>) => void
 
 export let fn4: Func4 = null
 
@@ -64,7 +64,7 @@ export function NewMyError(text: string): MyError | $.VarRef<MyError> | null {
 }
 
 export async function main(): Promise<void> {
-	fn1 = (a: number, b: string): [boolean, error] => {
+	fn1 = (a: number, b: string): [boolean, $.GoError] => {
 	$.println("fn1 called with:", a, b)
 	if (a > 0) {
 		return [true, null]
@@ -78,10 +78,10 @@ export async function main(): Promise<void> {
 	fn3 = (): void => {
 	$.println("fn3 called")
 }
-	fn4 = (a: number, ...b: $.Slice<string>): void => {
+	fn4 = (a: number, b: $.Slice<string>): void => {
 	$.println("fn4 called with: ", a)
 	for (let __rangeIndex = 0; __rangeIndex < $.len(b); __rangeIndex++) {
-		let s = b[__rangeIndex]
+		let s = b![__rangeIndex]
 		$.println(" ", s)
 	}
 	$.println()
@@ -105,9 +105,9 @@ export async function main(): Promise<void> {
 	let res2_2 = fn2(3, "hey")
 	$.println("fn2 result 2:", res2_2)
 	fn3()
-	fn4(1)
-	fn4(2, "one")
-	fn4(3, "two", "three")
+	fn4(1, null)
+	fn4(2, $.arrayToSlice<string>(["one"]))
+	fn4(3, $.arrayToSlice<string>(["two", "three"]))
 }
 
 
