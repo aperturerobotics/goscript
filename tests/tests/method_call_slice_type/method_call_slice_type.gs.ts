@@ -14,8 +14,8 @@ export async function main(): Promise<void> {
 	MySlice_Add(myList, 10)
 	MySlice_Add(myList, 20)
 	$.println("length:", $.len(myList.value))
-	$.println("first:", myList.value[0])
-	$.println("second:", myList.value[1])
+	$.println("first:", myList.value![0])
+	$.println("second:", myList.value![1])
 }
 
 

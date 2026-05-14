@@ -78,16 +78,16 @@ export async function main(): Promise<void> {
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 100, text: "Main: All workers completed"})))
 	for (let i = 0; i < $.len(allMessages); i++) {
 		for (let j = i + 1; j < $.len(allMessages); j++) {
-			if (allMessages[i].priority > allMessages[j].priority) {
-				let __goscriptAssign2054_0 = allMessages[j]
-				let __goscriptAssign2054_1 = allMessages[i]
-				allMessages[i] = __goscriptAssign2054_0
-				allMessages[j] = __goscriptAssign2054_1
+			if (allMessages![i].priority > allMessages![j].priority) {
+				let __goscriptAssign2054_0 = allMessages![j]
+				let __goscriptAssign2054_1 = allMessages![i]
+				allMessages![i] = __goscriptAssign2054_0
+				allMessages![j] = __goscriptAssign2054_1
 			}
 		}
 	}
 	for (let __rangeIndex = 0; __rangeIndex < $.len(allMessages); __rangeIndex++) {
-		let msg = allMessages[__rangeIndex]
+		let msg = allMessages![__rangeIndex]
 		$.println(msg.priority, msg.text)
 	}
 	$.println("done")

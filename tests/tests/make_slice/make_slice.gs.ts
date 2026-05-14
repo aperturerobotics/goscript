@@ -31,20 +31,20 @@ export async function main(): Promise<void> {
 	$.println("cap(s4):", $.cap(s4))
 	$.println("--- Append to slice with extra capacity ---")
 	let s5 = $.makeSlice<number>(2, 5, "number")
-	s5[0] = 10
-	s5[1] = 20
+	s5![0] = 10
+	s5![1] = 20
 	$.println("Before append - len:", $.len(s5), "cap:", $.cap(s5))
 	s5 = $.append(s5, 30)
 	$.println("After append - len:", $.len(s5), "cap:", $.cap(s5))
-	$.println("s5[2]:", s5[2])
+	$.println("s5[2]:", s5![2])
 	$.println("--- Append to bytes with extra capacity ---")
 	let b3 = $.makeSlice<number>(1, 10, "byte")
-	b3[0] = 65
+	b3![0] = 65
 	$.println("Before append - len:", $.len(b3), "cap:", $.cap(b3))
 	b3 = $.append(b3, 66)
 	$.println("After append - len:", $.len(b3), "cap:", $.cap(b3))
-	$.println("b3[0]:", b3[0])
-	$.println("b3[1]:", b3[1])
+	$.println("b3[0]:", b3![0])
+	$.println("b3[1]:", b3![1])
 	$.println("--- Large capacity slice ---")
 	let large = $.makeSlice<number>(5, 1000000, "number")
 	$.println("len(large):", $.len(large))
@@ -59,19 +59,19 @@ export async function main(): Promise<void> {
 	$.println("--- Slice operations on made slices ---")
 	let s6 = $.makeSlice<number>(10, 20, "number")
 	for (let i = 0; i < 10; i++) {
-		s6[i] = i * 10
+		s6![i] = i * 10
 	}
 	let sub = $.goSlice(s6, 2, 5)
 	$.println("sub - len:", $.len(sub), "cap:", $.cap(sub))
-	$.println("sub[0]:", sub[0])
-	$.println("sub[2]:", sub[2])
+	$.println("sub[0]:", sub![0])
+	$.println("sub[2]:", sub![2])
 	$.println("--- String slices with capacity ---")
 	let str = $.makeSlice<string>(3, 8, "string")
-	str[0] = "hello"
-	str[1] = "world"
-	str[2] = "test"
+	str![0] = "hello"
+	str![1] = "world"
+	str![2] = "test"
 	$.println("str - len:", $.len(str), "cap:", $.cap(str))
-	$.println("str[1]:", str[1])
+	$.println("str[1]:", str![1])
 	$.println("--- All tests completed ---")
 }
 

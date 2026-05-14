@@ -25,11 +25,11 @@ export async function main(): Promise<void> {
 	$.println("arr3[6]:", arr3[6])
 	$.println("arr3[7]:", arr3[7])
 	let slice1 = ["", "", "second", "", "fourth"]
-	$.println("slice1[0]:", slice1[0])
-	$.println("slice1[1]:", slice1[1])
-	$.println("slice1[2]:", slice1[2])
-	$.println("slice1[3]:", slice1[3])
-	$.println("slice1[4]:", slice1[4])
+	$.println("slice1[0]:", slice1![0])
+	$.println("slice1[1]:", slice1![1])
+	$.println("slice1[2]:", slice1![2])
+	$.println("slice1[3]:", slice1![3])
+	$.println("slice1[4]:", slice1![4])
 	$.println("keyed array literal test completed")
 }
 

@@ -1179,10 +1179,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 	}
 	children := body
 	if valueName != "" {
-		indexTarget := rangeValue
-		if isNilableType(rangeType) {
-			indexTarget += "!"
-		}
+		indexTarget := lowerIndexTarget(rangeValue, rangeType)
 		children = append([]loweredStmt{{text: "let " + valueName + " = " + indexTarget + "[" + indexName + "]"}}, body...)
 	}
 	return loweredStmt{
@@ -1999,8 +1996,15 @@ func (o *LoweringOwner) lowerIndexExpr(ctx lowerFileContext, expr *ast.IndexExpr
 	case isMapType(targetType):
 		return o.lowerMapGetValue(ctx, expr, target, index), diagnostics
 	default:
-		return target + "[" + index + "]", diagnostics
+		return lowerIndexTarget(target, targetType) + "[" + index + "]", diagnostics
 	}
+}
+
+func lowerIndexTarget(target string, typ types.Type) string {
+	if isNilableType(typ) {
+		return target + "!"
+	}
+	return target
 }
 
 func (o *LoweringOwner) lowerSliceExpr(ctx lowerFileContext, expr *ast.SliceExpr) (string, []Diagnostic) {

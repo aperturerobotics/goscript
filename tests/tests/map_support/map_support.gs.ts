@@ -34,16 +34,16 @@ export async function main(): Promise<void> {
 	let n = $.len(scoreResults)
 	for (let i = 0; i < n - 1; i++) {
 		for (let j = 0; j < n - i - 1; j++) {
-			if (scoreResults[j] > scoreResults[j + 1]) {
-				let __goscriptAssign2043_0 = scoreResults[j + 1]
-				let __goscriptAssign2043_1 = scoreResults[j]
-				scoreResults[j] = __goscriptAssign2043_0
-				scoreResults[j + 1] = __goscriptAssign2043_1
+			if (scoreResults![j] > scoreResults![j + 1]) {
+				let __goscriptAssign2043_0 = scoreResults![j + 1]
+				let __goscriptAssign2043_1 = scoreResults![j]
+				scoreResults![j] = __goscriptAssign2043_0
+				scoreResults![j + 1] = __goscriptAssign2043_1
 			}
 		}
 	}
 	for (let __rangeIndex = 0; __rangeIndex < $.len(scoreResults); __rangeIndex++) {
-		let result = scoreResults[__rangeIndex]
+		let result = scoreResults![__rangeIndex]
 		$.println(result)
 	}
 }

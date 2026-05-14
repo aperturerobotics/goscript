@@ -28,8 +28,8 @@ export async function main(): Promise<void> {
 	$.println(stringFromRunes)
 	$.println(originalString == stringFromRunes)
 	let mutableRunes = $.stringToRunes("Mutable String")
-	mutableRunes[0] = 109
-	mutableRunes[8] = 115
+	mutableRunes![0] = 109
+	mutableRunes![8] = 115
 	let modifiedString = $.runesToString(mutableRunes)
 	$.println(modifiedString)
 	let bytes = [72, 101, 108, 108, 111]

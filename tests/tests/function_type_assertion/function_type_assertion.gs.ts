@@ -131,9 +131,9 @@ export async function main(): Promise<void> {
 		$.println("Map adder assertion failed")
 	}
 	let funcSlice = $.makeSlice<any>(2)
-	funcSlice[0] = $.namedFunction(greet, "main.Greeter")
-	funcSlice[1] = $.namedFunction(add, "main.Adder")
-	let __goscriptTuple2058 = $.typeAssertTuple<Greeter>(funcSlice[0], { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
+	funcSlice![0] = $.namedFunction(greet, "main.Greeter")
+	funcSlice![1] = $.namedFunction(add, "main.Adder")
+	let __goscriptTuple2058 = $.typeAssertTuple<Greeter>(funcSlice![0], { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	let sliceFn = __goscriptTuple2058[0]
 	ok = __goscriptTuple2058[1]
 	if (ok) {
@@ -141,7 +141,7 @@ export async function main(): Promise<void> {
 	} else {
 		$.println("Slice function assertion failed")
 	}
-	let __goscriptTuple2192 = $.typeAssertTuple<Adder>(funcSlice[1], { kind: $.TypeKind.Function, name: "main.Adder", params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
+	let __goscriptTuple2192 = $.typeAssertTuple<Adder>(funcSlice![1], { kind: $.TypeKind.Function, name: "main.Adder", params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	let sliceAdderFn = __goscriptTuple2192[0]
 	ok = __goscriptTuple2192[1]
 	if (ok) {

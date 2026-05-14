@@ -101,13 +101,13 @@ export async function main(): Promise<void> {
 	let nums = [1, 2, 3]
 	nums = append2({T: { zero: () => 0 }}, nums, 4)
 	for (let __rangeIndex = 0; __rangeIndex < $.len(nums); __rangeIndex++) {
-		let n = nums[__rangeIndex]
+		let n = nums![__rangeIndex]
 		$.println(n)
 	}
 	let words = ["a", "b"]
 	words = append2({T: { zero: () => "" }}, words, "c")
 	for (let __rangeIndex = 0; __rangeIndex < $.len(words); __rangeIndex++) {
-		let w = words[__rangeIndex]
+		let w = words![__rangeIndex]
 		$.println(w)
 	}
 	$.println("=== Type Inference ===")

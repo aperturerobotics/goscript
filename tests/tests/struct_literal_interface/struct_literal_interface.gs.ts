@@ -8,7 +8,7 @@ import * as reflect from "@goscript/reflect/index.ts"
 export async function main(): Promise<void> {
 	let cases = [$.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectDefault}))]
 	$.println("Cases len:", $.len(cases))
-	$.println("First case dir:", cases[0].Dir)
+	$.println("First case dir:", cases![0].Dir)
 }
 
 
