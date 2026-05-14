@@ -11,66 +11,40 @@ export function getValue(): [string, number] {
 	return ["test", 42]
 }
 
-// Simple iterator function that mimics maps.All behavior
-export function simpleIterator(m: Map<string, number> | null): ((p0: ((p0: string, p1: number) => boolean) | null) => void) | null {
-	return (_yield: ((p0: string, p1: number) => boolean) | null): void => {
-		for (const [k, v] of m?.entries() ?? []) {
-			{
-				if (!_yield!(k, v)) {
-					break
-				}
-			}
+export function simpleIterator(m: Map<string, number> | null): (_p0: (_p0: string, _p1: number) => boolean) => void {
+	return (_yield: (_p0: string, _p1: number) => boolean): void => {
+	for (const [k, v] of m?.entries() ?? []) {
+		if (!_yield(k, v)) {
+			break
 		}
 	}
 }
+}
 
 export async function main(): Promise<void> {
-	// Create a map to test with
-	let m = new Map([["a", 1], ["b", 2], ["c", 3]])
-
-	// Collect results in a slice to ensure deterministic output
+	let m = new Map<string, number>([["a", 1], ["b", 2], ["c", 3]])
 	let results: $.Slice<string> = null
-
-	// Test maps.All which returns an iterator function (this tests the maps package import)
-
-	// Simple assignment that should trigger the error
 	;(() => {
-		let shouldContinue = true
 		maps.All(m)!((k, v) => {
-			{
-				// Simple assignment that should trigger the error
-				let [x, y] = getValue()
-				let result = k + x + $.runeOrStringToString(v + y)
-				results = $.append(results, result)
-			}
-			return shouldContinue
+			let [x, y] = getValue()
+			let result = k + x + String.fromCodePoint($.int(v + y))
+			results = $.append(results, result)
+			return true
 		})
 	})()
-
-	// Also test simpleIterator to ensure our local iterator works
 	;(() => {
-		let shouldContinue = true
 		simpleIterator(m)!((k, v) => {
-			{
-				let [x, y] = getValue()
-				let result = k + x + $.runeOrStringToString(v + y) + "_local"
-				results = $.append(results, result)
-			}
-			return shouldContinue
+			let [x, y] = getValue()
+			let result = k + x + String.fromCodePoint($.int(v + y)) + "_local"
+			results = $.append(results, result)
+			return true
 		})
 	})()
-
-	// Sort results for deterministic output
 	slices.Sort(results)
-
-	// Print sorted results
-	for (let _i = 0; _i < $.len(results); _i++) {
-		let result = results![_i]
-		{
-			$.println("Result:", result)
-		}
+	for (let __rangeIndex = 0; __rangeIndex < $.len(results); __rangeIndex++) {
+		let result = results![__rangeIndex]
+		$.println("Result:", result)
 	}
-
 	$.println("test finished")
 }
 

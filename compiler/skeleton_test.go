@@ -696,6 +696,66 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLowersRangeOverFunctionIterators(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/iterators\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func pairs(yield func(int, string) bool) {",
+			"  values := []string{\"a\", \"b\"}",
+			"  for i, v := range values {",
+			"    if !yield(i, v) {",
+			"      break",
+			"    }",
+			"  }",
+			"}",
+			"func main() {",
+			"  for i, v := range pairs {",
+			"    println(i, v)",
+			"  }",
+			"  var last int",
+			"  for last = range pairs {",
+			"    println(last)",
+			"  }",
+			"  for i := range 3 {",
+			"    if i == 1 {",
+			"      continue",
+			"    }",
+			"    println(i)",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "iterators", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"if (!_yield(i, v))",
+		"break",
+		"pairs!((i, v) => {",
+		"last = __goscriptRange",
+		"return true",
+		"continue",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/async\n\ngo 1.25.3\n",

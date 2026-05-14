@@ -3,19 +3,19 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function simpleIterator(yield: (_p0: number) => boolean): void {
+export function simpleIterator(_yield: (_p0: number) => boolean): void {
 	for (let i = 0; i < 3; i++) {
-		if (!yield(i)) {
+		if (!_yield(i)) {
 			return
 		}
 	}
 }
 
-export function keyValueIterator(yield: (_p0: number, _p1: string) => boolean): void {
-	let values = ["a", "b", "c"]
+export function keyValueIterator(_yield: (_p0: number, _p1: string) => boolean): void {
+	let values = $.arrayToSlice<string>(["a", "b", "c"])
 	for (let i = 0; i < $.len(values); i++) {
-		let v = values[i]
-		if (!yield(i, v)) {
+		let v = values![i]
+		if (!_yield(i, v)) {
 			return
 		}
 	}
@@ -23,14 +23,19 @@ export function keyValueIterator(yield: (_p0: number, _p1: string) => boolean): 
 
 export async function main(): Promise<void> {
 	$.println("Testing single value iterator:")
-	for (let v = 0; v < $.len(simpleIterator); v++) {
-		$.println("value:", v)
-	}
+	;(() => {
+		simpleIterator!((v) => {
+			$.println("value:", v)
+			return true
+		})
+	})()
 	$.println("Testing key-value iterator:")
-	for (let k = 0; k < $.len(keyValueIterator); k++) {
-		let v = keyValueIterator[k]
-		$.println("key:", k, "value:", v)
-	}
+	;(() => {
+		keyValueIterator!((k, v) => {
+			$.println("key:", k, "value:", v)
+			return true
+		})
+	})()
 	$.println("test finished")
 }
 

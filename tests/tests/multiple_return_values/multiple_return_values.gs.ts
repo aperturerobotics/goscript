@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function multipleReturnValues(): void {
+export function multipleReturnValues(): [number, string, boolean] {
 	return [42, "hello", true]
 }
 

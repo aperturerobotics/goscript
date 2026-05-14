@@ -71,8 +71,15 @@ type loweredStmt struct {
 	text       string
 	children   []loweredStmt
 	elseBody   []loweredStmt
+	rangeFunc  *loweredRangeFunc
 	selectStmt *loweredSelect
 	typeSwitch *loweredTypeSwitch
+}
+
+type loweredRangeFunc struct {
+	value  string
+	params []string
+	body   []loweredStmt
 }
 
 type loweredDeferState struct {

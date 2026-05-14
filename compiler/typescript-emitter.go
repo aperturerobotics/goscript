@@ -342,6 +342,10 @@ func renderDeferStack(b *strings.Builder, state *loweredDeferState, indent int) 
 
 func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 	for _, stmt := range stmts {
+		if stmt.rangeFunc != nil {
+			renderRangeFunc(b, stmt.rangeFunc, indent)
+			continue
+		}
 		if stmt.selectStmt != nil {
 			renderSelect(b, stmt.selectStmt, indent)
 			continue
@@ -376,6 +380,23 @@ func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 		writeIndent(b, indent)
 		b.WriteString("}\n")
 	}
+}
+
+func renderRangeFunc(b *strings.Builder, stmt *loweredRangeFunc, indent int) {
+	writeIndent(b, indent)
+	b.WriteString(";(() => {\n")
+	writeIndent(b, indent+1)
+	b.WriteString(stmt.value)
+	b.WriteString("!((")
+	b.WriteString(strings.Join(stmt.params, ", "))
+	b.WriteString(") => {\n")
+	renderStmts(b, stmt.body, indent+2)
+	writeIndent(b, indent+2)
+	b.WriteString("return true\n")
+	writeIndent(b, indent+1)
+	b.WriteString("})\n")
+	writeIndent(b, indent)
+	b.WriteString("})()\n")
 }
 
 func renderSelect(b *strings.Builder, stmt *loweredSelect, indent int) {

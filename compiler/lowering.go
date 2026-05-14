@@ -295,7 +295,28 @@ func safeIdentifier(value string) string {
 	if b.Len() == 0 {
 		return "_"
 	}
-	return b.String()
+	identifier := b.String()
+	switch identifier {
+	case "abstract", "any", "as", "asserts", "async", "await", "boolean", "break", "case",
+		"catch", "class", "const", "constructor", "continue", "debugger", "declare", "default",
+		"delete", "do", "else", "enum", "export", "extends", "false", "finally", "for",
+		"from", "function", "get", "if", "implements", "import", "in", "infer", "instanceof",
+		"interface", "is", "keyof", "let", "module", "namespace", "never", "new", "null",
+		"number", "object", "of", "package", "private", "protected", "public", "readonly",
+		"require", "return", "set", "static", "string", "super", "switch", "symbol", "this",
+		"throw", "true", "try", "type", "typeof", "undefined", "unique", "unknown", "var",
+		"void", "while", "with", "yield":
+		return "_" + identifier
+	default:
+		return identifier
+	}
+}
+
+func safeParamName(param *types.Var, idx int) string {
+	if param == nil || param.Name() == "" {
+		return "_p" + strconv.Itoa(idx)
+	}
+	return safeIdentifier(param.Name())
 }
 
 type lowerFileContext struct {
@@ -368,7 +389,7 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				if _, ok := obj.(*types.Const); ok || decl.Tok == token.CONST {
 					keyword = "const"
 				}
-				code := keyword + " " + name.Name + ": " + o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj]) + " = " + value
+				code := keyword + " " + o.lowerIdent(ctx, name, true) + ": " + o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj]) + " = " + value
 				indexExport := ""
 				if ctx.topLevel {
 					code = "export " + code
@@ -590,14 +611,11 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 	if signature == nil || signature.Recv() == nil {
 		return nil, nil
 	}
-	result := "void"
-	if signature.Results() != nil && signature.Results().Len() == 1 {
-		result = tsType(signature.Results().At(0).Type())
-	}
+	result := tsSignatureResult(signature)
 	async := ctx.model.functions[fnObj] != nil && ctx.model.functions[fnObj].async
 	receiverName := "recv"
 	if len(decl.Recv.List) != 0 && len(decl.Recv.List[0].Names) != 0 {
-		receiverName = decl.Recv.List[0].Names[0].Name
+		receiverName = safeIdentifier(decl.Recv.List[0].Names[0].Name)
 	}
 	deferState := &loweredDeferState{}
 	lowered := &loweredFunction{
@@ -612,9 +630,10 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 			typ:  tsReceiverType(signature.Recv().Type()),
 		}},
 	}
-	for param := range signature.Params().Variables() {
+	for idx := range signature.Params().Len() {
+		param := signature.Params().At(idx)
 		lowered.params = append(lowered.params, loweredParam{
-			name: param.Name(),
+			name: safeParamName(param, idx),
 			typ:  tsType(param.Type()),
 		})
 	}
@@ -639,10 +658,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 	if signature == nil {
 		return nil, nil
 	}
-	result := "void"
-	if signature.Results() != nil && signature.Results().Len() == 1 {
-		result = tsType(signature.Results().At(0).Type())
-	}
+	result := tsSignatureResult(signature)
 	async := ctx.model.functions[fnObj] != nil && ctx.model.functions[fnObj].async
 	deferState := &loweredDeferState{}
 	lowered := &loweredFunction{
@@ -660,15 +676,16 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		})
 	}
 	if decl.Recv != nil && len(decl.Recv.List) != 0 && len(decl.Recv.List[0].Names) != 0 {
-		lowered.receiverAlias = decl.Recv.List[0].Names[0].Name
+		lowered.receiverAlias = safeIdentifier(decl.Recv.List[0].Names[0].Name)
 	}
 	if decl.Name.Name == "main" {
 		lowered.async = true
 		lowered.result = asyncResultType(result, true)
 	}
-	for param := range signature.Params().Variables() {
+	for idx := range signature.Params().Len() {
+		param := signature.Params().At(idx)
 		lowered.params = append(lowered.params, loweredParam{
-			name: param.Name(),
+			name: safeParamName(param, idx),
 			typ:  tsType(param.Type()),
 		})
 	}
@@ -774,6 +791,16 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 	case *ast.IncDecStmt:
 		expr, diagnostics := o.lowerExpr(ctx, typed.X)
 		return []loweredStmt{{text: expr + typed.Tok.String()}}, diagnostics
+	case *ast.BranchStmt:
+		if typed.Label != nil {
+			return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported labeled branch")}
+		}
+		switch typed.Tok {
+		case token.BREAK, token.CONTINUE:
+			return []loweredStmt{{text: typed.Tok.String()}}, nil
+		default:
+			return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported branch")}
+		}
 	default:
 		return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported statement kind")}
 	}
@@ -1172,6 +1199,18 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 			children: body,
 		}, diagnostics
 	}
+	if isFunctionType(rangeType) {
+		signature := rangeFunctionSignature(rangeType)
+		if signature == nil {
+			return loweredStmt{}, append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported function range signature"))
+		}
+		if rangeFuncBodyHasUnsupportedControl(stmt.Body) {
+			return loweredStmt{}, append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported control flow in function range body"))
+		}
+		lowered, funcDiagnostics := o.lowerRangeFuncStmt(ctx, stmt, rangeValue, signature)
+		diagnostics = append(diagnostics, funcDiagnostics...)
+		return lowered, diagnostics
+	}
 
 	indexName := keyName
 	if indexName == "" {
@@ -1186,6 +1225,61 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		text:     "for (let " + indexName + " = 0; " + indexName + " < " + o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + rangeValue + "); " + indexName + "++)",
 		children: children,
 	}, diagnostics
+}
+
+func (o *LoweringOwner) lowerRangeFuncStmt(
+	ctx lowerFileContext,
+	stmt *ast.RangeStmt,
+	rangeValue string,
+	signature *types.Signature,
+) (loweredStmt, []Diagnostic) {
+	yieldSignature, ok := types.Unalias(signature.Params().At(0).Type()).Underlying().(*types.Signature)
+	if !ok {
+		return loweredStmt{}, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported function range yield signature")}
+	}
+	keyName := rangeKeyName(stmt.Key)
+	valueName := rangeKeyName(stmt.Value)
+	paramKeyName := keyName
+	paramValueName := valueName
+	if stmt.Tok != token.DEFINE {
+		paramKeyName = ""
+		paramValueName = ""
+	}
+	paramNames := rangeFuncParamNames(paramKeyName, paramValueName, yieldSignature.Params().Len(), int(stmt.Pos()))
+
+	body, diagnostics := o.lowerBlock(ctx, stmt.Body)
+	if stmt.Tok != token.DEFINE {
+		assignments, assignmentDiagnostics := o.lowerRangeFuncAssignments(ctx, stmt, paramNames)
+		diagnostics = append(diagnostics, assignmentDiagnostics...)
+		body = append(assignments, body...)
+	}
+
+	return loweredStmt{rangeFunc: &loweredRangeFunc{
+		value:  rangeValue,
+		params: paramNames,
+		body:   body,
+	}}, diagnostics
+}
+
+func (o *LoweringOwner) lowerRangeFuncAssignments(
+	ctx lowerFileContext,
+	stmt *ast.RangeStmt,
+	paramNames []string,
+) ([]loweredStmt, []Diagnostic) {
+	var diagnostics []Diagnostic
+	var assignments []loweredStmt
+	for idx, expr := range []ast.Expr{stmt.Key, stmt.Value} {
+		if expr == nil || idx >= len(paramNames) {
+			continue
+		}
+		if ident, ok := expr.(*ast.Ident); ok && ident.Name == "_" {
+			continue
+		}
+		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, expr, false)
+		diagnostics = append(diagnostics, leftDiagnostics...)
+		assignments = append(assignments, loweredStmt{text: left + " = " + paramNames[idx]})
+	}
+	return assignments, diagnostics
 }
 
 func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectStmt) (*loweredSelect, []Diagnostic) {
@@ -1348,7 +1442,7 @@ func (o *LoweringOwner) lowerTypeSwitchAssign(ctx lowerFileContext, stmt ast.Stm
 		}
 		varName := ""
 		if ident, ok := typed.Lhs[0].(*ast.Ident); ok && ident.Name != "_" {
-			varName = ident.Name
+			varName = safeIdentifier(ident.Name)
 		}
 		return o.lowerTypeSwitchGuard(ctx, typed.Rhs[0], varName)
 	default:
@@ -1370,7 +1464,77 @@ func rangeKeyName(expr ast.Expr) string {
 	if !ok || ident.Name == "_" {
 		return ""
 	}
-	return ident.Name
+	return safeIdentifier(ident.Name)
+}
+
+func rangeFunctionSignature(typ types.Type) *types.Signature {
+	signature, ok := types.Unalias(typ).Underlying().(*types.Signature)
+	if !ok || signature.Params() == nil || signature.Params().Len() != 1 {
+		return nil
+	}
+	yieldSignature, ok := types.Unalias(signature.Params().At(0).Type()).Underlying().(*types.Signature)
+	if !ok || yieldSignature.Params() == nil || yieldSignature.Results() == nil {
+		return nil
+	}
+	if yieldSignature.Params().Len() > 2 || yieldSignature.Results().Len() != 1 {
+		return nil
+	}
+	if !isBoolType(yieldSignature.Results().At(0).Type()) {
+		return nil
+	}
+	return signature
+}
+
+func isFunctionType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
+	_, ok := types.Unalias(typ).Underlying().(*types.Signature)
+	return ok
+}
+
+func isBoolType(typ types.Type) bool {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	return ok && basic.Kind() == types.Bool
+}
+
+func rangeFuncParamNames(keyName, valueName string, arity int, pos int) []string {
+	names := make([]string, 0, arity)
+	if arity >= 1 {
+		name := keyName
+		if name == "" {
+			name = "__goscriptRange" + strconv.Itoa(pos) + "_0"
+		}
+		names = append(names, name)
+	}
+	if arity >= 2 {
+		name := valueName
+		if name == "" {
+			name = "__goscriptRange" + strconv.Itoa(pos) + "_1"
+		}
+		names = append(names, name)
+	}
+	return names
+}
+
+func rangeFuncBodyHasUnsupportedControl(body *ast.BlockStmt) bool {
+	unsupported := false
+	ast.Inspect(body, func(node ast.Node) bool {
+		if node == nil || unsupported {
+			return !unsupported
+		}
+		if _, ok := node.(*ast.FuncLit); ok {
+			return false
+		}
+		switch node.(type) {
+		case *ast.BranchStmt, *ast.ReturnStmt:
+			unsupported = true
+			return false
+		default:
+			return true
+		}
+	})
+	return unsupported
 }
 
 func isIntegerRangeType(typ types.Type) bool {
@@ -1488,7 +1652,7 @@ func lowerIdent(ident *ast.Ident) string {
 	case "true", "false":
 		return ident.Name
 	default:
-		return ident.Name
+		return safeIdentifier(ident.Name)
 	}
 }
 
@@ -2503,11 +2667,7 @@ func tsSignatureParams(signature *types.Signature) string {
 	params := make([]string, 0, signature.Params().Len())
 	for idx := range signature.Params().Len() {
 		param := signature.Params().At(idx)
-		name := param.Name()
-		if name == "" {
-			name = "_p" + strconv.Itoa(idx)
-		}
-		params = append(params, name+": "+tsType(param.Type()))
+		params = append(params, safeParamName(param, idx)+": "+tsType(param.Type()))
 	}
 	return strings.Join(params, ", ")
 }
