@@ -11,12 +11,12 @@ require (
 	github.com/aperturerobotics/util v1.33.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.5-0.20260309202648-9f0600962f75
-	golang.org/x/mod v0.34.0
 	golang.org/x/tools v0.43.0
 )
 
 require (
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
+	golang.org/x/mod v0.34.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 )

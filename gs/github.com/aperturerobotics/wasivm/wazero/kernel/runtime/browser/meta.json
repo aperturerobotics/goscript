@@ -1,5 +1,7 @@
 {
-  "dependencies": [],
+  "dependencies": [
+    "github.com/aperturerobotics/wasivm/wazero/kernel/runtime"
+  ],
   "asyncMethods": {
     "Runtime.Compile": true,
     "Runtime.Close": true,

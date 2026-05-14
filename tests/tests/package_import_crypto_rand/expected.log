@@ -1,0 +1,8 @@
+read len 32
+read err nil true
+read has data true
+reader len 4
+reader err nil true
+reader has data true
+text len 26
+text alphabet true

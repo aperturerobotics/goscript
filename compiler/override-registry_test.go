@@ -71,14 +71,67 @@ func TestOverrideRegistryCopiesRuntimeAndOverrides(t *testing.T) {
 	}
 }
 
-func TestOverrideRegistryReportsMissingMetadataDependency(t *testing.T) {
+func TestOverrideRegistryReportsMissingOverridePackage(t *testing.T) {
 	_, diagnostics := NewOverrideRegistryOwner().CopyPlan(context.Background(), &CompileRequest{
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	}, &PackageGraph{Nodes: []*PackageGraphNode{{
+		PkgPath:           "does/not/exist",
+		OverrideCandidate: true,
+	}}})
+	requireDiagnosticCode(t, diagnostics, "goscript/overrides:missing-package")
+}
+
+func TestOverrideRegistryPlansOsOverrideDependencies(t *testing.T) {
+	owner := NewOverrideRegistryOwner()
+	plan, diagnostics := owner.CopyPlan(context.Background(), &CompileRequest{
 		RuntimeEmissionMode: RuntimeEmissionModeEmit,
 	}, &PackageGraph{Nodes: []*PackageGraphNode{{
 		PkgPath:           "os",
 		OverrideCandidate: true,
 	}}})
-	requireDiagnosticCode(t, diagnostics, "goscript/overrides:missing-package")
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("copy plan failed: %#v", diagnostics)
+	}
+
+	var packages []string
+	for _, pkg := range plan.packages {
+		packages = append(packages, pkg.path)
+	}
+	if !slices.Contains(packages, "os") {
+		t.Fatalf("missing os in copy plan: %v", packages)
+	}
+	if slices.Contains(packages, "internal/poll") {
+		t.Fatalf("os copy plan includes stale internal/poll dependency: %v", packages)
+	}
+}
+
+func TestOverrideRegistryPlansNestedOverrideMetadataDependencies(t *testing.T) {
+	owner := NewOverrideRegistryOwner()
+	plan, diagnostics := owner.CopyPlan(context.Background(), &CompileRequest{
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	}, &PackageGraph{Nodes: []*PackageGraphNode{{
+		PkgPath:           "github.com/aperturerobotics/wasivm/wazero/kernel/runtime/browser",
+		OverrideCandidate: true,
+	}}})
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("copy plan failed: %#v", diagnostics)
+	}
+
+	var packages []string
+	for _, pkg := range plan.packages {
+		packages = append(packages, pkg.path)
+	}
+
+	runtimePkg := "github.com/aperturerobotics/wasivm/wazero/kernel/runtime"
+	browserPkg := "github.com/aperturerobotics/wasivm/wazero/kernel/runtime/browser"
+	for _, pkg := range []string{"builtin", runtimePkg, browserPkg} {
+		if !slices.Contains(packages, pkg) {
+			t.Fatalf("missing %s in copy plan: %v", pkg, packages)
+		}
+	}
+	if slices.Index(packages, runtimePkg) > slices.Index(packages, browserPkg) {
+		t.Fatalf("nested override dependency order is wrong: %v", packages)
+	}
 }
 
 func TestCompilePackagesCopiesRuntimeOverrides(t *testing.T) {

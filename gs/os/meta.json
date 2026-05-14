@@ -3,7 +3,6 @@
     "errors",
     "internal/byteorder",
     "internal/goarch",
-    "internal/poll",
     "io",
     "io/fs",
     "runtime",
@@ -12,4 +11,4 @@
     "time",
     "unsafe"
   ]
-} 
+}

@@ -227,6 +227,18 @@ func TestPackageGraphDetectsOverrideCandidates(t *testing.T) {
 	}
 }
 
+func TestPackageGraphOverrideCandidatesRequirePackageIndex(t *testing.T) {
+	parent := "github.com/aperturerobotics/wasivm/wazero/kernel"
+	child := parent + "/runtime"
+
+	if hasOverrideCandidate(parent) {
+		t.Fatalf("parent directory without an override index was detected as an override candidate")
+	}
+	if !hasOverrideCandidate(child) {
+		t.Fatalf("nested package with an override index was not detected as an override candidate")
+	}
+}
+
 func loadPackageGraph(t *testing.T, req *CompileRequest) *PackageGraph {
 	t.Helper()
 

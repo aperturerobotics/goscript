@@ -226,6 +226,6 @@ func hasOverrideCandidate(pkgPath string) bool {
 	if pkgPath == "" {
 		return false
 	}
-	_, err := gs.GsOverrides.ReadDir("gs/" + pkgPath)
+	_, err := gs.GsOverrides.ReadFile("gs/" + pkgPath + "/index.ts")
 	return err == nil
 }
