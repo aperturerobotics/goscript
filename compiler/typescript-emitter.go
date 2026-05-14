@@ -346,6 +346,10 @@ func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 			renderRangeFunc(b, stmt.rangeFunc, indent)
 			continue
 		}
+		if stmt.switchStmt != nil {
+			renderSwitch(b, stmt.switchStmt, indent)
+			continue
+		}
 		if stmt.selectStmt != nil {
 			renderSelect(b, stmt.selectStmt, indent)
 			continue
@@ -380,6 +384,39 @@ func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 		writeIndent(b, indent)
 		b.WriteString("}\n")
 	}
+}
+
+func renderSwitch(b *strings.Builder, stmt *loweredSwitch, indent int) {
+	writeIndent(b, indent)
+	b.WriteString("switch (")
+	b.WriteString(stmt.value)
+	b.WriteString(") {\n")
+	for _, switchCase := range stmt.cases {
+		for _, value := range switchCase.values {
+			writeIndent(b, indent+1)
+			b.WriteString("case ")
+			b.WriteString(value)
+			b.WriteString(":\n")
+		}
+		renderSwitchBody(b, switchCase.body, indent+1)
+	}
+	if len(stmt.defaultBody) != 0 {
+		writeIndent(b, indent+1)
+		b.WriteString("default:\n")
+		renderSwitchBody(b, stmt.defaultBody, indent+1)
+	}
+	writeIndent(b, indent)
+	b.WriteString("}\n")
+}
+
+func renderSwitchBody(b *strings.Builder, body []loweredStmt, indent int) {
+	writeIndent(b, indent)
+	b.WriteString("{\n")
+	renderStmts(b, body, indent+1)
+	writeIndent(b, indent+1)
+	b.WriteString("break\n")
+	writeIndent(b, indent)
+	b.WriteString("}\n")
 }
 
 func renderRangeFunc(b *strings.Builder, stmt *loweredRangeFunc, indent int) {

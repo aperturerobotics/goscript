@@ -475,24 +475,28 @@ func (o *LoweringOwner) tsMethodSignature(ctx lowerFileContext, method *types.Fu
 }
 
 func (o *LoweringOwner) runtimeMethodSignatures(iface *types.Interface) string {
+	return o.runtimeMethodSignaturesWithSeen(iface, make(map[string]bool))
+}
+
+func (o *LoweringOwner) runtimeMethodSignaturesWithSeen(iface *types.Interface, seen map[string]bool) string {
 	methods := make([]string, 0, iface.NumMethods())
 	for method := range iface.Methods() {
-		methods = append(methods, o.runtimeMethodSignature(method))
+		methods = append(methods, o.runtimeMethodSignature(method, seen))
 	}
 	return "[" + strings.Join(methods, ", ") + "]"
 }
 
-func (o *LoweringOwner) runtimeMethodSignature(method *types.Func) string {
+func (o *LoweringOwner) runtimeMethodSignature(method *types.Func, seen map[string]bool) string {
 	signature, _ := method.Type().(*types.Signature)
 	if signature == nil {
 		return "{ name: " + strconv.Quote(method.Name()) + ", args: [], returns: [] }"
 	}
 	return "{ name: " + strconv.Quote(method.Name()) +
-		", args: " + o.runtimeMethodArgs(signature.Params()) +
-		", returns: " + o.runtimeMethodReturns(signature.Results()) + " }"
+		", args: " + o.runtimeMethodArgs(signature.Params(), seen) +
+		", returns: " + o.runtimeMethodReturns(signature.Results(), seen) + " }"
 }
 
-func (o *LoweringOwner) runtimeMethodArgs(tuple *types.Tuple) string {
+func (o *LoweringOwner) runtimeMethodArgs(tuple *types.Tuple, seen map[string]bool) string {
 	if tuple == nil || tuple.Len() == 0 {
 		return "[]"
 	}
@@ -503,12 +507,12 @@ func (o *LoweringOwner) runtimeMethodArgs(tuple *types.Tuple) string {
 		if name == "" {
 			name = "_p" + strconv.Itoa(idx)
 		}
-		args = append(args, "{ name: "+strconv.Quote(name)+", type: "+o.runtimeTypeInfoExpr(param.Type())+" }")
+		args = append(args, "{ name: "+strconv.Quote(name)+", type: "+o.runtimeTypeInfoExprWithSeen(param.Type(), seen)+" }")
 	}
 	return "[" + strings.Join(args, ", ") + "]"
 }
 
-func (o *LoweringOwner) runtimeMethodReturns(tuple *types.Tuple) string {
+func (o *LoweringOwner) runtimeMethodReturns(tuple *types.Tuple, seen map[string]bool) string {
 	if tuple == nil || tuple.Len() == 0 {
 		return "[]"
 	}
@@ -519,7 +523,7 @@ func (o *LoweringOwner) runtimeMethodReturns(tuple *types.Tuple) string {
 		if name == "" {
 			name = "_r" + strconv.Itoa(idx)
 		}
-		results = append(results, "{ name: "+strconv.Quote(name)+", type: "+o.runtimeTypeInfoExpr(result.Type())+" }")
+		results = append(results, "{ name: "+strconv.Quote(name)+", type: "+o.runtimeTypeInfoExprWithSeen(result.Type(), seen)+" }")
 	}
 	return "[" + strings.Join(results, ", ") + "]"
 }
@@ -786,6 +790,8 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 	case *ast.SelectStmt:
 		lowered, diagnostics := o.lowerSelectStmt(ctx, typed)
 		return []loweredStmt{{selectStmt: lowered}}, diagnostics
+	case *ast.SwitchStmt:
+		return o.lowerSwitchStmt(ctx, typed)
 	case *ast.TypeSwitchStmt:
 		return o.lowerTypeSwitchStmt(ctx, typed)
 	case *ast.IncDecStmt:
@@ -1388,6 +1394,56 @@ func (o *LoweringOwner) lowerSelectReceiveComm(
 	return channel, prelude, diagnostics
 }
 
+func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchStmt) ([]loweredStmt, []Diagnostic) {
+	var diagnostics []Diagnostic
+	var init []loweredStmt
+	if stmt.Init != nil {
+		lowered, initDiagnostics := o.lowerStmt(ctx, stmt.Init)
+		diagnostics = append(diagnostics, initDiagnostics...)
+		init = append(init, lowered...)
+	}
+
+	value := "true"
+	if stmt.Tag != nil {
+		var valueDiagnostics []Diagnostic
+		value, valueDiagnostics = o.lowerExpr(ctx, stmt.Tag)
+		diagnostics = append(diagnostics, valueDiagnostics...)
+	}
+
+	switchIR := &loweredSwitch{value: value}
+	for _, raw := range stmt.Body.List {
+		clause, ok := raw.(*ast.CaseClause)
+		if !ok {
+			diagnostics = append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported switch clause"))
+			continue
+		}
+		body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope(), clause.Body)
+		diagnostics = append(diagnostics, bodyDiagnostics...)
+		if len(clause.List) == 0 {
+			switchIR.defaultBody = body
+			continue
+		}
+
+		values := make([]string, 0, len(clause.List))
+		for _, expr := range clause.List {
+			lowered, exprDiagnostics := o.lowerExpr(ctx, expr)
+			diagnostics = append(diagnostics, exprDiagnostics...)
+			values = append(values, lowered)
+		}
+		switchIR.cases = append(switchIR.cases, loweredSwitchCase{
+			values: values,
+			body:   body,
+		})
+	}
+
+	lowered := loweredStmt{switchStmt: switchIR}
+	if len(init) == 0 {
+		return []loweredStmt{lowered}, diagnostics
+	}
+	init = append(init, lowered)
+	return []loweredStmt{{children: init}}, diagnostics
+}
+
 func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.TypeSwitchStmt) ([]loweredStmt, []Diagnostic) {
 	var lowered []loweredStmt
 	var diagnostics []Diagnostic
@@ -1795,6 +1851,14 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 		}
 		return call, append(diagnostics, calleeDiagnostics...)
 	default:
+		if callTargetSignature(ctx, expr.Fun) != nil {
+			callee, calleeDiagnostics := o.lowerExpr(ctx, expr.Fun)
+			if strings.HasPrefix(callee, "await ") {
+				callee = "(" + callee + ")"
+			}
+			call := callee + "(" + strings.Join(args, ", ") + ")"
+			return o.awaitCallIfNeeded(ctx, expr.Fun, call), append(diagnostics, calleeDiagnostics...)
+		}
 		return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported call target"))
 	}
 	return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported call target"))
@@ -2498,9 +2562,21 @@ func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ 
 }
 
 func (o *LoweringOwner) runtimeTypeInfoExpr(typ types.Type) string {
+	return o.runtimeTypeInfoExprWithSeen(typ, make(map[string]bool))
+}
+
+func (o *LoweringOwner) runtimeTypeInfoExprWithSeen(typ types.Type, seen map[string]bool) string {
 	typeKind := o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeKind)
 	if typ == nil {
 		return "{ kind: " + typeKind + ".Basic, name: \"unknown\" }"
+	}
+	typeKey := goRuntimeTypeString(typ)
+	if typeKey != "" {
+		if seen[typeKey] {
+			return o.shallowRuntimeTypeInfoExpr(typ)
+		}
+		seen[typeKey] = true
+		defer delete(seen, typeKey)
 	}
 	if named := namedStructType(typ); named != nil {
 		return strconv.Quote(runtimeNamedTypeName(named))
@@ -2524,56 +2600,84 @@ func (o *LoweringOwner) runtimeTypeInfoExpr(typ types.Type) string {
 			return "{ kind: " + typeKind + ".Basic, name: \"unknown\" }"
 		}
 	case *types.Pointer:
-		return "{ kind: " + typeKind + ".Pointer, elemType: " + o.runtimeTypeInfoExpr(typed.Elem()) + " }"
+		return "{ kind: " + typeKind + ".Pointer, elemType: " + o.runtimeTypeInfoExprWithSeen(typed.Elem(), seen) + " }"
 	case *types.Struct:
-		return "{ kind: " + typeKind + ".Struct, methods: [], fields: " + o.runtimeStructFieldsExpr(typed) + " }"
+		return "{ kind: " + typeKind + ".Struct, methods: [], fields: " + o.runtimeStructFieldsExpr(typed, seen) + " }"
 	case *types.Slice:
-		return "{ kind: " + typeKind + ".Slice, elemType: " + o.runtimeTypeInfoExpr(typed.Elem()) + " }"
+		return "{ kind: " + typeKind + ".Slice, elemType: " + o.runtimeTypeInfoExprWithSeen(typed.Elem(), seen) + " }"
 	case *types.Array:
-		return "{ kind: " + typeKind + ".Array, elemType: " + o.runtimeTypeInfoExpr(typed.Elem()) + ", length: " + strconv.FormatInt(typed.Len(), 10) + " }"
+		return "{ kind: " + typeKind + ".Array, elemType: " + o.runtimeTypeInfoExprWithSeen(typed.Elem(), seen) + ", length: " + strconv.FormatInt(typed.Len(), 10) + " }"
 	case *types.Map:
-		return "{ kind: " + typeKind + ".Map, keyType: " + o.runtimeTypeInfoExpr(typed.Key()) + ", elemType: " + o.runtimeTypeInfoExpr(typed.Elem()) + " }"
+		return "{ kind: " + typeKind + ".Map, keyType: " + o.runtimeTypeInfoExprWithSeen(typed.Key(), seen) + ", elemType: " + o.runtimeTypeInfoExprWithSeen(typed.Elem(), seen) + " }"
 	case *types.Chan:
-		return "{ kind: " + typeKind + ".Channel, direction: " + strconv.Quote(channelDirectionString(typed.Dir())) + ", elemType: " + o.runtimeTypeInfoExpr(typed.Elem()) + " }"
+		return "{ kind: " + typeKind + ".Channel, direction: " + strconv.Quote(channelDirectionString(typed.Dir())) + ", elemType: " + o.runtimeTypeInfoExprWithSeen(typed.Elem(), seen) + " }"
 	case *types.Interface:
 		typed.Complete()
-		return "{ kind: " + typeKind + ".Interface, methods: " + o.runtimeMethodSignatures(typed) + " }"
+		return "{ kind: " + typeKind + ".Interface, methods: " + o.runtimeMethodSignaturesWithSeen(typed, seen) + " }"
 	case *types.Signature:
-		return o.runtimeFunctionTypeInfo(typed, "")
+		return o.runtimeFunctionTypeInfoWithSeen(typed, "", seen)
 	default:
 		return "{ kind: " + typeKind + ".Basic, name: \"unknown\" }"
 	}
 }
 
-func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct) string {
+func (o *LoweringOwner) shallowRuntimeTypeInfoExpr(typ types.Type) string {
+	typeKind := o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeKind)
+	switch types.Unalias(typ).Underlying().(type) {
+	case *types.Interface:
+		return "{ kind: " + typeKind + ".Interface, methods: [] }"
+	case *types.Signature:
+		return "{ kind: " + typeKind + ".Function, params: [], results: [] }"
+	case *types.Pointer:
+		return "{ kind: " + typeKind + ".Pointer, elemType: { kind: " + typeKind + ".Basic, name: \"unknown\" } }"
+	case *types.Struct:
+		return "{ kind: " + typeKind + ".Struct, methods: [], fields: {} }"
+	case *types.Slice:
+		return "{ kind: " + typeKind + ".Slice, elemType: { kind: " + typeKind + ".Basic, name: \"unknown\" } }"
+	case *types.Array:
+		return "{ kind: " + typeKind + ".Array, elemType: { kind: " + typeKind + ".Basic, name: \"unknown\" }, length: 0 }"
+	case *types.Map:
+		return "{ kind: " + typeKind + ".Map, keyType: { kind: " + typeKind + ".Basic, name: \"unknown\" }, elemType: { kind: " + typeKind + ".Basic, name: \"unknown\" } }"
+	case *types.Chan:
+		return "{ kind: " + typeKind + ".Channel, direction: \"both\", elemType: { kind: " + typeKind + ".Basic, name: \"unknown\" } }"
+	default:
+		return "{ kind: " + typeKind + ".Basic, name: \"unknown\" }"
+	}
+}
+
+func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct, seen map[string]bool) string {
 	fields := make([]string, 0, structType.NumFields())
 	for field := range structType.Fields() {
-		fields = append(fields, strconv.Quote(field.Name())+": "+o.runtimeTypeInfoExpr(field.Type()))
+		fields = append(fields, strconv.Quote(field.Name())+": "+o.runtimeTypeInfoExprWithSeen(field.Type(), seen))
 	}
 	return "{" + strings.Join(fields, ", ") + "}"
 }
 
 func (o *LoweringOwner) runtimeFunctionTypeInfo(signature *types.Signature, name string) string {
+	return o.runtimeFunctionTypeInfoWithSeen(signature, name, make(map[string]bool))
+}
+
+func (o *LoweringOwner) runtimeFunctionTypeInfoWithSeen(signature *types.Signature, name string, seen map[string]bool) string {
 	typeKind := o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeKind)
 	parts := []string{"kind: " + typeKind + ".Function"}
 	if name != "" {
 		parts = append(parts, "name: "+strconv.Quote(name))
 	}
-	parts = append(parts, "params: "+o.runtimeSignatureTypes(signature.Params()))
-	parts = append(parts, "results: "+o.runtimeSignatureTypes(signature.Results()))
+	parts = append(parts, "params: "+o.runtimeSignatureTypes(signature.Params(), seen))
+	parts = append(parts, "results: "+o.runtimeSignatureTypes(signature.Results(), seen))
 	if signature.Variadic() {
 		parts = append(parts, "isVariadic: true")
 	}
 	return "{ " + strings.Join(parts, ", ") + " }"
 }
 
-func (o *LoweringOwner) runtimeSignatureTypes(tuple *types.Tuple) string {
+func (o *LoweringOwner) runtimeSignatureTypes(tuple *types.Tuple, seen map[string]bool) string {
 	if tuple == nil || tuple.Len() == 0 {
 		return "[]"
 	}
 	types := make([]string, 0, tuple.Len())
 	for v := range tuple.Variables() {
-		types = append(types, o.runtimeTypeInfoExpr(v.Type()))
+		types = append(types, o.runtimeTypeInfoExprWithSeen(v.Type(), seen))
 	}
 	return "[" + strings.Join(types, ", ") + "]"
 }

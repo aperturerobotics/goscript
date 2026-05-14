@@ -1,3 +1,5 @@
-Expected v2 failure: github.com/aperturerobotics/util/csync still requires
-unsupported dependency lowering in github.com/aperturerobotics/util/broadcast
-and csync.
+Expected v2 failure: github.com/aperturerobotics/util/csync now compiles
+without recursive runtime descriptor expansion or generic unsupported switch /
+function-call lowering diagnostics, but generated dependency TypeScript still
+misses package-qualified type/value references and exposes method-value spread
+plus nullability/return typing gaps in broadcast and csync.

@@ -894,6 +894,64 @@ func TestCompilePackagesScopesIfInitDeclarations(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/switchcall\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func main() {",
+			"  value := 2",
+			"  switch value {",
+			"  case 1:",
+			"    println(\"one\")",
+			"  case 2, 3:",
+			"    local := \"two-three\"",
+			"    println(local)",
+			"  default:",
+			"    println(\"other\")",
+			"  }",
+			"  switch {",
+			"  case value > 1:",
+			"    println(\"positive\")",
+			"  }",
+			"  release := func() { println(\"release\") }",
+			"  rel := &release",
+			"  (*rel)()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "switchcall", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"switch (value) {",
+		"case 2:",
+		"case 3:",
+		"let local = \"two-three\"",
+		"switch (true) {",
+		"($.pointerValue(rel))()",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	if strings.Count(text, "\t\tbreak\n") < 3 {
+		t.Fatalf("switch cases were not rendered with implicit breaks:\n%s", text)
+	}
+}
+
 func TestCompilePackagesReportsUnsupportedUnaryBeforeOutput(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/unsupported\n\ngo 1.25.3\n",

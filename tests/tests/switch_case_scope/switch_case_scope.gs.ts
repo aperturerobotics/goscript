@@ -5,20 +5,22 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let x = 1
-
 	switch (x) {
-		case 1: {
-			let [y, z] = [10, 20]
+		case 1:
+		{
+			let y = 10
+			let z = 20
 			$.println(y + z)
 			break
 		}
-		case 2: {
-			let [y, z] = [30, 40]
+		case 2:
+		{
+			let y = 30
+			let z = 40
 			$.println(y + z)
 			break
 		}
 	}
-
 	$.println("done")
 }
 

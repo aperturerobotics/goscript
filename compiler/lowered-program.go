@@ -72,6 +72,7 @@ type loweredStmt struct {
 	children   []loweredStmt
 	elseBody   []loweredStmt
 	rangeFunc  *loweredRangeFunc
+	switchStmt *loweredSwitch
 	selectStmt *loweredSelect
 	typeSwitch *loweredTypeSwitch
 }
@@ -85,6 +86,17 @@ type loweredRangeFunc struct {
 type loweredDeferState struct {
 	used  bool
 	async bool
+}
+
+type loweredSwitch struct {
+	value       string
+	cases       []loweredSwitchCase
+	defaultBody []loweredStmt
+}
+
+type loweredSwitchCase struct {
+	values []string
+	body   []loweredStmt
 }
 
 type loweredSelect struct {
