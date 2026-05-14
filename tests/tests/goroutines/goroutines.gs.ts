@@ -99,10 +99,10 @@ export async function main(): Promise<void> {
 	for (let i = 0; i < $.len(allMessages); i++) {
 		for (let j = i + 1; j < $.len(allMessages); j++) {
 			if (allMessages![i].priority > allMessages![j].priority) {
-				let __goscriptAssign2054_0 = allMessages![j]
-				let __goscriptAssign2054_1 = allMessages![i]
-				allMessages![i] = __goscriptAssign2054_0
-				allMessages![j] = __goscriptAssign2054_1
+				let __goscriptAssign0_0 = allMessages![j]
+				let __goscriptAssign0_1 = allMessages![i]
+				allMessages![i] = __goscriptAssign0_0
+				allMessages![j] = __goscriptAssign0_1
 			}
 		}
 	}

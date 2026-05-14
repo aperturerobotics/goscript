@@ -7,7 +7,7 @@ export async function main(): Promise<void> {
 	let ch = $.makeChannel<number>(0, 0, "both")
 	ch!.close()
 
-	const [__goscriptSelectHasReturn78, __goscriptSelectValue78] = await $.selectStatement<any, void>([
+	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -23,8 +23,8 @@ export async function main(): Promise<void> {
 			}
 		}
 	], false)
-	if (__goscriptSelectHasReturn78) {
-		return __goscriptSelectValue78
+	if (__goscriptSelect0HasReturn) {
+		return __goscriptSelect0Value
 	}
 }
 

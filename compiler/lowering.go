@@ -170,6 +170,7 @@ func (o *LoweringOwner) lowerFile(
 		importAliases: importAliases,
 		importPaths:   importPaths,
 		localAliases:  localAliases,
+		tempNames:     newTempNameOwner(),
 		topLevel:      true,
 	}
 	var diagnostics []Diagnostic
@@ -326,9 +327,31 @@ type lowerFileContext struct {
 	importAliases map[string]string
 	importPaths   map[string]string
 	localAliases  map[types.Object]string
+	tempNames     *tempNameOwner
 	signature     *types.Signature
 	deferState    *loweredDeferState
 	topLevel      bool
+}
+
+type tempNameOwner struct {
+	counters map[string]int
+}
+
+func newTempNameOwner() *tempNameOwner {
+	return &tempNameOwner{counters: make(map[string]int)}
+}
+
+func (ctx lowerFileContext) tempName(prefix string) string {
+	if ctx.tempNames == nil {
+		return "__goscript" + prefix + "0"
+	}
+	return ctx.tempNames.next(prefix)
+}
+
+func (o *tempNameOwner) next(prefix string) string {
+	idx := o.counters[prefix]
+	o.counters[prefix] = idx + 1
+	return "__goscript" + prefix + strconv.Itoa(idx)
 }
 
 func (o *LoweringOwner) lowerDecl(ctx lowerFileContext, decl ast.Decl) ([]loweredDecl, []Diagnostic) {
@@ -1031,7 +1054,7 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		}
 		return []loweredStmt{{text: prefix + left + " = " + value}}, diagnostics
 	}
-	tempName := "__goscriptRecv" + strconv.Itoa(int(stmt.Pos()))
+	tempName := ctx.tempName("Recv")
 	stmts := []loweredStmt{{text: "let " + tempName + " = await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecvWithOk) + "(" + channel + ")"}}
 	if allBlankIdents(stmt.Lhs) {
 		return stmts, diagnostics
@@ -1063,7 +1086,7 @@ func (o *LoweringOwner) lowerTupleReassignmentStmt(
 	right string,
 	diagnostics []Diagnostic,
 ) ([]loweredStmt, []Diagnostic) {
-	tempName := "__goscriptTuple" + strconv.Itoa(int(stmt.Pos()))
+	tempName := ctx.tempName("Tuple")
 	stmts := []loweredStmt{{text: "let " + tempName + " = " + right}}
 	for idx, lhs := range stmt.Lhs {
 		if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
@@ -1097,7 +1120,7 @@ func (o *LoweringOwner) lowerDeclaredValue(ctx lowerFileContext, lhs ast.Expr, v
 func (o *LoweringOwner) lowerParallelAssignStmt(ctx lowerFileContext, stmt *ast.AssignStmt) ([]loweredStmt, []Diagnostic) {
 	stmts := make([]loweredStmt, 0, len(stmt.Rhs)*2)
 	var diagnostics []Diagnostic
-	tempPrefix := "__goscriptAssign" + strconv.Itoa(int(stmt.Pos())) + "_"
+	tempPrefix := ctx.tempName("Assign") + "_"
 	for idx, rhs := range stmt.Rhs {
 		right, rightDiagnostics := o.lowerExpr(ctx, rhs)
 		diagnostics = append(diagnostics, rightDiagnostics...)
@@ -1251,7 +1274,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 	valueName := rangeKeyName(stmt.Value)
 	rangeType := ctx.semPkg.source.TypesInfo.TypeOf(stmt.X)
 	if isChannelType(rangeType) {
-		tempName := "__goscriptRange" + strconv.Itoa(int(stmt.Pos()))
+		tempName := ctx.tempName("Range")
 		children := []loweredStmt{
 			{text: "let " + tempName + " = await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecvWithOk) + "(" + rangeValue + ")"},
 			{text: "if (!" + tempName + ".ok)", children: []loweredStmt{{text: "break"}}},
@@ -1338,7 +1361,7 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 		paramKeyName = ""
 		paramValueName = ""
 	}
-	paramNames := rangeFuncParamNames(paramKeyName, paramValueName, yieldSignature.Params().Len(), int(stmt.Pos()))
+	paramNames := rangeFuncParamNames(paramKeyName, paramValueName, yieldSignature.Params().Len(), ctx.tempName("Range"))
 
 	body, diagnostics := o.lowerBlock(ctx, stmt.Body)
 	if stmt.Tok != token.DEFINE {
@@ -1380,9 +1403,10 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 	if ctx.signature != nil {
 		resultType = o.tsSignatureResultFor(ctx, ctx.signature)
 	}
+	selectName := ctx.tempName("Select")
 	lowered := &loweredSelect{
-		hasReturn:  "__goscriptSelectHasReturn" + strconv.Itoa(int(stmt.Pos())),
-		value:      "__goscriptSelectValue" + strconv.Itoa(int(stmt.Pos())),
+		hasReturn:  selectName + "HasReturn",
+		value:      selectName + "Value",
 		resultType: resultType,
 	}
 	var diagnostics []Diagnostic
@@ -1646,19 +1670,19 @@ func isBoolType(typ types.Type) bool {
 	return ok && basic.Kind() == types.Bool
 }
 
-func rangeFuncParamNames(keyName, valueName string, arity int, pos int) []string {
+func rangeFuncParamNames(keyName, valueName string, arity int, fallback string) []string {
 	names := make([]string, 0, arity)
 	if arity >= 1 {
 		name := keyName
 		if name == "" {
-			name = "__goscriptRange" + strconv.Itoa(pos) + "_0"
+			name = fallback + "_0"
 		}
 		names = append(names, name)
 	}
 	if arity >= 2 {
 		name := valueName
 		if name == "" {
-			name = "__goscriptRange" + strconv.Itoa(pos) + "_1"
+			name = fallback + "_1"
 		}
 		names = append(names, name)
 	}

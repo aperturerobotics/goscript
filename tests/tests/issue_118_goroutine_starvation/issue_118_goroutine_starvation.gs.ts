@@ -43,7 +43,7 @@ export async function main(): Promise<void> {
 	let timeout = time.After(5 * time.Second)
 
 	for (let __rangeIndex = 0; __rangeIndex < 2; __rangeIndex++) {
-		const [__goscriptSelectHasReturn3480658, __goscriptSelectValue3480658] = await $.selectStatement<any, void>([
+		const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 			{
 				id: 0,
 				isSend: false,
@@ -70,8 +70,8 @@ export async function main(): Promise<void> {
 				}
 			}
 		], false)
-		if (__goscriptSelectHasReturn3480658) {
-			return __goscriptSelectValue3480658
+		if (__goscriptSelect0HasReturn) {
+			return __goscriptSelect0Value
 		}
 	}
 

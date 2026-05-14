@@ -31,8 +31,8 @@ export async function main(): Promise<void> {
 
 	// Delete a key
 	$.deleteMapEntry(scores, "Charlie")
-	let __goscriptTuple859 = $.mapGet(scores, "Charlie", 0)
-	exists = __goscriptTuple859[1]
+	let __goscriptTuple0 = $.mapGet(scores, "Charlie", 0)
+	exists = __goscriptTuple0[1]
 	$.println("After delete, does Charlie exist? Expected: false, Actual:", exists)
 
 	// Create map with literal syntax
@@ -60,10 +60,10 @@ export async function main(): Promise<void> {
 	for (let i = 0; i < n - 1; i++) {
 		for (let j = 0; j < n - i - 1; j++) {
 			if (scoreResults![j] > scoreResults![j + 1]) {
-				let __goscriptAssign2043_0 = scoreResults![j + 1]
-				let __goscriptAssign2043_1 = scoreResults![j]
-				scoreResults![j] = __goscriptAssign2043_0
-				scoreResults![j + 1] = __goscriptAssign2043_1
+				let __goscriptAssign0_0 = scoreResults![j + 1]
+				let __goscriptAssign0_1 = scoreResults![j]
+				scoreResults![j] = __goscriptAssign0_0
+				scoreResults![j + 1] = __goscriptAssign0_1
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 import { expect, test, describe } from 'vitest'
+import { stripGeneratedMainGuard } from '../assets/js/generated-code.js'
 
 // Simulate the import stripping from playground.js
 const stripImports = (code: string): string => {
@@ -128,5 +129,22 @@ function main() {
     await fn(mockRuntime)
 
     expect(logs).toContain('Point: 10 20')
+  })
+})
+
+describe('Generated main guard stripping', () => {
+  test('removes GoScript import.meta main guard before function execution', () => {
+    const code = `export async function main(): Promise<void> {
+  $.println("Hello")
+}
+
+if ($.isMainScript(import.meta)) {
+\tawait main()
+}
+`
+    const result = stripGeneratedMainGuard(code)
+    expect(result).toContain('export async function main')
+    expect(result).not.toContain('import.meta')
+    expect(result).not.toContain('isMainScript')
   })
 })

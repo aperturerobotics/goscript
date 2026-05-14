@@ -9,11 +9,11 @@ export async function main(): Promise<void> {
 	c!.close()
 
 	while (true) {
-		let __goscriptRange73 = await $.chanRecvWithOk(c)
-		if (!__goscriptRange73.ok) {
+		let __goscriptRange0 = await $.chanRecvWithOk(c)
+		if (!__goscriptRange0.ok) {
 			break
 		}
-		let x = __goscriptRange73.value
+		let x = __goscriptRange0.value
 		$.println(x)
 	}
 
@@ -24,11 +24,11 @@ export async function main(): Promise<void> {
 
 	let y: number = 0
 	while (true) {
-		let __goscriptRange214 = await $.chanRecvWithOk(c)
-		if (!__goscriptRange214.ok) {
+		let __goscriptRange1 = await $.chanRecvWithOk(c)
+		if (!__goscriptRange1.ok) {
 			break
 		}
-		y = __goscriptRange214.value
+		y = __goscriptRange1.value
 		$.println(y)
 	}
 }

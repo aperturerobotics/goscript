@@ -62,8 +62,8 @@ export async function main(): Promise<void> {
 	}
 
 	// test case: re-use success variable, ignore second variable
-	let __goscriptTuple743 = processor!.Process(data, 5, "unused")
-	success = __goscriptTuple743[0]
+	let __goscriptTuple0 = processor!.Process(data, 5, "unused")
+	success = __goscriptTuple0[0]
 	if (success) {
 		$.println("Main: Success reported")
 	} else {

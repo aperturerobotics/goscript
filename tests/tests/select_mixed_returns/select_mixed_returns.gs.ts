@@ -17,7 +17,7 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 	// Pre-populate only one channel to make the test deterministic
 	await $.chanSend(ch2, 42)
 
-	const [__goscriptSelectHasReturn3504637, __goscriptSelectValue3504637] = await $.selectStatement<any, string>([
+	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, string>([
 		{
 			id: 0,
 			isSend: false,
@@ -85,8 +85,8 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn3504637) {
-		return __goscriptSelectValue3504637
+	if (__goscriptSelect0HasReturn) {
+		return __goscriptSelect0Value
 	}
 
 	// This code should execute when cases 2, 4, 5, or default are selected
@@ -109,7 +109,7 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 	// Pre-populate ch1 to trigger a returning case
 	await $.chanSend(ch1, "test_message")
 
-	const [__goscriptSelectHasReturn3505996, __goscriptSelectValue3505996] = await $.selectStatement<any, string>([
+	const [__goscriptSelect1HasReturn, __goscriptSelect1Value] = await $.selectStatement<any, string>([
 		{
 			id: 0,
 			isSend: false,
@@ -168,8 +168,8 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn3505996) {
-		return __goscriptSelectValue3505996
+	if (__goscriptSelect1HasReturn) {
+		return __goscriptSelect1Value
 	}
 
 	// This code should NOT execute for ch1 case (which returns)

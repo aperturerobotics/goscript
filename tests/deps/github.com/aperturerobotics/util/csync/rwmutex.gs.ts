@@ -131,7 +131,7 @@ export class RWMutex {
 
 		// slow path: watch for changes
 		while (true) {
-			const [__goscriptSelectHasReturn4794695, __goscriptSelectValue4794695] = await $.selectStatement<any, [(() => void) | null, $.GoError]>([
+			const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, [(() => void) | null, $.GoError]>([
 				{
 					id: 0,
 					isSend: false,
@@ -149,8 +149,8 @@ export class RWMutex {
 					}
 				}
 			], false)
-			if (__goscriptSelectHasReturn4794695) {
-				return __goscriptSelectValue4794695
+			if (__goscriptSelect0HasReturn) {
+				return __goscriptSelect0Value
 			}
 
 			await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {

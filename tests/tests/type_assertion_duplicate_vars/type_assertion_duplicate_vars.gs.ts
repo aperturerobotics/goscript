@@ -124,10 +124,10 @@ export async function main(): Promise<void> {
 	let c = new Container()
 
 	// Multiple type assertions that should generate unique variable names
-	let __goscriptTuple406 = $.typeAssertTuple<ConcreteA>(iface, "main.ConcreteA")
-	$.pointerValue(c).hasA = __goscriptTuple406[1]
-	let __goscriptTuple437 = $.typeAssertTuple<ConcreteB>(iface, "main.ConcreteB")
-	$.pointerValue(c).hasB = __goscriptTuple437[1]
+	let __goscriptTuple0 = $.typeAssertTuple<ConcreteA>(iface, "main.ConcreteA")
+	$.pointerValue(c).hasA = __goscriptTuple0[1]
+	let __goscriptTuple1 = $.typeAssertTuple<ConcreteB>(iface, "main.ConcreteB")
+	$.pointerValue(c).hasB = __goscriptTuple1[1]
 
 	$.println("hasA:", $.pointerValue(c).hasA)
 	$.println("hasB:", $.pointerValue(c).hasB)

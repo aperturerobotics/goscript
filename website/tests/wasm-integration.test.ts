@@ -9,7 +9,7 @@ const shouldRunWasm =
 const describeWasm = shouldRunWasm ? describe : describe.skip
 let wasmModule: WasmModule
 
-// This test loads the WASM adapter and verifies the current v2 browser contract.
+// This test loads the WASM adapter and verifies the browser source compile path.
 describeWasm('WASM Integration', () => {
   beforeAll(async () => {
     wasmModule = await import('../assets/js/goscript-wasm.js')
@@ -24,14 +24,14 @@ describeWasm('WASM Integration', () => {
     expect(typeof window.goscriptCompile).toBe('function')
   })
 
-  test('reports unsupported browser source compilation', async () => {
+  test('compiles browser source to TypeScript', async () => {
     const goCode = `package main
 
 func main() {
     println("Hello, World!")
 }`
-    await expect(wasmModule.compileGoToTypeScript(goCode, 'main')).rejects.toThrow(
-      'goscript/wasm:single-file-unsupported',
-    )
+    const output = await wasmModule.compileGoToTypeScript(goCode, 'main')
+    expect(output).toContain('export async function main')
+    expect(output).toContain('$.println("Hello, World!")')
   })
 })

@@ -66,8 +66,8 @@ export async function main(): Promise<void> {
 	}
 
 	// try a second time since this generates something different when using = and not :=
-	let __goscriptTuple461 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
-	ok = __goscriptTuple461[1]
+	let __goscriptTuple0 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+	ok = __goscriptTuple0[1]
 	if (ok) {
 		$.println("Type assertion successful")
 	} else {

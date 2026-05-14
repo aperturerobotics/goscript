@@ -9,7 +9,7 @@ export async function main(): Promise<void> {
 	let ch1 = $.makeChannel<string>(1, "", "both")
 
 	// First test: empty channel, should hit default
-	const [__goscriptSelectHasReturn214, __goscriptSelectValue214] = await $.selectStatement<any, void>([
+	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -28,15 +28,15 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn214) {
-		return __goscriptSelectValue214
+	if (__goscriptSelect0HasReturn) {
+		return __goscriptSelect0Value
 	}
 
 	// Now put something in the channel
 	await $.chanSend(ch1, "hello")
 
 	// Second test: should read from channel
-	const [__goscriptSelectHasReturn453, __goscriptSelectValue453] = await $.selectStatement<any, void>([
+	const [__goscriptSelect1HasReturn, __goscriptSelect1Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -55,8 +55,8 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn453) {
-		return __goscriptSelectValue453
+	if (__goscriptSelect1HasReturn) {
+		return __goscriptSelect1Value
 	}
 
 	// Test 3: Select with channel closing and ok value
@@ -65,7 +65,7 @@ export async function main(): Promise<void> {
 	ch2!.close()
 
 	// First receive gets the buffered value
-	const [__goscriptSelectHasReturn742, __goscriptSelectValue742] = await $.selectStatement<any, void>([
+	const [__goscriptSelect2HasReturn, __goscriptSelect2Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -89,12 +89,12 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn742) {
-		return __goscriptSelectValue742
+	if (__goscriptSelect2HasReturn) {
+		return __goscriptSelect2Value
 	}
 
 	// Second receive gets the zero value with ok==false
-	const [__goscriptSelectHasReturn1021, __goscriptSelectValue1021] = await $.selectStatement<any, void>([
+	const [__goscriptSelect3HasReturn, __goscriptSelect3Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -118,15 +118,15 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn1021) {
-		return __goscriptSelectValue1021
+	if (__goscriptSelect3HasReturn) {
+		return __goscriptSelect3Value
 	}
 
 	// Test 5: Send operations
 	let ch3 = $.makeChannel<number>(1, 0, "both")
 
 	// First send should succeed (buffer not full)
-	const [__goscriptSelectHasReturn1351, __goscriptSelectValue1351] = await $.selectStatement<any, void>([
+	const [__goscriptSelect4HasReturn, __goscriptSelect4Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -145,12 +145,12 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn1351) {
-		return __goscriptSelectValue1351
+	if (__goscriptSelect4HasReturn) {
+		return __goscriptSelect4Value
 	}
 
 	// Second send should hit default (buffer full)
-	const [__goscriptSelectHasReturn1529, __goscriptSelectValue1529] = await $.selectStatement<any, void>([
+	const [__goscriptSelect5HasReturn, __goscriptSelect5Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -169,8 +169,8 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn1529) {
-		return __goscriptSelectValue1529
+	if (__goscriptSelect5HasReturn) {
+		return __goscriptSelect5Value
 	}
 
 	// Test 7: Multiple channel select (with known values)
@@ -180,7 +180,7 @@ export async function main(): Promise<void> {
 	await $.chanSend(ch4, "from ch4")
 
 	// Should select ch4 because it has data, ch5 is empty
-	const [__goscriptSelectHasReturn1856, __goscriptSelectValue1856] = await $.selectStatement<any, void>([
+	const [__goscriptSelect6HasReturn, __goscriptSelect6Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -200,15 +200,15 @@ export async function main(): Promise<void> {
 			}
 		}
 	], false)
-	if (__goscriptSelectHasReturn1856) {
-		return __goscriptSelectValue1856
+	if (__goscriptSelect6HasReturn) {
+		return __goscriptSelect6Value
 	}
 
 	// Now ch4 is empty and ch5 is empty
 	await $.chanSend(ch5, "from ch5")
 
 	// Should select ch5 because it has data, ch4 is empty
-	const [__goscriptSelectHasReturn2125, __goscriptSelectValue2125] = await $.selectStatement<any, void>([
+	const [__goscriptSelect7HasReturn, __goscriptSelect7Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -228,16 +228,16 @@ export async function main(): Promise<void> {
 			}
 		}
 	], false)
-	if (__goscriptSelectHasReturn2125) {
-		return __goscriptSelectValue2125
+	if (__goscriptSelect7HasReturn) {
+		return __goscriptSelect7Value
 	}
 
 	// Test 9: Channel closing test case for a separate test
 	let chClose = $.makeChannel<boolean>(0, false, "both")
 	chClose!.close()
-	let __goscriptRecv2382 = await $.chanRecvWithOk(chClose)
-	let val = __goscriptRecv2382.value
-	let ok = __goscriptRecv2382.ok
+	let __goscriptRecv0 = await $.chanRecvWithOk(chClose)
+	let val = __goscriptRecv0.value
+	let ok = __goscriptRecv0.ok
 	if (!ok) {
 		$.println("TEST9: Channel is closed, ok is false, val:", val)
 	} else {

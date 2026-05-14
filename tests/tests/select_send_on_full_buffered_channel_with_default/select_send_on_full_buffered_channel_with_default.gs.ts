@@ -8,7 +8,7 @@ export async function main(): Promise<void> {
 	await $.chanSend(ch, 1)
 
 	// TODO: The comments on the following cases are written twice in the output.
-	const [__goscriptSelectHasReturn163, __goscriptSelectValue163] = await $.selectStatement<any, void>([
+	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -27,8 +27,8 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn163) {
-		return __goscriptSelectValue163
+	if (__goscriptSelect0HasReturn) {
+		return __goscriptSelect0Value
 	}
 }
 

@@ -77,9 +77,9 @@ export async function main(): Promise<void> {
 	}
 
 	let fnPtr: $.VarRef<atomic.Pointer<(() => void) | null>> = $.varRef($.markAsStructValue(new atomic.Pointer<(() => void) | null>()))
-	let __goscriptTuple29340 = makeAtomicCallback()
-	let callback = $.varRef(__goscriptTuple29340[0])
-	let callbackErr = __goscriptTuple29340[1]
+	let __goscriptTuple0 = makeAtomicCallback()
+	let callback = $.varRef(__goscriptTuple0[0])
+	let callbackErr = __goscriptTuple0[1]
 	if (callbackErr != null) {
 		$.println("Pointer function error:", callbackErr!.Error())
 	} else {

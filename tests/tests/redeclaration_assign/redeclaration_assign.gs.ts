@@ -13,9 +13,9 @@ export async function main(): Promise<void> {
 
 	// i already exists from the var declaration above.
 	// err is a new variable being declared.
-	let __goscriptTuple268 = returnsOneIntOneBool()
-	i = __goscriptTuple268[0]
-	let err = __goscriptTuple268[1]
+	let __goscriptTuple0 = returnsOneIntOneBool()
+	i = __goscriptTuple0[0]
+	let err = __goscriptTuple0[1]
 
 	$.println("after assign i:", i)
 	if (err) {

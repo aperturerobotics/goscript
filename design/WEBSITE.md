@@ -2,13 +2,18 @@
 
 ## Overview
 
-A GitHub Pages website for GoScript featuring precompiled Go-to-TypeScript demos and browser execution of generated TypeScript. The website demonstrates GoScript's package output through a playground and compliance test browser without requiring a live compiler in the browser.
+A GitHub Pages website for GoScript featuring a functional browser compiler for
+single-file demos, precompiled Go-to-TypeScript examples, and browser execution
+of generated TypeScript. The website demonstrates GoScript's package output
+through a playground and compliance test browser while keeping imported-package
+compilation on the CLI/package workflow.
 
 ## Architecture
 
-### Phase 1: Pre-compiled Examples (MVP)
+### Pre-compiled Examples
 
-For the initial release, we use pre-compiled examples to avoid the complexity of running the Go compiler in the browser:
+The website keeps pre-compiled examples and compliance tests for package-shaped
+output and imported-package demos:
 
 1. **Pre-compiled Compliance Tests**
    - Generate a manifest of all compliance tests at build time
@@ -25,18 +30,16 @@ For the initial release, we use pre-compiled examples to avoid the complexity of
    - Execute generated TypeScript in a sandboxed environment
    - Capture and display `println` output
 
-### Phase 2: WASM Compilation (Future)
+### WASM Compilation
 
-Compile the GoScript compiler to WASM for client-side compilation:
+The deployed website builds the GoScript compiler to WASM for client-side
+compilation:
 
-- Requires solving `go/packages` dependency on Go toolchain
-- Could use a separately scoped parser-only approach for single-file programs
-- Would enable live editing without server
-
-The current v2 WASM adapter is intentionally diagnostic-only. Direct browser
-source-string compilation returns `goscript/wasm:single-file-unsupported`, and
-the website consumes precompiled examples/tests until direct single-file support
-is designed and verified.
+- Uses the parser/type-checker path for import-free single-file programs
+- Reuses the v2 semantic model, lowering, and TypeScript emitter
+- Enables live editing without a server for functional demos
+- Returns a structured unsupported-import diagnostic for code that imports
+  packages; those examples use precompiled output or the CLI package workflow
 
 ## Website Structure
 

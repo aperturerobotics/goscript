@@ -18,7 +18,7 @@ Public entrypoints are adapters over one compiler service:
 
 *   `cmd/goscript` is the CLI adapter. It uses `github.com/aperturerobotics/cli` for command and flag parsing, normalizes flags into `compiler.Config`, and then calls the public Go compiler adapter.
 *   `compiler.Compiler` is the public Go API. It owns logger/config storage only and forwards package patterns to `CompileService`.
-*   `compiler/wasm` is the browser/WASM API adapter. Direct browser source-string compilation is not supported in v2 yet, so this adapter returns the structured `goscript/wasm:single-file-unsupported` diagnostic instead of claiming a partial parser-only compile path.
+*   `compiler/wasm` is the browser/WASM API adapter. It supports import-free single-file browser source strings by parsing and type-checking a synthetic package before reusing the same semantic, lowering, and TypeScript emitter owners as package compilation. Browser source imports return a structured diagnostic; imported code should use the package workflow.
 
 `CompileService` owns the v2 compile pipeline:
 

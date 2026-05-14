@@ -10,7 +10,7 @@ export async function main(): Promise<void> {
 	$.println("Test 1: Select with nil channel and default")
 	let nilCh: $.Channel<number> | null = null
 
-	const [__goscriptSelectHasReturn193, __goscriptSelectValue193] = await $.selectStatement<any, void>([
+	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -37,8 +37,8 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn193) {
-		return __goscriptSelectValue193
+	if (__goscriptSelect0HasReturn) {
+		return __goscriptSelect0Value
 	}
 
 	// Test 2: Multiple nil channels in select with default
@@ -46,7 +46,7 @@ export async function main(): Promise<void> {
 	let nilCh1: $.Channel<string> | null = null
 	let nilCh2: $.Channel<string> | null = null
 
-	const [__goscriptSelectHasReturn583, __goscriptSelectValue583] = await $.selectStatement<any, void>([
+	const [__goscriptSelect1HasReturn, __goscriptSelect1Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -82,8 +82,8 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn583) {
-		return __goscriptSelectValue583
+	if (__goscriptSelect1HasReturn) {
+		return __goscriptSelect1Value
 	}
 
 	// Test 3: Mix of nil and valid channels in select
@@ -92,7 +92,7 @@ export async function main(): Promise<void> {
 	let validCh = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(validCh, true)
 
-	const [__goscriptSelectHasReturn1100, __goscriptSelectValue1100] = await $.selectStatement<any, void>([
+	const [__goscriptSelect2HasReturn, __goscriptSelect2Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -128,8 +128,8 @@ export async function main(): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn1100) {
-		return __goscriptSelectValue1100
+	if (__goscriptSelect2HasReturn) {
+		return __goscriptSelect2Value
 	}
 
 	$.println("\nAll nil channel tests completed")

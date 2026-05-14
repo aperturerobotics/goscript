@@ -12,8 +12,8 @@ export async function main(): Promise<void> {
 	// This should generate: [nref] = returnTwoValues()
 	// Not: [nref, ] = returnTwoValues()
 	let nref: number = 0
-	let __goscriptTuple252 = returnTwoValues()
-	nref = __goscriptTuple252[0]
+	let __goscriptTuple0 = returnTwoValues()
+	nref = __goscriptTuple0[0]
 
 	$.println("nref:", nref)
 }

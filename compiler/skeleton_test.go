@@ -1121,12 +1121,14 @@ func TestCompilePackagesReportsUnsupportedUnaryBeforeOutput(t *testing.T) {
 	}
 }
 
-func TestCompileSourceToTypeScriptStopsAtSkeleton(t *testing.T) {
-	_, err := CompileSourceToTypeScript("package main\nfunc main() {}\n", "main")
-	if err == nil {
-		t.Fatal("expected WASM source compile to fail in the skeleton")
+func TestCompileSourceToTypeScriptCompilesSingleFile(t *testing.T) {
+	output, err := CompileSourceToTypeScript("package main\nfunc main() { println(\"hi\") }\n", "main")
+	if err != nil {
+		t.Fatal(err.Error())
 	}
-	requireDiagnostic(t, err, "goscript/wasm:single-file-unsupported")
+	if !strings.Contains(output, "$.println(\"hi\")") {
+		t.Fatalf("missing println in generated output:\n%s", output)
+	}
 }
 
 func requireDiagnostic(t *testing.T, err error, code string) {

@@ -17,9 +17,9 @@ export async function main(): Promise<void> {
 	$.println("Itoa result:", s)
 
 	// Test ParseInt
-	let __goscriptTuple3148803 = strconv.ParseInt("456", 10, 64)
-	let i64 = __goscriptTuple3148803[0]
-	err = __goscriptTuple3148803[1]
+	let __goscriptTuple0 = strconv.ParseInt("456", 10, 64)
+	let i64 = __goscriptTuple0[0]
+	err = __goscriptTuple0[1]
 	if (err == null) {
 		$.println("ParseInt result:", i64)
 	}
@@ -29,9 +29,9 @@ export async function main(): Promise<void> {
 	$.println("FormatInt result:", formatted)
 
 	// Test ParseFloat
-	let __goscriptTuple3149026 = strconv.ParseFloat("3.14", 64)
-	let f = __goscriptTuple3149026[0]
-	err = __goscriptTuple3149026[1]
+	let __goscriptTuple1 = strconv.ParseFloat("3.14", 64)
+	let f = __goscriptTuple1[0]
+	err = __goscriptTuple1[1]
 	if (err == null) {
 		$.println("ParseFloat result:", strconv.FormatFloat(f, 102, 2, 64))
 	}
@@ -41,9 +41,9 @@ export async function main(): Promise<void> {
 	$.println("FormatFloat result:", floatStr)
 
 	// Test ParseBool
-	let __goscriptTuple3149292 = strconv.ParseBool("true")
-	let b = __goscriptTuple3149292[0]
-	err = __goscriptTuple3149292[1]
+	let __goscriptTuple2 = strconv.ParseBool("true")
+	let b = __goscriptTuple2[0]
+	err = __goscriptTuple2[1]
 	if (err == null) {
 		$.println("ParseBool result:", b)
 	}
@@ -57,22 +57,22 @@ export async function main(): Promise<void> {
 	$.println("Quote result:", quoted)
 
 	// Test Unquote
-	let __goscriptTuple3149590 = strconv.Unquote(`"hello world"`)
-	let unquoted = __goscriptTuple3149590[0]
-	err = __goscriptTuple3149590[1]
+	let __goscriptTuple3 = strconv.Unquote(`"hello world"`)
+	let unquoted = __goscriptTuple3[0]
+	err = __goscriptTuple3[1]
 	if (err == null) {
 		$.println("Unquote result:", unquoted)
 	}
 
 	// Test error cases
-	let __goscriptTuple3149722 = strconv.Atoi("invalid")
-	err = __goscriptTuple3149722[1]
+	let __goscriptTuple4 = strconv.Atoi("invalid")
+	err = __goscriptTuple4[1]
 	if (err != null) {
 		$.println("Atoi error handled")
 	}
 
-	let __goscriptTuple3149809 = strconv.ParseFloat("invalid", 64)
-	err = __goscriptTuple3149809[1]
+	let __goscriptTuple5 = strconv.ParseFloat("invalid", 64)
+	err = __goscriptTuple5[1]
 	if (err != null) {
 		$.println("ParseFloat error handled")
 	}

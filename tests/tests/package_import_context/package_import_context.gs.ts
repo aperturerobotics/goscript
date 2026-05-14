@@ -18,7 +18,7 @@ export async function run(ctx: context.Context): Promise<void> {
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 
 	// Check that myCh is not readable yet
-	const [__goscriptSelectHasReturn3504577, __goscriptSelectValue3504577] = await $.selectStatement<any, void>([
+	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -36,8 +36,8 @@ export async function run(ctx: context.Context): Promise<void> {
 			}
 		}
 	], true)
-	if (__goscriptSelectHasReturn3504577) {
-		return __goscriptSelectValue3504577
+	if (__goscriptSelect0HasReturn) {
+		return __goscriptSelect0Value
 	}
 
 	// Cancel context which should trigger the goroutine

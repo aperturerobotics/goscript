@@ -68,9 +68,10 @@ GoScript translates Go code at the AST (Abstract Syntax Tree) level, producing r
 The public CLI uses `github.com/aperturerobotics/cli` and constructs
 `compiler.Config` from command-local flag state. The public Go API is
 `compiler.Compiler`, which forwards package patterns into `CompileService`.
-The WASM/browser adapter is intentionally diagnostic-only in v2: direct
-source-string compilation returns `goscript/wasm:single-file-unsupported` until
-single-file browser compilation is scoped.
+The WASM/browser adapter parses and type-checks import-free single-file source
+strings, builds the same semantic model used by package compilation, and then
+reuses the v2 lowering and TypeScript emitter. Browser source imports still
+return a structured diagnostic; use the package workflow for imported code.
 
 ---
 
@@ -837,7 +838,7 @@ goscript/
 │   ├── typescript-emitter.go # Deterministic TypeScript rendering
 │   ├── runtime-contract.go   # Generated helper/import contract
 │   ├── override-registry.go  # Handwritten gs/ package metadata/copy plans
-│   └── wasm_api.go       # Browser source-compilation diagnostic adapter
+│   └── wasm_api.go       # Browser source-compilation adapter
 ├── gs/                    # Runtime & handwritten packages
 │   ├── builtin/           # @goscript/builtin runtime
 │   │   ├── index.ts       # Main exports

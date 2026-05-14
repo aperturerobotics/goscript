@@ -101,9 +101,9 @@ export class Broadcast {
 			let done: boolean = false
 			let err: $.GoError = null
 			await $.pointerValue(c).HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
-				let __goscriptTuple4790192 = cb!(broadcast, getWaitCh)
-				done = __goscriptTuple4790192[0]
-				err = __goscriptTuple4790192[1]
+				let __goscriptTuple0 = cb!(broadcast, getWaitCh)
+				done = __goscriptTuple0[0]
+				err = __goscriptTuple0[1]
 				if (!done && err == null) {
 					waitCh = getWaitCh!()
 				}
@@ -113,7 +113,7 @@ export class Broadcast {
 				return err
 			}
 
-			const [__goscriptSelectHasReturn4790340, __goscriptSelectValue4790340] = await $.selectStatement<any, $.GoError>([
+			const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, $.GoError>([
 				{
 					id: 0,
 					isSend: false,
@@ -130,8 +130,8 @@ export class Broadcast {
 					}
 				}
 			], false)
-			if (__goscriptSelectHasReturn4790340) {
-				return __goscriptSelectValue4790340
+			if (__goscriptSelect0HasReturn) {
+				return __goscriptSelect0Value
 			}
 		}
 	}

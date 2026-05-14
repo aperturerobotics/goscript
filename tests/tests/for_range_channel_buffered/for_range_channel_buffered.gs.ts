@@ -11,11 +11,11 @@ export async function main(): Promise<void> {
 	}
 	ch!.close()
 	while (true) {
-		let __goscriptRange134 = await $.chanRecvWithOk(ch)
-		if (!__goscriptRange134.ok) {
+		let __goscriptRange0 = await $.chanRecvWithOk(ch)
+		if (!__goscriptRange0.ok) {
 			break
 		}
-		let val = __goscriptRange134.value
+		let val = __goscriptRange0.value
 		$.println("from ch", val)
 	}
 }

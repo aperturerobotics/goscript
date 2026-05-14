@@ -56,7 +56,7 @@ export async function main(): Promise<void> {
 		done!.close()
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 
-	const [__goscriptSelectHasReturn4801746, __goscriptSelectValue4801746] = await $.selectStatement<any, void>([
+	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -74,8 +74,8 @@ export async function main(): Promise<void> {
 			}
 		}
 	], false)
-	if (__goscriptSelectHasReturn4801746) {
-		return __goscriptSelectValue4801746
+	if (__goscriptSelect0HasReturn) {
+		return __goscriptSelect0Value
 	}
 
 	$.println("Final counter value:", counter)

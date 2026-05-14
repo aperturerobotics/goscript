@@ -5,7 +5,7 @@ import (
 	"github.com/aperturerobotics/goscript/compiler"
 )
 
-// CompileSource returns the v2 browser source-compilation diagnostic.
+// CompileSource compiles import-free browser source strings to TypeScript.
 func CompileSource(source string, packageName string) (string, error) {
 	return compiler.CompileSourceToTypeScript(source, packageName)
 }

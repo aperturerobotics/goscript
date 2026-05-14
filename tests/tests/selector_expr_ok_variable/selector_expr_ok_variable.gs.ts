@@ -44,8 +44,8 @@ export async function main(): Promise<void> {
 
 	// This should trigger the error: ok expression is not an identifier: *ast.SelectorExpr
 	// The 'ok' variable is result.ok (a selector expression) instead of a simple identifier
-	let __goscriptTuple279 = $.typeAssertTuple<number>(x, { kind: $.TypeKind.Basic, name: "int" })
-	result.ok = __goscriptTuple279[1]
+	let __goscriptTuple0 = $.typeAssertTuple<number>(x, { kind: $.TypeKind.Basic, name: "int" })
+	result.ok = __goscriptTuple0[1]
 
 	$.println("Type assertion successful:", result.ok)
 }

@@ -6,6 +6,7 @@ import {
   ready as wasmReady,
   compileGoToTypeScript,
 } from './goscript-wasm.js'
+import { stripGeneratedMainGuard } from './generated-code.js'
 import { packages as goscriptPackages } from 'virtual:goscript-packages'
 
 // Make runtime available globally for executed code
@@ -476,7 +477,7 @@ async function runTypeScript(code) {
     try {
       const result = await window.esbuild.build({
         stdin: {
-          contents: code,
+          contents: stripGeneratedMainGuard(code),
           loader: 'ts',
           resolveDir: '/',
         },
@@ -490,6 +491,8 @@ async function runTypeScript(code) {
     } catch (err) {
       throw new Error(`TypeScript compilation error: ${err.message}`)
     }
+
+    jsCode = stripGeneratedMainGuard(jsCode)
 
     // Remove any remaining export keywords (esbuild preserves them)
     jsCode = jsCode.replace(/^export /gm, '')

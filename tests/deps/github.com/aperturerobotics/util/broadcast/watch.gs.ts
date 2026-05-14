@@ -28,7 +28,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 	}
 	let prev = val
 	while (true) {
-		const [__goscriptSelectHasReturn4792121, __goscriptSelectValue4792121] = await $.selectStatement<any, $.GoError>([
+		const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, $.GoError>([
 			{
 				id: 0,
 				isSend: false,
@@ -45,8 +45,8 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 				}
 			}
 		], false)
-		if (__goscriptSelectHasReturn4792121) {
-			return __goscriptSelectValue4792121
+		if (__goscriptSelect0HasReturn) {
+			return __goscriptSelect0Value
 		}
 		await $.pointerValue(bcast).HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 			ch = getWaitCh!()
