@@ -4,9 +4,9 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export function getAdder(x: number): (_p0: number) => number {
-	return (y: number): number => {
+	return $.functionValue((y: number): number => {
 	return x + y
-}
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 }
 
 export async function main(): Promise<void> {

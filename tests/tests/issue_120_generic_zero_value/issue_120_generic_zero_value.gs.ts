@@ -42,15 +42,15 @@ export function Sum(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<any
 }
 
 export async function main(): Promise<void> {
-	let zeroInt = ZeroValue({T: { zero: () => 0, methods: {String: IntVal_String} }})
+	let zeroInt = ZeroValue({T: { type: "main.IntVal", zero: () => 0, methods: {String: IntVal_String} }})
 	$.println("ZeroValue[IntVal]:", IntVal_String(zeroInt))
-	let zeroStr = ZeroValue({T: { zero: () => "", methods: {String: StringVal_String} }})
+	let zeroStr = ZeroValue({T: { type: "main.StringVal", zero: () => "", methods: {String: StringVal_String} }})
 	$.println("ZeroValue[StringVal] len:", $.len(StringVal_String(zeroStr)))
-	$.println("CallString on zero IntVal:", CallString({T: { zero: () => 0, methods: {String: IntVal_String} }}, zeroInt))
-	$.println("CallString on zero StringVal len:", $.len(CallString({T: { zero: () => "", methods: {String: StringVal_String} }}, zeroStr)))
-	let sumInt = Sum({T: { zero: () => 0, methods: {String: IntVal_String} }}, null)
+	$.println("CallString on zero IntVal:", CallString({T: { type: "main.IntVal", zero: () => 0, methods: {String: IntVal_String} }}, zeroInt))
+	$.println("CallString on zero StringVal len:", $.len(CallString({T: { type: "main.StringVal", zero: () => "", methods: {String: StringVal_String} }}, zeroStr)))
+	let sumInt = Sum({T: { type: "main.IntVal", zero: () => 0, methods: {String: IntVal_String} }}, null)
 	$.println("Sum[IntVal]():", IntVal_String(sumInt))
-	let sumStr = Sum({T: { zero: () => "", methods: {String: StringVal_String} }}, null)
+	let sumStr = Sum({T: { type: "main.StringVal", zero: () => "", methods: {String: StringVal_String} }}, null)
 	$.println("Sum[StringVal]() len:", $.len(StringVal_String(sumStr)))
 	$.println("zeroInt == 0:", zeroInt == 0)
 	$.println("zeroStr == \"\":", zeroStr == "")

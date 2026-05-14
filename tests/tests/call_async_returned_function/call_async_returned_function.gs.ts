@@ -9,9 +9,9 @@ export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map
 
 export async function getCallback(): Promise<(_p0: string) => void> {
 	await cache.value.Load(1)
-	return (msg: string): void => {
+	return $.functionValue((msg: string): void => {
 	$.println("Callback:", msg)
-}
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [] })
 }
 
 export async function main(): Promise<void> {

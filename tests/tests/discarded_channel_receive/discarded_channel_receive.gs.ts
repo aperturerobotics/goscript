@@ -5,10 +5,10 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let ch = $.makeChannel<number>(0, 0, "both")
-	queueMicrotask(async () => { await (async (): Promise<void> => {
+	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
 	await $.chanSend(ch, 1)
 	ch.close()
-})() })
+}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 	await $.chanRecv(ch)
 	$.println("done")
 }

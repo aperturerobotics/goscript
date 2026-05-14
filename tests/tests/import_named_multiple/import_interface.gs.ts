@@ -38,9 +38,9 @@ export async function main(): Promise<void> {
 	$.println("strings.ContainsAny:", strings.ContainsAny("hello", "lo"))
 	$.println("strings.EqualFold:", strings.EqualFold("hello", "HELLO"))
 	$.println("strings.Fields:", strings.Fields("hello world"))
-	$.println("strings.FieldsFunc:", strings.FieldsFunc("hello world", (r: number): boolean => {
+	$.println("strings.FieldsFunc:", strings.FieldsFunc("hello world", $.functionValue((r: number): boolean => {
 	return r == 32
-}))
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })))
 	$.println("strings.HasPrefix:", strings.HasPrefix("hello", "he"))
 	$.println("strings.HasSuffix:", strings.HasSuffix("hello", "lo"))
 }

@@ -1259,7 +1259,15 @@ export function namedFunction<T>(fn: T, typeName: string): T {
   return Object.assign(fn, { __goTypeName: typeName })
 }
 
+export function functionValue<T extends (...args: any[]) => any>(
+  fn: T,
+  typeInfo: FunctionTypeInfo,
+): T {
+  return Object.assign(fn, { __typeInfo: typeInfo })
+}
+
 export interface GenericTypeDescriptor<T = any> {
+  type?: TypeInfo | string
   zero?: () => T
   methods?: Record<string, (receiver: T, ...args: any[]) => any>
 }

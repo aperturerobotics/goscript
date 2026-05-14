@@ -213,7 +213,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"reflect_implements":                  true,
 	"reflect_numfield":                    true,
 	"reflect_struct_field":                true,
-	"reflect_typefor":                     true,
 	"reserved_word_in":                    true,
 	"reserved_words":                      true,
 	"return_async_call":                   true,

@@ -32,9 +32,9 @@ export class AsyncResource {
 	public async Release(): Promise<void> {
 		const r = this
 		let ch = $.makeChannel<boolean>(1, false, "both")
-		queueMicrotask(async () => { await (async (): Promise<void> => {
+		queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
 	await $.chanSend(ch, true)
-})() })
+}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 		await $.chanRecv(ch)
 		$.println("Released", $.pointerValue(r).name)
 	}

@@ -4,9 +4,9 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	let greet = (name: string): string => {
+	let greet = $.functionValue((name: string): string => {
 	return "Hello, " + name
-}
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	let message = greet("world")
 	$.println(message)
 }

@@ -32,16 +32,16 @@ export async function main(): Promise<void> {
 	$.println("Index of 'banana' in sorted strings:", stringIndex)
 	let floatIndex = sort.SearchFloat64s(floats, 2.71)
 	$.println("Index of 2.71 in sorted floats:", floatIndex)
-	let searchResult = sort.Search($.len(ints), (i: number): boolean => {
+	let searchResult = sort.Search($.len(ints), $.functionValue((i: number): boolean => {
 	return ints![i] >= 5
-})
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
 	$.println("First index where value >= 5:", searchResult)
 	let testSlice = $.arrayToSlice<number>([5, 2, 8, 1, 9])
 	slices.Sort(testSlice)
 	$.println("Custom sorted slice:", testSlice![0], testSlice![1], testSlice![2], testSlice![3], testSlice![4])
-	let isSliceSorted = sort.SliceIsSorted(testSlice, (i: number, j: number): boolean => {
+	let isSliceSorted = sort.SliceIsSorted(testSlice, $.functionValue((i: number, j: number): boolean => {
 	return testSlice![i] < testSlice![j]
-})
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
 	$.println("Custom slice is sorted:", isSliceSorted)
 	$.println("test finished")
 }

@@ -1573,7 +1573,8 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 	case *ast.CallExpr:
 		return o.lowerCallExpr(ctx, typed)
 	case *ast.FuncLit:
-		return o.lowerFuncLit(ctx, typed)
+		value, _, diagnostics := o.lowerFuncLit(ctx, typed)
+		return value, diagnostics
 	case *ast.SelectorExpr:
 		return o.lowerSelectorExpr(ctx, typed)
 	case *ast.IndexExpr:
@@ -1602,7 +1603,7 @@ func lowerBasicLit(lit *ast.BasicLit) string {
 	return lit.Value
 }
 
-func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (string, []Diagnostic) {
+func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (string, bool, []Diagnostic) {
 	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
 	body, diagnostics := o.lowerBlock(ctx.withSignature(signature), lit.Body)
 	var rendered strings.Builder
@@ -1612,9 +1613,11 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	if async {
 		prefix = "async "
 	}
-	return prefix + "(" + tsSignatureParams(signature) + "): " +
+	function := prefix + "(" + tsSignatureParams(signature) + "): " +
 		asyncResultType(tsSignatureResult(signature), async) + " => {\n" +
-		rendered.String() + "}", diagnostics
+		rendered.String() + "}"
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
+		"(" + function + ", " + o.runtimeFunctionTypeInfo(signature, "") + ")", async, diagnostics
 }
 
 func stmtsContainAwait(stmts []loweredStmt) bool {
@@ -1785,9 +1788,9 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 		}
 		return callee + "(" + strings.Join(args, ", ") + ")", append(diagnostics, calleeDiagnostics...)
 	case *ast.FuncLit:
-		callee, calleeDiagnostics := o.lowerFuncLit(ctx, fun)
+		callee, async, calleeDiagnostics := o.lowerFuncLit(ctx, fun)
 		call := "(" + callee + ")(" + strings.Join(args, ", ") + ")"
-		if strings.HasPrefix(callee, "async ") {
+		if async {
 			call = "await " + call
 		}
 		return call, append(diagnostics, calleeDiagnostics...)
@@ -3108,7 +3111,10 @@ func (o *LoweringOwner) inferGenericTypeArg(
 }
 
 func (o *LoweringOwner) genericTypeDescriptorExpr(typ types.Type) string {
-	parts := []string{"zero: () => " + zeroValueExpr(typ)}
+	parts := []string{
+		"type: " + o.runtimeTypeInfoExpr(typ),
+		"zero: () => " + zeroValueExpr(typ),
+	}
 	if methods := o.genericMethodDescriptors(typ); methods != "" {
 		parts = append(parts, "methods: "+methods)
 	}
@@ -3127,7 +3133,7 @@ func (o *LoweringOwner) genericMethodDescriptors(typ types.Type) string {
 		if method == nil {
 			continue
 		}
-		if namedStructType(named) != nil {
+		if namedStructType(named) != nil || isInterfaceType(named) {
 			methods = append(methods, method.Name()+": (receiver: any, ...args: any[]) => receiver."+method.Name()+"(...args)")
 			continue
 		}

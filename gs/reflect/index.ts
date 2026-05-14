@@ -47,7 +47,6 @@ export {
 } from './types.js'
 export type {
   uintptr,
-  Pointer,
   Method,
   SelectDir,
   SliceHeader,
@@ -80,6 +79,7 @@ export {
   Interface,
   Map,
   Ptr,
+  Pointer,
   Slice,
   String,
   Struct,

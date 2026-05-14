@@ -613,9 +613,50 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 		"$.mapSet(seen, 1, {})",
 		"$.genericZero(__typeArgs, \"T\", null)",
 		"$.callGenericMethod(__typeArgs, \"T\", \"String\", v)",
-		"ZeroValue({T: { zero: () => 0, methods: {String: MyInt_String} }})",
-		"CallString({T: { zero: () => 0, methods: {String: MyInt_String} }}, zero)",
-		"Sum({T: { zero: () => 0, methods: {String: MyInt_String} }}, null)",
+		"ZeroValue({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: MyInt_String} }})",
+		"CallString({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: MyInt_String} }}, zero)",
+		"Sum({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: MyInt_String} }}, null)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/function-type-info\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func main() {",
+			"  fn := func(value int) string {",
+			"    return \"\"",
+			"  }",
+			"  _ = fn",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "function-type-info", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"$.functionValue((value: number): string => {",
+		"kind: $.TypeKind.Function",
+		"params: [{ kind: $.TypeKind.Basic, name: \"int\" }]",
+		"results: [{ kind: $.TypeKind.Basic, name: \"string\" }]",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -805,7 +846,7 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 		"await $.chanSend($.pointerValue(w).ch, v)",
 		"return await $.chanRecv($.pointerValue(w).ch)",
 		"await using __defer = new $.AsyncDisposableStack()",
-		"queueMicrotask(async () => { await (async (): Promise<void> => {",
+		"queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {",
 		"$.selectStatement([",
 		"let v = result.value",
 		"await call(new Worker({ch: $.makeChannel<number>(1, 0, \"both\")}))",

@@ -24,10 +24,10 @@ export function toStringGeneric(__typeArgs: $.GenericTypeArgs | undefined, v: an
 }
 
 export async function main(): Promise<void> {
-	$.println(toStringString({T: { zero: () => "" }}, "hello"))
-	$.println(toStringBytes({T: { zero: () => null }}, $.arrayToSlice<number>([119, 111, 114, 108, 100])))
-	$.println(toStringGeneric({T: { zero: () => "" }}, "foo"))
-	$.println(toStringGeneric({T: { zero: () => null }}, $.arrayToSlice<number>([98, 97, 114])))
+	$.println(toStringString({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, "hello"))
+	$.println(toStringBytes({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }}, $.arrayToSlice<number>([119, 111, 114, 108, 100])))
+	$.println(toStringGeneric({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, "foo"))
+	$.println(toStringGeneric({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }}, $.arrayToSlice<number>([98, 97, 114])))
 }
 
 

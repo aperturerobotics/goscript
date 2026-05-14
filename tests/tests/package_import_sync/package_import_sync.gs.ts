@@ -26,24 +26,24 @@ export async function main(): Promise<void> {
 	$.println("WaitGroup wait completed")
 	let once: $.VarRef<sync.Once> = $.varRef($.markAsStructValue(new sync.Once()))
 	let counter = 0
-	await once.value.Do((): void => {
+	await once.value.Do($.functionValue((): void => {
 	counter++
 	$.println("Once function executed, counter:", counter)
-})
-	await once.value.Do((): void => {
+}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	await once.value.Do($.functionValue((): void => {
 	counter++
 	$.println("This should not execute")
-})
+}, { kind: $.TypeKind.Function, params: [], results: [] }))
 	$.println("Final counter:", counter)
-	let onceFunc = sync.OnceFunc((): void => {
+	let onceFunc = sync.OnceFunc($.functionValue((): void => {
 	$.println("OnceFunc executed")
-})
+}, { kind: $.TypeKind.Function, params: [], results: [] }))
 	onceFunc()
 	onceFunc()
-	let onceValue = sync.OnceValue((): number => {
+	let onceValue = sync.OnceValue($.functionValue((): number => {
 	$.println("OnceValue function executed")
 	return 42
-})
+}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
 	let val1 = onceValue()
 	let val2 = onceValue()
 	$.println("OnceValue results:", val1, val2)
@@ -62,10 +62,10 @@ export async function main(): Promise<void> {
 			$.println("Stored key2:", val)
 		}
 	}
-	await m.value.Range((key: any, value: any): boolean => {
+	await m.value.Range($.functionValue((key: any, value: any): boolean => {
 	$.println("Range:", key, "->", value)
 	return true
-})
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Interface, methods: [] }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
 	await m.value.Delete("key1")
 	{
 		let [, ok] = await m.value.Load("key1")
@@ -73,10 +73,10 @@ export async function main(): Promise<void> {
 			$.println("key1 deleted successfully")
 		}
 	}
-	let pool = new sync.Pool({New: (): any => {
+	let pool = new sync.Pool({New: $.functionValue((): any => {
 	$.println("Pool creating new object")
 	return "new object"
-}})
+}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [] }] })})
 	let obj1 = $.pointerValue(pool).Get()
 	$.println("Got from pool:", obj1)
 	$.pointerValue(pool).Put("reused object")

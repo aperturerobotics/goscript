@@ -61,14 +61,14 @@ $.registerInterfaceType(
 )
 
 export async function main(): Promise<void> {
-	let t1 = reflect.TypeFor({T: { zero: () => null, methods: {SomeMethod: MyInterface_SomeMethod} }})
-	$.println("TypeFor interface:", t1.String())
-	let t2 = reflect.TypeFor({T: { zero: () => new MyStruct() }})
-	$.println("TypeFor struct:", t2.String())
-	$.println("TypeFor struct kind:", t2.Kind() == reflect.Struct)
-	let t3 = reflect.TypeFor({T: { zero: () => 0 }})
-	$.println("TypeFor int:", t3.String())
-	$.println("TypeFor int kind:", t3.Kind() == reflect.Int)
+	let t1 = reflect.TypeFor({T: { type: "main.MyInterface", zero: () => null, methods: {SomeMethod: (receiver: any, ...args: any[]) => receiver.SomeMethod(...args)} }})
+	$.println("TypeFor interface:", t1!.String())
+	let t2 = reflect.TypeFor({T: { type: "main.MyStruct", zero: () => new MyStruct() }})
+	$.println("TypeFor struct:", t2!.String())
+	$.println("TypeFor struct kind:", t2!.Kind() == reflect.Struct)
+	let t3 = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})
+	$.println("TypeFor int:", t3!.String())
+	$.println("TypeFor int kind:", t3!.Kind() == reflect.Int)
 	$.println("Pointer constant:", reflect.Pointer == reflect.Pointer)
 	$.println("reflect_typefor test finished")
 }

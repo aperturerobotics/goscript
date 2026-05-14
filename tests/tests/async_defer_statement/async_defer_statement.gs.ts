@@ -6,11 +6,11 @@ import * as $ from "@goscript/builtin/index.ts"
 export async function main(): Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
 	let ch = $.makeChannel<boolean>(1, false, "both")
-	__defer.defer(async () => { await (async (): Promise<void> => {
+	__defer.defer(async () => { await ($.functionValue(async (): Promise<void> => {
 	$.println("deferred start")
 	await $.chanRecv(ch)
 	$.println("deferred end")
-})() })
+}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 	$.println("main start")
 	$.println("main signaling defer")
 	await $.chanSend(ch, true)

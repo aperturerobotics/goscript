@@ -12,13 +12,13 @@ export function getValue(): [string, number] {
 }
 
 export function simpleIterator(m: Map<string, number> | null): (_p0: (_p0: string, _p1: number) => boolean) => void {
-	return (_yield: (_p0: string, _p1: number) => boolean): void => {
+	return $.functionValue((_yield: (_p0: string, _p1: number) => boolean): void => {
 	for (const [k, v] of m?.entries() ?? []) {
 		if (!_yield(k, v)) {
 			break
 		}
 	}
-}
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }], results: [] })
 }
 
 export async function main(): Promise<void> {

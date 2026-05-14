@@ -8,9 +8,9 @@ export function printVal(__typeArgs: $.GenericTypeArgs | undefined, val: any): v
 }
 
 export async function main(): Promise<void> {
-	printVal({T: { zero: () => 0 }}, 10)
-	printVal({T: { zero: () => "" }}, "hello")
-	printVal({T: { zero: () => false }}, true)
+	printVal({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, 10)
+	printVal({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, "hello")
+	printVal({T: { type: { kind: $.TypeKind.Basic, name: "bool" }, zero: () => false }}, true)
 }
 
 

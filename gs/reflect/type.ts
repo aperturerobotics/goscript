@@ -167,6 +167,7 @@ export const Func: Kind = 19
 export const Interface: Kind = 20
 export const Map: Kind = 21
 export const Ptr: Kind = 22
+export const Pointer: Kind = Ptr
 export const Slice: Kind = 23
 export const String: Kind = 24
 export const Struct: Kind = 25
@@ -1945,22 +1946,7 @@ function getTypeOf(value: ReflectValue): Type {
           typeInfo.params &&
           typeInfo.results
         ) {
-          // Build proper function signature from type info
-          const paramTypes = typeInfo.params
-            .map((p: any) => (typeof p === 'string' ? p : p.name || 'any'))
-            .join(', ')
-          const resultTypes = typeInfo.results.map((r: any) =>
-            typeof r === 'string' ? r : r.name || 'any',
-          )
-
-          let signature = `func(${paramTypes})`
-          if (resultTypes.length === 1) {
-            signature += ` ${resultTypes[0]}`
-          } else if (resultTypes.length > 1) {
-            signature += ` (${resultTypes.join(', ')})`
-          }
-
-          return new FunctionType(signature)
+          return functionTypeFromInfo(typeInfo)
         }
       }
 
@@ -2180,8 +2166,111 @@ export function ChanOf(dir: ChanDir, t: Type): Type {
   return new ChannelType(t, dir)
 }
 
-export function TypeFor(): Type {
+export function TypeFor(typeArgs?: $.GenericTypeArgs): Type {
+  const descriptor = typeArgs?.T
+  if (descriptor?.type) {
+    return typeFromTypeInfo(descriptor.type)
+  }
+  if (descriptor?.methods) {
+    const methods = Object.keys(descriptor.methods)
+    if (methods.length !== 0) {
+      return new InterfaceType(
+        `interface { ${methods.map((method) => method + '()').join('; ')} }`,
+      )
+    }
+  }
+  if (descriptor?.zero) {
+    return getTypeOf(descriptor.zero())
+  }
   return new InterfaceType('interface{}')
+}
+
+function typeFromTypeInfo(info: $.TypeInfo | string): Type {
+  if (typeof info === 'string') {
+    const registered = builtinGetTypeByName(info)
+    if (registered) {
+      return typeFromTypeInfo(registered)
+    }
+    return StructType.createTypeFromFieldInfo(info)
+  }
+  switch (info.kind) {
+    case $.TypeKind.Array:
+      return new ArrayType(
+        typeFromTypeInfo(info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
+        info.length,
+      )
+    case $.TypeKind.Channel:
+      return new ChannelType(
+        typeFromTypeInfo(info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
+        chanDirFromTypeInfo(info.direction),
+      )
+    case $.TypeKind.Function:
+      return functionTypeFromInfo(info)
+    case $.TypeKind.Interface:
+      return interfaceTypeFromInfo(info)
+    case $.TypeKind.Map:
+      return new MapType(
+        typeFromTypeInfo(info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
+        typeFromTypeInfo(info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
+      )
+    case $.TypeKind.Pointer:
+      return new PointerType(
+        typeFromTypeInfo(info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
+      )
+    default:
+      return StructType.createTypeFromFieldInfo(info)
+  }
+}
+
+function functionTypeFromInfo(info: $.FunctionTypeInfo): Type {
+  if (info.name) {
+    return new FunctionType(info.name)
+  }
+  const params = info.params ?? []
+  const paramTypes = params.map((param, index) => {
+    const typeName = functionSignatureTypeName(param)
+    if (!info.isVariadic || index !== params.length - 1) {
+      return typeName
+    }
+    if (typeName.startsWith('[]')) {
+      return '...' + typeName.slice(2)
+    }
+    return '...' + typeName
+  })
+  const resultTypes = (info.results ?? []).map(functionSignatureTypeName)
+  let signature = `func(${paramTypes.join(', ')})`
+  if (resultTypes.length === 1) {
+    signature += ` ${resultTypes[0]}`
+  }
+  if (resultTypes.length > 1) {
+    signature += ` (${resultTypes.join(', ')})`
+  }
+  return new FunctionType(signature)
+}
+
+function functionSignatureTypeName(info: $.TypeInfo | string): string {
+  return typeFromTypeInfo(info).String()
+}
+
+function interfaceTypeFromInfo(info: $.InterfaceTypeInfo): Type {
+  if (info.methods.length === 0) {
+    return new InterfaceType('interface{}', info.name)
+  }
+  return new InterfaceType(
+    `interface { ${info.methods.map((method) => method.name + '()').join('; ')} }`,
+    info.name,
+  )
+}
+
+function chanDirFromTypeInfo(direction?: 'send' | 'receive' | 'both'): ChanDir {
+  switch (direction) {
+    case 'send':
+      return SendDir
+    case 'receive':
+      return RecvDir
+    default:
+      return BothDir
+  }
 }
 
 /**

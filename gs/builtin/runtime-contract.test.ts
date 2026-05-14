@@ -4,6 +4,7 @@ import {
   byte,
   callGenericMethod,
   chanRecvWithOk,
+  functionValue,
   genericZero,
   int,
   interfaceValue,
@@ -184,6 +185,13 @@ describe('builtin runtime contract helpers', () => {
       kind: TypeKind.Function,
       name: 'phase5.Greet',
     }).ok).toBe(true)
+    const literal = functionValue((value: number) => String(value), {
+      kind: TypeKind.Function,
+      params: [{ kind: TypeKind.Basic, name: 'int' }],
+      results: [{ kind: TypeKind.Basic, name: 'string' }],
+    })
+    expect(literal(7)).toBe('7')
+    expect(literal).toHaveProperty('__typeInfo')
 
     const genericArgs = {
       T: {

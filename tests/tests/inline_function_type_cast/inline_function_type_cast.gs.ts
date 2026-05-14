@@ -6,15 +6,15 @@ import * as $ from "@goscript/builtin/index.ts"
 export type Greeter = (name: string) => string
 
 export async function main(): Promise<void> {
-	let theInlineVar = (name: string): string => {
+	let theInlineVar = $.functionValue((name: string): string => {
 	return "Hello, " + name
-}
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	let castedGreeter = $.namedFunction(theInlineVar, "main.Greeter")
 	$.println(castedGreeter("Inline World"))
 	type Adder = (a: number, b: number) => number
-	let theInlineAdder = (a: number, b: number): number => {
+	let theInlineAdder = $.functionValue((a: number, b: number): number => {
 	return a + b
-}
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	let castedAdder = $.namedFunction(theInlineAdder, "main.Adder")
 	$.println(castedAdder(5, 7))
 }

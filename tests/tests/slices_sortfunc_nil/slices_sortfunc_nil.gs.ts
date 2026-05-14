@@ -43,7 +43,7 @@ export class field {
 export async function main(): Promise<void> {
 	let fields: $.Slice<field> = null
 	$.println("fields before:", fields)
-	slices.SortFunc(fields, (a: field, b: field): number => {
+	slices.SortFunc(fields, $.functionValue((a: field, b: field): number => {
 	if (a.name < b.name) {
 		return -1
 	}
@@ -51,7 +51,7 @@ export async function main(): Promise<void> {
 		return 1
 	}
 	return 0
-})
+}, { kind: $.TypeKind.Function, params: ["main.field", "main.field"], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
 	$.println("fields after:", fields)
 }
 

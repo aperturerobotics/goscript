@@ -68,9 +68,9 @@ export async function main(): Promise<void> {
 		queueMicrotask(async () => { await worker(i) })
 	}
 	queueMicrotask(async () => { await anotherWorker("test") })
-	queueMicrotask(async () => { await (async (): Promise<void> => {
+	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
 	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 50, text: "Anonymous function worker"})))
-})() })
+}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 1, text: "Main: Workers started"})))
 	for (let __rangeIndex = 0; __rangeIndex < totalMessages; __rangeIndex++) {
 		allMessages = $.append(allMessages, await $.chanRecv(messages))

@@ -5,9 +5,9 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let messages = $.makeChannel<string>(0, "", "both")
-	queueMicrotask(async () => { await (async (): Promise<void> => {
+	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
 	await $.chanSend(messages, "ping")
-})() })
+}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 	let msg = await $.chanRecv(messages)
 	$.println(msg)
 }
