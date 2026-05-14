@@ -25,7 +25,7 @@ export async function main(): Promise<void> {
 	let expected = $.arrayToSlice<string>(["file1.txt", "file2.txt", "file3.txt"])
 	let err = TestFS("myfs", expected)
 	if (err != null) {
-		$.println("Error: " + err.Error())
+		$.println("Error: " + err!.Error())
 	} else {
 		$.println("Success!")
 	}

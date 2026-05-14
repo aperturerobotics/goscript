@@ -1,2 +1,0 @@
-Expected v2 failure: os metadata now fails before output because the inherited
-override surface still lacks internal/poll.

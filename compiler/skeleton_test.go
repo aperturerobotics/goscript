@@ -463,6 +463,49 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 	}
 }
 
+func TestCompilePackagesAssertsInterfaceMethodReceivers(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/interface-receivers\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type FileInfo interface { Name() string }",
+			"type fileInfo struct { name string }",
+			"func (f fileInfo) Name() string { return f.name }",
+			"func stat() (FileInfo, error) { return fileInfo{name: \"demo\"}, nil }",
+			"func main() {",
+			"  info, err := stat()",
+			"  if err == nil {",
+			"    println(info.Name())",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "interface-receivers", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export type FileInfo = null | {",
+		"$.println(info!.Name())",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/generics\n\ngo 1.25.3\n",
@@ -594,7 +637,7 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 		"$.append(parts, \"c\", \"d\")",
 		"maybeErr($.arrayToSlice<string>([\"ok\"]))",
 		"fn(\"fn\", $.arrayToSlice<string>([\"x\"]))",
-		"joiner.Join($.arrayToSlice<string>([\"q\", \"r\"]))",
+		"joiner!.Join($.arrayToSlice<string>([\"q\", \"r\"]))",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

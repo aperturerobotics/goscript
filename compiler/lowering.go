@@ -1940,6 +1940,9 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 		isPointerToStructType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
 		return o.lowerStructClone(receiver), diagnostics
 	}
+	if isInterfaceType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
+		return receiver + "!", diagnostics
+	}
 	return receiver, diagnostics
 }
 

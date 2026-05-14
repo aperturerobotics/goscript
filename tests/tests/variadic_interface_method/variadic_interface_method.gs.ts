@@ -55,14 +55,14 @@ export class PathJoiner {
 
 export async function main(): Promise<void> {
 	let b: Basic = $.markAsStructValue($.markAsStructValue(new PathJoiner()).clone())
-	let result1 = b.Join($.arrayToSlice<string>(["path", "to", "file"]))
+	let result1 = b!.Join($.arrayToSlice<string>(["path", "to", "file"]))
 	$.println("Result1:", result1)
-	let result2 = b.Join($.arrayToSlice<string>(["single"]))
+	let result2 = b!.Join($.arrayToSlice<string>(["single"]))
 	$.println("Result2:", result2)
-	let result3 = b.Join(null)
+	let result3 = b!.Join(null)
 	$.println("Result3:", result3)
 	let parts = $.arrayToSlice<string>(["another", "path", "here"])
-	let result4 = b.Join(parts)
+	let result4 = b!.Join(parts)
 	$.println("Result4:", result4)
 }
 
