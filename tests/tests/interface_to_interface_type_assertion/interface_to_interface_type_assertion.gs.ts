@@ -1,7 +1,7 @@
 // Generated file based on interface_to_interface_type_assertion.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type MyInterface = null | {
 	Method1(): number
@@ -67,6 +67,7 @@ export async function main(): Promise<void> {
 	let i: MyInterface = null
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.markAsStructValue(s.clone())
+
 	let [, ok] = $.typeAssertTuple<MyOtherInterface>(i, "main.MyOtherInterface")
 	if (ok) {
 		$.println("Type assertion successful")

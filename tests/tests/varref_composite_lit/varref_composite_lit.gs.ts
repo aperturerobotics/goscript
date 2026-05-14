@@ -1,7 +1,7 @@
 // Generated file based on varref_composite_lit.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MockInode {
 	public get Value(): number {
@@ -44,7 +44,12 @@ export class MockInode {
 }
 
 export async function main(): Promise<void> {
+	// This should generate: let childInode: MockInode | null = new MockInode({Value: 42})
+	// Not: let childInode: MockInode | null = $.varRef(new MockInode({Value: 42}))
+	// Because we're taking the address of a composite literal, not a variable
 	let childInode: MockInode | $.VarRef<MockInode> | null = new MockInode({Value: 42})
+
+	// Use the pointer
 	$.println("childInode.Value:", $.pointerValue(childInode).Value)
 	$.println("childInode.getValue():", $.pointerValue(childInode).getValue())
 }

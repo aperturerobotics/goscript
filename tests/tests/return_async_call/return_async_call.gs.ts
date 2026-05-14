@@ -1,11 +1,11 @@
 // Generated file based on return_async_call.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as context from "@goscript/context/index.ts"
+import * as context from "@goscript/context/index.js"
 
-import * as time from "@goscript/time/index.ts"
+import * as time from "@goscript/time/index.js"
 
 export function AsyncFunction(): string {
 	time.Sleep(10 * time.Millisecond)
@@ -26,8 +26,10 @@ export function WrapperWithError(ctx: context.Context): [string, $.GoError] {
 }
 
 export async function main(): Promise<void> {
+	// These calls should work properly with async/await
 	let result1 = SyncWrapper()
 	$.println("Result1:", result1)
+
 	let ctx = context.Background()
 	let [result2, err] = WrapperWithError(ctx)
 	if (err != null) {

@@ -1,7 +1,7 @@
 // Generated file based on issue_119_interface_nil_value.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type Animal = null | {
 	Name(): string
@@ -108,9 +108,15 @@ export function FindCat(): Cat | $.VarRef<Cat> | null {
 }
 
 export function FindAnimal(): Animal {
+	// This is a common bug pattern in Go:
+	// dog is a *Dog with value nil
+	// When assigned to Animal interface, the interface is NOT nil
+	// because it has type *Dog (even though value is nil)
 	{
 		let dog = $.interfaceValue<Animal>(FindDog(), "*main.Dog")
 		if (dog != null) {
+			// In Go, this branch IS taken because dog != nil
+			// The interface has type=*Dog, value=nil
 			return dog
 		}
 	}
@@ -119,12 +125,20 @@ export function FindAnimal(): Animal {
 
 export async function main(): Promise<void> {
 	let animal = FindAnimal()
+
+	// Test 1: The interface should NOT be nil
 	if (animal == null) {
 		$.println("animal is nil")
 	} else {
 		$.println("animal is not nil")
 	}
+
+	// Test 2: Calling method on nil receiver should work
+	// The method dispatch uses the type (*Dog) to find Name()
+	// Then passes nil as the receiver
 	$.println(animal!.Name())
+
+	// Test 3: Type assertions preserve the typed nil pointer
 	{
 		let [d, ok] = $.typeAssertTuple<Dog | $.VarRef<Dog> | null>(animal, { kind: $.TypeKind.Pointer, elemType: "main.Dog" })
 		if (ok && d == null) {
@@ -141,13 +155,18 @@ export async function main(): Promise<void> {
 			$.println("typed nil cat assertion rejected")
 		}
 	}
+
+	// Test 4: Direct nil pointer to interface assignment
 	let dog: Dog | $.VarRef<Dog> | null = null
 	let a: Animal = $.interfaceValue<Animal>(dog, "*main.Dog")
+
 	if (a == null) {
 		$.println("a is nil")
 	} else {
 		$.println("a is not nil")
 	}
+
+	// Test 5: Truly nil interface
 	let b: Animal = null
 	if (b == null) {
 		$.println("b is nil")

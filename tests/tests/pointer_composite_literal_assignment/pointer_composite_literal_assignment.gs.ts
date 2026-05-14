@@ -1,7 +1,7 @@
 // Generated file based on pointer_composite_literal_assignment.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -49,10 +49,19 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
+	// === Pointer Composite Literal Assignment ===
+	// Creating a pointer to a struct directly using a composite literal with &
 	let structPointer = new MyStruct({MyInt: 42, MyString: "composite literal pointer"})
+
+	// Access fields through the pointer
+	// Expected: 42
 	$.println("MyInt via pointer: Expected: 42, Actual:", $.pointerValue(structPointer).MyInt)
+	// Expected: "composite literal pointer"
 	$.println("MyString via pointer: Expected: composite literal pointer, Actual: " + $.pointerValue(structPointer).MyString)
+
+	// Modify through the pointer
 	$.pointerValue(structPointer).MyInt = 99
+	// Expected: 99
 	$.println("MyInt after modification: Expected: 99, Actual:", $.pointerValue(structPointer).MyInt)
 }
 

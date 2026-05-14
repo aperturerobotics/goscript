@@ -1,7 +1,7 @@
 // Generated file based on inline_interface_type_assertion.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class Greeter {
 	public _fields: {
@@ -76,35 +76,49 @@ export class MyStringer {
 export async function main(): Promise<void> {
 	let i: any = null
 	i = $.markAsStructValue($.markAsStructValue(new Greeter()).clone())
+
+	// Successful type assertion to an inline interface
 	let [g, ok] = $.typeAssertTuple<any>(i, { kind: $.TypeKind.Interface, methods: [{ name: "Greet", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok) {
 		$.println("Greet assertion successful:", g!.Greet())
 	} else {
 		$.println("Greet assertion failed")
 	}
+
+	// Failing type assertion to a different inline interface
 	let [s, ok2] = $.typeAssertTuple<any>(i, { kind: $.TypeKind.Interface, methods: [{ name: "NonExistentMethod", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }] })
 	if (ok2) {
 		$.println("NonExistentMethod assertion successful (unexpected):", s!.NonExistentMethod())
 	} else {
 		$.println("NonExistentMethod assertion failed as expected")
 	}
+
+	// Successful type assertion to a named interface, where the asserted value also implements an inline interface method
 	let j: any = null
 	j = $.markAsStructValue($.markAsStructValue(new MyStringer()).clone())
+
+	// Assert 'j' (which holds MyStringer) to an inline interface that MyStringer satisfies.
 	let [inlineMs, ok4] = $.typeAssertTuple<any>(j, { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok4) {
 		$.println("Inline String assertion successful:", inlineMs!.String())
 	} else {
 		$.println("Inline String assertion failed")
 	}
+
+	// Test case: variable of named interface type, asserted to inline interface
 	let k: Stringer = null
 	k = $.markAsStructValue($.markAsStructValue(new MyStringer()).clone())
+
 	let [inlineK, ok5] = $.typeAssertTuple<any>(k, { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok5) {
 		$.println("k.(interface{ String() string }) successful:", inlineK!.String())
 	} else {
 		$.println("k.(interface{ String() string }) failed")
 	}
+
+	// Test case: nil value of an inline interface type assigned to interface{}
 	let l: any = $.interfaceValue<any>($.typedNil("*struct{Name string}"), "*struct{Name string}")
+
 	let [ptr, ok6] = $.typeAssertTuple<$.VarRef<Record<string, unknown>> | null>(l, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Struct, methods: [], fields: {"Name": { kind: $.TypeKind.Basic, name: "string" }} } })
 	if (ok6) {
 		if (ptr == null) {

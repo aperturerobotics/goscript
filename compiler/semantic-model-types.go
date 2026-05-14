@@ -58,6 +58,7 @@ type semanticType struct {
 type semanticField struct {
 	name     string
 	typ      types.Type
+	doc      string
 	tag      string
 	embedded bool
 }

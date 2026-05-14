@@ -1,7 +1,7 @@
 // Generated file based on struct_new.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -59,23 +59,30 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
+	// Test new(MyStruct)
 	let ptr = new MyStruct()
 	$.println("ptr.MyInt (default):", $.pointerValue(ptr).MyInt)
 	$.println("ptr.MyString (default):", $.pointerValue(ptr).MyString)
 	$.println("ptr.myBool (default):", $.pointerValue(ptr).myBool)
+
 	$.pointerValue(ptr).MyInt = 42
 	$.pointerValue(ptr).MyString = "hello"
 	$.pointerValue(ptr).myBool = true
+
 	$.println("ptr.MyInt (assigned):", $.pointerValue(ptr).MyInt)
 	$.println("ptr.MyString (assigned):", $.pointerValue(ptr).MyString)
 	$.println("ptr.myBool (assigned):", $.pointerValue(ptr).myBool)
+
+	// Test assignment to a dereferenced new struct
 	let s: MyStruct = $.markAsStructValue($.pointerValue(new MyStruct()).clone())
 	$.println("s.MyInt (default):", s.MyInt)
 	$.println("s.MyString (default):", s.MyString)
 	$.println("s.myBool (default):", s.myBool)
+
 	s.MyInt = 100
 	s.MyString = "world"
 	s.myBool = false
+
 	$.println("s.MyInt (assigned):", s.MyInt)
 	$.println("s.MyString (assigned):", s.MyString)
 	$.println("s.myBool (assigned):", s.myBool)

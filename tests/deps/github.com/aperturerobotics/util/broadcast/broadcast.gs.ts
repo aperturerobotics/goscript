@@ -1,13 +1,13 @@
 // Generated file based on broadcast.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as context from "@goscript/context/index.ts"
+import * as context from "@goscript/context/index.js"
 
-import * as errors from "@goscript/errors/index.ts"
+import * as errors from "@goscript/errors/index.js"
 
-import * as sync from "@goscript/sync/index.ts"
+import * as sync from "@goscript/sync/index.js"
 
 export class Broadcast {
 	public get mtx(): sync.Mutex {
@@ -56,16 +56,20 @@ export class Broadcast {
 	public HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): void {
 		const c = this
 		let holdBroadcastLock = $.functionValue(async (lock: boolean): Promise<void> => {
-	using __defer = new $.DisposableStack()
-	if (lock) {
-		await $.pointerValue(c).mtx.Lock()
-	}
-	__defer.defer(() => { $.pointerValue(c).mtx.Unlock() })
-	cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [] })
+			using __defer = new $.DisposableStack()
+			if (lock) {
+				await $.pointerValue(c).mtx.Lock()
+			}
+			// use defer to catch panic cases
+			__defer.defer(() => { $.pointerValue(c).mtx.Unlock() })
+			cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
+		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [] })
+
+		// fast path: lock immediately
 		if ($.pointerValue(c).mtx.TryLock()) {
 			holdBroadcastLock!(false)
 		} else {
+			// slow path: use separate goroutine
 			queueMicrotask(async () => { holdBroadcastLock!(true) })
 		}
 	}
@@ -86,25 +90,30 @@ export class Broadcast {
 		if (cb == null || ctx == null) {
 			return errors.New("cb and ctx must be set")
 		}
+
 		let waitCh: $.Channel<Record<string, unknown>> | null = null
+
 		while (true) {
 			if (ctx!.Err() != null) {
 				return context.Canceled
 			}
+
 			let done: boolean = false
 			let err: $.GoError = null
 			await $.pointerValue(c).HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
-	let __goscriptTuple4792258 = cb!(broadcast, getWaitCh)
-	done = __goscriptTuple4792258[0]
-	err = __goscriptTuple4792258[1]
-	if (!done && err == null) {
-		waitCh = getWaitCh!()
-	}
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+				let __goscriptTuple4790192 = cb!(broadcast, getWaitCh)
+				done = __goscriptTuple4790192[0]
+				err = __goscriptTuple4790192[1]
+				if (!done && err == null) {
+					waitCh = getWaitCh!()
+				}
+			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+
 			if (done || err != null) {
 				return err
 			}
-			const [__goscriptSelectHasReturn4792406, __goscriptSelectValue4792406] = await $.selectStatement<any, $.GoError>([
+
+			const [__goscriptSelectHasReturn4790340, __goscriptSelectValue4790340] = await $.selectStatement<any, $.GoError>([
 				{
 					id: 0,
 					isSend: false,
@@ -121,8 +130,8 @@ export class Broadcast {
 					}
 				}
 			], false)
-			if (__goscriptSelectHasReturn4792406) {
-				return __goscriptSelectValue4792406
+			if (__goscriptSelectHasReturn4790340) {
+				return __goscriptSelectValue4790340
 			}
 		}
 	}

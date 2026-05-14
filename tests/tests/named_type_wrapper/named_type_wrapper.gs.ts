@@ -1,7 +1,7 @@
 // Generated file based on named_type_wrapper.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type MyFileMode = number
 
@@ -55,12 +55,18 @@ export class FileStatus {
 }
 
 export async function main(): Promise<void> {
+	// Test using the named type directly
 	let mode: MyFileMode = 0o644
 	$.println("Mode value:", $.int(mode))
 	$.println("Mode string:", MyFileMode_String(mode))
+
+	// Test using in struct
 	let status = $.markAsStructValue(new FileStatus({mode: 0o755, size: 1024}))
+
 	$.println("Status mode:", $.int(status.mode))
 	$.println("Status size:", status.size)
+
+	// Test type assertion and conversion
 	let genericMode: MyFileMode = 0o777
 	$.println("Generic mode:", $.int(genericMode))
 }

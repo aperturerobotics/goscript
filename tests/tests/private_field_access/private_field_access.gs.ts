@@ -1,7 +1,7 @@
 // Generated file based on private_field_access.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get publicField(): string {
@@ -53,6 +53,8 @@ export function NewMyStruct(pub: string, priv: number): MyStruct {
 }
 
 export function accessPrivateField(s: MyStruct): void {
+	// Accessing privateField directly from a function in the same package
+	// This should trigger the generation of the _private field
 	$.println("Accessing privateField:", s.privateField)
 }
 

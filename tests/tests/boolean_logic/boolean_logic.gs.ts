@@ -1,9 +1,10 @@
 // Generated file based on boolean_logic.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
+	// === Boolean Logic ===
 	let a = true
 	let b = false
 	let and = a && b

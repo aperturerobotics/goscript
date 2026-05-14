@@ -1,11 +1,15 @@
 // Generated file based on nil_channel.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
+	// Test nil channel operations
+
+	// Test 1: Using nil channel in select with default
 	$.println("Test 1: Select with nil channel and default")
 	let nilCh: $.Channel<number> | null = null
+
 	const [__goscriptSelectHasReturn193, __goscriptSelectValue193] = await $.selectStatement<any, void>([
 		{
 			id: 0,
@@ -36,9 +40,12 @@ export async function main(): Promise<void> {
 	if (__goscriptSelectHasReturn193) {
 		return __goscriptSelectValue193
 	}
+
+	// Test 2: Multiple nil channels in select with default
 	$.println("\nTest 2: Select with multiple nil channels and default")
 	let nilCh1: $.Channel<string> | null = null
 	let nilCh2: $.Channel<string> | null = null
+
 	const [__goscriptSelectHasReturn583, __goscriptSelectValue583] = await $.selectStatement<any, void>([
 		{
 			id: 0,
@@ -78,10 +85,13 @@ export async function main(): Promise<void> {
 	if (__goscriptSelectHasReturn583) {
 		return __goscriptSelectValue583
 	}
+
+	// Test 3: Mix of nil and valid channels in select
 	$.println("\nTest 3: Select with mix of nil and valid channels")
 	let nilCh3: $.Channel<boolean> | null = null
 	let validCh = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(validCh, true)
+
 	const [__goscriptSelectHasReturn1100, __goscriptSelectValue1100] = await $.selectStatement<any, void>([
 		{
 			id: 0,
@@ -121,6 +131,7 @@ export async function main(): Promise<void> {
 	if (__goscriptSelectHasReturn1100) {
 		return __goscriptSelectValue1100
 	}
+
 	$.println("\nAll nil channel tests completed")
 }
 

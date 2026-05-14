@@ -1,7 +1,7 @@
 // Generated file based on type_missing_imports.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class file {
 	public get name(): string {
@@ -95,8 +95,11 @@ export class storage {
 
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new storage({files: $.makeMap<string, file | $.VarRef<file> | null>(), children: $.makeMap<string, Map<string, file | $.VarRef<file> | null> | null>()}))
+
 	let f = new file({name: "test.txt", data: $.stringToBytes("hello world")})
+
 	$.mapSet(s.files, "test", f)
+
 	$.println("Created storage with file:", $.pointerValue($.mapGet(s.files, "test", null)[0]).name)
 }
 

@@ -1,9 +1,10 @@
 // Generated file based on main.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
+	// MyInt is a public integer field, initialized to zero.
 	public get MyInt(): number {
 		return this._fields.MyInt.value
 	}
@@ -11,6 +12,7 @@ export class MyStruct {
 		this._fields.MyInt.value = value
 	}
 
+	// MyString is a public string field, initialized to empty string.
 	public get MyString(): string {
 		return this._fields.MyString.value
 	}
@@ -18,6 +20,7 @@ export class MyStruct {
 		this._fields.MyString.value = value
 	}
 
+	// myBool is a private boolean field, initialized to false.
 	public get myBool(): boolean {
 		return this._fields.myBool.value
 	}
@@ -72,105 +75,144 @@ export function NewMyStruct(s: string): MyStruct {
 	return $.markAsStructValue(new MyStruct({MyString: s}))
 }
 
-export function vals(): void {
+export function vals(): [number, number] {
 	return [1, 2]
 }
 
 export async function main(): Promise<void> {
 	$.println("Hello from GoScript example!")
+
+	// Basic arithmetic
 	let a = 10
 	let b = 3
 	$.println("Addition:", a + b, "Subtraction:", a - b, "Multiplication:", a * b, "Division:", a / b, "Modulo:", a % b)
+
+	// Boolean logic and comparisons
 	$.println("Logic &&:", true && false, "||:", true || false, "!:!", !true)
 	$.println("Comparisons:", a == b, a != b, a < b, a > b, a <= b, a >= b)
+
+	// string(rune) conversion
 	let r: number = 88
 	let s = String.fromCodePoint(r)
 	$.println("string('X'):", s)
+
 	let r2: number = 121
 	let s2 = String.fromCodePoint(r2)
 	$.println("string(121):", s2)
+
 	let r3: number = 0x221A
 	let s3 = String.fromCodePoint(r3)
 	$.println("string(0x221A):", s3)
+
+	// Arrays
 	let arr = [1, 2, 3]
 	$.println("Array elements:", arr[0], arr[1], arr[2])
-	let slice = [4, 5, 6]
-	$.println("Slice elements:", slice[0], slice[1], slice[2])
+
+	// Slices - Basic initialization and access
+	let slice = $.arrayToSlice<number>([4, 5, 6])
+	$.println("Slice elements:", slice![0], slice![1], slice![2])
 	$.println("Slice length:", $.len(slice), "capacity:", $.cap(slice))
+
 	let sliceWithCap = $.makeSlice<number>(3, 5, "number")
 	$.println("\nSlice created with make([]int, 3, 5):")
 	$.println("Length:", $.len(sliceWithCap), "Capacity:", $.cap(sliceWithCap))
+
 	$.println("\nAppend and capacity growth:")
 	let growingSlice = $.makeSlice<number>(0, 2, "number")
 	$.println("Initial - Length:", $.len(growingSlice), "Capacity:", $.cap(growingSlice))
+
 	for (let i = 1; i <= 4; i++) {
 		growingSlice = $.append(growingSlice, i)
 		$.println("After append", i, "- Length:", $.len(growingSlice), "Capacity:", $.cap(growingSlice))
 	}
+
 	$.println("\nSlicing operations and shared backing arrays:")
-	let original = [10, 20, 30, 40, 50]
+	let original = $.arrayToSlice<number>([10, 20, 30, 40, 50])
 	$.println("Original slice - Length:", $.len(original), "Capacity:", $.cap(original))
+
 	let slice1 = $.goSlice(original, 1, 3)
-	$.println("slice1 := original[1:3] - Values:", slice1[0], slice1[1])
+	$.println("slice1 := original[1:3] - Values:", slice1![0], slice1![1])
 	$.println("slice1 - Length:", $.len(slice1), "Capacity:", $.cap(slice1))
+
 	let slice2 = $.goSlice(original, 1, 3, 4)
-	$.println("slice2 := original[1:3:4] - Values:", slice2[0], slice2[1])
+	$.println("slice2 := original[1:3:4] - Values:", slice2![0], slice2![1])
 	$.println("slice2 - Length:", $.len(slice2), "Capacity:", $.cap(slice2))
+
 	$.println("\nShared backing arrays:")
-	slice1[0] = 999
+	slice1![0] = 999
 	$.println("After slice1[0] = 999:")
-	$.println("original[1]:", original[1], "slice1[0]:", slice1[0], "slice2[0]:", slice2[0])
+	$.println("original[1]:", original![1], "slice1[0]:", slice1![0], "slice2[0]:", slice2![0])
+
 	let sum = 0
 	for (let idx = 0; idx < $.len(slice); idx++) {
-		let val = slice[idx]
+		let val = slice![idx]
 		sum += val
 		$.println("Range idx:", idx, "val:", val)
 	}
 	$.println("Range sum:", sum)
+
+	// Basic for loop
 	let prod = 1
 	for (let i = 1; i <= 3; i++) {
 		prod *= i
 	}
 	$.println("Product via for:", prod)
+
+	// Struct, pointers, copy independence
 	let instance = $.varRef($.markAsStructValue(NewMyStruct("go-script").clone()))
 	$.println("instance.MyString:", instance.value.GetMyString())
 	instance.value.MyInt = 42
 	let copyInst = $.markAsStructValue(instance.value.clone())
 	copyInst.MyInt = 7
 	$.println("instance.MyInt:", instance.value.MyInt, "copyInst.MyInt:", copyInst.MyInt)
+
+	// Pointer initialization and dereference assignment
 	let ptr = new MyStruct()
 	$.pointerValue(ptr).MyInt = 9
 	$.println("ptr.MyInt:", $.pointerValue(ptr).MyInt)
 	let deref = $.markAsStructValue($.pointerValue(ptr).clone())
 	deref.MyInt = 8
 	$.println("After deref assign, ptr.MyInt:", $.pointerValue(ptr).MyInt, "deref.MyInt:", deref.MyInt)
+
+	// Method calls on pointer receiver
 	$.pointerValue(ptr).myBool = true
 	$.println("ptr.GetMyBool():", $.pointerValue(ptr).GetMyBool())
+
+	// Composite literal assignment
 	let comp = $.varRef($.markAsStructValue(new MyStruct({MyInt: 100, MyString: "composite", myBool: false})))
 	$.println("comp fields:", comp.value.MyInt, comp.value.GetMyString(), comp.value.GetMyBool())
+
+	// Multiple return values and blank identifier
 	let [x, ] = vals()
 	let [, y] = vals()
 	$.println("vals x:", x, "y:", y)
+
+	// If/else
 	if (a > b) {
 		$.println("If branch: a>b")
 	} else {
 		$.println("Else branch: a<=b")
 	}
+
+	// Goroutines and Channels
 	$.println("\nGoroutines and Channels:")
 	let ch = $.makeChannel<string>(0, "", "both")
-	queueMicrotask(async () => { await (async (): Promise<void> => {
-	$.println("Goroutine: Sending message")
-	await $.chanSend(ch, "Hello from goroutine!")
-})() })
+	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
+		$.println("Goroutine: Sending message")
+		await $.chanSend(ch, "Hello from goroutine!")
+	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+
 	let msg = await $.chanRecv(ch)
 	$.println("Main goroutine: Received message:", msg)
+
+	// Select statement
 	$.println("\nSelect statement:")
 	let selectCh = $.makeChannel<string>(0, "", "both")
-	queueMicrotask(async () => { await (async (): Promise<void> => {
-	await $.chanSend(selectCh, "Message from select goroutine!")
-})() })
+	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
+		await $.chanSend(selectCh, "Message from select goroutine!")
+	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 	let anotherCh = $.makeChannel<string>(0, "", "both")
-	const [__goscriptSelectHasReturn4514, __goscriptSelectValue4514] = await $.selectStatement([
+	const [__goscriptSelectHasReturn4514, __goscriptSelectValue4514] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -193,11 +235,13 @@ export async function main(): Promise<void> {
 	if (__goscriptSelectHasReturn4514) {
 		return __goscriptSelectValue4514
 	}
+
+	// Function Literals
 	$.println("\nFunction Literals:")
-	let add = (x: number, y: number): number => {
-	return x + y
-}
-	sum = add(5, 7)
+	let add = $.functionValue((x: number, y: number): number => {
+		return x + y
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
+	sum = add!(5, 7)
 	$.println("Function literal result:", sum)
 }
 

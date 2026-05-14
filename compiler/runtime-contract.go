@@ -135,7 +135,7 @@ func NewRuntimeContractOwner() *RuntimeContractOwner {
 func (o *RuntimeContractOwner) BuiltinImport() RuntimeImport {
 	return RuntimeImport{
 		Alias:  "$",
-		Source: "@goscript/builtin/index.ts",
+		Source: "@goscript/builtin/index.js",
 	}
 }
 

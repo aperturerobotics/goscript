@@ -124,7 +124,7 @@ func TestCompilePackagesEmitsSimplePackage(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"import * as $ from \"@goscript/builtin/index.ts\"",
+		"import * as $ from \"@goscript/builtin/index.js\"",
 		"export const Greeting: string = \"Hello\"",
 		"export function Add(a: number, b: number): number",
 		"export async function main(): Promise<void>",
@@ -198,7 +198,7 @@ func TestCompilePackagesEmitsPackageLocalImport(t *testing.T) {
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	if !strings.Contains(string(mainContent), "import * as subpkg from \"@goscript/example.test/imports/subpkg/index.ts\"") {
+	if !strings.Contains(string(mainContent), "import * as subpkg from \"@goscript/example.test/imports/subpkg/index.js\"") {
 		t.Fatalf("missing package-local import:\n%s", string(mainContent))
 	}
 	if !strings.Contains(string(mainContent), "let b: $.VarRef<subpkg.Builder> = $.varRef($.markAsStructValue(new subpkg.Builder()))") {
@@ -231,7 +231,10 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"go.mod": "module example.test/structs\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
 			"package main",
-			"type Counter struct { Value int `json:\"value\"` }",
+			"type Counter struct {",
+			"  // Value counts reads.",
+			"  Value int `json:\"value\"`",
+			"}",
 			"func (c Counter) Read() int {",
 			"  return c.Value",
 			"}",
@@ -240,6 +243,8 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 			"}",
 			"func main() {",
 			"  original := Counter{Value: 1}",
+			"",
+			"  // Copy should stay readable in generated output.",
 			"  copy := original",
 			"  pointer := &original",
 			"  pointer.Set(2)",
@@ -267,10 +272,12 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export class Counter",
+		"// Value counts reads.\n\tpublic get Value(): number",
 		"public clone(): Counter",
 		"public Read(): number",
 		"public Set(v: number): void",
 		"let original = $.varRef($.markAsStructValue(new Counter({Value: 1})))",
+		"let original = $.varRef($.markAsStructValue(new Counter({Value: 1})))\n\n\t// Copy should stay readable in generated output.\n\tlet copy",
 		"let copy = $.markAsStructValue(original.value.clone())",
 		"let pointer = original",
 		"$.pointerValue(pointer).Set(2)",
@@ -957,7 +964,7 @@ func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
 		"let local = \"two-three\"",
 		"switch (true) {",
 		"($.pointerValue(rel))!()",
-		"$.functionValue((): void => {\n\tusing __defer = new $.DisposableStack()",
+		"$.functionValue((): void => {\n\t\tusing __defer = new $.DisposableStack()",
 		"__defer.defer(() => { $.println(\"wrapped deferred\") })",
 		"$.println(\"wrapped body\")",
 	} {

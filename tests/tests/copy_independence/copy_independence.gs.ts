@@ -1,7 +1,7 @@
 // Generated file based on copy_independence.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -57,9 +57,15 @@ export async function main(): Promise<void> {
 	let valueCopy2 = $.markAsStructValue(dereferencedStructCopy.clone())
 	valueCopy2.MyString = "value copy 2"
 	let pointerCopy = structPointer
+
+	// === Verifying Copy Independence ===
+	// Expected: "hello world"
 	$.println("pointerCopy (points to original structPointer): Expected: hello world, Actual: " + $.pointerValue(pointerCopy).MyString)
+	// Expected: "original dereferenced copy modified"
 	$.println("dereferencedStructCopy (modified after copies were made): Expected: original dereferenced copy modified, Actual: " + dereferencedStructCopy.MyString)
+	// Expected: "value copy 1"
 	$.println("valueCopy1: Expected: value copy 1, Actual: " + valueCopy1.MyString)
+	// Expected: "value copy 2"
 	$.println("valueCopy2: Expected: value copy 2, Actual: " + valueCopy2.MyString)
 }
 

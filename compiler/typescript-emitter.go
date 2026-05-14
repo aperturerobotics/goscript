@@ -138,6 +138,7 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 	b.WriteString(structType.name)
 	b.WriteString(" {\n")
 	for _, field := range structType.fields {
+		writeLineComment(b, "\t", field.doc)
 		b.WriteString("\tpublic get ")
 		b.WriteString(field.name)
 		b.WriteString("(): ")
@@ -265,6 +266,25 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 	b.WriteString("}\n")
 }
 
+func writeLineComment(b *strings.Builder, indent string, comment string) {
+	comment = strings.TrimSpace(comment)
+	if comment == "" {
+		return
+	}
+	for line := range strings.SplitSeq(comment, "\n") {
+		line = strings.TrimRight(line, "\r")
+		if strings.TrimSpace(line) == "" {
+			b.WriteString(indent)
+			b.WriteString("//\n")
+			continue
+		}
+		b.WriteString(indent)
+		b.WriteString("// ")
+		b.WriteString(line)
+		b.WriteString("\n")
+	}
+}
+
 func renderFunction(b *strings.Builder, fn *loweredFunction) {
 	if fn.exported {
 		b.WriteString("export ")
@@ -342,6 +362,7 @@ func renderDeferStack(b *strings.Builder, state *loweredDeferState, indent int) 
 
 func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 	for _, stmt := range stmts {
+		renderLeadingLines(b, stmt.leading, indent)
 		if stmt.rangeFunc != nil {
 			renderRangeFunc(b, stmt.rangeFunc, indent)
 			continue
@@ -366,7 +387,7 @@ func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 			b.WriteString("}\n")
 			continue
 		}
-		b.WriteString(stmt.text)
+		writeIndentedText(b, stmt.text, indent)
 		if len(stmt.children) == 0 {
 			b.WriteString("\n")
 			continue
@@ -383,6 +404,31 @@ func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 		renderStmts(b, stmt.elseBody, indent+1)
 		writeIndent(b, indent)
 		b.WriteString("}\n")
+	}
+}
+
+func renderLeadingLines(b *strings.Builder, lines []string, indent int) {
+	for _, line := range lines {
+		if strings.TrimSpace(line) == "" {
+			b.WriteString("\n")
+			continue
+		}
+		writeIndent(b, indent)
+		b.WriteString(line)
+		b.WriteString("\n")
+	}
+}
+
+func writeIndentedText(b *strings.Builder, text string, indent int) {
+	lines := strings.Split(text, "\n")
+	for idx, line := range lines {
+		if idx != 0 {
+			b.WriteString("\n")
+			if line != "" {
+				writeIndent(b, indent)
+			}
+		}
+		b.WriteString(line)
 	}
 }
 

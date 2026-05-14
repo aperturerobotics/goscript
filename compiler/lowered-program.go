@@ -47,6 +47,7 @@ type loweredStructField struct {
 	typ         string
 	zero        string
 	runtimeType string
+	doc         string
 	tag         string
 	structValue bool
 }
@@ -70,6 +71,7 @@ type loweredParam struct {
 
 type loweredStmt struct {
 	text       string
+	leading    []string
 	children   []loweredStmt
 	elseBody   []loweredStmt
 	rangeFunc  *loweredRangeFunc

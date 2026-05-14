@@ -1,12 +1,12 @@
 // Generated file based on function_returns_function.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export function getAdder(x: number): ((_p0: number) => number) | null {
 	return $.functionValue((y: number): number => {
-	return x + y
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
+		return x + y
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 }
 
 export async function main(): Promise<void> {

@@ -1,7 +1,7 @@
 // Generated file based on multiple_return_values.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export function multipleReturnValues(): [number, string, boolean] {
 	return [42, "hello", true]
@@ -12,9 +12,11 @@ export async function main(): Promise<void> {
 	$.println(a)
 	$.println(b)
 	$.println(c)
+
 	let [x, , z] = multipleReturnValues()
 	$.println(x)
 	$.println(z)
+
 	let [, y, ] = multipleReturnValues()
 	$.println(y)
 }

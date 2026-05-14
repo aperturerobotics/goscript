@@ -1,7 +1,7 @@
 // Generated file based on struct_pointer_marking.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get Value(): number {
@@ -40,42 +40,59 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	$.println("=== Struct Pointer Marking Test ===")
+
+	// Scenario 1: Address-of Composite Literal vs Value Variable
 	$.println("\n--- Scenario 1: Composite Literal vs Value Variable ---")
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	let p = new MyStruct({Value: 20})
+
+	// Type assertions - struct value
 	let i: any = $.markAsStructValue(s.clone())
 	let [, ok1] = $.typeAssertTuple<MyStruct>(i, "main.MyStruct")
 	let [, ok2] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("struct value -> MyStruct assertion:", ok1)
 	$.println("struct value -> *MyStruct assertion:", ok2)
+
+	// Type assertions - struct pointer
 	let j: any = $.interfaceValue<any>(p, "*main.MyStruct")
 	let [, ok3] = $.typeAssertTuple<MyStruct>(j, "main.MyStruct")
 	let [, ok4] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(j, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("struct pointer -> MyStruct assertion:", ok3)
 	$.println("struct pointer -> *MyStruct assertion:", ok4)
+
+	// Scenario 2: Variable Aliasing
 	$.println("\n--- Scenario 2: Variable Aliasing ---")
 	let original = $.varRef($.markAsStructValue(new MyStruct({Value: 30})))
 	let pAlias = original
+
 	let iOriginal: any = $.markAsStructValue(original.value.clone())
 	let jAlias: any = $.interfaceValue<any>(pAlias, "*main.MyStruct")
+
 	let [, ok5] = $.typeAssertTuple<MyStruct>(iOriginal, "main.MyStruct")
 	let [, ok6] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(iOriginal, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("original value -> MyStruct assertion:", ok5)
 	$.println("original value -> *MyStruct assertion:", ok6)
+
 	let [, ok7] = $.typeAssertTuple<MyStruct>(jAlias, "main.MyStruct")
 	let [, ok8] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(jAlias, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("alias pointer -> MyStruct assertion:", ok7)
 	$.println("alias pointer -> *MyStruct assertion:", ok8)
+
+	// Scenario 3: Multiple Pointers to Same Variable
 	$.println("\n--- Scenario 3: Multiple Pointers to Same Variable ---")
 	let shared = $.varRef($.markAsStructValue(new MyStruct({Value: 40})))
 	let p1 = shared
 	let p2 = shared
+
 	let i1: any = $.interfaceValue<any>(p1, "*main.MyStruct")
 	let i2: any = $.interfaceValue<any>(p2, "*main.MyStruct")
+
 	let [, ok9] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i1, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	let [, ok10] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i2, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("first pointer -> *MyStruct assertion:", ok9)
 	$.println("second pointer -> *MyStruct assertion:", ok10)
+
+	// Verify they point to the same data
 	{
 		let [structPtr1, ok] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i1, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 		if (ok) {
@@ -88,20 +105,29 @@ export async function main(): Promise<void> {
 			}
 		}
 	}
+
+	// Scenario 4: Mixed Assignment Patterns
 	$.println("\n--- Scenario 4: Mixed Assignment Patterns ---")
 	let mixed = $.varRef($.markAsStructValue(new MyStruct({Value: 50})))
 	let pVar = mixed
 	let pLit = new MyStruct({Value: 60})
+
 	let iVar: any = $.interfaceValue<any>(pVar, "*main.MyStruct")
 	let iLit: any = $.interfaceValue<any>(pLit, "*main.MyStruct")
+
 	let [, ok11] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(iVar, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	let [, ok12] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(iLit, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("variable pointer -> *MyStruct assertion:", ok11)
 	$.println("literal pointer -> *MyStruct assertion:", ok12)
+
+	// Scenario 5: Nested Type Assertions
 	$.println("\n--- Scenario 5: Nested Type Assertions ---")
 	let nested1 = new MyStruct({Value: 70})
 	let nested2 = $.varRef($.markAsStructValue(new MyStruct({Value: 80})))
+
+	// Array of interfaces containing both pointers and values
 	let arr = $.arrayToSlice<any>([$.interfaceValue<any>(nested1, "*main.MyStruct"), $.markAsStructValue(nested2.value.clone()), $.interfaceValue<any>(nested2, "*main.MyStruct")])
+
 	for (let i = 0; i < $.len(arr); i++) {
 		let item = arr![i]
 		{
@@ -120,8 +146,11 @@ export async function main(): Promise<void> {
 			}
 		}
 	}
+
+	// Scenario 6: Type Switch with Mixed Types
 	$.println("\n--- Scenario 6: Type Switch ---")
 	let testItems = $.arrayToSlice<any>([$.markAsStructValue($.markAsStructValue(new MyStruct({Value: 100})).clone()), $.interfaceValue<any>(new MyStruct({Value: 200}), "*main.MyStruct"), 300, "string"])
+
 	for (let i = 0; i < $.len(testItems); i++) {
 		let item = testItems![i]
 		$.typeSwitch(
@@ -158,6 +187,7 @@ export async function main(): Promise<void> {
 			}
 		)
 	}
+
 	$.println("\n=== Test Complete ===")
 }
 

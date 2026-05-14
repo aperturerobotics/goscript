@@ -1,7 +1,7 @@
 // Generated file based on nested_async_method_value.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class Worker {
 	public get ch(): $.Channel<number> | null {
@@ -32,8 +32,8 @@ export class Worker {
 	public Spawn(): $.GoError {
 		const w = this
 		queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
-	await $.chanRecv($.pointerValue(w).ch)
-}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+			await $.chanRecv($.pointerValue(w).ch)
+		}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 		return null
 	}
 
@@ -68,6 +68,7 @@ export function run(fn: (() => $.GoError) | null): void {
 export async function main(): Promise<void> {
 	let w = new Worker({ch: $.makeChannel<number>(1, 0, "both")})
 	run(((__receiver) => () => __receiver.Spawn())($.pointerValue(w)))
+
 	let s: Spawner = $.interfaceValue<Spawner>(w, "*main.Worker")
 	let err = s!.Spawn()
 	if (err == null) {

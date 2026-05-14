@@ -1,7 +1,7 @@
 // Generated file based on simple_deref_assignment.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -50,9 +50,13 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
+	// === Simple Dereference Assignment (Value Copy) ===
 	let simpleDereferencedCopy = $.markAsStructValue($.pointerValue(structPointer).clone())
+	// Modifying the copy does not affect the original struct pointed to by structPointer.
 	simpleDereferencedCopy.MyString = "modified dereferenced copy"
+	// Expected: "hello world"
 	$.println("Original structPointer after modifying simpleDereferencedCopy: Expected: hello world, Actual: " + $.pointerValue(structPointer).MyString)
+	// Expected: "modified dereferenced copy"
 	$.println("Simple Dereferenced Copy: Expected: modified dereferenced copy, Actual: " + simpleDereferencedCopy.MyString)
 }
 

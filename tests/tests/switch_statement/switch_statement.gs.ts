@@ -1,7 +1,7 @@
 // Generated file based on switch_statement.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
 	let i = 2
@@ -28,6 +28,7 @@ export async function main(): Promise<void> {
 			break
 		}
 	}
+
 	let s = "hello"
 	$.println("\nString switch:")
 	switch (s) {
@@ -66,6 +67,7 @@ export async function main(): Promise<void> {
 			break
 		}
 	}
+
 	x = 0
 	$.println("\nSwitch without expression (zero):")
 	switch (true) {
@@ -85,6 +87,7 @@ export async function main(): Promise<void> {
 			break
 		}
 	}
+
 	x = 10
 	$.println("\nSwitch without expression (positive):")
 	switch (true) {

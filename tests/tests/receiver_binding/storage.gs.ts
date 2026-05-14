@@ -1,7 +1,7 @@
 // Generated file based on storage.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_methods from "./methods.gs.ts"
 
@@ -77,11 +77,14 @@ export class storage {
 
 export async function main(): Promise<void> {
 	let s = new storage({bytes: $.makeSlice<number>(5, undefined, "byte"), name: "test"})
+
 	$.println("Name:", $.pointerValue(s).Name())
 	$.println("Length:", $.pointerValue(s).Len())
 	$.println("Empty:", $.pointerValue(s).IsEmpty())
+
 	$.pointerValue(s).Truncate()
 	$.println("Length after truncate:", $.pointerValue(s).Len())
+
 	$.pointerValue(s).SetName("new_name")
 	$.println("New name:", $.pointerValue(s).Name())
 }

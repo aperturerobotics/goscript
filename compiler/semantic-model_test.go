@@ -96,6 +96,7 @@ func TestSemanticModelRecordsStructFieldsAndReceivers(t *testing.T) {
 		"main.go": strings.Join([]string{
 			"package structs",
 			"type Counter struct {",
+			"  // Value counts reads.",
 			"  Value int",
 			"  Label string",
 			"}",
@@ -118,6 +119,9 @@ func TestSemanticModelRecordsStructFieldsAndReceivers(t *testing.T) {
 		counter.fields[0].name != "Value" ||
 		counter.fields[1].name != "Label" {
 		t.Fatalf("unexpected Counter fields: %#v", counter.fields)
+	}
+	if counter.fields[0].doc != "Value counts reads." {
+		t.Fatalf("unexpected Counter.Value doc: %#v", counter.fields[0].doc)
 	}
 
 	read := requireDefinedFunc(t, graph, "example.test/structs", "Read")

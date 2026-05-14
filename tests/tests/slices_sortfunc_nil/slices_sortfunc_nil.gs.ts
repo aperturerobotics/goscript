@@ -1,9 +1,9 @@
 // Generated file based on slices_sortfunc_nil.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as slices from "@goscript/slices/index.ts"
+import * as slices from "@goscript/slices/index.js"
 
 export class field {
 	public get name(): string {
@@ -43,15 +43,17 @@ export class field {
 export async function main(): Promise<void> {
 	let fields: $.Slice<field> = null
 	$.println("fields before:", fields)
+
 	slices.SortFunc(fields, $.functionValue((a: field, b: field): number => {
-	if (a.name < b.name) {
-		return -1
-	}
-	if (a.name > b.name) {
-		return 1
-	}
-	return 0
-}, { kind: $.TypeKind.Function, params: ["main.field", "main.field"], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
+		if (a.name < b.name) {
+			return -1
+		}
+		if (a.name > b.name) {
+			return 1
+		}
+		return 0
+	}, { kind: $.TypeKind.Function, params: ["main.field", "main.field"], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
+
 	$.println("fields after:", fields)
 }
 

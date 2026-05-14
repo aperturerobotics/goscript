@@ -1,11 +1,11 @@
 // Generated file based on watch.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as context from "@goscript/context/index.ts"
+import * as context from "@goscript/context/index.js"
 
-import * as proto from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.ts"
+import * as proto from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
 
 import * as __goscript_broadcast from "./broadcast.gs.ts"
 
@@ -17,9 +17,9 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 	let ch: $.Channel<Record<string, unknown>> | null = null
 	let val: any = $.genericZero(__typeArgs, "T", null)
 	await $.pointerValue(bcast).HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
-	ch = getWaitCh!()
-	val = snapshot!()
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+		ch = getWaitCh!()
+		val = snapshot!()
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 	{
 		let err = send!(val)
 		if (err != null) {
@@ -28,7 +28,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 	}
 	let prev = val
 	while (true) {
-		const [__goscriptSelectHasReturn4789316, __goscriptSelectValue4789316] = await $.selectStatement<any, $.GoError>([
+		const [__goscriptSelectHasReturn4792121, __goscriptSelectValue4792121] = await $.selectStatement<any, $.GoError>([
 			{
 				id: 0,
 				isSend: false,
@@ -45,13 +45,13 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 				}
 			}
 		], false)
-		if (__goscriptSelectHasReturn4789316) {
-			return __goscriptSelectValue4789316
+		if (__goscriptSelectHasReturn4792121) {
+			return __goscriptSelectValue4792121
 		}
 		await $.pointerValue(bcast).HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
-	ch = getWaitCh!()
-	val = snapshot!()
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+			ch = getWaitCh!()
+			val = snapshot!()
+		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 		if (val == prev) {
 			continue
 		}

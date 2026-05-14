@@ -1,7 +1,7 @@
 // Generated file based on named_struct_underlying_methodset.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class Base {
 	public _fields: {
@@ -75,6 +75,7 @@ export async function main(): Promise<void> {
 	let base: any = $.markAsStructValue($.markAsStructValue(new Base()).clone())
 	let [, baseOK] = $.typeAssertTuple<Stringer>(base, "main.Stringer")
 	$.println("base implements Stringer:", baseOK)
+
 	let derived: any = $.markAsStructValue($.markAsStructValue(new Derived()).clone())
 	let [, derivedOK] = $.typeAssertTuple<Stringer>(derived, "main.Stringer")
 	$.println("derived implements Stringer:", derivedOK)

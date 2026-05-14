@@ -1,9 +1,10 @@
 // Generated file based on type_switch_statement.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
+	// Basic type switch with variable and default case
 	let i: any = "hello"
 	$.typeSwitch(
 		i,
@@ -26,6 +27,8 @@ export async function main(): Promise<void> {
 			$.println("unknown")
 		}
 	)
+
+	// Type switch without variable
 	let x: any = 123
 	$.typeSwitch(
 		x,
@@ -44,6 +47,8 @@ export async function main(): Promise<void> {
 			}
 		]
 	)
+
+	// Type switch with multiple types in a case
 	let y: any = true
 	$.typeSwitch(
 		y,
@@ -62,6 +67,8 @@ export async function main(): Promise<void> {
 			}
 		]
 	)
+
+	// Type switch with initialization statement
 	let z = getInterface()
 	$.typeSwitch(
 		z,
@@ -74,6 +81,8 @@ export async function main(): Promise<void> {
 			}
 		]
 	)
+
+	// Default-only type switch
 	let w: any = "test"
 	$.typeSwitch(
 		w,

@@ -1,11 +1,13 @@
 // Generated file based on select_send_on_full_buffered_channel_with_default.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
 	let ch = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(ch, 1)
+
+	// TODO: The comments on the following cases are written twice in the output.
 	const [__goscriptSelectHasReturn163, __goscriptSelectValue163] = await $.selectStatement<any, void>([
 		{
 			id: 0,

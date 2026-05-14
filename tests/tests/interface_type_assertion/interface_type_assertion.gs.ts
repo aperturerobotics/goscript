@@ -1,7 +1,7 @@
 // Generated file based on interface_type_assertion.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type MyInterface = null | {
 	Method1(): number
@@ -57,25 +57,32 @@ export async function main(): Promise<void> {
 	let i: MyInterface = null
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.markAsStructValue(s.clone())
+
 	let [, ok] = $.typeAssertTuple<MyStruct>(i, "main.MyStruct")
 	if (ok) {
 		$.println("Type assertion successful")
 	} else {
 		$.println("Type assertion failed")
 	}
+
+	// try a second time since this generates something different when using = and not :=
 	let __goscriptTuple461 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	ok = __goscriptTuple461[1]
 	if (ok) {
 		$.println("Type assertion successful")
 	} else {
+		// expected
 		$.println("Type assertion failed")
 	}
+
+	// assign result to a variable
 	let [val, ok2] = $.typeAssertTuple<MyStruct>(i, "main.MyStruct")
 	if (!ok2) {
 		$.println("type assertion failed")
 	} else {
 		$.println("type assertion success", val.Value)
 	}
+
 	let nilInterface: MyInterface = null
 	let [nilVal, ok3] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(nilInterface, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	if (ok3 && $.pointerValue(nilVal).Value == 0) {

@@ -52,7 +52,7 @@ When a compliance test runs, the following steps occur:
 
 ### 5. Type Checking (unless skipped)
 - Generates a `tsconfig.json` for type checking the generated files
-- Runs `tsc` to verify TypeScript types are correct
+- Runs `tsgo` to verify TypeScript types are correct
 - Uses path mapping to resolve `@goscript/*` imports
 
 ## Multi-Package Tests

@@ -1,7 +1,7 @@
 // Generated file based on pointer_assignment_no_copy.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -50,10 +50,23 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let original = new MyStruct({MyInt: 10, MyString: "original"})
+
+	// === Pointer Assignment (No Copy) ===
+	// Assigning a pointer variable to another pointer variable.
 	let pointerCopy = original
+
+	// Modify the struct through the original pointer.
 	$.pointerValue(original).MyString = "modified original"
+
+	// The change should be reflected when accessing through the copied pointer.
+	// Expected: "modified original"
 	$.println("Pointer copy value: Expected: modified original, Actual: " + $.pointerValue(pointerCopy).MyString)
+
+	// Modify the struct through the copied pointer.
 	$.pointerValue(pointerCopy).MyInt = 20
+
+	// The change should be reflected when accessing through the original pointer.
+	// Expected: 20
 	$.println("Original value after pointer copy modification: Expected: 20, Actual:", $.pointerValue(original).MyInt)
 }
 

@@ -1,9 +1,9 @@
 // Generated file based on wrapper_slice_append.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as errlist from "@goscript/github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist/index.ts"
+import * as errlist from "@goscript/github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist/index.js"
 
 export class parser {
 	public get errors(): errlist.ErrorList {
@@ -52,8 +52,11 @@ export class parser {
 
 export async function main(): Promise<void> {
 	let p: parser = $.markAsStructValue(new parser())
+	// this Add method does not work:
 	errlist.ErrorList_Add(p._fields.errors, "error")
 	$.println(p.errors![0])
+
+	// but it does work for a struct type:
 	p.astruct.Set("astruct")
 	$.println(p.astruct.Msg)
 }

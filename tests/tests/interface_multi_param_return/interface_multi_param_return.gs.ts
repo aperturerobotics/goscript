@@ -1,7 +1,7 @@
 // Generated file based on interface_multi_param_return.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type MultiParamReturner = null | {
 	Process(data: $.Slice<number>, count: number, _: string): [boolean, $.GoError]
@@ -31,6 +31,7 @@ export class MyProcessor {
 
 	public Process(data: $.Slice<number>, count: number, _: string): [boolean, $.GoError] {
 		const p = this
+		// Dummy implementation
 		if (count > 0 && $.len(data) > 0) {
 			$.println("Processing successful")
 			return [true, null]
@@ -50,13 +51,17 @@ export class MyProcessor {
 
 export async function main(): Promise<void> {
 	let processor: MultiParamReturner = $.markAsStructValue($.markAsStructValue(new MyProcessor()).clone())
+
 	let data = $.arrayToSlice<number>([1, 2, 3])
 	let [success, ] = processor!.Process(data, 5, "unused")
+
 	if (success) {
 		$.println("Main: Success reported")
 	} else {
 		$.println("Main: Failure reported")
 	}
+
+	// test case: re-use success variable, ignore second variable
 	let __goscriptTuple743 = processor!.Process(data, 5, "unused")
 	success = __goscriptTuple743[0]
 	if (success) {

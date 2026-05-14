@@ -1,7 +1,7 @@
 // Generated file based on pointer_deref_multiassign.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -60,6 +60,9 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
+	// === Pointer Dereference and Multi-Assignment ===
+	// Dereference structPointer to get a copy of the struct.
+	// Also demonstrates multi-variable assignment and the use of the blank identifier '_'.
 	let dereferencedStructCopy = $.markAsStructValue($.pointerValue(structPointer).clone())
 	let unusedString = "hello"
 	unusedString

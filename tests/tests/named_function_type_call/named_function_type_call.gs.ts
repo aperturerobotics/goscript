@@ -1,9 +1,9 @@
 // Generated file based on named_function_type_call.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as filepath from "@goscript/path/filepath/index.ts"
+import * as filepath from "@goscript/path/filepath/index.js"
 
 export type FileInfo = null | {
 	IsDir(): boolean
@@ -130,36 +130,57 @@ export class MockFilesystem {
 export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoError) | null
 
 export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: filepath.WalkFunc): $.GoError {
+	// Test case 1: Direct call to named function type parameter
+	// This should generate: walkFn!(path, info, nil)
+	// But currently generates: walkFn(path, info, nil) - missing !
+
+	// We need to convert our FileInfo to os.FileInfo for filepath.WalkFunc
+	// For this test, we'll use a simpler approach with our own WalkFunc
 	return walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo, e: $.GoError): $.GoError => {
-	return null
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] }))
+		// This simulates the issue by calling filepath.WalkFunc indirectly
+		return null
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] }))
 }
 
 export function walkWithCustomFunc(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): $.GoError {
+	// Test case 1: Direct call to named function type parameter
+	// This should generate: walkFn!(path, info, nil)
+	// But currently generates: walkFn(path, info, nil) - missing !
 	{
 		let err = walkFn!(path, info, null)
 		if (err != null && err != filepath.SkipDir) {
 			return err
 		}
 	}
+
+	// Test case 2: Call with variable error
 	let walkErr: $.GoError = null
+	// This should also generate: walkFn!(path, info, walkErr)
 	{
 		let err = walkFn!(path, info, walkErr)
 		if (err != null && err != filepath.SkipDir) {
 			return err
 		}
 	}
+
+	// Test case 3: Call in if statement condition
+	// This should generate: walkFn!(path, info, nil)
 	if (walkFn!(path, info, null) != null) {
 		return filepath.SkipDir
 	}
+
 	return null
 }
 
 export function processFiles(pattern: string, fn: ((_p0: string) => $.GoError) | null): $.GoError {
+	// Test case 4: Anonymous function type parameter (for comparison)
+	// This should also have ! operator when called
 	return fn!(pattern)
 }
 
 export function multiCallback(walkFn: WalkFunc, processFn: ((_p0: string) => $.GoError) | null): $.GoError {
+	// Test case 5: Multiple function parameters
+	// Both should generate ! operators
 	{
 		let err = walkFn!("test", null, null)
 		if (err != null) {
@@ -172,27 +193,35 @@ export function multiCallback(walkFn: WalkFunc, processFn: ((_p0: string) => $.G
 export async function main(): Promise<void> {
 	let fs = new MockFilesystem()
 	let fileInfo = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
+
+	// Test the walk function with custom WalkFunc
 	let walkFunc = $.functionValue((path: string, info: FileInfo, err: $.GoError): $.GoError => {
-	if (info != null) {
-		$.println("Walking:", path, "size:", info!.Size())
-	}
-	if (err != null) {
-		$.println("Error:", err!.Error())
-	}
-	return null
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
+		if (info != null) {
+			$.println("Walking:", path, "size:", info!.Size())
+		}
+		if (err != null) {
+			$.println("Error:", err!.Error())
+		}
+		return null
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
+
 	let err = walkWithCustomFunc(fs, "/test", fileInfo, walkFunc)
 	if (err != null) {
 		$.println("Walk error:", err!.Error())
 	}
+
+	// Test with processFiles
 	let processFunc = $.functionValue((pattern: string): $.GoError => {
-	$.println("Processing pattern:", pattern)
-	return null
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: ["error"] })
+		$.println("Processing pattern:", pattern)
+		return null
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: ["error"] })
+
 	let err2 = processFiles("*.go", processFunc)
 	if (err2 != null) {
 		$.println("Process error:", err2!.Error())
 	}
+
+	// Test with multiCallback
 	let err3 = multiCallback(walkFunc, processFunc)
 	if (err3 != null) {
 		$.println("Multi callback error:", err3!.Error())

@@ -1,9 +1,9 @@
 // Generated file based on nullable_function_param_call.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as os from "@goscript/os/index.ts"
+import * as os from "@goscript/os/index.js"
 
 export type FileInfo = null | {
 	IsDir(): boolean
@@ -132,21 +132,31 @@ export class MockFilesystem {
 }
 
 export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): $.GoError {
+	// Test case 1: Direct call to nullable function parameter
+	// This should generate: walkFn!(path, info, nil)
+	// But currently generates: walkFn(path, info, nil) - missing !
 	let err = walkFn!(path, info, null)
 	if (err != null && err != SkipDir) {
 		return err
 	}
+
+	// Test case 2: Call with error parameter
 	let walkErr: $.GoError = null
+	// This should also generate: walkFn!(path, info, walkErr)
 	let result = walkFn!(path, info, walkErr)
 	if (result != null) {
 		return result
 	}
+
 	return null
 }
 
 export type ProcessFunc = ((data: string) => [string, $.GoError]) | null
 
 export function processWithCallback(input: string, processor: ProcessFunc): [string, $.GoError] {
+	// Test case 3: Function parameter with return values
+	// This should generate: processor!(input)
+	// But currently generates: processor(input) - missing !
 	return processor!(input)
 }
 
@@ -162,32 +172,40 @@ export function maybeProcess(input: string, processor: OptionalProcessFunc): [st
 export async function main(): Promise<void> {
 	let fs = new MockFilesystem()
 	let fileInfo = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
+
+	// Test the walk function with a callback
 	let walkFunc = $.functionValue((path: string, info: FileInfo, err: $.GoError): $.GoError => {
-	$.println("Walking:", path, "size:", info!.Size())
-	if (err != null) {
-		$.println("Error:", err!.Error())
-	}
-	return null
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
+		$.println("Walking:", path, "size:", info!.Size())
+		if (err != null) {
+			$.println("Error:", err!.Error())
+		}
+		return null
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
+
 	let err = walk(fs, "/test", fileInfo, walkFunc)
 	if (err != null) {
 		$.println("Walk error:", err!.Error())
 	}
+
+	// Test the process function with a callback
 	let processFunc = $.functionValue((data: string): [string, $.GoError] => {
-	return ["processed: " + data, null]
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }, "error"] })
+		return ["processed: " + data, null]
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }, "error"] })
+
 	let [result, err2] = processWithCallback("hello", processFunc)
 	if (err2 != null) {
 		$.println("Process error:", err2!.Error())
 	} else {
 		$.println("Process result:", result)
 	}
+
 	let [result3, err3] = maybeProcess("ignored", null)
 	if (err3 != null) {
 		$.println("Optional process error:", err3!.Error())
 	} else {
 		$.println("Optional process result:", result3)
 	}
+
 	let [result4, err4] = maybeProcess("world", processFunc)
 	if (err4 != null) {
 		$.println("Optional process error:", err4!.Error())

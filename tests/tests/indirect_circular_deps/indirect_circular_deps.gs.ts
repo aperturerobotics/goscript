@@ -1,7 +1,7 @@
 // Generated file based on indirect_circular_deps.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class A {
 	public get BB(): $.Slice<B> {
@@ -76,8 +76,10 @@ export class B {
 export async function main(): Promise<void> {
 	let a1 = $.markAsStructValue(new A())
 	let b1 = $.markAsStructValue(new B())
+
 	let a2 = $.markAsStructValue(new A({BB: $.arrayToSlice<B>([$.markAsStructValue(b1.clone())])}))
 	let b2 = $.markAsStructValue(new B({AA: $.arrayToSlice<A>([$.markAsStructValue(a1.clone())])}))
+
 	$.println("a1:", a1.BB == null)
 	$.println("b1:", b1.AA == null)
 	$.println("a2 has", $.len(a2.BB), "B items")

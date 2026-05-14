@@ -1,19 +1,20 @@
 // Generated file based on mutex.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as context from "@goscript/context/index.ts"
+import * as context from "@goscript/context/index.js"
 
-import * as sync from "@goscript/sync/index.ts"
+import * as sync from "@goscript/sync/index.js"
 
-import * as atomic from "@goscript/sync/atomic/index.ts"
+import * as atomic from "@goscript/sync/atomic/index.js"
 
-import * as broadcast from "@goscript/github.com/aperturerobotics/util/broadcast/index.ts"
+import * as broadcast from "@goscript/github.com/aperturerobotics/util/broadcast/index.js"
 
-import * as errors from "@goscript/github.com/pkg/errors/index.ts"
+import * as errors from "@goscript/github.com/pkg/errors/index.js"
 
 export class Mutex {
+	// bcast is broadcast when below fields change
 	public get bcast(): broadcast.Broadcast {
 		return this._fields.bcast.value
 	}
@@ -21,6 +22,7 @@ export class Mutex {
 		this._fields.bcast.value = value
 	}
 
+	// locked indicates the mutex is locked
 	public get locked(): boolean {
 		return this._fields.locked.value
 	}
@@ -51,31 +53,46 @@ export class Mutex {
 
 	public async Lock(ctx: context.Context): Promise<[(() => void) | null, $.GoError]> {
 		const m = this
+		// status:
+		// 0: waiting for lock
+		// 1: locked
+		// 2: unlocked (released)
 		let status: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
 		let waitCh: $.Channel<Record<string, unknown>> | null = null
 		await $.pointerValue(m).bcast.HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
-	if ($.pointerValue(m).locked) {
-		waitCh = getWaitCh!()
-	} else {
-		let swapped = status.value.CompareAndSwap(0, 1)
-		if (swapped) {
-			$.pointerValue(m).locked = true
-		}
-	}
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+			if ($.pointerValue(m).locked) {
+				// keep waiting
+				waitCh = getWaitCh!()
+			} else {
+				// 0: waiting for lock
+				// 1: have the lock
+				let swapped = status.value.CompareAndSwap(0, 1)
+				if (swapped) {
+					$.pointerValue(m).locked = true
+				}
+			}
+		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+
 		let release = $.functionValue(async (): Promise<void> => {
-	let pre = status.value.Swap(2)
-	if (pre != 1) {
-		return
-	}
-	await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, _: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
-	$.pointerValue(m).locked = false
-	broadcast!()
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
-}, { kind: $.TypeKind.Function, params: [], results: [] })
+			let pre = status.value.Swap(2)
+			// 1: we have the lock
+			if (pre != 1) {
+				return
+			}
+
+			// unlock
+			await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, _: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
+				$.pointerValue(m).locked = false
+				broadcast!()
+			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+		}, { kind: $.TypeKind.Function, params: [], results: [] })
+
+		// fast path: we locked the mutex
 		if (status.value.Load() == 1) {
 			return [release, null]
 		}
+
+		// slow path: watch for changes
 		while (true) {
 			const [__goscriptSelectHasReturn4798710, __goscriptSelectValue4798710] = await $.selectStatement<any, [(() => void) | null, $.GoError]>([
 				{
@@ -98,16 +115,22 @@ export class Mutex {
 			if (__goscriptSelectHasReturn4798710) {
 				return __goscriptSelectValue4798710
 			}
+
 			await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
-	if ($.pointerValue(m).locked) {
-		waitCh = getWaitCh!()
-		return
-	}
-	let swapped = status.value.CompareAndSwap(0, 1)
-	if (swapped) {
-		$.pointerValue(m).locked = true
-	}
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+				// keep waiting for the lock
+				if ($.pointerValue(m).locked) {
+					waitCh = getWaitCh!()
+					return
+				}
+
+				// 0: waiting for lock
+				// 1: have the lock
+				let swapped = status.value.CompareAndSwap(0, 1)
+				if (swapped) {
+					$.pointerValue(m).locked = true
+				}
+			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+
 			let nstatus = status.value.Load()
 			switch (nstatus) {
 				case 1:
@@ -133,24 +156,28 @@ export class Mutex {
 		const m = this
 		let unlocked: $.VarRef<atomic.Bool> = $.varRef($.markAsStructValue(new atomic.Bool()))
 		await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
-	if ($.pointerValue(m).locked) {
-		unlocked.value.Store(true)
-	} else {
-		$.pointerValue(m).locked = true
-	}
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+			if ($.pointerValue(m).locked) {
+				unlocked.value.Store(true)
+			} else {
+				$.pointerValue(m).locked = true
+			}
+		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+
+		// we failed to lock the mutex
 		if (unlocked.value.Load()) {
 			return [null, false]
 		}
+
 		return [$.functionValue(async (): Promise<void> => {
-	if (unlocked.value.Swap(true)) {
-		return
-	}
-	await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, _: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
-	$.pointerValue(m).locked = false
-	broadcast!()
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
-}, { kind: $.TypeKind.Function, params: [], results: [] }), true]
+			if (unlocked.value.Swap(true)) {
+				return
+			}
+
+			await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, _: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
+				$.pointerValue(m).locked = false
+				broadcast!()
+			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+		}, { kind: $.TypeKind.Function, params: [], results: [] }), true]
 	}
 
 	static __typeInfo = $.registerStructType(

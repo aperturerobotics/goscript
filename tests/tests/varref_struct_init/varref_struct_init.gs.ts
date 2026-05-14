@@ -1,7 +1,7 @@
 // Generated file based on varref_struct_init.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -39,13 +39,25 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
+	// Scenario 1: Value type that NeedsVarRef
+	// 'val' is a value type, but its address is taken, so it should be varrefed in TS.
 	let val = $.varRef($.markAsStructValue(new MyStruct({MyInt: 10})))
 	let ptrToVal = val
+
+	// Accessing field on varrefed value type: Should generate val.value.MyInt
 	val.value.MyInt = 20
+
+	// Scenario 2: Pointer type
+	// We never take the address of ptr so it should not be varrefed.
 	let ptr = new MyStruct({MyInt: 30})
+
+	// Accessing field on pointer type: Should generate ptr.MyInt
 	$.pointerValue(ptr).MyInt = 40
 	$.println("ptr.MyInt:", $.pointerValue(ptr).MyInt)
+
+	// Accessing pointer value, should use .value
 	$.println("ptrToVal.MyInt:", $.pointerValue(ptrToVal).MyInt)
+
 	let myIntVal = $.pointerValue(ptrToVal).MyInt
 	$.println("myIntVal:", myIntVal)
 }

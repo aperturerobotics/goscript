@@ -1,9 +1,10 @@
 // Generated file based on basic_arithmetic.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
+	// === Basic Arithmetic ===
 	let add = 2 + 3
 	let sub = 10 - 4
 	let mul = 6 * 7

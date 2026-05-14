@@ -8,6 +8,7 @@ import (
 	"go/types"
 	"slices"
 	"strconv"
+	"strings"
 
 	"golang.org/x/tools/go/packages"
 )
@@ -174,7 +175,7 @@ func (o *SemanticModelOwner) collectGenDecl(
 				continue
 			}
 			position := sourcePos(pkg, typed.Name.Pos())
-			o.addType(model, semPkg, obj, position)
+			o.addType(model, semPkg, obj, position, typed.Type)
 			semPkg.declarations = append(semPkg.declarations, semanticDeclaration{
 				kind:     "type",
 				name:     typed.Name.Name,
@@ -287,7 +288,7 @@ func (o *SemanticModelOwner) addDefinedObject(
 		o.addValue(model, semPkg, typed, position, false)
 		o.recordGeneratedImports(model, semPkg, position.file, pkg.PkgPath, typed.Type())
 	case *types.TypeName:
-		o.addType(model, semPkg, typed, sourcePos(pkg, ident.Pos()))
+		o.addType(model, semPkg, typed, sourcePos(pkg, ident.Pos()), nil)
 	case *types.Func:
 		o.addFunction(model, semPkg, typed, sourcePos(pkg, ident.Pos()))
 	}
@@ -298,6 +299,7 @@ func (o *SemanticModelOwner) addType(
 	semPkg *semanticPackage,
 	obj *types.TypeName,
 	position sourcePosition,
+	typeExpr ast.Expr,
 ) *semanticType {
 	named, _ := obj.Type().(*types.Named)
 	if named == nil {
@@ -311,7 +313,7 @@ func (o *SemanticModelOwner) addType(
 		name:        obj.Name(),
 		named:       named,
 		isInterface: isInterface,
-		fields:      semanticFields(named),
+		fields:      semanticFields(named, typeExpr),
 		position:    position,
 	}
 	model.types[named] = semType
@@ -386,7 +388,7 @@ func (o *SemanticModelOwner) addFunction(
 	return semFn
 }
 
-func semanticFields(named *types.Named) []semanticField {
+func semanticFields(named *types.Named, typeExpr ast.Expr) []semanticField {
 	if named == nil {
 		return nil
 	}
@@ -394,17 +396,40 @@ func semanticFields(named *types.Named) []semanticField {
 	if structType == nil {
 		return nil
 	}
+	docs := structFieldDocs(typeExpr)
 	fields := make([]semanticField, 0, structType.NumFields())
 	for i := range structType.NumFields() {
 		field := structType.Field(i)
 		fields = append(fields, semanticField{
 			name:     field.Name(),
 			typ:      field.Type(),
+			doc:      docs[field.Name()],
 			tag:      structType.Tag(i),
 			embedded: field.Embedded(),
 		})
 	}
 	return fields
+}
+
+func structFieldDocs(typeExpr ast.Expr) map[string]string {
+	structType, _ := typeExpr.(*ast.StructType)
+	if structType == nil || structType.Fields == nil {
+		return nil
+	}
+	docs := make(map[string]string)
+	for _, field := range structType.Fields.List {
+		if field.Doc == nil {
+			continue
+		}
+		doc := strings.TrimSpace(field.Doc.Text())
+		if doc == "" {
+			continue
+		}
+		for _, name := range field.Names {
+			docs[name.Name] = doc
+		}
+	}
+	return docs
 }
 
 func (o *SemanticModelOwner) recordAddressTaken(model *SemanticModel, pkg *packages.Package, expr ast.Expr) {

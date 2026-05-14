@@ -144,7 +144,7 @@ func (o *LoweringOwner) lowerFile(
 		importPaths[pkgName.Imported().Path()] = alias
 		loweredFile.imports = append(loweredFile.imports, loweredImport{
 			alias:  alias,
-			source: "@goscript/" + pkgName.Imported().Path() + "/index.ts",
+			source: "@goscript/" + pkgName.Imported().Path() + "/index.js",
 		})
 	}
 	localAliases, localAliasSources := o.localFileAliases(semPkg, file, sourcePath)
@@ -541,6 +541,7 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 			typ:         o.tsTypeFor(ctx, field.typ),
 			zero:        o.lowerZeroValueExprFor(ctx, field.typ),
 			runtimeType: o.runtimeTypeInfoExpr(field.typ),
+			doc:         field.doc,
 			tag:         field.tag,
 			structValue: isStructValueType(field.typ),
 		})
@@ -725,7 +726,7 @@ func (o *LoweringOwner) lowerBlock(ctx lowerFileContext, block *ast.BlockStmt) (
 	if block == nil {
 		return nil, nil
 	}
-	return o.lowerStmtList(ctx.withLocalScope(), block.List)
+	return o.lowerStmtListAfter(ctx.withLocalScope(), block.List, sourceLine(ctx, block.Lbrace))
 }
 
 func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]loweredStmt, []Diagnostic) {
@@ -825,14 +826,69 @@ func (o *LoweringOwner) lowerElse(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 }
 
 func (o *LoweringOwner) lowerStmtList(ctx lowerFileContext, stmts []ast.Stmt) ([]loweredStmt, []Diagnostic) {
+	return o.lowerStmtListAfter(ctx, stmts, 0)
+}
+
+func (o *LoweringOwner) lowerStmtListAfter(
+	ctx lowerFileContext,
+	stmts []ast.Stmt,
+	prevEndLine int,
+) ([]loweredStmt, []Diagnostic) {
 	lowered := make([]loweredStmt, 0, len(stmts))
 	var diagnostics []Diagnostic
 	for _, stmt := range stmts {
+		startLine := sourceLine(ctx, stmt.Pos())
+		leading := leadingStmtLines(ctx, prevEndLine, startLine)
 		stmtLowered, stmtDiagnostics := o.lowerStmt(ctx, stmt)
 		diagnostics = append(diagnostics, stmtDiagnostics...)
+		if len(stmtLowered) != 0 && len(leading) != 0 {
+			stmtLowered[0].leading = append(leading, stmtLowered[0].leading...)
+		}
 		lowered = append(lowered, stmtLowered...)
+		if endLine := sourceLine(ctx, stmt.End()); endLine != 0 {
+			prevEndLine = endLine
+		}
 	}
 	return lowered, diagnostics
+}
+
+func leadingStmtLines(ctx lowerFileContext, prevEndLine int, startLine int) []string {
+	if prevEndLine == 0 || startLine == 0 || startLine <= prevEndLine+1 {
+		return nil
+	}
+	if ctx.file == nil || ctx.semPkg == nil || ctx.semPkg.source == nil || ctx.semPkg.source.Fset == nil {
+		return []string{""}
+	}
+
+	var lines []string
+	lastLine := prevEndLine
+	for _, group := range ctx.file.Comments {
+		groupStart := sourceLine(ctx, group.Pos())
+		groupEnd := sourceLine(ctx, group.End())
+		if groupStart <= prevEndLine || groupEnd >= startLine {
+			continue
+		}
+		if groupStart > lastLine+1 {
+			lines = append(lines, "")
+		}
+		for _, comment := range group.List {
+			for line := range strings.SplitSeq(comment.Text, "\n") {
+				lines = append(lines, line)
+			}
+		}
+		lastLine = groupEnd
+	}
+	if startLine > lastLine+1 {
+		lines = append(lines, "")
+	}
+	return lines
+}
+
+func sourceLine(ctx lowerFileContext, pos token.Pos) int {
+	if ctx.semPkg == nil || ctx.semPkg.source == nil || ctx.semPkg.source.Fset == nil || !pos.IsValid() {
+		return 0
+	}
+	return ctx.semPkg.source.Fset.Position(pos).Line
 }
 
 func (o *LoweringOwner) lowerSendStmt(ctx lowerFileContext, stmt *ast.SendStmt) (string, []Diagnostic) {

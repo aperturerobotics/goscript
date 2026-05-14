@@ -1,7 +1,7 @@
 // Generated file based on goroutines.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class Message {
 	public get priority(): number {
@@ -53,7 +53,10 @@ export let messages: $.Channel<Message> | null = $.makeChannel<Message>(0, $.mar
 export const totalMessages: number = 8
 
 export async function worker(id: number): Promise<void> {
+	// Send worker starting message
 	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 10 + id, text: "Worker " + String.fromCodePoint($.int(48 + id)) + " starting"})))
+
+	// Send worker done message
 	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 20 + id, text: "Worker " + String.fromCodePoint($.int(48 + id)) + " done"})))
 }
 
@@ -62,20 +65,37 @@ export async function anotherWorker(name: string): Promise<void> {
 }
 
 export async function main(): Promise<void> {
+	// Create a slice to collect all messages
 	let allMessages = $.makeSlice<Message>(0, totalMessages + 3)
+
+	// Add initial message
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 0, text: "Main: Starting workers"})))
+
+	// Start 3 worker goroutines
 	for (let i = 0; i < 3; i++) {
 		queueMicrotask(async () => { await worker(i) })
 	}
+
+	// Start another worker goroutine
 	queueMicrotask(async () => { await anotherWorker("test") })
+
+	// Start an anonymous function worker
 	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
-	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 50, text: "Anonymous function worker"})))
-}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+		await $.chanSend(messages, $.markAsStructValue(new Message({priority: 50, text: "Anonymous function worker"})))
+	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+
+	// Add status message
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 1, text: "Main: Workers started"})))
+
+	// Collect all messages from goroutines
 	for (let __rangeIndex = 0; __rangeIndex < totalMessages; __rangeIndex++) {
 		allMessages = $.append(allMessages, await $.chanRecv(messages))
 	}
+
+	// Add final message
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 100, text: "Main: All workers completed"})))
+
+	// Sort messages by priority for deterministic order
 	for (let i = 0; i < $.len(allMessages); i++) {
 		for (let j = i + 1; j < $.len(allMessages); j++) {
 			if (allMessages![i].priority > allMessages![j].priority) {
@@ -86,6 +106,8 @@ export async function main(): Promise<void> {
 			}
 		}
 	}
+
+	// Print all messages in deterministic order
 	for (let __rangeIndex = 0; __rangeIndex < $.len(allMessages); __rangeIndex++) {
 		let msg = allMessages![__rangeIndex]
 		$.println(msg.priority, msg.text)

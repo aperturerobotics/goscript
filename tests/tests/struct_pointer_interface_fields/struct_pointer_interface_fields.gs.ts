@@ -1,7 +1,7 @@
 // Generated file based on struct_pointer_interface_fields.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type MyInterface = null | {
 	Method(): void
@@ -62,12 +62,14 @@ export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct())
 	$.println(s.PointerField == null)
 	$.println(s.interfaceField == null)
+
 	let i = $.varRef(10)
 	s.PointerField = i
 	$.println(s.PointerField != null)
 	$.println($.pointerValue(s.PointerField))
 	i.value = 15
 	$.println($.pointerValue(s.PointerField))
+
 	let mi: MyInterface = null
 	s.interfaceField = mi
 	$.println(s.interfaceField == null)

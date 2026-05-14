@@ -1,1 +1,0 @@
-Expected v2 failure: compiling go/scanner still exposes unsupported statement lowering in go/scanner/go/token, labeled branch lowering in dependency code, missing serialized token helper types, async callback typing mismatches, and missing override/package surface such as slices.Clone.

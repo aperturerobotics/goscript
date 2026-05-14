@@ -1,7 +1,7 @@
 // Generated file based on selector_expr_ok_variable.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class Result {
 	public get ok(): boolean {
@@ -41,8 +41,12 @@ export class Result {
 export async function main(): Promise<void> {
 	let x: any = 42
 	let result = $.markAsStructValue(new Result())
+
+	// This should trigger the error: ok expression is not an identifier: *ast.SelectorExpr
+	// The 'ok' variable is result.ok (a selector expression) instead of a simple identifier
 	let __goscriptTuple279 = $.typeAssertTuple<number>(x, { kind: $.TypeKind.Basic, name: "int" })
 	result.ok = __goscriptTuple279[1]
+
 	$.println("Type assertion successful:", result.ok)
 }
 

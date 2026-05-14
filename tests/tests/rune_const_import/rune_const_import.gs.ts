@@ -1,17 +1,22 @@
 // Generated file based on rune_const_import.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/tests/rune_const_import/subpkg/index.ts"
+import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/tests/rune_const_import/subpkg/index.js"
 
 export async function main(): Promise<void> {
+	// Test importing rune constants from another package
 	const separator: number = subpkg.Separator
 	const newline: number = subpkg.Newline
 	const space: number = subpkg.Space
+
+	// Print the imported rune constants
 	$.println("separator:", separator)
 	$.println("newline:", newline)
 	$.println("space:", space)
+
+	// Use them in comparisons to ensure they're actually numbers
 	if (separator == 47) {
 		$.println("separator matches '/'")
 	}
@@ -21,6 +26,8 @@ export async function main(): Promise<void> {
 	if (space == 32) {
 		$.println("space matches ' '")
 	}
+
+	// Test arithmetic operations (only works with numbers)
 	$.println("separator + 1:", separator + 1)
 	$.println("space - 1:", space - 1)
 }

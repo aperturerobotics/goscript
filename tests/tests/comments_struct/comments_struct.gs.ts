@@ -1,9 +1,10 @@
 // Generated file based on comments_struct.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class TestStruct {
+	// IntField is a commented integer field.
 	public get IntField(): number {
 		return this._fields.IntField.value
 	}
@@ -11,6 +12,7 @@ export class TestStruct {
 		this._fields.IntField.value = value
 	}
 
+	// StringField is a commented string field.
 	public get StringField(): string {
 		return this._fields.StringField.value
 	}

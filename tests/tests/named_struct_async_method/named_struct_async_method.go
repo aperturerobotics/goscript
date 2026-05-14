@@ -11,7 +11,7 @@ func (d *decoder) next() {
 }
 
 func (d *decoder) value(n int) {
-	for i := 0; i < n; i++ {
+	for range n {
 		d.value(0)
 	}
 

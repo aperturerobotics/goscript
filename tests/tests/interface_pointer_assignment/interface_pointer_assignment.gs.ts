@@ -1,7 +1,7 @@
 // Generated file based on interface_pointer_assignment.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get Value(): number {
@@ -39,14 +39,19 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
+	// Scenario 1: Composite literal pointers (should work correctly)
 	let i1: any = $.interfaceValue<any>(new MyStruct({Value: 10}), "*main.MyStruct")
 	let [, ok1] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i1, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("Scenario 1 - Composite literal pointer assertion:", ok1)
+
+	// Scenario 2: Variable aliasing (fixed by our change)
 	let original = $.varRef($.markAsStructValue(new MyStruct({Value: 30})))
 	let pAlias = original
 	let i2: any = $.interfaceValue<any>(pAlias, "*main.MyStruct")
 	let [, ok2] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i2, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("Scenario 2 - Variable pointer assertion:", ok2)
+
+	// Scenario 3: Multiple pointer variables
 	let s1 = $.varRef($.markAsStructValue(new MyStruct({Value: 40})))
 	let s2 = $.varRef($.markAsStructValue(new MyStruct({Value: 50})))
 	let p1 = s1
@@ -57,6 +62,8 @@ export async function main(): Promise<void> {
 	let [, ok3b] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i3b, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("Scenario 3a - Multiple pointer 1 assertion:", ok3a)
 	$.println("Scenario 3b - Multiple pointer 2 assertion:", ok3b)
+
+	// Scenario 4: Mixed patterns
 	let s4 = $.varRef($.markAsStructValue(new MyStruct({Value: 60})))
 	let p4 = s4
 	let i4a: any = $.interfaceValue<any>(new MyStruct({Value: 70}), "*main.MyStruct")
@@ -65,12 +72,16 @@ export async function main(): Promise<void> {
 	let [, ok4b] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i4b, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("Scenario 4a - Mixed composite literal assertion:", ok4a)
 	$.println("Scenario 4b - Mixed variable pointer assertion:", ok4b)
+
+	// Scenario 5: Nested pointer assignment
 	let s5 = $.varRef($.markAsStructValue(new MyStruct({Value: 80})))
 	let p5a = s5
 	let p5b = p5a
 	let i5: any = $.interfaceValue<any>(p5b, "*main.MyStruct")
 	let [, ok5] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i5, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("Scenario 5 - Nested pointer assignment assertion:", ok5)
+
+	// Scenario 6: Struct value vs pointer distinction
 	let s6 = $.varRef($.markAsStructValue(new MyStruct({Value: 90})))
 	let p6 = s6
 	let s6copy = $.markAsStructValue(s6.value.clone())

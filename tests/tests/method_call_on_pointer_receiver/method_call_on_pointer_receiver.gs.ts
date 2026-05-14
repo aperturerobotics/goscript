@@ -1,7 +1,7 @@
 // Generated file based on method_call_on_pointer_receiver.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -55,6 +55,8 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
+	// === Method Call on Pointer Receiver ===
+	// Calling a method with a pointer receiver (*MyStruct) using a pointer variable.
 	$.println("Method call on pointer (structPointer): Expected: hello world, Actual: " + $.pointerValue(structPointer).GetMyString())
 }
 

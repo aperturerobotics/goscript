@@ -42,7 +42,7 @@
     }
   },
   "scripts": {
-    "build": "bun run build:updategover && tsc -p tsconfig.build.json",
+    "build": "bun run build:updategover && tsgo -p tsconfig.build.json",
     "build:updategover": "bun run scripts/update-go-version.ts",
     "prepublishOnly": "bun run build",
     "example": "cd ./example/simple && bash run.bash",

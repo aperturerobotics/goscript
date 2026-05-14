@@ -1,7 +1,7 @@
 // Generated file based on undefined_type_error.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class formatter {
 	public get wid(): number {
@@ -153,6 +153,8 @@ export class printer {
 		this._fields.arg.value = value
 	}
 
+	// This line causes the issue: fmt: $.VarRef<fmt>; where fmt is undefined
+	// Should generate proper type reference
 	public get fmt(): formatter {
 		return this._fields.fmt.value
 	}
@@ -186,6 +188,7 @@ export class printer {
 
 	public format(verb: number): void {
 		const p = this
+		// Use the formatter
 		if ($.pointerValue(p).fmt.minus) {
 			$.println("minus flag set")
 		}

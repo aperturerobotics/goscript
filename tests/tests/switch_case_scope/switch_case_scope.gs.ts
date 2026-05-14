@@ -1,10 +1,11 @@
 // Generated file based on switch_case_scope.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
 	let x = 1
+
 	switch (x) {
 		case 1:
 		{
@@ -21,6 +22,7 @@ export async function main(): Promise<void> {
 			break
 		}
 	}
+
 	$.println("done")
 }
 

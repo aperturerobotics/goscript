@@ -1,18 +1,20 @@
 // Generated file based on import_interface.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as strings from "@goscript/strings/index.ts"
+import * as strings from "@goscript/strings/index.js"
 
-import * as foo_bar from "@goscript/strings/index.ts"
+import * as foo_bar from "@goscript/strings/index.js"
 
-import * as baz from "@goscript/strings/index.ts"
+import * as baz from "@goscript/strings/index.js"
 
 export async function main(): Promise<void> {
+	// Test named imports with same package name
 	let result1 = foo_bar.ToUpper("hello")
 	let result2 = strings.ToLower("WORLD")
 	let result3 = baz.Split("a,b,c", ",")
+
 	$.println("foo_bar.ToUpper:", result1)
 	$.println("strings.ToLower:", result2)
 	$.println("baz.Split length:", $.len(result3))
@@ -21,6 +23,8 @@ export async function main(): Promise<void> {
 		let v = result3![i]
 		$.println("baz.Split[", i, "]:", v)
 	}
+
+	// Test the rest of the "strings" package
 	$.println("strings.Count:", strings.Count("a,b,c", ","))
 	$.println("strings.Split:", strings.Split("a,b,c", ","))
 	$.println("strings.Join:", strings.Join($.arrayToSlice<string>(["a", "b", "c"]), ","))
@@ -39,8 +43,8 @@ export async function main(): Promise<void> {
 	$.println("strings.EqualFold:", strings.EqualFold("hello", "HELLO"))
 	$.println("strings.Fields:", strings.Fields("hello world"))
 	$.println("strings.FieldsFunc:", strings.FieldsFunc("hello world", $.functionValue((r: number): boolean => {
-	return r == 32
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })))
+		return r == 32
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })))
 	$.println("strings.HasPrefix:", strings.HasPrefix("hello", "he"))
 	$.println("strings.HasSuffix:", strings.HasSuffix("hello", "lo"))
 }

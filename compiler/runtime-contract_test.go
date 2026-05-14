@@ -6,7 +6,7 @@ func TestRuntimeContractOwnsBuiltinImportAndHelpers(t *testing.T) {
 	owner := NewRuntimeContractOwner()
 
 	runtimeImport := owner.BuiltinImport()
-	if runtimeImport.Alias != "$" || runtimeImport.Source != "@goscript/builtin/index.ts" {
+	if runtimeImport.Alias != "$" || runtimeImport.Source != "@goscript/builtin/index.js" {
 		t.Fatalf("unexpected builtin import: %#v", runtimeImport)
 	}
 

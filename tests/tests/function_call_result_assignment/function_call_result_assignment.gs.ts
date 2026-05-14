@@ -1,7 +1,7 @@
 // Generated file based on function_call_result_assignment.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -63,10 +63,14 @@ export function NewMyStruct(s: string): MyStruct {
 }
 
 export async function main(): Promise<void> {
+	// === Function Call Result Assignment (Value Copy) ===
+	// Assigning the result of a function that returns a struct creates a copy.
 	let structFromFunc = $.markAsStructValue(NewMyStruct("function result").clone())
 	let structFromFuncCopy = $.markAsStructValue(structFromFunc.clone())
 	structFromFuncCopy.MyString = "modified function result copy"
+	// Expected: "function result"
 	$.println("Original struct from function: Expected: function result, Actual: " + structFromFunc.MyString)
+	// Expected: "modified function result copy"
 	$.println("Modified struct from function copy: Expected: modified function result copy, Actual: " + structFromFuncCopy.MyString)
 }
 

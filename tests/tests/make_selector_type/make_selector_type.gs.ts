@@ -1,9 +1,13 @@
 // Generated file based on make_selector_type.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
+	// Test make() with a map type
+	// This verifies that our fix for selector expressions in make() calls works
+	// The original issue was "unhandled make call" when using selector expressions
+
 	let mfs = $.makeMap<string, $.Slice<number>>()
 	$.mapSet(mfs, "test.txt", $.stringToBytes("hello world"))
 	$.println("Created map:", $.len(mfs))

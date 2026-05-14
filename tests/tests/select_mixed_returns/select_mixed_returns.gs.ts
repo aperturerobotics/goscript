@@ -1,11 +1,11 @@
 // Generated file based on select_mixed_returns.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as context from "@goscript/context/index.ts"
+import * as context from "@goscript/context/index.js"
 
-import * as time from "@goscript/time/index.ts"
+import * as time from "@goscript/time/index.js"
 
 export async function testMixedReturns(ctx: context.Context): Promise<string> {
 	let ch1 = $.makeChannel<string>(1, "", "both")
@@ -13,7 +13,10 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 	let ch3 = $.makeChannel<boolean>(1, false, "both")
 	let ch4 = $.makeChannel<number>(1, 0, "both")
 	let ch5 = $.makeChannel<$.Slice<number>>(1, null, "both")
+
+	// Pre-populate only one channel to make the test deterministic
 	await $.chanSend(ch2, 42)
+
 	const [__goscriptSelectHasReturn3504637, __goscriptSelectValue3504637] = await $.selectStatement<any, string>([
 		{
 			id: 0,
@@ -85,9 +88,14 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 	if (__goscriptSelectHasReturn3504637) {
 		return __goscriptSelectValue3504637
 	}
+
+	// This code should execute when cases 2, 4, 5, or default are selected
 	$.println("Continuing execution after select")
 	$.println("Performing additional work...")
+
+	// Simulate some work
 	time.Sleep(10 * time.Millisecond)
+
 	return "completed_normally"
 }
 
@@ -97,7 +105,10 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 	let ch3 = $.makeChannel<boolean>(1, false, "both")
 	let ch4 = $.makeChannel<number>(1, 0, "both")
 	let ch5 = $.makeChannel<$.Slice<number>>(1, null, "both")
+
+	// Pre-populate ch1 to trigger a returning case
 	await $.chanSend(ch1, "test_message")
+
 	const [__goscriptSelectHasReturn3505996, __goscriptSelectValue3505996] = await $.selectStatement<any, string>([
 		{
 			id: 0,
@@ -160,21 +171,29 @@ export async function testReturnCase(ctx: context.Context): Promise<string> {
 	if (__goscriptSelectHasReturn3505996) {
 		return __goscriptSelectValue3505996
 	}
+
+	// This code should NOT execute for ch1 case (which returns)
 	$.println("Continuing execution after select")
 	$.println("Performing additional work...")
+
+	// Simulate some work
 	time.Sleep(10 * time.Millisecond)
+
 	return "completed_normally"
 }
 
 export async function main(): Promise<void> {
 	let ctx = context.Background()
+
 	$.println("Test 1: Non-returning case (ch2)")
 	let result1 = await testMixedReturns(ctx)
 	$.println("Final result:", result1)
+
 	$.println()
 	$.println("Test 2: Returning case (ch1)")
 	let result2 = await testReturnCase(ctx)
 	$.println("Final result:", result2)
+
 	$.println()
 	$.println("All tests completed")
 }

@@ -1,7 +1,7 @@
 // Generated file based on constants.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export const Pi: number = 3.14
 
@@ -14,6 +14,8 @@ export let Nothing: any = null
 export async function main(): Promise<void> {
 	$.println(Pi)
 	$.println(Truth)
+	// println(Big) // Commented out until large integer handling is implemented
+	// println(Small) // Commented out as it depends on Big
 	$.println(Greeting)
 	$.println($.int(4))
 }

@@ -1,7 +1,7 @@
 // Generated file based on for_post_exprstmt.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export let counter: number = 0
 
@@ -13,6 +13,9 @@ export function increment_counter(): void {
 export async function main(): Promise<void> {
 	for (let i = 0; i < 2; increment_counter()) {
 		$.println("loop iteration:", i)
+		// We need to manually increment i or change the condition
+		// to ensure the loop terminates as increment_counter() in post
+		// does not affect 'i'.
 		i++
 	}
 	$.println("done", "final counter:", counter)

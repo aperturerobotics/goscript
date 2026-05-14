@@ -1,7 +1,7 @@
 // Generated file based on defer_async_method.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class AsyncResource {
 	public get name(): string {
@@ -33,8 +33,8 @@ export class AsyncResource {
 		const r = this
 		let ch = $.makeChannel<boolean>(1, false, "both")
 		queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
-	await $.chanSend(ch, true)
-}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+			await $.chanSend(ch, true)
+		}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 		await $.chanRecv(ch)
 		$.println("Released", $.pointerValue(r).name)
 	}

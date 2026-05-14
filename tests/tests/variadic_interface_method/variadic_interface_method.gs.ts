@@ -1,9 +1,9 @@
 // Generated file based on variadic_interface_method.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as strings from "@goscript/strings/index.ts"
+import * as strings from "@goscript/strings/index.js"
 
 export type Basic = null | {
 	Join(elem: $.Slice<string>): string
@@ -55,12 +55,20 @@ export class PathJoiner {
 
 export async function main(): Promise<void> {
 	let b: Basic = $.markAsStructValue($.markAsStructValue(new PathJoiner()).clone())
+
+	// Test with multiple arguments
 	let result1 = b!.Join($.arrayToSlice<string>(["path", "to", "file"]))
 	$.println("Result1:", result1)
+
+	// Test with single argument
 	let result2 = b!.Join($.arrayToSlice<string>(["single"]))
 	$.println("Result2:", result2)
+
+	// Test with no arguments
 	let result3 = b!.Join(null)
 	$.println("Result3:", result3)
+
+	// Test with slice expansion
 	let parts = $.arrayToSlice<string>(["another", "path", "here"])
 	let result4 = b!.Join(parts)
 	$.println("Result4:", result4)

@@ -171,7 +171,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"named_types_valueof":               true,
 	"nil_pkg_pointer_dereference":       true,
 	"os_filemode_struct":                true,
-	"package_import_go_scanner":         true,
 	"path_error_constructor":            true,
 	"pointer_circular_ref":              true,
 	"pointer_composite_literal_untyped": true,

@@ -12,6 +12,7 @@
     "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "allowImportingTsExtensions": true,
     "importsNotUsedAsValues": "remove",
     "noEmit": true,
     "resolveJsonModule": true,

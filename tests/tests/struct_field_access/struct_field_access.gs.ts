@@ -1,7 +1,7 @@
 // Generated file based on struct_field_access.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -49,6 +49,7 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
+	// === Struct Field Access ===
 	let ms = $.markAsStructValue(new MyStruct({MyInt: 42, MyString: "foo"}))
 	$.println("MyInt: Expected: 42, Actual:", ms.MyInt)
 	$.println("MyString: Expected: foo, Actual:", ms.MyString)

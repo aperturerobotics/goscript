@@ -1,7 +1,7 @@
 // Generated file based on selector_expr_lhs_multi_assign.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class Point {
 	public get X(): number {
@@ -54,6 +54,8 @@ export function getCoords(): [number, number] {
 
 export async function main(): Promise<void> {
 	let p: Point = $.markAsStructValue(new Point())
+	// p.X and p.Y are *ast.SelectorExpr
+	// test writeMultiVarAssignFromCall in WriteStmtAssign
 	let __goscriptTuple222 = getCoords()
 	p.X = __goscriptTuple222[0]
 	p.Y = __goscriptTuple222[1]

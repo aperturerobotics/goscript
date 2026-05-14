@@ -1,9 +1,9 @@
 // Generated file based on json_value.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as reflect from "@goscript/reflect/index.ts"
+import * as reflect from "@goscript/reflect/index.js"
 
 export class Person {
 	public get Name(): string {
@@ -64,15 +64,19 @@ export async function main(): Promise<void> {
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
 	let v = $.markAsStructValue(reflect.ValueOf(p).clone())
 	let t = $.markAsStructValue(v.clone()).Type()
+
 	$.println("Type:", t!.Name())
 	$.println("Kind:", reflect.Kind_String(t!.Kind()))
 	$.println("NumField:", t!.NumField())
+
 	for (let i = 0; i < t!.NumField(); i++) {
 		let sf = $.markAsStructValue(t!.Field(i).clone())
 		let fv = $.markAsStructValue($.markAsStructValue(v.clone()).Field(i).clone())
+
 		$.println("Field", i, ":", sf.Name)
 		$.println("  FieldValue Kind:", reflect.Kind_String($.markAsStructValue(fv.clone()).Kind()))
 		$.println("  FieldValue CanInterface:", $.markAsStructValue(fv.clone()).CanInterface())
+
 		switch ($.markAsStructValue(fv.clone()).Kind()) {
 			case reflect.String:
 			{

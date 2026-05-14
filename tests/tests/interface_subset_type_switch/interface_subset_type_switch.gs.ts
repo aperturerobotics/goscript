@@ -1,7 +1,7 @@
 // Generated file based on interface_subset_type_switch.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type MyInterface1 = null | {
 	MyString1(): string
@@ -105,11 +105,19 @@ export function processInterface(i: any): void {
 
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({Value1: "hello", Value2: "world"}))
+
+	// Test with MyInterface1
 	let i1: MyInterface1 = $.markAsStructValue(s.clone())
 	processInterface(i1)
+
+	// Test with MyInterface2
 	let i2: MyInterface2 = $.markAsStructValue(s.clone())
 	processInterface(i2)
+
+	// Test with concrete type
 	processInterface(s)
+
+	// Type switch with subset casting
 	let i3: any = i1
 	$.typeSwitch(
 		i3,

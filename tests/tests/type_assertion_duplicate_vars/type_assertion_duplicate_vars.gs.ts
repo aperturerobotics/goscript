@@ -1,7 +1,7 @@
 // Generated file based on type_assertion_duplicate_vars.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type Interface = null | {
 	Method(): string
@@ -120,11 +120,15 @@ export class Container {
 
 export async function main(): Promise<void> {
 	let iface: Interface = $.markAsStructValue($.markAsStructValue(new ConcreteA()).clone())
+
 	let c = new Container()
+
+	// Multiple type assertions that should generate unique variable names
 	let __goscriptTuple406 = $.typeAssertTuple<ConcreteA>(iface, "main.ConcreteA")
 	$.pointerValue(c).hasA = __goscriptTuple406[1]
 	let __goscriptTuple437 = $.typeAssertTuple<ConcreteB>(iface, "main.ConcreteB")
 	$.pointerValue(c).hasB = __goscriptTuple437[1]
+
 	$.println("hasA:", $.pointerValue(c).hasA)
 	$.println("hasB:", $.pointerValue(c).hasB)
 }

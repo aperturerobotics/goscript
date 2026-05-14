@@ -1,7 +1,7 @@
 // Generated file based on pointer_initialization.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -49,7 +49,10 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
+	// === Pointer Initialization ===
+	// Create a pointer to a MyStruct instance using a composite literal.
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
+	// Expected: "hello world"
 	$.println("Initial MyString (via pointer): Expected: hello world, Actual: " + $.pointerValue(structPointer).MyString)
 }
 

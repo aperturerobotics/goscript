@@ -1,7 +1,7 @@
 // Generated file based on varref_struct.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -39,9 +39,14 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
+	// 'val' is a value type, but its address is taken, so it should be varrefed in TS.
 	let val = $.varRef($.markAsStructValue(new MyStruct({MyInt: 10})))
 	let ptrToVal = val
+
+	// Accessing pointer value, should use .value
 	$.println("ptrToVal.MyInt:", $.pointerValue(ptrToVal).MyInt)
+
+	// Accessing pointer value, should use .value
 	let myIntVal = $.pointerValue(ptrToVal).MyInt
 	$.println("myIntVal:", myIntVal)
 }

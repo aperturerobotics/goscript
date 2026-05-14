@@ -1,7 +1,7 @@
 // Generated file based on embedded_interface_assertion.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type Reader = null | {
 	Read(_p0: $.Slice<number>): [number, $.GoError]
@@ -52,11 +52,13 @@ export class MyStruct {
 
 	public Close(): $.GoError {
 		const m = this
+		// Dummy implementation
 		return null
 	}
 
 	public Read(p: $.Slice<number>): [number, $.GoError] {
 		const m = this
+		// Dummy implementation
 		return [0, null]
 	}
 
@@ -73,6 +75,7 @@ export async function main(): Promise<void> {
 	let rwc: ReadCloser = null
 	let s = $.markAsStructValue(new MyStruct())
 	rwc = $.markAsStructValue(s.clone())
+
 	let [, ok] = $.typeAssertTuple<ReadCloser>(rwc, "main.ReadCloser")
 	if (ok) {
 		$.println("Embedded interface assertion successful")

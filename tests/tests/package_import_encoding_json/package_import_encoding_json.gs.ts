@@ -1,13 +1,13 @@
 // Generated file based on package_import_encoding_json.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as json from "@goscript/encoding/json/index.ts"
+import * as json from "@goscript/encoding/json/index.js"
 
-import * as slices from "@goscript/slices/index.ts"
+import * as slices from "@goscript/slices/index.js"
 
-import * as strconv from "@goscript/strconv/index.ts"
+import * as strconv from "@goscript/strconv/index.js"
 
 export class Person {
 	public get Name(): string {
@@ -66,6 +66,8 @@ export class Person {
 
 export async function main(): Promise<void> {
 	let results: $.Slice<string> = null
+
+	// Marshal a simple struct
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
 	let [b, err] = json.Marshal(p)
 	if (err != null) {
@@ -73,6 +75,8 @@ export async function main(): Promise<void> {
 	} else {
 		results = $.append(results, "Marshal: " + $.bytesToString(b))
 	}
+
+	// Unmarshal into a struct
 	let q: $.VarRef<Person> = $.varRef($.markAsStructValue(new Person()))
 	{
 		let err = json.Unmarshal($.stringToBytes(`{"name":"Bob","age":25,"active":false}`), q)
@@ -82,6 +86,8 @@ export async function main(): Promise<void> {
 			results = $.append(results, "Unmarshal struct: Name=" + q.value.Name + ", Age=" + strconv.Itoa(q.value.Age) + ", Active=" + strconv.FormatBool(q.value.Active))
 		}
 	}
+
+	// Unmarshal into a map[string]any
 	let m: $.VarRef<Map<string, any> | null> = $.varRef(null)
 	{
 		let err = json.Unmarshal($.stringToBytes(`{"name":"Carol","age":22,"active":true}`), m)
@@ -94,11 +100,15 @@ export async function main(): Promise<void> {
 			results = $.append(results, "Unmarshal map: name=" + name + ", age=" + strconv.Itoa(age) + ", active=" + strconv.FormatBool(active))
 		}
 	}
+
+	// Sort results for deterministic output
 	slices.Sort(results)
+
 	for (let __rangeIndex = 0; __rangeIndex < $.len(results); __rangeIndex++) {
 		let r = results![__rangeIndex]
 		$.println("JSON result:", r)
 	}
+
 	$.println("encoding/json test finished")
 }
 

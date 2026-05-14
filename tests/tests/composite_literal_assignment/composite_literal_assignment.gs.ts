@@ -1,7 +1,7 @@
 // Generated file based on composite_literal_assignment.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export class MyStruct {
 	public get MyInt(): number {
@@ -59,10 +59,15 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
+	// === Composite Literal Assignment (Value Copy) ===
+	// Creating a struct directly using a composite literal.
 	let structLiteral = $.markAsStructValue(new MyStruct({MyString: "composite literal"}))
+	// Assigning it creates another independent copy.
 	let structLiteralCopy = $.markAsStructValue(structLiteral.clone())
 	structLiteralCopy.MyString = "modified composite literal copy"
+	// Expected: "composite literal"
 	$.println("Original struct literal: Expected: composite literal, Actual: " + structLiteral.MyString)
+	// Expected: "modified composite literal copy"
 	$.println("Modified struct literal copy: Expected: modified composite literal copy, Actual: " + structLiteralCopy.MyString)
 }
 
