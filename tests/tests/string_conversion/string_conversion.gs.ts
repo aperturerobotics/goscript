@@ -18,7 +18,7 @@ export async function main(): Promise<void> {
 	let myRunes = [71, 111, 83, 99, 114, 105, 112, 116]
 	let myStringFromRunes = $.runesToString(myRunes)
 	$.println(myStringFromRunes)
-	let emptyRunes = []
+	let emptyRunes = $.arrayToSlice<number>([])
 	let emptyStringFromRunes = $.runesToString(emptyRunes)
 	$.println(emptyStringFromRunes)
 	let originalString = "你好世界"

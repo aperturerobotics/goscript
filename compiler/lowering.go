@@ -2209,6 +2209,10 @@ func (o *LoweringOwner) lowerSliceCompositeLit(
 		values[index] = o.lowerValueForTarget(ctx, valueExpr, slice.Elem(), value)
 		nextIndex = index + 1
 	}
+	if len(values) == 0 {
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayToSlice) +
+			"<" + o.tsTypeFor(ctx, slice.Elem()) + ">([])", diagnostics
+	}
 	return "[" + strings.Join(values, ", ") + "]", diagnostics
 }
 

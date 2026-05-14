@@ -236,7 +236,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"slices_grow":                         true,
 	"star_compound_assign":                true,
 	"star_expr_destructuring":             true,
-	"string_conversion":                   true,
 	"struct_embedding":                    true,
 	"struct_embedding_bytes_buffer":       true,
 	"switch_case_scope":                   true,
