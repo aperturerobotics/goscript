@@ -506,6 +506,57 @@ func TestCompilePackagesAssertsInterfaceMethodReceivers(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesBoxesTypedNilInterfaceValues(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/typed-nil-interface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Animal interface { Name() string }",
+			"type Dog struct { name string }",
+			"func (d *Dog) Name() string {",
+			"  if d == nil {",
+			"    return \"unknown dog\"",
+			"  }",
+			"  return d.name",
+			"}",
+			"func FindDog() *Dog { return nil }",
+			"func FindAnimal() Animal { return Animal(FindDog()) }",
+			"func main() {",
+			"  animal := FindAnimal()",
+			"  println(animal.Name())",
+			"  var dog *Dog = nil",
+			"  var a Animal = dog",
+			"  println(a == nil)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "typed-nil-interface", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"return $.interfaceValue<Animal>(FindDog(), \"*main.Dog\")",
+		"$.println(animal!.Name())",
+		"let a: Animal = $.interfaceValue<Animal>(dog, \"*main.Dog\")",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/generics\n\ngo 1.25.3\n",

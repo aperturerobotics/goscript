@@ -1808,6 +1808,9 @@ func (o *LoweringOwner) lowerConversionExpr(
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperTypedNil) +
 			"(" + strconv.Quote(goRuntimeTypeString(targetType)) + ")", diagnostics
 	}
+	if isInterfaceType(targetType) {
+		return o.lowerValueForTarget(ctx, expr.Args[0], targetType, value), diagnostics
+	}
 	if isStringType(targetType) {
 		switch {
 		case isRuneSliceType(sourceType):
@@ -2289,6 +2292,10 @@ func (o *LoweringOwner) lowerValueForTarget(
 	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
 	if isInterfaceType(targetType) && isStructValueType(sourceType) {
 		return o.lowerStructClone(value)
+	}
+	if isInterfaceType(targetType) && !isInterfaceType(sourceType) && isNilableType(sourceType) {
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInterfaceValue) +
+			"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " + strconv.Quote(goRuntimeTypeString(sourceType)) + ")"
 	}
 	if isStructValueType(targetType) && shouldCloneStructValue(expr) {
 		return o.lowerStructClone(value)

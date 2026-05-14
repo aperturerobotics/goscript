@@ -1008,6 +1008,9 @@ export function typeAssert<T>(
 
   // Handle typed nil pointers (created by typedNil() for conversions like (*T)(nil))
   if (typeof value === 'object' && value !== null && value.__isTypedNil) {
+    if (isInterfaceTypeInfo(normalizedType) && matchesInterfaceType(value, normalizedType)) {
+      return { value: value as T, ok: true }
+    }
     // For typed nils, we need to compare the stored type with the expected type
     if (isPointerTypeInfo(normalizedType)) {
       // Parse the stored type string and compare with expected type
@@ -1218,6 +1221,35 @@ export function typedNil(typeName: string): any {
     __goType: typeName,
     __isTypedNil: true,
   })
+}
+
+export function interfaceValue<T>(value: unknown, typeName: string): T {
+  if (value !== null && value !== undefined) {
+    return value as T
+  }
+
+  const nilValue = typedNil(typeName)
+  if (!typeName.startsWith('*')) {
+    return nilValue as T
+  }
+
+  const dynamicType = typeRegistry.get(typeName.slice(1))
+  if (!dynamicType || !isStructTypeInfo(dynamicType) || !dynamicType.ctor) {
+    return nilValue as T
+  }
+
+  const prototype = dynamicType.ctor.prototype as Record<string, unknown>
+  for (const method of dynamicType.methods) {
+    const implementation = prototype[method.name]
+    if (typeof implementation !== 'function') {
+      continue
+    }
+    Object.defineProperty(nilValue, method.name, {
+      value: (...args: unknown[]) => implementation.call(null, ...args),
+      enumerable: true,
+    })
+  }
+  return nilValue as T
 }
 
 export function namedFunction<T>(fn: T, typeName: string): T {

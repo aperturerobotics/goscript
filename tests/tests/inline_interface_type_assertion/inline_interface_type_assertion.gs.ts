@@ -104,7 +104,7 @@ export async function main(): Promise<void> {
 	} else {
 		$.println("k.(interface{ String() string }) failed")
 	}
-	let l: any = $.typedNil("*struct{Name string}")
+	let l: any = $.interfaceValue<any>($.typedNil("*struct{Name string}"), "*struct{Name string}")
 	let [ptr, ok6] = $.typeAssertTuple<$.VarRef<Record<string, unknown>> | null>(l, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Struct, methods: [], fields: {"Name": { kind: $.TypeKind.Basic, name: "string" }} } })
 	if (ok6) {
 		if (ptr == null) {

@@ -80,6 +80,7 @@ const (
 	RuntimeHelperIs                    RuntimeHelper = "type.is"
 	RuntimeHelperTypeSwitch            RuntimeHelper = "type.typeSwitch"
 	RuntimeHelperTypedNil              RuntimeHelper = "type.typedNil"
+	RuntimeHelperInterfaceValue        RuntimeHelper = "type.interfaceValue"
 	RuntimeHelperNamedFunction         RuntimeHelper = "type.namedFunction"
 	RuntimeHelperGenericZero           RuntimeHelper = "type.genericZero"
 	RuntimeHelperCallGenericMethod     RuntimeHelper = "type.callGenericMethod"
@@ -244,6 +245,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperIs, "is", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperTypeSwitch, "typeSwitch", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperTypedNil, "typedNil", RuntimeHelperCategoryType),
+		runtimeHelper(RuntimeHelperInterfaceValue, "interfaceValue", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperNamedFunction, "namedFunction", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperGenericZero, "genericZero", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperCallGenericMethod, "callGenericMethod", RuntimeHelperCategoryType),

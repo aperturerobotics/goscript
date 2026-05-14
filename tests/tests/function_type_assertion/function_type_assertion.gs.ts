@@ -16,11 +16,11 @@ export function add(a: number, b: number): number {
 }
 
 export function getGreeter(): any {
-	return $.namedFunction(greet, "main.Greeter")
+	return $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
 }
 
 export function getAdder(): any {
-	return $.namedFunction(add, "main.Adder")
+	return $.interfaceValue<any>($.namedFunction(add, "main.Adder"), "main.Adder")
 }
 
 export class FuncContainer {
@@ -59,14 +59,14 @@ export class FuncContainer {
 }
 
 export async function main(): Promise<void> {
-	let i: any = $.namedFunction(greet, "main.Greeter")
+	let i: any = $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
 	let [fn, ok] = $.typeAssertTuple<Greeter>(i, { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	if (ok) {
 		$.println(fn("World"))
 	} else {
 		$.println("Simple assertion failed")
 	}
-	let j: any = $.namedFunction(add, "main.Adder")
+	let j: any = $.interfaceValue<any>($.namedFunction(add, "main.Adder"), "main.Adder")
 	let __goscriptTuple538 = $.typeAssertTuple<Adder>(j, { kind: $.TypeKind.Function, name: "main.Adder", params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	let addFn = __goscriptTuple538[0]
 	ok = __goscriptTuple538[1]
@@ -93,7 +93,7 @@ export async function main(): Promise<void> {
 	} else {
 		$.println("Returned adder assertion failed")
 	}
-	let container = $.markAsStructValue(new FuncContainer({myFunc: $.namedFunction(greet, "main.Greeter")}))
+	let container = $.markAsStructValue(new FuncContainer({myFunc: $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")}))
 	let __goscriptTuple1163 = $.typeAssertTuple<Greeter>(container.myFunc, { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	let structFn = __goscriptTuple1163[0]
 	ok = __goscriptTuple1163[1]
@@ -102,7 +102,7 @@ export async function main(): Promise<void> {
 	} else {
 		$.println("Struct function assertion failed")
 	}
-	let adderContainer = $.markAsStructValue(new FuncContainer({myFunc: $.namedFunction(add, "main.Adder")}))
+	let adderContainer = $.markAsStructValue(new FuncContainer({myFunc: $.interfaceValue<any>($.namedFunction(add, "main.Adder"), "main.Adder")}))
 	let __goscriptTuple1359 = $.typeAssertTuple<Adder>(adderContainer.myFunc, { kind: $.TypeKind.Function, name: "main.Adder", params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	let structAdderFn = __goscriptTuple1359[0]
 	ok = __goscriptTuple1359[1]
@@ -112,8 +112,8 @@ export async function main(): Promise<void> {
 		$.println("Struct adder assertion failed")
 	}
 	let funcMap = $.makeMap<string, any>()
-	$.mapSet(funcMap, "greeter", $.namedFunction(greet, "main.Greeter"))
-	$.mapSet(funcMap, "adder", $.namedFunction(add, "main.Adder"))
+	$.mapSet(funcMap, "greeter", $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter"))
+	$.mapSet(funcMap, "adder", $.interfaceValue<any>($.namedFunction(add, "main.Adder"), "main.Adder"))
 	let __goscriptTuple1655 = $.typeAssertTuple<Greeter>($.mapGet(funcMap, "greeter", null)[0], { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	let mapFn = __goscriptTuple1655[0]
 	ok = __goscriptTuple1655[1]
@@ -131,8 +131,8 @@ export async function main(): Promise<void> {
 		$.println("Map adder assertion failed")
 	}
 	let funcSlice = $.makeSlice<any>(2)
-	funcSlice![0] = $.namedFunction(greet, "main.Greeter")
-	funcSlice![1] = $.namedFunction(add, "main.Adder")
+	funcSlice![0] = $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
+	funcSlice![1] = $.interfaceValue<any>($.namedFunction(add, "main.Adder"), "main.Adder")
 	let __goscriptTuple2058 = $.typeAssertTuple<Greeter>(funcSlice![0], { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	let sliceFn = __goscriptTuple2058[0]
 	ok = __goscriptTuple2058[1]
@@ -149,7 +149,7 @@ export async function main(): Promise<void> {
 	} else {
 		$.println("Slice adder assertion failed")
 	}
-	let k: any = $.namedFunction(greet, "main.Greeter")
+	let k: any = $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
 	let [, ok1] = $.typeAssertTuple<Greeter>(k, { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	$.println(ok1)
 	let [, ok2] = $.typeAssertTuple<Adder>(k, { kind: $.TypeKind.Function, name: "main.Adder", params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
@@ -164,7 +164,7 @@ export async function main(): Promise<void> {
 	} else {
 		$.println("Nil interface assertion failed")
 	}
-	let wrongFnInterface: any = $.namedFunction(greet, "main.Greeter")
+	let wrongFnInterface: any = $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
 	let [wrongFn, okWrong] = $.typeAssertTuple<Adder>(wrongFnInterface, { kind: $.TypeKind.Function, name: "main.Adder", params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	if (!okWrong && wrongFn == null) {
 		$.println("Wrong function type assertion correct")

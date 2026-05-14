@@ -109,12 +109,12 @@ export function FindCat(): Cat | $.VarRef<Cat> | null {
 
 export function FindAnimal(): Animal {
 	{
-		let dog = FindDog()
+		let dog = $.interfaceValue<Animal>(FindDog(), "*main.Dog")
 		if (dog != null) {
 			return dog
 		}
 	}
-	return FindCat()
+	return $.interfaceValue<Animal>(FindCat(), "*main.Cat")
 }
 
 export async function main(): Promise<void> {
@@ -124,9 +124,25 @@ export async function main(): Promise<void> {
 	} else {
 		$.println("animal is not nil")
 	}
-	$.println(animal.Name())
+	$.println(animal!.Name())
+	{
+		let [d, ok] = $.typeAssertTuple<Dog | $.VarRef<Dog> | null>(animal, { kind: $.TypeKind.Pointer, elemType: "main.Dog" })
+		if (ok && d == null) {
+			$.println("typed nil dog assertion ok")
+		} else {
+			$.println("typed nil dog assertion failed")
+		}
+	}
+	{
+		let [c, ok] = $.typeAssertTuple<Cat | $.VarRef<Cat> | null>(animal, { kind: $.TypeKind.Pointer, elemType: "main.Cat" })
+		if (ok || c != null) {
+			$.println("typed nil cat assertion accepted")
+		} else {
+			$.println("typed nil cat assertion rejected")
+		}
+	}
 	let dog: Dog | $.VarRef<Dog> | null = null
-	let a: Animal = dog
+	let a: Animal = $.interfaceValue<Animal>(dog, "*main.Dog")
 	if (a == null) {
 		$.println("a is nil")
 	} else {

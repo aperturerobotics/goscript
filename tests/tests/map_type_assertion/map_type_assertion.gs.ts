@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let i: any = null
-	i = new Map<string, number>([["age", 30]])
+	i = $.interfaceValue<any>(new Map<string, number>([["age", 30]]), "map[string]int")
 	let [m, ok] = $.typeAssertTuple<Map<string, number> | null>(i, { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } })
 	if (ok) {
 		$.println("Age:", $.mapGet(m, "age", 0)[0])

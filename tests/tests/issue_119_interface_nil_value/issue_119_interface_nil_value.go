@@ -67,7 +67,19 @@ func main() {
 	// Then passes nil as the receiver
 	println(animal.Name())
 
-	// Test 3: Direct nil pointer to interface assignment
+	// Test 3: Type assertions preserve the typed nil pointer
+	if d, ok := animal.(*Dog); ok && d == nil {
+		println("typed nil dog assertion ok")
+	} else {
+		println("typed nil dog assertion failed")
+	}
+	if c, ok := animal.(*Cat); ok || c != nil {
+		println("typed nil cat assertion accepted")
+	} else {
+		println("typed nil cat assertion rejected")
+	}
+
+	// Test 4: Direct nil pointer to interface assignment
 	var dog *Dog = nil
 	var a Animal = dog
 
@@ -77,7 +89,7 @@ func main() {
 		println("a is not nil")
 	}
 
-	// Test 4: Truly nil interface
+	// Test 5: Truly nil interface
 	var b Animal = nil
 	if b == nil {
 		println("b is nil")

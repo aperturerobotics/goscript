@@ -6,6 +6,7 @@ import {
   chanRecvWithOk,
   genericZero,
   int,
+  interfaceValue,
   makeChannel,
   makeMap,
   mapGet,
@@ -143,6 +144,40 @@ describe('builtin runtime contract helpers', () => {
       }),
     ).toEqual({ value: null, ok: true })
     expect(TypeKind.Pointer).toBe('pointer')
+
+    class TypedDog {
+      public Name(this: TypedDog | null): string {
+        if (this === null) {
+          return 'unknown dog'
+        }
+        return 'dog'
+      }
+    }
+
+    registerStructType(
+      'phase5.TypedDog',
+      new TypedDog(),
+      [{ name: 'Name', args: [], returns: [{ type: 'string' }] }],
+      TypedDog,
+    )
+    const dogInterface = registerInterfaceType(
+      'phase5.DogInterface',
+      null,
+      [{ name: 'Name', args: [], returns: [{ type: 'string' }] }],
+    )
+    const nilDog = interfaceValue<{ Name(): string } | null>(
+      null,
+      '*phase5.TypedDog',
+    )
+    expect(nilDog).not.toBeNull()
+    expect(nilDog!.Name()).toBe('unknown dog')
+    expect(typeAssert<{ Name(): string }>(nilDog, dogInterface).ok).toBe(true)
+    expect(
+      typeAssert<TypedDog | null>(nilDog, {
+        kind: TypeKind.Pointer,
+        elemType: 'phase5.TypedDog',
+      }),
+    ).toEqual({ value: null, ok: true })
 
     const greet = namedFunction((name: string) => `hello ${name}`, 'phase5.Greet')
     expect(typeAssert<typeof greet>(greet, {

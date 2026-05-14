@@ -41,7 +41,7 @@ export class MyStruct {
 export async function main(): Promise<void> {
 	let original = $.varRef($.markAsStructValue(new MyStruct({Value: 30})))
 	let pAlias = original
-	let jAlias: any = pAlias
+	let jAlias: any = $.interfaceValue<any>(pAlias, "*main.MyStruct")
 	let [, ok] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(jAlias, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("pointer assertion result:", ok)
 }
