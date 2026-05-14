@@ -1806,7 +1806,8 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			if signature := genericFunctionSignature(ctx, fun); signature != nil {
 				args = append([]string{o.inferredGenericTypeArgsExpr(ctx, signature, expr.Args)}, args...)
 			}
-			call := o.lowerIdent(ctx, fun, false) + "(" + strings.Join(args, ", ") + ")"
+			callee := o.lowerCallableExpr(ctx, fun, o.lowerIdent(ctx, fun, false))
+			call := callee + "(" + strings.Join(args, ", ") + ")"
 			return o.awaitCallIfNeeded(ctx, fun, call), diagnostics
 		}
 	case *ast.SelectorExpr:
@@ -1828,20 +1829,20 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			return o.awaitCallIfNeeded(ctx, fun, call), diagnostics
 		}
 		selector, selectorDiagnostics := o.lowerSelectorExpr(ctx, fun)
-		call := selector + "(" + strings.Join(args, ", ") + ")"
+		call := o.lowerCallableExpr(ctx, fun, selector) + "(" + strings.Join(args, ", ") + ")"
 		return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, selectorDiagnostics...)
 	case *ast.IndexExpr:
 		if signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(fun).(*types.Signature); signature != nil {
 			callee, calleeDiagnostics := o.lowerExpr(ctx, fun.X)
 			args = append([]string{o.genericTypeArgsExpr(ctx, fun.X, []ast.Expr{fun.Index})}, args...)
-			call := callee + "(" + strings.Join(args, ", ") + ")"
+			call := o.lowerCallableExpr(ctx, fun.X, callee) + "(" + strings.Join(args, ", ") + ")"
 			return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, calleeDiagnostics...)
 		}
 	case *ast.IndexListExpr:
 		if signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(fun).(*types.Signature); signature != nil {
 			callee, calleeDiagnostics := o.lowerExpr(ctx, fun.X)
 			args = append([]string{o.genericTypeArgsExpr(ctx, fun.X, fun.Indices)}, args...)
-			call := callee + "(" + strings.Join(args, ", ") + ")"
+			call := o.lowerCallableExpr(ctx, fun.X, callee) + "(" + strings.Join(args, ", ") + ")"
 			return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, calleeDiagnostics...)
 		}
 	case *ast.CallExpr:
@@ -1849,6 +1850,7 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 		if strings.HasPrefix(callee, "await ") {
 			callee = "(" + callee + ")"
 		}
+		callee = o.lowerCallableExpr(ctx, fun, callee)
 		return callee + "(" + strings.Join(args, ", ") + ")", append(diagnostics, calleeDiagnostics...)
 	case *ast.FuncLit:
 		callee, async, calleeDiagnostics := o.lowerFuncLit(ctx, fun)
@@ -1863,12 +1865,19 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			if strings.HasPrefix(callee, "await ") {
 				callee = "(" + callee + ")"
 			}
-			call := callee + "(" + strings.Join(args, ", ") + ")"
+			call := o.lowerCallableExpr(ctx, expr.Fun, callee) + "(" + strings.Join(args, ", ") + ")"
 			return o.awaitCallIfNeeded(ctx, expr.Fun, call), append(diagnostics, calleeDiagnostics...)
 		}
 		return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported call target"))
 	}
 	return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported call target"))
+}
+
+func (o *LoweringOwner) lowerCallableExpr(ctx lowerFileContext, expr ast.Expr, callee string) string {
+	if callTargetNeedsNonNull(ctx, expr) {
+		return callee + "!"
+	}
+	return callee
 }
 
 func (o *LoweringOwner) lowerCallArgs(
@@ -1944,6 +1953,33 @@ func callTargetSignature(ctx lowerFileContext, expr ast.Expr) *types.Signature {
 	}
 	signature, _ := types.Unalias(typ).Underlying().(*types.Signature)
 	return signature
+}
+
+func callTargetNeedsNonNull(ctx lowerFileContext, expr ast.Expr) bool {
+	if callTargetSignature(ctx, expr) == nil {
+		return false
+	}
+	switch typed := expr.(type) {
+	case *ast.FuncLit:
+		return false
+	case *ast.Ident:
+		switch objectForIdent(ctx, typed).(type) {
+		case *types.Func, *types.Builtin:
+			return false
+		default:
+			return true
+		}
+	case *ast.SelectorExpr:
+		if selection := ctx.semPkg.source.TypesInfo.Selections[typed]; selection != nil && selection.Kind() == types.MethodVal {
+			return false
+		}
+		if _, ok := objectForIdent(ctx, typed.Sel).(*types.Func); ok {
+			return false
+		}
+		return true
+	default:
+		return true
+	}
 }
 
 func isBuiltinCallTarget(ctx lowerFileContext, expr ast.Expr) bool {
@@ -2914,7 +2950,7 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		}
 		return "$.VarRef<" + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
 	case *types.Signature:
-		return "(" + o.tsSignatureParamsFor(ctx, typed) + ") => " + o.tsSignatureResultFor(ctx, typed)
+		return "((" + o.tsSignatureParamsFor(ctx, typed) + ") => " + o.tsSignatureResultFor(ctx, typed) + ") | null"
 	default:
 		return tsType(typ)
 	}

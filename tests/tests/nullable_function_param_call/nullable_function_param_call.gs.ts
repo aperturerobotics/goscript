@@ -17,7 +17,7 @@ $.registerInterfaceType(
 	[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
-export type WalkFunc = (path: string, info: FileInfo, err: $.GoError) => $.GoError
+export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoError) | null
 
 export let SkipDir: $.GoError = os.ErrNotExist
 
@@ -132,22 +132,31 @@ export class MockFilesystem {
 }
 
 export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): $.GoError {
-	let err = walkFn(path, info, null)
+	let err = walkFn!(path, info, null)
 	if (err != null && err != SkipDir) {
 		return err
 	}
 	let walkErr: $.GoError = null
-	let result = walkFn(path, info, walkErr)
+	let result = walkFn!(path, info, walkErr)
 	if (result != null) {
 		return result
 	}
 	return null
 }
 
-export type ProcessFunc = (data: string) => [string, $.GoError]
+export type ProcessFunc = ((data: string) => [string, $.GoError]) | null
 
 export function processWithCallback(input: string, processor: ProcessFunc): [string, $.GoError] {
-	return processor(input)
+	return processor!(input)
+}
+
+export type OptionalProcessFunc = ((data: string) => [string, $.GoError]) | null
+
+export function maybeProcess(input: string, processor: OptionalProcessFunc): [string, $.GoError] {
+	if (processor == null) {
+		return ["nil processor", null]
+	}
+	return processor!(input)
 }
 
 export async function main(): Promise<void> {
@@ -172,6 +181,18 @@ export async function main(): Promise<void> {
 		$.println("Process error:", err2!.Error())
 	} else {
 		$.println("Process result:", result)
+	}
+	let [result3, err3] = maybeProcess("ignored", null)
+	if (err3 != null) {
+		$.println("Optional process error:", err3!.Error())
+	} else {
+		$.println("Optional process result:", result3)
+	}
+	let [result4, err4] = maybeProcess("world", processFunc)
+	if (err4 != null) {
+		$.println("Optional process error:", err4!.Error())
+	} else {
+		$.println("Optional process result:", result4)
 	}
 }
 

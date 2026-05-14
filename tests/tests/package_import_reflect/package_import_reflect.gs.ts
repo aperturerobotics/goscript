@@ -106,7 +106,7 @@ export async function main(): Promise<void> {
 	let testSlice = $.arrayToSlice<number>([1, 2, 3, 4, 5])
 	let swapper = reflect.Swapper(testSlice)
 	$.println("Before swap:", testSlice![0], testSlice![4])
-	swapper(0, 4)
+	swapper!(0, 4)
 	$.println("After swap:", testSlice![0], testSlice![4])
 	let src = $.arrayToSlice<number>([10, 20, 30])
 	let dst = $.makeSlice<number>(2, undefined, "number")

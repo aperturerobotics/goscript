@@ -7,7 +7,7 @@ export async function main(): Promise<void> {
 	let greet = $.functionValue((name: string): string => {
 	return "Hello, " + name
 }, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
-	let message = greet("world")
+	let message = greet!("world")
 	$.println(message)
 }
 

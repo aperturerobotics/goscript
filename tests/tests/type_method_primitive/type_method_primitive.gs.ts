@@ -13,7 +13,7 @@ export async function main(): Promise<void> {
 	let result = MyInt_Double(5)
 	$.println("Direct call:", result)
 	let fn = ((__receiver) => () => MyInt_Double(__receiver))(10)
-	$.println("Method ref call:", fn())
+	$.println("Method ref call:", fn!())
 }
 
 

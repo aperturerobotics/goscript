@@ -7,7 +7,7 @@ import * as sync from "@goscript/sync/index.ts"
 
 export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
-export async function getCallback(): Promise<(_p0: string) => void> {
+export async function getCallback(): Promise<((_p0: string) => void) | null> {
 	await cache.value.Load(1)
 	return $.functionValue((msg: string): void => {
 	$.println("Callback:", msg)
@@ -15,7 +15,7 @@ export async function getCallback(): Promise<(_p0: string) => void> {
 }
 
 export async function main(): Promise<void> {
-	(await getCallback())("hello")
+	(await getCallback())!("hello")
 }
 
 

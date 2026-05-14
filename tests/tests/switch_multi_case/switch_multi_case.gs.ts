@@ -20,7 +20,7 @@ export async function main(): Promise<void> {
 		case stdNumMonth:
 		case stdZeroMonth:
 		{
-			let __goscriptTuple428 = getnum(value, std == stdZeroMonth)
+			let __goscriptTuple428 = getnum!(value, std == stdZeroMonth)
 			month = __goscriptTuple428[0]
 			value = __goscriptTuple428[1]
 			err = __goscriptTuple428[2]
@@ -46,7 +46,7 @@ export async function main(): Promise<void> {
 		case stdNumMonth:
 		case stdZeroMonth:
 		{
-			let __goscriptTuple712 = getnum(value, std == stdZeroMonth)
+			let __goscriptTuple712 = getnum!(value, std == stdZeroMonth)
 			month = __goscriptTuple712[0]
 			value = __goscriptTuple712[1]
 			err = __goscriptTuple712[2]

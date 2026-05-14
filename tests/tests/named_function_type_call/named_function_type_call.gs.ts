@@ -127,7 +127,7 @@ export class MockFilesystem {
 	)
 }
 
-export type WalkFunc = (path: string, info: FileInfo, err: $.GoError) => $.GoError
+export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoError) | null
 
 export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: filepath.WalkFunc): $.GoError {
 	return walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo, e: $.GoError): $.GoError => {
@@ -137,36 +137,36 @@ export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: filep
 
 export function walkWithCustomFunc(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): $.GoError {
 	{
-		let err = walkFn(path, info, null)
+		let err = walkFn!(path, info, null)
 		if (err != null && err != filepath.SkipDir) {
 			return err
 		}
 	}
 	let walkErr: $.GoError = null
 	{
-		let err = walkFn(path, info, walkErr)
+		let err = walkFn!(path, info, walkErr)
 		if (err != null && err != filepath.SkipDir) {
 			return err
 		}
 	}
-	if (walkFn(path, info, null) != null) {
+	if (walkFn!(path, info, null) != null) {
 		return filepath.SkipDir
 	}
 	return null
 }
 
-export function processFiles(pattern: string, fn: (_p0: string) => $.GoError): $.GoError {
-	return fn(pattern)
+export function processFiles(pattern: string, fn: ((_p0: string) => $.GoError) | null): $.GoError {
+	return fn!(pattern)
 }
 
-export function multiCallback(walkFn: WalkFunc, processFn: (_p0: string) => $.GoError): $.GoError {
+export function multiCallback(walkFn: WalkFunc, processFn: ((_p0: string) => $.GoError) | null): $.GoError {
 	{
-		let err = walkFn("test", null, null)
+		let err = walkFn!("test", null, null)
 		if (err != null) {
 			return err
 		}
 	}
-	return processFn("test")
+	return processFn!("test")
 }
 
 export async function main(): Promise<void> {

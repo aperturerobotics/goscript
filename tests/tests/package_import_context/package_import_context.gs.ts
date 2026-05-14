@@ -8,7 +8,7 @@ import * as context from "@goscript/context/index.ts"
 export async function run(ctx: context.Context): Promise<void> {
 	using __defer = new $.DisposableStack()
 	let [sctx, sctxCancel] = context.WithCancel(ctx)
-	__defer.defer(() => { sctxCancel() })
+	__defer.defer(() => { sctxCancel!() })
 	let myCh = $.makeChannel<Record<string, unknown>>(0, {}, "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
 	await $.chanRecv(sctx!.Done())
@@ -35,7 +35,7 @@ export async function run(ctx: context.Context): Promise<void> {
 	if (__goscriptSelectHasReturn3504577) {
 		return __goscriptSelectValue3504577
 	}
-	sctxCancel()
+	sctxCancel!()
 	await $.chanRecv(myCh)
 	$.println("read successfully")
 }

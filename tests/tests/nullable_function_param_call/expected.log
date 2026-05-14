@@ -1,3 +1,5 @@
 Walking: /test size: 50
 Walking: /test size: 50
 Process result: processed: hello
+Optional process result: nil processor
+Optional process result: processed: world

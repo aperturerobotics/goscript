@@ -3,9 +3,9 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export type Greeter = (name: string) => string
+export type Greeter = ((name: string) => string) | null
 
-export type Adder = (a: number, b: number) => number
+export type Adder = ((a: number, b: number) => number) | null
 
 export function greet(name: string): string {
 	return "Hello, " + name
@@ -62,7 +62,7 @@ export async function main(): Promise<void> {
 	let i: any = $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
 	let [fn, ok] = $.typeAssertTuple<Greeter>(i, { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	if (ok) {
-		$.println(fn("World"))
+		$.println(fn!("World"))
 	} else {
 		$.println("Simple assertion failed")
 	}
@@ -71,7 +71,7 @@ export async function main(): Promise<void> {
 	let addFn = __goscriptTuple538[0]
 	ok = __goscriptTuple538[1]
 	if (ok) {
-		$.println(addFn(5, 3))
+		$.println(addFn!(5, 3))
 	} else {
 		$.println("Simple adder assertion failed")
 	}
@@ -80,7 +80,7 @@ export async function main(): Promise<void> {
 	let greetFn = __goscriptTuple746[0]
 	ok = __goscriptTuple746[1]
 	if (ok) {
-		$.println(greetFn("Gopher"))
+		$.println(greetFn!("Gopher"))
 	} else {
 		$.println("Returned function assertion failed")
 	}
@@ -89,7 +89,7 @@ export async function main(): Promise<void> {
 	let addFnFromFunc = __goscriptTuple912[0]
 	ok = __goscriptTuple912[1]
 	if (ok) {
-		$.println(addFnFromFunc(10, 20))
+		$.println(addFnFromFunc!(10, 20))
 	} else {
 		$.println("Returned adder assertion failed")
 	}
@@ -98,7 +98,7 @@ export async function main(): Promise<void> {
 	let structFn = __goscriptTuple1163[0]
 	ok = __goscriptTuple1163[1]
 	if (ok) {
-		$.println(structFn("Struct"))
+		$.println(structFn!("Struct"))
 	} else {
 		$.println("Struct function assertion failed")
 	}
@@ -107,7 +107,7 @@ export async function main(): Promise<void> {
 	let structAdderFn = __goscriptTuple1359[0]
 	ok = __goscriptTuple1359[1]
 	if (ok) {
-		$.println(structAdderFn(7, 8))
+		$.println(structAdderFn!(7, 8))
 	} else {
 		$.println("Struct adder assertion failed")
 	}
@@ -118,7 +118,7 @@ export async function main(): Promise<void> {
 	let mapFn = __goscriptTuple1655[0]
 	ok = __goscriptTuple1655[1]
 	if (ok) {
-		$.println(mapFn("Map"))
+		$.println(mapFn!("Map"))
 	} else {
 		$.println("Map function assertion failed")
 	}
@@ -126,7 +126,7 @@ export async function main(): Promise<void> {
 	let mapAdderFn = __goscriptTuple1788[0]
 	ok = __goscriptTuple1788[1]
 	if (ok) {
-		$.println(mapAdderFn(1, 2))
+		$.println(mapAdderFn!(1, 2))
 	} else {
 		$.println("Map adder assertion failed")
 	}
@@ -137,7 +137,7 @@ export async function main(): Promise<void> {
 	let sliceFn = __goscriptTuple2058[0]
 	ok = __goscriptTuple2058[1]
 	if (ok) {
-		$.println(sliceFn("Slice"))
+		$.println(sliceFn!("Slice"))
 	} else {
 		$.println("Slice function assertion failed")
 	}
@@ -145,7 +145,7 @@ export async function main(): Promise<void> {
 	let sliceAdderFn = __goscriptTuple2192[0]
 	ok = __goscriptTuple2192[1]
 	if (ok) {
-		$.println(sliceAdderFn(9, 9))
+		$.println(sliceAdderFn!(9, 9))
 	} else {
 		$.println("Slice adder assertion failed")
 	}

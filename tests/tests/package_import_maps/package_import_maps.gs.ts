@@ -11,10 +11,10 @@ export function getValue(): [string, number] {
 	return ["test", 42]
 }
 
-export function simpleIterator(m: Map<string, number> | null): (_p0: (_p0: string, _p1: number) => boolean) => void {
-	return $.functionValue((_yield: (_p0: string, _p1: number) => boolean): void => {
+export function simpleIterator(m: Map<string, number> | null): ((_p0: ((_p0: string, _p1: number) => boolean) | null) => void) | null {
+	return $.functionValue((_yield: ((_p0: string, _p1: number) => boolean) | null): void => {
 	for (const [k, v] of m?.entries() ?? []) {
-		if (!_yield(k, v)) {
+		if (!_yield!(k, v)) {
 			break
 		}
 	}

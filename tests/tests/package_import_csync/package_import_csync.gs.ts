@@ -17,7 +17,7 @@ export async function main(): Promise<void> {
 	let counter: number = 0
 	let wg: $.VarRef<sync.WaitGroup> = $.varRef($.markAsStructValue(new sync.WaitGroup()))
 	let [ctx, cancel] = context.WithTimeout(context.Background(), 5 * time.Second)
-	__defer.defer(() => { cancel() })
+	__defer.defer(() => { cancel!() })
 	let numWorkers = 5
 	wg.value.Add(numWorkers)
 	let worker = $.functionValue(async (id: number): Promise<void> => {
@@ -28,13 +28,13 @@ export async function main(): Promise<void> {
 		$.println("worker", id, "failed to acquire lock:", err!.Error())
 		return
 	}
-	__defer.defer(() => { relLock() })
+	__defer.defer(() => { relLock!() })
 	let current = counter
 	time.Sleep(100 * time.Millisecond)
 	counter = current + 1
 }, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] })
 	for (let i = 0; i < numWorkers; i++) {
-		queueMicrotask(async () => { worker(i) })
+		queueMicrotask(async () => { worker!(i) })
 	}
 	let done = $.makeChannel<Record<string, unknown>>(0, {}, "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {

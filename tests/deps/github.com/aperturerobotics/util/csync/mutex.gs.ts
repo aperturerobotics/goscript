@@ -49,13 +49,13 @@ export class Mutex {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Lock(ctx: context.Context): Promise<[() => void, $.GoError]> {
+	public async Lock(ctx: context.Context): Promise<[(() => void) | null, $.GoError]> {
 		const m = this
 		let status: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
 		let waitCh: $.Channel<Record<string, unknown>> | null = null
-		await $.pointerValue(m).bcast.HoldLock($.functionValue((_: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null): void => {
+		await $.pointerValue(m).bcast.HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 	if ($.pointerValue(m).locked) {
-		waitCh = getWaitCh()
+		waitCh = getWaitCh!()
 	} else {
 		let swapped = status.value.CompareAndSwap(0, 1)
 		if (swapped) {
@@ -68,22 +68,22 @@ export class Mutex {
 	if (pre != 1) {
 		return
 	}
-	await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: () => void, _: () => $.Channel<Record<string, unknown>> | null): void => {
+	await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, _: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 	$.pointerValue(m).locked = false
-	broadcast()
+	broadcast!()
 }, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 }, { kind: $.TypeKind.Function, params: [], results: [] })
 		if (status.value.Load() == 1) {
 			return [release, null]
 		}
 		while (true) {
-			const [__goscriptSelectHasReturn4794185, __goscriptSelectValue4794185] = await $.selectStatement<any, [() => void, $.GoError]>([
+			const [__goscriptSelectHasReturn4794185, __goscriptSelectValue4794185] = await $.selectStatement<any, [(() => void) | null, $.GoError]>([
 				{
 					id: 0,
 					isSend: false,
 					channel: ctx!.Done(),
 					onSelected: async (result) => {
-						release()
+						release!()
 						return [null, context.Canceled]
 					}
 				},
@@ -98,9 +98,9 @@ export class Mutex {
 			if (__goscriptSelectHasReturn4794185) {
 				return __goscriptSelectValue4794185
 			}
-			await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null): void => {
+			await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 	if ($.pointerValue(m).locked) {
-		waitCh = getWaitCh()
+		waitCh = getWaitCh!()
 		return
 	}
 	let swapped = status.value.CompareAndSwap(0, 1)
@@ -129,10 +129,10 @@ export class Mutex {
 		return $.interfaceValue<sync.Locker>(new MutexLocker({m: m}), "*csync.MutexLocker")
 	}
 
-	public async TryLock(): Promise<[() => void, boolean]> {
+	public async TryLock(): Promise<[(() => void) | null, boolean]> {
 		const m = this
 		let unlocked: $.VarRef<atomic.Bool> = $.varRef($.markAsStructValue(new atomic.Bool()))
-		await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null): void => {
+		await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 	if ($.pointerValue(m).locked) {
 		unlocked.value.Store(true)
 	} else {
@@ -146,9 +146,9 @@ export class Mutex {
 	if (unlocked.value.Swap(true)) {
 		return
 	}
-	await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: () => void, _: () => $.Channel<Record<string, unknown>> | null): void => {
+	await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, _: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 	$.pointerValue(m).locked = false
-	broadcast()
+	broadcast!()
 }, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 }, { kind: $.TypeKind.Function, params: [], results: [] }), true]
 	}
@@ -170,22 +170,22 @@ export class MutexLocker {
 		this._fields.m.value = value
 	}
 
-	public get rel(): atomic.Pointer<() => void> {
+	public get rel(): atomic.Pointer<(() => void) | null> {
 		return this._fields.rel.value
 	}
-	public set rel(value: atomic.Pointer<() => void>) {
+	public set rel(value: atomic.Pointer<(() => void) | null>) {
 		this._fields.rel.value = value
 	}
 
 	public _fields: {
 		m: $.VarRef<Mutex | $.VarRef<Mutex> | null>
-		rel: $.VarRef<atomic.Pointer<() => void>>
+		rel: $.VarRef<atomic.Pointer<(() => void) | null>>
 	}
 
-	constructor(init?: Partial<{m?: Mutex | $.VarRef<Mutex> | null, rel?: atomic.Pointer<() => void>}>) {
+	constructor(init?: Partial<{m?: Mutex | $.VarRef<Mutex> | null, rel?: atomic.Pointer<(() => void) | null>}>) {
 		this._fields = {
 			m: $.varRef(init?.m ?? null),
-			rel: $.varRef(init?.rel ? $.markAsStructValue(init.rel.clone()) : $.markAsStructValue(new atomic.Pointer<() => void>()))
+			rel: $.varRef(init?.rel ? $.markAsStructValue(init.rel.clone()) : $.markAsStructValue(new atomic.Pointer<(() => void) | null>()))
 		}
 	}
 
@@ -213,7 +213,7 @@ export class MutexLocker {
 		if (rel == null) {
 			$.panic("csync: unlock of unlocked MutexLocker")
 		}
-		($.pointerValue(rel))()
+		($.pointerValue(rel))!()
 	}
 
 	static __typeInfo = $.registerStructType(

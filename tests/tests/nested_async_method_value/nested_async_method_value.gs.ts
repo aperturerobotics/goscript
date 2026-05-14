@@ -56,8 +56,8 @@ $.registerInterfaceType(
 	[{ name: "Spawn", args: [], returns: [{ name: "_r0", type: "error" }] }]
 )
 
-export function run(fn: () => $.GoError): void {
-	let err = fn()
+export function run(fn: (() => $.GoError) | null): void {
+	let err = fn!()
 	if (err == null) {
 		$.println("func value err: nil")
 	} else {

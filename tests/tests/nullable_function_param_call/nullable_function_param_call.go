@@ -77,6 +77,15 @@ func processWithCallback(input string, processor ProcessFunc) (string, error) {
 	return processor(input)
 }
 
+type OptionalProcessFunc func(data string) (string, error)
+
+func maybeProcess(input string, processor OptionalProcessFunc) (string, error) {
+	if processor == nil {
+		return "nil processor", nil
+	}
+	return processor(input)
+}
+
 func main() {
 	fs := &MockFilesystem{}
 	fileInfo := &MockFileInfo{name: "test.txt", size: 50, isDir: false}
@@ -105,5 +114,19 @@ func main() {
 		println("Process error:", err2.Error())
 	} else {
 		println("Process result:", result)
+	}
+
+	result3, err3 := maybeProcess("ignored", nil)
+	if err3 != nil {
+		println("Optional process error:", err3.Error())
+	} else {
+		println("Optional process result:", result3)
+	}
+
+	result4, err4 := maybeProcess("world", processFunc)
+	if err4 != nil {
+		println("Optional process error:", err4.Error())
+	} else {
+		println("Optional process result:", result4)
 	}
 }

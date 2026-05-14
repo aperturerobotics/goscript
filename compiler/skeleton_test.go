@@ -444,7 +444,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Greeter = (name: string) => string",
+		"export type Greeter = ((name: string) => string) | null",
 		"export type ReadCloser = null | {",
 		"Read(): string",
 		"Close(): string",
@@ -628,11 +628,18 @@ func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
 		"go.mod": "module example.test/function-type-info\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
 			"package main",
+			"type Callback func(value int) string",
+			"func call(cb Callback) string {",
+			"  return cb(1)",
+			"}",
 			"func main() {",
 			"  fn := func(value int) string {",
 			"    return \"\"",
 			"  }",
+			"  var cb Callback = nil",
 			"  _ = fn",
+			"  _ = cb",
+			"  _ = call(fn)",
 			"}",
 			"",
 		}, "\n"),
@@ -653,6 +660,8 @@ func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
+		"export type Callback = ((value: number) => string) | null",
+		"export function call(cb: Callback): string {\n\treturn cb!(1)",
 		"$.functionValue((value: number): string => {",
 		"kind: $.TypeKind.Function",
 		"params: [{ kind: $.TypeKind.Basic, name: \"int\" }]",
@@ -717,7 +726,7 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Collector = (label: string, parts: $.Slice<string>) => string",
+		"export type Collector = ((label: string, parts: $.Slice<string>) => string) | null",
 		"Join(parts: $.Slice<string>): string",
 		"export function collect(label: string, parts: $.Slice<string>): string",
 		"let part = parts![__rangeIndex]",
@@ -728,7 +737,7 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 		"collect(\"spread\", parts)",
 		"$.append(parts, \"c\", \"d\")",
 		"maybeErr($.arrayToSlice<string>([\"ok\"]))",
-		"fn(\"fn\", $.arrayToSlice<string>([\"x\"]))",
+		"fn!(\"fn\", $.arrayToSlice<string>([\"x\"]))",
 		"joiner!.Join($.arrayToSlice<string>([\"q\", \"r\"]))",
 	} {
 		if !strings.Contains(text, want) {
@@ -784,7 +793,7 @@ func TestCompilePackagesLowersRangeOverFunctionIterators(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"if (!_yield(i, v))",
+		"if (!_yield!(i, v))",
 		"break",
 		"pairs!((i, v) => {",
 		"last = __goscriptRange",
@@ -946,7 +955,7 @@ func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
 		"case 3:",
 		"let local = \"two-three\"",
 		"switch (true) {",
-		"($.pointerValue(rel))()",
+		"($.pointerValue(rel))!()",
 		"$.functionValue((): void => {\n\tusing __defer = new $.DisposableStack()",
 		"__defer.defer(() => { $.println(\"wrapped deferred\") })",
 		"$.println(\"wrapped body\")",
@@ -1060,11 +1069,11 @@ func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testi
 	for _, want := range []string{
 		"Box: $.VarRef<lib.Box>",
 		"Boxes: $.VarRef<$.Slice<lib.Box>>",
-		"Fn: $.VarRef<(_p0: lib.Box) => [lib.Box, $.GoError]>",
-		"Ptr: $.VarRef<atomic.Pointer<() => void>>",
+		"Fn: $.VarRef<((_p0: lib.Box) => [lib.Box, $.GoError]) | null>",
+		"Ptr: $.VarRef<atomic.Pointer<(() => void) | null>>",
 		"$.markAsStructValue(new lib.Box())",
-		"$.markAsStructValue(new atomic.Pointer<() => void>())",
-		"export function Use(fn: (_p0: lib.Box) => [lib.Box, $.GoError], box: lib.Box): [lib.Box, $.GoError]",
+		"$.markAsStructValue(new atomic.Pointer<(() => void) | null>())",
+		"export function Use(fn: ((_p0: lib.Box) => [lib.Box, $.GoError]) | null, box: lib.Box): [lib.Box, $.GoError]",
 		"$.functionValue((box: lib.Box): [lib.Box, $.GoError] => {",
 	} {
 		if !strings.Contains(text, want) {

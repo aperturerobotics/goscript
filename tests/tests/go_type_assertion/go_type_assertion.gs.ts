@@ -7,7 +7,7 @@ export async function main(): Promise<void> {
 	let x: any = $.interfaceValue<any>($.functionValue((): void => {
 	$.println("goroutine executed")
 }, { kind: $.TypeKind.Function, params: [], results: [] }), "func()")
-	queueMicrotask(async () => { $.mustTypeAssert<() => void>(x, { kind: $.TypeKind.Function, params: [], results: [] })() })
+	queueMicrotask(async () => { $.mustTypeAssert<(() => void) | null>(x, { kind: $.TypeKind.Function, params: [], results: [] })!() })
 	$.println("main finished")
 }
 

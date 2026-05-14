@@ -45,15 +45,15 @@ export class Broadcast {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async HoldLock(cb: (broadcast: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null) => void): Promise<void> {
+	public async HoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): Promise<void> {
 		const c = this
 		using __defer = new $.DisposableStack()
 		await $.pointerValue(c).mtx.Lock()
 		__defer.defer(() => { $.pointerValue(c).mtx.Unlock() })
-		cb(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
+		cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
 	}
 
-	public HoldLockMaybeAsync(cb: (broadcast: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null) => void): void {
+	public HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): void {
 		const c = this
 		let holdBroadcastLock = $.functionValue(async (lock: boolean): Promise<void> => {
 	using __defer = new $.DisposableStack()
@@ -61,27 +61,27 @@ export class Broadcast {
 		await $.pointerValue(c).mtx.Lock()
 	}
 	__defer.defer(() => { $.pointerValue(c).mtx.Unlock() })
-	cb(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
+	cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
 }, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [] })
 		if ($.pointerValue(c).mtx.TryLock()) {
-			holdBroadcastLock(false)
+			holdBroadcastLock!(false)
 		} else {
-			queueMicrotask(async () => { holdBroadcastLock(true) })
+			queueMicrotask(async () => { holdBroadcastLock!(true) })
 		}
 	}
 
-	public TryHoldLock(cb: (broadcast: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null) => void): boolean {
+	public TryHoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): boolean {
 		const c = this
 		using __defer = new $.DisposableStack()
 		if (!$.pointerValue(c).mtx.TryLock()) {
 			return false
 		}
 		__defer.defer(() => { $.pointerValue(c).mtx.Unlock() })
-		cb(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
+		cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
 		return true
 	}
 
-	public async Wait(ctx: context.Context, cb: (broadcast: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null) => [boolean, $.GoError]): Promise<$.GoError> {
+	public async Wait(ctx: context.Context, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
 		const c = this
 		if (cb == null || ctx == null) {
 			return errors.New("cb and ctx must be set")
@@ -93,12 +93,12 @@ export class Broadcast {
 			}
 			let done: boolean = false
 			let err: $.GoError = null
-			await $.pointerValue(c).HoldLock($.functionValue((broadcast: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null): void => {
-	let __goscriptTuple4792258 = cb(broadcast, getWaitCh)
+			await $.pointerValue(c).HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
+	let __goscriptTuple4792258 = cb!(broadcast, getWaitCh)
 	done = __goscriptTuple4792258[0]
 	err = __goscriptTuple4792258[1]
 	if (!done && err == null) {
-		waitCh = getWaitCh()
+		waitCh = getWaitCh!()
 	}
 }, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 			if (done || err != null) {
