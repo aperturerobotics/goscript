@@ -29,11 +29,11 @@ export class Worker {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Spawn(): error {
+	public Spawn(): $.GoError {
 		const w = this
-		queueMicrotask(async () => { await (async (): Promise<void> => {
+		queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
 	await $.chanRecv($.pointerValue(w).ch)
-})() })
+}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 		return null
 	}
 
@@ -47,7 +47,7 @@ export class Worker {
 }
 
 export type Spawner = null | {
-	Spawn(): error
+	Spawn(): $.GoError
 }
 
 $.registerInterfaceType(
@@ -56,7 +56,7 @@ $.registerInterfaceType(
 	[{ name: "Spawn", args: [], returns: [{ name: "_r0", type: "error" }] }]
 )
 
-export function run(fn: () => error): void {
+export function run(fn: () => $.GoError): void {
 	let err = fn()
 	if (err == null) {
 		$.println("func value err: nil")
@@ -67,9 +67,9 @@ export function run(fn: () => error): void {
 
 export async function main(): Promise<void> {
 	let w = new Worker({ch: $.makeChannel<number>(1, 0, "both")})
-	run(((__receiver) => (...args: any[]) => __receiver.Spawn(...args))($.pointerValue(w)))
-	let s: Spawner = w
-	let err = s.Spawn()
+	run(((__receiver) => () => __receiver.Spawn())($.pointerValue(w)))
+	let s: Spawner = $.interfaceValue<Spawner>(w, "*main.Worker")
+	let err = s!.Spawn()
 	if (err == null) {
 		$.println("iface err: nil")
 	} else {

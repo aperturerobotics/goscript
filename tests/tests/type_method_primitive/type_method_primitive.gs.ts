@@ -12,7 +12,7 @@ export function MyInt_Double(m: MyInt): number {
 export async function main(): Promise<void> {
 	let result = MyInt_Double(5)
 	$.println("Direct call:", result)
-	let fn = ((__receiver) => (...args: any[]) => MyInt_Double(__receiver, ...args))(10)
+	let fn = ((__receiver) => () => MyInt_Double(__receiver))(10)
 	$.println("Method ref call:", fn())
 }
 

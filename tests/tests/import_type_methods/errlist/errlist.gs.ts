@@ -1,6 +1,3 @@
-// Generated file based on errlist/errlist.go
-// Updated when compliance tests are re-run, DO NOT EDIT!
-
 // Generated file based on errlist.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 

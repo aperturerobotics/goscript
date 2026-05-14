@@ -6,38 +6,38 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as atomic from "@goscript/sync/atomic/index.ts"
 
 export class MyStruct {
-	public get closed(): Bool {
+	public get closed(): atomic.Bool {
 		return this._fields.closed.value
 	}
-	public set closed(value: Bool) {
+	public set closed(value: atomic.Bool) {
 		this._fields.closed.value = value
 	}
 
-	public get count(): Int32 {
+	public get count(): atomic.Int32 {
 		return this._fields.count.value
 	}
-	public set count(value: Int32) {
+	public set count(value: atomic.Int32) {
 		this._fields.count.value = value
 	}
 
-	public get flag(): Uint32 {
+	public get flag(): atomic.Uint32 {
 		return this._fields.flag.value
 	}
-	public set flag(value: Uint32) {
+	public set flag(value: atomic.Uint32) {
 		this._fields.flag.value = value
 	}
 
 	public _fields: {
-		closed: $.VarRef<Bool>
-		count: $.VarRef<Int32>
-		flag: $.VarRef<Uint32>
+		closed: $.VarRef<atomic.Bool>
+		count: $.VarRef<atomic.Int32>
+		flag: $.VarRef<atomic.Uint32>
 	}
 
-	constructor(init?: Partial<{closed?: Bool, count?: Int32, flag?: Uint32}>) {
+	constructor(init?: Partial<{closed?: atomic.Bool, count?: atomic.Int32, flag?: atomic.Uint32}>) {
 		this._fields = {
-			closed: $.varRef(init?.closed ? $.markAsStructValue(init.closed.clone()) : $.markAsStructValue(new Bool())),
-			count: $.varRef(init?.count ? $.markAsStructValue(init.count.clone()) : $.markAsStructValue(new Int32())),
-			flag: $.varRef(init?.flag ? $.markAsStructValue(init.flag.clone()) : $.markAsStructValue(new Uint32()))
+			closed: $.varRef(init?.closed ? $.markAsStructValue(init.closed.clone()) : $.markAsStructValue(new atomic.Bool())),
+			count: $.varRef(init?.count ? $.markAsStructValue(init.count.clone()) : $.markAsStructValue(new atomic.Int32())),
+			flag: $.varRef(init?.flag ? $.markAsStructValue(init.flag.clone()) : $.markAsStructValue(new atomic.Uint32()))
 		}
 	}
 

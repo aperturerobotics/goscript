@@ -6,18 +6,18 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as errlist from "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_type_methods/errlist/index.ts"
 
 export class parser {
-	public get errors(): ErrorList {
+	public get errors(): errlist.ErrorList {
 		return this._fields.errors.value
 	}
-	public set errors(value: ErrorList) {
+	public set errors(value: errlist.ErrorList) {
 		this._fields.errors.value = value
 	}
 
 	public _fields: {
-		errors: $.VarRef<ErrorList>
+		errors: $.VarRef<errlist.ErrorList>
 	}
 
-	constructor(init?: Partial<{errors?: ErrorList}>) {
+	constructor(init?: Partial<{errors?: errlist.ErrorList}>) {
 		this._fields = {
 			errors: $.varRef(init?.errors ?? null)
 		}
@@ -43,7 +43,7 @@ export class parser {
 export async function main(): Promise<void> {
 	let p: parser = $.markAsStructValue(new parser())
 	p.errors = errlist.ErrorList_Add(p.errors, "error")
-	$.println(p.errors[0])
+	$.println(p.errors![0])
 }
 
 

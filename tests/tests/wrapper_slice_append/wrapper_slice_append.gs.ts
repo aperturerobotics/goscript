@@ -6,29 +6,29 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as errlist from "@goscript/github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist/index.ts"
 
 export class parser {
-	public get errors(): ErrorList {
+	public get errors(): errlist.ErrorList {
 		return this._fields.errors.value
 	}
-	public set errors(value: ErrorList) {
+	public set errors(value: errlist.ErrorList) {
 		this._fields.errors.value = value
 	}
 
-	public get astruct(): AStruct {
+	public get astruct(): errlist.AStruct {
 		return this._fields.astruct.value
 	}
-	public set astruct(value: AStruct) {
+	public set astruct(value: errlist.AStruct) {
 		this._fields.astruct.value = value
 	}
 
 	public _fields: {
-		errors: $.VarRef<ErrorList>
-		astruct: $.VarRef<AStruct>
+		errors: $.VarRef<errlist.ErrorList>
+		astruct: $.VarRef<errlist.AStruct>
 	}
 
-	constructor(init?: Partial<{errors?: ErrorList, astruct?: AStruct}>) {
+	constructor(init?: Partial<{errors?: errlist.ErrorList, astruct?: errlist.AStruct}>) {
 		this._fields = {
 			errors: $.varRef(init?.errors ?? null),
-			astruct: $.varRef(init?.astruct ? $.markAsStructValue(init.astruct.clone()) : $.markAsStructValue(new AStruct()))
+			astruct: $.varRef(init?.astruct ? $.markAsStructValue(init.astruct.clone()) : $.markAsStructValue(new errlist.AStruct()))
 		}
 	}
 
@@ -53,7 +53,7 @@ export class parser {
 export async function main(): Promise<void> {
 	let p: parser = $.markAsStructValue(new parser())
 	errlist.ErrorList_Add(p._fields.errors, "error")
-	$.println(p.errors[0])
+	$.println(p.errors![0])
 	p.astruct.Set("astruct")
 	$.println(p.astruct.Msg)
 }

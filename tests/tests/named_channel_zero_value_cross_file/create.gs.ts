@@ -5,6 +5,6 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as __goscript_types from "./types.gs.ts"
 
-export function MakeJobs(): Jobs {
-	return $.makeChannel<Job>(0, $.markAsStructValue(new __goscript_types.Job()), "both")
+export function MakeJobs(): __goscript_types.Jobs {
+	return $.makeChannel<__goscript_types.Job>(0, $.markAsStructValue(new __goscript_types.Job()), "both")
 }

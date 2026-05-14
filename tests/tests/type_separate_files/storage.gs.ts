@@ -6,26 +6,26 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as __goscript_memory from "./memory.gs.ts"
 
 export class storage {
-	public get files(): Map<string, file | $.VarRef<file> | null> | null {
+	public get files(): Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null {
 		return this._fields.files.value
 	}
-	public set files(value: Map<string, file | $.VarRef<file> | null> | null) {
+	public set files(value: Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null) {
 		this._fields.files.value = value
 	}
 
-	public get children(): Map<string, Map<string, file | $.VarRef<file> | null> | null> | null {
+	public get children(): Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null {
 		return this._fields.children.value
 	}
-	public set children(value: Map<string, Map<string, file | $.VarRef<file> | null> | null> | null) {
+	public set children(value: Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null) {
 		this._fields.children.value = value
 	}
 
 	public _fields: {
-		files: $.VarRef<Map<string, file | $.VarRef<file> | null> | null>
-		children: $.VarRef<Map<string, Map<string, file | $.VarRef<file> | null> | null> | null>
+		files: $.VarRef<Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null>
+		children: $.VarRef<Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null>
 	}
 
-	constructor(init?: Partial<{files?: Map<string, file | $.VarRef<file> | null> | null, children?: Map<string, Map<string, file | $.VarRef<file> | null> | null> | null}>) {
+	constructor(init?: Partial<{files?: Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null, children?: Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null}>) {
 		this._fields = {
 			files: $.varRef(init?.files ?? null),
 			children: $.varRef(init?.children ?? null)
