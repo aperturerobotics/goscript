@@ -151,7 +151,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"hex_escape_sequence":                 true,
 	"if_type_assert":                      true,
 	"import_interface":                    true,
-	"import_named_multiple":               true,
 	"import_type_methods":                 true,
 	"index_expr_destructuring":            true,
 	"index_expr_type_assertion":           true,

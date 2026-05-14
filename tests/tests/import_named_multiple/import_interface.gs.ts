@@ -18,7 +18,7 @@ export async function main(): Promise<void> {
 	$.println("baz.Split length:", $.len(result3))
 	$.println("baz.Count:", baz.Count("a,b,c", ","))
 	for (let i = 0; i < $.len(result3); i++) {
-		let v = result3[i]
+		let v = result3![i]
 		$.println("baz.Split[", i, "]:", v)
 	}
 	$.println("strings.Count:", strings.Count("a,b,c", ","))
