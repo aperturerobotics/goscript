@@ -449,7 +449,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 		"Read(): string",
 		"Close(): string",
 		"$.registerInterfaceType(\n\t\"main.ReadCloser\"",
-		"((__receiver) => (...args: any[]) => __receiver.Inc(...args))($.pointerValue(counter))",
+		"((__receiver) => () => __receiver.Inc())($.pointerValue(counter))",
 		"$.namedFunction(greet, \"main.Greeter\")",
 		"$.typedNil(\"*struct{Name string}\")",
 		"elemType: { kind: $.TypeKind.Struct, methods: [], fields: {\"Name\": { kind: $.TypeKind.Basic, name: \"string\" }} }",
@@ -949,6 +949,119 @@ func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
 	}
 	if strings.Count(text, "\t\tbreak\n") < 3 {
 		t.Fatalf("switch cases were not rendered with implicit breaks:\n%s", text)
+	}
+}
+
+func TestCompilePackagesLowersMethodValuesWithFixedParameters(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/methodvalue\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Counter int",
+			"func (c Counter) Add(n int) int {",
+			"  return int(c) + n",
+			"}",
+			"type Runner struct{}",
+			"func (r Runner) Run() {",
+			"  println(\"run\")",
+			"}",
+			"func main() {",
+			"  c := Counter(4)",
+			"  add := c.Add",
+			"  println(add(3))",
+			"  r := Runner{}",
+			"  run := r.Run",
+			"  run()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "methodvalue", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"((__receiver) => (n: number) => Counter_Add(__receiver, n))(c)",
+		"((__receiver) => () => __receiver.Run())(",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	if strings.Contains(text, "...args: any[]") {
+		t.Fatalf("method value lowering still uses spread args:\n%s", text)
+	}
+}
+
+func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/qualified\n\ngo 1.25.3\n",
+		"lib/lib.go": strings.Join([]string{
+			"package lib",
+			"type Box struct {",
+			"  Value int",
+			"}",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import (",
+			"  \"example.test/qualified/lib\"",
+			"  \"sync/atomic\"",
+			")",
+			"type Holder struct {",
+			"  Box lib.Box",
+			"  Boxes []lib.Box",
+			"  Fn func(lib.Box) (lib.Box, error)",
+			"  Ptr atomic.Pointer[func()]",
+			"}",
+			"func Use(fn func(lib.Box) (lib.Box, error), box lib.Box) (lib.Box, error) {",
+			"  return fn(box)",
+			"}",
+			"func main() {",
+			"  _ = Holder{}",
+			"  _, _ = Use(func(box lib.Box) (lib.Box, error) { return box, nil }, lib.Box{})",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "qualified", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"Box: $.VarRef<lib.Box>",
+		"Boxes: $.VarRef<$.Slice<lib.Box>>",
+		"Fn: $.VarRef<(_p0: lib.Box) => [lib.Box, $.GoError]>",
+		"Ptr: $.VarRef<atomic.Pointer<() => void>>",
+		"$.markAsStructValue(new lib.Box())",
+		"$.markAsStructValue(new atomic.Pointer<() => void>())",
+		"export function Use(fn: (_p0: lib.Box) => [lib.Box, $.GoError], box: lib.Box): [lib.Box, $.GoError]",
+		"$.functionValue((box: lib.Box): [lib.Box, $.GoError] => {",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
 	}
 }
 

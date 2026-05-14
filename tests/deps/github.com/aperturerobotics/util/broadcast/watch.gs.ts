@@ -1,42 +1,34 @@
+// Generated file based on watch.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
 import * as $ from "@goscript/builtin/index.ts"
-import { Broadcast } from "./broadcast.gs.ts";
 
 import * as context from "@goscript/context/index.ts"
 
 import * as proto from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.ts"
 
-// WatchBroadcast watches a broadcast for changes and sends snapshots.
-//
-// snapshot is called under the broadcast lock to get the current value.
-// send is called outside the lock to transmit the value.
-// Skips sending when the value is equal to the previous via ==.
-// Returns when ctx is canceled or send returns an error.
-export async function WatchBroadcast<T extends $.Comparable>(ctx: null | context.Context, bcast: Broadcast | null, snapshot: (() => T) | null, send: ((p0: T) => $.GoError) | null): Promise<$.GoError> {
-	return await WatchBroadcastWithEqual(ctx, bcast, snapshot, send, null)
+import * as __goscript_broadcast from "./broadcast.gs.ts"
+
+export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: () => any, send: (_p0: any) => $.GoError): Promise<$.GoError> {
+	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, null)
 }
 
-// WatchBroadcastWithEqual watches a broadcast for changes and sends snapshots.
-//
-// snapshot is called under the broadcast lock to get the current value.
-// send is called outside the lock to transmit the value.
-// equal is an optional comparator; if nil, uses == for dedup.
-// Returns when ctx is canceled or send returns an error.
-export async function WatchBroadcastWithEqual<T extends $.Comparable>(ctx: null | context.Context, bcast: Broadcast | null, snapshot: (() => T) | null, send: ((p0: T) => $.GoError) | null, equal: ((a: T, b: T) => boolean) | null): Promise<$.GoError> {
-	let ch: $.Channel<{  }> | null = null
-	let val: T = null as any
-	await bcast!.HoldLock((_: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
-		ch = getWaitCh!()
-		val = snapshot!()
-	})
+export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: () => any, send: (_p0: any) => $.GoError, equal: (a: any, b: any) => boolean): Promise<$.GoError> {
+	let ch: $.Channel<Record<string, unknown>> | null = null
+	let val: any = $.genericZero(__typeArgs, "T", null)
+	await $.pointerValue(bcast).HoldLock($.functionValue((_: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null): void => {
+	ch = getWaitCh()
+	val = snapshot()
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 	{
-		let err = send!(val)
+		let err = send(val)
 		if (err != null) {
 			return err
 		}
 	}
 	let prev = val
-	for (; ; ) {
-		const [_select_has_return_7b6c, _select_value_7b6c] = await $.selectStatement([
+	while (true) {
+		const [__goscriptSelectHasReturn4789316, __goscriptSelectValue4789316] = await $.selectStatement([
 			{
 				id: 0,
 				isSend: false,
@@ -51,24 +43,23 @@ export async function WatchBroadcastWithEqual<T extends $.Comparable>(ctx: null 
 				channel: ch,
 				onSelected: async (result) => {
 				}
-			},
+			}
 		], false)
-		if (_select_has_return_7b6c) {
-			return _select_value_7b6c!
+		if (__goscriptSelectHasReturn4789316) {
+			return __goscriptSelectValue4789316
 		}
-		// If _select_has_return_7b6c is false, continue execution
-		await bcast!.HoldLock((_: (() => void) | null, getWaitCh: (() => $.Channel<{  }> | null) | null): void => {
-			ch = getWaitCh!()
-			val = snapshot!()
-		})
+		await $.pointerValue(bcast).HoldLock($.functionValue((_: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null): void => {
+	ch = getWaitCh()
+	val = snapshot()
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 		if (val == prev) {
 			continue
 		}
-		if (equal != null && equal!(val, prev)) {
+		if (equal != null && equal(val, prev)) {
 			continue
 		}
 		{
-			let err = send!(val)
+			let err = send(val)
 			if (err != null) {
 				return err
 			}
@@ -77,10 +68,6 @@ export async function WatchBroadcastWithEqual<T extends $.Comparable>(ctx: null 
 	}
 }
 
-// WatchBroadcastVT watches a broadcast for changes and sends snapshots.
-//
-// Uses EqualVT for deduplication. Same as WatchBroadcast but for VTProtobuf messages.
-export async function WatchBroadcastVT<T extends proto.EqualVT<T>>(ctx: null | context.Context, bcast: Broadcast | null, snapshot: (() => T) | null, send: ((p0: T) => $.GoError) | null): Promise<$.GoError> {
-	return await WatchBroadcastWithEqual(ctx, bcast, snapshot, send, proto.CompareEqualVT<T>())
+export async function WatchBroadcastVT(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: () => any, send: (_p0: any) => $.GoError): Promise<$.GoError> {
+	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, proto.CompareEqualVT({T: { type: { kind: $.TypeKind.Interface, methods: [{ name: "EqualVT", args: [{ name: "other", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }] }, zero: () => null }}))
 }
-

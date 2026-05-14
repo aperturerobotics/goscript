@@ -34,7 +34,7 @@ export async function main(): Promise<void> {
 	$.println("Bool stored true, value:", b.value.Load())
 	let old_bool = b.value.Swap(false)
 	$.println("Bool swapped to false, old value:", old_bool, "new value:", b.value.Load())
-	let ptr: $.VarRef<atomic.Pointer> = $.varRef($.markAsStructValue(new atomic.Pointer()))
+	let ptr: $.VarRef<atomic.Pointer<string>> = $.varRef($.markAsStructValue(new atomic.Pointer<string>()))
 	let str1 = $.varRef("hello")
 	let str2 = $.varRef("world")
 	ptr.value.Store(str1)

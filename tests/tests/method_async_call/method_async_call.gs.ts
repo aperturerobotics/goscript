@@ -6,10 +6,10 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as sync from "@goscript/sync/index.ts"
 
 export class FileTracker {
-	public get mutex(): Mutex {
+	public get mutex(): sync.Mutex {
 		return this._fields.mutex.value
 	}
-	public set mutex(value: Mutex) {
+	public set mutex(value: sync.Mutex) {
 		this._fields.mutex.value = value
 	}
 
@@ -21,13 +21,13 @@ export class FileTracker {
 	}
 
 	public _fields: {
-		mutex: $.VarRef<Mutex>
+		mutex: $.VarRef<sync.Mutex>
 		lines: $.VarRef<$.Slice<number>>
 	}
 
-	constructor(init?: Partial<{mutex?: Mutex, lines?: $.Slice<number>}>) {
+	constructor(init?: Partial<{mutex?: sync.Mutex, lines?: $.Slice<number>}>) {
 		this._fields = {
-			mutex: $.varRef(init?.mutex ? $.markAsStructValue(init.mutex.clone()) : $.markAsStructValue(new Mutex())),
+			mutex: $.varRef(init?.mutex ? $.markAsStructValue(init.mutex.clone()) : $.markAsStructValue(new sync.Mutex())),
 			lines: $.varRef(init?.lines ?? null)
 		}
 	}
@@ -98,7 +98,7 @@ export class Scanner {
 }
 
 export async function main(): Promise<void> {
-	let tracker = new FileTracker({lines: []})
+	let tracker = new FileTracker({lines: $.arrayToSlice<number>([])})
 	let scanner = new Scanner({file: tracker})
 	await $.pointerValue(scanner).next()
 	$.println($.len($.pointerValue(tracker).lines))

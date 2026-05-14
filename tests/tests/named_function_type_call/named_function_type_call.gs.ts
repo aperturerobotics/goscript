@@ -129,7 +129,7 @@ export class MockFilesystem {
 
 export type WalkFunc = (path: string, info: FileInfo, err: $.GoError) => $.GoError
 
-export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): $.GoError {
+export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: filepath.WalkFunc): $.GoError {
 	return walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo, e: $.GoError): $.GoError => {
 	return null
 }, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] }))

@@ -426,7 +426,7 @@ func (o *LoweringOwner) lowerTypeSpec(ctx lowerFileContext, spec *ast.TypeSpec) 
 	if iface, ok := named.Underlying().(*types.Interface); ok {
 		return o.lowerInterfaceType(ctx, semType, iface), nil
 	}
-	code := "type " + semType.name + " = " + tsType(named.Underlying())
+	code := "type " + semType.name + " = " + o.tsTypeFor(ctx, named.Underlying())
 	typeIndexExport := ""
 	if ctx.topLevel {
 		code = "export " + code
@@ -470,8 +470,8 @@ func (o *LoweringOwner) tsMethodSignature(ctx lowerFileContext, method *types.Fu
 		return method.Name() + "(): unknown"
 	}
 	async := o.functionAsync(ctx, method)
-	return method.Name() + "(" + tsSignatureParams(signature) + "): " +
-		asyncResultType(tsSignatureResult(signature), async)
+	return method.Name() + "(" + o.tsSignatureParamsFor(ctx, signature) + "): " +
+		asyncResultType(o.tsSignatureResultFor(ctx, signature), async)
 }
 
 func (o *LoweringOwner) runtimeMethodSignatures(iface *types.Interface) string {
@@ -538,8 +538,8 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 	for _, field := range semType.fields {
 		lowered.fields = append(lowered.fields, loweredStructField{
 			name:        field.name,
-			typ:         tsType(field.typ),
-			zero:        o.lowerZeroValueExpr(field.typ),
+			typ:         o.tsTypeFor(ctx, field.typ),
+			zero:        o.lowerZeroValueExprFor(ctx, field.typ),
 			runtimeType: o.runtimeTypeInfoExpr(field.typ),
 			structValue: isStructValueType(field.typ),
 		})
@@ -615,7 +615,7 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 	if signature == nil || signature.Recv() == nil {
 		return nil, nil
 	}
-	result := tsSignatureResult(signature)
+	result := o.tsSignatureResultFor(ctx, signature)
 	async := ctx.model.functions[fnObj] != nil && ctx.model.functions[fnObj].async
 	receiverName := "recv"
 	if len(decl.Recv.List) != 0 && len(decl.Recv.List[0].Names) != 0 {
@@ -631,14 +631,14 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 		deferState:    deferState,
 		params: []loweredParam{{
 			name: receiverName,
-			typ:  tsReceiverType(signature.Recv().Type()),
+			typ:  o.tsReceiverTypeFor(ctx, signature.Recv().Type()),
 		}},
 	}
 	for idx := range signature.Params().Len() {
 		param := signature.Params().At(idx)
 		lowered.params = append(lowered.params, loweredParam{
 			name: safeParamName(param, idx),
-			typ:  tsType(param.Type()),
+			typ:  o.tsTypeFor(ctx, param.Type()),
 		})
 	}
 	if decl.Body != nil {
@@ -662,7 +662,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 	if signature == nil {
 		return nil, nil
 	}
-	result := tsSignatureResult(signature)
+	result := o.tsSignatureResultFor(ctx, signature)
 	async := ctx.model.functions[fnObj] != nil && ctx.model.functions[fnObj].async
 	deferState := &loweredDeferState{}
 	lowered := &loweredFunction{
@@ -690,7 +690,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		param := signature.Params().At(idx)
 		lowered.params = append(lowered.params, loweredParam{
 			name: safeParamName(param, idx),
-			typ:  tsType(param.Type()),
+			typ:  o.tsTypeFor(ctx, param.Type()),
 		})
 	}
 	if decl.Body != nil {
@@ -1669,8 +1669,8 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	if async {
 		prefix = "async "
 	}
-	function := prefix + "(" + tsSignatureParams(signature) + "): " +
-		asyncResultType(tsSignatureResult(signature), async) + " => {\n" +
+	function := prefix + "(" + o.tsSignatureParamsFor(ctx, signature) + "): " +
+		asyncResultType(o.tsSignatureResultFor(ctx, signature), async) + " => {\n" +
 		rendered.String() + "}"
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
 		"(" + function + ", " + o.runtimeFunctionTypeInfo(signature, "") + ")", async, diagnostics
@@ -1994,10 +1994,10 @@ func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			args = append(args, strconv.Quote(hint))
 		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMakeSlice) +
-			"<" + tsType(typed.Elem()) + ">(" + strings.Join(args, ", ") + ")", diagnostics
+			"<" + o.tsTypeFor(ctx, typed.Elem()) + ">(" + strings.Join(args, ", ") + ")", diagnostics
 	case *types.Map:
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMakeMap) +
-			"<" + tsType(typed.Key()) + ", " + tsType(typed.Elem()) + ">()", nil
+			"<" + o.tsTypeFor(ctx, typed.Key()) + ", " + o.tsTypeFor(ctx, typed.Elem()) + ">()", nil
 	case *types.Chan:
 		capacity := "0"
 		var diagnostics []Diagnostic
@@ -2007,7 +2007,7 @@ func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			diagnostics = append(diagnostics, capacityDiagnostics...)
 		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMakeChannel) +
-			"<" + tsType(typed.Elem()) + ">(" + capacity + ", " +
+			"<" + o.tsTypeFor(ctx, typed.Elem()) + ">(" + capacity + ", " +
 			o.lowerZeroValueExprFor(ctx, typed.Elem()) + ", " + strconv.Quote(channelDirectionString(typed.Dir())) + ")", diagnostics
 	default:
 		return "undefined", []Diagnostic{loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported make type")}
@@ -2022,7 +2022,7 @@ func (o *LoweringOwner) lowerNewExpr(ctx lowerFileContext, expr *ast.CallExpr) (
 	if named := namedStructType(typ); named != nil {
 		return "new " + o.namedTypeExpr(ctx, named) + "()", nil
 	}
-	return o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + zeroValueExpr(typ) + ")", nil
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + o.lowerZeroValueExprFor(ctx, typ) + ")", nil
 }
 
 func (o *LoweringOwner) lowerConversionExpr(
@@ -2126,10 +2126,10 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 			if receiver := receiverNamedType(selection.Recv()); namedNonInterfaceNonStructType(receiver) {
 				receiverExpr, diagnostics := o.lowerNamedReceiverForMethod(ctx, expr.X, selection)
 				methodExpr := o.methodFunctionExpr(ctx, receiver, selection.Obj(), expr.Sel.Name)
-				return "((__receiver) => (...args: any[]) => " + methodExpr + "(__receiver, ...args))(" + receiverExpr + ")", diagnostics
+				return o.lowerMethodValueClosure(ctx, selection, receiverExpr, methodExpr, true), diagnostics
 			}
 			receiver, diagnostics := o.lowerMethodReceiverExpr(ctx, expr.X, selection)
-			return "((__receiver) => (...args: any[]) => __receiver." + expr.Sel.Name + "(...args))(" + receiver + ")", diagnostics
+			return o.lowerMethodValueClosure(ctx, selection, receiver, "__receiver."+expr.Sel.Name, false), diagnostics
 		case types.FieldVal:
 			receiver, diagnostics := o.lowerFieldReceiverExpr(ctx, expr.X)
 			return receiver + "." + expr.Sel.Name, diagnostics
@@ -2137,6 +2137,32 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 	}
 	left, diagnostics := o.lowerExpr(ctx, expr.X)
 	return left + "." + expr.Sel.Name, diagnostics
+}
+
+func (o *LoweringOwner) lowerMethodValueClosure(
+	ctx lowerFileContext,
+	selection *types.Selection,
+	receiver string,
+	callee string,
+	includeReceiver bool,
+) string {
+	signature, _ := selection.Type().(*types.Signature)
+	var params []string
+	var args []string
+	if signature != nil && signature.Params() != nil {
+		params = make([]string, 0, signature.Params().Len())
+		args = make([]string, 0, signature.Params().Len())
+		for idx := range signature.Params().Len() {
+			param := signature.Params().At(idx)
+			name := safeParamName(param, idx)
+			params = append(params, name+": "+o.tsTypeFor(ctx, param.Type()))
+			args = append(args, name)
+		}
+	}
+	if includeReceiver {
+		args = append([]string{"__receiver"}, args...)
+	}
+	return "((__receiver) => (" + strings.Join(params, ", ") + ") => " + callee + "(" + strings.Join(args, ", ") + "))(" + receiver + ")"
 }
 
 func (o *LoweringOwner) lowerFieldReceiverExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
@@ -2384,7 +2410,7 @@ func (o *LoweringOwner) lowerArrayCompositeLit(
 ) (string, []Diagnostic) {
 	values := make([]string, int(array.Len()))
 	for idx := range values {
-		values[idx] = o.lowerZeroValueExpr(array.Elem())
+		values[idx] = o.lowerZeroValueExprFor(ctx, array.Elem())
 	}
 	nextIndex := 0
 	var diagnostics []Diagnostic
@@ -2443,7 +2469,7 @@ func (o *LoweringOwner) lowerSliceCompositeLit(
 			}
 		}
 		for len(values) <= index {
-			values = append(values, o.lowerZeroValueExpr(slice.Elem()))
+			values = append(values, o.lowerZeroValueExprFor(ctx, slice.Elem()))
 		}
 		value, valueDiagnostics := o.lowerExpr(ctx, valueExpr)
 		diagnostics = append(diagnostics, valueDiagnostics...)
@@ -2474,13 +2500,13 @@ func (o *LoweringOwner) lowerMapCompositeLit(
 		value = o.lowerValueForTarget(ctx, keyed.Value, mapType.Elem(), value)
 		entries = append(entries, "["+key+", "+value+"]")
 	}
-	return "new Map<" + tsType(mapType.Key()) + ", " + tsType(mapType.Elem()) + ">([" + strings.Join(entries, ", ") + "])", diagnostics
+	return "new Map<" + o.tsTypeFor(ctx, mapType.Key()) + ", " + o.tsTypeFor(ctx, mapType.Elem()) + ">([" + strings.Join(entries, ", ") + "])", diagnostics
 }
 
 func (o *LoweringOwner) lowerTypeAssertExpr(ctx lowerFileContext, expr *ast.TypeAssertExpr) (string, []Diagnostic) {
 	value, diagnostics := o.lowerExpr(ctx, expr.X)
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMustTypeAssert) +
-		"<" + tsType(ctx.semPkg.source.TypesInfo.TypeOf(expr.Type)) + ">(" +
+		"<" + o.tsTypeFor(ctx, ctx.semPkg.source.TypesInfo.TypeOf(expr.Type)) + ">(" +
 		value + ", " + o.runtimeTypeInfoExpr(ctx.semPkg.source.TypesInfo.TypeOf(expr.Type)) + ")", diagnostics
 }
 
@@ -2489,7 +2515,7 @@ func (o *LoweringOwner) lowerTupleExpr(ctx lowerFileContext, expr ast.Expr) (str
 	case *ast.TypeAssertExpr:
 		value, diagnostics := o.lowerExpr(ctx, typed.X)
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeAssertTuple) +
-			"<" + tsType(ctx.semPkg.source.TypesInfo.TypeOf(typed.Type)) + ">(" +
+			"<" + o.tsTypeFor(ctx, ctx.semPkg.source.TypesInfo.TypeOf(typed.Type)) + ">(" +
 			value + ", " + o.runtimeTypeInfoExpr(ctx.semPkg.source.TypesInfo.TypeOf(typed.Type)) + ")", diagnostics
 	case *ast.IndexExpr:
 		if isMapType(ctx.semPkg.source.TypesInfo.TypeOf(typed.X)) {
@@ -2509,7 +2535,7 @@ func (o *LoweringOwner) lowerMapGetTuple(ctx lowerFileContext, expr *ast.IndexEx
 	mapType, _ := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(expr.X)).Underlying().(*types.Map)
 	defaultValue := "undefined"
 	if mapType != nil {
-		defaultValue = o.lowerZeroValueExpr(mapType.Elem())
+		defaultValue = o.lowerZeroValueExprFor(ctx, mapType.Elem())
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMapGet) + "(" + target + ", " + index + ", " + defaultValue + ")"
 }
@@ -2549,7 +2575,23 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 	if named := namedStructType(typ); named != nil && isStructValueType(typ) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) + "(new " + o.namedTypeExpr(ctx, named) + "())"
 	}
-	return o.lowerZeroValueExpr(typ)
+	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Basic:
+		if typed.Info()&types.IsBoolean != 0 {
+			return "false"
+		}
+		if typed.Info()&types.IsString != 0 {
+			return "\"\""
+		}
+		if typed.Info()&types.IsNumeric != 0 {
+			return "0"
+		}
+		return "undefined"
+	case *types.Array:
+		return "Array.from({ length: " + strconv.FormatInt(typed.Len(), 10) + " }, () => " + o.lowerZeroValueExprFor(ctx, typed.Elem()) + ")"
+	default:
+		return "null"
+	}
 }
 
 func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ types.Type) string {
@@ -2793,6 +2835,32 @@ func tsSignatureResult(signature *types.Signature) string {
 	return "[" + strings.Join(results, ", ") + "]"
 }
 
+func (o *LoweringOwner) tsSignatureParamsFor(ctx lowerFileContext, signature *types.Signature) string {
+	if signature == nil || signature.Params() == nil || signature.Params().Len() == 0 {
+		return ""
+	}
+	params := make([]string, 0, signature.Params().Len())
+	for idx := range signature.Params().Len() {
+		param := signature.Params().At(idx)
+		params = append(params, safeParamName(param, idx)+": "+o.tsTypeFor(ctx, param.Type()))
+	}
+	return strings.Join(params, ", ")
+}
+
+func (o *LoweringOwner) tsSignatureResultFor(ctx lowerFileContext, signature *types.Signature) string {
+	if signature == nil || signature.Results() == nil || signature.Results().Len() == 0 {
+		return "void"
+	}
+	if signature.Results().Len() == 1 {
+		return o.tsTypeFor(ctx, signature.Results().At(0).Type())
+	}
+	results := make([]string, 0, signature.Results().Len())
+	for result := range signature.Results().Variables() {
+		results = append(results, o.tsTypeFor(ctx, result.Type()))
+	}
+	return "[" + strings.Join(results, ", ") + "]"
+}
+
 func asyncResultType(result string, async bool) string {
 	if !async {
 		return result
@@ -2837,7 +2905,7 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		}
 		return "$.VarRef<" + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
 	case *types.Signature:
-		return "(" + tsSignatureParams(typed) + ") => " + tsSignatureResult(typed)
+		return "(" + o.tsSignatureParamsFor(ctx, typed) + ") => " + o.tsSignatureResultFor(ctx, typed)
 	default:
 		return tsType(typ)
 	}
@@ -3278,24 +3346,45 @@ func (o *LoweringOwner) namedTypeExpr(ctx lowerFileContext, named *types.Named) 
 	if named == nil || named.Obj() == nil {
 		return "unknown"
 	}
+	baseName := named.Obj().Name()
 	if alias := ctx.localAliases[named.Obj()]; alias != "" {
-		return alias + "." + named.Obj().Name()
-	}
-	if named.Obj().Pkg() != nil {
+		baseName = alias + "." + baseName
+	} else if named.Obj().Pkg() != nil {
 		if alias := ctx.importPaths[named.Obj().Pkg().Path()]; alias != "" {
-			return alias + "." + named.Obj().Name()
+			baseName = alias + "." + baseName
 		}
 	}
-	return named.Obj().Name()
+	if args := o.overrideTypeArgsExpr(ctx, named); args != "" {
+		return baseName + "<" + args + ">"
+	}
+	return baseName
 }
 
-func tsReceiverType(typ types.Type) string {
+func (o *LoweringOwner) overrideTypeArgsExpr(ctx lowerFileContext, named *types.Named) string {
+	if o.overrideOwner == nil || named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
+		return ""
+	}
+	args := named.TypeArgs()
+	if args == nil || args.Len() == 0 {
+		return ""
+	}
+	if _, ok := o.overrideOwner.importPackageRoot(named.Obj().Pkg().Path()); !ok {
+		return ""
+	}
+	parts := make([]string, 0, args.Len())
+	for typ := range args.Types() {
+		parts = append(parts, o.tsTypeFor(ctx, typ))
+	}
+	return strings.Join(parts, ", ")
+}
+
+func (o *LoweringOwner) tsReceiverTypeFor(ctx lowerFileContext, typ types.Type) string {
 	if pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer); ok {
 		if named := namedNonStructType(pointer.Elem()); named != nil {
-			return "$.VarRef<" + named.Obj().Name() + ">"
+			return "$.VarRef<" + o.namedTypeExpr(ctx, named) + ">"
 		}
 	}
-	return tsType(typ)
+	return o.tsTypeFor(ctx, typ)
 }
 
 func runtimeNamedTypeName(named *types.Named) string {

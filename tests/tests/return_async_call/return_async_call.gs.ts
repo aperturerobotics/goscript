@@ -16,12 +16,12 @@ export function SyncWrapper(): string {
 	return AsyncFunction()
 }
 
-export function AnotherAsyncFunction(ctx: Context): void {
+export function AnotherAsyncFunction(ctx: context.Context): [string, $.GoError] {
 	time.Sleep(5 * time.Millisecond)
 	return ["async result", null]
 }
 
-export function WrapperWithError(ctx: Context): void {
+export function WrapperWithError(ctx: context.Context): [string, $.GoError] {
 	return AnotherAsyncFunction(ctx)
 }
 
@@ -31,7 +31,7 @@ export async function main(): Promise<void> {
 	let ctx = context.Background()
 	let [result2, err] = WrapperWithError(ctx)
 	if (err != null) {
-		$.println("Error:", err.Error())
+		$.println("Error:", err!.Error())
 		return
 	}
 	$.println("Result2:", result2)
