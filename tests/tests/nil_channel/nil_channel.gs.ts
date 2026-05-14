@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.ts"
 export async function main(): Promise<void> {
 	$.println("Test 1: Select with nil channel and default")
 	let nilCh: $.Channel<number> | null = null
-	const [__goscriptSelectHasReturn193, __goscriptSelectValue193] = await $.selectStatement([
+	const [__goscriptSelectHasReturn193, __goscriptSelectValue193] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -39,7 +39,7 @@ export async function main(): Promise<void> {
 	$.println("\nTest 2: Select with multiple nil channels and default")
 	let nilCh1: $.Channel<string> | null = null
 	let nilCh2: $.Channel<string> | null = null
-	const [__goscriptSelectHasReturn583, __goscriptSelectValue583] = await $.selectStatement([
+	const [__goscriptSelectHasReturn583, __goscriptSelectValue583] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -82,7 +82,7 @@ export async function main(): Promise<void> {
 	let nilCh3: $.Channel<boolean> | null = null
 	let validCh = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(validCh, true)
-	const [__goscriptSelectHasReturn1100, __goscriptSelectValue1100] = await $.selectStatement([
+	const [__goscriptSelectHasReturn1100, __goscriptSelectValue1100] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,

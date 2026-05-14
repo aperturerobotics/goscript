@@ -1,6 +1,7 @@
 Expected v2 failure: github.com/aperturerobotics/util/csync now compiles and
 the generated runtime output completes, but type checking still exposes
-function/nullability gaps in dependency output: select callbacks with no return
-infer void where an error or tuple can return, nil function values are not
-accepted by function-typed parameters/results, and atomic.Pointer[func()] stores
-need a VarRef-compatible address value.
+function/nullability gaps in dependency output: repeated nullable channel field
+access is not narrowed across getter calls, nil function values are not accepted
+by function-typed parameters/results, atomic.Pointer[func()] stores need a
+VarRef-compatible address value, and generic override function type arguments
+are not yet accepted by every override signature.

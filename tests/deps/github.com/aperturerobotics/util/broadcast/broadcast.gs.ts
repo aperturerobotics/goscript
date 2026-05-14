@@ -104,7 +104,7 @@ export class Broadcast {
 			if (done || err != null) {
 				return err
 			}
-			const [__goscriptSelectHasReturn4792406, __goscriptSelectValue4792406] = await $.selectStatement([
+			const [__goscriptSelectHasReturn4792406, __goscriptSelectValue4792406] = await $.selectStatement<any, $.GoError>([
 				{
 					id: 0,
 					isSend: false,
@@ -138,7 +138,7 @@ export class Broadcast {
 	public getWaitChLocked(): $.Channel<Record<string, unknown>> | null {
 		const c = this
 		if ($.pointerValue(c).ch == null) {
-			$.pointerValue(c).ch = $.makeChannel<Record<string, unknown>>(0, null, "both")
+			$.pointerValue(c).ch = $.makeChannel<Record<string, unknown>>(0, {}, "both")
 		}
 		return $.pointerValue(c).ch
 	}

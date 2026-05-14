@@ -847,7 +847,7 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 		"return await $.chanRecv($.pointerValue(w).ch)",
 		"await using __defer = new $.AsyncDisposableStack()",
 		"queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {",
-		"$.selectStatement([",
+		"$.selectStatement<any, void>([",
 		"let v = result.value",
 		"await call(new Worker({ch: $.makeChannel<number>(1, 0, \"both\")}))",
 	} {

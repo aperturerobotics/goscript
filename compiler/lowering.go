@@ -1289,9 +1289,14 @@ func (o *LoweringOwner) lowerRangeFuncAssignments(
 }
 
 func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectStmt) (*loweredSelect, []Diagnostic) {
+	resultType := "void"
+	if ctx.signature != nil {
+		resultType = o.tsSignatureResultFor(ctx, ctx.signature)
+	}
 	lowered := &loweredSelect{
-		hasReturn: "__goscriptSelectHasReturn" + strconv.Itoa(int(stmt.Pos())),
-		value:     "__goscriptSelectValue" + strconv.Itoa(int(stmt.Pos())),
+		hasReturn:  "__goscriptSelectHasReturn" + strconv.Itoa(int(stmt.Pos())),
+		value:      "__goscriptSelectValue" + strconv.Itoa(int(stmt.Pos())),
+		resultType: resultType,
 	}
 	var diagnostics []Diagnostic
 	caseID := 0
@@ -2591,6 +2596,8 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 		return "undefined"
 	case *types.Array:
 		return "Array.from({ length: " + strconv.FormatInt(typed.Len(), 10) + " }, () => " + o.lowerZeroValueExprFor(ctx, typed.Elem()) + ")"
+	case *types.Struct:
+		return "{}"
 	default:
 		return "null"
 	}
@@ -2934,6 +2941,8 @@ func zeroValueExpr(typ types.Type) string {
 		return "undefined"
 	case *types.Array:
 		return "Array.from({ length: " + strconv.FormatInt(typed.Len(), 10) + " }, () => " + zeroValueExpr(typed.Elem()) + ")"
+	case *types.Struct:
+		return "{}"
 	default:
 		return "null"
 	}

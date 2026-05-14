@@ -28,7 +28,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 	}
 	let prev = val
 	while (true) {
-		const [__goscriptSelectHasReturn4789316, __goscriptSelectValue4789316] = await $.selectStatement([
+		const [__goscriptSelectHasReturn4789316, __goscriptSelectValue4789316] = await $.selectStatement<any, $.GoError>([
 			{
 				id: 0,
 				isSend: false,

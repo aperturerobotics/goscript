@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.ts"
 export async function main(): Promise<void> {
 	let ch = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(ch, 1)
-	const [__goscriptSelectHasReturn163, __goscriptSelectValue163] = await $.selectStatement([
+	const [__goscriptSelectHasReturn163, __goscriptSelectValue163] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,

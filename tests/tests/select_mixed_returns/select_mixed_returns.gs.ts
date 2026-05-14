@@ -7,18 +7,18 @@ import * as context from "@goscript/context/index.ts"
 
 import * as time from "@goscript/time/index.ts"
 
-export async function testMixedReturns(ctx: Context): Promise<string> {
+export async function testMixedReturns(ctx: context.Context): Promise<string> {
 	let ch1 = $.makeChannel<string>(1, "", "both")
 	let ch2 = $.makeChannel<number>(1, 0, "both")
 	let ch3 = $.makeChannel<boolean>(1, false, "both")
 	let ch4 = $.makeChannel<number>(1, 0, "both")
 	let ch5 = $.makeChannel<$.Slice<number>>(1, null, "both")
 	await $.chanSend(ch2, 42)
-	const [__goscriptSelectHasReturn3504637, __goscriptSelectValue3504637] = await $.selectStatement([
+	const [__goscriptSelectHasReturn3504637, __goscriptSelectValue3504637] = await $.selectStatement<any, string>([
 		{
 			id: 0,
 			isSend: false,
-			channel: ctx.Done(),
+			channel: ctx!.Done(),
 			onSelected: async (result) => {
 				$.println("Context done, returning")
 				return "context_done"
@@ -91,14 +91,14 @@ export async function testMixedReturns(ctx: Context): Promise<string> {
 	return "completed_normally"
 }
 
-export async function testReturnCase(ctx: Context): Promise<string> {
+export async function testReturnCase(ctx: context.Context): Promise<string> {
 	let ch1 = $.makeChannel<string>(1, "", "both")
 	let ch2 = $.makeChannel<number>(1, 0, "both")
 	let ch3 = $.makeChannel<boolean>(1, false, "both")
 	let ch4 = $.makeChannel<number>(1, 0, "both")
 	let ch5 = $.makeChannel<$.Slice<number>>(1, null, "both")
 	await $.chanSend(ch1, "test_message")
-	const [__goscriptSelectHasReturn3505996, __goscriptSelectValue3505996] = await $.selectStatement([
+	const [__goscriptSelectHasReturn3505996, __goscriptSelectValue3505996] = await $.selectStatement<any, string>([
 		{
 			id: 0,
 			isSend: false,

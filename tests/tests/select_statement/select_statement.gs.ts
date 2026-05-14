@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let ch1 = $.makeChannel<string>(1, "", "both")
-	const [__goscriptSelectHasReturn214, __goscriptSelectValue214] = await $.selectStatement([
+	const [__goscriptSelectHasReturn214, __goscriptSelectValue214] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -28,7 +28,7 @@ export async function main(): Promise<void> {
 		return __goscriptSelectValue214
 	}
 	await $.chanSend(ch1, "hello")
-	const [__goscriptSelectHasReturn453, __goscriptSelectValue453] = await $.selectStatement([
+	const [__goscriptSelectHasReturn453, __goscriptSelectValue453] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -53,7 +53,7 @@ export async function main(): Promise<void> {
 	let ch2 = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(ch2, 42)
 	ch2.close()
-	const [__goscriptSelectHasReturn742, __goscriptSelectValue742] = await $.selectStatement([
+	const [__goscriptSelectHasReturn742, __goscriptSelectValue742] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -80,7 +80,7 @@ export async function main(): Promise<void> {
 	if (__goscriptSelectHasReturn742) {
 		return __goscriptSelectValue742
 	}
-	const [__goscriptSelectHasReturn1021, __goscriptSelectValue1021] = await $.selectStatement([
+	const [__goscriptSelectHasReturn1021, __goscriptSelectValue1021] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -108,7 +108,7 @@ export async function main(): Promise<void> {
 		return __goscriptSelectValue1021
 	}
 	let ch3 = $.makeChannel<number>(1, 0, "both")
-	const [__goscriptSelectHasReturn1351, __goscriptSelectValue1351] = await $.selectStatement([
+	const [__goscriptSelectHasReturn1351, __goscriptSelectValue1351] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -130,7 +130,7 @@ export async function main(): Promise<void> {
 	if (__goscriptSelectHasReturn1351) {
 		return __goscriptSelectValue1351
 	}
-	const [__goscriptSelectHasReturn1529, __goscriptSelectValue1529] = await $.selectStatement([
+	const [__goscriptSelectHasReturn1529, __goscriptSelectValue1529] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: true,
@@ -155,7 +155,7 @@ export async function main(): Promise<void> {
 	let ch4 = $.makeChannel<string>(1, "", "both")
 	let ch5 = $.makeChannel<string>(1, "", "both")
 	await $.chanSend(ch4, "from ch4")
-	const [__goscriptSelectHasReturn1856, __goscriptSelectValue1856] = await $.selectStatement([
+	const [__goscriptSelectHasReturn1856, __goscriptSelectValue1856] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
@@ -179,7 +179,7 @@ export async function main(): Promise<void> {
 		return __goscriptSelectValue1856
 	}
 	await $.chanSend(ch5, "from ch5")
-	const [__goscriptSelectHasReturn2125, __goscriptSelectValue2125] = await $.selectStatement([
+	const [__goscriptSelectHasReturn2125, __goscriptSelectValue2125] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,

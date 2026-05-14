@@ -77,7 +77,7 @@ export class Mutex {
 			return [release, null]
 		}
 		while (true) {
-			const [__goscriptSelectHasReturn4798710, __goscriptSelectValue4798710] = await $.selectStatement([
+			const [__goscriptSelectHasReturn4794185, __goscriptSelectValue4794185] = await $.selectStatement<any, [() => void, $.GoError]>([
 				{
 					id: 0,
 					isSend: false,
@@ -95,8 +95,8 @@ export class Mutex {
 					}
 				}
 			], false)
-			if (__goscriptSelectHasReturn4798710) {
-				return __goscriptSelectValue4798710
+			if (__goscriptSelectHasReturn4794185) {
+				return __goscriptSelectValue4794185
 			}
 			await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: () => void, getWaitCh: () => $.Channel<Record<string, unknown>> | null): void => {
 	if ($.pointerValue(m).locked) {

@@ -442,7 +442,9 @@ func renderSelect(b *strings.Builder, stmt *loweredSelect, indent int) {
 	b.WriteString(stmt.hasReturn)
 	b.WriteString(", ")
 	b.WriteString(stmt.value)
-	b.WriteString("] = await $.selectStatement([\n")
+	b.WriteString("] = await $.selectStatement<any, ")
+	b.WriteString(stmt.resultType)
+	b.WriteString(">([\n")
 	for idx, switchCase := range stmt.cases {
 		renderSelectCase(b, switchCase, indent+1)
 		if idx != len(stmt.cases)-1 {

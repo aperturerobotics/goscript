@@ -28,7 +28,7 @@ export async function main(): Promise<void> {
 	let results = $.arrayToSlice<number>([])
 	let timeout = time.After(5 * time.Second)
 	for (let __rangeIndex = 0; __rangeIndex < 2; __rangeIndex++) {
-		const [__goscriptSelectHasReturn3480658, __goscriptSelectValue3480658] = await $.selectStatement([
+		const [__goscriptSelectHasReturn3480658, __goscriptSelectValue3480658] = await $.selectStatement<any, void>([
 			{
 				id: 0,
 				isSend: false,
