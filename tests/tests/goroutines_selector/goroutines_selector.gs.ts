@@ -12,7 +12,7 @@ export class Foo {
 	}
 
 	public _fields: {
-		done: $.VarRef<$.Channel<boolean> | null>;
+		done: $.VarRef<$.Channel<boolean> | null>
 	}
 
 	constructor(init?: Partial<{done?: $.Channel<boolean> | null}>) {
@@ -26,35 +26,32 @@ export class Foo {
 		cloned._fields = {
 			done: $.varRef(this._fields.done.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public async Bar(): Promise<void> {
 		const f = this
 		$.println("Foo.Bar called")
-		await $.chanSend(f.done, true)
+		await $.chanSend($.pointerValue(f).done, true)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Foo',
-	  new Foo(),
-	  [{ name: "Bar", args: [], returns: [] }],
-	  Foo,
-	  {"done": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }}
-	);
+		"main.Foo",
+		new Foo(),
+		[{ name: "Bar", args: [], returns: [] }],
+		Foo,
+		{"done": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }}
+	)
 }
 
-export function NewFoo(): Foo | null {
-	return new Foo({done: $.makeChannel<boolean>(0, false, 'both')})
+export function NewFoo(): Foo | $.VarRef<Foo> | null {
+	return new Foo({done: $.makeChannel<boolean>(0, false, "both")})
 }
 
 export async function main(): Promise<void> {
 	let f = NewFoo()
-	queueMicrotask(async () => {
-		await f!.Bar()
-	})
-	await $.chanRecv(f!.done)
+	queueMicrotask(async () => { await $.pointerValue(f).Bar() })
+	await $.chanRecv($.pointerValue(f).done)
 	$.println("main done")
 }
 

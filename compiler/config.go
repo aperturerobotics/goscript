@@ -6,36 +6,29 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Config is the configuration for the compiler
-// Dir is the working directory for the compiler. If empty, uses the current working directory.
+// Config is the public compiler configuration.
 type Config struct {
 	fset *token.FileSet
 
-	// Dir is the working directory for the compiler. If empty, uses the current working directory.
+	// Dir is the working directory for the compiler.
 	Dir string
 	// OutputPath is the output path root.
 	OutputPath string
-	// BuildFlags are the Go build flags (tags) to use during analysis.
+	// BuildFlags are the Go build flags to use during package loading.
 	BuildFlags []string
-	// AllDependencies controls whether to compile all dependencies of the requested packages.
-	// If true, all dependencies will be compiled; if false, only the requested packages are compiled.
+	// AllDependencies controls whether dependencies are included in the graph.
 	AllDependencies bool
-	// DisableEmitBuiltin controls whether to emit builtin packages when they are referenced.
-	// If true, builtin packages will not be emitted; if false, they will be emitted if referenced.
-	// Default is false (emit builtin packages).
+	// DisableEmitBuiltin controls whether runtime packages are emitted.
 	DisableEmitBuiltin bool
 }
 
-// Validate checks the config.
+// Validate checks the config and initializes owned defaults.
 func (c *Config) Validate() error {
 	if c == nil {
 		return errors.New("config cannot be nil")
 	}
 	if c.fset == nil {
 		c.fset = token.NewFileSet()
-	}
-	if c.OutputPath == "" {
-		return errors.New("output path root must be specified")
 	}
 	return nil
 }

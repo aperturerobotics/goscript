@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function firstFunc(): [string, number] {
+export function firstFunc(): void {
 	return ["", 42]
 }
 
@@ -17,13 +17,11 @@ export function secondFunc(x: number): number {
 
 export async function main(): Promise<void> {
 	let [, x] = firstFunc()
-	// This is the problematic pattern: x is shadowed but also used in the call
-	const _temp_x = x
 	{
-		let x = secondFunc(_temp_x)
+		let x = secondFunc(x)
 		if (x != 0) {
 			$.println("Function returned value")
-			return 
+			return
 		}
 	}
 	$.println("Completed successfully")

@@ -8,28 +8,21 @@ export class Decoder {
 	}
 
 	constructor(init?: Partial<{}>) {
-		this._fields = {}
+		this._fields = {
+		}
 	}
 
 	public clone(): Decoder {
 		const cloned = new Decoder()
 		cloned._fields = {
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// value is async because it uses channels
-	public async value(): Promise<$.GoError> {
-		let ch = $.makeChannel<number>(1, 0, 'both') // Buffered channel to avoid deadlock
-		await $.chanSend(ch, 42)
-		return null
-	}
-
-	// array calls value, so it should also be async
-	public async array(): Promise<$.GoError> {
+	public async array(): Promise<error> {
 		const d = this
 		{
-			let err = await d.value()
+			let err = await $.pointerValue(d).value()
 			if (err != null) {
 				return err
 			}
@@ -37,22 +30,28 @@ export class Decoder {
 		return null
 	}
 
-	// Register this type with the runtime type system
+	public async value(): Promise<error> {
+		const d = this
+		let ch = $.makeChannel<number>(1, 0, "both")
+		await $.chanSend(ch, 42)
+		return null
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'main.Decoder',
-	  new Decoder(),
-	  [{ name: "value", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "array", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  Decoder,
-	  {}
-	);
+		"main.Decoder",
+		new Decoder(),
+		[{ name: "array", args: [], returns: [] }, { name: "value", args: [], returns: [] }],
+		Decoder,
+		{}
+	)
 }
 
 export async function main(): Promise<void> {
-	let d = new Decoder({})
+	let d = new Decoder()
 	{
-		let err = await d!.array()
+		let err = await $.pointerValue(d).array()
 		if (err != null) {
-			$.println("Error:", err!.Error())
+			$.println("Error:", err.Error())
 		} else {
 			$.println("Success")
 		}

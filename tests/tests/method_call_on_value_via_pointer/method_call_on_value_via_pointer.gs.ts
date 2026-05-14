@@ -12,7 +12,7 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
+		MyInt: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{MyInt?: number}>) {
@@ -26,43 +26,29 @@ export class MyStruct {
 		cloned._fields = {
 			MyInt: $.varRef(this._fields.MyInt.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// GetValue returns the MyInt field (value receiver).
 	public GetValue(): number {
 		const m = this
 		return m.MyInt
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [{ name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[{ name: "GetValue", args: [], returns: [] }],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// Create a struct value
 	let msValue = $.varRef($.markAsStructValue(new MyStruct({MyInt: 100})))
-	// Create a pointer to the struct value
 	let msPointer = msValue
-
-	// === Method Call on Value Receiver via Pointer ===
-	// Call the value-receiver method using the pointer variable.
-	// Go implicitly dereferences msPointer to call GetValue on the value.
-	// Expected: 100
-	$.println("Value via pointer call: Expected: 100, Actual:", msPointer!.value!.GetValue())
-
-	// Modify the value through the original value variable
-	msValue!.value.MyInt = 200
-
-	// The pointer still points to the modified value
-	// Expected: 200
-	$.println("Value via pointer call after modification: Expected: 200, Actual:", msPointer!.value!.GetValue())
+	$.println("Value via pointer call: Expected: 100, Actual:", $.markAsStructValue($.pointerValue(msPointer).clone()).GetValue())
+	msValue.value.MyInt = 200
+	$.println("Value via pointer call after modification: Expected: 200, Actual:", $.markAsStructValue($.pointerValue(msPointer).clone()).GetValue())
 }
 
 

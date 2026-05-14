@@ -10,23 +10,18 @@ export type Stringer = null | {
 }
 
 $.registerInterfaceType(
-  'main.Stringer',
-  null, // Zero value for interface is null
-  [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
+	"main.Stringer",
+	null,
+	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
 
 export async function main(): Promise<void> {
-	// Create a typed nil pointer to interface
-
-	// Get the type
-	let t = reflect.PointerTo(reflect.getInterfaceTypeByName("main.Stringer"))
-	$.println("Type:", t!.String())
-	$.println("Kind:", t!.Kind())
-
-	// Get the element type (the interface type itself)
-	let elem = t!.Elem()
-	$.println("Elem Type:", elem!.String())
-	$.println("Elem Kind:", elem!.Kind())
+	let t = reflect.TypeFor({T: { zero: () => null }})
+	$.println("Type:", t.String())
+	$.println("Kind:", t.Kind())
+	let elem = t.Elem()
+	$.println("Elem Type:", elem.String())
+	$.println("Elem Kind:", elem.Kind())
 }
 
 

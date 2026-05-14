@@ -12,7 +12,7 @@ export class State {
 	}
 
 	public _fields: {
-		value: $.VarRef<number>;
+		value: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{value?: number}>) {
@@ -26,34 +26,33 @@ export class State {
 		cloned._fields = {
 			value: $.varRef(this._fields.value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public Process(): void {
 		const s = this
-		;getProcessor()!(s)
+		getProcessor()(s)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.State',
-	  new State(),
-	  [{ name: "Process", args: [], returns: [] }],
-	  State,
-	  {"value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.State",
+		new State(),
+		[{ name: "Process", args: [], returns: [] }],
+		State,
+		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
-export function getProcessor(): ((p0: State | null) => void) | null {
-	return (s: State | null): void => {
-		s!.value = 42
-	}
+export function getProcessor(): (_p0: State | $.VarRef<State> | null) => void {
+	return (s: State | $.VarRef<State> | null): void => {
+	$.pointerValue(s).value = 42
+}
 }
 
 export async function main(): Promise<void> {
-	let state = new State({})
-	state!.Process()
-	$.println("value:", state!.value)
+	let state = new State()
+	$.pointerValue(state).Process()
+	$.println("value:", $.pointerValue(state).value)
 }
 
 

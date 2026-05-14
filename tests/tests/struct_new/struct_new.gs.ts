@@ -26,9 +26,9 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
-		MyString: $.VarRef<string>;
-		myBool: $.VarRef<boolean>;
+		MyInt: $.VarRef<number>
+		MyString: $.VarRef<string>
+		myBool: $.VarRef<boolean>
 	}
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string, myBool?: boolean}>) {
@@ -46,47 +46,39 @@ export class MyStruct {
 			MyString: $.varRef(this._fields.MyString.value),
 			myBool: $.varRef(this._fields.myBool.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// Test new(MyStruct)
 	let ptr = new MyStruct()
-	$.println("ptr.MyInt (default):", ptr!.MyInt) // Expected: 0
-	$.println("ptr.MyString (default):", ptr!.MyString) // Expected: ""
-	$.println("ptr.myBool (default):", ptr!.myBool) // Expected: false
-
-	ptr!.MyInt = 42
-	ptr!.MyString = "hello"
-	ptr!.myBool = true
-
-	$.println("ptr.MyInt (assigned):", ptr!.MyInt) // Expected: 42
-	$.println("ptr.MyString (assigned):", ptr!.MyString) // Expected: "hello"
-	$.println("ptr.myBool (assigned):", ptr!.myBool) // Expected: true
-
-	// Test assignment to a dereferenced new struct
-	let s: MyStruct = $.markAsStructValue(new MyStruct()!.clone())
-	$.println("s.MyInt (default):", s.MyInt) // Expected: 0
-	$.println("s.MyString (default):", s.MyString) // Expected: ""
-	$.println("s.myBool (default):", s.myBool) // Expected: false
-
+	$.println("ptr.MyInt (default):", $.pointerValue(ptr).MyInt)
+	$.println("ptr.MyString (default):", $.pointerValue(ptr).MyString)
+	$.println("ptr.myBool (default):", $.pointerValue(ptr).myBool)
+	$.pointerValue(ptr).MyInt = 42
+	$.pointerValue(ptr).MyString = "hello"
+	$.pointerValue(ptr).myBool = true
+	$.println("ptr.MyInt (assigned):", $.pointerValue(ptr).MyInt)
+	$.println("ptr.MyString (assigned):", $.pointerValue(ptr).MyString)
+	$.println("ptr.myBool (assigned):", $.pointerValue(ptr).myBool)
+	let s: MyStruct = $.markAsStructValue($.pointerValue(new MyStruct()).clone())
+	$.println("s.MyInt (default):", s.MyInt)
+	$.println("s.MyString (default):", s.MyString)
+	$.println("s.myBool (default):", s.myBool)
 	s.MyInt = 100
 	s.MyString = "world"
-	s.myBool = false // though private, it's in the same package
-
-	$.println("s.MyInt (assigned):", s.MyInt) // Expected: 100
-	$.println("s.MyString (assigned):", s.MyString) // Expected: "world"
-	$.println("s.myBool (assigned):", s.myBool) // Expected: false
+	s.myBool = false
+	$.println("s.MyInt (assigned):", s.MyInt)
+	$.println("s.MyString (assigned):", s.MyString)
+	$.println("s.myBool (assigned):", s.myBool)
 }
 
 

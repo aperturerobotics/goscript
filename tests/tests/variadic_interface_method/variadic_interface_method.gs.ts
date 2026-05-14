@@ -6,72 +6,63 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as strings from "@goscript/strings/index.ts"
 
 export type Basic = null | {
-	Join(...elem: string[]): string
+	Join(...elem: $.Slice<string>): string
 }
 
 $.registerInterfaceType(
-  'main.Basic',
-  null, // Zero value for interface is null
-  [{ name: "Join", args: [{ name: "elem", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
+	"main.Basic",
+	null,
+	[{ name: "Join", args: [{ name: "elem", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
 
 export class PathJoiner {
 	public _fields: {
 	}
 
 	constructor(init?: Partial<{}>) {
-		this._fields = {}
+		this._fields = {
+		}
 	}
 
 	public clone(): PathJoiner {
 		const cloned = new PathJoiner()
 		cloned._fields = {
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public Join(...elem: string[]): string {
-		let result: $.VarRef<strings.Builder> = $.varRef(new strings.Builder())
+	public Join(elem: $.Slice<string>): string {
+		const p = this
+		let result: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
 		for (let i = 0; i < $.len(elem); i++) {
-			let e = elem![i]
-			{
-				if (i > 0) {
-					result!.value.WriteString("/")
-				}
-				result!.value.WriteString(e)
+			let e = elem[i]
+			if (i > 0) {
+				result.value.WriteString("/")
 			}
+			result.value.WriteString(e)
 		}
-		return result!.value.String()
+		return result.value.String()
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.PathJoiner',
-	  new PathJoiner(),
-	  [{ name: "Join", args: [{ name: "elem", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
-	  PathJoiner,
-	  {}
-	);
+		"main.PathJoiner",
+		new PathJoiner(),
+		[{ name: "Join", args: [], returns: [] }],
+		PathJoiner,
+		{}
+	)
 }
 
 export async function main(): Promise<void> {
-	let b: Basic = $.markAsStructValue(new PathJoiner({}))
-
-	// Test with multiple arguments
-	let result1 = b!.Join("path", "to", "file")
+	let b: Basic = $.markAsStructValue($.markAsStructValue(new PathJoiner()).clone())
+	let result1 = b.Join("path", "to", "file")
 	$.println("Result1:", result1)
-
-	// Test with single argument
-	let result2 = b!.Join("single")
+	let result2 = b.Join("single")
 	$.println("Result2:", result2)
-
-	// Test with no arguments
-	let result3 = b!.Join()
+	let result3 = b.Join()
 	$.println("Result3:", result3)
-
-	// Test with slice expansion
-	let parts = $.arrayToSlice<string>(["another", "path", "here"])
-	let result4 = b!.Join(...(parts ?? []))
+	let parts = ["another", "path", "here"]
+	let result4 = b.Join(parts)
 	$.println("Result4:", result4)
 }
 

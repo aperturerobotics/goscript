@@ -3,17 +3,14 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function returnTwoValues(): [number, $.GoError] {
+export function returnTwoValues(): void {
 	return [42, null]
 }
 
 export async function main(): Promise<void> {
-	// Test destructuring assignment with trailing comma issue
-	// This should generate: [nref] = returnTwoValues()
-	// Not: [nref, ] = returnTwoValues()
 	let nref: number = 0
-	;[nref] = returnTwoValues()
-
+	let __goscriptTuple252 = returnTwoValues()
+	nref = __goscriptTuple252[0]
 	$.println("nref:", nref)
 }
 

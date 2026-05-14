@@ -12,7 +12,7 @@ export class Thing {
 	}
 
 	public _fields: {
-		value: $.VarRef<number>;
+		value: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{value?: number}>) {
@@ -26,34 +26,33 @@ export class Thing {
 		cloned._fields = {
 			value: $.varRef(this._fields.value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public callIt(x: number): void {
 		const t = this
-		;getFunc()!(t, x)
+		getFunc()(t, x)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Thing',
-	  new Thing(),
-	  [{ name: "callIt", args: [{ name: "x", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
-	  Thing,
-	  {"value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.Thing",
+		new Thing(),
+		[{ name: "callIt", args: [], returns: [] }],
+		Thing,
+		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
-export function getFunc(): ((p0: Thing | null, p1: number) => void) | null {
-	return (t: Thing | null, x: number): void => {
-		t!.value += x
-	}
+export function getFunc(): (_p0: Thing | $.VarRef<Thing> | null, _p1: number) => void {
+	return (t: Thing | $.VarRef<Thing> | null, x: number): void => {
+	$.pointerValue(t).value += x
+}
 }
 
 export async function main(): Promise<void> {
 	let thing = new Thing({value: 10})
-	thing!.callIt(32)
-	$.println("Result:", thing!.value)
+	$.pointerValue(thing).callIt(32)
+	$.println("Result:", $.pointerValue(thing).value)
 }
 
 

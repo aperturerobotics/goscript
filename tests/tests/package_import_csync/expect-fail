@@ -1,0 +1,3 @@
+Expected v2 failure: github.com/aperturerobotics/util/csync still requires
+unsupported dependency lowering in github.com/aperturerobotics/util/broadcast
+and csync.

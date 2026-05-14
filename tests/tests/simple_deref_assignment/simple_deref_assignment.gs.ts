@@ -19,8 +19,8 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
-		MyString: $.VarRef<string>;
+		MyInt: $.VarRef<number>
+		MyString: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string}>) {
@@ -36,28 +36,23 @@ export class MyStruct {
 			MyInt: $.varRef(this._fields.MyInt.value),
 			MyString: $.varRef(this._fields.MyString.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
-	// === Simple Dereference Assignment (Value Copy) ===
-	let simpleDereferencedCopy = $.markAsStructValue(structPointer!.clone())
-	// Modifying the copy does not affect the original struct pointed to by structPointer.
+	let simpleDereferencedCopy = $.markAsStructValue($.pointerValue(structPointer).clone())
 	simpleDereferencedCopy.MyString = "modified dereferenced copy"
-	// Expected: "hello world"
-	$.println("Original structPointer after modifying simpleDereferencedCopy: Expected: hello world, Actual: " + structPointer!.MyString)
-	// Expected: "modified dereferenced copy"
+	$.println("Original structPointer after modifying simpleDereferencedCopy: Expected: hello world, Actual: " + $.pointerValue(structPointer).MyString)
 	$.println("Simple Dereferenced Copy: Expected: modified dereferenced copy, Actual: " + simpleDereferencedCopy.MyString)
 }
 

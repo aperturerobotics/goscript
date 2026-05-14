@@ -6,48 +6,48 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as os from "@goscript/os/index.ts"
 
 export type Basic = null | {
-	// Stat returns a FileInfo describing the named file.
-	Stat(filename: string): [null | os.FileInfo, $.GoError]
+	Stat(filename: string): [FileInfo, error]
 }
 
 $.registerInterfaceType(
-  'main.Basic',
-  null, // Zero value for interface is null
-  [{ name: "Stat", args: [{ name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ type: "io/fs.FileMode" }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
+	"main.Basic",
+	null,
+	[{ name: "Stat", args: [{ name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }]
+)
 
 export class MyStorage {
 	public _fields: {
 	}
 
 	constructor(init?: Partial<{}>) {
-		this._fields = {}
+		this._fields = {
+		}
 	}
 
 	public clone(): MyStorage {
 		const cloned = new MyStorage()
 		cloned._fields = {
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public Stat(filename: string): [null | os.FileInfo, $.GoError] {
+	public Stat(filename: string): void {
+		const s = this
 		return [null, null]
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStorage',
-	  new MyStorage(),
-	  [{ name: "Stat", args: [{ name: "filename", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ type: "io/fs.FileMode" }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }] } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  MyStorage,
-	  {}
-	);
+		"main.MyStorage",
+		new MyStorage(),
+		[{ name: "Stat", args: [], returns: [] }],
+		MyStorage,
+		{}
+	)
 }
 
 export async function main(): Promise<void> {
-	let b: Basic = $.markAsStructValue(new MyStorage({}))
-	let [, err] = b!.Stat("test.txt")
+	let b: Basic = $.markAsStructValue($.markAsStructValue(new MyStorage()).clone())
+	let [, err] = b.Stat("test.txt")
 	if (err == null) {
 		$.println("Stat call successful")
 	}

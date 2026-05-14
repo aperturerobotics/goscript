@@ -3,12 +3,11 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export type MyFileMode = number;
+export type MyFileMode = number
 
 export function MyFileMode_String(m: MyFileMode): string {
 	return "mode"
 }
-
 
 export class FileStatus {
 	public get mode(): MyFileMode {
@@ -26,13 +25,13 @@ export class FileStatus {
 	}
 
 	public _fields: {
-		mode: $.VarRef<MyFileMode>;
-		size: $.VarRef<number>;
+		mode: $.VarRef<MyFileMode>
+		size: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{mode?: MyFileMode, size?: number}>) {
 		this._fields = {
-			mode: $.varRef(init?.mode ?? 0 as MyFileMode),
+			mode: $.varRef(init?.mode ?? 0),
 			size: $.varRef(init?.size ?? 0)
 		}
 	}
@@ -43,34 +42,27 @@ export class FileStatus {
 			mode: $.varRef(this._fields.mode.value),
 			size: $.varRef(this._fields.size.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.FileStatus',
-	  new FileStatus(),
-	  [],
-	  FileStatus,
-	  {"mode": "main.MyFileMode", "size": { kind: $.TypeKind.Basic, name: "int64" }}
-	);
+		"main.FileStatus",
+		new FileStatus(),
+		[],
+		FileStatus,
+		{"mode": "main.MyFileMode", "size": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// Test using the named type directly
 	let mode: MyFileMode = 0o644
-	$.println("Mode value:", mode)
+	$.println("Mode value:", $.int(mode))
 	$.println("Mode string:", MyFileMode_String(mode))
-
-	// Test using in struct
-	let status = $.markAsStructValue(new FileStatus({mode: (0o755 as MyFileMode), size: 1024}))
-
-	$.println("Status mode:", status.mode)
+	let status = $.markAsStructValue(new FileStatus({mode: 0o755, size: 1024}))
+	$.println("Status mode:", $.int(status.mode))
 	$.println("Status size:", status.size)
-
-	// Test type assertion and conversion
-	let genericMode: MyFileMode = (0o777 as MyFileMode)
-	$.println("Generic mode:", genericMode)
+	let genericMode: MyFileMode = 0o777
+	$.println("Generic mode:", $.int(genericMode))
 }
 
 

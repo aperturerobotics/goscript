@@ -4,7 +4,6 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	// === Boolean Logic ===
 	let a = true
 	let b = false
 	let and = a && b

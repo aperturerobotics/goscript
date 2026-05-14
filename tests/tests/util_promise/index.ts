@@ -1,2 +1,1 @@
-export { NewPromise, NewPromiseWithResult } from "./util_promise.gs.ts"
-export { PromiseType } from "./util_promise.gs.ts"
+export { NewPromise, NewPromiseWithResult, Promise } from "./util_promise.gs.ts"

@@ -8,10 +8,10 @@ import * as fmt from "@goscript/fmt/index.ts"
 import * as sync from "@goscript/sync/index.ts"
 
 export class AsyncData {
-	public get mu(): sync.Mutex {
+	public get mu(): Mutex {
 		return this._fields.mu.value
 	}
-	public set mu(value: sync.Mutex) {
+	public set mu(value: Mutex) {
 		this._fields.mu.value = value
 	}
 
@@ -23,13 +23,13 @@ export class AsyncData {
 	}
 
 	public _fields: {
-		mu: $.VarRef<sync.Mutex>;
-		value: $.VarRef<number>;
+		mu: $.VarRef<Mutex>
+		value: $.VarRef<number>
 	}
 
-	constructor(init?: Partial<{mu?: sync.Mutex, value?: number}>) {
+	constructor(init?: Partial<{mu?: Mutex, value?: number}>) {
 		this._fields = {
-			mu: $.varRef(init?.mu ? $.markAsStructValue(init.mu.clone()) : new sync.Mutex()),
+			mu: $.varRef(init?.mu ? $.markAsStructValue(init.mu.clone()) : $.markAsStructValue(new Mutex())),
 			value: $.varRef(init?.value ?? 0)
 		}
 	}
@@ -40,34 +40,28 @@ export class AsyncData {
 			mu: $.varRef($.markAsStructValue(this._fields.mu.value.clone())),
 			value: $.varRef(this._fields.value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// This returns a value and should be async due to mutex
 	public async GetValue(): Promise<number> {
 		const d = this
-		using __defer = new $.DisposableStack();
-		await d.mu.Lock()
-		__defer.defer(() => {
-			d.mu.Unlock()
-		});
-		return d.value
+		using __defer = new $.DisposableStack()
+		await $.pointerValue(d).mu.Lock()
+		__defer.defer(() => { $.pointerValue(d).mu.Unlock() })
+		return $.pointerValue(d).value
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.AsyncData',
-	  new AsyncData(),
-	  [{ name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  AsyncData,
-	  {"mu": "sync.Mutex", "value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.AsyncData",
+		new AsyncData(),
+		[{ name: "GetValue", args: [], returns: [] }],
+		AsyncData,
+		{"mu": "sync.Mutex", "value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
-// This should handle the Promise return type correctly
-export async function processData(d: AsyncData | null): Promise<void> {
-	// This should await the async method call
-	let result = await d!.GetValue()
+export async function processData(d: AsyncData | $.VarRef<AsyncData> | null): Promise<void> {
+	let result = await $.pointerValue(d).GetValue()
 	fmt.Printf("Result: %d\n", result)
 }
 

@@ -320,7 +320,10 @@ func CompileGoToTypeScript(t *testing.T, parentModulePath, testDir, tempDir, out
 
 			goFileRelativePath := strings.TrimSuffix(filePathRelativeToTestModule, ".gs.ts") + ".go"
 			comment := fmt.Sprintf("// Generated file based on %s\n// Updated when compliance tests are re-run, DO NOT EDIT!\n\n", goFileRelativePath)
-			finalContent := append([]byte(comment), generatedContent...)
+			finalContent := generatedContent
+			if !strings.HasPrefix(string(generatedContent), "// Generated file based on ") {
+				finalContent = append([]byte(comment), generatedContent...)
+			}
 
 			if writeErr := os.WriteFile(destPath, finalContent, 0o644); writeErr != nil {
 				t.Logf("failed to write file %s: %v", destPath, writeErr)

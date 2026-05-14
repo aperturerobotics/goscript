@@ -6,20 +6,15 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as strings from "@goscript/strings/index.ts"
 
 export async function main(): Promise<void> {
-	// This should trigger the unhandled make call error
-	// strings.Builder uses make internally for its buffer
-	let builder: $.VarRef<strings.Builder> = $.varRef(new strings.Builder())
-	builder!.value.WriteString("Hello")
-	builder!.value.WriteString(" ")
-	builder!.value.WriteString("World")
-
-	let result = builder!.value.String()
+	let builder: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
+	builder.value.WriteString("Hello")
+	builder.value.WriteString(" ")
+	builder.value.WriteString("World")
+	let result = builder.value.String()
 	$.println("Result:", result)
-
-	// Also test direct make with strings.Builder
-	let builderPtr = new strings.Builder({})
-	builderPtr!.WriteString("Direct make test")
-	$.println("Direct:", builderPtr!.String())
+	let builderPtr = new strings.Builder()
+	$.pointerValue(builderPtr).WriteString("Direct make test")
+	$.println("Direct:", $.pointerValue(builderPtr).String())
 }
 
 

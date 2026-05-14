@@ -12,7 +12,7 @@ export class T {
 	}
 
 	public _fields: {
-		val: $.VarRef<number>;
+		val: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{val?: number}>) {
@@ -26,35 +26,34 @@ export class T {
 		cloned._fields = {
 			val: $.varRef(this._fields.val.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public WithDelta(delta: number): T | null {
+	public WithDelta(delta: number): T | $.VarRef<T> | null {
 		const t = this
-		return new T({val: t.val + delta})
+		return new T({val: $.pointerValue(t).val + delta})
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.T',
-	  new T(),
-	  [{ name: "WithDelta", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "main.T" } }] }],
-	  T,
-	  {"val": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.T",
+		new T(),
+		[{ name: "WithDelta", args: [], returns: [] }],
+		T,
+		{"val": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
-export let Base: T | null = NewT(10)
-
-export let Derived: T | null = Base!.WithDelta(5)
-
-export function NewT(v: number): T | null {
+export function NewT(v: number): T | $.VarRef<T> | null {
 	return new T({val: v})
 }
 
+export let Base: T | $.VarRef<T> | null = NewT(10)
+
+export let Derived: T | $.VarRef<T> | null = $.pointerValue(Base).WithDelta(5)
+
 export async function main(): Promise<void> {
-	$.println("Base:", Base!.val)
-	$.println("Derived:", Derived!.val)
+	$.println("Base:", $.pointerValue(Base).val)
+	$.println("Derived:", $.pointerValue(Derived).val)
 }
 
 

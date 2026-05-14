@@ -12,7 +12,7 @@ export class AsyncResource {
 	}
 
 	public _fields: {
-		name: $.VarRef<string>;
+		name: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{name?: string}>) {
@@ -26,36 +26,32 @@ export class AsyncResource {
 		cloned._fields = {
 			name: $.varRef(this._fields.name.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Release is an async method that contains channel operations
 	public async Release(): Promise<void> {
 		const r = this
-		let ch = $.makeChannel<boolean>(1, false, 'both')
-		queueMicrotask(async () => {
-			await $.chanSend(ch, true)
-		})
+		let ch = $.makeChannel<boolean>(1, false, "both")
+		queueMicrotask(async () => { await (async (): Promise<void> => {
+	await $.chanSend(ch, true)
+})() })
 		await $.chanRecv(ch)
-		$.println("Released", r.name)
+		$.println("Released", $.pointerValue(r).name)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.AsyncResource',
-	  new AsyncResource(),
-	  [{ name: "Release", args: [], returns: [] }],
-	  AsyncResource,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.AsyncResource",
+		new AsyncResource(),
+		[{ name: "Release", args: [], returns: [] }],
+		AsyncResource,
+		{"name": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	await using __defer = new $.AsyncDisposableStack();
+	await using __defer = new $.AsyncDisposableStack()
 	let res = new AsyncResource({name: "test"})
-	__defer.defer(async () => {
-		await res!.Release()
-	});
+	__defer.defer(async () => { await $.pointerValue(res).Release() })
 	$.println("main function")
 }
 

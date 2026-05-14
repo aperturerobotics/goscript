@@ -3,13 +3,21 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export type Func1 = ((a: number, b: string) => [boolean, $.GoError]) | null;
+export type Func1 = (a: number, b: string) => [boolean, error]
 
-export type Func2 = ((p0: number, p1: string) => boolean) | null;
+export let fn1: Func1 = null
 
-export type Func3 = (() => void) | null;
+export type Func2 = (_p0: number, _p1: string) => boolean
 
-export type Func4 = ((a: number, ...b: string[]) => void) | null;
+export let fn2: Func2 = null
+
+export type Func3 = () => void
+
+export let fn3: Func3 = null
+
+export type Func4 = (a: number, ...b: $.Slice<string>) => void
+
+export let fn4: Func4 = null
 
 export class MyError {
 	public get s(): string {
@@ -20,7 +28,7 @@ export class MyError {
 	}
 
 	public _fields: {
-		s: $.VarRef<string>;
+		s: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{s?: string}>) {
@@ -34,93 +42,72 @@ export class MyError {
 		cloned._fields = {
 			s: $.varRef(this._fields.s.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public Error(): string {
 		const e = this
-		return e.s
+		return $.pointerValue(e).s
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyError',
-	  new MyError(),
-	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
-	  MyError,
-	  {"s": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.MyError",
+		new MyError(),
+		[{ name: "Error", args: [], returns: [] }],
+		MyError,
+		{"s": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
-export let fn1: Func1 | null = null
-
-export let fn2: Func2 | null = null
-
-export let fn3: Func3 | null = null
-
-export let fn4: Func4 | null = null
-
-export function NewMyError(text: string): MyError | null {
+export function NewMyError(text: string): MyError | $.VarRef<MyError> | null {
 	return new MyError({s: text})
 }
 
 export async function main(): Promise<void> {
-	fn1 = (a: number, b: string): [boolean, $.GoError] => {
-		$.println("fn1 called with:", a, b)
-		if (a > 0) {
-			return [true, null]
-		}
-		return [false, NewMyError("a was not positive")]
+	fn1 = (a: number, b: string): [boolean, error] => {
+	$.println("fn1 called with:", a, b)
+	if (a > 0) {
+		return [true, null]
 	}
-
+	return [false, NewMyError("a was not positive")]
+}
 	fn2 = (p0: number, p1: string): boolean => {
-		$.println("fn2 called with:", p0, p1)
-		return p0 == $.len(p1)
-	}
-
+	$.println("fn2 called with:", p0, p1)
+	return p0 == $.len(p1)
+}
 	fn3 = (): void => {
-		$.println("fn3 called")
+	$.println("fn3 called")
+}
+	fn4 = (a: number, ...b: $.Slice<string>): void => {
+	$.println("fn4 called with: ", a)
+	for (let __rangeIndex = 0; __rangeIndex < $.len(b); __rangeIndex++) {
+		let s = b[__rangeIndex]
+		$.println(" ", s)
 	}
-
-	// Newline after all strings
-	fn4 = (a: number, ...b: string[]): void => {
-		$.println("fn4 called with: ", a)
-		for (let _i = 0; _i < $.len(b); _i++) {
-			let s = b![_i]
-			{
-				$.println(" ", s)
-			}
-		}
-		$.println() // Newline after all strings
-	}
-
-	let [res1, err1] = fn1!(10, "hello")
+	$.println()
+}
+	let [res1, err1] = fn1(10, "hello")
 	$.println("fn1 result 1: ", res1, " ")
 	if (err1 != null) {
-		$.println(err1!.Error())
+		$.println(err1.Error())
 	} else {
 		$.println("nil")
 	}
-
-	let [res1_2, err1_2] = fn1!(-5, "world")
+	let [res1_2, err1_2] = fn1(-5, "world")
 	$.println("fn1 result 2: ", res1_2, " ")
 	if (err1_2 != null) {
-		$.println(err1_2!.Error())
+		$.println(err1_2.Error())
 	} else {
 		$.println("nil")
 	}
-
-	let res2 = fn2!(5, "hello")
+	let res2 = fn2(5, "hello")
 	$.println("fn2 result 1:", res2)
-
-	let res2_2 = fn2!(3, "hey")
+	let res2_2 = fn2(3, "hey")
 	$.println("fn2 result 2:", res2_2)
-
-	fn3!()
-
-	fn4!(1)
-	fn4!(2, "one")
-	fn4!(3, "two", "three")
+	fn3()
+	fn4(1)
+	fn4(2, "one")
+	fn4(3, "two", "three")
 }
 
 

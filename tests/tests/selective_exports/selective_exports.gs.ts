@@ -2,37 +2,27 @@
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
 import * as $ from "@goscript/builtin/index.ts"
-import { ExportedFromUtils, unexportedFromUtils } from "./utils.gs.ts";
+
+import * as __goscript_utils from "./utils.gs.ts"
 
 export async function main(): Promise<void> {
 	$.println("=== Selective Exports Test ===")
-
-	// Call exported function
 	ExportedFunc()
-
-	// Call unexported function from same file
 	unexportedFunc()
-
-	// Call exported function from another file
-	ExportedFromUtils()
-
-	// Call unexported function from another file (should work due to auto-imports)
-	unexportedFromUtils()
-
+	__goscript_utils.ExportedFromUtils()
+	__goscript_utils.unexportedFromUtils()
 	$.println("=== End Selective Exports Test ===")
-}
-
-// ExportedFunc is exported (uppercase) - should appear in index.ts
-export function ExportedFunc(): void {
-	$.println("ExportedFunc called")
-}
-
-// unexportedFunc is not exported (lowercase) - should NOT appear in index.ts
-export function unexportedFunc(): void {
-	$.println("unexportedFunc called")
 }
 
 
 if ($.isMainScript(import.meta)) {
 	await main()
+}
+
+export function ExportedFunc(): void {
+	$.println("ExportedFunc called")
+}
+
+export function unexportedFunc(): void {
+	$.println("unexportedFunc called")
 }

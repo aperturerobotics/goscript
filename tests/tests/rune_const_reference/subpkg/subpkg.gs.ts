@@ -1,9 +1,8 @@
-// Generated file based on subpkg/subpkg.go
+// Generated file based on subpkg.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export let Separator: number = 47
+export const Separator: number = 47
 
-export let Newline: number = 10
-
+export const Newline: number = 10

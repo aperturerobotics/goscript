@@ -21,11 +21,11 @@ export class Person {
 	}
 
 	public _fields: {
-		Name: $.VarRef<string>;
-		Age: $.VarRef<number>;
+		Name: $.VarRef<string>
+		Age: $.VarRef<number>
 	}
 
-	constructor(init?: Partial<{Age?: number, Name?: string}>) {
+	constructor(init?: Partial<{Name?: string, Age?: number}>) {
 		this._fields = {
 			Name: $.varRef(init?.Name ?? ""),
 			Age: $.varRef(init?.Age ?? 0)
@@ -38,17 +38,16 @@ export class Person {
 			Name: $.varRef(this._fields.Name.value),
 			Age: $.varRef(this._fields.Age.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Person',
-	  new Person(),
-	  [],
-	  Person,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.Person",
+		new Person(),
+		[],
+		Person,
+		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export type Stringer = null | {
@@ -56,238 +55,151 @@ export type Stringer = null | {
 }
 
 $.registerInterfaceType(
-  'main.Stringer',
-  null, // Zero value for interface is null
-  [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
+	"main.Stringer",
+	null,
+	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
 
 export async function main(): Promise<void> {
-	// Test basic reflect functions
 	let x = 42
 	let v = $.markAsStructValue(reflect.ValueOf(x).clone())
-	$.println("Type:", reflect.TypeOf(0)!.String())
-	$.println("Value:", v.Int())
-	$.println("Kind:", reflect.Kind_String(v.Kind()))
-
-	// Test with string
+	$.println("Type:", reflect.TypeFor({T: { zero: () => 0 }}).String())
+	$.println("Value:", $.markAsStructValue(v.clone()).Int())
+	$.println("Kind:", reflect.Kind_String($.markAsStructValue(v.clone()).Kind()))
 	let s = "hello"
 	let sv = $.markAsStructValue(reflect.ValueOf(s).clone())
-	$.println("String type:", reflect.TypeOf("")!.String())
-	$.println("String value:", sv.String())
-	$.println("String kind:", reflect.Kind_String(sv.Kind()))
-
-	// Test with slice
-	let slice = $.arrayToSlice<number>([1, 2, 3])
+	$.println("String type:", reflect.TypeFor({T: { zero: () => "" }}).String())
+	$.println("String value:", $.markAsStructValue(sv.clone()).String())
+	$.println("String kind:", reflect.Kind_String($.markAsStructValue(sv.clone()).Kind()))
+	let slice = [1, 2, 3]
 	let sliceV = $.markAsStructValue(reflect.ValueOf(slice).clone())
-	$.println("Slice type:", reflect.SliceOf(reflect.TypeOf(0))!.String())
-	$.println("Slice len:", sliceV.Len())
-	$.println("Slice kind:", reflect.Kind_String(sliceV.Kind()))
-
-	// Test DeepEqual
-	let a = $.arrayToSlice<number>([1, 2, 3])
-	let b = $.arrayToSlice<number>([1, 2, 3])
-	let c = $.arrayToSlice<number>([1, 2, 4])
+	$.println("Slice type:", reflect.TypeFor({T: { zero: () => null }}).String())
+	$.println("Slice len:", $.markAsStructValue(sliceV.clone()).Len())
+	$.println("Slice kind:", reflect.Kind_String($.markAsStructValue(sliceV.clone()).Kind()))
+	let a = [1, 2, 3]
+	let b = [1, 2, 3]
+	let c = [1, 2, 4]
 	$.println("DeepEqual a==b:", reflect.DeepEqual(a, b))
 	$.println("DeepEqual a==c:", reflect.DeepEqual(a, c))
-
-	// Test Zero value
-	let zeroInt = $.markAsStructValue(reflect.Zero(reflect.TypeOf(0)).clone())
-	$.println("Zero int:", zeroInt.Int())
-
-	// Test type construction functions
-	let intType = reflect.TypeOf(0)
+	let zeroInt = $.markAsStructValue(reflect.Zero(reflect.TypeFor({T: { zero: () => 0 }})).clone())
+	$.println("Zero int:", $.markAsStructValue(zeroInt.clone()).Int())
+	let intType = reflect.TypeFor({T: { zero: () => 0 }})
 	let sliceType = reflect.SliceOf(intType)
-	$.println("SliceOf int:", sliceType!.String())
-	$.println("SliceOf kind:", reflect.Kind_String(sliceType!.Kind()))
-
+	$.println("SliceOf int:", sliceType.String())
+	$.println("SliceOf kind:", reflect.Kind_String(sliceType.Kind()))
 	let arrayType = reflect.ArrayOf(5, intType)
-	$.println("ArrayOf 5 int:", arrayType!.String())
-	$.println("ArrayOf kind:", reflect.Kind_String(arrayType!.Kind()))
-
+	$.println("ArrayOf 5 int:", arrayType.String())
+	$.println("ArrayOf kind:", reflect.Kind_String(arrayType.Kind()))
 	let ptrType = reflect.PointerTo(intType)
-	$.println("PointerTo int:", ptrType!.String())
-	$.println("PointerTo kind:", reflect.Kind_String(ptrType!.Kind()))
-
-	// Test PtrTo (alias for PointerTo)
+	$.println("PointerTo int:", ptrType.String())
+	$.println("PointerTo kind:", reflect.Kind_String(ptrType.Kind()))
 	let ptrType2 = reflect.PtrTo(intType)
-	$.println("PtrTo int:", ptrType2!.String())
-
-	// Test New and Indirect
+	$.println("PtrTo int:", ptrType2.String())
 	let newVal = $.markAsStructValue(reflect.New(intType).clone())
-	$.println("New int type:", newVal.Type()!.String())
+	$.println("New int type:", $.markAsStructValue(newVal.clone()).Type().String())
 	let indirectVal = $.markAsStructValue(reflect.Indirect(newVal).clone())
-	$.println("Indirect type:", indirectVal.Type()!.String())
-
-	// Test Zero values for different types
-	let zeroString = $.markAsStructValue(reflect.Zero(reflect.TypeOf("")).clone())
-	$.println("Zero string:", zeroString.String())
-
-	let zeroBool = $.markAsStructValue(reflect.Zero(reflect.TypeOf(false)).clone())
-	$.println("Zero bool:", zeroBool.String()) // Should show the type since it's not a string
-
-	// Test Swapper function
-	let testSlice = $.arrayToSlice<number>([1, 2, 3, 4, 5])
+	$.println("Indirect type:", $.markAsStructValue(indirectVal.clone()).Type().String())
+	let zeroString = $.markAsStructValue(reflect.Zero(reflect.TypeFor({T: { zero: () => "" }})).clone())
+	$.println("Zero string:", $.markAsStructValue(zeroString.clone()).String())
+	let zeroBool = $.markAsStructValue(reflect.Zero(reflect.TypeFor({T: { zero: () => false }})).clone())
+	$.println("Zero bool:", $.markAsStructValue(zeroBool.clone()).String())
+	let testSlice = [1, 2, 3, 4, 5]
 	let swapper = reflect.Swapper(testSlice)
-	$.println("Before swap:", testSlice![0], testSlice![4])
-	swapper!(0, 4)
-	$.println("After swap:", testSlice![0], testSlice![4])
-
-	// Test Copy function
-	let src = $.arrayToSlice<number>([10, 20, 30])
-	let dst = $.makeSlice<number>(2, undefined, 'number')
+	$.println("Before swap:", testSlice[0], testSlice[4])
+	swapper(0, 4)
+	$.println("After swap:", testSlice[0], testSlice[4])
+	let src = [10, 20, 30]
+	let dst = $.makeSlice<number>(2, undefined, "number")
 	let srcVal = $.markAsStructValue(reflect.ValueOf(src).clone())
 	let dstVal = $.markAsStructValue(reflect.ValueOf(dst).clone())
 	let copied = reflect.Copy(dstVal, srcVal)
 	$.println("Copied elements:", copied)
-	$.println("Dst after copy:", dst![0], dst![1])
-
-	// Test struct reflection
-	let person = $.markAsStructValue(new Person({Age: 30, Name: "Alice"}))
-	let personType = reflect.TypeOf(new Person())
-	$.println("Struct type:", personType!.String())
-	$.println("Struct kind:", reflect.Kind_String(personType!.Kind()))
-
+	$.println("Dst after copy:", dst[0], dst[1])
+	let person = $.markAsStructValue(new Person({Name: "Alice", Age: 30}))
+	let personType = reflect.TypeFor({T: { zero: () => new Person() }})
+	$.println("Struct type:", personType.String())
+	$.println("Struct kind:", reflect.Kind_String(personType.Kind()))
 	let personVal = $.markAsStructValue(reflect.ValueOf(person).clone())
-	$.println("Struct value type:", personVal.Type()!.String())
-
-	// Test with different kinds
+	$.println("Struct value type:", $.markAsStructValue(personVal.clone()).Type().String())
 	let f: number = 3.14
 	let fVal = $.markAsStructValue(reflect.ValueOf(f).clone())
-	$.println("Float kind:", reflect.Kind_String(fVal.Kind()))
-
+	$.println("Float kind:", reflect.Kind_String($.markAsStructValue(fVal.clone()).Kind()))
 	let boolVal: boolean = true
 	let bVal = $.markAsStructValue(reflect.ValueOf(boolVal).clone())
-	$.println("Bool kind:", reflect.Kind_String(bVal.Kind()))
-
-	// Test type equality
-	let intType1 = reflect.TypeOf(0)
-	let intType2 = reflect.TypeOf(0)
-	$.println("Same int types:", intType1!.String() == intType2!.String())
-
-	let stringType = reflect.TypeOf("")
-	$.println("Different types:", intType1!.String() == stringType!.String())
-
-	// Test map type construction
-	let mapType = reflect.MapOf(reflect.TypeOf(""), reflect.TypeOf(0))
-	$.println("MapOf string->int:", mapType!.String())
-	$.println("MapOf kind:", reflect.Kind_String(mapType!.Kind()))
-
-	// Test channel direction constants
+	$.println("Bool kind:", reflect.Kind_String($.markAsStructValue(bVal.clone()).Kind()))
+	let intType1 = reflect.TypeFor({T: { zero: () => 0 }})
+	let intType2 = reflect.TypeFor({T: { zero: () => 0 }})
+	$.println("Same int types:", intType1.String() == intType2.String())
+	let stringType = reflect.TypeFor({T: { zero: () => "" }})
+	$.println("Different types:", intType1.String() == stringType.String())
+	let mapType = reflect.MapOf(reflect.TypeFor({T: { zero: () => "" }}), reflect.TypeFor({T: { zero: () => 0 }}))
+	$.println("MapOf string->int:", mapType.String())
+	$.println("MapOf kind:", reflect.Kind_String(mapType.Kind()))
 	$.println("Chan kinds available")
-
-	// Test pointer operations
-	// Note: Pointer-to-pointer reflection has a compiler limitation
-	// var ptr *int = &x
-	// ptrVal := reflect.ValueOf(&ptr)
-	// println("Pointer type:", ptrVal.Type().String())
-	// println("Pointer kind:", ptrVal.Kind().String())
-
-	// Test interface type
-	let iface: null | any = "hello"
+	let iface: any = "hello"
 	let ifaceVal = $.markAsStructValue(reflect.ValueOf(iface).clone())
-	$.println("Interface value type:", ifaceVal.Type()!.String())
-	$.println("Interface kind:", reflect.Kind_String(ifaceVal.Kind()))
-
-	// Test function type
-	let fn = (() => {
-		const fn = (): string => {
-			return ""
-		}
-		fn.__typeInfo = {
-			kind: $.TypeKind.Function,
-			params: ['int'],
-			results: ['string'],
-		}
-		return fn
-	})()
+	$.println("Interface value type:", $.markAsStructValue(ifaceVal.clone()).Type().String())
+	$.println("Interface kind:", reflect.Kind_String($.markAsStructValue(ifaceVal.clone()).Kind()))
+	let fn = (_p0: number): string => {
+	return ""
+}
 	let fnVal = $.markAsStructValue(reflect.ValueOf(fn).clone())
-	$.println("Function type:", fnVal.Type()!.String())
-	$.println("Function kind:", reflect.Kind_String(fnVal.Kind()))
-
-	// Test more complex types
-	let complexSlice = $.arrayToSlice<$.Slice<number>>([[ 1, 2 ], [ 3, 4 ]], 2)
+	$.println("Function type:", $.markAsStructValue(fnVal.clone()).Type().String())
+	$.println("Function kind:", reflect.Kind_String($.markAsStructValue(fnVal.clone()).Kind()))
+	let complexSlice = [[1, 2], [3, 4]]
 	let complexVal = $.markAsStructValue(reflect.ValueOf(complexSlice).clone())
-	$.println("Complex slice type:", complexVal.Type()!.String())
-	$.println("Complex slice kind:", reflect.Kind_String(complexVal.Kind()))
-	$.println("Complex slice len:", complexVal.Len())
-
-	// Test type methods
+	$.println("Complex slice type:", $.markAsStructValue(complexVal.clone()).Type().String())
+	$.println("Complex slice kind:", reflect.Kind_String($.markAsStructValue(complexVal.clone()).Kind()))
+	$.println("Complex slice len:", $.markAsStructValue(complexVal.clone()).Len())
 	$.println("Type size methods:")
-	$.println("Int size:", reflect.TypeOf(0)!.Size())
-	$.println("String size:", reflect.TypeOf("")!.Size())
-	$.println("Slice size:", reflect.SliceOf(reflect.TypeOf(0))!.Size())
-
-	// Test enhanced API surface - functions to implement
+	$.println("Int size:", reflect.TypeFor({T: { zero: () => 0 }}).Size())
+	$.println("String size:", reflect.TypeFor({T: { zero: () => "" }}).Size())
+	$.println("Slice size:", reflect.TypeFor({T: { zero: () => null }}).Size())
 	$.println("Enhanced API tests:")
-
-	// Test MakeSlice
-	let sliceTypeInt = reflect.SliceOf(reflect.TypeOf(0))
+	let sliceTypeInt = reflect.SliceOf(reflect.TypeFor({T: { zero: () => 0 }}))
 	let newSlice = $.markAsStructValue(reflect.MakeSlice(sliceTypeInt, 3, 5).clone())
-	$.println("MakeSlice len:", newSlice.Len())
-	$.println("MakeSlice type:", newSlice.Type()!.String())
-
-	// Test MakeMap
-	let mapTypeStr = reflect.MapOf(reflect.TypeOf(""), reflect.TypeOf(0))
+	$.println("MakeSlice len:", $.markAsStructValue(newSlice.clone()).Len())
+	$.println("MakeSlice type:", $.markAsStructValue(newSlice.clone()).Type().String())
+	let mapTypeStr = reflect.MapOf(reflect.TypeFor({T: { zero: () => "" }}), reflect.TypeFor({T: { zero: () => 0 }}))
 	let newMap = $.markAsStructValue(reflect.MakeMap(mapTypeStr).clone())
-	$.println("MakeMap type:", newMap.Type()!.String())
-
-	// Test Append
-	let originalSlice = $.markAsStructValue(reflect.ValueOf($.arrayToSlice<number>([1, 2])).clone())
+	$.println("MakeMap type:", $.markAsStructValue(newMap.clone()).Type().String())
+	let originalSlice = $.markAsStructValue(reflect.ValueOf([1, 2]).clone())
 	let appendedSlice = $.markAsStructValue(reflect.Append(originalSlice, reflect.ValueOf(3)).clone())
-	$.println("Append result len:", appendedSlice.Len())
-
-	// Test channel types
-	let chanType = reflect.ChanOf(reflect.BothDir, reflect.TypeOf(0))
-	$.println("ChanOf type:", chanType!.String())
-	$.println("ChanOf kind:", reflect.Kind_String(chanType!.Kind()))
-
-	// Test MakeChan
+	$.println("Append result len:", $.markAsStructValue(appendedSlice.clone()).Len())
+	let chanType = reflect.ChanOf(reflect.BothDir, reflect.TypeFor({T: { zero: () => 0 }}))
+	$.println("ChanOf type:", chanType.String())
+	$.println("ChanOf kind:", reflect.Kind_String(chanType.Kind()))
 	let newChan = $.markAsStructValue(reflect.MakeChan(chanType, 0).clone())
-	$.println("MakeChan type:", newChan.Type()!.String())
-
-	// Test different channel directions
-	let sendOnlyChan = reflect.ChanOf(reflect.SendDir, reflect.TypeOf(""))
-	$.println("SendOnly chan type:", sendOnlyChan!.String())
-
-	let recvOnlyChan = reflect.ChanOf(reflect.RecvDir, reflect.TypeOf(false))
-	$.println("RecvOnly chan type:", recvOnlyChan!.String())
-
-	// Test channels with different element types
-	let stringChanType = reflect.ChanOf(reflect.BothDir, reflect.TypeOf(""))
+	$.println("MakeChan type:", $.markAsStructValue(newChan.clone()).Type().String())
+	let sendOnlyChan = reflect.ChanOf(reflect.SendDir, reflect.TypeFor({T: { zero: () => "" }}))
+	$.println("SendOnly chan type:", sendOnlyChan.String())
+	let recvOnlyChan = reflect.ChanOf(reflect.RecvDir, reflect.TypeFor({T: { zero: () => false }}))
+	$.println("RecvOnly chan type:", recvOnlyChan.String())
+	let stringChanType = reflect.ChanOf(reflect.BothDir, reflect.TypeFor({T: { zero: () => "" }}))
 	let stringChan = $.markAsStructValue(reflect.MakeChan(stringChanType, 5).clone())
-	$.println("String chan type:", stringChan.Type()!.String())
-	$.println("String chan elem type:", stringChan.Type()!.Elem()!.String())
-
-	// Test buffered vs unbuffered channels
+	$.println("String chan type:", $.markAsStructValue(stringChan.clone()).Type().String())
+	$.println("String chan elem type:", $.markAsStructValue(stringChan.clone()).Type().Elem().String())
 	let unbufferedChan = $.markAsStructValue(reflect.MakeChan(chanType, 0).clone())
 	let bufferedChan = $.markAsStructValue(reflect.MakeChan(chanType, 10).clone())
-	$.println("Unbuffered chan type:", unbufferedChan.Type()!.String())
-	$.println("Buffered chan type:", bufferedChan.Type()!.String())
-
-	// Test channel reflection properties
-	$.println("Chan elem type:", chanType!.Elem()!.String())
-	$.println("Chan elem kind:", reflect.Kind_String(chanType!.Elem()!.Kind()))
-	$.println("Chan size:", chanType!.Size())
-
-	// Test Select functionality
-	let intChan = $.markAsStructValue(reflect.MakeChan(reflect.ChanOf(reflect.BothDir, reflect.TypeOf(0)), 1).clone())
-	let strChan = $.markAsStructValue(reflect.MakeChan(reflect.ChanOf(reflect.BothDir, reflect.TypeOf("")), 1).clone())
-
-	// Send values to only the string channel to make select deterministic
-	strChan.Send(reflect.ValueOf("hello"))
-
-	let cases = $.arrayToSlice<reflect.SelectCase>([$.markAsStructValue(new reflect.SelectCase({Chan: intChan, Dir: reflect.SelectRecv})), $.markAsStructValue(new reflect.SelectCase({Chan: strChan, Dir: reflect.SelectRecv})), $.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectDefault}))])
+	$.println("Unbuffered chan type:", $.markAsStructValue(unbufferedChan.clone()).Type().String())
+	$.println("Buffered chan type:", $.markAsStructValue(bufferedChan.clone()).Type().String())
+	$.println("Chan elem type:", chanType.Elem().String())
+	$.println("Chan elem kind:", reflect.Kind_String(chanType.Elem().Kind()))
+	$.println("Chan size:", chanType.Size())
+	let intChan = $.markAsStructValue(reflect.MakeChan(reflect.ChanOf(reflect.BothDir, reflect.TypeFor({T: { zero: () => 0 }})), 1).clone())
+	let strChan = $.markAsStructValue(reflect.MakeChan(reflect.ChanOf(reflect.BothDir, reflect.TypeFor({T: { zero: () => "" }})), 1).clone())
+	$.markAsStructValue(strChan.clone()).Send(reflect.ValueOf("hello"))
+	let cases = [$.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectRecv, Chan: $.markAsStructValue(intChan.clone())})), $.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectRecv, Chan: $.markAsStructValue(strChan.clone())})), $.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectDefault}))]
 	let [chosen, recv, recvOK] = reflect.Select(cases)
 	$.println("Select chosen:", chosen, "recvOK:", recvOK)
-
-	// Print the actual received value
-	if (recv.IsValid()) {
-		$.println("Select recv type:", recv.Type()!.String())
-		// Print the actual received value
+	if ($.markAsStructValue(recv.clone()).IsValid()) {
+		$.println("Select recv type:", $.markAsStructValue(recv.clone()).Type().String())
 		if (chosen == 0) {
-			$.println("Select recv value:", recv.Int())
-		} else if (chosen == 1) {
-			$.println("Select recv value:", recv.String())
+			$.println("Select recv value:", $.markAsStructValue(recv.clone()).Int())
+		} else {
+			if (chosen == 1) {
+				$.println("Select recv value:", $.markAsStructValue(recv.clone()).String())
+			}
 		}
 	} else {
 		$.println("Select recv type: invalid")

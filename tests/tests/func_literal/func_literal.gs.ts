@@ -5,10 +5,9 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let greet = (name: string): string => {
-		return "Hello, " + name
-	}
-
-	let message = greet!("world")
+	return "Hello, " + name
+}
+	let message = greet("world")
 	$.println(message)
 }
 

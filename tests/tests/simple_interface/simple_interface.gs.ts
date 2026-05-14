@@ -12,7 +12,7 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		Value: $.VarRef<number>;
+		Value: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{Value?: number}>) {
@@ -26,26 +26,23 @@ export class MyStruct {
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"Value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let original = $.varRef($.markAsStructValue(new MyStruct({Value: 30})))
 	let pAlias = original
-
-	let jAlias: null | any = pAlias
-
-	let { ok: ok } = $.typeAssert<MyStruct | null>(jAlias, {kind: $.TypeKind.Pointer, elemType: 'main.MyStruct'})
+	let jAlias: any = pAlias
+	let [, ok] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(jAlias, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("pointer assertion result:", ok)
 }
 

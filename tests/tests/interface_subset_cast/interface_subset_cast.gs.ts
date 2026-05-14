@@ -9,20 +9,20 @@ export type MyInterface1 = null | {
 }
 
 $.registerInterfaceType(
-  'main.MyInterface1',
-  null, // Zero value for interface is null
-  [{ name: "MyString1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
+	"main.MyInterface1",
+	null,
+	[{ name: "MyString1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
 
 export type MyInterface2 = null | {
 	MyString1(): string
 }
 
 $.registerInterfaceType(
-  'main.MyInterface2',
-  null, // Zero value for interface is null
-  [{ name: "MyString1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
+	"main.MyInterface2",
+	null,
+	[{ name: "MyString1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
 
 export class MyStruct {
 	public get Value1(): string {
@@ -40,8 +40,8 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		Value1: $.VarRef<string>;
-		Value2: $.VarRef<string>;
+		Value1: $.VarRef<string>
+		Value2: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{Value1?: string, Value2?: string}>) {
@@ -57,7 +57,7 @@ export class MyStruct {
 			Value1: $.varRef(this._fields.Value1.value),
 			Value2: $.varRef(this._fields.Value2.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public MyString1(): string {
@@ -70,32 +70,26 @@ export class MyStruct {
 		return m.Value2
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [{ name: "MyString1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
-	  MyStruct,
-	  {"Value1": { kind: $.TypeKind.Basic, name: "string" }, "Value2": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[{ name: "MyString1", args: [], returns: [] }, { name: "MyString2", args: [], returns: [] }],
+		MyStruct,
+		{"Value1": { kind: $.TypeKind.Basic, name: "string" }, "Value2": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({Value1: "hello", Value2: "world"}))
 	let i1: MyInterface1 = $.markAsStructValue(s.clone())
-
-	// Cast from larger interface to smaller interface (subset)
 	let i2: MyInterface2 = i1
-
-	$.println("i1.MyString1():", i1!.MyString1())
-	$.println("i1.MyString2():", i1!.MyString2())
-	$.println("i2.MyString1():", i2!.MyString1())
-
-	// Type assertion from larger to smaller interface
-	let { value: i3, ok: ok } = $.typeAssert<MyInterface2>(i1, 'main.MyInterface2')
+	$.println("i1.MyString1():", i1.MyString1())
+	$.println("i1.MyString2():", i1.MyString2())
+	$.println("i2.MyString1():", i2.MyString1())
+	let [i3, ok] = $.typeAssertTuple<MyInterface2>(i1, "main.MyInterface2")
 	if (ok) {
 		$.println("Type assertion successful")
-		$.println("i3.MyString1():", i3!.MyString1())
+		$.println("i3.MyString1():", i3.MyString1())
 	} else {
 		$.println("Type assertion failed")
 	}

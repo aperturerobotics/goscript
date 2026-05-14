@@ -19,8 +19,8 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
-		MyString: $.VarRef<string>;
+		MyInt: $.VarRef<number>
+		MyString: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string}>) {
@@ -36,34 +36,24 @@ export class MyStruct {
 			MyInt: $.varRef(this._fields.MyInt.value),
 			MyString: $.varRef(this._fields.MyString.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// === Pointer Composite Literal Assignment ===
-	// Creating a pointer to a struct directly using a composite literal with &
 	let structPointer = new MyStruct({MyInt: 42, MyString: "composite literal pointer"})
-
-	// Access fields through the pointer
-	// Expected: 42
-	$.println("MyInt via pointer: Expected: 42, Actual:", structPointer!.MyInt)
-	// Expected: "composite literal pointer"
-	$.println("MyString via pointer: Expected: composite literal pointer, Actual: " + structPointer!.MyString)
-
-	// Modify through the pointer
-	structPointer!.MyInt = 99
-	// Expected: 99
-	$.println("MyInt after modification: Expected: 99, Actual:", structPointer!.MyInt)
+	$.println("MyInt via pointer: Expected: 42, Actual:", $.pointerValue(structPointer).MyInt)
+	$.println("MyString via pointer: Expected: composite literal pointer, Actual: " + $.pointerValue(structPointer).MyString)
+	$.pointerValue(structPointer).MyInt = 99
+	$.println("MyInt after modification: Expected: 99, Actual:", $.pointerValue(structPointer).MyInt)
 }
 
 

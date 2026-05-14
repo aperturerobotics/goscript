@@ -2,6 +2,15 @@ import type { Slice, SliceProxy } from './slice.js'
 import { writeHostStdoutText } from './hostio.js'
 import { formatPrintedArgs } from './print.js'
 import { isSliceProxy } from './slice.js'
+import { isVarRef, type VarRef } from './varRef.js'
+
+/**
+ * Implementation of Go's built-in print function
+ * @param args Arguments to print
+ */
+export function print(...args: any[]): void {
+  writeHostStdoutText(args.length === 0 ? '' : formatPrintedArgs(args))
+}
 
 /**
  * Implementation of Go's built-in println function
@@ -67,6 +76,24 @@ export function assignStruct<T>(target: T, source: T): void {
       targetField.value = sourceField.value
     }
   }
+}
+
+/**
+ * pointerValue unwraps a Go pointer value for generated field, method, and
+ * dereference access. Struct pointers may be represented directly as class
+ * instances or indirectly as VarRef values when the pointer came from taking a
+ * variable's address.
+ */
+export function pointerValue<T>(value: T | VarRef<T> | null | undefined): T {
+  if (value === null || value === undefined) {
+    throw new Error(
+      'runtime error: invalid memory address or nil pointer dereference',
+    )
+  }
+  if (isVarRef(value)) {
+    return value.value as T
+  }
+  return value
 }
 
 // Bytes represents all valid []byte representations in TypeScript

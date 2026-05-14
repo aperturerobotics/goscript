@@ -12,7 +12,7 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		Value: $.VarRef<number>;
+		Value: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{Value?: number}>) {
@@ -26,34 +26,32 @@ export class MyStruct {
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Method that uses the receiver
-	public UsesReceiver(): number {
-		const m = this
-		return m.Value
-	}
-
-	// Method that doesn't use the receiver
 	public DoesNotUseReceiver(): number {
+		const m = this
 		return 42
 	}
 
-	// Register this type with the runtime type system
+	public UsesReceiver(): number {
+		const m = this
+		return $.pointerValue(m).Value
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [{ name: "UsesReceiver", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "DoesNotUseReceiver", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  MyStruct,
-	  {"Value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[{ name: "DoesNotUseReceiver", args: [], returns: [] }, { name: "UsesReceiver", args: [], returns: [] }],
+		MyStruct,
+		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let s = new MyStruct({Value: 10})
-	$.println(s!.UsesReceiver())
-	$.println(s!.DoesNotUseReceiver())
+	$.println($.pointerValue(s).UsesReceiver())
+	$.println($.pointerValue(s).DoesNotUseReceiver())
 }
 
 

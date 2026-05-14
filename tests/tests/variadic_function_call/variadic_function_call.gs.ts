@@ -5,36 +5,27 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as errors from "@goscript/errors/index.ts"
 
-// TestFS simulates the function signature from the user's example
-export function TestFS(fsys: string, ...expected: string[]): $.GoError {
-	return testFS(fsys, ...(expected ?? []))
+export function TestFS(fsys: string, expected: $.Slice<string>): error {
+	return testFS(fsys, expected)
 }
 
-// testFS is the variadic function being called
-export function testFS(fsys: string, ...expected: string[]): $.GoError {
+export function testFS(fsys: string, expected: $.Slice<string>): error {
 	if ($.len(expected) == 0) {
 		return errors.New("no expected values")
 	}
-
 	for (let i = 0; i < $.len(expected); i++) {
-		let exp = expected![i]
-		{
-			$.println("Expected[" + $.runeOrStringToString(i + 48) + "]: " + exp)
-		}
+		let exp = expected[i]
+		$.println("Expected[" + String.fromCodePoint($.int(i + 48)) + "]: " + exp)
 	}
-
 	$.println("File system: " + fsys)
 	return null
 }
 
 export async function main(): Promise<void> {
-	let expected = $.arrayToSlice<string>(["file1.txt", "file2.txt", "file3.txt"])
-
-	// This is the problematic line - should generate spread syntax in TypeScript
-	let err = TestFS("myfs", ...(expected ?? []))
-
+	let expected = ["file1.txt", "file2.txt", "file3.txt"]
+	let err = TestFS("myfs", expected)
 	if (err != null) {
-		$.println("Error: " + err!.Error())
+		$.println("Error: " + err.Error())
 	} else {
 		$.println("Success!")
 	}

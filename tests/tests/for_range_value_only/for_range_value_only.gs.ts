@@ -6,39 +6,28 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as strings from "@goscript/strings/index.ts"
 
 export async function main(): Promise<void> {
-	let s = $.arrayToSlice<number>([10, 20, 30])
+	let s = [10, 20, 30]
 	let sum = 0
-	for (let _i = 0; _i < $.len(s); _i++) {
-		let v = s![_i]
-		{
-			sum += v
-			$.println(v)
-		}
+	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {
+		let v = s[__rangeIndex]
+		sum += v
+		$.println(v)
 	}
 	$.println(sum)
-
-	let arr = $.arrayToSlice<string>(["a", "b", "c"])
-	let concat: $.VarRef<strings.Builder> = $.varRef(new strings.Builder())
-	for (let _i = 0; _i < $.len(arr); _i++) {
-		let val = arr![_i]
-		{
-			concat!.value.WriteString(val)
-			$.println(val)
-		}
+	let arr = ["a", "b", "c"]
+	let concat: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
+	for (let __rangeIndex = 0; __rangeIndex < $.len(arr); __rangeIndex++) {
+		let val = arr[__rangeIndex]
+		concat.value.WriteString(val)
+		$.println(val)
 	}
-	$.println(concat!.value.String())
-
-	// Test with blank identifier for value (should still iterate)
+	$.println(concat.value.String())
 	$.println("Ranging with blank identifier for value:")
 	let count = 0
-	// Both key and value are blank identifiers
-	for (let _i = 0; _i < $.len(s); _i++) {
-		{
-			// Both key and value are blank identifiers
-			count++
-		}
+	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {
+		count++
 	}
-	$.println(count) // Should be 3
+	$.println(count)
 }
 
 

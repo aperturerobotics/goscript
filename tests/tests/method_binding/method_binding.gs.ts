@@ -12,7 +12,7 @@ export class Counter {
 	}
 
 	public _fields: {
-		value: $.VarRef<number>;
+		value: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{value?: number}>) {
@@ -26,22 +26,12 @@ export class Counter {
 		cloned._fields = {
 			value: $.varRef(this._fields.value.value)
 		}
-		return cloned
-	}
-
-	public Increment(): void {
-		const c = this
-		c.value++
+		return $.markAsStructValue(cloned)
 	}
 
 	public GetValue(): number {
 		const c = this
-		return c.value
-	}
-
-	public IncrementValue(): void {
-		const c = this
-		c.value++
+		return $.pointerValue(c).value
 	}
 
 	public GetValueByValue(): number {
@@ -49,65 +39,55 @@ export class Counter {
 		return c.value
 	}
 
-	// Register this type with the runtime type system
+	public Increment(): void {
+		const c = this
+		$.pointerValue(c).value++
+	}
+
+	public IncrementValue(): void {
+		const c = this
+		c.value++
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'main.Counter',
-	  new Counter(),
-	  [{ name: "Increment", args: [], returns: [] }, { name: "GetValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "IncrementValue", args: [], returns: [] }, { name: "GetValueByValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  Counter,
-	  {"value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.Counter",
+		new Counter(),
+		[{ name: "GetValue", args: [], returns: [] }, { name: "GetValueByValue", args: [], returns: [] }, { name: "Increment", args: [], returns: [] }, { name: "IncrementValue", args: [], returns: [] }],
+		Counter,
+		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
-export function callFunction(fn: (() => void) | null): void {
-	fn!()
+export function callFunction(fn: () => void): void {
+	fn()
 }
 
-export function callFunctionWithReturn(fn: (() => number) | null): number {
-	return fn!()
+export function callFunctionWithReturn(fn: () => number): number {
+	return fn()
 }
 
 export async function main(): Promise<void> {
-	// Test with pointer receiver methods
 	let counter = new Counter({value: 0})
-
-	$.println("Initial value:", counter!.GetValue())
-
-	// Test method binding when passed as parameter
-	callFunction(counter!.Increment.bind(counter!))
-	$.println("After calling Increment via parameter:", counter!.GetValue())
-
-	// Test method binding when assigned to variable
-	let incrementFunc = counter!.Increment.bind(counter!)
-	incrementFunc!()
-	$.println("After calling Increment via variable:", counter!.GetValue())
-
-	// Test method with return value
-	let getValueFunc = counter!.GetValue.bind(counter!)
-	let value = getValueFunc!()
+	$.println("Initial value:", $.pointerValue(counter).GetValue())
+	callFunction(((__receiver) => (...args: any[]) => __receiver.Increment(...args))($.pointerValue(counter)))
+	$.println("After calling Increment via parameter:", $.pointerValue(counter).GetValue())
+	let incrementFunc = ((__receiver) => (...args: any[]) => __receiver.Increment(...args))($.pointerValue(counter))
+	incrementFunc()
+	$.println("After calling Increment via variable:", $.pointerValue(counter).GetValue())
+	let getValueFunc = ((__receiver) => (...args: any[]) => __receiver.GetValue(...args))($.pointerValue(counter))
+	let value = getValueFunc()
 	$.println("Value from assigned method:", value)
-
-	// Test with return value via parameter
-	let value2 = callFunctionWithReturn(counter!.GetValue.bind(counter!))
+	let value2 = callFunctionWithReturn(((__receiver) => (...args: any[]) => __receiver.GetValue(...args))($.pointerValue(counter)))
 	$.println("Value from method via parameter:", value2)
-
-	// Test with value receiver methods
 	let counter2 = $.markAsStructValue(new Counter({value: 10}))
-
-	$.println("Initial value2:", counter2.GetValueByValue())
-
-	// This should NOT modify the original counter2 since it's a value receiver
-	callFunction(counter2.IncrementValue.bind($.markAsStructValue(counter2.clone())))
-	$.println("After calling IncrementValue via parameter (should be unchanged):", counter2.GetValueByValue())
-
-	// This should also NOT modify the original counter2
-	let incrementValueFunc = counter2.IncrementValue.bind($.markAsStructValue(counter2.clone()))
-	incrementValueFunc!()
-	$.println("After calling IncrementValue via variable (should be unchanged):", counter2.GetValueByValue())
-
-	// Test method with return value on value receiver
-	let getValueByValueFunc = counter2.GetValueByValue.bind($.markAsStructValue(counter2.clone()))
-	let value3 = getValueByValueFunc!()
+	$.println("Initial value2:", $.markAsStructValue(counter2.clone()).GetValueByValue())
+	callFunction(((__receiver) => (...args: any[]) => __receiver.IncrementValue(...args))($.markAsStructValue(counter2.clone())))
+	$.println("After calling IncrementValue via parameter (should be unchanged):", $.markAsStructValue(counter2.clone()).GetValueByValue())
+	let incrementValueFunc = ((__receiver) => (...args: any[]) => __receiver.IncrementValue(...args))($.markAsStructValue(counter2.clone()))
+	incrementValueFunc()
+	$.println("After calling IncrementValue via variable (should be unchanged):", $.markAsStructValue(counter2.clone()).GetValueByValue())
+	let getValueByValueFunc = ((__receiver) => (...args: any[]) => __receiver.GetValueByValue(...args))($.markAsStructValue(counter2.clone()))
+	let value3 = getValueByValueFunc()
 	$.println("Value from assigned value method:", value3)
 }
 

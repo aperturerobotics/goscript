@@ -5,16 +5,6 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as reflect from "@goscript/reflect/index.ts"
 
-export type MyInterface = null | {
-	SomeMethod(): void
-}
-
-$.registerInterfaceType(
-  'main.MyInterface',
-  null, // Zero value for interface is null
-  [{ name: "SomeMethod", args: [], returns: [] }]
-);
-
 export class MyStruct {
 	public get Name(): string {
 		return this._fields.Name.value
@@ -31,11 +21,11 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		Name: $.VarRef<string>;
-		Age: $.VarRef<number>;
+		Name: $.VarRef<string>
+		Age: $.VarRef<number>
 	}
 
-	constructor(init?: Partial<{Age?: number, Name?: string}>) {
+	constructor(init?: Partial<{Name?: string, Age?: number}>) {
 		this._fields = {
 			Name: $.varRef(init?.Name ?? ""),
 			Age: $.varRef(init?.Age ?? 0)
@@ -48,37 +38,38 @@ export class MyStruct {
 			Name: $.varRef(this._fields.Name.value),
 			Age: $.varRef(this._fields.Age.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
+export type MyInterface = null | {
+	SomeMethod(): void
+}
+
+$.registerInterfaceType(
+	"main.MyInterface",
+	null,
+	[{ name: "SomeMethod", args: [], returns: [] }]
+)
+
 export async function main(): Promise<void> {
-	// Test TypeFor with named interface type
-	let t1 = reflect.getInterfaceLiteralTypeByName("main.MyInterface")
-	$.println("TypeFor interface:", t1!.String())
-
-	// Test TypeFor with struct type
-	let t2 = reflect.TypeOf(new MyStruct())
-	$.println("TypeFor struct:", t2!.String())
-	$.println("TypeFor struct kind:", t2!.Kind() == reflect.Struct)
-
-	// Test TypeFor with int type
-	let t3 = reflect.TypeOf(0)
-	$.println("TypeFor int:", t3!.String())
-	$.println("TypeFor int kind:", t3!.Kind() == reflect.Int)
-
-	// Test Pointer constant (should be same as Ptr)
-	$.println("Pointer constant:", reflect.Ptr == reflect.Ptr)
-
+	let t1 = reflect.TypeFor({T: { zero: () => null, methods: {SomeMethod: MyInterface_SomeMethod} }})
+	$.println("TypeFor interface:", t1.String())
+	let t2 = reflect.TypeFor({T: { zero: () => new MyStruct() }})
+	$.println("TypeFor struct:", t2.String())
+	$.println("TypeFor struct kind:", t2.Kind() == reflect.Struct)
+	let t3 = reflect.TypeFor({T: { zero: () => 0 }})
+	$.println("TypeFor int:", t3.String())
+	$.println("TypeFor int kind:", t3.Kind() == reflect.Int)
+	$.println("Pointer constant:", reflect.Pointer == reflect.Pointer)
 	$.println("reflect_typefor test finished")
 }
 

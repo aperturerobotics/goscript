@@ -19,8 +19,8 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
-		MyString: $.VarRef<string>;
+		MyInt: $.VarRef<number>
+		MyString: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string}>) {
@@ -36,28 +36,26 @@ export class MyStruct {
 			MyInt: $.varRef(this._fields.MyInt.value),
 			MyString: $.varRef(this._fields.MyString.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// GetMyString returns the MyString field.
 	public GetMyString(): string {
 		const m = this
 		return m.MyString
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [{ name: "GetMyString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[{ name: "GetMyString", args: [], returns: [] }],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let ms = $.markAsStructValue(new MyStruct({MyInt: 1, MyString: "bar"}))
-	$.println("Method call on value: Expected: bar, Actual:", ms.GetMyString())
+	$.println("Method call on value: Expected: bar, Actual:", $.markAsStructValue(ms.clone()).GetMyString())
 }
 
 

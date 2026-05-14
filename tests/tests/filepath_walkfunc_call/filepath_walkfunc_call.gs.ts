@@ -10,14 +10,14 @@ import * as filepath from "@goscript/path/filepath/index.ts"
 import * as time from "@goscript/time/index.ts"
 
 export type Filesystem = null | {
-	ReadDir(path: string): [$.Slice<null | os.FileInfo>, $.GoError]
+	ReadDir(path: string): [$.Slice<FileInfo>, error]
 }
 
 $.registerInterfaceType(
-  'main.Filesystem',
-  null, // Zero value for interface is null
-  [{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ type: "io/fs.FileMode" }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }] } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
+	"main.Filesystem",
+	null,
+	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "fs.FileInfo" } }, { name: "_r1", type: "error" }] }]
+)
 
 export class MockFileInfo {
 	public get name(): string {
@@ -42,12 +42,12 @@ export class MockFileInfo {
 	}
 
 	public _fields: {
-		name: $.VarRef<string>;
-		size: $.VarRef<number>;
-		dir: $.VarRef<boolean>;
+		name: $.VarRef<string>
+		size: $.VarRef<number>
+		dir: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{dir?: boolean, name?: string, size?: number}>) {
+	constructor(init?: Partial<{name?: string, size?: number, dir?: boolean}>) {
 		this._fields = {
 			name: $.varRef(init?.name ?? ""),
 			size: $.varRef(init?.size ?? 0),
@@ -62,7 +62,22 @@ export class MockFileInfo {
 			size: $.varRef(this._fields.size.value),
 			dir: $.varRef(this._fields.dir.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
+	}
+
+	public IsDir(): boolean {
+		const m = this
+		return m.dir
+	}
+
+	public ModTime(): Time {
+		const m = this
+		return $.markAsStructValue(new time.Time())
+	}
+
+	public Mode(): FileMode {
+		const m = this
+		return 0o644
 	}
 
 	public Name(): string {
@@ -75,31 +90,18 @@ export class MockFileInfo {
 		return m.size
 	}
 
-	public Mode(): os.FileMode {
-		return 0o644
-	}
-
-	public ModTime(): time.Time {
-		return $.markAsStructValue(new time.Time({}))
-	}
-
-	public IsDir(): boolean {
+	public Sys(): any {
 		const m = this
-		return m.dir
-	}
-
-	public Sys(): null | any {
 		return null
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MockFileInfo',
-	  new MockFileInfo(),
-	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "Mode", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint32" } }] }, { name: "ModTime", args: [], returns: [{ type: "time.Time" }] }, { name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }],
-	  MockFileInfo,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "size": { kind: $.TypeKind.Basic, name: "int64" }, "dir": { kind: $.TypeKind.Basic, name: "bool" }}
-	);
+		"main.MockFileInfo",
+		new MockFileInfo(),
+		[{ name: "IsDir", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "Sys", args: [], returns: [] }],
+		MockFileInfo,
+		{"name": { kind: $.TypeKind.Basic, name: "string" }, "size": { kind: $.TypeKind.Basic, name: "int" }, "dir": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export class MockFilesystem {
@@ -107,106 +109,81 @@ export class MockFilesystem {
 	}
 
 	constructor(init?: Partial<{}>) {
-		this._fields = {}
+		this._fields = {
+		}
 	}
 
 	public clone(): MockFilesystem {
 		const cloned = new MockFilesystem()
 		cloned._fields = {
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public ReadDir(path: string): [$.Slice<null | os.FileInfo>, $.GoError] {
-		return [$.arrayToSlice<null | os.FileInfo>([$.markAsStructValue(new MockFileInfo({dir: false, name: "file1.txt", size: 100})), $.markAsStructValue(new MockFileInfo({dir: true, name: "subdir", size: 0}))]), null]
+	public ReadDir(path: string): void {
+		const fs = this
+		return [[$.markAsStructValue($.markAsStructValue(new MockFileInfo({name: "file1.txt", size: 100, dir: false})).clone()), $.markAsStructValue($.markAsStructValue(new MockFileInfo({name: "subdir", size: 0, dir: true})).clone())], null]
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MockFilesystem',
-	  new MockFilesystem(),
-	  [{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ type: "io/fs.FileMode" }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }] } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  MockFilesystem,
-	  {}
-	);
+		"main.MockFilesystem",
+		new MockFilesystem(),
+		[{ name: "ReadDir", args: [], returns: [] }],
+		MockFilesystem,
+		{}
+	)
 }
 
-// This is the exact function signature from the user's example
-// walkFn is filepath.WalkFunc which should be nullable and need ! operator
-export function walk(fs: Filesystem, path: string, info: null | os.FileInfo, walkFn: filepath.WalkFunc | null): $.GoError {
-	let filename = path + "/" + info!.Name()
+export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): error {
+	let filename = path + "/" + info.Name()
 	let fileInfo = info
-
-	// This is the exact call that should generate walkFn!(filename, fileInfo, err)
-	// but currently generates walkFn(filename, fileInfo, err) - missing !
 	{
-		let err = walkFn!(filename, fileInfo, null)
+		let err = walkFn(filename, fileInfo, null)
 		if (err != null && err != filepath.SkipDir) {
 			return err
 		}
 	}
-
-	// Additional test case with error variable
-	let walkErr: $.GoError = null
+	let walkErr: error = null
 	{
-		let err = walkFn!(filename, fileInfo, walkErr)
+		let err = walkFn(filename, fileInfo, walkErr)
 		if (err != null && err != filepath.SkipDir) {
 			return err
 		}
 	}
-
 	return null
 }
 
-// Additional test with direct filepath.WalkFunc usage
-export function walkFiles(rootPath: string, walkFn: filepath.WalkFunc | null): $.GoError {
-	// Test case: direct call to filepath.WalkFunc parameter
-	// Should generate: walkFn!(rootPath, nil, nil)
-	// Currently generates: walkFn(rootPath, nil, nil) - missing !
-	return walkFn!(rootPath, null, null)
+export function walkFiles(rootPath: string, walkFn: WalkFunc): error {
+	return walkFn(rootPath, null, null)
 }
 
-// Test with filepath.WalkFunc in different contexts
-export function processPath(walkFn: filepath.WalkFunc | null): void {
-	// Test case: function call in standalone statement
-	// Should generate: walkFn!("test", nil, nil)
-	walkFn!("test", null, null)
-
-	// Test case: function call in if condition
-	// Should generate: if walkFn!("test", nil, nil) != nil
-	if (walkFn!("test", null, null) != null) {
+export function processPath(walkFn: WalkFunc): void {
+	walkFn("test", null, null)
+	if (walkFn("test", null, null) != null) {
 		$.println("Error occurred")
 	}
 }
 
 export async function main(): Promise<void> {
-	let fs = $.markAsStructValue(new MockFilesystem({}))
-	let fileInfo = $.markAsStructValue(new MockFileInfo({dir: false, name: "test.txt", size: 50}))
-
-	// Test with actual filepath.WalkFunc
-	let walkFunc = (path: string, info: null | os.FileInfo, err: $.GoError): $.GoError => {
-		if (info != null) {
-			$.println("Walking:", path, "size:", info!.Size())
-		}
-		if (err != null) {
-			$.println("Error:", err!.Error())
-		}
-		return null
+	let fs = $.markAsStructValue(new MockFilesystem())
+	let fileInfo = $.markAsStructValue(new MockFileInfo({name: "test.txt", size: 50, dir: false}))
+	let walkFunc = (path: string, info: FileInfo, err: error): error => {
+	if (info != null) {
+		$.println("Walking:", path, "size:", info.Size())
 	}
-
-	// Test the walk function
+	if (err != null) {
+		$.println("Error:", err.Error())
+	}
+	return null
+}
 	let err = walk(fs, "/test", fileInfo, walkFunc)
 	if (err != null) {
-		$.println("Walk error:", err!.Error())
+		$.println("Walk error:", err.Error())
 	}
-
-	// Test walkFiles
 	let err2 = walkFiles("/root", walkFunc)
 	if (err2 != null) {
-		$.println("WalkFiles error:", err2!.Error())
+		$.println("WalkFiles error:", err2.Error())
 	}
-
-	// Test processPath
 	processPath(walkFunc)
 }
 

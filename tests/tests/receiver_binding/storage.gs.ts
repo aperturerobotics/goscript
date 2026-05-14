@@ -3,11 +3,13 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
+import * as __goscript_methods from "./methods.gs.ts"
+
 export class storage {
-	public get bytes(): $.Bytes {
+	public get bytes(): $.Slice<number> {
 		return this._fields.bytes.value
 	}
-	public set bytes(value: $.Bytes) {
+	public set bytes(value: $.Slice<number>) {
 		this._fields.bytes.value = value
 	}
 
@@ -19,13 +21,13 @@ export class storage {
 	}
 
 	public _fields: {
-		bytes: $.VarRef<$.Bytes>;
-		name: $.VarRef<string>;
+		bytes: $.VarRef<$.Slice<number>>
+		name: $.VarRef<string>
 	}
 
-	constructor(init?: Partial<{bytes?: $.Bytes, name?: string}>) {
+	constructor(init?: Partial<{bytes?: $.Slice<number>, name?: string}>) {
 		this._fields = {
-			bytes: $.varRef(init?.bytes ?? new Uint8Array(0)),
+			bytes: $.varRef(init?.bytes ?? null),
 			name: $.varRef(init?.name ?? "")
 		}
 	}
@@ -36,61 +38,52 @@ export class storage {
 			bytes: $.varRef(this._fields.bytes.value),
 			name: $.varRef(this._fields.name.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Very simple method - just field access
-	public Len(): number {
-		const s = this
-		return $.len(s.bytes)
-	}
-
-	// Very simple method - just field assignment
-	public Truncate(): void {
-		const s = this
-		s.bytes = new Uint8Array(0)
-	}
-
-	// Simple method - field access in return
-	public Name(): string {
-		const s = this
-		return s.name
-	}
-
-	// Simple method - field assignment with parameter
-	public SetName(name: string): void {
-		const s = this
-		s.name = name
-	}
-
-	// Simple method - field access with built-in function call
 	public IsEmpty(): boolean {
 		const s = this
-		return $.len(s.bytes) == 0
+		return $.len($.pointerValue(s).bytes) == 0
 	}
 
-	// Register this type with the runtime type system
+	public Len(): number {
+		const s = this
+		return $.len($.pointerValue(s).bytes)
+	}
+
+	public Name(): string {
+		const s = this
+		return $.pointerValue(s).name
+	}
+
+	public SetName(name: string): void {
+		const s = this
+		$.pointerValue(s).name = name
+	}
+
+	public Truncate(): void {
+		const s = this
+		$.pointerValue(s).bytes = $.makeSlice<number>(0, undefined, "byte")
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'main.storage',
-	  new storage(),
-	  [{ name: "Len", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Truncate", args: [], returns: [] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "SetName", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "IsEmpty", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
-	  storage,
-	  {"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "name": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.storage",
+		new storage(),
+		[{ name: "IsEmpty", args: [], returns: [] }, { name: "Len", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "SetName", args: [], returns: [] }, { name: "Truncate", args: [], returns: [] }],
+		storage,
+		{"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "name": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let s = new storage({bytes: new Uint8Array(5), name: "test"})
-
-	$.println("Name:", s!.Name())
-	$.println("Length:", s!.Len())
-	$.println("Empty:", s!.IsEmpty())
-
-	s!.Truncate()
-	$.println("Length after truncate:", s!.Len())
-
-	s!.SetName("new_name")
-	$.println("New name:", s!.Name())
+	let s = new storage({bytes: $.makeSlice<number>(5, undefined, "byte"), name: "test"})
+	$.println("Name:", $.pointerValue(s).Name())
+	$.println("Length:", $.pointerValue(s).Len())
+	$.println("Empty:", $.pointerValue(s).IsEmpty())
+	$.pointerValue(s).Truncate()
+	$.println("Length after truncate:", $.pointerValue(s).Len())
+	$.pointerValue(s).SetName("new_name")
+	$.println("New name:", $.pointerValue(s).Name())
 }
 
 

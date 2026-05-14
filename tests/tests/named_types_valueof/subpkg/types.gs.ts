@@ -1,43 +1,43 @@
 // Generated file based on subpkg/types.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
+// Generated file based on types.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
 import * as $ from "@goscript/builtin/index.ts"
 
-export let IntValue: MyInt = 42
+export type MyInt = number
 
-export let UintValue: MyUint = 0xFF
+export type MyUint = number
 
-export let FloatValue: MyFloat = 3.14
+export type MyFloat = number
 
-export let StringValue: MyString = "hello"
+export type MyString = string
 
-export let BoolValue: MyBool = true
+export type MyBool = boolean
 
-export let LevelValue: Level1 = 0x1000
+export type Level1 = number
 
-export type Level3 = number;
+export type Level2 = number
 
-export type MyBool = boolean;
+export type Level3 = number
 
-export type MyFloat = number;
+export const IntValue: MyInt = 42
 
-export type MyInt = number;
+export const UintValue: MyUint = 0xFF
 
-export type MyString = string;
+export const FloatValue: MyFloat = 3.14
 
-export type MyUint = number;
+export const StringValue: MyString = "hello"
 
-export type Level2 = Level3;
+export const BoolValue: MyBool = true
 
-export type Level1 = Level2;
+export const LevelValue: Level1 = 0x1000
 
-// Helper function that uses bitwise operations
 export function GetCombinedFlags(): MyUint {
-	return (255 | 0x10)
+	return UintValue | 0x10
 }
 
-// Function that tests multi-level indirection
 export function GetLevelValue(): Level1 {
-	return (4096 | 0x0F)
+	return LevelValue | 0x0F
 }
-

@@ -1219,3 +1219,43 @@ export function typedNil(typeName: string): any {
     __isTypedNil: true,
   })
 }
+
+export function namedFunction<T>(fn: T, typeName: string): T {
+  if (typeof fn !== 'function') {
+    return fn
+  }
+  return Object.assign(fn, { __goTypeName: typeName })
+}
+
+export interface GenericTypeDescriptor<T = any> {
+  zero?: () => T
+  methods?: Record<string, (receiver: T, ...args: any[]) => any>
+}
+
+export type GenericTypeArgs = Record<string, GenericTypeDescriptor>
+
+export function genericZero<T>(
+  typeArgs: GenericTypeArgs | undefined,
+  name: string,
+  fallback: T,
+): T {
+  const zero = typeArgs?.[name]?.zero
+  if (zero) {
+    return zero() as T
+  }
+  return fallback
+}
+
+export function callGenericMethod<T>(
+  typeArgs: GenericTypeArgs | undefined,
+  name: string,
+  method: string,
+  receiver: T,
+  ...args: any[]
+): any {
+  const fn = typeArgs?.[name]?.methods?.[method]
+  if (fn) {
+    return fn(receiver, ...args)
+  }
+  return (receiver as any)[method](...args)
+}

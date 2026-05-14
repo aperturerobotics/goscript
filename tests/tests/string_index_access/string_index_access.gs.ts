@@ -5,21 +5,14 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let myStr1 = "testing"
-	$.println("Byte from myStr1[0]:", $.indexString(myStr1, 0)) // Expected: t (byte value 116)
-	$.println("Byte from myStr1[2]:", $.indexString(myStr1, 2)) // Expected: s (byte value 115)
-	$.println("Byte from myStr1[6]:", $.indexString(myStr1, 6)) // Expected: g (byte value 103)
-
-	let myStr2 = "你好世界" // "Hello World" in Chinese
-	// Accessing bytes of multi-byte characters
-	// '你' is E4 BD A0 in UTF-8
-	// '好' is E5 A5 BD in UTF-8
-	// '世' is E4 B8 96 in UTF-8
-	// '界' is E7 95 C2 8C in UTF-8 (界 seems to be E7 95 8C, let's assume 3 bytes for simplicity in this example)
-	// For "你好世界", bytes are: E4 BD A0 E5 A5 BD E4 B8 96 E7 95 8C
-	$.println("Byte from myStr2[0]:", $.indexString(myStr2, 0)) // Expected: E4 (byte value 228) - First byte of '你'
-	$.println("Byte from myStr2[1]:", $.indexString(myStr2, 1)) // Expected: BD (byte value 189) - Second byte of '你'
-	$.println("Byte from myStr2[2]:", $.indexString(myStr2, 2)) // Expected: A0 (byte value 160) - Third byte of '你'
-	$.println("Byte from myStr2[3]:", $.indexString(myStr2, 3)) // Expected: E5 (byte value 229) - First byte of '好'
+	$.println("Byte from myStr1[0]:", $.indexStringOrBytes(myStr1, 0))
+	$.println("Byte from myStr1[2]:", $.indexStringOrBytes(myStr1, 2))
+	$.println("Byte from myStr1[6]:", $.indexStringOrBytes(myStr1, 6))
+	let myStr2 = "你好世界"
+	$.println("Byte from myStr2[0]:", $.indexStringOrBytes(myStr2, 0))
+	$.println("Byte from myStr2[1]:", $.indexStringOrBytes(myStr2, 1))
+	$.println("Byte from myStr2[2]:", $.indexStringOrBytes(myStr2, 2))
+	$.println("Byte from myStr2[3]:", $.indexStringOrBytes(myStr2, 3))
 }
 
 

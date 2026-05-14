@@ -4,20 +4,20 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	let ch = $.makeChannel<string>(15, "", 'both')
-	for (let i = 0; i < 10; i++) {{
+	let ch = $.makeChannel<string>(15, "", "both")
+	for (let i = 0; i < 10; i++) {
 		$.println("Hello", i)
 		await $.chanSend(ch, "testing")
 	}
-}
-ch.close()
-for (;;) {
-	const { value: val, ok: _ok } = await $.chanRecvWithOk(ch)
-	if (!_ok) break
-	{
+	ch.close()
+	while (true) {
+		let __goscriptRange134 = await $.chanRecvWithOk(ch)
+		if (!__goscriptRange134.ok) {
+			break
+		}
+		let val = __goscriptRange134.value
 		$.println("from ch", val)
 	}
-}
 }
 
 

@@ -4,7 +4,6 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export class TestStruct {
-	// IntField is a commented integer field.
 	public get IntField(): number {
 		return this._fields.IntField.value
 	}
@@ -12,7 +11,6 @@ export class TestStruct {
 		this._fields.IntField.value = value
 	}
 
-	// StringField is a commented string field.
 	public get StringField(): string {
 		return this._fields.StringField.value
 	}
@@ -21,8 +19,8 @@ export class TestStruct {
 	}
 
 	public _fields: {
-		IntField: $.VarRef<number>;
-		StringField: $.VarRef<string>;
+		IntField: $.VarRef<number>
+		StringField: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{IntField?: number, StringField?: string}>) {
@@ -38,17 +36,16 @@ export class TestStruct {
 			IntField: $.varRef(this._fields.IntField.value),
 			StringField: $.varRef(this._fields.StringField.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.TestStruct',
-	  new TestStruct(),
-	  [],
-	  TestStruct,
-	  {"IntField": { kind: $.TypeKind.Basic, name: "int" }, "StringField": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.TestStruct",
+		new TestStruct(),
+		[],
+		TestStruct,
+		{"IntField": { kind: $.TypeKind.Basic, name: "int" }, "StringField": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {

@@ -11,15 +11,8 @@ export function increment_counter(): void {
 }
 
 export async function main(): Promise<void> {
-
-	// We need to manually increment i or change the condition
-	// to ensure the loop terminates as increment_counter() in post
-	// does not affect 'i'.
 	for (let i = 0; i < 2; increment_counter()) {
 		$.println("loop iteration:", i)
-		// We need to manually increment i or change the condition
-		// to ensure the loop terminates as increment_counter() in post
-		// does not affect 'i'.
 		i++
 	}
 	$.println("done", "final counter:", counter)

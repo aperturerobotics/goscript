@@ -18,7 +18,6 @@ export class MyStruct {
 		this._fields.MyString.value = value
 	}
 
-	//nolint:unused
 	public get myBool(): boolean {
 		return this._fields.myBool.value
 	}
@@ -27,9 +26,9 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
-		MyString: $.VarRef<string>;
-		myBool: $.VarRef<boolean>;
+		MyInt: $.VarRef<number>
+		MyString: $.VarRef<string>
+		myBool: $.VarRef<boolean>
 	}
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string, myBool?: boolean}>) {
@@ -47,33 +46,27 @@ export class MyStruct {
 			MyString: $.varRef(this._fields.MyString.value),
 			myBool: $.varRef(this._fields.myBool.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
-// NewMyStruct creates a new MyStruct instance.
 export function NewMyStruct(s: string): MyStruct {
 	return $.markAsStructValue(new MyStruct({MyString: s}))
 }
 
 export async function main(): Promise<void> {
-	// === Function Call Result Assignment (Value Copy) ===
-	// Assigning the result of a function that returns a struct creates a copy.
 	let structFromFunc = $.markAsStructValue(NewMyStruct("function result").clone())
 	let structFromFuncCopy = $.markAsStructValue(structFromFunc.clone())
 	structFromFuncCopy.MyString = "modified function result copy"
-	// Expected: "function result"
 	$.println("Original struct from function: Expected: function result, Actual: " + structFromFunc.MyString)
-	// Expected: "modified function result copy"
 	$.println("Modified struct from function copy: Expected: modified function result copy, Actual: " + structFromFuncCopy.MyString)
 }
 

@@ -3,96 +3,91 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-// ignore first value by assigning to blank identifier
+export type ByteSize = number
 
-export let KB: ByteSize = (1 << (10 * 0))
+export const _: number = iota
 
-export let MB: ByteSize = 0
+export const KB: ByteSize = 1 << (10 * iota)
 
-export let GB: ByteSize = 0
+export const MB: ByteSize = 0
 
-export let TB: ByteSize = 0
+export const GB: ByteSize = 0
 
-export let North: Direction = 0
+export const TB: ByteSize = 0
 
-export let East: Direction = 0
+export type Direction = number
 
-export let South: Direction = 0
+export const North: Direction = iota
 
-export let West: Direction = 0
+export const East: Direction = 0
 
-export let Red: number = 0
+export const South: Direction = 0
 
-export let Green: number = 0
+export const West: Direction = 0
 
-export let Blue: number = 0
+export const Red: number = iota
 
-export let Sunday: number = 0
+export const Green: number = 0
 
-export let Monday: number = 0
+export const Blue: number = 0
 
-export let Tuesday: number = 0
+export const Sunday: number = iota
 
-export let Wednesday: number = 0
+export const Monday: number = 0
 
-export let Thursday: number = 0
+export const Tuesday: number = 0
 
-export let Friday: number = 0
+export const Wednesday: number = 0
 
-export let Saturday: number = 0
+export const Thursday: number = 0
 
-export let First: number = 0 + 1
+export const Friday: number = 0
 
-export let Second: number = 0 + 1
+export const Saturday: number = 0
 
-export let Third: number = 0 + 1
+export const First: number = iota + 1
 
-export let A: number = 0 * 2
+export const Second: number = iota + 1
 
-export let B: number = 0
+export const Third: number = iota + 1
 
-export let C: number = 0
+export const A: number = iota * 2
 
-export type ByteSize = number;
+export const B: number = 0
 
-export type Direction = number;
+export const C: number = 0
 
 export async function main(): Promise<void> {
 	$.println("ByteSize constants:")
-	$.println("KB:", 1024)
-	$.println("MB:", 1048576)
-	$.println("GB:", 1073741824)
-	$.println("TB:", 1099511627776)
-
+	$.println("KB:", $.int(KB))
+	$.println("MB:", $.int(MB))
+	$.println("GB:", $.int(GB))
+	$.println("TB:", $.int(TB))
 	$.println("Direction constants:")
-	$.println("North:", 0)
-	$.println("East:", 1)
-	$.println("South:", 2)
-	$.println("West:", 3)
-
+	$.println("North:", $.int(North))
+	$.println("East:", $.int(East))
+	$.println("South:", $.int(South))
+	$.println("West:", $.int(West))
 	$.println("Color constants:")
-	$.println("Red:", 0)
-	$.println("Green:", 1)
-	$.println("Blue:", 2)
-
+	$.println("Red:", Red)
+	$.println("Green:", Green)
+	$.println("Blue:", Blue)
 	$.println("Day constants:")
-	$.println("Sunday:", 0)
-	$.println("Monday:", 1)
-	$.println("Tuesday:", 2)
-	$.println("Wednesday:", 3)
-	$.println("Thursday:", 4)
-	$.println("Friday:", 5)
-	$.println("Saturday:", 6)
-
+	$.println("Sunday:", Sunday)
+	$.println("Monday:", Monday)
+	$.println("Tuesday:", Tuesday)
+	$.println("Wednesday:", Wednesday)
+	$.println("Thursday:", Thursday)
+	$.println("Friday:", Friday)
+	$.println("Saturday:", Saturday)
 	$.println("Arithmetic constants:")
-	$.println("First:", 1)
-	$.println("Second:", 2)
-	$.println("Third:", 3)
-
+	$.println("First:", First)
+	$.println("Second:", Second)
+	$.println("Third:", Third)
 	$.println("Multiplication constants:")
-	$.println("A:", 0)
-	$.println("B:", 2)
-	$.println("C:", 4)
+	$.println("A:", A)
+	$.println("B:", B)
+	$.println("C:", C)
 }
 
 

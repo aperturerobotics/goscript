@@ -4,11 +4,10 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	// Start an anonymous function worker
-	let msgs = $.makeChannel<string>(1, "", 'both')
-	queueMicrotask(async () => {
-		await $.chanSend(msgs, "anonymous function worker")
-	})
+	let msgs = $.makeChannel<string>(1, "", "both")
+	queueMicrotask(async () => { await (async (): Promise<void> => {
+	await $.chanSend(msgs, "anonymous function worker")
+})() })
 	$.println(await $.chanRecv(msgs))
 }
 

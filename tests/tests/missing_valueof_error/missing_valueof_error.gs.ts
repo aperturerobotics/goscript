@@ -4,20 +4,20 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export class buffer {
-	public get data(): $.Bytes {
+	public get data(): $.Slice<number> {
 		return this._fields.data.value
 	}
-	public set data(value: $.Bytes) {
+	public set data(value: $.Slice<number>) {
 		this._fields.data.value = value
 	}
 
 	public _fields: {
-		data: $.VarRef<$.Bytes>;
+		data: $.VarRef<$.Slice<number>>
 	}
 
-	constructor(init?: Partial<{data?: $.Bytes}>) {
+	constructor(init?: Partial<{data?: $.Slice<number>}>) {
 		this._fields = {
-			data: $.varRef(init?.data ?? new Uint8Array(0))
+			data: $.varRef(init?.data ?? null)
 		}
 	}
 
@@ -26,32 +26,31 @@ export class buffer {
 		cloned._fields = {
 			data: $.varRef(this._fields.data.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.buffer',
-	  new buffer(),
-	  [],
-	  buffer,
-	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
-	);
+		"main.buffer",
+		new buffer(),
+		[],
+		buffer,
+		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
 }
 
 export class printer {
-	public get buf(): buffer | null {
+	public get buf(): buffer | $.VarRef<buffer> | null {
 		return this._fields.buf.value
 	}
-	public set buf(value: buffer | null) {
+	public set buf(value: buffer | $.VarRef<buffer> | null) {
 		this._fields.buf.value = value
 	}
 
 	public _fields: {
-		buf: $.VarRef<buffer | null>;
+		buf: $.VarRef<buffer | $.VarRef<buffer> | null>
 	}
 
-	constructor(init?: Partial<{buf?: buffer | null}>) {
+	constructor(init?: Partial<{buf?: buffer | $.VarRef<buffer> | null}>) {
 		this._fields = {
 			buf: $.varRef(init?.buf ?? null)
 		}
@@ -60,56 +59,49 @@ export class printer {
 	public clone(): printer {
 		const cloned = new printer()
 		cloned._fields = {
-			buf: $.varRef(this._fields.buf.value ? $.markAsStructValue(this._fields.buf.value.clone()) : null)
+			buf: $.varRef(this._fields.buf.value)
 		}
-		return cloned
-	}
-
-	public free(): void {
-		const p = this
-		if ($.cap(p.buf!.data) > 64 * 1024) {
-			p.buf = null
-		} else {
-			// Reset buffer
-			p.buf!.data = $.goSlice(p.buf!.data, undefined, 0)
-		}
+		return $.markAsStructValue(cloned)
 	}
 
 	public checkCapacity(): number {
 		const p = this
-		return $.cap(p.buf!.data)
+		return $.cap($.pointerValue($.pointerValue(p).buf).data)
+	}
+
+	public free(): void {
+		const p = this
+		if ($.cap($.pointerValue($.pointerValue(p).buf).data) > 64 * 1024) {
+			$.pointerValue(p).buf = null
+		} else {
+			$.pointerValue($.pointerValue(p).buf).data = $.goSlice($.pointerValue($.pointerValue(p).buf).data, undefined, 0)
+		}
 	}
 
 	public getLength(): number {
 		const p = this
-		return $.len(p.buf!.data)
+		return $.len($.pointerValue($.pointerValue(p).buf).data)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.printer',
-	  new printer(),
-	  [{ name: "free", args: [], returns: [] }, { name: "checkCapacity", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "getLength", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  printer,
-	  {"buf": { kind: $.TypeKind.Pointer, elemType: "main.buffer" }}
-	);
+		"main.printer",
+		new printer(),
+		[{ name: "checkCapacity", args: [], returns: [] }, { name: "free", args: [], returns: [] }, { name: "getLength", args: [], returns: [] }],
+		printer,
+		{"buf": { kind: $.TypeKind.Pointer, elemType: "main.buffer" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let buf = new buffer({data: $.makeSlice<number>(0, 100000, 'byte')})
+	let buf = new buffer({data: $.makeSlice<number>(0, 100000, "byte")})
 	let p = new printer({buf: buf})
-
-	$.println("Initial capacity:", p!.checkCapacity())
-	$.println("Initial length:", p!.getLength())
-
-	// Add some data
-	p!.buf!.data = $.append(p!.buf!.data, ...$.stringToBytes("hello world"))
-	$.println("After append length:", p!.getLength())
-
-	// Test free
-	p!.free()
-	if (p!.buf != null) {
-		$.println("Buffer not freed, capacity:", p!.checkCapacity())
+	$.println("Initial capacity:", $.pointerValue(p).checkCapacity())
+	$.println("Initial length:", $.pointerValue(p).getLength())
+	$.pointerValue($.pointerValue(p).buf).data = $.append($.pointerValue($.pointerValue(p).buf).data, "hello world")
+	$.println("After append length:", $.pointerValue(p).getLength())
+	$.pointerValue(p).free()
+	if ($.pointerValue(p).buf != null) {
+		$.println("Buffer not freed, capacity:", $.pointerValue(p).checkCapacity())
 	} else {
 		$.println("Buffer was freed")
 	}

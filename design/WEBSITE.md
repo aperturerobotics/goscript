@@ -2,7 +2,7 @@
 
 ## Overview
 
-A GitHub Pages website for GoScript featuring interactive demos that compile Go code to TypeScript and execute it in the browser. The website demonstrates GoScript's capabilities through a playground and compliance test browser.
+A GitHub Pages website for GoScript featuring precompiled Go-to-TypeScript demos and browser execution of generated TypeScript. The website demonstrates GoScript's package output through a playground and compliance test browser without requiring a live compiler in the browser.
 
 ## Architecture
 
@@ -30,8 +30,13 @@ For the initial release, we use pre-compiled examples to avoid the complexity of
 Compile the GoScript compiler to WASM for client-side compilation:
 
 - Requires solving `go/packages` dependency on Go toolchain
-- Could use a simplified parser-only approach for single-file programs
+- Could use a separately scoped parser-only approach for single-file programs
 - Would enable live editing without server
+
+The current v2 WASM adapter is intentionally diagnostic-only. Direct browser
+source-string compilation returns `goscript/wasm:single-file-unsupported`, and
+the website consumes precompiled examples/tests until direct single-file support
+is designed and verified.
 
 ## Website Structure
 
@@ -49,11 +54,12 @@ website/
 │       ├── main.js         # Core utilities
 │       ├── playground.js   # Playground logic
 │       ├── tests.js        # Test browser logic
-│       └── runtime.js      # Bundled goscript runtime
-├── data/
+│       └── goscript-wasm.js # WASM adapter wrapper
+├── public/data/
 │   ├── examples.json       # Curated examples with pre-compiled TS
+│   ├── required-packages.json # Runtime/override package manifest
 │   └── tests.json          # Test manifest with source/output
-└── CNAME                   # Custom domain (optional)
+└── public/CNAME            # Custom domain
 ```
 
 ## Implementation
@@ -63,15 +69,15 @@ website/
 1. **Generate Test Manifest** (`scripts/generate-test-manifest.ts`)
    - Scan `tests/tests/` directory
    - Extract Go source, TypeScript output, expected logs
-   - Generate `website/data/tests.json`
+   - Generate `website/public/data/tests.json`
 
-2. **Bundle Runtime** (`scripts/bundle-runtime.ts`)
-   - Bundle `@goscript/builtin` for browser using esbuild
-   - Output to `website/assets/js/runtime.js`
-
-3. **Generate Examples** (`scripts/generate-examples.ts`)
+2. **Generate Examples** (`scripts/generate-examples.ts`)
    - Compile curated Go examples using goscript
-   - Generate `website/data/examples.json`
+   - Generate `website/public/data/examples.json`
+
+3. **Vite Build** (`cd website && bun run build`)
+   - Builds the static site from checked-in HTML/CSS/JS and generated public data
+   - Does not start the website dev server
 
 ### Pages
 
@@ -102,23 +108,19 @@ website/
 
 ### Runtime Execution
 
-Generated TypeScript is executed in-browser using dynamic import and function evaluation:
+Generated TypeScript is executed in-browser by bundling precompiled output with
+the browser runtime and a resolver for `@goscript/*` imports:
 
 ```javascript
-// Load the bundled runtime
-const $ = await import('./runtime.js')
+const result = await esbuild.transform(generatedCode, {
+  loader: 'ts',
+  format: 'esm',
+})
 
-// Capture output
-const output = []
-const printlnCapture = (...args) => output.push(args.map(String).join(' '))
-
-// Execute the generated code in an async context
-const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
-const execCode = new AsyncFunction('$', 'println', generatedCode)
-await execCode($, printlnCapture)
-
-// Display results
-console.log(output.join('\n'))
+const module = await import(URL.createObjectURL(new Blob([result.code], {
+  type: 'text/javascript',
+})))
+await module.main()
 ```
 
 ## Build Scripts
@@ -128,11 +130,10 @@ console.log(output.join('\n'))
 ```json
 {
   "scripts": {
-    "website:build": "npm run website:manifest && npm run website:bundle && npm run website:examples",
+    "website:build": "bun run website:manifest && bun run website:examples && cd website && bun run build",
     "website:manifest": "bun run scripts/generate-test-manifest.ts",
-    "website:bundle": "bun run scripts/bundle-runtime.ts",
     "website:examples": "bun run scripts/generate-examples.ts",
-    "website:serve": "cd website && python3 -m http.server 8080"
+    "website:serve": "cd website && bun run preview"
   }
 }
 ```

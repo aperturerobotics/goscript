@@ -3,15 +3,15 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function getAdder(x: number): ((p0: number) => number) | null {
+export function getAdder(x: number): (_p0: number) => number {
 	return (y: number): number => {
-		return x + y
-	}
+	return x + y
+}
 }
 
 export async function main(): Promise<void> {
 	let adder = getAdder(5)
-	let result = adder!(3)
+	let result = adder(3)
 	$.println("Result:", result)
 }
 

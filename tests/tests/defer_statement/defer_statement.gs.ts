@@ -4,10 +4,8 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	using __defer = new $.DisposableStack();
-	__defer.defer(() => {
-		$.println("deferred")
-	});
+	using __defer = new $.DisposableStack()
+	__defer.defer(() => { $.println("deferred") })
 	$.println("main")
 }
 

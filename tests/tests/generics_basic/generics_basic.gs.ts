@@ -3,14 +3,14 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function printVal<T extends any>(val: T): void {
+export function printVal(__typeArgs: $.GenericTypeArgs | undefined, val: any): void {
 	$.println(val)
 }
 
 export async function main(): Promise<void> {
-	printVal(10)
-	printVal("hello")
-	printVal(true)
+	printVal({T: { zero: () => 0 }}, 10)
+	printVal({T: { zero: () => "" }}, "hello")
+	printVal({T: { zero: () => false }}, true)
 }
 
 

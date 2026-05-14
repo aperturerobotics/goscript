@@ -3,24 +3,19 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export let Pi: number = 3.14
+export const Pi: number = 3.14
 
-export let Truth: boolean = false
+export const Truth: boolean = false
 
-// TODO: Handle large integer constants and bit shifts exceeding JS number limits.
-// Big      = 1 << 60
-// Small    = Big >> 59 // Commented out as it depends on Big
-export let Greeting: string = "Hello, Constants!"
+export const Greeting: string = "Hello, Constants!"
 
-export let Nothing: null | any = null
+export let Nothing: any = null
 
 export async function main(): Promise<void> {
-	$.println(3.14)
-	$.println(false)
-	// println(Big) // Commented out until large integer handling is implemented
-	// println(Small) // Commented out as it depends on Big
-	$.println("Hello, Constants!")
-	$.println($.byte(4))
+	$.println(Pi)
+	$.println(Truth)
+	$.println(Greeting)
+	$.println($.int(4))
 }
 
 

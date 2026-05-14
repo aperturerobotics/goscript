@@ -4,11 +4,10 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	for (let i = 0; i < 1; i++) {{
+	for (let i = 0; i < 1; i++) {
 		$.println(i)
 	}
-}
-$.println("done")
+	$.println("done")
 }
 
 

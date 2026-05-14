@@ -14,7 +14,7 @@ export class field {
 	}
 
 	public _fields: {
-		name: $.VarRef<string>;
+		name: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{name?: string}>) {
@@ -28,33 +28,30 @@ export class field {
 		cloned._fields = {
 			name: $.varRef(this._fields.name.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.field',
-	  new field(),
-	  [],
-	  field,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.field",
+		new field(),
+		[],
+		field,
+		{"name": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let fields: $.Slice<field> = null
 	$.println("fields before:", fields)
-
 	slices.SortFunc(fields, (a: field, b: field): number => {
-		if (a.name < b.name) {
-			return -1
-		}
-		if (a.name > b.name) {
-			return 1
-		}
-		return 0
-	})
-
+	if (a.name < b.name) {
+		return -1
+	}
+	if (a.name > b.name) {
+		return 1
+	}
+	return 0
+})
 	$.println("fields after:", fields)
 }
 

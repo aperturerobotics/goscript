@@ -5,19 +5,17 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as sync from "@goscript/sync/index.ts"
 
-export let cache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
+export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
-// This function calls an async method on a package-level variable
-export async function getValueFromCache(key: string): Promise<[null | any, boolean]> {
-	return await cache!.value.Load(key)
+export async function getValueFromCache(key: string): Promise<void> {
+	return await cache.value.Load(key)
 }
 
 export async function main(): Promise<void> {
-	await cache!.value.Store("hello", "world")
-
+	await cache.value.Store("hello", "world")
 	let [val, ok] = await getValueFromCache("hello")
 	if (ok) {
-		$.println("Found:", $.mustTypeAssert<string>(val, {kind: $.TypeKind.Basic, name: 'string'}))
+		$.println("Found:", $.mustTypeAssert<string>(val, { kind: $.TypeKind.Basic, name: "string" }))
 	}
 }
 

@@ -18,7 +18,6 @@ export class MyStruct {
 		this._fields.MyString.value = value
 	}
 
-	//nolint:unused
 	public get myBool(): boolean {
 		return this._fields.myBool.value
 	}
@@ -27,9 +26,9 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
-		MyString: $.VarRef<string>;
-		myBool: $.VarRef<boolean>;
+		MyInt: $.VarRef<number>
+		MyString: $.VarRef<string>
+		myBool: $.VarRef<boolean>
 	}
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string, myBool?: boolean}>) {
@@ -47,29 +46,23 @@ export class MyStruct {
 			MyString: $.varRef(this._fields.MyString.value),
 			myBool: $.varRef(this._fields.myBool.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// === Composite Literal Assignment (Value Copy) ===
-	// Creating a struct directly using a composite literal.
 	let structLiteral = $.markAsStructValue(new MyStruct({MyString: "composite literal"}))
-	// Assigning it creates another independent copy.
 	let structLiteralCopy = $.markAsStructValue(structLiteral.clone())
 	structLiteralCopy.MyString = "modified composite literal copy"
-	// Expected: "composite literal"
 	$.println("Original struct literal: Expected: composite literal, Actual: " + structLiteral.MyString)
-	// Expected: "modified composite literal copy"
 	$.println("Modified struct literal copy: Expected: modified composite literal copy, Actual: " + structLiteralCopy.MyString)
 }
 

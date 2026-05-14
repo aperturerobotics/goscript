@@ -4,31 +4,33 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export type MultiParamReturner = null | {
-	Process(data: $.Bytes, count: number, _p2: string): [boolean, $.GoError]
+	Process(data: $.Slice<number>, count: number, _: string): [boolean, error]
 }
 
 $.registerInterfaceType(
-  'main.MultiParamReturner',
-  null, // Zero value for interface is null
-  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
+	"main.MultiParamReturner",
+	null,
+	[{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "_r1", type: "error" }] }]
+)
 
 export class MyProcessor {
 	public _fields: {
 	}
 
 	constructor(init?: Partial<{}>) {
-		this._fields = {}
+		this._fields = {
+		}
 	}
 
 	public clone(): MyProcessor {
 		const cloned = new MyProcessor()
 		cloned._fields = {
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public Process(data: $.Bytes, count: number, _: string): [boolean, $.GoError] {
+	public Process(data: $.Slice<number>, count: number, _: string): void {
+		const p = this
 		if (count > 0 && $.len(data) > 0) {
 			$.println("Processing successful")
 			return [true, null]
@@ -37,30 +39,26 @@ export class MyProcessor {
 		return [false, null]
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyProcessor',
-	  new MyProcessor(),
-	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  MyProcessor,
-	  {}
-	);
+		"main.MyProcessor",
+		new MyProcessor(),
+		[{ name: "Process", args: [], returns: [] }],
+		MyProcessor,
+		{}
+	)
 }
 
 export async function main(): Promise<void> {
-	let processor: MultiParamReturner = $.markAsStructValue(new MyProcessor({}))
-
-	let data = new Uint8Array([1, 2, 3])
-	let [success, ] = processor!.Process(data, 5, "unused")
-
+	let processor: MultiParamReturner = $.markAsStructValue($.markAsStructValue(new MyProcessor()).clone())
+	let data = [1, 2, 3]
+	let [success, ] = processor.Process(data, 5, "unused")
 	if (success) {
 		$.println("Main: Success reported")
 	} else {
 		$.println("Main: Failure reported")
 	}
-
-	// test case: re-use success variable, ignore second variable
-	;[success] = processor!.Process(data, 5, "unused")
+	let __goscriptTuple743 = processor.Process(data, 5, "unused")
+	success = __goscriptTuple743[0]
 	if (success) {
 		$.println("Main: Success reported")
 	} else {

@@ -8,57 +8,29 @@ export class Greeter {
 	}
 
 	constructor(init?: Partial<{}>) {
-		this._fields = {}
+		this._fields = {
+		}
 	}
 
 	public clone(): Greeter {
 		const cloned = new Greeter()
 		cloned._fields = {
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public Greet(): string {
+		const g = this
 		return "Hello from Greeter"
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Greeter',
-	  new Greeter(),
-	  [{ name: "Greet", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
-	  Greeter,
-	  {}
-	);
-}
-
-export class MyStringer {
-	public _fields: {
-	}
-
-	constructor(init?: Partial<{}>) {
-		this._fields = {}
-	}
-
-	public clone(): MyStringer {
-		const cloned = new MyStringer()
-		cloned._fields = {
-		}
-		return cloned
-	}
-
-	public String(): string {
-		return "MyStringer implementation"
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'main.MyStringer',
-	  new MyStringer(),
-	  [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
-	  MyStringer,
-	  {}
-	);
+		"main.Greeter",
+		new Greeter(),
+		[{ name: "Greet", args: [], returns: [] }],
+		Greeter,
+		{}
+	)
 }
 
 export type Stringer = null | {
@@ -66,66 +38,74 @@ export type Stringer = null | {
 }
 
 $.registerInterfaceType(
-  'main.Stringer',
-  null, // Zero value for interface is null
-  [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
+	"main.Stringer",
+	null,
+	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
+
+export class MyStringer {
+	public _fields: {
+	}
+
+	constructor(init?: Partial<{}>) {
+		this._fields = {
+		}
+	}
+
+	public clone(): MyStringer {
+		const cloned = new MyStringer()
+		cloned._fields = {
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public String(): string {
+		const ms = this
+		return "MyStringer implementation"
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.MyStringer",
+		new MyStringer(),
+		[{ name: "String", args: [], returns: [] }],
+		MyStringer,
+		{}
+	)
+}
 
 export async function main(): Promise<void> {
-	let i: null | any = null
-	i = $.markAsStructValue(new Greeter({}))
-
-	// Successful type assertion to an inline interface
-	let { value: g, ok: ok } = $.typeAssert<null | {
-		Greet(): string
-	}>(i, {kind: $.TypeKind.Interface, methods: [{ name: 'Greet', args: [], returns: [{ type: {kind: $.TypeKind.Basic, name: 'string'} }] }]})
+	let i: any = null
+	i = $.markAsStructValue($.markAsStructValue(new Greeter()).clone())
+	let [g, ok] = $.typeAssertTuple<any>(i, { kind: $.TypeKind.Interface, methods: [{ name: "Greet", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok) {
-		$.println("Greet assertion successful:", g!.Greet())
+		$.println("Greet assertion successful:", g.Greet())
 	} else {
 		$.println("Greet assertion failed")
 	}
-
-	// Failing type assertion to a different inline interface
-	let { value: s, ok: ok2 } = $.typeAssert<null | {
-		NonExistentMethod(): number
-	}>(i, {kind: $.TypeKind.Interface, methods: [{ name: 'NonExistentMethod', args: [], returns: [{ type: {kind: $.TypeKind.Basic, name: 'number'} }] }]})
+	let [s, ok2] = $.typeAssertTuple<any>(i, { kind: $.TypeKind.Interface, methods: [{ name: "NonExistentMethod", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }] })
 	if (ok2) {
-		$.println("NonExistentMethod assertion successful (unexpected):", s!.NonExistentMethod())
+		$.println("NonExistentMethod assertion successful (unexpected):", s.NonExistentMethod())
 	} else {
 		$.println("NonExistentMethod assertion failed as expected")
 	}
-
-	// Successful type assertion to a named interface, where the asserted value also implements an inline interface method
-	let j: null | any = null
-	j = $.markAsStructValue(new MyStringer({}))
-
-	// Assert 'j' (which holds MyStringer) to an inline interface that MyStringer satisfies.
-	let { value: inlineMs, ok: ok4 } = $.typeAssert<null | {
-		String(): string
-	}>(j, {kind: $.TypeKind.Interface, methods: [{ name: 'String', args: [], returns: [{ type: {kind: $.TypeKind.Basic, name: 'string'} }] }]})
+	let j: any = null
+	j = $.markAsStructValue($.markAsStructValue(new MyStringer()).clone())
+	let [inlineMs, ok4] = $.typeAssertTuple<any>(j, { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok4) {
-		$.println("Inline String assertion successful:", inlineMs!.String())
+		$.println("Inline String assertion successful:", inlineMs.String())
 	} else {
 		$.println("Inline String assertion failed")
 	}
-
-	// Test case: variable of named interface type, asserted to inline interface
 	let k: Stringer = null
-	k = $.markAsStructValue(new MyStringer({}))
-
-	let { value: inlineK, ok: ok5 } = $.typeAssert<null | {
-		String(): string
-	}>(k, {kind: $.TypeKind.Interface, methods: [{ name: 'String', args: [], returns: [{ type: {kind: $.TypeKind.Basic, name: 'string'} }] }]})
+	k = $.markAsStructValue($.markAsStructValue(new MyStringer()).clone())
+	let [inlineK, ok5] = $.typeAssertTuple<any>(k, { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok5) {
-		$.println("k.(interface{ String() string }) successful:", inlineK!.String())
+		$.println("k.(interface{ String() string }) successful:", inlineK.String())
 	} else {
 		$.println("k.(interface{ String() string }) failed")
 	}
-
-	// Test case: nil value of an inline interface type assigned to interface{}
-	let l: null | any = $.typedNil("*struct{Name string}")
-
-	let { value: ptr, ok: ok6 } = $.typeAssert<{ Name?: string } | null>(l, {kind: $.TypeKind.Pointer, elemType: {kind: $.TypeKind.Struct, fields: {'Name': {kind: $.TypeKind.Basic, name: 'string'}}, methods: []}})
+	let l: any = $.typedNil("*struct{Name string}")
+	let [ptr, ok6] = $.typeAssertTuple<$.VarRef<Record<string, unknown>> | null>(l, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Struct, methods: [], fields: {"Name": { kind: $.TypeKind.Basic, name: "string" }} } })
 	if (ok6) {
 		if (ptr == null) {
 			$.println("l.(*struct{ Name string }) successful, ptr is nil as expected")

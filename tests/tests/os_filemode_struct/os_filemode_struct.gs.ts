@@ -6,10 +6,10 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as os from "@goscript/os/index.ts"
 
 export class file {
-	public get mode(): os.FileMode {
+	public get mode(): FileMode {
 		return this._fields.mode.value
 	}
-	public set mode(value: os.FileMode) {
+	public set mode(value: FileMode) {
 		this._fields.mode.value = value
 	}
 
@@ -21,13 +21,13 @@ export class file {
 	}
 
 	public _fields: {
-		mode: $.VarRef<os.FileMode>;
-		name: $.VarRef<string>;
+		mode: $.VarRef<FileMode>
+		name: $.VarRef<string>
 	}
 
-	constructor(init?: Partial<{mode?: os.FileMode, name?: string}>) {
+	constructor(init?: Partial<{mode?: FileMode, name?: string}>) {
 		this._fields = {
-			mode: $.varRef(init?.mode ?? 0 as os.FileMode),
+			mode: $.varRef(init?.mode ?? 0),
 			name: $.varRef(init?.name ?? "")
 		}
 	}
@@ -38,27 +38,23 @@ export class file {
 			mode: $.varRef(this._fields.mode.value),
 			name: $.varRef(this._fields.name.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.file',
-	  new file(),
-	  [],
-	  file,
-	  {"mode": { kind: $.TypeKind.Basic, name: "uint32" }, "name": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.file",
+		new file(),
+		[],
+		file,
+		{"mode": "fs.FileMode", "name": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let f = $.markAsStructValue(new file({mode: (0o644 as os.FileMode), name: "test.txt"}))
-
+	let f = $.markAsStructValue(new file({mode: 0o644, name: "test.txt"}))
 	$.println("File mode:", $.int(f.mode))
 	$.println("File name:", f.name)
-
-	// Test type assertion
-	let mode: os.FileMode = (0o755 as os.FileMode)
+	let mode: FileMode = 0o755
 	$.println("Mode type:", $.int(mode))
 }
 

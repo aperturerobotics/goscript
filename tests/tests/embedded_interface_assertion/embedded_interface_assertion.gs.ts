@@ -3,74 +3,77 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export type Closer = null | {
-	Close(): $.GoError
+export type Reader = null | {
+	Read(_p0: $.Slice<number>): [number, error]
 }
 
 $.registerInterfaceType(
-  'main.Closer',
-  null, // Zero value for interface is null
-  [{ name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
+	"main.Reader",
+	null,
+	[{ name: "Read", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
+)
+
+export type Closer = null | {
+	Close(): error
+}
+
+$.registerInterfaceType(
+	"main.Closer",
+	null,
+	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }]
+)
+
+export type ReadCloser = null | {
+	Close(): error
+	Read(_p0: $.Slice<number>): [number, error]
+}
+
+$.registerInterfaceType(
+	"main.ReadCloser",
+	null,
+	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
+)
 
 export class MyStruct {
 	public _fields: {
 	}
 
 	constructor(init?: Partial<{}>) {
-		this._fields = {}
+		this._fields = {
+		}
 	}
 
 	public clone(): MyStruct {
 		const cloned = new MyStruct()
 		cloned._fields = {
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public Read(p: $.Bytes): [number, $.GoError] {
-		return [0, null]
-	}
-
-	public Close(): $.GoError {
+	public Close(): error {
+		const m = this
 		return null
 	}
 
-	// Register this type with the runtime type system
+	public Read(p: $.Slice<number>): void {
+		const m = this
+		return [0, null]
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  MyStruct,
-	  {}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }],
+		MyStruct,
+		{}
+	)
 }
-
-export type ReadCloser = null | Reader & Closer
-
-$.registerInterfaceType(
-  'main.ReadCloser',
-  null, // Zero value for interface is null
-  []
-);
-
-export type Reader = null | {
-	// Read reads data from the reader.
-	Read(_p0: $.Bytes): [number, $.GoError]
-}
-
-$.registerInterfaceType(
-  'main.Reader',
-  null, // Zero value for interface is null
-  [{ name: "Read", args: [{ name: "", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
 
 export async function main(): Promise<void> {
 	let rwc: ReadCloser = null
-	let s = $.markAsStructValue(new MyStruct({}))
+	let s = $.markAsStructValue(new MyStruct())
 	rwc = $.markAsStructValue(s.clone())
-
-	let { ok: ok } = $.typeAssert<ReadCloser>(rwc, 'main.ReadCloser')
+	let [, ok] = $.typeAssertTuple<ReadCloser>(rwc, "main.ReadCloser")
 	if (ok) {
 		$.println("Embedded interface assertion successful")
 	} else {

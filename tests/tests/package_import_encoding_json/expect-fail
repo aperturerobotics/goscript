@@ -1,0 +1,2 @@
+Expected v2 failure: encoding/json still requires unsupported dependency
+lowering across encoding/base64, encoding/json, and unicode/utf16.

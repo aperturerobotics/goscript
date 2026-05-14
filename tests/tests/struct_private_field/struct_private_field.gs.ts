@@ -12,7 +12,7 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		myPrivate: $.VarRef<number>;
+		myPrivate: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{myPrivate?: number}>) {
@@ -26,23 +26,22 @@ export class MyStruct {
 		cloned._fields = {
 			myPrivate: $.varRef(this._fields.myPrivate.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"myPrivate": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"myPrivate": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let myStruct = new MyStruct({myPrivate: 4})
-	myStruct!.myPrivate = 10
-	$.println(myStruct!.myPrivate)
+	$.pointerValue(myStruct).myPrivate = 10
+	$.println($.pointerValue(myStruct).myPrivate)
 }
 
 

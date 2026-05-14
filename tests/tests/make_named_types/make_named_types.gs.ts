@@ -4,16 +4,10 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	// Test make() calls with named types as the first argument
-	// This tests the compiler's ability to handle make() with type aliases/named types
-	// rather than direct type expressions like []int or map[string]int
-
-	type MySlice = $.Slice<number>;
-	let s: MySlice = $.makeSlice<number>(5, undefined, 'number')
+	type MySlice = $.Slice<number>
+	let s: MySlice = $.makeSlice<number>(5, undefined, "number")
 	$.println("Length:", $.len(s))
-
-	// Test make() with named map type
-	type MyMap = Map<string, number> | null;
+	type MyMap = Map<string, number> | null
 	let m: MyMap = $.makeMap<string, number>()
 	$.mapSet(m, "test", 42)
 	$.println("Value:", $.mapGet(m, "test", 0)[0])

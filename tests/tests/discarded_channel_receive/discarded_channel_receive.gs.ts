@@ -4,15 +4,13 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	let ch = $.makeChannel<number>(0, 0, 'both')
-
-	// Close the channel to allow the main goroutine to exit
-	queueMicrotask(async () => {
-		await $.chanSend(ch, 1)
-		ch.close() // Close the channel to allow the main goroutine to exit
-	})
+	let ch = $.makeChannel<number>(0, 0, "both")
+	queueMicrotask(async () => { await (async (): Promise<void> => {
+	await $.chanSend(ch, 1)
+	ch.close()
+})() })
 	await $.chanRecv(ch)
-	$.println("done") // Add a print statement to verify execution
+	$.println("done")
 }
 
 

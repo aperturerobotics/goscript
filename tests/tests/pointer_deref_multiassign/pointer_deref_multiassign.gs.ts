@@ -26,9 +26,9 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
-		MyString: $.VarRef<string>;
-		myBool: $.VarRef<boolean>;
+		MyInt: $.VarRef<number>
+		MyString: $.VarRef<string>
+		myBool: $.VarRef<boolean>
 	}
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string, myBool?: boolean}>) {
@@ -46,27 +46,24 @@ export class MyStruct {
 			MyString: $.varRef(this._fields.MyString.value),
 			myBool: $.varRef(this._fields.myBool.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
-	// === Pointer Dereference and Multi-Assignment ===
-	// Dereference structPointer to get a copy of the struct.
-	// Also demonstrates multi-variable assignment and the use of the blank identifier '_'.
-	let [dereferencedStructCopy, , , unusedString] = [structPointer!, structPointer!.myBool, structPointer!.MyInt, "hello"] // testing _ set
-	/* _ = */ unusedString // Explicitly ignore unusedString to satisfy linters
-	/* _ = */ dereferencedStructCopy
+	let dereferencedStructCopy = $.markAsStructValue($.pointerValue(structPointer).clone())
+	let unusedString = "hello"
+	unusedString
+	dereferencedStructCopy
 }
 
 

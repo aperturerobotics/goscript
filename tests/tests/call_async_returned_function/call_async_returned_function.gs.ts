@@ -5,21 +5,17 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as sync from "@goscript/sync/index.ts"
 
-export let cache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
+export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
-// Async function that returns a function
-export async function getCallback(): Promise<((p0: string) => void) | null> {
-	await cache!.value.Load(1)
+export async function getCallback(): Promise<(_p0: string) => void> {
+	await cache.value.Load(1)
 	return (msg: string): void => {
-		$.println("Callback:", msg)
-	}
+	$.println("Callback:", msg)
+}
 }
 
 export async function main(): Promise<void> {
-	// Call the function returned by an async function
-	// This should generate: (await getCallback())!("hello")
-	// NOT: await getCallback()!("hello")
-	;(await getCallback())!("hello")
+	(await getCallback())("hello")
 }
 
 

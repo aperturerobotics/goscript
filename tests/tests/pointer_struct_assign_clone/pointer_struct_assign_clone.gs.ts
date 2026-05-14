@@ -12,7 +12,7 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		Value: $.VarRef<number>;
+		Value: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{Value?: number}>) {
@@ -26,68 +26,51 @@ export class MyStruct {
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"Value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let s1 = $.markAsStructValue(new MyStruct({Value: 10}))
-	let p: MyStruct | null = null
-	p = new MyStruct({Value: 20}) // Initialize p to point to something
-
-	// This assignment should trigger the .clone() on s1
-	// because s1 is a struct and *p is being assigned.
-	$.assignStruct(p!, $.markAsStructValue(s1.clone()))
-
-	$.println(p!.Value) // Expected: 10
-
-	// Modify s1 to ensure p is a clone and not a reference
+	let p: MyStruct | $.VarRef<MyStruct> | null = null
+	p = new MyStruct({Value: 20})
+	$.assignStruct($.pointerValue(p), $.markAsStructValue(s1.clone()))
+	$.println($.pointerValue(p).Value)
 	s1.Value = 30
-	$.println(p!.Value) // Expected: 10 (still, due to clone)
-
-	// Test assignment from a pointer to a struct (should not clone)
+	$.println($.pointerValue(p).Value)
 	let s2 = new MyStruct({Value: 40})
 	let p2 = new MyStruct({Value: 50})
-	$.assignStruct(p2!, $.markAsStructValue(s2!.clone())) // Assigning the struct pointed to by s2 to the struct pointed to by p2
-	$.println(p2!.Value) // Expected: 40
-
-	s2!.Value = 60 // Modify original s2
-
-	// GoScript should replicate this by cloning if the RHS is a struct value.
-	// In *p2 = *s2, *s2 is a struct value.
-	$.println(p2!.Value) // Expected: 40 (because *s2 was cloned implicitly by Go's value semantics for struct assignment)
-
-	// Test assignment of a struct from a function call
+	$.assignStruct($.pointerValue(p2), $.markAsStructValue($.pointerValue(s2).clone()))
+	$.println($.pointerValue(p2).Value)
+	$.pointerValue(s2).Value = 60
+	$.println($.pointerValue(p2).Value)
 	let s3 = $.markAsStructValue(new MyStruct({Value: 70}))
 	let p3 = new MyStruct({Value: 80})
-	$.assignStruct(p3!, $.markAsStructValue(getStruct().clone()))
-	$.println(p3!.Value) // Expected: 100
-	$.println(s3.Value) // Expected: 70
-
-	// Test assignment of a struct from a pointer returned by a function call
+	$.assignStruct($.pointerValue(p3), $.markAsStructValue(getStruct().clone()))
+	$.println($.pointerValue(p3).Value)
+	$.println(s3.Value)
 	let p4 = new MyStruct({Value: 90})
-	$.assignStruct(p4!, $.markAsStructValue(getStructPointer()!.clone()))
-	$.println(p4!.Value) // Expected: 110
+	$.assignStruct($.pointerValue(p4), $.markAsStructValue($.pointerValue(getStructPointer()).clone()))
+	$.println($.pointerValue(p4).Value)
+}
+
+
+if ($.isMainScript(import.meta)) {
+	await main()
 }
 
 export function getStruct(): MyStruct {
 	return $.markAsStructValue(new MyStruct({Value: 100}))
 }
 
-export function getStructPointer(): MyStruct | null {
+export function getStructPointer(): MyStruct | $.VarRef<MyStruct> | null {
 	return new MyStruct({Value: 110})
-}
-
-
-if ($.isMainScript(import.meta)) {
-	await main()
 }

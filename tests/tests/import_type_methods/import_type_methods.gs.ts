@@ -6,20 +6,20 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as errlist from "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_type_methods/errlist/index.ts"
 
 export class parser {
-	public get errors(): errlist.ErrorList {
+	public get errors(): ErrorList {
 		return this._fields.errors.value
 	}
-	public set errors(value: errlist.ErrorList) {
+	public set errors(value: ErrorList) {
 		this._fields.errors.value = value
 	}
 
 	public _fields: {
-		errors: $.VarRef<errlist.ErrorList>;
+		errors: $.VarRef<ErrorList>
 	}
 
-	constructor(init?: Partial<{errors?: errlist.ErrorList}>) {
+	constructor(init?: Partial<{errors?: ErrorList}>) {
 		this._fields = {
-			errors: $.varRef(init?.errors ?? null as errlist.ErrorList)
+			errors: $.varRef(init?.errors ?? null)
 		}
 	}
 
@@ -28,23 +28,22 @@ export class parser {
 		cloned._fields = {
 			errors: $.varRef(this._fields.errors.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.parser',
-	  new parser(),
-	  [],
-	  parser,
-	  {"errors": "github.com/aperturerobotics/goscript/tests/tests/import_type_methods/errlist.ErrorList"}
-	);
+		"main.parser",
+		new parser(),
+		[],
+		parser,
+		{"errors": "errlist.ErrorList"}
+	)
 }
 
 export async function main(): Promise<void> {
-	let p: parser = new parser()
+	let p: parser = $.markAsStructValue(new parser())
 	p.errors = errlist.ErrorList_Add(p.errors, "error")
-	$.println(p.errors![0])
+	$.println(p.errors[0])
 }
 
 

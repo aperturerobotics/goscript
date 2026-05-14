@@ -5,30 +5,27 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as sync from "@goscript/sync/index.ts"
 
-export let cache: $.VarRef<sync.Map> = $.varRef(new sync.Map())
+export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
-export async function getFromCache(key: string): Promise<[null | any, boolean]> {
-	let [val, ok] = await cache!.value.Load(key)
+export async function getFromCache(key: string): Promise<void> {
+	let [val, ok] = await cache.value.Load(key)
 	return [val, ok]
 }
 
-export async function getFromCacheInline(key: string): Promise<[null | any, boolean]> {
-	return await cache!.value.Load(key)
+export async function getFromCacheInline(key: string): Promise<void> {
+	return await cache.value.Load(key)
 }
 
 export async function main(): Promise<void> {
-	await cache!.value.Store("test", 42)
-
+	await cache.value.Store("test", 42)
 	let [val1, ok1] = await getFromCache("test")
 	if (ok1) {
-		$.println("getFromCache found:", $.mustTypeAssert<number>(val1, {kind: $.TypeKind.Basic, name: 'number'}))
+		$.println("getFromCache found:", $.mustTypeAssert<number>(val1, { kind: $.TypeKind.Basic, name: "int" }))
 	}
-
 	let [val2, ok2] = await getFromCacheInline("test")
 	if (ok2) {
-		$.println("getFromCacheInline found:", $.mustTypeAssert<number>(val2, {kind: $.TypeKind.Basic, name: 'number'}))
+		$.println("getFromCacheInline found:", $.mustTypeAssert<number>(val2, { kind: $.TypeKind.Basic, name: "int" }))
 	}
-
 	let [, ok3] = await getFromCache("missing")
 	if (!ok3) {
 		$.println("Not found as expected")

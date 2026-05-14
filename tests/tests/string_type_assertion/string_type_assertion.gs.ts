@@ -4,8 +4,8 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	let w: null | any = "test"
-	$.println("value is", $.mustTypeAssert<string>(w, {kind: $.TypeKind.Basic, name: 'string'}))
+	let w: any = "test"
+	$.println("value is", $.mustTypeAssert<string>(w, { kind: $.TypeKind.Basic, name: "string" }))
 }
 
 

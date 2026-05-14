@@ -4,7 +4,6 @@ set -x
 
 go run -v github.com/aperturerobotics/goscript/cmd/goscript \
      compile \
-     --all-dependencies \
      --package .
 
 # Copy for reference

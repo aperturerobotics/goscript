@@ -28,12 +28,12 @@ export class Person {
 	}
 
 	public _fields: {
-		Name: $.VarRef<string>;
-		Age: $.VarRef<number>;
-		Active: $.VarRef<boolean>;
+		Name: $.VarRef<string>
+		Age: $.VarRef<number>
+		Active: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{Active?: boolean, Age?: number, Name?: string}>) {
+	constructor(init?: Partial<{Name?: string, Age?: number, Active?: boolean}>) {
 		this._fields = {
 			Name: $.varRef(init?.Name ?? ""),
 			Age: $.varRef(init?.Age ?? 0),
@@ -48,31 +48,27 @@ export class Person {
 			Age: $.varRef(this._fields.Age.value),
 			Active: $.varRef(this._fields.Active.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Person',
-	  new Person(),
-	  [],
-	  Person,
-	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
-	);
+		"main.Person",
+		new Person(),
+		[],
+		Person,
+		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }, "Active": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let t = reflect.TypeOf(new Person())
-	$.println("Type:", t!.Name())
-	$.println("Kind:", reflect.Kind_String(t!.Kind()))
-	$.println("NumField:", t!.NumField())
-
-	// Test the Get method
-	for (let i = 0; i < t!.NumField(); i++) {
-		let f = $.markAsStructValue(t!.Field(i).clone())
+	let t = reflect.TypeFor({T: { zero: () => new Person() }})
+	$.println("Type:", t.Name())
+	$.println("Kind:", reflect.Kind_String(t.Kind()))
+	$.println("NumField:", t.NumField())
+	for (let i = 0; i < t.NumField(); i++) {
+		let f = $.markAsStructValue(t.Field(i).clone())
 		$.println("Field", i, "Name:", f.Name)
-		$.println("Field", i, "Tag:", f.Tag.toString())
-		// Test the Get method
+		$.println("Field", i, "Tag:", f.Tag)
 		let jsonTag = reflect.StructTag_Get(f.Tag, "json")
 		$.println("Field", i, "JsonTag:", jsonTag)
 	}

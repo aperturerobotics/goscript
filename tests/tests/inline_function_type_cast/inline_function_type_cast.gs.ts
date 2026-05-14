@@ -3,27 +3,20 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export type Greeter = ((name: string) => string) | null;
+export type Greeter = (name: string) => string
 
 export async function main(): Promise<void> {
-	// 2. Create an inline variable with the inline function satisfying that type.
 	let theInlineVar = (name: string): string => {
-		return "Hello, " + name
-	}
-
-	// 3. Use Greeter(theInlineVar) to cast to the Greeter declared function type.
-	let castedGreeter = Object.assign(theInlineVar, { __goTypeName: 'Greeter' })
-
-	// 4. Call that
-	$.println(castedGreeter!("Inline World"))
-
-	// Test with a different signature
-	type Adder = ((a: number, b: number) => number) | null;
+	return "Hello, " + name
+}
+	let castedGreeter = $.namedFunction(theInlineVar, "main.Greeter")
+	$.println(castedGreeter("Inline World"))
+	type Adder = (a: number, b: number) => number
 	let theInlineAdder = (a: number, b: number): number => {
-		return a + b
-	}
-	let castedAdder = Object.assign(theInlineAdder, { __goTypeName: 'Adder' })
-	$.println(castedAdder!(5, 7))
+	return a + b
+}
+	let castedAdder = $.namedFunction(theInlineAdder, "main.Adder")
+	$.println(castedAdder(5, 7))
 }
 
 

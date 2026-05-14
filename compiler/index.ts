@@ -1,95 +1,63 @@
-import * as path from "path";
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
+import * as path from 'node:path'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 
-const __filename = fileURLToPath(import.meta.url);
-const execAsync = promisify(exec);
-const __dirname = dirname(__filename);
-const projectRoot = dirname(__dirname); // Go up one level from src/ to the project root
+const execFileAsync = promisify(execFile)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const projectRoot = dirname(__dirname)
 
 /**
  * Configuration options for the GoScript compiler.
  */
 export interface CompileConfig {
   /** The Go package path or pattern to compile. */
-  pkg: string;
+  pkg: string
   /** The output directory for the generated TypeScript files. Defaults to './output'. */
-  output?: string;
+  output?: string
   /** The working directory for the compiler. Defaults to the current working directory. */
-  dir?: string;
-  /** The path to the goscript executable. Defaults to 'go run github.com/aperturerobotics/goscript/cmd/goscript'. */
-  goscriptPath?: string;
+  dir?: string
+  /** The path to the goscript executable. Defaults to `go run ./cmd/goscript`. */
+  goscriptPath?: string
 }
 
 /**
  * Compiles a Go package to TypeScript using the goscript compiler.
- * @param config - The compilation configuration.
- * @returns A promise that resolves when compilation is complete, or rejects on error.
  */
 export async function compile(config: CompileConfig): Promise<void> {
   if (!config.pkg) {
-    throw new Error("Package path (pkg) must be specified.");
+    throw new Error('Package path (pkg) must be specified.')
   }
 
-  // Construct the go run command with the absolute path to the goscript executable
-  const goscriptCmd =
-    config.goscriptPath ??
-    `go run "${path.join(projectRoot, "./cmd/goscript")}"`;
+  const cwd = config.dir ? path.resolve(config.dir) : process.cwd()
+  const output = config.output ? path.resolve(config.output) : './output'
 
-  const args: string[] = ["compile", "--package", `"${config.pkg}"`];
-
-  if (config.output) {
-    args.push("--output", `"${path.resolve(config.output)}"`);
-  } else {
-    // Default output path if not specified, relative to the working directory
-    args.push("--output", `"./output"`);
+  if (config.goscriptPath) {
+    await execFileAsync(config.goscriptPath, [
+      'compile',
+      '--package',
+      config.pkg,
+      '--output',
+      output,
+      '--dir',
+      cwd,
+    ])
+    return
   }
 
-  // Pass the working directory to the goscript command
-  if (config.dir) {
-    args.push("--dir", `"${path.resolve(config.dir)}"`);
-  }
-
-  const command = `${goscriptCmd} ${args.join(" ")}`;
-  // Execute go run from the specified working directory (or current)
-  const cwd = config.dir ? path.resolve(config.dir) : process.cwd();
-
-  try {
-    const { stdout, stderr } = await execAsync(command, { cwd });
-    if (stdout) {
-      console.log(`GoScript stdout:\n${stdout}`);
-    }
-    if (stderr) {
-      // Go compiler often prints status messages to stderr, treat as info unless exit code is non-zero
-      console.info(`GoScript stderr:\n${stderr}`);
-    }
-  } catch (error: unknown) {
-    const compileErr =
-      error instanceof Error ? error : new Error(String(error));
-
-    console.error(`GoScript compilation failed: ${compileErr.message}`);
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "stderr" in error &&
-      typeof error.stderr === "string"
-    ) {
-      console.error(`GoScript stderr:\n${error.stderr}`);
-    }
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "stdout" in error &&
-      typeof error.stdout === "string"
-    ) {
-      console.error(`GoScript stdout:\n${error.stdout}`);
-    }
-    throw new Error(`GoScript compilation failed: ${compileErr.message}`, {
-      cause: error,
-    });
-  }
+  await execFileAsync('go', [
+    'run',
+    path.join(projectRoot, 'cmd/goscript'),
+    'compile',
+    '--package',
+    config.pkg,
+    '--output',
+    output,
+    '--dir',
+    cwd,
+  ])
 }
 
 /**
@@ -97,4 +65,4 @@ export async function compile(config: CompileConfig): Promise<void> {
  */
 export default {
   compile,
-};
+}

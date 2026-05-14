@@ -4,14 +4,10 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	// Test make() with a map type
-	// This verifies that our fix for selector expressions in make() calls works
-	// The original issue was "unhandled make call" when using selector expressions
-
-	let mfs = $.makeMap<string, $.Bytes>()
+	let mfs = $.makeMap<string, $.Slice<number>>()
 	$.mapSet(mfs, "test.txt", $.stringToBytes("hello world"))
 	$.println("Created map:", $.len(mfs))
-	$.println("Content:", $.bytesToString($.mapGet(mfs, "test.txt", new Uint8Array(0))[0]))
+	$.println("Content:", $.bytesToString($.mapGet(mfs, "test.txt", null)[0]))
 }
 
 

@@ -10,83 +10,84 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var (
-	cliCompiler           *compiler.Compiler
-	cliCompilerConfig     compiler.Config
-	cliCompilerPkg        cli.StringSlice
-	cliCompilerBuildFlags cli.StringSlice
-)
+func compileCommands() []*cli.Command {
+	return []*cli.Command{newCompileCommand()}
+}
 
-// CompileCommands are commands related to compiling code.
-var CompileCommands = []*cli.Command{{
-	Name:     "compile",
-	Category: "compile",
-	Usage:    "compile a Go package to TypeScript",
-	Action:   compilePackage,
-	Before: func(c *cli.Context) (err error) {
-		logger := logrus.New()
-		logger.SetLevel(logrus.DebugLevel)
-		le := logrus.NewEntry(logger)
-		cliCompiler, err = compiler.NewCompiler(&cliCompilerConfig, le, nil)
-		return
-	},
-	Flags: []cli.Flag{
-		&cli.StringSliceFlag{
-			Name:        "package",
-			Usage:       "the package(s) to compile",
-			Aliases:     []string{"p", "packages"},
-			EnvVars:     []string{"GOSCRIPT_PACKAGES"},
-			Destination: &cliCompilerPkg,
+func newCompileCommand() *cli.Command {
+	var config compiler.Config
+	var packages cli.StringSlice
+	var buildFlags cli.StringSlice
+
+	return &cli.Command{
+		Name:     "compile",
+		Category: "compile",
+		Usage:    "compile a Go package to TypeScript",
+		Action: func(c *cli.Context) error {
+			config.BuildFlags = slices.Clone(buildFlags.Value())
+			return compilePackage(c.Context, &config, packages.Value())
 		},
-		&cli.StringFlag{
-			Name:        "output",
-			Usage:       "the output typescript path to use",
-			Destination: &cliCompilerConfig.OutputPath,
-			Value:       "./output",
-			EnvVars:     []string{"GOSCRIPT_OUTPUT"},
+		Flags: []cli.Flag{
+			&cli.StringSliceFlag{
+				Name:        "package",
+				Usage:       "the package(s) to compile",
+				Aliases:     []string{"p", "packages"},
+				EnvVars:     []string{"GOSCRIPT_PACKAGES"},
+				Destination: &packages,
+			},
+			&cli.StringFlag{
+				Name:        "output",
+				Usage:       "the output typescript path to use",
+				Destination: &config.OutputPath,
+				Value:       "./output",
+				EnvVars:     []string{"GOSCRIPT_OUTPUT"},
+			},
+			&cli.StringFlag{
+				Name:        "dir",
+				Usage:       "the working directory to use for the compiler (default: current directory)",
+				Destination: &config.Dir,
+				Value:       "",
+				EnvVars:     []string{"GOSCRIPT_DIR"},
+			},
+			&cli.StringSliceFlag{
+				Name:        "build-flags",
+				Aliases:     []string{"b", "buildflags", "build-flag", "buildflag"},
+				Usage:       "Go build flags (tags) to use during analysis",
+				Destination: &buildFlags,
+				EnvVars:     []string{"GOSCRIPT_BUILD_FLAGS"},
+			},
+			&cli.BoolFlag{
+				Name:        "disable-emit-builtin",
+				Usage:       "disable emitting built-in packages that have handwritten equivalents",
+				Destination: &config.DisableEmitBuiltin,
+				Value:       false,
+				EnvVars:     []string{"GOSCRIPT_DISABLE_EMIT_BUILTIN"},
+			},
+			&cli.BoolFlag{
+				Name:        "all-dependencies",
+				Usage:       "compile all dependencies of the requested packages",
+				Aliases:     []string{"all-deps", "deps"},
+				Destination: &config.AllDependencies,
+				Value:       false,
+				EnvVars:     []string{"GOSCRIPT_ALL_DEPENDENCIES"},
+			},
 		},
-		&cli.StringFlag{
-			Name:        "dir",
-			Usage:       "the working directory to use for the compiler (default: current directory)",
-			Destination: &cliCompilerConfig.Dir,
-			Value:       "",
-			EnvVars:     []string{"GOSCRIPT_DIR"},
-		},
-		&cli.StringSliceFlag{
-			Name:        "build-flags",
-			Aliases:     []string{"b", "buildflags", "build-flag", "buildflag"},
-			Usage:       "Go build flags (tags) to use during analysis",
-			Destination: &cliCompilerBuildFlags,
-			EnvVars:     []string{"GOSCRIPT_BUILD_FLAGS"},
-		},
-		&cli.BoolFlag{
-			Name:        "disable-emit-builtin",
-			Usage:       "disable emitting built-in packages that have handwritten equivalents",
-			Destination: &cliCompilerConfig.DisableEmitBuiltin,
-			Value:       false,
-			EnvVars:     []string{"GOSCRIPT_DISABLE_EMIT_BUILTIN"},
-		},
-		&cli.BoolFlag{
-			Name:        "all-dependencies",
-			Usage:       "compile all dependencies of the requested packages",
-			Aliases:     []string{"all-deps", "deps"},
-			Destination: &cliCompilerConfig.AllDependencies,
-			Value:       false,
-			EnvVars:     []string{"GOSCRIPT_ALL_DEPENDENCIES"},
-		},
-	},
-}}
+	}
+}
 
 // compilePackage tries to compile the package.
-func compilePackage(c *cli.Context) error {
-	pkgs := cliCompilerPkg.Value()
+func compilePackage(ctx context.Context, config *compiler.Config, pkgs []string) error {
 	if len(pkgs) == 0 {
 		return errors.New("package(s) must be specified")
 	}
 
-	// build flags
-	cliCompilerConfig.BuildFlags = slices.Clone(cliCompilerBuildFlags.Value())
-
-	_, err := cliCompiler.CompilePackages(context.Background(), pkgs...)
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
+	le := logrus.NewEntry(logger)
+	comp, err := compiler.NewCompiler(config, le, nil)
+	if err != nil {
+		return err
+	}
+	_, err = comp.CompilePackages(ctx, pkgs...)
 	return err
 }

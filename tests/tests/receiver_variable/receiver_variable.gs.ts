@@ -15,31 +15,31 @@ export class content {
 		this._fields.name.value = value
 	}
 
-	public get bytes(): $.Bytes {
+	public get bytes(): $.Slice<number> {
 		return this._fields.bytes.value
 	}
-	public set bytes(value: $.Bytes) {
+	public set bytes(value: $.Slice<number>) {
 		this._fields.bytes.value = value
 	}
 
-	public get m(): sync.RWMutex {
+	public get m(): RWMutex {
 		return this._fields.m.value
 	}
-	public set m(value: sync.RWMutex) {
+	public set m(value: RWMutex) {
 		this._fields.m.value = value
 	}
 
 	public _fields: {
-		name: $.VarRef<string>;
-		bytes: $.VarRef<$.Bytes>;
-		m: $.VarRef<sync.RWMutex>;
+		name: $.VarRef<string>
+		bytes: $.VarRef<$.Slice<number>>
+		m: $.VarRef<RWMutex>
 	}
 
-	constructor(init?: Partial<{bytes?: $.Bytes, m?: sync.RWMutex, name?: string}>) {
+	constructor(init?: Partial<{name?: string, bytes?: $.Slice<number>, m?: RWMutex}>) {
 		this._fields = {
 			name: $.varRef(init?.name ?? ""),
-			bytes: $.varRef(init?.bytes ?? new Uint8Array(0)),
-			m: $.varRef(init?.m ? $.markAsStructValue(init.m.clone()) : new sync.RWMutex())
+			bytes: $.varRef(init?.bytes ?? null),
+			m: $.varRef(init?.m ? $.markAsStructValue(init.m.clone()) : $.markAsStructValue(new RWMutex()))
 		}
 	}
 
@@ -50,164 +50,145 @@ export class content {
 			bytes: $.varRef(this._fields.bytes.value),
 			m: $.varRef($.markAsStructValue(this._fields.m.value.clone()))
 		}
-		return cloned
-	}
-
-	public async WriteAt(p: $.Bytes, off: number): Promise<[number, $.GoError]> {
-		const c = this
-		if (off < 0) {
-			return [0, errors.New("negative offset")]
-		}
-		await c.m.Lock()
-		let prev = $.len(c.bytes)
-		let diff = $.int(off) - prev
-		if (diff > 0) {
-			c.bytes = $.append(c.bytes, ...(new Uint8Array(diff) || []))
-		}
-		c.bytes = $.append($.goSlice(c.bytes, undefined, off), ...(p || []))
-		if ($.len(c.bytes) < prev) {
-			c.bytes = $.goSlice(c.bytes, undefined, prev)
-		}
-		c.m.Unlock()
-		return [$.len(p), null]
-	}
-
-	public async ReadAt(b: $.Bytes, off: number): Promise<[number, $.GoError]> {
-		const c = this
-		let n: number = 0
-		let err: $.GoError = null
-		if (off < 0) {
-			return [0, errors.New("negative offset")]
-		}
-		await c.m.RLock()
-		let size = ($.len(c.bytes) as number)
-		if (off >= size) {
-			c.m.RUnlock()
-			return [0, errors.New("EOF")]
-		}
-		let l = ($.len(b) as number)
-		if (off + l > size) {
-			l = size - off
-		}
-		let btr = $.goSlice(c.bytes, off, off + l)
-		n = $.copy(b, btr)
-		if ($.len(btr) < $.len(b)) {
-			err = errors.New("EOF")
-		}
-		c.m.RUnlock()
-		return [n, err]
-	}
-
-	public async Size(): Promise<number> {
-		const c = this
-		using __defer = new $.DisposableStack();
-		await c.m.RLock()
-		__defer.defer(() => {
-			c.m.RUnlock()
-		});
-		return $.len(c.bytes)
+		return $.markAsStructValue(cloned)
 	}
 
 	public async Clear(): Promise<void> {
 		const c = this
-		using __defer = new $.DisposableStack();
-		await c.m.Lock()
-		__defer.defer(() => {
-			c.m.Unlock()
-		});
-		const _temp_len = $.len
+		using __defer = new $.DisposableStack()
+		await $.pointerValue(c).m.Lock()
+		__defer.defer(() => { $.pointerValue(c).m.Unlock() })
 		{
-			let len = _temp_len(c.bytes)
+			let len = $.len($.pointerValue(c).bytes)
 			if (len > 0) {
-				c.bytes = new Uint8Array(0)
+				$.pointerValue(c).bytes = $.makeSlice<number>(0, undefined, "byte")
 			}
 		}
 	}
 
-	// Method with complex variable scoping
-	public async ComplexMethod(): Promise<$.GoError> {
+	public async ComplexMethod(): Promise<error> {
 		const c = this
-		using __defer = new $.DisposableStack();
-		await c.m.Lock()
-		__defer.defer(() => {
-			c.m.Unlock()
-		});
-		if ($.len(c.bytes) == 0) {
-			c.bytes = new Uint8Array(10)
+		using __defer = new $.DisposableStack()
+		await $.pointerValue(c).m.Lock()
+		__defer.defer(() => { $.pointerValue(c).m.Unlock() })
+		if ($.len($.pointerValue(c).bytes) == 0) {
+			$.pointerValue(c).bytes = $.makeSlice<number>(10, undefined, "byte")
 		}
-		for (let i = 0; i < 3; i++) {{
-
-			// Nested scope with receiver usage
+		for (let i = 0; i < 3; i++) {
 			{
-				let [data, err] = c.getData(i)
+				let [data, err] = $.pointerValue(c).getData(i)
 				if (err == null) {
-					// Nested scope with receiver usage
 					if ($.len(data) > 0) {
-						c.bytes = $.append(c.bytes, ...(data || []))
+						$.pointerValue(c).bytes = $.append($.pointerValue(c).bytes, data)
 					}
 				}
 			}
 		}
+		{
+			let x = $.len($.pointerValue(c).bytes)
+			if (x > 20) {
+				$.pointerValue(c).bytes = $.goSlice($.pointerValue(c).bytes, undefined, 20)
+				let fn = (): void => {
+	if ($.len($.pointerValue(c).bytes) > 0) {
+		$.pointerValue(c).bytes[0] = 42
 	}
-	{
-		let x = $.len(c.bytes)
-		if (x > 20) {
-			// Use receiver in nested scope
-			c.bytes = $.goSlice(c.bytes, undefined, 20)
-
-			// Nested function literal that might affect scoping
-			let fn = (): void => {
-				if ($.len(c.bytes) > 0) {
-					c.bytes![0] = 42
-				}
+}
+				fn()
 			}
-			fn!()
 		}
+		return null
 	}
-	return null
-}
 
-public getData(index: number): [$.Bytes, $.GoError] {
-	if (index < 0) {
-		return [null, errors.New("invalid index")]
+	public Len(): number {
+		const c = this
+		return $.len($.pointerValue(c).bytes)
 	}
-	return [new Uint8Array([$.byte(index), $.byte(index + 1)]), null]
-}
 
-// Simple methods that should trigger receiver binding but might not
-public Truncate(): void {
-	const c = this
-	c.bytes = new Uint8Array(0)
-}
+	public async ReadAt(b: $.Slice<number>, off: number): Promise<void> {
+		const c = this
+		if (off < 0) {
+			return [0, errors.New("negative offset")]
+		}
+		await $.pointerValue(c).m.RLock()
+		let size = $.int($.len($.pointerValue(c).bytes))
+		if (off >= size) {
+			$.pointerValue(c).m.RUnlock()
+			return [0, errors.New("EOF")]
+		}
+		let l = $.int($.len(b))
+		if (off + l > size) {
+			l = size - off
+		}
+		let btr = $.goSlice($.pointerValue(c).bytes, off, off + l)
+		n = $.copy(b, btr)
+		if ($.len(btr) < $.len(b)) {
+			err = errors.New("EOF")
+		}
+		$.pointerValue(c).m.RUnlock()
+		return
+	}
 
-public Len(): number {
-	const c = this
-	return $.len(c.bytes)
-}
+	public async Size(): Promise<number> {
+		const c = this
+		using __defer = new $.DisposableStack()
+		await $.pointerValue(c).m.RLock()
+		__defer.defer(() => { ((): void => {
+	$.pointerValue(c).m.RUnlock()
+})() })
+		return $.len($.pointerValue(c).bytes)
+	}
 
-// Register this type with the runtime type system
-static __typeInfo = $.registerStructType(
-  'main.content',
-  new content(),
-  [{ name: "WriteAt", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "ReadAt", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Clear", args: [], returns: [] }, { name: "ComplexMethod", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "getData", args: [{ name: "index", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Truncate", args: [], returns: [] }, { name: "Len", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-  content,
-  {"name": { kind: $.TypeKind.Basic, name: "string" }, "bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "m": "sync.RWMutex"}
-);
+	public Truncate(): void {
+		const c = this
+		$.pointerValue(c).bytes = $.makeSlice<number>(0, undefined, "byte")
+	}
+
+	public async WriteAt(p: $.Slice<number>, off: number): Promise<void> {
+		const c = this
+		if (off < 0) {
+			return [0, errors.New("negative offset")]
+		}
+		await $.pointerValue(c).m.Lock()
+		let prev = $.len($.pointerValue(c).bytes)
+		let diff = $.int(off) - prev
+		if (diff > 0) {
+			$.pointerValue(c).bytes = $.append($.pointerValue(c).bytes, $.makeSlice<number>(diff, undefined, "byte"))
+		}
+		$.pointerValue(c).bytes = $.append($.goSlice($.pointerValue(c).bytes, undefined, off), p)
+		if ($.len($.pointerValue(c).bytes) < prev) {
+			$.pointerValue(c).bytes = $.goSlice($.pointerValue(c).bytes, undefined, prev)
+		}
+		$.pointerValue(c).m.Unlock()
+		return [$.len(p), null]
+	}
+
+	public getData(index: number): void {
+		const c = this
+		if (index < 0) {
+			return [null, errors.New("invalid index")]
+		}
+		return [[$.int(index), $.int(index + 1)], null]
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.content",
+		new content(),
+		[{ name: "Clear", args: [], returns: [] }, { name: "ComplexMethod", args: [], returns: [] }, { name: "Len", args: [], returns: [] }, { name: "ReadAt", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "Truncate", args: [], returns: [] }, { name: "WriteAt", args: [], returns: [] }, { name: "getData", args: [], returns: [] }],
+		content,
+		{"name": { kind: $.TypeKind.Basic, name: "string" }, "bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "m": "sync.RWMutex"}
+	)
 }
 
 export async function main(): Promise<void> {
-	let c = new content({bytes: new Uint8Array(0), name: "test"})
-
-	// Test basic functionality that should work
+	let c = new content({name: "test", bytes: $.makeSlice<number>(0, undefined, "byte")})
 	{
-		let err = await c!.ComplexMethod()
+		let err = await $.pointerValue(c).ComplexMethod()
 		if (err != null) {
-			$.println("Error:", err!.Error())
-			return 
+			$.println("Error:", err.Error())
+			return
 		}
 	}
-
-	$.println("Complex method completed, size:", await c!.Size())
+	$.println("Complex method completed, size:", await $.pointerValue(c).Size())
 }
 
 

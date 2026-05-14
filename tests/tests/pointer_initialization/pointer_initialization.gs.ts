@@ -19,8 +19,8 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
-		MyString: $.VarRef<string>;
+		MyInt: $.VarRef<number>
+		MyString: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string}>) {
@@ -36,25 +36,21 @@ export class MyStruct {
 			MyInt: $.varRef(this._fields.MyInt.value),
 			MyString: $.varRef(this._fields.MyString.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// === Pointer Initialization ===
-	// Create a pointer to a MyStruct instance using a composite literal.
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
-	// Expected: "hello world"
-	$.println("Initial MyString (via pointer): Expected: hello world, Actual: " + structPointer!.MyString)
+	$.println("Initial MyString (via pointer): Expected: hello world, Actual: " + $.pointerValue(structPointer).MyString)
 }
 
 

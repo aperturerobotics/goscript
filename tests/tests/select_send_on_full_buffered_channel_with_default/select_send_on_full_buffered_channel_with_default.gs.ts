@@ -4,15 +4,9 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	let ch = $.makeChannel<number>(1, 0, 'both')
+	let ch = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(ch, 1)
-
-	// TODO: The comments on the following cases are written twice in the output.
-
-	// Should not be reached
-
-	// Should be reached
-	const [_select_has_return_5b5a, _select_value_5b5a] = await $.selectStatement([
+	const [__goscriptSelectHasReturn163, __goscriptSelectValue163] = await $.selectStatement([
 		{
 			id: 0,
 			isSend: true,
@@ -29,12 +23,11 @@ export async function main(): Promise<void> {
 			onSelected: async (result) => {
 				$.println("Default case hit")
 			}
-		},
+		}
 	], true)
-	if (_select_has_return_5b5a) {
-		return _select_value_5b5a!
+	if (__goscriptSelectHasReturn163) {
+		return __goscriptSelectValue163
 	}
-	// If _select_has_return_5b5a is false, continue execution
 }
 
 

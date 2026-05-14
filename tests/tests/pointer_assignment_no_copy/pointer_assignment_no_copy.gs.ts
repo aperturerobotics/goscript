@@ -19,8 +19,8 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
-		MyString: $.VarRef<string>;
+		MyInt: $.VarRef<number>
+		MyString: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string}>) {
@@ -36,39 +36,25 @@ export class MyStruct {
 			MyInt: $.varRef(this._fields.MyInt.value),
 			MyString: $.varRef(this._fields.MyString.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let original = new MyStruct({MyInt: 10, MyString: "original"})
-
-	// === Pointer Assignment (No Copy) ===
-	// Assigning a pointer variable to another pointer variable.
 	let pointerCopy = original
-
-	// Modify the struct through the original pointer.
-	original!.MyString = "modified original"
-
-	// The change should be reflected when accessing through the copied pointer.
-	// Expected: "modified original"
-	$.println("Pointer copy value: Expected: modified original, Actual: " + pointerCopy!.MyString)
-
-	// Modify the struct through the copied pointer.
-	pointerCopy!.MyInt = 20
-
-	// The change should be reflected when accessing through the original pointer.
-	// Expected: 20
-	$.println("Original value after pointer copy modification: Expected: 20, Actual:", original!.MyInt)
+	$.pointerValue(original).MyString = "modified original"
+	$.println("Pointer copy value: Expected: modified original, Actual: " + $.pointerValue(pointerCopy).MyString)
+	$.pointerValue(pointerCopy).MyInt = 20
+	$.println("Original value after pointer copy modification: Expected: 20, Actual:", $.pointerValue(original).MyInt)
 }
 
 

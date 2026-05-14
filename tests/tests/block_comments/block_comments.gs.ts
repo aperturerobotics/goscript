@@ -4,17 +4,8 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	/* Another single-line block comment */
 	$.println("testing block comments")
-
-	/*
-	 *
-	 *		Multi-line comment
-	 *		in the middle of code
-	 *	
-	 */
-
-	let x = 42 // inline block comment
+	let x = 42
 	$.println("x =", x)
 }
 

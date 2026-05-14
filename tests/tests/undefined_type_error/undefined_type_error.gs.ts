@@ -4,7 +4,6 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export class formatter {
-	//nolint:unused
 	public get wid(): number {
 		return this._fields.wid.value
 	}
@@ -12,7 +11,6 @@ export class formatter {
 		this._fields.wid.value = value
 	}
 
-	//nolint:unused
 	public get prec(): number {
 		return this._fields.prec.value
 	}
@@ -20,7 +18,6 @@ export class formatter {
 		this._fields.prec.value = value
 	}
 
-	//nolint:unused
 	public get widPresent(): boolean {
 		return this._fields.widPresent.value
 	}
@@ -28,7 +25,6 @@ export class formatter {
 		this._fields.widPresent.value = value
 	}
 
-	//nolint:unused
 	public get precPresent(): boolean {
 		return this._fields.precPresent.value
 	}
@@ -50,7 +46,6 @@ export class formatter {
 		this._fields.plus.value = value
 	}
 
-	//nolint:unused
 	public get sharp(): boolean {
 		return this._fields.sharp.value
 	}
@@ -58,7 +53,6 @@ export class formatter {
 		this._fields.sharp.value = value
 	}
 
-	//nolint:unused
 	public get space(): boolean {
 		return this._fields.space.value
 	}
@@ -66,7 +60,6 @@ export class formatter {
 		this._fields.space.value = value
 	}
 
-	//nolint:unused
 	public get zero(): boolean {
 		return this._fields.zero.value
 	}
@@ -74,7 +67,6 @@ export class formatter {
 		this._fields.zero.value = value
 	}
 
-	//nolint:unused
 	public get plusV(): boolean {
 		return this._fields.plusV.value
 	}
@@ -82,7 +74,6 @@ export class formatter {
 		this._fields.plusV.value = value
 	}
 
-	//nolint:unused
 	public get sharpV(): boolean {
 		return this._fields.sharpV.value
 	}
@@ -91,20 +82,20 @@ export class formatter {
 	}
 
 	public _fields: {
-		wid: $.VarRef<number>;
-		prec: $.VarRef<number>;
-		widPresent: $.VarRef<boolean>;
-		precPresent: $.VarRef<boolean>;
-		minus: $.VarRef<boolean>;
-		plus: $.VarRef<boolean>;
-		sharp: $.VarRef<boolean>;
-		space: $.VarRef<boolean>;
-		zero: $.VarRef<boolean>;
-		plusV: $.VarRef<boolean>;
-		sharpV: $.VarRef<boolean>;
+		wid: $.VarRef<number>
+		prec: $.VarRef<number>
+		widPresent: $.VarRef<boolean>
+		precPresent: $.VarRef<boolean>
+		minus: $.VarRef<boolean>
+		plus: $.VarRef<boolean>
+		sharp: $.VarRef<boolean>
+		space: $.VarRef<boolean>
+		zero: $.VarRef<boolean>
+		plusV: $.VarRef<boolean>
+		sharpV: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{minus?: boolean, plus?: boolean, plusV?: boolean, prec?: number, precPresent?: boolean, sharp?: boolean, sharpV?: boolean, space?: boolean, wid?: number, widPresent?: boolean, zero?: boolean}>) {
+	constructor(init?: Partial<{wid?: number, prec?: number, widPresent?: boolean, precPresent?: boolean, minus?: boolean, plus?: boolean, sharp?: boolean, space?: boolean, zero?: boolean, plusV?: boolean, sharpV?: boolean}>) {
 		this._fields = {
 			wid: $.varRef(init?.wid ?? 0),
 			prec: $.varRef(init?.prec ?? 0),
@@ -135,38 +126,33 @@ export class formatter {
 			plusV: $.varRef(this._fields.plusV.value),
 			sharpV: $.varRef(this._fields.sharpV.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.formatter',
-	  new formatter(),
-	  [],
-	  formatter,
-	  {"wid": { kind: $.TypeKind.Basic, name: "int" }, "prec": { kind: $.TypeKind.Basic, name: "int" }, "widPresent": { kind: $.TypeKind.Basic, name: "bool" }, "precPresent": { kind: $.TypeKind.Basic, name: "bool" }, "minus": { kind: $.TypeKind.Basic, name: "bool" }, "plus": { kind: $.TypeKind.Basic, name: "bool" }, "sharp": { kind: $.TypeKind.Basic, name: "bool" }, "space": { kind: $.TypeKind.Basic, name: "bool" }, "zero": { kind: $.TypeKind.Basic, name: "bool" }, "plusV": { kind: $.TypeKind.Basic, name: "bool" }, "sharpV": { kind: $.TypeKind.Basic, name: "bool" }}
-	);
+		"main.formatter",
+		new formatter(),
+		[],
+		formatter,
+		{"wid": { kind: $.TypeKind.Basic, name: "int" }, "prec": { kind: $.TypeKind.Basic, name: "int" }, "widPresent": { kind: $.TypeKind.Basic, name: "bool" }, "precPresent": { kind: $.TypeKind.Basic, name: "bool" }, "minus": { kind: $.TypeKind.Basic, name: "bool" }, "plus": { kind: $.TypeKind.Basic, name: "bool" }, "sharp": { kind: $.TypeKind.Basic, name: "bool" }, "space": { kind: $.TypeKind.Basic, name: "bool" }, "zero": { kind: $.TypeKind.Basic, name: "bool" }, "plusV": { kind: $.TypeKind.Basic, name: "bool" }, "sharpV": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export class printer {
-	//nolint:unused
-	public get buf(): $.Bytes {
+	public get buf(): $.Slice<number> {
 		return this._fields.buf.value
 	}
-	public set buf(value: $.Bytes) {
+	public set buf(value: $.Slice<number>) {
 		this._fields.buf.value = value
 	}
 
-	//nolint:unused
-	public get arg(): null | any {
+	public get arg(): any {
 		return this._fields.arg.value
 	}
-	public set arg(value: null | any) {
+	public set arg(value: any) {
 		this._fields.arg.value = value
 	}
 
-	// This line causes the issue: fmt: $.VarRef<fmt>; where fmt is undefined
-	// Should generate proper type reference
 	public get fmt(): formatter {
 		return this._fields.fmt.value
 	}
@@ -175,16 +161,16 @@ export class printer {
 	}
 
 	public _fields: {
-		buf: $.VarRef<$.Bytes>;
-		arg: $.VarRef<null | any>;
-		fmt: $.VarRef<formatter>;
+		buf: $.VarRef<$.Slice<number>>
+		arg: $.VarRef<any>
+		fmt: $.VarRef<formatter>
 	}
 
-	constructor(init?: Partial<{arg?: null | any, buf?: $.Bytes, fmt?: formatter}>) {
+	constructor(init?: Partial<{buf?: $.Slice<number>, arg?: any, fmt?: formatter}>) {
 		this._fields = {
-			buf: $.varRef(init?.buf ?? new Uint8Array(0)),
+			buf: $.varRef(init?.buf ?? null),
 			arg: $.varRef(init?.arg ?? null),
-			fmt: $.varRef(init?.fmt ? $.markAsStructValue(init.fmt.clone()) : new formatter())
+			fmt: $.varRef(init?.fmt ? $.markAsStructValue(init.fmt.clone()) : $.markAsStructValue(new formatter()))
 		}
 	}
 
@@ -195,38 +181,37 @@ export class printer {
 			arg: $.varRef(this._fields.arg.value),
 			fmt: $.varRef($.markAsStructValue(this._fields.fmt.value.clone()))
 		}
-		return cloned
-	}
-
-	public init(): void {
-		const p = this
-		p.fmt = $.markAsStructValue(new formatter({}))
+		return $.markAsStructValue(cloned)
 	}
 
 	public format(verb: number): void {
 		const p = this
-		if (p.fmt.minus) {
+		if ($.pointerValue(p).fmt.minus) {
 			$.println("minus flag set")
 		}
-		if (p.fmt.plus) {
+		if ($.pointerValue(p).fmt.plus) {
 			$.println("plus flag set")
 		}
 	}
 
-	// Register this type with the runtime type system
+	public init(): void {
+		const p = this
+		$.pointerValue(p).fmt = $.markAsStructValue(new formatter())
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'main.printer',
-	  new printer(),
-	  [{ name: "init", args: [], returns: [] }, { name: "format", args: [{ name: "verb", type: { kind: $.TypeKind.Basic, name: "rune" } }], returns: [] }],
-	  printer,
-	  {"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "arg": { kind: $.TypeKind.Interface, methods: [] }, "fmt": "main.formatter"}
-	);
+		"main.printer",
+		new printer(),
+		[{ name: "format", args: [], returns: [] }, { name: "init", args: [], returns: [] }],
+		printer,
+		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "arg": { kind: $.TypeKind.Interface, methods: [] }, "fmt": "main.formatter"}
+	)
 }
 
 export async function main(): Promise<void> {
-	let p = new printer({})
-	p!.init()
-	p!.format(100)
+	let p = new printer()
+	$.pointerValue(p).init()
+	$.pointerValue(p).format(100)
 	$.println("Formatter test completed")
 }
 

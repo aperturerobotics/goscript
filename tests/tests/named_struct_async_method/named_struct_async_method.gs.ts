@@ -12,7 +12,7 @@ export class coder {
 	}
 
 	public _fields: {
-		ch: $.VarRef<$.Channel<number> | null>;
+		ch: $.VarRef<$.Channel<number> | null>
 	}
 
 	constructor(init?: Partial<{ch?: $.Channel<number> | null}>) {
@@ -26,17 +26,16 @@ export class coder {
 		cloned._fields = {
 			ch: $.varRef(this._fields.ch.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.coder',
-	  new coder(),
-	  [],
-	  coder,
-	  {"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
-	);
+		"main.coder",
+		new coder(),
+		[],
+		coder,
+		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
 }
 
 export class decoder {
@@ -48,12 +47,13 @@ export class decoder {
 	}
 
 	public _fields: {
-		ch: $.VarRef<$.Channel<number> | null>;
+		ch: $.VarRef<$.Channel<number> | null>
 	}
 
 	constructor(init?: Partial<{ch?: $.Channel<number> | null}>) {
-		const base = new coder(init)
-		this._fields = base._fields
+		this._fields = {
+			ch: $.varRef(init?.ch ?? null)
+		}
 	}
 
 	public clone(): decoder {
@@ -61,37 +61,36 @@ export class decoder {
 		cloned._fields = {
 			ch: $.varRef(this._fields.ch.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public async next(): Promise<void> {
 		const d = this
-		await $.chanRecv(d.ch)
+		await $.chanRecv($.pointerValue(d).ch)
 	}
 
 	public async value(n: number): Promise<void> {
 		const d = this
 		for (let i = 0; i < n; i++) {
-			await d.value(0)
+			await $.pointerValue(d).value(0)
 		}
-		await d.next()
+		await $.pointerValue(d).next()
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  "main.decoder",
-	  new decoder(),
-	  [{ name: "next", args: [], returns: [] }, { name: "value", args: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
-	  decoder,
-	  {"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
-	);
+		"main.decoder",
+		new decoder(),
+		[{ name: "next", args: [], returns: [] }, { name: "value", args: [], returns: [] }],
+		decoder,
+		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let d = new decoder({ch: $.makeChannel<number>(2, 0, 'both')})
-	await $.chanSend(d!.ch, 1)
-	await $.chanSend(d!.ch, 2)
-	await d!.value(1)
+	let d = new decoder({ch: $.makeChannel<number>(2, 0, "both")})
+	await $.chanSend($.pointerValue(d).ch, 1)
+	await $.chanSend($.pointerValue(d).ch, 2)
+	await $.pointerValue(d).value(1)
 	$.println("ok")
 }
 

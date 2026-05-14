@@ -6,10 +6,10 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as sync from "@goscript/sync/index.ts"
 
 export class FileTracker {
-	public get mutex(): sync.Mutex {
+	public get mutex(): Mutex {
 		return this._fields.mutex.value
 	}
-	public set mutex(value: sync.Mutex) {
+	public set mutex(value: Mutex) {
 		this._fields.mutex.value = value
 	}
 
@@ -21,13 +21,13 @@ export class FileTracker {
 	}
 
 	public _fields: {
-		mutex: $.VarRef<sync.Mutex>;
-		lines: $.VarRef<$.Slice<number>>;
+		mutex: $.VarRef<Mutex>
+		lines: $.VarRef<$.Slice<number>>
 	}
 
-	constructor(init?: Partial<{lines?: $.Slice<number>, mutex?: sync.Mutex}>) {
+	constructor(init?: Partial<{mutex?: Mutex, lines?: $.Slice<number>}>) {
 		this._fields = {
-			mutex: $.varRef(init?.mutex ? $.markAsStructValue(init.mutex.clone()) : new sync.Mutex()),
+			mutex: $.varRef(init?.mutex ? $.markAsStructValue(init.mutex.clone()) : $.markAsStructValue(new Mutex())),
 			lines: $.varRef(init?.lines ?? null)
 		}
 	}
@@ -38,40 +38,38 @@ export class FileTracker {
 			mutex: $.varRef($.markAsStructValue(this._fields.mutex.value.clone())),
 			lines: $.varRef(this._fields.lines.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// AddLine is async because it uses a mutex
 	public async AddLine(offset: number): Promise<void> {
 		const f = this
-		await f.mutex.Lock()
-		f.lines = $.append(f.lines, offset)
-		f.mutex.Unlock()
+		await $.pointerValue(f).mutex.Lock()
+		$.pointerValue(f).lines = $.append($.pointerValue(f).lines, offset)
+		$.pointerValue(f).mutex.Unlock()
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.FileTracker',
-	  new FileTracker(),
-	  [{ name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
-	  FileTracker,
-	  {"mutex": "sync.Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
-	);
+		"main.FileTracker",
+		new FileTracker(),
+		[{ name: "AddLine", args: [], returns: [] }],
+		FileTracker,
+		{"mutex": "sync.Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
 }
 
 export class Scanner {
-	public get file(): FileTracker | null {
+	public get file(): FileTracker | $.VarRef<FileTracker> | null {
 		return this._fields.file.value
 	}
-	public set file(value: FileTracker | null) {
+	public set file(value: FileTracker | $.VarRef<FileTracker> | null) {
 		this._fields.file.value = value
 	}
 
 	public _fields: {
-		file: $.VarRef<FileTracker | null>;
+		file: $.VarRef<FileTracker | $.VarRef<FileTracker> | null>
 	}
 
-	constructor(init?: Partial<{file?: FileTracker | null}>) {
+	constructor(init?: Partial<{file?: FileTracker | $.VarRef<FileTracker> | null}>) {
 		this._fields = {
 			file: $.varRef(init?.file ?? null)
 		}
@@ -80,32 +78,30 @@ export class Scanner {
 	public clone(): Scanner {
 		const cloned = new Scanner()
 		cloned._fields = {
-			file: $.varRef(this._fields.file.value ? $.markAsStructValue(this._fields.file.value.clone()) : null)
+			file: $.varRef(this._fields.file.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// next() calls an async method but itself is not marked async
 	public async next(): Promise<void> {
 		const s = this
-		await s.file!.AddLine(10)
+		await $.pointerValue($.pointerValue(s).file).AddLine(10)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Scanner',
-	  new Scanner(),
-	  [{ name: "next", args: [], returns: [] }],
-	  Scanner,
-	  {"file": { kind: $.TypeKind.Pointer, elemType: "main.FileTracker" }}
-	);
+		"main.Scanner",
+		new Scanner(),
+		[{ name: "next", args: [], returns: [] }],
+		Scanner,
+		{"file": { kind: $.TypeKind.Pointer, elemType: "main.FileTracker" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let tracker = new FileTracker({lines: $.arrayToSlice<number>([])})
+	let tracker = new FileTracker({lines: []})
 	let scanner = new Scanner({file: tracker})
-	await scanner!.next()
-	$.println($.len(tracker!.lines))
+	await $.pointerValue(scanner).next()
+	$.println($.len($.pointerValue(tracker).lines))
 }
 
 

@@ -181,36 +181,31 @@ func (a *Analysis) IsInterfaceMethodAsync(interfaceType *types.Interface, method
 
 ### Code Generation Integration
 
-#### Interface Generation
+#### Interface Lowering
 
 ```go
-func (c *GoToTSCompiler) writeInterfaceStructure(iface *types.Interface, astNode *ast.InterfaceType) {
-    for i := 0; i < iface.NumExplicitMethods(); i++ {
-        method := iface.ExplicitMethod(i)
-        
-        // Use analysis to determine if method should be async
-        isAsync := c.analysis.IsInterfaceMethodAsync(iface, method.Name())
-        
-        if isAsync {
-            // Generate: methodName(): Promise<ReturnType>
-        } else {
-            // Generate: methodName(): ReturnType  
-        }
+func (o *LoweringOwner) tsMethodSignature(ctx lowerFileContext, method *types.Func) string {
+    signature, _ := method.Type().(*types.Signature)
+    if signature == nil {
+        return method.Name() + "(): unknown"
     }
+    async := o.functionAsync(ctx, method)
+    return method.Name() + "(" + tsSignatureParams(signature) + "): " +
+        asyncResultType(tsSignatureResult(signature), async)
 }
 ```
 
-#### Struct Method Generation
+#### Struct Method Lowering
 
 ```go
-func (c *GoToTSCompiler) writeMethodSignature(decl *ast.FuncDecl) {
-    // Check if this method must be async due to interface constraints
-    mustBeAsync := c.analysis.MustBeAsyncDueToInterface(structType, methodName)
-    
-    // Determine final async status
-    isAsync := c.analysis.IsAsyncFunc(funcObj) || mustBeAsync
-    
-    // Generate appropriate signature
+func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) (*loweredFunction, []Diagnostic) {
+    // SemanticModelOwner colors functions and interface-compatible methods
+    // before lowering. Lowering records the final async status in IR; the
+    // emitter only renders that decision.
+    fnObj := ctx.pkg.TypesInfo.Defs[decl.Name].(*types.Func)
+    async := ctx.model.functions[fnObj] != nil && ctx.model.functions[fnObj].async
+    lowered := &loweredFunction{async: async}
+    _ = lowered
 }
 ```
 

@@ -6,21 +6,15 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as io from "@goscript/io/index.ts"
 
 export async function main(): Promise<void> {
-	// Test basic error variables
-	$.println("EOF:", io.EOF!.Error())
-	$.println("ErrClosedPipe:", io.ErrClosedPipe!.Error())
-	$.println("ErrShortWrite:", io.ErrShortWrite!.Error())
-	$.println("ErrUnexpectedEOF:", io.ErrUnexpectedEOF!.Error())
-
-	// Test seek constants
+	$.println("EOF:", io.EOF.Error())
+	$.println("ErrClosedPipe:", io.ErrClosedPipe.Error())
+	$.println("ErrShortWrite:", io.ErrShortWrite.Error())
+	$.println("ErrUnexpectedEOF:", io.ErrUnexpectedEOF.Error())
 	$.println("SeekStart:", io.SeekStart)
 	$.println("SeekCurrent:", io.SeekCurrent)
 	$.println("SeekEnd:", io.SeekEnd)
-
-	// Test Discard writer
 	let [n, err] = io.WriteString(io.Discard, "hello world")
 	$.println("WriteString to Discard - bytes:", n, "err:", err == null)
-
 	$.println("test finished")
 }
 

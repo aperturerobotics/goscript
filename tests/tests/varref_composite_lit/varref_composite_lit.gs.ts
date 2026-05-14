@@ -12,7 +12,7 @@ export class MockInode {
 	}
 
 	public _fields: {
-		Value: $.VarRef<number>;
+		Value: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{Value?: number}>) {
@@ -26,33 +26,27 @@ export class MockInode {
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public getValue(): number {
 		const m = this
-		return m.Value
+		return $.pointerValue(m).Value
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MockInode',
-	  new MockInode(),
-	  [{ name: "getValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  MockInode,
-	  {"Value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MockInode",
+		new MockInode(),
+		[{ name: "getValue", args: [], returns: [] }],
+		MockInode,
+		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// This should generate: let childInode: MockInode | null = new MockInode({Value: 42})
-	// Not: let childInode: MockInode | null = $.varRef(new MockInode({Value: 42}))
-	// Because we're taking the address of a composite literal, not a variable
-	let childInode: MockInode | null = new MockInode({Value: 42})
-
-	// Use the pointer
-	$.println("childInode.Value:", childInode!.Value)
-	$.println("childInode.getValue():", childInode!.getValue())
+	let childInode: MockInode | $.VarRef<MockInode> | null = new MockInode({Value: 42})
+	$.println("childInode.Value:", $.pointerValue(childInode).Value)
+	$.println("childInode.getValue():", $.pointerValue(childInode).getValue())
 }
 
 

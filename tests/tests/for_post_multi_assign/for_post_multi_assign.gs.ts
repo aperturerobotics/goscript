@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	for (let i = 0, j = 5; i < j; [i, j] = [i + 1, j - 1]) {
+	for (let i = 0; i < j; let __goscriptAssign55_0 = i + 1) {
 		$.println(i, j)
 	}
 	$.println("done")

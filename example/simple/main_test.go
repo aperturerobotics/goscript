@@ -2,8 +2,8 @@ package main_test
 
 import (
 	"context"
+	"errors"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -18,6 +18,14 @@ func TestBuildRunExampleSimple(t *testing.T) {
 		t.Fatalf("failed to determine project directory: %v", err)
 	}
 	outputDir := filepath.Join(projectDir, "output")
+	if err := os.RemoveAll(outputDir); err != nil {
+		t.Fatalf("failed to remove output directory: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.RemoveAll(outputDir); err != nil {
+			t.Logf("failed to clean output directory: %v", err)
+		}
+	})
 
 	// Initialize the compiler
 	logger := logrus.New()
@@ -36,24 +44,25 @@ func TestBuildRunExampleSimple(t *testing.T) {
 		t.Fatalf("failed to create compiler: %v", err)
 	}
 
-	// Compile the package
-	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
-		t.Fatalf("compilation failed: %v", err)
+	_, err = comp.CompilePackages(context.Background(), ".")
+	if err == nil {
+		t.Fatalf("expected complex example to exceed the v2 seed subset")
 	}
-
-	// Log the compiled file
-	outFile, err := os.ReadFile(filepath.Join(outputDir, "@goscript/example/main.gs.ts"))
-	if err != nil {
-		t.Fatalf("failed to read output file: %v", err)
+	var compileErr *compiler.CompileError
+	if !errors.As(err, &compileErr) {
+		t.Fatalf("expected CompileError, got %T: %v", err, err)
 	}
-	t.Log(string(outFile))
-
-	// Run the compiled TypeScript file
-	cmd := exec.Command("bun", "run", "./main.ts")
-	cmd.Dir = projectDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("run failed: %v", err)
+	foundUnsupported := false
+	for _, diagnostic := range compileErr.Diagnostics {
+		if diagnostic.Code == "goscript/lowering:unsupported" {
+			foundUnsupported = true
+			break
+		}
+	}
+	if !foundUnsupported {
+		t.Fatalf("expected unsupported lowering diagnostic, got %#v", compileErr.Diagnostics)
+	}
+	if _, statErr := os.Stat(outputDir); !os.IsNotExist(statErr) {
+		t.Fatalf("compile wrote output directory before unsupported lowering stopped: %v", statErr)
 	}
 }

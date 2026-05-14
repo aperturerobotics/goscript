@@ -3,22 +3,16 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export type Ints<T extends $.Comparable> = Map<T, {  }> | null;
+export type Ints = Map<any, Record<string, unknown>> | null
 
 export async function main(): Promise<void> {
-	// This should trigger the unhandled make call error
-	// Similar to: seen := make(set.Ints[int64])
-	let seen = $.makeMap<number, {  }>()
-
-	// Test basic operations
+	let seen = $.makeMap<number, Record<string, unknown>>()
 	$.mapSet(seen, 42, {})
-	let [, exists] = $.mapGet(seen, 42, {})
+	let [, exists] = $.mapGet(seen, 42, null)
 	$.println("Value exists:", exists)
-
-	// Test with string type parameter
-	let stringSet = $.makeMap<string, {  }>()
+	let stringSet = $.makeMap<string, Record<string, unknown>>()
 	$.mapSet(stringSet, "hello", {})
-	let [, exists2] = $.mapGet(stringSet, "hello", {})
+	let [, exists2] = $.mapGet(stringSet, "hello", null)
 	$.println("String exists:", exists2)
 }
 

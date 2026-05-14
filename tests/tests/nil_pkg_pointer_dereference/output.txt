@@ -1,2 +1,0 @@
-# command-line-arguments
-../../../cmd/goscript/main.go:17:38: undefined: CompileCommands

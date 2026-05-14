@@ -3,98 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export class Address {
-	public get Street(): string {
-		return this._fields.Street.value
-	}
-	public set Street(value: string) {
-		this._fields.Street.value = value
-	}
-
-	public get City(): string {
-		return this._fields.City.value
-	}
-	public set City(value: string) {
-		this._fields.City.value = value
-	}
-
-	public _fields: {
-		Street: $.VarRef<string>;
-		City: $.VarRef<string>;
-	}
-
-	constructor(init?: Partial<{City?: string, Street?: string}>) {
-		this._fields = {
-			Street: $.varRef(init?.Street ?? ""),
-			City: $.varRef(init?.City ?? "")
-		}
-	}
-
-	public clone(): Address {
-		const cloned = new Address()
-		cloned._fields = {
-			Street: $.varRef(this._fields.Street.value),
-			City: $.varRef(this._fields.City.value)
-		}
-		return cloned
-	}
-
-	public FullAddress(): string {
-		const a = this
-		return a.Street + ", " + a.City
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'main.Address',
-	  new Address(),
-	  [{ name: "FullAddress", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
-	  Address,
-	  {"Street": { kind: $.TypeKind.Basic, name: "string" }, "City": { kind: $.TypeKind.Basic, name: "string" }}
-	);
-}
-
-export class Contact {
-	public get Phone(): string {
-		return this._fields.Phone.value
-	}
-	public set Phone(value: string) {
-		this._fields.Phone.value = value
-	}
-
-	public _fields: {
-		Phone: $.VarRef<string>;
-	}
-
-	constructor(init?: Partial<{Phone?: string}>) {
-		this._fields = {
-			Phone: $.varRef(init?.Phone ?? "")
-		}
-	}
-
-	public clone(): Contact {
-		const cloned = new Contact()
-		cloned._fields = {
-			Phone: $.varRef(this._fields.Phone.value)
-		}
-		return cloned
-	}
-
-	public Call(): void {
-		const c = this
-		$.println("Calling " + c.Phone)
-	}
-
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'main.Contact',
-	  new Contact(),
-	  [{ name: "Call", args: [], returns: [] }],
-	  Contact,
-	  {"Phone": { kind: $.TypeKind.Basic, name: "string" }}
-	);
-}
-
 export class Person {
 	public get Name(): string {
 		return this._fields.Name.value
@@ -111,11 +19,11 @@ export class Person {
 	}
 
 	public _fields: {
-		Name: $.VarRef<string>;
-		Age: $.VarRef<number>;
+		Name: $.VarRef<string>
+		Age: $.VarRef<number>
 	}
 
-	constructor(init?: Partial<{Age?: number, Name?: string}>) {
+	constructor(init?: Partial<{Name?: string, Age?: number}>) {
 		this._fields = {
 			Name: $.varRef(init?.Name ?? ""),
 			Age: $.varRef(init?.Age ?? 0)
@@ -128,7 +36,7 @@ export class Person {
 			Name: $.varRef(this._fields.Name.value),
 			Age: $.varRef(this._fields.Age.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public Greet(): void {
@@ -136,24 +44,16 @@ export class Person {
 		$.println("Hello, my name is " + p.Name)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Person',
-	  new Person(),
-	  [{ name: "Greet", args: [], returns: [] }],
-	  Person,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.Person",
+		new Person(),
+		[{ name: "Greet", args: [], returns: [] }],
+		Person,
+		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export class Employee {
-	public get ID(): number {
-		return this._fields.ID.value
-	}
-	public set ID(value: number) {
-		this._fields.ID.value = value
-	}
-
 	public get Person(): Person {
 		return this._fields.Person.value
 	}
@@ -161,14 +61,21 @@ export class Employee {
 		this._fields.Person.value = value
 	}
 
-	public _fields: {
-		Person: $.VarRef<Person>;
-		ID: $.VarRef<number>;
+	public get ID(): number {
+		return this._fields.ID.value
+	}
+	public set ID(value: number) {
+		this._fields.ID.value = value
 	}
 
-	constructor(init?: Partial<{ID?: number, Person?: Partial<ConstructorParameters<typeof Person>[0]>}>) {
+	public _fields: {
+		Person: $.VarRef<Person>
+		ID: $.VarRef<number>
+	}
+
+	constructor(init?: Partial<{Person?: Person, ID?: number}>) {
 		this._fields = {
-			Person: $.varRef(new Person(init?.Person)),
+			Person: $.varRef(init?.Person ? $.markAsStructValue(init.Person.clone()) : $.markAsStructValue(new Person())),
 			ID: $.varRef(init?.ID ?? 0)
 		}
 	}
@@ -179,45 +86,109 @@ export class Employee {
 			Person: $.varRef($.markAsStructValue(this._fields.Person.value.clone())),
 			ID: $.varRef(this._fields.ID.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public get Name(): string {
-		return this.Person.Name
-	}
-	public set Name(value: string) {
-		this.Person.Name = value
-	}
-
-	public get Age(): number {
-		return this.Person.Age
-	}
-	public set Age(value: number) {
-		this.Person.Age = value
-	}
-
-	public Greet(): void {
-		this.Person.Greet()
-	}
-
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Employee',
-	  new Employee(),
-	  [],
-	  Employee,
-	  {"Person": "main.Person", "ID": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.Employee",
+		new Employee(),
+		[],
+		Employee,
+		{"Person": "main.Person", "ID": { kind: $.TypeKind.Basic, name: "int" }}
+	)
+}
+
+export class Address {
+	public get Street(): string {
+		return this._fields.Street.value
+	}
+	public set Street(value: string) {
+		this._fields.Street.value = value
+	}
+
+	public get City(): string {
+		return this._fields.City.value
+	}
+	public set City(value: string) {
+		this._fields.City.value = value
+	}
+
+	public _fields: {
+		Street: $.VarRef<string>
+		City: $.VarRef<string>
+	}
+
+	constructor(init?: Partial<{Street?: string, City?: string}>) {
+		this._fields = {
+			Street: $.varRef(init?.Street ?? ""),
+			City: $.varRef(init?.City ?? "")
+		}
+	}
+
+	public clone(): Address {
+		const cloned = new Address()
+		cloned._fields = {
+			Street: $.varRef(this._fields.Street.value),
+			City: $.varRef(this._fields.City.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public FullAddress(): string {
+		const a = this
+		return a.Street + ", " + a.City
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.Address",
+		new Address(),
+		[{ name: "FullAddress", args: [], returns: [] }],
+		Address,
+		{"Street": { kind: $.TypeKind.Basic, name: "string" }, "City": { kind: $.TypeKind.Basic, name: "string" }}
+	)
+}
+
+export class Contact {
+	public get Phone(): string {
+		return this._fields.Phone.value
+	}
+	public set Phone(value: string) {
+		this._fields.Phone.value = value
+	}
+
+	public _fields: {
+		Phone: $.VarRef<string>
+	}
+
+	constructor(init?: Partial<{Phone?: string}>) {
+		this._fields = {
+			Phone: $.varRef(init?.Phone ?? "")
+		}
+	}
+
+	public clone(): Contact {
+		const cloned = new Contact()
+		cloned._fields = {
+			Phone: $.varRef(this._fields.Phone.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Call(): void {
+		const c = this
+		$.println("Calling " + c.Phone)
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.Contact",
+		new Contact(),
+		[{ name: "Call", args: [], returns: [] }],
+		Contact,
+		{"Phone": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
 export class Manager {
-	public get Level(): number {
-		return this._fields.Level.value
-	}
-	public set Level(value: number) {
-		this._fields.Level.value = value
-	}
-
 	public get Person(): Person {
 		return this._fields.Person.value
 	}
@@ -239,18 +210,25 @@ export class Manager {
 		this._fields.Contact.value = value
 	}
 
-	public _fields: {
-		Person: $.VarRef<Person>;
-		Address: $.VarRef<Address>;
-		Contact: $.VarRef<Contact>;
-		Level: $.VarRef<number>;
+	public get Level(): number {
+		return this._fields.Level.value
+	}
+	public set Level(value: number) {
+		this._fields.Level.value = value
 	}
 
-	constructor(init?: Partial<{Address?: Partial<ConstructorParameters<typeof Address>[0]>, Contact?: Partial<ConstructorParameters<typeof Contact>[0]>, Level?: number, Person?: Partial<ConstructorParameters<typeof Person>[0]>}>) {
+	public _fields: {
+		Person: $.VarRef<Person>
+		Address: $.VarRef<Address>
+		Contact: $.VarRef<Contact>
+		Level: $.VarRef<number>
+	}
+
+	constructor(init?: Partial<{Person?: Person, Address?: Address, Contact?: Contact, Level?: number}>) {
 		this._fields = {
-			Person: $.varRef(new Person(init?.Person)),
-			Address: $.varRef(new Address(init?.Address)),
-			Contact: $.varRef(new Contact(init?.Contact)),
+			Person: $.varRef(init?.Person ? $.markAsStructValue(init.Person.clone()) : $.markAsStructValue(new Person())),
+			Address: $.varRef(init?.Address ? $.markAsStructValue(init.Address.clone()) : $.markAsStructValue(new Address())),
+			Contact: $.varRef(init?.Contact ? $.markAsStructValue(init.Contact.clone()) : $.markAsStructValue(new Contact())),
 			Level: $.varRef(init?.Level ?? 0)
 		}
 	}
@@ -263,119 +241,50 @@ export class Manager {
 			Contact: $.varRef($.markAsStructValue(this._fields.Contact.value.clone())),
 			Level: $.varRef(this._fields.Level.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public get Name(): string {
-		return this.Person.Name
-	}
-	public set Name(value: string) {
-		this.Person.Name = value
-	}
-
-	public get Age(): number {
-		return this.Person.Age
-	}
-	public set Age(value: number) {
-		this.Person.Age = value
-	}
-
-	public Greet(): void {
-		this.Person.Greet()
-	}
-
-	public get Street(): string {
-		return this.Address.Street
-	}
-	public set Street(value: string) {
-		this.Address.Street = value
-	}
-
-	public get City(): string {
-		return this.Address.City
-	}
-	public set City(value: string) {
-		this.Address.City = value
-	}
-
-	public FullAddress(): string {
-		return this.Address.FullAddress()
-	}
-
-	public get Phone(): string {
-		return this.Contact.Phone
-	}
-	public set Phone(value: string) {
-		this.Contact.Phone = value
-	}
-
-	public Call(): void {
-		this.Contact.Call()
-	}
-
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Manager',
-	  new Manager(),
-	  [],
-	  Manager,
-	  {"Person": "main.Person", "Address": "main.Address", "Contact": "main.Contact", "Level": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.Manager",
+		new Manager(),
+		[],
+		Manager,
+		{"Person": "main.Person", "Address": "main.Address", "Contact": "main.Contact", "Level": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// --- Single Embedding Tests ---
-	let e = $.markAsStructValue(new Employee({ID: 123, Person: {Name: "Alice", Age: 30}}))
-
-	// Accessing embedded fields
+	let e = $.markAsStructValue(new Employee({Person: $.markAsStructValue(new Person({Name: "Alice", Age: 30})), ID: 123}))
 	$.println("Employee Name:", e.Name)
 	$.println("Employee Age:", e.Age)
 	$.println("Employee ID:", e.ID)
-
-	// Calling embedded method
-	e.Greet()
-
-	// Test with a pointer to Employee
-	let ep = new Employee({ID: 456, Person: {Name: "Bob", Age: 25}})
-
-	// Accessing embedded fields via pointer
-	$.println("Employee Pointer Name:", ep!.Name)
-	$.println("Employee Pointer Age:", ep!.Age)
-	$.println("Employee Pointer ID:", ep!.ID)
-
-	// Calling embedded method via pointer
-	ep!.Greet()
-
-	// --- Multiple Embedding Tests ---
+	$.markAsStructValue(e.clone()).Greet()
+	let ep = new Employee({Person: $.markAsStructValue(new Person({Name: "Bob", Age: 25})), ID: 456})
+	$.println("Employee Pointer Name:", $.pointerValue(ep).Name)
+	$.println("Employee Pointer Age:", $.pointerValue(ep).Age)
+	$.println("Employee Pointer ID:", $.pointerValue(ep).ID)
+	$.markAsStructValue($.pointerValue(ep).clone()).Greet()
 	$.println("\n--- Multiple Embedding ---")
-	let m = $.varRef($.markAsStructValue(new Manager({Level: 5, Address: {Street: "123 Main St", City: "Anytown"}, Contact: {Phone: "555-1234"}, Person: {Name: "Charlie", Age: 40}})))
-
-	// Accessing fields from all embedded structs and the outer struct
-	$.println("Manager Name:", m!.value.Name) // From Person
-	$.println("Manager Age:", m!.value.Age) // From Person
-	$.println("Manager Street:", m!.value.Street) // From Address
-	$.println("Manager City:", m!.value.City) // From Address
-	$.println("Manager Phone:", m!.value.Phone) // From Contact
-	$.println("Manager Level:", m!.value.Level) // From Manager
-
-	// Calling methods from embedded structs
-	m!.value.Greet() // From Person
-	$.println("Manager Full Address:", m!.value.FullAddress()) // From Address
-	m!.value.Call() // From Contact
-
-	// Test with a pointer
+	let m = $.varRef($.markAsStructValue(new Manager({Person: $.markAsStructValue(new Person({Name: "Charlie", Age: 40})), Address: $.markAsStructValue(new Address({Street: "123 Main St", City: "Anytown"})), Contact: $.markAsStructValue(new Contact({Phone: "555-1234"})), Level: 5})))
+	$.println("Manager Name:", m.value.Name)
+	$.println("Manager Age:", m.value.Age)
+	$.println("Manager Street:", m.value.Street)
+	$.println("Manager City:", m.value.City)
+	$.println("Manager Phone:", m.value.Phone)
+	$.println("Manager Level:", m.value.Level)
+	$.markAsStructValue(m.value.clone()).Greet()
+	$.println("Manager Full Address:", $.markAsStructValue(m.value.clone()).FullAddress())
+	$.markAsStructValue(m.value.clone()).Call()
 	let mp = m
 	$.println("\n--- Multiple Embedding (Pointer) ---")
-	$.println("Manager Pointer Name:", mp!.value!.Name)
-	mp!.value!.Greet()
-	$.println("Manager Pointer Full Address:", mp!.value!.FullAddress())
-	mp!.value!.Call()
-
-	// Modify through pointer
-	mp!.value!.Age = 41
-	mp!.value!.City = "New City"
-	$.println("Modified Manager Age:", m!.value.Age)
-	$.println("Modified Manager City:", m!.value.City)
+	$.println("Manager Pointer Name:", $.pointerValue(mp).Name)
+	$.markAsStructValue($.pointerValue(mp).clone()).Greet()
+	$.println("Manager Pointer Full Address:", $.markAsStructValue($.pointerValue(mp).clone()).FullAddress())
+	$.markAsStructValue($.pointerValue(mp).clone()).Call()
+	$.pointerValue(mp).Age = 41
+	$.pointerValue(mp).City = "New City"
+	$.println("Modified Manager Age:", m.value.Age)
+	$.println("Modified Manager City:", m.value.City)
 }
 
 

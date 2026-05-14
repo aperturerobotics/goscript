@@ -1,31 +1,31 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { compile } from "./index";
-import * as path from "path";
-import * as fs from "fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { describe, it, expect } from 'vitest'
+import { compile } from './index'
 
-const exampleDir = path.resolve(__dirname, "../example/simple");
-const outputDir = path.join(exampleDir, "output"); // Use a separate output dir for tests
-const expectedOutputFile = path.join(outputDir, "@goscript", "example", "main.gs.ts");
+describe('GoScript Compiler API', () => {
+  it('compiles a simple package through the CLI adapter', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'goscript-api-'))
+    const output = join(dir, 'output')
+    await mkdir(dir, { recursive: true })
+    await writeFile(join(dir, 'go.mod'), 'module example.test/api\n\ngo 1.25.3\n')
+    await writeFile(join(dir, 'main.go'), [
+      'package main',
+      'func main() {',
+      '  println("api")',
+      '}',
+      '',
+    ].join('\n'))
 
-describe("GoScript Compiler API", () => {
-  // Clean up before and after tests
-  beforeAll(async () => {
-    await fs.rm(outputDir, { recursive: true, force: true });
-  });
-  afterAll(async () => {
-    await fs.rm(outputDir, { recursive: true, force: true });
-  });
+    await compile({
+      pkg: '.',
+      output,
+      dir,
+    })
 
-  it("should compile the simple example package", async () => {
-    const config = {
-      pkg: ".", // Compile the package in the exampleDir
-      dir: exampleDir,
-      output: outputDir,
-    };
-
-    await expect(compile(config)).resolves.toBeUndefined();
-    // fs.access resolves to undefined/null on success - verify file exists
-    const fileExists = await fs.access(expectedOutputFile).then(() => true).catch(() => false);
-    expect(fileExists).toBe(true);
-  }, 30000); // 30 second timeout for compilation
-});
+    const generated = await readFile(join(output, '@goscript', 'example.test', 'api', 'main.gs.ts'), 'utf8')
+    expect(generated).toContain('export async function main(): Promise<void>')
+    expect(generated).toContain('$.println("api")')
+  }, 30000)
+})

@@ -9,10 +9,10 @@ export type AsyncProcessor = null | {
 }
 
 $.registerInterfaceType(
-  'main.AsyncProcessor',
-  null, // Zero value for interface is null
-  [{ name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-);
+	"main.AsyncProcessor",
+	null,
+	[{ name: "GetResult", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+)
 
 export class ChannelProcessor {
 	public get ch(): $.Channel<number> | null {
@@ -23,7 +23,7 @@ export class ChannelProcessor {
 	}
 
 	public _fields: {
-		ch: $.VarRef<$.Channel<number> | null>;
+		ch: $.VarRef<$.Channel<number> | null>
 	}
 
 	constructor(init?: Partial<{ch?: $.Channel<number> | null}>) {
@@ -37,28 +37,28 @@ export class ChannelProcessor {
 		cloned._fields = {
 			ch: $.varRef(this._fields.ch.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
+	}
+
+	public GetResult(): number {
+		const p = this
+		return 42
 	}
 
 	public async Process(data: number): Promise<number> {
 		const p = this
-		await $.chanSend(p.ch, data)
-		let result = await $.chanRecv(p.ch)
+		await $.chanSend($.pointerValue(p).ch, data)
+		let result = await $.chanRecv($.pointerValue(p).ch)
 		return result * 2
 	}
 
-	public GetResult(): number {
-		return 42
-	}
-
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.ChannelProcessor',
-	  new ChannelProcessor(),
-	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  ChannelProcessor,
-	  {"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
-	);
+		"main.ChannelProcessor",
+		new ChannelProcessor(),
+		[{ name: "GetResult", args: [], returns: [] }, { name: "Process", args: [], returns: [] }],
+		ChannelProcessor,
+		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
 }
 
 export class SimpleProcessor {
@@ -70,7 +70,7 @@ export class SimpleProcessor {
 	}
 
 	public _fields: {
-		value: $.VarRef<number>;
+		value: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{value?: number}>) {
@@ -84,53 +84,42 @@ export class SimpleProcessor {
 		cloned._fields = {
 			value: $.varRef(this._fields.value.value)
 		}
-		return cloned
-	}
-
-	public async Process(data: number): Promise<number> {
-		return data + 10
+		return $.markAsStructValue(cloned)
 	}
 
 	public GetResult(): number {
 		const p = this
-		return p.value
+		return $.pointerValue(p).value
 	}
 
-	// Register this type with the runtime type system
+	public Process(data: number): number {
+		const p = this
+		return data + 10
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'main.SimpleProcessor',
-	  new SimpleProcessor(),
-	  [{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "GetResult", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  SimpleProcessor,
-	  {"value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.SimpleProcessor",
+		new SimpleProcessor(),
+		[{ name: "GetResult", args: [], returns: [] }, { name: "Process", args: [], returns: [] }],
+		SimpleProcessor,
+		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
-// Function that calls async method on interface
 export async function processViaInterface(processor: AsyncProcessor, input: number): Promise<number> {
-	// This call should be awaited in TypeScript since Process is async
-	let result = await processor!.Process(input)
-
-	// This call should NOT be awaited since GetResult is sync
-	let baseResult = processor!.GetResult()
-
+	let result = await processor.Process(input)
+	let baseResult = processor.GetResult()
 	return result + baseResult
 }
 
 export async function main(): Promise<void> {
-	// Create a buffered channel
-	let ch = $.makeChannel<number>(1, 0, 'both')
-
-	// Test with ChannelProcessor (naturally async)
+	let ch = $.makeChannel<number>(1, 0, "both")
 	let channelProc = new ChannelProcessor({ch: ch})
 	let result1 = await processViaInterface(channelProc, 5)
-	$.println("ChannelProcessor result:", result1) // Expected: 52 (5*2 + 42)
-
-	// Test with SimpleProcessor (forced async for compatibility)
+	$.println("ChannelProcessor result:", result1)
 	let simpleProc = new SimpleProcessor({value: 100})
 	let result2 = await processViaInterface(simpleProc, 5)
-	$.println("SimpleProcessor result:", result2) // Expected: 115 (5+10 + 100)
-
+	$.println("SimpleProcessor result:", result2)
 	ch.close()
 }
 

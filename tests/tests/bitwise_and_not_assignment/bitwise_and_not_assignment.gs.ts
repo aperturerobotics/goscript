@@ -4,17 +4,13 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	// Test the &^= operator (bit clear assignment)
-	let x = (0x7FF0000000000000 as number) // Some bits set
-	let mask = ((2047 << 52) as number) // Mask to clear
-
+	let x = $.int(0x7FF0000000000000)
+	let mask = $.int(2047 << 52)
 	$.println("Before:", x)
-	x &= ~(mask) // This should generate valid TypeScript
+	x &^= mask
 	$.println("After:", x)
-
-	// Also test regular &^ operator
-	let y = (0x7FF0000000000000 as number)
-	let result = (y & ~ mask)
+	let y = $.int(0x7FF0000000000000)
+	let result = y &^ mask
 	$.println("Result:", result)
 }
 

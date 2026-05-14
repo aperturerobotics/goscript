@@ -12,7 +12,7 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
+		MyInt: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{MyInt?: number}>) {
@@ -26,27 +26,24 @@ export class MyStruct {
 		cloned._fields = {
 			MyInt: $.varRef(this._fields.MyInt.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// We need to make sure we don't add .value for this
-	let myStruct = new MyStruct({})
-	;myStruct!.MyInt = 5
-	$.println(myStruct!.MyInt)
-
+	let myStruct = new MyStruct()
+	($.pointerValue(myStruct)).MyInt = 5
+	$.println(($.pointerValue(myStruct)).MyInt)
 	let myOtherStruct = new MyStruct({MyInt: 1})
-	if ((myOtherStruct !== myStruct)) {
+	if (myOtherStruct != myStruct) {
 		$.println("expected not equal")
 	}
 }

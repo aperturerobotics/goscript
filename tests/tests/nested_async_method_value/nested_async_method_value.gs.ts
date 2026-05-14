@@ -3,16 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export type Spawner = null | {
-	Spawn(): $.GoError
-}
-
-$.registerInterfaceType(
-  'main.Spawner',
-  null, // Zero value for interface is null
-  [{ name: "Spawn", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
-
 export class Worker {
 	public get ch(): $.Channel<number> | null {
 		return this._fields.ch.value
@@ -22,7 +12,7 @@ export class Worker {
 	}
 
 	public _fields: {
-		ch: $.VarRef<$.Channel<number> | null>;
+		ch: $.VarRef<$.Channel<number> | null>
 	}
 
 	constructor(init?: Partial<{ch?: $.Channel<number> | null}>) {
@@ -36,29 +26,38 @@ export class Worker {
 		cloned._fields = {
 			ch: $.varRef(this._fields.ch.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public Spawn(): $.GoError {
+	public Spawn(): error {
 		const w = this
-		queueMicrotask(async () => {
-			await $.chanRecv(w.ch)
-		})
+		queueMicrotask(async () => { await (async (): Promise<void> => {
+	await $.chanRecv($.pointerValue(w).ch)
+})() })
 		return null
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Worker',
-	  new Worker(),
-	  [{ name: "Spawn", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  Worker,
-	  {"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
-	);
+		"main.Worker",
+		new Worker(),
+		[{ name: "Spawn", args: [], returns: [] }],
+		Worker,
+		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
 }
 
-export function run(fn: (() => $.GoError) | null): void {
-	let err = fn!()
+export type Spawner = null | {
+	Spawn(): error
+}
+
+$.registerInterfaceType(
+	"main.Spawner",
+	null,
+	[{ name: "Spawn", args: [], returns: [{ name: "_r0", type: "error" }] }]
+)
+
+export function run(fn: () => error): void {
+	let err = fn()
 	if (err == null) {
 		$.println("func value err: nil")
 	} else {
@@ -67,17 +66,16 @@ export function run(fn: (() => $.GoError) | null): void {
 }
 
 export async function main(): Promise<void> {
-	let w = new Worker({ch: $.makeChannel<number>(1, 0, 'both')})
-	run(w!.Spawn.bind(w!))
-
+	let w = new Worker({ch: $.makeChannel<number>(1, 0, "both")})
+	run(((__receiver) => (...args: any[]) => __receiver.Spawn(...args))($.pointerValue(w)))
 	let s: Spawner = w
-	let err = s!.Spawn()
+	let err = s.Spawn()
 	if (err == null) {
 		$.println("iface err: nil")
 	} else {
 		$.println("iface err: non-nil")
 	}
-	await $.chanSend(w!.ch, 1)
+	await $.chanSend($.pointerValue(w).ch, 1)
 }
 
 

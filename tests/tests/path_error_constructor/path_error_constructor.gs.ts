@@ -8,12 +8,10 @@ import * as fmt from "@goscript/fmt/index.ts"
 import * as os from "@goscript/os/index.ts"
 
 export async function main(): Promise<void> {
-	// Test creating a PathError using composite literal syntax
-	let err = new os.PathError({Err: fmt.Errorf("not a symlink"), Op: "readlink", Path: "/some/path"})
-
-	$.println(err!.Op)
-	$.println(err!.Path)
-	$.println(err!.Err!.Error())
+	let err = new PathError({Op: "readlink", Path: "/some/path", Err: fmt.Errorf("not a symlink")})
+	$.println($.pointerValue(err).Op)
+	$.println($.pointerValue(err).Path)
+	$.println($.pointerValue(err).Err.Error())
 }
 
 

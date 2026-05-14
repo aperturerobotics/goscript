@@ -23,11 +23,11 @@ export class Person {
 	}
 
 	public _fields: {
-		Name: $.VarRef<string>;
-		Age: $.VarRef<number>;
+		Name: $.VarRef<string>
+		Age: $.VarRef<number>
 	}
 
-	constructor(init?: Partial<{Age?: number, Name?: string}>) {
+	constructor(init?: Partial<{Name?: string, Age?: number}>) {
 		this._fields = {
 			Name: $.varRef(init?.Name ?? ""),
 			Age: $.varRef(init?.Age ?? 0)
@@ -40,25 +40,24 @@ export class Person {
 			Name: $.varRef(this._fields.Name.value),
 			Age: $.varRef(this._fields.Age.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Person',
-	  new Person(),
-	  [],
-	  Person,
-	  {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.Person",
+		new Person(),
+		[],
+		Person,
+		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let p = $.markAsStructValue(new Person({Age: 30, Name: "Alice"}))
+	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30}))
 	let v = $.markAsStructValue(reflect.ValueOf(p).clone())
-	if (v.Kind() == reflect.Struct) {
-		let f = $.markAsStructValue(v.Field(0).clone())
-		fmt.Println(f.String())
+	if ($.markAsStructValue(v.clone()).Kind() == reflect.Struct) {
+		let f = $.markAsStructValue($.markAsStructValue(v.clone()).Field(0).clone())
+		fmt.Println($.markAsStructValue(f.clone()).String())
 	}
 }
 

@@ -19,11 +19,11 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		publicField: $.VarRef<string>;
-		privateField: $.VarRef<number>;
+		publicField: $.VarRef<string>
+		privateField: $.VarRef<number>
 	}
 
-	constructor(init?: Partial<{privateField?: number, publicField?: string}>) {
+	constructor(init?: Partial<{publicField?: string, privateField?: number}>) {
 		this._fields = {
 			publicField: $.varRef(init?.publicField ?? ""),
 			privateField: $.varRef(init?.privateField ?? 0)
@@ -36,26 +36,23 @@ export class MyStruct {
 			publicField: $.varRef(this._fields.publicField.value),
 			privateField: $.varRef(this._fields.privateField.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"publicField": { kind: $.TypeKind.Basic, name: "string" }, "privateField": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"publicField": { kind: $.TypeKind.Basic, name: "string" }, "privateField": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export function NewMyStruct(pub: string, priv: number): MyStruct {
-	return $.markAsStructValue(new MyStruct({privateField: priv, publicField: pub}))
+	return $.markAsStructValue(new MyStruct({publicField: pub, privateField: priv}))
 }
 
 export function accessPrivateField(s: MyStruct): void {
-	// Accessing privateField directly from a function in the same package
-	// This should trigger the generation of the _private field
 	$.println("Accessing privateField:", s.privateField)
 }
 

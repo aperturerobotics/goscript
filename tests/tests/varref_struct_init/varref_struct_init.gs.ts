@@ -12,7 +12,7 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>;
+		MyInt: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{MyInt?: number}>) {
@@ -26,40 +26,27 @@ export class MyStruct {
 		cloned._fields = {
 			MyInt: $.varRef(this._fields.MyInt.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"MyInt": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// Scenario 1: Value type that NeedsVarRef
-	// 'val' is a value type, but its address is taken, so it should be varrefed in TS.
 	let val = $.varRef($.markAsStructValue(new MyStruct({MyInt: 10})))
-	let ptrToVal = val // Makes NeedsVarRefAccess(val) true
-
-	// Accessing field on varrefed value type: Should generate val.value.MyInt
-	val!.value.MyInt = 20
-
-	// Scenario 2: Pointer type
-	// We never take the address of ptr so it should not be varrefed.
+	let ptrToVal = val
+	val.value.MyInt = 20
 	let ptr = new MyStruct({MyInt: 30})
-
-	// Accessing field on pointer type: Should generate ptr.MyInt
-	ptr!.MyInt = 40
-	$.println("ptr.MyInt:", ptr!.MyInt) // Expected: 40
-
-	// Accessing pointer value, should use .value
-	$.println("ptrToVal.MyInt:", ptrToVal!.value!.MyInt)
-
-	let myIntVal = ptrToVal!.value!.MyInt
+	$.pointerValue(ptr).MyInt = 40
+	$.println("ptr.MyInt:", $.pointerValue(ptr).MyInt)
+	$.println("ptrToVal.MyInt:", $.pointerValue(ptrToVal).MyInt)
+	let myIntVal = $.pointerValue(ptrToVal).MyInt
 	$.println("myIntVal:", myIntVal)
 }
 

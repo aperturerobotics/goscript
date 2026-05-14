@@ -4,34 +4,27 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	let s = $.arrayToSlice<number>([10, 20, 30])
+	let s = [10, 20, 30]
 	$.println("Looping over slice (no vars):")
 	let count = 0
-	for (let _i = 0; _i < $.len(s); _i++) {
-		{
-			count++
-		}
+	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {
+		count++
 	}
-	$.println(count) // Expected output: 3
-
-	let a = $.arrayToSlice<string>(["alpha", "beta"])
+	$.println(count)
+	let a = ["alpha", "beta"]
 	$.println("Looping over array (no vars):")
 	let arrCount = 0
-	for (let _i = 0; _i < $.len(a); _i++) {
-		{
-			$.println(a![arrCount])
-			arrCount++
-		}
+	for (let __rangeIndex = 0; __rangeIndex < $.len(a); __rangeIndex++) {
+		$.println(a[arrCount])
+		arrCount++
 	}
-	$.println(arrCount) // Expected output: 2
-
+	$.println(arrCount)
 	$.println("Ranging over number (no vars):")
 	let numCount = 0
-	for (let _i = 0; _i < 5; _i++) {{
+	for (let __rangeIndex = 0; __rangeIndex < 5; __rangeIndex++) {
 		numCount++
 	}
-}
-$.println(numCount) // Expected output: 5
+	$.println(numCount)
 }
 
 

@@ -1,0 +1,109 @@
+package compiler
+
+// LoweredProgram is the compiler-owned IR consumed by TypeScript emission.
+type LoweredProgram struct {
+	packages []*loweredPackage
+}
+
+type loweredPackage struct {
+	pkgPath string
+	name    string
+	files   []*loweredFile
+}
+
+type loweredFile struct {
+	sourcePath  string
+	outputName  string
+	imports     []loweredImport
+	decls       []loweredDecl
+	exports     []string
+	typeExports []string
+}
+
+type loweredImport struct {
+	alias  string
+	source string
+}
+
+type loweredDecl struct {
+	code            string
+	indexExport     string
+	typeIndexExport string
+	function        *loweredFunction
+	structType      *loweredStruct
+}
+
+type loweredStruct struct {
+	exported      bool
+	indexExported bool
+	name          string
+	typeName      string
+	fields        []loweredStructField
+	methods       []loweredFunction
+}
+
+type loweredStructField struct {
+	name        string
+	typ         string
+	zero        string
+	runtimeType string
+	structValue bool
+}
+
+type loweredFunction struct {
+	exported      bool
+	indexExported bool
+	async         bool
+	name          string
+	receiverAlias string
+	params        []loweredParam
+	result        string
+	body          []loweredStmt
+	deferState    *loweredDeferState
+}
+
+type loweredParam struct {
+	name string
+	typ  string
+}
+
+type loweredStmt struct {
+	text       string
+	children   []loweredStmt
+	elseBody   []loweredStmt
+	selectStmt *loweredSelect
+	typeSwitch *loweredTypeSwitch
+}
+
+type loweredDeferState struct {
+	used  bool
+	async bool
+}
+
+type loweredSelect struct {
+	hasReturn  string
+	value      string
+	cases      []loweredSelectCase
+	hasDefault bool
+}
+
+type loweredSelectCase struct {
+	id      int
+	isSend  bool
+	channel string
+	value   string
+	prelude []loweredStmt
+	body    []loweredStmt
+}
+
+type loweredTypeSwitch struct {
+	value       string
+	varName     string
+	cases       []loweredTypeSwitchCase
+	defaultBody []loweredStmt
+}
+
+type loweredTypeSwitchCase struct {
+	types []string
+	body  []loweredStmt
+}

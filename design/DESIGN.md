@@ -6,11 +6,30 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
 
 ## Core Principles
 
-1.  **AST Mapping:** Aim for a close mapping between the Go AST (`go/ast`) and the TypeScript AST, simplifying the compiler logic.
+1.  **Owner-separated pipeline:** Keep package loading, semantic analysis, lowering, runtime helper contracts, override package handling, and TypeScript text emission in separate owners.
 2.  **Type Preservation:** Preserve Go's static typing as much as possible using TypeScript's type system.
 3.  **Value Semantics:** Emulate Go's value semantics for basic types and structs using copying where necessary. Pointers are used to emulate reference semantics when Go uses pointers. See [VarRefes and Pointers](#varRefes-and-pointers).
 4.  **Idiomatic TypeScript:** Generate TypeScript code that feels natural to TypeScript developers, even if it means minor divergences from exact Go runtime behavior (e.g., `for range` loop variable scoping).
 5.  **Readability:** Prioritize clear and understandable generated code.
+
+## Compiler Architecture (v2)
+
+Public entrypoints are adapters over one compiler service:
+
+*   `cmd/goscript` is the CLI adapter. It uses `github.com/aperturerobotics/cli` for command and flag parsing, normalizes flags into `compiler.Config`, and then calls the public Go compiler adapter.
+*   `compiler.Compiler` is the public Go API. It owns logger/config storage only and forwards package patterns to `CompileService`.
+*   `compiler/wasm` is the browser/WASM API adapter. Direct browser source-string compilation is not supported in v2 yet, so this adapter returns the structured `goscript/wasm:single-file-unsupported` diagnostic instead of claiming a partial parser-only compile path.
+
+`CompileService` owns the v2 compile pipeline:
+
+1.  `CompileRequestOwner` normalizes adapter inputs and rejects invalid requests before output is written. Package patterns such as `.` or `./pkg` are supported from inside a Go module; direct `.go` file inputs are rejected with `goscript/request:single-file-unsupported`.
+2.  `PackageGraphOwner` loads Go packages with `go/packages`, using `GOOS=js`, `GOARCH=wasm`, and caller-supplied build flags.
+3.  `SemanticModelOwner` computes package, file, type, method, addressability, async, interface, generic, and override facts.
+4.  `OverrideRegistryOwner` discovers handwritten `gs/` packages, validates metadata/dependencies, supplies async method facts, builds copy plans, and copies required runtime/override packages.
+5.  `LoweringOwner` converts the semantic model and Go AST into GoScript's compiler-owned intermediate model. Unsupported syntax produces structured lowering diagnostics before emission.
+6.  `TypeScriptEmitOwner` renders deterministic semicolon-free TypeScript files and package indexes only from the lowered model.
+
+This means generated TypeScript text should not re-query package loader state, rebuild semantic facts, or duplicate runtime helper names locally. Shared helper names and `@goscript/builtin/index.ts` import policy come from `RuntimeContractOwner`.
 
 ## Translation Strategies
 
@@ -18,8 +37,8 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
 
 *   Go packages are translated into TypeScript modules (ES modules).
 *   Each Go file within a package is typically translated into a corresponding TypeScript file.
-*   The `main` package is translated like any other package. The `main` function is exported as `export async function main(): Promise<void>` to serve as the entry point. Since most Go programs use concurrency features (channels, goroutines), the main function is always generated as async.
-*   Imports are translated to TypeScript `import` statements. The GoScript runtime is imported as `@goscript/builtin`.
+*   The `main` package is translated like any other package. The `main` function is exported as `export async function main(): Promise<void>` to serve as the entry point, and generated `package main` modules include a main-script guard that calls `main()` when the module is executed directly.
+*   Imports are translated to TypeScript `import` statements. The GoScript runtime is imported as `@goscript/builtin/index.ts` in generated source.
 
 ### Types
 
@@ -51,7 +70,7 @@ GoScript translates Go code to TypeScript. This document outlines the design pri
 ### Control Flow
 
 *   **`if`/`else`:** Translated directly to TypeScript `if`/`else`. Scoped simple statements (`if x := foo(); x > 0`) are handled by declaring the variable before the `if`.
-*   **`switch`:** Translated to TypeScript `switch`. Type switches require special handling using runtime type information.
+*   **`switch`:** Type switches are translated using runtime type information. Expression switches are not part of the current v2 compiler yet and currently report an unsupported lowering diagnostic.
 *   **`for`:**
     *   Standard `for` loops (`for init; cond; post`) are translated directly to TypeScript `for` loops.
     *   `for cond` loops are translated to TypeScript `while (cond)`.
@@ -141,9 +160,10 @@ The runtime provides:
     *   Map operations: `$.makeMap`, `$.mapGet`, `$.mapSet`, `$.deleteMapEntry`
     *   Channel operations: `$.makeChannel`, `$.chanSend`, `$.chanRecv`, `$.chanRecvWithOk`, `$.selectStatement`
     *   String operations: `$.stringToRunes`, `$.stringToBytes`, `$.bytesToString`, `$.runeOrStringToString`
-    *   Pointer/value operations: `$.varRef`, `$.unref`, `$.isVarRef`
+    *   Pointer/value operations: `$.varRef`, `$.unref`, `$.isVarRef`, `$.pointerValue`, `$.markAsStructValue`, `$.assignStruct`
     *   Type operations: `$.typeAssert`, `$.mustTypeAssert`, `$.typeSwitch`, `$.is`, `$.typedNil`
-    *   Control flow: `$.panic`, `$.recover`, `$.println`
+    *   Function/generic operations: `$.namedFunction`, `$.genericZero`, `$.callGenericMethod`
+    *   Control flow: `$.panic`, `$.recover`, `$.println`, `$.isMainScript`
     *   Math: `$.int`, `$.byte`
 *   Runtime type information utilities (`$.registerStructType`, `$.registerInterfaceType`, `$.getTypeByName`, `$.TypeKind`).
 
@@ -179,9 +199,9 @@ This is the typical package structure of the output TypeScript import path:
 
 This section highlights key areas where GoScript's generated TypeScript behavior differs from standard Go, primarily due to the challenges of mapping Go's memory model and semantics directly to JavaScript/TypeScript.
 
-• **Value Receiver Method Semantics:**
-  - In Go, methods with value receivers (`func (s MyStruct) Method()`) operate on a *copy* of the receiver struct.
-  - In GoScript, both value and pointer receiver methods are translated to methods on the TypeScript class. Calls to value-receiver methods on a TypeScript instance modify the *original* object referenced by `this`, not a copy. This differs from Go's copy-on-call semantics for value receivers.
+• **Expression Switches:**
+  - Go expression switches are not lowered by the current v2 compiler.
+  - Type switches are supported through runtime type descriptors and `$.typeSwitch`; expression switches should fail with a structured unsupported lowering diagnostic until they are scoped.
 
 ## Implementation Considerations
 

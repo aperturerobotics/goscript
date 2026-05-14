@@ -1,7 +1,16 @@
 // Generated file based on errlist/errlist.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
+// Generated file based on errlist.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
 import * as $ from "@goscript/builtin/index.ts"
+
+export type ErrorList = $.Slice<string>
+
+export function ErrorList_Add(p: $.VarRef<ErrorList>, msg: string): void {
+	p.value = $.append($.pointerValue(p), msg)
+}
 
 export class AStruct {
 	public get Msg(): string {
@@ -12,7 +21,7 @@ export class AStruct {
 	}
 
 	public _fields: {
-		Msg: $.VarRef<string>;
+		Msg: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{Msg?: string}>) {
@@ -26,28 +35,19 @@ export class AStruct {
 		cloned._fields = {
 			Msg: $.varRef(this._fields.Msg.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public Set(msg: string): void {
 		const a = this
-		a.Msg = msg
+		$.pointerValue(a).Msg = msg
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist.AStruct',
-	  new AStruct(),
-	  [{ name: "Set", args: [{ name: "msg", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }],
-	  AStruct,
-	  {"Msg": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"errlist.AStruct",
+		new AStruct(),
+		[{ name: "Set", args: [], returns: [] }],
+		AStruct,
+		{"Msg": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
-
-export type ErrorList = $.Slice<string>;
-
-export function ErrorList_Add(p: $.VarRef<ErrorList>, msg: string): void {
-	p!.value = $.append(p!.value, msg)
-}
-
-

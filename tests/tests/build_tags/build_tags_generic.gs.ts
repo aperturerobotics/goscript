@@ -6,4 +6,3 @@ import * as $ from "@goscript/builtin/index.ts"
 export function testGeneric(): void {
 	$.println("Generic code compiled - CORRECT")
 }
-

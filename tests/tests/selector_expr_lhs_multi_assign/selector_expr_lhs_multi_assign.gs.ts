@@ -19,8 +19,8 @@ export class Point {
 	}
 
 	public _fields: {
-		X: $.VarRef<number>;
-		Y: $.VarRef<number>;
+		X: $.VarRef<number>
+		Y: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{X?: number, Y?: number}>) {
@@ -36,32 +36,27 @@ export class Point {
 			X: $.varRef(this._fields.X.value),
 			Y: $.varRef(this._fields.Y.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Point',
-	  new Point(),
-	  [],
-	  Point,
-	  {"X": { kind: $.TypeKind.Basic, name: "int" }, "Y": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.Point",
+		new Point(),
+		[],
+		Point,
+		{"X": { kind: $.TypeKind.Basic, name: "int" }, "Y": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
 
-export function getCoords(): [number, number] {
+export function getCoords(): void {
 	return [10, 20]
 }
 
 export async function main(): Promise<void> {
-	let p: Point = new Point()
-	// p.X and p.Y are *ast.SelectorExpr
-	// test writeMultiVarAssignFromCall in WriteStmtAssign
-	{
-	  const _tmp = getCoords()
-	  p.X = _tmp[0]
-	  p.Y = _tmp[1]
-	}
+	let p: Point = $.markAsStructValue(new Point())
+	let __goscriptTuple222 = getCoords()
+	p.X = __goscriptTuple222[0]
+	p.Y = __goscriptTuple222[1]
 	$.println(p.X, p.Y)
 }
 

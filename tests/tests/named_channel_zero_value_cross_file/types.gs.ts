@@ -12,7 +12,7 @@ export class Job {
 	}
 
 	public _fields: {
-		Value: $.VarRef<string>;
+		Value: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{Value?: string}>) {
@@ -26,18 +26,16 @@ export class Job {
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Job',
-	  new Job(),
-	  [],
-	  Job,
-	  {"Value": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.Job",
+		new Job(),
+		[],
+		Job,
+		{"Value": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
-export type Jobs = $.Channel<Job> | null;
-
+export type Jobs = $.Channel<Job> | null

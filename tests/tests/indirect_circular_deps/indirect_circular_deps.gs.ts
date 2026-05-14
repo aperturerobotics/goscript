@@ -12,7 +12,7 @@ export class A {
 	}
 
 	public _fields: {
-		BB: $.VarRef<$.Slice<B>>;
+		BB: $.VarRef<$.Slice<B>>
 	}
 
 	constructor(init?: Partial<{BB?: $.Slice<B>}>) {
@@ -26,17 +26,16 @@ export class A {
 		cloned._fields = {
 			BB: $.varRef(this._fields.BB.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.A',
-	  new A(),
-	  [],
-	  A,
-	  {"BB": { kind: $.TypeKind.Slice, elemType: "main.B" }}
-	);
+		"main.A",
+		new A(),
+		[],
+		A,
+		{"BB": { kind: $.TypeKind.Slice, elemType: "main.B" }}
+	)
 }
 
 export class B {
@@ -48,7 +47,7 @@ export class B {
 	}
 
 	public _fields: {
-		AA: $.VarRef<$.Slice<A>>;
+		AA: $.VarRef<$.Slice<A>>
 	}
 
 	constructor(init?: Partial<{AA?: $.Slice<A>}>) {
@@ -62,26 +61,23 @@ export class B {
 		cloned._fields = {
 			AA: $.varRef(this._fields.AA.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.B',
-	  new B(),
-	  [],
-	  B,
-	  {"AA": { kind: $.TypeKind.Slice, elemType: "main.A" }}
-	);
+		"main.B",
+		new B(),
+		[],
+		B,
+		{"AA": { kind: $.TypeKind.Slice, elemType: "main.A" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let a1 = $.markAsStructValue(new A({}))
-	let b1 = $.markAsStructValue(new B({}))
-
-	let a2 = $.markAsStructValue(new A({BB: $.arrayToSlice<B>([b1])}))
-	let b2 = $.markAsStructValue(new B({AA: $.arrayToSlice<A>([a1])}))
-
+	let a1 = $.markAsStructValue(new A())
+	let b1 = $.markAsStructValue(new B())
+	let a2 = $.markAsStructValue(new A({BB: [$.markAsStructValue(b1.clone())]}))
+	let b2 = $.markAsStructValue(new B({AA: [$.markAsStructValue(a1.clone())]}))
 	$.println("a1:", a1.BB == null)
 	$.println("b1:", b1.AA == null)
 	$.println("a2 has", $.len(a2.BB), "B items")

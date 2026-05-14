@@ -12,7 +12,7 @@ export class Foo {
 	}
 
 	public _fields: {
-		Value: $.VarRef<string>;
+		Value: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{Value?: string}>) {
@@ -26,18 +26,16 @@ export class Foo {
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Foo',
-	  new Foo(),
-	  [],
-	  Foo,
-	  {"Value": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.Foo",
+		new Foo(),
+		[],
+		Foo,
+		{"Value": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
-export let Storage: Map<string, Foo> | null = new Map([["foo", $.markAsStructValue(new Foo({Value: "bar"}))]])
-
+export let Storage: Map<string, Foo> | null = new Map<string, Foo>([["foo", $.markAsStructValue(new Foo({Value: "bar"}))]])

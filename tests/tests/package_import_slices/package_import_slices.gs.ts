@@ -6,20 +6,11 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as slices from "@goscript/slices/index.ts"
 
 export async function main(): Promise<void> {
-	let s = $.arrayToSlice<number>([1, 2, 3, 4, 5])
-
-	// This should trigger the interface range issue
-	// slices.All returns an iterator interface that can be ranged over
-	;(() => {
-		let shouldContinue = true
-		slices.All(s)!((i, v) => {
-			{
-				$.println("index:", i, "value:", v)
-			}
-			return shouldContinue
-		})
-	})()
-
+	let s = [1, 2, 3, 4, 5]
+	for (let i = 0; i < $.len(slices.All(s)); i++) {
+		let v = slices.All(s)[i]
+		$.println("index:", i, "value:", v)
+	}
 	$.println("test finished")
 }
 

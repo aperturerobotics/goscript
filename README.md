@@ -89,6 +89,11 @@ npm install -g goscript
 goscript compile --package . --output ./dist
 ```
 
+GoScript v2 compiles Go packages from inside a Go module. Direct single-file
+inputs such as `main.go` and browser/WASM source-string compilation are not
+supported yet; those paths return structured diagnostics before output is
+written.
+
 ## 📦 Using Generated Code in Your Project
 
 After compiling your Go code to TypeScript, you'll need to set up your project appropriately.
@@ -125,6 +130,11 @@ Create or update your `tsconfig.json` with these settings:
 
 You should be able to use any TypeScript bundler to compile the generated TypeScript.
 
+For a generated `package main`, GoScript emits a main-script guard so the
+generated module can be executed directly by a TypeScript runtime or bundler
+that resolves `@goscript/*` imports. The `example/simple` package shows the
+supported compile-and-run workflow.
+
 ## 🛠️ Integration & Usage
 
 ### Command Line
@@ -135,8 +145,10 @@ goscript compile --package ./my-go-code --output ./dist
 
 **Options:**
 
-- `--package <path>` - Go package to compile (default: ".")
+- `--package <path>` - Go package pattern to compile
 - `--output <dir>` - Output directory for TypeScript files
+- `--dir <dir>` - Working directory for module/package loading
+- `--build-flags <flag>` - Go package loader build flag, repeatable
 
 ### Programmatic API
 

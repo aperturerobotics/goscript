@@ -10,6 +10,14 @@ import (
 var version = "dev"
 
 func main() {
+	app := newApp()
+	if err := app.Run(os.Args); err != nil {
+		_, _ = os.Stderr.WriteString(err.Error() + "\n")
+		os.Exit(1)
+	}
+}
+
+func newApp() *cli.App {
 	app := cli.NewApp()
 	app.Version = version
 
@@ -18,10 +26,7 @@ func main() {
 	}
 
 	app.Usage = "GoScript compiles Go to Typescript."
-	app.Commands = append(app.Commands, CompileCommands...)
+	app.Commands = append(app.Commands, compileCommands()...)
 
-	if err := app.Run(os.Args); err != nil {
-		_, _ = os.Stderr.WriteString(err.Error() + "\n")
-		os.Exit(1)
-	}
+	return app
 }

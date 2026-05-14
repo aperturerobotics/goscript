@@ -5,28 +5,27 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as os from "@goscript/os/index.ts"
 
-export type ByName = $.Slice<null | os.FileInfo>;
+export type ByName = $.Slice<FileInfo>
 
 export function ByName_Len(a: ByName): number {
 	return $.len(a)
 }
 
 export function ByName_Less(a: ByName, i: number, j: number): boolean {
-	return a![i]!.Name() < a![j]!.Name()
+	return a[i].Name() < a[j].Name()
 }
 
 export function ByName_Swap(a: ByName, i: number, j: number): void {
-	;[a![i], a![j]] = [a![j], a![i]]
+	let __goscriptAssign3839207_0 = a[j]
+	let __goscriptAssign3839207_1 = a[i]
+	a[i] = __goscriptAssign3839207_0
+	a[j] = __goscriptAssign3839207_1
 }
 
-
 export async function main(): Promise<void> {
-	// Create a ByName instance to test the wrapper
-	let files: ByName = $.makeSlice<os.FileInfo>(2)
+	let files: ByName = $.makeSlice<FileInfo>(2)
 	$.println("Length:", ByName_Len(files))
-
-	// Test type conversion
-	let slice: $.Slice<null | os.FileInfo> = files
+	let slice: $.Slice<FileInfo> = files
 	$.println("Slice length:", $.len(slice))
 }
 

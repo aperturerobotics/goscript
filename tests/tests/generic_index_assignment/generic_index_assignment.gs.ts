@@ -3,21 +3,16 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function modifyGenericSlice<S extends $.Slice<E>, E extends any>(s: S, i: number, v: E): void {
-	// This line causes the issue: s[i] = v
-	// For generic slice types, the compiler should generate proper assignment
-	// But currently it may generate: $.indexStringOrBytes(s, i) = v
-	// which is invalid TypeScript syntax
-	s![i] = v
+export function modifyGenericSlice(__typeArgs: $.GenericTypeArgs | undefined, s: any, i: number, v: any): void {
+	s[i] = v
 }
 
 export async function main(): Promise<void> {
-	let slice = $.arrayToSlice<number>([1, 2, 3])
-	modifyGenericSlice(slice, 1, 42)
-
-	$.println("slice[0]:", slice![0])
-	$.println("slice[1]:", slice![1])
-	$.println("slice[2]:", slice![2])
+	let slice = [1, 2, 3]
+	modifyGenericSlice({S: { zero: () => null }, E: { zero: () => 0 }}, slice, 1, 42)
+	$.println("slice[0]:", slice[0])
+	$.println("slice[1]:", slice[1])
+	$.println("slice[2]:", slice[2])
 	$.println("test finished")
 }
 

@@ -29,19 +29,29 @@ export type NodeFSModule = {
   lchownSync?(path: string, uid: number, gid: number): void
   linkSync?(existingPath: string, newPath: string): void
   lstatSync?(path: string): any
-  mkdirSync?(path: string, options?: number | { mode?: number; recursive?: boolean }): void
+  mkdirSync?(
+    path: string,
+    options?: number | { mode?: number; recursive?: boolean },
+  ): void
   readFileSync?(path: string): Uint8Array
   readdirSync?(path: string, options?: { withFileTypes?: boolean }): any[]
   readlinkSync?(path: string): string
   renameSync?(oldPath: string, newPath: string): void
-  rmSync?(path: string, options?: { force?: boolean; recursive?: boolean }): void
+  rmSync?(
+    path: string,
+    options?: { force?: boolean; recursive?: boolean },
+  ): void
   rmdirSync?(path: string): void
   statSync?(path: string): any
   symlinkSync?(target: string, path: string): void
   truncateSync?(path: string, len?: number): void
   unlinkSync?(path: string): void
   utimesSync?(path: string, atime: Date | number, mtime: Date | number): void
-  writeFileSync?(path: string, data: Uint8Array, options?: { mode?: number }): void
+  writeFileSync?(
+    path: string,
+    data: Uint8Array,
+    options?: { mode?: number },
+  ): void
 }
 
 export type DenoStream = {
@@ -74,6 +84,8 @@ export type HostRuntime = {
   writeStderrText: HostTextWrite
   writeStdoutText: HostTextWrite
 }
+
+export type HostRuntimeDetector = () => HostRuntime
 
 export type MainScriptMeta = {
   url: string
@@ -176,17 +188,18 @@ function absolutePathToFileURL(path: string, isDirectory: boolean): string {
 }
 
 function getCurrentWorkingDirectory(): string | null {
+  const runtime = getHostRuntime()
   try {
-    if (typeof hostRuntime?.processObj?.cwd === 'function') {
-      return hostRuntime.processObj.cwd()
+    if (typeof runtime.processObj?.cwd === 'function') {
+      return runtime.processObj.cwd()
     }
   } catch {
     // Fall through to Deno cwd.
   }
 
   try {
-    if (typeof hostRuntime?.deno?.cwd === 'function') {
-      return hostRuntime.deno.cwd()
+    if (typeof runtime.deno?.cwd === 'function') {
+      return runtime.deno.cwd()
     }
   } catch {
     // No cwd fallback available.
@@ -251,10 +264,7 @@ function detectHostRuntime(): HostRuntime {
     }
   }
 
-  const platform =
-    deno?.build?.os ??
-    processObj?.platform ??
-    'unknown'
+  const platform = deno?.build?.os ?? processObj?.platform ?? 'unknown'
 
   const getEnv = (name: string): string => {
     if (deno?.env?.get) {
@@ -267,7 +277,10 @@ function detectHostRuntime(): HostRuntime {
     return processObj?.env?.[name] ?? ''
   }
 
-  const readFD: HostReadFD = (fd: number, buffer: Uint8Array): number | null => {
+  const readFD: HostReadFD = (
+    fd: number,
+    buffer: Uint8Array,
+  ): number | null => {
     const handle = getStdioHandle(fd)
     if (handle && typeof handle.readSync === 'function') {
       return handle.readSync(buffer)
@@ -302,7 +315,8 @@ function detectHostRuntime(): HostRuntime {
     }
     if (nodeFS) {
       writeAllText(
-        (chunk: Uint8Array) => nodeFS.writeSync(1, chunk, 0, chunk.length, null),
+        (chunk: Uint8Array) =>
+          nodeFS.writeSync(1, chunk, 0, chunk.length, null),
         data,
       )
       return
@@ -317,7 +331,8 @@ function detectHostRuntime(): HostRuntime {
     }
     if (nodeFS) {
       writeAllText(
-        (chunk: Uint8Array) => nodeFS.writeSync(2, chunk, 0, chunk.length, null),
+        (chunk: Uint8Array) =>
+          nodeFS.writeSync(2, chunk, 0, chunk.length, null),
         data,
       )
       return
@@ -339,18 +354,40 @@ function detectHostRuntime(): HostRuntime {
   }
 }
 
-export let hostRuntime = detectHostRuntime()
+export class HostRuntimeOwner {
+  private runtime: HostRuntime
+
+  constructor(
+    private readonly detector: HostRuntimeDetector = detectHostRuntime,
+  ) {
+    this.runtime = detector()
+  }
+
+  current(): HostRuntime {
+    return this.runtime
+  }
+
+  reset(): void {
+    this.runtime = this.detector()
+  }
+}
+
+export const hostRuntimeOwner = new HostRuntimeOwner()
+
+export function getHostRuntime(): HostRuntime {
+  return hostRuntimeOwner.current()
+}
 
 export function resetHostRuntimeForTests(): void {
-  hostRuntime = detectHostRuntime()
+  hostRuntimeOwner.reset()
 }
 
 export function writeHostStdoutText(data: string): void {
-  hostRuntime.writeStdoutText(data)
+  getHostRuntime().writeStdoutText(data)
 }
 
 export function writeHostStderrText(data: string): void {
-  hostRuntime.writeStderrText(data)
+  getHostRuntime().writeStderrText(data)
 }
 
 export function isMainScript(meta: MainScriptMeta): boolean {
@@ -358,7 +395,7 @@ export function isMainScript(meta: MainScriptMeta): boolean {
     return true
   }
 
-  const entryPath = hostRuntime.processObj?.argv?.[1]
+  const entryPath = getHostRuntime().processObj?.argv?.[1]
   if (typeof entryPath !== 'string' || entryPath === '') {
     return false
   }

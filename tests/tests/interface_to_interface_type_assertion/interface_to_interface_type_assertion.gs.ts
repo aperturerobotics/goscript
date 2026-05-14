@@ -8,20 +8,10 @@ export type MyInterface = null | {
 }
 
 $.registerInterfaceType(
-  'main.MyInterface',
-  null, // Zero value for interface is null
-  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-);
-
-export type MyOtherInterface = null | {
-	Method1(): number
-}
-
-$.registerInterfaceType(
-  'main.MyOtherInterface',
-  null, // Zero value for interface is null
-  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-);
+	"main.MyInterface",
+	null,
+	[{ name: "Method1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+)
 
 export class MyStruct {
 	public get Value(): number {
@@ -32,7 +22,7 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		Value: $.VarRef<number>;
+		Value: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{Value?: number}>) {
@@ -46,7 +36,7 @@ export class MyStruct {
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public Method1(): number {
@@ -54,22 +44,30 @@ export class MyStruct {
 		return m.Value
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [{ name: "Method1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  MyStruct,
-	  {"Value": { kind: $.TypeKind.Basic, name: "int" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[{ name: "Method1", args: [], returns: [] }],
+		MyStruct,
+		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
 }
+
+export type MyOtherInterface = null | {
+	Method1(): number
+}
+
+$.registerInterfaceType(
+	"main.MyOtherInterface",
+	null,
+	[{ name: "Method1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+)
 
 export async function main(): Promise<void> {
 	let i: MyInterface = null
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.markAsStructValue(s.clone())
-
-	let { ok: ok } = $.typeAssert<MyOtherInterface>(i, 'main.MyOtherInterface')
+	let [, ok] = $.typeAssertTuple<MyOtherInterface>(i, "main.MyOtherInterface")
 	if (ok) {
 		$.println("Type assertion successful")
 	} else {

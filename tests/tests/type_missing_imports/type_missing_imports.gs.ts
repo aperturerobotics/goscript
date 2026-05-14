@@ -11,22 +11,22 @@ export class file {
 		this._fields.name.value = value
 	}
 
-	public get data(): $.Bytes {
+	public get data(): $.Slice<number> {
 		return this._fields.data.value
 	}
-	public set data(value: $.Bytes) {
+	public set data(value: $.Slice<number>) {
 		this._fields.data.value = value
 	}
 
 	public _fields: {
-		name: $.VarRef<string>;
-		data: $.VarRef<$.Bytes>;
+		name: $.VarRef<string>
+		data: $.VarRef<$.Slice<number>>
 	}
 
-	constructor(init?: Partial<{data?: $.Bytes, name?: string}>) {
+	constructor(init?: Partial<{name?: string, data?: $.Slice<number>}>) {
 		this._fields = {
 			name: $.varRef(init?.name ?? ""),
-			data: $.varRef(init?.data ?? new Uint8Array(0))
+			data: $.varRef(init?.data ?? null)
 		}
 	}
 
@@ -36,40 +36,39 @@ export class file {
 			name: $.varRef(this._fields.name.value),
 			data: $.varRef(this._fields.data.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.file',
-	  new file(),
-	  [],
-	  file,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
-	);
+		"main.file",
+		new file(),
+		[],
+		file,
+		{"name": { kind: $.TypeKind.Basic, name: "string" }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
 }
 
 export class storage {
-	public get files(): Map<string, file | null> | null {
+	public get files(): Map<string, file | $.VarRef<file> | null> | null {
 		return this._fields.files.value
 	}
-	public set files(value: Map<string, file | null> | null) {
+	public set files(value: Map<string, file | $.VarRef<file> | null> | null) {
 		this._fields.files.value = value
 	}
 
-	public get children(): Map<string, Map<string, file | null> | null> | null {
+	public get children(): Map<string, Map<string, file | $.VarRef<file> | null> | null> | null {
 		return this._fields.children.value
 	}
-	public set children(value: Map<string, Map<string, file | null> | null> | null) {
+	public set children(value: Map<string, Map<string, file | $.VarRef<file> | null> | null> | null) {
 		this._fields.children.value = value
 	}
 
 	public _fields: {
-		files: $.VarRef<Map<string, file | null> | null>;
-		children: $.VarRef<Map<string, Map<string, file | null> | null> | null>;
+		files: $.VarRef<Map<string, file | $.VarRef<file> | null> | null>
+		children: $.VarRef<Map<string, Map<string, file | $.VarRef<file> | null> | null> | null>
 	}
 
-	constructor(init?: Partial<{children?: Map<string, Map<string, file | null> | null> | null, files?: Map<string, file | null> | null}>) {
+	constructor(init?: Partial<{files?: Map<string, file | $.VarRef<file> | null> | null, children?: Map<string, Map<string, file | $.VarRef<file> | null> | null> | null}>) {
 		this._fields = {
 			files: $.varRef(init?.files ?? null),
 			children: $.varRef(init?.children ?? null)
@@ -82,27 +81,23 @@ export class storage {
 			files: $.varRef(this._fields.files.value),
 			children: $.varRef(this._fields.children.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.storage',
-	  new storage(),
-	  [],
-	  storage,
-	  {"files": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } }, "children": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } } }}
-	);
+		"main.storage",
+		new storage(),
+		[],
+		storage,
+		{"files": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } }, "children": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } } }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let s = $.markAsStructValue(new storage({children: $.makeMap<string, Map<string, file | null> | null>(), files: $.makeMap<string, file | null>()}))
-
-	let f = new file({data: $.stringToBytes("hello world"), name: "test.txt"})
-
+	let s = $.markAsStructValue(new storage({files: $.makeMap<string, file | $.VarRef<file> | null>(), children: $.makeMap<string, Map<string, file | $.VarRef<file> | null> | null>()}))
+	let f = new file({name: "test.txt", data: $.stringToBytes("hello world")})
 	$.mapSet(s.files, "test", f)
-
-	$.println("Created storage with file:", $.mapGet(s.files, "test", null)[0]!.name)
+	$.println("Created storage with file:", $.pointerValue($.mapGet(s.files, "test", null)[0]).name)
 }
 
 

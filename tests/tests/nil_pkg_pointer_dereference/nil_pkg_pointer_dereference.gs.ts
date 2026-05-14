@@ -6,28 +6,28 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as os from "@goscript/os/index.ts"
 
 export class TestStruct {
-	public get Mode(): os.FileMode {
+	public get Mode(): FileMode {
 		return this._fields.Mode.value
 	}
-	public set Mode(value: os.FileMode) {
+	public set Mode(value: FileMode) {
 		this._fields.Mode.value = value
 	}
 
-	public get File(): os.File | null {
+	public get File(): File | $.VarRef<File> | null {
 		return this._fields.File.value
 	}
-	public set File(value: os.File | null) {
+	public set File(value: File | $.VarRef<File> | null) {
 		this._fields.File.value = value
 	}
 
 	public _fields: {
-		Mode: $.VarRef<os.FileMode>;
-		File: $.VarRef<os.File | null>;
+		Mode: $.VarRef<FileMode>
+		File: $.VarRef<File | $.VarRef<File> | null>
 	}
 
-	constructor(init?: Partial<{File?: os.File | null, Mode?: os.FileMode}>) {
+	constructor(init?: Partial<{Mode?: FileMode, File?: File | $.VarRef<File> | null}>) {
 		this._fields = {
-			Mode: $.varRef(init?.Mode ?? 0 as os.FileMode),
+			Mode: $.varRef(init?.Mode ?? 0),
 			File: $.varRef(init?.File ?? null)
 		}
 	}
@@ -36,32 +36,25 @@ export class TestStruct {
 		const cloned = new TestStruct()
 		cloned._fields = {
 			Mode: $.varRef(this._fields.Mode.value),
-			File: $.varRef(this._fields.File.value ? $.markAsStructValue(this._fields.File.value.clone()) : null)
+			File: $.varRef(this._fields.File.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.TestStruct',
-	  new TestStruct(),
-	  [],
-	  TestStruct,
-	  {"Mode": { kind: $.TypeKind.Basic, name: "uint32" }, "File": { kind: $.TypeKind.Pointer, elemType: "os.File" }}
-	);
+		"main.TestStruct",
+		new TestStruct(),
+		[],
+		TestStruct,
+		{"Mode": "fs.FileMode", "File": { kind: $.TypeKind.Pointer, elemType: "os.File" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	// Test initialized struct
-
-	// 420 in decimal
-	let s = $.markAsStructValue(new TestStruct({File: null, Mode: 420}))
-
+	let s = $.markAsStructValue(new TestStruct({Mode: 420, File: null}))
 	$.println("Mode:", $.int(s.Mode))
 	$.println("File is nil:", s.File == null)
-
-	// Test zero values
-	let zero: TestStruct = new TestStruct()
+	let zero: TestStruct = $.markAsStructValue(new TestStruct())
 	$.println("Zero Mode:", $.int(zero.Mode))
 	$.println("Zero File is nil:", zero.File == null)
 }

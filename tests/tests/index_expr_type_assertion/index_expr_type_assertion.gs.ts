@@ -4,31 +4,24 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	// Test type assertion assignment with indexed LHS using regular assignment
-	let slice = $.arrayToSlice<null | any>(["hello", 42, true])
-	let results: null | any[] = [null, null]
+	let slice: $.Slice<any> = ["hello", 42, true]
+	let results: any[] = Array.from({ length: 2 }, () => null)
 	let ok: boolean = false
-	let _gs_ta_val_cd3f: number
-	let _gs_ta_ok_cd3f: boolean
-	({ value: _gs_ta_val_cd3f, ok: _gs_ta_ok_cd3f } = $.typeAssert<number>(slice![1], {kind: $.TypeKind.Basic, name: 'number'}))
-	results![0] = _gs_ta_val_cd3f
-	ok = _gs_ta_ok_cd3f
+	let __goscriptTuple184 = $.typeAssertTuple<number>(slice[1], { kind: $.TypeKind.Basic, name: "int" })
+	results[0] = __goscriptTuple184[0]
+	ok = __goscriptTuple184[1]
 	if (ok) {
-		$.println("slice[1] as int:", $.mustTypeAssert<number>(results![0], {kind: $.TypeKind.Basic, name: 'number'}))
+		$.println("slice[1] as int:", $.mustTypeAssert<number>(results[0], { kind: $.TypeKind.Basic, name: "int" }))
 	}
-
-	// Test type assertion assignment with map indexed LHS using regular assignment
-	let m: Map<string, null | any> | null = $.makeMap<string, null | any>()
+	let m: Map<string, any> | null = $.makeMap<string, any>()
 	$.mapSet(m, "key2", 123)
-	let mapResults: Map<string, null | any> | null = $.makeMap<string, null | any>()
+	let mapResults: Map<string, any> | null = $.makeMap<string, any>()
 	let ok2: boolean = false
-	let _gs_ta_val_4f04: number
-	let _gs_ta_ok_4f04: boolean
-	({ value: _gs_ta_val_4f04, ok: _gs_ta_ok_4f04 } = $.typeAssert<number>($.mapGet(m, "key2", null)[0], {kind: $.TypeKind.Basic, name: 'number'}))
-	$.mapSet(mapResults, "result", _gs_ta_val_4f04)
-	ok2 = _gs_ta_ok_4f04
+	let __goscriptTuple489 = $.typeAssertTuple<number>($.mapGet(m, "key2", null)[0], { kind: $.TypeKind.Basic, name: "int" })
+	$.mapGet(mapResults, "result", null)[0] = __goscriptTuple489[0]
+	ok2 = __goscriptTuple489[1]
 	if (ok2) {
-		$.println("m[key2] as int:", $.mustTypeAssert<number>($.mapGet(mapResults, "result", null)[0], {kind: $.TypeKind.Basic, name: 'number'}))
+		$.println("m[key2] as int:", $.mustTypeAssert<number>($.mapGet(mapResults, "result", null)[0], { kind: $.TypeKind.Basic, name: "int" }))
 	}
 }
 

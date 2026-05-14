@@ -6,4 +6,3 @@ import * as $ from "@goscript/builtin/index.ts"
 export function testJSWasm(): void {
 	$.println("JS/WASM specific code compiled - CORRECT")
 }
-

@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  getHostRuntime,
+  HostRuntimeOwner,
+  type HostRuntime,
   isMainScript,
   resetHostRuntimeForTests,
   writeHostStderrText,
@@ -11,6 +14,8 @@ const originalDeno = (globalThis as any).Deno
 const originalProcess = (globalThis as any).process
 
 afterEach(() => {
+  vi.restoreAllMocks()
+
   if (originalDeno === undefined) {
     delete (globalThis as any).Deno
   } else {
@@ -24,6 +29,40 @@ afterEach(() => {
   }
 
   resetHostRuntimeForTests()
+})
+
+function runtimeFixture(platform: string): HostRuntime {
+  return {
+    deno: null,
+    getEnv: () => '',
+    getStdioHandle: () => null,
+    nodeFS: null,
+    platform,
+    processObj: null,
+    readFD: () => null,
+    writeFD: () => 0,
+    writeStderrText: () => {},
+    writeStdoutText: () => {},
+  }
+}
+
+describe('hostio runtime owner', () => {
+  it('caches host capability detection until reset', () => {
+    let detects = 0
+    const owner = new HostRuntimeOwner(() => {
+      detects++
+      return runtimeFixture(`host-${detects}`)
+    })
+
+    expect(owner.current().platform).toBe('host-1')
+    expect(owner.current().platform).toBe('host-1')
+    expect(detects).toBe(1)
+
+    owner.reset()
+
+    expect(owner.current().platform).toBe('host-2')
+    expect(detects).toBe(2)
+  })
 })
 
 describe('hostio text writes', () => {
@@ -106,6 +145,54 @@ describe('hostio text writes', () => {
       { bytes: [98, 117, 110, 10], fd: 1 },
       { bytes: [101, 114, 114, 10], fd: 2 },
     ])
+    expect(getHostRuntime().platform).toBe('unknown')
+  })
+
+  it('prefers Deno sync stdio when it is available', () => {
+    const denoWrites: Array<{ bytes: number[]; stream: string }> = []
+    const nodeWriteSync = vi.fn()
+    const denoWriteSync = vi.fn((buffer: Uint8Array) => {
+      denoWrites.push({
+        bytes: Array.from(buffer),
+        stream: 'stdout',
+      })
+      return buffer.length
+    })
+
+    ;(globalThis as any).Deno = {
+      build: { os: 'darwin' },
+      stdout: { writeSync: denoWriteSync },
+    }
+    ;(globalThis as any).process = {
+      getBuiltinModule: vi.fn(() => ({
+        readSync: vi.fn(),
+        writeSync: nodeWriteSync,
+      })),
+    }
+    resetHostRuntimeForTests()
+
+    writeHostStdoutText('deno\n')
+
+    expect(denoWriteSync).toHaveBeenCalledTimes(1)
+    expect(nodeWriteSync).not.toHaveBeenCalled()
+    expect(denoWrites).toEqual([
+      { bytes: [100, 101, 110, 111, 10], stream: 'stdout' },
+    ])
+    expect(getHostRuntime().platform).toBe('darwin')
+  })
+
+  it('uses console fallback in browser-like hosts', () => {
+    const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    delete (globalThis as any).Deno
+    delete (globalThis as any).process
+    resetHostRuntimeForTests()
+
+    writeHostStdoutText('browser\n')
+
+    expect(getHostRuntime().platform).toBe('unknown')
+    expect(getHostRuntime().nodeFS).toBeNull()
+    expect(consoleLog).toHaveBeenCalledWith('browser')
   })
 })
 

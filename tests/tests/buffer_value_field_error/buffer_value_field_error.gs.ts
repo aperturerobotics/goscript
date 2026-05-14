@@ -4,20 +4,20 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export class buffer {
-	public get data(): $.Bytes {
+	public get data(): $.Slice<number> {
 		return this._fields.data.value
 	}
-	public set data(value: $.Bytes) {
+	public set data(value: $.Slice<number>) {
 		this._fields.data.value = value
 	}
 
 	public _fields: {
-		data: $.VarRef<$.Bytes>;
+		data: $.VarRef<$.Slice<number>>
 	}
 
-	constructor(init?: Partial<{data?: $.Bytes}>) {
+	constructor(init?: Partial<{data?: $.Slice<number>}>) {
 		this._fields = {
-			data: $.varRef(init?.data ?? new Uint8Array(0))
+			data: $.varRef(init?.data ?? null)
 		}
 	}
 
@@ -26,48 +26,41 @@ export class buffer {
 		cloned._fields = {
 			data: $.varRef(this._fields.data.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public write(p: $.Bytes): void {
+	public write(p: $.Slice<number>): void {
 		const b = this
-		b.data = $.append(b.data, ...(p || []))
-	}
-
-	public writeString(s: string): void {
-		const b = this
-		b.data = $.append(b.data, ...$.stringToBytes(s))
+		$.pointerValue(b).data = $.append($.pointerValue(b).data, p)
 	}
 
 	public writeByte(c: number): void {
 		const b = this
-		b.data = $.append(b.data, c)
+		$.pointerValue(b).data = $.append($.pointerValue(b).data, c)
 	}
 
-	// Register this type with the runtime type system
+	public writeString(s: string): void {
+		const b = this
+		$.pointerValue(b).data = $.append($.pointerValue(b).data, s)
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'main.buffer',
-	  new buffer(),
-	  [{ name: "write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [] }, { name: "writeString", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "writeByte", args: [{ name: "c", type: { kind: $.TypeKind.Basic, name: "byte" } }], returns: [] }],
-	  buffer,
-	  {"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
-	);
+		"main.buffer",
+		new buffer(),
+		[{ name: "write", args: [], returns: [] }, { name: "writeByte", args: [], returns: [] }, { name: "writeString", args: [], returns: [] }],
+		buffer,
+		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let buf = new buffer({})
-
-	// Test write
-	buf!.write($.stringToBytes("hello"))
-	$.println("After write:", $.bytesToString(buf!.data))
-
-	// Test writeString
-	buf!.writeString(" world")
-	$.println("After writeString:", $.bytesToString(buf!.data))
-
-	// Test writeByte
-	buf!.writeByte(33)
-	$.println("After writeByte:", $.bytesToString(buf!.data))
+	let buf = new buffer()
+	$.pointerValue(buf).write($.stringToBytes("hello"))
+	$.println("After write:", $.bytesToString($.pointerValue(buf).data))
+	$.pointerValue(buf).writeString(" world")
+	$.println("After writeString:", $.bytesToString($.pointerValue(buf).data))
+	$.pointerValue(buf).writeByte(33)
+	$.println("After writeByte:", $.bytesToString($.pointerValue(buf).data))
 }
 
 

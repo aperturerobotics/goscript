@@ -2,10 +2,11 @@
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
 import * as $ from "@goscript/builtin/index.ts"
-import { MakeJobs } from "./create.gs.ts";
+
+import * as __goscript_create from "./create.gs.ts"
 
 export async function main(): Promise<void> {
-	let jobs = MakeJobs()
+	let jobs = __goscript_create.MakeJobs()
 	$.println(jobs != null)
 }
 

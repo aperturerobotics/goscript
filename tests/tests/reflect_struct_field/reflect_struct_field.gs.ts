@@ -6,10 +6,9 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as reflect from "@goscript/reflect/index.ts"
 
 export async function main(): Promise<void> {
-	// Test creating a StructField value
-	let field = $.markAsStructValue(new reflect.StructField({Name: "TestField", Type: reflect.TypeOf("")}))
+	let field = $.markAsStructValue(new reflect.StructField({Name: "TestField", Type: reflect.TypeFor({T: { zero: () => "" }})}))
 	$.println("StructField Name:", field.Name)
-	$.println("StructField Type:", field.Type!.String())
+	$.println("StructField Type:", field.Type.String())
 }
 
 

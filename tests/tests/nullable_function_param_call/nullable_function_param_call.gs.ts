@@ -12,20 +12,24 @@ export type FileInfo = null | {
 }
 
 $.registerInterfaceType(
-  'main.FileInfo',
-  null, // Zero value for interface is null
-  [{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }]
-);
+	"main.FileInfo",
+	null,
+	[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+)
+
+export type WalkFunc = (path: string, info: FileInfo, err: error) => error
+
+export let SkipDir: error = os.ErrNotExist
 
 export type Filesystem = null | {
-	ReadDir(path: string): [$.Slice<FileInfo>, $.GoError]
+	ReadDir(path: string): [$.Slice<FileInfo>, error]
 }
 
 $.registerInterfaceType(
-  'main.Filesystem',
-  null, // Zero value for interface is null
-  [{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
-);
+	"main.Filesystem",
+	null,
+	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }]
+)
 
 export class MockFileInfo {
 	public get name(): string {
@@ -50,12 +54,12 @@ export class MockFileInfo {
 	}
 
 	public _fields: {
-		name: $.VarRef<string>;
-		size: $.VarRef<number>;
-		isDir: $.VarRef<boolean>;
+		name: $.VarRef<string>
+		size: $.VarRef<number>
+		isDir: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{isDir?: boolean, name?: string, size?: number}>) {
+	constructor(init?: Partial<{name?: string, size?: number, isDir?: boolean}>) {
 		this._fields = {
 			name: $.varRef(init?.name ?? ""),
 			size: $.varRef(init?.size ?? 0),
@@ -70,32 +74,31 @@ export class MockFileInfo {
 			size: $.varRef(this._fields.size.value),
 			isDir: $.varRef(this._fields.isDir.value)
 		}
-		return cloned
-	}
-
-	public Name(): string {
-		const m = this
-		return m.name
-	}
-
-	public Size(): number {
-		const m = this
-		return m.size
+		return $.markAsStructValue(cloned)
 	}
 
 	public IsDir(): boolean {
 		const m = this
-		return m.isDir
+		return $.pointerValue(m).isDir
 	}
 
-	// Register this type with the runtime type system
+	public Name(): string {
+		const m = this
+		return $.pointerValue(m).name
+	}
+
+	public Size(): number {
+		const m = this
+		return $.pointerValue(m).size
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'main.MockFileInfo',
-	  new MockFileInfo(),
-	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
-	  MockFileInfo,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "size": { kind: $.TypeKind.Basic, name: "int64" }, "isDir": { kind: $.TypeKind.Basic, name: "bool" }}
-	);
+		"main.MockFileInfo",
+		new MockFileInfo(),
+		[{ name: "IsDir", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "Size", args: [], returns: [] }],
+		MockFileInfo,
+		{"name": { kind: $.TypeKind.Basic, name: "string" }, "size": { kind: $.TypeKind.Basic, name: "int" }, "isDir": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export class MockFilesystem {
@@ -103,91 +106,70 @@ export class MockFilesystem {
 	}
 
 	constructor(init?: Partial<{}>) {
-		this._fields = {}
+		this._fields = {
+		}
 	}
 
 	public clone(): MockFilesystem {
 		const cloned = new MockFilesystem()
 		cloned._fields = {
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public ReadDir(path: string): [$.Slice<FileInfo>, $.GoError] {
-		return [$.arrayToSlice<FileInfo>([new MockFileInfo({isDir: false, name: "file1.txt", size: 100}), new MockFileInfo({isDir: true, name: "subdir", size: 0})]), null]
+	public ReadDir(path: string): void {
+		const m = this
+		return [[new MockFileInfo({name: "file1.txt", size: 100, isDir: false}), new MockFileInfo({name: "subdir", size: 0, isDir: true})], null]
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MockFilesystem',
-	  new MockFilesystem(),
-	  [{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  MockFilesystem,
-	  {}
-	);
+		"main.MockFilesystem",
+		new MockFilesystem(),
+		[{ name: "ReadDir", args: [], returns: [] }],
+		MockFilesystem,
+		{}
+	)
 }
 
-export type ProcessFunc = ((data: string) => [string, $.GoError]) | null;
-
-export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoError) | null;
-
-export let SkipDir: $.GoError = os.ErrNotExist
-
-// walk is a simplified version of filepath.Walk that demonstrates the issue
-// walkFn is a nullable function parameter that needs non-null assertion when called
-export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc | null): $.GoError {
-	// Test case 1: Direct call to nullable function parameter
-	// This should generate: walkFn!(path, info, nil)
-	// But currently generates: walkFn(path, info, nil) - missing !
-	let err = walkFn!(path, info, null)
+export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): error {
+	let err = walkFn(path, info, null)
 	if (err != null && err != SkipDir) {
 		return err
 	}
-
-	// Test case 2: Call with error parameter
-	let walkErr: $.GoError = null
-	// This should also generate: walkFn!(path, info, walkErr)
-	let result = walkFn!(path, info, walkErr)
+	let walkErr: error = null
+	let result = walkFn(path, info, walkErr)
 	if (result != null) {
 		return result
 	}
-
 	return null
 }
 
-export function processWithCallback(input: string, processor: ProcessFunc | null): [string, $.GoError] {
-	// Test case 3: Function parameter with return values
-	// This should generate: processor!(input)
-	// But currently generates: processor(input) - missing !
-	return processor!(input)
+export type ProcessFunc = (data: string) => [string, error]
+
+export function processWithCallback(input: string, processor: ProcessFunc): void {
+	return processor(input)
 }
 
 export async function main(): Promise<void> {
-	let fs = new MockFilesystem({})
-	let fileInfo = new MockFileInfo({isDir: false, name: "test.txt", size: 50})
-
-	// Test the walk function with a callback
-	let walkFunc = (path: string, info: FileInfo, err: $.GoError): $.GoError => {
-		$.println("Walking:", path, "size:", info!.Size())
-		if (err != null) {
-			$.println("Error:", err!.Error())
-		}
-		return null
+	let fs = new MockFilesystem()
+	let fileInfo = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
+	let walkFunc = (path: string, info: FileInfo, err: error): error => {
+	$.println("Walking:", path, "size:", info.Size())
+	if (err != null) {
+		$.println("Error:", err.Error())
 	}
-
+	return null
+}
 	let err = walk(fs, "/test", fileInfo, walkFunc)
 	if (err != null) {
-		$.println("Walk error:", err!.Error())
+		$.println("Walk error:", err.Error())
 	}
-
-	// Test the process function with a callback
-	let processFunc = (data: string): [string, $.GoError] => {
-		return ["processed: " + data, null]
-	}
-
+	let processFunc = (data: string): [string, error] => {
+	return ["processed: " + data, null]
+}
 	let [result, err2] = processWithCallback("hello", processFunc)
 	if (err2 != null) {
-		$.println("Process error:", err2!.Error())
+		$.println("Process error:", err2.Error())
 	} else {
 		$.println("Process result:", result)
 	}

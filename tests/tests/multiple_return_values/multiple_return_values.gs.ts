@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function multipleReturnValues(): [number, string, boolean] {
+export function multipleReturnValues(): void {
 	return [42, "hello", true]
 }
 
@@ -12,11 +12,9 @@ export async function main(): Promise<void> {
 	$.println(a)
 	$.println(b)
 	$.println(c)
-
 	let [x, , z] = multipleReturnValues()
 	$.println(x)
 	$.println(z)
-
 	let [, y, ] = multipleReturnValues()
 	$.println(y)
 }

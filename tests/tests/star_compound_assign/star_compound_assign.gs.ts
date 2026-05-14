@@ -6,13 +6,10 @@ import * as $ from "@goscript/builtin/index.ts"
 export async function main(): Promise<void> {
 	let x: $.VarRef<number> = $.varRef(2)
 	let p: $.VarRef<number> | null = x
-
-	p!.value += 3
-	$.println(x!.value) // Expected: 5
-
-	p!.value &= ~(1)
-	// 5 (0101) &^ 1 (0001) = 4 (0100)
-	$.println(x!.value) // Expected: 4
+	$.pointerValue(p) += 3
+	$.println(x.value)
+	$.pointerValue(p) &^= 1
+	$.println(x.value)
 }
 
 

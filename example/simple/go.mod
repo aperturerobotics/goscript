@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/aperturerobotics/cli v1.1.0 // indirect
+	github.com/aperturerobotics/json-iterator-lite v1.0.1-0.20251104042408-0c9eb8a3f726 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
 	golang.org/x/mod v0.34.0 // indirect

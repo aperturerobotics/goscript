@@ -3,23 +3,21 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export let Add: Operation = 0
+export type Operation = number
 
-export let Sub: Operation = 0
+export const Add: Operation = iota
 
-export let Mul: Operation = 0
+export const Sub: Operation = 0
 
-export type OpNames = Map<Operation, string> | null;
+export const Mul: Operation = 0
 
-export type Operation = number;
+export type OpNames = Map<Operation, string> | null
 
 export async function main(): Promise<void> {
-	// Using a type alias for map with constant keys
-	let opNames = new Map([[0, "addition"], [1, "subtraction"], [2, "multiplication"]])
-
-	$.println($.mapGet(opNames, 0, "")[0])
-	$.println($.mapGet(opNames, 1, "")[0])
-	$.println($.mapGet(opNames, 2, "")[0])
+	let opNames = new Map<Operation, string>([[Add, "addition"], [Sub, "subtraction"], [Mul, "multiplication"]])
+	$.println($.mapGet(opNames, Add, "")[0])
+	$.println($.mapGet(opNames, Sub, "")[0])
+	$.println($.mapGet(opNames, Mul, "")[0])
 }
 
 

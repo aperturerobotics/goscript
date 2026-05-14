@@ -4,24 +4,14 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	// Test hexadecimal escape sequences in string literals
-	// This should reproduce the error: TS1125: Hexadecimal digit expected.
-
-	// This reproduces the original error: buf = $.append(buf, `\x`)
-	let buf: $.Bytes = new Uint8Array(0)
-	buf = $.append(buf, ...$.stringToBytes("\\x"))
+	let buf: $.Slice<number> = null
+	buf = $.append(buf, `\x`)
 	$.println("Appended raw string with \\x:", $.bytesToString(buf))
-
-	// Raw string with incomplete hex escape
-	let s1 = "\\x" // This should be treated as literal \x
+	let s1 = `\x`
 	$.println("Raw string with \\x:", s1)
-
-	// Raw string with \x followed by non-hex
-	let s2 = "\\xG" // This should be treated as literal \xG
+	let s2 = `\xG`
 	$.println("Raw string with \\xG:", s2)
-
-	// Interpreted string with \x escape sequence
-	let s3 = "\x41" // This should be treated as hex escape for 'A'
+	let s3 = "\x41"
 	$.println("Interpreted string:", s3)
 }
 

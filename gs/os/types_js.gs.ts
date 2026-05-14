@@ -8,8 +8,8 @@ import * as syscall from "@goscript/syscall/index.js"
 import {
 	DenoFileLike,
 	DenoStream,
+	getHostRuntime,
 	HostUnsupportedError,
-	hostRuntime,
 	NodeFSModule,
 	resetHostRuntimeForTests,
 } from "@goscript/builtin/hostio.js"
@@ -33,23 +33,23 @@ export function newHostError(err: unknown): $.GoError {
 }
 
 export function getNodeFS(): NodeFSModule | null {
-	return hostRuntime.nodeFS
+	return getHostRuntime().nodeFS
 }
 
 export function getDeno(): any | null {
-	return hostRuntime.deno
+	return getHostRuntime().deno
 }
 
 export function getPlatform(): string {
-	return hostRuntime.platform
+	return getHostRuntime().platform
 }
 
 export function getEnv(name: string): string {
-	return hostRuntime.getEnv(name)
+	return getHostRuntime().getEnv(name)
 }
 
 export function getDenoStream(fd: number): DenoStream | null {
-	return hostRuntime.getStdioHandle(fd)
+	return getHostRuntime().getStdioHandle(fd)
 }
 
 function readFD(fd: number, b: Uint8Array): [number, $.GoError] {
@@ -58,7 +58,7 @@ function readFD(fd: number, b: Uint8Array): [number, $.GoError] {
 	}
 
 	try {
-		const n = hostRuntime.readFD(fd, b)
+		const n = getHostRuntime().readFD(fd, b)
 		if (n === null || n === 0) {
 			return [0, io.EOF]
 		}
@@ -77,7 +77,7 @@ function writeFD(fd: number, b: Uint8Array): [number, $.GoError] {
 	}
 
 	try {
-		return [hostRuntime.writeFD(fd, b), null]
+		return [getHostRuntime().writeFD(fd, b), null]
 	} catch (err) {
 		if (err instanceof HostUnsupportedError) {
 			return [0, ErrUnimplemented]
@@ -192,7 +192,7 @@ export function createFileInfo(name: string, stat: HostStatLike): fs.FileInfo {
 export function createHostFile(name: string, fd: number = -1, handle: DenoFileLike | null = null): File {
 	return new File({
 		fd,
-		file: new file({ handle: handle ?? hostRuntime.getStdioHandle(fd), path: name }),
+		file: new file({ handle: handle ?? getHostRuntime().getStdioHandle(fd), path: name }),
 		name,
 	})
 }

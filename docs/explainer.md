@@ -35,18 +35,24 @@ GoScript translates Go code at the AST (Abstract Syntax Tree) level, producing r
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
-│                           GoScript Compiler                           │
+│                       GoScript Compile Service                        │
 ├───────────────────────────────────────────────────────────────────────┤
 │                                                                       │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
-│  │ Go Source    │───▶│ Package      │───▶│ Analysis     │             │
-│  │ Files        │    │ Loading      │    │ Phase        │             │
+│  │ Public       │───▶│ Compile      │───▶│ Package      │             │
+│  │ Adapters     │    │ Request      │    │ Graph        │             │
 │  └──────────────┘    └──────────────┘    └──────────────┘             │
-│                                                 │                     │
-│                                                 ▼                     │
+│                                                  │                    │
+│                                                  ▼                    │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
-│  │ TypeScript   │◀───│ Code         │◀───│ Analysis     │             │
-│  │ Output       │    │ Generation   │    │ Results      │             │
+│  │ TypeScript   │◀───│ TypeScript   │◀───│ Lowered      │             │
+│  │ Output       │    │ Emitter      │    │ Program      │             │
+│  └──────────────┘    └──────────────┘    └──────────────┘             │
+│         ▲                 ▲                    ▲                      │
+│         │                 │                    │                      │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
+│  │ Override     │    │ Runtime      │    │ Semantic     │             │
+│  │ Registry     │    │ Contract     │    │ Model        │             │
 │  └──────────────┘    └──────────────┘    └──────────────┘             │
 │                                                                       │
 └───────────────────────────────────────────────────────────────────────┘
@@ -58,6 +64,13 @@ GoScript translates Go code at the AST (Abstract Syntax Tree) level, producing r
 │  varRef.ts │ slice.ts │ channel.ts │ map.ts │ type.ts │ defer.ts      │
 └───────────────────────────────────────────────────────────────────────┘
 ```
+
+The public CLI uses `github.com/aperturerobotics/cli` and constructs
+`compiler.Config` from command-local flag state. The public Go API is
+`compiler.Compiler`, which forwards package patterns into `CompileService`.
+The WASM/browser adapter is intentionally diagnostic-only in v2: direct
+source-string compilation returns `goscript/wasm:single-file-unsupported` until
+single-file browser compilation is scoped.
 
 ---
 
@@ -76,46 +89,52 @@ GoScript translates Go code at the AST (Abstract Syntax Tree) level, producing r
          │
          ▼
 ┌───────────────────┐
-│ LOAD PACKAGES     │───────────────────────────────────────┐
-│                   │  Uses golang.org/x/tools/go/packages  │
-│ - Parse Go code   │  Mode: LoadAllSyntax                  │
-│ - Type check      │  Env: GOOS=js, GOARCH=wasm            │
-│ - Build AST       │                                       │
-└─────────┬─────────┘                                       │
-          │                                                 │
-          ▼                                                 │
-┌───────────────────┐                                       │
-│ CHECK OVERRIDES   │◀──────────────────────────────────────┘
+│ VALIDATE REQUEST  │
 │                   │
-│ gs/{pkg}/ exists? │───Yes──▶ Copy handwritten TS package
-│                   │                    │
-└─────────┬─────────┘                    │
-          │ No                           │
-          ▼                              │
-┌───────────────────┐                    │
-│ ANALYSIS PHASE    │                    │
-│                   │                    │
-│ - Variable refs   │                    │
-│ - Async funcs     │                    │
-│ - Defer blocks    │                    │
-│ - Type info       │                    │
-└─────────┬─────────┘                    │
-          │                              │
-          ▼                              │
-┌───────────────────┐                    │
-│ CODE GENERATION   │                    │
-│                   │                    │
-│ - Write imports   │                    │
-│ - Write decls     │                    │
-│ - Write funcs     │                    │
-└─────────┬─────────┘                    │
-          │                              │
-          ▼                              │
-┌───────────────────┐                    │
-│ GENERATE INDEX    │◀───────────────────┘
+│ - package patterns│
+│ - output path     │
+│ - module root     │
+│ - build flags     │
+└─────────┬─────────┘
+          │
+          ▼
+┌───────────────────┐
+│ LOAD PACKAGE GRAPH│ Uses golang.org/x/tools/go/packages
+│                   │ Env: GOOS=js, GOARCH=wasm
+└─────────┬─────────┘
+          │
+          ▼
+┌───────────────────┐
+│ SEMANTIC MODEL    │
 │                   │
-│ - Re-export       │
-│   public symbols  │
+│ - package facts   │
+│ - addressability  │
+│ - methods/types   │
+│ - async facts     │
+└─────────┬─────────┘
+          │
+          ▼
+┌───────────────────┐
+│ OVERRIDE COPY PLAN│ Discover handwritten gs/ packages
+│                   │ and validate dependencies before output
+└─────────┬─────────┘
+          │
+          ▼
+┌───────────────────┐
+│ LOWER PROGRAM     │ Convert Go AST + semantic facts into
+│                   │ compiler-owned IR
+└─────────┬─────────┘
+          │
+          ▼
+┌───────────────────┐
+│ EMIT TYPESCRIPT   │ Render only from lowered IR
+│                   │ and generate indexes
+└─────────┬─────────┘
+          │
+          ▼
+┌───────────────────┐
+│ COPY OVERRIDES    │ Copy @goscript/builtin and required
+│                   │ handwritten packages
 └─────────┬─────────┘
           │
           ▼
@@ -128,86 +147,52 @@ GoScript translates Go code at the AST (Abstract Syntax Tree) level, producing r
 
 ## Compiler Components
 
-GoScript uses a hierarchical compiler structure:
-
-### Component Hierarchy
+GoScript v2 uses owner-level components instead of a package/file compiler
+hierarchy. Each owner hides one durable rule boundary:
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│                        COMPILER HIERARCHY                         │
-└───────────────────────────────────────────────────────────────────┘
-
-┌───────────────────────────────────────────────────────────────────┐
-│                            Compiler                               │
-│  - Root compiler for entire project                               │
-│  - Orchestrates package loading                                   │
-│  - Manages project-wide configuration                             │
-│  - Uses packages.Load() for Go package info                       │
-├───────────────────────────────────────────────────────────────────┤
-│  Methods:                                                         │
-│  • NewCompiler(config, logger, opts)                              │
-│  • CompilePackages(ctx, patterns...) → CompilationResult          │
+│                         PUBLIC ADAPTERS                           │
+│  cmd/goscript: github.com/aperturerobotics/cli flag surface       │
+│  compiler.Compiler: Go API adapter over CompileService            │
+│  compiler/wasm: browser diagnostic adapter                        │
 └───────────────────────────────────────────────────────────────────┘
                                     │
-                                    │ creates one per package
                                     ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│                          PackageCompiler                          │
-│  - Compiles entire Go package to TypeScript module                │
-│  - Manages file compilation within package                        │
-│  - Generates index.ts re-exports                                  │
-│  - Handles protobuf file detection                                │
-├───────────────────────────────────────────────────────────────────┤
-│  Methods:                                                         │
-│  • NewPackageCompiler(logger, config, pkg, allPackages)           │
-│  • Compile(ctx) → error                                           │
-│  • generateIndexFile(compiledFiles)                               │
+│                         CompileService                            │
+│  - Coordinates request, graph, semantic, lowering, emit, copy      │
+│  - Accumulates structured diagnostics                             │
+│  - Stops before writing output when owner diagnostics are errors   │
 └───────────────────────────────────────────────────────────────────┘
                                     │
-                                    │ creates one per file
-                                    ▼
-┌───────────────────────────────────────────────────────────────────┐
-│                           FileCompiler                            │
-│  - Compiles single Go source file (ast.File)                      │
-│  - Creates output .gs.ts file                                     │
-│  - Initializes TSCodeWriter                                       │
-│  - Manages imports for the file                                   │
-├───────────────────────────────────────────────────────────────────┤
-│  Methods:                                                         │
-│  • NewFileCompiler(config, pkg, ast, path, analysis, pkgAnalysis) │
-│  • Compile(ctx) → error                                           │
-└───────────────────────────────────────────────────────────────────┘
+              ┌─────────────────────┼─────────────────────┐
+              ▼                     ▼                     ▼
+┌──────────────────────┐ ┌──────────────────────┐ ┌──────────────────────┐
+│ CompileRequestOwner  │ │ PackageGraphOwner    │ │ SemanticModelOwner   │
+│ Normalizes adapters  │ │ Loads packages       │ │ Computes package,    │
+│ and validates module │ │ with go/packages     │ │ type, method, async, │
+│ package requests     │ │ and build flags      │ │ and address facts    │
+└──────────────────────┘ └──────────────────────┘ └──────────────────────┘
+              ▼                     ▼                     ▼
+┌──────────────────────┐ ┌──────────────────────┐ ┌──────────────────────┐
+│ OverrideRegistryOwner│ │ LoweringOwner        │ │ TypeScriptEmitOwner  │
+│ Discovers/copies gs/ │ │ Converts semantic    │ │ Renders deterministic│
+│ packages and async   │ │ model + AST to IR    │ │ TypeScript from IR   │
+│ override metadata    │ │                      │ │ only                 │
+└──────────────────────┘ └──────────────────────┘ └──────────────────────┘
                                     │
-                                    │ uses for AST translation
                                     ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│                          GoToTSCompiler                           │
-│  - Core AST-to-TypeScript translator                              │
-│  - Translates expressions, statements, declarations               │
-│  - Uses TSCodeWriter for output                                   │
-│  - Queries Analysis for code generation decisions                 │
-├───────────────────────────────────────────────────────────────────┤
-│  Key Methods:                                                     │
-│  • WriteDecls(decls) - Top-level declarations                     │
-│  • WriteStmt(stmt) - Statements                                   │
-│  • WriteValueExpr(expr) - Value expressions                       │
-│  • WriteGoType(type) - Type expressions                           │
-└───────────────────────────────────────────────────────────────────┘
-                                    │
-                                    │ writes to
-                                    ▼
-┌───────────────────────────────────────────────────────────────────┐
-│                           TSCodeWriter                            │
-│  - Outputs formatted TypeScript code                              │
-│  - Manages indentation                                            │
-│  - Handles line breaks and formatting                             │
-├───────────────────────────────────────────────────────────────────┤
-│  Methods:                                                         │
-│  • WriteLine(line) - Write line with newline                      │
-│  • WriteLiterally(text) - Write raw text                          │
-│  • Indent(delta) - Adjust indentation level                       │
+│                       RuntimeContractOwner                        │
+│  Owns generated helper names and @goscript/builtin import policy  │
 └───────────────────────────────────────────────────────────────────┘
 ```
+
+The main design constraint is that text emission is the last step. Earlier
+owners decide package identity, imports, async coloring, pointer/value shape,
+interface descriptors, generic dictionaries, override dependencies, and runtime
+helper names before `TypeScriptEmitOwner` writes files.
 
 ---
 
@@ -841,18 +826,18 @@ Async Defer:
 ```
 goscript/
 ├── cmd/goscript/          # CLI entry point
-├── compiler/              # Core compiler (47 files)
-│   ├── compiler.go        # Compiler, PackageCompiler, FileCompiler, GoToTSCompiler
-│   ├── analysis.go        # Analysis phase (largest file ~109KB)
-│   ├── code-writer.go     # TSCodeWriter
-│   ├── expr.go            # Expression translation dispatch
-│   ├── expr-call*.go      # Function call variants
-│   ├── expr-selector.go   # Field/method access
-│   ├── stmt.go            # Statement translation dispatch
-│   ├── stmt-*.go          # Specific statement handlers
-│   ├── type.go            # Type translation
-│   ├── decl.go            # Declaration translation
-│   └── ...
+├── compiler/              # Core v2 compiler owners
+│   ├── compiler.go        # Public Go adapter over CompileService
+│   ├── service.go         # Pipeline coordinator
+│   ├── compile-request.go # Adapter normalization and request validation
+│   ├── package-graph.go   # go/packages loading and package graph facts
+│   ├── semantic-model.go  # Semantic/package/type/method/async facts
+│   ├── lowering.go        # Go AST + semantic facts to compiler IR
+│   ├── lowered-model.go   # Lowered IR structs
+│   ├── typescript-emitter.go # Deterministic TypeScript rendering
+│   ├── runtime-contract.go   # Generated helper/import contract
+│   ├── override-registry.go  # Handwritten gs/ package metadata/copy plans
+│   └── wasm_api.go       # Browser source-compilation diagnostic adapter
 ├── gs/                    # Runtime & handwritten packages
 │   ├── builtin/           # @goscript/builtin runtime
 │   │   ├── index.ts       # Main exports
@@ -881,11 +866,12 @@ goscript/
 
 GoScript achieves Go-to-TypeScript translation through:
 
-1. **Two-Phase Architecture**: Analysis then generation ensures consistent, correct output
+1. **Owner-Separated Pipeline**: Request, graph, semantic, lowering, runtime, override, and emit owners keep durable rules in one place
 2. **VarRef System**: Enables pointer semantics in TypeScript
 3. **Function Coloring**: Automatically determines async/sync boundaries
 4. **Runtime Helpers**: Provide Go-like semantics for slices, channels, maps
 5. **Value Semantics**: Clone methods preserve Go's copy behavior
-6. **Comprehensive Type Mapping**: Go types become idiomatic TypeScript
+6. **Structured Diagnostics**: Unsupported requests or syntax fail before output is written
+7. **Comprehensive Type Mapping**: Go types become idiomatic TypeScript
 
 The result is maintainable TypeScript that preserves Go's behavior while feeling natural to TypeScript developers.

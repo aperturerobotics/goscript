@@ -9,20 +9,20 @@ export type MyInterface1 = null | {
 }
 
 $.registerInterfaceType(
-  'main.MyInterface1',
-  null, // Zero value for interface is null
-  [{ name: "MyString1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
+	"main.MyInterface1",
+	null,
+	[{ name: "MyString1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
 
 export type MyInterface2 = null | {
 	MyString1(): string
 }
 
 $.registerInterfaceType(
-  'main.MyInterface2',
-  null, // Zero value for interface is null
-  [{ name: "MyString1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
+	"main.MyInterface2",
+	null,
+	[{ name: "MyString1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
 
 export class MyStruct {
 	public get Value1(): string {
@@ -40,8 +40,8 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		Value1: $.VarRef<string>;
-		Value2: $.VarRef<string>;
+		Value1: $.VarRef<string>
+		Value2: $.VarRef<string>
 	}
 
 	constructor(init?: Partial<{Value1?: string, Value2?: string}>) {
@@ -57,7 +57,7 @@ export class MyStruct {
 			Value1: $.varRef(this._fields.Value1.value),
 			Value2: $.varRef(this._fields.Value2.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
 	public MyString1(): string {
@@ -70,51 +70,68 @@ export class MyStruct {
 		return m.Value2
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [{ name: "MyString1", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
-	  MyStruct,
-	  {"Value1": { kind: $.TypeKind.Basic, name: "string" }, "Value2": { kind: $.TypeKind.Basic, name: "string" }}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[{ name: "MyString1", args: [], returns: [] }, { name: "MyString2", args: [], returns: [] }],
+		MyStruct,
+		{"Value1": { kind: $.TypeKind.Basic, name: "string" }, "Value2": { kind: $.TypeKind.Basic, name: "string" }}
+	)
 }
 
-export function processInterface(i: null | any): void {
-	$.typeSwitch(i, [{ types: ['main.MyInterface1'], body: (v) => {
-		$.println("MyInterface1:", v!.MyString1(), v!.MyString2())
-	}},
-	{ types: ['main.MyInterface2'], body: (v) => {
-		$.println("MyInterface2:", v!.MyString1())
-	}}], () => {
-		$.println("Unknown type")
-	})
+export function processInterface(i: any): void {
+	$.typeSwitch(
+		i,
+		[
+			{
+				types: ["main.MyInterface1"],
+				body: (v) => {
+					$.println("MyInterface1:", v.MyString1(), v.MyString2())
+				}
+			},
+			{
+				types: ["main.MyInterface2"],
+				body: (v) => {
+					$.println("MyInterface2:", v.MyString1())
+				}
+			}
+		],
+		() => {
+			let v = i
+			$.println("Unknown type")
+		}
+	)
 }
 
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({Value1: "hello", Value2: "world"}))
-
-	// Test with MyInterface1
 	let i1: MyInterface1 = $.markAsStructValue(s.clone())
 	processInterface(i1)
-
-	// Test with MyInterface2
 	let i2: MyInterface2 = $.markAsStructValue(s.clone())
 	processInterface(i2)
-
-	// Test with concrete type
 	processInterface(s)
-
-	// Type switch with subset casting
-	let i3: null | any = i1
-	$.typeSwitch(i3, [{ types: ['main.MyInterface2'], body: (v) => {
-		$.println("Matched MyInterface2 from i1:", v!.MyString1())
-	}},
-	{ types: ['main.MyInterface1'], body: (v) => {
-		$.println("Matched MyInterface1 from i1:", v!.MyString1(), v!.MyString2())
-	}}], () => {
-		$.println("No match")
-	})
+	let i3: any = i1
+	$.typeSwitch(
+		i3,
+		[
+			{
+				types: ["main.MyInterface2"],
+				body: (v) => {
+					$.println("Matched MyInterface2 from i1:", v.MyString1())
+				}
+			},
+			{
+				types: ["main.MyInterface1"],
+				body: (v) => {
+					$.println("Matched MyInterface1 from i1:", v.MyString1(), v.MyString2())
+				}
+			}
+		],
+		() => {
+			let v = i3
+			$.println("No match")
+		}
+	)
 }
 
 

@@ -3,19 +3,17 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-
 import * as target from "@goscript/github.com/aperturerobotics/goscript/tests/tests/linkname_alias/target/index.ts"
 
-export const greet: (name: string) => string = target.Greet
+export function greet(name: string): string {
+}
 
-export const add: (a: number, b: number) => number = target.Add
+export function add(a: number, b: number): number {
+}
 
 export async function main(): Promise<void> {
-	// Test using the linkname alias functions
 	$.println(greet("World"))
 	$.println(add(2, 3))
-
-	// Also test calling the target package directly
 	$.println(target.Greet("Direct"))
 }
 

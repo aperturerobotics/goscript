@@ -5,71 +5,53 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as strconv from "@goscript/strconv/index.ts"
 
-export type IntVal = number;
-
-export function IntVal_String(i: IntVal): string {
-	return strconv.Itoa(i)
-}
-
-
-export type StringVal = string;
-
-export function StringVal_String(s: StringVal): string {
-	return s
-}
-
-
 export type Stringer = null | {
 	String(): string
 }
 
 $.registerInterfaceType(
-  'main.Stringer',
-  null, // Zero value for interface is null
-  [{ name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-);
+	"main.Stringer",
+	null,
+	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
 
-// ZeroValue returns the zero value of type T
-export function ZeroValue<T extends Stringer>(): T {
-	let zero: T = null as any
+export type IntVal = number
+
+export function IntVal_String(i: IntVal): string {
+	return strconv.Itoa($.int(i))
+}
+
+export type StringVal = string
+
+export function StringVal_String(s: StringVal): string {
+	return s
+}
+
+export function ZeroValue(__typeArgs: $.GenericTypeArgs | undefined): any {
+	let zero: any = $.genericZero(__typeArgs, "T", null)
 	return zero
 }
 
-// CallString calls the String method on a value of type T
-export function CallString<T extends Stringer>(v: T): string {
-	return v!.String()
+export function CallString(__typeArgs: $.GenericTypeArgs | undefined, v: any): string {
+	return $.callGenericMethod(__typeArgs, "T", "String", v)
 }
 
-// Sum demonstrates zero value + method call in a generic context
-export function Sum<T extends Stringer>(...vals: T[]): T {
-	// Should be 0 for IntVal, "" for StringVal
-	let sum: T = null as any
-	// Note: We can't actually add T values in Go without more constraints
-	// This just tests that sum has the right zero value and String() works
+export function Sum(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<any>): any {
+	let sum: any = $.genericZero(__typeArgs, "T", null)
 	return sum
 }
 
 export async function main(): Promise<void> {
-	// Test 1: Zero value of IntVal should be 0
-	let zeroInt = ZeroValue<IntVal>()
+	let zeroInt = ZeroValue({T: { zero: () => 0, methods: {String: IntVal_String} }})
 	$.println("ZeroValue[IntVal]:", IntVal_String(zeroInt))
-
-	// Test 2: Zero value of StringVal should be ""
-	let zeroStr = ZeroValue<StringVal>()
+	let zeroStr = ZeroValue({T: { zero: () => "", methods: {String: StringVal_String} }})
 	$.println("ZeroValue[StringVal]:", StringVal_String(zeroStr))
-
-	// Test 3: CallString on zero value
-	$.println("CallString on zero IntVal:", CallString(zeroInt))
-	$.println("CallString on zero StringVal:", CallString(zeroStr))
-
-	// Test 4: Sum returns zero value
-	let sumInt = Sum<IntVal>()
+	$.println("CallString on zero IntVal:", CallString({T: { zero: () => 0, methods: {String: IntVal_String} }}, zeroInt))
+	$.println("CallString on zero StringVal:", CallString({T: { zero: () => "", methods: {String: StringVal_String} }}, zeroStr))
+	let sumInt = Sum({T: { zero: () => 0, methods: {String: IntVal_String} }})
 	$.println("Sum[IntVal]():", IntVal_String(sumInt))
-
-	let sumStr = Sum<StringVal>()
+	let sumStr = Sum({T: { zero: () => "", methods: {String: StringVal_String} }})
 	$.println("Sum[StringVal]():", StringVal_String(sumStr))
-
-	// Test 5: Verify the actual values
 	$.println("zeroInt == 0:", zeroInt == 0)
 	$.println("zeroStr == \"\":", zeroStr == "")
 }

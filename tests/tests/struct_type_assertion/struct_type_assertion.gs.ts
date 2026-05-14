@@ -4,16 +4,14 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	let i: null | any = {Name: "Alice", Number: 8005553424}
-
-	let { value: s, ok: ok } = $.typeAssert<{ Name?: string; Number?: number }>(i, {kind: $.TypeKind.Struct, fields: {'Name': {kind: $.TypeKind.Basic, name: 'string'}, 'Number': {kind: $.TypeKind.Basic, name: 'number'}}, methods: []})
+	let i: any = {Name: "Alice", Number: 8005553424}
+	let [s, ok] = $.typeAssertTuple<Record<string, unknown>>(i, { kind: $.TypeKind.Struct, methods: [], fields: {"Name": { kind: $.TypeKind.Basic, name: "string" }, "Number": { kind: $.TypeKind.Basic, name: "int" }} })
 	if (ok) {
 		$.println("Name:", s.Name, "Number:", s.Number)
 	} else {
 		$.println("Type assertion failed")
 	}
-
-	let { value: j, ok: ok2 } = $.typeAssert<{ Age?: number }>(i, {kind: $.TypeKind.Struct, fields: {'Age': {kind: $.TypeKind.Basic, name: 'number'}}, methods: []})
+	let [j, ok2] = $.typeAssertTuple<Record<string, unknown>>(i, { kind: $.TypeKind.Struct, methods: [], fields: {"Age": { kind: $.TypeKind.Basic, name: "int" }} })
 	if (ok2) {
 		$.println("Age:", j.Age)
 	} else {

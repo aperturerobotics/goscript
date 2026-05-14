@@ -3,27 +3,20 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function returnTwoValues(): [number, string] {
+export function returnTwoValues(): void {
 	return [42, "hello"]
 }
 
 export async function main(): Promise<void> {
 	let a: $.VarRef<number> = $.varRef(0)
 	let b: $.VarRef<string> = $.varRef("")
-
-	// Create pointers - these will be properly varrefed
 	let pA: $.VarRef<number> | null = a
 	let pB: $.VarRef<string> | null = b
-
-	// This should trigger the "unhandled LHS expression in destructuring: *ast.StarExpr" error
-	{
-	  const _tmp = returnTwoValues()
-	  pA!.value = _tmp[0]
-	  pB!.value = _tmp[1]
-	}
-
-	$.println("a:", a!.value)
-	$.println("b:", b!.value)
+	let __goscriptTuple314 = returnTwoValues()
+	$.pointerValue(pA) = __goscriptTuple314[0]
+	$.pointerValue(pB) = __goscriptTuple314[1]
+	$.println("a:", a.value)
+	$.println("b:", b.value)
 }
 
 

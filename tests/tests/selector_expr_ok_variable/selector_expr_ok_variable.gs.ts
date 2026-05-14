@@ -12,7 +12,7 @@ export class Result {
 	}
 
 	public _fields: {
-		ok: $.VarRef<boolean>;
+		ok: $.VarRef<boolean>
 	}
 
 	constructor(init?: Partial<{ok?: boolean}>) {
@@ -26,30 +26,23 @@ export class Result {
 		cloned._fields = {
 			ok: $.varRef(this._fields.ok.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Result',
-	  new Result(),
-	  [],
-	  Result,
-	  {"ok": { kind: $.TypeKind.Basic, name: "bool" }}
-	);
+		"main.Result",
+		new Result(),
+		[],
+		Result,
+		{"ok": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let x: null | any = 42
-	let result = $.markAsStructValue(new Result({}))
-
-	// This should trigger the error: ok expression is not an identifier: *ast.SelectorExpr
-	// The 'ok' variable is result.ok (a selector expression) instead of a simple identifier
-	let _gs_ta_val_7689: number
-	let _gs_ta_ok_7689: boolean
-	({ value: _gs_ta_val_7689, ok: _gs_ta_ok_7689 } = $.typeAssert<number>(x, {kind: $.TypeKind.Basic, name: 'number'}))
-	result.ok = _gs_ta_ok_7689
-
+	let x: any = 42
+	let result = $.markAsStructValue(new Result())
+	let __goscriptTuple279 = $.typeAssertTuple<number>(x, { kind: $.TypeKind.Basic, name: "int" })
+	result.ok = __goscriptTuple279[1]
 	$.println("Type assertion successful:", result.ok)
 }
 

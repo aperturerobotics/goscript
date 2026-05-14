@@ -5,17 +5,12 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let s = "abc"
-	{
-		const _runes = $.stringToRunes(s)
-		for (let i = 0; i < _runes.length; i++) {
-			let c = _runes[i]
-			{
-				if (c >= 97) {
-					c = c - 97 + 10
-				}
-				$.println($.int(c))
-			}
+	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {
+		let c = s[__rangeIndex]
+		if (c >= 97) {
+			c = c - 97 + 10
 		}
+		$.println($.int(c))
 	}
 }
 

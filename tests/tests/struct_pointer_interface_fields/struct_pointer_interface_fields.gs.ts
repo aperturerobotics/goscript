@@ -8,10 +8,10 @@ export type MyInterface = null | {
 }
 
 $.registerInterfaceType(
-  'main.MyInterface',
-  null, // Zero value for interface is null
-  [{ name: "Method", args: [], returns: [] }]
-);
+	"main.MyInterface",
+	null,
+	[{ name: "Method", args: [], returns: [] }]
+)
 
 export class MyStruct {
 	public get PointerField(): $.VarRef<number> | null {
@@ -29,8 +29,8 @@ export class MyStruct {
 	}
 
 	public _fields: {
-		PointerField: $.VarRef<$.VarRef<number> | null>;
-		interfaceField: $.VarRef<MyInterface>;
+		PointerField: $.VarRef<$.VarRef<number> | null>
+		interfaceField: $.VarRef<MyInterface>
 	}
 
 	constructor(init?: Partial<{PointerField?: $.VarRef<number> | null, interfaceField?: MyInterface}>) {
@@ -46,31 +46,28 @@ export class MyStruct {
 			PointerField: $.varRef(this._fields.PointerField.value),
 			interfaceField: $.varRef(this._fields.interfaceField.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.MyStruct',
-	  new MyStruct(),
-	  [],
-	  MyStruct,
-	  {"PointerField": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "interfaceField": "main.MyInterface"}
-	);
+		"main.MyStruct",
+		new MyStruct(),
+		[],
+		MyStruct,
+		{"PointerField": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "interfaceField": "main.MyInterface"}
+	)
 }
 
 export async function main(): Promise<void> {
-	let s = $.markAsStructValue(new MyStruct({}))
+	let s = $.markAsStructValue(new MyStruct())
 	$.println(s.PointerField == null)
 	$.println(s.interfaceField == null)
-
 	let i = $.varRef(10)
 	s.PointerField = i
 	$.println(s.PointerField != null)
-	$.println(s.PointerField!.value)
-	i!.value = 15
-	$.println(s.PointerField!.value)
-
+	$.println($.pointerValue(s.PointerField))
+	i.value = 15
+	$.println($.pointerValue(s.PointerField))
 	let mi: MyInterface = null
 	s.interfaceField = mi
 	$.println(s.interfaceField == null)

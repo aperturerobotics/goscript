@@ -11,22 +11,22 @@ export class file {
 		this._fields.name.value = value
 	}
 
-	public get data(): $.Bytes {
+	public get data(): $.Slice<number> {
 		return this._fields.data.value
 	}
-	public set data(value: $.Bytes) {
+	public set data(value: $.Slice<number>) {
 		this._fields.data.value = value
 	}
 
 	public _fields: {
-		name: $.VarRef<string>;
-		data: $.VarRef<$.Bytes>;
+		name: $.VarRef<string>
+		data: $.VarRef<$.Slice<number>>
 	}
 
-	constructor(init?: Partial<{data?: $.Bytes, name?: string}>) {
+	constructor(init?: Partial<{name?: string, data?: $.Slice<number>}>) {
 		this._fields = {
 			name: $.varRef(init?.name ?? ""),
-			data: $.varRef(init?.data ?? new Uint8Array(0))
+			data: $.varRef(init?.data ?? null)
 		}
 	}
 
@@ -36,16 +36,14 @@ export class file {
 			name: $.varRef(this._fields.name.value),
 			data: $.varRef(this._fields.data.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.file',
-	  new file(),
-	  [],
-	  file,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
-	);
+		"main.file",
+		new file(),
+		[],
+		file,
+		{"name": { kind: $.TypeKind.Basic, name: "string" }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
 }
-

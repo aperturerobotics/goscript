@@ -6,29 +6,29 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as errlist from "@goscript/github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist/index.ts"
 
 export class parser {
-	public get errors(): errlist.ErrorList {
+	public get errors(): ErrorList {
 		return this._fields.errors.value
 	}
-	public set errors(value: errlist.ErrorList) {
+	public set errors(value: ErrorList) {
 		this._fields.errors.value = value
 	}
 
-	public get astruct(): errlist.AStruct {
+	public get astruct(): AStruct {
 		return this._fields.astruct.value
 	}
-	public set astruct(value: errlist.AStruct) {
+	public set astruct(value: AStruct) {
 		this._fields.astruct.value = value
 	}
 
 	public _fields: {
-		errors: $.VarRef<errlist.ErrorList>;
-		astruct: $.VarRef<errlist.AStruct>;
+		errors: $.VarRef<ErrorList>
+		astruct: $.VarRef<AStruct>
 	}
 
-	constructor(init?: Partial<{astruct?: errlist.AStruct, errors?: errlist.ErrorList}>) {
+	constructor(init?: Partial<{errors?: ErrorList, astruct?: AStruct}>) {
 		this._fields = {
-			errors: $.varRef(init?.errors ?? null as errlist.ErrorList),
-			astruct: $.varRef(init?.astruct ? $.markAsStructValue(init.astruct.clone()) : new errlist.AStruct())
+			errors: $.varRef(init?.errors ?? null),
+			astruct: $.varRef(init?.astruct ? $.markAsStructValue(init.astruct.clone()) : $.markAsStructValue(new AStruct()))
 		}
 	}
 
@@ -38,26 +38,22 @@ export class parser {
 			errors: $.varRef(this._fields.errors.value),
 			astruct: $.varRef($.markAsStructValue(this._fields.astruct.value.clone()))
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.parser',
-	  new parser(),
-	  [],
-	  parser,
-	  {"errors": "github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist.ErrorList", "astruct": "github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist.AStruct"}
-	);
+		"main.parser",
+		new parser(),
+		[],
+		parser,
+		{"errors": "errlist.ErrorList", "astruct": "errlist.AStruct"}
+	)
 }
 
 export async function main(): Promise<void> {
-	let p: parser = new parser()
-	// this Add method does not work:
+	let p: parser = $.markAsStructValue(new parser())
 	errlist.ErrorList_Add(p._fields.errors, "error")
-	$.println(p.errors![0])
-
-	// but it does work for a struct type:
+	$.println(p.errors[0])
 	p.astruct.Set("astruct")
 	$.println(p.astruct.Msg)
 }
