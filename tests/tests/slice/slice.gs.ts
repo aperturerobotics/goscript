@@ -83,7 +83,7 @@ export async function main(): Promise<void> {
 	$.println(appendArr[3])
 	$.println(appendArr[4])
 	$.println("--- Slicing a slice ---")
-	let baseSlice = [0, 10, 20, 30, 40, 50]
+	let baseSlice = $.arrayToSlice<number>([0, 10, 20, 30, 40, 50])
 	let subSlice1 = $.goSlice(baseSlice, 1, 4)
 	$.println($.len(subSlice1))
 	$.println($.cap(subSlice1))
@@ -114,7 +114,7 @@ export async function main(): Promise<void> {
 	$.println(threeIndexSlice![3])
 	$.println(threeIndexArr[4])
 	$.println("--- Additional Tests ---")
-	let sliceLiteral = [10, 20, 30]
+	let sliceLiteral = $.arrayToSlice<number>([10, 20, 30])
 	$.println("Slice literal len:", $.len(sliceLiteral))
 	$.println("Slice literal cap:", $.cap(sliceLiteral))
 	$.println("Slice literal[1]:", sliceLiteral![1])
@@ -126,7 +126,7 @@ export async function main(): Promise<void> {
 	$.println("Append to nil slice cap:", $.cap(nilSlice))
 	$.println("Append to nil slice[0]:", nilSlice![0])
 	$.println("--- Slices of Slices Tests ---")
-	let sliceOfSlices = [[1, 2, 3], [4, 5], [6, 7, 8, 9]]
+	let sliceOfSlices = $.arrayToSlice<$.Slice<number>>([$.arrayToSlice<number>([1, 2, 3]), $.arrayToSlice<number>([4, 5]), $.arrayToSlice<number>([6, 7, 8, 9])])
 	$.println("Length of sliceOfSlices:", $.len(sliceOfSlices))
 	$.println("Capacity of sliceOfSlices:", $.cap(sliceOfSlices))
 	$.println("sliceOfSlices[0][1]:", sliceOfSlices![0]![1])
@@ -140,7 +140,7 @@ export async function main(): Promise<void> {
 	$.println("Length of innerSlice after append:", $.len(innerSlice))
 	$.println("Capacity of innerSlice after append:", $.cap(innerSlice))
 	$.println("innerSlice[2]:", innerSlice![2])
-	let sliceOfSlicesWithCap = [[1, 2, 3], $.makeSlice<number>(2, 5, "number"), [6, 7, 8, 9]]
+	let sliceOfSlicesWithCap = $.arrayToSlice<$.Slice<number>>([$.arrayToSlice<number>([1, 2, 3]), $.makeSlice<number>(2, 5, "number"), $.arrayToSlice<number>([6, 7, 8, 9])])
 	sliceOfSlicesWithCap![1]![0] = 40
 	sliceOfSlicesWithCap![1]![1] = 50
 	$.println("--- Append to inner slice with capacity ---")
@@ -172,12 +172,12 @@ export async function main(): Promise<void> {
 	subSliceOfSlices![0]![1] = 55
 	$.println("sliceOfSlices[1][1] after sub-slice modification:", sliceOfSlices![1]![1])
 	$.println("--- Append a new slice to slice of slices ---")
-	sliceOfSlices = $.append(sliceOfSlices, [100, 110])
+	sliceOfSlices = $.append(sliceOfSlices, $.arrayToSlice<number>([100, 110]))
 	$.println("Length of sliceOfSlices after append:", $.len(sliceOfSlices))
 	$.println("Capacity of sliceOfSlices after append:", $.cap(sliceOfSlices))
 	$.println("sliceOfSlices[3][0]:", sliceOfSlices![3]![0])
 	$.println("--- Append an existing slice to slice of slices ---")
-	let existingSlice = [200, 210]
+	let existingSlice = $.arrayToSlice<number>([200, 210])
 	sliceOfSlices = $.append(sliceOfSlices, existingSlice)
 	$.println("Length of sliceOfSlices after appending existing:", $.len(sliceOfSlices))
 	$.println("Capacity of sliceOfSlices after appending existing:", $.cap(sliceOfSlices))
@@ -192,16 +192,16 @@ export async function main(): Promise<void> {
 	let makeSliceOfSlices = $.makeSlice<$.Slice<number>>(2, 4)
 	$.println("Length of makeSliceOfSlices:", $.len(makeSliceOfSlices))
 	$.println("Capacity of makeSliceOfSlices:", $.cap(makeSliceOfSlices))
-	makeSliceOfSlices![0] = [1000, 2000]
+	makeSliceOfSlices![0] = $.arrayToSlice<number>([1000, 2000])
 	makeSliceOfSlices![1] = $.makeSlice<number>(1, 3, "number")
 	makeSliceOfSlices![1]![0] = 3000
 	$.println("makeSliceOfSlices[0][1]:", makeSliceOfSlices![0]![1])
 	$.println("makeSliceOfSlices[1][0]:", makeSliceOfSlices![1]![0])
-	makeSliceOfSlices = $.append(makeSliceOfSlices, [4000, 5000])
+	makeSliceOfSlices = $.append(makeSliceOfSlices, $.arrayToSlice<number>([4000, 5000]))
 	$.println("Length of makeSliceOfSlices after append:", $.len(makeSliceOfSlices))
 	$.println("Capacity of makeSliceOfSlices after append:", $.cap(makeSliceOfSlices))
 	$.println("makeSliceOfSlices[2][1]:", makeSliceOfSlices![2]![1])
-	makeSliceOfSlices = $.append(makeSliceOfSlices, [6000])
+	makeSliceOfSlices = $.append(makeSliceOfSlices, $.arrayToSlice<number>([6000]))
 	$.println("Length of makeSliceOfSlices after second append:", $.len(makeSliceOfSlices))
 	$.println("Capacity of makeSliceOfSlices after second append:", $.cap(makeSliceOfSlices))
 	$.println("makeSliceOfSlices[3][0]:", makeSliceOfSlices![3]![0])
@@ -209,11 +209,11 @@ export async function main(): Promise<void> {
 	let nilSliceOfSlices: $.Slice<$.Slice<number>> = null
 	$.println("Nil slice of slices len:", $.len(nilSliceOfSlices))
 	$.println("Nil slice of slices cap:", $.cap(nilSliceOfSlices))
-	nilSliceOfSlices = $.append(nilSliceOfSlices, [10000])
+	nilSliceOfSlices = $.append(nilSliceOfSlices, $.arrayToSlice<number>([10000]))
 	$.println("Length of nilSliceOfSlices after append:", $.len(nilSliceOfSlices))
 	$.println("Capacity of nilSliceOfSlices after append:", $.cap(nilSliceOfSlices))
 	$.println("nilSliceOfSlices[0][0]:", nilSliceOfSlices![0]![0])
-	nilSliceOfSlices = $.append(nilSliceOfSlices, [20000, 30000])
+	nilSliceOfSlices = $.append(nilSliceOfSlices, $.arrayToSlice<number>([20000, 30000]))
 	$.println("Length of nilSliceOfSlices after second append:", $.len(nilSliceOfSlices))
 	$.println("Capacity of nilSliceOfSlices after second append:", $.cap(nilSliceOfSlices))
 	$.println("nilSliceOfSlices[1][1]:", nilSliceOfSlices![1]![1])
@@ -221,7 +221,7 @@ export async function main(): Promise<void> {
 	let emptySliceOfSlices = $.makeSlice<$.Slice<number>>(0)
 	$.println("Empty slice of slices len:", $.len(emptySliceOfSlices))
 	$.println("Empty slice of slices cap:", $.cap(emptySliceOfSlices))
-	emptySliceOfSlices = $.append(emptySliceOfSlices, [40000])
+	emptySliceOfSlices = $.append(emptySliceOfSlices, $.arrayToSlice<number>([40000]))
 	$.println("Length of emptySliceOfSlices after append:", $.len(emptySliceOfSlices))
 	$.println("Capacity of emptySliceOfSlices after append:", $.cap(emptySliceOfSlices))
 	$.println("emptySliceOfSlices[0][0]:", emptySliceOfSlices![0]![0])

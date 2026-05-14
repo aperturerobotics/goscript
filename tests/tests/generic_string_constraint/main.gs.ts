@@ -25,9 +25,9 @@ export function toStringGeneric(__typeArgs: $.GenericTypeArgs | undefined, v: an
 
 export async function main(): Promise<void> {
 	$.println(toStringString({T: { zero: () => "" }}, "hello"))
-	$.println(toStringBytes({T: { zero: () => null }}, [119, 111, 114, 108, 100]))
+	$.println(toStringBytes({T: { zero: () => null }}, $.arrayToSlice<number>([119, 111, 114, 108, 100])))
 	$.println(toStringGeneric({T: { zero: () => "" }}, "foo"))
-	$.println(toStringGeneric({T: { zero: () => null }}, [98, 97, 114]))
+	$.println(toStringGeneric({T: { zero: () => null }}, $.arrayToSlice<number>([98, 97, 114])))
 }
 
 

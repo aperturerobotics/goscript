@@ -15,7 +15,7 @@ export async function main(): Promise<void> {
 	let r3: number = 0x20AC
 	let s3 = String.fromCodePoint(r3)
 	$.println(s3)
-	let myRunes = [71, 111, 83, 99, 114, 105, 112, 116]
+	let myRunes = $.arrayToSlice<number>([71, 111, 83, 99, 114, 105, 112, 116])
 	let myStringFromRunes = $.runesToString(myRunes)
 	$.println(myStringFromRunes)
 	let emptyRunes = $.arrayToSlice<number>([])
@@ -32,7 +32,7 @@ export async function main(): Promise<void> {
 	mutableRunes![8] = 115
 	let modifiedString = $.runesToString(mutableRunes)
 	$.println(modifiedString)
-	let bytes = [72, 101, 108, 108, 111]
+	let bytes = $.arrayToSlice<number>([72, 101, 108, 108, 111])
 	let bytesString = $.bytesToString(bytes)
 	$.println(bytesString)
 	let i32 = $.int(66)

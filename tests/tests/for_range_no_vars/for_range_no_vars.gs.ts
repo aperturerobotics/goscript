@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
-	let s = [10, 20, 30]
+	let s = $.arrayToSlice<number>([10, 20, 30])
 	$.println("Looping over slice (no vars):")
 	let count = 0
 	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {

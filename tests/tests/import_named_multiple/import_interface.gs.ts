@@ -23,7 +23,7 @@ export async function main(): Promise<void> {
 	}
 	$.println("strings.Count:", strings.Count("a,b,c", ","))
 	$.println("strings.Split:", strings.Split("a,b,c", ","))
-	$.println("strings.Join:", strings.Join(["a", "b", "c"], ","))
+	$.println("strings.Join:", strings.Join($.arrayToSlice<string>(["a", "b", "c"]), ","))
 	$.println("strings.Replace:", strings.Replace("a,b,c", "b", "d", 1))
 	$.println("strings.ReplaceAll:", strings.ReplaceAll("a,b,c", "b", "d"))
 	$.println("strings.ToLower:", strings.ToLower("HELLO"))

@@ -51,7 +51,7 @@ export class Person {
 }
 
 export async function main(): Promise<void> {
-	let people = [$.markAsStructValue(new Person({Name: "Charlie", Age: 30})), $.markAsStructValue(new Person({Name: "Alice", Age: 25})), $.markAsStructValue(new Person({Name: "Bob", Age: 35}))]
+	let people = $.arrayToSlice<Person>([$.markAsStructValue(new Person({Name: "Charlie", Age: 30})), $.markAsStructValue(new Person({Name: "Alice", Age: 25})), $.markAsStructValue(new Person({Name: "Bob", Age: 35}))])
 	slices.SortFunc(people, (a: Person, b: Person): number => {
 	if (a.Age < b.Age) {
 		return -1

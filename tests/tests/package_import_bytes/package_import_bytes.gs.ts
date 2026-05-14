@@ -22,7 +22,7 @@ export async function main(): Promise<void> {
 	if (idx == 2) {
 		$.println("Index works correctly, found at position:", idx)
 	}
-	let slices = [b1, b2]
+	let slices = $.arrayToSlice<$.Slice<number>>([b1, b2])
 	let joined = bytes.Join(slices, $.stringToBytes(" "))
 	$.println("Joined:", $.bytesToString(joined))
 	let split = bytes.Split(joined, $.stringToBytes(" "))

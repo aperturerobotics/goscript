@@ -22,7 +22,7 @@ export function testFS(fsys: string, expected: $.Slice<string>): $.GoError {
 }
 
 export async function main(): Promise<void> {
-	let expected = ["file1.txt", "file2.txt", "file3.txt"]
+	let expected = $.arrayToSlice<string>(["file1.txt", "file2.txt", "file3.txt"])
 	let err = TestFS("myfs", expected)
 	if (err != null) {
 		$.println("Error: " + err.Error())

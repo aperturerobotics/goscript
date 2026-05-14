@@ -226,8 +226,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"return_async_call":                   true,
 	"select_mixed_returns":                true,
 	"selector_expr_lhs_multi_assign":      true,
-	"slice":                               true,
-	"slices_grow":                         true,
 	"star_compound_assign":                true,
 	"star_expr_destructuring":             true,
 	"struct_embedding":                    true,

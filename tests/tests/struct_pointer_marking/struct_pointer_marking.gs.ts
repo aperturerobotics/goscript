@@ -101,7 +101,7 @@ export async function main(): Promise<void> {
 	$.println("\n--- Scenario 5: Nested Type Assertions ---")
 	let nested1 = new MyStruct({Value: 70})
 	let nested2 = $.varRef($.markAsStructValue(new MyStruct({Value: 80})))
-	let arr = [nested1, $.markAsStructValue(nested2.value.clone()), nested2]
+	let arr = $.arrayToSlice<any>([nested1, $.markAsStructValue(nested2.value.clone()), nested2])
 	for (let i = 0; i < $.len(arr); i++) {
 		let item = arr![i]
 		{
@@ -121,7 +121,7 @@ export async function main(): Promise<void> {
 		}
 	}
 	$.println("\n--- Scenario 6: Type Switch ---")
-	let testItems = [$.markAsStructValue($.markAsStructValue(new MyStruct({Value: 100})).clone()), new MyStruct({Value: 200}), 300, "string"]
+	let testItems = $.arrayToSlice<any>([$.markAsStructValue($.markAsStructValue(new MyStruct({Value: 100})).clone()), new MyStruct({Value: 200}), 300, "string"])
 	for (let i = 0; i < $.len(testItems); i++) {
 		let item = testItems![i]
 		$.typeSwitch(

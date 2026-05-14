@@ -20,7 +20,7 @@ export async function main(): Promise<void> {
 	testVariadicInterface("test1", $.arrayToSlice<any>(["hello", 42, true]))
 	testVariadicInterface("test2", $.arrayToSlice<any>([null, "world"]))
 	testVariadicInterface("test3", null)
-	let values = ["a", "b", "c"]
+	let values = $.arrayToSlice<any>(["a", "b", "c"])
 	testVariadicInterface("test4", values)
 }
 

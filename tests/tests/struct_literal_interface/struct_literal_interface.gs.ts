@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as reflect from "@goscript/reflect/index.ts"
 
 export async function main(): Promise<void> {
-	let cases = [$.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectDefault}))]
+	let cases = $.arrayToSlice<reflect.SelectCase>([$.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectDefault}))])
 	$.println("Cases len:", $.len(cases))
 	$.println("First case dir:", cases![0].Dir)
 }

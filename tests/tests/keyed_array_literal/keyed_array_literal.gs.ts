@@ -24,7 +24,7 @@ export async function main(): Promise<void> {
 	$.println("arr3[5]:", arr3[5])
 	$.println("arr3[6]:", arr3[6])
 	$.println("arr3[7]:", arr3[7])
-	let slice1 = ["", "", "second", "", "fourth"]
+	let slice1 = $.arrayToSlice<string>(["", "", "second", "", "fourth"])
 	$.println("slice1[0]:", slice1![0])
 	$.println("slice1[1]:", slice1![1])
 	$.println("slice1[2]:", slice1![2])

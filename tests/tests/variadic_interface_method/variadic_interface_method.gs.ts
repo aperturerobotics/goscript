@@ -61,7 +61,7 @@ export async function main(): Promise<void> {
 	$.println("Result2:", result2)
 	let result3 = b.Join(null)
 	$.println("Result3:", result3)
-	let parts = ["another", "path", "here"]
+	let parts = $.arrayToSlice<string>(["another", "path", "here"])
 	let result4 = b.Join(parts)
 	$.println("Result4:", result4)
 }

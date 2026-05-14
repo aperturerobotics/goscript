@@ -8,7 +8,7 @@ export function modifyGenericSlice(__typeArgs: $.GenericTypeArgs | undefined, s:
 }
 
 export async function main(): Promise<void> {
-	let slice = [1, 2, 3]
+	let slice = $.arrayToSlice<number>([1, 2, 3])
 	modifyGenericSlice({S: { zero: () => null }, E: { zero: () => 0 }}, slice, 1, 42)
 	$.println("slice[0]:", slice![0])
 	$.println("slice[1]:", slice![1])

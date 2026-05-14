@@ -27,7 +27,7 @@ export async function main(): Promise<void> {
 	fmt.Printf("Float: %f\n", 3.14159)
 	fmt.Printf("String: %s\n", "hello")
 	fmt.Printf("Type: %T\n", 42)
-	fmt.Printf("Value: %v\n", [1, 2, 3])
+	fmt.Printf("Value: %v\n", $.arrayToSlice<number>([1, 2, 3]))
 	fmt.Printf("Width: '%5s'\n", "hi")
 	fmt.Printf("Precision: '%.2f'\n", 3.14159)
 	fmt.Printf("Both: '%5.2f'\n", 3.14159)
