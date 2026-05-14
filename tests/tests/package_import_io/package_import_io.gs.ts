@@ -6,10 +6,10 @@ import * as $ from "@goscript/builtin/index.ts"
 import * as io from "@goscript/io/index.ts"
 
 export async function main(): Promise<void> {
-	$.println("EOF:", io.EOF.Error())
-	$.println("ErrClosedPipe:", io.ErrClosedPipe.Error())
-	$.println("ErrShortWrite:", io.ErrShortWrite.Error())
-	$.println("ErrUnexpectedEOF:", io.ErrUnexpectedEOF.Error())
+	$.println("EOF:", io.EOF!.Error())
+	$.println("ErrClosedPipe:", io.ErrClosedPipe!.Error())
+	$.println("ErrShortWrite:", io.ErrShortWrite!.Error())
+	$.println("ErrUnexpectedEOF:", io.ErrUnexpectedEOF!.Error())
 	$.println("SeekStart:", io.SeekStart)
 	$.println("SeekCurrent:", io.SeekCurrent)
 	$.println("SeekEnd:", io.SeekEnd)
