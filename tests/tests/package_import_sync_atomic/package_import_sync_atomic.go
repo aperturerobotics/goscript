@@ -2,6 +2,12 @@ package main
 
 import "sync/atomic"
 
+func makeAtomicCallback() (func(), error) {
+	return func() {
+		println("Pointer function callback called")
+	}, nil
+}
+
 func main() {
 	// Test atomic.Int32
 	var i32 atomic.Int32
@@ -65,6 +71,18 @@ func main() {
 	loaded = ptr.Load()
 	if loaded != nil {
 		println("Pointer new value:", *loaded)
+	}
+
+	var fnPtr atomic.Pointer[func()]
+	callback, callbackErr := makeAtomicCallback()
+	if callbackErr != nil {
+		println("Pointer function error:", callbackErr.Error())
+	} else {
+		fnPtr.Store(&callback)
+		loadedFn := fnPtr.Load()
+		if loadedFn != nil {
+			(*loadedFn)()
+		}
 	}
 
 	// Test atomic.Value

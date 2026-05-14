@@ -18,7 +18,7 @@ export async function main(): Promise<void> {
 	await $.chanSend(myChan, 10)
 	let finalResult = await caller(myChan)
 	$.println(finalResult)
-	myChan.close()
+	myChan!.close()
 }
 
 

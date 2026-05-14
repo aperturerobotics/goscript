@@ -39,7 +39,7 @@ export async function main(): Promise<void> {
 	let done = $.makeChannel<Record<string, unknown>>(0, {}, "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
 	await wg.value.Wait()
-	done.close()
+	done!.close()
 }, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 	const [__goscriptSelectHasReturn4801746, __goscriptSelectValue4801746] = await $.selectStatement<any, void>([
 		{

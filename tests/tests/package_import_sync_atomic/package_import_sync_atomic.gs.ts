@@ -5,6 +5,12 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as atomic from "@goscript/sync/atomic/index.ts"
 
+export function makeAtomicCallback(): [(() => void) | null, $.GoError] {
+	return [$.functionValue((): void => {
+	$.println("Pointer function callback called")
+}, { kind: $.TypeKind.Function, params: [], results: [] }), null]
+}
+
 export async function main(): Promise<void> {
 	let i32: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
 	i32.value.Store(42)
@@ -49,6 +55,19 @@ export async function main(): Promise<void> {
 	loaded = ptr.value.Load()
 	if (loaded != null) {
 		$.println("Pointer new value:", $.pointerValue(loaded))
+	}
+	let fnPtr: $.VarRef<atomic.Pointer<(() => void) | null>> = $.varRef($.markAsStructValue(new atomic.Pointer<(() => void) | null>()))
+	let __goscriptTuple29340 = makeAtomicCallback()
+	let callback = $.varRef(__goscriptTuple29340[0])
+	let callbackErr = __goscriptTuple29340[1]
+	if (callbackErr != null) {
+		$.println("Pointer function error:", callbackErr!.Error())
+	} else {
+		fnPtr.value.Store(callback)
+		let loadedFn = fnPtr.value.Load()
+		if (loadedFn != null) {
+			($.pointerValue(loadedFn))!()
+		}
 	}
 	let val: $.VarRef<atomic.Value> = $.varRef($.markAsStructValue(new atomic.Value()))
 	val.value.Store("atomic value")

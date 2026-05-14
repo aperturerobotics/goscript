@@ -8,7 +8,7 @@ export async function main(): Promise<void> {
 	await $.chanSend(ch, 42)
 	let __goscriptRecv144 = await $.chanRecvWithOk(ch)
 	$.println("received and discarded value and ok")
-	ch.close()
+	ch!.close()
 	let __goscriptRecv293 = await $.chanRecvWithOk(ch)
 	$.println("received from closed channel, both discarded")
 }

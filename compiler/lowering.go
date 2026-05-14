@@ -890,7 +890,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		prefix := ""
 		if stmt.Tok == token.DEFINE {
 			prefix = "let "
-			if !allShortAssignTargetsNew(ctx, stmt.Lhs) {
+			if !allShortAssignTargetsNew(ctx, stmt.Lhs) || tupleDeclarationNeedsElementStatements(ctx, stmt.Lhs) {
 				return o.lowerTupleReassignmentStmt(ctx, stmt, right, diagnostics)
 			}
 			return []loweredStmt{{text: prefix + "[" + strings.Join(lefts, ", ") + "] = " + right}}, diagnostics
@@ -938,9 +938,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		}
 		if stmt.Tok == token.DEFINE {
 			if ident, ok := lhs.(*ast.Ident); ok {
-				if obj := ctx.semPkg.source.TypesInfo.Defs[ident]; obj != nil && ctx.model.needsVarRef[obj] {
-					right = o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + right + ")"
-				}
+				right = o.lowerDeclaredValue(ctx, ident, right)
 			}
 			stmts = append(stmts, loweredStmt{text: "let " + left + " = " + right})
 			continue
@@ -969,10 +967,12 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, stmt.Lhs[0], stmt.Tok == token.DEFINE)
 		diagnostics = append(diagnostics, leftDiagnostics...)
 		prefix := ""
+		value := "await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecv) + "(" + channel + ")"
 		if stmt.Tok == token.DEFINE {
 			prefix = "let "
+			value = o.lowerDeclaredValue(ctx, stmt.Lhs[0], value)
 		}
-		return []loweredStmt{{text: prefix + left + " = await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecv) + "(" + channel + ")"}}, diagnostics
+		return []loweredStmt{{text: prefix + left + " = " + value}}, diagnostics
 	}
 	tempName := "__goscriptRecv" + strconv.Itoa(int(stmt.Pos()))
 	stmts := []loweredStmt{{text: "let " + tempName + " = await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecvWithOk) + "(" + channel + ")"}}
@@ -990,10 +990,12 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs))
 		diagnostics = append(diagnostics, leftDiagnostics...)
 		prefix := ""
+		value := tempName + fields[idx]
 		if stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs) {
 			prefix = "let "
+			value = o.lowerDeclaredValue(ctx, lhs, value)
 		}
-		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + tempName + fields[idx]})
+		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + value})
 	}
 	return stmts, diagnostics
 }
@@ -1013,12 +1015,26 @@ func (o *LoweringOwner) lowerTupleReassignmentStmt(
 		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs))
 		diagnostics = append(diagnostics, leftDiagnostics...)
 		prefix := ""
+		value := tempName + "[" + strconv.Itoa(idx) + "]"
 		if stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs) {
 			prefix = "let "
+			value = o.lowerDeclaredValue(ctx, lhs, value)
 		}
-		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + tempName + "[" + strconv.Itoa(idx) + "]"})
+		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + value})
 	}
 	return stmts, diagnostics
+}
+
+func (o *LoweringOwner) lowerDeclaredValue(ctx lowerFileContext, lhs ast.Expr, value string) string {
+	ident, ok := lhs.(*ast.Ident)
+	if !ok {
+		return value
+	}
+	obj := ctx.semPkg.source.TypesInfo.Defs[ident]
+	if obj == nil || !ctx.model.needsVarRef[obj] {
+		return value
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + value + ")"
 }
 
 func (o *LoweringOwner) lowerParallelAssignStmt(ctx lowerFileContext, stmt *ast.AssignStmt) ([]loweredStmt, []Diagnostic) {
@@ -1051,6 +1067,20 @@ func allShortAssignTargetsNew(ctx lowerFileContext, exprs []ast.Expr) bool {
 		}
 	}
 	return true
+}
+
+func tupleDeclarationNeedsElementStatements(ctx lowerFileContext, exprs []ast.Expr) bool {
+	for _, expr := range exprs {
+		ident, ok := expr.(*ast.Ident)
+		if !ok || ident.Name == "_" {
+			continue
+		}
+		obj := ctx.semPkg.source.TypesInfo.Defs[ident]
+		if obj != nil && ctx.model.needsVarRef[obj] {
+			return true
+		}
+	}
+	return false
 }
 
 func isShortAssignTargetNew(ctx lowerFileContext, expr ast.Expr) bool {
@@ -1801,7 +1831,7 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			if len(args) != 1 {
 				return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "close requires one argument"))
 			}
-			return args[0] + ".close()", diagnostics
+			return args[0] + "!.close()", diagnostics
 		default:
 			if signature := genericFunctionSignature(ctx, fun); signature != nil {
 				args = append([]string{o.inferredGenericTypeArgsExpr(ctx, signature, expr.Args)}, args...)

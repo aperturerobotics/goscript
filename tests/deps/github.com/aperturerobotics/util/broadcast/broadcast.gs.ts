@@ -130,7 +130,7 @@ export class Broadcast {
 	public broadcastLocked(): void {
 		const c = this
 		if ($.pointerValue(c).ch != null) {
-			$.pointerValue(c).ch.close()
+			$.pointerValue(c).ch!.close()
 			$.pointerValue(c).ch = null
 		}
 	}

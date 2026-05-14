@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let ch = $.makeChannel<number>(0, 0, "both")
-	ch.close()
+	ch!.close()
 	const [__goscriptSelectHasReturn78, __goscriptSelectValue78] = await $.selectStatement<any, void>([
 		{
 			id: 0,

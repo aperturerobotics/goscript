@@ -52,7 +52,7 @@ export async function main(): Promise<void> {
 	}
 	let ch2 = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(ch2, 42)
-	ch2.close()
+	ch2!.close()
 	const [__goscriptSelectHasReturn742, __goscriptSelectValue742] = await $.selectStatement<any, void>([
 		{
 			id: 0,
@@ -203,7 +203,7 @@ export async function main(): Promise<void> {
 		return __goscriptSelectValue2125
 	}
 	let chClose = $.makeChannel<boolean>(0, false, "both")
-	chClose.close()
+	chClose!.close()
 	let __goscriptRecv2382 = await $.chanRecvWithOk(chClose)
 	let val = __goscriptRecv2382.value
 	let ok = __goscriptRecv2382.ok

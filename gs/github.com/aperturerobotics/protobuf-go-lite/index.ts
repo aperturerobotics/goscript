@@ -9,6 +9,8 @@ export function IsEqualVT<T extends EqualVT<T>>(t1: T | null, t2: T | null): boo
   return t1.EqualVT(t2)
 }
 
-export function CompareEqualVT<T extends EqualVT<T>>(): (t1: T | null, t2: T | null) => boolean {
+export function CompareEqualVT<T extends EqualVT<T>>(
+  _typeArgs?: unknown,
+): (t1: T | null, t2: T | null) => boolean {
   return (t1, t2) => IsEqualVT(t1, t2)
 }

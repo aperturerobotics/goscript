@@ -23,7 +23,7 @@ export async function main(): Promise<void> {
 }, { kind: $.TypeKind.Function, params: [], results: [] }))
 	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
 	await wg.value.Wait()
-	done.close()
+	done!.close()
 }, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 	let results = $.arrayToSlice<number>([])
 	let timeout = time.After(5 * time.Second)

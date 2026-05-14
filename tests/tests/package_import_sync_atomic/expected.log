@@ -12,6 +12,7 @@ Bool swapped to false, old value: true new value: false
 Pointer loaded: hello
 Pointer swapped, old: hello
 Pointer new value: world
+Pointer function callback called
 Value loaded: atomic value
 Value swapped, old: atomic value
 Value new: new atomic value

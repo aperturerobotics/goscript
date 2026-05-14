@@ -77,7 +77,7 @@ export class Mutex {
 			return [release, null]
 		}
 		while (true) {
-			const [__goscriptSelectHasReturn4794185, __goscriptSelectValue4794185] = await $.selectStatement<any, [(() => void) | null, $.GoError]>([
+			const [__goscriptSelectHasReturn4798710, __goscriptSelectValue4798710] = await $.selectStatement<any, [(() => void) | null, $.GoError]>([
 				{
 					id: 0,
 					isSend: false,
@@ -95,8 +95,8 @@ export class Mutex {
 					}
 				}
 			], false)
-			if (__goscriptSelectHasReturn4794185) {
-				return __goscriptSelectValue4794185
+			if (__goscriptSelectHasReturn4798710) {
+				return __goscriptSelectValue4798710
 			}
 			await $.pointerValue(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 	if ($.pointerValue(m).locked) {
@@ -200,7 +200,9 @@ export class MutexLocker {
 
 	public async Lock(): Promise<void> {
 		const l = this
-		let [release, err] = await $.pointerValue($.pointerValue(l).m).Lock(context.Background())
+		let __goscriptTuple4800196 = await $.pointerValue($.pointerValue(l).m).Lock(context.Background())
+		let release = $.varRef(__goscriptTuple4800196[0])
+		let err = __goscriptTuple4800196[1]
 		if (err != null) {
 			$.panic(errors.Wrap(err, "csync: failed MutexLocker Lock"))
 		}

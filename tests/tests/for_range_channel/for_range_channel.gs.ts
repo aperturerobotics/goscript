@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.ts"
 export async function main(): Promise<void> {
 	let c = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(c, 0)
-	c.close()
+	c!.close()
 	while (true) {
 		let __goscriptRange73 = await $.chanRecvWithOk(c)
 		if (!__goscriptRange73.ok) {
@@ -17,7 +17,7 @@ export async function main(): Promise<void> {
 	}
 	c = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(c, 1)
-	c.close()
+	c!.close()
 	let y: number = 0
 	while (true) {
 		let __goscriptRange214 = await $.chanRecvWithOk(c)
