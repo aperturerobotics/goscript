@@ -10,7 +10,7 @@ export async function main(): Promise<void> {
 	p1_varRefer
 	p1.value = y
 	$.println($.pointerValue(p1.value))
-	p1.value.value = 20
+	p1.value!.value = 20
 }
 
 

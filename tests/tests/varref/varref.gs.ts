@@ -12,7 +12,7 @@ export async function main(): Promise<void> {
 	$.println("***p3 ==", $.pointerValue($.pointerValue($.pointerValue(p3))))
 	$.println()
 	$.println("setting ***p3 to 12")
-	$.pointerValue($.pointerValue(p3)).value = 12
+	$.pointerValue($.pointerValue(p3))!.value = 12
 	$.println("***p3 ==", $.pointerValue($.pointerValue($.pointerValue(p3))))
 	$.println()
 	$.println("setting y to 15, p1 to &y")

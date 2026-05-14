@@ -1982,7 +1982,7 @@ func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Exp
 
 func (o *LoweringOwner) lowerPointerStorageExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
 	base, diagnostics := o.lowerExpr(ctx, expr)
-	return base + ".value", diagnostics
+	return base + "!.value", diagnostics
 }
 
 func (o *LoweringOwner) lowerIndexExpr(ctx lowerFileContext, expr *ast.IndexExpr) (string, []Diagnostic) {

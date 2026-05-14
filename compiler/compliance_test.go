@@ -239,9 +239,7 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"type_separate_files":                 true,
 	"util_promise":                        true,
 	"variable_shadowing_scope":            true,
-	"varref":                              true,
 	"varref_deref_struct":                 true,
-	"varref_pointers":                     true,
 	"wrapper_slice_append":                true,
 	"wrapper_type_args":                   true,
 }

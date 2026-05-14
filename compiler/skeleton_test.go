@@ -282,6 +282,50 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEmitsNestedPointerStorageAssertions(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/pointers\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func main() {",
+			"  var x int = 10",
+			"  p1 := &x",
+			"  p2 := &p1",
+			"  p3 := &p2",
+			"  ***p3 = 12",
+			"  println(x)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "pointers", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"let x: $.VarRef<number> = $.varRef(10)",
+		"let p1 = $.varRef(x)",
+		"let p2 = $.varRef(p1)",
+		"let p3 = p2",
+		"$.pointerValue($.pointerValue(p3))!.value = 12",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsArraySliceMapStringAndNamedMethods(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/collections\n\ngo 1.25.3\n",
