@@ -7,14 +7,10 @@ export async function main(): Promise<void> {
 	let m = $.makeMap<string, number>()
 	$.mapSet(m, "key1", 10)
 	$.mapSet(m, "key2", 20)
-
-	// This should trigger the compiler error: for loop initialization with value, ok pattern
 	for (let [value, ok] = $.mapGet(m, "key1", 0); ok; ) {
 		$.println("value:", value)
 		break
 	}
-
-	// Another case that might trigger the error
 	for (let [v, exists] = $.mapGet(m, "key2", 0); exists && v > 0; ) {
 		$.println("v:", v)
 		break

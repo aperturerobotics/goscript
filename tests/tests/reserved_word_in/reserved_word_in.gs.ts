@@ -3,15 +3,15 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function double(in: number): number {
-	return in * 2
+export function double(_in: number): number {
+	return _in * 2
 }
 
 export async function main(): Promise<void> {
-	let in: number = 3
-	in = in + 1
-	let result = double(in)
-	$.println(in)
+	let _in: number = 3
+	_in = _in + 1
+	let result = double(_in)
+	$.println(_in)
 	$.println(result)
 }
 

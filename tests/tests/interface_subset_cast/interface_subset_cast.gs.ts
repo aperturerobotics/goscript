@@ -83,13 +83,13 @@ export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({Value1: "hello", Value2: "world"}))
 	let i1: MyInterface1 = $.markAsStructValue(s.clone())
 	let i2: MyInterface2 = i1
-	$.println("i1.MyString1():", i1.MyString1())
-	$.println("i1.MyString2():", i1.MyString2())
-	$.println("i2.MyString1():", i2.MyString1())
+	$.println("i1.MyString1():", i1!.MyString1())
+	$.println("i1.MyString2():", i1!.MyString2())
+	$.println("i2.MyString1():", i2!.MyString1())
 	let [i3, ok] = $.typeAssertTuple<MyInterface2>(i1, "main.MyInterface2")
 	if (ok) {
 		$.println("Type assertion successful")
-		$.println("i3.MyString1():", i3.MyString1())
+		$.println("i3.MyString1():", i3!.MyString1())
 	} else {
 		$.println("Type assertion failed")
 	}

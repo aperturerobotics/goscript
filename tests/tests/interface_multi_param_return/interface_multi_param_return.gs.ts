@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export type MultiParamReturner = null | {
-	Process(data: $.Slice<number>, count: number, _: string): [boolean, error]
+	Process(data: $.Slice<number>, count: number, _: string): [boolean, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -29,7 +29,7 @@ export class MyProcessor {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Process(data: $.Slice<number>, count: number, _: string): void {
+	public Process(data: $.Slice<number>, count: number, _: string): [boolean, $.GoError] {
 		const p = this
 		if (count > 0 && $.len(data) > 0) {
 			$.println("Processing successful")
@@ -50,14 +50,14 @@ export class MyProcessor {
 
 export async function main(): Promise<void> {
 	let processor: MultiParamReturner = $.markAsStructValue($.markAsStructValue(new MyProcessor()).clone())
-	let data = [1, 2, 3]
-	let [success, ] = processor.Process(data, 5, "unused")
+	let data = $.arrayToSlice<number>([1, 2, 3])
+	let [success, ] = processor!.Process(data, 5, "unused")
 	if (success) {
 		$.println("Main: Success reported")
 	} else {
 		$.println("Main: Failure reported")
 	}
-	let __goscriptTuple743 = processor.Process(data, 5, "unused")
+	let __goscriptTuple743 = processor!.Process(data, 5, "unused")
 	success = __goscriptTuple743[0]
 	if (success) {
 		$.println("Main: Success reported")

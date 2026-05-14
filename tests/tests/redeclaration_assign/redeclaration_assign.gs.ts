@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function returnsOneIntOneBool(): void {
+export function returnsOneIntOneBool(): [number, boolean] {
 	return [7, true]
 }
 

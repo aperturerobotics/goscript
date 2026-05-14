@@ -7,12 +7,12 @@ import * as sync from "@goscript/sync/index.ts"
 
 export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
-export async function getFromCache(key: string): Promise<void> {
+export async function getFromCache(key: string): Promise<[any, boolean]> {
 	let [val, ok] = await cache.value.Load(key)
 	return [val, ok]
 }
 
-export async function getFromCacheInline(key: string): Promise<void> {
+export async function getFromCacheInline(key: string): Promise<[any, boolean]> {
 	return await cache.value.Load(key)
 }
 

@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function returnTwoValues(): void {
+export function returnTwoValues(): [number, $.GoError] {
 	return [42, null]
 }
 

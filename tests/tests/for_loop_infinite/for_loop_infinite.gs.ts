@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.ts"
 
 export async function main(): Promise<void> {
 	let i = 0
-	for (; ; ) {
+	while (true) {
 		$.println("Looping forever...")
 		i++
 		if (i >= 3) {

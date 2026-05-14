@@ -18,7 +18,7 @@ $.registerInterfaceType(
 )
 
 export type Filesystem = null | {
-	ReadDir(path: string): [$.Slice<FileInfo>, error]
+	ReadDir(path: string): [$.Slice<FileInfo>, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -113,9 +113,9 @@ export class MockFilesystem {
 		return $.markAsStructValue(cloned)
 	}
 
-	public ReadDir(path: string): void {
+	public ReadDir(path: string): [$.Slice<FileInfo>, $.GoError] {
 		const m = this
-		return [[new MockFileInfo({name: "file1.txt", size: 100, isDir: false}), new MockFileInfo({name: "subdir", size: 0, isDir: true})], null]
+		return [$.arrayToSlice<FileInfo>([$.interfaceValue<FileInfo>(new MockFileInfo({name: "file1.txt", size: 100, isDir: false}), "*main.MockFileInfo"), $.interfaceValue<FileInfo>(new MockFileInfo({name: "subdir", size: 0, isDir: true}), "*main.MockFileInfo")]), null]
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -127,22 +127,22 @@ export class MockFilesystem {
 	)
 }
 
-export type WalkFunc = (path: string, info: FileInfo, err: error) => error
+export type WalkFunc = (path: string, info: FileInfo, err: $.GoError) => $.GoError
 
-export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): error {
-	return walkWithCustomFunc(fs, path, info, (p: string, i: FileInfo, e: error): error => {
+export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): $.GoError {
+	return walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo, e: $.GoError): $.GoError => {
 	return null
-})
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] }))
 }
 
-export function walkWithCustomFunc(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): error {
+export function walkWithCustomFunc(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): $.GoError {
 	{
 		let err = walkFn(path, info, null)
 		if (err != null && err != filepath.SkipDir) {
 			return err
 		}
 	}
-	let walkErr: error = null
+	let walkErr: $.GoError = null
 	{
 		let err = walkFn(path, info, walkErr)
 		if (err != null && err != filepath.SkipDir) {
@@ -155,11 +155,11 @@ export function walkWithCustomFunc(fs: Filesystem, path: string, info: FileInfo,
 	return null
 }
 
-export function processFiles(pattern: string, fn: (_p0: string) => error): error {
+export function processFiles(pattern: string, fn: (_p0: string) => $.GoError): $.GoError {
 	return fn(pattern)
 }
 
-export function multiCallback(walkFn: WalkFunc, processFn: (_p0: string) => error): error {
+export function multiCallback(walkFn: WalkFunc, processFn: (_p0: string) => $.GoError): $.GoError {
 	{
 		let err = walkFn("test", null, null)
 		if (err != null) {
@@ -172,30 +172,30 @@ export function multiCallback(walkFn: WalkFunc, processFn: (_p0: string) => erro
 export async function main(): Promise<void> {
 	let fs = new MockFilesystem()
 	let fileInfo = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
-	let walkFunc = (path: string, info: FileInfo, err: error): error => {
+	let walkFunc = $.functionValue((path: string, info: FileInfo, err: $.GoError): $.GoError => {
 	if (info != null) {
-		$.println("Walking:", path, "size:", info.Size())
+		$.println("Walking:", path, "size:", info!.Size())
 	}
 	if (err != null) {
-		$.println("Error:", err.Error())
+		$.println("Error:", err!.Error())
 	}
 	return null
-}
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
 	let err = walkWithCustomFunc(fs, "/test", fileInfo, walkFunc)
 	if (err != null) {
-		$.println("Walk error:", err.Error())
+		$.println("Walk error:", err!.Error())
 	}
-	let processFunc = (pattern: string): error => {
+	let processFunc = $.functionValue((pattern: string): $.GoError => {
 	$.println("Processing pattern:", pattern)
 	return null
-}
+}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: ["error"] })
 	let err2 = processFiles("*.go", processFunc)
 	if (err2 != null) {
-		$.println("Process error:", err2.Error())
+		$.println("Process error:", err2!.Error())
 	}
 	let err3 = multiCallback(walkFunc, processFunc)
 	if (err3 != null) {
-		$.println("Multi callback error:", err3.Error())
+		$.println("Multi callback error:", err3!.Error())
 	}
 }
 

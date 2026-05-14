@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.ts"
 
 export type Reader = null | {
-	Read(_p0: $.Slice<number>): [number, error]
+	Read(_p0: $.Slice<number>): [number, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -14,7 +14,7 @@ $.registerInterfaceType(
 )
 
 export type Closer = null | {
-	Close(): error
+	Close(): $.GoError
 }
 
 $.registerInterfaceType(
@@ -24,8 +24,8 @@ $.registerInterfaceType(
 )
 
 export type ReadCloser = null | {
-	Close(): error
-	Read(_p0: $.Slice<number>): [number, error]
+	Close(): $.GoError
+	Read(_p0: $.Slice<number>): [number, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -50,12 +50,12 @@ export class MyStruct {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Close(): error {
+	public Close(): $.GoError {
 		const m = this
 		return null
 	}
 
-	public Read(p: $.Slice<number>): void {
+	public Read(p: $.Slice<number>): [number, $.GoError] {
 		const m = this
 		return [0, null]
 	}

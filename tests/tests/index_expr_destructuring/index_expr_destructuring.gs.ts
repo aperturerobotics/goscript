@@ -3,11 +3,11 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-export function returnTwoInts(): void {
+export function returnTwoInts(): [number, number] {
 	return [42, 24]
 }
 
-export function returnIntAndString(): void {
+export function returnIntAndString(): [number, string] {
 	return [42, "hello"]
 }
 
@@ -16,9 +16,9 @@ export async function main(): Promise<void> {
 	let stringSlice: $.Slice<string> = $.makeSlice<string>(2, undefined, "string")
 	let __goscriptTuple377 = returnIntAndString()
 	intArray[0] = __goscriptTuple377[0]
-	stringSlice[1] = __goscriptTuple377[1]
+	stringSlice![1] = __goscriptTuple377[1]
 	$.println("intArray[0]:", intArray[0])
-	$.println("stringSlice[1]:", stringSlice[1])
+	$.println("stringSlice[1]:", stringSlice![1])
 	let matrix: number[][] = Array.from({ length: 2 }, () => Array.from({ length: 2 }, () => 0))
 	let i: number = 0
 	let j: number = 1

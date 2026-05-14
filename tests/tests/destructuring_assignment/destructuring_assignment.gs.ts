@@ -5,11 +5,11 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as fmt from "@goscript/fmt/index.ts"
 
-export function multiReturn(): void {
+export function multiReturn(): [number, number] {
 	return [10, 20]
 }
 
-export function multiReturnThree(): void {
+export function multiReturnThree(): [string, number, number] {
 	return ["test", 100, 200]
 }
 

@@ -8,14 +8,10 @@ export function getValues(): [number, boolean] {
 }
 
 export async function main(): Promise<void> {
-	// This should trigger the error: multi-assignment in for loop init
-	// where lhs has 2 variables but rhs has 1 expression that returns 2 values
-	// but is not a map access
 	for (let [value, ok] = getValues(); ok; ) {
 		$.println("value:", value)
 		break
 	}
-
 	$.println("done")
 }
 

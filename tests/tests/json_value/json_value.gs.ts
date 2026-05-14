@@ -28,12 +28,12 @@ export class Person {
 	}
 
 	public _fields: {
-		Name: $.VarRef<string>;
-		Age: $.VarRef<number>;
-		Active: $.VarRef<boolean>;
+		Name: $.VarRef<string>
+		Age: $.VarRef<number>
+		Active: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{Active?: boolean, Age?: number, Name?: string}>) {
+	constructor(init?: Partial<{Name?: string, Age?: number, Active?: boolean}>) {
 		this._fields = {
 			Name: $.varRef(init?.Name ?? ""),
 			Age: $.varRef(init?.Age ?? 0),
@@ -48,51 +48,49 @@ export class Person {
 			Age: $.varRef(this._fields.Age.value),
 			Active: $.varRef(this._fields.Active.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Person',
-	  new Person(),
-	  [],
-	  Person,
-	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
-	);
+		"main.Person",
+		new Person(),
+		[],
+		Person,
+		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }, "Active": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let p = $.markAsStructValue(new Person({Active: true, Age: 30, Name: "Alice"}))
+	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
 	let v = $.markAsStructValue(reflect.ValueOf(p).clone())
-	let t = v.Type()
-
+	let t = $.markAsStructValue(v.clone()).Type()
 	$.println("Type:", t!.Name())
 	$.println("Kind:", reflect.Kind_String(t!.Kind()))
 	$.println("NumField:", t!.NumField())
-
 	for (let i = 0; i < t!.NumField(); i++) {
 		let sf = $.markAsStructValue(t!.Field(i).clone())
-		let fv = $.markAsStructValue(v.Field(i).clone())
-
+		let fv = $.markAsStructValue($.markAsStructValue(v.clone()).Field(i).clone())
 		$.println("Field", i, ":", sf.Name)
-		$.println("  FieldValue Kind:", reflect.Kind_String(fv.Kind()))
-		$.println("  FieldValue CanInterface:", fv.CanInterface())
-
-		switch (fv.Kind()) {
-			case reflect.String: {
-				$.println("  Value:", fv.String())
+		$.println("  FieldValue Kind:", reflect.Kind_String($.markAsStructValue(fv.clone()).Kind()))
+		$.println("  FieldValue CanInterface:", $.markAsStructValue(fv.clone()).CanInterface())
+		switch ($.markAsStructValue(fv.clone()).Kind()) {
+			case reflect.String:
+			{
+				$.println("  Value:", $.markAsStructValue(fv.clone()).String())
 				break
 			}
 			case reflect.Int:
 			case reflect.Int8:
 			case reflect.Int16:
 			case reflect.Int32:
-			case reflect.Int64: {
-				$.println("  Value:", fv.Int())
+			case reflect.Int64:
+			{
+				$.println("  Value:", $.markAsStructValue(fv.clone()).Int())
 				break
 			}
-			case reflect.Bool: {
-				$.println("  Value:", fv.Bool())
+			case reflect.Bool:
+			{
+				$.println("  Value:", $.markAsStructValue(fv.clone()).Bool())
 				break
 			}
 		}

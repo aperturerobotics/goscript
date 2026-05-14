@@ -48,7 +48,7 @@ export class Point {
 	)
 }
 
-export function getCoords(): void {
+export function getCoords(): [number, number] {
 	return [10, 20]
 }
 
