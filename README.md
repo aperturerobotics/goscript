@@ -1,106 +1,116 @@
-# GoScript
+<div align="center">
+  <h1>GoScript</h1>
 
-[![GoDoc Widget]][GoDoc] [![Go Report Card Widget]][Go Report Card] [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/aperturerobotics/goscript)
+  <h3>Readable TypeScript output for Go packages</h3>
 
-[GoDoc]: https://godoc.org/github.com/aperturerobotics/goscript
-[GoDoc Widget]: https://godoc.org/github.com/aperturerobotics/goscript?status.svg
-[Go Report Card Widget]: https://goreportcard.com/badge/github.com/aperturerobotics/goscript
-[Go Report Card]: https://goreportcard.com/report/github.com/aperturerobotics/goscript
+  <p>
+    Compile Go packages into TypeScript modules for shared application logic.<br/>
+    Built for Bun, modern bundlers, browser demos, and package-level workflows.<br/>
+  </p>
 
-## What is GoScript?
+  <p>
+    <a href="https://godoc.org/github.com/aperturerobotics/goscript">
+      <img src="https://godoc.org/github.com/aperturerobotics/goscript?status.svg" alt="GoDoc" />
+    </a>
+    <a href="https://goreportcard.com/report/github.com/aperturerobotics/goscript">
+      <img src="https://goreportcard.com/badge/github.com/aperturerobotics/goscript" alt="Go Report Card" />
+    </a>
+    <a href="https://deepwiki.com/aperturerobotics/goscript">
+      <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" />
+    </a>
+  </p>
+</div>
 
-GoScript is an experimental **Go to TypeScript compiler** that translates Go code to TypeScript at the AST level. The goal is to enable sharing algorithms and business logic between Go backends and TypeScript frontends.
+## Overview
 
-> Right now goscript looks pretty cool if you problem is "I want this self-sufficient algorithm be available in Go and JS runtimes". gopherjs's ambition, however, has always been "any valid Go program can run in a browser". There is a lot that goes on in gopherjs that is necessary for supporting the standard library, which goes beyond cross-language translation.
->
-> &mdash; [nevkontakte](https://gophers.slack.com/archives/C039C0R2T/p1745870396945719), developer of [GopherJS](https://github.com/gopherjs/gopherjs)
+**GoScript** is an experimental Go-to-TypeScript compiler.
 
-### 🎯 Why GoScript?
+The main workflow compiles Go packages from inside a Go module and writes
+deterministic TypeScript packages under `@goscript/<go-package>/`. The v2
+compiler pipeline is organized around explicit owners for request validation,
+package loading, semantic modeling, lowering, TypeScript emission, runtime
+helpers, and handwritten override packages.
 
-Write once, run everywhere. Share your Go algorithms, business logic, and data structures seamlessly between your backend and frontend without maintaining two codebases.
+Use GoScript when you want to share Go algorithms, data structures, validation
+logic, or selected runtime code with TypeScript and browser environments without
+maintaining a second implementation by hand.
 
-**Use cases:**
+GoScript is not trying to be a drop-in browser runtime for every valid Go
+program. The project prioritizes clear generated TypeScript and owner-level
+semantic support over backwards compatibility with older compiler internals.
 
-- Sharing business logic between Go services and web apps
-- Porting Go algorithms to run in browsers
-- Building TypeScript libraries from existing Go code
+Useful docs:
 
-Go has powerful concurrency support and an excellent standard library. GoScript brings these capabilities to TypeScript with as simple and readable of a translation as possible.
+- [Architecture explainer](./docs/explainer.md)
+- [Compiler design](./design/DESIGN.md)
+- [Compliance tests](./tests/README.md)
+- [Runtime packages](./gs/README.md)
 
-**✅ What works:**
+## Current Surface
 
-- Structs, interfaces, methods, and functions with full value semantics
-- Channels and goroutines (translated to async/await with function coloring)
-- Pointers and addressability (via VarRef system)
-- Slices, maps, and built-in types
-- Control flow (if, for, switch, select, range, defer, etc.)
-- Type assertions and interface implementations
-- Closures and anonymous functions
-- Generics
-- Reflection
-- Encoding: encoding/json
-- Most of the standard library
+The package compiler supports:
 
-**🚧 In progress:**
+- Go package loading through `go/packages` with `GOOS=js` and `GOARCH=wasm`
+- Structs, methods, interfaces, type assertions, typed nils, and value copying
+- Pointers and address-taken variables through the `VarRef` runtime model
+- Arrays, slices, maps, strings, named types, and selected builtins
+- Generics through generated type-argument dictionaries for supported shapes
+- Goroutines, channels, `select`, `defer`, async calls, and async interfaces
+- Package initialization, cross-file imports, package indexes, and dependency output
+- Handwritten `gs/` runtime and standard-library override packages
+- Browser/WASM compilation for import-free single-file demos
 
-- Reflection edge cases
-- Full standard library coverage
-- Various other edge cases (see GitHub issues)
+Known limits:
 
-**Important Notes**
+- CLI, Go API, and Node API inputs are package patterns, not direct `main.go` files.
+- Browser source compilation is import-free only. Imported code should use the package workflow.
+- `unsafe`, pointer arithmetic, complex numbers, and arbitrary Go runtime behavior are not supported.
+- JavaScript `number` is used for numeric output, so it does not preserve every Go integer edge case.
+- Standard-library coverage is practical and override-driven, not complete.
 
-- Uses JavaScript `number` type (64-bit float, not Go's int types)
-- No pointer arithmetic (`uintptr`) or `unsafe` package
-- No complex numbers
+## Getting Started
 
-📖 **Learn more:** [Design document](./design/DESIGN.md) | [Architecture explainer](./docs/explainer.md) | [Compliance tests](./tests/README.md)
-
-🐛 **Found an issue?** Please [open an issue](https://github.com/aperturerobotics/goscript/issues).
-
-## 🚀 Try It
-
-### Prerequisites
-
-GoScript requires [Bun](https://bun.sh) to be installed for running compliance tests:
+Install Bun for TypeScript tests, examples, and website builds:
 
 ```bash
-# Install Bun
 curl -fsSL https://bun.sh/install | bash
 ```
 
-### Installation
-
-**Option 1: Go Install**
+Install the CLI:
 
 ```bash
 go install github.com/aperturerobotics/goscript/cmd/goscript@latest
 ```
 
-**Option 2: NPM** (if available)
+Compile a Go package from a module directory:
 
 ```bash
-npm install -g goscript
+goscript compile --package . --output ./output
 ```
 
-### Compilation
+The output tree looks like this:
 
-```bash
-# Try compiling your Go package to TypeScript
-goscript compile --package . --output ./dist
+```text
+output/
+└── @goscript/
+    ├── builtin/
+    └── example.com/my/module/
+        ├── index.ts
+        └── main.gs.ts
 ```
 
-GoScript v2 compiles Go packages from inside a Go module. Direct single-file
-inputs such as `main.go` and browser/WASM source-string compilation are not
-supported yet; those paths return structured diagnostics before output is
-written.
+For a generated `package main`, GoScript emits a main-script guard so the module
+can run directly in Bun or a bundler that resolves `@goscript/*` imports. See
+[example/simple](./example/simple) for the smallest compile-and-run workflow.
 
-## 📦 Using Generated Code in Your Project
+## TypeScript Projects
 
-After compiling your Go code to TypeScript, you'll need to set up your project appropriately.
+Generated package indexes re-export generated files such as `./main.gs.ts`, and
+some package-local imports also use explicit `.ts` specifiers. Your TypeScript
+project needs to allow those imports and map `@goscript/*` to the generated
+output root.
 
-### TypeScript Configuration
-
-Create or update your `tsconfig.json` with these settings:
+Use this shape as the starting point:
 
 ```json
 {
@@ -108,11 +118,13 @@ Create or update your `tsconfig.json` with these settings:
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022", "esnext.disposable", "dom"],
-    "baseUrl": "./",
+    "lib": ["ES2022", "esnext.disposable", "DOM"],
+    "baseUrl": ".",
     "paths": {
-      "@goscript/*": ["./path/to/generated/output/@goscript/*"]
+      "@goscript/*": ["./output/@goscript/*"]
     },
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -121,237 +133,179 @@ Create or update your `tsconfig.json` with these settings:
 }
 ```
 
-**Important requirements:**
+The important settings are:
 
-- **`target: "ES2022"` or newer** - Required for `Disposable` and other features
-- **`lib: ["esnext.disposable"]`** - Enables TypeScript's disposable types for resource management
-- **`baseUrl` and `paths`** - Allows TypeScript to resolve `@goscript/*` imports
-- **`moduleResolution: "bundler"`** - Recommended for modern bundlers
+- `moduleResolution: "bundler"` so `@goscript/*` package imports resolve like a modern app build.
+- `allowImportingTsExtensions: true` because generated indexes and same-package imports can reference `.ts` files directly.
+- `rewriteRelativeImportExtensions: true` if TypeScript is emitting JavaScript instead of only typechecking.
+- `paths` pointing at the generated `@goscript/` tree.
 
-You should be able to use any TypeScript bundler to compile the generated TypeScript.
+If your bundler owns JavaScript emission and TypeScript only typechecks, adding
+`"noEmit": true` is also a good fit.
 
-For a generated `package main`, GoScript emits a main-script guard so the
-generated module can be executed directly by a TypeScript runtime or bundler
-that resolves `@goscript/*` imports. The `example/simple` package shows the
-supported compile-and-run workflow.
-
-## 🛠️ Integration & Usage
-
-### Command Line
+## Command Line
 
 ```bash
-goscript compile --package ./my-go-code --output ./dist
+goscript compile \
+  --package ./my-go-package \
+  --output ./output
 ```
 
-**Options:**
+Common options:
 
-- `--package <path>` - Go package pattern to compile
-- `--output <dir>` - Output directory for TypeScript files
-- `--dir <dir>` - Working directory for module/package loading
-- `--build-flags <flag>` - Go package loader build flag, repeatable
+- `--package <pattern>`: Go package pattern to compile. Repeat for multiple packages.
+- `--output <dir>`: output directory for the generated TypeScript tree.
+- `--dir <dir>`: working directory for module/package loading.
+- `--build-flags <flag>`: Go build flag, repeatable.
+- `--all-dependencies`: compile dependency packages instead of only requested packages.
+- `--disable-emit-builtin`: skip copying handwritten `gs/` runtime packages.
 
-### Programmatic API
+## APIs
 
-**Go:**
-
-```go
-import "github.com/aperturerobotics/goscript/compiler"
-
-conf := &compiler.Config{OutputPath: "./dist"}
-comp, err := compiler.NewCompiler(conf, logger, nil)
-_, err = comp.CompilePackages(ctx, "your/package/path")
-```
-
-**Node.js:**
-
-```typescript
-import { compile } from 'goscript'
-
-await compile({
-  pkg: './my-go-package',
-  output: './dist',
-})
-```
-
-### Frontend Frameworks
-
-**React + GoScript:**
-
-```typescript
-import { NewCalculator } from '@goscript/myapp/calculator'
-
-function CalculatorApp() {
-  const [calc] = useState(() => NewCalculator())
-
-  const handleAdd = () => {
-    const result = calc.Add(5, 3)
-    setResult(result)
-  }
-
-  return <button onClick={handleAdd}>Add 5 + 3</button>
-}
-```
-
-**Vue + GoScript:**
-
-```vue
-<script setup lang="ts">
-import { NewUser, FindUserByEmail } from '@goscript/myapp/user'
-
-const users = ref([NewUser(1, 'Alice', 'alice@example.com')])
-
-const searchUser = (email: string) => {
-  return FindUserByEmail(users.value, email)
-}
-</script>
-```
-
-## 💡 See It In Action
-
-See the [example/app](./example/app) for a full todo list application using GoScript with tRPC, Drizzle ORM, and React, or [example/simple](./example/simple) for a comprehensive demo of language features.
-
-### Example: User Management
-
-**Go Code** (`user.go`):
+Go API:
 
 ```go
 package main
 
-type User struct {
-    ID    int    `json:"id"`
-    Name  string `json:"name"`
-    Email string `json:"email"`
-}
+import (
+	"context"
 
-func (u *User) IsValid() bool {
-    return u.Name != "" && u.Email != ""
-}
+	"github.com/aperturerobotics/goscript/compiler"
+)
 
-func NewUser(id int, name, email string) *User {
-    return &User{ID: id, Name: name, Email: email}
-}
-
-func FindUserByEmail(users []*User, email string) *User {
-    for _, user := range users {
-        if user.Email == email {
-            return user
-        }
-    }
-    return nil
+func main() {
+	comp, err := compiler.NewCompiler(&compiler.Config{
+		Dir:        ".",
+		OutputPath: "./output",
+	}, nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		panic(err)
+	}
 }
 ```
 
-**Compile it:**
+Node/Bun API:
 
-```bash
-goscript compile --package . --output ./dist
+```ts
+import { compile } from 'goscript'
+
+await compile({
+  pkg: '.',
+  output: './output',
+  dir: process.cwd(),
+})
 ```
 
-**Generated TypeScript** (`user.gs.ts`):
-
-```typescript
-export class User {
-  public ID: number = 0
-  public Name: string = ''
-  public Email: string = ''
-
-  public IsValid(): boolean {
-    const u = this
-    return u.Name !== '' && u.Email !== ''
-  }
-
-  constructor(init?: Partial<User>) {
-    if (init) Object.assign(this, init)
-  }
-}
-
-export function NewUser(id: number, name: string, email: string): User {
-  return new User({ ID: id, Name: name, Email: email })
-}
-
-export function FindUserByEmail(users: User[], email: string): User | null {
-  for (let user of users) {
-    if (user.Email === email) {
-      return user
-    }
-  }
-  return null
-}
-```
-
-**Use in your frontend:**
-
-```typescript
-import { NewUser, FindUserByEmail } from '@goscript/myapp/user'
-
-// Same logic, now in TypeScript!
-const users = [
-  NewUser(1, 'Alice', 'alice@example.com'),
-  NewUser(2, 'Bob', 'bob@example.com'),
-]
-
-const alice = FindUserByEmail(users, 'alice@example.com')
-console.log(alice?.IsValid()) // true
-```
-
-### Example: Async Processing with Channels
-
-**Go Code:**
+WASM adapter package:
 
 ```go
-func ProcessMessages(messages []string) chan string {
-    results := make(chan string, len(messages))
+package main
 
-    for _, msg := range messages {
-        go func(m string) {
-            // Simulate processing
-            processed := "✓ " + m
-            results <- processed
-        }(msg)
-    }
+import "github.com/aperturerobotics/goscript/compiler/wasm"
 
-    return results
+func main() {
+	ts, err := wasm.CompileSource(`
+package main
+
+func main() {
+	println("hello from GoScript")
+}
+`, "main")
+	if err != nil {
+		panic(err)
+	}
+	_ = ts
 }
 ```
 
-**Generated TypeScript:**
+The website compiles this package into the browser build. Browser source
+compilation accepts import-free single-file demos. Package imports return a
+structured diagnostic; compile imported code with the package workflow.
 
-```typescript
-export function ProcessMessages(messages: string[]): $.Channel<string> {
-  let results = $.makeChannel<string>(messages.length, '')
+## Architecture
 
-  for (let msg of messages) {
-    queueMicrotask(async (m: string) => {
-      let processed = '✓ ' + m
-      await results.send(processed)
-    })(msg)
-  }
+GoScript v2 uses a linear compiler pipeline:
 
-  return results
-}
+```text
+public adapter
+  -> compile request
+  -> package graph
+  -> semantic model
+  -> lowered program
+  -> TypeScript emitter
+  -> runtime/override package copy
 ```
 
-**Use with async/await:**
+Each step owns one durable rule boundary:
 
-```typescript
-import { ProcessMessages } from '@goscript/myapp/processor'
+- `CompileRequestOwner` validates adapter input, module roots, output paths, and build flags.
+- `PackageGraphOwner` loads Go packages and records dependency edges.
+- `SemanticModelOwner` computes type, value, import, addressability, interface, and async facts.
+- `LoweringOwner` turns Go syntax plus semantic facts into compiler-owned IR.
+- `TypeScriptEmitOwner` renders deterministic, semicolon-free TypeScript from IR only.
+- `RuntimeContractOwner` owns generated helper names and `@goscript/builtin` import policy.
+- `OverrideRegistryOwner` discovers and copies handwritten runtime and standard-library packages.
 
-async function handleMessages() {
-  const channel = ProcessMessages(['hello', 'world', 'goscript'])
+This keeps semantic decisions out of the text emitter and makes generated output
+changes easier to trace back to the owner that made the decision.
 
-  // Receive processed messages
-  for (let i = 0; i < 3; i++) {
-    const result = await channel.receive()
-    console.log(result) // "✓ hello", "✓ world", "✓ goscript"
-  }
-}
+## Running from Source
+
+Install dependencies:
+
+```bash
+bun install
 ```
 
-## 🤝 How You Can Help
+Run the core checks:
 
-- Try GoScript on your code and [report issues](https://github.com/aperturerobotics/goscript/issues)
-- Check the [compliance tests](./tests/README.md) for current progress
-- Contribute test cases for edge cases you discover
+```bash
+bun run test
+bun run lint
+bun run build
+```
+
+Run the simple package example:
+
+```bash
+bun run example
+```
+
+Build the static website and browser demo assets:
+
+```bash
+bun run website:build
+```
+
+The website playground can compile and run import-free single-file demos in the
+browser. Compliance examples and imported-package examples are precompiled by the
+website build.
+
+## Examples
+
+- [example/simple](./example/simple): smallest package compile-and-run workflow.
+- [example/app](./example/app): full-stack application example using generated TypeScript.
+- [tests/tests](./tests/tests): inherited compliance fixtures and generated output snapshots.
+
+## Contributing
+
+GoScript is experimental. Small compatibility shims are usually the wrong fix;
+prefer adding focused compiler or compliance tests that name the missing semantic
+owner, then implement the owner-level behavior.
+
+Use the repo scripts rather than direct package-manager commands:
+
+```bash
+bun run test
+bun run lint
+bun run build
+```
+
+Please open issues for unsupported Go shapes, runtime gaps, and standard-library
+override gaps.
 
 ## License
 

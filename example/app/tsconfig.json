@@ -8,6 +8,7 @@
       "@goscript/*": ["output/@goscript/*", "../../gs/*"]
     },
     "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
     "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
