@@ -56,7 +56,7 @@ export class Person {
 		new Person(),
 		[],
 		Person,
-		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }, "Active": { kind: $.TypeKind.Basic, name: "bool" }}
+		{"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
 	)
 }
 

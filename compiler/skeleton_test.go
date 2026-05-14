@@ -231,7 +231,7 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"go.mod": "module example.test/structs\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
 			"package main",
-			"type Counter struct { Value int }",
+			"type Counter struct { Value int `json:\"value\"` }",
 			"func (c Counter) Read() int {",
 			"  return c.Value",
 			"}",
@@ -275,6 +275,7 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"let pointer = original",
 		"$.pointerValue(pointer).Set(2)",
 		"let [, ok] = $.typeAssertTuple<Counter | $.VarRef<Counter> | null>(iface, { kind: $.TypeKind.Pointer, elemType: \"main.Counter\" })",
+		"\"Value\": { type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\" }",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

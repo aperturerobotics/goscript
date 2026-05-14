@@ -7,6 +7,8 @@ import * as json from "@goscript/encoding/json/index.ts"
 
 import * as slices from "@goscript/slices/index.ts"
 
+import * as strconv from "@goscript/strconv/index.ts"
+
 export class Person {
 	public get Name(): string {
 		return this._fields.Name.value
@@ -30,12 +32,12 @@ export class Person {
 	}
 
 	public _fields: {
-		Name: $.VarRef<string>;
-		Age: $.VarRef<number>;
-		Active: $.VarRef<boolean>;
+		Name: $.VarRef<string>
+		Age: $.VarRef<number>
+		Active: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{Active?: boolean, Age?: number, Name?: string}>) {
+	constructor(init?: Partial<{Name?: string, Age?: number, Active?: boolean}>) {
 		this._fields = {
 			Name: $.varRef(init?.Name ?? ""),
 			Age: $.varRef(init?.Age ?? 0),
@@ -50,101 +52,54 @@ export class Person {
 			Age: $.varRef(this._fields.Age.value),
 			Active: $.varRef(this._fields.Active.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Person',
-	  new Person(),
-	  [],
-	  Person,
-	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
-	);
+		"main.Person",
+		new Person(),
+		[],
+		Person,
+		{"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let results: $.Slice<string> = null
-
-	// Marshal a simple struct
-	let p = $.markAsStructValue(new Person({Active: true, Age: 30, Name: "Alice"}))
-	let [b, err] = await json.Marshal(p)
+	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
+	let [b, err] = json.Marshal(p)
 	if (err != null) {
 		results = $.append(results, "Marshal error: " + err!.Error())
 	} else {
 		results = $.append(results, "Marshal: " + $.bytesToString(b))
 	}
-
-	// Unmarshal into a struct
-	let q: $.VarRef<Person> = $.varRef(new Person())
+	let q: $.VarRef<Person> = $.varRef($.markAsStructValue(new Person()))
 	{
-		let err = await json.Unmarshal($.stringToBytes(`{"name":"Bob","age":25,"active":false}`), q)
+		let err = json.Unmarshal($.stringToBytes(`{"name":"Bob","age":25,"active":false}`), q)
 		if (err != null) {
 			results = $.append(results, "Unmarshal struct error: " + err!.Error())
 		} else {
-			results = $.append(results, "Unmarshal struct: Name=" + q!.value.Name + ", Age=" + itoa(q!.value.Age) + ", Active=" + boolstr(q!.value.Active))
+			results = $.append(results, "Unmarshal struct: Name=" + q.value.Name + ", Age=" + strconv.Itoa(q.value.Age) + ", Active=" + strconv.FormatBool(q.value.Active))
 		}
 	}
-
-	// Unmarshal into a map[string]any
-	let m: $.VarRef<Map<string, null | any> | null> = $.varRef(null)
+	let m: $.VarRef<Map<string, any> | null> = $.varRef(null)
 	{
-		let err = await json.Unmarshal($.stringToBytes(`{"name":"Carol","age":22,"active":true}`), m)
+		let err = json.Unmarshal($.stringToBytes(`{"name":"Carol","age":22,"active":true}`), m)
 		if (err != null) {
 			results = $.append(results, "Unmarshal map error: " + err!.Error())
 		} else {
-			let name = $.mustTypeAssert<string>($.mapGet(m!.value, "name", null)[0], {kind: $.TypeKind.Basic, name: 'string'})
-			let age = $.int($.mustTypeAssert<number>($.mapGet(m!.value, "age", null)[0], {kind: $.TypeKind.Basic, name: 'number'}))
-			let active = $.mustTypeAssert<boolean>($.mapGet(m!.value, "active", null)[0], {kind: $.TypeKind.Basic, name: 'boolean'})
-			results = $.append(results, "Unmarshal map: name=" + name + ", age=" + itoa(age) + ", active=" + boolstr(active))
+			let name = $.mustTypeAssert<string>($.mapGet(m.value, "name", null)[0], { kind: $.TypeKind.Basic, name: "string" })
+			let age = $.int($.mustTypeAssert<number>($.mapGet(m.value, "age", null)[0], { kind: $.TypeKind.Basic, name: "int" }))
+			let active = $.mustTypeAssert<boolean>($.mapGet(m.value, "active", null)[0], { kind: $.TypeKind.Basic, name: "bool" })
+			results = $.append(results, "Unmarshal map: name=" + name + ", age=" + strconv.Itoa(age) + ", active=" + strconv.FormatBool(active))
 		}
 	}
-
-	// Sort results for deterministic output
 	slices.Sort(results)
-
-	for (let _i = 0; _i < $.len(results); _i++) {
-		let r = results![_i]
-		{
-			$.println("JSON result:", r)
-		}
+	for (let __rangeIndex = 0; __rangeIndex < $.len(results); __rangeIndex++) {
+		let r = results![__rangeIndex]
+		$.println("JSON result:", r)
 	}
-
 	$.println("encoding/json test finished")
-}
-
-// minimal helpers to avoid imports
-export function itoa(i: number): string {
-	// simple positive int conversion sufficient for this test
-	if (i == 0) {
-		return "0"
-	}
-	let neg = false
-	if (i < 0) {
-		neg = true
-		i = -i
-	}
-	let buf = $.makeSlice<number>(0, 20, 'byte')
-	for (; i > 0; ) {
-		let d = $.byte(i % 10)
-		buf = $.append(buf, 48 + d)
-		i = Math.trunc(i / 10)
-	}
-	// reverse
-	for (let l = 0, r = $.len(buf) - 1; l < r; [l, r] = [l + 1, r - 1]) {
-		;[buf![l], buf![r]] = [buf![r], buf![l]]
-	}
-	if (neg) {
-		return "-" + $.bytesToString(buf)
-	}
-	return $.bytesToString(buf)
-}
-
-export function boolstr(b: boolean): string {
-	if (b) {
-		return "true"
-	}
-	return "false"
 }
 
 

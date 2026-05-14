@@ -14,7 +14,7 @@ export class Simple {
 	}
 
 	public _fields: {
-		X: $.VarRef<number>;
+		X: $.VarRef<number>
 	}
 
 	constructor(init?: Partial<{X?: number}>) {
@@ -28,22 +28,21 @@ export class Simple {
 		cloned._fields = {
 			X: $.varRef(this._fields.X.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Simple',
-	  new Simple(),
-	  [],
-	  Simple,
-	  {"X": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"x\"" }}
-	);
+		"main.Simple",
+		new Simple(),
+		[],
+		Simple,
+		{"X": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"x\"" }}
+	)
 }
 
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new Simple({X: 42}))
-	let [b, err] = await json.Marshal(s)
+	let [b, err] = json.Marshal(s)
 	if (err != null) {
 		$.println("Error:", err!.Error())
 	} else {

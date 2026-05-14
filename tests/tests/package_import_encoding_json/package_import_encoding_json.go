@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"slices"
+	"strconv"
 )
 
 type Person struct {
@@ -28,7 +29,7 @@ func main() {
 	if err := json.Unmarshal([]byte(`{"name":"Bob","age":25,"active":false}`), &q); err != nil {
 		results = append(results, "Unmarshal struct error: "+err.Error())
 	} else {
-		results = append(results, "Unmarshal struct: Name="+q.Name+", Age="+itoa(q.Age)+", Active="+boolstr(q.Active))
+		results = append(results, "Unmarshal struct: Name="+q.Name+", Age="+strconv.Itoa(q.Age)+", Active="+strconv.FormatBool(q.Active))
 	}
 
 	// Unmarshal into a map[string]any
@@ -39,7 +40,7 @@ func main() {
 		name := m["name"].(string)
 		age := int(m["age"].(float64))
 		active := m["active"].(bool)
-		results = append(results, "Unmarshal map: name="+name+", age="+itoa(age)+", active="+boolstr(active))
+		results = append(results, "Unmarshal map: name="+name+", age="+strconv.Itoa(age)+", active="+strconv.FormatBool(active))
 	}
 
 	// Sort results for deterministic output
@@ -50,38 +51,4 @@ func main() {
 	}
 
 	println("encoding/json test finished")
-}
-
-// minimal helpers to avoid imports
-func itoa(i int) string {
-	// simple positive int conversion sufficient for this test
-	if i == 0 {
-		return "0"
-	}
-	neg := false
-	if i < 0 {
-		neg = true
-		i = -i
-	}
-	buf := make([]byte, 0, 20)
-	for i > 0 {
-		d := byte(i % 10)
-		buf = append(buf, '0'+d)
-		i /= 10
-	}
-	// reverse
-	for l, r := 0, len(buf)-1; l < r; l, r = l+1, r-1 {
-		buf[l], buf[r] = buf[r], buf[l]
-	}
-	if neg {
-		return "-" + string(buf)
-	}
-	return string(buf)
-}
-
-func boolstr(b bool) string {
-	if b {
-		return "true"
-	}
-	return "false"
 }

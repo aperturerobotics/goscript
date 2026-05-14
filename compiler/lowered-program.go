@@ -47,6 +47,7 @@ type loweredStructField struct {
 	typ         string
 	zero        string
 	runtimeType string
+	tag         string
 	structValue bool
 }
 

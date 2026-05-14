@@ -259,7 +259,7 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 		}
 		b.WriteString(strconvQuote(field.name))
 		b.WriteString(": ")
-		b.WriteString(field.runtimeType)
+		b.WriteString(runtimeStructFieldInfoExpr(field.runtimeType, field.tag))
 	}
 	b.WriteString("}\n\t)\n")
 	b.WriteString("}\n")

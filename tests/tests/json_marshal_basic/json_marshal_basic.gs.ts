@@ -28,12 +28,12 @@ export class Person {
 	}
 
 	public _fields: {
-		Name: $.VarRef<string>;
-		Age: $.VarRef<number>;
-		Active: $.VarRef<boolean>;
+		Name: $.VarRef<string>
+		Age: $.VarRef<number>
+		Active: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{Active?: boolean, Age?: number, Name?: string}>) {
+	constructor(init?: Partial<{Name?: string, Age?: number, Active?: boolean}>) {
 		this._fields = {
 			Name: $.varRef(init?.Name ?? ""),
 			Age: $.varRef(init?.Age ?? 0),
@@ -48,22 +48,21 @@ export class Person {
 			Age: $.varRef(this._fields.Age.value),
 			Active: $.varRef(this._fields.Active.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'main.Person',
-	  new Person(),
-	  [],
-	  Person,
-	  {"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
-	);
+		"main.Person",
+		new Person(),
+		[],
+		Person,
+		{"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
+	)
 }
 
 export async function main(): Promise<void> {
-	let p = $.markAsStructValue(new Person({Active: true, Age: 30, Name: "Alice"}))
-	let [b, err] = await json.Marshal(p)
+	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
+	let [b, err] = json.Marshal(p)
 	if (err != null) {
 		$.println("Marshal error:", err!.Error())
 	} else {

@@ -185,6 +185,21 @@ describe('builtin runtime contract helpers', () => {
       kind: TypeKind.Function,
       name: 'phase5.Greet',
     }).ok).toBe(true)
+    expect(
+      typeAssert<{ Name: string }>(
+        { Name: 'Alice' },
+        {
+          kind: TypeKind.Struct,
+          methods: [],
+          fields: {
+            Name: {
+              type: { kind: TypeKind.Basic, name: 'string' },
+              tag: 'json:"name"',
+            },
+          },
+        },
+      ).ok,
+    ).toBe(true)
     const literal = functionValue((value: number) => String(value), {
       kind: TypeKind.Function,
       params: [{ kind: TypeKind.Basic, name: 'int' }],

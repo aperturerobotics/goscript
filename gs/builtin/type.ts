@@ -500,9 +500,12 @@ function matchesStructType(value: any, info: TypeInfo): boolean {
 
     if (fieldsExist && sameFieldCount && allFieldsInStruct) {
       return Object.entries(info.fields).every(([fieldName, fieldType]) => {
+        const fieldTypeInfo = isStructFieldInfo(fieldType)
+          ? fieldType.type
+          : fieldType
         return matchesType(
           value[fieldName],
-          normalizeTypeInfo(fieldType as TypeInfo | string),
+          normalizeTypeInfo(fieldTypeInfo),
         )
       })
     }

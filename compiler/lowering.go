@@ -541,6 +541,7 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 			typ:         o.tsTypeFor(ctx, field.typ),
 			zero:        o.lowerZeroValueExprFor(ctx, field.typ),
 			runtimeType: o.runtimeTypeInfoExpr(field.typ),
+			tag:         field.tag,
 			structValue: isStructValueType(field.typ),
 		})
 	}
@@ -2764,10 +2765,22 @@ func (o *LoweringOwner) shallowRuntimeTypeInfoExpr(typ types.Type) string {
 
 func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct, seen map[string]bool) string {
 	fields := make([]string, 0, structType.NumFields())
-	for field := range structType.Fields() {
-		fields = append(fields, strconv.Quote(field.Name())+": "+o.runtimeTypeInfoExprWithSeen(field.Type(), seen))
+	for idx := range structType.NumFields() {
+		field := structType.Field(idx)
+		fieldInfo := runtimeStructFieldInfoExpr(
+			o.runtimeTypeInfoExprWithSeen(field.Type(), seen),
+			structType.Tag(idx),
+		)
+		fields = append(fields, strconv.Quote(field.Name())+": "+fieldInfo)
 	}
 	return "{" + strings.Join(fields, ", ") + "}"
+}
+
+func runtimeStructFieldInfoExpr(runtimeType string, tag string) string {
+	if tag == "" {
+		return runtimeType
+	}
+	return "{ type: " + runtimeType + ", tag: " + strconv.Quote(tag) + " }"
 }
 
 func (o *LoweringOwner) runtimeFunctionTypeInfo(signature *types.Signature, name string) string {
