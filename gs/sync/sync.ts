@@ -193,6 +193,18 @@ export class WaitGroup {
     this.Add(-1)
   }
 
+  // Go calls f in a new goroutine and adds that task to the WaitGroup.
+  public Go(f: () => void | Promise<void>): void {
+    this.Add(1)
+    queueMicrotask(async () => {
+      try {
+        await f()
+      } finally {
+        this.Done()
+      }
+    })
+  }
+
   // Wait blocks until the WaitGroup counter is zero
   public async Wait(): Promise<void> {
     if (this._counter === 0) {
