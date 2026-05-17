@@ -25,19 +25,20 @@
 
 **GoScript** is an experimental Go-to-TypeScript compiler.
 
-The main workflow compiles Go packages from inside a Go module and writes
-deterministic TypeScript packages under `@goscript/<go-package>/`. The v2
-compiler pipeline is organized around explicit owners for request validation,
-package loading, semantic modeling, lowering, TypeScript emission, runtime
-helpers, and handwritten override packages.
+GoScript compiles Go packages from inside a Go module and writes deterministic
+TypeScript packages under `@goscript/<go-package>/`. The compiler keeps package
+loading, semantic modeling, lowering, TypeScript emission, runtime helpers, and
+handwritten override packages as explicit pipeline stages so generated output is
+readable and semantic decisions have one owner.
 
 Use GoScript when you want to share Go algorithms, data structures, validation
 logic, or selected runtime code with TypeScript and browser environments without
 maintaining a second implementation by hand.
 
 GoScript is not trying to be a drop-in browser runtime for every valid Go
-program. The project prioritizes clear generated TypeScript and owner-level
-semantic support over backwards compatibility with older compiler internals.
+program. The project prioritizes clear generated TypeScript, explicit runtime
+contracts, and focused support for the Go language features that can be modeled
+cleanly in TypeScript.
 
 Useful docs:
 

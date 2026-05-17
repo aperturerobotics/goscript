@@ -40,6 +40,8 @@ type CompileRequest struct {
 	DependencyMode DependencyMode
 	// RuntimeEmissionMode controls runtime package emission policy.
 	RuntimeEmissionMode RuntimeEmissionMode
+	// Tests controls whether package loading includes Go package-test variants.
+	Tests bool
 	// AllDependencies controls whether the package graph should include deps.
 	AllDependencies bool
 	// DisableEmitBuiltin controls whether runtime packages are emitted.

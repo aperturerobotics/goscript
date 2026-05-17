@@ -27,6 +27,7 @@ func newApp() *cli.App {
 
 	app.Usage = "GoScript compiles Go to Typescript."
 	app.Commands = append(app.Commands, compileCommands()...)
+	app.Commands = append(app.Commands, testCommands()...)
 
 	return app
 }

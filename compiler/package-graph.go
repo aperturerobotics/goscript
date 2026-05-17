@@ -3,7 +3,8 @@ package compiler
 import (
 	"context"
 	"os"
-	"sort"
+	"slices"
+	"strings"
 
 	gs "github.com/aperturerobotics/goscript"
 	"golang.org/x/tools/go/packages"
@@ -35,6 +36,8 @@ type PackageGraphNode struct {
 	ModulePath string
 	// ModuleDir is the owning module directory when known.
 	ModuleDir string
+	// ForTest is the package path under test for Go test variants.
+	ForTest string
 	// GoFiles are the package source files.
 	GoFiles []string
 	// CompiledGoFiles are files selected by build constraints.
@@ -70,7 +73,7 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 		Dir:        req.Dir,
 		Env:        append(os.Environ(), "GOOS=js", "GOARCH=wasm"),
 		BuildFlags: append([]string(nil), req.BuildFlags...),
-		Tests:      false,
+		Tests:      req.Tests,
 		Mode: packages.NeedName |
 			packages.NeedFiles |
 			packages.NeedCompiledGoFiles |
@@ -81,6 +84,7 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 			packages.NeedSyntax |
 			packages.NeedTypesInfo |
 			packages.NeedTypesSizes |
+			packages.NeedForTest |
 			packages.NeedModule,
 	}
 	pkgs, err := packages.Load(cfg, req.Patterns...)
@@ -109,23 +113,29 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 
 	requested := make(map[string]bool)
 	for _, pkg := range pkgs {
+		if isTestMainPackage(pkg) {
+			continue
+		}
 		path := packagePath(pkg)
 		requested[path] = true
 		graph.RequestedPackagePaths = append(graph.RequestedPackagePaths, path)
 	}
-	sort.Strings(graph.RequestedPackagePaths)
+	slices.Sort(graph.RequestedPackagePaths)
 
 	var diagnostics []Diagnostic
 	seen := make(map[string]bool)
 	for _, pkg := range pkgs {
+		if isTestMainPackage(pkg) {
+			continue
+		}
 		o.collect(graph, pkg, req.DependencyMode, requested, seen)
 		diagnostics = append(diagnostics, packageDiagnostics(pkg)...)
 	}
-	sort.Slice(graph.Nodes, func(i, j int) bool {
-		if graph.Nodes[i].PkgPath == graph.Nodes[j].PkgPath {
-			return graph.Nodes[i].ID < graph.Nodes[j].ID
+	slices.SortFunc(graph.Nodes, func(a, b *PackageGraphNode) int {
+		if a.PkgPath == b.PkgPath {
+			return strings.Compare(a.ID, b.ID)
 		}
-		return graph.Nodes[i].PkgPath < graph.Nodes[j].PkgPath
+		return strings.Compare(a.PkgPath, b.PkgPath)
 	})
 	if len(graph.Nodes) == 0 {
 		diagnostics = append(diagnostics, Diagnostic{
@@ -162,7 +172,7 @@ func (o *PackageGraphOwner) collect(
 	for importPath := range pkg.Imports {
 		imports = append(imports, importPath)
 	}
-	sort.Strings(imports)
+	slices.Sort(imports)
 	for _, importPath := range imports {
 		o.collect(graph, pkg.Imports[importPath], mode, requested, seen)
 	}
@@ -173,7 +183,7 @@ func newPackageGraphNode(pkg *packages.Package, requested bool) *PackageGraphNod
 	for importPath := range pkg.Imports {
 		imports = append(imports, importPath)
 	}
-	sort.Strings(imports)
+	slices.Sort(imports)
 
 	var modulePath string
 	var moduleDir string
@@ -188,12 +198,17 @@ func newPackageGraphNode(pkg *packages.Package, requested bool) *PackageGraphNod
 		Name:              pkg.Name,
 		ModulePath:        modulePath,
 		ModuleDir:         moduleDir,
+		ForTest:           pkg.ForTest,
 		GoFiles:           append([]string(nil), pkg.GoFiles...),
 		CompiledGoFiles:   append([]string(nil), pkg.CompiledGoFiles...),
 		Imports:           imports,
 		Requested:         requested,
 		OverrideCandidate: hasOverrideCandidate(packagePath(pkg)),
 	}
+}
+
+func isTestMainPackage(pkg *packages.Package) bool {
+	return pkg != nil && pkg.ForTest == "" && pkg.Name == "main" && strings.HasSuffix(packagePath(pkg), ".test")
 }
 
 func packagePath(pkg *packages.Package) string {
