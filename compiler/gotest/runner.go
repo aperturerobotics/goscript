@@ -3,8 +3,6 @@ package gotest
 import (
 	"bytes"
 	"context"
-	"go/ast"
-	"go/types"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,11 +11,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/aperturerobotics/goscript/compiler"
 	"github.com/pkg/errors"
-	"golang.org/x/tools/go/packages"
 )
 
 // Runner owns GoScript package-test loading, compilation, typecheck, and execution.
@@ -65,31 +61,65 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		WorkDir:    norm.WorkDir,
 		OutputRoot: norm.OutputRoot,
 	}
-	testPackages, loadDiagnostics := loadTestPackages(ctx, norm)
-	result.Diagnostics = append(result.Diagnostics, loadDiagnostics...)
-	result.Packages = packageResults(testPackages)
-	if diagnosticsHaveErrors(loadDiagnostics) {
-		markAllFailures(result, OwnerPackageGraph, diagnosticsSummary(loadDiagnostics))
+
+	runPattern, err := compileRunPattern(norm.Run)
+	if err != nil {
+		diag := compiler.Diagnostic{
+			Severity: compiler.DiagnosticSeverityError,
+			Code:     "goscript/gotest:run-pattern",
+			Message:  "invalid -run pattern",
+			Detail:   err.Error(),
+		}
+		result.Diagnostics = append(result.Diagnostics, diag)
+		markAllFailures(result, OwnerPackageGraph, compiler.NewCompileError([]compiler.Diagnostic{diag}).Error())
 		return result, nil
 	}
 
-	compileReq := &compiler.CompileRequest{
+	testGraphReq := &compiler.CompileRequest{
 		Patterns:            append([]string(nil), norm.Patterns...),
 		Dir:                 norm.Dir,
 		OutputPath:          norm.OutputRoot,
 		BuildFlags:          append([]string(nil), norm.BuildFlags...),
-		DependencyMode:      compiler.DependencyModeAll,
+		DependencyMode:      compiler.DependencyModeRequested,
 		RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
 		Tests:               true,
-		AllDependencies:     true,
 	}
-	compileResult, compileErr := r.service.Compile(ctx, compileReq)
-	if compileResult != nil {
-		result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
-	}
-	if compileErr != nil {
-		markAllFailures(result, classifyDiagnostics(result.Diagnostics), compileErr.Error())
+	testGraph, loadDiagnostics := r.service.PackageGraphOwner().LoadTestGraph(ctx, testGraphReq)
+	result.Diagnostics = append(result.Diagnostics, loadDiagnostics...)
+	result.Packages = packageResults(testGraph, runPattern)
+	if diagnosticsHaveErrors(loadDiagnostics) && len(result.Packages) == 0 {
+		markAllFailures(result, OwnerPackageGraph, diagnosticsSummary(loadDiagnostics))
 		return result, nil
+	}
+
+	for idx := range result.Packages {
+		if !shouldCompilePackage(result.Packages[idx]) {
+			continue
+		}
+		compileReq := &compiler.CompileRequest{
+			Patterns:            []string{result.Packages[idx].PackagePath},
+			Dir:                 norm.Dir,
+			OutputPath:          norm.OutputRoot,
+			BuildFlags:          append([]string(nil), norm.BuildFlags...),
+			DependencyMode:      compiler.DependencyModeAll,
+			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
+			Tests:               true,
+			AllDependencies:     true,
+		}
+		compileResult, compileErr := r.service.Compile(ctx, compileReq)
+		if compileResult != nil {
+			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+		}
+		if compileErr != nil {
+			result.Packages[idx].Action = ActionFail
+			var diagnostics []compiler.Diagnostic
+			if compileResult != nil {
+				diagnostics = compileResult.Diagnostics
+			}
+			result.Packages[idx].Owner = classifyDiagnostics(diagnostics)
+			result.Packages[idx].Error = compileErr.Error()
+			continue
+		}
 	}
 
 	runnerFiles, err := writeRunnerFiles(norm, result.Packages)
@@ -122,11 +152,12 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		return result, nil
 	}
 	for idx := range result.Packages {
-		if result.Packages[idx].Action == ActionSkip {
+		runnerFile, ok := runnerFiles[idx]
+		if !ok {
 			continue
 		}
 		start := time.Now()
-		output, err := runCommand(ctx, norm.WorkDir, bun, runnerFiles[idx])
+		output, err := runCommand(ctx, norm.WorkDir, bun, runnerFile)
 		result.Packages[idx].Elapsed = time.Since(start)
 		result.Packages[idx].Output = strings.TrimSpace(output)
 		if err != nil {
@@ -140,103 +171,6 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 	return result, nil
 }
 
-type loadedTestPackage struct {
-	packagePath     string
-	testPackagePath string
-	tests           []Test
-}
-
-func loadTestPackages(ctx context.Context, req *normalizedRequest) ([]loadedTestPackage, []compiler.Diagnostic) {
-	cfg := &packages.Config{
-		Context:    ctx,
-		Dir:        req.Dir,
-		Env:        append(os.Environ(), "GOOS=js", "GOARCH=wasm"),
-		BuildFlags: append([]string(nil), req.BuildFlags...),
-		Tests:      true,
-		Mode: packages.NeedName |
-			packages.NeedFiles |
-			packages.NeedCompiledGoFiles |
-			packages.NeedImports |
-			packages.NeedDeps |
-			packages.NeedExportFile |
-			packages.NeedTypes |
-			packages.NeedSyntax |
-			packages.NeedTypesInfo |
-			packages.NeedTypesSizes |
-			packages.NeedForTest |
-			packages.NeedModule,
-	}
-	pkgs, err := packages.Load(cfg, req.Patterns...)
-	if err != nil {
-		return nil, []compiler.Diagnostic{{
-			Severity: compiler.DiagnosticSeverityError,
-			Code:     "goscript/gotest:load",
-			Message:  "failed to load Go test packages",
-			Detail:   err.Error(),
-		}}
-	}
-
-	runPattern, err := compileRunPattern(req.Run)
-	if err != nil {
-		return nil, []compiler.Diagnostic{{
-			Severity: compiler.DiagnosticSeverityError,
-			Code:     "goscript/gotest:run-pattern",
-			Message:  "test run pattern is invalid",
-			Detail:   err.Error(),
-		}}
-	}
-
-	requested := make(map[string]bool)
-	byPackage := make(map[string]*loadedTestPackage)
-	var diagnostics []compiler.Diagnostic
-	for _, pkg := range pkgs {
-		if isTestMainPackage(pkg) {
-			continue
-		}
-		diagnostics = append(diagnostics, packageDiagnostics(pkg)...)
-		if pkg.ForTest == "" {
-			path := packagePath(pkg)
-			if strings.TrimSpace(path) != "" {
-				requested[path] = true
-				if byPackage[path] == nil {
-					byPackage[path] = &loadedTestPackage{packagePath: path}
-				}
-			}
-			continue
-		}
-		path := pkg.ForTest
-		requested[path] = true
-		loaded := byPackage[path]
-		if loaded == nil {
-			loaded = &loadedTestPackage{packagePath: path}
-			byPackage[path] = loaded
-		}
-		loaded.testPackagePath = packagePath(pkg)
-		for _, test := range discoverTests(pkg, runPattern) {
-			loaded.tests = append(loaded.tests, test)
-		}
-	}
-
-	packagePaths := make([]string, 0, len(requested))
-	for path := range requested {
-		packagePaths = append(packagePaths, path)
-	}
-	slices.Sort(packagePaths)
-
-	result := make([]loadedTestPackage, 0, len(packagePaths))
-	for _, path := range packagePaths {
-		loaded := byPackage[path]
-		if loaded == nil {
-			loaded = &loadedTestPackage{packagePath: path}
-		}
-		slices.SortFunc(loaded.tests, func(a, b Test) int {
-			return strings.Compare(a.Name, b.Name)
-		})
-		result = append(result, *loaded)
-	}
-	return result, diagnostics
-}
-
 func compileRunPattern(pattern string) (*regexp.Regexp, error) {
 	pattern = strings.TrimSpace(pattern)
 	if pattern == "" {
@@ -245,74 +179,57 @@ func compileRunPattern(pattern string) (*regexp.Regexp, error) {
 	return regexp.Compile(pattern)
 }
 
-func discoverTests(pkg *packages.Package, runPattern *regexp.Regexp) []Test {
-	var tests []Test
-	for _, file := range pkg.Syntax {
-		for _, decl := range file.Decls {
-			fn, ok := decl.(*ast.FuncDecl)
-			if !ok || fn.Recv != nil || !isTestName(fn.Name.Name) {
-				continue
-			}
-			if runPattern != nil && !runPattern.MatchString(fn.Name.Name) {
-				continue
-			}
-			obj, _ := pkg.TypesInfo.Defs[fn.Name].(*types.Func)
-			if !isOrdinaryTestFunc(obj) {
-				continue
-			}
-			tests = append(tests, Test{
-				Name:        fn.Name.Name,
-				PackagePath: packagePath(pkg),
-			})
-		}
+func packageResults(testGraph *compiler.PackageTestGraph, runPattern *regexp.Regexp) []PackageResult {
+	if testGraph == nil {
+		return nil
 	}
-	return tests
-}
-
-func isOrdinaryTestFunc(fn *types.Func) bool {
-	if fn == nil {
-		return false
-	}
-	sig, _ := fn.Type().(*types.Signature)
-	if sig == nil || sig.Params().Len() != 1 || sig.Results().Len() != 0 {
-		return false
-	}
-	ptr, _ := sig.Params().At(0).Type().(*types.Pointer)
-	if ptr == nil {
-		return false
-	}
-	named, _ := ptr.Elem().(*types.Named)
-	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
-		return false
-	}
-	return named.Obj().Name() == "T" && named.Obj().Pkg().Path() == "testing"
-}
-
-func isTestName(name string) bool {
-	if !strings.HasPrefix(name, "Test") || name == "Test" {
-		return false
-	}
-	for _, r := range strings.TrimPrefix(name, "Test") {
-		return !unicode.IsLower(r)
-	}
-	return false
-}
-
-func packageResults(testPackages []loadedTestPackage) []PackageResult {
-	results := make([]PackageResult, 0, len(testPackages))
-	for _, pkg := range testPackages {
+	results := make([]PackageResult, 0, len(testGraph.Packages))
+	for _, pkg := range testGraph.Packages {
 		result := PackageResult{
-			PackagePath:     pkg.packagePath,
-			TestPackagePath: pkg.testPackagePath,
-			Tests:           append([]Test(nil), pkg.tests...),
-			Action:          ActionSkip,
+			PackagePath: pkg.PackagePath,
+			Action:      ActionSkip,
 		}
-		if len(pkg.tests) != 0 {
+		result.Tests = append(result.Tests, packageVariantTests(pkg.SamePackageTests, runPattern)...)
+		result.Tests = append(result.Tests, packageVariantTests(pkg.ExternalPackageTests, runPattern)...)
+		slices.SortFunc(result.Tests, func(a, b Test) int {
+			if a.Name == b.Name {
+				return strings.Compare(a.PackagePath, b.PackagePath)
+			}
+			return strings.Compare(a.Name, b.Name)
+		})
+		if len(result.Tests) != 0 {
+			result.TestPackagePath = result.Tests[0].PackagePath
 			result.Action = ActionFail
+		}
+		if diagnosticsHaveErrors(pkg.Diagnostics) {
+			result.Action = ActionFail
+			result.Owner = OwnerPackageGraph
+			result.Error = diagnosticsSummary(pkg.Diagnostics)
 		}
 		results = append(results, result)
 	}
 	return results
+}
+
+func packageVariantTests(variant *compiler.PackageTestGraphVariant, runPattern *regexp.Regexp) []Test {
+	if variant == nil {
+		return nil
+	}
+	tests := make([]Test, 0, len(variant.Tests))
+	for _, test := range variant.Tests {
+		if runPattern != nil && !runPattern.MatchString(test.Name) {
+			continue
+		}
+		tests = append(tests, Test{
+			Name:        test.Name,
+			PackagePath: test.PackagePath,
+		})
+	}
+	return tests
+}
+
+func shouldCompilePackage(result PackageResult) bool {
+	return result.Action != ActionSkip && result.Owner == "" && result.Error == ""
 }
 
 func markAllFailures(result *Result, owner Owner, message string) {
@@ -333,6 +250,9 @@ func markAllFailures(result *Result, owner Owner, message string) {
 		if result.Packages[idx].Action == ActionSkip {
 			continue
 		}
+		if result.Packages[idx].Action == ActionFail && (result.Packages[idx].Owner != "" || result.Packages[idx].Error != "") {
+			continue
+		}
 		result.Packages[idx].Action = ActionFail
 		result.Packages[idx].Owner = owner
 		result.Packages[idx].Error = message
@@ -345,7 +265,7 @@ func writeRunnerFiles(req *normalizedRequest, results []PackageResult) (map[int]
 	}
 	runnerFiles := make(map[int]string)
 	for idx, result := range results {
-		if len(result.Tests) == 0 {
+		if !shouldCompilePackage(result) {
 			continue
 		}
 		name := "runner-" + strconv.Itoa(idx) + ".ts"
@@ -360,16 +280,24 @@ func writeRunnerFiles(req *normalizedRequest, results []PackageResult) (map[int]
 func renderRunner(result PackageResult, req *normalizedRequest) string {
 	var b strings.Builder
 	b.WriteString("import { runTests } from \"@goscript/testing/index.js\"\n")
-	b.WriteString("import * as pkg from ")
-	b.WriteString(strconv.Quote("@goscript/" + result.TestPackagePath + "/index.js"))
-	b.WriteString("\n\n")
+	imports := runnerImports(result.Tests)
+	for idx, packagePath := range imports {
+		b.WriteString("import * as pkg")
+		b.WriteString(strconv.Itoa(idx))
+		b.WriteString(" from ")
+		b.WriteString(strconv.Quote("@goscript/" + packagePath + "/index.js"))
+		b.WriteString("\n")
+	}
+	b.WriteString("\n")
 	b.WriteString("const result = await runTests(")
 	b.WriteString(strconv.Quote(result.PackagePath))
 	b.WriteString(", [\n")
 	for idx, test := range result.Tests {
 		b.WriteString("\t{ name: ")
 		b.WriteString(strconv.Quote(test.Name))
-		b.WriteString(", fn: async (t) => await pkg.")
+		b.WriteString(", fn: async (t) => await pkg")
+		b.WriteString(strconv.Itoa(slices.Index(imports, test.PackagePath)))
+		b.WriteString(".")
 		b.WriteString(test.Name)
 		b.WriteString("(t) }")
 		if idx != len(result.Tests)-1 {
@@ -388,6 +316,20 @@ func renderRunner(result PackageResult, req *normalizedRequest) string {
 	b.WriteString(" })\n")
 	b.WriteString("if (!result.ok) {\n\tthrow new Error(\"goscript test failed\")\n}\n")
 	return b.String()
+}
+
+func runnerImports(tests []Test) []string {
+	seen := make(map[string]bool)
+	var imports []string
+	for _, test := range tests {
+		if test.PackagePath == "" || seen[test.PackagePath] {
+			continue
+		}
+		seen[test.PackagePath] = true
+		imports = append(imports, test.PackagePath)
+	}
+	slices.Sort(imports)
+	return imports
 }
 
 func writeTypeScriptProject(req *normalizedRequest) error {
@@ -559,34 +501,4 @@ func diagnosticsSummary(diagnostics []compiler.Diagnostic) string {
 		}
 	}
 	return b.String()
-}
-
-func packageDiagnostics(pkg *packages.Package) []compiler.Diagnostic {
-	if pkg == nil || len(pkg.Errors) == 0 {
-		return nil
-	}
-	diagnostics := make([]compiler.Diagnostic, 0, len(pkg.Errors))
-	for _, pkgErr := range pkg.Errors {
-		diagnostics = append(diagnostics, compiler.Diagnostic{
-			Severity: compiler.DiagnosticSeverityError,
-			Code:     "goscript/gotest:load-error",
-			Message:  "Go test package contains load errors",
-			Detail:   pkgErr.Msg,
-		})
-	}
-	return diagnostics
-}
-
-func packagePath(pkg *packages.Package) string {
-	if pkg == nil {
-		return ""
-	}
-	if pkg.PkgPath != "" {
-		return pkg.PkgPath
-	}
-	return pkg.ID
-}
-
-func isTestMainPackage(pkg *packages.Package) bool {
-	return pkg != nil && pkg.ForTest == "" && pkg.Name == "main" && strings.HasSuffix(packagePath(pkg), ".test")
 }

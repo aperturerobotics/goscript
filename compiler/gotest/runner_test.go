@@ -122,6 +122,202 @@ func TestRunnerRejectsInvalidRunPattern(t *testing.T) {
 	if result.Packages[0].Owner != OwnerPackageGraph {
 		t.Fatalf("unexpected owner classification: %#v", result.Packages[0])
 	}
+	if len(result.Diagnostics) != 1 || result.Diagnostics[0].Code != "goscript/gotest:run-pattern" {
+		t.Fatalf("expected structured run-pattern diagnostic: %#v", result.Diagnostics)
+	}
+}
+
+func TestRunnerFailsPackagePatternsWhenGraphHasOnlyDiagnostics(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod":   "module example.test/missing\n\ngo 1.25.3\n",
+		"value.go": "package missing\n",
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"./does-not-exist"},
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run missing package test: %v", err)
+	}
+	if result.Passed() {
+		t.Fatalf("expected missing package pattern to fail")
+	}
+	if len(result.Packages) != 1 || result.Packages[0].Owner != OwnerPackageGraph {
+		t.Fatalf("unexpected package graph failure: %#v", result.Packages)
+	}
+}
+
+func TestMarkAllFailuresPreservesExistingPackageOwners(t *testing.T) {
+	result := &Result{Packages: []PackageResult{
+		{
+			PackagePath: "example.test/broken",
+			Action:      ActionFail,
+			Owner:       OwnerPackageGraph,
+			Error:       "load failed",
+		},
+		{
+			PackagePath: "example.test/run",
+			Action:      ActionFail,
+		},
+		{
+			PackagePath: "example.test/notests",
+			Action:      ActionSkip,
+		},
+	}}
+
+	markAllFailures(result, OwnerTestRunner, "typecheck failed")
+
+	if result.Packages[0].Owner != OwnerPackageGraph || result.Packages[0].Error != "load failed" {
+		t.Fatalf("package graph failure was overwritten: %#v", result.Packages[0])
+	}
+	if result.Packages[1].Owner != OwnerTestRunner || result.Packages[1].Error != "typecheck failed" {
+		t.Fatalf("unowned failure was not marked: %#v", result.Packages[1])
+	}
+	if result.Packages[2].Action != ActionSkip || result.Packages[2].Owner != "" {
+		t.Fatalf("skipped package should stay skipped: %#v", result.Packages[2])
+	}
+}
+
+func TestRunnerScopesPackageLoadErrors(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/mixed\n\ngo 1.25.3\n",
+		"clean/value.go": strings.Join([]string{
+			"package clean",
+			"",
+			"func Value() int { return 11 }",
+			"",
+		}, "\n"),
+		"clean/value_test.go": strings.Join([]string{
+			"package clean",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestValue(t *testing.T) {",
+			"\tif Value() != 11 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"broken/value.go": "package broken\nfunc Value() int { return 12 }\n",
+		"broken/value_test.go": strings.Join([]string{
+			"package broken",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestBroken(t *testing.T) {",
+			"\tMissing()",
+			"}",
+			"",
+		}, "\n"),
+		"notests/value.go": "package notests\nfunc Value() int { return 13 }\n",
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"./..."},
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run mixed package tests: %v", err)
+	}
+
+	clean := requirePackageResult(t, result, "example.test/mixed/clean")
+	if clean.Action != ActionPass {
+		t.Fatalf("clean package should pass independently: %#v", clean)
+	}
+	broken := requirePackageResult(t, result, "example.test/mixed/broken")
+	if broken.Action != ActionFail || broken.Owner != OwnerPackageGraph {
+		t.Fatalf("broken package should carry package graph failure: %#v", broken)
+	}
+	if !strings.Contains(broken.Error, "Missing") {
+		t.Fatalf("broken package error should preserve load diagnostic: %#v", broken)
+	}
+	noTests := requirePackageResult(t, result, "example.test/mixed/notests")
+	if noTests.Action != ActionSkip {
+		t.Fatalf("no-test package should stay skipped: %#v", noTests)
+	}
+}
+
+func TestRunnerScopesPackageCompileErrors(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/mixedcompile\n\ngo 1.25.3\n",
+		"clean/value.go": strings.Join([]string{
+			"package clean",
+			"",
+			"func Value() int { return 11 }",
+			"",
+		}, "\n"),
+		"clean/value_test.go": strings.Join([]string{
+			"package clean",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestValue(t *testing.T) {",
+			"\tif Value() != 11 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"broken/value.go": strings.Join([]string{
+			"package broken",
+			"",
+			"func Value() int {",
+			"\treturn ^1",
+			"}",
+			"",
+		}, "\n"),
+		"broken/value_test.go": strings.Join([]string{
+			"package broken",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestBroken(t *testing.T) {",
+			"\tif Value() == 0 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"./..."},
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run mixed compile test: %v", err)
+	}
+
+	clean := requirePackageResult(t, result, "example.test/mixedcompile/clean")
+	if clean.Action != ActionPass {
+		t.Fatalf("clean package should pass independently: %#v", clean)
+	}
+	broken := requirePackageResult(t, result, "example.test/mixedcompile/broken")
+	if broken.Action != ActionFail || broken.Owner != OwnerLowering {
+		t.Fatalf("broken package should carry lowering failure: %#v", broken)
+	}
+	if !strings.Contains(broken.Error, "unsupported unary operator") {
+		t.Fatalf("broken package error should preserve compile diagnostic: %#v", broken)
+	}
+}
+
+func requirePackageResult(t *testing.T, result *Result, packagePath string) PackageResult {
+	t.Helper()
+
+	if result != nil {
+		for _, pkg := range result.Packages {
+			if pkg.PackagePath == packagePath {
+				return pkg
+			}
+		}
+	}
+	t.Fatalf("missing package result %q in %#v", packagePath, result)
+	return PackageResult{}
 }
 
 func writeFixture(t *testing.T, files map[string]string) string {
