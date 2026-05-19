@@ -266,7 +266,11 @@ func TestRunnerScopesPackageCompileErrors(t *testing.T) {
 			"package broken",
 			"",
 			"func Value() int {",
-			"\treturn ^1",
+			"Loop:",
+			"\tfor {",
+			"\t\tbreak Loop",
+			"\t}",
+			"\treturn 1",
 			"}",
 			"",
 		}, "\n"),
@@ -301,7 +305,7 @@ func TestRunnerScopesPackageCompileErrors(t *testing.T) {
 	if broken.Action != ActionFail || broken.Owner != OwnerLowering {
 		t.Fatalf("broken package should carry lowering failure: %#v", broken)
 	}
-	if !strings.Contains(broken.Error, "unsupported unary operator") {
+	if !strings.Contains(broken.Error, "unsupported statement kind") {
 		t.Fatalf("broken package error should preserve compile diagnostic: %#v", broken)
 	}
 }
