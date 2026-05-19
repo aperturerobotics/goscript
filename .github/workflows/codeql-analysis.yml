@@ -25,7 +25,7 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'go' ]
-        go: ['1.26.2']
+        go: ['1.26.3']
         bun: ['latest']
 
     steps:
