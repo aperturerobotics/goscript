@@ -81,9 +81,16 @@ type loweredStmt struct {
 }
 
 type loweredRangeFunc struct {
-	value  string
-	params []string
-	body   []loweredStmt
+	value        string
+	params       []string
+	body         []loweredStmt
+	returnBranch *loweredRangeBranch
+}
+
+type loweredRangeBranch struct {
+	hasReturn  string
+	value      string
+	resultType string
 }
 
 type loweredDeferState struct {

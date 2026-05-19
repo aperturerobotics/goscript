@@ -23,20 +23,28 @@ export function keyValueIterator(_yield: ((_p0: number, _p1: string) => boolean)
 
 export async function main(): Promise<void> {
 	$.println("Testing single value iterator:")
+	let __goscriptRangeReturn331 = false
 	;(() => {
 		simpleIterator!((v) => {
 			$.println("value:", v)
 			return true
 		})
 	})()
+	if (__goscriptRangeReturn331) {
+		return
+	}
 
 	$.println("Testing key-value iterator:")
+	let __goscriptRangeReturn431 = false
 	;(() => {
 		keyValueIterator!((k, v) => {
 			$.println("key:", k, "value:", v)
 			return true
 		})
 	})()
+	if (__goscriptRangeReturn431) {
+		return
+	}
 
 	$.println("test finished")
 }

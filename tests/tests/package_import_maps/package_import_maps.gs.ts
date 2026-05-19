@@ -29,6 +29,7 @@ export async function main(): Promise<void> {
 	let results: $.Slice<string> = null
 
 	// Test maps.All which returns an iterator function (this tests the maps package import)
+	let __goscriptRangeReturn3114832 = false
 	;(() => {
 		maps.All(m)!((k, v) => {
 			// Simple assignment that should trigger the error
@@ -38,8 +39,12 @@ export async function main(): Promise<void> {
 			return true
 		})
 	})()
+	if (__goscriptRangeReturn3114832) {
+		return
+	}
 
 	// Also test simpleIterator to ensure our local iterator works
+	let __goscriptRangeReturn3115081 = false
 	;(() => {
 		simpleIterator(m)!((k, v) => {
 			let [x, y] = getValue()
@@ -48,6 +53,9 @@ export async function main(): Promise<void> {
 			return true
 		})
 	})()
+	if (__goscriptRangeReturn3115081) {
+		return
+	}
 
 	// Sort results for deterministic output
 	slices.Sort(results)

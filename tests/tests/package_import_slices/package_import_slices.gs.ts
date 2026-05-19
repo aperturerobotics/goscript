@@ -10,12 +10,16 @@ export async function main(): Promise<void> {
 
 	// This should trigger the interface range issue
 	// slices.All returns an iterator interface that can be ranged over
+	let __goscriptRangeReturn3110826 = false
 	;(() => {
 		slices.All(s)!((i, v) => {
 			$.println("index:", i, "value:", v)
 			return true
 		})
 	})()
+	if (__goscriptRangeReturn3110826) {
+		return
+	}
 
 	$.println("test finished")
 }

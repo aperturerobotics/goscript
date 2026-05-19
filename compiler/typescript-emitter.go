@@ -466,6 +466,20 @@ func renderSwitchBody(b *strings.Builder, body []loweredStmt, indent int) {
 }
 
 func renderRangeFunc(b *strings.Builder, stmt *loweredRangeFunc, indent int) {
+	if stmt.returnBranch != nil {
+		writeIndent(b, indent)
+		b.WriteString("let ")
+		b.WriteString(stmt.returnBranch.hasReturn)
+		b.WriteString(" = false\n")
+		if stmt.returnBranch.value != "" {
+			writeIndent(b, indent)
+			b.WriteString("let ")
+			b.WriteString(stmt.returnBranch.value)
+			b.WriteString(": ")
+			b.WriteString(stmt.returnBranch.resultType)
+			b.WriteString(" | undefined\n")
+		}
+	}
 	writeIndent(b, indent)
 	b.WriteString(";(() => {\n")
 	writeIndent(b, indent+1)
@@ -480,6 +494,29 @@ func renderRangeFunc(b *strings.Builder, stmt *loweredRangeFunc, indent int) {
 	b.WriteString("})\n")
 	writeIndent(b, indent)
 	b.WriteString("})()\n")
+	if stmt.returnBranch == nil {
+		return
+	}
+	writeIndent(b, indent)
+	b.WriteString("if (")
+	b.WriteString(stmt.returnBranch.hasReturn)
+	b.WriteString(")")
+	if stmt.returnBranch.value == "" {
+		b.WriteString(" {\n")
+		writeIndent(b, indent+1)
+		b.WriteString("return\n")
+		writeIndent(b, indent)
+		b.WriteString("}\n")
+		return
+	}
+	b.WriteString(" {\n")
+	writeIndent(b, indent+1)
+	b.WriteString("return ")
+	b.WriteString(stmt.returnBranch.value)
+	b.WriteString("!")
+	b.WriteString("\n")
+	writeIndent(b, indent)
+	b.WriteString("}\n")
 }
 
 func renderSelect(b *strings.Builder, stmt *loweredSelect, indent int) {

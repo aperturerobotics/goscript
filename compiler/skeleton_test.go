@@ -814,6 +814,78 @@ func TestCompilePackagesLowersRangeOverFunctionIterators(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLowersFunctionIteratorControlFlow(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/iterator-control\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func values(yield func(int) bool) {",
+			"  for i := range 4 {",
+			"    if !yield(i) {",
+			"      return",
+			"    }",
+			"  }",
+			"}",
+			"func first(limit int) int {",
+			"  j := 3",
+			"  for i := 0; i < j; i, j = i+1, j-1 {",
+			"    println(i, j)",
+			"  }",
+			"  for v := range values {",
+			"    if v == 0 {",
+			"      continue",
+			"    }",
+			"    for i := range 2 {",
+			"      if i == 1 {",
+			"        break",
+			"      }",
+			"    }",
+			"    if v == limit {",
+			"      break",
+			"    }",
+			"    if v == 2 {",
+			"      return v",
+			"    }",
+			"  }",
+			"  return -1",
+			"}",
+			"func main() { println(first(3)) }",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "iterator-control", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"let __goscriptRangeReturn",
+		"let __goscriptRangeReturnValue",
+		"return true",
+		"return false",
+		"__goscriptRangeReturnValue",
+		"if (__goscriptRangeReturn",
+		"return __goscriptRangeReturnValue",
+		"for (let i = 0; i < j; [i, j] = [i + 1, j - 1])",
+		"for (let i = 0; i < 2; i++)",
+		"break",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/async\n\ngo 1.25.3\n",
@@ -1090,14 +1162,16 @@ func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testi
 	}
 }
 
-func TestCompilePackagesReportsUnsupportedUnaryBeforeOutput(t *testing.T) {
+func TestCompilePackagesLowersUnaryBitwiseComplement(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
-		"go.mod": "module example.test/unsupported\n\ngo 1.25.3\n",
+		"go.mod": "module example.test/unary-bitwise\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
 			"package main",
 			"var value = 1",
 			"func main() {",
-			"  println(^value)",
+			"  mask := 7",
+			"  mask &^= 3",
+			"  println(^value, value &^ 3, mask, 0700)",
 			"}",
 			"",
 		}, "\n"),
@@ -1108,16 +1182,22 @@ func TestCompilePackagesReportsUnsupportedUnaryBeforeOutput(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	result, err := comp.CompilePackages(context.Background(), ".")
-	if err == nil {
-		t.Fatal("expected unsupported unary expression to fail")
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
 	}
-	requireDiagnostic(t, err, "goscript/lowering:unsupported")
-	if result == nil || len(result.Diagnostics) == 0 {
-		t.Fatalf("expected structured diagnostics in result")
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "unary-bitwise", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
 	}
-	if _, statErr := os.Stat(outputDir); !os.IsNotExist(statErr) {
-		t.Fatalf("compile wrote output directory after lowering failed: %v", statErr)
+	text := string(content)
+	for _, want := range []string{
+		"mask = mask & ~(3)",
+		"$.println(~value, value & ~(3), mask, 0o700)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
 	}
 }
 
