@@ -681,6 +681,44 @@ func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEmitsRecursiveFunctionTypeInfo(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/recursive-function-type\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Handler func(Handler) Handler",
+			"type Holder struct { Next Handler }",
+			"func main() { _ = Holder{} }",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "recursive-function-type", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export type Handler = ((_p0: Handler) => Handler) | null",
+		"\"Next\": { kind: $.TypeKind.Function, name: \"main.Handler\"",
+		"params: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
+		"results: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/variadic\n\ngo 1.25.3\n",

@@ -501,10 +501,10 @@ func (o *LoweringOwner) tsMethodSignature(ctx lowerFileContext, method *types.Fu
 }
 
 func (o *LoweringOwner) runtimeMethodSignatures(iface *types.Interface) string {
-	return o.runtimeMethodSignaturesWithSeen(iface, make(map[string]bool))
+	return o.runtimeMethodSignaturesWithSeen(iface, make(map[types.Type]bool))
 }
 
-func (o *LoweringOwner) runtimeMethodSignaturesWithSeen(iface *types.Interface, seen map[string]bool) string {
+func (o *LoweringOwner) runtimeMethodSignaturesWithSeen(iface *types.Interface, seen map[types.Type]bool) string {
 	methods := make([]string, 0, iface.NumMethods())
 	for method := range iface.Methods() {
 		methods = append(methods, o.runtimeMethodSignature(method, seen))
@@ -512,7 +512,7 @@ func (o *LoweringOwner) runtimeMethodSignaturesWithSeen(iface *types.Interface, 
 	return "[" + strings.Join(methods, ", ") + "]"
 }
 
-func (o *LoweringOwner) runtimeMethodSignature(method *types.Func, seen map[string]bool) string {
+func (o *LoweringOwner) runtimeMethodSignature(method *types.Func, seen map[types.Type]bool) string {
 	signature, _ := method.Type().(*types.Signature)
 	if signature == nil {
 		return "{ name: " + strconv.Quote(method.Name()) + ", args: [], returns: [] }"
@@ -522,7 +522,7 @@ func (o *LoweringOwner) runtimeMethodSignature(method *types.Func, seen map[stri
 		", returns: " + o.runtimeMethodReturns(signature.Results(), seen) + " }"
 }
 
-func (o *LoweringOwner) runtimeMethodArgs(tuple *types.Tuple, seen map[string]bool) string {
+func (o *LoweringOwner) runtimeMethodArgs(tuple *types.Tuple, seen map[types.Type]bool) string {
 	if tuple == nil || tuple.Len() == 0 {
 		return "[]"
 	}
@@ -538,7 +538,7 @@ func (o *LoweringOwner) runtimeMethodArgs(tuple *types.Tuple, seen map[string]bo
 	return "[" + strings.Join(args, ", ") + "]"
 }
 
-func (o *LoweringOwner) runtimeMethodReturns(tuple *types.Tuple, seen map[string]bool) string {
+func (o *LoweringOwner) runtimeMethodReturns(tuple *types.Tuple, seen map[types.Type]bool) string {
 	if tuple == nil || tuple.Len() == 0 {
 		return "[]"
 	}
@@ -2868,16 +2868,16 @@ func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ 
 }
 
 func (o *LoweringOwner) runtimeTypeInfoExpr(typ types.Type) string {
-	return o.runtimeTypeInfoExprWithSeen(typ, make(map[string]bool))
+	return o.runtimeTypeInfoExprWithSeen(typ, make(map[types.Type]bool))
 }
 
-func (o *LoweringOwner) runtimeTypeInfoExprWithSeen(typ types.Type, seen map[string]bool) string {
+func (o *LoweringOwner) runtimeTypeInfoExprWithSeen(typ types.Type, seen map[types.Type]bool) string {
 	typeKind := o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeKind)
 	if typ == nil {
 		return "{ kind: " + typeKind + ".Basic, name: \"unknown\" }"
 	}
-	typeKey := goRuntimeTypeString(typ)
-	if typeKey != "" {
+	typeKey := types.Unalias(typ)
+	if typeKey != nil {
 		if seen[typeKey] {
 			return o.shallowRuntimeTypeInfoExpr(typ)
 		}
@@ -2888,7 +2888,7 @@ func (o *LoweringOwner) runtimeTypeInfoExprWithSeen(typ types.Type, seen map[str
 		return strconv.Quote(runtimeNamedTypeName(named))
 	}
 	if named := namedFunctionType(typ); named != nil {
-		return o.runtimeFunctionTypeInfo(named.Underlying().(*types.Signature), runtimeNamedTypeName(named))
+		return o.runtimeFunctionTypeInfoWithSeen(named.Underlying().(*types.Signature), runtimeNamedTypeName(named), seen)
 	}
 	if named := namedNonStructType(typ); named != nil {
 		return strconv.Quote(runtimeNamedTypeName(named))
@@ -2951,7 +2951,7 @@ func (o *LoweringOwner) shallowRuntimeTypeInfoExpr(typ types.Type) string {
 	}
 }
 
-func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct, seen map[string]bool) string {
+func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct, seen map[types.Type]bool) string {
 	fields := make([]string, 0, structType.NumFields())
 	for idx := range structType.NumFields() {
 		field := structType.Field(idx)
@@ -2972,10 +2972,10 @@ func runtimeStructFieldInfoExpr(runtimeType string, tag string) string {
 }
 
 func (o *LoweringOwner) runtimeFunctionTypeInfo(signature *types.Signature, name string) string {
-	return o.runtimeFunctionTypeInfoWithSeen(signature, name, make(map[string]bool))
+	return o.runtimeFunctionTypeInfoWithSeen(signature, name, make(map[types.Type]bool))
 }
 
-func (o *LoweringOwner) runtimeFunctionTypeInfoWithSeen(signature *types.Signature, name string, seen map[string]bool) string {
+func (o *LoweringOwner) runtimeFunctionTypeInfoWithSeen(signature *types.Signature, name string, seen map[types.Type]bool) string {
 	typeKind := o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeKind)
 	parts := []string{"kind: " + typeKind + ".Function"}
 	if name != "" {
@@ -2989,7 +2989,7 @@ func (o *LoweringOwner) runtimeFunctionTypeInfoWithSeen(signature *types.Signatu
 	return "{ " + strings.Join(parts, ", ") + " }"
 }
 
-func (o *LoweringOwner) runtimeSignatureTypes(tuple *types.Tuple, seen map[string]bool) string {
+func (o *LoweringOwner) runtimeSignatureTypes(tuple *types.Tuple, seen map[types.Type]bool) string {
 	if tuple == nil || tuple.Len() == 0 {
 		return "[]"
 	}
