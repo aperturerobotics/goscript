@@ -96,10 +96,11 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		if !shouldCompilePackage(result.Packages[idx]) {
 			continue
 		}
+		outputRoot := packageOutputRoot(norm, idx)
 		compileReq := &compiler.CompileRequest{
 			Patterns:            []string{result.Packages[idx].PackagePath},
 			Dir:                 norm.Dir,
-			OutputPath:          norm.OutputRoot,
+			OutputPath:          outputRoot,
 			BuildFlags:          append([]string(nil), norm.BuildFlags...),
 			DependencyMode:      compiler.DependencyModeAll,
 			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
@@ -122,15 +123,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		}
 	}
 
-	runnerFiles, err := writeRunnerFiles(norm, result.Packages)
-	if err != nil {
-		markAllFailures(result, OwnerTestRunner, err.Error())
-		return result, nil
-	}
-	if len(runnerFiles) == 0 {
-		return result, nil
-	}
-	if err := writeTypeScriptProject(norm); err != nil {
+	if err := writePackageJSON(norm); err != nil {
 		markAllFailures(result, OwnerTestRunner, err.Error())
 		return result, nil
 	}
@@ -140,24 +133,36 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		markAllFailures(result, OwnerTestRunner, err.Error())
 		return result, nil
 	}
-	output, err := runCommand(ctx, norm.WorkDir, tsgo, "--project", "tsconfig.json")
-	if err != nil {
-		markAllFailures(result, classifyProcessOutput(output), strings.TrimSpace(output))
-		return result, nil
-	}
-
 	bun, err := findTool(norm.Dir, "bun")
 	if err != nil {
 		markAllFailures(result, OwnerTestRunner, err.Error())
 		return result, nil
 	}
 	for idx := range result.Packages {
-		runnerFile, ok := runnerFiles[idx]
-		if !ok {
+		if !shouldCompilePackage(result.Packages[idx]) {
+			continue
+		}
+		outputRoot := packageOutputRoot(norm, idx)
+		runnerFile := packageRunnerFile(idx)
+		if err := writeRunnerFile(norm, runnerFile, result.Packages[idx]); err != nil {
+			result.Packages[idx].Owner = OwnerTestRunner
+			result.Packages[idx].Error = err.Error()
+			continue
+		}
+		tsconfigFile := "tsconfig.json"
+		if err := writeTypeScriptProject(norm, tsconfigFile, outputRoot, runnerFile); err != nil {
+			result.Packages[idx].Owner = OwnerTestRunner
+			result.Packages[idx].Error = err.Error()
+			continue
+		}
+		output, err := runCommand(ctx, norm.WorkDir, tsgo, "--project", tsconfigFile)
+		if err != nil {
+			result.Packages[idx].Owner = classifyProcessOutput(output)
+			result.Packages[idx].Error = strings.TrimSpace(output)
 			continue
 		}
 		start := time.Now()
-		output, err := runCommand(ctx, norm.WorkDir, bun, runnerFile)
+		output, err = runCommand(ctx, norm.WorkDir, bun, runnerFile)
 		result.Packages[idx].Elapsed = time.Since(start)
 		result.Packages[idx].Output = strings.TrimSpace(output)
 		if err != nil {
@@ -259,22 +264,26 @@ func markAllFailures(result *Result, owner Owner, message string) {
 	}
 }
 
-func writeRunnerFiles(req *normalizedRequest, results []PackageResult) (map[int]string, error) {
+func packageOutputRoot(req *normalizedRequest, idx int) string {
+	return filepath.Join(req.OutputRoot, "package-"+strconv.Itoa(idx))
+}
+
+func packageRunnerFile(idx int) string {
+	return "runner-" + strconv.Itoa(idx) + ".ts"
+}
+
+func writePackageJSON(req *normalizedRequest) error {
 	if err := os.MkdirAll(req.WorkDir, 0o755); err != nil {
-		return nil, errors.Wrap(err, "create test runner directory")
+		return errors.Wrap(err, "create test runner directory")
 	}
-	runnerFiles := make(map[int]string)
-	for idx, result := range results {
-		if !shouldCompilePackage(result) {
-			continue
-		}
-		name := "runner-" + strconv.Itoa(idx) + ".ts"
-		if err := os.WriteFile(filepath.Join(req.WorkDir, name), []byte(renderRunner(result, req)), 0o644); err != nil {
-			return nil, errors.Wrap(err, "write TypeScript test runner")
-		}
-		runnerFiles[idx] = name
+	return os.WriteFile(filepath.Join(req.WorkDir, "package.json"), []byte("{\"type\":\"module\"}\n"), 0o644)
+}
+
+func writeRunnerFile(req *normalizedRequest, name string, result PackageResult) error {
+	if err := os.WriteFile(filepath.Join(req.WorkDir, name), []byte(renderRunner(result, req)), 0o644); err != nil {
+		return errors.Wrap(err, "write TypeScript test runner")
 	}
-	return runnerFiles, nil
+	return nil
 }
 
 func renderRunner(result PackageResult, req *normalizedRequest) string {
@@ -332,11 +341,14 @@ func runnerImports(tests []Test) []string {
 	return imports
 }
 
-func writeTypeScriptProject(req *normalizedRequest) error {
-	if err := os.WriteFile(filepath.Join(req.WorkDir, "package.json"), []byte("{\"type\":\"module\"}\n"), 0o644); err != nil {
-		return errors.Wrap(err, "write package.json")
-	}
+func writeTypeScriptProject(req *normalizedRequest, name string, outputRoot string, runnerFile string) error {
 	nodeTypeRoots := findNodeTypeRoots(req.Dir)
+	outputPattern := filepath.ToSlash(outputRoot)
+	outputAlias := filepath.ToSlash(filepath.Join(outputRoot, "@goscript", "*"))
+	if rel, err := filepath.Rel(req.WorkDir, outputRoot); err == nil {
+		outputPattern = filepath.ToSlash(rel)
+		outputAlias = filepath.ToSlash(filepath.Join(rel, "@goscript", "*"))
+	}
 	var b strings.Builder
 	b.WriteString("{\n")
 	b.WriteString("  \"compilerOptions\": {\n")
@@ -360,12 +372,18 @@ func writeTypeScriptProject(req *normalizedRequest) error {
 	}
 	b.WriteString("    \"paths\": {\n")
 	b.WriteString("      \"*\": [\"./*\"],\n")
-	b.WriteString("      \"@goscript/*\": [\"./output/@goscript/*\"]\n")
+	b.WriteString("      \"@goscript/*\": [")
+	b.WriteString(strconv.Quote("./" + outputAlias))
+	b.WriteString("]\n")
 	b.WriteString("    }\n")
 	b.WriteString("  },\n")
-	b.WriteString("  \"include\": [\"output/**/*.ts\", \"runner-*.ts\"]\n")
+	b.WriteString("  \"include\": [")
+	b.WriteString(strconv.Quote(outputPattern + "/**/*.ts"))
+	b.WriteString(", ")
+	b.WriteString(strconv.Quote(runnerFile))
+	b.WriteString("]\n")
 	b.WriteString("}\n")
-	return os.WriteFile(filepath.Join(req.WorkDir, "tsconfig.json"), []byte(b.String()), 0o644)
+	return os.WriteFile(filepath.Join(req.WorkDir, name), []byte(b.String()), 0o644)
 }
 
 func findNodeTypeRoots(dir string) []string {

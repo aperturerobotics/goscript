@@ -310,6 +310,92 @@ func TestRunnerScopesPackageCompileErrors(t *testing.T) {
 	}
 }
 
+func TestRunnerScopesPackageTypecheckErrors(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/mixedtypecheck\n\ngo 1.25.3\n",
+		"clean/value.go": strings.Join([]string{
+			"package clean",
+			"",
+			"func Value() int { return 11 }",
+			"",
+		}, "\n"),
+		"clean/value_test.go": strings.Join([]string{
+			"package clean",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestValue(t *testing.T) {",
+			"\tif Value() != 11 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"bad/value.go": strings.Join([]string{
+			"package bad",
+			"",
+			"func Value() int { return 12 }",
+			"",
+		}, "\n"),
+		"bad/value_test.go": strings.Join([]string{
+			"package bad",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestBad(t *testing.T) {",
+			"\tif Value() != 12 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "tsgo"), strings.Join([]string{
+		"#!/bin/sh",
+		"project=",
+		"while [ \"$#\" -gt 0 ]; do",
+		"\tif [ \"$1\" = \"--project\" ]; then",
+		"\t\tshift",
+		"\t\tproject=\"$1\"",
+		"\tfi",
+		"\tshift || break",
+		"done",
+		"runner=$(sed -n 's/.*\"\\(runner-[0-9][0-9]*\\.ts\\)\".*/\\1/p' \"$project\" | head -n 1)",
+		"if grep -q 'example.test/mixedtypecheck/bad' \"$runner\"; then",
+		"\techo 'TypeScript TS9000: bad package'",
+		"\texit 1",
+		"fi",
+		"exit 0",
+		"",
+	}, "\n"))
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "bun"), strings.Join([]string{
+		"#!/bin/sh",
+		"exit 0",
+		"",
+	}, "\n"))
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"./..."},
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run mixed typecheck test: %v", err)
+	}
+
+	clean := requirePackageResult(t, result, "example.test/mixedtypecheck/clean")
+	if clean.Action != ActionPass {
+		t.Fatalf("clean package should pass independently: %#v", clean)
+	}
+	bad := requirePackageResult(t, result, "example.test/mixedtypecheck/bad")
+	if bad.Action != ActionFail || bad.Owner != OwnerTypeScriptEmitter {
+		t.Fatalf("bad package should carry typecheck failure: %#v", bad)
+	}
+	if !strings.Contains(bad.Error, "TS9000") {
+		t.Fatalf("bad package error should preserve typecheck output: %#v", bad)
+	}
+}
+
 func requirePackageResult(t *testing.T, result *Result, packagePath string) PackageResult {
 	t.Helper()
 
@@ -338,4 +424,15 @@ func writeFixture(t *testing.T, files map[string]string) string {
 		}
 	}
 	return dir
+}
+
+func writeExecutable(t *testing.T, path string, contents string) {
+	t.Helper()
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err.Error())
+	}
+	if err := os.WriteFile(path, []byte(contents), 0o755); err != nil {
+		t.Fatal(err.Error())
+	}
 }
