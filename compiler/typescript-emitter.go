@@ -592,6 +592,11 @@ func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, indent i
 
 func renderTypeSwitch(b *strings.Builder, stmt *loweredTypeSwitch, indent int) {
 	writeIndent(b, indent)
+	if stmt.result != "" {
+		b.WriteString("const ")
+		b.WriteString(stmt.result)
+		b.WriteString(" = ")
+	}
 	b.WriteString("$.typeSwitch(\n")
 	writeIndent(b, indent+1)
 	b.WriteString(stmt.value)
@@ -632,6 +637,18 @@ func renderTypeSwitch(b *strings.Builder, stmt *loweredTypeSwitch, indent int) {
 	}
 	writeIndent(b, indent)
 	b.WriteString(")\n")
+	if stmt.result != "" {
+		writeIndent(b, indent)
+		b.WriteString("if (")
+		b.WriteString(stmt.result)
+		b.WriteString(" !== undefined) {\n")
+		writeIndent(b, indent+1)
+		b.WriteString("return ")
+		b.WriteString(stmt.result)
+		b.WriteString("\n")
+		writeIndent(b, indent)
+		b.WriteString("}\n")
+	}
 }
 
 func renderTypeSwitchBody(

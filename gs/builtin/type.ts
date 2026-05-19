@@ -1166,7 +1166,7 @@ export function is(value: any, typeInfo: string | TypeInfo): boolean {
  */
 export interface TypeSwitchCase {
   types: (string | TypeInfo)[] // Array of types for this case (e.g., case int, string:)
-  body: (value?: any) => void // Function representing the case body. 'value' is the asserted value if applicable.
+  body: (value?: any) => any // Function representing the case body. 'value' is the asserted value if applicable.
 }
 
 /**
@@ -1180,16 +1180,15 @@ export interface TypeSwitchCase {
 export function typeSwitch(
   value: any,
   cases: TypeSwitchCase[],
-  defaultCase?: () => void,
-): void {
+  defaultCase?: () => any,
+): any {
   for (const caseObj of cases) {
     // For cases with multiple types (case T1, T2:), use $.is
     if (caseObj.types.length > 1) {
       const matchesAny = caseObj.types.some((typeInfo) => is(value, typeInfo))
       if (matchesAny) {
         // For multi-type cases, the case variable (if any) gets the original value
-        caseObj.body(value)
-        return // Found a match, exit switch
+        return caseObj.body(value)
       }
     } else if (caseObj.types.length === 1) {
       // For single-type cases (case T:), use $.typeAssert to get the typed value and ok status
@@ -1197,9 +1196,7 @@ export function typeSwitch(
       const { value: assertedValue, ok } = typeAssert(value, typeInfo)
       if (ok) {
         // Pass the asserted value to the case body function
-        caseObj.body(assertedValue)
-
-        return // Found a match, exit switch
+        return caseObj.body(assertedValue)
       }
     }
     // Note: Cases with 0 types are not valid in Go type switches
@@ -1207,7 +1204,7 @@ export function typeSwitch(
 
   // If no case matched and a default case exists, execute it
   if (defaultCase) {
-    defaultCase()
+    return defaultCase()
   }
 }
 

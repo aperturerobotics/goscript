@@ -331,6 +331,8 @@ type lowerFileContext struct {
 	signature     *types.Signature
 	deferState    *loweredDeferState
 	rangeBranch   *loweredRangeBranch
+	rangeBreak    bool
+	rangeContinue bool
 	topLevel      bool
 }
 
@@ -748,11 +750,26 @@ func (ctx lowerFileContext) withLocalScope() lowerFileContext {
 
 func (ctx lowerFileContext) withRangeBranch(branch *loweredRangeBranch) lowerFileContext {
 	ctx.rangeBranch = branch
+	ctx.rangeBreak = true
+	ctx.rangeContinue = true
 	return ctx
 }
 
 func (ctx lowerFileContext) withoutRangeBranch() lowerFileContext {
 	ctx.rangeBranch = nil
+	ctx.rangeBreak = false
+	ctx.rangeContinue = false
+	return ctx
+}
+
+func (ctx lowerFileContext) withoutRangeLoopBranches() lowerFileContext {
+	ctx.rangeBreak = false
+	ctx.rangeContinue = false
+	return ctx
+}
+
+func (ctx lowerFileContext) withoutRangeBreak() lowerFileContext {
+	ctx.rangeBreak = false
 	return ctx
 }
 
@@ -839,10 +856,10 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		}
 		switch typed.Tok {
 		case token.BREAK, token.CONTINUE:
-			if ctx.rangeBranch != nil {
-				if typed.Tok == token.BREAK {
-					return []loweredStmt{{text: "return false"}}, nil
-				}
+			if typed.Tok == token.BREAK && ctx.rangeBranch != nil && ctx.rangeBreak {
+				return []loweredStmt{{text: "return false"}}, nil
+			}
+			if typed.Tok == token.CONTINUE && ctx.rangeBranch != nil && ctx.rangeContinue {
 				return []loweredStmt{{text: "return true"}}, nil
 			}
 			return []loweredStmt{{text: typed.Tok.String()}}, nil
@@ -1271,7 +1288,7 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 			cond, condDiagnostics = o.lowerExpr(ctx, stmt.Cond)
 			diagnostics = append(diagnostics, condDiagnostics...)
 		}
-		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeBranch(), stmt.Body)
+		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		return loweredStmt{
 			text:     "while (" + cond + ")",
@@ -1300,7 +1317,7 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 		diagnostics = append(diagnostics, postDiagnostics...)
 		post = lowered
 	}
-	body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeBranch(), stmt.Body)
+	body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
 	diagnostics = append(diagnostics, bodyDiagnostics...)
 	return loweredStmt{
 		text:     "for (" + init + "; " + cond + "; " + post + ")",
@@ -1339,7 +1356,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 	valueName := rangeKeyName(stmt.Value)
 	rangeType := ctx.semPkg.source.TypesInfo.TypeOf(stmt.X)
 	if isChannelType(rangeType) {
-		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeBranch(), stmt.Body)
+		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		tempName := ctx.tempName("Range")
 		children := []loweredStmt{
@@ -1360,7 +1377,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		}, diagnostics
 	}
 	if isIntegerRangeType(rangeType) {
-		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeBranch(), stmt.Body)
+		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		if keyName == "" {
 			keyName = "__rangeIndex"
@@ -1371,7 +1388,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		}, diagnostics
 	}
 	if isMapType(rangeType) {
-		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeBranch(), stmt.Body)
+		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		key := keyName
 		if key == "" {
@@ -1396,7 +1413,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		return lowered, diagnostics
 	}
 
-	body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeBranch(), stmt.Body)
+	body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
 	diagnostics = append(diagnostics, bodyDiagnostics...)
 	indexName := keyName
 	if indexName == "" {
@@ -1495,7 +1512,7 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 		}
 		switch comm := clause.Comm.(type) {
 		case nil:
-			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBranch(), clause.Body)
+			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak(), clause.Body)
 			diagnostics = append(diagnostics, bodyDiagnostics...)
 			lowered.hasDefault = true
 			lowered.cases = append(lowered.cases, loweredSelectCase{
@@ -1506,7 +1523,7 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 		case *ast.SendStmt:
 			channel, channelDiagnostics := o.lowerExpr(ctx, comm.Chan)
 			value, valueDiagnostics := o.lowerExpr(ctx, comm.Value)
-			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBranch(), clause.Body)
+			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak(), clause.Body)
 			diagnostics = append(diagnostics, channelDiagnostics...)
 			diagnostics = append(diagnostics, valueDiagnostics...)
 			diagnostics = append(diagnostics, bodyDiagnostics...)
@@ -1520,7 +1537,7 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 			caseID++
 		case *ast.ExprStmt:
 			channel, prelude, receiveDiagnostics := o.lowerSelectReceiveComm(ctx, nil, comm.X)
-			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBranch(), clause.Body)
+			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak(), clause.Body)
 			diagnostics = append(diagnostics, receiveDiagnostics...)
 			diagnostics = append(diagnostics, bodyDiagnostics...)
 			lowered.cases = append(lowered.cases, loweredSelectCase{
@@ -1532,7 +1549,7 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 			caseID++
 		case *ast.AssignStmt:
 			channel, prelude, receiveDiagnostics := o.lowerSelectReceiveComm(ctx, comm, nil)
-			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBranch(), clause.Body)
+			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak(), clause.Body)
 			diagnostics = append(diagnostics, receiveDiagnostics...)
 			diagnostics = append(diagnostics, bodyDiagnostics...)
 			lowered.cases = append(lowered.cases, loweredSelectCase{
@@ -1609,7 +1626,7 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 			diagnostics = append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported switch clause"))
 			continue
 		}
-		body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBranch(), clause.Body)
+		body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak(), clause.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		if len(clause.List) == 0 {
 			switchIR.defaultBody = body
@@ -1655,13 +1672,16 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 		value:   valueExpr,
 		varName: varName,
 	}
+	if ctx.rangeBranch != nil {
+		switchIR.result = "__goscriptTypeSwitchResult" + strconv.Itoa(int(stmt.Pos()))
+	}
 	for _, clauseStmt := range stmt.Body.List {
 		clause, ok := clauseStmt.(*ast.CaseClause)
 		if !ok {
 			diagnostics = append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported type switch clause"))
 			continue
 		}
-		body, bodyDiagnostics := o.lowerStmtList(ctx.withoutRangeBranch(), clause.Body)
+		body, bodyDiagnostics := o.lowerStmtList(ctx.withoutRangeBreak(), clause.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		if len(clause.List) == 0 {
 			switchIR.defaultBody = body

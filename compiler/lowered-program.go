@@ -129,6 +129,7 @@ type loweredSelectCase struct {
 type loweredTypeSwitch struct {
 	value       string
 	varName     string
+	result      string
 	cases       []loweredTypeSwitchCase
 	defaultBody []loweredStmt
 }
