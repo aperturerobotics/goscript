@@ -1778,7 +1778,11 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 	children := body
 	if valueName != "" {
 		indexTarget := lowerIndexTarget(rangeValue, rangeType)
-		children = append([]loweredStmt{{text: "let " + valueName + " = " + indexTarget + "[" + indexName + "]"}}, body...)
+		value := indexTarget + "[" + indexName + "]"
+		if stmt.Tok == token.DEFINE {
+			value = o.lowerDeclaredValue(ctx, stmt.Value, value)
+		}
+		children = append([]loweredStmt{{text: "let " + valueName + " = " + value}}, body...)
 	}
 	return loweredStmt{
 		text:     "for (let " + indexName + " = 0; " + indexName + " < " + o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + rangeValue + "); " + indexName + "++)",
