@@ -59,6 +59,7 @@ type loweredFunction struct {
 	name          string
 	receiverAlias string
 	params        []loweredParam
+	namedResults  []loweredNamedResult
 	result        string
 	body          []loweredStmt
 	deferState    *loweredDeferState
@@ -67,6 +68,13 @@ type loweredFunction struct {
 type loweredParam struct {
 	name string
 	typ  string
+}
+
+type loweredNamedResult struct {
+	name       string
+	typ        string
+	zero       string
+	returnExpr string
 }
 
 type loweredStmt struct {

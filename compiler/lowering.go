@@ -732,6 +732,7 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 			name: receiverName,
 			typ:  o.tsReceiverTypeFor(ctx, signature.Recv().Type()),
 		}},
+		namedResults: o.lowerNamedResults(ctx, signature),
 	}
 	for idx := range signature.Params().Len() {
 		param := signature.Params().At(idx)
@@ -771,6 +772,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		name:          decl.Name.Name,
 		result:        asyncResultType(result, async),
 		deferState:    deferState,
+		namedResults:  o.lowerNamedResults(ctx, signature),
 	}
 	if signature.TypeParams() != nil && signature.TypeParams().Len() != 0 {
 		lowered.params = append(lowered.params, loweredParam{
@@ -1392,6 +1394,9 @@ func (o *LoweringOwner) lowerReturnStmt(ctx lowerFileContext, stmt *ast.ReturnSt
 		return o.lowerRangeFuncReturnStmt(ctx, stmt)
 	}
 	if len(stmt.Results) == 0 {
+		if result, ok := o.lowerNamedResultReturn(ctx); ok {
+			return "return " + result, nil
+		}
 		return "return", nil
 	}
 	if len(stmt.Results) == 1 {
@@ -1413,6 +1418,9 @@ func (o *LoweringOwner) lowerReturnStmt(ctx lowerFileContext, stmt *ast.ReturnSt
 
 func (o *LoweringOwner) lowerRangeFuncReturnStmt(ctx lowerFileContext, stmt *ast.ReturnStmt) (string, []Diagnostic) {
 	if len(stmt.Results) == 0 {
+		if result, ok := o.lowerNamedResultReturn(ctx); ok {
+			return ctx.rangeBranch.hasReturn + " = true\n" + ctx.rangeBranch.value + " = " + result + "\nreturn false", nil
+		}
 		return ctx.rangeBranch.hasReturn + " = true\nreturn false", nil
 	}
 	if len(stmt.Results) == 1 {
@@ -1437,6 +1445,49 @@ func singleReturnType(ctx lowerFileContext) types.Type {
 		return nil
 	}
 	return ctx.signature.Results().At(0).Type()
+}
+
+func (o *LoweringOwner) lowerNamedResults(ctx lowerFileContext, signature *types.Signature) []loweredNamedResult {
+	if signature == nil || signature.Results() == nil {
+		return nil
+	}
+	results := make([]loweredNamedResult, 0, signature.Results().Len())
+	for result := range signature.Results().Variables() {
+		result := result
+		name := result.Name()
+		if name == "" || name == "_" {
+			continue
+		}
+		needsVarRef := ctx.model.needsVarRef[result]
+		zero := o.lowerDeclarationZeroValueExpr(ctx, result.Type())
+		returnExpr := safeIdentifier(name)
+		if needsVarRef {
+			zero = o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + zero + ")"
+			returnExpr += ".value"
+		}
+		results = append(results, loweredNamedResult{
+			name:       safeIdentifier(name),
+			typ:        o.tsVariableTypeFor(ctx, result.Type(), needsVarRef),
+			zero:       zero,
+			returnExpr: returnExpr,
+		})
+	}
+	return results
+}
+
+func (o *LoweringOwner) lowerNamedResultReturn(ctx lowerFileContext) (string, bool) {
+	results := o.lowerNamedResults(ctx, ctx.signature)
+	if len(results) == 0 {
+		return "", false
+	}
+	if len(results) == 1 {
+		return results[0].returnExpr, true
+	}
+	parts := make([]string, 0, len(results))
+	for _, result := range results {
+		parts = append(parts, result.returnExpr)
+	}
+	return "[" + strings.Join(parts, ", ") + "]", true
 }
 
 func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (loweredStmt, []Diagnostic) {

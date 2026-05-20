@@ -312,6 +312,7 @@ func renderFunction(b *strings.Builder, fn *loweredFunction) {
 		b.WriteString(fn.receiverAlias)
 		b.WriteString(" = this\n")
 	}
+	renderNamedResults(b, fn.namedResults, 1)
 	renderDeferStack(b, fn.deferState, 1)
 	renderStmts(b, fn.body, 1)
 	b.WriteString("}\n")
@@ -342,10 +343,24 @@ func renderMethod(b *strings.Builder, fn *loweredFunction) {
 		b.WriteString(fn.receiverAlias)
 		b.WriteString(" = this\n")
 	}
+	renderNamedResults(b, fn.namedResults, 2)
 	renderDeferStack(b, fn.deferState, 2)
 	renderStmts(b, fn.body, 2)
 	writeIndent(b, 1)
 	b.WriteString("}\n")
+}
+
+func renderNamedResults(b *strings.Builder, results []loweredNamedResult, indent int) {
+	for _, result := range results {
+		writeIndent(b, indent)
+		b.WriteString("let ")
+		b.WriteString(result.name)
+		b.WriteString(": ")
+		b.WriteString(result.typ)
+		b.WriteString(" = ")
+		b.WriteString(result.zero)
+		b.WriteString("\n")
+	}
 }
 
 func renderDeferStack(b *strings.Builder, state *loweredDeferState, indent int) {
