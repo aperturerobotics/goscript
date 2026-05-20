@@ -3694,7 +3694,6 @@ func tsSignatureParams(signature *types.Signature) string {
 func tsAnonymousStructType(structType *types.Struct) string {
 	fields := make([]string, 0, structType.NumFields())
 	for field := range structType.Fields() {
-		field := field
 		fields = append(fields, strconv.Quote(field.Name())+": "+tsType(field.Type()))
 	}
 	return "{" + strings.Join(fields, ", ") + "}"
@@ -3799,7 +3798,6 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 func (o *LoweringOwner) tsAnonymousStructTypeFor(ctx lowerFileContext, structType *types.Struct) string {
 	fields := make([]string, 0, structType.NumFields())
 	for field := range structType.Fields() {
-		field := field
 		fields = append(fields, strconv.Quote(field.Name())+": "+o.tsTypeFor(ctx, field.Type()))
 	}
 	return "{" + strings.Join(fields, ", ") + "}"
