@@ -107,20 +107,20 @@ export function FindCat(): Cat | $.VarRef<Cat> | null {
 	return new Cat({name: "Whiskers"})
 }
 
-export function FindAnimal(): Animal {
+export function FindAnimal(): Animal | null {
 	// This is a common bug pattern in Go:
 	// dog is a *Dog with value nil
 	// When assigned to Animal interface, the interface is NOT nil
 	// because it has type *Dog (even though value is nil)
 	{
-		let dog = $.interfaceValue<Animal>(FindDog(), "*main.Dog")
+		let dog = $.interfaceValue<Animal | null>(FindDog(), "*main.Dog")
 		if (dog != null) {
 			// In Go, this branch IS taken because dog != nil
 			// The interface has type=*Dog, value=nil
 			return dog
 		}
 	}
-	return $.interfaceValue<Animal>(FindCat(), "*main.Cat")
+	return $.interfaceValue<Animal | null>(FindCat(), "*main.Cat")
 }
 
 export async function main(): Promise<void> {
@@ -158,7 +158,7 @@ export async function main(): Promise<void> {
 
 	// Test 4: Direct nil pointer to interface assignment
 	let dog: Dog | $.VarRef<Dog> | null = null
-	let a: Animal = $.interfaceValue<Animal>(dog, "*main.Dog")
+	let a: Animal | null = $.interfaceValue<Animal | null>(dog, "*main.Dog")
 
 	if (a == null) {
 		$.println("a is nil")
@@ -167,7 +167,7 @@ export async function main(): Promise<void> {
 	}
 
 	// Test 5: Truly nil interface
-	let b: Animal = null
+	let b: Animal | null = null
 	if (b == null) {
 		$.println("b is nil")
 	} else {

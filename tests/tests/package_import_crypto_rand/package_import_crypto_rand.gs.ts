@@ -14,7 +14,7 @@ export async function main(): Promise<void> {
 	$.println("read err nil", err == null)
 	$.println("read has data", hasData(buf))
 
-	let r: io.Reader = rand.Reader
+	let r: io.Reader | null = rand.Reader
 	let small = $.makeSlice<number>(4, undefined, "byte")
 	let __goscriptTuple0 = r!.Read(small)
 	n = __goscriptTuple0[0]

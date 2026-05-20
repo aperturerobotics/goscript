@@ -64,11 +64,11 @@ $.registerInterfaceType(
 )
 
 export async function main(): Promise<void> {
-	let i: MyInterface = null
+	let i: MyInterface | null = null
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.markAsStructValue(s.clone())
 
-	let [, ok] = $.typeAssertTuple<MyOtherInterface>(i, "main.MyOtherInterface")
+	let [, ok] = $.typeAssertTuple<MyOtherInterface | null>(i, "main.MyOtherInterface")
 	if (ok) {
 		$.println("Type assertion successful")
 	} else {

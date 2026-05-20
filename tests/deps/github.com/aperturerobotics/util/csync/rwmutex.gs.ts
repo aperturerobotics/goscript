@@ -73,7 +73,7 @@ export class RWMutex {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Lock(ctx: context.Context, write: boolean): Promise<[(() => void) | null, $.GoError]> {
+	public async Lock(ctx: context.Context | null, write: boolean): Promise<[(() => void) | null, $.GoError]> {
 		const m: RWMutex | $.VarRef<RWMutex> | null = this
 		// status:
 		// 0: waiting for lock
@@ -178,14 +178,14 @@ export class RWMutex {
 		}
 	}
 
-	public Locker(): sync.Locker {
+	public Locker(): sync.Locker | null {
 		const m: RWMutex | $.VarRef<RWMutex> | null = this
-		return $.interfaceValue<sync.Locker>(new RWMutexLocker({m: m, write: true}), "*csync.RWMutexLocker")
+		return $.interfaceValue<sync.Locker | null>(new RWMutexLocker({m: m, write: true}), "*csync.RWMutexLocker")
 	}
 
-	public RLocker(): sync.Locker {
+	public RLocker(): sync.Locker | null {
 		const m: RWMutex | $.VarRef<RWMutex> | null = this
-		return $.interfaceValue<sync.Locker>(new RWMutexLocker({m: m, write: false}), "*csync.RWMutexLocker")
+		return $.interfaceValue<sync.Locker | null>(new RWMutexLocker({m: m, write: false}), "*csync.RWMutexLocker")
 	}
 
 	public async TryLock(write: boolean): Promise<[(() => void) | null, boolean]> {
@@ -331,4 +331,4 @@ export class RWMutexLocker {
 	)
 }
 
-export let _: sync.Locker = $.interfaceValue<sync.Locker>(($.typedNil("*csync.RWMutexLocker")), "*csync.RWMutexLocker")
+export let _: sync.Locker | null = $.interfaceValue<sync.Locker | null>(($.typedNil("*csync.RWMutexLocker")), "*csync.RWMutexLocker")

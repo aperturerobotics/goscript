@@ -106,7 +106,7 @@ export async function main(): Promise<void> {
 	}
 
 	// Test case: variable of named interface type, asserted to inline interface
-	let k: Stringer = null
+	let k: Stringer | null = null
 	k = $.markAsStructValue($.markAsStructValue(new MyStringer()).clone())
 
 	let [inlineK, ok5] = $.typeAssertTuple<any>(k, { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })

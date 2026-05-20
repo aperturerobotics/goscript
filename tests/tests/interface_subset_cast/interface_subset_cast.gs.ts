@@ -81,17 +81,17 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({Value1: "hello", Value2: "world"}))
-	let i1: MyInterface1 = $.markAsStructValue(s.clone())
+	let i1: MyInterface1 | null = $.markAsStructValue(s.clone())
 
 	// Cast from larger interface to smaller interface (subset)
-	let i2: MyInterface2 = i1
+	let i2: MyInterface2 | null = i1
 
 	$.println("i1.MyString1():", i1!.MyString1())
 	$.println("i1.MyString2():", i1!.MyString2())
 	$.println("i2.MyString1():", i2!.MyString1())
 
 	// Type assertion from larger to smaller interface
-	let [i3, ok] = $.typeAssertTuple<MyInterface2>(i1, "main.MyInterface2")
+	let [i3, ok] = $.typeAssertTuple<MyInterface2 | null>(i1, "main.MyInterface2")
 	if (ok) {
 		$.println("Type assertion successful")
 		$.println("i3.MyString1():", i3!.MyString1())

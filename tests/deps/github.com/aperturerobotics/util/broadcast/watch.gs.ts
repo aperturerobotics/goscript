@@ -9,11 +9,11 @@ import * as proto from "@goscript/github.com/aperturerobotics/protobuf-go-lite/i
 
 import * as __goscript_broadcast from "./broadcast.gs.ts"
 
-export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any) | null, send: ((_p0: any) => $.GoError) | null): Promise<$.GoError> {
+export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any) | null, send: ((_p0: any) => $.GoError) | null): Promise<$.GoError> {
 	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, null)
 }
 
-export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any) | null, send: ((_p0: any) => $.GoError) | null, equal: ((a: any, b: any) => boolean) | null): Promise<$.GoError> {
+export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any) | null, send: ((_p0: any) => $.GoError) | null, equal: ((a: any, b: any) => boolean) | null): Promise<$.GoError> {
 	let ch: $.Channel<Record<string, unknown>> | null = null
 	let val: any = $.genericZero(__typeArgs, "T", null)
 	await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
@@ -68,6 +68,6 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 	}
 }
 
-export async function WatchBroadcastVT(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any) | null, send: ((_p0: any) => $.GoError) | null): Promise<$.GoError> {
+export async function WatchBroadcastVT(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any) | null, send: ((_p0: any) => $.GoError) | null): Promise<$.GoError> {
 	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, proto.CompareEqualVT({T: { type: { kind: $.TypeKind.Interface, methods: [{ name: "EqualVT", args: [{ name: "other", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }] }, zero: () => null }}))
 }

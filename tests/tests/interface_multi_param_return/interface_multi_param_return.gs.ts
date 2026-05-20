@@ -50,7 +50,7 @@ export class MyProcessor {
 }
 
 export async function main(): Promise<void> {
-	let processor: MultiParamReturner = $.markAsStructValue($.markAsStructValue(new MyProcessor()).clone())
+	let processor: MultiParamReturner | null = $.markAsStructValue($.markAsStructValue(new MyProcessor()).clone())
 
 	let data = $.arrayToSlice<number>([1, 2, 3])
 	let [success, ] = processor!.Process(data, 5, "unused")

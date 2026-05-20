@@ -7,7 +7,7 @@ import * as context from "@goscript/context/index.js"
 
 import * as time from "@goscript/time/index.js"
 
-export async function testMixedReturns(ctx: context.Context): Promise<string> {
+export async function testMixedReturns(ctx: context.Context | null): Promise<string> {
 	let ch1 = $.makeChannel<string>(1, "", "both")
 	let ch2 = $.makeChannel<number>(1, 0, "both")
 	let ch3 = $.makeChannel<boolean>(1, false, "both")
@@ -99,7 +99,7 @@ export async function testMixedReturns(ctx: context.Context): Promise<string> {
 	return "completed_normally"
 }
 
-export async function testReturnCase(ctx: context.Context): Promise<string> {
+export async function testReturnCase(ctx: context.Context | null): Promise<string> {
 	let ch1 = $.makeChannel<string>(1, "", "both")
 	let ch2 = $.makeChannel<number>(1, 0, "both")
 	let ch3 = $.makeChannel<boolean>(1, false, "both")

@@ -718,9 +718,9 @@ func TestCompilePackagesBoxesTypedNilInterfaceValues(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"return $.interfaceValue<Animal>(FindDog(), \"*main.Dog\")",
+		"return $.interfaceValue<Animal | null>(FindDog(), \"*main.Dog\")",
 		"$.println(animal!.Name())",
-		"let a: Animal = $.interfaceValue<Animal>(dog, \"*main.Dog\")",
+		"let a: Animal | null = $.interfaceValue<Animal | null>(dog, \"*main.Dog\")",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

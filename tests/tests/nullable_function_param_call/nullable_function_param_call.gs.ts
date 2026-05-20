@@ -17,12 +17,12 @@ $.registerInterfaceType(
 	[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
-export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoError) | null
+export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError) | null
 
 export let SkipDir: $.GoError = os.ErrNotExist
 
 export type Filesystem = null | {
-	ReadDir(path: string): [$.Slice<FileInfo>, $.GoError]
+	ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -117,9 +117,9 @@ export class MockFilesystem {
 		return $.markAsStructValue(cloned)
 	}
 
-	public ReadDir(path: string): [$.Slice<FileInfo>, $.GoError] {
+	public ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError] {
 		const m: MockFilesystem | $.VarRef<MockFilesystem> | null = this
-		return [$.arrayToSlice<FileInfo>([$.interfaceValue<FileInfo>(new MockFileInfo({name: "file1.txt", size: 100, isDir: false}), "*main.MockFileInfo"), $.interfaceValue<FileInfo>(new MockFileInfo({name: "subdir", size: 0, isDir: true}), "*main.MockFileInfo")]), null]
+		return [$.arrayToSlice<FileInfo | null>([$.interfaceValue<FileInfo | null>(new MockFileInfo({name: "file1.txt", size: 100, isDir: false}), "*main.MockFileInfo"), $.interfaceValue<FileInfo | null>(new MockFileInfo({name: "subdir", size: 0, isDir: true}), "*main.MockFileInfo")]), null]
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -131,7 +131,7 @@ export class MockFilesystem {
 	)
 }
 
-export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): $.GoError {
+export function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: WalkFunc): $.GoError {
 	// Test case 1: Direct call to nullable function parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
@@ -174,7 +174,7 @@ export async function main(): Promise<void> {
 	let fileInfo = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
 
 	// Test the walk function with a callback
-	let walkFunc = $.functionValue((path: string, info: FileInfo, err: $.GoError): $.GoError => {
+	let walkFunc = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {
 		$.println("Walking:", path, "size:", info!.Size())
 		if (err != null) {
 			$.println("Error:", err!.Error())

@@ -73,11 +73,11 @@ $.registerInterfaceType(
 
 export async function main(): Promise<void> {
 	let base: any = $.markAsStructValue($.markAsStructValue(new Base()).clone())
-	let [, baseOK] = $.typeAssertTuple<Stringer>(base, "main.Stringer")
+	let [, baseOK] = $.typeAssertTuple<Stringer | null>(base, "main.Stringer")
 	$.println("base implements Stringer:", baseOK)
 
 	let derived: any = $.markAsStructValue($.markAsStructValue(new Derived()).clone())
-	let [, derivedOK] = $.typeAssertTuple<Stringer>(derived, "main.Stringer")
+	let [, derivedOK] = $.typeAssertTuple<Stringer | null>(derived, "main.Stringer")
 	$.println("derived implements Stringer:", derivedOK)
 }
 

@@ -69,7 +69,7 @@ export async function main(): Promise<void> {
 	let w = new Worker({ch: $.makeChannel<number>(1, 0, "both")})
 	run(((__receiver) => () => __receiver.Spawn())($.pointerValue<Worker>(w)))
 
-	let s: Spawner = $.interfaceValue<Spawner>(w, "*main.Worker")
+	let s: Spawner | null = $.interfaceValue<Spawner | null>(w, "*main.Worker")
 	let err = s!.Spawn()
 	if (err == null) {
 		$.println("iface err: nil")

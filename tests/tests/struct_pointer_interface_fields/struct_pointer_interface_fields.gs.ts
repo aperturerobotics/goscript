@@ -21,19 +21,19 @@ export class MyStruct {
 		this._fields.PointerField.value = value
 	}
 
-	public get interfaceField(): MyInterface {
+	public get interfaceField(): MyInterface | null {
 		return this._fields.interfaceField.value
 	}
-	public set interfaceField(value: MyInterface) {
+	public set interfaceField(value: MyInterface | null) {
 		this._fields.interfaceField.value = value
 	}
 
 	public _fields: {
 		PointerField: $.VarRef<$.VarRef<number> | null>
-		interfaceField: $.VarRef<MyInterface>
+		interfaceField: $.VarRef<MyInterface | null>
 	}
 
-	constructor(init?: Partial<{PointerField?: $.VarRef<number> | null, interfaceField?: MyInterface}>) {
+	constructor(init?: Partial<{PointerField?: $.VarRef<number> | null, interfaceField?: MyInterface | null}>) {
 		this._fields = {
 			PointerField: $.varRef(init?.PointerField ?? null),
 			interfaceField: $.varRef(init?.interfaceField ?? null)
@@ -70,7 +70,7 @@ export async function main(): Promise<void> {
 	i.value = 15
 	$.println($.pointerValue<number>(s.PointerField))
 
-	let mi: MyInterface = null
+	let mi: MyInterface | null = null
 	s.interfaceField = mi
 	$.println(s.interfaceField == null)
 }

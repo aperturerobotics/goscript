@@ -119,7 +119,7 @@ export class Container {
 }
 
 export async function main(): Promise<void> {
-	let iface: Interface = $.markAsStructValue($.markAsStructValue(new ConcreteA()).clone())
+	let iface: Interface | null = $.markAsStructValue($.markAsStructValue(new ConcreteA()).clone())
 
 	let c = new Container()
 

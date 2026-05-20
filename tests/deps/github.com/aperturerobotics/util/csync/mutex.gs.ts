@@ -51,7 +51,7 @@ export class Mutex {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Lock(ctx: context.Context): Promise<[(() => void) | null, $.GoError]> {
+	public async Lock(ctx: context.Context | null): Promise<[(() => void) | null, $.GoError]> {
 		const m: Mutex | $.VarRef<Mutex> | null = this
 		// status:
 		// 0: waiting for lock
@@ -147,9 +147,9 @@ export class Mutex {
 		}
 	}
 
-	public Locker(): sync.Locker {
+	public Locker(): sync.Locker | null {
 		const m: Mutex | $.VarRef<Mutex> | null = this
-		return $.interfaceValue<sync.Locker>(new MutexLocker({m: m}), "*csync.MutexLocker")
+		return $.interfaceValue<sync.Locker | null>(new MutexLocker({m: m}), "*csync.MutexLocker")
 	}
 
 	public async TryLock(): Promise<[(() => void) | null, boolean]> {
@@ -254,4 +254,4 @@ export class MutexLocker {
 	)
 }
 
-export let _: sync.Locker = $.interfaceValue<sync.Locker>(($.typedNil("*csync.MutexLocker")), "*csync.MutexLocker")
+export let _: sync.Locker | null = $.interfaceValue<sync.Locker | null>(($.typedNil("*csync.MutexLocker")), "*csync.MutexLocker")

@@ -16,12 +16,12 @@ export function SyncWrapper(): string {
 	return AsyncFunction()
 }
 
-export function AnotherAsyncFunction(ctx: context.Context): [string, $.GoError] {
+export function AnotherAsyncFunction(ctx: context.Context | null): [string, $.GoError] {
 	time.Sleep(5 * time.Millisecond)
 	return ["async result", null]
 }
 
-export function WrapperWithError(ctx: context.Context): [string, $.GoError] {
+export function WrapperWithError(ctx: context.Context | null): [string, $.GoError] {
 	return AnotherAsyncFunction(ctx)
 }
 

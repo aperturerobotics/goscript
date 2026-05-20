@@ -18,7 +18,7 @@ $.registerInterfaceType(
 )
 
 export type Filesystem = null | {
-	ReadDir(path: string): [$.Slice<FileInfo>, $.GoError]
+	ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -113,9 +113,9 @@ export class MockFilesystem {
 		return $.markAsStructValue(cloned)
 	}
 
-	public ReadDir(path: string): [$.Slice<FileInfo>, $.GoError] {
+	public ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError] {
 		const m: MockFilesystem | $.VarRef<MockFilesystem> | null = this
-		return [$.arrayToSlice<FileInfo>([$.interfaceValue<FileInfo>(new MockFileInfo({name: "file1.txt", size: 100, isDir: false}), "*main.MockFileInfo"), $.interfaceValue<FileInfo>(new MockFileInfo({name: "subdir", size: 0, isDir: true}), "*main.MockFileInfo")]), null]
+		return [$.arrayToSlice<FileInfo | null>([$.interfaceValue<FileInfo | null>(new MockFileInfo({name: "file1.txt", size: 100, isDir: false}), "*main.MockFileInfo"), $.interfaceValue<FileInfo | null>(new MockFileInfo({name: "subdir", size: 0, isDir: true}), "*main.MockFileInfo")]), null]
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -127,22 +127,22 @@ export class MockFilesystem {
 	)
 }
 
-export type WalkFunc = ((path: string, info: FileInfo, err: $.GoError) => $.GoError) | null
+export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError) | null
 
-export function walk(fs: Filesystem, path: string, info: FileInfo, walkFn: filepath.WalkFunc): $.GoError {
+export function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: filepath.WalkFunc): $.GoError {
 	// Test case 1: Direct call to named function type parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
 
 	// We need to convert our FileInfo to os.FileInfo for filepath.WalkFunc
 	// For this test, we'll use a simpler approach with our own WalkFunc
-	return walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo, e: $.GoError): $.GoError => {
+	return walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo | null, e: $.GoError): $.GoError => {
 		// This simulates the issue by calling filepath.WalkFunc indirectly
 		return null
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] }))
 }
 
-export function walkWithCustomFunc(fs: Filesystem, path: string, info: FileInfo, walkFn: WalkFunc): $.GoError {
+export function walkWithCustomFunc(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: WalkFunc): $.GoError {
 	// Test case 1: Direct call to named function type parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
@@ -195,7 +195,7 @@ export async function main(): Promise<void> {
 	let fileInfo = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
 
 	// Test the walk function with custom WalkFunc
-	let walkFunc = $.functionValue((path: string, info: FileInfo, err: $.GoError): $.GoError => {
+	let walkFunc = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {
 		if (info != null) {
 			$.println("Walking:", path, "size:", info!.Size())
 		}

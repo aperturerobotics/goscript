@@ -3335,6 +3335,9 @@ func tsType(typ types.Type) string {
 		return "$.GoError"
 	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
+		if _, ok := named.Underlying().(*types.Interface); ok {
+			return named.Obj().Name() + " | null"
+		}
 		if _, ok := named.Underlying().(*types.Struct); ok {
 			return named.Obj().Name()
 		}
@@ -3457,7 +3460,11 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		return "$.GoError"
 	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
-		return o.namedTypeExpr(ctx, named)
+		name := o.namedTypeExpr(ctx, named)
+		if _, ok := named.Underlying().(*types.Interface); ok {
+			return name + " | null"
+		}
+		return name
 	}
 	switch typed := types.Unalias(typ).Underlying().(type) {
 	case *types.Array:

@@ -54,7 +54,7 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
-	let i: MyInterface = null
+	let i: MyInterface | null = null
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.markAsStructValue(s.clone())
 
@@ -83,7 +83,7 @@ export async function main(): Promise<void> {
 		$.println("type assertion success", val.Value)
 	}
 
-	let nilInterface: MyInterface = null
+	let nilInterface: MyInterface | null = null
 	let [nilVal, ok3] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(nilInterface, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	if (ok3 && $.pointerValue<MyStruct>(nilVal).Value == 0) {
 		$.println("nil interface pointer assertion succeeded")

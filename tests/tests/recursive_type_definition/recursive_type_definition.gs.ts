@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export type A = null | {
-	MethodA(a: A): void
+	MethodA(a: A | null): void
 }
 
 $.registerInterfaceType(
@@ -43,7 +43,7 @@ export class B {
 }
 
 export type C = null | {
-	MethodC(d: D): void
+	MethodC(d: D | null): void
 }
 
 $.registerInterfaceType(
@@ -53,7 +53,7 @@ $.registerInterfaceType(
 )
 
 export type D = null | {
-	MethodD(c: C): void
+	MethodD(c: C | null): void
 }
 
 $.registerInterfaceType(

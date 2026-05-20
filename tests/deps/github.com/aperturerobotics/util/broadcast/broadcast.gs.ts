@@ -85,7 +85,7 @@ export class Broadcast {
 		return true
 	}
 
-	public async Wait(ctx: context.Context, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
+	public async Wait(ctx: context.Context | null, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		if (cb == null || ctx == null) {
 			return errors.New("cb and ctx must be set")
