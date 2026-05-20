@@ -41,7 +41,7 @@ func (o *PackageGraphOwner) LoadTestGraph(ctx context.Context, req *CompileReque
 		Context:    ctx,
 		Dir:        req.Dir,
 		Env:        append(os.Environ(), "GOOS=js", "GOARCH=wasm"),
-		BuildFlags: append([]string(nil), req.BuildFlags...),
+		BuildFlags: goScriptBuildFlags(req.BuildFlags),
 		Tests:      true,
 		Mode: packages.NeedName |
 			packages.NeedFiles |

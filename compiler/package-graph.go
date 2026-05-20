@@ -72,7 +72,7 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 		Context:    ctx,
 		Dir:        req.Dir,
 		Env:        append(os.Environ(), "GOOS=js", "GOARCH=wasm"),
-		BuildFlags: append([]string(nil), req.BuildFlags...),
+		BuildFlags: goScriptBuildFlags(req.BuildFlags),
 		Tests:      req.Tests,
 		Mode: packages.NeedName |
 			packages.NeedFiles |

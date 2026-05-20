@@ -176,6 +176,37 @@ func TestPackageGraphHonorsBuildFlags(t *testing.T) {
 	}
 }
 
+func TestPackageGraphAddsGoScriptBuildTag(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod":       "module example.test/goscripttag\n\ngo 1.25.3\n",
+		"default.go":   "package goscripttag\nconst Selected = \"default\"\n",
+		"goscript.go":  "//go:build goscript\n\npackage goscripttag\nconst GoScript = true\n",
+		"excluded.go":  "//go:build !goscript\n\npackage goscripttag\nconst Excluded = true\n",
+		"customtag.go": "//go:build customtag\n\npackage goscripttag\nconst Custom = true\n",
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		BuildFlags:          []string{"-tags=customtag"},
+		DependencyMode:      DependencyModeRequested,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+
+	var compiled []string
+	for _, file := range graph.Nodes[0].CompiledGoFiles {
+		compiled = append(compiled, filepath.Base(file))
+	}
+	for _, expected := range []string{"default.go", "goscript.go", "customtag.go"} {
+		if !slices.Contains(compiled, expected) {
+			t.Fatalf("expected %s in compiled files: %v", expected, compiled)
+		}
+	}
+	if slices.Contains(compiled, "excluded.go") {
+		t.Fatalf("did not expect excluded.go in compiled files: %v", compiled)
+	}
+}
+
 func TestPackageGraphLoadsLocalReplacement(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": strings.Join([]string{
