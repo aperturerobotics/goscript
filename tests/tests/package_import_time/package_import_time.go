@@ -27,4 +27,6 @@ func main() {
 	// other functions on setTime
 	println("weekday", setTime.Weekday().String())
 	println("location", setTime.Location().String())
+	println("utc", setTime.UTC().Format("2006-01-02T15:04:05Z07:00"))
+	println("seconds", (1500 * time.Millisecond).Seconds())
 }

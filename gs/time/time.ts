@@ -137,6 +137,11 @@ export class Time {
     return this._location
   }
 
+  // UTC returns t with the location set to UTC.
+  public UTC(): Time {
+    return Time.create(this._date, this._nsec, undefined, UTC)
+  }
+
   // Format returns a textual representation of the time value formatted according to the layout
   public Format(layout: string): string {
     // Implementation of Go's time formatting based on reference time:
@@ -590,6 +595,11 @@ export function Duration_multiply(
   multiplier: number,
 ): Duration {
   return receiver * multiplier
+}
+
+// Duration_Seconds returns the duration as a floating point number of seconds.
+export function Duration_Seconds(receiver: Duration): number {
+  return receiver / Second
 }
 
 // Location represents a time zone

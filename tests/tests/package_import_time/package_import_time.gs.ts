@@ -30,6 +30,8 @@ export async function main(): Promise<void> {
 	// other functions on setTime
 	$.println("weekday", time.Weekday_String($.markAsStructValue(setTime.clone()).Weekday()))
 	$.println("location", $.pointerValue<time.Location>($.markAsStructValue(setTime.clone()).Location()).String())
+	$.println("utc", $.markAsStructValue($.markAsStructValue(setTime.clone()).UTC().clone()).Format("2006-01-02T15:04:05Z07:00"))
+	$.println("seconds", time.Duration_Seconds((1500 * time.Millisecond)))
 }
 
 
