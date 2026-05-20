@@ -2719,8 +2719,10 @@ func (o *LoweringOwner) callUsesOverridePackage(ctx lowerFileContext, expr ast.E
 	if fn == nil || fn.Pkg() == nil {
 		return false
 	}
-	_, ok := o.overrideOwner.importPackageRoot(fn.Pkg().Path())
-	return ok
+	if ctx.model != nil && ctx.model.functions[fn] != nil {
+		return false
+	}
+	return o.overrideOwner.hasPackage(fn.Pkg().Path())
 }
 
 func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) (string, []Diagnostic) {
@@ -4257,7 +4259,7 @@ func (o *LoweringOwner) overrideTypeArgsExpr(ctx lowerFileContext, named *types.
 	if args == nil || args.Len() == 0 {
 		return ""
 	}
-	if _, ok := o.overrideOwner.importPackageRoot(named.Obj().Pkg().Path()); !ok {
+	if !o.overrideOwner.hasPackage(named.Obj().Pkg().Path()) {
 		return ""
 	}
 	parts := make([]string, 0, args.Len())

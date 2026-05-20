@@ -375,6 +375,11 @@ func (o *OverrideRegistryOwner) importPackageRoot(importPath string) (string, bo
 	return "", false
 }
 
+func (o *OverrideRegistryOwner) hasPackage(pkgPath string) bool {
+	roots, err := o.packageRoots()
+	return err == nil && roots[pkgPath]
+}
+
 func isOverrideSourceFile(filePath string) bool {
 	return strings.HasSuffix(filePath, ".ts") && !strings.HasSuffix(filePath, ".test.ts")
 }

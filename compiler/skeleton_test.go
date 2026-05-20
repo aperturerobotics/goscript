@@ -955,6 +955,46 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesPacksVariadicCallsInGeneratedOverrideSubpackage(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module github.com/aperturerobotics/protobuf-go-lite\n\ngo 1.25.3\n",
+		"json/json.go": strings.Join([]string{
+			"package json",
+			"import \"fmt\"",
+			"type State struct { err error }",
+			"func (s *State) SetErrorf(format string, a ...any) {",
+			"  s.err = fmt.Errorf(format, a...)",
+			"}",
+			"func (s *State) Read(key string) {",
+			"  s.SetErrorf(\"bad %q\", key)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "./json"); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "github.com", "aperturerobotics", "protobuf-go-lite", "json", "json.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	want := "$.pointerValue<State>(s).SetErrorf(\"bad %q\", $.arrayToSlice<any>([key]))"
+	if !strings.Contains(text, want) {
+		t.Fatalf("missing %q in generated output:\n%s", want, text)
+	}
+	if strings.Contains(text, "$.pointerValue<State>(s).SetErrorf(\"bad %q\", key)") {
+		t.Fatalf("generated override subpackage call was not packed:\n%s", text)
+	}
+}
+
 func TestCompilePackagesLowersRangeOverFunctionIterators(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/iterators\n\ngo 1.25.3\n",
