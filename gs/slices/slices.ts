@@ -42,6 +42,22 @@ export function Compare<T extends string | number>(
 }
 
 /**
+ * Clone returns a shallow copy of s while preserving nilness.
+ * @param s The slice to clone
+ * @returns A new slice with the same elements, or null for a nil slice
+ */
+export function Clone<T>(s: $.Slice<T>): $.Slice<T> {
+  if (s == null) {
+    return null
+  }
+  const out = $.makeSlice<T>($.len(s))
+  for (let i = 0; i < $.len(s); i++) {
+    ;(out as any)[i] = (s as any)[i] as T
+  }
+  return out
+}
+
+/**
  * All returns an iterator over index-value pairs in the slice.
  * This is equivalent to Go's slices.All function.
  * @param s The slice to iterate over

@@ -21,6 +21,12 @@ export async function main(): Promise<void> {
 		return
 	}
 
+	let cloned = slices.Clone(s)
+	cloned![0] = 99
+	$.println("clone first:", cloned![0], "original first:", s![0], "same len:", $.len(cloned) == $.len(s))
+	let nilSlice: $.Slice<number> = null
+	$.println("nil clone:", slices.Clone(nilSlice) == null)
+
 	$.println("test finished")
 }
 

@@ -11,5 +11,11 @@ func main() {
 		println("index:", i, "value:", v)
 	}
 
+	cloned := slices.Clone(s)
+	cloned[0] = 99
+	println("clone first:", cloned[0], "original first:", s[0], "same len:", len(cloned) == len(s))
+	var nilSlice []int
+	println("nil clone:", slices.Clone(nilSlice) == nil)
+
 	println("test finished")
 }

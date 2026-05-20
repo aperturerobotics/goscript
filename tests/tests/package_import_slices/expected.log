@@ -3,4 +3,6 @@ index: 1 value: 2
 index: 2 value: 3
 index: 3 value: 4
 index: 4 value: 5
+clone first: 99 original first: 1 same len: true
+nil clone: true
 test finished
