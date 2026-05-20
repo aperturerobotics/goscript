@@ -57,7 +57,7 @@ export async function main(): Promise<void> {
 	$.println("Quote result:", quoted)
 
 	// Test Unquote
-	let __goscriptTuple3 = strconv.Unquote(`"hello world"`)
+	let __goscriptTuple3 = strconv.Unquote("\"hello world\"")
 	let unquoted = __goscriptTuple3[0]
 	err = __goscriptTuple3[1]
 	if (err == null) {

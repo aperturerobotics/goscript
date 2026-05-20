@@ -6,7 +6,9 @@ import {
   chanRecvWithOk,
   functionValue,
   genericZero,
+  goSlice,
   int,
+  indexRef,
   interfaceValue,
   makeChannel,
   makeMap,
@@ -105,6 +107,25 @@ describe('builtin runtime contract helpers', () => {
     expect(mapGet(m, 'missing', 0)).toEqual([0, false])
 
     expect(newError('bad')?.Error()).toBe('bad')
+  })
+
+  it('exposes addressable slice and array index references', () => {
+    const values = [1, 2, 3]
+    const second = indexRef(values, 1)
+    second.value = 8
+    expect(values).toEqual([1, 8, 3])
+    expect(pointerValue(second)).toBe(8)
+
+    const view = goSlice(values, 1, 3)
+    const firstInView = indexRef(view, 0)
+    firstInView.value = 11
+    expect(values).toEqual([1, 11, 3])
+    expect(Object.getOwnPropertyDescriptor(view, '0')?.value).toBe(11)
+
+    const bytes = new Uint8Array([4, 5])
+    const firstByte = indexRef<number>(bytes, 0)
+    firstByte.value = 9
+    expect(Array.from(bytes)).toEqual([9, 5])
   })
 
   it('exposes value and type descriptor helpers', () => {

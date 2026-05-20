@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -140,6 +141,120 @@ func TestCompilePackagesEmitsSimplePackage(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEmitsShadowedBuiltinCalls(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/shadowbuiltin\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package shadowbuiltin",
+			"type Value struct {",
+			"  N int",
+			"}",
+			"func Build(new func() (*Value, error)) (*Value, error) {",
+			"  return new()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "shadowbuiltin", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "return _new!()") {
+		t.Fatalf("shadowed builtin call was not emitted as a callable value:\n%s", text)
+	}
+}
+
+func TestCompilePackagesQuotesRawStringLiterals(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/rawstrings\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package rawstrings",
+			"func Values() (string, string) {",
+			"  return `\\u00`, `invalid escape char after \\`",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "rawstrings", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, `return ["\\u00", "invalid escape char after \\"]`) {
+		t.Fatalf("raw string literals were not quoted for TypeScript:\n%s", text)
+	}
+}
+
+func TestCompilePackagesUsesEmbedOverride(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod":       "module example.test/embedblank\n\ngo 1.25.3\n",
+		"version.txt":  "1.2.3\n",
+		"version..txt": "4.5.6\n",
+		"main.go": strings.Join([]string{
+			"package embedblank",
+			"import _ \"embed\"",
+			"//go:embed version.txt",
+			"var Version string",
+			"//go:embed version..txt",
+			"var Dotted string",
+			"func GetVersion() string {",
+			"  return Version",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir, AllDependencies: true}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	result, err := comp.CompilePackages(context.Background(), ".")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if !slices.Contains(result.CopiedPackages, "embed") {
+		t.Fatalf("embed override was not copied: %#v", result.CopiedPackages)
+	}
+	if _, err := os.Stat(filepath.Join(outputDir, "@goscript", "embed", "index.ts")); err != nil {
+		t.Fatalf("embed override missing from output: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(outputDir, "@goscript", "embed", "embed.gs.ts")); !os.IsNotExist(err) {
+		t.Fatalf("stdlib embed was emitted instead of override: %v", err)
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "embedblank", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if !strings.Contains(string(content), "export let Version: string = \"1.2.3\\n\"") {
+		t.Fatalf("embedded string content was not emitted:\n%s", string(content))
+	}
+	if !strings.Contains(string(content), "export let Dotted: string = \"4.5.6\\n\"") {
+		t.Fatalf("embedded dotted filename content was not emitted:\n%s", string(content))
+	}
+}
+
 func TestCompilePackagesEmitsPackageLocalImport(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/imports\n\ngo 1.25.3\n",
@@ -226,6 +341,49 @@ func TestCompilePackagesEmitsPackageLocalImport(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEmitsIndexAddressRefs(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/indexaddr\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Item struct { N int }",
+			"func set(ptr *int, value int) {",
+			"  *ptr = value",
+			"}",
+			"func Use(values []int, i int) int {",
+			"  set(&values[i], 9)",
+			"  return values[i]",
+			"}",
+			"func Items() []*Item {",
+			"  return []*Item{{N: 1}}",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	_, err = comp.CompilePackages(context.Background(), ".")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "indexaddr", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "set($.indexRef(values!, i), 9)") {
+		t.Fatalf("missing index address reference:\n%s", text)
+	}
+	if !strings.Contains(text, "new Item({N: 1})") {
+		t.Fatalf("missing elided pointer composite literal:\n%s", text)
+	}
+}
+
 func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/structs\n\ngo 1.25.3\n",
@@ -241,6 +399,9 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 			"func (c *Counter) Set(v int) {",
 			"  c.Value = v",
 			"}",
+			"func NewCounter() *Counter {",
+			"  return &Counter{Value: 3}",
+			"}",
 			"func main() {",
 			"  original := Counter{Value: 1}",
 			"",
@@ -248,6 +409,7 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 			"  copy := original",
 			"  pointer := &original",
 			"  pointer.Set(2)",
+			"  NewCounter().Set(5)",
 			"  var iface any = pointer",
 			"  _, ok := iface.(*Counter)",
 			"  println(copy.Read(), original.Read(), ok)",
@@ -281,6 +443,7 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"let copy = $.markAsStructValue(original.value.clone())",
 		"let pointer = original",
 		"$.pointerValue(pointer).Set(2)",
+		"$.pointerValue(NewCounter()).Set(5)",
 		"let [, ok] = $.typeAssertTuple<Counter | $.VarRef<Counter> | null>(iface, { kind: $.TypeKind.Pointer, elemType: \"main.Counter\" })",
 		"\"Value\": { type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\" }",
 	} {
@@ -1052,6 +1215,21 @@ func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
 			"  case value > 1:",
 			"    println(\"positive\")",
 			"  }",
+			"Block:",
+			"  for value > 0 {",
+			"    switch value {",
+			"    case 2:",
+			"      value--",
+			"      fallthrough",
+			"    case 1:",
+			"      break Block",
+			"    }",
+			"  }",
+			"Again:",
+			"  value--",
+			"  if value > 0 {",
+			"    goto Again",
+			"  }",
 			"  release := func() { println(\"release\") }",
 			"  rel := &release",
 			"  (*rel)()",
@@ -1084,6 +1262,10 @@ func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
 		"case 3:",
 		"let local = \"two-three\"",
 		"switch (true) {",
+		"Block: while (value > 0)",
+		"break Block",
+		"Again: while (true)",
+		"continue Again",
 		"($.pointerValue(rel))!()",
 		"$.functionValue((): void => {\n\t\tusing __defer = new $.DisposableStack()",
 		"__defer.defer(() => { $.println(\"wrapped deferred\") })",
@@ -1095,6 +1277,9 @@ func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
 	}
 	if strings.Count(text, "\t\tbreak\n") < 3 {
 		t.Fatalf("switch cases were not rendered with implicit breaks:\n%s", text)
+	}
+	if strings.Contains(text, "fallthrough") {
+		t.Fatalf("fallthrough marker leaked into generated output:\n%s", text)
 	}
 }
 

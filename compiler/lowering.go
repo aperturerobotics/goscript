@@ -7,6 +7,8 @@ import (
 	"go/constant"
 	"go/token"
 	"go/types"
+	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -169,6 +171,7 @@ func (o *LoweringOwner) lowerFile(
 		file:          file,
 		importAliases: importAliases,
 		importPaths:   importPaths,
+		sourcePath:    sourcePath,
 		localAliases:  localAliases,
 		tempNames:     newTempNameOwner(),
 		topLevel:      true,
@@ -326,6 +329,7 @@ type lowerFileContext struct {
 	file          *ast.File
 	importAliases map[string]string
 	importPaths   map[string]string
+	sourcePath    string
 	localAliases  map[types.Object]string
 	tempNames     *tempNameOwner
 	signature     *types.Signature
@@ -333,6 +337,7 @@ type lowerFileContext struct {
 	rangeBranch   *loweredRangeBranch
 	rangeBreak    bool
 	rangeContinue bool
+	gotoLabels    map[string]bool
 	topLevel      bool
 }
 
@@ -397,6 +402,7 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				decls = append(decls, decl)
 			}
 		case *ast.ValueSpec:
+			embedPatterns := goEmbedPatterns(decl.Doc, typed.Doc)
 			for idx, name := range typed.Names {
 				obj := ctx.semPkg.source.TypesInfo.Defs[name]
 				if obj == nil {
@@ -407,6 +413,12 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					lowered, exprDiagnostics := o.lowerExpr(ctx, typed.Values[idx])
 					diagnostics = append(diagnostics, exprDiagnostics...)
 					value = o.lowerValueForTarget(ctx, typed.Values[idx], obj.Type(), lowered)
+				} else if len(embedPatterns) != 0 {
+					embedded, embedDiagnostics := o.lowerGoEmbedValue(ctx, obj.Type(), embedPatterns)
+					diagnostics = append(diagnostics, embedDiagnostics...)
+					if embedded != "" {
+						value = embedded
+					}
 				}
 				if _, ok := obj.(*types.Const); !ok && ctx.model.needsVarRef[obj] {
 					value = o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + value + ")"
@@ -430,6 +442,65 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 		}
 	}
 	return decls, diagnostics
+}
+
+func goEmbedPatterns(groups ...*ast.CommentGroup) []string {
+	var patterns []string
+	for _, group := range groups {
+		if group == nil {
+			continue
+		}
+		for _, comment := range group.List {
+			text := strings.TrimSpace(comment.Text)
+			if after, ok := strings.CutPrefix(text, "//"); ok {
+				text = strings.TrimSpace(after)
+			}
+			if after, ok := strings.CutPrefix(text, "/*"); ok {
+				text = strings.TrimSpace(strings.TrimSuffix(after, "*/"))
+			}
+			if !strings.HasPrefix(text, "go:embed") {
+				continue
+			}
+			patterns = append(patterns, strings.Fields(strings.TrimSpace(strings.TrimPrefix(text, "go:embed")))...)
+		}
+	}
+	return patterns
+}
+
+func (o *LoweringOwner) lowerGoEmbedValue(
+	ctx lowerFileContext,
+	typ types.Type,
+	patterns []string,
+) (string, []Diagnostic) {
+	if len(patterns) != 1 {
+		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern list")}
+	}
+	pattern := strings.Trim(patterns[0], "`\"")
+	cleanPattern := path.Clean(pattern)
+	if pattern == "" ||
+		strings.Contains(pattern, "*") ||
+		path.IsAbs(pattern) ||
+		cleanPattern == "." ||
+		cleanPattern == ".." ||
+		strings.HasPrefix(cleanPattern, "../") {
+		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
+	}
+	data, err := os.ReadFile(filepath.Join(filepath.Dir(ctx.sourcePath), filepath.FromSlash(cleanPattern)))
+	if err != nil {
+		return "", []Diagnostic{{
+			Severity: DiagnosticSeverityError,
+			Code:     "goscript/lowering:embed",
+			Message:  "failed to read go:embed file",
+			Detail:   ctx.semPkg.pkgPath + ": " + err.Error(),
+		}}
+	}
+	if isStringType(typ) {
+		return strconv.Quote(string(data)), nil
+	}
+	if slice, ok := types.Unalias(typ).Underlying().(*types.Slice); ok && isByteType(slice.Elem()) {
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperStringToBytes) + "(" + strconv.Quote(string(data)) + ")", nil
+	}
+	return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed target type")}
 }
 
 func (o *LoweringOwner) lowerTypeSpec(ctx lowerFileContext, spec *ast.TypeSpec) (loweredDecl, []Diagnostic) {
@@ -773,6 +844,11 @@ func (ctx lowerFileContext) withoutRangeBreak() lowerFileContext {
 	return ctx
 }
 
+func (ctx lowerFileContext) withGotoLabels(labels map[string]bool) lowerFileContext {
+	ctx.gotoLabels = labels
+	return ctx
+}
+
 func (o *LoweringOwner) lowerBlock(ctx lowerFileContext, block *ast.BlockStmt) ([]loweredStmt, []Diagnostic) {
 	if block == nil {
 		return nil, nil
@@ -847,12 +923,32 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		return o.lowerSwitchStmt(ctx, typed)
 	case *ast.TypeSwitchStmt:
 		return o.lowerTypeSwitchStmt(ctx, typed)
+	case *ast.LabeledStmt:
+		lowered, diagnostics := o.lowerStmt(ctx, typed.Stmt)
+		if len(lowered) != 0 {
+			label := safeIdentifier(typed.Label.Name)
+			if lowered[0].text == "" {
+				return []loweredStmt{{text: label + ":", children: lowered}}, diagnostics
+			}
+			lowered[0].text = label + ": " + lowered[0].text
+		}
+		return lowered, diagnostics
 	case *ast.IncDecStmt:
 		expr, diagnostics := o.lowerExpr(ctx, typed.X)
 		return []loweredStmt{{text: expr + typed.Tok.String()}}, diagnostics
 	case *ast.BranchStmt:
 		if typed.Label != nil {
-			return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported labeled branch")}
+			switch typed.Tok {
+			case token.BREAK, token.CONTINUE:
+				return []loweredStmt{{text: typed.Tok.String() + " " + safeIdentifier(typed.Label.Name)}}, nil
+			case token.GOTO:
+				if ctx.gotoLabels[safeIdentifier(typed.Label.Name)] {
+					return []loweredStmt{{text: "continue " + safeIdentifier(typed.Label.Name)}}, nil
+				}
+				return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported goto branch")}
+			default:
+				return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported labeled branch")}
+			}
 		}
 		switch typed.Tok {
 		case token.BREAK, token.CONTINUE:
@@ -863,9 +959,13 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 				return []loweredStmt{{text: "return true"}}, nil
 			}
 			return []loweredStmt{{text: typed.Tok.String()}}, nil
+		case token.FALLTHROUGH:
+			return []loweredStmt{{text: "fallthrough"}}, nil
 		default:
 			return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported branch")}
 		}
+	case *ast.EmptyStmt:
+		return nil, nil
 	default:
 		return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported statement kind")}
 	}
@@ -893,9 +993,40 @@ func (o *LoweringOwner) lowerStmtListAfter(
 ) ([]loweredStmt, []Diagnostic) {
 	lowered := make([]loweredStmt, 0, len(stmts))
 	var diagnostics []Diagnostic
-	for _, stmt := range stmts {
+	gotoSpans := backwardGotoLabelSpans(stmts)
+	gotoLabels := make(map[string]bool, len(gotoSpans))
+	for label := range gotoSpans {
+		gotoLabels[label] = true
+	}
+	for idx := 0; idx < len(stmts); idx++ {
+		stmt := stmts[idx]
 		startLine := sourceLine(ctx, stmt.Pos())
 		leading := leadingStmtLines(ctx, prevEndLine, startLine)
+		if labeled, ok := stmt.(*ast.LabeledStmt); ok {
+			label := safeIdentifier(labeled.Label.Name)
+			if endIdx, ok := gotoSpans[label]; ok {
+				bodyStmts := make([]ast.Stmt, 0, endIdx-idx+1)
+				bodyStmts = append(bodyStmts, labeled.Stmt)
+				bodyStmts = append(bodyStmts, stmts[idx+1:endIdx+1]...)
+				body, bodyDiagnostics := o.lowerStmtListAfter(
+					ctx.withGotoLabels(gotoLabels),
+					bodyStmts,
+					sourceLine(ctx, labeled.Label.End()),
+				)
+				diagnostics = append(diagnostics, bodyDiagnostics...)
+				body = append(body, loweredStmt{text: "break"})
+				loop := loweredStmt{text: label + ": while (true)", children: body}
+				if len(leading) != 0 {
+					loop.leading = append(leading, loop.leading...)
+				}
+				lowered = append(lowered, loop)
+				if endLine := sourceLine(ctx, stmts[endIdx].End()); endLine != 0 {
+					prevEndLine = endLine
+				}
+				idx = endIdx
+				continue
+			}
+		}
 		stmtLowered, stmtDiagnostics := o.lowerStmt(ctx, stmt)
 		diagnostics = append(diagnostics, stmtDiagnostics...)
 		if len(stmtLowered) != 0 && len(leading) != 0 {
@@ -907,6 +1038,35 @@ func (o *LoweringOwner) lowerStmtListAfter(
 		}
 	}
 	return lowered, diagnostics
+}
+
+func backwardGotoLabelSpans(stmts []ast.Stmt) map[string]int {
+	seenLabels := make(map[string]bool)
+	spans := make(map[string]int)
+	for idx, stmt := range stmts {
+		if labeled, ok := stmt.(*ast.LabeledStmt); ok {
+			seenLabels[safeIdentifier(labeled.Label.Name)] = true
+		}
+		ast.Inspect(stmt, func(node ast.Node) bool {
+			branch, ok := node.(*ast.BranchStmt)
+			if !ok || branch.Tok != token.GOTO || branch.Label == nil {
+				return true
+			}
+			label := safeIdentifier(branch.Label.Name)
+			if seenLabels[label] {
+				spans[label] = idx
+			}
+			return true
+		})
+	}
+	for label, idx := range spans {
+		if idx+1 < len(stmts) {
+			if _, ok := stmts[idx+1].(*ast.ReturnStmt); ok {
+				spans[label] = idx + 1
+			}
+		}
+	}
+	return spans
 }
 
 func leadingStmtLines(ctx lowerFileContext, prevEndLine int, startLine int) []string {
@@ -1626,7 +1786,15 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 			diagnostics = append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported switch clause"))
 			continue
 		}
-		body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak(), clause.Body)
+		bodyStmts := clause.Body
+		fallsThrough := false
+		if len(bodyStmts) != 0 {
+			if branch, ok := bodyStmts[len(bodyStmts)-1].(*ast.BranchStmt); ok && branch.Tok == token.FALLTHROUGH {
+				bodyStmts = bodyStmts[:len(bodyStmts)-1]
+				fallsThrough = true
+			}
+		}
+		body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak(), bodyStmts)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		if len(clause.List) == 0 {
 			switchIR.defaultBody = body
@@ -1640,8 +1808,9 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 			values = append(values, lowered)
 		}
 		switchIR.cases = append(switchIR.cases, loweredSwitchCase{
-			values: values,
-			body:   body,
+			values:       values,
+			body:         body,
+			fallsThrough: fallsThrough,
 		})
 	}
 
@@ -1854,6 +2023,13 @@ func lowerBasicLit(lit *ast.BasicLit) string {
 		}
 		return strconv.FormatInt(int64([]rune(value)[0]), 10)
 	}
+	if lit.Kind == token.STRING {
+		value, err := strconv.Unquote(lit.Value)
+		if err != nil {
+			return strconv.Quote(lit.Value)
+		}
+		return strconv.Quote(value)
+	}
 	if lit.Kind == token.INT && isLegacyOctalLiteral(lit.Value) {
 		digits := strings.TrimLeft(strings.ReplaceAll(lit.Value, "_", ""), "0")
 		if digits == "" {
@@ -1967,7 +2143,7 @@ func objectForIdent(ctx lowerFileContext, ident *ast.Ident) types.Object {
 }
 
 func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) (string, []Diagnostic) {
-	if ident, ok := expr.Fun.(*ast.Ident); ok {
+	if ident, ok := expr.Fun.(*ast.Ident); ok && isBuiltinCallTarget(ctx, ident) {
 		switch ident.Name {
 		case "make":
 			return o.lowerMakeExpr(ctx, expr)
@@ -1983,52 +2159,47 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 
 	switch fun := expr.Fun.(type) {
 	case *ast.Ident:
-		switch fun.Name {
-		case "println", "print":
-			helper := RuntimeHelperPrintln
-			if fun.Name == "print" {
-				helper = RuntimeHelperPrint
+		if isBuiltinCallTarget(ctx, fun) {
+			switch fun.Name {
+			case "println", "print":
+				helper := RuntimeHelperPrintln
+				if fun.Name == "print" {
+					helper = RuntimeHelperPrint
+				}
+				return o.runtimeOwner.QualifiedHelper(helper) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "append":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperAppend) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "cap":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperCap) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "clear":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperClear) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "copy":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperCopy) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "delete":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperDeleteMapEntry) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "len":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "max":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperMax) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "min":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperMin) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "panic":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperPanic) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "recover":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperRecover) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "close":
+				if len(args) != 1 {
+					return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "close requires one argument"))
+				}
+				return args[0] + "!.close()", diagnostics
 			}
-			return o.runtimeOwner.QualifiedHelper(helper) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "byte":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperByte) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "append":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperAppend) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "cap":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperCap) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "clear":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperClear) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "copy":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperCopy) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "delete":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperDeleteMapEntry) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "int":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "len":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "max":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperMax) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "min":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperMin) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "panic":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperPanic) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "recover":
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperRecover) + "(" + strings.Join(args, ", ") + ")", diagnostics
-		case "string":
-			return "String(" + strings.Join(args, ", ") + ")", diagnostics
-		case "close":
-			if len(args) != 1 {
-				return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "close requires one argument"))
-			}
-			return args[0] + "!.close()", diagnostics
-		default:
-			if signature := genericFunctionSignature(ctx, fun); signature != nil {
-				args = append([]string{o.inferredGenericTypeArgsExpr(ctx, signature, expr.Args)}, args...)
-			}
-			callee := o.lowerCallableExpr(ctx, fun, o.lowerIdent(ctx, fun, false))
-			call := callee + "(" + strings.Join(args, ", ") + ")"
-			return o.awaitCallIfNeeded(ctx, fun, call), diagnostics
 		}
+		if signature := genericFunctionSignature(ctx, fun); signature != nil {
+			args = append([]string{o.inferredGenericTypeArgsExpr(ctx, signature, expr.Args)}, args...)
+		}
+		callee := o.lowerCallableExpr(ctx, fun, o.lowerIdent(ctx, fun, false))
+		call := callee + "(" + strings.Join(args, ", ") + ")"
+		return o.awaitCallIfNeeded(ctx, fun, call), diagnostics
 	case *ast.SelectorExpr:
 		if selection := ctx.semPkg.source.TypesInfo.Selections[fun]; selection != nil && selection.Kind() == types.MethodVal {
 			if typeParam := receiverTypeParam(selection.Recv()); typeParam != nil {
@@ -2366,6 +2537,9 @@ func (o *LoweringOwner) lowerNamedReceiverForMethod(
 		}
 	}
 	if receiverPointer {
+		if isPointerType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
+			return o.lowerExpr(ctx, expr)
+		}
 		if ident, ok := expr.(*ast.Ident); ok {
 			if obj := objectForIdent(ctx, ident); obj != nil && ctx.model.needsVarRef[obj] {
 				return o.lowerIdent(ctx, ident, true), nil
@@ -2495,9 +2669,22 @@ func (o *LoweringOwner) lowerAddressExpr(ctx lowerFileContext, expr ast.Expr) (s
 	case *ast.SelectorExpr:
 		receiver, diagnostics := o.lowerFieldReceiverExpr(ctx, typed.X)
 		return receiver + "._fields." + typed.Sel.Name, diagnostics
+	case *ast.IndexExpr:
+		return o.lowerIndexAddressExpr(ctx, typed)
 	default:
 		return "undefined", []Diagnostic{loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported address expression")}
 	}
+}
+
+func (o *LoweringOwner) lowerIndexAddressExpr(ctx lowerFileContext, expr *ast.IndexExpr) (string, []Diagnostic) {
+	target, targetDiagnostics := o.lowerExpr(ctx, expr.X)
+	index, indexDiagnostics := o.lowerExpr(ctx, expr.Index)
+	diagnostics := append(targetDiagnostics, indexDiagnostics...)
+	targetType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	if isStringType(targetType) || isMapType(targetType) {
+		return "undefined", append(diagnostics, loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported address expression"))
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexRef) + "(" + lowerIndexTarget(target, targetType) + ", " + index + ")", diagnostics
 }
 
 func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
@@ -2567,6 +2754,11 @@ func (o *LoweringOwner) lowerCompositeLit(
 	if named != nil {
 		return o.lowerStructCompositeLit(ctx, lit, named, markStruct)
 	}
+	if ptr, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(lit)).Underlying().(*types.Pointer); ok {
+		if named := namedStructType(ptr.Elem()); named != nil {
+			return o.lowerStructCompositeLit(ctx, lit, named, false)
+		}
+	}
 	if structType, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(lit)).Underlying().(*types.Struct); ok {
 		return o.lowerAnonymousStructCompositeLit(ctx, lit, structType)
 	}
@@ -2579,7 +2771,15 @@ func (o *LoweringOwner) lowerCompositeLit(
 	if mapType, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(lit)).Underlying().(*types.Map); ok {
 		return o.lowerMapCompositeLit(ctx, lit, mapType)
 	}
-	return "undefined", []Diagnostic{loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported composite literal")}
+	position := sourcePos(ctx.semPkg.source, lit.Pos())
+	detail := "unsupported composite literal"
+	if position.file != "" {
+		detail += " at " + filepath.Base(position.file) + ":" + strconv.Itoa(position.line)
+	}
+	if typ := ctx.semPkg.source.TypesInfo.TypeOf(lit); typ != nil {
+		detail += " of type " + typ.String()
+	}
+	return "undefined", []Diagnostic{loweringUnsupported("expression", ctx.semPkg.pkgPath, detail)}
 }
 
 func (o *LoweringOwner) lowerStructCompositeLit(

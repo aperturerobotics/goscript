@@ -105,8 +105,9 @@ type loweredSwitch struct {
 }
 
 type loweredSwitchCase struct {
-	values []string
-	body   []loweredStmt
+	values       []string
+	body         []loweredStmt
+	fallsThrough bool
 }
 
 type loweredSelect struct {

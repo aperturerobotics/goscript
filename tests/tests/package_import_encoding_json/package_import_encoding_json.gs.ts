@@ -79,7 +79,7 @@ export async function main(): Promise<void> {
 	// Unmarshal into a struct
 	let q: $.VarRef<Person> = $.varRef($.markAsStructValue(new Person()))
 	{
-		let err = json.Unmarshal($.stringToBytes(`{"name":"Bob","age":25,"active":false}`), q)
+		let err = json.Unmarshal($.stringToBytes("{\"name\":\"Bob\",\"age\":25,\"active\":false}"), q)
 		if (err != null) {
 			results = $.append(results, "Unmarshal struct error: " + err!.Error())
 		} else {
@@ -90,7 +90,7 @@ export async function main(): Promise<void> {
 	// Unmarshal into a map[string]any
 	let m: $.VarRef<Map<string, any> | null> = $.varRef(null)
 	{
-		let err = json.Unmarshal($.stringToBytes(`{"name":"Carol","age":22,"active":true}`), m)
+		let err = json.Unmarshal($.stringToBytes("{\"name\":\"Carol\",\"age\":22,\"active\":true}"), m)
 		if (err != null) {
 			results = $.append(results, "Unmarshal map error: " + err!.Error())
 		} else {

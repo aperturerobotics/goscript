@@ -157,6 +157,12 @@ func (o *PackageGraphOwner) collect(
 	if pkg == nil || seen[pkg.ID] {
 		return
 	}
+	if pkg.ForTest != "" && !requested[pkg.ForTest] {
+		if prod := pkg.Imports[pkg.ForTest]; prod != nil {
+			o.collect(graph, prod, mode, requested, seen)
+		}
+		return
+	}
 	seen[pkg.ID] = true
 
 	path := packagePath(pkg)

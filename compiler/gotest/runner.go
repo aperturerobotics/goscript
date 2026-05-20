@@ -104,22 +104,42 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 			BuildFlags:          append([]string(nil), norm.BuildFlags...),
 			DependencyMode:      compiler.DependencyModeAll,
 			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
-			Tests:               true,
+			Tests:               false,
 			AllDependencies:     true,
 		}
-		compileResult, compileErr := r.service.Compile(ctx, compileReq)
-		if compileResult != nil {
-			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
-		}
-		if compileErr != nil {
+		if compileResult, compileErr := r.service.Compile(ctx, compileReq); compileErr != nil {
 			result.Packages[idx].Action = ActionFail
-			var diagnostics []compiler.Diagnostic
 			if compileResult != nil {
-				diagnostics = compileResult.Diagnostics
+				result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+				result.Packages[idx].Owner = classifyDiagnostics(compileResult.Diagnostics)
 			}
-			result.Packages[idx].Owner = classifyDiagnostics(diagnostics)
 			result.Packages[idx].Error = compileErr.Error()
 			continue
+		} else if compileResult != nil {
+			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+		}
+		if !r.compileTestImports(ctx, norm, outputRoot, &result.Packages[idx], result) {
+			continue
+		}
+		testCompileReq := &compiler.CompileRequest{
+			Patterns:            []string{result.Packages[idx].PackagePath},
+			Dir:                 norm.Dir,
+			OutputPath:          outputRoot,
+			BuildFlags:          append([]string(nil), norm.BuildFlags...),
+			DependencyMode:      compiler.DependencyModeRequested,
+			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
+			Tests:               true,
+		}
+		if compileResult, compileErr := r.service.Compile(ctx, testCompileReq); compileErr != nil {
+			result.Packages[idx].Action = ActionFail
+			if compileResult != nil {
+				result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+				result.Packages[idx].Owner = classifyDiagnostics(compileResult.Diagnostics)
+			}
+			result.Packages[idx].Error = compileErr.Error()
+			continue
+		} else if compileResult != nil {
+			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
 		}
 	}
 
@@ -176,6 +196,46 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 	return result, nil
 }
 
+func (r *Runner) compileTestImports(
+	ctx context.Context,
+	req *normalizedRequest,
+	outputRoot string,
+	pkg *PackageResult,
+	result *Result,
+) bool {
+	imports := append([]string(nil), pkg.TestImports...)
+	slices.Sort(imports)
+	imports = slices.Compact(imports)
+	for _, importPath := range imports {
+		if importPath == "" || importPath == pkg.PackagePath {
+			continue
+		}
+		compileReq := &compiler.CompileRequest{
+			Patterns:            []string{importPath},
+			Dir:                 req.Dir,
+			OutputPath:          outputRoot,
+			BuildFlags:          append([]string(nil), req.BuildFlags...),
+			DependencyMode:      compiler.DependencyModeAll,
+			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
+			Tests:               false,
+			AllDependencies:     true,
+		}
+		compileResult, compileErr := r.service.Compile(ctx, compileReq)
+		if compileResult != nil {
+			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+		}
+		if compileErr != nil {
+			pkg.Action = ActionFail
+			if compileResult != nil {
+				pkg.Owner = classifyDiagnostics(compileResult.Diagnostics)
+			}
+			pkg.Error = compileErr.Error()
+			return false
+		}
+	}
+	return true
+}
+
 func compileRunPattern(pattern string) (*regexp.Regexp, error) {
 	pattern = strings.TrimSpace(pattern)
 	if pattern == "" {
@@ -196,6 +256,7 @@ func packageResults(testGraph *compiler.PackageTestGraph, runPattern *regexp.Reg
 		}
 		result.Tests = append(result.Tests, packageVariantTests(pkg.SamePackageTests, runPattern)...)
 		result.Tests = append(result.Tests, packageVariantTests(pkg.ExternalPackageTests, runPattern)...)
+		result.TestImports = packageTestImports(pkg)
 		slices.SortFunc(result.Tests, func(a, b Test) int {
 			if a.Name == b.Name {
 				return strings.Compare(a.PackagePath, b.PackagePath)
@@ -214,6 +275,24 @@ func packageResults(testGraph *compiler.PackageTestGraph, runPattern *regexp.Reg
 		results = append(results, result)
 	}
 	return results
+}
+
+func packageTestImports(pkg *compiler.PackageTestGraphPackage) []string {
+	importSet := make(map[string]bool)
+	for _, variant := range []*compiler.PackageTestGraphVariant{pkg.SamePackageTests, pkg.ExternalPackageTests} {
+		if variant == nil {
+			continue
+		}
+		for _, importPath := range variant.Imports {
+			importSet[importPath] = true
+		}
+	}
+	imports := make([]string, 0, len(importSet))
+	for importPath := range importSet {
+		imports = append(imports, importPath)
+	}
+	slices.Sort(imports)
+	return imports
 }
 
 func packageVariantTests(variant *compiler.PackageTestGraphVariant, runPattern *regexp.Regexp) []Test {

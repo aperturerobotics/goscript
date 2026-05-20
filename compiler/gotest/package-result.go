@@ -20,6 +20,8 @@ type PackageResult struct {
 	PackagePath string
 	// TestPackagePath is the package variant that contains test functions.
 	TestPackagePath string
+	// TestImports are direct imports from selected test variants.
+	TestImports []string
 	// Tests are the selected tests for this package.
 	Tests []Test
 	// Action is the package result.

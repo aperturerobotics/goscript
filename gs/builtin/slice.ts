@@ -1,3 +1,5 @@
+import type { VarRef } from './varRef.js'
+
 /**
  * GoSliceObject contains metadata for complex slice views
  */
@@ -339,6 +341,7 @@ export function goSlice<T>( // T can be number for Uint8Array case
         const index = Number(prop)
         if (index >= 0 && index < target.__meta__.length) {
           target.__meta__.backing[target.__meta__.offset + index] = value
+          target[index] = value
           return true
         }
         if (
@@ -346,6 +349,7 @@ export function goSlice<T>( // T can be number for Uint8Array case
           target.__meta__.length < target.__meta__.capacity
         ) {
           target.__meta__.backing[target.__meta__.offset + index] = value
+          target[index] = value
           target.__meta__.length++
           return true
         }
@@ -1068,6 +1072,68 @@ export function index<T>(
       )
     }
     return collection[index]
+  }
+  throw new Error('runtime error: index on unsupported type')
+}
+
+/**
+ * indexRef returns an addressable reference to a slice or array element.
+ */
+export function indexRef<T>(
+  collection: Slice<T> | T[] | Uint8Array,
+  index: number,
+): VarRef<T> {
+  if (collection === null || collection === undefined) {
+    throw new Error('runtime error: index on nil or undefined collection')
+  }
+  if (collection instanceof Uint8Array) {
+    if (index < 0 || index >= collection.length) {
+      throw new Error(
+        `runtime error: index out of range [${index}] with length ${collection.length}`,
+      )
+    }
+    return {
+      get value() {
+        return collection[index] as T
+      },
+      set value(value: T) {
+        collection[index] = value as number
+      },
+      __isVarRef: true,
+    }
+  }
+  if (isComplexSlice(collection)) {
+    if (index < 0 || index >= collection.__meta__.length) {
+      throw new Error(
+        `runtime error: index out of range [${index}] with length ${collection.__meta__.length}`,
+      )
+    }
+    const backingIndex = collection.__meta__.offset + index
+    return {
+      get value() {
+        return collection.__meta__.backing[backingIndex]
+      },
+      set value(value: T) {
+        collection[index] = value
+      },
+      __isVarRef: true,
+    }
+  }
+  if (Array.isArray(collection)) {
+    if (index < 0 || index >= collection.length) {
+      throw new Error(
+        `runtime error: index out of range [${index}] with length ${collection.length}`,
+      )
+    }
+    return {
+      get value() {
+        return collection[index]
+      },
+      set value(value: T) {
+        collection[index] = value
+      },
+      __isVarRef: true,
+    }
   }
   throw new Error('runtime error: index on unsupported type')
 }

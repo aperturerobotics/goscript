@@ -266,10 +266,8 @@ func TestRunnerScopesPackageCompileErrors(t *testing.T) {
 			"package broken",
 			"",
 			"func Value() int {",
-			"Loop:",
-			"\tfor {",
-			"\t\tbreak Loop",
-			"\t}",
+			"\tgoto Done",
+			"Done:",
 			"\treturn 1",
 			"}",
 			"",
@@ -305,8 +303,67 @@ func TestRunnerScopesPackageCompileErrors(t *testing.T) {
 	if broken.Action != ActionFail || broken.Owner != OwnerLowering {
 		t.Fatalf("broken package should carry lowering failure: %#v", broken)
 	}
-	if !strings.Contains(broken.Error, "unsupported statement kind") {
+	if !strings.Contains(broken.Error, "unsupported goto branch") {
 		t.Fatalf("broken package error should preserve compile diagnostic: %#v", broken)
+	}
+}
+
+func TestRunnerDoesNotCompileDependencyTests(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/deptest\n\ngo 1.25.3\n",
+		"dep/value.go": strings.Join([]string{
+			"package dep",
+			"",
+			"func Value() int { return 11 }",
+			"",
+		}, "\n"),
+		"dep/value_test.go": strings.Join([]string{
+			"package dep",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestDependencyOnly(t *testing.T) {",
+			"Loop:",
+			"\tfor {",
+			"\t\tbreak Loop",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"app/value.go": strings.Join([]string{
+			"package app",
+			"",
+			"import \"example.test/deptest/dep\"",
+			"",
+			"func Value() int { return dep.Value() }",
+			"",
+		}, "\n"),
+		"app/value_test.go": strings.Join([]string{
+			"package app",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestValue(t *testing.T) {",
+			"\tif Value() != 11 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"./app"},
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run dependency test isolation fixture: %v", err)
+	}
+
+	app := requirePackageResult(t, result, "example.test/deptest/app")
+	if app.Action != ActionPass {
+		t.Fatalf("package under test should ignore dependency-only tests: %#v", app)
 	}
 }
 

@@ -3,6 +3,7 @@ package compiler
 import (
 	"go/ast"
 	"go/types"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -23,6 +24,8 @@ type PackageTestGraphVariant struct {
 	GoFiles []string
 	// CompiledGoFiles are files selected by build constraints.
 	CompiledGoFiles []string
+	// Imports are packages imported directly by this test variant.
+	Imports []string
 	// Diagnostics are load diagnostics attached to this variant.
 	Diagnostics []Diagnostic
 	// Tests are ordinary TestXxx functions discovered in this variant.
@@ -30,6 +33,11 @@ type PackageTestGraphVariant struct {
 }
 
 func newPackageTestGraphVariant(pkg *packages.Package, diagnostics []Diagnostic) *PackageTestGraphVariant {
+	imports := make([]string, 0, len(pkg.Imports))
+	for importPath := range pkg.Imports {
+		imports = append(imports, importPath)
+	}
+	slices.Sort(imports)
 	return &PackageTestGraphVariant{
 		ID:              pkg.ID,
 		PkgPath:         packagePath(pkg),
@@ -37,6 +45,7 @@ func newPackageTestGraphVariant(pkg *packages.Package, diagnostics []Diagnostic)
 		ForTest:         pkg.ForTest,
 		GoFiles:         append([]string(nil), pkg.GoFiles...),
 		CompiledGoFiles: append([]string(nil), pkg.CompiledGoFiles...),
+		Imports:         imports,
 		Diagnostics:     append([]Diagnostic(nil), diagnostics...),
 		Tests:           discoverPackageTestFunctions(pkg),
 	}
