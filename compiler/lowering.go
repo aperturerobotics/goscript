@@ -1846,13 +1846,14 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 
 	body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
 	diagnostics = append(diagnostics, bodyDiagnostics...)
+	rangeTarget := o.lowerArrayPointerTarget(ctx, rangeValue, rangeType)
+	indexTarget := o.lowerIndexTarget(ctx, rangeValue, rangeType)
 	indexName := keyName
 	if indexName == "" {
 		indexName = "__rangeIndex"
 	}
 	children := body
 	if valueName != "" {
-		indexTarget := lowerIndexTarget(rangeValue, rangeType)
 		value := indexTarget + "[" + indexName + "]"
 		if stmt.Tok == token.DEFINE {
 			value = o.lowerDeclaredValue(ctx, stmt.Value, value)
@@ -1860,7 +1861,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		children = append([]loweredStmt{{text: "let " + valueName + " = " + value}}, body...)
 	}
 	return loweredStmt{
-		text:     "for (let " + indexName + " = 0; " + indexName + " < " + o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + rangeValue + "); " + indexName + "++)",
+		text:     "for (let " + indexName + " = 0; " + indexName + " < " + o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + rangeTarget + "); " + indexName + "++)",
 		children: children,
 	}, diagnostics
 }
@@ -2456,6 +2457,9 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			case "append":
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperAppend) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "cap":
+				if len(expr.Args) == 1 {
+					args[0] = o.lowerArrayPointerTarget(ctx, args[0], ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[0]))
+				}
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperCap) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "clear":
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperClear) + "(" + strings.Join(args, ", ") + ")", diagnostics
@@ -2464,6 +2468,9 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			case "delete":
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperDeleteMapEntry) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "len":
+				if len(expr.Args) == 1 {
+					args[0] = o.lowerArrayPointerTarget(ctx, args[0], ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[0]))
+				}
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "max":
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperMax) + "(" + strings.Join(args, ", ") + ")", diagnostics
@@ -3016,7 +3023,7 @@ func (o *LoweringOwner) lowerIndexAddressExpr(ctx lowerFileContext, expr *ast.In
 	if isStringType(targetType) || isMapType(targetType) {
 		return "undefined", append(diagnostics, loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported address expression"))
 	}
-	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexRef) + "(" + lowerIndexTarget(target, targetType) + ", " + index + ")", diagnostics
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexRef) + "(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + index + ")", diagnostics
 }
 
 func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
@@ -3073,15 +3080,27 @@ func (o *LoweringOwner) lowerIndexExpr(ctx lowerFileContext, expr *ast.IndexExpr
 	case isMapType(targetType):
 		return o.lowerMapGetValue(ctx, expr, target, index), diagnostics
 	default:
-		return lowerIndexTarget(target, targetType) + "[" + index + "]", diagnostics
+		return o.lowerIndexTarget(ctx, target, targetType) + "[" + index + "]", diagnostics
 	}
 }
 
-func lowerIndexTarget(target string, typ types.Type) string {
+func (o *LoweringOwner) lowerIndexTarget(ctx lowerFileContext, target string, typ types.Type) string {
+	if array := pointerToArrayType(typ); array != nil {
+		return o.lowerArrayPointerTarget(ctx, target, typ)
+	}
 	if isNilableType(typ) {
 		return target + "!"
 	}
 	return target
+}
+
+func (o *LoweringOwner) lowerArrayPointerTarget(ctx lowerFileContext, target string, typ types.Type) string {
+	array := pointerToArrayType(typ)
+	if array == nil {
+		return target
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+		"<" + o.tsTypeFor(ctx, array) + ">(" + target + ")"
 }
 
 func (o *LoweringOwner) lowerSliceExpr(ctx lowerFileContext, expr *ast.SliceExpr) (string, []Diagnostic) {
@@ -3093,8 +3112,11 @@ func (o *LoweringOwner) lowerSliceExpr(ctx lowerFileContext, expr *ast.SliceExpr
 	diagnostics = append(diagnostics, highDiagnostics...)
 	diagnostics = append(diagnostics, maxDiagnostics...)
 	helper := RuntimeHelperGoSlice
-	if isStringType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X)) {
+	targetType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	if isStringType(targetType) {
 		helper = RuntimeHelperSliceStringOrBytes
+	} else {
+		target = o.lowerArrayPointerTarget(ctx, target, targetType)
 	}
 	args := []string{target, low, high}
 	if expr.Slice3 {
@@ -3916,6 +3938,15 @@ func isPointerToStructType(typ types.Type) bool {
 		return false
 	}
 	return namedStructType(pointer.Elem()) != nil
+}
+
+func pointerToArrayType(typ types.Type) *types.Array {
+	pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer)
+	if !ok {
+		return nil
+	}
+	array, _ := types.Unalias(pointer.Elem()).Underlying().(*types.Array)
+	return array
 }
 
 func isMapType(typ types.Type) bool {

@@ -35,7 +35,7 @@ func TestCompileSourceCompilesSingleFile(t *testing.T) {
 		"class Counter",
 		"public Increment(): void",
 		"export async function main(): Promise<void>",
-		"$.println(\"Count:\", $.pointerValue(c).value)",
+		"$.println(\"Count:\", $.pointerValue<Counter>(c).value)",
 		"await main()",
 	} {
 		if !strings.Contains(output, want) {
