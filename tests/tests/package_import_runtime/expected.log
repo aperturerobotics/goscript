@@ -4,3 +4,5 @@ GOMAXPROCS(-1): 1
 GOMAXPROCS(0): 1
 NumGoroutine: 1
 GC called successfully
+Callers empty: 0
+Frames empty: 0 false

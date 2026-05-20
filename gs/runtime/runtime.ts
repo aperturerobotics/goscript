@@ -1,3 +1,5 @@
+import * as $ from '@goscript/builtin/index.js'
+
 // Runtime constants for the JavaScript/WebAssembly target
 export const GOOS = 'js'
 export const GOARCH = 'wasm'
@@ -77,6 +79,61 @@ export function Caller(_skip: number): [number, string, number, boolean] {
   const line = 0
   const ok = false // indicate we don't have real stack info
   return [pc, file, line, ok]
+}
+
+// Func represents metadata for a function in a stack frame.
+export class Func {
+  public Entry(): number {
+    return 0
+  }
+
+  public FileLine(_pc: number): [string, number] {
+    return ['', 0]
+  }
+
+  public Name(): string {
+    return ''
+  }
+}
+
+// Frame represents a single call frame.
+export class Frame {
+  public PC = 0
+  public Func: Func | null = null
+  public Function = ''
+  public File = ''
+  public Line = 0
+  public Entry = 0
+}
+
+// Frames iterates over call frames.
+export class Frames {
+  private readonly frames: Frame[]
+  private index = 0
+
+  constructor(frames: Frame[] = []) {
+    this.frames = frames
+  }
+
+  public Next(): [Frame, boolean] {
+    if (this.index >= this.frames.length) {
+      return [new Frame(), false]
+    }
+
+    const frame = this.frames[this.index]
+    this.index++
+    return [frame, this.index < this.frames.length]
+  }
+}
+
+// Callers fills pc with return program counters from the current stack.
+export function Callers(_skip: number, _pc: $.Slice<number>): number {
+  return 0
+}
+
+// CallersFrames returns an iterator over call frames for pcs.
+export function CallersFrames(_callers: $.Slice<number>): Frames {
+  return new Frames()
 }
 
 // Stack returns a formatted stack trace of the calling goroutine.

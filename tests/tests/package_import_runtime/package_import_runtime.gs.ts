@@ -23,6 +23,12 @@ export async function main(): Promise<void> {
 	// Test GC (should be no-op)
 	runtime.GC()
 	$.println("GC called successfully")
+
+	let pcs = $.makeSlice<number>(0, undefined, "number")
+	$.println("Callers empty:", runtime.Callers(0, pcs))
+	let frames = runtime.CallersFrames(pcs)
+	let [frame, more] = $.pointerValue<runtime.Frames>(frames).Next()
+	$.println("Frames empty:", frame.Line, more)
 }
 
 

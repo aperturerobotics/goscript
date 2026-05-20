@@ -20,4 +20,10 @@ func main() {
 	// Test GC (should be no-op)
 	runtime.GC()
 	println("GC called successfully")
+
+	pcs := make([]uintptr, 0)
+	println("Callers empty:", runtime.Callers(0, pcs))
+	frames := runtime.CallersFrames(pcs)
+	frame, more := frames.Next()
+	println("Frames empty:", frame.Line, more)
 }
