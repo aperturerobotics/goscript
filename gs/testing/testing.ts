@@ -111,6 +111,33 @@ export class T {
     this.cleanups.push(fn)
   }
 
+  public Run(name: string, fn: TestFunc): boolean {
+    const child = new T(this.testName + '/' + name)
+    try {
+      const result = fn(child)
+      if (result instanceof Promise) {
+        child.Fail()
+        child.Log('testing.T.Run does not support async subtests')
+      }
+    } catch (err) {
+      if (err instanceof TestControl && err.kind === 'skip') {
+        // A skipped subtest is still a successful Run result.
+      } else {
+        child.Fail()
+        if (!(err instanceof TestControl)) {
+          child.Log(formatValue(err))
+        }
+      }
+    }
+    void child.runCleanups()
+    if (child.Failed()) {
+      this.Fail()
+      child.flushLogs()
+      return false
+    }
+    return true
+  }
+
   public TempDir(): string {
     const path = join(
       tmpdir(),
