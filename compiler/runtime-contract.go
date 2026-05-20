@@ -52,6 +52,7 @@ const (
 	RuntimeHelperCopy                         RuntimeHelper = "slice.copy"
 	RuntimeHelperAsArray                      RuntimeHelper = "slice.asArray"
 	RuntimeHelperStringToRunes                RuntimeHelper = "slice.stringToRunes"
+	RuntimeHelperRangeString                  RuntimeHelper = "slice.rangeString"
 	RuntimeHelperStringToRune                 RuntimeHelper = "slice.stringToRune"
 	RuntimeHelperRunesToString                RuntimeHelper = "slice.runesToString"
 	RuntimeHelperStringToBytes                RuntimeHelper = "slice.stringToBytes"
@@ -222,6 +223,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperCopy, "copy", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperAsArray, "asArray", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperStringToRunes, "stringToRunes", RuntimeHelperCategorySlice),
+		runtimeHelper(RuntimeHelperRangeString, "rangeString", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperStringToRune, "stringToRune", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperRunesToString, "runesToString", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperStringToBytes, "stringToBytes", RuntimeHelperCategorySlice),

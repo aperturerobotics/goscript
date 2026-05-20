@@ -1148,6 +1148,22 @@ export const stringToRunes = (str: string): number[] => {
 }
 
 /**
+ * Returns Go range pairs for a string: UTF-8 byte offset and rune value.
+ * @param str The input string.
+ * @returns Index/rune pairs matching Go's `for i, r := range str`.
+ */
+export const rangeString = (str: string): Array<[number, number]> => {
+  const encoder = new TextEncoder()
+  const pairs: Array<[number, number]> = []
+  let offset = 0
+  for (const char of str) {
+    pairs.push([offset, char.codePointAt(0) || 0])
+    offset += encoder.encode(char).length
+  }
+  return pairs
+}
+
+/**
  * Converts a single-character string to its Unicode code point (rune).
  * Used for readable rune constants like $.stringToRune('/') instead of 47.
  * @param str A single-character string.

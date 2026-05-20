@@ -1743,6 +1743,22 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 			children: body,
 		}, diagnostics
 	}
+	if isStringType(rangeType) {
+		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
+		diagnostics = append(diagnostics, bodyDiagnostics...)
+		key := keyName
+		if key == "" {
+			key = "__rangeIndex"
+		}
+		value := valueName
+		if value == "" {
+			value = "__rangeRune"
+		}
+		return loweredStmt{
+			text:     "for (const [" + key + ", " + value + "] of " + o.runtimeOwner.QualifiedHelper(RuntimeHelperRangeString) + "(" + rangeValue + "))",
+			children: body,
+		}, diagnostics
+	}
 	if isFunctionType(rangeType) {
 		signature := rangeFunctionSignature(rangeType)
 		if signature == nil {

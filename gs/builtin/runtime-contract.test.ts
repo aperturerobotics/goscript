@@ -20,6 +20,7 @@ import {
   pointerValue,
   print,
   println,
+  rangeString,
   registerInterfaceType,
   registerStructType,
   resetHostRuntimeForTests,
@@ -107,6 +108,11 @@ describe('builtin runtime contract helpers', () => {
     expect(mapGet(m, 'missing', 0)).toEqual([0, false])
 
     expect(newError('bad')?.Error()).toBe('bad')
+    expect(rangeString('a¢€')).toEqual([
+      [0, 97],
+      [1, 162],
+      [3, 8364],
+    ])
   })
 
   it('exposes addressable slice and array index references', () => {
