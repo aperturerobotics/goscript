@@ -117,6 +117,14 @@ func (o *LoweringOwner) lowerFile(
 	file *ast.File,
 	sourcePath string,
 ) (*loweredFile, []Diagnostic) {
+	associatedMethods := o.methodDeclsForFileTypes(semPkg, file)
+	relevantImportFiles := map[string]bool{sourcePath: true}
+	for _, methodDecl := range associatedMethods {
+		methodPath := sourcePos(semPkg.source, methodDecl.Pos()).file
+		if methodPath != "" {
+			relevantImportFiles[methodPath] = true
+		}
+	}
 	loweredFile := &loweredFile{
 		sourcePath: sourcePath,
 		outputName: sourceOutputName(sourcePath),
@@ -127,29 +135,42 @@ func (o *LoweringOwner) lowerFile(
 	}
 	importAliases := make(map[string]string)
 	importPaths := make(map[string]string)
-	for _, importSpec := range file.Imports {
-		pkgName, _ := semPkg.source.TypesInfo.Implicits[importSpec].(*types.PkgName)
-		if importSpec.Name != nil {
-			pkgName, _ = semPkg.source.TypesInfo.Defs[importSpec.Name].(*types.PkgName)
-		}
-		if pkgName == nil || pkgName.Imported() == nil {
+	seenImport := make(map[string]bool)
+	for idx, importFile := range semPkg.source.Syntax {
+		importSourcePath := sourceFilePath(semPkg, idx, importFile)
+		if !relevantImportFiles[importSourcePath] {
 			continue
 		}
-		alias := pkgName.Name()
-		if importSpec.Name != nil {
-			alias = importSpec.Name.Name
+		for _, importSpec := range importFile.Imports {
+			pkgName, _ := semPkg.source.TypesInfo.Implicits[importSpec].(*types.PkgName)
+			if importSpec.Name != nil {
+				pkgName, _ = semPkg.source.TypesInfo.Defs[importSpec.Name].(*types.PkgName)
+			}
+			if pkgName == nil || pkgName.Imported() == nil {
+				continue
+			}
+			alias := pkgName.Name()
+			if importSpec.Name != nil {
+				alias = importSpec.Name.Name
+			}
+			if alias == "." || alias == "_" {
+				continue
+			}
+			source := "@goscript/" + pkgName.Imported().Path() + "/index.js"
+			importKey := alias + "\x00" + source
+			if seenImport[importKey] {
+				continue
+			}
+			seenImport[importKey] = true
+			importAliases[alias] = pkgName.Imported().Path()
+			importPaths[pkgName.Imported().Path()] = alias
+			loweredFile.imports = append(loweredFile.imports, loweredImport{
+				alias:  alias,
+				source: source,
+			})
 		}
-		if alias == "." || alias == "_" {
-			continue
-		}
-		importAliases[alias] = pkgName.Imported().Path()
-		importPaths[pkgName.Imported().Path()] = alias
-		loweredFile.imports = append(loweredFile.imports, loweredImport{
-			alias:  alias,
-			source: "@goscript/" + pkgName.Imported().Path() + "/index.js",
-		})
 	}
-	localAliases, localAliasSources := o.localFileAliases(semPkg, file, sourcePath)
+	localAliases, localAliasSources := o.localFileAliases(semPkg, file, sourcePath, associatedMethods)
 	localImports := make([]loweredImport, 0, len(localAliases))
 	seenLocalImport := make(map[string]bool)
 	for _, alias := range localAliases {
@@ -199,10 +220,63 @@ func (o *LoweringOwner) lowerFile(
 	return loweredFile, diagnostics
 }
 
+func (o *LoweringOwner) methodDeclsForFileTypes(semPkg *semanticPackage, file *ast.File) []*ast.FuncDecl {
+	if semPkg == nil || semPkg.source == nil || file == nil {
+		return nil
+	}
+	fileTypes := make(map[*types.Named]bool)
+	for _, decl := range file.Decls {
+		genDecl, ok := decl.(*ast.GenDecl)
+		if !ok {
+			continue
+		}
+		for _, spec := range genDecl.Specs {
+			typeSpec, ok := spec.(*ast.TypeSpec)
+			if !ok {
+				continue
+			}
+			typeName, _ := semPkg.source.TypesInfo.Defs[typeSpec.Name].(*types.TypeName)
+			if typeName == nil {
+				continue
+			}
+			named, _ := typeName.Type().(*types.Named)
+			if named != nil {
+				fileTypes[named.Origin()] = true
+			}
+		}
+	}
+	if len(fileTypes) == 0 {
+		return nil
+	}
+	var methods []*ast.FuncDecl
+	for _, syntax := range semPkg.source.Syntax {
+		for _, decl := range syntax.Decls {
+			funcDecl, ok := decl.(*ast.FuncDecl)
+			if !ok || funcDecl.Recv == nil {
+				continue
+			}
+			fnObj, _ := semPkg.source.TypesInfo.Defs[funcDecl.Name].(*types.Func)
+			if fnObj == nil {
+				continue
+			}
+			signature, _ := fnObj.Type().(*types.Signature)
+			if signature == nil || signature.Recv() == nil {
+				continue
+			}
+			receiver := receiverNamedType(signature.Recv().Type())
+			if receiver != nil && fileTypes[receiver.Origin()] {
+				methods = append(methods, funcDecl)
+			}
+		}
+	}
+	return methods
+}
+
 func (o *LoweringOwner) localFileAliases(
 	semPkg *semanticPackage,
 	file *ast.File,
 	sourcePath string,
+	associatedMethods []*ast.FuncDecl,
 ) (map[types.Object]string, map[string]string) {
 	declFiles := make(map[types.Object]string)
 	for _, decl := range semPkg.declarations {
@@ -272,7 +346,7 @@ func (o *LoweringOwner) localFileAliases(
 			}
 		}
 	}
-	ast.Inspect(file, func(node ast.Node) bool {
+	inspect := func(node ast.Node) bool {
 		switch typed := node.(type) {
 		case *ast.Ident:
 			addObject(semPkg.source.TypesInfo.Uses[typed])
@@ -282,7 +356,11 @@ func (o *LoweringOwner) localFileAliases(
 			}
 		}
 		return true
-	})
+	}
+	ast.Inspect(file, inspect)
+	for _, methodDecl := range associatedMethods {
+		ast.Inspect(methodDecl, inspect)
+	}
 	return aliases, aliasSources
 }
 
