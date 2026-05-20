@@ -409,7 +409,11 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					continue
 				}
 				value := o.lowerDeclarationZeroValueExpr(ctx, obj.Type())
-				if idx < len(typed.Values) {
+				if constObj, ok := obj.(*types.Const); ok {
+					if constValue, ok := lowerConstantValue(constObj.Val()); ok {
+						value = constValue
+					}
+				} else if idx < len(typed.Values) {
 					lowered, exprDiagnostics := o.lowerExpr(ctx, typed.Values[idx])
 					diagnostics = append(diagnostics, exprDiagnostics...)
 					value = o.lowerValueForTarget(ctx, typed.Values[idx], obj.Type(), lowered)
@@ -442,6 +446,30 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 		}
 	}
 	return decls, diagnostics
+}
+
+func lowerConstantValue(value constant.Value) (string, bool) {
+	if value == nil {
+		return "", false
+	}
+	switch value.Kind() {
+	case constant.Bool:
+		return strconv.FormatBool(constant.BoolVal(value)), true
+	case constant.String:
+		return strconv.Quote(constant.StringVal(value)), true
+	case constant.Int:
+		if intValue, ok := constant.Int64Val(value); ok {
+			return strconv.FormatInt(intValue, 10), true
+		}
+		if uintValue, ok := constant.Uint64Val(value); ok {
+			return strconv.FormatUint(uintValue, 10), true
+		}
+		return value.ExactString(), true
+	case constant.Float:
+		return value.ExactString(), true
+	default:
+		return "", false
+	}
 }
 
 func goEmbedPatterns(groups ...*ast.CommentGroup) []string {

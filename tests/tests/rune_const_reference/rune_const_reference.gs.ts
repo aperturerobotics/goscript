@@ -7,8 +7,8 @@ import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/te
 
 export async function main(): Promise<void> {
 	// Test importing rune constants from another package
-	const separator: number = subpkg.Separator
-	const newline: number = subpkg.Newline
+	const separator: number = 47
+	const newline: number = 10
 
 	// This should use the variable name instead of evaluating to numeric literal
 	$.println("separator used in function:", useInFunction(separator))

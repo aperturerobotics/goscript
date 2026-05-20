@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export const Pi: number = 3.14
+export const Pi: number = 157/50
 
 export const Truth: boolean = false
 

@@ -7,9 +7,9 @@ import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/te
 
 export async function main(): Promise<void> {
 	// Test importing rune constants from another package
-	const separator: number = subpkg.Separator
-	const newline: number = subpkg.Newline
-	const space: number = subpkg.Space
+	const separator: number = 47
+	const newline: number = 10
+	const space: number = 32
 
 	// Print the imported rune constants
 	$.println("separator:", separator)

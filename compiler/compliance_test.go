@@ -125,7 +125,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"buffer_value_field_error":          true,
 	"bytes":                             true,
 	"chan_type_assertion":               true,
-	"constants_iota":                    true,
 	"debug_marshal":                     true,
 	"debug_simple":                      true,
 	"embedded_interface_null_assertion": true,
