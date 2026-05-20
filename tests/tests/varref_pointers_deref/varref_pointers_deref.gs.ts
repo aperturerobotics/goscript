@@ -13,7 +13,7 @@ export async function main(): Promise<void> {
 
 	// These should be different pointers but point to the same value
 	$.println("p1==p2:", p1 == p2)
-	$.println("*p1==*p2:", $.pointerValue(p1) == $.pointerValue(p2))
+	$.println("*p1==*p2:", $.pointerValue<number>(p1) == $.pointerValue<number>(p2))
 
 	// Now create a third pointer that's a copy of p1
 	let p3 = p1
@@ -34,15 +34,15 @@ export async function main(): Promise<void> {
 	let ppp1 = pp1
 
 	// Use ppp1 to make sure it's not considered unused
-	$.println("Value through ppp1:", $.pointerValue($.pointerValue($.pointerValue(ppp1))))
+	$.println("Value through ppp1:", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>($.pointerValue<$.VarRef<$.VarRef<number> | null> | null>(ppp1))))
 
 	// This is a comparison of the same pointer through different paths
 	// but one path involves a varrefed variable and one doesn't
 	$.println("pp1==savedPP1:", pp1.value == savedPP1)
 
 	// Print dereferenced values to verify they're the same
-	$.println("**pp1:", $.pointerValue($.pointerValue(pp1.value)))
-	$.println("**savedPP1:", $.pointerValue($.pointerValue(savedPP1)))
+	$.println("**pp1:", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>(pp1.value)))
+	$.println("**savedPP1:", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>(savedPP1)))
 }
 
 

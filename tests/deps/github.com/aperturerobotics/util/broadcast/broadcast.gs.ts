@@ -46,27 +46,27 @@ export class Broadcast {
 	}
 
 	public async HoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): Promise<void> {
-		const c = this
+		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		using __defer = new $.DisposableStack()
-		await $.pointerValue(c).mtx.Lock()
-		__defer.defer(() => { $.pointerValue(c).mtx.Unlock() })
-		cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
+		await $.pointerValue<Broadcast>(c).mtx.Lock()
+		__defer.defer(() => { $.pointerValue<Broadcast>(c).mtx.Unlock() })
+		cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
 	}
 
 	public HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): void {
-		const c = this
+		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		let holdBroadcastLock = $.functionValue(async (lock: boolean): Promise<void> => {
 			using __defer = new $.DisposableStack()
 			if (lock) {
-				await $.pointerValue(c).mtx.Lock()
+				await $.pointerValue<Broadcast>(c).mtx.Lock()
 			}
 			// use defer to catch panic cases
-			__defer.defer(() => { $.pointerValue(c).mtx.Unlock() })
-			cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
+			__defer.defer(() => { $.pointerValue<Broadcast>(c).mtx.Unlock() })
+			cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [] })
 
 		// fast path: lock immediately
-		if ($.pointerValue(c).mtx.TryLock()) {
+		if ($.pointerValue<Broadcast>(c).mtx.TryLock()) {
 			holdBroadcastLock!(false)
 		} else {
 			// slow path: use separate goroutine
@@ -75,18 +75,18 @@ export class Broadcast {
 	}
 
 	public TryHoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): boolean {
-		const c = this
+		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		using __defer = new $.DisposableStack()
-		if (!$.pointerValue(c).mtx.TryLock()) {
+		if (!$.pointerValue<Broadcast>(c).mtx.TryLock()) {
 			return false
 		}
-		__defer.defer(() => { $.pointerValue(c).mtx.Unlock() })
-		cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue(c)))
+		__defer.defer(() => { $.pointerValue<Broadcast>(c).mtx.Unlock() })
+		cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
 		return true
 	}
 
 	public async Wait(ctx: context.Context, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
-		const c = this
+		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		if (cb == null || ctx == null) {
 			return errors.New("cb and ctx must be set")
 		}
@@ -100,7 +100,7 @@ export class Broadcast {
 
 			let done: boolean = false
 			let err: $.GoError = null
-			await $.pointerValue(c).HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
+			await $.pointerValue<Broadcast>(c).HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 				let __goscriptTuple0 = cb!(broadcast, getWaitCh)
 				done = __goscriptTuple0[0]
 				err = __goscriptTuple0[1]
@@ -137,19 +137,19 @@ export class Broadcast {
 	}
 
 	public broadcastLocked(): void {
-		const c = this
-		if ($.pointerValue(c).ch != null) {
-			$.pointerValue(c).ch!.close()
-			$.pointerValue(c).ch = null
+		const c: Broadcast | $.VarRef<Broadcast> | null = this
+		if ($.pointerValue<Broadcast>(c).ch != null) {
+			$.pointerValue<Broadcast>(c).ch!.close()
+			$.pointerValue<Broadcast>(c).ch = null
 		}
 	}
 
 	public getWaitChLocked(): $.Channel<Record<string, unknown>> | null {
-		const c = this
-		if ($.pointerValue(c).ch == null) {
-			$.pointerValue(c).ch = $.makeChannel<Record<string, unknown>>(0, {}, "both")
+		const c: Broadcast | $.VarRef<Broadcast> | null = this
+		if ($.pointerValue<Broadcast>(c).ch == null) {
+			$.pointerValue<Broadcast>(c).ch = $.makeChannel<Record<string, unknown>>(0, {}, "both")
 		}
-		return $.pointerValue(c).ch
+		return $.pointerValue<Broadcast>(c).ch
 	}
 
 	static __typeInfo = $.registerStructType(

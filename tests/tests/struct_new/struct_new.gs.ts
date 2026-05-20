@@ -61,20 +61,20 @@ export class MyStruct {
 export async function main(): Promise<void> {
 	// Test new(MyStruct)
 	let ptr = new MyStruct()
-	$.println("ptr.MyInt (default):", $.pointerValue(ptr).MyInt)
-	$.println("ptr.MyString (default):", $.pointerValue(ptr).MyString)
-	$.println("ptr.myBool (default):", $.pointerValue(ptr).myBool)
+	$.println("ptr.MyInt (default):", $.pointerValue<MyStruct>(ptr).MyInt)
+	$.println("ptr.MyString (default):", $.pointerValue<MyStruct>(ptr).MyString)
+	$.println("ptr.myBool (default):", $.pointerValue<MyStruct>(ptr).myBool)
 
-	$.pointerValue(ptr).MyInt = 42
-	$.pointerValue(ptr).MyString = "hello"
-	$.pointerValue(ptr).myBool = true
+	$.pointerValue<MyStruct>(ptr).MyInt = 42
+	$.pointerValue<MyStruct>(ptr).MyString = "hello"
+	$.pointerValue<MyStruct>(ptr).myBool = true
 
-	$.println("ptr.MyInt (assigned):", $.pointerValue(ptr).MyInt)
-	$.println("ptr.MyString (assigned):", $.pointerValue(ptr).MyString)
-	$.println("ptr.myBool (assigned):", $.pointerValue(ptr).myBool)
+	$.println("ptr.MyInt (assigned):", $.pointerValue<MyStruct>(ptr).MyInt)
+	$.println("ptr.MyString (assigned):", $.pointerValue<MyStruct>(ptr).MyString)
+	$.println("ptr.myBool (assigned):", $.pointerValue<MyStruct>(ptr).myBool)
 
 	// Test assignment to a dereferenced new struct
-	let s: MyStruct = $.markAsStructValue($.pointerValue(new MyStruct()).clone())
+	let s: MyStruct = $.markAsStructValue($.pointerValue<MyStruct>(new MyStruct()).clone())
 	$.println("s.MyInt (default):", s.MyInt)
 	$.println("s.MyString (default):", s.MyString)
 	$.println("s.myBool (default):", s.myBool)

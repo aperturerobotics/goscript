@@ -30,9 +30,9 @@ export class Worker {
 	}
 
 	public Spawn(): $.GoError {
-		const w = this
+		const w: Worker | $.VarRef<Worker> | null = this
 		queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
-			await $.chanRecv($.pointerValue(w).ch)
+			await $.chanRecv($.pointerValue<Worker>(w).ch)
 		}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 		return null
 	}
@@ -67,7 +67,7 @@ export function run(fn: (() => $.GoError) | null): void {
 
 export async function main(): Promise<void> {
 	let w = new Worker({ch: $.makeChannel<number>(1, 0, "both")})
-	run(((__receiver) => () => __receiver.Spawn())($.pointerValue(w)))
+	run(((__receiver) => () => __receiver.Spawn())($.pointerValue<Worker>(w)))
 
 	let s: Spawner = $.interfaceValue<Spawner>(w, "*main.Worker")
 	let err = s!.Spawn()
@@ -76,7 +76,7 @@ export async function main(): Promise<void> {
 	} else {
 		$.println("iface err: non-nil")
 	}
-	await $.chanSend($.pointerValue(w).ch, 1)
+	await $.chanSend($.pointerValue<Worker>(w).ch, 1)
 }
 
 

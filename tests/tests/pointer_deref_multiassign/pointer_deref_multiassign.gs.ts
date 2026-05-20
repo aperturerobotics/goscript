@@ -63,7 +63,7 @@ export async function main(): Promise<void> {
 	// === Pointer Dereference and Multi-Assignment ===
 	// Dereference structPointer to get a copy of the struct.
 	// Also demonstrates multi-variable assignment and the use of the blank identifier '_'.
-	let dereferencedStructCopy = $.markAsStructValue($.pointerValue(structPointer).clone())
+	let dereferencedStructCopy = $.markAsStructValue($.pointerValue<MyStruct>(structPointer).clone())
 	let unusedString = "hello"
 	unusedString
 	dereferencedStructCopy

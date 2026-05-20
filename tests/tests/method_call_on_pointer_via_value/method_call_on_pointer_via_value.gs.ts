@@ -35,8 +35,8 @@ export class MyStruct {
 	}
 
 	public SetValue(v: number): void {
-		const m = this
-		$.pointerValue(m).MyInt = v
+		const m: MyStruct | $.VarRef<MyStruct> | null = this
+		$.pointerValue<MyStruct>(m).MyInt = v
 	}
 
 	static __typeInfo = $.registerStructType(

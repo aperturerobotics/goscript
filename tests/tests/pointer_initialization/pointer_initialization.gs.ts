@@ -53,7 +53,7 @@ export async function main(): Promise<void> {
 	// Create a pointer to a MyStruct instance using a composite literal.
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
 	// Expected: "hello world"
-	$.println("Initial MyString (via pointer): Expected: hello world, Actual: " + $.pointerValue(structPointer).MyString)
+	$.println("Initial MyString (via pointer): Expected: hello world, Actual: " + $.pointerValue<MyStruct>(structPointer).MyString)
 }
 
 

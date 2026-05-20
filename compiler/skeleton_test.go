@@ -442,8 +442,8 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"let original = $.varRef($.markAsStructValue(new Counter({Value: 1})))\n\n\t// Copy should stay readable in generated output.\n\tlet copy",
 		"let copy = $.markAsStructValue(original.value.clone())",
 		"let pointer = original",
-		"$.pointerValue(pointer).Set(2)",
-		"$.pointerValue(NewCounter()).Set(5)",
+		"$.pointerValue<Counter>(pointer).Set(2)",
+		"$.pointerValue<Counter>(NewCounter()).Set(5)",
 		"let [, ok] = $.typeAssertTuple<Counter | $.VarRef<Counter> | null>(iface, { kind: $.TypeKind.Pointer, elemType: \"main.Counter\" })",
 		"\"Value\": { type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\" }",
 	} {
@@ -489,7 +489,7 @@ func TestCompilePackagesEmitsNestedPointerStorageAssertions(t *testing.T) {
 		"let p1 = $.varRef(x)",
 		"let p2 = $.varRef(p1)",
 		"let p3 = p2",
-		"$.pointerValue($.pointerValue(p3))!.value = 12",
+		"$.pointerValue<$.VarRef<number> | null>($.pointerValue<$.VarRef<$.VarRef<number> | null> | null>(p3))!.value = 12",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -620,7 +620,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 		"Read(): string",
 		"Close(): string",
 		"$.registerInterfaceType(\n\t\"main.ReadCloser\"",
-		"((__receiver) => () => __receiver.Inc())($.pointerValue(counter))",
+		"((__receiver) => () => __receiver.Inc())($.pointerValue<Counter>(counter))",
 		"$.namedFunction(greet, \"main.Greeter\")",
 		"$.typedNil(\"*struct{Name string}\")",
 		"elemType: { kind: $.TypeKind.Struct, methods: [], fields: {\"Name\": { kind: $.TypeKind.Basic, name: \"string\" }} }",
@@ -1144,8 +1144,8 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 		"Process(v: number): Promise<number>",
 		"public async Process(v: number): Promise<number>",
 		"let ch = $.makeChannel<number>(1, 0, \"both\")",
-		"await $.chanSend($.pointerValue(w).ch, v)",
-		"return await $.chanRecv($.pointerValue(w).ch)",
+		"await $.chanSend($.pointerValue<Worker>(w).ch, v)",
+		"return await $.chanRecv($.pointerValue<Worker>(w).ch)",
 		"await using __defer = new $.AsyncDisposableStack()",
 		"queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {",
 		"$.selectStatement<any, void>([",
@@ -1266,7 +1266,7 @@ func TestCompilePackagesLowersSwitchesAndFunctionValueCalls(t *testing.T) {
 		"break Block",
 		"Again: while (true)",
 		"continue Again",
-		"($.pointerValue(rel))!()",
+		"($.pointerValue<(() => void) | null>(rel))!()",
 		"$.functionValue((): void => {\n\t\tusing __defer = new $.DisposableStack()",
 		"__defer.defer(() => { $.println(\"wrapped deferred\") })",
 		"$.println(\"wrapped body\")",

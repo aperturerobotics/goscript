@@ -44,10 +44,10 @@ export async function main(): Promise<void> {
 	let ptrToVal = val
 
 	// Accessing pointer value, should use .value
-	$.println("ptrToVal.MyInt:", $.pointerValue(ptrToVal).MyInt)
+	$.println("ptrToVal.MyInt:", $.pointerValue<MyStruct>(ptrToVal).MyInt)
 
 	// Accessing pointer value, should use .value
-	let myIntVal = $.pointerValue(ptrToVal).MyInt
+	let myIntVal = $.pointerValue<MyStruct>(ptrToVal).MyInt
 	$.println("myIntVal:", myIntVal)
 }
 

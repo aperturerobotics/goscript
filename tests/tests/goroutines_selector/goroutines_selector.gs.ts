@@ -30,9 +30,9 @@ export class Foo {
 	}
 
 	public async Bar(): Promise<void> {
-		const f = this
+		const f: Foo | $.VarRef<Foo> | null = this
 		$.println("Foo.Bar called")
-		await $.chanSend($.pointerValue(f).done, true)
+		await $.chanSend($.pointerValue<Foo>(f).done, true)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -50,8 +50,8 @@ export function NewFoo(): Foo | $.VarRef<Foo> | null {
 
 export async function main(): Promise<void> {
 	let f = NewFoo()
-	queueMicrotask(async () => { await $.pointerValue(f).Bar() })
-	await $.chanRecv($.pointerValue(f).done)
+	queueMicrotask(async () => { await $.pointerValue<Foo>(f).Bar() })
+	await $.chanRecv($.pointerValue<Foo>(f).done)
 	$.println("main done")
 }
 

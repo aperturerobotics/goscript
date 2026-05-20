@@ -132,8 +132,8 @@ export async function main(): Promise<void> {
 	$.println("  Before pointer modification - original.MyString: " + original.value.MyString)
 
 	// Modify the struct 'original' *through* the pointerCopy.
-	$.pointerValue(pointerCopy).MyString = "modified through pointer"
-	$.pointerValue(pointerCopy).MyInt = 100
+	$.pointerValue<MyStruct>(pointerCopy).MyString = "modified through pointer"
+	$.pointerValue<MyStruct>(pointerCopy).MyInt = 100
 
 	// Show the state of 'original' *after* modification via the pointer.
 	// Both fields reflect the changes made through pointerCopy.

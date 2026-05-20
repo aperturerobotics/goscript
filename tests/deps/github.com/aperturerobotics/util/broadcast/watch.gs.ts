@@ -16,7 +16,7 @@ export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, 
 export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any) | null, send: ((_p0: any) => $.GoError) | null, equal: ((a: any, b: any) => boolean) | null): Promise<$.GoError> {
 	let ch: $.Channel<Record<string, unknown>> | null = null
 	let val: any = $.genericZero(__typeArgs, "T", null)
-	await $.pointerValue(bcast).HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
+	await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 		ch = getWaitCh!()
 		val = snapshot!()
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
@@ -48,7 +48,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 		if (__goscriptSelect0HasReturn) {
 			return __goscriptSelect0Value
 		}
-		await $.pointerValue(bcast).HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
+		await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 			ch = getWaitCh!()
 			val = snapshot!()
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))

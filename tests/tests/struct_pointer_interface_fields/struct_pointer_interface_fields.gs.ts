@@ -66,9 +66,9 @@ export async function main(): Promise<void> {
 	let i = $.varRef(10)
 	s.PointerField = i
 	$.println(s.PointerField != null)
-	$.println($.pointerValue(s.PointerField))
+	$.println($.pointerValue<number>(s.PointerField))
 	i.value = 15
-	$.println($.pointerValue(s.PointerField))
+	$.println($.pointerValue<number>(s.PointerField))
 
 	let mi: MyInterface = null
 	s.interfaceField = mi

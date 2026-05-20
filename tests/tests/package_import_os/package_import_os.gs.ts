@@ -46,7 +46,7 @@ export async function main(): Promise<void> {
 		}
 	}
 
-	let [n, err] = $.pointerValue(os.Stdout).Write($.stringToBytes("stdout write works\n"))
+	let [n, err] = $.pointerValue<os.File>(os.Stdout).Write($.stringToBytes("stdout write works\n"))
 	if (err == null) {
 		$.println("Stdout write bytes:", n)
 	} else {
@@ -101,9 +101,9 @@ export async function main(): Promise<void> {
 		let [tempFile, err] = os.CreateTemp("", "os-temp-file-*")
 		if (err == null) {
 			$.println("CreateTemp ok")
-			$.println("CreateTemp name empty:", $.pointerValue(tempFile).Name() == "")
-			$.pointerValue(tempFile).Close()
-			os.Remove($.pointerValue(tempFile).Name())
+			$.println("CreateTemp name empty:", $.pointerValue<os.File>(tempFile).Name() == "")
+			$.pointerValue<os.File>(tempFile).Close()
+			os.Remove($.pointerValue<os.File>(tempFile).Name())
 		} else {
 			$.println("CreateTemp error:", err!.Error())
 		}

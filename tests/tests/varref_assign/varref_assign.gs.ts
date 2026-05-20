@@ -16,7 +16,7 @@ export async function main(): Promise<void> {
 	// should be: p1.value = y
 	p1.value = y
 
-	$.println("***p3 ==", $.pointerValue($.pointerValue($.pointerValue(p3))))
+	$.println("***p3 ==", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>($.pointerValue<$.VarRef<$.VarRef<number> | null> | null>(p3))))
 }
 
 

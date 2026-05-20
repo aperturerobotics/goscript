@@ -30,8 +30,8 @@ export class T {
 	}
 
 	public WithDelta(delta: number): T | $.VarRef<T> | null {
-		const t = this
-		return new T({val: $.pointerValue(t).val + delta})
+		const t: T | $.VarRef<T> | null = this
+		return new T({val: $.pointerValue<T>(t).val + delta})
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -49,11 +49,11 @@ export function NewT(v: number): T | $.VarRef<T> | null {
 
 export let Base: T | $.VarRef<T> | null = NewT(10)
 
-export let Derived: T | $.VarRef<T> | null = $.pointerValue(Base).WithDelta(5)
+export let Derived: T | $.VarRef<T> | null = $.pointerValue<T>(Base).WithDelta(5)
 
 export async function main(): Promise<void> {
-	$.println("Base:", $.pointerValue(Base).val)
-	$.println("Derived:", $.pointerValue(Derived).val)
+	$.println("Base:", $.pointerValue<T>(Base).val)
+	$.println("Derived:", $.pointerValue<T>(Derived).val)
 }
 
 

@@ -11,12 +11,12 @@ export async function main(): Promise<void> {
 	let p2: $.VarRef<$.VarRef<$.VarRef<number> | null> | null> = $.varRef(p1)
 	let p3: $.VarRef<$.VarRef<$.VarRef<number> | null> | null> | null = p2
 
-	$.println("***p3 ==", $.pointerValue($.pointerValue($.pointerValue(p3))))
+	$.println("***p3 ==", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>($.pointerValue<$.VarRef<$.VarRef<number> | null> | null>(p3))))
 	$.println()
 
 	$.println("setting ***p3 to 12")
-	$.pointerValue($.pointerValue(p3))!.value = 12
-	$.println("***p3 ==", $.pointerValue($.pointerValue($.pointerValue(p3))))
+	$.pointerValue<$.VarRef<number> | null>($.pointerValue<$.VarRef<$.VarRef<number> | null> | null>(p3))!.value = 12
+	$.println("***p3 ==", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>($.pointerValue<$.VarRef<$.VarRef<number> | null> | null>(p3))))
 	$.println()
 
 	$.println("setting y to 15, p1 to &y")
@@ -25,7 +25,7 @@ export async function main(): Promise<void> {
 	// should be: p1.value = y
 	p1.value = y
 
-	$.println("***p3 ==", $.pointerValue($.pointerValue($.pointerValue(p3))))
+	$.println("***p3 ==", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>($.pointerValue<$.VarRef<$.VarRef<number> | null> | null>(p3))))
 	$.println()
 }
 

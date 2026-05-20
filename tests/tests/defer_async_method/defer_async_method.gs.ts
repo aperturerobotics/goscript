@@ -30,13 +30,13 @@ export class AsyncResource {
 	}
 
 	public async Release(): Promise<void> {
-		const r = this
+		const r: AsyncResource | $.VarRef<AsyncResource> | null = this
 		let ch = $.makeChannel<boolean>(1, false, "both")
 		queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
 			await $.chanSend(ch, true)
 		}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 		await $.chanRecv(ch)
-		$.println("Released", $.pointerValue(r).name)
+		$.println("Released", $.pointerValue<AsyncResource>(r).name)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -51,7 +51,7 @@ export class AsyncResource {
 export async function main(): Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
 	let res = new AsyncResource({name: "test"})
-	__defer.defer(async () => { await $.pointerValue(res).Release() })
+	__defer.defer(async () => { await $.pointerValue<AsyncResource>(res).Release() })
 	$.println("main function")
 }
 

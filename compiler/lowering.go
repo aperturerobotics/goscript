@@ -781,7 +781,18 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		})
 	}
 	if decl.Recv != nil && len(decl.Recv.List) != 0 && len(decl.Recv.List[0].Names) != 0 {
-		lowered.receiverAlias = safeIdentifier(decl.Recv.List[0].Names[0].Name)
+		receiverName := decl.Recv.List[0].Names[0]
+		lowered.receiverAlias = safeIdentifier(receiverName.Name)
+		lowered.receiverValue = "this"
+		_, receiverPointer := signature.Recv().Type().(*types.Pointer)
+		if receiverPointer {
+			lowered.receiverType = o.tsReceiverTypeFor(ctx, signature.Recv().Type())
+		}
+		recvObj := ctx.semPkg.source.TypesInfo.Defs[receiverName]
+		if recvObj != nil && ctx.model.needsVarRef[recvObj] {
+			lowered.receiverType = ""
+			lowered.receiverValue = o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(this)"
+		}
 	}
 	if decl.Name.Name == "main" {
 		lowered.async = true
@@ -1408,9 +1419,12 @@ func (o *LoweringOwner) lowerReturnStmt(ctx lowerFileContext, stmt *ast.ReturnSt
 	}
 	parts := make([]string, 0, len(stmt.Results))
 	var diagnostics []Diagnostic
-	for _, result := range stmt.Results {
+	for idx, result := range stmt.Results {
 		expr, exprDiagnostics := o.lowerExpr(ctx, result)
 		diagnostics = append(diagnostics, exprDiagnostics...)
+		if ctx.signature != nil && ctx.signature.Results() != nil && idx < ctx.signature.Results().Len() {
+			expr = o.lowerValueForTarget(ctx, result, ctx.signature.Results().At(idx).Type(), expr)
+		}
 		parts = append(parts, expr)
 	}
 	return "return [" + strings.Join(parts, ", ") + "]", diagnostics
@@ -1432,9 +1446,12 @@ func (o *LoweringOwner) lowerRangeFuncReturnStmt(ctx lowerFileContext, stmt *ast
 	}
 	parts := make([]string, 0, len(stmt.Results))
 	var diagnostics []Diagnostic
-	for _, result := range stmt.Results {
+	for idx, result := range stmt.Results {
 		expr, exprDiagnostics := o.lowerExpr(ctx.withoutRangeBranch(), result)
 		diagnostics = append(diagnostics, exprDiagnostics...)
+		if ctx.signature != nil && ctx.signature.Results() != nil && idx < ctx.signature.Results().Len() {
+			expr = o.lowerValueForTarget(ctx.withoutRangeBranch(), result, ctx.signature.Results().At(idx).Type(), expr)
+		}
 		parts = append(parts, expr)
 	}
 	return ctx.rangeBranch.hasReturn + " = true\n" + ctx.rangeBranch.value + " = [" + strings.Join(parts, ", ") + "]\nreturn false", diagnostics
@@ -1453,7 +1470,6 @@ func (o *LoweringOwner) lowerNamedResults(ctx lowerFileContext, signature *types
 	}
 	results := make([]loweredNamedResult, 0, signature.Results().Len())
 	for result := range signature.Results().Variables() {
-		result := result
 		name := result.Name()
 		if name == "" || name == "_" {
 			continue
@@ -2740,7 +2756,11 @@ func (o *LoweringOwner) lowerIndexAddressExpr(ctx lowerFileContext, expr *ast.In
 
 func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
 	base, diagnostics := o.lowerExpr(ctx, expr)
-	return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "(" + base + ")", diagnostics
+	typeArg := ""
+	if pointer, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(expr)).Underlying().(*types.Pointer); ok {
+		typeArg = "<" + o.tsTypeFor(ctx, pointer.Elem()) + ">"
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + typeArg + "(" + base + ")", diagnostics
 }
 
 func (o *LoweringOwner) lowerPointerStorageExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
@@ -3063,6 +3083,11 @@ func (o *LoweringOwner) lowerValueForTarget(
 	if isInterfaceType(targetType) && isStructValueType(sourceType) {
 		return o.lowerStructClone(value)
 	}
+	if isBuiltinErrorType(targetType) {
+		if wrapper := o.lowerPrimitiveErrorWrapper(ctx, sourceType, value); wrapper != "" {
+			return wrapper
+		}
+	}
 	if isInterfaceType(targetType) && !isInterfaceType(sourceType) && isNilableType(sourceType) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInterfaceValue) +
 			"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " + strconv.Quote(goRuntimeTypeString(sourceType)) + ")"
@@ -3071,6 +3096,27 @@ func (o *LoweringOwner) lowerValueForTarget(
 		return o.lowerStructClone(value)
 	}
 	return value
+}
+
+func (o *LoweringOwner) lowerPrimitiveErrorWrapper(ctx lowerFileContext, sourceType types.Type, value string) string {
+	named, _ := types.Unalias(sourceType).(*types.Named)
+	if named == nil || named.Obj() == nil {
+		return ""
+	}
+	if _, ok := types.Unalias(named.Underlying()).(*types.Basic); !ok {
+		return ""
+	}
+	errorType, _ := types.Universe.Lookup("error").Type().Underlying().(*types.Interface)
+	if errorType == nil || !types.Implements(named, errorType) {
+		return ""
+	}
+	method, _, _ := types.LookupFieldOrMethod(named, true, named.Obj().Pkg(), "Error")
+	fn, _ := method.(*types.Func)
+	if fn == nil {
+		return ""
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperWrapPrimitiveError) +
+		"(" + value + ", " + o.methodFunctionExpr(ctx, named, fn, "Error") + ")"
 }
 
 func (o *LoweringOwner) lowerStructClone(value string) string {

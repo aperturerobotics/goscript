@@ -64,16 +64,16 @@ export async function main(): Promise<void> {
 	ptr.value.Store(str1)
 	let loaded = ptr.value.Load()
 	if (loaded != null) {
-		$.println("Pointer loaded:", $.pointerValue(loaded))
+		$.println("Pointer loaded:", $.pointerValue<string>(loaded))
 	}
 
 	let old_ptr = ptr.value.Swap(str2)
 	if (old_ptr != null) {
-		$.println("Pointer swapped, old:", $.pointerValue(old_ptr))
+		$.println("Pointer swapped, old:", $.pointerValue<string>(old_ptr))
 	}
 	loaded = ptr.value.Load()
 	if (loaded != null) {
-		$.println("Pointer new value:", $.pointerValue(loaded))
+		$.println("Pointer new value:", $.pointerValue<string>(loaded))
 	}
 
 	let fnPtr: $.VarRef<atomic.Pointer<(() => void) | null>> = $.varRef($.markAsStructValue(new atomic.Pointer<(() => void) | null>()))
@@ -86,7 +86,7 @@ export async function main(): Promise<void> {
 		fnPtr.value.Store(callback)
 		let loadedFn = fnPtr.value.Load()
 		if (loadedFn != null) {
-			($.pointerValue(loadedFn))!()
+			($.pointerValue<(() => void) | null>(loadedFn))!()
 		}
 	}
 

@@ -40,8 +40,8 @@ export class MyStruct {
 	}
 
 	public GetMyString(): string {
-		const m = this
-		return $.pointerValue(m).MyString
+		const m: MyStruct | $.VarRef<MyStruct> | null = this
+		return $.pointerValue<MyStruct>(m).MyString
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -57,7 +57,7 @@ export async function main(): Promise<void> {
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
 	// === Method Call on Pointer Receiver ===
 	// Calling a method with a pointer receiver (*MyStruct) using a pointer variable.
-	$.println("Method call on pointer (structPointer): Expected: hello world, Actual: " + $.pointerValue(structPointer).GetMyString())
+	$.println("Method call on pointer (structPointer): Expected: hello world, Actual: " + $.pointerValue<MyStruct>(structPointer).GetMyString())
 }
 
 

@@ -97,10 +97,10 @@ export async function main(): Promise<void> {
 		return "new object"
 	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [] }] })})
 
-	let obj1 = $.pointerValue(pool).Get()
+	let obj1 = $.pointerValue<sync.Pool>(pool).Get()
 	$.println("Got from pool:", obj1)
-	$.pointerValue(pool).Put("reused object")
-	let obj2 = $.pointerValue(pool).Get()
+	$.pointerValue<sync.Pool>(pool).Put("reused object")
+	let obj2 = $.pointerValue<sync.Pool>(pool).Get()
 	$.println("Got from pool:", obj2)
 
 	$.println("test finished")

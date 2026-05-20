@@ -52,13 +52,13 @@ export async function main(): Promise<void> {
 	let ptr = new MyStruct({MyInt: 30})
 
 	// Accessing field on pointer type: Should generate ptr.MyInt
-	$.pointerValue(ptr).MyInt = 40
-	$.println("ptr.MyInt:", $.pointerValue(ptr).MyInt)
+	$.pointerValue<MyStruct>(ptr).MyInt = 40
+	$.println("ptr.MyInt:", $.pointerValue<MyStruct>(ptr).MyInt)
 
 	// Accessing pointer value, should use .value
-	$.println("ptrToVal.MyInt:", $.pointerValue(ptrToVal).MyInt)
+	$.println("ptrToVal.MyInt:", $.pointerValue<MyStruct>(ptrToVal).MyInt)
 
-	let myIntVal = $.pointerValue(ptrToVal).MyInt
+	let myIntVal = $.pointerValue<MyStruct>(ptrToVal).MyInt
 	$.println("myIntVal:", myIntVal)
 }
 

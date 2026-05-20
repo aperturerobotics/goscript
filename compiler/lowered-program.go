@@ -58,6 +58,8 @@ type loweredFunction struct {
 	async         bool
 	name          string
 	receiverAlias string
+	receiverType  string
+	receiverValue string
 	params        []loweredParam
 	namedResults  []loweredNamedResult
 	result        string

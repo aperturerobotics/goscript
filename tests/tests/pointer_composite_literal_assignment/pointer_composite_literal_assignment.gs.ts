@@ -55,14 +55,14 @@ export async function main(): Promise<void> {
 
 	// Access fields through the pointer
 	// Expected: 42
-	$.println("MyInt via pointer: Expected: 42, Actual:", $.pointerValue(structPointer).MyInt)
+	$.println("MyInt via pointer: Expected: 42, Actual:", $.pointerValue<MyStruct>(structPointer).MyInt)
 	// Expected: "composite literal pointer"
-	$.println("MyString via pointer: Expected: composite literal pointer, Actual: " + $.pointerValue(structPointer).MyString)
+	$.println("MyString via pointer: Expected: composite literal pointer, Actual: " + $.pointerValue<MyStruct>(structPointer).MyString)
 
 	// Modify through the pointer
-	$.pointerValue(structPointer).MyInt = 99
+	$.pointerValue<MyStruct>(structPointer).MyInt = 99
 	// Expected: 99
-	$.println("MyInt after modification: Expected: 99, Actual:", $.pointerValue(structPointer).MyInt)
+	$.println("MyInt after modification: Expected: 99, Actual:", $.pointerValue<MyStruct>(structPointer).MyInt)
 }
 
 

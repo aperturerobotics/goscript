@@ -30,13 +30,13 @@ export class MyStruct {
 	}
 
 	public DoesNotUseReceiver(): number {
-		const m = this
+		const m: MyStruct | $.VarRef<MyStruct> | null = this
 		return 42
 	}
 
 	public UsesReceiver(): number {
-		const m = this
-		return $.pointerValue(m).Value
+		const m: MyStruct | $.VarRef<MyStruct> | null = this
+		return $.pointerValue<MyStruct>(m).Value
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -50,8 +50,8 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let s = new MyStruct({Value: 10})
-	$.println($.pointerValue(s).UsesReceiver())
-	$.println($.pointerValue(s).DoesNotUseReceiver())
+	$.println($.pointerValue<MyStruct>(s).UsesReceiver())
+	$.println($.pointerValue<MyStruct>(s).DoesNotUseReceiver())
 }
 
 

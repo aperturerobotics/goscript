@@ -29,7 +29,7 @@ export async function main(): Promise<void> {
 
 	// other functions on setTime
 	$.println("weekday", time.Weekday_String($.markAsStructValue(setTime.clone()).Weekday()))
-	$.println("location", $.pointerValue($.markAsStructValue(setTime.clone()).Location()).String())
+	$.println("location", $.pointerValue<time.Location>($.markAsStructValue(setTime.clone()).Location()).String())
 }
 
 

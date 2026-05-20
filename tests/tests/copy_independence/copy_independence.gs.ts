@@ -50,7 +50,7 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
-	let dereferencedStructCopy = $.markAsStructValue($.pointerValue(structPointer).clone())
+	let dereferencedStructCopy = $.markAsStructValue($.pointerValue<MyStruct>(structPointer).clone())
 	dereferencedStructCopy.MyString = "original dereferenced copy modified"
 	let valueCopy1 = $.markAsStructValue(dereferencedStructCopy.clone())
 	valueCopy1.MyString = "value copy 1"
@@ -60,7 +60,7 @@ export async function main(): Promise<void> {
 
 	// === Verifying Copy Independence ===
 	// Expected: "hello world"
-	$.println("pointerCopy (points to original structPointer): Expected: hello world, Actual: " + $.pointerValue(pointerCopy).MyString)
+	$.println("pointerCopy (points to original structPointer): Expected: hello world, Actual: " + $.pointerValue<MyStruct>(pointerCopy).MyString)
 	// Expected: "original dereferenced copy modified"
 	$.println("dereferencedStructCopy (modified after copies were made): Expected: original dereferenced copy modified, Actual: " + dereferencedStructCopy.MyString)
 	// Expected: "value copy 1"

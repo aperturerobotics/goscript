@@ -310,7 +310,13 @@ func renderFunction(b *strings.Builder, fn *loweredFunction) {
 		writeIndent(b, 1)
 		b.WriteString("const ")
 		b.WriteString(fn.receiverAlias)
-		b.WriteString(" = this\n")
+		if fn.receiverType != "" {
+			b.WriteString(": ")
+			b.WriteString(fn.receiverType)
+		}
+		b.WriteString(" = ")
+		b.WriteString(receiverValue(fn))
+		b.WriteString("\n")
 	}
 	renderNamedResults(b, fn.namedResults, 1)
 	renderDeferStack(b, fn.deferState, 1)
@@ -341,13 +347,26 @@ func renderMethod(b *strings.Builder, fn *loweredFunction) {
 		writeIndent(b, 2)
 		b.WriteString("const ")
 		b.WriteString(fn.receiverAlias)
-		b.WriteString(" = this\n")
+		if fn.receiverType != "" {
+			b.WriteString(": ")
+			b.WriteString(fn.receiverType)
+		}
+		b.WriteString(" = ")
+		b.WriteString(receiverValue(fn))
+		b.WriteString("\n")
 	}
 	renderNamedResults(b, fn.namedResults, 2)
 	renderDeferStack(b, fn.deferState, 2)
 	renderStmts(b, fn.body, 2)
 	writeIndent(b, 1)
 	b.WriteString("}\n")
+}
+
+func receiverValue(fn *loweredFunction) string {
+	if fn.receiverValue != "" {
+		return fn.receiverValue
+	}
+	return "this"
 }
 
 func renderNamedResults(b *strings.Builder, results []loweredNamedResult, indent int) {

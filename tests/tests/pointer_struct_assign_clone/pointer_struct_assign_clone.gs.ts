@@ -45,36 +45,36 @@ export async function main(): Promise<void> {
 
 	// This assignment should trigger the .clone() on s1
 	// because s1 is a struct and *p is being assigned.
-	$.assignStruct($.pointerValue(p), $.markAsStructValue(s1.clone()))
+	$.assignStruct($.pointerValue<MyStruct>(p), $.markAsStructValue(s1.clone()))
 
-	$.println($.pointerValue(p).Value)
+	$.println($.pointerValue<MyStruct>(p).Value)
 
 	// Modify s1 to ensure p is a clone and not a reference
 	s1.Value = 30
-	$.println($.pointerValue(p).Value)
+	$.println($.pointerValue<MyStruct>(p).Value)
 
 	// Test assignment from a pointer to a struct (should not clone)
 	let s2 = new MyStruct({Value: 40})
 	let p2 = new MyStruct({Value: 50})
-	$.assignStruct($.pointerValue(p2), $.markAsStructValue($.pointerValue(s2).clone()))
-	$.println($.pointerValue(p2).Value)
+	$.assignStruct($.pointerValue<MyStruct>(p2), $.markAsStructValue($.pointerValue<MyStruct>(s2).clone()))
+	$.println($.pointerValue<MyStruct>(p2).Value)
 
-	$.pointerValue(s2).Value = 60
-	$.println($.pointerValue(p2).Value)
+	$.pointerValue<MyStruct>(s2).Value = 60
+	$.println($.pointerValue<MyStruct>(p2).Value)
 	// GoScript should replicate this by cloning if the RHS is a struct value.
 	// In *p2 = *s2, *s2 is a struct value.
 
 	// Test assignment of a struct from a function call
 	let s3 = $.markAsStructValue(new MyStruct({Value: 70}))
 	let p3 = new MyStruct({Value: 80})
-	$.assignStruct($.pointerValue(p3), $.markAsStructValue(getStruct().clone()))
-	$.println($.pointerValue(p3).Value)
+	$.assignStruct($.pointerValue<MyStruct>(p3), $.markAsStructValue(getStruct().clone()))
+	$.println($.pointerValue<MyStruct>(p3).Value)
 	$.println(s3.Value)
 
 	// Test assignment of a struct from a pointer returned by a function call
 	let p4 = new MyStruct({Value: 90})
-	$.assignStruct($.pointerValue(p4), $.markAsStructValue($.pointerValue(getStructPointer()).clone()))
-	$.println($.pointerValue(p4).Value)
+	$.assignStruct($.pointerValue<MyStruct>(p4), $.markAsStructValue($.pointerValue<MyStruct>(getStructPointer()).clone()))
+	$.println($.pointerValue<MyStruct>(p4).Value)
 }
 
 

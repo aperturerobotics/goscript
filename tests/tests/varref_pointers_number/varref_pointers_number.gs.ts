@@ -19,8 +19,8 @@ export async function main(): Promise<void> {
 	// Compare the pointers - they should be different pointers
 	// but point to the same value
 	$.println("p1==p2:", p1.value == p2)
-	$.println("*p1==*p2:", $.pointerValue(p1.value) == $.pointerValue(p2))
-	$.println("pp1 deref:", $.pointerValue($.pointerValue(pp1)))
+	$.println("*p1==*p2:", $.pointerValue<number>(p1.value) == $.pointerValue<number>(p2))
+	$.println("pp1 deref:", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>(pp1)))
 }
 
 

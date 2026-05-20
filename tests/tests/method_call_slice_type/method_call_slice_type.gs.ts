@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 export type MySlice = $.Slice<number>
 
 export function MySlice_Add(s: $.VarRef<MySlice>, val: number): void {
-	s!.value = $.append($.pointerValue(s), val)
+	s!.value = $.append($.pointerValue<MySlice>(s), val)
 }
 
 export async function main(): Promise<void> {

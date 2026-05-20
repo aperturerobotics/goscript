@@ -42,10 +42,10 @@ export class FileTracker {
 	}
 
 	public async AddLine(offset: number): Promise<void> {
-		const f = this
-		await $.pointerValue(f).mutex.Lock()
-		$.pointerValue(f).lines = $.append($.pointerValue(f).lines, offset)
-		$.pointerValue(f).mutex.Unlock()
+		const f: FileTracker | $.VarRef<FileTracker> | null = this
+		await $.pointerValue<FileTracker>(f).mutex.Lock()
+		$.pointerValue<FileTracker>(f).lines = $.append($.pointerValue<FileTracker>(f).lines, offset)
+		$.pointerValue<FileTracker>(f).mutex.Unlock()
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -84,8 +84,8 @@ export class Scanner {
 	}
 
 	public async next(): Promise<void> {
-		const s = this
-		await $.pointerValue($.pointerValue(s).file).AddLine(10)
+		const s: Scanner | $.VarRef<Scanner> | null = this
+		await $.pointerValue<FileTracker>($.pointerValue<Scanner>(s).file).AddLine(10)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -100,8 +100,8 @@ export class Scanner {
 export async function main(): Promise<void> {
 	let tracker = new FileTracker({lines: $.arrayToSlice<number>([])})
 	let scanner = new Scanner({file: tracker})
-	await $.pointerValue(scanner).next()
-	$.println($.len($.pointerValue(tracker).lines))
+	await $.pointerValue<Scanner>(scanner).next()
+	$.println($.len($.pointerValue<FileTracker>(tracker).lines))
 }
 
 

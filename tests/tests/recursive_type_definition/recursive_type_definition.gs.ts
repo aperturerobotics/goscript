@@ -30,7 +30,7 @@ export class B {
 	}
 
 	public MethodB(valB: B | $.VarRef<B> | null): void {
-		const b = this
+		const b: B | $.VarRef<B> | null = this
 	}
 
 	static __typeInfo = $.registerStructType(

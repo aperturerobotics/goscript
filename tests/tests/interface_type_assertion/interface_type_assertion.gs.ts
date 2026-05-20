@@ -85,7 +85,7 @@ export async function main(): Promise<void> {
 
 	let nilInterface: MyInterface = null
 	let [nilVal, ok3] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(nilInterface, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
-	if (ok3 && $.pointerValue(nilVal).Value == 0) {
+	if (ok3 && $.pointerValue<MyStruct>(nilVal).Value == 0) {
 		$.println("nil interface pointer assertion succeeded")
 	} else {
 		$.println("nil interface pointer assertion failed")

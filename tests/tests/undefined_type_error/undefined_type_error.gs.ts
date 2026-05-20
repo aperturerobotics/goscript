@@ -187,19 +187,19 @@ export class printer {
 	}
 
 	public format(verb: number): void {
-		const p = this
+		const p: printer | $.VarRef<printer> | null = this
 		// Use the formatter
-		if ($.pointerValue(p).fmt.minus) {
+		if ($.pointerValue<printer>(p).fmt.minus) {
 			$.println("minus flag set")
 		}
-		if ($.pointerValue(p).fmt.plus) {
+		if ($.pointerValue<printer>(p).fmt.plus) {
 			$.println("plus flag set")
 		}
 	}
 
 	public init(): void {
-		const p = this
-		$.pointerValue(p).fmt = $.markAsStructValue(new formatter())
+		const p: printer | $.VarRef<printer> | null = this
+		$.pointerValue<printer>(p).fmt = $.markAsStructValue(new formatter())
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -213,8 +213,8 @@ export class printer {
 
 export async function main(): Promise<void> {
 	let p = new printer()
-	$.pointerValue(p).init()
-	$.pointerValue(p).format(100)
+	$.pointerValue<printer>(p).init()
+	$.pointerValue<printer>(p).format(100)
 	$.println("Formatter test completed")
 }
 

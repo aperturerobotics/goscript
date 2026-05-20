@@ -78,18 +78,18 @@ export class MockFileInfo {
 	}
 
 	public IsDir(): boolean {
-		const m = this
-		return $.pointerValue(m).isDir
+		const m: MockFileInfo | $.VarRef<MockFileInfo> | null = this
+		return $.pointerValue<MockFileInfo>(m).isDir
 	}
 
 	public Name(): string {
-		const m = this
-		return $.pointerValue(m).name
+		const m: MockFileInfo | $.VarRef<MockFileInfo> | null = this
+		return $.pointerValue<MockFileInfo>(m).name
 	}
 
 	public Size(): number {
-		const m = this
-		return $.pointerValue(m).size
+		const m: MockFileInfo | $.VarRef<MockFileInfo> | null = this
+		return $.pointerValue<MockFileInfo>(m).size
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -118,7 +118,7 @@ export class MockFilesystem {
 	}
 
 	public ReadDir(path: string): [$.Slice<FileInfo>, $.GoError] {
-		const m = this
+		const m: MockFilesystem | $.VarRef<MockFilesystem> | null = this
 		return [$.arrayToSlice<FileInfo>([$.interfaceValue<FileInfo>(new MockFileInfo({name: "file1.txt", size: 100, isDir: false}), "*main.MockFileInfo"), $.interfaceValue<FileInfo>(new MockFileInfo({name: "subdir", size: 0, isDir: true}), "*main.MockFileInfo")]), null]
 	}
 

@@ -10,8 +10,8 @@ export async function main(): Promise<void> {
 	let p2 = p1
 
 	$.println("p1==p2:", p1 == p2)
-	$.println("*p1:", $.pointerValue(p1))
-	$.println("*p2:", $.pointerValue(p2))
+	$.println("*p1:", $.pointerValue<number>(p1))
+	$.println("*p2:", $.pointerValue<number>(p2))
 }
 
 

@@ -19,7 +19,7 @@ export async function main(): Promise<void> {
 	// Go: println(*p1)
 	// Expected TS for same behavior: console.log(p1.value.value)
 	// We access p1 which should be p1.value. Then we dereference that, which should be p1.value.value.
-	$.println($.pointerValue(p1.value))
+	$.println($.pointerValue<number>(p1.value))
 
 	// Set the value
 	p1.value!.value = 20

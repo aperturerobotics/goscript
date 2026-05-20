@@ -99,8 +99,8 @@ export async function main(): Promise<void> {
 			{
 				let [structPtr2, ok] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i2, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 				if (ok) {
-					$.pointerValue(structPtr1).Value = 99
-					$.println("shared modification check:", $.pointerValue(structPtr2).Value)
+					$.pointerValue<MyStruct>(structPtr1).Value = 99
+					$.println("shared modification check:", $.pointerValue<MyStruct>(structPtr2).Value)
 				}
 			}
 		}
@@ -138,7 +138,7 @@ export async function main(): Promise<void> {
 				{
 					let [ptr, ok] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(item, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 					if (ok) {
-						$.println("arr[", i, "] is *MyStruct with value:", $.pointerValue(ptr).Value)
+						$.println("arr[", i, "] is *MyStruct with value:", $.pointerValue<MyStruct>(ptr).Value)
 					} else {
 						$.println("arr[", i, "] is unknown type")
 					}
@@ -165,7 +165,7 @@ export async function main(): Promise<void> {
 				{
 					types: [{ kind: $.TypeKind.Pointer, elemType: "main.MyStruct" }],
 					body: (v) => {
-						$.println("testItems[", i, "] is *MyStruct pointer:", $.pointerValue(v).Value)
+						$.println("testItems[", i, "] is *MyStruct pointer:", $.pointerValue<MyStruct>(v).Value)
 					}
 				},
 				{

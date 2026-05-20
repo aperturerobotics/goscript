@@ -42,28 +42,28 @@ export class storage {
 	}
 
 	public IsEmpty(): boolean {
-		const s = this
-		return $.len($.pointerValue(s).bytes) == 0
+		const s: storage | $.VarRef<storage> | null = this
+		return $.len($.pointerValue<storage>(s).bytes) == 0
 	}
 
 	public Len(): number {
-		const s = this
-		return $.len($.pointerValue(s).bytes)
+		const s: storage | $.VarRef<storage> | null = this
+		return $.len($.pointerValue<storage>(s).bytes)
 	}
 
 	public Name(): string {
-		const s = this
-		return $.pointerValue(s).name
+		const s: storage | $.VarRef<storage> | null = this
+		return $.pointerValue<storage>(s).name
 	}
 
 	public SetName(name: string): void {
-		const s = this
-		$.pointerValue(s).name = name
+		const s: storage | $.VarRef<storage> | null = this
+		$.pointerValue<storage>(s).name = name
 	}
 
 	public Truncate(): void {
-		const s = this
-		$.pointerValue(s).bytes = $.makeSlice<number>(0, undefined, "byte")
+		const s: storage | $.VarRef<storage> | null = this
+		$.pointerValue<storage>(s).bytes = $.makeSlice<number>(0, undefined, "byte")
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -78,15 +78,15 @@ export class storage {
 export async function main(): Promise<void> {
 	let s = new storage({bytes: $.makeSlice<number>(5, undefined, "byte"), name: "test"})
 
-	$.println("Name:", $.pointerValue(s).Name())
-	$.println("Length:", $.pointerValue(s).Len())
-	$.println("Empty:", $.pointerValue(s).IsEmpty())
+	$.println("Name:", $.pointerValue<storage>(s).Name())
+	$.println("Length:", $.pointerValue<storage>(s).Len())
+	$.println("Empty:", $.pointerValue<storage>(s).IsEmpty())
 
-	$.pointerValue(s).Truncate()
-	$.println("Length after truncate:", $.pointerValue(s).Len())
+	$.pointerValue<storage>(s).Truncate()
+	$.println("Length after truncate:", $.pointerValue<storage>(s).Len())
 
-	$.pointerValue(s).SetName("new_name")
-	$.println("New name:", $.pointerValue(s).Name())
+	$.pointerValue<storage>(s).SetName("new_name")
+	$.println("New name:", $.pointerValue<storage>(s).Name())
 }
 
 

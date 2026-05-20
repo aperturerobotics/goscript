@@ -30,8 +30,8 @@ export class MockInode {
 	}
 
 	public getValue(): number {
-		const m = this
-		return $.pointerValue(m).Value
+		const m: MockInode | $.VarRef<MockInode> | null = this
+		return $.pointerValue<MockInode>(m).Value
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -50,8 +50,8 @@ export async function main(): Promise<void> {
 	let childInode: MockInode | $.VarRef<MockInode> | null = new MockInode({Value: 42})
 
 	// Use the pointer
-	$.println("childInode.Value:", $.pointerValue(childInode).Value)
-	$.println("childInode.getValue():", $.pointerValue(childInode).getValue())
+	$.println("childInode.Value:", $.pointerValue<MockInode>(childInode).Value)
+	$.println("childInode.getValue():", $.pointerValue<MockInode>(childInode).getValue())
 }
 
 

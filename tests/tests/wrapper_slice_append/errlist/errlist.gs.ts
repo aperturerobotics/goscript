@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 export type ErrorList = $.Slice<string>
 
 export function ErrorList_Add(p: $.VarRef<ErrorList>, msg: string): void {
-	p!.value = $.append($.pointerValue(p), msg)
+	p!.value = $.append($.pointerValue<ErrorList>(p), msg)
 }
 
 export class AStruct {
@@ -36,8 +36,8 @@ export class AStruct {
 	}
 
 	public Set(msg: string): void {
-		const a = this
-		$.pointerValue(a).Msg = msg
+		const a: AStruct | $.VarRef<AStruct> | null = this
+		$.pointerValue<AStruct>(a).Msg = msg
 	}
 
 	static __typeInfo = $.registerStructType(

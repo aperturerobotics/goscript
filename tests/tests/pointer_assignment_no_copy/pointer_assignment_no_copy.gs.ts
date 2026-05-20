@@ -56,18 +56,18 @@ export async function main(): Promise<void> {
 	let pointerCopy = original
 
 	// Modify the struct through the original pointer.
-	$.pointerValue(original).MyString = "modified original"
+	$.pointerValue<MyStruct>(original).MyString = "modified original"
 
 	// The change should be reflected when accessing through the copied pointer.
 	// Expected: "modified original"
-	$.println("Pointer copy value: Expected: modified original, Actual: " + $.pointerValue(pointerCopy).MyString)
+	$.println("Pointer copy value: Expected: modified original, Actual: " + $.pointerValue<MyStruct>(pointerCopy).MyString)
 
 	// Modify the struct through the copied pointer.
-	$.pointerValue(pointerCopy).MyInt = 20
+	$.pointerValue<MyStruct>(pointerCopy).MyInt = 20
 
 	// The change should be reflected when accessing through the original pointer.
 	// Expected: 20
-	$.println("Original value after pointer copy modification: Expected: 20, Actual:", $.pointerValue(original).MyInt)
+	$.println("Original value after pointer copy modification: Expected: 20, Actual:", $.pointerValue<MyStruct>(original).MyInt)
 }
 
 

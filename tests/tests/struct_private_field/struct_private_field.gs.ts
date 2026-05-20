@@ -40,8 +40,8 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let myStruct = new MyStruct({myPrivate: 4})
-	$.pointerValue(myStruct).myPrivate = 10
-	$.println($.pointerValue(myStruct).myPrivate)
+	$.pointerValue<MyStruct>(myStruct).myPrivate = 10
+	$.println($.pointerValue<MyStruct>(myStruct).myPrivate)
 }
 
 
