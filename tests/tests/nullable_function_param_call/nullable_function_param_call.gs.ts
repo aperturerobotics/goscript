@@ -175,16 +175,16 @@ export async function main(): Promise<void> {
 
 	// Test the walk function with a callback
 	let walkFunc = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {
-		$.println("Walking:", path, "size:", info!.Size())
+		$.println("Walking:", path, "size:", $.pointerValue(info).Size())
 		if (err != null) {
-			$.println("Error:", err!.Error())
+			$.println("Error:", $.pointerValue(err).Error())
 		}
 		return null
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
 
-	let err = walk(fs, "/test", fileInfo, walkFunc)
+	let err = walk($.interfaceValue<Filesystem | null>(fs, "*main.MockFilesystem"), "/test", $.interfaceValue<FileInfo | null>(fileInfo, "*main.MockFileInfo"), walkFunc)
 	if (err != null) {
-		$.println("Walk error:", err!.Error())
+		$.println("Walk error:", $.pointerValue(err).Error())
 	}
 
 	// Test the process function with a callback
@@ -194,21 +194,21 @@ export async function main(): Promise<void> {
 
 	let [result, err2] = processWithCallback("hello", processFunc)
 	if (err2 != null) {
-		$.println("Process error:", err2!.Error())
+		$.println("Process error:", $.pointerValue(err2).Error())
 	} else {
 		$.println("Process result:", result)
 	}
 
 	let [result3, err3] = maybeProcess("ignored", null)
 	if (err3 != null) {
-		$.println("Optional process error:", err3!.Error())
+		$.println("Optional process error:", $.pointerValue(err3).Error())
 	} else {
 		$.println("Optional process result:", result3)
 	}
 
 	let [result4, err4] = maybeProcess("world", processFunc)
 	if (err4 != null) {
-		$.println("Optional process error:", err4!.Error())
+		$.println("Optional process error:", $.pointerValue(err4).Error())
 	} else {
 		$.println("Optional process result:", result4)
 	}

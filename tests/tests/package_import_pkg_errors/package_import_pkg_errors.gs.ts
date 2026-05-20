@@ -8,36 +8,36 @@ import * as errors from "@goscript/github.com/pkg/errors/index.js"
 export async function main(): Promise<void> {
 	// Test New
 	let err1 = errors.New("basic error")
-	$.println("New error:", err1!.Error())
+	$.println("New error:", $.pointerValue(err1).Error())
 
 	// Test Errorf
 	let err2 = errors.Errorf("formatted error: %d", 42)
-	$.println("Errorf error:", err2!.Error())
+	$.println("Errorf error:", $.pointerValue(err2).Error())
 
 	// Test WithStack
 	let baseErr = errors.New("base error")
 	let err3 = errors.WithStack(baseErr)
-	$.println("WithStack error:", err3!.Error())
+	$.println("WithStack error:", $.pointerValue(err3).Error())
 
 	// Test Wrap
 	let err4 = errors.Wrap(baseErr, "wrapped message")
-	$.println("Wrap error:", err4!.Error())
+	$.println("Wrap error:", $.pointerValue(err4).Error())
 
 	// Test Wrapf
 	let err5 = errors.Wrapf(baseErr, "wrapped with format: %s", "test")
-	$.println("Wrapf error:", err5!.Error())
+	$.println("Wrapf error:", $.pointerValue(err5).Error())
 
 	// Test WithMessage
 	let err6 = errors.WithMessage(baseErr, "additional message")
-	$.println("WithMessage error:", err6!.Error())
+	$.println("WithMessage error:", $.pointerValue(err6).Error())
 
 	// Test WithMessagef
 	let err7 = errors.WithMessagef(baseErr, "additional formatted message: %d", 123)
-	$.println("WithMessagef error:", err7!.Error())
+	$.println("WithMessagef error:", $.pointerValue(err7).Error())
 
 	// Test Cause
 	let cause = errors.Cause(err4)
-	$.println("Cause error:", cause!.Error())
+	$.println("Cause error:", $.pointerValue(cause).Error())
 
 	// Test nil handling
 	let nilErr = errors.WithStack(null)
@@ -53,7 +53,7 @@ export async function main(): Promise<void> {
 	// Test Go 1.13 error handling
 	let unwrapped = errors.Unwrap(err4)
 	if (unwrapped != null) {
-		$.println("Unwrap error:", unwrapped!.Error())
+		$.println("Unwrap error:", $.pointerValue(unwrapped).Error())
 	}
 
 	// Test Is

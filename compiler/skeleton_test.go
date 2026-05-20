@@ -669,7 +669,7 @@ func TestCompilePackagesAssertsInterfaceMethodReceivers(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export type FileInfo = null | {",
-		"$.println(info!.Name())",
+		"$.println($.pointerValue(info).Name())",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -719,7 +719,7 @@ func TestCompilePackagesBoxesTypedNilInterfaceValues(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"return $.interfaceValue<Animal | null>(FindDog(), \"*main.Dog\")",
-		"$.println(animal!.Name())",
+		"$.println($.pointerValue(animal).Name())",
 		"let a: Animal | null = $.interfaceValue<Animal | null>(dog, \"*main.Dog\")",
 	} {
 		if !strings.Contains(text, want) {
@@ -947,7 +947,7 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 		"$.append(parts, \"c\", \"d\")",
 		"maybeErr($.arrayToSlice<string>([\"ok\"]))",
 		"fn!(\"fn\", $.arrayToSlice<string>([\"x\"]))",
-		"joiner!.Join($.arrayToSlice<string>([\"q\", \"r\"]))",
+		"$.pointerValue(joiner).Join($.arrayToSlice<string>([\"q\", \"r\"]))",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -1150,7 +1150,7 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 		"queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {",
 		"$.selectStatement<any, void>([",
 		"let v = result.value",
-		"await call(new Worker({ch: $.makeChannel<number>(1, 0, \"both\")}))",
+		"await call($.interfaceValue<Processor | null>(new Worker({ch: $.makeChannel<number>(1, 0, \"both\")}), \"*main.Worker\"))",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

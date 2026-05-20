@@ -136,7 +136,7 @@ export async function main(): Promise<void> {
 	// Test 2: Calling method on nil receiver should work
 	// The method dispatch uses the type (*Dog) to find Name()
 	// Then passes nil as the receiver
-	$.println(animal!.Name())
+	$.println($.pointerValue(animal).Name())
 
 	// Test 3: Type assertions preserve the typed nil pointer
 	{

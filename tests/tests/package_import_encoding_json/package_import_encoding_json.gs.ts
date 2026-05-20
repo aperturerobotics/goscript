@@ -69,9 +69,9 @@ export async function main(): Promise<void> {
 
 	// Marshal a simple struct
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
-	let [b, err] = json.Marshal(p)
+	let [b, err] = json.Marshal($.markAsStructValue(p.clone()))
 	if (err != null) {
-		results = $.append(results, "Marshal error: " + err!.Error())
+		results = $.append(results, "Marshal error: " + $.pointerValue(err).Error())
 	} else {
 		results = $.append(results, "Marshal: " + $.bytesToString(b))
 	}
@@ -79,9 +79,9 @@ export async function main(): Promise<void> {
 	// Unmarshal into a struct
 	let q: $.VarRef<Person> = $.varRef($.markAsStructValue(new Person()))
 	{
-		let err = json.Unmarshal($.stringToBytes("{\"name\":\"Bob\",\"age\":25,\"active\":false}"), q)
+		let err = json.Unmarshal($.stringToBytes("{\"name\":\"Bob\",\"age\":25,\"active\":false}"), $.interfaceValue<any>(q, "*main.Person"))
 		if (err != null) {
-			results = $.append(results, "Unmarshal struct error: " + err!.Error())
+			results = $.append(results, "Unmarshal struct error: " + $.pointerValue(err).Error())
 		} else {
 			results = $.append(results, (((("Unmarshal struct: Name=" + q.value.Name) + ", Age=") + strconv.Itoa(q.value.Age)) + ", Active=") + strconv.FormatBool(q.value.Active))
 		}
@@ -90,9 +90,9 @@ export async function main(): Promise<void> {
 	// Unmarshal into a map[string]any
 	let m: $.VarRef<Map<string, any> | null> = $.varRef(null)
 	{
-		let err = json.Unmarshal($.stringToBytes("{\"name\":\"Carol\",\"age\":22,\"active\":true}"), m)
+		let err = json.Unmarshal($.stringToBytes("{\"name\":\"Carol\",\"age\":22,\"active\":true}"), $.interfaceValue<any>(m, "*map[string]any"))
 		if (err != null) {
-			results = $.append(results, "Unmarshal map error: " + err!.Error())
+			results = $.append(results, "Unmarshal map error: " + $.pointerValue(err).Error())
 		} else {
 			let name = $.mustTypeAssert<string>($.mapGet(m.value, "name", null)[0], { kind: $.TypeKind.Basic, name: "string" })
 			let age = $.int($.mustTypeAssert<number>($.mapGet(m.value, "age", null)[0], { kind: $.TypeKind.Basic, name: "int" }))

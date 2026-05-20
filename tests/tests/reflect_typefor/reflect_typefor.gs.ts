@@ -63,17 +63,17 @@ $.registerInterfaceType(
 export async function main(): Promise<void> {
 	// Test TypeFor with named interface type
 	let t1 = reflect.TypeFor({T: { type: "main.MyInterface", zero: () => null, methods: {SomeMethod: (receiver: any, ...args: any[]) => receiver.SomeMethod(...args)} }})
-	$.println("TypeFor interface:", t1!.String())
+	$.println("TypeFor interface:", $.pointerValue(t1).String())
 
 	// Test TypeFor with struct type
 	let t2 = reflect.TypeFor({T: { type: "main.MyStruct", zero: () => new MyStruct() }})
-	$.println("TypeFor struct:", t2!.String())
-	$.println("TypeFor struct kind:", t2!.Kind() == reflect.Struct)
+	$.println("TypeFor struct:", $.pointerValue(t2).String())
+	$.println("TypeFor struct kind:", $.pointerValue(t2).Kind() == reflect.Struct)
 
 	// Test TypeFor with int type
 	let t3 = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})
-	$.println("TypeFor int:", t3!.String())
-	$.println("TypeFor int kind:", t3!.Kind() == reflect.Int)
+	$.println("TypeFor int:", $.pointerValue(t3).String())
+	$.println("TypeFor int kind:", $.pointerValue(t3).Kind() == reflect.Int)
 
 	// Test Pointer constant (should be same as Ptr)
 	$.println("Pointer constant:", reflect.Pointer == reflect.Pointer)

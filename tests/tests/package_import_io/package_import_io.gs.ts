@@ -7,10 +7,10 @@ import * as io from "@goscript/io/index.js"
 
 export async function main(): Promise<void> {
 	// Test basic error variables
-	$.println("EOF:", io.EOF!.Error())
-	$.println("ErrClosedPipe:", io.ErrClosedPipe!.Error())
-	$.println("ErrShortWrite:", io.ErrShortWrite!.Error())
-	$.println("ErrUnexpectedEOF:", io.ErrUnexpectedEOF!.Error())
+	$.println("EOF:", $.pointerValue(io.EOF).Error())
+	$.println("ErrClosedPipe:", $.pointerValue(io.ErrClosedPipe).Error())
+	$.println("ErrShortWrite:", $.pointerValue(io.ErrShortWrite).Error())
+	$.println("ErrUnexpectedEOF:", $.pointerValue(io.ErrUnexpectedEOF).Error())
 
 	// Test seek constants
 	$.println("SeekStart:", io.SeekStart)

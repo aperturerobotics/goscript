@@ -86,13 +86,13 @@ export function processInterface(i: any): void {
 			{
 				types: ["main.MyInterface1"],
 				body: (v) => {
-					$.println("MyInterface1:", v!.MyString1(), v!.MyString2())
+					$.println("MyInterface1:", $.pointerValue(v).MyString1(), $.pointerValue(v).MyString2())
 				}
 			},
 			{
 				types: ["main.MyInterface2"],
 				body: (v) => {
-					$.println("MyInterface2:", v!.MyString1())
+					$.println("MyInterface2:", $.pointerValue(v).MyString1())
 				}
 			}
 		],
@@ -115,7 +115,7 @@ export async function main(): Promise<void> {
 	processInterface(i2)
 
 	// Test with concrete type
-	processInterface(s)
+	processInterface($.markAsStructValue(s.clone()))
 
 	// Type switch with subset casting
 	let i3: any = i1
@@ -125,13 +125,13 @@ export async function main(): Promise<void> {
 			{
 				types: ["main.MyInterface2"],
 				body: (v) => {
-					$.println("Matched MyInterface2 from i1:", v!.MyString1())
+					$.println("Matched MyInterface2 from i1:", $.pointerValue(v).MyString1())
 				}
 			},
 			{
 				types: ["main.MyInterface1"],
 				body: (v) => {
-					$.println("Matched MyInterface1 from i1:", v!.MyString1(), v!.MyString2())
+					$.println("Matched MyInterface1 from i1:", $.pointerValue(v).MyString1(), $.pointerValue(v).MyString2())
 				}
 			}
 		],

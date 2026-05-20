@@ -20,11 +20,11 @@ export async function main(): Promise<void> {
 	$.println("ValidPath(''):", valid4)
 
 	// Test error constants
-	$.println("ErrInvalid:", fs.ErrInvalid!.Error())
-	$.println("ErrNotExist:", fs.ErrNotExist!.Error())
-	$.println("ErrExist:", fs.ErrExist!.Error())
-	$.println("ErrPermission:", fs.ErrPermission!.Error())
-	$.println("ErrClosed:", fs.ErrClosed!.Error())
+	$.println("ErrInvalid:", $.pointerValue(fs.ErrInvalid).Error())
+	$.println("ErrNotExist:", $.pointerValue(fs.ErrNotExist).Error())
+	$.println("ErrExist:", $.pointerValue(fs.ErrExist).Error())
+	$.println("ErrPermission:", $.pointerValue(fs.ErrPermission).Error())
+	$.println("ErrClosed:", $.pointerValue(fs.ErrClosed).Error())
 
 	// Test all FileMode constants
 	$.println("ModeDir:", $.int(fs.ModeDir))

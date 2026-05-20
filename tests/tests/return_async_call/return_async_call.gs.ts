@@ -33,7 +33,7 @@ export async function main(): Promise<void> {
 	let ctx = context.Background()
 	let [result2, err] = WrapperWithError(ctx)
 	if (err != null) {
-		$.println("Error:", err!.Error())
+		$.println("Error:", $.pointerValue(err).Error())
 		return
 	}
 	$.println("Result2:", result2)

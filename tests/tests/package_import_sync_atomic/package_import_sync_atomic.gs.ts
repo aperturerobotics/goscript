@@ -81,7 +81,7 @@ export async function main(): Promise<void> {
 	let callback = $.varRef(__goscriptTuple0[0])
 	let callbackErr = __goscriptTuple0[1]
 	if (callbackErr != null) {
-		$.println("Pointer function error:", callbackErr!.Error())
+		$.println("Pointer function error:", $.pointerValue(callbackErr).Error())
 	} else {
 		fnPtr.value.Store(callback)
 		let loadedFn = fnPtr.value.Load()

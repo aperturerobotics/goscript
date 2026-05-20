@@ -86,15 +86,15 @@ export async function main(): Promise<void> {
 	// Cast from larger interface to smaller interface (subset)
 	let i2: MyInterface2 | null = i1
 
-	$.println("i1.MyString1():", i1!.MyString1())
-	$.println("i1.MyString2():", i1!.MyString2())
-	$.println("i2.MyString1():", i2!.MyString1())
+	$.println("i1.MyString1():", $.pointerValue(i1).MyString1())
+	$.println("i1.MyString2():", $.pointerValue(i1).MyString2())
+	$.println("i2.MyString1():", $.pointerValue(i2).MyString1())
 
 	// Type assertion from larger to smaller interface
 	let [i3, ok] = $.typeAssertTuple<MyInterface2 | null>(i1, "main.MyInterface2")
 	if (ok) {
 		$.println("Type assertion successful")
-		$.println("i3.MyString1():", i3!.MyString1())
+		$.println("i3.MyString1():", $.pointerValue(i3).MyString1())
 	} else {
 		$.println("Type assertion failed")
 	}

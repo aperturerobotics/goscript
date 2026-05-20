@@ -21,7 +21,7 @@ export async function testMixedReturns(ctx: context.Context | null): Promise<str
 		{
 			id: 0,
 			isSend: false,
-			channel: ctx!.Done(),
+			channel: $.pointerValue(ctx).Done(),
 			onSelected: async (result) => {
 				$.println("Context done, returning")
 				return "context_done"

@@ -10,8 +10,8 @@ export async function main(): Promise<void> {
 	let err1 = errors.New("first error")
 	let err2 = errors.New("second error")
 
-	$.println("err1:", err1!.Error())
-	$.println("err2:", err2!.Error())
+	$.println("err1:", $.pointerValue(err1).Error())
+	$.println("err2:", $.pointerValue(err2).Error())
 
 	// Test error comparison
 	$.println("err1 == err2:", err1 == err2)

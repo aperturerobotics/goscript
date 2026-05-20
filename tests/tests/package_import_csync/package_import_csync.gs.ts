@@ -32,7 +32,7 @@ export async function main(): Promise<void> {
 		// Try to acquire the lock
 		let [relLock, err] = await mtx.value.Lock(ctx)
 		if (err != null) {
-			$.println("worker", id, "failed to acquire lock:", err!.Error())
+			$.println("worker", id, "failed to acquire lock:", $.pointerValue(err).Error())
 			return
 		}
 		__defer.defer(() => { relLock!() })
@@ -68,9 +68,9 @@ export async function main(): Promise<void> {
 		{
 			id: 1,
 			isSend: false,
-			channel: ctx!.Done(),
+			channel: $.pointerValue(ctx).Done(),
 			onSelected: async (result) => {
-				$.println("Test timed out:", ctx!.Err()!.Error())
+				$.println("Test timed out:", $.pointerValue($.pointerValue(ctx).Err()).Error())
 			}
 		}
 	], false)

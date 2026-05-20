@@ -60,7 +60,7 @@ export async function main(): Promise<void> {
 	$.println("Custom sorted slice:", testSlice![0], testSlice![1], testSlice![2], testSlice![3], testSlice![4])
 
 	// Test SliceIsSorted
-	let isSliceSorted = sort.SliceIsSorted(testSlice, $.functionValue((i: number, j: number): boolean => {
+	let isSliceSorted = sort.SliceIsSorted($.interfaceValue<any>(testSlice, "[]int"), $.functionValue((i: number, j: number): boolean => {
 		return testSlice![i] < testSlice![j]
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
 	$.println("Custom slice is sorted:", isSliceSorted)

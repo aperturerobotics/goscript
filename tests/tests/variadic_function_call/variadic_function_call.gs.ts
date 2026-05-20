@@ -30,7 +30,7 @@ export async function main(): Promise<void> {
 	let err = TestFS("myfs", expected)
 
 	if (err != null) {
-		$.println("Error: " + err!.Error())
+		$.println("Error: " + $.pointerValue(err).Error())
 	} else {
 		$.println("Success!")
 	}

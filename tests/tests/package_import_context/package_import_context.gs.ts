@@ -13,7 +13,7 @@ export async function run(ctx: context.Context | null): Promise<void> {
 	let myCh = $.makeChannel<Record<string, unknown>>(0, {}, "both")
 
 	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
-		await $.chanRecv(sctx!.Done())
+		await $.chanRecv($.pointerValue(sctx).Done())
 		await $.chanSend(myCh, {})
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 

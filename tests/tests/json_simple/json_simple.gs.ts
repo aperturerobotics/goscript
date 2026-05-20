@@ -42,9 +42,9 @@ export class Simple {
 
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new Simple({X: 42}))
-	let [b, err] = json.Marshal(s)
+	let [b, err] = json.Marshal($.markAsStructValue(s.clone()))
 	if (err != null) {
-		$.println("Error:", err!.Error())
+		$.println("Error:", $.pointerValue(err).Error())
 	} else {
 		$.println("Result:", $.bytesToString(b))
 	}

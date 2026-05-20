@@ -53,7 +53,7 @@ export async function main(): Promise<void> {
 	let processor: MultiParamReturner | null = $.markAsStructValue($.markAsStructValue(new MyProcessor()).clone())
 
 	let data = $.arrayToSlice<number>([1, 2, 3])
-	let [success, ] = processor!.Process(data, 5, "unused")
+	let [success, ] = $.pointerValue(processor).Process(data, 5, "unused")
 
 	if (success) {
 		$.println("Main: Success reported")
@@ -62,7 +62,7 @@ export async function main(): Promise<void> {
 	}
 
 	// test case: re-use success variable, ignore second variable
-	let __goscriptTuple0 = processor!.Process(data, 5, "unused")
+	let __goscriptTuple0 = $.pointerValue(processor).Process(data, 5, "unused")
 	success = __goscriptTuple0[0]
 	if (success) {
 		$.println("Main: Success reported")

@@ -13,7 +13,7 @@ export async function main(): Promise<void> {
 				$.println("Current working directory ok")
 			}
 		} else {
-			$.println("Error getting working directory:", err!.Error())
+			$.println("Error getting working directory:", $.pointerValue(err).Error())
 		}
 	}
 
@@ -42,7 +42,7 @@ export async function main(): Promise<void> {
 		if (err == null) {
 			$.println("Hostname:", hostname)
 		} else {
-			$.println("Error getting hostname:", err!.Error())
+			$.println("Error getting hostname:", $.pointerValue(err).Error())
 		}
 	}
 
@@ -50,7 +50,7 @@ export async function main(): Promise<void> {
 	if (err == null) {
 		$.println("Stdout write bytes:", n)
 	} else {
-		$.println("Stdout write error:", err!.Error())
+		$.println("Stdout write error:", $.pointerValue(err).Error())
 	}
 
 	let fileName = "os-runtime-file.txt"
@@ -58,7 +58,7 @@ export async function main(): Promise<void> {
 	if (writeErr == null) {
 		$.println("WriteFile ok")
 	} else {
-		$.println("WriteFile error:", writeErr!.Error())
+		$.println("WriteFile error:", $.pointerValue(writeErr).Error())
 	}
 
 	{
@@ -66,17 +66,17 @@ export async function main(): Promise<void> {
 		if (readErr == null) {
 			$.println("ReadFile data:", $.bytesToString(data))
 		} else {
-			$.println("ReadFile error:", readErr!.Error())
+			$.println("ReadFile error:", $.pointerValue(readErr).Error())
 		}
 	}
 
 	{
 		let [info, statErr] = os.Stat(fileName)
 		if (statErr == null) {
-			$.println("Stat name:", info!.Name())
-			$.println("Stat size:", info!.Size())
+			$.println("Stat name:", $.pointerValue(info).Name())
+			$.println("Stat size:", $.pointerValue(info).Size())
 		} else {
-			$.println("Stat error:", statErr!.Error())
+			$.println("Stat error:", $.pointerValue(statErr).Error())
 		}
 	}
 
@@ -84,7 +84,7 @@ export async function main(): Promise<void> {
 	if (removeErr == null) {
 		$.println("Remove ok")
 	} else {
-		$.println("Remove error:", removeErr!.Error())
+		$.println("Remove error:", $.pointerValue(removeErr).Error())
 	}
 
 	{
@@ -93,7 +93,7 @@ export async function main(): Promise<void> {
 			$.println("MkdirTemp ok")
 			os.RemoveAll(tempDir)
 		} else {
-			$.println("MkdirTemp error:", err!.Error())
+			$.println("MkdirTemp error:", $.pointerValue(err).Error())
 		}
 	}
 
@@ -105,7 +105,7 @@ export async function main(): Promise<void> {
 			$.pointerValue<os.File>(tempFile).Close()
 			os.Remove($.pointerValue<os.File>(tempFile).Name())
 		} else {
-			$.println("CreateTemp error:", err!.Error())
+			$.println("CreateTemp error:", $.pointerValue(err).Error())
 		}
 	}
 }

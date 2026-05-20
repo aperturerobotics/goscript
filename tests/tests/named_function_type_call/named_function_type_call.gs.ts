@@ -197,17 +197,17 @@ export async function main(): Promise<void> {
 	// Test the walk function with custom WalkFunc
 	let walkFunc = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {
 		if (info != null) {
-			$.println("Walking:", path, "size:", info!.Size())
+			$.println("Walking:", path, "size:", $.pointerValue(info).Size())
 		}
 		if (err != null) {
-			$.println("Error:", err!.Error())
+			$.println("Error:", $.pointerValue(err).Error())
 		}
 		return null
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
 
-	let err = walkWithCustomFunc(fs, "/test", fileInfo, walkFunc)
+	let err = walkWithCustomFunc($.interfaceValue<Filesystem | null>(fs, "*main.MockFilesystem"), "/test", $.interfaceValue<FileInfo | null>(fileInfo, "*main.MockFileInfo"), walkFunc)
 	if (err != null) {
-		$.println("Walk error:", err!.Error())
+		$.println("Walk error:", $.pointerValue(err).Error())
 	}
 
 	// Test with processFiles
@@ -218,13 +218,13 @@ export async function main(): Promise<void> {
 
 	let err2 = processFiles("*.go", processFunc)
 	if (err2 != null) {
-		$.println("Process error:", err2!.Error())
+		$.println("Process error:", $.pointerValue(err2).Error())
 	}
 
 	// Test with multiCallback
 	let err3 = multiCallback(walkFunc, processFunc)
 	if (err3 != null) {
-		$.println("Multi callback error:", err3!.Error())
+		$.println("Multi callback error:", $.pointerValue(err3).Error())
 	}
 }
 

@@ -2489,11 +2489,11 @@ func (o *LoweringOwner) lowerCallArgs(
 	if signature == nil || !signature.Variadic() ||
 		isBuiltinCallTarget(ctx, expr.Fun) ||
 		o.variadicCallUsesOverrideRest(ctx, expr.Fun) {
-		return o.lowerExprList(ctx, expr.Args)
+		return o.lowerFixedCallArgs(ctx, expr.Args, signature)
 	}
 	params := signature.Params()
 	if params == nil || params.Len() == 0 {
-		return o.lowerExprList(ctx, expr.Args)
+		return o.lowerFixedCallArgs(ctx, expr.Args, signature)
 	}
 
 	fixedCount := params.Len() - 1
@@ -2504,12 +2504,17 @@ func (o *LoweringOwner) lowerCallArgs(
 		lowered, argDiagnostics := o.lowerExpr(ctx, arg)
 		diagnostics = append(diagnostics, argDiagnostics...)
 		if idx < fixedCount {
+			lowered = o.lowerValueForTarget(ctx, arg, params.At(idx).Type(), lowered)
 			args = append(args, lowered)
 			continue
 		}
 		if expr.Ellipsis != token.NoPos && idx == len(expr.Args)-1 {
+			lowered = o.lowerValueForTarget(ctx, arg, params.At(fixedCount).Type(), lowered)
 			args = append(args, lowered)
 			continue
+		}
+		if slice, ok := types.Unalias(params.At(fixedCount).Type()).Underlying().(*types.Slice); ok {
+			lowered = o.lowerValueForTarget(ctx, arg, slice.Elem(), lowered)
 		}
 		variadicArgs = append(variadicArgs, lowered)
 	}
@@ -2527,6 +2532,28 @@ func (o *LoweringOwner) lowerCallArgs(
 	}
 	args = append(args, o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayToSlice)+
 		"<"+elemType+">(["+strings.Join(variadicArgs, ", ")+"])")
+	return args, diagnostics
+}
+
+func (o *LoweringOwner) lowerFixedCallArgs(
+	ctx lowerFileContext,
+	exprs []ast.Expr,
+	signature *types.Signature,
+) ([]string, []Diagnostic) {
+	var params *types.Tuple
+	if signature != nil {
+		params = signature.Params()
+	}
+	args := make([]string, 0, len(exprs))
+	var diagnostics []Diagnostic
+	for idx, expr := range exprs {
+		lowered, exprDiagnostics := o.lowerExpr(ctx, expr)
+		diagnostics = append(diagnostics, exprDiagnostics...)
+		if params != nil && idx < params.Len() {
+			lowered = o.lowerValueForTarget(ctx, expr, params.At(idx).Type(), lowered)
+		}
+		args = append(args, lowered)
+	}
 	return args, diagnostics
 }
 
@@ -2848,7 +2875,7 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 		return o.lowerStructClone(receiver), diagnostics
 	}
 	if isInterfaceType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
-		return receiver + "!", diagnostics
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "(" + receiver + ")", diagnostics
 	}
 	return receiver, diagnostics
 }
