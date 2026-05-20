@@ -5,6 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as os from "@goscript/os/index.js"
 
+import * as fs from "@goscript/io/fs/index.js"
+
 export async function main(): Promise<void> {
 	{
 		let [wd, err] = os.Getwd()

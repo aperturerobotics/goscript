@@ -170,6 +170,7 @@ func (o *LoweringOwner) lowerFile(
 			})
 		}
 	}
+	o.addGeneratedTypeImports(model, semPkg, sourcePath, loweredFile, importAliases, importPaths, seenImport)
 	localAliases, localAliasSources := o.localFileAliases(semPkg, file, sourcePath, associatedMethods)
 	localImports := make([]loweredImport, 0, len(localAliases))
 	seenLocalImport := make(map[string]bool)
@@ -218,6 +219,80 @@ func (o *LoweringOwner) lowerFile(
 		}
 	}
 	return loweredFile, diagnostics
+}
+
+func (o *LoweringOwner) addGeneratedTypeImports(
+	model *SemanticModel,
+	semPkg *semanticPackage,
+	sourcePath string,
+	loweredFile *loweredFile,
+	importAliases map[string]string,
+	importPaths map[string]string,
+	seenImport map[string]bool,
+) {
+	generatedImports := semPkg.generatedImports[sourcePath]
+	if len(generatedImports) == 0 {
+		return
+	}
+	pkgPaths := make([]string, 0, len(generatedImports))
+	for pkgPath := range generatedImports {
+		if pkgPath != "" && pkgPath != semPkg.pkgPath {
+			pkgPaths = append(pkgPaths, pkgPath)
+		}
+	}
+	slices.Sort(pkgPaths)
+	for _, pkgPath := range pkgPaths {
+		if !o.hasGeneratedImportPackage(model, pkgPath) {
+			continue
+		}
+		if importPaths[pkgPath] != "" {
+			continue
+		}
+		alias := generatedImportAlias(model, pkgPath)
+		alias = uniqueImportAlias(alias, pkgPath, importAliases)
+		source := "@goscript/" + pkgPath + "/index.js"
+		importKey := alias + "\x00" + source
+		if seenImport[importKey] {
+			continue
+		}
+		seenImport[importKey] = true
+		importAliases[alias] = pkgPath
+		importPaths[pkgPath] = alias
+		loweredFile.imports = append(loweredFile.imports, loweredImport{
+			alias:  alias,
+			source: source,
+		})
+	}
+}
+
+func (o *LoweringOwner) hasGeneratedImportPackage(model *SemanticModel, pkgPath string) bool {
+	if model != nil && model.packages[pkgPath] != nil {
+		return true
+	}
+	roots, err := o.overrideOwner.packageRoots()
+	return err == nil && roots[pkgPath]
+}
+
+func generatedImportAlias(model *SemanticModel, pkgPath string) string {
+	if model != nil {
+		if semPkg := model.packages[pkgPath]; semPkg != nil && semPkg.name != "" {
+			return safeIdentifier(semPkg.name)
+		}
+	}
+	return safeIdentifier(path.Base(pkgPath))
+}
+
+func uniqueImportAlias(alias string, pkgPath string, importAliases map[string]string) string {
+	if importAliases[alias] == "" || importAliases[alias] == pkgPath {
+		return alias
+	}
+	base := alias
+	for idx := 2; ; idx++ {
+		candidate := base + strconv.Itoa(idx)
+		if importAliases[candidate] == "" || importAliases[candidate] == pkgPath {
+			return candidate
+		}
+	}
 }
 
 func (o *LoweringOwner) methodDeclsForFileTypes(semPkg *semanticPackage, file *ast.File) []*ast.FuncDecl {

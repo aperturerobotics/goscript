@@ -235,9 +235,36 @@ func (o *SemanticModelOwner) collectFileFacts(
 			o.recordValueSpecNilFacts(semPkg, pkg, typed)
 		case *ast.AssignStmt:
 			o.recordAssignNilFacts(semPkg, pkg, typed)
+		case *ast.CallExpr:
+			o.recordCallSignatureImports(model, semPkg, pkg, typed)
 		}
 		return true
 	})
+}
+
+func (o *SemanticModelOwner) recordCallSignatureImports(
+	model *SemanticModel,
+	semPkg *semanticPackage,
+	pkg *packages.Package,
+	expr *ast.CallExpr,
+) {
+	signature := signatureForType(pkg.TypesInfo.TypeOf(expr.Fun))
+	if signature == nil {
+		return
+	}
+	position := sourcePos(pkg, expr.Pos())
+	o.recordTupleImports(model, semPkg, position.file, pkg.PkgPath, signature.Params(), make(map[types.Type]bool))
+}
+
+func signatureForType(typ types.Type) *types.Signature {
+	if typ == nil {
+		return nil
+	}
+	if signature, ok := typ.(*types.Signature); ok {
+		return signature
+	}
+	signature, _ := types.Unalias(typ).Underlying().(*types.Signature)
+	return signature
 }
 
 func (o *SemanticModelOwner) recordPointerReceiverUse(
@@ -822,7 +849,6 @@ func (o *SemanticModelOwner) recordTypeImports(
 				o.recordTypeImports(model, semPkg, file, currentPkg, t, seen)
 			}
 		}
-		o.recordTypeImports(model, semPkg, file, currentPkg, typed.Underlying(), seen)
 	case *types.Pointer:
 		o.recordTypeImports(model, semPkg, file, currentPkg, typed.Elem(), seen)
 	case *types.Slice:
