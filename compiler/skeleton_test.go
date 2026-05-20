@@ -780,7 +780,7 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 	for _, want := range []string{
 		"public Get(): any",
 		"export function NewBox(__typeArgs: $.GenericTypeArgs | undefined, value: any): Box",
-		"let seen = $.makeMap<number, Record<string, unknown>>()",
+		"let seen = $.makeMap<number, {}>()",
 		"$.mapSet(seen, 1, {})",
 		"$.genericZero(__typeArgs, \"T\", null)",
 		"$.callGenericMethod(__typeArgs, \"T\", \"String\", v)",

@@ -3653,7 +3653,7 @@ func tsType(typ types.Type) string {
 		}
 		return "unknown"
 	case *types.Struct:
-		return "Record<string, unknown>"
+		return tsAnonymousStructType(typed)
 	case *types.Array:
 		return tsType(typed.Elem()) + "[]"
 	case *types.Slice:
@@ -3689,6 +3689,15 @@ func tsSignatureParams(signature *types.Signature) string {
 		params = append(params, safeParamName(param, idx)+": "+tsType(param.Type()))
 	}
 	return strings.Join(params, ", ")
+}
+
+func tsAnonymousStructType(structType *types.Struct) string {
+	fields := make([]string, 0, structType.NumFields())
+	for field := range structType.Fields() {
+		field := field
+		fields = append(fields, strconv.Quote(field.Name())+": "+tsType(field.Type()))
+	}
+	return "{" + strings.Join(fields, ", ") + "}"
 }
 
 func tsSignatureResult(signature *types.Signature) string {
@@ -3769,6 +3778,8 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		return "Map<" + o.tsTypeFor(ctx, typed.Key()) + ", " + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
 	case *types.Chan:
 		return "$.Channel<" + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
+	case *types.Struct:
+		return o.tsAnonymousStructTypeFor(ctx, typed)
 	case *types.Pointer:
 		if named := namedNonStructType(typed.Elem()); named != nil {
 			return "$.VarRef<" + o.namedTypeExpr(ctx, named) + "> | null"
@@ -3783,6 +3794,15 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	default:
 		return tsType(typ)
 	}
+}
+
+func (o *LoweringOwner) tsAnonymousStructTypeFor(ctx lowerFileContext, structType *types.Struct) string {
+	fields := make([]string, 0, structType.NumFields())
+	for field := range structType.Fields() {
+		field := field
+		fields = append(fields, strconv.Quote(field.Name())+": "+o.tsTypeFor(ctx, field.Type()))
+	}
+	return "{" + strings.Join(fields, ", ") + "}"
 }
 
 func zeroValueExpr(typ types.Type) string {
