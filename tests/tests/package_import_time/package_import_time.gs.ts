@@ -32,6 +32,16 @@ export async function main(): Promise<void> {
 	$.println("location", $.pointerValue<time.Location>($.markAsStructValue(setTime.clone()).Location()).String())
 	$.println("utc", $.markAsStructValue($.markAsStructValue(setTime.clone()).UTC().clone()).Format("2006-01-02T15:04:05Z07:00"))
 	$.println("seconds", time.Duration_Seconds((1500 * time.Millisecond)))
+
+	let [duration, durationErr] = time.ParseDuration("1.5s")
+	$.println("parsed duration", duration, durationErr == null)
+	let [, badDurationErr] = time.ParseDuration("not-a-duration")
+	$.println("bad duration err", badDurationErr != null)
+
+	let [parsed, parseErr] = time.Parse(time.RFC3339, "2025-05-15T01:10:42Z")
+	$.println("parsed time", $.markAsStructValue($.markAsStructValue(parsed.clone()).UTC().clone()).Format(time.RFC3339), parseErr == null)
+	let [, badParseErr] = time.Parse(time.RFC3339, "not-a-time")
+	$.println("bad time err", badParseErr != null)
 }
 
 

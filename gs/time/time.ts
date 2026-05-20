@@ -1,3 +1,4 @@
+import * as $ from '../builtin/index.js'
 import { makeChannel, ChannelRef, makeChannelRef } from '../builtin/channel.js'
 
 // Time represents a time instant with nanosecond precision
@@ -917,12 +918,12 @@ export function UnixNano(nsec: number): Time {
 // ParseDuration parses a duration string
 // A duration string is a possibly signed sequence of decimal numbers,
 // each with optional fraction and a unit suffix
-export function ParseDuration(s: string): Duration {
+export function ParseDuration(s: string): [Duration, $.GoError] {
   const regex = /^([+-]?)(\d+(?:\.\d+)?)(ns|us|µs|ms|s|m|h)$/
   const match = s.match(regex)
 
   if (!match) {
-    throw new Error(`time: invalid duration "${s}"`)
+    return [0, $.newError(`time: invalid duration "${s}"`)]
   }
 
   const [, sign, valueStr, unit] = match
@@ -951,14 +952,14 @@ export function ParseDuration(s: string): Duration {
       nanoseconds = value * 3600000000000
       break
     default:
-      throw new Error(`time: unknown unit "${unit}" in duration "${s}"`)
+      return [0, $.newError(`time: unknown unit "${unit}" in duration "${s}"`)]
   }
 
-  return nanoseconds
+  return [nanoseconds, null]
 }
 
 // Parse parses a formatted string and returns the time value it represents
-export function Parse(layout: string, value: string): Time {
+export function Parse(layout: string, value: string): [Time, $.GoError] {
   return ParseInLocation(layout, value, UTC)
 }
 
@@ -967,7 +968,7 @@ export function ParseInLocation(
   layout: string,
   value: string,
   loc: Location,
-): Time {
+): [Time, $.GoError] {
   // This is a simplified implementation
   // A full implementation would need to parse according to the layout format
 
@@ -975,43 +976,58 @@ export function ParseInLocation(
   if (layout === RFC3339 || layout === '2006-01-02T15:04:05Z07:00') {
     const date = new globalThis.Date(value)
     if (isNaN(date.getTime())) {
-      throw new ParseError(
-        layout,
-        value,
-        '',
-        '',
-        `parsing time "${value}" as "${layout}": cannot parse`,
-      )
+      return [
+        new Time(),
+        $.toGoError(
+          new ParseError(
+            layout,
+            value,
+            '',
+            '',
+            `parsing time "${value}" as "${layout}": cannot parse`,
+          ),
+        ),
+      ]
     }
-    return Time.create(date, 0, undefined, loc)
+    return [Time.create(date, 0, undefined, loc), null]
   }
 
   if (layout === DateTime || layout === '2006-01-02 15:04:05') {
     const date = new globalThis.Date(value)
     if (isNaN(date.getTime())) {
-      throw new ParseError(
-        layout,
-        value,
-        '',
-        '',
-        `parsing time "${value}" as "${layout}": cannot parse`,
-      )
+      return [
+        new Time(),
+        $.toGoError(
+          new ParseError(
+            layout,
+            value,
+            '',
+            '',
+            `parsing time "${value}" as "${layout}": cannot parse`,
+          ),
+        ),
+      ]
     }
-    return Time.create(date, 0, undefined, loc)
+    return [Time.create(date, 0, undefined, loc), null]
   }
 
   // Fallback to standard Date parsing
   const date = new globalThis.Date(value)
   if (isNaN(date.getTime())) {
-    throw new ParseError(
-      layout,
-      value,
-      '',
-      '',
-      `parsing time "${value}" as "${layout}": cannot parse`,
-    )
+    return [
+      new Time(),
+      $.toGoError(
+        new ParseError(
+          layout,
+          value,
+          '',
+          '',
+          `parsing time "${value}" as "${layout}": cannot parse`,
+        ),
+      ),
+    ]
   }
-  return Time.create(date, 0, undefined, loc)
+  return [Time.create(date, 0, undefined, loc), null]
 }
 
 // After waits for the duration to elapse and then sends the current time on the returned channel

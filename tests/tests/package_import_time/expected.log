@@ -14,3 +14,7 @@ weekday Thursday
 location UTC
 utc 2025-05-15T01:10:42Z
 seconds 1.5
+parsed duration 1500000000 true
+bad duration err true
+parsed time 2025-05-15T01:10:42Z true
+bad time err true
