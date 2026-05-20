@@ -700,6 +700,24 @@ func renderTypeSwitchBody(
 	}
 	b.WriteString(header)
 	if varName != "" && defaultValue != "" {
+		if varName == defaultValue {
+			writeIndent(b, indent+1)
+			b.WriteString("const __goscriptTypeSwitchDefaultValue = ")
+			b.WriteString(defaultValue)
+			b.WriteString("\n")
+			writeIndent(b, indent+1)
+			b.WriteString("{\n")
+			writeIndent(b, indent+2)
+			b.WriteString("let ")
+			b.WriteString(varName)
+			b.WriteString(" = __goscriptTypeSwitchDefaultValue\n")
+			renderStmts(b, body, indent+2)
+			writeIndent(b, indent+1)
+			b.WriteString("}\n")
+			writeIndent(b, indent)
+			b.WriteString("}\n")
+			return
+		}
 		writeIndent(b, indent+1)
 		b.WriteString("let ")
 		b.WriteString(varName)

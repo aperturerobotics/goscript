@@ -100,6 +100,22 @@ export async function main(): Promise<void> {
 			$.println("default only, value is", $.mustTypeAssert<string>(w, { kind: $.TypeKind.Basic, name: "string" }))
 		}
 	)
+
+	for (let __rangeIndex = 0; __rangeIndex < $.len($.arrayToSlice<any>([$.int(7)])); __rangeIndex++) {
+		let v = $.arrayToSlice<any>([$.int(7)])![__rangeIndex]
+		$.typeSwitch(
+			v,
+			[
+			],
+			() => {
+				const __goscriptTypeSwitchDefaultValue = v
+				{
+					let v = __goscriptTypeSwitchDefaultValue
+					$.println("shadow default", $.mustTypeAssert<number>(v, { kind: $.TypeKind.Basic, name: "int" }))
+				}
+			}
+		)
+	}
 }
 
 

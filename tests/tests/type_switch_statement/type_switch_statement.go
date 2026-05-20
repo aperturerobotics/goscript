@@ -46,6 +46,13 @@ func main() {
 	default:
 		println("default only, value is", w.(string))
 	}
+
+	for _, v := range []any{int32(7)} {
+		switch v := v.(type) {
+		default:
+			println("shadow default", v.(int32))
+		}
+	}
 }
 
 func getInterface() any {
