@@ -55,7 +55,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 		if (val == prev) {
 			continue
 		}
-		if (equal != null && equal!(val, prev)) {
+		if ((equal != null) && equal!(val, prev)) {
 			continue
 		}
 		{

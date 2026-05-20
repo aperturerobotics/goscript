@@ -50,15 +50,15 @@ export async function main(): Promise<void> {
 	let scoreResults: $.Slice<string> = null
 	for (const [name, grade] of stringMap?.entries() ?? []) {
 		// Using string concatenation to build the output string
-		let result = "  - Name: " + name + " Grade: " + grade
+		let result = (("  - Name: " + name) + " Grade: ") + grade
 		scoreResults = $.append(scoreResults, result)
 	}
 
 	// Inline bubble sort for string slice
 	// (avoid importing sort package yet)
 	let n = $.len(scoreResults)
-	for (let i = 0; i < n - 1; i++) {
-		for (let j = 0; j < n - i - 1; j++) {
+	for (let i = 0; i < (n - 1); i++) {
+		for (let j = 0; j < ((n - i) - 1); j++) {
 			if (scoreResults![j] > scoreResults![j + 1]) {
 				let __goscriptAssign0_0 = scoreResults![j + 1]
 				let __goscriptAssign0_1 = scoreResults![j]

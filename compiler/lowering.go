@@ -2035,6 +2035,12 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 	case *ast.BinaryExpr:
 		left, leftDiagnostics := o.lowerExpr(ctx, typed.X)
 		right, rightDiagnostics := o.lowerExpr(ctx, typed.Y)
+		if _, ok := typed.X.(*ast.BinaryExpr); ok {
+			left = "(" + left + ")"
+		}
+		if _, ok := typed.Y.(*ast.BinaryExpr); ok {
+			right = "(" + right + ")"
+		}
 		if typed.Op == token.AND_NOT {
 			return left + " & ~(" + right + ")", append(leftDiagnostics, rightDiagnostics...)
 		}

@@ -54,10 +54,10 @@ export const totalMessages: number = 8
 
 export async function worker(id: number): Promise<void> {
 	// Send worker starting message
-	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 10 + id, text: "Worker " + String.fromCodePoint($.int(48 + id)) + " starting"})))
+	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 10 + id, text: ("Worker " + String.fromCodePoint($.int(48 + id))) + " starting"})))
 
 	// Send worker done message
-	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 20 + id, text: "Worker " + String.fromCodePoint($.int(48 + id)) + " done"})))
+	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 20 + id, text: ("Worker " + String.fromCodePoint($.int(48 + id))) + " done"})))
 }
 
 export async function anotherWorker(name: string): Promise<void> {

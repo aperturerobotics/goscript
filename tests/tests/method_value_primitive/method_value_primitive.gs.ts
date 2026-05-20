@@ -10,7 +10,7 @@ export function myInt_add(m: myInt, x: number): number {
 }
 
 export function myInt_multiply(m: myInt, x: number, y: number): number {
-	return $.int(m) * x * y
+	return ($.int(m) * x) * y
 }
 
 export async function main(): Promise<void> {

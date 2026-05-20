@@ -83,7 +83,7 @@ export async function main(): Promise<void> {
 		if (err != null) {
 			results = $.append(results, "Unmarshal struct error: " + err!.Error())
 		} else {
-			results = $.append(results, "Unmarshal struct: Name=" + q.value.Name + ", Age=" + strconv.Itoa(q.value.Age) + ", Active=" + strconv.FormatBool(q.value.Active))
+			results = $.append(results, (((("Unmarshal struct: Name=" + q.value.Name) + ", Age=") + strconv.Itoa(q.value.Age)) + ", Active=") + strconv.FormatBool(q.value.Active))
 		}
 	}
 
@@ -97,7 +97,7 @@ export async function main(): Promise<void> {
 			let name = $.mustTypeAssert<string>($.mapGet(m.value, "name", null)[0], { kind: $.TypeKind.Basic, name: "string" })
 			let age = $.int($.mustTypeAssert<number>($.mapGet(m.value, "age", null)[0], { kind: $.TypeKind.Basic, name: "int" }))
 			let active = $.mustTypeAssert<boolean>($.mapGet(m.value, "active", null)[0], { kind: $.TypeKind.Basic, name: "bool" })
-			results = $.append(results, "Unmarshal map: name=" + name + ", age=" + strconv.Itoa(age) + ", active=" + strconv.FormatBool(active))
+			results = $.append(results, (((("Unmarshal map: name=" + name) + ", age=") + strconv.Itoa(age)) + ", active=") + strconv.FormatBool(active))
 		}
 	}
 

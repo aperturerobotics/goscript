@@ -83,7 +83,7 @@ export class RWMutex {
 		let waitCh: $.Channel<Record<string, unknown>> | null = null
 		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue((_: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 			if (write) {
-				if ($.pointerValue<RWMutex>(m).nreaders != 0 || $.pointerValue<RWMutex>(m).writing) {
+				if (($.pointerValue<RWMutex>(m).nreaders != 0) || $.pointerValue<RWMutex>(m).writing) {
 					$.pointerValue<RWMutex>(m).writeWaiting++
 					waitCh = getWaitCh!()
 				} else {
@@ -91,7 +91,7 @@ export class RWMutex {
 					status.value.Store(1)
 				}
 			} else {
-				if (!$.pointerValue<RWMutex>(m).writing && $.pointerValue<RWMutex>(m).writeWaiting == 0) {
+				if (!$.pointerValue<RWMutex>(m).writing && ($.pointerValue<RWMutex>(m).writeWaiting == 0)) {
 					$.pointerValue<RWMutex>(m).nreaders++
 					status.value.Store(1)
 				} else {
@@ -155,7 +155,7 @@ export class RWMutex {
 
 			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 				if (write) {
-					if ($.pointerValue<RWMutex>(m).nreaders == 0 && !$.pointerValue<RWMutex>(m).writing) {
+					if (($.pointerValue<RWMutex>(m).nreaders == 0) && !$.pointerValue<RWMutex>(m).writing) {
 						$.pointerValue<RWMutex>(m).writeWaiting--
 						$.pointerValue<RWMutex>(m).writing = true
 						status.value.Store(1)
@@ -163,7 +163,7 @@ export class RWMutex {
 						waitCh = getWaitCh!()
 					}
 				} else {
-					if (!$.pointerValue<RWMutex>(m).writing && $.pointerValue<RWMutex>(m).writeWaiting == 0) {
+					if (!$.pointerValue<RWMutex>(m).writing && ($.pointerValue<RWMutex>(m).writeWaiting == 0)) {
 						$.pointerValue<RWMutex>(m).nreaders++
 						status.value.Store(1)
 					} else {
@@ -193,13 +193,13 @@ export class RWMutex {
 		let unlocked: $.VarRef<atomic.Bool> = $.varRef($.markAsStructValue(new atomic.Bool()))
 		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
 			if (write) {
-				if ($.pointerValue<RWMutex>(m).nreaders != 0 || $.pointerValue<RWMutex>(m).writing) {
+				if (($.pointerValue<RWMutex>(m).nreaders != 0) || $.pointerValue<RWMutex>(m).writing) {
 					unlocked.value.Store(true)
 				} else {
 					$.pointerValue<RWMutex>(m).writing = true
 				}
 			} else {
-				if (!$.pointerValue<RWMutex>(m).writing && $.pointerValue<RWMutex>(m).writeWaiting == 0) {
+				if (!$.pointerValue<RWMutex>(m).writing && ($.pointerValue<RWMutex>(m).writeWaiting == 0)) {
 					$.pointerValue<RWMutex>(m).nreaders++
 				} else {
 					unlocked.value.Store(true)

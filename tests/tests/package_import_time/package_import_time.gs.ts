@@ -8,7 +8,7 @@ import * as time from "@goscript/time/index.js"
 export async function main(): Promise<void> {
 	let now = $.markAsStructValue(time.Now().clone())
 	let setTime = $.markAsStructValue(time.Date(2025, time.May, 15, 1, 10, 42, 0, time.UTC).clone())
-	if ($.markAsStructValue(now.clone()).Sub(setTime) < time.Hour * 24) {
+	if ($.markAsStructValue(now.clone()).Sub(setTime) < (time.Hour * 24)) {
 		$.println("expected we are > 24 hrs past may 15, incorrect")
 	}
 

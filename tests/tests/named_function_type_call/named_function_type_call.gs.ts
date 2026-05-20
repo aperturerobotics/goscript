@@ -148,7 +148,7 @@ export function walkWithCustomFunc(fs: Filesystem | null, path: string, info: Fi
 	// But currently generates: walkFn(path, info, nil) - missing !
 	{
 		let err = walkFn!(path, info, null)
-		if (err != null && err != filepath.SkipDir) {
+		if ((err != null) && (err != filepath.SkipDir)) {
 			return err
 		}
 	}
@@ -158,7 +158,7 @@ export function walkWithCustomFunc(fs: Filesystem | null, path: string, info: Fi
 	// This should also generate: walkFn!(path, info, walkErr)
 	{
 		let err = walkFn!(path, info, walkErr)
-		if (err != null && err != filepath.SkipDir) {
+		if ((err != null) && (err != filepath.SkipDir)) {
 			return err
 		}
 	}

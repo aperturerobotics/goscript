@@ -32,7 +32,7 @@ export class MyProcessor {
 	public Process(data: $.Slice<number>, count: number, _: string): [boolean, $.GoError] {
 		const p = this
 		// Dummy implementation
-		if (count > 0 && $.len(data) > 0) {
+		if ((count > 0) && ($.len(data) > 0)) {
 			$.println("Processing successful")
 			return [true, null]
 		}

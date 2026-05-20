@@ -16,7 +16,7 @@ export function testFS(fsys: string, expected: $.Slice<string>): $.GoError {
 
 	for (let i = 0; i < $.len(expected); i++) {
 		let exp = expected![i]
-		$.println("Expected[" + String.fromCodePoint($.int(i + 48)) + "]: " + exp)
+		$.println((("Expected[" + String.fromCodePoint($.int(i + 48))) + "]: ") + exp)
 	}
 
 	$.println("File system: " + fsys)

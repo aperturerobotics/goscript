@@ -46,7 +46,7 @@ export function hasData(buf: $.Slice<number>): boolean {
 export function isBase32(token: string): boolean {
 	for (let i = 0; i < $.len(token); i++) {
 		let c = $.indexStringOrBytes(token, i)
-		if (!((c >= 65 && c <= 90) || (c >= 50 && c <= 55))) {
+		if (!(((c >= 65) && (c <= 90)) || ((c >= 50) && (c <= 55)))) {
 			return false
 		}
 	}

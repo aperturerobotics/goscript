@@ -15,7 +15,7 @@ export async function main(): Promise<void> {
 	}
 
 	// Another case that might trigger the error
-	for (let [v, exists] = $.mapGet(m, "key2", 0); exists && v > 0; ) {
+	for (let [v, exists] = $.mapGet(m, "key2", 0); exists && (v > 0); ) {
 		$.println("v:", v)
 		break
 	}

@@ -190,7 +190,7 @@ export async function main(): Promise<void> {
 	// Test with nil interface
 	let nilInterface: any = null
 	let [nilFn, okNil] = $.typeAssertTuple<Greeter>(nilInterface, { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
-	if (!okNil && nilFn == null) {
+	if (!okNil && (nilFn == null)) {
 		$.println("Nil interface assertion correct")
 	} else {
 		$.println("Nil interface assertion failed")
@@ -199,7 +199,7 @@ export async function main(): Promise<void> {
 	// Test assertion to wrong function type
 	let wrongFnInterface: any = $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
 	let [wrongFn, okWrong] = $.typeAssertTuple<Adder>(wrongFnInterface, { kind: $.TypeKind.Function, name: "main.Adder", params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
-	if (!okWrong && wrongFn == null) {
+	if (!okWrong && (wrongFn == null)) {
 		$.println("Wrong function type assertion correct")
 	} else {
 		$.println("Wrong function type assertion failed")

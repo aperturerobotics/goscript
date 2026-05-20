@@ -136,7 +136,7 @@ export function walk(fs: Filesystem | null, path: string, info: FileInfo | null,
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
 	let err = walkFn!(path, info, null)
-	if (err != null && err != SkipDir) {
+	if ((err != null) && (err != SkipDir)) {
 		return err
 	}
 

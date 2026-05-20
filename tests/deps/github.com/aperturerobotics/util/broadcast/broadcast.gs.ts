@@ -87,7 +87,7 @@ export class Broadcast {
 
 	public async Wait(ctx: context.Context | null, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
-		if (cb == null || ctx == null) {
+		if ((cb == null) || (ctx == null)) {
 			return errors.New("cb and ctx must be set")
 		}
 
@@ -104,12 +104,12 @@ export class Broadcast {
 				let __goscriptTuple0 = cb!(broadcast, getWaitCh)
 				done = __goscriptTuple0[0]
 				err = __goscriptTuple0[1]
-				if (!done && err == null) {
+				if (!done && (err == null)) {
 					waitCh = getWaitCh!()
 				}
 			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 
-			if (done || err != null) {
+			if (done || (err != null)) {
 				return err
 			}
 

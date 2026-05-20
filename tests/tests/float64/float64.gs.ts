@@ -26,7 +26,7 @@ export async function main(): Promise<void> {
 	$.println("c =", c)
 
 	// More complex expression
-	let e = (a + b) * (c - d) / a
+	let e = ((a + b) * (c - d)) / a
 	$.println("(a + b) * (c - d) / a =", e)
 }
 
