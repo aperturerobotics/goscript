@@ -2,6 +2,10 @@ package main
 
 import "sync/atomic"
 
+type pointerNode struct {
+	value string
+}
+
 func makeAtomicCallback() (func(), error) {
 	return func() {
 		println("Pointer function callback called")
@@ -82,6 +86,16 @@ func main() {
 		loadedFn := fnPtr.Load()
 		if loadedFn != nil {
 			(*loadedFn)()
+		}
+	}
+
+	var structPtr atomic.Pointer[pointerNode]
+	node := new(pointerNode)
+	node.value = "node"
+	if structPtr.CompareAndSwap(nil, node) {
+		loadedNode := structPtr.Load()
+		if loadedNode != nil {
+			println("Pointer struct CAS:", loadedNode.value)
 		}
 	}
 

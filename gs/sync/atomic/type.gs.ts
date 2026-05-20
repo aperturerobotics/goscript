@@ -4,6 +4,8 @@ import { AddInt64, AddUint64, AndInt64, AndUint64, CompareAndSwapInt64, CompareA
 
 import * as unsafe from "@goscript/unsafe/index.js"
 
+export type PointerValue<T> = T | $.VarRef<T> | null
+
 export class Bool {
 	public get v(): number {
 		return this._fields.v.value
@@ -74,18 +76,18 @@ export function b32(b: boolean): number {
 
 
 export class Pointer<T> {
-	public get v(): $.VarRef<T> | null {
+	public get v(): PointerValue<T> {
 		return this._fields.v.value
 	}
-	public set v(value: $.VarRef<T> | null) {
+	public set v(value: PointerValue<T>) {
 		this._fields.v.value = value
 	}
 
 	public _fields: {
-		v: $.VarRef<$.VarRef<T> | null>;
+		v: $.VarRef<PointerValue<T>>;
 	}
 
-	constructor(init?: Partial<{v?: $.VarRef<T> | null}>) {
+	constructor(init?: Partial<{v?: PointerValue<T>}>) {
 		this._fields = {
 			v: $.varRef(init?.v ?? null)
 		}
@@ -100,14 +102,13 @@ export class Pointer<T> {
 	}
 
 	// Load atomically loads and returns the value stored in x.
-	public Load(): $.VarRef<T> | null {
+	public Load(): PointerValue<T> {
 		const x = this
-		return LoadPointer(x._fields.v) as $.VarRef<T> | null
+		return LoadPointer(x._fields.v) as PointerValue<T>
 	}
 
 	// Store atomically stores val into x.
-	// In Go, this takes *T which can be nil, so we accept VarRef<T> | null
-	public Store(val: $.VarRef<T> | null): void {
+	public Store(val: PointerValue<T>): void {
 		const x = this
 		if (val === null) {
 			StorePointer(x._fields.v, null)
@@ -117,17 +118,16 @@ export class Pointer<T> {
 	}
 
 	// Swap atomically stores new into x and returns the previous value.
-	// In Go, this takes *T which can be nil, so we accept VarRef<T> | null
-	public Swap(_new: $.VarRef<T> | null): $.VarRef<T> | null {
+	public Swap(_new: PointerValue<T>): PointerValue<T> {
 		const x = this
 		if (_new === null) {
-			return SwapPointer(x._fields.v, null) as $.VarRef<T> | null
+			return SwapPointer(x._fields.v, null) as PointerValue<T>
 		}
-		return SwapPointer(x._fields.v, unsafe.Pointer(_new)) as $.VarRef<T> | null
+		return SwapPointer(x._fields.v, unsafe.Pointer(_new)) as PointerValue<T>
 	}
 
 	// CompareAndSwap executes the compare-and-swap operation for x.
-	public CompareAndSwap(old: $.VarRef<T> | null, _new: $.VarRef<T> | null): boolean {
+	public CompareAndSwap(old: PointerValue<T>, _new: PointerValue<T>): boolean {
 		const x = this
 		return CompareAndSwapPointer(x._fields.v, old ? unsafe.Pointer(old) : null, _new ? unsafe.Pointer(_new) : null)
 	}
@@ -598,4 +598,3 @@ class align64 {
 	  {}
 	);
 }
-

@@ -5,6 +5,41 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as atomic from "@goscript/sync/atomic/index.js"
 
+export class pointerNode {
+	public get value(): string {
+		return this._fields.value.value
+	}
+	public set value(value: string) {
+		this._fields.value.value = value
+	}
+
+	public _fields: {
+		value: $.VarRef<string>
+	}
+
+	constructor(init?: Partial<{value?: string}>) {
+		this._fields = {
+			value: $.varRef(init?.value ?? "")
+		}
+	}
+
+	public clone(): pointerNode {
+		const cloned = new pointerNode()
+		cloned._fields = {
+			value: $.varRef(this._fields.value.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.pointerNode",
+		new pointerNode(),
+		[],
+		pointerNode,
+		{"value": { kind: $.TypeKind.Basic, name: "string" }}
+	)
+}
+
 export function makeAtomicCallback(): [(() => void) | null, $.GoError] {
 	return [$.functionValue((): void => {
 		$.println("Pointer function callback called")
@@ -87,6 +122,16 @@ export async function main(): Promise<void> {
 		let loadedFn = fnPtr.value.Load()
 		if (loadedFn != null) {
 			($.pointerValue<(() => void) | null>(loadedFn))!()
+		}
+	}
+
+	let structPtr: $.VarRef<atomic.Pointer<pointerNode>> = $.varRef($.markAsStructValue(new atomic.Pointer<pointerNode>()))
+	let node = new pointerNode()
+	$.pointerValue<pointerNode>(node).value = "node"
+	if (structPtr.value.CompareAndSwap(null, node)) {
+		let loadedNode = structPtr.value.Load()
+		if (loadedNode != null) {
+			$.println("Pointer struct CAS:", $.pointerValue<pointerNode>(loadedNode).value)
 		}
 	}
 
