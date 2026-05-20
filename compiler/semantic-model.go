@@ -801,6 +801,18 @@ func isInterfaceType(typ types.Type) bool {
 	return ok
 }
 
+func isNonEmptyInterfaceType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
+	iface, ok := types.Unalias(typ).Underlying().(*types.Interface)
+	if !ok {
+		return false
+	}
+	iface.Complete()
+	return iface.NumMethods() != 0
+}
+
 func isNilableType(typ types.Type) bool {
 	if typ == nil {
 		return false

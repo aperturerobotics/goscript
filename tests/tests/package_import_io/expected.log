@@ -6,4 +6,5 @@ SeekStart: 0
 SeekCurrent: 1
 SeekEnd: 2
 WriteString to Discard - bytes: 11 err: true
+WriteString field writer - bytes: 12 err: true
 test finished

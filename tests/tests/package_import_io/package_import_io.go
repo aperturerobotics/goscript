@@ -2,6 +2,10 @@ package main
 
 import "io"
 
+type writerHolder struct {
+	w io.Writer
+}
+
 func main() {
 	// Test basic error variables
 	println("EOF:", io.EOF.Error())
@@ -17,6 +21,10 @@ func main() {
 	// Test Discard writer
 	n, err := io.WriteString(io.Discard, "hello world")
 	println("WriteString to Discard - bytes:", n, "err:", err == nil)
+
+	holder := writerHolder{w: io.Discard}
+	n, err = io.WriteString(holder.w, "field writer")
+	println("WriteString field writer - bytes:", n, "err:", err == nil)
 
 	println("test finished")
 }

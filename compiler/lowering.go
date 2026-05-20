@@ -2561,14 +2561,15 @@ func (o *LoweringOwner) lowerCallArgs(
 	expr *ast.CallExpr,
 	signature *types.Signature,
 ) ([]string, []Diagnostic) {
+	overrideCall := o.callUsesOverridePackage(ctx, expr.Fun)
 	if signature == nil || !signature.Variadic() ||
 		isBuiltinCallTarget(ctx, expr.Fun) ||
-		o.variadicCallUsesOverrideRest(ctx, expr.Fun) {
-		return o.lowerFixedCallArgs(ctx, expr.Args, signature)
+		overrideCall {
+		return o.lowerFixedCallArgs(ctx, expr.Args, signature, overrideCall)
 	}
 	params := signature.Params()
 	if params == nil || params.Len() == 0 {
-		return o.lowerFixedCallArgs(ctx, expr.Args, signature)
+		return o.lowerFixedCallArgs(ctx, expr.Args, signature, overrideCall)
 	}
 
 	fixedCount := params.Len() - 1
@@ -2579,17 +2580,17 @@ func (o *LoweringOwner) lowerCallArgs(
 		lowered, argDiagnostics := o.lowerExpr(ctx, arg)
 		diagnostics = append(diagnostics, argDiagnostics...)
 		if idx < fixedCount {
-			lowered = o.lowerValueForTarget(ctx, arg, params.At(idx).Type(), lowered)
+			lowered = o.lowerCallArgForTarget(ctx, arg, params.At(idx).Type(), lowered, overrideCall)
 			args = append(args, lowered)
 			continue
 		}
 		if expr.Ellipsis != token.NoPos && idx == len(expr.Args)-1 {
-			lowered = o.lowerValueForTarget(ctx, arg, params.At(fixedCount).Type(), lowered)
+			lowered = o.lowerCallArgForTarget(ctx, arg, params.At(fixedCount).Type(), lowered, overrideCall)
 			args = append(args, lowered)
 			continue
 		}
 		if slice, ok := types.Unalias(params.At(fixedCount).Type()).Underlying().(*types.Slice); ok {
-			lowered = o.lowerValueForTarget(ctx, arg, slice.Elem(), lowered)
+			lowered = o.lowerCallArgForTarget(ctx, arg, slice.Elem(), lowered, overrideCall)
 		}
 		variadicArgs = append(variadicArgs, lowered)
 	}
@@ -2614,6 +2615,7 @@ func (o *LoweringOwner) lowerFixedCallArgs(
 	ctx lowerFileContext,
 	exprs []ast.Expr,
 	signature *types.Signature,
+	overrideCall bool,
 ) ([]string, []Diagnostic) {
 	var params *types.Tuple
 	if signature != nil {
@@ -2625,11 +2627,26 @@ func (o *LoweringOwner) lowerFixedCallArgs(
 		lowered, exprDiagnostics := o.lowerExpr(ctx, expr)
 		diagnostics = append(diagnostics, exprDiagnostics...)
 		if params != nil && idx < params.Len() {
-			lowered = o.lowerValueForTarget(ctx, expr, params.At(idx).Type(), lowered)
+			lowered = o.lowerCallArgForTarget(ctx, expr, params.At(idx).Type(), lowered, overrideCall)
 		}
 		args = append(args, lowered)
 	}
 	return args, diagnostics
+}
+
+func (o *LoweringOwner) lowerCallArgForTarget(
+	ctx lowerFileContext,
+	expr ast.Expr,
+	targetType types.Type,
+	value string,
+	overrideCall bool,
+) string {
+	value = o.lowerValueForTarget(ctx, expr, targetType, value)
+	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	if overrideCall && isNonEmptyInterfaceType(targetType) && isInterfaceType(sourceType) {
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "(" + value + ")"
+	}
+	return value
 }
 
 func (o *LoweringOwner) lowerExprList(ctx lowerFileContext, exprs []ast.Expr) ([]string, []Diagnostic) {
@@ -2694,7 +2711,7 @@ func isBuiltinCallTarget(ctx lowerFileContext, expr ast.Expr) bool {
 	return ok
 }
 
-func (o *LoweringOwner) variadicCallUsesOverrideRest(ctx lowerFileContext, expr ast.Expr) bool {
+func (o *LoweringOwner) callUsesOverridePackage(ctx lowerFileContext, expr ast.Expr) bool {
 	if o.overrideOwner == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
 		return false
 	}

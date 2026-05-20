@@ -17,7 +17,7 @@ export async function main(): Promise<void> {
 	let counter: number = 0
 	let wg: $.VarRef<sync.WaitGroup> = $.varRef($.markAsStructValue(new sync.WaitGroup()))
 
-	let [ctx, cancel] = context.WithTimeout(context.Background(), 5 * time.Second)
+	let [ctx, cancel] = context.WithTimeout($.pointerValue(context.Background()), 5 * time.Second)
 	__defer.defer(() => { cancel!() })
 
 	// Number of goroutines to spawn

@@ -7,7 +7,7 @@ import * as context from "@goscript/context/index.js"
 
 export async function run(ctx: context.Context | null): Promise<void> {
 	using __defer = new $.DisposableStack()
-	let [sctx, sctxCancel] = context.WithCancel(ctx)
+	let [sctx, sctxCancel] = context.WithCancel($.pointerValue(ctx))
 	__defer.defer(() => { sctxCancel!() })
 
 	let myCh = $.makeChannel<Record<string, unknown>>(0, {}, "both")

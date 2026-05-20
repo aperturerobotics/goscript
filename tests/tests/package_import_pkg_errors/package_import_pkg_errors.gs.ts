@@ -16,27 +16,27 @@ export async function main(): Promise<void> {
 
 	// Test WithStack
 	let baseErr = errors.New("base error")
-	let err3 = errors.WithStack(baseErr)
+	let err3 = errors.WithStack($.pointerValue(baseErr))
 	$.println("WithStack error:", $.pointerValue(err3).Error())
 
 	// Test Wrap
-	let err4 = errors.Wrap(baseErr, "wrapped message")
+	let err4 = errors.Wrap($.pointerValue(baseErr), "wrapped message")
 	$.println("Wrap error:", $.pointerValue(err4).Error())
 
 	// Test Wrapf
-	let err5 = errors.Wrapf(baseErr, "wrapped with format: %s", "test")
+	let err5 = errors.Wrapf($.pointerValue(baseErr), "wrapped with format: %s", "test")
 	$.println("Wrapf error:", $.pointerValue(err5).Error())
 
 	// Test WithMessage
-	let err6 = errors.WithMessage(baseErr, "additional message")
+	let err6 = errors.WithMessage($.pointerValue(baseErr), "additional message")
 	$.println("WithMessage error:", $.pointerValue(err6).Error())
 
 	// Test WithMessagef
-	let err7 = errors.WithMessagef(baseErr, "additional formatted message: %d", 123)
+	let err7 = errors.WithMessagef($.pointerValue(baseErr), "additional formatted message: %d", 123)
 	$.println("WithMessagef error:", $.pointerValue(err7).Error())
 
 	// Test Cause
-	let cause = errors.Cause(err4)
+	let cause = errors.Cause($.pointerValue(err4))
 	$.println("Cause error:", $.pointerValue(cause).Error())
 
 	// Test nil handling
@@ -51,13 +51,13 @@ export async function main(): Promise<void> {
 	}
 
 	// Test Go 1.13 error handling
-	let unwrapped = errors.Unwrap(err4)
+	let unwrapped = errors.Unwrap($.pointerValue(err4))
 	if (unwrapped != null) {
 		$.println("Unwrap error:", $.pointerValue(unwrapped).Error())
 	}
 
 	// Test Is
-	if (errors.Is(err4, baseErr)) {
+	if (errors.Is($.pointerValue(err4), $.pointerValue(baseErr))) {
 		$.println("Is check passed")
 	}
 
