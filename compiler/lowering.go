@@ -550,6 +550,13 @@ func lowerConstantValue(value constant.Value) (string, bool) {
 	}
 }
 
+func lowerLargeIntegerConstantValue(value constant.Value) (string, bool) {
+	if value == nil || value.Kind() != constant.Int || constant.BitLen(value) <= 53 {
+		return "", false
+	}
+	return value.ExactString(), true
+}
+
 func goEmbedPatterns(groups ...*ast.CommentGroup) []string {
 	var patterns []string
 	for _, group := range groups {
@@ -2139,6 +2146,11 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 	case *ast.Ident:
 		return o.lowerIdent(ctx, typed, false), nil
 	case *ast.BinaryExpr:
+		if value := ctx.semPkg.source.TypesInfo.Types[typed].Value; value != nil {
+			if constantValue, ok := lowerLargeIntegerConstantValue(value); ok {
+				return constantValue, nil
+			}
+		}
 		left, leftDiagnostics := o.lowerExpr(ctx, typed.X)
 		right, rightDiagnostics := o.lowerExpr(ctx, typed.Y)
 		if _, ok := typed.X.(*ast.BinaryExpr); ok {
