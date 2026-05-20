@@ -2895,12 +2895,41 @@ func (o *LoweringOwner) lowerIndexAddressExpr(ctx lowerFileContext, expr *ast.In
 }
 
 func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
+	if value, diagnostics, ok := o.lowerUnsafeStringPointerValue(ctx, expr); ok {
+		return value, diagnostics
+	}
 	base, diagnostics := o.lowerExpr(ctx, expr)
 	typeArg := ""
 	if pointer, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(expr)).Underlying().(*types.Pointer); ok {
 		typeArg = "<" + o.tsTypeFor(ctx, pointer.Elem()) + ">"
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + typeArg + "(" + base + ")", diagnostics
+}
+
+func (o *LoweringOwner) lowerUnsafeStringPointerValue(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic, bool) {
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return "", nil, false
+	}
+	targetType := typeFromExpr(ctx, call.Fun)
+	if targetType == nil {
+		return "", nil, false
+	}
+	targetPointer, _ := types.Unalias(targetType).Underlying().(*types.Pointer)
+	if targetPointer == nil || !isStringType(targetPointer.Elem()) {
+		return "", nil, false
+	}
+	unsafeCall, ok := unwrapParenExpr(call.Args[0]).(*ast.CallExpr)
+	unsafeTargetType := typeFromExpr(ctx, unsafeCall.Fun)
+	if !ok || len(unsafeCall.Args) != 1 || unsafeTargetType == nil || !isUnsafePointerType(unsafeTargetType) {
+		return "", nil, false
+	}
+	address, ok := unwrapParenExpr(unsafeCall.Args[0]).(*ast.UnaryExpr)
+	if !ok || address.Op != token.AND || !isByteSliceType(ctx.semPkg.source.TypesInfo.TypeOf(address.X)) {
+		return "", nil, false
+	}
+	value, diagnostics := o.lowerExpr(ctx, address.X)
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperBytesToString) + "(" + value + ")", diagnostics, true
 }
 
 func (o *LoweringOwner) lowerPointerStorageExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
@@ -3770,6 +3799,11 @@ func isPointerType(typ types.Type) bool {
 	return ok
 }
 
+func isUnsafePointerType(typ types.Type) bool {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	return ok && basic.Kind() == types.UnsafePointer
+}
+
 func channelDirectionString(dir types.ChanDir) string {
 	switch dir {
 	case types.SendOnly:
@@ -3784,6 +3818,16 @@ func channelDirectionString(dir types.ChanDir) string {
 func isNilExpr(expr ast.Expr) bool {
 	ident, ok := expr.(*ast.Ident)
 	return ok && ident.Name == "nil"
+}
+
+func unwrapParenExpr(expr ast.Expr) ast.Expr {
+	for {
+		paren, ok := expr.(*ast.ParenExpr)
+		if !ok {
+			return expr
+		}
+		expr = paren.X
+	}
 }
 
 func isStringType(typ types.Type) bool {
