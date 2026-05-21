@@ -255,6 +255,27 @@ export function SortFunc<T>(s: $.Slice<T>, cmp: (a: T, b: T) => number): void {
   arr.sort(cmp)
 }
 
+export function SortStableFunc<T>(
+  s: $.Slice<T>,
+  cmp: (a: T, b: T) => number,
+): void {
+  if (s === null || s === undefined) {
+    return
+  }
+  const sorted = (s as any as T[])
+    .map((value, index) => ({ value, index }))
+    .sort((a, b) => {
+      const result = cmp(a.value, b.value)
+      if (result !== 0) {
+        return result
+      }
+      return a.index - b.index
+    })
+  for (let i = 0; i < sorted.length; i++) {
+    ;(s as any)[i] = sorted[i].value
+  }
+}
+
 /**
  * BinarySearchFunc works like BinarySearch, but uses a custom comparison function.
  * The slice must be sorted in increasing order, where "increasing" is defined by cmp.

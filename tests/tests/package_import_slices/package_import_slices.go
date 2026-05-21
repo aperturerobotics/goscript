@@ -29,5 +29,15 @@ func main() {
 	slices.Reverse(inserted)
 	println("reverse:", inserted[0], inserted[1], inserted[2], inserted[3])
 
+	type item struct {
+		group int
+		label string
+	}
+	stable := []item{{2, "a"}, {1, "b"}, {2, "c"}, {1, "d"}}
+	slices.SortStableFunc(stable, func(a, b item) int {
+		return a.group - b.group
+	})
+	println("stable:", stable[0].label, stable[1].label, stable[2].label, stable[3].label)
+
 	println("test finished")
 }

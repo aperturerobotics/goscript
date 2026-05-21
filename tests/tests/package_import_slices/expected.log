@@ -10,4 +10,5 @@ equal func: true
 contains: true true
 insert: 1 2 3 4
 reverse: 4 3 2 1
+stable: b d a c
 test finished

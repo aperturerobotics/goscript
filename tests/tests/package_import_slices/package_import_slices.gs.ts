@@ -39,6 +39,56 @@ export async function main(): Promise<void> {
 	slices.Reverse(inserted)
 	$.println("reverse:", inserted![0], inserted![1], inserted![2], inserted![3])
 
+	class item {
+		public get group(): number {
+			return this._fields.group.value
+		}
+		public set group(value: number) {
+			this._fields.group.value = value
+		}
+
+		public get label(): string {
+			return this._fields.label.value
+		}
+		public set label(value: string) {
+			this._fields.label.value = value
+		}
+
+		public _fields: {
+			group: $.VarRef<number>
+			label: $.VarRef<string>
+		}
+
+		constructor(init?: Partial<{group?: number, label?: string}>) {
+			this._fields = {
+				group: $.varRef(init?.group ?? 0),
+				label: $.varRef(init?.label ?? "")
+			}
+		}
+
+		public clone(): item {
+			const cloned = new item()
+			cloned._fields = {
+				group: $.varRef(this._fields.group.value),
+				label: $.varRef(this._fields.label.value)
+			}
+			return $.markAsStructValue(cloned)
+		}
+
+		static __typeInfo = $.registerStructType(
+			"main.item",
+			new item(),
+			[],
+			item,
+			{"group": { kind: $.TypeKind.Basic, name: "int" }, "label": { kind: $.TypeKind.Basic, name: "string" }}
+		)
+	}
+	let stable = $.arrayToSlice<item>([$.markAsStructValue(new item({group: 2, label: "a"})), $.markAsStructValue(new item({group: 1, label: "b"})), $.markAsStructValue(new item({group: 2, label: "c"})), $.markAsStructValue(new item({group: 1, label: "d"}))])
+	slices.SortStableFunc(stable, $.functionValue((a: item, b: item): number => {
+		return a.group - b.group
+	}, { kind: $.TypeKind.Function, params: ["main.item", "main.item"], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
+	$.println("stable:", stable![0].label, stable![1].label, stable![2].label, stable![3].label)
+
 	$.println("test finished")
 }
 
