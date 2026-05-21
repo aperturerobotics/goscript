@@ -870,7 +870,7 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 	for _, field := range semType.fields {
 		lowered.fields = append(lowered.fields, loweredStructField{
 			name:        field.name,
-			typ:         o.tsTypeFor(ctx, field.typ),
+			typ:         o.tsStructFieldTypeFor(ctx, field.typ),
 			zero:        o.lowerZeroValueExprFor(ctx, field.typ),
 			runtimeType: o.runtimeTypeInfoExpr(field.typ),
 			doc:         field.doc,
@@ -4538,9 +4538,18 @@ func tsArrayType(elem string) string {
 func (o *LoweringOwner) tsAnonymousStructTypeFor(ctx lowerFileContext, structType *types.Struct) string {
 	fields := make([]string, 0, structType.NumFields())
 	for field := range structType.Fields() {
-		fields = append(fields, strconv.Quote(field.Name())+": "+o.tsTypeFor(ctx, field.Type()))
+		fields = append(fields, strconv.Quote(field.Name())+": "+o.tsStructFieldTypeFor(ctx, field.Type()))
 	}
 	return "{" + strings.Join(fields, ", ") + "}"
+}
+
+func (o *LoweringOwner) tsStructFieldTypeFor(ctx lowerFileContext, typ types.Type) string {
+	signature, _ := types.Unalias(typ).Underlying().(*types.Signature)
+	if signature == nil {
+		return o.tsTypeFor(ctx, typ)
+	}
+	return "((" + o.tsSignatureParamsFor(ctx, signature) + ") => " +
+		asyncCompatibleResultType(o.tsSignatureResultFor(ctx, signature)) + ") | null"
 }
 
 func zeroValueExpr(typ types.Type) string {
@@ -4831,7 +4840,8 @@ func (o *LoweringOwner) callNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool 
 				return false
 			}
 			return o.functionAsync(ctx, calledFunction(ctx.semPkg.source, fun)) ||
-				o.overrideCallNeedsAwait(ctx, fun)
+				o.overrideCallNeedsAwait(ctx, fun) ||
+				callUsesFunctionValue(ctx.semPkg.source, fun)
 		}
 	}
 }

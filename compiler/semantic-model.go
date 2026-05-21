@@ -516,6 +516,9 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				if called := calledFunction(pkg, typed.Fun); called != nil {
 					semFn.calls[called] = true
 				}
+				if callUsesFunctionValue(pkg, typed.Fun) {
+					markFunctionAsync(semFn, "function-value-call")
+				}
 				async, err := o.isOverrideAsyncCall(pkg, typed.Fun)
 				if err != nil {
 					diagnostics = append(diagnostics, Diagnostic{
@@ -571,6 +574,22 @@ func calledFunction(pkg *packages.Package, expr ast.Expr) *types.Func {
 		return fn
 	}
 	return nil
+}
+
+func callUsesFunctionValue(pkg *packages.Package, expr ast.Expr) bool {
+	if signatureForType(pkg.TypesInfo.TypeOf(expr)) == nil {
+		return false
+	}
+	switch typed := expr.(type) {
+	case *ast.SelectorExpr:
+		selection := pkg.TypesInfo.Selections[typed]
+		if selection == nil || selection.Kind() != types.FieldVal {
+			return false
+		}
+		return signatureForType(selection.Type()) != nil
+	default:
+		return false
+	}
 }
 
 func receiverNamedType(typ types.Type) *types.Named {

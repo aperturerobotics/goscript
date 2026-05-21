@@ -1429,7 +1429,7 @@ func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testi
 	for _, want := range []string{
 		"Box: $.VarRef<lib.Box>",
 		"Boxes: $.VarRef<$.Slice<lib.Box>>",
-		"Fn: $.VarRef<((_p0: lib.Box) => [lib.Box, $.GoError]) | null>",
+		"Fn: $.VarRef<((_p0: lib.Box) => [lib.Box, $.GoError] | Promise<[lib.Box, $.GoError]>) | null>",
 		"Ptr: $.VarRef<atomic.Pointer<(() => void) | null>>",
 		"$.markAsStructValue(new lib.Box())",
 		"$.markAsStructValue(new atomic.Pointer<(() => void) | null>())",
