@@ -31,6 +31,19 @@ loading, semantic modeling, lowering, TypeScript emission, runtime helpers, and
 handwritten override packages as explicit pipeline stages so generated output is
 readable and semantic decisions have one owner.
 
+> "Right now goscript looks pretty cool if [your] problem is 'I want this
+> self-sufficient algorithm [to] be available in Go and JS runtimes.'"
+>
+> - [nevkontakte](https://gophers.slack.com/archives/C039C0R2T/p1745870396945719),
+>   developer of [GopherJS](https://github.com/gopherjs/gopherjs)
+
+That contrast is the project shape. GopherJS aims to make any valid Go program
+run in a browser. GoScript starts from the narrower but common product need:
+move self-contained Go logic into TypeScript projects without maintaining a
+second implementation.
+
+### Why GoScript?
+
 Use GoScript when you want to share Go algorithms, data structures, validation
 logic, or selected runtime code with TypeScript and browser environments without
 maintaining a second implementation by hand. The first supported target is a
@@ -38,6 +51,15 @@ useful, well-defined subset of Go that produces readable TypeScript and avoids
 unsafe-heavy runtime behavior. The long-term goal is to expand that subset until
 ordinary Go programs can run through GoScript, but that is not the first
 compatibility bar.
+
+Good fits today include:
+
+- Sharing validation, formatting, parsing, policy, and business rules between
+  Go services and TypeScript applications
+- Publishing TypeScript packages from Go data structures and algorithms
+- Running selected Go runtime code in Bun, browser demos, and modern bundlers
+- Building package-level test workflows that exercise generated TypeScript
+  instead of parallel handwritten ports
 
 GoScript is not currently a drop-in browser runtime for every valid Go program.
 The project prioritizes clear generated TypeScript, explicit runtime contracts,
@@ -53,7 +75,9 @@ Useful docs:
 
 ## Current Surface
 
-The package compiler supports:
+### Works Today
+
+The package compiler currently supports:
 
 - Go package loading through `go/packages` with `GOOS=js` and `GOARCH=wasm`
 - Go build tags through CLI build flags, including `goscript`-selected code paths
@@ -73,7 +97,7 @@ The package compiler supports:
   failures with owner classifications
 - Browser/WASM compilation for import-free single-file demos
 
-Known limits:
+### Intentional Limits
 
 - CLI, Go API, and Node API inputs are package patterns, not direct `main.go` files.
 - Browser source compilation is import-free only. Imported code should use the package workflow.
