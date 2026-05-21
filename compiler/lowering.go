@@ -522,6 +522,11 @@ func safeIdentifier(value string) string {
 			b.WriteRune(r)
 			continue
 		}
+		if r > 127 {
+			b.WriteString("_u")
+			b.WriteString(strconv.FormatInt(int64(r), 16))
+			continue
+		}
 		b.WriteByte('_')
 	}
 	if b.Len() == 0 {

@@ -10,6 +10,12 @@ func (Packer) pack(msg []byte, _ map[string]int, _ int) []byte {
 	return append(msg, 1)
 }
 
+func unicodeNames(φ int, β int) (ψ int, δ int) {
+	ψ = φ + 1
+	δ = β + 2
+	return
+}
+
 func main() {
 	p := Packer{}
 	println(blanks(1, "x"))
@@ -19,4 +25,7 @@ func main() {
 		return 9
 	}
 	println(f(1, 2))
+
+	left, right := unicodeNames(3, 4)
+	println(left, right)
 }

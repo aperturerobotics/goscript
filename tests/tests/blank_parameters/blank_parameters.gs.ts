@@ -36,6 +36,14 @@ export function blanks(_p0: number, _p1: string): number {
 	return 7
 }
 
+export function unicodeNames(_u3c6: number, _u3b2: number): [number, number] {
+	let _u3c8: number = 0
+	let _u3b4: number = 0
+	_u3c8 = _u3c6 + 1
+	_u3b4 = _u3b2 + 2
+	return [_u3c8, _u3b4]
+}
+
 export async function main(): Promise<void> {
 	let p = $.markAsStructValue(new Packer())
 	$.println(blanks(1, "x"))
@@ -45,6 +53,9 @@ export async function main(): Promise<void> {
 		return 9
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	$.println(await f!(1, 2))
+
+	let [left, right] = unicodeNames(3, 4)
+	$.println(left, right)
 }
 
 
