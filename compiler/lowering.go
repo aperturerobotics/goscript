@@ -2976,7 +2976,34 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 			diagnostics = append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported select communication"))
 		}
 	}
+	lowered.returns = selectCasesReturn(lowered.cases)
 	return lowered, diagnostics
+}
+
+func selectCasesReturn(cases []loweredSelectCase) bool {
+	if len(cases) == 0 {
+		return false
+	}
+	for _, switchCase := range cases {
+		if !stmtsEndInReturn(switchCase.body) {
+			return false
+		}
+	}
+	return true
+}
+
+func stmtsEndInReturn(stmts []loweredStmt) bool {
+	if len(stmts) == 0 {
+		return false
+	}
+	last := stmts[len(stmts)-1]
+	if strings.HasPrefix(strings.TrimSpace(last.text), "return") {
+		return true
+	}
+	if last.selectStmt != nil {
+		return last.selectStmt.returns
+	}
+	return false
 }
 
 func (o *LoweringOwner) lowerSelectReceiveComm(
@@ -3376,11 +3403,7 @@ func stmtsContainAwait(stmts []loweredStmt) bool {
 			return true
 		}
 		if stmt.selectStmt != nil {
-			for _, switchCase := range stmt.selectStmt.cases {
-				if stmtsContainAwait(switchCase.prelude) || stmtsContainAwait(switchCase.body) {
-					return true
-				}
-			}
+			return true
 		}
 		if stmt.switchStmt != nil {
 			for _, switchCase := range stmt.switchStmt.cases {

@@ -627,6 +627,10 @@ func renderSelect(b *strings.Builder, stmt *loweredSelect, indent int) {
 	b.WriteString("\n")
 	writeIndent(b, indent)
 	b.WriteString("}\n")
+	if stmt.returns {
+		writeIndent(b, indent)
+		b.WriteString("throw new Error(\"unreachable select\")\n")
+	}
 }
 
 func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, indent int) {

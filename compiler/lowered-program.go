@@ -129,6 +129,7 @@ type loweredSelect struct {
 	resultType string
 	cases      []loweredSelectCase
 	hasDefault bool
+	returns    bool
 }
 
 type loweredSelectCase struct {
