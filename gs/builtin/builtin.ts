@@ -35,7 +35,7 @@ export function panic(...args: any[]): never {
  * For maps, it deletes all entries.
  * @param v The slice or map to clear
  */
-export function clear<T>(v: T[] | Map<unknown, unknown> | null): void {
+export function clear<T>(v: Slice<T> | Map<unknown, unknown> | null): void {
   if (v === null || v === undefined) {
     return
   }
@@ -43,10 +43,38 @@ export function clear<T>(v: T[] | Map<unknown, unknown> | null): void {
     v.clear()
     return
   }
-  if (Array.isArray(v)) {
-    v.fill(null as T)
+  if (v instanceof Uint8Array) {
+    v.fill(0)
     return
   }
+  if (isSliceProxy(v)) {
+    const zero = clearZeroValue(v)
+    for (let i = 0; i < v.length; i++) {
+      v[i] = zero
+    }
+    return
+  }
+  if (Array.isArray(v)) {
+    v.fill(clearZeroValue(v))
+    return
+  }
+}
+
+function clearZeroValue<T>(v: T[]): T {
+  for (const item of v) {
+    if (item !== null && item !== undefined) {
+      switch (typeof item) {
+        case 'number':
+          return 0 as T
+        case 'string':
+          return '' as T
+        case 'boolean':
+          return false as T
+      }
+      break
+    }
+  }
+  return null as T
 }
 
 /**
