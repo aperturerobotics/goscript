@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 export type MySlice = $.Slice<number>
 
-export function MySlice_Add(s: $.VarRef<MySlice>, val: number): void {
+export function MySlice_Add(s: $.VarRef<MySlice> | null, val: number): void {
 	s!.value = $.append($.pointerValue<MySlice>(s), val)
 }
 

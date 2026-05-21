@@ -550,7 +550,7 @@ func TestCompilePackagesEmitsArraySliceMapStringAndNamedMethods(t *testing.T) {
 		"export type MyInt = number",
 		"export function MyInt_Double(m: MyInt): number",
 		"export type MySlice = $.Slice<number>",
-		"export function MySlice_Add(s: $.VarRef<MySlice>, v: number): void",
+		"export function MySlice_Add(s: $.VarRef<MySlice> | null, v: number): void",
 		"let arr = [0, 10, 0]",
 		"let slice = $.makeSlice<number>(0, 2, \"number\")",
 		"let empty = $.arrayToSlice<number>([])",

@@ -5635,7 +5635,7 @@ func (o *LoweringOwner) overrideTypeArgsExpr(ctx lowerFileContext, named *types.
 func (o *LoweringOwner) tsReceiverTypeFor(ctx lowerFileContext, typ types.Type) string {
 	if pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer); ok {
 		if named := namedNonStructType(pointer.Elem()); named != nil {
-			return "$.VarRef<" + o.namedTypeExpr(ctx, named) + ">"
+			return "$.VarRef<" + o.namedTypeExpr(ctx, named) + "> | null"
 		}
 	}
 	return o.tsTypeFor(ctx, typ)

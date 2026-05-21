@@ -45,6 +45,6 @@ export class AStruct {
 	)
 }
 
-export function ErrorList_Add(p: $.VarRef<ErrorList>, msg: string): void {
+export function ErrorList_Add(p: $.VarRef<ErrorList> | null, msg: string): void {
 	p!.value = $.append($.pointerValue<ErrorList>(p), msg)
 }
