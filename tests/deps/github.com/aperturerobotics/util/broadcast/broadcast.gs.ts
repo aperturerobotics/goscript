@@ -17,19 +17,19 @@ export class Broadcast {
 		this._fields.mtx.value = value
 	}
 
-	public get ch(): $.Channel<Record<string, unknown>> | null {
+	public get ch(): $.Channel<{}> | null {
 		return this._fields.ch.value
 	}
-	public set ch(value: $.Channel<Record<string, unknown>> | null) {
+	public set ch(value: $.Channel<{}> | null) {
 		this._fields.ch.value = value
 	}
 
 	public _fields: {
 		mtx: $.VarRef<sync.Mutex>
-		ch: $.VarRef<$.Channel<Record<string, unknown>> | null>
+		ch: $.VarRef<$.Channel<{}> | null>
 	}
 
-	constructor(init?: Partial<{mtx?: sync.Mutex, ch?: $.Channel<Record<string, unknown>> | null}>) {
+	constructor(init?: Partial<{mtx?: sync.Mutex, ch?: $.Channel<{}> | null}>) {
 		this._fields = {
 			mtx: $.varRef(init?.mtx ? $.markAsStructValue(init.mtx.clone()) : $.markAsStructValue(new sync.Mutex())),
 			ch: $.varRef(init?.ch ?? null)
@@ -45,7 +45,7 @@ export class Broadcast {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async HoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): Promise<void> {
+	public async HoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): Promise<void> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		using __defer = new $.DisposableStack()
 		await $.pointerValue<Broadcast>(c).mtx.Lock()
@@ -53,7 +53,7 @@ export class Broadcast {
 		cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
 	}
 
-	public HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): void {
+	public HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): void {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		let holdBroadcastLock = $.functionValue(async (lock: boolean): Promise<void> => {
 			using __defer = new $.DisposableStack()
@@ -74,7 +74,7 @@ export class Broadcast {
 		}
 	}
 
-	public TryHoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => void) | null): boolean {
+	public TryHoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): boolean {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		using __defer = new $.DisposableStack()
 		if (!$.pointerValue<Broadcast>(c).mtx.TryLock()) {
@@ -85,22 +85,22 @@ export class Broadcast {
 		return true
 	}
 
-	public async Wait(ctx: context.Context | null, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
+	public async Wait(ctx: context.Context | null, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		if ((cb == null) || (ctx == null)) {
 			return errors.New("cb and ctx must be set")
 		}
 
-		let waitCh: $.Channel<Record<string, unknown>> | null = null
+		let waitCh: $.Channel<{}> | null = null
 
 		while (true) {
-			if (ctx!.Err() != null) {
+			if ($.pointerValue(ctx).Err() != null) {
 				return context.Canceled
 			}
 
 			let done: boolean = false
 			let err: $.GoError = null
-			await $.pointerValue<Broadcast>(c).HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<Record<string, unknown>> | null) | null): void => {
+			await $.pointerValue<Broadcast>(c).HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): void => {
 				let __goscriptTuple0 = cb!(broadcast, getWaitCh)
 				done = __goscriptTuple0[0]
 				err = __goscriptTuple0[1]
@@ -117,7 +117,7 @@ export class Broadcast {
 				{
 					id: 0,
 					isSend: false,
-					channel: ctx!.Done(),
+					channel: $.pointerValue(ctx).Done(),
 					onSelected: async (result) => {
 						return context.Canceled
 					}
@@ -144,10 +144,10 @@ export class Broadcast {
 		}
 	}
 
-	public getWaitChLocked(): $.Channel<Record<string, unknown>> | null {
+	public getWaitChLocked(): $.Channel<{}> | null {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		if ($.pointerValue<Broadcast>(c).ch == null) {
-			$.pointerValue<Broadcast>(c).ch = $.makeChannel<Record<string, unknown>>(0, {}, "both")
+			$.pointerValue<Broadcast>(c).ch = $.makeChannel<{}>(0, {}, "both")
 		}
 		return $.pointerValue<Broadcast>(c).ch
 	}
