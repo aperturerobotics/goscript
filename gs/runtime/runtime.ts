@@ -1,11 +1,11 @@
 import * as $ from '@goscript/builtin/index.js'
 
 // Runtime constants for the JavaScript/WebAssembly target
-export const GOOS = 'js'
-export const GOARCH = 'wasm'
+export const GOOS: string = 'js'
+export const GOARCH: string = 'wasm'
 
 // Version returns the Go version as a string
-export const GOVERSION = 'go1.25.3'
+export const GOVERSION: string = 'go1.25.3'
 export function Version(): string {
   return GOVERSION
 }
