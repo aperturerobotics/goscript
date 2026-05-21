@@ -4,6 +4,22 @@ import "slices"
 
 import "sort"
 
+type descending struct {
+	values []int
+}
+
+func (d descending) Len() int {
+	return len(d.values)
+}
+
+func (d descending) Less(i, j int) bool {
+	return d.values[i] > d.values[j]
+}
+
+func (d descending) Swap(i, j int) {
+	d.values[i], d.values[j] = d.values[j], d.values[i]
+}
+
 func main() {
 	// Test basic slice sorting
 	ints := []int{3, 1, 4, 1, 5, 9}
@@ -61,6 +77,11 @@ func main() {
 		return testSlice[i] < testSlice[j]
 	})
 	println("Custom slice is sorted:", isSliceSorted)
+
+	// Test custom sort.Interface values.
+	custom := descending{values: []int{1, 3, 2}}
+	sort.Sort(custom)
+	println("Custom interface sort:", custom.values[0], custom.values[1], custom.values[2])
 
 	println("test finished")
 }

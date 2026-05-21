@@ -94,27 +94,29 @@ export class StringSlice {
 }
 
 // Sort sorts data in ascending order as determined by the Less method
-export function Sort(data: Interface): void {
+export function Sort(data: Interface | null): void {
+  const sortData = $.pointerValue(data)
   // Use a simple insertion sort for now - can be optimized later
-  const n = data.Len()
+  const n = sortData.Len()
   for (let i = 1; i < n; i++) {
-    for (let j = i; j > 0 && data.Less(j, j - 1); j--) {
-      data.Swap(j, j - 1)
+    for (let j = i; j > 0 && sortData.Less(j, j - 1); j--) {
+      sortData.Swap(j, j - 1)
     }
   }
 }
 
 // Stable sorts data while keeping the original order of equal elements
-export function Stable(data: Interface): void {
+export function Stable(data: Interface | null): void {
   // For simplicity, use the same sort - can be improved later
   Sort(data)
 }
 
 // IsSorted reports whether data is sorted
-export function IsSorted(data: Interface): boolean {
-  const n = data.Len()
+export function IsSorted(data: Interface | null): boolean {
+  const sortData = $.pointerValue(data)
+  const n = sortData.Len()
   for (let i = n - 1; i > 0; i--) {
-    if (data.Less(i, i - 1)) {
+    if (sortData.Less(i, i - 1)) {
       return false
     }
   }
@@ -122,11 +124,12 @@ export function IsSorted(data: Interface): boolean {
 }
 
 // Reverse returns the reverse order for data
-export function Reverse(data: Interface): Interface {
+export function Reverse(data: Interface | null): Interface {
+  const sortData = $.pointerValue(data)
   return {
-    Len: () => data.Len(),
-    Less: (i: number, j: number) => data.Less(j, i),
-    Swap: (i: number, j: number) => data.Swap(i, j)
+    Len: () => sortData.Len(),
+    Less: (i: number, j: number) => sortData.Less(j, i),
+    Swap: (i: number, j: number) => sortData.Swap(i, j)
   }
 }
 
@@ -224,4 +227,4 @@ export function StringsAreSorted(x: $.Slice<string>): boolean {
     }
   }
   return true
-} 
+}
