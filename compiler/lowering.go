@@ -5317,6 +5317,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		return "any"
 	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
+		if crossPackageUnexportedNamedType(ctx, named) {
+			return "any"
+		}
 		name := o.namedTypeExpr(ctx, named)
 		if _, ok := named.Underlying().(*types.Interface); ok {
 			return name + " | null"
@@ -5339,9 +5342,15 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 			return "any"
 		}
 		if named := namedNonStructType(typed.Elem()); named != nil {
+			if crossPackageUnexportedNamedType(ctx, named) {
+				return "any"
+			}
 			return "$.VarRef<" + o.namedTypeExpr(ctx, named) + "> | null"
 		}
 		if named := namedStructType(typed.Elem()); named != nil {
+			if crossPackageUnexportedNamedType(ctx, named) {
+				return "any"
+			}
 			name := o.namedTypeExpr(ctx, named)
 			return name + " | $.VarRef<" + name + "> | null"
 		}
@@ -5351,6 +5360,13 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	default:
 		return tsType(typ)
 	}
+}
+
+func crossPackageUnexportedNamedType(ctx lowerFileContext, named *types.Named) bool {
+	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil || ctx.semPkg == nil {
+		return false
+	}
+	return named.Obj().Pkg().Path() != ctx.semPkg.pkgPath && !ast.IsExported(named.Obj().Name())
 }
 
 func tsArrayType(elem string) string {
