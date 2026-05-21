@@ -3,28 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export function firstFunc(): [string, number] {
-	return ["", 42]
-}
-
-export function secondFunc(x: number): number {
-	if (x != 0) {
-		$.println("Got value:", x)
-		return 0
-	}
-	return 99
-}
-
-export type named = null | {
-	Name(): string
-}
-
-$.registerInterfaceType(
-	"main.named",
-	null,
-	[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
-
 export class item {
 	public _fields: {
 	}
@@ -53,6 +31,28 @@ export class item {
 		{}
 	)
 }
+
+export function firstFunc(): [string, number] {
+	return ["", 42]
+}
+
+export function secondFunc(x: number): number {
+	if (x != 0) {
+		$.println("Got value:", x)
+		return 0
+	}
+	return 99
+}
+
+export type named = null | {
+	Name(): string
+}
+
+$.registerInterfaceType(
+	"main.named",
+	null,
+	[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
 
 export function describe(value: any): void {
 	let __goscriptShadow0 = value

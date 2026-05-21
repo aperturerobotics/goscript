@@ -42,8 +42,6 @@ export class writerHolder {
 	)
 }
 
-export let asyncWrites: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
-
 export class asyncBuffer {
 	public _fields: {
 	}
@@ -83,6 +81,8 @@ export class asyncBuffer {
 		{}
 	)
 }
+
+export let asyncWrites: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
 export async function main(): Promise<void> {
 	// Test basic error variables

@@ -27,6 +27,8 @@ $.registerInterfaceType(
 	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }]
 )
 
+export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError) | null
+
 export class MockFileInfo {
 	public get name(): string {
 		return this._fields.name.value
@@ -126,8 +128,6 @@ export class MockFilesystem {
 		{}
 	)
 }
-
-export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError) | null
 
 export function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: filepath.WalkFunc): $.GoError {
 	// Test case 1: Direct call to named function type parameter

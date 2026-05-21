@@ -102,15 +102,21 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 	if len(file.imports) != 0 {
 		b.WriteString("\n")
 	}
-	for idx, decl := range file.decls {
-		if idx != 0 {
+	wroteDecl := false
+	writeSeparator := func() {
+		if wroteDecl {
 			b.WriteString("\n")
 		}
+		wroteDecl = true
+	}
+	writeDecl := func(decl loweredDecl) {
 		if decl.structType != nil {
+			writeSeparator()
 			renderStruct(&b, decl.structType, o.runtimeOwner)
-			continue
+			return
 		}
 		if decl.function != nil {
+			writeSeparator()
 			renderFunction(&b, decl.function)
 			if pkg.name == "main" && decl.function.name == "main" {
 				b.WriteString("\n\nif (")
@@ -119,10 +125,27 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 				b.WriteString("\tawait main()\n")
 				b.WriteString("}\n")
 			}
-			continue
+			return
 		}
+		writeSeparator()
 		b.WriteString(decl.code)
 		b.WriteString("\n")
+	}
+	for _, decl := range file.decls {
+		if decl.typeIndexExport != "" && decl.code != "" {
+			writeDecl(decl)
+		}
+	}
+	for _, decl := range file.decls {
+		if decl.structType != nil {
+			writeDecl(decl)
+		}
+	}
+	for _, decl := range file.decls {
+		if decl.structType != nil || (decl.typeIndexExport != "" && decl.code != "") {
+			continue
+		}
+		writeDecl(decl)
 	}
 	return b.String()
 }

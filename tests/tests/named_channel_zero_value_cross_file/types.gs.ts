@@ -3,6 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+export type Jobs = $.Channel<Job> | null
+
 export class Job {
 	public get Value(): string {
 		return this._fields.Value.value
@@ -37,5 +39,3 @@ export class Job {
 		{"Value": { kind: $.TypeKind.Basic, name: "string" }}
 	)
 }
-
-export type Jobs = $.Channel<Job> | null

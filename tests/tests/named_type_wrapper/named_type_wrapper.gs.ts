@@ -5,10 +5,6 @@ import * as $ from "@goscript/builtin/index.js"
 
 export type MyFileMode = number
 
-export function MyFileMode_String(m: MyFileMode): string {
-	return "mode"
-}
-
 export class FileStatus {
 	public get mode(): MyFileMode {
 		return this._fields.mode.value
@@ -52,6 +48,10 @@ export class FileStatus {
 		FileStatus,
 		{"mode": "main.MyFileMode", "size": { kind: $.TypeKind.Basic, name: "int" }}
 	)
+}
+
+export function MyFileMode_String(m: MyFileMode): string {
+	return "mode"
 }
 
 export async function main(): Promise<void> {

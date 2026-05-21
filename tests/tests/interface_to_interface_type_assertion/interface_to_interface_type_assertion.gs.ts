@@ -13,6 +13,16 @@ $.registerInterfaceType(
 	[{ name: "Method1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
+export type MyOtherInterface = null | {
+	Method1(): number
+}
+
+$.registerInterfaceType(
+	"main.MyOtherInterface",
+	null,
+	[{ name: "Method1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+)
+
 export class MyStruct {
 	public get Value(): number {
 		return this._fields.Value.value
@@ -52,16 +62,6 @@ export class MyStruct {
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
-
-export type MyOtherInterface = null | {
-	Method1(): number
-}
-
-$.registerInterfaceType(
-	"main.MyOtherInterface",
-	null,
-	[{ name: "Method1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
 
 export async function main(): Promise<void> {
 	let i: MyInterface | null = null

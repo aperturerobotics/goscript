@@ -5,6 +5,16 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as reflect from "@goscript/reflect/index.js"
 
+export type MyInterface = null | {
+	SomeMethod(): void
+}
+
+$.registerInterfaceType(
+	"main.MyInterface",
+	null,
+	[{ name: "SomeMethod", args: [], returns: [] }]
+)
+
 export class MyStruct {
 	public get Name(): string {
 		return this._fields.Name.value
@@ -49,16 +59,6 @@ export class MyStruct {
 		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
-
-export type MyInterface = null | {
-	SomeMethod(): void
-}
-
-$.registerInterfaceType(
-	"main.MyInterface",
-	null,
-	[{ name: "SomeMethod", args: [], returns: [] }]
-)
 
 export async function main(): Promise<void> {
 	// Test TypeFor with named interface type

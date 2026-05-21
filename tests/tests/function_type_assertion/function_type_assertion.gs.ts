@@ -7,22 +7,6 @@ export type Greeter = ((name: string) => string) | null
 
 export type Adder = ((a: number, b: number) => number) | null
 
-export function greet(name: string): string {
-	return "Hello, " + name
-}
-
-export function add(a: number, b: number): number {
-	return a + b
-}
-
-export function getGreeter(): any {
-	return $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
-}
-
-export function getAdder(): any {
-	return $.interfaceValue<any>($.namedFunction(add, "main.Adder"), "main.Adder")
-}
-
 export class FuncContainer {
 	public get myFunc(): any {
 		return this._fields.myFunc.value
@@ -56,6 +40,22 @@ export class FuncContainer {
 		FuncContainer,
 		{"myFunc": { kind: $.TypeKind.Interface, methods: [] }}
 	)
+}
+
+export function greet(name: string): string {
+	return "Hello, " + name
+}
+
+export function add(a: number, b: number): number {
+	return a + b
+}
+
+export function getGreeter(): any {
+	return $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
+}
+
+export function getAdder(): any {
+	return $.interfaceValue<any>($.namedFunction(add, "main.Adder"), "main.Adder")
 }
 
 export async function main(): Promise<void> {

@@ -3,14 +3,6 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export function toStringString(__typeArgs: $.GenericTypeArgs | undefined, v: any): string {
-	return $.genericBytesOrStringToString(v)
-}
-
-export function toStringBytes(__typeArgs: $.GenericTypeArgs | undefined, v: any): string {
-	return $.genericBytesOrStringToString(v)
-}
-
 export type StrOrBytes = any
 
 $.registerInterfaceType(
@@ -18,6 +10,14 @@ $.registerInterfaceType(
 	null,
 	[]
 )
+
+export function toStringString(__typeArgs: $.GenericTypeArgs | undefined, v: any): string {
+	return $.genericBytesOrStringToString(v)
+}
+
+export function toStringBytes(__typeArgs: $.GenericTypeArgs | undefined, v: any): string {
+	return $.genericBytesOrStringToString(v)
+}
 
 export function toStringGeneric(__typeArgs: $.GenericTypeArgs | undefined, v: any): string {
 	return $.genericBytesOrStringToString(v)

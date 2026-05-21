@@ -3,6 +3,16 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+export type Stringer = null | {
+	String(): string
+}
+
+$.registerInterfaceType(
+	"main.Stringer",
+	null,
+	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
+
 export class Base {
 	public _fields: {
 	}
@@ -60,16 +70,6 @@ export class Derived {
 		{}
 	)
 }
-
-export type Stringer = null | {
-	String(): string
-}
-
-$.registerInterfaceType(
-	"main.Stringer",
-	null,
-	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
 
 export async function main(): Promise<void> {
 	let base: any = $.markAsStructValue($.markAsStructValue(new Base()).clone())

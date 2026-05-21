@@ -3,6 +3,16 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+export type Spawner = null | {
+	Spawn(): $.GoError
+}
+
+$.registerInterfaceType(
+	"main.Spawner",
+	null,
+	[{ name: "Spawn", args: [], returns: [{ name: "_r0", type: "error" }] }]
+)
+
 export class Worker {
 	public get ch(): $.Channel<number> | null {
 		return this._fields.ch.value
@@ -45,16 +55,6 @@ export class Worker {
 		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
 	)
 }
-
-export type Spawner = null | {
-	Spawn(): $.GoError
-}
-
-$.registerInterfaceType(
-	"main.Spawner",
-	null,
-	[{ name: "Spawn", args: [], returns: [{ name: "_r0", type: "error" }] }]
-)
 
 export function run(fn: (() => $.GoError) | null): void {
 	let err = fn!()

@@ -17,11 +17,11 @@ $.registerInterfaceType(
 
 export type IntVal = number
 
+export type StringVal = string
+
 export function IntVal_String(i: IntVal): string {
 	return strconv.Itoa($.int(i))
 }
-
-export type StringVal = string
 
 export function StringVal_String(s: StringVal): string {
 	return s

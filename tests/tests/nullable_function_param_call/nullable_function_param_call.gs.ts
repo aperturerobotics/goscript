@@ -19,8 +19,6 @@ $.registerInterfaceType(
 
 export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError) | null
 
-export let SkipDir: $.GoError = os.ErrNotExist
-
 export type Filesystem = null | {
 	ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError]
 }
@@ -30,6 +28,10 @@ $.registerInterfaceType(
 	null,
 	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }]
 )
+
+export type ProcessFunc = ((data: string) => [string, $.GoError]) | null
+
+export type OptionalProcessFunc = ((data: string) => [string, $.GoError]) | null
 
 export class MockFileInfo {
 	public get name(): string {
@@ -131,6 +133,8 @@ export class MockFilesystem {
 	)
 }
 
+export let SkipDir: $.GoError = os.ErrNotExist
+
 export function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: WalkFunc): $.GoError {
 	// Test case 1: Direct call to nullable function parameter
 	// This should generate: walkFn!(path, info, nil)
@@ -151,16 +155,12 @@ export function walk(fs: Filesystem | null, path: string, info: FileInfo | null,
 	return null
 }
 
-export type ProcessFunc = ((data: string) => [string, $.GoError]) | null
-
 export function processWithCallback(input: string, processor: ProcessFunc): [string, $.GoError] {
 	// Test case 3: Function parameter with return values
 	// This should generate: processor!(input)
 	// But currently generates: processor(input) - missing !
 	return processor!(input)
 }
-
-export type OptionalProcessFunc = ((data: string) => [string, $.GoError]) | null
 
 export function maybeProcess(input: string, processor: OptionalProcessFunc): [string, $.GoError] {
 	if (processor == null) {

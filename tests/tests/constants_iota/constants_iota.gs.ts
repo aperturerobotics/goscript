@@ -5,6 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 export type ByteSize = number
 
+export type Direction = number
+
 export const _: number = 0
 
 export const KB: ByteSize = 1024
@@ -14,8 +16,6 @@ export const MB: ByteSize = 1048576
 export const GB: ByteSize = 1073741824
 
 export const TB: ByteSize = 1099511627776
-
-export type Direction = number
 
 export const North: Direction = 0
 

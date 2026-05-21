@@ -5,6 +5,16 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as reflect from "@goscript/reflect/index.js"
 
+export type Stringer = null | {
+	String(): string
+}
+
+$.registerInterfaceType(
+	"main.Stringer",
+	null,
+	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
+
 export class Person {
 	public get Name(): string {
 		return this._fields.Name.value
@@ -49,16 +59,6 @@ export class Person {
 		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
-
-export type Stringer = null | {
-	String(): string
-}
-
-$.registerInterfaceType(
-	"main.Stringer",
-	null,
-	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
 
 export async function main(): Promise<void> {
 	// Test basic reflect functions

@@ -5,8 +5,6 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as sync from "@goscript/sync/index.js"
 
-export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
-
 export class loader {
 	public get load(): ((_p0: string) => [any, boolean] | Promise<[any, boolean]>) | null {
 		return this._fields.load.value
@@ -41,6 +39,8 @@ export class loader {
 		{"load": { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] }}
 	)
 }
+
+export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
 export let defaultLoader: loader | $.VarRef<loader> | null = new loader({load: $.functionValue(async (key: string): Promise<[any, boolean]> => {
 	return await cache.value.Load(key)
