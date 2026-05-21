@@ -23,7 +23,7 @@ export function simpleIterator(m: Map<string, number> | null): ((_p0: ((_p0: str
 
 export async function main(): Promise<void> {
 	// Create a map to test with
-	let m = new Map<string, number>([["a", 1], ["b", 2], ["c", 3]])
+	let m: Map<string, number> | null = new Map<string, number>([["a", 1], ["b", 2], ["c", 3]])
 
 	// Collect results in a slice to ensure deterministic output
 	let results: $.Slice<string> = null
@@ -66,8 +66,8 @@ export async function main(): Promise<void> {
 		$.println("Result:", result)
 	}
 
-	let dst = new Map<string, number>([["base", 1]])
-	let src = new Map<string, number>([["copied", 2]])
+	let dst: Map<string, number> | null = new Map<string, number>([["base", 1]])
+	let src: Map<string, number> | null = new Map<string, number>([["copied", 2]])
 	maps.Copy(dst, src)
 	let nilSrc: Map<string, number> | null = null
 	maps.Copy(dst, nilSrc)

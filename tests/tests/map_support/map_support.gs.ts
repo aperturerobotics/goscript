@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): Promise<void> {
 	// Create map using make
-	let scores = $.makeMap<string, number>()
+	let scores: Map<string, number> | null = $.makeMap<string, number>()
 	$.println("Empty map created: Expected: true, Actual:", $.len(scores) == 0)
 
 	// Add key-value pairs
@@ -36,7 +36,7 @@ export async function main(): Promise<void> {
 	$.println("After delete, does Charlie exist? Expected: false, Actual:", exists)
 
 	// Create map with literal syntax
-	let colors = new Map<string, string>([["red", "#ff0000"], ["green", "#00ff00"], ["blue", "#0000ff"]])
+	let colors: Map<string, string> | null = new Map<string, string>([["red", "#ff0000"], ["green", "#00ff00"], ["blue", "#0000ff"]])
 	$.println("Map literal size: Expected: 3, Actual:", $.len(colors))
 	$.println("Color code for red: Expected: #ff0000, Actual:", $.mapGet(colors, "red", "")[0])
 
@@ -44,7 +44,7 @@ export async function main(): Promise<void> {
 	$.println("Iterating over scores map:")
 
 	// Create a new map with string keys and string values for testing iteration
-	let stringMap = new Map<string, string>([["Alice", "A+"], ["Bob", "B+"], ["Charlie", "A"]])
+	let stringMap: Map<string, string> | null = new Map<string, string>([["Alice", "A+"], ["Bob", "B+"], ["Charlie", "A"]])
 
 	// Note: Map iteration is not ordered in Go, so we will collect the results and sort them for consistent test output.
 	let scoreResults: $.Slice<string> = null

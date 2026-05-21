@@ -121,7 +121,7 @@ export async function main(): Promise<void> {
 	}
 
 	// 4. Type assertion of a function in a map
-	let funcMap = $.makeMap<string, any>()
+	let funcMap: Map<string, any> | null = $.makeMap<string, any>()
 	$.mapSet(funcMap, "greeter", $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter"))
 	$.mapSet(funcMap, "adder", $.interfaceValue<any>($.namedFunction(add, "main.Adder"), "main.Adder"))
 

@@ -2020,11 +2020,14 @@ func (o *LoweringOwner) shortDeclTypeAnnotation(ctx lowerFileContext, lhs ast.Ex
 }
 
 func shortDeclNeedsTypeAnnotation(typ types.Type) bool {
-	pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer)
-	if !ok {
+	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Pointer:
+		return namedStructType(typed.Elem()) != nil
+	case *types.Map:
+		return true
+	default:
 		return false
 	}
-	return namedStructType(pointer.Elem()) != nil
 }
 
 func rhsIsMethodValue(ctx lowerFileContext, expr ast.Expr) bool {

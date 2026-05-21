@@ -557,7 +557,7 @@ func TestCompilePackagesEmitsArraySliceMapStringAndNamedMethods(t *testing.T) {
 		"let literal = $.arrayToSlice<number>([1, 2])",
 		"literal = $.append(literal, 3)",
 		"slice![0] = arr[1]",
-		"let m = $.makeMap<string, number>()",
+		"let m: Map<string, number> | null = $.makeMap<string, number>()",
 		"$.mapSet(m, \"one\", 1)",
 		"let [value, ok] = $.mapGet(m, \"missing\", 0)",
 		"slice![0]",
@@ -787,7 +787,7 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 	for _, want := range []string{
 		"public Get(): any",
 		"export function NewBox(__typeArgs: $.GenericTypeArgs | undefined, value: any): Box",
-		"let seen = $.makeMap<number, {}>()",
+		"let seen: Set = $.makeMap<number, {}>()",
 		"$.mapSet(seen, 1, {})",
 		"$.genericZero(__typeArgs, \"T\", null)",
 		"$.callGenericMethod(__typeArgs, \"T\", \"String\", v)",
