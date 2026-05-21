@@ -133,6 +133,22 @@ export class Time {
     return this._nsec
   }
 
+  public Date(): [number, Month, number] {
+    return [this.Year(), this.Month(), this.Day()]
+  }
+
+  public Clock(): [number, number, number] {
+    return [this.Hour(), this.Minute(), this.Second()]
+  }
+
+  public Zone(): [string, number] {
+    if (this._location.offsetSeconds !== undefined) {
+      return [this._location.name, this._location.offsetSeconds]
+    }
+    const offset = -this._date.getTimezoneOffset() * 60
+    return [this._location.name, offset]
+  }
+
   // Location returns the time zone information associated with t
   public Location(): Location {
     return this._location
@@ -512,6 +528,33 @@ export class Time {
     const newMonotonic =
       this._monotonic !== undefined ? this._monotonic + durationNs : undefined
     return Time.create(newDate, newNsec, newMonotonic, this._location)
+  }
+
+  public AddDate(years: number, months: number, days: number): Time {
+    if (this._location.offsetSeconds !== undefined) {
+      const offsetMs = this._location.offsetSeconds * 1000
+      const local = new globalThis.Date(this._date.getTime() + offsetMs)
+      const shifted = globalThis.Date.UTC(
+        local.getUTCFullYear() + years,
+        local.getUTCMonth() + months,
+        local.getUTCDate() + days,
+        local.getUTCHours(),
+        local.getUTCMinutes(),
+        local.getUTCSeconds(),
+        local.getUTCMilliseconds(),
+      )
+      return Time.create(
+        new globalThis.Date(shifted - offsetMs),
+        this._nsec,
+        undefined,
+        this._location,
+      )
+    }
+    const shifted = new globalThis.Date(this._date.getTime())
+    shifted.setFullYear(shifted.getFullYear() + years)
+    shifted.setMonth(shifted.getMonth() + months)
+    shifted.setDate(shifted.getDate() + days)
+    return Time.create(shifted, this._nsec, undefined, this._location)
   }
 
   // Equal reports whether t and u represent the same time instant

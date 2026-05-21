@@ -23,6 +23,13 @@ func main() {
 	println("minute", setTime.Minute())
 	println("second", setTime.Second())
 	println("nanosecond", setTime.Nanosecond())
+	year, month, day := setTime.Date()
+	println("date tuple", year, month, day)
+	hour, minute, second := setTime.Clock()
+	println("clock tuple", hour, minute, second)
+	zoneName, zoneOffset := setTime.Zone()
+	println("zone tuple", zoneName, zoneOffset)
+	println("add date", setTime.AddDate(1, 2, 3).UTC().Format(time.RFC3339))
 
 	// other functions on setTime
 	println("weekday", setTime.Weekday().String())

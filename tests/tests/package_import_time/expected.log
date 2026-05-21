@@ -10,6 +10,10 @@ hour 1
 minute 10
 second 42
 nanosecond 0
+date tuple 2025 5 15
+clock tuple 1 10 42
+zone tuple UTC 0
+add date 2026-07-18T01:10:42Z
 weekday Thursday
 location UTC
 utc 2025-05-15T01:10:42Z

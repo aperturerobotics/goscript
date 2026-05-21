@@ -26,6 +26,13 @@ export async function main(): Promise<void> {
 	$.println("minute", $.markAsStructValue((setTime).clone()).Minute())
 	$.println("second", $.markAsStructValue((setTime).clone()).Second())
 	$.println("nanosecond", $.markAsStructValue((setTime).clone()).Nanosecond())
+	let [year, month, day] = $.markAsStructValue((setTime).clone()).Date()
+	$.println("date tuple", year, month, day)
+	let [hour, minute, second] = $.markAsStructValue((setTime).clone()).Clock()
+	$.println("clock tuple", hour, minute, second)
+	let [zoneName, zoneOffset] = $.markAsStructValue((setTime).clone()).Zone()
+	$.println("zone tuple", zoneName, zoneOffset)
+	$.println("add date", $.markAsStructValue(($.markAsStructValue(($.markAsStructValue((setTime).clone()).AddDate(1, 2, 3)).clone()).UTC()).clone()).Format(time.RFC3339))
 
 	// other functions on setTime
 	$.println("weekday", time.Weekday_String($.markAsStructValue((setTime).clone()).Weekday()))
