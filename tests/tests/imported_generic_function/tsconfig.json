@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/imported_generic_function/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "helper/helper.gs.ts",
+    "helper/index.ts",
+    "imported_generic_function.gs.ts",
+    "index.ts"
+  ]
+}

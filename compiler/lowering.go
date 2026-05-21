@@ -3078,6 +3078,9 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			return o.awaitCallIfNeeded(ctx, fun, call), diagnostics
 		}
 		selector, selectorDiagnostics := o.lowerSelectorExpr(ctx, fun)
+		if signature := genericFunctionSignature(ctx, fun); signature != nil && selectorUsesGeneratedPackage(ctx, fun) {
+			args = append([]string{o.inferredGenericTypeArgsExpr(ctx, signature, expr.Args)}, args...)
+		}
 		call := o.lowerCallableExpr(ctx, fun, selector) + "(" + strings.Join(args, ", ") + ")"
 		return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, selectorDiagnostics...)
 	case *ast.IndexExpr:
@@ -4837,6 +4840,18 @@ func genericFunctionSignature(ctx lowerFileContext, expr ast.Expr) *types.Signat
 		return nil
 	}
 	return signature
+}
+
+func selectorUsesGeneratedPackage(ctx lowerFileContext, expr *ast.SelectorExpr) bool {
+	if ctx.model == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	fn := calledFunction(ctx.semPkg.source, expr)
+	if fn == nil || fn.Pkg() == nil {
+		return false
+	}
+	_, ok := ctx.model.packages[fn.Pkg().Path()]
+	return ok
 }
 
 func (o *LoweringOwner) functionAsync(ctx lowerFileContext, fn *types.Func) bool {
