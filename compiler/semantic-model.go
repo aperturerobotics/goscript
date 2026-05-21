@@ -571,6 +571,9 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				if called := calledFunction(pkg, typed.Fun); called != nil {
 					semFn.calls[called.Origin()] = true
 				}
+				if fun, ok := ast.Unparen(typed.Fun).(*ast.FuncLit); ok && funcLitUsesFunctionIdentifierCall(pkg, fun) {
+					markFunctionAsync(semFn, "async-function-literal-call")
+				}
 				if callUsesFunctionValue(pkg, typed.Fun) {
 					markFunctionAsync(semFn, "function-value-call")
 				}
@@ -737,6 +740,32 @@ func callUsesFunctionIdentifier(pkg *packages.Package, expr ast.Expr) bool {
 	}
 	_, ok = obj.(*types.Var)
 	return ok
+}
+
+func funcLitUsesFunctionIdentifierCall(pkg *packages.Package, lit *ast.FuncLit) bool {
+	if pkg == nil || lit == nil || lit.Body == nil {
+		return false
+	}
+	signature, _ := pkg.TypesInfo.TypeOf(lit).(*types.Signature)
+	if signature == nil || signature.Results() == nil || signature.Results().Len() == 0 {
+		return false
+	}
+	uses := false
+	ast.Inspect(lit.Body, func(node ast.Node) bool {
+		if uses {
+			return false
+		}
+		if nested, ok := node.(*ast.FuncLit); ok && nested != lit {
+			return false
+		}
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		uses = callUsesFunctionIdentifier(pkg, call.Fun)
+		return !uses
+	})
+	return uses
 }
 
 func callPassesAsyncFunctionArgument(

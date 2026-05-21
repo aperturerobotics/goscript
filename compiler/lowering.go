@@ -1836,7 +1836,9 @@ func (o *LoweringOwner) lowerSendStmt(ctx lowerFileContext, stmt *ast.SendStmt) 
 }
 
 func (o *LoweringOwner) lowerGoStmt(ctx lowerFileContext, stmt *ast.GoStmt) (string, []Diagnostic) {
-	call, diagnostics := o.lowerCallExpr(ctx, stmt.Call)
+	goCtx := ctx
+	goCtx.deferState = nil
+	call, diagnostics := o.lowerCallExpr(goCtx, stmt.Call)
 	return "queueMicrotask(async () => { " + call + " })", diagnostics
 }
 
@@ -3449,7 +3451,8 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
 	deferState := &loweredDeferState{}
 	bodyCtx := ctx.withSignature(signature).withDeferState(deferState).withoutRangeBranch()
-	if funcLiteralNeedsAsyncFunctionParamCalls(signature) {
+	asyncCompatibleParams := funcLiteralNeedsAsyncFunctionParamCalls(signature)
+	if asyncCompatibleParams || funcLiteralUsesFunctionIdentifierCall(ctx, lit) {
 		bodyCtx = bodyCtx.withAsyncFunction(true)
 	}
 	body, diagnostics := o.lowerBlock(bodyCtx, lit.Body)
@@ -3462,11 +3465,37 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	if async {
 		prefix = "async "
 	}
-	function := prefix + "(" + o.tsSignatureParamsFor(ctx, signature, funcLiteralNeedsAsyncFunctionParamCalls(signature)) + "): " +
+	function := prefix + "(" + o.tsSignatureParamsFor(ctx, signature, asyncCompatibleParams) + "): " +
 		asyncResultType(o.tsSignatureResultFor(ctx, signature), async) + " => {\n" +
 		rendered.String() + "}"
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
 		"(" + function + ", " + o.runtimeFunctionTypeInfo(signature, "") + ")", async, diagnostics
+}
+
+func funcLiteralUsesFunctionIdentifierCall(ctx lowerFileContext, lit *ast.FuncLit) bool {
+	if lit == nil || lit.Body == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
+	if signature == nil || signature.Results() == nil || signature.Results().Len() == 0 {
+		return false
+	}
+	uses := false
+	ast.Inspect(lit.Body, func(node ast.Node) bool {
+		if uses {
+			return false
+		}
+		if nested, ok := node.(*ast.FuncLit); ok && nested != lit {
+			return false
+		}
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		uses = callUsesFunctionIdentifier(ctx.semPkg.source, call.Fun)
+		return !uses
+	})
+	return uses
 }
 
 func stmtsContainAwait(stmts []loweredStmt) bool {
@@ -3688,12 +3717,19 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			callee = "(" + callee + ")"
 		}
 		callee = o.lowerCallableExpr(ctx, fun, callee)
-		return callee + "(" + strings.Join(args, ", ") + ")", append(diagnostics, calleeDiagnostics...)
+		call := callee + "(" + strings.Join(args, ", ") + ")"
+		if strings.HasPrefix(callee, "(await ") && ctx.deferState != nil {
+			ctx.deferState.async = true
+		}
+		return call, append(diagnostics, calleeDiagnostics...)
 	case *ast.FuncLit:
 		callee, async, calleeDiagnostics := o.lowerFuncLit(ctx, fun)
 		call := "(" + callee + ")(" + strings.Join(args, ", ") + ")"
 		if async {
 			call = "await " + call
+			if ctx.deferState != nil {
+				ctx.deferState.async = true
+			}
 		}
 		return call, append(diagnostics, calleeDiagnostics...)
 	default:
