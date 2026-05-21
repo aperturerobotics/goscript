@@ -3,4 +3,7 @@ err2: second error
 err1 == err2: false
 err1 == nil: false
 nilErr == nil: true
+AsType matched: true
+AsType message: typed error
+AsType missing: false
 test finished

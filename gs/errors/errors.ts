@@ -179,6 +179,59 @@ export function As(err: $.GoError, target: any): boolean {
   return false
 }
 
+// AsType finds the first error in err's tree that matches the generic error
+// type E, returning the matching error and true. Otherwise it returns E's zero
+// value and false.
+export function AsType(
+  typeArgs: $.GenericTypeArgs | undefined,
+  err: $.GoError,
+): [any, boolean] {
+  const descriptor = typeArgs?.E
+  const zero = (): any => descriptor?.zero?.() ?? null
+  if (err === null || descriptor?.type === undefined) {
+    return [zero(), false]
+  }
+  return asType(err, descriptor.type, zero)
+}
+
+function asType(
+  err: $.GoError,
+  typeInfo: $.TypeInfo | string,
+  zero: () => any,
+): [any, boolean] {
+  if (err === null) {
+    return [zero(), false]
+  }
+
+  const [asserted, ok] = $.typeAssertTuple<any>(err, typeInfo)
+  if (ok) {
+    return [asserted, true]
+  }
+
+  if (typeof (err as any).Unwrap === 'function') {
+    const result = (err as any).Unwrap()
+    if (Array.isArray(result)) {
+      for (const wrappedErr of result) {
+        if (
+          wrappedErr &&
+          typeof wrappedErr.Error === 'function'
+        ) {
+          const [matched, matchedOK] = asType(wrappedErr, typeInfo, zero)
+          if (matchedOK) {
+            return [matched, true]
+          }
+        }
+      }
+      return [zero(), false]
+    }
+    if (result && typeof result.Error === 'function') {
+      return asType(result, typeInfo, zero)
+    }
+  }
+
+  return [zero(), false]
+}
+
 // Join returns an error that wraps the given errors.
 // Any nil error values are discarded.
 // Join returns nil if every value in errs is nil.
