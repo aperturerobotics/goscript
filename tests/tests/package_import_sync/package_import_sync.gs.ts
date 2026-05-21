@@ -47,16 +47,16 @@ export async function main(): Promise<void> {
 	let onceFunc = sync.OnceFunc($.functionValue((): void => {
 		$.println("OnceFunc executed")
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))
-	onceFunc!()
-	onceFunc!()
+	await onceFunc!()
+	await onceFunc!()
 
 	// Test OnceValue
 	let onceValue = sync.OnceValue($.functionValue((): number => {
 		$.println("OnceValue function executed")
 		return 42
 	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
-	let val1 = onceValue!()
-	let val2 = onceValue!()
+	let val1 = await onceValue!()
+	let val2 = await onceValue!()
 	$.println("OnceValue results:", val1, val2)
 
 	// Test sync.Map

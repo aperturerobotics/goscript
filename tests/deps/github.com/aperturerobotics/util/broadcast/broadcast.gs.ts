@@ -50,7 +50,7 @@ export class Broadcast {
 		using __defer = new $.DisposableStack()
 		await $.pointerValue<Broadcast>(c).mtx.Lock()
 		__defer.defer(() => { $.pointerValue<Broadcast>(c).mtx.Unlock() })
-		cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
+		await cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
 	}
 
 	public HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): void {
@@ -85,7 +85,7 @@ export class Broadcast {
 		return true
 	}
 
-	public async Wait(ctx: context.Context | null, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => [boolean, $.GoError]) | null): Promise<$.GoError> {
+	public async Wait(ctx: context.Context | null, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => [boolean, $.GoError] | Promise<[boolean, $.GoError]>) | null): Promise<$.GoError> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		if ((cb == null) || (ctx == null)) {
 			return errors.New("cb and ctx must be set")
@@ -100,12 +100,12 @@ export class Broadcast {
 
 			let done: boolean = false
 			let err: $.GoError = null
-			await $.pointerValue<Broadcast>(c).HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): void => {
-				let __goscriptTuple0 = cb!(broadcast, getWaitCh)
+			await $.pointerValue<Broadcast>(c).HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
+				let __goscriptTuple0 = await cb!(broadcast, getWaitCh)
 				done = __goscriptTuple0[0]
 				err = __goscriptTuple0[1]
 				if (!done && (err == null)) {
-					waitCh = getWaitCh!()
+					waitCh = await getWaitCh!()
 				}
 			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 

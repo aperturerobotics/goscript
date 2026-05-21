@@ -12,13 +12,13 @@ import * as time from "@goscript/time/index.js"
 import * as csync from "@goscript/github.com/aperturerobotics/util/csync/index.js"
 
 export async function main(): Promise<void> {
-	using __defer = new $.DisposableStack()
+	await using __defer = new $.AsyncDisposableStack()
 	let mtx: $.VarRef<csync.Mutex> = $.varRef($.markAsStructValue(new csync.Mutex()))
 	let counter: number = 0
 	let wg: $.VarRef<sync.WaitGroup> = $.varRef($.markAsStructValue(new sync.WaitGroup()))
 
 	let [ctx, cancel] = context.WithTimeout($.pointerValue(context.Background()), 5 * time.Second)
-	__defer.defer(() => { cancel!() })
+	__defer.defer(async () => { await cancel!() })
 
 	// Number of goroutines to spawn
 	let numWorkers = 5
@@ -26,7 +26,7 @@ export async function main(): Promise<void> {
 
 	// Function that will be run by each worker
 	let worker = $.functionValue(async (id: number): Promise<void> => {
-		using __defer = new $.DisposableStack()
+		await using __defer = new $.AsyncDisposableStack()
 		__defer.defer(() => { wg.value.Done() })
 
 		// Try to acquire the lock
@@ -35,7 +35,7 @@ export async function main(): Promise<void> {
 			$.println("worker", id, "failed to acquire lock:", $.pointerValue(err).Error())
 			return
 		}
-		__defer.defer(() => { relLock!() })
+		__defer.defer(async () => { await relLock!() })
 
 		// Critical section
 		// println("worker", id, "entered critical section") - non-deterministic, leave commented out
@@ -46,7 +46,7 @@ export async function main(): Promise<void> {
 
 	// Start worker goroutines
 	for (let i = 0; i < numWorkers; i++) {
-		queueMicrotask(async () => { worker!(i) })
+		queueMicrotask(async () => { await worker!(i) })
 	}
 
 	// Wait for all workers to complete or context timeout

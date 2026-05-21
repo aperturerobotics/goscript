@@ -507,6 +507,7 @@ type lowerFileContext struct {
 	identAliases  map[types.Object]string
 	tempNames     *tempNameOwner
 	signature     *types.Signature
+	asyncFunction bool
 	deferState    *loweredDeferState
 	rangeBranch   *loweredRangeBranch
 	rangeBreak    bool
@@ -973,11 +974,11 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 		param := signature.Params().At(idx)
 		lowered.params = append(lowered.params, loweredParam{
 			name: safeParamName(param, idx),
-			typ:  o.tsFuncParamTypeFor(ctx, param.Type(), decl.Body == nil),
+			typ:  o.tsFuncParamTypeFor(ctx, param.Type(), decl.Body == nil || async),
 		})
 	}
 	if decl.Body != nil {
-		body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withDeferState(deferState), decl.Body)
+		body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withAsyncFunction(async).withDeferState(deferState), decl.Body)
 		lowered.body = body
 		if deferState.async && !lowered.async {
 			lowered.async = true
@@ -1040,11 +1041,11 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		param := signature.Params().At(idx)
 		lowered.params = append(lowered.params, loweredParam{
 			name: safeParamName(param, idx),
-			typ:  o.tsFuncParamTypeFor(ctx, param.Type(), decl.Body == nil),
+			typ:  o.tsFuncParamTypeFor(ctx, param.Type(), decl.Body == nil || async),
 		})
 	}
 	if decl.Body != nil {
-		body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withDeferState(deferState), decl.Body)
+		body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withAsyncFunction(async).withDeferState(deferState), decl.Body)
 		lowered.body = body
 		if deferState.async && !lowered.async {
 			lowered.async = true
@@ -1060,6 +1061,11 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 
 func (ctx lowerFileContext) withSignature(signature *types.Signature) lowerFileContext {
 	ctx.signature = signature
+	return ctx
+}
+
+func (ctx lowerFileContext) withAsyncFunction(async bool) lowerFileContext {
+	ctx.asyncFunction = async
 	return ctx
 }
 
@@ -4497,8 +4503,8 @@ func (o *LoweringOwner) tsVariableTypeFor(ctx lowerFileContext, typ types.Type, 
 	return valueType
 }
 
-func (o *LoweringOwner) tsFuncParamTypeFor(ctx lowerFileContext, typ types.Type, bodyless bool) string {
-	if !bodyless {
+func (o *LoweringOwner) tsFuncParamTypeFor(ctx lowerFileContext, typ types.Type, asyncCompatible bool) string {
+	if !asyncCompatible {
 		return o.tsTypeFor(ctx, typ)
 	}
 	signature, _ := types.Unalias(typ).Underlying().(*types.Signature)
@@ -4535,6 +4541,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	case *types.Struct:
 		return o.tsAnonymousStructTypeFor(ctx, typed)
 	case *types.Pointer:
+		if _, ok := types.Unalias(typed.Elem()).(*types.TypeParam); ok {
+			return "any"
+		}
 		if named := namedNonStructType(typed.Elem()); named != nil {
 			return "$.VarRef<" + o.namedTypeExpr(ctx, named) + "> | null"
 		}
@@ -4859,6 +4868,9 @@ func (o *LoweringOwner) functionAsync(ctx lowerFileContext, fn *types.Func) bool
 		return false
 	}
 	semFn := ctx.model.functions[fn]
+	if semFn == nil {
+		semFn = ctx.model.functions[fn.Origin()]
+	}
 	return semFn != nil && semFn.async
 }
 
@@ -4875,7 +4887,8 @@ func (o *LoweringOwner) callNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool 
 			}
 			return o.functionAsync(ctx, calledFunction(ctx.semPkg.source, fun)) ||
 				o.overrideCallNeedsAwait(ctx, fun) ||
-				callUsesFunctionValue(ctx.semPkg.source, fun)
+				callUsesFunctionValue(ctx.semPkg.source, fun) ||
+				(ctx.asyncFunction && callUsesFunctionIdentifier(ctx.semPkg.source, fun))
 		}
 	}
 }

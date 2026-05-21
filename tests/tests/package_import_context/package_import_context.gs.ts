@@ -6,9 +6,9 @@ import * as $ from "@goscript/builtin/index.js"
 import * as context from "@goscript/context/index.js"
 
 export async function run(ctx: context.Context | null): Promise<void> {
-	using __defer = new $.DisposableStack()
+	await using __defer = new $.AsyncDisposableStack()
 	let [sctx, sctxCancel] = context.WithCancel($.pointerValue(ctx))
-	__defer.defer(() => { sctxCancel!() })
+	__defer.defer(async () => { await sctxCancel!() })
 
 	let myCh = $.makeChannel<{}>(0, {}, "both")
 
@@ -41,7 +41,7 @@ export async function run(ctx: context.Context | null): Promise<void> {
 	}
 
 	// Cancel context which should trigger the goroutine
-	sctxCancel!()
+	await sctxCancel!()
 
 	// Now myCh should become readable
 	await $.chanRecv(myCh)

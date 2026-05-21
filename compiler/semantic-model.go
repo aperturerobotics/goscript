@@ -514,7 +514,7 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				}
 			case *ast.CallExpr:
 				if called := calledFunction(pkg, typed.Fun); called != nil {
-					semFn.calls[called] = true
+					semFn.calls[called.Origin()] = true
 				}
 				if callUsesFunctionValue(pkg, typed.Fun) {
 					markFunctionAsync(semFn, "function-value-call")
@@ -590,6 +590,22 @@ func callUsesFunctionValue(pkg *packages.Package, expr ast.Expr) bool {
 	default:
 		return false
 	}
+}
+
+func callUsesFunctionIdentifier(pkg *packages.Package, expr ast.Expr) bool {
+	if signatureForType(pkg.TypesInfo.TypeOf(expr)) == nil {
+		return false
+	}
+	ident, ok := expr.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	obj := pkg.TypesInfo.Uses[ident]
+	if obj == nil {
+		obj = pkg.TypesInfo.Defs[ident]
+	}
+	_, ok = obj.(*types.Var)
+	return ok
 }
 
 func receiverNamedType(typ types.Type) *types.Named {
