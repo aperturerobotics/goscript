@@ -2131,7 +2131,15 @@ func (o *LoweringOwner) lowerParallelAssignStmt(ctx lowerFileContext, stmt *ast.
 	for idx, rhs := range stmt.Rhs {
 		right, rightDiagnostics := o.lowerExpr(ctx, rhs)
 		diagnostics = append(diagnostics, rightDiagnostics...)
-		stmts = append(stmts, loweredStmt{text: "let " + tempPrefix + strconv.Itoa(idx) + " = " + right})
+		typeAnnotation := ""
+		if idx < len(stmt.Lhs) {
+			targetType := ctx.semPkg.source.TypesInfo.TypeOf(stmt.Lhs[idx])
+			if targetType != nil {
+				right = o.lowerValueForTarget(ctx, rhs, targetType, right)
+				typeAnnotation = ": " + o.tsVariableTypeFor(ctx, targetType, false)
+			}
+		}
+		stmts = append(stmts, loweredStmt{text: "let " + tempPrefix + strconv.Itoa(idx) + typeAnnotation + " = " + right})
 	}
 	for idx, lhs := range stmt.Lhs {
 		if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
