@@ -408,7 +408,8 @@ func (o *LoweringOwner) localFileAliases(
 	seenObjects := make(map[types.Object]bool)
 	seenTypes := make(map[types.Type]bool)
 	var addTypeDeps func(typ types.Type)
-	addObject := func(obj types.Object) {
+	var addObject func(obj types.Object)
+	addObject = func(obj types.Object) {
 		if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() != semPkg.pkgPath {
 			return
 		}
@@ -430,6 +431,11 @@ func (o *LoweringOwner) localFileAliases(
 		switch typed := obj.(type) {
 		case *types.TypeName:
 			addTypeDeps(typed.Type())
+			if named, ok := types.Unalias(typed.Type()).(*types.Named); ok {
+				for method := range named.Methods() {
+					addObject(method)
+				}
+			}
 		case *types.Var:
 			addTypeDeps(typed.Type())
 		case *types.Const:
@@ -5573,11 +5579,6 @@ func (o *LoweringOwner) methodFunctionExpr(
 	name := methodFunctionName(receiver, method)
 	if alias := ctx.localAliases[obj]; alias != "" {
 		return alias + "." + name
-	}
-	if receiver != nil && receiver.Obj() != nil {
-		if alias := ctx.localAliases[receiver.Obj()]; alias != "" {
-			return alias + "." + name
-		}
 	}
 	if receiver != nil && receiver.Obj() != nil && receiver.Obj().Pkg() != nil {
 		if alias := ctx.importPaths[receiver.Obj().Pkg().Path()]; alias != "" {
