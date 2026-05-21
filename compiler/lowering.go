@@ -3414,8 +3414,47 @@ func (o *LoweringOwner) lowerUnsafeStringPointerValue(ctx lowerFileContext, expr
 }
 
 func (o *LoweringOwner) lowerPointerStorageExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
+	if ref, diagnostics, ok := o.lowerUnsafePointerStorageExpr(ctx, expr); ok {
+		return ref, diagnostics
+	}
 	base, diagnostics := o.lowerExpr(ctx, expr)
 	return base + "!.value", diagnostics
+}
+
+func (o *LoweringOwner) lowerUnsafePointerStorageExpr(
+	ctx lowerFileContext,
+	expr ast.Expr,
+) (string, []Diagnostic, bool) {
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return "", nil, false
+	}
+	pointer, _ := types.Unalias(typeFromExpr(ctx, call.Fun)).Underlying().(*types.Pointer)
+	if pointer == nil || !exprContainsUnsafePointerConversion(ctx, call.Args[0]) {
+		return "", nil, false
+	}
+	_, diagnostics := o.lowerExpr(ctx, call.Args[0])
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperUnsupportedPointerRef) +
+		"<" + o.tsTypeFor(ctx, pointer.Elem()) + ">(undefined).value", diagnostics, true
+}
+
+func exprContainsUnsafePointerConversion(ctx lowerFileContext, expr ast.Expr) bool {
+	found := false
+	ast.Inspect(expr, func(node ast.Node) bool {
+		if found {
+			return false
+		}
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		if isUnsafePointerType(typeFromExpr(ctx, call.Fun)) {
+			found = true
+			return false
+		}
+		return true
+	})
+	return found
 }
 
 func (o *LoweringOwner) lowerIndexExpr(ctx lowerFileContext, expr *ast.IndexExpr) (string, []Diagnostic) {

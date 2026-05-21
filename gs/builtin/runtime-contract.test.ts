@@ -28,6 +28,7 @@ import {
   typeAssert,
   typedNil,
   unref,
+  unsupportedPointerRef,
   varRef,
 } from './index.js'
 
@@ -101,6 +102,11 @@ describe('builtin runtime contract helpers', () => {
     expect(pointerValue(value)).toBe(8)
     expect(pointerValue({ ok: true })).toEqual({ ok: true })
     expect(() => pointerValue(null)).toThrow('nil pointer dereference')
+    const unsupported = unsupportedPointerRef<number>(0)
+    expect(() => unsupported.value).toThrow('unsafe pointer dereference')
+    expect(() => {
+      unsupported.value = 1
+    }).toThrow('unsafe pointer dereference')
 
     const m = makeMap<string, number>()
     mapSet(m, 'answer', 42)

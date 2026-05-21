@@ -29,3 +29,19 @@ export function unref<T>(b: VarRef<T>): T {
   }
   return b.value
 }
+
+export function unsupportedPointerRef<T>(_value: unknown): VarRef<T> {
+  return {
+    get value(): T {
+      throw new Error(
+        'unsafe pointer dereference is not supported in JavaScript/TypeScript',
+      )
+    },
+    set value(_value: T) {
+      throw new Error(
+        'unsafe pointer dereference is not supported in JavaScript/TypeScript',
+      )
+    },
+    __isVarRef: true,
+  }
+}

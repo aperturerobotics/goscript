@@ -41,9 +41,10 @@ const (
 	RuntimeHelperMarkAsStructValue RuntimeHelper = "value.markAsStructValue"
 	RuntimeHelperPointerValue      RuntimeHelper = "value.pointerValue"
 
-	RuntimeHelperVarRef   RuntimeHelper = "varref.varRef"
-	RuntimeHelperUnref    RuntimeHelper = "varref.unref"
-	RuntimeHelperIsVarRef RuntimeHelper = "varref.isVarRef"
+	RuntimeHelperVarRef                RuntimeHelper = "varref.varRef"
+	RuntimeHelperUnref                 RuntimeHelper = "varref.unref"
+	RuntimeHelperIsVarRef              RuntimeHelper = "varref.isVarRef"
+	RuntimeHelperUnsupportedPointerRef RuntimeHelper = "varref.unsupportedPointerRef"
 
 	RuntimeHelperMakeSlice                    RuntimeHelper = "slice.makeSlice"
 	RuntimeHelperGoSlice                      RuntimeHelper = "slice.goSlice"
@@ -216,6 +217,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperVarRef, "varRef", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperUnref, "unref", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperIsVarRef, "isVarRef", RuntimeHelperCategoryVarRef),
+		runtimeHelper(RuntimeHelperUnsupportedPointerRef, "unsupportedPointerRef", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperMakeSlice, "makeSlice", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperGoSlice, "goSlice", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperArrayToSlice, "arrayToSlice", RuntimeHelperCategorySlice),
