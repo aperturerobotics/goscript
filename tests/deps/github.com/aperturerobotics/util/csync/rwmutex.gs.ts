@@ -81,7 +81,7 @@ export class RWMutex {
 		// 2: unlocked (released)
 		let status: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
 		let waitCh: $.Channel<{}> | null = null
-		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (_: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
+		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
 			if (write) {
 				if (($.pointerValue<RWMutex>(m).nreaders != 0) || $.pointerValue<RWMutex>(m).writing) {
 					$.pointerValue<RWMutex>(m).writeWaiting++
@@ -106,7 +106,7 @@ export class RWMutex {
 				return
 			}
 
-			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _: (() => $.Channel<{}> | null) | null): Promise<void> => {
+			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): Promise<void> => {
 				if (pre == 0) {
 					// 0: waiting for lock
 					if (write) {
@@ -217,7 +217,7 @@ export class RWMutex {
 				return
 			}
 
-			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _: (() => $.Channel<{}> | null) | null): Promise<void> => {
+			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): Promise<void> => {
 				if (write) {
 					$.pointerValue<RWMutex>(m).writing = false
 				} else {

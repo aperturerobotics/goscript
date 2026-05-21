@@ -16,7 +16,7 @@ export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, 
 export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | Promise<any>) | null, send: ((_p0: any) => $.GoError | Promise<$.GoError>) | null, equal: ((a: any, b: any) => boolean | Promise<boolean>) | null): Promise<$.GoError> {
 	let ch: $.Channel<{}> | null = null
 	let val: any = $.genericZero(__typeArgs, "T", null)
-	await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue(async (_: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
+	await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
 		ch = await getWaitCh!()
 		val = await snapshot!()
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
@@ -48,7 +48,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 		if (__goscriptSelect0HasReturn) {
 			return __goscriptSelect0Value
 		}
-		await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue(async (_: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
+		await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
 			ch = await getWaitCh!()
 			val = await snapshot!()
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))

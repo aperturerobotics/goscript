@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export type MultiParamReturner = null | {
-	Process(data: $.Slice<number>, count: number, _: string): [boolean, $.GoError]
+	Process(data: $.Slice<number>, count: number, _p2: string): [boolean, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -29,7 +29,7 @@ export class MyProcessor {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Process(data: $.Slice<number>, count: number, _: string): [boolean, $.GoError] {
+	public Process(data: $.Slice<number>, count: number, _p2: string): [boolean, $.GoError] {
 		const p = this
 		// Dummy implementation
 		if ((count > 0) && ($.len(data) > 0)) {

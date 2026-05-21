@@ -552,7 +552,7 @@ func methodMemberName(value string) string {
 }
 
 func safeParamName(param *types.Var, idx int) string {
-	if param == nil || param.Name() == "" {
+	if param == nil || param.Name() == "" || param.Name() == "_" {
 		return "_p" + strconv.Itoa(idx)
 	}
 	return safeIdentifier(param.Name())

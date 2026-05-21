@@ -59,7 +59,7 @@ export class Mutex {
 		// 2: unlocked (released)
 		let status: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
 		let waitCh: $.Channel<{}> | null = null
-		await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (_: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
+		await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
 			if ($.pointerValue<Mutex>(m).locked) {
 				// keep waiting
 				waitCh = await getWaitCh!()
@@ -81,7 +81,7 @@ export class Mutex {
 			}
 
 			// unlock
-			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _: (() => $.Channel<{}> | null) | null): Promise<void> => {
+			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): Promise<void> => {
 				$.pointerValue<Mutex>(m).locked = false
 				await broadcast!()
 			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
@@ -173,7 +173,7 @@ export class Mutex {
 				return
 			}
 
-			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _: (() => $.Channel<{}> | null) | null): Promise<void> => {
+			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): Promise<void> => {
 				$.pointerValue<Mutex>(m).locked = false
 				await broadcast!()
 			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
