@@ -101,6 +101,54 @@ func indexedCallback(cbs []func(string) bool, value string) bool {
 	return cbs[0](value)
 }
 
+type Shape interface {
+	Stats() int
+}
+
+type shapeNode struct {
+	value int
+}
+
+func (s *shapeNode) Stats() int {
+	return s.value
+}
+
+type Morphism func(Shape) Shape
+
+type MorphismHolder struct {
+	morphism Morphism
+}
+
+type morphismWorker struct {
+	ready chan bool
+}
+
+func (w *morphismWorker) lookup(s Shape) Shape {
+	w.ready <- true
+	<-w.ready
+	return s
+}
+
+func useMorphism(m Morphism, s Shape) int {
+	return m(s).Stats()
+}
+
+func newMorphismHolder(m Morphism) *MorphismHolder {
+	return &MorphismHolder{morphism: m}
+}
+
+func cloneMorphism(m Morphism) *MorphismHolder {
+	return &MorphismHolder{morphism: m}
+}
+
+func (h *MorphismHolder) apply(s Shape) int {
+	return h.morphism(s).Stats()
+}
+
+func (h *MorphismHolder) cloneApply(s Shape) int {
+	return cloneMorphism(h.morphism).morphism(s).Stats()
+}
+
 func main() {
 	fs := &MockFilesystem{}
 	fileInfo := &MockFileInfo{name: "test.txt", size: 50, isDir: false}
@@ -144,4 +192,12 @@ func main() {
 			return true
 		},
 	}, "slice")
+
+	worker := &morphismWorker{ready: make(chan bool, 1)}
+	shape := &shapeNode{value: 7}
+	println("Named morphism:", useMorphism(worker.lookup, shape))
+	holder := newMorphismHolder(worker.lookup)
+	println("Field morphism:", holder.apply(shape))
+	println("Cloned field morphism:", holder.cloneApply(shape))
+	close(worker.ready)
 }

@@ -621,7 +621,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Greeter = ((name: string) => string) | null",
+		"export type Greeter = ((name: string) => string | Promise<string>) | null",
 		"export type ReadCloser = null | {",
 		"Read(): string",
 		"Close(): string",
@@ -838,7 +838,7 @@ func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Callback = ((value: number) => string) | null",
+		"export type Callback = ((value: number) => string | Promise<string>) | null",
 		"export async function call(cb: ((value: number) => string | Promise<string>) | null): Promise<string> {\n\treturn await cb!(1)",
 		"$.functionValue((value: number): string => {",
 		"kind: $.TypeKind.Function",
@@ -878,7 +878,7 @@ func TestCompilePackagesEmitsRecursiveFunctionTypeInfo(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Handler = ((_p0: Handler) => Handler) | null",
+		"export type Handler = ((_p0: ((_p0: Handler) => Handler | Promise<Handler>) | null) => Handler | Promise<Handler>) | null",
 		"\"Next\": { kind: $.TypeKind.Function, name: \"main.Handler\"",
 		"params: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
 		"results: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
@@ -942,7 +942,7 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Collector = ((label: string, parts: $.Slice<string>) => string) | null",
+		"export type Collector = ((label: string, parts: $.Slice<string>) => string | Promise<string>) | null",
 		"Join(parts: $.Slice<string>): string",
 		"export function collect(label: string, parts: $.Slice<string>): string",
 		"let part = parts![__rangeIndex]",

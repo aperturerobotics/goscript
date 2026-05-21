@@ -4,3 +4,6 @@ Walking: /test size: 50
 Processing pattern: *.go
 Processing pattern: test
 Indexed callback: slice
+Named morphism: 7
+Field morphism: 7
+Cloned field morphism: 7

@@ -884,7 +884,11 @@ func (o *LoweringOwner) lowerTypeSpec(ctx lowerFileContext, spec *ast.TypeSpec) 
 	if iface, ok := named.Underlying().(*types.Interface); ok {
 		return o.lowerInterfaceType(ctx, semType, iface), nil
 	}
-	code := "type " + semType.name + " = " + o.tsTypeFor(ctx, named.Underlying())
+	loweredType := o.tsTypeFor(ctx, named.Underlying())
+	if signature, ok := named.Underlying().(*types.Signature); ok {
+		loweredType = o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+	}
+	code := "type " + semType.name + " = " + loweredType
 	typeIndexExport := ""
 	if ctx.topLevel {
 		code = "export " + code

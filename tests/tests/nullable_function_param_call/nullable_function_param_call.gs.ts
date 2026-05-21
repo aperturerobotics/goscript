@@ -17,7 +17,7 @@ $.registerInterfaceType(
 	[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
-export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError) | null
+export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null
 
 export type Filesystem = null | {
 	ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError]
@@ -29,9 +29,9 @@ $.registerInterfaceType(
 	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }]
 )
 
-export type ProcessFunc = ((data: string) => [string, $.GoError]) | null
+export type ProcessFunc = ((data: string) => [string, $.GoError] | Promise<[string, $.GoError]>) | null
 
-export type OptionalProcessFunc = ((data: string) => [string, $.GoError]) | null
+export type OptionalProcessFunc = ((data: string) => [string, $.GoError] | Promise<[string, $.GoError]>) | null
 
 export class MockFileInfo {
 	public get name(): string {

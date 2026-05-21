@@ -3,9 +3,9 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Greeter = ((name: string) => string) | null
+export type Greeter = ((name: string) => string | Promise<string>) | null
 
-export type Adder = ((a: number, b: number) => number) | null
+export type Adder = ((a: number, b: number) => number | Promise<number>) | null
 
 export class FuncContainer {
 	public get myFunc(): any {

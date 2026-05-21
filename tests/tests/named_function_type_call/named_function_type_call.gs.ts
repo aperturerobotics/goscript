@@ -27,7 +27,19 @@ $.registerInterfaceType(
 	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }]
 )
 
-export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError) | null
+export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null
+
+export type Shape = null | {
+	Stats(): number
+}
+
+$.registerInterfaceType(
+	"main.Shape",
+	null,
+	[{ name: "Stats", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+)
+
+export type Morphism = ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null
 
 export class MockFileInfo {
 	public get name(): string {
@@ -129,6 +141,133 @@ export class MockFilesystem {
 	)
 }
 
+export class shapeNode {
+	public get value(): number {
+		return this._fields.value.value
+	}
+	public set value(value: number) {
+		this._fields.value.value = value
+	}
+
+	public _fields: {
+		value: $.VarRef<number>
+	}
+
+	constructor(init?: Partial<{value?: number}>) {
+		this._fields = {
+			value: $.varRef(init?.value ?? 0)
+		}
+	}
+
+	public clone(): shapeNode {
+		const cloned = new shapeNode()
+		cloned._fields = {
+			value: $.varRef(this._fields.value.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Stats(): number {
+		const s: shapeNode | $.VarRef<shapeNode> | null = this
+		return $.pointerValue<shapeNode>(s).value
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.shapeNode",
+		new shapeNode(),
+		[{ name: "Stats", args: [], returns: [] }],
+		shapeNode,
+		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
+}
+
+export class MorphismHolder {
+	public get morphism(): ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null {
+		return this._fields.morphism.value
+	}
+	public set morphism(value: ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null) {
+		this._fields.morphism.value = value
+	}
+
+	public _fields: {
+		morphism: $.VarRef<((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null>
+	}
+
+	constructor(init?: Partial<{morphism?: ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null}>) {
+		this._fields = {
+			morphism: $.varRef(init?.morphism ?? null)
+		}
+	}
+
+	public clone(): MorphismHolder {
+		const cloned = new MorphismHolder()
+		cloned._fields = {
+			morphism: $.varRef(this._fields.morphism.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public async apply(s: Shape | null): Promise<number> {
+		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
+		return $.pointerValue(await $.pointerValue<MorphismHolder>(h).morphism!(s)).Stats()
+	}
+
+	public async cloneApply(s: Shape | null): Promise<number> {
+		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
+		return $.pointerValue(await $.pointerValue<MorphismHolder>(cloneMorphism($.pointerValue<MorphismHolder>(h).morphism)).morphism!(s)).Stats()
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.MorphismHolder",
+		new MorphismHolder(),
+		[{ name: "apply", args: [], returns: [] }, { name: "cloneApply", args: [], returns: [] }],
+		MorphismHolder,
+		{"morphism": { kind: $.TypeKind.Function, name: "main.Morphism", params: ["main.Shape"], results: ["main.Shape"] }}
+	)
+}
+
+export class morphismWorker {
+	public get ready(): $.Channel<boolean> | null {
+		return this._fields.ready.value
+	}
+	public set ready(value: $.Channel<boolean> | null) {
+		this._fields.ready.value = value
+	}
+
+	public _fields: {
+		ready: $.VarRef<$.Channel<boolean> | null>
+	}
+
+	constructor(init?: Partial<{ready?: $.Channel<boolean> | null}>) {
+		this._fields = {
+			ready: $.varRef(init?.ready ?? null)
+		}
+	}
+
+	public clone(): morphismWorker {
+		const cloned = new morphismWorker()
+		cloned._fields = {
+			ready: $.varRef(this._fields.ready.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public async lookup(s: Shape | null): Promise<Shape | null> {
+		const w: morphismWorker | $.VarRef<morphismWorker> | null = this
+		await $.chanSend($.pointerValue<morphismWorker>(w).ready, true)
+		await $.chanRecv($.pointerValue<morphismWorker>(w).ready)
+		return s
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.morphismWorker",
+		new morphismWorker(),
+		[{ name: "lookup", args: [], returns: [] }],
+		morphismWorker,
+		{"ready": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }}
+	)
+}
+
 export async function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
 	// Test case 1: Direct call to named function type parameter
 	// This should generate: walkFn!(path, info, nil)
@@ -194,6 +333,18 @@ export function indexedCallback(cbs: $.Slice<((_p0: string) => boolean) | null>,
 	return cbs![0]!(value)
 }
 
+export async function useMorphism(m: ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null, s: Shape | null): Promise<number> {
+	return $.pointerValue(await m!(s)).Stats()
+}
+
+export async function newMorphismHolder(m: ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null): Promise<MorphismHolder | $.VarRef<MorphismHolder> | null> {
+	return new MorphismHolder({morphism: m})
+}
+
+export function cloneMorphism(m: Morphism): MorphismHolder | $.VarRef<MorphismHolder> | null {
+	return new MorphismHolder({morphism: m})
+}
+
 export async function main(): Promise<void> {
 	let fs: MockFilesystem | $.VarRef<MockFilesystem> | null = new MockFilesystem()
 	let fileInfo: MockFileInfo | $.VarRef<MockFileInfo> | null = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
@@ -235,6 +386,14 @@ export async function main(): Promise<void> {
 		$.println("Indexed callback:", value)
 		return true
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })]), "slice")
+
+	let worker: morphismWorker | $.VarRef<morphismWorker> | null = new morphismWorker({ready: $.makeChannel<boolean>(1, false, "both")})
+	let shape: shapeNode | $.VarRef<shapeNode> | null = new shapeNode({value: 7})
+	$.println("Named morphism:", await useMorphism(((__receiver) => (s: Shape | null) => __receiver.lookup(s))($.pointerValue<morphismWorker>(worker)), $.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
+	let holder: MorphismHolder | $.VarRef<MorphismHolder> | null = await newMorphismHolder(((__receiver) => (s: Shape | null) => __receiver.lookup(s))($.pointerValue<morphismWorker>(worker)))
+	$.println("Field morphism:", await $.pointerValue<MorphismHolder>(holder).apply($.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
+	$.println("Cloned field morphism:", await $.pointerValue<MorphismHolder>(holder).cloneApply($.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
+	$.pointerValue<morphismWorker>(worker).ready!.close()
 }
 
 
