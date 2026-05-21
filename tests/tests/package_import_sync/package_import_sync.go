@@ -2,6 +2,16 @@ package main
 
 import "sync"
 
+type embeddedMutex struct {
+	sync.Mutex
+	value int
+}
+
+type embeddedRWMutex struct {
+	sync.RWMutex
+	value int
+}
+
 func main() {
 	// Test Mutex
 	var mu sync.Mutex
@@ -9,6 +19,21 @@ func main() {
 	println("Mutex locked")
 	mu.Unlock()
 	println("Mutex unlocked")
+
+	var embedded embeddedMutex
+	embedded.Lock()
+	embedded.value = 7
+	embedded.Unlock()
+	println("Embedded Mutex value:", embedded.value)
+
+	var embeddedRW embeddedRWMutex
+	embeddedRW.RLock()
+	println("Embedded RWMutex read lock")
+	embeddedRW.RUnlock()
+	embeddedRW.Lock()
+	embeddedRW.value = 9
+	embeddedRW.Unlock()
+	println("Embedded RWMutex value:", embeddedRW.value)
 
 	// Test TryLock
 	if mu.TryLock() {

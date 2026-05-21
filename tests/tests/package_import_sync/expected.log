@@ -1,5 +1,8 @@
 Mutex locked
 Mutex unlocked
+Embedded Mutex value: 7
+Embedded RWMutex read lock
+Embedded RWMutex value: 9
 TryLock succeeded
 WaitGroup counter set to 1
 WaitGroup counter decremented

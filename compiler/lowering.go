@@ -4059,7 +4059,7 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 		receiver, diagnostics = o.lowerExpr(ctx, expr)
 	}
 	receiverType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
-	if index := selection.Index(); len(index) > 1 && !o.promotedMethodUsesOverridePackage(selection) {
+	if index := selection.Index(); len(index) > 1 && !o.receiverUsesOverridePackage(receiverType) {
 		receiver, receiverType = o.lowerPromotedMethodReceiver(ctx, receiver, receiverType, index[:len(index)-1])
 	}
 	if receiverPointer {
@@ -4074,11 +4074,13 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 	return receiver, diagnostics
 }
 
-func (o *LoweringOwner) promotedMethodUsesOverridePackage(selection *types.Selection) bool {
-	if o.overrideOwner == nil || selection == nil || selection.Obj() == nil || selection.Obj().Pkg() == nil {
+func (o *LoweringOwner) receiverUsesOverridePackage(typ types.Type) bool {
+	if o.overrideOwner == nil {
 		return false
 	}
-	return o.overrideOwner.hasPackage(selection.Obj().Pkg().Path())
+	named, _ := types.Unalias(derefPointerType(typ)).(*types.Named)
+	return named != nil && named.Obj() != nil && named.Obj().Pkg() != nil &&
+		o.overrideOwner.hasPackage(named.Obj().Pkg().Path())
 }
 
 func (o *LoweringOwner) lowerPromotedMethodReceiver(
