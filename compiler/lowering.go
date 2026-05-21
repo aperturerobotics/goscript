@@ -3902,7 +3902,7 @@ func (o *LoweringOwner) lowerCallArgForTarget(
 ) string {
 	value = o.lowerValueForTarget(ctx, expr, targetType, value)
 	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
-	if overrideCall && isNonEmptyInterfaceType(targetType) && isInterfaceType(sourceType) {
+	if overrideCall && isNonEmptyInterfaceType(targetType) && (isInterfaceType(sourceType) || isNilableType(sourceType)) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "(" + value + ")"
 	}
 	return value
