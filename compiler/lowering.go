@@ -1922,10 +1922,16 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		if ident, ok := stmt.Lhs[0].(*ast.Ident); ok && ident.Name == "_" {
 			return []loweredStmt{{text: "await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecv) + "(" + channel + ")"}}, diagnostics
 		}
+		value := "await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecv) + "(" + channel + ")"
+		if stmt.Tok != token.DEFINE {
+			if targetStmt, targetDiagnostics, ok := o.lowerStarTargetAssignmentStmt(ctx, stmt.Lhs[0], value); ok {
+				diagnostics = append(diagnostics, targetDiagnostics...)
+				return []loweredStmt{targetStmt}, diagnostics
+			}
+		}
 		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, stmt.Lhs[0], stmt.Tok == token.DEFINE)
 		diagnostics = append(diagnostics, leftDiagnostics...)
 		prefix := ""
-		value := "await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecv) + "(" + channel + ")"
 		if stmt.Tok == token.DEFINE {
 			prefix = "let "
 			left += o.shortDeclTypeAnnotation(ctx, stmt.Lhs[0], nil)
@@ -1946,16 +1952,11 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
 			continue
 		}
-		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs))
-		diagnostics = append(diagnostics, leftDiagnostics...)
-		prefix := ""
+		declare := stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs)
 		value := tempName + fields[idx]
-		if stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs) {
-			prefix = "let "
-			left += o.shortDeclTypeAnnotation(ctx, lhs, nil)
-			value = o.lowerDeclaredValue(ctx, lhs, value)
-		}
-		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + value})
+		targetStmt, targetDiagnostics := o.lowerTupleTargetAssignmentStmt(ctx, lhs, value, declare)
+		diagnostics = append(diagnostics, targetDiagnostics...)
+		stmts = append(stmts, targetStmt)
 	}
 	return stmts, diagnostics
 }
@@ -2001,6 +2002,45 @@ func rhsIsMethodValue(ctx lowerFileContext, expr ast.Expr) bool {
 	return selection != nil && selection.Kind() == types.MethodVal
 }
 
+func (o *LoweringOwner) lowerTupleTargetAssignmentStmt(
+	ctx lowerFileContext,
+	lhs ast.Expr,
+	value string,
+	declare bool,
+) (loweredStmt, []Diagnostic) {
+	if !declare {
+		if stmt, diagnostics, ok := o.lowerStarTargetAssignmentStmt(ctx, lhs, value); ok {
+			return stmt, diagnostics
+		}
+	}
+	left, diagnostics := o.lowerAssignmentTarget(ctx, lhs, declare)
+	prefix := ""
+	if declare {
+		prefix = "let "
+		left += o.shortDeclTypeAnnotation(ctx, lhs, nil)
+		value = o.lowerDeclaredValue(ctx, lhs, value)
+	}
+	return loweredStmt{text: prefix + left + " = " + value}, diagnostics
+}
+
+func (o *LoweringOwner) lowerStarTargetAssignmentStmt(
+	ctx lowerFileContext,
+	lhs ast.Expr,
+	right string,
+) (loweredStmt, []Diagnostic, bool) {
+	star, ok := lhs.(*ast.StarExpr)
+	if !ok {
+		return loweredStmt{}, nil, false
+	}
+	targetType := ctx.semPkg.source.TypesInfo.TypeOf(lhs)
+	if isStructValueType(targetType) {
+		pointer, diagnostics := o.lowerPointerValueExpr(ctx, star.X)
+		return loweredStmt{text: o.runtimeOwner.QualifiedHelper(RuntimeHelperAssignStruct) + "(" + pointer + ", " + right + ")"}, diagnostics, true
+	}
+	pointer, diagnostics := o.lowerPointerStorageExpr(ctx, star.X)
+	return loweredStmt{text: pointer + " = " + right}, diagnostics, true
+}
+
 func (o *LoweringOwner) lowerTupleReassignmentStmt(
 	ctx lowerFileContext,
 	stmt *ast.AssignStmt,
@@ -2013,16 +2053,11 @@ func (o *LoweringOwner) lowerTupleReassignmentStmt(
 		if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
 			continue
 		}
-		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs))
-		diagnostics = append(diagnostics, leftDiagnostics...)
-		prefix := ""
+		declare := stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs)
 		value := tempName + "[" + strconv.Itoa(idx) + "]"
-		if stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs) {
-			prefix = "let "
-			left += o.shortDeclTypeAnnotation(ctx, lhs, nil)
-			value = o.lowerDeclaredValue(ctx, lhs, value)
-		}
-		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + value})
+		targetStmt, targetDiagnostics := o.lowerTupleTargetAssignmentStmt(ctx, lhs, value, declare)
+		diagnostics = append(diagnostics, targetDiagnostics...)
+		stmts = append(stmts, targetStmt)
 	}
 	return stmts, diagnostics
 }
@@ -2164,9 +2199,9 @@ func (o *LoweringOwner) lowerParallelAssignStmt(ctx lowerFileContext, stmt *ast.
 		if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
 			continue
 		}
-		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, false)
-		diagnostics = append(diagnostics, leftDiagnostics...)
-		stmts = append(stmts, loweredStmt{text: left + " = " + tempPrefix + strconv.Itoa(idx)})
+		targetStmt, targetDiagnostics := o.lowerTupleTargetAssignmentStmt(ctx, lhs, tempPrefix+strconv.Itoa(idx), false)
+		diagnostics = append(diagnostics, targetDiagnostics...)
+		stmts = append(stmts, targetStmt)
 	}
 	return stmts, diagnostics
 }

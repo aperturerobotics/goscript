@@ -729,6 +729,10 @@ function matchesPointerType(value: any, info: TypeInfo): boolean {
 
   if (!isPointerTypeInfo(info)) return false
 
+  if (typeof value.__goType === 'string') {
+    return compareTypeStringWithTypeInfo(value.__goType, info)
+  }
+
   if (!info.elemType) return false
 
   let elem = info.elemType
@@ -1080,17 +1084,6 @@ export function typeAssert<T>(
 
   const matches = matchesType(value, normalizedType)
   if (matches) {
-    // Special handling for pointer type assertions:
-    // If the value is a VarRef and we're asserting to a pointer type,
-    // return the inner value (value.value), not the VarRef object itself
-    if (
-      isPointerTypeInfo(normalizedType) &&
-      typeof value === 'object' &&
-      value !== null &&
-      'value' in value
-    ) {
-      return { value: value.value as T, ok: true }
-    }
     return { value: value as T, ok: true }
   }
 
@@ -1225,6 +1218,13 @@ export function typedNil(typeName: string): any {
 
 export function interfaceValue<T>(value: unknown, typeName: string): T {
   if (value !== null && value !== undefined) {
+    if (typeof value === 'object') {
+      Object.defineProperty(value, '__goType', {
+        value: typeName,
+        writable: true,
+        configurable: true,
+      })
+    }
     return value as T
   }
 

@@ -3,6 +3,43 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+export type ObjectIdentifier = $.Slice<number>
+
+export class RawValue {
+	public get Tag(): number {
+		return this._fields.Tag.value
+	}
+	public set Tag(value: number) {
+		this._fields.Tag.value = value
+	}
+
+	public _fields: {
+		Tag: $.VarRef<number>
+	}
+
+	constructor(init?: Partial<{Tag?: number}>) {
+		this._fields = {
+			Tag: $.varRef(init?.Tag ?? 0)
+		}
+	}
+
+	public clone(): RawValue {
+		const cloned = new RawValue()
+		cloned._fields = {
+			Tag: $.varRef(this._fields.Tag.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.RawValue",
+		new RawValue(),
+		[],
+		RawValue,
+		{"Tag": { kind: $.TypeKind.Basic, name: "int" }}
+	)
+}
+
 export async function main(): Promise<void> {
 	// Basic type switch with variable and default case
 	let i: any = "hello"
@@ -136,6 +173,41 @@ export async function main(): Promise<void> {
 		$.println("after switch")
 	}
 	$.println("type switch count", count)
+
+	let oid: $.VarRef<ObjectIdentifier> = $.varRef(null)
+	let ok = false
+	let oidValue: any = $.interfaceValue<any>(oid, "*main.ObjectIdentifier")
+	{
+		const __goscriptTypeSwitchValue = oidValue
+		switch (true) {
+			case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.ObjectIdentifier" }).ok:
+				{
+					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.ObjectIdentifier" }).value
+					let __goscriptTuple0 = parseObjectIdentifier()
+					v!.value = __goscriptTuple0[0]
+					ok = __goscriptTuple0[1]
+				}
+				break
+		}
+	}
+	$.println("oid", $.len(oid.value), oid.value![0], ok)
+
+	let raw: $.VarRef<RawValue> = $.varRef($.markAsStructValue(new RawValue()))
+	let rawValue: any = $.interfaceValue<any>(raw, "*main.RawValue")
+	{
+		const __goscriptTypeSwitchValue = rawValue
+		switch (true) {
+			case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.RawValue" }).ok:
+				{
+					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.RawValue" }).value
+					let __goscriptTuple1 = parseRawValue()
+					$.assignStruct($.pointerValue<RawValue>(v), __goscriptTuple1[0])
+					ok = __goscriptTuple1[1]
+				}
+				break
+		}
+	}
+	$.println("raw", raw.value.Tag, ok)
 }
 
 
@@ -145,4 +217,12 @@ if ($.isMainScript(import.meta)) {
 
 export function getInterface(): any {
 	return 42
+}
+
+export function parseObjectIdentifier(): [ObjectIdentifier, boolean] {
+	return [$.arrayToSlice<number>([1, 2, 3]), true]
+}
+
+export function parseRawValue(): [RawValue, boolean] {
+	return [$.markAsStructValue(new RawValue({Tag: 9})), true]
 }

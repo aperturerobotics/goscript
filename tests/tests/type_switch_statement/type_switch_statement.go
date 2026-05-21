@@ -66,8 +66,39 @@ func main() {
 		println("after switch")
 	}
 	println("type switch count", count)
+
+	var oid ObjectIdentifier
+	ok := false
+	var oidValue any = &oid
+	switch v := oidValue.(type) {
+	case *ObjectIdentifier:
+		*v, ok = parseObjectIdentifier()
+	}
+	println("oid", len(oid), oid[0], ok)
+
+	var raw RawValue
+	var rawValue any = &raw
+	switch v := rawValue.(type) {
+	case *RawValue:
+		*v, ok = parseRawValue()
+	}
+	println("raw", raw.Tag, ok)
 }
 
 func getInterface() any {
 	return 42
+}
+
+type ObjectIdentifier []int
+
+type RawValue struct {
+	Tag int
+}
+
+func parseObjectIdentifier() (ObjectIdentifier, bool) {
+	return ObjectIdentifier{1, 2, 3}, true
+}
+
+func parseRawValue() (RawValue, bool) {
+	return RawValue{Tag: 9}, true
 }

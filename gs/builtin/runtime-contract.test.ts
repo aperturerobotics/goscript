@@ -102,6 +102,22 @@ describe('builtin runtime contract helpers', () => {
     value.value = 8
     expect(unref(value)).toBe(8)
     expect(pointerValue(value)).toBe(8)
+    const pointerAssert = typeAssert<typeof value>(value, {
+      kind: TypeKind.Pointer,
+      elemType: { kind: TypeKind.Basic, name: 'int' },
+    })
+    expect(pointerAssert).toEqual({ value, ok: true })
+    const nilNamedSlice = varRef(null)
+    const nilNamedSliceIface = interfaceValue(
+      nilNamedSlice,
+      '*main.ObjectIdentifier',
+    )
+    expect(
+      typeAssert<typeof nilNamedSlice>(nilNamedSliceIface, {
+        kind: TypeKind.Pointer,
+        elemType: 'main.ObjectIdentifier',
+      }),
+    ).toEqual({ value: nilNamedSlice, ok: true })
     expect(pointerValue({ ok: true })).toEqual({ ok: true })
     expect(() => pointerValue(null)).toThrow('nil pointer dereference')
     const unsupported = unsupportedPointerRef<number>(0)
