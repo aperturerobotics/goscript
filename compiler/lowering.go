@@ -3398,6 +3398,23 @@ func objectForIdent(ctx lowerFileContext, ident *ast.Ident) types.Object {
 	return ctx.semPkg.source.TypesInfo.Defs[ident]
 }
 
+func objectForValueExpr(ctx lowerFileContext, expr ast.Expr) types.Object {
+	switch typed := expr.(type) {
+	case *ast.Ident:
+		return objectForIdent(ctx, typed)
+	case *ast.SelectorExpr:
+		if ctx.semPkg == nil || ctx.semPkg.source == nil {
+			return nil
+		}
+		if selection := ctx.semPkg.source.TypesInfo.Selections[typed]; selection != nil {
+			return nil
+		}
+		return ctx.semPkg.source.TypesInfo.Uses[typed.Sel]
+	default:
+		return nil
+	}
+}
+
 func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) (string, []Diagnostic) {
 	if ident, ok := expr.Fun.(*ast.Ident); ok && isBuiltinCallTarget(ctx, ident) {
 		switch ident.Name {
@@ -4071,7 +4088,21 @@ func (o *LoweringOwner) lowerFieldReceiverExpr(ctx lowerFileContext, expr ast.Ex
 	if isPointerToStructType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
 		return o.lowerPointerValueExpr(ctx, expr)
 	}
-	return o.lowerExpr(ctx, expr)
+	value, diagnostics := o.lowerExpr(ctx, expr)
+	if obj := objectForValueExpr(ctx, expr); obj != nil &&
+		ctx.model.needsVarRef[obj] &&
+		isStructValueType(obj.Type()) &&
+		fieldReceiverNeedsVarRefValue(ctx, expr, obj) {
+		return value + ".value", diagnostics
+	}
+	return value, diagnostics
+}
+
+func fieldReceiverNeedsVarRefValue(ctx lowerFileContext, expr ast.Expr, obj types.Object) bool {
+	if _, ok := expr.(*ast.Ident); !ok {
+		return true
+	}
+	return ctx.localAliases[obj] != "" || ctx.identAliases[obj] != ""
 }
 
 func (o *LoweringOwner) lowerMethodReceiverExpr(
@@ -4656,7 +4687,31 @@ func (o *LoweringOwner) lowerValueForTarget(
 	value string,
 ) string {
 	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	if isComplexType(targetType) {
+		if isRealNumericConstantExpr(ctx, expr) {
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperComplex) + "(" + value + ", 0)"
+		}
+	}
 	return o.lowerValueForTargetTypes(ctx, targetType, sourceType, value, shouldCloneStructValue(expr))
+}
+
+func isRealNumericConstantExpr(ctx lowerFileContext, expr ast.Expr) bool {
+	if ctx.semPkg != nil && ctx.semPkg.source != nil {
+		if tv, ok := ctx.semPkg.source.TypesInfo.Types[expr]; ok && tv.Value != nil {
+			switch tv.Value.Kind() {
+			case constant.Int, constant.Float:
+				return true
+			}
+		}
+	}
+	switch typed := expr.(type) {
+	case *ast.BasicLit:
+		return typed.Kind == token.INT || typed.Kind == token.FLOAT || typed.Kind == token.CHAR
+	case *ast.UnaryExpr:
+		return (typed.Op == token.ADD || typed.Op == token.SUB) && isRealNumericConstantExpr(ctx, typed.X)
+	default:
+		return false
+	}
 }
 
 func (o *LoweringOwner) lowerValueForTargetTypes(
@@ -5437,6 +5492,11 @@ func isChannelType(typ types.Type) bool {
 	}
 	_, ok := types.Unalias(typ).Underlying().(*types.Chan)
 	return ok
+}
+
+func isComplexType(typ types.Type) bool {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	return ok && basic.Info()&types.IsComplex != 0
 }
 
 func isPointerType(typ types.Type) bool {
