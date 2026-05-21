@@ -938,6 +938,9 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 		}
 		return lowered, diagnostics
 	}
+	if zeroReturn, ok := o.lowerBodylessReturnStmt(ctx, signature); ok {
+		lowered.body = []loweredStmt{{text: zeroReturn}}
+	}
 	return lowered, nil
 }
 
@@ -1001,6 +1004,9 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 			lowered.result = asyncResultType(result, true)
 		}
 		return lowered, diagnostics
+	}
+	if zeroReturn, ok := o.lowerBodylessReturnStmt(ctx, signature); ok {
+		lowered.body = []loweredStmt{{text: zeroReturn}}
 	}
 	return lowered, nil
 }
@@ -1616,6 +1622,22 @@ func (o *LoweringOwner) lowerReturnStmt(ctx lowerFileContext, stmt *ast.ReturnSt
 		parts = append(parts, expr)
 	}
 	return "return [" + strings.Join(parts, ", ") + "]", diagnostics
+}
+
+func (o *LoweringOwner) lowerBodylessReturnStmt(ctx lowerFileContext, signature *types.Signature) (string, bool) {
+	if signature.Results().Len() == 0 {
+		return "", false
+	}
+	if signature.Results().Len() == 1 {
+		result := signature.Results().At(0)
+		return "return " + o.lowerDeclarationZeroValueExpr(ctx, result.Type()), true
+	}
+	results := make([]string, 0, signature.Results().Len())
+	for result := range signature.Results().Variables() {
+		result := result
+		results = append(results, o.lowerDeclarationZeroValueExpr(ctx, result.Type()))
+	}
+	return "return [" + strings.Join(results, ", ") + "]", true
 }
 
 func (o *LoweringOwner) lowerRangeFuncReturnStmt(ctx lowerFileContext, stmt *ast.ReturnStmt) (string, []Diagnostic) {
