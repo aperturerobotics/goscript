@@ -130,7 +130,7 @@ export function readIntBE(b: $.Bytes, size: uintptr): number {
 		case 4:
 			return (byteorder.BEUint32(b) as number)
 		case 8:
-			return (byteorder.BEUint64(b) as number)
+			return Number(byteorder.BEUint64(b))
 		default:
 			$.panic("syscall: readInt with unsupported size")
 			return 0 // This line will never be reached due to panic, but satisfies TypeScript
@@ -146,10 +146,9 @@ export function readIntLE(b: $.Bytes, size: uintptr): number {
 		case 4:
 			return (byteorder.LEUint32(b) as number)
 		case 8:
-			return (byteorder.LEUint64(b) as number)
+			return Number(byteorder.LEUint64(b))
 		default:
 			$.panic("syscall: readInt with unsupported size")
 			return 0 // This line will never be reached due to panic, but satisfies TypeScript
 	}
 }
-
