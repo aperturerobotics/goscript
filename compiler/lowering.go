@@ -1123,10 +1123,7 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 	}
 	for idx := range signature.Params().Len() {
 		param := signature.Params().At(idx)
-		lowered.params = append(lowered.params, loweredParam{
-			name: safeParamName(param, idx),
-			typ:  o.tsFuncParamTypeFor(ctx, param.Type(), decl.Body == nil || async),
-		})
+		lowered.params, lowered.paramBindings = o.appendLoweredParam(ctx, lowered.params, lowered.paramBindings, param, idx, decl.Body == nil || async)
 	}
 	if decl.Body != nil {
 		body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withAsyncFunction(async).withDeferState(deferState), decl.Body)
@@ -1198,10 +1195,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 	}
 	for idx := range signature.Params().Len() {
 		param := signature.Params().At(idx)
-		lowered.params = append(lowered.params, loweredParam{
-			name: safeParamName(param, idx),
-			typ:  o.tsFuncParamTypeFor(ctx, param.Type(), decl.Body == nil || async),
-		})
+		lowered.params, lowered.paramBindings = o.appendLoweredParam(ctx, lowered.params, lowered.paramBindings, param, idx, decl.Body == nil || async)
 	}
 	if decl.Body != nil {
 		body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withAsyncFunction(async).withDeferState(deferState), decl.Body)
@@ -1216,6 +1210,31 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		lowered.body = []loweredStmt{{text: zeroReturn}}
 	}
 	return lowered, nil
+}
+
+func (o *LoweringOwner) appendLoweredParam(
+	ctx lowerFileContext,
+	params []loweredParam,
+	bindings []loweredStmt,
+	param *types.Var,
+	idx int,
+	asyncCompatible bool,
+) ([]loweredParam, []loweredStmt) {
+	name := safeParamName(param, idx)
+	if param == nil {
+		return append(params, loweredParam{name: name, typ: "unknown"}), bindings
+	}
+	typ := o.tsFuncParamTypeFor(ctx, param.Type(), asyncCompatible)
+	if param.Name() == "" || param.Name() == "_" || !ctx.model.needsVarRef[param] {
+		return append(params, loweredParam{name: name, typ: typ}), bindings
+	}
+	rawName := ctx.tempName("Param")
+	params = append(params, loweredParam{name: rawName, typ: typ})
+	bindings = append(bindings, loweredStmt{
+		text: "let " + name + ": " + o.tsVariableTypeFor(ctx, param.Type(), true) + " = " +
+			o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + rawName + ")",
+	})
+	return params, bindings
 }
 
 func (ctx lowerFileContext) withSignature(signature *types.Signature) lowerFileContext {

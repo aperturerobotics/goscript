@@ -345,6 +345,7 @@ func renderFunction(b *strings.Builder, fn *loweredFunction) {
 		b.WriteString(receiverValue(fn))
 		b.WriteString("\n")
 	}
+	renderStmts(b, fn.paramBindings, 1)
 	renderNamedResults(b, fn.namedResults, 1)
 	renderDeferStack(b, fn.deferState, 1)
 	renderStmts(b, fn.body, 1)
@@ -382,6 +383,7 @@ func renderMethod(b *strings.Builder, fn *loweredFunction) {
 		b.WriteString(receiverValue(fn))
 		b.WriteString("\n")
 	}
+	renderStmts(b, fn.paramBindings, 2)
 	renderNamedResults(b, fn.namedResults, 2)
 	renderDeferStack(b, fn.deferState, 2)
 	renderStmts(b, fn.body, 2)
