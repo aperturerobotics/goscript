@@ -1,5 +1,6 @@
 import * as $ from '@goscript/builtin/index.js'
 import { ENOSYS } from './errors.js'
+import type { Sockaddr } from './types.js'
 
 // Dirent structure with Reclen field
 export class Dirent {
@@ -63,4 +64,41 @@ export function Getpagesize(): number {
   // Return a standard page size for JavaScript environment
   // Most systems use 4096 bytes as the default page size
   return 4096
+}
+
+export function Socket(
+  _domain: number,
+  _typ: number,
+  _proto: number,
+): [number, $.GoError] {
+  return [-1, ENOSYS]
+}
+
+export function Connect(_fd: number, _sa: Sockaddr | null): $.GoError {
+  return ENOSYS
+}
+
+export function Listen(_fd: number, _backlog: number): $.GoError {
+  return ENOSYS
+}
+
+export function Bind(_fd: number, _sa: Sockaddr | null): $.GoError {
+  return ENOSYS
+}
+
+export function GetsockoptInt(
+  _fd: number,
+  _level: number,
+  _opt: number,
+): [number, $.GoError] {
+  return [0, ENOSYS]
+}
+
+export function SetsockoptInt(
+  _fd: number,
+  _level: number,
+  _opt: number,
+  _value: number,
+): $.GoError {
+  return ENOSYS
 }

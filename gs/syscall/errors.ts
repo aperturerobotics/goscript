@@ -221,6 +221,12 @@ export const ENOSYS: Errno = {
   Errno: () => 38,
 }
 
+export const ENOTSUP: Errno = {
+  Error: () => 'operation not supported',
+  Is: (target: $.GoError) => target === ENOTSUP,
+  Errno: () => 95,
+}
+
 export const ENOTEMPTY: Errno = {
   Error: () => 'directory not empty',
   Is: (target: $.GoError) => target === ENOTEMPTY,

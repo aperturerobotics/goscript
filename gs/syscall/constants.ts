@@ -22,6 +22,12 @@ export const AF_INET6 = 10
 export const SOCK_STREAM = 1
 export const SOCK_DGRAM = 2
 export const SOCK_RAW = 3
+export const SOCK_SEQPACKET = 5
+
+export const IPPROTO_IPV6 = 0x29
+export const IPPROTO_TCP = 6
+export const IPV6_V6ONLY = 0x1a
+export const SOMAXCONN = 0x80
 
 // File mode constants
 export const S_IFMT = 0o170000
