@@ -138,6 +138,7 @@ func (o *LoweringOwner) lowerFile(
 	importAliases := make(map[string]string)
 	importPaths := make(map[string]string)
 	importNames := make(map[string]string)
+	reservedImportAliases := localDeclarationNames(semPkg, file, associatedMethods)
 	seenImport := make(map[string]bool)
 	for idx, importFile := range semPkg.source.Syntax {
 		importSourcePath := sourceFilePath(semPkg, idx, importFile)
@@ -159,7 +160,7 @@ func (o *LoweringOwner) lowerFile(
 			if name == "." || name == "_" {
 				continue
 			}
-			alias := uniqueImportAlias(safeIdentifier(name), pkgName.Imported().Path(), importAliases)
+			alias := uniqueImportAlias(safeIdentifier(name), pkgName.Imported().Path(), importAliases, reservedImportAliases)
 			source := "@goscript/" + pkgName.Imported().Path() + "/index.js"
 			importKey := alias + "\x00" + source
 			if seenImport[importKey] {
@@ -175,7 +176,7 @@ func (o *LoweringOwner) lowerFile(
 			})
 		}
 	}
-	o.addGeneratedTypeImports(model, semPkg, sourcePath, loweredFile, importAliases, importPaths, seenImport)
+	o.addGeneratedTypeImports(model, semPkg, sourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
 	localAliases, localAliasSources := o.localFileAliases(semPkg, file, sourcePath, associatedMethods)
 	localImports := make([]loweredImport, 0, len(localAliases))
 	seenLocalImport := make(map[string]bool)
@@ -234,6 +235,7 @@ func (o *LoweringOwner) addGeneratedTypeImports(
 	loweredFile *loweredFile,
 	importAliases map[string]string,
 	importPaths map[string]string,
+	reservedImportAliases map[string]bool,
 	seenImport map[string]bool,
 ) {
 	generatedImports := semPkg.generatedImports[sourcePath]
@@ -255,7 +257,7 @@ func (o *LoweringOwner) addGeneratedTypeImports(
 			continue
 		}
 		alias := generatedImportAlias(model, pkgPath)
-		alias = uniqueImportAlias(alias, pkgPath, importAliases)
+		alias = uniqueImportAlias(alias, pkgPath, importAliases, reservedImportAliases)
 		source := "@goscript/" + pkgPath + "/index.js"
 		importKey := alias + "\x00" + source
 		if seenImport[importKey] {
@@ -288,17 +290,47 @@ func generatedImportAlias(model *SemanticModel, pkgPath string) string {
 	return safeIdentifier(path.Base(pkgPath))
 }
 
-func uniqueImportAlias(alias string, pkgPath string, importAliases map[string]string) string {
-	if importAliases[alias] == "" || importAliases[alias] == pkgPath {
+func uniqueImportAlias(alias string, pkgPath string, importAliases map[string]string, reservedAliases map[string]bool) string {
+	if !reservedAliases[alias] && (importAliases[alias] == "" || importAliases[alias] == pkgPath) {
 		return alias
 	}
 	base := alias
 	for idx := 2; ; idx++ {
 		candidate := base + strconv.Itoa(idx)
-		if importAliases[candidate] == "" || importAliases[candidate] == pkgPath {
+		if !reservedAliases[candidate] && (importAliases[candidate] == "" || importAliases[candidate] == pkgPath) {
 			return candidate
 		}
 	}
+}
+
+func localDeclarationNames(semPkg *semanticPackage, file *ast.File, associatedMethods []*ast.FuncDecl) map[string]bool {
+	if semPkg == nil || semPkg.source == nil {
+		return nil
+	}
+	names := make(map[string]bool)
+	inspect := func(node ast.Node) bool {
+		ident, ok := node.(*ast.Ident)
+		if !ok {
+			return true
+		}
+		obj := semPkg.source.TypesInfo.Defs[ident]
+		if obj == nil {
+			return true
+		}
+		if _, ok := obj.(*types.PkgName); ok {
+			return true
+		}
+		name := safeIdentifier(obj.Name())
+		if name != "_" {
+			names[name] = true
+		}
+		return true
+	}
+	ast.Inspect(file, inspect)
+	for _, methodDecl := range associatedMethods {
+		ast.Inspect(methodDecl, inspect)
+	}
+	return names
 }
 
 func (o *LoweringOwner) methodDeclsForFileTypes(semPkg *semanticPackage, file *ast.File) []*ast.FuncDecl {
@@ -3734,8 +3766,10 @@ func (o *LoweringOwner) lowerNamedReceiverForMethod(
 
 func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.SelectorExpr) (string, []Diagnostic) {
 	if ident, ok := expr.X.(*ast.Ident); ok {
-		if alias := ctx.importNames[ident.Name]; alias != "" {
-			return alias + "." + expr.Sel.Name, nil
+		if pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName); pkgName != nil {
+			if alias := ctx.importNames[pkgName.Name()]; alias != "" {
+				return alias + "." + expr.Sel.Name, nil
+			}
 		}
 	}
 	if selection := ctx.semPkg.source.TypesInfo.Selections[expr]; selection != nil {

@@ -1,0 +1,63 @@
+// Generated file based on main.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+import * as drbg2 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_alias_shadowed_by_local/drbg/index.js"
+
+export class local {
+	public get value(): number {
+		return this._fields.value.value
+	}
+	public set value(value: number) {
+		this._fields.value.value = value
+	}
+
+	public _fields: {
+		value: $.VarRef<number>
+	}
+
+	constructor(init?: Partial<{value?: number}>) {
+		this._fields = {
+			value: $.varRef(init?.value ?? 0)
+		}
+	}
+
+	public clone(): local {
+		const cloned = new local()
+		cloned._fields = {
+			value: $.varRef(this._fields.value.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.local",
+		new local(),
+		[],
+		local,
+		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
+}
+
+export function newLocal(value: number): local | $.VarRef<local> | null {
+	return new local({value: value})
+}
+
+export async function main(): Promise<void> {
+	{
+		let err = drbg2.Read()
+		if (err != null) {
+			$.println("error")
+			return
+		}
+	}
+
+	let drbg: local | $.VarRef<local> | null = newLocal(7)
+	$.println($.pointerValue<local>(drbg).value)
+}
+
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

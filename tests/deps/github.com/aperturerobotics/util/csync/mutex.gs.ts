@@ -9,16 +9,16 @@ import * as sync from "@goscript/sync/index.js"
 
 import * as atomic from "@goscript/sync/atomic/index.js"
 
-import * as broadcast from "@goscript/github.com/aperturerobotics/util/broadcast/index.js"
+import * as broadcast2 from "@goscript/github.com/aperturerobotics/util/broadcast/index.js"
 
 import * as errors from "@goscript/github.com/pkg/errors/index.js"
 
 export class Mutex {
 	// bcast is broadcast when below fields change
-	public get bcast(): broadcast.Broadcast {
+	public get bcast(): broadcast2.Broadcast {
 		return this._fields.bcast.value
 	}
-	public set bcast(value: broadcast.Broadcast) {
+	public set bcast(value: broadcast2.Broadcast) {
 		this._fields.bcast.value = value
 	}
 
@@ -31,13 +31,13 @@ export class Mutex {
 	}
 
 	public _fields: {
-		bcast: $.VarRef<broadcast.Broadcast>
+		bcast: $.VarRef<broadcast2.Broadcast>
 		locked: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{bcast?: broadcast.Broadcast, locked?: boolean}>) {
+	constructor(init?: Partial<{bcast?: broadcast2.Broadcast, locked?: boolean}>) {
 		this._fields = {
-			bcast: $.varRef(init?.bcast ? $.markAsStructValue(init.bcast.clone()) : $.markAsStructValue(new broadcast.Broadcast())),
+			bcast: $.varRef(init?.bcast ? $.markAsStructValue(init.bcast.clone()) : $.markAsStructValue(new broadcast2.Broadcast())),
 			locked: $.varRef(init?.locked ?? false)
 		}
 	}
