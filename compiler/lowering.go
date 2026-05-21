@@ -3153,6 +3153,9 @@ func (o *LoweringOwner) lowerCallArgs(
 	signature *types.Signature,
 ) ([]string, []Diagnostic) {
 	overrideCall := o.callUsesOverridePackage(ctx, expr.Fun)
+	if args, diagnostics, ok := o.lowerTupleCallArgs(ctx, expr, signature, overrideCall); ok {
+		return args, diagnostics
+	}
 	if signature == nil || !signature.Variadic() ||
 		isBuiltinCallTarget(ctx, expr.Fun) ||
 		overrideCall {
@@ -3200,6 +3203,46 @@ func (o *LoweringOwner) lowerCallArgs(
 	args = append(args, o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayToSlice)+
 		"<"+elemType+">(["+strings.Join(variadicArgs, ", ")+"])")
 	return args, diagnostics
+}
+
+func (o *LoweringOwner) lowerTupleCallArgs(
+	ctx lowerFileContext,
+	expr *ast.CallExpr,
+	signature *types.Signature,
+	overrideCall bool,
+) ([]string, []Diagnostic, bool) {
+	if signature == nil || signature.Variadic() || len(expr.Args) != 1 ||
+		isBuiltinCallTarget(ctx, expr.Fun) || overrideCall {
+		return nil, nil, false
+	}
+	params := signature.Params()
+	sourceResults := tupleResultTypes(ctx, expr.Args[0])
+	if params == nil || sourceResults == nil || sourceResults.Len() != params.Len() || sourceResults.Len() < 2 {
+		return nil, nil, false
+	}
+	value, diagnostics := o.lowerTupleExpr(ctx, expr.Args[0])
+	parts := make([]string, 0, sourceResults.Len())
+	changed := false
+	for idx := range sourceResults.Len() {
+		part := "__goscriptTupleArg[" + strconv.Itoa(idx) + "]"
+		converted := o.lowerValueForTargetTypes(ctx, params.At(idx).Type(), sourceResults.At(idx).Type(), part, false)
+		if converted != part {
+			changed = true
+		}
+		parts = append(parts, converted)
+	}
+	if !changed {
+		return []string{"...(" + value + ")"}, diagnostics, true
+	}
+	temp := ctx.tempName("TupleArg")
+	for idx, part := range parts {
+		parts[idx] = strings.ReplaceAll(part, "__goscriptTupleArg", temp)
+	}
+	body := "const " + temp + " = " + value + "; return [" + strings.Join(parts, ", ") + "]"
+	if strings.Contains(value, "await ") {
+		return []string{"...(await (async () => { " + body + " })())"}, diagnostics, true
+	}
+	return []string{"...(() => { " + body + " })()"}, diagnostics, true
 }
 
 func (o *LoweringOwner) lowerFixedCallArgs(
