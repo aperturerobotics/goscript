@@ -277,8 +277,7 @@ func (o *LoweringOwner) hasGeneratedImportPackage(model *SemanticModel, pkgPath 
 	if model != nil && model.packages[pkgPath] != nil {
 		return true
 	}
-	roots, err := o.overrideOwner.packageRoots()
-	return err == nil && roots[pkgPath]
+	return o.overrideFacts().HasPackage(pkgPath)
 }
 
 func generatedImportAlias(model *SemanticModel, pkgPath string) string {
@@ -3926,7 +3925,7 @@ func (o *LoweringOwner) callUsesOverridePackage(ctx lowerFileContext, expr ast.E
 	if ctx.model != nil && ctx.model.functions[fn] != nil {
 		return false
 	}
-	return o.overrideOwner.hasPackage(fn.Pkg().Path())
+	return o.overrideFacts().HasPackage(fn.Pkg().Path())
 }
 
 func unsafePackageFunction(ctx lowerFileContext, expr ast.Expr, name string) bool {
@@ -4120,11 +4119,7 @@ func (o *LoweringOwner) typeUsesOverride(named *types.Named) bool {
 	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil || o.overrideOwner == nil {
 		return false
 	}
-	roots, err := o.overrideOwner.packageRoots()
-	if err != nil {
-		return false
-	}
-	return roots[named.Obj().Pkg().Path()]
+	return o.overrideFacts().HasPackage(named.Obj().Pkg().Path())
 }
 
 func (o *LoweringOwner) lowerNamedReceiverMethodCall(
@@ -4340,7 +4335,7 @@ func (o *LoweringOwner) receiverUsesOverridePackage(typ types.Type) bool {
 	}
 	named, _ := types.Unalias(derefPointerType(typ)).(*types.Named)
 	return named != nil && named.Obj() != nil && named.Obj().Pkg() != nil &&
-		o.overrideOwner.hasPackage(named.Obj().Pkg().Path())
+		o.overrideFacts().HasPackage(named.Obj().Pkg().Path())
 }
 
 func (o *LoweringOwner) lowerPromotedMethodReceiver(
@@ -5901,11 +5896,10 @@ func (o *LoweringOwner) overrideCallNeedsAwait(ctx lowerFileContext, fun ast.Exp
 	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
 		return false
 	}
-	async, err := o.overrideOwner.IsMethodAsync(
+	return o.overrideFacts().IsMethodAsync(
 		named.Obj().Pkg().Path(),
 		named.Obj().Name()+"."+method.Name(),
 	)
-	return err == nil && async
 }
 
 func (o *LoweringOwner) awaitCallIfNeeded(ctx lowerFileContext, fun ast.Expr, call string) string {
@@ -6083,7 +6077,7 @@ func (o *LoweringOwner) overrideTypeArgsExpr(ctx lowerFileContext, named *types.
 	if args == nil || args.Len() == 0 {
 		return ""
 	}
-	if !o.overrideOwner.hasPackage(named.Obj().Pkg().Path()) {
+	if !o.overrideFacts().HasPackage(named.Obj().Pkg().Path()) {
 		return ""
 	}
 	parts := make([]string, 0, args.Len())
@@ -6091,6 +6085,17 @@ func (o *LoweringOwner) overrideTypeArgsExpr(ctx lowerFileContext, named *types.
 		parts = append(parts, o.tsTypeFor(ctx, typ))
 	}
 	return strings.Join(parts, ", ")
+}
+
+func (o *LoweringOwner) overrideFacts() *OverrideFacts {
+	if o.overrideOwner == nil {
+		return nil
+	}
+	facts, diagnostics := o.overrideOwner.Facts(context.Background())
+	if diagnosticsHaveErrors(diagnostics) {
+		return nil
+	}
+	return facts
 }
 
 func (o *LoweringOwner) tsReceiverTypeFor(ctx lowerFileContext, typ types.Type) string {

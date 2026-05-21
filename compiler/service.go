@@ -19,7 +19,7 @@ func NewCompileService() *CompileService {
 	runtimeOwner := NewRuntimeContractOwner()
 	return &CompileService{
 		requestOwner:  NewCompileRequestOwner(),
-		graphOwner:    NewPackageGraphOwner(),
+		graphOwner:    NewPackageGraphOwner(overrideOwner),
 		semanticOwner: NewSemanticModelOwner(overrideOwner),
 		loweringOwner: NewLoweringOwner(runtimeOwner, overrideOwner),
 		emitterOwner:  NewTypeScriptEmitOwner(runtimeOwner),

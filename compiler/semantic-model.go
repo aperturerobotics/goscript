@@ -68,7 +68,7 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 			})
 			continue
 		}
-		diagnostics = append(diagnostics, o.buildPackage(model, node, pkg)...)
+		diagnostics = append(diagnostics, o.buildPackage(ctx, model, node, pkg)...)
 	}
 	if diagnosticsHaveErrors(diagnostics) {
 		return model, diagnostics
@@ -104,10 +104,15 @@ func newSemanticModel() *SemanticModel {
 }
 
 func (o *SemanticModelOwner) buildPackage(
+	ctx context.Context,
 	model *SemanticModel,
 	node *PackageGraphNode,
 	pkg *packages.Package,
 ) []Diagnostic {
+	overrideFacts, diagnostics := o.overrideOwner.Facts(ctx)
+	if diagnosticsHaveErrors(diagnostics) {
+		return diagnostics
+	}
 	semPkg := &semanticPackage{
 		pkgPath:          node.PkgPath,
 		name:             node.Name,
@@ -120,9 +125,8 @@ func (o *SemanticModelOwner) buildPackage(
 		o.collectFileDeclarations(model, semPkg, pkg, file)
 		o.collectFileFacts(model, semPkg, pkg, file)
 	}
-	var diagnostics []Diagnostic
 	for _, file := range pkg.Syntax {
-		diagnostics = append(diagnostics, o.collectFunctionFacts(model, pkg, file)...)
+		diagnostics = append(diagnostics, o.collectFunctionFacts(model, pkg, file, overrideFacts)...)
 	}
 	return diagnostics
 }
@@ -543,6 +547,7 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 	model *SemanticModel,
 	pkg *packages.Package,
 	file *ast.File,
+	overrideFacts *OverrideFacts,
 ) []Diagnostic {
 	var diagnostics []Diagnostic
 	for _, decl := range file.Decls {
@@ -577,17 +582,7 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				if callUsesFunctionIdentifier(pkg, typed.Fun) {
 					markFunctionAsync(semFn, "function-identifier-call")
 				}
-				async, err := o.isOverrideAsyncCall(pkg, typed.Fun)
-				if err != nil {
-					diagnostics = append(diagnostics, Diagnostic{
-						Severity: DiagnosticSeverityError,
-						Code:     "goscript/overrides:metadata",
-						Message:  "failed to read override metadata",
-						Detail:   err.Error(),
-					})
-					return false
-				}
-				if async {
+				if overrideFacts.IsMethodAsync(overrideCallPackage(pkg, typed.Fun), overrideCallMethod(pkg, typed.Fun)) {
 					markFunctionAsync(semFn, "override")
 				}
 			}
@@ -654,25 +649,44 @@ func (o *SemanticModelOwner) propagateAsyncFunctionArguments(
 	return nil
 }
 
-func (o *SemanticModelOwner) isOverrideAsyncCall(pkg *packages.Package, expr ast.Expr) (bool, error) {
+func overrideCallPackage(pkg *packages.Package, expr ast.Expr) string {
 	selector, ok := expr.(*ast.SelectorExpr)
 	if !ok {
-		return false, nil
+		return ""
 	}
 	selection := pkg.TypesInfo.Selections[selector]
 	if selection == nil {
-		return false, nil
+		return ""
 	}
 	method, _ := selection.Obj().(*types.Func)
 	if method == nil {
-		return false, nil
+		return ""
 	}
 	named := receiverNamedType(selection.Recv())
 	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
-		return false, nil
+		return ""
 	}
-	methodKey := named.Obj().Name() + "." + method.Name()
-	return o.overrideOwner.IsMethodAsync(named.Obj().Pkg().Path(), methodKey)
+	return named.Obj().Pkg().Path()
+}
+
+func overrideCallMethod(pkg *packages.Package, expr ast.Expr) string {
+	selector, ok := expr.(*ast.SelectorExpr)
+	if !ok {
+		return ""
+	}
+	selection := pkg.TypesInfo.Selections[selector]
+	if selection == nil {
+		return ""
+	}
+	method, _ := selection.Obj().(*types.Func)
+	if method == nil {
+		return ""
+	}
+	named := receiverNamedType(selection.Recv())
+	if named == nil || named.Obj() == nil {
+		return ""
+	}
+	return named.Obj().Name() + "." + method.Name()
 }
 
 func semanticFunctionFor(model *SemanticModel, fn *types.Func) *semanticFunction {

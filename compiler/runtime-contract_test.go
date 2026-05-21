@@ -91,3 +91,13 @@ func TestCompileServiceSharesRuntimeContractOwner(t *testing.T) {
 		t.Fatalf("qualified println helper = %q, want $.println", got)
 	}
 }
+
+func TestRuntimeContractHelpersAreExportedByBuiltinRuntime(t *testing.T) {
+	missing, err := NewRuntimeContractOwner().MissingRuntimeExports()
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if len(missing) != 0 {
+		t.Fatalf("runtime helper exports missing from gs/builtin: %v", missing)
+	}
+}

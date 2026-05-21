@@ -2,7 +2,11 @@ package compiler
 
 import (
 	"cmp"
+	"fmt"
 	"slices"
+	"strings"
+
+	gs "github.com/aperturerobotics/goscript"
 )
 
 // RuntimeHelperCategory names a runtime helper family owned by the contract.
@@ -197,6 +201,22 @@ func (o *RuntimeContractOwner) QualifiedHelper(helper RuntimeHelper) string {
 	return o.BuiltinImport().Alias + "." + name
 }
 
+// MissingRuntimeExports returns helper exports absent from the real runtime source.
+func (o *RuntimeContractOwner) MissingRuntimeExports() ([]string, error) {
+	exports, err := scanBuiltinRuntimeExports()
+	if err != nil {
+		return nil, err
+	}
+	var missing []string
+	for _, helper := range o.Helpers() {
+		if !exports[helper.Export] {
+			missing = append(missing, helper.Export)
+		}
+	}
+	slices.Sort(missing)
+	return missing, nil
+}
+
 func compareRuntimeHelperContract(a RuntimeHelperContract, b RuntimeHelperContract) int {
 	if c := cmp.Compare(a.Category, b.Category); c != 0 {
 		return c
@@ -300,4 +320,98 @@ func runtimeHelper(
 		Export:   export,
 		Category: category,
 	}
+}
+
+func scanBuiltinRuntimeExports() (map[string]bool, error) {
+	index, err := gs.GsOverrides.ReadFile("gs/builtin/index.ts")
+	if err != nil {
+		return nil, err
+	}
+	exports := make(map[string]bool)
+	for _, module := range builtinReexportModules(string(index)) {
+		data, err := gs.GsOverrides.ReadFile("gs/builtin/" + module + ".ts")
+		if err != nil {
+			return nil, fmt.Errorf("read builtin export module %s: %w", module, err)
+		}
+		for _, name := range sourceExportNames(string(data)) {
+			exports[name] = true
+		}
+	}
+	return exports, nil
+}
+
+func builtinReexportModules(index string) []string {
+	var modules []string
+	for line := range strings.SplitSeq(index, "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "export * from ") {
+			continue
+		}
+		module := quotedModulePath(line)
+		module = strings.TrimPrefix(module, "./")
+		module = strings.TrimSuffix(module, ".js")
+		if module != "" {
+			modules = append(modules, module)
+		}
+	}
+	slices.Sort(modules)
+	return modules
+}
+
+func quotedModulePath(line string) string {
+	for _, quote := range []string{"'", "\""} {
+		_, remaining, ok := strings.Cut(line, quote)
+		if !ok {
+			continue
+		}
+		module, _, ok := strings.Cut(remaining, quote)
+		if ok {
+			return module
+		}
+	}
+	return ""
+}
+
+func sourceExportNames(data string) []string {
+	names := make(map[string]bool)
+	for line := range strings.SplitSeq(data, "\n") {
+		line = strings.TrimSpace(line)
+		for _, prefix := range []string{
+			"export async function ",
+			"export function ",
+			"export const ",
+			"export class ",
+			"export enum ",
+			"export type ",
+			"export interface ",
+		} {
+			if !strings.HasPrefix(line, prefix) {
+				continue
+			}
+			name := exportNameAfterPrefix(line, prefix)
+			if name != "" {
+				names[name] = true
+			}
+		}
+	}
+	result := make([]string, 0, len(names))
+	for name := range names {
+		result = append(result, name)
+	}
+	slices.Sort(result)
+	return result
+}
+
+func exportNameAfterPrefix(line, prefix string) string {
+	remaining := strings.TrimSpace(strings.TrimPrefix(line, prefix))
+	for idx, char := range remaining {
+		if char == '_' || char == '$' ||
+			(char >= 'a' && char <= 'z') ||
+			(char >= 'A' && char <= 'Z') ||
+			(idx > 0 && char >= '0' && char <= '9') {
+			continue
+		}
+		return remaining[:idx]
+	}
+	return remaining
 }
