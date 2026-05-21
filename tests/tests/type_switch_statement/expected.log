@@ -5,3 +5,7 @@ z is int 42
 default only
 default only, value is test
 shadow default 7
+after switch
+continue skip
+after switch
+type switch count 3

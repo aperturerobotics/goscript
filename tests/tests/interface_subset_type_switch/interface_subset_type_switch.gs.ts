@@ -80,27 +80,29 @@ export class MyStruct {
 }
 
 export function processInterface(i: any): void {
-	$.typeSwitch(
-		i,
-		[
-			{
-				types: ["main.MyInterface1"],
-				body: (v) => {
+	{
+		const __goscriptTypeSwitchValue = i
+		switch (true) {
+			case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
+				{
+					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface1").value
 					$.println("MyInterface1:", $.pointerValue(v).MyString1(), $.pointerValue(v).MyString2())
 				}
-			},
-			{
-				types: ["main.MyInterface2"],
-				body: (v) => {
+				break
+			case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
+				{
+					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface2").value
 					$.println("MyInterface2:", $.pointerValue(v).MyString1())
 				}
-			}
-		],
-		() => {
-			let v = i
-			$.println("Unknown type")
+				break
+			default:
+				{
+					let v = __goscriptTypeSwitchValue
+					$.println("Unknown type")
+				}
+				break
 		}
-	)
+	}
 }
 
 export async function main(): Promise<void> {
@@ -119,27 +121,29 @@ export async function main(): Promise<void> {
 
 	// Type switch with subset casting
 	let i3: any = i1
-	$.typeSwitch(
-		i3,
-		[
-			{
-				types: ["main.MyInterface2"],
-				body: (v) => {
+	{
+		const __goscriptTypeSwitchValue = i3
+		switch (true) {
+			case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
+				{
+					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface2").value
 					$.println("Matched MyInterface2 from i1:", $.pointerValue(v).MyString1())
 				}
-			},
-			{
-				types: ["main.MyInterface1"],
-				body: (v) => {
+				break
+			case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
+				{
+					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface1").value
 					$.println("Matched MyInterface1 from i1:", $.pointerValue(v).MyString1(), $.pointerValue(v).MyString2())
 				}
-			}
-		],
-		() => {
-			let v = i3
-			$.println("No match")
+				break
+			default:
+				{
+					let v = __goscriptTypeSwitchValue
+					$.println("No match")
+				}
+				break
 		}
-	)
+	}
 }
 
 

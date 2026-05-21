@@ -53,6 +53,19 @@ func main() {
 			println("shadow default", v.(int32))
 		}
 	}
+
+	count := 0
+	for _, v := range []any{1, "skip", 2} {
+		switch v := v.(type) {
+		case string:
+			println("continue", v)
+			continue
+		case int:
+			count += v
+		}
+		println("after switch")
+	}
+	println("type switch count", count)
 }
 
 func getInterface() any {

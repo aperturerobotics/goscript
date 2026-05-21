@@ -651,103 +651,78 @@ func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, indent i
 
 func renderTypeSwitch(b *strings.Builder, stmt *loweredTypeSwitch, indent int) {
 	writeIndent(b, indent)
-	if stmt.result != "" {
-		b.WriteString("const ")
-		b.WriteString(stmt.result)
-		b.WriteString(" = ")
-	}
-	b.WriteString("$.typeSwitch(\n")
+	b.WriteString("{\n")
 	writeIndent(b, indent+1)
+	b.WriteString("const __goscriptTypeSwitchValue = ")
 	b.WriteString(stmt.value)
-	b.WriteString(",\n")
+	b.WriteString("\n")
 	writeIndent(b, indent+1)
-	b.WriteString("[\n")
-	for caseIdx, switchCase := range stmt.cases {
-		writeIndent(b, indent+2)
-		b.WriteString("{\n")
-		writeIndent(b, indent+3)
-		b.WriteString("types: [")
-		for idx, typ := range switchCase.types {
-			if idx != 0 {
-				b.WriteString(", ")
-			}
-			b.WriteString(typ)
-		}
-		b.WriteString("],\n")
-		writeIndent(b, indent+3)
-		b.WriteString("body: ")
-		renderTypeSwitchBody(b, stmt.varName, "", switchCase.body, indent+3)
-		writeIndent(b, indent+2)
-		b.WriteString("}")
-		if caseIdx != len(stmt.cases)-1 {
-			b.WriteString(",")
-		}
-		b.WriteString("\n")
+	b.WriteString("switch (true) {\n")
+	for _, switchCase := range stmt.cases {
+		renderTypeSwitchCase(b, stmt.varName, switchCase, indent+2)
 	}
-	writeIndent(b, indent+1)
-	b.WriteString("]")
 	if len(stmt.defaultBody) != 0 {
-		b.WriteString(",\n")
-		writeIndent(b, indent+1)
-		renderTypeSwitchBody(b, stmt.varName, stmt.value, stmt.defaultBody, indent+1)
+		writeIndent(b, indent+2)
+		b.WriteString("default:\n")
+		renderTypeSwitchInlineBody(b, stmt.varName, "__goscriptTypeSwitchValue", stmt.defaultBody, indent+3)
+		writeIndent(b, indent+3)
+		b.WriteString("break\n")
 	}
-	if len(stmt.defaultBody) == 0 {
-		b.WriteString("\n")
-	}
+	writeIndent(b, indent+1)
+	b.WriteString("}\n")
 	writeIndent(b, indent)
-	b.WriteString(")\n")
-	if stmt.result != "" {
-		writeIndent(b, indent)
-		b.WriteString("if (")
-		b.WriteString(stmt.result)
-		b.WriteString(" !== undefined) {\n")
-		writeIndent(b, indent+1)
-		b.WriteString("return ")
-		b.WriteString(stmt.result)
-		b.WriteString("\n")
-		writeIndent(b, indent)
-		b.WriteString("}\n")
-	}
+	b.WriteString("}\n")
 }
 
-func renderTypeSwitchBody(
+func renderTypeSwitchCase(b *strings.Builder, varName string, switchCase loweredTypeSwitchCase, indent int) {
+	if len(switchCase.types) == 0 {
+		return
+	}
+	writeIndent(b, indent)
+	b.WriteString("case ")
+	if len(switchCase.types) == 1 {
+		b.WriteString("$.typeAssert<any>(__goscriptTypeSwitchValue, ")
+		b.WriteString(switchCase.types[0])
+		b.WriteString(").ok")
+	} else {
+		for idx, typ := range switchCase.types {
+			if idx != 0 {
+				b.WriteString(" || ")
+			}
+			b.WriteString("$.is(__goscriptTypeSwitchValue, ")
+			b.WriteString(typ)
+			b.WriteString(")")
+		}
+	}
+	b.WriteString(":\n")
+	value := "__goscriptTypeSwitchValue"
+	if len(switchCase.types) == 1 {
+		value = "$.typeAssert<any>(__goscriptTypeSwitchValue, " + switchCase.types[0] + ").value"
+	}
+	renderTypeSwitchInlineBody(b, varName, value, switchCase.body, indent+1)
+	writeIndent(b, indent+1)
+	b.WriteString("break\n")
+}
+
+func renderTypeSwitchInlineBody(
 	b *strings.Builder,
 	varName string,
-	defaultValue string,
+	value string,
 	body []loweredStmt,
 	indent int,
 ) {
-	header := "() => {\n"
-	if varName != "" && defaultValue == "" {
-		header = "(" + varName + ") => {\n"
+	if varName == "" {
+		renderStmts(b, body, indent)
+		return
 	}
-	b.WriteString(header)
-	if varName != "" && defaultValue != "" {
-		if varName == defaultValue {
-			writeIndent(b, indent+1)
-			b.WriteString("const __goscriptTypeSwitchDefaultValue = ")
-			b.WriteString(defaultValue)
-			b.WriteString("\n")
-			writeIndent(b, indent+1)
-			b.WriteString("{\n")
-			writeIndent(b, indent+2)
-			b.WriteString("let ")
-			b.WriteString(varName)
-			b.WriteString(" = __goscriptTypeSwitchDefaultValue\n")
-			renderStmts(b, body, indent+2)
-			writeIndent(b, indent+1)
-			b.WriteString("}\n")
-			writeIndent(b, indent)
-			b.WriteString("}\n")
-			return
-		}
-		writeIndent(b, indent+1)
-		b.WriteString("let ")
-		b.WriteString(varName)
-		b.WriteString(" = ")
-		b.WriteString(defaultValue)
-		b.WriteString("\n")
-	}
+	writeIndent(b, indent)
+	b.WriteString("{\n")
+	writeIndent(b, indent+1)
+	b.WriteString("let ")
+	b.WriteString(varName)
+	b.WriteString(" = ")
+	b.WriteString(value)
+	b.WriteString("\n")
 	renderStmts(b, body, indent+1)
 	writeIndent(b, indent)
 	b.WriteString("}\n")

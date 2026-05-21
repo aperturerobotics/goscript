@@ -159,39 +159,41 @@ export async function main(): Promise<void> {
 
 	for (let i = 0; i < $.len(testItems); i++) {
 		let item = testItems![i]
-		$.typeSwitch(
-			item,
-			[
-				{
-					types: ["main.MyStruct"],
-					body: (v) => {
+		{
+			const __goscriptTypeSwitchValue = item
+			switch (true) {
+				case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyStruct").ok:
+					{
+						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyStruct").value
 						$.println("testItems[", i, "] is MyStruct value:", v.Value)
 					}
-				},
-				{
-					types: [{ kind: $.TypeKind.Pointer, elemType: "main.MyStruct" }],
-					body: (v) => {
+					break
+				case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" }).ok:
+					{
+						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" }).value
 						$.println("testItems[", i, "] is *MyStruct pointer:", $.pointerValue<MyStruct>(v).Value)
 					}
-				},
-				{
-					types: [{ kind: $.TypeKind.Basic, name: "int" }],
-					body: (v) => {
+					break
+				case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+					{
+						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
 						$.println("testItems[", i, "] is int:", v)
 					}
-				},
-				{
-					types: [{ kind: $.TypeKind.Basic, name: "string" }],
-					body: (v) => {
+					break
+				case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).ok:
+					{
+						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).value
 						$.println("testItems[", i, "] is string:", v)
 					}
-				}
-			],
-			() => {
-				let v = item
-				$.println("testItems[", i, "] is unknown type")
+					break
+				default:
+					{
+						let v = __goscriptTypeSwitchValue
+						$.println("testItems[", i, "] is unknown type")
+					}
+					break
 			}
-		)
+		}
 	}
 
 	$.println("\n=== Test Complete ===")

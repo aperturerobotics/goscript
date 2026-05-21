@@ -1390,6 +1390,24 @@ func (o *LoweringOwner) lowerStmtListAfter(
 				continue
 			}
 		}
+		if stmtCtx, nextCtx, prelude, ok := o.lowerShortDeclStatementContext(ctx, stmt); ok {
+			stmtLowered, stmtDiagnostics := o.lowerStmt(stmtCtx, stmt)
+			diagnostics = append(diagnostics, stmtDiagnostics...)
+			if len(prelude) != 0 {
+				if len(leading) != 0 {
+					prelude[0].leading = append(leading, prelude[0].leading...)
+				}
+				lowered = append(lowered, prelude...)
+			} else if len(stmtLowered) != 0 && len(leading) != 0 {
+				stmtLowered[0].leading = append(leading, stmtLowered[0].leading...)
+			}
+			lowered = append(lowered, stmtLowered...)
+			ctx = nextCtx
+			if endLine := sourceLine(ctx, stmt.End()); endLine != 0 {
+				prevEndLine = endLine
+			}
+			continue
+		}
 		stmtLowered, stmtDiagnostics := o.lowerStmt(ctx, stmt)
 		diagnostics = append(diagnostics, stmtDiagnostics...)
 		if len(stmtLowered) != 0 && len(leading) != 0 {
@@ -1401,6 +1419,25 @@ func (o *LoweringOwner) lowerStmtListAfter(
 		}
 	}
 	return lowered, diagnostics
+}
+
+func (o *LoweringOwner) lowerShortDeclStatementContext(
+	ctx lowerFileContext,
+	stmt ast.Stmt,
+) (lowerFileContext, lowerFileContext, []loweredStmt, bool) {
+	assign, ok := stmt.(*ast.AssignStmt)
+	if !ok || assign.Tok != token.DEFINE {
+		return ctx, ctx, nil, false
+	}
+	oldAliases, prelude := o.lowerShortDeclShadowAliases(ctx, assign)
+	newAliases := o.lowerShortDeclNewShadowAliases(ctx, assign)
+	if len(oldAliases) == 0 && len(newAliases) == 0 {
+		return ctx, ctx, nil, false
+	}
+	stmtAliases := make(map[types.Object]string, len(oldAliases)+len(newAliases))
+	maps.Copy(stmtAliases, oldAliases)
+	maps.Copy(stmtAliases, newAliases)
+	return ctx.withIdentAliases(stmtAliases), ctx.withIdentAliases(newAliases), prelude, true
 }
 
 func (o *LoweringOwner) lowerBackwardGotoLoop(
@@ -1856,9 +1893,16 @@ func (o *LoweringOwner) lowerShortDeclShadowAliases(
 	aliases := make(map[types.Object]string)
 	var prelude []loweredStmt
 	for _, rhs := range assign.Rhs {
+		selectorFields := make(map[*ast.Ident]bool)
+		ast.Inspect(rhs, func(node ast.Node) bool {
+			if selector, ok := node.(*ast.SelectorExpr); ok {
+				selectorFields[selector.Sel] = true
+			}
+			return true
+		})
 		ast.Inspect(rhs, func(node ast.Node) bool {
 			ident, ok := node.(*ast.Ident)
-			if !ok || !names[ident.Name] {
+			if !ok || selectorFields[ident] || !names[ident.Name] {
 				return true
 			}
 			obj := ctx.semPkg.source.TypesInfo.Uses[ident]
@@ -1873,6 +1917,51 @@ func (o *LoweringOwner) lowerShortDeclShadowAliases(
 		})
 	}
 	return aliases, prelude
+}
+
+func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
+	ctx lowerFileContext,
+	assign *ast.AssignStmt,
+) map[types.Object]string {
+	defsByName := make(map[string]types.Object)
+	for _, expr := range assign.Lhs {
+		ident, ok := expr.(*ast.Ident)
+		if !ok || ident.Name == "_" {
+			continue
+		}
+		obj := ctx.semPkg.source.TypesInfo.Defs[ident]
+		if obj != nil {
+			defsByName[ident.Name] = obj
+		}
+	}
+	if len(defsByName) == 0 {
+		return nil
+	}
+	aliases := make(map[types.Object]string)
+	for _, rhs := range assign.Rhs {
+		selectorFields := make(map[*ast.Ident]bool)
+		ast.Inspect(rhs, func(node ast.Node) bool {
+			if selector, ok := node.(*ast.SelectorExpr); ok {
+				selectorFields[selector.Sel] = true
+			}
+			return true
+		})
+		ast.Inspect(rhs, func(node ast.Node) bool {
+			ident, ok := node.(*ast.Ident)
+			if !ok || selectorFields[ident] {
+				return true
+			}
+			def := defsByName[ident.Name]
+			if def == nil || aliases[def] != "" {
+				return true
+			}
+			if used := ctx.semPkg.source.TypesInfo.Uses[ident]; used != nil && used != def {
+				aliases[def] = ctx.tempName("Shadow")
+			}
+			return true
+		})
+	}
+	return aliases
 }
 
 func (o *LoweringOwner) lowerDeclaredValue(ctx lowerFileContext, lhs ast.Expr, value string) string {
@@ -2689,9 +2778,6 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 		value:   valueExpr,
 		varName: varName,
 	}
-	if ctx.rangeBranch != nil {
-		switchIR.result = "__goscriptTypeSwitchResult" + strconv.Itoa(int(stmt.Pos()))
-	}
 	for _, clauseStmt := range stmt.Body.List {
 		clause, ok := clauseStmt.(*ast.CaseClause)
 		if !ok {
@@ -3003,12 +3089,15 @@ func lowerIdent(ident *ast.Ident) string {
 
 func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw bool) string {
 	value := lowerIdent(ident)
-	if raw || ident.Name == "nil" || ident.Name == "true" || ident.Name == "false" {
+	if ident.Name == "nil" || ident.Name == "true" || ident.Name == "false" {
 		return value
 	}
 	obj := objectForIdent(ctx, ident)
 	if alias := ctx.identAliases[obj]; alias != "" {
 		return alias
+	}
+	if raw {
+		return value
 	}
 	if alias := ctx.localAliases[obj]; alias != "" {
 		return alias + "." + value

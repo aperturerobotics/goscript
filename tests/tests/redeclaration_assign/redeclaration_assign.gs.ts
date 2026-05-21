@@ -7,6 +7,10 @@ export function returnsOneIntOneBool(): [number, boolean] {
 	return [7, true]
 }
 
+export function shadowTupleInput(value: string): [string, boolean] {
+	return [value + "-inner", true]
+}
+
 export async function main(): Promise<void> {
 	let i: number = 0
 	$.println("initial i:", i)
@@ -22,6 +26,15 @@ export async function main(): Promise<void> {
 		$.println("err is true")
 	} else {
 		$.println("err is false")
+	}
+
+	let value = "outer"
+	{
+		let __goscriptShadow0 = value
+		let __goscriptTuple1 = shadowTupleInput(__goscriptShadow0)
+		let __goscriptShadow1 = __goscriptTuple1[0]
+		let ok = __goscriptTuple1[1]
+		$.println("shadow tuple:", __goscriptShadow1, ok)
 	}
 }
 

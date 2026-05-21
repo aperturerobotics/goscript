@@ -4,6 +4,10 @@ func returnsOneIntOneBool() (int, bool) {
 	return 7, true
 }
 
+func shadowTupleInput(value string) (string, bool) {
+	return value + "-inner", true
+}
+
 func main() {
 	var i int
 	println("initial i:", i) /* Use i to avoid unused error before := */
@@ -17,5 +21,11 @@ func main() {
 		println("err is true")
 	} else {
 		println("err is false")
+	}
+
+	value := "outer"
+	{
+		value, ok := shadowTupleInput(value)
+		println("shadow tuple:", value, ok)
 	}
 }
