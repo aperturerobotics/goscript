@@ -955,9 +955,9 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 	}
 }
 
-func TestCompilePackagesPacksVariadicCallsInGeneratedOverrideSubpackage(t *testing.T) {
+func TestCompilePackagesPacksVariadicCallsInGeneratedSubpackage(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
-		"go.mod": "module github.com/aperturerobotics/protobuf-go-lite\n\ngo 1.25.3\n",
+		"go.mod": "module example.test/variadic-subpackage\n\ngo 1.25.3\n",
 		"json/json.go": strings.Join([]string{
 			"package json",
 			"import \"fmt\"",
@@ -980,7 +980,7 @@ func TestCompilePackagesPacksVariadicCallsInGeneratedOverrideSubpackage(t *testi
 	if _, err := comp.CompilePackages(context.Background(), "./json"); err != nil {
 		t.Fatal(err.Error())
 	}
-	outputFile := filepath.Join(outputDir, "@goscript", "github.com", "aperturerobotics", "protobuf-go-lite", "json", "json.gs.ts")
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "variadic-subpackage", "json", "json.gs.ts")
 	content, err := os.ReadFile(outputFile)
 	if err != nil {
 		t.Fatal(err.Error())
