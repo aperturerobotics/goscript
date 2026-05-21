@@ -178,7 +178,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"reflect_implements":                true,
 	"reflect_numfield":                  true,
 	"reserved_words":                    true,
-	"star_compound_assign":              true,
 	"star_expr_destructuring":           true,
 	"struct_embedding":                  true,
 	"struct_embedding_bytes_buffer":     true,

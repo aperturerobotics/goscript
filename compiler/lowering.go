@@ -1359,6 +1359,10 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		}
 		return lowered, diagnostics
 	case *ast.IncDecStmt:
+		if star, ok := unwrapParenExpr(typed.X).(*ast.StarExpr); ok {
+			expr, diagnostics := o.lowerPointerStorageExpr(ctx, star.X)
+			return []loweredStmt{{text: expr + typed.Tok.String()}}, diagnostics
+		}
 		expr, diagnostics := o.lowerExpr(ctx, typed.X)
 		return []loweredStmt{{text: expr + typed.Tok.String()}}, diagnostics
 	case *ast.BranchStmt:
@@ -1884,6 +1888,16 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			pointer, pointerDiagnostics := o.lowerPointerStorageExpr(ctx, star.X)
 			diagnostics = append(diagnostics, pointerDiagnostics...)
 			stmts = append(stmts, loweredStmt{text: pointer + " = " + right})
+			continue
+		}
+		if star, ok := lhs.(*ast.StarExpr); ok && stmt.Tok != token.DEFINE {
+			pointer, pointerDiagnostics := o.lowerPointerStorageExpr(ctx, star.X)
+			diagnostics = append(diagnostics, pointerDiagnostics...)
+			if stmt.Tok == token.AND_NOT_ASSIGN {
+				stmts = append(stmts, loweredStmt{text: pointer + " = " + pointer + " & ~(" + right + ")"})
+				continue
+			}
+			stmts = append(stmts, loweredStmt{text: pointer + " " + stmt.Tok.String() + " " + right})
 			continue
 		}
 		if isShortDecl {
