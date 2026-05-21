@@ -1,4 +1,4 @@
-import type { VarRef } from './varRef.js'
+import { varRef, type VarRef } from './varRef.js'
 
 /**
  * GoSliceObject contains metadata for complex slice views
@@ -116,6 +116,21 @@ export function sliceToArray<T>(
     )
   }
   return asArray(slice as Slice<T>).slice(0, length)
+}
+
+export function sliceToArrayPointer<T>(
+  slice: Slice<T> | Uint8Array,
+  length: number,
+): VarRef<T[]> {
+  if (len(slice) < length) {
+    throw new Error(
+      `runtime error: cannot convert slice with length ${len(slice)} to array pointer with length ${length}`,
+    )
+  }
+  if (slice instanceof Uint8Array) {
+    return varRef(goSlice(slice, 0, length) as unknown as T[])
+  }
+  return varRef(goSlice(slice, 0, length) as T[])
 }
 
 /**

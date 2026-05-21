@@ -3,6 +3,21 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+export function fillArray(dst: $.VarRef<number[]> | null): void {
+	for (let i = 0; i < $.len($.pointerValue<number[]>(dst)); i++) {
+		$.pointerValue<number[]>(dst)[i] = $.int(i + 1)
+	}
+}
+
+export function sumArray(src: $.VarRef<number[]> | null): number {
+	let sum = 0
+	for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<number[]>(src)); __rangeIndex++) {
+		let v = $.pointerValue<number[]>(src)[__rangeIndex]
+		sum += $.int(v)
+	}
+	return sum
+}
+
 export async function main(): Promise<void> {
 	let buckets: number[][] = Array.from({ length: 2 }, () => Array.from({ length: 3 }, () => 0))
 	let cache = $.indexRef(buckets, 1)
@@ -20,6 +35,11 @@ export async function main(): Promise<void> {
 
 	let view = $.goSlice($.pointerValue<number[]>(cache), undefined, undefined)
 	$.println("slice:", $.len(view), view![2])
+
+	let buf = $.arrayToSlice<number>([9, 0, 0, 0, 0])
+	fillArray($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4))
+	$.println("converted:", buf![0], buf![1], buf![2], buf![3], buf![4])
+	$.println("converted sum:", sumArray($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4)))
 }
 
 
