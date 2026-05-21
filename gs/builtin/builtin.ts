@@ -124,6 +124,85 @@ export function pointerValue<T>(value: T | VarRef<T> | null | undefined): T {
   return value
 }
 
+export function arrayEqual(a: unknown, b: unknown): boolean {
+  return comparableEqual(a, b)
+}
+
+function comparableEqual(a: unknown, b: unknown): boolean {
+  if (a === b) {
+    return true
+  }
+  if (a === null || a === undefined || b === null || b === undefined) {
+    return false
+  }
+  if (isArrayLike(a) && isArrayLike(b)) {
+    if (a.length !== b.length) {
+      return false
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (!comparableEqual(a[i], b[i])) {
+        return false
+      }
+    }
+    return true
+  }
+  if (hasGoType(a) || hasGoType(b)) {
+    if (!hasGoType(a) || !hasGoType(b) || a.__goType !== b.__goType) {
+      return false
+    }
+    if (a.__isTypedNil || b.__isTypedNil) {
+      return a.__isTypedNil === true && b.__isTypedNil === true
+    }
+  }
+  if (isStructValue(a) && isStructValue(b)) {
+    return fieldsEqual(a._fields, b._fields)
+  }
+  return false
+}
+
+function isArrayLike(value: unknown): value is ArrayLike<unknown> {
+  return Array.isArray(value) || value instanceof Uint8Array
+}
+
+function hasGoType(value: unknown): value is {
+  __goType: string
+  __isTypedNil?: boolean
+} {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { __goType?: unknown }).__goType === 'string'
+  )
+}
+
+function isStructValue(value: unknown): value is {
+  _fields: Record<string, VarRef<unknown>>
+} {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { _fields?: unknown })._fields === 'object' &&
+    (value as { _fields?: unknown })._fields !== null
+  )
+}
+
+function fieldsEqual(
+  a: Record<string, VarRef<unknown>>,
+  b: Record<string, VarRef<unknown>>,
+): boolean {
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
+  if (aKeys.length !== bKeys.length) {
+    return false
+  }
+  for (const key of aKeys) {
+    if (!(key in b) || !comparableEqual(a[key].value, b[key].value)) {
+      return false
+    }
+  }
+  return true
+}
+
 export interface Complex {
   real: number
   imag: number

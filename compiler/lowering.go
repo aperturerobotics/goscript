@@ -3272,6 +3272,11 @@ func isEqualityOperator(op token.Token) bool {
 	return op == token.EQL || op == token.NEQ
 }
 
+func isArrayType(typ types.Type) bool {
+	_, ok := types.Unalias(typ).Underlying().(*types.Array)
+	return ok
+}
+
 func (o *LoweringOwner) lowerEqualityOperands(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, string) {
 	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
 	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
@@ -3282,6 +3287,19 @@ func (o *LoweringOwner) lowerEqualityOperands(ctx lowerFileContext, expr *ast.Bi
 		left = o.lowerValueForTargetTypes(ctx, rightType, leftType, left, false)
 	}
 	return left, right
+}
+
+func (o *LoweringOwner) lowerArrayEqualityExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
+	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if !isArrayType(leftType) || !isArrayType(rightType) {
+		return "", false
+	}
+	value := o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayEqual) + "(" + left + ", " + right + ")"
+	if expr.Op == token.NEQ {
+		value = "!" + value
+	}
+	return value, true
 }
 
 func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
@@ -3313,6 +3331,9 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 			return left + " & ~(" + right + ")", append(leftDiagnostics, rightDiagnostics...)
 		}
 		if isEqualityOperator(typed.Op) {
+			if value, ok := o.lowerArrayEqualityExpr(ctx, typed, left, right); ok {
+				return value, append(leftDiagnostics, rightDiagnostics...)
+			}
 			left, right = o.lowerEqualityOperands(ctx, typed, left, right)
 		}
 		return left + " " + typed.Op.String() + " " + right, append(leftDiagnostics, rightDiagnostics...)

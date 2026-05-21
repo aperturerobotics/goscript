@@ -43,6 +43,7 @@ const (
 	RuntimeHelperAssignStruct      RuntimeHelper = "value.assignStruct"
 	RuntimeHelperMarkAsStructValue RuntimeHelper = "value.markAsStructValue"
 	RuntimeHelperPointerValue      RuntimeHelper = "value.pointerValue"
+	RuntimeHelperArrayEqual        RuntimeHelper = "value.arrayEqual"
 
 	RuntimeHelperVarRef                RuntimeHelper = "varref.varRef"
 	RuntimeHelperFieldRef              RuntimeHelper = "varref.fieldRef"
@@ -225,6 +226,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperAssignStruct, "assignStruct", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperMarkAsStructValue, "markAsStructValue", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperPointerValue, "pointerValue", RuntimeHelperCategoryValue),
+		runtimeHelper(RuntimeHelperArrayEqual, "arrayEqual", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperVarRef, "varRef", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperFieldRef, "fieldRef", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperUnref, "unref", RuntimeHelperCategoryVarRef),
