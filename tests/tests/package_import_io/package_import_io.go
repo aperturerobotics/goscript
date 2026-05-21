@@ -1,9 +1,29 @@
 package main
 
-import "io"
+import (
+	"io"
+	"sync"
+)
 
 type writerHolder struct {
 	w io.Writer
+}
+
+var asyncWrites sync.Map
+
+type asyncBuffer struct{}
+
+func (b *asyncBuffer) Write(p []byte) (int, error) {
+	asyncWrites.Load("last")
+	return len(p), nil
+}
+
+func (b *asyncBuffer) Reset(w io.Writer) {
+	if b == w {
+		println("Reset same writer")
+		return
+	}
+	println("Reset different writer")
 }
 
 func main() {
@@ -25,6 +45,10 @@ func main() {
 	holder := writerHolder{w: io.Discard}
 	n, err = io.WriteString(holder.w, "field writer")
 	println("WriteString field writer - bytes:", n, "err:", err == nil)
+
+	buf := &asyncBuffer{}
+	buf.Reset(buf)
+	buf.Reset(nil)
 
 	println("test finished")
 }

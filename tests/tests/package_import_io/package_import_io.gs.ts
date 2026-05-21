@@ -5,6 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as io from "@goscript/io/index.js"
 
+import * as sync from "@goscript/sync/index.js"
+
 export class writerHolder {
 	public get w(): io.Writer | null {
 		return this._fields.w.value
@@ -40,6 +42,48 @@ export class writerHolder {
 	)
 }
 
+export let asyncWrites: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
+
+export class asyncBuffer {
+	public _fields: {
+	}
+
+	constructor(init?: Partial<{}>) {
+		this._fields = {
+		}
+	}
+
+	public clone(): asyncBuffer {
+		const cloned = new asyncBuffer()
+		cloned._fields = {
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Reset(w: io.Writer | null): void {
+		const b: asyncBuffer | $.VarRef<asyncBuffer> | null = this
+		if ($.interfaceValue<io.Writer | null>(b, "*main.asyncBuffer") == w) {
+			$.println("Reset same writer")
+			return
+		}
+		$.println("Reset different writer")
+	}
+
+	public async Write(p: $.Slice<number>): Promise<[number, $.GoError]> {
+		const b: asyncBuffer | $.VarRef<asyncBuffer> | null = this
+		await asyncWrites.value.Load("last")
+		return [$.len(p), null]
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.asyncBuffer",
+		new asyncBuffer(),
+		[{ name: "Reset", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
+		asyncBuffer,
+		{}
+	)
+}
+
 export async function main(): Promise<void> {
 	// Test basic error variables
 	$.println("EOF:", $.pointerValue(io.EOF).Error())
@@ -61,6 +105,10 @@ export async function main(): Promise<void> {
 	n = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	$.println("WriteString field writer - bytes:", n, "err:", err == null)
+
+	let buf = new asyncBuffer()
+	$.pointerValue<asyncBuffer>(buf).Reset($.interfaceValue<io.Writer | null>(buf, "*main.asyncBuffer"))
+	$.pointerValue<asyncBuffer>(buf).Reset(null)
 
 	$.println("test finished")
 }

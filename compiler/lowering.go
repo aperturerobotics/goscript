@@ -2778,6 +2778,22 @@ func isIntegerRangeType(typ types.Type) bool {
 	return ok && basic.Info()&types.IsInteger != 0
 }
 
+func isEqualityOperator(op token.Token) bool {
+	return op == token.EQL || op == token.NEQ
+}
+
+func (o *LoweringOwner) lowerEqualityOperands(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, string) {
+	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if isInterfaceType(leftType) && !isInterfaceType(rightType) {
+		right = o.lowerValueForTargetTypes(ctx, leftType, rightType, right, false)
+	}
+	if isInterfaceType(rightType) && !isInterfaceType(leftType) {
+		left = o.lowerValueForTargetTypes(ctx, rightType, leftType, left, false)
+	}
+	return left, right
+}
+
 func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
 	switch typed := expr.(type) {
 	case *ast.BasicLit:
@@ -2800,6 +2816,9 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 		}
 		if typed.Op == token.AND_NOT {
 			return left + " & ~(" + right + ")", append(leftDiagnostics, rightDiagnostics...)
+		}
+		if isEqualityOperator(typed.Op) {
+			left, right = o.lowerEqualityOperands(ctx, typed, left, right)
 		}
 		return left + " " + typed.Op.String() + " " + right, append(leftDiagnostics, rightDiagnostics...)
 	case *ast.UnaryExpr:
