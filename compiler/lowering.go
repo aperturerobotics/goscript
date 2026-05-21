@@ -1998,11 +1998,9 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 	init := ""
 	var diagnostics []Diagnostic
 	if stmt.Init != nil {
-		lowered, initDiagnostics := o.lowerStmt(ctx, stmt.Init)
+		lowered, initDiagnostics := o.lowerForInitStmt(ctx, stmt.Init)
 		diagnostics = append(diagnostics, initDiagnostics...)
-		if len(lowered) != 0 {
-			init = strings.TrimSuffix(lowered[0].text, ";")
-		}
+		init = lowered
 	}
 	cond := ""
 	if stmt.Cond != nil {
@@ -2029,7 +2027,82 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 	}, diagnostics
 }
 
+func (o *LoweringOwner) lowerForInitStmt(ctx lowerFileContext, stmt ast.Stmt) (string, []Diagnostic) {
+	assign, ok := stmt.(*ast.AssignStmt)
+	if !ok {
+		lowered, diagnostics := o.lowerStmt(ctx, stmt)
+		if len(lowered) == 0 {
+			return "", diagnostics
+		}
+		return strings.TrimSuffix(lowered[0].text, ";"), diagnostics
+	}
+	if assign.Tok == token.DEFINE && len(assign.Rhs) > 1 && len(assign.Lhs) == len(assign.Rhs) {
+		parts := make([]string, 0, len(assign.Lhs))
+		var diagnostics []Diagnostic
+		for idx, lhs := range assign.Lhs {
+			if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
+				continue
+			}
+			left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, true)
+			right, rightDiagnostics := o.lowerExpr(ctx, assign.Rhs[idx])
+			diagnostics = append(diagnostics, leftDiagnostics...)
+			diagnostics = append(diagnostics, rightDiagnostics...)
+			right = o.lowerDeclaredValue(ctx, lhs, right)
+			parts = append(parts, left+" = "+right)
+		}
+		return "let " + strings.Join(parts, ", "), diagnostics
+	}
+	if len(assign.Rhs) == 1 && len(assign.Lhs) > 1 {
+		right, diagnostics := o.lowerTupleExpr(ctx, assign.Rhs[0])
+		lefts := make([]string, 0, len(assign.Lhs))
+		for _, lhs := range assign.Lhs {
+			if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
+				lefts = append(lefts, "")
+				continue
+			}
+			left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, assign.Tok == token.DEFINE)
+			diagnostics = append(diagnostics, leftDiagnostics...)
+			lefts = append(lefts, left)
+		}
+		if assign.Tok == token.DEFINE {
+			if allShortAssignTargetsNew(ctx, assign.Lhs) && !tupleDeclarationNeedsElementStatements(ctx, assign.Lhs) {
+				return "let [" + strings.Join(lefts, ", ") + "] = " + right, diagnostics
+			}
+			tempName := ctx.tempName("Tuple")
+			parts := []string{tempName + " = " + right}
+			for idx, lhs := range assign.Lhs {
+				if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
+					continue
+				}
+				value := o.lowerDeclaredValue(ctx, lhs, tempName+"["+strconv.Itoa(idx)+"]")
+				parts = append(parts, lefts[idx]+" = "+value)
+			}
+			return "let " + strings.Join(parts, ", "), diagnostics
+		}
+		return "[" + strings.Join(lefts, ", ") + "] = " + right, diagnostics
+	}
+	lowered, diagnostics := o.lowerStmt(ctx, stmt)
+	if len(lowered) == 0 {
+		return "", diagnostics
+	}
+	return strings.TrimSuffix(lowered[0].text, ";"), diagnostics
+}
+
 func (o *LoweringOwner) lowerForPostStmt(ctx lowerFileContext, stmt ast.Stmt) (string, []Diagnostic) {
+	if assign, ok := stmt.(*ast.AssignStmt); ok && len(assign.Rhs) == 1 && len(assign.Lhs) > 1 {
+		right, diagnostics := o.lowerTupleExpr(ctx, assign.Rhs[0])
+		lefts := make([]string, 0, len(assign.Lhs))
+		for _, lhs := range assign.Lhs {
+			if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
+				lefts = append(lefts, "")
+				continue
+			}
+			left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, false)
+			diagnostics = append(diagnostics, leftDiagnostics...)
+			lefts = append(lefts, left)
+		}
+		return "[" + strings.Join(lefts, ", ") + "] = " + right, diagnostics
+	}
 	if assign, ok := stmt.(*ast.AssignStmt); ok && assign.Tok == token.ASSIGN && len(assign.Rhs) > 1 && len(assign.Rhs) == len(assign.Lhs) {
 		lefts := make([]string, 0, len(assign.Lhs))
 		rights := make([]string, 0, len(assign.Rhs))

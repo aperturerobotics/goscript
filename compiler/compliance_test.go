@@ -131,7 +131,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"filepath_walkfunc_call":            true,
 	"flag_bitwise_op":                   true,
 	"for_init_multi_assign":             true,
-	"for_post_multi_assign":             true,
 	"for_range":                         true,
 	"function_call_variable_shadowing":  true,
 	"function_signature_type":           true,
