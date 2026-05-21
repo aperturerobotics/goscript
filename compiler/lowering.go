@@ -2743,6 +2743,7 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	deferState := &loweredDeferState{}
 	body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withDeferState(deferState).withoutRangeBranch(), lit.Body)
 	var rendered strings.Builder
+	renderNamedResults(&rendered, o.lowerNamedResults(ctx, signature), 1)
 	renderDeferStack(&rendered, deferState, 1)
 	renderStmts(&rendered, body, 1)
 	async := stmtsContainAwait(body) || deferState.async

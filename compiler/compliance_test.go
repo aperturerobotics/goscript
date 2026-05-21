@@ -162,8 +162,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"method_receiver_with_call_expr":    true,
 	"missing_valueof_error":             true,
 	"multi_return_same_type":            true,
-	"named_return_method":               true,
-	"named_return_multiple":             true,
 	"named_slice_wrapper":               true,
 	"named_struct_async_method":         true,
 	"named_types_valueof":               true,

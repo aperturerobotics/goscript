@@ -1,9 +1,12 @@
 // Generated file based on named_return_multiple.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-export function processValues(input: number): void {
+export function processValues(input: number): [number, string, boolean] {
+	let num: number = 0
+	let text: string = ""
+	let ok: boolean = false
 	num = input * 2
 	if (input > 5) {
 		text = "greater than five"
@@ -11,7 +14,7 @@ export function processValues(input: number): void {
 	} else {
 		text = "five or less"
 	}
-	return
+	return [num, text, ok]
 }
 
 export async function main(): Promise<void> {
@@ -19,49 +22,66 @@ export async function main(): Promise<void> {
 	$.println(n1)
 	$.println(t1)
 	$.println(o1)
+
 	let [n2, t2, o2] = processValues(3)
 	$.println(n2)
 	$.println(t2)
 	$.println(o2)
-	let [n3, t3, o3] = ((val: number): [number, string, boolean] => {
-	if (val == 1) {
-		resInt = 100
-	} else {
-		if (val == 2) {
-			resInt = 200
-			resStr = "set string"
+
+	// Test with an anonymous function and potentially unassigned named returns
+	let [n3, t3, o3] = ($.functionValue((val: number): [number, string, boolean] => {
+		let resInt: number = 0
+		let resStr: string = ""
+		let resBool: boolean = false
+		if (val == 1) {
+			resInt = 100
+		} else {
+			if (val == 2) {
+				resInt = 200
+				resStr = "set string"
+			}
 		}
-	}
-	return
-})(1)
+		return [resInt, resStr, resBool]
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] }))(1)
+
 	$.println(n3)
 	$.println(t3)
 	$.println(o3)
-	let [n4, t4, o4] = ((val: number): [number, string, boolean] => {
-	if (val == 1) {
-		resInt = 100
-	} else {
-		if (val == 2) {
-			resInt = 200
-			resStr = "set string for val 2"
+
+	let [n4, t4, o4] = ($.functionValue((val: number): [number, string, boolean] => {
+		let resInt: number = 0
+		let resStr: string = ""
+		let resBool: boolean = false
+		if (val == 1) {
+			resInt = 100
+		} else {
+			if (val == 2) {
+				resInt = 200
+				resStr = "set string for val 2"
+			}
 		}
-	}
-	return
-})(2)
+		return [resInt, resStr, resBool]
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] }))(2)
+
 	$.println(n4)
 	$.println(t4)
 	$.println(o4)
-	let [n5, t5, o5] = ((val: number): [number, string, boolean] => {
-	if (val == 1) {
-		resInt = 100
-	} else {
-		if (val == 2) {
-			resInt = 200
-			resStr = "set string for val 2"
+
+	let [n5, t5, o5] = ($.functionValue((val: number): [number, string, boolean] => {
+		let resInt: number = 0
+		let resStr: string = ""
+		let resBool: boolean = false
+		if (val == 1) {
+			resInt = 100
+		} else {
+			if (val == 2) {
+				resInt = 200
+				resStr = "set string for val 2"
+			}
 		}
-	}
-	return
-})(3)
+		return [resInt, resStr, resBool]
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] }))(3)
+
 	$.println(n5)
 	$.println(t5)
 	$.println(o5)
