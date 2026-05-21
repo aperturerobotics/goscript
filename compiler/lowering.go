@@ -1114,7 +1114,7 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		return stmts, diagnostics
 	case *ast.BlockStmt:
 		body, diagnostics := o.lowerBlock(ctx, typed)
-		return []loweredStmt{{children: body}}, diagnostics
+		return []loweredStmt{{hasBlock: true, children: body}}, diagnostics
 	case *ast.AssignStmt:
 		return o.lowerAssignStmt(ctx, typed)
 	case *ast.SendStmt:
@@ -1145,6 +1145,7 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		body, bodyDiagnostics := o.lowerBlock(ctx, typed.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		stmt := loweredStmt{
+			hasBlock: true,
 			text:     "if (" + cond + ")",
 			children: body,
 		}
@@ -1302,7 +1303,7 @@ func (o *LoweringOwner) lowerStmtListAfter(
 				prevEndLine,
 			)
 			diagnostics = append(diagnostics, bodyDiagnostics...)
-			block := loweredStmt{text: span.label + ":", children: body}
+			block := loweredStmt{hasBlock: true, text: span.label + ":", children: body}
 			if len(leading) != 0 {
 				block.leading = append(leading, block.leading...)
 			}
@@ -1381,7 +1382,7 @@ func (o *LoweringOwner) lowerBackwardGotoLoop(
 		lowered = append(lowered, init)
 		first, firstDiagnostics := o.lowerStmt(bodyCtx, labeled.Stmt)
 		diagnostics = append(diagnostics, firstDiagnostics...)
-		body = append(body, loweredStmt{text: "if (!" + skipVar + ")", children: first})
+		body = append(body, loweredStmt{hasBlock: true, text: "if (!" + skipVar + ")", children: first})
 		body = append(body, loweredStmt{text: skipVar + " = false"})
 	} else {
 		first, firstDiagnostics := o.lowerStmt(bodyCtx, labeled.Stmt)
@@ -1396,7 +1397,7 @@ func (o *LoweringOwner) lowerBackwardGotoLoop(
 	diagnostics = append(diagnostics, restDiagnostics...)
 	body = append(body, rest...)
 	body = append(body, loweredStmt{text: "break"})
-	loop := loweredStmt{text: label + ": while (true)", children: body}
+	loop := loweredStmt{hasBlock: true, text: label + ": while (true)", children: body}
 	if initialForwardLabel == "" && len(leading) != 0 {
 		loop.leading = append(leading, loop.leading...)
 	}
@@ -1983,6 +1984,7 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 			text = loopLabel + ": " + text
 		}
 		return loweredStmt{
+			hasBlock: true,
 			text:     text,
 			children: body,
 		}, diagnostics
@@ -2016,6 +2018,7 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 		text = loopLabel + ": " + text
 	}
 	return loweredStmt{
+		hasBlock: true,
 		text:     text,
 		children: body,
 	}, diagnostics
@@ -2068,6 +2071,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		}
 		children = append(children, body...)
 		return loweredStmt{
+			hasBlock: true,
 			text:     "while (true)",
 			children: children,
 		}, diagnostics
@@ -2079,6 +2083,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 			keyName = "__rangeIndex"
 		}
 		return loweredStmt{
+			hasBlock: true,
 			text:     "for (let " + keyName + " = 0; " + keyName + " < " + rangeValue + "; " + keyName + "++)",
 			children: body,
 		}, diagnostics
@@ -2095,6 +2100,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 			value = "__rangeValue"
 		}
 		return loweredStmt{
+			hasBlock: true,
 			text:     "for (const [" + key + ", " + value + "] of " + rangeValue + "?.entries() ?? [])",
 			children: body,
 		}, diagnostics
@@ -2111,6 +2117,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 			value = "__rangeRune"
 		}
 		return loweredStmt{
+			hasBlock: true,
 			text:     "for (const [" + key + ", " + value + "] of " + o.runtimeOwner.QualifiedHelper(RuntimeHelperRangeString) + "(" + rangeValue + "))",
 			children: body,
 		}, diagnostics
@@ -2142,6 +2149,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		children = append([]loweredStmt{{text: "let " + valueName + " = " + value}}, body...)
 	}
 	return loweredStmt{
+		hasBlock: true,
 		text:     "for (let " + indexName + " = 0; " + indexName + " < " + o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + rangeTarget + "); " + indexName + "++)",
 		children: children,
 	}, diagnostics

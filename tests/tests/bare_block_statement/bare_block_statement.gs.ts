@@ -25,9 +25,19 @@ export function shadowedValue(): number {
 	return value
 }
 
+export function emptyBodies(limit: number): number {
+	let count = 0
+	if (limit > 0) {
+	}
+	for (; count < limit; count++) {
+	}
+	return count
+}
+
 export async function main(): Promise<void> {
 	$.println("scoped total:", scopedTotal(1))
 	$.println("outer value:", shadowedValue())
+	$.println("empty bodies:", emptyBodies(3))
 }
 
 

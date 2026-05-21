@@ -414,7 +414,7 @@ func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 			continue
 		}
 		writeIndent(b, indent)
-		if stmt.text == "" && len(stmt.children) != 0 {
+		if stmt.text == "" && (stmt.hasBlock || len(stmt.children) != 0) {
 			b.WriteString("{\n")
 			renderStmts(b, stmt.children, indent+1)
 			writeIndent(b, indent)
@@ -422,7 +422,7 @@ func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 			continue
 		}
 		writeIndentedText(b, stmt.text, indent)
-		if len(stmt.children) == 0 {
+		if !stmt.hasBlock && len(stmt.children) == 0 {
 			b.WriteString("\n")
 			continue
 		}

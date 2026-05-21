@@ -22,7 +22,17 @@ func shadowedValue() int {
 	return value
 }
 
+func emptyBodies(limit int) int {
+	count := 0
+	if limit > 0 {
+	}
+	for ; count < limit; count++ {
+	}
+	return count
+}
+
 func main() {
 	println("scoped total:", scopedTotal(1))
 	println("outer value:", shadowedValue())
+	println("empty bodies:", emptyBodies(3))
 }

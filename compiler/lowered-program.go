@@ -82,6 +82,7 @@ type loweredNamedResult struct {
 type loweredStmt struct {
 	text       string
 	leading    []string
+	hasBlock   bool
 	children   []loweredStmt
 	elseBody   []loweredStmt
 	rangeFunc  *loweredRangeFunc
