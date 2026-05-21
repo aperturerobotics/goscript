@@ -74,22 +74,32 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 		return model, diagnostics
 	}
 
-	o.propagateFunctionAsync(model)
-	o.propagateAsyncFunctionArguments(model)
-	o.resolveInterfaceImplementations(model)
-	o.propagateFunctionAsync(model)
+	diagnostics = append(diagnostics, o.propagateFunctionAsync(ctx, model)...)
+	if diagnosticsHaveErrors(diagnostics) {
+		return model, diagnostics
+	}
+	diagnostics = append(diagnostics, o.propagateAsyncFunctionArguments(ctx, model)...)
+	if diagnosticsHaveErrors(diagnostics) {
+		return model, diagnostics
+	}
+	diagnostics = append(diagnostics, o.resolveInterfaceImplementations(ctx, model)...)
+	if diagnosticsHaveErrors(diagnostics) {
+		return model, diagnostics
+	}
+	diagnostics = append(diagnostics, o.propagateFunctionAsync(ctx, model)...)
 	return model, diagnostics
 }
 
 func newSemanticModel() *SemanticModel {
 	return &SemanticModel{
-		packages:         make(map[string]*semanticPackage),
-		addressTaken:     make(map[types.Object]bool),
-		needsVarRef:      make(map[types.Object]bool),
-		functions:        make(map[*types.Func]*semanticFunction),
-		types:            make(map[*types.Named]*semanticType),
-		values:           make(map[types.Object]*semanticValue),
-		generatedImports: make(map[string]map[string]bool),
+		packages:            make(map[string]*semanticPackage),
+		addressTaken:        make(map[types.Object]bool),
+		needsVarRef:         make(map[types.Object]bool),
+		functions:           make(map[*types.Func]*semanticFunction),
+		functionsByFullName: make(map[string]*semanticFunction),
+		types:               make(map[*types.Named]*semanticType),
+		values:              make(map[types.Object]*semanticValue),
+		generatedImports:    make(map[string]map[string]bool),
 	}
 }
 
@@ -397,6 +407,12 @@ func (o *SemanticModelOwner) addFunction(
 	if existing := model.functions[fn]; existing != nil {
 		return existing
 	}
+	if origin := fn.Origin(); origin != nil {
+		if existing := model.functions[origin]; existing != nil {
+			model.functions[fn] = existing
+			return existing
+		}
+	}
 	signature, _ := fn.Type().(*types.Signature)
 	semFn := &semanticFunction{
 		name:      fn.Name(),
@@ -413,6 +429,14 @@ func (o *SemanticModelOwner) addFunction(
 		semFn.receiver = receiverNamedType(recv)
 	}
 	model.functions[fn] = semFn
+	if origin := fn.Origin(); origin != nil {
+		model.functions[origin] = semFn
+	}
+	if fullName := fn.FullName(); fullName != "" {
+		if existing := model.functionsByFullName[fullName]; existing == nil {
+			model.functionsByFullName[fullName] = semFn
+		}
+	}
 	semPkg.functions = append(semPkg.functions, semFn)
 	return semFn
 }
@@ -541,17 +565,33 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 	return diagnostics
 }
 
-func (o *SemanticModelOwner) propagateAsyncFunctionArguments(model *SemanticModel) {
+func (o *SemanticModelOwner) propagateAsyncFunctionArguments(
+	ctx context.Context,
+	model *SemanticModel,
+) []Diagnostic {
 	changed := true
 	for changed {
+		if err := ctx.Err(); err != nil {
+			return []Diagnostic{contextCanceledDiagnostic(err)}
+		}
 		changed = false
 		for _, semPkg := range model.packages {
+			if err := ctx.Err(); err != nil {
+				return []Diagnostic{contextCanceledDiagnostic(err)}
+			}
 			pkg := semPkg.source
 			if pkg == nil {
 				continue
 			}
 			for _, file := range pkg.Syntax {
+				if err := ctx.Err(); err != nil {
+					return []Diagnostic{contextCanceledDiagnostic(err)}
+				}
+				var inspectErr error
 				ast.Inspect(file, func(node ast.Node) bool {
+					if inspectErr = ctx.Err(); inspectErr != nil {
+						return false
+					}
 					switch typed := node.(type) {
 					case *ast.CallExpr:
 						called := calledFunction(pkg, typed.Fun)
@@ -568,12 +608,18 @@ func (o *SemanticModelOwner) propagateAsyncFunctionArguments(model *SemanticMode
 					}
 					return true
 				})
+				if inspectErr != nil {
+					return []Diagnostic{contextCanceledDiagnostic(inspectErr)}
+				}
 			}
 		}
 		if changed {
-			o.propagateFunctionAsync(model)
+			if diagnostics := o.propagateFunctionAsync(ctx, model); diagnosticsHaveErrors(diagnostics) {
+				return diagnostics
+			}
 		}
 	}
+	return nil
 }
 
 func (o *SemanticModelOwner) isOverrideAsyncCall(pkg *packages.Package, expr ast.Expr) (bool, error) {
@@ -607,11 +653,8 @@ func semanticFunctionFor(model *SemanticModel, fn *types.Func) *semanticFunction
 	if semFn := model.functions[fn.Origin()]; semFn != nil {
 		return semFn
 	}
-	fullName := fn.FullName()
-	for candidate, semFn := range model.functions {
-		if candidate.FullName() == fullName {
-			return semFn
-		}
+	if semFn := model.functionsByFullName[fn.FullName()]; semFn != nil {
+		return semFn
 	}
 	return nil
 }
@@ -750,11 +793,17 @@ func receiverNamedType(typ types.Type) *types.Named {
 	return named
 }
 
-func (o *SemanticModelOwner) propagateFunctionAsync(model *SemanticModel) {
+func (o *SemanticModelOwner) propagateFunctionAsync(ctx context.Context, model *SemanticModel) []Diagnostic {
 	changed := true
 	for changed {
+		if err := ctx.Err(); err != nil {
+			return []Diagnostic{contextCanceledDiagnostic(err)}
+		}
 		changed = false
 		for _, semFn := range model.functions {
+			if err := ctx.Err(); err != nil {
+				return []Diagnostic{contextCanceledDiagnostic(err)}
+			}
 			for called := range semFn.calls {
 				calledFn := semanticFunctionFor(model, called)
 				if calledFn != nil && calledFn.async {
@@ -765,6 +814,7 @@ func (o *SemanticModelOwner) propagateFunctionAsync(model *SemanticModel) {
 			}
 		}
 	}
+	return nil
 }
 
 func markFunctionAsync(fn *semanticFunction, reason string) bool {
@@ -780,10 +830,16 @@ func markFunctionAsync(fn *semanticFunction, reason string) bool {
 	return true
 }
 
-func (o *SemanticModelOwner) resolveInterfaceImplementations(model *SemanticModel) {
+func (o *SemanticModelOwner) resolveInterfaceImplementations(
+	ctx context.Context,
+	model *SemanticModel,
+) []Diagnostic {
 	var interfaces []*types.Named
 	var concretes []*types.Named
 	for named, semType := range model.types {
+		if err := ctx.Err(); err != nil {
+			return []Diagnostic{contextCanceledDiagnostic(err)}
+		}
 		if semType.isInterface {
 			interfaces = append(interfaces, named)
 			continue
@@ -794,15 +850,30 @@ func (o *SemanticModelOwner) resolveInterfaceImplementations(model *SemanticMode
 	sortNamedTypes(concretes)
 
 	for _, ifaceNamed := range interfaces {
+		if err := ctx.Err(); err != nil {
+			return []Diagnostic{contextCanceledDiagnostic(err)}
+		}
 		iface, _ := ifaceNamed.Underlying().(*types.Interface)
 		if iface == nil {
 			continue
 		}
 		iface.Complete()
 		for _, concrete := range concretes {
+			if err := ctx.Err(); err != nil {
+				return []Diagnostic{contextCanceledDiagnostic(err)}
+			}
 			o.addInterfaceImplementation(model, concrete, ifaceNamed, iface, false)
 			o.addInterfaceImplementation(model, concrete, ifaceNamed, iface, true)
 		}
+	}
+	return nil
+}
+
+func contextCanceledDiagnostic(err error) Diagnostic {
+	return Diagnostic{
+		Severity: DiagnosticSeverityError,
+		Code:     "goscript/context:canceled",
+		Message:  err.Error(),
 	}
 }
 

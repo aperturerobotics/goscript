@@ -12,6 +12,7 @@ type SemanticModel struct {
 	addressTaken             map[types.Object]bool
 	needsVarRef              map[types.Object]bool
 	functions                map[*types.Func]*semanticFunction
+	functionsByFullName      map[string]*semanticFunction
 	types                    map[*types.Named]*semanticType
 	values                   map[types.Object]*semanticValue
 	generatedImports         map[string]map[string]bool

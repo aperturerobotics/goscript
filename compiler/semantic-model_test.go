@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"context"
+	"go/token"
 	"go/types"
 	"path/filepath"
 	"strings"
@@ -278,6 +279,34 @@ func TestSemanticModelColorsAsyncFunctionsAndOverrides(t *testing.T) {
 	}
 	if !hasInterfaceImplementation(model, "AsyncLocker", "Locker", true) {
 		t.Fatalf("missing *AsyncLocker -> Locker implementation: %#v", model.interfaceImplementations)
+	}
+}
+
+func TestSemanticModelIndexesFunctionsByFullName(t *testing.T) {
+	model := newSemanticModel()
+	semPkg := &semanticPackage{}
+	pkg := types.NewPackage("example.test/indexed", "indexed")
+	signature := types.NewSignatureType(nil, nil, nil, types.NewTuple(), types.NewTuple(), false)
+	fn := types.NewFunc(token.NoPos, pkg, "Call", signature)
+	semFn := NewSemanticModelOwner().addFunction(model, semPkg, fn, sourcePosition{})
+
+	duplicatePkg := types.NewPackage("example.test/indexed", "indexed")
+	duplicate := types.NewFunc(token.NoPos, duplicatePkg, "Call", signature)
+	if got := semanticFunctionFor(model, duplicate); got != semFn {
+		t.Fatalf("semanticFunctionFor() = %#v, want %#v", got, semFn)
+	}
+}
+
+func TestSemanticModelAsyncPropagationObservesContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	diagnostics := NewSemanticModelOwner().propagateFunctionAsync(ctx, newSemanticModel())
+	if !diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("expected canceled context diagnostic")
+	}
+	if diagnostics[0].Code != "goscript/context:canceled" {
+		t.Fatalf("unexpected diagnostic: %#v", diagnostics[0])
 	}
 }
 
