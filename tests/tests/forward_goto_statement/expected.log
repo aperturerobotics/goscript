@@ -2,3 +2,5 @@ skip negative: 10
 skip positive: 11
 loop skipped: 1
 loop included: 4
+mixed small: 4
+mixed large: 7

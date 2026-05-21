@@ -266,22 +266,9 @@ func TestRunnerScopesPackageCompileErrors(t *testing.T) {
 			"package broken",
 			"",
 			"func Value() int {",
-			"\ttotal := 0",
-			"\tfor total < 2 {",
-			"\t\ttotal++",
-			"\t\tgoto skip",
-			"\tcheck:",
-			"\t\tif total > 1 {",
-			"\t\t\tcontinue",
-			"\t\t}",
-			"\tskip:",
-			"\t\tswitch total {",
-			"\t\tcase 1:",
-			"\t\t\tgoto check",
-			"\t\t}",
-			"\t\tbreak",
-			"\t}",
-			"\treturn total",
+			"\tx := 1",
+			"\t_ = &(x)",
+			"\treturn x",
 			"}",
 			"",
 		}, "\n"),
@@ -316,7 +303,7 @@ func TestRunnerScopesPackageCompileErrors(t *testing.T) {
 	if broken.Action != ActionFail || broken.Owner != OwnerLowering {
 		t.Fatalf("broken package should carry lowering failure: %#v", broken)
 	}
-	if !strings.Contains(broken.Error, "unsupported goto branch") {
+	if !strings.Contains(broken.Error, "unsupported address expression") {
 		t.Fatalf("broken package error should preserve compile diagnostic: %#v", broken)
 	}
 }
