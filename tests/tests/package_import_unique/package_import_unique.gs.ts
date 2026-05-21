@@ -41,13 +41,13 @@ export class zone {
 }
 
 export async function main(): Promise<void> {
-	let a = $.markAsStructValue((_unique.Make($.markAsStructValue(new zone({name: "eth0"})))).clone())
-	let b = $.markAsStructValue((_unique.Make($.markAsStructValue(new zone({name: "eth0"})))).clone())
-	let c = $.markAsStructValue((_unique.Make($.markAsStructValue(new zone({name: "eth1"})))).clone())
+	let a = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth0"})))))
+	let b = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth0"})))))
+	let c = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth1"})))))
 
 	$.println(a == b)
 	$.println(a == c)
-	$.println($.markAsStructValue((a).clone()).Value().name)
+	$.println($.markAsStructValue($.cloneStructValue(a)).Value().name)
 }
 
 

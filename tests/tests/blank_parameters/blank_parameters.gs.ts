@@ -101,7 +101,7 @@ export function unicodeNames(_u3c6: number, _u3b2: number): [number, number] {
 export async function main(): Promise<void> {
 	let p = $.markAsStructValue(new Packer())
 	$.println(blanks(1, "x"))
-	$.println($.len($.markAsStructValue((p).clone()).pack(null, null, 0)))
+	$.println($.len($.markAsStructValue($.cloneStructValue(p)).pack(null, null, 0)))
 
 	let f = $.functionValue((_p0: number, _p1: number): number => {
 		return 9

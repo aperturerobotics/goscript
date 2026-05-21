@@ -38,6 +38,7 @@ type loweredStruct struct {
 	indexExported bool
 	name          string
 	typeName      string
+	cloneMethod   string
 	fields        []loweredStructField
 	methods       []loweredFunction
 }

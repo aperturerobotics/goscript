@@ -63,7 +63,7 @@ export async function main(): Promise<void> {
 	// Creating a struct directly using a composite literal.
 	let structLiteral = $.markAsStructValue(new MyStruct({MyString: "composite literal"}))
 	// Assigning it creates another independent copy.
-	let structLiteralCopy = $.markAsStructValue((structLiteral).clone())
+	let structLiteralCopy = $.markAsStructValue($.cloneStructValue(structLiteral))
 	structLiteralCopy.MyString = "modified composite literal copy"
 	// Expected: "composite literal"
 	$.println("Original struct literal: Expected: composite literal, Actual: " + structLiteral.MyString)

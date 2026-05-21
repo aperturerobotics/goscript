@@ -61,19 +61,19 @@ export class LocalTime {
 }
 
 export function asTime(t: LocalTime): time.Time {
-	return $.markAsStructValue(((t as unknown as time.Time)).clone())
+	return $.markAsStructValue($.cloneStructValue((t as unknown as time.Time)))
 }
 
 export function asLocal(t: time.Time): LocalTime {
-	return $.markAsStructValue(((t as unknown as LocalTime)).clone())
+	return $.markAsStructValue($.cloneStructValue((t as unknown as LocalTime)))
 }
 
 export async function main(): Promise<void> {
-	let first = $.markAsStructValue((($.markAsStructValue((time.Unix(11, 0)).clone()).UTC() as unknown as LocalTime)).clone())
-	$.println("as time:", $.markAsStructValue((asTime($.markAsStructValue((first).clone()))).clone()).Unix())
+	let first = $.markAsStructValue($.cloneStructValue(($.markAsStructValue($.cloneStructValue(time.Unix(11, 0))).UTC() as unknown as LocalTime)))
+	$.println("as time:", $.markAsStructValue($.cloneStructValue(asTime($.markAsStructValue($.cloneStructValue(first))))).Unix())
 
-	let second = $.markAsStructValue((asLocal($.markAsStructValue(($.markAsStructValue((time.Unix(22, 0)).clone()).UTC()).clone()))).clone())
-	$.println("as local:", $.markAsStructValue(((second as unknown as time.Time)).clone()).Unix())
+	let second = $.markAsStructValue($.cloneStructValue(asLocal($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Unix(22, 0))).UTC())))))
+	$.println("as local:", $.markAsStructValue($.cloneStructValue((second as unknown as time.Time))).Unix())
 }
 
 

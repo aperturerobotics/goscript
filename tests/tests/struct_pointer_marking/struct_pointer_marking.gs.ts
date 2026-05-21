@@ -47,7 +47,7 @@ export async function main(): Promise<void> {
 	let p: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({Value: 20})
 
 	// Type assertions - struct value
-	let i: any = $.interfaceValue<any>($.markAsStructValue((s).clone()), "main.MyStruct")
+	let i: any = $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(s)), "main.MyStruct")
 	let [, ok1] = $.typeAssertTuple<MyStruct>(i, "main.MyStruct")
 	let [, ok2] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("struct value -> MyStruct assertion:", ok1)
@@ -65,7 +65,7 @@ export async function main(): Promise<void> {
 	let original = $.varRef($.markAsStructValue(new MyStruct({Value: 30})))
 	let pAlias: MyStruct | $.VarRef<MyStruct> | null = original
 
-	let iOriginal: any = $.interfaceValue<any>($.markAsStructValue((original.value).clone()), "main.MyStruct")
+	let iOriginal: any = $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(original.value)), "main.MyStruct")
 	let jAlias: any = $.interfaceValue<any>(pAlias, "*main.MyStruct")
 
 	let [, ok5] = $.typeAssertTuple<MyStruct>(iOriginal, "main.MyStruct")
@@ -130,7 +130,7 @@ export async function main(): Promise<void> {
 	let nested2 = $.varRef($.markAsStructValue(new MyStruct({Value: 80})))
 
 	// Array of interfaces containing both pointers and values
-	let arr = $.arrayToSlice<any>([$.interfaceValue<any>(nested1, "*main.MyStruct"), $.interfaceValue<any>($.markAsStructValue((nested2.value).clone()), "main.MyStruct"), $.interfaceValue<any>(nested2, "*main.MyStruct")])
+	let arr = $.arrayToSlice<any>([$.interfaceValue<any>(nested1, "*main.MyStruct"), $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(nested2.value)), "main.MyStruct"), $.interfaceValue<any>(nested2, "*main.MyStruct")])
 
 	for (let i = 0; i < $.len(arr); i++) {
 		let item = arr![i]

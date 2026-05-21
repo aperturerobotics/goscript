@@ -701,6 +701,20 @@ export function markAsStructValue<T>(value: T): T {
   return value
 }
 
+export function cloneStructValue<T>(value: T): T {
+  const cloneable = value as T & {
+    __goscriptClone?: () => T
+    clone?: () => T
+  }
+  if (typeof cloneable.__goscriptClone === 'function') {
+    return cloneable.__goscriptClone()
+  }
+  if (typeof cloneable.clone === 'function') {
+    return cloneable.clone()
+  }
+  throw new Error('runtime error: value is not cloneable')
+}
+
 // Check if a struct instance is marked as a value
 function isMarkedAsStructValue(value: any): boolean {
   return (

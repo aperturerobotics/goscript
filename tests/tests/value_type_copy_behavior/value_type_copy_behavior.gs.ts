@@ -106,8 +106,8 @@ export async function main(): Promise<void> {
 	// === Value-Type Copy Behavior ===
 	// Assigning a struct (value type) creates independent copies.
 	// valueCopy1 and valueCopy2 get their own copies of 'original's data.
-	let valueCopy1 = $.markAsStructValue((original.value).clone())
-	let valueCopy2 = $.markAsStructValue((original.value).clone())
+	let valueCopy1 = $.markAsStructValue($.cloneStructValue(original.value))
+	let valueCopy2 = $.markAsStructValue($.cloneStructValue(original.value))
 	// pointerCopy holds the memory address of 'original'.
 	let pointerCopy: MyStruct | $.VarRef<MyStruct> | null = original
 
@@ -147,7 +147,7 @@ export async function main(): Promise<void> {
 
 	// Create a value copy of the nested struct. This copies both the outer
 	// struct's fields (Value) and the inner struct (InnerStruct) by value.
-	let nestedCopy = $.markAsStructValue((nestedOriginal).clone())
+	let nestedCopy = $.markAsStructValue($.cloneStructValue(nestedOriginal))
 
 	// Modify the copy's fields, including fields within the nested InnerStruct.
 	nestedCopy.InnerStruct.MyString = "inner modified"

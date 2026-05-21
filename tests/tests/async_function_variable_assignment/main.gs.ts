@@ -42,10 +42,10 @@ export async function main(): Promise<void> {
 	let ch = $.makeChannel<result>(1, $.markAsStructValue(new result()), "both")
 	let fn: (() => result | Promise<result>) | null = null
 	fn = $.functionValue(async (): Promise<result> => {
-		return $.markAsStructValue((await $.chanRecv(ch)).clone())
+		return $.markAsStructValue($.cloneStructValue(await $.chanRecv(ch)))
 	}, { kind: $.TypeKind.Function, params: [], results: ["main.result"] })
 	await $.chanSend(ch, $.markAsStructValue(new result({value: 8})))
-	let got = $.markAsStructValue((await fn!()).clone())
+	let got = $.markAsStructValue($.cloneStructValue(await fn!()))
 	$.println(got.value)
 }
 

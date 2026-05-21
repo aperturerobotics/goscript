@@ -5,10 +5,10 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as dep from "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_unexported_inferred_type/dep/index.js"
 
-export let closed: any = $.markAsStructValue((dep.ErrClosed).clone())
+export let closed: any = $.markAsStructValue($.cloneStructValue(dep.ErrClosed))
 
 export async function main(): Promise<void> {
-	$.println($.markAsStructValue((closed).clone()).Error())
+	$.println($.markAsStructValue($.cloneStructValue(closed)).Error())
 }
 
 

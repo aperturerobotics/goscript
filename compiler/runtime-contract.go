@@ -42,6 +42,7 @@ const (
 
 	RuntimeHelperAssignStruct      RuntimeHelper = "value.assignStruct"
 	RuntimeHelperMarkAsStructValue RuntimeHelper = "value.markAsStructValue"
+	RuntimeHelperCloneStructValue  RuntimeHelper = "value.cloneStructValue"
 	RuntimeHelperPointerValue      RuntimeHelper = "value.pointerValue"
 	RuntimeHelperArrayEqual        RuntimeHelper = "value.arrayEqual"
 
@@ -225,6 +226,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperImag, "imag", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperAssignStruct, "assignStruct", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperMarkAsStructValue, "markAsStructValue", RuntimeHelperCategoryValue),
+		runtimeHelper(RuntimeHelperCloneStructValue, "cloneStructValue", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperPointerValue, "pointerValue", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperArrayEqual, "arrayEqual", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperVarRef, "varRef", RuntimeHelperCategoryVarRef),

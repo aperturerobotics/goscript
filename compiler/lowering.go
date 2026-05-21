@@ -1017,6 +1017,7 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 		indexExported: ctx.topLevel && ast.IsExported(semType.name),
 		name:          semType.name,
 		typeName:      runtimeNamedTypeName(semType.named),
+		cloneMethod:   "clone",
 	}
 	for _, field := range semType.fields {
 		lowered.fields = append(lowered.fields, loweredStructField{
@@ -1036,6 +1037,9 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 		method, methodDiagnostics := o.lowerFuncDecl(ctx, methodDecl)
 		diagnostics = append(diagnostics, methodDiagnostics...)
 		if method != nil {
+			if method.name == "clone" {
+				lowered.cloneMethod = "__goscriptClone"
+			}
 			lowered.methods = append(lowered.methods, *method)
 		}
 	}
@@ -5041,7 +5045,8 @@ func (o *LoweringOwner) lowerPrimitiveErrorWrapper(ctx lowerFileContext, sourceT
 }
 
 func (o *LoweringOwner) lowerStructClone(value string) string {
-	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) + "((" + value + ").clone())"
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) + "(" +
+		o.runtimeOwner.QualifiedHelper(RuntimeHelperCloneStructValue) + "(" + value + "))"
 }
 
 func (o *LoweringOwner) lowerZeroValueExpr(typ types.Type) string {

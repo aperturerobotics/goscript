@@ -74,7 +74,7 @@ export async function main(): Promise<void> {
 	$.println("ptr.myBool (assigned):", $.pointerValue<MyStruct>(ptr).myBool)
 
 	// Test assignment to a dereferenced new struct
-	let s: MyStruct = $.markAsStructValue(($.pointerValue<MyStruct>(new MyStruct())).clone())
+	let s: MyStruct = $.markAsStructValue($.cloneStructValue($.pointerValue<MyStruct>(new MyStruct())))
 	$.println("s.MyInt (default):", s.MyInt)
 	$.println("s.MyString (default):", s.MyString)
 	$.println("s.myBool (default):", s.myBool)

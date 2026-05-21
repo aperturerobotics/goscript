@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   byte,
+  cloneStructValue,
   callGenericMethod,
   chanRecvWithOk,
   functionValue,
@@ -119,6 +120,12 @@ describe('builtin runtime contract helpers', () => {
       }),
     ).toEqual({ value: nilNamedSlice, ok: true })
     expect(pointerValue({ ok: true })).toEqual({ ok: true })
+    expect(cloneStructValue({ clone: () => ({ ok: true }) })).toEqual({
+      ok: true,
+    })
+    expect(
+      cloneStructValue({ __goscriptClone: () => ({ internal: true }) }),
+    ).toEqual({ internal: true })
     expect(() => pointerValue(null)).toThrow('nil pointer dereference')
     const unsupported = unsupportedPointerRef<number>(0)
     expect(() => unsupported.value).toThrow('unsafe pointer dereference')

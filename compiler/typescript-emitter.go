@@ -224,7 +224,9 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 		b.WriteString("\n")
 	}
 	b.WriteString("\t\t}\n\t}\n\n")
-	b.WriteString("\tpublic clone(): ")
+	b.WriteString("\tpublic ")
+	b.WriteString(structType.cloneMethod)
+	b.WriteString("(): ")
 	b.WriteString(structType.name)
 	b.WriteString(" {\n\t\tconst cloned = new ")
 	b.WriteString(structType.name)

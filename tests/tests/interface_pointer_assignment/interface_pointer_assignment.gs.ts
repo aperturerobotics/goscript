@@ -84,8 +84,8 @@ export async function main(): Promise<void> {
 	// Scenario 6: Struct value vs pointer distinction
 	let s6 = $.varRef($.markAsStructValue(new MyStruct({Value: 90})))
 	let p6: MyStruct | $.VarRef<MyStruct> | null = s6
-	let s6copy = $.markAsStructValue((s6.value).clone())
-	let i6a: any = $.interfaceValue<any>($.markAsStructValue((s6copy).clone()), "main.MyStruct")
+	let s6copy = $.markAsStructValue($.cloneStructValue(s6.value))
+	let i6a: any = $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(s6copy)), "main.MyStruct")
 	let i6b: any = $.interfaceValue<any>(p6, "*main.MyStruct")
 	let [, ok6a] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i6a, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	let [, ok6b] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i6b, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })

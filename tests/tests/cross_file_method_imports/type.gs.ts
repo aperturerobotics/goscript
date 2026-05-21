@@ -52,7 +52,7 @@ export class label {
 
 export async function main(): Promise<void> {
 	let item = $.markAsStructValue(new label({value: "go"}))
-	$.println($.markAsStructValue((item).clone()).Format())
+	$.println($.markAsStructValue($.cloneStructValue(item)).Format())
 }
 
 

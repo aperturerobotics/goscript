@@ -62,7 +62,7 @@ export class Person {
 
 export async function main(): Promise<void> {
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
-	let [b, err] = json.Marshal($.interfaceValue<any>($.markAsStructValue((p).clone()), "main.Person"))
+	let [b, err] = json.Marshal($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))
 	if (err != null) {
 		$.println("Marshal error:", $.pointerValue(err).Error())
 	} else {

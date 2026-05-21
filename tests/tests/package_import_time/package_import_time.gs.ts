@@ -6,38 +6,38 @@ import * as $ from "@goscript/builtin/index.js"
 import * as time from "@goscript/time/index.js"
 
 export async function main(): Promise<void> {
-	let now = $.markAsStructValue((time.Now()).clone())
-	let setTime = $.markAsStructValue((time.Date(2025, time.May, 15, 1, 10, 42, 0, time.UTC)).clone())
-	if ($.markAsStructValue((now).clone()).Sub($.markAsStructValue((setTime).clone())) < (time.Hour * 24)) {
+	let now = $.markAsStructValue($.cloneStructValue(time.Now()))
+	let setTime = $.markAsStructValue($.cloneStructValue(time.Date(2025, time.May, 15, 1, 10, 42, 0, time.UTC)))
+	if ($.markAsStructValue($.cloneStructValue(now)).Sub($.markAsStructValue($.cloneStructValue(setTime))) < (time.Hour * 24)) {
 		$.println("expected we are > 24 hrs past may 15, incorrect")
 	}
 
-	$.println("preset time", $.markAsStructValue((setTime).clone()).String())
-	$.println("unix", $.markAsStructValue((setTime).clone()).Unix())
-	$.println("unix micro", $.markAsStructValue((setTime).clone()).UnixMicro())
-	$.println("unix nano", $.markAsStructValue((setTime).clone()).UnixNano())
-	$.println("unix milli", $.markAsStructValue((setTime).clone()).UnixMilli())
+	$.println("preset time", $.markAsStructValue($.cloneStructValue(setTime)).String())
+	$.println("unix", $.markAsStructValue($.cloneStructValue(setTime)).Unix())
+	$.println("unix micro", $.markAsStructValue($.cloneStructValue(setTime)).UnixMicro())
+	$.println("unix nano", $.markAsStructValue($.cloneStructValue(setTime)).UnixNano())
+	$.println("unix milli", $.markAsStructValue($.cloneStructValue(setTime)).UnixMilli())
 
 	// day, month, etc.
-	$.println("day", $.markAsStructValue((setTime).clone()).Day())
-	$.println("month", $.markAsStructValue((setTime).clone()).Month())
-	$.println("year", $.markAsStructValue((setTime).clone()).Year())
-	$.println("hour", $.markAsStructValue((setTime).clone()).Hour())
-	$.println("minute", $.markAsStructValue((setTime).clone()).Minute())
-	$.println("second", $.markAsStructValue((setTime).clone()).Second())
-	$.println("nanosecond", $.markAsStructValue((setTime).clone()).Nanosecond())
-	let [year, month, day] = $.markAsStructValue((setTime).clone()).Date()
+	$.println("day", $.markAsStructValue($.cloneStructValue(setTime)).Day())
+	$.println("month", $.markAsStructValue($.cloneStructValue(setTime)).Month())
+	$.println("year", $.markAsStructValue($.cloneStructValue(setTime)).Year())
+	$.println("hour", $.markAsStructValue($.cloneStructValue(setTime)).Hour())
+	$.println("minute", $.markAsStructValue($.cloneStructValue(setTime)).Minute())
+	$.println("second", $.markAsStructValue($.cloneStructValue(setTime)).Second())
+	$.println("nanosecond", $.markAsStructValue($.cloneStructValue(setTime)).Nanosecond())
+	let [year, month, day] = $.markAsStructValue($.cloneStructValue(setTime)).Date()
 	$.println("date tuple", year, month, day)
-	let [hour, minute, second] = $.markAsStructValue((setTime).clone()).Clock()
+	let [hour, minute, second] = $.markAsStructValue($.cloneStructValue(setTime)).Clock()
 	$.println("clock tuple", hour, minute, second)
-	let [zoneName, zoneOffset] = $.markAsStructValue((setTime).clone()).Zone()
+	let [zoneName, zoneOffset] = $.markAsStructValue($.cloneStructValue(setTime)).Zone()
 	$.println("zone tuple", zoneName, zoneOffset)
-	$.println("add date", $.markAsStructValue(($.markAsStructValue(($.markAsStructValue((setTime).clone()).AddDate(1, 2, 3)).clone()).UTC()).clone()).Format(time.RFC3339))
+	$.println("add date", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(setTime)).AddDate(1, 2, 3))).UTC())).Format(time.RFC3339))
 
 	// other functions on setTime
-	$.println("weekday", time.Weekday_String($.markAsStructValue((setTime).clone()).Weekday()))
-	$.println("location", $.pointerValue<time.Location>($.markAsStructValue((setTime).clone()).Location()).String())
-	$.println("utc", $.markAsStructValue(($.markAsStructValue((setTime).clone()).UTC()).clone()).Format("2006-01-02T15:04:05Z07:00"))
+	$.println("weekday", time.Weekday_String($.markAsStructValue($.cloneStructValue(setTime)).Weekday()))
+	$.println("location", $.pointerValue<time.Location>($.markAsStructValue($.cloneStructValue(setTime)).Location()).String())
+	$.println("utc", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(setTime)).UTC())).Format("2006-01-02T15:04:05Z07:00"))
 	$.println("seconds", time.Duration_Seconds((1500 * time.Millisecond)))
 	$.println("duration string", time.Duration_String((1500 * time.Millisecond)))
 
@@ -47,8 +47,8 @@ export async function main(): Promise<void> {
 	$.println("bad duration err", badDurationErr != null)
 
 	let [parsed, parseErr] = time.Parse(time.RFC3339, "2025-05-15T01:10:42Z")
-	$.println("parsed time", $.markAsStructValue(($.markAsStructValue((parsed).clone()).UTC()).clone()).Format(time.RFC3339), parseErr == null)
-	$.println("parsed nano", $.markAsStructValue(($.markAsStructValue((parsed).clone()).UTC()).clone()).Format(time.RFC3339Nano))
+	$.println("parsed time", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(parsed)).UTC())).Format(time.RFC3339), parseErr == null)
+	$.println("parsed nano", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(parsed)).UTC())).Format(time.RFC3339Nano))
 	let [, badParseErr] = time.Parse(time.RFC3339, "not-a-time")
 	$.println("bad time err", badParseErr != null)
 }

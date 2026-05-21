@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 import * as helper from "@goscript/github.com/aperturerobotics/goscript/tests/tests/imported_generic_function/helper/index.js"
 
 export async function main(): Promise<void> {
-	let box = $.markAsStructValue((helper.Wrap({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, 21)).clone())
+	let box = $.markAsStructValue($.cloneStructValue(helper.Wrap({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, 21)))
 	$.println("wrapped:", box.Value)
 }
 

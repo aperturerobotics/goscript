@@ -59,8 +59,8 @@ export function accessPrivateField(s: MyStruct): void {
 }
 
 export async function main(): Promise<void> {
-	let s = $.markAsStructValue((NewMyStruct("hello", 123)).clone())
-	accessPrivateField($.markAsStructValue((s).clone()))
+	let s = $.markAsStructValue($.cloneStructValue(NewMyStruct("hello", 123)))
+	accessPrivateField($.markAsStructValue($.cloneStructValue(s)))
 }
 
 

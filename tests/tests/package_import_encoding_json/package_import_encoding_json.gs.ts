@@ -69,7 +69,7 @@ export async function main(): Promise<void> {
 
 	// Marshal a simple struct
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
-	let [b, err] = json.Marshal($.interfaceValue<any>($.markAsStructValue((p).clone()), "main.Person"))
+	let [b, err] = json.Marshal($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))
 	if (err != null) {
 		results = $.append(results, "Marshal error: " + $.pointerValue(err).Error())
 	} else {

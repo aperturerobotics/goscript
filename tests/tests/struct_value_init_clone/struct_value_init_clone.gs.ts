@@ -54,7 +54,7 @@ export async function main(): Promise<void> {
 	$.println("p1:", p1.X, p1.Y)
 
 	// Assign to another variable (should trigger clone)
-	let p2 = $.markAsStructValue((p1).clone())
+	let p2 = $.markAsStructValue($.cloneStructValue(p1))
 	p2.X = 10
 
 	// Print both to show they are independent
@@ -63,7 +63,7 @@ export async function main(): Promise<void> {
 
 	// Initialize via variable assignment
 	let v = $.markAsStructValue(new Point({X: 3, Y: 4}))
-	let p3 = $.markAsStructValue((v).clone())
+	let p3 = $.markAsStructValue($.cloneStructValue(v))
 	p3.Y = 40
 
 	$.println("v after p3 mod:", v.X, v.Y)

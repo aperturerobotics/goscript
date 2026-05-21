@@ -50,11 +50,11 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	let structPointer: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({MyInt: 4, MyString: "hello world"})
-	let dereferencedStructCopy = $.markAsStructValue(($.pointerValue<MyStruct>(structPointer)).clone())
+	let dereferencedStructCopy = $.markAsStructValue($.cloneStructValue($.pointerValue<MyStruct>(structPointer)))
 	dereferencedStructCopy.MyString = "original dereferenced copy modified"
-	let valueCopy1 = $.markAsStructValue((dereferencedStructCopy).clone())
+	let valueCopy1 = $.markAsStructValue($.cloneStructValue(dereferencedStructCopy))
 	valueCopy1.MyString = "value copy 1"
-	let valueCopy2 = $.markAsStructValue((dereferencedStructCopy).clone())
+	let valueCopy2 = $.markAsStructValue($.cloneStructValue(dereferencedStructCopy))
 	valueCopy2.MyString = "value copy 2"
 	let pointerCopy: MyStruct | $.VarRef<MyStruct> | null = structPointer
 
