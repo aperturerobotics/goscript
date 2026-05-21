@@ -653,6 +653,12 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 			}
 		case *ast.ValueSpec:
 			embedPatterns := goEmbedPatterns(decl.Doc, typed.Doc)
+			if len(typed.Values) == 1 && len(typed.Names) > 1 && tupleResultTypes(ctx, typed.Values[0]) != nil {
+				tupleDecls, tupleDiagnostics := o.lowerTupleValueSpec(ctx, decl, typed)
+				diagnostics = append(diagnostics, tupleDiagnostics...)
+				decls = append(decls, tupleDecls...)
+				continue
+			}
 			for idx, name := range typed.Names {
 				obj := ctx.semPkg.source.TypesInfo.Defs[name]
 				if obj == nil {
@@ -702,6 +708,41 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 		default:
 			diagnostics = append(diagnostics, loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported general declaration"))
 		}
+	}
+	return decls, diagnostics
+}
+
+func (o *LoweringOwner) lowerTupleValueSpec(
+	ctx lowerFileContext,
+	decl *ast.GenDecl,
+	spec *ast.ValueSpec,
+) ([]loweredDecl, []Diagnostic) {
+	right, diagnostics := o.lowerTupleExpr(ctx, spec.Values[0])
+	tempName := ctx.tempName("Tuple")
+	decls := []loweredDecl{{code: "const " + tempName + " = " + right}}
+	for idx, name := range spec.Names {
+		if name.Name == "_" {
+			continue
+		}
+		obj := ctx.semPkg.source.TypesInfo.Defs[name]
+		if obj == nil {
+			continue
+		}
+		value := o.lowerDeclaredValue(ctx, name, tempName+"["+strconv.Itoa(idx)+"]")
+		keyword := "let"
+		if _, ok := obj.(*types.Const); ok || decl.Tok == token.CONST {
+			keyword = "const"
+		}
+		variableType := o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj])
+		code := keyword + " " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = " + value
+		indexExport := ""
+		if ctx.topLevel {
+			code = "export " + code
+			if ast.IsExported(name.Name) {
+				indexExport = name.Name
+			}
+		}
+		decls = append(decls, loweredDecl{code: code, indexExport: indexExport})
 	}
 	return decls, diagnostics
 }
