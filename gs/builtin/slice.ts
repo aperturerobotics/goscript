@@ -10,6 +10,10 @@ interface GoSliceObject<T> {
   capacity: number // Capacity of the slice
 }
 
+const addressStride = 0x100000000
+let nextAddressBase = 1
+const addressBases = new WeakMap<object, number>()
+
 /**
  * SliceProxy is a proxy object for complex slices
  */
@@ -1163,6 +1167,52 @@ export function indexRef<T>(
     }
   }
   throw new Error('runtime error: index on unsupported type')
+}
+
+/**
+ * indexAddress returns a stable synthetic address for an addressable slice or
+ * array element.
+ */
+export function indexAddress<T>(
+  collection: Slice<T> | T[] | Uint8Array,
+  index: number,
+): number {
+  if (collection === null || collection === undefined) {
+    throw new Error('runtime error: index on nil or undefined collection')
+  }
+
+  let backing: object
+  let backingIndex: number
+  let length: number
+  if (collection instanceof Uint8Array) {
+    backing = collection.buffer
+    backingIndex = collection.byteOffset + index
+    length = collection.length
+  } else if (isComplexSlice(collection)) {
+    backing = collection.__meta__.backing
+    backingIndex = collection.__meta__.offset + index
+    length = collection.__meta__.length
+  } else if (Array.isArray(collection)) {
+    backing = collection
+    backingIndex = index
+    length = collection.length
+  } else {
+    throw new Error('runtime error: index on unsupported type')
+  }
+
+  if (index < 0 || index >= length) {
+    throw new Error(
+      `runtime error: index out of range [${index}] with length ${length}`,
+    )
+  }
+
+  let base = addressBases.get(backing)
+  if (base === undefined) {
+    base = nextAddressBase * addressStride
+    nextAddressBase++
+    addressBases.set(backing, base)
+  }
+  return base + backingIndex
 }
 
 /**

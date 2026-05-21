@@ -8,6 +8,7 @@ import {
   genericZero,
   goSlice,
   int,
+  indexAddress,
   indexRef,
   interfaceValue,
   makeChannel,
@@ -139,6 +140,18 @@ describe('builtin runtime contract helpers', () => {
     const firstByte = indexRef<number>(bytes, 0)
     firstByte.value = 9
     expect(Array.from(bytes)).toEqual([9, 5])
+  })
+
+  it('exposes stable synthetic slice index addresses', () => {
+    const values = [1, 2, 3, 4]
+    const left = goSlice(values, 1, 3)
+    const right = goSlice(values, 2, 4)
+    const other = [8, 9]
+
+    expect(indexAddress(left, 0)).toBe(indexAddress(values, 1))
+    expect(indexAddress(left, 1)).toBe(indexAddress(right, 0))
+    expect(indexAddress(left, 1)).toBeGreaterThan(indexAddress(left, 0))
+    expect(indexAddress(other, 0)).not.toBe(indexAddress(left, 0))
   })
 
   it('copies slices into fixed arrays with Go length checks', () => {

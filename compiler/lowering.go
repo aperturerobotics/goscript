@@ -2835,6 +2835,11 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 				return constantValue, nil
 			}
 		}
+		if isEqualityOperator(typed.Op) {
+			if value, diagnostics, ok := o.lowerAddressEqualityExpr(ctx, typed); ok {
+				return value, diagnostics
+			}
+		}
 		left, leftDiagnostics := o.lowerExpr(ctx, typed.X)
 		right, rightDiagnostics := o.lowerExpr(ctx, typed.Y)
 		if _, ok := typed.X.(*ast.BinaryExpr); ok {
@@ -3457,6 +3462,11 @@ func (o *LoweringOwner) lowerConversionExpr(
 	}
 	value, diagnostics := o.lowerExpr(ctx, expr.Args[0])
 	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[0])
+	if isNumericType(targetType) && isUnsafePointerType(sourceType) {
+		if value, addressDiagnostics, ok := o.lowerUnsafePointerIntegerExpr(ctx, expr.Args[0]); ok {
+			return value, append(diagnostics, addressDiagnostics...)
+		}
+	}
 	if isNilExpr(expr.Args[0]) && isPointerType(targetType) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperTypedNil) +
 			"(" + strconv.Quote(goRuntimeTypeString(targetType)) + ")", diagnostics
@@ -3772,6 +3782,55 @@ func (o *LoweringOwner) lowerIndexAddressExpr(ctx lowerFileContext, expr *ast.In
 		return "undefined", append(diagnostics, loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported address expression"))
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexRef) + "(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + index + ")", diagnostics
+}
+
+func (o *LoweringOwner) lowerAddressEqualityExpr(
+	ctx lowerFileContext,
+	expr *ast.BinaryExpr,
+) (string, []Diagnostic, bool) {
+	left, leftDiagnostics, leftOK := o.lowerIndexAddressIntegerExpr(ctx, expr.X)
+	if !leftOK {
+		return "", nil, false
+	}
+	right, rightDiagnostics, rightOK := o.lowerIndexAddressIntegerExpr(ctx, expr.Y)
+	if !rightOK {
+		return "", nil, false
+	}
+	return left + " " + expr.Op.String() + " " + right, append(leftDiagnostics, rightDiagnostics...), true
+}
+
+func (o *LoweringOwner) lowerUnsafePointerIntegerExpr(
+	ctx lowerFileContext,
+	expr ast.Expr,
+) (string, []Diagnostic, bool) {
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 || !isUnsafePointerType(typeFromExpr(ctx, call.Fun)) {
+		return "", nil, false
+	}
+	return o.lowerIndexAddressIntegerExpr(ctx, call.Args[0])
+}
+
+func (o *LoweringOwner) lowerIndexAddressIntegerExpr(
+	ctx lowerFileContext,
+	expr ast.Expr,
+) (string, []Diagnostic, bool) {
+	address, ok := unwrapParenExpr(expr).(*ast.UnaryExpr)
+	if !ok || address.Op != token.AND {
+		return "", nil, false
+	}
+	indexExpr, ok := unwrapParenExpr(address.X).(*ast.IndexExpr)
+	if !ok {
+		return "", nil, false
+	}
+	target, targetDiagnostics := o.lowerExpr(ctx, indexExpr.X)
+	index, indexDiagnostics := o.lowerExpr(ctx, indexExpr.Index)
+	diagnostics := append(targetDiagnostics, indexDiagnostics...)
+	targetType := ctx.semPkg.source.TypesInfo.TypeOf(indexExpr.X)
+	if isStringType(targetType) || isMapType(targetType) {
+		return "", diagnostics, false
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexAddress) +
+		"(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + index + ")", diagnostics, true
 }
 
 func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
