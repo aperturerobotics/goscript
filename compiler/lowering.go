@@ -926,7 +926,7 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 		param := signature.Params().At(idx)
 		lowered.params = append(lowered.params, loweredParam{
 			name: safeParamName(param, idx),
-			typ:  o.tsTypeFor(ctx, param.Type()),
+			typ:  o.tsFuncParamTypeFor(ctx, param.Type(), decl.Body == nil),
 		})
 	}
 	if decl.Body != nil {
@@ -993,7 +993,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		param := signature.Params().At(idx)
 		lowered.params = append(lowered.params, loweredParam{
 			name: safeParamName(param, idx),
-			typ:  o.tsTypeFor(ctx, param.Type()),
+			typ:  o.tsFuncParamTypeFor(ctx, param.Type(), decl.Body == nil),
 		})
 	}
 	if decl.Body != nil {
@@ -1634,7 +1634,6 @@ func (o *LoweringOwner) lowerBodylessReturnStmt(ctx lowerFileContext, signature 
 	}
 	results := make([]string, 0, signature.Results().Len())
 	for result := range signature.Results().Variables() {
-		result := result
 		results = append(results, o.lowerDeclarationZeroValueExpr(ctx, result.Type()))
 	}
 	return "return [" + strings.Join(results, ", ") + "]", true
@@ -3840,12 +3839,31 @@ func asyncResultType(result string, async bool) string {
 	return "Promise<" + result + ">"
 }
 
+func asyncCompatibleResultType(result string) string {
+	if result == "void" {
+		return result
+	}
+	return result + " | Promise<" + result + ">"
+}
+
 func (o *LoweringOwner) tsVariableTypeFor(ctx lowerFileContext, typ types.Type, needsVarRef bool) string {
 	valueType := o.tsTypeFor(ctx, typ)
 	if needsVarRef {
 		return "$.VarRef<" + valueType + ">"
 	}
 	return valueType
+}
+
+func (o *LoweringOwner) tsFuncParamTypeFor(ctx lowerFileContext, typ types.Type, bodyless bool) string {
+	if !bodyless {
+		return o.tsTypeFor(ctx, typ)
+	}
+	signature, _ := types.Unalias(typ).Underlying().(*types.Signature)
+	if signature == nil {
+		return o.tsTypeFor(ctx, typ)
+	}
+	return "((" + o.tsSignatureParamsFor(ctx, signature) + ") => " +
+		asyncCompatibleResultType(o.tsSignatureResultFor(ctx, signature)) + ") | null"
 }
 
 func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
