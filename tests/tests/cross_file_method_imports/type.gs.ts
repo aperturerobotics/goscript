@@ -37,7 +37,8 @@ export class label {
 
 	public Format(): string {
 		const l = this
-		return strings.ToUpper(l.value) + __goscript_helper.suffix()
+		let state = __goscript_helper.newHelperState()
+		return strings.ToUpper(l.value) + $.pointerValue<__goscript_helper.helperState>(state).text
 	}
 
 	static __typeInfo = $.registerStructType(

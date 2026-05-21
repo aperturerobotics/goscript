@@ -372,6 +372,7 @@ func (o *LoweringOwner) localFileAliases(
 	}
 	aliases := make(map[types.Object]string)
 	aliasSources := make(map[string]string)
+	seenObjects := make(map[types.Object]bool)
 	seenTypes := make(map[types.Type]bool)
 	var addTypeDeps func(typ types.Type)
 	addObject := func(obj types.Object) {
@@ -389,8 +390,17 @@ func (o *LoweringOwner) localFileAliases(
 		alias := "__goscript_" + safeIdentifier(strings.TrimSuffix(outputName, ".gs.ts"))
 		aliases[obj] = alias
 		aliasSources[alias] = "./" + outputName
-		if typeName, ok := obj.(*types.TypeName); ok {
-			addTypeDeps(typeName.Type())
+		if seenObjects[obj] {
+			return
+		}
+		seenObjects[obj] = true
+		switch typed := obj.(type) {
+		case *types.TypeName:
+			addTypeDeps(typed.Type())
+		case *types.Var:
+			addTypeDeps(typed.Type())
+		case *types.Const:
+			addTypeDeps(typed.Type())
 		}
 	}
 	addTypeDeps = func(typ types.Type) {
@@ -433,6 +443,9 @@ func (o *LoweringOwner) localFileAliases(
 		case *ast.SelectorExpr:
 			if selection := semPkg.source.TypesInfo.Selections[typed]; selection != nil {
 				addObject(selection.Obj())
+			}
+			if pointer, ok := types.Unalias(semPkg.source.TypesInfo.TypeOf(typed.X)).Underlying().(*types.Pointer); ok {
+				addTypeDeps(pointer.Elem())
 			}
 		}
 		return true
