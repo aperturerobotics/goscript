@@ -1309,17 +1309,20 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		var init []loweredStmt
 		var initPrelude []loweredStmt
 		initCtx := ctx
+		scopeCtx := ctx
 		if typed.Init != nil {
-			aliases, prelude := o.lowerShortDeclShadowAliases(ctx, typed.Init)
-			initPrelude = append(initPrelude, prelude...)
-			initCtx = ctx.withIdentAliases(aliases)
+			if stmtCtx, nextCtx, prelude, ok := o.lowerShortDeclStatementContext(ctx, typed.Init); ok {
+				initCtx = stmtCtx
+				scopeCtx = nextCtx
+				initPrelude = append(initPrelude, prelude...)
+			}
 			initStmts, initDiagnostics := o.lowerStmt(initCtx, typed.Init)
 			diagnostics = append(diagnostics, initDiagnostics...)
 			init = append(init, initStmts...)
 		}
-		cond, condDiagnostics := o.lowerExpr(ctx, typed.Cond)
+		cond, condDiagnostics := o.lowerExpr(scopeCtx, typed.Cond)
 		diagnostics = append(diagnostics, condDiagnostics...)
-		body, bodyDiagnostics := o.lowerBlock(ctx, typed.Body)
+		body, bodyDiagnostics := o.lowerBlock(scopeCtx, typed.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		stmt := loweredStmt{
 			hasBlock: true,
@@ -1327,7 +1330,7 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 			children: body,
 		}
 		if typed.Else != nil {
-			elseBody, elseDiagnostics := o.lowerElse(ctx, typed.Else)
+			elseBody, elseDiagnostics := o.lowerElse(scopeCtx, typed.Else)
 			diagnostics = append(diagnostics, elseDiagnostics...)
 			stmt.elseBody = elseBody
 		}
@@ -2172,8 +2175,37 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 			}
 			return true
 		})
+		for name, def := range defsByName {
+			if def == nil || aliases[def] != "" {
+				continue
+			}
+			if o.mapIndexDefaultUsesShortDeclName(ctx, rhs, name) {
+				aliases[def] = ctx.tempName("Shadow")
+			}
+		}
 	}
 	return aliases
+}
+
+func (o *LoweringOwner) mapIndexDefaultUsesShortDeclName(
+	ctx lowerFileContext,
+	rhs ast.Expr,
+	name string,
+) bool {
+	index, ok := unwrapParenExpr(rhs).(*ast.IndexExpr)
+	if !ok || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	mapType, _ := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(index.X)).Underlying().(*types.Map)
+	if mapType == nil {
+		return false
+	}
+	named := namedStructType(mapType.Elem())
+	if named == nil || named.Obj() == nil {
+		return false
+	}
+	return safeIdentifier(named.Obj().Name()) == safeIdentifier(name) &&
+		!strings.Contains(o.namedTypeExpr(ctx, named), ".")
 }
 
 func objectDeclaredInAssignRHS(obj types.Object, assign *ast.AssignStmt) bool {

@@ -58,10 +58,10 @@ export function describe(value: any): void {
 	let __goscriptShadow0 = value
 	{
 		let __goscriptTuple0 = $.typeAssertTuple<named | null>(__goscriptShadow0, "main.named")
-		let value = __goscriptTuple0[0]
+		let __goscriptShadow1 = __goscriptTuple0[0]
 		let ok = __goscriptTuple0[1]
 		if (ok) {
-			$.println("Shadowed name:", $.pointerValue(value).Name())
+			$.println("Shadowed name:", $.pointerValue(__goscriptShadow1).Name())
 			return
 		}
 	}
@@ -71,10 +71,10 @@ export function describe(value: any): void {
 export async function main(): Promise<void> {
 	let [, x] = firstFunc()
 	// This is the problematic pattern: x is shadowed but also used in the call
-	let __goscriptShadow1 = x
+	let __goscriptShadow2 = x
 	{
-		let x = secondFunc(__goscriptShadow1)
-		if (x != 0) {
+		let __goscriptShadow3 = secondFunc(__goscriptShadow2)
+		if (__goscriptShadow3 != 0) {
 			$.println("Function returned value")
 			return
 		}

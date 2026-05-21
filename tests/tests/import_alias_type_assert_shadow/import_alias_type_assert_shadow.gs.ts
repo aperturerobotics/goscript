@@ -8,10 +8,10 @@ import * as dep2 from "@goscript/github.com/aperturerobotics/goscript/tests/test
 export function unwrap(v: any): number {
 	{
 		let __goscriptTuple0 = $.typeAssertTuple<dep2.Thing | $.VarRef<dep2.Thing> | null>(v, { kind: $.TypeKind.Pointer, elemType: "dep.Thing" })
-		let dep: dep2.Thing | $.VarRef<dep2.Thing> | null = __goscriptTuple0[0]
+		let __goscriptShadow0: dep2.Thing | $.VarRef<dep2.Thing> | null = __goscriptTuple0[0]
 		let ok = __goscriptTuple0[1]
 		if (ok) {
-			return $.pointerValue<dep2.Thing>(dep).Value
+			return $.pointerValue<dep2.Thing>(__goscriptShadow0).Value
 		}
 	}
 	return 0
