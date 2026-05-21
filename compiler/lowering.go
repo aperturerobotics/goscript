@@ -1906,7 +1906,7 @@ func (o *LoweringOwner) lowerShortDeclShadowAliases(
 				return true
 			}
 			obj := ctx.semPkg.source.TypesInfo.Uses[ident]
-			if obj == nil || aliases[obj] != "" {
+			if obj == nil || aliases[obj] != "" || objectDeclaredInAssignRHS(obj, assign) {
 				return true
 			}
 			alias := ctx.tempName("Shadow")
@@ -1955,13 +1955,21 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 			if def == nil || aliases[def] != "" {
 				return true
 			}
-			if used := ctx.semPkg.source.TypesInfo.Uses[ident]; used != nil && used != def {
+			if used := ctx.semPkg.source.TypesInfo.Uses[ident]; used != nil && used != def && !objectDeclaredInAssignRHS(used, assign) {
 				aliases[def] = ctx.tempName("Shadow")
 			}
 			return true
 		})
 	}
 	return aliases
+}
+
+func objectDeclaredInAssignRHS(obj types.Object, assign *ast.AssignStmt) bool {
+	if obj == nil || assign == nil {
+		return false
+	}
+	pos := obj.Pos()
+	return pos.IsValid() && assign.Pos() < pos && pos < assign.End()
 }
 
 func (o *LoweringOwner) lowerDeclaredValue(ctx lowerFileContext, lhs ast.Expr, value string) string {

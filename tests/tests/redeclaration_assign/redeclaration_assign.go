@@ -8,6 +8,10 @@ func shadowTupleInput(value string) (string, bool) {
 	return value + "-inner", true
 }
 
+func shadowCallbackInput(fn func(int) int) (int, bool) {
+	return fn(5), true
+}
+
 func main() {
 	var i int
 	println("initial i:", i) /* Use i to avoid unused error before := */
@@ -27,5 +31,12 @@ func main() {
 	{
 		value, ok := shadowTupleInput(value)
 		println("shadow tuple:", value, ok)
+	}
+
+	{
+		k, ok := shadowCallbackInput(func(k int) int {
+			return k + 1
+		})
+		println("callback shadow:", k, ok)
 	}
 }
