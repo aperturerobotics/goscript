@@ -1,3 +1,5 @@
 Write: 1 true
 Result: Hello World!
 Direct: Direct make test
+LastIndexByte: 3
+LastIndex: 3

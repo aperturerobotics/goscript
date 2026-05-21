@@ -19,4 +19,6 @@ func main() {
 	builderPtr := &strings.Builder{}
 	builderPtr.WriteString("Direct make test")
 	println("Direct:", builderPtr.String())
+	println("LastIndexByte:", strings.LastIndexByte("hello", 'l'))
+	println("LastIndex:", strings.LastIndex("hello", "l"))
 }

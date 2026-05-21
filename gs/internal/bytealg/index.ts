@@ -131,6 +131,11 @@ export function IndexByteString(s: string, b: number): number {
   return s.indexOf(char)
 }
 
+export function LastIndexByteString(s: string, b: number): number {
+  const char = String.fromCharCode(b)
+  return s.lastIndexOf(char)
+}
+
 export function IndexString(s: string, substr: string): number {
   return s.indexOf(substr)
 }

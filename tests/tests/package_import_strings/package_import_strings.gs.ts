@@ -22,6 +22,8 @@ export async function main(): Promise<void> {
 	let builderPtr: strings.Builder | $.VarRef<strings.Builder> | null = new strings.Builder()
 	$.pointerValue<strings.Builder>(builderPtr).WriteString("Direct make test")
 	$.println("Direct:", $.pointerValue<strings.Builder>(builderPtr).String())
+	$.println("LastIndexByte:", strings.LastIndexByte("hello", 108))
+	$.println("LastIndex:", strings.LastIndex("hello", "l"))
 }
 
 
