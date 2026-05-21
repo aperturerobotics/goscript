@@ -3419,17 +3419,51 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 	} else {
 		receiver, diagnostics = o.lowerExpr(ctx, expr)
 	}
+	receiverType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	if index := selection.Index(); len(index) > 1 && !o.promotedMethodUsesOverridePackage(selection) {
+		receiver, receiverType = o.lowerPromotedMethodReceiver(ctx, receiver, receiverType, index[:len(index)-1])
+	}
 	if receiverPointer {
 		return receiver, diagnostics
 	}
-	if isStructValueType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) ||
-		isPointerToStructType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
+	if isStructValueType(receiverType) || isPointerToStructType(receiverType) {
 		return o.lowerStructClone(receiver), diagnostics
 	}
-	if isInterfaceType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
+	if isInterfaceType(receiverType) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "(" + receiver + ")", diagnostics
 	}
 	return receiver, diagnostics
+}
+
+func (o *LoweringOwner) promotedMethodUsesOverridePackage(selection *types.Selection) bool {
+	if o.overrideOwner == nil || selection == nil || selection.Obj() == nil || selection.Obj().Pkg() == nil {
+		return false
+	}
+	return o.overrideOwner.hasPackage(selection.Obj().Pkg().Path())
+}
+
+func (o *LoweringOwner) lowerPromotedMethodReceiver(
+	ctx lowerFileContext,
+	receiver string,
+	typ types.Type,
+	index []int,
+) (string, types.Type) {
+	typ = derefPointerType(typ)
+	for _, fieldIndex := range index {
+		structType := structUnderlyingType(typ)
+		if structType == nil || fieldIndex < 0 || fieldIndex >= structType.NumFields() {
+			return receiver, typ
+		}
+		field := structType.Field(fieldIndex)
+		receiver += "." + field.Name()
+		typ = field.Type()
+		if pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer); ok {
+			receiver = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+				"<" + o.tsTypeFor(ctx, pointer.Elem()) + ">(" + receiver + ")"
+			typ = pointer.Elem()
+		}
+	}
+	return receiver, typ
 }
 
 func (o *LoweringOwner) lowerAssignmentTarget(
