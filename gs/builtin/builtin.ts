@@ -124,6 +124,29 @@ export function pointerValue<T>(value: T | VarRef<T> | null | undefined): T {
   return value
 }
 
+export interface Complex {
+  real: number
+  imag: number
+}
+
+export function complex(real: number, imag: number): Complex {
+  return { real, imag }
+}
+
+export function real(value: number | Complex | null | undefined): number {
+  if (typeof value === 'number') {
+    return value
+  }
+  return value?.real ?? 0
+}
+
+export function imag(value: number | Complex | null | undefined): number {
+  if (typeof value === 'number') {
+    return 0
+  }
+  return value?.imag ?? 0
+}
+
 // Bytes represents all valid []byte representations in TypeScript
 // This includes Uint8Array (the preferred representation) and $.Slice<number> (which includes null)
 export type Bytes = Uint8Array | Slice<number>

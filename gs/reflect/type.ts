@@ -226,6 +226,10 @@ export interface Type {
   // NumMethod returns the number of methods in the type's method set
   NumMethod(): number
 
+  // Len returns an array type's length.
+  // Panics if the type's Kind is not Array.
+  Len(): number
+
   // Bits returns the size of the type in bits
   // Panics if the type's Kind is not a sized type.
   Bits(): number
@@ -271,6 +275,9 @@ class InvalidTypeClass implements Type {
   }
   NumMethod(): number {
     return 0
+  }
+  Len(): number {
+    throw new Error('reflect: Len of invalid type')
   }
   Bits(): number {
     throw new Error('reflect: Bits of invalid type')
@@ -607,9 +614,17 @@ export class Value {
     return new Value(null, new BasicType(Invalid, 'invalid'))
   }
 
-  public Complex(): number | { real: number; imag: number } | null {
-    // Placeholder for complex number support
-    return this._value as number | { real: number; imag: number } | null
+  public Complex(): number | $.Complex | null {
+    const k = this.Kind()
+    if (k !== Complex64 && k !== Complex128) {
+      throw new Error(
+        'reflect: call of reflect.Value.Complex on ' +
+          Kind_String(k) +
+          ' Value',
+      )
+    }
+    const value = this._parentVarRef ? this._parentVarRef.value : this._value
+    return value as number | $.Complex | null
   }
 
   // Send sends a value to a channel
@@ -744,6 +759,28 @@ export class Value {
     if (k !== Float32 && k !== Float64) {
       throw new Error(
         'reflect: call of reflect.Value.SetFloat on ' + k + ' Value',
+      )
+    }
+    this._value = x
+    if (this._parentVarRef) {
+      this._parentVarRef.value = x
+    }
+    if (this._parentStruct && this._fieldName) {
+      this._parentStruct[this._fieldName] = x
+    }
+  }
+
+  // SetComplex sets v's underlying value to x
+  public SetComplex(x: number | $.Complex): void {
+    if (!this.CanSet()) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetComplex on unaddressable value',
+      )
+    }
+    const k = this.Kind()
+    if (k !== Complex64 && k !== Complex128) {
+      throw new Error(
+        'reflect: call of reflect.Value.SetComplex on ' + k + ' Value',
       )
     }
     this._value = x
@@ -1056,6 +1093,14 @@ export class BasicType implements Type {
     return 0
   }
 
+  public Len(): number {
+    throw new Error(
+      'reflect: call of reflect.Type.Len on ' +
+        Kind_String(this._kind) +
+        ' Type',
+    )
+  }
+
   public Bits(): number {
     const k = this._kind
     switch (k) {
@@ -1075,6 +1120,10 @@ export class BasicType implements Type {
       case Uint64:
       case Float64:
         return 64
+      case Complex64:
+        return 64
+      case Complex128:
+        return 128
       case Int:
       case Uint:
       case Uintptr:
@@ -1152,6 +1201,10 @@ class SliceType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+
+  public Len(): number {
+    throw new Error('reflect: call of reflect.Type.Len on slice Type')
   }
 
   public Bits(): number {
@@ -1319,6 +1372,10 @@ class PointerType implements Type {
     return 0
   }
 
+  public Len(): number {
+    throw new Error('reflect: call of reflect.Type.Len on pointer Type')
+  }
+
   public Bits(): number {
     throw new Error('reflect: call of reflect.Type.Bits on pointer Type')
   }
@@ -1393,6 +1450,10 @@ class FunctionType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+
+  public Len(): number {
+    throw new Error('reflect: call of reflect.Type.Len on func Type')
   }
 
   public Bits(): number {
@@ -1472,6 +1533,10 @@ class MapType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+
+  public Len(): number {
+    throw new Error('reflect: call of reflect.Type.Len on map Type')
   }
 
   public Bits(): number {
@@ -1632,6 +1697,10 @@ class StructType implements Type {
     return 0
   }
 
+  public Len(): number {
+    throw new Error('reflect: call of reflect.Type.Len on struct Type')
+  }
+
   public Bits(): number {
     throw new Error('reflect: call of reflect.Type.Bits on struct Type')
   }
@@ -1651,6 +1720,10 @@ class StructType implements Type {
           return new BasicType(Bool, 'bool', 1)
         case 'float64':
           return new BasicType(Float64, ti, 8)
+        case 'complex64':
+          return new BasicType(Complex64, ti, 8)
+        case 'complex128':
+          return new BasicType(Complex128, ti, 16)
         case 'uint':
         case 'uint32':
         case 'uint64':
@@ -1677,6 +1750,10 @@ class StructType implements Type {
               return new BasicType(Bool, 'bool', 1)
             case 'float64':
               return new BasicType(Float64, 'float64', 8)
+            case 'complex64':
+              return new BasicType(Complex64, 'complex64', 8)
+            case 'complex128':
+              return new BasicType(Complex128, 'complex128', 16)
             default:
               return new BasicType(Invalid, name, 8)
           }
@@ -1794,6 +1871,10 @@ class ChannelType implements Type {
     return 0
   }
 
+  public Len(): number {
+    throw new Error('reflect: call of reflect.Type.Len on chan Type')
+  }
+
   public Bits(): number {
     throw new Error('reflect: call of reflect.Type.Bits on chan Type')
   }
@@ -1890,6 +1971,10 @@ class InterfaceType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+
+  public Len(): number {
+    throw new Error('reflect: call of reflect.Type.Len on interface Type')
   }
 
   public Bits(): number {
@@ -2001,6 +2086,15 @@ function getTypeOf(value: ReflectValue): Type {
       if ($.isVarRef(value)) {
         const elemType = getTypeOf(value.value as ReflectValue)
         return new PointerType(elemType)
+      }
+
+      if (
+        'real' in value &&
+        'imag' in value &&
+        typeof (value as $.Complex).real === 'number' &&
+        typeof (value as $.Complex).imag === 'number'
+      ) {
+        return new BasicType(Complex128, 'complex128', 16)
       }
 
       // Check for arrays

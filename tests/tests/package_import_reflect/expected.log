@@ -39,6 +39,12 @@ Interface value type: string
 Interface kind: string
 TypeAssert string: typed true
 TypeAssert int: false
+Complex value kind: complex128
+Complex real: 3
+Complex imag: -2
+SetComplex real: 7
+SetComplex imag: 8
+Array type len: 3
 Function type: func(int) string
 Function kind: func
 Complex slice type: [][]int

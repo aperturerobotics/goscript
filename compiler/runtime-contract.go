@@ -36,6 +36,9 @@ const (
 	RuntimeHelperRecover RuntimeHelper = "builtin.recover"
 	RuntimeHelperMin     RuntimeHelper = "builtin.min"
 	RuntimeHelperMax     RuntimeHelper = "builtin.max"
+	RuntimeHelperComplex RuntimeHelper = "builtin.complex"
+	RuntimeHelperReal    RuntimeHelper = "builtin.real"
+	RuntimeHelperImag    RuntimeHelper = "builtin.imag"
 
 	RuntimeHelperAssignStruct      RuntimeHelper = "value.assignStruct"
 	RuntimeHelperMarkAsStructValue RuntimeHelper = "value.markAsStructValue"
@@ -216,6 +219,9 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperRecover, "recover", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperMin, "min", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperMax, "max", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperComplex, "complex", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperReal, "real", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperImag, "imag", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperAssignStruct, "assignStruct", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperMarkAsStructValue, "markAsStructValue", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperPointerValue, "pointerValue", RuntimeHelperCategoryValue),

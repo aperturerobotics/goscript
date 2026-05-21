@@ -190,6 +190,17 @@ export async function main(): Promise<void> {
 	$.println("TypeAssert string:", assertedString, assertedOK)
 	let [, assertedIntOK] = reflect.TypeAssert({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, $.markAsStructValue((reflect.ValueOf("typed")).clone()))
 	$.println("TypeAssert int:", assertedIntOK)
+	let complexValue = $.complex(3, -2)
+	let complexReflect = $.markAsStructValue((reflect.ValueOf(complexValue)).clone())
+	$.println("Complex value kind:", reflect.Kind_String($.markAsStructValue((complexReflect).clone()).Kind()))
+	$.println("Complex real:", $.int($.real($.markAsStructValue((complexReflect).clone()).Complex())))
+	$.println("Complex imag:", $.int($.imag($.markAsStructValue((complexReflect).clone()).Complex())))
+	let complexTarget: $.VarRef<$.Complex> = $.varRef($.complex(0, 0))
+	let complexTargetValue = $.markAsStructValue(($.markAsStructValue((reflect.ValueOf($.interfaceValue<any>(complexTarget, "*complex128"))).clone()).Elem()).clone())
+	$.markAsStructValue((complexTargetValue).clone()).SetComplex($.complex(7, 8))
+	$.println("SetComplex real:", $.int($.real($.markAsStructValue((complexTargetValue).clone()).Complex())))
+	$.println("SetComplex imag:", $.int($.imag($.markAsStructValue((complexTargetValue).clone()).Complex())))
+	$.println("Array type len:", $.pointerValue(reflect.ArrayOf(3, $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))).Len())
 
 	// Test function type
 	let fn = $.functionValue((_p0: number): string => {

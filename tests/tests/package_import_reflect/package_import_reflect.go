@@ -143,6 +143,17 @@ func main() {
 	println("TypeAssert string:", assertedString, assertedOK)
 	_, assertedIntOK := reflect.TypeAssert[int](reflect.ValueOf("typed"))
 	println("TypeAssert int:", assertedIntOK)
+	complexValue := complex(3, -2)
+	complexReflect := reflect.ValueOf(complexValue)
+	println("Complex value kind:", complexReflect.Kind().String())
+	println("Complex real:", int(real(complexReflect.Complex())))
+	println("Complex imag:", int(imag(complexReflect.Complex())))
+	var complexTarget complex128
+	complexTargetValue := reflect.ValueOf(&complexTarget).Elem()
+	complexTargetValue.SetComplex(complex(7, 8))
+	println("SetComplex real:", int(real(complexTargetValue.Complex())))
+	println("SetComplex imag:", int(imag(complexTargetValue.Complex())))
+	println("Array type len:", reflect.ArrayOf(3, reflect.TypeFor[int]()).Len())
 
 	// Test function type
 	fn := func(int) string { return "" }

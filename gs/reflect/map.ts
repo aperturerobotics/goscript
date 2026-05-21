@@ -78,6 +78,10 @@ class MapType implements Type {
     return 0
   }
 
+  public Len(): number {
+    throw new Error('reflect: Len of non-array type map')
+  }
+
   public Bits(): number {
     throw new Error('reflect: Bits of non-sized type map')
   }

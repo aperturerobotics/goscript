@@ -772,6 +772,10 @@ func lowerConstantValue(value constant.Value) (string, bool) {
 		return value.ExactString(), true
 	case constant.Float:
 		return value.ExactString(), true
+	case constant.Complex:
+		real := constant.Real(value).ExactString()
+		imag := constant.Imag(value).ExactString()
+		return "({ real: " + real + ", imag: " + imag + " })", true
 	default:
 		return "", false
 	}
@@ -3404,6 +3408,12 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperMax) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "min":
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperMin) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "complex":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperComplex) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "real":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperReal) + "(" + strings.Join(args, ", ") + ")", diagnostics
+			case "imag":
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperImag) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "panic":
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperPanic) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "recover":
@@ -4709,6 +4719,9 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 		if typed.Kind() == types.UnsafePointer {
 			return "null"
 		}
+		if typed.Info()&types.IsComplex != 0 {
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperComplex) + "(0, 0)"
+		}
 		if typed.Info()&types.IsBoolean != 0 {
 			return "false"
 		}
@@ -4929,6 +4942,9 @@ func tsType(typ types.Type) string {
 	case *types.Basic:
 		if typed.Kind() == types.UntypedNil {
 			return "null"
+		}
+		if typed.Info()&types.IsComplex != 0 {
+			return "$.Complex"
 		}
 		if typed.Info()&types.IsBoolean != 0 {
 			return "boolean"
@@ -5205,6 +5221,9 @@ func zeroValueExpr(typ types.Type) string {
 	case *types.Basic:
 		if typed.Kind() == types.UnsafePointer {
 			return "null"
+		}
+		if typed.Info()&types.IsComplex != 0 {
+			return "({ real: 0, imag: 0 })"
 		}
 		if typed.Info()&types.IsBoolean != 0 {
 			return "false"
@@ -5782,6 +5801,10 @@ func basicRuntimeName(basic *types.Basic) string {
 		return "bool"
 	case types.String:
 		return "string"
+	case types.Complex64:
+		return "complex64"
+	case types.Complex128:
+		return "complex128"
 	default:
 		if basic.Info()&types.IsNumeric != 0 {
 			return "int"
