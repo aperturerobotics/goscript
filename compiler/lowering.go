@@ -977,7 +977,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		exported:      ctx.topLevel,
 		indexExported: ctx.topLevel && (ast.IsExported(decl.Name.Name) || decl.Name.Name == "main"),
 		async:         async,
-		name:          decl.Name.Name,
+		name:          safeIdentifier(decl.Name.Name),
 		result:        asyncResultType(result, async),
 		deferState:    deferState,
 		namedResults:  o.lowerNamedResults(ctx, signature),
