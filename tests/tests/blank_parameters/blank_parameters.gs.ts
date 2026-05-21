@@ -3,6 +3,46 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+export class blankImpl {
+	public get value(): number {
+		return this._fields.value.value
+	}
+	public set value(value: number) {
+		this._fields.value.value = value
+	}
+
+	public _fields: {
+		value: $.VarRef<number>
+	}
+
+	constructor(init?: Partial<{value?: number}>) {
+		this._fields = {
+			value: $.varRef(init?.value ?? 0)
+		}
+	}
+
+	public clone(): blankImpl {
+		const cloned = new blankImpl()
+		cloned._fields = {
+			value: $.varRef(this._fields.value.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Value(): number {
+		const b: blankImpl | $.VarRef<blankImpl> | null = this
+		return $.pointerValue<blankImpl>(b).value
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.blankImpl",
+		new blankImpl(),
+		[{ name: "Value", args: [], returns: [] }],
+		blankImpl,
+		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
+}
+
 export class Packer {
 	public _fields: {
 	}
@@ -31,6 +71,20 @@ export class Packer {
 		{}
 	)
 }
+
+export type blankInterface = null | {
+	Value(): number
+}
+
+$.registerInterfaceType(
+	"main.blankInterface",
+	null,
+	[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+)
+
+let __goscriptBlank0: blankInterface | null = $.interfaceValue<blankInterface | null>(new blankImpl({value: 1}), "*main.blankImpl")
+
+let __goscriptBlank1: blankInterface | null = $.interfaceValue<blankInterface | null>(new blankImpl({value: 2}), "*main.blankImpl")
 
 export function blanks(_p0: number, _p1: string): number {
 	return 7

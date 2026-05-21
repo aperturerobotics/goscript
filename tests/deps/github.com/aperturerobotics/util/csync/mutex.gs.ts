@@ -254,4 +254,4 @@ export class MutexLocker {
 	)
 }
 
-export let _: sync.Locker | null = $.interfaceValue<sync.Locker | null>(($.typedNil("*csync.MutexLocker")), "*csync.MutexLocker")
+let __goscriptBlank0: sync.Locker | null = $.interfaceValue<sync.Locker | null>(($.typedNil("*csync.MutexLocker")), "*csync.MutexLocker")

@@ -7,7 +7,7 @@ export type ByteSize = number
 
 export type Direction = number
 
-export const _: number = 0
+const __goscriptBlank0: number = 0
 
 export const KB: ByteSize = 1024
 

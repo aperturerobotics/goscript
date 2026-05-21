@@ -1,5 +1,22 @@
 package main
 
+type blankInterface interface {
+	Value() int
+}
+
+type blankImpl struct {
+	value int
+}
+
+func (b *blankImpl) Value() int {
+	return b.value
+}
+
+var (
+	_ blankInterface = &blankImpl{value: 1}
+	_ blankInterface = &blankImpl{value: 2}
+)
+
 type Packer struct{}
 
 func blanks(_ int, _ string) int {

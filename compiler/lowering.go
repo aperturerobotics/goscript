@@ -706,9 +706,13 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 						variableType = o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
 					}
 				}
-				code := keyword + " " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = " + value
+				declName := o.lowerIdent(ctx, name, true)
+				if name.Name == "_" {
+					declName = ctx.tempName("Blank")
+				}
+				code := keyword + " " + declName + ": " + variableType + " = " + value
 				indexExport := ""
-				if ctx.topLevel {
+				if ctx.topLevel && name.Name != "_" {
 					code = "export " + code
 					if ast.IsExported(name.Name) {
 						indexExport = name.Name
