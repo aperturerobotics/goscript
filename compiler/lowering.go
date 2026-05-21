@@ -2201,7 +2201,28 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 			}
 		}
 	}
+	for name, def := range defsByName {
+		if def == nil || aliases[def] != "" {
+			continue
+		}
+		if shortDeclDefShadowsOuterName(name, def) {
+			aliases[def] = ctx.tempName("Shadow")
+		}
+	}
 	return aliases
+}
+
+func shortDeclDefShadowsOuterName(name string, def types.Object) bool {
+	for scope := def.Parent(); scope != nil; scope = scope.Parent() {
+		if scope == def.Parent() {
+			continue
+		}
+		obj, ok := scope.Lookup(name).(*types.Var)
+		if ok && obj.Pos().IsValid() && obj.Pos() < def.Pos() {
+			return true
+		}
+	}
+	return false
 }
 
 func (o *LoweringOwner) mapIndexDefaultUsesShortDeclName(

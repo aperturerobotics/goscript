@@ -101,8 +101,8 @@ export async function main(): Promise<void> {
 			{
 				let __goscriptTuple1 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i2, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 				let structPtr2: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple1[0]
-				let ok = __goscriptTuple1[1]
-				if (ok) {
+				let __goscriptShadow0 = __goscriptTuple1[1]
+				if (__goscriptShadow0) {
 					$.pointerValue<MyStruct>(structPtr1).Value = 99
 					$.println("shared modification check:", $.pointerValue<MyStruct>(structPtr2).Value)
 				}
@@ -142,8 +142,8 @@ export async function main(): Promise<void> {
 				{
 					let __goscriptTuple2 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(item, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 					let ptr: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple2[0]
-					let ok = __goscriptTuple2[1]
-					if (ok) {
+					let __goscriptShadow1 = __goscriptTuple2[1]
+					if (__goscriptShadow1) {
 						$.println("arr[", i, "] is *MyStruct with value:", $.pointerValue<MyStruct>(ptr).Value)
 					} else {
 						$.println("arr[", i, "] is unknown type")

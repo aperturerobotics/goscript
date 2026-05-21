@@ -90,26 +90,26 @@ export async function main(): Promise<void> {
 	}
 
 	{
-		let [tempDir, err] = os.MkdirTemp("", "os-temp-dir-*")
-		if (err == null) {
+		let [tempDir, __goscriptShadow0] = os.MkdirTemp("", "os-temp-dir-*")
+		if (__goscriptShadow0 == null) {
 			$.println("MkdirTemp ok")
 			os.RemoveAll(tempDir)
 		} else {
-			$.println("MkdirTemp error:", $.pointerValue(err).Error())
+			$.println("MkdirTemp error:", $.pointerValue(__goscriptShadow0).Error())
 		}
 	}
 
 	{
 		let __goscriptTuple0 = os.CreateTemp("", "os-temp-file-*")
 		let tempFile: os.File | $.VarRef<os.File> | null = __goscriptTuple0[0]
-		let err = __goscriptTuple0[1]
-		if (err == null) {
+		let __goscriptShadow1 = __goscriptTuple0[1]
+		if (__goscriptShadow1 == null) {
 			$.println("CreateTemp ok")
 			$.println("CreateTemp name empty:", $.pointerValue<os.File>(tempFile).Name() == "")
 			$.pointerValue<os.File>(tempFile).Close()
 			os.Remove($.pointerValue<os.File>(tempFile).Name())
 		} else {
-			$.println("CreateTemp error:", $.pointerValue(err).Error())
+			$.println("CreateTemp error:", $.pointerValue(__goscriptShadow1).Error())
 		}
 	}
 }

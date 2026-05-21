@@ -19,8 +19,8 @@ export function scopedTotal(seed: number): number {
 export function shadowedValue(): number {
 	let value = 7
 	{
-		let value = 11
-		$.println("block value:", value)
+		let __goscriptShadow0 = 11
+		$.println("block value:", __goscriptShadow0)
 	}
 	return value
 }
