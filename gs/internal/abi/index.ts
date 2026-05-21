@@ -26,6 +26,20 @@ export class IntArgRegBitmap {
   }
 }
 
+export function NoEscape<T>(p: T): T {
+  return p
+}
+
+export function Escape<T>(x: T): T {
+  return x
+}
+
+export function EscapeNonString<T>(_v: T): void {}
+
+export function EscapeToResultNonString<T>(v: T): T {
+  return v
+}
+
 // FuncPCABI0 returns the entry PC of the function f for ABI0
 export function FuncPCABI0(_f: any): number {
   return 0 // Placeholder
