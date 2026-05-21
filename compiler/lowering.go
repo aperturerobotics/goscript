@@ -631,7 +631,13 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				if _, ok := obj.(*types.Const); ok || decl.Tok == token.CONST {
 					keyword = "const"
 				}
-				code := keyword + " " + o.lowerIdent(ctx, name, true) + ": " + o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj]) + " = " + value
+				variableType := o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj])
+				if idx < len(typed.Values) {
+					if signature := unnamedSignatureForType(obj.Type()); signature != nil && exprIsAsyncCompatibleFuncLit(ctx, typed.Values[idx]) {
+						variableType = o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+					}
+				}
+				code := keyword + " " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = " + value
 				indexExport := ""
 				if ctx.topLevel {
 					code = "export " + code
@@ -810,7 +816,7 @@ func (o *LoweringOwner) tsMethodSignature(ctx lowerFileContext, method *types.Fu
 		return method.Name() + "(): unknown"
 	}
 	async := o.functionAsync(ctx, method)
-	return method.Name() + "(" + o.tsSignatureParamsFor(ctx, signature) + "): " +
+	return method.Name() + "(" + o.tsSignatureParamsFor(ctx, signature, false) + "): " +
 		asyncResultType(o.tsSignatureResultFor(ctx, signature), async)
 }
 
@@ -1769,7 +1775,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			if ident, ok := lhs.(*ast.Ident); ok {
 				right = o.lowerDeclaredValue(ctx, ident, right)
 			}
-			stmts = append(stmts, loweredStmt{text: "let " + left + o.shortDeclTypeAnnotation(ctx, lhs) + " = " + right})
+			stmts = append(stmts, loweredStmt{text: "let " + left + o.shortDeclTypeAnnotation(ctx, lhs, stmt.Rhs[idx]) + " = " + right})
 			continue
 		}
 		if stmt.Tok == token.AND_NOT_ASSIGN {
@@ -1807,7 +1813,7 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		value := "await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecv) + "(" + channel + ")"
 		if stmt.Tok == token.DEFINE {
 			prefix = "let "
-			left += o.shortDeclTypeAnnotation(ctx, stmt.Lhs[0])
+			left += o.shortDeclTypeAnnotation(ctx, stmt.Lhs[0], nil)
 			value = o.lowerDeclaredValue(ctx, stmt.Lhs[0], value)
 		}
 		return []loweredStmt{{text: prefix + left + " = " + value}}, diagnostics
@@ -1831,7 +1837,7 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		value := tempName + fields[idx]
 		if stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs) {
 			prefix = "let "
-			left += o.shortDeclTypeAnnotation(ctx, lhs)
+			left += o.shortDeclTypeAnnotation(ctx, lhs, nil)
 			value = o.lowerDeclaredValue(ctx, lhs, value)
 		}
 		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + value})
@@ -1839,13 +1845,19 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 	return stmts, diagnostics
 }
 
-func (o *LoweringOwner) shortDeclTypeAnnotation(ctx lowerFileContext, lhs ast.Expr) string {
+func (o *LoweringOwner) shortDeclTypeAnnotation(ctx lowerFileContext, lhs ast.Expr, rhs ast.Expr) string {
 	ident, ok := lhs.(*ast.Ident)
 	if !ok {
 		return ""
 	}
 	obj := ctx.semPkg.source.TypesInfo.Defs[ident]
-	if obj == nil || !shortDeclNeedsTypeAnnotation(obj.Type()) {
+	if obj == nil {
+		return ""
+	}
+	if signature := unnamedSignatureForType(obj.Type()); signature != nil && rhsIsMethodValue(ctx, rhs) {
+		return ": " + o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+	}
+	if !shortDeclNeedsTypeAnnotation(obj.Type()) {
 		return ""
 	}
 	return ": " + o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj])
@@ -1857,6 +1869,15 @@ func shortDeclNeedsTypeAnnotation(typ types.Type) bool {
 		return false
 	}
 	return namedStructType(pointer.Elem()) != nil
+}
+
+func rhsIsMethodValue(ctx lowerFileContext, expr ast.Expr) bool {
+	selector, ok := expr.(*ast.SelectorExpr)
+	if !ok || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	selection := ctx.semPkg.source.TypesInfo.Selections[selector]
+	return selection != nil && selection.Kind() == types.MethodVal
 }
 
 func (o *LoweringOwner) lowerTupleReassignmentStmt(
@@ -1877,7 +1898,7 @@ func (o *LoweringOwner) lowerTupleReassignmentStmt(
 		value := tempName + "[" + strconv.Itoa(idx) + "]"
 		if stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs) {
 			prefix = "let "
-			left += o.shortDeclTypeAnnotation(ctx, lhs)
+			left += o.shortDeclTypeAnnotation(ctx, lhs, nil)
 			value = o.lowerDeclaredValue(ctx, lhs, value)
 		}
 		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + value})
@@ -3053,7 +3074,11 @@ func isLegacyOctalLiteral(value string) bool {
 func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (string, bool, []Diagnostic) {
 	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
 	deferState := &loweredDeferState{}
-	body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withDeferState(deferState).withoutRangeBranch(), lit.Body)
+	bodyCtx := ctx.withSignature(signature).withDeferState(deferState).withoutRangeBranch()
+	if funcSignatureNeedsAsyncFunctionParamCalls(signature) {
+		bodyCtx = bodyCtx.withAsyncFunction(true)
+	}
+	body, diagnostics := o.lowerBlock(bodyCtx, lit.Body)
 	var rendered strings.Builder
 	renderNamedResults(&rendered, o.lowerNamedResults(ctx, signature), 1)
 	renderDeferStack(&rendered, deferState, 1)
@@ -3063,7 +3088,7 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	if async {
 		prefix = "async "
 	}
-	function := prefix + "(" + o.tsSignatureParamsFor(ctx, signature) + "): " +
+	function := prefix + "(" + o.tsSignatureParamsFor(ctx, signature, funcSignatureNeedsAsyncFunctionParamCalls(signature)) + "): " +
 		asyncResultType(o.tsSignatureResultFor(ctx, signature), async) + " => {\n" +
 		rendered.String() + "}"
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
@@ -4311,18 +4336,20 @@ func (o *LoweringOwner) lowerMapCompositeLit(
 
 func (o *LoweringOwner) lowerTypeAssertExpr(ctx lowerFileContext, expr *ast.TypeAssertExpr) (string, []Diagnostic) {
 	value, diagnostics := o.lowerExpr(ctx, expr.X)
+	targetType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Type)
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMustTypeAssert) +
-		"<" + o.tsTypeFor(ctx, ctx.semPkg.source.TypesInfo.TypeOf(expr.Type)) + ">(" +
-		value + ", " + o.runtimeTypeInfoExpr(ctx.semPkg.source.TypesInfo.TypeOf(expr.Type)) + ")", diagnostics
+		"<" + o.tsTypeAssertionTypeFor(ctx, targetType) + ">(" +
+		value + ", " + o.runtimeTypeInfoExpr(targetType) + ")", diagnostics
 }
 
 func (o *LoweringOwner) lowerTupleExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
 	switch typed := expr.(type) {
 	case *ast.TypeAssertExpr:
 		value, diagnostics := o.lowerExpr(ctx, typed.X)
+		targetType := ctx.semPkg.source.TypesInfo.TypeOf(typed.Type)
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeAssertTuple) +
-			"<" + o.tsTypeFor(ctx, ctx.semPkg.source.TypesInfo.TypeOf(typed.Type)) + ">(" +
-			value + ", " + o.runtimeTypeInfoExpr(ctx.semPkg.source.TypesInfo.TypeOf(typed.Type)) + ")", diagnostics
+			"<" + o.tsTypeAssertionTypeFor(ctx, targetType) + ">(" +
+			value + ", " + o.runtimeTypeInfoExpr(targetType) + ")", diagnostics
 	case *ast.IndexExpr:
 		if isMapType(ctx.semPkg.source.TypesInfo.TypeOf(typed.X)) {
 			target, targetDiagnostics := o.lowerExpr(ctx, typed.X)
@@ -4705,14 +4732,14 @@ func tsSignatureResult(signature *types.Signature) string {
 	return "[" + strings.Join(results, ", ") + "]"
 }
 
-func (o *LoweringOwner) tsSignatureParamsFor(ctx lowerFileContext, signature *types.Signature) string {
+func (o *LoweringOwner) tsSignatureParamsFor(ctx lowerFileContext, signature *types.Signature, asyncCompatibleFunctionParams bool) string {
 	if signature == nil || signature.Params() == nil || signature.Params().Len() == 0 {
 		return ""
 	}
 	params := make([]string, 0, signature.Params().Len())
 	for idx := range signature.Params().Len() {
 		param := signature.Params().At(idx)
-		params = append(params, safeParamName(param, idx)+": "+o.tsTypeFor(ctx, param.Type()))
+		params = append(params, safeParamName(param, idx)+": "+o.tsFuncParamTypeFor(ctx, param.Type(), asyncCompatibleFunctionParams))
 	}
 	return strings.Join(params, ", ")
 }
@@ -4729,6 +4756,41 @@ func (o *LoweringOwner) tsSignatureResultFor(ctx lowerFileContext, signature *ty
 		results = append(results, o.tsTypeFor(ctx, result.Type()))
 	}
 	return "[" + strings.Join(results, ", ") + "]"
+}
+
+func funcSignatureNeedsAsyncFunctionParamCalls(signature *types.Signature) bool {
+	if signature == nil || signature.Params() == nil {
+		return false
+	}
+	if signature.Results() == nil || signature.Results().Len() == 0 {
+		return false
+	}
+	for param := range signature.Params().Variables() {
+		if signatureForType(param.Type()) != nil {
+			return true
+		}
+	}
+	return false
+}
+
+func unnamedSignatureForType(typ types.Type) *types.Signature {
+	if typ == nil {
+		return nil
+	}
+	if _, ok := types.Unalias(typ).(*types.Named); ok {
+		return nil
+	}
+	signature, _ := types.Unalias(typ).Underlying().(*types.Signature)
+	return signature
+}
+
+func exprIsAsyncCompatibleFuncLit(ctx lowerFileContext, expr ast.Expr) bool {
+	funcLit, ok := expr.(*ast.FuncLit)
+	if !ok || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(funcLit).(*types.Signature)
+	return funcSignatureNeedsAsyncFunctionParamCalls(signature)
 }
 
 func asyncResultType(result string, async bool) string {
@@ -4761,7 +4823,19 @@ func (o *LoweringOwner) tsFuncParamTypeFor(ctx lowerFileContext, typ types.Type,
 	if signature == nil {
 		return o.tsTypeFor(ctx, typ)
 	}
-	return "((" + o.tsSignatureParamsFor(ctx, signature) + ") => " +
+	return "((" + o.tsSignatureParamsFor(ctx, signature, false) + ") => " +
+		asyncCompatibleResultType(o.tsSignatureResultFor(ctx, signature)) + ") | null"
+}
+
+func (o *LoweringOwner) tsTypeAssertionTypeFor(ctx lowerFileContext, typ types.Type) string {
+	if signature := signatureForType(typ); signature != nil {
+		return o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+	}
+	return o.tsTypeFor(ctx, typ)
+}
+
+func (o *LoweringOwner) tsAsyncCompatibleFunctionTypeFor(ctx lowerFileContext, signature *types.Signature) string {
+	return "((" + o.tsSignatureParamsFor(ctx, signature, true) + ") => " +
 		asyncCompatibleResultType(o.tsSignatureResultFor(ctx, signature)) + ") | null"
 }
 
@@ -4803,7 +4877,7 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		}
 		return "$.VarRef<" + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
 	case *types.Signature:
-		return "((" + o.tsSignatureParamsFor(ctx, typed) + ") => " + o.tsSignatureResultFor(ctx, typed) + ") | null"
+		return "((" + o.tsSignatureParamsFor(ctx, typed, false) + ") => " + o.tsSignatureResultFor(ctx, typed) + ") | null"
 	default:
 		return tsType(typ)
 	}
@@ -4829,7 +4903,7 @@ func (o *LoweringOwner) tsStructFieldTypeFor(ctx lowerFileContext, typ types.Typ
 	if signature == nil {
 		return o.tsTypeFor(ctx, typ)
 	}
-	return "((" + o.tsSignatureParamsFor(ctx, signature) + ") => " +
+	return "((" + o.tsSignatureParamsFor(ctx, signature, true) + ") => " +
 		asyncCompatibleResultType(o.tsSignatureResultFor(ctx, signature)) + ") | null"
 }
 

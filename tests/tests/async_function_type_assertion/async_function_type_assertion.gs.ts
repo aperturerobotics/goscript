@@ -1,0 +1,83 @@
+// Generated file based on async_function_type_assertion.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+export class Worker {
+	public get ch(): $.Channel<number> | null {
+		return this._fields.ch.value
+	}
+	public set ch(value: $.Channel<number> | null) {
+		this._fields.ch.value = value
+	}
+
+	public _fields: {
+		ch: $.VarRef<$.Channel<number> | null>
+	}
+
+	constructor(init?: Partial<{ch?: $.Channel<number> | null}>) {
+		this._fields = {
+			ch: $.varRef(init?.ch ?? null)
+		}
+	}
+
+	public clone(): Worker {
+		const cloned = new Worker()
+		cloned._fields = {
+			ch: $.varRef(this._fields.ch.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public async lookup(network: string): Promise<number> {
+		const w: Worker | $.VarRef<Worker> | null = this
+		await $.chanSend($.pointerValue<Worker>(w).ch, $.len(network))
+		return await $.chanRecv($.pointerValue<Worker>(w).ch)
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.Worker",
+		new Worker(),
+		[{ name: "lookup", args: [], returns: [] }],
+		Worker,
+		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+	)
+}
+
+export function callLookup(fn: ((_p0: string) => number) | null, network: string): number {
+	return fn!(network)
+}
+
+export function syncLookup(network: string): number {
+	return $.len(network)
+}
+
+export function chooseLookup(value: any, worker: Worker | $.VarRef<Worker> | null): number {
+	let resolver: ((network: string) => number | Promise<number>) | null = ((__receiver) => (network: string) => __receiver.lookup(network))($.pointerValue<Worker>(worker))
+	{
+		let [alt, ] = $.typeAssertTuple<((_p0: string) => number | Promise<number>) | null>(value, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
+		if (alt != null) {
+			resolver = alt
+		}
+	}
+	resolver
+	return 2
+}
+
+export async function main(): Promise<void> {
+	let worker: Worker | $.VarRef<Worker> | null = new Worker({ch: $.makeChannel<number>(1, 0, "both")})
+	$.println("lookup:", chooseLookup(null, worker))
+
+	await $.chanSend($.pointerValue<Worker>(worker).ch, 1)
+	await $.chanRecv($.pointerValue<Worker>(worker).ch)
+	let hook = $.functionValue(async (fn: ((_p0: string) => number | Promise<number>) | null, network: string): Promise<number> => {
+		return await fn!(network)
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] }, { kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
+	$.println("hook:", await hook!(syncLookup, "ip"))
+	$.pointerValue<Worker>(worker).ch!.close()
+}
+
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}
