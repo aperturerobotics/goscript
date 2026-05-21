@@ -1,0 +1,4 @@
+skip negative: 10
+skip positive: 11
+loop skipped: 1
+loop included: 4

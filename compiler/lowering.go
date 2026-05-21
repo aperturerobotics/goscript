@@ -491,6 +491,7 @@ type lowerFileContext struct {
 	rangeBreak    bool
 	rangeContinue bool
 	gotoLabels    map[string]bool
+	forwardGotos  map[string]bool
 	topLevel      bool
 }
 
@@ -1064,6 +1065,22 @@ func (ctx lowerFileContext) withGotoLabels(labels map[string]bool) lowerFileCont
 	return ctx
 }
 
+func (ctx lowerFileContext) withForwardGotos(labels map[string]bool) lowerFileContext {
+	if len(ctx.forwardGotos) == 0 {
+		ctx.forwardGotos = labels
+		return ctx
+	}
+	merged := make(map[string]bool, len(ctx.forwardGotos)+len(labels))
+	for label := range ctx.forwardGotos {
+		merged[label] = true
+	}
+	for label := range labels {
+		merged[label] = true
+	}
+	ctx.forwardGotos = merged
+	return ctx
+}
+
 func (o *LoweringOwner) lowerBlock(ctx lowerFileContext, block *ast.BlockStmt) ([]loweredStmt, []Diagnostic) {
 	if block == nil {
 		return nil, nil
@@ -1157,6 +1174,9 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 			case token.BREAK, token.CONTINUE:
 				return []loweredStmt{{text: typed.Tok.String() + " " + safeIdentifier(typed.Label.Name)}}, nil
 			case token.GOTO:
+				if ctx.forwardGotos[safeIdentifier(typed.Label.Name)] {
+					return []loweredStmt{{text: "break " + safeIdentifier(typed.Label.Name)}}, nil
+				}
 				if ctx.gotoLabels[safeIdentifier(typed.Label.Name)] {
 					return []loweredStmt{{text: "continue " + safeIdentifier(typed.Label.Name)}}, nil
 				}
@@ -1213,10 +1233,50 @@ func (o *LoweringOwner) lowerStmtListAfter(
 	for label := range gotoSpans {
 		gotoLabels[label] = true
 	}
+	forwardSpans := forwardGotoLabelSpans(stmts, gotoSpans)
+	forwardStarts := make(map[int]forwardGotoLabelSpan, len(forwardSpans))
+	for label, span := range forwardSpans {
+		span.label = label
+		group := forwardStarts[span.start]
+		if group.forwardLabels == nil {
+			group.forwardLabels = make(map[string]bool)
+		}
+		group.forwardLabels[label] = true
+		if group.label == "" || span.labelIdx > group.labelIdx {
+			group.label = span.label
+			group.start = span.start
+			group.labelIdx = span.labelIdx
+		}
+		forwardStarts[span.start] = group
+	}
 	for idx := 0; idx < len(stmts); idx++ {
 		stmt := stmts[idx]
 		startLine := sourceLine(ctx, stmt.Pos())
 		leading := leadingStmtLines(ctx, prevEndLine, startLine)
+		if span, ok := forwardStarts[idx]; ok {
+			bodyStmts := stmts[idx:span.labelIdx]
+			body, bodyDiagnostics := o.lowerStmtListAfter(
+				ctx.withForwardGotos(span.forwardLabels),
+				bodyStmts,
+				prevEndLine,
+			)
+			diagnostics = append(diagnostics, bodyDiagnostics...)
+			block := loweredStmt{text: span.label + ":", children: body}
+			if len(leading) != 0 {
+				block.leading = append(leading, block.leading...)
+			}
+			lowered = append(lowered, block)
+			if labeled, ok := stmts[span.labelIdx].(*ast.LabeledStmt); ok {
+				labelLowered, labelDiagnostics := o.lowerStmt(ctx, labeled.Stmt)
+				diagnostics = append(diagnostics, labelDiagnostics...)
+				lowered = append(lowered, labelLowered...)
+				if endLine := sourceLine(ctx, labeled.End()); endLine != 0 {
+					prevEndLine = endLine
+				}
+			}
+			idx = span.labelIdx
+			continue
+		}
 		if labeled, ok := stmt.(*ast.LabeledStmt); ok {
 			label := safeIdentifier(labeled.Label.Name)
 			if endIdx, ok := gotoSpans[label]; ok {
@@ -1255,6 +1315,13 @@ func (o *LoweringOwner) lowerStmtListAfter(
 	return lowered, diagnostics
 }
 
+type forwardGotoLabelSpan struct {
+	label         string
+	start         int
+	labelIdx      int
+	forwardLabels map[string]bool
+}
+
 func backwardGotoLabelSpans(stmts []ast.Stmt) map[string]int {
 	seenLabels := make(map[string]bool)
 	spans := make(map[string]int)
@@ -1280,6 +1347,44 @@ func backwardGotoLabelSpans(stmts []ast.Stmt) map[string]int {
 				spans[label] = idx + 1
 			}
 		}
+	}
+	return spans
+}
+
+func forwardGotoLabelSpans(stmts []ast.Stmt, backwardSpans map[string]int) map[string]forwardGotoLabelSpan {
+	labelIndexes := make(map[string]int)
+	for idx, stmt := range stmts {
+		labeled, ok := stmt.(*ast.LabeledStmt)
+		if !ok {
+			continue
+		}
+		label := safeIdentifier(labeled.Label.Name)
+		if _, isBackward := backwardSpans[label]; isBackward {
+			continue
+		}
+		labelIndexes[label] = idx
+	}
+	spans := make(map[string]forwardGotoLabelSpan)
+	for idx, stmt := range stmts {
+		ast.Inspect(stmt, func(node ast.Node) bool {
+			branch, ok := node.(*ast.BranchStmt)
+			if !ok || branch.Tok != token.GOTO || branch.Label == nil {
+				return true
+			}
+			label := safeIdentifier(branch.Label.Name)
+			labelIdx, ok := labelIndexes[label]
+			if !ok || labelIdx <= idx {
+				return true
+			}
+			span, ok := spans[label]
+			if !ok || idx < span.start {
+				spans[label] = forwardGotoLabelSpan{
+					start:    idx,
+					labelIdx: labelIdx,
+				}
+			}
+			return true
+		})
 	}
 	return spans
 }
