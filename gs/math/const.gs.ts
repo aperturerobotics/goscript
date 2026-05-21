@@ -89,5 +89,4 @@ export let MaxUint16: number = 65535
 export let MaxUint32: number = 4294967295
 
 // 18446744073709551615
-export let MaxUint64: bigint = 0xFFFFFFFFFFFFFFFFn
-
+export let MaxUint64: number | bigint = 0xFFFFFFFFFFFFFFFFn

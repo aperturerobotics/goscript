@@ -77,4 +77,10 @@ describe('Mathematical Constants', () => {
     expect(MaxUint).toBe(0xffffffffffffffffn)
     expect(MaxUint64).toBe(0xffffffffffffffffn)
   })
+
+  it('should typecheck current number-based uint64 comparisons', () => {
+    const counter: number = 0
+    const atLimit: boolean = counter === MaxUint64
+    expect(atLimit).toBe(false)
+  })
 })
