@@ -1,3 +1,5 @@
+import type { Slice } from '@goscript/builtin/index.js'
+
 // Package unicode provides data and functions to test some properties of Unicode code points.
 
 // Constants
@@ -16,13 +18,27 @@ export const MaxCase = 3
 export const UpperLower = MaxRune + 1
 
 // Range16 represents a range of 16-bit Unicode code points
+type Range16Init = {
+  Lo?: number
+  Hi?: number
+  Stride?: number
+}
+
 export class Range16 {
   public Lo: number
   public Hi: number
   public Stride: number
 
-  constructor(lo: number, hi: number, stride: number) {
-    this.Lo = lo
+  constructor(init?: Range16Init)
+  constructor(lo: number, hi: number, stride: number)
+  constructor(loOrInit: number | Range16Init = 0, hi = 0, stride = 0) {
+    if (typeof loOrInit === 'object') {
+      this.Lo = loOrInit.Lo ?? 0
+      this.Hi = loOrInit.Hi ?? 0
+      this.Stride = loOrInit.Stride ?? 0
+      return
+    }
+    this.Lo = loOrInit
     this.Hi = hi
     this.Stride = stride
   }
@@ -33,13 +49,27 @@ export class Range16 {
 }
 
 // Range32 represents a range of 32-bit Unicode code points
+type Range32Init = {
+  Lo?: number
+  Hi?: number
+  Stride?: number
+}
+
 export class Range32 {
   public Lo: number
   public Hi: number
   public Stride: number
 
-  constructor(lo: number, hi: number, stride: number) {
-    this.Lo = lo
+  constructor(init?: Range32Init)
+  constructor(lo: number, hi: number, stride: number)
+  constructor(loOrInit: number | Range32Init = 0, hi = 0, stride = 0) {
+    if (typeof loOrInit === 'object') {
+      this.Lo = loOrInit.Lo ?? 0
+      this.Hi = loOrInit.Hi ?? 0
+      this.Stride = loOrInit.Stride ?? 0
+      return
+    }
+    this.Lo = loOrInit
     this.Hi = hi
     this.Stride = stride
   }
@@ -50,18 +80,36 @@ export class Range32 {
 }
 
 // RangeTable defines a set of Unicode code points by listing the ranges of code points within the set
+type RangeTableInit = {
+  R16?: Slice<Range16>
+  R32?: Slice<Range32>
+  LatinOffset?: number
+}
+
 export class RangeTable {
   public R16: Range16[]
   public R32: Range32[]
   public LatinOffset: number
 
+  constructor(init?: RangeTableInit)
   constructor(
-    r16: Range16[] = [],
-    r32: Range32[] = [],
-    latinOffset: number = 0,
+    r16?: Slice<Range16>,
+    r32?: Slice<Range32>,
+    latinOffset?: number,
+  )
+  constructor(
+    r16OrInit: Slice<Range16> | RangeTableInit = [],
+    r32: Slice<Range32> = [],
+    latinOffset = 0,
   ) {
-    this.R16 = r16
-    this.R32 = r32
+    if (isRangeTableInit(r16OrInit)) {
+      this.R16 = sliceToArray(r16OrInit.R16)
+      this.R32 = sliceToArray(r16OrInit.R32)
+      this.LatinOffset = r16OrInit.LatinOffset ?? 0
+      return
+    }
+    this.R16 = sliceToArray(r16OrInit)
+    this.R32 = sliceToArray(r32)
     this.LatinOffset = latinOffset
   }
 
@@ -72,6 +120,23 @@ export class RangeTable {
       this.LatinOffset,
     )
   }
+}
+
+function isRangeTableInit(
+  value: Slice<Range16> | RangeTableInit,
+): value is RangeTableInit {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    ('R16' in value || 'R32' in value || 'LatinOffset' in value)
+  )
+}
+
+function sliceToArray<T>(value: Slice<T> | undefined): T[] {
+  if (value == null) {
+    return []
+  }
+  return Array.from(value as ArrayLike<T>)
 }
 
 // CaseRange represents a range of Unicode code points for case mapping
@@ -345,6 +410,48 @@ export const Categories = new Map<string, RangeTable>([
   ['Z', Space],
 ])
 
+export const CategoryAliases = new Map<string, string>([
+  ['C', 'C'],
+  ['Cc', 'Cc'],
+  ['cntrl', 'Cc'],
+  ['Cf', 'Cf'],
+  ['Co', 'Co'],
+  ['Cs', 'Cs'],
+  ['L', 'L'],
+  ['LC', 'LC'],
+  ['Ll', 'Ll'],
+  ['Lm', 'Lm'],
+  ['Lo', 'Lo'],
+  ['Lt', 'Lt'],
+  ['Lu', 'Lu'],
+  ['M', 'M'],
+  ['Mc', 'Mc'],
+  ['Me', 'Me'],
+  ['Mn', 'Mn'],
+  ['N', 'N'],
+  ['Nd', 'Nd'],
+  ['digit', 'Nd'],
+  ['Nl', 'Nl'],
+  ['No', 'No'],
+  ['P', 'P'],
+  ['Pc', 'Pc'],
+  ['Pd', 'Pd'],
+  ['Pe', 'Pe'],
+  ['Pf', 'Pf'],
+  ['Pi', 'Pi'],
+  ['Po', 'Po'],
+  ['Ps', 'Ps'],
+  ['S', 'S'],
+  ['Sc', 'Sc'],
+  ['Sk', 'Sk'],
+  ['Sm', 'Sm'],
+  ['So', 'So'],
+  ['Z', 'Z'],
+  ['Zl', 'Zl'],
+  ['Zp', 'Zp'],
+  ['Zs', 'Zs'],
+])
+
 // Scripts and Properties maps (simplified)
 export const Scripts = new Map<string, RangeTable>()
 export const Properties = new Map<string, RangeTable>()
@@ -370,6 +477,7 @@ export const Cc = new RangeTable(
   [],
 )
 export const Cf = new RangeTable([], [])
+export const Cn = new RangeTable([], [])
 export const Co = new RangeTable([], [])
 export const Cs = new RangeTable([new Range16(0xd800, 0xdfff, 1)], [])
 export const Lm = new RangeTable([], [])
@@ -416,3 +524,5 @@ export const So = new RangeTable([], [])
 export const Zl = new RangeTable([], [])
 export const Zp = new RangeTable([], [])
 export const Zs = new RangeTable([new Range16(0x0020, 0x0020, 1)], []) // space
+
+Categories.set('Cn', Cn)
