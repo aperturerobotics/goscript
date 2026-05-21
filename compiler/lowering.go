@@ -4629,6 +4629,9 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInterfaceValue) +
 			"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " + strconv.Quote(goRuntimeTypeString(sourceType)) + ")"
 	}
+	if wrapper := o.lowerNamedValueInterfaceWrapper(ctx, targetType, sourceType, value); wrapper != "" {
+		return wrapper
+	}
 	if isInterfaceType(targetType) && !isInterfaceType(sourceType) && isNilableType(sourceType) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInterfaceValue) +
 			"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " + strconv.Quote(goRuntimeTypeString(sourceType)) + ")"
@@ -4637,6 +4640,32 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 		return o.lowerStructClone(value)
 	}
 	return value
+}
+
+func (o *LoweringOwner) lowerNamedValueInterfaceWrapper(
+	ctx lowerFileContext,
+	targetType types.Type,
+	sourceType types.Type,
+	value string,
+) string {
+	if !isInterfaceType(targetType) || isInterfaceType(sourceType) || isNilableType(sourceType) {
+		return ""
+	}
+	targetInterface, _ := types.Unalias(targetType).Underlying().(*types.Interface)
+	if targetInterface == nil || !types.Implements(sourceType, targetInterface) {
+		return ""
+	}
+	named, _ := types.Unalias(sourceType).(*types.Named)
+	if named == nil || namedStructType(named) != nil {
+		return ""
+	}
+	methods := o.genericMethodDescriptors(ctx, named)
+	if methods == "" {
+		return ""
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedValueInterfaceValue) +
+		"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " +
+		strconv.Quote(goRuntimeTypeString(sourceType)) + ", " + methods + ")"
 }
 
 func (o *LoweringOwner) lowerPrimitiveErrorWrapper(ctx lowerFileContext, sourceType types.Type, value string) string {

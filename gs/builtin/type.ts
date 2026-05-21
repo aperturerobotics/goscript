@@ -858,6 +858,13 @@ function matchesType(value: any, info: TypeInfo): boolean {
   if (value === null || value === undefined) {
     return false
   }
+  if (
+    typeof value === 'object' &&
+    typeof value.__goType === 'string' &&
+    value.__goType === info.name
+  ) {
+    return true
+  }
 
   switch (info.kind) {
     case TypeKind.Basic:
@@ -1032,6 +1039,17 @@ export function typeAssert<T>(
 
   if (isPointerTypeInfo(normalizedType) && value === null) {
     return { value: null as unknown as T, ok: false }
+  }
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof value.__goType === 'string' &&
+    value.__goType === normalizedType.name
+  ) {
+    if ('__goValue' in value) {
+      return { value: value.__goValue as T, ok: true }
+    }
+    return { value: value as T, ok: true }
   }
 
   // Removed struct matching logic - struct types should use nominal matching
@@ -1250,6 +1268,24 @@ export function interfaceValue<T>(value: unknown, typeName: string): T {
     })
   }
   return nilValue as T
+}
+
+export function namedValueInterfaceValue<T>(
+  value: unknown,
+  typeName: string,
+  methods: Record<string, (receiver: any, ...args: any[]) => any>,
+): T {
+  const boxed: any = {
+    __goType: typeName,
+    __goValue: value,
+    valueOf: () => value,
+    toString: () => String(value),
+    [Symbol.toPrimitive]: () => value as any,
+  }
+  for (const [name, method] of Object.entries(methods)) {
+    boxed[name] = (...args: any[]) => method(value, ...args)
+  }
+  return boxed as T
 }
 
 export function namedFunction<T>(fn: T, typeName: string): T {

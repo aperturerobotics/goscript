@@ -77,21 +77,22 @@ const (
 	RuntimeHelperToGoError          RuntimeHelper = "error.toGoError"
 	RuntimeHelperWrapPrimitiveError RuntimeHelper = "error.wrapPrimitiveError"
 
-	RuntimeHelperTypeKind              RuntimeHelper = "type.TypeKind"
-	RuntimeHelperRegisterStructType    RuntimeHelper = "type.registerStructType"
-	RuntimeHelperRegisterInterfaceType RuntimeHelper = "type.registerInterfaceType"
-	RuntimeHelperGetTypeByName         RuntimeHelper = "type.getTypeByName"
-	RuntimeHelperTypeAssert            RuntimeHelper = "type.typeAssert"
-	RuntimeHelperTypeAssertTuple       RuntimeHelper = "type.typeAssertTuple"
-	RuntimeHelperMustTypeAssert        RuntimeHelper = "type.mustTypeAssert"
-	RuntimeHelperIs                    RuntimeHelper = "type.is"
-	RuntimeHelperTypeSwitch            RuntimeHelper = "type.typeSwitch"
-	RuntimeHelperTypedNil              RuntimeHelper = "type.typedNil"
-	RuntimeHelperInterfaceValue        RuntimeHelper = "type.interfaceValue"
-	RuntimeHelperFunctionValue         RuntimeHelper = "type.functionValue"
-	RuntimeHelperNamedFunction         RuntimeHelper = "type.namedFunction"
-	RuntimeHelperGenericZero           RuntimeHelper = "type.genericZero"
-	RuntimeHelperCallGenericMethod     RuntimeHelper = "type.callGenericMethod"
+	RuntimeHelperTypeKind                 RuntimeHelper = "type.TypeKind"
+	RuntimeHelperRegisterStructType       RuntimeHelper = "type.registerStructType"
+	RuntimeHelperRegisterInterfaceType    RuntimeHelper = "type.registerInterfaceType"
+	RuntimeHelperGetTypeByName            RuntimeHelper = "type.getTypeByName"
+	RuntimeHelperTypeAssert               RuntimeHelper = "type.typeAssert"
+	RuntimeHelperTypeAssertTuple          RuntimeHelper = "type.typeAssertTuple"
+	RuntimeHelperMustTypeAssert           RuntimeHelper = "type.mustTypeAssert"
+	RuntimeHelperIs                       RuntimeHelper = "type.is"
+	RuntimeHelperTypeSwitch               RuntimeHelper = "type.typeSwitch"
+	RuntimeHelperTypedNil                 RuntimeHelper = "type.typedNil"
+	RuntimeHelperInterfaceValue           RuntimeHelper = "type.interfaceValue"
+	RuntimeHelperNamedValueInterfaceValue RuntimeHelper = "type.namedValueInterfaceValue"
+	RuntimeHelperFunctionValue            RuntimeHelper = "type.functionValue"
+	RuntimeHelperNamedFunction            RuntimeHelper = "type.namedFunction"
+	RuntimeHelperGenericZero              RuntimeHelper = "type.genericZero"
+	RuntimeHelperCallGenericMethod        RuntimeHelper = "type.callGenericMethod"
 
 	RuntimeHelperMakeChannel     RuntimeHelper = "channel.makeChannel"
 	RuntimeHelperMakeChannelRef  RuntimeHelper = "channel.makeChannelRef"
@@ -261,6 +262,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperTypeSwitch, "typeSwitch", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperTypedNil, "typedNil", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperInterfaceValue, "interfaceValue", RuntimeHelperCategoryType),
+		runtimeHelper(RuntimeHelperNamedValueInterfaceValue, "namedValueInterfaceValue", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperFunctionValue, "functionValue", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperNamedFunction, "namedFunction", RuntimeHelperCategoryType),
 		runtimeHelper(RuntimeHelperGenericZero, "genericZero", RuntimeHelperCategoryType),
