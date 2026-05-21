@@ -1970,6 +1970,9 @@ func (o *LoweringOwner) lowerReturnStmt(ctx lowerFileContext, stmt *ast.ReturnSt
 	}
 	if len(stmt.Results) == 1 {
 		expr, diagnostics := o.lowerExpr(ctx, stmt.Results[0])
+		if result, ok := o.lowerTupleReturnExpr(ctx, stmt.Results[0], expr); ok {
+			return result, diagnostics
+		}
 		if returnType := singleReturnType(ctx); returnType != nil {
 			expr = o.lowerValueForTarget(ctx, stmt.Results[0], returnType, expr)
 		}
@@ -2012,6 +2015,9 @@ func (o *LoweringOwner) lowerRangeFuncReturnStmt(ctx lowerFileContext, stmt *ast
 	}
 	if len(stmt.Results) == 1 {
 		expr, diagnostics := o.lowerExpr(ctx.withoutRangeBranch(), stmt.Results[0])
+		if result, ok := o.lowerTupleRangeReturnExpr(ctx, stmt.Results[0], expr); ok {
+			return result, diagnostics
+		}
 		if returnType := singleReturnType(ctx); returnType != nil {
 			expr = o.lowerValueForTarget(ctx, stmt.Results[0], returnType, expr)
 		}
@@ -2035,6 +2041,64 @@ func singleReturnType(ctx lowerFileContext) types.Type {
 		return nil
 	}
 	return ctx.signature.Results().At(0).Type()
+}
+
+func (o *LoweringOwner) lowerTupleReturnExpr(ctx lowerFileContext, expr ast.Expr, value string) (string, bool) {
+	prefix, tuple, ok := o.lowerTupleReturnValue(ctx, expr, value)
+	if !ok {
+		return "", false
+	}
+	return prefix + "\nreturn " + tuple, true
+}
+
+func (o *LoweringOwner) lowerTupleRangeReturnExpr(ctx lowerFileContext, expr ast.Expr, value string) (string, bool) {
+	prefix, tuple, ok := o.lowerTupleReturnValue(ctx.withoutRangeBranch(), expr, value)
+	if !ok {
+		return "", false
+	}
+	return prefix + "\n" + ctx.rangeBranch.hasReturn + " = true\n" +
+		ctx.rangeBranch.value + " = " + tuple + "\nreturn false", true
+}
+
+func (o *LoweringOwner) lowerTupleReturnValue(ctx lowerFileContext, expr ast.Expr, value string) (string, string, bool) {
+	if ctx.signature == nil || ctx.signature.Results() == nil || ctx.signature.Results().Len() < 2 {
+		return "", "", false
+	}
+	sourceResults := tupleResultTypes(ctx, expr)
+	if sourceResults == nil || sourceResults.Len() != ctx.signature.Results().Len() {
+		return "", "", false
+	}
+	temp := ctx.tempName("Return")
+	parts := make([]string, 0, sourceResults.Len())
+	changed := false
+	for idx := range sourceResults.Len() {
+		part := temp + "[" + strconv.Itoa(idx) + "]"
+		converted := o.lowerValueForTargetTypes(ctx, ctx.signature.Results().At(idx).Type(), sourceResults.At(idx).Type(), part, false)
+		if converted != part {
+			changed = true
+		}
+		part = converted
+		parts = append(parts, part)
+	}
+	if !changed {
+		return "", "", false
+	}
+	return "const " + temp + " = " + value, "[" + strings.Join(parts, ", ") + "]", true
+}
+
+func tupleResultTypes(ctx lowerFileContext, expr ast.Expr) *types.Tuple {
+	if tuple, ok := ctx.semPkg.source.TypesInfo.TypeOf(expr).(*types.Tuple); ok {
+		return tuple
+	}
+	call, ok := ast.Unparen(expr).(*ast.CallExpr)
+	if !ok {
+		return nil
+	}
+	signature := callTargetSignature(ctx, call.Fun)
+	if signature == nil || signature.Results() == nil || signature.Results().Len() < 2 {
+		return nil
+	}
+	return signature.Results()
 }
 
 func (o *LoweringOwner) lowerNamedResults(ctx lowerFileContext, signature *types.Signature) []loweredNamedResult {
@@ -4014,6 +4078,16 @@ func (o *LoweringOwner) lowerValueForTarget(
 	value string,
 ) string {
 	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	return o.lowerValueForTargetTypes(ctx, targetType, sourceType, value, shouldCloneStructValue(expr))
+}
+
+func (o *LoweringOwner) lowerValueForTargetTypes(
+	ctx lowerFileContext,
+	targetType types.Type,
+	sourceType types.Type,
+	value string,
+	cloneStructValue bool,
+) string {
 	if isInterfaceType(targetType) && isStructValueType(sourceType) {
 		return o.lowerStructClone(value)
 	}
@@ -4026,7 +4100,7 @@ func (o *LoweringOwner) lowerValueForTarget(
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInterfaceValue) +
 			"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " + strconv.Quote(goRuntimeTypeString(sourceType)) + ")"
 	}
-	if isStructValueType(targetType) && shouldCloneStructValue(expr) {
+	if isStructValueType(targetType) && cloneStructValue {
 		return o.lowerStructClone(value)
 	}
 	return value
