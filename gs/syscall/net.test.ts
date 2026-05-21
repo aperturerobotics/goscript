@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 
 import {
   Bind,
+  CloseOnExec,
   Connect,
   ENOSYS,
   ENOTSUP,
@@ -10,6 +11,7 @@ import {
   IPPROTO_TCP,
   IPV6_V6ONLY,
   Listen,
+  SetNonblock,
   SetsockoptInt,
   SOCK_SEQPACKET,
   SOMAXCONN,
@@ -33,5 +35,11 @@ describe('syscall network stubs', () => {
     expect(Bind(-1, null)).toBe(ENOSYS)
     expect(GetsockoptInt(-1, 0, 0)).toEqual([0, ENOSYS])
     expect(SetsockoptInt(-1, 0, 0, 0)).toBe(ENOSYS)
+  })
+
+  test('exports JavaScript no-op descriptor flag helpers', () => {
+    expect(CloseOnExec(1)).toBeUndefined()
+    expect(SetNonblock(1, true)).toBeNull()
+    expect(SetNonblock(1, false)).toBeNull()
   })
 })

@@ -59,6 +59,12 @@ export function Unlink(_path: string): $.GoError {
   return ENOSYS
 }
 
+export function CloseOnExec(_fd: number): void {}
+
+export function SetNonblock(_fd: number, _nonblocking: boolean): $.GoError {
+  return null
+}
+
 // Getpagesize returns the underlying system's memory page size.
 export function Getpagesize(): number {
   // Return a standard page size for JavaScript environment
