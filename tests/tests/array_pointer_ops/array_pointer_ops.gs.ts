@@ -40,6 +40,11 @@ export async function main(): Promise<void> {
 	fillArray($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4))
 	$.println("converted:", buf![0], buf![1], buf![2], buf![3], buf![4])
 	$.println("converted sum:", sumArray($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4)))
+
+	let literal = $.varRef([4, 3, 2, 1])
+	$.println("literal sum:", sumArray(literal))
+	fillArray(literal)
+	$.println("literal filled:", $.pointerValue<number[]>(literal)[0], $.pointerValue<number[]>(literal)[1], $.pointerValue<number[]>(literal)[2], $.pointerValue<number[]>(literal)[3])
 }
 
 

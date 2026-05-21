@@ -35,4 +35,9 @@ func main() {
 	fillArray((*[4]byte)(buf[1:]))
 	println("converted:", buf[0], buf[1], buf[2], buf[3], buf[4])
 	println("converted sum:", sumArray((*[4]byte)(buf[1:])))
+
+	literal := &[4]byte{4, 3, 2, 1}
+	println("literal sum:", sumArray(literal))
+	fillArray(literal)
+	println("literal filled:", literal[0], literal[1], literal[2], literal[3])
 }

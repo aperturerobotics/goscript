@@ -3895,7 +3895,11 @@ func (o *LoweringOwner) lowerAddressExpr(ctx lowerFileContext, expr ast.Expr) (s
 	case *ast.Ident:
 		return o.lowerIdent(ctx, typed, true), nil
 	case *ast.CompositeLit:
-		return o.lowerCompositeLit(ctx, typed, false)
+		value, diagnostics := o.lowerCompositeLit(ctx, typed, false)
+		if namedStructType(ctx.semPkg.source.TypesInfo.TypeOf(typed)) != nil {
+			return value, diagnostics
+		}
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + value + ")", diagnostics
 	case *ast.SelectorExpr:
 		if selection := ctx.semPkg.source.TypesInfo.Selections[typed]; selection != nil && selection.Kind() == types.FieldVal {
 			return o.lowerFieldSelectionExpr(ctx, typed, selection, true)
