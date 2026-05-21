@@ -1294,7 +1294,7 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		return []loweredStmt{{text: text}}, diagnostics
 	case *ast.ExprStmt:
 		text, diagnostics := o.lowerExpr(ctx, typed.X)
-		return []loweredStmt{{text: text}}, diagnostics
+		return []loweredStmt{{text: expressionStmtText(text)}}, diagnostics
 	case *ast.ReturnStmt:
 		text, diagnostics := o.lowerReturnStmt(ctx, typed)
 		return []loweredStmt{{text: text}}, diagnostics
@@ -1401,6 +1401,14 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 	default:
 		return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported statement kind")}
 	}
+}
+
+func expressionStmtText(text string) string {
+	trimmed := strings.TrimLeft(text, " \t")
+	if strings.HasPrefix(trimmed, "(") || strings.HasPrefix(trimmed, "[") {
+		return "void " + text
+	}
+	return text
 }
 
 func (o *LoweringOwner) lowerElse(ctx lowerFileContext, stmt ast.Stmt) ([]loweredStmt, []Diagnostic) {

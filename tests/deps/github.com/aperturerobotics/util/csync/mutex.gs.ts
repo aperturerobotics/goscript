@@ -242,7 +242,7 @@ export class MutexLocker {
 		if (rel == null) {
 			$.panic("csync: unlock of unlocked MutexLocker")
 		}
-		($.pointerValue<(() => void) | null>(rel))!()
+		void ($.pointerValue<(() => void) | null>(rel))!()
 	}
 
 	static __typeInfo = $.registerStructType(

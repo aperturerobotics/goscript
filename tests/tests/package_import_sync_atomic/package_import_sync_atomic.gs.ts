@@ -121,7 +121,7 @@ export async function main(): Promise<void> {
 		fnPtr.value.Store(callback)
 		let loadedFn = fnPtr.value.Load()
 		if (loadedFn != null) {
-			($.pointerValue<(() => void) | null>(loadedFn))!()
+			void ($.pointerValue<(() => void) | null>(loadedFn))!()
 		}
 	}
 
