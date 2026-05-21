@@ -3281,11 +3281,11 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 	if alias := ctx.identAliases[obj]; alias != "" {
 		return alias
 	}
-	if raw {
-		return value
-	}
 	if alias := ctx.localAliases[obj]; alias != "" {
 		return alias + "." + value
+	}
+	if raw {
+		return value
 	}
 	if obj != nil && ctx.model.needsVarRef[obj] {
 		return value + ".value"
@@ -3394,6 +3394,9 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			args = append([]string{o.inferredGenericTypeArgsExpr(ctx, signature, expr.Args)}, args...)
 		}
 		call := o.lowerCallableExpr(ctx, fun, selector) + "(" + strings.Join(args, ", ") + ")"
+		if unsafePackageFunction(ctx, fun, "Slice") {
+			call = "(" + call + " as " + o.tsTypeFor(ctx, ctx.semPkg.source.TypesInfo.TypeOf(expr)) + ")"
+		}
 		return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, selectorDiagnostics...)
 	case *ast.IndexExpr:
 		if signature := callTargetSignature(ctx, fun); signature != nil {
@@ -3661,6 +3664,22 @@ func (o *LoweringOwner) callUsesOverridePackage(ctx lowerFileContext, expr ast.E
 	return o.overrideOwner.hasPackage(fn.Pkg().Path())
 }
 
+func unsafePackageFunction(ctx lowerFileContext, expr ast.Expr, name string) bool {
+	if ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	selector, ok := expr.(*ast.SelectorExpr)
+	if !ok || selector.Sel.Name != name {
+		return false
+	}
+	ident, ok := selector.X.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName)
+	return pkgName != nil && pkgName.Imported() != nil && pkgName.Imported().Path() == "unsafe"
+}
+
 func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) (string, []Diagnostic) {
 	if len(expr.Args) < 1 {
 		return "undefined", []Diagnostic{loweringUnsupported("call", ctx.semPkg.pkgPath, "make requires a type argument")}
@@ -3740,6 +3759,9 @@ func (o *LoweringOwner) lowerConversionExpr(
 		if value, addressDiagnostics, ok := o.lowerUnsafePointerIntegerExpr(ctx, expr.Args[0]); ok {
 			return value, append(diagnostics, addressDiagnostics...)
 		}
+	}
+	if isUnsafePointerType(targetType) {
+		return "(" + value + " as any)", diagnostics
 	}
 	if isNilExpr(expr.Args[0]) && isPointerType(targetType) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperTypedNil) +
