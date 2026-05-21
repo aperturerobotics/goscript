@@ -54,6 +54,40 @@ func TestRunnerRunsOrdinaryPackageTest(t *testing.T) {
 	}
 }
 
+func TestRunnerRunsAsyncSubtest(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/asyncsubtest\n\ngo 1.25.3\n",
+		"value_test.go": strings.Join([]string{
+			"package asyncsubtest",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestAsyncSubtest(t *testing.T) {",
+			"\tt.Run(\"child\", func(t *testing.T) {",
+			"\t\tch := make(chan string, 1)",
+			"\t\tch <- \"ok\"",
+			"\t\tif <-ch != \"ok\" {",
+			"\t\t\tt.Fatalf(\"unexpected channel value\")",
+			"\t\t}",
+			"\t})",
+			"}",
+			"",
+		}, "\n"),
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"."},
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run async subtest package: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected async subtest to pass: %#v", result.Packages)
+	}
+}
+
 func TestRunnerRunsExternalPackageTest(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/external\n\ngo 1.25.3\n",
