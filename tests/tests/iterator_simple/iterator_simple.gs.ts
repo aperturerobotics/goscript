@@ -3,19 +3,19 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export function simpleIterator(_yield: ((_p0: number) => boolean) | null): void {
+export async function simpleIterator(_yield: ((_p0: number) => boolean | Promise<boolean>) | null): Promise<void> {
 	for (let i = 0; i < 3; i++) {
-		if (!_yield!(i)) {
+		if (!await _yield!(i)) {
 			return
 		}
 	}
 }
 
-export function keyValueIterator(_yield: ((_p0: number, _p1: string) => boolean) | null): void {
+export async function keyValueIterator(_yield: ((_p0: number, _p1: string) => boolean | Promise<boolean>) | null): Promise<void> {
 	let values = $.arrayToSlice<string>(["a", "b", "c"])
 	for (let i = 0; i < $.len(values); i++) {
 		let v = values![i]
-		if (!_yield!(i, v)) {
+		if (!await _yield!(i, v)) {
 			return
 		}
 	}
@@ -24,8 +24,8 @@ export function keyValueIterator(_yield: ((_p0: number, _p1: string) => boolean)
 export async function main(): Promise<void> {
 	$.println("Testing single value iterator:")
 	let __goscriptRangeReturn331 = false
-	;(() => {
-		simpleIterator!((v) => {
+	;await (async () => {
+		await simpleIterator!(async (v) => {
 			$.println("value:", v)
 			return true
 		})
@@ -36,8 +36,8 @@ export async function main(): Promise<void> {
 
 	$.println("Testing key-value iterator:")
 	let __goscriptRangeReturn431 = false
-	;(() => {
-		keyValueIterator!((k, v) => {
+	;await (async () => {
+		await keyValueIterator!(async (k, v) => {
 			$.println("key:", k, "value:", v)
 			return true
 		})

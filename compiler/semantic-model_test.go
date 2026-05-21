@@ -310,6 +310,32 @@ func TestSemanticModelAsyncPropagationObservesContext(t *testing.T) {
 	}
 }
 
+func TestSemanticModelMarksFunctionIdentifierCallAsync(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/callback\n\ngo 1.25.3\n",
+		"callback.go": strings.Join([]string{
+			"package callback",
+			"func Run(fn func() error) error {",
+			"  return fn()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeRequested,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	model := buildSemanticModel(t, graph)
+	run := requireDefinedFunc(t, graph, "example.test/callback", "Run")
+	semFn := model.functions[run]
+	if semFn == nil || !semFn.async {
+		t.Fatalf("expected Run to be async after calling function parameter, got %#v", semFn)
+	}
+}
+
 func buildSemanticModel(t *testing.T, graph *PackageGraph) *SemanticModel {
 	t.Helper()
 

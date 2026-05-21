@@ -11,8 +11,8 @@ export function shadowTupleInput(value: string): [string, boolean] {
 	return [value + "-inner", true]
 }
 
-export function shadowCallbackInput(fn: ((_p0: number) => number) | null): [number, boolean] {
-	return [fn!(5), true]
+export async function shadowCallbackInput(fn: ((_p0: number) => number | Promise<number>) | null): Promise<[number, boolean]> {
+	return [await fn!(5), true]
 }
 
 export async function main(): Promise<void> {
@@ -42,7 +42,7 @@ export async function main(): Promise<void> {
 	}
 
 	{
-		let __goscriptTuple2 = shadowCallbackInput($.functionValue((k: number): number => {
+		let __goscriptTuple2 = await shadowCallbackInput($.functionValue((k: number): number => {
 			return k + 1
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
 		let k = __goscriptTuple2[0]

@@ -135,11 +135,11 @@ export class MockFilesystem {
 
 export let SkipDir: $.GoError = os.ErrNotExist
 
-export function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: WalkFunc): $.GoError {
+export async function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
 	// Test case 1: Direct call to nullable function parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
-	let err = walkFn!(path, info, null)
+	let err = await walkFn!(path, info, null)
 	if ((err != null) && (err != SkipDir)) {
 		return err
 	}
@@ -147,7 +147,7 @@ export function walk(fs: Filesystem | null, path: string, info: FileInfo | null,
 	// Test case 2: Call with error parameter
 	let walkErr: $.GoError = null
 	// This should also generate: walkFn!(path, info, walkErr)
-	let result = walkFn!(path, info, walkErr)
+	let result = await walkFn!(path, info, walkErr)
 	if (result != null) {
 		return result
 	}
@@ -155,18 +155,18 @@ export function walk(fs: Filesystem | null, path: string, info: FileInfo | null,
 	return null
 }
 
-export function processWithCallback(input: string, processor: ProcessFunc): [string, $.GoError] {
+export async function processWithCallback(input: string, processor: ((data: string) => [string, $.GoError] | Promise<[string, $.GoError]>) | null): Promise<[string, $.GoError]> {
 	// Test case 3: Function parameter with return values
 	// This should generate: processor!(input)
 	// But currently generates: processor(input) - missing !
-	return processor!(input)
+	return await processor!(input)
 }
 
-export function maybeProcess(input: string, processor: OptionalProcessFunc): [string, $.GoError] {
+export async function maybeProcess(input: string, processor: ((data: string) => [string, $.GoError] | Promise<[string, $.GoError]>) | null): Promise<[string, $.GoError]> {
 	if (processor == null) {
 		return ["nil processor", null]
 	}
-	return processor!(input)
+	return await processor!(input)
 }
 
 export async function main(): Promise<void> {
@@ -182,7 +182,7 @@ export async function main(): Promise<void> {
 		return null
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
 
-	let err = walk($.interfaceValue<Filesystem | null>(fs, "*main.MockFilesystem"), "/test", $.interfaceValue<FileInfo | null>(fileInfo, "*main.MockFileInfo"), walkFunc)
+	let err = await walk($.interfaceValue<Filesystem | null>(fs, "*main.MockFilesystem"), "/test", $.interfaceValue<FileInfo | null>(fileInfo, "*main.MockFileInfo"), walkFunc)
 	if (err != null) {
 		$.println("Walk error:", $.pointerValue(err).Error())
 	}
@@ -192,21 +192,21 @@ export async function main(): Promise<void> {
 		return ["processed: " + data, null]
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }, "error"] })
 
-	let [result, err2] = processWithCallback("hello", processFunc)
+	let [result, err2] = await processWithCallback("hello", processFunc)
 	if (err2 != null) {
 		$.println("Process error:", $.pointerValue(err2).Error())
 	} else {
 		$.println("Process result:", result)
 	}
 
-	let [result3, err3] = maybeProcess("ignored", null)
+	let [result3, err3] = await maybeProcess("ignored", null)
 	if (err3 != null) {
 		$.println("Optional process error:", $.pointerValue(err3).Error())
 	} else {
 		$.println("Optional process result:", result3)
 	}
 
-	let [result4, err4] = maybeProcess("world", processFunc)
+	let [result4, err4] = await maybeProcess("world", processFunc)
 	if (err4 != null) {
 		$.println("Optional process error:", $.pointerValue(err4).Error())
 	} else {

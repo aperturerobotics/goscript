@@ -2620,6 +2620,7 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 		value:        rangeValue,
 		params:       paramNames,
 		body:         body,
+		async:        o.callNeedsAwait(ctx, stmt.X),
 		returnBranch: rangeBranch,
 	}}, diagnostics
 }

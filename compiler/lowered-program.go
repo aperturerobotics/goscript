@@ -96,6 +96,7 @@ type loweredRangeFunc struct {
 	value        string
 	params       []string
 	body         []loweredStmt
+	async        bool
 	returnBranch *loweredRangeBranch
 }
 

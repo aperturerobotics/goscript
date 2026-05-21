@@ -53,7 +53,7 @@ export class Broadcast {
 		await cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
 	}
 
-	public HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): void {
+	public async HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): Promise<void> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		let holdBroadcastLock = $.functionValue(async (lock: boolean): Promise<void> => {
 			using __defer = new $.DisposableStack()
@@ -62,26 +62,26 @@ export class Broadcast {
 			}
 			// use defer to catch panic cases
 			__defer.defer(() => { $.pointerValue<Broadcast>(c).mtx.Unlock() })
-			cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
+			await cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [] })
 
 		// fast path: lock immediately
 		if ($.pointerValue<Broadcast>(c).mtx.TryLock()) {
-			holdBroadcastLock!(false)
+			await holdBroadcastLock!(false)
 		} else {
 			// slow path: use separate goroutine
-			queueMicrotask(async () => { holdBroadcastLock!(true) })
+			queueMicrotask(async () => { await holdBroadcastLock!(true) })
 		}
 	}
 
-	public TryHoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): boolean {
+	public async TryHoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): Promise<boolean> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		using __defer = new $.DisposableStack()
 		if (!$.pointerValue<Broadcast>(c).mtx.TryLock()) {
 			return false
 		}
 		__defer.defer(() => { $.pointerValue<Broadcast>(c).mtx.Unlock() })
-		cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
+		await cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
 		return true
 	}
 

@@ -129,25 +129,25 @@ export class MockFilesystem {
 	)
 }
 
-export function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: filepath.WalkFunc): $.GoError {
+export async function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
 	// Test case 1: Direct call to named function type parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
 
 	// We need to convert our FileInfo to os.FileInfo for filepath.WalkFunc
 	// For this test, we'll use a simpler approach with our own WalkFunc
-	return walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo | null, e: $.GoError): $.GoError => {
+	return await walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo | null, e: $.GoError): $.GoError => {
 		// This simulates the issue by calling filepath.WalkFunc indirectly
 		return null
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] }))
 }
 
-export function walkWithCustomFunc(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: WalkFunc): $.GoError {
+export async function walkWithCustomFunc(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
 	// Test case 1: Direct call to named function type parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
 	{
-		let err = walkFn!(path, info, null)
+		let err = await walkFn!(path, info, null)
 		if ((err != null) && (err != filepath.SkipDir)) {
 			return err
 		}
@@ -157,7 +157,7 @@ export function walkWithCustomFunc(fs: Filesystem | null, path: string, info: Fi
 	let walkErr: $.GoError = null
 	// This should also generate: walkFn!(path, info, walkErr)
 	{
-		let err = walkFn!(path, info, walkErr)
+		let err = await walkFn!(path, info, walkErr)
 		if ((err != null) && (err != filepath.SkipDir)) {
 			return err
 		}
@@ -165,29 +165,29 @@ export function walkWithCustomFunc(fs: Filesystem | null, path: string, info: Fi
 
 	// Test case 3: Call in if statement condition
 	// This should generate: walkFn!(path, info, nil)
-	if (walkFn!(path, info, null) != null) {
+	if (await walkFn!(path, info, null) != null) {
 		return filepath.SkipDir
 	}
 
 	return null
 }
 
-export function processFiles(pattern: string, fn: ((_p0: string) => $.GoError) | null): $.GoError {
+export async function processFiles(pattern: string, fn: ((_p0: string) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
 	// Test case 4: Anonymous function type parameter (for comparison)
 	// This should also have ! operator when called
-	return fn!(pattern)
+	return await fn!(pattern)
 }
 
-export function multiCallback(walkFn: WalkFunc, processFn: ((_p0: string) => $.GoError) | null): $.GoError {
+export async function multiCallback(walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null, processFn: ((_p0: string) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
 	// Test case 5: Multiple function parameters
 	// Both should generate ! operators
 	{
-		let err = walkFn!("test", null, null)
+		let err = await walkFn!("test", null, null)
 		if (err != null) {
 			return err
 		}
 	}
-	return processFn!("test")
+	return await processFn!("test")
 }
 
 export function indexedCallback(cbs: $.Slice<((_p0: string) => boolean) | null>, value: string): boolean {
@@ -209,7 +209,7 @@ export async function main(): Promise<void> {
 		return null
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
 
-	let err = walkWithCustomFunc($.interfaceValue<Filesystem | null>(fs, "*main.MockFilesystem"), "/test", $.interfaceValue<FileInfo | null>(fileInfo, "*main.MockFileInfo"), walkFunc)
+	let err = await walkWithCustomFunc($.interfaceValue<Filesystem | null>(fs, "*main.MockFilesystem"), "/test", $.interfaceValue<FileInfo | null>(fileInfo, "*main.MockFileInfo"), walkFunc)
 	if (err != null) {
 		$.println("Walk error:", $.pointerValue(err).Error())
 	}
@@ -220,13 +220,13 @@ export async function main(): Promise<void> {
 		return null
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: ["error"] })
 
-	let err2 = processFiles("*.go", processFunc)
+	let err2 = await processFiles("*.go", processFunc)
 	if (err2 != null) {
 		$.println("Process error:", $.pointerValue(err2).Error())
 	}
 
 	// Test with multiCallback
-	let err3 = multiCallback(walkFunc, processFunc)
+	let err3 = await multiCallback(walkFunc, processFunc)
 	if (err3 != null) {
 		$.println("Multi callback error:", $.pointerValue(err3).Error())
 	}

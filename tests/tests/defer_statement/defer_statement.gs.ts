@@ -11,8 +11,8 @@ export async function main(): Promise<void> {
 		__defer.defer(() => { $.println("func deferred", name) })
 		$.println("func body", name)
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [] })
-	release!("first")
-	release!("second")
+	await release!("first")
+	await release!("second")
 	$.println("main")
 }
 

@@ -574,6 +574,9 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				if callUsesFunctionValue(pkg, typed.Fun) {
 					markFunctionAsync(semFn, "function-value-call")
 				}
+				if callUsesFunctionIdentifier(pkg, typed.Fun) {
+					markFunctionAsync(semFn, "function-identifier-call")
+				}
 				async, err := o.isOverrideAsyncCall(pkg, typed.Fun)
 				if err != nil {
 					diagnostics = append(diagnostics, Diagnostic{

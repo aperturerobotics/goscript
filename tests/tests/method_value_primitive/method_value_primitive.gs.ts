@@ -18,15 +18,15 @@ export async function main(): Promise<void> {
 
 	// Method value: binding the receiver to create a function
 	let addFn: ((x: number) => number | Promise<number>) | null = ((__receiver) => (x: number) => myInt_add(__receiver, x))(n)
-	$.println("addFn(3):", addFn!(3))
+	$.println("addFn(3):", await addFn!(3))
 
 	let mulFn: ((x: number, y: number) => number | Promise<number>) | null = ((__receiver) => (x: number, y: number) => myInt_multiply(__receiver, x, y))(n)
-	$.println("mulFn(2, 3):", mulFn!(2, 3))
+	$.println("mulFn(2, 3):", await mulFn!(2, 3))
 
 	// Test with different receiver value
 	let m: myInt = 10
 	let addFn2: ((x: number) => number | Promise<number>) | null = ((__receiver) => (x: number) => myInt_add(__receiver, x))(m)
-	$.println("addFn2(7):", addFn2!(7))
+	$.println("addFn2(7):", await addFn2!(7))
 }
 
 

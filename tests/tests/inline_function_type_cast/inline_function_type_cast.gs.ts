@@ -15,7 +15,7 @@ export async function main(): Promise<void> {
 	let castedGreeter = $.namedFunction(theInlineVar, "main.Greeter")
 
 	// 4. Call that
-	$.println(castedGreeter!("Inline World"))
+	$.println(await castedGreeter!("Inline World"))
 
 	// Test with a different signature
 	type Adder = ((a: number, b: number) => number) | null
@@ -23,7 +23,7 @@ export async function main(): Promise<void> {
 		return a + b
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	let castedAdder = $.namedFunction(theInlineAdder, "main.Adder")
-	$.println(castedAdder!(5, 7))
+	$.println(await castedAdder!(5, 7))
 }
 
 

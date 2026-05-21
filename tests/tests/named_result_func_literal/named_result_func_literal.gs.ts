@@ -19,11 +19,11 @@ export function makeLookup(): ((_p0: boolean) => [number, string]) | null {
 export async function main(): Promise<void> {
 	let lookup = makeLookup()
 
-	let [value, label] = lookup!(false)
+	let [value, label] = await lookup!(false)
 	$.println(value)
 	$.println(label == "")
 
-	let __goscriptTuple0 = lookup!(true)
+	let __goscriptTuple0 = await lookup!(true)
 	value = __goscriptTuple0[0]
 	label = __goscriptTuple0[1]
 	$.println(value)

@@ -83,7 +83,7 @@ export async function main(): Promise<void> {
 	$.println($.pointerValue<wrapper>(w).base.Add(4))
 
 	let add: ((n: number) => number | Promise<number>) | null = ((__receiver) => (n: number) => __receiver.Add(n))($.pointerValue<wrapper>(w).base)
-	$.println(add!(5))
+	$.println(await add!(5))
 }
 
 

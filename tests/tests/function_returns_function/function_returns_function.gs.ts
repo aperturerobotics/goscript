@@ -11,7 +11,7 @@ export function getAdder(x: number): ((_p0: number) => number) | null {
 
 export async function main(): Promise<void> {
 	let adder = getAdder(5)
-	let result = adder!(3)
+	let result = await adder!(3)
 	$.println("Result:", result)
 }
 

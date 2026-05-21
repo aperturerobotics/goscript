@@ -128,7 +128,7 @@ export async function main(): Promise<void> {
 	let testSlice = $.arrayToSlice<number>([1, 2, 3, 4, 5])
 	let swapper = reflect.Swapper($.interfaceValue<any>(testSlice, "[]int"))
 	$.println("Before swap:", testSlice![0], testSlice![4])
-	swapper!(0, 4)
+	await swapper!(0, 4)
 	$.println("After swap:", testSlice![0], testSlice![4])
 
 	// Test Copy function

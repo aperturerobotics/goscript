@@ -544,10 +544,21 @@ func renderRangeFunc(b *strings.Builder, stmt *loweredRangeFunc, indent int) {
 		}
 	}
 	writeIndent(b, indent)
-	b.WriteString(";(() => {\n")
+	if stmt.async {
+		b.WriteString(";await (async () => {\n")
+	} else {
+		b.WriteString(";(() => {\n")
+	}
 	writeIndent(b, indent+1)
+	if stmt.async {
+		b.WriteString("await ")
+	}
 	b.WriteString(stmt.value)
-	b.WriteString("!((")
+	b.WriteString("!(")
+	if stmt.async {
+		b.WriteString("async ")
+	}
+	b.WriteString("(")
 	b.WriteString(strings.Join(stmt.params, ", "))
 	b.WriteString(") => {\n")
 	renderStmts(b, stmt.body, indent+2)

@@ -170,7 +170,7 @@ func TestCompilePackagesEmitsShadowedBuiltinCalls(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if !strings.Contains(text, "return _new!()") {
+	if !strings.Contains(text, "return await _new!()") {
 		t.Fatalf("shadowed builtin call was not emitted as a callable value:\n%s", text)
 	}
 }
@@ -839,7 +839,7 @@ func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export type Callback = ((value: number) => string) | null",
-		"export function call(cb: Callback): string {\n\treturn cb!(1)",
+		"export async function call(cb: ((value: number) => string | Promise<string>) | null): Promise<string> {\n\treturn await cb!(1)",
 		"$.functionValue((value: number): string => {",
 		"kind: $.TypeKind.Function",
 		"params: [{ kind: $.TypeKind.Basic, name: \"int\" }]",
@@ -1049,9 +1049,9 @@ func TestCompilePackagesLowersRangeOverFunctionIterators(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"if (!_yield!(i, v))",
+		"if (!await _yield!(i, v))",
 		"break",
-		"pairs!((i, v) => {",
+		"await pairs!(async (i, v) => {",
 		"last = __goscriptRange",
 		"return true",
 		"continue",
@@ -1434,7 +1434,7 @@ func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testi
 		"Ptr: $.VarRef<atomic.Pointer<(() => void) | null>>",
 		"$.markAsStructValue(new lib.Box())",
 		"$.markAsStructValue(new atomic.Pointer<(() => void) | null>())",
-		"export function Use(fn: ((_p0: lib.Box) => [lib.Box, $.GoError]) | null, box: lib.Box): [lib.Box, $.GoError]",
+		"export async function Use(fn: ((_p0: lib.Box) => [lib.Box, $.GoError] | Promise<[lib.Box, $.GoError]>) | null, box: lib.Box): Promise<[lib.Box, $.GoError]>",
 		"$.functionValue((box: lib.Box): [lib.Box, $.GoError] => {",
 	} {
 		if !strings.Contains(text, want) {

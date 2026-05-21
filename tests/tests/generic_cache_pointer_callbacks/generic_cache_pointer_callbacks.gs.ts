@@ -29,12 +29,12 @@ export class cache {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Get(k: any, _new: (() => [any, $.GoError]) | null, check: ((_p0: any) => boolean) | null): [any, $.GoError] {
+	public async Get(k: any, _new: (() => [any, $.GoError] | Promise<[any, $.GoError]>) | null, check: ((_p0: any) => boolean | Promise<boolean>) | null): Promise<[any, $.GoError]> {
 		const c: cache | $.VarRef<cache> | null = this
-		if (($.pointerValue<cache>(c).stored != null) && check!($.pointerValue<cache>(c).stored)) {
+		if (($.pointerValue<cache>(c).stored != null) && await check!($.pointerValue<cache>(c).stored)) {
 			return [$.pointerValue<cache>(c).stored, null]
 		}
-		let [v, err] = _new!()
+		let [v, err] = await _new!()
 		if (err != null) {
 			return [null, err]
 		}
@@ -123,8 +123,8 @@ export class privateKey {
 
 export let privateKeyCache: $.VarRef<cache> = $.varRef($.markAsStructValue(new cache()))
 
-export function privateKeyToCache(k: key | $.VarRef<key> | null): [privateKey | $.VarRef<privateKey> | null, $.GoError] {
-	return privateKeyCache.value.Get(k, $.functionValue((): [privateKey | $.VarRef<privateKey> | null, $.GoError] => {
+export async function privateKeyToCache(k: key | $.VarRef<key> | null): Promise<[privateKey | $.VarRef<privateKey> | null, $.GoError]> {
+	return await privateKeyCache.value.Get(k, $.functionValue((): [privateKey | $.VarRef<privateKey> | null, $.GoError] => {
 		return [new privateKey({D: $.pointerValue<key>(k).N}), null]
 	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Pointer, elemType: "main.privateKey" }, "error"] }), $.functionValue((v: privateKey | $.VarRef<privateKey> | null): boolean => {
 		return $.pointerValue<privateKey>(v).D == $.pointerValue<key>(k).N
@@ -133,7 +133,7 @@ export function privateKeyToCache(k: key | $.VarRef<key> | null): [privateKey | 
 
 export async function main(): Promise<void> {
 	let k: key | $.VarRef<key> | null = new key({N: 7})
-	let __goscriptTuple0 = privateKeyToCache(k)
+	let __goscriptTuple0 = await privateKeyToCache(k)
 	let v: privateKey | $.VarRef<privateKey> | null = __goscriptTuple0[0]
 	let err = __goscriptTuple0[1]
 	if (err != null) {

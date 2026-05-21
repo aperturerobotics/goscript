@@ -16,7 +16,7 @@ export async function main(): Promise<void> {
 
 	// Test storing method reference (this is the failing case)
 	let fn: (() => number | Promise<number>) | null = ((__receiver) => () => MyInt_Double(__receiver))(10)
-	$.println("Method ref call:", fn!())
+	$.println("Method ref call:", await fn!())
 }
 
 
