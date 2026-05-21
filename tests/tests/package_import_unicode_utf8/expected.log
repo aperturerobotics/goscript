@@ -4,6 +4,9 @@ Valid UTF-8: true
 Byte rune count: 9
 First rune from bytes: 72 size: 1
 Valid UTF-8 bytes: true
+param bytes RuneCount: 9
+param bytes Valid: true
+param bytes Last rune: 30028 size: 3
 Encoded rune size: 3
 Rune length: 3
 Valid rune: true

@@ -5,6 +5,13 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as utf8 from "@goscript/unicode/utf8/index.js"
 
+export function checkBytes(label: string, b: $.Slice<number>): void {
+	$.println(label, "RuneCount:", utf8.RuneCount(b))
+	$.println(label, "Valid:", utf8.Valid(b))
+	let [r, size] = utf8.DecodeLastRune(b)
+	$.println(label, "Last rune:", r, "size:", size)
+}
+
 export async function main(): Promise<void> {
 	// Test basic UTF-8 functions
 	let s = "Hello, 世界"
@@ -35,6 +42,7 @@ export async function main(): Promise<void> {
 	// Test Valid
 	let bvalid = utf8.Valid(b)
 	$.println("Valid UTF-8 bytes:", bvalid)
+	checkBytes("param bytes", b)
 
 	// Test EncodeRune
 	let buf: number[] = Array.from({ length: 4 }, () => 0)

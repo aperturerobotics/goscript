@@ -2,6 +2,13 @@ package main
 
 import "unicode/utf8"
 
+func checkBytes(label string, b []byte) {
+	println(label, "RuneCount:", utf8.RuneCount(b))
+	println(label, "Valid:", utf8.Valid(b))
+	r, size := utf8.DecodeLastRune(b)
+	println(label, "Last rune:", r, "size:", size)
+}
+
 func main() {
 	// Test basic UTF-8 functions
 	s := "Hello, 世界"
@@ -32,6 +39,7 @@ func main() {
 	// Test Valid
 	bvalid := utf8.Valid(b)
 	println("Valid UTF-8 bytes:", bvalid)
+	checkBytes("param bytes", b)
 
 	// Test EncodeRune
 	var buf [4]byte

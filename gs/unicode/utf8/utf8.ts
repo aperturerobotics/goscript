@@ -26,19 +26,20 @@ export function AppendRune(p: $.Bytes, r: number): Uint8Array {
 }
 
 // DecodeLastRune unpacks the last UTF-8 encoding in p and returns the rune and its width in bytes.
-export function DecodeLastRune(p: Uint8Array): [number, number] {
-  if (p.length === 0) {
+export function DecodeLastRune(p: $.Bytes): [number, number] {
+  const bytes = $.bytesToUint8Array(p)
+  if (bytes.length === 0) {
     return [RuneError, 0]
   }
 
   // Simple implementation - find the start of the last rune
-  let start = p.length - 1
-  while (start > 0 && !RuneStart(p[start])) {
+  let start = bytes.length - 1
+  while (start > 0 && !RuneStart(bytes[start])) {
     start--
   }
 
-  const [r, size] = DecodeRune(p.slice(start))
-  if (start + size !== p.length) {
+  const [r, size] = DecodeRune(bytes.slice(start))
+  if (start + size !== bytes.length) {
     return [RuneError, 1]
   }
   return [r, size]
@@ -181,9 +182,9 @@ export function FullRuneInString(s: string): boolean {
 }
 
 // RuneCount returns the number of runes in p.
-export function RuneCount(p: Uint8Array): number {
+export function RuneCount(p: $.Bytes): number {
   const decoder = new TextDecoder('utf-8', { fatal: false })
-  const str = decoder.decode(p)
+  const str = decoder.decode($.bytesToUint8Array(p))
   return [...str].length
 }
 
@@ -213,10 +214,10 @@ export function RuneStart(b: number): boolean {
 }
 
 // Valid reports whether p consists entirely of valid UTF-8-encoded runes.
-export function Valid(p: Uint8Array): boolean {
+export function Valid(p: $.Bytes): boolean {
   try {
     const decoder = new TextDecoder('utf-8', { fatal: true })
-    decoder.decode(p)
+    decoder.decode($.bytesToUint8Array(p))
     return true
   } catch {
     return false
