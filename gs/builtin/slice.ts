@@ -106,6 +106,18 @@ export function asArray<T>(slice: Slice<T>): T[] {
   return []
 }
 
+export function sliceToArray<T>(
+  slice: Slice<T> | Uint8Array,
+  length: number,
+): T[] {
+  if (len(slice) < length) {
+    throw new Error(
+      `runtime error: cannot convert slice with length ${len(slice)} to array with length ${length}`,
+    )
+  }
+  return asArray(slice as Slice<T>).slice(0, length)
+}
+
 /**
  * isComplexSlice checks if a slice is a complex slice (has __meta__ property)
  */

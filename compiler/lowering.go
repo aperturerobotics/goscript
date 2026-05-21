@@ -3206,6 +3206,13 @@ func (o *LoweringOwner) lowerConversionExpr(
 	if isByteSliceType(targetType) && isStringType(sourceType) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperStringToBytes) + "(" + value + ")", diagnostics
 	}
+	if array, ok := types.Unalias(targetType).Underlying().(*types.Array); ok {
+		if slice, ok := types.Unalias(sourceType).Underlying().(*types.Slice); ok && types.Identical(array.Elem(), slice.Elem()) {
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperSliceToArray) +
+				"<" + o.tsTypeFor(ctx, array.Elem()) + ">(" +
+				value + ", " + strconv.FormatInt(array.Len(), 10) + ")", diagnostics
+		}
+	}
 	if named := namedFunctionType(targetType); named != nil {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedFunction) +
 			"(" + value + ", " + strconv.Quote(runtimeNamedTypeName(named)) + ")", diagnostics

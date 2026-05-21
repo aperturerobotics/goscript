@@ -24,6 +24,7 @@ import {
   registerInterfaceType,
   registerStructType,
   resetHostRuntimeForTests,
+  sliceToArray,
   TypeKind,
   typeAssert,
   typedNil,
@@ -138,6 +139,18 @@ describe('builtin runtime contract helpers', () => {
     const firstByte = indexRef<number>(bytes, 0)
     firstByte.value = 9
     expect(Array.from(bytes)).toEqual([9, 5])
+  })
+
+  it('copies slices into fixed arrays with Go length checks', () => {
+    const source = goSlice([1, 2, 3], 1, 3)
+    const array = sliceToArray<number>(source, 2)
+    array[0] = 9
+
+    expect(array).toEqual([9, 3])
+    expect(source![0]).toBe(2)
+    expect(() => sliceToArray<number>(source, 3)).toThrow(
+      'cannot convert slice with length 2 to array with length 3',
+    )
   })
 
   it('exposes value and type descriptor helpers', () => {

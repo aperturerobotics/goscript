@@ -49,6 +49,7 @@ const (
 	RuntimeHelperMakeSlice                    RuntimeHelper = "slice.makeSlice"
 	RuntimeHelperGoSlice                      RuntimeHelper = "slice.goSlice"
 	RuntimeHelperArrayToSlice                 RuntimeHelper = "slice.arrayToSlice"
+	RuntimeHelperSliceToArray                 RuntimeHelper = "slice.sliceToArray"
 	RuntimeHelperAppend                       RuntimeHelper = "slice.append"
 	RuntimeHelperCopy                         RuntimeHelper = "slice.copy"
 	RuntimeHelperAsArray                      RuntimeHelper = "slice.asArray"
@@ -221,6 +222,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperMakeSlice, "makeSlice", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperGoSlice, "goSlice", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperArrayToSlice, "arrayToSlice", RuntimeHelperCategorySlice),
+		runtimeHelper(RuntimeHelperSliceToArray, "sliceToArray", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperAppend, "append", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperCopy, "copy", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperAsArray, "asArray", RuntimeHelperCategorySlice),
