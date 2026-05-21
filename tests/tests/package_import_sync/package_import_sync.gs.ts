@@ -78,6 +78,19 @@ export async function main(): Promise<void> {
 		}
 	}
 
+	{
+		let [val, loaded] = await m.value.Swap("key2", "value3")
+		if (loaded) {
+			$.println("Swapped key2 previous:", val)
+		}
+	}
+	{
+		let [val, ok] = await m.value.Load("key2")
+		if (ok) {
+			$.println("Loaded key2 after swap:", val)
+		}
+	}
+
 	await m.value.Range($.functionValue((key: any, value: any): boolean => {
 		$.println("Range:", key, "->", value)
 		return true

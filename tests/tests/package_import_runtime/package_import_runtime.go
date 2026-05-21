@@ -26,4 +26,12 @@ func main() {
 	frames := runtime.CallersFrames(pcs)
 	frame, more := frames.Next()
 	println("Frames empty:", frame.Line, more)
+
+	box := &struct{ value int }{value: 1}
+	cleanup := runtime.AddCleanup(box, func(value int) {
+		println("cleanup should not run during test:", value)
+	}, 1)
+	cleanup.Stop()
+	runtime.KeepAlive(box)
+	println("Cleanup stopped")
 }

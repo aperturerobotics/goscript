@@ -383,6 +383,19 @@ export class Map {
     }
   }
 
+  // Swap swaps the value for a key and returns the previous value if any
+  public async Swap(key: any, value: any): Promise<[any, boolean]> {
+    await this._m.Lock()
+    try {
+      const previous = this._data.get(key)
+      const loaded = this._data.has(key)
+      this._data.set(key, value)
+      return [previous, loaded]
+    } finally {
+      this._m.Unlock()
+    }
+  }
+
   // clone returns a copy of this Map instance
   public clone(): Map {
     return new Map()

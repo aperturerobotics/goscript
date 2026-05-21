@@ -224,6 +224,25 @@ export function SetFinalizer(
   )
 }
 
+// Cleanup is a handle to a cleanup call for a specific object.
+export class Cleanup {
+  public Stop(): void {}
+
+  public clone(): Cleanup {
+    return new Cleanup()
+  }
+}
+
+// AddCleanup registers cleanup to run when ptr is no longer reachable.
+export function AddCleanup<T, S>(
+  _ptr: T,
+  _cleanup: (arg: S) => void | Promise<void>,
+  _arg: S,
+): Cleanup {
+  // JavaScript runtimes do not provide Go's cleanup scheduling contract here.
+  return new Cleanup()
+}
+
 // KeepAlive keeps obj reachable until the point where KeepAlive is called
 export function KeepAlive(obj: any): void {
   // In JavaScript, just accessing the object keeps it alive for this call

@@ -14,6 +14,7 @@
     "Map.LoadAndDelete": true,
     "Map.LoadOrStore": true,
     "Map.Range": true,
-    "Map.Store": true
+    "Map.Store": true,
+    "Map.Swap": true
   }
 }

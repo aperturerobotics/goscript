@@ -29,6 +29,14 @@ export async function main(): Promise<void> {
 	let frames: runtime.Frames | $.VarRef<runtime.Frames> | null = runtime.CallersFrames(pcs)
 	let [frame, more] = $.pointerValue<runtime.Frames>(frames).Next()
 	$.println("Frames empty:", frame.Line, more)
+
+	let box = $.varRef({value: 1})
+	let cleanup = $.markAsStructValue((runtime.AddCleanup(box, $.functionValue((value: number): void => {
+		$.println("cleanup should not run during test:", value)
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] }), 1)).clone())
+	$.markAsStructValue((cleanup).clone()).Stop()
+	runtime.KeepAlive($.interfaceValue<any>(box, "*struct{value int}"))
+	$.println("Cleanup stopped")
 }
 
 

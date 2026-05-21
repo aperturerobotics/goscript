@@ -69,6 +69,13 @@ func main() {
 		println("Stored key2:", val)
 	}
 
+	if val, loaded := m.Swap("key2", "value3"); loaded {
+		println("Swapped key2 previous:", val)
+	}
+	if val, ok := m.Load("key2"); ok {
+		println("Loaded key2 after swap:", val)
+	}
+
 	m.Range(func(key, value any) bool {
 		println("Range:", key, "->", value)
 		return true

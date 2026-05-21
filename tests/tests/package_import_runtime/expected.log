@@ -6,3 +6,4 @@ NumGoroutine: 1
 GC called successfully
 Callers empty: 0
 Frames empty: 0 false
+Cleanup stopped
