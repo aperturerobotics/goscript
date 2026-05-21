@@ -3215,6 +3215,16 @@ func stmtsContainAwait(stmts []loweredStmt) bool {
 				}
 			}
 		}
+		if stmt.switchStmt != nil {
+			for _, switchCase := range stmt.switchStmt.cases {
+				if stmtsContainAwait(switchCase.body) {
+					return true
+				}
+			}
+			if stmtsContainAwait(stmt.switchStmt.defaultBody) {
+				return true
+			}
+		}
 		if stmt.typeSwitch != nil {
 			for _, switchCase := range stmt.typeSwitch.cases {
 				if stmtsContainAwait(switchCase.body) {
