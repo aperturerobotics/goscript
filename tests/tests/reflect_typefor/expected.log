@@ -3,5 +3,7 @@ TypeFor struct: main.MyStruct
 TypeFor struct kind: true
 TypeFor int: int
 TypeFor int kind: true
+TypeFor imported struct: time.Time
+TypeFor cross-file struct: main.OtherStruct
 Pointer constant: true
 reflect_typefor test finished

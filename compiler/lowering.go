@@ -5507,7 +5507,7 @@ func (o *LoweringOwner) genericTypeArgsExpr(ctx lowerFileContext, callee ast.Exp
 		if typ == nil {
 			continue
 		}
-		entries = append(entries, typeParams.At(idx).Obj().Name()+": "+o.genericTypeDescriptorExpr(typ))
+		entries = append(entries, typeParams.At(idx).Obj().Name()+": "+o.genericTypeDescriptorExpr(ctx, typ))
 	}
 	if len(entries) == 0 {
 		return "undefined"
@@ -5540,7 +5540,7 @@ func (o *LoweringOwner) inferredGenericTypeArgsExpr(
 		if typ == nil {
 			continue
 		}
-		entries = append(entries, typeParam.Obj().Name()+": "+o.genericTypeDescriptorExpr(typ))
+		entries = append(entries, typeParam.Obj().Name()+": "+o.genericTypeDescriptorExpr(ctx, typ))
 	}
 	if len(entries) == 0 {
 		return "undefined"
@@ -5574,18 +5574,18 @@ func (o *LoweringOwner) inferGenericTypeArg(
 	}
 }
 
-func (o *LoweringOwner) genericTypeDescriptorExpr(typ types.Type) string {
+func (o *LoweringOwner) genericTypeDescriptorExpr(ctx lowerFileContext, typ types.Type) string {
 	parts := []string{
 		"type: " + o.runtimeTypeInfoExpr(typ),
-		"zero: () => " + zeroValueExpr(typ),
+		"zero: () => " + o.lowerZeroValueExprFor(ctx, typ),
 	}
-	if methods := o.genericMethodDescriptors(typ); methods != "" {
+	if methods := o.genericMethodDescriptors(ctx, typ); methods != "" {
 		parts = append(parts, "methods: "+methods)
 	}
 	return "{ " + strings.Join(parts, ", ") + " }"
 }
 
-func (o *LoweringOwner) genericMethodDescriptors(typ types.Type) string {
+func (o *LoweringOwner) genericMethodDescriptors(ctx lowerFileContext, typ types.Type) string {
 	named, _ := types.Unalias(typ).(*types.Named)
 	if named == nil {
 		return ""
@@ -5601,7 +5601,7 @@ func (o *LoweringOwner) genericMethodDescriptors(typ types.Type) string {
 			methods = append(methods, method.Name()+": (receiver: any, ...args: any[]) => receiver."+method.Name()+"(...args)")
 			continue
 		}
-		methods = append(methods, method.Name()+": "+methodFunctionName(named.Origin(), method.Name()))
+		methods = append(methods, method.Name()+": "+o.methodFunctionExpr(ctx, named.Origin(), method, method.Name()))
 	}
 	if len(methods) == 0 {
 		return ""

@@ -16,6 +16,7 @@
   "extends": "../../../tests/tsconfig.base.json",
   "include": [
     "index.ts",
+    "other.gs.ts",
     "reflect_typefor.gs.ts"
   ]
 }

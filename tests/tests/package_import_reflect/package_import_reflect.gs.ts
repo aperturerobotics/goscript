@@ -142,7 +142,7 @@ export async function main(): Promise<void> {
 
 	// Test struct reflection
 	let person = $.markAsStructValue(new Person({Name: "Alice", Age: 30}))
-	let personType = reflect.TypeFor({T: { type: "main.Person", zero: () => new Person() }})
+	let personType = reflect.TypeFor({T: { type: "main.Person", zero: () => $.markAsStructValue(new Person()) }})
 	$.println("Struct type:", $.pointerValue(personType).String())
 	$.println("Struct kind:", reflect.Kind_String($.pointerValue(personType).Kind()))
 
