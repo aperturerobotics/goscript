@@ -1,1 +1,2 @@
 Method call on pointer (structPointer): Expected: hello world, Actual: hello world
+reserved pointer method: 9

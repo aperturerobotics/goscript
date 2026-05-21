@@ -270,8 +270,12 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 		if idx != 0 {
 			b.WriteString(", ")
 		}
+		methodName := method.name
+		if method.runtimeName != "" {
+			methodName = method.runtimeName
+		}
 		b.WriteString("{ name: ")
-		b.WriteString(strconvQuote(method.name))
+		b.WriteString(strconvQuote(methodName))
 		b.WriteString(", args: [], returns: [] }")
 	}
 	b.WriteString("],\n\t\t")

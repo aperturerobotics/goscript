@@ -488,6 +488,13 @@ func safeIdentifier(value string) string {
 	}
 }
 
+func methodMemberName(value string) string {
+	if safeIdentifier(value) == value {
+		return value
+	}
+	return "[" + strconv.Quote(value) + "]"
+}
+
 func safeParamName(param *types.Var, idx int) string {
 	if param == nil || param.Name() == "" {
 		return "_p" + strconv.Itoa(idx)
@@ -1004,11 +1011,18 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 	result := o.tsSignatureResultFor(ctx, signature)
 	async := ctx.model.functions[fnObj] != nil && ctx.model.functions[fnObj].async
 	deferState := &loweredDeferState{}
+	name := safeIdentifier(decl.Name.Name)
+	runtimeName := ""
+	if decl.Recv != nil {
+		name = methodMemberName(decl.Name.Name)
+		runtimeName = decl.Name.Name
+	}
 	lowered := &loweredFunction{
 		exported:      ctx.topLevel,
 		indexExported: ctx.topLevel && (ast.IsExported(decl.Name.Name) || decl.Name.Name == "main"),
 		async:         async,
-		name:          safeIdentifier(decl.Name.Name),
+		name:          name,
+		runtimeName:   runtimeName,
 		result:        asyncResultType(result, async),
 		deferState:    deferState,
 		namedResults:  o.lowerNamedResults(ctx, signature),

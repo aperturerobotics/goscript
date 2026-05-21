@@ -53,11 +53,60 @@ export class MyStruct {
 	)
 }
 
+export class setterStruct {
+	public get value(): number {
+		return this._fields.value.value
+	}
+	public set value(value: number) {
+		this._fields.value.value = value
+	}
+
+	public _fields: {
+		value: $.VarRef<number>
+	}
+
+	constructor(init?: Partial<{value?: number}>) {
+		this._fields = {
+			value: $.varRef(init?.value ?? 0)
+		}
+	}
+
+	public clone(): setterStruct {
+		const cloned = new setterStruct()
+		cloned._fields = {
+			value: $.varRef(this._fields.value.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public ["get"](): number {
+		const s: setterStruct | $.VarRef<setterStruct> | null = this
+		return $.pointerValue<setterStruct>(s).value
+	}
+
+	public ["set"](value: number): void {
+		const s: setterStruct | $.VarRef<setterStruct> | null = this
+		$.pointerValue<setterStruct>(s).value = value
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.setterStruct",
+		new setterStruct(),
+		[{ name: "get", args: [], returns: [] }, { name: "set", args: [], returns: [] }],
+		setterStruct,
+		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
+}
+
 export async function main(): Promise<void> {
 	let structPointer: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({MyInt: 4, MyString: "hello world"})
 	// === Method Call on Pointer Receiver ===
 	// Calling a method with a pointer receiver (*MyStruct) using a pointer variable.
 	$.println("Method call on pointer (structPointer): Expected: hello world, Actual: " + $.pointerValue<MyStruct>(structPointer).GetMyString())
+
+	let setter: setterStruct | $.VarRef<setterStruct> | null = new setterStruct()
+	$.pointerValue<setterStruct>(setter).set(9)
+	$.println("reserved pointer method:", $.pointerValue<setterStruct>(setter).get())
 }
 
 

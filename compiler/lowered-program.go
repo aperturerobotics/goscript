@@ -57,6 +57,7 @@ type loweredFunction struct {
 	indexExported bool
 	async         bool
 	name          string
+	runtimeName   string
 	receiverAlias string
 	receiverType  string
 	receiverValue string
