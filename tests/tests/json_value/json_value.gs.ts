@@ -62,7 +62,7 @@ export class Person {
 
 export async function main(): Promise<void> {
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
-	let v = $.markAsStructValue((reflect.ValueOf($.markAsStructValue((p).clone()))).clone())
+	let v = $.markAsStructValue((reflect.ValueOf($.interfaceValue<any>($.markAsStructValue((p).clone()), "main.Person"))).clone())
 	let t = $.markAsStructValue((v).clone()).Type()
 
 	$.println("Type:", $.pointerValue(t).Name())

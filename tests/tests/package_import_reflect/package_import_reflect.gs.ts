@@ -146,7 +146,7 @@ export async function main(): Promise<void> {
 	$.println("Struct type:", $.pointerValue(personType).String())
 	$.println("Struct kind:", reflect.Kind_String($.pointerValue(personType).Kind()))
 
-	let personVal = $.markAsStructValue((reflect.ValueOf($.markAsStructValue((person).clone()))).clone())
+	let personVal = $.markAsStructValue((reflect.ValueOf($.interfaceValue<any>($.markAsStructValue((person).clone()), "main.Person"))).clone())
 	$.println("Struct value type:", $.pointerValue($.markAsStructValue((personVal).clone()).Type()).String())
 
 	// Test with different kinds

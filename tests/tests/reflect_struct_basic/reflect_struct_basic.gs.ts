@@ -54,7 +54,7 @@ export class Person {
 
 export async function main(): Promise<void> {
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30}))
-	let v = $.markAsStructValue((reflect.ValueOf($.markAsStructValue((p).clone()))).clone())
+	let v = $.markAsStructValue((reflect.ValueOf($.interfaceValue<any>($.markAsStructValue((p).clone()), "main.Person"))).clone())
 	if ($.markAsStructValue((v).clone()).Kind() == reflect.Struct) {
 		let f = $.markAsStructValue(($.markAsStructValue((v).clone()).Field(0)).clone())
 		fmt.Println($.markAsStructValue((f).clone()).String())

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_alias_type_assert_shadow/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "dep/dep.gs.ts",
+    "dep/index.ts",
+    "import_alias_type_assert_shadow.gs.ts",
+    "index.ts"
+  ]
+}

@@ -1062,8 +1062,9 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 	if signature == nil || signature.Recv() == nil {
 		return nil, nil
 	}
-	result := o.tsSignatureResultFor(ctx, signature)
 	async := o.functionAsync(ctx, fnObj)
+	resultCtx := ctx.withAsyncFunction(async)
+	result := o.tsSignatureResultFor(resultCtx, signature)
 	receiverName := "recv"
 	if len(decl.Recv.List) != 0 && len(decl.Recv.List[0].Names) != 0 {
 		receiverName = safeIdentifier(decl.Recv.List[0].Names[0].Name)
@@ -1094,7 +1095,7 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 		lowered.body = body
 		if deferState.async && !lowered.async {
 			lowered.async = true
-			lowered.result = asyncResultType(result, true)
+			lowered.result = asyncResultType(o.tsSignatureResultFor(ctx.withAsyncFunction(true), signature), true)
 		}
 		return lowered, diagnostics
 	}
@@ -1113,8 +1114,9 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 	if signature == nil {
 		return nil, nil
 	}
-	result := o.tsSignatureResultFor(ctx, signature)
 	async := o.functionAsync(ctx, fnObj)
+	resultCtx := ctx.withAsyncFunction(async)
+	result := o.tsSignatureResultFor(resultCtx, signature)
 	deferState := &loweredDeferState{}
 	name := safeIdentifier(decl.Name.Name)
 	runtimeName := ""
@@ -1154,7 +1156,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 	}
 	if decl.Name.Name == "main" {
 		lowered.async = true
-		lowered.result = asyncResultType(result, true)
+		lowered.result = asyncResultType(o.tsSignatureResultFor(ctx.withAsyncFunction(true), signature), true)
 	}
 	for idx := range signature.Params().Len() {
 		param := signature.Params().At(idx)
@@ -1168,7 +1170,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		lowered.body = body
 		if deferState.async && !lowered.async {
 			lowered.async = true
-			lowered.result = asyncResultType(result, true)
+			lowered.result = asyncResultType(o.tsSignatureResultFor(ctx.withAsyncFunction(true), signature), true)
 		}
 		return lowered, diagnostics
 	}
@@ -2060,6 +2062,9 @@ func (o *LoweringOwner) lowerShortDeclShadowAliases(
 				return true
 			}
 			obj := ctx.semPkg.source.TypesInfo.Uses[ident]
+			if _, ok := obj.(*types.PkgName); ok {
+				return true
+			}
 			if obj == nil || aliases[obj] != "" || objectDeclaredInAssignRHS(obj, assign) {
 				return true
 			}
@@ -4563,13 +4568,17 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 	value string,
 	cloneStructValue bool,
 ) string {
-	if isInterfaceType(targetType) && isStructValueType(sourceType) {
-		return o.lowerStructClone(value)
-	}
 	if isBuiltinErrorType(targetType) {
 		if wrapper := o.lowerPrimitiveErrorWrapper(ctx, sourceType, value); wrapper != "" {
 			return wrapper
 		}
+	}
+	if isInterfaceType(targetType) && isStructValueType(sourceType) {
+		if cloneStructValue {
+			value = o.lowerStructClone(value)
+		}
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInterfaceValue) +
+			"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " + strconv.Quote(goRuntimeTypeString(sourceType)) + ")"
 	}
 	if isInterfaceType(targetType) && !isInterfaceType(sourceType) && isNilableType(sourceType) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInterfaceValue) +
@@ -4931,13 +4940,20 @@ func (o *LoweringOwner) tsSignatureResultFor(ctx lowerFileContext, signature *ty
 		return "void"
 	}
 	if signature.Results().Len() == 1 {
-		return o.tsTypeFor(ctx, signature.Results().At(0).Type())
+		return o.tsSignatureResultTypeFor(ctx, signature.Results().At(0).Type())
 	}
 	results := make([]string, 0, signature.Results().Len())
 	for result := range signature.Results().Variables() {
-		results = append(results, o.tsTypeFor(ctx, result.Type()))
+		results = append(results, o.tsSignatureResultTypeFor(ctx, result.Type()))
 	}
 	return "[" + strings.Join(results, ", ") + "]"
+}
+
+func (o *LoweringOwner) tsSignatureResultTypeFor(ctx lowerFileContext, typ types.Type) string {
+	if signature := signatureForType(typ); ctx.asyncFunction && signature != nil {
+		return o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+	}
+	return o.tsTypeFor(ctx, typ)
 }
 
 func funcSignatureNeedsAsyncFunctionParamCalls(signature *types.Signature) bool {
