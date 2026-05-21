@@ -402,6 +402,24 @@ func (o *LoweringOwner) localFileAliases(
 			addTypeDeps(typed.Type())
 		case *types.Const:
 			addTypeDeps(typed.Type())
+		case *types.Func:
+			signature, _ := typed.Type().(*types.Signature)
+			if signature == nil {
+				return
+			}
+			if receiver := signature.Recv(); receiver != nil {
+				addTypeDeps(receiver.Type())
+			}
+			if params := signature.Params(); params != nil {
+				for param := range params.Variables() {
+					addTypeDeps(param.Type())
+				}
+			}
+			if results := signature.Results(); results != nil {
+				for result := range results.Variables() {
+					addTypeDeps(result.Type())
+				}
+			}
 		}
 	}
 	addTypeDeps = func(typ types.Type) {
