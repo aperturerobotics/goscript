@@ -32,6 +32,8 @@ func main() {
 
 	worker.ch <- 1
 	<-worker.ch
+	println("call:", callLookup(worker.lookup, "tcp"))
+
 	hook := func(fn func(string) int, network string) int {
 		return fn(network)
 	}

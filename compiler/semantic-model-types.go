@@ -79,6 +79,7 @@ type semanticFunction struct {
 	receiver        *types.Named
 	receiverPointer bool
 	position        sourcePosition
+	hasBody         bool
 	async           bool
 	asyncReasons    []string
 	calls           map[*types.Func]bool

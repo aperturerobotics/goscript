@@ -44,8 +44,8 @@ export class Worker {
 	)
 }
 
-export function callLookup(fn: ((_p0: string) => number) | null, network: string): number {
-	return fn!(network)
+export async function callLookup(fn: ((_p0: string) => number | Promise<number>) | null, network: string): Promise<number> {
+	return await fn!(network)
 }
 
 export function syncLookup(network: string): number {
@@ -70,6 +70,8 @@ export async function main(): Promise<void> {
 
 	await $.chanSend($.pointerValue<Worker>(worker).ch, 1)
 	await $.chanRecv($.pointerValue<Worker>(worker).ch)
+	$.println("call:", await callLookup(((__receiver) => (network: string) => __receiver.lookup(network))($.pointerValue<Worker>(worker)), "tcp"))
+
 	let hook = $.functionValue(async (fn: ((_p0: string) => number | Promise<number>) | null, network: string): Promise<number> => {
 		return await fn!(network)
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] }, { kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })

@@ -964,7 +964,7 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 		return nil, nil
 	}
 	result := o.tsSignatureResultFor(ctx, signature)
-	async := ctx.model.functions[fnObj] != nil && ctx.model.functions[fnObj].async
+	async := o.functionAsync(ctx, fnObj)
 	receiverName := "recv"
 	if len(decl.Recv.List) != 0 && len(decl.Recv.List[0].Names) != 0 {
 		receiverName = safeIdentifier(decl.Recv.List[0].Names[0].Name)
@@ -1015,7 +1015,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		return nil, nil
 	}
 	result := o.tsSignatureResultFor(ctx, signature)
-	async := ctx.model.functions[fnObj] != nil && ctx.model.functions[fnObj].async
+	async := o.functionAsync(ctx, fnObj)
 	deferState := &loweredDeferState{}
 	name := safeIdentifier(decl.Name.Name)
 	runtimeName := ""
@@ -3075,7 +3075,7 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
 	deferState := &loweredDeferState{}
 	bodyCtx := ctx.withSignature(signature).withDeferState(deferState).withoutRangeBranch()
-	if funcSignatureNeedsAsyncFunctionParamCalls(signature) {
+	if funcLiteralNeedsAsyncFunctionParamCalls(signature) {
 		bodyCtx = bodyCtx.withAsyncFunction(true)
 	}
 	body, diagnostics := o.lowerBlock(bodyCtx, lit.Body)
@@ -3088,7 +3088,7 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	if async {
 		prefix = "async "
 	}
-	function := prefix + "(" + o.tsSignatureParamsFor(ctx, signature, funcSignatureNeedsAsyncFunctionParamCalls(signature)) + "): " +
+	function := prefix + "(" + o.tsSignatureParamsFor(ctx, signature, funcLiteralNeedsAsyncFunctionParamCalls(signature)) + "): " +
 		asyncResultType(o.tsSignatureResultFor(ctx, signature), async) + " => {\n" +
 		rendered.String() + "}"
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
@@ -4775,15 +4775,23 @@ func funcSignatureNeedsAsyncFunctionParamCalls(signature *types.Signature) bool 
 	if signature == nil || signature.Params() == nil {
 		return false
 	}
-	if signature.Results() == nil || signature.Results().Len() == 0 {
-		return false
-	}
 	for param := range signature.Params().Variables() {
-		if signatureForType(param.Type()) != nil {
+		paramSignature := signatureForType(param.Type())
+		if paramSignature != nil && paramSignature.Results() != nil && paramSignature.Results().Len() != 0 {
 			return true
 		}
 	}
 	return false
+}
+
+func funcLiteralNeedsAsyncFunctionParamCalls(signature *types.Signature) bool {
+	if signature == nil || signature.Params() == nil {
+		return false
+	}
+	if signature.Results() == nil || signature.Results().Len() == 0 {
+		return false
+	}
+	return funcSignatureNeedsAsyncFunctionParamCalls(signature)
 }
 
 func unnamedSignatureForType(typ types.Type) *types.Signature {
@@ -4803,7 +4811,7 @@ func exprIsAsyncCompatibleFuncLit(ctx lowerFileContext, expr ast.Expr) bool {
 		return false
 	}
 	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(funcLit).(*types.Signature)
-	return funcSignatureNeedsAsyncFunctionParamCalls(signature)
+	return funcLiteralNeedsAsyncFunctionParamCalls(signature)
 }
 
 func asyncResultType(result string, async bool) string {
@@ -5242,10 +5250,7 @@ func (o *LoweringOwner) functionAsync(ctx lowerFileContext, fn *types.Func) bool
 	if fn == nil || ctx.model == nil {
 		return false
 	}
-	semFn := ctx.model.functions[fn]
-	if semFn == nil {
-		semFn = ctx.model.functions[fn.Origin()]
-	}
+	semFn := semanticFunctionFor(ctx.model, fn)
 	return semFn != nil && semFn.async
 }
 

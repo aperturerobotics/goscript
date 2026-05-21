@@ -75,6 +75,7 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 	}
 
 	o.propagateFunctionAsync(model)
+	o.propagateAsyncFunctionArguments(model)
 	o.resolveInterfaceImplementations(model)
 	o.propagateFunctionAsync(model)
 	return model, diagnostics
@@ -150,7 +151,8 @@ func (o *SemanticModelOwner) collectFileDeclarations(
 				continue
 			}
 			position := sourcePos(pkg, typed.Name.Pos())
-			o.addFunction(model, semPkg, fn, position)
+			semFn := o.addFunction(model, semPkg, fn, position)
+			semFn.hasBody = typed.Body != nil
 			semPkg.declarations = append(semPkg.declarations, semanticDeclaration{
 				kind:     "func",
 				name:     typed.Name.Name,
@@ -539,6 +541,41 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 	return diagnostics
 }
 
+func (o *SemanticModelOwner) propagateAsyncFunctionArguments(model *SemanticModel) {
+	changed := true
+	for changed {
+		changed = false
+		for _, semPkg := range model.packages {
+			pkg := semPkg.source
+			if pkg == nil {
+				continue
+			}
+			for _, file := range pkg.Syntax {
+				ast.Inspect(file, func(node ast.Node) bool {
+					switch typed := node.(type) {
+					case *ast.CallExpr:
+						called := calledFunction(pkg, typed.Fun)
+						semFn := semanticFunctionFor(model, called)
+						if semFn == nil || !semFn.hasBody {
+							return true
+						}
+						signature, _ := called.Type().(*types.Signature)
+						if callPassesAsyncFunctionArgument(model, pkg, signature, typed.Args) {
+							if markFunctionAsync(semFn, "async-function-argument") {
+								changed = true
+							}
+						}
+					}
+					return true
+				})
+			}
+		}
+		if changed {
+			o.propagateFunctionAsync(model)
+		}
+	}
+}
+
 func (o *SemanticModelOwner) isOverrideAsyncCall(pkg *packages.Package, expr ast.Expr) (bool, error) {
 	selector, ok := expr.(*ast.SelectorExpr)
 	if !ok {
@@ -558,6 +595,25 @@ func (o *SemanticModelOwner) isOverrideAsyncCall(pkg *packages.Package, expr ast
 	}
 	methodKey := named.Obj().Name() + "." + method.Name()
 	return o.overrideOwner.IsMethodAsync(named.Obj().Pkg().Path(), methodKey)
+}
+
+func semanticFunctionFor(model *SemanticModel, fn *types.Func) *semanticFunction {
+	if model == nil || fn == nil {
+		return nil
+	}
+	if semFn := model.functions[fn]; semFn != nil {
+		return semFn
+	}
+	if semFn := model.functions[fn.Origin()]; semFn != nil {
+		return semFn
+	}
+	fullName := fn.FullName()
+	for candidate, semFn := range model.functions {
+		if candidate.FullName() == fullName {
+			return semFn
+		}
+	}
+	return nil
 }
 
 func calledFunction(pkg *packages.Package, expr ast.Expr) *types.Func {
@@ -608,6 +664,80 @@ func callUsesFunctionIdentifier(pkg *packages.Package, expr ast.Expr) bool {
 	return ok
 }
 
+func callPassesAsyncFunctionArgument(
+	model *SemanticModel,
+	pkg *packages.Package,
+	signature *types.Signature,
+	args []ast.Expr,
+) bool {
+	if signature == nil || signature.Params() == nil {
+		return false
+	}
+	for idx, arg := range args {
+		paramIdx := idx
+		if signature.Variadic() && idx >= signature.Params().Len()-1 {
+			paramIdx = signature.Params().Len() - 1
+		}
+		if paramIdx < 0 || paramIdx >= signature.Params().Len() {
+			continue
+		}
+		if signatureForType(signature.Params().At(paramIdx).Type()) == nil {
+			continue
+		}
+		if exprMayNeedAwait(model, pkg, arg) {
+			return true
+		}
+	}
+	return false
+}
+
+func exprMayNeedAwait(model *SemanticModel, pkg *packages.Package, expr ast.Expr) bool {
+	if called := calledFunction(pkg, expr); called != nil {
+		semFn := semanticFunctionFor(model, called)
+		return semFn != nil && semFn.async
+	}
+	lit, ok := expr.(*ast.FuncLit)
+	if !ok {
+		return false
+	}
+	needsAwait := false
+	ast.Inspect(lit.Body, func(node ast.Node) bool {
+		if needsAwait {
+			return false
+		}
+		switch typed := node.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.SendStmt, *ast.SelectStmt:
+			needsAwait = true
+			return false
+		case *ast.UnaryExpr:
+			if typed.Op == token.ARROW {
+				needsAwait = true
+				return false
+			}
+		case *ast.CallExpr:
+			if callUsesFunctionValue(pkg, typed.Fun) {
+				needsAwait = true
+				return false
+			}
+			if callUsesFunctionIdentifier(pkg, typed.Fun) {
+				needsAwait = true
+				return false
+			}
+			if called := calledFunction(pkg, typed.Fun); called != nil {
+				semFn := semanticFunctionFor(model, called)
+				if semFn != nil && semFn.async {
+					needsAwait = true
+					return false
+				}
+			}
+		}
+		return true
+	})
+	return needsAwait
+}
+
 func receiverNamedType(typ types.Type) *types.Named {
 	for {
 		pointer, ok := typ.(*types.Pointer)
@@ -626,7 +756,7 @@ func (o *SemanticModelOwner) propagateFunctionAsync(model *SemanticModel) {
 		changed = false
 		for _, semFn := range model.functions {
 			for called := range semFn.calls {
-				calledFn := model.functions[called]
+				calledFn := semanticFunctionFor(model, called)
 				if calledFn != nil && calledFn.async {
 					if markFunctionAsync(semFn, "call:"+called.FullName()) {
 						changed = true
