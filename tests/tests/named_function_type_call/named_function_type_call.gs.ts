@@ -190,6 +190,10 @@ export function multiCallback(walkFn: WalkFunc, processFn: ((_p0: string) => $.G
 	return processFn!("test")
 }
 
+export function indexedCallback(cbs: $.Slice<((_p0: string) => boolean) | null>, value: string): boolean {
+	return cbs![0]!(value)
+}
+
 export async function main(): Promise<void> {
 	let fs = new MockFilesystem()
 	let fileInfo = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
@@ -226,6 +230,11 @@ export async function main(): Promise<void> {
 	if (err3 != null) {
 		$.println("Multi callback error:", $.pointerValue(err3).Error())
 	}
+
+	indexedCallback($.arrayToSlice<((_p0: string) => boolean) | null>([$.functionValue((value: string): boolean => {
+		$.println("Indexed callback:", value)
+		return true
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })]), "slice")
 }
 
 

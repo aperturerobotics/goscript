@@ -3,6 +3,7 @@ package compiler
 import (
 	"cmp"
 	"context"
+	"fmt"
 	"go/ast"
 	"go/constant"
 	"go/token"
@@ -1111,6 +1112,9 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 			}
 		}
 		return stmts, diagnostics
+	case *ast.BlockStmt:
+		body, diagnostics := o.lowerBlock(ctx, typed)
+		return []loweredStmt{{children: body}}, diagnostics
 	case *ast.AssignStmt:
 		return o.lowerAssignStmt(ctx, typed)
 	case *ast.SendStmt:
@@ -2792,10 +2796,15 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 		call := o.lowerCallableExpr(ctx, fun, selector) + "(" + strings.Join(args, ", ") + ")"
 		return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, selectorDiagnostics...)
 	case *ast.IndexExpr:
-		if signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(fun).(*types.Signature); signature != nil {
-			callee, calleeDiagnostics := o.lowerExpr(ctx, fun.X)
-			args = append([]string{o.genericTypeArgsExpr(ctx, fun.X, []ast.Expr{fun.Index})}, args...)
-			call := o.lowerCallableExpr(ctx, fun.X, callee) + "(" + strings.Join(args, ", ") + ")"
+		if signature := callTargetSignature(ctx, fun); signature != nil {
+			if callTargetSignature(ctx, fun.X) != nil {
+				callee, calleeDiagnostics := o.lowerExpr(ctx, fun.X)
+				args = append([]string{o.genericTypeArgsExpr(ctx, fun.X, []ast.Expr{fun.Index})}, args...)
+				call := o.lowerCallableExpr(ctx, fun.X, callee) + "(" + strings.Join(args, ", ") + ")"
+				return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, calleeDiagnostics...)
+			}
+			callee, calleeDiagnostics := o.lowerExpr(ctx, fun)
+			call := o.lowerCallableExpr(ctx, fun, callee) + "(" + strings.Join(args, ", ") + ")"
 			return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, calleeDiagnostics...)
 		}
 	case *ast.IndexListExpr:
@@ -2828,9 +2837,9 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			call := o.lowerCallableExpr(ctx, expr.Fun, callee) + "(" + strings.Join(args, ", ") + ")"
 			return o.awaitCallIfNeeded(ctx, expr.Fun, call), append(diagnostics, calleeDiagnostics...)
 		}
-		return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported call target"))
+		return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, fmt.Sprintf("unsupported call target %T", expr.Fun)))
 	}
-	return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported call target"))
+	return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, fmt.Sprintf("unsupported call target %T", expr.Fun)))
 }
 
 func (o *LoweringOwner) lowerCallableExpr(ctx lowerFileContext, expr ast.Expr, callee string) string {

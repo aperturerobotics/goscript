@@ -1,0 +1,36 @@
+// Generated file based on bare_block_statement.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+export function scopedTotal(seed: number): number {
+	let total = seed
+	{
+		total += 1
+		let inner = total * 2
+		$.println("inner:", inner)
+	}
+	{
+		total += 3
+	}
+	return total
+}
+
+export function shadowedValue(): number {
+	let value = 7
+	{
+		let value = 11
+		$.println("block value:", value)
+	}
+	return value
+}
+
+export async function main(): Promise<void> {
+	$.println("scoped total:", scopedTotal(1))
+	$.println("outer value:", shadowedValue())
+}
+
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

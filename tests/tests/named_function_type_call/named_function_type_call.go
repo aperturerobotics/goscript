@@ -97,6 +97,10 @@ func multiCallback(walkFn WalkFunc, processFn func(string) error) error {
 	return processFn("test")
 }
 
+func indexedCallback(cbs []func(string) bool, value string) bool {
+	return cbs[0](value)
+}
+
 func main() {
 	fs := &MockFilesystem{}
 	fileInfo := &MockFileInfo{name: "test.txt", size: 50, isDir: false}
@@ -133,4 +137,11 @@ func main() {
 	if err3 != nil {
 		println("Multi callback error:", err3.Error())
 	}
+
+	indexedCallback([]func(string) bool{
+		func(value string) bool {
+			println("Indexed callback:", value)
+			return true
+		},
+	}, "slice")
 }
