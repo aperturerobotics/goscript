@@ -3070,6 +3070,10 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			if typeParam := receiverTypeParam(selection.Recv()); typeParam != nil {
 				receiverExpr, receiverDiagnostics := o.lowerExpr(ctx, fun.X)
 				diagnostics = append(diagnostics, receiverDiagnostics...)
+				if !signatureHasTypeParam(ctx.signature, typeParam) {
+					call := receiverExpr + "." + fun.Sel.Name + "(" + strings.Join(args, ", ") + ")"
+					return o.awaitCallIfNeeded(ctx, fun, call), diagnostics
+				}
 				methodArgs := append([]string{"__typeArgs", strconv.Quote(typeParam.Obj().Name()), strconv.Quote(fun.Sel.Name), receiverExpr}, args...)
 				call := o.runtimeOwner.QualifiedHelper(RuntimeHelperCallGenericMethod) + "(" + strings.Join(methodArgs, ", ") + ")"
 				return o.awaitCallIfNeeded(ctx, fun, call), diagnostics
@@ -4196,6 +4200,9 @@ func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ 
 	if !ok {
 		return o.lowerZeroValueExprFor(ctx, typ)
 	}
+	if !signatureHasTypeParam(ctx.signature, typeParam) {
+		return zeroValueExpr(typ)
+	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperGenericZero) +
 		"(__typeArgs, " + strconv.Quote(typeParam.Obj().Name()) + ", " + zeroValueExpr(typ) + ")"
 }
@@ -4665,6 +4672,22 @@ func receiverTypeParam(typ types.Type) *types.TypeParam {
 	}
 	typeParam, _ := types.Unalias(typ).(*types.TypeParam)
 	return typeParam
+}
+
+func signatureHasTypeParam(signature *types.Signature, target *types.TypeParam) bool {
+	if signature == nil || target == nil {
+		return false
+	}
+	typeParams := signature.TypeParams()
+	if typeParams == nil {
+		return false
+	}
+	for typeParam := range typeParams.TypeParams() {
+		if typeParam == target || typeParam.Obj() == target.Obj() {
+			return true
+		}
+	}
+	return false
 }
 
 func sameNamedTypeOrigin(a *types.Named, b *types.Named) bool {
