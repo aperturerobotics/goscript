@@ -54,7 +54,7 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
-	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
+	let structPointer: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({MyInt: 4, MyString: "hello world"})
 	// === Method Call on Pointer Receiver ===
 	// Calling a method with a pointer receiver (*MyStruct) using a pointer variable.
 	$.println("Method call on pointer (structPointer): Expected: hello world, Actual: " + $.pointerValue<MyStruct>(structPointer).GetMyString())

@@ -49,11 +49,11 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
-	let original = new MyStruct({MyInt: 10, MyString: "original"})
+	let original: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({MyInt: 10, MyString: "original"})
 
 	// === Pointer Assignment (No Copy) ===
 	// Assigning a pointer variable to another pointer variable.
-	let pointerCopy = original
+	let pointerCopy: MyStruct | $.VarRef<MyStruct> | null = original
 
 	// Modify the struct through the original pointer.
 	$.pointerValue<MyStruct>(original).MyString = "modified original"

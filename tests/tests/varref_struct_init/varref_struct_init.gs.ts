@@ -42,14 +42,14 @@ export async function main(): Promise<void> {
 	// Scenario 1: Value type that NeedsVarRef
 	// 'val' is a value type, but its address is taken, so it should be varrefed in TS.
 	let val = $.varRef($.markAsStructValue(new MyStruct({MyInt: 10})))
-	let ptrToVal = val
+	let ptrToVal: MyStruct | $.VarRef<MyStruct> | null = val
 
 	// Accessing field on varrefed value type: Should generate val.value.MyInt
 	val.value.MyInt = 20
 
 	// Scenario 2: Pointer type
 	// We never take the address of ptr so it should not be varrefed.
-	let ptr = new MyStruct({MyInt: 30})
+	let ptr: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({MyInt: 30})
 
 	// Accessing field on pointer type: Should generate ptr.MyInt
 	$.pointerValue<MyStruct>(ptr).MyInt = 40

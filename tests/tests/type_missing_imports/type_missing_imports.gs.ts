@@ -96,7 +96,7 @@ export class storage {
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new storage({files: $.makeMap<string, file | $.VarRef<file> | null>(), children: $.makeMap<string, Map<string, file | $.VarRef<file> | null> | null>()}))
 
-	let f = new file({name: "test.txt", data: $.stringToBytes("hello world")})
+	let f: file | $.VarRef<file> | null = new file({name: "test.txt", data: $.stringToBytes("hello world")})
 
 	$.mapSet(s.files, "test", f)
 

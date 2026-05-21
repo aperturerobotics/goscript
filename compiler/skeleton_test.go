@@ -447,7 +447,7 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"let original = $.varRef($.markAsStructValue(new Counter({Value: 1})))",
 		"let original = $.varRef($.markAsStructValue(new Counter({Value: 1})))\n\n\t// Copy should stay readable in generated output.\n\tlet copy",
 		"let copy = $.markAsStructValue(original.value.clone())",
-		"let pointer = original",
+		"let pointer: Counter | $.VarRef<Counter> | null = original",
 		"$.pointerValue<Counter>(pointer).Set(2)",
 		"$.pointerValue<Counter>(NewCounter()).Set(5)",
 		"let [, ok] = $.typeAssertTuple<Counter | $.VarRef<Counter> | null>(iface, { kind: $.TypeKind.Pointer, elemType: \"main.Counter\" })",

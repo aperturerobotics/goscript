@@ -10,7 +10,7 @@ import * as __goscript_storage from "./storage.gs.ts"
 export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new __goscript_storage.storage({files: $.makeMap<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null>(), children: $.makeMap<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null>()}))
 
-	let f = new __goscript_memory.file({name: "test.txt", data: $.stringToBytes("hello world")})
+	let f: __goscript_memory.file | $.VarRef<__goscript_memory.file> | null = new __goscript_memory.file({name: "test.txt", data: $.stringToBytes("hello world")})
 
 	$.mapSet(s.files, "test", f)
 

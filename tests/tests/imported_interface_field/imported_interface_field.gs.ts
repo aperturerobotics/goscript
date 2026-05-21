@@ -45,7 +45,7 @@ export function newHolder(w: io.Writer | null): holder | $.VarRef<holder> | null
 }
 
 export async function main(): Promise<void> {
-	let h = newHolder(null)
+	let h: holder | $.VarRef<holder> | null = newHolder(null)
 	if ($.pointerValue<holder>(h).w == null) {
 		$.println("nil writer")
 		return

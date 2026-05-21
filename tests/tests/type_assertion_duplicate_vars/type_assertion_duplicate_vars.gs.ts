@@ -121,7 +121,7 @@ export class Container {
 export async function main(): Promise<void> {
 	let iface: Interface | null = $.markAsStructValue($.markAsStructValue(new ConcreteA()).clone())
 
-	let c = new Container()
+	let c: Container | $.VarRef<Container> | null = new Container()
 
 	// Multiple type assertions that should generate unique variable names
 	let __goscriptTuple0 = $.typeAssertTuple<ConcreteA>(iface, "main.ConcreteA")

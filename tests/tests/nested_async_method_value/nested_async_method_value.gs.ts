@@ -66,7 +66,7 @@ export function run(fn: (() => $.GoError) | null): void {
 }
 
 export async function main(): Promise<void> {
-	let w = new Worker({ch: $.makeChannel<number>(1, 0, "both")})
+	let w: Worker | $.VarRef<Worker> | null = new Worker({ch: $.makeChannel<number>(1, 0, "both")})
 	run(((__receiver) => () => __receiver.Spawn())($.pointerValue<Worker>(w)))
 
 	let s: Spawner | null = $.interfaceValue<Spawner | null>(w, "*main.Worker")

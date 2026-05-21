@@ -49,7 +49,7 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
-	let s = new MyStruct({Value: 10})
+	let s: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({Value: 10})
 	$.println($.pointerValue<MyStruct>(s).UsesReceiver())
 	$.println($.pointerValue<MyStruct>(s).DoesNotUseReceiver())
 }

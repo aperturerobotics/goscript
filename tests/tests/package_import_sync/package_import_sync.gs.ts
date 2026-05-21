@@ -92,7 +92,7 @@ export async function main(): Promise<void> {
 	}
 
 	// Test Pool
-	let pool = new sync.Pool({New: $.functionValue((): any => {
+	let pool: sync.Pool | $.VarRef<sync.Pool> | null = new sync.Pool({New: $.functionValue((): any => {
 		$.println("Pool creating new object")
 		return "new object"
 	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [] }] })})

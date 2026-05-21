@@ -132,8 +132,10 @@ export function privateKeyToCache(k: key | $.VarRef<key> | null): [privateKey | 
 }
 
 export async function main(): Promise<void> {
-	let k = new key({N: 7})
-	let [v, err] = privateKeyToCache(k)
+	let k: key | $.VarRef<key> | null = new key({N: 7})
+	let __goscriptTuple0 = privateKeyToCache(k)
+	let v: privateKey | $.VarRef<privateKey> | null = __goscriptTuple0[0]
+	let err = __goscriptTuple0[1]
 	if (err != null) {
 		$.panic(err)
 	}

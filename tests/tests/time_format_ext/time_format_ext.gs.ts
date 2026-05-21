@@ -7,7 +7,7 @@ import * as time from "@goscript/time/index.js"
 
 export async function main(): Promise<void> {
 	// Fixed time with a specific offset and nanoseconds
-	let locPDT = time.FixedZone("PDT", (-7 * 60) * 60)
+	let locPDT: time.Location | $.VarRef<time.Location> | null = time.FixedZone("PDT", (-7 * 60) * 60)
 	let t1 = $.markAsStructValue(time.Date(2025, time.May, 25, 17, 42, 56, 123456789, locPDT).clone())
 
 	$.println("--- Specific Time (2025-05-25 17:42:56.123456789 -0700 PDT) ---")
@@ -33,7 +33,7 @@ export async function main(): Promise<void> {
 	$.println("Layout Combined  -> " + $.markAsStructValue(t1.clone()).Format("Mon Jan _2 15:04:05.999999999 Z07:00 2006"))
 
 	// Fixed time with zero nanoseconds for trimming tests
-	let locPST = time.FixedZone("PST", (-8 * 60) * 60)
+	let locPST: time.Location | $.VarRef<time.Location> | null = time.FixedZone("PST", (-8 * 60) * 60)
 	let t2 = $.markAsStructValue(time.Date(2025, time.May, 25, 17, 42, 56, 0, locPST).clone())
 	$.println("--- Specific Time (2025-05-25 17:42:56.000 -0800 PST) ---")
 	$.println("Layout .999 (zero ns) -> " + $.markAsStructValue(t2.clone()).Format("15:04:05.999"))

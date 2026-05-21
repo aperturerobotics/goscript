@@ -100,7 +100,9 @@ export async function main(): Promise<void> {
 	}
 
 	{
-		let [tempFile, err] = os.CreateTemp("", "os-temp-file-*")
+		let __goscriptTuple0 = os.CreateTemp("", "os-temp-file-*")
+		let tempFile: os.File | $.VarRef<os.File> | null = __goscriptTuple0[0]
+		let err = __goscriptTuple0[1]
 		if (err == null) {
 			$.println("CreateTemp ok")
 			$.println("CreateTemp name empty:", $.pointerValue<os.File>(tempFile).Name() == "")

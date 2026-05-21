@@ -39,7 +39,7 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
-	let myStruct = new MyStruct({myPrivate: null})
+	let myStruct: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({myPrivate: null})
 	let intVar: $.VarRef<number> = $.varRef(10)
 	$.pointerValue<MyStruct>(myStruct).myPrivate = intVar
 	intVar.value = 15

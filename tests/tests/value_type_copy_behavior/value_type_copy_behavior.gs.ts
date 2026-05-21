@@ -109,7 +109,7 @@ export async function main(): Promise<void> {
 	let valueCopy1 = $.markAsStructValue(original.value.clone())
 	let valueCopy2 = $.markAsStructValue(original.value.clone())
 	// pointerCopy holds the memory address of 'original'.
-	let pointerCopy = original
+	let pointerCopy: MyStruct | $.VarRef<MyStruct> | null = original
 
 	// Modifications to value copies do not affect the original or other copies.
 	valueCopy1.MyString = "value copy 1"

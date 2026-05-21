@@ -51,7 +51,7 @@ export class Counter {
 
 export async function main(): Promise<void> {
 	let original = $.varRef($.markAsStructValue(new Counter({value: 10})))
-	let pointerFromValue = $.markAsStructValue(original.value.clone()).PointerAfterIncrement()
+	let pointerFromValue: Counter | $.VarRef<Counter> | null = $.markAsStructValue(original.value.clone()).PointerAfterIncrement()
 
 	$.println("Value receiver pointer value:", $.pointerValue<Counter>(pointerFromValue).Value())
 	$.println("Original after PointerAfterIncrement:", original.value.Value())

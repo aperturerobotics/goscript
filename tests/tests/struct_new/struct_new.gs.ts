@@ -60,7 +60,7 @@ export class MyStruct {
 
 export async function main(): Promise<void> {
 	// Test new(MyStruct)
-	let ptr = new MyStruct()
+	let ptr: MyStruct | $.VarRef<MyStruct> | null = new MyStruct()
 	$.println("ptr.MyInt (default):", $.pointerValue<MyStruct>(ptr).MyInt)
 	$.println("ptr.MyString (default):", $.pointerValue<MyStruct>(ptr).MyString)
 	$.println("ptr.myBool (default):", $.pointerValue<MyStruct>(ptr).myBool)

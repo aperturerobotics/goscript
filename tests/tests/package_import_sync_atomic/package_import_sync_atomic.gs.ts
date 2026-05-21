@@ -126,10 +126,10 @@ export async function main(): Promise<void> {
 	}
 
 	let structPtr: $.VarRef<atomic.Pointer<pointerNode>> = $.varRef($.markAsStructValue(new atomic.Pointer<pointerNode>()))
-	let node = new pointerNode()
+	let node: pointerNode | $.VarRef<pointerNode> | null = new pointerNode()
 	$.pointerValue<pointerNode>(node).value = "node"
 	if (structPtr.value.CompareAndSwap(null, node)) {
-		let loadedNode = structPtr.value.Load()
+		let loadedNode: pointerNode | $.VarRef<pointerNode> | null = structPtr.value.Load()
 		if (loadedNode != null) {
 			$.println("Pointer struct CAS:", $.pointerValue<pointerNode>(loadedNode).value)
 		}

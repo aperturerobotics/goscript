@@ -1718,7 +1718,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			if ident, ok := lhs.(*ast.Ident); ok {
 				right = o.lowerDeclaredValue(ctx, ident, right)
 			}
-			stmts = append(stmts, loweredStmt{text: "let " + left + " = " + right})
+			stmts = append(stmts, loweredStmt{text: "let " + left + o.shortDeclTypeAnnotation(ctx, lhs) + " = " + right})
 			continue
 		}
 		if stmt.Tok == token.AND_NOT_ASSIGN {
@@ -1756,6 +1756,7 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		value := "await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanRecv) + "(" + channel + ")"
 		if stmt.Tok == token.DEFINE {
 			prefix = "let "
+			left += o.shortDeclTypeAnnotation(ctx, stmt.Lhs[0])
 			value = o.lowerDeclaredValue(ctx, stmt.Lhs[0], value)
 		}
 		return []loweredStmt{{text: prefix + left + " = " + value}}, diagnostics
@@ -1779,11 +1780,32 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		value := tempName + fields[idx]
 		if stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs) {
 			prefix = "let "
+			left += o.shortDeclTypeAnnotation(ctx, lhs)
 			value = o.lowerDeclaredValue(ctx, lhs, value)
 		}
 		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + value})
 	}
 	return stmts, diagnostics
+}
+
+func (o *LoweringOwner) shortDeclTypeAnnotation(ctx lowerFileContext, lhs ast.Expr) string {
+	ident, ok := lhs.(*ast.Ident)
+	if !ok {
+		return ""
+	}
+	obj := ctx.semPkg.source.TypesInfo.Defs[ident]
+	if obj == nil || !shortDeclNeedsTypeAnnotation(obj.Type()) {
+		return ""
+	}
+	return ": " + o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj])
+}
+
+func shortDeclNeedsTypeAnnotation(typ types.Type) bool {
+	pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer)
+	if !ok {
+		return false
+	}
+	return namedStructType(pointer.Elem()) != nil
 }
 
 func (o *LoweringOwner) lowerTupleReassignmentStmt(
@@ -1804,6 +1826,7 @@ func (o *LoweringOwner) lowerTupleReassignmentStmt(
 		value := tempName + "[" + strconv.Itoa(idx) + "]"
 		if stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs) {
 			prefix = "let "
+			left += o.shortDeclTypeAnnotation(ctx, lhs)
 			value = o.lowerDeclaredValue(ctx, lhs, value)
 		}
 		stmts = append(stmts, loweredStmt{text: prefix + left + " = " + value})
@@ -1903,7 +1926,7 @@ func tupleDeclarationNeedsElementStatements(ctx lowerFileContext, exprs []ast.Ex
 			continue
 		}
 		obj := ctx.semPkg.source.TypesInfo.Defs[ident]
-		if obj != nil && ctx.model.needsVarRef[obj] {
+		if obj != nil && (ctx.model.needsVarRef[obj] || shortDeclNeedsTypeAnnotation(obj.Type())) {
 			return true
 		}
 	}

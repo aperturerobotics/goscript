@@ -49,7 +49,7 @@ export function NewFoo(): Foo | $.VarRef<Foo> | null {
 }
 
 export async function main(): Promise<void> {
-	let f = NewFoo()
+	let f: Foo | $.VarRef<Foo> | null = NewFoo()
 	queueMicrotask(async () => { await $.pointerValue<Foo>(f).Bar() })
 	await $.chanRecv($.pointerValue<Foo>(f).done)
 	$.println("main done")

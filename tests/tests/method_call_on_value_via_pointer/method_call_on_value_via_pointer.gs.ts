@@ -47,7 +47,7 @@ export async function main(): Promise<void> {
 	// Create a struct value
 	let msValue = $.varRef($.markAsStructValue(new MyStruct({MyInt: 100})))
 	// Create a pointer to the struct value
-	let msPointer = msValue
+	let msPointer: MyStruct | $.VarRef<MyStruct> | null = msValue
 
 	// === Method Call on Value Receiver via Pointer ===
 	// Call the value-receiver method using the pointer variable.

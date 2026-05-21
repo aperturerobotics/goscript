@@ -42,11 +42,11 @@ export async function main(): Promise<void> {
 	let s1 = $.varRef($.markAsStructValue(new MyStruct({Val: 1})))
 	let s2 = $.varRef($.markAsStructValue(new MyStruct({Val: 2})))
 
-	let p1 = $.varRef(s1)
-	let p2 = $.varRef(s1)
-	let p3 = $.varRef(s2)
+	let p1: $.VarRef<MyStruct | $.VarRef<MyStruct> | null> = $.varRef(s1)
+	let p2: $.VarRef<MyStruct | $.VarRef<MyStruct> | null> = $.varRef(s1)
+	let p3: $.VarRef<MyStruct | $.VarRef<MyStruct> | null> = $.varRef(s2)
 
-	let p4 = s1
+	let p4: MyStruct | $.VarRef<MyStruct> | null = s1
 	p4
 
 	let pp1 = $.varRef(p1)

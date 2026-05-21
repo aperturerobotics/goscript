@@ -195,8 +195,8 @@ export function indexedCallback(cbs: $.Slice<((_p0: string) => boolean) | null>,
 }
 
 export async function main(): Promise<void> {
-	let fs = new MockFilesystem()
-	let fileInfo = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
+	let fs: MockFilesystem | $.VarRef<MockFilesystem> | null = new MockFilesystem()
+	let fileInfo: MockFileInfo | $.VarRef<MockFileInfo> | null = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
 
 	// Test the walk function with custom WalkFunc
 	let walkFunc = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {

@@ -124,7 +124,7 @@ export class outer {
 }
 
 export async function main(): Promise<void> {
-	let o = new outer({inner: new inner({name: "ready", count: $.markAsStructValue(new counter({value: 7}))})})
+	let o: outer | $.VarRef<outer> | null = new outer({inner: new inner({name: "ready", count: $.markAsStructValue(new counter({value: 7}))})})
 
 	$.println("name:", $.pointerValue<inner>($.pointerValue<outer>(o).inner).name)
 	$.pointerValue<inner>($.pointerValue<outer>(o).inner).name = "done"

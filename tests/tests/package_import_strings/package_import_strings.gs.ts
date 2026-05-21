@@ -19,7 +19,7 @@ export async function main(): Promise<void> {
 	$.println("Result:", result)
 
 	// Also test direct make with strings.Builder
-	let builderPtr = new strings.Builder()
+	let builderPtr: strings.Builder | $.VarRef<strings.Builder> | null = new strings.Builder()
 	$.pointerValue<strings.Builder>(builderPtr).WriteString("Direct make test")
 	$.println("Direct:", $.pointerValue<strings.Builder>(builderPtr).String())
 }

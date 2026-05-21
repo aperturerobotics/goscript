@@ -106,7 +106,7 @@ export async function main(): Promise<void> {
 	err = __goscriptTuple0[1]
 	$.println("WriteString field writer - bytes:", n, "err:", err == null)
 
-	let buf = new asyncBuffer()
+	let buf: asyncBuffer | $.VarRef<asyncBuffer> | null = new asyncBuffer()
 	$.pointerValue<asyncBuffer>(buf).Reset($.interfaceValue<io.Writer | null>(buf, "*main.asyncBuffer"))
 	$.pointerValue<asyncBuffer>(buf).Reset(null)
 

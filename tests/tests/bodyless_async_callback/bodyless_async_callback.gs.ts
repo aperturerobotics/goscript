@@ -51,7 +51,7 @@ export function setCallback(callback: ((_p0: string) => (() => void) | null | Pr
 }
 
 export async function newCallback(name: string): Promise<(() => void) | null> {
-	let s = new Setting()
+	let s: Setting | $.VarRef<Setting> | null = new Setting()
 	await $.pointerValue<Setting>(s).Value()
 	return $.functionValue((): void => {
 		$.println("callback:", name)

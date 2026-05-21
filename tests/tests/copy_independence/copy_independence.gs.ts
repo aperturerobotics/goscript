@@ -49,14 +49,14 @@ export class MyStruct {
 }
 
 export async function main(): Promise<void> {
-	let structPointer = new MyStruct({MyInt: 4, MyString: "hello world"})
+	let structPointer: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({MyInt: 4, MyString: "hello world"})
 	let dereferencedStructCopy = $.markAsStructValue($.pointerValue<MyStruct>(structPointer).clone())
 	dereferencedStructCopy.MyString = "original dereferenced copy modified"
 	let valueCopy1 = $.markAsStructValue(dereferencedStructCopy.clone())
 	valueCopy1.MyString = "value copy 1"
 	let valueCopy2 = $.markAsStructValue(dereferencedStructCopy.clone())
 	valueCopy2.MyString = "value copy 2"
-	let pointerCopy = structPointer
+	let pointerCopy: MyStruct | $.VarRef<MyStruct> | null = structPointer
 
 	// === Verifying Copy Independence ===
 	// Expected: "hello world"

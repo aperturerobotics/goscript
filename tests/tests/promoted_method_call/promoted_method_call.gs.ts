@@ -79,7 +79,7 @@ export class wrapper {
 }
 
 export async function main(): Promise<void> {
-	let w = new wrapper({base: $.markAsStructValue(new base({value: 3}))})
+	let w: wrapper | $.VarRef<wrapper> | null = new wrapper({base: $.markAsStructValue(new base({value: 3}))})
 	$.println($.pointerValue<wrapper>(w).base.Add(4))
 
 	let add = ((__receiver) => (n: number) => __receiver.Add(n))($.pointerValue<wrapper>(w).base)

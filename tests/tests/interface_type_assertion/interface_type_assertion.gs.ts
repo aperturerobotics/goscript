@@ -84,7 +84,9 @@ export async function main(): Promise<void> {
 	}
 
 	let nilInterface: MyInterface | null = null
-	let [nilVal, ok3] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(nilInterface, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+	let __goscriptTuple1 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(nilInterface, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+	let nilVal: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple1[0]
+	let ok3 = __goscriptTuple1[1]
 	if (ok3 && ($.pointerValue<MyStruct>(nilVal).Value == 0)) {
 		$.println("nil interface pointer assertion succeeded")
 	} else {

@@ -76,7 +76,7 @@ export class storage {
 }
 
 export async function main(): Promise<void> {
-	let s = new storage({bytes: $.makeSlice<number>(5, undefined, "byte"), name: "test"})
+	let s: storage | $.VarRef<storage> | null = new storage({bytes: $.makeSlice<number>(5, undefined, "byte"), name: "test"})
 
 	$.println("Name:", $.pointerValue<storage>(s).Name())
 	$.println("Length:", $.pointerValue<storage>(s).Len())

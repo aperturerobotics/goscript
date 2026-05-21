@@ -46,7 +46,7 @@ export async function main(): Promise<void> {
 
 	// Scenario 2: Variable aliasing (fixed by our change)
 	let original = $.varRef($.markAsStructValue(new MyStruct({Value: 30})))
-	let pAlias = original
+	let pAlias: MyStruct | $.VarRef<MyStruct> | null = original
 	let i2: any = $.interfaceValue<any>(pAlias, "*main.MyStruct")
 	let [, ok2] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i2, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("Scenario 2 - Variable pointer assertion:", ok2)
@@ -54,8 +54,8 @@ export async function main(): Promise<void> {
 	// Scenario 3: Multiple pointer variables
 	let s1 = $.varRef($.markAsStructValue(new MyStruct({Value: 40})))
 	let s2 = $.varRef($.markAsStructValue(new MyStruct({Value: 50})))
-	let p1 = s1
-	let p2 = s2
+	let p1: MyStruct | $.VarRef<MyStruct> | null = s1
+	let p2: MyStruct | $.VarRef<MyStruct> | null = s2
 	let i3a: any = $.interfaceValue<any>(p1, "*main.MyStruct")
 	let i3b: any = $.interfaceValue<any>(p2, "*main.MyStruct")
 	let [, ok3a] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i3a, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
@@ -65,7 +65,7 @@ export async function main(): Promise<void> {
 
 	// Scenario 4: Mixed patterns
 	let s4 = $.varRef($.markAsStructValue(new MyStruct({Value: 60})))
-	let p4 = s4
+	let p4: MyStruct | $.VarRef<MyStruct> | null = s4
 	let i4a: any = $.interfaceValue<any>(new MyStruct({Value: 70}), "*main.MyStruct")
 	let i4b: any = $.interfaceValue<any>(p4, "*main.MyStruct")
 	let [, ok4a] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i4a, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
@@ -75,15 +75,15 @@ export async function main(): Promise<void> {
 
 	// Scenario 5: Nested pointer assignment
 	let s5 = $.varRef($.markAsStructValue(new MyStruct({Value: 80})))
-	let p5a = s5
-	let p5b = p5a
+	let p5a: MyStruct | $.VarRef<MyStruct> | null = s5
+	let p5b: MyStruct | $.VarRef<MyStruct> | null = p5a
 	let i5: any = $.interfaceValue<any>(p5b, "*main.MyStruct")
 	let [, ok5] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i5, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("Scenario 5 - Nested pointer assignment assertion:", ok5)
 
 	// Scenario 6: Struct value vs pointer distinction
 	let s6 = $.varRef($.markAsStructValue(new MyStruct({Value: 90})))
-	let p6 = s6
+	let p6: MyStruct | $.VarRef<MyStruct> | null = s6
 	let s6copy = $.markAsStructValue(s6.value.clone())
 	let i6a: any = $.markAsStructValue(s6copy.clone())
 	let i6b: any = $.interfaceValue<any>(p6, "*main.MyStruct")

@@ -44,7 +44,7 @@ export async function main(): Promise<void> {
 	// Scenario 1: Address-of Composite Literal vs Value Variable
 	$.println("\n--- Scenario 1: Composite Literal vs Value Variable ---")
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
-	let p = new MyStruct({Value: 20})
+	let p: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({Value: 20})
 
 	// Type assertions - struct value
 	let i: any = $.markAsStructValue(s.clone())
@@ -63,7 +63,7 @@ export async function main(): Promise<void> {
 	// Scenario 2: Variable Aliasing
 	$.println("\n--- Scenario 2: Variable Aliasing ---")
 	let original = $.varRef($.markAsStructValue(new MyStruct({Value: 30})))
-	let pAlias = original
+	let pAlias: MyStruct | $.VarRef<MyStruct> | null = original
 
 	let iOriginal: any = $.markAsStructValue(original.value.clone())
 	let jAlias: any = $.interfaceValue<any>(pAlias, "*main.MyStruct")
@@ -81,8 +81,8 @@ export async function main(): Promise<void> {
 	// Scenario 3: Multiple Pointers to Same Variable
 	$.println("\n--- Scenario 3: Multiple Pointers to Same Variable ---")
 	let shared = $.varRef($.markAsStructValue(new MyStruct({Value: 40})))
-	let p1 = shared
-	let p2 = shared
+	let p1: MyStruct | $.VarRef<MyStruct> | null = shared
+	let p2: MyStruct | $.VarRef<MyStruct> | null = shared
 
 	let i1: any = $.interfaceValue<any>(p1, "*main.MyStruct")
 	let i2: any = $.interfaceValue<any>(p2, "*main.MyStruct")
@@ -94,10 +94,14 @@ export async function main(): Promise<void> {
 
 	// Verify they point to the same data
 	{
-		let [structPtr1, ok] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i1, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+		let __goscriptTuple0 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i1, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+		let structPtr1: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple0[0]
+		let ok = __goscriptTuple0[1]
 		if (ok) {
 			{
-				let [structPtr2, ok] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i2, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+				let __goscriptTuple1 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i2, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+				let structPtr2: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple1[0]
+				let ok = __goscriptTuple1[1]
 				if (ok) {
 					$.pointerValue<MyStruct>(structPtr1).Value = 99
 					$.println("shared modification check:", $.pointerValue<MyStruct>(structPtr2).Value)
@@ -109,8 +113,8 @@ export async function main(): Promise<void> {
 	// Scenario 4: Mixed Assignment Patterns
 	$.println("\n--- Scenario 4: Mixed Assignment Patterns ---")
 	let mixed = $.varRef($.markAsStructValue(new MyStruct({Value: 50})))
-	let pVar = mixed
-	let pLit = new MyStruct({Value: 60})
+	let pVar: MyStruct | $.VarRef<MyStruct> | null = mixed
+	let pLit: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({Value: 60})
 
 	let iVar: any = $.interfaceValue<any>(pVar, "*main.MyStruct")
 	let iLit: any = $.interfaceValue<any>(pLit, "*main.MyStruct")
@@ -122,7 +126,7 @@ export async function main(): Promise<void> {
 
 	// Scenario 5: Nested Type Assertions
 	$.println("\n--- Scenario 5: Nested Type Assertions ---")
-	let nested1 = new MyStruct({Value: 70})
+	let nested1: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({Value: 70})
 	let nested2 = $.varRef($.markAsStructValue(new MyStruct({Value: 80})))
 
 	// Array of interfaces containing both pointers and values
@@ -136,7 +140,9 @@ export async function main(): Promise<void> {
 				$.println("arr[", i, "] is MyStruct with value:", val.Value)
 			} else {
 				{
-					let [ptr, ok] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(item, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+					let __goscriptTuple2 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(item, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+					let ptr: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple2[0]
+					let ok = __goscriptTuple2[1]
 					if (ok) {
 						$.println("arr[", i, "] is *MyStruct with value:", $.pointerValue<MyStruct>(ptr).Value)
 					} else {

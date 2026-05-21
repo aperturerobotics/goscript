@@ -140,7 +140,9 @@ export async function main(): Promise<void> {
 
 	// Test 3: Type assertions preserve the typed nil pointer
 	{
-		let [d, ok] = $.typeAssertTuple<Dog | $.VarRef<Dog> | null>(animal, { kind: $.TypeKind.Pointer, elemType: "main.Dog" })
+		let __goscriptTuple0 = $.typeAssertTuple<Dog | $.VarRef<Dog> | null>(animal, { kind: $.TypeKind.Pointer, elemType: "main.Dog" })
+		let d: Dog | $.VarRef<Dog> | null = __goscriptTuple0[0]
+		let ok = __goscriptTuple0[1]
 		if (ok && (d == null)) {
 			$.println("typed nil dog assertion ok")
 		} else {
@@ -148,7 +150,9 @@ export async function main(): Promise<void> {
 		}
 	}
 	{
-		let [c, ok] = $.typeAssertTuple<Cat | $.VarRef<Cat> | null>(animal, { kind: $.TypeKind.Pointer, elemType: "main.Cat" })
+		let __goscriptTuple1 = $.typeAssertTuple<Cat | $.VarRef<Cat> | null>(animal, { kind: $.TypeKind.Pointer, elemType: "main.Cat" })
+		let c: Cat | $.VarRef<Cat> | null = __goscriptTuple1[0]
+		let ok = __goscriptTuple1[1]
 		if (ok || (c != null)) {
 			$.println("typed nil cat assertion accepted")
 		} else {

@@ -79,7 +79,7 @@ export class content {
 }
 
 export async function main(): Promise<void> {
-	let c = new content({bytes: $.stringToBytes("Hello, World!")})
+	let c: content | $.VarRef<content> | null = new content({bytes: $.stringToBytes("Hello, World!")})
 
 	// Test ReadAt method
 	let buf = $.makeSlice<number>(5, undefined, "byte")

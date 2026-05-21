@@ -98,8 +98,8 @@ export class Scanner {
 }
 
 export async function main(): Promise<void> {
-	let tracker = new FileTracker({lines: $.arrayToSlice<number>([])})
-	let scanner = new Scanner({file: tracker})
+	let tracker: FileTracker | $.VarRef<FileTracker> | null = new FileTracker({lines: $.arrayToSlice<number>([])})
+	let scanner: Scanner | $.VarRef<Scanner> | null = new Scanner({file: tracker})
 	await $.pointerValue<Scanner>(scanner).next()
 	$.println($.len($.pointerValue<FileTracker>(tracker).lines))
 }
