@@ -18,7 +18,9 @@ weekday Thursday
 location UTC
 utc 2025-05-15T01:10:42Z
 seconds 1.5
+duration string 1.5s
 parsed duration 1500000000 true
 bad duration err true
 parsed time 2025-05-15T01:10:42Z true
+parsed nano 2025-05-15T01:10:42Z
 bad time err true

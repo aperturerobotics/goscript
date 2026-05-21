@@ -36,6 +36,7 @@ func main() {
 	println("location", setTime.Location().String())
 	println("utc", setTime.UTC().Format("2006-01-02T15:04:05Z07:00"))
 	println("seconds", (1500 * time.Millisecond).Seconds())
+	println("duration string", (1500 * time.Millisecond).String())
 
 	duration, durationErr := time.ParseDuration("1.5s")
 	println("parsed duration", duration, durationErr == nil)
@@ -44,6 +45,7 @@ func main() {
 
 	parsed, parseErr := time.Parse(time.RFC3339, "2025-05-15T01:10:42Z")
 	println("parsed time", parsed.UTC().Format(time.RFC3339), parseErr == nil)
+	println("parsed nano", parsed.UTC().Format(time.RFC3339Nano))
 	_, badParseErr := time.Parse(time.RFC3339, "not-a-time")
 	println("bad time err", badParseErr != nil)
 }

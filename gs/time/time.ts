@@ -650,6 +650,40 @@ export function Duration_Seconds(receiver: Duration): number {
   return receiver / Second
 }
 
+export function Duration_String(receiver: Duration): string {
+  if (receiver === 0) {
+    return '0s'
+  }
+  const sign = receiver < 0 ? '-' : ''
+  let remaining = Math.abs(receiver)
+  const hours = Math.floor(remaining / Hour)
+  remaining -= hours * Hour
+  const minutes = Math.floor(remaining / Minute)
+  remaining -= minutes * Minute
+  const seconds = Math.floor(remaining / Second)
+  remaining -= seconds * Second
+
+  let out = sign
+  if (hours !== 0) {
+    out += `${hours}h`
+  }
+  if (minutes !== 0) {
+    out += `${minutes}m`
+  }
+  if (seconds !== 0 || remaining !== 0) {
+    out += formatSeconds(seconds, remaining)
+  }
+  return out
+}
+
+function formatSeconds(seconds: number, nanos: number): string {
+  if (nanos === 0) {
+    return `${seconds}s`
+  }
+  const fraction = String(nanos).padStart(9, '0').replace(/0+$/, '')
+  return `${seconds}.${fraction}s`
+}
+
 // Location represents a time zone
 export class Location {
   private _name: string
@@ -750,17 +784,13 @@ export class Timer {
   private _timeout: NodeJS.Timeout | number
   private _duration: Duration
   private _callback?: () => void
+  private _channel = makeChannel(1, new Time(), 'both')
+  public C: ChannelRef<Time> = makeChannelRef(this._channel, 'receive')
 
   constructor(duration: Duration, callback?: () => void) {
     this._duration = duration
     this._callback = callback
-    const ms = duration / 1000000 // Convert nanoseconds to milliseconds
-
-    if (callback) {
-      this._timeout = setTimeout(callback, ms)
-    } else {
-      this._timeout = setTimeout(() => {}, ms)
-    }
+    this._timeout = this.start(duration)
   }
 
   // Stop prevents the Timer from firing
@@ -776,13 +806,19 @@ export class Timer {
   // Reset changes the timer to expire after duration d
   public Reset(d: Duration): boolean {
     this.Stop()
+    this._duration = d
+    this._timeout = this.start(d)
+    return true
+  }
+
+  private start(d: Duration): NodeJS.Timeout | number {
     const ms = d / 1000000
     if (this._callback) {
-      this._timeout = setTimeout(this._callback, ms)
-    } else {
-      this._timeout = setTimeout(() => {}, ms)
+      return setTimeout(this._callback, ms)
     }
-    return true
+    return setTimeout(() => {
+      this._channel.send(Now()).catch(() => {})
+    }, ms)
   }
 }
 
@@ -930,6 +966,7 @@ export const May = Month.May
 export const DateTime = '2006-01-02 15:04:05'
 export const Layout = "01/02 03:04:05PM '06 -0700"
 export const RFC3339 = '2006-01-02T15:04:05Z07:00'
+export const RFC3339Nano = '2006-01-02T15:04:05.999999999Z07:00'
 export const Kitchen = '3:04PM'
 
 // Unix returns the local Time corresponding to the given Unix time,
