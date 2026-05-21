@@ -186,6 +186,10 @@ export async function main(): Promise<void> {
 	let ifaceVal = $.markAsStructValue((reflect.ValueOf(iface)).clone())
 	$.println("Interface value type:", $.pointerValue($.markAsStructValue((ifaceVal).clone()).Type()).String())
 	$.println("Interface kind:", reflect.Kind_String($.markAsStructValue((ifaceVal).clone()).Kind()))
+	let [assertedString, assertedOK] = reflect.TypeAssert({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, $.markAsStructValue((reflect.ValueOf("typed")).clone()))
+	$.println("TypeAssert string:", assertedString, assertedOK)
+	let [, assertedIntOK] = reflect.TypeAssert({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, $.markAsStructValue((reflect.ValueOf("typed")).clone()))
+	$.println("TypeAssert int:", assertedIntOK)
 
 	// Test function type
 	let fn = $.functionValue((_p0: number): string => {

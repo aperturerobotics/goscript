@@ -2141,6 +2141,17 @@ export function ValueOf(i: ReflectValue): Value {
   return new Value(i, getTypeOf(i))
 }
 
+export function TypeAssert(
+  typeArgs: $.GenericTypeArgs | undefined,
+  v: Value,
+): [any, boolean] {
+  const descriptor = typeArgs?.T
+  if (!descriptor?.type) {
+    return [v.Interface(), true]
+  }
+  return $.typeAssertTuple<any>(v.Interface(), descriptor.type)
+}
+
 export function ArrayOf(length: number, elem: Type): Type {
   return new ArrayType(elem, length)
 }

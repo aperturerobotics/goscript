@@ -139,6 +139,10 @@ func main() {
 	ifaceVal := reflect.ValueOf(iface)
 	println("Interface value type:", ifaceVal.Type().String())
 	println("Interface kind:", ifaceVal.Kind().String())
+	assertedString, assertedOK := reflect.TypeAssert[string](reflect.ValueOf("typed"))
+	println("TypeAssert string:", assertedString, assertedOK)
+	_, assertedIntOK := reflect.TypeAssert[int](reflect.ValueOf("typed"))
+	println("TypeAssert int:", assertedIntOK)
 
 	// Test function type
 	fn := func(int) string { return "" }

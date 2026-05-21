@@ -2,6 +2,7 @@
 export {
   TypeOf,
   TypeFor,
+  TypeAssert,
   ValueOf,
   Value,
   Kind_String,

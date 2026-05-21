@@ -37,6 +37,8 @@ MapOf kind: map
 Chan kinds available
 Interface value type: string
 Interface kind: string
+TypeAssert string: typed true
+TypeAssert int: false
 Function type: func(int) string
 Function kind: func
 Complex slice type: [][]int
