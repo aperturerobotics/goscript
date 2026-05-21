@@ -59,7 +59,7 @@ export async function main(): Promise<void> {
 
 	// Verify the value was modified through the method call.
 	// Expected: 200
-	$.println("Value after pointer method call via value: Expected: 200, Actual:", $.markAsStructValue(msValue.value.clone()).GetValue())
+	$.println("Value after pointer method call via value: Expected: 200, Actual:", $.markAsStructValue((msValue.value).clone()).GetValue())
 }
 
 

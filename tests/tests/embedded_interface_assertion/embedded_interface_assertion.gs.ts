@@ -74,7 +74,7 @@ export class MyStruct {
 export async function main(): Promise<void> {
 	let rwc: ReadCloser | null = null
 	let s = $.markAsStructValue(new MyStruct())
-	rwc = $.markAsStructValue(s.clone())
+	rwc = $.markAsStructValue((s).clone())
 
 	let [, ok] = $.typeAssertTuple<ReadCloser | null>(rwc, "main.ReadCloser")
 	if (ok) {

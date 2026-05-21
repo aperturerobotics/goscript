@@ -75,7 +75,7 @@ export class MyStringer {
 
 export async function main(): Promise<void> {
 	let i: any = null
-	i = $.markAsStructValue($.markAsStructValue(new Greeter()).clone())
+	i = $.markAsStructValue(($.markAsStructValue(new Greeter())).clone())
 
 	// Successful type assertion to an inline interface
 	let [g, ok] = $.typeAssertTuple<any>(i, { kind: $.TypeKind.Interface, methods: [{ name: "Greet", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
@@ -95,7 +95,7 @@ export async function main(): Promise<void> {
 
 	// Successful type assertion to a named interface, where the asserted value also implements an inline interface method
 	let j: any = null
-	j = $.markAsStructValue($.markAsStructValue(new MyStringer()).clone())
+	j = $.markAsStructValue(($.markAsStructValue(new MyStringer())).clone())
 
 	// Assert 'j' (which holds MyStringer) to an inline interface that MyStringer satisfies.
 	let [inlineMs, ok4] = $.typeAssertTuple<any>(j, { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
@@ -107,7 +107,7 @@ export async function main(): Promise<void> {
 
 	// Test case: variable of named interface type, asserted to inline interface
 	let k: Stringer | null = null
-	k = $.markAsStructValue($.markAsStructValue(new MyStringer()).clone())
+	k = $.markAsStructValue(($.markAsStructValue(new MyStringer())).clone())
 
 	let [inlineK, ok5] = $.typeAssertTuple<any>(k, { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok5) {

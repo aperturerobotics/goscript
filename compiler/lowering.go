@@ -632,8 +632,10 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					keyword = "const"
 				}
 				variableType := o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj])
-				if idx < len(typed.Values) {
-					if signature := unnamedSignatureForType(obj.Type()); signature != nil && exprIsAsyncCompatibleFuncLit(ctx, typed.Values[idx]) {
+				if signature := unnamedSignatureForType(obj.Type()); signature != nil {
+					value := ctx.model.values[obj]
+					if (value != nil && value.asyncCompatibleFunction) ||
+						(idx < len(typed.Values) && exprIsAsyncCompatibleFuncLit(ctx, typed.Values[idx])) {
 						variableType = o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
 					}
 				}
@@ -1170,6 +1172,12 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		for _, decl := range decls {
 			if decl.code != "" {
 				stmts = append(stmts, loweredStmt{text: decl.code})
+				continue
+			}
+			if decl.structType != nil {
+				var b strings.Builder
+				renderStruct(&b, decl.structType, o.runtimeOwner)
+				stmts = append(stmts, loweredStmt{text: strings.TrimRight(b.String(), "\n")})
 			}
 		}
 		return stmts, diagnostics
@@ -1856,6 +1864,12 @@ func (o *LoweringOwner) shortDeclTypeAnnotation(ctx lowerFileContext, lhs ast.Ex
 	}
 	if signature := unnamedSignatureForType(obj.Type()); signature != nil && rhsIsMethodValue(ctx, rhs) {
 		return ": " + o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+	}
+	if signature := unnamedSignatureForType(obj.Type()); signature != nil {
+		value := ctx.model.values[obj]
+		if value != nil && value.asyncCompatibleFunction {
+			return ": " + o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+		}
 	}
 	if !shortDeclNeedsTypeAnnotation(obj.Type()) {
 		return ""
@@ -4434,7 +4448,7 @@ func (o *LoweringOwner) lowerPrimitiveErrorWrapper(ctx lowerFileContext, sourceT
 }
 
 func (o *LoweringOwner) lowerStructClone(value string) string {
-	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) + "(" + value + ".clone())"
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) + "((" + value + ").clone())"
 }
 
 func (o *LoweringOwner) lowerZeroValueExpr(typ types.Type) string {

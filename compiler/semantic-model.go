@@ -245,8 +245,14 @@ func (o *SemanticModelOwner) collectFileFacts(
 			o.recordTypeAssertion(semPkg, pkg, typed)
 		case *ast.ValueSpec:
 			o.recordValueSpecNilFacts(semPkg, pkg, typed)
+			names := make([]ast.Expr, 0, len(typed.Names))
+			for _, name := range typed.Names {
+				names = append(names, name)
+			}
+			o.recordAsyncCompatibleFunctionAssignments(model, pkg, names, typed.Values)
 		case *ast.AssignStmt:
 			o.recordAssignNilFacts(semPkg, pkg, typed)
+			o.recordAsyncCompatibleFunctionAssignments(model, pkg, typed.Lhs, typed.Rhs)
 		case *ast.CallExpr:
 			o.recordCallSignatureImports(model, semPkg, pkg, typed)
 		}
@@ -266,6 +272,29 @@ func (o *SemanticModelOwner) recordCallSignatureImports(
 	}
 	position := sourcePos(pkg, expr.Pos())
 	o.recordTupleImports(model, semPkg, position.file, pkg.PkgPath, signature.Params(), make(map[types.Type]bool))
+}
+
+func (o *SemanticModelOwner) recordAsyncCompatibleFunctionAssignments(
+	model *SemanticModel,
+	pkg *packages.Package,
+	lhs []ast.Expr,
+	rhs []ast.Expr,
+) {
+	for idx, target := range lhs {
+		if idx >= len(rhs) {
+			return
+		}
+		obj := objectForAddress(pkg, target)
+		if obj == nil || signatureForType(obj.Type()) == nil {
+			continue
+		}
+		if !exprMayNeedAwait(model, pkg, rhs[idx]) {
+			continue
+		}
+		if value := model.values[obj]; value != nil {
+			value.asyncCompatibleFunction = true
+		}
+	}
 }
 
 func signatureForType(typ types.Type) *types.Signature {

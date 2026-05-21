@@ -77,8 +77,8 @@ export async function main(): Promise<void> {
 	let a1 = $.markAsStructValue(new A())
 	let b1 = $.markAsStructValue(new B())
 
-	let a2 = $.markAsStructValue(new A({BB: $.arrayToSlice<B>([$.markAsStructValue(b1.clone())])}))
-	let b2 = $.markAsStructValue(new B({AA: $.arrayToSlice<A>([$.markAsStructValue(a1.clone())])}))
+	let a2 = $.markAsStructValue(new A({BB: $.arrayToSlice<B>([$.markAsStructValue((b1).clone())])}))
+	let b2 = $.markAsStructValue(new B({AA: $.arrayToSlice<A>([$.markAsStructValue((a1).clone())])}))
 
 	$.println("a1:", a1.BB == null)
 	$.println("b1:", b1.AA == null)

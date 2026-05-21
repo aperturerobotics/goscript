@@ -65,12 +65,13 @@ type semanticField struct {
 }
 
 type semanticValue struct {
-	name          string
-	object        types.Object
-	typ           types.Type
-	zeroValueKind string
-	position      sourcePosition
-	topLevel      bool
+	name                    string
+	object                  types.Object
+	typ                     types.Type
+	zeroValueKind           string
+	position                sourcePosition
+	topLevel                bool
+	asyncCompatibleFunction bool
 }
 
 type semanticFunction struct {

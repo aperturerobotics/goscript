@@ -62,25 +62,25 @@ export class Person {
 
 export async function main(): Promise<void> {
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
-	let v = $.markAsStructValue(reflect.ValueOf($.markAsStructValue(p.clone())).clone())
-	let t = $.markAsStructValue(v.clone()).Type()
+	let v = $.markAsStructValue((reflect.ValueOf($.markAsStructValue((p).clone()))).clone())
+	let t = $.markAsStructValue((v).clone()).Type()
 
 	$.println("Type:", $.pointerValue(t).Name())
 	$.println("Kind:", reflect.Kind_String($.pointerValue(t).Kind()))
 	$.println("NumField:", $.pointerValue(t).NumField())
 
 	for (let i = 0; i < $.pointerValue(t).NumField(); i++) {
-		let sf = $.markAsStructValue($.pointerValue(t).Field(i).clone())
-		let fv = $.markAsStructValue($.markAsStructValue(v.clone()).Field(i).clone())
+		let sf = $.markAsStructValue(($.pointerValue(t).Field(i)).clone())
+		let fv = $.markAsStructValue(($.markAsStructValue((v).clone()).Field(i)).clone())
 
 		$.println("Field", i, ":", sf.Name)
-		$.println("  FieldValue Kind:", reflect.Kind_String($.markAsStructValue(fv.clone()).Kind()))
-		$.println("  FieldValue CanInterface:", $.markAsStructValue(fv.clone()).CanInterface())
+		$.println("  FieldValue Kind:", reflect.Kind_String($.markAsStructValue((fv).clone()).Kind()))
+		$.println("  FieldValue CanInterface:", $.markAsStructValue((fv).clone()).CanInterface())
 
-		switch ($.markAsStructValue(fv.clone()).Kind()) {
+		switch ($.markAsStructValue((fv).clone()).Kind()) {
 			case reflect.String:
 			{
-				$.println("  Value:", $.markAsStructValue(fv.clone()).String())
+				$.println("  Value:", $.markAsStructValue((fv).clone()).String())
 				break
 			}
 			case reflect.Int:
@@ -89,12 +89,12 @@ export async function main(): Promise<void> {
 			case reflect.Int32:
 			case reflect.Int64:
 			{
-				$.println("  Value:", $.markAsStructValue(fv.clone()).Int())
+				$.println("  Value:", $.markAsStructValue((fv).clone()).Int())
 				break
 			}
 			case reflect.Bool:
 			{
-				$.println("  Value:", $.markAsStructValue(fv.clone()).Bool())
+				$.println("  Value:", $.markAsStructValue((fv).clone()).Bool())
 				break
 			}
 		}

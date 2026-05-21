@@ -56,11 +56,11 @@ export async function main(): Promise<void> {
 	let ctx = context.Background()
 	await run(ctx)
 
-	let [deadlineCtx, cancel] = context.WithDeadline($.pointerValue(ctx), $.markAsStructValue($.markAsStructValue(time.Now().clone()).Add(time.Hour).clone()))
+	let [deadlineCtx, cancel] = context.WithDeadline($.pointerValue(ctx), $.markAsStructValue(($.markAsStructValue((time.Now()).clone()).Add(time.Hour)).clone()))
 	__defer.defer(async () => { await cancel!() })
 	let [deadline, ok] = $.pointerValue(deadlineCtx).Deadline()
 	$.println("deadline ok:", ok)
-	$.println("deadline zero:", $.markAsStructValue(deadline.clone()).IsZero())
+	$.println("deadline zero:", $.markAsStructValue((deadline).clone()).IsZero())
 
 	$.println("test finished")
 }

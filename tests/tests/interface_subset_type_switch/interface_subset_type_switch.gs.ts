@@ -109,15 +109,15 @@ export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new MyStruct({Value1: "hello", Value2: "world"}))
 
 	// Test with MyInterface1
-	let i1: MyInterface1 | null = $.markAsStructValue(s.clone())
+	let i1: MyInterface1 | null = $.markAsStructValue((s).clone())
 	processInterface(i1)
 
 	// Test with MyInterface2
-	let i2: MyInterface2 | null = $.markAsStructValue(s.clone())
+	let i2: MyInterface2 | null = $.markAsStructValue((s).clone())
 	processInterface(i2)
 
 	// Test with concrete type
-	processInterface($.markAsStructValue(s.clone()))
+	processInterface($.markAsStructValue((s).clone()))
 
 	// Type switch with subset casting
 	let i3: any = i1

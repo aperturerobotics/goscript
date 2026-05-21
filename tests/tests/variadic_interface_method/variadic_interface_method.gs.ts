@@ -54,7 +54,7 @@ export class PathJoiner {
 }
 
 export async function main(): Promise<void> {
-	let b: Basic | null = $.markAsStructValue($.markAsStructValue(new PathJoiner()).clone())
+	let b: Basic | null = $.markAsStructValue(($.markAsStructValue(new PathJoiner())).clone())
 
 	// Test with multiple arguments
 	let result1 = $.pointerValue(b).Join($.arrayToSlice<string>(["path", "to", "file"]))

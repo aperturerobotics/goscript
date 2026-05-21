@@ -80,7 +80,7 @@ export async function main(): Promise<void> {
 		}
 	}
 	$.println("Completed successfully")
-	describe($.markAsStructValue($.markAsStructValue(new item()).clone()))
+	describe($.markAsStructValue(($.markAsStructValue(new item())).clone()))
 	describe("nope")
 }
 

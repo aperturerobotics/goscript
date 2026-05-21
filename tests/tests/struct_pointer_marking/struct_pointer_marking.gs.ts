@@ -47,7 +47,7 @@ export async function main(): Promise<void> {
 	let p: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({Value: 20})
 
 	// Type assertions - struct value
-	let i: any = $.markAsStructValue(s.clone())
+	let i: any = $.markAsStructValue((s).clone())
 	let [, ok1] = $.typeAssertTuple<MyStruct>(i, "main.MyStruct")
 	let [, ok2] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("struct value -> MyStruct assertion:", ok1)
@@ -65,7 +65,7 @@ export async function main(): Promise<void> {
 	let original = $.varRef($.markAsStructValue(new MyStruct({Value: 30})))
 	let pAlias: MyStruct | $.VarRef<MyStruct> | null = original
 
-	let iOriginal: any = $.markAsStructValue(original.value.clone())
+	let iOriginal: any = $.markAsStructValue((original.value).clone())
 	let jAlias: any = $.interfaceValue<any>(pAlias, "*main.MyStruct")
 
 	let [, ok5] = $.typeAssertTuple<MyStruct>(iOriginal, "main.MyStruct")
@@ -130,7 +130,7 @@ export async function main(): Promise<void> {
 	let nested2 = $.varRef($.markAsStructValue(new MyStruct({Value: 80})))
 
 	// Array of interfaces containing both pointers and values
-	let arr = $.arrayToSlice<any>([$.interfaceValue<any>(nested1, "*main.MyStruct"), $.markAsStructValue(nested2.value.clone()), $.interfaceValue<any>(nested2, "*main.MyStruct")])
+	let arr = $.arrayToSlice<any>([$.interfaceValue<any>(nested1, "*main.MyStruct"), $.markAsStructValue((nested2.value).clone()), $.interfaceValue<any>(nested2, "*main.MyStruct")])
 
 	for (let i = 0; i < $.len(arr); i++) {
 		let item = arr![i]
@@ -155,7 +155,7 @@ export async function main(): Promise<void> {
 
 	// Scenario 6: Type Switch with Mixed Types
 	$.println("\n--- Scenario 6: Type Switch ---")
-	let testItems = $.arrayToSlice<any>([$.markAsStructValue($.markAsStructValue(new MyStruct({Value: 100})).clone()), $.interfaceValue<any>(new MyStruct({Value: 200}), "*main.MyStruct"), 300, "string"])
+	let testItems = $.arrayToSlice<any>([$.markAsStructValue(($.markAsStructValue(new MyStruct({Value: 100}))).clone()), $.interfaceValue<any>(new MyStruct({Value: 200}), "*main.MyStruct"), 300, "string"])
 
 	for (let i = 0; i < $.len(testItems); i++) {
 		let item = testItems![i]

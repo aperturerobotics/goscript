@@ -56,7 +56,7 @@ export class MyStruct {
 export async function main(): Promise<void> {
 	let i: MyInterface | null = null
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
-	i = $.markAsStructValue(s.clone())
+	i = $.markAsStructValue((s).clone())
 
 	let [, ok] = $.typeAssertTuple<MyStruct>(i, "main.MyStruct")
 	if (ok) {
