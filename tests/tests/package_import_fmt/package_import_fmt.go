@@ -4,6 +4,16 @@ import (
 	"fmt"
 )
 
+type byteFormatter struct {
+	prefix []byte
+}
+
+func (b byteFormatter) Format(state fmt.State, verb rune) {
+	buf := append([]byte{}, b.prefix...)
+	buf = append(buf, byte(verb))
+	_, _ = state.Write(buf)
+}
+
 func main() {
 	// Test basic Print functions
 	fmt.Print("Hello")
@@ -47,6 +57,9 @@ func main() {
 	fmt.Printf("Width: '%5s'\n", "hi")
 	fmt.Printf("Precision: '%.2f'\n", 3.14159)
 	fmt.Printf("Both: '%5.2f'\n", 3.14159)
+	fmt.Printf("Formatter: %v\n", byteFormatter{prefix: []byte("byte-")})
+	appended := fmt.Append([]byte("base-"), "tail")
+	fmt.Println("Append bytes:", string(appended))
 
 	println("test finished")
 }

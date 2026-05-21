@@ -22,7 +22,7 @@ export interface State {
   Flag(c: number): boolean
   Precision(): [number, boolean]
   Width(): [number, boolean]
-  Write(b: Uint8Array): [number, $.GoError | null]
+  Write(b: $.Bytes): [number, $.GoError | null]
 }
 
 // Simple printf-style formatting implementation
@@ -199,7 +199,11 @@ function parseFormat(format: string, args: any[]): string {
           const verb = format[j]
 
           if (argIndex < args.length) {
-            let formatted = formatValue(args[argIndex], verb)
+            const arg = args[argIndex]
+            let formatted = formatWithState(arg, verb, flags, width, precision)
+            if (formatted === null) {
+              formatted = formatValue(arg, verb)
+            }
 
             // Apply width and precision formatting
             if (width && !precision) {
@@ -217,7 +221,7 @@ function parseFormat(format: string, args: any[]): string {
               (verb === 'f' || verb === 'e' || verb === 'g')
             ) {
               const p = parseInt(precision)
-              const num = Number(args[argIndex])
+              const num = Number(arg)
               if (verb === 'f') {
                 formatted = num.toFixed(p)
               } else if (verb === 'e') {
@@ -255,6 +259,39 @@ function parseFormat(format: string, args: any[]): string {
   }
 
   return result
+}
+
+function formatWithState(
+  value: any,
+  verb: string,
+  flags: string,
+  width: string,
+  precision: string,
+): string | null {
+  if (!value || typeof value.Format !== 'function') {
+    return null
+  }
+
+  let out = ''
+  const state: State = {
+    Flag(c: number): boolean {
+      return flags.includes(String.fromCharCode(c))
+    },
+    Precision(): [number, boolean] {
+      return precision === '' ? [0, false] : [parseInt(precision), true]
+    },
+    Width(): [number, boolean] {
+      return width === '' ? [0, false] : [parseInt(width), true]
+    },
+    Write(b: $.Bytes): [number, $.GoError | null] {
+      const text = $.bytesToString(b)
+      out += text
+      return [text.length, null]
+    },
+  }
+
+  value.Format(state, verb.codePointAt(0) ?? 0)
+  return out
 }
 
 // Global stdout simulation for Print functions
@@ -361,34 +398,37 @@ export function Fprintln(w: any, ...a: any[]): [number, $.GoError | null] {
 }
 
 // Append functions (append to byte slice)
-export function Append(b: Uint8Array, ...a: any[]): Uint8Array {
+export function Append(b: $.Bytes, ...a: any[]): $.Bytes {
   const result = a.map(defaultFormat).join(' ')
   const encoded = new TextEncoder().encode(result)
-  const newArray = new Uint8Array(b.length + encoded.length)
-  newArray.set(b)
-  newArray.set(encoded, b.length)
+  const base = $.bytesToUint8Array(b)
+  const newArray = new Uint8Array(base.length + encoded.length)
+  newArray.set(base)
+  newArray.set(encoded, base.length)
   return newArray
 }
 
 export function Appendf(
-  b: Uint8Array,
+  b: $.Bytes,
   format: string,
   ...a: any[]
-): Uint8Array {
+): $.Bytes {
   const result = parseFormat(format, a)
   const encoded = new TextEncoder().encode(result)
-  const newArray = new Uint8Array(b.length + encoded.length)
-  newArray.set(b)
-  newArray.set(encoded, b.length)
+  const base = $.bytesToUint8Array(b)
+  const newArray = new Uint8Array(base.length + encoded.length)
+  newArray.set(base)
+  newArray.set(encoded, base.length)
   return newArray
 }
 
-export function Appendln(b: Uint8Array, ...a: any[]): Uint8Array {
+export function Appendln(b: $.Bytes, ...a: any[]): $.Bytes {
   const result = a.map(defaultFormat).join(' ') + '\n'
   const encoded = new TextEncoder().encode(result)
-  const newArray = new Uint8Array(b.length + encoded.length)
-  newArray.set(b)
-  newArray.set(encoded, b.length)
+  const base = $.bytesToUint8Array(b)
+  const newArray = new Uint8Array(base.length + encoded.length)
+  newArray.set(base)
+  newArray.set(encoded, base.length)
   return newArray
 }
 
