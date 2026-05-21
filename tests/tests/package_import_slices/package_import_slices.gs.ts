@@ -3,21 +3,25 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+import * as maps from "@goscript/maps/index.js"
+
 import * as slices from "@goscript/slices/index.js"
+
+import * as iter from "@goscript/iter/index.js"
 
 export async function main(): Promise<void> {
 	let s = $.arrayToSlice<number>([1, 2, 3, 4, 5])
 
 	// This should trigger the interface range issue
 	// slices.All returns an iterator interface that can be ranged over
-	let __goscriptRangeReturn3110826 = false
+	let __goscriptRangeReturn3114422 = false
 	;(() => {
 		slices.All(s)!((i, v) => {
 			$.println("index:", i, "value:", v)
 			return true
 		})
 	})()
-	if (__goscriptRangeReturn3110826) {
+	if (__goscriptRangeReturn3114422) {
 		return
 	}
 
@@ -93,6 +97,9 @@ export async function main(): Promise<void> {
 		return (v % 2) == 0
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
 	$.println("delete func:", filtered![0], filtered![1], filtered![2], $.len(filtered))
+
+	let sortedKeys = slices.Sorted(maps.Keys(new Map<string, number>([["c", 3], ["a", 1], ["b", 2]])))
+	$.println("sorted:", sortedKeys![0], sortedKeys![1], sortedKeys![2])
 
 	$.println("test finished")
 }

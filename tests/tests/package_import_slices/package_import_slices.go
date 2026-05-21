@@ -1,6 +1,9 @@
 package main
 
-import "slices"
+import (
+	"maps"
+	"slices"
+)
 
 func main() {
 	s := []int{1, 2, 3, 4, 5}
@@ -43,6 +46,9 @@ func main() {
 		return v%2 == 0
 	})
 	println("delete func:", filtered[0], filtered[1], filtered[2], len(filtered))
+
+	sortedKeys := slices.Sorted(maps.Keys(map[string]int{"c": 3, "a": 1, "b": 2}))
+	println("sorted:", sortedKeys[0], sortedKeys[1], sortedKeys[2])
 
 	println("test finished")
 }

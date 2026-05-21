@@ -1,6 +1,7 @@
 // TypeScript implementation of Go's slices package
 import * as $ from '@goscript/builtin/index.js'
 import * as cmp from '../cmp/index.js'
+import * as iter from '../iter/index.js'
 
 /**
  * Compare compares the elements of s1 and s2 using cmp.Compare.
@@ -84,6 +85,21 @@ export function All<T>(
  */
 export function Sort<T extends string | number>(s: $.Slice<T>): void {
   $.sortSlice(s)
+}
+
+export function Collect<T>(seq: iter.Seq<T>): $.Slice<T> {
+  const out: T[] = []
+  seq((value) => {
+    out.push(value)
+    return true
+  })
+  return out.length === 0 ? null : out
+}
+
+export function Sorted<T extends string | number>(seq: iter.Seq<T>): $.Slice<T> {
+  const out = Collect(seq)
+  Sort(out)
+  return out
 }
 
 /**
