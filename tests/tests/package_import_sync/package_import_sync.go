@@ -100,6 +100,15 @@ func main() {
 	if val, ok := m.Load("key2"); ok {
 		println("Loaded key2 after swap:", val)
 	}
+	if !m.CompareAndDelete("key2", "other") {
+		println("CompareAndDelete mismatch preserved key2")
+	}
+	if m.CompareAndDelete("key2", "value3") {
+		println("CompareAndDelete removed key2")
+	}
+	if _, ok := m.Load("key2"); !ok {
+		println("key2 compare deleted successfully")
+	}
 
 	m.Range(func(key, value any) bool {
 		println("Range:", key, "->", value)

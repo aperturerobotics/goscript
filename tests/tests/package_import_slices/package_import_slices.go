@@ -39,5 +39,10 @@ func main() {
 	})
 	println("stable:", stable[0].label, stable[1].label, stable[2].label, stable[3].label)
 
+	filtered := slices.DeleteFunc([]int{1, 2, 3, 4, 5}, func(v int) bool {
+		return v%2 == 0
+	})
+	println("delete func:", filtered[0], filtered[1], filtered[2], len(filtered))
+
 	println("test finished")
 }

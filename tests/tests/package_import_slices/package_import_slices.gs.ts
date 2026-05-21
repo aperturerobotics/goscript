@@ -89,6 +89,11 @@ export async function main(): Promise<void> {
 	}, { kind: $.TypeKind.Function, params: ["main.item", "main.item"], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
 	$.println("stable:", stable![0].label, stable![1].label, stable![2].label, stable![3].label)
 
+	let filtered = slices.DeleteFunc($.arrayToSlice<number>([1, 2, 3, 4, 5]), $.functionValue((v: number): boolean => {
+		return (v % 2) == 0
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
+	$.println("delete func:", filtered![0], filtered![1], filtered![2], $.len(filtered))
+
 	$.println("test finished")
 }
 

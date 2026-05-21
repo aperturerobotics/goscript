@@ -11,4 +11,5 @@ contains: true true
 insert: 1 2 3 4
 reverse: 4 3 2 1
 stable: b d a c
+delete func: 1 3 5 3
 test finished

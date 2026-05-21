@@ -8,3 +8,8 @@ json unmarshaled: {
   exampleField: Uint8Array(5) [ 104, 101, 108, 108, 111 ],
   exampleText: "world",
 }
+varint uint32: 300 2
+varint int32: -1 5
+varint int64: 300 2
+fixed32: 287454020 4
+fixed64: 1234605616436508700 8

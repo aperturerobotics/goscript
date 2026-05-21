@@ -195,6 +195,18 @@ export async function main(): Promise<void> {
 			$.println("Loaded key2 after swap:", val)
 		}
 	}
+	if (!await m.value.CompareAndDelete("key2", "other")) {
+		$.println("CompareAndDelete mismatch preserved key2")
+	}
+	if (await m.value.CompareAndDelete("key2", "value3")) {
+		$.println("CompareAndDelete removed key2")
+	}
+	{
+		let [, ok] = await m.value.Load("key2")
+		if (!ok) {
+			$.println("key2 compare deleted successfully")
+		}
+	}
 
 	await m.value.Range($.functionValue((key: any, value: any): boolean => {
 		$.println("Range:", key, "->", value)

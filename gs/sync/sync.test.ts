@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { WaitGroup } from './sync.js'
+import { Map, WaitGroup } from './sync.js'
 
 describe('sync.WaitGroup', () => {
   it('Go tracks scheduled work and unblocks Wait after completion', async () => {
@@ -20,5 +20,17 @@ describe('sync.WaitGroup', () => {
     expect(events).toEqual([])
     await wait
     expect(events).toEqual(['worker start', 'worker done', 'wait done'])
+  })
+})
+
+describe('sync.Map', () => {
+  it('CompareAndDelete deletes only matching entries', async () => {
+    const m = new Map()
+
+    await m.Store('key', 'value')
+    expect(await m.CompareAndDelete('key', 'other')).toBe(false)
+    expect(await m.Load('key')).toEqual(['value', true])
+    expect(await m.CompareAndDelete('key', 'value')).toBe(true)
+    expect(await m.Load('key')).toEqual([undefined, false])
   })
 })

@@ -321,6 +321,20 @@ export class Map {
     }
   }
 
+  // CompareAndDelete deletes the entry for key if its value is equal to old.
+  public async CompareAndDelete(key: any, old: any): Promise<boolean> {
+    await this._m.Lock()
+    try {
+      if (!this._data.has(key) || this._data.get(key) !== old) {
+        return false
+      }
+      this._data.delete(key)
+      return true
+    } finally {
+      this._m.Unlock()
+    }
+  }
+
   // Load returns the value stored in the map for a key, or nil if no value is present
   public async Load(key: any): Promise<[any, boolean]> {
     await this._m.RLock()

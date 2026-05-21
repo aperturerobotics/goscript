@@ -17,8 +17,10 @@ Loaded key1: value1
 Stored key2: value2
 Swapped key2 previous: value2
 Loaded key2 after swap: value3
+CompareAndDelete mismatch preserved key2
+CompareAndDelete removed key2
+key2 compare deleted successfully
 Range: key1 -> value1
-Range: key2 -> value3
 key1 deleted successfully
 Pool creating new object
 Got from pool: new object

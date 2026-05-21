@@ -9,6 +9,7 @@
     "WaitGroup.Wait": true,
     "Once.Do": true,
     "Cond.Wait": true,
+    "Map.CompareAndDelete": true,
     "Map.Delete": true,
     "Map.Load": true,
     "Map.LoadAndDelete": true,

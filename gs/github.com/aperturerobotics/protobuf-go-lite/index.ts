@@ -131,6 +131,64 @@ export function DecodeVarint(
   return [v, idx + n, null]
 }
 
+export function DecodeVarintInt32(
+  b: $.Slice<number>,
+  idx: number,
+): [number, number, $.GoError] {
+  const [v, next, err] = DecodeVarint(b, idx)
+  return [toInt32(v), next, err]
+}
+
+export function DecodeVarintInt64(
+  b: $.Slice<number>,
+  idx: number,
+): [number, number, $.GoError] {
+  return DecodeVarint(b, idx)
+}
+
+export function DecodeVarintUint32(
+  b: $.Slice<number>,
+  idx: number,
+): [number, number, $.GoError] {
+  const [v, next, err] = DecodeVarint(b, idx)
+  return [v >>> 0, next, err]
+}
+
+export function DecodeFixed32(
+  b: $.Slice<number>,
+  idx: number,
+): [number, number, $.GoError] {
+  if (idx + 4 > $.len(b)) {
+    return [0, 0, ioUnexpectedEOF()]
+  }
+  const value =
+    byteSliceValue(b, idx) +
+    byteSliceValue(b, idx + 1) * 2 ** 8 +
+    byteSliceValue(b, idx + 2) * 2 ** 16 +
+    byteSliceValue(b, idx + 3) * 2 ** 24
+  return [value >>> 0, idx + 4, null]
+}
+
+export function DecodeFixed64(
+  b: $.Slice<number>,
+  idx: number,
+): [number, number, $.GoError] {
+  if (idx + 8 > $.len(b)) {
+    return [0, 0, ioUnexpectedEOF()]
+  }
+  const low =
+    byteSliceValue(b, idx) +
+    byteSliceValue(b, idx + 1) * 2 ** 8 +
+    byteSliceValue(b, idx + 2) * 2 ** 16 +
+    byteSliceValue(b, idx + 3) * 2 ** 24
+  const high =
+    byteSliceValue(b, idx + 4) +
+    byteSliceValue(b, idx + 5) * 2 ** 8 +
+    byteSliceValue(b, idx + 6) * 2 ** 16 +
+    byteSliceValue(b, idx + 7) * 2 ** 24
+  return [low + high * 2 ** 32, idx + 8, null]
+}
+
 export function Skip(dAtA: $.Slice<number>): [number, $.GoError] {
   const l = $.len(dAtA)
   let iNdEx = 0
@@ -228,6 +286,10 @@ function setByte(b: $.Slice<number>, idx: number, value: number): void {
     throw new Error('assignment to nil byte slice')
   }
   b[idx] = value & 0xff
+}
+
+function toInt32(v: number): number {
+  return v | 0
 }
 
 function ioUnexpectedEOF(): $.GoError {

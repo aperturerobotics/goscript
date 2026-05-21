@@ -118,6 +118,27 @@ export function Delete<T>(s: $.Slice<T>, i: number, j: number): $.Slice<T> {
   return $.goSlice(s, 0, length - deleteCount) as $.Slice<T>
 }
 
+export function DeleteFunc<T>(
+  s: $.Slice<T>,
+  del: (value: T) => boolean,
+): $.Slice<T> {
+  if (s === null || s === undefined) {
+    return s
+  }
+  let w = 0
+  for (let i = 0; i < s.length; i++) {
+    const value = s[i] as T
+    if (!del(value)) {
+      ;(s as any)[w] = value
+      w++
+    }
+  }
+  for (let i = w; i < s.length; i++) {
+    ;(s as any)[i] = clearValue(s)
+  }
+  return $.goSlice(s, 0, w) as $.Slice<T>
+}
+
 export function Equal<T>(s1: $.Slice<T>, s2: $.Slice<T>): boolean {
   const len1 = $.len(s1)
   if (len1 !== $.len(s2)) {
@@ -274,6 +295,26 @@ export function SortStableFunc<T>(
   for (let i = 0; i < sorted.length; i++) {
     ;(s as any)[i] = sorted[i].value
   }
+}
+
+function clearValue<T>(s: $.Slice<T>): T | null {
+  if (s instanceof Uint8Array) {
+    return 0 as T
+  }
+  for (const value of s ?? []) {
+    if (value !== null && value !== undefined) {
+      switch (typeof value) {
+        case 'number':
+          return 0 as T
+        case 'string':
+          return '' as T
+        case 'boolean':
+          return false as T
+      }
+      break
+    }
+  }
+  return null
 }
 
 /**
