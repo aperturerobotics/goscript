@@ -1855,7 +1855,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		prefix := ""
 		if stmt.Tok == token.DEFINE {
 			prefix = "let "
-			if !allShortAssignTargetsNew(ctx, stmt.Lhs) || tupleDeclarationNeedsElementStatements(ctx, stmt.Lhs) || tupleDeclarationRHSUsesNewName(ctx, stmt.Lhs, stmt.Rhs[0]) {
+			if !allShortAssignTargetsNew(ctx, stmt.Lhs) || o.tupleDeclarationNeedsElementStatements(ctx, stmt) {
 				return o.lowerTupleReassignmentStmt(ctx, stmt, right, diagnostics)
 			}
 			return []loweredStmt{{text: prefix + "[" + strings.Join(lefts, ", ") + "] = " + right}}, diagnostics
@@ -2081,6 +2081,7 @@ func (o *LoweringOwner) lowerTupleReassignmentStmt(
 		}
 		declare := stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs)
 		value := tempName + "[" + strconv.Itoa(idx) + "]"
+		value = o.lowerTupleAssignmentValueForTarget(ctx, stmt, lhs, idx, value)
 		targetStmt, targetDiagnostics := o.lowerTupleTargetAssignmentStmt(ctx, lhs, value, declare)
 		diagnostics = append(diagnostics, targetDiagnostics...)
 		stmts = append(stmts, targetStmt)
@@ -2273,6 +2274,12 @@ func allShortAssignTargetsNew(ctx lowerFileContext, exprs []ast.Expr) bool {
 	return true
 }
 
+func (o *LoweringOwner) tupleDeclarationNeedsElementStatements(ctx lowerFileContext, stmt *ast.AssignStmt) bool {
+	return tupleDeclarationNeedsElementStatements(ctx, stmt.Lhs) ||
+		tupleDeclarationRHSUsesNewName(ctx, stmt.Lhs, stmt.Rhs[0]) ||
+		o.tupleAssignmentNeedsTargetConversion(ctx, stmt)
+}
+
 func tupleDeclarationNeedsElementStatements(ctx lowerFileContext, exprs []ast.Expr) bool {
 	for _, expr := range exprs {
 		ident, ok := expr.(*ast.Ident)
@@ -2285,6 +2292,48 @@ func tupleDeclarationNeedsElementStatements(ctx lowerFileContext, exprs []ast.Ex
 		}
 	}
 	return false
+}
+
+func (o *LoweringOwner) tupleAssignmentNeedsTargetConversion(ctx lowerFileContext, stmt *ast.AssignStmt) bool {
+	sourceResults := tupleResultTypes(ctx, stmt.Rhs[0])
+	if sourceResults == nil {
+		return false
+	}
+	for idx, lhs := range stmt.Lhs {
+		if idx >= sourceResults.Len() {
+			break
+		}
+		if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
+			continue
+		}
+		targetType := ctx.semPkg.source.TypesInfo.TypeOf(lhs)
+		if targetType == nil {
+			continue
+		}
+		value := "__tupleValue"
+		if o.lowerValueForTargetTypes(ctx, targetType, sourceResults.At(idx).Type(), value, false) != value {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *LoweringOwner) lowerTupleAssignmentValueForTarget(
+	ctx lowerFileContext,
+	stmt *ast.AssignStmt,
+	lhs ast.Expr,
+	idx int,
+	value string,
+) string {
+	sourceResults := tupleResultTypes(ctx, stmt.Rhs[0])
+	if sourceResults == nil || idx >= sourceResults.Len() {
+		return value
+	}
+	targetType := ctx.semPkg.source.TypesInfo.TypeOf(lhs)
+	if targetType == nil {
+		return value
+	}
+	return o.lowerValueForTargetTypes(ctx, targetType, sourceResults.At(idx).Type(), value, false)
 }
 
 func tupleDeclarationRHSUsesNewName(ctx lowerFileContext, lhs []ast.Expr, rhs ast.Expr) bool {
@@ -2624,7 +2673,7 @@ func (o *LoweringOwner) lowerForInitStmt(ctx lowerFileContext, stmt ast.Stmt) (s
 			lefts = append(lefts, left)
 		}
 		if assign.Tok == token.DEFINE {
-			if allShortAssignTargetsNew(ctx, assign.Lhs) && !tupleDeclarationNeedsElementStatements(ctx, assign.Lhs) && !tupleDeclarationRHSUsesNewName(ctx, assign.Lhs, assign.Rhs[0]) {
+			if allShortAssignTargetsNew(ctx, assign.Lhs) && !o.tupleDeclarationNeedsElementStatements(ctx, assign) {
 				return "let [" + strings.Join(lefts, ", ") + "] = " + right, diagnostics
 			}
 			tempName := ctx.tempName("Tuple")
@@ -2633,7 +2682,8 @@ func (o *LoweringOwner) lowerForInitStmt(ctx lowerFileContext, stmt ast.Stmt) (s
 				if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
 					continue
 				}
-				value := o.lowerDeclaredValue(ctx, lhs, tempName+"["+strconv.Itoa(idx)+"]")
+				value := o.lowerTupleAssignmentValueForTarget(ctx, assign, lhs, idx, tempName+"["+strconv.Itoa(idx)+"]")
+				value = o.lowerDeclaredValue(ctx, lhs, value)
 				parts = append(parts, lefts[idx]+" = "+value)
 			}
 			return "let " + strings.Join(parts, ", "), diagnostics
