@@ -28,6 +28,7 @@ export const IPPROTO_IPV6 = 0x29
 export const IPPROTO_TCP = 6
 export const IPV6_V6ONLY = 0x1a
 export const SOMAXCONN = 0x80
+export const F_DUPFD_CLOEXEC = 1
 
 // File mode constants
 export const S_IFMT = 0o170000

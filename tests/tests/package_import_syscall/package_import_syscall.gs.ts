@@ -23,6 +23,34 @@ export async function main(): Promise<void> {
 			return
 		}
 	}
+	if (false) {
+		let st: $.VarRef<syscall.Stat_t> = $.varRef($.markAsStructValue(new syscall.Stat_t()))
+		let buf: $.Slice<number> = null
+		let iovecs: $.Slice<syscall.Iovec> = null
+		syscall.Accept(-1)
+		syscall.Close(-1)
+		syscall.Dup(-1)
+		syscall.Fchdir(-1)
+		syscall.Fchmod(-1, 0)
+		syscall.Fchown(-1, 0, 0)
+		syscall.Fstat(-1, st)
+		syscall.Fsync(-1)
+		syscall.Ftruncate(-1, 0)
+		syscall.Pread(-1, buf, 0)
+		syscall.Pwrite(-1, buf, 0)
+		syscall.Read(-1, buf)
+		syscall.ReadDirent(-1, buf)
+		syscall.Recvfrom(-1, buf, 0)
+		syscall.Recvmsg(-1, buf, buf, 0)
+		syscall.Seek(-1, 0, 0)
+		syscall.SendmsgN(-1, buf, buf, null, 0)
+		syscall.Sendto(-1, buf, 0, null)
+		syscall.Shutdown(-1, 0)
+		syscall.Write(-1, buf)
+		syscall.F_DUPFD_CLOEXEC
+		syscall.ForkLock
+		iovecs
+	}
 	fmt.Println("set nonblock ok")
 }
 

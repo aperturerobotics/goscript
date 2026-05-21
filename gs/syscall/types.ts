@@ -70,3 +70,5 @@ export class SockaddrUnix implements Sockaddr {
     return new SockaddrUnix({ Name: this.Name })
   }
 }
+
+export class Iovec {}
