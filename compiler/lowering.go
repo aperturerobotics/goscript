@@ -4446,6 +4446,9 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 	}
 	switch typed := types.Unalias(typ).Underlying().(type) {
 	case *types.Basic:
+		if typed.Kind() == types.UnsafePointer {
+			return "null"
+		}
 		if typed.Info()&types.IsBoolean != 0 {
 			return "false"
 		}
@@ -4457,9 +4460,12 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 		}
 		return "undefined"
 	case *types.Array:
-		return "Array.from({ length: " + strconv.FormatInt(typed.Len(), 10) + " }, () => " + o.lowerZeroValueExprFor(ctx, typed.Elem()) + ")"
+		elem := o.lowerZeroValueExprFor(ctx, typed.Elem())
+		return "Array.from({ length: " + strconv.FormatInt(typed.Len(), 10) + " }, () => " + arrowBodyExpr(elem) + ")"
 	case *types.Struct:
-		return "{}"
+		return anonymousStructZeroValueExpr(typed, func(fieldType types.Type) string {
+			return o.lowerZeroValueExprFor(ctx, fieldType)
+		})
 	default:
 		return "null"
 	}
@@ -4646,6 +4652,9 @@ func tsType(typ types.Type) string {
 	}
 	if isBuiltinErrorType(typ) {
 		return "$.GoError"
+	}
+	if isUnsafePointerType(typ) {
+		return "any"
 	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
 		if _, ok := named.Underlying().(*types.Interface); ok {
@@ -4846,6 +4855,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	if isBuiltinErrorType(typ) {
 		return "$.GoError"
 	}
+	if isUnsafePointerType(typ) {
+		return "any"
+	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
 		name := o.namedTypeExpr(ctx, named)
 		if _, ok := named.Underlying().(*types.Interface); ok {
@@ -4916,6 +4928,9 @@ func zeroValueExpr(typ types.Type) string {
 	}
 	switch typed := types.Unalias(typ).Underlying().(type) {
 	case *types.Basic:
+		if typed.Kind() == types.UnsafePointer {
+			return "null"
+		}
 		if typed.Info()&types.IsBoolean != 0 {
 			return "false"
 		}
@@ -4927,12 +4942,28 @@ func zeroValueExpr(typ types.Type) string {
 		}
 		return "undefined"
 	case *types.Array:
-		return "Array.from({ length: " + strconv.FormatInt(typed.Len(), 10) + " }, () => " + zeroValueExpr(typed.Elem()) + ")"
+		elem := zeroValueExpr(typed.Elem())
+		return "Array.from({ length: " + strconv.FormatInt(typed.Len(), 10) + " }, () => " + arrowBodyExpr(elem) + ")"
 	case *types.Struct:
-		return "{}"
+		return anonymousStructZeroValueExpr(typed, zeroValueExpr)
 	default:
 		return "null"
 	}
+}
+
+func anonymousStructZeroValueExpr(structType *types.Struct, zero func(types.Type) string) string {
+	fields := make([]string, 0, structType.NumFields())
+	for field := range structType.Fields() {
+		fields = append(fields, strconv.Quote(field.Name())+": "+zero(field.Type()))
+	}
+	return "{" + strings.Join(fields, ", ") + "}"
+}
+
+func arrowBodyExpr(expr string) string {
+	if strings.HasPrefix(expr, "{") {
+		return "(" + expr + ")"
+	}
+	return expr
 }
 
 func namedStructType(typ types.Type) *types.Named {
