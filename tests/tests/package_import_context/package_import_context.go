@@ -1,6 +1,7 @@
 package main
 
 import "context"
+import "time"
 
 func run(ctx context.Context) {
 	sctx, sctxCancel := context.WithCancel(ctx)
@@ -33,6 +34,12 @@ func run(ctx context.Context) {
 func main() {
 	ctx := context.Background()
 	run(ctx)
+
+	deadlineCtx, cancel := context.WithDeadline(ctx, time.Now().Add(time.Hour))
+	defer cancel()
+	deadline, ok := deadlineCtx.Deadline()
+	println("deadline ok:", ok)
+	println("deadline zero:", deadline.IsZero())
 
 	println("test finished")
 }

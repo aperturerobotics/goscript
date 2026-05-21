@@ -5,6 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as context from "@goscript/context/index.js"
 
+import * as time from "@goscript/time/index.js"
+
 export async function run(ctx: context.Context | null): Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
 	let [sctx, sctxCancel] = context.WithCancel($.pointerValue(ctx))
@@ -50,8 +52,15 @@ export async function run(ctx: context.Context | null): Promise<void> {
 }
 
 export async function main(): Promise<void> {
+	await using __defer = new $.AsyncDisposableStack()
 	let ctx = context.Background()
 	await run(ctx)
+
+	let [deadlineCtx, cancel] = context.WithDeadline($.pointerValue(ctx), $.markAsStructValue($.markAsStructValue(time.Now().clone()).Add(time.Hour).clone()))
+	__defer.defer(async () => { await cancel!() })
+	let [deadline, ok] = $.pointerValue(deadlineCtx).Deadline()
+	$.println("deadline ok:", ok)
+	$.println("deadline zero:", $.markAsStructValue(deadline.clone()).IsZero())
 
 	$.println("test finished")
 }

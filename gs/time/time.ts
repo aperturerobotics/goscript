@@ -523,6 +523,10 @@ export class Time {
     return this._date.getTime() === u._date.getTime() && this._nsec === u._nsec
   }
 
+  public IsZero(): boolean {
+    return this.Equal(new Time())
+  }
+
   // Before reports whether the time instant t is before u
   // Uses monotonic clock if both times have it
   public Before(u: Time): boolean {

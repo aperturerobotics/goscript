@@ -1,4 +1,5 @@
 import * as $ from '@goscript/builtin/index.js'
+import * as time from '@goscript/time/index.js'
 
 export const Canceled = $.newError('context canceled')
 
@@ -11,7 +12,7 @@ export type CancelCauseFunc = (cause: $.GoError) => void
 // Context interface matching Go's context.Context
 export type Context = null | {
   // Deadline returns the time when work done on behalf of this context should be canceled
-  Deadline(): [Date | null, boolean]
+  Deadline(): [time.Time, boolean]
 
   // Done returns a channel that's closed when work done on behalf of this context should be canceled
   Done(): $.Channel<{}>
@@ -28,7 +29,7 @@ export type ContextNonNil = Exclude<Context, null>
 
 // Base implementation for all contexts
 abstract class baseContext implements ContextNonNil {
-  abstract Deadline(): [Date | null, boolean]
+  abstract Deadline(): [time.Time, boolean]
   abstract Done(): $.Channel<{}>
   abstract Err(): $.GoError
   abstract Value(key: any): any
@@ -42,8 +43,8 @@ class backgroundContext extends baseContext {
     return backgroundContext.neverClosedChannel
   }
 
-  Deadline(): [Date | null, boolean] {
-    return [null, false]
+  Deadline(): [time.Time, boolean] {
+    return [new time.Time(), false]
   }
 
   Done(): $.Channel<{}> {
@@ -73,7 +74,7 @@ class valueContext extends baseContext {
     return this.parent
   }
 
-  Deadline(): [Date | null, boolean] {
+  Deadline(): [time.Time, boolean] {
     return this.parent.Deadline()
   }
 
@@ -109,7 +110,7 @@ class cancelContext extends baseContext {
     this.doneChannel = $.makeChannel<{}>(0, {}, 'both')
   }
 
-  Deadline(): [Date | null, boolean] {
+  Deadline(): [time.Time, boolean] {
     return this.parent.Deadline()
   }
 
@@ -195,21 +196,20 @@ class cancelContext extends baseContext {
 
 // Timer context with deadline
 class timerContext extends cancelContext {
-  private deadline: Date
+  private deadline: time.Time
   private timer: any
 
-  constructor(parent: ContextNonNil, deadline: Date) {
+  constructor(parent: ContextNonNil, deadline: time.Time) {
     super(parent)
-    this.deadline = deadline
+    this.deadline = deadline.clone()
   }
 
-  Deadline(): [Date | null, boolean] {
-    return [this.deadline, true]
+  Deadline(): [time.Time, boolean] {
+    return [this.deadline.clone(), true]
   }
 
   startTimer(): void {
-    const now = Date.now()
-    const duration = this.deadline.getTime() - now
+    const duration = this.deadline.Sub(time.Now()) / 1000000
 
     if (duration <= 0) {
       // Already expired
@@ -237,8 +237,8 @@ class withoutCancelContext extends baseContext {
     super()
   }
 
-  Deadline(): [Date | null, boolean] {
-    return [null, false]
+  Deadline(): [time.Time, boolean] {
+    return [new time.Time(), false]
   }
 
   Done(): $.Channel<{}> {
@@ -305,7 +305,7 @@ export function WithCancelCause(
 // WithDeadline returns a copy of parent with the deadline adjusted to be no later than d
 export function WithDeadline(
   parent: Context,
-  d: Date,
+  d: time.Time,
 ): [ContextNonNil, CancelFunc] {
   return WithDeadlineCause(parent, d, null)
 }
@@ -313,7 +313,7 @@ export function WithDeadline(
 // WithDeadlineCause is like WithDeadline but also sets the cause
 export function WithDeadlineCause(
   parent: Context,
-  d: Date,
+  d: time.Time,
   cause: $.GoError,
 ): [ContextNonNil, CancelFunc] {
   if (parent === null) {
@@ -321,7 +321,7 @@ export function WithDeadlineCause(
   }
   // Check if parent deadline is already earlier
   const [parentDeadline, ok] = parent.Deadline()
-  if (ok && parentDeadline && parentDeadline <= d) {
+  if (ok && (parentDeadline.Before(d) || parentDeadline.Equal(d))) {
     // Parent deadline is already sooner
     return WithCancel(parent)
   }
@@ -343,7 +343,7 @@ export function WithTimeout(
   parent: Context,
   timeout: number,
 ): [ContextNonNil, CancelFunc] {
-  return WithDeadline(parent, new Date(Date.now() + timeout / 1000000))
+  return WithDeadline(parent, time.Now().Add(timeout))
 }
 
 // WithTimeoutCause is like WithTimeout but also sets the cause
@@ -352,11 +352,7 @@ export function WithTimeoutCause(
   timeout: number,
   cause: $.GoError,
 ): [ContextNonNil, CancelFunc] {
-  return WithDeadlineCause(
-    parent,
-    new Date(Date.now() + timeout / 1000000),
-    cause,
-  )
+  return WithDeadlineCause(parent, time.Now().Add(timeout), cause)
 }
 
 // WithValue returns a copy of parent with the value associated with key
