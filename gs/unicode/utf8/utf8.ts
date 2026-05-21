@@ -141,17 +141,28 @@ export function EncodeRune(p: Uint8Array | $.Slice<number>, r: number): number {
 }
 
 // FullRune reports whether the bytes in p begin with a full UTF-8 encoding of a rune.
-export function FullRune(p: Uint8Array): boolean {
-  if (p.length === 0) {
+export function FullRune(p: $.Bytes): boolean {
+  if ($.len(p) === 0) {
     return false
   }
 
-  if (p[0] < RuneSelf) {
+  const first = $.indexStringOrBytes(p, 0)
+  if (first < RuneSelf) {
     return true
   }
-
-  const [, size] = DecodeRune(p)
-  return size <= p.length && size > 0
+  if (first < 0xc0) {
+    return true
+  }
+  if (first < 0xe0) {
+    return $.len(p) >= 2
+  }
+  if (first < 0xf0) {
+    return $.len(p) >= 3
+  }
+  if (first < 0xf8) {
+    return $.len(p) >= 4
+  }
+  return true
 }
 
 // FullRuneInString is like FullRune but its input is a string.
