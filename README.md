@@ -33,12 +33,16 @@ readable and semantic decisions have one owner.
 
 Use GoScript when you want to share Go algorithms, data structures, validation
 logic, or selected runtime code with TypeScript and browser environments without
-maintaining a second implementation by hand.
+maintaining a second implementation by hand. The first supported target is a
+useful, well-defined subset of Go that produces readable TypeScript and avoids
+unsafe-heavy runtime behavior. The long-term goal is to expand that subset until
+ordinary Go programs can run through GoScript, but that is not the first
+compatibility bar.
 
-GoScript is not trying to be a drop-in browser runtime for every valid Go
-program. The project prioritizes clear generated TypeScript, explicit runtime
-contracts, and focused support for the Go language features that can be modeled
-cleanly in TypeScript.
+GoScript is not currently a drop-in browser runtime for every valid Go program.
+The project prioritizes clear generated TypeScript, explicit runtime contracts,
+and focused support for Go language features that can be modeled cleanly in
+TypeScript.
 
 Useful docs:
 
@@ -52,22 +56,33 @@ Useful docs:
 The package compiler supports:
 
 - Go package loading through `go/packages` with `GOOS=js` and `GOARCH=wasm`
+- Go build tags through CLI build flags, including `goscript`-selected code paths
 - Structs, methods, interfaces, type assertions, typed nils, and value copying
 - Pointers and address-taken variables through the `VarRef` runtime model
-- Arrays, slices, maps, strings, named types, and selected builtins
-- Generics through generated type-argument dictionaries for supported shapes
-- Goroutines, channels, `select`, `defer`, async calls, and async interfaces
-- Package initialization, cross-file imports, package indexes, and dependency output
-- Handwritten `gs/` runtime and standard-library override packages
+- Arrays, slices, maps, strings, named types, complex values, and selected builtins
+- Generics through generated type-argument dictionaries for supported call,
+  method, and descriptor shapes
+- Goroutines, channels, `select`, `defer`, async calls, async function values,
+  async callbacks, async interfaces, and async package tests
+- Package initialization, cross-file imports, package indexes, dependency
+  output, and package-scoped test graph variants
+- Handwritten `gs/` runtime and standard-library override packages for the
+  browser/WASM-oriented subset
+- `goscript test`, which compiles selected Go package tests to TypeScript,
+  typechecks the generated workspace, runs it with Bun, and reports package
+  failures with owner classifications
 - Browser/WASM compilation for import-free single-file demos
 
 Known limits:
 
 - CLI, Go API, and Node API inputs are package patterns, not direct `main.go` files.
 - Browser source compilation is import-free only. Imported code should use the package workflow.
-- `unsafe`, pointer arithmetic, complex numbers, and arbitrary Go runtime behavior are not supported.
+- `unsafe`, pointer arithmetic, cgo, and arbitrary Go runtime behavior are not
+  part of the first supported target.
 - JavaScript `number` is used for numeric output, so it does not preserve every Go integer edge case.
 - Standard-library coverage is practical and override-driven, not complete.
+- Package-test execution intentionally supports a growing GoScript-compatible
+  subset of `testing`, not the complete `go test` flag surface.
 
 ## Getting Started
 
@@ -160,6 +175,26 @@ Common options:
 - `--build-flags <flag>`: Go build flag, repeatable.
 - `--all-dependencies`: compile dependency packages instead of only requested packages.
 - `--disable-emit-builtin`: skip copying handwritten `gs/` runtime packages.
+
+Run Go package tests through GoScript:
+
+```bash
+goscript test --tags goscript ./...
+```
+
+`goscript test` loads package test variants, compiles each selected package
+through the normal GoScript pipeline, writes a TypeScript test runner, typechecks
+the generated workspace, and runs it with Bun. Useful options:
+
+- `--tags <tags>`: comma-separated Go build tags.
+- `--run <regexp>`: run only matching Go test names.
+- `--count <n>`: run selected tests multiple times.
+- `--timeout <duration>`: maximum package-test runtime.
+- `--workdir <dir>`: generated test workspace directory.
+- `--output <dir>`: generated TypeScript output root.
+
+The output is shaped like `go test` where possible and adds an `owner=...`
+classification for failures that occur before the generated tests run.
 
 ## APIs
 
