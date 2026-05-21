@@ -2906,12 +2906,59 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 			receiver, diagnostics := o.lowerMethodReceiverExpr(ctx, expr.X, selection)
 			return o.lowerMethodValueClosure(ctx, selection, receiver, "__receiver."+expr.Sel.Name, false), diagnostics
 		case types.FieldVal:
-			receiver, diagnostics := o.lowerFieldReceiverExpr(ctx, expr.X)
-			return receiver + "." + expr.Sel.Name, diagnostics
+			return o.lowerFieldSelectionExpr(ctx, expr, selection, false)
 		}
 	}
 	left, diagnostics := o.lowerExpr(ctx, expr.X)
 	return left + "." + expr.Sel.Name, diagnostics
+}
+
+func (o *LoweringOwner) lowerFieldSelectionExpr(
+	ctx lowerFileContext,
+	expr *ast.SelectorExpr,
+	selection *types.Selection,
+	address bool,
+) (string, []Diagnostic) {
+	receiver, diagnostics := o.lowerFieldReceiverExpr(ctx, expr.X)
+	index := selection.Index()
+	if len(index) == 0 {
+		if address {
+			return receiver + "._fields." + expr.Sel.Name, diagnostics
+		}
+		return receiver + "." + expr.Sel.Name, diagnostics
+	}
+
+	typ := derefPointerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X))
+	for idx, fieldIndex := range index {
+		structType := structUnderlyingType(typ)
+		if structType == nil || fieldIndex < 0 || fieldIndex >= structType.NumFields() {
+			if address {
+				return receiver + "._fields." + expr.Sel.Name, diagnostics
+			}
+			return receiver + "." + expr.Sel.Name, diagnostics
+		}
+		field := structType.Field(fieldIndex)
+		name := field.Name()
+		if idx == len(index)-1 {
+			if address {
+				return receiver + "._fields." + name, diagnostics
+			}
+			return receiver + "." + name, diagnostics
+		}
+
+		receiver += "." + name
+		typ = field.Type()
+		if pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer); ok {
+			receiver = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+				"<" + o.tsTypeFor(ctx, pointer.Elem()) + ">(" + receiver + ")"
+			typ = pointer.Elem()
+		}
+	}
+
+	if address {
+		return receiver + "._fields." + expr.Sel.Name, diagnostics
+	}
+	return receiver + "." + expr.Sel.Name, diagnostics
 }
 
 func (o *LoweringOwner) lowerMethodValueClosure(
@@ -3006,6 +3053,9 @@ func (o *LoweringOwner) lowerAddressExpr(ctx lowerFileContext, expr ast.Expr) (s
 	case *ast.CompositeLit:
 		return o.lowerCompositeLit(ctx, typed, false)
 	case *ast.SelectorExpr:
+		if selection := ctx.semPkg.source.TypesInfo.Selections[typed]; selection != nil && selection.Kind() == types.FieldVal {
+			return o.lowerFieldSelectionExpr(ctx, typed, selection, true)
+		}
 		receiver, diagnostics := o.lowerFieldReceiverExpr(ctx, typed.X)
 		return receiver + "._fields." + typed.Sel.Name, diagnostics
 	case *ast.IndexExpr:
@@ -3938,6 +3988,18 @@ func isPointerToStructType(typ types.Type) bool {
 		return false
 	}
 	return namedStructType(pointer.Elem()) != nil
+}
+
+func derefPointerType(typ types.Type) types.Type {
+	if pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer); ok {
+		return pointer.Elem()
+	}
+	return typ
+}
+
+func structUnderlyingType(typ types.Type) *types.Struct {
+	typed, _ := types.Unalias(typ).Underlying().(*types.Struct)
+	return typed
 }
 
 func pointerToArrayType(typ types.Type) *types.Array {
