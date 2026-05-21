@@ -4145,7 +4145,7 @@ func tsType(typ types.Type) string {
 	case *types.Struct:
 		return tsAnonymousStructType(typed)
 	case *types.Array:
-		return tsType(typed.Elem()) + "[]"
+		return tsArrayType(tsType(typed.Elem()))
 	case *types.Slice:
 		return "$.Slice<" + tsType(typed.Elem()) + ">"
 	case *types.Map:
@@ -4279,7 +4279,7 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	}
 	switch typed := types.Unalias(typ).Underlying().(type) {
 	case *types.Array:
-		return o.tsTypeFor(ctx, typed.Elem()) + "[]"
+		return tsArrayType(o.tsTypeFor(ctx, typed.Elem()))
 	case *types.Slice:
 		return "$.Slice<" + o.tsTypeFor(ctx, typed.Elem()) + ">"
 	case *types.Map:
@@ -4302,6 +4302,13 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	default:
 		return tsType(typ)
 	}
+}
+
+func tsArrayType(elem string) string {
+	if strings.Contains(elem, "|") {
+		return "(" + elem + ")[]"
+	}
+	return elem + "[]"
 }
 
 func (o *LoweringOwner) tsAnonymousStructTypeFor(ctx lowerFileContext, structType *types.Struct) string {
