@@ -686,9 +686,17 @@ func (o *LoweringOwner) lowerGoEmbedValue(
 		return strconv.Quote(string(data)), nil
 	}
 	if slice, ok := types.Unalias(typ).Underlying().(*types.Slice); ok && isByteType(slice.Elem()) {
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperStringToBytes) + "(" + strconv.Quote(string(data)) + ")", nil
+		return byteSliceLiteral(data), nil
 	}
 	return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed target type")}
+}
+
+func byteSliceLiteral(data []byte) string {
+	values := make([]string, 0, len(data))
+	for _, value := range data {
+		values = append(values, strconv.FormatUint(uint64(value), 10))
+	}
+	return "new Uint8Array([" + strings.Join(values, ", ") + "])"
 }
 
 func (o *LoweringOwner) lowerTypeSpec(ctx lowerFileContext, spec *ast.TypeSpec) (loweredDecl, []Diagnostic) {

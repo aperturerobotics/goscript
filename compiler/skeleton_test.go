@@ -211,6 +211,7 @@ func TestCompilePackagesUsesEmbedOverride(t *testing.T) {
 		"go.mod":       "module example.test/embedblank\n\ngo 1.25.3\n",
 		"version.txt":  "1.2.3\n",
 		"version..txt": "4.5.6\n",
+		"binary.bin":   string([]byte{0x00, 0xff, 0x80, 0x41}),
 		"main.go": strings.Join([]string{
 			"package embedblank",
 			"import _ \"embed\"",
@@ -218,6 +219,8 @@ func TestCompilePackagesUsesEmbedOverride(t *testing.T) {
 			"var Version string",
 			"//go:embed version..txt",
 			"var Dotted string",
+			"//go:embed binary.bin",
+			"var Binary []byte",
 			"func GetVersion() string {",
 			"  return Version",
 			"}",
@@ -252,6 +255,9 @@ func TestCompilePackagesUsesEmbedOverride(t *testing.T) {
 	}
 	if !strings.Contains(string(content), "export let Dotted: string = \"4.5.6\\n\"") {
 		t.Fatalf("embedded dotted filename content was not emitted:\n%s", string(content))
+	}
+	if !strings.Contains(string(content), "export let Binary: $.Slice<number> = new Uint8Array([0, 255, 128, 65])") {
+		t.Fatalf("embedded binary content was not emitted as byte values:\n%s", string(content))
 	}
 }
 
