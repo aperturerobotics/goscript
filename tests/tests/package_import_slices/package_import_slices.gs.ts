@@ -27,6 +27,18 @@ export async function main(): Promise<void> {
 	let nilSlice: $.Slice<number> = null
 	$.println("nil clone:", slices.Clone(nilSlice) == null)
 
+	$.println("equal:", slices.Equal($.arrayToSlice<number>([1, 2]), $.arrayToSlice<number>([1, 2])), slices.Equal($.arrayToSlice<number>([1]), $.arrayToSlice<number>([2])))
+	$.println("equal func:", slices.EqualFunc($.arrayToSlice<number>([1, 3]), $.arrayToSlice<number>([5, 7]), $.functionValue((a: number, b: number): boolean => {
+		return (a % 2) == (b % 2)
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })))
+	$.println("contains:", slices.Contains(s, 3), slices.ContainsFunc(s, $.functionValue((v: number): boolean => {
+		return v > 4
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })))
+	let inserted = slices.Insert($.arrayToSlice<number>([1, 4]), 1, 2, 3)
+	$.println("insert:", inserted![0], inserted![1], inserted![2], inserted![3])
+	slices.Reverse(inserted)
+	$.println("reverse:", inserted![0], inserted![1], inserted![2], inserted![3])
+
 	$.println("test finished")
 }
 

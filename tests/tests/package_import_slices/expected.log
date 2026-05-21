@@ -5,4 +5,9 @@ index: 3 value: 4
 index: 4 value: 5
 clone first: 99 original first: 1 same len: true
 nil clone: true
+equal: true false
+equal func: true
+contains: true true
+insert: 1 2 3 4
+reverse: 4 3 2 1
 test finished

@@ -17,5 +17,17 @@ func main() {
 	var nilSlice []int
 	println("nil clone:", slices.Clone(nilSlice) == nil)
 
+	println("equal:", slices.Equal([]int{1, 2}, []int{1, 2}), slices.Equal([]int{1}, []int{2}))
+	println("equal func:", slices.EqualFunc([]int{1, 3}, []int{5, 7}, func(a, b int) bool {
+		return a%2 == b%2
+	}))
+	println("contains:", slices.Contains(s, 3), slices.ContainsFunc(s, func(v int) bool {
+		return v > 4
+	}))
+	inserted := slices.Insert([]int{1, 4}, 1, 2, 3)
+	println("insert:", inserted[0], inserted[1], inserted[2], inserted[3])
+	slices.Reverse(inserted)
+	println("reverse:", inserted[0], inserted[1], inserted[2], inserted[3])
+
 	println("test finished")
 }

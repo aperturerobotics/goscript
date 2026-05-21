@@ -118,6 +118,91 @@ export function Delete<T>(s: $.Slice<T>, i: number, j: number): $.Slice<T> {
   return $.goSlice(s, 0, length - deleteCount) as $.Slice<T>
 }
 
+export function Equal<T>(s1: $.Slice<T>, s2: $.Slice<T>): boolean {
+  const len1 = $.len(s1)
+  if (len1 !== $.len(s2)) {
+    return false
+  }
+  for (let i = 0; i < len1; i++) {
+    if ((s1 as any)[i] !== (s2 as any)[i]) {
+      return false
+    }
+  }
+  return true
+}
+
+export function EqualFunc<T, U>(
+  s1: $.Slice<T>,
+  s2: $.Slice<U>,
+  eq: (v1: T, v2: U) => boolean,
+): boolean {
+  const len1 = $.len(s1)
+  if (len1 !== $.len(s2)) {
+    return false
+  }
+  for (let i = 0; i < len1; i++) {
+    if (!eq((s1 as any)[i] as T, (s2 as any)[i] as U)) {
+      return false
+    }
+  }
+  return true
+}
+
+export function Index<T>(s: $.Slice<T>, v: T): number {
+  for (let i = 0; i < $.len(s); i++) {
+    if ((s as any)[i] === v) {
+      return i
+    }
+  }
+  return -1
+}
+
+export function IndexFunc<T>(s: $.Slice<T>, f: (v: T) => boolean): number {
+  for (let i = 0; i < $.len(s); i++) {
+    if (f((s as any)[i] as T)) {
+      return i
+    }
+  }
+  return -1
+}
+
+export function Contains<T>(s: $.Slice<T>, v: T): boolean {
+  return Index(s, v) >= 0
+}
+
+export function ContainsFunc<T>(s: $.Slice<T>, f: (v: T) => boolean): boolean {
+  return IndexFunc(s, f) >= 0
+}
+
+export function Insert<T>(s: $.Slice<T>, i: number, ...v: T[]): $.Slice<T> {
+  const length = $.len(s)
+  if (i < 0 || i > length) {
+    throw new Error(`slice bounds out of range [${i}:${i}] with length ${length}`)
+  }
+  if (v.length === 0) {
+    return s
+  }
+  const out = $.makeSlice<T>(length + v.length)
+  for (let idx = 0; idx < i; idx++) {
+    ;(out as any)[idx] = (s as any)[idx]
+  }
+  for (let idx = 0; idx < v.length; idx++) {
+    ;(out as any)[i + idx] = v[idx]
+  }
+  for (let idx = i; idx < length; idx++) {
+    ;(out as any)[idx + v.length] = (s as any)[idx]
+  }
+  return out
+}
+
+export function Reverse<T>(s: $.Slice<T>): void {
+  for (let i = 0, j = $.len(s) - 1; i < j; i++, j--) {
+    const tmp = (s as any)[i]
+    ;(s as any)[i] = (s as any)[j]
+    ;(s as any)[j] = tmp
+  }
+}
+
 /**
  * Grow increases the slice's capacity, if necessary, to guarantee space for
  * another n elements. After Grow(n), at least n elements can be appended
