@@ -15,6 +15,22 @@ export function varRef<T>(v: T): VarRef<T> {
   return { value: v, __isVarRef: true }
 }
 
+/** Create a variable reference to an object field. */
+export function fieldRef<T extends object, K extends keyof T>(
+  target: T,
+  key: K,
+): VarRef<T[K]> {
+  return {
+    get value(): T[K] {
+      return target[key]
+    },
+    set value(value: T[K]) {
+      target[key] = value
+    },
+    __isVarRef: true,
+  }
+}
+
 /** Check if a value is a VarRef (pointer) */
 export function isVarRef(v: unknown): v is VarRef<unknown> {
   return v !== null && typeof v === 'object' && (v as any).__isVarRef === true

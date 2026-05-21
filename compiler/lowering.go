@@ -3841,7 +3841,7 @@ func (o *LoweringOwner) lowerFieldSelectionExpr(
 	index := selection.Index()
 	if len(index) == 0 {
 		if address {
-			return receiver + "._fields." + expr.Sel.Name, diagnostics
+			return o.lowerFieldAddressExpr(ctx, receiver, ctx.semPkg.source.TypesInfo.TypeOf(expr.X), expr.Sel.Name), diagnostics
 		}
 		return receiver + "." + expr.Sel.Name, diagnostics
 	}
@@ -3859,7 +3859,7 @@ func (o *LoweringOwner) lowerFieldSelectionExpr(
 		name := field.Name()
 		if idx == len(index)-1 {
 			if address {
-				return receiver + "._fields." + name, diagnostics
+				return o.lowerFieldAddressExpr(ctx, receiver, typ, name), diagnostics
 			}
 			return receiver + "." + name, diagnostics
 		}
@@ -3874,9 +3874,16 @@ func (o *LoweringOwner) lowerFieldSelectionExpr(
 	}
 
 	if address {
-		return receiver + "._fields." + expr.Sel.Name, diagnostics
+		return o.lowerFieldAddressExpr(ctx, receiver, typ, expr.Sel.Name), diagnostics
 	}
 	return receiver + "." + expr.Sel.Name, diagnostics
+}
+
+func (o *LoweringOwner) lowerFieldAddressExpr(ctx lowerFileContext, receiver string, typ types.Type, fieldName string) string {
+	if namedStructType(derefPointerType(typ)) != nil {
+		return receiver + "._fields." + fieldName
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFieldRef) + "(" + receiver + ", " + strconv.Quote(fieldName) + ")"
 }
 
 func (o *LoweringOwner) lowerMethodValueClosure(

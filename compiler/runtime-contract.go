@@ -42,6 +42,7 @@ const (
 	RuntimeHelperPointerValue      RuntimeHelper = "value.pointerValue"
 
 	RuntimeHelperVarRef                RuntimeHelper = "varref.varRef"
+	RuntimeHelperFieldRef              RuntimeHelper = "varref.fieldRef"
 	RuntimeHelperUnref                 RuntimeHelper = "varref.unref"
 	RuntimeHelperIsVarRef              RuntimeHelper = "varref.isVarRef"
 	RuntimeHelperUnsupportedPointerRef RuntimeHelper = "varref.unsupportedPointerRef"
@@ -218,6 +219,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperMarkAsStructValue, "markAsStructValue", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperPointerValue, "pointerValue", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperVarRef, "varRef", RuntimeHelperCategoryVarRef),
+		runtimeHelper(RuntimeHelperFieldRef, "fieldRef", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperUnref, "unref", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperIsVarRef, "isVarRef", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperUnsupportedPointerRef, "unsupportedPointerRef", RuntimeHelperCategoryVarRef),
