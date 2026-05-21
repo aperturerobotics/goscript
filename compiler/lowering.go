@@ -4003,6 +4003,9 @@ func (o *LoweringOwner) lowerConversionExpr(
 				value + ", " + strconv.FormatInt(array.Len(), 10) + ")", diagnostics
 		}
 	}
+	if converted, ok := o.lowerNamedStructConversion(ctx, targetType, sourceType, value); ok {
+		return converted, diagnostics
+	}
 	if named := namedFunctionType(targetType); named != nil {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedFunction) +
 			"(" + value + ", " + strconv.Quote(runtimeNamedTypeName(named)) + ")", diagnostics
@@ -4014,6 +4017,48 @@ func (o *LoweringOwner) lowerConversionExpr(
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt) + "(" + value + ")", diagnostics
 	}
 	return value, diagnostics
+}
+
+func (o *LoweringOwner) lowerNamedStructConversion(
+	ctx lowerFileContext,
+	targetType types.Type,
+	sourceType types.Type,
+	value string,
+) (string, bool) {
+	target := namedStructType(targetType)
+	source := namedStructType(sourceType)
+	if target == nil || source == nil || types.Identical(target, source) ||
+		!types.IdenticalIgnoreTags(target.Underlying(), source.Underlying()) {
+		return "", false
+	}
+	if o.typeUsesOverride(target) || o.typeUsesOverride(source) {
+		return "(" + value + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", true
+	}
+	structType, _ := target.Underlying().(*types.Struct)
+	temp := ctx.tempName("Convert")
+	fields := make([]string, 0, structType.NumFields())
+	for field := range structType.Fields() {
+		name := field.Name()
+		fields = append(fields, name+": "+temp+"."+name)
+	}
+	body := "const " + temp + " = " + value + "; return " +
+		o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) +
+		"(new " + o.namedTypeExpr(ctx, target) + "({" + strings.Join(fields, ", ") + "}))"
+	if strings.Contains(value, "await ") {
+		return "(await (async () => { " + body + " })())", true
+	}
+	return "(() => { " + body + " })()", true
+}
+
+func (o *LoweringOwner) typeUsesOverride(named *types.Named) bool {
+	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil || o.overrideOwner == nil {
+		return false
+	}
+	roots, err := o.overrideOwner.packageRoots()
+	if err != nil {
+		return false
+	}
+	return roots[named.Obj().Pkg().Path()]
 }
 
 func (o *LoweringOwner) lowerNamedReceiverMethodCall(
