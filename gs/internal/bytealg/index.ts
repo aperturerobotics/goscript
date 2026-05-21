@@ -136,6 +136,17 @@ export function LastIndexByteString(s: string, b: number): number {
   return s.lastIndexOf(char)
 }
 
+export function CountString(s: string, b: number): number {
+  const char = String.fromCharCode(b)
+  let count = 0
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === char) {
+      count++
+    }
+  }
+  return count
+}
+
 export function IndexString(s: string, substr: string): number {
   return s.indexOf(substr)
 }
