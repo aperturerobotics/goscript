@@ -1119,6 +1119,19 @@ func (o *SemanticModelOwner) recordTypeImports(
 	}
 	seen[typ] = true
 
+	if alias, ok := typ.(*types.Alias); ok {
+		if obj := alias.Obj(); obj != nil && obj.Pkg() != nil && obj.Pkg().Path() != currentPkg {
+			addGeneratedImport(model, semPkg, file, obj.Pkg().Path())
+		}
+		if args := alias.TypeArgs(); args != nil {
+			for t := range args.Types() {
+				o.recordTypeImports(model, semPkg, file, currentPkg, t, seen)
+			}
+		}
+		o.recordTypeImports(model, semPkg, file, currentPkg, alias.Rhs(), seen)
+		return
+	}
+
 	switch typed := types.Unalias(typ).(type) {
 	case *types.Named:
 		if obj := typed.Obj(); obj != nil && obj.Pkg() != nil && obj.Pkg().Path() != currentPkg {

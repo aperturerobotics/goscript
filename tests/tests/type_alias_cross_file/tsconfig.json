@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/type_alias_cross_file/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "alias.gs.ts",
+    "index.ts",
+    "iterator.gs.ts",
+    "main.gs.ts",
+    "subpkg/index.ts",
+    "subpkg/subpkg.gs.ts"
+  ]
+}

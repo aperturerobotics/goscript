@@ -465,6 +465,16 @@ func (o *LoweringOwner) localFileAliases(
 			return
 		}
 		seenTypes[typ] = true
+		if alias, ok := typ.(*types.Alias); ok {
+			addObject(alias.Obj())
+			if args := alias.TypeArgs(); args != nil {
+				for t := range args.Types() {
+					addTypeDeps(t)
+				}
+			}
+			addTypeDeps(alias.Rhs())
+			return
+		}
 		if named, ok := types.Unalias(typ).(*types.Named); ok {
 			addObject(named.Obj())
 			if args := named.TypeArgs(); args != nil {
@@ -868,6 +878,17 @@ func (o *LoweringOwner) lowerTypeSpec(ctx lowerFileContext, spec *ast.TypeSpec) 
 	obj, _ := ctx.semPkg.source.TypesInfo.Defs[spec.Name].(*types.TypeName)
 	if obj == nil {
 		return loweredDecl{}, nil
+	}
+	if alias, ok := obj.Type().(*types.Alias); ok {
+		code := "type " + obj.Name() + " = " + o.tsTypeFor(ctx, alias.Rhs())
+		typeIndexExport := ""
+		if ctx.topLevel {
+			code = "export " + code
+			if ast.IsExported(obj.Name()) {
+				typeIndexExport = obj.Name()
+			}
+		}
+		return loweredDecl{code: code, typeIndexExport: typeIndexExport}, nil
 	}
 	named, _ := obj.Type().(*types.Named)
 	if named == nil {
@@ -5408,6 +5429,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	if typ == nil {
 		return "unknown"
 	}
+	if alias, ok := typ.(*types.Alias); ok {
+		return o.aliasTypeExpr(ctx, alias)
+	}
 	if isBuiltinErrorType(typ) {
 		return "$.GoError"
 	}
@@ -5458,6 +5482,22 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	default:
 		return tsType(typ)
 	}
+}
+
+func (o *LoweringOwner) aliasTypeExpr(ctx lowerFileContext, alias *types.Alias) string {
+	if alias == nil || alias.Obj() == nil {
+		return "unknown"
+	}
+	if alias.Obj().Pkg() == nil {
+		return o.tsTypeFor(ctx, alias.Rhs())
+	}
+	baseName := alias.Obj().Name()
+	if localAlias := ctx.localAliases[alias.Obj()]; localAlias != "" {
+		baseName = localAlias + "." + baseName
+	} else if importAlias := ctx.importPaths[alias.Obj().Pkg().Path()]; importAlias != "" {
+		baseName = importAlias + "." + baseName
+	}
+	return baseName
 }
 
 func crossPackageUnexportedNamedType(ctx lowerFileContext, named *types.Named) bool {
