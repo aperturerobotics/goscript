@@ -8,6 +8,7 @@ import (
 	"go/constant"
 	"go/token"
 	"go/types"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -503,6 +504,7 @@ type lowerFileContext struct {
 	importNames   map[string]string
 	sourcePath    string
 	localAliases  map[types.Object]string
+	identAliases  map[types.Object]string
 	tempNames     *tempNameOwner
 	signature     *types.Signature
 	deferState    *loweredDeferState
@@ -529,6 +531,21 @@ func (ctx lowerFileContext) tempName(prefix string) string {
 		return "__goscript" + prefix + "0"
 	}
 	return ctx.tempNames.next(prefix)
+}
+
+func (ctx lowerFileContext) withIdentAliases(aliases map[types.Object]string) lowerFileContext {
+	if len(aliases) == 0 {
+		return ctx
+	}
+	if len(ctx.identAliases) != 0 {
+		merged := make(map[types.Object]string, len(ctx.identAliases)+len(aliases))
+		maps.Copy(merged, ctx.identAliases)
+		maps.Copy(merged, aliases)
+		ctx.identAliases = merged
+		return ctx
+	}
+	ctx.identAliases = aliases
+	return ctx
 }
 
 func (o *tempNameOwner) next(prefix string) string {
@@ -1153,8 +1170,13 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 	case *ast.IfStmt:
 		var diagnostics []Diagnostic
 		var init []loweredStmt
+		var initPrelude []loweredStmt
+		initCtx := ctx
 		if typed.Init != nil {
-			initStmts, initDiagnostics := o.lowerStmt(ctx, typed.Init)
+			aliases, prelude := o.lowerShortDeclShadowAliases(ctx, typed.Init)
+			initPrelude = append(initPrelude, prelude...)
+			initCtx = ctx.withIdentAliases(aliases)
+			initStmts, initDiagnostics := o.lowerStmt(initCtx, typed.Init)
 			diagnostics = append(diagnostics, initDiagnostics...)
 			init = append(init, initStmts...)
 		}
@@ -1174,7 +1196,7 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		}
 		if len(init) != 0 {
 			init = append(init, stmt)
-			return []loweredStmt{{children: init}}, diagnostics
+			return append(initPrelude, loweredStmt{children: init}), diagnostics
 		}
 		return []loweredStmt{stmt}, diagnostics
 	case *ast.ForStmt:
@@ -1639,7 +1661,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		prefix := ""
 		if stmt.Tok == token.DEFINE {
 			prefix = "let "
-			if !allShortAssignTargetsNew(ctx, stmt.Lhs) || tupleDeclarationNeedsElementStatements(ctx, stmt.Lhs) {
+			if !allShortAssignTargetsNew(ctx, stmt.Lhs) || tupleDeclarationNeedsElementStatements(ctx, stmt.Lhs) || tupleDeclarationRHSUsesNewName(ctx, stmt.Lhs, stmt.Rhs[0]) {
 				return o.lowerTupleReassignmentStmt(ctx, stmt, right, diagnostics)
 			}
 			return []loweredStmt{{text: prefix + "[" + strings.Join(lefts, ", ") + "] = " + right}}, diagnostics
@@ -1783,6 +1805,47 @@ func (o *LoweringOwner) lowerTupleReassignmentStmt(
 	return stmts, diagnostics
 }
 
+func (o *LoweringOwner) lowerShortDeclShadowAliases(
+	ctx lowerFileContext,
+	stmt ast.Stmt,
+) (map[types.Object]string, []loweredStmt) {
+	assign, ok := stmt.(*ast.AssignStmt)
+	if !ok || assign.Tok != token.DEFINE {
+		return nil, nil
+	}
+	names := make(map[string]bool)
+	for _, expr := range assign.Lhs {
+		ident, ok := expr.(*ast.Ident)
+		if !ok || ident.Name == "_" || ctx.semPkg.source.TypesInfo.Defs[ident] == nil {
+			continue
+		}
+		names[ident.Name] = true
+	}
+	if len(names) == 0 {
+		return nil, nil
+	}
+	aliases := make(map[types.Object]string)
+	var prelude []loweredStmt
+	for _, rhs := range assign.Rhs {
+		ast.Inspect(rhs, func(node ast.Node) bool {
+			ident, ok := node.(*ast.Ident)
+			if !ok || !names[ident.Name] {
+				return true
+			}
+			obj := ctx.semPkg.source.TypesInfo.Uses[ident]
+			if obj == nil || aliases[obj] != "" {
+				return true
+			}
+			alias := ctx.tempName("Shadow")
+			value := o.lowerIdent(ctx, ident, false)
+			aliases[obj] = alias
+			prelude = append(prelude, loweredStmt{text: "let " + alias + " = " + value})
+			return true
+		})
+	}
+	return aliases, prelude
+}
+
 func (o *LoweringOwner) lowerDeclaredValue(ctx lowerFileContext, lhs ast.Expr, value string) string {
 	ident, ok := lhs.(*ast.Ident)
 	if !ok {
@@ -1839,6 +1902,30 @@ func tupleDeclarationNeedsElementStatements(ctx lowerFileContext, exprs []ast.Ex
 		}
 	}
 	return false
+}
+
+func tupleDeclarationRHSUsesNewName(ctx lowerFileContext, lhs []ast.Expr, rhs ast.Expr) bool {
+	names := make(map[string]bool)
+	for _, expr := range lhs {
+		ident, ok := expr.(*ast.Ident)
+		if !ok || ident.Name == "_" || ctx.semPkg.source.TypesInfo.Defs[ident] == nil {
+			continue
+		}
+		names[ident.Name] = true
+	}
+	if len(names) == 0 {
+		return false
+	}
+	usesName := false
+	ast.Inspect(rhs, func(node ast.Node) bool {
+		ident, ok := node.(*ast.Ident)
+		if ok && names[ident.Name] {
+			usesName = true
+			return false
+		}
+		return true
+	})
+	return usesName
 }
 
 func isShortAssignTargetNew(ctx lowerFileContext, expr ast.Expr) bool {
@@ -2090,7 +2177,7 @@ func (o *LoweringOwner) lowerForInitStmt(ctx lowerFileContext, stmt ast.Stmt) (s
 			lefts = append(lefts, left)
 		}
 		if assign.Tok == token.DEFINE {
-			if allShortAssignTargetsNew(ctx, assign.Lhs) && !tupleDeclarationNeedsElementStatements(ctx, assign.Lhs) {
+			if allShortAssignTargetsNew(ctx, assign.Lhs) && !tupleDeclarationNeedsElementStatements(ctx, assign.Lhs) && !tupleDeclarationRHSUsesNewName(ctx, assign.Lhs, assign.Rhs[0]) {
 				return "let [" + strings.Join(lefts, ", ") + "] = " + right, diagnostics
 			}
 			tempName := ctx.tempName("Tuple")
@@ -2803,6 +2890,9 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 		return value
 	}
 	obj := objectForIdent(ctx, ident)
+	if alias := ctx.identAliases[obj]; alias != "" {
+		return alias
+	}
 	if alias := ctx.localAliases[obj]; alias != "" {
 		return alias + "." + value
 	}

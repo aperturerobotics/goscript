@@ -12,6 +12,8 @@ export async function main(): Promise<void> {
 	builder.value.WriteString("Hello")
 	builder.value.WriteString(" ")
 	builder.value.WriteString("World")
+	let [n, err] = builder.value.Write($.stringToBytes("!"))
+	$.println("Write:", n, err == null)
 
 	let result = builder.value.String()
 	$.println("Result:", result)

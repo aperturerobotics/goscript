@@ -12,6 +12,24 @@ func secondFunc(x int) int {
 	return 99
 }
 
+type named interface {
+	Name() string
+}
+
+type item struct{}
+
+func (item) Name() string {
+	return "item"
+}
+
+func describe(value any) {
+	if value, ok := value.(named); ok {
+		println("Shadowed name:", value.Name())
+		return
+	}
+	println("Shadowed name: missing")
+}
+
 func main() {
 	_, x := firstFunc()
 	// This is the problematic pattern: x is shadowed but also used in the call
@@ -20,4 +38,6 @@ func main() {
 		return
 	}
 	println("Completed successfully")
+	describe(item{})
+	describe("nope")
 }

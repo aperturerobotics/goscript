@@ -185,7 +185,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"type_conversion_interface_ptr_nil": true,
 	"type_declaration_receiver":         true,
 	"util_promise":                      true,
-	"variable_shadowing_scope":          true,
 	"varref_deref_struct":               true,
 	"wrapper_type_args":                 true,
 }

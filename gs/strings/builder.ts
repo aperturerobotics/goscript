@@ -60,12 +60,13 @@ export class Builder {
 
   // Write appends the contents of p to b's buffer.
   // Write always returns len(p), nil.
-  public Write(p: Uint8Array): [number, $.GoError] {
+  public Write(p: $.Bytes): [number, $.GoError] {
     this.copyCheck()
     // Convert byte array to string
-    const str = new TextDecoder('utf-8').decode(p)
+    const bytes = $.bytesToUint8Array(p)
+    const str = new TextDecoder('utf-8').decode(bytes)
     this._content += str
-    return [p.length, null]
+    return [$.len(p), null]
   }
 
   // WriteByte appends the byte c to b's buffer.

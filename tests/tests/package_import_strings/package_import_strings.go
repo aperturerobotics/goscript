@@ -9,6 +9,8 @@ func main() {
 	builder.WriteString("Hello")
 	builder.WriteString(" ")
 	builder.WriteString("World")
+	n, err := builder.Write([]byte("!"))
+	println("Write:", n, err == nil)
 
 	result := builder.String()
 	println("Result:", result)
