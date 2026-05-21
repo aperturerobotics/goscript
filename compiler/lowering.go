@@ -5574,6 +5574,11 @@ func (o *LoweringOwner) methodFunctionExpr(
 	if alias := ctx.localAliases[obj]; alias != "" {
 		return alias + "." + name
 	}
+	if receiver != nil && receiver.Obj() != nil {
+		if alias := ctx.localAliases[receiver.Obj()]; alias != "" {
+			return alias + "." + name
+		}
+	}
 	if receiver != nil && receiver.Obj() != nil && receiver.Obj().Pkg() != nil {
 		if alias := ctx.importPaths[receiver.Obj().Pkg().Path()]; alias != "" {
 			return alias + "." + name
