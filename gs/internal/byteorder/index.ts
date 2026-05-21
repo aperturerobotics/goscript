@@ -12,16 +12,16 @@ export function BEUint32(b: $.Bytes): number {
   return (((b![0] << 24) >>> 0) | (b![1] << 16) | (b![2] << 8) | b![3]) >>> 0
 }
 
-export function BEUint64(b: $.Bytes): bigint {
-  return (
+export function BEUint64(b: $.Bytes): number {
+  return Number(
     (BigInt(b![0]) << 56n) |
-    (BigInt(b![1]) << 48n) |
-    (BigInt(b![2]) << 40n) |
-    (BigInt(b![3]) << 32n) |
-    (BigInt(b![4]) << 24n) |
-    (BigInt(b![5]) << 16n) |
-    (BigInt(b![6]) << 8n) |
-    BigInt(b![7])
+      (BigInt(b![1]) << 48n) |
+      (BigInt(b![2]) << 40n) |
+      (BigInt(b![3]) << 32n) |
+      (BigInt(b![4]) << 24n) |
+      (BigInt(b![5]) << 16n) |
+      (BigInt(b![6]) << 8n) |
+      BigInt(b![7]),
   )
 }
 
@@ -33,16 +33,16 @@ export function LEUint32(b: $.Bytes): number {
   return b![0] | (b![1] << 8) | (b![2] << 16) | (b![3] << 24)
 }
 
-export function LEUint64(b: $.Bytes): bigint {
-  return (
+export function LEUint64(b: $.Bytes): number {
+  return Number(
     BigInt(b![0]) |
-    (BigInt(b![1]) << 8n) |
-    (BigInt(b![2]) << 16n) |
-    (BigInt(b![3]) << 24n) |
-    (BigInt(b![4]) << 32n) |
-    (BigInt(b![5]) << 40n) |
-    (BigInt(b![6]) << 48n) |
-    (BigInt(b![7]) << 56n)
+      (BigInt(b![1]) << 8n) |
+      (BigInt(b![2]) << 16n) |
+      (BigInt(b![3]) << 24n) |
+      (BigInt(b![4]) << 32n) |
+      (BigInt(b![5]) << 40n) |
+      (BigInt(b![6]) << 48n) |
+      (BigInt(b![7]) << 56n),
   )
 }
 

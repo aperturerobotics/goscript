@@ -4,6 +4,22 @@
 // UintSize is the size of a uint in bits
 export const UintSize = 32 // Assuming 32-bit for JavaScript numbers
 
+type Word64 = number | bigint
+
+const uint64Mask = (1n << 64n) - 1n
+
+function toUint64(x: Word64): bigint {
+  return BigInt(x) & uint64Mask
+}
+
+function useBigIntResult(...values: Word64[]): boolean {
+  return values.some((value) => typeof value === 'bigint')
+}
+
+function word64Result(value: bigint, useBigInt: boolean): Word64 {
+  return useBigInt ? value : Number(value)
+}
+
 // --- Leading zeros ---
 export function LeadingZeros(x: number): number {
   return Math.clz32(x >>> 0)
@@ -21,8 +37,9 @@ export function LeadingZeros32(x: number): number {
   return Math.clz32(x >>> 0)
 }
 
-export function LeadingZeros64(x: bigint): number {
+export function LeadingZeros64(x: Word64): number {
   // For 64-bit, we need to handle it differently
+  x = toUint64(x)
   if (x === 0n) return 64
   let count = 0
   let mask = 1n << 63n
@@ -59,7 +76,8 @@ export function TrailingZeros32(x: number): number {
   return count
 }
 
-export function TrailingZeros64(x: bigint): number {
+export function TrailingZeros64(x: Word64): number {
+  x = toUint64(x)
   if (x === 0n) return 64
   let count = 0
   while ((x & 1n) === 0n && count < 64) {
@@ -93,7 +111,8 @@ export function OnesCount32(x: number): number {
   return count
 }
 
-export function OnesCount64(x: bigint): number {
+export function OnesCount64(x: Word64): number {
+  x = toUint64(x)
   let count = 0
   while (x > 0n) {
     count++
@@ -128,12 +147,17 @@ export function RotateLeft32(x: number, k: number): number {
   return ((x << k) | (x >>> (n - k))) >>> 0
 }
 
-export function RotateLeft64(x: bigint, k: number): bigint {
+export function RotateLeft64(x: number, k: number): number
+export function RotateLeft64(x: bigint, k: number): bigint
+export function RotateLeft64(x: Word64, k: number): Word64 {
   const n = 64
   k = k % n
-  const mask = (1n << 64n) - 1n
-  x = x & mask
-  return ((x << BigInt(k)) | (x >> BigInt(n - k))) & mask
+  const useBigInt = useBigIntResult(x)
+  const word = toUint64(x)
+  return word64Result(
+    ((word << BigInt(k)) | (word >> BigInt(n - k))) & uint64Mask,
+    useBigInt,
+  )
 }
 
 // --- Reverse ---
@@ -168,25 +192,39 @@ export function Reverse32(x: number): number {
   return x >>> 0
 }
 
-export function Reverse64(x: bigint): bigint {
+export function Reverse64(x: number): number
+export function Reverse64(x: bigint): bigint
+export function Reverse64(x: Word64): Word64 {
   // Implement 64-bit reverse using similar bit manipulation
-  const mask = (1n << 64n) - 1n
-  x = x & mask
+  const useBigInt = useBigIntResult(x)
+  let word = toUint64(x)
 
   // Swap 32-bit halves
-  x = ((x & 0xffffffff00000000n) >> 32n) | ((x & 0x00000000ffffffffn) << 32n)
+  word =
+    ((word & 0xffffffff00000000n) >> 32n) |
+    ((word & 0x00000000ffffffffn) << 32n)
   // Swap 16-bit chunks
-  x = ((x & 0xffff0000ffff0000n) >> 16n) | ((x & 0x0000ffff0000ffffn) << 16n)
+  word =
+    ((word & 0xffff0000ffff0000n) >> 16n) |
+    ((word & 0x0000ffff0000ffffn) << 16n)
   // Swap 8-bit chunks
-  x = ((x & 0xff00ff00ff00ff00n) >> 8n) | ((x & 0x00ff00ff00ff00ffn) << 8n)
+  word =
+    ((word & 0xff00ff00ff00ff00n) >> 8n) |
+    ((word & 0x00ff00ff00ff00ffn) << 8n)
   // Swap 4-bit chunks
-  x = ((x & 0xf0f0f0f0f0f0f0f0n) >> 4n) | ((x & 0x0f0f0f0f0f0f0f0fn) << 4n)
+  word =
+    ((word & 0xf0f0f0f0f0f0f0f0n) >> 4n) |
+    ((word & 0x0f0f0f0f0f0f0f0fn) << 4n)
   // Swap 2-bit chunks
-  x = ((x & 0xccccccccccccccccn) >> 2n) | ((x & 0x3333333333333333n) << 2n)
+  word =
+    ((word & 0xccccccccccccccccn) >> 2n) |
+    ((word & 0x3333333333333333n) << 2n)
   // Swap 1-bit chunks
-  x = ((x & 0xaaaaaaaaaaaaaaaan) >> 1n) | ((x & 0x5555555555555555n) << 1n)
+  word =
+    ((word & 0xaaaaaaaaaaaaaaaan) >> 1n) |
+    ((word & 0x5555555555555555n) << 1n)
 
-  return x & mask
+  return word64Result(word & uint64Mask, useBigInt)
 }
 
 // --- ReverseBytes ---
@@ -209,20 +247,23 @@ export function ReverseBytes32(x: number): number {
   )
 }
 
-export function ReverseBytes64(x: bigint): bigint {
-  const mask = (1n << 64n) - 1n
-  x = x & mask
+export function ReverseBytes64(x: number): number
+export function ReverseBytes64(x: bigint): bigint
+export function ReverseBytes64(x: Word64): Word64 {
+  const useBigInt = useBigIntResult(x)
+  const word = toUint64(x)
 
-  return (
-    (((x & 0xffn) << 56n) |
-      ((x & 0xff00n) << 40n) |
-      ((x & 0xff0000n) << 24n) |
-      ((x & 0xff000000n) << 8n) |
-      ((x & 0xff00000000n) >> 8n) |
-      ((x & 0xff0000000000n) >> 24n) |
-      ((x & 0xff000000000000n) >> 40n) |
-      ((x & 0xff00000000000000n) >> 56n)) &
-    mask
+  return word64Result(
+    (((word & 0xffn) << 56n) |
+      ((word & 0xff00n) << 40n) |
+      ((word & 0xff0000n) << 24n) |
+      ((word & 0xff000000n) << 8n) |
+      ((word & 0xff00000000n) >> 8n) |
+      ((word & 0xff0000000000n) >> 24n) |
+      ((word & 0xff000000000000n) >> 40n) |
+      ((word & 0xff00000000000000n) >> 56n)) &
+      uint64Mask,
+    useBigInt,
   )
 }
 
@@ -243,7 +284,7 @@ export function Len32(x: number): number {
   return 32 - LeadingZeros32(x)
 }
 
-export function Len64(x: bigint): number {
+export function Len64(x: Word64): number {
   return 64 - LeadingZeros64(x)
 }
 
@@ -260,7 +301,12 @@ export function Mul32(x: number, y: number): [number, number] {
   return [hi, lo]
 }
 
-export function Mul64(x: bigint, y: bigint): [bigint, bigint] {
+export function Mul64(x: number, y: number): [number, number]
+export function Mul64(x: bigint, y: bigint): [bigint, bigint]
+export function Mul64(x: Word64, y: Word64): [Word64, Word64] {
+  const useBigInt = useBigIntResult(x, y)
+  x = toUint64(x)
+  y = toUint64(y)
   const mask32 = 0xffffffffn
 
   // Split into 32-bit parts
@@ -279,7 +325,7 @@ export function Mul64(x: bigint, y: bigint): [bigint, bigint] {
   const lo = p00 + ((p01 + p10) << 32n)
   const hi = p11 + ((p01 + p10) >> 32n) + (lo < p00 ? 1n : 0n)
 
-  return [hi, lo]
+  return [word64Result(hi & uint64Mask, useBigInt), word64Result(lo & uint64Mask, useBigInt)]
 }
 
 // --- Division functions ---
@@ -302,7 +348,13 @@ export function Div32(hi: number, lo: number, y: number): [number, number] {
   return [Number(quotient), Number(remainder)]
 }
 
-export function Div64(hi: bigint, lo: bigint, y: bigint): [bigint, bigint] {
+export function Div64(hi: number, lo: number, y: number): [number, number]
+export function Div64(hi: bigint, lo: bigint, y: bigint): [bigint, bigint]
+export function Div64(hi: Word64, lo: Word64, y: Word64): [Word64, Word64] {
+  const useBigInt = useBigIntResult(hi, lo, y)
+  hi = toUint64(hi)
+  lo = toUint64(lo)
+  y = toUint64(y)
   if (y === 0n) {
     throw new Error('division by zero')
   }
@@ -313,7 +365,7 @@ export function Div64(hi: bigint, lo: bigint, y: bigint): [bigint, bigint] {
   const quotient = dividend / y
   const remainder = dividend % y
 
-  return [quotient, remainder]
+  return [word64Result(quotient, useBigInt), word64Result(remainder, useBigInt)]
 }
 
 // --- Add and Sub with carry ---
@@ -328,12 +380,14 @@ export function Add32(x: number, y: number, carry: number): [number, number] {
   return [result, carryOut]
 }
 
-export function Add64(x: bigint, y: bigint, carry: bigint): [bigint, bigint] {
-  const mask = (1n << 64n) - 1n
-  const sum = (x & mask) + (y & mask) + (carry & mask)
-  const result = sum & mask
-  const carryOut = sum > mask ? 1n : 0n
-  return [result, carryOut]
+export function Add64(x: number, y: number, carry: number): [number, number]
+export function Add64(x: bigint, y: bigint, carry: bigint): [bigint, bigint]
+export function Add64(x: Word64, y: Word64, carry: Word64): [Word64, Word64] {
+  const useBigInt = useBigIntResult(x, y, carry)
+  const sum = toUint64(x) + toUint64(y) + toUint64(carry)
+  const result = sum & uint64Mask
+  const carryOut = sum > uint64Mask ? 1n : 0n
+  return [word64Result(result, useBigInt), word64Result(carryOut, useBigInt)]
 }
 
 export function Sub(x: number, y: number, borrow: number): [number, number] {
@@ -347,10 +401,12 @@ export function Sub32(x: number, y: number, borrow: number): [number, number] {
   return [result, borrowOut]
 }
 
-export function Sub64(x: bigint, y: bigint, borrow: bigint): [bigint, bigint] {
-  const mask = (1n << 64n) - 1n
-  const diff = (x & mask) - (y & mask) - (borrow & mask)
-  const result = diff & mask
+export function Sub64(x: number, y: number, borrow: number): [number, number]
+export function Sub64(x: bigint, y: bigint, borrow: bigint): [bigint, bigint]
+export function Sub64(x: Word64, y: Word64, borrow: Word64): [Word64, Word64] {
+  const useBigInt = useBigIntResult(x, y, borrow)
+  const diff = toUint64(x) - toUint64(y) - toUint64(borrow)
+  const result = diff & uint64Mask
   const borrowOut = diff < 0n ? 1n : 0n
-  return [result, borrowOut]
+  return [word64Result(result, useBigInt), word64Result(borrowOut, useBigInt)]
 }

@@ -16,7 +16,7 @@ describe('internal/byteorder uint64', () => {
     BEPutUint64(bytes, 0x0102030405060708n)
 
     expect(Array.from(bytes)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-    expect(BEUint64(bytes)).toBe(0x0102030405060708n)
+    expect(BEUint64(bytes)).toBe(Number(0x0102030405060708n))
   })
 
   test('reads and writes little-endian bigint values', () => {
@@ -25,7 +25,7 @@ describe('internal/byteorder uint64', () => {
     LEPutUint64(bytes, 0x0102030405060708n)
 
     expect(Array.from(bytes)).toEqual([8, 7, 6, 5, 4, 3, 2, 1])
-    expect(LEUint64(bytes)).toBe(0x0102030405060708n)
+    expect(LEUint64(bytes)).toBe(Number(0x0102030405060708n))
   })
 
   test('appends uint64 values', () => {
