@@ -1,6 +1,10 @@
 import * as $ from '@goscript/builtin/index.js'
 import { Errno } from './types.js'
 
+export function Errno_Error(errno: Errno): string {
+  return errno.Error()
+}
+
 export const EPERM: Errno = {
   Error: () => 'operation not permitted',
   Is: (target: $.GoError) => target === EPERM,

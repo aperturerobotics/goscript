@@ -54,6 +54,10 @@ export function Sysctl(_name: string): [string, $.GoError] {
   return ['', ENOSYS]
 }
 
+export function Unlink(_path: string): $.GoError {
+  return ENOSYS
+}
+
 // Getpagesize returns the underlying system's memory page size.
 export function Getpagesize(): number {
   // Return a standard page size for JavaScript environment

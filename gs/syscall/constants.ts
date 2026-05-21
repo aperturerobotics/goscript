@@ -15,6 +15,14 @@ export const Stderr = 2
 export const SIGINT = 2
 export const SIGTERM = 15
 
+export const AF_UNIX = 1
+export const AF_INET = 2
+export const AF_INET6 = 10
+
+export const SOCK_STREAM = 1
+export const SOCK_DGRAM = 2
+export const SOCK_RAW = 3
+
 // File mode constants
 export const S_IFMT = 0o170000
 export const S_IFREG = 0o100000
