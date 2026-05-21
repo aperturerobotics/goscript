@@ -1184,6 +1184,9 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 			if lowered[0].text == "" {
 				return []loweredStmt{{text: label + ":", children: lowered}}, diagnostics
 			}
+			if labeledTextCannotPrefix(lowered[0].text) {
+				return append([]loweredStmt{{text: label + ":;"}}, lowered...), diagnostics
+			}
 			lowered[0].text = label + ": " + lowered[0].text
 		}
 		return lowered, diagnostics
@@ -1844,6 +1847,10 @@ func allBlankIdents(exprs []ast.Expr) bool {
 		}
 	}
 	return true
+}
+
+func labeledTextCannotPrefix(text string) bool {
+	return strings.HasPrefix(text, "let ") || strings.HasPrefix(text, "const ") || strings.HasPrefix(text, "class ")
 }
 
 func isChannelReceiveExpr(expr ast.Expr) bool {

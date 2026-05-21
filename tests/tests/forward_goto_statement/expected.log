@@ -4,3 +4,5 @@ loop skipped: 1
 loop included: 4
 mixed small: 4
 mixed large: 7
+label decl: 3
+mixed decl: 2

@@ -46,6 +46,33 @@ func mixedForwardBackward(limit int) int {
 	return total
 }
 
+func labelBeforeShortDecl(v int) int {
+	if v > 0 {
+		goto skip
+	}
+	return 0
+
+skip:
+	x := v + 1
+	return x
+}
+
+func mixedForwardBackwardDecl(limit int) int {
+	total := 0
+	for total < limit {
+		goto skip
+	check:
+		if total >= limit {
+			continue
+		}
+	skip:
+		x := total + 1
+		total = x
+		goto check
+	}
+	return total
+}
+
 func main() {
 	println("skip negative:", skipToLabel(-1))
 	println("skip positive:", skipToLabel(1))
@@ -53,4 +80,6 @@ func main() {
 	println("loop included:", skipLoop(2))
 	println("mixed small:", mixedForwardBackward(1))
 	println("mixed large:", mixedForwardBackward(5))
+	println("label decl:", labelBeforeShortDecl(2))
+	println("mixed decl:", mixedForwardBackwardDecl(2))
 }

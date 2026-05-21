@@ -64,6 +64,39 @@ export function mixedForwardBackward(limit: number): number {
 	return total
 }
 
+export function labelBeforeShortDecl(v: number): number {
+	skip: {
+		if (v > 0) {
+			break skip
+		}
+		return 0
+	}
+	let x = v + 1
+	return x
+}
+
+export function mixedForwardBackwardDecl(limit: number): number {
+	let total = 0
+	__goscriptLoop751: while (total < limit) {
+		let __goscriptSkip784 = true
+		check: while (true) {
+			if (!__goscriptSkip784) {
+				if (total >= limit) {
+					continue __goscriptLoop751
+				}
+			}
+			__goscriptSkip784 = false
+
+			skip:;
+			let x = total + 1
+			total = x
+			continue check
+			break
+		}
+	}
+	return total
+}
+
 export async function main(): Promise<void> {
 	$.println("skip negative:", skipToLabel(-1))
 	$.println("skip positive:", skipToLabel(1))
@@ -71,6 +104,8 @@ export async function main(): Promise<void> {
 	$.println("loop included:", skipLoop(2))
 	$.println("mixed small:", mixedForwardBackward(1))
 	$.println("mixed large:", mixedForwardBackward(5))
+	$.println("label decl:", labelBeforeShortDecl(2))
+	$.println("mixed decl:", mixedForwardBackwardDecl(2))
 }
 
 
