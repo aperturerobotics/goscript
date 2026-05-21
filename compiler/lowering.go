@@ -1643,7 +1643,8 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
 			continue
 		}
-		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, stmt.Tok == token.DEFINE)
+		isShortDecl := stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs)
+		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, isShortDecl)
 		right, rightDiagnostics := o.lowerExpr(ctx, stmt.Rhs[idx])
 		diagnostics = append(diagnostics, leftDiagnostics...)
 		diagnostics = append(diagnostics, rightDiagnostics...)
@@ -1669,7 +1670,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			stmts = append(stmts, loweredStmt{text: pointer + " = " + right})
 			continue
 		}
-		if stmt.Tok == token.DEFINE {
+		if isShortDecl {
 			if ident, ok := lhs.(*ast.Ident); ok {
 				right = o.lowerDeclaredValue(ctx, ident, right)
 			}
@@ -1680,7 +1681,11 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			stmts = append(stmts, loweredStmt{text: left + " = " + left + " & ~(" + right + ")"})
 			continue
 		}
-		stmts = append(stmts, loweredStmt{text: left + " " + stmt.Tok.String() + " " + right})
+		op := stmt.Tok.String()
+		if stmt.Tok == token.DEFINE {
+			op = "="
+		}
+		stmts = append(stmts, loweredStmt{text: left + " " + op + " " + right})
 	}
 	return stmts, diagnostics
 }
