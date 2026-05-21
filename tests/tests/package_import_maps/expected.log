@@ -4,4 +4,5 @@ Result: btest,
 Result: btest,_local
 Result: ctest-
 Result: ctest-_local
+Copy result: 1 2 2
 test finished

@@ -68,10 +68,10 @@ export function Clone<K extends $.Comparable, V>(m: Map<K, V>): Map<K, V> {
 // the value in dst will be overwritten by the value associated
 // with the key in src.
 export function Copy<K extends $.Comparable, V>(
-  dst: Map<K, V>,
-  src: Map<K, V>,
+  dst: Map<K, V> | null,
+  src: Map<K, V> | null,
 ): void {
-  for (const [k, v] of src.entries()) {
+  for (const [k, v] of src?.entries() ?? []) {
     $.mapSet(dst, k, v)
   }
 }

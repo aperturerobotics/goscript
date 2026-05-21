@@ -54,5 +54,12 @@ func main() {
 		println("Result:", result)
 	}
 
+	dst := map[string]int{"base": 1}
+	src := map[string]int{"copied": 2}
+	maps.Copy(dst, src)
+	var nilSrc map[string]int
+	maps.Copy(dst, nilSrc)
+	println("Copy result:", dst["base"], dst["copied"], len(dst))
+
 	println("test finished")
 }

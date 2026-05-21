@@ -66,6 +66,13 @@ export async function main(): Promise<void> {
 		$.println("Result:", result)
 	}
 
+	let dst = new Map<string, number>([["base", 1]])
+	let src = new Map<string, number>([["copied", 2]])
+	maps.Copy(dst, src)
+	let nilSrc: Map<string, number> | null = null
+	maps.Copy(dst, nilSrc)
+	$.println("Copy result:", $.mapGet(dst, "base", 0)[0], $.mapGet(dst, "copied", 0)[0], $.len(dst))
+
 	$.println("test finished")
 }
 
