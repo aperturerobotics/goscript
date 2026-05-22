@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/implicit_type_imports/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "handler.gs.ts",
+    "index.ts",
+    "invoker.gs.ts",
+    "main.gs.ts",
+    "server.gs.ts",
+    "stream.gs.ts"
+  ]
+}

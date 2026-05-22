@@ -1,0 +1,56 @@
+// Generated file based on main.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+import * as io from "@goscript/io/index.js"
+
+import * as __goscript_server from "./server.gs.ts"
+
+export class localReadWriteCloser {
+	public _fields: {
+	}
+
+	constructor(init?: Partial<{}>) {
+		this._fields = {
+		}
+	}
+
+	public clone(): localReadWriteCloser {
+		const cloned = new localReadWriteCloser()
+		cloned._fields = {
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Close(): $.GoError {
+		return null
+	}
+
+	public Read(_p0: $.Slice<number>): [number, $.GoError] {
+		return [0, null]
+	}
+
+	public Write(p: $.Slice<number>): [number, $.GoError] {
+		return [$.len(p), null]
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.localReadWriteCloser",
+		new localReadWriteCloser(),
+		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
+		localReadWriteCloser,
+		{}
+	)
+}
+
+export async function main(): Promise<void> {
+	let server: __goscript_server.Server | $.VarRef<__goscript_server.Server> | null = new __goscript_server.Server()
+	$.pointerValue<__goscript_server.Server>(server).Handle($.interfaceValue<io.ReadWriteCloser | null>(new localReadWriteCloser(), "*main.localReadWriteCloser"))
+	$.println("ok")
+}
+
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

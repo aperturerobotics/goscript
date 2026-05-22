@@ -179,7 +179,17 @@ func (o *LoweringOwner) lowerFile(
 	for importSourcePath := range relevantImportFiles {
 		o.addGeneratedTypeImports(model, semPkg, importSourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
 	}
-	localAliases, localAliasSources := o.localFileAliases(semPkg, file, sourcePath, associatedMethods)
+	localAliases, localAliasSources, implicitImports := o.localFileAliases(semPkg, file, sourcePath, associatedMethods)
+	implicitImportPaths := make([]string, 0, len(implicitImports))
+	for pkgPath := range implicitImports {
+		if pkgPath != "" && pkgPath != semPkg.pkgPath {
+			implicitImportPaths = append(implicitImportPaths, pkgPath)
+		}
+	}
+	slices.Sort(implicitImportPaths)
+	for _, pkgPath := range implicitImportPaths {
+		o.addGeneratedImportPath(model, pkgPath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
+	}
 	localImports := make([]loweredImport, 0, len(localAliases))
 	seenLocalImport := make(map[string]bool)
 	for _, alias := range localAliases {
@@ -265,27 +275,39 @@ func (o *LoweringOwner) addGeneratedTypeImports(
 	}
 	slices.Sort(pkgPaths)
 	for _, pkgPath := range pkgPaths {
-		if !o.hasGeneratedImportPackage(model, pkgPath) {
-			continue
-		}
-		if importPaths[pkgPath] != "" {
-			continue
-		}
-		alias := generatedImportAlias(model, pkgPath)
-		alias = uniqueImportAlias(alias, pkgPath, importAliases, reservedImportAliases)
-		source := "@goscript/" + pkgPath + "/index.js"
-		importKey := alias + "\x00" + source
-		if seenImport[importKey] {
-			continue
-		}
-		seenImport[importKey] = true
-		importAliases[alias] = pkgPath
-		importPaths[pkgPath] = alias
-		loweredFile.imports = append(loweredFile.imports, loweredImport{
-			alias:  alias,
-			source: source,
-		})
+		o.addGeneratedImportPath(model, pkgPath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
 	}
+}
+
+func (o *LoweringOwner) addGeneratedImportPath(
+	model *SemanticModel,
+	pkgPath string,
+	loweredFile *loweredFile,
+	importAliases map[string]string,
+	importPaths map[string]string,
+	reservedImportAliases map[string]bool,
+	seenImport map[string]bool,
+) {
+	if !o.hasGeneratedImportPackage(model, pkgPath) {
+		return
+	}
+	if importPaths[pkgPath] != "" {
+		return
+	}
+	alias := generatedImportAlias(model, pkgPath)
+	alias = uniqueImportAlias(alias, pkgPath, importAliases, reservedImportAliases)
+	source := "@goscript/" + pkgPath + "/index.js"
+	importKey := alias + "\x00" + source
+	if seenImport[importKey] {
+		return
+	}
+	seenImport[importKey] = true
+	importAliases[alias] = pkgPath
+	importPaths[pkgPath] = alias
+	loweredFile.imports = append(loweredFile.imports, loweredImport{
+		alias:  alias,
+		source: source,
+	})
 }
 
 func (o *LoweringOwner) hasGeneratedImportPackage(model *SemanticModel, pkgPath string) bool {
@@ -404,7 +426,7 @@ func (o *LoweringOwner) localFileAliases(
 	file *ast.File,
 	sourcePath string,
 	associatedMethods []*ast.FuncDecl,
-) (map[types.Object]string, map[string]string) {
+) (map[types.Object]string, map[string]string, map[string]bool) {
 	declFiles := make(map[types.Object]string)
 	for _, decl := range semPkg.declarations {
 		if decl.object == nil || decl.position.file == "" {
@@ -419,6 +441,7 @@ func (o *LoweringOwner) localFileAliases(
 	}
 	aliases := make(map[types.Object]string)
 	aliasSources := make(map[string]string)
+	implicitImports := make(map[string]bool)
 	seenObjects := make(map[types.Object]bool)
 	seenTypes := make(map[types.Type]bool)
 	var addTypeDeps func(typ types.Type)
@@ -480,6 +503,15 @@ func (o *LoweringOwner) localFileAliases(
 		}
 		seenTypes[typ] = true
 		if alias, ok := typ.(*types.Alias); ok {
+			if obj := alias.Obj(); obj != nil && obj.Pkg() != nil && obj.Pkg().Path() != semPkg.pkgPath {
+				implicitImports[obj.Pkg().Path()] = true
+				if args := alias.TypeArgs(); args != nil {
+					for t := range args.Types() {
+						addTypeDeps(t)
+					}
+				}
+				return
+			}
 			addObject(alias.Obj())
 			if args := alias.TypeArgs(); args != nil {
 				for t := range args.Types() {
@@ -490,6 +522,15 @@ func (o *LoweringOwner) localFileAliases(
 			return
 		}
 		if named, ok := types.Unalias(typ).(*types.Named); ok {
+			if obj := named.Obj(); obj != nil && obj.Pkg() != nil && obj.Pkg().Path() != semPkg.pkgPath {
+				implicitImports[obj.Pkg().Path()] = true
+				if args := named.TypeArgs(); args != nil {
+					for t := range args.Types() {
+						addTypeDeps(t)
+					}
+				}
+				return
+			}
 			addObject(named.Obj())
 			if args := named.TypeArgs(); args != nil {
 				for t := range args.Types() {
@@ -515,6 +556,25 @@ func (o *LoweringOwner) localFileAliases(
 			for field := range typed.Fields() {
 				addTypeDeps(field.Type())
 			}
+		case *types.Signature:
+			if params := typed.Params(); params != nil {
+				for param := range params.Variables() {
+					addTypeDeps(param.Type())
+				}
+			}
+			if results := typed.Results(); results != nil {
+				for result := range results.Variables() {
+					addTypeDeps(result.Type())
+				}
+			}
+		case *types.Interface:
+			typed.Complete()
+			for method := range typed.Methods() {
+				addTypeDeps(method.Type())
+			}
+			for etyp := range typed.EmbeddedTypes() {
+				addTypeDeps(etyp)
+			}
 		}
 	}
 	inspect := func(node ast.Node) bool {
@@ -535,7 +595,7 @@ func (o *LoweringOwner) localFileAliases(
 	for _, methodDecl := range associatedMethods {
 		ast.Inspect(methodDecl, inspect)
 	}
-	return aliases, aliasSources
+	return aliases, aliasSources, implicitImports
 }
 
 func safeIdentifier(value string) string {
