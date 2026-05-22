@@ -10,6 +10,8 @@ func main() {
 	// Test Join function
 	joined := path.Join("a", "b", "c")
 	println("Join result:", joined)
+	joinedSpread := path.Join([]string{"root", "leaf"}...)
+	println("Join spread result:", joinedSpread)
 
 	// Test Base function
 	base := path.Base("/a/b/c.txt")

@@ -2,6 +2,20 @@
 // in a way compatible with the target operating system-defined file paths.
 import * as $ from '@goscript/builtin/index.js'
 
+type JoinElement = string | $.Slice<string>
+
+function normalizeJoinElements(elem: JoinElement[]): string[] {
+  if (elem.length === 1 && typeof elem[0] !== 'string') {
+    const slice = elem[0]
+    const parts: string[] = []
+    for (let i = 0; i < $.len(slice); i++) {
+      parts.push(slice![i])
+    }
+    return parts
+  }
+  return elem as string[]
+}
+
 // Path separator constants
 export const Separator = $.stringToRune('/')
 export const ListSeparator = $.stringToRune(':')
@@ -123,15 +137,16 @@ export function Clean(path: string): string {
 // are ignored. The result is Cleaned. However, if the argument
 // list is empty or all its elements are empty, Join returns
 // an empty string.
-export function Join(...elem: string[]): string {
-  if (elem.length === 0) {
+export function Join(...elem: JoinElement[]): string {
+  const partsArg = normalizeJoinElements(elem)
+  if (partsArg.length === 0) {
     return ''
   }
 
   // Filter out empty elements but handle absolute paths
   const parts: string[] = []
 
-  for (const e of elem) {
+  for (const e of partsArg) {
     if (e === '') {
       continue
     }

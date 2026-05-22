@@ -26,6 +26,8 @@ func main() {
 	// Test Join
 	joined := filepath.Join("dir", "subdir", "file.txt")
 	println("Join:", joined)
+	joinedSpread := filepath.Join([]string{"dir", "spread.txt"}...)
+	println("Join spread:", joinedSpread)
 
 	// Test Split
 	dir2, file := filepath.Split(path)

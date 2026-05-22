@@ -1,5 +1,19 @@
 import * as $ from '@goscript/builtin/index.js'
 
+type JoinElement = string | $.Slice<string>
+
+function normalizeJoinElements(elem: JoinElement[]): string[] {
+  if (elem.length === 1 && typeof elem[0] !== 'string') {
+    const slice = elem[0]
+    const parts: string[] = []
+    for (let i = 0; i < $.len(slice); i++) {
+      parts.push(slice![i])
+    }
+    return parts
+  }
+  return elem as string[]
+}
+
 class lazybuf {
   public get s(): string {
     return this._fields.s.value
@@ -245,10 +259,11 @@ export function Split(path: string): [string, string] {
 // The result is Cleaned. However, if the argument list is
 // empty or all its elements are empty, Join returns
 // an empty string.
-export function Join(...elem: string[]): string {
+export function Join(...elem: JoinElement[]): string {
+  const parts = normalizeJoinElements(elem)
   let size = 0
-  for (let _i = 0; _i < $.len(elem); _i++) {
-    const e = elem![_i]
+  for (let _i = 0; _i < $.len(parts); _i++) {
+    const e = parts![_i]
     {
       size += $.len(e)
     }
@@ -257,8 +272,8 @@ export function Join(...elem: string[]): string {
     return ''
   }
   let buf: string[] = []
-  for (let _i = 0; _i < $.len(elem); _i++) {
-    const e = elem![_i]
+  for (let _i = 0; _i < $.len(parts); _i++) {
+    const e = parts![_i]
     {
       if ($.len(buf) > 0 || e != '') {
         if ($.len(buf) > 0) {

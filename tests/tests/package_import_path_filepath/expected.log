@@ -3,6 +3,7 @@ Dir: dir/subdir
 Ext: .txt
 Clean: dir/subdir/file.txt
 Join: dir/subdir/file.txt
+Join spread: dir/spread.txt
 Split dir: dir/subdir/
 Split file: file.txt
 IsAbs /absolute/path: true

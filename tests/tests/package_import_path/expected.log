@@ -1,5 +1,6 @@
 Clean result: /a/c/d
 Join result: a/b/c
+Join spread result: root/leaf
 Base result: c.txt
 Dir result: /a/b
 Ext result: .txt

@@ -29,6 +29,8 @@ export async function main(): globalThis.Promise<void> {
 	// Test Join
 	let joined = filepath.Join("dir", "subdir", "file.txt")
 	$.println("Join:", joined)
+	let joinedSpread = filepath.Join($.arrayToSlice<string>(["dir", "spread.txt"]))
+	$.println("Join spread:", joinedSpread)
 
 	// Test Split
 	let [dir2, file] = filepath.Split(path)
