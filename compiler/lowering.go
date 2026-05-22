@@ -520,6 +520,7 @@ func (o *LoweringOwner) localFileAliases(
 						addTypeDeps(t)
 					}
 				}
+				addTypeDeps(alias.Rhs())
 				return
 			}
 			addObject(alias.Obj())
@@ -591,6 +592,7 @@ func (o *LoweringOwner) localFileAliases(
 		switch typed := node.(type) {
 		case *ast.Ident:
 			addObject(semPkg.source.TypesInfo.Uses[typed])
+			addTypeDeps(semPkg.source.TypesInfo.TypeOf(typed))
 		case *ast.SelectorExpr:
 			if selection := semPkg.source.TypesInfo.Selections[typed]; selection != nil {
 				addObject(selection.Obj())
