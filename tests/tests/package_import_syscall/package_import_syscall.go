@@ -15,6 +15,9 @@ func main() {
 		fmt.Println("set false:", err)
 		return
 	}
+	if syscall.F_DUPFD_CLOEXEC != 0 {
+		fmt.Println("cloexec supported")
+	}
 	if false {
 		var st syscall.Stat_t
 		var buf []byte

@@ -7,6 +7,8 @@ import * as fmt from "@goscript/fmt/index.js"
 
 import * as syscall from "@goscript/syscall/index.js"
 
+import * as sync from "@goscript/sync/index.js"
+
 export async function main(): globalThis.Promise<void> {
 	syscall.CloseOnExec(1)
 	{
@@ -22,6 +24,9 @@ export async function main(): globalThis.Promise<void> {
 			fmt.Println("set false:", (err as any))
 			return
 		}
+	}
+	if (syscall.F_DUPFD_CLOEXEC != 0) {
+		fmt.Println("cloexec supported")
 	}
 	if (false) {
 		let st: $.VarRef<syscall.Stat_t> = $.varRef($.markAsStructValue(new syscall.Stat_t()))
