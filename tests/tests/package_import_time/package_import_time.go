@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"math"
+	"time"
+)
 
 func main() {
 	now := time.Now()
@@ -42,6 +45,11 @@ func main() {
 	println("parsed duration", duration, durationErr == nil)
 	_, badDurationErr := time.ParseDuration("not-a-duration")
 	println("bad duration err", badDurationErr != nil)
+
+	timer := time.AfterFunc(math.MaxInt64, func() {})
+	println("max duration timer stopped", timer.Stop())
+	maxDuration := time.Duration(math.MaxInt64)
+	println("max duration converted", maxDuration > 0)
 
 	parsed, parseErr := time.Parse(time.RFC3339, "2025-05-15T01:10:42Z")
 	println("parsed time", parsed.UTC().Format(time.RFC3339), parseErr == nil)

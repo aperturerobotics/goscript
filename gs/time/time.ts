@@ -632,6 +632,19 @@ export class Time {
 // Duration represents a span of time (nanoseconds)
 export type Duration = number
 
+const maxTimerDelayMilliseconds = 0x7fffffff
+
+function timeoutMilliseconds(d: Duration): number {
+  const ms = d / 1000000
+  if (!Number.isFinite(ms) || ms > maxTimerDelayMilliseconds) {
+    return maxTimerDelayMilliseconds
+  }
+  if (ms <= 0) {
+    return 0
+  }
+  return ms
+}
+
 // Duration comparison function
 export function Duration_lt(receiver: Duration, other: Duration): boolean {
   return receiver < other
@@ -812,7 +825,7 @@ export class Timer {
   }
 
   private start(d: Duration): NodeJS.Timeout | number {
-    const ms = d / 1000000
+    const ms = timeoutMilliseconds(d)
     if (this._callback) {
       return setTimeout(this._callback, ms)
     }
@@ -830,7 +843,7 @@ export class Ticker {
 
   constructor(duration: Duration) {
     this._duration = duration
-    const ms = duration / 1000000 // Convert nanoseconds to milliseconds
+    const ms = timeoutMilliseconds(duration)
     this._interval = setInterval(() => {}, ms)
   }
 
@@ -849,13 +862,13 @@ export class Ticker {
     this.Stop()
     this._stopped = false
     this._duration = d
-    const ms = d / 1000000
+    const ms = timeoutMilliseconds(d)
     this._interval = setInterval(() => {}, ms)
   }
 
   // Channel returns an async iterator that yields time values
   public async *Channel(): AsyncIterableIterator<Time> {
-    const ms = this._duration / 1000000
+    const ms = timeoutMilliseconds(this._duration)
     while (!this._stopped) {
       await new Promise((resolve) => setTimeout(resolve, ms))
       if (!this._stopped) {
@@ -955,7 +968,7 @@ export function Until(t: Time): Duration {
 
 // Sleep pauses the current execution for at least the duration d
 export async function Sleep(d: Duration): Promise<void> {
-  const ms = d / 1000000 // Convert nanoseconds to milliseconds
+  const ms = timeoutMilliseconds(d)
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -1116,7 +1129,7 @@ export function ParseInLocation(
 
 // After waits for the duration to elapse and then sends the current time on the returned channel
 export function After(d: Duration): ChannelRef<Time> {
-  const ms = d / 1000000 // Convert nanoseconds to milliseconds
+  const ms = timeoutMilliseconds(d)
 
   // Create a buffered channel with capacity 1
   const channel = makeChannel(1, new Time(), 'both')

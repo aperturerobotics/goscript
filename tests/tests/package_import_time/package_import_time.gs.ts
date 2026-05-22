@@ -3,6 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+import * as math from "@goscript/math/index.js"
+
 import * as time from "@goscript/time/index.js"
 
 export async function main(): Promise<void> {
@@ -45,6 +47,12 @@ export async function main(): Promise<void> {
 	$.println("parsed duration", duration, durationErr == null)
 	let [, badDurationErr] = time.ParseDuration("not-a-duration")
 	$.println("bad duration err", badDurationErr != null)
+
+	let timer: time.Timer | $.VarRef<time.Timer> | null = time.AfterFunc(9223372036854775807, $.functionValue((): void => {
+	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	$.println("max duration timer stopped", $.pointerValue<time.Timer>(timer).Stop())
+	let maxDuration = 9223372036854775807
+	$.println("max duration converted", maxDuration > 0)
 
 	let [parsed, parseErr] = time.Parse(time.RFC3339, "2025-05-15T01:10:42Z")
 	$.println("parsed time", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(parsed)).UTC())).Format(time.RFC3339), parseErr == null)

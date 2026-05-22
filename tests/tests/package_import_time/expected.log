@@ -21,6 +21,8 @@ seconds 1.5
 duration string 1.5s
 parsed duration 1500000000 true
 bad duration err true
+max duration timer stopped true
+max duration converted true
 parsed time 2025-05-15T01:10:42Z true
 parsed nano 2025-05-15T01:10:42Z
 bad time err true

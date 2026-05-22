@@ -4279,6 +4279,11 @@ func (o *LoweringOwner) lowerConversionExpr(
 	if conversion, ok := o.lowerNamedStructConversion(ctx, expr.Args[0], targetType, sourceType, value); ok {
 		return renderNamedStructConversion(conversion), diagnostics
 	}
+	if isNumericType(targetType) {
+		if constantValue, ok := lowerRealNumericConstantExpr(ctx, expr.Args[0]); ok {
+			return constantValue, diagnostics
+		}
+	}
 	if named := namedFunctionType(targetType); named != nil {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedFunction) +
 			"(" + value + ", " + strconv.Quote(runtimeNamedTypeName(named)) + ")", diagnostics
@@ -5159,7 +5164,34 @@ func (o *LoweringOwner) lowerValueForTarget(
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperComplex) + "(" + value + ", 0)"
 		}
 	}
+	if isNumericType(targetType) {
+		if constantValue, ok := lowerRealNumericConstantExpr(ctx, expr); ok {
+			return constantValue
+		}
+	}
 	return o.lowerValueForTargetTypes(ctx, targetType, sourceType, value, shouldCloneStructValue(expr))
+}
+
+func lowerRealNumericConstantExpr(ctx lowerFileContext, expr ast.Expr) (string, bool) {
+	if ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return "", false
+	}
+	if _, ok := objectForValueExpr(ctx, expr).(*types.Const); !ok {
+		return "", false
+	}
+	tv, ok := ctx.semPkg.source.TypesInfo.Types[expr]
+	if !ok || tv.Value == nil {
+		return "", false
+	}
+	switch tv.Value.Kind() {
+	case constant.Int:
+		if constant.BitLen(tv.Value) <= 53 {
+			return "", false
+		}
+		return lowerConstantValue(tv.Value)
+	default:
+		return "", false
+	}
 }
 
 func isRealNumericConstantExpr(ctx lowerFileContext, expr ast.Expr) bool {
