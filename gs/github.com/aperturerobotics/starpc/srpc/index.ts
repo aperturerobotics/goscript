@@ -13,6 +13,8 @@ export type TypeScriptClient = StarpcClient
 export type TypeScriptMux = StarpcMux
 export type TypeScriptServer = StarpcServer
 
+type MaybePromise<T> = T | Promise<T>
+
 export const ErrReset = $.newError('stream reset')
 export const ErrUnimplemented = $.newError('unimplemented')
 export const ErrCompleted = $.newError(
@@ -154,7 +156,7 @@ export class ClientSet implements Client {
 
   private async execCall(
     ctx: context.Context,
-    call: (client: Client) => Promise<$.GoError>,
+    call: (client: Client) => MaybePromise<$.GoError>,
   ): Promise<$.GoError> {
     let anyClient = false
     for (let i = 0; i < $.len(this.clients); i++) {
@@ -264,23 +266,23 @@ export function NewPrefixClient(
 
 export interface Stream {
   Context(): context.Context
-  MsgSend(msg: Message | null): $.GoError
-  MsgRecv(msg: Message | null): $.GoError
-  CloseSend(): $.GoError
-  Close(): $.GoError
+  MsgSend(msg: Message | null): MaybePromise<$.GoError>
+  MsgRecv(msg: Message | null): MaybePromise<$.GoError>
+  CloseSend(): MaybePromise<$.GoError>
+  Close(): MaybePromise<$.GoError>
 }
 
 export interface StreamRecv<T> extends Stream {
-  Recv(): [T, $.GoError]
-  RecvTo(value: T): $.GoError
+  Recv(): MaybePromise<[T, $.GoError]>
+  RecvTo(value: T): MaybePromise<$.GoError>
 }
 
 export interface StreamSend<T> extends Stream {
-  Send(value: T): $.GoError
+  Send(value: T): MaybePromise<$.GoError>
 }
 
 export interface StreamSendAndClose<T> extends StreamSend<T> {
-  SendAndClose(value: T): $.GoError
+  SendAndClose(value: T): MaybePromise<$.GoError>
 }
 
 class emptyStream implements Stream {
@@ -317,35 +319,35 @@ class emptyStream implements Stream {
 class streamWithClose implements Stream {
   constructor(
     private stream: Stream,
-    private closeFn: () => $.GoError,
+    private closeFn: () => MaybePromise<$.GoError>,
   ) {}
 
   public Context(): context.Context {
     return this.stream.Context()
   }
 
-  public MsgSend(msg: Message | null): $.GoError {
+  public MsgSend(msg: Message | null): MaybePromise<$.GoError> {
     return this.stream.MsgSend(msg)
   }
 
-  public MsgRecv(msg: Message | null): $.GoError {
+  public MsgRecv(msg: Message | null): MaybePromise<$.GoError> {
     return this.stream.MsgRecv(msg)
   }
 
-  public CloseSend(): $.GoError {
+  public CloseSend(): MaybePromise<$.GoError> {
     return this.stream.CloseSend()
   }
 
-  public Close(): $.GoError {
-    const err = this.stream.Close()
-    const closeErr = this.closeFn()
+  public async Close(): Promise<$.GoError> {
+    const err = await this.stream.Close()
+    const closeErr = await this.closeFn()
     return err ?? closeErr
   }
 }
 
 export function NewStreamWithClose(
   stream: Stream | null,
-  close: () => $.GoError,
+  close: () => MaybePromise<$.GoError>,
 ): Stream {
   return new streamWithClose(stream ?? new emptyStream(), close)
 }
@@ -355,7 +357,7 @@ export interface Invoker {
     serviceID: string,
     methodID: string,
     stream: Stream | null,
-  ): Promise<[boolean, $.GoError]>
+  ): MaybePromise<[boolean, $.GoError]>
 }
 
 export interface QueryableInvoker {

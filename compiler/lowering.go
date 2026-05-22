@@ -6686,7 +6686,7 @@ func (o *LoweringOwner) overrideCallNeedsAwait(ctx lowerFileContext, fun ast.Exp
 	if method == nil {
 		return false
 	}
-	named := receiverNamedType(selection.Recv())
+	named := selectedReceiverNamedType(ctx.semPkg.source, selector, selection)
 	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
 		return false
 	}

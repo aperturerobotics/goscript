@@ -721,7 +721,7 @@ func overrideCallPackage(pkg *packages.Package, expr ast.Expr) string {
 	if method == nil {
 		return ""
 	}
-	named := receiverNamedType(selection.Recv())
+	named := selectedReceiverNamedType(pkg, selector, selection)
 	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
 		return ""
 	}
@@ -741,11 +741,51 @@ func overrideCallMethod(pkg *packages.Package, expr ast.Expr) string {
 	if method == nil {
 		return ""
 	}
-	named := receiverNamedType(selection.Recv())
+	named := selectedReceiverNamedType(pkg, selector, selection)
 	if named == nil || named.Obj() == nil {
 		return ""
 	}
 	return named.Obj().Name() + "." + method.Name()
+}
+
+func selectedReceiverNamedType(pkg *packages.Package, selector *ast.SelectorExpr, selection *types.Selection) *types.Named {
+	if named := promotedReceiverNamedType(selection); named != nil {
+		return named
+	}
+	if named := receiverNamedType(selection.Recv()); named != nil {
+		return named
+	}
+	if pkg == nil || selector == nil {
+		return nil
+	}
+	return receiverNamedType(pkg.TypesInfo.TypeOf(selector.X))
+}
+
+func promotedReceiverNamedType(selection *types.Selection) *types.Named {
+	index := selection.Index()
+	if len(index) <= 1 {
+		return nil
+	}
+	typ := selection.Recv()
+	for _, idx := range index[:len(index)-1] {
+		for {
+			if pointer, ok := types.Unalias(typ).(*types.Pointer); ok {
+				typ = pointer.Elem()
+				continue
+			}
+			break
+		}
+		switch underlying := types.Unalias(typ).Underlying().(type) {
+		case *types.Struct:
+			if idx < 0 || idx >= underlying.NumFields() {
+				return nil
+			}
+			typ = underlying.Field(idx).Type()
+		default:
+			return receiverNamedType(typ)
+		}
+	}
+	return receiverNamedType(typ)
 }
 
 func overrideFunctionCallPackage(pkg *packages.Package, expr ast.Expr) string {
