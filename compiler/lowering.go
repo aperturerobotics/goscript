@@ -1407,6 +1407,18 @@ func objectAssignedInBlock(ctx lowerFileContext, obj types.Object, body *ast.Blo
 	return assigned
 }
 
+func rangeBindingAssignedInBody(ctx lowerFileContext, expr ast.Expr, body *ast.BlockStmt) bool {
+	ident, ok := expr.(*ast.Ident)
+	if !ok || ident.Name == "_" || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	obj := ctx.semPkg.source.TypesInfo.Defs[ident]
+	if obj == nil {
+		obj = ctx.semPkg.source.TypesInfo.Uses[ident]
+	}
+	return objectAssignedInBlock(ctx, obj, body)
+}
+
 func expressionUsesObject(ctx lowerFileContext, expr ast.Expr, obj types.Object) bool {
 	if expr == nil || obj == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
 		return false
@@ -3409,9 +3421,14 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		if value == "" {
 			value = "__rangeValue"
 		}
+		binding := "const"
+		if rangeBindingAssignedInBody(ctx, stmt.Key, stmt.Body) ||
+			rangeBindingAssignedInBody(ctx, stmt.Value, stmt.Body) {
+			binding = "let"
+		}
 		return loweredStmt{
 			hasBlock: true,
-			text:     "for (const [" + key + ", " + value + "] of " + rangeTarget + "?.entries() ?? [])",
+			text:     "for (" + binding + " [" + key + ", " + value + "] of " + rangeTarget + "?.entries() ?? [])",
 			children: body,
 		}, diagnostics
 	}
@@ -3426,9 +3443,14 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		if value == "" {
 			value = "__rangeRune"
 		}
+		binding := "const"
+		if rangeBindingAssignedInBody(ctx, stmt.Key, stmt.Body) ||
+			rangeBindingAssignedInBody(ctx, stmt.Value, stmt.Body) {
+			binding = "let"
+		}
 		return loweredStmt{
 			hasBlock: true,
-			text:     "for (const [" + key + ", " + value + "] of " + o.runtimeOwner.QualifiedHelper(RuntimeHelperRangeString) + "(" + rangeValue + "))",
+			text:     "for (" + binding + " [" + key + ", " + value + "] of " + o.runtimeOwner.QualifiedHelper(RuntimeHelperRangeString) + "(" + rangeValue + "))",
 			children: body,
 		}, diagnostics
 	}
