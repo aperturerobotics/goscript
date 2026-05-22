@@ -163,6 +163,11 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Append to nil slice len:", $.len(nilSlice))
 	$.println("Append to nil slice cap:", $.cap(nilSlice))
 	$.println("Append to nil slice[0]:", nilSlice![0])
+	let spreadSource = $.arrayToSlice<number>([7, 8])
+	nilSlice = $.append(nilSlice, ...(spreadSource ?? []))
+	$.println("Append spread slice len:", $.len(nilSlice))
+	$.println("Append spread slice[1]:", nilSlice![1])
+	$.println("Append spread slice[2]:", nilSlice![2])
 
 	// Out-of-bounds indexing (should panic)
 	// Note: Testing panics in compliance tests requires specific handling in the test runner.
@@ -341,7 +346,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Capacity of emptySliceOfSlices after append:", $.cap(emptySliceOfSlices))
 	$.println("emptySliceOfSlices[0][0]:", emptySliceOfSlices![0]![0])
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -160,6 +160,11 @@ func main() {
 	println("Append to nil slice len:", len(nilSlice)) // 1
 	println("Append to nil slice cap:", cap(nilSlice)) // 1 (or more)
 	println("Append to nil slice[0]:", nilSlice[0])    // 5
+	spreadSource := []int{7, 8}
+	nilSlice = append(nilSlice, spreadSource...)
+	println("Append spread slice len:", len(nilSlice)) // 3
+	println("Append spread slice[1]:", nilSlice[1])    // 7
+	println("Append spread slice[2]:", nilSlice[2])    // 8
 
 	// Out-of-bounds indexing (should panic)
 	// Note: Testing panics in compliance tests requires specific handling in the test runner.

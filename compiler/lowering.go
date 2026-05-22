@@ -4563,6 +4563,14 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 				}
 				return o.runtimeOwner.QualifiedHelper(helper) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "append":
+				if expr.Ellipsis != token.NoPos && len(args) > 1 {
+					last := len(args) - 1
+					spread := args[last]
+					if isStringType(ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[len(expr.Args)-1])) {
+						spread = o.runtimeOwner.QualifiedHelper(RuntimeHelperStringToBytes) + "(" + spread + ")"
+					}
+					args[last] = "...(" + spread + " ?? [])"
+				}
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperAppend) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "cap":
 				if len(expr.Args) == 1 {

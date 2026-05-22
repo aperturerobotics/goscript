@@ -86,6 +86,9 @@ Nil slice cap: 0
 Append to nil slice len: 1
 Append to nil slice cap: 1
 Append to nil slice[0]: 5
+Append spread slice len: 3
+Append spread slice[1]: 7
+Append spread slice[2]: 8
 --- Slices of Slices Tests ---
 Length of sliceOfSlices: 3
 Capacity of sliceOfSlices: 3
