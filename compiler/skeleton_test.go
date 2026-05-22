@@ -1492,6 +1492,53 @@ func TestCompileSourceToTypeScriptCompilesSingleFile(t *testing.T) {
 	}
 }
 
+func TestTypeScriptEmitOwnerEmitsToMemoryOnDiskPath(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod":  "module example.test/memoryemit\n\ngo 1.25.3\n",
+		"main.go": "package main\nfunc main() { println(\"memory\") }\n",
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	req := &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          outputDir,
+		DependencyMode:      DependencyModeRequested,
+		RuntimeEmissionMode: RuntimeEmissionModeReference,
+	}
+	service := NewCompileService()
+	graph, diagnostics := service.PackageGraphOwner().Load(context.Background(), req)
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("graph diagnostics: %#v", diagnostics)
+	}
+	model, diagnostics := service.SemanticModelOwner().Build(context.Background(), graph)
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("semantic diagnostics: %#v", diagnostics)
+	}
+	program, diagnostics := service.LoweringOwner().Build(context.Background(), model)
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("lowering diagnostics: %#v", diagnostics)
+	}
+
+	files, diagnostics := service.TypeScriptEmitOwner().EmitToMemory(context.Background(), program)
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("memory emit diagnostics: %#v", diagnostics)
+	}
+	path := "@goscript/example.test/memoryemit/main.gs.ts"
+	if !strings.Contains(files[path], "$.println(\"memory\")") {
+		t.Fatalf("missing in-memory output: %#v", files)
+	}
+	if _, diagnostics := service.TypeScriptEmitOwner().Emit(context.Background(), req, program); diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("disk emit diagnostics: %#v", diagnostics)
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, filepath.FromSlash(path)))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if string(content) != files[path] {
+		t.Fatalf("disk and memory emit diverged:\n%s\n---\n%s", string(content), files[path])
+	}
+}
+
 func TestCompilePackagesLowersNamedStructConversionWithTypedAsyncFact(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/namedstructconvert\n\ngo 1.25.3\n",

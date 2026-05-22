@@ -51,8 +51,11 @@ func (o *TypeScriptEmitOwner) Emit(
 		}}
 	}
 
+	files, diagnostics := o.EmitToMemory(ctx, program)
+	if diagnosticsHaveErrors(diagnostics) {
+		return nil, diagnostics
+	}
 	var compiled []string
-	var diagnostics []Diagnostic
 	for _, pkg := range program.packages {
 		if err := ctx.Err(); err != nil {
 			diagnostics = append(diagnostics, Diagnostic{
@@ -68,18 +71,48 @@ func (o *TypeScriptEmitOwner) Emit(
 			continue
 		}
 		for _, file := range pkg.files {
-			path := filepath.Join(pkgDir, file.outputName)
-			if err := os.WriteFile(path, []byte(o.renderLoweredFile(pkg, file)), 0o644); err != nil {
+			filePath := "@goscript/" + pkg.pkgPath + "/" + file.outputName
+			path := filepath.Join(req.OutputPath, filepath.FromSlash(filePath))
+			if err := os.WriteFile(path, []byte(files[filePath]), 0o644); err != nil {
 				diagnostics = append(diagnostics, emitError("write TypeScript file", path, err))
 			}
 		}
-		if err := os.WriteFile(filepath.Join(pkgDir, "index.ts"), []byte(renderIndex(pkg)), 0o644); err != nil {
+		indexPath := "@goscript/" + pkg.pkgPath + "/index.ts"
+		if err := os.WriteFile(filepath.Join(pkgDir, "index.ts"), []byte(files[indexPath]), 0o644); err != nil {
 			diagnostics = append(diagnostics, emitError("write package index", pkg.pkgPath, err))
 			continue
 		}
 		compiled = append(compiled, pkg.pkgPath)
 	}
 	return compiled, diagnostics
+}
+
+// EmitToMemory renders a lowered program into deterministic slash-path files.
+func (o *TypeScriptEmitOwner) EmitToMemory(
+	ctx context.Context,
+	program *LoweredProgram,
+) (map[string]string, []Diagnostic) {
+	if err := ctx.Err(); err != nil {
+		return nil, []Diagnostic{contextCanceledDiagnostic(err)}
+	}
+	if program == nil {
+		return nil, []Diagnostic{{
+			Severity: DiagnosticSeverityError,
+			Code:     "goscript/emitter:no-program",
+			Message:  "TypeScript emission requires a lowered program",
+		}}
+	}
+	files := make(map[string]string)
+	for _, pkg := range program.packages {
+		if err := ctx.Err(); err != nil {
+			return files, []Diagnostic{contextCanceledDiagnostic(err)}
+		}
+		for _, file := range pkg.files {
+			files["@goscript/"+pkg.pkgPath+"/"+file.outputName] = o.renderLoweredFile(pkg, file)
+		}
+		files["@goscript/"+pkg.pkgPath+"/index.ts"] = renderIndex(pkg)
+	}
+	return files, nil
 }
 
 func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *loweredFile) string {
