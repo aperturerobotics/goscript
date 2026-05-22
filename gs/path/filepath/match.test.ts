@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { Match, Glob, ErrBadPattern } from './match.js'
 
 describe('path/filepath - Pattern matching functions', () => {
@@ -216,20 +219,36 @@ describe('path/filepath - Pattern matching functions', () => {
   })
 
   describe('Glob', () => {
-    it('should validate patterns but return empty results (no filesystem)', () => {
-      // Valid patterns should not error
-      const [files1, err1] = Glob('*.txt')
+    it('should read host filesystem matches', () => {
+      const root = mkdtempSync(join(tmpdir(), 'goscript-filepath-glob-'))
+      const oldwd = process.cwd()
+      try {
+        mkdirSync(join(root, 'a', 'b', 'c.d', 'e.f'), { recursive: true })
+        process.chdir(root)
+
+        const [files1, err1] = Glob('./*/*/*.d')
+        expect(err1).toBeNull()
+        expect(files1).toEqual(['a/b/c.d'])
+
+        const [files2, err2] = Glob('a/b/c.d/e.*')
+        expect(err2).toBeNull()
+        expect(files2).toEqual(['a/b/c.d/e.f'])
+      } finally {
+        process.chdir(oldwd)
+        rmSync(root, { force: true, recursive: true })
+      }
+    })
+
+    it('should validate bad patterns', () => {
+      const [files1, err1] = Glob('[unclosed')
+      expect(err1).toBe(ErrBadPattern)
+      expect(files1).toEqual([])
+    })
+
+    it('should return empty results for unmatched valid patterns', () => {
+      const [files1, err1] = Glob('missing-*.txt')
       expect(err1).toBeNull()
       expect(files1).toEqual([])
-
-      const [files2, err2] = Glob('dir/*')
-      expect(err2).toBeNull()
-      expect(files2).toEqual([])
-
-      // Invalid patterns should error
-      const [files3, err3] = Glob('[unclosed')
-      expect(err3).toBe(ErrBadPattern)
-      expect(files3).toEqual([])
     })
   })
 

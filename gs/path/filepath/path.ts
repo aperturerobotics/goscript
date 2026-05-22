@@ -1,6 +1,7 @@
 // Package filepath implements utility routines for manipulating filename paths
 // in a way compatible with the target operating system-defined file paths.
 import * as $ from '@goscript/builtin/index.js'
+import { getHostRuntime } from '@goscript/builtin/hostio.js'
 
 type JoinElement = string | $.Slice<string>
 
@@ -322,8 +323,7 @@ export function Glob(_pattern: string): [string[], $.GoError] {
 export type WalkFunc = (path: string, info: any, err: $.GoError) => $.GoError
 
 export function Walk(root: string, walkFn: WalkFunc): $.GoError {
-  // No filesystem support, just call the function with the root
-  return walkFn(root, null, $.newError('filesystem not supported'))
+  return walkHost(root, walkFn)
 }
 
 export function WalkDir(_root: string, _walkFn: any): $.GoError {
@@ -334,4 +334,143 @@ export function WalkDir(_root: string, _walkFn: any): $.GoError {
 // Localize is a stub - in Go it's used for Windows path localization
 export function Localize(path: string): [string, $.GoError] {
   return [path, null]
+}
+
+type HostStat = {
+  isDirectory?: boolean | (() => boolean)
+  mode?: number
+  mtimeMs?: number
+  size?: number
+}
+
+type HostEntry = {
+  name: string
+  isDir: boolean
+}
+
+function hostError(err: unknown): $.GoError {
+  const message =
+    err instanceof Error ? err.message
+    : typeof err === 'string' ? err
+    : String(err)
+  return { Error: () => message }
+}
+
+function statIsDir(stat: HostStat): boolean {
+  if (typeof stat.isDirectory === 'function') {
+    return stat.isDirectory()
+  }
+  return !!stat.isDirectory
+}
+
+function fileInfo(path: string, stat: HostStat): any {
+  return {
+    IsDir: () => statIsDir(stat),
+    ModTime: () => null,
+    Mode: () => (stat.mode ?? 0) + (statIsDir(stat) ? 2147483648 : 0),
+    Name: () => Base(path),
+    Size: () => stat.size ?? 0,
+    Sys: () => stat,
+  }
+}
+
+function statPath(path: string): [HostStat | null, $.GoError] {
+  const runtime = getHostRuntime()
+  if (runtime.deno?.statSync) {
+    try {
+      return [runtime.deno.statSync(path), null]
+    } catch (err) {
+      return [null, hostError(err)]
+    }
+  }
+
+  const nodeFS = runtime.nodeFS
+  if (nodeFS?.statSync) {
+    try {
+      return [nodeFS.statSync(path), null]
+    } catch (err) {
+      return [null, hostError(err)]
+    }
+  }
+
+  return [null, $.newError('filesystem not supported')]
+}
+
+function readDir(path: string): [HostEntry[] | null, $.GoError] {
+  const runtime = getHostRuntime()
+  if (runtime.deno?.readDirSync) {
+    try {
+      const entries: HostEntry[] = []
+      for (const entry of runtime.deno.readDirSync(path)) {
+        entries.push({ name: entry.name, isDir: !!entry.isDirectory })
+      }
+      entries.sort((a, b) => a.name.localeCompare(b.name))
+      return [entries, null]
+    } catch (err) {
+      return [null, hostError(err)]
+    }
+  }
+
+  const nodeFS = runtime.nodeFS
+  if (nodeFS?.readdirSync) {
+    try {
+      const entries = nodeFS
+        .readdirSync(path, { withFileTypes: true })
+        .map((entry: any) => ({
+          name: String(entry.name),
+          isDir:
+            typeof entry.isDirectory === 'function' ?
+              entry.isDirectory()
+            : false,
+        }))
+      entries.sort((a, b) => a.name.localeCompare(b.name))
+      return [entries, null]
+    } catch (err) {
+      return [null, hostError(err)]
+    }
+  }
+
+  return [null, $.newError('filesystem not supported')]
+}
+
+function walkHost(path: string, walkFn: WalkFunc): $.GoError {
+  const [stat, statErr] = statPath(path)
+  if (statErr !== null) {
+    return walkFn(path, null, statErr)
+  }
+
+  const visitErr = walkFn(path, fileInfo(path, stat!), null)
+  if (visitErr === SkipAll) {
+    return null
+  }
+  if (visitErr !== null) {
+    if (visitErr === SkipDir && statIsDir(stat!)) {
+      return null
+    }
+    return visitErr
+  }
+  if (!statIsDir(stat!)) {
+    return null
+  }
+
+  const [entries, readErr] = readDir(path)
+  if (readErr !== null) {
+    return walkFn(path, fileInfo(path, stat!), readErr)
+  }
+  for (const entry of entries!) {
+    const err = walkHost(Join(path, entry.name), walkFn)
+    if (err === SkipDir) {
+      if (entry.isDir) {
+        continue
+      }
+      return err
+    }
+    if (err === SkipAll) {
+      return null
+    }
+    if (err !== null) {
+      return err
+    }
+  }
+  return null
 }

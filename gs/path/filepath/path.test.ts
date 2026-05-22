@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import {
   Base,
   Dir,
@@ -16,6 +19,7 @@ import {
   Abs,
   Rel,
   EvalSymlinks,
+  Walk,
   Separator,
   ListSeparator,
 } from './path.js'
@@ -198,6 +202,27 @@ describe('path/filepath - Path manipulation functions', () => {
       const [result, err] = EvalSymlinks('/path/with/../dots')
       expect(err).toBeNull()
       expect(result).toBe('/path/dots')
+    })
+  })
+
+  describe('Walk', () => {
+    it('should visit host filesystem paths in lexical order', () => {
+      const root = mkdtempSync(join(tmpdir(), 'goscript-filepath-walk-'))
+      try {
+        mkdirSync(join(root, 'a', 'b'), { recursive: true })
+        writeFileSync(join(root, 'a', 'b', 'file.txt'), 'ok')
+
+        const visited: string[] = []
+        const err = Walk(root, (path) => {
+          visited.push(path.slice(root.length).replace(/^\/?/, '') || '.')
+          return null
+        })
+
+        expect(err).toBeNull()
+        expect(visited).toEqual(['.', 'a', 'a/b', 'a/b/file.txt'])
+      } finally {
+        rmSync(root, { force: true, recursive: true })
+      }
     })
   })
 

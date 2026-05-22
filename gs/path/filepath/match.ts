@@ -1,4 +1,5 @@
 import * as $ from '@goscript/builtin/index.js'
+import { getHostRuntime, type NodeFSModule } from '@goscript/builtin/hostio.js'
 
 export const ErrBadPattern = $.newError('syntax error in pattern')
 
@@ -238,12 +239,186 @@ function matchCharClass(
 // The only possible returned error is ErrBadPattern, when pattern is malformed.
 export function Glob(pattern: string): [string[], $.GoError] {
   try {
-    // Validate the pattern using the same logic as Match
     validatePattern(pattern)
-    // We don't have filesystem access, so return empty array
-    return [[], null]
+    return [globHost(pattern), null]
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     return [[], ErrBadPattern]
   }
+}
+
+function hasMeta(path: string): boolean {
+  return /[*?[\\]/.test(path)
+}
+
+function splitPattern(pattern: string): { absolute: boolean; segments: string[] } {
+  const absolute = pattern.startsWith('/')
+  const segments = pattern.split('/').filter((segment, index) => {
+    if (index === 0 && segment === '') {
+      return false
+    }
+    return segment !== '' && segment !== '.'
+  })
+  return { absolute, segments }
+}
+
+function cleanMatch(path: string): string {
+  const absolute = path.startsWith('/')
+  const parts: string[] = []
+  for (const part of path.split('/')) {
+    if (part === '' || part === '.') {
+      continue
+    }
+    if (part === '..') {
+      if (parts.length > 0 && parts[parts.length - 1] !== '..') {
+        parts.pop()
+      } else if (!absolute) {
+        parts.push(part)
+      }
+      continue
+    }
+    parts.push(part)
+  }
+  const out = parts.join('/')
+  if (absolute) {
+    return '/' + out
+  }
+  return out === '' ? '.' : out
+}
+
+function joinPath(dir: string, name: string): string {
+  if (dir === '' || dir === '.') {
+    return name
+  }
+  if (dir === '/') {
+    return '/' + name
+  }
+  return dir.replace(/\/+$/, '') + '/' + name
+}
+
+type HostDirEntry = { name: string; isDir: boolean }
+
+function readDir(path: string): HostDirEntry[] | null {
+  const runtime = getHostRuntime()
+  const denoObj = runtime.deno
+  if (denoObj?.readDirSync) {
+    try {
+      const entries: HostDirEntry[] = []
+      for (const entry of denoObj.readDirSync(path)) {
+        entries.push({ name: entry.name, isDir: !!entry.isDirectory })
+      }
+      entries.sort((a, b) => a.name.localeCompare(b.name))
+      return entries
+    } catch {
+      return null
+    }
+  }
+
+  const nodeFS = runtime.nodeFS
+  if (nodeFS?.readdirSync) {
+    try {
+      const entries = nodeFS
+        .readdirSync(path, { withFileTypes: true })
+        .map((entry: any) => ({
+          name: String(entry.name),
+          isDir:
+            typeof entry.isDirectory === 'function' ?
+              entry.isDirectory()
+            : false,
+        }))
+      entries.sort((a, b) => a.name.localeCompare(b.name))
+      return entries
+    } catch {
+      return null
+    }
+  }
+
+  return null
+}
+
+function exists(path: string): boolean {
+  const runtime = getHostRuntime()
+  if (runtime.deno?.statSync) {
+    try {
+      runtime.deno.statSync(path)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  const nodeFS = runtime.nodeFS
+  if (nodeFS?.statSync) {
+    try {
+      nodeFS.statSync(path)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  return false
+}
+
+function isDir(path: string, nodeFS?: NodeFSModule | null): boolean {
+  const runtime = getHostRuntime()
+  if (runtime.deno?.statSync) {
+    try {
+      return !!runtime.deno.statSync(path).isDirectory
+    } catch {
+      return false
+    }
+  }
+
+  const fs = nodeFS ?? runtime.nodeFS
+  if (fs?.statSync) {
+    try {
+      const stat = fs.statSync(path)
+      return typeof stat.isDirectory === 'function' ? stat.isDirectory() : false
+    } catch {
+      return false
+    }
+  }
+
+  return false
+}
+
+function globHost(pattern: string): string[] {
+  const { absolute, segments } = splitPattern(pattern)
+  if (!hasMeta(pattern)) {
+    return exists(pattern) ? [cleanMatch(pattern)] : []
+  }
+
+  let prefixes = [absolute ? '/' : '.']
+  for (const [index, segment] of segments.entries()) {
+    const next: string[] = []
+    const last = index === segments.length - 1
+    const segmentHasMeta = hasMeta(segment)
+    for (const prefix of prefixes) {
+      if (!segmentHasMeta) {
+        const candidate = joinPath(prefix, segment)
+        if (last || isDir(candidate)) {
+          next.push(candidate)
+        }
+        continue
+      }
+
+      const entries = readDir(prefix)
+      if (entries === null) {
+        continue
+      }
+      for (const entry of entries) {
+        const [matched, err] = Match(segment, entry.name)
+        if (err !== null || !matched) {
+          continue
+        }
+        if (last || entry.isDir) {
+          next.push(joinPath(prefix, entry.name))
+        }
+      }
+    }
+    prefixes = next
+  }
+
+  return prefixes.map(cleanMatch).sort()
 }
