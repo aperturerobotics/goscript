@@ -5061,6 +5061,9 @@ func (o *LoweringOwner) lowerGenericFunctionValue(
 }
 
 func (o *LoweringOwner) lowerIndexTarget(ctx lowerFileContext, target string, typ types.Type) string {
+	if strings.HasPrefix(target, "await ") {
+		target = "(" + target + ")"
+	}
 	if array := pointerToArrayType(typ); array != nil {
 		return o.lowerArrayPointerTarget(ctx, target, typ)
 	}
