@@ -10,10 +10,19 @@ export async function values(): globalThis.Promise<$.Slice<number>> {
 	return $.arrayToSlice<number>([4])
 }
 
-export async function main(): globalThis.Promise<void> {
-	$.println((await values())![0])
+export async function mapped(): globalThis.Promise<Map<number, number> | null> {
+	let ready = $.makeChannel<boolean>(1, false, "both")
+	await $.chanSend(ready, true)
+	await $.chanRecv(ready)
+	return new Map<number, number>([[2, 5]])
 }
 
+export async function main(): globalThis.Promise<void> {
+	$.println((await values())![0])
+	for (const [k, v] of (await mapped())?.entries() ?? []) {
+		$.println(k, v)
+	}
+}
 
 if ($.isMainScript(import.meta)) {
 	await main()

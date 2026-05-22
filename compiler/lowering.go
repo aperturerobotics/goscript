@@ -3377,6 +3377,10 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 	if isMapType(rangeType) {
 		body, bodyDiagnostics := o.lowerBlock(bodyCtx.withoutRangeLoopBranches(), stmt.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
+		rangeTarget := rangeValue
+		if strings.HasPrefix(rangeTarget, "await ") {
+			rangeTarget = "(" + rangeTarget + ")"
+		}
 		key := keyName
 		if key == "" {
 			key = "__rangeKey"
@@ -3387,7 +3391,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		}
 		return loweredStmt{
 			hasBlock: true,
-			text:     "for (const [" + key + ", " + value + "] of " + rangeValue + "?.entries() ?? [])",
+			text:     "for (const [" + key + ", " + value + "] of " + rangeTarget + "?.entries() ?? [])",
 			children: body,
 		}, diagnostics
 	}
