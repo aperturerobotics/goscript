@@ -18,6 +18,16 @@ export function sumArray(src: $.VarRef<number[]> | null): number {
 	return sum
 }
 
+export function closureArrayAddress(): number {
+	let result = 0
+	void ($.functionValue((): void => {
+		let table = $.varRef([6, 7, 8, 9])
+		let ptr = table
+		result = $.int($.pointerValue<number[]>(ptr)[2])
+	}, { kind: $.TypeKind.Function, params: [], results: [] }))()
+	return result
+}
+
 export async function main(): globalThis.Promise<void> {
 	let buckets: number[][] = Array.from({ length: 2 }, () => Array.from({ length: 3 }, () => 0))
 	let cache = $.indexRef(buckets, 1)
@@ -45,6 +55,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("literal sum:", sumArray(literal))
 	fillArray(literal)
 	$.println("literal filled:", $.pointerValue<number[]>(literal)[0], $.pointerValue<number[]>(literal)[1], $.pointerValue<number[]>(literal)[2], $.pointerValue<number[]>(literal)[3])
+	$.println("closure ptr:", closureArrayAddress())
 }
 
 

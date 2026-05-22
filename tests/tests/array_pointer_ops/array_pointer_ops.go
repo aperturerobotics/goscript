@@ -14,6 +14,16 @@ func sumArray(src *[4]byte) int {
 	return sum
 }
 
+func closureArrayAddress() int {
+	result := 0
+	func() {
+		table := [4]byte{6, 7, 8, 9}
+		ptr := &table
+		result = int(ptr[2])
+	}()
+	return result
+}
+
 func main() {
 	var buckets [2][3]uint64
 	cache := &buckets[1]
@@ -40,4 +50,5 @@ func main() {
 	println("literal sum:", sumArray(literal))
 	fillArray(literal)
 	println("literal filled:", literal[0], literal[1], literal[2], literal[3])
+	println("closure ptr:", closureArrayAddress())
 }

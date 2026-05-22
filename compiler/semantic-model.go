@@ -278,6 +278,10 @@ func (o *SemanticModelOwner) recordFuncLitAssignedCaptures(
 		case *ast.FuncLit:
 			o.recordFuncLitAssignedCaptures(model, pkg, typed)
 			return false
+		case *ast.UnaryExpr:
+			if typed.Op == token.AND {
+				o.recordAddressTaken(model, pkg, typed.X)
+			}
 		case *ast.AssignStmt:
 			for _, lhs := range typed.Lhs {
 				o.recordFuncLitAssignedCapture(model, pkg, lit, lhs)

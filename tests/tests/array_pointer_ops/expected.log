@@ -8,3 +8,4 @@ converted: 9 1 2 3 4
 converted sum: 10
 literal sum: 10
 literal filled: 1 2 3 4
+closure ptr: 8
