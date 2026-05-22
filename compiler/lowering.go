@@ -6774,7 +6774,11 @@ func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ 
 	}
 	typeParam, ok := types.Unalias(typ).(*types.TypeParam)
 	if !ok {
-		return o.lowerZeroValueExprFor(ctx, typ)
+		value := o.lowerZeroValueExprFor(ctx, typ)
+		if value == "null" {
+			return "null as " + o.tsTypeFor(ctx, typ)
+		}
+		return value
 	}
 	if !signatureHasTypeParam(ctx.signature, typeParam) {
 		return zeroValueExpr(typ)
