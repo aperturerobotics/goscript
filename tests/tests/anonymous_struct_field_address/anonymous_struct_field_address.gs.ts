@@ -30,7 +30,7 @@ export class entry {
 	}
 
 	public add(value: number): void {
-		const e: entry | $.VarRef<entry> | null = this
+		let e: entry | $.VarRef<entry> | null = this
 		$.pointerValue<entry>(e).value += value
 	}
 

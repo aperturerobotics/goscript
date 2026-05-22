@@ -137,7 +137,7 @@ export class Broadcast {
 	}
 
 	public broadcastLocked(): void {
-		const c: Broadcast | $.VarRef<Broadcast> | null = this
+		let c: Broadcast | $.VarRef<Broadcast> | null = this
 		if ($.pointerValue<Broadcast>(c).ch != null) {
 			$.pointerValue<Broadcast>(c).ch!.close()
 			$.pointerValue<Broadcast>(c).ch = null
@@ -145,7 +145,7 @@ export class Broadcast {
 	}
 
 	public getWaitChLocked(): $.Channel<{}> | null {
-		const c: Broadcast | $.VarRef<Broadcast> | null = this
+		let c: Broadcast | $.VarRef<Broadcast> | null = this
 		if ($.pointerValue<Broadcast>(c).ch == null) {
 			$.pointerValue<Broadcast>(c).ch = $.makeChannel<{}>(0, {}, "both")
 		}

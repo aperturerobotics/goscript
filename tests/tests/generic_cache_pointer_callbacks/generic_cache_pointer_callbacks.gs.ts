@@ -30,7 +30,7 @@ export class cache {
 	}
 
 	public async Get(k: any, _new: (() => [any, $.GoError] | Promise<[any, $.GoError]>) | null, check: ((_p0: any) => boolean | Promise<boolean>) | null): Promise<[any, $.GoError]> {
-		const c: cache | $.VarRef<cache> | null = this
+		let c: cache | $.VarRef<cache> | null = this
 		if (($.pointerValue<cache>(c).stored != null) && await check!($.pointerValue<cache>(c).stored)) {
 			return [$.pointerValue<cache>(c).stored, null]
 		}

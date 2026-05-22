@@ -62,6 +62,7 @@ type loweredFunction struct {
 	receiverAlias string
 	receiverType  string
 	receiverValue string
+	receiverMutable bool
 	params        []loweredParam
 	paramBindings []loweredStmt
 	namedResults  []loweredNamedResult

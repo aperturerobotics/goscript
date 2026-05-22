@@ -337,7 +337,11 @@ func renderFunction(b *strings.Builder, fn *loweredFunction) {
 	b.WriteString(" {\n")
 	if fn.receiverAlias != "" && fn.receiverAlias != "_" {
 		writeIndent(b, 1)
-		b.WriteString("const ")
+		if fn.receiverMutable {
+			b.WriteString("let ")
+		} else {
+			b.WriteString("const ")
+		}
 		b.WriteString(fn.receiverAlias)
 		if fn.receiverType != "" {
 			b.WriteString(": ")
@@ -375,7 +379,11 @@ func renderMethod(b *strings.Builder, fn *loweredFunction) {
 	b.WriteString(" {\n")
 	if fn.receiverAlias != "" && fn.receiverAlias != "_" {
 		writeIndent(b, 2)
-		b.WriteString("const ")
+		if fn.receiverMutable {
+			b.WriteString("let ")
+		} else {
+			b.WriteString("const ")
+		}
 		b.WriteString(fn.receiverAlias)
 		if fn.receiverType != "" {
 			b.WriteString(": ")

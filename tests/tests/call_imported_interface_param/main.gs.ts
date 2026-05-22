@@ -34,7 +34,7 @@ export class Buffer {
 	}
 
 	public Write(p: $.Slice<number>): [number, $.GoError] {
-		const b: Buffer | $.VarRef<Buffer> | null = this
+		let b: Buffer | $.VarRef<Buffer> | null = this
 		$.pointerValue<Buffer>(b).data = $.append($.pointerValue<Buffer>(b).data, p)
 		return [$.len(p), null]
 	}

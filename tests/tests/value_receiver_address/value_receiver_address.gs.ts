@@ -30,7 +30,7 @@ export class Counter {
 	}
 
 	public PointerAfterIncrement(): Counter | $.VarRef<Counter> | null {
-		const c = $.varRef(this)
+		let c = $.varRef(this)
 		c.value.value++
 		return c
 	}

@@ -1183,11 +1183,14 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		receiverName := decl.Recv.List[0].Names[0]
 		lowered.receiverAlias = safeIdentifier(receiverName.Name)
 		lowered.receiverValue = "this"
+		recvObj := ctx.semPkg.source.TypesInfo.Defs[receiverName]
+		lowered.receiverMutable = objectAssignedInBlock(ctx, recvObj, decl.Body)
 		_, receiverPointer := signature.Recv().Type().(*types.Pointer)
 		if receiverPointer {
 			lowered.receiverType = o.tsReceiverTypeFor(ctx, signature.Recv().Type())
+		} else if lowered.receiverMutable {
+			lowered.receiverType = o.tsReceiverTypeFor(ctx, signature.Recv().Type())
 		}
-		recvObj := ctx.semPkg.source.TypesInfo.Defs[receiverName]
 		if recvObj != nil && ctx.model.needsVarRef[recvObj] {
 			lowered.receiverType = ""
 			lowered.receiverValue = o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(this)"
@@ -1214,6 +1217,63 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		lowered.body = []loweredStmt{{text: zeroReturn}}
 	}
 	return lowered, nil
+}
+
+func objectAssignedInBlock(ctx lowerFileContext, obj types.Object, body *ast.BlockStmt) bool {
+	if obj == nil || body == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	assigned := false
+	ast.Inspect(body, func(node ast.Node) bool {
+		if assigned {
+			return false
+		}
+		switch typed := node.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.AssignStmt:
+			for _, lhs := range typed.Lhs {
+				if expressionUsesObject(ctx, lhs, obj) {
+					assigned = true
+					return false
+				}
+			}
+		case *ast.IncDecStmt:
+			if expressionUsesObject(ctx, typed.X, obj) {
+				assigned = true
+				return false
+			}
+		case *ast.RangeStmt:
+			if expressionUsesObject(ctx, typed.Key, obj) || expressionUsesObject(ctx, typed.Value, obj) {
+				assigned = true
+				return false
+			}
+		}
+		return true
+	})
+	return assigned
+}
+
+func expressionUsesObject(ctx lowerFileContext, expr ast.Expr, obj types.Object) bool {
+	if expr == nil || obj == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	uses := false
+	ast.Inspect(expr, func(node ast.Node) bool {
+		if uses {
+			return false
+		}
+		ident, ok := node.(*ast.Ident)
+		if !ok {
+			return true
+		}
+		if ctx.semPkg.source.TypesInfo.Uses[ident] == obj || ctx.semPkg.source.TypesInfo.Defs[ident] == obj {
+			uses = true
+			return false
+		}
+		return true
+	})
+	return uses
 }
 
 func (o *LoweringOwner) appendLoweredParam(

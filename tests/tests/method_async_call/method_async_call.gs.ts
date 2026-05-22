@@ -42,7 +42,7 @@ export class FileTracker {
 	}
 
 	public async AddLine(offset: number): Promise<void> {
-		const f: FileTracker | $.VarRef<FileTracker> | null = this
+		let f: FileTracker | $.VarRef<FileTracker> | null = this
 		await $.pointerValue<FileTracker>(f).mutex.Lock()
 		$.pointerValue<FileTracker>(f).lines = $.append($.pointerValue<FileTracker>(f).lines, offset)
 		$.pointerValue<FileTracker>(f).mutex.Unlock()

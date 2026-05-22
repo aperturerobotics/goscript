@@ -32,7 +32,7 @@ export class AStruct {
 	}
 
 	public Set(msg: string): void {
-		const a: AStruct | $.VarRef<AStruct> | null = this
+		let a: AStruct | $.VarRef<AStruct> | null = this
 		$.pointerValue<AStruct>(a).Msg = msg
 	}
 

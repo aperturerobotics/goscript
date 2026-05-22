@@ -65,7 +65,7 @@ export class iterator {
 	}
 
 	public Next(): [frame, boolean] {
-		const it: iterator | $.VarRef<iterator> | null = this
+		let it: iterator | $.VarRef<iterator> | null = this
 		$.pointerValue<iterator>(it).idx++
 		switch ($.pointerValue<iterator>(it).idx) {
 			case 1:

@@ -198,7 +198,7 @@ export class printer {
 	}
 
 	public init(): void {
-		const p: printer | $.VarRef<printer> | null = this
+		let p: printer | $.VarRef<printer> | null = this
 		$.pointerValue<printer>(p).fmt = $.markAsStructValue(new formatter())
 	}
 

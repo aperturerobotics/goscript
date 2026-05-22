@@ -44,7 +44,7 @@ export class descending {
 	}
 
 	public Swap(i: number, j: number): void {
-		const d = this
+		let d: descending = this
 		let __goscriptAssign0_0: number = d.values![j]
 		let __goscriptAssign0_1: number = d.values![i]
 		d.values![i] = __goscriptAssign0_0

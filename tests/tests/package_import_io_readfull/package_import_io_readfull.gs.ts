@@ -32,7 +32,7 @@ export class fixedReader {
 	}
 
 	public Read(p: $.Slice<number>): [number, $.GoError] {
-		const r: fixedReader | $.VarRef<fixedReader> | null = this
+		let r: fixedReader | $.VarRef<fixedReader> | null = this
 		let n = $.copy(p, $.pointerValue<fixedReader>(r).data)
 		$.pointerValue<fixedReader>(r).data = $.goSlice($.pointerValue<fixedReader>(r).data, n, undefined)
 		return [n, null]

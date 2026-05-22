@@ -294,7 +294,7 @@ export class RWMutexLocker {
 	}
 
 	public async Lock(): Promise<void> {
-		const l: RWMutexLocker | $.VarRef<RWMutexLocker> | null = this
+		let l: RWMutexLocker | $.VarRef<RWMutexLocker> | null = this
 		let [release, err] = await $.pointerValue<RWMutex>($.pointerValue<RWMutexLocker>(l).m).Lock(context.Background(), $.pointerValue<RWMutexLocker>(l).write)
 		if (err != null) {
 			$.panic(errors.Wrap($.pointerValue(err), "csync: failed RWMutexLocker Lock"))
@@ -305,7 +305,7 @@ export class RWMutexLocker {
 	}
 
 	public async Unlock(): Promise<void> {
-		const l: RWMutexLocker | $.VarRef<RWMutexLocker> | null = this
+		let l: RWMutexLocker | $.VarRef<RWMutexLocker> | null = this
 		await $.pointerValue<RWMutexLocker>(l).mtx.Lock()
 		if ($.len($.pointerValue<RWMutexLocker>(l).rels) == 0) {
 			$.pointerValue<RWMutexLocker>(l).mtx.Unlock()

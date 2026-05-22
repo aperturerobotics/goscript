@@ -85,7 +85,7 @@ export class setterStruct {
 	}
 
 	public ["set"](value: number): void {
-		const s: setterStruct | $.VarRef<setterStruct> | null = this
+		let s: setterStruct | $.VarRef<setterStruct> | null = this
 		$.pointerValue<setterStruct>(s).value = value
 	}
 
