@@ -53,6 +53,15 @@ func (f *OverrideFacts) IsMethodAsync(pkgPath, method string) bool {
 	return pkg.metadata.AsyncMethods[method]
 }
 
+// IsFunctionAsync returns true when override metadata marks a package-level function async.
+func (f *OverrideFacts) IsFunctionAsync(pkgPath, function string) bool {
+	if f == nil {
+		return false
+	}
+	pkg := f.packages[pkgPath]
+	return pkg.metadata.AsyncFunctions[function]
+}
+
 func (f *OverrideFacts) copyPackage(pkgPath string) (overrideCopyPackage, []string, bool) {
 	if f == nil {
 		return overrideCopyPackage{}, nil, false
@@ -164,6 +173,10 @@ func loadOverrideMetadata(pkgPath string) (OverrideMetadata, error) {
 			for method := iter.ReadObject(); method != ""; method = iter.ReadObject() {
 				metadata.AsyncMethods[method] = iter.ReadBool()
 			}
+		case "asyncFunctions":
+			for function := iter.ReadObject(); function != ""; function = iter.ReadObject() {
+				metadata.AsyncFunctions[function] = iter.ReadBool()
+			}
 		default:
 			iter.Skip()
 		}
@@ -259,13 +272,17 @@ func loadOverrideCopyPackage(
 }
 
 func newOverrideMetadata() OverrideMetadata {
-	return OverrideMetadata{AsyncMethods: make(map[string]bool)}
+	return OverrideMetadata{
+		AsyncFunctions: make(map[string]bool),
+		AsyncMethods:   make(map[string]bool),
+	}
 }
 
 func cloneOverrideMetadata(metadata OverrideMetadata) OverrideMetadata {
 	return OverrideMetadata{
-		Dependencies: slices.Clone(metadata.Dependencies),
-		AsyncMethods: cloneBoolMap(metadata.AsyncMethods),
+		Dependencies:   slices.Clone(metadata.Dependencies),
+		AsyncFunctions: cloneBoolMap(metadata.AsyncFunctions),
+		AsyncMethods:   cloneBoolMap(metadata.AsyncMethods),
 	}
 }
 

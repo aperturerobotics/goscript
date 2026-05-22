@@ -12,6 +12,8 @@ import (
 type OverrideMetadata struct {
 	// Dependencies are override package dependencies.
 	Dependencies []string
+	// AsyncFunctions maps package-level function names to async status.
+	AsyncFunctions map[string]bool
 	// AsyncMethods maps Type.Method keys to async status.
 	AsyncMethods map[string]bool
 }
@@ -158,6 +160,15 @@ func (o *OverrideRegistryOwner) IsMethodAsync(pkgPath, method string) (bool, err
 		return false, NewCompileError(diagnostics)
 	}
 	return facts.IsMethodAsync(pkgPath, method), nil
+}
+
+// IsFunctionAsync returns true when override metadata marks a package-level function async.
+func (o *OverrideRegistryOwner) IsFunctionAsync(pkgPath, function string) (bool, error) {
+	facts, diagnostics := o.Facts(context.Background())
+	if diagnosticsHaveErrors(diagnostics) {
+		return false, NewCompileError(diagnostics)
+	}
+	return facts.IsFunctionAsync(pkgPath, function), nil
 }
 
 type overrideCopyPlan struct {

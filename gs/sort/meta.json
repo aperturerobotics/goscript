@@ -1,0 +1,7 @@
+{
+  "asyncFunctions": {
+    "Slice": true,
+    "SliceIsSorted": true,
+    "SliceStable": true
+  }
+}

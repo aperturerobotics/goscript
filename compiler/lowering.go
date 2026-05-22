@@ -2327,16 +2327,10 @@ func (o *LoweringOwner) lowerShortDeclShadowAliases(
 	aliases := make(map[types.Object]string)
 	var prelude []loweredStmt
 	for _, rhs := range assign.Rhs {
-		selectorFields := make(map[*ast.Ident]bool)
-		ast.Inspect(rhs, func(node ast.Node) bool {
-			if selector, ok := node.(*ast.SelectorExpr); ok {
-				selectorFields[selector.Sel] = true
-			}
-			return true
-		})
+		nonValueIdents := shortDeclShadowNonValueIdents(rhs)
 		ast.Inspect(rhs, func(node ast.Node) bool {
 			ident, ok := node.(*ast.Ident)
-			if !ok || selectorFields[ident] || !names[ident.Name] {
+			if !ok || nonValueIdents[ident] || !names[ident.Name] {
 				return true
 			}
 			obj := ctx.semPkg.source.TypesInfo.Uses[ident]
@@ -2376,16 +2370,10 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 	}
 	aliases := make(map[types.Object]string)
 	for _, rhs := range assign.Rhs {
-		selectorFields := make(map[*ast.Ident]bool)
-		ast.Inspect(rhs, func(node ast.Node) bool {
-			if selector, ok := node.(*ast.SelectorExpr); ok {
-				selectorFields[selector.Sel] = true
-			}
-			return true
-		})
+		nonValueIdents := shortDeclShadowNonValueIdents(rhs)
 		ast.Inspect(rhs, func(node ast.Node) bool {
 			ident, ok := node.(*ast.Ident)
-			if !ok || selectorFields[ident] {
+			if !ok || nonValueIdents[ident] {
 				return true
 			}
 			def := defsByName[ident.Name]
@@ -2415,6 +2403,22 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 		}
 	}
 	return aliases
+}
+
+func shortDeclShadowNonValueIdents(expr ast.Expr) map[*ast.Ident]bool {
+	idents := make(map[*ast.Ident]bool)
+	ast.Inspect(expr, func(node ast.Node) bool {
+		switch typed := node.(type) {
+		case *ast.SelectorExpr:
+			idents[typed.Sel] = true
+		case *ast.KeyValueExpr:
+			if ident, ok := typed.Key.(*ast.Ident); ok {
+				idents[ident] = true
+			}
+		}
+		return true
+	})
+	return idents
 }
 
 func shortDeclDefShadowsOuterName(name string, def types.Object) bool {
@@ -6393,6 +6397,10 @@ func (o *LoweringOwner) callNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool 
 func (o *LoweringOwner) overrideCallNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool {
 	if o.overrideOwner == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
 		return false
+	}
+	if fn := calledFunction(ctx.semPkg.source, fun); fn != nil && fn.Pkg() != nil &&
+		o.overrideFacts().IsFunctionAsync(fn.Pkg().Path(), fn.Name()) {
+		return true
 	}
 	selector, ok := fun.(*ast.SelectorExpr)
 	if !ok {

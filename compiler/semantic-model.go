@@ -637,6 +637,9 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				if overrideFacts.IsMethodAsync(overrideCallPackage(pkg, typed.Fun), overrideCallMethod(pkg, typed.Fun)) {
 					markFunctionAsync(semFn, "override")
 				}
+				if overrideFacts.IsFunctionAsync(overrideFunctionCallPackage(pkg, typed.Fun), overrideFunctionCallName(pkg, typed.Fun)) {
+					markFunctionAsync(semFn, "override")
+				}
 			}
 			return true
 		})
@@ -739,6 +742,22 @@ func overrideCallMethod(pkg *packages.Package, expr ast.Expr) string {
 		return ""
 	}
 	return named.Obj().Name() + "." + method.Name()
+}
+
+func overrideFunctionCallPackage(pkg *packages.Package, expr ast.Expr) string {
+	fn := calledFunction(pkg, expr)
+	if fn == nil || fn.Pkg() == nil {
+		return ""
+	}
+	return fn.Pkg().Path()
+}
+
+func overrideFunctionCallName(pkg *packages.Package, expr ast.Expr) string {
+	fn := calledFunction(pkg, expr)
+	if fn == nil {
+		return ""
+	}
+	return fn.Name()
 }
 
 func semanticFunctionFor(model *SemanticModel, fn *types.Func) *semanticFunction {

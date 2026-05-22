@@ -27,25 +27,31 @@ function swapInSlice<T>(slice: $.Slice<T>, i: number, j: number): void {
 }
 
 // Slice sorts the slice x given the provided less function
-export function Slice(x: $.Slice<any>, less: (i: number, j: number) => boolean): void {
+export async function Slice(
+  x: $.Slice<any>,
+  less: (i: number, j: number) => boolean | globalThis.Promise<boolean>
+): globalThis.Promise<void> {
   if (!x) return
   
   // Simple insertion sort using the provided less function
   const n = $.len(x)
   for (let i = 1; i < n; i++) {
-    for (let j = i; j > 0 && less(j, j - 1); j--) {
+    for (let j = i; j > 0 && await less(j, j - 1); j--) {
       swapInSlice(x, j, j - 1)
     }
   }
 }
 
 // SliceIsSorted reports whether the slice x is sorted according to the provided less function
-export function SliceIsSorted(x: $.Slice<any>, less: (i: number, j: number) => boolean): boolean {
+export async function SliceIsSorted(
+  x: $.Slice<any>,
+  less: (i: number, j: number) => boolean | globalThis.Promise<boolean>
+): globalThis.Promise<boolean> {
   if (!x) return true
   
   const n = $.len(x)
   for (let i = n - 1; i > 0; i--) {
-    if (less(i, i - 1)) {
+    if (await less(i, i - 1)) {
       return false
     }
   }
@@ -53,7 +59,10 @@ export function SliceIsSorted(x: $.Slice<any>, less: (i: number, j: number) => b
 }
 
 // SliceStable sorts the slice x while keeping the original order of equal elements
-export function SliceStable(x: $.Slice<any>, less: (i: number, j: number) => boolean): void {
+export async function SliceStable(
+  x: $.Slice<any>,
+  less: (i: number, j: number) => boolean | globalThis.Promise<boolean>
+): globalThis.Promise<void> {
   // For simplicity, use the same sort - can be improved later
-  Slice(x, less)
-} 
+  await Slice(x, less)
+}

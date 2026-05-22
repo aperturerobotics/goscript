@@ -12,6 +12,7 @@ Index of 'banana' in sorted strings: 1
 Index of 2.71 in sorted floats: 1
 First index where value >= 5: 4
 Custom sorted slice: 1 2 5 8 9
+Async sorted slice: 1 2
 Custom slice is sorted: true
 Custom interface sort: 3 2 1
 test finished

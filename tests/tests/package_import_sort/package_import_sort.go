@@ -72,6 +72,15 @@ func main() {
 	slices.Sort(testSlice)
 	println("Custom sorted slice:", testSlice[0], testSlice[1], testSlice[2], testSlice[3], testSlice[4])
 
+	asyncSlice := []int{2, 1}
+	ready := make(chan bool, 1)
+	ready <- true
+	sort.Slice(asyncSlice, func(i, j int) bool {
+		<-ready
+		return asyncSlice[i] < asyncSlice[j]
+	})
+	println("Async sorted slice:", asyncSlice[0], asyncSlice[1])
+
 	// Test SliceIsSorted
 	isSliceSorted := sort.SliceIsSorted(testSlice, func(i, j int) bool {
 		return testSlice[i] < testSlice[j]
