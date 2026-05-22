@@ -5671,6 +5671,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	case *types.Struct:
 		return o.tsAnonymousStructTypeFor(ctx, typed)
 	case *types.Pointer:
+		if isBuiltinErrorType(typed.Elem()) {
+			return "$.VarRef<$.GoError> | null"
+		}
 		if _, ok := types.Unalias(typed.Elem()).(*types.TypeParam); ok {
 			return "any"
 		}
