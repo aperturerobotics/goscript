@@ -54,12 +54,10 @@ compatibility bar.
 
 Good fits today include:
 
-- Sharing validation, formatting, parsing, policy, and business rules between
-  Go services and TypeScript applications
+- Sharing validation, formatting, parsing, and business rules between Go services and TypeScript applications
 - Publishing TypeScript packages from Go data structures and algorithms
 - Running selected Go runtime code in Bun, browser demos, and modern bundlers
-- Building package-level test workflows that exercise generated TypeScript
-  instead of parallel handwritten ports
+- Building package-level test workflows that exercise generated TypeScript instead of handwritten ports
 
 GoScript is not currently a drop-in browser runtime for every valid Go program.
 The project prioritizes clear generated TypeScript, explicit runtime contracts,
