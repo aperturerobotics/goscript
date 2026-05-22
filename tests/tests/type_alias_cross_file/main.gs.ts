@@ -24,7 +24,7 @@ export class source {
 	}
 
 	public Val(): __goscript_alias.Value {
-		return $.stringToBytes("ok")
+		return ($.stringToBytes("ok") as __goscript_alias.Value)
 	}
 
 	static __typeInfo = $.registerStructType(

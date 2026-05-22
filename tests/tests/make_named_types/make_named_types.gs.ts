@@ -9,8 +9,8 @@ export async function main(): Promise<void> {
 	// rather than direct type expressions like []int or map[string]int
 
 	type MySlice = $.Slice<number>
-	let s: MySlice = $.makeSlice<number>(5, undefined, "number")
-	$.println("Length:", $.len(s))
+	let s: MySlice = ($.makeSlice<number>(5, undefined, "number") as MySlice)
+	$.println("Length:", $.len((s as MySlice)))
 
 	// Test make() with named map type
 	type MyMap = Map<string, number> | null

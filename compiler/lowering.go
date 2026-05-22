@@ -4196,6 +4196,9 @@ func (o *LoweringOwner) lowerConversionExpr(
 			"(" + value + ", " + strconv.Quote(runtimeNamedTypeName(named)) + ")", diagnostics
 	}
 	if named := namedNonStructType(targetType); named != nil {
+		if _, ok := named.Underlying().(*types.Slice); ok {
+			return "(" + value + " as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics
+		}
 		return value, diagnostics
 	}
 	if isNumericType(targetType) {
@@ -5053,6 +5056,11 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 	}
 	if isStructValueType(targetType) && cloneStructValue {
 		return o.lowerStructClone(value)
+	}
+	if named := namedNonStructType(targetType); named != nil {
+		if _, ok := named.Underlying().(*types.Slice); ok {
+			return "(" + value + " as " + o.tsTypeFor(ctx, targetType) + ")"
+		}
 	}
 	return value
 }

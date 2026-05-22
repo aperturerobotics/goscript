@@ -42,7 +42,7 @@ export class parser {
 
 export async function main(): Promise<void> {
 	let p: parser = $.markAsStructValue(new parser())
-	p.errors = errlist.ErrorList_Add(p.errors, "error")
+	p.errors = (errlist.ErrorList_Add(p.errors, "error") as errlist.ErrorList)
 	$.println(p.errors![0])
 }
 

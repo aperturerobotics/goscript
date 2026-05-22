@@ -16,5 +16,5 @@ $.registerInterfaceType(
 )
 
 export function Read(r: Reader | null): __goscript_alias.Value {
-	return $.pointerValue(r).Val()
+	return ($.pointerValue(r).Val() as __goscript_alias.Value)
 }

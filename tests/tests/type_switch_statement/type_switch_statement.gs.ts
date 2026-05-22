@@ -184,13 +184,13 @@ export async function main(): Promise<void> {
 				{
 					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.ObjectIdentifier" }).value
 					let __goscriptTuple0 = parseObjectIdentifier()
-					v!.value = __goscriptTuple0[0]
+					v!.value = (__goscriptTuple0[0] as ObjectIdentifier)
 					ok = __goscriptTuple0[1]
 				}
 				break
 		}
 	}
-	$.println("oid", $.len(oid.value), oid.value![0], ok)
+	$.println("oid", $.len((oid.value as ObjectIdentifier)), oid.value![0], ok)
 
 	let raw: $.VarRef<RawValue> = $.varRef($.markAsStructValue(new RawValue()))
 	let rawValue: any = $.interfaceValue<any>(raw, "*main.RawValue")
@@ -220,7 +220,7 @@ export function getInterface(): any {
 }
 
 export function parseObjectIdentifier(): [ObjectIdentifier, boolean] {
-	return [$.arrayToSlice<number>([1, 2, 3]), true]
+	return [($.arrayToSlice<number>([1, 2, 3]) as ObjectIdentifier), true]
 }
 
 export function parseRawValue(): [RawValue, boolean] {
