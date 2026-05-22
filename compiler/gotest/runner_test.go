@@ -502,12 +502,23 @@ func TestRenderTypeScriptProjectDisablesAmbientTypePackages(t *testing.T) {
 		WorkDir: "/work",
 	}
 
-	tsconfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts")
+	tsconfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts", false)
 	if !strings.Contains(tsconfig, "\"types\": []") {
 		t.Fatalf("expected generated tsconfig to disable ambient @types packages: %s", tsconfig)
 	}
 	if !strings.Contains(tsconfig, "\"goscript-node.d.ts\"") {
 		t.Fatalf("expected generated tsconfig to include GoScript node ambient declarations: %s", tsconfig)
+	}
+}
+
+func TestRenderTypeScriptProjectUsesNodeTypesWhenAvailable(t *testing.T) {
+	req := &normalizedRequest{
+		WorkDir: "/work",
+	}
+
+	tsconfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts", true)
+	if !strings.Contains(tsconfig, "\"types\": [\"node\"]") {
+		t.Fatalf("expected generated tsconfig to opt into node types: %s", tsconfig)
 	}
 }
 

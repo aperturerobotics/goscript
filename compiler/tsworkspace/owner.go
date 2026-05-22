@@ -59,7 +59,7 @@ func (o *Owner) EnsurePackageJSON() Result {
 
 // EnsureNodeAmbientTypes writes host runtime declarations needed by emitted tests.
 func (o *Owner) EnsureNodeAmbientTypes() Result {
-	if nodeTypesPresent(o.workDir, o.toolDir) {
+	if NodeTypesPresent(o.workDir, o.toolDir) {
 		return o.WriteFile(PhaseWorkspace, NodeAmbientTypesFile, "")
 	}
 	return o.WriteFile(PhaseWorkspace, NodeAmbientTypesFile, nodeAmbientTypes)
@@ -186,7 +186,8 @@ func NodeTypeRoots(dirs ...string) []string {
 	return roots
 }
 
-func nodeTypesPresent(dirs ...string) bool {
+// NodeTypesPresent reports whether @types/node is visible from any provided directory.
+func NodeTypesPresent(dirs ...string) bool {
 	seen := make(map[string]bool)
 	for _, start := range dirs {
 		if start == "" {

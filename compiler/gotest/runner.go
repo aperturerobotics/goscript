@@ -150,6 +150,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		markAllFailures(result, OwnerTestRunner, phase.Error)
 		return result, nil
 	}
+	nodeTypesAvailable := tsworkspace.NodeTypesPresent(norm.WorkDir, norm.Dir)
 	if phase := workspace.EnsureNodeAmbientTypes(); phase.Failed() {
 		markAllFailures(result, OwnerTestRunner, phase.Error)
 		return result, nil
@@ -168,7 +169,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 			continue
 		}
 		tsconfigFile := "tsconfig.json"
-		if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, tsconfigFile, renderTypeScriptProject(norm, outputRoot, runnerFile)); phase.Failed() {
+		if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, tsconfigFile, renderTypeScriptProject(norm, outputRoot, runnerFile, nodeTypesAvailable)); phase.Failed() {
 			result.Packages[idx].Owner = OwnerTestRunner
 			result.Packages[idx].Phases.Workspace = PhaseStatusFail
 			result.Packages[idx].Error = phase.Error
@@ -452,7 +453,7 @@ func processErrorText(result tsworkspace.Result) string {
 	return result.Error
 }
 
-func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string) string {
+func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string, nodeTypesAvailable bool) string {
 	outputPattern := filepath.ToSlash(outputRoot)
 	outputAlias := filepath.ToSlash(filepath.Join(outputRoot, "@goscript", "*"))
 	if rel, err := filepath.Rel(req.WorkDir, outputRoot); err == nil {
@@ -469,7 +470,11 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 	b.WriteString("    \"strict\": true,\n")
 	b.WriteString("    \"allowImportingTsExtensions\": true,\n")
 	b.WriteString("    \"noEmit\": true,\n")
-	b.WriteString("    \"types\": [],\n")
+	if nodeTypesAvailable {
+		b.WriteString("    \"types\": [\"node\"],\n")
+	} else {
+		b.WriteString("    \"types\": [],\n")
+	}
 	b.WriteString("    \"paths\": {\n")
 	b.WriteString("      \"*\": [\"./*\"],\n")
 	b.WriteString("      \"@goscript/*\": [")
