@@ -405,7 +405,7 @@ export function AfterFunc(ctx: Context, f: () => void): () => boolean {
     if (!stopped) {
       done = true
       // Run in next tick to simulate goroutine
-      setImmediate(f)
+      queueMicrotask(f)
     }
   })()
 
