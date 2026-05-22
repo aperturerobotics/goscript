@@ -1,0 +1,19 @@
+{
+  "dependencies": [
+    "context",
+    "errors",
+    "io",
+    "github.com/aperturerobotics/protobuf-go-lite"
+  ],
+  "asyncMethods": {
+    "Client.ExecCall": true,
+    "Client.NewStream": true,
+    "Stream.MsgSend": true,
+    "Stream.MsgRecv": true,
+    "Stream.CloseSend": true,
+    "Stream.Close": true,
+    "Invoker.InvokeMethod": true,
+    "Handler.InvokeMethod": true,
+    "Mux.InvokeMethod": true
+  }
+}
