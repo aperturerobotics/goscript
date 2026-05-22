@@ -667,6 +667,24 @@ export class Value {
     return new Value(null, new BasicType(Invalid, 'invalid'))
   }
 
+  public MapKeys(): $.Slice<Value> {
+    if (this.Kind() !== Map) {
+      throw new ValueError({ Kind: this.Kind(), Method: 'MapKeys' })
+    }
+    if (this._value === null || this._value === undefined) {
+      return $.makeSlice<Value>(0)
+    }
+    if (!(this._value instanceof globalThis.Map)) {
+      throw new ValueError({ Kind: this.Kind(), Method: 'MapKeys' })
+    }
+    const keyType = this.Type().Key()
+    const keys: Value[] = []
+    for (const key of this._value.keys()) {
+      keys.push(new Value(key as ReflectValue, keyType))
+    }
+    return $.arrayToSlice(keys)
+  }
+
   public Complex(): number | $.Complex | null {
     const k = this.Kind()
     if (k !== Complex64 && k !== Complex128) {

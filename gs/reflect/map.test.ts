@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { MapIter } from './map.js'
+import { ValueOf } from './type.js'
 
 describe('MapIter', () => {
   it('should iterate over map entries with proper typing', () => {
@@ -27,5 +28,23 @@ describe('MapIter', () => {
     expect(iter.current?.done === false).toBe(true)
     expect(iter.Key().Interface()).toBe('reset')
     expect(iter.Value().Interface()).toBe(100)
+  })
+})
+
+describe('Value.MapKeys', () => {
+  it('returns map keys as reflect values', () => {
+    const map = new Map<string, number>()
+    map.set('alpha', 1)
+    map.set('beta', 2)
+
+    const keys = ValueOf(map).MapKeys()
+
+    expect(keys?.map((key) => key.String()).sort()).toEqual(['alpha', 'beta'])
+  })
+
+  it('returns an empty slice for empty maps', () => {
+    const emptyMap = new Map<string, number>()
+
+    expect(ValueOf(emptyMap).MapKeys()).toEqual([])
   })
 })
