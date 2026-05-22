@@ -5468,24 +5468,36 @@ func (o *LoweringOwner) lowerAnonymousStructCompositeLit(
 	lit *ast.CompositeLit,
 	structType *types.Struct,
 ) (string, []Diagnostic) {
-	fields := make([]string, 0, len(lit.Elts))
+	fields := make([]string, structType.NumFields())
+	for idx := range structType.NumFields() {
+		field := structType.Field(idx)
+		fields[idx] = tsStructFieldName(field.Name(), idx) + ": (" +
+			o.lowerZeroValueExprFor(ctx, field.Type()) + " as " + o.tsStructFieldTypeFor(ctx, field.Type()) + ")"
+	}
 	var diagnostics []Diagnostic
 	for idx, elt := range lit.Elts {
 		fieldName := ""
 		fieldType := types.Type(nil)
+		fieldIndex := -1
 		valueExpr := elt
 		if keyed, ok := elt.(*ast.KeyValueExpr); ok {
 			valueExpr = keyed.Value
 			if ident, ok := keyed.Key.(*ast.Ident); ok {
 				fieldName = ident.Name
-				if field := fieldByName(structType, fieldName); field != nil {
-					fieldType = field.Type()
+				for index := range structType.NumFields() {
+					field := structType.Field(index)
+					if field.Name() == fieldName {
+						fieldIndex = index
+						fieldType = field.Type()
+						break
+					}
 				}
 			}
 		}
 		if fieldName == "" && idx < structType.NumFields() {
 			field := structType.Field(idx)
 			fieldName = tsStructFieldName(field.Name(), idx)
+			fieldIndex = idx
 			fieldType = field.Type()
 		}
 		if fieldName == "" {
@@ -5495,7 +5507,12 @@ func (o *LoweringOwner) lowerAnonymousStructCompositeLit(
 		value, valueDiagnostics := o.lowerExpr(ctx, valueExpr)
 		diagnostics = append(diagnostics, valueDiagnostics...)
 		value = o.lowerValueForTarget(ctx, valueExpr, fieldType, value)
-		fields = append(fields, fieldName+": "+value)
+		field := fieldName + ": " + value
+		if fieldIndex >= 0 {
+			fields[fieldIndex] = field
+			continue
+		}
+		fields = append(fields, field)
 	}
 	return "{" + strings.Join(fields, ", ") + "}", diagnostics
 }

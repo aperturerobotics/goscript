@@ -11,4 +11,15 @@ func main() {
 	} {
 		println(tt.name, tt.input, tt.count)
 	}
+
+	x := struct {
+		Name    string
+		Offsets []int
+		Count   int
+	}{
+		Name:  "third",
+		Count: 3,
+	}
+	x.Offsets = append(x.Offsets, 5)
+	println(x.Name, x.Offsets[0], x.Count)
 }
