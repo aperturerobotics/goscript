@@ -62,8 +62,48 @@ export class Error {
 }
 
 export type ErrorList = $.Slice<Error | null>
+export type ErrorHandler = (pos: token.Position, msg: string) => void
+export type Mode = number
 
 export const ScanComments = 1
+
+export class Scanner {
+  public ErrorCount = 0
+  private file: token.File | null = null
+  private src: $.Slice<number> = null
+  private err: ErrorHandler | null = null
+  private done = false
+
+  public clone(): Scanner {
+    const scanner = new Scanner()
+    scanner.ErrorCount = this.ErrorCount
+    scanner.file = this.file
+    scanner.src = this.src
+    scanner.err = this.err
+    scanner.done = this.done
+    return scanner
+  }
+
+  public Init(
+    file: token.File | $.VarRef<token.File> | null,
+    src: $.Slice<number>,
+    err: ErrorHandler | null,
+    _mode: Mode,
+  ): void {
+    this.file = file === null ? null : $.pointerValue<token.File>(file)
+    this.src = src
+    this.err = err
+    this.done = false
+  }
+
+  public Scan(): [token.Pos, token.Token, string] {
+    if (this.done) {
+      return [this.file?.Pos($.len(this.src)) ?? token.NoPos, token.EOF, '']
+    }
+    this.done = true
+    return [this.file?.Pos(0) ?? token.NoPos, token.EOF, '']
+  }
+}
 
 export function Error_Error(err: Error): string {
   if (!err.Pos.IsValid()) {
@@ -154,4 +194,11 @@ export function ErrorList_Error(list: ErrorList): string {
     return errors[0]!.Error()
   }
   return `${errors[0]!.Error()} (and ${errors.length - 1} more errors)`
+}
+
+export function ErrorList_Err(list: ErrorList): $.GoError {
+  if ($.len(list) === 0) {
+    return null
+  }
+  return $.newError(ErrorList_Error(list))
 }

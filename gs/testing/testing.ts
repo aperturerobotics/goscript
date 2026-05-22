@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 export type TestFunc = (t: T) => void | Promise<void>
+export type TB = T | B | F
 
 export type TestCase = {
   name: string
@@ -158,6 +159,55 @@ export class T {
     throw new TestControl('fatal', 'testing.T.Parallel is not supported by GoScript test')
   }
 
+  public Setenv(key: string, value: string): void {
+    const proc = (globalThis as any).process as
+      | { env?: Record<string, string | undefined> }
+      | undefined
+    const env = proc?.env
+    if (env === undefined) {
+      return
+    }
+    const oldValue = env[key]
+    env[key] = value
+    this.Cleanup(() => {
+      if (oldValue === undefined) {
+        delete env[key]
+        return
+      }
+      env[key] = oldValue
+    })
+  }
+
+  public Chdir(dir: string): void {
+    const proc = (globalThis as any).process as
+      | { cwd?: () => string; chdir?: (dir: string) => void }
+      | undefined
+    if (proc?.cwd === undefined || proc.chdir === undefined) {
+      return
+    }
+    const oldDir = proc.cwd()
+    proc.chdir(dir)
+    this.Cleanup(() => {
+      proc.chdir!(oldDir)
+    })
+  }
+
+  public ArtifactDir(): string {
+    return this.TempDir()
+  }
+
+  public Attr(_key: string, _value: string): void {}
+
+  public Context(): null {
+    return null
+  }
+
+  public Output(): null {
+    return null
+  }
+
+  public private(): void {}
+
   public async runCleanups(): Promise<void> {
     for (let i = this.cleanups.length - 1; i >= 0; i--) {
       await this.cleanups[i]()
@@ -169,6 +219,77 @@ export class T {
       console.log('    ' + line)
     }
   }
+}
+
+export class B extends T {
+  public N = 1
+
+  constructor(name = 'Benchmark') {
+    super(name)
+  }
+
+  public async Run(name: string, fn: (b: B) => void | Promise<void>): Promise<boolean> {
+    const child = new B(this.Name() + '/' + name)
+    child.N = this.N
+    try {
+      await fn(child)
+    } catch (err) {
+      child.Error(err)
+    }
+    if (child.Failed()) {
+      this.Fail()
+      return false
+    }
+    return true
+  }
+
+  public StartTimer(): void {}
+
+  public StopTimer(): void {}
+
+  public ResetTimer(): void {}
+
+  public ReportAllocs(): void {}
+
+  public SetBytes(_bytes: number): void {}
+
+  public ReportMetric(_n: number, _unit: string): void {}
+
+  public RunParallel(_fn: (pb: PB) => void): void {}
+
+  public Loop(): boolean {
+    if (this.N > 0) {
+      this.N--
+      return true
+    }
+    return false
+  }
+}
+
+export class F extends T {
+  constructor(name = 'Fuzz') {
+    super(name)
+  }
+
+  public Add(..._args: unknown[]): void {}
+
+  public Fuzz(_fn: unknown): void {}
+}
+
+export class PB {
+  private remaining = 1
+
+  public Next(): boolean {
+    if (this.remaining > 0) {
+      this.remaining--
+      return true
+    }
+    return false
+  }
+}
+
+export function Short(): boolean {
+  return false
 }
 
 export async function runTests(

@@ -5,9 +5,11 @@ import * as token from '@goscript/go/token/index.js'
 
 import {
   ErrorList_Add,
+  ErrorList_Err,
   ErrorList_Error,
   ErrorList_Len,
   ErrorList_RemoveMultiples,
+  Scanner,
   type ErrorList,
 } from './index.js'
 
@@ -46,5 +48,25 @@ describe('go/scanner override', () => {
     ErrorList_RemoveMultiples(list)
 
     expect(ErrorList_Len(list.value)).toBe(1)
+  })
+
+  it('returns nil Err for an empty list and an error for non-empty lists', () => {
+    const empty: ErrorList = null
+    expect(ErrorList_Err(empty)).toBeNull()
+
+    const list: $.VarRef<ErrorList> = $.varRef(null)
+    ErrorList_Add(list, new token.Position({ Line: 1 }), 'first')
+    expect(ErrorList_Err(list.value)?.Error()).toBe('1: first')
+  })
+
+  it('provides a Scanner surface for generated go/parser code', () => {
+    const fset = token.NewFileSet()
+    const file = fset.AddFile('test.go', -1, 0)
+    const scanner = new Scanner()
+
+    scanner.Init(file, null, null, 0)
+
+    expect(scanner.Scan()).toEqual([file.Pos(0), token.EOF, ''])
+    expect(scanner.Scan()).toEqual([file.Pos(0), token.EOF, ''])
   })
 })

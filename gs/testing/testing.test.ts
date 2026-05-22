@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { T } from './testing.js'
+import { B, F, Short, T, type TB } from './testing.js'
 
 describe('testing.T', () => {
   it('runs passing subtests', async () => {
@@ -38,5 +38,31 @@ describe('testing.T', () => {
 
     expect(ok).toBe(false)
     expect(t.Failed()).toBe(true)
+  })
+
+  it('exports the benchmark and fuzz test surfaces used by compiled tests', async () => {
+    const b = new B('bench')
+    b.N = 2
+    b.ReportAllocs()
+    b.ResetTimer()
+    b.SetBytes(12)
+    b.ReportMetric(3, 'items')
+
+    let ran = false
+    const ok = await b.Run('child', (child) => {
+      ran = true
+      expect(child.Name()).toBe('bench/child')
+    })
+
+    const f = new F('fuzz')
+    f.Add('seed')
+    f.Fuzz(() => {})
+
+    const tb: TB = b
+    tb.Helper()
+
+    expect(ok).toBe(true)
+    expect(ran).toBe(true)
+    expect(Short()).toBe(false)
   })
 })
