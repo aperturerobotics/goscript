@@ -10,7 +10,7 @@ import * as http from "@goscript/net/http/index.js"
 import * as httptest from "@goscript/net/http/httptest/index.js"
 
 export function setAttachment(w: http.ResponseWriter | null, name: string): void {
-	http.Header_Set($.pointerValue(w).Header(), "Content-Disposition", mime.FormatMediaType("attachment", new Map<string, string>([["filename", name]])))
+	http.Header_Set($.pointerValue<Exclude<http.ResponseWriter, null>>(w).Header(), "Content-Disposition", mime.FormatMediaType("attachment", new Map<string, string>([["filename", name]])))
 }
 
 export async function main(): Promise<void> {

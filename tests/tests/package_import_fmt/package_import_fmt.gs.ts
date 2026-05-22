@@ -35,7 +35,7 @@ export class byteFormatter {
 		const b = this
 		let buf = $.append($.arrayToSlice<number>([]), b.prefix)
 		buf = $.append(buf, $.int(verb))
-		$.pointerValue(state).Write(buf)
+		$.pointerValue<Exclude<fmt.State, null>>(state).Write(buf)
 	}
 
 	static __typeInfo = $.registerStructType(

@@ -44,7 +44,7 @@ export async function main(): Promise<void> {
 	let s = $.markAsStructValue(new Simple({X: 42}))
 	let [b, err] = json.Marshal($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(s)), "main.Simple"))
 	if (err != null) {
-		$.println("Error:", $.pointerValue(err).Error())
+		$.println("Error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 	} else {
 		$.println("Result:", $.bytesToString(b))
 	}

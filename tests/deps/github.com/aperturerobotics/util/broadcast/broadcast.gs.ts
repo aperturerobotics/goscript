@@ -94,7 +94,7 @@ export class Broadcast {
 		let waitCh: $.Channel<{}> | null = null
 
 		while (true) {
-			if ($.pointerValue(ctx).Err() != null) {
+			if ($.pointerValue<Exclude<context.Context, null>>(ctx).Err() != null) {
 				return context.Canceled
 			}
 
@@ -117,7 +117,7 @@ export class Broadcast {
 				{
 					id: 0,
 					isSend: false,
-					channel: $.pointerValue(ctx).Done(),
+					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 					onSelected: async (result) => {
 						return context.Canceled
 					}

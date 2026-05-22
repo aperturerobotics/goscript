@@ -80,7 +80,7 @@ export async function main(): Promise<void> {
 	// Successful type assertion to an inline interface
 	let [g, ok] = $.typeAssertTuple<any>(i, { kind: $.TypeKind.Interface, methods: [{ name: "Greet", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok) {
-		$.println("Greet assertion successful:", $.pointerValue(g).Greet())
+		$.println("Greet assertion successful:", $.pointerValue<any>(g).Greet())
 	} else {
 		$.println("Greet assertion failed")
 	}
@@ -88,7 +88,7 @@ export async function main(): Promise<void> {
 	// Failing type assertion to a different inline interface
 	let [s, ok2] = $.typeAssertTuple<any>(i, { kind: $.TypeKind.Interface, methods: [{ name: "NonExistentMethod", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }] })
 	if (ok2) {
-		$.println("NonExistentMethod assertion successful (unexpected):", $.pointerValue(s).NonExistentMethod())
+		$.println("NonExistentMethod assertion successful (unexpected):", $.pointerValue<any>(s).NonExistentMethod())
 	} else {
 		$.println("NonExistentMethod assertion failed as expected")
 	}
@@ -100,7 +100,7 @@ export async function main(): Promise<void> {
 	// Assert 'j' (which holds MyStringer) to an inline interface that MyStringer satisfies.
 	let [inlineMs, ok4] = $.typeAssertTuple<any>(j, { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok4) {
-		$.println("Inline String assertion successful:", $.pointerValue(inlineMs).String())
+		$.println("Inline String assertion successful:", $.pointerValue<any>(inlineMs).String())
 	} else {
 		$.println("Inline String assertion failed")
 	}
@@ -111,7 +111,7 @@ export async function main(): Promise<void> {
 
 	let [inlineK, ok5] = $.typeAssertTuple<any>(k, { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
 	if (ok5) {
-		$.println("k.(interface{ String() string }) successful:", $.pointerValue(inlineK).String())
+		$.println("k.(interface{ String() string }) successful:", $.pointerValue<any>(inlineK).String())
 	} else {
 		$.println("k.(interface{ String() string }) failed")
 	}

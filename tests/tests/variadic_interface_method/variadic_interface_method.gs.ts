@@ -57,20 +57,20 @@ export async function main(): Promise<void> {
 	let b: Basic | null = $.interfaceValue<Basic | null>($.markAsStructValue(new PathJoiner()), "main.PathJoiner")
 
 	// Test with multiple arguments
-	let result1 = $.pointerValue(b).Join($.arrayToSlice<string>(["path", "to", "file"]))
+	let result1 = $.pointerValue<Exclude<Basic, null>>(b).Join($.arrayToSlice<string>(["path", "to", "file"]))
 	$.println("Result1:", result1)
 
 	// Test with single argument
-	let result2 = $.pointerValue(b).Join($.arrayToSlice<string>(["single"]))
+	let result2 = $.pointerValue<Exclude<Basic, null>>(b).Join($.arrayToSlice<string>(["single"]))
 	$.println("Result2:", result2)
 
 	// Test with no arguments
-	let result3 = $.pointerValue(b).Join(null)
+	let result3 = $.pointerValue<Exclude<Basic, null>>(b).Join(null)
 	$.println("Result3:", result3)
 
 	// Test with slice expansion
 	let parts = $.arrayToSlice<string>(["another", "path", "here"])
-	let result4 = $.pointerValue(b).Join(parts)
+	let result4 = $.pointerValue<Exclude<Basic, null>>(b).Join(parts)
 	$.println("Result4:", result4)
 }
 

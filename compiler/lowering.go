@@ -4568,7 +4568,8 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 		return o.lowerStructClone(receiver), diagnostics
 	}
 	if isInterfaceType(receiverType) {
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "(" + receiver + ")", diagnostics
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+			"<" + o.tsNonNilTypeFor(ctx, receiverType) + ">(" + receiver + ")", diagnostics
 	}
 	return receiver, diagnostics
 }
@@ -5651,6 +5652,18 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	default:
 		return "unknown"
 	}
+}
+
+func (o *LoweringOwner) tsNonNilTypeFor(ctx lowerFileContext, typ types.Type) string {
+	if isBuiltinErrorType(typ) {
+		return "Exclude<$.GoError, null>"
+	}
+	if named, ok := types.Unalias(typ).(*types.Named); ok {
+		if _, ok := named.Underlying().(*types.Interface); ok {
+			return "Exclude<" + o.namedTypeExpr(ctx, named) + ", null>"
+		}
+	}
+	return strings.TrimSuffix(o.tsTypeFor(ctx, typ), " | null")
 }
 
 func (o *LoweringOwner) aliasTypeExpr(ctx lowerFileContext, alias *types.Alias) string {

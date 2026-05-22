@@ -32,9 +32,9 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 			{
 				id: 0,
 				isSend: false,
-				channel: $.pointerValue(ctx).Done(),
+				channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 				onSelected: async (result) => {
-					return $.pointerValue(ctx).Err()
+					return $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
 				}
 			},
 			{

@@ -17,5 +17,5 @@ export function ToKey(v: Ref | null): any {
 	if (v == null) {
 		return null
 	}
-	return $.pointerValue(v).Key()
+	return $.pointerValue<Exclude<Ref, null>>(v).Key()
 }

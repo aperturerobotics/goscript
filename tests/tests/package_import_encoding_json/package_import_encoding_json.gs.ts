@@ -71,7 +71,7 @@ export async function main(): Promise<void> {
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
 	let [b, err] = json.Marshal($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))
 	if (err != null) {
-		results = $.append(results, "Marshal error: " + $.pointerValue(err).Error())
+		results = $.append(results, "Marshal error: " + $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 	} else {
 		results = $.append(results, "Marshal: " + $.bytesToString(b))
 	}
@@ -81,7 +81,7 @@ export async function main(): Promise<void> {
 	{
 		let __goscriptShadow0 = json.Unmarshal($.stringToBytes("{\"name\":\"Bob\",\"age\":25,\"active\":false}"), $.interfaceValue<any>(q, "*main.Person"))
 		if (__goscriptShadow0 != null) {
-			results = $.append(results, "Unmarshal struct error: " + $.pointerValue(__goscriptShadow0).Error())
+			results = $.append(results, "Unmarshal struct error: " + $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow0).Error())
 		} else {
 			results = $.append(results, (((("Unmarshal struct: Name=" + q.value.Name) + ", Age=") + strconv.Itoa(q.value.Age)) + ", Active=") + strconv.FormatBool(q.value.Active))
 		}
@@ -92,7 +92,7 @@ export async function main(): Promise<void> {
 	{
 		let __goscriptShadow1 = json.Unmarshal($.stringToBytes("{\"name\":\"Carol\",\"age\":22,\"active\":true}"), $.interfaceValue<any>(m, "*map[string]any"))
 		if (__goscriptShadow1 != null) {
-			results = $.append(results, "Unmarshal map error: " + $.pointerValue(__goscriptShadow1).Error())
+			results = $.append(results, "Unmarshal map error: " + $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow1).Error())
 		} else {
 			let name = $.mustTypeAssert<string>($.mapGet(m.value, "name", null)[0], { kind: $.TypeKind.Basic, name: "string" })
 			let age = $.int($.mustTypeAssert<number>($.mapGet(m.value, "age", null)[0], { kind: $.TypeKind.Basic, name: "int" }))

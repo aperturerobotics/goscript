@@ -61,7 +61,7 @@ export function describe(value: any): void {
 		let __goscriptShadow1 = __goscriptTuple0[0]
 		let ok = __goscriptTuple0[1]
 		if (ok) {
-			$.println("Shadowed name:", $.pointerValue(__goscriptShadow1).Name())
+			$.println("Shadowed name:", $.pointerValue<Exclude<named, null>>(__goscriptShadow1).Name())
 			return
 		}
 	}

@@ -70,7 +70,7 @@ export async function main(): Promise<void> {
 	await run(((__receiver) => () => __receiver.Spawn())($.pointerValue<Worker>(w)))
 
 	let s: Spawner | null = $.interfaceValue<Spawner | null>(w, "*main.Worker")
-	let err = $.pointerValue(s).Spawn()
+	let err = $.pointerValue<Exclude<Spawner, null>>(s).Spawn()
 	if (err == null) {
 		$.println("iface err: nil")
 	} else {

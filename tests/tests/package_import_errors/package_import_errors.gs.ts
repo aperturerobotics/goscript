@@ -73,7 +73,7 @@ export class wrappedErr {
 
 	public Error(): string {
 		const e = this
-		return "wrapped: " + $.pointerValue(e.err).Error()
+		return "wrapped: " + $.pointerValue<Exclude<$.GoError, null>>(e.err).Error()
 	}
 
 	public Unwrap(): $.GoError {
@@ -95,8 +95,8 @@ export async function main(): Promise<void> {
 	let err1 = errors.New("first error")
 	let err2 = errors.New("second error")
 
-	$.println("err1:", $.pointerValue(err1).Error())
-	$.println("err2:", $.pointerValue(err2).Error())
+	$.println("err1:", $.pointerValue<Exclude<$.GoError, null>>(err1).Error())
+	$.println("err2:", $.pointerValue<Exclude<$.GoError, null>>(err2).Error())
 
 	// Test error comparison
 	$.println("err1 == err2:", err1 == err2)
@@ -114,7 +114,7 @@ export async function main(): Promise<void> {
 	if (ok) {
 		$.println("AsType message:", $.pointerValue<customErr>(matched).msg)
 	}
-	let __goscriptTuple1 = errors.AsType({E: { type: { kind: $.TypeKind.Pointer, elemType: "main.customErr" }, zero: () => null }}, err1)
+	let __goscriptTuple1 = errors.AsType({E: { type: { kind: $.TypeKind.Pointer, elemType: "main.customErr" }, zero: () => null }}, $.pointerValue(err1))
 	ok = __goscriptTuple1[1]
 	$.println("AsType missing:", ok)
 

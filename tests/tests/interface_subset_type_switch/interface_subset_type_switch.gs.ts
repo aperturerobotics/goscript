@@ -86,13 +86,13 @@ export function processInterface(i: any): void {
 			case $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
 				{
 					let v: MyInterface1 | null = $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").value
-					$.println("MyInterface1:", $.pointerValue(v).MyString1(), $.pointerValue(v).MyString2())
+					$.println("MyInterface1:", $.pointerValue<Exclude<MyInterface1, null>>(v).MyString1(), $.pointerValue<Exclude<MyInterface1, null>>(v).MyString2())
 				}
 				break
 			case $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
 				{
 					let v: MyInterface2 | null = $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").value
-					$.println("MyInterface2:", $.pointerValue(v).MyString1())
+					$.println("MyInterface2:", $.pointerValue<Exclude<MyInterface2, null>>(v).MyString1())
 				}
 				break
 			default:
@@ -127,13 +127,13 @@ export async function main(): Promise<void> {
 			case $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
 				{
 					let v: MyInterface2 | null = $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").value
-					$.println("Matched MyInterface2 from i1:", $.pointerValue(v).MyString1())
+					$.println("Matched MyInterface2 from i1:", $.pointerValue<Exclude<MyInterface2, null>>(v).MyString1())
 				}
 				break
 			case $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
 				{
 					let v: MyInterface1 | null = $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").value
-					$.println("Matched MyInterface1 from i1:", $.pointerValue(v).MyString1(), $.pointerValue(v).MyString2())
+					$.println("Matched MyInterface1 from i1:", $.pointerValue<Exclude<MyInterface1, null>>(v).MyString1(), $.pointerValue<Exclude<MyInterface1, null>>(v).MyString2())
 				}
 				break
 			default:

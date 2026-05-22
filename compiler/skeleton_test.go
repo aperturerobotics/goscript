@@ -676,7 +676,7 @@ func TestCompilePackagesAssertsInterfaceMethodReceivers(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export type FileInfo = null | {",
-		"$.println($.pointerValue(info).Name())",
+		"$.println($.pointerValue<Exclude<FileInfo, null>>(info).Name())",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -726,7 +726,7 @@ func TestCompilePackagesBoxesTypedNilInterfaceValues(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"return $.interfaceValue<Animal | null>(FindDog(), \"*main.Dog\")",
-		"$.println($.pointerValue(animal).Name())",
+		"$.println($.pointerValue<Exclude<Animal, null>>(animal).Name())",
 		"let a: Animal | null = $.interfaceValue<Animal | null>(dog, \"*main.Dog\")",
 	} {
 		if !strings.Contains(text, want) {
@@ -954,7 +954,7 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 		"$.append(parts, \"c\", \"d\")",
 		"maybeErr($.arrayToSlice<string>([\"ok\"]))",
 		"fn!(\"fn\", $.arrayToSlice<string>([\"x\"]))",
-		"$.pointerValue(joiner).Join($.arrayToSlice<string>([\"q\", \"r\"]))",
+		"$.pointerValue<Exclude<Joiner, null>>(joiner).Join($.arrayToSlice<string>([\"q\", \"r\"]))",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

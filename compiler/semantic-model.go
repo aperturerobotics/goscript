@@ -257,11 +257,58 @@ func (o *SemanticModelOwner) collectFileFacts(
 		case *ast.AssignStmt:
 			o.recordAssignNilFacts(semPkg, pkg, typed)
 			o.recordAsyncCompatibleFunctionAssignments(model, pkg, typed.Lhs, typed.Rhs)
+		case *ast.FuncLit:
+			o.recordFuncLitAssignedCaptures(model, pkg, typed)
+			return false
 		case *ast.CallExpr:
 			o.recordCallSignatureImports(model, semPkg, pkg, typed)
 		}
 		return true
 	})
+}
+
+func (o *SemanticModelOwner) recordFuncLitAssignedCaptures(
+	model *SemanticModel,
+	pkg *packages.Package,
+	lit *ast.FuncLit,
+) {
+	ast.Inspect(lit.Body, func(node ast.Node) bool {
+		switch typed := node.(type) {
+		case *ast.FuncLit:
+			o.recordFuncLitAssignedCaptures(model, pkg, typed)
+			return false
+		case *ast.AssignStmt:
+			for _, lhs := range typed.Lhs {
+				o.recordFuncLitAssignedCapture(model, pkg, lit, lhs)
+			}
+		case *ast.IncDecStmt:
+			o.recordFuncLitAssignedCapture(model, pkg, lit, typed.X)
+		}
+		return true
+	})
+}
+
+func (o *SemanticModelOwner) recordFuncLitAssignedCapture(
+	model *SemanticModel,
+	pkg *packages.Package,
+	lit *ast.FuncLit,
+	expr ast.Expr,
+) {
+	ident, ok := ast.Unparen(expr).(*ast.Ident)
+	if !ok {
+		return
+	}
+	obj, _ := pkg.TypesInfo.Uses[ident].(*types.Var)
+	if obj == nil || !obj.Pos().IsValid() {
+		return
+	}
+	if lit.Pos() < obj.Pos() && obj.Pos() < lit.End() {
+		return
+	}
+	if signatureForType(obj.Type()) == nil {
+		return
+	}
+	model.needsVarRef[obj] = true
 }
 
 func (o *SemanticModelOwner) recordCallSignatureImports(
@@ -709,6 +756,17 @@ func semanticFunctionFor(model *SemanticModel, fn *types.Func) *semanticFunction
 }
 
 func calledFunction(pkg *packages.Package, expr ast.Expr) *types.Func {
+	for {
+		switch typed := expr.(type) {
+		case *ast.IndexExpr:
+			expr = typed.X
+		case *ast.IndexListExpr:
+			expr = typed.X
+		default:
+			goto unwrapped
+		}
+	}
+unwrapped:
 	switch typed := expr.(type) {
 	case *ast.Ident:
 		fn, _ := pkg.TypesInfo.Uses[typed].(*types.Func)

@@ -64,21 +64,21 @@ export async function main(): Promise<void> {
 	// Test basic reflect functions
 	let x = 42
 	let v = $.markAsStructValue($.cloneStructValue(reflect.ValueOf(x)))
-	$.println("Type:", $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})).String())
+	$.println("Type:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})).String())
 	$.println("Value:", $.markAsStructValue($.cloneStructValue(v)).Int())
 	$.println("Kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(v)).Kind()))
 
 	// Test with string
 	let s = "hello"
 	let sv = $.markAsStructValue($.cloneStructValue(reflect.ValueOf(s)))
-	$.println("String type:", $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})).String())
+	$.println("String type:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})).String())
 	$.println("String value:", $.markAsStructValue($.cloneStructValue(sv)).String())
 	$.println("String kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(sv)).Kind()))
 
 	// Test with slice
 	let slice = $.arrayToSlice<number>([1, 2, 3])
 	let sliceV = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(slice, "[]int"))))
-	$.println("Slice type:", $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }})).String())
+	$.println("Slice type:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }})).String())
 	$.println("Slice len:", $.markAsStructValue($.cloneStructValue(sliceV)).Len())
 	$.println("Slice kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(sliceV)).Kind()))
 
@@ -96,26 +96,26 @@ export async function main(): Promise<void> {
 	// Test type construction functions
 	let intType = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})
 	let sliceType = reflect.SliceOf($.pointerValue(intType))
-	$.println("SliceOf int:", $.pointerValue(sliceType).String())
-	$.println("SliceOf kind:", reflect.Kind_String($.pointerValue(sliceType).Kind()))
+	$.println("SliceOf int:", $.pointerValue<Exclude<reflect.Type, null>>(sliceType).String())
+	$.println("SliceOf kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>(sliceType).Kind()))
 
 	let arrayType = reflect.ArrayOf(5, $.pointerValue(intType))
-	$.println("ArrayOf 5 int:", $.pointerValue(arrayType).String())
-	$.println("ArrayOf kind:", reflect.Kind_String($.pointerValue(arrayType).Kind()))
+	$.println("ArrayOf 5 int:", $.pointerValue<Exclude<reflect.Type, null>>(arrayType).String())
+	$.println("ArrayOf kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>(arrayType).Kind()))
 
 	let ptrType = reflect.PointerTo($.pointerValue(intType))
-	$.println("PointerTo int:", $.pointerValue(ptrType).String())
-	$.println("PointerTo kind:", reflect.Kind_String($.pointerValue(ptrType).Kind()))
+	$.println("PointerTo int:", $.pointerValue<Exclude<reflect.Type, null>>(ptrType).String())
+	$.println("PointerTo kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>(ptrType).Kind()))
 
 	// Test PtrTo (alias for PointerTo)
 	let ptrType2 = reflect.PtrTo($.pointerValue(intType))
-	$.println("PtrTo int:", $.pointerValue(ptrType2).String())
+	$.println("PtrTo int:", $.pointerValue<Exclude<reflect.Type, null>>(ptrType2).String())
 
 	// Test New and Indirect
 	let newVal = $.markAsStructValue($.cloneStructValue(reflect.New($.pointerValue(intType))))
-	$.println("New int type:", $.pointerValue($.markAsStructValue($.cloneStructValue(newVal)).Type()).String())
+	$.println("New int type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(newVal)).Type()).String())
 	let indirectVal = $.markAsStructValue($.cloneStructValue(reflect.Indirect($.markAsStructValue($.cloneStructValue(newVal)))))
-	$.println("Indirect type:", $.pointerValue($.markAsStructValue($.cloneStructValue(indirectVal)).Type()).String())
+	$.println("Indirect type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(indirectVal)).Type()).String())
 
 	// Test Zero values for different types
 	let zeroString = $.markAsStructValue($.cloneStructValue(reflect.Zero($.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})))))
@@ -143,11 +143,11 @@ export async function main(): Promise<void> {
 	// Test struct reflection
 	let person = $.markAsStructValue(new Person({Name: "Alice", Age: 30}))
 	let personType = reflect.TypeFor({T: { type: "main.Person", zero: () => $.markAsStructValue(new Person()) }})
-	$.println("Struct type:", $.pointerValue(personType).String())
-	$.println("Struct kind:", reflect.Kind_String($.pointerValue(personType).Kind()))
+	$.println("Struct type:", $.pointerValue<Exclude<reflect.Type, null>>(personType).String())
+	$.println("Struct kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>(personType).Kind()))
 
 	let personVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(person)), "main.Person"))))
-	$.println("Struct value type:", $.pointerValue($.markAsStructValue($.cloneStructValue(personVal)).Type()).String())
+	$.println("Struct value type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(personVal)).Type()).String())
 
 	// Test with different kinds
 	let f: number = 3.14
@@ -161,15 +161,15 @@ export async function main(): Promise<void> {
 	// Test type equality
 	let intType1 = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})
 	let intType2 = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})
-	$.println("Same int types:", $.pointerValue(intType1).String() == $.pointerValue(intType2).String())
+	$.println("Same int types:", $.pointerValue<Exclude<reflect.Type, null>>(intType1).String() == $.pointerValue<Exclude<reflect.Type, null>>(intType2).String())
 
 	let stringType = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})
-	$.println("Different types:", $.pointerValue(intType1).String() == $.pointerValue(stringType).String())
+	$.println("Different types:", $.pointerValue<Exclude<reflect.Type, null>>(intType1).String() == $.pointerValue<Exclude<reflect.Type, null>>(stringType).String())
 
 	// Test map type construction
 	let mapType = reflect.MapOf($.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})), $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))
-	$.println("MapOf string->int:", $.pointerValue(mapType).String())
-	$.println("MapOf kind:", reflect.Kind_String($.pointerValue(mapType).Kind()))
+	$.println("MapOf string->int:", $.pointerValue<Exclude<reflect.Type, null>>(mapType).String())
+	$.println("MapOf kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>(mapType).Kind()))
 
 	// Test channel direction constants
 	$.println("Chan kinds available")
@@ -184,7 +184,7 @@ export async function main(): Promise<void> {
 	// Test interface type
 	let iface: any = "hello"
 	let ifaceVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf(iface)))
-	$.println("Interface value type:", $.pointerValue($.markAsStructValue($.cloneStructValue(ifaceVal)).Type()).String())
+	$.println("Interface value type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(ifaceVal)).Type()).String())
 	$.println("Interface kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(ifaceVal)).Kind()))
 	let [assertedString, assertedOK] = reflect.TypeAssert({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, $.markAsStructValue($.cloneStructValue(reflect.ValueOf("typed"))))
 	$.println("TypeAssert string:", assertedString, assertedOK)
@@ -200,28 +200,28 @@ export async function main(): Promise<void> {
 	$.markAsStructValue($.cloneStructValue(complexTargetValue)).SetComplex($.complex(7, 8))
 	$.println("SetComplex real:", $.int($.real($.markAsStructValue($.cloneStructValue(complexTargetValue)).Complex())))
 	$.println("SetComplex imag:", $.int($.imag($.markAsStructValue($.cloneStructValue(complexTargetValue)).Complex())))
-	$.println("Array type len:", $.pointerValue(reflect.ArrayOf(3, $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))).Len())
+	$.println("Array type len:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.ArrayOf(3, $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))).Len())
 
 	// Test function type
 	let fn = $.functionValue((_p0: number): string => {
 		return ""
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	let fnVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(fn, "func(int) string"))))
-	$.println("Function type:", $.pointerValue($.markAsStructValue($.cloneStructValue(fnVal)).Type()).String())
+	$.println("Function type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(fnVal)).Type()).String())
 	$.println("Function kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(fnVal)).Kind()))
 
 	// Test more complex types
 	let complexSlice = $.arrayToSlice<$.Slice<number>>([$.arrayToSlice<number>([1, 2]), $.arrayToSlice<number>([3, 4])])
 	let complexVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(complexSlice, "[][]int"))))
-	$.println("Complex slice type:", $.pointerValue($.markAsStructValue($.cloneStructValue(complexVal)).Type()).String())
+	$.println("Complex slice type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(complexVal)).Type()).String())
 	$.println("Complex slice kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(complexVal)).Kind()))
 	$.println("Complex slice len:", $.markAsStructValue($.cloneStructValue(complexVal)).Len())
 
 	// Test type methods
 	$.println("Type size methods:")
-	$.println("Int size:", $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})).Size())
-	$.println("String size:", $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})).Size())
-	$.println("Slice size:", $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }})).Size())
+	$.println("Int size:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})).Size())
+	$.println("String size:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})).Size())
+	$.println("Slice size:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }})).Size())
 
 	// Test enhanced API surface - functions to implement
 	$.println("Enhanced API tests:")
@@ -230,12 +230,12 @@ export async function main(): Promise<void> {
 	let sliceTypeInt = reflect.SliceOf($.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))
 	let newSlice = $.markAsStructValue($.cloneStructValue(reflect.MakeSlice($.pointerValue(sliceTypeInt), 3, 5)))
 	$.println("MakeSlice len:", $.markAsStructValue($.cloneStructValue(newSlice)).Len())
-	$.println("MakeSlice type:", $.pointerValue($.markAsStructValue($.cloneStructValue(newSlice)).Type()).String())
+	$.println("MakeSlice type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(newSlice)).Type()).String())
 
 	// Test MakeMap
 	let mapTypeStr = reflect.MapOf($.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})), $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))
 	let newMap = $.markAsStructValue($.cloneStructValue(reflect.MakeMap($.pointerValue(mapTypeStr))))
-	$.println("MakeMap type:", $.pointerValue($.markAsStructValue($.cloneStructValue(newMap)).Type()).String())
+	$.println("MakeMap type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(newMap)).Type()).String())
 
 	// Test Append
 	let originalSlice = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.arrayToSlice<number>([1, 2]), "[]int"))))
@@ -244,36 +244,36 @@ export async function main(): Promise<void> {
 
 	// Test channel types
 	let chanType = reflect.ChanOf(reflect.BothDir, $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))
-	$.println("ChanOf type:", $.pointerValue(chanType).String())
-	$.println("ChanOf kind:", reflect.Kind_String($.pointerValue(chanType).Kind()))
+	$.println("ChanOf type:", $.pointerValue<Exclude<reflect.Type, null>>(chanType).String())
+	$.println("ChanOf kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>(chanType).Kind()))
 
 	// Test MakeChan
 	let newChan = $.markAsStructValue($.cloneStructValue(reflect.MakeChan($.pointerValue(chanType), 0)))
-	$.println("MakeChan type:", $.pointerValue($.markAsStructValue($.cloneStructValue(newChan)).Type()).String())
+	$.println("MakeChan type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(newChan)).Type()).String())
 
 	// Test different channel directions
 	let sendOnlyChan = reflect.ChanOf(reflect.SendDir, $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})))
-	$.println("SendOnly chan type:", $.pointerValue(sendOnlyChan).String())
+	$.println("SendOnly chan type:", $.pointerValue<Exclude<reflect.Type, null>>(sendOnlyChan).String())
 
 	let recvOnlyChan = reflect.ChanOf(reflect.RecvDir, $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "bool" }, zero: () => false }})))
-	$.println("RecvOnly chan type:", $.pointerValue(recvOnlyChan).String())
+	$.println("RecvOnly chan type:", $.pointerValue<Exclude<reflect.Type, null>>(recvOnlyChan).String())
 
 	// Test channels with different element types
 	let stringChanType = reflect.ChanOf(reflect.BothDir, $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})))
 	let stringChan = $.markAsStructValue($.cloneStructValue(reflect.MakeChan($.pointerValue(stringChanType), 5)))
-	$.println("String chan type:", $.pointerValue($.markAsStructValue($.cloneStructValue(stringChan)).Type()).String())
-	$.println("String chan elem type:", $.pointerValue($.pointerValue($.markAsStructValue($.cloneStructValue(stringChan)).Type()).Elem()).String())
+	$.println("String chan type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(stringChan)).Type()).String())
+	$.println("String chan elem type:", $.pointerValue<Exclude<reflect.Type, null>>($.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(stringChan)).Type()).Elem()).String())
 
 	// Test buffered vs unbuffered channels
 	let unbufferedChan = $.markAsStructValue($.cloneStructValue(reflect.MakeChan($.pointerValue(chanType), 0)))
 	let bufferedChan = $.markAsStructValue($.cloneStructValue(reflect.MakeChan($.pointerValue(chanType), 10)))
-	$.println("Unbuffered chan type:", $.pointerValue($.markAsStructValue($.cloneStructValue(unbufferedChan)).Type()).String())
-	$.println("Buffered chan type:", $.pointerValue($.markAsStructValue($.cloneStructValue(bufferedChan)).Type()).String())
+	$.println("Unbuffered chan type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(unbufferedChan)).Type()).String())
+	$.println("Buffered chan type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(bufferedChan)).Type()).String())
 
 	// Test channel reflection properties
-	$.println("Chan elem type:", $.pointerValue($.pointerValue(chanType).Elem()).String())
-	$.println("Chan elem kind:", reflect.Kind_String($.pointerValue($.pointerValue(chanType).Elem()).Kind()))
-	$.println("Chan size:", $.pointerValue(chanType).Size())
+	$.println("Chan elem type:", $.pointerValue<Exclude<reflect.Type, null>>($.pointerValue<Exclude<reflect.Type, null>>(chanType).Elem()).String())
+	$.println("Chan elem kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>($.pointerValue<Exclude<reflect.Type, null>>(chanType).Elem()).Kind()))
+	$.println("Chan size:", $.pointerValue<Exclude<reflect.Type, null>>(chanType).Size())
 
 	// Test Select functionality
 	let intChan = $.markAsStructValue($.cloneStructValue(reflect.MakeChan($.pointerValue(reflect.ChanOf(reflect.BothDir, $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))), 1)))
@@ -286,7 +286,7 @@ export async function main(): Promise<void> {
 	let [chosen, recv, recvOK] = reflect.Select(cases)
 	$.println("Select chosen:", chosen, "recvOK:", recvOK)
 	if ($.markAsStructValue($.cloneStructValue(recv)).IsValid()) {
-		$.println("Select recv type:", $.pointerValue($.markAsStructValue($.cloneStructValue(recv)).Type()).String())
+		$.println("Select recv type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(recv)).Type()).String())
 		// Print the actual received value
 		if (chosen == 0) {
 			$.println("Select recv value:", $.markAsStructValue($.cloneStructValue(recv)).Int())

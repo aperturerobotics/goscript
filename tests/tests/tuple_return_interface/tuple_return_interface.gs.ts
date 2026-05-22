@@ -68,7 +68,7 @@ export function newInterface(size: number): [Block | null, $.GoError] {
 export async function main(): Promise<void> {
 	let [block, err] = newInterface(16)
 	$.println("err nil:", err == null)
-	$.println("size:", $.pointerValue(block).Size())
+	$.println("size:", $.pointerValue<Exclude<Block, null>>(block).Size())
 }
 
 

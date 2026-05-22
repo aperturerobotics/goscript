@@ -13,7 +13,7 @@ import * as csync from "@goscript/github.com/aperturerobotics/util/csync/index.j
 
 export async function main(): Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
-	let mtx: $.VarRef<csync.Mutex> = $.varRef($.markAsStructValue(new csync.Mutex()))
+	let mtx: csync.Mutex = $.markAsStructValue(new csync.Mutex())
 	let counter: number = 0
 	let wg: $.VarRef<sync.WaitGroup> = $.varRef($.markAsStructValue(new sync.WaitGroup()))
 
@@ -30,9 +30,9 @@ export async function main(): Promise<void> {
 		__defer.defer(() => { wg.value.Done() })
 
 		// Try to acquire the lock
-		let [relLock, err] = await mtx.value.Lock(ctx)
+		let [relLock, err] = await mtx.Lock(ctx)
 		if (err != null) {
-			$.println("worker", id, "failed to acquire lock:", $.pointerValue(err).Error())
+			$.println("worker", id, "failed to acquire lock:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 			return
 		}
 		__defer.defer(async () => { await relLock!() })
@@ -68,9 +68,9 @@ export async function main(): Promise<void> {
 		{
 			id: 1,
 			isSend: false,
-			channel: $.pointerValue(ctx).Done(),
+			channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 			onSelected: async (result) => {
-				$.println("Test timed out:", $.pointerValue($.pointerValue(ctx).Err()).Error())
+				$.println("Test timed out:", $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<Exclude<context.Context, null>>(ctx).Err()).Error())
 			}
 		}
 	], false)

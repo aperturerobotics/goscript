@@ -15,7 +15,7 @@ export async function main(): Promise<void> {
 				$.println("Current working directory ok")
 			}
 		} else {
-			$.println("Error getting working directory:", $.pointerValue(err).Error())
+			$.println("Error getting working directory:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		}
 	}
 
@@ -44,7 +44,7 @@ export async function main(): Promise<void> {
 		if (err == null) {
 			$.println("Hostname:", hostname)
 		} else {
-			$.println("Error getting hostname:", $.pointerValue(err).Error())
+			$.println("Error getting hostname:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		}
 	}
 
@@ -52,7 +52,7 @@ export async function main(): Promise<void> {
 	if (err == null) {
 		$.println("Stdout write bytes:", n)
 	} else {
-		$.println("Stdout write error:", $.pointerValue(err).Error())
+		$.println("Stdout write error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 	}
 
 	let fileName = "os-runtime-file.txt"
@@ -60,7 +60,7 @@ export async function main(): Promise<void> {
 	if (writeErr == null) {
 		$.println("WriteFile ok")
 	} else {
-		$.println("WriteFile error:", $.pointerValue(writeErr).Error())
+		$.println("WriteFile error:", $.pointerValue<Exclude<$.GoError, null>>(writeErr).Error())
 	}
 
 	{
@@ -68,17 +68,17 @@ export async function main(): Promise<void> {
 		if (readErr == null) {
 			$.println("ReadFile data:", $.bytesToString(data))
 		} else {
-			$.println("ReadFile error:", $.pointerValue(readErr).Error())
+			$.println("ReadFile error:", $.pointerValue<Exclude<$.GoError, null>>(readErr).Error())
 		}
 	}
 
 	{
 		let [info, statErr] = os.Stat(fileName)
 		if (statErr == null) {
-			$.println("Stat name:", $.pointerValue(info).Name())
-			$.println("Stat size:", $.pointerValue(info).Size())
+			$.println("Stat name:", $.pointerValue<Exclude<fs.FileInfo, null>>(info).Name())
+			$.println("Stat size:", $.pointerValue<Exclude<fs.FileInfo, null>>(info).Size())
 		} else {
-			$.println("Stat error:", $.pointerValue(statErr).Error())
+			$.println("Stat error:", $.pointerValue<Exclude<$.GoError, null>>(statErr).Error())
 		}
 	}
 
@@ -86,7 +86,7 @@ export async function main(): Promise<void> {
 	if (removeErr == null) {
 		$.println("Remove ok")
 	} else {
-		$.println("Remove error:", $.pointerValue(removeErr).Error())
+		$.println("Remove error:", $.pointerValue<Exclude<$.GoError, null>>(removeErr).Error())
 	}
 
 	{
@@ -95,7 +95,7 @@ export async function main(): Promise<void> {
 			$.println("MkdirTemp ok")
 			os.RemoveAll(tempDir)
 		} else {
-			$.println("MkdirTemp error:", $.pointerValue(__goscriptShadow0).Error())
+			$.println("MkdirTemp error:", $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow0).Error())
 		}
 	}
 
@@ -109,7 +109,7 @@ export async function main(): Promise<void> {
 			$.pointerValue<os.File>(tempFile).Close()
 			os.Remove($.pointerValue<os.File>(tempFile).Name())
 		} else {
-			$.println("CreateTemp error:", $.pointerValue(__goscriptShadow1).Error())
+			$.println("CreateTemp error:", $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow1).Error())
 		}
 	}
 }

@@ -48,7 +48,7 @@ export class sink {
 }
 
 export function write(tx: __goscript_types.Tx | null, v: dep.Value): void {
-	$.pointerValue(tx).Put((v as __goscript_types.Value))
+	$.pointerValue<Exclude<__goscript_types.Tx, null>>(tx).Put((v as __goscript_types.Value))
 }
 
 export async function main(): Promise<void> {

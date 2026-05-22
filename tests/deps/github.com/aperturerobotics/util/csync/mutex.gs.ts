@@ -98,7 +98,7 @@ export class Mutex {
 				{
 					id: 0,
 					isSend: false,
-					channel: $.pointerValue(ctx).Done(),
+					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 					onSelected: async (result) => {
 						await release!()
 						return [null, context.Canceled]

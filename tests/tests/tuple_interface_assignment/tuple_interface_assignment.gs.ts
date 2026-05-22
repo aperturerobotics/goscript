@@ -52,7 +52,7 @@ export async function main(): Promise<void> {
 	let __goscriptTuple0 = makeReader()
 	r = $.interfaceValue<reader | null>(__goscriptTuple0[0], "*main.concrete")
 	err = __goscriptTuple0[1]
-	$.println("ok", ($.pointerValue(r).Read() == 7) && (err == null))
+	$.println("ok", ($.pointerValue<Exclude<reader, null>>(r).Read() == 7) && (err == null))
 }
 
 

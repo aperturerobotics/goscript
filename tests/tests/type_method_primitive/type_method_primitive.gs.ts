@@ -33,10 +33,10 @@ export async function main(): Promise<void> {
 	$.println("Method ref call:", await fn!())
 
 	let d: Doubler | null = $.namedValueInterfaceValue<Doubler | null>(12, "main.MyInt", {Double: MyInt_Double})
-	$.println("Interface method call:", $.pointerValue(d).Double())
+	$.println("Interface method call:", $.pointerValue<Exclude<Doubler, null>>(d).Double())
 
 	let ret = asDoubler(13)
-	$.println("Returned interface call:", $.pointerValue(ret).Double())
+	$.println("Returned interface call:", $.pointerValue<Exclude<Doubler, null>>(ret).Double())
 
 	let [asserted, ok] = $.typeAssertTuple<MyInt>(ret, "main.MyInt")
 	$.println("Interface assertion:", $.int(asserted), ok)

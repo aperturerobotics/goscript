@@ -86,10 +86,10 @@ export let asyncWrites: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sy
 
 export async function main(): Promise<void> {
 	// Test basic error variables
-	$.println("EOF:", $.pointerValue(io.EOF).Error())
-	$.println("ErrClosedPipe:", $.pointerValue(io.ErrClosedPipe).Error())
-	$.println("ErrShortWrite:", $.pointerValue(io.ErrShortWrite).Error())
-	$.println("ErrUnexpectedEOF:", $.pointerValue(io.ErrUnexpectedEOF).Error())
+	$.println("EOF:", $.pointerValue<Exclude<$.GoError, null>>(io.EOF).Error())
+	$.println("ErrClosedPipe:", $.pointerValue<Exclude<$.GoError, null>>(io.ErrClosedPipe).Error())
+	$.println("ErrShortWrite:", $.pointerValue<Exclude<$.GoError, null>>(io.ErrShortWrite).Error())
+	$.println("ErrUnexpectedEOF:", $.pointerValue<Exclude<$.GoError, null>>(io.ErrUnexpectedEOF).Error())
 
 	// Test seek constants
 	$.println("SeekStart:", io.SeekStart)

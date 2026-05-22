@@ -15,7 +15,7 @@ export async function run(ctx: context.Context | null): Promise<void> {
 	let myCh = $.makeChannel<{}>(0, {}, "both")
 
 	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
-		await $.chanRecv($.pointerValue(sctx).Done())
+		await $.chanRecv($.pointerValue<Exclude<context.Context, null>>(sctx).Done())
 		await $.chanSend(myCh, {})
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 
@@ -58,7 +58,7 @@ export async function main(): Promise<void> {
 
 	let [deadlineCtx, cancel] = context.WithDeadline($.pointerValue(ctx), $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Now())).Add(time.Hour))))
 	__defer.defer(async () => { await cancel!() })
-	let [deadline, ok] = $.pointerValue(deadlineCtx).Deadline()
+	let [deadline, ok] = $.pointerValue<Exclude<context.Context, null>>(deadlineCtx).Deadline()
 	$.println("deadline ok:", ok)
 	$.println("deadline zero:", $.markAsStructValue($.cloneStructValue(deadline)).IsZero())
 

@@ -24,14 +24,14 @@ export async function main(): Promise<void> {
 	if (err == null) {
 		$.println("mayFail(5): no error")
 	} else {
-		$.println("mayFail(5):", $.pointerValue(err).Error())
+		$.println("mayFail(5):", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 	}
 
 	err = mayFail(-1)
 	if (err == null) {
 		$.println("mayFail(-1): no error")
 	} else {
-		$.println("mayFail(-1):", $.pointerValue(err).Error())
+		$.println("mayFail(-1):", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 	}
 }
 

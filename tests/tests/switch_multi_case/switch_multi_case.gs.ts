@@ -30,7 +30,7 @@ export async function main(): Promise<void> {
 			value = __goscriptTuple0[1]
 			err = __goscriptTuple0[2]
 			if (err != null) {
-				$.println("Error:", $.pointerValue(err).Error())
+				$.println("Error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 			}
 			$.println("Month:", month, "Value:", value)
 			break
@@ -57,7 +57,7 @@ export async function main(): Promise<void> {
 			value = __goscriptTuple1[1]
 			err = __goscriptTuple1[2]
 			if (err != null) {
-				$.println("Error:", $.pointerValue(err).Error())
+				$.println("Error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 			}
 			$.println("Month:", month, "Value:", value)
 			break

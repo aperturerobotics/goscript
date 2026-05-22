@@ -65,12 +65,12 @@ export async function main(): Promise<void> {
 	let v = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))))
 	let t = $.markAsStructValue($.cloneStructValue(v)).Type()
 
-	$.println("Type:", $.pointerValue(t).Name())
-	$.println("Kind:", reflect.Kind_String($.pointerValue(t).Kind()))
-	$.println("NumField:", $.pointerValue(t).NumField())
+	$.println("Type:", $.pointerValue<Exclude<reflect.Type, null>>(t).Name())
+	$.println("Kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>(t).Kind()))
+	$.println("NumField:", $.pointerValue<Exclude<reflect.Type, null>>(t).NumField())
 
-	for (let i = 0; i < $.pointerValue(t).NumField(); i++) {
-		let sf = $.markAsStructValue($.cloneStructValue($.pointerValue(t).Field(i)))
+	for (let i = 0; i < $.pointerValue<Exclude<reflect.Type, null>>(t).NumField(); i++) {
+		let sf = $.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<reflect.Type, null>>(t).Field(i)))
 		let fv = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(v)).Field(i)))
 
 		$.println("Field", i, ":", sf.Name)

@@ -55,7 +55,7 @@ export class Buffer {
 }
 
 export function use(w: Writer | null): void {
-	$.pointerValue(w).Write($.stringToBytes("x"))
+	$.pointerValue<Exclude<Writer, null>>(w).Write($.stringToBytes("x"))
 }
 
 export async function main(): Promise<void> {
