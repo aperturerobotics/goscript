@@ -5,9 +5,11 @@ import * as iter from '@goscript/iter/index.js'
 // All returns an iterator over key-value pairs from m.
 // The iteration order is not specified and is not guaranteed
 // to be the same from one call to the next.
-export function All<K extends $.Comparable, V>(m: Map<K, V>): iter.Seq2<K, V> {
+export function All<K extends $.Comparable, V>(
+  m: Map<K, V> | null,
+): iter.Seq2<K, V> {
   return (_yield: ((p0: K, p1: V) => boolean) | null): void => {
-    for (const [k, v] of m.entries()) {
+    for (const [k, v] of m?.entries() ?? []) {
       if (!_yield!(k, v)) {
         return
       }
@@ -18,9 +20,11 @@ export function All<K extends $.Comparable, V>(m: Map<K, V>): iter.Seq2<K, V> {
 // Keys returns an iterator over keys in m.
 // The iteration order is not specified and is not guaranteed
 // to be the same from one call to the next.
-export function Keys<K extends $.Comparable, V>(m: Map<K, V>): iter.Seq<K> {
+export function Keys<K extends $.Comparable, V>(
+  m: Map<K, V> | null,
+): iter.Seq<K> {
   return (_yield: ((p0: K) => boolean) | null): void => {
-    for (const [k, _v] of m.entries()) {
+    for (const [k, _v] of m?.entries() ?? []) {
       if (!_yield!(k)) {
         return
       }
@@ -31,9 +35,11 @@ export function Keys<K extends $.Comparable, V>(m: Map<K, V>): iter.Seq<K> {
 // Values returns an iterator over values in m.
 // The iteration order is not specified and is not guaranteed
 // to be the same from one call to the next.
-export function Values<K extends $.Comparable, V>(m: Map<K, V>): iter.Seq<V> {
+export function Values<K extends $.Comparable, V>(
+  m: Map<K, V> | null,
+): iter.Seq<V> {
   return (_yield: ((p0: V) => boolean) | null): void => {
-    for (const [_k, v] of m.entries()) {
+    for (const [_k, v] of m?.entries() ?? []) {
       if (!_yield!(v)) {
         return
       }
