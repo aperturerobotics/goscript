@@ -66,6 +66,8 @@ func main() {
 	// The method dispatch uses the type (*Dog) to find Name()
 	// Then passes nil as the receiver
 	println(animal.Name())
+	var directNilDog *Dog
+	println(directNilDog.Name())
 
 	// Test 3: Type assertions preserve the typed nil pointer
 	if d, ok := animal.(*Dog); ok && d == nil {

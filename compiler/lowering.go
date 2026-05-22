@@ -4632,6 +4632,9 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			if namedNonInterfaceNonStructType(receiver) {
 				return o.lowerNamedReceiverMethodCall(ctx, fun, args, diagnostics)
 			}
+			if call, callDiagnostics, ok := o.lowerNilablePointerReceiverMethodCall(ctx, fun, selection, args); ok {
+				return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, callDiagnostics...)
+			}
 			receiverExpr, receiverDiagnostics := o.lowerMethodReceiverExpr(ctx, fun.X, selection)
 			diagnostics = append(diagnostics, receiverDiagnostics...)
 			call := receiverExpr + "." + fun.Sel.Name + "(" + strings.Join(args, ", ") + ")"
@@ -5229,6 +5232,36 @@ func (o *LoweringOwner) lowerNamedReceiverMethodCall(
 	allArgs := append([]string{receiverExpr}, args...)
 	call := o.methodFunctionExpr(ctx, receiver, selection.Obj(), selector.Sel.Name) + "(" + strings.Join(allArgs, ", ") + ")"
 	return o.awaitCallIfNeeded(ctx, selector, call), diagnostics
+}
+
+func (o *LoweringOwner) lowerNilablePointerReceiverMethodCall(
+	ctx lowerFileContext,
+	selector *ast.SelectorExpr,
+	selection *types.Selection,
+	args []string,
+) (string, []Diagnostic, bool) {
+	if len(selection.Index()) != 1 || !isPointerToStructType(ctx.semPkg.source.TypesInfo.TypeOf(selector.X)) {
+		return "", nil, false
+	}
+	method, _ := selection.Obj().(*types.Func)
+	if method == nil {
+		return "", nil, false
+	}
+	signature, _ := method.Type().(*types.Signature)
+	if signature == nil || signature.Recv() == nil {
+		return "", nil, false
+	}
+	if !isPointerToStructType(signature.Recv().Type()) {
+		return "", nil, false
+	}
+	receiver := receiverNamedType(signature.Recv().Type())
+	if receiver == nil {
+		return "", nil, false
+	}
+	receiverExpr, diagnostics := o.lowerExpr(ctx, selector.X)
+	callArgs := append([]string{receiverExpr}, args...)
+	call := o.namedTypeExpr(ctx, receiver) + ".prototype." + selector.Sel.Name + ".call(" + strings.Join(callArgs, ", ") + ")"
+	return call, diagnostics, true
 }
 
 func (o *LoweringOwner) lowerNamedReceiverForMethod(

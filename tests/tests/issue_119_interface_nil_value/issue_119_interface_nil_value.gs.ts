@@ -49,7 +49,7 @@ export class Dog {
 
 	static __typeInfo = $.registerStructType(
 		"main.Dog",
-		new Dog(),
+		() => new Dog(),
 		[{ name: "Name", args: [], returns: [] }],
 		Dog,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }}
@@ -92,7 +92,7 @@ export class Cat {
 
 	static __typeInfo = $.registerStructType(
 		"main.Cat",
-		new Cat(),
+		() => new Cat(),
 		[{ name: "Name", args: [], returns: [] }],
 		Cat,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }}
@@ -137,6 +137,8 @@ export async function main(): globalThis.Promise<void> {
 	// The method dispatch uses the type (*Dog) to find Name()
 	// Then passes nil as the receiver
 	$.println($.pointerValue<Exclude<Animal, null>>(animal).Name())
+	let directNilDog: Dog | $.VarRef<Dog> | null = null
+	$.println(Dog.prototype.Name.call(directNilDog))
 
 	// Test 3: Type assertions preserve the typed nil pointer
 	{
@@ -178,7 +180,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("b is not nil")
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

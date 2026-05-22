@@ -1,5 +1,6 @@
 animal is not nil
 unknown dog
+unknown dog
 typed nil dog assertion ok
 typed nil cat assertion rejected
 a is not nil
