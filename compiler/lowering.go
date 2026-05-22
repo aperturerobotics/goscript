@@ -4283,6 +4283,9 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 			}
 			left, right = o.lowerEqualityOperands(ctx, typed, left, right)
 		}
+		if typed.Op == token.QUO && isIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(typed)) {
+			return "Math.trunc(" + left + " / " + right + ")", append(leftDiagnostics, rightDiagnostics...)
+		}
 		return left + " " + typed.Op.String() + " " + right, append(leftDiagnostics, rightDiagnostics...)
 	case *ast.UnaryExpr:
 		if typed.Op == token.AND {
@@ -7014,6 +7017,11 @@ func isStringType(typ types.Type) bool {
 func isNumericType(typ types.Type) bool {
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Info()&types.IsNumeric != 0
+}
+
+func isIntegerType(typ types.Type) bool {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	return ok && basic.Info()&types.IsInteger != 0
 }
 
 func isRuneSliceType(typ types.Type) bool {
