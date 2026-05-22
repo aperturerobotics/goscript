@@ -239,7 +239,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test Append
 	let originalSlice = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.arrayToSlice<number>([1, 2]), "[]int"))))
-	let appendedSlice = $.markAsStructValue($.cloneStructValue(reflect.Append($.markAsStructValue($.cloneStructValue(originalSlice)), reflect.ValueOf(3))))
+	let appendedSlice = $.markAsStructValue($.cloneStructValue(reflect.Append($.markAsStructValue($.cloneStructValue(originalSlice)), $.markAsStructValue($.cloneStructValue(reflect.ValueOf(3))))))
 	$.println("Append result len:", $.markAsStructValue($.cloneStructValue(appendedSlice)).Len())
 
 	// Test channel types

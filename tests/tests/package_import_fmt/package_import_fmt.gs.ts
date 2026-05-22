@@ -76,7 +76,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test Errorf
 	let err = fmt.Errorf("error code: %d", 404)
-	fmt.Println("Error:", err)
+	fmt.Println("Error:", (err as any))
 
 	// Test various format verbs
 	fmt.Printf("Boolean: %t\n", true)
@@ -84,13 +84,13 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Printf("Float: %f\n", 3.14159)
 	fmt.Printf("String: %s\n", "hello")
 	fmt.Printf("Type: %T\n", 42)
-	fmt.Printf("Value: %v\n", $.arrayToSlice<number>([1, 2, 3]))
+	fmt.Printf("Value: %v\n", $.interfaceValue<any>($.arrayToSlice<number>([1, 2, 3]), "[]int"))
 
 	// Test width and precision
 	fmt.Printf("Width: '%5s'\n", "hi")
 	fmt.Printf("Precision: '%.2f'\n", 3.14159)
 	fmt.Printf("Both: '%5.2f'\n", 3.14159)
-	fmt.Printf("Formatter: %v\n", $.markAsStructValue(new byteFormatter({prefix: $.stringToBytes("byte-")})))
+	fmt.Printf("Formatter: %v\n", $.interfaceValue<any>($.markAsStructValue(new byteFormatter({prefix: $.stringToBytes("byte-")})), "main.byteFormatter"))
 	let appended = fmt.Append($.stringToBytes("base-"), "tail")
 	fmt.Println("Append bytes:", $.bytesToString(appended))
 

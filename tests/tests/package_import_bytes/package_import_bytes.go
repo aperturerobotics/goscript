@@ -1,6 +1,9 @@
 package main
 
-import "bytes"
+import (
+	"bytes"
+	"io"
+)
 
 func main() {
 	// Test basic byte slice operations
@@ -92,6 +95,13 @@ func main() {
 	// Test Buffer Reset
 	buf.Reset()
 	println("Buffer after reset, length:", buf.Len())
+
+	// Test Buffer as Reader interface through an address expression.
+	buf.WriteString("abc")
+	multi := io.MultiReader(&buf, bytes.NewReader([]byte("de")))
+	data = make([]byte, 5)
+	n, _ = multi.Read(data)
+	println("MultiReader read", n, "bytes:", string(data[:n]))
 
 	println("test finished")
 }

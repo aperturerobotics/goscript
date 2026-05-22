@@ -12,14 +12,14 @@ export async function main(): globalThis.Promise<void> {
 	{
 		let err = syscall.SetNonblock(1, true)
 		if (err != null) {
-			fmt.Println("set true:", err)
+			fmt.Println("set true:", (err as any))
 			return
 		}
 	}
 	{
 		let err = syscall.SetNonblock(1, false)
 		if (err != null) {
-			fmt.Println("set false:", err)
+			fmt.Println("set false:", (err as any))
 			return
 		}
 	}

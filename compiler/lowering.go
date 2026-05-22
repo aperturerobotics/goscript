@@ -4339,6 +4339,32 @@ func (o *LoweringOwner) lowerCallArgs(
 	if args, diagnostics, ok := o.lowerTupleCallArgs(ctx, expr, signature, overrideCall); ok {
 		return args, diagnostics
 	}
+	if signature != nil && signature.Variadic() && overrideCall && !isBuiltinCallTarget(ctx, expr.Fun) {
+		params := signature.Params()
+		if params == nil || params.Len() == 0 {
+			return o.lowerFixedCallArgs(ctx, expr.Args, signature, overrideCall)
+		}
+		fixedCount := params.Len() - 1
+		targetType := params.At(fixedCount).Type()
+		if slice, ok := types.Unalias(targetType).Underlying().(*types.Slice); ok {
+			targetType = slice.Elem()
+		}
+		args := make([]string, 0, len(expr.Args))
+		var diagnostics []Diagnostic
+		for idx, arg := range expr.Args {
+			lowered, argDiagnostics := o.lowerExpr(ctx, arg)
+			diagnostics = append(diagnostics, argDiagnostics...)
+			if idx < fixedCount {
+				lowered = o.lowerCallArgForTarget(ctx, arg, params.At(idx).Type(), lowered, overrideCall)
+			} else if expr.Ellipsis != token.NoPos && idx == len(expr.Args)-1 {
+				lowered = o.lowerCallArgForTarget(ctx, arg, params.At(fixedCount).Type(), lowered, overrideCall)
+			} else {
+				lowered = o.lowerCallArgForTarget(ctx, arg, targetType, lowered, overrideCall)
+			}
+			args = append(args, lowered)
+		}
+		return args, diagnostics
+	}
 	if signature == nil || !signature.Variadic() ||
 		isBuiltinCallTarget(ctx, expr.Fun) ||
 		overrideCall {
@@ -5663,6 +5689,16 @@ func (o *LoweringOwner) lowerValueForTarget(
 	value string,
 ) string {
 	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	if isInterfaceType(targetType) && isPointerToStructType(sourceType) {
+		if address, ok := expr.(*ast.UnaryExpr); ok && address.Op == token.AND {
+			if obj := objectForValueExpr(ctx, address.X); obj != nil &&
+				ctx.model.needsVarRef[obj] &&
+				isStructValueType(obj.Type()) {
+				value = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+					"<" + o.tsNonNilTypeFor(ctx, sourceType) + ">(" + value + ")"
+			}
+		}
+	}
 	if isComplexType(targetType) {
 		if isRealNumericConstantExpr(ctx, expr) {
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperComplex) + "(" + value + ", 0)"

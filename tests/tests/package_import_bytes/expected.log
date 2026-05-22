@@ -18,4 +18,5 @@ Buffer content: Hello World
 Buffer length: 11
 Read 5 bytes: Hello
 Buffer after reset, length: 0
+MultiReader read 3 bytes: abc
 test finished

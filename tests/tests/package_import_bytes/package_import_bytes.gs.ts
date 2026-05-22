@@ -5,6 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
+import * as io from "@goscript/io/index.js"
+
 export async function main(): globalThis.Promise<void> {
 	// Test basic byte slice operations
 	let b1 = $.stringToBytes("hello")
@@ -95,6 +97,14 @@ export async function main(): globalThis.Promise<void> {
 	// Test Buffer Reset
 	buf.value.Reset()
 	$.println("Buffer after reset, length:", buf.value.Len())
+
+	// Test Buffer as Reader interface through an address expression.
+	buf.value.WriteString("abc")
+	let multi = io.MultiReader($.pointerValue($.interfaceValue<io.Reader | null>($.pointerValue<bytes.Buffer | $.VarRef<bytes.Buffer>>(buf), "*bytes.Buffer")), $.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewReader($.stringToBytes("de")), "*bytes.Reader")))
+	data = $.makeSlice<number>(5, undefined, "byte")
+	let __goscriptTuple0 = $.pointerValue<Exclude<io.Reader, null>>(multi).Read(data)
+	n = __goscriptTuple0[0]
+	$.println("MultiReader read", n, "bytes:", $.bytesToString($.goSlice(data, undefined, n)))
 
 	$.println("test finished")
 }

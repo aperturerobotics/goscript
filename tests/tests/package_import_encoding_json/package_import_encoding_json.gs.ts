@@ -89,7 +89,7 @@ export async function main(): globalThis.Promise<void> {
 	// Unmarshal into a struct
 	let q: $.VarRef<Person> = $.varRef($.markAsStructValue(new Person()))
 	{
-		let __goscriptShadow0 = json.Unmarshal($.stringToBytes("{\"name\":\"Bob\",\"age\":25,\"active\":false}"), $.interfaceValue<any>(q, "*main.Person"))
+		let __goscriptShadow0 = json.Unmarshal($.stringToBytes("{\"name\":\"Bob\",\"age\":25,\"active\":false}"), $.interfaceValue<any>($.pointerValue<Person | $.VarRef<Person>>(q), "*main.Person"))
 		if (__goscriptShadow0 != null) {
 			results = $.append(results, "Unmarshal struct error: " + $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow0).Error())
 		} else {
