@@ -607,7 +607,7 @@ export function growSlice(b: $.Bytes, n: number): $.Bytes {
 		// we could rely purely on append to determine the growth rate.
 		c = 2 * $.cap(b)
 	}
-	let b2 = $.append<number>(null, new Uint8Array(c))
+	let b2 = $.makeSlice<number>(c, c, 'byte')
 	let i = $.copy(b2, b)
 	return $.goSlice(b2, undefined, i)
 }
