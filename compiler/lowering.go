@@ -4715,6 +4715,13 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 		receiver, receiverType = o.lowerPromotedMethodReceiver(ctx, receiver, receiverType, index[:len(index)-1])
 	}
 	if receiverPointer {
+		if obj := objectForValueExpr(ctx, expr); obj != nil &&
+			ctx.model.needsVarRef[obj] &&
+			isStructValueType(obj.Type()) &&
+			fieldReceiverNeedsVarRefValue(ctx, expr, obj) {
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+				"<" + o.tsNonNilTypeFor(ctx, receiverType) + ">(" + receiver + ")", diagnostics
+		}
 		return receiver, diagnostics
 	}
 	if isStructValueType(receiverType) || isPointerToStructType(receiverType) {
