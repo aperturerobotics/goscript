@@ -2764,6 +2764,7 @@ func (o *LoweringOwner) tupleAssignmentNeedsTargetConversion(ctx lowerFileContex
 	if sourceResults == nil {
 		return false
 	}
+	genericResults := genericCallTupleResultTypeParamIndexes(ctx, stmt.Rhs[0])
 	for idx, lhs := range stmt.Lhs {
 		if idx >= sourceResults.Len() {
 			break
@@ -2774,6 +2775,9 @@ func (o *LoweringOwner) tupleAssignmentNeedsTargetConversion(ctx lowerFileContex
 		targetType := ctx.semPkg.source.TypesInfo.TypeOf(lhs)
 		if targetType == nil {
 			continue
+		}
+		if genericResults[idx] {
+			return true
 		}
 		value := "__tupleValue"
 		if o.lowerValueForTargetTypes(ctx, targetType, sourceResults.At(idx).Type(), value, false) != value {
@@ -2798,7 +2802,11 @@ func (o *LoweringOwner) lowerTupleAssignmentValueForTarget(
 	if targetType == nil {
 		return value
 	}
-	return o.lowerValueForTargetTypes(ctx, targetType, sourceResults.At(idx).Type(), value, false)
+	value = o.lowerValueForTargetTypes(ctx, targetType, sourceResults.At(idx).Type(), value, false)
+	if genericCallTupleResultTypeParamIndexes(ctx, stmt.Rhs[0])[idx] {
+		return "(" + value + " as " + o.tsTypeFor(ctx, targetType) + ")"
+	}
+	return value
 }
 
 func tupleDeclarationRHSUsesNewName(ctx lowerFileContext, lhs []ast.Expr, rhs ast.Expr) bool {
@@ -2872,6 +2880,9 @@ func (o *LoweringOwner) lowerReturnStmt(ctx lowerFileContext, stmt *ast.ReturnSt
 		}
 		if returnType := singleReturnType(ctx); returnType != nil {
 			expr = o.lowerValueForTarget(ctx, stmt.Results[0], returnType, expr)
+			if genericCallResultUsesTypeParam(ctx, stmt.Results[0]) {
+				expr = "(" + expr + " as " + o.tsTypeFor(ctx, returnType) + ")"
+			}
 		}
 		return "return " + expr, diagnostics
 	}
@@ -2966,11 +2977,16 @@ func (o *LoweringOwner) lowerTupleReturnValue(ctx lowerFileContext, expr ast.Exp
 		return "", "", false
 	}
 	temp := ctx.tempName("Return")
+	genericResults := genericCallTupleResultTypeParamIndexes(ctx, expr)
 	parts := make([]string, 0, sourceResults.Len())
 	changed := false
 	for idx := range sourceResults.Len() {
 		part := temp + "[" + strconv.Itoa(idx) + "]"
-		converted := o.lowerValueForTargetTypes(ctx, ctx.signature.Results().At(idx).Type(), sourceResults.At(idx).Type(), part, false)
+		targetType := ctx.signature.Results().At(idx).Type()
+		converted := o.lowerValueForTargetTypes(ctx, targetType, sourceResults.At(idx).Type(), part, false)
+		if genericResults[idx] {
+			converted = "(" + converted + " as " + o.tsTypeFor(ctx, targetType) + ")"
+		}
 		if converted != part {
 			changed = true
 		}
@@ -2996,6 +3012,119 @@ func tupleResultTypes(ctx lowerFileContext, expr ast.Expr) *types.Tuple {
 		return nil
 	}
 	return signature.Results()
+}
+
+func genericCallResultUsesTypeParam(ctx lowerFileContext, expr ast.Expr) bool {
+	call, ok := ast.Unparen(expr).(*ast.CallExpr)
+	if !ok {
+		return false
+	}
+	signature := genericFunctionSignatureForCall(ctx, call.Fun)
+	if signature == nil || signature.Results() == nil || signature.Results().Len() != 1 {
+		return false
+	}
+	return typeContainsTypeParam(signature.Results().At(0).Type())
+}
+
+func genericCallTupleResultTypeParamIndexes(ctx lowerFileContext, expr ast.Expr) map[int]bool {
+	call, ok := ast.Unparen(expr).(*ast.CallExpr)
+	if !ok {
+		return nil
+	}
+	signature := genericFunctionSignatureForCall(ctx, call.Fun)
+	if signature == nil || signature.Results() == nil || signature.Results().Len() < 2 {
+		return nil
+	}
+	indexes := make(map[int]bool)
+	for idx := range signature.Results().Len() {
+		if typeContainsTypeParam(signature.Results().At(idx).Type()) {
+			indexes[idx] = true
+		}
+	}
+	return indexes
+}
+
+func genericFunctionSignatureForCall(ctx lowerFileContext, fun ast.Expr) *types.Signature {
+	for {
+		switch typed := ast.Unparen(fun).(type) {
+		case *ast.IndexExpr:
+			fun = typed.X
+		case *ast.IndexListExpr:
+			fun = typed.X
+		default:
+			return genericFunctionSignature(ctx, fun)
+		}
+	}
+}
+
+func typeContainsTypeParam(typ types.Type) bool {
+	return typeContainsTypeParamSeen(typ, make(map[types.Type]bool))
+}
+
+func typeContainsTypeParamSeen(typ types.Type, seen map[types.Type]bool) bool {
+	if typ == nil {
+		return false
+	}
+	if seen[typ] {
+		return false
+	}
+	seen[typ] = true
+	if _, ok := types.Unalias(typ).(*types.TypeParam); ok {
+		return true
+	}
+	switch typed := types.Unalias(typ).(type) {
+	case *types.Named:
+		if args := typed.TypeArgs(); args != nil {
+			for t := range args.Types() {
+				if typeContainsTypeParamSeen(t, seen) {
+					return true
+				}
+			}
+		}
+	case *types.Alias:
+		if args := typed.TypeArgs(); args != nil {
+			for t := range args.Types() {
+				if typeContainsTypeParamSeen(t, seen) {
+					return true
+				}
+			}
+		}
+	}
+	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Array:
+		return typeContainsTypeParamSeen(typed.Elem(), seen)
+	case *types.Slice:
+		return typeContainsTypeParamSeen(typed.Elem(), seen)
+	case *types.Map:
+		return typeContainsTypeParamSeen(typed.Key(), seen) || typeContainsTypeParamSeen(typed.Elem(), seen)
+	case *types.Chan:
+		return typeContainsTypeParamSeen(typed.Elem(), seen)
+	case *types.Pointer:
+		return typeContainsTypeParamSeen(typed.Elem(), seen)
+	case *types.Signature:
+		return tupleContainsTypeParamSeen(typed.Params(), seen) || tupleContainsTypeParamSeen(typed.Results(), seen)
+	case *types.Struct:
+		for field := range typed.Fields() {
+			if typeContainsTypeParamSeen(field.Type(), seen) {
+				return true
+			}
+		}
+		return false
+	default:
+		return false
+	}
+}
+
+func tupleContainsTypeParamSeen(tuple *types.Tuple, seen map[types.Type]bool) bool {
+	if tuple == nil {
+		return false
+	}
+	for v := range tuple.Variables() {
+		if typeContainsTypeParamSeen(v.Type(), seen) {
+			return true
+		}
+	}
+	return false
 }
 
 func (o *LoweringOwner) lowerNamedResults(ctx lowerFileContext, signature *types.Signature) []loweredNamedResult {

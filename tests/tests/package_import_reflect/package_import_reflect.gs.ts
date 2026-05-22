@@ -186,7 +186,9 @@ export async function main(): globalThis.Promise<void> {
 	let ifaceVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf(iface)))
 	$.println("Interface value type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(ifaceVal)).Type()).String())
 	$.println("Interface kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(ifaceVal)).Kind()))
-	let [assertedString, assertedOK] = reflect.TypeAssert({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, $.markAsStructValue($.cloneStructValue(reflect.ValueOf("typed"))))
+	let __goscriptTuple0 = reflect.TypeAssert({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, $.markAsStructValue($.cloneStructValue(reflect.ValueOf("typed"))))
+	let assertedString = (__goscriptTuple0[0] as string)
+	let assertedOK = __goscriptTuple0[1]
 	$.println("TypeAssert string:", assertedString, assertedOK)
 	let [, assertedIntOK] = reflect.TypeAssert({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, $.markAsStructValue($.cloneStructValue(reflect.ValueOf("typed"))))
 	$.println("TypeAssert int:", assertedIntOK)
