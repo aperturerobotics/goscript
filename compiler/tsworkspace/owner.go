@@ -59,6 +59,9 @@ func (o *Owner) EnsurePackageJSON() Result {
 
 // EnsureNodeAmbientTypes writes host runtime declarations needed by emitted tests.
 func (o *Owner) EnsureNodeAmbientTypes() Result {
+	if nodeTypesPresent(o.workDir, o.toolDir) {
+		return o.WriteFile(PhaseWorkspace, NodeAmbientTypesFile, "")
+	}
 	return o.WriteFile(PhaseWorkspace, NodeAmbientTypesFile, nodeAmbientTypes)
 }
 
@@ -181,6 +184,33 @@ func NodeTypeRoots(dirs ...string) []string {
 	}
 	slices.Sort(roots)
 	return roots
+}
+
+func nodeTypesPresent(dirs ...string) bool {
+	seen := make(map[string]bool)
+	for _, start := range dirs {
+		if start == "" {
+			continue
+		}
+		for current := start; current != ""; current = filepath.Dir(current) {
+			if seen[current] {
+				if parent := filepath.Dir(current); parent == current {
+					break
+				}
+				continue
+			}
+			seen[current] = true
+			candidate := filepath.Join(current, "node_modules", "@types", "node")
+			info, err := os.Stat(candidate)
+			if err == nil && info.IsDir() {
+				return true
+			}
+			if parent := filepath.Dir(current); parent == current {
+				break
+			}
+		}
+	}
+	return false
 }
 
 func currentWorkingDirectory() string {

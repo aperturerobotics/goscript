@@ -469,6 +469,7 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 	b.WriteString("    \"strict\": true,\n")
 	b.WriteString("    \"allowImportingTsExtensions\": true,\n")
 	b.WriteString("    \"noEmit\": true,\n")
+	b.WriteString("    \"types\": [],\n")
 	b.WriteString("    \"paths\": {\n")
 	b.WriteString("      \"*\": [\"./*\"],\n")
 	b.WriteString("      \"@goscript/*\": [")

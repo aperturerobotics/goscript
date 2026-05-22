@@ -72,3 +72,22 @@ func TestOwnerWritesNodeAmbientTypes(t *testing.T) {
 		t.Fatalf("node ambient types missing node:fs declaration: %s", data)
 	}
 }
+
+func TestOwnerSkipsNodeAmbientTypesWhenNodeTypesExist(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "node_modules", "@types", "node"), 0o755); err != nil {
+		t.Fatal(err.Error())
+	}
+	owner := NewOwner(filepath.Join(dir, "work"), dir)
+
+	if result := owner.EnsureNodeAmbientTypes(); result.Failed() {
+		t.Fatalf("write node ambient types: %s", result.Error)
+	}
+	data, err := os.ReadFile(filepath.Join(dir, "work", NodeAmbientTypesFile))
+	if err != nil {
+		t.Fatalf("read node ambient types: %v", err)
+	}
+	if strings.TrimSpace(string(data)) != "" {
+		t.Fatalf("node ambient types should be empty when @types/node is already visible: %s", data)
+	}
+}
