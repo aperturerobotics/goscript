@@ -413,25 +413,25 @@ func (o *LoweringOwner) localFileAliases(
 		if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() != semPkg.pkgPath {
 			return
 		}
-		declFile := declFiles[obj]
-		if declFile == "" || declFile == sourcePath {
-			return
-		}
-		outputName := outputNames[declFile]
-		if outputName == "" {
-			return
-		}
-		alias := "__goscript_" + safeIdentifier(strings.TrimSuffix(outputName, ".gs.ts"))
-		aliases[obj] = alias
-		aliasSources[alias] = "./" + outputName
 		if seenObjects[obj] {
 			return
 		}
 		seenObjects[obj] = true
+		declFile := declFiles[obj]
+		hasAlias := false
+		if declFile != "" && declFile != sourcePath {
+			outputName := outputNames[declFile]
+			if outputName != "" {
+				alias := "__goscript_" + safeIdentifier(strings.TrimSuffix(outputName, ".gs.ts"))
+				aliases[obj] = alias
+				aliasSources[alias] = "./" + outputName
+				hasAlias = true
+			}
+		}
 		switch typed := obj.(type) {
 		case *types.TypeName:
 			addTypeDeps(typed.Type())
-			if named, ok := types.Unalias(typed.Type()).(*types.Named); ok {
+			if named, ok := types.Unalias(typed.Type()).(*types.Named); ok && hasAlias {
 				for method := range named.Methods() {
 					addObject(method)
 				}
