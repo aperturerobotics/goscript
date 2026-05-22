@@ -845,7 +845,7 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					}
 					decls = append(decls, loweredDecl{code: getterCode, indexExport: getterIndexExport})
 				}
-				if ctx.topLevel && ast.IsExported(name.Name) && keyword != "const" {
+				if ctx.topLevel && name.Name != "_" && keyword != "const" {
 					setterName := packageVarSetterName(name.Name)
 					setterType := o.tsPackageVarSetterValueTypeFor(ctx, obj.Type())
 					setterTarget := declName
@@ -854,7 +854,11 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					}
 					setterCode := "export function " + setterName + "(value: " + setterType + "): void {\n\t" +
 						setterTarget + " = value\n}"
-					decls = append(decls, loweredDecl{code: setterCode, indexExport: setterName})
+					setterIndexExport := ""
+					if ast.IsExported(name.Name) {
+						setterIndexExport = setterName
+					}
+					decls = append(decls, loweredDecl{code: setterCode, indexExport: setterIndexExport})
 				}
 			}
 		default:
@@ -1571,6 +1575,17 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 			typ:  o.tsReceiverTypeFor(ctx, signature.Recv().Type()),
 		}},
 		namedResults: o.lowerNamedResults(ctx, signature),
+	}
+	if len(decl.Recv.List) != 0 && len(decl.Recv.List[0].Names) != 0 {
+		receiverObj := ctx.semPkg.source.TypesInfo.Defs[decl.Recv.List[0].Names[0]]
+		if _, receiverPointer := signature.Recv().Type().(*types.Pointer); !receiverPointer && receiverObj != nil && ctx.model.needsVarRef[receiverObj] {
+			rawName := ctx.tempName("Receiver")
+			lowered.params[0].name = rawName
+			lowered.paramBindings = append(lowered.paramBindings, loweredStmt{
+				text: "let " + receiverName + ": " + o.tsVariableTypeFor(ctx, receiverObj.Type(), true) + " = " +
+					o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + rawName + ")",
+			})
+		}
 	}
 	for idx := range signature.Params().Len() {
 		param := signature.Params().At(idx)
@@ -2651,7 +2666,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		diagnostics = append(diagnostics, rightDiagnostics...)
 		targetType := ctx.semPkg.source.TypesInfo.TypeOf(lhs)
 		right = o.lowerValueForTarget(ctx, stmt.Rhs[idx], targetType, right)
-		if setter, ok := o.importedPackageVarSetter(ctx, lhs); ok && stmt.Tok == token.ASSIGN {
+		if setter, ok := o.packageVarSetterForAssignment(ctx, lhs); ok && stmt.Tok == token.ASSIGN {
 			stmts = append(stmts, loweredStmt{text: setter + "(" + right + ")"})
 			continue
 		}
@@ -5548,7 +5563,18 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 	return left + "." + expr.Sel.Name, diagnostics
 }
 
-func (o *LoweringOwner) importedPackageVarSetter(ctx lowerFileContext, expr ast.Expr) (string, bool) {
+func (o *LoweringOwner) packageVarSetterForAssignment(ctx lowerFileContext, expr ast.Expr) (string, bool) {
+	if ident, ok := unwrapParenExpr(expr).(*ast.Ident); ok {
+		obj, _ := objectForIdent(ctx, ident).(*types.Var)
+		if obj == nil {
+			return "", false
+		}
+		alias := ctx.localAliases[obj]
+		if alias == "" {
+			return "", false
+		}
+		return alias + "." + packageVarSetterName(ident.Name), true
+	}
 	selector, ok := unwrapParenExpr(expr).(*ast.SelectorExpr)
 	if !ok {
 		return "", false
@@ -5566,7 +5592,7 @@ func (o *LoweringOwner) importedPackageVarSetter(ctx lowerFileContext, expr ast.
 		return "", false
 	}
 	obj, _ := ctx.semPkg.source.TypesInfo.Uses[selector.Sel].(*types.Var)
-	if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() == ctx.semPkg.pkgPath || !ast.IsExported(obj.Name()) {
+	if obj == nil || obj.Pkg() == nil {
 		return "", false
 	}
 	return alias + "." + packageVarSetterName(selector.Sel.Name), true
