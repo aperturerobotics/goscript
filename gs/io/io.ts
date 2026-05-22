@@ -49,6 +49,9 @@ export interface Writer {
   Write(p: $.Bytes): [number, $.GoError]
 }
 
+type ReaderLike = Reader | { Reader: Reader | null } | null
+type WriterLike = Writer | { Writer: Writer | null } | null
+
 // Closer is the interface that wraps the basic Close method
 export interface Closer {
   Close(): $.GoError
@@ -413,18 +416,20 @@ export function NewOffsetWriter(w: WriterAt, off: number): OffsetWriter {
 
 // Copy copies from src to dst until either EOF is reached on src or an error occurs
 export function Copy(
-  dst: Writer | null,
-  src: Reader | null,
+  dst: WriterLike,
+  src: ReaderLike,
 ): [number, $.GoError] {
   return CopyBuffer(dst, src, null)
 }
 
 // CopyBuffer is identical to Copy except that it stages through the provided buffer
 export function CopyBuffer(
-  dst: Writer | null,
-  src: Reader | null,
+  dst: WriterLike,
+  src: ReaderLike,
   buf: $.Bytes | null,
 ): [number, $.GoError] {
+  dst = unwrapWriter(dst)
+  src = unwrapReader(src)
   if (dst === null || src === null) {
     return [0, newError('io: copy with nil reader or writer')]
   }
@@ -470,6 +475,26 @@ export function CopyBuffer(
     }
   }
   return [written, null]
+}
+
+function unwrapReader(src: ReaderLike): Reader | null {
+  if (src == null) {
+    return null
+  }
+  if ('Read' in src && typeof (src as any).Read === 'function') {
+    return src as Reader
+  }
+  return (src as { Reader: Reader | null }).Reader
+}
+
+function unwrapWriter(dst: WriterLike): Writer | null {
+  if (dst == null) {
+    return null
+  }
+  if ('Write' in dst && typeof (dst as any).Write === 'function') {
+    return dst as Writer
+  }
+  return (dst as { Writer: Writer | null }).Writer
 }
 
 // CopyN copies n bytes (or until an error) from src to dst

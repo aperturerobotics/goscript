@@ -47,10 +47,10 @@ export let SmallestNonzeroFloat64: number = Number.MIN_VALUE
 let intSize: number = (32 << ((~(0 as number) >> 63)))
 
 // MaxInt32 or MaxInt64 depending on intSize.
-export let MaxInt: bigint = 9223372036854775807n
+export let MaxInt: number = 9223372036854775807
 
 // MinInt32 or MinInt64 depending on intSize.
-export let MinInt: bigint = -9223372036854775808n
+export let MinInt: number = -9223372036854775808
 
 // 127
 export let MaxInt8: number = 127
@@ -71,10 +71,10 @@ export let MaxInt32: number = 2147483647
 export let MinInt32: number = -2147483648
 
 // 9223372036854775807
-export let MaxInt64: bigint = 9223372036854775807n
+export let MaxInt64: number = 9223372036854775807
 
 // -9223372036854775808
-export let MinInt64: bigint = -9223372036854775808n
+export let MinInt64: number = -9223372036854775808
 
 // MaxUint32 or MaxUint64 depending on intSize.
 export let MaxUint: bigint = 0xFFFFFFFFFFFFFFFFn

@@ -68,6 +68,10 @@ func main() {
 	buf.Reset(nil)
 	n64, err := copyInterfaces(io.Discard, &staticReader{})
 	println("Copy interface - bytes:", n64, "err:", err == nil)
+	n64, err = io.Copy(io.Discard, struct{ io.Reader }{&staticReader{}})
+	println("Copy embedded reader - bytes:", n64, "err:", err == nil)
+	n64, err = io.Copy(struct{ io.Writer }{io.Discard}, &staticReader{})
+	println("Copy embedded writer - bytes:", n64, "err:", err == nil)
 
 	reader, writer := io.Pipe()
 	done := make(chan bool, 1)

@@ -35,7 +35,7 @@ export class writerHolder {
 
 	static __typeInfo = $.registerStructType(
 		"main.writerHolder",
-		new writerHolder(),
+		() => new writerHolder(),
 		[],
 		writerHolder,
 		{"w": "io.Writer"}
@@ -75,7 +75,7 @@ export class asyncBuffer {
 
 	static __typeInfo = $.registerStructType(
 		"main.asyncBuffer",
-		new asyncBuffer(),
+		() => new asyncBuffer(),
 		[{ name: "Reset", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		asyncBuffer,
 		{}
@@ -120,7 +120,7 @@ export class staticReader {
 
 	static __typeInfo = $.registerStructType(
 		"main.staticReader",
-		new staticReader(),
+		() => new staticReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		staticReader,
 		{"done": { kind: $.TypeKind.Basic, name: "bool" }}
@@ -128,6 +128,10 @@ export class staticReader {
 }
 
 export let asyncWrites: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
+
+export function __goscript_set_asyncWrites(value: sync.Map): void {
+	asyncWrites.value = value
+}
 
 export function copyInterfaces(dst: io.Writer | null, src: io.Reader | null): [number, $.GoError] {
 	return io.Copy($.pointerValue(dst), $.pointerValue(src))
@@ -156,37 +160,45 @@ export async function main(): globalThis.Promise<void> {
 	$.println("WriteString field writer - bytes:", n, "err:", err == null)
 
 	let buf: asyncBuffer | $.VarRef<asyncBuffer> | null = new asyncBuffer()
-	$.pointerValue<asyncBuffer>(buf).Reset($.interfaceValue<io.Writer | null>(buf, "*main.asyncBuffer"))
-	$.pointerValue<asyncBuffer>(buf).Reset(null)
+	asyncBuffer.prototype.Reset.call(buf, $.interfaceValue<io.Writer | null>(buf, "*main.asyncBuffer"))
+	asyncBuffer.prototype.Reset.call(buf, null)
 	let __goscriptTuple1 = copyInterfaces(io.Discard, $.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader"))
 	let n64 = __goscriptTuple1[0]
 	err = __goscriptTuple1[1]
 	$.println("Copy interface - bytes:", n64, "err:", err == null)
+	let __goscriptTuple2 = io.Copy($.pointerValue(io.Discard), {Reader: $.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader")})
+	n64 = __goscriptTuple2[0]
+	err = __goscriptTuple2[1]
+	$.println("Copy embedded reader - bytes:", n64, "err:", err == null)
+	let __goscriptTuple3 = io.Copy({Writer: io.Discard}, $.pointerValue($.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader")))
+	n64 = __goscriptTuple3[0]
+	err = __goscriptTuple3[1]
+	$.println("Copy embedded writer - bytes:", n64, "err:", err == null)
 
-	let __goscriptTuple2 = io.Pipe()
-	let reader: io.PipeReader | $.VarRef<io.PipeReader> | null = __goscriptTuple2[0]
-	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple2[1]
+	let __goscriptTuple4 = io.Pipe()
+	let reader: io.PipeReader | $.VarRef<io.PipeReader> | null = __goscriptTuple4[0]
+	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple4[1]
 	let done = $.makeChannel<boolean>(1, false, "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		let __goscriptShadow0 = $.makeSlice<number>(5, undefined, "byte")
 		let [__goscriptShadow1, __goscriptShadow2] = $.pointerValue<io.PipeReader>(reader).Read(__goscriptShadow0)
 		$.println("Pipe read - bytes:", __goscriptShadow1, "data:", $.bytesToString($.goSlice(__goscriptShadow0, undefined, __goscriptShadow1)), "err:", __goscriptShadow2 == null)
-		let __goscriptTuple3 = $.pointerValue<io.PipeReader>(reader).Read(__goscriptShadow0)
-		__goscriptShadow1 = __goscriptTuple3[0]
-		__goscriptShadow2 = __goscriptTuple3[1]
+		let __goscriptTuple5 = $.pointerValue<io.PipeReader>(reader).Read(__goscriptShadow0)
+		__goscriptShadow1 = __goscriptTuple5[0]
+		__goscriptShadow2 = __goscriptTuple5[1]
 		$.println("Pipe read EOF - bytes:", __goscriptShadow1, "err EOF:", __goscriptShadow2 == io.EOF)
 		await $.chanSend(done, true)
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
-	let __goscriptTuple4 = $.pointerValue<io.PipeWriter>(writer).Write($.stringToBytes("hello"))
-	n = __goscriptTuple4[0]
-	err = __goscriptTuple4[1]
+	let __goscriptTuple6 = $.pointerValue<io.PipeWriter>(writer).Write($.stringToBytes("hello"))
+	n = __goscriptTuple6[0]
+	err = __goscriptTuple6[1]
 	$.println("Pipe write - bytes:", n, "err:", err == null)
 	err = $.pointerValue<io.PipeWriter>(writer).Close()
 	$.println("Pipe close err:", err == null)
 	await $.chanRecv(done)
-	let __goscriptTuple5 = $.pointerValue<io.PipeWriter>(writer).Write($.stringToBytes("again"))
-	n = __goscriptTuple5[0]
-	err = __goscriptTuple5[1]
+	let __goscriptTuple7 = $.pointerValue<io.PipeWriter>(writer).Write($.stringToBytes("again"))
+	n = __goscriptTuple7[0]
+	err = __goscriptTuple7[1]
 	$.println("Pipe write after close - bytes:", n, "err closed:", err == io.ErrClosedPipe)
 
 	$.println("test finished")

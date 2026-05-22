@@ -69,11 +69,11 @@ describe('Mathematical Constants', () => {
     expect(MaxUint32).toBe(4294967295)
   })
 
-  it('should have correct bigint limits', () => {
-    expect(MaxInt).toBe(9223372036854775807n)
-    expect(MinInt).toBe(-9223372036854775808n)
-    expect(MaxInt64).toBe(9223372036854775807n)
-    expect(MinInt64).toBe(-9223372036854775808n)
+  it('should have correct wide integer limits', () => {
+    expect(MaxInt).toBe(9223372036854775807)
+    expect(MinInt).toBe(-9223372036854775808)
+    expect(MaxInt64).toBe(9223372036854775807)
+    expect(MinInt64).toBe(-9223372036854775808)
     expect(MaxUint).toBe(0xffffffffffffffffn)
     expect(MaxUint64).toBe(0xffffffffffffffffn)
   })

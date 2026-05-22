@@ -10,6 +10,8 @@ WriteString field writer - bytes: 12 err: true
 Reset same writer
 Reset different writer
 Copy interface - bytes: 4 err: true
+Copy embedded reader - bytes: 4 err: true
+Copy embedded writer - bytes: 4 err: true
 Pipe write - bytes: 5 err: true
 Pipe close err: true
 Pipe read - bytes: 5 data: hello err: true
