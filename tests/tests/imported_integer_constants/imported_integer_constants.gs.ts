@@ -9,8 +9,13 @@ export function aboveSignedLimit(v: number): boolean {
 	return v > (9223372036854775808)
 }
 
+export function isMinInt64(v: number): boolean {
+	return v == -9223372036854775808
+}
+
 export async function main(): globalThis.Promise<void> {
 	$.println(aboveSignedLimit($.int(10)))
+	$.println(isMinInt64(0))
 }
 
 

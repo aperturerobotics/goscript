@@ -3650,6 +3650,10 @@ func isArrayType(typ types.Type) bool {
 func (o *LoweringOwner) lowerEqualityOperands(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, string) {
 	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
 	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if isNumericType(leftType) && isNumericType(rightType) {
+		left = o.lowerValueForTarget(ctx, expr.X, rightType, left)
+		right = o.lowerValueForTarget(ctx, expr.Y, leftType, right)
+	}
 	if isInterfaceType(leftType) && !isInterfaceType(rightType) {
 		right = o.lowerValueForTargetTypes(ctx, leftType, rightType, right, false)
 	}
