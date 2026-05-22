@@ -122,6 +122,20 @@ export function IsSorted<T extends string | number>(x: $.Slice<T>): boolean {
   return true
 }
 
+export function Max<T extends cmp.Ordered>(x: $.Slice<T>): T {
+  if ($.len(x) === 0) {
+    throw new Error('slices.Max: empty list')
+  }
+  let max = (x as any)[0] as T
+  for (let i = 1; i < $.len(x); i++) {
+    const value = (x as any)[i] as T
+    if (cmp.Compare(max, value) < 0) {
+      max = value
+    }
+  }
+  return max
+}
+
 export function Collect<T>(seq: iter.Seq<T>): $.Slice<T> {
   const out: T[] = []
   seq((value) => {

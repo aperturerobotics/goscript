@@ -6,6 +6,7 @@ import {
   Backward,
   IsSorted,
   IsSortedFunc,
+  Max,
   Sorted,
   SortStableFunc,
 } from './slices.js'
@@ -76,5 +77,18 @@ describe('slices.IsSorted', () => {
     expect(
       IsSortedFunc($.arrayToSlice(['b', 'aa']), (a, b) => a.length - b.length),
     ).toBe(true)
+  })
+})
+
+describe('slices.Max', () => {
+  it('returns the greatest ordered value', () => {
+    expect(Max($.arrayToSlice([3, 1, 4, 2]))).toBe(4)
+    expect(Max($.arrayToSlice(['beta', 'alpha', 'gamma']))).toBe('gamma')
+  })
+
+  it('panics for empty slices', () => {
+    expect(() => Max($.arrayToSlice<number>([]))).toThrow(
+      'slices.Max: empty list',
+    )
   })
 })
