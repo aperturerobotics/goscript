@@ -689,7 +689,13 @@ export interface PacketWriter {
   Close(): MaybePromise<$.GoError>
 }
 
-export type OpenStreamFunc = any
+export type OpenStreamFunc = ((
+  ctx: context.Context,
+  msgHandler: PacketDataHandler,
+  closeHandler: CloseHandler,
+) => MaybePromise<[PacketWriter | null, $.GoError]>) & {
+  __server?: Server
+}
 
 class transportClient implements Client {
   constructor(private openStream: OpenStreamFunc | null) {}
@@ -777,6 +783,9 @@ class transportClient implements Client {
 }
 
 export function NewClient(openStream: OpenStreamFunc | null): Client {
+  if (openStream?.__server != null) {
+    return NewClientWithInvoker(openStream.__server.GetInvoker())
+  }
   return new transportClient(openStream)
 }
 
@@ -942,6 +951,54 @@ export function NewServerRPC(
   writer: PacketWriter | null,
 ): ServerRPC {
   return new ServerRPC(ctx, invoker, writer)
+}
+
+export class PacketReadWriter implements PacketWriter {
+  constructor(private rw: io.ReadWriteCloser | null) {}
+
+  public Write(data: $.Slice<number>): [number, $.GoError] {
+    if (this.rw == null) {
+      return [0, ErrNilWriter]
+    }
+    return this.rw.Write(data)
+  }
+
+  public WritePacket(_packet: Packet | null): $.GoError {
+    return this.rw == null ? ErrNilWriter : null
+  }
+
+  public ReadPump(_cb: PacketDataHandler, closed: CloseHandler): void {
+    if (closed != null) {
+      closed(null)
+    }
+  }
+
+  public ReadToHandler(_cb: PacketDataHandler): $.GoError {
+    return null
+  }
+
+  public Close(): $.GoError {
+    return this.rw?.Close() ?? null
+  }
+}
+
+export function NewPacketReadWriter(
+  rw: io.ReadWriteCloser | null,
+): PacketReadWriter {
+  return new PacketReadWriter(rw)
+}
+
+export function NewServerPipe(server: Server | null): OpenStreamFunc {
+  const openStream = ((
+    _ctx: context.Context,
+    _msgHandler: PacketDataHandler,
+    _closeHandler: CloseHandler,
+  ): [PacketWriter | null, $.GoError] => [new closedPacketWriter(), null]) as
+    OpenStreamFunc
+  if (server != null) {
+    openStream.__server = server
+  }
+  return openStream
 }
 
 export class MuxedConn {

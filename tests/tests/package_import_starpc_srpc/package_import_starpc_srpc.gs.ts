@@ -3,7 +3,13 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+import * as context from "@goscript/context/index.js"
+
 import * as srpc from "@goscript/github.com/aperturerobotics/starpc/srpc/index.js"
+
+import * as protobuf_go_lite from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
+
+import * as io from "@goscript/io/index.js"
 
 export class handler {
 	public _fields: {
@@ -93,7 +99,14 @@ export async function main(): globalThis.Promise<void> {
 	closeEmbedded
 	$.functionValue(async (strm: srpc.StreamRecv<any> | null): globalThis.Promise<$.GoError> => await recvOne({T: { type: { kind: $.TypeKind.Interface, methods: [] }, zero: () => null }}, strm), { kind: $.TypeKind.Function, params: ["srpc.StreamRecv"], results: ["error"] })
 	srpc.NewRawMessage($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]), true)
-	srpc.NewServer($.pointerValue((mux as srpc.Invoker | null)))
+	let server: srpc.Server | $.VarRef<srpc.Server> | null = srpc.NewServer($.pointerValue((mux as srpc.Invoker | null)))
+	let client = srpc.NewClient(srpc.NewServerPipe(server))
+	let err = await $.pointerValue<Exclude<srpc.Client, null>>(client).ExecCall($.pointerValue(context.Background()), "svc", "method", $.pointerValue($.interfaceValue<srpc.Message>(srpc.NewRawMessage(null, false), "*srpc.RawMessage")), $.pointerValue($.interfaceValue<srpc.Message>(srpc.NewRawMessage(null, false), "*srpc.RawMessage")))
+	if (err != null) {
+		$.println("exec error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
+		return
+	}
+	srpc.NewPacketReadWriter(null)
 	$.println("success: starpc srpc override")
 }
 

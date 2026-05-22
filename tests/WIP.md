@@ -29,3 +29,15 @@ value used for `var zero T`.
 Focused compliance case: extend `issue_120_generic_zero_value` with
 `ZeroArrayLiteral[T ~[2]int]() T { return T{} }` and prove the instantiated
 array has length 2 with zero elements.
+
+Fifth owner: the Starpc override covers the core invoker/client surface but
+still lacks the in-memory server-pipe and packet read-writer symbols used by
+Spacewave SRPC testbeds. The generated Go `starpc/srpc` and yamux graph is not
+the owner; the override should provide Go-shaped `NewServerPipe`,
+`NewPacketReadWriter`, and `PacketReadWriter` APIs that keep direct in-memory
+client/server tests on the handwritten TypeScript path.
+
+Focused compliance case: extend `package_import_starpc_srpc` so
+`srpc.NewClient(srpc.NewServerPipe(srpc.NewServer(mux)))` can invoke a registered
+handler, and instantiate `NewPacketReadWriter` without pulling generated starpc
+or yamux internals into the output.

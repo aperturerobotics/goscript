@@ -1,6 +1,10 @@
 package main
 
-import "github.com/aperturerobotics/starpc/srpc"
+import (
+	"context"
+
+	"github.com/aperturerobotics/starpc/srpc"
+)
 
 type handler struct{}
 
@@ -36,6 +40,13 @@ func main() {
 	_ = closeEmbedded
 	_ = recvOne[any]
 	_ = srpc.NewRawMessage([]byte{1, 2, 3}, true)
-	_ = srpc.NewServer(mux)
+	server := srpc.NewServer(mux)
+	client := srpc.NewClient(srpc.NewServerPipe(server))
+	err := client.ExecCall(context.Background(), "svc", "method", srpc.NewRawMessage(nil, false), srpc.NewRawMessage(nil, false))
+	if err != nil {
+		println("exec error:", err.Error())
+		return
+	}
+	_ = srpc.NewPacketReadWriter(nil)
 	println("success: starpc srpc override")
 }
