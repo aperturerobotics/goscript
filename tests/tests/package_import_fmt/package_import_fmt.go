@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 )
 
@@ -60,6 +61,9 @@ func main() {
 	fmt.Printf("Formatter: %v\n", byteFormatter{prefix: []byte("byte-")})
 	appended := fmt.Append([]byte("base-"), "tail")
 	fmt.Println("Append bytes:", string(appended))
+	var buf bytes.Buffer
+	fmt.Fprintln(&buf, "Buffered writer")
+	fmt.Print(buf.String())
 
 	println("test finished")
 }

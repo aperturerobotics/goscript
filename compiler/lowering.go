@@ -592,6 +592,8 @@ func (o *LoweringOwner) localFileAliases(
 		case *ast.SelectorExpr:
 			if selection := semPkg.source.TypesInfo.Selections[typed]; selection != nil {
 				addObject(selection.Obj())
+			} else if obj := semPkg.source.TypesInfo.Uses[typed.Sel]; obj != nil {
+				addTypeDeps(obj.Type())
 			}
 			if pointer, ok := types.Unalias(semPkg.source.TypesInfo.TypeOf(typed.X)).Underlying().(*types.Pointer); ok {
 				addTypeDeps(pointer.Elem())

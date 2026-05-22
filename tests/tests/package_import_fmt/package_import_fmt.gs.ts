@@ -3,7 +3,11 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+import * as bytes from "@goscript/bytes/index.js"
+
 import * as fmt from "@goscript/fmt/index.js"
+
+import * as io from "@goscript/io/index.js"
 
 export class byteFormatter {
 	public get prefix(): $.Slice<number> {
@@ -93,6 +97,9 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Printf("Formatter: %v\n", $.interfaceValue<any>($.markAsStructValue(new byteFormatter({prefix: $.stringToBytes("byte-")})), "main.byteFormatter"))
 	let appended = fmt.Append($.stringToBytes("base-"), "tail")
 	fmt.Println("Append bytes:", $.bytesToString(appended))
+	let buf: $.VarRef<bytes.Buffer> = $.varRef($.markAsStructValue(new bytes.Buffer()))
+	fmt.Fprintln($.pointerValue($.interfaceValue<io.Writer | null>($.pointerValue<bytes.Buffer | $.VarRef<bytes.Buffer>>(buf), "*bytes.Buffer")), "Buffered writer")
+	fmt.Print(buf.value.String())
 
 	$.println("test finished")
 }

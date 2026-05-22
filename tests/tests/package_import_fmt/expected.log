@@ -16,4 +16,5 @@ Precision: '3.14'
 Both: ' 3.14'
 Formatter: byte-v
 Append bytes: base-tail
+Buffered writer
 test finished
