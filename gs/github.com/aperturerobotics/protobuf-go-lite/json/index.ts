@@ -1,4 +1,5 @@
 import * as $ from '../../../../builtin/index.js'
+import * as time from '../../../../time/index.js'
 
 export interface FieldMask {
   GetPaths(): $.Slice<string>
@@ -361,8 +362,8 @@ export class MarshalState {
     this.writeArray(vs, (v) => this.WriteString(v))
   }
 
-  public WriteTime(x: unknown): void {
-    this.WriteString(String(x))
+  public WriteTime(x: time.Time | $.VarRef<time.Time> | null): void {
+    this.WriteString($.pointerValue<time.Time>(x).Format(time.RFC3339Nano))
   }
 
   public WriteUint32(v: number): void {
@@ -624,8 +625,12 @@ export class UnmarshalState {
     this.readMapKeys((key) => cb?.(key))
   }
 
-  public ReadTime(): $.VarRef<unknown> | null {
-    return $.varRef(this.ReadString())
+  public ReadTime(): $.VarRef<time.Time> | null {
+    const [parsed, err] = time.Parse(time.RFC3339, this.ReadString())
+    if (err != null) {
+      this.SetError(err)
+    }
+    return $.varRef($.markAsStructValue($.cloneStructValue(parsed)))
   }
 
   public ReadUint32(): number {

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import * as $ from '../../../../builtin/index.js'
+import * as time from '../../../../time/index.js'
 import {
   DefaultMarshalerConfig,
   DefaultUnmarshalerConfig,
+  JsonStream,
   MarshalMap,
   MarshalSlice,
   MarshalState,
@@ -124,6 +126,21 @@ describe('protobuf-go-lite/json override', () => {
     expect(raw?.Err()).toBeNull()
     expect(object?.ReadWrappedString()).toBe('def')
     expect(object?.Err()).toBeNull()
+  })
+
+  it('reads and writes protobuf timestamp values as time.Time pointers', () => {
+    const state = NewUnmarshalState(jsonBytes('"2025-05-15T01:10:42Z"'), DefaultUnmarshalerConfig)
+    const parsed = state?.ReadTime()
+    const jsonStream = new JsonStream()
+    const stream = new MarshalState({ stream: jsonStream })
+
+    expect(state?.Err()).toBeNull()
+    expect($.pointerValue(parsed)?.Format(time.RFC3339)).toBe('2025-05-15T01:10:42Z')
+
+    stream.WriteTime(parsed ?? null)
+
+    expect(stream.Err()).toBeNull()
+    expect(jsonStream.String()).toBe('"2025-05-15T01:10:42Z"')
   })
 
   it('rejects invalid bool and numeric map keys', () => {
