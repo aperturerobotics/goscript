@@ -54,7 +54,6 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Println("set nonblock ok")
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

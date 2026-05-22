@@ -1,3 +1,5 @@
 run
 go.mod
 go.sum
+!tests/package_import_starpc_srpc/go.mod
+!tests/package_import_starpc_srpc/go.sum

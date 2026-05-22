@@ -174,7 +174,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("atomic test finished")
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

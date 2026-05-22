@@ -86,7 +86,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("success: csync.Mutex test completed")
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

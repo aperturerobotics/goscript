@@ -20,7 +20,6 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Printf("ErrorList length: %d\n", $.len((errorList.value as scanner.ErrorList)))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

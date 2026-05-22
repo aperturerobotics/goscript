@@ -53,7 +53,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("read:", n, $.bytesToString(buf), err == null)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

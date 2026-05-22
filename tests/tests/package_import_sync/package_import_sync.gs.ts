@@ -104,16 +104,16 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Mutex unlocked")
 
 	let embedded: $.VarRef<embeddedMutex> = $.varRef($.markAsStructValue(new embeddedMutex()))
-	embedded.value.Mutex.Lock()
+	await embedded.value.Mutex.Lock()
 	embedded.value.value = 7
 	embedded.value.Mutex.Unlock()
 	$.println("Embedded Mutex value:", embedded.value.value)
 
 	let embeddedRW: $.VarRef<embeddedRWMutex> = $.varRef($.markAsStructValue(new embeddedRWMutex()))
-	embeddedRW.value.RWMutex.RLock()
+	await embeddedRW.value.RWMutex.RLock()
 	$.println("Embedded RWMutex read lock")
 	embeddedRW.value.RWMutex.RUnlock()
-	embeddedRW.value.RWMutex.Lock()
+	await embeddedRW.value.RWMutex.Lock()
 	embeddedRW.value.value = 9
 	embeddedRW.value.RWMutex.Unlock()
 	$.println("Embedded RWMutex value:", embeddedRW.value.value)
@@ -235,7 +235,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("test finished")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

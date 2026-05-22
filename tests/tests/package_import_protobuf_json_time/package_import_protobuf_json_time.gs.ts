@@ -18,7 +18,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("read time", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(t)).UTC())).Format(time.RFC3339), $.pointerValue<json.UnmarshalState>(state).Err() == null)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

@@ -9,7 +9,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(subpkg.Greet("world"))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

@@ -50,7 +50,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println($.markAsStructValue($.cloneStructValue(a)).Value().name)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

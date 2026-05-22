@@ -45,7 +45,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("box:", $.pointerValue<_unique.Box>(holder.Box).Value)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

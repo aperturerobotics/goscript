@@ -22,7 +22,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(http.Header_Get($.pointerValue<httptest.ResponseRecorder>(w).Header(), "Content-Disposition"))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

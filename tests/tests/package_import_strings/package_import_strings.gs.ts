@@ -26,7 +26,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("LastIndex:", strings.LastIndex("hello", "l"))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

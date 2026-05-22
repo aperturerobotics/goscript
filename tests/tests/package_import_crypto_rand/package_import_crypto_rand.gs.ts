@@ -28,11 +28,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("text alphabet", isBase32(token))
 }
 
-
-if ($.isMainScript(import.meta)) {
-	await main()
-}
-
 export function hasData(buf: $.Slice<number>): boolean {
 	for (let __rangeIndex = 0; __rangeIndex < $.len(buf); __rangeIndex++) {
 		let b = buf![__rangeIndex]
@@ -51,4 +46,8 @@ export function isBase32(token: string): boolean {
 		}
 	}
 	return true
+}
+
+if ($.isMainScript(import.meta)) {
+	await main()
 }

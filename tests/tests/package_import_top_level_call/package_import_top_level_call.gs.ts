@@ -11,7 +11,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("cached:", cached)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

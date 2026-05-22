@@ -76,7 +76,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("as local:", $.markAsStructValue($.cloneStructValue((second as unknown as time.Time))).Unix())
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }
