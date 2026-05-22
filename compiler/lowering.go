@@ -2906,7 +2906,7 @@ func (o *LoweringOwner) lowerShortDeclShadowAliases(
 	aliases := make(map[types.Object]string)
 	var prelude []loweredStmt
 	for _, rhs := range assign.Rhs {
-		nonValueIdents := shortDeclShadowNonValueIdents(rhs)
+		nonValueIdents := shortDeclShadowNonValueIdents(ctx, rhs)
 		ast.Inspect(rhs, func(node ast.Node) bool {
 			ident, ok := node.(*ast.Ident)
 			if !ok || nonValueIdents[ident] || !names[ident.Name] {
@@ -2949,7 +2949,7 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 	}
 	aliases := make(map[types.Object]string)
 	for _, rhs := range assign.Rhs {
-		nonValueIdents := shortDeclShadowNonValueIdents(rhs)
+		nonValueIdents := shortDeclShadowNonValueIdents(ctx, rhs)
 		ast.Inspect(rhs, func(node ast.Node) bool {
 			ident, ok := node.(*ast.Ident)
 			if !ok || nonValueIdents[ident] {
@@ -2984,10 +2984,16 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 	return aliases
 }
 
-func shortDeclShadowNonValueIdents(expr ast.Expr) map[*ast.Ident]bool {
+func shortDeclShadowNonValueIdents(ctx lowerFileContext, expr ast.Expr) map[*ast.Ident]bool {
 	idents := make(map[*ast.Ident]bool)
 	ast.Inspect(expr, func(node ast.Node) bool {
 		switch typed := node.(type) {
+		case *ast.CallExpr:
+			if ident, ok := typed.Fun.(*ast.Ident); ok {
+				if _, ok := ctx.semPkg.source.TypesInfo.Uses[ident].(*types.TypeName); ok {
+					idents[ident] = true
+				}
+			}
 		case *ast.SelectorExpr:
 			idents[typed.Sel] = true
 		case *ast.KeyValueExpr:
