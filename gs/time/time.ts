@@ -159,6 +159,14 @@ export class Time {
     return Time.create(this._date, this._nsec, undefined, UTC)
   }
 
+  // In returns a copy of t representing the same instant in loc.
+  public In(loc: Location | $.VarRef<Location> | null): Time {
+    if (loc === null) {
+      throw new Error('time: missing Location in call to Time.In')
+    }
+    return Time.create(this._date, this._nsec, undefined, $.pointerValue(loc))
+  }
+
   // Format returns a textual representation of the time value formatted according to the layout
   public Format(layout: string): string {
     // Implementation of Go's time formatting based on reference time:

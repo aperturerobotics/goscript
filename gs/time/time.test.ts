@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
+import * as $ from '@goscript/builtin/index.js'
+
 import {
   Duration_Abs,
   Duration_Hours,
@@ -11,6 +13,7 @@ import {
   Duration_Seconds,
   Duration_String,
   Duration_Truncate,
+  FixedZone,
   January,
   Microsecond,
   Millisecond,
@@ -19,6 +22,11 @@ import {
   NewTimer,
   RFC3339Nano,
   Second,
+  Date,
+  May,
+  RFC3339,
+  Time,
+  UTC,
 } from './time.js'
 
 describe('time.Duration_String', () => {
@@ -76,5 +84,23 @@ describe('time constants and timers', () => {
     ticker.Stop()
 
     expect(value.Unix()).toBeGreaterThan(0)
+  })
+})
+
+describe('time.Time.In', () => {
+  it('returns the same instant in another fixed location', () => {
+    const utc = Date(2025, May, 15, 1, 10, 42, 0, UTC)
+    const pdt = FixedZone('PDT', -7 * 60 * 60)
+
+    expect(utc.In(pdt).Format(RFC3339)).toBe('2025-05-14T18:10:42-07:00')
+    expect(utc.In($.varRef(pdt)).Format(RFC3339)).toBe(
+      '2025-05-14T18:10:42-07:00',
+    )
+  })
+
+  it('panics for nil locations', () => {
+    expect(() => new Time().In(null)).toThrow(
+      'time: missing Location in call to Time.In',
+    )
   })
 })
