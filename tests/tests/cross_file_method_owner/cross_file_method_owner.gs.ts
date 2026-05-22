@@ -13,7 +13,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(box_total(3))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }
