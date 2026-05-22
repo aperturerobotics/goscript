@@ -173,6 +173,20 @@ export const String: Kind = 24
 export const Struct: Kind = 25
 export const UnsafePointer: Kind = 26
 
+const pointerAddressStride = 0x100000000
+const pointerAddresses = new WeakMap<object, number>()
+let nextPointerAddress = 1
+
+function pointerAddress(value: object): number {
+  let address = pointerAddresses.get(value)
+  if (address === undefined) {
+    address = nextPointerAddress * pointerAddressStride
+    nextPointerAddress++
+    pointerAddresses.set(value, address)
+  }
+  return address
+}
+
 // Type is the representation of a Go type.
 export interface Type {
   // String returns a string representation of the type.
@@ -513,6 +527,45 @@ export class Value {
   // Additional methods needed by various parts of the codebase
   public UnsafePointer(): unknown {
     return this._value
+  }
+
+  public Pointer(): number {
+    const kind = this.Kind()
+    if (
+      kind !== Chan &&
+      kind !== Func &&
+      kind !== Map &&
+      kind !== Ptr &&
+      kind !== Slice &&
+      kind !== UnsafePointer
+    ) {
+      throw new ValueError({ Kind: kind, Method: 'Pointer' })
+    }
+    if (this._value === null || this._value === undefined) {
+      return 0
+    }
+    if ($.isVarRef(this._value)) {
+      const address = this._value.__goAddress?.()
+      if (address !== undefined) {
+        return address
+      }
+      return pointerAddress(this._value)
+    }
+    if (kind === Slice) {
+      const slice = this._value as $.Slice<unknown> | Uint8Array
+      try {
+        if ($.len(slice) === 0) {
+          return 0
+        }
+        return $.indexAddress(slice, 0)
+      } catch {
+        return 0
+      }
+    }
+    if (typeof this._value === 'object' || typeof this._value === 'function') {
+      return pointerAddress(this._value)
+    }
+    return 0
   }
 
   public pointer(): unknown {

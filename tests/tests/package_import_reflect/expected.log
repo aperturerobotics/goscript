@@ -71,6 +71,10 @@ Buffered chan type: chan int
 Chan elem type: int
 Chan elem kind: int
 Chan size: 8
+Pointer overlap: true
+Pointer separate: false
+Pointer same: true
+Pointer different: false
 Select chosen: 1 recvOK: true
 Select recv type: string
 Select recv value: hello

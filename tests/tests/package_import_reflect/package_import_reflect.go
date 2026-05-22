@@ -13,6 +13,17 @@ type Stringer interface {
 	String() string
 }
 
+func reflectOverlap(x, y []byte) bool {
+	return len(x) > 0 && len(y) > 0 &&
+		reflect.ValueOf(&x[0]).Pointer() <= reflect.ValueOf(&y[len(y)-1]).Pointer() &&
+		reflect.ValueOf(&y[0]).Pointer() <= reflect.ValueOf(&x[len(x)-1]).Pointer()
+}
+
+func reflectSameStart(x, y []byte) bool {
+	return len(x) > 0 && len(y) > 0 &&
+		reflect.ValueOf(&x[0]).Pointer() == reflect.ValueOf(&y[0]).Pointer()
+}
+
 func main() {
 	// Test basic reflect functions
 	x := 42
@@ -225,6 +236,16 @@ func main() {
 	println("Chan elem type:", chanType.Elem().String())
 	println("Chan elem kind:", chanType.Elem().Kind().String())
 	println("Chan size:", chanType.Size())
+
+	// Test Value.Pointer on addressable slice elements.
+	pointerBuf := []byte{1, 2, 3, 4}
+	pointerLeft := pointerBuf[1:3]
+	pointerRight := pointerBuf[2:4]
+	pointerOther := []byte{8, 9}
+	println("Pointer overlap:", reflectOverlap(pointerLeft, pointerRight))
+	println("Pointer separate:", reflectOverlap(pointerLeft, pointerOther))
+	println("Pointer same:", reflectSameStart(pointerLeft, pointerBuf[1:]))
+	println("Pointer different:", reflectSameStart(pointerLeft, pointerRight))
 
 	// Test Select functionality
 	intChan := reflect.MakeChan(reflect.ChanOf(reflect.BothDir, reflect.TypeFor[int]()), 1)

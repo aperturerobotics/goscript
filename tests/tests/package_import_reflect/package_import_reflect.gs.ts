@@ -60,6 +60,14 @@ export class Person {
 	)
 }
 
+export function reflectOverlap(x: $.Slice<number>, y: $.Slice<number>): boolean {
+	return ((($.len(x) > 0) && ($.len(y) > 0)) && ($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(x!, 0), "*byte")))).Pointer() <= $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(y!, $.len(y) - 1), "*byte")))).Pointer())) && ($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(y!, 0), "*byte")))).Pointer() <= $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(x!, $.len(x) - 1), "*byte")))).Pointer())
+}
+
+export function reflectSameStart(x: $.Slice<number>, y: $.Slice<number>): boolean {
+	return (($.len(x) > 0) && ($.len(y) > 0)) && ($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(x!, 0), "*byte")))).Pointer() == $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(y!, 0), "*byte")))).Pointer())
+}
+
 export async function main(): globalThis.Promise<void> {
 	// Test basic reflect functions
 	let x = 42
@@ -276,6 +284,16 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Chan elem type:", $.pointerValue<Exclude<reflect.Type, null>>($.pointerValue<Exclude<reflect.Type, null>>(chanType).Elem()).String())
 	$.println("Chan elem kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>($.pointerValue<Exclude<reflect.Type, null>>(chanType).Elem()).Kind()))
 	$.println("Chan size:", $.pointerValue<Exclude<reflect.Type, null>>(chanType).Size())
+
+	// Test Value.Pointer on addressable slice elements.
+	let pointerBuf = $.arrayToSlice<number>([1, 2, 3, 4])
+	let pointerLeft = $.goSlice(pointerBuf, 1, 3)
+	let pointerRight = $.goSlice(pointerBuf, 2, 4)
+	let pointerOther = $.arrayToSlice<number>([8, 9])
+	$.println("Pointer overlap:", reflectOverlap(pointerLeft, pointerRight))
+	$.println("Pointer separate:", reflectOverlap(pointerLeft, pointerOther))
+	$.println("Pointer same:", reflectSameStart(pointerLeft, $.goSlice(pointerBuf, 1, undefined)))
+	$.println("Pointer different:", reflectSameStart(pointerLeft, pointerRight))
 
 	// Test Select functionality
 	let intChan = $.markAsStructValue($.cloneStructValue(reflect.MakeChan($.pointerValue(reflect.ChanOf(reflect.BothDir, $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))), 1)))

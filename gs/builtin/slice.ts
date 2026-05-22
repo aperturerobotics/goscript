@@ -1131,6 +1131,7 @@ export function indexRef<T>(
         collection[index] = value as number
       },
       __isVarRef: true,
+      __goAddress: () => indexAddress(collection, index),
     }
   }
   if (isComplexSlice(collection)) {
@@ -1148,6 +1149,7 @@ export function indexRef<T>(
         collection[index] = value
       },
       __isVarRef: true,
+      __goAddress: () => indexAddress(collection, index),
     }
   }
   if (Array.isArray(collection)) {
@@ -1164,6 +1166,7 @@ export function indexRef<T>(
         collection[index] = value
       },
       __isVarRef: true,
+      __goAddress: () => indexAddress(collection, index),
     }
   }
   throw new Error('runtime error: index on unsupported type')

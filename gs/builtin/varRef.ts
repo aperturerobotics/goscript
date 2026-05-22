@@ -5,7 +5,12 @@
  *   var myVariable int // variable referenced
  *   myOtherVar := &myVariable
  */
-export type VarRef<T> = { value: T; __isVarRef?: true; __goType?: string }
+export type VarRef<T> = {
+  value: T
+  __isVarRef?: true
+  __goType?: string
+  __goAddress?: () => number
+}
 
 /** Wrap a non-null T in a variable reference. */
 export function varRef<T>(v: T): VarRef<T> {
