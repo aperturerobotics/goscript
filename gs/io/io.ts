@@ -412,16 +412,23 @@ export function NewOffsetWriter(w: WriterAt, off: number): OffsetWriter {
 }
 
 // Copy copies from src to dst until either EOF is reached on src or an error occurs
-export function Copy(dst: Writer, src: Reader): [number, $.GoError] {
+export function Copy(
+  dst: Writer | null,
+  src: Reader | null,
+): [number, $.GoError] {
   return CopyBuffer(dst, src, null)
 }
 
 // CopyBuffer is identical to Copy except that it stages through the provided buffer
 export function CopyBuffer(
-  dst: Writer,
-  src: Reader,
+  dst: Writer | null,
+  src: Reader | null,
   buf: $.Bytes | null,
 ): [number, $.GoError] {
+  if (dst === null || src === null) {
+    return [0, newError('io: copy with nil reader or writer')]
+  }
+
   // If src implements WriterTo, use it
   if ('WriteTo' in src && typeof (src as any).WriteTo === 'function') {
     return (src as WriterTo).WriteTo(dst)

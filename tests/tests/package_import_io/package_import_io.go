@@ -13,9 +13,22 @@ var asyncWrites sync.Map
 
 type asyncBuffer struct{}
 
+type staticReader struct {
+	done bool
+}
+
 func (b *asyncBuffer) Write(p []byte) (int, error) {
 	asyncWrites.Load("last")
 	return len(p), nil
+}
+
+func (r *staticReader) Read(p []byte) (int, error) {
+	if r.done {
+		return 0, io.EOF
+	}
+	copy(p, []byte("copy"))
+	r.done = true
+	return 4, nil
 }
 
 func (b *asyncBuffer) Reset(w io.Writer) {
@@ -24,6 +37,10 @@ func (b *asyncBuffer) Reset(w io.Writer) {
 		return
 	}
 	println("Reset different writer")
+}
+
+func copyInterfaces(dst io.Writer, src io.Reader) (int64, error) {
+	return io.Copy(dst, src)
 }
 
 func main() {
@@ -49,6 +66,8 @@ func main() {
 	buf := &asyncBuffer{}
 	buf.Reset(buf)
 	buf.Reset(nil)
+	n64, err := copyInterfaces(io.Discard, &staticReader{})
+	println("Copy interface - bytes:", n64, "err:", err == nil)
 
 	reader, writer := io.Pipe()
 	done := make(chan bool, 1)
