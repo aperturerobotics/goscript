@@ -6567,16 +6567,6 @@ func (o *LoweringOwner) lowerValueForTarget(
 	value string,
 ) string {
 	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
-	if isInterfaceType(targetType) && isPointerToStructType(sourceType) {
-		if address, ok := expr.(*ast.UnaryExpr); ok && address.Op == token.AND {
-			if obj := objectForValueExpr(ctx, address.X); obj != nil &&
-				ctx.model.needsVarRef[obj] &&
-				isStructValueType(obj.Type()) {
-				value = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
-					"<" + o.tsNonNilTypeFor(ctx, sourceType) + ">(" + value + ")"
-			}
-		}
-	}
 	if isComplexType(targetType) {
 		if isRealNumericConstantExpr(ctx, expr) {
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperComplex) + "(" + value + ", 0)"
