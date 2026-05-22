@@ -168,6 +168,7 @@ export const makeSlice = <T>(
   length: number,
   capacity?: number,
   typeHint?: string,
+  zeroFactory?: () => T,
 ): Slice<T> => {
   if (typeHint === 'byte') {
     const actualCapacity = capacity === undefined ? length : capacity
@@ -209,25 +210,26 @@ export const makeSlice = <T>(
     )
   }
 
-  let zeroVal: any
-  switch (typeHint) {
-    case 'number':
-      zeroVal = 0
-      break
-    case 'boolean':
-      zeroVal = false
-      break
-    case 'string':
-      zeroVal = ''
-      break
-    default:
-      zeroVal = null // Default for objects, complex types, or unspecified
+  const zeroValue = (): T => {
+    if (zeroFactory !== undefined) {
+      return zeroFactory()
+    }
+    switch (typeHint) {
+      case 'number':
+        return 0 as T
+      case 'boolean':
+        return false as T
+      case 'string':
+        return '' as T
+      default:
+        return null as T // Default for objects, complex types, or unspecified
+    }
   }
 
   const backingArr = new Array<T>(actualCapacity)
   // Initialize the relevant part of the backing array
   for (let i = 0; i < length; i++) {
-    backingArr[i] = zeroVal
+    backingArr[i] = zeroValue()
   }
   // The rest of backingArr (from length to actualCapacity-1) remains uninitialized (undefined),
   // representing available capacity.
@@ -241,7 +243,7 @@ export const makeSlice = <T>(
   // Its elements up to 'length' should reflect the initialized part of the slice.
   const proxyTargetArray = new Array<T>(length)
   for (let i = 0; i < length; i++) {
-    proxyTargetArray[i] = backingArr[i] // Or simply zeroVal
+    proxyTargetArray[i] = backingArr[i]
   }
 
   const proxy = proxyTargetArray as SliceProxy<T>

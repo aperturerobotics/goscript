@@ -5167,6 +5167,15 @@ func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			}
 			args = append(args, strconv.Quote(hint))
 		}
+		if namedStructType(typed.Elem()) != nil && isStructValueType(typed.Elem()) {
+			if capacity == "" {
+				args = append(args, "undefined")
+			}
+			if len(args) < 3 {
+				args = append(args, "undefined")
+			}
+			args = append(args, "() => "+o.lowerZeroValueExprFor(ctx, typed.Elem()))
+		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMakeSlice) +
 			"<" + o.tsTypeFor(ctx, typed.Elem()) + ">(" + strings.Join(args, ", ") + ")", diagnostics
 	case *types.Map:
