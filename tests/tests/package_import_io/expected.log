@@ -9,4 +9,9 @@ WriteString to Discard - bytes: 11 err: true
 WriteString field writer - bytes: 12 err: true
 Reset same writer
 Reset different writer
+Pipe write - bytes: 5 err: true
+Pipe close err: true
+Pipe read - bytes: 5 data: hello err: true
+Pipe read EOF - bytes: 0 err EOF: true
+Pipe write after close - bytes: 0 err closed: true
 test finished

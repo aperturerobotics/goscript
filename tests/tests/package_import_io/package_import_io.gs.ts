@@ -110,6 +110,32 @@ export async function main(): Promise<void> {
 	$.pointerValue<asyncBuffer>(buf).Reset($.interfaceValue<io.Writer | null>(buf, "*main.asyncBuffer"))
 	$.pointerValue<asyncBuffer>(buf).Reset(null)
 
+	let __goscriptTuple1 = io.Pipe()
+	let reader: io.PipeReader | $.VarRef<io.PipeReader> | null = __goscriptTuple1[0]
+	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple1[1]
+	let done = $.makeChannel<boolean>(1, false, "both")
+	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
+		let __goscriptShadow0 = $.makeSlice<number>(5, undefined, "byte")
+		let [__goscriptShadow1, __goscriptShadow2] = $.pointerValue<io.PipeReader>(reader).Read(__goscriptShadow0)
+		$.println("Pipe read - bytes:", __goscriptShadow1, "data:", $.bytesToString($.goSlice(__goscriptShadow0, undefined, __goscriptShadow1)), "err:", __goscriptShadow2 == null)
+		let __goscriptTuple2 = $.pointerValue<io.PipeReader>(reader).Read(__goscriptShadow0)
+		__goscriptShadow1 = __goscriptTuple2[0]
+		__goscriptShadow2 = __goscriptTuple2[1]
+		$.println("Pipe read EOF - bytes:", __goscriptShadow1, "err EOF:", __goscriptShadow2 == io.EOF)
+		await $.chanSend(done, true)
+	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	let __goscriptTuple3 = $.pointerValue<io.PipeWriter>(writer).Write($.stringToBytes("hello"))
+	n = __goscriptTuple3[0]
+	err = __goscriptTuple3[1]
+	$.println("Pipe write - bytes:", n, "err:", err == null)
+	err = $.pointerValue<io.PipeWriter>(writer).Close()
+	$.println("Pipe close err:", err == null)
+	await $.chanRecv(done)
+	let __goscriptTuple4 = $.pointerValue<io.PipeWriter>(writer).Write($.stringToBytes("again"))
+	n = __goscriptTuple4[0]
+	err = __goscriptTuple4[1]
+	$.println("Pipe write after close - bytes:", n, "err closed:", err == io.ErrClosedPipe)
+
 	$.println("test finished")
 }
 

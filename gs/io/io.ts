@@ -68,6 +68,110 @@ export interface ReadSeeker extends Reader, Seeker {}
 export interface WriteSeeker extends Writer, Seeker {}
 export interface ReadWriteSeeker extends Reader, Writer, Seeker {}
 
+class pipeState {
+  private chunks: Uint8Array[] = []
+  private readOffset = 0
+  private readerClosed = false
+  private writerClosed = false
+  private readerErr: $.GoError = null
+  private writerErr: $.GoError = null
+
+  Read(p: $.Bytes): [number, $.GoError] {
+    if (this.readerClosed) {
+      return [0, this.readerErr ?? ErrClosedPipe]
+    }
+    if ($.len(p) === 0) {
+      return [0, null]
+    }
+    if (this.chunks.length === 0) {
+      if (this.writerClosed) {
+        return [0, this.writerErr ?? EOF]
+      }
+      return [0, EOF]
+    }
+
+    let copied = 0
+    while (copied < $.len(p) && this.chunks.length > 0) {
+      const chunk = this.chunks[0]
+      const available = chunk.length - this.readOffset
+      const want = Math.min($.len(p) - copied, available)
+      const target = $.goSlice(p, copied, copied + want)
+      $.copy(target, chunk.subarray(this.readOffset, this.readOffset + want))
+      copied += want
+      this.readOffset += want
+      if (this.readOffset === chunk.length) {
+        this.chunks.shift()
+        this.readOffset = 0
+      }
+    }
+    return [copied, null]
+  }
+
+  Write(p: $.Bytes): [number, $.GoError] {
+    if (this.writerClosed || this.readerClosed) {
+      return [0, this.readerErr ?? ErrClosedPipe]
+    }
+    const data = new Uint8Array($.len(p))
+    $.copy(data, p)
+    this.chunks.push(data)
+    return [$.len(p), null]
+  }
+
+  CloseReader(err: $.GoError): $.GoError {
+    this.readerClosed = true
+    this.readerErr = err
+    this.chunks = []
+    this.readOffset = 0
+    return null
+  }
+
+  CloseWriter(err: $.GoError): $.GoError {
+    this.writerClosed = true
+    this.writerErr = err
+    return null
+  }
+}
+
+// PipeReader is the read half of a pipe.
+export class PipeReader implements Reader, Closer {
+  constructor(private pipe: pipeState) {}
+
+  Read(data: $.Bytes): [number, $.GoError] {
+    return this.pipe.Read(data)
+  }
+
+  Close(): $.GoError {
+    return this.CloseWithError(null)
+  }
+
+  CloseWithError(err: $.GoError): $.GoError {
+    return this.pipe.CloseReader(err ?? ErrClosedPipe)
+  }
+}
+
+// PipeWriter is the write half of a pipe.
+export class PipeWriter implements Writer, Closer {
+  constructor(private pipe: pipeState) {}
+
+  Write(data: $.Bytes): [number, $.GoError] {
+    return this.pipe.Write(data)
+  }
+
+  Close(): $.GoError {
+    return this.CloseWithError(null)
+  }
+
+  CloseWithError(err: $.GoError): $.GoError {
+    return this.pipe.CloseWriter(err ?? EOF)
+  }
+}
+
+// Pipe creates a synchronous in-memory pipe.
+export function Pipe(): [PipeReader, PipeWriter] {
+  const pipe = new pipeState()
+  return [new PipeReader(pipe), new PipeWriter(pipe)]
+}
+
 // ReaderAt is the interface that wraps the basic ReadAt method
 export interface ReaderAt {
   ReadAt(p: $.Bytes, off: number): [number, $.GoError]

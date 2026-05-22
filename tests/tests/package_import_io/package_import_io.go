@@ -50,5 +50,23 @@ func main() {
 	buf.Reset(buf)
 	buf.Reset(nil)
 
+	reader, writer := io.Pipe()
+	done := make(chan bool, 1)
+	go func() {
+		buf := make([]byte, 5)
+		n, err := reader.Read(buf)
+		println("Pipe read - bytes:", n, "data:", string(buf[:n]), "err:", err == nil)
+		n, err = reader.Read(buf)
+		println("Pipe read EOF - bytes:", n, "err EOF:", err == io.EOF)
+		done <- true
+	}()
+	n, err = writer.Write([]byte("hello"))
+	println("Pipe write - bytes:", n, "err:", err == nil)
+	err = writer.Close()
+	println("Pipe close err:", err == nil)
+	<-done
+	n, err = writer.Write([]byte("again"))
+	println("Pipe write after close - bytes:", n, "err closed:", err == io.ErrClosedPipe)
+
 	println("test finished")
 }
