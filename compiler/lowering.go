@@ -804,10 +804,9 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				}
 				variableType := o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj])
 				if signature := unnamedSignatureForType(obj.Type()); signature != nil {
-					value := ctx.model.values[obj]
-					if (value != nil && value.asyncCompatibleFunction) ||
-						(idx < len(typed.Values) && exprIsAsyncCompatibleFuncLit(ctx, typed.Values[idx])) {
-						variableType = o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+					variableType = o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+					if ctx.model.needsVarRef[obj] {
+						variableType = "$.VarRef<" + variableType + ">"
 					}
 				}
 				declName := o.lowerIdent(ctx, name, true)
@@ -823,6 +822,17 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					}
 				}
 				decls = append(decls, loweredDecl{code: code, indexExport: indexExport})
+				if ctx.topLevel && ast.IsExported(name.Name) && keyword != "const" {
+					setterName := packageVarSetterName(name.Name)
+					setterType := o.tsPackageVarSetterValueTypeFor(ctx, obj.Type())
+					setterTarget := declName
+					if ctx.model.needsVarRef[obj] {
+						setterTarget += ".value"
+					}
+					setterCode := "export function " + setterName + "(value: " + setterType + "): void {\n\t" +
+						setterTarget + " = value\n}"
+					decls = append(decls, loweredDecl{code: setterCode, indexExport: setterName})
+				}
 			}
 		default:
 			diagnostics = append(diagnostics, loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported general declaration"))
@@ -1703,6 +1713,10 @@ func expressionStmtText(text string) string {
 	return text
 }
 
+func packageVarSetterName(name string) string {
+	return "__goscript_set_" + safeIdentifier(name)
+}
+
 func (o *LoweringOwner) lowerElse(ctx lowerFileContext, stmt ast.Stmt) ([]loweredStmt, []Diagnostic) {
 	switch typed := stmt.(type) {
 	case *ast.BlockStmt:
@@ -2315,12 +2329,16 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			continue
 		}
 		isShortDecl := stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs)
-		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, isShortDecl)
 		right, rightDiagnostics := o.lowerExpr(ctx, stmt.Rhs[idx])
-		diagnostics = append(diagnostics, leftDiagnostics...)
 		diagnostics = append(diagnostics, rightDiagnostics...)
 		targetType := ctx.semPkg.source.TypesInfo.TypeOf(lhs)
 		right = o.lowerValueForTarget(ctx, stmt.Rhs[idx], targetType, right)
+		if setter, ok := o.importedPackageVarSetter(ctx, lhs); ok && stmt.Tok == token.ASSIGN {
+			stmts = append(stmts, loweredStmt{text: setter + "(" + right + ")"})
+			continue
+		}
+		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, isShortDecl)
+		diagnostics = append(diagnostics, leftDiagnostics...)
 		if index, ok := lhs.(*ast.IndexExpr); ok && isMapType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)) && stmt.Tok == token.ASSIGN {
 			mapExpr, mapDiagnostics := o.lowerExpr(ctx, index.X)
 			keyExpr, keyDiagnostics := o.lowerExpr(ctx, index.Index)
@@ -5051,6 +5069,37 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 	}
 	left, diagnostics := o.lowerExpr(ctx, expr.X)
 	return left + "." + expr.Sel.Name, diagnostics
+}
+
+func (o *LoweringOwner) importedPackageVarSetter(ctx lowerFileContext, expr ast.Expr) (string, bool) {
+	selector, ok := unwrapParenExpr(expr).(*ast.SelectorExpr)
+	if !ok {
+		return "", false
+	}
+	ident, ok := selector.X.(*ast.Ident)
+	if !ok {
+		return "", false
+	}
+	pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName)
+	if pkgName == nil {
+		return "", false
+	}
+	alias := ctx.importNames[pkgName.Name()]
+	if alias == "" {
+		return "", false
+	}
+	obj, _ := ctx.semPkg.source.TypesInfo.Uses[selector.Sel].(*types.Var)
+	if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() == ctx.semPkg.pkgPath || !ast.IsExported(obj.Name()) {
+		return "", false
+	}
+	return alias + "." + packageVarSetterName(selector.Sel.Name), true
+}
+
+func (o *LoweringOwner) tsPackageVarSetterValueTypeFor(ctx lowerFileContext, typ types.Type) string {
+	if signature := unnamedSignatureForType(typ); signature != nil {
+		return o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+	}
+	return o.tsTypeFor(ctx, typ)
 }
 
 func (o *LoweringOwner) lowerFieldSelectionExpr(
