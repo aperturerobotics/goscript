@@ -8,4 +8,5 @@ func (source) Val() Value {
 
 func main() {
 	println(string(Read(source{})))
+	println(string(Read(source{}).Clone()))
 }

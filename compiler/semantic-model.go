@@ -989,7 +989,7 @@ func receiverNamedType(typ types.Type) *types.Named {
 		}
 		typ = pointer.Elem()
 	}
-	named, _ := typ.(*types.Named)
+	named, _ := types.Unalias(typ).(*types.Named)
 	return named
 }
 
