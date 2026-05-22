@@ -528,7 +528,7 @@ export class Time {
   // Add adds the duration d to t, returning the sum
   // Preserves monotonic reading if present
   public Add(d: Duration): Time {
-    const durationNs = d
+    const durationNs = durationNumber(d)
     const newDate = new globalThis.Date(
       this._date.getTime() + Math.floor(durationNs / 1000000),
     )
@@ -644,8 +644,12 @@ const maxDuration = 9223372036854775807
 const minDuration = -9223372036854775808
 const maxTimerDelayMilliseconds = 0x7fffffff
 
+function durationNumber(d: Duration): number {
+  return Number(d)
+}
+
 function timeoutMilliseconds(d: Duration): number {
-  const ms = d / 1000000
+  const ms = durationNumber(d) / 1000000
   if (!Number.isFinite(ms) || ms > maxTimerDelayMilliseconds) {
     return maxTimerDelayMilliseconds
   }
@@ -665,71 +669,77 @@ export function Duration_multiply(
   receiver: Duration,
   multiplier: number,
 ): Duration {
-  return receiver * multiplier
+  return durationNumber(receiver) * multiplier
 }
 
 export function Duration_Abs(receiver: Duration): Duration {
-  if (receiver >= 0) {
-    return receiver
+  const value = durationNumber(receiver)
+  if (value >= 0) {
+    return value
   }
-  if (receiver === minDuration) {
+  if (value === minDuration) {
     return maxDuration
   }
-  return -receiver
+  return -value
 }
 
 export function Duration_Hours(receiver: Duration): number {
-  return receiver / Hour
+  return durationNumber(receiver) / Hour
 }
 
 export function Duration_Microseconds(receiver: Duration): number {
-  return Math.trunc(receiver / Microsecond)
+  return Math.trunc(durationNumber(receiver) / Microsecond)
 }
 
 export function Duration_Milliseconds(receiver: Duration): number {
-  return Math.trunc(receiver / Millisecond)
+  return Math.trunc(durationNumber(receiver) / Millisecond)
 }
 
 export function Duration_Minutes(receiver: Duration): number {
-  return receiver / Minute
+  return durationNumber(receiver) / Minute
 }
 
 export function Duration_Nanoseconds(receiver: Duration): number {
-  return receiver
+  return durationNumber(receiver)
 }
 
 export function Duration_Round(receiver: Duration, multiple: Duration): Duration {
-  if (multiple <= 0) {
-    return receiver
+  const value = durationNumber(receiver)
+  const unit = durationNumber(multiple)
+  if (unit <= 0) {
+    return value
   }
   const rounded =
-    receiver >= 0 ?
-      Math.floor(receiver / multiple + 0.5) * multiple
-    : Math.ceil(receiver / multiple - 0.5) * multiple
+    value >= 0 ?
+      Math.floor(value / unit + 0.5) * unit
+    : Math.ceil(value / unit - 0.5) * unit
   return Math.max(minDuration, Math.min(maxDuration, rounded))
 }
 
 // Duration_Seconds returns the duration as a floating point number of seconds.
 export function Duration_Seconds(receiver: Duration): number {
-  return receiver / Second
+  return durationNumber(receiver) / Second
 }
 
 export function Duration_Truncate(
   receiver: Duration,
   multiple: Duration,
 ): Duration {
-  if (multiple <= 0) {
-    return receiver
+  const value = durationNumber(receiver)
+  const unit = durationNumber(multiple)
+  if (unit <= 0) {
+    return value
   }
-  return receiver - (receiver % multiple)
+  return value - (value % unit)
 }
 
 export function Duration_String(receiver: Duration): string {
-  if (receiver === 0) {
+  const value = durationNumber(receiver)
+  if (value === 0) {
     return '0s'
   }
-  const sign = receiver < 0 ? '-' : ''
-  let remaining = Math.abs(receiver)
+  const sign = value < 0 ? '-' : ''
+  let remaining = Math.abs(value)
   const hours = Math.floor(remaining / Hour)
   remaining -= hours * Hour
   const minutes = Math.floor(remaining / Minute)

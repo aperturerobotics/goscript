@@ -137,7 +137,10 @@ export function sliceToArrayPointer<T>(
     )
   }
   if (typeHint === 'byte') {
-    return varRef(new Uint8Array(asArray(slice as Slice<T>).slice(0, length) as number[]))
+    if (slice instanceof Uint8Array) {
+      return varRef(goSlice(slice, 0, length) as unknown as Uint8Array)
+    }
+    return varRef(goSlice(slice as Slice<T>, 0, length) as unknown as Uint8Array)
   }
   if (slice instanceof Uint8Array) {
     return varRef(goSlice(slice, 0, length) as unknown as T[])
@@ -156,6 +159,13 @@ function isComplexSlice<T>(slice: Slice<T>): slice is SliceProxy<T> {
     '__meta__' in slice &&
     slice.__meta__ !== undefined
   )
+}
+
+function normalizeSliceIndex(value: number | undefined): number | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+  return Number(value)
 }
 
 /**
@@ -339,6 +349,10 @@ export function goSlice<T>( // T can be number for Uint8Array case
   high?: number,
   max?: number,
 ): Slice<T> {
+  low = normalizeSliceIndex(low)
+  high = normalizeSliceIndex(high)
+  max = normalizeSliceIndex(max)
+
   const handler = {
     get(target: any, prop: string | symbol): any {
       if (typeof prop === 'string' && /^\d+$/.test(prop)) {
@@ -770,11 +784,7 @@ export function append<T>(
   // 1. Flatten all elements from the varargs `...elements` into `varargsElements`.
   // Determine if the result should be a Uint8Array.
   const inputIsUint8Array = slice instanceof Uint8Array
-  const appendingUint8Array = elements.some((el) => el instanceof Uint8Array)
-  const produceUint8Array =
-    inputIsUint8Array ||
-    appendingUint8Array ||
-    (slice === null && appendingUint8Array)
+  const produceUint8Array = inputIsUint8Array
 
   // If producing Uint8Array, all elements must be numbers and potentially flattened from other Uint8Arrays/number slices.
   if (produceUint8Array) {
