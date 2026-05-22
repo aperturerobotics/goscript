@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/aperturerobotics/goscript/compiler"
+	"github.com/aperturerobotics/goscript/compiler/tsworkspace"
 	"github.com/sirupsen/logrus"
 )
 
@@ -526,11 +527,11 @@ func WriteTypeScriptRunner(t *testing.T, parentModulePath, testDir, tempDir stri
 	tsImportPath := filepath.ToSlash(rawImportPath) // Ensure overall path uses forward slashes
 
 	runnerContent := fmt.Sprintf(runnerContentTemplate, tsImportPath)
-	tsRunner := filepath.Join(tempDir, "runner.ts")
-	if err := os.WriteFile(tsRunner, []byte(runnerContent), 0o644); err != nil {
-		t.Fatalf("failed to write runner.ts: %v", err)
+	workspace := tsworkspace.NewOwner(tempDir, "")
+	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, "runner.ts", runnerContent); phase.Failed() {
+		t.Fatalf("failed to write runner.ts: %v", phase.Error)
 	}
-	return tsRunner
+	return filepath.Join(tempDir, "runner.ts")
 }
 
 // RunTypeScriptRunner executes the generated "runner.ts" script using `bun run`.
@@ -549,25 +550,18 @@ func WriteTypeScriptRunner(t *testing.T, parentModulePath, testDir, tempDir stri
 func RunTypeScriptRunner(t *testing.T, workspaceDir, tempDir, tsRunner string) string {
 	t.Helper()
 
-	// Check if bun is available
-	if _, err := exec.LookPath("bun"); err != nil {
-		t.Fatalf("bun is required but not found in PATH. Please install bun: https://bun.sh")
-	}
-
-	cmd := exec.Command("bun", "run", tsRunner)
-	cmd.Dir = tempDir
-
-	var outBuf, errBuf bytes.Buffer
-	cmd.Stdout = io.MultiWriter(&outBuf, os.Stdout) // Changed to os.Stdout for easier debugging
-	cmd.Stderr = io.MultiWriter(&errBuf, os.Stderr) // Keep stderr going to test output
-
 	depsCopyMutex.Lock()
 	defer depsCopyMutex.Unlock()
 
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("bun run failed: %v\nstdout: %s\nstderr: %s", err, outBuf.String(), errBuf.String())
+	workspace := tsworkspace.NewOwner(tempDir, workspaceDir)
+	phase := workspace.RunTool(context.Background(), tsworkspace.PhaseRuntime, tempDir, "bun", "run", tsRunner)
+	if phase.Output != "" {
+		fmt.Print(phase.Output)
 	}
-	return outBuf.String()
+	if phase.Failed() {
+		t.Fatalf("bun run failed: %v\noutput: %s", phase.Error, phase.Output)
+	}
+	return phase.Output
 }
 
 // copyFile copies a file from a source path (src) to a destination path (dst).
@@ -694,11 +688,11 @@ func WriteTypeCheckConfig(t *testing.T, parentModulePath, workspaceDir, testDir 
 		t.Fatalf("failed to marshal tsconfig to JSON: %v", err)
 	}
 
-	tsconfigPath := filepath.Join(testDir, "tsconfig.json")
-	if err := os.WriteFile(tsconfigPath, append(tsconfigContentBytes, '\n'), 0o644); err != nil {
-		t.Fatalf("failed to write tsconfig.json to %s: %v", tsconfigPath, err)
+	workspace := tsworkspace.NewOwner(testDir, workspaceDir)
+	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, "tsconfig.json", string(append(tsconfigContentBytes, '\n'))); phase.Failed() {
+		t.Fatalf("failed to write tsconfig.json to %s: %v", testDir, phase.Error)
 	}
-	return tsconfigPath
+	return filepath.Join(testDir, "tsconfig.json")
 }
 
 // RunTypeScriptTypeCheck executes tsgo to perform type checking
@@ -719,17 +713,13 @@ func WriteTypeCheckConfig(t *testing.T, parentModulePath, workspaceDir, testDir 
 func RunTypeScriptTypeCheck(t *testing.T, workspaceDir, testDir string, tsconfigPath string) {
 	t.Helper()
 	t.Run("TypeCheck", func(t *testing.T) {
-		// tsconfigPath is already testDir/tsconfig.json
-		nodeBinDir := filepath.Join(workspaceDir, "node_modules", ".bin")
-		cmd := exec.Command(filepath.Join(nodeBinDir, "tsgo"), "--project", filepath.Base(tsconfigPath)) // Use "tsconfig.json"
-		cmd.Dir = testDir                                                                                // Run tsgo from the test directory where tsconfig.json is located
-
 		depsCopyMutex.Lock()
 		defer depsCopyMutex.Unlock()
 
-		output, err := cmd.CombinedOutput() // Capture both stdout and stderr
-		if err != nil {
-			t.Fatalf("TypeScript type checking failed: %v\noutput:\n%s", err, string(output))
+		workspace := tsworkspace.NewOwner(testDir, workspaceDir)
+		phase := workspace.RunTool(context.Background(), tsworkspace.PhaseTypeCheck, testDir, "tsgo", "--project", filepath.Base(tsconfigPath))
+		if phase.Failed() {
+			t.Fatalf("TypeScript type checking failed: %v\noutput:\n%s", phase.Error, phase.Output)
 		}
 	})
 }
@@ -813,6 +803,7 @@ func RunGoScriptTestDir(t *testing.T, workspaceDir, testDir string) {
 		t.Fatalf("failed to calculate relative path from tempDir (%s) to tests/deps (%s): %v", tempDir, depsPath, err)
 	}
 	relDepsPath = filepath.ToSlash(relDepsPath) // Ensure forward slashes for tsconfig
+	workspace := tsworkspace.NewOwner(tempDir, workspaceDir)
 
 	// tsconfig.json for the runner execution in tempDir
 	runnerTsConfig := maps.Clone(baseTsConfig)
@@ -823,19 +814,12 @@ func RunGoScriptTestDir(t *testing.T, workspaceDir, testDir string) {
 	}
 	runnerTsConfig["compilerOptions"] = runnerCompilerOptions
 
-	runnerTsConfigContentBytes, err := json.MarshalIndent(runnerTsConfig, "", "  ")
-	if err != nil {
-		t.Fatalf("failed to marshal runner tsconfig to JSON: %v", err)
-	}
-	runnerTsConfigPath := filepath.Join(tempDir, "tsconfig.json")
-	if err := os.WriteFile(runnerTsConfigPath, append(runnerTsConfigContentBytes, '\n'), 0o644); err != nil {
-		t.Fatalf("failed to write runner tsconfig.json to temp dir: %v", err)
+	if phase := workspace.WriteJSON(tsworkspace.PhaseWorkspace, "tsconfig.json", runnerTsConfig); phase.Failed() {
+		t.Fatalf("failed to write runner tsconfig.json to temp dir: %v", phase.Error)
 	}
 
-	packageJsonContent := `{"type": "module"}` + "\n"
-	packageJsonPath := filepath.Join(tempDir, "package.json")
-	if err := os.WriteFile(packageJsonPath, []byte(packageJsonContent), 0o644); err != nil {
-		t.Fatalf("failed to write package.json to temp dir: %v", err)
+	if phase := workspace.EnsurePackageJSON(); phase.Failed() {
+		t.Fatalf("failed to write package.json to temp dir: %v", phase.Error)
 	}
 
 	outputDir := filepath.Join(tempDir, "output")

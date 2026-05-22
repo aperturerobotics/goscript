@@ -52,6 +52,13 @@ func TestRunnerRunsOrdinaryPackageTest(t *testing.T) {
 	if result.Packages[0].Tests[0].Name != "TestAdd" {
 		t.Fatalf("unexpected test discovery: %#v", result.Packages[0].Tests)
 	}
+	if result.Packages[0].Phases.Workspace != PhaseStatusPass ||
+		result.Packages[0].Phases.Compile != PhaseStatusPass ||
+		result.Packages[0].Phases.Emit != PhaseStatusPass ||
+		result.Packages[0].Phases.TypeCheck != PhaseStatusPass ||
+		result.Packages[0].Phases.Runtime != PhaseStatusPass {
+		t.Fatalf("unexpected phase status: %#v", result.Packages[0].Phases)
+	}
 }
 
 func TestRunnerRunsAsyncSubtest(t *testing.T) {
