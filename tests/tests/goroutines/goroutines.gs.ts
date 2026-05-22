@@ -48,9 +48,9 @@ export class Message {
 	)
 }
 
-export let messages: $.Channel<Message> | null = $.makeChannel<Message>(0, $.markAsStructValue(new Message()), "both")
-
 export const totalMessages: number = 8
+
+export let messages: $.Channel<Message> | null = $.makeChannel<Message>(0, $.markAsStructValue(new Message()), "both")
 
 export async function worker(id: number): Promise<void> {
 	// Send worker starting message

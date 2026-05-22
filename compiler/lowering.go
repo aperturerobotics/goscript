@@ -206,29 +206,42 @@ func (o *LoweringOwner) lowerFile(
 		localAliases:  localAliases,
 		tempNames:     newTempNameOwner(),
 		topLevel:      true,
-	}
-	var diagnostics []Diagnostic
-	for _, decl := range file.Decls {
-		loweredDecls, declDiagnostics := o.lowerDecl(ctx, decl)
-		diagnostics = append(diagnostics, declDiagnostics...)
-		for _, decl := range loweredDecls {
-			loweredFile.decls = append(loweredFile.decls, decl)
-			if decl.indexExport != "" {
-				loweredFile.exports = append(loweredFile.exports, decl.indexExport)
-			}
-			if decl.typeIndexExport != "" {
-				loweredFile.typeExports = append(loweredFile.typeExports, decl.typeIndexExport)
-			}
-			if decl.function != nil && decl.function.indexExported && decl.function.name != "main" {
-				loweredFile.exports = append(loweredFile.exports, decl.function.name)
-			}
-			if decl.structType != nil && decl.structType.indexExported {
-				loweredFile.exports = append(loweredFile.exports, decl.structType.name)
+		}
+		var diagnostics []Diagnostic
+		appendDecls := func(decls []loweredDecl) {
+			for _, decl := range decls {
+				loweredFile.decls = append(loweredFile.decls, decl)
+				if decl.indexExport != "" {
+					loweredFile.exports = append(loweredFile.exports, decl.indexExport)
+				}
+				if decl.typeIndexExport != "" {
+					loweredFile.typeExports = append(loweredFile.typeExports, decl.typeIndexExport)
+				}
+				if decl.function != nil && decl.function.indexExported && decl.function.name != "main" {
+					loweredFile.exports = append(loweredFile.exports, decl.function.name)
+				}
+				if decl.structType != nil && decl.structType.indexExported {
+					loweredFile.exports = append(loweredFile.exports, decl.structType.name)
+				}
 			}
 		}
+		lowerDecl := func(decl ast.Decl) {
+			loweredDecls, declDiagnostics := o.lowerDecl(ctx, decl)
+			diagnostics = append(diagnostics, declDiagnostics...)
+			appendDecls(loweredDecls)
+		}
+		for _, decl := range file.Decls {
+			if isConstGenDecl(decl) {
+				lowerDecl(decl)
+			}
+		}
+		for _, decl := range file.Decls {
+			if !isConstGenDecl(decl) {
+				lowerDecl(decl)
+			}
+		}
+		return loweredFile, diagnostics
 	}
-	return loweredFile, diagnostics
-}
 
 func (o *LoweringOwner) addGeneratedTypeImports(
 	model *SemanticModel,
@@ -661,6 +674,11 @@ func (o *LoweringOwner) lowerDecl(ctx lowerFileContext, decl ast.Decl) ([]lowere
 	default:
 		return nil, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported declaration kind")}
 	}
+}
+
+func isConstGenDecl(decl ast.Decl) bool {
+	genDecl, ok := decl.(*ast.GenDecl)
+	return ok && genDecl.Tok == token.CONST
 }
 
 func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([]loweredDecl, []Diagnostic) {
