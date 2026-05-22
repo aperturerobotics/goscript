@@ -30,7 +30,7 @@ export function skipLoop(v: number): number {
 
 export function mixedForwardBackward(limit: number): number {
 	let total = 0
-	__goscriptLoop328: while (total < limit) {
+	__goscriptLoop0: while (total < limit) {
 		total++
 		let __goscriptGotoState0 = "__entry"
 		__goscriptGotoLoop0: while (true) {
@@ -46,7 +46,7 @@ export function mixedForwardBackward(limit: number): number {
 				case "checkAndLoop":
 				{
 					if (total >= limit) {
-						continue __goscriptLoop328
+						continue __goscriptLoop0
 					}
 					__goscriptGotoState0 = "skipVisit"
 					continue __goscriptGotoLoop0
@@ -76,7 +76,7 @@ export function mixedForwardBackward(limit: number): number {
 			}
 			break
 		}
-		break __goscriptLoop328
+		break __goscriptLoop0
 	}
 	return total
 }
@@ -94,7 +94,7 @@ export function labelBeforeShortDecl(v: number): number {
 
 export function mixedForwardBackwardDecl(limit: number): number {
 	let total = 0
-	__goscriptLoop751: while (total < limit) {
+	__goscriptLoop1: while (total < limit) {
 		let __goscriptGotoState1 = "__entry"
 		__goscriptGotoLoop1: while (true) {
 			switch (__goscriptGotoState1) {
@@ -109,7 +109,7 @@ export function mixedForwardBackwardDecl(limit: number): number {
 				case "check":
 				{
 					if (total >= limit) {
-						continue __goscriptLoop751
+						continue __goscriptLoop1
 					}
 					__goscriptGotoState1 = "skip"
 					continue __goscriptGotoLoop1

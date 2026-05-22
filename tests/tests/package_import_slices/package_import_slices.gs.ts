@@ -14,17 +14,17 @@ export async function main(): globalThis.Promise<void> {
 
 	// This should trigger the interface range issue
 	// slices.All returns an iterator interface that can be ranged over
-	let __goscriptRangeReturn3114422 = false
+	let __goscriptRangeReturn0 = false
 	;(() => {
 		slices.All(s)!((i, v) => {
 			$.println("index:", i, "value:", v)
 			return true
 		})
 	})()
-	if (__goscriptRangeReturn3114422) {
+	if (__goscriptRangeReturn0) {
 		return
 	}
-	let __goscriptRangeReturn3114496 = false
+	let __goscriptRangeReturn1 = false
 	;(() => {
 		slices.Backward(s)!((i, v) => {
 			if (i < 3) {
@@ -34,7 +34,7 @@ export async function main(): globalThis.Promise<void> {
 			return true
 		})
 	})()
-	if (__goscriptRangeReturn3114496) {
+	if (__goscriptRangeReturn1) {
 		return
 	}
 

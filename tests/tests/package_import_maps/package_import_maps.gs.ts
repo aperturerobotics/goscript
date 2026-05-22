@@ -31,7 +31,7 @@ export async function main(): globalThis.Promise<void> {
 	let results: $.Slice<string> = null as $.Slice<string>
 
 	// Test maps.All which returns an iterator function (this tests the maps package import)
-	let __goscriptRangeReturn3114832 = false
+	let __goscriptRangeReturn0 = false
 	;(() => {
 		maps.All(m)!((k, v) => {
 			// Simple assignment that should trigger the error
@@ -41,12 +41,12 @@ export async function main(): globalThis.Promise<void> {
 			return true
 		})
 	})()
-	if (__goscriptRangeReturn3114832) {
+	if (__goscriptRangeReturn0) {
 		return
 	}
 
 	// Also test simpleIterator to ensure our local iterator works
-	let __goscriptRangeReturn3115081 = false
+	let __goscriptRangeReturn1 = false
 	;(() => {
 		simpleIterator(m)!((k, v) => {
 			let [x, y] = getValue()
@@ -55,7 +55,7 @@ export async function main(): globalThis.Promise<void> {
 			return true
 		})
 	})()
-	if (__goscriptRangeReturn3115081) {
+	if (__goscriptRangeReturn1) {
 		return
 	}
 

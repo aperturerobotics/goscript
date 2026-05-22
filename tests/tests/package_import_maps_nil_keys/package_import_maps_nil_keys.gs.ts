@@ -10,14 +10,14 @@ import * as iter from "@goscript/iter/index.js"
 export async function main(): globalThis.Promise<void> {
 	let m: Map<string, number> | null = null as Map<string, number> | null
 	let count = 0
-	let __goscriptRangeReturn3062395 = false
+	let __goscriptRangeReturn0 = false
 	;(() => {
 		maps.Keys(m)!((__goscriptRange0_0) => {
 			count++
 			return true
 		})
 	})()
-	if (__goscriptRangeReturn3062395) {
+	if (__goscriptRangeReturn0) {
 		return
 	}
 	$.println("keys:", count)
