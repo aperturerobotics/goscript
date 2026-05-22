@@ -4033,6 +4033,16 @@ func (o *LoweringOwner) lowerEqualityOperands(ctx lowerFileContext, expr *ast.Bi
 		left = o.lowerValueForTarget(ctx, expr.X, rightType, left)
 		right = o.lowerValueForTarget(ctx, expr.Y, leftType, right)
 	}
+	if isStringType(leftType) && isStringType(rightType) {
+		leftLiteral := isStringLiteralExpr(expr.X)
+		rightLiteral := isStringLiteralExpr(expr.Y)
+		if leftLiteral && !rightLiteral {
+			right = "(" + right + " as string)"
+		}
+		if rightLiteral && !leftLiteral {
+			left = "(" + left + " as string)"
+		}
+	}
 	if isInterfaceType(leftType) && !isInterfaceType(rightType) {
 		right = o.lowerValueForTargetTypes(ctx, leftType, rightType, right, false)
 	}
@@ -4156,6 +4166,11 @@ func lowerBasicLit(lit *ast.BasicLit) string {
 		return "0o" + digits
 	}
 	return lit.Value
+}
+
+func isStringLiteralExpr(expr ast.Expr) bool {
+	lit, ok := unwrapParenExpr(expr).(*ast.BasicLit)
+	return ok && lit.Kind == token.STRING
 }
 
 func isLegacyOctalLiteral(value string) bool {
