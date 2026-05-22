@@ -21,6 +21,7 @@ func main() {
 	// day, month, etc.
 	println("day", setTime.Day())
 	println("month", setTime.Month())
+	println("january", time.January)
 	println("year", setTime.Year())
 	println("hour", setTime.Hour())
 	println("minute", setTime.Minute())

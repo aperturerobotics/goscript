@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
 
-import { AsType, Join } from './errors.js'
+import { AsType, Errorf, Is, Join, Wrap, Wrapf } from './errors.js'
 
 class DNSError {
   public readonly IsNotFound = true
@@ -56,5 +56,27 @@ describe('errors.AsType', () => {
 
     expect(ok).toBe(false)
     expect(matched).toBe(null)
+  })
+})
+
+describe('errors github.com/pkg/errors compatibility helpers', () => {
+  it('formats new errors', () => {
+    expect(Errorf('bad %s: %d', 'value', 42)?.Error()).toBe('bad value: 42')
+  })
+
+  it('wraps and unwraps errors', () => {
+    const base = $.newError('root')
+    const wrapped = Wrap(base, 'context')
+
+    expect(wrapped?.Error()).toBe('context: root')
+    expect(Is(wrapped, base)).toBe(true)
+  })
+
+  it('wraps formatted context and preserves nil', () => {
+    const base = $.newError('root')
+
+    expect(Wrapf(base, 'context %d', 7)?.Error()).toBe('context 7: root')
+    expect(Wrap(null, 'context')).toBe(null)
+    expect(Wrapf(null, 'context %d', 7)).toBe(null)
   })
 })

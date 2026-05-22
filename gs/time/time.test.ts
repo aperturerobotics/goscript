@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   Duration_String,
+  January,
   Millisecond,
   NewTicker,
   NewTimer,
@@ -21,6 +22,10 @@ describe('time.Duration_String', () => {
 describe('time constants and timers', () => {
   it('exports RFC3339Nano', () => {
     expect(RFC3339Nano).toBe('2006-01-02T15:04:05.999999999Z07:00')
+  })
+
+  it('exports month constants directly', () => {
+    expect(January).toBe(1)
   })
 
   it('delivers NewTimer values on C', async () => {

@@ -976,7 +976,18 @@ export async function Sleep(d: Duration): Promise<void> {
 }
 
 // Export month constants
+export const January = Month.January
+export const February = Month.February
+export const March = Month.March
+export const April = Month.April
 export const May = Month.May
+export const June = Month.June
+export const July = Month.July
+export const August = Month.August
+export const September = Month.September
+export const October = Month.October
+export const November = Month.November
+export const December = Month.December
 
 // Time layout constants (matching Go's time package)
 export const DateTime = '2006-01-02 15:04:05'

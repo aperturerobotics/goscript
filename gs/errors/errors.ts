@@ -6,6 +6,57 @@ export function New(text: string): $.GoError {
   return $.newError(text)
 }
 
+export function Errorf(format: string, ...args: any[]): $.GoError {
+  return New(formatText(format, args))
+}
+
+export function Wrap(err: $.GoError, message: string): $.GoError {
+  if (err === null) {
+    return null
+  }
+  return wrapError(err, message)
+}
+
+export function Wrapf(
+  err: $.GoError,
+  format: string,
+  ...args: any[]
+): $.GoError {
+  if (err === null) {
+    return null
+  }
+  return wrapError(err, formatText(format, args))
+}
+
+function wrapError(err: Exclude<$.GoError, null>, message: string): $.GoError {
+  const wrapped = $.newError(`${message}: ${err.Error()}`)
+  ;(wrapped as any).Unwrap = function (): $.GoError {
+    return err
+  }
+  return wrapped
+}
+
+function formatText(format: string, args: any[]): string {
+  let argIndex = 0
+  return format.replace(/%[sdqv%]/g, (match) => {
+    if (match === '%%') {
+      return '%'
+    }
+    if (argIndex >= args.length) {
+      return match
+    }
+    const arg = args[argIndex++]
+    switch (match) {
+      case '%d':
+        return String(Number(arg))
+      case '%q':
+        return JSON.stringify(String(arg))
+      default:
+        return String(arg)
+    }
+  })
+}
+
 // ErrUnsupported indicates that a requested operation cannot be performed,
 // because it is unsupported. For example, a call to os.Link when using a
 // file system that does not support hard links.

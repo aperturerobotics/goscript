@@ -23,6 +23,7 @@ export async function main(): globalThis.Promise<void> {
 	// day, month, etc.
 	$.println("day", $.markAsStructValue($.cloneStructValue(setTime)).Day())
 	$.println("month", $.markAsStructValue($.cloneStructValue(setTime)).Month())
+	$.println("january", time.January)
 	$.println("year", $.markAsStructValue($.cloneStructValue(setTime)).Year())
 	$.println("hour", $.markAsStructValue($.cloneStructValue(setTime)).Hour())
 	$.println("minute", $.markAsStructValue($.cloneStructValue(setTime)).Minute())
@@ -60,7 +61,6 @@ export async function main(): globalThis.Promise<void> {
 	let [, badParseErr] = time.Parse(time.RFC3339, "not-a-time")
 	$.println("bad time err", badParseErr != null)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()
