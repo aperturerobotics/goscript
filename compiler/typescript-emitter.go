@@ -135,6 +135,7 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 	if len(file.imports) != 0 {
 		b.WriteString("\n")
 	}
+	hasMain := false
 	wroteDecl := false
 	writeSeparator := func() {
 		if wroteDecl {
@@ -151,12 +152,8 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 		if decl.function != nil {
 			writeSeparator()
 			renderFunction(&b, decl.function)
-			if pkg.name == "main" && decl.function.name == "main" {
-				b.WriteString("\n\nif (")
-				b.WriteString(o.runtimeOwner.QualifiedHelper(RuntimeHelperIsMainScript))
-				b.WriteString("(import.meta)) {\n")
-				b.WriteString("\tawait main()\n")
-				b.WriteString("}\n")
+			if decl.function.name == "main" {
+				hasMain = true
 			}
 			return
 		}
@@ -179,6 +176,14 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 			continue
 		}
 		writeDecl(decl)
+	}
+	if pkg.name == "main" && hasMain {
+		writeSeparator()
+		b.WriteString("if (")
+		b.WriteString(o.runtimeOwner.QualifiedHelper(RuntimeHelperIsMainScript))
+		b.WriteString("(import.meta)) {\n")
+		b.WriteString("\tawait main()\n")
+		b.WriteString("}\n")
 	}
 	return b.String()
 }

@@ -216,42 +216,52 @@ func (o *LoweringOwner) lowerFile(
 		localAliases:  localAliases,
 		tempNames:     newTempNameOwner(),
 		topLevel:      true,
-		}
-		var diagnostics []Diagnostic
-		appendDecls := func(decls []loweredDecl) {
-			for _, decl := range decls {
-				loweredFile.decls = append(loweredFile.decls, decl)
-				if decl.indexExport != "" {
-					loweredFile.exports = append(loweredFile.exports, decl.indexExport)
-				}
-				if decl.typeIndexExport != "" {
-					loweredFile.typeExports = append(loweredFile.typeExports, decl.typeIndexExport)
-				}
-				if decl.function != nil && decl.function.indexExported && decl.function.name != "main" {
-					loweredFile.exports = append(loweredFile.exports, decl.function.name)
-				}
-				if decl.structType != nil && decl.structType.indexExported {
-					loweredFile.exports = append(loweredFile.exports, decl.structType.name)
-				}
-			}
-		}
-		lowerDecl := func(decl ast.Decl) {
-			loweredDecls, declDiagnostics := o.lowerDecl(ctx, decl)
-			diagnostics = append(diagnostics, declDiagnostics...)
-			appendDecls(loweredDecls)
-		}
-		for _, decl := range file.Decls {
-			if isConstGenDecl(decl) {
-				lowerDecl(decl)
-			}
-		}
-		for _, decl := range file.Decls {
-			if !isConstGenDecl(decl) {
-				lowerDecl(decl)
-			}
-		}
-		return loweredFile, diagnostics
 	}
+	var diagnostics []Diagnostic
+	appendDecls := func(decls []loweredDecl) {
+		for _, decl := range decls {
+			loweredFile.decls = append(loweredFile.decls, decl)
+			if decl.indexExport != "" {
+				loweredFile.exports = append(loweredFile.exports, decl.indexExport)
+			}
+			if decl.typeIndexExport != "" {
+				loweredFile.typeExports = append(loweredFile.typeExports, decl.typeIndexExport)
+			}
+			if decl.function != nil && decl.function.indexExported && decl.function.name != "main" {
+				loweredFile.exports = append(loweredFile.exports, decl.function.name)
+			}
+			if decl.structType != nil && decl.structType.indexExported {
+				loweredFile.exports = append(loweredFile.exports, decl.structType.name)
+			}
+		}
+	}
+	lowerDecl := func(decl ast.Decl) {
+		loweredDecls, declDiagnostics := o.lowerDecl(ctx, decl)
+		diagnostics = append(diagnostics, declDiagnostics...)
+		appendDecls(loweredDecls)
+	}
+	for _, decl := range file.Decls {
+		if isConstGenDecl(decl) {
+			lowerDecl(decl)
+		}
+	}
+	for _, decl := range file.Decls {
+		if !isConstGenDecl(decl) {
+			lowerDecl(decl)
+		}
+	}
+	for _, decl := range loweredFile.decls {
+		if decl.function == nil || !decl.function.init {
+			continue
+		}
+		call := decl.function.name + "()"
+		if decl.function.async {
+			call = "await " + call
+		}
+		loweredFile.decls = append(loweredFile.decls, loweredDecl{code: call})
+	}
+	return loweredFile, diagnostics
+}
 
 func (o *LoweringOwner) addGeneratedTypeImports(
 	model *SemanticModel,
@@ -1284,8 +1294,11 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 	deferState := &loweredDeferState{}
 	name := safeIdentifier(decl.Name.Name)
 	blankName := decl.Name.Name == "_"
+	initFunc := ctx.topLevel && decl.Name.Name == "init" && decl.Recv == nil
 	if blankName {
 		name = ctx.tempName("BlankFunc")
+	} else if initFunc {
+		name = ctx.tempName("Init")
 	}
 	runtimeName := ""
 	if decl.Recv != nil && !blankName {
@@ -1293,8 +1306,9 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		runtimeName = decl.Name.Name
 	}
 	lowered := &loweredFunction{
-		exported:      ctx.topLevel && !blankName,
-		indexExported: ctx.topLevel && !blankName && (ast.IsExported(decl.Name.Name) || decl.Name.Name == "main"),
+		exported:      ctx.topLevel && !blankName && !initFunc,
+		indexExported: ctx.topLevel && !blankName && !initFunc && (ast.IsExported(decl.Name.Name) || decl.Name.Name == "main"),
+		init:          initFunc,
 		async:         async,
 		name:          name,
 		runtimeName:   runtimeName,

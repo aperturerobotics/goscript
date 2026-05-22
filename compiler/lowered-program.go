@@ -76,6 +76,7 @@ type loweredStructField struct {
 type loweredFunction struct {
 	exported        bool
 	indexExported   bool
+	init            bool
 	async           bool
 	name            string
 	runtimeName     string
