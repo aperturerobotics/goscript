@@ -74,6 +74,9 @@ export async function main(): globalThis.Promise<void> {
 	let nilSrc: Map<string, number> | null = null
 	maps.Copy(dst, nilSrc)
 	$.println("Copy result:", $.mapGet(dst, "base", 0)[0], $.mapGet(dst, "copied", 0)[0], $.len(dst))
+	let cloned: Map<string, number> | null = maps.Clone(dst)
+	let nilMap: Map<string, number> | null = null
+	$.println("Clone result:", $.mapGet(cloned, "base", 0)[0], $.mapGet(cloned, "copied", 0)[0], maps.Clone(nilMap) == null)
 
 	$.println("test finished")
 }

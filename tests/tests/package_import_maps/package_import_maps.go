@@ -60,6 +60,9 @@ func main() {
 	var nilSrc map[string]int
 	maps.Copy(dst, nilSrc)
 	println("Copy result:", dst["base"], dst["copied"], len(dst))
+	cloned := maps.Clone(dst)
+	var nilMap map[string]int
+	println("Clone result:", cloned["base"], cloned["copied"], maps.Clone(nilMap) == nil)
 
 	println("test finished")
 }

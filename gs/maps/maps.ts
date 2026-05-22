@@ -55,12 +55,14 @@ export function clone<K extends $.Comparable, V>(
 
 // Clone returns a copy of m.  This is a shallow clone:
 // the new keys and values are set using ordinary assignment.
-export function Clone<K extends $.Comparable, V>(m: Map<K, V>): Map<K, V> {
+export function Clone<K extends $.Comparable, V>(
+  m: Map<K, V> | null,
+): Map<K, V> | null {
   // Preserve nil in case it matters.
   if (m == null) {
-    return null as unknown as Map<K, V>
+    return null
   }
-  return clone(m)!
+  return clone(m)
 }
 
 // Copy copies all key/value pairs in src adding them to dst.
