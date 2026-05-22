@@ -900,7 +900,11 @@ func (o *LoweringOwner) lowerTypeSpec(ctx lowerFileContext, spec *ast.TypeSpec) 
 		return loweredDecl{}, nil
 	}
 	if alias, ok := obj.Type().(*types.Alias); ok {
-		code := "type " + obj.Name() + " = " + o.tsTypeFor(ctx, alias.Rhs())
+		loweredType := o.tsTypeFor(ctx, alias.Rhs())
+		if signature, ok := types.Unalias(alias.Rhs()).Underlying().(*types.Signature); ok {
+			loweredType = o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+		}
+		code := "type " + obj.Name() + " = " + loweredType
 		typeIndexExport := ""
 		if ctx.topLevel {
 			code = "export " + code
