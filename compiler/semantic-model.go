@@ -860,6 +860,16 @@ func callUsesFunctionValue(pkg *packages.Package, expr ast.Expr) bool {
 			return false
 		}
 		return signatureForType(selection.Type()) != nil
+	case *ast.IndexExpr:
+		if signatureForType(pkg.TypesInfo.TypeOf(typed.X)) != nil {
+			return false
+		}
+		return true
+	case *ast.IndexListExpr:
+		if signatureForType(pkg.TypesInfo.TypeOf(typed.X)) != nil {
+			return false
+		}
+		return true
 	default:
 		return false
 	}

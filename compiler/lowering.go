@@ -7650,8 +7650,14 @@ func (o *LoweringOwner) callNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool 
 	for {
 		switch typed := fun.(type) {
 		case *ast.IndexExpr:
+			if signatureForType(ctx.semPkg.source.TypesInfo.TypeOf(typed.X)) == nil {
+				break
+			}
 			fun = typed.X
 		case *ast.IndexListExpr:
+			if signatureForType(ctx.semPkg.source.TypesInfo.TypeOf(typed.X)) == nil {
+				break
+			}
 			fun = typed.X
 		default:
 			if ctx.semPkg == nil || ctx.semPkg.source == nil {
@@ -7662,6 +7668,13 @@ func (o *LoweringOwner) callNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool 
 				callUsesFunctionValue(ctx.semPkg.source, fun) ||
 				(ctx.asyncFunction && callUsesFunctionIdentifier(ctx.semPkg.source, fun))
 		}
+		if ctx.semPkg == nil || ctx.semPkg.source == nil {
+			return false
+		}
+		return o.functionAsync(ctx, calledFunction(ctx.semPkg.source, fun)) ||
+			o.overrideCallNeedsAwait(ctx, fun) ||
+			callUsesFunctionValue(ctx.semPkg.source, fun) ||
+			(ctx.asyncFunction && callUsesFunctionIdentifier(ctx.semPkg.source, fun))
 	}
 }
 
