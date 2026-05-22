@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"slices"
 	"strconv"
+	"strings"
 )
 
 type Person struct {
@@ -22,6 +23,12 @@ func main() {
 		results = append(results, "Marshal error: "+err.Error())
 	} else {
 		results = append(results, "Marshal: "+string(b))
+	}
+	indented, err := json.MarshalIndent(p, "", "  ")
+	if err != nil {
+		results = append(results, "MarshalIndent error: "+err.Error())
+	} else {
+		results = append(results, "MarshalIndent: "+strings.ReplaceAll(string(indented), "\n", "|"))
 	}
 
 	// Unmarshal into a struct

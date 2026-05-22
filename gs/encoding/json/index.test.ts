@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
 
-import { Marshal, Unmarshal } from './index.js'
+import { Marshal, MarshalIndent, Unmarshal } from './index.js'
 
 class Person {
   public _fields = {
@@ -36,6 +36,20 @@ describe('encoding/json override', () => {
     expect(err).toBeNull()
     expect($.bytesToString(data)).toBe(
       '{"name":"Alice","age":30,"active":true}',
+    )
+  })
+
+  it('marshals indented JSON with a line prefix', () => {
+    const person = new Person()
+    person._fields.Name.value = 'Alice'
+    person._fields.Age.value = 30
+    person._fields.Active.value = true
+
+    const [data, err] = MarshalIndent(person, '> ', '  ')
+
+    expect(err).toBeNull()
+    expect($.bytesToString(data)).toBe(
+      '{\n>   "name": "Alice",\n>   "age": 30,\n>   "active": true\n> }',
     )
   })
 

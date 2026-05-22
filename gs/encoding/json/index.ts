@@ -8,6 +8,30 @@ export function Marshal(v: unknown): [$.Slice<number>, $.GoError] {
   }
 }
 
+export function MarshalIndent(
+  v: unknown,
+  prefix: string,
+  indent: string,
+): [$.Slice<number>, $.GoError] {
+  try {
+    const text = JSON.stringify(marshalValue(v), null, indent)
+    if (prefix === '') {
+      return [$.stringToBytes(text), null]
+    }
+    return [
+      $.stringToBytes(
+        text
+          .split('\n')
+          .map((line, idx) => (idx === 0 ? line : prefix + line))
+          .join('\n'),
+      ),
+      null,
+    ]
+  } catch (err) {
+    return [null, goError(err)]
+  }
+}
+
 export function Unmarshal(data: $.Slice<number>, v: unknown): $.GoError {
   try {
     assignDecodedValue(v, JSON.parse($.bytesToString(data)))

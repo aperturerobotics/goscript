@@ -9,6 +9,8 @@ import * as slices from "@goscript/slices/index.js"
 
 import * as strconv from "@goscript/strconv/index.js"
 
+import * as strings from "@goscript/strings/index.js"
+
 export class Person {
 	public get Name(): string {
 		return this._fields.Name.value
@@ -75,6 +77,14 @@ export async function main(): globalThis.Promise<void> {
 	} else {
 		results = $.append(results, "Marshal: " + $.bytesToString(b))
 	}
+	let __goscriptTuple0 = json.MarshalIndent($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"), "", "  ")
+	let indented = __goscriptTuple0[0]
+	err = __goscriptTuple0[1]
+	if (err != null) {
+		results = $.append(results, "MarshalIndent error: " + $.pointerValue<Exclude<$.GoError, null>>(err).Error())
+	} else {
+		results = $.append(results, "MarshalIndent: " + strings.ReplaceAll($.bytesToString(indented), "\n", "|"))
+	}
 
 	// Unmarshal into a struct
 	let q: $.VarRef<Person> = $.varRef($.markAsStructValue(new Person()))
@@ -111,7 +121,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("encoding/json test finished")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()
