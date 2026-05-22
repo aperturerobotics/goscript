@@ -46,7 +46,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[{ name: "GetMyString", args: [], returns: [] }],
 		MyStruct,
 		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
@@ -91,10 +91,50 @@ export class setterStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.setterStruct",
-		new setterStruct(),
+		() => new setterStruct(),
 		[{ name: "get", args: [], returns: [] }, { name: "set", args: [], returns: [] }],
 		setterStruct,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+	)
+}
+
+export class digest {
+	public get writes(): number {
+		return this._fields.writes.value
+	}
+	public set writes(value: number) {
+		this._fields.writes.value = value
+	}
+
+	public _fields: {
+		writes: $.VarRef<number>
+	}
+
+	constructor(init?: Partial<{writes?: number}>) {
+		this._fields = {
+			writes: $.varRef(init?.writes ?? 0)
+		}
+	}
+
+	public clone(): digest {
+		const cloned = new digest()
+		cloned._fields = {
+			writes: $.varRef(this._fields.writes.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Write(p: $.Slice<number>): void {
+		let d: digest | $.VarRef<digest> | null = this
+		$.pointerValue<digest>(d).writes += $.len(p)
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.digest",
+		() => new digest(),
+		[{ name: "Write", args: [], returns: [] }],
+		digest,
+		{"writes": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 
@@ -107,8 +147,15 @@ export async function main(): globalThis.Promise<void> {
 	let setter: setterStruct | $.VarRef<setterStruct> | null = new setterStruct()
 	$.pointerValue<setterStruct>(setter).set(9)
 	$.println("reserved pointer method:", $.pointerValue<setterStruct>(setter).get())
-}
 
+	let d: digest | $.VarRef<digest> | null = new digest()
+	let pad = $.arrayToSlice<number>([1, 2, 3])
+	{
+		$.pointerValue<digest>(d).Write(pad)
+		let digest = $.arrayToSlice<number>([4])
+		$.println("shadowed type name after method call:", $.pointerValue<digest>(d).writes, $.len(digest))
+	}
+}
 
 if ($.isMainScript(import.meta)) {
 	await main()

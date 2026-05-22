@@ -1,2 +1,3 @@
 Method call on pointer (structPointer): Expected: hello world, Actual: hello world
 reserved pointer method: 9
+shadowed type name after method call: 3 1

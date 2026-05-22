@@ -5247,6 +5247,9 @@ func (o *LoweringOwner) lowerNilablePointerReceiverMethodCall(
 	if method == nil {
 		return "", nil, false
 	}
+	if !methodAllowsNilReceiver(ctx, method) {
+		return "", nil, false
+	}
 	signature, _ := method.Type().(*types.Signature)
 	if signature == nil || signature.Recv() == nil {
 		return "", nil, false
@@ -5262,6 +5265,75 @@ func (o *LoweringOwner) lowerNilablePointerReceiverMethodCall(
 	callArgs := append([]string{receiverExpr}, args...)
 	call := o.namedTypeExpr(ctx, receiver) + ".prototype." + selector.Sel.Name + ".call(" + strings.Join(callArgs, ", ") + ")"
 	return call, diagnostics, true
+}
+
+func methodAllowsNilReceiver(ctx lowerFileContext, method *types.Func) bool {
+	if method == nil || method.Pkg() == nil {
+		return false
+	}
+	semPkg := ctx.semPkg
+	if semPkg == nil || semPkg.pkgPath != method.Pkg().Path() {
+		if ctx.model == nil {
+			return false
+		}
+		semPkg = ctx.model.packages[method.Pkg().Path()]
+	}
+	if semPkg == nil || semPkg.source == nil {
+		return false
+	}
+	for _, file := range semPkg.source.Syntax {
+		for _, decl := range file.Decls {
+			fnDecl, ok := decl.(*ast.FuncDecl)
+			if !ok || fnDecl.Body == nil || semPkg.source.TypesInfo.Defs[fnDecl.Name] != method {
+				continue
+			}
+			if fnDecl.Recv == nil || len(fnDecl.Recv.List) == 0 || len(fnDecl.Recv.List[0].Names) == 0 {
+				return false
+			}
+			receiverName := fnDecl.Recv.List[0].Names[0].Name
+			checksNil := false
+			directDeref := false
+			ast.Inspect(fnDecl.Body, func(node ast.Node) bool {
+				if checksNil || directDeref {
+					return false
+				}
+				if _, ok := node.(*ast.FuncLit); ok {
+					return false
+				}
+				if star, ok := node.(*ast.StarExpr); ok && identName(star.X) == receiverName {
+					directDeref = true
+					return false
+				}
+				if selector, ok := node.(*ast.SelectorExpr); ok && identName(selector.X) == receiverName {
+					if selection := semPkg.source.TypesInfo.Selections[selector]; selection != nil &&
+						selection.Kind() == types.FieldVal {
+						directDeref = true
+						return false
+					}
+				}
+				binary, ok := node.(*ast.BinaryExpr)
+				if !ok || (binary.Op != token.EQL && binary.Op != token.NEQ) {
+					return true
+				}
+				if identName(binary.X) == receiverName && isNilExpr(binary.Y) ||
+					identName(binary.Y) == receiverName && isNilExpr(binary.X) {
+					checksNil = true
+					return false
+				}
+				return true
+			})
+			return checksNil || !directDeref
+		}
+	}
+	return false
+}
+
+func identName(expr ast.Expr) string {
+	ident, _ := ast.Unparen(expr).(*ast.Ident)
+	if ident == nil {
+		return ""
+	}
+	return ident.Name
 }
 
 func (o *LoweringOwner) lowerNamedReceiverForMethod(
