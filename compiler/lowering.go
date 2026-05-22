@@ -4212,7 +4212,7 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			return o.awaitCallIfNeeded(ctx, fun, call), diagnostics
 		}
 		selector, selectorDiagnostics := o.lowerSelectorExpr(ctx, fun)
-		if signature := genericFunctionSignature(ctx, fun); signature != nil && selectorUsesGeneratedPackage(ctx, fun) {
+		if signature := genericFunctionSignature(ctx, fun); signature != nil && !o.callUsesOverridePackage(ctx, fun) {
 			args = append([]string{o.inferredGenericTypeArgsExpr(ctx, signature, expr.Args)}, args...)
 		}
 		call := o.lowerCallableExpr(ctx, fun, selector) + "(" + strings.Join(args, ", ") + ")"
