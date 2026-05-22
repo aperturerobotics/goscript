@@ -690,12 +690,12 @@ func renderTypeSwitch(b *strings.Builder, stmt *loweredTypeSwitch, indent int) {
 	writeIndent(b, indent+1)
 	b.WriteString("switch (true) {\n")
 	for _, switchCase := range stmt.cases {
-		renderTypeSwitchCase(b, stmt.varName, switchCase, indent+2)
+		renderTypeSwitchCase(b, stmt.varName, stmt.varRef, switchCase, indent+2)
 	}
 	if len(stmt.defaultBody) != 0 {
 		writeIndent(b, indent+2)
 		b.WriteString("default:\n")
-		renderTypeSwitchInlineBody(b, stmt.varName, "__goscriptTypeSwitchValue", stmt.defaultBody, indent+3)
+		renderTypeSwitchInlineBody(b, stmt.varName, stmt.varRef || stmt.defaultRef, "any", "__goscriptTypeSwitchValue", stmt.defaultBody, indent+3)
 		writeIndent(b, indent+3)
 		b.WriteString("break\n")
 	}
@@ -705,14 +705,16 @@ func renderTypeSwitch(b *strings.Builder, stmt *loweredTypeSwitch, indent int) {
 	b.WriteString("}\n")
 }
 
-func renderTypeSwitchCase(b *strings.Builder, varName string, switchCase loweredTypeSwitchCase, indent int) {
+func renderTypeSwitchCase(b *strings.Builder, varName string, varRef bool, switchCase loweredTypeSwitchCase, indent int) {
 	if len(switchCase.types) == 0 {
 		return
 	}
 	writeIndent(b, indent)
 	b.WriteString("case ")
 	if len(switchCase.types) == 1 {
-		b.WriteString("$.typeAssert<any>(__goscriptTypeSwitchValue, ")
+		b.WriteString("$.typeAssert<")
+		b.WriteString(typeSwitchAssertType(switchCase, 0))
+		b.WriteString(">(__goscriptTypeSwitchValue, ")
 		b.WriteString(switchCase.types[0])
 		b.WriteString(").ok")
 	} else {
@@ -728,16 +730,33 @@ func renderTypeSwitchCase(b *strings.Builder, varName string, switchCase lowered
 	b.WriteString(":\n")
 	value := "__goscriptTypeSwitchValue"
 	if len(switchCase.types) == 1 {
-		value = "$.typeAssert<any>(__goscriptTypeSwitchValue, " + switchCase.types[0] + ").value"
+		value = "$.typeAssert<" + typeSwitchAssertType(switchCase, 0) +
+			">(__goscriptTypeSwitchValue, " + switchCase.types[0] + ").value"
 	}
-	renderTypeSwitchInlineBody(b, varName, value, switchCase.body, indent+1)
+	renderTypeSwitchInlineBody(b, varName, varRef || switchCase.varRef, typeSwitchCaseVariableType(switchCase), value, switchCase.body, indent+1)
 	writeIndent(b, indent+1)
 	b.WriteString("break\n")
+}
+
+func typeSwitchAssertType(switchCase loweredTypeSwitchCase, idx int) string {
+	if idx < len(switchCase.tsTypes) && switchCase.tsTypes[idx] != "" {
+		return switchCase.tsTypes[idx]
+	}
+	return "any"
+}
+
+func typeSwitchCaseVariableType(switchCase loweredTypeSwitchCase) string {
+	if len(switchCase.types) == 1 {
+		return typeSwitchAssertType(switchCase, 0)
+	}
+	return ""
 }
 
 func renderTypeSwitchInlineBody(
 	b *strings.Builder,
 	varName string,
+	varRef bool,
+	varType string,
 	value string,
 	body []loweredStmt,
 	indent int,
@@ -751,6 +770,24 @@ func renderTypeSwitchInlineBody(
 	writeIndent(b, indent+1)
 	b.WriteString("let ")
 	b.WriteString(varName)
+	if varRef {
+		if varType == "" {
+			varType = "any"
+		}
+		b.WriteString(": $.VarRef<")
+		b.WriteString(varType)
+		b.WriteString("> = $.varRef(")
+		b.WriteString(value)
+		b.WriteString(")\n")
+		renderStmts(b, body, indent+1)
+		writeIndent(b, indent)
+		b.WriteString("}\n")
+		return
+	}
+	if varType != "" {
+		b.WriteString(": ")
+		b.WriteString(varType)
+	}
 	b.WriteString(" = ")
 	b.WriteString(value)
 	b.WriteString("\n")

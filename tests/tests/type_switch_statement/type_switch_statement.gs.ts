@@ -46,21 +46,21 @@ export async function main(): Promise<void> {
 	{
 		const __goscriptTypeSwitchValue = i
 		switch (true) {
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
 				{
-					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
 					$.println("int", v)
 				}
 				break
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).ok:
+			case $.typeAssert<string>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).ok:
 				{
-					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).value
+					let v: string = $.typeAssert<string>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).value
 					$.println("string", v)
 				}
 				break
 			default:
 				{
-					let v = __goscriptTypeSwitchValue
+					let v: any = __goscriptTypeSwitchValue
 					$.println("unknown")
 				}
 				break
@@ -72,10 +72,10 @@ export async function main(): Promise<void> {
 	{
 		const __goscriptTypeSwitchValue = x
 		switch (true) {
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "bool" }).ok:
+			case $.typeAssert<boolean>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "bool" }).ok:
 				$.println("bool")
 				break
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
 				$.println("int")
 				break
 		}
@@ -106,9 +106,9 @@ export async function main(): Promise<void> {
 	{
 		const __goscriptTypeSwitchValue = z
 		switch (true) {
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
 				{
-					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
 					$.println("z is int", v)
 				}
 				break
@@ -141,7 +141,7 @@ export async function main(): Promise<void> {
 			switch (true) {
 				default:
 					{
-						let v = __goscriptTypeSwitchValue
+						let v: any = __goscriptTypeSwitchValue
 						$.println("shadow default", $.mustTypeAssert<number>(v, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					break
@@ -155,16 +155,16 @@ export async function main(): Promise<void> {
 		{
 			const __goscriptTypeSwitchValue = v
 			switch (true) {
-				case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).ok:
+				case $.typeAssert<string>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).ok:
 					{
-						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).value
+						let v: string = $.typeAssert<string>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).value
 						$.println("continue", v)
 						continue
 					}
 					break
-				case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
 					{
-						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
 						count += v
 					}
 					break
@@ -180,9 +180,9 @@ export async function main(): Promise<void> {
 	{
 		const __goscriptTypeSwitchValue = oidValue
 		switch (true) {
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.ObjectIdentifier" }).ok:
+			case $.typeAssert<$.VarRef<ObjectIdentifier> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.ObjectIdentifier" }).ok:
 				{
-					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.ObjectIdentifier" }).value
+					let v: $.VarRef<ObjectIdentifier> | null = $.typeAssert<$.VarRef<ObjectIdentifier> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.ObjectIdentifier" }).value
 					let __goscriptTuple0 = parseObjectIdentifier()
 					v!.value = (__goscriptTuple0[0] as ObjectIdentifier)
 					ok = __goscriptTuple0[1]
@@ -197,9 +197,9 @@ export async function main(): Promise<void> {
 	{
 		const __goscriptTypeSwitchValue = rawValue
 		switch (true) {
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.RawValue" }).ok:
+			case $.typeAssert<RawValue | $.VarRef<RawValue> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.RawValue" }).ok:
 				{
-					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.RawValue" }).value
+					let v: RawValue | $.VarRef<RawValue> | null = $.typeAssert<RawValue | $.VarRef<RawValue> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.RawValue" }).value
 					let __goscriptTuple1 = parseRawValue()
 					$.assignStruct($.pointerValue<RawValue>(v), __goscriptTuple1[0])
 					ok = __goscriptTuple1[1]

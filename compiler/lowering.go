@@ -3249,7 +3249,7 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 		lowered = append(lowered, init...)
 	}
 
-	valueExpr, varName, assignDiagnostics := o.lowerTypeSwitchAssign(ctx, stmt.Assign)
+	valueExpr, varName, varRef, assignDiagnostics := o.lowerTypeSwitchAssign(ctx, stmt.Assign)
 	diagnostics = append(diagnostics, assignDiagnostics...)
 	if valueExpr == "" {
 		return lowered, append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported type switch assignment"))
@@ -3258,6 +3258,7 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 	switchIR := &loweredTypeSwitch{
 		value:   valueExpr,
 		varName: varName,
+		varRef:  varRef,
 	}
 	for _, clauseStmt := range stmt.Body.List {
 		clause, ok := clauseStmt.(*ast.CaseClause)
@@ -3269,46 +3270,99 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		if len(clause.List) == 0 {
 			switchIR.defaultBody = body
+			switchIR.defaultRef = varRef || loweredStmtsUseVarRefName(body, varName)
 			continue
 		}
 		types := make([]string, 0, len(clause.List))
+		tsTypes := make([]string, 0, len(clause.List))
 		for _, expr := range clause.List {
-			types = append(types, o.runtimeTypeInfoExpr(ctx.semPkg.source.TypesInfo.TypeOf(expr)))
+			typ := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+			types = append(types, o.runtimeTypeInfoExpr(typ))
+			if typ == nil {
+				tsTypes = append(tsTypes, "any")
+			} else {
+				tsTypes = append(tsTypes, o.tsTypeFor(ctx, typ))
+			}
 		}
 		switchIR.cases = append(switchIR.cases, loweredTypeSwitchCase{
-			types: types,
-			body:  body,
+			types:   types,
+			tsTypes: tsTypes,
+			varRef:  varRef || loweredStmtsUseVarRefName(body, varName),
+			body:    body,
 		})
 	}
 	lowered = append(lowered, loweredStmt{typeSwitch: switchIR})
 	return lowered, diagnostics
 }
 
-func (o *LoweringOwner) lowerTypeSwitchAssign(ctx lowerFileContext, stmt ast.Stmt) (string, string, []Diagnostic) {
+func loweredStmtsUseVarRefName(stmts []loweredStmt, name string) bool {
+	if name == "" {
+		return false
+	}
+	needle := name + ".value"
+	for _, stmt := range stmts {
+		if strings.Contains(stmt.text, needle) {
+			return true
+		}
+		if loweredStmtsUseVarRefName(stmt.children, name) {
+			return true
+		}
+		if stmt.switchStmt != nil {
+			for _, switchCase := range stmt.switchStmt.cases {
+				if loweredStmtsUseVarRefName(switchCase.body, name) {
+					return true
+				}
+			}
+			if loweredStmtsUseVarRefName(stmt.switchStmt.defaultBody, name) {
+				return true
+			}
+		}
+		if stmt.typeSwitch != nil {
+			for _, switchCase := range stmt.typeSwitch.cases {
+				if loweredStmtsUseVarRefName(switchCase.body, name) {
+					return true
+				}
+			}
+			if loweredStmtsUseVarRefName(stmt.typeSwitch.defaultBody, name) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (o *LoweringOwner) lowerTypeSwitchAssign(ctx lowerFileContext, stmt ast.Stmt) (string, string, bool, []Diagnostic) {
 	switch typed := stmt.(type) {
 	case *ast.ExprStmt:
 		return o.lowerTypeSwitchGuard(ctx, typed.X, "")
 	case *ast.AssignStmt:
 		if len(typed.Lhs) != 1 || len(typed.Rhs) != 1 {
-			return "", "", nil
+			return "", "", false, nil
 		}
 		varName := ""
+		varRef := false
 		if ident, ok := typed.Lhs[0].(*ast.Ident); ok && ident.Name != "_" {
 			varName = safeIdentifier(ident.Name)
+			if obj := ctx.semPkg.source.TypesInfo.Defs[ident]; obj != nil {
+				varRef = ctx.model.needsVarRef[obj]
+			} else if obj := ctx.semPkg.source.TypesInfo.Uses[ident]; obj != nil {
+				varRef = ctx.model.needsVarRef[obj]
+			}
 		}
-		return o.lowerTypeSwitchGuard(ctx, typed.Rhs[0], varName)
+		value, name, _, diagnostics := o.lowerTypeSwitchGuard(ctx, typed.Rhs[0], varName)
+		return value, name, varRef, diagnostics
 	default:
-		return "", "", nil
+		return "", "", false, nil
 	}
 }
 
-func (o *LoweringOwner) lowerTypeSwitchGuard(ctx lowerFileContext, expr ast.Expr, varName string) (string, string, []Diagnostic) {
+func (o *LoweringOwner) lowerTypeSwitchGuard(ctx lowerFileContext, expr ast.Expr, varName string) (string, string, bool, []Diagnostic) {
 	assertion, ok := expr.(*ast.TypeAssertExpr)
 	if !ok || assertion.Type != nil {
-		return "", "", nil
+		return "", "", false, nil
 	}
 	value, diagnostics := o.lowerExpr(ctx, assertion.X)
-	return value, varName, diagnostics
+	return value, varName, false, diagnostics
 }
 
 func rangeKeyName(expr ast.Expr) string {

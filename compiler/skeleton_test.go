@@ -632,8 +632,8 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 		"elemType: { kind: $.TypeKind.Struct, methods: [], fields: {\"Name\": { kind: $.TypeKind.Basic, name: \"string\" }} }",
 		"let fn = __goscriptTuple",
 		"switch (true)",
-		"case $.typeAssert<any>(__goscriptTypeSwitchValue, \"main.ReadCloser\").ok",
-		"let v = $.typeAssert<any>(__goscriptTypeSwitchValue, \"main.ReadCloser\").value",
+		"case $.typeAssert<ReadCloser | null>(__goscriptTypeSwitchValue, \"main.ReadCloser\").ok",
+		"let v: ReadCloser | null = $.typeAssert<ReadCloser | null>(__goscriptTypeSwitchValue, \"main.ReadCloser\").value",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -1136,7 +1136,7 @@ func TestCompilePackagesLowersFunctionIteratorControlFlow(t *testing.T) {
 		"switch (v)",
 		"const __goscriptTypeSwitchValue",
 		"switch (true)",
-		"case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: \"int\" }).ok",
+		"case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: \"int\" }).ok",
 		"break",
 	} {
 		if !strings.Contains(text, want) {

@@ -162,33 +162,33 @@ export async function main(): Promise<void> {
 		{
 			const __goscriptTypeSwitchValue = item
 			switch (true) {
-				case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyStruct").ok:
+				case $.typeAssert<MyStruct>(__goscriptTypeSwitchValue, "main.MyStruct").ok:
 					{
-						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyStruct").value
+						let v: MyStruct = $.typeAssert<MyStruct>(__goscriptTypeSwitchValue, "main.MyStruct").value
 						$.println("testItems[", i, "] is MyStruct value:", v.Value)
 					}
 					break
-				case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" }).ok:
+				case $.typeAssert<MyStruct | $.VarRef<MyStruct> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" }).ok:
 					{
-						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" }).value
+						let v: MyStruct | $.VarRef<MyStruct> | null = $.typeAssert<MyStruct | $.VarRef<MyStruct> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" }).value
 						$.println("testItems[", i, "] is *MyStruct pointer:", $.pointerValue<MyStruct>(v).Value)
 					}
 					break
-				case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
 					{
-						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
 						$.println("testItems[", i, "] is int:", v)
 					}
 					break
-				case $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).ok:
+				case $.typeAssert<string>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).ok:
 					{
-						let v = $.typeAssert<any>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).value
+						let v: string = $.typeAssert<string>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).value
 						$.println("testItems[", i, "] is string:", v)
 					}
 					break
 				default:
 					{
-						let v = __goscriptTypeSwitchValue
+						let v: any = __goscriptTypeSwitchValue
 						$.println("testItems[", i, "] is unknown type")
 					}
 					break

@@ -147,11 +147,15 @@ type loweredSelectCase struct {
 type loweredTypeSwitch struct {
 	value       string
 	varName     string
+	varRef      bool
 	cases       []loweredTypeSwitchCase
 	defaultBody []loweredStmt
+	defaultRef  bool
 }
 
 type loweredTypeSwitchCase struct {
-	types []string
-	body  []loweredStmt
+	types   []string
+	tsTypes []string
+	varRef  bool
+	body    []loweredStmt
 }

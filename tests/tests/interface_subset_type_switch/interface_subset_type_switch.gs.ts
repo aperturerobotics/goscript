@@ -83,21 +83,21 @@ export function processInterface(i: any): void {
 	{
 		const __goscriptTypeSwitchValue = i
 		switch (true) {
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
+			case $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
 				{
-					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface1").value
+					let v: MyInterface1 | null = $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").value
 					$.println("MyInterface1:", $.pointerValue(v).MyString1(), $.pointerValue(v).MyString2())
 				}
 				break
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
+			case $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
 				{
-					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface2").value
+					let v: MyInterface2 | null = $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").value
 					$.println("MyInterface2:", $.pointerValue(v).MyString1())
 				}
 				break
 			default:
 				{
-					let v = __goscriptTypeSwitchValue
+					let v: any = __goscriptTypeSwitchValue
 					$.println("Unknown type")
 				}
 				break
@@ -124,21 +124,21 @@ export async function main(): Promise<void> {
 	{
 		const __goscriptTypeSwitchValue = i3
 		switch (true) {
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
+			case $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
 				{
-					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface2").value
+					let v: MyInterface2 | null = $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").value
 					$.println("Matched MyInterface2 from i1:", $.pointerValue(v).MyString1())
 				}
 				break
-			case $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
+			case $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
 				{
-					let v = $.typeAssert<any>(__goscriptTypeSwitchValue, "main.MyInterface1").value
+					let v: MyInterface1 | null = $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").value
 					$.println("Matched MyInterface1 from i1:", $.pointerValue(v).MyString1(), $.pointerValue(v).MyString2())
 				}
 				break
 			default:
 				{
-					let v = __goscriptTypeSwitchValue
+					let v: any = __goscriptTypeSwitchValue
 					$.println("No match")
 				}
 				break
