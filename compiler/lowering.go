@@ -4082,6 +4082,9 @@ func stmtsContainAwait(stmts []loweredStmt) bool {
 			stmtsContainAwait(stmt.elseBody) {
 			return true
 		}
+		if stmt.rangeFunc != nil && (stmt.rangeFunc.async || stmtsContainAwait(stmt.rangeFunc.body)) {
+			return true
+		}
 		if stmt.selectStmt != nil {
 			return true
 		}
