@@ -24,6 +24,19 @@ export async function main(): globalThis.Promise<void> {
 	if (__goscriptRangeReturn3114422) {
 		return
 	}
+	let __goscriptRangeReturn3114496 = false
+	;(() => {
+		slices.Backward(s)!((i, v) => {
+			if (i < 3) {
+				return false
+			}
+			$.println("backward:", i, v)
+			return true
+		})
+	})()
+	if (__goscriptRangeReturn3114496) {
+		return
+	}
 
 	let cloned = slices.Clone(s)
 	cloned![0] = 99
@@ -42,6 +55,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("insert:", inserted![0], inserted![1], inserted![2], inserted![3])
 	slices.Reverse(inserted)
 	$.println("reverse:", inserted![0], inserted![1], inserted![2], inserted![3])
+	$.println("is sorted:", slices.IsSorted($.arrayToSlice<number>([1, 2, 3])), slices.IsSorted($.arrayToSlice<number>([1, 3, 2])))
 
 	class item {
 		public get group(): number {
@@ -92,6 +106,9 @@ export async function main(): globalThis.Promise<void> {
 		return a.group - b.group
 	}, { kind: $.TypeKind.Function, params: ["main.item", "main.item"], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
 	$.println("stable:", stable![0].label, stable![1].label, stable![2].label, stable![3].label)
+	$.println("is sorted func:", slices.IsSortedFunc(stable, $.functionValue((a: item, b: item): number => {
+		return a.group - b.group
+	}, { kind: $.TypeKind.Function, params: ["main.item", "main.item"], results: [{ kind: $.TypeKind.Basic, name: "int" }] })))
 
 	let filtered = slices.DeleteFunc($.arrayToSlice<number>([1, 2, 3, 4, 5]), $.functionValue((v: number): boolean => {
 		return (v % 2) == 0
@@ -103,7 +120,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("test finished")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

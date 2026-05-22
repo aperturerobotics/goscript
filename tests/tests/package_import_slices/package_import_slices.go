@@ -13,6 +13,12 @@ func main() {
 	for i, v := range slices.All(s) {
 		println("index:", i, "value:", v)
 	}
+	for i, v := range slices.Backward(s) {
+		if i < 3 {
+			break
+		}
+		println("backward:", i, v)
+	}
 
 	cloned := slices.Clone(s)
 	cloned[0] = 99
@@ -31,6 +37,7 @@ func main() {
 	println("insert:", inserted[0], inserted[1], inserted[2], inserted[3])
 	slices.Reverse(inserted)
 	println("reverse:", inserted[0], inserted[1], inserted[2], inserted[3])
+	println("is sorted:", slices.IsSorted([]int{1, 2, 3}), slices.IsSorted([]int{1, 3, 2}))
 
 	type item struct {
 		group int
@@ -41,6 +48,9 @@ func main() {
 		return a.group - b.group
 	})
 	println("stable:", stable[0].label, stable[1].label, stable[2].label, stable[3].label)
+	println("is sorted func:", slices.IsSortedFunc(stable, func(a, b item) int {
+		return a.group - b.group
+	}))
 
 	filtered := slices.DeleteFunc([]int{1, 2, 3, 4, 5}, func(v int) bool {
 		return v%2 == 0

@@ -78,6 +78,16 @@ export function All<T>(
   }
 }
 
+export function Backward<T>(s: $.Slice<T>): iter.Seq2<number, T> {
+  return function (_yield: (index: number, value: T) => boolean): void {
+    for (let i = $.len(s) - 1; i >= 0; i--) {
+      if (!_yield(i, (s as any)[i] as T)) {
+        break
+      }
+    }
+  }
+}
+
 /**
  * Sort sorts a slice in ascending order.
  * This is equivalent to Go's slices.Sort function.
@@ -85,6 +95,15 @@ export function All<T>(
  */
 export function Sort<T extends string | number>(s: $.Slice<T>): void {
   $.sortSlice(s)
+}
+
+export function IsSorted<T extends string | number>(x: $.Slice<T>): boolean {
+  for (let i = $.len(x) - 1; i > 0; i--) {
+    if (cmp.Compare((x as any)[i] as T, (x as any)[i - 1] as T) < 0) {
+      return false
+    }
+  }
+  return true
 }
 
 export function Collect<T>(seq: iter.Seq<T>): $.Slice<T> {
@@ -290,6 +309,18 @@ export function SortFunc<T>(s: $.Slice<T>, cmp: (a: T, b: T) => number): void {
   }
   const arr = s as any as T[]
   arr.sort(cmp)
+}
+
+export function IsSortedFunc<T>(
+  x: $.Slice<T>,
+  cmp: (a: T, b: T) => number,
+): boolean {
+  for (let i = $.len(x) - 1; i > 0; i--) {
+    if (cmp((x as any)[i] as T, (x as any)[i - 1] as T) < 0) {
+      return false
+    }
+  }
+  return true
 }
 
 export function SortStableFunc<T>(
