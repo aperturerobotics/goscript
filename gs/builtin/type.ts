@@ -44,6 +44,7 @@ export interface MethodSignature {
  */
 export interface StructFieldInfo {
   type: TypeInfo | string // The field's type
+  name?: string // The Go field name when it differs from the TypeScript key.
   tag?: string // The struct field tag (e.g., `json:"name,omitempty"`)
 }
 
@@ -500,13 +501,9 @@ function matchesStructType(value: any, info: TypeInfo): boolean {
 
     if (fieldsExist && sameFieldCount && allFieldsInStruct) {
       return Object.entries(info.fields).every(([fieldName, fieldType]) => {
-        const fieldTypeInfo = isStructFieldInfo(fieldType)
-          ? fieldType.type
-          : fieldType
-        return matchesType(
-          value[fieldName],
-          normalizeTypeInfo(fieldTypeInfo),
-        )
+        const fieldTypeInfo =
+          isStructFieldInfo(fieldType) ? fieldType.type : fieldType
+        return matchesType(value[fieldName], normalizeTypeInfo(fieldTypeInfo))
       })
     }
 
@@ -1036,7 +1033,10 @@ export function typeAssert<T>(
 
   // Handle typed nil pointers (created by typedNil() for conversions like (*T)(nil))
   if (typeof value === 'object' && value !== null && value.__isTypedNil) {
-    if (isInterfaceTypeInfo(normalizedType) && matchesInterfaceType(value, normalizedType)) {
+    if (
+      isInterfaceTypeInfo(normalizedType) &&
+      matchesInterfaceType(value, normalizedType)
+    ) {
       return { value: value as T, ok: true }
     }
     // For typed nils, we need to compare the stored type with the expected type
@@ -1076,9 +1076,9 @@ export function typeAssert<T>(
   ) {
     if (normalizedType.keyType || normalizedType.elemType) {
       const entries =
-        value instanceof Map
-          ? Array.from(value.entries())
-          : Object.entries(value)
+        value instanceof Map ?
+          Array.from(value.entries())
+        : Object.entries(value)
 
       if (entries.length === 0) {
         return { value: value as T, ok: true }

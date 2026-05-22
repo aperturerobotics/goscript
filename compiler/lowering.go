@@ -1103,9 +1103,15 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 		typeName:      runtimeNamedTypeName(semType.named),
 		cloneMethod:   "clone",
 	}
-	for _, field := range semType.fields {
+	for idx, field := range semType.fields {
+		fieldName := tsStructFieldName(field.name, idx)
+		runtimeName := ""
+		if fieldName != field.name {
+			runtimeName = field.name
+		}
 		lowered.fields = append(lowered.fields, loweredStructField{
-			name:        field.name,
+			name:        fieldName,
+			runtimeName: runtimeName,
 			typ:         o.tsStructFieldTypeFor(ctx, field.typ),
 			zero:        o.lowerZeroValueExprFor(ctx, field.typ),
 			runtimeType: o.runtimeTypeInfoExpr(field.typ),
@@ -4442,8 +4448,9 @@ func (o *LoweringOwner) lowerNamedStructConversion(
 	structType, _ := target.Underlying().(*types.Struct)
 	temp := ctx.tempName("Convert")
 	fields := make([]loweredConversionField, 0, structType.NumFields())
-	for field := range structType.Fields() {
-		fields = append(fields, loweredConversionField{name: field.Name()})
+	for idx := range structType.NumFields() {
+		field := structType.Field(idx)
+		fields = append(fields, loweredConversionField{name: tsStructFieldName(field.Name(), idx)})
 	}
 	return &loweredNamedStructConversionExpr{
 		value: loweredExpr{
@@ -5069,7 +5076,7 @@ func (o *LoweringOwner) lowerStructCompositeLit(
 			}
 		} else if idx < structType.NumFields() {
 			field := structType.Field(idx)
-			fieldName = field.Name()
+			fieldName = tsStructFieldName(field.Name(), idx)
 			fieldType = field.Type()
 		}
 		if fieldName == "" {
@@ -5114,7 +5121,7 @@ func (o *LoweringOwner) lowerAnonymousStructCompositeLit(
 		}
 		if fieldName == "" && idx < structType.NumFields() {
 			field := structType.Field(idx)
-			fieldName = field.Name()
+			fieldName = tsStructFieldName(field.Name(), idx)
 			fieldType = field.Type()
 		}
 		if fieldName == "" {
@@ -5563,20 +5570,33 @@ func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct, seen m
 	fields := make([]string, 0, structType.NumFields())
 	for idx := range structType.NumFields() {
 		field := structType.Field(idx)
+		fieldName := tsStructFieldName(field.Name(), idx)
+		runtimeName := ""
+		if fieldName != field.Name() {
+			runtimeName = field.Name()
+		}
 		fieldInfo := runtimeStructFieldInfoExpr(
 			o.runtimeTypeInfoExprWithSeen(field.Type(), seen),
+			runtimeName,
 			structType.Tag(idx),
 		)
-		fields = append(fields, strconv.Quote(field.Name())+": "+fieldInfo)
+		fields = append(fields, strconv.Quote(fieldName)+": "+fieldInfo)
 	}
 	return "{" + strings.Join(fields, ", ") + "}"
 }
 
-func runtimeStructFieldInfoExpr(runtimeType string, tag string) string {
-	if tag == "" {
+func runtimeStructFieldInfoExpr(runtimeType string, runtimeName string, tag string) string {
+	if runtimeName == "" && tag == "" {
 		return runtimeType
 	}
-	return "{ type: " + runtimeType + ", tag: " + strconv.Quote(tag) + " }"
+	fields := []string{"type: " + runtimeType}
+	if runtimeName != "" {
+		fields = append(fields, "name: "+strconv.Quote(runtimeName))
+	}
+	if tag != "" {
+		fields = append(fields, "tag: "+strconv.Quote(tag))
+	}
+	return "{ " + strings.Join(fields, ", ") + " }"
 }
 
 func (o *LoweringOwner) runtimeFunctionTypeInfo(signature *types.Signature, name string) string {
@@ -5615,6 +5635,13 @@ func fieldByName(structType *types.Struct, name string) *types.Var {
 		}
 	}
 	return nil
+}
+
+func tsStructFieldName(name string, idx int) string {
+	if name == "_" {
+		return "_blank" + strconv.Itoa(idx)
+	}
+	return name
 }
 
 func shouldCloneStructValue(expr ast.Expr) bool {
@@ -5898,8 +5925,9 @@ func tsArrayType(elem string) string {
 
 func (o *LoweringOwner) tsAnonymousStructTypeFor(ctx lowerFileContext, structType *types.Struct) string {
 	fields := make([]string, 0, structType.NumFields())
-	for field := range structType.Fields() {
-		fields = append(fields, strconv.Quote(field.Name())+": "+o.tsStructFieldTypeFor(ctx, field.Type()))
+	for idx := range structType.NumFields() {
+		field := structType.Field(idx)
+		fields = append(fields, strconv.Quote(tsStructFieldName(field.Name(), idx))+": "+o.tsStructFieldTypeFor(ctx, field.Type()))
 	}
 	return "{" + strings.Join(fields, ", ") + "}"
 }
@@ -5950,8 +5978,9 @@ func zeroValueExpr(typ types.Type) string {
 
 func anonymousStructZeroValueExpr(structType *types.Struct, zero func(types.Type) string) string {
 	fields := make([]string, 0, structType.NumFields())
-	for field := range structType.Fields() {
-		fields = append(fields, strconv.Quote(field.Name())+": "+zero(field.Type()))
+	for idx := range structType.NumFields() {
+		field := structType.Field(idx)
+		fields = append(fields, strconv.Quote(tsStructFieldName(field.Name(), idx))+": "+zero(field.Type()))
 	}
 	return "{" + strings.Join(fields, ", ") + "}"
 }

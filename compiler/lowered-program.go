@@ -64,6 +64,7 @@ type loweredStruct struct {
 
 type loweredStructField struct {
 	name        string
+	runtimeName string
 	typ         string
 	zero        string
 	runtimeType string
@@ -73,21 +74,21 @@ type loweredStructField struct {
 }
 
 type loweredFunction struct {
-	exported      bool
-	indexExported bool
-	async         bool
-	name          string
-	runtimeName   string
-	receiverAlias string
-	receiverType  string
-	receiverValue string
+	exported        bool
+	indexExported   bool
+	async           bool
+	name            string
+	runtimeName     string
+	receiverAlias   string
+	receiverType    string
+	receiverValue   string
 	receiverMutable bool
-	params        []loweredParam
-	paramBindings []loweredStmt
-	namedResults  []loweredNamedResult
-	result        string
-	body          []loweredStmt
-	deferState    *loweredDeferState
+	params          []loweredParam
+	paramBindings   []loweredStmt
+	namedResults    []loweredNamedResult
+	result          string
+	body            []loweredStmt
+	deferState      *loweredDeferState
 }
 
 type loweredParam struct {

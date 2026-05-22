@@ -1908,10 +1908,7 @@ class InterfaceType implements Type {
   }
 
   public PkgPath?(): string {
-    if (
-      this._name === 'interface{}' ||
-      this._name.startsWith('interface {')
-    ) {
+    if (this._name === 'interface{}' || this._name.startsWith('interface {')) {
       return ''
     }
     const dotIndex = this._name.lastIndexOf('.')
@@ -1922,10 +1919,7 @@ class InterfaceType implements Type {
   }
 
   public Name(): string {
-    if (
-      this._name === 'interface{}' ||
-      this._name.startsWith('interface {')
-    ) {
+    if (this._name === 'interface{}' || this._name.startsWith('interface {')) {
       return this._name
     }
     const dotIndex = this._name.lastIndexOf('.')
@@ -2195,7 +2189,7 @@ function getTypeOf(value: ReflectValue): Type {
                 // Check if fieldInfo is a StructFieldInfo with type and tag
                 if (isStructFieldInfo(fieldInfo)) {
                   return {
-                    name,
+                    name: fieldInfo.name ?? name,
                     type: StructType.createTypeFromFieldInfo(fieldInfo.type),
                     tag: fieldInfo.tag,
                   }
@@ -2301,12 +2295,16 @@ function typeFromTypeInfo(info: $.TypeInfo | string): Type {
   switch (info.kind) {
     case $.TypeKind.Array:
       return new ArrayType(
-        typeFromTypeInfo(info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
+        typeFromTypeInfo(
+          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        ),
         info.length,
       )
     case $.TypeKind.Channel:
       return new ChannelType(
-        typeFromTypeInfo(info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
+        typeFromTypeInfo(
+          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        ),
         chanDirFromTypeInfo(info.direction),
       )
     case $.TypeKind.Function:
@@ -2315,12 +2313,18 @@ function typeFromTypeInfo(info: $.TypeInfo | string): Type {
       return interfaceTypeFromInfo(info)
     case $.TypeKind.Map:
       return new MapType(
-        typeFromTypeInfo(info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
-        typeFromTypeInfo(info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
+        typeFromTypeInfo(
+          info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        ),
+        typeFromTypeInfo(
+          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        ),
       )
     case $.TypeKind.Pointer:
       return new PointerType(
-        typeFromTypeInfo(info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' }),
+        typeFromTypeInfo(
+          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        ),
       )
     default:
       return StructType.createTypeFromFieldInfo(info)
