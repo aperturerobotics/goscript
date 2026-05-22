@@ -1,1 +1,4 @@
 read: 2 ab true
+empty: 0 true
+short: 1 x true
+readall: abcDEFghi true

@@ -5,5 +5,13 @@
     "path",
     "time",
     "unicode/utf8"
-  ]
-} 
+  ],
+  "asyncFunctions": {
+    "Copy": true,
+    "CopyBuffer": true,
+    "CopyN": true,
+    "ReadAtLeast": true,
+    "ReadFull": true,
+    "ReadAll": true
+  }
+}

@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  bytesToUint8Array,
   byte,
+  cap,
   cloneStructValue,
   callGenericMethod,
   chanRecvWithOk,
@@ -13,6 +15,7 @@ import {
   indexRef,
   interfaceValue,
   len,
+  makeSlice,
   makeChannel,
   makeMap,
   mapGet,
@@ -31,6 +34,16 @@ import {
   TypeKind,
   typeAssert,
   typedNil,
+  uint,
+  uint64Add,
+  uint64And,
+  uint64Mul,
+  uint64Or,
+  uint64Shl,
+  uint64Shr,
+  uint64Sub,
+  uint64Xor,
+  uintShr,
   unref,
   unsupportedPointerRef,
   varRef,
@@ -98,7 +111,20 @@ describe('builtin runtime contract helpers', () => {
 
   it('exposes numeric, varref, map, and error helpers', () => {
     expect(int(1.9)).toBe(1)
+    expect(int(3n)).toBe(3)
+    expect(uint(-1n, 8)).toBe(255)
     expect(byte(257)).toBe(1)
+    expect(uint(uint64Shl(1n, 63), 32)).toBe(0)
+    expect(uint(uint64Shr(uint64Shl(1n, 63), 60), 32)).toBe(8)
+    expect(uint(uint64Mul(0xffffffffffffffffn, 3), 32)).toBe(0xfffffffd)
+    expect(uint(uint64Add(0xffffffffffffffffn, 2), 32)).toBe(1)
+    expect(uint(uint64Sub(1n, 2), 32)).toBe(0xffffffff)
+    expect(uint(uint64And(0xf0n, 0x3cn), 32)).toBe(0x30)
+    expect(uint(uint64Or(0xf0n, 0x0fn), 32)).toBe(0xff)
+    expect(uint(uint64Xor(0xf0n, 0xffn), 32)).toBe(0x0f)
+    expect(uintShr(0x80000000, 31, 32)).toBe(1)
+    expect(uintShr(0x80000000, 32, 32)).toBe(0)
+    expect(uintShr(0xff, 4, 8)).toBe(15)
 
     const value = varRef(4)
     value.value = 8
@@ -164,6 +190,17 @@ describe('builtin runtime contract helpers', () => {
     const firstByte = indexRef<number>(bytes, 0)
     firstByte.value = 9
     expect(Array.from(bytes)).toEqual([9, 5])
+
+    const byteBacking = makeSlice<number>(8, undefined, 'byte')
+    const shortBytes = goSlice(byteBacking as Uint8Array, 0, 2)
+    expect(len(shortBytes)).toBe(2)
+    expect(cap(shortBytes)).toBe(8)
+    const fullBytes = goSlice(shortBytes, 0, 8)
+    fullBytes![7] = 12
+    expect((byteBacking as Uint8Array)[7]).toBe(12)
+
+    shortBytes![0] = 14
+    expect(bytesToUint8Array(shortBytes)).toEqual(new Uint8Array([14, 0]))
   })
 
   it('exposes stable synthetic slice index addresses', () => {

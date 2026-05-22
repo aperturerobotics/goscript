@@ -269,28 +269,30 @@ export class Buffer {
 	// error except io.EOF encountered during the read is also returned. If the
 	// buffer becomes too large, ReadFrom will panic with [ErrTooLarge].
 	public ReadFrom(r: io.Reader): [number, $.GoError] {
-		const b = this
-		b.lastRead = 0
-		let n = 0
-		for (; ; ) {
-			let i = b.grow(512)
-			b.buf = $.goSlice(b.buf, undefined, i)
-			let [m, e] = r!.Read($.bytesToUint8Array($.goSlice(b.buf, i, $.cap(b.buf))))
-			if (m < 0) {
-				$.panic(errNegativeRead)
-			}
+		return (async (): Promise<[number, $.GoError]> => {
+			const b = this
+			b.lastRead = 0
+			let n = 0
+			for (; ; ) {
+				let i = b.grow(512)
+				b.buf = $.goSlice(b.buf, undefined, i)
+				let [m, e] = await (r!.Read($.bytesToUint8Array($.goSlice(b.buf, i, $.cap(b.buf)))) as any)
+				if (m < 0) {
+					$.panic(errNegativeRead)
+				}
 
-			b.buf = $.goSlice(b.buf, undefined, i + m)
-			n += (m as number)
+				b.buf = $.goSlice(b.buf, undefined, i + m)
+				n += (m as number)
 
-			// e is EOF, so return nil explicitly
-			if (e == io.EOF) {
-				return [n, null]
+				// e is EOF, so return nil explicitly
+				if (e == io.EOF) {
+					return [n, null]
+				}
+				if (e != null) {
+					return [n, e]
+				}
 			}
-			if (e != null) {
-				return [n, e]
-			}
-		}
+		})() as any
 	}
 
 	// WriteTo writes data to w until the buffer is drained or an error occurs.
@@ -298,30 +300,32 @@ export class Buffer {
 	// int, but it is int64 to match the [io.WriterTo] interface. Any error
 	// encountered during the write is also returned.
 	public WriteTo(w: io.Writer): [number, $.GoError] {
-		const b = this
-		b.lastRead = 0
-		let n = 0
-		{
-			let nBytes = b.Len()
-			if (nBytes > 0) {
-				let [m, e] = w!.Write($.bytesToUint8Array($.goSlice(b.buf, b.off, undefined)))
-				if (m > nBytes) {
-					$.panic("bytes.Buffer.WriteTo: invalid Write count")
-				}
-				b.off += m
-				n = (m as number)
-				if (e != null) {
-					return [n, e]
-				}
-				// all bytes should have been written, by definition of
-				// Write method in io.Writer
-				if (m != nBytes) {
-					return [n, io.ErrShortWrite]
+		return (async (): Promise<[number, $.GoError]> => {
+			const b = this
+			b.lastRead = 0
+			let n = 0
+			{
+				let nBytes = b.Len()
+				if (nBytes > 0) {
+					let [m, e] = await (w!.Write($.bytesToUint8Array($.goSlice(b.buf, b.off, undefined))) as any)
+					if (m > nBytes) {
+						$.panic("bytes.Buffer.WriteTo: invalid Write count")
+					}
+					b.off += m
+					n = (m as number)
+					if (e != null) {
+						return [n, e]
+					}
+					// all bytes should have been written, by definition of
+					// Write method in io.Writer
+					if (m != nBytes) {
+						return [n, io.ErrShortWrite]
+					}
 				}
 			}
-		}
-		b.Reset()
-		return [n, null]
+			b.Reset()
+			return [n, null]
+		})() as any
 	}
 
 	// WriteByte appends the byte c to the buffer, growing the buffer as needed.
@@ -373,7 +377,7 @@ export class Buffer {
 			}
 			return [0, io.EOF]
 		}
-		const n = $.copy($.bytesToUint8Array(p), $.bytesToUint8Array($.goSlice(b.buf, b.off, undefined)))
+		const n = $.copy(p, $.goSlice(b.buf, b.off, undefined))
 		b.off += n
 		if (n > 0) {
 			b.lastRead = -1
@@ -604,7 +608,7 @@ export function growSlice(b: $.Bytes, n: number): $.Bytes {
 		c = 2 * $.cap(b)
 	}
 	let b2 = $.append<number>(null, new Uint8Array(c))
-	let i = $.copy($.bytesToUint8Array(b2), $.bytesToUint8Array(b))
+	let i = $.copy(b2, b)
 	return $.goSlice(b2, undefined, i)
 }
 

@@ -312,7 +312,7 @@ export class File {
 		if (this.closed) {
 			return [0, ErrClosed]
 		}
-		return io.Copy(this, r)
+		return io.Copy(this, r) as any
 	}
 
 	public Write(b: $.Bytes): [number, $.GoError] {
@@ -349,7 +349,7 @@ export class File {
 		if (this.closed) {
 			return [0, ErrClosed]
 		}
-		return io.Copy(w, this)
+		return io.Copy(w, this) as any
 	}
 
 	public Seek(offset: number, whence: number): [number, $.GoError] {

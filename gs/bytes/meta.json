@@ -1,10 +1,15 @@
 {
   "dependencies": [
     "errors",
-    "io", 
+    "io",
     "iter",
     "unicode",
     "unicode/utf8",
     "unsafe"
-  ]
-} 
+  ],
+  "asyncMethods": {
+    "Buffer.ReadFrom": true,
+    "Buffer.WriteTo": true,
+    "Reader.WriteTo": true
+  }
+}

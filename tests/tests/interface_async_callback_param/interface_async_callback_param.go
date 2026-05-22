@@ -1,6 +1,9 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"sync"
+)
 
 type scanner interface {
 	Scan(func(int) error) error
@@ -23,4 +26,13 @@ func run(s scanner) error {
 
 func main() {
 	println(run(listScanner{}) == nil)
+
+	var m sync.Map
+	callbacks := [1]func(int) error{
+		func(v int) error {
+			m.Load(v)
+			return nil
+		},
+	}
+	println(callbacks[0](1) == nil)
 }

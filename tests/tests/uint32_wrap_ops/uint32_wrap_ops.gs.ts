@@ -1,0 +1,22 @@
+// Generated file based on uint32_wrap_ops.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+export function checksum(c: number): number {
+	return $.uint(c + 2, 32)
+}
+
+export async function main(): globalThis.Promise<void> {
+	let c: number = $.uint(4294967295, 32)
+	let v = $.uint(checksum($.uint(c, 32)), 32)
+	$.println($.uint(v, 32) == $.uint(1, 32))
+	$.println($.uint($.uint(v, 8), 8) == $.uint(1, 8))
+	let high: number = $.uint(0x80000000, 32)
+	$.println($.uint(($.uintShr(high, 31, 32)), 32) == $.uint(1, 32))
+	$.println($.uint(($.uintShr(high, 32, 32)), 32) == $.uint(0, 32))
+}
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

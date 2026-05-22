@@ -29,21 +29,30 @@ const (
 type RuntimeHelper string
 
 const (
-	RuntimeHelperPrintln RuntimeHelper = "builtin.println"
-	RuntimeHelperPrint   RuntimeHelper = "builtin.print"
-	RuntimeHelperInt     RuntimeHelper = "builtin.int"
-	RuntimeHelperUint    RuntimeHelper = "builtin.uint"
-	RuntimeHelperByte    RuntimeHelper = "builtin.byte"
-	RuntimeHelperLen     RuntimeHelper = "builtin.len"
-	RuntimeHelperCap     RuntimeHelper = "builtin.cap"
-	RuntimeHelperClear   RuntimeHelper = "builtin.clear"
-	RuntimeHelperPanic   RuntimeHelper = "builtin.panic"
-	RuntimeHelperRecover RuntimeHelper = "builtin.recover"
-	RuntimeHelperMin     RuntimeHelper = "builtin.min"
-	RuntimeHelperMax     RuntimeHelper = "builtin.max"
-	RuntimeHelperComplex RuntimeHelper = "builtin.complex"
-	RuntimeHelperReal    RuntimeHelper = "builtin.real"
-	RuntimeHelperImag    RuntimeHelper = "builtin.imag"
+	RuntimeHelperPrintln   RuntimeHelper = "builtin.println"
+	RuntimeHelperPrint     RuntimeHelper = "builtin.print"
+	RuntimeHelperInt       RuntimeHelper = "builtin.int"
+	RuntimeHelperUint      RuntimeHelper = "builtin.uint"
+	RuntimeHelperByte      RuntimeHelper = "builtin.byte"
+	RuntimeHelperLen       RuntimeHelper = "builtin.len"
+	RuntimeHelperCap       RuntimeHelper = "builtin.cap"
+	RuntimeHelperClear     RuntimeHelper = "builtin.clear"
+	RuntimeHelperPanic     RuntimeHelper = "builtin.panic"
+	RuntimeHelperRecover   RuntimeHelper = "builtin.recover"
+	RuntimeHelperMin       RuntimeHelper = "builtin.min"
+	RuntimeHelperMax       RuntimeHelper = "builtin.max"
+	RuntimeHelperComplex   RuntimeHelper = "builtin.complex"
+	RuntimeHelperReal      RuntimeHelper = "builtin.real"
+	RuntimeHelperImag      RuntimeHelper = "builtin.imag"
+	RuntimeHelperUint64Shl RuntimeHelper = "builtin.uint64Shl"
+	RuntimeHelperUint64Shr RuntimeHelper = "builtin.uint64Shr"
+	RuntimeHelperUintShr   RuntimeHelper = "builtin.uintShr"
+	RuntimeHelperUint64Mul RuntimeHelper = "builtin.uint64Mul"
+	RuntimeHelperUint64Add RuntimeHelper = "builtin.uint64Add"
+	RuntimeHelperUint64Sub RuntimeHelper = "builtin.uint64Sub"
+	RuntimeHelperUint64And RuntimeHelper = "builtin.uint64And"
+	RuntimeHelperUint64Or  RuntimeHelper = "builtin.uint64Or"
+	RuntimeHelperUint64Xor RuntimeHelper = "builtin.uint64Xor"
 
 	RuntimeHelperAssignStruct      RuntimeHelper = "value.assignStruct"
 	RuntimeHelperMarkAsStructValue RuntimeHelper = "value.markAsStructValue"
@@ -246,6 +255,15 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperComplex, "complex", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperReal, "real", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperImag, "imag", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint64Shl, "uint64Shl", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint64Shr, "uint64Shr", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUintShr, "uintShr", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint64Mul, "uint64Mul", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint64Add, "uint64Add", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint64Sub, "uint64Sub", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint64And, "uint64And", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint64Or, "uint64Or", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint64Xor, "uint64Xor", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperAssignStruct, "assignStruct", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperMarkAsStructValue, "markAsStructValue", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperCloneStructValue, "cloneStructValue", RuntimeHelperCategoryValue),

@@ -3,6 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
+import * as bytes from "@goscript/bytes/index.js"
+
 import * as io from "@goscript/io/index.js"
 
 import * as sync from "@goscript/sync/index.js"
@@ -113,7 +115,7 @@ export class staticReader {
 		if ($.pointerValue<staticReader>(r).done) {
 			return [0, io.EOF]
 		}
-		$.copy(p, $.stringToBytes("copy"))
+		$.copy(p, new Uint8Array([99, 111, 112, 121]))
 		$.pointerValue<staticReader>(r).done = true
 		return [4, null]
 	}
@@ -127,14 +129,60 @@ export class staticReader {
 	)
 }
 
+export class asyncReader {
+	public get done(): boolean {
+		return this._fields.done.value
+	}
+	public set done(value: boolean) {
+		this._fields.done.value = value
+	}
+
+	public _fields: {
+		done: $.VarRef<boolean>
+	}
+
+	constructor(init?: Partial<{done?: boolean}>) {
+		this._fields = {
+			done: $.varRef(init?.done ?? false)
+		}
+	}
+
+	public clone(): asyncReader {
+		const cloned = new asyncReader()
+		cloned._fields = {
+			done: $.varRef(this._fields.done.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
+		let r: asyncReader | $.VarRef<asyncReader> | null = this
+		await asyncWrites.value.Load("read")
+		if ($.pointerValue<asyncReader>(r).done) {
+			return [0, io.EOF]
+		}
+		$.copy(p, new Uint8Array([97, 115, 121, 110, 99]))
+		$.pointerValue<asyncReader>(r).done = true
+		return [5, null]
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.asyncReader",
+		() => new asyncReader(),
+		[{ name: "Read", args: [], returns: [] }],
+		asyncReader,
+		{"done": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
+}
+
 export let asyncWrites: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
 export function __goscript_set_asyncWrites(value: sync.Map): void {
 	asyncWrites.value = value
 }
 
-export function copyInterfaces(dst: io.Writer | null, src: io.Reader | null): [number, $.GoError] {
-	return io.Copy($.pointerValue(dst), $.pointerValue(src))
+export async function copyInterfaces(dst: io.Writer | null, src: io.Reader | null): globalThis.Promise<[number, $.GoError]> {
+	return await io.Copy($.pointerValue(dst), $.pointerValue(src))
 }
 
 export async function main(): globalThis.Promise<void> {
@@ -162,43 +210,65 @@ export async function main(): globalThis.Promise<void> {
 	let buf: asyncBuffer | $.VarRef<asyncBuffer> | null = new asyncBuffer()
 	asyncBuffer.prototype.Reset.call(buf, $.interfaceValue<io.Writer | null>(buf, "*main.asyncBuffer"))
 	asyncBuffer.prototype.Reset.call(buf, null)
-	let __goscriptTuple1 = copyInterfaces(io.Discard, $.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader"))
+	let __goscriptTuple1 = await copyInterfaces(io.Discard, $.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader"))
 	let n64 = __goscriptTuple1[0]
 	err = __goscriptTuple1[1]
 	$.println("Copy interface - bytes:", n64, "err:", err == null)
-	let __goscriptTuple2 = io.Copy($.pointerValue(io.Discard), {Reader: $.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader")})
+	let __goscriptTuple2 = await io.Copy($.pointerValue(io.Discard), {Reader: $.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader")})
 	n64 = __goscriptTuple2[0]
 	err = __goscriptTuple2[1]
 	$.println("Copy embedded reader - bytes:", n64, "err:", err == null)
-	let __goscriptTuple3 = io.Copy({Writer: io.Discard}, $.pointerValue($.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader")))
+	let __goscriptTuple3 = await io.Copy({Writer: io.Discard}, $.pointerValue($.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader")))
 	n64 = __goscriptTuple3[0]
 	err = __goscriptTuple3[1]
 	$.println("Copy embedded writer - bytes:", n64, "err:", err == null)
+	let __goscriptTuple4 = await io.Copy($.pointerValue($.interfaceValue<io.Writer | null>(buf, "*main.asyncBuffer")), $.pointerValue($.interfaceValue<io.Reader | null>(new staticReader(), "*main.staticReader")))
+	n64 = __goscriptTuple4[0]
+	err = __goscriptTuple4[1]
+	$.println("Copy async writer - bytes:", n64, "err:", err == null)
+	let __goscriptTuple5 = await io.CopyN($.pointerValue(io.Discard), $.pointerValue($.interfaceValue<io.Reader | null>(new asyncReader(), "*main.asyncReader")), 5)
+	n64 = __goscriptTuple5[0]
+	err = __goscriptTuple5[1]
+	$.println("CopyN async reader - bytes:", n64, "err:", err == null)
+	let __goscriptTuple6 = await io.Copy($.pointerValue($.interfaceValue<io.Writer | null>(buf, "*main.asyncBuffer")), $.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewBuffer(new Uint8Array([99, 111, 112, 121])), "*bytes.Buffer")))
+	n64 = __goscriptTuple6[0]
+	err = __goscriptTuple6[1]
+	$.println("Copy bytes WriteTo async writer - bytes:", n64, "err:", err == null)
+	let viewBacking = $.arrayToSlice<number>([$.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(99, 8)])
+	let __goscriptTuple7 = $.pointerValue<bytes.Buffer>(bytes.NewBuffer(new Uint8Array([118, 105, 101, 119]))).Read($.goSlice(viewBacking, undefined, 4))
+	n = __goscriptTuple7[0]
+	err = __goscriptTuple7[1]
+	$.println("Read into byte slice view - bytes:", n, "data:", $.bytesToString(viewBacking), "err:", err == null)
+	let dst: $.VarRef<bytes.Buffer> = $.varRef($.markAsStructValue(new bytes.Buffer()))
+	let __goscriptTuple8 = await io.Copy($.pointerValue($.interfaceValue<io.Writer | null>($.pointerValue<bytes.Buffer | $.VarRef<bytes.Buffer>>(dst), "*bytes.Buffer")), $.pointerValue($.interfaceValue<io.Reader | null>(new asyncReader(), "*main.asyncReader")))
+	n64 = __goscriptTuple8[0]
+	err = __goscriptTuple8[1]
+	$.println("Copy bytes ReadFrom async reader - bytes:", n64, "data:", dst.value.String(), "err:", err == null)
 
-	let __goscriptTuple4 = io.Pipe()
-	let reader: io.PipeReader | $.VarRef<io.PipeReader> | null = __goscriptTuple4[0]
-	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple4[1]
+	let __goscriptTuple9 = io.Pipe()
+	let reader: io.PipeReader | $.VarRef<io.PipeReader> | null = __goscriptTuple9[0]
+	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple9[1]
 	let done = $.makeChannel<boolean>(1, false, "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		let __goscriptShadow0 = $.makeSlice<number>(5, undefined, "byte")
 		let [__goscriptShadow1, __goscriptShadow2] = $.pointerValue<io.PipeReader>(reader).Read(__goscriptShadow0)
 		$.println("Pipe read - bytes:", __goscriptShadow1, "data:", $.bytesToString($.goSlice(__goscriptShadow0, undefined, __goscriptShadow1)), "err:", __goscriptShadow2 == null)
-		let __goscriptTuple5 = $.pointerValue<io.PipeReader>(reader).Read(__goscriptShadow0)
-		__goscriptShadow1 = __goscriptTuple5[0]
-		__goscriptShadow2 = __goscriptTuple5[1]
+		let __goscriptTuple10 = $.pointerValue<io.PipeReader>(reader).Read(__goscriptShadow0)
+		__goscriptShadow1 = __goscriptTuple10[0]
+		__goscriptShadow2 = __goscriptTuple10[1]
 		$.println("Pipe read EOF - bytes:", __goscriptShadow1, "err EOF:", __goscriptShadow2 == io.EOF)
 		await $.chanSend(done, true)
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
-	let __goscriptTuple6 = $.pointerValue<io.PipeWriter>(writer).Write($.stringToBytes("hello"))
-	n = __goscriptTuple6[0]
-	err = __goscriptTuple6[1]
+	let __goscriptTuple11 = $.pointerValue<io.PipeWriter>(writer).Write(new Uint8Array([104, 101, 108, 108, 111]))
+	n = __goscriptTuple11[0]
+	err = __goscriptTuple11[1]
 	$.println("Pipe write - bytes:", n, "err:", err == null)
 	err = $.pointerValue<io.PipeWriter>(writer).Close()
 	$.println("Pipe close err:", err == null)
 	await $.chanRecv(done)
-	let __goscriptTuple7 = $.pointerValue<io.PipeWriter>(writer).Write($.stringToBytes("again"))
-	n = __goscriptTuple7[0]
-	err = __goscriptTuple7[1]
+	let __goscriptTuple12 = $.pointerValue<io.PipeWriter>(writer).Write(new Uint8Array([97, 103, 97, 105, 110]))
+	n = __goscriptTuple12[0]
+	err = __goscriptTuple12[1]
 	$.println("Pipe write after close - bytes:", n, "err closed:", err == io.ErrClosedPipe)
 
 	$.println("test finished")

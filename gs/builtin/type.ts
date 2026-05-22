@@ -671,8 +671,14 @@ function matchesMapType(value: any, info: TypeInfo): boolean {
  */
 function matchesArrayOrSliceType(value: any, info: TypeInfo): boolean {
   // For slices and arrays, check if the value is an array and sample element types
-  if (!Array.isArray(value)) return false
   if (!isArrayTypeInfo(info) && !isSliceTypeInfo(info)) return false
+
+  if (value instanceof Uint8Array) {
+    if (isArrayTypeInfo(info) && value.length !== info.length) return false
+    return isNumberElementType(info.elemType)
+  }
+
+  if (!Array.isArray(value)) return false
 
   if (info.elemType) {
     const arr = value as any[]
@@ -692,6 +698,21 @@ function matchesArrayOrSliceType(value: any, info: TypeInfo): boolean {
   }
 
   return true
+}
+
+function isNumberElementType(typeInfo: string | TypeInfo | undefined): boolean {
+  if (typeInfo === undefined) return true
+  const info = normalizeTypeInfo(typeInfo)
+  return (
+    info.kind === TypeKind.Basic &&
+    (info.name === undefined ||
+      info.name === 'number' ||
+      info.name === 'int' ||
+      info.name === 'uint' ||
+      info.name === 'uint8' ||
+      info.name === 'byte' ||
+      info.name === 'float64')
+  )
 }
 
 // Symbol used to mark struct instances that represent values (not pointers)

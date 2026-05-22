@@ -12,6 +12,11 @@ Reset different writer
 Copy interface - bytes: 4 err: true
 Copy embedded reader - bytes: 4 err: true
 Copy embedded writer - bytes: 4 err: true
+Copy async writer - bytes: 4 err: true
+CopyN async reader - bytes: 5 err: true
+Copy bytes WriteTo async writer - bytes: 4 err: true
+Read into byte slice view - bytes: 4 data: viewc err: true
+Copy bytes ReadFrom async reader - bytes: 5 data: async err: true
 Pipe write - bytes: 5 err: true
 Pipe close err: true
 Pipe read - bytes: 5 data: hello err: true

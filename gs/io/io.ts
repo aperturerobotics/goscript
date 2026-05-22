@@ -257,18 +257,20 @@ export class LimitedReader implements Reader {
   }
 
   Read(p: $.Bytes): [number, $.GoError] {
-    if (this.N <= 0) {
-      return [0, EOF]
-    }
+    return (async (): Promise<[number, $.GoError]> => {
+      if (this.N <= 0) {
+        return [0, EOF]
+      }
 
-    let readBuf = p
-    if ($.len(p) > this.N) {
-      readBuf = $.goSlice(p, 0, this.N)
-    }
+      let readBuf = p
+      if ($.len(p) > this.N) {
+        readBuf = $.goSlice(p, 0, this.N)
+      }
 
-    const [n, err] = this.R.Read(readBuf)
-    this.N -= n
-    return [n, err]
+      const [n, err] = await (this.R.Read(readBuf) as any)
+      this.N -= n
+      return [n, err]
+    })() as any
   }
 }
 
@@ -415,19 +417,19 @@ export function NewOffsetWriter(w: WriterAt, off: number): OffsetWriter {
 }
 
 // Copy copies from src to dst until either EOF is reached on src or an error occurs
-export function Copy(
+export async function Copy(
   dst: WriterLike,
   src: ReaderLike,
-): [number, $.GoError] {
-  return CopyBuffer(dst, src, null)
+): Promise<[number, $.GoError]> {
+  return await CopyBuffer(dst, src, null)
 }
 
 // CopyBuffer is identical to Copy except that it stages through the provided buffer
-export function CopyBuffer(
+export async function CopyBuffer(
   dst: WriterLike,
   src: ReaderLike,
   buf: $.Bytes | null,
-): [number, $.GoError] {
+): Promise<[number, $.GoError]> {
   dst = unwrapWriter(dst)
   src = unwrapReader(src)
   if (dst === null || src === null) {
@@ -436,12 +438,12 @@ export function CopyBuffer(
 
   // If src implements WriterTo, use it
   if ('WriteTo' in src && typeof (src as any).WriteTo === 'function') {
-    return (src as WriterTo).WriteTo(dst)
+    return await ((src as WriterTo).WriteTo(dst) as any)
   }
 
   // If dst implements ReaderFrom, use it
   if ('ReadFrom' in dst && typeof (dst as any).ReadFrom === 'function') {
-    return (dst as ReaderFrom).ReadFrom(src)
+    return await ((dst as ReaderFrom).ReadFrom(src) as any)
   }
 
   if (buf === null) {
@@ -450,9 +452,9 @@ export function CopyBuffer(
 
   let written = 0
   while (true) {
-    const [nr, er] = src.Read(buf)
+    const [nr, er] = await (src.Read(buf) as any)
     if (nr > 0) {
-      const [nw, ew] = dst.Write($.goSlice(buf, 0, nr))
+      const [nw, ew] = await (dst.Write($.goSlice(buf, 0, nr)) as any)
       if (nw < 0 || nr < nw) {
         if (ew === null) {
           return [written, ErrShortWrite]
@@ -498,12 +500,12 @@ function unwrapWriter(dst: WriterLike): Writer | null {
 }
 
 // CopyN copies n bytes (or until an error) from src to dst
-export function CopyN(
+export async function CopyN(
   dst: Writer,
   src: Reader,
   n: number,
-): [number, $.GoError] {
-  const [written, err] = Copy(dst, LimitReader(src, n))
+): Promise<[number, $.GoError]> {
+  const [written, err] = await Copy(dst, LimitReader(src, n))
   if (written === n) {
     return [written, null]
   }
@@ -515,22 +517,25 @@ export function CopyN(
 }
 
 // ReadAtLeast reads from r into buf until it has read at least min bytes
-export function ReadAtLeast(
+export async function ReadAtLeast(
   r: Reader,
   buf: $.Bytes,
   min: number,
-): [number, $.GoError] {
+): Promise<[number, $.GoError]> {
   if ($.len(buf) < min) {
     return [0, ErrShortBuffer]
   }
 
   let n = 0
   while (n < min) {
-    const [nn, err] = r.Read($.goSlice(buf, n))
+    const [nn, err] = await (r.Read($.goSlice(buf, n)) as any)
     n += nn
     if (err !== null) {
       if (err === EOF && n >= min) {
         return [n, null]
+      }
+      if (err === EOF && n === 0) {
+        return [n, EOF]
       }
       if (err === EOF && n < min) {
         return [n, ErrUnexpectedEOF]
@@ -542,20 +547,22 @@ export function ReadAtLeast(
 }
 
 // ReadFull reads exactly len(buf) bytes from r into buf
-export function ReadFull(r: Reader, buf: $.Bytes): [number, $.GoError] {
-  return ReadAtLeast(r, buf, $.len(buf))
+export async function ReadFull(r: Reader, buf: $.Bytes): Promise<[number, $.GoError]> {
+  return await ReadAtLeast(r, buf, $.len(buf))
 }
 
 // ReadAll reads from r until an error or EOF and returns the data it read
-export function ReadAll(r: Reader): [$.Bytes, $.GoError] {
+export async function ReadAll(r: Reader): Promise<[$.Bytes, $.GoError]> {
   const chunks: $.Bytes[] = []
   let totalLength = 0
   const buf = $.makeSlice<number>(512, undefined, 'byte')
 
   while (true) {
-    const [n, err] = r.Read(buf)
+    const [n, err] = await (r.Read(buf) as any)
     if (n > 0) {
-      chunks.push($.goSlice(buf, 0, n))
+      const chunk = $.makeSlice<number>(n, undefined, 'byte')
+      $.copy(chunk, $.goSlice(buf, 0, n))
+      chunks.push(chunk)
       totalLength += n
     }
     if (err !== null) {

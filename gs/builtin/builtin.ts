@@ -232,7 +232,13 @@ export type Bytes = Uint8Array | Slice<number>
 
 // int converts a value to a Go int type, handling proper signed integer conversion
 // This ensures that values like 2147483648 (2^31) are properly handled according to Go semantics
-export function int(value: number, bits = 0): number {
+export function int(value: number | bigint, bits = 0): number {
+  if (typeof value === 'bigint') {
+    if (bits > 0 && bits <= 64) {
+      return Number(BigInt.asIntN(bits, value))
+    }
+    return Number(value)
+  }
   if (bits > 0 && bits < 64) {
     const modulo = 2 ** bits
     const sign = 2 ** (bits - 1)
@@ -262,7 +268,14 @@ export function int(value: number, bits = 0): number {
 }
 
 // uint converts a value to an unsigned Go integer width.
-export function uint(value: number, bits = 64): number {
+export function uint(value: number | bigint, bits = 64): number {
+  if (typeof value === 'bigint') {
+    const normalized = BigInt.asUintN(Math.min(bits, 64), value)
+    if (bits >= 64) {
+      return normalized as unknown as number
+    }
+    return Number(normalized)
+  }
   const modulo = bits >= 64 ? 2 ** 64 : 2 ** bits
   let truncated = Math.trunc(value)
   if (!Number.isFinite(truncated)) {
@@ -273,6 +286,65 @@ export function uint(value: number, bits = 64): number {
     truncated += modulo
   }
   return truncated
+}
+
+export function uint64Shl(value: number | bigint, shift: number | bigint): number {
+  return uint64Result(uint64Value(value) << BigInt(Math.trunc(Number(shift))))
+}
+
+export function uint64Shr(value: number | bigint, shift: number | bigint): number {
+  return uint64Result(uint64Value(value) >> BigInt(Math.trunc(Number(shift))))
+}
+
+export function uintShr(
+  value: number | bigint,
+  shift: number | bigint,
+  bits = 32,
+): number {
+  const width = Math.min(bits, 32)
+  const amount = Math.trunc(Number(shift))
+  if (amount < 0) {
+    throw new Error('runtime error: negative shift amount')
+  }
+  if (amount >= width) {
+    return 0
+  }
+  return uint(value, width) >>> amount
+}
+
+export function uint64Mul(left: number | bigint, right: number | bigint): number {
+  return uint64Result(uint64Value(left) * uint64Value(right))
+}
+
+export function uint64Add(left: number | bigint, right: number | bigint): number {
+  return uint64Result(uint64Value(left) + uint64Value(right))
+}
+
+export function uint64Sub(left: number | bigint, right: number | bigint): number {
+  return uint64Result(uint64Value(left) - uint64Value(right))
+}
+
+export function uint64And(left: number | bigint, right: number | bigint): number {
+  return uint64Result(uint64Value(left) & uint64Value(right))
+}
+
+export function uint64Or(left: number | bigint, right: number | bigint): number {
+  return uint64Result(uint64Value(left) | uint64Value(right))
+}
+
+export function uint64Xor(left: number | bigint, right: number | bigint): number {
+  return uint64Result(uint64Value(left) ^ uint64Value(right))
+}
+
+function uint64Value(value: number | bigint): bigint {
+  if (typeof value === 'bigint') {
+    return BigInt.asUintN(64, value)
+  }
+  return BigInt.asUintN(64, BigInt(Math.trunc(value)))
+}
+
+function uint64Result(value: bigint): number {
+  return BigInt.asUintN(64, value) as unknown as number
 }
 
 /**
@@ -408,15 +480,14 @@ export function bytesToArray(bytes: Bytes | null): number[] {
     return Array.from(bytes)
   }
 
-  if (Array.isArray(bytes)) {
-    return bytes
-  }
-
-  // Handle SliceProxy
   if (isSliceProxy(bytes)) {
     const proxy = bytes as SliceProxy<number>
     const meta = proxy.__meta__
     return meta.backing.slice(meta.offset, meta.offset + meta.length)
+  }
+
+  if (Array.isArray(bytes)) {
+    return bytes
   }
 
   throw new Error(`Cannot convert bytes of type ${typeof bytes} to array`)

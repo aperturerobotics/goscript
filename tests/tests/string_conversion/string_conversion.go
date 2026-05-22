@@ -48,6 +48,20 @@ func main() {
 	bytes := []byte{72, 101, 108, 108, 111}
 	bytesString := string(bytes)
 	println(bytesString)
+	println(string([]byte{0xea, 0x08, 0x00}) == "\xea\x08\x00")
+	println(string([]byte{0xc3, 0xa9}) == "é")
+	const magic = "\xff\x06\x00\x00S2sTwO"
+	println(len(magic) == 10)
+	magicBytes := []byte(magic)
+	println(len(magicBytes) == 10)
+	println(magicBytes[0] == 255)
+	println(magicBytes[1] == 6)
+	println(string(magicBytes) == magic)
+	println(len("é") == 2)
+	utf8Bytes := []byte("é")
+	println(len(utf8Bytes) == 2)
+	println(utf8Bytes[0] == 195)
+	println(utf8Bytes[1] == 169)
 
 	// string(int32) conversion
 	i32 := int32(66)

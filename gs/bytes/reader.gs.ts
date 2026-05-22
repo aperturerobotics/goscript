@@ -80,7 +80,7 @@ export class Reader {
 			return [0, io.EOF]
 		}
 		r.prevRune = -1
-		const n = $.copy($.bytesToUint8Array(b), $.bytesToUint8Array($.goSlice(r.s, r.i, undefined)))
+		const n = $.copy(b, $.goSlice(r.s, r.i, undefined))
 		r.i += (n as number)
 		return [n, null]
 	}
@@ -94,7 +94,7 @@ export class Reader {
 		if (off >= ($.len(r.s) as number)) {
 			return [0, io.EOF]
 		}
-		const n = $.copy($.bytesToUint8Array(b), $.bytesToUint8Array($.goSlice(r.s, off, undefined)))
+		const n = $.copy(b, $.goSlice(r.s, off, undefined))
 		let err: $.GoError = null
 		if (n < $.len(b)) {
 			err = io.EOF
@@ -187,22 +187,24 @@ export class Reader {
 
 	// WriteTo implements the [io.WriterTo] interface.
 	public WriteTo(w: io.Writer): [number, $.GoError] {
-		const r = this
-		r.prevRune = -1
-		if (r.i >= ($.len(r.s) as number)) {
-			return [0, null]
-		}
-		const b = $.goSlice(r.s, r.i, undefined)
-		const [m, err] = w!.Write($.bytesToUint8Array(b))
-		if (m > $.len(b)) {
-			$.panic("bytes.Reader.WriteTo: invalid Write count")
-		}
-		r.i += (m as number)
-		const n = (m as number)
-		if (m != $.len(b) && err == null) {
-			return [n, io.ErrShortWrite]
-		}
-		return [n, err]
+		return (async (): Promise<[number, $.GoError]> => {
+			const r = this
+			r.prevRune = -1
+			if (r.i >= ($.len(r.s) as number)) {
+				return [0, null]
+			}
+			const b = $.goSlice(r.s, r.i, undefined)
+			const [m, err] = await (w!.Write($.bytesToUint8Array(b)) as any)
+			if (m > $.len(b)) {
+				$.panic("bytes.Reader.WriteTo: invalid Write count")
+			}
+			r.i += (m as number)
+			const n = (m as number)
+			if (m != $.len(b) && err == null) {
+				return [n, io.ErrShortWrite]
+			}
+			return [n, err]
+		})() as any
 	}
 
 	// Reset resets the [Reader] to be reading from b.
@@ -227,4 +229,3 @@ export class Reader {
 export function NewReader(b: $.Bytes): Reader {
 	return new Reader({s: $.normalizeBytes(b), i: 0, prevRune: -1})
 }
-

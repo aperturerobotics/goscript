@@ -409,7 +409,7 @@ export function goSlice<T>( // T can be number for Uint8Array case
       )
     }
 
-    const subArrayView = s.subarray(actualLow, actualHigh) // This is Uint8Array
+    const newLength = actualHigh - actualLow
 
     if (max !== undefined) {
       if (max < actualHigh || max > s.length) {
@@ -419,35 +419,36 @@ export function goSlice<T>( // T can be number for Uint8Array case
         )
       }
 
-      const newLength = subArrayView.length // actualHigh - actualLow
       const newCap = max - actualLow // Capacity of the new slice view
 
       if (newCap !== newLength) {
-        // Capacity is different from length, so return SliceProxy<number>
-        // The original s was Uint8Array, so T is effectively 'number' for this path.
-        const backingNumbers = Array.from(subArrayView) // Convert Uint8Array data to number[]
-
-        const proxyTarget = {
-          __meta__: {
-            backing: backingNumbers, // number[]
-            offset: 0, // Offset is 0 because backingNumbers is a direct copy
-            length: newLength,
-            capacity: newCap,
-          },
+        const proxyTarget = new Array<number>(newLength) as SliceProxy<number>
+        proxyTarget.__meta__ = {
+          backing: s as unknown as number[],
+          offset: actualLow,
+          length: newLength,
+          capacity: newCap,
         }
-        // Explicitly cast to Slice<T> after ensuring T is number for this branch.
-        return new Proxy(
-          proxyTarget,
-          handler,
-        ) as unknown as SliceProxy<number> as Slice<T>
+        return new Proxy(proxyTarget, handler) as unknown as Slice<T>
       } else {
         // newCap === newLength, standard Uint8Array is fine.
-        return subArrayView as Slice<T> // T is number
+        return s.subarray(actualLow, actualHigh) as Slice<T> // T is number
       }
-    } else {
-      // max is not defined, return the Uint8Array subarray view directly.
-      return subArrayView as Slice<T> // T is number
     }
+
+    if (actualHigh !== s.length) {
+      const proxyTarget = new Array<number>(newLength) as SliceProxy<number>
+      proxyTarget.__meta__ = {
+        backing: s as unknown as number[],
+        offset: actualLow,
+        length: newLength,
+        capacity: s.length - actualLow,
+      }
+      return new Proxy(proxyTarget, handler) as unknown as Slice<T>
+    }
+
+    // max is not defined and length equals capacity, return the Uint8Array view directly.
+    return s.subarray(actualLow, actualHigh) as Slice<T> // T is number
   }
 
   // Handle nil slices - in Go, slicing a nil slice with valid bounds returns nil
@@ -772,7 +773,7 @@ export function append<T>(
     let combinedBytes: number[] = []
     // Add bytes from the original slice if it exists and is numeric.
     if (inputIsUint8Array) {
-      combinedBytes.push(...Array.from(slice as Uint8Array))
+      appendBytes(combinedBytes, slice as Uint8Array)
     } else if (slice !== null && slice !== undefined) {
       // Original was Slice<number> or number[]
       const sliceLen = len(slice)
@@ -790,7 +791,7 @@ export function append<T>(
     // For Uint8Array, elements are always flattened if they are slices/Uint8Arrays.
     for (const item of elements) {
       if (item instanceof Uint8Array) {
-        combinedBytes.push(...Array.from(item))
+        appendBytes(combinedBytes, item)
       } else if (isComplexSlice(item) || Array.isArray(item)) {
         const itemLen = len(item as Slice<any>)
         for (let i = 0; i < itemLen; i++) {
@@ -896,6 +897,12 @@ export function append<T>(
     capacity: newCapacity,
   }
   return wrapSliceProxy(resultProxy) as any
+}
+
+function appendBytes(dst: number[], src: Uint8Array): void {
+  for (let i = 0; i < src.length; i++) {
+    dst.push(src[i])
+  }
 }
 
 /**
@@ -1400,9 +1407,7 @@ export const bytesToString = (
   if (bytes === null) return ''
   // If it's already a string, just return it
   if (typeof bytes === 'string') return bytes
-  if (bytes instanceof Uint8Array) {
-    return new TextDecoder().decode(bytes)
-  }
+  if (bytes instanceof Uint8Array) return decodeGoStringBytes(bytes)
   // Ensure we get a plain number[] for Uint8Array.from
   let byteArray: number[]
   if (isComplexSlice(bytes)) {
@@ -1415,7 +1420,24 @@ export const bytesToString = (
     // For simple T[] slices
     byteArray = bytes
   }
-  return new TextDecoder().decode(Uint8Array.from(byteArray))
+  return decodeGoStringBytes(Uint8Array.from(byteArray))
+}
+
+function decodeGoStringBytes(bytes: Uint8Array): string {
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+  } catch {
+    return bytesToBinaryString(bytes)
+  }
+}
+
+function bytesToBinaryString(bytes: Uint8Array): string {
+  const chunkSize = 0x8000
+  let out = ''
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    out += String.fromCharCode(...bytes.subarray(i, i + chunkSize))
+  }
+  return out
 }
 
 /**

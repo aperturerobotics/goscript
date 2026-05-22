@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"io"
 	"sync"
 )
@@ -17,9 +18,23 @@ type staticReader struct {
 	done bool
 }
 
+type asyncReader struct {
+	done bool
+}
+
 func (b *asyncBuffer) Write(p []byte) (int, error) {
 	asyncWrites.Load("last")
 	return len(p), nil
+}
+
+func (r *asyncReader) Read(p []byte) (int, error) {
+	asyncWrites.Load("read")
+	if r.done {
+		return 0, io.EOF
+	}
+	copy(p, []byte("async"))
+	r.done = true
+	return 5, nil
 }
 
 func (r *staticReader) Read(p []byte) (int, error) {
@@ -72,6 +87,18 @@ func main() {
 	println("Copy embedded reader - bytes:", n64, "err:", err == nil)
 	n64, err = io.Copy(struct{ io.Writer }{io.Discard}, &staticReader{})
 	println("Copy embedded writer - bytes:", n64, "err:", err == nil)
+	n64, err = io.Copy(buf, &staticReader{})
+	println("Copy async writer - bytes:", n64, "err:", err == nil)
+	n64, err = io.CopyN(io.Discard, &asyncReader{}, 5)
+	println("CopyN async reader - bytes:", n64, "err:", err == nil)
+	n64, err = io.Copy(buf, bytes.NewBuffer([]byte("copy")))
+	println("Copy bytes WriteTo async writer - bytes:", n64, "err:", err == nil)
+	viewBacking := []byte{0, 0, 0, 0, 99}
+	n, err = bytes.NewBuffer([]byte("view")).Read(viewBacking[:4])
+	println("Read into byte slice view - bytes:", n, "data:", string(viewBacking), "err:", err == nil)
+	var dst bytes.Buffer
+	n64, err = io.Copy(&dst, &asyncReader{})
+	println("Copy bytes ReadFrom async reader - bytes:", n64, "data:", dst.String(), "err:", err == nil)
 
 	reader, writer := io.Pipe()
 	done := make(chan bool, 1)

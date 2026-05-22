@@ -1250,6 +1250,22 @@ func lowerLargeIntegerConstantValue(value constant.Value) (string, bool) {
 	return value.ExactString(), true
 }
 
+func lowerConstantStringByteSlice(ctx lowerFileContext, expr ast.Expr) (string, bool) {
+	value := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)].Value
+	if value == nil || value.Kind() != constant.String {
+		return "", false
+	}
+	return byteSliceLiteral([]byte(constant.StringVal(value))), true
+}
+
+func lowerConstantStringLen(ctx lowerFileContext, expr ast.Expr) (string, bool) {
+	value := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)].Value
+	if value == nil || value.Kind() != constant.String {
+		return "", false
+	}
+	return strconv.Itoa(len([]byte(constant.StringVal(value)))), true
+}
+
 func goEmbedPatterns(groups ...*ast.CommentGroup) []string {
 	var patterns []string
 	for _, group := range groups {
@@ -2715,6 +2731,10 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			stmts = append(stmts, loweredStmt{text: left + " = " + left + " & ~(" + right + ")"})
 			continue
 		}
+		if helper, ok := wideIntegerAssignHelper(targetType, stmt.Tok); ok {
+			stmts = append(stmts, loweredStmt{text: left + " = " + o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")"})
+			continue
+		}
 		op := stmt.Tok.String()
 		if stmt.Tok == token.DEFINE {
 			op = "="
@@ -2722,6 +2742,32 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		stmts = append(stmts, loweredStmt{text: left + " " + op + " " + right})
 	}
 	return stmts, diagnostics
+}
+
+func wideIntegerAssignHelper(targetType types.Type, tok token.Token) (RuntimeHelper, bool) {
+	if !isFixedWideIntegerType(targetType) {
+		return "", false
+	}
+	switch tok {
+	case token.SHL_ASSIGN:
+		return RuntimeHelperUint64Shl, true
+	case token.SHR_ASSIGN:
+		return RuntimeHelperUint64Shr, true
+	case token.MUL_ASSIGN:
+		return RuntimeHelperUint64Mul, true
+	case token.ADD_ASSIGN:
+		return RuntimeHelperUint64Add, true
+	case token.SUB_ASSIGN:
+		return RuntimeHelperUint64Sub, true
+	case token.AND_ASSIGN:
+		return RuntimeHelperUint64And, true
+	case token.OR_ASSIGN:
+		return RuntimeHelperUint64Or, true
+	case token.XOR_ASSIGN:
+		return RuntimeHelperUint64Xor, true
+	default:
+		return "", false
+	}
 }
 
 func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
@@ -4453,6 +4499,12 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 		if typed.Op == token.QUO && isIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(typed)) {
 			return "Math.trunc(" + left + " / " + right + ")", append(leftDiagnostics, rightDiagnostics...)
 		}
+		if typed.Op == token.SHR {
+			if bits, ok := unsignedIntegerBits(ctx.semPkg.source.TypesInfo.TypeOf(typed.X)); ok && bits <= 32 {
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUintShr) +
+					"(" + left + ", " + right + ", " + strconv.Itoa(bits) + ")", append(leftDiagnostics, rightDiagnostics...)
+			}
+		}
 		if value, ok := o.lowerWideIntegerBinaryExpr(ctx, typed, left, right); ok {
 			return value, append(leftDiagnostics, rightDiagnostics...)
 		}
@@ -4760,6 +4812,9 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperDeleteMapEntry) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "len":
 				if len(expr.Args) == 1 {
+					if literalLen, ok := lowerConstantStringLen(ctx, expr.Args[0]); ok {
+						return literalLen, diagnostics
+					}
 					args[0] = o.lowerArrayPointerTarget(ctx, args[0], ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[0]))
 				}
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + strings.Join(args, ", ") + ")", diagnostics
@@ -5256,6 +5311,9 @@ func (o *LoweringOwner) lowerConversionExpr(
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperStringToRunes) + "(" + value + ")", diagnostics
 	}
 	if isByteSliceType(targetType) && isStringType(sourceType) {
+		if literal, ok := lowerConstantStringByteSlice(ctx, expr.Args[0]); ok {
+			return literal, diagnostics
+		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperStringToBytes) + "(" + value + ")", diagnostics
 	}
 	if array := pointerToArrayType(targetType); array != nil {
@@ -5305,27 +5363,44 @@ func (o *LoweringOwner) lowerConversionExpr(
 }
 
 func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
+	resultWide := isFixedWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr))
+	leftWide := isFixedWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X))
+	if !resultWide && !leftWide {
+		return "", false
+	}
 	switch expr.Op {
 	case token.SHL, token.SHR:
-		amount, ok := constantShiftAmount(ctx, expr.Y)
-		if !ok || amount < 32 || !isWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X)) {
-			return "", false
-		}
-		base := left
+		helper := RuntimeHelperUint64Shr
 		if expr.Op == token.SHL {
-			base = o.lowerWideShiftLeftOperand(ctx, expr.X, left)
+			helper = RuntimeHelperUint64Shl
+		}
+		if _, ok := constantShiftAmount(ctx, expr.Y); !ok {
+			return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
+		}
+		amount, ok := constantShiftAmount(ctx, expr.Y)
+		if ok && amount >= 32 && expr.Op == token.SHL {
+			base := o.lowerWideShiftLeftOperand(ctx, expr.X, left)
 			return "(" + base + " * " + shiftMultiplier(amount) + ")", true
 		}
-		return "Math.floor(" + base + " / " + shiftMultiplier(amount) + ")", true
+		return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
+	case token.MUL:
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Mul) + "(" + left + ", " + right + ")", true
+	case token.ADD:
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Add) + "(" + left + ", " + right + ")", true
+	case token.SUB:
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Sub) + "(" + left + ", " + right + ")", true
+	case token.AND:
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64And) + "(" + left + ", " + right + ")", true
+	case token.XOR:
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Xor) + "(" + left + ", " + right + ")", true
 	case token.OR:
 		shift, ok := wideLeftShiftExpr(ctx, expr.X)
-		if !ok {
-			return "", false
+		if ok {
+			if bits, ok := lowIntegerBits(ctx, expr.Y); ok && bits <= shift {
+				return "(" + left + " + " + right + ")", true
+			}
 		}
-		if bits, ok := lowIntegerBits(ctx, expr.Y); !ok || bits > shift {
-			return "", false
-		}
-		return "(" + left + " + " + right + ")", true
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Or) + "(" + left + ", " + right + ")", true
 	default:
 		return "", false
 	}
@@ -6592,6 +6667,16 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 	if isStructValueType(targetType) && cloneStructValue {
 		return o.lowerStructClone(value)
 	}
+	if isIntegerType(targetType) && isIntegerType(sourceType) {
+		if bits, ok := unsignedIntegerBits(targetType); ok && bits < 64 {
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
+				"(" + value + ", " + strconv.Itoa(bits) + ")"
+		}
+		if bits, ok := signedIntegerBits(targetType); ok && bits < 64 {
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt) +
+				"(" + value + ", " + strconv.Itoa(bits) + ")"
+		}
+	}
 	if named := namedNonStructType(targetType); named != nil {
 		if _, ok := named.Underlying().(*types.Slice); ok {
 			return "(" + value + " as " + o.tsTypeFor(ctx, targetType) + ")"
@@ -7104,8 +7189,8 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		return "any"
 	case *types.Signature:
 		signatureCtx := ctx.withFunctionTypeDepth(ctx.functionTypeDepth + 1)
-		return "((" + o.tsSignatureParamsFor(signatureCtx, typed, false) + ") => " +
-			o.tsSignatureResultFor(signatureCtx, typed) + ") | null"
+		return "((" + o.tsSignatureParamsFor(signatureCtx, typed, true) + ") => " +
+			asyncCompatibleResultType(o.tsSignatureResultFor(signatureCtx, typed)) + ") | null"
 	default:
 		return "unknown"
 	}
@@ -7465,6 +7550,19 @@ func integerBits(typ types.Type) (int, bool) {
 func isWideIntegerType(typ types.Type) bool {
 	bits, ok := integerBits(typ)
 	return ok && bits > 32
+}
+
+func isFixedWideIntegerType(typ types.Type) bool {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	if !ok {
+		return false
+	}
+	switch basic.Kind() {
+	case types.Int64, types.Uint64, types.Uintptr:
+		return true
+	default:
+		return false
+	}
 }
 
 func isRuneSliceType(typ types.Type) bool {

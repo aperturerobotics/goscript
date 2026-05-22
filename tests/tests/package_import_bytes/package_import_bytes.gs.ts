@@ -9,8 +9,8 @@ import * as io from "@goscript/io/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	// Test basic byte slice operations
-	let b1 = $.stringToBytes("hello")
-	let b2 = $.stringToBytes("world")
+	let b1 = new Uint8Array([104, 101, 108, 108, 111])
+	let b2 = new Uint8Array([119, 111, 114, 108, 100])
 
 	// Test Equal
 	if (bytes.Equal(b1, b1)) {
@@ -24,39 +24,39 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test Contains
-	if (bytes.Contains(b1, $.stringToBytes("ell"))) {
+	if (bytes.Contains(b1, new Uint8Array([101, 108, 108]))) {
 		$.println("Contains works correctly")
 	}
 
 	// Test Index
-	let idx = bytes.Index(b1, $.stringToBytes("ll"))
+	let idx = bytes.Index(b1, new Uint8Array([108, 108]))
 	if (idx == 2) {
 		$.println("Index works correctly, found at position:", idx)
 	}
 
 	// Test Join
 	let slices = $.arrayToSlice<$.Slice<number>>([b1, b2])
-	let joined = bytes.Join(slices, $.stringToBytes(" "))
+	let joined = bytes.Join(slices, new Uint8Array([32]))
 	$.println("Joined:", $.bytesToString(joined))
 
 	// Test Split
-	let split = bytes.Split(joined, $.stringToBytes(" "))
+	let split = bytes.Split(joined, new Uint8Array([32]))
 	$.println("Split result length:", $.len(split))
 	if ($.len(split) == 2) {
 		$.println("Split works correctly")
 	}
 
 	// Test HasPrefix and HasSuffix
-	if (bytes.HasPrefix(b1, $.stringToBytes("he"))) {
+	if (bytes.HasPrefix(b1, new Uint8Array([104, 101]))) {
 		$.println("HasPrefix works correctly")
 	}
 
-	if (bytes.HasSuffix(b1, $.stringToBytes("lo"))) {
+	if (bytes.HasSuffix(b1, new Uint8Array([108, 111]))) {
 		$.println("HasSuffix works correctly")
 	}
 
 	// Test Trim functions
-	let whitespace = $.stringToBytes("  hello  ")
+	let whitespace = new Uint8Array([32, 32, 104, 101, 108, 108, 111, 32, 32])
 	let trimmed = bytes.TrimSpace(whitespace)
 	$.println("Trimmed:", $.bytesToString(trimmed))
 
@@ -67,19 +67,19 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Lower:", $.bytesToString(lower))
 
 	// Test Repeat
-	let repeated = bytes.Repeat($.stringToBytes("x"), 3)
+	let repeated = bytes.Repeat(new Uint8Array([120]), 3)
 	$.println("Repeated:", $.bytesToString(repeated))
 
 	// Test Count
-	let count = bytes.Count($.stringToBytes("banana"), $.stringToBytes("a"))
+	let count = bytes.Count(new Uint8Array([98, 97, 110, 97, 110, 97]), new Uint8Array([97]))
 	$.println("Count of 'a' in 'banana':", count)
 
 	// Test Replace
-	let replaced = bytes.Replace($.stringToBytes("hello hello"), $.stringToBytes("hello"), $.stringToBytes("hi"), 1)
+	let replaced = bytes.Replace(new Uint8Array([104, 101, 108, 108, 111, 32, 104, 101, 108, 108, 111]), new Uint8Array([104, 101, 108, 108, 111]), new Uint8Array([104, 105]), 1)
 	$.println("Replace result:", $.bytesToString(replaced))
 
 	// Test ReplaceAll
-	let replacedAll = bytes.ReplaceAll($.stringToBytes("hello hello"), $.stringToBytes("hello"), $.stringToBytes("hi"))
+	let replacedAll = bytes.ReplaceAll(new Uint8Array([104, 101, 108, 108, 111, 32, 104, 101, 108, 108, 111]), new Uint8Array([104, 101, 108, 108, 111]), new Uint8Array([104, 105]))
 	$.println("ReplaceAll result:", $.bytesToString(replacedAll))
 
 	// Test Buffer
@@ -100,7 +100,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test Buffer as Reader interface through an address expression.
 	buf.value.WriteString("abc")
-	let multi = io.MultiReader($.pointerValue($.interfaceValue<io.Reader | null>($.pointerValue<bytes.Buffer | $.VarRef<bytes.Buffer>>(buf), "*bytes.Buffer")), $.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewReader($.stringToBytes("de")), "*bytes.Reader")))
+	let multi = io.MultiReader($.pointerValue($.interfaceValue<io.Reader | null>($.pointerValue<bytes.Buffer | $.VarRef<bytes.Buffer>>(buf), "*bytes.Buffer")), $.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewReader(new Uint8Array([100, 101])), "*bytes.Reader")))
 	data = $.makeSlice<number>(5, undefined, "byte")
 	let __goscriptTuple0 = $.pointerValue<Exclude<io.Reader, null>>(multi).Read(data)
 	n = __goscriptTuple0[0]
