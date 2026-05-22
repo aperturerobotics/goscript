@@ -41,7 +41,7 @@ export class Message {
 
 	static __typeInfo = $.registerStructType(
 		"main.Message",
-		new Message(),
+		() => new Message(),
 		[],
 		Message,
 		{"priority": { kind: $.TypeKind.Basic, name: "int" }, "text": { kind: $.TypeKind.Basic, name: "string" }}
@@ -52,12 +52,16 @@ export const totalMessages: number = 8
 
 export let messages: $.Channel<Message> | null = $.makeChannel<Message>(0, $.markAsStructValue(new Message()), "both")
 
+export function __goscript_set_messages(value: $.Channel<Message> | null): void {
+	messages = value
+}
+
 export async function worker(id: number): globalThis.Promise<void> {
 	// Send worker starting message
-	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 10 + id, text: ("Worker " + String.fromCodePoint($.int(48 + id))) + " starting"})))
+	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 10 + id, text: ("Worker " + String.fromCodePoint($.int(48 + id, 32))) + " starting"})))
 
 	// Send worker done message
-	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 20 + id, text: ("Worker " + String.fromCodePoint($.int(48 + id))) + " done"})))
+	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 20 + id, text: ("Worker " + String.fromCodePoint($.int(48 + id, 32))) + " done"})))
 }
 
 export async function anotherWorker(name: string): globalThis.Promise<void> {
@@ -66,7 +70,7 @@ export async function anotherWorker(name: string): globalThis.Promise<void> {
 
 export async function main(): globalThis.Promise<void> {
 	// Create a slice to collect all messages
-	let allMessages = $.makeSlice<Message>(0, totalMessages + 3)
+	let allMessages = $.makeSlice<Message>(0, totalMessages + 3, undefined, () => $.markAsStructValue(new Message()))
 
 	// Add initial message
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 0, text: "Main: Starting workers"})))
@@ -114,7 +118,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println("done")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

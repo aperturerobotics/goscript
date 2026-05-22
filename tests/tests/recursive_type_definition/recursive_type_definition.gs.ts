@@ -55,7 +55,7 @@ export class B {
 
 	static __typeInfo = $.registerStructType(
 		"main.B",
-		new B(),
+		() => new B(),
 		[{ name: "MethodB", args: [], returns: [] }],
 		B,
 		{}
@@ -65,7 +65,6 @@ export class B {
 export async function main(): globalThis.Promise<void> {
 	$.println("recursive type definition test")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

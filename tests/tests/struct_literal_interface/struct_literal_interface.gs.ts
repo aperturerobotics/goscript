@@ -12,7 +12,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("First case dir:", cases![0].Dir)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

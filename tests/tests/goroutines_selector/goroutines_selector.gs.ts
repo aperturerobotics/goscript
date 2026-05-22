@@ -37,7 +37,7 @@ export class Foo {
 
 	static __typeInfo = $.registerStructType(
 		"main.Foo",
-		new Foo(),
+		() => new Foo(),
 		[{ name: "Bar", args: [], returns: [] }],
 		Foo,
 		{"done": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }}
@@ -54,7 +54,6 @@ export async function main(): globalThis.Promise<void> {
 	await $.chanRecv($.pointerValue<Foo>(f).done)
 	$.println("main done")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

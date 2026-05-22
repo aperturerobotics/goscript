@@ -46,7 +46,7 @@ export class blockImpl {
 
 	static __typeInfo = $.registerStructType(
 		"main.blockImpl",
-		new blockImpl(),
+		() => new blockImpl(),
 		[{ name: "Size", args: [], returns: [] }],
 		blockImpl,
 		{"size": { kind: $.TypeKind.Basic, name: "int" }}
@@ -70,7 +70,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("err nil:", err == null)
 	$.println("size:", $.pointerValue<Exclude<Block, null>>(block).Size())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -29,7 +29,6 @@ export async function main(): globalThis.Promise<void> {
 	testVariadicInterface("test4", values)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

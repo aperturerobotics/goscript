@@ -8,7 +8,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test 1: Using nil channel in select with default
 	$.println("Test 1: Select with nil channel and default")
-	let nilCh: $.Channel<number> | null = null
+	let nilCh: $.Channel<number> | null = null as $.Channel<number> | null
 
 	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{
@@ -43,8 +43,8 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test 2: Multiple nil channels in select with default
 	$.println("\nTest 2: Select with multiple nil channels and default")
-	let nilCh1: $.Channel<string> | null = null
-	let nilCh2: $.Channel<string> | null = null
+	let nilCh1: $.Channel<string> | null = null as $.Channel<string> | null
+	let nilCh2: $.Channel<string> | null = null as $.Channel<string> | null
 
 	const [__goscriptSelect1HasReturn, __goscriptSelect1Value] = await $.selectStatement<any, void>([
 		{
@@ -88,7 +88,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test 3: Mix of nil and valid channels in select
 	$.println("\nTest 3: Select with mix of nil and valid channels")
-	let nilCh3: $.Channel<boolean> | null = null
+	let nilCh3: $.Channel<boolean> | null = null as $.Channel<boolean> | null
 	let validCh = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(validCh, true)
 
@@ -134,7 +134,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("\nAll nil channel tests completed")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

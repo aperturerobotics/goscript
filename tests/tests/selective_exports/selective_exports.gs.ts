@@ -23,15 +23,14 @@ export async function main(): globalThis.Promise<void> {
 	$.println("=== End Selective Exports Test ===")
 }
 
-
-if ($.isMainScript(import.meta)) {
-	await main()
-}
-
 export function ExportedFunc(): void {
 	$.println("ExportedFunc called")
 }
 
 export function unexportedFunc(): void {
 	$.println("unexportedFunc called")
+}
+
+if ($.isMainScript(import.meta)) {
+	await main()
 }

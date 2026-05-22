@@ -14,10 +14,9 @@ export function isMinInt64(v: number): boolean {
 }
 
 export async function main(): globalThis.Promise<void> {
-	$.println(aboveSignedLimit($.int(10)))
+	$.println(aboveSignedLimit($.uint(10, 64)))
 	$.println(isMinInt64(0))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

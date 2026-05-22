@@ -44,7 +44,7 @@ export class cache {
 
 	static __typeInfo = $.registerStructType(
 		"main.cache",
-		new cache(),
+		() => new cache(),
 		[{ name: "Get", args: [], returns: [] }],
 		cache,
 		{"stored": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } }}
@@ -79,7 +79,7 @@ export class key {
 
 	static __typeInfo = $.registerStructType(
 		"main.key",
-		new key(),
+		() => new key(),
 		[],
 		key,
 		{"N": { kind: $.TypeKind.Basic, name: "int" }}
@@ -114,7 +114,7 @@ export class privateKey {
 
 	static __typeInfo = $.registerStructType(
 		"main.privateKey",
-		new privateKey(),
+		() => new privateKey(),
 		[],
 		privateKey,
 		{"D": { kind: $.TypeKind.Basic, name: "int" }}
@@ -122,6 +122,10 @@ export class privateKey {
 }
 
 export let privateKeyCache: $.VarRef<cache> = $.varRef($.markAsStructValue(new cache()))
+
+export function __goscript_set_privateKeyCache(value: cache): void {
+	privateKeyCache.value = value
+}
 
 export async function privateKeyToCache(k: key | $.VarRef<key> | null): globalThis.Promise<[privateKey | $.VarRef<privateKey> | null, $.GoError]> {
 	return await privateKeyCache.value.Get(k, $.functionValue((): [privateKey | $.VarRef<privateKey> | null, $.GoError] => {
@@ -141,7 +145,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println("cached:", $.pointerValue<privateKey>(v).D)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

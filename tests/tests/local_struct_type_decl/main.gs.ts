@@ -32,7 +32,7 @@ export async function main(): globalThis.Promise<void> {
 
 		static __typeInfo = $.registerStructType(
 			"main.result",
-			new result(),
+			() => new result(),
 			[],
 			result,
 			{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -44,7 +44,6 @@ export async function main(): globalThis.Promise<void> {
 	let got = await $.chanRecv(ch)
 	$.println(got.value)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

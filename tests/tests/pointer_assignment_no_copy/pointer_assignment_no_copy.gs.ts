@@ -41,7 +41,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
@@ -69,7 +69,6 @@ export async function main(): globalThis.Promise<void> {
 	// Expected: 20
 	$.println("Original value after pointer copy modification: Expected: 20, Actual:", $.pointerValue<MyStruct>(original).MyInt)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

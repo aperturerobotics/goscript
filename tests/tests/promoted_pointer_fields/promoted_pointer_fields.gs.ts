@@ -36,7 +36,7 @@ export class counter {
 
 	static __typeInfo = $.registerStructType(
 		"main.counter",
-		new counter(),
+		() => new counter(),
 		[{ name: "Load", args: [], returns: [] }],
 		counter,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -81,7 +81,7 @@ export class inner {
 
 	static __typeInfo = $.registerStructType(
 		"main.inner",
-		new inner(),
+		() => new inner(),
 		[],
 		inner,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }, "count": "main.counter"}
@@ -116,7 +116,7 @@ export class outer {
 
 	static __typeInfo = $.registerStructType(
 		"main.outer",
-		new outer(),
+		() => new outer(),
 		[],
 		outer,
 		{"inner": { kind: $.TypeKind.Pointer, elemType: "main.inner" }}
@@ -131,7 +131,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("renamed:", $.pointerValue<inner>($.pointerValue<outer>(o).inner).name, $.pointerValue<inner>($.pointerValue<outer>(o).inner).name)
 	$.println("count:", $.pointerValue<inner>($.pointerValue<outer>(o).inner).count.Load())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

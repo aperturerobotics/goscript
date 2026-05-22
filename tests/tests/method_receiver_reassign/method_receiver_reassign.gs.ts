@@ -39,7 +39,7 @@ export class item {
 
 	static __typeInfo = $.registerStructType(
 		"main.item",
-		new item(),
+		() => new item(),
 		[{ name: "dec", args: [], returns: [] }],
 		item,
 		{"n": { kind: $.TypeKind.Basic, name: "int" }}
@@ -52,7 +52,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("original:", original.n)
 	$.println("out:", out.n)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

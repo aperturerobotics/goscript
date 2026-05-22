@@ -31,7 +31,7 @@ export async function main(): globalThis.Promise<void> {
 export function hasData(buf: $.Slice<number>): boolean {
 	for (let __rangeIndex = 0; __rangeIndex < $.len(buf); __rangeIndex++) {
 		let b = buf![__rangeIndex]
-		if (b != 0) {
+		if ($.uint(b, 8) != $.uint(0, 8)) {
 			return true
 		}
 	}
@@ -40,7 +40,7 @@ export function hasData(buf: $.Slice<number>): boolean {
 
 export function isBase32(token: string): boolean {
 	for (let i = 0; i < $.len(token); i++) {
-		let c = $.indexStringOrBytes(token, i)
+		let c = $.uint($.indexStringOrBytes(token, i), 8)
 		if (!(((c >= 65) && (c <= 90)) || ((c >= 50) && (c <= 55)))) {
 			return false
 		}

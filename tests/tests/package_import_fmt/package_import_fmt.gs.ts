@@ -37,14 +37,14 @@ export class byteFormatter {
 
 	public Format(state: fmt.State | null, verb: number): void {
 		const b = this
-		let buf = $.append($.arrayToSlice<number>([]), b.prefix)
-		buf = $.append(buf, $.int(verb))
+		let buf = $.append($.arrayToSlice<number>([]), ...(b.prefix ?? []))
+		buf = $.append(buf, $.uint(verb, 8))
 		$.pointerValue<Exclude<fmt.State, null>>(state).Write(buf)
 	}
 
 	static __typeInfo = $.registerStructType(
 		"main.byteFormatter",
-		new byteFormatter(),
+		() => new byteFormatter(),
 		[{ name: "Format", args: [], returns: [] }],
 		byteFormatter,
 		{"prefix": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -94,11 +94,11 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Printf("Width: '%5s'\n", "hi")
 	fmt.Printf("Precision: '%.2f'\n", 3.14159)
 	fmt.Printf("Both: '%5.2f'\n", 3.14159)
-	fmt.Printf("Formatter: %v\n", $.interfaceValue<any>($.markAsStructValue(new byteFormatter({prefix: $.stringToBytes("byte-")})), "main.byteFormatter"))
-	let appended = fmt.Append($.stringToBytes("base-"), "tail")
+	fmt.Printf("Formatter: %v\n", $.interfaceValue<any>($.markAsStructValue(new byteFormatter({prefix: new Uint8Array([98, 121, 116, 101, 45])})), "main.byteFormatter"))
+	let appended = fmt.Append(new Uint8Array([98, 97, 115, 101, 45]), "tail")
 	fmt.Println("Append bytes:", $.bytesToString(appended))
 	let buf: $.VarRef<bytes.Buffer> = $.varRef($.markAsStructValue(new bytes.Buffer()))
-	fmt.Fprintln($.pointerValue($.interfaceValue<io.Writer | null>($.pointerValue<bytes.Buffer | $.VarRef<bytes.Buffer>>(buf), "*bytes.Buffer")), "Buffered writer")
+	fmt.Fprintln($.pointerValue($.interfaceValue<io.Writer | null>(buf, "*bytes.Buffer")), "Buffered writer")
 	fmt.Print(buf.value.String())
 
 	$.println("test finished")

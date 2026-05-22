@@ -5,11 +5,19 @@ import * as $ from "@goscript/builtin/index.js"
 
 export let value: number = 0
 
+export function __goscript_set_value(value: number): void {
+	value = value
+}
+
 function __goscriptInit0(): void {
 	value = 1
 }
 
 export let increment: number = 2
+
+export function __goscript_set_increment(value: number): void {
+	increment = value
+}
 
 function __goscriptInit1(): void {
 	value += increment

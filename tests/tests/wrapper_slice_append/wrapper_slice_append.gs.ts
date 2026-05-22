@@ -43,7 +43,7 @@ export class parser {
 
 	static __typeInfo = $.registerStructType(
 		"main.parser",
-		new parser(),
+		() => new parser(),
 		[],
 		parser,
 		{"errors": "errlist.ErrorList", "astruct": "errlist.AStruct"}
@@ -60,7 +60,6 @@ export async function main(): globalThis.Promise<void> {
 	p.astruct.Set("astruct")
 	$.println(p.astruct.Msg)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

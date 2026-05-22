@@ -43,7 +43,7 @@ export class FileStatus {
 
 	static __typeInfo = $.registerStructType(
 		"main.FileStatus",
-		new FileStatus(),
+		() => new FileStatus(),
 		[],
 		FileStatus,
 		{"mode": "main.MyFileMode", "size": { kind: $.TypeKind.Basic, name: "int" }}
@@ -70,7 +70,6 @@ export async function main(): globalThis.Promise<void> {
 	let genericMode: MyFileMode = 0o777
 	$.println("Generic mode:", $.int(genericMode))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

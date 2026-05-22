@@ -41,7 +41,7 @@ export class point {
 
 	static __typeInfo = $.registerStructType(
 		"main.point",
-		new point(),
+		() => new point(),
 		[],
 		point,
 		{"x": { kind: $.TypeKind.Basic, name: "int" }, "y": { kind: $.TypeKind.Basic, name: "int" }}
@@ -81,7 +81,6 @@ export async function main(): globalThis.Promise<void> {
 	z = __goscriptTuple0[2]
 	$.println("shift:", $.pointerValue<point>(x).x, $.pointerValue<point>(y).x, $.pointerValue<point>(z).x)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

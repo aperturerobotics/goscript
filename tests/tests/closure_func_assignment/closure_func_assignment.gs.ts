@@ -23,7 +23,6 @@ export async function main(): globalThis.Promise<void> {
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }], results: [] }))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

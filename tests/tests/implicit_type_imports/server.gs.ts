@@ -27,7 +27,7 @@ export class Server {
 
 	static __typeInfo = $.registerStructType(
 		"main.Server",
-		new Server(),
+		() => new Server(),
 		[{ name: "Handle", args: [], returns: [] }],
 		Server,
 		{}

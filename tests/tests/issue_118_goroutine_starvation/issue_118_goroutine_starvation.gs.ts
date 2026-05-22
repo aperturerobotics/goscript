@@ -40,7 +40,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Collect results
 	let results = $.arrayToSlice<number>([])
-	let timeout = time.After(5 * time.Second)
+	let timeout = time.After($.uint64Mul(5, time.Second))
 
 	for (let __rangeIndex = 0; __rangeIndex < 2; __rangeIndex++) {
 		const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
@@ -80,7 +80,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("worker2 completed")
 	$.println("no starvation detected")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

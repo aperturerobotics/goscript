@@ -41,7 +41,7 @@ export class Format {
 
 	static __typeInfo = $.registerStructType(
 		"main.Format",
-		new Format(),
+		() => new Format(),
 		[],
 		Format,
 		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Ext": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }}
@@ -50,7 +50,15 @@ export class Format {
 
 export let byName: Map<string, Format | $.VarRef<Format> | null> | null = $.makeMap<string, Format | $.VarRef<Format> | null>()
 
+export function __goscript_set_byName(value: Map<string, Format | $.VarRef<Format> | null> | null): void {
+	byName = value
+}
+
 export let byExt: Map<string, Format | $.VarRef<Format> | null> | null = $.makeMap<string, Format | $.VarRef<Format> | null>()
+
+export function __goscript_set_byExt(value: Map<string, Format | $.VarRef<Format> | null> | null): void {
+	byExt = value
+}
 
 export function registerFormat(__goscriptParam0: Format): void {
 	let f: $.VarRef<Format> = $.varRef(__goscriptParam0)
@@ -69,7 +77,6 @@ export async function main(): globalThis.Promise<void> {
 	$.pointerValue<Format>($.mapGet(byName, "json", null)[0]).Name = "mutated"
 	$.println($.pointerValue<Format>($.mapGet(byExt, "json", null)[0]).Name)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

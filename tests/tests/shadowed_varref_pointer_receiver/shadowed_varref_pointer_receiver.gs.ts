@@ -41,7 +41,7 @@ export class locked {
 
 	static __typeInfo = $.registerStructType(
 		"main.locked",
-		new locked(),
+		() => new locked(),
 		[{ name: "Inc", args: [], returns: [] }, { name: "Value", args: [], returns: [] }],
 		locked,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -65,7 +65,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println(locked.value.Value())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -36,7 +36,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[{ name: "GetValue", args: [], returns: [] }],
 		MyStruct,
 		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }}
@@ -62,7 +62,6 @@ export async function main(): globalThis.Promise<void> {
 	// Expected: 200
 	$.println("Value via pointer call after modification: Expected: 200, Actual:", $.markAsStructValue($.cloneStructValue($.pointerValue<MyStruct>(msPointer))).GetValue())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

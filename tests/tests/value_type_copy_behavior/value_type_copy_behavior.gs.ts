@@ -41,7 +41,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
@@ -86,7 +86,7 @@ export class NestedStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.NestedStruct",
-		new NestedStruct(),
+		() => new NestedStruct(),
 		[],
 		NestedStruct,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }, "InnerStruct": "main.MyStruct"}
@@ -161,7 +161,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("----------------------------------------------------------")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

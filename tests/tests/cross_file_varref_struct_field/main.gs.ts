@@ -10,7 +10,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(__goscript_info.info.value.mantbits, __goscript_info.info.value.expbits)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

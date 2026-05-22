@@ -33,7 +33,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("single:", single())
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

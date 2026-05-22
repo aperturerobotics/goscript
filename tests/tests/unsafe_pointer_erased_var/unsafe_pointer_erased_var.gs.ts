@@ -5,20 +5,23 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as unsafe from "@goscript/unsafe/index.js"
 
-export let table: $.VarRef<number[]> = $.varRef([1, 2, 3, 4])
+export let table: $.VarRef<Uint8Array> = $.varRef(new Uint8Array([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8), $.uint(4, 8)]))
 
-export function acceptMatrix(_p0: $.VarRef<number[][]> | null): void {
+export function __goscript_set_table(value: Uint8Array): void {
+	table.value = value
+}
+
+export function acceptMatrix(_p0: $.VarRef<Uint8Array[]> | null): void {
 }
 
 export async function main(): globalThis.Promise<void> {
 	let ptr = (table as any)
 	let bytes = ptr
-	$.println(($.pointerValue<number[]>(bytes))[2])
+	$.println($.uint(($.pointerValue<Uint8Array>(bytes))[2], 8))
 
 	ptr = (table as any)
 	acceptMatrix(ptr)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

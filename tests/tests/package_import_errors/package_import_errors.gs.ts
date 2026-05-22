@@ -38,7 +38,7 @@ export class customErr {
 
 	static __typeInfo = $.registerStructType(
 		"main.customErr",
-		new customErr(),
+		() => new customErr(),
 		[{ name: "Error", args: [], returns: [] }],
 		customErr,
 		{"msg": { kind: $.TypeKind.Basic, name: "string" }}
@@ -83,7 +83,7 @@ export class wrappedErr {
 
 	static __typeInfo = $.registerStructType(
 		"main.wrappedErr",
-		new wrappedErr(),
+		() => new wrappedErr(),
 		[{ name: "Error", args: [], returns: [] }, { name: "Unwrap", args: [], returns: [] }],
 		wrappedErr,
 		{"err": "error"}
@@ -103,12 +103,12 @@ export async function main(): globalThis.Promise<void> {
 	$.println("err1 == nil:", err1 == null)
 
 	// Test nil error
-	let nilErr: $.GoError = null
+	let nilErr: $.GoError = null as $.GoError
 	$.println("nilErr == nil:", nilErr == null)
 
 	let typedErr: customErr | $.VarRef<customErr> | null = new customErr({msg: "typed error"})
 	let __goscriptTuple0 = errors.AsType({E: { type: { kind: $.TypeKind.Pointer, elemType: "main.customErr" }, zero: () => null }}, $.interfaceValue<$.GoError>($.markAsStructValue(new wrappedErr({err: $.interfaceValue<$.GoError>(typedErr, "*main.customErr")})), "main.wrappedErr"))
-	let matched: customErr | $.VarRef<customErr> | null = __goscriptTuple0[0]
+	let matched: customErr | $.VarRef<customErr> | null = (__goscriptTuple0[0] as customErr | $.VarRef<customErr> | null)
 	let ok = __goscriptTuple0[1]
 	$.println("AsType matched:", ok)
 	if (ok) {

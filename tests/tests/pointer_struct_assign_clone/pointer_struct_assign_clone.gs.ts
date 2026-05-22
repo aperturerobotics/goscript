@@ -31,7 +31,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -40,7 +40,7 @@ export class MyStruct {
 
 export async function main(): globalThis.Promise<void> {
 	let s1 = $.markAsStructValue(new MyStruct({Value: 10}))
-	let p: MyStruct | $.VarRef<MyStruct> | null = null
+	let p: MyStruct | $.VarRef<MyStruct> | null = null as MyStruct | $.VarRef<MyStruct> | null
 	p = new MyStruct({Value: 20})
 
 	// This assignment should trigger the .clone() on s1
@@ -77,15 +77,14 @@ export async function main(): globalThis.Promise<void> {
 	$.println($.pointerValue<MyStruct>(p4).Value)
 }
 
-
-if ($.isMainScript(import.meta)) {
-	await main()
-}
-
 export function getStruct(): MyStruct {
 	return $.markAsStructValue(new MyStruct({Value: 100}))
 }
 
 export function getStructPointer(): MyStruct | $.VarRef<MyStruct> | null {
 	return new MyStruct({Value: 110})
+}
+
+if ($.isMainScript(import.meta)) {
+	await main()
 }

@@ -87,7 +87,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(o5)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

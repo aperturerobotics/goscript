@@ -68,7 +68,7 @@ export class storage {
 
 	static __typeInfo = $.registerStructType(
 		"main.storage",
-		new storage(),
+		() => new storage(),
 		[{ name: "IsEmpty", args: [], returns: [] }, { name: "Len", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "SetName", args: [], returns: [] }, { name: "Truncate", args: [], returns: [] }],
 		storage,
 		{"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "name": { kind: $.TypeKind.Basic, name: "string" }}
@@ -88,7 +88,6 @@ export async function main(): globalThis.Promise<void> {
 	$.pointerValue<storage>(s).SetName("new_name")
 	$.println("New name:", $.pointerValue<storage>(s).Name())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

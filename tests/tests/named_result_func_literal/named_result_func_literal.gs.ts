@@ -21,7 +21,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let [value, label] = await lookup!(false)
 	$.println(value)
-	$.println(label == "")
+	$.println((label as string) == "")
 
 	let __goscriptTuple0 = await lookup!(true)
 	value = __goscriptTuple0[0]
@@ -29,7 +29,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(value)
 	$.println(label)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

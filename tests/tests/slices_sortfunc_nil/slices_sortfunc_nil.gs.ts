@@ -33,7 +33,7 @@ export class field {
 
 	static __typeInfo = $.registerStructType(
 		"main.field",
-		new field(),
+		() => new field(),
 		[],
 		field,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }}
@@ -41,7 +41,7 @@ export class field {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let fields: $.Slice<field> = null
+	let fields: $.Slice<field> = null as $.Slice<field>
 	$.println("fields before:", fields)
 
 	slices.SortFunc(fields, $.functionValue((a: field, b: field): number => {
@@ -56,7 +56,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("fields after:", fields)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

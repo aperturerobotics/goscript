@@ -45,7 +45,7 @@ export class Broadcast {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async HoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): globalThis.Promise<void> {
+	public async HoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null) => void) | null): globalThis.Promise<void> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		using __defer = new $.DisposableStack()
 		await $.pointerValue<Broadcast>(c).mtx.Lock()
@@ -53,7 +53,7 @@ export class Broadcast {
 		await cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
 	}
 
-	public async HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): globalThis.Promise<void> {
+	public async HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null) => void) | null): globalThis.Promise<void> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		let holdBroadcastLock = $.functionValue(async (lock: boolean): globalThis.Promise<void> => {
 			using __defer = new $.DisposableStack()
@@ -74,7 +74,7 @@ export class Broadcast {
 		}
 	}
 
-	public async TryHoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => void) | null): globalThis.Promise<boolean> {
+	public async TryHoldLock(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null) => void) | null): globalThis.Promise<boolean> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		using __defer = new $.DisposableStack()
 		if (!$.pointerValue<Broadcast>(c).mtx.TryLock()) {
@@ -85,13 +85,13 @@ export class Broadcast {
 		return true
 	}
 
-	public async Wait(ctx: context.Context | null, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null) => [boolean, $.GoError] | globalThis.Promise<[boolean, $.GoError]>) | null): globalThis.Promise<$.GoError> {
+	public async Wait(ctx: context.Context | null, cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null) => [boolean, $.GoError] | globalThis.Promise<[boolean, $.GoError]>) | null): globalThis.Promise<$.GoError> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
 		if ((cb == null) || (ctx == null)) {
 			return errors.New("cb and ctx must be set")
 		}
 
-		let waitCh: $.Channel<{}> | null = null
+		let waitCh: $.Channel<{}> | null = null as $.Channel<{}> | null
 
 		while (true) {
 			if ($.pointerValue<Exclude<context.Context, null>>(ctx).Err() != null) {
@@ -99,8 +99,8 @@ export class Broadcast {
 			}
 
 			let done: boolean = false
-			let err: $.GoError = null
-			await $.pointerValue<Broadcast>(c).HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
+			let err: $.GoError = null as $.GoError
+			await $.pointerValue<Broadcast>(c).HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
 				let __goscriptTuple0 = await cb!(broadcast, getWaitCh)
 				done = __goscriptTuple0[0]
 				err = __goscriptTuple0[1]
@@ -154,7 +154,7 @@ export class Broadcast {
 
 	static __typeInfo = $.registerStructType(
 		"broadcast.Broadcast",
-		new Broadcast(),
+		() => new Broadcast(),
 		[{ name: "HoldLock", args: [], returns: [] }, { name: "HoldLockMaybeAsync", args: [], returns: [] }, { name: "TryHoldLock", args: [], returns: [] }, { name: "Wait", args: [], returns: [] }, { name: "broadcastLocked", args: [], returns: [] }, { name: "getWaitChLocked", args: [], returns: [] }],
 		Broadcast,
 		{"mtx": "sync.Mutex", "ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }}

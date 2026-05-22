@@ -7,8 +7,6 @@ export type ByteSize = number
 
 export type Direction = number
 
-const __goscriptBlank0: number = 0
-
 export const KB: ByteSize = 1024
 
 export const MB: ByteSize = 1048576
@@ -94,7 +92,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("B:", B)
 	$.println("C:", C)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

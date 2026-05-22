@@ -20,7 +20,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("=== End Build Tags Test ===")
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

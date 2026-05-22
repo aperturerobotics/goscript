@@ -10,7 +10,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(__goscript_helper.consumeToken(tok))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

@@ -31,7 +31,7 @@ export class Result {
 
 	static __typeInfo = $.registerStructType(
 		"main.Result",
-		new Result(),
+		() => new Result(),
 		[],
 		Result,
 		{"ok": { kind: $.TypeKind.Basic, name: "bool" }}
@@ -49,7 +49,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("Type assertion successful:", result.ok)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -49,7 +49,7 @@ export class Worker {
 
 	static __typeInfo = $.registerStructType(
 		"main.Worker",
-		new Worker(),
+		() => new Worker(),
 		[{ name: "Spawn", args: [], returns: [] }],
 		Worker,
 		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -78,7 +78,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	await $.chanSend($.pointerValue<Worker>(w).ch, 1)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

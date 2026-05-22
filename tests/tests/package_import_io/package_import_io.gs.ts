@@ -240,7 +240,7 @@ export async function main(): globalThis.Promise<void> {
 	err = __goscriptTuple7[1]
 	$.println("Read into byte slice view - bytes:", n, "data:", $.bytesToString(viewBacking), "err:", err == null)
 	let dst: $.VarRef<bytes.Buffer> = $.varRef($.markAsStructValue(new bytes.Buffer()))
-	let __goscriptTuple8 = await io.Copy($.pointerValue($.interfaceValue<io.Writer | null>($.pointerValue<bytes.Buffer | $.VarRef<bytes.Buffer>>(dst), "*bytes.Buffer")), $.pointerValue($.interfaceValue<io.Reader | null>(new asyncReader(), "*main.asyncReader")))
+	let __goscriptTuple8 = await io.Copy($.pointerValue($.interfaceValue<io.Writer | null>(dst, "*bytes.Buffer")), $.pointerValue($.interfaceValue<io.Reader | null>(new asyncReader(), "*main.asyncReader")))
 	n64 = __goscriptTuple8[0]
 	err = __goscriptTuple8[1]
 	$.println("Copy bytes ReadFrom async reader - bytes:", n64, "data:", dst.value.String(), "err:", err == null)

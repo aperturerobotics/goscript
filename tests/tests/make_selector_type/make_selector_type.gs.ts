@@ -9,11 +9,10 @@ export async function main(): globalThis.Promise<void> {
 	// The original issue was "unhandled make call" when using selector expressions
 
 	let mfs: Map<string, $.Slice<number>> | null = $.makeMap<string, $.Slice<number>>()
-	$.mapSet(mfs, "test.txt", $.stringToBytes("hello world"))
+	$.mapSet(mfs, "test.txt", new Uint8Array([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]))
 	$.println("Created map:", $.len(mfs))
 	$.println("Content:", $.bytesToString($.mapGet(mfs, "test.txt", null)[0]))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

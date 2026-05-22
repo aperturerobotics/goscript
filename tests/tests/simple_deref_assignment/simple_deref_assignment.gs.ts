@@ -41,7 +41,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
@@ -59,7 +59,6 @@ export async function main(): globalThis.Promise<void> {
 	// Expected: "modified dereferenced copy"
 	$.println("Simple Dereferenced Copy: Expected: modified dereferenced copy, Actual: " + simpleDereferencedCopy.MyString)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

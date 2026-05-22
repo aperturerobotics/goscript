@@ -33,7 +33,7 @@ export class Simple {
 
 	static __typeInfo = $.registerStructType(
 		"main.Simple",
-		new Simple(),
+		() => new Simple(),
 		[],
 		Simple,
 		{"X": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"x\"" }}
@@ -49,7 +49,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Result:", $.bytesToString(b))
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

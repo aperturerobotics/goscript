@@ -12,7 +12,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("StructField Type:", $.pointerValue<Exclude<reflect.Type, null>>(field.Type).String())
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

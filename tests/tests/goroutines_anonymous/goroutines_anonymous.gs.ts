@@ -12,7 +12,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(await $.chanRecv(msgs))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

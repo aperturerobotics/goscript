@@ -33,7 +33,7 @@ export class Job {
 
 	static __typeInfo = $.registerStructType(
 		"main.Job",
-		new Job(),
+		() => new Job(),
 		[],
 		Job,
 		{"Value": { kind: $.TypeKind.Basic, name: "string" }}

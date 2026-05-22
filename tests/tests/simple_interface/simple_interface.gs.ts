@@ -31,7 +31,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -47,7 +47,6 @@ export async function main(): globalThis.Promise<void> {
 	let [, ok] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(jAlias, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	$.println("pointer assertion result:", ok)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -32,7 +32,7 @@ export class nistCurve {
 
 	static __typeInfo = $.registerStructType(
 		"main.nistCurve",
-		new nistCurve(),
+		() => new nistCurve(),
 		[{ name: "Add", args: [], returns: [] }, { name: "Zero", args: [], returns: [] }],
 		nistCurve,
 		{}
@@ -72,7 +72,7 @@ export class point {
 
 	static __typeInfo = $.registerStructType(
 		"main.point",
-		new point(),
+		() => new point(),
 		[{ name: "Add", args: [], returns: [] }],
 		point,
 		{"N": { kind: $.TypeKind.Basic, name: "int" }}
@@ -91,6 +91,10 @@ $.registerInterfaceType(
 
 export let curve: nistCurve | $.VarRef<nistCurve> | null = new nistCurve()
 
+export function __goscript_set_curve(value: nistCurve | $.VarRef<nistCurve> | null): void {
+	curve = value
+}
+
 export async function main(): globalThis.Promise<void> {
 	let p: point | $.VarRef<point> | null = $.pointerValue<nistCurve>(curve).Add(new point({N: 2}), new point({N: 3}))
 	$.println("sum:", $.pointerValue<point>(p).N)
@@ -98,7 +102,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("zero")
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

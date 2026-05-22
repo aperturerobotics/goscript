@@ -56,7 +56,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[{ name: "Method1", args: [], returns: [] }],
 		MyStruct,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -64,7 +64,7 @@ export class MyStruct {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let i: MyInterface | null = null
+	let i: MyInterface | null = null as MyInterface | null
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.interfaceValue<MyInterface | null>($.markAsStructValue($.cloneStructValue(s)), "main.MyStruct")
 
@@ -75,7 +75,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Type assertion failed")
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

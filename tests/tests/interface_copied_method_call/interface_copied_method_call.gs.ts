@@ -25,7 +25,7 @@ export class task {
 
 	static __typeInfo = $.registerStructType(
 		"main.task",
-		new task(),
+		() => new task(),
 		[{ name: "Run", args: [], returns: [] }],
 		task,
 		{}
@@ -43,7 +43,7 @@ $.registerInterfaceType(
 )
 
 export function callCopied(r: runner | null): void {
-	let curr: runner | null = null
+	let curr: runner | null = null as runner | null
 	void ($.functionValue((): void => {
 		curr = r
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))()
@@ -53,7 +53,6 @@ export function callCopied(r: runner | null): void {
 export async function main(): globalThis.Promise<void> {
 	callCopied($.interfaceValue<runner | null>($.markAsStructValue(new task()), "main.task"))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

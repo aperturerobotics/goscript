@@ -19,7 +19,7 @@ export function MySlice_Sum(s: MySlice): number {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let myList: $.VarRef<MySlice> = $.varRef(null)
+	let myList: $.VarRef<MySlice> = $.varRef(null as MySlice)
 	MySlice_Add(myList, 10)
 	MySlice_Add(myList, 20)
 	let ptr = myList

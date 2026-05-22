@@ -15,31 +15,31 @@ function __goscriptBlankFunc0(): void {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	let x: {}[] = Array.from({ length: 1 }, () => ({}))
-	x[__goscript_regexp.OpNoMatch - 1]
-	x[__goscript_regexp.OpEmptyMatch - 2]
-	x[__goscript_regexp.OpLiteral - 3]
-	x[__goscript_regexp.OpCharClass - 4]
-	x[__goscript_regexp.OpAnyCharNotNL - 5]
-	x[__goscript_regexp.OpAnyChar - 6]
-	x[__goscript_regexp.OpBeginLine - 7]
-	x[__goscript_regexp.OpEndLine - 8]
-	x[__goscript_regexp.OpBeginText - 9]
-	x[__goscript_regexp.OpEndText - 10]
-	x[__goscript_regexp.OpWordBoundary - 11]
-	x[__goscript_regexp.OpNoWordBoundary - 12]
-	x[__goscript_regexp.OpCapture - 13]
-	x[__goscript_regexp.OpStar - 14]
-	x[__goscript_regexp.OpPlus - 15]
-	x[__goscript_regexp.OpQuest - 16]
-	x[__goscript_regexp.OpRepeat - 17]
-	x[__goscript_regexp.OpConcat - 18]
-	x[__goscript_regexp.OpAlternate - 19]
-	x[__goscript_regexp.opPseudo - 128]
+	x[1 - 1]
+	x[2 - 2]
+	x[3 - 3]
+	x[4 - 4]
+	x[5 - 5]
+	x[6 - 6]
+	x[7 - 7]
+	x[8 - 8]
+	x[9 - 9]
+	x[10 - 10]
+	x[11 - 11]
+	x[12 - 12]
+	x[13 - 13]
+	x[14 - 14]
+	x[15 - 15]
+	x[16 - 16]
+	x[17 - 17]
+	x[18 - 18]
+	x[19 - 19]
+	x[128 - 128]
 }
 
-export let _Op_index_0: number[] = [0, 7, 17, 24, 33, 45, 52, 61, 68, 77, 84, 96, 110, 117, 121, 125, 130, 136, 142, 151]
+export let _Op_index_0: Uint8Array = new Uint8Array([$.uint(0, 8), $.uint(7, 8), $.uint(17, 8), $.uint(24, 8), $.uint(33, 8), $.uint(45, 8), $.uint(52, 8), $.uint(61, 8), $.uint(68, 8), $.uint(77, 8), $.uint(84, 8), $.uint(96, 8), $.uint(110, 8), $.uint(117, 8), $.uint(121, 8), $.uint(125, 8), $.uint(130, 8), $.uint(136, 8), $.uint(142, 8), $.uint(151, 8)])
 
-export function __goscript_set__Op_index_0(value: number[]): void {
+export function __goscript_set__Op_index_0(value: Uint8Array): void {
 	_Op_index_0 = value
 }
 
@@ -47,11 +47,11 @@ export function Op_String(i: __goscript_regexp.Op): string {
 	switch (true) {
 		case (1 <= i) && (i <= 19):
 		{
-			i -= 1
+			i -= $.uint(1, 8)
 			return $.sliceStringOrBytes(_Op_name_0, _Op_index_0[i], _Op_index_0[i + 1])
 			break
 		}
-		case i == 128:
+		case $.uint(i, 8) == $.uint(128, 8):
 		{
 			return _Op_name_1
 			break

@@ -31,7 +31,7 @@ export class helperState {
 
 	static __typeInfo = $.registerStructType(
 		"main.helperState",
-		new helperState(),
+		() => new helperState(),
 		[],
 		helperState,
 		{"text": { kind: $.TypeKind.Basic, name: "string" }}

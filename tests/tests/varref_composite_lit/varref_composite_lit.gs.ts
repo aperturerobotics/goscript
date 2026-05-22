@@ -36,7 +36,7 @@ export class MockInode {
 
 	static __typeInfo = $.registerStructType(
 		"main.MockInode",
-		new MockInode(),
+		() => new MockInode(),
 		[{ name: "getValue", args: [], returns: [] }],
 		MockInode,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -53,7 +53,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("childInode.Value:", $.pointerValue<MockInode>(childInode).Value)
 	$.println("childInode.getValue():", $.pointerValue<MockInode>(childInode).getValue())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

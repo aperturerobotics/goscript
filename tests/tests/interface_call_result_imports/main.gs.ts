@@ -12,7 +12,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println($.pointerValue<Exclude<dep2.Value, null>>(v).Value())
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

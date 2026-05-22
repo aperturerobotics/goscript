@@ -5,6 +5,10 @@ import * as $ from "@goscript/builtin/index.js"
 
 export let counter: number = 0
 
+export function __goscript_set_counter(value: number): void {
+	counter = value
+}
+
 export function increment_counter(): void {
 	counter++
 	$.println("counter incremented to", counter)
@@ -20,7 +24,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println("done", "final counter:", counter)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

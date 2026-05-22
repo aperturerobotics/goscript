@@ -41,13 +41,13 @@ export class Buffer {
 
 	public Write(p: $.Slice<number>): [number, $.GoError] {
 		let b: Buffer | $.VarRef<Buffer> | null = this
-		$.pointerValue<Buffer>(b).data = $.append($.pointerValue<Buffer>(b).data, p)
+		$.pointerValue<Buffer>(b).data = $.append($.pointerValue<Buffer>(b).data, ...(p ?? []))
 		return [$.len(p), null]
 	}
 
 	static __typeInfo = $.registerStructType(
 		"main.Buffer",
-		new Buffer(),
+		() => new Buffer(),
 		[{ name: "Write", args: [], returns: [] }],
 		Buffer,
 		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -55,7 +55,7 @@ export class Buffer {
 }
 
 export function use(w: Writer | null): void {
-	$.pointerValue<Exclude<Writer, null>>(w).Write($.stringToBytes("x"))
+	$.pointerValue<Exclude<Writer, null>>(w).Write(new Uint8Array([120]))
 }
 
 export async function main(): globalThis.Promise<void> {
@@ -63,7 +63,6 @@ export async function main(): globalThis.Promise<void> {
 	use($.interfaceValue<Writer | null>(b, "*main.Buffer"))
 	$.println($.bytesToString(b.value.data))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

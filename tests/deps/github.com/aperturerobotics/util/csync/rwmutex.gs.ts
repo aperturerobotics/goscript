@@ -80,20 +80,20 @@ export class RWMutex {
 		// 1: locked
 		// 2: unlocked (released)
 		let status: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
-		let waitCh: $.Channel<{}> | null = null
-		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
+		let waitCh: $.Channel<{}> | null = null as $.Channel<{}> | null
+		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
 			if (write) {
 				if (($.pointerValue<RWMutex>(m).nreaders != 0) || $.pointerValue<RWMutex>(m).writing) {
 					$.pointerValue<RWMutex>(m).writeWaiting++
 					waitCh = await getWaitCh!()
 				} else {
 					$.pointerValue<RWMutex>(m).writing = true
-					status.value.Store(1)
+					status.value.Store($.int(1, 32))
 				}
 			} else {
 				if (!$.pointerValue<RWMutex>(m).writing && ($.pointerValue<RWMutex>(m).writeWaiting == 0)) {
 					$.pointerValue<RWMutex>(m).nreaders++
-					status.value.Store(1)
+					status.value.Store($.int(1, 32))
 				} else {
 					waitCh = await getWaitCh!()
 				}
@@ -101,13 +101,13 @@ export class RWMutex {
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 
 		let release = $.functionValue(async (): globalThis.Promise<void> => {
-			let pre = status.value.Swap(2)
-			if (pre == 2) {
+			let pre = $.int(status.value.Swap($.int(2, 32)), 32)
+			if ($.int(pre, 32) == $.int(2, 32)) {
 				return
 			}
 
-			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
-				if (pre == 0) {
+			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
+				if ($.int(pre, 32) == $.int(0, 32)) {
 					// 0: waiting for lock
 					if (write) {
 						$.pointerValue<RWMutex>(m).writeWaiting--
@@ -125,7 +125,7 @@ export class RWMutex {
 		}, { kind: $.TypeKind.Function, params: [], results: [] })
 
 		// fast path: we locked the mutex
-		if (status.value.Load() == 1) {
+		if ($.int(status.value.Load(), 32) == $.int(1, 32)) {
 			return [release, null]
 		}
 
@@ -153,26 +153,26 @@ export class RWMutex {
 				return __goscriptSelect0Value
 			}
 
-			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
+			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
 				if (write) {
 					if (($.pointerValue<RWMutex>(m).nreaders == 0) && !$.pointerValue<RWMutex>(m).writing) {
 						$.pointerValue<RWMutex>(m).writeWaiting--
 						$.pointerValue<RWMutex>(m).writing = true
-						status.value.Store(1)
+						status.value.Store($.int(1, 32))
 					} else {
 						waitCh = await getWaitCh!()
 					}
 				} else {
 					if (!$.pointerValue<RWMutex>(m).writing && ($.pointerValue<RWMutex>(m).writeWaiting == 0)) {
 						$.pointerValue<RWMutex>(m).nreaders++
-						status.value.Store(1)
+						status.value.Store($.int(1, 32))
 					} else {
 						waitCh = await getWaitCh!()
 					}
 				}
 			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 
-			if (status.value.Load() == 1) {
+			if ($.int(status.value.Load(), 32) == $.int(1, 32)) {
 				return [release, null]
 			}
 		}
@@ -191,7 +191,7 @@ export class RWMutex {
 	public async TryLock(write: boolean): globalThis.Promise<[(() => void) | null, boolean]> {
 		const m: RWMutex | $.VarRef<RWMutex> | null = this
 		let unlocked: $.VarRef<atomic.Bool> = $.varRef($.markAsStructValue(new atomic.Bool()))
-		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): void => {
+		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): void => {
 			if (write) {
 				if (($.pointerValue<RWMutex>(m).nreaders != 0) || $.pointerValue<RWMutex>(m).writing) {
 					unlocked.value.Store(true)
@@ -217,7 +217,7 @@ export class RWMutex {
 				return
 			}
 
-			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
+			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
 				if (write) {
 					$.pointerValue<RWMutex>(m).writing = false
 				} else {
@@ -230,7 +230,7 @@ export class RWMutex {
 
 	static __typeInfo = $.registerStructType(
 		"csync.RWMutex",
-		new RWMutex(),
+		() => new RWMutex(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "Locker", args: [], returns: [] }, { name: "RLocker", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }],
 		RWMutex,
 		{"bcast": "broadcast.Broadcast", "nreaders": { kind: $.TypeKind.Basic, name: "int" }, "writing": { kind: $.TypeKind.Basic, name: "bool" }, "writeWaiting": { kind: $.TypeKind.Basic, name: "int" }}
@@ -324,11 +324,9 @@ export class RWMutexLocker {
 
 	static __typeInfo = $.registerStructType(
 		"csync.RWMutexLocker",
-		new RWMutexLocker(),
+		() => new RWMutexLocker(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		RWMutexLocker,
 		{"m": { kind: $.TypeKind.Pointer, elemType: "csync.RWMutex" }, "write": { kind: $.TypeKind.Basic, name: "bool" }, "mtx": "sync.Mutex", "rels": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Function, params: [], results: [] } }}
 	)
 }
-
-let __goscriptBlank0: sync.Locker | null = $.interfaceValue<sync.Locker | null>(($.typedNil("*csync.RWMutexLocker")), "*csync.RWMutexLocker")

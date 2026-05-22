@@ -41,7 +41,7 @@ export class file {
 
 	static __typeInfo = $.registerStructType(
 		"main.file",
-		new file(),
+		() => new file(),
 		[],
 		file,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -86,7 +86,7 @@ export class storage {
 
 	static __typeInfo = $.registerStructType(
 		"main.storage",
-		new storage(),
+		() => new storage(),
 		[],
 		storage,
 		{"files": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } }, "children": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } } }}
@@ -96,13 +96,12 @@ export class storage {
 export async function main(): globalThis.Promise<void> {
 	let s = $.markAsStructValue(new storage({files: $.makeMap<string, file | $.VarRef<file> | null>(), children: $.makeMap<string, Map<string, file | $.VarRef<file> | null> | null>()}))
 
-	let f: file | $.VarRef<file> | null = new file({name: "test.txt", data: $.stringToBytes("hello world")})
+	let f: file | $.VarRef<file> | null = new file({name: "test.txt", data: new Uint8Array([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100])})
 
 	$.mapSet(s.files, "test", f)
 
 	$.println("Created storage with file:", $.pointerValue<file>($.mapGet(s.files, "test", null)[0]).name)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

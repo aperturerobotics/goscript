@@ -41,7 +41,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
@@ -55,7 +55,6 @@ export async function main(): globalThis.Promise<void> {
 	// Expected: "hello world"
 	$.println("Initial MyString (via pointer): Expected: hello world, Actual: " + $.pointerValue<MyStruct>(structPointer).MyString)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

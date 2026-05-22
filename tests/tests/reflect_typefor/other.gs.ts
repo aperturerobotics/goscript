@@ -31,7 +31,7 @@ export class OtherStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.OtherStruct",
-		new OtherStruct(),
+		() => new OtherStruct(),
 		[],
 		OtherStruct,
 		{"Label": { kind: $.TypeKind.Basic, name: "string" }}

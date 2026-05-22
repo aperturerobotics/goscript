@@ -10,7 +10,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let month = 0
 	let value = "someValue"
-	let err: $.GoError = null
+	let err: $.GoError = null as $.GoError
 
 	let getnum = $.functionValue((v: string, flag: boolean): [number, string, $.GoError] => {
 		if (flag) {
@@ -74,7 +74,6 @@ export async function main(): globalThis.Promise<void> {
 		}
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

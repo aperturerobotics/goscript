@@ -15,7 +15,6 @@ export async function main(): globalThis.Promise<void> {
 	}, { kind: $.TypeKind.Function, params: [], results: ["error"] }))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

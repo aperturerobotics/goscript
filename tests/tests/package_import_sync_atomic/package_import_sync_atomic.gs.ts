@@ -33,7 +33,7 @@ export class pointerNode {
 
 	static __typeInfo = $.registerStructType(
 		"main.pointerNode",
-		new pointerNode(),
+		() => new pointerNode(),
 		[],
 		pointerNode,
 		{"value": { kind: $.TypeKind.Basic, name: "string" }}
@@ -49,17 +49,17 @@ export function makeAtomicCallback(): [(() => void) | null, $.GoError] {
 export async function main(): globalThis.Promise<void> {
 	// Test atomic.Int32
 	let i32: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
-	i32.value.Store(42)
-	$.println("Int32 stored 42, value:", i32.value.Load())
+	i32.value.Store($.int(42, 32))
+	$.println("Int32 stored 42, value:", $.int(i32.value.Load(), 32))
 
-	let old = i32.value.Swap(100)
-	$.println("Int32 swapped to 100, old value:", old, "new value:", i32.value.Load())
+	let old = $.int(i32.value.Swap($.int(100, 32)), 32)
+	$.println("Int32 swapped to 100, old value:", $.int(old, 32), "new value:", $.int(i32.value.Load(), 32))
 
-	let newVal = i32.value.Add(5)
-	$.println("Int32 added 5, new value:", newVal)
+	let newVal = $.int(i32.value.Add($.int(5, 32)), 32)
+	$.println("Int32 added 5, new value:", $.int(newVal, 32))
 
-	if (i32.value.CompareAndSwap(105, 200)) {
-		$.println("Int32 CompareAndSwap 105->200 succeeded, value:", i32.value.Load())
+	if (i32.value.CompareAndSwap($.int(105, 32), $.int(200, 32))) {
+		$.println("Int32 CompareAndSwap 105->200 succeeded, value:", $.int(i32.value.Load(), 32))
 	}
 
 	// Test atomic.Int64
@@ -72,11 +72,11 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test atomic.Uint32
 	let u32: $.VarRef<atomic.Uint32> = $.varRef($.markAsStructValue(new atomic.Uint32()))
-	u32.value.Store(50)
-	$.println("Uint32 stored 50, value:", u32.value.Load())
+	u32.value.Store($.uint(50, 32))
+	$.println("Uint32 stored 50, value:", $.uint(u32.value.Load(), 32))
 
-	u32.value.Add(25)
-	$.println("Uint32 after adding 25:", u32.value.Load())
+	u32.value.Add($.uint(25, 32))
+	$.println("Uint32 after adding 25:", $.uint(u32.value.Load(), 32))
 
 	// Test atomic.Uint64
 	let u64: $.VarRef<atomic.Uint64> = $.varRef($.markAsStructValue(new atomic.Uint64()))

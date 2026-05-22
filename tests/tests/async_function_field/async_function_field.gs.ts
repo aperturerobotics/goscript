@@ -38,7 +38,7 @@ export class loader {
 
 	static __typeInfo = $.registerStructType(
 		"main.loader",
-		new loader(),
+		() => new loader(),
 		[{ name: "getLoad", args: [], returns: [] }],
 		loader,
 		{"load": { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] }}
@@ -47,9 +47,17 @@ export class loader {
 
 export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
+export function __goscript_set_cache(value: sync.Map): void {
+	cache.value = value
+}
+
 export let defaultLoader: loader | $.VarRef<loader> | null = new loader({load: $.functionValue(async (key: string): globalThis.Promise<[any, boolean]> => {
 	return await cache.value.Load(key)
 }, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] })})
+
+export function __goscript_set_defaultLoader(value: loader | $.VarRef<loader> | null): void {
+	defaultLoader = value
+}
 
 export async function lookup(key: string): globalThis.Promise<[any, boolean]> {
 	return await $.pointerValue<loader>(defaultLoader).load!(key)
@@ -70,7 +78,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("getter value:", $.mustTypeAssert<number>(getterValue, { kind: $.TypeKind.Basic, name: "int" }))
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

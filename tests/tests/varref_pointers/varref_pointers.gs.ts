@@ -20,7 +20,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("***p3 after ==", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>($.pointerValue<$.VarRef<$.VarRef<number> | null> | null>(p3))))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

@@ -51,7 +51,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
@@ -68,7 +68,6 @@ export async function main(): globalThis.Promise<void> {
 	unusedString
 	dereferencedStructCopy
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

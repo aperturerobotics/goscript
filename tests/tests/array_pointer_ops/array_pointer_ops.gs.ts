@@ -3,16 +3,16 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export function fillArray(dst: $.VarRef<number[]> | null): void {
-	for (let i = 0; i < $.len($.pointerValue<number[]>(dst)); i++) {
-		$.pointerValue<number[]>(dst)[i] = $.int(i + 1)
+export function fillArray(dst: $.VarRef<Uint8Array> | null): void {
+	for (let i = 0; i < $.len($.pointerValue<Uint8Array>(dst)); i++) {
+		$.pointerValue<Uint8Array>(dst)[i] = $.uint($.uint(i + 1, 8), 8)
 	}
 }
 
-export function sumArray(src: $.VarRef<number[]> | null): number {
+export function sumArray(src: $.VarRef<Uint8Array> | null): number {
 	let sum = 0
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<number[]>(src)); __rangeIndex++) {
-		let v = $.pointerValue<number[]>(src)[__rangeIndex]
+	for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Uint8Array>(src)); __rangeIndex++) {
+		let v = $.pointerValue<Uint8Array>(src)[__rangeIndex]
 		sum += $.int(v)
 	}
 	return sum
@@ -21,9 +21,9 @@ export function sumArray(src: $.VarRef<number[]> | null): number {
 export function closureArrayAddress(): number {
 	let result = 0
 	void ($.functionValue((): void => {
-		let table = $.varRef([6, 7, 8, 9])
+		let table = $.varRef(new Uint8Array([$.uint(6, 8), $.uint(7, 8), $.uint(8, 8), $.uint(9, 8)]))
 		let ptr = table
-		result = $.int($.pointerValue<number[]>(ptr)[2])
+		result = $.int($.pointerValue<Uint8Array>(ptr)[2])
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))()
 	return result
 }
@@ -46,18 +46,17 @@ export async function main(): globalThis.Promise<void> {
 	let view = $.goSlice($.pointerValue<number[]>(cache), undefined, undefined)
 	$.println("slice:", $.len(view), view![2])
 
-	let buf = $.arrayToSlice<number>([9, 0, 0, 0, 0])
-	fillArray($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4))
-	$.println("converted:", buf![0], buf![1], buf![2], buf![3], buf![4])
-	$.println("converted sum:", sumArray($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4)))
+	let buf = $.arrayToSlice<number>([$.uint(9, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8)])
+	fillArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null))
+	$.println("converted:", $.uint(buf![0], 8), $.uint(buf![1], 8), $.uint(buf![2], 8), $.uint(buf![3], 8), $.uint(buf![4], 8))
+	$.println("converted sum:", sumArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null)))
 
-	let literal = $.varRef([4, 3, 2, 1])
+	let literal = $.varRef(new Uint8Array([$.uint(4, 8), $.uint(3, 8), $.uint(2, 8), $.uint(1, 8)]))
 	$.println("literal sum:", sumArray(literal))
 	fillArray(literal)
-	$.println("literal filled:", $.pointerValue<number[]>(literal)[0], $.pointerValue<number[]>(literal)[1], $.pointerValue<number[]>(literal)[2], $.pointerValue<number[]>(literal)[3])
+	$.println("literal filled:", $.uint($.pointerValue<Uint8Array>(literal)[0], 8), $.uint($.pointerValue<Uint8Array>(literal)[1], 8), $.uint($.pointerValue<Uint8Array>(literal)[2], 8), $.uint($.pointerValue<Uint8Array>(literal)[3], 8))
 	$.println("closure ptr:", closureArrayAddress())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

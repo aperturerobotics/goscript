@@ -53,33 +53,33 @@ export class patchList {
 
 	public append(p: __goscript_prog.Prog | $.VarRef<__goscript_prog.Prog> | null, l2: patchList): patchList {
 		const l1 = this
-		if (l1.head == 0) {
+		if ($.uint(l1.head, 32) == $.uint(0, 32)) {
 			return $.markAsStructValue($.cloneStructValue(l2))
 		}
-		if (l2.head == 0) {
+		if ($.uint(l2.head, 32) == $.uint(0, 32)) {
 			return $.markAsStructValue($.cloneStructValue(l1))
 		}
 
-		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>(p).Inst!, l1.tail >> 1)
-		if ((l1.tail & 1) == 0) {
-			$.pointerValue<__goscript_prog.Inst>(i).Out = l2.head
+		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>(p).Inst!, $.uintShr(l1.tail, 1, 32))
+		if ($.uint((l1.tail & 1), 32) == $.uint(0, 32)) {
+			$.pointerValue<__goscript_prog.Inst>(i).Out = $.uint(l2.head, 32)
 		} else {
-			$.pointerValue<__goscript_prog.Inst>(i).Arg = l2.head
+			$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint(l2.head, 32)
 		}
-		return $.markAsStructValue(new patchList({head: l1.head, tail: l2.tail}))
+		return $.markAsStructValue(new patchList({head: $.uint(l1.head, 32), tail: $.uint(l2.tail, 32)}))
 	}
 
 	public patch(p: __goscript_prog.Prog | $.VarRef<__goscript_prog.Prog> | null, val: number): void {
 		const l = this
-		let head = l.head
-		while (head != 0) {
-			let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>(p).Inst!, head >> 1)
-			if ((head & 1) == 0) {
-				head = $.pointerValue<__goscript_prog.Inst>(i).Out
-				$.pointerValue<__goscript_prog.Inst>(i).Out = val
+		let head = $.uint(l.head, 32)
+		while ($.uint(head, 32) != $.uint(0, 32)) {
+			let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>(p).Inst!, $.uintShr(head, 1, 32))
+			if ($.uint((head & 1), 32) == $.uint(0, 32)) {
+				head = $.uint($.pointerValue<__goscript_prog.Inst>(i).Out, 32)
+				$.pointerValue<__goscript_prog.Inst>(i).Out = $.uint(val, 32)
 			} else {
-				head = $.pointerValue<__goscript_prog.Inst>(i).Arg
-				$.pointerValue<__goscript_prog.Inst>(i).Arg = val
+				head = $.uint($.pointerValue<__goscript_prog.Inst>(i).Arg, 32)
+				$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint(val, 32)
 			}
 		}
 	}
@@ -177,17 +177,17 @@ export class compiler {
 	public alt(f1: frag, f2: frag): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
 		// alt of failure is other
-		if (f1.i == 0) {
+		if ($.uint(f1.i, 32) == $.uint(0, 32)) {
 			return $.markAsStructValue($.cloneStructValue(f2))
 		}
-		if (f2.i == 0) {
+		if ($.uint(f2.i, 32) == $.uint(0, 32)) {
 			return $.markAsStructValue($.cloneStructValue(f1))
 		}
 
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst(__goscript_prog.InstAlt)))
+		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(0, 8))))
 		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst!, f.i)
-		$.pointerValue<__goscript_prog.Inst>(i).Out = f1.i
-		$.pointerValue<__goscript_prog.Inst>(i).Arg = f2.i
+		$.pointerValue<__goscript_prog.Inst>(i).Out = $.uint(f1.i, 32)
+		$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint(f2.i, 32)
 		f.out = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(f1.out)).append($.pointerValue<compiler>(c).p, $.markAsStructValue($.cloneStructValue(f2.out)))))
 		f.nullable = f1.nullable || f2.nullable
 		return $.markAsStructValue($.cloneStructValue(f))
@@ -195,9 +195,9 @@ export class compiler {
 
 	public cap(arg: number): frag {
 		let c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst(__goscript_prog.InstCapture)))
-		f.out = $.markAsStructValue($.cloneStructValue(makePatchList(f.i << 1)))
-		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst![f.i].Arg = arg
+		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(2, 8))))
+		f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))
+		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst![f.i].Arg = $.uint(arg, 32)
 
 		if ($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).NumCap < ($.int(arg) + 1)) {
 			$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).NumCap = $.int(arg) + 1
@@ -208,37 +208,37 @@ export class compiler {
 	public cat(f1: frag, f2: frag): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
 		// concat of failure is failure
-		if ((f1.i == 0) || (f2.i == 0)) {
+		if (($.uint(f1.i, 32) == $.uint(0, 32)) || ($.uint(f2.i, 32) == $.uint(0, 32))) {
 			return $.markAsStructValue(new frag())
 		}
 
 		// TODO: elide nop
 
-		$.markAsStructValue($.cloneStructValue(f1.out)).patch($.pointerValue<compiler>(c).p, f2.i)
-		return $.markAsStructValue(new frag({i: f1.i, out: $.markAsStructValue($.cloneStructValue(f2.out)), nullable: f1.nullable && f2.nullable}))
+		$.markAsStructValue($.cloneStructValue(f1.out)).patch($.pointerValue<compiler>(c).p, $.uint(f2.i, 32))
+		return $.markAsStructValue(new frag({i: $.uint(f1.i, 32), out: $.markAsStructValue($.cloneStructValue(f2.out)), nullable: f1.nullable && f2.nullable}))
 	}
 
 	public compile(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
 		switch ($.pointerValue<__goscript_regexp.Regexp>(re).Op) {
-			case __goscript_regexp.OpNoMatch:
+			case 1:
 			{
 				return $.markAsStructValue($.cloneStructValue(compiler.prototype.fail.call(c)))
 				break
 			}
-			case __goscript_regexp.OpEmptyMatch:
+			case 2:
 			{
 				return $.markAsStructValue($.cloneStructValue(compiler.prototype.nop.call(c)))
 				break
 			}
-			case __goscript_regexp.OpLiteral:
+			case 3:
 			{
 				if ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 0) {
 					return $.markAsStructValue($.cloneStructValue(compiler.prototype.nop.call(c)))
 				}
 				let f: frag = $.markAsStructValue(new frag())
 				for (let j = 0; j < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune); j++) {
-					let f1 = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune($.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune, j, j + 1), $.pointerValue<__goscript_regexp.Regexp>(re).Flags)))
+					let f1 = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune($.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune, j, j + 1), $.uint($.pointerValue<__goscript_regexp.Regexp>(re).Flags, 16))))
 					if (j == 0) {
 						f = $.markAsStructValue($.cloneStructValue(f1))
 					} else {
@@ -248,75 +248,75 @@ export class compiler {
 				return $.markAsStructValue($.cloneStructValue(f))
 				break
 			}
-			case __goscript_regexp.OpCharClass:
+			case 4:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune($.pointerValue<__goscript_regexp.Regexp>(re).Rune, $.pointerValue<__goscript_regexp.Regexp>(re).Flags)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune($.pointerValue<__goscript_regexp.Regexp>(re).Rune, $.uint($.pointerValue<__goscript_regexp.Regexp>(re).Flags, 16))))
 				break
 			}
-			case __goscript_regexp.OpAnyCharNotNL:
+			case 5:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune(anyRuneNotNL, 0)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune(anyRuneNotNL, $.uint(0, 16))))
 				break
 			}
-			case __goscript_regexp.OpAnyChar:
+			case 6:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune(anyRune, 0)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune(anyRune, $.uint(0, 16))))
 				break
 			}
-			case __goscript_regexp.OpBeginLine:
+			case 7:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty(__goscript_prog.EmptyBeginLine)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(1, 8))))
 				break
 			}
-			case __goscript_regexp.OpEndLine:
+			case 8:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty(__goscript_prog.EmptyEndLine)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(2, 8))))
 				break
 			}
-			case __goscript_regexp.OpBeginText:
+			case 9:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty(__goscript_prog.EmptyBeginText)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(4, 8))))
 				break
 			}
-			case __goscript_regexp.OpEndText:
+			case 10:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty(__goscript_prog.EmptyEndText)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(8, 8))))
 				break
 			}
-			case __goscript_regexp.OpWordBoundary:
+			case 11:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty(__goscript_prog.EmptyWordBoundary)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(16, 8))))
 				break
 			}
-			case __goscript_regexp.OpNoWordBoundary:
+			case 12:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty(__goscript_prog.EmptyNoWordBoundary)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(32, 8))))
 				break
 			}
-			case __goscript_regexp.OpCapture:
+			case 13:
 			{
-				let bra = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cap($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Cap << 1, 32))))
+				let bra = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cap($.uint($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Cap << 1, 32), 32))))
 				let sub = $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0])))
-				let ket = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cap($.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Cap << 1) | 1, 32))))
+				let ket = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cap($.uint($.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Cap << 1) | 1, 32), 32))))
 				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cat($.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cat($.markAsStructValue($.cloneStructValue(bra)), $.markAsStructValue($.cloneStructValue(sub))))), $.markAsStructValue($.cloneStructValue(ket)))))
 				break
 			}
-			case __goscript_regexp.OpStar:
+			case 14:
 			{
-				return $.markAsStructValue($.cloneStructValue(compiler.prototype.star.call(c, $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]))), ($.pointerValue<__goscript_regexp.Regexp>(re).Flags & __goscript_parse.NonGreedy) != 0)))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.star.call(c, $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]))), $.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Flags & 32), 16) != $.uint(0, 16))))
 				break
 			}
-			case __goscript_regexp.OpPlus:
+			case 15:
 			{
-				return $.markAsStructValue($.cloneStructValue(compiler.prototype.plus.call(c, $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]))), ($.pointerValue<__goscript_regexp.Regexp>(re).Flags & __goscript_parse.NonGreedy) != 0)))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.plus.call(c, $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]))), $.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Flags & 32), 16) != $.uint(0, 16))))
 				break
 			}
-			case __goscript_regexp.OpQuest:
+			case 16:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).quest($.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]))), ($.pointerValue<__goscript_regexp.Regexp>(re).Flags & __goscript_parse.NonGreedy) != 0)))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).quest($.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]))), $.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Flags & 32), 16) != $.uint(0, 16))))
 				break
 			}
-			case __goscript_regexp.OpConcat:
+			case 18:
 			{
 				if ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) == 0) {
 					return $.markAsStructValue($.cloneStructValue(compiler.prototype.nop.call(c)))
@@ -333,7 +333,7 @@ export class compiler {
 				return $.markAsStructValue($.cloneStructValue(f))
 				break
 			}
-			case __goscript_regexp.OpAlternate:
+			case 19:
 			{
 				let f: frag = $.markAsStructValue(new frag())
 				for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub); __rangeIndex++) {
@@ -349,9 +349,9 @@ export class compiler {
 
 	public empty(op: __goscript_prog.EmptyOp): frag {
 		let c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst(__goscript_prog.InstEmptyWidth)))
-		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst![f.i].Arg = $.uint(op, 32)
-		f.out = $.markAsStructValue($.cloneStructValue(makePatchList(f.i << 1)))
+		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(3, 8))))
+		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst![f.i].Arg = $.uint($.uint(op, 32), 32)
+		f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))
 		return $.markAsStructValue($.cloneStructValue(f))
 	}
 
@@ -364,54 +364,54 @@ export class compiler {
 		let c: compiler | $.VarRef<compiler> | null = this
 		$.pointerValue<compiler>(c).p = new __goscript_prog.Prog()
 		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).NumCap = 2
-		$.pointerValue<compiler>(c).inst(__goscript_prog.InstFail)
+		$.pointerValue<compiler>(c).inst($.uint(5, 8))
 	}
 
 	public inst(op: __goscript_prog.InstOp): frag {
 		let c: compiler | $.VarRef<compiler> | null = this
 		// TODO: impose length limit
-		let f = $.markAsStructValue(new frag({i: $.uint($.len($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst), 32), nullable: true}))
-		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst = $.append($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst, $.markAsStructValue(new __goscript_prog.Inst({Op: op})))
+		let f = $.markAsStructValue(new frag({i: $.uint($.uint($.len($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst), 32), 32), nullable: true}))
+		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst = $.append($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst, $.markAsStructValue(new __goscript_prog.Inst({Op: $.uint(op, 8)})))
 		return $.markAsStructValue($.cloneStructValue(f))
 	}
 
 	public loop(f1: frag, nongreedy: boolean): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst(__goscript_prog.InstAlt)))
+		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(0, 8))))
 		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst!, f.i)
 		if (nongreedy) {
-			$.pointerValue<__goscript_prog.Inst>(i).Arg = f1.i
-			f.out = $.markAsStructValue($.cloneStructValue(makePatchList(f.i << 1)))
+			$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint(f1.i, 32)
+			f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))
 		} else {
-			$.pointerValue<__goscript_prog.Inst>(i).Out = f1.i
-			f.out = $.markAsStructValue($.cloneStructValue(makePatchList((f.i << 1) | 1)))
+			$.pointerValue<__goscript_prog.Inst>(i).Out = $.uint(f1.i, 32)
+			f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint((f.i << 1) | 1, 32))))
 		}
-		$.markAsStructValue($.cloneStructValue(f1.out)).patch($.pointerValue<compiler>(c).p, f.i)
+		$.markAsStructValue($.cloneStructValue(f1.out)).patch($.pointerValue<compiler>(c).p, $.uint(f.i, 32))
 		return $.markAsStructValue($.cloneStructValue(f))
 	}
 
 	public nop(): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst(__goscript_prog.InstNop)))
-		f.out = $.markAsStructValue($.cloneStructValue(makePatchList(f.i << 1)))
+		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(6, 8))))
+		f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))
 		return $.markAsStructValue($.cloneStructValue(f))
 	}
 
 	public plus(f1: frag, nongreedy: boolean): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		return $.markAsStructValue(new frag({i: f1.i, out: $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).loop($.markAsStructValue($.cloneStructValue(f1)), nongreedy).out)), nullable: f1.nullable}))
+		return $.markAsStructValue(new frag({i: $.uint(f1.i, 32), out: $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).loop($.markAsStructValue($.cloneStructValue(f1)), nongreedy).out)), nullable: f1.nullable}))
 	}
 
 	public quest(f1: frag, nongreedy: boolean): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst(__goscript_prog.InstAlt)))
+		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(0, 8))))
 		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst!, f.i)
 		if (nongreedy) {
-			$.pointerValue<__goscript_prog.Inst>(i).Arg = f1.i
-			f.out = $.markAsStructValue($.cloneStructValue(makePatchList(f.i << 1)))
+			$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint(f1.i, 32)
+			f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))
 		} else {
-			$.pointerValue<__goscript_prog.Inst>(i).Out = f1.i
-			f.out = $.markAsStructValue($.cloneStructValue(makePatchList((f.i << 1) | 1)))
+			$.pointerValue<__goscript_prog.Inst>(i).Out = $.uint(f1.i, 32)
+			f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint((f.i << 1) | 1, 32))))
 		}
 		f.out = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(f.out)).append($.pointerValue<compiler>(c).p, $.markAsStructValue($.cloneStructValue(f1.out)))))
 		return $.markAsStructValue($.cloneStructValue(f))
@@ -419,33 +419,33 @@ export class compiler {
 
 	public rune(r: $.Slice<number>, flags: __goscript_parse.Flags): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst(__goscript_prog.InstRune)))
+		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(7, 8))))
 		f.nullable = false
 		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst!, f.i)
 		$.pointerValue<__goscript_prog.Inst>(i).Rune = r
-		flags &= __goscript_parse.FoldCase
-		if (($.len(r) != 1) || (unicode.SimpleFold(r![0]) == r![0])) {
+		flags &= $.uint(1, 16)
+		if (($.len(r) != 1) || ($.int(unicode.SimpleFold($.int(r![0], 32)), 32) == $.int(r![0], 32))) {
 			// and sometimes not even that
-			flags = flags & ~(__goscript_parse.FoldCase)
+			flags = flags & ~($.uint(1, 16))
 		}
-		$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint(flags, 32)
-		f.out = $.markAsStructValue($.cloneStructValue(makePatchList(f.i << 1)))
+		$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint($.uint(flags, 32), 32)
+		f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))
 
 		// Special cases for exec machine.
 		switch (true) {
-			case ((flags & __goscript_parse.FoldCase) == 0) && (($.len(r) == 1) || (($.len(r) == 2) && (r![0] == r![1]))):
+			case ($.uint((flags & 1), 16) == $.uint(0, 16)) && (($.len(r) == 1) || (($.len(r) == 2) && ($.int(r![0], 32) == $.int(r![1], 32)))):
 			{
-				$.pointerValue<__goscript_prog.Inst>(i).Op = __goscript_prog.InstRune1
+				$.pointerValue<__goscript_prog.Inst>(i).Op = $.uint(8, 8)
 				break
 			}
-			case (($.len(r) == 2) && (r![0] == 0)) && (r![1] == unicode.MaxRune):
+			case (($.len(r) == 2) && ($.int(r![0], 32) == $.int(0, 32))) && ($.int(r![1], 32) == $.int(unicode.MaxRune, 32)):
 			{
-				$.pointerValue<__goscript_prog.Inst>(i).Op = __goscript_prog.InstRuneAny
+				$.pointerValue<__goscript_prog.Inst>(i).Op = $.uint(9, 8)
 				break
 			}
-			case (((($.len(r) == 4) && (r![0] == 0)) && (r![1] == (10 - 1))) && (r![2] == (10 + 1))) && (r![3] == unicode.MaxRune):
+			case (((($.len(r) == 4) && ($.int(r![0], 32) == $.int(0, 32))) && ($.int(r![1], 32) == $.int((10 - 1), 32))) && ($.int(r![2], 32) == $.int((10 + 1), 32))) && ($.int(r![3], 32) == $.int(unicode.MaxRune, 32)):
 			{
-				$.pointerValue<__goscript_prog.Inst>(i).Op = __goscript_prog.InstRuneAnyNotNL
+				$.pointerValue<__goscript_prog.Inst>(i).Op = $.uint(10, 8)
 				break
 			}
 		}
@@ -473,25 +473,25 @@ export class compiler {
 }
 
 export function makePatchList(n: number): patchList {
-	return $.markAsStructValue(new patchList({head: n, tail: n}))
+	return $.markAsStructValue(new patchList({head: $.uint(n, 32), tail: $.uint(n, 32)}))
 }
 
 export function Compile(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): [__goscript_prog.Prog | $.VarRef<__goscript_prog.Prog> | null, $.GoError] {
 	let c: $.VarRef<compiler> = $.varRef($.markAsStructValue(new compiler()))
 	c.value.init()
 	let f = $.markAsStructValue($.cloneStructValue(c.value.compile(re)))
-	$.markAsStructValue($.cloneStructValue(f.out)).patch(c.value.p, c.value.inst(__goscript_prog.InstMatch).i)
+	$.markAsStructValue($.cloneStructValue(f.out)).patch(c.value.p, $.uint(c.value.inst($.uint(4, 8)).i, 32))
 	$.pointerValue<__goscript_prog.Prog>(c.value.p).Start = $.int(f.i)
 	return [c.value.p, null]
 }
 
-export let anyRuneNotNL: $.Slice<number> = $.arrayToSlice<number>([0, 10 - 1, 10 + 1, unicode.MaxRune])
+export let anyRuneNotNL: $.Slice<number> = $.arrayToSlice<number>([$.int(0, 32), $.int(10 - 1, 32), $.int(10 + 1, 32), $.int(unicode.MaxRune, 32)])
 
 export function __goscript_set_anyRuneNotNL(value: $.Slice<number>): void {
 	anyRuneNotNL = value
 }
 
-export let anyRune: $.Slice<number> = $.arrayToSlice<number>([0, unicode.MaxRune])
+export let anyRune: $.Slice<number> = $.arrayToSlice<number>([$.int(0, 32), $.int(unicode.MaxRune, 32)])
 
 export function __goscript_set_anyRune(value: $.Slice<number>): void {
 	anyRune = value

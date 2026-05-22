@@ -11,7 +11,7 @@ export function setWords(w: $.VarRef<words> | null): [$.VarRef<words> | null, bo
 }
 
 export function words_Rsh(w: $.VarRef<words> | null, n: number): number {
-	return $.pointerValue<number[]>(w)[0] >> n
+	return $.uint64Shr($.pointerValue<number[]>(w)[0], n)
 }
 
 export async function main(): globalThis.Promise<void> {
@@ -22,7 +22,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println(words_Rsh(w, 1))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -31,7 +31,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -94,7 +94,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Scenario 6b - Struct pointer to pointer assertion (should be true):", ok6b)
 	$.println("Scenario 6c - Struct value to value assertion (should be true):", ok6c)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

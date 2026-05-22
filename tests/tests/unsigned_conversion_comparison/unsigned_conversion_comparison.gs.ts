@@ -8,13 +8,13 @@ export function beforeStart(pos: number, length: number): boolean {
 }
 
 export function byteWrap(v: number): number {
-	return $.uint(v, 8)
+	return $.uint($.uint(v, 8), 8)
 }
 
 export async function main(): globalThis.Promise<void> {
 	$.println("uint(-1) below length:", beforeStart(0, 3))
 	$.println("uint(0) below length:", beforeStart(1, 3))
-	$.println("uint8(-1):", byteWrap(-1))
+	$.println("uint8(-1):", $.uint(byteWrap(-1), 8))
 }
 
 if ($.isMainScript(import.meta)) {

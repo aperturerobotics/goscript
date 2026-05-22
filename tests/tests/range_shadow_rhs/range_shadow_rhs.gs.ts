@@ -31,7 +31,7 @@ export class holder {
 
 	static __typeInfo = $.registerStructType(
 		"main.holder",
-		new holder(),
+		() => new holder(),
 		[],
 		holder,
 		{"values": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -46,7 +46,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println(sum)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

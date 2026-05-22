@@ -21,7 +21,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(unwrap($.interfaceValue<any>(new dep2.Thing({Value: 7}), "*dep.Thing")))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

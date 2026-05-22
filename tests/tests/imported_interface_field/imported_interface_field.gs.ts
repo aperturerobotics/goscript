@@ -33,7 +33,7 @@ export class holder {
 
 	static __typeInfo = $.registerStructType(
 		"main.holder",
-		new holder(),
+		() => new holder(),
 		[],
 		holder,
 		{"w": "io.Writer"}
@@ -52,7 +52,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println("writer present")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

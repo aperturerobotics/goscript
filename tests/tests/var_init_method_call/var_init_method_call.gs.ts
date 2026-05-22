@@ -36,7 +36,7 @@ export class T {
 
 	static __typeInfo = $.registerStructType(
 		"main.T",
-		new T(),
+		() => new T(),
 		[{ name: "WithDelta", args: [], returns: [] }],
 		T,
 		{"val": { kind: $.TypeKind.Basic, name: "int" }}
@@ -49,13 +49,20 @@ export function NewT(v: number): T | $.VarRef<T> | null {
 
 export let Base: T | $.VarRef<T> | null = NewT(10)
 
+export function __goscript_set_Base(value: T | $.VarRef<T> | null): void {
+	Base = value
+}
+
 export let Derived: T | $.VarRef<T> | null = $.pointerValue<T>(Base).WithDelta(5)
+
+export function __goscript_set_Derived(value: T | $.VarRef<T> | null): void {
+	Derived = value
+}
 
 export async function main(): globalThis.Promise<void> {
 	$.println("Base:", $.pointerValue<T>(Base).val)
 	$.println("Derived:", $.pointerValue<T>(Derived).val)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

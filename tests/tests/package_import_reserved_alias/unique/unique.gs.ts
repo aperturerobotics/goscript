@@ -31,7 +31,7 @@ export class Box {
 
 	static __typeInfo = $.registerStructType(
 		"unique.Box",
-		new Box(),
+		() => new Box(),
 		[],
 		Box,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}

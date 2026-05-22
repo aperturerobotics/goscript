@@ -10,7 +10,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(($.pointerValue<number[]>(p))[1])
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

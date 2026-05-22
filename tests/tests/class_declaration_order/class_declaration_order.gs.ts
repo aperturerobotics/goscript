@@ -25,7 +25,7 @@ export class lateType {
 
 	static __typeInfo = $.registerStructType(
 		"main.lateType",
-		new lateType(),
+		() => new lateType(),
 		[{ name: "Name", args: [], returns: [] }],
 		lateType,
 		{}
@@ -44,10 +44,13 @@ $.registerInterfaceType(
 
 export let defaultNamed: named | null = $.interfaceValue<named | null>(new lateType(), "*main.lateType")
 
+export function __goscript_set_defaultNamed(value: named | null): void {
+	defaultNamed = value
+}
+
 export async function main(): globalThis.Promise<void> {
 	$.println($.pointerValue<Exclude<named, null>>(defaultNamed).Name())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

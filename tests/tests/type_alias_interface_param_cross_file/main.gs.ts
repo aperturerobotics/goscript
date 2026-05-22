@@ -40,7 +40,7 @@ export class sink {
 
 	static __typeInfo = $.registerStructType(
 		"main.sink",
-		new sink(),
+		() => new sink(),
 		[{ name: "Put", args: [], returns: [] }],
 		sink,
 		{"size": { kind: $.TypeKind.Basic, name: "int" }}
@@ -53,10 +53,9 @@ export function write(tx: __goscript_types.Tx | null, v: dep.Value): void {
 
 export async function main(): globalThis.Promise<void> {
 	let s: sink | $.VarRef<sink> | null = new sink()
-	write($.interfaceValue<__goscript_types.Tx | null>(s, "*main.sink"), ($.arrayToSlice<number>([1, 2, 3]) as dep.Value))
+	write($.interfaceValue<__goscript_types.Tx | null>(s, "*main.sink"), ($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]) as dep.Value))
 	$.println("size:", $.pointerValue<sink>(s).size)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

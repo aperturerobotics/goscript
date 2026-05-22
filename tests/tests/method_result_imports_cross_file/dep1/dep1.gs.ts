@@ -27,7 +27,7 @@ export class maker {
 
 	static __typeInfo = $.registerStructType(
 		"dep1.maker",
-		new maker(),
+		() => new maker(),
 		[{ name: "Value", args: [], returns: [] }],
 		maker,
 		{}

@@ -5,6 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as errors from "@goscript/errors/index.js"
 
+import * as sync from "@goscript/sync/index.js"
+
 export class listScanner {
 	public _fields: {
 	}
@@ -27,7 +29,7 @@ export class listScanner {
 
 	static __typeInfo = $.registerStructType(
 		"main.listScanner",
-		new listScanner(),
+		() => new listScanner(),
 		[{ name: "Scan", args: [], returns: [] }],
 		listScanner,
 		{}
@@ -55,6 +57,13 @@ export async function run(s: scanner | null): globalThis.Promise<$.GoError> {
 
 export async function main(): globalThis.Promise<void> {
 	$.println(await run($.interfaceValue<scanner | null>($.markAsStructValue(new listScanner()), "main.listScanner")) == null)
+
+	let m: sync.Map = $.markAsStructValue(new sync.Map())
+	let callbacks = [$.functionValue(async (v: number): globalThis.Promise<$.GoError> => {
+		await m.Load(v)
+		return null
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] })]
+	$.println(await callbacks[0]!(1) == null)
 }
 
 if ($.isMainScript(import.meta)) {

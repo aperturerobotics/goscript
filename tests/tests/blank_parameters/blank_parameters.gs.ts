@@ -36,7 +36,7 @@ export class blankImpl {
 
 	static __typeInfo = $.registerStructType(
 		"main.blankImpl",
-		new blankImpl(),
+		() => new blankImpl(),
 		[{ name: "Value", args: [], returns: [] }],
 		blankImpl,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -65,7 +65,7 @@ export class Packer {
 
 	static __typeInfo = $.registerStructType(
 		"main.Packer",
-		new Packer(),
+		() => new Packer(),
 		[{ name: "pack", args: [], returns: [] }],
 		Packer,
 		{}
@@ -81,10 +81,6 @@ $.registerInterfaceType(
 	null,
 	[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
-
-let __goscriptBlank0: blankInterface | null = $.interfaceValue<blankInterface | null>(new blankImpl({value: 1}), "*main.blankImpl")
-
-let __goscriptBlank1: blankInterface | null = $.interfaceValue<blankInterface | null>(new blankImpl({value: 2}), "*main.blankImpl")
 
 export function blanks(_p0: number, _p1: string): number {
 	return 7
@@ -111,7 +107,6 @@ export async function main(): globalThis.Promise<void> {
 	let [left, right] = unicodeNames(3, 4)
 	$.println(left, right)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

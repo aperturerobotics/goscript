@@ -35,7 +35,7 @@ export class FuncContainer {
 
 	static __typeInfo = $.registerStructType(
 		"main.FuncContainer",
-		new FuncContainer(),
+		() => new FuncContainer(),
 		[],
 		FuncContainer,
 		{"myFunc": { kind: $.TypeKind.Interface, methods: [] }}
@@ -188,7 +188,7 @@ export async function main(): globalThis.Promise<void> {
 	// println("This line should not be reached if panic test is active")
 
 	// Test with nil interface
-	let nilInterface: any = null
+	let nilInterface: any = null as any
 	let [nilFn, okNil] = $.typeAssertTuple<((name: string) => string | globalThis.Promise<string>) | null>(nilInterface, { kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	if (!okNil && (nilFn == null)) {
 		$.println("Nil interface assertion correct")
@@ -205,7 +205,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Wrong function type assertion failed")
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

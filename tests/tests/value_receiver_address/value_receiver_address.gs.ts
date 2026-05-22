@@ -42,7 +42,7 @@ export class Counter {
 
 	static __typeInfo = $.registerStructType(
 		"main.Counter",
-		new Counter(),
+		() => new Counter(),
 		[{ name: "PointerAfterIncrement", args: [], returns: [] }, { name: "Value", args: [], returns: [] }],
 		Counter,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -56,7 +56,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Value receiver pointer value:", $.pointerValue<Counter>(pointerFromValue).Value())
 	$.println("Original after PointerAfterIncrement:", original.value.Value())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

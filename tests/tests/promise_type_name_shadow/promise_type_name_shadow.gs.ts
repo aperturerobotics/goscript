@@ -31,7 +31,7 @@ export class Promise {
 
 	static __typeInfo = $.registerStructType(
 		"main.Promise",
-		new Promise(),
+		() => new Promise(),
 		[],
 		Promise,
 		{"value": { kind: $.TypeKind.Basic, name: "string" }}
@@ -42,7 +42,6 @@ export async function main(): globalThis.Promise<void> {
 	let p = $.markAsStructValue(new Promise({value: "ok"}))
 	$.println(p.value)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

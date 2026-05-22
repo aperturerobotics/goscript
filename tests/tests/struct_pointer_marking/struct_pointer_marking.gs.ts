@@ -31,7 +31,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -198,7 +198,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("\n=== Test Complete ===")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

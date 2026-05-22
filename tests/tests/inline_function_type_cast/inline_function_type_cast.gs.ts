@@ -26,7 +26,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(await castedAdder!(5, 7))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

@@ -46,7 +46,7 @@ export class PathJoiner {
 
 	static __typeInfo = $.registerStructType(
 		"main.PathJoiner",
-		new PathJoiner(),
+		() => new PathJoiner(),
 		[{ name: "Join", args: [], returns: [] }],
 		PathJoiner,
 		{}
@@ -73,7 +73,6 @@ export async function main(): globalThis.Promise<void> {
 	let result4 = $.pointerValue<Exclude<Basic, null>>(b).Join(parts)
 	$.println("Result4:", result4)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -36,7 +36,7 @@ export class entry {
 
 	static __typeInfo = $.registerStructType(
 		"main.entry",
-		new entry(),
+		() => new entry(),
 		[{ name: "add", args: [], returns: [] }],
 		entry,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -44,6 +44,10 @@ export class entry {
 }
 
 export let box: {"table": entry[]} = {"table": Array.from({ length: 2 }, () => $.markAsStructValue(new entry()))}
+
+export function __goscript_set_box(value: {"table": entry[]}): void {
+	box = value
+}
 
 export function entries(): $.VarRef<entry[]> | null {
 	return $.fieldRef(box, "table")
@@ -54,7 +58,6 @@ export async function main(): globalThis.Promise<void> {
 	$.pointerValue<entry[]>(table)[0].add(5)
 	$.println($.pointerValue<entry[]>(table)[0].value)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -13,8 +13,8 @@ export function getValue(): [string, number] {
 	return ["test", 42]
 }
 
-export function simpleIterator(m: Map<string, number> | null): ((_p0: ((_p0: string, _p1: number) => boolean) | null) => void) | null {
-	return $.functionValue((_yield: ((_p0: string, _p1: number) => boolean) | null): void => {
+export function simpleIterator(m: Map<string, number> | null): ((_p0: ((_p0: string, _p1: number) => boolean | globalThis.Promise<boolean>) | null) => void) | null {
+	return $.functionValue((_yield: ((_p0: string, _p1: number) => boolean | globalThis.Promise<boolean>) | null): void => {
 		for (const [k, v] of m?.entries() ?? []) {
 			if (!_yield!(k, v)) {
 				break
@@ -28,7 +28,7 @@ export async function main(): globalThis.Promise<void> {
 	let m: Map<string, number> | null = new Map<string, number>([["a", 1], ["b", 2], ["c", 3]])
 
 	// Collect results in a slice to ensure deterministic output
-	let results: $.Slice<string> = null
+	let results: $.Slice<string> = null as $.Slice<string>
 
 	// Test maps.All which returns an iterator function (this tests the maps package import)
 	let __goscriptRangeReturn3114832 = false
@@ -36,7 +36,7 @@ export async function main(): globalThis.Promise<void> {
 		maps.All(m)!((k, v) => {
 			// Simple assignment that should trigger the error
 			let [x, y] = getValue()
-			let result = (k + x) + String.fromCodePoint($.int(v + y))
+			let result = (k + x) + String.fromCodePoint($.int(v + y, 32))
 			results = $.append(results, result)
 			return true
 		})
@@ -50,7 +50,7 @@ export async function main(): globalThis.Promise<void> {
 	;(() => {
 		simpleIterator(m)!((k, v) => {
 			let [x, y] = getValue()
-			let result = ((k + x) + String.fromCodePoint($.int(v + y))) + "_local"
+			let result = ((k + x) + String.fromCodePoint($.int(v + y, 32))) + "_local"
 			results = $.append(results, result)
 			return true
 		})
@@ -71,11 +71,11 @@ export async function main(): globalThis.Promise<void> {
 	let dst: Map<string, number> | null = new Map<string, number>([["base", 1]])
 	let src: Map<string, number> | null = new Map<string, number>([["copied", 2]])
 	maps.Copy(dst, src)
-	let nilSrc: Map<string, number> | null = null
+	let nilSrc: Map<string, number> | null = null as Map<string, number> | null
 	maps.Copy(dst, nilSrc)
 	$.println("Copy result:", $.mapGet(dst, "base", 0)[0], $.mapGet(dst, "copied", 0)[0], $.len(dst))
 	let cloned: Map<string, number> | null = maps.Clone(dst)
-	let nilMap: Map<string, number> | null = null
+	let nilMap: Map<string, number> | null = null as Map<string, number> | null
 	$.println("Clone result:", $.mapGet(cloned, "base", 0)[0], $.mapGet(cloned, "copied", 0)[0], maps.Clone(nilMap) == null)
 
 	$.println("test finished")

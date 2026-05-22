@@ -41,7 +41,7 @@ export class AsyncResource {
 
 	static __typeInfo = $.registerStructType(
 		"main.AsyncResource",
-		new AsyncResource(),
+		() => new AsyncResource(),
 		[{ name: "Release", args: [], returns: [] }],
 		AsyncResource,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }}
@@ -54,7 +54,6 @@ export async function main(): globalThis.Promise<void> {
 	__defer.defer(async () => { await $.pointerValue<AsyncResource>(res).Release() })
 	$.println("main function")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

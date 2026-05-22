@@ -46,7 +46,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[{ name: "Method1", args: [], returns: [] }],
 		MyStruct,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -54,7 +54,7 @@ export class MyStruct {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let i: MyInterface | null = null
+	let i: MyInterface | null = null as MyInterface | null
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.interfaceValue<MyInterface | null>($.markAsStructValue($.cloneStructValue(s)), "main.MyStruct")
 
@@ -83,7 +83,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("type assertion success", val.Value)
 	}
 
-	let nilInterface: MyInterface | null = null
+	let nilInterface: MyInterface | null = null as MyInterface | null
 	let __goscriptTuple1 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(nilInterface, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	let nilVal: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple1[0]
 	let ok3 = __goscriptTuple1[1]
@@ -93,7 +93,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("nil interface pointer assertion failed")
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

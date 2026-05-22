@@ -9,7 +9,7 @@ export function __goscript_set_Count(value: number): void {
 	Count = value
 }
 
-export let Hook: (() => $.GoError | globalThis.Promise<$.GoError>) | null = null as (() => $.GoError) | null
+export let Hook: (() => $.GoError | globalThis.Promise<$.GoError>) | null = null as (() => $.GoError | globalThis.Promise<$.GoError>) | null
 
 export function __goscript_set_Hook(value: (() => $.GoError | globalThis.Promise<$.GoError>) | null): void {
 	Hook = value

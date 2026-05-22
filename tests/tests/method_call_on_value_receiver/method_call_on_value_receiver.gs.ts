@@ -46,7 +46,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[{ name: "GetMyString", args: [], returns: [] }],
 		MyStruct,
 		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
@@ -57,7 +57,6 @@ export async function main(): globalThis.Promise<void> {
 	let ms = $.markAsStructValue(new MyStruct({MyInt: 1, MyString: "bar"}))
 	$.println("Method call on value: Expected: bar, Actual:", $.markAsStructValue($.cloneStructValue(ms)).GetMyString())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -96,7 +96,7 @@ export class MockFileInfo {
 
 	static __typeInfo = $.registerStructType(
 		"main.MockFileInfo",
-		new MockFileInfo(),
+		() => new MockFileInfo(),
 		[{ name: "IsDir", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "Size", args: [], returns: [] }],
 		MockFileInfo,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }, "size": { kind: $.TypeKind.Basic, name: "int" }, "isDir": { kind: $.TypeKind.Basic, name: "bool" }}
@@ -126,7 +126,7 @@ export class MockFilesystem {
 
 	static __typeInfo = $.registerStructType(
 		"main.MockFilesystem",
-		new MockFilesystem(),
+		() => new MockFilesystem(),
 		[{ name: "ReadDir", args: [], returns: [] }],
 		MockFilesystem,
 		{}
@@ -134,6 +134,10 @@ export class MockFilesystem {
 }
 
 export let SkipDir: $.GoError = os.ErrNotExist
+
+export function __goscript_set_SkipDir(value: $.GoError): void {
+	SkipDir = value
+}
 
 export async function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	// Test case 1: Direct call to nullable function parameter
@@ -213,7 +217,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Optional process result:", result4)
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

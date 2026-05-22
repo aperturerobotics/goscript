@@ -43,7 +43,7 @@ export class label {
 
 	static __typeInfo = $.registerStructType(
 		"main.label",
-		new label(),
+		() => new label(),
 		[{ name: "Format", args: [], returns: [] }],
 		label,
 		{"value": { kind: $.TypeKind.Basic, name: "string" }}

@@ -22,7 +22,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("String exists:", exists2)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

@@ -46,7 +46,7 @@ export class box {
 
 	static __typeInfo = $.registerStructType(
 		"main.box",
-		new box(),
+		() => new box(),
 		[{ name: "Value", args: [], returns: [] }],
 		box,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -73,7 +73,6 @@ export async function main(): globalThis.Promise<void> {
 	let fn = await wrapNew(undefined, asyncBox)
 	$.println($.pointerValue<Exclude<Value, null>>(await fn!()).Value())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

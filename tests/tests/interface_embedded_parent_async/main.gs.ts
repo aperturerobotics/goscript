@@ -48,7 +48,7 @@ export class impl {
 
 	static __typeInfo = $.registerStructType(
 		"main.impl",
-		new impl(),
+		() => new impl(),
 		[{ name: "Name", args: [], returns: [] }, { name: "Validate", args: [], returns: [] }],
 		impl,
 		{}
@@ -56,6 +56,10 @@ export class impl {
 }
 
 export let ready: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
+
+export function __goscript_set_ready(value: $.Channel<boolean> | null): void {
+	ready = value
+}
 
 export function NewSpecific(): Specific | null {
 	return $.interfaceValue<Specific | null>(new impl(), "*main.impl")
@@ -65,7 +69,6 @@ export async function main(): globalThis.Promise<void> {
 	let s = NewSpecific()
 	$.println("embedded directive", dep.Accept((s as dep.Directive | null)), await $.pointerValue<Exclude<Specific, null>>(s).Name())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -45,7 +45,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("**savedPP1:", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>(savedPP1)))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

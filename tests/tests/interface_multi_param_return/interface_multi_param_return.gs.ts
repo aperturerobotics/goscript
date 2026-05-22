@@ -42,7 +42,7 @@ export class MyProcessor {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyProcessor",
-		new MyProcessor(),
+		() => new MyProcessor(),
 		[{ name: "Process", args: [], returns: [] }],
 		MyProcessor,
 		{}
@@ -52,7 +52,7 @@ export class MyProcessor {
 export async function main(): globalThis.Promise<void> {
 	let processor: MultiParamReturner | null = $.interfaceValue<MultiParamReturner | null>($.markAsStructValue(new MyProcessor()), "main.MyProcessor")
 
-	let data = $.arrayToSlice<number>([1, 2, 3])
+	let data = $.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)])
 	let [success, ] = $.pointerValue<Exclude<MultiParamReturner, null>>(processor).Process(data, 5, "unused")
 
 	if (success) {
@@ -70,7 +70,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Main: Failure reported")
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

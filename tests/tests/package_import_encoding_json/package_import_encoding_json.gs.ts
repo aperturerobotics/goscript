@@ -59,7 +59,7 @@ export class Person {
 
 	static __typeInfo = $.registerStructType(
 		"main.Person",
-		new Person(),
+		() => new Person(),
 		[],
 		Person,
 		{"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
@@ -67,7 +67,7 @@ export class Person {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let results: $.Slice<string> = null
+	let results: $.Slice<string> = null as $.Slice<string>
 
 	// Marshal a simple struct
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
@@ -89,7 +89,7 @@ export async function main(): globalThis.Promise<void> {
 	// Unmarshal into a struct
 	let q: $.VarRef<Person> = $.varRef($.markAsStructValue(new Person()))
 	{
-		let __goscriptShadow0 = json.Unmarshal($.stringToBytes("{\"name\":\"Bob\",\"age\":25,\"active\":false}"), $.interfaceValue<any>($.pointerValue<Person | $.VarRef<Person>>(q), "*main.Person"))
+		let __goscriptShadow0 = json.Unmarshal(new Uint8Array([123, 34, 110, 97, 109, 101, 34, 58, 34, 66, 111, 98, 34, 44, 34, 97, 103, 101, 34, 58, 50, 53, 44, 34, 97, 99, 116, 105, 118, 101, 34, 58, 102, 97, 108, 115, 101, 125]), $.interfaceValue<any>(q, "*main.Person"))
 		if (__goscriptShadow0 != null) {
 			results = $.append(results, "Unmarshal struct error: " + $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow0).Error())
 		} else {
@@ -98,9 +98,9 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Unmarshal into a map[string]any
-	let m: $.VarRef<Map<string, any> | null> = $.varRef(null)
+	let m: $.VarRef<Map<string, any> | null> = $.varRef(null as Map<string, any> | null)
 	{
-		let __goscriptShadow1 = json.Unmarshal($.stringToBytes("{\"name\":\"Carol\",\"age\":22,\"active\":true}"), $.interfaceValue<any>(m, "*map[string]any"))
+		let __goscriptShadow1 = json.Unmarshal(new Uint8Array([123, 34, 110, 97, 109, 101, 34, 58, 34, 67, 97, 114, 111, 108, 34, 44, 34, 97, 103, 101, 34, 58, 50, 50, 44, 34, 97, 99, 116, 105, 118, 101, 34, 58, 116, 114, 117, 101, 125]), $.interfaceValue<any>(m, "*map[string]any"))
 		if (__goscriptShadow1 != null) {
 			results = $.append(results, "Unmarshal map error: " + $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow1).Error())
 		} else {

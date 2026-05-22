@@ -6,21 +6,20 @@ import * as $ from "@goscript/builtin/index.js"
 export async function main(): globalThis.Promise<void> {
 	let encoder = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
-	let decodeMap: number[] = Array.from({ length: 256 }, () => 0)
+	let decodeMap: Uint8Array = new Uint8Array(256)
 	for (let i = 0; i < $.len(decodeMap); i++) {
-		decodeMap[i] = 255
+		decodeMap[i] = $.uint(255, 8)
 	}
 
 	for (let i = 0; i < $.len(encoder); i++) {
-		if (decodeMap[$.indexStringOrBytes(encoder, i)] != 255) {
+		if ($.uint(decodeMap[$.indexStringOrBytes(encoder, i)], 8) != $.uint(255, 8)) {
 			$.panic("duplicate symbol")
 		}
-		decodeMap[$.indexStringOrBytes(encoder, i)] = $.int(i)
+		decodeMap[$.indexStringOrBytes(encoder, i)] = $.uint($.uint(i, 8), 8)
 	}
 
 	$.println("Success: no duplicates")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

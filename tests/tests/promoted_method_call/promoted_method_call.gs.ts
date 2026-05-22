@@ -36,7 +36,7 @@ export class base {
 
 	static __typeInfo = $.registerStructType(
 		"main.base",
-		new base(),
+		() => new base(),
 		[{ name: "Add", args: [], returns: [] }],
 		base,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -71,7 +71,7 @@ export class wrapper {
 
 	static __typeInfo = $.registerStructType(
 		"main.wrapper",
-		new wrapper(),
+		() => new wrapper(),
 		[],
 		wrapper,
 		{"base": "main.base"}
@@ -85,7 +85,6 @@ export async function main(): globalThis.Promise<void> {
 	let add: ((n: number) => number | globalThis.Promise<number>) | null = ((__receiver) => (n: number) => __receiver.Add(n))($.pointerValue<wrapper>(w).base)
 	$.println(await add!(5))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

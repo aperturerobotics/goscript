@@ -58,15 +58,15 @@ export class Mutex {
 		// 1: locked
 		// 2: unlocked (released)
 		let status: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
-		let waitCh: $.Channel<{}> | null = null
-		await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
+		let waitCh: $.Channel<{}> | null = null as $.Channel<{}> | null
+		await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
 			if ($.pointerValue<Mutex>(m).locked) {
 				// keep waiting
 				waitCh = await getWaitCh!()
 			} else {
 				// 0: waiting for lock
 				// 1: have the lock
-				let swapped = status.value.CompareAndSwap(0, 1)
+				let swapped = status.value.CompareAndSwap($.int(0, 32), $.int(1, 32))
 				if (swapped) {
 					$.pointerValue<Mutex>(m).locked = true
 				}
@@ -74,21 +74,21 @@ export class Mutex {
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 
 		let release = $.functionValue(async (): globalThis.Promise<void> => {
-			let pre = status.value.Swap(2)
+			let pre = $.int(status.value.Swap($.int(2, 32)), 32)
 			// 1: we have the lock
-			if (pre != 1) {
+			if ($.int(pre, 32) != $.int(1, 32)) {
 				return
 			}
 
 			// unlock
-			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
+			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
 				$.pointerValue<Mutex>(m).locked = false
 				await broadcast!()
 			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 		}, { kind: $.TypeKind.Function, params: [], results: [] })
 
 		// fast path: we locked the mutex
-		if (status.value.Load() == 1) {
+		if ($.int(status.value.Load(), 32) == $.int(1, 32)) {
 			return [release, null]
 		}
 
@@ -116,7 +116,7 @@ export class Mutex {
 				return __goscriptSelect0Value
 			}
 
-			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
+			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
 				// keep waiting for the lock
 				if ($.pointerValue<Mutex>(m).locked) {
 					waitCh = await getWaitCh!()
@@ -125,13 +125,13 @@ export class Mutex {
 
 				// 0: waiting for lock
 				// 1: have the lock
-				let swapped = status.value.CompareAndSwap(0, 1)
+				let swapped = status.value.CompareAndSwap($.int(0, 32), $.int(1, 32))
 				if (swapped) {
 					$.pointerValue<Mutex>(m).locked = true
 				}
 			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 
-			let nstatus = status.value.Load()
+			let nstatus = $.int(status.value.Load(), 32)
 			switch (nstatus) {
 				case 1:
 				{
@@ -155,7 +155,7 @@ export class Mutex {
 	public async TryLock(): globalThis.Promise<[(() => void) | null, boolean]> {
 		const m: Mutex | $.VarRef<Mutex> | null = this
 		let unlocked: $.VarRef<atomic.Bool> = $.varRef($.markAsStructValue(new atomic.Bool()))
-		await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): void => {
+		await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): void => {
 			if ($.pointerValue<Mutex>(m).locked) {
 				unlocked.value.Store(true)
 			} else {
@@ -173,7 +173,7 @@ export class Mutex {
 				return
 			}
 
-			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
+			await $.pointerValue<Mutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
 				$.pointerValue<Mutex>(m).locked = false
 				await broadcast!()
 			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
@@ -182,7 +182,7 @@ export class Mutex {
 
 	static __typeInfo = $.registerStructType(
 		"csync.Mutex",
-		new Mutex(),
+		() => new Mutex(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "Locker", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }],
 		Mutex,
 		{"bcast": "broadcast.Broadcast", "locked": { kind: $.TypeKind.Basic, name: "bool" }}
@@ -247,11 +247,9 @@ export class MutexLocker {
 
 	static __typeInfo = $.registerStructType(
 		"csync.MutexLocker",
-		new MutexLocker(),
+		() => new MutexLocker(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		MutexLocker,
 		{"m": { kind: $.TypeKind.Pointer, elemType: "csync.Mutex" }, "rel": "atomic.Pointer"}
 	)
 }
-
-let __goscriptBlank0: sync.Locker | null = $.interfaceValue<sync.Locker | null>(($.typedNil("*csync.MutexLocker")), "*csync.MutexLocker")

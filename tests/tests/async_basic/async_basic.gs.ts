@@ -26,7 +26,6 @@ export async function main(): globalThis.Promise<void> {
 	myChan!.close()
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

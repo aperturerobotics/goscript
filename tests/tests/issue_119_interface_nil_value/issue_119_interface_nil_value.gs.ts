@@ -137,7 +137,7 @@ export async function main(): globalThis.Promise<void> {
 	// The method dispatch uses the type (*Dog) to find Name()
 	// Then passes nil as the receiver
 	$.println($.pointerValue<Exclude<Animal, null>>(animal).Name())
-	let directNilDog: Dog | $.VarRef<Dog> | null = null
+	let directNilDog: Dog | $.VarRef<Dog> | null = null as Dog | $.VarRef<Dog> | null
 	$.println(Dog.prototype.Name.call(directNilDog))
 
 	// Test 3: Type assertions preserve the typed nil pointer

@@ -29,7 +29,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(numCount)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

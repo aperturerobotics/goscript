@@ -39,7 +39,7 @@ export class asyncReader {
 
 	static __typeInfo = $.registerStructType(
 		"main.asyncReader",
-		new asyncReader(),
+		() => new asyncReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		asyncReader,
 		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -48,6 +48,10 @@ export class asyncReader {
 
 export let Reader: io.Reader | null = $.interfaceValue<io.Reader | null>($.markAsStructValue(new asyncReader({ch: $.makeChannel<number>(1, 0, "both")})), "main.asyncReader")
 
+export function __goscript_set_Reader(value: io.Reader | null): void {
+	Reader = value
+}
+
 export async function main(): globalThis.Promise<void> {
 	if (Reader == null) {
 		$.println(0)
@@ -55,7 +59,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println(3)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

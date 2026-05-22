@@ -68,14 +68,14 @@ export class Action {
 
 	static __typeInfo = $.registerStructType(
 		"main.Action",
-		new Action(),
+		() => new Action(),
 		[{ name: "Mark", args: [], returns: [] }, { name: "SetFilter", args: [], returns: [] }],
 		Action,
 		{"Result": { kind: $.TypeKind.Basic, name: "int" }, "Filter": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: "dep.Ref" }}
 	)
 }
 
-export type value = number[]
+export type value = Uint8Array
 
 export function value_Key(v: value): any {
 	return $.namedValueInterfaceValue<any>(v, "main.value", {Key: value_Key})
@@ -86,8 +86,8 @@ export function Fixed_Mark(f: Fixed): boolean {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let shapes = $.arrayToSlice<Shape | null>([$.interfaceValue<Shape | null>($.arrayToSlice<dep.Ref | null>([$.namedValueInterfaceValue<dep.Ref | null>([1, 2], "main.value", {Key: value_Key})]), "main.Fixed"), $.interfaceValue<Shape | null>($.markAsStructValue(new Action({Result: 1, Filter: new Map<number, dep.Ref | null>([[1, $.namedValueInterfaceValue<dep.Ref | null>([1, 2], "main.value", {Key: value_Key})]])})), "main.Action")])
-	let fixed: $.Slice<Fixed> = null
+	let shapes = $.arrayToSlice<Shape | null>([$.namedValueInterfaceValue<Shape | null>($.arrayToSlice<dep.Ref | null>([$.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: value_Key})]), "main.Fixed", {Mark: Fixed_Mark}), $.interfaceValue<Shape | null>($.markAsStructValue(new Action({Result: 1, Filter: new Map<number, dep.Ref | null>([[1, $.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: value_Key})]])})), "main.Action")])
+	let fixed: $.Slice<Fixed> = null as $.Slice<Fixed>
 	for (let __rangeIndex = 0; __rangeIndex < $.len(shapes); __rangeIndex++) {
 		let shape = shapes![__rangeIndex]
 		{
@@ -96,7 +96,7 @@ export async function main(): globalThis.Promise<void> {
 				case $.typeAssert<Fixed>(__goscriptTypeSwitchValue, "main.Fixed").ok:
 					{
 						let shape: Fixed = $.typeAssert<Fixed>(__goscriptTypeSwitchValue, "main.Fixed").value
-						shape = ($.append((shape as Fixed), [3, 4]) as Fixed)
+						shape = ($.append((shape as Fixed), new Uint8Array([$.uint(3, 8), $.uint(4, 8)])) as Fixed)
 						fixed = $.append(fixed, shape)
 					}
 					break
@@ -124,7 +124,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("ok")
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

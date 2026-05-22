@@ -7,10 +7,13 @@ import * as dep from "@goscript/github.com/aperturerobotics/goscript/tests/tests
 
 export let closed: any = $.markAsStructValue($.cloneStructValue(dep.ErrClosed))
 
+export function __goscript_set_closed(value: any): void {
+	closed = value
+}
+
 export async function main(): globalThis.Promise<void> {
 	$.println($.markAsStructValue($.cloneStructValue(closed)).Error())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

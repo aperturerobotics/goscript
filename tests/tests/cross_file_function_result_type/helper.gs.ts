@@ -31,7 +31,7 @@ export class token {
 
 	static __typeInfo = $.registerStructType(
 		"main.token",
-		new token(),
+		() => new token(),
 		[],
 		token,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}

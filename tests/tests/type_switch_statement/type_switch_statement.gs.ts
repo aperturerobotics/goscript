@@ -33,7 +33,7 @@ export class RawValue {
 
 	static __typeInfo = $.registerStructType(
 		"main.RawValue",
-		new RawValue(),
+		() => new RawValue(),
 		[],
 		RawValue,
 		{"Tag": { kind: $.TypeKind.Basic, name: "int" }}
@@ -134,15 +134,15 @@ export async function main(): globalThis.Promise<void> {
 		}
 	}
 
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.arrayToSlice<any>([$.int(7)])); __rangeIndex++) {
-		let v = $.arrayToSlice<any>([$.int(7)])![__rangeIndex]
+	for (let __rangeIndex = 0; __rangeIndex < $.len($.arrayToSlice<any>([$.int(7, 32)])); __rangeIndex++) {
+		let v = $.arrayToSlice<any>([$.int(7, 32)])![__rangeIndex]
 		{
 			const __goscriptTypeSwitchValue = v
 			switch (true) {
 				default:
 					{
 						let v: any = __goscriptTypeSwitchValue
-						$.println("shadow default", $.mustTypeAssert<number>(v, { kind: $.TypeKind.Basic, name: "int" }))
+						$.println("shadow default", $.int($.mustTypeAssert<number>(v, { kind: $.TypeKind.Basic, name: "int" }), 32))
 					}
 					break
 			}
@@ -174,7 +174,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println("type switch count", count)
 
-	let oid: $.VarRef<ObjectIdentifier> = $.varRef(null)
+	let oid: $.VarRef<ObjectIdentifier> = $.varRef(null as ObjectIdentifier)
 	let ok = false
 	let oidValue: any = $.interfaceValue<any>(oid, "*main.ObjectIdentifier")
 	{
@@ -210,11 +210,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("raw", raw.value.Tag, ok)
 }
 
-
-if ($.isMainScript(import.meta)) {
-	await main()
-}
-
 export function getInterface(): any {
 	return 42
 }
@@ -225,4 +220,8 @@ export function parseObjectIdentifier(): [ObjectIdentifier, boolean] {
 
 export function parseRawValue(): [RawValue, boolean] {
 	return [$.markAsStructValue(new RawValue({Tag: 9})), true]
+}
+
+if ($.isMainScript(import.meta)) {
+	await main()
 }

@@ -37,7 +37,7 @@ export class Worker {
 
 	static __typeInfo = $.registerStructType(
 		"main.Worker",
-		new Worker(),
+		() => new Worker(),
 		[{ name: "lookup", args: [], returns: [] }],
 		Worker,
 		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -78,7 +78,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("hook:", await hook!(syncLookup, "ip"))
 	$.pointerValue<Worker>(worker).ch!.close()
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

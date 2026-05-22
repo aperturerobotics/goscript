@@ -25,7 +25,7 @@ export class hiddenError {
 
 	static __typeInfo = $.registerStructType(
 		"dep.hiddenError",
-		new hiddenError(),
+		() => new hiddenError(),
 		[{ name: "Error", args: [], returns: [] }],
 		hiddenError,
 		{}
@@ -33,3 +33,7 @@ export class hiddenError {
 }
 
 export let ErrClosed: hiddenError = $.markAsStructValue(new hiddenError())
+
+export function __goscript_set_ErrClosed(value: hiddenError): void {
+	ErrClosed = value
+}

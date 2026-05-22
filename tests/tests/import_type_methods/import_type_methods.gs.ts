@@ -33,7 +33,7 @@ export class parser {
 
 	static __typeInfo = $.registerStructType(
 		"main.parser",
-		new parser(),
+		() => new parser(),
 		[],
 		parser,
 		{"errors": "errlist.ErrorList"}
@@ -45,7 +45,6 @@ export async function main(): globalThis.Promise<void> {
 	p.errors = (errlist.ErrorList_Add(p.errors, "error") as errlist.ErrorList)
 	$.println(p.errors![0])
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

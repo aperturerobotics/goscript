@@ -6,14 +6,13 @@ import * as $ from "@goscript/builtin/index.js"
 import * as unsafe from "@goscript/unsafe/index.js"
 
 export function bytesAsString(): string {
-	let b = $.varRef($.stringToBytes("123"))
+	let b = $.varRef(new Uint8Array([49, 50, 51]))
 	return $.bytesToString(b.value)
 }
 
 export async function main(): globalThis.Promise<void> {
 	$.println(bytesAsString())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -48,7 +48,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Layout MST (UTC)    -> " + $.markAsStructValue($.cloneStructValue(t3)).Format("2006-01-02 15:04:05 MST"))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

@@ -7,6 +7,10 @@ import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/te
 
 export let cached: number = await subpkg.Next()
 
+export function __goscript_set_cached(value: number): void {
+	cached = value
+}
+
 export async function main(): globalThis.Promise<void> {
 	$.println("cached:", cached)
 }

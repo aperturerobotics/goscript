@@ -8,7 +8,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("value is", $.mustTypeAssert<string>(w, { kind: $.TypeKind.Basic, name: "string" }))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

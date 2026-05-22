@@ -44,14 +44,14 @@ export async function main(): globalThis.Promise<void> {
 	$.println("ModePerm:", $.int(fs.ModePerm))
 
 	// Test FileMode methods
-	let mode = fs.ModeDir | 0o755
+	let mode = $.uint(fs.ModeDir | 0o755, 32)
 	$.println("FileMode.IsDir():", fs.FileMode_IsDir(mode))
 	$.println("FileMode.IsRegular():", fs.FileMode_IsRegular(mode))
 	$.println("FileMode.Perm():", $.int(fs.FileMode_Perm(mode)))
 	$.println("FileMode.Type():", $.int(fs.FileMode_Type(mode)))
 	$.println("FileMode.String():", fs.FileMode_String(mode))
 
-	let regularMode = 0o644
+	let regularMode = $.uint(0o644, 32)
 	$.println("Regular file IsDir():", fs.FileMode_IsDir(regularMode))
 	$.println("Regular file IsRegular():", fs.FileMode_IsRegular(regularMode))
 

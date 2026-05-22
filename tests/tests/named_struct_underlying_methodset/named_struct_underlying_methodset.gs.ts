@@ -35,7 +35,7 @@ export class Base {
 
 	static __typeInfo = $.registerStructType(
 		"main.Base",
-		new Base(),
+		() => new Base(),
 		[{ name: "String", args: [], returns: [] }],
 		Base,
 		{}
@@ -64,7 +64,7 @@ export class Derived {
 
 	static __typeInfo = $.registerStructType(
 		"main.Derived",
-		new Derived(),
+		() => new Derived(),
 		[{ name: "Own", args: [], returns: [] }],
 		Derived,
 		{}
@@ -80,7 +80,6 @@ export async function main(): globalThis.Promise<void> {
 	let [, derivedOK] = $.typeAssertTuple<Stringer | null>(derived, "main.Stringer")
 	$.println("derived implements Stringer:", derivedOK)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

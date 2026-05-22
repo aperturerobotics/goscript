@@ -41,7 +41,7 @@ export class file {
 
 	static __typeInfo = $.registerStructType(
 		"main.file",
-		new file(),
+		() => new file(),
 		[],
 		file,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}

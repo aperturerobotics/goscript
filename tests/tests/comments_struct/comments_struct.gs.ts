@@ -43,7 +43,7 @@ export class TestStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.TestStruct",
-		new TestStruct(),
+		() => new TestStruct(),
 		[],
 		TestStruct,
 		{"IntField": { kind: $.TypeKind.Basic, name: "int" }, "StringField": { kind: $.TypeKind.Basic, name: "string" }}
@@ -55,7 +55,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("IntField:", s.IntField)
 	$.println("StringField:", s.StringField)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

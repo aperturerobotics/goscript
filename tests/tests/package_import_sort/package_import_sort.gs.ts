@@ -53,7 +53,7 @@ export class descending {
 
 	static __typeInfo = $.registerStructType(
 		"main.descending",
-		new descending(),
+		() => new descending(),
 		[{ name: "Len", args: [], returns: [] }, { name: "Less", args: [], returns: [] }, { name: "Swap", args: [], returns: [] }],
 		descending,
 		{"values": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}

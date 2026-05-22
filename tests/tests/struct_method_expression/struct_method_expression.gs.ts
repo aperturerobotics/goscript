@@ -36,7 +36,7 @@ export class worker {
 
 	static __typeInfo = $.registerStructType(
 		"main.worker",
-		new worker(),
+		() => new worker(),
 		[{ name: "add", args: [], returns: [] }],
 		worker,
 		{"base": { kind: $.TypeKind.Basic, name: "int" }}
@@ -47,7 +47,6 @@ export async function main(): globalThis.Promise<void> {
 	let fn = $.functionValue((w: worker | $.VarRef<worker> | null, v: number): number => $.pointerValue<worker>(w).add(v), { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "main.worker" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	$.println("method expr:", await fn!(new worker({base: 5}), 7))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

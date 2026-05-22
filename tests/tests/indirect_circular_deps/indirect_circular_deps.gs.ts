@@ -31,7 +31,7 @@ export class A {
 
 	static __typeInfo = $.registerStructType(
 		"main.A",
-		new A(),
+		() => new A(),
 		[],
 		A,
 		{"BB": { kind: $.TypeKind.Slice, elemType: "main.B" }}
@@ -66,7 +66,7 @@ export class B {
 
 	static __typeInfo = $.registerStructType(
 		"main.B",
-		new B(),
+		() => new B(),
 		[],
 		B,
 		{"AA": { kind: $.TypeKind.Slice, elemType: "main.A" }}
@@ -85,7 +85,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("a2 has", $.len(a2.BB), "B items")
 	$.println("b2 has", $.len(b2.AA), "A items")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

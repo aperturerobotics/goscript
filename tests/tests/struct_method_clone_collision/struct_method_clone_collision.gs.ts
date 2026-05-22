@@ -36,7 +36,7 @@ export class Box {
 
 	static __typeInfo = $.registerStructType(
 		"main.Box",
-		new Box(),
+		() => new Box(),
 		[{ name: "clone", args: [], returns: [] }],
 		Box,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -55,7 +55,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("copied:", copied.Value)
 	$.println("method:", $.pointerValue<Box>(methodCopy).Value)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

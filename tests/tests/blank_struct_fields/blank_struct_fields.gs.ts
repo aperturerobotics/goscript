@@ -4,10 +4,10 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export class padded {
-	public get _blank0(): number[] {
+	public get _blank0(): Uint8Array {
 		return this._fields._blank0.value
 	}
-	public set _blank0(value: number[]) {
+	public set _blank0(value: Uint8Array) {
 		this._fields._blank0.value = value
 	}
 
@@ -18,24 +18,24 @@ export class padded {
 		this._fields.Value.value = value
 	}
 
-	public get _blank2(): number[] {
+	public get _blank2(): Uint8Array {
 		return this._fields._blank2.value
 	}
-	public set _blank2(value: number[]) {
+	public set _blank2(value: Uint8Array) {
 		this._fields._blank2.value = value
 	}
 
 	public _fields: {
-		_blank0: $.VarRef<number[]>
+		_blank0: $.VarRef<Uint8Array>
 		Value: $.VarRef<number>
-		_blank2: $.VarRef<number[]>
+		_blank2: $.VarRef<Uint8Array>
 	}
 
-	constructor(init?: Partial<{_blank0?: number[], Value?: number, _blank2?: number[]}>) {
+	constructor(init?: Partial<{_blank0?: Uint8Array, Value?: number, _blank2?: Uint8Array}>) {
 		this._fields = {
-			_blank0: $.varRef(init?._blank0 ?? Array.from({ length: 2 }, () => 0)),
+			_blank0: $.varRef(init?._blank0 ?? new Uint8Array(2)),
 			Value: $.varRef(init?.Value ?? 0),
-			_blank2: $.varRef(init?._blank2 ?? Array.from({ length: 3 }, () => 0))
+			_blank2: $.varRef(init?._blank2 ?? new Uint8Array(3))
 		}
 	}
 
@@ -51,7 +51,7 @@ export class padded {
 
 	static __typeInfo = $.registerStructType(
 		"main.padded",
-		new padded(),
+		() => new padded(),
 		[],
 		padded,
 		{"_blank0": { type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 2 }, name: "_" }, "Value": { kind: $.TypeKind.Basic, name: "int" }, "_blank2": { type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 3 }, name: "_" }}
@@ -59,6 +59,10 @@ export class padded {
 }
 
 export let featureBlock: {"_blank0": padded, "Enabled": boolean, "_blank2": padded} = {"_blank0": $.markAsStructValue(new padded()), "Enabled": false, "_blank2": $.markAsStructValue(new padded())}
+
+export function __goscript_set_featureBlock(value: {"_blank0": padded, "Enabled": boolean, "_blank2": padded}): void {
+	featureBlock = value
+}
 
 export async function main(): globalThis.Promise<void> {
 	featureBlock.Enabled = true
@@ -69,7 +73,6 @@ export async function main(): globalThis.Promise<void> {
 	copy.Value = 8
 	$.println(original.Value, copy.Value)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

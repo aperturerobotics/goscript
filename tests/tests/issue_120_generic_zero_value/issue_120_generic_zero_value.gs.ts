@@ -65,9 +65,8 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test 5: Verify the actual values
 	$.println("zeroInt == 0:", zeroInt == 0)
-	$.println("zeroStr == \"\":", zeroStr == "")
+	$.println("zeroStr == \"\":", (zeroStr as string) == "")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

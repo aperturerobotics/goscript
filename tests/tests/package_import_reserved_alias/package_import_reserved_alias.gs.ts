@@ -33,7 +33,7 @@ export class Holder {
 
 	static __typeInfo = $.registerStructType(
 		"main.Holder",
-		new Holder(),
+		() => new Holder(),
 		[],
 		Holder,
 		{"Box": { kind: $.TypeKind.Pointer, elemType: "unique.Box" }}

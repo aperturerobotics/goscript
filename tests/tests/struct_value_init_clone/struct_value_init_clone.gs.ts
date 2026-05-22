@@ -41,7 +41,7 @@ export class Point {
 
 	static __typeInfo = $.registerStructType(
 		"main.Point",
-		new Point(),
+		() => new Point(),
 		[],
 		Point,
 		{"X": { kind: $.TypeKind.Basic, name: "int" }, "Y": { kind: $.TypeKind.Basic, name: "int" }}
@@ -69,7 +69,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("v after p3 mod:", v.X, v.Y)
 	$.println("p3:", p3.X, p3.Y)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

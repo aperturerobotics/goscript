@@ -17,7 +17,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("blank funcs ok")
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

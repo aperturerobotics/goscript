@@ -37,7 +37,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("intArray[1]:", intArray[1])
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

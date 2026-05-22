@@ -38,7 +38,7 @@ export class msg {
 
 	static __typeInfo = $.registerStructType(
 		"main.msg",
-		new msg(),
+		() => new msg(),
 		[{ name: "EqualVT", args: [], returns: [] }],
 		msg,
 		{"v": { kind: $.TypeKind.Basic, name: "int" }}

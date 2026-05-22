@@ -10,7 +10,7 @@ export const blockTypeRLE: blockType = 1
 export type blockType = number
 
 export async function main(): globalThis.Promise<void> {
-	let blockType = 1
+	let blockType = $.uint(1, 8)
 	switch (blockType) {
 		case blockTypeRaw:
 		{

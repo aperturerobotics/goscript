@@ -41,7 +41,7 @@ export class Box {
 
 	static __typeInfo = $.registerStructType(
 		"helper.Box",
-		new Box(),
+		() => new Box(),
 		[],
 		Box,
 		{"Value": { kind: $.TypeKind.Interface, methods: [] }}
@@ -81,7 +81,7 @@ export class IntValue {
 
 	static __typeInfo = $.registerStructType(
 		"helper.IntValue",
-		new IntValue(),
+		() => new IntValue(),
 		[{ name: "GetValue", args: [], returns: [] }],
 		IntValue,
 		{"N": { kind: $.TypeKind.Basic, name: "int" }}

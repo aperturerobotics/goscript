@@ -194,7 +194,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("state one:", stateMachineGoto(1))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

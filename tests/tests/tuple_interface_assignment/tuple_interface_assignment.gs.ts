@@ -25,7 +25,7 @@ export class concrete {
 
 	static __typeInfo = $.registerStructType(
 		"main.concrete",
-		new concrete(),
+		() => new concrete(),
 		[{ name: "Read", args: [], returns: [] }],
 		concrete,
 		{}
@@ -47,14 +47,13 @@ export function makeReader(): [concrete | $.VarRef<concrete> | null, $.GoError] 
 }
 
 export async function main(): globalThis.Promise<void> {
-	let r: reader | null = null
-	let err: $.GoError = null
+	let r: reader | null = null as reader | null
+	let err: $.GoError = null as $.GoError
 	let __goscriptTuple0 = makeReader()
 	r = $.interfaceValue<reader | null>(__goscriptTuple0[0], "*main.concrete")
 	err = __goscriptTuple0[1]
 	$.println("ok", ($.pointerValue<Exclude<reader, null>>(r).Read() == 7) && (err == null))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -5,19 +5,19 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_parse from "./parse.gs.ts"
 
-export let code1: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39])
+export let code1: $.Slice<number> = $.arrayToSlice<number>([$.int(0x30, 32), $.int(0x39, 32)])
 
 export function __goscript_set_code1(value: $.Slice<number>): void {
 	code1 = value
 }
 
-export let code2: $.Slice<number> = $.arrayToSlice<number>([0x9, 0xa, 0xc, 0xd, 0x20, 0x20])
+export let code2: $.Slice<number> = $.arrayToSlice<number>([$.int(0x9, 32), $.int(0xa, 32), $.int(0xc, 32), $.int(0xd, 32), $.int(0x20, 32), $.int(0x20, 32)])
 
 export function __goscript_set_code2(value: $.Slice<number>): void {
 	code2 = value
 }
 
-export let code3: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39, 0x41, 0x5a, 0x5f, 0x5f, 0x61, 0x7a])
+export let code3: $.Slice<number> = $.arrayToSlice<number>([$.int(0x30, 32), $.int(0x39, 32), $.int(0x41, 32), $.int(0x5a, 32), $.int(0x5f, 32), $.int(0x5f, 32), $.int(0x61, 32), $.int(0x7a, 32)])
 
 export function __goscript_set_code3(value: $.Slice<number>): void {
 	code3 = value
@@ -36,85 +36,85 @@ export function __goscript_set_perlGroup(value: Map<string, __goscript_parse.cha
 	perlGroup = value
 }
 
-export let code4: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39, 0x41, 0x5a, 0x61, 0x7a])
+export let code4: $.Slice<number> = $.arrayToSlice<number>([$.int(0x30, 32), $.int(0x39, 32), $.int(0x41, 32), $.int(0x5a, 32), $.int(0x61, 32), $.int(0x7a, 32)])
 
 export function __goscript_set_code4(value: $.Slice<number>): void {
 	code4 = value
 }
 
-export let code5: $.Slice<number> = $.arrayToSlice<number>([0x41, 0x5a, 0x61, 0x7a])
+export let code5: $.Slice<number> = $.arrayToSlice<number>([$.int(0x41, 32), $.int(0x5a, 32), $.int(0x61, 32), $.int(0x7a, 32)])
 
 export function __goscript_set_code5(value: $.Slice<number>): void {
 	code5 = value
 }
 
-export let code6: $.Slice<number> = $.arrayToSlice<number>([0x0, 0x7f])
+export let code6: $.Slice<number> = $.arrayToSlice<number>([$.int(0x0, 32), $.int(0x7f, 32)])
 
 export function __goscript_set_code6(value: $.Slice<number>): void {
 	code6 = value
 }
 
-export let code7: $.Slice<number> = $.arrayToSlice<number>([0x9, 0x9, 0x20, 0x20])
+export let code7: $.Slice<number> = $.arrayToSlice<number>([$.int(0x9, 32), $.int(0x9, 32), $.int(0x20, 32), $.int(0x20, 32)])
 
 export function __goscript_set_code7(value: $.Slice<number>): void {
 	code7 = value
 }
 
-export let code8: $.Slice<number> = $.arrayToSlice<number>([0x0, 0x1f, 0x7f, 0x7f])
+export let code8: $.Slice<number> = $.arrayToSlice<number>([$.int(0x0, 32), $.int(0x1f, 32), $.int(0x7f, 32), $.int(0x7f, 32)])
 
 export function __goscript_set_code8(value: $.Slice<number>): void {
 	code8 = value
 }
 
-export let code9: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39])
+export let code9: $.Slice<number> = $.arrayToSlice<number>([$.int(0x30, 32), $.int(0x39, 32)])
 
 export function __goscript_set_code9(value: $.Slice<number>): void {
 	code9 = value
 }
 
-export let code10: $.Slice<number> = $.arrayToSlice<number>([0x21, 0x7e])
+export let code10: $.Slice<number> = $.arrayToSlice<number>([$.int(0x21, 32), $.int(0x7e, 32)])
 
 export function __goscript_set_code10(value: $.Slice<number>): void {
 	code10 = value
 }
 
-export let code11: $.Slice<number> = $.arrayToSlice<number>([0x61, 0x7a])
+export let code11: $.Slice<number> = $.arrayToSlice<number>([$.int(0x61, 32), $.int(0x7a, 32)])
 
 export function __goscript_set_code11(value: $.Slice<number>): void {
 	code11 = value
 }
 
-export let code12: $.Slice<number> = $.arrayToSlice<number>([0x20, 0x7e])
+export let code12: $.Slice<number> = $.arrayToSlice<number>([$.int(0x20, 32), $.int(0x7e, 32)])
 
 export function __goscript_set_code12(value: $.Slice<number>): void {
 	code12 = value
 }
 
-export let code13: $.Slice<number> = $.arrayToSlice<number>([0x21, 0x2f, 0x3a, 0x40, 0x5b, 0x60, 0x7b, 0x7e])
+export let code13: $.Slice<number> = $.arrayToSlice<number>([$.int(0x21, 32), $.int(0x2f, 32), $.int(0x3a, 32), $.int(0x40, 32), $.int(0x5b, 32), $.int(0x60, 32), $.int(0x7b, 32), $.int(0x7e, 32)])
 
 export function __goscript_set_code13(value: $.Slice<number>): void {
 	code13 = value
 }
 
-export let code14: $.Slice<number> = $.arrayToSlice<number>([0x9, 0xd, 0x20, 0x20])
+export let code14: $.Slice<number> = $.arrayToSlice<number>([$.int(0x9, 32), $.int(0xd, 32), $.int(0x20, 32), $.int(0x20, 32)])
 
 export function __goscript_set_code14(value: $.Slice<number>): void {
 	code14 = value
 }
 
-export let code15: $.Slice<number> = $.arrayToSlice<number>([0x41, 0x5a])
+export let code15: $.Slice<number> = $.arrayToSlice<number>([$.int(0x41, 32), $.int(0x5a, 32)])
 
 export function __goscript_set_code15(value: $.Slice<number>): void {
 	code15 = value
 }
 
-export let code16: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39, 0x41, 0x5a, 0x5f, 0x5f, 0x61, 0x7a])
+export let code16: $.Slice<number> = $.arrayToSlice<number>([$.int(0x30, 32), $.int(0x39, 32), $.int(0x41, 32), $.int(0x5a, 32), $.int(0x5f, 32), $.int(0x5f, 32), $.int(0x61, 32), $.int(0x7a, 32)])
 
 export function __goscript_set_code16(value: $.Slice<number>): void {
 	code16 = value
 }
 
-export let code17: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39, 0x41, 0x46, 0x61, 0x66])
+export let code17: $.Slice<number> = $.arrayToSlice<number>([$.int(0x30, 32), $.int(0x39, 32), $.int(0x41, 32), $.int(0x46, 32), $.int(0x61, 32), $.int(0x66, 32)])
 
 export function __goscript_set_code17(value: $.Slice<number>): void {
 	code17 = value

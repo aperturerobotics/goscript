@@ -41,7 +41,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[{ name: "DoesNotUseReceiver", args: [], returns: [] }, { name: "UsesReceiver", args: [], returns: [] }],
 		MyStruct,
 		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -51,9 +51,8 @@ export class MyStruct {
 export async function main(): globalThis.Promise<void> {
 	let s: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({Value: 10})
 	$.println($.pointerValue<MyStruct>(s).UsesReceiver())
-	$.println($.pointerValue<MyStruct>(s).DoesNotUseReceiver())
+	$.println(MyStruct.prototype.DoesNotUseReceiver.call(s))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

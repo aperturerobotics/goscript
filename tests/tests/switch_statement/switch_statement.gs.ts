@@ -109,7 +109,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

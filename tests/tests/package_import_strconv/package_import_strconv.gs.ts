@@ -33,11 +33,11 @@ export async function main(): globalThis.Promise<void> {
 	let f = __goscriptTuple1[0]
 	err = __goscriptTuple1[1]
 	if (err == null) {
-		$.println("ParseFloat result:", strconv.FormatFloat(f, 102, 2, 64))
+		$.println("ParseFloat result:", strconv.FormatFloat(f, $.uint(102, 8), 2, 64))
 	}
 
 	// Test FormatFloat
-	let floatStr = strconv.FormatFloat(2.718, 102, 3, 64)
+	let floatStr = strconv.FormatFloat(2.718, $.uint(102, 8), 3, 64)
 	$.println("FormatFloat result:", floatStr)
 
 	// Test ParseBool

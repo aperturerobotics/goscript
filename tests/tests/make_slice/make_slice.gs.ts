@@ -55,12 +55,12 @@ export async function main(): globalThis.Promise<void> {
 	// Test 8: Append to bytes with extra capacity
 	$.println("--- Append to bytes with extra capacity ---")
 	let b3 = $.makeSlice<number>(1, 10, "byte")
-	b3![0] = 65
+	b3![0] = $.uint(65, 8)
 	$.println("Before append - len:", $.len(b3), "cap:", $.cap(b3))
 	b3 = $.append(b3, 66)
 	$.println("After append - len:", $.len(b3), "cap:", $.cap(b3))
-	$.println("b3[0]:", b3![0])
-	$.println("b3[1]:", b3![1])
+	$.println("b3[0]:", $.uint(b3![0], 8))
+	$.println("b3[1]:", $.uint(b3![1], 8))
 
 	// Test 9: Large capacity slice
 	$.println("--- Large capacity slice ---")
@@ -99,7 +99,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("--- All tests completed ---")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -72,7 +72,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[{ name: "MyString1", args: [], returns: [] }, { name: "MyString2", args: [], returns: [] }],
 		MyStruct,
 		{"Value1": { kind: $.TypeKind.Basic, name: "string" }, "Value2": { kind: $.TypeKind.Basic, name: "string" }}
@@ -99,7 +99,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Type assertion failed")
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

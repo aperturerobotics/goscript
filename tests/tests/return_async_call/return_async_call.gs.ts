@@ -8,7 +8,7 @@ import * as context from "@goscript/context/index.js"
 import * as time from "@goscript/time/index.js"
 
 export function AsyncFunction(): string {
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep($.uint64Mul(10, time.Millisecond))
 	return "result"
 }
 
@@ -17,7 +17,7 @@ export function SyncWrapper(): string {
 }
 
 export function AnotherAsyncFunction(ctx: context.Context | null): [string, $.GoError] {
-	time.Sleep(5 * time.Millisecond)
+	time.Sleep($.uint64Mul(5, time.Millisecond))
 	return ["async result", null]
 }
 
@@ -38,7 +38,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println("Result2:", result2)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -64,7 +64,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }],
 		MyStruct,
 		{}
@@ -72,7 +72,7 @@ export class MyStruct {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let rwc: ReadCloser | null = null
+	let rwc: ReadCloser | null = null as ReadCloser | null
 	let s = $.markAsStructValue(new MyStruct())
 	rwc = $.interfaceValue<ReadCloser | null>($.markAsStructValue($.cloneStructValue(s)), "main.MyStruct")
 
@@ -83,7 +83,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Embedded interface assertion failed")
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

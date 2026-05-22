@@ -23,7 +23,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("pp1 deref:", $.pointerValue<number>($.pointerValue<$.VarRef<number> | null>(pp1)))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

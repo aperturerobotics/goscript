@@ -13,7 +13,6 @@ export async function main(): globalThis.Promise<void> {
 	printVal({T: { type: { kind: $.TypeKind.Basic, name: "bool" }, zero: () => false }}, true)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

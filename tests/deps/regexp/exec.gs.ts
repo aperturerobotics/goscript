@@ -351,13 +351,13 @@ export class machine {
 	public add(q: queue | $.VarRef<queue> | null, pc: number, pos: number, cap: $.Slice<number>, cond: $.VarRef<lazyFlag> | null, t: thread | $.VarRef<thread> | null): thread | $.VarRef<thread> | null {
 		const m: machine | $.VarRef<machine> | null = this
 		Again: while (true) {
-			if (pc == 0) {
+			if ($.uint(pc, 32) == $.uint(0, 32)) {
 				return t
 			}
 
 			{
-				let j = $.pointerValue<queue>(q).sparse![pc]
-				if ((j < $.uint($.len($.pointerValue<queue>(q).dense), 32)) && ($.pointerValue<queue>(q).dense![j].pc == pc)) {
+				let j = $.uint($.pointerValue<queue>(q).sparse![pc], 32)
+				if ((j < $.uint($.len($.pointerValue<queue>(q).dense), 32)) && ($.uint($.pointerValue<queue>(q).dense![j].pc, 32) == $.uint(pc, 32))) {
 					return t
 				}
 			}
@@ -366,8 +366,8 @@ export class machine {
 			$.pointerValue<queue>(q).dense = $.goSlice($.pointerValue<queue>(q).dense, undefined, j + 1)
 			let d: entry | $.VarRef<entry> | null = $.indexRef($.pointerValue<queue>(q).dense!, j)
 			$.pointerValue<entry>(d).t = null
-			$.pointerValue<entry>(d).pc = pc
-			$.pointerValue<queue>(q).sparse![pc] = $.uint(j, 32)
+			$.pointerValue<entry>(d).pc = $.uint(pc, 32)
+			$.pointerValue<queue>(q).sparse![pc] = $.uint($.uint(j, 32), 32)
 
 			let i: syntax.Inst | $.VarRef<syntax.Inst> | null = $.indexRef($.pointerValue<syntax.Prog>($.pointerValue<machine>(m).p).Inst!, pc)
 			switch ($.pointerValue<syntax.Inst>(i).Op) {
@@ -383,22 +383,22 @@ export class machine {
 				case syntax.InstAlt:
 				case syntax.InstAltMatch:
 				{
-					t = $.pointerValue<machine>(m).add(q, $.pointerValue<syntax.Inst>(i).Out, pos, cap, cond, t)
-					pc = $.pointerValue<syntax.Inst>(i).Arg
+					t = $.pointerValue<machine>(m).add(q, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), pos, cap, cond, t)
+					pc = $.uint($.pointerValue<syntax.Inst>(i).Arg, 32)
 					continue Again
 					break
 				}
 				case syntax.InstEmptyWidth:
 				{
-					if (lazyFlag_match($.pointerValue<lazyFlag>(cond), $.pointerValue<syntax.Inst>(i).Arg)) {
-						pc = $.pointerValue<syntax.Inst>(i).Out
+					if (lazyFlag_match($.pointerValue<lazyFlag>(cond), $.uint($.pointerValue<syntax.Inst>(i).Arg, 8))) {
+						pc = $.uint($.pointerValue<syntax.Inst>(i).Out, 32)
 						continue Again
 					}
 					break
 				}
 				case syntax.InstNop:
 				{
-					pc = $.pointerValue<syntax.Inst>(i).Out
+					pc = $.uint($.pointerValue<syntax.Inst>(i).Out, 32)
 					continue Again
 					break
 				}
@@ -407,10 +407,10 @@ export class machine {
 					if ($.int($.pointerValue<syntax.Inst>(i).Arg) < $.len(cap)) {
 						let opos = cap![$.pointerValue<syntax.Inst>(i).Arg]
 						cap![$.pointerValue<syntax.Inst>(i).Arg] = pos
-						$.pointerValue<machine>(m).add(q, $.pointerValue<syntax.Inst>(i).Out, pos, cap, cond, null)
+						$.pointerValue<machine>(m).add(q, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), pos, cap, cond, null)
 						cap![$.pointerValue<syntax.Inst>(i).Arg] = opos
 					} else {
-						pc = $.pointerValue<syntax.Inst>(i).Out
+						pc = $.uint($.pointerValue<syntax.Inst>(i).Out, 32)
 						continue Again
 					}
 					break
@@ -441,7 +441,7 @@ export class machine {
 
 	public alloc(i: syntax.Inst | $.VarRef<syntax.Inst> | null): thread | $.VarRef<thread> | null {
 		let m: machine | $.VarRef<machine> | null = this
-		let t: thread | $.VarRef<thread> | null = null
+		let t: thread | $.VarRef<thread> | null = null as thread | $.VarRef<thread> | null
 		{
 			let n = $.len($.pointerValue<machine>(m).pool)
 			if (n > 0) {
@@ -478,8 +478,8 @@ export class machine {
 
 	public match(i: __goscript_regexp.input | null, pos: number): boolean {
 		let m: machine | $.VarRef<machine> | null = this
-		let startCond = $.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).cond
-		if (startCond == ~0) {
+		let startCond = $.uint($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).cond, 8)
+		if ($.uint(startCond, 8) == $.uint(~0, 8)) {
 			return false
 		}
 		$.pointerValue<machine>(m).matched = false
@@ -488,27 +488,27 @@ export class machine {
 		}
 		let runq: queue | $.VarRef<queue> | null = $.pointerValue<machine>(m)._fields.q0
 		let nextq: queue | $.VarRef<queue> | null = $.pointerValue<machine>(m)._fields.q1
-		let r = __goscript_regexp.endOfText
-		let r1 = __goscript_regexp.endOfText
+		let r = $.int(-1, 32)
+		let r1 = $.int(-1, 32)
 		let width = 0
 		let width1 = 0
 		let __goscriptTuple0 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
-		r = __goscriptTuple0[0]
+		r = $.int(__goscriptTuple0[0], 32)
 		width = __goscriptTuple0[1]
-		if (r != __goscript_regexp.endOfText) {
+		if ($.int(r, 32) != $.int(-1, 32)) {
 			let __goscriptTuple1 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
-			r1 = __goscriptTuple1[0]
+			r1 = $.int(__goscriptTuple1[0], 32)
 			width1 = __goscriptTuple1[1]
 		}
 		let flag: $.VarRef<lazyFlag> = $.varRef(0)
 		if (pos == 0) {
-			flag.value = newLazyFlag(-1, r)
+			flag.value = newLazyFlag($.int(-1, 32), $.int(r, 32))
 		} else {
 			flag.value = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).context(pos)
 		}
 		while (true) {
 			if ($.len($.pointerValue<queue>(runq).dense) == 0) {
-				if (((startCond & syntax.EmptyBeginText) != 0) && (pos != 0)) {
+				if (($.uint((startCond & syntax.EmptyBeginText), 8) != $.uint(0, 8)) && (pos != 0)) {
 					// Anchored match, past beginning of text.
 					break
 				}
@@ -516,7 +516,7 @@ export class machine {
 					// Have match; finished exploring alternatives.
 					break
 				}
-				if ((($.len($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).prefix) > 0) && (r1 != $.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).prefixRune)) && $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).canCheckPrefix()) {
+				if ((($.len($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).prefix) > 0) && ($.int(r1, 32) != $.int($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).prefixRune, 32))) && $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).canCheckPrefix()) {
 					// Match requires literal prefix; fast search for it.
 					let advance = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).index($.pointerValue<machine>(m).re, pos)
 					if (advance < 0) {
@@ -524,10 +524,10 @@ export class machine {
 					}
 					pos += advance
 					let __goscriptTuple2 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
-					r = __goscriptTuple2[0]
+					r = $.int(__goscriptTuple2[0], 32)
 					width = __goscriptTuple2[1]
 					let __goscriptTuple3 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
-					r1 = __goscriptTuple3[0]
+					r1 = $.int(__goscriptTuple3[0], 32)
 					width1 = __goscriptTuple3[1]
 				}
 			}
@@ -535,10 +535,10 @@ export class machine {
 				if ($.len($.pointerValue<machine>(m).matchcap) > 0) {
 					$.pointerValue<machine>(m).matchcap![0] = pos
 				}
-				$.pointerValue<machine>(m).add(runq, $.uint($.pointerValue<syntax.Prog>($.pointerValue<machine>(m).p).Start, 32), pos, $.pointerValue<machine>(m).matchcap, flag, null)
+				$.pointerValue<machine>(m).add(runq, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<machine>(m).p).Start, 32), 32), pos, $.pointerValue<machine>(m).matchcap, flag, null)
 			}
-			flag.value = newLazyFlag(r, r1)
-			$.pointerValue<machine>(m).step(runq, nextq, pos, pos + width, r, flag)
+			flag.value = newLazyFlag($.int(r, 32), $.int(r1, 32))
+			$.pointerValue<machine>(m).step(runq, nextq, pos, pos + width, $.int(r, 32), flag)
 			if (width == 0) {
 				break
 			}
@@ -548,13 +548,13 @@ export class machine {
 				break
 			}
 			pos += width
-			let __goscriptAssign0_0: number = r1
+			let __goscriptAssign0_0: number = $.int(r1, 32)
 			let __goscriptAssign0_1: number = width1
 			r = __goscriptAssign0_0
 			width = __goscriptAssign0_1
-			if (r != __goscript_regexp.endOfText) {
+			if ($.int(r, 32) != $.int(-1, 32)) {
 				let __goscriptTuple4 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
-				r1 = __goscriptTuple4[0]
+				r1 = $.int(__goscriptTuple4[0], 32)
 				width1 = __goscriptTuple4[1]
 			}
 			let __goscriptAssign1_0: queue | $.VarRef<queue> | null = nextq
@@ -608,12 +608,12 @@ export class machine {
 				}
 				case syntax.InstRune:
 				{
-					add = syntax.Inst.prototype.MatchRune.call(i, c)
+					add = syntax.Inst.prototype.MatchRune.call(i, $.int(c, 32))
 					break
 				}
 				case syntax.InstRune1:
 				{
-					add = c == $.pointerValue<syntax.Inst>(i).Rune![0]
+					add = $.int(c, 32) == $.int($.pointerValue<syntax.Inst>(i).Rune![0], 32)
 					break
 				}
 				case syntax.InstRuneAny:
@@ -623,12 +623,12 @@ export class machine {
 				}
 				case syntax.InstRuneAnyNotNL:
 				{
-					add = c != 10
+					add = $.int(c, 32) != $.int(10, 32)
 					break
 				}
 			}
 			if (add) {
-				t = $.pointerValue<machine>(m).add(nextq, $.pointerValue<syntax.Inst>(i).Out, nextPos, $.pointerValue<thread>(t).cap, nextCond, t)
+				t = $.pointerValue<machine>(m).add(nextq, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), nextPos, $.pointerValue<thread>(t).cap, nextCond, t)
 			}
 			if (t != null) {
 				$.pointerValue<machine>(m).pool = $.append($.pointerValue<machine>(m).pool, t)
@@ -694,51 +694,51 @@ export class onePassMachine {
 export type lazyFlag = number
 
 export function newLazyFlag(r1: number, r2: number): lazyFlag {
-	return (((r1 * (2 ** 32))) + $.uint($.uint(r2, 32), 64))
+	return $.uint64Add(($.uint64Mul(r1, (2 ** 32))), $.uint($.uint(r2, 32), 64))
 }
 
 export function lazyFlag_match(f: lazyFlag, op: syntax.EmptyOp): boolean {
-	if (op == 0) {
+	if ($.uint(op, 8) == $.uint(0, 8)) {
 		return true
 	}
-	let r1 = $.int(Math.floor(f / (2 ** 32)), 32)
-	if ((op & syntax.EmptyBeginLine) != 0) {
-		if ((r1 != 10) && (r1 >= 0)) {
+	let r1 = $.int($.int($.uint64Shr(f, 32), 32), 32)
+	if ($.uint((op & syntax.EmptyBeginLine), 8) != $.uint(0, 8)) {
+		if (($.int(r1, 32) != $.int(10, 32)) && (r1 >= 0)) {
 			return false
 		}
-		op = op & ~(syntax.EmptyBeginLine)
+		op = op & ~($.uint(syntax.EmptyBeginLine, 8))
 	}
-	if ((op & syntax.EmptyBeginText) != 0) {
+	if ($.uint((op & syntax.EmptyBeginText), 8) != $.uint(0, 8)) {
 		if (r1 >= 0) {
 			return false
 		}
-		op = op & ~(syntax.EmptyBeginText)
+		op = op & ~($.uint(syntax.EmptyBeginText, 8))
 	}
-	if (op == 0) {
+	if ($.uint(op, 8) == $.uint(0, 8)) {
 		return true
 	}
-	let r2 = $.int(f, 32)
-	if ((op & syntax.EmptyEndLine) != 0) {
-		if ((r2 != 10) && (r2 >= 0)) {
+	let r2 = $.int($.int(f, 32), 32)
+	if ($.uint((op & syntax.EmptyEndLine), 8) != $.uint(0, 8)) {
+		if (($.int(r2, 32) != $.int(10, 32)) && (r2 >= 0)) {
 			return false
 		}
-		op = op & ~(syntax.EmptyEndLine)
+		op = op & ~($.uint(syntax.EmptyEndLine, 8))
 	}
-	if ((op & syntax.EmptyEndText) != 0) {
+	if ($.uint((op & syntax.EmptyEndText), 8) != $.uint(0, 8)) {
 		if (r2 >= 0) {
 			return false
 		}
-		op = op & ~(syntax.EmptyEndText)
+		op = op & ~($.uint(syntax.EmptyEndText, 8))
 	}
-	if (op == 0) {
+	if ($.uint(op, 8) == $.uint(0, 8)) {
 		return true
 	}
-	if (syntax.IsWordChar(r1) != syntax.IsWordChar(r2)) {
-		op = op & ~(syntax.EmptyWordBoundary)
+	if (syntax.IsWordChar($.int(r1, 32)) != syntax.IsWordChar($.int(r2, 32))) {
+		op = op & ~($.uint(syntax.EmptyWordBoundary, 8))
 	} else {
-		op = op & ~(syntax.EmptyNoWordBoundary)
+		op = op & ~($.uint(syntax.EmptyNoWordBoundary, 8))
 	}
-	return op == 0
+	return $.uint(op, 8) == $.uint(0, 8)
 }
 
 export let onePassPool: $.VarRef<sync.Pool> = $.varRef($.markAsStructValue(new sync.Pool()))

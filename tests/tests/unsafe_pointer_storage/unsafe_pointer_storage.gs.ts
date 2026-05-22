@@ -8,14 +8,13 @@ import * as unsafe from "@goscript/unsafe/index.js"
 export function writeBytes(words: $.Slice<number>, bytes: $.Slice<number>): void {
 	for (let i = 0; i < $.len(bytes); i++) {
 		let b = bytes![i]
-		$.unsupportedPointerRef<number>(undefined).value = b
+		$.unsupportedPointerRef<number>(undefined).value = $.uint(b, 8)
 	}
 }
 
 export async function main(): globalThis.Promise<void> {
 	$.println("unsafe pointer storage compiles")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

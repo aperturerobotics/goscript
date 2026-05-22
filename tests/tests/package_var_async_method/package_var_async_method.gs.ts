@@ -7,6 +7,10 @@ import * as sync from "@goscript/sync/index.js"
 
 export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
+export function __goscript_set_cache(value: sync.Map): void {
+	cache.value = value
+}
+
 export async function getValueFromCache(key: string): globalThis.Promise<[any, boolean]> {
 	return await cache.value.Load(key)
 }
@@ -19,7 +23,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Found:", $.mustTypeAssert<string>(val, { kind: $.TypeKind.Basic, name: "string" }))
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

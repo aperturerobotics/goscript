@@ -32,7 +32,7 @@ export async function main(): globalThis.Promise<void> {
 
 		static __typeInfo = $.registerStructType(
 			"main.result",
-			new result(),
+			() => new result(),
 			[],
 			result,
 			{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -40,7 +40,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	let ch = $.makeChannel<result>(1, $.markAsStructValue(new result()), "both")
-	let fn: (() => result | globalThis.Promise<result>) | null = null as (() => result) | null
+	let fn: (() => result | globalThis.Promise<result>) | null = null as (() => result | globalThis.Promise<result>) | null
 	fn = $.functionValue(async (): globalThis.Promise<result> => {
 		return $.markAsStructValue($.cloneStructValue(await $.chanRecv(ch)))
 	}, { kind: $.TypeKind.Function, params: [], results: ["main.result"] })
@@ -48,7 +48,6 @@ export async function main(): globalThis.Promise<void> {
 	let got = $.markAsStructValue($.cloneStructValue(await fn!()))
 	$.println(got.value)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

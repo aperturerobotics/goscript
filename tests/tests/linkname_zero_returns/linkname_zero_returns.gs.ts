@@ -21,7 +21,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("pair:", n, ok)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

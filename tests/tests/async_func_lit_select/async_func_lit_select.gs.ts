@@ -28,7 +28,6 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Println("select literal ok")
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

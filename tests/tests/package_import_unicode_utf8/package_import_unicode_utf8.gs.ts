@@ -8,8 +8,10 @@ import * as utf8 from "@goscript/unicode/utf8/index.js"
 export function checkBytes(label: string, b: $.Slice<number>): void {
 	$.println(label, "RuneCount:", utf8.RuneCount(b))
 	$.println(label, "Valid:", utf8.Valid(b))
-	let [r, size] = utf8.DecodeLastRune(b)
-	$.println(label, "Last rune:", r, "size:", size)
+	let __goscriptTuple0 = utf8.DecodeLastRune(b)
+	let r = $.int(__goscriptTuple0[0], 32)
+	let size = __goscriptTuple0[1]
+	$.println(label, "Last rune:", $.int(r, 32), "size:", size)
 }
 
 export async function main(): globalThis.Promise<void> {
@@ -21,8 +23,10 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Rune count:", count)
 
 	// Test DecodeRuneInString
-	let [r, size] = utf8.DecodeRuneInString(s)
-	$.println("First rune:", r, "size:", size)
+	let __goscriptTuple1 = utf8.DecodeRuneInString(s)
+	let r = $.int(__goscriptTuple1[0], 32)
+	let size = __goscriptTuple1[1]
+	$.println("First rune:", $.int(r, 32), "size:", size)
 
 	// Test ValidString
 	let valid = utf8.ValidString(s)
@@ -36,8 +40,10 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Byte rune count:", byteCount)
 
 	// Test DecodeRune
-	let [br, bsize] = utf8.DecodeRune(b)
-	$.println("First rune from bytes:", br, "size:", bsize)
+	let __goscriptTuple2 = utf8.DecodeRune(b)
+	let br = $.int(__goscriptTuple2[0], 32)
+	let bsize = __goscriptTuple2[1]
+	$.println("First rune from bytes:", $.int(br, 32), "size:", bsize)
 
 	// Test Valid
 	let bvalid = utf8.Valid(b)
@@ -45,21 +51,21 @@ export async function main(): globalThis.Promise<void> {
 	checkBytes("param bytes", b)
 
 	// Test EncodeRune
-	let buf: number[] = Array.from({ length: 4 }, () => 0)
-	let n = utf8.EncodeRune($.goSlice(buf, undefined, undefined), 19990)
+	let buf: Uint8Array = new Uint8Array(4)
+	let n = utf8.EncodeRune($.goSlice(buf, undefined, undefined), $.int(19990, 32))
 	$.println("Encoded rune size:", n)
 
 	// Test RuneLen
-	let runeLen = utf8.RuneLen(19990)
+	let runeLen = utf8.RuneLen($.int(19990, 32))
 	$.println("Rune length:", runeLen)
 
 	// Test ValidRune
-	let validRune = utf8.ValidRune(19990)
+	let validRune = utf8.ValidRune($.int(19990, 32))
 	$.println("Valid rune:", validRune)
 
 	// Test constants
 	$.println("RuneSelf:", utf8.RuneSelf)
-	$.println("MaxRune:", utf8.MaxRune)
+	$.println("MaxRune:", $.int(utf8.MaxRune, 32))
 	$.println("UTFMax:", utf8.UTFMax)
 }
 

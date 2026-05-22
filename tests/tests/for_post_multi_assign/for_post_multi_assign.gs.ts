@@ -31,7 +31,7 @@ export class frame {
 
 	static __typeInfo = $.registerStructType(
 		"main.frame",
-		new frame(),
+		() => new frame(),
 		[],
 		frame,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }}
@@ -88,7 +88,7 @@ export class iterator {
 
 	static __typeInfo = $.registerStructType(
 		"main.iterator",
-		new iterator(),
+		() => new iterator(),
 		[{ name: "Next", args: [], returns: [] }],
 		iterator,
 		{"idx": { kind: $.TypeKind.Basic, name: "int" }}
@@ -98,7 +98,7 @@ export class iterator {
 export function findFrame(): frame | $.VarRef<frame> | null {
 	let it: iterator | $.VarRef<iterator> | null = new iterator()
 	for (let __goscriptTuple0 = $.pointerValue<iterator>(it).Next(), f = $.varRef(__goscriptTuple0[0]), again = __goscriptTuple0[1]; again; [f.value, again] = $.pointerValue<iterator>(it).Next()) {
-		if (f.value.name == "second") {
+		if ((f.value.name as string) == "second") {
 			return f
 		}
 	}
@@ -115,7 +115,6 @@ export async function main(): globalThis.Promise<void> {
 	}
 	$.println("done")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

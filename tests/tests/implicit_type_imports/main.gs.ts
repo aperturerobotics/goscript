@@ -37,7 +37,7 @@ export class localReadWriteCloser {
 
 	static __typeInfo = $.registerStructType(
 		"main.localReadWriteCloser",
-		new localReadWriteCloser(),
+		() => new localReadWriteCloser(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		localReadWriteCloser,
 		{}
@@ -49,7 +49,6 @@ export async function main(): globalThis.Promise<void> {
 	$.pointerValue<__goscript_server.Server>(server).Handle($.interfaceValue<io.ReadWriteCloser | null>(new localReadWriteCloser(), "*main.localReadWriteCloser"))
 	$.println("ok")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

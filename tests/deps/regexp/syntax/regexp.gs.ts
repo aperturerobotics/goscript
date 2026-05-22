@@ -147,13 +147,13 @@ export class Regexp {
 		if ((x == null) || (y == null)) {
 			return x == y
 		}
-		if ($.pointerValue<Regexp>(x).Op != $.pointerValue<Regexp>(y).Op) {
+		if ($.uint($.pointerValue<Regexp>(x).Op, 8) != $.uint($.pointerValue<Regexp>(y).Op, 8)) {
 			return false
 		}
 		switch ($.pointerValue<Regexp>(x).Op) {
 			case OpEndText:
 			{
-				if (($.pointerValue<Regexp>(x).Flags & __goscript_parse.WasDollar) != ($.pointerValue<Regexp>(y).Flags & __goscript_parse.WasDollar)) {
+				if ($.uint(($.pointerValue<Regexp>(x).Flags & 256), 16) != $.uint(($.pointerValue<Regexp>(y).Flags & 256), 16)) {
 					return false
 				}
 				break
@@ -161,7 +161,7 @@ export class Regexp {
 			case OpLiteral:
 			case OpCharClass:
 			{
-				return (($.pointerValue<Regexp>(x).Flags & __goscript_parse.FoldCase) == ($.pointerValue<Regexp>(y).Flags & __goscript_parse.FoldCase)) && slices.Equal($.pointerValue<Regexp>(x).Rune, $.pointerValue<Regexp>(y).Rune)
+				return ($.uint(($.pointerValue<Regexp>(x).Flags & 1), 16) == $.uint(($.pointerValue<Regexp>(y).Flags & 1), 16)) && slices.Equal($.pointerValue<Regexp>(x).Rune, $.pointerValue<Regexp>(y).Rune)
 				break
 			}
 			case OpAlternate:
@@ -174,14 +174,14 @@ export class Regexp {
 			case OpPlus:
 			case OpQuest:
 			{
-				if ((($.pointerValue<Regexp>(x).Flags & __goscript_parse.NonGreedy) != ($.pointerValue<Regexp>(y).Flags & __goscript_parse.NonGreedy)) || !Regexp.prototype.Equal.call($.pointerValue<Regexp>(x).Sub![0], $.pointerValue<Regexp>(y).Sub![0])) {
+				if (($.uint(($.pointerValue<Regexp>(x).Flags & 32), 16) != $.uint(($.pointerValue<Regexp>(y).Flags & 32), 16)) || !Regexp.prototype.Equal.call($.pointerValue<Regexp>(x).Sub![0], $.pointerValue<Regexp>(y).Sub![0])) {
 					return false
 				}
 				break
 			}
 			case OpRepeat:
 			{
-				if ((((($.pointerValue<Regexp>(x).Flags & __goscript_parse.NonGreedy) != ($.pointerValue<Regexp>(y).Flags & __goscript_parse.NonGreedy)) || ($.pointerValue<Regexp>(x).Min != $.pointerValue<Regexp>(y).Min)) || ($.pointerValue<Regexp>(x).Max != $.pointerValue<Regexp>(y).Max)) || !Regexp.prototype.Equal.call($.pointerValue<Regexp>(x).Sub![0], $.pointerValue<Regexp>(y).Sub![0])) {
+				if (((($.uint(($.pointerValue<Regexp>(x).Flags & 32), 16) != $.uint(($.pointerValue<Regexp>(y).Flags & 32), 16)) || ($.pointerValue<Regexp>(x).Min != $.pointerValue<Regexp>(y).Min)) || ($.pointerValue<Regexp>(x).Max != $.pointerValue<Regexp>(y).Max)) || !Regexp.prototype.Equal.call($.pointerValue<Regexp>(x).Sub![0], $.pointerValue<Regexp>(y).Sub![0])) {
 					return false
 				}
 				break
@@ -200,7 +200,7 @@ export class Regexp {
 	public MaxCap(): number {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let m = 0
-		if ($.pointerValue<Regexp>(re).Op == OpCapture) {
+		if ($.uint($.pointerValue<Regexp>(re).Op, 8) == $.uint(OpCapture, 8)) {
 			m = $.pointerValue<Regexp>(re).Cap
 		}
 		for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Sub); __rangeIndex++) {
@@ -248,13 +248,13 @@ export class Regexp {
 			case OpQuest:
 			{
 				let sub: Regexp | $.VarRef<Regexp> | null = Regexp.prototype.Simplify.call($.pointerValue<Regexp>(re).Sub![0])
-				return __goscript_simplify.simplify1($.pointerValue<Regexp>(re).Op, $.pointerValue<Regexp>(re).Flags, sub, re)
+				return __goscript_simplify.simplify1($.uint($.pointerValue<Regexp>(re).Op, 8), $.uint($.pointerValue<Regexp>(re).Flags, 16), sub, re)
 				break
 			}
 			case OpRepeat:
 			{
 				if (($.pointerValue<Regexp>(re).Min == 0) && ($.pointerValue<Regexp>(re).Max == 0)) {
-					return new Regexp({Op: OpEmptyMatch})
+					return new Regexp({Op: $.uint(OpEmptyMatch, 8)})
 				}
 				// matches empty string at end of line
 				// matches empty string at beginning of text
@@ -264,21 +264,21 @@ export class Regexp {
 				if ($.pointerValue<Regexp>(re).Max == -1) {
 					// matches Sub[0] zero or more times
 					if ($.pointerValue<Regexp>(re).Min == 0) {
-						return __goscript_simplify.simplify1(OpStar, $.pointerValue<Regexp>(re).Flags, sub, null)
+						return __goscript_simplify.simplify1($.uint(OpStar, 8), $.uint($.pointerValue<Regexp>(re).Flags, 16), sub, null)
 					}
 					// matches concatenation of Subs
 					// matches alternation of Subs
 					if ($.pointerValue<Regexp>(re).Min == 1) {
-						return __goscript_simplify.simplify1(OpPlus, $.pointerValue<Regexp>(re).Flags, sub, null)
+						return __goscript_simplify.simplify1($.uint(OpPlus, 8), $.uint($.pointerValue<Regexp>(re).Flags, 16), sub, null)
 					}
 
 					// Equal reports whether x and y have identical structure.
-					let nre: Regexp | $.VarRef<Regexp> | null = new Regexp({Op: OpConcat})
+					let nre: Regexp | $.VarRef<Regexp> | null = new Regexp({Op: $.uint(OpConcat, 8)})
 					$.pointerValue<Regexp>(nre).Sub = $.goSlice($.pointerValue<Regexp>(nre).Sub0, undefined, 0)
 					for (let i = 0; i < ($.pointerValue<Regexp>(re).Min - 1); i++) {
 						$.pointerValue<Regexp>(nre).Sub = $.append($.pointerValue<Regexp>(nre).Sub, sub)
 					}
-					$.pointerValue<Regexp>(nre).Sub = $.append($.pointerValue<Regexp>(nre).Sub, __goscript_simplify.simplify1(OpPlus, $.pointerValue<Regexp>(re).Flags, sub, null))
+					$.pointerValue<Regexp>(nre).Sub = $.append($.pointerValue<Regexp>(nre).Sub, __goscript_simplify.simplify1($.uint(OpPlus, 8), $.uint($.pointerValue<Regexp>(re).Flags, 16), sub, null))
 					return nre
 				}
 
@@ -288,9 +288,9 @@ export class Regexp {
 					return sub
 				}
 
-				let prefix: Regexp | $.VarRef<Regexp> | null = null
+				let prefix: Regexp | $.VarRef<Regexp> | null = null as Regexp | $.VarRef<Regexp> | null
 				if ($.pointerValue<Regexp>(re).Min > 0) {
-					prefix = new Regexp({Op: OpConcat})
+					prefix = new Regexp({Op: $.uint(OpConcat, 8)})
 					$.pointerValue<Regexp>(prefix).Sub = $.goSlice($.pointerValue<Regexp>(prefix).Sub0, undefined, 0)
 					for (let i = 0; i < $.pointerValue<Regexp>(re).Min; i++) {
 						$.pointerValue<Regexp>(prefix).Sub = $.append($.pointerValue<Regexp>(prefix).Sub, sub)
@@ -298,11 +298,11 @@ export class Regexp {
 				}
 
 				if ($.pointerValue<Regexp>(re).Max > $.pointerValue<Regexp>(re).Min) {
-					let suffix: Regexp | $.VarRef<Regexp> | null = __goscript_simplify.simplify1(OpQuest, $.pointerValue<Regexp>(re).Flags, sub, null)
+					let suffix: Regexp | $.VarRef<Regexp> | null = __goscript_simplify.simplify1($.uint(OpQuest, 8), $.uint($.pointerValue<Regexp>(re).Flags, 16), sub, null)
 					for (let i = $.pointerValue<Regexp>(re).Min + 1; i < $.pointerValue<Regexp>(re).Max; i++) {
-						let nre2: Regexp | $.VarRef<Regexp> | null = new Regexp({Op: OpConcat})
+						let nre2: Regexp | $.VarRef<Regexp> | null = new Regexp({Op: $.uint(OpConcat, 8)})
 						$.pointerValue<Regexp>(nre2).Sub = $.append($.goSlice($.pointerValue<Regexp>(nre2).Sub0, undefined, 0), sub, suffix)
-						suffix = __goscript_simplify.simplify1(OpQuest, $.pointerValue<Regexp>(re).Flags, nre2, null)
+						suffix = __goscript_simplify.simplify1($.uint(OpQuest, 8), $.uint($.pointerValue<Regexp>(re).Flags, 16), nre2, null)
 					}
 					if (prefix == null) {
 						return suffix
@@ -315,7 +315,7 @@ export class Regexp {
 				// (?: )
 				// flagI<<negShift is (?-i:
 
-				return new Regexp({Op: OpNoMatch})
+				return new Regexp({Op: $.uint(OpNoMatch, 8)})
 				break
 			}
 		}
@@ -326,19 +326,21 @@ export class Regexp {
 	public String(): string {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let b: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
-		let flags: $.VarRef<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> = $.varRef(null)
-		let [must, cant] = calcFlags(re, flags)
-		must |= (cant & ~(flagI)) << negShift
-		if (must != 0) {
-			must |= flagOff
+		let flags: $.VarRef<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> = $.varRef(null as Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null)
+		let __goscriptTuple0 = calcFlags(re, flags)
+		let must = $.uint(__goscriptTuple0[0], 8)
+		let cant = $.uint(__goscriptTuple0[1], 8)
+		must |= $.uint((cant & ~(flagI)) << negShift, 8)
+		if ($.uint(must, 8) != $.uint(0, 8)) {
+			must |= $.uint(flagOff, 8)
 		}
-		writeRegexp(b, re, must, flags.value)
+		writeRegexp(b, re, $.uint(must, 8), flags.value)
 		return b.value.String()
 	}
 
 	public capNames(names: $.Slice<string>): void {
 		let re: Regexp | $.VarRef<Regexp> | null = this
-		if ($.pointerValue<Regexp>(re).Op == OpCapture) {
+		if ($.uint($.pointerValue<Regexp>(re).Op, 8) == $.uint(OpCapture, 8)) {
 			names![$.pointerValue<Regexp>(re).Cap] = $.pointerValue<Regexp>(re).Name
 		}
 		for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Sub); __rangeIndex++) {
@@ -416,8 +418,8 @@ export function addSpan(start: Regexp | $.VarRef<Regexp> | null, last: Regexp | 
 	if ($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags) == null) {
 		flags!.value = $.makeMap<Regexp | $.VarRef<Regexp> | null, printFlags>()
 	}
-	$.mapSet(($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags)), start, f)
-	$.mapGet(($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags)), last, 0)[0] |= flagOff
+	$.mapSet(($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags)), start, $.uint(f, 8))
+	$.mapGet(($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags)), last, 0)[0] |= $.uint(flagOff, 8)
 }
 
 export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> | null): [printFlags, printFlags] {
@@ -426,62 +428,62 @@ export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<
 	switch ($.pointerValue<Regexp>(re).Op) {
 		default:
 		{
-			return [0, 0]
+			return [$.uint(0, 8), $.uint(0, 8)]
 			break
 		}
 		case OpLiteral:
 		{
 			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Rune); __rangeIndex++) {
 				let r = $.pointerValue<Regexp>(re).Rune![__rangeIndex]
-				if (((__goscript_parse.minFold <= r) && (r <= __goscript_parse.maxFold)) && (unicode.SimpleFold(r) != r)) {
-					if (($.pointerValue<Regexp>(re).Flags & __goscript_parse.FoldCase) != 0) {
-						return [flagI, 0]
+				if (((65 <= r) && (r <= 125251)) && ($.int(unicode.SimpleFold($.int(r, 32)), 32) != $.int(r, 32))) {
+					if ($.uint(($.pointerValue<Regexp>(re).Flags & 1), 16) != $.uint(0, 16)) {
+						return [$.uint(flagI, 8), $.uint(0, 8)]
 					} else {
-						return [0, flagI]
+						return [$.uint(0, 8), $.uint(flagI, 8)]
 					}
 				}
 			}
-			return [0, 0]
+			return [$.uint(0, 8), $.uint(0, 8)]
 			break
 		}
 		case OpCharClass:
 		{
 			for (let i = 0; i < $.len($.pointerValue<Regexp>(re).Rune); i += 2) {
-				let lo = $.max(__goscript_parse.minFold, $.pointerValue<Regexp>(re).Rune![i])
-				let hi = $.min(__goscript_parse.maxFold, $.pointerValue<Regexp>(re).Rune![i + 1])
-				for (let r = lo; r <= hi; r++) {
-					for (let f = unicode.SimpleFold(r); f != r; f = unicode.SimpleFold(f)) {
-						if (!((lo <= f) && (f <= hi)) && !__goscript_parse.inCharClass(f, $.pointerValue<Regexp>(re).Rune)) {
-							return [0, flagI]
+				let lo = $.int($.max($.int(65, 32), $.int($.pointerValue<Regexp>(re).Rune![i], 32)), 32)
+				let hi = $.int($.min($.int(125251, 32), $.int($.pointerValue<Regexp>(re).Rune![i + 1], 32)), 32)
+				for (let r = $.int(lo, 32); r <= hi; r++) {
+					for (let f = $.int(unicode.SimpleFold($.int(r, 32)), 32); $.int(f, 32) != $.int(r, 32); f = $.int(unicode.SimpleFold($.int(f, 32)), 32)) {
+						if (!((lo <= f) && (f <= hi)) && !__goscript_parse.inCharClass($.int(f, 32), $.pointerValue<Regexp>(re).Rune)) {
+							return [$.uint(0, 8), $.uint(flagI, 8)]
 						}
 					}
 				}
 			}
-			return [0, 0]
+			return [$.uint(0, 8), $.uint(0, 8)]
 			break
 		}
 		case OpAnyCharNotNL:
 		{
-			return [0, flagS]
+			return [$.uint(0, 8), $.uint(flagS, 8)]
 			break
 		}
 		case OpAnyChar:
 		{
-			return [flagS, 0]
+			return [$.uint(flagS, 8), $.uint(0, 8)]
 			break
 		}
 		case OpBeginLine:
 		case OpEndLine:
 		{
-			return [flagM, 0]
+			return [$.uint(flagM, 8), $.uint(0, 8)]
 			break
 		}
 		case OpEndText:
 		{
-			if (($.pointerValue<Regexp>(re).Flags & __goscript_parse.WasDollar) != 0) {
-				return [0, flagM]
+			if ($.uint(($.pointerValue<Regexp>(re).Flags & 256), 16) != $.uint(0, 16)) {
+				return [$.uint(0, 8), $.uint(flagM, 8)]
 			}
-			return [0, 0]
+			return [$.uint(0, 8), $.uint(0, 8)]
 			break
 		}
 		case OpCapture:
@@ -490,7 +492,8 @@ export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<
 		case OpQuest:
 		case OpRepeat:
 		{
-			return calcFlags($.pointerValue<Regexp>(re).Sub![0], flags)
+			const __goscriptReturn0 = calcFlags($.pointerValue<Regexp>(re).Sub![0], flags)
+			return [$.uint(__goscriptReturn0[0], 8), $.uint(__goscriptReturn0[1], 8)]
 			break
 		}
 		case OpConcat:
@@ -504,35 +507,37 @@ export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<
 			let did = false
 			for (let i = 0; i < $.len($.pointerValue<Regexp>(re).Sub); i++) {
 				let sub = $.pointerValue<Regexp>(re).Sub![i]
-				let [subMust, subCant] = calcFlags(sub, flags)
-				if (((must & subCant) != 0) || ((subMust & cant) != 0)) {
-					if (must != 0) {
-						addSpan($.pointerValue<Regexp>(re).Sub![start], $.pointerValue<Regexp>(re).Sub![last], must, flags)
+				let __goscriptTuple1 = calcFlags(sub, flags)
+				let subMust = $.uint(__goscriptTuple1[0], 8)
+				let subCant = $.uint(__goscriptTuple1[1], 8)
+				if (($.uint((must & subCant), 8) != $.uint(0, 8)) || ($.uint((subMust & cant), 8) != $.uint(0, 8))) {
+					if ($.uint(must, 8) != $.uint(0, 8)) {
+						addSpan($.pointerValue<Regexp>(re).Sub![start], $.pointerValue<Regexp>(re).Sub![last], $.uint(must, 8), flags)
 					}
-					must = 0
-					cant = 0
+					must = $.uint(0, 8)
+					cant = $.uint(0, 8)
 					start = i
 					did = true
 				}
-				must |= subMust
-				cant |= subCant
-				allCant |= subCant
-				if (subMust != 0) {
+				must |= $.uint(subMust, 8)
+				cant |= $.uint(subCant, 8)
+				allCant |= $.uint(subCant, 8)
+				if ($.uint(subMust, 8) != $.uint(0, 8)) {
 					last = i
 				}
-				if ((must == 0) && (start == i)) {
+				if (($.uint(must, 8) == $.uint(0, 8)) && (start == i)) {
 					start++
 				}
 			}
 			if (!did) {
 				// No conflicts: pass the accumulated must and cant upward.
-				return [must, cant]
+				return [$.uint(must, 8), $.uint(cant, 8)]
 			}
-			if (must != 0) {
+			if ($.uint(must, 8) != $.uint(0, 8)) {
 				// Conflicts found; need to finish final span.
-				addSpan($.pointerValue<Regexp>(re).Sub![start], $.pointerValue<Regexp>(re).Sub![last], must, flags)
+				addSpan($.pointerValue<Regexp>(re).Sub![start], $.pointerValue<Regexp>(re).Sub![last], $.uint(must, 8), flags)
 			}
-			return [0, allCant]
+			return [$.uint(0, 8), $.uint(allCant, 8)]
 			break
 		}
 	}
@@ -540,37 +545,37 @@ export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<
 
 export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | null, re: Regexp | $.VarRef<Regexp> | null, f: printFlags, flags: Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null): void {
 	using __defer = new $.DisposableStack()
-	f |= $.mapGet(flags, re, 0)[0]
-	if ((((f & flagPrec) != 0) && ((f & ~((flagOff | flagPrec))) != 0)) && ((f & flagOff) != 0)) {
+	f |= $.uint($.mapGet(flags, re, 0)[0], 8)
+	if ((($.uint((f & flagPrec), 8) != $.uint(0, 8)) && ($.uint((f & ~((flagOff | flagPrec))), 8) != $.uint(0, 8))) && ($.uint((f & flagOff), 8) != $.uint(0, 8))) {
 		// flagPrec is redundant with other flags being added and terminated
-		f = f & ~(flagPrec)
+		f = f & ~($.uint(flagPrec, 8))
 	}
-	if ((f & ~((flagOff | flagPrec))) != 0) {
+	if ($.uint((f & ~((flagOff | flagPrec))), 8) != $.uint(0, 8)) {
 		$.pointerValue<strings.Builder>(b).WriteString("(?")
-		if ((f & flagI) != 0) {
+		if ($.uint((f & flagI), 8) != $.uint(0, 8)) {
 			$.pointerValue<strings.Builder>(b).WriteString("i")
 		}
-		if ((f & flagM) != 0) {
+		if ($.uint((f & flagM), 8) != $.uint(0, 8)) {
 			$.pointerValue<strings.Builder>(b).WriteString("m")
 		}
-		if ((f & flagS) != 0) {
+		if ($.uint((f & flagS), 8) != $.uint(0, 8)) {
 			$.pointerValue<strings.Builder>(b).WriteString("s")
 		}
-		if ((f & ((flagM | flagS) << negShift)) != 0) {
+		if ($.uint((f & ((flagM | flagS) << negShift)), 8) != $.uint(0, 8)) {
 			$.pointerValue<strings.Builder>(b).WriteString("-")
-			if ((f & (flagM << negShift)) != 0) {
+			if ($.uint((f & (flagM << negShift)), 8) != $.uint(0, 8)) {
 				$.pointerValue<strings.Builder>(b).WriteString("m")
 			}
-			if ((f & (flagS << negShift)) != 0) {
+			if ($.uint((f & (flagS << negShift)), 8) != $.uint(0, 8)) {
 				$.pointerValue<strings.Builder>(b).WriteString("s")
 			}
 		}
 		$.pointerValue<strings.Builder>(b).WriteString(":")
 	}
-	if ((f & flagOff) != 0) {
+	if ($.uint((f & flagOff), 8) != $.uint(0, 8)) {
 		__defer.defer(() => { $.pointerValue<strings.Builder>(b).WriteString(")") })
 	}
-	if ((f & flagPrec) != 0) {
+	if ($.uint((f & flagPrec), 8) != $.uint(0, 8)) {
 		$.pointerValue<strings.Builder>(b).WriteString("(?:")
 		__defer.defer(() => { $.pointerValue<strings.Builder>(b).WriteString(")") })
 	}
@@ -595,7 +600,7 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		{
 			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Rune); __rangeIndex++) {
 				let r = $.pointerValue<Regexp>(re).Rune![__rangeIndex]
-				escape(b, r, false)
+				escape(b, $.int(r, 32), false)
 			}
 			break
 		}
@@ -605,40 +610,40 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 				$.pointerValue<strings.Builder>(b).WriteString("[invalid char class]")
 				break
 			}
-			$.pointerValue<strings.Builder>(b).WriteRune(91)
+			$.pointerValue<strings.Builder>(b).WriteRune($.int(91, 32))
 			if ($.len($.pointerValue<Regexp>(re).Rune) == 0) {
 				$.pointerValue<strings.Builder>(b).WriteString("^\\x00-\\x{10FFFF}")
 			} else {
-				if ((($.pointerValue<Regexp>(re).Rune![0] == 0) && ($.pointerValue<Regexp>(re).Rune![$.len($.pointerValue<Regexp>(re).Rune) - 1] == unicode.MaxRune)) && ($.len($.pointerValue<Regexp>(re).Rune) > 2)) {
+				if ((($.int($.pointerValue<Regexp>(re).Rune![0], 32) == $.int(0, 32)) && ($.int($.pointerValue<Regexp>(re).Rune![$.len($.pointerValue<Regexp>(re).Rune) - 1], 32) == $.int(unicode.MaxRune, 32))) && ($.len($.pointerValue<Regexp>(re).Rune) > 2)) {
 					// Contains 0 and MaxRune. Probably a negated class.
 					// Print the gaps.
-					$.pointerValue<strings.Builder>(b).WriteRune(94)
+					$.pointerValue<strings.Builder>(b).WriteRune($.int(94, 32))
 					for (let i = 1; i < ($.len($.pointerValue<Regexp>(re).Rune) - 1); i += 2) {
-						let lo = $.pointerValue<Regexp>(re).Rune![i] + 1
-						let hi = $.pointerValue<Regexp>(re).Rune![i + 1] - 1
-						escape(b, lo, lo == 45)
-						if (lo != hi) {
-							if (hi != (lo + 1)) {
-								$.pointerValue<strings.Builder>(b).WriteRune(45)
+						let lo = $.int($.pointerValue<Regexp>(re).Rune![i] + 1, 32)
+						let hi = $.int($.pointerValue<Regexp>(re).Rune![i + 1] - 1, 32)
+						escape(b, $.int(lo, 32), $.int(lo, 32) == $.int(45, 32))
+						if ($.int(lo, 32) != $.int(hi, 32)) {
+							if ($.int(hi, 32) != $.int((lo + 1), 32)) {
+								$.pointerValue<strings.Builder>(b).WriteRune($.int(45, 32))
 							}
-							escape(b, hi, hi == 45)
+							escape(b, $.int(hi, 32), $.int(hi, 32) == $.int(45, 32))
 						}
 					}
 				} else {
 					for (let i = 0; i < $.len($.pointerValue<Regexp>(re).Rune); i += 2) {
-						let lo = $.pointerValue<Regexp>(re).Rune![i]
-						let hi = $.pointerValue<Regexp>(re).Rune![i + 1]
-						escape(b, lo, lo == 45)
-						if (lo != hi) {
-							if (hi != (lo + 1)) {
-								$.pointerValue<strings.Builder>(b).WriteRune(45)
+						let lo = $.int($.pointerValue<Regexp>(re).Rune![i], 32)
+						let hi = $.int($.pointerValue<Regexp>(re).Rune![i + 1], 32)
+						escape(b, $.int(lo, 32), $.int(lo, 32) == $.int(45, 32))
+						if ($.int(lo, 32) != $.int(hi, 32)) {
+							if ($.int(hi, 32) != $.int((lo + 1), 32)) {
+								$.pointerValue<strings.Builder>(b).WriteRune($.int(45, 32))
 							}
-							escape(b, hi, hi == 45)
+							escape(b, $.int(hi, 32), $.int(hi, 32) == $.int(45, 32))
 						}
 					}
 				}
 			}
-			$.pointerValue<strings.Builder>(b).WriteRune(93)
+			$.pointerValue<strings.Builder>(b).WriteRune($.int(93, 32))
 			break
 		}
 		case OpAnyCharNotNL:
@@ -664,7 +669,7 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		}
 		case OpEndText:
 		{
-			if (($.pointerValue<Regexp>(re).Flags & __goscript_parse.WasDollar) != 0) {
+			if ($.uint(($.pointerValue<Regexp>(re).Flags & 256), 16) != $.uint(0, 16)) {
 				$.pointerValue<strings.Builder>(b).WriteString("$")
 			} else {
 				$.pointerValue<strings.Builder>(b).WriteString("\\z")
@@ -686,14 +691,14 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 			if (($.pointerValue<Regexp>(re).Name as string) != "") {
 				$.pointerValue<strings.Builder>(b).WriteString("(?P<")
 				$.pointerValue<strings.Builder>(b).WriteString($.pointerValue<Regexp>(re).Name)
-				$.pointerValue<strings.Builder>(b).WriteRune(62)
+				$.pointerValue<strings.Builder>(b).WriteRune($.int(62, 32))
 			} else {
-				$.pointerValue<strings.Builder>(b).WriteRune(40)
+				$.pointerValue<strings.Builder>(b).WriteRune($.int(40, 32))
 			}
-			if ($.pointerValue<Regexp>($.pointerValue<Regexp>(re).Sub![0]).Op != OpEmptyMatch) {
-				writeRegexp(b, $.pointerValue<Regexp>(re).Sub![0], $.mapGet(flags, $.pointerValue<Regexp>(re).Sub![0], 0)[0], flags)
+			if ($.uint($.pointerValue<Regexp>($.pointerValue<Regexp>(re).Sub![0]).Op, 8) != $.uint(OpEmptyMatch, 8)) {
+				writeRegexp(b, $.pointerValue<Regexp>(re).Sub![0], $.uint($.mapGet(flags, $.pointerValue<Regexp>(re).Sub![0], 0)[0], 8), flags)
 			}
-			$.pointerValue<strings.Builder>(b).WriteRune(41)
+			$.pointerValue<strings.Builder>(b).WriteRune($.int(41, 32))
 			break
 		}
 		case OpStar:
@@ -701,45 +706,45 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		case OpQuest:
 		case OpRepeat:
 		{
-			let p = 0
+			let p = $.uint(0, 8)
 			let sub: Regexp | $.VarRef<Regexp> | null = $.pointerValue<Regexp>(re).Sub![0]
-			if (($.pointerValue<Regexp>(sub).Op > OpCapture) || (($.pointerValue<Regexp>(sub).Op == OpLiteral) && ($.len($.pointerValue<Regexp>(sub).Rune) > 1))) {
-				p = flagPrec
+			if (($.pointerValue<Regexp>(sub).Op > OpCapture) || (($.uint($.pointerValue<Regexp>(sub).Op, 8) == $.uint(OpLiteral, 8)) && ($.len($.pointerValue<Regexp>(sub).Rune) > 1))) {
+				p = $.uint(flagPrec, 8)
 			}
-			writeRegexp(b, sub, p, flags)
+			writeRegexp(b, sub, $.uint(p, 8), flags)
 
 			switch ($.pointerValue<Regexp>(re).Op) {
 				case OpStar:
 				{
-					$.pointerValue<strings.Builder>(b).WriteRune(42)
+					$.pointerValue<strings.Builder>(b).WriteRune($.int(42, 32))
 					break
 				}
 				case OpPlus:
 				{
-					$.pointerValue<strings.Builder>(b).WriteRune(43)
+					$.pointerValue<strings.Builder>(b).WriteRune($.int(43, 32))
 					break
 				}
 				case OpQuest:
 				{
-					$.pointerValue<strings.Builder>(b).WriteRune(63)
+					$.pointerValue<strings.Builder>(b).WriteRune($.int(63, 32))
 					break
 				}
 				case OpRepeat:
 				{
-					$.pointerValue<strings.Builder>(b).WriteRune(123)
+					$.pointerValue<strings.Builder>(b).WriteRune($.int(123, 32))
 					$.pointerValue<strings.Builder>(b).WriteString(strconv.Itoa($.pointerValue<Regexp>(re).Min))
 					if ($.pointerValue<Regexp>(re).Max != $.pointerValue<Regexp>(re).Min) {
-						$.pointerValue<strings.Builder>(b).WriteRune(44)
+						$.pointerValue<strings.Builder>(b).WriteRune($.int(44, 32))
 						if ($.pointerValue<Regexp>(re).Max >= 0) {
 							$.pointerValue<strings.Builder>(b).WriteString(strconv.Itoa($.pointerValue<Regexp>(re).Max))
 						}
 					}
-					$.pointerValue<strings.Builder>(b).WriteRune(125)
+					$.pointerValue<strings.Builder>(b).WriteRune($.int(125, 32))
 					break
 				}
 			}
-			if (($.pointerValue<Regexp>(re).Flags & __goscript_parse.NonGreedy) != 0) {
-				$.pointerValue<strings.Builder>(b).WriteRune(63)
+			if ($.uint(($.pointerValue<Regexp>(re).Flags & 32), 16) != $.uint(0, 16)) {
+				$.pointerValue<strings.Builder>(b).WriteRune($.int(63, 32))
 			}
 			break
 		}
@@ -747,11 +752,11 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		{
 			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Sub); __rangeIndex++) {
 				let sub = $.pointerValue<Regexp>(re).Sub![__rangeIndex]
-				let p = 0
-				if ($.pointerValue<Regexp>(sub).Op == OpAlternate) {
-					p = flagPrec
+				let p = $.uint(0, 8)
+				if ($.uint($.pointerValue<Regexp>(sub).Op, 8) == $.uint(OpAlternate, 8)) {
+					p = $.uint(flagPrec, 8)
 				}
-				writeRegexp(b, sub, p, flags)
+				writeRegexp(b, sub, $.uint(p, 8), flags)
 			}
 			break
 		}
@@ -760,9 +765,9 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 			for (let i = 0; i < $.len($.pointerValue<Regexp>(re).Sub); i++) {
 				let sub = $.pointerValue<Regexp>(re).Sub![i]
 				if (i > 0) {
-					$.pointerValue<strings.Builder>(b).WriteRune(124)
+					$.pointerValue<strings.Builder>(b).WriteRune($.int(124, 32))
 				}
-				writeRegexp(b, sub, 0, flags)
+				writeRegexp(b, sub, $.uint(0, 8), flags)
 			}
 			break
 		}
@@ -770,11 +775,11 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 }
 
 export function escape(b: strings.Builder | $.VarRef<strings.Builder> | null, r: number, force: boolean): void {
-	if (unicode.IsPrint(r)) {
-		if (strings.ContainsRune(meta, r) || force) {
-			$.pointerValue<strings.Builder>(b).WriteRune(92)
+	if (unicode.IsPrint($.int(r, 32))) {
+		if (strings.ContainsRune(meta, $.int(r, 32)) || force) {
+			$.pointerValue<strings.Builder>(b).WriteRune($.int(92, 32))
 		}
-		$.pointerValue<strings.Builder>(b).WriteRune(r)
+		$.pointerValue<strings.Builder>(b).WriteRune($.int(r, 32))
 		return
 	}
 
@@ -815,7 +820,7 @@ export function escape(b: strings.Builder | $.VarRef<strings.Builder> | null, r:
 				$.pointerValue<strings.Builder>(b).WriteString("\\x")
 				let s = strconv.FormatInt($.int(r), 16)
 				if ($.len(s) == 1) {
-					$.pointerValue<strings.Builder>(b).WriteRune(48)
+					$.pointerValue<strings.Builder>(b).WriteRune($.int(48, 32))
 				}
 				$.pointerValue<strings.Builder>(b).WriteString(s)
 				break

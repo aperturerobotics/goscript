@@ -32,7 +32,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("alias opener ok", err == null)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

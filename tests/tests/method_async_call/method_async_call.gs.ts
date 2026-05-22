@@ -50,7 +50,7 @@ export class FileTracker {
 
 	static __typeInfo = $.registerStructType(
 		"main.FileTracker",
-		new FileTracker(),
+		() => new FileTracker(),
 		[{ name: "AddLine", args: [], returns: [] }],
 		FileTracker,
 		{"mutex": "sync.Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -90,7 +90,7 @@ export class Scanner {
 
 	static __typeInfo = $.registerStructType(
 		"main.Scanner",
-		new Scanner(),
+		() => new Scanner(),
 		[{ name: "next", args: [], returns: [] }],
 		Scanner,
 		{"file": { kind: $.TypeKind.Pointer, elemType: "main.FileTracker" }}
@@ -103,7 +103,6 @@ export async function main(): globalThis.Promise<void> {
 	await $.pointerValue<Scanner>(scanner).next()
 	$.println($.len($.pointerValue<FileTracker>(tracker).lines))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

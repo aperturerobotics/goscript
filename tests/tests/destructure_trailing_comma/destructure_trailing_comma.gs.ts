@@ -18,7 +18,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("nref:", nref)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

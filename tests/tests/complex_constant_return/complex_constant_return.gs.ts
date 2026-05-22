@@ -18,7 +18,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println($.int($.real(o)), $.int($.imag(o)))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

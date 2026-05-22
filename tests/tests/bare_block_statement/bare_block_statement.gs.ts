@@ -40,7 +40,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("empty bodies:", emptyBodies(3))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

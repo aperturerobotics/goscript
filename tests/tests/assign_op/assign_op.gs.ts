@@ -50,7 +50,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(k)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

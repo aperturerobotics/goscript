@@ -41,7 +41,7 @@ export class floatInfo {
 
 	static __typeInfo = $.registerStructType(
 		"main.floatInfo",
-		new floatInfo(),
+		() => new floatInfo(),
 		[],
 		floatInfo,
 		{"mantbits": { kind: $.TypeKind.Basic, name: "int" }, "expbits": { kind: $.TypeKind.Basic, name: "int" }}
@@ -49,6 +49,10 @@ export class floatInfo {
 }
 
 export let info: $.VarRef<floatInfo> = $.varRef($.markAsStructValue(new floatInfo({mantbits: 52, expbits: 11})))
+
+export function __goscript_set_info(value: floatInfo): void {
+	info.value = value
+}
 
 export function infoPtr(): floatInfo | $.VarRef<floatInfo> | null {
 	return info

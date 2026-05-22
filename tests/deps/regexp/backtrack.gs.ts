@@ -150,8 +150,8 @@ export class bitState {
 		let b: bitState | $.VarRef<bitState> | null = this
 		// Only check shouldVisit when arg is false.
 		// When arg is true, we are continuing a previous visit.
-		if (($.pointerValue<syntax.Prog>($.pointerValue<__goscript_regexp.Regexp>(re).prog).Inst![pc].Op != syntax.InstFail) && (arg || $.pointerValue<bitState>(b).shouldVisit(pc, pos))) {
-			$.pointerValue<bitState>(b).jobs = $.append($.pointerValue<bitState>(b).jobs, $.markAsStructValue(new job({pc: pc, arg: arg, pos: pos})))
+		if (($.uint($.pointerValue<syntax.Prog>($.pointerValue<__goscript_regexp.Regexp>(re).prog).Inst![pc].Op, 8) != $.uint(syntax.InstFail, 8)) && (arg || $.pointerValue<bitState>(b).shouldVisit($.uint(pc, 32), pos))) {
+			$.pointerValue<bitState>(b).jobs = $.append($.pointerValue<bitState>(b).jobs, $.markAsStructValue(new job({pc: $.uint(pc, 32), arg: arg, pos: pos})))
 		}
 	}
 
@@ -160,7 +160,7 @@ export class bitState {
 		$.pointerValue<bitState>(b).end = end
 
 		if ($.cap($.pointerValue<bitState>(b).jobs) == 0) {
-			$.pointerValue<bitState>(b).jobs = $.makeSlice<job>(0, 256)
+			$.pointerValue<bitState>(b).jobs = $.makeSlice<job>(0, 256, undefined, () => $.markAsStructValue(new job()))
 		} else {
 			$.pointerValue<bitState>(b).jobs = $.goSlice($.pointerValue<bitState>(b).jobs, undefined, 0)
 		}
@@ -195,10 +195,10 @@ export class bitState {
 	public shouldVisit(pc: number, pos: number): boolean {
 		let b: bitState | $.VarRef<bitState> | null = this
 		let n = $.uint(($.int(pc) * ($.pointerValue<bitState>(b).end + 1)) + pos, 64)
-		if (($.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] & (1 << (n & (visitedBits - 1)))) != 0) {
+		if ($.uint(($.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] & (1 << (n & (visitedBits - 1)))), 32) != $.uint(0, 32)) {
 			return false
 		}
-		$.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] |= 1 << (n & (visitedBits - 1))
+		$.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] |= $.uint(1 << (n & (visitedBits - 1)), 32)
 		return true
 	}
 

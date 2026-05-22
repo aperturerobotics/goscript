@@ -17,7 +17,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println(c[0], c[1], c[2], c[3], c[4])
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

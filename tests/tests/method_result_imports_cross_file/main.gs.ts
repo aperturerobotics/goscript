@@ -32,7 +32,7 @@ export class Holder {
 
 	static __typeInfo = $.registerStructType(
 		"main.Holder",
-		new Holder(),
+		() => new Holder(),
 		[{ name: "Run", args: [], returns: [] }],
 		Holder,
 		{}
@@ -42,7 +42,6 @@ export class Holder {
 export async function main(): globalThis.Promise<void> {
 	$.markAsStructValue($.cloneStructValue($.markAsStructValue(new Holder()))).Run()
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

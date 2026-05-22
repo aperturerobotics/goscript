@@ -12,7 +12,7 @@ export async function main(): globalThis.Promise<void> {
 	builder.value.WriteString("Hello")
 	builder.value.WriteString(" ")
 	builder.value.WriteString("World")
-	let [n, err] = builder.value.Write($.stringToBytes("!"))
+	let [n, err] = builder.value.Write(new Uint8Array([33]))
 	$.println("Write:", n, err == null)
 
 	let result = builder.value.String()
@@ -22,7 +22,7 @@ export async function main(): globalThis.Promise<void> {
 	let builderPtr: strings.Builder | $.VarRef<strings.Builder> | null = new strings.Builder()
 	$.pointerValue<strings.Builder>(builderPtr).WriteString("Direct make test")
 	$.println("Direct:", $.pointerValue<strings.Builder>(builderPtr).String())
-	$.println("LastIndexByte:", strings.LastIndexByte("hello", 108))
+	$.println("LastIndexByte:", strings.LastIndexByte("hello", $.uint(108, 8)))
 	$.println("LastIndex:", strings.LastIndex("hello", "l"))
 }
 

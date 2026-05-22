@@ -6,23 +6,23 @@ import * as $ from "@goscript/builtin/index.js"
 import * as runtime from "@goscript/runtime/index.js"
 
 export function platform(): string {
-	switch (true) {
-		case runtime.GOARCH == "wasm":
+	switch ((true as boolean)) {
+		case ((runtime.GOARCH as string) as string) == "wasm":
 		{
 			return "wasm"
 			break
 		}
-		case (runtime.GOOS == "windows") && (runtime.GOARCH == "386"):
+		case (((runtime.GOOS as string) as string) == "windows") && (((runtime.GOARCH as string) as string) == "386"):
 		{
 			return "windows386"
 			break
 		}
-		case runtime.GOOS == "openbsd":
+		case ((runtime.GOOS as string) as string) == "openbsd":
 		{
 			return "openbsd"
 			break
 		}
-		case runtime.GOOS == "aix":
+		case ((runtime.GOOS as string) as string) == "aix":
 		{
 			return "aix"
 			break
@@ -38,7 +38,6 @@ export function platform(): string {
 export async function main(): globalThis.Promise<void> {
 	$.println(platform())
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

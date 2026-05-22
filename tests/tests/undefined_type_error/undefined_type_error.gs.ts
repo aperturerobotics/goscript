@@ -131,7 +131,7 @@ export class formatter {
 
 	static __typeInfo = $.registerStructType(
 		"main.formatter",
-		new formatter(),
+		() => new formatter(),
 		[],
 		formatter,
 		{"wid": { kind: $.TypeKind.Basic, name: "int" }, "prec": { kind: $.TypeKind.Basic, name: "int" }, "widPresent": { kind: $.TypeKind.Basic, name: "bool" }, "precPresent": { kind: $.TypeKind.Basic, name: "bool" }, "minus": { kind: $.TypeKind.Basic, name: "bool" }, "plus": { kind: $.TypeKind.Basic, name: "bool" }, "sharp": { kind: $.TypeKind.Basic, name: "bool" }, "space": { kind: $.TypeKind.Basic, name: "bool" }, "zero": { kind: $.TypeKind.Basic, name: "bool" }, "plusV": { kind: $.TypeKind.Basic, name: "bool" }, "sharpV": { kind: $.TypeKind.Basic, name: "bool" }}
@@ -204,7 +204,7 @@ export class printer {
 
 	static __typeInfo = $.registerStructType(
 		"main.printer",
-		new printer(),
+		() => new printer(),
 		[{ name: "format", args: [], returns: [] }, { name: "init", args: [], returns: [] }],
 		printer,
 		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "arg": { kind: $.TypeKind.Interface, methods: [] }, "fmt": "main.formatter"}
@@ -214,10 +214,9 @@ export class printer {
 export async function main(): globalThis.Promise<void> {
 	let p: printer | $.VarRef<printer> | null = new printer()
 	$.pointerValue<printer>(p).init()
-	$.pointerValue<printer>(p).format(100)
+	$.pointerValue<printer>(p).format($.int(100, 32))
 	$.println("Formatter test completed")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

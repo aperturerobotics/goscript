@@ -40,7 +40,7 @@ export class Setting {
 
 	static __typeInfo = $.registerStructType(
 		"main.Setting",
-		new Setting(),
+		() => new Setting(),
 		[{ name: "Value", args: [], returns: [] }],
 		Setting,
 		{"once": "sync.Once"}
@@ -58,7 +58,7 @@ export async function newCallback(name: string): globalThis.Promise<(() => void)
 	}, { kind: $.TypeKind.Function, params: [], results: [] })
 }
 
-export function init(): void {
+function __goscriptInit0(): void {
 	setCallback(newCallback)
 }
 
@@ -66,6 +66,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("ok")
 }
 
+__goscriptInit0()
 
 if ($.isMainScript(import.meta)) {
 	await main()

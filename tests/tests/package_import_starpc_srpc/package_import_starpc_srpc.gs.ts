@@ -35,7 +35,7 @@ export class handler {
 
 	static __typeInfo = $.registerStructType(
 		"main.handler",
-		new handler(),
+		() => new handler(),
 		[{ name: "GetMethodIDs", args: [], returns: [] }, { name: "GetServiceID", args: [], returns: [] }, { name: "InvokeMethod", args: [], returns: [] }],
 		handler,
 		{}
@@ -70,7 +70,7 @@ export class embeddedStream {
 
 	static __typeInfo = $.registerStructType(
 		"main.embeddedStream",
-		new embeddedStream(),
+		() => new embeddedStream(),
 		[],
 		embeddedStream,
 		{"Stream": "srpc.Stream"}
@@ -92,7 +92,7 @@ export async function main(): globalThis.Promise<void> {
 	await $.pointerValue<Exclude<srpc.Mux, null>>(mux).InvokeMethod("svc", "method", null)
 	closeEmbedded
 	$.functionValue(async (strm: srpc.StreamRecv<any> | null): globalThis.Promise<$.GoError> => await recvOne({T: { type: { kind: $.TypeKind.Interface, methods: [] }, zero: () => null }}, strm), { kind: $.TypeKind.Function, params: ["srpc.StreamRecv"], results: ["error"] })
-	srpc.NewRawMessage($.arrayToSlice<number>([1, 2, 3]), true)
+	srpc.NewRawMessage($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]), true)
 	srpc.NewServer($.pointerValue((mux as srpc.Invoker | null)))
 	$.println("success: starpc srpc override")
 }

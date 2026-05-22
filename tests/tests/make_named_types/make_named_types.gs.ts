@@ -19,7 +19,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Value:", $.mapGet(m, "test", 0)[0])
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

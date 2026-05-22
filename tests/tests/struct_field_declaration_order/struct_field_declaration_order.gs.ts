@@ -31,7 +31,7 @@ export class inner {
 
 	static __typeInfo = $.registerStructType(
 		"main.inner",
-		new inner(),
+		() => new inner(),
 		[],
 		inner,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -66,7 +66,7 @@ export class outer {
 
 	static __typeInfo = $.registerStructType(
 		"main.outer",
-		new outer(),
+		() => new outer(),
 		[],
 		outer,
 		{"inner": "main.inner"}
@@ -74,6 +74,10 @@ export class outer {
 }
 
 export let defaultOuter: outer = $.markAsStructValue(new outer())
+
+export function __goscript_set_defaultOuter(value: outer): void {
+	defaultOuter = value
+}
 
 export async function main(): globalThis.Promise<void> {
 	defaultOuter.inner.value = 7

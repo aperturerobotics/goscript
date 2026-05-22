@@ -14,7 +14,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("*p2:", $.pointerValue<number>(p2))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

@@ -29,7 +29,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("addFn2(7):", await addFn2!(7))
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

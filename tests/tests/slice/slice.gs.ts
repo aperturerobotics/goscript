@@ -156,7 +156,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Slice literal[1]:", sliceLiteral![1])
 
 	// Nil slice
-	let nilSlice: $.Slice<number> = null
+	let nilSlice: $.Slice<number> = null as $.Slice<number>
 	$.println("Nil slice len:", $.len(nilSlice))
 	$.println("Nil slice cap:", $.cap(nilSlice))
 	nilSlice = $.append(nilSlice, 5)
@@ -318,7 +318,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Nil slice of slices
 	$.println("--- Nil slice of slices ---")
-	let nilSliceOfSlices: $.Slice<$.Slice<number>> = null
+	let nilSliceOfSlices: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
 	$.println("Nil slice of slices len:", $.len(nilSliceOfSlices))
 	$.println("Nil slice of slices cap:", $.cap(nilSliceOfSlices))
 

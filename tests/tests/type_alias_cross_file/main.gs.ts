@@ -26,12 +26,12 @@ export class source {
 	}
 
 	public Val(): __goscript_alias.Value {
-		return ($.stringToBytes("ok") as __goscript_alias.Value)
+		return (new Uint8Array([111, 107]) as __goscript_alias.Value)
 	}
 
 	static __typeInfo = $.registerStructType(
 		"main.source",
-		new source(),
+		() => new source(),
 		[{ name: "Val", args: [], returns: [] }],
 		source,
 		{}

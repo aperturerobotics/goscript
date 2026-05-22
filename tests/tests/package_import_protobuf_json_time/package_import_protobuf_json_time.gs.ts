@@ -13,7 +13,7 @@ export function readTime(s: json.UnmarshalState | $.VarRef<json.UnmarshalState> 
 }
 
 export async function main(): globalThis.Promise<void> {
-	let state: json.UnmarshalState | $.VarRef<json.UnmarshalState> | null = json.NewUnmarshalState($.stringToBytes("\"2025-05-15T01:10:42Z\""), $.markAsStructValue($.cloneStructValue(json.DefaultUnmarshalerConfig)))
+	let state: json.UnmarshalState | $.VarRef<json.UnmarshalState> | null = json.NewUnmarshalState(new Uint8Array([34, 50, 48, 50, 53, 45, 48, 53, 45, 49, 53, 84, 48, 49, 58, 49, 48, 58, 52, 50, 90, 34]), $.markAsStructValue($.cloneStructValue(json.DefaultUnmarshalerConfig)))
 	let t = $.markAsStructValue($.cloneStructValue(readTime(state)))
 	$.println("read time", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(t)).UTC())).Format(time.RFC3339), $.pointerValue<json.UnmarshalState>(state).Err() == null)
 }

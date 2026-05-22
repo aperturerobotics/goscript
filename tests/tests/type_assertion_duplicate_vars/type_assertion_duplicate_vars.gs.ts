@@ -36,7 +36,7 @@ export class ConcreteA {
 
 	static __typeInfo = $.registerStructType(
 		"main.ConcreteA",
-		new ConcreteA(),
+		() => new ConcreteA(),
 		[{ name: "Method", args: [], returns: [] }],
 		ConcreteA,
 		{}
@@ -66,7 +66,7 @@ export class ConcreteB {
 
 	static __typeInfo = $.registerStructType(
 		"main.ConcreteB",
-		new ConcreteB(),
+		() => new ConcreteB(),
 		[{ name: "Method", args: [], returns: [] }],
 		ConcreteB,
 		{}
@@ -111,7 +111,7 @@ export class Container {
 
 	static __typeInfo = $.registerStructType(
 		"main.Container",
-		new Container(),
+		() => new Container(),
 		[],
 		Container,
 		{"hasA": { kind: $.TypeKind.Basic, name: "bool" }, "hasB": { kind: $.TypeKind.Basic, name: "bool" }}
@@ -132,7 +132,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("hasA:", $.pointerValue<Container>(c).hasA)
 	$.println("hasB:", $.pointerValue<Container>(c).hasB)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

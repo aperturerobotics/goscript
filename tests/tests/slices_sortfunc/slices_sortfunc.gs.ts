@@ -43,7 +43,7 @@ export class Person {
 
 	static __typeInfo = $.registerStructType(
 		"main.Person",
-		new Person(),
+		() => new Person(),
 		[],
 		Person,
 		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
@@ -68,7 +68,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println(p.Name, p.Age)
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

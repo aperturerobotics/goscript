@@ -20,7 +20,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Test finished")
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

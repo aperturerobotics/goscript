@@ -11,7 +11,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("is nil:", values == null)
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

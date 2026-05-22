@@ -41,7 +41,7 @@ export async function main(): globalThis.Promise<void> {
 	let cloned = slices.Clone(s)
 	cloned![0] = 99
 	$.println("clone first:", cloned![0], "original first:", s![0], "same len:", $.len(cloned) == $.len(s))
-	let nilSlice: $.Slice<number> = null
+	let nilSlice: $.Slice<number> = null as $.Slice<number>
 	$.println("nil clone:", slices.Clone(nilSlice) == null)
 
 	$.println("equal:", slices.Equal($.arrayToSlice<number>([1, 2]), $.arrayToSlice<number>([1, 2])), slices.Equal($.arrayToSlice<number>([1]), $.arrayToSlice<number>([2])))
@@ -95,7 +95,7 @@ export async function main(): globalThis.Promise<void> {
 
 		static __typeInfo = $.registerStructType(
 			"main.item",
-			new item(),
+			() => new item(),
 			[],
 			item,
 			{"group": { kind: $.TypeKind.Basic, name: "int" }, "label": { kind: $.TypeKind.Basic, name: "string" }}

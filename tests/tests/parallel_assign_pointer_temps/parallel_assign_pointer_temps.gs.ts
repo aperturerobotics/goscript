@@ -31,7 +31,7 @@ export class node {
 
 	static __typeInfo = $.registerStructType(
 		"main.node",
-		new node(),
+		() => new node(),
 		[],
 		node,
 		{"next": { kind: $.TypeKind.Basic, name: "int" }}
@@ -66,7 +66,7 @@ export class queue {
 
 	static __typeInfo = $.registerStructType(
 		"main.queue",
-		new queue(),
+		() => new queue(),
 		[],
 		queue,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -91,7 +91,6 @@ export async function main(): globalThis.Promise<void> {
 	inst = __goscriptAssign1_1
 	$.println(pc, $.pointerValue<node>(inst).next)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

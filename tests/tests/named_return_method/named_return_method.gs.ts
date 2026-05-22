@@ -53,25 +53,25 @@ export class content {
 	public ReadAt(b: $.Slice<number>, off: number): [number, $.GoError] {
 		const c: content | $.VarRef<content> | null = this
 		let n: number = 0
-		let err: $.GoError = null
+		let err: $.GoError = null as $.GoError
 		if ((off < 0) || (off >= $.int($.len($.pointerValue<content>(c).bytes)))) {
 			err = null
 			return [n, err]
 		}
 
 		let l = $.int($.len(b))
-		if ((off + l) > $.int($.len($.pointerValue<content>(c).bytes))) {
-			l = $.int($.len($.pointerValue<content>(c).bytes)) - off
+		if (($.uint64Add(off, l)) > $.int($.len($.pointerValue<content>(c).bytes))) {
+			l = $.uint64Sub($.int($.len($.pointerValue<content>(c).bytes)), off)
 		}
 
-		let btr = $.goSlice($.pointerValue<content>(c).bytes, off, off + l)
+		let btr = $.goSlice($.pointerValue<content>(c).bytes, off, $.uint64Add(off, l))
 		n = $.copy(b, btr)
 		return [n, err]
 	}
 
 	static __typeInfo = $.registerStructType(
 		"main.content",
-		new content(),
+		() => new content(),
 		[{ name: "ProcessData", args: [], returns: [] }, { name: "ReadAt", args: [], returns: [] }],
 		content,
 		{"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -79,7 +79,7 @@ export class content {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let c: content | $.VarRef<content> | null = new content({bytes: $.stringToBytes("Hello, World!")})
+	let c: content | $.VarRef<content> | null = new content({bytes: new Uint8Array([72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33])})
 
 	// Test ReadAt method
 	let buf = $.makeSlice<number>(5, undefined, "byte")
@@ -104,22 +104,21 @@ export async function main(): globalThis.Promise<void> {
 	$.println($.bytesToString(buf2))
 
 	// Test ProcessData method
-	let [r1, s1, v1] = $.pointerValue<content>(c).ProcessData(15)
+	let [r1, s1, v1] = content.prototype.ProcessData.call(c, 15)
 	$.println(r1)
 	$.println(s1)
 	$.println(v1)
 
-	let [r2, s2, v2] = $.pointerValue<content>(c).ProcessData(5)
+	let [r2, s2, v2] = content.prototype.ProcessData.call(c, 5)
 	$.println(r2)
 	$.println(s2)
 	$.println(v2)
 
-	let [r3, s3, v3] = $.pointerValue<content>(c).ProcessData(-1)
+	let [r3, s3, v3] = content.prototype.ProcessData.call(c, -1)
 	$.println(r3)
 	$.println(s3)
 	$.println(v3)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

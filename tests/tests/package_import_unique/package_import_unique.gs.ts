@@ -33,7 +33,7 @@ export class zone {
 
 	static __typeInfo = $.registerStructType(
 		"main.zone",
-		new zone(),
+		() => new zone(),
 		[],
 		zone,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }}

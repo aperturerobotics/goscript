@@ -53,7 +53,7 @@ export class Person {
 
 	static __typeInfo = $.registerStructType(
 		"main.Person",
-		new Person(),
+		() => new Person(),
 		[],
 		Person,
 		{"Name": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, "Age": { type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, "Active": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }}
@@ -69,7 +69,6 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Marshal:", $.bytesToString(b))
 	}
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

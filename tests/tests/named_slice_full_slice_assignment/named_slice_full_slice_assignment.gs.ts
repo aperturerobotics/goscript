@@ -10,8 +10,8 @@ export function filters_size(f: filters): number {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let out: filters = null
-	let value = $.interfaceValue<any>($.arrayToSlice<number>([1, 2, 3]), "main.filters")
+	let out: filters = null as filters
+	let value = $.namedValueInterfaceValue<any>($.arrayToSlice<number>([1, 2, 3]), "main.filters", {size: filters_size})
 	{
 		let __goscriptTuple0 = $.typeAssertTuple<filters>(value, "main.filters")
 		let c = (__goscriptTuple0[0] as filters)
@@ -26,7 +26,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("cap:", $.cap((out as filters)))
 	$.println("size:", size)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

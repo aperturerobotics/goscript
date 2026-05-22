@@ -3,7 +3,11 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export let fn: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null = null as ((_p0: number) => boolean) | null
+export let fn: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null = null as ((_p0: number) => boolean | globalThis.Promise<boolean>) | null
+
+export function __goscript_set_fn(value: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null): void {
+	fn = value
+}
 
 export async function main(): globalThis.Promise<void> {
 	let ch = $.makeChannel<boolean>(1, false, "both")
@@ -24,7 +28,6 @@ export async function main(): globalThis.Promise<void> {
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })
 	$.println(await fn!(0))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

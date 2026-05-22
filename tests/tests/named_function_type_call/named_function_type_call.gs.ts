@@ -104,7 +104,7 @@ export class MockFileInfo {
 
 	static __typeInfo = $.registerStructType(
 		"main.MockFileInfo",
-		new MockFileInfo(),
+		() => new MockFileInfo(),
 		[{ name: "IsDir", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "Size", args: [], returns: [] }],
 		MockFileInfo,
 		{"name": { kind: $.TypeKind.Basic, name: "string" }, "size": { kind: $.TypeKind.Basic, name: "int" }, "isDir": { kind: $.TypeKind.Basic, name: "bool" }}
@@ -134,7 +134,7 @@ export class MockFilesystem {
 
 	static __typeInfo = $.registerStructType(
 		"main.MockFilesystem",
-		new MockFilesystem(),
+		() => new MockFilesystem(),
 		[{ name: "ReadDir", args: [], returns: [] }],
 		MockFilesystem,
 		{}
@@ -174,7 +174,7 @@ export class shapeNode {
 
 	static __typeInfo = $.registerStructType(
 		"main.shapeNode",
-		new shapeNode(),
+		() => new shapeNode(),
 		[{ name: "Stats", args: [], returns: [] }],
 		shapeNode,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -219,7 +219,7 @@ export class MorphismHolder {
 
 	static __typeInfo = $.registerStructType(
 		"main.MorphismHolder",
-		new MorphismHolder(),
+		() => new MorphismHolder(),
 		[{ name: "apply", args: [], returns: [] }, { name: "cloneApply", args: [], returns: [] }],
 		MorphismHolder,
 		{"morphism": { kind: $.TypeKind.Function, name: "main.Morphism", params: ["main.Shape"], results: ["main.Shape"] }}
@@ -261,7 +261,7 @@ export class morphismWorker {
 
 	static __typeInfo = $.registerStructType(
 		"main.morphismWorker",
-		new morphismWorker(),
+		() => new morphismWorker(),
 		[{ name: "lookup", args: [], returns: [] }],
 		morphismWorker,
 		{"ready": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }}
@@ -329,8 +329,8 @@ export async function multiCallback(walkFn: ((path: string, info: FileInfo | nul
 	return await processFn!("test")
 }
 
-export function indexedCallback(cbs: $.Slice<((_p0: string) => boolean) | null>, value: string): boolean {
-	return cbs![0]!(value)
+export async function indexedCallback(cbs: $.Slice<((_p0: string) => boolean | globalThis.Promise<boolean>) | null>, value: string): globalThis.Promise<boolean> {
+	return await cbs![0]!(value)
 }
 
 export async function useMorphism(m: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null, s: Shape | null): globalThis.Promise<number> {
@@ -382,7 +382,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Multi callback error:", $.pointerValue<Exclude<$.GoError, null>>(err3).Error())
 	}
 
-	indexedCallback($.arrayToSlice<((_p0: string) => boolean) | null>([$.functionValue((value: string): boolean => {
+	await indexedCallback($.arrayToSlice<((_p0: string) => boolean | globalThis.Promise<boolean>) | null>([$.functionValue((value: string): boolean => {
 		$.println("Indexed callback:", value)
 		return true
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })]), "slice")
@@ -395,7 +395,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Cloned field morphism:", await $.pointerValue<MorphismHolder>(holder).cloneApply($.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
 	$.pointerValue<morphismWorker>(worker).ready!.close()
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

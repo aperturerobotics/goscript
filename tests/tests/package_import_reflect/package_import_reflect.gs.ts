@@ -53,7 +53,7 @@ export class Person {
 
 	static __typeInfo = $.registerStructType(
 		"main.Person",
-		new Person(),
+		() => new Person(),
 		[],
 		Person,
 		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
@@ -286,10 +286,10 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Chan size:", $.pointerValue<Exclude<reflect.Type, null>>(chanType).Size())
 
 	// Test Value.Pointer on addressable slice elements.
-	let pointerBuf = $.arrayToSlice<number>([1, 2, 3, 4])
+	let pointerBuf = $.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8), $.uint(4, 8)])
 	let pointerLeft = $.goSlice(pointerBuf, 1, 3)
 	let pointerRight = $.goSlice(pointerBuf, 2, 4)
-	let pointerOther = $.arrayToSlice<number>([8, 9])
+	let pointerOther = $.arrayToSlice<number>([$.uint(8, 8), $.uint(9, 8)])
 	$.println("Pointer overlap:", reflectOverlap(pointerLeft, pointerRight))
 	$.println("Pointer separate:", reflectOverlap(pointerLeft, pointerOther))
 	$.println("Pointer same:", reflectSameStart(pointerLeft, $.goSlice(pointerBuf, 1, undefined)))

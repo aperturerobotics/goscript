@@ -33,7 +33,7 @@ export class local {
 
 	static __typeInfo = $.registerStructType(
 		"main.local",
-		new local(),
+		() => new local(),
 		[],
 		local,
 		{"value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -56,7 +56,6 @@ export async function main(): globalThis.Promise<void> {
 	let drbg: local | $.VarRef<local> | null = newLocal(7)
 	$.println($.pointerValue<local>(drbg).value)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

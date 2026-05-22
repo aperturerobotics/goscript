@@ -57,7 +57,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Age": { kind: $.TypeKind.Basic, name: "int" }}
@@ -86,11 +86,10 @@ export async function main(): globalThis.Promise<void> {
 	$.println("TypeFor cross-file struct:", $.pointerValue<Exclude<reflect.Type, null>>(t5).String())
 
 	// Test Pointer constant (should be same as Ptr)
-	$.println("Pointer constant:", reflect.Pointer == reflect.Pointer)
+	$.println("Pointer constant:", (reflect.Pointer as number) == reflect.Pointer)
 
 	$.println("reflect_typefor test finished")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

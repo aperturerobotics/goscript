@@ -41,7 +41,7 @@ export class node {
 
 	static __typeInfo = $.registerStructType(
 		"main.node",
-		new node(),
+		() => new node(),
 		[],
 		node,
 		{"sub": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "main.node" } }, "sub0": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Pointer, elemType: "main.node" }, length: 1 }}
@@ -55,7 +55,6 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println($.len($.pointerValue<node>(root).sub), $.pointerValue<node>(root).sub![0] == child)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -41,7 +41,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"publicField": { kind: $.TypeKind.Basic, name: "string" }, "privateField": { kind: $.TypeKind.Basic, name: "int" }}
@@ -62,7 +62,6 @@ export async function main(): globalThis.Promise<void> {
 	let s = $.markAsStructValue($.cloneStructValue(NewMyStruct("hello", 123)))
 	accessPrivateField($.markAsStructValue($.cloneStructValue(s)))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

@@ -51,7 +51,7 @@ export class MyStruct {
 
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
-		new MyStruct(),
+		() => new MyStruct(),
 		[],
 		MyStruct,
 		{"PointerField": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "interfaceField": "main.MyInterface"}
@@ -70,11 +70,10 @@ export async function main(): globalThis.Promise<void> {
 	i.value = 15
 	$.println($.pointerValue<number>(s.PointerField))
 
-	let mi: MyInterface | null = null
+	let mi: MyInterface | null = null as MyInterface | null
 	s.interfaceField = mi
 	$.println(s.interfaceField == null)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

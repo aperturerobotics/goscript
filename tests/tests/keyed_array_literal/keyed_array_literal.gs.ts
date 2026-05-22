@@ -41,7 +41,6 @@ export async function main(): globalThis.Promise<void> {
 	$.println("keyed array literal test completed")
 }
 
-
 if ($.isMainScript(import.meta)) {
 	await main()
 }

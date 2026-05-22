@@ -25,7 +25,7 @@ export class item {
 
 	static __typeInfo = $.registerStructType(
 		"main.item",
-		new item(),
+		() => new item(),
 		[{ name: "Name", args: [], returns: [] }],
 		item,
 		{}
@@ -83,7 +83,6 @@ export async function main(): globalThis.Promise<void> {
 	describe($.interfaceValue<any>($.markAsStructValue(new item()), "main.item"))
 	describe("nope")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

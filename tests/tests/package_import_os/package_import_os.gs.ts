@@ -11,7 +11,7 @@ export async function main(): globalThis.Promise<void> {
 	{
 		let [wd, err] = os.Getwd()
 		if (err == null) {
-			if (wd != "") {
+			if ((wd as string) != "") {
 				$.println("Current working directory ok")
 			}
 		} else {
@@ -25,7 +25,7 @@ export async function main(): globalThis.Promise<void> {
 
 	{
 		let val = os.Getenv("TEST_VAR")
-		if (val != "") {
+		if ((val as string) != "") {
 			$.println("Got environment variable TEST_VAR:", val)
 		}
 	}
@@ -33,7 +33,7 @@ export async function main(): globalThis.Promise<void> {
 	os.Unsetenv("TEST_VAR")
 	{
 		let val = os.Getenv("TEST_VAR")
-		if (val == "") {
+		if ((val as string) == "") {
 			$.println("Environment variable TEST_VAR unset successfully")
 		}
 	}
@@ -48,7 +48,7 @@ export async function main(): globalThis.Promise<void> {
 		}
 	}
 
-	let [n, err] = $.pointerValue<os.File>(os.Stdout).Write($.stringToBytes("stdout write works\n"))
+	let [n, err] = $.pointerValue<os.File>(os.Stdout).Write(new Uint8Array([115, 116, 100, 111, 117, 116, 32, 119, 114, 105, 116, 101, 32, 119, 111, 114, 107, 115, 10]))
 	if (err == null) {
 		$.println("Stdout write bytes:", n)
 	} else {
@@ -56,7 +56,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	let fileName = "os-runtime-file.txt"
-	let writeErr = os.WriteFile(fileName, $.stringToBytes("runtime file contents"), 0o644)
+	let writeErr = os.WriteFile(fileName, new Uint8Array([114, 117, 110, 116, 105, 109, 101, 32, 102, 105, 108, 101, 32, 99, 111, 110, 116, 101, 110, 116, 115]), $.uint(0o644, 32))
 	if (writeErr == null) {
 		$.println("WriteFile ok")
 	} else {
@@ -105,7 +105,7 @@ export async function main(): globalThis.Promise<void> {
 		let __goscriptShadow1 = __goscriptTuple0[1]
 		if (__goscriptShadow1 == null) {
 			$.println("CreateTemp ok")
-			$.println("CreateTemp name empty:", $.pointerValue<os.File>(tempFile).Name() == "")
+			$.println("CreateTemp name empty:", ($.pointerValue<os.File>(tempFile).Name() as string) == "")
 			$.pointerValue<os.File>(tempFile).Close()
 			os.Remove($.pointerValue<os.File>(tempFile).Name())
 		} else {

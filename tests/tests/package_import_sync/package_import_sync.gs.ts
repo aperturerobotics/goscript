@@ -43,7 +43,7 @@ export class embeddedMutex {
 
 	static __typeInfo = $.registerStructType(
 		"main.embeddedMutex",
-		new embeddedMutex(),
+		() => new embeddedMutex(),
 		[],
 		embeddedMutex,
 		{"Mutex": "sync.Mutex", "value": { kind: $.TypeKind.Basic, name: "int" }}
@@ -88,7 +88,7 @@ export class embeddedRWMutex {
 
 	static __typeInfo = $.registerStructType(
 		"main.embeddedRWMutex",
-		new embeddedRWMutex(),
+		() => new embeddedRWMutex(),
 		[],
 		embeddedRWMutex,
 		{"RWMutex": "sync.RWMutex", "value": { kind: $.TypeKind.Basic, name: "int" }}

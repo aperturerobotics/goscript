@@ -31,7 +31,7 @@ export class buffer {
 
 	static __typeInfo = $.registerStructType(
 		"main.buffer",
-		new buffer(),
+		() => new buffer(),
 		[],
 		buffer,
 		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
@@ -44,10 +44,9 @@ export function newBuffer(data: $.Slice<number>): buffer | $.VarRef<buffer> | nu
 }
 
 export async function main(): globalThis.Promise<void> {
-	let buf: buffer | $.VarRef<buffer> | null = newBuffer($.arrayToSlice<number>([7]))
-	$.println($.pointerValue<buffer>(buf).buf![0])
+	let buf: buffer | $.VarRef<buffer> | null = newBuffer($.arrayToSlice<number>([$.uint(7, 8)]))
+	$.println($.uint($.pointerValue<buffer>(buf).buf![0], 8))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()
