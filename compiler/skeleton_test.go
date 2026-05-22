@@ -1554,6 +1554,13 @@ func TestCompilePackagesLowersNamedStructConversionWithTypedAsyncFact(t *testing
 			"func Convert() Target {",
 			"  return Target(Make())",
 			"}",
+			"func ConvertLiteral() Target {",
+			"  return Target(func() Source {",
+			"    ch := make(chan Source, 1)",
+			"    ch <- Source{Value: 9}",
+			"    return <-ch",
+			"  }())",
+			"}",
 			"func main() { println(Convert().Value) }",
 			"",
 		}, "\n"),
@@ -1578,6 +1585,9 @@ func TestCompilePackagesLowersNamedStructConversionWithTypedAsyncFact(t *testing
 	}
 	if !strings.Contains(text, "$.markAsStructValue(new Target({Value: __goscriptConvert") {
 		t.Fatalf("missing typed named struct conversion target:\n%s", text)
+	}
+	if !strings.Contains(text, "const __goscriptConvert1 = await ($.functionValue(async ") {
+		t.Fatalf("missing async fact from function literal conversion source:\n%s", text)
 	}
 }
 

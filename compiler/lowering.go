@@ -4128,11 +4128,56 @@ func (o *LoweringOwner) lowerNamedStructConversion(
 func (o *LoweringOwner) conversionValueNeedsAwait(ctx lowerFileContext, expr ast.Expr) bool {
 	switch typed := expr.(type) {
 	case *ast.CallExpr:
-		return o.callNeedsAwait(ctx, typed.Fun)
+		if o.callNeedsAwait(ctx, typed.Fun) || o.conversionValueNeedsAwait(ctx, typed.Fun) {
+			return true
+		}
+		for _, arg := range typed.Args {
+			if o.conversionValueNeedsAwait(ctx, arg) {
+				return true
+			}
+		}
+		return false
 	case *ast.ParenExpr:
 		return o.conversionValueNeedsAwait(ctx, typed.X)
 	case *ast.UnaryExpr:
-		return typed.Op == token.ARROW
+		return typed.Op == token.ARROW || o.conversionValueNeedsAwait(ctx, typed.X)
+	case *ast.BinaryExpr:
+		return o.conversionValueNeedsAwait(ctx, typed.X) || o.conversionValueNeedsAwait(ctx, typed.Y)
+	case *ast.CompositeLit:
+		for _, elt := range typed.Elts {
+			if o.conversionValueNeedsAwait(ctx, elt) {
+				return true
+			}
+		}
+		return false
+	case *ast.FuncLit:
+		return ctx.model != nil && ctx.semPkg != nil && ctx.semPkg.source != nil &&
+			exprMayNeedAwait(ctx.model, ctx.semPkg.source, typed)
+	case *ast.IndexExpr:
+		return o.conversionValueNeedsAwait(ctx, typed.X) || o.conversionValueNeedsAwait(ctx, typed.Index)
+	case *ast.IndexListExpr:
+		if o.conversionValueNeedsAwait(ctx, typed.X) {
+			return true
+		}
+		for _, index := range typed.Indices {
+			if o.conversionValueNeedsAwait(ctx, index) {
+				return true
+			}
+		}
+		return false
+	case *ast.KeyValueExpr:
+		return o.conversionValueNeedsAwait(ctx, typed.Key) || o.conversionValueNeedsAwait(ctx, typed.Value)
+	case *ast.SelectorExpr:
+		return o.conversionValueNeedsAwait(ctx, typed.X)
+	case *ast.SliceExpr:
+		return o.conversionValueNeedsAwait(ctx, typed.X) ||
+			o.conversionValueNeedsAwait(ctx, typed.Low) ||
+			o.conversionValueNeedsAwait(ctx, typed.High) ||
+			o.conversionValueNeedsAwait(ctx, typed.Max)
+	case *ast.StarExpr:
+		return o.conversionValueNeedsAwait(ctx, typed.X)
+	case *ast.TypeAssertExpr:
+		return o.conversionValueNeedsAwait(ctx, typed.X)
 	default:
 		return false
 	}

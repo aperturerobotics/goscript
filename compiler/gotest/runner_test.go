@@ -273,6 +273,9 @@ func TestRunnerScopesPackageLoadErrors(t *testing.T) {
 	if broken.Action != ActionFail || broken.Owner != OwnerPackageGraph {
 		t.Fatalf("broken package should carry package graph failure: %#v", broken)
 	}
+	if broken.Phases.Compile != PhaseStatusFail {
+		t.Fatalf("broken package should carry compile phase failure: %#v", broken)
+	}
 	if !strings.Contains(broken.Error, "Missing") {
 		t.Fatalf("broken package error should preserve load diagnostic: %#v", broken)
 	}

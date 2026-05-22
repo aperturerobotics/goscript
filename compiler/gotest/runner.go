@@ -269,6 +269,7 @@ func packageResults(testGraph *compiler.PackageTestGraph, runPattern *regexp.Reg
 			result.Action = ActionFail
 			result.Owner = OwnerPackageGraph
 			result.Error = diagnosticsSummary(pkg.Diagnostics)
+			result.Phases = failurePhases(OwnerPackageGraph)
 		}
 		results = append(results, result)
 	}

@@ -2,11 +2,11 @@ package compiler
 
 import (
 	"cmp"
-	"fmt"
 	"slices"
 	"strings"
 
 	gs "github.com/aperturerobotics/goscript"
+	"github.com/pkg/errors"
 )
 
 // RuntimeHelperCategory names a runtime helper family owned by the contract.
@@ -331,7 +331,7 @@ func scanBuiltinRuntimeExports() (map[string]bool, error) {
 	for _, module := range builtinReexportModules(string(index)) {
 		data, err := gs.GsOverrides.ReadFile("gs/builtin/" + module + ".ts")
 		if err != nil {
-			return nil, fmt.Errorf("read builtin export module %s: %w", module, err)
+			return nil, errors.Wrapf(err, "read builtin export module %s", module)
 		}
 		for _, name := range sourceExportNames(string(data)) {
 			exports[name] = true

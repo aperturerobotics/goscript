@@ -3,13 +3,13 @@ package tsworkspace
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
 	"time"
 
+	jsoniter "github.com/aperturerobotics/json-iterator-lite"
 	"github.com/pkg/errors"
 )
 
@@ -86,11 +86,11 @@ func (o *Owner) WriteFile(phase Phase, name string, data string) Result {
 
 // WriteJSON writes an indented JSON workspace file.
 func (o *Owner) WriteJSON(phase Phase, name string, value any) Result {
-	data, err := json.MarshalIndent(value, "", "  ")
+	data, err := renderJSON(value)
 	if err != nil {
-		return Result{Phase: phase, Error: errors.Wrap(err, "marshal TypeScript workspace JSON").Error()}
+		return Result{Phase: phase, Error: err.Error()}
 	}
-	return o.WriteFile(phase, name, string(append(data, '\n')))
+	return o.WriteFile(phase, name, data)
 }
 
 // RunTool finds and executes a TypeScript workspace tool.
@@ -178,4 +178,83 @@ func currentWorkingDirectory() string {
 		return ""
 	}
 	return wd
+}
+
+func renderJSON(value any) (string, error) {
+	stream := jsoniter.NewStream(nil, 512, 2)
+	if err := writeJSONValue(stream, value); err != nil {
+		return "", errors.Wrap(err, "marshal TypeScript workspace JSON")
+	}
+	stream.WriteRaw("\n")
+	if stream.Error != nil {
+		return "", errors.Wrap(stream.Error, "marshal TypeScript workspace JSON")
+	}
+	return string(stream.Buffer()), nil
+}
+
+func writeJSONValue(stream *jsoniter.Stream, value any) error {
+	switch typed := value.(type) {
+	case nil:
+		stream.WriteNil()
+	case bool:
+		stream.WriteBool(typed)
+	case string:
+		stream.WriteString(typed)
+	case []string:
+		stream.WriteArrayStart()
+		for idx, item := range typed {
+			if idx != 0 {
+				stream.WriteMore()
+			}
+			stream.WriteString(item)
+		}
+		stream.WriteArrayEnd()
+	case []any:
+		stream.WriteArrayStart()
+		for idx, item := range typed {
+			if idx != 0 {
+				stream.WriteMore()
+			}
+			if err := writeJSONValue(stream, item); err != nil {
+				return err
+			}
+		}
+		stream.WriteArrayEnd()
+	case map[string]string:
+		return writeJSONObject(stream, typed, func(value string) error {
+			stream.WriteString(value)
+			return nil
+		})
+	case map[string][]string:
+		return writeJSONObject(stream, typed, func(value []string) error {
+			return writeJSONValue(stream, value)
+		})
+	case map[string]any:
+		return writeJSONObject(stream, typed, func(value any) error {
+			return writeJSONValue(stream, value)
+		})
+	default:
+		return errors.Errorf("unsupported TypeScript workspace JSON value %T", value)
+	}
+	return nil
+}
+
+func writeJSONObject[T any](stream *jsoniter.Stream, fields map[string]T, writeValue func(T) error) error {
+	stream.WriteObjectStart()
+	keys := make([]string, 0, len(fields))
+	for key := range fields {
+		keys = append(keys, key)
+	}
+	slices.Sort(keys)
+	for idx, key := range keys {
+		if idx != 0 {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField(key)
+		if err := writeValue(fields[key]); err != nil {
+			return err
+		}
+	}
+	stream.WriteObjectEnd()
+	return nil
 }
