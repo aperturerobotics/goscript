@@ -3157,7 +3157,17 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 		}
 	}
 	lowered.returns = selectCasesReturn(lowered.cases)
+	lowered.external = selectCasesNeedExternalBody(lowered.cases)
 	return lowered, diagnostics
+}
+
+func selectCasesNeedExternalBody(cases []loweredSelectCase) bool {
+	for _, switchCase := range cases {
+		if stmtsContainLoopJump(switchCase.body) {
+			return true
+		}
+	}
+	return false
 }
 
 func selectCasesReturn(cases []loweredSelectCase) bool {
@@ -3182,6 +3192,44 @@ func stmtsEndInReturn(stmts []loweredStmt) bool {
 	}
 	if last.selectStmt != nil {
 		return last.selectStmt.returns
+	}
+	return false
+}
+
+func stmtsContainLoopJump(stmts []loweredStmt) bool {
+	for _, stmt := range stmts {
+		if stmtTextContainsLoopJump(stmt.text) {
+			return true
+		}
+		if stmt.selectStmt != nil && stmtsContainSelectLoopJump(stmt.selectStmt) {
+			return true
+		}
+		if stmtsContainLoopJump(stmt.children) || stmtsContainLoopJump(stmt.elseBody) {
+			return true
+		}
+	}
+	return false
+}
+
+func stmtTextContainsLoopJump(text string) bool {
+	for line := range strings.SplitSeq(text, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "break" || trimmed == "continue" ||
+			strings.HasPrefix(trimmed, "break ") || strings.HasPrefix(trimmed, "continue ") {
+			return true
+		}
+	}
+	return false
+}
+
+func stmtsContainSelectLoopJump(stmt *loweredSelect) bool {
+	if stmt == nil {
+		return false
+	}
+	for _, switchCase := range stmt.cases {
+		if stmtsContainLoopJump(switchCase.body) {
+			return true
+		}
 	}
 	return false
 }

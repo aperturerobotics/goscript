@@ -664,10 +664,14 @@ func renderSelect(b *strings.Builder, stmt *loweredSelect, indent int) {
 	b.WriteString(", ")
 	b.WriteString(stmt.value)
 	b.WriteString("] = await $.selectStatement<any, ")
-	b.WriteString(stmt.resultType)
+	if stmt.external {
+		b.WriteString("any")
+	} else {
+		b.WriteString(stmt.resultType)
+	}
 	b.WriteString(">([\n")
 	for idx, switchCase := range stmt.cases {
-		renderSelectCase(b, switchCase, indent+1)
+		renderSelectCase(b, switchCase, stmt.external, indent+1)
 		if idx != len(stmt.cases)-1 {
 			b.WriteString(",")
 		}
@@ -681,6 +685,10 @@ func renderSelect(b *strings.Builder, stmt *loweredSelect, indent int) {
 	}
 	b.WriteString(hasDefault)
 	b.WriteString(")\n")
+	if stmt.external {
+		renderSelectExternalBodies(b, stmt, indent)
+		return
+	}
 	writeIndent(b, indent)
 	b.WriteString("if (")
 	b.WriteString(stmt.hasReturn)
@@ -697,7 +705,38 @@ func renderSelect(b *strings.Builder, stmt *loweredSelect, indent int) {
 	}
 }
 
-func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, indent int) {
+func renderSelectExternalBodies(b *strings.Builder, stmt *loweredSelect, indent int) {
+	writeIndent(b, indent)
+	b.WriteString("switch (")
+	b.WriteString(stmt.value)
+	b.WriteString("?.id) {\n")
+	for _, switchCase := range stmt.cases {
+		writeIndent(b, indent+1)
+		b.WriteString("case ")
+		b.WriteString(strconv.Itoa(switchCase.id))
+		b.WriteString(":\n")
+		writeIndent(b, indent+2)
+		b.WriteString("{\n")
+		writeIndent(b, indent+3)
+		b.WriteString("const result = ")
+		b.WriteString(stmt.value)
+		b.WriteString("\n")
+		renderStmts(b, switchCase.prelude, indent+3)
+		renderStmts(b, switchCase.body, indent+3)
+		writeIndent(b, indent+3)
+		b.WriteString("break\n")
+		writeIndent(b, indent+2)
+		b.WriteString("}\n")
+	}
+	writeIndent(b, indent)
+	b.WriteString("}\n")
+	if stmt.returns {
+		writeIndent(b, indent)
+		b.WriteString("throw new Error(\"unreachable select\")\n")
+	}
+}
+
+func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, external bool, indent int) {
 	writeIndent(b, indent)
 	b.WriteString("{\n")
 	writeIndent(b, indent+1)
@@ -724,6 +763,15 @@ func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, indent i
 	}
 	writeIndent(b, indent+1)
 	b.WriteString("onSelected: async (result) => {\n")
+	if external {
+		writeIndent(b, indent+2)
+		b.WriteString("return result\n")
+		writeIndent(b, indent+1)
+		b.WriteString("}\n")
+		writeIndent(b, indent)
+		b.WriteString("}")
+		return
+	}
 	renderStmts(b, switchCase.prelude, indent+2)
 	renderStmts(b, switchCase.body, indent+2)
 	writeIndent(b, indent+1)

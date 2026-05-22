@@ -152,6 +152,7 @@ type loweredSelect struct {
 	cases      []loweredSelectCase
 	hasDefault bool
 	returns    bool
+	external   bool
 }
 
 type loweredSelectCase struct {
