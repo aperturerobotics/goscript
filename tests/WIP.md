@@ -19,3 +19,13 @@ that reference the local class name without emitting the class.
 
 Focused compliance case: a callback declares a local struct type, constructs a
 slice of that type, and prints field values from the slice.
+
+Fourth owner: empty composite literals whose type is a type parameter, such as
+`T{}` in `crypto/internal/fips140/mlkem.polyByteDecode`, are rejected even when
+the type parameter has a concrete array underlying type. GoScript already
+carries generic zero descriptors, so this should lower as the same generic zero
+value used for `var zero T`.
+
+Focused compliance case: extend `issue_120_generic_zero_value` with
+`ZeroArrayLiteral[T ~[2]int]() T { return T{} }` and prove the instantiated
+array has length 2 with zero elements.

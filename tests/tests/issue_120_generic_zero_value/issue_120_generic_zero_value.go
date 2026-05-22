@@ -27,10 +27,16 @@ func (s StringVal) String() string {
 	return string(s)
 }
 
+type Pair [2]int
+
 // ZeroValue returns the zero value of type T
 func ZeroValue[T Stringer]() T {
 	var zero T
 	return zero
+}
+
+func ZeroArrayLiteral[T ~[2]int]() T {
+	return T{}
 }
 
 // CallString calls the String method on a value of type T
@@ -69,4 +75,9 @@ func main() {
 	// Test 5: Verify the actual values
 	println("zeroInt == 0:", zeroInt == 0)
 	println("zeroStr == \"\":", zeroStr == "")
+
+	// Test 6: T{} returns the instantiated array zero value.
+	zeroPair := ZeroArrayLiteral[Pair]()
+	println("ZeroArrayLiteral[Pair] len:", len(zeroPair))
+	println("ZeroArrayLiteral[Pair] zero:", zeroPair[0] == 0 && zeroPair[1] == 0)
 }

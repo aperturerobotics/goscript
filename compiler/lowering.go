@@ -6418,6 +6418,13 @@ func (o *LoweringOwner) lowerCompositeLit(
 	lit *ast.CompositeLit,
 	markStruct bool,
 ) (string, []Diagnostic) {
+	if len(lit.Elts) == 0 {
+		if typeParam, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(lit)).(*types.TypeParam); ok {
+			if signatureHasTypeParam(ctx.signature, typeParam) {
+				return o.lowerDeclarationZeroValueExpr(ctx, typeParam), nil
+			}
+		}
+	}
 	named := namedStructType(ctx.semPkg.source.TypesInfo.TypeOf(lit))
 	if named != nil {
 		return o.lowerStructCompositeLit(ctx, lit, named, markStruct)

@@ -6,3 +6,5 @@ Sum[IntVal](): 0
 Sum[StringVal]() len: 0
 zeroInt == 0: true
 zeroStr == "": true
+ZeroArrayLiteral[Pair] len: 2
+ZeroArrayLiteral[Pair] zero: true

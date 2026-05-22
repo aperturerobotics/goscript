@@ -19,6 +19,8 @@ export type IntVal = number
 
 export type StringVal = string
 
+export type Pair = number[]
+
 export function IntVal_String(i: IntVal): string {
 	return strconv.Itoa($.int(i))
 }
@@ -30,6 +32,10 @@ export function StringVal_String(s: StringVal): string {
 export function ZeroValue(__typeArgs: $.GenericTypeArgs | undefined): any {
 	let zero: any = $.genericZero(__typeArgs, "T", null)
 	return zero
+}
+
+export function ZeroArrayLiteral(__typeArgs: $.GenericTypeArgs | undefined): any {
+	return $.genericZero(__typeArgs, "T", null)
 }
 
 export function CallString(__typeArgs: $.GenericTypeArgs | undefined, v: any): string {
@@ -66,6 +72,11 @@ export async function main(): globalThis.Promise<void> {
 	// Test 5: Verify the actual values
 	$.println("zeroInt == 0:", zeroInt == 0)
 	$.println("zeroStr == \"\":", (zeroStr as string) == "")
+
+	// Test 6: T{} returns the instantiated array zero value.
+	let zeroPair = ZeroArrayLiteral({T: { type: "main.Pair", zero: () => Array.from({ length: 2 }, () => 0) }})
+	$.println("ZeroArrayLiteral[Pair] len:", $.len(zeroPair))
+	$.println("ZeroArrayLiteral[Pair] zero:", (zeroPair[0] == 0) && (zeroPair[1] == 0))
 }
 
 if ($.isMainScript(import.meta)) {
