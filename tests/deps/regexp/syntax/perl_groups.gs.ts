@@ -1,0 +1,134 @@
+// Generated file based on perl_groups.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+import * as __goscript_parse from "./parse.gs.ts"
+
+export let code1: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39])
+
+export function __goscript_set_code1(value: $.Slice<number>): void {
+	code1 = value
+}
+
+export let code2: $.Slice<number> = $.arrayToSlice<number>([0x9, 0xa, 0xc, 0xd, 0x20, 0x20])
+
+export function __goscript_set_code2(value: $.Slice<number>): void {
+	code2 = value
+}
+
+export let code3: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39, 0x41, 0x5a, 0x5f, 0x5f, 0x61, 0x7a])
+
+export function __goscript_set_code3(value: $.Slice<number>): void {
+	code3 = value
+}
+
+export let perlGroup: Map<string, __goscript_parse.charGroup> | null = undefined as unknown as Map<string, __goscript_parse.charGroup> | null
+
+export function __goscript_get_perlGroup(): Map<string, __goscript_parse.charGroup> | null {
+	if (((perlGroup) as any) === undefined) {
+		perlGroup = new Map<string, __goscript_parse.charGroup>([["\\d", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code1}))], ["\\D", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code1}))], ["\\s", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code2}))], ["\\S", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code2}))], ["\\w", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code3}))], ["\\W", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code3}))]])
+	}
+	return perlGroup
+}
+
+export function __goscript_set_perlGroup(value: Map<string, __goscript_parse.charGroup> | null): void {
+	perlGroup = value
+}
+
+export let code4: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39, 0x41, 0x5a, 0x61, 0x7a])
+
+export function __goscript_set_code4(value: $.Slice<number>): void {
+	code4 = value
+}
+
+export let code5: $.Slice<number> = $.arrayToSlice<number>([0x41, 0x5a, 0x61, 0x7a])
+
+export function __goscript_set_code5(value: $.Slice<number>): void {
+	code5 = value
+}
+
+export let code6: $.Slice<number> = $.arrayToSlice<number>([0x0, 0x7f])
+
+export function __goscript_set_code6(value: $.Slice<number>): void {
+	code6 = value
+}
+
+export let code7: $.Slice<number> = $.arrayToSlice<number>([0x9, 0x9, 0x20, 0x20])
+
+export function __goscript_set_code7(value: $.Slice<number>): void {
+	code7 = value
+}
+
+export let code8: $.Slice<number> = $.arrayToSlice<number>([0x0, 0x1f, 0x7f, 0x7f])
+
+export function __goscript_set_code8(value: $.Slice<number>): void {
+	code8 = value
+}
+
+export let code9: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39])
+
+export function __goscript_set_code9(value: $.Slice<number>): void {
+	code9 = value
+}
+
+export let code10: $.Slice<number> = $.arrayToSlice<number>([0x21, 0x7e])
+
+export function __goscript_set_code10(value: $.Slice<number>): void {
+	code10 = value
+}
+
+export let code11: $.Slice<number> = $.arrayToSlice<number>([0x61, 0x7a])
+
+export function __goscript_set_code11(value: $.Slice<number>): void {
+	code11 = value
+}
+
+export let code12: $.Slice<number> = $.arrayToSlice<number>([0x20, 0x7e])
+
+export function __goscript_set_code12(value: $.Slice<number>): void {
+	code12 = value
+}
+
+export let code13: $.Slice<number> = $.arrayToSlice<number>([0x21, 0x2f, 0x3a, 0x40, 0x5b, 0x60, 0x7b, 0x7e])
+
+export function __goscript_set_code13(value: $.Slice<number>): void {
+	code13 = value
+}
+
+export let code14: $.Slice<number> = $.arrayToSlice<number>([0x9, 0xd, 0x20, 0x20])
+
+export function __goscript_set_code14(value: $.Slice<number>): void {
+	code14 = value
+}
+
+export let code15: $.Slice<number> = $.arrayToSlice<number>([0x41, 0x5a])
+
+export function __goscript_set_code15(value: $.Slice<number>): void {
+	code15 = value
+}
+
+export let code16: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39, 0x41, 0x5a, 0x5f, 0x5f, 0x61, 0x7a])
+
+export function __goscript_set_code16(value: $.Slice<number>): void {
+	code16 = value
+}
+
+export let code17: $.Slice<number> = $.arrayToSlice<number>([0x30, 0x39, 0x41, 0x46, 0x61, 0x66])
+
+export function __goscript_set_code17(value: $.Slice<number>): void {
+	code17 = value
+}
+
+export let posixGroup: Map<string, __goscript_parse.charGroup> | null = undefined as unknown as Map<string, __goscript_parse.charGroup> | null
+
+export function __goscript_get_posixGroup(): Map<string, __goscript_parse.charGroup> | null {
+	if (((posixGroup) as any) === undefined) {
+		posixGroup = new Map<string, __goscript_parse.charGroup>([["[:alnum:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code4}))], ["[:^alnum:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code4}))], ["[:alpha:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code5}))], ["[:^alpha:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code5}))], ["[:ascii:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code6}))], ["[:^ascii:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code6}))], ["[:blank:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code7}))], ["[:^blank:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code7}))], ["[:cntrl:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code8}))], ["[:^cntrl:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code8}))], ["[:digit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code9}))], ["[:^digit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code9}))], ["[:graph:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code10}))], ["[:^graph:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code10}))], ["[:lower:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code11}))], ["[:^lower:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code11}))], ["[:print:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code12}))], ["[:^print:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code12}))], ["[:punct:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code13}))], ["[:^punct:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code13}))], ["[:space:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code14}))], ["[:^space:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code14}))], ["[:upper:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code15}))], ["[:^upper:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code15}))], ["[:word:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code16}))], ["[:^word:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code16}))], ["[:xdigit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, class: code17}))], ["[:^xdigit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, class: code17}))]])
+	}
+	return posixGroup
+}
+
+export function __goscript_set_posixGroup(value: Map<string, __goscript_parse.charGroup> | null): void {
+	posixGroup = value
+}

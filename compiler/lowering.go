@@ -4445,6 +4445,9 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 		if typed.Op == token.QUO && isIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(typed)) {
 			return "Math.trunc(" + left + " / " + right + ")", append(leftDiagnostics, rightDiagnostics...)
 		}
+		if value, ok := o.lowerWideIntegerBinaryExpr(ctx, typed, left, right); ok {
+			return value, append(leftDiagnostics, rightDiagnostics...)
+		}
 		return left + " " + typed.Op.String() + " " + right, append(leftDiagnostics, rightDiagnostics...)
 	case *ast.UnaryExpr:
 		if typed.Op == token.AND {
@@ -5270,9 +5273,94 @@ func (o *LoweringOwner) lowerConversionExpr(
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
 				"(" + value + ", " + strconv.Itoa(bits) + ")", diagnostics
 		}
+		if bits, ok := signedIntegerBits(targetType); ok && bits < 64 {
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt) +
+				"(" + value + ", " + strconv.Itoa(bits) + ")", diagnostics
+		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt) + "(" + value + ")", diagnostics
 	}
 	return value, diagnostics
+}
+
+func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
+	switch expr.Op {
+	case token.SHL, token.SHR:
+		amount, ok := constantShiftAmount(ctx, expr.Y)
+		if !ok || amount < 32 || !isWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X)) {
+			return "", false
+		}
+		base := left
+		if expr.Op == token.SHL {
+			base = o.lowerWideShiftLeftOperand(ctx, expr.X, left)
+			return "(" + base + " * " + shiftMultiplier(amount) + ")", true
+		}
+		return "Math.floor(" + base + " / " + shiftMultiplier(amount) + ")", true
+	case token.OR:
+		shift, ok := wideLeftShiftExpr(ctx, expr.X)
+		if !ok {
+			return "", false
+		}
+		if bits, ok := lowIntegerBits(ctx, expr.Y); !ok || bits > shift {
+			return "", false
+		}
+		return "(" + left + " + " + right + ")", true
+	default:
+		return "", false
+	}
+}
+
+func (o *LoweringOwner) lowerWideShiftLeftOperand(ctx lowerFileContext, expr ast.Expr, fallback string) string {
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return fallback
+	}
+	targetType := typeFromExpr(ctx, call.Fun)
+	if bits, ok := unsignedIntegerBits(targetType); !ok || bits < 64 {
+		return fallback
+	}
+	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(call.Args[0])
+	if _, ok := signedIntegerBits(sourceType); !ok {
+		return fallback
+	}
+	value, _ := o.lowerExpr(ctx, call.Args[0])
+	return value
+}
+
+func constantShiftAmount(ctx lowerFileContext, expr ast.Expr) (int, bool) {
+	value := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)].Value
+	if value == nil {
+		return 0, false
+	}
+	amount, ok := constant.Int64Val(value)
+	if !ok || amount < 0 || amount > int64(strconv.IntSize) {
+		return 0, false
+	}
+	return int(amount), true
+}
+
+func wideLeftShiftExpr(ctx lowerFileContext, expr ast.Expr) (int, bool) {
+	binary, ok := unwrapParenExpr(expr).(*ast.BinaryExpr)
+	if !ok || binary.Op != token.SHL || !isWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(binary.X)) {
+		return 0, false
+	}
+	amount, ok := constantShiftAmount(ctx, binary.Y)
+	if !ok || amount < 32 {
+		return 0, false
+	}
+	return amount, true
+}
+
+func lowIntegerBits(ctx lowerFileContext, expr ast.Expr) (int, bool) {
+	if call, ok := unwrapParenExpr(expr).(*ast.CallExpr); ok && len(call.Args) == 1 {
+		if bits, ok := integerBits(ctx.semPkg.source.TypesInfo.TypeOf(call.Args[0])); ok {
+			return bits, true
+		}
+	}
+	return integerBits(ctx.semPkg.source.TypesInfo.TypeOf(expr))
+}
+
+func shiftMultiplier(amount int) string {
+	return "(2 ** " + strconv.Itoa(amount) + ")"
 }
 
 func (o *LoweringOwner) lowerNamedStructConversion(
@@ -7326,6 +7414,35 @@ func unsignedIntegerBits(typ types.Type) (int, bool) {
 	default:
 		return 64, true
 	}
+}
+
+func signedIntegerBits(typ types.Type) (int, bool) {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	if !ok || basic.Info()&types.IsInteger == 0 || basic.Info()&types.IsUnsigned != 0 {
+		return 0, false
+	}
+	switch basic.Kind() {
+	case types.Int8:
+		return 8, true
+	case types.Int16:
+		return 16, true
+	case types.Int32:
+		return 32, true
+	default:
+		return 64, true
+	}
+}
+
+func integerBits(typ types.Type) (int, bool) {
+	if bits, ok := unsignedIntegerBits(typ); ok {
+		return bits, true
+	}
+	return signedIntegerBits(typ)
+}
+
+func isWideIntegerType(typ types.Type) bool {
+	bits, ok := integerBits(typ)
+	return ok && bits > 32
 }
 
 func isRuneSliceType(typ types.Type) bool {
