@@ -1,10 +1,12 @@
 package compiler
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
 	"io/fs"
+	"maps"
 	"path"
 	"slices"
 	"strings"
@@ -59,7 +61,7 @@ func (f *OverrideFacts) copyPackage(pkgPath string) (overrideCopyPackage, []stri
 	if !ok {
 		return overrideCopyPackage{}, nil, false
 	}
-	return cloneOverrideCopyPackage(pkg.copyPackage), append([]string(nil), pkg.dependencies...), true
+	return cloneOverrideCopyPackage(pkg.copyPackage), slices.Clone(pkg.dependencies), true
 }
 
 func (f *OverrideFacts) importPackageRoot(importPath string) (string, bool) {
@@ -262,16 +264,14 @@ func newOverrideMetadata() OverrideMetadata {
 
 func cloneOverrideMetadata(metadata OverrideMetadata) OverrideMetadata {
 	return OverrideMetadata{
-		Dependencies: append([]string(nil), metadata.Dependencies...),
+		Dependencies: slices.Clone(metadata.Dependencies),
 		AsyncMethods: cloneBoolMap(metadata.AsyncMethods),
 	}
 }
 
 func cloneBoolMap(values map[string]bool) map[string]bool {
 	cloned := make(map[string]bool, len(values))
-	for key, value := range values {
-		cloned[key] = value
-	}
+	maps.Copy(cloned, values)
 	return cloned
 }
 
@@ -283,7 +283,7 @@ func cloneOverrideCopyPackage(pkg overrideCopyPackage) overrideCopyPackage {
 	for _, file := range pkg.files {
 		cloned.files = append(cloned.files, overrideCopyFile{
 			path: file.path,
-			data: append([]byte(nil), file.data...),
+			data: bytes.Clone(file.data),
 		})
 	}
 	return cloned

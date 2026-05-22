@@ -5223,104 +5223,6 @@ func constIntExpr(ctx lowerFileContext, expr ast.Expr) (int, bool) {
 	return int(value), true
 }
 
-func tsType(typ types.Type) string {
-	if typ == nil {
-		return "unknown"
-	}
-	if isBuiltinErrorType(typ) {
-		return "$.GoError"
-	}
-	if isUnsafePointerType(typ) {
-		return "any"
-	}
-	if named, ok := types.Unalias(typ).(*types.Named); ok {
-		if _, ok := named.Underlying().(*types.Interface); ok {
-			return named.Obj().Name() + " | null"
-		}
-		if _, ok := named.Underlying().(*types.Struct); ok {
-			return named.Obj().Name()
-		}
-		return named.Obj().Name()
-	}
-	switch typed := types.Unalias(typ).Underlying().(type) {
-	case *types.Basic:
-		if typed.Kind() == types.UntypedNil {
-			return "null"
-		}
-		if typed.Info()&types.IsComplex != 0 {
-			return "$.Complex"
-		}
-		if typed.Info()&types.IsBoolean != 0 {
-			return "boolean"
-		}
-		if typed.Info()&types.IsString != 0 {
-			return "string"
-		}
-		if typed.Info()&types.IsNumeric != 0 {
-			return "number"
-		}
-		return "unknown"
-	case *types.Struct:
-		return tsAnonymousStructType(typed)
-	case *types.Array:
-		return tsArrayType(tsType(typed.Elem()))
-	case *types.Slice:
-		return "$.Slice<" + tsType(typed.Elem()) + ">"
-	case *types.Map:
-		return "Map<" + tsType(typed.Key()) + ", " + tsType(typed.Elem()) + "> | null"
-	case *types.Chan:
-		return "$.Channel<" + tsType(typed.Elem()) + "> | null"
-	case *types.Pointer:
-		if named := namedNonStructType(typed.Elem()); named != nil {
-			return "$.VarRef<" + named.Obj().Name() + "> | null"
-		}
-		if named := namedStructType(typed.Elem()); named != nil {
-			return named.Obj().Name() + " | $.VarRef<" + named.Obj().Name() + "> | null"
-		}
-		return "$.VarRef<" + tsType(typed.Elem()) + "> | null"
-	case *types.Interface:
-		return "any"
-	case *types.Signature:
-		return "(" + tsSignatureParams(typed) + ") => " + tsSignatureResult(typed)
-	default:
-		return "unknown"
-	}
-}
-
-func tsSignatureParams(signature *types.Signature) string {
-	if signature == nil || signature.Params() == nil || signature.Params().Len() == 0 {
-		return ""
-	}
-	params := make([]string, 0, signature.Params().Len())
-	for idx := range signature.Params().Len() {
-		param := signature.Params().At(idx)
-		params = append(params, safeParamName(param, idx)+": "+tsType(param.Type()))
-	}
-	return strings.Join(params, ", ")
-}
-
-func tsAnonymousStructType(structType *types.Struct) string {
-	fields := make([]string, 0, structType.NumFields())
-	for field := range structType.Fields() {
-		fields = append(fields, strconv.Quote(field.Name())+": "+tsType(field.Type()))
-	}
-	return "{" + strings.Join(fields, ", ") + "}"
-}
-
-func tsSignatureResult(signature *types.Signature) string {
-	if signature == nil || signature.Results() == nil || signature.Results().Len() == 0 {
-		return "void"
-	}
-	if signature.Results().Len() == 1 {
-		return tsType(signature.Results().At(0).Type())
-	}
-	results := make([]string, 0, signature.Results().Len())
-	for result := range signature.Results().Variables() {
-		results = append(results, tsType(result.Type()))
-	}
-	return "[" + strings.Join(results, ", ") + "]"
-}
-
 func (o *LoweringOwner) tsSignatureParamsFor(ctx lowerFileContext, signature *types.Signature, asyncCompatibleFunctionParams bool) string {
 	if signature == nil || signature.Params() == nil || signature.Params().Len() == 0 {
 		return ""
@@ -5456,6 +5358,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	if isUnsafePointerType(typ) {
 		return "any"
 	}
+	if _, ok := types.Unalias(typ).(*types.TypeParam); ok {
+		return "any"
+	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
 		if crossPackageUnexportedNamedType(ctx, named) {
 			return "any"
@@ -5467,6 +5372,23 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		return name
 	}
 	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Basic:
+		if typed.Kind() == types.UntypedNil {
+			return "null"
+		}
+		if typed.Info()&types.IsComplex != 0 {
+			return "$.Complex"
+		}
+		if typed.Info()&types.IsBoolean != 0 {
+			return "boolean"
+		}
+		if typed.Info()&types.IsString != 0 {
+			return "string"
+		}
+		if typed.Info()&types.IsNumeric != 0 {
+			return "number"
+		}
+		return "unknown"
 	case *types.Array:
 		return tsArrayType(o.tsTypeFor(ctx, typed.Elem()))
 	case *types.Slice:
@@ -5495,10 +5417,12 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 			return name + " | $.VarRef<" + name + "> | null"
 		}
 		return "$.VarRef<" + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
+	case *types.Interface:
+		return "any"
 	case *types.Signature:
 		return "((" + o.tsSignatureParamsFor(ctx, typed, false) + ") => " + o.tsSignatureResultFor(ctx, typed) + ") | null"
 	default:
-		return tsType(typ)
+		return "unknown"
 	}
 }
 
