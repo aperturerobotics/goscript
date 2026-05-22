@@ -640,8 +640,8 @@ export class Time {
 // Duration represents a span of time (nanoseconds)
 export type Duration = number
 
-const maxDuration = 9223372036854775807
-const minDuration = -9223372036854775808
+const maxDuration = Number(9223372036854775807n)
+const minDuration = Number(-9223372036854775808n)
 const maxTimerDelayMilliseconds = 0x7fffffff
 
 function durationNumber(d: Duration): number {

@@ -70,10 +70,10 @@ describe('Mathematical Constants', () => {
   })
 
   it('should have correct wide integer limits', () => {
-    expect(MaxInt).toBe(9223372036854775807)
-    expect(MinInt).toBe(-9223372036854775808)
-    expect(MaxInt64).toBe(9223372036854775807)
-    expect(MinInt64).toBe(-9223372036854775808)
+    expect(MaxInt).toBe(Number(9223372036854775807n))
+    expect(MinInt).toBe(Number(-9223372036854775808n))
+    expect(MaxInt64).toBe(Number(9223372036854775807n))
+    expect(MinInt64).toBe(Number(-9223372036854775808n))
     expect(MaxUint).toBe(0xffffffffffffffffn)
     expect(MaxUint64).toBe(0xffffffffffffffffn)
   })
