@@ -166,7 +166,7 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 			writeDecl(decl)
 		}
 	}
-	for _, decl := range file.decls {
+	for _, decl := range sortedStructDecls(file.decls) {
 		if decl.structType != nil {
 			writeDecl(decl)
 		}
@@ -186,6 +186,66 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 		b.WriteString("}\n")
 	}
 	return b.String()
+}
+
+func sortedStructDecls(decls []loweredDecl) []loweredDecl {
+	structs := make([]loweredDecl, 0)
+	names := make(map[string]bool)
+	for _, decl := range decls {
+		if decl.structType == nil {
+			continue
+		}
+		structs = append(structs, decl)
+		names[decl.structType.name] = true
+	}
+	if len(structs) < 2 {
+		return structs
+	}
+	byName := make(map[string]loweredDecl, len(structs))
+	for _, decl := range structs {
+		byName[decl.structType.name] = decl
+	}
+	visiting := make(map[string]bool, len(structs))
+	visited := make(map[string]bool, len(structs))
+	sorted := make([]loweredDecl, 0, len(structs))
+	var visit func(loweredDecl)
+	visit = func(decl loweredDecl) {
+		name := decl.structType.name
+		if visited[name] || visiting[name] {
+			return
+		}
+		visiting[name] = true
+		for _, dep := range structZeroValueDeps(decl.structType, names) {
+			if depDecl, ok := byName[dep]; ok {
+				visit(depDecl)
+			}
+		}
+		visiting[name] = false
+		visited[name] = true
+		sorted = append(sorted, decl)
+	}
+	for _, decl := range structs {
+		visit(decl)
+	}
+	return sorted
+}
+
+func structZeroValueDeps(structType *loweredStruct, names map[string]bool) []string {
+	var deps []string
+	for _, field := range structType.fields {
+		if !field.structValue {
+			continue
+		}
+		for name := range names {
+			if name == structType.name {
+				continue
+			}
+			if strings.Contains(field.zero, "new "+name+"(") {
+				deps = append(deps, name)
+			}
+		}
+	}
+	return deps
 }
 
 func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *RuntimeContractOwner) {
