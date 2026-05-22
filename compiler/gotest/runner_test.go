@@ -61,6 +61,37 @@ func TestRunnerRunsOrdinaryPackageTest(t *testing.T) {
 	}
 }
 
+func TestRunnerReportsShortMode(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/short\n\ngo 1.25.3\n",
+		"value_test.go": strings.Join([]string{
+			"package short",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestShort(t *testing.T) {",
+			"\tif !testing.Short() {",
+			"\t\tt.Fatalf(\"expected short mode\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"."},
+		Short:    true,
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run short package: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected short package to pass: %#v", result.Packages)
+	}
+}
+
 func TestRunnerRunsAsyncSubtest(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/asyncsubtest\n\ngo 1.25.3\n",

@@ -427,6 +427,12 @@ func renderRunner(result PackageResult, req *normalizedRequest) string {
 	}
 	b.WriteString(", count: ")
 	b.WriteString(strconv.Itoa(req.Count))
+	b.WriteString(", short: ")
+	if req.Short {
+		b.WriteString("true")
+	} else {
+		b.WriteString("false")
+	}
 	b.WriteString(" })\n")
 	b.WriteString("if (!result.ok) {\n\tthrow new Error(\"goscript test failed\")\n}\n")
 	return b.String()

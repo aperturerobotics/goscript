@@ -20,6 +20,7 @@ func newTestCommand() *cli.Command {
 	var tags cli.StringSlice
 	var run string
 	var count int
+	var short bool
 	var timeout time.Duration
 	var verbose bool
 	var outputRoot string
@@ -37,6 +38,7 @@ func newTestCommand() *cli.Command {
 				BuildTags:  tags.Value(),
 				Run:        run,
 				Count:      count,
+				Short:      short,
 				Timeout:    timeout,
 				Verbose:    verbose,
 				WorkDir:    workDir,
@@ -70,6 +72,11 @@ func newTestCommand() *cli.Command {
 				Usage:       "run each selected test this many times",
 				Destination: &count,
 				Value:       1,
+			},
+			&cli.BoolFlag{
+				Name:        "short",
+				Usage:       "report true from testing.Short",
+				Destination: &short,
 			},
 			&cli.DurationFlag{
 				Name:        "timeout",

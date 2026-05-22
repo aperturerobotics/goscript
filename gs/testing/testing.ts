@@ -13,6 +13,7 @@ export type TestCase = {
 export type RunOptions = {
   verbose?: boolean
   count?: number
+  short?: boolean
 }
 
 export type RunResult = {
@@ -29,6 +30,8 @@ class TestControl extends Error {
     this.kind = kind
   }
 }
+
+let shortMode = false
 
 export class T {
   private readonly testName: string
@@ -156,7 +159,10 @@ export class T {
   }
 
   public Parallel(): never {
-    throw new TestControl('fatal', 'testing.T.Parallel is not supported by GoScript test')
+    throw new TestControl(
+      'fatal',
+      'testing.T.Parallel is not supported by GoScript test',
+    )
   }
 
   public Setenv(key: string, value: string): void {
@@ -228,7 +234,10 @@ export class B extends T {
     super(name)
   }
 
-  public async Run(name: string, fn: (b: B) => void | Promise<void>): Promise<boolean> {
+  public async Run(
+    name: string,
+    fn: (b: B) => void | Promise<void>,
+  ): Promise<boolean> {
     const child = new B(this.Name() + '/' + name)
     child.N = this.N
     try {
@@ -289,7 +298,7 @@ export class PB {
 }
 
 export function Short(): boolean {
-  return false
+  return shortMode
 }
 
 export async function runTests(
@@ -297,58 +306,64 @@ export async function runTests(
   tests: TestCase[],
   options: RunOptions = {},
 ): Promise<RunResult> {
+  const previousShortMode = shortMode
+  shortMode = options.short ?? false
   const count = options.count ?? 1
   let failed = 0
   let skipped = 0
-  for (let run = 0; run < count; run++) {
-    for (const test of tests) {
-      if (options.verbose) {
-        console.log('=== RUN   ' + test.name)
-      }
-      const t = new T(test.name)
-      const start = Date.now()
-      try {
-        await test.fn(t)
-      } catch (err) {
-        if (err instanceof TestControl && err.kind === 'skip') {
-          skipped++
-        } else {
-          t.Fail()
-          if (!(err instanceof TestControl)) {
-            t.Log(formatValue(err))
-          }
+  try {
+    for (let run = 0; run < count; run++) {
+      for (const test of tests) {
+        if (options.verbose) {
+          console.log('=== RUN   ' + test.name)
         }
-      } finally {
-        await t.runCleanups()
-      }
-      const elapsed = ((Date.now() - start) / 1000).toFixed(2)
-      if (t.Skipped()) {
+        const t = new T(test.name)
+        const start = Date.now()
+        try {
+          await test.fn(t)
+        } catch (err) {
+          if (err instanceof TestControl && err.kind === 'skip') {
+            skipped++
+          } else {
+            t.Fail()
+            if (!(err instanceof TestControl)) {
+              t.Log(formatValue(err))
+            }
+          }
+        } finally {
+          await t.runCleanups()
+        }
+        const elapsed = ((Date.now() - start) / 1000).toFixed(2)
+        if (t.Skipped()) {
+          if (options.verbose) {
+            t.flushLogs()
+          }
+          console.log('--- SKIP: ' + test.name + ' (' + elapsed + 's)')
+          continue
+        }
+        if (t.Failed()) {
+          failed++
+          t.flushLogs()
+          console.log('--- FAIL: ' + test.name + ' (' + elapsed + 's)')
+          continue
+        }
         if (options.verbose) {
           t.flushLogs()
+          console.log('--- PASS: ' + test.name + ' (' + elapsed + 's)')
         }
-        console.log('--- SKIP: ' + test.name + ' (' + elapsed + 's)')
-        continue
       }
-      if (t.Failed()) {
-        failed++
-        t.flushLogs()
-        console.log('--- FAIL: ' + test.name + ' (' + elapsed + 's)')
-        continue
-      }
+    }
+    if (failed === 0) {
       if (options.verbose) {
-        t.flushLogs()
-        console.log('--- PASS: ' + test.name + ' (' + elapsed + 's)')
+        console.log('PASS')
       }
+      return { ok: true, failed, skipped }
     }
+    console.log('FAIL\t' + packagePath)
+    return { ok: false, failed, skipped }
+  } finally {
+    shortMode = previousShortMode
   }
-  if (failed === 0) {
-    if (options.verbose) {
-      console.log('PASS')
-    }
-    return { ok: true, failed, skipped }
-  }
-  console.log('FAIL\t' + packagePath)
-  return { ok: false, failed, skipped }
 }
 
 function formatMessage(format: string, args: unknown[]): string {

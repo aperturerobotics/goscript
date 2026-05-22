@@ -21,6 +21,8 @@ type Request struct {
 	Run string
 	// Count is the number of times to run matched tests.
 	Count int
+	// Short reports true from testing.Short in generated tests.
+	Short bool
 	// Timeout bounds compile, typecheck, and execution.
 	Timeout time.Duration
 	// Verbose emits test-level output.
@@ -37,6 +39,7 @@ type normalizedRequest struct {
 	BuildFlags []string
 	Run        string
 	Count      int
+	Short      bool
 	Timeout    time.Duration
 	Verbose    bool
 	WorkDir    string
@@ -100,6 +103,7 @@ func (r *Request) normalize() (*normalizedRequest, error) {
 		BuildFlags: buildFlags,
 		Run:        strings.TrimSpace(r.Run),
 		Count:      count,
+		Short:      r.Short,
 		Timeout:    r.Timeout,
 		Verbose:    r.Verbose,
 		WorkDir:    workDir,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { B, F, Short, T, type TB } from './testing.js'
+import { runTests } from './testing.js'
 
 describe('testing.T', () => {
   it('runs passing subtests', async () => {
@@ -63,6 +64,27 @@ describe('testing.T', () => {
 
     expect(ok).toBe(true)
     expect(ran).toBe(true)
+    expect(Short()).toBe(false)
+  })
+
+  it('reports short mode while a short run is active', async () => {
+    let observed = false
+
+    const result = await runTests(
+      'example.test/short',
+      [
+        {
+          name: 'TestShort',
+          fn: () => {
+            observed = Short()
+          },
+        },
+      ],
+      { short: true },
+    )
+
+    expect(result.ok).toBe(true)
+    expect(observed).toBe(true)
     expect(Short()).toBe(false)
   })
 })
