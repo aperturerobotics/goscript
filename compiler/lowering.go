@@ -5445,7 +5445,8 @@ func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *a
 		amount, ok := constantShiftAmount(ctx, expr.Y)
 		if ok && amount >= 32 && expr.Op == token.SHL {
 			base := o.lowerWideShiftLeftOperand(ctx, expr.X, left)
-			return "(" + base + " * " + shiftMultiplier(amount) + ")", true
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Mul) +
+				"(" + base + ", " + shiftMultiplier(amount) + ")", true
 		}
 		return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
 	case token.MUL:
@@ -5462,7 +5463,7 @@ func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *a
 		shift, ok := wideLeftShiftExpr(ctx, expr.X)
 		if ok {
 			if bits, ok := lowIntegerBits(ctx, expr.Y); ok && bits <= shift {
-				return "(" + left + " + " + right + ")", true
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Add) + "(" + left + ", " + right + ")", true
 			}
 		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Or) + "(" + left + ", " + right + ")", true
