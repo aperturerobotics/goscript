@@ -4856,6 +4856,11 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 			}
 			receiver, diagnostics := o.lowerMethodReceiverExpr(ctx, expr.X, selection)
 			return o.lowerMethodValueClosure(ctx, selection, receiver, "__receiver."+expr.Sel.Name, false), diagnostics
+		case types.MethodExpr:
+			if receiver := receiverNamedType(selection.Recv()); namedNonInterfaceNonStructType(receiver) {
+				return o.methodFunctionExpr(ctx, receiver, selection.Obj(), expr.Sel.Name), nil
+			}
+			return o.lowerMethodExpressionClosure(ctx, selection), nil
 		case types.FieldVal:
 			return o.lowerFieldSelectionExpr(ctx, expr, selection, false)
 		}
@@ -4943,6 +4948,37 @@ func (o *LoweringOwner) lowerMethodValueClosure(
 		args = append([]string{"__receiver"}, args...)
 	}
 	return "((__receiver) => (" + strings.Join(params, ", ") + ") => " + callee + "(" + strings.Join(args, ", ") + "))(" + receiver + ")"
+}
+
+func (o *LoweringOwner) lowerMethodExpressionClosure(ctx lowerFileContext, selection *types.Selection) string {
+	signature, _ := selection.Type().(*types.Signature)
+	if signature == nil || signature.Params() == nil || signature.Params().Len() == 0 {
+		return "undefined"
+	}
+	method, _ := selection.Obj().(*types.Func)
+	if method == nil {
+		return "undefined"
+	}
+	receiver := receiverNamedType(selection.Recv())
+	receiverName := safeParamName(signature.Params().At(0), 0)
+	args := make([]string, 0, signature.Params().Len()-1)
+	for idx := 1; idx < signature.Params().Len(); idx++ {
+		args = append(args, safeParamName(signature.Params().At(idx), idx))
+	}
+	call := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+		"<" + o.namedTypeExpr(ctx, receiver) + ">(" + receiverName + ")." +
+		method.Name() + "(" + strings.Join(args, ", ") + ")"
+	async := o.functionAsync(ctx, method)
+	prefix := ""
+	if async {
+		prefix = "async "
+		call = "await " + call
+	}
+	functionCtx := ctx.withFunctionTypeDepth(ctx.functionTypeDepth + 1)
+	function := prefix + "(" + o.tsSignatureParamsFor(functionCtx, signature, async) + "): " +
+		asyncResultType(o.tsSignatureResultFor(functionCtx, signature), async) + " => " + call
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
+		"(" + function + ", " + o.runtimeFunctionTypeInfo(signature, "") + ")"
 }
 
 func (o *LoweringOwner) lowerFieldReceiverExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
