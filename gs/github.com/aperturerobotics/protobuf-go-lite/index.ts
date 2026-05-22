@@ -37,7 +37,22 @@ export function CompareComparable<T>(): (t1: T, t2: T) => boolean {
   return (t1, t2) => t1 === t2
 }
 
-export function IsEqualVT<T extends EqualVT<T>>(t1: T | null, t2: T | null): boolean {
+export function IsEqualVT<T extends EqualVT<T>>(
+  t1: T | null,
+  t2: T | null,
+): boolean
+export function IsEqualVT<T extends EqualVT<T>>(
+  _typeArgs: unknown,
+  t1: T | null,
+  t2: T | null,
+): boolean
+export function IsEqualVT<T extends EqualVT<T>>(
+  arg0: unknown,
+  arg1: T | null,
+  arg2?: T | null,
+): boolean {
+  const t1 = arg2 === undefined ? (arg0 as T | null) : arg1
+  const t2 = arg2 === undefined ? arg1 : arg2
   if (t1 == null || t2 == null) {
     return t1 == t2
   }
