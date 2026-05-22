@@ -6606,18 +6606,18 @@ func (o *LoweringOwner) lowerNamedValueInterfaceWrapper(
 	sourceType types.Type,
 	value string,
 ) string {
-	if !isInterfaceType(targetType) || isInterfaceType(sourceType) || isNilableType(sourceType) {
+	if !isInterfaceType(targetType) || isInterfaceType(sourceType) {
 		return ""
 	}
 	targetInterface, _ := types.Unalias(targetType).Underlying().(*types.Interface)
 	if targetInterface == nil || !types.Implements(sourceType, targetInterface) {
 		return ""
 	}
-	named, _ := types.Unalias(sourceType).(*types.Named)
-	if named == nil || namedStructType(named) != nil {
+	receiver, methodSetType := namedNonStructMethodSetType(sourceType)
+	if receiver == nil {
 		return ""
 	}
-	methods := o.genericMethodDescriptors(ctx, named)
+	methods := o.genericMethodDescriptorsForType(ctx, receiver, methodSetType)
 	if methods == "" {
 		return ""
 	}
@@ -7712,7 +7712,15 @@ func (o *LoweringOwner) genericMethodDescriptors(ctx lowerFileContext, typ types
 	if named == nil {
 		return ""
 	}
-	methodSet := types.NewMethodSet(named)
+	return o.genericMethodDescriptorsForType(ctx, named, named)
+}
+
+func (o *LoweringOwner) genericMethodDescriptorsForType(
+	ctx lowerFileContext,
+	named *types.Named,
+	methodSetType types.Type,
+) string {
+	methodSet := types.NewMethodSet(methodSetType)
 	methods := make([]string, 0, methodSet.Len())
 	for method := range methodSet.Methods() {
 		method, _ := method.Obj().(*types.Func)
@@ -7729,6 +7737,21 @@ func (o *LoweringOwner) genericMethodDescriptors(ctx lowerFileContext, typ types
 		return ""
 	}
 	return "{" + strings.Join(methods, ", ") + "}"
+}
+
+func namedNonStructMethodSetType(typ types.Type) (*types.Named, types.Type) {
+	if named := namedNonStructType(typ); named != nil {
+		return named, named
+	}
+	pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer)
+	if !ok {
+		return nil, nil
+	}
+	named := namedNonStructType(pointer.Elem())
+	if named == nil {
+		return nil, nil
+	}
+	return named, typ
 }
 
 func methodFunctionName(receiver *types.Named, method string) string {

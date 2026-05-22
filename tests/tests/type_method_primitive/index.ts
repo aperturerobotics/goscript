@@ -1,2 +1,2 @@
-export type { Doubler, MyInt } from "./type_method_primitive.gs.ts"
-export { MyInt_Double } from "./type_method_primitive.gs.ts"
+export type { Doubler, MyBool, MyInt, Stringer } from "./type_method_primitive.gs.ts"
+export { MyBool_String, MyInt_Double } from "./type_method_primitive.gs.ts"

@@ -3,3 +3,4 @@ Method ref call: 20
 Interface method call: 24
 Returned interface call: 26
 Interface assertion: 13 true
+Pointer primitive interface: true true

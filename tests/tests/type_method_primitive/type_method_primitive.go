@@ -7,12 +7,30 @@ type Doubler interface {
 	Double() int
 }
 
+type Stringer interface {
+	String() string
+}
+
+type MyBool bool
+
 func (m MyInt) Double() int {
 	return int(m) * 2
 }
 
+func (b *MyBool) String() string {
+	if bool(*b) {
+		return "true"
+	}
+	return "false"
+}
+
 func asDoubler(v MyInt) Doubler {
 	return v
+}
+
+func newMyBool(value bool, target *bool) *MyBool {
+	*target = value
+	return (*MyBool)(target)
 }
 
 func main() {
@@ -32,4 +50,8 @@ func main() {
 
 	asserted, ok := ret.(MyInt)
 	println("Interface assertion:", int(asserted), ok)
+
+	var flag bool
+	var stringer Stringer = newMyBool(true, &flag)
+	println("Pointer primitive interface:", stringer.String(), flag)
 }
