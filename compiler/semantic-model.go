@@ -192,6 +192,7 @@ func (o *SemanticModelOwner) collectGenDecl(
 			}
 			position := sourcePos(pkg, typed.Name.Pos())
 			o.addType(model, semPkg, obj, position, typed.Type)
+			o.recordGeneratedImports(model, semPkg, position.file, pkg.PkgPath, obj.Type())
 			semPkg.declarations = append(semPkg.declarations, semanticDeclaration{
 				kind:     "type",
 				name:     typed.Name.Name,
@@ -1242,6 +1243,9 @@ func (o *SemanticModelOwner) recordTypeImports(
 			for t := range args.Types() {
 				o.recordTypeImports(model, semPkg, file, currentPkg, t, seen)
 			}
+		}
+		if obj := typed.Obj(); obj != nil && obj.Pkg() != nil && obj.Pkg().Path() == currentPkg {
+			o.recordTypeImports(model, semPkg, file, currentPkg, typed.Underlying(), seen)
 		}
 	case *types.Pointer:
 		o.recordTypeImports(model, semPkg, file, currentPkg, typed.Elem(), seen)

@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_import_methods/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "dep1/dep1.gs.ts",
+    "dep1/index.ts",
+    "dep2/dep2.gs.ts",
+    "dep2/index.ts",
+    "index.ts",
+    "main.gs.ts"
+  ]
+}

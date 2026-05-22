@@ -7,6 +7,8 @@ import * as context from "@goscript/context/index.js"
 
 import * as proto from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
 
+import * as sync from "@goscript/sync/index.js"
+
 import * as __goscript_broadcast from "./broadcast.gs.ts"
 
 export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | Promise<any>) | null, send: ((_p0: any) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
