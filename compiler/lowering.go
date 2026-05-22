@@ -4654,6 +4654,11 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 	if alias := ctx.identAliases[obj]; alias != "" {
 		return alias
 	}
+	if constObj, ok := obj.(*types.Const); ok && ctx.localAliases[obj] != "" {
+		if constValue, ok := lowerConstantValue(constObj.Val()); ok {
+			return constValue
+		}
+	}
 	if alias := ctx.localAliases[obj]; alias != "" {
 		if ctx.lazyPackageVars[obj] {
 			lazyValue := alias + "." + packageVarGetterName(value) + "()"
