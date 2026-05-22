@@ -777,6 +777,7 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					lowered, exprDiagnostics := o.lowerExpr(ctx, typed.Values[idx])
 					diagnostics = append(diagnostics, exprDiagnostics...)
 					value = o.lowerValueForTarget(ctx, typed.Values[idx], obj.Type(), lowered)
+					value = o.lowerTopLevelInitializerValue(ctx, typed.Values[idx], value)
 				} else if len(embedPatterns) != 0 {
 					embedded, embedDiagnostics := o.lowerGoEmbedValue(ctx, obj.Type(), embedPatterns)
 					diagnostics = append(diagnostics, embedDiagnostics...)
@@ -818,6 +819,37 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 		}
 	}
 	return decls, diagnostics
+}
+
+func (o *LoweringOwner) lowerTopLevelInitializerValue(ctx lowerFileContext, expr ast.Expr, value string) string {
+	if !ctx.topLevel || strings.HasPrefix(value, "await ") {
+		return value
+	}
+	if !o.topLevelInitializerNeedsAwait(ctx, expr) {
+		return value
+	}
+	return "await " + value
+}
+
+func (o *LoweringOwner) topLevelInitializerNeedsAwait(ctx lowerFileContext, expr ast.Expr) bool {
+	if ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok {
+		return false
+	}
+	if o.callNeedsAwait(ctx, call.Fun) {
+		return true
+	}
+	if o.callUsesOverridePackage(ctx, call.Fun) {
+		return false
+	}
+	fn := calledFunction(ctx.semPkg.source, call.Fun)
+	if fn == nil || fn.Pkg() == nil || fn.Pkg().Path() == ctx.semPkg.pkgPath {
+		return false
+	}
+	return true
 }
 
 func (o *LoweringOwner) lowerTupleValueSpec(
