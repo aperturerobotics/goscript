@@ -2174,13 +2174,13 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 								t = __goscriptTuple18[1]
 								while ((lit as string) != "") {
 									let __goscriptTuple19 = nextRune(lit)
-									let __goscriptShadow5 = $.int(__goscriptTuple19[0], 32)
+									let __goscriptShadow6 = $.int(__goscriptTuple19[0], 32)
 									let rest = __goscriptTuple19[1]
-									let __goscriptShadow6 = __goscriptTuple19[2]
-									if (__goscriptShadow6 != null) {
-										return [null, __goscriptShadow6]
+									let __goscriptShadow5 = __goscriptTuple19[2]
+									if (__goscriptShadow5 != null) {
+										return [null, __goscriptShadow5]
 									}
-									p.value.literal($.int(__goscriptShadow5, 32))
+									p.value.literal($.int(__goscriptShadow6, 32))
 									lit = rest
 								}
 								break BigSwitch
