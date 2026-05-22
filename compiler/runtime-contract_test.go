@@ -14,6 +14,7 @@ func TestRuntimeContractOwnsBuiltinImportAndHelpers(t *testing.T) {
 		RuntimeHelperPrintln:                  RuntimeHelperCategoryBuiltin,
 		RuntimeHelperPrint:                    RuntimeHelperCategoryBuiltin,
 		RuntimeHelperInt:                      RuntimeHelperCategoryBuiltin,
+		RuntimeHelperUint:                     RuntimeHelperCategoryBuiltin,
 		RuntimeHelperByte:                     RuntimeHelperCategoryBuiltin,
 		RuntimeHelperVarRef:                   RuntimeHelperCategoryVarRef,
 		RuntimeHelperUnref:                    RuntimeHelperCategoryVarRef,

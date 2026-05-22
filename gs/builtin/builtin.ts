@@ -245,6 +245,20 @@ export function int(value: number): number {
   return Math.trunc(value)
 }
 
+// uint converts a value to an unsigned Go integer width.
+export function uint(value: number, bits = 64): number {
+  const modulo = bits >= 64 ? 2 ** 64 : 2 ** bits
+  let truncated = Math.trunc(value)
+  if (!Number.isFinite(truncated)) {
+    return truncated
+  }
+  truncated %= modulo
+  if (truncated < 0) {
+    truncated += modulo
+  }
+  return truncated
+}
+
 /**
  * Normalizes various byte representations into a `Uint8Array` for protobuf compatibility.
  *

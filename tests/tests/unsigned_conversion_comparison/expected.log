@@ -1,0 +1,3 @@
+uint(-1) below length: false
+uint(0) below length: true
+uint8(-1): 255

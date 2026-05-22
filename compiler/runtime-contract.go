@@ -32,6 +32,7 @@ const (
 	RuntimeHelperPrintln RuntimeHelper = "builtin.println"
 	RuntimeHelperPrint   RuntimeHelper = "builtin.print"
 	RuntimeHelperInt     RuntimeHelper = "builtin.int"
+	RuntimeHelperUint    RuntimeHelper = "builtin.uint"
 	RuntimeHelperByte    RuntimeHelper = "builtin.byte"
 	RuntimeHelperLen     RuntimeHelper = "builtin.len"
 	RuntimeHelperCap     RuntimeHelper = "builtin.cap"
@@ -233,6 +234,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperPrintln, "println", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperPrint, "print", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperInt, "int", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint, "uint", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperByte, "byte", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperLen, "len", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperCap, "cap", RuntimeHelperCategoryBuiltin),

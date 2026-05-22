@@ -5251,6 +5251,10 @@ func (o *LoweringOwner) lowerConversionExpr(
 		return value, diagnostics
 	}
 	if isNumericType(targetType) {
+		if bits, ok := unsignedIntegerBits(targetType); ok {
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
+				"(" + value + ", " + strconv.Itoa(bits) + ")", diagnostics
+		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt) + "(" + value + ")", diagnostics
 	}
 	return value, diagnostics
@@ -7279,6 +7283,23 @@ func isNumericType(typ types.Type) bool {
 func isIntegerType(typ types.Type) bool {
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Info()&types.IsInteger != 0
+}
+
+func unsignedIntegerBits(typ types.Type) (int, bool) {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	if !ok || basic.Info()&types.IsUnsigned == 0 {
+		return 0, false
+	}
+	switch basic.Kind() {
+	case types.Uint8:
+		return 8, true
+	case types.Uint16:
+		return 16, true
+	case types.Uint32:
+		return 32, true
+	default:
+		return 64, true
+	}
 }
 
 func isRuneSliceType(typ types.Type) bool {
