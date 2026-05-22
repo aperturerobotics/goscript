@@ -102,6 +102,19 @@ export function FuncForPC(_pc: number): Func | null {
   return null
 }
 
+// StartTrace enables execution tracing.
+export function StartTrace(): $.GoError {
+  return null
+}
+
+// StopTrace stops execution tracing.
+export function StopTrace(): void {}
+
+// ReadTrace returns the next execution trace chunk.
+export function ReadTrace(): $.Slice<number> {
+  return null
+}
+
 // Frame represents a single call frame.
 export class Frame {
   public PC = 0
