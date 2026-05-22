@@ -789,6 +789,8 @@ func callUsesFunctionValue(pkg *packages.Package, expr ast.Expr) bool {
 		return false
 	}
 	switch typed := expr.(type) {
+	case *ast.CallExpr:
+		return true
 	case *ast.SelectorExpr:
 		selection := pkg.TypesInfo.Selections[typed]
 		if selection == nil || selection.Kind() != types.FieldVal {

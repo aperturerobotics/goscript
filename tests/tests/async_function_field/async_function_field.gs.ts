@@ -31,10 +31,15 @@ export class loader {
 		return $.markAsStructValue(cloned)
 	}
 
+	public getLoad(): ((_p0: string) => [any, boolean] | Promise<[any, boolean]>) | null {
+		const l: loader | $.VarRef<loader> | null = this
+		return $.pointerValue<loader>(l).load
+	}
+
 	static __typeInfo = $.registerStructType(
 		"main.loader",
 		new loader(),
-		[],
+		[{ name: "getLoad", args: [], returns: [] }],
 		loader,
 		{"load": { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] }}
 	)
@@ -50,11 +55,19 @@ export async function lookup(key: string): Promise<[any, boolean]> {
 	return await $.pointerValue<loader>(defaultLoader).load!(key)
 }
 
+export async function lookupViaGetter(key: string): Promise<[any, boolean]> {
+	return await $.pointerValue<loader>(defaultLoader).getLoad()!(key)
+}
+
 export async function main(): Promise<void> {
 	await cache.value.Store("answer", 42)
 	let [value, ok] = await lookup("answer")
 	if (ok) {
 		$.println("value:", $.mustTypeAssert<number>(value, { kind: $.TypeKind.Basic, name: "int" }))
+	}
+	let [getterValue, getterOk] = await lookupViaGetter("answer")
+	if (getterOk) {
+		$.println("getter value:", $.mustTypeAssert<number>(getterValue, { kind: $.TypeKind.Basic, name: "int" }))
 	}
 }
 

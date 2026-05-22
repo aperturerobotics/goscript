@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export function getAdder(x: number): ((_p0: number) => number) | null {
+export function getAdder(x: number): ((_p0: number) => number | Promise<number>) | null {
 	return $.functionValue((y: number): number => {
 		return x + y
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
@@ -13,7 +13,7 @@ export function asyncAdd(a: number, b: number): number {
 	return a + b
 }
 
-export function getAsyncAdder(x: number): ((_p0: number) => number) | null {
+export function getAsyncAdder(x: number): ((_p0: number) => number | Promise<number>) | null {
 	return $.functionValue((y: number): number => {
 		return asyncAdd(x, y)
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
@@ -21,11 +21,11 @@ export function getAsyncAdder(x: number): ((_p0: number) => number) | null {
 
 export async function main(): Promise<void> {
 	// Direct call of returned function - not async
-	let result1 = getAdder(5)!(3)
+	let result1 = await getAdder(5)!(3)
 	$.println("Result 1:", result1)
 
 	// Direct call of returned function - with async call inside
-	let result2 = getAsyncAdder(10)!(7)
+	let result2 = await getAsyncAdder(10)!(7)
 	$.println("Result 2:", result2)
 }
 

@@ -587,6 +587,7 @@ type lowerFileContext struct {
 	tempNames     *tempNameOwner
 	signature     *types.Signature
 	asyncFunction bool
+	functionTypeDepth int
 	deferState    *loweredDeferState
 	rangeBranch   *loweredRangeBranch
 	rangeBreak    bool
@@ -1309,6 +1310,11 @@ func (ctx lowerFileContext) withSignature(signature *types.Signature) lowerFileC
 
 func (ctx lowerFileContext) withAsyncFunction(async bool) lowerFileContext {
 	ctx.asyncFunction = async
+	return ctx
+}
+
+func (ctx lowerFileContext) withFunctionTypeDepth(depth int) lowerFileContext {
+	ctx.functionTypeDepth = depth
 	return ctx
 }
 
@@ -3017,9 +3023,18 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 		value:        rangeValue,
 		params:       paramNames,
 		body:         body,
-		async:        o.callNeedsAwait(ctx, stmt.X),
+		async:        stmtsContainAwait(body) || o.rangeFunctionValueNeedsAwait(ctx, stmt.X),
 		returnBranch: rangeBranch,
 	}}, diagnostics
+}
+
+func (o *LoweringOwner) rangeFunctionValueNeedsAwait(ctx lowerFileContext, expr ast.Expr) bool {
+	if call, ok := ast.Unparen(expr).(*ast.CallExpr); ok {
+		if signatureForType(ctx.semPkg.source.TypesInfo.TypeOf(call)) != nil {
+			return false
+		}
+	}
+	return o.callNeedsAwait(ctx, expr)
 }
 
 func (o *LoweringOwner) lowerRangeFuncAssignments(
@@ -3859,7 +3874,7 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 		if strings.HasPrefix(callee, "(await ") && ctx.deferState != nil {
 			ctx.deferState.async = true
 		}
-		return call, append(diagnostics, calleeDiagnostics...)
+		return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, calleeDiagnostics...)
 	case *ast.FuncLit:
 		callee, async, calleeDiagnostics := o.lowerFuncLit(ctx, fun)
 		call := "(" + callee + ")(" + strings.Join(args, ", ") + ")"
@@ -5480,8 +5495,8 @@ func (o *LoweringOwner) tsSignatureResultFor(ctx lowerFileContext, signature *ty
 }
 
 func (o *LoweringOwner) tsSignatureResultTypeFor(ctx lowerFileContext, typ types.Type) string {
-	if signature := signatureForType(typ); ctx.asyncFunction && signature != nil {
-		return o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+	if signature := signatureForType(typ); ctx.functionTypeDepth == 0 && signature != nil {
+		return o.tsAsyncCompatibleFunctionResultTypeFor(ctx, signature)
 	}
 	return o.tsTypeFor(ctx, typ)
 }
@@ -5559,8 +5574,9 @@ func (o *LoweringOwner) tsFuncParamTypeFor(ctx lowerFileContext, typ types.Type,
 	if signature == nil {
 		return o.tsTypeFor(ctx, typ)
 	}
-	return "((" + o.tsSignatureParamsFor(ctx, signature, false) + ") => " +
-		asyncCompatibleResultType(o.tsSignatureResultFor(ctx, signature)) + ") | null"
+	signatureCtx := ctx.withFunctionTypeDepth(ctx.functionTypeDepth + 1)
+	return "((" + o.tsSignatureParamsFor(signatureCtx, signature, false) + ") => " +
+		asyncCompatibleResultType(o.tsSignatureResultFor(signatureCtx, signature)) + ") | null"
 }
 
 func (o *LoweringOwner) tsTypeAssertionTypeFor(ctx lowerFileContext, typ types.Type) string {
@@ -5571,8 +5587,15 @@ func (o *LoweringOwner) tsTypeAssertionTypeFor(ctx lowerFileContext, typ types.T
 }
 
 func (o *LoweringOwner) tsAsyncCompatibleFunctionTypeFor(ctx lowerFileContext, signature *types.Signature) string {
-	return "((" + o.tsSignatureParamsFor(ctx, signature, true) + ") => " +
-		asyncCompatibleResultType(o.tsSignatureResultFor(ctx, signature)) + ") | null"
+	signatureCtx := ctx.withFunctionTypeDepth(ctx.functionTypeDepth + 1)
+	return "((" + o.tsSignatureParamsFor(signatureCtx, signature, true) + ") => " +
+		asyncCompatibleResultType(o.tsSignatureResultFor(signatureCtx, signature)) + ") | null"
+}
+
+func (o *LoweringOwner) tsAsyncCompatibleFunctionResultTypeFor(ctx lowerFileContext, signature *types.Signature) string {
+	signatureCtx := ctx.withFunctionTypeDepth(ctx.functionTypeDepth + 1)
+	return "((" + o.tsSignatureParamsFor(signatureCtx, signature, false) + ") => " +
+		asyncCompatibleResultType(o.tsSignatureResultFor(signatureCtx, signature)) + ") | null"
 }
 
 func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
@@ -5650,7 +5673,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	case *types.Interface:
 		return "any"
 	case *types.Signature:
-		return "((" + o.tsSignatureParamsFor(ctx, typed, false) + ") => " + o.tsSignatureResultFor(ctx, typed) + ") | null"
+		signatureCtx := ctx.withFunctionTypeDepth(ctx.functionTypeDepth + 1)
+		return "((" + o.tsSignatureParamsFor(signatureCtx, typed, false) + ") => " +
+			o.tsSignatureResultFor(signatureCtx, typed) + ") | null"
 	default:
 		return "unknown"
 	}
