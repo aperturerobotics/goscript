@@ -928,6 +928,10 @@ func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage) map[types.Objec
 			declFiles[decl.object] = decl.position.file
 		}
 	}
+	varOrder := make(map[types.Object]int)
+	for idx, obj := range semPkg.initOrder {
+		varOrder[obj] = idx
+	}
 	lazy := make(map[types.Object]bool)
 	for idx, file := range semPkg.source.Syntax {
 		sourcePath := sourceFilePath(semPkg, idx, file)
@@ -951,6 +955,11 @@ func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage) map[types.Objec
 						lazy[obj] = true
 						continue
 					}
+					if valueIdx < len(valueSpec.Values) &&
+						initializerCallsFunctionReferencingLaterPackageVar(semPkg, varOrder, obj, valueSpec.Values[valueIdx]) {
+						lazy[obj] = true
+						continue
+					}
 					if valueIdx >= len(valueSpec.Values) &&
 						zeroValueReferencesOtherFileObject(semPkg, declFiles, sourcePath, obj.Type()) {
 						lazy[obj] = true
@@ -960,6 +969,104 @@ func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage) map[types.Objec
 		}
 	}
 	return lazy
+}
+
+func initializerCallsFunctionReferencingLaterPackageVar(
+	semPkg *semanticPackage,
+	varOrder map[types.Object]int,
+	current types.Object,
+	expr ast.Expr,
+) bool {
+	currentIdx, ok := varOrder[current]
+	if !ok {
+		return false
+	}
+	references := false
+	ast.Inspect(expr, func(node ast.Node) bool {
+		if references {
+			return false
+		}
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		fn := calledFunction(semPkg.source, call.Fun)
+		if fn == nil || fn.Pkg() == nil || fn.Pkg().Path() != semPkg.pkgPath {
+			return true
+		}
+		if functionReferencesLaterPackageVar(semPkg, varOrder, currentIdx, fn, nil) {
+			references = true
+			return false
+		}
+		return true
+	})
+	return references
+}
+
+func functionReferencesLaterPackageVar(
+	semPkg *semanticPackage,
+	varOrder map[types.Object]int,
+	currentIdx int,
+	fn *types.Func,
+	seen map[*types.Func]bool,
+) bool {
+	if fn == nil {
+		return false
+	}
+	if seen == nil {
+		seen = make(map[*types.Func]bool)
+	}
+	if seen[fn] {
+		return false
+	}
+	seen[fn] = true
+	fnDecl := functionDeclForObject(semPkg, fn)
+	if fnDecl == nil || fnDecl.Body == nil {
+		return false
+	}
+	references := false
+	ast.Inspect(fnDecl.Body, func(node ast.Node) bool {
+		if references {
+			return false
+		}
+		if _, ok := node.(*ast.FuncLit); ok {
+			return false
+		}
+		if ident, ok := node.(*ast.Ident); ok {
+			if obj, ok := semPkg.source.TypesInfo.Uses[ident].(*types.Var); ok &&
+				obj.Pkg() != nil && obj.Pkg().Path() == semPkg.pkgPath {
+				if idx, ok := varOrder[obj]; ok && idx > currentIdx {
+					references = true
+					return false
+				}
+			}
+		}
+		if call, ok := node.(*ast.CallExpr); ok {
+			called := calledFunction(semPkg.source, call.Fun)
+			if called != nil && called.Pkg() != nil && called.Pkg().Path() == semPkg.pkgPath &&
+				functionReferencesLaterPackageVar(semPkg, varOrder, currentIdx, called, seen) {
+				references = true
+				return false
+			}
+		}
+		return true
+	})
+	return references
+}
+
+func functionDeclForObject(semPkg *semanticPackage, fn *types.Func) *ast.FuncDecl {
+	if semPkg == nil || semPkg.source == nil || fn == nil {
+		return nil
+	}
+	for _, file := range semPkg.source.Syntax {
+		for _, decl := range file.Decls {
+			fnDecl, ok := decl.(*ast.FuncDecl)
+			if ok && semPkg.source.TypesInfo.Defs[fnDecl.Name] == fn {
+				return fnDecl
+			}
+		}
+	}
+	return nil
 }
 
 func initializerReferencesOtherFileObject(
@@ -1037,7 +1144,28 @@ func (o *LoweringOwner) lowerTupleValueSpec(
 ) ([]loweredDecl, []Diagnostic) {
 	right, diagnostics := o.lowerTupleExpr(ctx, spec.Values[0])
 	tempName := ctx.tempName("Tuple")
-	decls := []loweredDecl{{code: "const " + tempName + " = " + right}}
+	lazyTuple := false
+	if ctx.topLevel {
+		for _, name := range spec.Names {
+			obj := ctx.semPkg.source.TypesInfo.Defs[name]
+			if obj != nil && ctx.lazyPackageVars[obj] {
+				lazyTuple = true
+				break
+			}
+		}
+	}
+	var decls []loweredDecl
+	tupleExpr := tempName
+	if lazyTuple {
+		tupleGetterName := packageVarGetterName(tempName)
+		decls = append(decls, loweredDecl{code: "let " + tempName + ": any = undefined as any"})
+		decls = append(decls, loweredDecl{code: "function " + tupleGetterName + "(): any {\n\t" +
+			"if (((" + tempName + ") as any) === undefined) {\n\t\t" +
+			tempName + " = " + right + "\n\t}\n\treturn " + tempName + "\n}"})
+		tupleExpr = tupleGetterName + "()"
+	} else {
+		decls = append(decls, loweredDecl{code: "const " + tempName + " = " + right})
+	}
 	for idx, name := range spec.Names {
 		if name.Name == "_" {
 			continue
@@ -1046,13 +1174,18 @@ func (o *LoweringOwner) lowerTupleValueSpec(
 		if obj == nil {
 			continue
 		}
-		value := o.lowerDeclaredValue(ctx, name, tempName+"["+strconv.Itoa(idx)+"]")
+		value := o.lowerDeclaredValue(ctx, name, tupleExpr+"["+strconv.Itoa(idx)+"]")
 		keyword := "let"
 		if _, ok := obj.(*types.Const); ok || decl.Tok == token.CONST {
 			keyword = "const"
 		}
 		variableType := o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj])
 		code := keyword + " " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = " + value
+		lazy := lazyTuple || ctx.topLevel && ctx.lazyPackageVars[obj]
+		if lazy {
+			keyword = "let"
+			code = "let " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = undefined as unknown as " + variableType
+		}
 		indexExport := ""
 		if ctx.topLevel {
 			code = "export " + code
@@ -1061,6 +1194,17 @@ func (o *LoweringOwner) lowerTupleValueSpec(
 			}
 		}
 		decls = append(decls, loweredDecl{code: code, indexExport: indexExport})
+		if lazy {
+			getterName := packageVarGetterName(name.Name)
+			getterCode := "export function " + getterName + "(): " + variableType + " {\n\t" +
+				"if (((" + o.lowerIdent(ctx, name, true) + ") as any) === undefined) {\n\t\t" +
+				o.lowerIdent(ctx, name, true) + " = " + value + "\n\t}\n\treturn " + o.lowerIdent(ctx, name, true) + "\n}"
+			getterIndexExport := ""
+			if ast.IsExported(name.Name) {
+				getterIndexExport = getterName
+			}
+			decls = append(decls, loweredDecl{code: getterCode, indexExport: getterIndexExport})
+		}
 	}
 	return decls, diagnostics
 }
