@@ -1,4 +1,17 @@
 import * as $ from '@goscript/builtin/index.js'
+import * as errors from '@goscript/errors/index.js'
+import * as io from '@goscript/io/index.js'
+
+export const StatusOK = 200
+
+export function StatusText(code: number): string {
+  switch (code) {
+    case StatusOK:
+      return 'OK'
+    default:
+      return ''
+  }
+}
 
 export class Header extends Map<string, $.Slice<string>> {
   public Add(key: string, value: string): void {
@@ -41,4 +54,28 @@ export interface ResponseWriter {
   Header(): Header
   Write(p: $.Slice<number>): [number, $.GoError]
   WriteHeader(statusCode: number): void
+}
+
+export class Response {
+  public StatusCode: number
+  public Body: io.ReadCloser | null
+  public Header: Header
+
+  constructor(init?: Partial<Response>) {
+    this.StatusCode = init?.StatusCode ?? 0
+    this.Body = init?.Body ?? null
+    this.Header = init?.Header ?? new Header()
+  }
+
+  public clone(): Response {
+    return new Response({
+      Body: this.Body,
+      Header: this.Header,
+      StatusCode: this.StatusCode,
+    })
+  }
+}
+
+export function Get(_url: string): [Response | null, $.GoError] {
+  return [null, errors.New('net/http: Get is not implemented in GoScript')]
 }
