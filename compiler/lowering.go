@@ -4994,10 +4994,12 @@ func (o *LoweringOwner) lowerNamedReceiverForMethod(
 ) (string, []Diagnostic) {
 	method, _ := selection.Obj().(*types.Func)
 	receiverPointer := false
+	var receiverType types.Type
 	if method != nil {
 		signature, _ := method.Type().(*types.Signature)
 		if signature != nil && signature.Recv() != nil {
-			_, receiverPointer = signature.Recv().Type().(*types.Pointer)
+			receiverType = signature.Recv().Type()
+			_, receiverPointer = receiverType.(*types.Pointer)
 		}
 	}
 	if receiverPointer {
@@ -5011,7 +5013,11 @@ func (o *LoweringOwner) lowerNamedReceiverForMethod(
 		}
 		return o.lowerAddressExpr(ctx, expr)
 	}
-	return o.lowerExpr(ctx, expr)
+	receiver, diagnostics := o.lowerExpr(ctx, expr)
+	if receiverType != nil && isPointerType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "<" + o.tsTypeFor(ctx, receiverType) + ">(" + receiver + ")", diagnostics
+	}
+	return receiver, diagnostics
 }
 
 func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.SelectorExpr) (string, []Diagnostic) {
