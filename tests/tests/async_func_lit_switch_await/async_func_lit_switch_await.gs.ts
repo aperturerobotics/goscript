@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export let fn: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null = null
+export let fn: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null = null as ((_p0: number) => boolean) | null
 
 export async function main(): globalThis.Promise<void> {
 	let ch = $.makeChannel<boolean>(1, false, "both")

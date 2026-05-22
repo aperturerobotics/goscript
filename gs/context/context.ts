@@ -6,7 +6,7 @@ export const Canceled = $.newError('context canceled')
 export const DeadlineExceeded = $.newError('context deadline exceeded')
 
 // Function types
-export type CancelFunc = () => void
+export type CancelFunc = (() => void) | null
 export type CancelCauseFunc = (cause: $.GoError) => void
 
 // Context interface matching Go's context.Context

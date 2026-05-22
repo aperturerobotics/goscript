@@ -138,7 +138,7 @@ export class RWMutex {
 					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 					onSelected: async (result) => {
 						await release!()
-						return [null, context.Canceled]
+						return [(null as (() => void) | null), context.Canceled]
 					}
 				},
 				{
@@ -209,7 +209,7 @@ export class RWMutex {
 
 		// we failed to lock the mutex
 		if (unlocked.value.Load()) {
-			return [null, false]
+			return [(null as (() => void) | null), false]
 		}
 
 		return [$.functionValue(async (): globalThis.Promise<void> => {
@@ -315,7 +315,7 @@ export class RWMutexLocker {
 		if ($.len($.pointerValue<RWMutexLocker>(l).rels) == 1) {
 			$.pointerValue<RWMutexLocker>(l).rels = null
 		} else {
-			$.pointerValue<RWMutexLocker>(l).rels![$.len($.pointerValue<RWMutexLocker>(l).rels) - 1] = null
+			$.pointerValue<RWMutexLocker>(l).rels![$.len($.pointerValue<RWMutexLocker>(l).rels) - 1] = (null as (() => void) | null)
 			$.pointerValue<RWMutexLocker>(l).rels = $.goSlice($.pointerValue<RWMutexLocker>(l).rels, undefined, $.len($.pointerValue<RWMutexLocker>(l).rels) - 1)
 		}
 		$.pointerValue<RWMutexLocker>(l).mtx.Unlock()

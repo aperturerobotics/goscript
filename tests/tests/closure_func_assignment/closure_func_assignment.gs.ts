@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export async function run(_set: ((_p0: (() => void) | null) => void) | null): globalThis.Promise<void> {
-	let cb: $.VarRef<(() => void) | null> = $.varRef(null)
+	let cb: $.VarRef<(() => void) | null> = $.varRef(null as (() => void) | null)
 	await _set!($.functionValue(async (): globalThis.Promise<void> => {
 		await _set!($.functionValue((): void => {
 			cb.value = $.functionValue((): void => {

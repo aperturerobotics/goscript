@@ -101,7 +101,7 @@ export class Mutex {
 					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 					onSelected: async (result) => {
 						await release!()
-						return [null, context.Canceled]
+						return [(null as (() => void) | null), context.Canceled]
 					}
 				},
 				{
@@ -140,7 +140,7 @@ export class Mutex {
 				}
 				case 2:
 				{
-					return [null, context.Canceled]
+					return [(null as (() => void) | null), context.Canceled]
 					break
 				}
 			}
@@ -165,7 +165,7 @@ export class Mutex {
 
 		// we failed to lock the mutex
 		if (unlocked.value.Load()) {
-			return [null, false]
+			return [(null as (() => void) | null), false]
 		}
 
 		return [$.functionValue(async (): globalThis.Promise<void> => {

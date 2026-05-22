@@ -12,7 +12,7 @@ import * as sync from "@goscript/sync/index.js"
 import * as __goscript_broadcast from "./broadcast.gs.ts"
 
 export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
-	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, null)
+	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, (null as ((a: any, b: any) => boolean) | null))
 }
 
 export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null, equal: ((a: any, b: any) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<$.GoError> {

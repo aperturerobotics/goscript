@@ -3605,6 +3605,11 @@ func isBoolType(typ types.Type) bool {
 	return ok && basic.Kind() == types.Bool
 }
 
+func isUntypedNilType(typ types.Type) bool {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	return ok && basic.Kind() == types.UntypedNil
+}
+
 func rangeFuncParamNames(keyName, valueName string, arity int, fallback string) []string {
 	names := make([]string, 0, arity)
 	if arity >= 1 {
@@ -5392,6 +5397,9 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 	value string,
 	cloneStructValue bool,
 ) string {
+	if isFunctionType(targetType) && isUntypedNilType(sourceType) {
+		return "(" + value + " as " + o.tsTypeFor(ctx, targetType) + ")"
+	}
 	if isBuiltinErrorType(targetType) {
 		if wrapper := o.lowerPrimitiveErrorWrapper(ctx, sourceType, value); wrapper != "" {
 			return wrapper
@@ -5520,6 +5528,9 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 }
 
 func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ types.Type) string {
+	if isFunctionType(typ) {
+		return "null as " + o.tsTypeFor(ctx, typ)
+	}
 	typeParam, ok := types.Unalias(typ).(*types.TypeParam)
 	if !ok {
 		return o.lowerZeroValueExprFor(ctx, typ)
