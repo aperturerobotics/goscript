@@ -25,6 +25,25 @@ type loweredImport struct {
 	source string
 }
 
+type loweredExpr struct {
+	text  string
+	async bool
+}
+
+type loweredNamedStructConversionExpr struct {
+	value      loweredExpr
+	target     string
+	temp       string
+	helper     string
+	fields     []loweredConversionField
+	castOnly   bool
+	castTarget string
+}
+
+type loweredConversionField struct {
+	name string
+}
+
 type loweredDecl struct {
 	code            string
 	indexExport     string

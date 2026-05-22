@@ -14,6 +14,34 @@ const (
 	ActionSkip Action = "skip"
 )
 
+// PhaseStatus names a package-test phase state.
+type PhaseStatus string
+
+const (
+	// PhaseStatusPending means the phase has not run yet.
+	PhaseStatusPending PhaseStatus = "pending"
+	// PhaseStatusPass means the phase passed.
+	PhaseStatusPass PhaseStatus = "pass"
+	// PhaseStatusFail means the phase failed.
+	PhaseStatusFail PhaseStatus = "fail"
+	// PhaseStatusSkip means the phase was skipped.
+	PhaseStatusSkip PhaseStatus = "skip"
+)
+
+// PackagePhases records structured package-test phase status.
+type PackagePhases struct {
+	// Workspace covers workspace files and tool discovery.
+	Workspace PhaseStatus
+	// Compile covers GoScript compile/lowering work.
+	Compile PhaseStatus
+	// Emit covers TypeScript emit/copy output work.
+	Emit PhaseStatus
+	// TypeCheck covers tsgo execution.
+	TypeCheck PhaseStatus
+	// Runtime covers Bun test execution.
+	Runtime PhaseStatus
+}
+
 // PackageResult describes one package-test result.
 type PackageResult struct {
 	// PackagePath is the package under test.
@@ -26,6 +54,8 @@ type PackageResult struct {
 	Tests []Test
 	// Action is the package result.
 	Action Action
+	// Phases records structured status for each runner phase.
+	Phases PackagePhases
 	// Owner is the primary owner classification for failures.
 	Owner Owner
 	// Error is the concise package failure message.

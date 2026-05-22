@@ -6,7 +6,6 @@ import (
 	"slices"
 	"strings"
 
-	gs "github.com/aperturerobotics/goscript"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -51,11 +50,17 @@ type PackageGraphNode struct {
 }
 
 // PackageGraphOwner owns Go package loading and graph identity.
-type PackageGraphOwner struct{}
+type PackageGraphOwner struct {
+	overrideOwner *OverrideRegistryOwner
+}
 
 // NewPackageGraphOwner creates the package graph owner.
-func NewPackageGraphOwner() *PackageGraphOwner {
-	return &PackageGraphOwner{}
+func NewPackageGraphOwner(overrideOwners ...*OverrideRegistryOwner) *PackageGraphOwner {
+	overrideOwner := NewOverrideRegistryOwner()
+	if len(overrideOwners) != 0 && overrideOwners[0] != nil {
+		overrideOwner = overrideOwners[0]
+	}
+	return &PackageGraphOwner{overrideOwner: overrideOwner}
 }
 
 // Load builds the package graph for a validated request.
@@ -103,6 +108,10 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 			Message:  "package patterns did not match any packages",
 		}}
 	}
+	overrideFacts, overrideDiagnostics := o.overrideOwner.Facts(ctx)
+	if diagnosticsHaveErrors(overrideDiagnostics) {
+		return nil, overrideDiagnostics
+	}
 
 	graph := &PackageGraph{
 		RequestedPatterns:     append([]string(nil), req.Patterns...),
@@ -128,7 +137,7 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 		if isTestMainPackage(pkg) {
 			continue
 		}
-		o.collect(graph, pkg, req.DependencyMode, requested, seen)
+		o.collect(graph, pkg, req.DependencyMode, requested, overrideFacts, seen)
 		diagnostics = append(diagnostics, packageDiagnostics(pkg)...)
 	}
 	slices.SortFunc(graph.Nodes, func(a, b *PackageGraphNode) int {
@@ -152,6 +161,7 @@ func (o *PackageGraphOwner) collect(
 	pkg *packages.Package,
 	mode DependencyMode,
 	requested map[string]bool,
+	overrideFacts *OverrideFacts,
 	seen map[string]bool,
 ) {
 	if pkg == nil || seen[pkg.ID] {
@@ -159,14 +169,14 @@ func (o *PackageGraphOwner) collect(
 	}
 	if pkg.ForTest != "" && !requested[pkg.ForTest] {
 		if prod := pkg.Imports[pkg.ForTest]; prod != nil {
-			o.collect(graph, prod, mode, requested, seen)
+			o.collect(graph, prod, mode, requested, overrideFacts, seen)
 		}
 		return
 	}
 	seen[pkg.ID] = true
 
 	path := packagePath(pkg)
-	node := newPackageGraphNode(pkg, requested[path])
+	node := newPackageGraphNode(pkg, requested[path], overrideFacts)
 	graph.Nodes = append(graph.Nodes, node)
 	graph.NodesByPackagePath[path] = node
 	graph.packagesByPath[path] = pkg
@@ -180,11 +190,11 @@ func (o *PackageGraphOwner) collect(
 	}
 	slices.Sort(imports)
 	for _, importPath := range imports {
-		o.collect(graph, pkg.Imports[importPath], mode, requested, seen)
+		o.collect(graph, pkg.Imports[importPath], mode, requested, overrideFacts, seen)
 	}
 }
 
-func newPackageGraphNode(pkg *packages.Package, requested bool) *PackageGraphNode {
+func newPackageGraphNode(pkg *packages.Package, requested bool, overrideFacts *OverrideFacts) *PackageGraphNode {
 	imports := make([]string, 0, len(pkg.Imports))
 	for importPath := range pkg.Imports {
 		imports = append(imports, importPath)
@@ -209,7 +219,7 @@ func newPackageGraphNode(pkg *packages.Package, requested bool) *PackageGraphNod
 		CompiledGoFiles:   append([]string(nil), pkg.CompiledGoFiles...),
 		Imports:           imports,
 		Requested:         requested,
-		OverrideCandidate: hasOverrideCandidate(packagePath(pkg)),
+		OverrideCandidate: overrideFacts.HasPackage(packagePath(pkg)),
 	}
 }
 
@@ -241,12 +251,4 @@ func packageDiagnostics(pkg *packages.Package) []Diagnostic {
 		})
 	}
 	return diagnostics
-}
-
-func hasOverrideCandidate(pkgPath string) bool {
-	if pkgPath == "" {
-		return false
-	}
-	_, err := gs.GsOverrides.ReadFile("gs/" + pkgPath + "/index.ts")
-	return err == nil
 }

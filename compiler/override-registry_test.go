@@ -35,6 +35,53 @@ func TestOverrideRegistryPlansRuntimeAndOverrideDependencies(t *testing.T) {
 	}
 }
 
+func TestOverrideRegistryFactsAreImmutable(t *testing.T) {
+	owner := NewOverrideRegistryOwner()
+	facts, diagnostics := owner.Facts(context.Background())
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("override facts failed: %#v", diagnostics)
+	}
+
+	metadata := facts.Metadata("sync")
+	if !metadata.AsyncMethods["Map.Load"] {
+		t.Fatalf("expected sync Map.Load async metadata")
+	}
+	metadata.AsyncMethods["Map.Load"] = false
+	metadata.Dependencies = append(metadata.Dependencies, "mutated")
+
+	metadata = facts.Metadata("sync")
+	if !metadata.AsyncMethods["Map.Load"] {
+		t.Fatalf("override metadata mutation leaked back into facts")
+	}
+	if slices.Contains(metadata.Dependencies, "mutated") {
+		t.Fatalf("override dependency mutation leaked back into facts: %v", metadata.Dependencies)
+	}
+
+	pkg, dependencies, ok := facts.copyPackage("fmt")
+	if !ok {
+		t.Fatalf("missing fmt copy package facts")
+	}
+	if !slices.Contains(dependencies, "errors") {
+		t.Fatalf("expected fmt dependency on errors, got %v", dependencies)
+	}
+	dependencies = append(dependencies, "mutated")
+	if len(pkg.files) == 0 {
+		t.Fatalf("expected fmt copy files")
+	}
+	pkg.files[0].data[0] = '!'
+
+	pkg, dependencies, ok = facts.copyPackage("fmt")
+	if !ok {
+		t.Fatalf("missing fmt copy package facts after mutation")
+	}
+	if slices.Contains(dependencies, "mutated") {
+		t.Fatalf("copy dependency mutation leaked back into facts: %v", dependencies)
+	}
+	if len(pkg.files) == 0 || pkg.files[0].data[0] == '!' {
+		t.Fatalf("copy file mutation leaked back into facts")
+	}
+}
+
 func TestOverrideRegistryCopiesRuntimeAndOverrides(t *testing.T) {
 	owner := NewOverrideRegistryOwner()
 	req := &CompileRequest{

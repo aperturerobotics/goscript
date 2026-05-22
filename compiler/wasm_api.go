@@ -43,7 +43,23 @@ func CompileSourceToTypeScript(source string, packageName string) (string, error
 		return "", NewCompileError(diagnostics)
 	}
 
-	return service.emitterOwner.renderLoweredFile(program.packages[0], program.packages[0].files[0]), nil
+	files, emitDiagnostics := service.emitterOwner.EmitToMemory(ctx, program)
+	diagnostics = append(diagnostics, emitDiagnostics...)
+	if diagnosticsHaveErrors(diagnostics) {
+		return "", NewCompileError(diagnostics)
+	}
+	filePath := "@goscript/" + program.packages[0].pkgPath + "/" + program.packages[0].files[0].outputName
+	output, ok := files[filePath]
+	if !ok {
+		diagnostics = append(diagnostics, Diagnostic{
+			Severity: DiagnosticSeverityError,
+			Code:     "goscript/wasm:missing-output",
+			Message:  "browser source compilation did not emit the expected TypeScript file",
+			Detail:   filePath,
+		})
+		return "", NewCompileError(diagnostics)
+	}
+	return output, nil
 }
 
 func browserSourceGraph(source string, packageName string) (*PackageGraph, []Diagnostic) {

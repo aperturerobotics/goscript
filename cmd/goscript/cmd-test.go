@@ -129,6 +129,9 @@ func printTestResult(ctx context.Context, w io.Writer, result *gotest.Result) er
 			if pkg.Owner != "" {
 				line += "\towner=" + string(pkg.Owner)
 			}
+			if phase := failedPhase(pkg.Phases); phase != "" {
+				line += "\tphase=" + phase
+			}
 			if _, err := io.WriteString(w, line+"\n"); err != nil {
 				return err
 			}
@@ -145,6 +148,23 @@ func printTestResult(ctx context.Context, w io.Writer, result *gotest.Result) er
 		}
 	}
 	return nil
+}
+
+func failedPhase(phases gotest.PackagePhases) string {
+	switch {
+	case phases.Workspace == gotest.PhaseStatusFail:
+		return "workspace"
+	case phases.Compile == gotest.PhaseStatusFail:
+		return "compile"
+	case phases.Emit == gotest.PhaseStatusFail:
+		return "emit"
+	case phases.TypeCheck == gotest.PhaseStatusFail:
+		return "typecheck"
+	case phases.Runtime == gotest.PhaseStatusFail:
+		return "runtime"
+	default:
+		return ""
+	}
 }
 
 func formatElapsed(elapsed time.Duration) string {

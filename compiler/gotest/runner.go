@@ -1,18 +1,16 @@
 package gotest
 
 import (
-	"bytes"
 	"context"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/aperturerobotics/goscript/compiler"
+	"github.com/aperturerobotics/goscript/compiler/tsworkspace"
 	"github.com/pkg/errors"
 )
 
@@ -61,6 +59,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		WorkDir:    norm.WorkDir,
 		OutputRoot: norm.OutputRoot,
 	}
+	workspace := tsworkspace.NewOwner(norm.WorkDir, norm.Dir)
 
 	runPattern, err := compileRunPattern(norm.Run)
 	if err != nil {
@@ -113,10 +112,12 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 				result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
 				result.Packages[idx].Owner = classifyDiagnostics(compileResult.Diagnostics)
 			}
+			markCompilePhase(&result.Packages[idx], compileResult, false)
 			result.Packages[idx].Error = compileErr.Error()
 			continue
 		} else if compileResult != nil {
 			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+			markCompilePhase(&result.Packages[idx], compileResult, true)
 		}
 		if !r.compileTestImports(ctx, norm, outputRoot, &result.Packages[idx], result) {
 			continue
@@ -136,61 +137,58 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 				result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
 				result.Packages[idx].Owner = classifyDiagnostics(compileResult.Diagnostics)
 			}
+			markCompilePhase(&result.Packages[idx], compileResult, false)
 			result.Packages[idx].Error = compileErr.Error()
 			continue
 		} else if compileResult != nil {
 			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+			markCompilePhase(&result.Packages[idx], compileResult, true)
 		}
 	}
 
-	if err := writePackageJSON(norm); err != nil {
-		markAllFailures(result, OwnerTestRunner, err.Error())
-		return result, nil
-	}
-
-	tsgo, err := findTool(norm.Dir, "tsgo")
-	if err != nil {
-		markAllFailures(result, OwnerTestRunner, err.Error())
-		return result, nil
-	}
-	bun, err := findTool(norm.Dir, "bun")
-	if err != nil {
-		markAllFailures(result, OwnerTestRunner, err.Error())
+	if phase := workspace.EnsurePackageJSON(); phase.Failed() {
+		markAllFailures(result, OwnerTestRunner, phase.Error)
 		return result, nil
 	}
 	for idx := range result.Packages {
 		if !shouldCompilePackage(result.Packages[idx]) {
 			continue
 		}
+		result.Packages[idx].Phases.Workspace = PhaseStatusPass
 		outputRoot := packageOutputRoot(norm, idx)
 		runnerFile := packageRunnerFile(idx)
-		if err := writeRunnerFile(norm, runnerFile, result.Packages[idx]); err != nil {
+		if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, runnerFile, renderRunner(result.Packages[idx], norm)); phase.Failed() {
 			result.Packages[idx].Owner = OwnerTestRunner
-			result.Packages[idx].Error = err.Error()
+			result.Packages[idx].Phases.Workspace = PhaseStatusFail
+			result.Packages[idx].Error = phase.Error
 			continue
 		}
 		tsconfigFile := "tsconfig.json"
-		if err := writeTypeScriptProject(norm, tsconfigFile, outputRoot, runnerFile); err != nil {
+		if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, tsconfigFile, renderTypeScriptProject(norm, outputRoot, runnerFile)); phase.Failed() {
 			result.Packages[idx].Owner = OwnerTestRunner
-			result.Packages[idx].Error = err.Error()
+			result.Packages[idx].Phases.Workspace = PhaseStatusFail
+			result.Packages[idx].Error = phase.Error
 			continue
 		}
-		output, err := runCommand(ctx, norm.WorkDir, tsgo, "--project", tsconfigFile)
-		if err != nil {
-			result.Packages[idx].Owner = classifyProcessOutput(output)
-			result.Packages[idx].Error = strings.TrimSpace(output)
+		typecheck := workspace.RunTool(ctx, tsworkspace.PhaseTypeCheck, norm.WorkDir, "tsgo", "--project", tsconfigFile)
+		if typecheck.Failed() {
+			result.Packages[idx].Owner = classifyProcessOutput(typecheck.Output)
+			result.Packages[idx].Phases.TypeCheck = PhaseStatusFail
+			result.Packages[idx].Error = strings.TrimSpace(typecheck.Output)
 			continue
 		}
-		start := time.Now()
-		output, err = runCommand(ctx, norm.WorkDir, bun, runnerFile)
-		result.Packages[idx].Elapsed = time.Since(start)
-		result.Packages[idx].Output = strings.TrimSpace(output)
-		if err != nil {
+		result.Packages[idx].Phases.TypeCheck = PhaseStatusPass
+		runtime := workspace.RunTool(ctx, tsworkspace.PhaseRuntime, norm.WorkDir, "bun", runnerFile)
+		result.Packages[idx].Elapsed = runtime.Elapsed
+		result.Packages[idx].Output = strings.TrimSpace(runtime.Output)
+		if runtime.Failed() {
 			result.Packages[idx].Action = ActionFail
-			result.Packages[idx].Owner = classifyProcessOutput(output)
-			result.Packages[idx].Error = err.Error()
+			result.Packages[idx].Owner = classifyProcessOutput(runtime.Output)
+			result.Packages[idx].Phases.Runtime = PhaseStatusFail
+			result.Packages[idx].Error = runtime.Error
 			continue
 		}
+		result.Packages[idx].Phases.Runtime = PhaseStatusPass
 		result.Packages[idx].Action = ActionPass
 	}
 	return result, nil
@@ -229,9 +227,11 @@ func (r *Runner) compileTestImports(
 			if compileResult != nil {
 				pkg.Owner = classifyDiagnostics(compileResult.Diagnostics)
 			}
+			markCompilePhase(pkg, compileResult, false)
 			pkg.Error = compileErr.Error()
 			return false
 		}
+		markCompilePhase(pkg, compileResult, true)
 	}
 	return true
 }
@@ -250,10 +250,7 @@ func packageResults(testGraph *compiler.PackageTestGraph, runPattern *regexp.Reg
 	}
 	results := make([]PackageResult, 0, len(testGraph.Packages))
 	for _, pkg := range testGraph.Packages {
-		result := PackageResult{
-			PackagePath: pkg.PackagePath,
-			Action:      ActionSkip,
-		}
+		result := newSkippedPackageResult(pkg.PackagePath)
 		result.Tests = append(result.Tests, packageVariantTests(pkg.SamePackageTests, runPattern)...)
 		result.Tests = append(result.Tests, packageVariantTests(pkg.ExternalPackageTests, runPattern)...)
 		result.TestImports = packageTestImports(pkg)
@@ -266,15 +263,31 @@ func packageResults(testGraph *compiler.PackageTestGraph, runPattern *regexp.Reg
 		if len(result.Tests) != 0 {
 			result.TestPackagePath = result.Tests[0].PackagePath
 			result.Action = ActionFail
+			result.Phases = PackagePhases{}
 		}
 		if diagnosticsHaveErrors(pkg.Diagnostics) {
 			result.Action = ActionFail
 			result.Owner = OwnerPackageGraph
 			result.Error = diagnosticsSummary(pkg.Diagnostics)
+			result.Phases = failurePhases(OwnerPackageGraph)
 		}
 		results = append(results, result)
 	}
 	return results
+}
+
+func newSkippedPackageResult(packagePath string) PackageResult {
+	return PackageResult{
+		PackagePath: packagePath,
+		Action:      ActionSkip,
+		Phases: PackagePhases{
+			Workspace: PhaseStatusSkip,
+			Compile:   PhaseStatusSkip,
+			Emit:      PhaseStatusSkip,
+			TypeCheck: PhaseStatusSkip,
+			Runtime:   PhaseStatusSkip,
+		},
+	}
 }
 
 func packageTestImports(pkg *compiler.PackageTestGraphPackage) []string {
@@ -327,6 +340,7 @@ func markAllFailures(result *Result, owner Owner, message string) {
 			Action:      ActionFail,
 			Owner:       owner,
 			Error:       message,
+			Phases:      failurePhases(owner),
 		})
 		return
 	}
@@ -340,6 +354,26 @@ func markAllFailures(result *Result, owner Owner, message string) {
 		result.Packages[idx].Action = ActionFail
 		result.Packages[idx].Owner = owner
 		result.Packages[idx].Error = message
+		result.Packages[idx].Phases = failurePhases(owner)
+	}
+}
+
+func failurePhases(owner Owner) PackagePhases {
+	if owner == OwnerPackageGraph {
+		return PackagePhases{
+			Workspace: PhaseStatusSkip,
+			Compile:   PhaseStatusFail,
+			Emit:      PhaseStatusSkip,
+			TypeCheck: PhaseStatusSkip,
+			Runtime:   PhaseStatusSkip,
+		}
+	}
+	return PackagePhases{
+		Workspace: PhaseStatusFail,
+		Compile:   PhaseStatusSkip,
+		Emit:      PhaseStatusSkip,
+		TypeCheck: PhaseStatusSkip,
+		Runtime:   PhaseStatusSkip,
 	}
 }
 
@@ -349,20 +383,6 @@ func packageOutputRoot(req *normalizedRequest, idx int) string {
 
 func packageRunnerFile(idx int) string {
 	return "runner-" + strconv.Itoa(idx) + ".ts"
-}
-
-func writePackageJSON(req *normalizedRequest) error {
-	if err := os.MkdirAll(req.WorkDir, 0o755); err != nil {
-		return errors.Wrap(err, "create test runner directory")
-	}
-	return os.WriteFile(filepath.Join(req.WorkDir, "package.json"), []byte("{\"type\":\"module\"}\n"), 0o644)
-}
-
-func writeRunnerFile(req *normalizedRequest, name string, result PackageResult) error {
-	if err := os.WriteFile(filepath.Join(req.WorkDir, name), []byte(renderRunner(result, req)), 0o644); err != nil {
-		return errors.Wrap(err, "write TypeScript test runner")
-	}
-	return nil
 }
 
 func renderRunner(result PackageResult, req *normalizedRequest) string {
@@ -420,8 +440,8 @@ func runnerImports(tests []Test) []string {
 	return imports
 }
 
-func writeTypeScriptProject(req *normalizedRequest, name string, outputRoot string, runnerFile string) error {
-	nodeTypeRoots := findNodeTypeRoots(req.Dir)
+func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string) string {
+	nodeTypeRoots := tsworkspace.NodeTypeRoots(req.Dir)
 	outputPattern := filepath.ToSlash(outputRoot)
 	outputAlias := filepath.ToSlash(filepath.Join(outputRoot, "@goscript", "*"))
 	if rel, err := filepath.Rel(req.WorkDir, outputRoot); err == nil {
@@ -462,80 +482,32 @@ func writeTypeScriptProject(req *normalizedRequest, name string, outputRoot stri
 	b.WriteString(strconv.Quote(runnerFile))
 	b.WriteString("]\n")
 	b.WriteString("}\n")
-	return os.WriteFile(filepath.Join(req.WorkDir, name), []byte(b.String()), 0o644)
+	return b.String()
 }
 
-func findNodeTypeRoots(dir string) []string {
-	seen := make(map[string]bool)
-	var roots []string
-	for _, start := range []string{dir, currentWorkingDirectory()} {
-		if start == "" {
-			continue
-		}
-		for current := start; current != ""; current = filepath.Dir(current) {
-			candidate := filepath.Join(current, "node_modules", "@types")
-			info, err := os.Stat(candidate)
-			if err == nil && info.IsDir() && !seen[candidate] {
-				seen[candidate] = true
-				roots = append(roots, candidate)
-				break
-			}
-			if parent := filepath.Dir(current); parent == current {
-				break
-			}
-		}
+func markCompilePhase(pkg *PackageResult, result *compiler.CompilationResult, passed bool) {
+	if pkg == nil {
+		return
 	}
-	return roots
+	if passed {
+		pkg.Phases.Compile = PhaseStatusPass
+		pkg.Phases.Emit = PhaseStatusPass
+		return
+	}
+	if classifyDiagnostics(resultDiagnostics(result)) == OwnerTypeScriptEmitter {
+		pkg.Phases.Compile = PhaseStatusPass
+		pkg.Phases.Emit = PhaseStatusFail
+		return
+	}
+	pkg.Phases.Compile = PhaseStatusFail
+	pkg.Phases.Emit = PhaseStatusSkip
 }
 
-func currentWorkingDirectory() string {
-	wd, err := os.Getwd()
-	if err != nil {
-		return ""
+func resultDiagnostics(result *compiler.CompilationResult) []compiler.Diagnostic {
+	if result == nil {
+		return nil
 	}
-	return wd
-}
-
-func runCommand(ctx context.Context, dir string, name string, args ...string) (string, error) {
-	cmd := exec.CommandContext(ctx, name, args...)
-	cmd.Dir = dir
-	var output bytes.Buffer
-	cmd.Stdout = &output
-	cmd.Stderr = &output
-	err := cmd.Run()
-	return output.String(), err
-}
-
-func findTool(dir string, name string) (string, error) {
-	if filepath.IsAbs(name) {
-		return name, nil
-	}
-	for current := dir; current != ""; current = filepath.Dir(current) {
-		candidate := filepath.Join(current, "node_modules", ".bin", name)
-		info, err := os.Stat(candidate)
-		if err == nil && !info.IsDir() {
-			return candidate, nil
-		}
-		if parent := filepath.Dir(current); parent == current {
-			break
-		}
-	}
-	if wd, err := os.Getwd(); err == nil {
-		for current := wd; current != ""; current = filepath.Dir(current) {
-			candidate := filepath.Join(current, "node_modules", ".bin", name)
-			info, err := os.Stat(candidate)
-			if err == nil && !info.IsDir() {
-				return candidate, nil
-			}
-			if parent := filepath.Dir(current); parent == current {
-				break
-			}
-		}
-	}
-	if path, err := exec.LookPath(name); err == nil {
-		return path, nil
-	}
-	return "", errors.New(name + " not found in PATH or ancestor node_modules/.bin")
+	return result.Diagnostics
 }
 
 func classifyDiagnostics(diagnostics []compiler.Diagnostic) Owner {
