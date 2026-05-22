@@ -3,6 +3,7 @@ import * as $ from '@goscript/builtin/index.js'
 // Runtime constants for the JavaScript/WebAssembly target
 export const GOOS: string = 'js'
 export const GOARCH: string = 'wasm'
+export const Compiler: string = 'gc'
 
 // Version returns the Go version as a string
 export const GOVERSION: string = 'go1.25.3'
@@ -94,6 +95,11 @@ export class Func {
   public Name(): string {
     return ''
   }
+}
+
+// FuncForPC returns function metadata for a program counter.
+export function FuncForPC(_pc: number): Func | null {
+  return null
 }
 
 // Frame represents a single call frame.

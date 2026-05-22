@@ -6,6 +6,7 @@ func main() {
 	// Test basic runtime functions
 	println("GOOS:", runtime.GOOS)
 	println("GOARCH:", runtime.GOARCH)
+	println("Compiler:", runtime.Compiler)
 	// println("Version:", runtime.Version()) - not stable for the test (go.mod may change)
 	// println("NumCPU:", runtime.NumCPU()) - not stable for the test (number of cores may change)
 
@@ -26,6 +27,7 @@ func main() {
 	frames := runtime.CallersFrames(pcs)
 	frame, more := frames.Next()
 	println("Frames empty:", frame.Line, more)
+	println("FuncForPC nil:", runtime.FuncForPC(0) == nil)
 
 	box := &struct{ value int }{value: 1}
 	cleanup := runtime.AddCleanup(box, func(value int) {

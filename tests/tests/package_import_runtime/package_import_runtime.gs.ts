@@ -9,6 +9,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test basic runtime functions
 	$.println("GOOS:", runtime.GOOS)
 	$.println("GOARCH:", runtime.GOARCH)
+	$.println("Compiler:", runtime.Compiler)
 	// println("Version:", runtime.Version()) - not stable for the test (go.mod may change)
 	// println("NumCPU:", runtime.NumCPU()) - not stable for the test (number of cores may change)
 
@@ -29,6 +30,7 @@ export async function main(): globalThis.Promise<void> {
 	let frames: runtime.Frames | $.VarRef<runtime.Frames> | null = runtime.CallersFrames(pcs)
 	let [frame, more] = $.pointerValue<runtime.Frames>(frames).Next()
 	$.println("Frames empty:", frame.Line, more)
+	$.println("FuncForPC nil:", runtime.FuncForPC(0) == null)
 
 	let box = $.varRef({value: 1})
 	let cleanup = $.markAsStructValue($.cloneStructValue(runtime.AddCleanup(box, $.functionValue((value: number): void => {
@@ -38,7 +40,6 @@ export async function main(): globalThis.Promise<void> {
 	runtime.KeepAlive($.interfaceValue<any>(box, "*struct{value int}"))
 	$.println("Cleanup stopped")
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()
