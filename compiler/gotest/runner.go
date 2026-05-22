@@ -127,9 +127,10 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 			Dir:                 norm.Dir,
 			OutputPath:          outputRoot,
 			BuildFlags:          append([]string(nil), norm.BuildFlags...),
-			DependencyMode:      compiler.DependencyModeRequested,
+			DependencyMode:      compiler.DependencyModeAll,
 			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
 			Tests:               true,
+			AllDependencies:     true,
 		}
 		if compileResult, compileErr := r.service.Compile(ctx, testCompileReq); compileErr != nil {
 			result.Packages[idx].Action = ActionFail

@@ -12,19 +12,19 @@ export let SkipDir: $.GoError = errors.New('skip this directory')
 export let SkipAll: $.GoError = errors.New('skip everything and stop the walk')
 
 export type WalkDirFunc =
-  | ((path: string, d: DirEntry, err: $.GoError) => $.GoError)
+  | ((path: string, d: DirEntry, err: $.GoError) => $.GoError | Promise<$.GoError>)
   | null
 
 // walkDir recursively descends path, calling walkDirFn.
-export function walkDir(
+export async function walkDir(
   fsys: FS,
   name: string,
   d: DirEntry,
   walkDirFn: WalkDirFunc,
-): $.GoError {
+): Promise<$.GoError> {
   // Successfully skipped directory.
   {
-    let err = walkDirFn!(name, d, null)
+    let err = await walkDirFn!(name, d, null)
     if (err != null || !d!.IsDir()) {
       // Successfully skipped directory.
       if (err == SkipDir && d!.IsDir()) {
@@ -40,7 +40,7 @@ export function walkDir(
   // Second call, to report ReadDir error.
   if (err != null) {
     // Second call, to report ReadDir error.
-    err = walkDirFn!(name, d, err)
+    err = await walkDirFn!(name, d, err)
     if (err != null) {
       if (err == SkipDir && d!.IsDir()) {
         err = null
@@ -54,7 +54,7 @@ export function walkDir(
     {
       let name1 = path.Join(name, d1!.Name())
       {
-        let err = walkDir(fsys, name1, d1, walkDirFn)
+        let err = await walkDir(fsys, name1, d1, walkDirFn)
         if (err != null) {
           if (err == SkipDir) {
             break
@@ -79,12 +79,12 @@ export function walkDir(
 //
 // WalkDir does not follow symbolic links found in directories,
 // but if root itself is a symbolic link, its target will be walked.
-export function WalkDir(fsys: FS, root: string, fn: WalkDirFunc): $.GoError {
+export async function WalkDir(fsys: FS, root: string, fn: WalkDirFunc): Promise<$.GoError> {
   let [info, err] = Stat(fsys, root)
   if (err != null) {
-    err = fn!(root, null, err)
+    err = await fn!(root, null, err)
   } else {
-    err = walkDir(fsys, root, FileInfoToDirEntry(info), fn)
+    err = await walkDir(fsys, root, FileInfoToDirEntry(info), fn)
   }
   if (err == SkipDir || err == SkipAll) {
     return null

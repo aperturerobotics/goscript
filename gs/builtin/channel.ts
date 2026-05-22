@@ -77,6 +77,11 @@ export interface Channel<T> {
    * Used for non-blocking select operations.
    */
   canSendNonBlocking(): boolean
+
+  /**
+   * Reports the number of buffered values currently queued in the channel.
+   */
+  len(): number
 }
 
 /**
@@ -530,6 +535,10 @@ class BufferedChannel<T> implements Channel<T> {
       this.receiversWithOk.length > 0
     )
   }
+
+  len(): number {
+    return this.buffer.length
+  }
 }
 
 /**
@@ -555,6 +564,7 @@ export interface ChannelRef<T> {
   canReceiveNonBlocking(): boolean
   selectSend(value: T, id: number): Promise<SelectResult<boolean>>
   selectReceive(id: number): Promise<SelectResult<T>>
+  len(): number
 }
 
 /**
@@ -596,6 +606,10 @@ export class BidirectionalChannelRef<T> implements ChannelRef<T> {
 
   selectReceive(id: number): Promise<SelectResult<T>> {
     return this.channel.selectReceive(id)
+  }
+
+  len(): number {
+    return this.channel.len()
   }
 }
 
@@ -641,6 +655,10 @@ export class SendOnlyChannelRef<T> implements ChannelRef<T> {
   selectReceive(_id: number): Promise<SelectResult<T>> {
     throw new Error('Cannot receive from send-only channel')
   }
+
+  len(): number {
+    return this.channel.len()
+  }
 }
 
 /**
@@ -684,6 +702,10 @@ export class ReceiveOnlyChannelRef<T> implements ChannelRef<T> {
 
   selectSend(_value: T, _id: number): Promise<SelectResult<boolean>> {
     throw new Error('Cannot send to receive-only channel')
+  }
+
+  len(): number {
+    return this.channel.len()
   }
 }
 

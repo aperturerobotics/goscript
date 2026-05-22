@@ -680,6 +680,7 @@ export const len = <T = unknown, V = unknown>(
     | Map<T, V>
     | Set<T>
     | Uint8Array
+    | { len(): number }
     | null
     | undefined,
 ): number => {
@@ -699,8 +700,12 @@ export const len = <T = unknown, V = unknown>(
     return obj.length
   }
 
-  if (isComplexSlice(obj)) {
-    return obj.__meta__.length
+  if (typeof (obj as any).len === 'function') {
+    return (obj as { len(): number }).len()
+  }
+
+  if (isComplexSlice(obj as any)) {
+    return (obj as SliceProxy<T>).__meta__.length
   }
 
   if (Array.isArray(obj)) {

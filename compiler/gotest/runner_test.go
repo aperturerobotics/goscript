@@ -95,6 +95,38 @@ func TestRunnerRunsAsyncSubtest(t *testing.T) {
 	}
 }
 
+func TestRunnerAwaitsAsyncDependencyCallsInTests(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/asyncdep\n\ngo 1.25.3\n",
+		"value_test.go": strings.Join([]string{
+			"package asyncdep",
+			"",
+			"import (",
+			"\t\"math/rand\"",
+			"\t\"testing\"",
+			")",
+			"",
+			"func TestAsyncDependencyCall(t *testing.T) {",
+			"\tr := rand.New(rand.NewSource(1))",
+			"\t_ = uint8(r.Intn(256))",
+			"}",
+			"",
+		}, "\n"),
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"."},
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run async dependency package: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected async dependency package to pass: %#v", result.Packages)
+	}
+}
+
 func TestRunnerRunsExternalPackageTest(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/external\n\ngo 1.25.3\n",
