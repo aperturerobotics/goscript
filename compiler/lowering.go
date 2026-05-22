@@ -5247,6 +5247,10 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperInterfaceValue) +
 			"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " + strconv.Quote(goRuntimeTypeString(sourceType)) + ")"
 	}
+	if isInterfaceType(targetType) && isInterfaceType(sourceType) &&
+		!types.Identical(targetType, sourceType) && types.AssignableTo(sourceType, targetType) {
+		return "(" + value + " as " + o.tsTypeFor(ctx, targetType) + ")"
+	}
 	if isStructValueType(targetType) && cloneStructValue {
 		return o.lowerStructClone(value)
 	}

@@ -65,7 +65,7 @@ export function unwrap(v: Value | null): Value | null {
 
 export async function wrapNew(__typeArgs: $.GenericTypeArgs | undefined, newValue: (() => any | Promise<any>) | null): Promise<(() => Value | null | Promise<Value | null>) | null> {
 	return $.functionValue(async (): Promise<Value | null> => {
-		return unwrap(await newValue!())
+		return unwrap((await newValue!() as Value | null))
 	}, { kind: $.TypeKind.Function, params: [], results: ["main.Value"] })
 }
 

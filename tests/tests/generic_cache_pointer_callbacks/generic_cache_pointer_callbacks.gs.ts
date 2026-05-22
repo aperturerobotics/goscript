@@ -137,7 +137,7 @@ export async function main(): Promise<void> {
 	let v: privateKey | $.VarRef<privateKey> | null = __goscriptTuple0[0]
 	let err = __goscriptTuple0[1]
 	if (err != null) {
-		$.panic(err)
+		$.panic((err as any))
 	}
 	$.println("cached:", $.pointerValue<privateKey>(v).D)
 }

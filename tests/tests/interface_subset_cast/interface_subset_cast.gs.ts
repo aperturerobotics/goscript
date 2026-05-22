@@ -84,7 +84,7 @@ export async function main(): Promise<void> {
 	let i1: MyInterface1 | null = $.interfaceValue<MyInterface1 | null>($.markAsStructValue($.cloneStructValue(s)), "main.MyStruct")
 
 	// Cast from larger interface to smaller interface (subset)
-	let i2: MyInterface2 | null = i1
+	let i2: MyInterface2 | null = (i1 as MyInterface2 | null)
 
 	$.println("i1.MyString1():", $.pointerValue<Exclude<MyInterface1, null>>(i1).MyString1())
 	$.println("i1.MyString2():", $.pointerValue<Exclude<MyInterface1, null>>(i1).MyString2())

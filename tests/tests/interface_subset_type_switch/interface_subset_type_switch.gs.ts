@@ -110,17 +110,17 @@ export async function main(): Promise<void> {
 
 	// Test with MyInterface1
 	let i1: MyInterface1 | null = $.interfaceValue<MyInterface1 | null>($.markAsStructValue($.cloneStructValue(s)), "main.MyStruct")
-	processInterface(i1)
+	processInterface((i1 as any))
 
 	// Test with MyInterface2
 	let i2: MyInterface2 | null = $.interfaceValue<MyInterface2 | null>($.markAsStructValue($.cloneStructValue(s)), "main.MyStruct")
-	processInterface(i2)
+	processInterface((i2 as any))
 
 	// Test with concrete type
 	processInterface($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(s)), "main.MyStruct"))
 
 	// Type switch with subset casting
-	let i3: any = i1
+	let i3: any = (i1 as any)
 	{
 		const __goscriptTypeSwitchValue = i3
 		switch (true) {
