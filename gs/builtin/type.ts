@@ -234,6 +234,13 @@ export const registerStructType = (
   return typeInfo
 }
 
+function resolveZeroValue<T>(zeroValue: any): T {
+  if (typeof zeroValue === 'function') {
+    return zeroValue() as T
+  }
+  return zeroValue as T
+}
+
 /**
  * Registers an interface type with the runtime type system.
  *
@@ -1124,10 +1131,10 @@ export function typeAssert<T>(
   if (typeof typeInfo === 'string') {
     const registeredType = typeRegistry.get(typeInfo)
     if (registeredType && registeredType.zeroValue !== undefined) {
-      return { value: registeredType.zeroValue as T, ok: false }
+      return { value: resolveZeroValue<T>(registeredType.zeroValue), ok: false }
     }
   } else if (normalizedType.zeroValue !== undefined) {
-    return { value: normalizedType.zeroValue as T, ok: false }
+    return { value: resolveZeroValue<T>(normalizedType.zeroValue), ok: false }
   }
 
   return { value: null as unknown as T, ok: false }

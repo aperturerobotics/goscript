@@ -363,7 +363,7 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 	b.WriteString("(\n")
 	b.WriteString("\t\t")
 	b.WriteString(strconvQuote(structType.typeName))
-	b.WriteString(",\n\t\tnew ")
+	b.WriteString(",\n\t\t() => new ")
 	b.WriteString(structType.name)
 	b.WriteString("(),\n\t\t[")
 	for idx, method := range structType.methods {
