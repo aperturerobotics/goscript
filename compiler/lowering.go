@@ -630,15 +630,15 @@ func safeIdentifier(value string) string {
 	}
 	identifier := b.String()
 	switch identifier {
-	case "abstract", "any", "as", "asserts", "async", "await", "boolean", "break", "case",
-		"catch", "class", "const", "constructor", "continue", "debugger", "declare", "default",
-		"delete", "do", "else", "enum", "export", "extends", "false", "finally", "for",
-		"from", "function", "get", "if", "implements", "import", "in", "infer", "instanceof",
-		"interface", "is", "keyof", "let", "module", "namespace", "never", "new", "null",
-		"number", "object", "of", "package", "private", "protected", "public", "readonly",
-		"require", "return", "set", "static", "string", "super", "switch", "symbol", "this",
-		"throw", "true", "try", "type", "typeof", "undefined", "unique", "unknown", "var",
-		"void", "while", "with", "yield":
+	case "abstract", "any", "arguments", "as", "asserts", "async", "await", "boolean",
+		"break", "case", "catch", "class", "const", "constructor", "continue", "debugger",
+		"declare", "default", "delete", "do", "else", "enum", "export", "extends", "false",
+		"finally", "for", "from", "function", "get", "if", "implements", "import", "in",
+		"infer", "instanceof", "interface", "is", "keyof", "let", "module", "namespace",
+		"never", "new", "null", "number", "object", "of", "package", "private", "protected",
+		"public", "readonly", "require", "return", "set", "static", "string", "super",
+		"switch", "symbol", "this", "throw", "true", "try", "type", "typeof", "undefined",
+		"unique", "unknown", "var", "void", "while", "with", "yield":
 		return "_" + identifier
 	default:
 		return identifier

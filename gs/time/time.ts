@@ -632,6 +632,8 @@ export class Time {
 // Duration represents a span of time (nanoseconds)
 export type Duration = number
 
+const maxDuration = 9223372036854775807
+const minDuration = -9223372036854775808
 const maxTimerDelayMilliseconds = 0x7fffffff
 
 function timeoutMilliseconds(d: Duration): number {
@@ -658,9 +660,60 @@ export function Duration_multiply(
   return receiver * multiplier
 }
 
+export function Duration_Abs(receiver: Duration): Duration {
+  if (receiver >= 0) {
+    return receiver
+  }
+  if (receiver === minDuration) {
+    return maxDuration
+  }
+  return -receiver
+}
+
+export function Duration_Hours(receiver: Duration): number {
+  return receiver / Hour
+}
+
+export function Duration_Microseconds(receiver: Duration): number {
+  return Math.trunc(receiver / Microsecond)
+}
+
+export function Duration_Milliseconds(receiver: Duration): number {
+  return Math.trunc(receiver / Millisecond)
+}
+
+export function Duration_Minutes(receiver: Duration): number {
+  return receiver / Minute
+}
+
+export function Duration_Nanoseconds(receiver: Duration): number {
+  return receiver
+}
+
+export function Duration_Round(receiver: Duration, multiple: Duration): Duration {
+  if (multiple <= 0) {
+    return receiver
+  }
+  const rounded =
+    receiver >= 0 ?
+      Math.floor(receiver / multiple + 0.5) * multiple
+    : Math.ceil(receiver / multiple - 0.5) * multiple
+  return Math.max(minDuration, Math.min(maxDuration, rounded))
+}
+
 // Duration_Seconds returns the duration as a floating point number of seconds.
 export function Duration_Seconds(receiver: Duration): number {
   return receiver / Second
+}
+
+export function Duration_Truncate(
+  receiver: Duration,
+  multiple: Duration,
+): Duration {
+  if (multiple <= 0) {
+    return receiver
+  }
+  return receiver - (receiver % multiple)
 }
 
 export function Duration_String(receiver: Duration): string {
@@ -687,6 +740,19 @@ export function Duration_String(receiver: Duration): string {
     out += formatSeconds(seconds, remaining)
   }
   return out
+}
+
+export function Duration_format(
+  receiver: Duration,
+  buf: $.VarRef<number[]>,
+): number {
+  const text = Duration_String(receiver)
+  const bytes = Array.from(new TextEncoder().encode(text))
+  const start = Math.max(0, buf.value.length - bytes.length)
+  for (let idx = 0; idx < bytes.length && start + idx < buf.value.length; idx++) {
+    buf.value[start + idx] = bytes[idx]!
+  }
+  return start
 }
 
 function formatSeconds(seconds: number, nanos: number): string {
