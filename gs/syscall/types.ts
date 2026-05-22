@@ -21,7 +21,7 @@ export interface Sockaddr {}
 
 export class SockaddrInet4 implements Sockaddr {
   public Port: number = 0
-  public Addr: number[] = [0, 0, 0, 0]
+  public Addr: Uint8Array = new Uint8Array(4)
 
   constructor(init?: Partial<SockaddrInet4>) {
     if (init) {
@@ -32,7 +32,7 @@ export class SockaddrInet4 implements Sockaddr {
   public clone(): SockaddrInet4 {
     return new SockaddrInet4({
       Port: this.Port,
-      Addr: [...this.Addr],
+      Addr: new Uint8Array(this.Addr),
     })
   }
 }
@@ -40,7 +40,7 @@ export class SockaddrInet4 implements Sockaddr {
 export class SockaddrInet6 implements Sockaddr {
   public Port: number = 0
   public ZoneId: number = 0
-  public Addr: number[] = Array.from({ length: 16 }, () => 0)
+  public Addr: Uint8Array = new Uint8Array(16)
 
   constructor(init?: Partial<SockaddrInet6>) {
     if (init) {
@@ -52,7 +52,7 @@ export class SockaddrInet6 implements Sockaddr {
     return new SockaddrInet6({
       Port: this.Port,
       ZoneId: this.ZoneId,
-      Addr: [...this.Addr],
+      Addr: new Uint8Array(this.Addr),
     })
   }
 }

@@ -225,6 +225,10 @@ describe('builtin runtime contract helpers', () => {
     expect(() => sliceToArray<number>(source, 3)).toThrow(
       'cannot convert slice with length 2 to array with length 3',
     )
+
+    expect(sliceToArray<number>(new Uint8Array([4, 5, 6]), 2, 'byte')).toEqual(
+      new Uint8Array([4, 5]),
+    )
   })
 
   it('exposes value and type descriptor helpers', () => {

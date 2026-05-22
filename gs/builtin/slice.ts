@@ -113,11 +113,15 @@ export function asArray<T>(slice: Slice<T>): T[] {
 export function sliceToArray<T>(
   slice: Slice<T> | Uint8Array,
   length: number,
-): T[] {
+  typeHint?: string,
+): T[] | Uint8Array {
   if (len(slice) < length) {
     throw new Error(
       `runtime error: cannot convert slice with length ${len(slice)} to array with length ${length}`,
     )
+  }
+  if (typeHint === 'byte') {
+    return new Uint8Array(asArray(slice as Slice<T>).slice(0, length) as number[])
   }
   return asArray(slice as Slice<T>).slice(0, length)
 }
@@ -125,11 +129,15 @@ export function sliceToArray<T>(
 export function sliceToArrayPointer<T>(
   slice: Slice<T> | Uint8Array,
   length: number,
-): VarRef<T[]> {
+  typeHint?: string,
+): VarRef<T[] | Uint8Array> {
   if (len(slice) < length) {
     throw new Error(
       `runtime error: cannot convert slice with length ${len(slice)} to array pointer with length ${length}`,
     )
+  }
+  if (typeHint === 'byte') {
+    return varRef(new Uint8Array(asArray(slice as Slice<T>).slice(0, length) as number[]))
   }
   if (slice instanceof Uint8Array) {
     return varRef(goSlice(slice, 0, length) as unknown as T[])

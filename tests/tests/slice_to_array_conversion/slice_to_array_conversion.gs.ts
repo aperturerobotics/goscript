@@ -4,14 +4,13 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): globalThis.Promise<void> {
-	let values = $.arrayToSlice<number>([1, 2, 3])
-	let array = $.sliceToArray<number>($.goSlice(values, 1, undefined), 2)
+	let values = $.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)])
+	let array = ($.sliceToArray<number>($.goSlice(values, 1, undefined), 2, "byte") as unknown as Uint8Array)
 
-	$.println(array[0], array[1])
-	values![1] = 9
-	$.println(array[0], values![1])
+	$.println($.uint(array[0], 8), $.uint(array[1], 8))
+	values![1] = $.uint(9, 8)
+	$.println($.uint(array[0], 8), $.uint(values![1], 8))
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

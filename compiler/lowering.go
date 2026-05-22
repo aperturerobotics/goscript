@@ -5367,16 +5367,32 @@ func (o *LoweringOwner) lowerConversionExpr(
 	}
 	if array := pointerToArrayType(targetType); array != nil {
 		if slice, ok := types.Unalias(sourceType).Underlying().(*types.Slice); ok && types.Identical(array.Elem(), slice.Elem()) {
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperSliceToArrayPointer) +
+			result := o.runtimeOwner.QualifiedHelper(RuntimeHelperSliceToArrayPointer) +
 				"<" + o.tsTypeFor(ctx, array.Elem()) + ">(" +
-				value + ", " + strconv.FormatInt(array.Len(), 10) + ")", diagnostics
+				value + ", " + strconv.FormatInt(array.Len(), 10)
+			if isByteType(array.Elem()) {
+				result += `, "byte"`
+			}
+			result += ")"
+			if isByteType(array.Elem()) {
+				result = "(" + result + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")"
+			}
+			return result, diagnostics
 		}
 	}
 	if array, ok := types.Unalias(targetType).Underlying().(*types.Array); ok {
 		if slice, ok := types.Unalias(sourceType).Underlying().(*types.Slice); ok && types.Identical(array.Elem(), slice.Elem()) {
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperSliceToArray) +
+			result := o.runtimeOwner.QualifiedHelper(RuntimeHelperSliceToArray) +
 				"<" + o.tsTypeFor(ctx, array.Elem()) + ">(" +
-				value + ", " + strconv.FormatInt(array.Len(), 10) + ")", diagnostics
+				value + ", " + strconv.FormatInt(array.Len(), 10)
+			if isByteType(array.Elem()) {
+				result += `, "byte"`
+			}
+			result += ")"
+			if isByteType(array.Elem()) {
+				result = "(" + result + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")"
+			}
+			return result, diagnostics
 		}
 	}
 	if conversion, ok := o.lowerNamedStructConversion(ctx, expr.Args[0], targetType, sourceType, value); ok {
@@ -6506,6 +6522,9 @@ func (o *LoweringOwner) lowerArrayCompositeLit(
 		}
 		nextIndex = index + 1
 	}
+	if isByteType(array.Elem()) {
+		return "new Uint8Array([" + strings.Join(values, ", ") + "])", diagnostics
+	}
 	return "[" + strings.Join(values, ", ") + "]", diagnostics
 }
 
@@ -6806,6 +6825,9 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 		}
 		return "undefined"
 	case *types.Array:
+		if isByteType(typed.Elem()) {
+			return "new Uint8Array(" + strconv.FormatInt(typed.Len(), 10) + ")"
+		}
 		elem := o.lowerZeroValueExprFor(ctx, typed.Elem())
 		return "Array.from({ length: " + strconv.FormatInt(typed.Len(), 10) + " }, () => " + arrowBodyExpr(elem) + ")"
 	case *types.Struct:
@@ -7198,6 +7220,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		}
 		return "unknown"
 	case *types.Array:
+		if isByteType(typed.Elem()) {
+			return "Uint8Array"
+		}
 		return tsArrayType(o.tsTypeFor(ctx, typed.Elem()))
 	case *types.Slice:
 		return "$.Slice<" + o.tsTypeFor(ctx, typed.Elem()) + ">"
@@ -7325,6 +7350,9 @@ func zeroValueExpr(typ types.Type) string {
 		}
 		return "undefined"
 	case *types.Array:
+		if isByteType(typed.Elem()) {
+			return "new Uint8Array(" + strconv.FormatInt(typed.Len(), 10) + ")"
+		}
 		elem := zeroValueExpr(typed.Elem())
 		return "Array.from({ length: " + strconv.FormatInt(typed.Len(), 10) + " }, () => " + arrowBodyExpr(elem) + ")"
 	case *types.Struct:

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/netip"
 	"syscall"
 )
 
@@ -46,5 +47,13 @@ func main() {
 		_ = syscall.ForkLock
 		_ = iovecs
 	}
+	var sa4 syscall.SockaddrInet4
+	addr4 := netip.AddrFrom4(sa4.Addr)
+	sa4.Addr = addr4.As4()
+
+	var sa6 syscall.SockaddrInet6
+	addr6 := netip.AddrFrom16(sa6.Addr)
+	sa6.Addr = addr6.As16()
+
 	fmt.Println("set nonblock ok")
 }

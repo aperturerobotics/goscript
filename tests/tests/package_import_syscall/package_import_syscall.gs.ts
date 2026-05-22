@@ -5,6 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as fmt from "@goscript/fmt/index.js"
 
+import * as netip from "@goscript/net/netip/index.js"
+
 import * as syscall from "@goscript/syscall/index.js"
 
 import * as sync from "@goscript/sync/index.js"
@@ -25,18 +27,18 @@ export async function main(): globalThis.Promise<void> {
 			return
 		}
 	}
-	if (syscall.F_DUPFD_CLOEXEC != 0) {
+	if ((syscall.F_DUPFD_CLOEXEC as number) != 0) {
 		fmt.Println("cloexec supported")
 	}
 	if (false) {
 		let st: $.VarRef<syscall.Stat_t> = $.varRef($.markAsStructValue(new syscall.Stat_t()))
-		let buf: $.Slice<number> = null
-		let iovecs: $.Slice<syscall.Iovec> = null
+		let buf: $.Slice<number> = null as $.Slice<number>
+		let iovecs: $.Slice<syscall.Iovec> = null as $.Slice<syscall.Iovec>
 		syscall.Accept(-1)
 		syscall.Close(-1)
 		syscall.Dup(-1)
 		syscall.Fchdir(-1)
-		syscall.Fchmod(-1, 0)
+		syscall.Fchmod(-1, $.uint(0, 32))
 		syscall.Fchown(-1, 0, 0)
 		syscall.Fstat(-1, st)
 		syscall.Fsync(-1)
@@ -56,6 +58,14 @@ export async function main(): globalThis.Promise<void> {
 		syscall.ForkLock
 		iovecs
 	}
+	let sa4: syscall.SockaddrInet4 = $.markAsStructValue(new syscall.SockaddrInet4())
+	let addr4 = $.markAsStructValue($.cloneStructValue(netip.AddrFrom4(sa4.Addr)))
+	sa4.Addr = $.markAsStructValue($.cloneStructValue(addr4)).As4()
+
+	let sa6: syscall.SockaddrInet6 = $.markAsStructValue(new syscall.SockaddrInet6())
+	let addr6 = $.markAsStructValue($.cloneStructValue(netip.AddrFrom16(sa6.Addr)))
+	sa6.Addr = $.markAsStructValue($.cloneStructValue(addr6)).As16()
+
 	fmt.Println("set nonblock ok")
 }
 
