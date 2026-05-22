@@ -180,6 +180,7 @@ func (o *LoweringOwner) lowerFile(
 		o.addGeneratedTypeImports(model, semPkg, importSourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
 	}
 	localAliases, localAliasSources, implicitImports := o.localFileAliases(semPkg, file, sourcePath, associatedMethods)
+	lazyPackageVars := o.lazyPackageVars(semPkg)
 	implicitImportPaths := make([]string, 0, len(implicitImports))
 	for pkgPath := range implicitImports {
 		if pkgPath != "" && pkgPath != semPkg.pkgPath {
@@ -206,16 +207,17 @@ func (o *LoweringOwner) lowerFile(
 	loweredFile.imports = append(loweredFile.imports, localImports...)
 
 	ctx := lowerFileContext{
-		model:         model,
-		semPkg:        semPkg,
-		file:          file,
-		importAliases: importAliases,
-		importPaths:   importPaths,
-		importNames:   importNames,
-		sourcePath:    sourcePath,
-		localAliases:  localAliases,
-		tempNames:     newTempNameOwner(),
-		topLevel:      true,
+		model:           model,
+		semPkg:          semPkg,
+		file:            file,
+		importAliases:   importAliases,
+		importPaths:     importPaths,
+		importNames:     importNames,
+		sourcePath:      sourcePath,
+		localAliases:    localAliases,
+		lazyPackageVars: lazyPackageVars,
+		tempNames:       newTempNameOwner(),
+		topLevel:        true,
 	}
 	var diagnostics []Diagnostic
 	appendDecls := func(decls []loweredDecl) {
@@ -666,6 +668,7 @@ type lowerFileContext struct {
 	importNames       map[string]string
 	sourcePath        string
 	localAliases      map[types.Object]string
+	lazyPackageVars   map[types.Object]bool
 	identAliases      map[types.Object]string
 	tempNames         *tempNameOwner
 	signature         *types.Signature
@@ -817,7 +820,12 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				if name.Name == "_" {
 					declName = ctx.tempName("Blank")
 				}
+				lazy := ctx.topLevel && ctx.lazyPackageVars[obj]
 				code := keyword + " " + declName + ": " + variableType + " = " + value
+				if lazy {
+					keyword = "let"
+					code = "let " + declName + ": " + variableType + " = undefined as unknown as " + variableType
+				}
 				indexExport := ""
 				if ctx.topLevel && name.Name != "_" {
 					code = "export " + code
@@ -826,6 +834,17 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					}
 				}
 				decls = append(decls, loweredDecl{code: code, indexExport: indexExport})
+				if lazy {
+					getterName := packageVarGetterName(name.Name)
+					getterCode := "export function " + getterName + "(): " + variableType + " {\n\t" +
+						"if (((" + declName + ") as any) === undefined) {\n\t\t" +
+						declName + " = " + value + "\n\t}\n\treturn " + declName + "\n}"
+					getterIndexExport := ""
+					if ast.IsExported(name.Name) {
+						getterIndexExport = getterName
+					}
+					decls = append(decls, loweredDecl{code: getterCode, indexExport: getterIndexExport})
+				}
 				if ctx.topLevel && ast.IsExported(name.Name) && keyword != "const" {
 					setterName := packageVarSetterName(name.Name)
 					setterType := o.tsPackageVarSetterValueTypeFor(ctx, obj.Type())
@@ -897,6 +916,118 @@ func initializerMayHaveRuntimeEffects(ctx lowerFileContext, expr ast.Expr) bool 
 		return true
 	})
 	return hasEffects
+}
+
+func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage) map[types.Object]bool {
+	if semPkg == nil || semPkg.source == nil {
+		return nil
+	}
+	declFiles := make(map[types.Object]string)
+	for _, decl := range semPkg.declarations {
+		if decl.object != nil && decl.position.file != "" {
+			declFiles[decl.object] = decl.position.file
+		}
+	}
+	lazy := make(map[types.Object]bool)
+	for idx, file := range semPkg.source.Syntax {
+		sourcePath := sourceFilePath(semPkg, idx, file)
+		for _, decl := range file.Decls {
+			genDecl, ok := decl.(*ast.GenDecl)
+			if !ok || genDecl.Tok != token.VAR {
+				continue
+			}
+			for _, spec := range genDecl.Specs {
+				valueSpec, ok := spec.(*ast.ValueSpec)
+				if !ok {
+					continue
+				}
+				for valueIdx, name := range valueSpec.Names {
+					obj, _ := semPkg.source.TypesInfo.Defs[name].(*types.Var)
+					if obj == nil {
+						continue
+					}
+					if valueIdx < len(valueSpec.Values) &&
+						initializerReferencesOtherFileObject(semPkg, declFiles, sourcePath, valueSpec.Values[valueIdx]) {
+						lazy[obj] = true
+						continue
+					}
+					if valueIdx >= len(valueSpec.Values) &&
+						zeroValueReferencesOtherFileObject(semPkg, declFiles, sourcePath, obj.Type()) {
+						lazy[obj] = true
+					}
+				}
+			}
+		}
+	}
+	return lazy
+}
+
+func initializerReferencesOtherFileObject(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	sourcePath string,
+	expr ast.Expr,
+) bool {
+	references := false
+	ast.Inspect(expr, func(node ast.Node) bool {
+		if references {
+			return false
+		}
+		ident, ok := node.(*ast.Ident)
+		if !ok {
+			return true
+		}
+		obj := semPkg.source.TypesInfo.Uses[ident]
+		if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() != semPkg.pkgPath {
+			return true
+		}
+		if declFile := declFiles[obj]; declFile != "" && declFile != sourcePath {
+			references = true
+			return false
+		}
+		return true
+	})
+	return references
+}
+
+func zeroValueReferencesOtherFileObject(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	sourcePath string,
+	typ types.Type,
+) bool {
+	return zeroValueReferencesOtherFileObjectSeen(semPkg, declFiles, sourcePath, typ, make(map[types.Type]bool))
+}
+
+func zeroValueReferencesOtherFileObjectSeen(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	sourcePath string,
+	typ types.Type,
+	seen map[types.Type]bool,
+) bool {
+	if typ == nil || seen[typ] {
+		return false
+	}
+	seen[typ] = true
+	if named := namedStructType(typ); named != nil {
+		if obj := named.Obj(); obj != nil && obj.Pkg() != nil && obj.Pkg().Path() == semPkg.pkgPath {
+			if declFile := declFiles[obj]; declFile != "" && declFile != sourcePath {
+				return true
+			}
+		}
+	}
+	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Array:
+		return zeroValueReferencesOtherFileObjectSeen(semPkg, declFiles, sourcePath, typed.Elem(), seen)
+	case *types.Struct:
+		for field := range typed.Fields() {
+			if zeroValueReferencesOtherFileObjectSeen(semPkg, declFiles, sourcePath, field.Type(), seen) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (o *LoweringOwner) lowerTupleValueSpec(
@@ -1754,6 +1885,10 @@ func expressionStmtText(text string) string {
 
 func packageVarSetterName(name string) string {
 	return "__goscript_set_" + safeIdentifier(name)
+}
+
+func packageVarGetterName(name string) string {
+	return "__goscript_get_" + safeIdentifier(name)
 }
 
 func (o *LoweringOwner) lowerElse(ctx lowerFileContext, stmt ast.Stmt) ([]loweredStmt, []Diagnostic) {
@@ -4347,10 +4482,24 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 		return alias
 	}
 	if alias := ctx.localAliases[obj]; alias != "" {
+		if ctx.lazyPackageVars[obj] {
+			lazyValue := alias + "." + packageVarGetterName(value) + "()"
+			if obj != nil && ctx.model.needsVarRef[obj] {
+				return lazyValue + ".value"
+			}
+			return lazyValue
+		}
 		return alias + "." + value
 	}
 	if raw {
 		return value
+	}
+	if ctx.lazyPackageVars[obj] {
+		lazyValue := packageVarGetterName(value) + "()"
+		if obj != nil && ctx.model.needsVarRef[obj] {
+			return lazyValue + ".value"
+		}
+		return lazyValue
 	}
 	if obj != nil && ctx.model.needsVarRef[obj] {
 		return value + ".value"
