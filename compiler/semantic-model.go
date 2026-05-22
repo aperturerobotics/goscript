@@ -324,6 +324,7 @@ func (o *SemanticModelOwner) recordCallSignatureImports(
 	}
 	position := sourcePos(pkg, expr.Pos())
 	o.recordTupleImports(model, semPkg, position.file, pkg.PkgPath, signature.Params(), make(map[types.Type]bool))
+	o.recordTupleImports(model, semPkg, position.file, pkg.PkgPath, signature.Results(), make(map[types.Type]bool))
 }
 
 func (o *SemanticModelOwner) recordAsyncCompatibleFunctionAssignments(

@@ -176,7 +176,9 @@ func (o *LoweringOwner) lowerFile(
 			})
 		}
 	}
-	o.addGeneratedTypeImports(model, semPkg, sourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
+	for importSourcePath := range relevantImportFiles {
+		o.addGeneratedTypeImports(model, semPkg, importSourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
+	}
 	localAliases, localAliasSources := o.localFileAliases(semPkg, file, sourcePath, associatedMethods)
 	localImports := make([]loweredImport, 0, len(localAliases))
 	seenLocalImport := make(map[string]bool)
