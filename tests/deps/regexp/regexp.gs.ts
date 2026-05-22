@@ -1105,7 +1105,7 @@ export class Regexp {
 		let longest = $.pointerValue<Regexp>(re).longest
 
 		$.pointerValue<__goscript_backtrack.bitState>(b).push(re, $.uint(pc, 32), pos, false)
-		__goscriptLoop3953265: while ($.len($.pointerValue<__goscript_backtrack.bitState>(b).jobs) > 0) {
+		__goscriptLoop0: while ($.len($.pointerValue<__goscript_backtrack.bitState>(b).jobs) > 0) {
 			let l = $.len($.pointerValue<__goscript_backtrack.bitState>(b).jobs) - 1
 
 			let __goscriptShadow0 = $.uint($.pointerValue<__goscript_backtrack.bitState>(b).jobs![l].pc, 32)
@@ -1127,7 +1127,7 @@ export class Regexp {
 					case "CheckAndLoop":
 					{
 						if (!$.pointerValue<__goscript_backtrack.bitState>(b).shouldVisit($.uint(__goscriptShadow0, 32), __goscriptShadow1)) {
-							continue __goscriptLoop3953265
+							continue __goscriptLoop0
 						}
 						__goscriptGotoState0 = "Skip"
 						continue __goscriptGotoLoop0
@@ -1194,7 +1194,7 @@ export class Regexp {
 								let r = $.int(__goscriptTuple13[0], 32)
 								let width = __goscriptTuple13[1]
 								if (!syntax.Inst.prototype.MatchRune.call(inst, $.int(r, 32))) {
-									continue __goscriptLoop3953265
+									continue __goscriptLoop0
 								}
 								__goscriptShadow1 += width
 								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
@@ -1208,7 +1208,7 @@ export class Regexp {
 								let r = $.int(__goscriptTuple14[0], 32)
 								let width = __goscriptTuple14[1]
 								if ($.int(r, 32) != $.int($.pointerValue<syntax.Inst>(inst).Rune![0], 32)) {
-									continue __goscriptLoop3953265
+									continue __goscriptLoop0
 								}
 								__goscriptShadow1 += width
 								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
@@ -1222,7 +1222,7 @@ export class Regexp {
 								let r = $.int(__goscriptTuple15[0], 32)
 								let width = __goscriptTuple15[1]
 								if (($.int(r, 32) == $.int(10, 32)) || ($.int(r, 32) == $.int(endOfText, 32))) {
-									continue __goscriptLoop3953265
+									continue __goscriptLoop0
 								}
 								__goscriptShadow1 += width
 								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
@@ -1236,7 +1236,7 @@ export class Regexp {
 								let r = $.int(__goscriptTuple16[0], 32)
 								let width = __goscriptTuple16[1]
 								if ($.int(r, 32) == $.int(endOfText, 32)) {
-									continue __goscriptLoop3953265
+									continue __goscriptLoop0
 								}
 								__goscriptShadow1 += width
 								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
@@ -1249,7 +1249,7 @@ export class Regexp {
 								if (arg) {
 
 									$.pointerValue<__goscript_backtrack.bitState>(b).cap![$.pointerValue<syntax.Inst>(inst).Arg] = __goscriptShadow1
-									continue __goscriptLoop3953265
+									continue __goscriptLoop0
 								} else {
 									if ($.pointerValue<syntax.Inst>(inst).Arg < $.uint($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap), 32)) {
 										// large pool
@@ -1266,7 +1266,7 @@ export class Regexp {
 							{
 								let flag = $.pointerValue<Exclude<input, null>>(i).context(__goscriptShadow1)
 								if (!__goscript_exec.lazyFlag_match(flag, $.uint($.pointerValue<syntax.Inst>(inst).Arg, 8))) {
-									continue __goscriptLoop3953265
+									continue __goscriptLoop0
 								}
 								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
@@ -1304,7 +1304,7 @@ export class Regexp {
 									return true
 								}
 
-								continue __goscriptLoop3953265
+								continue __goscriptLoop0
 								break
 							}
 						}

@@ -2413,7 +2413,7 @@ func (o *LoweringOwner) lowerBackwardGotoLoop(
 	var diagnostics []Diagnostic
 	bodyCtx := ctx.withGotoLabels(gotoLabels)
 	if initialForwardLabel != "" {
-		skipVar := "__goscriptSkip" + strconv.Itoa(int(stmts[labelIdx].Pos()))
+		skipVar := ctx.tempName("Skip")
 		init := loweredStmt{text: "let " + skipVar + " = true"}
 		if len(leading) != 0 {
 			init.leading = append(leading, init.leading...)
@@ -2979,7 +2979,13 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 	ctx lowerFileContext,
 	assign *ast.AssignStmt,
 ) map[types.Object]string {
+	type shortDeclDef struct {
+		name string
+		def  types.Object
+	}
+
 	defsByName := make(map[string]types.Object)
+	var defs []shortDeclDef
 	for _, expr := range assign.Lhs {
 		ident, ok := expr.(*ast.Ident)
 		if !ok || ident.Name == "_" {
@@ -2988,6 +2994,7 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 		obj := ctx.semPkg.source.TypesInfo.Defs[ident]
 		if obj != nil {
 			defsByName[ident.Name] = obj
+			defs = append(defs, shortDeclDef{name: ident.Name, def: obj})
 		}
 	}
 	if len(defsByName) == 0 {
@@ -3010,21 +3017,21 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 			}
 			return true
 		})
-		for name, def := range defsByName {
-			if def == nil || aliases[def] != "" {
+		for _, entry := range defs {
+			if entry.def == nil || aliases[entry.def] != "" {
 				continue
 			}
-			if o.mapIndexDefaultUsesShortDeclName(ctx, rhs, name) {
-				aliases[def] = ctx.tempName("Shadow")
+			if o.mapIndexDefaultUsesShortDeclName(ctx, rhs, entry.name) {
+				aliases[entry.def] = ctx.tempName("Shadow")
 			}
 		}
 	}
-	for name, def := range defsByName {
-		if def == nil || aliases[def] != "" {
+	for _, entry := range defs {
+		if entry.def == nil || aliases[entry.def] != "" {
 			continue
 		}
-		if shortDeclDefShadowsOuterName(name, def) {
-			aliases[def] = ctx.tempName("Shadow")
+		if shortDeclDefShadowsOuterName(entry.name, entry.def) {
+			aliases[entry.def] = ctx.tempName("Shadow")
 		}
 	}
 	return aliases
@@ -3580,7 +3587,7 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 	bodyCtx := ctx.withoutRangeLoopBranches()
 	loopLabel := ""
 	if stmtListNeedsLoopBranchLabel(stmt.Body.List) {
-		loopLabel = "__goscriptLoop" + strconv.Itoa(int(stmt.For))
+		loopLabel = ctx.tempName("Loop")
 		bodyCtx = bodyCtx.withLoopLabel(loopLabel)
 	}
 	if stmt.Init == nil && stmt.Post == nil {
@@ -3921,9 +3928,9 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 	paramNames := rangeFuncParamNames(paramKeyName, paramValueName, yieldSignature.Params().Len(), ctx.tempName("Range"))
 
 	parentBranch := ctx.rangeBranch
-	rangeBranch := &loweredRangeBranch{hasReturn: "__goscriptRangeReturn" + strconv.Itoa(int(stmt.Pos()))}
+	rangeBranch := &loweredRangeBranch{hasReturn: ctx.tempName("RangeReturn")}
 	if ctx.signature != nil && ctx.signature.Results() != nil && ctx.signature.Results().Len() != 0 {
-		rangeBranch.value = "__goscriptRangeReturnValue" + strconv.Itoa(int(stmt.Pos()))
+		rangeBranch.value = ctx.tempName("RangeReturnValue")
 		rangeBranch.resultType = o.tsSignatureResultFor(ctx, ctx.signature)
 	}
 	body, diagnostics := o.lowerBlock(ctx.withRangeBranch(rangeBranch), stmt.Body)
