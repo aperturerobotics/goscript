@@ -73,6 +73,32 @@ func mixedForwardBackwardDecl(limit int) int {
 	return total
 }
 
+func stateMachineGoto(start int) int {
+	total := start
+	if start == 0 {
+		goto readLiteral
+	}
+	goto copyHistory
+
+readLiteral:
+	{
+		total++
+		if total < 2 {
+			goto readLiteral
+		}
+		goto copyHistory
+	}
+
+copyHistory:
+	{
+		total += 10
+		if total < 15 {
+			goto readLiteral
+		}
+	}
+	return total
+}
+
 func main() {
 	println("skip negative:", skipToLabel(-1))
 	println("skip positive:", skipToLabel(1))
@@ -82,4 +108,6 @@ func main() {
 	println("mixed large:", mixedForwardBackward(5))
 	println("label decl:", labelBeforeShortDecl(2))
 	println("mixed decl:", mixedForwardBackwardDecl(2))
+	println("state zero:", stateMachineGoto(0))
+	println("state one:", stateMachineGoto(1))
 }

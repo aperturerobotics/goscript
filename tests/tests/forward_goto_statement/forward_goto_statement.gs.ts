@@ -32,29 +32,46 @@ export function mixedForwardBackward(limit: number): number {
 	let total = 0
 	__goscriptLoop328: while (total < limit) {
 		total++
-		let __goscriptSkip376 = true
-		checkAndLoop: while (true) {
-			if (!__goscriptSkip376) {
-				if (total >= limit) {
-					continue __goscriptLoop328
+		let __goscriptGotoState0 = "__entry"
+		__goscriptGotoLoop0: while (true) {
+			switch (__goscriptGotoState0) {
+				case "__entry":
+				{
+					__goscriptGotoState0 = "skipVisit"
+					continue __goscriptGotoLoop0
+					__goscriptGotoState0 = "checkAndLoop"
+					continue __goscriptGotoLoop0
+					break
 				}
-			}
-			__goscriptSkip376 = false
-
-			skipVisit: {
-				switch (total % 3) {
-					case 0:
-					{
-						total += 2
-						continue checkAndLoop
-						break
+				case "checkAndLoop":
+				{
+					if (total >= limit) {
+						continue __goscriptLoop328
 					}
-					case 1:
-					{
-						total += 3
-						continue checkAndLoop
-						break
+					__goscriptGotoState0 = "skipVisit"
+					continue __goscriptGotoLoop0
+					break
+				}
+				case "skipVisit":
+				{
+					switch (total % 3) {
+						case 0:
+						{
+							total += 2
+							__goscriptGotoState0 = "checkAndLoop"
+							continue __goscriptGotoLoop0
+							break
+						}
+						case 1:
+						{
+							total += 3
+							__goscriptGotoState0 = "checkAndLoop"
+							continue __goscriptGotoLoop0
+							break
+						}
 					}
+					break __goscriptGotoLoop0
+					break
 				}
 			}
 			break
@@ -78,21 +95,88 @@ export function labelBeforeShortDecl(v: number): number {
 export function mixedForwardBackwardDecl(limit: number): number {
 	let total = 0
 	__goscriptLoop751: while (total < limit) {
-		let __goscriptSkip784 = true
-		check: while (true) {
-			if (!__goscriptSkip784) {
-				if (total >= limit) {
-					continue __goscriptLoop751
+		let __goscriptGotoState1 = "__entry"
+		__goscriptGotoLoop1: while (true) {
+			switch (__goscriptGotoState1) {
+				case "__entry":
+				{
+					__goscriptGotoState1 = "skip"
+					continue __goscriptGotoLoop1
+					__goscriptGotoState1 = "check"
+					continue __goscriptGotoLoop1
+					break
+				}
+				case "check":
+				{
+					if (total >= limit) {
+						continue __goscriptLoop751
+					}
+					__goscriptGotoState1 = "skip"
+					continue __goscriptGotoLoop1
+					break
+				}
+				case "skip":
+				{
+					let x = total + 1
+					total = x
+					__goscriptGotoState1 = "check"
+					continue __goscriptGotoLoop1
+					break __goscriptGotoLoop1
+					break
 				}
 			}
-			__goscriptSkip784 = false
-
-			skip:;
-			let x = total + 1
-			total = x
-			continue check
 			break
 		}
+	}
+	return total
+}
+
+export function stateMachineGoto(start: number): number {
+	let total = start
+	let __goscriptGotoState2 = "__entry"
+	__goscriptGotoLoop2: while (true) {
+		switch (__goscriptGotoState2) {
+			case "__entry":
+			{
+				if (start == 0) {
+					__goscriptGotoState2 = "readLiteral"
+					continue __goscriptGotoLoop2
+				}
+				__goscriptGotoState2 = "copyHistory"
+				continue __goscriptGotoLoop2
+				__goscriptGotoState2 = "readLiteral"
+				continue __goscriptGotoLoop2
+				break
+			}
+			case "readLiteral":
+			{
+				{
+					total++
+					if (total < 2) {
+						__goscriptGotoState2 = "readLiteral"
+						continue __goscriptGotoLoop2
+					}
+					__goscriptGotoState2 = "copyHistory"
+					continue __goscriptGotoLoop2
+				}
+				__goscriptGotoState2 = "copyHistory"
+				continue __goscriptGotoLoop2
+				break
+			}
+			case "copyHistory":
+			{
+				{
+					total += 10
+					if (total < 15) {
+						__goscriptGotoState2 = "readLiteral"
+						continue __goscriptGotoLoop2
+					}
+				}
+				break __goscriptGotoLoop2
+				break
+			}
+		}
+		break
 	}
 	return total
 }
@@ -106,6 +190,8 @@ export async function main(): globalThis.Promise<void> {
 	$.println("mixed large:", mixedForwardBackward(5))
 	$.println("label decl:", labelBeforeShortDecl(2))
 	$.println("mixed decl:", mixedForwardBackwardDecl(2))
+	$.println("state zero:", stateMachineGoto(0))
+	$.println("state one:", stateMachineGoto(1))
 }
 
 
