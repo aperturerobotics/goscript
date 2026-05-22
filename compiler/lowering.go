@@ -3370,11 +3370,6 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 		}
 		body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak().withSwitchBreak(), bodyStmts)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
-		if len(clause.List) == 0 {
-			switchIR.defaultBody = body
-			continue
-		}
-
 		values := make([]string, 0, len(clause.List))
 		for _, expr := range clause.List {
 			lowered, exprDiagnostics := o.lowerExpr(ctx, expr)
@@ -3382,6 +3377,7 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 			values = append(values, lowered)
 		}
 		switchIR.cases = append(switchIR.cases, loweredSwitchCase{
+			defaultCase:  len(clause.List) == 0,
 			values:       values,
 			body:         body,
 			fallsThrough: fallsThrough,
@@ -3468,9 +3464,6 @@ func loweredStmtsUseVarRefName(stmts []loweredStmt, name string) bool {
 				if loweredStmtsUseVarRefName(switchCase.body, name) {
 					return true
 				}
-			}
-			if loweredStmtsUseVarRefName(stmt.switchStmt.defaultBody, name) {
-				return true
 			}
 		}
 		if stmt.typeSwitch != nil {
@@ -3806,9 +3799,6 @@ func stmtsContainAwait(stmts []loweredStmt) bool {
 				if stmtsContainAwait(switchCase.body) {
 					return true
 				}
-			}
-			if stmtsContainAwait(stmt.switchStmt.defaultBody) {
-				return true
 			}
 		}
 		if stmt.typeSwitch != nil {

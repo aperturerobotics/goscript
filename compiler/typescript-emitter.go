@@ -544,18 +544,18 @@ func renderSwitch(b *strings.Builder, stmt *loweredSwitch, indent int) {
 	b.WriteString(stmt.value)
 	b.WriteString(") {\n")
 	for _, switchCase := range stmt.cases {
-		for _, value := range switchCase.values {
+		if switchCase.defaultCase {
 			writeIndent(b, indent+1)
-			b.WriteString("case ")
-			b.WriteString(value)
-			b.WriteString(":\n")
+			b.WriteString("default:\n")
+		} else {
+			for _, value := range switchCase.values {
+				writeIndent(b, indent+1)
+				b.WriteString("case ")
+				b.WriteString(value)
+				b.WriteString(":\n")
+			}
 		}
 		renderSwitchBody(b, switchCase.body, switchCase.fallsThrough, indent+1)
-	}
-	if len(stmt.defaultBody) != 0 {
-		writeIndent(b, indent+1)
-		b.WriteString("default:\n")
-		renderSwitchBody(b, stmt.defaultBody, false, indent+1)
 	}
 	writeIndent(b, indent)
 	b.WriteString("}\n")

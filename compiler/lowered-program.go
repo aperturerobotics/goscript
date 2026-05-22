@@ -135,12 +135,12 @@ type loweredDeferState struct {
 }
 
 type loweredSwitch struct {
-	value       string
-	cases       []loweredSwitchCase
-	defaultBody []loweredStmt
+	value string
+	cases []loweredSwitchCase
 }
 
 type loweredSwitchCase struct {
+	defaultCase  bool
 	values       []string
 	body         []loweredStmt
 	fallsThrough bool
