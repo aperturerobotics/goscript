@@ -1080,7 +1080,7 @@ func (o *LoweringOwner) tsMethodSignature(ctx lowerFileContext, method *types.Fu
 		return method.Name() + "(): unknown"
 	}
 	async := o.functionAsync(ctx, method)
-	return method.Name() + "(" + o.tsSignatureParamsFor(ctx, signature, false) + "): " +
+	return method.Name() + "(" + o.tsSignatureParamsFor(ctx, signature, async) + "): " +
 		asyncResultType(o.tsSignatureResultFor(ctx, signature), async)
 }
 
