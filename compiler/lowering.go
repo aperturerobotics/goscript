@@ -2974,12 +2974,17 @@ func (o *LoweringOwner) lowerForPostStmt(ctx lowerFileContext, stmt ast.Stmt) (s
 
 func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt) (loweredStmt, []Diagnostic) {
 	rangeValue, diagnostics := o.lowerExpr(ctx, stmt.X)
+	aliases := o.lowerRangeDeclShadowAliases(ctx, stmt)
+	bodyCtx := ctx
+	if len(aliases) != 0 {
+		bodyCtx = bodyCtx.withIdentAliases(aliases)
+	}
 
-	keyName := rangeKeyName(stmt.Key)
-	valueName := rangeKeyName(stmt.Value)
+	keyName := rangeKeyNameFor(ctx, stmt.Key, aliases)
+	valueName := rangeKeyNameFor(ctx, stmt.Value, aliases)
 	rangeType := ctx.semPkg.source.TypesInfo.TypeOf(stmt.X)
 	if isChannelType(rangeType) {
-		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
+		body, bodyDiagnostics := o.lowerBlock(bodyCtx.withoutRangeLoopBranches(), stmt.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		tempName := ctx.tempName("Range")
 		children := []loweredStmt{
@@ -3001,7 +3006,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		}, diagnostics
 	}
 	if isIntegerRangeType(rangeType) {
-		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
+		body, bodyDiagnostics := o.lowerBlock(bodyCtx.withoutRangeLoopBranches(), stmt.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		if keyName == "" {
 			keyName = "__rangeIndex"
@@ -3013,7 +3018,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		}, diagnostics
 	}
 	if isMapType(rangeType) {
-		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
+		body, bodyDiagnostics := o.lowerBlock(bodyCtx.withoutRangeLoopBranches(), stmt.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		key := keyName
 		if key == "" {
@@ -3030,7 +3035,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		}, diagnostics
 	}
 	if isStringType(rangeType) {
-		body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
+		body, bodyDiagnostics := o.lowerBlock(bodyCtx.withoutRangeLoopBranches(), stmt.Body)
 		diagnostics = append(diagnostics, bodyDiagnostics...)
 		key := keyName
 		if key == "" {
@@ -3056,7 +3061,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		return lowered, diagnostics
 	}
 
-	body, bodyDiagnostics := o.lowerBlock(ctx.withoutRangeLoopBranches(), stmt.Body)
+	body, bodyDiagnostics := o.lowerBlock(bodyCtx.withoutRangeLoopBranches(), stmt.Body)
 	diagnostics = append(diagnostics, bodyDiagnostics...)
 	rangeTarget := o.lowerArrayPointerTarget(ctx, rangeValue, rangeType)
 	indexTarget := o.lowerIndexTarget(ctx, rangeValue, rangeType)
@@ -3077,6 +3082,44 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		text:     "for (let " + indexName + " = 0; " + indexName + " < " + o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + rangeTarget + "); " + indexName + "++)",
 		children: children,
 	}, diagnostics
+}
+
+func (o *LoweringOwner) lowerRangeDeclShadowAliases(
+	ctx lowerFileContext,
+	stmt *ast.RangeStmt,
+) map[types.Object]string {
+	if stmt.Tok != token.DEFINE {
+		return nil
+	}
+	defsByName := make(map[string]types.Object)
+	for _, expr := range []ast.Expr{stmt.Key, stmt.Value} {
+		ident, ok := expr.(*ast.Ident)
+		if !ok || ident.Name == "_" {
+			continue
+		}
+		if def := ctx.semPkg.source.TypesInfo.Defs[ident]; def != nil {
+			defsByName[ident.Name] = def
+		}
+	}
+	if len(defsByName) == 0 {
+		return nil
+	}
+	aliases := make(map[types.Object]string)
+	ast.Inspect(stmt.X, func(node ast.Node) bool {
+		ident, ok := node.(*ast.Ident)
+		if !ok {
+			return true
+		}
+		def := defsByName[ident.Name]
+		if def == nil || aliases[def] != "" {
+			return true
+		}
+		if used := ctx.semPkg.source.TypesInfo.Uses[ident]; used != nil && used != def {
+			aliases[def] = ctx.tempName("RangeShadow")
+		}
+		return true
+	})
+	return aliases
 }
 
 func (o *LoweringOwner) lowerRangeFuncStmt(
@@ -3520,6 +3563,15 @@ func rangeKeyName(expr ast.Expr) string {
 		return ""
 	}
 	return safeIdentifier(ident.Name)
+}
+
+func rangeKeyNameFor(ctx lowerFileContext, expr ast.Expr, aliases map[types.Object]string) string {
+	if ident, ok := expr.(*ast.Ident); ok && ident.Name != "_" {
+		if alias := aliases[ctx.semPkg.source.TypesInfo.Defs[ident]]; alias != "" {
+			return alias
+		}
+	}
+	return rangeKeyName(expr)
 }
 
 func rangeFunctionSignature(typ types.Type) *types.Signature {
