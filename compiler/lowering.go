@@ -1178,14 +1178,18 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 	result := o.tsSignatureResultFor(resultCtx, signature)
 	deferState := &loweredDeferState{}
 	name := safeIdentifier(decl.Name.Name)
+	blankName := decl.Name.Name == "_"
+	if blankName {
+		name = ctx.tempName("BlankFunc")
+	}
 	runtimeName := ""
-	if decl.Recv != nil {
+	if decl.Recv != nil && !blankName {
 		name = methodMemberName(decl.Name.Name)
 		runtimeName = decl.Name.Name
 	}
 	lowered := &loweredFunction{
-		exported:      ctx.topLevel,
-		indexExported: ctx.topLevel && (ast.IsExported(decl.Name.Name) || decl.Name.Name == "main"),
+		exported:      ctx.topLevel && !blankName,
+		indexExported: ctx.topLevel && !blankName && (ast.IsExported(decl.Name.Name) || decl.Name.Name == "main"),
 		async:         async,
 		name:          name,
 		runtimeName:   runtimeName,
