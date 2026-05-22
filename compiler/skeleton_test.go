@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -1121,7 +1122,17 @@ func TestCompilePackagesLowersFunctionIteratorControlFlow(t *testing.T) {
 			"  }",
 			"  return -1",
 			"}",
-			"func main() { println(first(3)) }",
+			"func nestedReturn(limit int) int {",
+			"  for v := range values {",
+			"    for i := range values {",
+			"      if i == limit {",
+			"        return v + i",
+			"      }",
+			"    }",
+			"  }",
+			"  return -1",
+			"}",
+			"func main() { println(first(3), nestedReturn(2)) }",
 			"",
 		}, "\n"),
 	})
@@ -1159,6 +1170,10 @@ func TestCompilePackagesLowersFunctionIteratorControlFlow(t *testing.T) {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
 		}
+	}
+	nestedReturn := regexp.MustCompile(`if \(__goscriptRangeReturn\d+\) \{\n\t+__goscriptRangeReturn\d+ = true\n\t+__goscriptRangeReturnValue\d+ = __goscriptRangeReturnValue\d+!\n\t+return false\n\t+\}`)
+	if !nestedReturn.MatchString(text) {
+		t.Fatalf("missing nested range return propagation:\n%s", text)
 	}
 }
 

@@ -3372,6 +3372,7 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 	}
 	paramNames := rangeFuncParamNames(paramKeyName, paramValueName, yieldSignature.Params().Len(), ctx.tempName("Range"))
 
+	parentBranch := ctx.rangeBranch
 	rangeBranch := &loweredRangeBranch{hasReturn: "__goscriptRangeReturn" + strconv.Itoa(int(stmt.Pos()))}
 	if ctx.signature != nil && ctx.signature.Results() != nil && ctx.signature.Results().Len() != 0 {
 		rangeBranch.value = "__goscriptRangeReturnValue" + strconv.Itoa(int(stmt.Pos()))
@@ -3390,6 +3391,7 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 		body:         body,
 		async:        stmtsContainAwait(body) || o.rangeFunctionValueNeedsAwait(ctx, stmt.X),
 		returnBranch: rangeBranch,
+		parentBranch: parentBranch,
 	}}, diagnostics
 }
 

@@ -122,6 +122,7 @@ type loweredRangeFunc struct {
 	body         []loweredStmt
 	async        bool
 	returnBranch *loweredRangeBranch
+	parentBranch *loweredRangeBranch
 }
 
 type loweredRangeBranch struct {

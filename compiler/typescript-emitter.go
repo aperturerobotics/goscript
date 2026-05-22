@@ -625,6 +625,24 @@ func renderRangeFunc(b *strings.Builder, stmt *loweredRangeFunc, indent int) {
 	b.WriteString("if (")
 	b.WriteString(stmt.returnBranch.hasReturn)
 	b.WriteString(")")
+	if stmt.parentBranch != nil {
+		b.WriteString(" {\n")
+		writeIndent(b, indent+1)
+		b.WriteString(stmt.parentBranch.hasReturn)
+		b.WriteString(" = true\n")
+		if stmt.parentBranch.value != "" && stmt.returnBranch.value != "" {
+			writeIndent(b, indent+1)
+			b.WriteString(stmt.parentBranch.value)
+			b.WriteString(" = ")
+			b.WriteString(stmt.returnBranch.value)
+			b.WriteString("!\n")
+		}
+		writeIndent(b, indent+1)
+		b.WriteString("return false\n")
+		writeIndent(b, indent)
+		b.WriteString("}\n")
+		return
+	}
 	if stmt.returnBranch.value == "" {
 		b.WriteString(" {\n")
 		writeIndent(b, indent+1)
