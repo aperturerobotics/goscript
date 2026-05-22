@@ -29,6 +29,17 @@ func TestOwnerWritesWorkspaceFiles(t *testing.T) {
 	}
 }
 
+func TestOwnerRejectsWorkspacePathEscapes(t *testing.T) {
+	dir := t.TempDir()
+	owner := NewOwner(dir, dir)
+
+	for _, name := range []string{"../escape.ts", filepath.Join("nested", "..", "..", "escape.ts"), filepath.Join(dir, "escape.ts")} {
+		if result := owner.WriteFile(PhaseWorkspace, name, "escape"); !result.Failed() {
+			t.Fatalf("expected %s to fail", name)
+		}
+	}
+}
+
 func TestOwnerRunsToolsWithCapturedOutput(t *testing.T) {
 	dir := t.TempDir()
 	owner := NewOwner(dir, dir)

@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 
 	jsoniter "github.com/aperturerobotics/json-iterator-lite"
@@ -24,20 +25,6 @@ const (
 	// PhaseRuntime covers TypeScript runtime execution.
 	PhaseRuntime Phase = "runtime"
 )
-
-// Result describes one workspace file or process operation.
-type Result struct {
-	Phase   Phase
-	Command []string
-	Output  string
-	Error   string
-	Elapsed time.Duration
-}
-
-// Failed returns true when the operation failed.
-func (r Result) Failed() bool {
-	return r.Error != ""
-}
 
 // Owner owns TypeScript test workspace files, tool discovery, and execution.
 type Owner struct {
@@ -74,7 +61,10 @@ func (o *Owner) WriteFile(phase Phase, name string, data string) Result {
 	if err := os.MkdirAll(o.workDir, 0o755); err != nil {
 		return Result{Phase: phase, Error: errors.Wrap(err, "create TypeScript workspace").Error()}
 	}
-	path := filepath.Join(o.workDir, name)
+	path, err := o.workspacePath(name)
+	if err != nil {
+		return Result{Phase: phase, Error: err.Error()}
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return Result{Phase: phase, Error: errors.Wrap(err, "create TypeScript workspace file parent").Error()}
 	}
@@ -145,6 +135,17 @@ func (o *Owner) FindTool(name string) (string, error) {
 		return path, nil
 	}
 	return "", errors.New(name + " not found in PATH or ancestor node_modules/.bin")
+}
+
+func (o *Owner) workspacePath(name string) (string, error) {
+	if filepath.IsAbs(name) {
+		return "", errors.Errorf("TypeScript workspace path must be relative: %s", name)
+	}
+	clean := filepath.Clean(name)
+	if clean == "." || clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
+		return "", errors.Errorf("TypeScript workspace path escapes workspace: %s", name)
+	}
+	return filepath.Join(o.workDir, clean), nil
 }
 
 // NodeTypeRoots returns existing @types roots visible from the provided dirs.
