@@ -158,11 +158,7 @@ export class T {
     return path
   }
 
-  public Parallel(): never {
-    throw new TestControl(
-      'fatal',
-      'testing.T.Parallel is not supported by GoScript test',
-    )
+  public Parallel(): void {
   }
 
   public Setenv(key: string, value: string): void {
@@ -368,12 +364,26 @@ export async function runTests(
 
 function formatMessage(format: string, args: unknown[]): string {
   let index = 0
-  return format.replace(/%[vds]/g, () => formatValue(args[index++]))
+  return format.replace(/%#v|%q|%[vds]/g, (verb) => {
+    const value = args[index++]
+    if (verb === '%q') {
+      return JSON.stringify(String(value))
+    }
+    return formatValue(value)
+  })
 }
 
 function formatValue(value: unknown): string {
   if (value instanceof Error) {
     return value.message
+  }
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    'Error' in value &&
+    typeof value.Error === 'function'
+  ) {
+    return String(value.Error())
   }
   if (value === null) {
     return '<nil>'

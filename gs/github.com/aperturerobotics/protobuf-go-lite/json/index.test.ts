@@ -78,10 +78,11 @@ describe('protobuf-go-lite/json override', () => {
       a: new TestMessage('one', 1),
       b: new TestMessage('two', 2),
     })
-    const [sliceData, sliceErr] = MarshalSlice(undefined, DefaultMarshalerConfig, [
-      new TestMessage('one', 1),
-      new TestMessage('two', 2),
-    ])
+    const [sliceData, sliceErr] = MarshalSlice(
+      undefined,
+      DefaultMarshalerConfig,
+      [new TestMessage('one', 1), new TestMessage('two', 2)],
+    )
 
     expect(mapErr).toBeNull()
     expect(sliceErr).toBeNull()
@@ -99,7 +100,10 @@ describe('protobuf-go-lite/json override', () => {
       jsonBytes('{"name":"ok","count":"42"}'),
       msg,
     )
-    const state = NewUnmarshalState(jsonBytes('["Zm9vYg==","YXI="]'), DefaultUnmarshalerConfig)
+    const state = NewUnmarshalState(
+      jsonBytes('["Zm9vYg==","YXI="]'),
+      DefaultUnmarshalerConfig,
+    )
 
     expect(err).toBeNull()
     expect(msg).toEqual(new TestMessage('ok', 42))
@@ -120,7 +124,10 @@ describe('protobuf-go-lite/json override', () => {
 
   it('accepts raw wrapped values and object wrapped values', () => {
     const raw = NewUnmarshalState(jsonBytes('"abc"'), DefaultUnmarshalerConfig)
-    const object = NewUnmarshalState(jsonBytes('{"value": "def"}'), DefaultUnmarshalerConfig)
+    const object = NewUnmarshalState(
+      jsonBytes('{"value": "def"}'),
+      DefaultUnmarshalerConfig,
+    )
 
     expect(raw?.ReadWrappedString()).toBe('abc')
     expect(raw?.Err()).toBeNull()
@@ -129,13 +136,18 @@ describe('protobuf-go-lite/json override', () => {
   })
 
   it('reads and writes protobuf timestamp values as time.Time pointers', () => {
-    const state = NewUnmarshalState(jsonBytes('"2025-05-15T01:10:42Z"'), DefaultUnmarshalerConfig)
+    const state = NewUnmarshalState(
+      jsonBytes('"2025-05-15T01:10:42Z"'),
+      DefaultUnmarshalerConfig,
+    )
     const parsed = state?.ReadTime()
     const jsonStream = new JsonStream()
     const stream = new MarshalState({ stream: jsonStream })
 
     expect(state?.Err()).toBeNull()
-    expect($.pointerValue(parsed)?.Format(time.RFC3339)).toBe('2025-05-15T01:10:42Z')
+    expect($.pointerValue(parsed)?.Format(time.RFC3339)).toBe(
+      '2025-05-15T01:10:42Z',
+    )
 
     stream.WriteTime(parsed ?? null)
 
@@ -144,9 +156,18 @@ describe('protobuf-go-lite/json override', () => {
   })
 
   it('rejects invalid bool and numeric map keys', () => {
-    const boolState = NewUnmarshalState(jsonBytes('{"yes": 1}'), DefaultUnmarshalerConfig)
-    const intState = NewUnmarshalState(jsonBytes('{"1.5": 1}'), DefaultUnmarshalerConfig)
-    const uintState = NewUnmarshalState(jsonBytes('{"-1": 1}'), DefaultUnmarshalerConfig)
+    const boolState = NewUnmarshalState(
+      jsonBytes('{"yes": 1}'),
+      DefaultUnmarshalerConfig,
+    )
+    const intState = NewUnmarshalState(
+      jsonBytes('{"1.5": 1}'),
+      DefaultUnmarshalerConfig,
+    )
+    const uintState = NewUnmarshalState(
+      jsonBytes('{"-1": 1}'),
+      DefaultUnmarshalerConfig,
+    )
 
     boolState?.ReadBoolMap(() => {})
     intState?.ReadInt32Map(() => {})

@@ -12,4 +12,3 @@ func unwrap(v any) int {
 func main() {
 	println(unwrap(&dep.Thing{Value: 7}))
 }
-

@@ -2,7 +2,9 @@ Hello World
 Welcome to Go 1.21
 This is println
 Sprint result: Sprint result
+Sprint spread result: Spread result
 Sprintf result: Number: 42, String: test
+Sprintf spread result: Spread Number: 7, String: spread
 Sprintln result:Sprintln result
 Error: error code: 404
 Boolean: true

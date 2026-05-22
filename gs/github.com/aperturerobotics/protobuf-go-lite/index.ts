@@ -83,56 +83,76 @@ export function IsEqualVTSlice<T extends EqualVT<T>>(
 export function EncodeVarint(
   dAtA: $.Slice<number>,
   offset: number,
-  v: number,
+  v: number | bigint,
 ): number {
   offset -= SizeOfVarint(v)
   const base = offset
-  while (v >= 0x80) {
-    setByte(dAtA, offset, (v % 0x80) | 0x80)
-    v = Math.floor(v / 0x80)
+  let value = normalizedVarint(v)
+  while (value >= 0x80n) {
+    setByte(dAtA, offset, Number((value & 0x7fn) | 0x80n))
+    value >>= 7n
     offset++
   }
-  setByte(dAtA, offset, v)
+  setByte(dAtA, offset, Number(value))
   return base
 }
 
-export function AppendVarint(b: $.Slice<number>, v: number): $.Slice<number> {
+export function AppendVarint(
+  b: $.Slice<number>,
+  v: number | bigint,
+): $.Slice<number> {
   const bytes: number[] = []
-  while (v >= 0x80) {
-    bytes.push((v % 0x80) | 0x80)
-    v = Math.floor(v / 0x80)
+  let value = normalizedVarint(v)
+  while (value >= 0x80n) {
+    bytes.push(Number((value & 0x7fn) | 0x80n))
+    value >>= 7n
   }
-  bytes.push(v)
+  bytes.push(Number(value))
   return $.append(b, ...bytes)
 }
 
 export function ConsumeVarint(b: $.Slice<number>): [number, number] {
-  let v = 0
-  let shift = 0
+  let v = 0n
+  let shift = 0n
   for (let i = 0; i < 10; i++) {
     if (i >= $.len(b)) {
       return [0, -1]
     }
     const value = byteSliceValue(b, i)
-    if (shift === 63 && value > 1) {
+    if (shift === 63n && value > 1) {
       return [0, -2]
     }
-    v += (value & 0x7f) * 2 ** shift
+    v += BigInt(value & 0x7f) << shift
     if (value < 0x80) {
-      return [v, i + 1]
+      return [varintResult(v), i + 1]
     }
-    shift += 7
+    shift += 7n
   }
   return [0, -2]
 }
 
-export function SizeOfVarint(x: number): number {
+export function SizeOfVarint(x: number | bigint): number {
+  let value = normalizedVarint(x)
   let n = 1
-  while (x >= 0x80) {
-    x = Math.floor(x / 0x80)
+  while (value >= 0x80n) {
+    value >>= 7n
     n++
   }
   return n
+}
+
+function normalizedVarint(value: number | bigint): bigint {
+  if (typeof value === 'bigint') {
+    return BigInt.asUintN(64, value)
+  }
+  return BigInt.asUintN(64, BigInt(Math.trunc(value)))
+}
+
+function varintResult(value: bigint): number {
+  if (value <= BigInt(Number.MAX_SAFE_INTEGER)) {
+    return Number(value)
+  }
+  return value as unknown as number
 }
 
 export function DecodeVarint(

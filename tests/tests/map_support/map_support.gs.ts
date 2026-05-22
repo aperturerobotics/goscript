@@ -68,8 +68,8 @@ export async function main(): globalThis.Promise<void> {
 		}
 	}
 
-	for (let __rangeIndex = 0; __rangeIndex < $.len(scoreResults); __rangeIndex++) {
-		let result = scoreResults![__rangeIndex]
+	for (let __goscriptRangeTarget0 = scoreResults, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let result = __goscriptRangeTarget0![__rangeIndex]
 		$.println(result)
 	}
 }

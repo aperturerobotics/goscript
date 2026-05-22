@@ -10,7 +10,8 @@ function bytes(value: string): number[] {
 }
 
 function matchBytes(a: number[], b: number[]): number {
-  const diff = (Load64(undefined, arrayToSlice(a), 0) as unknown as bigint) ^
+  const diff =
+    (Load64(undefined, arrayToSlice(a), 0) as unknown as bigint) ^
     (Load64(undefined, arrayToSlice(b), 0) as unknown as bigint)
   return TrailingZeros64(diff) >> 3
 }

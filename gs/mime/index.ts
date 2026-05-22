@@ -1,9 +1,15 @@
-export function FormatMediaType(t: string, param: Map<string, string> | Record<string, string> | null): string {
+export function FormatMediaType(
+  t: string,
+  param: Map<string, string> | Record<string, string> | null,
+): string {
   if (!isToken(t)) {
     return ''
   }
   let out = t
-  const entries = param instanceof Map ? Array.from(param.entries()) : Object.entries(param ?? {})
+  const entries =
+    param instanceof Map ?
+      Array.from(param.entries())
+    : Object.entries(param ?? {})
   entries.sort(([a], [b]) => a.localeCompare(b))
   for (const [key, value] of entries) {
     if (!isToken(key)) {

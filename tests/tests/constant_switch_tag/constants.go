@@ -1,4 +1,6 @@
 package main
 
-const wordSize = 64
-const cgoEnabled = false
+const (
+	wordSize   = 64
+	cgoEnabled = false
+)

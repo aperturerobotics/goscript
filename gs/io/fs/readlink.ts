@@ -9,56 +9,48 @@ export type ReadLinkFS =
       Lstat(name: string): [FileInfo, $.GoError]
     } & FS)
 
-$.registerInterfaceType(
-  'ReadLinkFS',
-  null,
-  [
-    {
-      name: 'ReadLink',
-      args: [
-        { name: 'name', type: { kind: $.TypeKind.Basic, name: 'string' } },
-      ],
-      returns: [
-        { type: { kind: $.TypeKind.Basic, name: 'string' } },
-        {
-          type: {
-            kind: $.TypeKind.Interface,
-            name: 'GoError',
-            methods: [
-              {
-                name: 'Error',
-                args: [],
-                returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
-              },
-            ],
-          },
+$.registerInterfaceType('ReadLinkFS', null, [
+  {
+    name: 'ReadLink',
+    args: [{ name: 'name', type: { kind: $.TypeKind.Basic, name: 'string' } }],
+    returns: [
+      { type: { kind: $.TypeKind.Basic, name: 'string' } },
+      {
+        type: {
+          kind: $.TypeKind.Interface,
+          name: 'GoError',
+          methods: [
+            {
+              name: 'Error',
+              args: [],
+              returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
+            },
+          ],
         },
-      ],
-    },
-    {
-      name: 'Lstat',
-      args: [
-        { name: 'name', type: { kind: $.TypeKind.Basic, name: 'string' } },
-      ],
-      returns: [
-        { type: 'FileInfo' },
-        {
-          type: {
-            kind: $.TypeKind.Interface,
-            name: 'GoError',
-            methods: [
-              {
-                name: 'Error',
-                args: [],
-                returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
-              },
-            ],
-          },
+      },
+    ],
+  },
+  {
+    name: 'Lstat',
+    args: [{ name: 'name', type: { kind: $.TypeKind.Basic, name: 'string' } }],
+    returns: [
+      { type: 'FileInfo' },
+      {
+        type: {
+          kind: $.TypeKind.Interface,
+          name: 'GoError',
+          methods: [
+            {
+              name: 'Error',
+              args: [],
+              returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
+            },
+          ],
         },
-      ],
-    },
-  ],
-)
+      },
+    ],
+  },
+])
 
 export function ReadLink(fsys: FS, name: string): [string, $.GoError] {
   const { value: sym, ok } = $.typeAssert<ReadLinkFS>(fsys, 'ReadLinkFS')

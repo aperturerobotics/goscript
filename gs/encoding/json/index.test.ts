@@ -17,9 +17,15 @@ class Person {
     [],
     Person,
     {
-      Name: { type: { kind: $.TypeKind.Basic, name: 'string' }, tag: 'json:"name"' },
+      Name: {
+        type: { kind: $.TypeKind.Basic, name: 'string' },
+        tag: 'json:"name"',
+      },
       Age: { type: { kind: $.TypeKind.Basic, name: 'int' }, tag: 'json:"age"' },
-      Active: { type: { kind: $.TypeKind.Basic, name: 'bool' }, tag: 'json:"active"' },
+      Active: {
+        type: { kind: $.TypeKind.Basic, name: 'bool' },
+        tag: 'json:"active"',
+      },
     },
   )
 }

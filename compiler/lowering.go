@@ -1237,7 +1237,7 @@ func lowerConstantValue(value constant.Value) (string, bool) {
 	case constant.Complex:
 		real := constant.Real(value).ExactString()
 		imag := constant.Imag(value).ExactString()
-		return "({ real: " + real + ", imag: " + imag + " })", true
+		return "$.complex(" + real + ", " + imag + ")", true
 	default:
 		return "", false
 	}
@@ -1483,6 +1483,10 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 		cloneMethod:   "clone",
 	}
 	for idx, field := range semType.fields {
+		structValue := isStructValueType(field.typ)
+		if named := namedStructType(field.typ); named != nil && crossPackageUnexportedNamedType(ctx, named) {
+			structValue = false
+		}
 		fieldName := tsStructFieldName(field.name, idx)
 		runtimeName := ""
 		if fieldName != field.name {
@@ -1496,7 +1500,7 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 			runtimeType: o.runtimeTypeInfoExpr(field.typ),
 			doc:         field.doc,
 			tag:         field.tag,
-			structValue: isStructValueType(field.typ),
+			structValue: structValue,
 		})
 	}
 
@@ -1852,7 +1856,18 @@ func (ctx lowerFileContext) withoutRangeBreak() lowerFileContext {
 }
 
 func (ctx lowerFileContext) withGotoLabels(labels map[string]bool) lowerFileContext {
-	ctx.gotoLabels = labels
+	if len(ctx.gotoLabels) == 0 {
+		ctx.gotoLabels = labels
+		return ctx
+	}
+	merged := make(map[string]bool, len(ctx.gotoLabels)+len(labels))
+	for label := range ctx.gotoLabels {
+		merged[label] = true
+	}
+	for label := range labels {
+		merged[label] = true
+	}
+	ctx.gotoLabels = merged
 	return ctx
 }
 
@@ -3729,9 +3744,13 @@ func (o *LoweringOwner) lowerForPostStmt(ctx lowerFileContext, stmt ast.Stmt) (s
 			diagnostics = append(diagnostics, leftDiagnostics...)
 			lefts = append(lefts, left)
 		}
-		for _, rhs := range assign.Rhs {
+		for idx, rhs := range assign.Rhs {
 			right, rightDiagnostics := o.lowerExpr(ctx, rhs)
 			diagnostics = append(diagnostics, rightDiagnostics...)
+			if idx < len(assign.Lhs) {
+				targetType := ctx.semPkg.source.TypesInfo.TypeOf(assign.Lhs[idx])
+				right = o.lowerValueForTarget(ctx, rhs, targetType, right)
+			}
 			rights = append(rights, right)
 		}
 		return "[" + strings.Join(lefts, ", ") + "] = [" + strings.Join(rights, ", ") + "]", diagnostics
@@ -3848,8 +3867,12 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 
 	body, bodyDiagnostics := o.lowerBlock(bodyCtx.withoutRangeLoopBranches(), stmt.Body)
 	diagnostics = append(diagnostics, bodyDiagnostics...)
-	rangeTarget := o.lowerArrayPointerTarget(ctx, rangeValue, rangeType)
-	indexTarget := o.lowerIndexTarget(ctx, rangeValue, rangeType)
+	rangeTarget := ctx.tempName("RangeTarget")
+	rangeTargetValue := o.lowerArrayPointerTarget(ctx, rangeValue, rangeType)
+	indexTarget := rangeTarget
+	if isNilableType(rangeType) {
+		indexTarget += "!"
+	}
 	indexName := keyName
 	if indexName == "" {
 		indexName = "__rangeIndex"
@@ -3864,7 +3887,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 	}
 	return loweredStmt{
 		hasBlock: true,
-		text:     "for (let " + indexName + " = 0; " + indexName + " < " + o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + rangeTarget + "); " + indexName + "++)",
+		text:     "for (let " + rangeTarget + " = " + rangeTargetValue + ", " + indexName + " = 0; " + indexName + " < " + o.runtimeOwner.QualifiedHelper(RuntimeHelperLen) + "(" + rangeTarget + "); " + indexName + "++)",
 		children: children,
 	}, diagnostics
 }
@@ -4518,7 +4541,25 @@ func (o *LoweringOwner) lowerArrayEqualityExpr(ctx lowerFileContext, expr *ast.B
 	return value, true
 }
 
+func (o *LoweringOwner) lowerComplexEqualityExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
+	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if !isComplexType(leftType) || !isComplexType(rightType) {
+		return "", false
+	}
+	value := o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayEqual) + "(" + left + ", " + right + ")"
+	if expr.Op == token.NEQ {
+		value = "!" + value
+	}
+	return value, true
+}
+
 func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
+	if value := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)].Value; value != nil && value.Kind() == constant.Complex {
+		if constantValue, ok := lowerConstantValue(value); ok {
+			return constantValue, nil
+		}
+	}
 	switch typed := expr.(type) {
 	case *ast.BasicLit:
 		return lowerBasicLit(typed), nil
@@ -4550,7 +4591,13 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 			if value, ok := o.lowerArrayEqualityExpr(ctx, typed, left, right); ok {
 				return value, append(leftDiagnostics, rightDiagnostics...)
 			}
+			if value, ok := o.lowerComplexEqualityExpr(ctx, typed, left, right); ok {
+				return value, append(leftDiagnostics, rightDiagnostics...)
+			}
 			left, right = o.lowerEqualityOperands(ctx, typed, left, right)
+		}
+		if value, ok := o.lowerWideIntegerBinaryExpr(ctx, typed, left, right); ok {
+			return value, append(leftDiagnostics, rightDiagnostics...)
 		}
 		if typed.Op == token.QUO && isIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(typed)) {
 			return "Math.trunc(" + left + " / " + right + ")", append(leftDiagnostics, rightDiagnostics...)
@@ -4560,9 +4607,6 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUintShr) +
 					"(" + left + ", " + right + ", " + strconv.Itoa(bits) + ")", append(leftDiagnostics, rightDiagnostics...)
 			}
-		}
-		if value, ok := o.lowerWideIntegerBinaryExpr(ctx, typed, left, right); ok {
-			return value, append(leftDiagnostics, rightDiagnostics...)
 		}
 		return left + " " + typed.Op.String() + " " + right, append(leftDiagnostics, rightDiagnostics...)
 	case *ast.UnaryExpr:
@@ -5024,6 +5068,7 @@ func (o *LoweringOwner) lowerCallArgs(
 				lowered = o.lowerCallArgForTarget(ctx, arg, params.At(idx).Type(), lowered, overrideCall)
 			} else if expr.Ellipsis != token.NoPos && idx == len(expr.Args)-1 {
 				lowered = o.lowerCallArgForTarget(ctx, arg, params.At(fixedCount).Type(), lowered, overrideCall)
+				lowered = "...(" + lowered + " ?? [])"
 			} else {
 				lowered = o.lowerCallArgForTarget(ctx, arg, targetType, lowered, overrideCall)
 			}
@@ -5402,6 +5447,13 @@ func (o *LoweringOwner) lowerConversionExpr(
 			return result, diagnostics
 		}
 	}
+	if target := pointerToNamedStructType(targetType); target != nil {
+		source := pointerToNamedStructType(sourceType)
+		if source != nil && !types.Identical(target, source) &&
+			types.IdenticalIgnoreTags(target.Underlying(), source.Underlying()) {
+			return "(" + value + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics
+		}
+	}
 	if conversion, ok := o.lowerNamedStructConversion(ctx, expr.Args[0], targetType, sourceType, value); ok {
 		return renderNamedStructConversion(conversion), diagnostics
 	}
@@ -5458,6 +5510,10 @@ func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *a
 		return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
 	case token.MUL:
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Mul) + "(" + left + ", " + right + ")", true
+	case token.QUO:
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Div) + "(" + left + ", " + right + ")", true
+	case token.REM:
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Mod) + "(" + left + ", " + right + ")", true
 	case token.ADD:
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Add) + "(" + left + ", " + right + ")", true
 	case token.SUB:
@@ -6644,6 +6700,9 @@ func (o *LoweringOwner) lowerValueForTarget(
 ) string {
 	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
 	if isComplexType(targetType) {
+		if isComplexType(sourceType) {
+			return value
+		}
 		if isRealNumericConstantExpr(ctx, expr) {
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperComplex) + "(" + value + ", 0)"
 		}
@@ -6704,6 +6763,9 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 	value string,
 	cloneStructValue bool,
 ) string {
+	if targetType == nil || sourceType == nil {
+		return value
+	}
 	if isFunctionType(targetType) && isUntypedNilType(sourceType) {
 		return "(" + value + " as " + o.tsTypeFor(ctx, targetType) + ")"
 	}
@@ -6757,6 +6819,9 @@ func (o *LoweringOwner) lowerNamedValueInterfaceWrapper(
 	sourceType types.Type,
 	value string,
 ) string {
+	if targetType == nil || sourceType == nil {
+		return ""
+	}
 	if !isInterfaceType(targetType) || isInterfaceType(sourceType) {
 		return ""
 	}
@@ -6812,6 +6877,9 @@ func (o *LoweringOwner) lowerZeroValueExpr(typ types.Type) string {
 
 func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Type) string {
 	if named := namedStructType(typ); named != nil && isStructValueType(typ) {
+		if crossPackageUnexportedNamedType(ctx, named) {
+			return "undefined as any"
+		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) + "(new " + o.namedTypeExpr(ctx, named) + "())"
 	}
 	switch typed := types.Unalias(typ).Underlying().(type) {
@@ -7397,6 +7465,14 @@ func namedStructType(typ types.Type) *types.Named {
 	return named
 }
 
+func pointerToNamedStructType(typ types.Type) *types.Named {
+	pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer)
+	if !ok {
+		return nil
+	}
+	return namedStructType(pointer.Elem())
+}
+
 func namedNonStructType(typ types.Type) *types.Named {
 	named, _ := types.Unalias(typ).(*types.Named)
 	if named == nil {
@@ -7632,6 +7708,9 @@ func isWideIntegerType(typ types.Type) bool {
 }
 
 func isFixedWideIntegerType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	if !ok {
 		return false

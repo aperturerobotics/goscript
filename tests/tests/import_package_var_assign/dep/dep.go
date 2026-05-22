@@ -1,7 +1,9 @@
 package dep
 
-var Count = 1
-var Hook func() error
+var (
+	Count = 1
+	Hook  func() error
+)
 
 func Current() int {
 	return Count

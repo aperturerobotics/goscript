@@ -7,7 +7,7 @@ export async function main(): globalThis.Promise<void> {
 	let s = $.arrayToSlice<number>([10, 20, 30])
 	$.println("Looping over slice (no vars):")
 	let count = 0
-	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {
+	for (let __goscriptRangeTarget0 = s, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		count++
 	}
 	$.println(count)
@@ -15,7 +15,7 @@ export async function main(): globalThis.Promise<void> {
 	let a = ["alpha", "beta"]
 	$.println("Looping over array (no vars):")
 	let arrCount = 0
-	for (let __rangeIndex = 0; __rangeIndex < $.len(a); __rangeIndex++) {
+	for (let __goscriptRangeTarget1 = a, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 		$.println(a[arrCount])
 		arrCount++
 	}

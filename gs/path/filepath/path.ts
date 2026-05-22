@@ -2,6 +2,8 @@
 // in a way compatible with the target operating system-defined file paths.
 import * as $ from '@goscript/builtin/index.js'
 import { getHostRuntime } from '@goscript/builtin/hostio.js'
+import type { DirEntry } from '@goscript/io/fs/fs.js'
+import { FileInfoToDirEntry } from '@goscript/io/fs/readdir.js'
 
 type JoinElement = string | $.Slice<string>
 
@@ -326,9 +328,14 @@ export function Walk(root: string, walkFn: WalkFunc): $.GoError {
   return walkHost(root, walkFn)
 }
 
-export function WalkDir(_root: string, _walkFn: any): $.GoError {
-  // No filesystem support
-  return $.newError('filesystem not supported')
+export type WalkDirFunc = (
+  path: string,
+  d: DirEntry,
+  err: $.GoError,
+) => $.GoError
+
+export function WalkDir(root: string, walkFn: WalkDirFunc): $.GoError {
+  return walkDirHost(root, walkFn)
 }
 
 // Localize is a stub - in Go it's used for Windows path localization
@@ -372,6 +379,10 @@ function fileInfo(path: string, stat: HostStat): any {
     Size: () => stat.size ?? 0,
     Sys: () => stat,
   }
+}
+
+function dirEntry(path: string, stat: HostStat): DirEntry {
+  return FileInfoToDirEntry(fileInfo(path, stat))
 }
 
 function statPath(path: string): [HostStat | null, $.GoError] {
@@ -459,6 +470,64 @@ function walkHost(path: string, walkFn: WalkFunc): $.GoError {
   }
   for (const entry of entries!) {
     const err = walkHost(Join(path, entry.name), walkFn)
+    if (err === SkipDir) {
+      if (entry.isDir) {
+        continue
+      }
+      return err
+    }
+    if (err === SkipAll) {
+      return null
+    }
+    if (err !== null) {
+      return err
+    }
+  }
+  return null
+}
+
+function normalizeWalkDirErr(d: DirEntry, err: $.GoError): $.GoError {
+  if (err === SkipAll) {
+    return null
+  }
+  if (err === SkipDir && d?.IsDir?.()) {
+    return null
+  }
+  return err
+}
+
+function normalizeRootWalkDirErr(err: $.GoError): $.GoError {
+  if (err === SkipAll || err === SkipDir) {
+    return null
+  }
+  return err
+}
+
+function walkDirHost(path: string, walkFn: WalkDirFunc): $.GoError {
+  const [stat, statErr] = statPath(path)
+  if (statErr !== null) {
+    return normalizeRootWalkDirErr(walkFn(path, null, statErr))
+  }
+
+  const d = dirEntry(path, stat!)
+  const visitErr = walkFn(path, d, null)
+  if (visitErr === SkipAll) {
+    return null
+  }
+  if (visitErr === SkipDir && statIsDir(stat!)) {
+    return null
+  }
+  if (visitErr !== null || !statIsDir(stat!)) {
+    return visitErr
+  }
+
+  const [entries, readErr] = readDir(path)
+  if (readErr !== null) {
+    return normalizeWalkDirErr(d, walkFn(path, d, readErr))
+  }
+
+  for (const entry of entries!) {
+    const err = walkDirHost(Join(path, entry.name), walkFn)
     if (err === SkipDir) {
       if (entry.isDir) {
         continue

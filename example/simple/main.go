@@ -175,5 +175,4 @@ func main() {
 	}
 	sum = add(5, 7)
 	println("Function literal result:", sum)
-
 }

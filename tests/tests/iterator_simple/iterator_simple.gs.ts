@@ -13,8 +13,8 @@ export async function simpleIterator(_yield: ((_p0: number) => boolean | globalT
 
 export async function keyValueIterator(_yield: ((_p0: number, _p1: string) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<void> {
 	let values = $.arrayToSlice<string>(["a", "b", "c"])
-	for (let i = 0; i < $.len(values); i++) {
-		let v = values![i]
+	for (let __goscriptRangeTarget0 = values, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+		let v = __goscriptRangeTarget0![i]
 		if (!await _yield!(i, v)) {
 			return
 		}

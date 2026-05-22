@@ -34,8 +34,8 @@ export class PathJoiner {
 	public Join(elem: $.Slice<string>): string {
 		const p = this
 		let result: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
-		for (let i = 0; i < $.len(elem); i++) {
-			let e = elem![i]
+		for (let __goscriptRangeTarget0 = elem, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+			let e = __goscriptRangeTarget0![i]
 			if (i > 0) {
 				result.value.WriteString("/")
 			}

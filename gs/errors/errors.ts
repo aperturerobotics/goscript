@@ -191,10 +191,7 @@ export function As(err: $.GoError, target: any): boolean {
     throw new Error('errors: target cannot be nil')
   }
 
-  // Check if err matches target type
-  if (err.constructor === target.constructor) {
-    // Copy properties from err to target
-    Object.assign(target, err)
+  if (assignAsTarget(err, target)) {
     return true
   }
 
@@ -230,6 +227,36 @@ export function As(err: $.GoError, target: any): boolean {
   return false
 }
 
+function assignAsTarget(err: Exclude<$.GoError, null>, target: any): boolean {
+  const targetType = asTargetType(target)
+  if (targetType !== undefined) {
+    const [matched, ok] = $.typeAssertTuple<any>(err, targetType)
+    if (!ok) {
+      return false
+    }
+    if ($.isVarRef(target)) {
+      target.value = matched
+      return true
+    }
+    Object.assign(target, matched)
+    return true
+  }
+
+  if (err.constructor === target.constructor) {
+    Object.assign(target, err)
+    return true
+  }
+  return false
+}
+
+function asTargetType(target: any): string | undefined {
+  const goType = target?.__goType
+  if (typeof goType !== 'string' || !goType.startsWith('*')) {
+    return undefined
+  }
+  return goType.slice(1)
+}
+
 // AsType finds the first error in err's tree that matches the generic error
 // type E, returning the matching error and true. Otherwise it returns E's zero
 // value and false.
@@ -263,10 +290,7 @@ function asType(
     const result = (err as any).Unwrap()
     if (Array.isArray(result)) {
       for (const wrappedErr of result) {
-        if (
-          wrappedErr &&
-          typeof wrappedErr.Error === 'function'
-        ) {
+        if (wrappedErr && typeof wrappedErr.Error === 'function') {
           const [matched, matchedOK] = asType(wrappedErr, typeInfo, zero)
           if (matchedOK) {
             return [matched, true]

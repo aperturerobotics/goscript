@@ -8,10 +8,7 @@ export class Runtime implements vmruntime.VmRuntime {
   constructor() {}
 
   // Compile calls WebAssembly.compile and returns a Module.
-  async Compile(
-    _ctx: any,
-    wasm: Uint8Array | number[],
-  ): Promise<Module> {
+  async Compile(_ctx: any, wasm: Uint8Array | number[]): Promise<Module> {
     const bytes = wasm instanceof Uint8Array ? wasm : new Uint8Array(wasm)
     const compiled = await WebAssembly.compile(bytes.buffer as ArrayBuffer)
     return new Module(compiled)

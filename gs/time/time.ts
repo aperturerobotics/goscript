@@ -703,7 +703,10 @@ export function Duration_Nanoseconds(receiver: Duration): number {
   return durationNumber(receiver)
 }
 
-export function Duration_Round(receiver: Duration, multiple: Duration): Duration {
+export function Duration_Round(
+  receiver: Duration,
+  multiple: Duration,
+): Duration {
   const value = durationNumber(receiver)
   const unit = durationNumber(multiple)
   if (unit <= 0) {
@@ -740,6 +743,9 @@ export function Duration_String(receiver: Duration): string {
   }
   const sign = value < 0 ? '-' : ''
   let remaining = Math.abs(value)
+  if (remaining < Second) {
+    return sign + formatSubsecond(remaining)
+  }
   const hours = Math.floor(remaining / Hour)
   remaining -= hours * Hour
   const minutes = Math.floor(remaining / Minute)
@@ -767,7 +773,11 @@ export function Duration_format(
   const text = Duration_String(receiver)
   const bytes = Array.from(new TextEncoder().encode(text))
   const start = Math.max(0, buf.value.length - bytes.length)
-  for (let idx = 0; idx < bytes.length && start + idx < buf.value.length; idx++) {
+  for (
+    let idx = 0;
+    idx < bytes.length && start + idx < buf.value.length;
+    idx++
+  ) {
     buf.value[start + idx] = bytes[idx]!
   }
   return start
@@ -779,6 +789,27 @@ function formatSeconds(seconds: number, nanos: number): string {
   }
   const fraction = String(nanos).padStart(9, '0').replace(/0+$/, '')
   return `${seconds}.${fraction}s`
+}
+
+function formatSubsecond(nanos: number): string {
+  if (nanos >= Millisecond) {
+    return formatUnit(nanos, Millisecond, 'ms')
+  }
+  if (nanos >= Microsecond) {
+    return formatUnit(nanos, Microsecond, '\u00b5s')
+  }
+  return `${nanos}ns`
+}
+
+function formatUnit(nanos: number, unit: number, suffix: string): string {
+  const whole = Math.floor(nanos / unit)
+  const rem = nanos % unit
+  if (rem === 0) {
+    return `${whole}${suffix}`
+  }
+  const scale = Math.log10(unit)
+  const fraction = String(rem).padStart(scale, '0').replace(/0+$/, '')
+  return `${whole}.${fraction}${suffix}`
 }
 
 // Location represents a time zone

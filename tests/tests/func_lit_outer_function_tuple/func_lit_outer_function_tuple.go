@@ -1,8 +1,10 @@
 package main
 
-type opener func(string) (string, error)
-type wrapper func(string) (string, error)
-type updater func() error
+type (
+	opener  func(string) (string, error)
+	wrapper func(string) (string, error)
+	updater func() error
+)
 
 func wrap(open opener) wrapper {
 	return func(path string) (string, error) {

@@ -6,8 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as unsafe from "@goscript/unsafe/index.js"
 
 export function writeBytes(words: $.Slice<number>, bytes: $.Slice<number>): void {
-	for (let i = 0; i < $.len(bytes); i++) {
-		let b = bytes![i]
+	for (let __goscriptRangeTarget0 = bytes, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+		let b = __goscriptRangeTarget0![i]
 		$.unsupportedPointerRef<number>(undefined).value = $.uint(b, 8)
 	}
 }

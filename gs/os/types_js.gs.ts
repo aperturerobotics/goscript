@@ -29,7 +29,37 @@ export function newHostError(err: unknown): $.GoError {
 		err instanceof Error ? err.message
 		: typeof err === "string" ? err
 		: String(err)
-	return { Error: () => message }
+	const target = hostErrorTarget(err)
+	const hostErr: Exclude<$.GoError, null> = {
+		Error: () => message,
+	}
+	Object.defineProperty(hostErr, "Is", {
+		value: (candidate: $.GoError) => target !== null && candidate === target,
+	})
+	return hostErr
+}
+
+function hostErrorTarget(err: unknown): $.GoError {
+	const codeValue = typeof err === "object" && err !== null && "code" in err
+		? Reflect.get(err, "code")
+		: ""
+	const code = codeValue === undefined ? "" : String(codeValue)
+	switch (code) {
+	case "ENOENT":
+	case "ENOTDIR":
+		return fs.ErrNotExist
+	case "EEXIST":
+		return fs.ErrExist
+	case "EACCES":
+	case "EPERM":
+		return fs.ErrPermission
+	case "EBADF":
+		return ErrClosed
+	case "EINVAL":
+		return ErrInvalid
+	default:
+		return null
+	}
 }
 
 export function getNodeFS(): NodeFSModule | null {
@@ -296,16 +326,44 @@ export class File {
 	}
 
 	public ReadAt(b: $.Bytes, off: number): [number, $.GoError] {
+		if (this.closed) {
+			return [0, ErrClosed]
+		}
+		if (off < 0) {
+			return [0, ErrInvalid]
+		}
+		if (b === null) {
+			return [0, null]
+		}
+		const buf = $.bytesToUint8Array(b)
 		const handle = this.file?.handle
-		if (!handle || typeof handle.seekSync !== "function" || b === null) {
-			return [0, ErrUnimplemented]
+		if (handle && typeof handle.seekSync === "function") {
+			try {
+				handle.seekSync(off, io.SeekStart)
+				return this.Read(b)
+			} catch (err) {
+				return [0, newHostError(err)]
+			}
 		}
-		try {
-			handle.seekSync(off, io.SeekStart)
-			return this.Read(b)
-		} catch (err) {
-			return [0, newHostError(err)]
+		if (this.fd < 0) {
+			return [0, ErrInvalid]
 		}
+		const nodeFS = getNodeFS()
+		if (nodeFS?.readSync && this.fd >= 0) {
+			try {
+				const n = nodeFS.readSync(this.fd, buf, 0, buf.length, off)
+				if (!(b instanceof Uint8Array) && n > 0) {
+					$.copy(b, buf.subarray(0, n))
+				}
+				if (n === 0) {
+					return [0, io.EOF]
+				}
+				return [n, null]
+			} catch (err) {
+				return [0, newHostError(err)]
+			}
+		}
+		return [0, ErrUnimplemented]
 	}
 
 	public ReadFrom(r: io.Reader): [number, $.GoError] {
@@ -333,16 +391,37 @@ export class File {
 	}
 
 	public WriteAt(b: $.Bytes, off: number): [number, $.GoError] {
+		if (this.closed) {
+			return [0, ErrClosed]
+		}
+		if (off < 0) {
+			return [0, ErrInvalid]
+		}
+		if (b === null) {
+			return [0, null]
+		}
+		const buf = $.bytesToUint8Array(b)
 		const handle = this.file?.handle
-		if (!handle || typeof handle.seekSync !== "function" || b === null) {
-			return [0, ErrUnimplemented]
+		if (handle && typeof handle.seekSync === "function") {
+			try {
+				handle.seekSync(off, io.SeekStart)
+				return this.Write(b)
+			} catch (err) {
+				return [0, newHostError(err)]
+			}
 		}
-		try {
-			handle.seekSync(off, io.SeekStart)
-			return this.Write(b)
-		} catch (err) {
-			return [0, newHostError(err)]
+		if (this.fd < 0) {
+			return [0, ErrInvalid]
 		}
+		const nodeFS = getNodeFS()
+		if (nodeFS?.writeSync && this.fd >= 0) {
+			try {
+				return [nodeFS.writeSync(this.fd, buf, 0, buf.length, off), null]
+			} catch (err) {
+				return [0, newHostError(err)]
+			}
+		}
+		return [0, ErrUnimplemented]
 	}
 
 	public WriteTo(w: io.Writer): [number, $.GoError] {

@@ -258,6 +258,55 @@ func TestPackageGraphDetectsOverrideCandidates(t *testing.T) {
 	}
 }
 
+func TestPackageGraphDetectsExternalOverrideCandidates(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": strings.Join([]string{
+			"module example.test/externaloverride",
+			"",
+			"go 1.25.3",
+			"",
+			"require example.test/lib v0.0.0",
+			"replace example.test/lib => ./lib",
+			"",
+		}, "\n"),
+		"main.go": "package main\nimport \"example.test/lib\"\nfunc main() { lib.Run() }\n",
+		"lib/go.mod": strings.Join([]string{
+			"module example.test/lib",
+			"",
+			"go 1.25.3",
+			"",
+			"require example.test/heavy v0.0.0",
+			"replace example.test/heavy => ../heavy",
+			"",
+		}, "\n"),
+		"lib/lib.go":     "package lib\nimport \"example.test/heavy\"\nfunc Run() { heavy.Run() }\n",
+		"heavy/go.mod":   "module example.test/heavy\n\ngo 1.25.3\n",
+		"heavy/heavy.go": "package heavy\nfunc Run() {}\n",
+	})
+	overrideDir := filepath.Join(t.TempDir(), "gs")
+	writeFixtureFile(t, overrideDir, "example.test/lib/index.ts", "export function Run(): void {}\n")
+
+	overrideOwner := NewOverrideRegistryOwner(overrideDir)
+	req := &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	}
+	graph, diagnostics := NewPackageGraphOwner(overrideOwner).Load(context.Background(), req)
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("package graph failed: %#v", diagnostics)
+	}
+	lib := graph.NodesByPackagePath["example.test/lib"]
+	if lib == nil || !lib.OverrideCandidate {
+		t.Fatalf("expected external override candidate for lib")
+	}
+	if graph.NodesByPackagePath["example.test/heavy"] != nil {
+		t.Fatalf("external override dependency should not be collected")
+	}
+}
+
 func TestPackageGraphOverrideCandidatesRequirePackageIndex(t *testing.T) {
 	parent := "github.com/aperturerobotics/wasivm/wazero/kernel"
 	child := parent + "/runtime"
@@ -293,15 +342,21 @@ func writePackageGraphFixture(t *testing.T, files map[string]string) string {
 
 	dir := t.TempDir()
 	for name, contents := range files {
-		path := filepath.Join(dir, name)
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-			t.Fatal(err.Error())
-		}
-		if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
-			t.Fatal(err.Error())
-		}
+		writeFixtureFile(t, dir, name, contents)
 	}
 	return dir
+}
+
+func writeFixtureFile(t *testing.T, root, name, contents string) {
+	t.Helper()
+
+	path := filepath.Join(root, filepath.FromSlash(name))
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err.Error())
+	}
+	if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
+		t.Fatal(err.Error())
+	}
 }
 
 func requireDiagnosticCode(t *testing.T, diagnostics []Diagnostic, code string) {

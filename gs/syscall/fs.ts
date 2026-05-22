@@ -242,16 +242,16 @@ export function SetsockoptInt(
   return null
 }
 
-export function readv(_fd: number, _iovecs: $.Slice<Iovec> | null): [
-  number,
-  $.GoError,
-] {
+export function readv(
+  _fd: number,
+  _iovecs: $.Slice<Iovec> | null,
+): [number, $.GoError] {
   return [0, ENOSYS]
 }
 
-export function writev(_fd: number, _iovecs: $.Slice<Iovec> | null): [
-  number,
-  $.GoError,
-] {
+export function writev(
+  _fd: number,
+  _iovecs: $.Slice<Iovec> | null,
+): [number, $.GoError] {
   return [0, ENOSYS]
 }

@@ -99,6 +99,25 @@ copyHistory:
 	return total
 }
 
+func nestedBackwardGoto(limit int) int {
+	total := 0
+restart:
+	if total >= limit {
+		return total
+	}
+	for {
+	next:
+		total++
+		if total%2 == 0 {
+			goto restart
+		}
+		if total < limit {
+			goto next
+		}
+		return total
+	}
+}
+
 func main() {
 	println("skip negative:", skipToLabel(-1))
 	println("skip positive:", skipToLabel(1))
@@ -110,4 +129,5 @@ func main() {
 	println("mixed decl:", mixedForwardBackwardDecl(2))
 	println("state zero:", stateMachineGoto(0))
 	println("state one:", stateMachineGoto(1))
+	println("nested restart:", nestedBackwardGoto(5))
 }

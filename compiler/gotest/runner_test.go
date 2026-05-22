@@ -206,6 +206,63 @@ func TestRunnerRunsExternalPackageTest(t *testing.T) {
 	}
 }
 
+func TestRunnerAppliesOverridesToTestImports(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/testoverride\n\ngo 1.25.3\n",
+		"dep/value.go": strings.Join([]string{
+			"package dep",
+			"",
+			"func Value() int {",
+			"\tx := 41",
+			"\t_ = &x",
+			"\treturn x + 1",
+			"}",
+			"",
+		}, "\n"),
+		"app/value.go": "package app\n",
+		"app/value_test.go": strings.Join([]string{
+			"package app",
+			"",
+			"import (",
+			"\t\"testing\"",
+			"",
+			"\t\"example.test/testoverride/dep\"",
+			")",
+			"",
+			"func TestOverrideImport(t *testing.T) {",
+			"\tif dep.Value() != 42 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+	overrideDir := filepath.Join(moduleDir, "gs")
+	if err := os.MkdirAll(filepath.Join(overrideDir, "example.test", "testoverride", "dep"), 0o755); err != nil {
+		t.Fatal(err.Error())
+	}
+	if err := os.WriteFile(
+		filepath.Join(overrideDir, "example.test", "testoverride", "dep", "index.ts"),
+		[]byte("export function Value(): number { return 42 }\n"),
+		0o644,
+	); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:          moduleDir,
+		Patterns:     []string{"./app"},
+		OverrideDirs: []string{overrideDir},
+		Timeout:      30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run override import package: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected package test to pass with override import: %#v", result.Packages)
+	}
+}
+
 func TestRunnerRejectsInvalidRunPattern(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod":   "module example.test/badrun\n\ngo 1.25.3\n",

@@ -63,8 +63,8 @@ export function __goscript_set_byExt(value: Map<string, Format | $.VarRef<Format
 export function registerFormat(__goscriptParam0: Format): void {
 	let f: $.VarRef<Format> = $.varRef(__goscriptParam0)
 	$.mapSet(byName, f.value.Name, f)
-	for (let __rangeIndex = 0; __rangeIndex < $.len(f.value.Ext); __rangeIndex++) {
-		let ext = f.value.Ext![__rangeIndex]
+	for (let __goscriptRangeTarget0 = f.value.Ext, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let ext = __goscriptRangeTarget0![__rangeIndex]
 		$.mapSet(byExt, ext, f)
 	}
 	f.value.Name = f.value.Name + "-updated"

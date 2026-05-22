@@ -121,7 +121,9 @@ export function sliceToArray<T>(
     )
   }
   if (typeHint === 'byte') {
-    return new Uint8Array(asArray(slice as Slice<T>).slice(0, length) as number[])
+    return new Uint8Array(
+      asArray(slice as Slice<T>).slice(0, length) as number[],
+    )
   }
   return asArray(slice as Slice<T>).slice(0, length)
 }
@@ -140,7 +142,9 @@ export function sliceToArrayPointer<T>(
     if (slice instanceof Uint8Array) {
       return varRef(goSlice(slice, 0, length) as unknown as Uint8Array)
     }
-    return varRef(goSlice(slice as Slice<T>, 0, length) as unknown as Uint8Array)
+    return varRef(
+      goSlice(slice as Slice<T>, 0, length) as unknown as Uint8Array,
+    )
   }
   if (slice instanceof Uint8Array) {
     return varRef(goSlice(slice, 0, length) as unknown as T[])

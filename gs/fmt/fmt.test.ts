@@ -36,7 +36,9 @@ function captureStdout(run: () => void): string {
           length?: number,
           _position?: number | null,
         ) => {
-          buf += new TextDecoder().decode(chunk.subarray(0, length ?? chunk.length))
+          buf += new TextDecoder().decode(
+            chunk.subarray(0, length ?? chunk.length),
+          )
           return length ?? chunk.length
         },
       ),

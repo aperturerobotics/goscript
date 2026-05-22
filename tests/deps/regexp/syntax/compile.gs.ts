@@ -237,7 +237,7 @@ export class compiler {
 					return $.markAsStructValue($.cloneStructValue(compiler.prototype.nop.call(c)))
 				}
 				let f: frag = $.markAsStructValue(new frag())
-				for (let j = 0; j < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune); j++) {
+				for (let __goscriptRangeTarget0 = $.pointerValue<__goscript_regexp.Regexp>(re).Rune, j = 0; j < $.len(__goscriptRangeTarget0); j++) {
 					let f1 = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune($.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune, j, j + 1), $.uint($.pointerValue<__goscript_regexp.Regexp>(re).Flags, 16))))
 					if (j == 0) {
 						f = $.markAsStructValue($.cloneStructValue(f1))
@@ -322,8 +322,8 @@ export class compiler {
 					return $.markAsStructValue($.cloneStructValue(compiler.prototype.nop.call(c)))
 				}
 				let f: frag = $.markAsStructValue(new frag())
-				for (let i = 0; i < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub); i++) {
-					let sub = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![i]
+				for (let __goscriptRangeTarget1 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
+					let sub = __goscriptRangeTarget1![i]
 					if (i == 0) {
 						f = $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, sub)))
 					} else {
@@ -336,8 +336,8 @@ export class compiler {
 			case 19:
 			{
 				let f: frag = $.markAsStructValue(new frag())
-				for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub); __rangeIndex++) {
-					let sub = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![__rangeIndex]
+				for (let __goscriptRangeTarget2 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
+					let sub = __goscriptRangeTarget2![__rangeIndex]
 					f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).alt($.markAsStructValue($.cloneStructValue(f)), $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, sub))))))
 				}
 				return $.markAsStructValue($.cloneStructValue(f))

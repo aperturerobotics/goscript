@@ -105,14 +105,21 @@ export class Value {
         `syscall/js: Value.Call: property ${m} is not a function, got ${Type_String(ValueOf(fn).Type())}`,
       )
     }
-    return new Value({ raw: fn.apply(this._raw, args.map((arg) => ValueOf(arg)._raw)) })
+    return new Value({
+      raw: fn.apply(
+        this._raw,
+        args.map((arg) => ValueOf(arg)._raw),
+      ),
+    })
   }
 
   public Invoke(...args: unknown[]): Value {
     if (typeof this._raw !== 'function') {
       $.panic(new ValueError({ Method: 'Value.Invoke', Type: this.Type() }))
     }
-    return new Value({ raw: this._raw(...args.map((arg) => ValueOf(arg)._raw)) })
+    return new Value({
+      raw: this._raw(...args.map((arg) => ValueOf(arg)._raw)),
+    })
   }
 
   public New(...args: unknown[]): Value {
@@ -120,7 +127,10 @@ export class Value {
       $.panic(new ValueError({ Method: 'Value.Invoke', Type: this.Type() }))
     }
     return new Value({
-      raw: Reflect.construct(this._raw, args.map((arg) => ValueOf(arg)._raw)),
+      raw: Reflect.construct(
+        this._raw,
+        args.map((arg) => ValueOf(arg)._raw),
+      ),
     })
   }
 
@@ -224,21 +234,27 @@ export class Func {
   public Value: Value
   private _released = false
 
-  constructor(init?: Partial<Func> & { fn?: (this$: Value, args: $.Slice<Value>) => unknown }) {
+  constructor(
+    init?: Partial<Func> & {
+      fn?: (this$: Value, args: $.Slice<Value>) => unknown
+    },
+  ) {
     const fn = init?.fn
-    this.Value = init?.Value?.clone() ?? new Value({
-      raw: function (this: unknown, ...args: unknown[]) {
-        if (fn === undefined) {
-          return undefined
-        }
-        return ValueOf(
-          fn(
-            new Value({ raw: this }),
-            args.map((arg) => new Value({ raw: arg })) as $.Slice<Value>,
-          ),
-        )._raw
-      },
-    })
+    this.Value =
+      init?.Value?.clone() ??
+      new Value({
+        raw: function (this: unknown, ...args: unknown[]) {
+          if (fn === undefined) {
+            return undefined
+          }
+          return ValueOf(
+            fn(
+              new Value({ raw: this }),
+              args.map((arg) => new Value({ raw: arg })) as $.Slice<Value>,
+            ),
+          )._raw
+        },
+      })
   }
 
   public clone(): Func {
@@ -352,7 +368,11 @@ export function ValueOf(x: unknown): Value {
   if (x === null || x === undefined) {
     return Null()
   }
-  if (typeof x === 'boolean' || typeof x === 'number' || typeof x === 'string') {
+  if (
+    typeof x === 'boolean' ||
+    typeof x === 'number' ||
+    typeof x === 'string'
+  ) {
     return new Value({ raw: x })
   }
   if (typeof x === 'bigint') {
@@ -423,7 +443,8 @@ export function CopyBytesToGo(dst: $.Bytes | null, src: Value): number {
 
 export function CopyBytesToJS(dst: Value, src: $.Bytes | null): number {
   const target = dstRawBytes(dst)
-  const bytes = src instanceof Uint8Array ? src : Uint8Array.from($.asArray(src))
+  const bytes =
+    src instanceof Uint8Array ? src : Uint8Array.from($.asArray(src))
   const n = Math.min(target.length, bytes.length)
   target.set(bytes.subarray(0, n), 0)
   return n
@@ -432,9 +453,13 @@ export function CopyBytesToJS(dst: Value, src: $.Bytes | null): number {
 function sourceBytes(src: Value): Uint8Array {
   const raw = srcRaw(src)
   if (raw instanceof Uint8Array || raw instanceof Uint8ClampedArray) {
-    return raw instanceof Uint8Array ? raw : new Uint8Array(raw.buffer, raw.byteOffset, raw.byteLength)
+    return raw instanceof Uint8Array ? raw : (
+        new Uint8Array(raw.buffer, raw.byteOffset, raw.byteLength)
+      )
   }
-  $.panic('syscall/js: CopyBytesToGo: expected src to be a Uint8Array or Uint8ClampedArray')
+  $.panic(
+    'syscall/js: CopyBytesToGo: expected src to be a Uint8Array or Uint8ClampedArray',
+  )
 }
 
 function dstRawBytes(dst: Value): Uint8Array | Uint8ClampedArray {
@@ -442,7 +467,9 @@ function dstRawBytes(dst: Value): Uint8Array | Uint8ClampedArray {
   if (raw instanceof Uint8Array || raw instanceof Uint8ClampedArray) {
     return raw
   }
-  $.panic('syscall/js: CopyBytesToJS: expected dst to be a Uint8Array or Uint8ClampedArray')
+  $.panic(
+    'syscall/js: CopyBytesToJS: expected dst to be a Uint8Array or Uint8ClampedArray',
+  )
 }
 
 function srcRaw(value: Value): unknown {

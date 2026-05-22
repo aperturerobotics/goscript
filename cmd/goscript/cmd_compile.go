@@ -18,6 +18,7 @@ func newCompileCommand() *cli.Command {
 	var config compiler.Config
 	var packages cli.StringSlice
 	var buildFlags cli.StringSlice
+	var overrideDirs cli.StringSlice
 
 	return &cli.Command{
 		Name:     "compile",
@@ -25,6 +26,7 @@ func newCompileCommand() *cli.Command {
 		Usage:    "compile a Go package to TypeScript",
 		Action: func(c *cli.Context) error {
 			config.BuildFlags = slices.Clone(buildFlags.Value())
+			config.OverrideDirs = slices.Clone(overrideDirs.Value())
 			return compilePackage(c.Context, &config, packages.Value())
 		},
 		Flags: []cli.Flag{
@@ -55,6 +57,13 @@ func newCompileCommand() *cli.Command {
 				Usage:       "Go build flags (tags) to use during analysis",
 				Destination: &buildFlags,
 				EnvVars:     []string{"GOSCRIPT_BUILD_FLAGS"},
+			},
+			&cli.StringSliceFlag{
+				Name:        "gs-path",
+				Aliases:     []string{"override-dir"},
+				Usage:       "additional GoScript override root containing package-path directories",
+				Destination: &overrideDirs,
+				EnvVars:     []string{"GOSCRIPT_GS_PATH"},
 			},
 			&cli.BoolFlag{
 				Name:        "disable-emit-builtin",

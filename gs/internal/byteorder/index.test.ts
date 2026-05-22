@@ -29,11 +29,11 @@ describe('internal/byteorder uint64', () => {
   })
 
   test('appends uint64 values', () => {
-    expect(Array.from(BEAppendUint64(new Uint8Array([0xaa]), 0x0102n))).toEqual([
-      0xaa, 0, 0, 0, 0, 0, 0, 1, 2,
-    ])
-    expect(Array.from(LEAppendUint64(new Uint8Array([0xaa]), 0x0102n))).toEqual([
-      0xaa, 2, 1, 0, 0, 0, 0, 0, 0,
-    ])
+    expect(Array.from(BEAppendUint64(new Uint8Array([0xaa]), 0x0102n))).toEqual(
+      [0xaa, 0, 0, 0, 0, 0, 0, 1, 2],
+    )
+    expect(Array.from(LEAppendUint64(new Uint8Array([0xaa]), 0x0102n))).toEqual(
+      [0xaa, 2, 1, 0, 0, 0, 0, 0, 0],
+    )
   })
 })

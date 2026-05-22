@@ -203,8 +203,8 @@ export class Regexp {
 		if ($.uint($.pointerValue<Regexp>(re).Op, 8) == $.uint(OpCapture, 8)) {
 			m = $.pointerValue<Regexp>(re).Cap
 		}
-		for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Sub); __rangeIndex++) {
-			let sub = $.pointerValue<Regexp>(re).Sub![__rangeIndex]
+		for (let __goscriptRangeTarget0 = $.pointerValue<Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+			let sub = __goscriptRangeTarget0![__rangeIndex]
 			{
 				let n = $.pointerValue<Regexp>(sub).MaxCap()
 				if (m < n) {
@@ -226,8 +226,8 @@ export class Regexp {
 			case OpAlternate:
 			{
 				let nre: Regexp | $.VarRef<Regexp> | null = re
-				for (let i = 0; i < $.len($.pointerValue<Regexp>(re).Sub); i++) {
-					let sub = $.pointerValue<Regexp>(re).Sub![i]
+				for (let __goscriptRangeTarget1 = $.pointerValue<Regexp>(re).Sub, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
+					let sub = __goscriptRangeTarget1![i]
 					let nsub: Regexp | $.VarRef<Regexp> | null = Regexp.prototype.Simplify.call(sub)
 					if ((nre == re) && (nsub != sub)) {
 						// min, max for OpRepeat
@@ -343,8 +343,8 @@ export class Regexp {
 		if ($.uint($.pointerValue<Regexp>(re).Op, 8) == $.uint(OpCapture, 8)) {
 			names![$.pointerValue<Regexp>(re).Cap] = $.pointerValue<Regexp>(re).Name
 		}
-		for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Sub); __rangeIndex++) {
-			let sub = $.pointerValue<Regexp>(re).Sub![__rangeIndex]
+		for (let __goscriptRangeTarget2 = $.pointerValue<Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
+			let sub = __goscriptRangeTarget2![__rangeIndex]
 			$.pointerValue<Regexp>(sub).capNames(names)
 		}
 	}
@@ -433,8 +433,8 @@ export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<
 		}
 		case OpLiteral:
 		{
-			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Rune); __rangeIndex++) {
-				let r = $.pointerValue<Regexp>(re).Rune![__rangeIndex]
+			for (let __goscriptRangeTarget3 = $.pointerValue<Regexp>(re).Rune, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget3); __rangeIndex++) {
+				let r = __goscriptRangeTarget3![__rangeIndex]
 				if (((65 <= r) && (r <= 125251)) && ($.int(unicode.SimpleFold($.int(r, 32)), 32) != $.int(r, 32))) {
 					if ($.uint(($.pointerValue<Regexp>(re).Flags & 1), 16) != $.uint(0, 16)) {
 						return [$.uint(flagI, 8), $.uint(0, 8)]
@@ -505,8 +505,8 @@ export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<
 			let start = 0
 			let last = 0
 			let did = false
-			for (let i = 0; i < $.len($.pointerValue<Regexp>(re).Sub); i++) {
-				let sub = $.pointerValue<Regexp>(re).Sub![i]
+			for (let __goscriptRangeTarget4 = $.pointerValue<Regexp>(re).Sub, i = 0; i < $.len(__goscriptRangeTarget4); i++) {
+				let sub = __goscriptRangeTarget4![i]
 				let __goscriptTuple1 = calcFlags(sub, flags)
 				let subMust = $.uint(__goscriptTuple1[0], 8)
 				let subCant = $.uint(__goscriptTuple1[1], 8)
@@ -598,8 +598,8 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		}
 		case OpLiteral:
 		{
-			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Rune); __rangeIndex++) {
-				let r = $.pointerValue<Regexp>(re).Rune![__rangeIndex]
+			for (let __goscriptRangeTarget5 = $.pointerValue<Regexp>(re).Rune, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget5); __rangeIndex++) {
+				let r = __goscriptRangeTarget5![__rangeIndex]
 				escape(b, $.int(r, 32), false)
 			}
 			break
@@ -750,8 +750,8 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		}
 		case OpConcat:
 		{
-			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Regexp>(re).Sub); __rangeIndex++) {
-				let sub = $.pointerValue<Regexp>(re).Sub![__rangeIndex]
+			for (let __goscriptRangeTarget6 = $.pointerValue<Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget6); __rangeIndex++) {
+				let sub = __goscriptRangeTarget6![__rangeIndex]
 				let p = $.uint(0, 8)
 				if ($.uint($.pointerValue<Regexp>(sub).Op, 8) == $.uint(OpAlternate, 8)) {
 					p = $.uint(flagPrec, 8)
@@ -762,8 +762,8 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		}
 		case OpAlternate:
 		{
-			for (let i = 0; i < $.len($.pointerValue<Regexp>(re).Sub); i++) {
-				let sub = $.pointerValue<Regexp>(re).Sub![i]
+			for (let __goscriptRangeTarget7 = $.pointerValue<Regexp>(re).Sub, i = 0; i < $.len(__goscriptRangeTarget7); i++) {
+				let sub = __goscriptRangeTarget7![i]
 				if (i > 0) {
 					$.pointerValue<strings.Builder>(b).WriteRune($.int(124, 32))
 				}

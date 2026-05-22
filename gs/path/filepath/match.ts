@@ -251,7 +251,10 @@ function hasMeta(path: string): boolean {
   return /[*?[\\]/.test(path)
 }
 
-function splitPattern(pattern: string): { absolute: boolean; segments: string[] } {
+function splitPattern(pattern: string): {
+  absolute: boolean
+  segments: string[]
+} {
   const absolute = pattern.startsWith('/')
   const segments = pattern.split('/').filter((segment, index) => {
     if (index === 0 && segment === '') {

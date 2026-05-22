@@ -441,14 +441,14 @@ export function IsWordChar(r: number): boolean {
 }
 
 export function bw(b: strings.Builder | $.VarRef<strings.Builder> | null, args: $.Slice<string>): void {
-	for (let __rangeIndex = 0; __rangeIndex < $.len(args); __rangeIndex++) {
-		let s = args![__rangeIndex]
+	for (let __goscriptRangeTarget0 = args, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let s = __goscriptRangeTarget0![__rangeIndex]
 		$.pointerValue<strings.Builder>(b).WriteString(s)
 	}
 }
 
 export function dumpProg(b: strings.Builder | $.VarRef<strings.Builder> | null, p: Prog | $.VarRef<Prog> | null): void {
-	for (let j = 0; j < $.len($.pointerValue<Prog>(p).Inst); j++) {
+	for (let __goscriptRangeTarget1 = $.pointerValue<Prog>(p).Inst, j = 0; j < $.len(__goscriptRangeTarget1); j++) {
 		let i: Inst | $.VarRef<Inst> | null = $.indexRef($.pointerValue<Prog>(p).Inst!, j)
 		let pc = strconv.Itoa(j)
 		if ($.len(pc) < 3) {

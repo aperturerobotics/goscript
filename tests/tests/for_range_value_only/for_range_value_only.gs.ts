@@ -8,8 +8,8 @@ import * as strings from "@goscript/strings/index.js"
 export async function main(): globalThis.Promise<void> {
 	let s = $.arrayToSlice<number>([10, 20, 30])
 	let sum = 0
-	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {
-		let v = s![__rangeIndex]
+	for (let __goscriptRangeTarget0 = s, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let v = __goscriptRangeTarget0![__rangeIndex]
 		sum += v
 		$.println(v)
 	}
@@ -17,8 +17,8 @@ export async function main(): globalThis.Promise<void> {
 
 	let arr = ["a", "b", "c"]
 	let concat: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
-	for (let __rangeIndex = 0; __rangeIndex < $.len(arr); __rangeIndex++) {
-		let val = arr[__rangeIndex]
+	for (let __goscriptRangeTarget1 = arr, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
+		let val = __goscriptRangeTarget1[__rangeIndex]
 		concat.value.WriteString(val)
 		$.println(val)
 	}
@@ -27,7 +27,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test with blank identifier for value (should still iterate)
 	$.println("Ranging with blank identifier for value:")
 	let count = 0
-	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {
+	for (let __goscriptRangeTarget2 = s, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
 		count++
 	}
 	$.println(count)

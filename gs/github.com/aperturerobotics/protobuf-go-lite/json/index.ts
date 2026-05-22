@@ -190,18 +190,27 @@ export class MarshalState {
   }
 
   public Sub(js: JsonStream | null): MarshalState | null {
-    return new MarshalState({ config: this.configValue, stream: js ?? new JsonStream() })
+    return new MarshalState({
+      config: this.configValue,
+      stream: js ?? new JsonStream(),
+    })
   }
 
   public WithField(field: string): MarshalState | null {
-    const next = new MarshalState({ config: this.configValue, stream: this.stream })
+    const next = new MarshalState({
+      config: this.configValue,
+      stream: this.stream,
+    })
     next.fields = new Set(this.fields)
     next.fields.add(field)
     return next
   }
 
   public WithFieldMask(...paths: string[]): MarshalState | null {
-    const next = new MarshalState({ config: this.configValue, stream: this.stream })
+    const next = new MarshalState({
+      config: this.configValue,
+      stream: this.stream,
+    })
     next.fields = new Set([...this.fields, ...paths])
     return next
   }
@@ -238,7 +247,10 @@ export class MarshalState {
     this.WriteString(`${x}s`)
   }
 
-  public WriteEnum(x: number, ...valueMaps: Array<Map<number, string> | Record<number, string> | null>): void {
+  public WriteEnum(
+    x: number,
+    ...valueMaps: Array<Map<number, string> | Record<number, string> | null>
+  ): void {
     if (this.configValue.EnumsAsInts) {
       this.WriteEnumNumber(x)
       return
@@ -250,7 +262,10 @@ export class MarshalState {
     this.WriteInt32(x)
   }
 
-  public WriteEnumString(x: number, ...valueMaps: Array<Map<number, string> | Record<number, string> | null>): void {
+  public WriteEnumString(
+    x: number,
+    ...valueMaps: Array<Map<number, string> | Record<number, string> | null>
+  ): void {
     const value = enumStringValue(x, valueMaps)
     if (value == null) {
       this.WriteEnumNumber(x)
@@ -382,7 +397,10 @@ export class MarshalState {
     this.writeArray(vs, (v) => this.WriteUint64(v))
   }
 
-  private writeArray<T>(values: $.Slice<T>, writeValue: (value: T) => void): void {
+  private writeArray<T>(
+    values: $.Slice<T>,
+    writeValue: (value: T) => void,
+  ): void {
     this.WriteArrayStart()
     let wrote = false
     for (const value of sliceValues(values)) {
@@ -406,13 +424,15 @@ export class UnmarshalState {
   private objectEntries: Array<[string, unknown]> | null = null
   private objectIndex = 0
 
-  constructor(init?: Partial<{
-    config: UnmarshalerConfig
-    value: unknown
-    root: UnmarshalState
-    fieldMaskPaths: Set<string>
-    path: string[]
-  }>) {
+  constructor(
+    init?: Partial<{
+      config: UnmarshalerConfig
+      value: unknown
+      root: UnmarshalState
+      fieldMaskPaths: Set<string>
+      path: string[]
+    }>,
+  ) {
     this.configValue = init?.config?.clone() ?? DefaultUnmarshalerConfig.clone()
     this.value = init?.value ?? null
     this.root = init?.root ?? this
@@ -488,7 +508,9 @@ export class UnmarshalState {
     return $.varRef(numberFromJSON(this.value))
   }
 
-  public ReadEnum(...valueMaps: Array<Map<string, number> | Record<string, number> | null>): number {
+  public ReadEnum(
+    ...valueMaps: Array<Map<string, number> | Record<string, number> | null>
+  ): number {
     if (typeof this.value === 'number') {
       return Math.trunc(this.value)
     }
@@ -505,11 +527,12 @@ export class UnmarshalState {
   }
 
   public ReadFieldMask(): FieldMask | null {
-    const paths = typeof this.value === 'string'
-      ? this.value.split(',').filter((part) => part !== '')
-      : Array.isArray(recordValue(this.value)?.paths)
-        ? sliceValues(recordValue(this.value)?.paths as $.Slice<string>)
-        : []
+    const paths =
+      typeof this.value === 'string' ?
+        this.value.split(',').filter((part) => part !== '')
+      : Array.isArray(recordValue(this.value)?.paths) ?
+        sliceValues(recordValue(this.value)?.paths as $.Slice<string>)
+      : []
     return { GetPaths: () => $.arrayToSlice(paths) }
   }
 
@@ -671,15 +694,33 @@ export class UnmarshalState {
     })
   }
 
-  public ReadWrappedBool(): boolean { return this.readWrapped(() => this.ReadBool()) }
-  public ReadWrappedBytes(): $.Slice<number> { return this.readWrapped(() => this.ReadBytes()) }
-  public ReadWrappedFloat32(): number { return this.readWrapped(() => this.ReadFloat32()) }
-  public ReadWrappedFloat64(): number { return this.readWrapped(() => this.ReadFloat64()) }
-  public ReadWrappedInt32(): number { return this.readWrapped(() => this.ReadInt32()) }
-  public ReadWrappedInt64(): number { return this.readWrapped(() => this.ReadInt64()) }
-  public ReadWrappedString(): string { return this.readWrapped(() => this.ReadString()) }
-  public ReadWrappedUint32(): number { return this.readWrapped(() => this.ReadUint32()) }
-  public ReadWrappedUint64(): number { return this.readWrapped(() => this.ReadUint64()) }
+  public ReadWrappedBool(): boolean {
+    return this.readWrapped(() => this.ReadBool())
+  }
+  public ReadWrappedBytes(): $.Slice<number> {
+    return this.readWrapped(() => this.ReadBytes())
+  }
+  public ReadWrappedFloat32(): number {
+    return this.readWrapped(() => this.ReadFloat32())
+  }
+  public ReadWrappedFloat64(): number {
+    return this.readWrapped(() => this.ReadFloat64())
+  }
+  public ReadWrappedInt32(): number {
+    return this.readWrapped(() => this.ReadInt32())
+  }
+  public ReadWrappedInt64(): number {
+    return this.readWrapped(() => this.ReadInt64())
+  }
+  public ReadWrappedString(): string {
+    return this.readWrapped(() => this.ReadString())
+  }
+  public ReadWrappedUint32(): number {
+    return this.readWrapped(() => this.ReadUint32())
+  }
+  public ReadWrappedUint64(): number {
+    return this.readWrapped(() => this.ReadUint64())
+  }
 
   public SetError(err: $.GoError): void {
     this.root.err = err
@@ -726,7 +767,10 @@ export class UnmarshalState {
     return 0
   }
 
-  public WithField(_field: string, _mask: boolean = true): UnmarshalState | null {
+  public WithField(
+    _field: string,
+    _mask: boolean = true,
+  ): UnmarshalState | null {
     return new UnmarshalState({
       config: this.configValue,
       value: this.value,
@@ -772,7 +816,10 @@ export class UnmarshalState {
     }
     const keys = Object.keys(record)
     if (keys.length !== 1) {
-      this.SetErrorf('unexpected %q field in wrapped value', keys.find((key) => key !== 'value') ?? '')
+      this.SetErrorf(
+        'unexpected %q field in wrapped value',
+        keys.find((key) => key !== 'value') ?? '',
+      )
       return read()
     }
     const original = this.value
@@ -787,13 +834,22 @@ export function NewJsonStream(wr: unknown): JsonStream | null {
   return new JsonStream(wr)
 }
 
-export function NewMarshalState(config: MarshalerConfig, stream: JsonStream | null): MarshalState | null {
+export function NewMarshalState(
+  config: MarshalerConfig,
+  stream: JsonStream | null,
+): MarshalState | null {
   return new MarshalState({ config, stream: stream ?? new JsonStream() })
 }
 
-export function NewUnmarshalState(data: $.Slice<number>, config: UnmarshalerConfig): UnmarshalState | null {
+export function NewUnmarshalState(
+  data: $.Slice<number>,
+  config: UnmarshalerConfig,
+): UnmarshalState | null {
   try {
-    return new UnmarshalState({ config, value: JSON.parse(bytesToString(data)) })
+    return new UnmarshalState({
+      config,
+      value: JSON.parse(bytesToString(data)),
+    })
   } catch (err) {
     const state = new UnmarshalState({ config })
     state.SetError($.newError(err instanceof Error ? err.message : String(err)))
@@ -801,11 +857,16 @@ export function NewUnmarshalState(data: $.Slice<number>, config: UnmarshalerConf
   }
 }
 
-export function Marshal(c: MarshalerConfig, m: Marshaler | null): [$.Slice<number>, $.GoError] {
+export function Marshal(
+  c: MarshalerConfig,
+  m: Marshaler | null,
+): [$.Slice<number>, $.GoError] {
   return c.Marshal(m)
 }
 
-export function MarshalMap<M extends Map<string, Marshaler> | Record<string, Marshaler>>(
+export function MarshalMap<
+  M extends Map<string, Marshaler> | Record<string, Marshaler>,
+>(
   _typeArgs: $.GenericTypeArgs | undefined,
   c: MarshalerConfig,
   mm: M,
@@ -824,7 +885,9 @@ export function MarshalMap<M extends Map<string, Marshaler> | Record<string, Mar
     value?.MarshalProtoJSON(state)
   })
   state.WriteObjectEnd()
-  return state.Err() == null ? [stringToBytes(stream.String()), null] : [null, state.Err()]
+  return state.Err() == null ?
+      [stringToBytes(stream.String()), null]
+    : [null, state.Err()]
 }
 
 export function MarshalSlice<S extends $.Slice<Marshaler>>(
@@ -842,14 +905,22 @@ export function MarshalSlice<S extends $.Slice<Marshaler>>(
     value?.MarshalProtoJSON(state)
   })
   state.WriteArrayEnd()
-  return state.Err() == null ? [stringToBytes(stream.String()), null] : [null, state.Err()]
+  return state.Err() == null ?
+      [stringToBytes(stream.String()), null]
+    : [null, state.Err()]
 }
 
-export function GetEnumString(x: number, ...valueMaps: Array<Map<number, string> | Record<number, string> | null>): string {
+export function GetEnumString(
+  x: number,
+  ...valueMaps: Array<Map<number, string> | Record<number, string> | null>
+): string {
   return enumStringValue(x, valueMaps) ?? String(x)
 }
 
-export function ParseEnumString(v: string, ...valueMaps: Array<Map<string, number> | Record<string, number> | null>): [number, $.GoError] {
+export function ParseEnumString(
+  v: string,
+  ...valueMaps: Array<Map<string, number> | Record<string, number> | null>
+): [number, $.GoError] {
   for (const valueMap of valueMaps) {
     const value = lookupStringMap(valueMap, v)
     if (value !== undefined) {
@@ -857,10 +928,14 @@ export function ParseEnumString(v: string, ...valueMaps: Array<Map<string, numbe
     }
   }
   const parsed = Number(v)
-  return Number.isFinite(parsed) ? [parsed, null] : [0, $.newError(`invalid enum ${v}`)]
+  return Number.isFinite(parsed) ?
+      [parsed, null]
+    : [0, $.newError(`invalid enum ${v}`)]
 }
 
-function sliceValues<T>(values: $.Slice<T> | readonly T[] | null | undefined): T[] {
+function sliceValues<T>(
+  values: $.Slice<T> | readonly T[] | null | undefined,
+): T[] {
   return Array.from((values ?? []) as Iterable<T>)
 }
 
@@ -953,7 +1028,10 @@ function enumStringValue(
   return null
 }
 
-function lookupStringMap(valueMap: Map<string, number> | Record<string, number> | null, key: string): number | undefined {
+function lookupStringMap(
+  valueMap: Map<string, number> | Record<string, number> | null,
+  key: string,
+): number | undefined {
   if (valueMap == null) {
     return undefined
   }
@@ -964,7 +1042,8 @@ function formatError(format: string, args: unknown[]): string {
   return format.replace(/%[vqsd]/g, () => String(args.shift()))
 }
 
-const base64Alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+const base64Alphabet =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
 function base64Encode(bytes: $.Slice<number>): string {
   const data = sliceValues(bytes)

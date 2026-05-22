@@ -408,11 +408,7 @@ export function Append(b: $.Bytes, ...a: any[]): $.Bytes {
   return newArray
 }
 
-export function Appendf(
-  b: $.Bytes,
-  format: string,
-  ...a: any[]
-): $.Bytes {
+export function Appendf(b: $.Bytes, format: string, ...a: any[]): $.Bytes {
   const result = parseFormat(format, a)
   const encoded = new TextEncoder().encode(result)
   const base = $.bytesToUint8Array(b)

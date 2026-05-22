@@ -134,8 +134,8 @@ export async function main(): globalThis.Promise<void> {
 		}
 	}
 
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.arrayToSlice<any>([$.int(7, 32)])); __rangeIndex++) {
-		let v = $.arrayToSlice<any>([$.int(7, 32)])![__rangeIndex]
+	for (let __goscriptRangeTarget0 = $.arrayToSlice<any>([$.int(7, 32)]), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let v = __goscriptRangeTarget0![__rangeIndex]
 		{
 			const __goscriptTypeSwitchValue = v
 			switch (true) {
@@ -150,8 +150,8 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	let count = 0
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.arrayToSlice<any>([1, "skip", 2])); __rangeIndex++) {
-		let v = $.arrayToSlice<any>([1, "skip", 2])![__rangeIndex]
+	for (let __goscriptRangeTarget1 = $.arrayToSlice<any>([1, "skip", 2]), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
+		let v = __goscriptRangeTarget1![__rangeIndex]
 		{
 			const __goscriptTypeSwitchValue = v
 			switch (true) {

@@ -231,4 +231,59 @@ describe('os stdio', () => {
     expect(handle.writeSync).toHaveBeenCalledTimes(2)
     expect(Array.from(handle.writeSync.mock.calls[1][0])).toEqual([22, 23])
   })
+
+  it('supports ReadAt and WriteAt on process fs descriptors', () => {
+    const readSync = vi.fn(
+      (
+        _fd: number,
+        buffer: Uint8Array,
+        offset?: number,
+        length?: number,
+        position?: number | null,
+      ) => {
+        expect(offset).toBe(0)
+        expect(length).toBe(3)
+        expect(position).toBe(5)
+        buffer.set([31, 32, 33], 0)
+        return 3
+      },
+    )
+    const writeSync = vi.fn(
+      (
+        _fd: number,
+        _buffer: Uint8Array,
+        offset?: number,
+        length?: number,
+        position?: number | null,
+      ) => {
+        expect(offset).toBe(0)
+        expect(length).toBe(2)
+        expect(position).toBe(8)
+        return length ?? 0
+      },
+    )
+
+    delete (globalThis as any).Deno
+    ;(globalThis as any).process = {
+      getBuiltinModule: vi.fn(() => ({
+        readSync,
+        writeSync,
+      })),
+    }
+    resetHostRuntimeForTests()
+
+    const file = createHostFile('descriptor-file', 7)
+    const buf = new Uint8Array(3)
+
+    const [readN, readErr] = file.ReadAt(buf, 5)
+    expect(readN).toBe(3)
+    expect(readErr).toBeNull()
+    expect(Array.from(buf)).toEqual([31, 32, 33])
+
+    const [writeN, writeErr] = file.WriteAt(new Uint8Array([41, 42]), 8)
+    expect(writeN).toBe(2)
+    expect(writeErr).toBeNull()
+    expect(readSync).toHaveBeenCalledTimes(1)
+    expect(writeSync).toHaveBeenCalledTimes(1)
+  })
 })

@@ -81,7 +81,7 @@ export function All<T>(
 export function Backward<T>(
   s: $.Slice<T>,
 ): (
-  _yield: (index: number, value: T) => boolean | globalThis.Promise<boolean>
+  _yield: (index: number, value: T) => boolean | globalThis.Promise<boolean>,
 ) => void | globalThis.Promise<void> {
   return function (
     _yield: (index: number, value: T) => boolean | globalThis.Promise<boolean>,
@@ -145,7 +145,9 @@ export function Collect<T>(seq: iter.Seq<T>): $.Slice<T> {
   return out.length === 0 ? null : out
 }
 
-export function Sorted<T extends string | number>(seq: iter.Seq<T>): $.Slice<T> {
+export function Sorted<T extends string | number>(
+  seq: iter.Seq<T>,
+): $.Slice<T> {
   const out = Collect(seq)
   Sort(out)
   return out
@@ -263,7 +265,9 @@ export function ContainsFunc<T>(s: $.Slice<T>, f: (v: T) => boolean): boolean {
 export function Insert<T>(s: $.Slice<T>, i: number, ...v: T[]): $.Slice<T> {
   const length = $.len(s)
   if (i < 0 || i > length) {
-    throw new Error(`slice bounds out of range [${i}:${i}] with length ${length}`)
+    throw new Error(
+      `slice bounds out of range [${i}:${i}] with length ${length}`,
+    )
   }
   if (v.length === 0) {
     return s

@@ -547,7 +547,10 @@ export async function ReadAtLeast(
 }
 
 // ReadFull reads exactly len(buf) bytes from r into buf
-export async function ReadFull(r: Reader, buf: $.Bytes): Promise<[number, $.GoError]> {
+export async function ReadFull(
+  r: Reader,
+  buf: $.Bytes,
+): Promise<[number, $.GoError]> {
   return await ReadAtLeast(r, buf, $.len(buf))
 }
 

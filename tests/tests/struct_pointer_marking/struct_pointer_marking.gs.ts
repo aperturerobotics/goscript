@@ -132,8 +132,8 @@ export async function main(): globalThis.Promise<void> {
 	// Array of interfaces containing both pointers and values
 	let arr = $.arrayToSlice<any>([$.interfaceValue<any>(nested1, "*main.MyStruct"), $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(nested2.value)), "main.MyStruct"), $.interfaceValue<any>(nested2, "*main.MyStruct")])
 
-	for (let i = 0; i < $.len(arr); i++) {
-		let item = arr![i]
+	for (let __goscriptRangeTarget0 = arr, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+		let item = __goscriptRangeTarget0![i]
 		{
 			let [val, ok] = $.typeAssertTuple<MyStruct>(item, "main.MyStruct")
 			if (ok) {
@@ -157,8 +157,8 @@ export async function main(): globalThis.Promise<void> {
 	$.println("\n--- Scenario 6: Type Switch ---")
 	let testItems = $.arrayToSlice<any>([$.interfaceValue<any>($.markAsStructValue(new MyStruct({Value: 100})), "main.MyStruct"), $.interfaceValue<any>(new MyStruct({Value: 200}), "*main.MyStruct"), 300, "string"])
 
-	for (let i = 0; i < $.len(testItems); i++) {
-		let item = testItems![i]
+	for (let __goscriptRangeTarget1 = testItems, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
+		let item = __goscriptRangeTarget1![i]
 		{
 			const __goscriptTypeSwitchValue = item
 			switch (true) {

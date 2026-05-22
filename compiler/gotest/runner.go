@@ -33,6 +33,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
+	r.service = compiler.NewCompileService(norm.OverrideDirs...)
 	if norm.Timeout != 0 {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, norm.Timeout)
@@ -79,6 +80,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		Dir:                 norm.Dir,
 		OutputPath:          norm.OutputRoot,
 		BuildFlags:          append([]string(nil), norm.BuildFlags...),
+		OverrideDirs:        append([]string(nil), norm.OverrideDirs...),
 		DependencyMode:      compiler.DependencyModeRequested,
 		RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
 		Tests:               true,
@@ -101,6 +103,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 			Dir:                 norm.Dir,
 			OutputPath:          outputRoot,
 			BuildFlags:          append([]string(nil), norm.BuildFlags...),
+			OverrideDirs:        append([]string(nil), norm.OverrideDirs...),
 			DependencyMode:      compiler.DependencyModeAll,
 			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
 			Tests:               false,
@@ -127,6 +130,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 			Dir:                 norm.Dir,
 			OutputPath:          outputRoot,
 			BuildFlags:          append([]string(nil), norm.BuildFlags...),
+			OverrideDirs:        append([]string(nil), norm.OverrideDirs...),
 			DependencyMode:      compiler.DependencyModeAll,
 			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
 			Tests:               true,
@@ -219,6 +223,7 @@ func (r *Runner) compileTestImports(
 			Dir:                 req.Dir,
 			OutputPath:          outputRoot,
 			BuildFlags:          append([]string(nil), req.BuildFlags...),
+			OverrideDirs:        append([]string(nil), req.OverrideDirs...),
 			DependencyMode:      compiler.DependencyModeAll,
 			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
 			Tests:               false,

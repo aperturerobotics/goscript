@@ -100,7 +100,7 @@ export async function main(): globalThis.Promise<void> {
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 100, text: "Main: All workers completed"})))
 
 	// Sort messages by priority for deterministic order
-	for (let i = 0; i < $.len(allMessages); i++) {
+	for (let __goscriptRangeTarget0 = allMessages, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 		for (let j = i + 1; j < $.len(allMessages); j++) {
 			if (allMessages![i].priority > allMessages![j].priority) {
 				let __goscriptAssign0_0: Message = $.markAsStructValue($.cloneStructValue(allMessages![j]))
@@ -112,8 +112,8 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Print all messages in deterministic order
-	for (let __rangeIndex = 0; __rangeIndex < $.len(allMessages); __rangeIndex++) {
-		let msg = allMessages![__rangeIndex]
+	for (let __goscriptRangeTarget1 = allMessages, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
+		let msg = __goscriptRangeTarget1![__rangeIndex]
 		$.println(msg.priority, msg.text)
 	}
 	$.println("done")

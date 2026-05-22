@@ -20,6 +20,8 @@ import {
   Rel,
   EvalSymlinks,
   Walk,
+  WalkDir,
+  SkipDir,
   Separator,
   ListSeparator,
 } from './path.js'
@@ -220,6 +222,40 @@ describe('path/filepath - Path manipulation functions', () => {
 
         expect(err).toBeNull()
         expect(visited).toEqual(['.', 'a', 'a/b', 'a/b/file.txt'])
+      } finally {
+        rmSync(root, { force: true, recursive: true })
+      }
+    })
+  })
+
+  describe('WalkDir', () => {
+    it('should visit host filesystem dir entries in lexical order', () => {
+      const root = mkdtempSync(join(tmpdir(), 'goscript-filepath-walkdir-'))
+      try {
+        mkdirSync(join(root, 'b'), { recursive: true })
+        mkdirSync(join(root, 'a'), { recursive: true })
+        writeFileSync(join(root, 'a', 'skipped.txt'), 'skip')
+        writeFileSync(join(root, 'b', 'file.txt'), 'ok')
+
+        const visited: string[] = []
+        const err = WalkDir(root, (path, d, walkErr) => {
+          expect(walkErr).toBeNull()
+          visited.push(
+            `${path.slice(root.length).replace(/^\/?/, '') || '.'}:${d.Name()}:${d.IsDir()}`,
+          )
+          if (d.Name() === 'a') {
+            return SkipDir
+          }
+          return null
+        })
+
+        expect(err).toBeNull()
+        expect(visited).toEqual([
+          `.:${root.split('/').pop()}:true`,
+          'a:a:true',
+          'b:b:true',
+          'b/file.txt:file.txt:false',
+        ])
       } finally {
         rmSync(root, { force: true, recursive: true })
       }

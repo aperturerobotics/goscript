@@ -1,0 +1,9 @@
+{
+  "asyncFunctions": {
+    "Sum224": true,
+    "Sum256": true
+  },
+  "asyncMethods": {
+    "Digest.Sum": true
+  }
+}

@@ -147,9 +147,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   )
 }
 
-function structFieldMetadata(
-  value: unknown,
-): Record<string, { tag?: string }> {
+function structFieldMetadata(value: unknown): Record<string, { tag?: string }> {
   if (value === null || typeof value !== 'object') {
     return {}
   }

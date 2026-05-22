@@ -14,8 +14,8 @@ export function testFS(fsys: string, expected: $.Slice<string>): $.GoError {
 		return errors.New("no expected values")
 	}
 
-	for (let i = 0; i < $.len(expected); i++) {
-		let exp = expected![i]
+	for (let __goscriptRangeTarget0 = expected, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+		let exp = __goscriptRangeTarget0![i]
 		$.println((("Expected[" + String.fromCodePoint($.int(i + 48, 32))) + "]: ") + exp)
 	}
 

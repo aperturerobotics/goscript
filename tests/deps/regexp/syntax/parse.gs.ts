@@ -260,8 +260,8 @@ export class parser {
 			}
 		}
 		let h = 1
-		for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub); __rangeIndex++) {
-			let sub = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![__rangeIndex]
+		for (let __goscriptRangeTarget0 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+			let sub = __goscriptRangeTarget0![__rangeIndex]
 			let hsub = $.pointerValue<parser>(p).calcHeight(sub, false)
 			if (h < (1 + hsub)) {
 				h = 1 + hsub
@@ -305,16 +305,16 @@ export class parser {
 			}
 			case 18:
 			{
-				for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub); __rangeIndex++) {
-					let sub = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![__rangeIndex]
+				for (let __goscriptRangeTarget1 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
+					let sub = __goscriptRangeTarget1![__rangeIndex]
 					size = $.uint64Add(size, $.pointerValue<parser>(p).calcSize(sub, false))
 				}
 				break
 			}
 			case 19:
 			{
-				for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub); __rangeIndex++) {
-					let sub = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![__rangeIndex]
+				for (let __goscriptRangeTarget2 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
+					let sub = __goscriptRangeTarget2![__rangeIndex]
 					size = $.uint64Add(size, $.pointerValue<parser>(p).calcSize(sub, false))
 				}
 				if ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) > 1) {
@@ -351,8 +351,8 @@ export class parser {
 		}
 		if ($.pointerValue<parser>(p).height == null) {
 			$.pointerValue<parser>(p).height = $.makeMap<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number>()
-			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<parser>(p).stack); __rangeIndex++) {
-				let re = $.pointerValue<parser>(p).stack![__rangeIndex]
+			for (let __goscriptRangeTarget3 = $.pointerValue<parser>(p).stack, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget3); __rangeIndex++) {
+				let re = __goscriptRangeTarget3![__rangeIndex]
 				$.pointerValue<parser>(p).checkHeight(re)
 			}
 		}
@@ -389,13 +389,13 @@ export class parser {
 				if (n <= 0) {
 					n = 1
 				}
-				if ($.int(n) > (Math.trunc(maxSize / $.pointerValue<parser>(p).repeats))) {
+				if ($.int(n) > ($.uint64Div(maxSize, $.pointerValue<parser>(p).repeats))) {
 					$.pointerValue<parser>(p).repeats = maxSize
 				} else {
 					$.pointerValue<parser>(p).repeats = $.uint64Mul($.pointerValue<parser>(p).repeats, $.int(n))
 				}
 			}
-			if ($.int($.pointerValue<parser>(p).numRegexp) < (Math.trunc(maxSize / $.pointerValue<parser>(p).repeats))) {
+			if ($.int($.pointerValue<parser>(p).numRegexp) < ($.uint64Div(maxSize, $.pointerValue<parser>(p).repeats))) {
 				return
 			}
 
@@ -403,8 +403,8 @@ export class parser {
 			// Make the map and belatedly populate it
 			// with info about everything we've constructed so far.
 			$.pointerValue<parser>(p).size = $.makeMap<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number>()
-			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<parser>(p).stack); __rangeIndex++) {
-				let re = $.pointerValue<parser>(p).stack![__rangeIndex]
+			for (let __goscriptRangeTarget4 = $.pointerValue<parser>(p).stack, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget4); __rangeIndex++) {
+				let re = __goscriptRangeTarget4![__rangeIndex]
 				$.pointerValue<parser>(p).checkSize(re)
 			}
 		}
@@ -421,8 +421,8 @@ export class parser {
 		}
 		let re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).newRegexp($.uint(op, 8))
 		$.pointerValue<__goscript_regexp.Regexp>(re).Sub = $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Sub0, undefined, 0)
-		for (let __rangeIndex = 0; __rangeIndex < $.len(subs); __rangeIndex++) {
-			let sub = subs![__rangeIndex]
+		for (let __goscriptRangeTarget5 = subs, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget5); __rangeIndex++) {
+			let sub = __goscriptRangeTarget5![__rangeIndex]
 			if ($.uint($.pointerValue<__goscript_regexp.Regexp>(sub).Op, 8) == $.uint(op, 8)) {
 				$.pointerValue<__goscript_regexp.Regexp>(re).Sub = $.append($.pointerValue<__goscript_regexp.Regexp>(re).Sub, ...($.pointerValue<__goscript_regexp.Regexp>(sub).Sub ?? []))
 				$.pointerValue<parser>(p).reuse(sub)
@@ -644,7 +644,7 @@ export class parser {
 		// Round 4: Collapse runs of empty matches into a single empty match.
 		start = 0
 		out = $.goSlice(sub, undefined, 0)
-		for (let i = 0; i < $.len(sub); i++) {
+		for (let __goscriptRangeTarget6 = sub, i = 0; i < $.len(__goscriptRangeTarget6); i++) {
 			if ((((i + 1) < $.len(sub)) && ($.uint($.pointerValue<__goscript_regexp.Regexp>(sub![i]).Op, 8) == $.uint(2, 8))) && ($.uint($.pointerValue<__goscript_regexp.Regexp>(sub![i + 1]).Op, 8) == $.uint(2, 8))) {
 				continue
 			}
@@ -1876,8 +1876,8 @@ export function repeatIsValid(re: __goscript_regexp.Regexp | $.VarRef<__goscript
 			n /= m
 		}
 	}
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub); __rangeIndex++) {
-		let sub = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![__rangeIndex]
+	for (let __goscriptRangeTarget7 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget7); __rangeIndex++) {
+		let sub = __goscriptRangeTarget7![__rangeIndex]
 		if (!repeatIsValid(sub, n)) {
 			return false
 		}
@@ -2615,8 +2615,8 @@ export function appendNegatedClass(r: $.Slice<number>, x: $.Slice<number>): $.Sl
 }
 
 export function appendTable(r: $.Slice<number>, x: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null): $.Slice<number> {
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<unicode.RangeTable>(x).R16); __rangeIndex++) {
-		let xr = $.pointerValue<unicode.RangeTable>(x).R16![__rangeIndex]
+	for (let __goscriptRangeTarget8 = $.pointerValue<unicode.RangeTable>(x).R16, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget8); __rangeIndex++) {
+		let xr = __goscriptRangeTarget8![__rangeIndex]
 		let lo = $.int($.int(xr.Lo, 32), 32)
 		let hi = $.int($.int(xr.Hi, 32), 32)
 		let stride = $.int($.int(xr.Stride, 32), 32)
@@ -2628,8 +2628,8 @@ export function appendTable(r: $.Slice<number>, x: unicode.RangeTable | $.VarRef
 			r = appendRange(r, $.int(c, 32), $.int(c, 32))
 		}
 	}
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<unicode.RangeTable>(x).R32); __rangeIndex++) {
-		let xr = $.pointerValue<unicode.RangeTable>(x).R32![__rangeIndex]
+	for (let __goscriptRangeTarget9 = $.pointerValue<unicode.RangeTable>(x).R32, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget9); __rangeIndex++) {
+		let xr = __goscriptRangeTarget9![__rangeIndex]
 		let lo = $.int($.int(xr.Lo, 32), 32)
 		let hi = $.int($.int(xr.Hi, 32), 32)
 		let stride = $.int($.int(xr.Stride, 32), 32)
@@ -2646,8 +2646,8 @@ export function appendTable(r: $.Slice<number>, x: unicode.RangeTable | $.VarRef
 
 export function appendNegatedTable(r: $.Slice<number>, x: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null): $.Slice<number> {
 	let nextLo = $.int(0, 32)
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<unicode.RangeTable>(x).R16); __rangeIndex++) {
-		let xr = $.pointerValue<unicode.RangeTable>(x).R16![__rangeIndex]
+	for (let __goscriptRangeTarget10 = $.pointerValue<unicode.RangeTable>(x).R16, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget10); __rangeIndex++) {
+		let xr = __goscriptRangeTarget10![__rangeIndex]
 		let lo = $.int($.int(xr.Lo, 32), 32)
 		let hi = $.int($.int(xr.Hi, 32), 32)
 		let stride = $.int($.int(xr.Stride, 32), 32)
@@ -2665,8 +2665,8 @@ export function appendNegatedTable(r: $.Slice<number>, x: unicode.RangeTable | $
 			nextLo = $.int(c + 1, 32)
 		}
 	}
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<unicode.RangeTable>(x).R32); __rangeIndex++) {
-		let xr = $.pointerValue<unicode.RangeTable>(x).R32![__rangeIndex]
+	for (let __goscriptRangeTarget11 = $.pointerValue<unicode.RangeTable>(x).R32, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget11); __rangeIndex++) {
+		let xr = __goscriptRangeTarget11![__rangeIndex]
 		let lo = $.int($.int(xr.Lo, 32), 32)
 		let hi = $.int($.int(xr.Hi, 32), 32)
 		let stride = $.int($.int(xr.Stride, 32), 32)

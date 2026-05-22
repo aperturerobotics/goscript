@@ -35,6 +35,10 @@ describe('time.Duration_String', () => {
     expect(Duration_String(1500 * Millisecond)).toBe('1.5s')
     expect(Duration_String(-1500 * Millisecond)).toBe('-1.5s')
     expect(Duration_String(2 * Second)).toBe('2s')
+    expect(Duration_String(9 * Millisecond)).toBe('9ms')
+    expect(Duration_String(1500 * Microsecond)).toBe('1.5ms')
+    expect(Duration_String(1500)).toBe('1.5\u00b5s')
+    expect(Duration_String(12)).toBe('12ns')
   })
 })
 

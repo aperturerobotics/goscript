@@ -92,11 +92,7 @@ export class RangeTable {
   public LatinOffset: number
 
   constructor(init?: RangeTableInit)
-  constructor(
-    r16?: Slice<Range16>,
-    r32?: Slice<Range32>,
-    latinOffset?: number,
-  )
+  constructor(r16?: Slice<Range16>, r32?: Slice<Range32>, latinOffset?: number)
   constructor(
     r16OrInit: Slice<Range16> | RangeTableInit = [],
     r32: Slice<Range32> = [],

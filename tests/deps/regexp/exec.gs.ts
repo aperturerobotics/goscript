@@ -458,8 +458,8 @@ export class machine {
 
 	public clear(q: queue | $.VarRef<queue> | null): void {
 		let m: machine | $.VarRef<machine> | null = this
-		for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<queue>(q).dense); __rangeIndex++) {
-			let d = $.pointerValue<queue>(q).dense![__rangeIndex]
+		for (let __goscriptRangeTarget0 = $.pointerValue<queue>(q).dense, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+			let d = __goscriptRangeTarget0![__rangeIndex]
 			if (d.t != null) {
 				$.pointerValue<machine>(m).pool = $.append($.pointerValue<machine>(m).pool, d.t)
 			}
@@ -469,8 +469,8 @@ export class machine {
 
 	public init(ncap: number): void {
 		let m: machine | $.VarRef<machine> | null = this
-		for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<machine>(m).pool); __rangeIndex++) {
-			let t = $.pointerValue<machine>(m).pool![__rangeIndex]
+		for (let __goscriptRangeTarget1 = $.pointerValue<machine>(m).pool, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
+			let t = __goscriptRangeTarget1![__rangeIndex]
 			$.pointerValue<thread>(t).cap = $.goSlice($.pointerValue<thread>(t).cap, undefined, ncap)
 		}
 		$.pointerValue<machine>(m).matchcap = $.goSlice($.pointerValue<machine>(m).matchcap, undefined, ncap)
@@ -483,7 +483,7 @@ export class machine {
 			return false
 		}
 		$.pointerValue<machine>(m).matched = false
-		for (let i = 0; i < $.len($.pointerValue<machine>(m).matchcap); i++) {
+		for (let __goscriptRangeTarget2 = $.pointerValue<machine>(m).matchcap, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 			$.pointerValue<machine>(m).matchcap![i] = -1
 		}
 		let runq: queue | $.VarRef<queue> | null = $.pointerValue<machine>(m)._fields.q0
@@ -595,8 +595,8 @@ export class machine {
 					}
 					if (!longest) {
 						// First-match mode: cut off all lower-priority threads.
-						for (let __rangeIndex = 0; __rangeIndex < $.len($.goSlice($.pointerValue<queue>(runq).dense, j + 1, undefined)); __rangeIndex++) {
-							let d = $.goSlice($.pointerValue<queue>(runq).dense, j + 1, undefined)![__rangeIndex]
+						for (let __goscriptRangeTarget3 = $.goSlice($.pointerValue<queue>(runq).dense, j + 1, undefined), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget3); __rangeIndex++) {
+							let d = __goscriptRangeTarget3![__rangeIndex]
 							if (d.t != null) {
 								$.pointerValue<machine>(m).pool = $.append($.pointerValue<machine>(m).pool, d.t)
 							}

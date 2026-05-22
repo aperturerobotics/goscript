@@ -29,8 +29,8 @@ export async function main(): globalThis.Promise<void> {
 }
 
 export function hasData(buf: $.Slice<number>): boolean {
-	for (let __rangeIndex = 0; __rangeIndex < $.len(buf); __rangeIndex++) {
-		let b = buf![__rangeIndex]
+	for (let __goscriptRangeTarget0 = buf, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let b = __goscriptRangeTarget0![__rangeIndex]
 		if ($.uint(b, 8) != $.uint(0, 8)) {
 			return true
 		}

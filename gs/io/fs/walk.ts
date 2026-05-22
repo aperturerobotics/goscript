@@ -12,7 +12,11 @@ export let SkipDir: $.GoError = errors.New('skip this directory')
 export let SkipAll: $.GoError = errors.New('skip everything and stop the walk')
 
 export type WalkDirFunc =
-  | ((path: string, d: DirEntry, err: $.GoError) => $.GoError | Promise<$.GoError>)
+  | ((
+      path: string,
+      d: DirEntry,
+      err: $.GoError,
+    ) => $.GoError | Promise<$.GoError>)
   | null
 
 // walkDir recursively descends path, calling walkDirFn.
@@ -79,7 +83,11 @@ export async function walkDir(
 //
 // WalkDir does not follow symbolic links found in directories,
 // but if root itself is a symbolic link, its target will be walked.
-export async function WalkDir(fsys: FS, root: string, fn: WalkDirFunc): Promise<$.GoError> {
+export async function WalkDir(
+  fsys: FS,
+  root: string,
+  fn: WalkDirFunc,
+): Promise<$.GoError> {
   let [info, err] = Stat(fsys, root)
   if (err != null) {
     err = await fn!(root, null, err)

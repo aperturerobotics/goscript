@@ -87,4 +87,46 @@ describe('testing.T', () => {
     expect(observed).toBe(true)
     expect(Short()).toBe(false)
   })
+
+  it('accepts parallel tests in the sequential runner', () => {
+    const t = new T('root')
+
+    t.Parallel()
+
+    expect(t.Failed()).toBe(false)
+  })
+
+  it('formats common testing printf verbs', () => {
+    const t = new T('root')
+    const messages: string[] = []
+    const originalLog = console.log
+    console.log = (message?: unknown) => {
+      messages.push(String(message))
+    }
+    try {
+      t.Logf('quoted=%q value=%#v number=%d string=%s plain=%v', 'key', 7, 3, 'ok', true)
+      t.flushLogs()
+    } finally {
+      console.log = originalLog
+    }
+
+    expect(messages).toEqual(['    quoted="key" value=7 number=3 string=ok plain=true'])
+  })
+
+  it('formats Go-style error objects with Error methods', () => {
+    const t = new T('root')
+    const messages: string[] = []
+    const originalLog = console.log
+    console.log = (message?: unknown) => {
+      messages.push(String(message))
+    }
+    try {
+      t.Logf('err=%v', { Error: () => 'host path missing' })
+      t.flushLogs()
+    } finally {
+      console.log = originalLog
+    }
+
+    expect(messages).toEqual(['    err=host path missing'])
+  })
 })

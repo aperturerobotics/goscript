@@ -1,7 +1,9 @@
 package main
 
-import "context"
-import "time"
+import (
+	"context"
+	"time"
+)
 
 func run(ctx context.Context) {
 	sctx, sctxCancel := context.WithCancel(ctx)

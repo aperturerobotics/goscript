@@ -209,20 +209,16 @@ export function Reverse64(x: Word64): Word64 {
     ((word & 0x0000ffff0000ffffn) << 16n)
   // Swap 8-bit chunks
   word =
-    ((word & 0xff00ff00ff00ff00n) >> 8n) |
-    ((word & 0x00ff00ff00ff00ffn) << 8n)
+    ((word & 0xff00ff00ff00ff00n) >> 8n) | ((word & 0x00ff00ff00ff00ffn) << 8n)
   // Swap 4-bit chunks
   word =
-    ((word & 0xf0f0f0f0f0f0f0f0n) >> 4n) |
-    ((word & 0x0f0f0f0f0f0f0f0fn) << 4n)
+    ((word & 0xf0f0f0f0f0f0f0f0n) >> 4n) | ((word & 0x0f0f0f0f0f0f0f0fn) << 4n)
   // Swap 2-bit chunks
   word =
-    ((word & 0xccccccccccccccccn) >> 2n) |
-    ((word & 0x3333333333333333n) << 2n)
+    ((word & 0xccccccccccccccccn) >> 2n) | ((word & 0x3333333333333333n) << 2n)
   // Swap 1-bit chunks
   word =
-    ((word & 0xaaaaaaaaaaaaaaaan) >> 1n) |
-    ((word & 0x5555555555555555n) << 1n)
+    ((word & 0xaaaaaaaaaaaaaaaan) >> 1n) | ((word & 0x5555555555555555n) << 1n)
 
   return word64Result(word & uint64Mask, useBigInt)
 }
@@ -325,7 +321,10 @@ export function Mul64(x: Word64, y: Word64): [Word64, Word64] {
   const lo = p00 + ((p01 + p10) << 32n)
   const hi = p11 + ((p01 + p10) >> 32n) + (lo < p00 ? 1n : 0n)
 
-  return [word64Result(hi & uint64Mask, useBigInt), word64Result(lo & uint64Mask, useBigInt)]
+  return [
+    word64Result(hi & uint64Mask, useBigInt),
+    word64Result(lo & uint64Mask, useBigInt),
+  ]
 }
 
 // --- Division functions ---

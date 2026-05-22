@@ -114,8 +114,8 @@ export async function main(): globalThis.Promise<void> {
 	// Sort results for deterministic output
 	slices.Sort(results)
 
-	for (let __rangeIndex = 0; __rangeIndex < $.len(results); __rangeIndex++) {
-		let r = results![__rangeIndex]
+	for (let __goscriptRangeTarget0 = results, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let r = __goscriptRangeTarget0![__rangeIndex]
 		$.println("JSON result:", r)
 	}
 

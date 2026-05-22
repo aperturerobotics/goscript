@@ -1,6 +1,9 @@
 package compiler
 
-import "context"
+import (
+	"context"
+	"slices"
+)
 
 // CompileService owns the v2 compiler pipeline.
 type CompileService struct {
@@ -14,8 +17,8 @@ type CompileService struct {
 }
 
 // NewCompileService creates a compile service with every pipeline owner.
-func NewCompileService() *CompileService {
-	overrideOwner := NewOverrideRegistryOwner()
+func NewCompileService(overrideDirs ...string) *CompileService {
+	overrideOwner := NewOverrideRegistryOwner(overrideDirs...)
 	runtimeOwner := NewRuntimeContractOwner()
 	return &CompileService{
 		requestOwner:  NewCompileRequestOwner(),
@@ -78,6 +81,9 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 	if diagnosticsHaveErrors(diagnostics) {
 		result.Diagnostics = diagnostics
 		return result, NewCompileError(diagnostics)
+	}
+	if !slices.Equal(s.overrideOwner.overrideDirs, req.OverrideDirs) {
+		return NewCompileService(req.OverrideDirs...).Compile(ctx, req)
 	}
 
 	graph, graphDiagnostics := s.graphOwner.Load(ctx, req)

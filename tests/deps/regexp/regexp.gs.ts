@@ -305,7 +305,7 @@ export class Regexp {
 				result = $.makeSlice<$.Slice<string>>(0, startSize)
 			}
 			let slice = $.makeSlice<string>(Math.trunc($.len(match) / 2), undefined, "string")
-			for (let j = 0; j < $.len(slice); j++) {
+			for (let __goscriptRangeTarget0 = slice, j = 0; j < $.len(__goscriptRangeTarget0); j++) {
 				if (match![2 * j] >= 0) {
 					slice![j] = $.sliceStringOrBytes(s, match![2 * j], match![(2 * j) + 1])
 				}
@@ -341,7 +341,7 @@ export class Regexp {
 				result = $.makeSlice<$.Slice<$.Slice<number>>>(0, startSize)
 			}
 			let slice = $.makeSlice<$.Slice<number>>(Math.trunc($.len(match) / 2))
-			for (let j = 0; j < $.len(slice); j++) {
+			for (let __goscriptRangeTarget1 = slice, j = 0; j < $.len(__goscriptRangeTarget1); j++) {
 				if (match![2 * j] >= 0) {
 					slice![j] = $.goSlice(b, match![2 * j], match![(2 * j) + 1], match![(2 * j) + 1])
 				}
@@ -419,7 +419,7 @@ export class Regexp {
 			return null
 		}
 		let ret = $.makeSlice<string>(1 + $.pointerValue<Regexp>(re).numSubexp, undefined, "string")
-		for (let i = 0; i < $.len(ret); i++) {
+		for (let __goscriptRangeTarget2 = ret, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 			if (((2 * i) < $.len(a)) && (a![2 * i] >= 0)) {
 				ret![i] = $.sliceStringOrBytes(s, a![2 * i], a![(2 * i) + 1])
 			}
@@ -440,7 +440,7 @@ export class Regexp {
 			return null
 		}
 		let ret = $.makeSlice<$.Slice<number>>(1 + $.pointerValue<Regexp>(re).numSubexp)
-		for (let i = 0; i < $.len(ret); i++) {
+		for (let __goscriptRangeTarget3 = ret, i = 0; i < $.len(__goscriptRangeTarget3); i++) {
 			if (((2 * i) < $.len(a)) && (a![2 * i] >= 0)) {
 				ret![i] = $.goSlice(b, a![2 * i], a![(2 * i) + 1], a![(2 * i) + 1])
 			}
@@ -563,8 +563,8 @@ export class Regexp {
 
 		let beg = 0
 		let end = 0
-		for (let __rangeIndex = 0; __rangeIndex < $.len(matches); __rangeIndex++) {
-			let match = matches![__rangeIndex]
+		for (let __goscriptRangeTarget4 = matches, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget4); __rangeIndex++) {
+			let match = __goscriptRangeTarget4![__rangeIndex]
 			if ((n > 0) && ($.len(strings) >= (n - 1))) {
 				break
 			}
@@ -591,8 +591,8 @@ export class Regexp {
 	public SubexpIndex(name: string): number {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		if ((name as string) != "") {
-			for (let i = 0; i < $.len($.pointerValue<Regexp>(re).subexpNames); i++) {
-				let s = $.pointerValue<Regexp>(re).subexpNames![i]
+			for (let __goscriptRangeTarget5 = $.pointerValue<Regexp>(re).subexpNames, i = 0; i < $.len(__goscriptRangeTarget5); i++) {
+				let s = __goscriptRangeTarget5![i]
 				if (name == s) {
 					return i
 				}
@@ -778,7 +778,7 @@ export class Regexp {
 		}
 
 		let matched = false
-		for (let i = 0; i < $.len($.pointerValue<__goscript_exec.onePassMachine>(m).matchcap); i++) {
+		for (let __goscriptRangeTarget6 = $.pointerValue<__goscript_exec.onePassMachine>(m).matchcap, i = 0; i < $.len(__goscriptRangeTarget6); i++) {
 			$.pointerValue<__goscript_exec.onePassMachine>(m).matchcap![i] = -1
 		}
 
@@ -961,8 +961,8 @@ export class Regexp {
 					}
 				}
 			} else {
-				for (let i = 0; i < $.len($.pointerValue<Regexp>(re).subexpNames); i++) {
-					let namei = $.pointerValue<Regexp>(re).subexpNames![i]
+				for (let __goscriptRangeTarget7 = $.pointerValue<Regexp>(re).subexpNames, i = 0; i < $.len(__goscriptRangeTarget7); i++) {
+					let namei = __goscriptRangeTarget7![i]
 					if (((name == namei) && (((2 * i) + 1) < $.len(match))) && (match![2 * i] >= 0)) {
 						if (bsrc != null) {
 							dst = $.append(dst, ...($.goSlice(bsrc, match![2 * i], match![(2 * i) + 1]) ?? []))
@@ -990,8 +990,8 @@ export class Regexp {
 		$.pointerValue<__goscript_exec.machine>(m).p = $.pointerValue<Regexp>(re).prog
 		if ($.cap($.pointerValue<__goscript_exec.machine>(m).matchcap) < $.pointerValue<Regexp>(re).matchcap) {
 			$.pointerValue<__goscript_exec.machine>(m).matchcap = $.makeSlice<number>($.pointerValue<Regexp>(re).matchcap, undefined, "number")
-			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<__goscript_exec.machine>(m).pool); __rangeIndex++) {
-				let t = $.pointerValue<__goscript_exec.machine>(m).pool![__rangeIndex]
+			for (let __goscriptRangeTarget8 = $.pointerValue<__goscript_exec.machine>(m).pool, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget8); __rangeIndex++) {
+				let t = __goscriptRangeTarget8![__rangeIndex]
 				$.pointerValue<__goscript_exec.thread>(t).cap = $.makeSlice<number>($.pointerValue<Regexp>(re).matchcap, undefined, "number")
 			}
 		}
@@ -1664,8 +1664,8 @@ export function minInputLen(re: syntax.Regexp | $.VarRef<syntax.Regexp> | null):
 		case syntax.OpLiteral:
 		{
 			let l = 0
-			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<syntax.Regexp>(re).Rune); __rangeIndex++) {
-				let r = $.pointerValue<syntax.Regexp>(re).Rune![__rangeIndex]
+			for (let __goscriptRangeTarget9 = $.pointerValue<syntax.Regexp>(re).Rune, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget9); __rangeIndex++) {
+				let r = __goscriptRangeTarget9![__rangeIndex]
 				if ($.int(r, 32) == $.int(utf8.RuneError, 32)) {
 					l++
 				} else {
@@ -1689,8 +1689,8 @@ export function minInputLen(re: syntax.Regexp | $.VarRef<syntax.Regexp> | null):
 		case syntax.OpConcat:
 		{
 			let l = 0
-			for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<syntax.Regexp>(re).Sub); __rangeIndex++) {
-				let sub = $.pointerValue<syntax.Regexp>(re).Sub![__rangeIndex]
+			for (let __goscriptRangeTarget10 = $.pointerValue<syntax.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget10); __rangeIndex++) {
+				let sub = __goscriptRangeTarget10![__rangeIndex]
 				l += minInputLen(sub)
 			}
 			return l
@@ -1700,8 +1700,8 @@ export function minInputLen(re: syntax.Regexp | $.VarRef<syntax.Regexp> | null):
 		{
 			let l = minInputLen($.pointerValue<syntax.Regexp>(re).Sub![0])
 			let lnext: number = 0
-			for (let __rangeIndex = 0; __rangeIndex < $.len($.goSlice($.pointerValue<syntax.Regexp>(re).Sub, 1, undefined)); __rangeIndex++) {
-				let sub = $.goSlice($.pointerValue<syntax.Regexp>(re).Sub, 1, undefined)![__rangeIndex]
+			for (let __goscriptRangeTarget11 = $.goSlice($.pointerValue<syntax.Regexp>(re).Sub, 1, undefined), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget11); __rangeIndex++) {
+				let sub = __goscriptRangeTarget11![__rangeIndex]
 				lnext = minInputLen(sub)
 				if (lnext < l) {
 					l = lnext
@@ -1801,8 +1801,8 @@ export function special(b: number): boolean {
 }
 
 function __goscriptInit0(): void {
-	for (let __rangeIndex = 0; __rangeIndex < $.len(new Uint8Array([92, 46, 43, 42, 63, 40, 41, 124, 91, 93, 123, 125, 94, 36])); __rangeIndex++) {
-		let b = new Uint8Array([92, 46, 43, 42, 63, 40, 41, 124, 91, 93, 123, 125, 94, 36])![__rangeIndex]
+	for (let __goscriptRangeTarget12 = new Uint8Array([92, 46, 43, 42, 63, 40, 41, 124, 91, 93, 123, 125, 94, 36]), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget12); __rangeIndex++) {
+		let b = __goscriptRangeTarget12![__rangeIndex]
 		specialBytes[b % 16] |= $.uint(1 << (Math.trunc(b / 16)), 8)
 	}
 }

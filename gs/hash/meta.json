@@ -1,0 +1,5 @@
+{
+  "asyncMethods": {
+    "Hash.Sum": true
+  }
+}

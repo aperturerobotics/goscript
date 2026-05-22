@@ -178,7 +178,7 @@ export class bitState {
 		} else {
 			$.pointerValue<bitState>(b).cap = $.goSlice($.pointerValue<bitState>(b).cap, undefined, ncap)
 		}
-		for (let i = 0; i < $.len($.pointerValue<bitState>(b).cap); i++) {
+		for (let __goscriptRangeTarget0 = $.pointerValue<bitState>(b).cap, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 			$.pointerValue<bitState>(b).cap![i] = -1
 		}
 
@@ -187,7 +187,7 @@ export class bitState {
 		} else {
 			$.pointerValue<bitState>(b).matchcap = $.goSlice($.pointerValue<bitState>(b).matchcap, undefined, ncap)
 		}
-		for (let i = 0; i < $.len($.pointerValue<bitState>(b).matchcap); i++) {
+		for (let __goscriptRangeTarget1 = $.pointerValue<bitState>(b).matchcap, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
 			$.pointerValue<bitState>(b).matchcap![i] = -1
 		}
 	}

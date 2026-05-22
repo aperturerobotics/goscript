@@ -73,11 +73,18 @@ function normalize(
   if (value instanceof Map) {
     return {
       $map: [...value.entries()]
-        .map(([key, entry]) => [normalize(key, seen, nextID), normalize(entry, seen, nextID)])
+        .map(([key, entry]) => [
+          normalize(key, seen, nextID),
+          normalize(entry, seen, nextID),
+        ])
         .sort(([a], [b]) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
     }
   }
-  if ('_fields' in value && value._fields && typeof value._fields === 'object') {
+  if (
+    '_fields' in value &&
+    value._fields &&
+    typeof value._fields === 'object'
+  ) {
     return {
       $type: value.constructor.name,
       $fields: normalize(value._fields, seen, nextID),

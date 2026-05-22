@@ -43,7 +43,10 @@ describe('errors.AsType', () => {
 
   it('walks wrapped errors depth first', () => {
     const dns = $.interfaceValue<$.GoError>(new DNSError(), '*net.DNSError')
-    const wrapped = $.interfaceValue<$.GoError>(new Wrapper(dns), '*main.Wrapper')
+    const wrapped = $.interfaceValue<$.GoError>(
+      new Wrapper(dns),
+      '*main.Wrapper',
+    )
 
     const [matched, ok] = AsType(dnsTypeArgs, Join(null, wrapped))
 

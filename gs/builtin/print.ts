@@ -68,7 +68,10 @@ function formatValue(
   try {
     if (value instanceof Map) {
       return formatArray(
-        Array.from(value.entries()).map(([k, v]) => `${formatValue(k, depth + 1, true, seen)} => ${formatValue(v, depth + 1, true, seen)}`),
+        Array.from(value.entries()).map(
+          ([k, v]) =>
+            `${formatValue(k, depth + 1, true, seen)} => ${formatValue(v, depth + 1, true, seen)}`,
+        ),
         depth,
         seen,
       )
@@ -113,7 +116,11 @@ function formatUint8Array(value: Uint8Array): string {
   return `Uint8Array(${value.length}) [ ${Array.from(value).join(', ')} ]`
 }
 
-function formatArray(value: readonly any[], depth: number, seen: WeakSet<object>): string {
+function formatArray(
+  value: readonly any[],
+  depth: number,
+  seen: WeakSet<object>,
+): string {
   if (value.length === 0) {
     return '[]'
   }
@@ -150,5 +157,7 @@ function getObjectEntries(value: Record<string, any>): [string, any][] {
     })
   }
 
-  return Object.entries(value).filter(([, entry]) => typeof entry !== 'function')
+  return Object.entries(value).filter(
+    ([, entry]) => typeof entry !== 'function',
+  )
 }

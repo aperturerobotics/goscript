@@ -17,6 +17,8 @@ type Request struct {
 	Patterns []string
 	// BuildTags are normalized into a Go -tags build flag.
 	BuildTags []string
+	// OverrideDirs are additional GoScript override roots.
+	OverrideDirs []string
 	// Run is the optional Go test name regexp.
 	Run string
 	// Count is the number of times to run matched tests.
@@ -34,16 +36,17 @@ type Request struct {
 }
 
 type normalizedRequest struct {
-	Dir        string
-	Patterns   []string
-	BuildFlags []string
-	Run        string
-	Count      int
-	Short      bool
-	Timeout    time.Duration
-	Verbose    bool
-	WorkDir    string
-	OutputRoot string
+	Dir          string
+	Patterns     []string
+	BuildFlags   []string
+	OverrideDirs []string
+	Run          string
+	Count        int
+	Short        bool
+	Timeout      time.Duration
+	Verbose      bool
+	WorkDir      string
+	OutputRoot   string
 }
 
 func (r *Request) normalize() (*normalizedRequest, error) {
@@ -78,6 +81,10 @@ func (r *Request) normalize() (*normalizedRequest, error) {
 	if len(buildTags) != 0 {
 		buildFlags = append(buildFlags, "-tags="+strings.Join(buildTags, ","))
 	}
+	overrideDirs, err := normalizeOverrideDirs(r.OverrideDirs)
+	if err != nil {
+		return nil, err
+	}
 
 	workDir := strings.TrimSpace(r.WorkDir)
 	if workDir != "" {
@@ -98,17 +105,42 @@ func (r *Request) normalize() (*normalizedRequest, error) {
 	}
 
 	return &normalizedRequest{
-		Dir:        absDir,
-		Patterns:   patterns,
-		BuildFlags: buildFlags,
-		Run:        strings.TrimSpace(r.Run),
-		Count:      count,
-		Short:      r.Short,
-		Timeout:    r.Timeout,
-		Verbose:    r.Verbose,
-		WorkDir:    workDir,
-		OutputRoot: outputRoot,
+		Dir:          absDir,
+		Patterns:     patterns,
+		BuildFlags:   buildFlags,
+		OverrideDirs: overrideDirs,
+		Run:          strings.TrimSpace(r.Run),
+		Count:        count,
+		Short:        r.Short,
+		Timeout:      r.Timeout,
+		Verbose:      r.Verbose,
+		WorkDir:      workDir,
+		OutputRoot:   outputRoot,
 	}, nil
+}
+
+func normalizeOverrideDirs(dirs []string) ([]string, error) {
+	if len(dirs) == 0 {
+		return nil, nil
+	}
+	var normalized []string
+	seen := make(map[string]bool)
+	for _, dir := range dirs {
+		dir = strings.TrimSpace(dir)
+		if dir == "" {
+			continue
+		}
+		abs, err := filepath.Abs(dir)
+		if err != nil {
+			return nil, errors.Wrap(err, "resolve override directory")
+		}
+		if seen[abs] {
+			continue
+		}
+		seen[abs] = true
+		normalized = append(normalized, abs)
+	}
+	return normalized, nil
 }
 
 func normalizePatterns(patterns []string) []string {

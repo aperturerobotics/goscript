@@ -55,11 +55,12 @@ export function Load32(
 ): number {
   const [b, off] = loadArgs(typeArgsOrB, bOrI, i)
   return (
-    byteAt(b, off) |
-    (byteAt(b, off + 1) << 8) |
-    (byteAt(b, off + 2) << 16) |
-    (byteAt(b, off + 3) << 24)
-  ) >>> 0
+    (byteAt(b, off) |
+      (byteAt(b, off + 1) << 8) |
+      (byteAt(b, off + 2) << 16) |
+      (byteAt(b, off + 3) << 24)) >>>
+    0
+  )
 }
 
 export function Load64(

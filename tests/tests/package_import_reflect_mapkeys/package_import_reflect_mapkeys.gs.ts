@@ -9,8 +9,8 @@ export async function main(): globalThis.Promise<void> {
 	let keys = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(new Map<string, number>([["alpha", 1], ["beta", 2]]), "map[string]int")))).MapKeys()
 
 	let seen: Map<string, boolean> | null = new Map<string, boolean>([])
-	for (let __rangeIndex = 0; __rangeIndex < $.len(keys); __rangeIndex++) {
-		let key = keys![__rangeIndex]
+	for (let __goscriptRangeTarget0 = keys, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let key = __goscriptRangeTarget0![__rangeIndex]
 		$.mapSet(seen, $.markAsStructValue($.cloneStructValue(key)).String(), true)
 	}
 

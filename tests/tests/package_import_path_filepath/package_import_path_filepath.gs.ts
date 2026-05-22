@@ -29,7 +29,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test Join
 	let joined = filepath.Join("dir", "subdir", "file.txt")
 	$.println("Join:", joined)
-	let joinedSpread = filepath.Join($.arrayToSlice<string>(["dir", "spread.txt"]))
+	let joinedSpread = filepath.Join(...($.arrayToSlice<string>(["dir", "spread.txt"]) ?? []))
 	$.println("Join spread:", joinedSpread)
 
 	// Test Split
@@ -79,8 +79,8 @@ export async function main(): globalThis.Promise<void> {
 	let pathList = "/usr/bin:/usr/local/bin:/bin"
 	let split = filepath.SplitList(pathList)
 	$.println("SplitList length:", $.len(split))
-	for (let i = 0; i < $.len(split); i++) {
-		let p = split![i]
+	for (let __goscriptRangeTarget0 = split, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+		let p = __goscriptRangeTarget0![i]
 		$.println("SplitList", i, ":", p)
 	}
 

@@ -37,6 +37,8 @@ import {
   uint,
   uint64Add,
   uint64And,
+  uint64Div,
+  uint64Mod,
   uint64Mul,
   uint64Or,
   uint64Shl,
@@ -117,6 +119,8 @@ describe('builtin runtime contract helpers', () => {
     expect(uint(uint64Shl(1n, 63), 32)).toBe(0)
     expect(uint(uint64Shr(uint64Shl(1n, 63), 60), 32)).toBe(8)
     expect(uint(uint64Mul(0xffffffffffffffffn, 3), 32)).toBe(0xfffffffd)
+    expect(uint64Div(0xffffffffffffffffn, 4114)).toBe(4483895010624587)
+    expect(uint64Mod(0xffffffffffffffffn, 4114)).toBe(697)
     expect(uint(uint64Add(0xffffffffffffffffn, 2), 32)).toBe(1)
     expect(uint(uint64Sub(1n, 2), 32)).toBe(0xffffffff)
     expect(uint(uint64And(0xf0n, 0x3cn), 32)).toBe(0x30)
@@ -285,11 +289,9 @@ describe('builtin runtime contract helpers', () => {
       [{ name: 'Name', args: [], returns: [{ type: 'string' }] }],
       TypedDog,
     )
-    const dogInterface = registerInterfaceType(
-      'phase5.DogInterface',
-      null,
-      [{ name: 'Name', args: [], returns: [{ type: 'string' }] }],
-    )
+    const dogInterface = registerInterfaceType('phase5.DogInterface', null, [
+      { name: 'Name', args: [], returns: [{ type: 'string' }] },
+    ])
     const nilDog = interfaceValue<{ Name(): string } | null>(
       null,
       '*phase5.TypedDog',
@@ -304,11 +306,16 @@ describe('builtin runtime contract helpers', () => {
       }),
     ).toEqual({ value: null, ok: true })
 
-    const greet = namedFunction((name: string) => `hello ${name}`, 'phase5.Greet')
-    expect(typeAssert<typeof greet>(greet, {
-      kind: TypeKind.Function,
-      name: 'phase5.Greet',
-    }).ok).toBe(true)
+    const greet = namedFunction(
+      (name: string) => `hello ${name}`,
+      'phase5.Greet',
+    )
+    expect(
+      typeAssert<typeof greet>(greet, {
+        kind: TypeKind.Function,
+        name: 'phase5.Greet',
+      }).ok,
+    ).toBe(true)
     expect(
       typeAssert<{ Name: string }>(
         { Name: 'Alice' },

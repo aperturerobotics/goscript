@@ -33,10 +33,16 @@ func main() {
 	// Test Sprint functions
 	result := fmt.Sprint("Sprint", " ", "result")
 	fmt.Println("Sprint result:", result)
+	parts := []any{"Spread", " ", "result"}
+	spreadResult := fmt.Sprint(parts...)
+	fmt.Println("Sprint spread result:", spreadResult)
 
 	// Test Sprintf
 	formatted := fmt.Sprintf("Number: %d, String: %s", 42, "test")
 	fmt.Println("Sprintf result:", formatted)
+	formatArgs := []any{7, "spread"}
+	formattedSpread := fmt.Sprintf("Spread Number: %d, String: %s", formatArgs...)
+	fmt.Println("Sprintf spread result:", formattedSpread)
 
 	// Test Sprintln
 	sprintln_result := fmt.Sprintln("Sprintln", "result")

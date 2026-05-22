@@ -4,15 +4,15 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export function fillArray(dst: $.VarRef<Uint8Array> | null): void {
-	for (let i = 0; i < $.len($.pointerValue<Uint8Array>(dst)); i++) {
+	for (let __goscriptRangeTarget0 = $.pointerValue<Uint8Array>(dst), i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 		$.pointerValue<Uint8Array>(dst)[i] = $.uint($.uint(i + 1, 8), 8)
 	}
 }
 
 export function sumArray(src: $.VarRef<Uint8Array> | null): number {
 	let sum = 0
-	for (let __rangeIndex = 0; __rangeIndex < $.len($.pointerValue<Uint8Array>(src)); __rangeIndex++) {
-		let v = $.pointerValue<Uint8Array>(src)[__rangeIndex]
+	for (let __goscriptRangeTarget1 = $.pointerValue<Uint8Array>(src), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
+		let v = __goscriptRangeTarget1![__rangeIndex]
 		sum += $.int(v)
 	}
 	return sum
@@ -38,8 +38,8 @@ export async function main(): globalThis.Promise<void> {
 	$.pointerValue<number[]>(cache)[1] = 7
 	$.println("index:", $.pointerValue<number[]>(cache)[0], $.pointerValue<number[]>(cache)[1])
 
-	for (let i = 0; i < $.len($.pointerValue<number[]>(cache)); i++) {
-		let x = $.pointerValue<number[]>(cache)[i]
+	for (let __goscriptRangeTarget2 = $.pointerValue<number[]>(cache), i = 0; i < $.len(__goscriptRangeTarget2); i++) {
+		let x = __goscriptRangeTarget2![i]
 		$.println("range:", i, x)
 	}
 

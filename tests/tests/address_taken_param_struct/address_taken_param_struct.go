@@ -5,8 +5,10 @@ type Format struct {
 	Ext  []string
 }
 
-var byName = make(map[string]*Format)
-var byExt = make(map[string]*Format)
+var (
+	byName = make(map[string]*Format)
+	byExt  = make(map[string]*Format)
+)
 
 func registerFormat(f Format) {
 	byName[f.Name] = &f

@@ -57,7 +57,9 @@ function fillSecureBytes(dst: $.Bytes): $.GoError {
 
   const crypto = secureCrypto()
   if (crypto == null) {
-    return new RandError('crypto/rand: Web Crypto getRandomValues is unavailable')
+    return new RandError(
+      'crypto/rand: Web Crypto getRandomValues is unavailable',
+    )
   }
 
   if (dst instanceof Uint8Array) {

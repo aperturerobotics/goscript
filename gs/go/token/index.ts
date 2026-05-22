@@ -368,7 +368,10 @@ export class File {
 
   public AddLine(offset: number): void {
     const last = this.linesValue[this.linesValue.length - 1]
-    if ((this.linesValue.length === 0 || last < offset) && offset < this.sizeValue) {
+    if (
+      (this.linesValue.length === 0 || last < offset) &&
+      offset < this.sizeValue
+    ) {
       this.linesValue.push(offset)
     }
   }
@@ -428,8 +431,16 @@ export class File {
     column: number,
   ): void {
     const last = this.infosValue[this.infosValue.length - 1]
-    if ((this.infosValue.length === 0 || last.Offset < offset) && offset < this.sizeValue) {
-      this.infosValue.push({ Offset: offset, Filename: filename, Line: line, Column: column })
+    if (
+      (this.infosValue.length === 0 || last.Offset < offset) &&
+      offset < this.sizeValue
+    ) {
+      this.infosValue.push({
+        Offset: offset,
+        Filename: filename,
+        Line: line,
+        Column: column,
+      })
     }
   }
 
@@ -567,7 +578,9 @@ export class FileSet {
     if (pos === NoPos) {
       return null
     }
-    return this.files.find((file) => file.Base() <= pos && pos <= file.End()) ?? null
+    return (
+      this.files.find((file) => file.Base() <= pos && pos <= file.End()) ?? null
+    )
   }
 
   public PositionFor(pos: Pos, adjusted: boolean): Position {

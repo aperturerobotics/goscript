@@ -20,12 +20,13 @@ type OverrideMetadata struct {
 
 // OverrideRegistryOwner owns GoScript override package metadata and copy plans.
 type OverrideRegistryOwner struct {
-	facts *OverrideFacts
+	overrideDirs []string
+	facts        *OverrideFacts
 }
 
 // NewOverrideRegistryOwner creates the override registry owner.
-func NewOverrideRegistryOwner() *OverrideRegistryOwner {
-	return &OverrideRegistryOwner{}
+func NewOverrideRegistryOwner(overrideDirs ...string) *OverrideRegistryOwner {
+	return &OverrideRegistryOwner{overrideDirs: slices.Clone(overrideDirs)}
 }
 
 // Facts returns the immutable compiler-visible override facts.
@@ -36,7 +37,7 @@ func (o *OverrideRegistryOwner) Facts(ctx context.Context) (*OverrideFacts, []Di
 	if o.facts != nil {
 		return o.facts, nil
 	}
-	facts, diagnostics := buildOverrideFacts(ctx)
+	facts, diagnostics := buildOverrideFacts(ctx, o.overrideDirs)
 	if diagnosticsHaveErrors(diagnostics) {
 		return facts, diagnostics
 	}

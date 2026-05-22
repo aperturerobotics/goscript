@@ -36,6 +36,8 @@ type CompileRequest struct {
 	OutputPath string
 	// BuildFlags are forwarded to the Go package loader.
 	BuildFlags []string
+	// OverrideDirs are additional GoScript override roots.
+	OverrideDirs []string
 	// DependencyMode controls whether dependencies are included in the graph.
 	DependencyMode DependencyMode
 	// RuntimeEmissionMode controls runtime package emission policy.
@@ -77,6 +79,7 @@ func (o *CompileRequestOwner) NewRequest(conf Config, patterns []string) *Compil
 		Dir:                 strings.TrimSpace(dir),
 		OutputPath:          strings.TrimSpace(conf.OutputPath),
 		BuildFlags:          append([]string(nil), conf.BuildFlags...),
+		OverrideDirs:        append([]string(nil), conf.OverrideDirs...),
 		DependencyMode:      dependencyMode,
 		RuntimeEmissionMode: runtimeEmissionMode,
 		AllDependencies:     conf.AllDependencies,
@@ -162,6 +165,34 @@ func (o *CompileRequestOwner) Validate(req *CompileRequest) []Diagnostic {
 				Severity: DiagnosticSeverityError,
 				Code:     "goscript/request:empty-build-flag",
 				Message:  "build flags must not contain empty values",
+			})
+		}
+	}
+	for _, dir := range req.OverrideDirs {
+		dir = strings.TrimSpace(dir)
+		if dir == "" {
+			diagnostics = append(diagnostics, Diagnostic{
+				Severity: DiagnosticSeverityError,
+				Code:     "goscript/request:empty-override-dir",
+				Message:  "override directories must not be empty",
+			})
+			continue
+		}
+		info, err := os.Stat(dir)
+		switch {
+		case err != nil:
+			diagnostics = append(diagnostics, Diagnostic{
+				Severity: DiagnosticSeverityError,
+				Code:     "goscript/request:override-dir",
+				Message:  "override directory is not readable",
+				Detail:   err.Error(),
+			})
+		case !info.IsDir():
+			diagnostics = append(diagnostics, Diagnostic{
+				Severity: DiagnosticSeverityError,
+				Code:     "goscript/request:override-dir",
+				Message:  "override path must be a directory",
+				Detail:   dir,
 			})
 		}
 	}

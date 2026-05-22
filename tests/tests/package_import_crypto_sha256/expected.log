@@ -1,0 +1,8 @@
+sum len 32
+sum first 186
+sum last 173
+write a 1 true
+write bc 2 true
+stream len 34
+stream prefix 1 2
+stream digest 186 173

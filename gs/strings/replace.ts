@@ -396,12 +396,12 @@ class trieNode {
         // what is currently t.prefix[0] will lead to prefixNode, and
         // looking up key[0] will lead to keyNode.
         const prefixNode =
-          $.len(t!.prefix) == 1
-            ? t!.next
-            : new trieNode({
-                next: t!.next,
-                prefix: $.sliceString(t!.prefix, 1, undefined),
-              })
+          $.len(t!.prefix) == 1 ?
+            t!.next
+          : new trieNode({
+              next: t!.next,
+              prefix: $.sliceString(t!.prefix, 1, undefined),
+            })
         let keyNode = new trieNode()
         t!.table = $.makeSlice<trieNode | null>(r!.tableSize)
         t!.table![r!.mapping![$.indexString(t!.prefix, 0)]] = prefixNode

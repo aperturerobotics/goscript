@@ -8,3 +8,4 @@ label decl: 3
 mixed decl: 2
 state zero: 23
 state one: 22
+nested restart: 5

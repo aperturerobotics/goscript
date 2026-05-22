@@ -23,7 +23,7 @@ func NewCompiler(conf *Config, le *logrus.Entry, _ *packages.Config) (*Compiler,
 	return &Compiler{
 		le:      le,
 		config:  *conf,
-		service: NewCompileService(),
+		service: NewCompileService(conf.OverrideDirs...),
 	}, nil
 }
 

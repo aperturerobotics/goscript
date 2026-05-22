@@ -11,8 +11,8 @@ export function MySlice_Add(s: $.VarRef<MySlice> | null, val: number): void {
 
 export function MySlice_Sum(s: MySlice): number {
 	let total = 0
-	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {
-		let v = s![__rangeIndex]
+	for (let __goscriptRangeTarget0 = s, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let v = __goscriptRangeTarget0![__rangeIndex]
 		total += v
 	}
 	return total

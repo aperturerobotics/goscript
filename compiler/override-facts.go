@@ -7,7 +7,9 @@ import (
 	"io"
 	"io/fs"
 	"maps"
+	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -24,6 +26,12 @@ type overridePackageFacts struct {
 	metadata     OverrideMetadata
 	copyPackage  overrideCopyPackage
 	dependencies []string
+}
+
+type overridePackageRoot struct {
+	pkgPath string
+	fsys    fs.FS
+	dir     string
 }
 
 // HasPackage returns true when pkgPath has a GoScript override package.
@@ -93,10 +101,10 @@ func (f *OverrideFacts) importPackageRoot(importPath string) (string, bool) {
 	return "", false
 }
 
-func buildOverrideFacts(ctx context.Context) (*OverrideFacts, []Diagnostic) {
-	roots, err := discoverOverridePackageRoots()
-	if err != nil {
-		return nil, []Diagnostic{overrideError("discover override packages", "", err)}
+func buildOverrideFacts(ctx context.Context, overrideDirs []string) (*OverrideFacts, []Diagnostic) {
+	roots, diagnostics := discoverOverridePackageRoots(overrideDirs)
+	if diagnosticsHaveErrors(diagnostics) {
+		return nil, diagnostics
 	}
 	paths := make([]string, 0, len(roots))
 	for pkgPath := range roots {
@@ -105,17 +113,16 @@ func buildOverrideFacts(ctx context.Context) (*OverrideFacts, []Diagnostic) {
 	slices.Sort(paths)
 
 	facts := &OverrideFacts{packages: make(map[string]overridePackageFacts, len(paths))}
-	var diagnostics []Diagnostic
 	for _, pkgPath := range paths {
 		if err := ctx.Err(); err != nil {
 			return facts, []Diagnostic{contextCanceledDiagnostic(err)}
 		}
-		metadata, err := loadOverrideMetadata(pkgPath)
+		metadata, err := loadOverrideMetadata(roots[pkgPath])
 		if err != nil {
 			diagnostics = append(diagnostics, overrideError("read override metadata", pkgPath, err))
 			continue
 		}
-		copyPackage, dependencies, packageDiagnostics := loadOverrideCopyPackage(pkgPath, roots, metadata)
+		copyPackage, dependencies, packageDiagnostics := loadOverrideCopyPackage(roots[pkgPath], roots, metadata)
 		diagnostics = append(diagnostics, packageDiagnostics...)
 		if diagnosticsHaveErrors(packageDiagnostics) {
 			continue
@@ -132,29 +139,62 @@ func buildOverrideFacts(ctx context.Context) (*OverrideFacts, []Diagnostic) {
 	return facts, diagnostics
 }
 
-func discoverOverridePackageRoots() (map[string]bool, error) {
-	roots := make(map[string]bool)
-	if err := fs.WalkDir(gs.GsOverrides, "gs", func(filePath string, entry fs.DirEntry, err error) error {
+func discoverOverridePackageRoots(overrideDirs []string) (map[string]overridePackageRoot, []Diagnostic) {
+	roots := make(map[string]overridePackageRoot)
+	var diagnostics []Diagnostic
+	for _, dir := range overrideDirs {
+		dir = strings.TrimSpace(dir)
+		if dir == "" {
+			continue
+		}
+		abs, err := filepath.Abs(dir)
+		if err != nil {
+			diagnostics = append(diagnostics, overrideError("resolve override directory", dir, err))
+			continue
+		}
+		if err := discoverOverridePackageRootsInFS(roots, os.DirFS(abs), ".", false); err != nil {
+			diagnostics = append(diagnostics, overrideError("discover override packages", abs, err))
+		}
+	}
+	if err := discoverOverridePackageRootsInFS(roots, gs.GsOverrides, "gs", true); err != nil {
+		diagnostics = append(diagnostics, overrideError("discover override packages", "embedded gs", err))
+	}
+	return roots, diagnostics
+}
+
+func discoverOverridePackageRootsInFS(
+	roots map[string]overridePackageRoot,
+	fsys fs.FS,
+	rootDir string,
+	embedded bool,
+) error {
+	return fs.WalkDir(fsys, rootDir, func(filePath string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if entry.IsDir() || path.Base(filePath) != "index.ts" {
 			return nil
 		}
-		pkgPath := strings.TrimPrefix(path.Dir(filePath), "gs/")
+		pkgPath := strings.TrimPrefix(path.Dir(filePath), rootDir+"/")
+		if rootDir == "." {
+			pkgPath = path.Dir(filePath)
+		}
 		if pkgPath != "." && pkgPath != "" {
-			roots[pkgPath] = true
+			if _, exists := roots[pkgPath]; !exists || !embedded {
+				roots[pkgPath] = overridePackageRoot{
+					pkgPath: pkgPath,
+					fsys:    fsys,
+					dir:     path.Dir(filePath),
+				}
+			}
 		}
 		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return roots, nil
+	})
 }
 
-func loadOverrideMetadata(pkgPath string) (OverrideMetadata, error) {
+func loadOverrideMetadata(root overridePackageRoot) (OverrideMetadata, error) {
 	metadata := newOverrideMetadata()
-	data, err := gs.GsOverrides.ReadFile("gs/" + pkgPath + "/meta.json")
+	data, err := fs.ReadFile(root.fsys, path.Join(root.dir, "meta.json"))
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return metadata, nil
@@ -188,11 +228,12 @@ func loadOverrideMetadata(pkgPath string) (OverrideMetadata, error) {
 }
 
 func loadOverrideCopyPackage(
-	pkgPath string,
-	roots map[string]bool,
+	root overridePackageRoot,
+	roots map[string]overridePackageRoot,
 	metadata OverrideMetadata,
 ) (overrideCopyPackage, []string, []Diagnostic) {
-	if !roots[pkgPath] {
+	pkgPath := root.pkgPath
+	if _, ok := roots[pkgPath]; !ok {
 		return overrideCopyPackage{}, nil, []Diagnostic{{
 			Severity: DiagnosticSeverityError,
 			Code:     "goscript/overrides:missing-package",
@@ -215,14 +256,18 @@ func loadOverrideCopyPackage(
 		}
 	}
 
-	root := "gs/" + pkgPath
-	err := fs.WalkDir(gs.GsOverrides, root, func(filePath string, entry fs.DirEntry, walkErr error) error {
+	err := fs.WalkDir(root.fsys, root.dir, func(filePath string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
 		}
 		if entry.IsDir() {
-			nestedPkg := strings.TrimPrefix(filePath, "gs/")
-			if nestedPkg != pkgPath && roots[nestedPkg] {
+			nestedPkg := strings.TrimPrefix(filePath, root.dir+"/")
+			if root.dir == "." {
+				nestedPkg = filePath
+			} else if nestedPkg != filePath {
+				nestedPkg = path.Join(pkgPath, nestedPkg)
+			}
+			if _, ok := roots[nestedPkg]; nestedPkg != pkgPath && ok {
 				return fs.SkipDir
 			}
 			return nil
@@ -230,11 +275,16 @@ func loadOverrideCopyPackage(
 		if !isOverrideSourceFile(filePath) {
 			return nil
 		}
-		data, readErr := gs.GsOverrides.ReadFile(filePath)
+		data, readErr := fs.ReadFile(root.fsys, filePath)
 		if readErr != nil {
 			return readErr
 		}
-		rel := strings.TrimPrefix(filePath, "gs/")
+		rel := strings.TrimPrefix(filePath, root.dir+"/")
+		if root.dir == "." {
+			rel = filePath
+		} else if rel != filePath {
+			rel = path.Join(pkgPath, rel)
+		}
 		copyPackage.files = append(copyPackage.files, overrideCopyFile{
 			path: rel,
 			data: data,

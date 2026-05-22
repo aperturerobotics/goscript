@@ -88,8 +88,8 @@ export function Fixed_Mark(f: Fixed): boolean {
 export async function main(): globalThis.Promise<void> {
 	let shapes = $.arrayToSlice<Shape | null>([$.namedValueInterfaceValue<Shape | null>($.arrayToSlice<dep.Ref | null>([$.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: value_Key})]), "main.Fixed", {Mark: Fixed_Mark}), $.interfaceValue<Shape | null>($.markAsStructValue(new Action({Result: 1, Filter: new Map<number, dep.Ref | null>([[1, $.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: value_Key})]])})), "main.Action")])
 	let fixed: $.Slice<Fixed> = null as $.Slice<Fixed>
-	for (let __rangeIndex = 0; __rangeIndex < $.len(shapes); __rangeIndex++) {
-		let shape = shapes![__rangeIndex]
+	for (let __goscriptRangeTarget0 = shapes, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let shape = __goscriptRangeTarget0![__rangeIndex]
 		{
 			const __goscriptTypeSwitchValue = shape
 			switch (true) {

@@ -69,10 +69,16 @@ export async function main(): globalThis.Promise<void> {
 	// Test Sprint functions
 	let result = fmt.Sprint("Sprint", " ", "result")
 	fmt.Println("Sprint result:", result)
+	let parts = $.arrayToSlice<any>(["Spread", " ", "result"])
+	let spreadResult = fmt.Sprint(...(parts ?? []))
+	fmt.Println("Sprint spread result:", spreadResult)
 
 	// Test Sprintf
 	let formatted = fmt.Sprintf("Number: %d, String: %s", 42, "test")
 	fmt.Println("Sprintf result:", formatted)
+	let formatArgs = $.arrayToSlice<any>([7, "spread"])
+	let formattedSpread = fmt.Sprintf("Spread Number: %d, String: %s", ...(formatArgs ?? []))
+	fmt.Println("Sprintf spread result:", formattedSpread)
 
 	// Test Sprintln
 	let sprintln_result = fmt.Sprintln("Sprintln", "result")

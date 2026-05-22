@@ -13,7 +13,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test Join function
 	let joined = path.Join("a", "b", "c")
 	$.println("Join result:", joined)
-	let joinedSpread = path.Join($.arrayToSlice<string>(["root", "leaf"]))
+	let joinedSpread = path.Join(...($.arrayToSlice<string>(["root", "leaf"]) ?? []))
 	$.println("Join spread result:", joinedSpread)
 
 	// Test Base function

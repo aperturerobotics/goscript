@@ -146,6 +146,14 @@ function comparableEqual(a: unknown, b: unknown): boolean {
     }
     return true
   }
+  if (isComplexValue(a) || isComplexValue(b)) {
+    return (
+      isComplexValue(a) &&
+      isComplexValue(b) &&
+      a.real === b.real &&
+      a.imag === b.imag
+    )
+  }
   if (hasGoType(a) || hasGoType(b)) {
     if (!hasGoType(a) || !hasGoType(b) || a.__goType !== b.__goType) {
       return false
@@ -206,6 +214,15 @@ function fieldsEqual(
 export interface Complex {
   real: number
   imag: number
+}
+
+function isComplexValue(value: unknown): value is Complex {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { real?: unknown }).real === 'number' &&
+    typeof (value as { imag?: unknown }).imag === 'number'
+  )
 }
 
 export function complex(real: number, imag: number): Complex {
@@ -272,7 +289,7 @@ export function uint(value: number | bigint, bits = 64): number {
   if (typeof value === 'bigint') {
     const normalized = BigInt.asUintN(Math.min(bits, 64), value)
     if (bits >= 64) {
-      return normalized as unknown as number
+      return uint64Result(normalized)
     }
     return Number(normalized)
   }
@@ -288,11 +305,17 @@ export function uint(value: number | bigint, bits = 64): number {
   return truncated
 }
 
-export function uint64Shl(value: number | bigint, shift: number | bigint): number {
+export function uint64Shl(
+  value: number | bigint,
+  shift: number | bigint,
+): number {
   return uint64Result(uint64Value(value) << BigInt(Math.trunc(Number(shift))))
 }
 
-export function uint64Shr(value: number | bigint, shift: number | bigint): number {
+export function uint64Shr(
+  value: number | bigint,
+  shift: number | bigint,
+): number {
   return uint64Result(uint64Value(value) >> BigInt(Math.trunc(Number(shift))))
 }
 
@@ -312,27 +335,67 @@ export function uintShr(
   return uint(value, width) >>> amount
 }
 
-export function uint64Mul(left: number | bigint, right: number | bigint): number {
+export function uint64Mul(
+  left: number | bigint,
+  right: number | bigint,
+): number {
   return uint64Result(uint64Value(left) * uint64Value(right))
 }
 
-export function uint64Add(left: number | bigint, right: number | bigint): number {
+export function uint64Div(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  const divisor = uint64Value(right)
+  if (divisor === 0n) {
+    throw new Error('runtime error: integer divide by zero')
+  }
+  return uint64Result(uint64Value(left) / divisor)
+}
+
+export function uint64Mod(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  const divisor = uint64Value(right)
+  if (divisor === 0n) {
+    throw new Error('runtime error: integer divide by zero')
+  }
+  return uint64Result(uint64Value(left) % divisor)
+}
+
+export function uint64Add(
+  left: number | bigint,
+  right: number | bigint,
+): number {
   return uint64Result(uint64Value(left) + uint64Value(right))
 }
 
-export function uint64Sub(left: number | bigint, right: number | bigint): number {
+export function uint64Sub(
+  left: number | bigint,
+  right: number | bigint,
+): number {
   return uint64Result(uint64Value(left) - uint64Value(right))
 }
 
-export function uint64And(left: number | bigint, right: number | bigint): number {
+export function uint64And(
+  left: number | bigint,
+  right: number | bigint,
+): number {
   return uint64Result(uint64Value(left) & uint64Value(right))
 }
 
-export function uint64Or(left: number | bigint, right: number | bigint): number {
+export function uint64Or(
+  left: number | bigint,
+  right: number | bigint,
+): number {
   return uint64Result(uint64Value(left) | uint64Value(right))
 }
 
-export function uint64Xor(left: number | bigint, right: number | bigint): number {
+export function uint64Xor(
+  left: number | bigint,
+  right: number | bigint,
+): number {
   return uint64Result(uint64Value(left) ^ uint64Value(right))
 }
 
@@ -344,7 +407,11 @@ function uint64Value(value: number | bigint): bigint {
 }
 
 function uint64Result(value: bigint): number {
-  return BigInt.asUintN(64, value) as unknown as number
+  const normalized = BigInt.asUintN(64, value)
+  if (normalized <= BigInt(Number.MAX_SAFE_INTEGER)) {
+    return Number(normalized)
+  }
+  return normalized as unknown as number
 }
 
 /**

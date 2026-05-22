@@ -13,7 +13,7 @@ import * as csync from "@goscript/github.com/aperturerobotics/util/csync/index.j
 
 export async function main(): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
-	let mtx: csync.Mutex = $.markAsStructValue(new csync.Mutex())
+	let mtx: $.VarRef<csync.Mutex> = $.varRef($.markAsStructValue(new csync.Mutex()))
 	let counter: number = 0
 	let wg: $.VarRef<sync.WaitGroup> = $.varRef($.markAsStructValue(new sync.WaitGroup()))
 
@@ -30,7 +30,7 @@ export async function main(): globalThis.Promise<void> {
 		__defer.defer(() => { wg.value.Done() })
 
 		// Try to acquire the lock
-		let [relLock, err] = await mtx.Lock(ctx)
+		let [relLock, err] = await mtx.value.Lock(ctx)
 		if (err != null) {
 			$.println("worker", id, "failed to acquire lock:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 			return

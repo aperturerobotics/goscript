@@ -19,8 +19,8 @@ export async function main(): globalThis.Promise<void> {
 	$.println("strings.ToLower:", result2)
 	$.println("baz.Split length:", $.len(result3))
 	$.println("baz.Count:", baz.Count("a,b,c", ","))
-	for (let i = 0; i < $.len(result3); i++) {
-		let v = result3![i]
+	for (let __goscriptRangeTarget0 = result3, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+		let v = __goscriptRangeTarget0![i]
 		$.println("baz.Split[", i, "]:", v)
 	}
 

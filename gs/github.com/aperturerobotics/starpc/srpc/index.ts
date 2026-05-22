@@ -316,6 +316,85 @@ class emptyStream implements Stream {
   }
 }
 
+class memoryStream implements Stream {
+  private sent: Message | null = null
+  private sentQueue: (Message | null)[] = []
+  private waiters: ((msg: Message | null) => void)[] = []
+  private closed = false
+  private recvConsumed = false
+
+  constructor(
+    private ctx: context.Context,
+    private recv: Message | null,
+  ) {}
+
+  public Context(): context.Context {
+    return this.ctx
+  }
+
+  public MsgSend(msg: Message | null): $.GoError {
+    this.sent = msg
+    const waiter = this.waiters.shift()
+    if (waiter != null) {
+      waiter(msg)
+      return null
+    }
+    this.sentQueue.push(msg)
+    return null
+  }
+
+  public MsgRecv(msg: Message | null): MaybePromise<$.GoError> {
+    if (!this.recvConsumed) {
+      this.recvConsumed = true
+      if (msg != null && this.recv != null) {
+        Object.assign(msg, this.recv)
+      }
+      return null
+    }
+    const next = this.sentQueue.shift()
+    if (next !== undefined) {
+      if (msg != null && next != null) {
+        Object.assign(msg, next)
+      }
+      return null
+    }
+    if (this.closed) {
+      return io.EOF
+    }
+    return new Promise<$.GoError>((resolve) => {
+      this.waiters.push((sent) => {
+        if (msg != null && sent != null) {
+          Object.assign(msg, sent)
+        }
+        resolve(null)
+      })
+    })
+  }
+
+  public CloseSend(): $.GoError {
+    return null
+  }
+
+  public Close(): $.GoError {
+    this.closed = true
+    for (const waiter of this.waiters.splice(0)) {
+      waiter(null)
+    }
+    return null
+  }
+
+  public CopySentTo(output: Message | null): void {
+    if (output != null && this.sent != null) {
+      Object.assign(output, this.sent)
+      return
+    }
+    const next = this.sentQueue.shift()
+    if (output != null && next != null) {
+      Object.assign(output, next)
+    }
+  }
+}
+
 class streamWithClose implements Stream {
   constructor(
     private stream: Stream,
@@ -592,15 +671,350 @@ export class Server {
     _ctx: context.Context,
     _rwc: io.ReadWriteCloser | null,
   ): void {}
+
+  public AcceptMuxedConn(
+    _ctx: context.Context,
+    _conn: MuxedConn | null,
+  ): $.GoError {
+    return null
+  }
 }
 
 export function NewServer(invoker: Invoker | null): Server {
   return new Server({ invoker })
 }
 
-export type PacketHandler = (pkt: Packet | null) => $.GoError
-export type PacketDataHandler = (data: $.Slice<number>) => $.GoError
+export interface PacketWriter {
+  WritePacket(packet: Packet | null): MaybePromise<$.GoError>
+  Close(): MaybePromise<$.GoError>
+}
+
+export type OpenStreamFunc = any
+
+class transportClient implements Client {
+  constructor(private openStream: OpenStreamFunc | null) {}
+
+  public async ExecCall(
+    ctx: context.Context,
+    service: string,
+    method: string,
+    input: Message | null,
+    output: Message | null,
+  ): Promise<$.GoError> {
+    if (this.openStream == null) {
+      return ErrNoAvailableClients
+    }
+    const writerResult = await this.openStream(
+      ctx,
+      () => null,
+      () => undefined,
+    )
+    if (writerResult == null) {
+      return ErrNoAvailableClients
+    }
+    const writer = writerResult[0]
+    const err = writerResult[1]
+    if (err != null) {
+      return err
+    }
+    if (input != null) {
+      const [data, marshalErr] = input.MarshalVT()
+      if (marshalErr != null) {
+        return marshalErr
+      }
+      const writeErr = await writer?.WritePacket(
+        NewCallStartPacket(service, method, data, $.len(data) === 0),
+      )
+      if (writeErr != null) {
+        return writeErr
+      }
+    }
+    if (output != null) {
+      output.Reset()
+    }
+    return await writer?.Close() ?? null
+  }
+
+  public async NewStream(
+    ctx: context.Context,
+    service: string,
+    method: string,
+    firstMsg: Message | null,
+  ): Promise<[Stream | null, $.GoError]> {
+    if (this.openStream == null) {
+      return [null, ErrNoAvailableClients]
+    }
+    const writerResult = await this.openStream(
+      ctx,
+      () => null,
+      () => undefined,
+    )
+    if (writerResult == null) {
+      return [null, ErrNoAvailableClients]
+    }
+    const writer = writerResult[0]
+    const err = writerResult[1]
+    if (err != null) {
+      return [null, err]
+    }
+    if (firstMsg != null) {
+      const [data, marshalErr] = firstMsg.MarshalVT()
+      if (marshalErr != null) {
+        return [null, marshalErr]
+      }
+      const writeErr = await writer?.WritePacket(
+        NewCallStartPacket(service, method, data, $.len(data) === 0),
+      )
+      if (writeErr != null) {
+        return [null, writeErr]
+      }
+    }
+    return [
+      NewStreamWithClose(new emptyStream(ctx), () => writer?.Close() ?? null),
+      null,
+    ]
+  }
+}
+
+export function NewClient(openStream: OpenStreamFunc | null): Client {
+  return new transportClient(openStream)
+}
+
+class invokerClient implements Client {
+  constructor(
+    private invoker: Invoker | null,
+    private contextFn: ((ctx: context.Context) => context.Context) | null = null,
+  ) {}
+
+  public async ExecCall(
+    ctx: context.Context,
+    service: string,
+    method: string,
+    input: Message | null,
+    output: Message | null,
+  ): Promise<$.GoError> {
+    if (this.invoker == null) {
+      return ErrNoAvailableClients
+    }
+    const stream = new memoryStream(
+      this.contextFn == null ? ctx : this.contextFn(ctx),
+      input,
+    )
+    const [handled, err] = await this.invoker.InvokeMethod(
+      service,
+      method,
+      stream,
+    )
+    if (err != null) {
+      return err
+    }
+    if (!handled) {
+      return ErrUnimplemented
+    }
+    stream.CopySentTo(output)
+    return null
+  }
+
+  public async NewStream(
+    ctx: context.Context,
+    service: string,
+    method: string,
+    firstMsg: Message | null,
+  ): Promise<[Stream | null, $.GoError]> {
+    if (this.invoker == null) {
+      return [null, ErrNoAvailableClients]
+    }
+    const stream = new memoryStream(
+      this.contextFn == null ? ctx : this.contextFn(ctx),
+      firstMsg,
+    )
+    const pending = Promise.resolve(
+      this.invoker.InvokeMethod(service, method, stream),
+    )
+    pending.then(([handled, err]) => {
+      if (!handled || err != null) {
+        stream.Close()
+      }
+    })
+    return [stream, null]
+  }
+}
+
+export function NewClientWithInvoker(
+  invoker: Invoker | null,
+  contextFn: ((ctx: context.Context) => context.Context) | null = null,
+): Client {
+  return new invokerClient(invoker, contextFn)
+}
+
+export type PacketHandler = (pkt: Packet | null) => MaybePromise<$.GoError>
+export type PacketDataHandler = (
+  data: $.Slice<number>,
+) => MaybePromise<$.GoError>
 export type CloseHandler = (closeErr: $.GoError) => void
+
+class streamWithContext implements Stream {
+  constructor(
+    private stream: Stream,
+    private ctx: context.Context,
+  ) {}
+
+  public Context(): context.Context {
+    return this.ctx
+  }
+
+  public MsgSend(msg: Message | null): MaybePromise<$.GoError> {
+    return this.stream.MsgSend(msg)
+  }
+
+  public MsgRecv(msg: Message | null): MaybePromise<$.GoError> {
+    return this.stream.MsgRecv(msg)
+  }
+
+  public CloseSend(): MaybePromise<$.GoError> {
+    return this.stream.CloseSend()
+  }
+
+  public Close(): MaybePromise<$.GoError> {
+    return this.stream.Close()
+  }
+}
+
+export function NewStreamWithContext(
+  stream: Stream | null,
+  ctx: context.Context,
+): Stream {
+  return new streamWithContext(stream ?? new emptyStream(ctx), ctx)
+}
+
+export class ServerRPC {
+  constructor(
+    private ctx: context.Context,
+    private invoker: Invoker | null,
+    private writer: PacketWriter | null,
+  ) {}
+
+  public async HandlePacketData(data: $.Slice<number>): Promise<$.GoError> {
+    const pkt = new Packet()
+    const err = pkt.UnmarshalVT(data)
+    if (err != null) {
+      return err
+    }
+    return this.HandlePacket(pkt)
+  }
+
+  public async HandlePacket(pkt: Packet | null): Promise<$.GoError> {
+    if (pkt == null) {
+      return null
+    }
+    const body = pkt.GetBody()
+    if (body instanceof Packet_CallStart) {
+      return this.HandleCallStart(body.CallStart)
+    }
+    return null
+  }
+
+  public async HandleCallStart(pkt: CallStart | null): Promise<$.GoError> {
+    if (pkt == null || this.invoker == null) {
+      return ErrUnimplemented
+    }
+    const stream = new emptyStream(this.ctx)
+    const [handled, err] = await this.invoker.InvokeMethod(
+      pkt.GetRpcService(),
+      pkt.GetRpcMethod(),
+      stream,
+    )
+    const callErr = err ?? (handled ? null : ErrUnimplemented)
+    await this.writer?.WritePacket(NewCallDataPacket(null, false, true, callErr))
+    return callErr
+  }
+
+  public HandleStreamClose(_closeErr: $.GoError): void {}
+
+  public Wait(_ctx: context.Context): $.GoError {
+    return null
+  }
+}
+
+export function NewServerRPC(
+  ctx: context.Context,
+  invoker: Invoker | null,
+  writer: PacketWriter | null,
+): ServerRPC {
+  return new ServerRPC(ctx, invoker, writer)
+}
+
+export class MuxedConn {
+  constructor(
+    public rwc: any = null,
+    public outbound = false,
+  ) {}
+
+  public Close(): $.GoError {
+    return this.rwc?.Close() ?? null
+  }
+}
+
+class closedPacketWriter implements PacketWriter {
+  public WritePacket(_packet: Packet | null): $.GoError {
+    return ErrUnimplemented
+  }
+
+  public Close(): $.GoError {
+    return null
+  }
+}
+
+export function NewOpenStreamWithMuxedConn(_conn: MuxedConn): OpenStreamFunc {
+  return () => [new closedPacketWriter(), null]
+}
+
+export function NewMuxedConn(
+  rwc: any,
+  outbound: boolean,
+  _yamuxConf: unknown,
+): [MuxedConn | null, $.GoError] {
+  return [new MuxedConn(rwc, outbound), null]
+}
+
+export function NewClientWithMuxedConn(_conn: MuxedConn | null): Client {
+  return NewClientWithInvoker(null)
+}
+
+export function NewMuxedConnWithRwc(
+  _ctx: context.Context,
+  _rwc: io.ReadWriteCloser | null,
+  _outbound: boolean,
+  _yamuxConf: unknown,
+): [MuxedConn | null, $.GoError] {
+  return [new MuxedConn(_rwc, _outbound), null]
+}
+
+class clientInvoker implements Invoker {
+  constructor(private client: Client | null) {}
+
+  public async InvokeMethod(
+    serviceID: string,
+    methodID: string,
+    stream: Stream | null,
+  ): Promise<[boolean, $.GoError]> {
+    if (this.client == null || stream == null) {
+      return [false, null]
+    }
+    const [remote, err] = await this.client.NewStream(
+      stream.Context(),
+      serviceID,
+      methodID,
+      null,
+    )
+    await remote?.Close()
+    return [true, err]
+  }
+}
+
+export function NewClientInvoker(client: Client | null): Invoker {
+  return new clientInvoker(client)
+}
 
 export class Packet {
   public Body: unknown = null
@@ -635,6 +1049,22 @@ export class CallStart {
   public RpcMethod = ''
   public Data: $.Slice<number> = null
   public DataIsZero = false
+
+  public GetRpcService(): string {
+    return this.RpcService
+  }
+
+  public GetRpcMethod(): string {
+    return this.RpcMethod
+  }
+
+  public GetData(): $.Slice<number> {
+    return this.Data
+  }
+
+  public GetDataIsZero(): boolean {
+    return this.DataIsZero
+  }
 }
 
 export class CallData {
@@ -642,6 +1072,22 @@ export class CallData {
   public DataIsZero = false
   public Complete = false
   public Error = ''
+
+  public GetData(): $.Slice<number> {
+    return this.Data
+  }
+
+  public GetDataIsZero(): boolean {
+    return this.DataIsZero
+  }
+
+  public GetComplete(): boolean {
+    return this.Complete
+  }
+
+  public GetError(): string {
+    return this.Error
+  }
 }
 
 export class Packet_CallStart {

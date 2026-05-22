@@ -1,7 +1,9 @@
 package main
 
-type Callback = func() error
-type Opener = func(Callback) error
+type (
+	Callback = func() error
+	Opener   = func(Callback) error
+)
 
 func newOpener(ch chan error) Opener {
 	return func(cb Callback) error {

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   AppendVarint,
   CompareEqualVT,
+  ConsumeVarint,
   DecodeFixed32,
   DecodeFixed64,
   DecodeVarint,
@@ -50,9 +51,14 @@ describe('protobuf-go-lite wire helpers', () => {
     expect(DecodeVarintInt32(buf, offset)).toEqual([300, 4, null])
     expect(DecodeVarintInt64(buf, offset)).toEqual([300, 4, null])
     expect(DecodeVarintUint32(buf, offset)).toEqual([300, 4, null])
-    expect(Array.from(AppendVarint([], 300) as number[])).toEqual([
-      0xac,
-      0x02,
+    expect(Array.from(AppendVarint([], 300) as number[])).toEqual([0xac, 0x02])
+    expect(SizeOfVarint(0xffffffffffffffffn)).toBe(10)
+    expect(Array.from(AppendVarint([], 0xffffffffffffffffn) as number[])).toEqual([
+      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01,
+    ])
+    expect(ConsumeVarint(AppendVarint([], 0xffffffffffffffffn))).toEqual([
+      0xffffffffffffffffn,
+      10,
     ])
   })
 
@@ -80,10 +86,7 @@ describe('protobuf-go-lite wire helpers', () => {
       5,
       null,
     ])
-    expect(Skip(new Uint8Array([0x0c]))).toEqual([
-      0,
-      ErrUnexpectedEndOfGroup,
-    ])
+    expect(Skip(new Uint8Array([0x0c]))).toEqual([0, ErrUnexpectedEndOfGroup])
   })
 
   it('reports protobuf wire errors as Go errors', () => {

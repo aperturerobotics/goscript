@@ -194,6 +194,30 @@ export * from "./sync.js"
 
 This allows the import system to resolve `@goscript/sync` to the TypeScript implementation.
 
+## Project Override Roots
+
+Projects can provide additional override roots with `--gs-path` (alias:
+`--override-dir`) on `goscript compile` and `goscript test`.
+
+Each root uses the same package-path layout as the built-in `gs/` tree:
+
+```text
+project/gs/
+├── github.com/example/project/sdk/foo/
+│   ├── index.ts
+│   └── meta.json
+```
+
+When a package has a matching override, GoScript treats that package as an
+override boundary in the package graph and does not compile its Go imports. The
+override files are copied into the generated `@goscript/<package-path>/` output
+tree with any `meta.json` dependencies.
+
+Project roots take precedence over built-in overrides. Use project overrides
+when a repository already owns an equivalent TypeScript SDK package and the Go
+implementation imports native-only transport, crypto, filesystem, or service
+code that should not be part of the generated JavaScript graph.
+
 ## Adding New Override Packages
 
 ### Step 1: Create Package Directory

@@ -18,6 +18,7 @@ func testCommands() []*cli.Command {
 
 func newTestCommand() *cli.Command {
 	var tags cli.StringSlice
+	var overrideDirs cli.StringSlice
 	var run string
 	var count int
 	var short bool
@@ -33,16 +34,17 @@ func newTestCommand() *cli.Command {
 		Usage:    "compile and run Go package tests through GoScript",
 		Action: func(c *cli.Context) error {
 			req := &gotest.Request{
-				Dir:        dir,
-				Patterns:   c.Args().Slice(),
-				BuildTags:  tags.Value(),
-				Run:        run,
-				Count:      count,
-				Short:      short,
-				Timeout:    timeout,
-				Verbose:    verbose,
-				WorkDir:    workDir,
-				OutputRoot: outputRoot,
+				Dir:          dir,
+				Patterns:     c.Args().Slice(),
+				BuildTags:    tags.Value(),
+				OverrideDirs: overrideDirs.Value(),
+				Run:          run,
+				Count:        count,
+				Short:        short,
+				Timeout:      timeout,
+				Verbose:      verbose,
+				WorkDir:      workDir,
+				OutputRoot:   outputRoot,
 			}
 			result, err := gotest.NewRunner().Run(c.Context, req)
 			if err != nil {
@@ -61,6 +63,12 @@ func newTestCommand() *cli.Command {
 				Name:        "tags",
 				Usage:       "comma-separated Go build tags",
 				Destination: &tags,
+			},
+			&cli.StringSliceFlag{
+				Name:        "gs-path",
+				Aliases:     []string{"override-dir"},
+				Usage:       "additional GoScript override root containing package-path directories",
+				Destination: &overrideDirs,
 			},
 			&cli.StringFlag{
 				Name:        "run",

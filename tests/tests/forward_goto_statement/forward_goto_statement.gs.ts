@@ -181,6 +181,31 @@ export function stateMachineGoto(start: number): number {
 	return total
 }
 
+export function nestedBackwardGoto(limit: number): number {
+	let total = 0
+	restart: while (true) {
+		if (total >= limit) {
+			return total
+		}
+
+		__goscriptLoop2: while (true) {
+			next: while (true) {
+				total++
+
+				if ((total % 2) == 0) {
+					continue restart
+				}
+				if (total < limit) {
+					continue next
+				}
+				return total
+				break
+			}
+		}
+		break
+	}
+}
+
 export async function main(): globalThis.Promise<void> {
 	$.println("skip negative:", skipToLabel(-1))
 	$.println("skip positive:", skipToLabel(1))
@@ -192,6 +217,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("mixed decl:", mixedForwardBackwardDecl(2))
 	$.println("state zero:", stateMachineGoto(0))
 	$.println("state one:", stateMachineGoto(1))
+	$.println("nested restart:", nestedBackwardGoto(5))
 }
 
 if ($.isMainScript(import.meta)) {

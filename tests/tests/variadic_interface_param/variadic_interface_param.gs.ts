@@ -6,8 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 export function testVariadicInterface(name: string, values: $.Slice<any>): void {
 	$.println("Name:", name)
 	$.println("Values count:", $.len(values))
-	for (let i = 0; i < $.len(values); i++) {
-		let v = values![i]
+	for (let __goscriptRangeTarget0 = values, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+		let v = __goscriptRangeTarget0![i]
 		// We can't do much with interface{} values in the compiled output
 		// but we can at least check they're passed correctly
 		if (v != null) {

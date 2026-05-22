@@ -7,7 +7,7 @@ export async function main(): globalThis.Promise<void> {
 	let encoder = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 	let decodeMap: Uint8Array = new Uint8Array(256)
-	for (let i = 0; i < $.len(decodeMap); i++) {
+	for (let __goscriptRangeTarget0 = decodeMap, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 		decodeMap[i] = $.uint(255, 8)
 	}
 

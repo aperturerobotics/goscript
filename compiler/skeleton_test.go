@@ -1082,7 +1082,7 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 		"export type Collector = ((label: string, parts: $.Slice<string>) => string | globalThis.Promise<string>) | null",
 		"Join(parts: $.Slice<string>): string",
 		"export function collect(label: string, parts: $.Slice<string>): string",
-		"let part = parts![__rangeIndex]",
+		"let part = __goscriptRangeTarget0![__rangeIndex]",
 		"export function maybeErr(parts: $.Slice<string>): $.GoError",
 		"public Join(parts: $.Slice<string>): string",
 		"collect(\"none\", null)",

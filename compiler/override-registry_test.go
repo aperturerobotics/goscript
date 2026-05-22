@@ -118,6 +118,47 @@ func TestOverrideRegistryCopiesRuntimeAndOverrides(t *testing.T) {
 	}
 }
 
+func TestOverrideRegistryCopiesExternalOverride(t *testing.T) {
+	overrideDir := filepath.Join(t.TempDir(), "gs")
+	writeFixtureFile(t, overrideDir, "example.test/lib/index.ts", strings.Join([]string{
+		"import * as helper from '@goscript/example.test/helper/index.js'",
+		"export function Run(): void { helper.Run() }",
+		"",
+	}, "\n"))
+	writeFixtureFile(t, overrideDir, "example.test/lib/meta.json", `{"dependencies":["example.test/helper"]}`)
+	writeFixtureFile(t, overrideDir, "example.test/helper/index.ts", "export function Run(): void {}\n")
+
+	owner := NewOverrideRegistryOwner(overrideDir)
+	req := &CompileRequest{
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	}
+	plan, diagnostics := owner.CopyPlan(context.Background(), req, &PackageGraph{Nodes: []*PackageGraphNode{{
+		PkgPath:           "example.test/lib",
+		OverrideCandidate: true,
+	}}})
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("copy plan failed: %#v", diagnostics)
+	}
+	copied, diagnostics := owner.CopyPackages(context.Background(), req, plan)
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("copy failed: %#v", diagnostics)
+	}
+	for _, pkg := range []string{"builtin", "example.test/helper", "example.test/lib"} {
+		if !slices.Contains(copied, pkg) {
+			t.Fatalf("missing copied package %s in %v", pkg, copied)
+		}
+	}
+	for _, path := range []string{
+		"@goscript/example.test/helper/index.ts",
+		"@goscript/example.test/lib/index.ts",
+	} {
+		if _, err := os.Stat(filepath.Join(req.OutputPath, filepath.FromSlash(path))); err != nil {
+			t.Fatalf("expected copied file %s: %v", path, err)
+		}
+	}
+}
+
 func TestOverrideRegistryReportsMissingOverridePackage(t *testing.T) {
 	_, diagnostics := NewOverrideRegistryOwner().CopyPlan(context.Background(), &CompileRequest{
 		RuntimeEmissionMode: RuntimeEmissionModeEmit,

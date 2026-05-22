@@ -16,6 +16,8 @@ type Config struct {
 	OutputPath string
 	// BuildFlags are the Go build flags to use during package loading.
 	BuildFlags []string
+	// OverrideDirs are additional GoScript override roots.
+	OverrideDirs []string
 	// AllDependencies controls whether dependencies are included in the graph.
 	AllDependencies bool
 	// DisableEmitBuiltin controls whether runtime packages are emitted.
