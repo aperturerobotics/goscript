@@ -57,7 +57,7 @@ export async function main(): globalThis.Promise<void> {
 	locked.value.Inc()
 	$.println(locked.value.Value())
 
-	for (let i = 0; i < 1; i++) {
+	for (let __rangeIndex = 0; __rangeIndex < 1; __rangeIndex++) {
 		let __goscriptShadow0 = $.varRef($.markAsStructValue($.cloneStructValue(newLocked(10))))
 		$.pointerValue<locked>(__goscriptShadow0).Inc()
 		$.println($.pointerValue<locked>(__goscriptShadow0).Value())

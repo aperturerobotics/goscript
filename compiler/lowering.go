@@ -5008,6 +5008,9 @@ func exprContainsUnsafePointerConversion(ctx lowerFileContext, expr ast.Expr) bo
 }
 
 func (o *LoweringOwner) lowerIndexExpr(ctx lowerFileContext, expr *ast.IndexExpr) (string, []Diagnostic) {
+	if signature := genericFunctionSignature(ctx, expr.X); signature != nil {
+		return o.lowerGenericFunctionValue(ctx, expr.X, []ast.Expr{expr.Index}, signature)
+	}
 	target, targetDiagnostics := o.lowerExpr(ctx, expr.X)
 	index, indexDiagnostics := o.lowerExpr(ctx, expr.Index)
 	diagnostics := append(targetDiagnostics, indexDiagnostics...)
@@ -5020,6 +5023,37 @@ func (o *LoweringOwner) lowerIndexExpr(ctx lowerFileContext, expr *ast.IndexExpr
 	default:
 		return o.lowerIndexTarget(ctx, target, targetType) + "[" + index + "]", diagnostics
 	}
+}
+
+func (o *LoweringOwner) lowerGenericFunctionValue(
+	ctx lowerFileContext,
+	callee ast.Expr,
+	typeArgExprs []ast.Expr,
+	signature *types.Signature,
+) (string, []Diagnostic) {
+	calleeExpr, diagnostics := o.lowerExpr(ctx, callee)
+	typeArgs := o.genericTypeArgsExpr(ctx, callee, typeArgExprs)
+	signatureCtx := ctx.withFunctionTypeDepth(ctx.functionTypeDepth + 1)
+	params := o.tsSignatureParamsFor(signatureCtx, signature, false)
+	args := []string{typeArgs}
+	if signature.Params() != nil {
+		for idx := range signature.Params().Len() {
+			args = append(args, safeParamName(signature.Params().At(idx), idx))
+		}
+	}
+	call := o.lowerCallableExpr(ctx, callee, calleeExpr) + "(" + strings.Join(args, ", ") + ")"
+	async := o.callNeedsAwait(ctx, callee)
+	prefix := ""
+	body := call
+	if async {
+		prefix = "async "
+		body = "await " + call
+	}
+	function := prefix + "(" + params + "): " +
+		asyncResultType(o.tsSignatureResultFor(signatureCtx, signature), async) +
+		" => " + body
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
+		"(" + function + ", " + o.runtimeFunctionTypeInfo(signature, "") + ")", diagnostics
 }
 
 func (o *LoweringOwner) lowerIndexTarget(ctx lowerFileContext, target string, typ types.Type) string {
@@ -6472,6 +6506,10 @@ func (o *LoweringOwner) inferGenericTypeArg(
 }
 
 func (o *LoweringOwner) genericTypeDescriptorExpr(ctx lowerFileContext, typ types.Type) string {
+	if typeParam, ok := types.Unalias(typ).(*types.TypeParam); ok && signatureHasTypeParam(ctx.signature, typeParam) {
+		return "__typeArgs?.[" + strconv.Quote(typeParam.Obj().Name()) + "] ?? { type: " +
+			o.runtimeTypeInfoExpr(typ) + ", zero: () => " + o.lowerZeroValueExprFor(ctx, typ) + " }"
+	}
 	parts := []string{
 		"type: " + o.runtimeTypeInfoExpr(typ),
 		"zero: () => " + o.lowerZeroValueExprFor(ctx, typ),

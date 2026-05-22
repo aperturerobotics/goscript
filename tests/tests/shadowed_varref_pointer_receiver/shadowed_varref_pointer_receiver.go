@@ -21,7 +21,7 @@ func main() {
 	locked.Inc()
 	println(locked.Value())
 
-	for i := 0; i < 1; i++ {
+	for range 1 {
 		locked := newLocked(10)
 		locked.Inc()
 		println(locked.Value())
