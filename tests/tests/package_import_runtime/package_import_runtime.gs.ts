@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as runtime from "@goscript/runtime/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test basic runtime functions
 	$.println("GOOS:", runtime.GOOS)
 	$.println("GOARCH:", runtime.GOARCH)

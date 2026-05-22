@@ -211,7 +211,7 @@ export class printer {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let p: printer | $.VarRef<printer> | null = new printer()
 	$.pointerValue<printer>(p).init()
 	$.pointerValue<printer>(p).format(100)

@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let stdNumMonth = 1
 	let stdZeroMonth = 2
 	// stdLongMonth := 3 // Not used in this specific example but good for context

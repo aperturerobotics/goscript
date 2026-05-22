@@ -9,7 +9,7 @@ import * as slices from "@goscript/slices/index.js"
 
 import * as iter from "@goscript/iter/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s = $.arrayToSlice<number>([1, 2, 3, 4, 5])
 
 	// This should trigger the interface range issue

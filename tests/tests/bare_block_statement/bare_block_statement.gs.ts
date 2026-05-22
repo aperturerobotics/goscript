@@ -34,7 +34,7 @@ export function emptyBodies(limit: number): number {
 	return count
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("scoped total:", scopedTotal(1))
 	$.println("outer value:", shadowedValue())
 	$.println("empty bodies:", emptyBodies(3))

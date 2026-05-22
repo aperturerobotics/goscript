@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test basic byte slice operations
 	let b1 = $.stringToBytes("hello")
 	let b2 = $.stringToBytes("world")

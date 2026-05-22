@@ -40,7 +40,7 @@ export class field {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let fields: $.Slice<field> = null
 	$.println("fields before:", fields)
 

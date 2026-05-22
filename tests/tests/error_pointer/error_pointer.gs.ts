@@ -13,7 +13,7 @@ export function setErr(err: $.VarRef<$.GoError> | null): void {
 	err!.value = $.wrapPrimitiveError("pointer error", customErr_Error)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let err: $.VarRef<$.GoError> = $.varRef(null)
 	setErr(err)
 	if (err.value != null) {

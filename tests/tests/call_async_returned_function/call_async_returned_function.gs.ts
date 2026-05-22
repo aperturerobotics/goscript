@@ -7,14 +7,14 @@ import * as sync from "@goscript/sync/index.js"
 
 export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
-export async function getCallback(): Promise<((_p0: string) => void) | null> {
+export async function getCallback(): globalThis.Promise<((_p0: string) => void) | null> {
 	await cache.value.Load(1)
 	return $.functionValue((msg: string): void => {
 		$.println("Callback:", msg)
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [] })
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Call the function returned by an async function
 	// This should generate: (await getCallback())!("hello")
 	// NOT: await getCallback()!("hello")

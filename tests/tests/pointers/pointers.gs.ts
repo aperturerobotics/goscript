@@ -38,7 +38,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s1 = $.varRef($.markAsStructValue(new MyStruct({Val: 1})))
 	let s2 = $.varRef($.markAsStructValue(new MyStruct({Val: 2})))
 

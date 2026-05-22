@@ -43,7 +43,7 @@ export class handler {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let mux = srpc.NewMux()
 	let err = $.pointerValue<Exclude<srpc.Mux, null>>(mux).Register($.interfaceValue<srpc.Handler | null>($.markAsStructValue(new handler()), "main.handler"))
 	$.println("registered:", err == null)

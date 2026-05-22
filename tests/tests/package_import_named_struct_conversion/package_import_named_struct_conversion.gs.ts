@@ -68,7 +68,7 @@ export function asLocal(t: time.Time): LocalTime {
 	return $.markAsStructValue($.cloneStructValue((t as unknown as LocalTime)))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let first = $.markAsStructValue($.cloneStructValue(($.markAsStructValue($.cloneStructValue(time.Unix(11, 0))).UTC() as unknown as LocalTime)))
 	$.println("as time:", $.markAsStructValue($.cloneStructValue(asTime($.markAsStructValue($.cloneStructValue(first))))).Unix())
 

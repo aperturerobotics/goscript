@@ -45,7 +45,7 @@ export class msg {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("equal:", protobuf_go_lite.IsEqualVT({T: { type: { kind: $.TypeKind.Pointer, elemType: "main.msg" }, zero: () => null }}, new msg({v: 7}), new msg({v: 7})))
 }
 

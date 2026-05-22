@@ -9,7 +9,7 @@ export let b: number = a + 5
 
 export let c: number = b * 2
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("a:", a)
 	$.println("b:", b)
 	$.println("c:", c)

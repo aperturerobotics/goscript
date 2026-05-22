@@ -48,7 +48,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Create a struct value
 	let msValue = $.varRef($.markAsStructValue(new MyStruct({MyInt: 100})))
 

@@ -73,7 +73,7 @@ export class B {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let a1 = $.markAsStructValue(new A())
 	let b1 = $.markAsStructValue(new B())
 

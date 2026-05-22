@@ -60,7 +60,7 @@ export class descending {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test basic slice sorting
 	let ints = $.arrayToSlice<number>([3, 1, 4, 1, 5, 9])
 	$.println("Original ints:", ints![0], ints![1], ints![2], ints![3], ints![4], ints![5])

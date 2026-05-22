@@ -29,7 +29,7 @@ export class cache {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Get(k: any, _new: (() => [any, $.GoError] | Promise<[any, $.GoError]>) | null, check: ((_p0: any) => boolean | Promise<boolean>) | null): Promise<[any, $.GoError]> {
+	public async Get(k: any, _new: (() => [any, $.GoError] | globalThis.Promise<[any, $.GoError]>) | null, check: ((_p0: any) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<[any, $.GoError]> {
 		let c: cache | $.VarRef<cache> | null = this
 		if (($.pointerValue<cache>(c).stored != null) && await check!($.pointerValue<cache>(c).stored)) {
 			return [$.pointerValue<cache>(c).stored, null]
@@ -123,7 +123,7 @@ export class privateKey {
 
 export let privateKeyCache: $.VarRef<cache> = $.varRef($.markAsStructValue(new cache()))
 
-export async function privateKeyToCache(k: key | $.VarRef<key> | null): Promise<[privateKey | $.VarRef<privateKey> | null, $.GoError]> {
+export async function privateKeyToCache(k: key | $.VarRef<key> | null): globalThis.Promise<[privateKey | $.VarRef<privateKey> | null, $.GoError]> {
 	return await privateKeyCache.value.Get(k, $.functionValue((): [privateKey | $.VarRef<privateKey> | null, $.GoError] => {
 		return [new privateKey({D: $.pointerValue<key>(k).N}), null]
 	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Pointer, elemType: "main.privateKey" }, "error"] }), $.functionValue((v: privateKey | $.VarRef<privateKey> | null): boolean => {
@@ -131,7 +131,7 @@ export async function privateKeyToCache(k: key | $.VarRef<key> | null): Promise<
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "main.privateKey" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let k: key | $.VarRef<key> | null = new key({N: 7})
 	let __goscriptTuple0 = await privateKeyToCache(k)
 	let v: privateKey | $.VarRef<privateKey> | null = __goscriptTuple0[0]

@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test simple keyed array literal with integer keys
 	let arr1 = ["", "first", "", "third", ""]
 	$.println("arr1[0]:", arr1[0])

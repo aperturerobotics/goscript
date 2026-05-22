@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let c = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(c, 0)
 	c!.close()

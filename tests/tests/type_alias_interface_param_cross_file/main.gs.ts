@@ -51,7 +51,7 @@ export function write(tx: __goscript_types.Tx | null, v: dep.Value): void {
 	$.pointerValue<Exclude<__goscript_types.Tx, null>>(tx).Put((v as __goscript_types.Value))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s: sink | $.VarRef<sink> | null = new sink()
 	write($.interfaceValue<__goscript_types.Tx | null>(s, "*main.sink"), ($.arrayToSlice<number>([1, 2, 3]) as dep.Value))
 	$.println("size:", $.pointerValue<sink>(s).size)

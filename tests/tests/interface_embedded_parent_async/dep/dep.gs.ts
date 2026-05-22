@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export type Directive = null | {
-	Validate(): Promise<$.GoError>
+	Validate(): globalThis.Promise<$.GoError>
 }
 
 $.registerInterfaceType(
@@ -13,7 +13,7 @@ $.registerInterfaceType(
 	[{ name: "Validate", args: [], returns: [{ name: "_r0", type: "error" }] }]
 )
 
-export async function Use(d: Directive | null): Promise<boolean> {
+export async function Use(d: Directive | null): globalThis.Promise<boolean> {
 	return await $.pointerValue<Exclude<Directive, null>>(d).Validate() == null
 }
 

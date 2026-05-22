@@ -13,7 +13,7 @@ export function setAttachment(w: http.ResponseWriter | null, name: string): void
 	http.Header_Set($.pointerValue<Exclude<http.ResponseWriter, null>>(w).Header(), "Content-Disposition", mime.FormatMediaType("attachment", new Map<string, string>([["filename", name]])))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let w: httptest.ResponseRecorder | $.VarRef<httptest.ResponseRecorder> | null = httptest.NewRecorder()
 	http.Header_Set($.pointerValue<httptest.ResponseRecorder>(w).Header(), "X-Test", "ok")
 	$.println(http.Header_Get($.pointerValue<httptest.ResponseRecorder>(w).Header(), "X-Test"))

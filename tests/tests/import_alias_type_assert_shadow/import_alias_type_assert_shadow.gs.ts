@@ -17,7 +17,7 @@ export function unwrap(v: any): number {
 	return 0
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println(unwrap($.interfaceValue<any>(new dep2.Thing({Value: 7}), "*dep.Thing")))
 }
 

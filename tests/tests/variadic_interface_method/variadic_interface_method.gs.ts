@@ -53,7 +53,7 @@ export class PathJoiner {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let b: Basic | null = $.interfaceValue<Basic | null>($.markAsStructValue(new PathJoiner()), "main.PathJoiner")
 
 	// Test with multiple arguments

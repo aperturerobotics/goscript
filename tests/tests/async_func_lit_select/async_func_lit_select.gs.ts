@@ -5,9 +5,9 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as fmt from "@goscript/fmt/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	if (false) {
-		let fn = $.functionValue(async (): Promise<boolean> => {
+		let fn = $.functionValue(async (): globalThis.Promise<boolean> => {
 			const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, boolean>([
 				{
 					id: -1,

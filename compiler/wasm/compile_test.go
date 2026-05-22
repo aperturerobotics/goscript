@@ -34,7 +34,7 @@ func TestCompileSourceCompilesSingleFile(t *testing.T) {
 		"import * as $ from \"@goscript/builtin/index.js\"",
 		"class Counter",
 		"public Increment(): void",
-		"export async function main(): Promise<void>",
+		"export async function main(): globalThis.Promise<void>",
 		"$.println(\"Count:\", $.pointerValue<Counter>(c).value)",
 		"await main()",
 	} {

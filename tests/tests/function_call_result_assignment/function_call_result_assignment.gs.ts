@@ -62,7 +62,7 @@ export function NewMyStruct(s: string): MyStruct {
 	return $.markAsStructValue(new MyStruct({MyString: s}))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// === Function Call Result Assignment (Value Copy) ===
 	// Assigning the result of a function that returns a struct creates a copy.
 	let structFromFunc = $.markAsStructValue($.cloneStructValue(NewMyStruct("function result")))

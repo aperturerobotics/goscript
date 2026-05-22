@@ -11,14 +11,14 @@ import * as sync from "@goscript/sync/index.js"
 
 import * as __goscript_broadcast from "./broadcast.gs.ts"
 
-export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | Promise<any>) | null, send: ((_p0: any) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
+export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, null)
 }
 
-export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | Promise<any>) | null, send: ((_p0: any) => $.GoError | Promise<$.GoError>) | null, equal: ((a: any, b: any) => boolean | Promise<boolean>) | null): Promise<$.GoError> {
+export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null, equal: ((a: any, b: any) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<$.GoError> {
 	let ch: $.Channel<{}> | null = null
 	let val: any = $.genericZero(__typeArgs, "T", null)
-	await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
+	await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
 		ch = await getWaitCh!()
 		val = await snapshot!()
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
@@ -50,7 +50,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 		if (__goscriptSelect0HasReturn) {
 			return __goscriptSelect0Value
 		}
-		await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
+		await $.pointerValue<__goscript_broadcast.Broadcast>(bcast).HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
 			ch = await getWaitCh!()
 			val = await snapshot!()
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
@@ -70,6 +70,6 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 	}
 }
 
-export async function WatchBroadcastVT(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | Promise<any>) | null, send: ((_p0: any) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
+export async function WatchBroadcastVT(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, proto.CompareEqualVT({T: { type: { kind: $.TypeKind.Interface, methods: [{ name: "EqualVT", args: [{ name: "other", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }] }, zero: () => null }}))
 }

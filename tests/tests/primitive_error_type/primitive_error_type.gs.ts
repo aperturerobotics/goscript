@@ -19,7 +19,7 @@ export function mayFail(n: number): $.GoError {
 	return null
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let err = mayFail(5)
 	if (err == null) {
 		$.println("mayFail(5): no error")

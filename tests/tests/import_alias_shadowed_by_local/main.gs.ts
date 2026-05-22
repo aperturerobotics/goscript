@@ -44,7 +44,7 @@ export function newLocal(value: number): local | $.VarRef<local> | null {
 	return new local({value: value})
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	{
 		let err = drbg2.Read()
 		if (err != null) {

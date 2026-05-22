@@ -7,7 +7,7 @@ import * as fmt from "@goscript/fmt/index.js"
 
 import * as syscall from "@goscript/syscall/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	syscall.CloseOnExec(1)
 	{
 		let err = syscall.SetNonblock(1, true)

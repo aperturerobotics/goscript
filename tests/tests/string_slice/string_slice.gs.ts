@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let myStr1 = "testing"
 	$.println("myStr1:", myStr1)
 	$.println("len(myStr1):", $.len(myStr1))

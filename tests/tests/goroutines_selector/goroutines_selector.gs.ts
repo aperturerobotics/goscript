@@ -29,7 +29,7 @@ export class Foo {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Bar(): Promise<void> {
+	public async Bar(): globalThis.Promise<void> {
 		const f: Foo | $.VarRef<Foo> | null = this
 		$.println("Foo.Bar called")
 		await $.chanSend($.pointerValue<Foo>(f).done, true)
@@ -48,7 +48,7 @@ export function NewFoo(): Foo | $.VarRef<Foo> | null {
 	return new Foo({done: $.makeChannel<boolean>(0, false, "both")})
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let f: Foo | $.VarRef<Foo> | null = NewFoo()
 	queueMicrotask(async () => { await $.pointerValue<Foo>(f).Bar() })
 	await $.chanRecv($.pointerValue<Foo>(f).done)

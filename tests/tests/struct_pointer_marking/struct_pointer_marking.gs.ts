@@ -38,7 +38,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("=== Struct Pointer Marking Test ===")
 
 	// Scenario 1: Address-of Composite Literal vs Value Variable

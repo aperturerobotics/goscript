@@ -7,7 +7,7 @@ export function printVal(__typeArgs: $.GenericTypeArgs | undefined, val: any): v
 	$.println(val)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	printVal({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, 10)
 	printVal({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, "hello")
 	printVal({T: { type: { kind: $.TypeKind.Basic, name: "bool" }, zero: () => false }}, true)

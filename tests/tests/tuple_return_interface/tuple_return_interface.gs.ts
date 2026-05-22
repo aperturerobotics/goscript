@@ -65,7 +65,7 @@ export function newInterface(size: number): [Block | null, $.GoError] {
 	return [$.interfaceValue<Block | null>(__goscriptReturn0[0], "*main.blockImpl"), __goscriptReturn0[1]]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let [block, err] = newInterface(16)
 	$.println("err nil:", err == null)
 	$.println("size:", $.pointerValue<Exclude<Block, null>>(block).Size())

@@ -123,7 +123,7 @@ export function FindAnimal(): Animal | null {
 	return $.interfaceValue<Animal | null>(FindCat(), "*main.Cat")
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let animal = FindAnimal()
 
 	// Test 1: The interface should NOT be nil

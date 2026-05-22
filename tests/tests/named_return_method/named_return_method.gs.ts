@@ -78,7 +78,7 @@ export class content {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let c: content | $.VarRef<content> | null = new content({bytes: $.stringToBytes("Hello, World!")})
 
 	// Test ReadAt method

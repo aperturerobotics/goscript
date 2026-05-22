@@ -40,7 +40,7 @@ export class RawValue {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Basic type switch with variable and default case
 	let i: any = "hello"
 	{

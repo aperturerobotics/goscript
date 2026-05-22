@@ -9,7 +9,7 @@ export function box_total(b: __goscript_box.box): number {
 	return __goscript_box.box_base(b) + 1
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println(box_total(3))
 }
 

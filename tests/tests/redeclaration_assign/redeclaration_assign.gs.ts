@@ -11,11 +11,11 @@ export function shadowTupleInput(value: string): [string, boolean] {
 	return [value + "-inner", true]
 }
 
-export async function shadowCallbackInput(fn: ((_p0: number) => number | Promise<number>) | null): Promise<[number, boolean]> {
+export async function shadowCallbackInput(fn: ((_p0: number) => number | globalThis.Promise<number>) | null): globalThis.Promise<[number, boolean]> {
 	return [await fn!(5), true]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let i: number = 0
 	$.println("initial i:", i)
 

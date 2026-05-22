@@ -41,7 +41,7 @@ export class FileTracker {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async AddLine(offset: number): Promise<void> {
+	public async AddLine(offset: number): globalThis.Promise<void> {
 		let f: FileTracker | $.VarRef<FileTracker> | null = this
 		await $.pointerValue<FileTracker>(f).mutex.Lock()
 		$.pointerValue<FileTracker>(f).lines = $.append($.pointerValue<FileTracker>(f).lines, offset)
@@ -83,7 +83,7 @@ export class Scanner {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async next(): Promise<void> {
+	public async next(): globalThis.Promise<void> {
 		const s: Scanner | $.VarRef<Scanner> | null = this
 		await $.pointerValue<FileTracker>($.pointerValue<Scanner>(s).file).AddLine(10)
 	}
@@ -97,7 +97,7 @@ export class Scanner {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let tracker: FileTracker | $.VarRef<FileTracker> | null = new FileTracker({lines: $.arrayToSlice<number>([])})
 	let scanner: Scanner | $.VarRef<Scanner> | null = new Scanner({file: tracker})
 	await $.pointerValue<Scanner>(scanner).next()

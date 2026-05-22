@@ -49,7 +49,7 @@ export class Counter {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let original = $.varRef($.markAsStructValue(new Counter({value: 10})))
 	let pointerFromValue: Counter | $.VarRef<Counter> | null = $.markAsStructValue($.cloneStructValue(original.value)).PointerAfterIncrement()
 

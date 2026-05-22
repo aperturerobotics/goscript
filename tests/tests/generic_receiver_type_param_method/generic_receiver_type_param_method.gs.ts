@@ -91,7 +91,7 @@ $.registerInterfaceType(
 
 export let curve: nistCurve | $.VarRef<nistCurve> | null = new nistCurve()
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let p: point | $.VarRef<point> | null = $.pointerValue<nistCurve>(curve).Add(new point({N: 2}), new point({N: 3}))
 	$.println("sum:", $.pointerValue<point>(p).N)
 	if ($.pointerValue<nistCurve>(curve).Zero() == null) {

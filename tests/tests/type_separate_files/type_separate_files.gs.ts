@@ -7,7 +7,7 @@ import * as __goscript_memory from "./memory.gs.ts"
 
 import * as __goscript_storage from "./storage.gs.ts"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s = $.markAsStructValue(new __goscript_storage.storage({files: $.makeMap<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null>(), children: $.makeMap<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null>()}))
 
 	let f: __goscript_memory.file | $.VarRef<__goscript_memory.file> | null = new __goscript_memory.file({name: "test.txt", data: $.stringToBytes("hello world")})

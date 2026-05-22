@@ -58,7 +58,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// === Composite Literal Assignment (Value Copy) ===
 	// Creating a struct directly using a composite literal.
 	let structLiteral = $.markAsStructValue(new MyStruct({MyString: "composite literal"}))

@@ -18,7 +18,7 @@ export function sumArray(src: $.VarRef<number[]> | null): number {
 	return sum
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let buckets: number[][] = Array.from({ length: 2 }, () => Array.from({ length: 3 }, () => 0))
 	let cache = $.indexRef(buckets, 1)
 

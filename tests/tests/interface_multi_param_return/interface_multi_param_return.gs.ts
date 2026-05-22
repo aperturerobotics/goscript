@@ -49,7 +49,7 @@ export class MyProcessor {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let processor: MultiParamReturner | null = $.interfaceValue<MultiParamReturner | null>($.markAsStructValue(new MyProcessor()), "main.MyProcessor")
 
 	let data = $.arrayToSlice<number>([1, 2, 3])

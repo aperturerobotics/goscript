@@ -6,18 +6,18 @@ import * as $ from "@goscript/builtin/index.js"
 import * as sync from "@goscript/sync/index.js"
 
 export class loader {
-	public get load(): ((_p0: string) => [any, boolean] | Promise<[any, boolean]>) | null {
+	public get load(): ((_p0: string) => [any, boolean] | globalThis.Promise<[any, boolean]>) | null {
 		return this._fields.load.value
 	}
-	public set load(value: ((_p0: string) => [any, boolean] | Promise<[any, boolean]>) | null) {
+	public set load(value: ((_p0: string) => [any, boolean] | globalThis.Promise<[any, boolean]>) | null) {
 		this._fields.load.value = value
 	}
 
 	public _fields: {
-		load: $.VarRef<((_p0: string) => [any, boolean] | Promise<[any, boolean]>) | null>
+		load: $.VarRef<((_p0: string) => [any, boolean] | globalThis.Promise<[any, boolean]>) | null>
 	}
 
-	constructor(init?: Partial<{load?: ((_p0: string) => [any, boolean] | Promise<[any, boolean]>) | null}>) {
+	constructor(init?: Partial<{load?: ((_p0: string) => [any, boolean] | globalThis.Promise<[any, boolean]>) | null}>) {
 		this._fields = {
 			load: $.varRef(init?.load ?? null)
 		}
@@ -31,7 +31,7 @@ export class loader {
 		return $.markAsStructValue(cloned)
 	}
 
-	public getLoad(): ((_p0: string) => [any, boolean] | Promise<[any, boolean]>) | null {
+	public getLoad(): ((_p0: string) => [any, boolean] | globalThis.Promise<[any, boolean]>) | null {
 		const l: loader | $.VarRef<loader> | null = this
 		return $.pointerValue<loader>(l).load
 	}
@@ -47,19 +47,19 @@ export class loader {
 
 export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
-export let defaultLoader: loader | $.VarRef<loader> | null = new loader({load: $.functionValue(async (key: string): Promise<[any, boolean]> => {
+export let defaultLoader: loader | $.VarRef<loader> | null = new loader({load: $.functionValue(async (key: string): globalThis.Promise<[any, boolean]> => {
 	return await cache.value.Load(key)
 }, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] })})
 
-export async function lookup(key: string): Promise<[any, boolean]> {
+export async function lookup(key: string): globalThis.Promise<[any, boolean]> {
 	return await $.pointerValue<loader>(defaultLoader).load!(key)
 }
 
-export async function lookupViaGetter(key: string): Promise<[any, boolean]> {
+export async function lookupViaGetter(key: string): globalThis.Promise<[any, boolean]> {
 	return await $.pointerValue<loader>(defaultLoader).getLoad()!(key)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	await cache.value.Store("answer", 42)
 	let [value, ok] = await lookup("answer")
 	if (ok) {

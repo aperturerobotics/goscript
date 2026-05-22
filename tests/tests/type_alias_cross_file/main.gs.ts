@@ -38,7 +38,7 @@ export class source {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println($.bytesToString(__goscript_iterator.Read($.interfaceValue<__goscript_iterator.Reader | null>($.markAsStructValue(new source()), "main.source"))))
 }
 

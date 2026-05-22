@@ -7,7 +7,7 @@ import * as math from "@goscript/math/index.js"
 
 import * as time from "@goscript/time/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let now = $.markAsStructValue($.cloneStructValue(time.Now()))
 	let setTime = $.markAsStructValue($.cloneStructValue(time.Date(2025, time.May, 15, 1, 10, 42, 0, time.UTC)))
 	if ($.markAsStructValue($.cloneStructValue(now)).Sub($.markAsStructValue($.cloneStructValue(setTime))) < (time.Hour * 24)) {

@@ -49,7 +49,7 @@ export function entries(): $.VarRef<entry[]> | null {
 	return $.fieldRef(box, "table")
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let table = entries()
 	$.pointerValue<entry[]>(table)[0].add(5)
 	$.println($.pointerValue<entry[]>(table)[0].value)

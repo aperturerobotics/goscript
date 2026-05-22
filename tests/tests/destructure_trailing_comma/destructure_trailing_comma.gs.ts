@@ -7,7 +7,7 @@ export function returnTwoValues(): [number, $.GoError] {
 	return [42, null]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test destructuring assignment with trailing comma issue
 	// This should generate: [nref] = returnTwoValues()
 	// Not: [nref, ] = returnTwoValues()

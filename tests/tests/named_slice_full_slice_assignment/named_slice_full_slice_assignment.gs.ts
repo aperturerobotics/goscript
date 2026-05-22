@@ -9,7 +9,7 @@ export function filters_size(f: filters): number {
 	return $.len((f as filters))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let out: filters = null
 	let value = $.interfaceValue<any>($.arrayToSlice<number>([1, 2, 3]), "main.filters")
 	{

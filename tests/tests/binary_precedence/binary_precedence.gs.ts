@@ -7,7 +7,7 @@ export function valid(n1: number, n2: number, n3: number, n4: number): boolean {
 	return (((n1 | n2) | n3) | n4) == 7
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	if (valid(1, 2, 4, 0)) {
 		$.println("or equals")
 	} else {

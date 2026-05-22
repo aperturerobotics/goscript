@@ -5794,14 +5794,18 @@ func asyncResultType(result string, async bool) string {
 	if !async {
 		return result
 	}
-	return "Promise<" + result + ">"
+	return tsPromiseType(result)
 }
 
 func asyncCompatibleResultType(result string) string {
 	if result == "void" {
 		return result
 	}
-	return result + " | Promise<" + result + ">"
+	return result + " | " + tsPromiseType(result)
+}
+
+func tsPromiseType(result string) string {
+	return "globalThis.Promise<" + result + ">"
 }
 
 func (o *LoweringOwner) tsVariableTypeFor(ctx lowerFileContext, typ types.Type, needsVarRef bool) string {

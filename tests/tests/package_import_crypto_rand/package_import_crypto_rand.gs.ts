@@ -7,7 +7,7 @@ import * as rand from "@goscript/crypto/rand/index.js"
 
 import * as io from "@goscript/io/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let buf = $.makeSlice<number>(32, undefined, "byte")
 	let [n, err] = rand.Read(buf)
 	$.println("read len", n)

@@ -7,7 +7,7 @@ export function getValues(): [number, boolean] {
 	return [42, true]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// This should trigger the error: multi-assignment in for loop init
 	// where lhs has 2 variables but rhs has 1 expression that returns 2 values
 	// but is not a map access

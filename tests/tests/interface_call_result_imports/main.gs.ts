@@ -7,7 +7,7 @@ import * as dep1 from "@goscript/github.com/aperturerobotics/goscript/tests/test
 
 import * as dep2 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_call_result_imports/dep2/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let v = dep1.Make()
 	$.println($.pointerValue<Exclude<dep2.Value, null>>(v).Value())
 }

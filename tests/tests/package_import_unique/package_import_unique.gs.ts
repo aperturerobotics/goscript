@@ -40,7 +40,7 @@ export class zone {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let a = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth0"})))))
 	let b = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth0"})))))
 	let c = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth1"})))))

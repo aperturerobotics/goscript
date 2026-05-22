@@ -17,7 +17,7 @@ export function processValues(input: number): [number, string, boolean] {
 	return [num, text, ok]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let [n1, t1, o1] = processValues(10)
 	$.println(n1)
 	$.println(t1)

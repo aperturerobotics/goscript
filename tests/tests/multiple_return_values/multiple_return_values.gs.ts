@@ -7,7 +7,7 @@ export function multipleReturnValues(): [number, string, boolean] {
 	return [42, "hello", true]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let [a, b, c] = multipleReturnValues()
 	$.println(a)
 	$.println(b)

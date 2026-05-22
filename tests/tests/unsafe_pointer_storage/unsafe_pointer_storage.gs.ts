@@ -12,7 +12,7 @@ export function writeBytes(words: $.Slice<number>, bytes: $.Slice<number>): void
 	}
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("unsafe pointer storage compiles")
 }
 

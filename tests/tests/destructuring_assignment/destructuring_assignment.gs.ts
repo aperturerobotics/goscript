@@ -13,7 +13,7 @@ export function multiReturnThree(): [string, number, number] {
 	return ["test", 100, 200]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test simple destructuring that should work
 	let [x, y] = multiReturn()
 	fmt.Printf("x=%d, y=%d\n", x, y)

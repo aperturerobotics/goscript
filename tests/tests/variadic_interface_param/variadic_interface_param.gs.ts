@@ -18,7 +18,7 @@ export function testVariadicInterface(name: string, values: $.Slice<any>): void 
 	}
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test with various argument types
 	testVariadicInterface("test1", $.arrayToSlice<any>(["hello", 42, true]))
 	testVariadicInterface("test2", $.arrayToSlice<any>([null, "world"]))

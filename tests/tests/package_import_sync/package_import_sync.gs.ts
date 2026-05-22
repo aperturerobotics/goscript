@@ -95,7 +95,7 @@ export class embeddedRWMutex {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test Mutex
 	let mu: $.VarRef<sync.Mutex> = $.varRef($.markAsStructValue(new sync.Mutex()))
 	await mu.value.Lock()

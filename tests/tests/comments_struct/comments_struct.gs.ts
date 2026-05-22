@@ -50,7 +50,7 @@ export class TestStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s = $.markAsStructValue(new TestStruct({IntField: 42, StringField: "hello"}))
 	$.println("IntField:", s.IntField)
 	$.println("StringField:", s.StringField)

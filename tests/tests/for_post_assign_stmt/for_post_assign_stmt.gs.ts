@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let x: number = 0
 	// The post statement 'x = i' is an AssignStmt
 	for (let i = 0; i < 3; x = i) {

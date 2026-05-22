@@ -97,7 +97,7 @@ export function mixedForwardBackwardDecl(limit: number): number {
 	return total
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("skip negative:", skipToLabel(-1))
 	$.println("skip positive:", skipToLabel(1))
 	$.println("loop skipped:", skipLoop(0))

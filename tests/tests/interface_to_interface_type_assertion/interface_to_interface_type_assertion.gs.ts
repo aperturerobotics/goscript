@@ -63,7 +63,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let i: MyInterface | null = null
 	let s = $.markAsStructValue(new MyStruct({Value: 10}))
 	i = $.interfaceValue<MyInterface | null>($.markAsStructValue($.cloneStructValue(s)), "main.MyStruct")

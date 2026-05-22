@@ -73,7 +73,7 @@ export class queue {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let left: queue | $.VarRef<queue> | null = new queue({value: 1})
 	let right: queue | $.VarRef<queue> | null = new queue({value: 2})
 	let __goscriptAssign0_0: queue | $.VarRef<queue> | null = right

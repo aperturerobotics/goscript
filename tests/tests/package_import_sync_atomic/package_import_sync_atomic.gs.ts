@@ -46,7 +46,7 @@ export function makeAtomicCallback(): [(() => void) | null, $.GoError] {
 	}, { kind: $.TypeKind.Function, params: [], results: [] }), null]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test atomic.Int32
 	let i32: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
 	i32.value.Store(42)

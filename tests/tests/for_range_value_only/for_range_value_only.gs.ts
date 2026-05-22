@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as strings from "@goscript/strings/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s = $.arrayToSlice<number>([10, 20, 30])
 	let sum = 0
 	for (let __rangeIndex = 0; __rangeIndex < $.len(s); __rangeIndex++) {

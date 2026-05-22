@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let values = $.arrayToSlice<number>([1, 2, 3])
 	let array = $.sliceToArray<number>($.goSlice(values, 1, undefined), 2)
 

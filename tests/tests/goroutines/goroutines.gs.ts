@@ -52,7 +52,7 @@ export const totalMessages: number = 8
 
 export let messages: $.Channel<Message> | null = $.makeChannel<Message>(0, $.markAsStructValue(new Message()), "both")
 
-export async function worker(id: number): Promise<void> {
+export async function worker(id: number): globalThis.Promise<void> {
 	// Send worker starting message
 	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 10 + id, text: ("Worker " + String.fromCodePoint($.int(48 + id))) + " starting"})))
 
@@ -60,11 +60,11 @@ export async function worker(id: number): Promise<void> {
 	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 20 + id, text: ("Worker " + String.fromCodePoint($.int(48 + id))) + " done"})))
 }
 
-export async function anotherWorker(name: string): Promise<void> {
+export async function anotherWorker(name: string): globalThis.Promise<void> {
 	await $.chanSend(messages, $.markAsStructValue(new Message({priority: 40, text: "Another worker: " + name})))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Create a slice to collect all messages
 	let allMessages = $.makeSlice<Message>(0, totalMessages + 3)
 
@@ -80,7 +80,7 @@ export async function main(): Promise<void> {
 	queueMicrotask(async () => { await anotherWorker("test") })
 
 	// Start an anonymous function worker
-	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
+	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanSend(messages, $.markAsStructValue(new Message({priority: 50, text: "Anonymous function worker"})))
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 

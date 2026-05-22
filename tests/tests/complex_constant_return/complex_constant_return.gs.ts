@@ -11,7 +11,7 @@ export function oneComplex(): $.Complex {
 	return $.complex(1, 0)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let [z, err] = zeroComplex()
 	$.println($.int($.real(z)), $.int($.imag(z)), err == null)
 	let o = oneComplex()

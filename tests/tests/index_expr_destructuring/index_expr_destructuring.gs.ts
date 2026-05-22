@@ -11,7 +11,7 @@ export function returnIntAndString(): [number, string] {
 	return [42, "hello"]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Create arrays/slices to test index expressions in destructuring
 	let intArray: number[] = Array.from({ length: 2 }, () => 0)
 	let stringSlice: $.Slice<string> = $.makeSlice<string>(2, undefined, "string")

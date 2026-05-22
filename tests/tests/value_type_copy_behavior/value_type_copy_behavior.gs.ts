@@ -93,7 +93,7 @@ export class NestedStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Horizontal line for output clarity
 	$.println("----------------------------------------------------------")
 	$.println("VALUE TYPE COPY BEHAVIOR TEST")

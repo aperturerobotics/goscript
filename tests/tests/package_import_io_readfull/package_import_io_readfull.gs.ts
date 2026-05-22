@@ -47,7 +47,7 @@ export class fixedReader {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let buf = $.makeSlice<number>(2, undefined, "byte")
 	let [n, err] = io.ReadFull($.pointerValue($.interfaceValue<io.Reader | null>(new fixedReader({data: $.stringToBytes("abc")}), "*main.fixedReader")), buf)
 	$.println("read:", n, $.bytesToString(buf), err == null)

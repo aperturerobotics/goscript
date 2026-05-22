@@ -118,7 +118,7 @@ export class Container {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let iface: Interface | null = $.interfaceValue<Interface | null>($.markAsStructValue(new ConcreteA()), "main.ConcreteA")
 
 	let c: Container | $.VarRef<Container> | null = new Container()

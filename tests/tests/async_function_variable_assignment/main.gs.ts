@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	class result {
 		public get value(): number {
 			return this._fields.value.value
@@ -40,8 +40,8 @@ export async function main(): Promise<void> {
 	}
 
 	let ch = $.makeChannel<result>(1, $.markAsStructValue(new result()), "both")
-	let fn: (() => result | Promise<result>) | null = null
-	fn = $.functionValue(async (): Promise<result> => {
+	let fn: (() => result | globalThis.Promise<result>) | null = null
+	fn = $.functionValue(async (): globalThis.Promise<result> => {
 		return $.markAsStructValue($.cloneStructValue(await $.chanRecv(ch)))
 	}, { kind: $.TypeKind.Function, params: [], results: ["main.result"] })
 	await $.chanSend(ch, $.markAsStructValue(new result({value: 8})))

@@ -9,7 +9,7 @@ import * as scanner from "@goscript/go/scanner/index.js"
 
 import * as token from "@goscript/go/token/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Use scanner package functionality that should generate imports
 	let errorList: $.VarRef<scanner.ErrorList> = $.varRef(null)
 

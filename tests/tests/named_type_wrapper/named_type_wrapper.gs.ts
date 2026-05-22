@@ -54,7 +54,7 @@ export function MyFileMode_String(m: MyFileMode): string {
 	return "mode"
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test using the named type directly
 	let mode: MyFileMode = 0o644
 	$.println("Mode value:", $.int(mode))

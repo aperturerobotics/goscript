@@ -60,7 +60,7 @@ export class padded {
 
 export let featureBlock: {"_blank0": padded, "Enabled": boolean, "_blank2": padded} = {"_blank0": $.markAsStructValue(new padded()), "Enabled": false, "_blank2": $.markAsStructValue(new padded())}
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	featureBlock.Enabled = true
 	$.println(featureBlock.Enabled)
 

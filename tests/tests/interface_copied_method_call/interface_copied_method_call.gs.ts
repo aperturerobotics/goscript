@@ -50,7 +50,7 @@ export function callCopied(r: runner | null): void {
 	$.pointerValue<Exclude<runner, null>>(curr).Run()
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	callCopied($.interfaceValue<runner | null>($.markAsStructValue(new task()), "main.task"))
 }
 

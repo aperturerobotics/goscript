@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as time from "@goscript/time/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Fixed time with a specific offset and nanoseconds
 	let locPDT: time.Location | $.VarRef<time.Location> | null = time.FixedZone("PDT", (-7 * 60) * 60)
 	let t1 = $.markAsStructValue($.cloneStructValue(time.Date(2025, time.May, 25, 17, 42, 56, 123456789, locPDT)))

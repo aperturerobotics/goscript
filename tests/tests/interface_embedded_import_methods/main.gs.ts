@@ -18,7 +18,7 @@ $.registerInterfaceType(
 	[{ name: "Extra", args: [], returns: [] }, { name: "Use", args: [{ name: "_p0", type: "dep2.Value" }], returns: [{ name: "_r0", type: "dep2.Result" }] }]
 )
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("ok")
 }
 

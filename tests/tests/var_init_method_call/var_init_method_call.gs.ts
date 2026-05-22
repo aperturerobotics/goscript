@@ -51,7 +51,7 @@ export let Base: T | $.VarRef<T> | null = NewT(10)
 
 export let Derived: T | $.VarRef<T> | null = $.pointerValue<T>(Base).WithDelta(5)
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("Base:", $.pointerValue<T>(Base).val)
 	$.println("Derived:", $.pointerValue<T>(Derived).val)
 }

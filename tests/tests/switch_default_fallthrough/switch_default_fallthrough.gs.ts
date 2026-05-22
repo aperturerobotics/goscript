@@ -21,7 +21,7 @@ export function classify(value: number): string {
 	}
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println(classify(0))
 	$.println(classify(1))
 	$.println(classify(2))

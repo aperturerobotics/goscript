@@ -10,7 +10,7 @@ export function increment_counter(): void {
 	$.println("counter incremented to", counter)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	for (let i = 0; i < 2; increment_counter()) {
 		$.println("loop iteration:", i)
 		// We need to manually increment i or change the condition

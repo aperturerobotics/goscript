@@ -58,7 +58,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let structPointer: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({MyInt: 4, MyString: "hello world"})
 	// === Pointer Dereference and Multi-Assignment ===
 	// Dereference structPointer to get a copy of the struct.

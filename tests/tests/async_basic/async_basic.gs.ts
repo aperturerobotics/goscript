@@ -3,18 +3,18 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function receiveFromChan(ch: $.Channel<number> | null): Promise<number> {
+export async function receiveFromChan(ch: $.Channel<number> | null): globalThis.Promise<number> {
 	let val = await $.chanRecv(ch)
 	return val
 }
 
-export async function caller(ch: $.Channel<number> | null): Promise<number> {
+export async function caller(ch: $.Channel<number> | null): globalThis.Promise<number> {
 	// We expect this call to be awaited in TypeScript
 	let result = await receiveFromChan(ch)
 	return result + 1
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Create a buffered channel
 	let myChan = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(myChan, 10)

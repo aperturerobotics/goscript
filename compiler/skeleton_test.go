@@ -128,7 +128,7 @@ func TestCompilePackagesEmitsSimplePackage(t *testing.T) {
 		"import * as $ from \"@goscript/builtin/index.js\"",
 		"export const Greeting: string = \"Hello\"",
 		"export function Add(a: number, b: number): number",
-		"export async function main(): Promise<void>",
+		"export async function main(): globalThis.Promise<void>",
 		"let size = $.len(Greeting)",
 		"$.print(\"total:\", size)",
 		"$.println(Greeting, total)",
@@ -621,7 +621,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Greeter = ((name: string) => string | Promise<string>) | null",
+		"export type Greeter = ((name: string) => string | globalThis.Promise<string>) | null",
 		"export type ReadCloser = null | {",
 		"Read(): string",
 		"Close(): string",
@@ -838,8 +838,8 @@ func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Callback = ((value: number) => string | Promise<string>) | null",
-		"export async function call(cb: ((value: number) => string | Promise<string>) | null): Promise<string> {\n\treturn await cb!(1)",
+		"export type Callback = ((value: number) => string | globalThis.Promise<string>) | null",
+		"export async function call(cb: ((value: number) => string | globalThis.Promise<string>) | null): globalThis.Promise<string> {\n\treturn await cb!(1)",
 		"$.functionValue((value: number): string => {",
 		"kind: $.TypeKind.Function",
 		"params: [{ kind: $.TypeKind.Basic, name: \"int\" }]",
@@ -878,7 +878,7 @@ func TestCompilePackagesEmitsRecursiveFunctionTypeInfo(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Handler = ((_p0: ((_p0: Handler) => Handler | Promise<Handler>) | null) => Handler | Promise<Handler>) | null",
+		"export type Handler = ((_p0: ((_p0: Handler) => Handler | globalThis.Promise<Handler>) | null) => Handler | globalThis.Promise<Handler>) | null",
 		"\"Next\": { kind: $.TypeKind.Function, name: \"main.Handler\"",
 		"params: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
 		"results: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
@@ -942,7 +942,7 @@ func TestCompilePackagesPacksVariadicCalls(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Collector = ((label: string, parts: $.Slice<string>) => string | Promise<string>) | null",
+		"export type Collector = ((label: string, parts: $.Slice<string>) => string | globalThis.Promise<string>) | null",
 		"Join(parts: $.Slice<string>): string",
 		"export function collect(label: string, parts: $.Slice<string>): string",
 		"let part = parts![__rangeIndex]",
@@ -1188,13 +1188,13 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"Process(v: number): Promise<number>",
-		"public async Process(v: number): Promise<number>",
+		"Process(v: number): globalThis.Promise<number>",
+		"public async Process(v: number): globalThis.Promise<number>",
 		"let ch = $.makeChannel<number>(1, 0, \"both\")",
 		"await $.chanSend($.pointerValue<Worker>(w).ch, v)",
 		"return await $.chanRecv($.pointerValue<Worker>(w).ch)",
 		"await using __defer = new $.AsyncDisposableStack()",
-		"queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {",
+		"queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {",
 		"$.selectStatement<any, void>([",
 		"let v = result.value",
 		"await call($.interfaceValue<Processor | null>(new Worker({ch: $.makeChannel<number>(1, 0, \"both\")}), \"*main.Worker\"))",
@@ -1430,11 +1430,11 @@ func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testi
 	for _, want := range []string{
 		"Box: $.VarRef<lib.Box>",
 		"Boxes: $.VarRef<$.Slice<lib.Box>>",
-		"Fn: $.VarRef<((_p0: lib.Box) => [lib.Box, $.GoError] | Promise<[lib.Box, $.GoError]>) | null>",
+		"Fn: $.VarRef<((_p0: lib.Box) => [lib.Box, $.GoError] | globalThis.Promise<[lib.Box, $.GoError]>) | null>",
 		"Ptr: $.VarRef<atomic.Pointer<(() => void) | null>>",
 		"$.markAsStructValue(new lib.Box())",
 		"$.markAsStructValue(new atomic.Pointer<(() => void) | null>())",
-		"export async function Use(fn: ((_p0: lib.Box) => [lib.Box, $.GoError] | Promise<[lib.Box, $.GoError]>) | null, box: lib.Box): Promise<[lib.Box, $.GoError]>",
+		"export async function Use(fn: ((_p0: lib.Box) => [lib.Box, $.GoError] | globalThis.Promise<[lib.Box, $.GoError]>) | null, box: lib.Box): globalThis.Promise<[lib.Box, $.GoError]>",
 		"$.functionValue((box: lib.Box): [lib.Box, $.GoError] => {",
 	} {
 		if !strings.Contains(text, want) {

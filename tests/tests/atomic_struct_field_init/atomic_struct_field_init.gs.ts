@@ -60,7 +60,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test struct initialization with atomic fields
 	let s = $.markAsStructValue(new MyStruct())
 

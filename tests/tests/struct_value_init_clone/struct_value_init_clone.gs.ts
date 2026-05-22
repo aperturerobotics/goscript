@@ -48,7 +48,7 @@ export class Point {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Initialize directly
 	let p1 = $.markAsStructValue(new Point({X: 1, Y: 2}))
 	$.println("p1:", p1.X, p1.Y)

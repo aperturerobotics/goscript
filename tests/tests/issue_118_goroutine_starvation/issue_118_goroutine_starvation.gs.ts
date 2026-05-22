@@ -7,7 +7,7 @@ import * as sync from "@goscript/sync/index.js"
 
 import * as time from "@goscript/time/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let wg: $.VarRef<sync.WaitGroup> = $.varRef($.markAsStructValue(new sync.WaitGroup()))
 	let done = $.makeChannel<boolean>(0, false, "both")
 	let result = $.makeChannel<number>(2, 0, "both")
@@ -15,7 +15,7 @@ export async function main(): Promise<void> {
 	// Worker 1: Does a tight loop (CPU-bound work)
 	// In Go: Will be preempted, allowing other goroutines to run
 	// In GoScript: Would block forever, starving other goroutines
-	wg.value.Go($.functionValue(async (): Promise<void> => {
+	wg.value.Go($.functionValue(async (): globalThis.Promise<void> => {
 		let sum = 0
 		// Simulate CPU-bound work with a tight loop
 		// In real code this might be a computation without I/O
@@ -28,12 +28,12 @@ export async function main(): Promise<void> {
 	// Worker 2: Quick task that should complete
 	// In Go: Will run concurrently with worker1
 	// In GoScript: Would never run if worker1 starves the event loop
-	wg.value.Go($.functionValue(async (): Promise<void> => {
+	wg.value.Go($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanSend(result, 42)
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))
 
 	// Wait for both workers with a timeout
-	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
+	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await wg.value.Wait()
 		done!.close()
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })

@@ -25,7 +25,7 @@ export function WrapperWithError(ctx: context.Context | null): [string, $.GoErro
 	return AnotherAsyncFunction(ctx)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// These calls should work properly with async/await
 	let result1 = SyncWrapper()
 	$.println("Result1:", result1)

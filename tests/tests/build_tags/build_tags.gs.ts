@@ -7,7 +7,7 @@ import * as __goscript_build_tags_generic from "./build_tags_generic.gs.ts"
 
 import * as __goscript_build_tags_js from "./build_tags_js.gs.ts"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("=== Build Tags Test ===")
 
 	// Test that platform-specific files are handled correctly

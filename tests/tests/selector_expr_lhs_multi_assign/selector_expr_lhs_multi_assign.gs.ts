@@ -52,7 +52,7 @@ export function getCoords(): [number, number] {
 	return [10, 20]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let p: Point = $.markAsStructValue(new Point())
 	// p.X and p.Y are *ast.SelectorExpr
 	// test writeMultiVarAssignFromCall in WriteStmtAssign

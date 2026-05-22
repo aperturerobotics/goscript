@@ -68,7 +68,7 @@ export function describe(value: any): void {
 	$.println("Shadowed name: missing")
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let [, x] = firstFunc()
 	// This is the problematic pattern: x is shadowed but also used in the call
 	let __goscriptShadow2 = x

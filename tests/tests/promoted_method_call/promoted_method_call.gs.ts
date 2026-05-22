@@ -78,11 +78,11 @@ export class wrapper {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let w: wrapper | $.VarRef<wrapper> | null = new wrapper({base: $.markAsStructValue(new base({value: 3}))})
 	$.println($.pointerValue<wrapper>(w).base.Add(4))
 
-	let add: ((n: number) => number | Promise<number>) | null = ((__receiver) => (n: number) => __receiver.Add(n))($.pointerValue<wrapper>(w).base)
+	let add: ((n: number) => number | globalThis.Promise<number>) | null = ((__receiver) => (n: number) => __receiver.Add(n))($.pointerValue<wrapper>(w).base)
 	$.println(await add!(5))
 }
 

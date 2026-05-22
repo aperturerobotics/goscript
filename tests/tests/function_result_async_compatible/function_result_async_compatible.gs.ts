@@ -53,7 +53,7 @@ export class box {
 	)
 }
 
-export async function asyncBox(): Promise<box | $.VarRef<box> | null> {
+export async function asyncBox(): globalThis.Promise<box | $.VarRef<box> | null> {
 	let ch = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(ch, 7)
 	return new box({value: await $.chanRecv(ch)})
@@ -63,13 +63,13 @@ export function unwrap(v: Value | null): Value | null {
 	return v
 }
 
-export async function wrapNew(__typeArgs: $.GenericTypeArgs | undefined, newValue: (() => any | Promise<any>) | null): Promise<(() => Value | null | Promise<Value | null>) | null> {
-	return $.functionValue(async (): Promise<Value | null> => {
+export async function wrapNew(__typeArgs: $.GenericTypeArgs | undefined, newValue: (() => any | globalThis.Promise<any>) | null): globalThis.Promise<(() => Value | null | globalThis.Promise<Value | null>) | null> {
+	return $.functionValue(async (): globalThis.Promise<Value | null> => {
 		return unwrap((await newValue!() as Value | null))
 	}, { kind: $.TypeKind.Function, params: [], results: ["main.Value"] })
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let fn = await wrapNew(undefined, asyncBox)
 	$.println($.pointerValue<Exclude<Value, null>>(await fn!()).Value())
 }

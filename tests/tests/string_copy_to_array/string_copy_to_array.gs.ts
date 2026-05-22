@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let arr: number[] = Array.from({ length: 10 }, () => 0)
 	let decodeMapInitialize = "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
 	$.copy($.goSlice(arr, undefined, undefined), decodeMapInitialize)

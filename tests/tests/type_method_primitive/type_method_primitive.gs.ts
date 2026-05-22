@@ -23,13 +23,13 @@ export function asDoubler(v: MyInt): Doubler | null {
 	return $.namedValueInterfaceValue<Doubler | null>(v, "main.MyInt", {Double: MyInt_Double})
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test direct method call on type conversion
 	let result = MyInt_Double(5)
 	$.println("Direct call:", result)
 
 	// Test storing method reference (this is the failing case)
-	let fn: (() => number | Promise<number>) | null = ((__receiver) => () => MyInt_Double(__receiver))(10)
+	let fn: (() => number | globalThis.Promise<number>) | null = ((__receiver) => () => MyInt_Double(__receiver))(10)
 	$.println("Method ref call:", await fn!())
 
 	let d: Doubler | null = $.namedValueInterfaceValue<Doubler | null>(12, "main.MyInt", {Double: MyInt_Double})

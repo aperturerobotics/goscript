@@ -7,7 +7,7 @@ import * as fmt from "@goscript/fmt/index.js"
 
 import * as slices from "@goscript/slices/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test slices.Delete which was missing in the error output
 	let numbers = $.arrayToSlice<number>([1, 2, 3, 4, 5])
 	fmt.Printf("Original: %v\n", numbers)

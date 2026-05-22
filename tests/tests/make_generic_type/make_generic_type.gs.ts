@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 export type Ints = Map<any, {}> | null
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// This should trigger the unhandled make call error
 	// Similar to: seen := make(set.Ints[int64])
 	let seen: Ints = $.makeMap<number, {}>()

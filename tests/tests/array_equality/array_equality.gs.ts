@@ -9,7 +9,7 @@ export function Hash_Valid(h: Hash): boolean {
 	return !$.arrayEqual(h, [0, 0, 0, 0])
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let zero: Hash = Array.from({ length: 4 }, () => 0)
 	let one = [0, 7, 0, 0]
 	let other = [0, 7, 0, 0]

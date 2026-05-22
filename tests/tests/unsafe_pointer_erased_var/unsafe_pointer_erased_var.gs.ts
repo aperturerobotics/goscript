@@ -10,7 +10,7 @@ export let table: $.VarRef<number[]> = $.varRef([1, 2, 3, 4])
 export function acceptMatrix(_p0: $.VarRef<number[][]> | null): void {
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let ptr = (table as any)
 	let bytes = ptr
 	$.println(($.pointerValue<number[]>(bytes))[2])

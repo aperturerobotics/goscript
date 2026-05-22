@@ -38,7 +38,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Scenario 1: Composite literal pointers (should work correctly)
 	let i1: any = $.interfaceValue<any>(new MyStruct({Value: 10}), "*main.MyStruct")
 	let [, ok1] = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i1, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })

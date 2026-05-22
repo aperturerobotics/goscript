@@ -60,7 +60,7 @@ export class Person {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test basic reflect functions
 	let x = 42
 	let v = $.markAsStructValue($.cloneStructValue(reflect.ValueOf(x)))

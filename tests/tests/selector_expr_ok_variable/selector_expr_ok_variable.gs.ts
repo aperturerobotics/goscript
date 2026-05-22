@@ -38,7 +38,7 @@ export class Result {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let x: any = 42
 	let result = $.markAsStructValue(new Result())
 

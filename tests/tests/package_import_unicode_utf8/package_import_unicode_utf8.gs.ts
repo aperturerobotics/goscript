@@ -12,7 +12,7 @@ export function checkBytes(label: string, b: $.Slice<number>): void {
 	$.println(label, "Last rune:", r, "size:", size)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test basic UTF-8 functions
 	let s = "Hello, 世界"
 

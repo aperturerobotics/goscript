@@ -29,10 +29,10 @@ export class AsyncResource {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Release(): Promise<void> {
+	public async Release(): globalThis.Promise<void> {
 		const r: AsyncResource | $.VarRef<AsyncResource> | null = this
 		let ch = $.makeChannel<boolean>(1, false, "both")
-		queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
+		queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 			await $.chanSend(ch, true)
 		}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 		await $.chanRecv(ch)
@@ -48,7 +48,7 @@ export class AsyncResource {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
 	let res: AsyncResource | $.VarRef<AsyncResource> | null = new AsyncResource({name: "test"})
 	__defer.defer(async () => { await $.pointerValue<AsyncResource>(res).Release() })

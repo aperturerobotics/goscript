@@ -7,7 +7,7 @@ import * as __goscript_create from "./create.gs.ts"
 
 import * as __goscript_types from "./types.gs.ts"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let jobs = __goscript_create.MakeJobs()
 	$.println(jobs != null)
 }

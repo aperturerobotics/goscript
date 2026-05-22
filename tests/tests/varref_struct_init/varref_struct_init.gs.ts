@@ -38,7 +38,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Scenario 1: Value type that NeedsVarRef
 	// 'val' is a value type, but its address is taken, so it should be varrefed in TS.
 	let val = $.varRef($.markAsStructValue(new MyStruct({MyInt: 10})))

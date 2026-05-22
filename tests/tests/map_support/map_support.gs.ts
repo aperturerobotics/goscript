@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Create map using make
 	let scores: Map<string, number> | null = $.makeMap<string, number>()
 	$.println("Empty map created: Expected: true, Actual:", $.len(scores) == 0)

@@ -19,7 +19,7 @@ export let DigestIV: number[] = [IV0, IV1, IV2]
 
 export let Nothing: any = null
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println(Pi)
 	$.println(Truth)
 	// println(Big) // Commented out until large integer handling is implemented

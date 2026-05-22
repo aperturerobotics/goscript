@@ -43,7 +43,7 @@ export function Sum(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<any
 	return sum
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test 1: Zero value of IntVal should be 0
 	let zeroInt = ZeroValue({T: { type: "main.IntVal", zero: () => 0, methods: {String: IntVal_String} }})
 	$.println("ZeroValue[IntVal]:", IntVal_String(zeroInt))

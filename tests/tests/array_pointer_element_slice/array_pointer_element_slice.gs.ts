@@ -48,7 +48,7 @@ export class node {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let root: node | $.VarRef<node> | null = new node()
 	let child: node | $.VarRef<node> | null = new node()
 	$.pointerValue<node>(root).sub = $.append($.goSlice($.pointerValue<node>(root).sub0, undefined, 0), child)

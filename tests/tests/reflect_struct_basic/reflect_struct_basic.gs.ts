@@ -52,7 +52,7 @@ export class Person {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30}))
 	let v = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))))
 	if ($.markAsStructValue($.cloneStructValue(v)).Kind() == reflect.Struct) {

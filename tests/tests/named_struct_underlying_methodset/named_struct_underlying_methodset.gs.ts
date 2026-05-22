@@ -71,7 +71,7 @@ export class Derived {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let base: any = $.interfaceValue<any>($.markAsStructValue(new Base()), "main.Base")
 	let [, baseOK] = $.typeAssertTuple<Stringer | null>(base, "main.Stringer")
 	$.println("base implements Stringer:", baseOK)

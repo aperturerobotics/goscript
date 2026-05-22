@@ -23,7 +23,7 @@ export function simpleIterator(m: Map<string, number> | null): ((_p0: ((_p0: str
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }], results: [] })
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Create a map to test with
 	let m: Map<string, number> | null = new Map<string, number>([["a", 1], ["b", 2], ["c", 3]])
 

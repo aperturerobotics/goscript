@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let myStr1 = "testing"
 	$.println("Byte from myStr1[0]:", $.indexStringOrBytes(myStr1, 0))
 	$.println("Byte from myStr1[2]:", $.indexStringOrBytes(myStr1, 2))

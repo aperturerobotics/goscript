@@ -62,7 +62,7 @@ export class B {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("recursive type definition test")
 }
 

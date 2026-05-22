@@ -39,7 +39,7 @@ export class Holder {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.markAsStructValue($.cloneStructValue($.markAsStructValue(new Holder()))).Run()
 }
 

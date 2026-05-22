@@ -38,7 +38,7 @@ export class item {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let items: Map<string, item> | null = new Map<string, item>([["one", $.markAsStructValue(new item({values: $.arrayToSlice<number>([1, 2, 3])}))]])
 	{
 		let [__goscriptShadow0, ok] = $.mapGet(items, "one", $.markAsStructValue(new item()))

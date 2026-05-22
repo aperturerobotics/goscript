@@ -21,7 +21,7 @@ export function single(): number {
 	return value
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let [n, label] = pair(true)
 	$.println("pair true:", n, label)
 

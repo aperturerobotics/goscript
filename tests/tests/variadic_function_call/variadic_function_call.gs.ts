@@ -23,7 +23,7 @@ export function testFS(fsys: string, expected: $.Slice<string>): $.GoError {
 	return null
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let expected = $.arrayToSlice<string>(["file1.txt", "file2.txt", "file3.txt"])
 
 	// This is the problematic line - should generate spread syntax in TypeScript

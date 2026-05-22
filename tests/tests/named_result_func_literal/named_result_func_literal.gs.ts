@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export function makeLookup(): ((_p0: boolean) => [number, string] | Promise<[number, string]>) | null {
+export function makeLookup(): ((_p0: boolean) => [number, string] | globalThis.Promise<[number, string]>) | null {
 	return $.functionValue((ok: boolean): [number, string] => {
 		let value: number = 0
 		let label: string = ""
@@ -16,7 +16,7 @@ export function makeLookup(): ((_p0: boolean) => [number, string] | Promise<[num
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }] })
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let lookup = makeLookup()
 
 	let [value, label] = await lookup!(false)

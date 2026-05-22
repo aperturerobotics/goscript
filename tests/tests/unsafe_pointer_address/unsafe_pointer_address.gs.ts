@@ -13,7 +13,7 @@ export function sameStart(x: $.Slice<number>, y: $.Slice<number>): boolean {
 	return (($.len(x) > 0) && ($.len(y) > 0)) && ($.indexAddress(x!, 0) == $.indexAddress(y!, 0))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let buf = $.arrayToSlice<number>([1, 2, 3, 4])
 	let left = $.goSlice(buf, 1, 3)
 	let right = $.goSlice(buf, 2, 4)

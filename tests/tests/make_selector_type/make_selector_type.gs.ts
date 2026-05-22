@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test make() with a map type
 	// This verifies that our fix for selector expressions in make() calls works
 	// The original issue was "unhandled make call" when using selector expressions

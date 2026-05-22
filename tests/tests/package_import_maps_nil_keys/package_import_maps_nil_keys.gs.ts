@@ -7,7 +7,7 @@ import * as maps from "@goscript/maps/index.js"
 
 import * as iter from "@goscript/iter/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let m: Map<string, number> | null = null
 	let count = 0
 	let __goscriptRangeReturn3062395 = false

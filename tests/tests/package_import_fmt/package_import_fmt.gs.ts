@@ -47,7 +47,7 @@ export class byteFormatter {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test basic Print functions
 	fmt.Print("Hello")
 	fmt.Print(" ")

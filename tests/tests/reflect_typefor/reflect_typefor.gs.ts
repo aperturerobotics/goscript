@@ -64,7 +64,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test TypeFor with named interface type
 	let t1 = reflect.TypeFor({T: { type: "main.MyInterface", zero: () => null, methods: {SomeMethod: (receiver: any, ...args: any[]) => receiver.SomeMethod(...args)} }})
 	$.println("TypeFor interface:", $.pointerValue<Exclude<reflect.Type, null>>(t1).String())

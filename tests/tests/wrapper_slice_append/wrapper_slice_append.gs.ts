@@ -50,7 +50,7 @@ export class parser {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let p: parser = $.markAsStructValue(new parser())
 	// this Add method does not work:
 	errlist.ErrorList_Add(p._fields.errors, "error")

@@ -64,7 +64,7 @@ export class Person {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let results: $.Slice<string> = null
 
 	// Marshal a simple struct

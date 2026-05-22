@@ -58,7 +58,7 @@ export function use(w: Writer | null): void {
 	$.pointerValue<Exclude<Writer, null>>(w).Write($.stringToBytes("x"))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let b: $.VarRef<Buffer> = $.varRef($.markAsStructValue(new Buffer()))
 	use($.interfaceValue<Writer | null>(b, "*main.Buffer"))
 	$.println($.bytesToString(b.value.data))

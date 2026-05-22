@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as reflect from "@goscript/reflect/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test creating a StructField value
 	let field = $.markAsStructValue(new reflect.StructField({Name: "TestField", Type: reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})}))
 	$.println("StructField Name:", field.Name)

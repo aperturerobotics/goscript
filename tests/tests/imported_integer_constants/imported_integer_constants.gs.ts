@@ -9,7 +9,7 @@ export function aboveSignedLimit(v: number): boolean {
 	return v > (9223372036854775808)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println(aboveSignedLimit($.int(10)))
 }
 

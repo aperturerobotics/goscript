@@ -46,7 +46,7 @@ export function makeReader(): [concrete | $.VarRef<concrete> | null, $.GoError] 
 	return [new concrete(), null]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let r: reader | null = null
 	let err: $.GoError = null
 	let __goscriptTuple0 = makeReader()

@@ -31,7 +31,7 @@ export class Setting {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Value(): Promise<string> {
+	public async Value(): globalThis.Promise<string> {
 		const s: Setting | $.VarRef<Setting> | null = this
 		await $.pointerValue<Setting>(s).once.Do($.functionValue((): void => {
 		}, { kind: $.TypeKind.Function, params: [], results: [] }))
@@ -47,10 +47,10 @@ export class Setting {
 	)
 }
 
-export function setCallback(callback: ((_p0: string) => (() => void) | null | Promise<(() => void) | null>) | null): void {
+export function setCallback(callback: ((_p0: string) => (() => void) | null | globalThis.Promise<(() => void) | null>) | null): void {
 }
 
-export async function newCallback(name: string): Promise<(() => void) | null> {
+export async function newCallback(name: string): globalThis.Promise<(() => void) | null> {
 	let s: Setting | $.VarRef<Setting> | null = new Setting()
 	await $.pointerValue<Setting>(s).Value()
 	return $.functionValue((): void => {
@@ -62,7 +62,7 @@ export function init(): void {
 	setCallback(newCallback)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("ok")
 }
 

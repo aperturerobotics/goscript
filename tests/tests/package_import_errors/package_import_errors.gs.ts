@@ -90,7 +90,7 @@ export class wrappedErr {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test basic error creation
 	let err1 = errors.New("first error")
 	let err2 = errors.New("second error")

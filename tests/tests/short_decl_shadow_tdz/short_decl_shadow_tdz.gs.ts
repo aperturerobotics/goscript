@@ -7,7 +7,7 @@ export function pair(): [number, number] {
 	return [2, 3]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let x = 0
 	for (let __rangeIndex = 0; __rangeIndex < 1; __rangeIndex++) {
 		x = 1

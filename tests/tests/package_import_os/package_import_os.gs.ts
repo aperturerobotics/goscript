@@ -7,7 +7,7 @@ import * as os from "@goscript/os/index.js"
 
 import * as fs from "@goscript/io/fs/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	{
 		let [wd, err] = os.Getwd()
 		if (err == null) {

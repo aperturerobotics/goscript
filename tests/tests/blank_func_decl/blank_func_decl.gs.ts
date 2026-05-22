@@ -13,7 +13,7 @@ function __goscriptBlankFunc1(): void {
 	x[0]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("blank funcs ok")
 }
 

@@ -31,7 +31,7 @@ export class asyncReader {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Read(b: $.Slice<number>): Promise<[number, $.GoError]> {
+	public async Read(b: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		const r = this
 		await $.chanSend(r.ch, $.len(b))
 		return [await $.chanRecv(r.ch), null]
@@ -48,7 +48,7 @@ export class asyncReader {
 
 export let Reader: io.Reader | null = $.interfaceValue<io.Reader | null>($.markAsStructValue(new asyncReader({ch: $.makeChannel<number>(1, 0, "both")})), "main.asyncReader")
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	if (Reader == null) {
 		$.println(0)
 		return

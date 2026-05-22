@@ -57,7 +57,7 @@ export const B: number = 2
 
 export const C: number = 4
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("ByteSize constants:")
 	$.println("KB:", $.int(KB))
 	$.println("MB:", $.int(MB))

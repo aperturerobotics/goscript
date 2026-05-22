@@ -25,7 +25,7 @@ describe('GoScript Compiler API', () => {
     })
 
     const generated = await readFile(join(output, '@goscript', 'example.test', 'api', 'main.gs.ts'), 'utf8')
-    expect(generated).toContain('export async function main(): Promise<void>')
+    expect(generated).toContain('export async function main(): globalThis.Promise<void>')
     expect(generated).toContain('$.println("api")')
   }, 30000)
 })

@@ -58,7 +58,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test new(MyStruct)
 	let ptr: MyStruct | $.VarRef<MyStruct> | null = new MyStruct()
 	$.println("ptr.MyInt (default):", $.pointerValue<MyStruct>(ptr).MyInt)

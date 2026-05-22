@@ -9,7 +9,7 @@ export function fail(): $.GoError {
 	return $.wrapPrimitiveError(1, __goscript_error_type.remoteError_Error)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let err = fail()
 	if (err != null) {
 		$.println($.pointerValue<Exclude<$.GoError, null>>(err).Error())

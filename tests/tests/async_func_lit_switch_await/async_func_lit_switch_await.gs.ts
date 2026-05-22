@@ -3,12 +3,12 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export let fn: ((_p0: number) => boolean | Promise<boolean>) | null = null
+export let fn: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null = null
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let ch = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(ch, true)
-	fn = $.functionValue(async (value: number): Promise<boolean> => {
+	fn = $.functionValue(async (value: number): globalThis.Promise<boolean> => {
 		switch (value) {
 			case 0:
 			{

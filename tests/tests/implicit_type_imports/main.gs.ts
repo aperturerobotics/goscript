@@ -44,7 +44,7 @@ export class localReadWriteCloser {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let server: __goscript_server.Server | $.VarRef<__goscript_server.Server> | null = new __goscript_server.Server()
 	$.pointerValue<__goscript_server.Server>(server).Handle($.interfaceValue<io.ReadWriteCloser | null>(new localReadWriteCloser(), "*main.localReadWriteCloser"))
 	$.println("ok")

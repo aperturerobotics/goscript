@@ -46,7 +46,7 @@ export class item {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let items = $.arrayToSlice<item>([$.markAsStructValue(new item({name: "alpha"})), $.markAsStructValue(new item({name: "beta"}))])
 	for (let __rangeIndex = 0; __rangeIndex < $.len(items); __rangeIndex++) {
 		let item = $.varRef(items![__rangeIndex])

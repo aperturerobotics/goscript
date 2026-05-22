@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let m: Map<string, number> | null = $.makeMap<string, number>()
 	$.mapSet(m, "key1", 10)
 	$.mapSet(m, "key2", 20)

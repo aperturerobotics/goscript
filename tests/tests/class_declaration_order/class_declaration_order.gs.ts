@@ -44,7 +44,7 @@ $.registerInterfaceType(
 
 export let defaultNamed: named | null = $.interfaceValue<named | null>(new lateType(), "*main.lateType")
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println($.pointerValue<Exclude<named, null>>(defaultNamed).Name())
 }
 

@@ -3,10 +3,10 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let messages = $.makeChannel<string>(0, "", "both")
 
-	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
+	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanSend(messages, "ping")
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 

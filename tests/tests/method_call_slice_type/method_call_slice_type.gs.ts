@@ -9,7 +9,7 @@ export function MySlice_Add(s: $.VarRef<MySlice> | null, val: number): void {
 	s!.value = ($.append(($.pointerValue<MySlice>(s) as MySlice), val) as MySlice)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let myList: $.VarRef<MySlice> = $.varRef(null)
 	MySlice_Add(myList, 10)
 	MySlice_Add(myList, 20)

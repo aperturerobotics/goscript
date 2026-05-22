@@ -48,7 +48,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let original: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({MyInt: 10, MyString: "original"})
 
 	// === Pointer Assignment (No Copy) ===

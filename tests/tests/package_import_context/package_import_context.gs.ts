@@ -7,14 +7,14 @@ import * as context from "@goscript/context/index.js"
 
 import * as time from "@goscript/time/index.js"
 
-export async function run(ctx: context.Context | null): Promise<void> {
+export async function run(ctx: context.Context | null): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
 	let [sctx, sctxCancel] = context.WithCancel($.pointerValue(ctx))
 	__defer.defer(async () => { await sctxCancel!() })
 
 	let myCh = $.makeChannel<{}>(0, {}, "both")
 
-	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
+	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanRecv($.pointerValue<Exclude<context.Context, null>>(sctx).Done())
 		await $.chanSend(myCh, {})
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
@@ -51,7 +51,7 @@ export async function run(ctx: context.Context | null): Promise<void> {
 	$.println("read successfully")
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
 	let ctx = context.Background()
 	await run(ctx)

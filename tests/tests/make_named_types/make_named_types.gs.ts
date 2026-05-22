@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test make() calls with named types as the first argument
 	// This tests the compiler's ability to handle make() with type aliases/named types
 	// rather than direct type expressions like []int or map[string]int

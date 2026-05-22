@@ -85,7 +85,7 @@ export function Fixed_Mark(f: Fixed): boolean {
 	return $.len((f as Fixed)) != 0
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let shapes = $.arrayToSlice<Shape | null>([$.interfaceValue<Shape | null>($.arrayToSlice<dep.Ref | null>([$.namedValueInterfaceValue<dep.Ref | null>([1, 2], "main.value", {Key: value_Key})]), "main.Fixed"), $.interfaceValue<Shape | null>($.markAsStructValue(new Action({Result: 1, Filter: new Map<number, dep.Ref | null>([[1, $.namedValueInterfaceValue<dep.Ref | null>([1, 2], "main.value", {Key: value_Key})]])})), "main.Action")])
 	let fixed: $.Slice<Fixed> = null
 	for (let __rangeIndex = 0; __rangeIndex < $.len(shapes); __rangeIndex++) {

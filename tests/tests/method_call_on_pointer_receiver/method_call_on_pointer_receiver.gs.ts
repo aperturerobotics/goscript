@@ -98,7 +98,7 @@ export class setterStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let structPointer: MyStruct | $.VarRef<MyStruct> | null = new MyStruct({MyInt: 4, MyString: "hello world"})
 	// === Method Call on Pointer Receiver ===
 	// Calling a method with a pointer receiver (*MyStruct) using a pointer variable.

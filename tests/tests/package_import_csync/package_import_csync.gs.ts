@@ -11,7 +11,7 @@ import * as time from "@goscript/time/index.js"
 
 import * as csync from "@goscript/github.com/aperturerobotics/util/csync/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
 	let mtx: csync.Mutex = $.markAsStructValue(new csync.Mutex())
 	let counter: number = 0
@@ -25,7 +25,7 @@ export async function main(): Promise<void> {
 	wg.value.Add(numWorkers)
 
 	// Function that will be run by each worker
-	let worker = $.functionValue(async (id: number): Promise<void> => {
+	let worker = $.functionValue(async (id: number): globalThis.Promise<void> => {
 		await using __defer = new $.AsyncDisposableStack()
 		__defer.defer(() => { wg.value.Done() })
 
@@ -51,7 +51,7 @@ export async function main(): Promise<void> {
 
 	// Wait for all workers to complete or context timeout
 	let done = $.makeChannel<{}>(0, {}, "both")
-	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
+	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await wg.value.Wait()
 		done!.close()
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })

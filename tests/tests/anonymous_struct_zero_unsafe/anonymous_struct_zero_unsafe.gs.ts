@@ -7,7 +7,7 @@ import * as unsafe from "@goscript/unsafe/index.js"
 
 export let linkinfo: {"Magic": number[], "Self": number, "Sects": {"Start": any, "End": any}[]} = {"Magic": Array.from({ length: 2 }, () => 0), "Self": 0, "Sects": Array.from({ length: 1 }, () => ({"Start": null, "End": null}))}
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("magic len:", $.len(linkinfo.Magic))
 	$.println("magic zero:", linkinfo.Magic[0])
 	$.println("sects len:", $.len(linkinfo.Sects))

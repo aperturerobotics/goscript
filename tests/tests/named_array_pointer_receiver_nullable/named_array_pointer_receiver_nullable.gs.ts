@@ -14,7 +14,7 @@ export function words_Rsh(w: $.VarRef<words> | null, n: number): number {
 	return $.pointerValue<number[]>(w)[0] >> n
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let [w, ok] = setWords($.varRef(Array.from({ length: 1 }, () => 0)))
 	if (!ok) {
 		$.println("missing")

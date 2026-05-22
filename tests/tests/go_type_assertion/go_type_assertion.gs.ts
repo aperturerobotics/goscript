@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let x: any = $.interfaceValue<any>($.functionValue((): void => {
 		$.println("goroutine executed")
 	}, { kind: $.TypeKind.Function, params: [], results: [] }), "func()")

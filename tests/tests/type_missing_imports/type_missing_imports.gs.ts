@@ -93,7 +93,7 @@ export class storage {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s = $.markAsStructValue(new storage({files: $.makeMap<string, file | $.VarRef<file> | null>(), children: $.makeMap<string, Map<string, file | $.VarRef<file> | null> | null>()}))
 
 	let f: file | $.VarRef<file> | null = new file({name: "test.txt", data: $.stringToBytes("hello world")})

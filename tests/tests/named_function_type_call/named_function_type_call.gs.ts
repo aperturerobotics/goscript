@@ -27,7 +27,7 @@ $.registerInterfaceType(
 	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }]
 )
 
-export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null
+export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null
 
 export type Shape = null | {
 	Stats(): number
@@ -39,7 +39,7 @@ $.registerInterfaceType(
 	[{ name: "Stats", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
-export type Morphism = ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null
+export type Morphism = ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null
 
 export class MockFileInfo {
 	public get name(): string {
@@ -182,18 +182,18 @@ export class shapeNode {
 }
 
 export class MorphismHolder {
-	public get morphism(): ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null {
+	public get morphism(): ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null {
 		return this._fields.morphism.value
 	}
-	public set morphism(value: ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null) {
+	public set morphism(value: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null) {
 		this._fields.morphism.value = value
 	}
 
 	public _fields: {
-		morphism: $.VarRef<((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null>
+		morphism: $.VarRef<((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null>
 	}
 
-	constructor(init?: Partial<{morphism?: ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null}>) {
+	constructor(init?: Partial<{morphism?: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null}>) {
 		this._fields = {
 			morphism: $.varRef(init?.morphism ?? null)
 		}
@@ -207,12 +207,12 @@ export class MorphismHolder {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async apply(s: Shape | null): Promise<number> {
+	public async apply(s: Shape | null): globalThis.Promise<number> {
 		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
 		return $.pointerValue<Exclude<Shape, null>>(await $.pointerValue<MorphismHolder>(h).morphism!(s)).Stats()
 	}
 
-	public async cloneApply(s: Shape | null): Promise<number> {
+	public async cloneApply(s: Shape | null): globalThis.Promise<number> {
 		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
 		return $.pointerValue<Exclude<Shape, null>>(await $.pointerValue<MorphismHolder>(cloneMorphism($.pointerValue<MorphismHolder>(h).morphism)).morphism!(s)).Stats()
 	}
@@ -252,7 +252,7 @@ export class morphismWorker {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async lookup(s: Shape | null): Promise<Shape | null> {
+	public async lookup(s: Shape | null): globalThis.Promise<Shape | null> {
 		const w: morphismWorker | $.VarRef<morphismWorker> | null = this
 		await $.chanSend($.pointerValue<morphismWorker>(w).ready, true)
 		await $.chanRecv($.pointerValue<morphismWorker>(w).ready)
@@ -268,7 +268,7 @@ export class morphismWorker {
 	)
 }
 
-export async function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
+export async function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	// Test case 1: Direct call to named function type parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
@@ -281,7 +281,7 @@ export async function walk(fs: Filesystem | null, path: string, info: FileInfo |
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] }))
 }
 
-export async function walkWithCustomFunc(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
+export async function walkWithCustomFunc(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	// Test case 1: Direct call to named function type parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
@@ -311,13 +311,13 @@ export async function walkWithCustomFunc(fs: Filesystem | null, path: string, in
 	return null
 }
 
-export async function processFiles(pattern: string, fn: ((_p0: string) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
+export async function processFiles(pattern: string, fn: ((_p0: string) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	// Test case 4: Anonymous function type parameter (for comparison)
 	// This should also have ! operator when called
 	return await fn!(pattern)
 }
 
-export async function multiCallback(walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null, processFn: ((_p0: string) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
+export async function multiCallback(walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null, processFn: ((_p0: string) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	// Test case 5: Multiple function parameters
 	// Both should generate ! operators
 	{
@@ -333,11 +333,11 @@ export function indexedCallback(cbs: $.Slice<((_p0: string) => boolean) | null>,
 	return cbs![0]!(value)
 }
 
-export async function useMorphism(m: ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null, s: Shape | null): Promise<number> {
+export async function useMorphism(m: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null, s: Shape | null): globalThis.Promise<number> {
 	return $.pointerValue<Exclude<Shape, null>>(await m!(s)).Stats()
 }
 
-export async function newMorphismHolder(m: ((_p0: Shape | null) => Shape | null | Promise<Shape | null>) | null): Promise<MorphismHolder | $.VarRef<MorphismHolder> | null> {
+export async function newMorphismHolder(m: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null): globalThis.Promise<MorphismHolder | $.VarRef<MorphismHolder> | null> {
 	return new MorphismHolder({morphism: m})
 }
 
@@ -345,7 +345,7 @@ export function cloneMorphism(m: Morphism): MorphismHolder | $.VarRef<MorphismHo
 	return new MorphismHolder({morphism: m})
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let fs: MockFilesystem | $.VarRef<MockFilesystem> | null = new MockFilesystem()
 	let fileInfo: MockFileInfo | $.VarRef<MockFileInfo> | null = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
 

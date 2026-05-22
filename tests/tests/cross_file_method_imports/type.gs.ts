@@ -50,7 +50,7 @@ export class label {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let item = $.markAsStructValue(new label({value: "go"}))
 	$.println($.markAsStructValue($.cloneStructValue(item)).Format())
 }

@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as errors from "@goscript/github.com/pkg/errors/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test New
 	let err1 = errors.New("basic error")
 	$.println("New error:", $.pointerValue<Exclude<$.GoError, null>>(err1).Error())

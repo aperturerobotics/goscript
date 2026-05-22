@@ -62,7 +62,7 @@ export function registerFormat(__goscriptParam0: Format): void {
 	f.value.Name = f.value.Name + "-updated"
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	registerFormat($.markAsStructValue(new Format({Name: "json", Ext: $.arrayToSlice<string>(["json"])})))
 	$.println($.pointerValue<Format>($.mapGet(byName, "json", null)[0]).Name)
 	$.println($.pointerValue<Format>($.mapGet(byExt, "json", null)[0]).Name)

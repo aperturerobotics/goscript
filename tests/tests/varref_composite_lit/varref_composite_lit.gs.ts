@@ -43,7 +43,7 @@ export class MockInode {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// This should generate: let childInode: MockInode | null = new MockInode({Value: 42})
 	// Not: let childInode: MockInode | null = $.varRef(new MockInode({Value: 42}))
 	// Because we're taking the address of a composite literal, not a variable

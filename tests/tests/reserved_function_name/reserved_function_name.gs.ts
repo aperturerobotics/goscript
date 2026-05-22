@@ -7,7 +7,7 @@ export function _throw(value: string): string {
 	return value + "!"
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println(_throw("ok"))
 }
 

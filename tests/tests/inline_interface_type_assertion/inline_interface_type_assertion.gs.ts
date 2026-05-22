@@ -73,7 +73,7 @@ export class MyStringer {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let i: any = null
 	i = $.interfaceValue<any>($.markAsStructValue(new Greeter()), "main.Greeter")
 

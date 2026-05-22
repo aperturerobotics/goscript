@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("Starting loop")
 	for (let i = 0; i < 3; i++) {
 		$.println("Iteration:", i)

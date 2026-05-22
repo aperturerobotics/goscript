@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test octal literals that cause TypeScript compilation errors
 	let perm1 = 0o777
 	let perm2 = 0o666

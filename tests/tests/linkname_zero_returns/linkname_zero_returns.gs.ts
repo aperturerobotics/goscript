@@ -14,7 +14,7 @@ export function externalPair(): [number, boolean] {
 	return [0, false]
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	externalVoid()
 	let [n, ok] = externalPair()
 	$.println("int:", externalInt())

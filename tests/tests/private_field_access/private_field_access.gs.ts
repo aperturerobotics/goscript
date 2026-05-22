@@ -58,7 +58,7 @@ export function accessPrivateField(s: MyStruct): void {
 	$.println("Accessing privateField:", s.privateField)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s = $.markAsStructValue($.cloneStructValue(NewMyStruct("hello", 123)))
 	accessPrivateField($.markAsStructValue($.cloneStructValue(s)))
 }

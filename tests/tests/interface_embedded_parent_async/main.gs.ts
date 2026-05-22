@@ -6,8 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as dep from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_parent_async/dep/index.js"
 
 export type Specific = null | {
-	Name(): Promise<string>
-	Validate(): Promise<$.GoError>
+	Name(): globalThis.Promise<string>
+	Validate(): globalThis.Promise<$.GoError>
 }
 
 $.registerInterfaceType(
@@ -32,14 +32,14 @@ export class impl {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Name(): Promise<string> {
+	public async Name(): globalThis.Promise<string> {
 		const i: impl | $.VarRef<impl> | null = this
 		await $.chanSend(ready, true)
 		await $.chanRecv(ready)
 		return "ok"
 	}
 
-	public async Validate(): Promise<$.GoError> {
+	public async Validate(): globalThis.Promise<$.GoError> {
 		const i: impl | $.VarRef<impl> | null = this
 		await $.chanSend(ready, true)
 		await $.chanRecv(ready)
@@ -61,7 +61,7 @@ export function NewSpecific(): Specific | null {
 	return $.interfaceValue<Specific | null>(new impl(), "*main.impl")
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s = NewSpecific()
 	$.println("embedded directive", dep.Accept((s as dep.Directive | null)), await $.pointerValue<Exclude<Specific, null>>(s).Name())
 }

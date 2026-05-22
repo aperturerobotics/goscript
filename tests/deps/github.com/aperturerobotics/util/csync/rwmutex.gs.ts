@@ -73,7 +73,7 @@ export class RWMutex {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Lock(ctx: context.Context | null, write: boolean): Promise<[(() => void) | null, $.GoError]> {
+	public async Lock(ctx: context.Context | null, write: boolean): globalThis.Promise<[(() => void) | null, $.GoError]> {
 		const m: RWMutex | $.VarRef<RWMutex> | null = this
 		// status:
 		// 0: waiting for lock
@@ -81,7 +81,7 @@ export class RWMutex {
 		// 2: unlocked (released)
 		let status: $.VarRef<atomic.Int32> = $.varRef($.markAsStructValue(new atomic.Int32()))
 		let waitCh: $.Channel<{}> | null = null
-		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
+		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
 			if (write) {
 				if (($.pointerValue<RWMutex>(m).nreaders != 0) || $.pointerValue<RWMutex>(m).writing) {
 					$.pointerValue<RWMutex>(m).writeWaiting++
@@ -100,13 +100,13 @@ export class RWMutex {
 			}
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 
-		let release = $.functionValue(async (): Promise<void> => {
+		let release = $.functionValue(async (): globalThis.Promise<void> => {
 			let pre = status.value.Swap(2)
 			if (pre == 2) {
 				return
 			}
 
-			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): Promise<void> => {
+			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
 				if (pre == 0) {
 					// 0: waiting for lock
 					if (write) {
@@ -153,7 +153,7 @@ export class RWMutex {
 				return __goscriptSelect0Value
 			}
 
-			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): Promise<void> => {
+			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
 				if (write) {
 					if (($.pointerValue<RWMutex>(m).nreaders == 0) && !$.pointerValue<RWMutex>(m).writing) {
 						$.pointerValue<RWMutex>(m).writeWaiting--
@@ -188,7 +188,7 @@ export class RWMutex {
 		return $.interfaceValue<sync.Locker | null>(new RWMutexLocker({m: m, write: false}), "*csync.RWMutexLocker")
 	}
 
-	public async TryLock(write: boolean): Promise<[(() => void) | null, boolean]> {
+	public async TryLock(write: boolean): globalThis.Promise<[(() => void) | null, boolean]> {
 		const m: RWMutex | $.VarRef<RWMutex> | null = this
 		let unlocked: $.VarRef<atomic.Bool> = $.varRef($.markAsStructValue(new atomic.Bool()))
 		await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null) | null): void => {
@@ -212,12 +212,12 @@ export class RWMutex {
 			return [null, false]
 		}
 
-		return [$.functionValue(async (): Promise<void> => {
+		return [$.functionValue(async (): globalThis.Promise<void> => {
 			if (unlocked.value.Swap(true)) {
 				return
 			}
 
-			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): Promise<void> => {
+			await $.pointerValue<RWMutex>(m).bcast.HoldLock($.functionValue(async (broadcast: (() => void) | null, _p1: (() => $.Channel<{}> | null) | null): globalThis.Promise<void> => {
 				if (write) {
 					$.pointerValue<RWMutex>(m).writing = false
 				} else {
@@ -293,7 +293,7 @@ export class RWMutexLocker {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Lock(): Promise<void> {
+	public async Lock(): globalThis.Promise<void> {
 		let l: RWMutexLocker | $.VarRef<RWMutexLocker> | null = this
 		let [release, err] = await $.pointerValue<RWMutex>($.pointerValue<RWMutexLocker>(l).m).Lock(context.Background(), $.pointerValue<RWMutexLocker>(l).write)
 		if (err != null) {
@@ -304,7 +304,7 @@ export class RWMutexLocker {
 		$.pointerValue<RWMutexLocker>(l).mtx.Unlock()
 	}
 
-	public async Unlock(): Promise<void> {
+	public async Unlock(): globalThis.Promise<void> {
 		let l: RWMutexLocker | $.VarRef<RWMutexLocker> | null = this
 		await $.pointerValue<RWMutexLocker>(l).mtx.Lock()
 		if ($.len($.pointerValue<RWMutexLocker>(l).rels) == 0) {

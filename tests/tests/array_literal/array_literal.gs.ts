@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test basic array literal
 	let a: number[] = [1, 2, 3]
 	$.println(a[0], a[1], a[2])

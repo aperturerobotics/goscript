@@ -48,7 +48,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// === Struct Field Access ===
 	let ms = $.markAsStructValue(new MyStruct({MyInt: 42, MyString: "foo"}))
 	$.println("MyInt: Expected: 42, Actual:", ms.MyInt)

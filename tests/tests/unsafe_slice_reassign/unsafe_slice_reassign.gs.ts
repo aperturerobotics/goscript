@@ -11,7 +11,7 @@ export function reslice(ptr: $.VarRef<number> | null, n: number): void {
 	s
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("ok")
 }
 

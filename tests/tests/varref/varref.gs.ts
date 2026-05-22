@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	$.println("setting x to 10")
 	let x: $.VarRef<number> = $.varRef(10)
 

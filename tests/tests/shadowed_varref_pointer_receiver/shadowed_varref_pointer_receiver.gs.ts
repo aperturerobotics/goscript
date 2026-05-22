@@ -52,7 +52,7 @@ export function newLocked(value: number): locked {
 	return $.markAsStructValue(new locked({value: value}))
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let locked = $.varRef($.markAsStructValue($.cloneStructValue(newLocked(1))))
 	locked.value.Inc()
 	$.println(locked.value.Value())

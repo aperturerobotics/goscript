@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s = $.arrayToSlice<number>([10, 20, 30])
 	$.println("Looping over slice (key only):")
 	for (let i = 0; i < $.len(s); i++) {

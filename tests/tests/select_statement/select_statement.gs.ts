@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// Test 1: Simple deterministic select with default
 	// Create a buffered channel so sends don't block
 	let ch1 = $.makeChannel<string>(1, "", "both")

@@ -105,7 +105,7 @@ export function findFrame(): frame | $.VarRef<frame> | null {
 	return null
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	for (let i = 0, j = 5; i < j; [i, j] = [i + 1, j - 1]) {
 		$.println(i, j)
 	}

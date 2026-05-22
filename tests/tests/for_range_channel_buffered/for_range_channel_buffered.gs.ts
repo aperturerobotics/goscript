@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let ch = $.makeChannel<string>(15, "", "both")
 	for (let i = 0; i < 10; i++) {
 		$.println("Hello", i)

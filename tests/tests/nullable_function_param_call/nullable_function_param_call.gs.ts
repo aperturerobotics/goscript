@@ -17,7 +17,7 @@ $.registerInterfaceType(
 	[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
-export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null
+export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null
 
 export type Filesystem = null | {
 	ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError]
@@ -29,9 +29,9 @@ $.registerInterfaceType(
 	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }]
 )
 
-export type ProcessFunc = ((data: string) => [string, $.GoError] | Promise<[string, $.GoError]>) | null
+export type ProcessFunc = ((data: string) => [string, $.GoError] | globalThis.Promise<[string, $.GoError]>) | null
 
-export type OptionalProcessFunc = ((data: string) => [string, $.GoError] | Promise<[string, $.GoError]>) | null
+export type OptionalProcessFunc = ((data: string) => [string, $.GoError] | globalThis.Promise<[string, $.GoError]>) | null
 
 export class MockFileInfo {
 	public get name(): string {
@@ -135,7 +135,7 @@ export class MockFilesystem {
 
 export let SkipDir: $.GoError = os.ErrNotExist
 
-export async function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | Promise<$.GoError>) | null): Promise<$.GoError> {
+export async function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	// Test case 1: Direct call to nullable function parameter
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
@@ -155,21 +155,21 @@ export async function walk(fs: Filesystem | null, path: string, info: FileInfo |
 	return null
 }
 
-export async function processWithCallback(input: string, processor: ((data: string) => [string, $.GoError] | Promise<[string, $.GoError]>) | null): Promise<[string, $.GoError]> {
+export async function processWithCallback(input: string, processor: ((data: string) => [string, $.GoError] | globalThis.Promise<[string, $.GoError]>) | null): globalThis.Promise<[string, $.GoError]> {
 	// Test case 3: Function parameter with return values
 	// This should generate: processor!(input)
 	// But currently generates: processor(input) - missing !
 	return await processor!(input)
 }
 
-export async function maybeProcess(input: string, processor: ((data: string) => [string, $.GoError] | Promise<[string, $.GoError]>) | null): Promise<[string, $.GoError]> {
+export async function maybeProcess(input: string, processor: ((data: string) => [string, $.GoError] | globalThis.Promise<[string, $.GoError]>) | null): globalThis.Promise<[string, $.GoError]> {
 	if (processor == null) {
 		return ["nil processor", null]
 	}
 	return await processor!(input)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let fs: MockFilesystem | $.VarRef<MockFilesystem> | null = new MockFilesystem()
 	let fileInfo: MockFileInfo | $.VarRef<MockFileInfo> | null = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
 

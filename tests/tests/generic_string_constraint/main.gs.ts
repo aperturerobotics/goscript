@@ -23,7 +23,7 @@ export function toStringGeneric(__typeArgs: $.GenericTypeArgs | undefined, v: an
 	return $.genericBytesOrStringToString(v)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	// string-only
 	$.println(toStringString({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, "hello"))
 

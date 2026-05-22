@@ -58,7 +58,7 @@ export class MyStruct {
 	)
 }
 
-export async function main(): Promise<void> {
+export async function main(): globalThis.Promise<void> {
 	let s = $.markAsStructValue(new MyStruct())
 	$.println(s.PointerField == null)
 	$.println(s.interfaceField == null)
