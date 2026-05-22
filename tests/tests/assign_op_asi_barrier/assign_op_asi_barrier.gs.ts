@@ -1,0 +1,27 @@
+// Generated file based on assign_op_asi_barrier.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+export function consume(v: $.VarRef<$.Slice<$.Slice<number>>> | null, n: number): void {
+	while ($.len($.pointerValue<$.Slice<$.Slice<number>>>(v)) > 0) {
+		let ln0 = $.int($.len(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0]))
+		if (ln0 > n) {
+			($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0], n, undefined)
+			return
+		}
+		n -= ln0;
+		($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = null
+		v!.value = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v)), 1, undefined)
+	}
+}
+
+export async function main(): globalThis.Promise<void> {
+	let values = $.varRef($.arrayToSlice<$.Slice<number>>([$.arrayToSlice<number>([1, 2]), $.arrayToSlice<number>([3])]))
+	consume(values, 2)
+	$.println($.len(values.value), values.value![0] == null)
+}
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

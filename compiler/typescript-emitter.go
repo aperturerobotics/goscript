@@ -472,7 +472,7 @@ func renderDeferStack(b *strings.Builder, state *loweredDeferState, indent int) 
 }
 
 func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
-	for _, stmt := range stmts {
+	for idx, stmt := range stmts {
 		renderLeadingLines(b, stmt.leading, indent)
 		if stmt.rangeFunc != nil {
 			renderRangeFunc(b, stmt.rangeFunc, indent)
@@ -500,6 +500,9 @@ func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 		}
 		writeIndentedText(b, stmt.text, indent)
 		if !stmt.hasBlock && len(stmt.children) == 0 {
+			if idx+1 < len(stmts) && needsASIBarrier(stmt, stmts[idx+1]) {
+				b.WriteString(";")
+			}
 			b.WriteString("\n")
 			continue
 		}
@@ -516,6 +519,23 @@ func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
 		writeIndent(b, indent)
 		b.WriteString("}\n")
 	}
+}
+
+func needsASIBarrier(current loweredStmt, next loweredStmt) bool {
+	if current.text == "" ||
+		current.hasBlock ||
+		len(current.children) != 0 ||
+		current.rangeFunc != nil ||
+		current.switchStmt != nil ||
+		current.selectStmt != nil ||
+		current.typeSwitch != nil {
+		return false
+	}
+	if strings.HasSuffix(strings.TrimSpace(current.text), ";") {
+		return false
+	}
+	nextText := strings.TrimLeft(next.text, " \t")
+	return strings.HasPrefix(nextText, "(") || strings.HasPrefix(nextText, "[")
 }
 
 func renderLeadingLines(b *strings.Builder, lines []string, indent int) {
