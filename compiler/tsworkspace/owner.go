@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"time"
@@ -24,6 +25,9 @@ const (
 	PhaseTypeCheck Phase = "typecheck"
 	// PhaseRuntime covers TypeScript runtime execution.
 	PhaseRuntime Phase = "runtime"
+
+	// NodeAmbientTypesFile names the GoScript runtime ambient declarations.
+	NodeAmbientTypesFile = "goscript-node.d.ts"
 )
 
 // Owner owns TypeScript test workspace files, tool discovery, and execution.
@@ -51,6 +55,11 @@ func (o *Owner) WorkDir() string {
 // EnsurePackageJSON writes the module package metadata used by Bun.
 func (o *Owner) EnsurePackageJSON() Result {
 	return o.WriteFile(PhaseWorkspace, "package.json", "{\"type\":\"module\"}\n")
+}
+
+// EnsureNodeAmbientTypes writes host runtime declarations needed by emitted tests.
+func (o *Owner) EnsureNodeAmbientTypes() Result {
+	return o.WriteFile(PhaseWorkspace, NodeAmbientTypesFile, nodeAmbientTypes)
 }
 
 // WriteFile writes a workspace-relative file.
@@ -116,7 +125,8 @@ func (o *Owner) FindTool(name string) (string, error) {
 	if filepath.IsAbs(name) {
 		return name, nil
 	}
-	for _, start := range []string{o.toolDir, o.workDir, currentWorkingDirectory()} {
+	starts := []string{o.toolDir, o.workDir, sourceDirectory(), currentWorkingDirectory()}
+	for _, start := range starts {
 		if start == "" {
 			continue
 		}
@@ -180,6 +190,38 @@ func currentWorkingDirectory() string {
 	}
 	return wd
 }
+
+func sourceDirectory() string {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		return ""
+	}
+	return filepath.Dir(file)
+}
+
+const nodeAmbientTypes = `declare const process: {
+  env?: Record<string, string | undefined>
+  exit?: (code?: number) => never
+}
+
+declare var gc: (() => void) | undefined
+
+declare namespace NodeJS {
+  type Timeout = ReturnType<typeof setTimeout>
+}
+
+declare module 'node:fs' {
+  export function mkdirSync(...args: unknown[]): unknown
+}
+
+declare module 'node:os' {
+  export function tmpdir(): string
+}
+
+declare module 'node:path' {
+  export function join(...parts: string[]): string
+}
+`
 
 func renderJSON(value any) (string, error) {
 	stream := jsoniter.NewStream(nil, 512, 2)

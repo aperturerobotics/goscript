@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -53,5 +54,21 @@ func TestOwnerRunsToolsWithCapturedOutput(t *testing.T) {
 	}
 	if len(result.Command) == 0 {
 		t.Fatalf("expected command capture")
+	}
+}
+
+func TestOwnerWritesNodeAmbientTypes(t *testing.T) {
+	dir := t.TempDir()
+	owner := NewOwner(dir, dir)
+
+	if result := owner.EnsureNodeAmbientTypes(); result.Failed() {
+		t.Fatalf("write node ambient types: %s", result.Error)
+	}
+	data, err := os.ReadFile(filepath.Join(dir, NodeAmbientTypesFile))
+	if err != nil {
+		t.Fatalf("read node ambient types: %v", err)
+	}
+	if !strings.Contains(string(data), "declare module 'node:fs'") {
+		t.Fatalf("node ambient types missing node:fs declaration: %s", data)
 	}
 }

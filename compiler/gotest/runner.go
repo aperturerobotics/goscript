@@ -150,6 +150,10 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		markAllFailures(result, OwnerTestRunner, phase.Error)
 		return result, nil
 	}
+	if phase := workspace.EnsureNodeAmbientTypes(); phase.Failed() {
+		markAllFailures(result, OwnerTestRunner, phase.Error)
+		return result, nil
+	}
 	for idx := range result.Packages {
 		if !shouldCompilePackage(result.Packages[idx]) {
 			continue
@@ -174,7 +178,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		if typecheck.Failed() {
 			result.Packages[idx].Owner = classifyProcessOutput(typecheck.Output)
 			result.Packages[idx].Phases.TypeCheck = PhaseStatusFail
-			result.Packages[idx].Error = strings.TrimSpace(typecheck.Output)
+			result.Packages[idx].Error = processErrorText(typecheck)
 			continue
 		}
 		result.Packages[idx].Phases.TypeCheck = PhaseStatusPass
@@ -440,8 +444,15 @@ func runnerImports(tests []Test) []string {
 	return imports
 }
 
+func processErrorText(result tsworkspace.Result) string {
+	output := strings.TrimSpace(result.Output)
+	if output != "" {
+		return output
+	}
+	return result.Error
+}
+
 func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string) string {
-	nodeTypeRoots := tsworkspace.NodeTypeRoots(req.Dir)
 	outputPattern := filepath.ToSlash(outputRoot)
 	outputAlias := filepath.ToSlash(filepath.Join(outputRoot, "@goscript", "*"))
 	if rel, err := filepath.Rel(req.WorkDir, outputRoot); err == nil {
@@ -458,17 +469,6 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 	b.WriteString("    \"strict\": true,\n")
 	b.WriteString("    \"allowImportingTsExtensions\": true,\n")
 	b.WriteString("    \"noEmit\": true,\n")
-	if len(nodeTypeRoots) != 0 {
-		b.WriteString("    \"types\": [\"node\"],\n")
-		b.WriteString("    \"typeRoots\": [")
-		for idx, root := range nodeTypeRoots {
-			if idx != 0 {
-				b.WriteString(", ")
-			}
-			b.WriteString(strconv.Quote(filepath.ToSlash(root)))
-		}
-		b.WriteString("],\n")
-	}
 	b.WriteString("    \"paths\": {\n")
 	b.WriteString("      \"*\": [\"./*\"],\n")
 	b.WriteString("      \"@goscript/*\": [")
@@ -480,6 +480,8 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 	b.WriteString(strconv.Quote(outputPattern + "/**/*.ts"))
 	b.WriteString(", ")
 	b.WriteString(strconv.Quote(runnerFile))
+	b.WriteString(", ")
+	b.WriteString(strconv.Quote(tsworkspace.NodeAmbientTypesFile))
 	b.WriteString("]\n")
 	b.WriteString("}\n")
 	return b.String()
