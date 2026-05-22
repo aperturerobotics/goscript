@@ -774,6 +774,10 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				continue
 			}
 			for idx, name := range typed.Names {
+				if name.Name == "_" && ctx.topLevel && idx < len(typed.Values) &&
+					!initializerMayHaveRuntimeEffects(ctx, typed.Values[idx]) {
+					continue
+				}
 				obj := ctx.semPkg.source.TypesInfo.Defs[name]
 				if obj == nil {
 					continue
@@ -870,6 +874,29 @@ func (o *LoweringOwner) topLevelInitializerNeedsAwait(ctx lowerFileContext, expr
 		return false
 	}
 	return true
+}
+
+func initializerMayHaveRuntimeEffects(ctx lowerFileContext, expr ast.Expr) bool {
+	hasEffects := false
+	ast.Inspect(expr, func(node ast.Node) bool {
+		if hasEffects {
+			return false
+		}
+		switch typed := node.(type) {
+		case *ast.CallExpr:
+			if callTargetSignature(ctx, typed.Fun) != nil {
+				hasEffects = true
+				return false
+			}
+		case *ast.UnaryExpr:
+			if typed.Op == token.ARROW {
+				hasEffects = true
+				return false
+			}
+		}
+		return true
+	})
+	return hasEffects
 }
 
 func (o *LoweringOwner) lowerTupleValueSpec(

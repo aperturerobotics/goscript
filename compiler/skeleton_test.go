@@ -142,6 +142,43 @@ func TestCompilePackagesEmitsSimplePackage(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesSkipsPureTopLevelBlankAssertions(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/blankassert\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type named interface { Name() string }",
+			"type item struct{}",
+			"func (*item) Name() string { return \"item\" }",
+			"var defaultItem = &item{}",
+			"var _ named = defaultItem",
+			"func main() { println(defaultItem.Name()) }",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "blankassert", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "__goscriptBlank") {
+		t.Fatalf("pure top-level blank assertion emitted runtime binding:\n%s", text)
+	}
+	if !strings.Contains(text, "export let defaultItem") {
+		t.Fatalf("missing real package variable:\n%s", text)
+	}
+}
+
 func TestCompilePackagesEmitsShadowedBuiltinCalls(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/shadowbuiltin\n\ngo 1.25.3\n",
