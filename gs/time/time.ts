@@ -840,11 +840,12 @@ export class Ticker {
   private _interval: NodeJS.Timeout | number
   private _duration: Duration
   private _stopped: boolean = false
+  private _channel = makeChannel(1, new Time(), 'both')
+  public C: ChannelRef<Time> = makeChannelRef(this._channel, 'receive')
 
   constructor(duration: Duration) {
     this._duration = duration
-    const ms = timeoutMilliseconds(duration)
-    this._interval = setInterval(() => {}, ms)
+    this._interval = this.start(duration)
   }
 
   // Stop turns off a ticker
@@ -862,19 +863,21 @@ export class Ticker {
     this.Stop()
     this._stopped = false
     this._duration = d
-    const ms = timeoutMilliseconds(d)
-    this._interval = setInterval(() => {}, ms)
+    this._interval = this.start(d)
   }
 
   // Channel returns an async iterator that yields time values
   public async *Channel(): AsyncIterableIterator<Time> {
-    const ms = timeoutMilliseconds(this._duration)
     while (!this._stopped) {
-      await new Promise((resolve) => setTimeout(resolve, ms))
-      if (!this._stopped) {
-        yield Now()
-      }
+      yield await this.C.receive()
     }
+  }
+
+  private start(d: Duration): NodeJS.Timeout | number {
+    const ms = timeoutMilliseconds(d)
+    return setInterval(() => {
+      this._channel.send(Now()).catch(() => {})
+    }, ms)
   }
 }
 
@@ -1158,8 +1161,8 @@ export function NewTicker(d: Duration): Ticker {
 }
 
 // Tick is a convenience wrapper for NewTicker providing access to the ticking channel only
-export function Tick(d: Duration): AsyncIterableIterator<Time> {
-  return new Ticker(d).Channel()
+export function Tick(d: Duration): ChannelRef<Time> {
+  return new Ticker(d).C
 }
 
 // LoadLocation returns the Location with the given name

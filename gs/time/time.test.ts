@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   Duration_String,
   Millisecond,
+  NewTicker,
   NewTimer,
   RFC3339Nano,
   Second,
@@ -25,6 +26,14 @@ describe('time constants and timers', () => {
   it('delivers NewTimer values on C', async () => {
     const timer = NewTimer(0)
     const value = await timer.C.receive()
+
+    expect(value.Unix()).toBeGreaterThan(0)
+  })
+
+  it('delivers NewTicker values on C', async () => {
+    const ticker = NewTicker(0)
+    const value = await ticker.C.receive()
+    ticker.Stop()
 
     expect(value.Unix()).toBeGreaterThan(0)
   })
