@@ -4174,6 +4174,9 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 		var valueDiagnostics []Diagnostic
 		value, valueDiagnostics = o.lowerExpr(ctx, stmt.Tag)
 		diagnostics = append(diagnostics, valueDiagnostics...)
+		value = lowerConstantComparableValue(ctx, stmt.Tag, value)
+	} else if switchHasConstantCaseExpr(ctx, stmt) {
+		value = "(true as boolean)"
 	}
 
 	switchIR := &loweredSwitch{value: value}
@@ -4213,6 +4216,49 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 	}
 	init = append(init, lowered)
 	return []loweredStmt{{children: init}}, diagnostics
+}
+
+func switchHasConstantCaseExpr(ctx lowerFileContext, stmt *ast.SwitchStmt) bool {
+	for _, raw := range stmt.Body.List {
+		clause, ok := raw.(*ast.CaseClause)
+		if !ok {
+			continue
+		}
+		for _, expr := range clause.List {
+			if constantComparableType(ctx, expr) != "" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func lowerConstantComparableValue(ctx lowerFileContext, expr ast.Expr, value string) string {
+	if typ := constantComparableType(ctx, expr); typ != "" {
+		return "(" + value + " as " + typ + ")"
+	}
+	return value
+}
+
+func constantComparableType(ctx lowerFileContext, expr ast.Expr) string {
+	tv, ok := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)]
+	if !ok || tv.Value == nil {
+		return ""
+	}
+	basic, ok := types.Unalias(tv.Type).Underlying().(*types.Basic)
+	if !ok {
+		return ""
+	}
+	switch {
+	case basic.Info()&types.IsBoolean != 0:
+		return "boolean"
+	case basic.Info()&types.IsString != 0:
+		return "string"
+	case basic.Info()&types.IsNumeric != 0 && basic.Info()&types.IsComplex == 0:
+		return "number"
+	default:
+		return ""
+	}
 }
 
 func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.TypeSwitchStmt) ([]loweredStmt, []Diagnostic) {
@@ -4426,6 +4472,9 @@ func isArrayType(typ types.Type) bool {
 func (o *LoweringOwner) lowerEqualityOperands(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, string) {
 	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
 	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if constantComparableType(ctx, expr.X) != "" && constantComparableType(ctx, expr.X) == constantComparableType(ctx, expr.Y) {
+		left = lowerConstantComparableValue(ctx, expr.X, left)
+	}
 	if isNumericType(leftType) && isNumericType(rightType) {
 		left = o.lowerValueForTarget(ctx, expr.X, rightType, left)
 		right = o.lowerValueForTarget(ctx, expr.Y, leftType, right)

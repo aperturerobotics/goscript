@@ -1,0 +1,4 @@
+word: 64
+cgo: off
+compare: not 32
+resolver: go
