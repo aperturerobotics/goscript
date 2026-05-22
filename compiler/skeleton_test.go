@@ -1492,6 +1492,48 @@ func TestCompileSourceToTypeScriptCompilesSingleFile(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLowersNamedStructConversionWithTypedAsyncFact(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/namedstructconvert\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Source struct { Value int }",
+			"type Target Source",
+			"func Make() Source {",
+			"  ch := make(chan Source, 1)",
+			"  ch <- Source{Value: 7}",
+			"  return <-ch",
+			"}",
+			"func Convert() Target {",
+			"  return Target(Make())",
+			"}",
+			"func main() { println(Convert().Value) }",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "namedstructconvert", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "await (async () => { const __goscriptConvert") {
+		t.Fatalf("missing async named struct conversion:\n%s", text)
+	}
+	if !strings.Contains(text, "$.markAsStructValue(new Target({Value: __goscriptConvert") {
+		t.Fatalf("missing typed named struct conversion target:\n%s", text)
+	}
+}
+
 func requireDiagnostic(t *testing.T, err error, code string) {
 	t.Helper()
 

@@ -4068,8 +4068,8 @@ func (o *LoweringOwner) lowerConversionExpr(
 				value + ", " + strconv.FormatInt(array.Len(), 10) + ")", diagnostics
 		}
 	}
-	if converted, ok := o.lowerNamedStructConversion(ctx, targetType, sourceType, value); ok {
-		return converted, diagnostics
+	if conversion, ok := o.lowerNamedStructConversion(ctx, expr.Args[0], targetType, sourceType, value); ok {
+		return renderNamedStructConversion(conversion), diagnostics
 	}
 	if named := namedFunctionType(targetType); named != nil {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedFunction) +
@@ -4086,33 +4086,56 @@ func (o *LoweringOwner) lowerConversionExpr(
 
 func (o *LoweringOwner) lowerNamedStructConversion(
 	ctx lowerFileContext,
+	sourceExpr ast.Expr,
 	targetType types.Type,
 	sourceType types.Type,
 	value string,
-) (string, bool) {
+) (*loweredNamedStructConversionExpr, bool) {
 	target := namedStructType(targetType)
 	source := namedStructType(sourceType)
 	if target == nil || source == nil || types.Identical(target, source) ||
 		!types.IdenticalIgnoreTags(target.Underlying(), source.Underlying()) {
-		return "", false
+		return nil, false
 	}
 	if o.typeUsesOverride(target) || o.typeUsesOverride(source) {
-		return "(" + value + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", true
+		return &loweredNamedStructConversionExpr{
+			value: loweredExpr{
+				text:  value,
+				async: o.conversionValueNeedsAwait(ctx, sourceExpr),
+			},
+			castOnly:   true,
+			castTarget: o.tsTypeFor(ctx, targetType),
+		}, true
 	}
 	structType, _ := target.Underlying().(*types.Struct)
 	temp := ctx.tempName("Convert")
-	fields := make([]string, 0, structType.NumFields())
+	fields := make([]loweredConversionField, 0, structType.NumFields())
 	for field := range structType.Fields() {
-		name := field.Name()
-		fields = append(fields, name+": "+temp+"."+name)
+		fields = append(fields, loweredConversionField{name: field.Name()})
 	}
-	body := "const " + temp + " = " + value + "; return " +
-		o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) +
-		"(new " + o.namedTypeExpr(ctx, target) + "({" + strings.Join(fields, ", ") + "}))"
-	if strings.Contains(value, "await ") {
-		return "(await (async () => { " + body + " })())", true
+	return &loweredNamedStructConversionExpr{
+		value: loweredExpr{
+			text:  value,
+			async: o.conversionValueNeedsAwait(ctx, sourceExpr),
+		},
+		target: o.namedTypeExpr(ctx, target),
+		temp:   temp,
+		helper: o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue),
+		fields: fields,
+	}, true
+}
+
+func (o *LoweringOwner) conversionValueNeedsAwait(ctx lowerFileContext, expr ast.Expr) bool {
+	switch typed := expr.(type) {
+	case *ast.CallExpr:
+		return o.callNeedsAwait(ctx, typed.Fun)
+	case *ast.ParenExpr:
+		return o.conversionValueNeedsAwait(ctx, typed.X)
+	case *ast.UnaryExpr:
+		return typed.Op == token.ARROW
+	default:
+		return false
 	}
-	return "(() => { " + body + " })()", true
 }
 
 func (o *LoweringOwner) typeUsesOverride(named *types.Named) bool {

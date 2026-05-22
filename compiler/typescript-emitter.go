@@ -593,6 +593,25 @@ func renderRangeFunc(b *strings.Builder, stmt *loweredRangeFunc, indent int) {
 	b.WriteString("}\n")
 }
 
+func renderNamedStructConversion(expr *loweredNamedStructConversionExpr) string {
+	if expr == nil {
+		return "undefined"
+	}
+	if expr.castOnly {
+		return "(" + expr.value.text + " as unknown as " + expr.castTarget + ")"
+	}
+	fields := make([]string, 0, len(expr.fields))
+	for _, field := range expr.fields {
+		fields = append(fields, field.name+": "+expr.temp+"."+field.name)
+	}
+	body := "const " + expr.temp + " = " + expr.value.text + "; return " +
+		expr.helper + "(new " + expr.target + "({" + strings.Join(fields, ", ") + "}))"
+	if expr.value.async {
+		return "(await (async () => { " + body + " })())"
+	}
+	return "(() => { " + body + " })()"
+}
+
 func renderSelect(b *strings.Builder, stmt *loweredSelect, indent int) {
 	writeIndent(b, indent)
 	b.WriteString("const [")
