@@ -51,6 +51,19 @@ describe('slices.Backward', () => {
       [0, 'a'],
     ])
   })
+
+  it('accepts async yield callbacks', async () => {
+    const visited: Array<[number, string]> = []
+    await Backward($.arrayToSlice(['a', 'b', 'c']))(async (index, value) => {
+      visited.push([index, value])
+      return index > 1
+    })
+
+    expect(visited).toEqual([
+      [2, 'c'],
+      [1, 'b'],
+    ])
+  })
 })
 
 describe('slices.IsSorted', () => {

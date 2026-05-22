@@ -78,21 +78,37 @@ export function All<T>(
   }
 }
 
-export function Backward<T>(s: $.Slice<T>): iter.Seq2<number, T> {
-  return function (_yield: (index: number, value: T) => boolean): void {
-    for (let i = $.len(s) - 1; i >= 0; i--) {
-      if (!_yield(i, (s as any)[i] as T)) {
-        break
+export function Backward<T>(
+  s: $.Slice<T>,
+): (
+  _yield: (index: number, value: T) => boolean | globalThis.Promise<boolean>
+) => void | globalThis.Promise<void> {
+  return function (
+    _yield: (index: number, value: T) => boolean | globalThis.Promise<boolean>,
+  ): void | globalThis.Promise<void> {
+    const walk = (i: number): void | globalThis.Promise<void> => {
+      for (; i >= 0; i--) {
+        const keepGoing = _yield(i, (s as any)[i] as T)
+        if (keepGoing instanceof Promise) {
+          return keepGoing.then((next) => {
+            if (next) {
+              return walk(i - 1)
+            }
+          })
+        }
+        if (!keepGoing) {
+          break
+        }
       }
     }
+    const length = $.len(s)
+    if (length === 0) {
+      return
+    }
+    return walk(length - 1)
   }
 }
 
-/**
- * Sort sorts a slice in ascending order.
- * This is equivalent to Go's slices.Sort function.
- * @param s The slice to sort in place
- */
 export function Sort<T extends string | number>(s: $.Slice<T>): void {
   $.sortSlice(s)
 }
