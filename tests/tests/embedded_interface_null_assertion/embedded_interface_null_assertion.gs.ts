@@ -1,10 +1,10 @@
 // Generated file based on embedded_interface_null_assertion.go
 // Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as $ from "@goscript/builtin/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
 export type Reader = null | {
-	Read(p: $.Slice<number>): [number, error]
+	Read(p: $.Slice<number>): [number, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -14,10 +14,10 @@ $.registerInterfaceType(
 )
 
 export class MyReader {
-	public get Reader(): Reader {
+	public get Reader(): Reader | null {
 		return this._fields.Reader.value
 	}
-	public set Reader(value: Reader) {
+	public set Reader(value: Reader | null) {
 		this._fields.Reader.value = value
 	}
 
@@ -29,11 +29,11 @@ export class MyReader {
 	}
 
 	public _fields: {
-		Reader: $.VarRef<Reader>
+		Reader: $.VarRef<Reader | null>
 		name: $.VarRef<string>
 	}
 
-	constructor(init?: Partial<{Reader?: Reader, name?: string}>) {
+	constructor(init?: Partial<{Reader?: Reader | null, name?: string}>) {
 		this._fields = {
 			Reader: $.varRef(init?.Reader ?? null),
 			name: $.varRef(init?.name ?? "")
@@ -49,10 +49,14 @@ export class MyReader {
 		return $.markAsStructValue(cloned)
 	}
 
+	public Read(p: any): any {
+		return $.pointerValue<Exclude<Reader | null, null>>(this.Reader).Read(p)
+	}
+
 	static __typeInfo = $.registerStructType(
 		"main.MyReader",
-		new MyReader(),
-		[],
+		() => new MyReader(),
+		[{ name: "Read", args: [], returns: [] }],
 		MyReader,
 		{"Reader": "main.Reader", "name": { kind: $.TypeKind.Basic, name: "string" }}
 	)
@@ -94,39 +98,41 @@ export class StringReader {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Read(p: $.Slice<number>): void {
-		const s = this
-		if ($.pointerValue(s).pos >= $.len($.pointerValue(s).data)) {
+	public Read(p: $.Slice<number>): [number, $.GoError] {
+		let s: StringReader | $.VarRef<StringReader> | null = this
+		if ($.pointerValue<StringReader>(s).pos >= $.len($.pointerValue<StringReader>(s).data)) {
 			return [0, null]
 		}
-		let n = $.copy(p, $.stringToBytes($.sliceStringOrBytes($.pointerValue(s).data, $.pointerValue(s).pos, undefined)))
-		$.pointerValue(s).pos += n
+		let n = $.copy(p, $.stringToBytes($.sliceStringOrBytes($.pointerValue<StringReader>(s).data, $.pointerValue<StringReader>(s).pos, undefined)))
+		$.pointerValue<StringReader>(s).pos += n
 		return [n, null]
 	}
 
 	static __typeInfo = $.registerStructType(
 		"main.StringReader",
-		new StringReader(),
+		() => new StringReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		StringReader,
 		{"data": { kind: $.TypeKind.Basic, name: "string" }, "pos": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 
-export async function main(): Promise<void> {
-	let mr1 = new MyReader({name: "test1"})
-	$.println($.pointerValue(mr1).Reader == null)
-	let sr = new StringReader({data: "hello", pos: 0})
-	let mr2 = new MyReader({Reader: sr, name: "test2"})
-	$.println($.pointerValue(mr2).Reader != null)
+export async function main(): globalThis.Promise<void> {
+	let mr1: MyReader | $.VarRef<MyReader> | null = new MyReader({name: "test1"})
+	$.println($.pointerValue<MyReader>(mr1).Reader == null)
+
+	let sr: StringReader | $.VarRef<StringReader> | null = new StringReader({data: "hello", pos: 0})
+	let mr2: MyReader | $.VarRef<MyReader> | null = new MyReader({Reader: $.interfaceValue<Reader | null>(sr, "*main.StringReader"), name: "test2"})
+	$.println($.pointerValue<MyReader>(mr2).Reader != null)
+
 	let buf = $.makeSlice<number>(5, undefined, "byte")
-	let [n, ] = $.markAsStructValue($.pointerValue(mr2).clone()).Read(buf)
+	let [n, ] = $.pointerValue<Exclude<Reader, null>>($.pointerValue<MyReader>(mr2).Reader).Read(buf)
 	$.println(n == 5)
+
 	$.println(10)
 	$.println(15)
 	$.println(true)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

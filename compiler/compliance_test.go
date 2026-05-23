@@ -127,7 +127,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"chan_type_assertion":               true,
 	"debug_marshal":                     true,
 	"debug_simple":                      true,
-	"embedded_interface_null_assertion": true,
 	"filepath_walkfunc_call":            true,
 	"flag_bitwise_op":                   true,
 	"for_init_multi_assign":             true,

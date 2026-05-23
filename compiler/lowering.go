@@ -1505,6 +1505,12 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 	}
 
 	methodDecls := o.methodDeclsForType(ctx, semType.named)
+	explicitMethods := make(map[string]bool, len(methodDecls))
+	for _, methodDecl := range methodDecls {
+		if methodDecl != nil {
+			explicitMethods[methodDecl.Name.Name] = true
+		}
+	}
 	var diagnostics []Diagnostic
 	for _, methodDecl := range methodDecls {
 		method, methodDiagnostics := o.lowerFuncDecl(ctx, methodDecl)
@@ -1516,7 +1522,61 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 			lowered.methods = append(lowered.methods, *method)
 		}
 	}
+	for _, field := range semType.fields {
+		methods := o.lowerEmbeddedInterfaceForwarders(ctx, field, explicitMethods)
+		lowered.methods = append(lowered.methods, methods...)
+	}
 	return lowered, diagnostics
+}
+
+func (o *LoweringOwner) lowerEmbeddedInterfaceForwarders(
+	ctx lowerFileContext,
+	field semanticField,
+	explicitMethods map[string]bool,
+) []loweredFunction {
+	if !field.embedded {
+		return nil
+	}
+	iface, ok := types.Unalias(field.typ).Underlying().(*types.Interface)
+	if !ok {
+		return nil
+	}
+	iface.Complete()
+	var methods []loweredFunction
+	for method := range iface.Methods() {
+		if method == nil || explicitMethods[method.Name()] {
+			continue
+		}
+		signature, _ := method.Type().(*types.Signature)
+		if signature == nil {
+			continue
+		}
+		async := o.functionAsync(ctx, method)
+		lowered := loweredFunction{
+			async:       async,
+			name:        methodMemberName(method.Name()),
+			runtimeName: method.Name(),
+			result:      asyncResultType("any", async),
+			deferState:  &loweredDeferState{},
+		}
+		args := make([]string, 0, signature.Params().Len())
+		for idx := range signature.Params().Len() {
+			param := signature.Params().At(idx)
+			name := safeParamName(param, idx)
+			args = append(args, name)
+			lowered.params = append(lowered.params, loweredParam{name: name, typ: "any"})
+		}
+		call := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+			"<Exclude<" + o.tsStructFieldTypeFor(ctx, field.typ) + ", null>>(this." +
+			tsStructFieldName(field.name, 0) + ")." + method.Name() + "(" + strings.Join(args, ", ") + ")"
+		if async {
+			call = "await " + call
+		}
+		lowered.body = []loweredStmt{{text: "return " + call}}
+		methods = append(methods, lowered)
+		explicitMethods[method.Name()] = true
+	}
+	return methods
 }
 
 func (o *LoweringOwner) methodDeclsForType(ctx lowerFileContext, named *types.Named) []*ast.FuncDecl {

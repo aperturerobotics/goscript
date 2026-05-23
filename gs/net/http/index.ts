@@ -3,6 +3,7 @@ import * as errors from '@goscript/errors/index.js'
 import * as io from '@goscript/io/index.js'
 
 export const StatusOK = 200
+export const StatusNotFound = 404
 export const StatusPartialContent = 206
 
 export const MethodGet = 'GET'
@@ -11,6 +12,8 @@ export function StatusText(code: number): string {
   switch (code) {
     case StatusOK:
       return 'OK'
+    case StatusNotFound:
+      return 'Not Found'
     case StatusPartialContent:
       return 'Partial Content'
     default:

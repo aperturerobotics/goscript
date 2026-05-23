@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { Get, Response, StatusOK, StatusText } from './index.js'
+import { Get, Response, StatusNotFound, StatusOK, StatusText } from './index.js'
 
 describe('net/http override', () => {
   it('exports response status helpers', () => {
@@ -8,6 +8,7 @@ describe('net/http override', () => {
 
     expect(resp.StatusCode).toBe(200)
     expect(StatusText(resp.StatusCode)).toBe('OK')
+    expect(StatusText(StatusNotFound)).toBe('Not Found')
     expect(StatusText(599)).toBe('')
   })
 
