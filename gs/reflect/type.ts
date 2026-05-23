@@ -1727,6 +1727,7 @@ class StructType implements Type {
     const f = this._fields[i]
     return new StructField({
       Name: f.name,
+      PkgPath: '',
       Type: f.type,
       Tag: f.tag ? new StructTag(f.tag) : undefined,
     })

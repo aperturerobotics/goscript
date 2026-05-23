@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
 
-import { Marshal, MarshalIndent, Unmarshal } from './index.js'
+import { Marshal, MarshalIndent, Unmarshal, type Unmarshaler } from './index.js'
 
 class Person {
   public _fields = {
@@ -31,6 +31,22 @@ class Person {
 }
 
 describe('encoding/json override', () => {
+  it('registers the Unmarshaler interface shape', () => {
+    class CustomUnmarshaler implements Unmarshaler {
+      UnmarshalJSON(_data: $.Slice<number>): $.GoError {
+        return null
+      }
+    }
+
+    const [value, ok] = $.typeAssertTuple<Unmarshaler>(
+      new CustomUnmarshaler(),
+      'json.Unmarshaler',
+    )
+
+    expect(ok).toBe(true)
+    expect(value.UnmarshalJSON($.stringToBytes('{}'))).toBeNull()
+  })
+
   it('marshals struct fields through json tags', () => {
     const person = new Person()
     person._fields.Name.value = 'Alice'

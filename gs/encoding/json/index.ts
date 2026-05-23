@@ -1,5 +1,25 @@
 import * as $ from '@goscript/builtin/index.js'
 
+export interface Unmarshaler {
+  UnmarshalJSON(data: $.Slice<number>): $.GoError
+}
+
+$.registerInterfaceType('json.Unmarshaler', null, [
+  {
+    name: 'UnmarshalJSON',
+    args: [
+      {
+        name: 'data',
+        type: {
+          kind: $.TypeKind.Slice,
+          elemType: { kind: $.TypeKind.Basic, name: 'uint8' },
+        },
+      },
+    ],
+    returns: [{ type: 'GoError' }],
+  },
+])
+
 export function Marshal(v: unknown): [$.Slice<number>, $.GoError] {
   try {
     return [$.stringToBytes(JSON.stringify(marshalValue(v))), null]

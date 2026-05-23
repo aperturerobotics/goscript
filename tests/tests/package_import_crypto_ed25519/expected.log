@@ -1,0 +1,8 @@
+generate err nil true
+pub len 32
+priv len 64
+sig len 64
+verify ok true
+verify wrong false
+public equal true
+private seed len 32

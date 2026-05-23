@@ -40,6 +40,7 @@ import { Type, Kind, Value, Kind_String, ChanDir } from './type.js'
 // Struct field representation
 export class StructField {
   public Name: string = ''
+  public PkgPath: string = ''
   public Type!: Type
   public Tag: StructTag = new StructTag('')
   public Offset: uintptr = 0
@@ -55,6 +56,7 @@ export class StructField {
   public clone(): StructField {
     return new StructField({
       Name: this.Name,
+      PkgPath: this.PkgPath,
       Type: this.Type,
       Tag: this.Tag,
       Offset: this.Offset,
@@ -64,7 +66,7 @@ export class StructField {
   }
 
   public IsExported(): boolean {
-    return this.Name !== '' && this.Name[0] !== '_'
+    return this.PkgPath === ''
   }
 }
 

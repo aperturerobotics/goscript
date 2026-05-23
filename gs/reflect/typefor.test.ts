@@ -4,9 +4,23 @@ import {
   registerInterfaceType,
   registerStructType,
 } from '../builtin/index.js'
+import { StructField } from './types.js'
 import { Int, Struct, TypeFor } from './type.js'
 
 describe('TypeFor', () => {
+  it('exposes StructField PkgPath and exported semantics', () => {
+    const exported = new StructField({ Name: 'Field' })
+    const unexported = new StructField({
+      Name: 'field',
+      PkgPath: 'example.test/pkg',
+    })
+
+    expect(exported.PkgPath).toBe('')
+    expect(exported.IsExported()).toBe(true)
+    expect(unexported.IsExported()).toBe(false)
+    expect(unexported.clone().PkgPath).toBe('example.test/pkg')
+  })
+
   it('uses generic runtime type descriptors', () => {
     const intType = TypeFor({
       T: {

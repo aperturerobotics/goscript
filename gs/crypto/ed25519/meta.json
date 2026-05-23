@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    "io"
+  ],
+  "asyncFunctions": {
+    "GenerateKey": true,
+    "NewKeyFromSeed": true,
+    "Sign": true,
+    "Verify": true,
+    "VerifyWithOptions": true,
+    "PrivateKey_Sign": true
+  }
+}
