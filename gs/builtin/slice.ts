@@ -249,12 +249,11 @@ export const makeSlice = <T>(
   }
 
   const backingArr = new Array<T>(actualCapacity)
-  // Initialize the relevant part of the backing array
-  for (let i = 0; i < length; i++) {
+  // Go zero-initializes the whole backing array. Elements beyond len become
+  // observable when a slice is resliced up to cap.
+  for (let i = 0; i < actualCapacity; i++) {
     backingArr[i] = zeroValue()
   }
-  // The rest of backingArr (from length to actualCapacity-1) remains uninitialized (undefined),
-  // representing available capacity.
 
   // OPTIMIZATION: If length equals capacity, return backing array directly
   if (length === actualCapacity) {
@@ -1477,6 +1476,71 @@ export function stringToBytes(
   }
   // Handle array or slice types
   return new Uint8Array(Array.isArray(s) ? s : [])
+}
+
+type StringHeaderData = {
+  kind: 'string'
+  value: string
+}
+
+export function stringHeaderRef(s: VarRef<string>): VarRef<{
+  Data: StringHeaderData
+  Len: number
+}> {
+  return varRef({
+    get Data(): StringHeaderData {
+      return { kind: 'string', value: s.value }
+    },
+    set Data(_value: StringHeaderData) {},
+    get Len(): number {
+      return stringToBytes(s.value).length
+    },
+    set Len(_value: number) {},
+  })
+}
+
+export function sliceHeaderRef(b: VarRef<Slice<number>>): VarRef<{
+  Data: StringHeaderData | null
+  Len: number
+  Cap: number
+}> {
+  let data: StringHeaderData | null = null
+  let length = 0
+  let capacity = 0
+  const refresh = () => {
+    if (data === null) {
+      return
+    }
+    const bytes = stringToBytes(data.value)
+    const out = makeSlice<number>(length, Math.max(capacity, length), 'byte')
+    if (out !== null) {
+      copy(out, goSlice(bytes, 0, Math.min(length, bytes.length)))
+    }
+    b.value = out
+  }
+  return varRef({
+    get Data(): StringHeaderData | null {
+      return data
+    },
+    set Data(value: StringHeaderData | null) {
+      data = value
+      refresh()
+    },
+    get Len(): number {
+      return length
+    },
+    set Len(value: number) {
+      length = value
+      refresh()
+    },
+    get Cap(): number {
+      return capacity
+    },
+    set Cap(value: number) {
+      capacity = value
+      refresh()
+    },
+  })
 }
 
 /**

@@ -32,6 +32,8 @@ import {
   resetHostRuntimeForTests,
   selectStatement,
   sliceToArray,
+  sliceHeaderRef,
+  stringHeaderRef,
   TypeKind,
   typeAssert,
   typedNil,
@@ -206,6 +208,24 @@ describe('builtin runtime contract helpers', () => {
 
     shortBytes![0] = 14
     expect(bytesToUint8Array(shortBytes)).toEqual(new Uint8Array([14, 0]))
+
+    class Entry {
+      value = ''
+    }
+    const entries = makeSlice<Entry>(1, 3, undefined, () => new Entry())
+    const expanded = goSlice(entries, 0, 3)
+    const extra = indexRef(expanded, 2)
+    extra.value.value = 'zero-backed'
+    expect(pointerValue(extra).value).toBe('zero-backed')
+
+    const text = varRef('abc')
+    const headerBytes = varRef(makeSlice<number>(0, 0, 'byte'))
+    const strh = pointerValue(stringHeaderRef(text))
+    const sh = pointerValue(sliceHeaderRef(headerBytes))
+    sh.Data = strh.Data
+    sh.Len = strh.Len
+    sh.Cap = strh.Len
+    expect(bytesToUint8Array(headerBytes.value)).toEqual(new Uint8Array([97, 98, 99]))
   })
 
   it('exposes stable synthetic slice index addresses', () => {

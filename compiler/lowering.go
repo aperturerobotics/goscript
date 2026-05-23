@@ -5449,6 +5449,9 @@ func (o *LoweringOwner) lowerConversionExpr(
 			return value, append(diagnostics, addressDiagnostics...)
 		}
 	}
+	if helper, addressDiagnostics, ok := o.lowerReflectHeaderPointerConversion(ctx, targetType, expr.Args[0]); ok {
+		return helper, append(diagnostics, addressDiagnostics...)
+	}
 	if isUnsafePointerType(targetType) {
 		return "(" + value + " as any)", diagnostics
 	}
@@ -6332,6 +6335,57 @@ func (o *LoweringOwner) lowerUnsafeStringPointerValue(ctx lowerFileContext, expr
 	}
 	value, diagnostics := o.lowerExpr(ctx, address.X)
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperBytesToString) + "(" + value + ")", diagnostics, true
+}
+
+func (o *LoweringOwner) lowerReflectHeaderPointerConversion(
+	ctx lowerFileContext,
+	targetType types.Type,
+	expr ast.Expr,
+) (string, []Diagnostic, bool) {
+	targetPointer, _ := types.Unalias(targetType).Underlying().(*types.Pointer)
+	if targetPointer == nil {
+		return "", nil, false
+	}
+	header, _ := types.Unalias(targetPointer.Elem()).(*types.Named)
+	if header == nil || header.Obj() == nil || header.Obj().Pkg() == nil || header.Obj().Pkg().Path() != "reflect" {
+		return "", nil, false
+	}
+	unsafeCall, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(unsafeCall.Args) != 1 || !isUnsafePointerType(typeFromExpr(ctx, unsafeCall.Fun)) {
+		return "", nil, false
+	}
+	address, ok := unwrapParenExpr(unsafeCall.Args[0]).(*ast.UnaryExpr)
+	if !ok || address.Op != token.AND {
+		return "", nil, false
+	}
+	switch header.Obj().Name() {
+	case "StringHeader":
+		if !isStringType(ctx.semPkg.source.TypesInfo.TypeOf(address.X)) {
+			return "", nil, false
+		}
+		value, diagnostics := o.lowerAddressedValueRef(ctx, address.X)
+		helper := o.runtimeOwner.QualifiedHelper(RuntimeHelperStringHeaderRef) + "(" + value + ")"
+		return "(" + helper + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics, true
+	case "SliceHeader":
+		if !isByteSliceType(ctx.semPkg.source.TypesInfo.TypeOf(address.X)) {
+			return "", nil, false
+		}
+		value, diagnostics := o.lowerAddressedValueRef(ctx, address.X)
+		helper := o.runtimeOwner.QualifiedHelper(RuntimeHelperSliceHeaderRef) + "(" + value + ")"
+		return "(" + helper + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics, true
+	default:
+		return "", nil, false
+	}
+}
+
+func (o *LoweringOwner) lowerAddressedValueRef(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
+	if ident, ok := unwrapParenExpr(expr).(*ast.Ident); ok {
+		if obj := objectForIdent(ctx, ident); obj != nil && ctx.model.needsVarRef[obj] {
+			return o.lowerIdent(ctx, ident, true), nil
+		}
+	}
+	value, diagnostics := o.lowerExpr(ctx, expr)
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + value + ")", diagnostics
 }
 
 func (o *LoweringOwner) lowerPointerStorageExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
