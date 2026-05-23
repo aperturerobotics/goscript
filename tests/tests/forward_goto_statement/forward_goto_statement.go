@@ -143,6 +143,14 @@ restart:
 	}
 }
 
+func rangeFuncBreakIterator(yield func(int) bool) {
+	for i := range 3 {
+		if !yield(i) {
+			return
+		}
+	}
+}
+
 func main() {
 	println("skip negative:", skipToLabel(-1))
 	println("skip positive:", skipToLabel(1))
@@ -156,4 +164,33 @@ func main() {
 	println("state one:", stateMachineGoto(1))
 	println("nested restart:", nestedBackwardGoto(5))
 	println("nested break:", nestedInnerBreakWithGoto(25))
+
+	rangeTotal := 0
+rangeRestart:
+	if rangeTotal >= 25 {
+		goto rangeDone
+	}
+	for {
+	rangeNext:
+		for v := range rangeFuncBreakIterator {
+			if v == 0 {
+				rangeTotal += 5
+				continue
+			}
+			if v == 1 {
+				break
+			}
+			rangeTotal += 10
+		}
+		rangeTotal++
+		if rangeTotal < 25 {
+			goto rangeNext
+		}
+		if rangeTotal < 28 {
+			goto rangeRestart
+		}
+		break
+	}
+rangeDone:
+	println("range func break:", rangeTotal)
 }

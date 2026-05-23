@@ -3962,7 +3962,7 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 		rangeBranch.value = ctx.tempName("RangeReturnValue")
 		rangeBranch.resultType = o.tsSignatureResultFor(ctx, ctx.signature)
 	}
-	body, diagnostics := o.lowerBlock(ctx.withRangeBranch(rangeBranch), stmt.Body)
+	body, diagnostics := o.lowerBlock(ctx.withoutLoopLabel().withRangeBranch(rangeBranch), stmt.Body)
 	if stmt.Tok != token.DEFINE {
 		assignments, assignmentDiagnostics := o.lowerRangeFuncAssignments(ctx, stmt, paramNames)
 		diagnostics = append(diagnostics, assignmentDiagnostics...)

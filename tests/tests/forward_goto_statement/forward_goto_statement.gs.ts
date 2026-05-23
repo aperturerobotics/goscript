@@ -237,6 +237,14 @@ export function nestedInnerBreakWithGoto(limit: number): number {
 	}
 }
 
+export async function rangeFuncBreakIterator(_yield: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<void> {
+	for (let i = 0; i < 3; i++) {
+		if (!await _yield!(i)) {
+			return
+		}
+	}
+}
+
 export async function main(): globalThis.Promise<void> {
 	$.println("skip negative:", skipToLabel(-1))
 	$.println("skip positive:", skipToLabel(1))
@@ -250,6 +258,62 @@ export async function main(): globalThis.Promise<void> {
 	$.println("state one:", stateMachineGoto(1))
 	$.println("nested restart:", nestedBackwardGoto(5))
 	$.println("nested break:", nestedInnerBreakWithGoto(25))
+
+	let rangeTotal = 0
+	let __goscriptGotoState3 = "rangeRestart"
+	__goscriptGotoLoop3: while (true) {
+		switch (__goscriptGotoState3) {
+			case "rangeRestart":
+			{
+				if (rangeTotal >= 25) {
+					__goscriptGotoState3 = "rangeDone"
+					continue __goscriptGotoLoop3
+				}
+				__goscriptLoop4: while (true) {
+					rangeNext: while (true) {
+						let __goscriptRangeReturn0 = false
+						;await (async () => {
+							await rangeFuncBreakIterator!(async (v) => {
+								if (v == 0) {
+									rangeTotal += 5
+									return true
+								}
+								if (v == 1) {
+									return false
+								}
+								rangeTotal += 10
+								return true
+							})
+						})()
+						if (__goscriptRangeReturn0) {
+							return
+						}
+
+						rangeTotal++
+						if (rangeTotal < 25) {
+							continue rangeNext
+						}
+						break
+					}
+					if (rangeTotal < 28) {
+						__goscriptGotoState3 = "rangeRestart"
+						continue __goscriptGotoLoop3
+					}
+					break __goscriptLoop4
+				}
+				__goscriptGotoState3 = "rangeDone"
+				continue __goscriptGotoLoop3
+				break
+			}
+			case "rangeDone":
+			{
+				$.println("range func break:", rangeTotal)
+				break __goscriptGotoLoop3
+				break
+			}
+		}
+		break
+	}
 }
 
 if ($.isMainScript(import.meta)) {

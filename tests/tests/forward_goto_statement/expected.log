@@ -10,3 +10,4 @@ state zero: 23
 state one: 22
 nested restart: 5
 nested break: 33
+range func break: 30
