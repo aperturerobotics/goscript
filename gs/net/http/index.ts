@@ -7,6 +7,7 @@ export const StatusNotFound = 404
 export const StatusPartialContent = 206
 
 export const MethodGet = 'GET'
+export const MethodPost = 'POST'
 
 export function StatusText(code: number): string {
   switch (code) {

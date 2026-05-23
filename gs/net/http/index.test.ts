@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { Get, Response, StatusNotFound, StatusOK, StatusText } from './index.js'
+import { Get, MethodPost, Response, StatusNotFound, StatusOK, StatusText } from './index.js'
 
 describe('net/http override', () => {
   it('exports response status helpers', () => {
@@ -10,6 +10,7 @@ describe('net/http override', () => {
     expect(StatusText(resp.StatusCode)).toBe('OK')
     expect(StatusText(StatusNotFound)).toBe('Not Found')
     expect(StatusText(599)).toBe('')
+    expect(MethodPost).toBe('POST')
   })
 
   it('returns an explicit unsupported error for Get', () => {
