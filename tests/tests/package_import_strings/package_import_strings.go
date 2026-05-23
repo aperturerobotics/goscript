@@ -14,6 +14,8 @@ func main() {
 
 	result := builder.String()
 	println("Result:", result)
+	printBuilderPointer(&builder)
+	println("After pointer:", builder.String())
 
 	// Also test direct make with strings.Builder
 	builderPtr := &strings.Builder{}
@@ -21,4 +23,10 @@ func main() {
 	println("Direct:", builderPtr.String())
 	println("LastIndexByte:", strings.LastIndexByte("hello", 'l'))
 	println("LastIndex:", strings.LastIndex("hello", "l"))
+}
+
+func printBuilderPointer(builder *strings.Builder) {
+	println("Pointer Len Before:", builder.Len())
+	builder.WriteString(" Pointer")
+	println("Pointer Len After:", builder.Len())
 }

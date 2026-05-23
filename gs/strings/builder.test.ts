@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { Builder } from './builder.js'
+import { varRef } from '../builtin/varRef.js'
 
 describe('strings/Builder', () => {
   describe('Builder', () => {
@@ -87,6 +88,13 @@ describe('strings/Builder', () => {
       b.WriteString('world')
       expect(b.String()).toBe('hello world')
       expect(b.Len()).toBe(11)
+    })
+
+    it('should accept VarRef pointer receivers', () => {
+      const b = varRef(new Builder())
+      Builder.prototype.WriteString.call(b, 'hello')
+      expect(Builder.prototype.Len.call(b)).toBe(5)
+      expect(Builder.prototype.String.call(b)).toBe('hello')
     })
 
     it('should handle empty writes', () => {

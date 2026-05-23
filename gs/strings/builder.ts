@@ -1,5 +1,11 @@
 import * as $ from '@goscript/builtin/index.js'
 
+function builderValue(
+  builder: Builder | $.VarRef<Builder> | null | undefined,
+): Builder {
+  return $.pointerValue<Builder>(builder)
+}
+
 export class Builder {
   private _content: string = ''
   private _addr: Builder | null = null
@@ -16,21 +22,22 @@ export class Builder {
   }
 
   private copyCheck(): void {
-    if (this._addr == null) {
-      this._addr = this
-    } else if (this._addr !== this) {
+    const builder = builderValue(this)
+    if (builder._addr == null) {
+      builder._addr = builder
+    } else if (builder._addr !== builder) {
       $.panic('strings: illegal use of non-zero Builder copied by value')
     }
   }
 
   // String returns the accumulated string.
   public String(): string {
-    return this._content
+    return builderValue(this)._content
   }
 
   // Len returns the number of accumulated bytes; b.Len() == len(b.String()).
   public Len(): number {
-    return this._content.length
+    return builderValue(this)._content.length
   }
 
   // Cap returns the capacity of the builder's underlying byte slice. It is the
@@ -38,20 +45,21 @@ export class Builder {
   // already written.
   public Cap(): number {
     // For simplicity, return the current length since JavaScript strings are dynamic
-    return this._content.length
+    return builderValue(this)._content.length
   }
 
   // Reset resets the Builder to be empty.
   public Reset(): void {
-    this._addr = null
-    this._content = ''
+    const builder = builderValue(this)
+    builder._addr = null
+    builder._content = ''
   }
 
   // Grow grows b's capacity, if necessary, to guarantee space for
   // another n bytes. After Grow(n), at least n bytes can be written to b
   // without another allocation. If n is negative, Grow panics.
   public Grow(n: number): void {
-    this.copyCheck()
+    builderValue(this).copyCheck()
     if (n < 0) {
       $.panic('strings.Builder.Grow: negative count')
     }
@@ -61,28 +69,31 @@ export class Builder {
   // Write appends the contents of p to b's buffer.
   // Write always returns len(p), nil.
   public Write(p: $.Bytes): [number, $.GoError] {
-    this.copyCheck()
+    builderValue(this).copyCheck()
+    const builder = builderValue(this)
     // Convert byte array to string
     const bytes = $.bytesToUint8Array(p)
     const str = new TextDecoder('utf-8').decode(bytes)
-    this._content += str
+    builder._content += str
     return [$.len(p), null]
   }
 
   // WriteByte appends the byte c to b's buffer.
   // The returned error is always nil.
   public WriteByte(c: number): $.GoError {
-    this.copyCheck()
-    this._content += String.fromCharCode(c)
+    builderValue(this).copyCheck()
+    const builder = builderValue(this)
+    builder._content += String.fromCharCode(c)
     return null
   }
 
   // WriteRune appends the UTF-8 encoding of Unicode code point r to b's buffer.
   // It returns the length of r and a nil error.
   public WriteRune(r: number): [number, $.GoError] {
-    this.copyCheck()
+    builderValue(this).copyCheck()
+    const builder = builderValue(this)
     const str = String.fromCodePoint(r)
-    this._content += str
+    builder._content += str
     // Return the byte length of the UTF-8 encoding
     const byteLength = new TextEncoder().encode(str).length
     return [byteLength, null]
@@ -91,8 +102,9 @@ export class Builder {
   // WriteString appends the contents of s to b's buffer.
   // It returns the length of s and a nil error.
   public WriteString(s: string): [number, $.GoError] {
-    this.copyCheck()
-    this._content += s
+    builderValue(this).copyCheck()
+    const builder = builderValue(this)
+    builder._content += s
     return [s.length, null]
   }
 

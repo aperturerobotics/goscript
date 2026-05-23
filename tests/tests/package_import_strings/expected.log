@@ -1,5 +1,8 @@
 Write: 1 true
 Result: Hello World!
+Pointer Len Before: 12
+Pointer Len After: 20
+After pointer: Hello World! Pointer
 Direct: Direct make test
 LastIndexByte: 3
 LastIndex: 3
