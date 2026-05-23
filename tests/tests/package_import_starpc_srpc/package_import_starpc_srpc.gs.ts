@@ -106,7 +106,9 @@ export async function main(): globalThis.Promise<void> {
 		$.println("exec error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	srpc.NewPacketReadWriter(null)
+	let prw: srpc.PacketReadWriter | $.VarRef<srpc.PacketReadWriter> | null = srpc.NewPacketReadWriter(null)
+	$.pointerValue<srpc.PacketReadWriter>(prw).ReadPump((null as srpc.PacketDataHandler), (null as srpc.CloseHandler))
+	$.pointerValue<srpc.PacketReadWriter>(prw).ReadToHandler((null as srpc.PacketDataHandler))
 	$.println("success: starpc srpc override")
 }
 

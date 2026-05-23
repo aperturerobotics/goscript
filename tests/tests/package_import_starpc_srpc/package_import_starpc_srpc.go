@@ -47,6 +47,8 @@ func main() {
 		println("exec error:", err.Error())
 		return
 	}
-	_ = srpc.NewPacketReadWriter(nil)
+	prw := srpc.NewPacketReadWriter(nil)
+	prw.ReadPump(nil, nil)
+	_ = prw.ReadToHandler(nil)
 	println("success: starpc srpc override")
 }

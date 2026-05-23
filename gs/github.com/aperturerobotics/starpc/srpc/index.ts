@@ -856,11 +856,13 @@ export function NewClientWithInvoker(
   return new invokerClient(invoker, contextFn)
 }
 
-export type PacketHandler = (pkt: Packet | null) => MaybePromise<$.GoError>
-export type PacketDataHandler = (
-  data: $.Slice<number>,
-) => MaybePromise<$.GoError>
-export type CloseHandler = (closeErr: $.GoError) => void
+export type PacketHandler =
+  | ((pkt: Packet | null) => MaybePromise<$.GoError>)
+  | null
+export type PacketDataHandler =
+  | ((data: $.Slice<number>) => MaybePromise<$.GoError>)
+  | null
+export type CloseHandler = ((closeErr: $.GoError) => void) | null
 
 class streamWithContext implements Stream {
   constructor(
@@ -1168,7 +1170,7 @@ export function NewPacketDataHandler(
     if (err != null) {
       return err
     }
-    return handler(pkt)
+    return handler?.(pkt) ?? null
   }
 }
 
