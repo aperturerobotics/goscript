@@ -935,10 +935,6 @@ func funcLitUsesFunctionIdentifierCall(pkg *packages.Package, lit *ast.FuncLit) 
 	if pkg == nil || lit == nil || lit.Body == nil {
 		return false
 	}
-	signature, _ := pkg.TypesInfo.TypeOf(lit).(*types.Signature)
-	if signature == nil || signature.Results() == nil || signature.Results().Len() == 0 {
-		return false
-	}
 	uses := false
 	ast.Inspect(lit.Body, func(node ast.Node) bool {
 		if uses {

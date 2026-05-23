@@ -656,7 +656,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 
 	$.pointerValue<queueOnePass>(instQueue).clear()
 	queueOnePass.prototype.insert.call(instQueue, $.uint($.uint($.pointerValue<onePassProg>(p).Start, 32), 32))
-	let m = $.makeSlice<boolean>($.len($.pointerValue<onePassProg>(p).Inst))
+	let m = $.makeSlice<boolean>($.len($.pointerValue<onePassProg>(p).Inst), undefined, "boolean")
 	while (!$.pointerValue<queueOnePass>(instQueue).empty()) {
 		$.pointerValue<queueOnePass>(visitQueue).clear()
 		let pc = $.uint($.pointerValue<queueOnePass>(instQueue).next(), 32)

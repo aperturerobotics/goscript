@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import * as $ from '@goscript/builtin/index.js'
 
 import {
+  All,
   Backward,
   IsSorted,
   IsSortedFunc,
@@ -62,6 +63,21 @@ describe('slices.Backward', () => {
 
     expect(visited).toEqual([
       [2, 'c'],
+      [1, 'b'],
+    ])
+  })
+})
+
+describe('slices.All', () => {
+  it('accepts async yield callbacks', async () => {
+    const visited: Array<[number, string]> = []
+    await All($.arrayToSlice(['a', 'b', 'c']))(async (index, value) => {
+      visited.push([index, value])
+      return index < 1
+    })
+
+    expect(visited).toEqual([
+      [0, 'a'],
       [1, 'b'],
     ])
   })

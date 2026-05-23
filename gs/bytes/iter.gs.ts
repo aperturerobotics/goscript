@@ -13,7 +13,7 @@ import * as utf8 from "@goscript/unicode/utf8/index.js"
 // If s does not end in a newline, the final yielded line will not end in a newline.
 // It returns a single-use iterator.
 export function Lines(s: $.Bytes): iter.Seq<$.Bytes> {
-	return (_yield: ((p0: $.Bytes) => boolean) | null): void => {
+	return async (_yield: ((p0: $.Bytes) => iter.YieldResult) | null): Promise<void> => {
 		for (; $.len(s) > 0; ) {
 			let line: $.Bytes = new Uint8Array(0)
 			{
@@ -24,7 +24,7 @@ export function Lines(s: $.Bytes): iter.Seq<$.Bytes> {
 					[line, s] = [s, null]
 				}
 			}
-			if (!_yield!($.goSlice(line, undefined, $.len(line), $.len(line)))) {
+			if (!await _yield!($.goSlice(line, undefined, $.len(line), $.len(line)))) {
 				return 
 			}
 		}
@@ -34,10 +34,10 @@ export function Lines(s: $.Bytes): iter.Seq<$.Bytes> {
 
 // explodeSeq returns an iterator over the runes in s.
 export function explodeSeq(s: $.Bytes): iter.Seq<$.Bytes> {
-	return (_yield: ((p0: $.Bytes) => boolean) | null): void => {
+	return async (_yield: ((p0: $.Bytes) => iter.YieldResult) | null): Promise<void> => {
 		for (; $.len(s) > 0; ) {
 			let [, size] = utf8.DecodeRune(s)
-			if (!_yield!($.goSlice(s, undefined, size, size))) {
+			if (!await _yield!($.goSlice(s, undefined, size, size))) {
 				return 
 			}
 			s = $.goSlice(s, size, undefined)
@@ -51,19 +51,19 @@ export function splitSeq(s: $.Bytes, sep: $.Bytes, sepSave: number): iter.Seq<$.
 	if ($.len(sep) == 0) {
 		return explodeSeq(s)
 	}
-	return (_yield: ((p0: $.Bytes) => boolean) | null): void => {
+	return async (_yield: ((p0: $.Bytes) => iter.YieldResult) | null): Promise<void> => {
 		for (; ; ) {
 			let i = Index(s, sep)
 			if (i < 0) {
 				break
 			}
 			let frag = $.goSlice(s, undefined, i + sepSave)
-			if (!_yield!($.goSlice(frag, undefined, $.len(frag), $.len(frag)))) {
+			if (!await _yield!($.goSlice(frag, undefined, $.len(frag), $.len(frag)))) {
 				return 
 			}
 			s = $.goSlice(s, i + $.len(sep), undefined)
 		}
-		_yield!($.goSlice(s, undefined, $.len(s), $.len(s)))
+		await _yield!($.goSlice(s, undefined, $.len(s), $.len(s)))
 	}
 }
 
@@ -88,7 +88,7 @@ export function SplitAfterSeq(s: $.Bytes, sep: $.Bytes): iter.Seq<$.Bytes> {
 // The iterator yields the same subslices that would be returned by [Fields](s),
 // but without constructing a new slice containing the subslices.
 export function FieldsSeq(s: $.Bytes): iter.Seq<$.Bytes> {
-	return (_yield: ((p0: $.Bytes) => boolean) | null): void => {
+	return async (_yield: ((p0: $.Bytes) => iter.YieldResult) | null): Promise<void> => {
 		let start = -1
 		for (let i = 0; i < $.len(s); ) {
 			let size = 1
@@ -100,7 +100,7 @@ export function FieldsSeq(s: $.Bytes): iter.Seq<$.Bytes> {
 			}
 			if (isSpace) {
 				if (start >= 0) {
-					if (!_yield!($.goSlice(s, start, i, i))) {
+					if (!await _yield!($.goSlice(s, start, i, i))) {
 						return 
 					}
 					start = -1
@@ -111,7 +111,7 @@ export function FieldsSeq(s: $.Bytes): iter.Seq<$.Bytes> {
 			i += size
 		}
 		if (start >= 0) {
-			_yield!($.goSlice(s, start, $.len(s), $.len(s)))
+			await _yield!($.goSlice(s, start, $.len(s), $.len(s)))
 		}
 	}
 }
@@ -121,7 +121,7 @@ export function FieldsSeq(s: $.Bytes): iter.Seq<$.Bytes> {
 // The iterator yields the same subslices that would be returned by [FieldsFunc](s),
 // but without constructing a new slice containing the subslices.
 export function FieldsFuncSeq(s: $.Bytes, f: ((p0: number) => boolean) | null): iter.Seq<$.Bytes> {
-	return (_yield: ((p0: $.Bytes) => boolean) | null): void => {
+	return async (_yield: ((p0: $.Bytes) => iter.YieldResult) | null): Promise<void> => {
 		let start = -1
 		for (let i = 0; i < $.len(s); ) {
 			let size = 1
@@ -131,7 +131,7 @@ export function FieldsFuncSeq(s: $.Bytes, f: ((p0: number) => boolean) | null): 
 			}
 			if (f!(r)) {
 				if (start >= 0) {
-					if (!_yield!($.goSlice(s, start, i, i))) {
+					if (!await _yield!($.goSlice(s, start, i, i))) {
 						return 
 					}
 					start = -1
@@ -142,8 +142,7 @@ export function FieldsFuncSeq(s: $.Bytes, f: ((p0: number) => boolean) | null): 
 			i += size
 		}
 		if (start >= 0) {
-			_yield!($.goSlice(s, start, $.len(s), $.len(s)))
+			await _yield!($.goSlice(s, start, $.len(s), $.len(s)))
 		}
 	}
 }
-

@@ -15,8 +15,8 @@ export async function main(): globalThis.Promise<void> {
 	// This should trigger the interface range issue
 	// slices.All returns an iterator interface that can be ranged over
 	let __goscriptRangeReturn0 = false
-	;(() => {
-		slices.All(s)!((i, v) => {
+	;await (async () => {
+		await slices.All(s)!(async (i, v) => {
 			$.println("index:", i, "value:", v)
 			return true
 		})
@@ -25,8 +25,8 @@ export async function main(): globalThis.Promise<void> {
 		return
 	}
 	let __goscriptRangeReturn1 = false
-	;(() => {
-		slices.Backward(s)!((i, v) => {
+	;await (async () => {
+		await slices.Backward(s)!(async (i, v) => {
 			if (i < 3) {
 				return false
 			}

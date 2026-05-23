@@ -23,38 +23,64 @@ const asciiSpace: { [key: number]: boolean } = {
 // If s does not end in a newline, the final yielded line will not end in a newline.
 // It returns a single-use iterator.
 export function Lines(s: string): iter.Seq<string> {
-  return (_yield: ((p0: string) => boolean) | null): void => {
-    for (; $.len(s) > 0; ) {
-      let line: string
-      {
-        let i = IndexByte(s, 10)
-        if (i >= 0) {
-          ;[line, s] = [
-            $.sliceString(s, undefined, i + 1),
-            $.sliceString(s, i + 1, undefined),
-          ]
-        } else {
-          ;[line, s] = [s, '']
+  return (
+    _yield: ((p0: string) => iter.YieldResult) | null,
+  ): void | globalThis.Promise<void> => {
+    const walk = (): void | globalThis.Promise<void> => {
+      for (; $.len(s) > 0; ) {
+        let line: string
+        {
+          let i = IndexByte(s, 10)
+          if (i >= 0) {
+            ;[line, s] = [
+              $.sliceString(s, undefined, i + 1),
+              $.sliceString(s, i + 1, undefined),
+            ]
+          } else {
+            ;[line, s] = [s, '']
+          }
+        }
+        const keepGoing = _yield!(line)
+        if (keepGoing instanceof Promise) {
+          return keepGoing.then((next) => {
+            if (next) {
+              return walk()
+            }
+          })
+        }
+        if (!keepGoing) {
+          return
         }
       }
-      if (!_yield!(line)) {
-        return
-      }
     }
-    return
+    return walk()
   }
 }
 
 // explodeSeq returns an iterator over the runes in s.
 export function explodeSeq(s: string): iter.Seq<string> {
-  return (_yield: ((p0: string) => boolean) | null): void => {
-    for (; $.len(s) > 0; ) {
-      let [, size] = utf8.DecodeRuneInString(s)
-      if (!_yield!($.sliceString(s, undefined, size))) {
-        return
+  return (
+    _yield: ((p0: string) => iter.YieldResult) | null,
+  ): void | globalThis.Promise<void> => {
+    const walk = (): void | globalThis.Promise<void> => {
+      for (; $.len(s) > 0; ) {
+        let [, size] = utf8.DecodeRuneInString(s)
+        const keepGoing = _yield!($.sliceString(s, undefined, size))
+        if (keepGoing instanceof Promise) {
+          return keepGoing.then((next) => {
+            if (next) {
+              s = $.sliceString(s, size, undefined)
+              return walk()
+            }
+          })
+        }
+        if (!keepGoing) {
+          return
+        }
+        s = $.sliceString(s, size, undefined)
       }
-      s = $.sliceString(s, size, undefined)
     }
+    return walk()
   }
 }
 
@@ -68,19 +94,36 @@ export function splitSeq(
   if ($.len(sep) == 0) {
     return explodeSeq(s)
   }
-  return (_yield: ((p0: string) => boolean) | null): void => {
-    for (;;) {
-      let i = Index(s, sep)
-      if (i < 0) {
-        break
+  return (
+    _yield: ((p0: string) => iter.YieldResult) | null,
+  ): void | globalThis.Promise<void> => {
+    const walk = (): void | globalThis.Promise<void> => {
+      for (;;) {
+        let i = Index(s, sep)
+        if (i < 0) {
+          const keepGoing = _yield!(s)
+          if (keepGoing instanceof Promise) {
+            return keepGoing.then(() => {})
+          }
+          return
+        }
+        let frag = $.sliceString(s, undefined, i + sepSave)
+        const keepGoing = _yield!(frag)
+        if (keepGoing instanceof Promise) {
+          return keepGoing.then((next) => {
+            if (next) {
+              s = $.sliceString(s, i + $.len(sep), undefined)
+              return walk()
+            }
+          })
+        }
+        if (!keepGoing) {
+          return
+        }
+        s = $.sliceString(s, i + $.len(sep), undefined)
       }
-      let frag = $.sliceString(s, undefined, i + sepSave)
-      if (!_yield!(frag)) {
-        return
-      }
-      s = $.sliceString(s, i + $.len(sep), undefined)
     }
-    _yield!(s)
+    return walk()
   }
 }
 
@@ -105,31 +148,47 @@ export function SplitAfterSeq(s: string, sep: string): iter.Seq<string> {
 // The iterator yields the same strings that would be returned by [Fields](s),
 // but without constructing the slice.
 export function FieldsSeq(s: string): iter.Seq<string> {
-  return (_yield: ((p0: string) => boolean) | null): void => {
+  return (
+    _yield: ((p0: string) => iter.YieldResult) | null,
+  ): void | globalThis.Promise<void> => {
     let start = -1
-    for (let i = 0; i < $.len(s); ) {
-      let size = 1
-      let r = $.indexString(s, i) as number
-      let isSpace = asciiSpace[$.indexString(s, i)] === true
-      if (r >= utf8.RuneSelf) {
-        ;[r, size] = utf8.DecodeRuneInString($.sliceString(s, i, undefined))
-        isSpace = unicode.IsSpace(r)
-      }
-      if (isSpace) {
-        if (start >= 0) {
-          if (!_yield!($.sliceString(s, start, i))) {
-            return
-          }
-          start = -1
+    const walk = (i: number): void | globalThis.Promise<void> => {
+      for (; i < $.len(s); ) {
+        let size = 1
+        let r = $.indexString(s, i) as number
+        let isSpace = asciiSpace[$.indexString(s, i)] === true
+        if (r >= utf8.RuneSelf) {
+          ;[r, size] = utf8.DecodeRuneInString($.sliceString(s, i, undefined))
+          isSpace = unicode.IsSpace(r)
         }
-      } else if (start < 0) {
-        start = i
+        if (isSpace) {
+          if (start >= 0) {
+            const keepGoing = _yield!($.sliceString(s, start, i))
+            start = -1
+            if (keepGoing instanceof Promise) {
+              return keepGoing.then((next) => {
+                if (next) {
+                  return walk(i + size)
+                }
+              })
+            }
+            if (!keepGoing) {
+              return
+            }
+          }
+        } else if (start < 0) {
+          start = i
+        }
+        i += size
       }
-      i += size
+      if (start >= 0) {
+        const keepGoing = _yield!($.sliceString(s, start, undefined))
+        if (keepGoing instanceof Promise) {
+          return keepGoing.then(() => {})
+        }
+      }
     }
-    if (start >= 0) {
-      _yield!($.sliceString(s, start, undefined))
-    }
+    return walk(0)
   }
 }
 
@@ -141,31 +200,47 @@ export function FieldsFuncSeq(
   s: string,
   f: ((p0: number) => boolean) | null,
 ): iter.Seq<string> {
-  return (_yield: ((p0: string) => boolean) | null): void => {
+  return (
+    _yield: ((p0: string) => iter.YieldResult) | null,
+  ): void | globalThis.Promise<void> => {
     if (f === null) {
       return
     }
     let start = -1
-    for (let i = 0; i < $.len(s); ) {
-      let size = 1
-      let r = $.indexString(s, i) as number
-      if (r >= utf8.RuneSelf) {
-        ;[r, size] = utf8.DecodeRuneInString($.sliceString(s, i, undefined))
-      }
-      if (f(r)) {
-        if (start >= 0) {
-          if (!_yield!($.sliceString(s, start, i))) {
-            return
-          }
-          start = -1
+    const walk = (i: number): void | globalThis.Promise<void> => {
+      for (; i < $.len(s); ) {
+        let size = 1
+        let r = $.indexString(s, i) as number
+        if (r >= utf8.RuneSelf) {
+          ;[r, size] = utf8.DecodeRuneInString($.sliceString(s, i, undefined))
         }
-      } else if (start < 0) {
-        start = i
+        if (f(r)) {
+          if (start >= 0) {
+            const keepGoing = _yield!($.sliceString(s, start, i))
+            start = -1
+            if (keepGoing instanceof Promise) {
+              return keepGoing.then((next) => {
+                if (next) {
+                  return walk(i + size)
+                }
+              })
+            }
+            if (!keepGoing) {
+              return
+            }
+          }
+        } else if (start < 0) {
+          start = i
+        }
+        i += size
       }
-      i += size
+      if (start >= 0) {
+        const keepGoing = _yield!($.sliceString(s, start, undefined))
+        if (keepGoing instanceof Promise) {
+          return keepGoing.then(() => {})
+        }
+      }
     }
-    if (start >= 0) {
-      _yield!($.sliceString(s, start, undefined))
-    }
+    return walk(0)
   }
 }

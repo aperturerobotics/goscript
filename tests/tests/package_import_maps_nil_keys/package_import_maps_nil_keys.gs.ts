@@ -11,8 +11,8 @@ export async function main(): globalThis.Promise<void> {
 	let m: Map<string, number> | null = null as Map<string, number> | null
 	let count = 0
 	let __goscriptRangeReturn0 = false
-	;(() => {
-		maps.Keys(m)!((__goscriptRange0_0) => {
+	;await (async () => {
+		await maps.Keys(m)!(async (__goscriptRange0_0) => {
 			count++
 			return true
 		})

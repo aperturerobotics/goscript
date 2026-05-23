@@ -14,9 +14,9 @@ export function getValue(): [string, number] {
 }
 
 export function simpleIterator(m: Map<string, number> | null): ((_p0: ((_p0: string, _p1: number) => boolean | globalThis.Promise<boolean>) | null) => void) | null {
-	return $.functionValue((_yield: ((_p0: string, _p1: number) => boolean | globalThis.Promise<boolean>) | null): void => {
+	return $.functionValue(async (_yield: ((_p0: string, _p1: number) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<void> => {
 		for (const [k, v] of m?.entries() ?? []) {
-			if (!_yield!(k, v)) {
+			if (!await _yield!(k, v)) {
 				break
 			}
 		}
@@ -32,8 +32,8 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test maps.All which returns an iterator function (this tests the maps package import)
 	let __goscriptRangeReturn0 = false
-	;(() => {
-		maps.All(m)!((k, v) => {
+	;await (async () => {
+		await maps.All(m)!(async (k, v) => {
 			// Simple assignment that should trigger the error
 			let [x, y] = getValue()
 			let result = (k + x) + String.fromCodePoint($.int(v + y, 32))
@@ -47,8 +47,8 @@ export async function main(): globalThis.Promise<void> {
 
 	// Also test simpleIterator to ensure our local iterator works
 	let __goscriptRangeReturn1 = false
-	;(() => {
-		simpleIterator(m)!((k, v) => {
+	;await (async () => {
+		await simpleIterator(m)!(async (k, v) => {
 			let [x, y] = getValue()
 			let result = ((k + x) + String.fromCodePoint($.int(v + y, 32))) + "_local"
 			results = $.append(results, result)

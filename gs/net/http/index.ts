@@ -3,11 +3,16 @@ import * as errors from '@goscript/errors/index.js'
 import * as io from '@goscript/io/index.js'
 
 export const StatusOK = 200
+export const StatusPartialContent = 206
+
+export const MethodGet = 'GET'
 
 export function StatusText(code: number): string {
   switch (code) {
     case StatusOK:
       return 'OK'
+    case StatusPartialContent:
+      return 'Partial Content'
     default:
       return ''
   }
@@ -56,6 +61,20 @@ export interface ResponseWriter {
   WriteHeader(statusCode: number): void
 }
 
+export class Request {
+  public Method: string
+  public URL: string
+  public Body: io.Reader | null
+  public Header: Header
+
+  constructor(init?: Partial<Request>) {
+    this.Method = init?.Method ?? ''
+    this.URL = init?.URL ?? ''
+    this.Body = init?.Body ?? null
+    this.Header = init?.Header ?? new Header()
+  }
+}
+
 export class Response {
   public StatusCode: number
   public Body: io.ReadCloser | null
@@ -74,6 +93,34 @@ export class Response {
       StatusCode: this.StatusCode,
     })
   }
+}
+
+export class Client {
+  public Do(_req: Request | null): [Response | null, $.GoError] {
+    return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
+  }
+}
+
+export const DefaultClient = new Client()
+
+export function NewRequest(
+  method: string,
+  url: string,
+  body: io.Reader | null,
+): [Request | null, $.GoError] {
+  return NewRequestWithContext(null, method, url, body)
+}
+
+export function NewRequestWithContext(
+  _ctx: unknown,
+  method: string,
+  url: string,
+  body: io.Reader | null,
+): [Request | null, $.GoError] {
+  if (method === '') {
+    method = MethodGet
+  }
+  return [new Request({ Method: method, URL: url, Body: body }), null]
 }
 
 export function Get(_url: string): [Response | null, $.GoError] {

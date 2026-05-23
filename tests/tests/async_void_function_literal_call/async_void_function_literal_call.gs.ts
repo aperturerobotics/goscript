@@ -1,0 +1,28 @@
+// Generated file based on async_void_function_literal_call.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+export async function wrap(fn: (() => void) | null): globalThis.Promise<(() => void) | null> {
+	return $.functionValue(async (): globalThis.Promise<void> => {
+		await fn!()
+		$.println("wrapped")
+	}, { kind: $.TypeKind.Function, params: [], results: [] })
+}
+
+export async function main(): globalThis.Promise<void> {
+	let ch = $.makeChannel<{}>(0, {}, "both")
+	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		await $.chanSend(ch, {})
+	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	let wrapped = await wrap($.functionValue(async (): globalThis.Promise<void> => {
+		await $.chanRecv(ch)
+		$.println("fn")
+	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	await wrapped!()
+	$.println("done")
+}
+
+if ($.isMainScript(import.meta)) {
+	await main()
+}

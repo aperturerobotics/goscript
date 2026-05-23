@@ -30,6 +30,7 @@ import {
   registerInterfaceType,
   registerStructType,
   resetHostRuntimeForTests,
+  selectStatement,
   sliceToArray,
   TypeKind,
   typeAssert,
@@ -359,5 +360,36 @@ describe('builtin runtime contract helpers', () => {
     expect(len(channel)).toBe(0)
     channel.close()
     expect(await chanRecvWithOk(channel)).toEqual({ value: 0, ok: false })
+  })
+
+  it('cancels losing select receive cases', async () => {
+    const signal = makeChannel<string>(1, '', 'both')
+    const timeout = makeChannel<string>(0, '', 'both')
+    queueMicrotask(() => timeout.close())
+
+    await selectStatement(
+      [
+        {
+          id: 0,
+          isSend: false,
+          channel: signal,
+          onSelected: async () => 'signal',
+        },
+        {
+          id: 1,
+          isSend: false,
+          channel: timeout,
+          onSelected: async () => 'timeout',
+        },
+      ],
+      false,
+    )
+
+    await signal.send('value')
+    const received = await Promise.race([
+      signal.receive(),
+      new Promise<string>((resolve) => setTimeout(() => resolve('timeout'), 20)),
+    ])
+    expect(received).toBe('value')
   })
 })

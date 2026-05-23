@@ -96,6 +96,12 @@ describe('testing.T', () => {
     expect(t.Failed()).toBe(false)
   })
 
+  it('returns a non-nil context', () => {
+    const t = new T('root')
+
+    expect(t.Context()).not.toBeNull()
+  })
+
   it('formats common testing printf verbs', () => {
     const t = new T('root')
     const messages: string[] = []

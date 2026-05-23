@@ -56,7 +56,7 @@ export interface Channel<T> {
    * @param id An identifier for this case in the select statement
    * @returns Promise that resolves when this case is selected
    */
-  selectReceive(id: number): Promise<SelectResult<T>>
+  selectReceive(id: number, signal?: AbortSignal): Promise<SelectResult<T>>
 
   /**
    * Used in select statements to create a send operation promise.
@@ -64,7 +64,11 @@ export interface Channel<T> {
    * @param id An identifier for this case in the select statement
    * @returns Promise that resolves when this case is selected
    */
-  selectSend(value: T, id: number): Promise<SelectResult<boolean>>
+  selectSend(
+    value: T,
+    id: number,
+    signal?: AbortSignal,
+  ): Promise<SelectResult<boolean>>
 
   /**
    * Checks if the channel has data ready to be received without blocking.
@@ -185,15 +189,20 @@ export async function selectStatement<T, V = void>(
 
   // 3. If no operations are ready and no default case, block until one is ready
   // Use Promise.race on the blocking promises
+  const abort = new AbortController()
   const blockingPromises = cases
     .filter((c) => c.id !== -1) // Exclude default case
     .filter((c) => c.channel !== null) // Exclude nil channels (they would block forever)
     .map((caseObj) => {
       // At this point caseObj.channel is guaranteed to be non-null
       if (caseObj.isSend) {
-        return caseObj.channel!.selectSend(caseObj.value, caseObj.id)
+        return caseObj.channel!.selectSend(
+          caseObj.value,
+          caseObj.id,
+          abort.signal,
+        )
       } else {
-        return caseObj.channel!.selectReceive(caseObj.id)
+        return caseObj.channel!.selectReceive(caseObj.id, abort.signal)
       }
     })
 
@@ -204,6 +213,7 @@ export async function selectStatement<T, V = void>(
   }
 
   const result = await Promise.race(blockingPromises)
+  abort.abort()
   // Execute onSelected handler for the selected case
   const selectedCase = cases.find((c) => c.id === result.id)
   if (selectedCase && selectedCase.onSelected) {
@@ -430,7 +440,10 @@ class BufferedChannel<T> implements Channel<T> {
     })
   }
 
-  async selectReceive(id: number): Promise<SelectResult<T>> {
+  async selectReceive(
+    id: number,
+    signal?: AbortSignal,
+  ): Promise<SelectResult<T>> {
     if (this.buffer.length > 0) {
       const value = this.buffer.shift()!
       if (this.senders.length > 0) {
@@ -452,15 +465,43 @@ class BufferedChannel<T> implements Channel<T> {
     }
 
     return new Promise<SelectResult<T>>((resolve) => {
-      this.receiversWithOk.push({
+      const state = { done: false }
+      const receiversWithOk = this.receiversWithOk
+      const task = {
         resolveReceive: (result: ChannelReceiveResult<T>) => {
-          resolve({ ...result, id })
+          if (!state.done) {
+            state.done = true
+            cleanup()
+            resolve({ ...result, id })
+          }
         },
-      })
+      }
+      function cleanup() {
+        signal?.removeEventListener('abort', onAbort)
+        const idx = receiversWithOk.indexOf(task)
+        if (idx >= 0) {
+          receiversWithOk.splice(idx, 1)
+        }
+      }
+      function onAbort() {
+        if (!state.done) {
+          state.done = true
+          cleanup()
+        }
+      }
+      if (signal?.aborted) {
+        return
+      }
+      signal?.addEventListener('abort', onAbort, { once: true })
+      this.receiversWithOk.push(task)
     })
   }
 
-  async selectSend(value: T, id: number): Promise<SelectResult<boolean>> {
+  async selectSend(
+    value: T,
+    id: number,
+    signal?: AbortSignal,
+  ): Promise<SelectResult<boolean>> {
     if (this.closed) {
       // A select case sending on a closed channel panics in Go.
       // This will cause Promise.race in selectStatement to reject.
@@ -484,11 +525,43 @@ class BufferedChannel<T> implements Channel<T> {
     }
 
     return new Promise<SelectResult<boolean>>((resolve, reject) => {
-      this.senders.push({
+      const state = { done: false }
+      const senders = this.senders
+      const task = {
         value,
-        resolveSend: () => resolve({ value: true, ok: true, id }),
-        rejectSend: (e) => reject(e), // Propagate error if channel closes
-      })
+        resolveSend: () => {
+          if (!state.done) {
+            state.done = true
+            cleanup()
+            resolve({ value: true, ok: true, id })
+          }
+        },
+        rejectSend: (e: Error) => {
+          if (!state.done) {
+            state.done = true
+            cleanup()
+            reject(e)
+          }
+        },
+      }
+      function cleanup() {
+        signal?.removeEventListener('abort', onAbort)
+        const idx = senders.indexOf(task)
+        if (idx >= 0) {
+          senders.splice(idx, 1)
+        }
+      }
+      function onAbort() {
+        if (!state.done) {
+          state.done = true
+          cleanup()
+        }
+      }
+      if (signal?.aborted) {
+        return
+      }
+      signal?.addEventListener('abort', onAbort, { once: true })
+      this.senders.push(task)
     })
   }
 
@@ -562,8 +635,12 @@ export interface ChannelRef<T> {
   close(): void
   canSendNonBlocking(): boolean
   canReceiveNonBlocking(): boolean
-  selectSend(value: T, id: number): Promise<SelectResult<boolean>>
-  selectReceive(id: number): Promise<SelectResult<T>>
+  selectSend(
+    value: T,
+    id: number,
+    signal?: AbortSignal,
+  ): Promise<SelectResult<boolean>>
+  selectReceive(id: number, signal?: AbortSignal): Promise<SelectResult<T>>
   len(): number
 }
 
@@ -600,12 +677,16 @@ export class BidirectionalChannelRef<T> implements ChannelRef<T> {
     return this.channel.canReceiveNonBlocking()
   }
 
-  selectSend(value: T, id: number): Promise<SelectResult<boolean>> {
-    return this.channel.selectSend(value, id)
+  selectSend(
+    value: T,
+    id: number,
+    signal?: AbortSignal,
+  ): Promise<SelectResult<boolean>> {
+    return this.channel.selectSend(value, id, signal)
   }
 
-  selectReceive(id: number): Promise<SelectResult<T>> {
-    return this.channel.selectReceive(id)
+  selectReceive(id: number, signal?: AbortSignal): Promise<SelectResult<T>> {
+    return this.channel.selectReceive(id, signal)
   }
 
   len(): number {
@@ -635,8 +716,12 @@ export class SendOnlyChannelRef<T> implements ChannelRef<T> {
     return this.channel.canSendNonBlocking()
   }
 
-  selectSend(value: T, id: number): Promise<SelectResult<boolean>> {
-    return this.channel.selectSend(value, id)
+  selectSend(
+    value: T,
+    id: number,
+    signal?: AbortSignal,
+  ): Promise<SelectResult<boolean>> {
+    return this.channel.selectSend(value, id, signal)
   }
 
   // Disallow receive operations
@@ -652,7 +737,7 @@ export class SendOnlyChannelRef<T> implements ChannelRef<T> {
     return false
   }
 
-  selectReceive(_id: number): Promise<SelectResult<T>> {
+  selectReceive(_id: number, _signal?: AbortSignal): Promise<SelectResult<T>> {
     throw new Error('Cannot receive from send-only channel')
   }
 
@@ -682,8 +767,8 @@ export class ReceiveOnlyChannelRef<T> implements ChannelRef<T> {
     return this.channel.canReceiveNonBlocking()
   }
 
-  selectReceive(id: number): Promise<SelectResult<T>> {
-    return this.channel.selectReceive(id)
+  selectReceive(id: number, signal?: AbortSignal): Promise<SelectResult<T>> {
+    return this.channel.selectReceive(id, signal)
   }
 
   // Disallow send operations
@@ -700,7 +785,11 @@ export class ReceiveOnlyChannelRef<T> implements ChannelRef<T> {
     return false
   }
 
-  selectSend(_value: T, _id: number): Promise<SelectResult<boolean>> {
+  selectSend(
+    _value: T,
+    _id: number,
+    _signal?: AbortSignal,
+  ): Promise<SelectResult<boolean>> {
     throw new Error('Cannot send to receive-only channel')
   }
 

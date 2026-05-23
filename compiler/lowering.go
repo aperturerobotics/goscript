@@ -1638,6 +1638,9 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		return nil, nil
 	}
 	async := o.functionAsync(ctx, fnObj)
+	if decl.Name.Name == "main" {
+		async = true
+	}
 	resultCtx := ctx.withAsyncFunction(async)
 	result := o.tsSignatureResultFor(resultCtx, signature)
 	deferState := &loweredDeferState{}
@@ -1687,10 +1690,6 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 			lowered.receiverType = ""
 			lowered.receiverValue = o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(this)"
 		}
-	}
-	if decl.Name.Name == "main" {
-		lowered.async = true
-		lowered.result = asyncResultType(o.tsSignatureResultFor(ctx.withAsyncFunction(true), signature), true)
 	}
 	for idx := range signature.Params().Len() {
 		param := signature.Params().At(idx)
@@ -3968,12 +3967,13 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 		diagnostics = append(diagnostics, assignmentDiagnostics...)
 		body = append(assignments, body...)
 	}
+	async := ctx.asyncFunction
 
 	return loweredStmt{rangeFunc: &loweredRangeFunc{
 		value:        rangeValue,
 		params:       paramNames,
 		body:         body,
-		async:        stmtsContainAwait(body) || o.rangeFunctionValueNeedsAwait(ctx, stmt.X),
+		async:        async,
 		returnBranch: rangeBranch,
 		parentBranch: parentBranch,
 	}}, diagnostics
@@ -4734,10 +4734,6 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 
 func funcLiteralUsesFunctionIdentifierCall(ctx lowerFileContext, lit *ast.FuncLit) bool {
 	if lit == nil || lit.Body == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
-		return false
-	}
-	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
-	if signature == nil || signature.Results() == nil || signature.Results().Len() == 0 {
 		return false
 	}
 	uses := false
@@ -7767,6 +7763,8 @@ func sliceTypeHint(typ types.Type) string {
 		return "string"
 	case isNumericType(typ):
 		return "number"
+	case isBoolType(typ):
+		return "boolean"
 	default:
 		return ""
 	}

@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "context"
+  ],
+  "asyncMethods": {
+    "ConcurrentQueue.WaitIdle": true,
+    "ConcurrentQueue.WatchState": true
+  }
+}

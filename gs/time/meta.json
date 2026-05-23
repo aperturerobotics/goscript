@@ -1,6 +1,6 @@
 {
   "dependencies": [],
-  "asyncMethods": {
+  "asyncFunctions": {
     "Sleep": true
   }
-} 
+}

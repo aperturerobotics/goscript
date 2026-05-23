@@ -2,6 +2,8 @@ import { mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import * as context from '@goscript/context/index.js'
+
 export type TestFunc = (t: T) => void | Promise<void>
 export type TB = T | B | F
 
@@ -200,8 +202,8 @@ export class T {
 
   public Attr(_key: string, _value: string): void {}
 
-  public Context(): null {
-    return null
+  public Context(): context.Context {
+    return context.Background()
   }
 
   public Output(): null {

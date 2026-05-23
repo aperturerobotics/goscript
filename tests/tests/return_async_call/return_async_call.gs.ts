@@ -7,31 +7,31 @@ import * as context from "@goscript/context/index.js"
 
 import * as time from "@goscript/time/index.js"
 
-export function AsyncFunction(): string {
-	time.Sleep($.uint64Mul(10, time.Millisecond))
+export async function AsyncFunction(): globalThis.Promise<string> {
+	await time.Sleep($.uint64Mul(10, time.Millisecond))
 	return "result"
 }
 
-export function SyncWrapper(): string {
-	return AsyncFunction()
+export async function SyncWrapper(): globalThis.Promise<string> {
+	return await AsyncFunction()
 }
 
-export function AnotherAsyncFunction(ctx: context.Context | null): [string, $.GoError] {
-	time.Sleep($.uint64Mul(5, time.Millisecond))
+export async function AnotherAsyncFunction(ctx: context.Context | null): globalThis.Promise<[string, $.GoError]> {
+	await time.Sleep($.uint64Mul(5, time.Millisecond))
 	return ["async result", null]
 }
 
-export function WrapperWithError(ctx: context.Context | null): [string, $.GoError] {
-	return AnotherAsyncFunction(ctx)
+export async function WrapperWithError(ctx: context.Context | null): globalThis.Promise<[string, $.GoError]> {
+	return await AnotherAsyncFunction(ctx)
 }
 
 export async function main(): globalThis.Promise<void> {
 	// These calls should work properly with async/await
-	let result1 = SyncWrapper()
+	let result1 = await SyncWrapper()
 	$.println("Result1:", result1)
 
 	let ctx = context.Background()
-	let [result2, err] = WrapperWithError(ctx)
+	let [result2, err] = await WrapperWithError(ctx)
 	if (err != null) {
 		$.println("Error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return

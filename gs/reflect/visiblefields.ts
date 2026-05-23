@@ -131,7 +131,7 @@ class visibleFieldsWalker {
       const field = t!.Field(i)
       if (field) {
         const f = field.clone()
-        f.Index = $.append(null, w.index) as number[]
+        f.Index = $.append(null, ...(w.index ?? [])) as number[]
         if (f.Anonymous) {
           if (f.Type && f.Type.Kind() === Ptr) {
             const elemType = f.Type.Elem!()

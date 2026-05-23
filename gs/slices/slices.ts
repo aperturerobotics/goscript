@@ -66,15 +66,28 @@ export function Clone<T>(s: $.Slice<T>): $.Slice<T> {
  */
 export function All<T>(
   s: $.Slice<T>,
-): (yieldFunc: (index: number, value: T) => boolean) => void {
-  return function (_yield: (index: number, value: T) => boolean): void {
+): (yieldFunc: (index: number, value: T) => iter.YieldResult) => void | globalThis.Promise<void> {
+  return function (
+    _yield: (index: number, value: T) => iter.YieldResult,
+  ): void | globalThis.Promise<void> {
     const length = $.len(s)
-    for (let i = 0; i < length; i++) {
-      const value = (s as any)[i] as T // Use proper indexing to avoid type issues
-      if (!_yield(i, value)) {
-        break
+    const walk = (i: number): void | globalThis.Promise<void> => {
+      for (; i < length; i++) {
+        const value = (s as any)[i] as T // Use proper indexing to avoid type issues
+        const keepGoing = _yield(i, value)
+        if (keepGoing instanceof Promise) {
+          return keepGoing.then((next) => {
+            if (next) {
+              return walk(i + 1)
+            }
+          })
+        }
+        if (!keepGoing) {
+          return
+        }
       }
     }
+    return walk(0)
   }
 }
 

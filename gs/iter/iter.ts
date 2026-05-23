@@ -1,11 +1,17 @@
 // TypeScript implementation of Go's iter package
 // This provides iterator types and functions
 
+export type YieldResult = boolean | globalThis.Promise<boolean>
+
 // Seq is an iterator over sequences of individual values
-export type Seq<V> = (_yield: (value: V) => boolean) => void
+export type Seq<V> = (
+  _yield: (value: V) => YieldResult,
+) => void | globalThis.Promise<void>
 
 // Seq2 is an iterator over sequences of pairs of values
-export type Seq2<K, V> = (_yield: (key: K, value: V) => boolean) => void
+export type Seq2<K, V> = (
+  _yield: (key: K, value: V) => YieldResult,
+) => void | globalThis.Promise<void>
 
 // Pull converts the "push-style" iterator sequence seq into a "pull-style" iterator
 // Returns a function that returns the next value and a boolean indicating if iteration should continue

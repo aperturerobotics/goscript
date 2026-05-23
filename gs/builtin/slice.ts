@@ -780,6 +780,7 @@ export const cap = <T>(obj: Slice<T> | Uint8Array): number => {
 export function append(slice: Uint8Array, ...elements: any[]): Uint8Array
 // Overload for null slice with number elements - returns number slice (Bytes compatible)
 export function append(slice: null, ...elements: number[]): Slice<number>
+export function append<T>(slice: null, ...elements: T[]): Slice<T>
 export function append<T>(slice: Slice<T>, ...elements: any[]): Slice<T>
 export function append<T>(
   slice: Slice<T> | Uint8Array | null,
