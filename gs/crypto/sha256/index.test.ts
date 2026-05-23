@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, test } from 'vitest'
 import * as $ from '@goscript/builtin/index.js'
 
 import { New, Size, Sum256 } from './index.js'
