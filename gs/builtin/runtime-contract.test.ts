@@ -11,6 +11,7 @@ import {
   genericZero,
   goSlice,
   int,
+  arrayPointerFromIndexRef,
   indexAddress,
   indexRef,
   interfaceValue,
@@ -205,6 +206,12 @@ describe('builtin runtime contract helpers', () => {
     const fullBytes = goSlice(shortBytes, 0, 8)
     fullBytes![7] = 12
     expect((byteBacking as Uint8Array)[7]).toBe(12)
+
+    const arrayPointer = arrayPointerFromIndexRef(indexRef(byteBacking, 1), 3)
+    const arrayView = pointerValue(arrayPointer) as Uint8Array
+    expect(len(arrayView)).toBe(3)
+    arrayView[2] = 19
+    expect((byteBacking as Uint8Array)[3]).toBe(19)
 
     shortBytes![0] = 14
     expect(bytesToUint8Array(shortBytes)).toEqual(new Uint8Array([14, 0]))

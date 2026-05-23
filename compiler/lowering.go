@@ -4633,6 +4633,11 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 		return o.lowerIdent(ctx, typed, false), nil
 	case *ast.BinaryExpr:
 		if value := ctx.semPkg.source.TypesInfo.Types[typed].Value; value != nil {
+			if (typed.Op == token.SHL || typed.Op == token.SHR) && (value.Kind() == constant.Int || value.Kind() == constant.Float) {
+				if constantValue, ok := lowerConstantValue(value); ok {
+					return constantValue, nil
+				}
+			}
 			if constantValue, ok := lowerLargeIntegerConstantValue(value); ok {
 				return constantValue, nil
 			}
@@ -5450,6 +5455,9 @@ func (o *LoweringOwner) lowerConversionExpr(
 		}
 	}
 	if helper, addressDiagnostics, ok := o.lowerReflectHeaderPointerConversion(ctx, targetType, expr.Args[0]); ok {
+		return helper, append(diagnostics, addressDiagnostics...)
+	}
+	if helper, addressDiagnostics, ok := o.lowerUnsafeArrayPointerConversion(ctx, targetType, expr.Args[0]); ok {
 		return helper, append(diagnostics, addressDiagnostics...)
 	}
 	if isUnsafePointerType(targetType) {
@@ -6376,6 +6384,37 @@ func (o *LoweringOwner) lowerReflectHeaderPointerConversion(
 	default:
 		return "", nil, false
 	}
+}
+
+func (o *LoweringOwner) lowerUnsafeArrayPointerConversion(
+	ctx lowerFileContext,
+	targetType types.Type,
+	expr ast.Expr,
+) (string, []Diagnostic, bool) {
+	targetPointer, _ := types.Unalias(targetType).Underlying().(*types.Pointer)
+	if targetPointer == nil {
+		return "", nil, false
+	}
+	array, _ := types.Unalias(targetPointer.Elem()).Underlying().(*types.Array)
+	if array == nil {
+		return "", nil, false
+	}
+	unsafeCall, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(unsafeCall.Args) != 1 || !isUnsafePointerType(typeFromExpr(ctx, unsafeCall.Fun)) {
+		return "", nil, false
+	}
+	address, ok := unwrapParenExpr(unsafeCall.Args[0]).(*ast.UnaryExpr)
+	if !ok || address.Op != token.AND {
+		return "", nil, false
+	}
+	index, ok := unwrapParenExpr(address.X).(*ast.IndexExpr)
+	if !ok {
+		return "", nil, false
+	}
+	ref, diagnostics := o.lowerAddressExpr(ctx, index)
+	helper := o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayPointerFromIndexRef) +
+		"<" + o.tsTypeFor(ctx, array.Elem()) + ">(" + ref + ", " + strconv.FormatInt(array.Len(), 10) + ")"
+	return "(" + helper + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics, true
 }
 
 func (o *LoweringOwner) lowerAddressedValueRef(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {

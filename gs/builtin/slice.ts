@@ -1162,6 +1162,8 @@ export function indexRef<T>(
       },
       __isVarRef: true,
       __goAddress: () => indexAddress(collection, index),
+      __goCollection: collection,
+      __goIndex: index,
     }
   }
   if (isComplexSlice(collection)) {
@@ -1180,6 +1182,8 @@ export function indexRef<T>(
       },
       __isVarRef: true,
       __goAddress: () => indexAddress(collection, index),
+      __goCollection: collection,
+      __goIndex: index,
     }
   }
   if (Array.isArray(collection)) {
@@ -1197,9 +1201,28 @@ export function indexRef<T>(
       },
       __isVarRef: true,
       __goAddress: () => indexAddress(collection, index),
+      __goCollection: collection,
+      __goIndex: index,
     }
   }
   throw new Error('runtime error: index on unsupported type')
+}
+
+/**
+ * arrayPointerFromIndexRef turns &slice[i] into a pointer to an N-element array
+ * view. This models unsafe conversions such as (*[64]byte)(unsafe.Pointer(&b[0]))
+ * for packages that immediately slice or index the resulting array pointer.
+ */
+export function arrayPointerFromIndexRef<T>(
+  ref: VarRef<T>,
+  length: number,
+): VarRef<Slice<T> | T[] | Uint8Array> {
+  const collection = ref.__goCollection as Slice<T> | T[] | Uint8Array | undefined
+  if (collection === undefined) {
+    throw new Error('unsafe array pointer requires an indexed collection reference')
+  }
+  const index = ref.__goIndex ?? 0
+  return varRef(goSlice(collection as any, index, index + length) as Slice<T> | T[] | Uint8Array)
 }
 
 /**
@@ -1402,8 +1425,7 @@ export const sliceString = (
     const result = new TextDecoder('utf-8', { fatal: true }).decode(slicedBytes)
     return result
   } catch (e: unknown) {
-    // If we get here, the slice would create invalid UTF-8
-    // This is a fundamental limitation of JavaScript string handling
+    // If we get here, the slice would create invalid UTF-8.
     throw new Error(
       `Cannot slice string at byte indices [${actualLow}:${actualHigh}] because it would create invalid UTF-8. ` +
         `This is a limitation of JavaScript's string handling.`,

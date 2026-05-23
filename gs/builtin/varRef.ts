@@ -10,6 +10,8 @@ export type VarRef<T> = {
   __isVarRef?: true
   __goType?: string
   __goAddress?: () => number
+  __goCollection?: unknown
+  __goIndex?: number
 }
 
 /** Wrap a non-null T in a variable reference. */
