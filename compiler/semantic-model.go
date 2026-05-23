@@ -1138,7 +1138,23 @@ func (o *SemanticModelOwner) addInterfaceImplementation(
 	if pointer {
 		receiver = types.NewPointer(concrete)
 	}
-	if !types.Implements(receiver, iface) {
+	implementsReceiver := receiver
+	implementsIface := types.Type(iface)
+	if concrete.TypeParams() != nil && concrete.TypeParams().Len() != 0 {
+		args := typeParamTypes(concrete.TypeParams())
+		if instantiated, err := types.Instantiate(nil, concrete, args, false); err == nil {
+			implementsReceiver = instantiated
+			if pointer {
+				implementsReceiver = types.NewPointer(instantiated)
+			}
+		}
+		if ifaceNamed.TypeParams() != nil && ifaceNamed.TypeParams().Len() == len(args) {
+			if instantiated, err := types.Instantiate(nil, ifaceNamed, args, false); err == nil {
+				implementsIface = instantiated.Underlying()
+			}
+		}
+	}
+	if !types.Implements(implementsReceiver, implementsIface.Underlying().(*types.Interface)) {
 		return
 	}
 
@@ -1171,6 +1187,17 @@ func (o *SemanticModelOwner) addInterfaceImplementation(
 		markFunctionAsync(model.functions[implMethod], "interface-method")
 	}
 	model.interfaceImplementations = append(model.interfaceImplementations, implementation)
+}
+
+func typeParamTypes(params *types.TypeParamList) []types.Type {
+	if params == nil {
+		return nil
+	}
+	args := make([]types.Type, 0, params.Len())
+	for tparam := range params.TypeParams() {
+		args = append(args, tparam)
+	}
+	return args
 }
 
 func sortNamedTypes(named []*types.Named) {

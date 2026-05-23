@@ -48,6 +48,31 @@ func processViaInterface(processor AsyncProcessor, input int) int {
 	return result + baseResult
 }
 
+type GenericStore[V any] interface {
+	Load() V
+}
+
+type GenericChannelStore[V any] struct {
+	ch    chan V
+	value V
+}
+
+func (s *GenericChannelStore[V]) Load() V {
+	s.ch <- s.value
+	return <-s.ch
+}
+
+func newGenericStore[V any](value V) GenericStore[V] {
+	return &GenericChannelStore[V]{
+		ch:    make(chan V, 1),
+		value: value,
+	}
+}
+
+func loadGenericStore(store GenericStore[int]) int {
+	return store.Load()
+}
+
 func main() {
 	// Create a buffered channel
 	ch := make(chan int, 1)
@@ -61,6 +86,9 @@ func main() {
 	simpleProc := &SimpleProcessor{value: 100}
 	result2 := processViaInterface(simpleProc, 5)
 	println("SimpleProcessor result:", result2) // Expected: 115 (5+10 + 100)
+
+	genericStore := newGenericStore(7)
+	println("GenericStore result:", loadGenericStore(genericStore))
 
 	close(ch)
 }

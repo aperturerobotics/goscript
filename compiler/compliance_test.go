@@ -141,7 +141,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"if_type_assert":                    true,
 	"import_interface":                  true,
 	"index_expr_type_assertion":         true,
-	"interface_async_method_call":       true,
 	"interface_embedding":               true,
 	"interface_type_reference":          true,
 	"json_debug":                        true,
