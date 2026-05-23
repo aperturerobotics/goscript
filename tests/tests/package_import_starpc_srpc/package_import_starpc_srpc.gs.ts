@@ -74,10 +74,30 @@ export class embeddedStream {
 		return $.markAsStructValue(cloned)
 	}
 
+	public Close(): any {
+		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).Close()
+	}
+
+	public CloseSend(): any {
+		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).CloseSend()
+	}
+
+	public Context(): any {
+		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).Context()
+	}
+
+	public MsgRecv(msg: any): any {
+		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).MsgRecv(msg)
+	}
+
+	public MsgSend(msg: any): any {
+		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).MsgSend(msg)
+	}
+
 	static __typeInfo = $.registerStructType(
 		"main.embeddedStream",
 		() => new embeddedStream(),
-		[],
+		[{ name: "Close", args: [], returns: [] }, { name: "CloseSend", args: [], returns: [] }, { name: "Context", args: [], returns: [] }, { name: "MsgRecv", args: [], returns: [] }, { name: "MsgSend", args: [], returns: [] }],
 		embeddedStream,
 		{"Stream": "srpc.Stream"}
 	)

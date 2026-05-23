@@ -26,7 +26,7 @@ export class node {
 	constructor(init?: Partial<{sub?: $.Slice<node | $.VarRef<node> | null>, sub0?: (node | $.VarRef<node> | null)[]}>) {
 		this._fields = {
 			sub: $.varRef(init?.sub ?? null),
-			sub0: $.varRef(init?.sub0 ?? Array.from({ length: 1 }, () => null))
+			sub0: $.varRef(init?.sub0 !== undefined ? $.cloneArrayValue(init.sub0) : Array.from({ length: 1 }, () => null))
 		}
 	}
 
@@ -34,7 +34,7 @@ export class node {
 		const cloned = new node()
 		cloned._fields = {
 			sub: $.varRef(this._fields.sub.value),
-			sub0: $.varRef(this._fields.sub0.value)
+			sub0: $.varRef($.cloneArrayValue(this._fields.sub0.value))
 		}
 		return $.markAsStructValue(cloned)
 	}

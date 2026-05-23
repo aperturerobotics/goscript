@@ -251,6 +251,7 @@ func structZeroValueDeps(structType *loweredStruct, names map[string]bool) []str
 func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *RuntimeContractOwner) {
 	varRef := runtimeOwner.QualifiedHelper(RuntimeHelperVarRef)
 	markStructValue := runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue)
+	cloneArrayValue := runtimeOwner.QualifiedHelper(RuntimeHelperCloneArrayValue)
 	registerStructType := runtimeOwner.QualifiedHelper(RuntimeHelperRegisterStructType)
 	if structType.exported {
 		b.WriteString("export ")
@@ -309,6 +310,15 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 			b.WriteString(field.name)
 			b.WriteString(".clone()) : ")
 			b.WriteString(field.zero)
+		} else if field.arrayValue {
+			b.WriteString("init?.")
+			b.WriteString(field.name)
+			b.WriteString(" !== undefined ? ")
+			b.WriteString(cloneArrayValue)
+			b.WriteString("(init.")
+			b.WriteString(field.name)
+			b.WriteString(") : ")
+			b.WriteString(field.zero)
 		} else {
 			b.WriteString("init?.")
 			b.WriteString(field.name)
@@ -340,6 +350,11 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 			b.WriteString("(this._fields.")
 			b.WriteString(field.name)
 			b.WriteString(".value.clone())")
+		} else if field.arrayValue {
+			b.WriteString(cloneArrayValue)
+			b.WriteString("(this._fields.")
+			b.WriteString(field.name)
+			b.WriteString(".value)")
 		} else {
 			b.WriteString("this._fields.")
 			b.WriteString(field.name)

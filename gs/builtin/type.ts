@@ -740,6 +740,18 @@ export function cloneStructValue<T>(value: T): T {
   throw new Error('runtime error: value is not cloneable')
 }
 
+export function cloneArrayValue<T>(value: T): T {
+  if (value instanceof Uint8Array) {
+    const out = new Uint8Array(value.length)
+    out.set(value)
+    return out as T
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => cloneArrayValue(item)) as T
+  }
+  return value
+}
+
 // Check if a struct instance is marked as a value
 function isMarkedAsStructValue(value: any): boolean {
   return (

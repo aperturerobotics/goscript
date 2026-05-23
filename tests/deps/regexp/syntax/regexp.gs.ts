@@ -108,9 +108,9 @@ export class Regexp {
 			Op: $.varRef(init?.Op ?? 0),
 			Flags: $.varRef(init?.Flags ?? 0),
 			Sub: $.varRef(init?.Sub ?? null),
-			Sub0: $.varRef(init?.Sub0 ?? Array.from({ length: 1 }, () => null)),
+			Sub0: $.varRef(init?.Sub0 !== undefined ? $.cloneArrayValue(init.Sub0) : Array.from({ length: 1 }, () => null)),
 			Rune: $.varRef(init?.Rune ?? null),
-			Rune0: $.varRef(init?.Rune0 ?? Array.from({ length: 2 }, () => 0)),
+			Rune0: $.varRef(init?.Rune0 !== undefined ? $.cloneArrayValue(init.Rune0) : Array.from({ length: 2 }, () => 0)),
 			Min: $.varRef(init?.Min ?? 0),
 			Max: $.varRef(init?.Max ?? 0),
 			Cap: $.varRef(init?.Cap ?? 0),
@@ -124,9 +124,9 @@ export class Regexp {
 			Op: $.varRef(this._fields.Op.value),
 			Flags: $.varRef(this._fields.Flags.value),
 			Sub: $.varRef(this._fields.Sub.value),
-			Sub0: $.varRef(this._fields.Sub0.value),
+			Sub0: $.varRef($.cloneArrayValue(this._fields.Sub0.value)),
 			Rune: $.varRef(this._fields.Rune.value),
-			Rune0: $.varRef(this._fields.Rune0.value),
+			Rune0: $.varRef($.cloneArrayValue(this._fields.Rune0.value)),
 			Min: $.varRef(this._fields.Min.value),
 			Max: $.varRef(this._fields.Max.value),
 			Cap: $.varRef(this._fields.Cap.value),
@@ -561,12 +561,12 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		if ($.uint((f & flagS), 8) != $.uint(0, 8)) {
 			$.pointerValue<strings.Builder>(b).WriteString("s")
 		}
-		if ($.uint((f & ((flagM | flagS) << negShift)), 8) != $.uint(0, 8)) {
+		if ($.uint((f & (192)), 8) != $.uint(0, 8)) {
 			$.pointerValue<strings.Builder>(b).WriteString("-")
-			if ($.uint((f & (flagM << negShift)), 8) != $.uint(0, 8)) {
+			if ($.uint((f & (64)), 8) != $.uint(0, 8)) {
 				$.pointerValue<strings.Builder>(b).WriteString("m")
 			}
-			if ($.uint((f & (flagS << negShift)), 8) != $.uint(0, 8)) {
+			if ($.uint((f & (128)), 8) != $.uint(0, 8)) {
 				$.pointerValue<strings.Builder>(b).WriteString("s")
 			}
 		}

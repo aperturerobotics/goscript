@@ -4,6 +4,7 @@ import {
   bytesToUint8Array,
   byte,
   cap,
+  cloneArrayValue,
   cloneStructValue,
   callGenericMethod,
   chanRecvWithOk,
@@ -161,6 +162,18 @@ describe('builtin runtime contract helpers', () => {
     expect(
       cloneStructValue({ __goscriptClone: () => ({ internal: true }) }),
     ).toEqual({ internal: true })
+    const fixedBytes = new Uint8Array([1, 2, 3])
+    const clonedBytes = cloneArrayValue(fixedBytes)
+    expect(clonedBytes).toEqual(fixedBytes)
+    expect(clonedBytes).not.toBe(fixedBytes)
+    const fixedWords = [
+      [1, 2],
+      [3, 4],
+    ]
+    const clonedWords = cloneArrayValue(fixedWords)
+    expect(clonedWords).toEqual(fixedWords)
+    expect(clonedWords).not.toBe(fixedWords)
+    expect(clonedWords[0]).not.toBe(fixedWords[0])
     expect(() => pointerValue(null)).toThrow('nil pointer dereference')
     const unsupported = unsupportedPointerRef<number>(0)
     expect(() => unsupported.value).toThrow('unsafe pointer dereference')

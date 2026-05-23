@@ -33,18 +33,18 @@ export class padded {
 
 	constructor(init?: Partial<{_blank0?: Uint8Array, Value?: number, _blank2?: Uint8Array}>) {
 		this._fields = {
-			_blank0: $.varRef(init?._blank0 ?? new Uint8Array(2)),
+			_blank0: $.varRef(init?._blank0 !== undefined ? $.cloneArrayValue(init._blank0) : new Uint8Array(2)),
 			Value: $.varRef(init?.Value ?? 0),
-			_blank2: $.varRef(init?._blank2 ?? new Uint8Array(3))
+			_blank2: $.varRef(init?._blank2 !== undefined ? $.cloneArrayValue(init._blank2) : new Uint8Array(3))
 		}
 	}
 
 	public clone(): padded {
 		const cloned = new padded()
 		cloned._fields = {
-			_blank0: $.varRef(this._fields._blank0.value),
+			_blank0: $.varRef($.cloneArrayValue(this._fields._blank0.value)),
 			Value: $.varRef(this._fields.Value.value),
-			_blank2: $.varRef(this._fields._blank2.value)
+			_blank2: $.varRef($.cloneArrayValue(this._fields._blank2.value))
 		}
 		return $.markAsStructValue(cloned)
 	}

@@ -2339,7 +2339,7 @@ export function mergeCharClass(dst: __goscript_regexp.Regexp | $.VarRef<__goscri
 	}
 }
 
-export let anyTable: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = new unicode.RangeTable({R16: $.arrayToSlice<unicode.Range16>([$.markAsStructValue(new unicode.Range16({Lo: $.uint(0, 16), Hi: $.uint((1 << 16) - 1, 16), Stride: $.uint(1, 16)}))]), R32: $.arrayToSlice<unicode.Range32>([$.markAsStructValue(new unicode.Range32({Lo: $.uint(1 << 16, 32), Hi: $.uint(unicode.MaxRune, 32), Stride: $.uint(1, 32)}))])})
+export let anyTable: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = new unicode.RangeTable({R16: $.arrayToSlice<unicode.Range16>([$.markAsStructValue(new unicode.Range16({Lo: $.uint(0, 16), Hi: $.uint((65536) - 1, 16), Stride: $.uint(1, 16)}))]), R32: $.arrayToSlice<unicode.Range32>([$.markAsStructValue(new unicode.Range32({Lo: $.uint(65536, 32), Hi: $.uint(unicode.MaxRune, 32), Stride: $.uint(1, 32)}))])})
 
 export function __goscript_set_anyTable(value: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null): void {
 	anyTable = value

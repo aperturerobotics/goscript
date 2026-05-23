@@ -1501,6 +1501,7 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 			doc:         field.doc,
 			tag:         field.tag,
 			structValue: structValue,
+			arrayValue:  isArrayType(field.typ),
 		})
 	}
 

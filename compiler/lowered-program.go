@@ -71,6 +71,7 @@ type loweredStructField struct {
 	doc         string
 	tag         string
 	structValue bool
+	arrayValue  bool
 }
 
 type loweredFunction struct {
