@@ -6154,7 +6154,7 @@ func (o *LoweringOwner) lowerAssignmentTarget(
 }
 
 func (o *LoweringOwner) lowerAddressExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
-	switch typed := expr.(type) {
+	switch typed := unwrapParenExpr(expr).(type) {
 	case *ast.Ident:
 		return o.lowerIdent(ctx, typed, true), nil
 	case *ast.CompositeLit:
