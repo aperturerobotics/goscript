@@ -118,6 +118,31 @@ restart:
 	}
 }
 
+func nestedInnerBreakWithGoto(limit int) int {
+	total := 0
+restart:
+	if total >= limit {
+		return total
+	}
+	for {
+	next:
+		for i := range 3 {
+			if i == 1 {
+				break
+			}
+			total += 10
+		}
+		total++
+		if total < limit {
+			goto next
+		}
+		if total < limit+3 {
+			goto restart
+		}
+		return total
+	}
+}
+
 func main() {
 	println("skip negative:", skipToLabel(-1))
 	println("skip positive:", skipToLabel(1))
@@ -130,4 +155,5 @@ func main() {
 	println("state zero:", stateMachineGoto(0))
 	println("state one:", stateMachineGoto(1))
 	println("nested restart:", nestedBackwardGoto(5))
+	println("nested break:", nestedInnerBreakWithGoto(25))
 }

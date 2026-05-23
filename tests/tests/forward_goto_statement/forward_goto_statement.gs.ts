@@ -206,6 +206,37 @@ export function nestedBackwardGoto(limit: number): number {
 	}
 }
 
+export function nestedInnerBreakWithGoto(limit: number): number {
+	let total = 0
+	restart: while (true) {
+		if (total >= limit) {
+			return total
+		}
+
+		__goscriptLoop3: while (true) {
+			next: while (true) {
+				for (let i = 0; i < 3; i++) {
+					if (i == 1) {
+						break
+					}
+					total += 10
+				}
+
+				total++
+				if (total < limit) {
+					continue next
+				}
+				break
+			}
+			if (total < (limit + 3)) {
+				continue restart
+			}
+			return total
+		}
+		break
+	}
+}
+
 export async function main(): globalThis.Promise<void> {
 	$.println("skip negative:", skipToLabel(-1))
 	$.println("skip positive:", skipToLabel(1))
@@ -218,6 +249,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("state zero:", stateMachineGoto(0))
 	$.println("state one:", stateMachineGoto(1))
 	$.println("nested restart:", nestedBackwardGoto(5))
+	$.println("nested break:", nestedInnerBreakWithGoto(25))
 }
 
 if ($.isMainScript(import.meta)) {

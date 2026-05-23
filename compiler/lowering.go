@@ -1899,6 +1899,11 @@ func (ctx lowerFileContext) withLoopLabel(label string) lowerFileContext {
 	return ctx
 }
 
+func (ctx lowerFileContext) withoutLoopLabel() lowerFileContext {
+	ctx.loopLabel = ""
+	return ctx
+}
+
 func (ctx lowerFileContext) withSwitchBreak() lowerFileContext {
 	ctx.switchBreak = true
 	return ctx
@@ -2713,19 +2718,20 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			stmts = append(stmts, loweredStmt{text: o.runtimeOwner.QualifiedHelper(RuntimeHelperMapSet) + "(" + mapExpr + ", " + keyExpr + ", " + right + ")"})
 			continue
 		}
-		if star, ok := lhs.(*ast.StarExpr); ok && stmt.Tok == token.ASSIGN && isStructValueType(targetType) {
+		star, starTarget := unwrapParenExpr(lhs).(*ast.StarExpr)
+		if starTarget && stmt.Tok == token.ASSIGN && isStructValueType(targetType) {
 			pointer, pointerDiagnostics := o.lowerPointerValueExpr(ctx, star.X)
 			diagnostics = append(diagnostics, pointerDiagnostics...)
 			stmts = append(stmts, loweredStmt{text: o.runtimeOwner.QualifiedHelper(RuntimeHelperAssignStruct) + "(" + pointer + ", " + right + ")"})
 			continue
 		}
-		if star, ok := lhs.(*ast.StarExpr); ok && stmt.Tok == token.ASSIGN {
+		if starTarget && stmt.Tok == token.ASSIGN {
 			pointer, pointerDiagnostics := o.lowerPointerStorageExpr(ctx, star.X)
 			diagnostics = append(diagnostics, pointerDiagnostics...)
 			stmts = append(stmts, loweredStmt{text: pointer + " = " + right})
 			continue
 		}
-		if star, ok := lhs.(*ast.StarExpr); ok && stmt.Tok != token.DEFINE {
+		if starTarget && stmt.Tok != token.DEFINE {
 			pointer, pointerDiagnostics := o.lowerPointerStorageExpr(ctx, star.X)
 			diagnostics = append(diagnostics, pointerDiagnostics...)
 			if stmt.Tok == token.AND_NOT_ASSIGN {
@@ -2910,7 +2916,7 @@ func (o *LoweringOwner) lowerStarTargetAssignmentStmt(
 	lhs ast.Expr,
 	right string,
 ) (loweredStmt, []Diagnostic, bool) {
-	star, ok := lhs.(*ast.StarExpr)
+	star, ok := unwrapParenExpr(lhs).(*ast.StarExpr)
 	if !ok {
 		return loweredStmt{}, nil, false
 	}
@@ -3599,7 +3605,7 @@ func (o *LoweringOwner) lowerNamedResultReturn(ctx lowerFileContext) (string, bo
 }
 
 func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (loweredStmt, []Diagnostic) {
-	bodyCtx := ctx.withoutRangeLoopBranches()
+	bodyCtx := ctx.withoutRangeLoopBranches().withoutLoopLabel()
 	loopLabel := ""
 	if stmtListNeedsLoopBranchLabel(stmt.Body.List) {
 		loopLabel = ctx.tempName("Loop")
@@ -3765,7 +3771,7 @@ func (o *LoweringOwner) lowerForPostStmt(ctx lowerFileContext, stmt ast.Stmt) (s
 func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt) (loweredStmt, []Diagnostic) {
 	rangeValue, diagnostics := o.lowerExpr(ctx, stmt.X)
 	aliases := o.lowerRangeDeclShadowAliases(ctx, stmt)
-	bodyCtx := ctx
+	bodyCtx := ctx.withoutLoopLabel()
 	if len(aliases) != 0 {
 		bodyCtx = bodyCtx.withIdentAliases(aliases)
 	}
@@ -6135,7 +6141,7 @@ func (o *LoweringOwner) lowerAssignmentTarget(
 	expr ast.Expr,
 	declare bool,
 ) (string, []Diagnostic) {
-	switch typed := expr.(type) {
+	switch typed := unwrapParenExpr(expr).(type) {
 	case *ast.Ident:
 		if declare {
 			return o.lowerIdent(ctx, typed, true), nil

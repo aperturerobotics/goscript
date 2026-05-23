@@ -1,5 +1,17 @@
 package main
 
+type holder struct {
+	values *[]int
+}
+
+func trim(h *holder) {
+	*h.values = (*h.values)[:len(*h.values)-1]
+}
+
+func trimParen(h *holder) {
+	(*h.values) = (*h.values)[:len(*h.values)-1]
+}
+
 func main() {
 	var x int = 2
 	var p *int = &x
@@ -25,4 +37,11 @@ func main() {
 
 	(*p)--
 	println(x) // Expected: 11
+
+	values := []int{1, 2, 3, 4}
+	h := &holder{values: &values}
+	trim(h)
+	println("len after star:", len(*h.values)) // Expected: 3
+	trimParen(h)
+	println("len after paren star:", len(*h.values)) // Expected: 2
 }
