@@ -124,6 +124,18 @@ export function pointerValue<T>(value: T | VarRef<T> | null | undefined): T {
   return value
 }
 
+export function pointerValueOrNil<T>(
+  value: T | VarRef<T> | null | undefined,
+): T | null {
+  if (value === null || value === undefined) {
+    return null
+  }
+  if (isVarRef(value)) {
+    return value.value as T
+  }
+  return value
+}
+
 export function arrayEqual(a: unknown, b: unknown): boolean {
   return comparableEqual(a, b)
 }

@@ -231,7 +231,7 @@ export class MutexLocker {
 		let release = $.varRef(__goscriptTuple0[0])
 		let err = __goscriptTuple0[1]
 		if (err != null) {
-			$.panic((errors.Wrap($.pointerValue(err), "csync: failed MutexLocker Lock") as any))
+			$.panic((errors.Wrap($.pointerValueOrNil(err), "csync: failed MutexLocker Lock") as any))
 		}
 		$.pointerValue<MutexLocker>(l).rel.Store(release)
 	}

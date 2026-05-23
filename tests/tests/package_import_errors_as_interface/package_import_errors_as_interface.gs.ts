@@ -70,7 +70,7 @@ export async function main(): globalThis.Promise<void> {
 	let err: wrappedHealthError | $.VarRef<wrappedHealthError> | null = new wrappedHealthError({err: errors.New("root")})
 
 	let target: $.VarRef<healthError | null> = $.varRef(null as healthError | null)
-	let ok = errors.As($.pointerValue($.interfaceValue<$.GoError>(err, "*main.wrappedHealthError")), $.interfaceValue<any>(target, "*main.healthError"))
+	let ok = errors.As($.pointerValueOrNil($.interfaceValue<$.GoError>(err, "*main.wrappedHealthError")), $.interfaceValue<any>(target, "*main.healthError"))
 	$.println("matched:", ok)
 	if (ok) {
 		$.println("health:", $.pointerValue<Exclude<healthError, null>>(target.value).Health())

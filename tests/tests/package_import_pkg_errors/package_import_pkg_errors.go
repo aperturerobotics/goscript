@@ -47,6 +47,12 @@ func main() {
 		println("Wrap with nil returns nil")
 	}
 
+	var err error
+	nilWrapVar := errors.Wrap(err, "message")
+	if nilWrapVar == nil {
+		println("Wrap with nil error variable returns nil")
+	}
+
 	// Test Go 1.13 error handling
 	unwrapped := errors.Unwrap(err4)
 	if unwrapped != nil {
