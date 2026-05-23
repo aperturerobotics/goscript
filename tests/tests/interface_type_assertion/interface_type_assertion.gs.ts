@@ -66,7 +66,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// try a second time since this generates something different when using = and not :=
-	let __goscriptTuple0 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+	let __goscriptTuple0: any = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	ok = __goscriptTuple0[1]
 	if (ok) {
 		$.println("Type assertion successful")
@@ -84,7 +84,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	let nilInterface: MyInterface | null = null as MyInterface | null
-	let __goscriptTuple1 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(nilInterface, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+	let __goscriptTuple1: any = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(nilInterface, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 	let nilVal: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple1[0]
 	let ok3 = __goscriptTuple1[1]
 	if (ok3 && ($.pointerValue<MyStruct>(nilVal).Value == 0)) {

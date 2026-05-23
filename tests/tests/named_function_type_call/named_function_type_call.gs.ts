@@ -391,8 +391,8 @@ export async function main(): globalThis.Promise<void> {
 	let shape: shapeNode | $.VarRef<shapeNode> | null = new shapeNode({value: 7})
 	$.println("Named morphism:", await useMorphism(((__receiver) => (s: Shape | null) => __receiver.lookup(s))($.pointerValue<morphismWorker>(worker)), $.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
 	let holder: MorphismHolder | $.VarRef<MorphismHolder> | null = await newMorphismHolder(((__receiver) => (s: Shape | null) => __receiver.lookup(s))($.pointerValue<morphismWorker>(worker)))
-	$.println("Field morphism:", await $.pointerValue<MorphismHolder>(holder).apply($.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
-	$.println("Cloned field morphism:", await $.pointerValue<MorphismHolder>(holder).cloneApply($.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
+	$.println("Field morphism:", await MorphismHolder.prototype.apply.call(holder, $.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
+	$.println("Cloned field morphism:", await MorphismHolder.prototype.cloneApply.call(holder, $.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
 	$.pointerValue<morphismWorker>(worker).ready!.close()
 }
 

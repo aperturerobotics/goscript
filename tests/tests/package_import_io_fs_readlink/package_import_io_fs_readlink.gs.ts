@@ -75,7 +75,7 @@ export async function main(): globalThis.Promise<void> {
 	let [target, err] = fs.ReadLink($.interfaceValue<fs.FS | null>($.markAsStructValue(new linkFS()), "main.linkFS"), "link")
 	$.println("target:", target, err == null)
 
-	let __goscriptTuple0 = fs.ReadLink($.interfaceValue<fs.FS | null>($.markAsStructValue(new emptyFS()), "main.emptyFS"), "link")
+	let __goscriptTuple0: any = fs.ReadLink($.interfaceValue<fs.FS | null>($.markAsStructValue(new emptyFS()), "main.emptyFS"), "link")
 	err = __goscriptTuple0[1]
 	$.println("unsupported:", err != null)
 }

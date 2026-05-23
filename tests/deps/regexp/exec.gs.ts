@@ -215,12 +215,12 @@ export class inputs {
 	public init(r: io.RuneReader | null, b: $.Slice<number>, s: string): [__goscript_regexp.input | null, number] {
 		const i: inputs | $.VarRef<inputs> | null = this
 		if (r != null) {
-			return [$.pointerValue<inputs>(i).newReader(r), 0]
+			return [inputs.prototype.newReader.call(i, r), 0]
 		}
 		if (b != null) {
-			return [$.pointerValue<inputs>(i).newBytes(b), $.len(b)]
+			return [inputs.prototype.newBytes.call(i, b), $.len(b)]
 		}
-		return [$.pointerValue<inputs>(i).newString(s), $.len(s)]
+		return [inputs.prototype.newString.call(i, s), $.len(s)]
 	}
 
 	public newBytes(b: $.Slice<number>): __goscript_regexp.input | null {
@@ -383,7 +383,7 @@ export class machine {
 				case syntax.InstAlt:
 				case syntax.InstAltMatch:
 				{
-					t = $.pointerValue<machine>(m).add(q, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), pos, cap, cond, t)
+					t = machine.prototype.add.call(m, q, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), pos, cap, cond, t)
 					pc = $.uint($.pointerValue<syntax.Inst>(i).Arg, 32)
 					continue Again
 					break
@@ -407,7 +407,7 @@ export class machine {
 					if ($.int($.pointerValue<syntax.Inst>(i).Arg) < $.len(cap)) {
 						let opos = cap![$.pointerValue<syntax.Inst>(i).Arg]
 						cap![$.pointerValue<syntax.Inst>(i).Arg] = pos
-						$.pointerValue<machine>(m).add(q, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), pos, cap, cond, null)
+						machine.prototype.add.call(m, q, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), pos, cap, cond, null)
 						cap![$.pointerValue<syntax.Inst>(i).Arg] = opos
 					} else {
 						pc = $.uint($.pointerValue<syntax.Inst>(i).Out, 32)
@@ -422,7 +422,7 @@ export class machine {
 				case syntax.InstRuneAnyNotNL:
 				{
 					if (t == null) {
-						t = $.pointerValue<machine>(m).alloc(i)
+						t = machine.prototype.alloc.call(m, i)
 					} else {
 						$.pointerValue<thread>(t).inst = i
 					}
@@ -492,11 +492,11 @@ export class machine {
 		let r1 = $.int(-1, 32)
 		let width = 0
 		let width1 = 0
-		let __goscriptTuple0 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
+		let __goscriptTuple0: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
 		r = $.int(__goscriptTuple0[0], 32)
 		width = __goscriptTuple0[1]
 		if ($.int(r, 32) != $.int(-1, 32)) {
-			let __goscriptTuple1 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
+			let __goscriptTuple1: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
 			r1 = $.int(__goscriptTuple1[0], 32)
 			width1 = __goscriptTuple1[1]
 		}
@@ -523,10 +523,10 @@ export class machine {
 						break
 					}
 					pos += advance
-					let __goscriptTuple2 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
+					let __goscriptTuple2: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
 					r = $.int(__goscriptTuple2[0], 32)
 					width = __goscriptTuple2[1]
-					let __goscriptTuple3 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
+					let __goscriptTuple3: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
 					r1 = $.int(__goscriptTuple3[0], 32)
 					width1 = __goscriptTuple3[1]
 				}
@@ -535,10 +535,10 @@ export class machine {
 				if ($.len($.pointerValue<machine>(m).matchcap) > 0) {
 					$.pointerValue<machine>(m).matchcap![0] = pos
 				}
-				$.pointerValue<machine>(m).add(runq, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<machine>(m).p).Start, 32), 32), pos, $.pointerValue<machine>(m).matchcap, flag, null)
+				machine.prototype.add.call(m, runq, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<machine>(m).p).Start, 32), 32), pos, $.pointerValue<machine>(m).matchcap, flag, null)
 			}
 			flag.value = newLazyFlag($.int(r, 32), $.int(r1, 32))
-			$.pointerValue<machine>(m).step(runq, nextq, pos, pos + width, $.int(r, 32), flag)
+			machine.prototype.step.call(m, runq, nextq, pos, pos + width, $.int(r, 32), flag)
 			if (width == 0) {
 				break
 			}
@@ -553,7 +553,7 @@ export class machine {
 			r = __goscriptAssign0_0
 			width = __goscriptAssign0_1
 			if ($.int(r, 32) != $.int(-1, 32)) {
-				let __goscriptTuple4 = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
+				let __goscriptTuple4: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
 				r1 = $.int(__goscriptTuple4[0], 32)
 				width1 = __goscriptTuple4[1]
 			}
@@ -562,7 +562,7 @@ export class machine {
 			runq = __goscriptAssign1_0
 			nextq = __goscriptAssign1_1
 		}
-		$.pointerValue<machine>(m).clear(nextq)
+		machine.prototype.clear.call(m, nextq)
 		return $.pointerValue<machine>(m).matched
 	}
 
@@ -628,7 +628,7 @@ export class machine {
 				}
 			}
 			if (add) {
-				t = $.pointerValue<machine>(m).add(nextq, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), nextPos, $.pointerValue<thread>(t).cap, nextCond, t)
+				t = machine.prototype.add.call(m, nextq, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), nextPos, $.pointerValue<thread>(t).cap, nextCond, t)
 			}
 			if (t != null) {
 				$.pointerValue<machine>(m).pool = $.append($.pointerValue<machine>(m).pool, t)
@@ -748,7 +748,7 @@ export function __goscript_set_onePassPool(value: sync.Pool): void {
 }
 
 export function newOnePassMachine(): onePassMachine | $.VarRef<onePassMachine> | null {
-	let __goscriptTuple5 = $.typeAssertTuple<onePassMachine | $.VarRef<onePassMachine> | null>(onePassPool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.onePassMachine" })
+	let __goscriptTuple5: any = $.typeAssertTuple<onePassMachine | $.VarRef<onePassMachine> | null>(onePassPool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.onePassMachine" })
 	let m: onePassMachine | $.VarRef<onePassMachine> | null = __goscriptTuple5[0]
 	let ok = __goscriptTuple5[1]
 	if (!ok) {

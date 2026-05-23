@@ -17,7 +17,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Itoa result:", s)
 
 	// Test ParseInt
-	let __goscriptTuple0 = strconv.ParseInt("456", 10, 64)
+	let __goscriptTuple0: any = strconv.ParseInt("456", 10, 64)
 	let i64 = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	if (err == null) {
@@ -29,7 +29,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("FormatInt result:", formatted)
 
 	// Test ParseFloat
-	let __goscriptTuple1 = strconv.ParseFloat("3.14", 64)
+	let __goscriptTuple1: any = strconv.ParseFloat("3.14", 64)
 	let f = __goscriptTuple1[0]
 	err = __goscriptTuple1[1]
 	if (err == null) {
@@ -41,7 +41,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("FormatFloat result:", floatStr)
 
 	// Test ParseBool
-	let __goscriptTuple2 = strconv.ParseBool("true")
+	let __goscriptTuple2: any = strconv.ParseBool("true")
 	let b = __goscriptTuple2[0]
 	err = __goscriptTuple2[1]
 	if (err == null) {
@@ -57,7 +57,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Quote result:", quoted)
 
 	// Test Unquote
-	let __goscriptTuple3 = strconv.Unquote("\"hello world\"")
+	let __goscriptTuple3: any = strconv.Unquote("\"hello world\"")
 	let unquoted = __goscriptTuple3[0]
 	err = __goscriptTuple3[1]
 	if (err == null) {
@@ -65,13 +65,13 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test error cases
-	let __goscriptTuple4 = strconv.Atoi("invalid")
+	let __goscriptTuple4: any = strconv.Atoi("invalid")
 	err = __goscriptTuple4[1]
 	if (err != null) {
 		$.println("Atoi error handled")
 	}
 
-	let __goscriptTuple5 = strconv.ParseFloat("invalid", 64)
+	let __goscriptTuple5: any = strconv.ParseFloat("invalid", 64)
 	err = __goscriptTuple5[1]
 	if (err != null) {
 		$.println("ParseFloat error handled")

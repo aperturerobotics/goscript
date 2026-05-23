@@ -25,7 +25,7 @@ export async function main(): globalThis.Promise<void> {
 		case stdNumMonth:
 		case stdZeroMonth:
 		{
-			let __goscriptTuple0 = await getnum!(value, std == stdZeroMonth)
+			let __goscriptTuple0: any = await getnum!(value, std == stdZeroMonth)
 			month = __goscriptTuple0[0]
 			value = __goscriptTuple0[1]
 			err = __goscriptTuple0[2]
@@ -52,7 +52,7 @@ export async function main(): globalThis.Promise<void> {
 		case stdNumMonth:
 		case stdZeroMonth:
 		{
-			let __goscriptTuple1 = await getnum!(value, std == stdZeroMonth)
+			let __goscriptTuple1: any = await getnum!(value, std == stdZeroMonth)
 			month = __goscriptTuple1[0]
 			value = __goscriptTuple1[1]
 			err = __goscriptTuple1[2]

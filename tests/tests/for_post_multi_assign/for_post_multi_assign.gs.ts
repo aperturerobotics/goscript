@@ -97,7 +97,7 @@ export class iterator {
 
 export function findFrame(): frame | $.VarRef<frame> | null {
 	let it: iterator | $.VarRef<iterator> | null = new iterator()
-	for (let __goscriptTuple0 = $.pointerValue<iterator>(it).Next(), f = $.varRef(__goscriptTuple0[0]), again = __goscriptTuple0[1]; again; [f.value, again] = $.pointerValue<iterator>(it).Next()) {
+	for (let __goscriptTuple0 = iterator.prototype.Next.call(it), f = $.varRef(__goscriptTuple0[0]), again = __goscriptTuple0[1]; again; [f.value, again] = iterator.prototype.Next.call(it)) {
 		if ((f.value.name as string) == "second") {
 			return f
 		}

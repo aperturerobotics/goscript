@@ -17,7 +17,7 @@ export async function main(): globalThis.Promise<void> {
 	let stringSlice: $.Slice<string> = $.makeSlice<string>(2, undefined, "string")
 
 	// This should trigger the "unhandled LHS expression in destructuring: *ast.IndexExpr" error
-	let __goscriptTuple0 = returnIntAndString()
+	let __goscriptTuple0: any = returnIntAndString()
 	intArray[0] = __goscriptTuple0[0]
 	stringSlice![1] = __goscriptTuple0[1]
 
@@ -29,7 +29,7 @@ export async function main(): globalThis.Promise<void> {
 	let i: number = 0
 	let j: number = 1
 
-	let __goscriptTuple1 = returnTwoInts()
+	let __goscriptTuple1: any = returnTwoInts()
 	matrix[i][j] = __goscriptTuple1[0]
 	intArray[1] = __goscriptTuple1[1]
 

@@ -53,7 +53,7 @@ export function __goscript_set_Base(value: T | $.VarRef<T> | null): void {
 	Base = value
 }
 
-export let Derived: T | $.VarRef<T> | null = $.pointerValue<T>(Base).WithDelta(5)
+export let Derived: T | $.VarRef<T> | null = T.prototype.WithDelta.call(Base, 5)
 
 export function __goscript_set_Derived(value: T | $.VarRef<T> | null): void {
 	Derived = value

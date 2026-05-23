@@ -51,7 +51,7 @@ export async function main(): globalThis.Promise<void> {
 	let original = $.varRef($.markAsStructValue(new Box({Value: 1})))
 	let copied = $.markAsStructValue($.cloneStructValue(copyBox($.markAsStructValue($.cloneStructValue(original.value)))))
 	original.value.Value = 3
-	let methodCopy: Box | $.VarRef<Box> | null = $.pointerValue<Box>((original)).clone()
+	let methodCopy: Box | $.VarRef<Box> | null = Box.prototype.clone.call((original))
 	$.println("copied:", copied.Value)
 	$.println("method:", $.pointerValue<Box>(methodCopy).Value)
 }

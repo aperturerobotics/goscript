@@ -227,10 +227,10 @@ export async function main(): globalThis.Promise<void> {
 		return "new object"
 	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [] }] })})
 
-	let obj1 = $.pointerValue<sync.Pool>(pool).Get()
+	let obj1 = sync.Pool.prototype.Get.call(pool)
 	$.println("Got from pool:", obj1)
-	$.pointerValue<sync.Pool>(pool).Put("reused object")
-	let obj2 = $.pointerValue<sync.Pool>(pool).Get()
+	sync.Pool.prototype.Put.call(pool, "reused object")
+	let obj2 = sync.Pool.prototype.Get.call(pool)
 	$.println("Got from pool:", obj2)
 
 	$.println("test finished")

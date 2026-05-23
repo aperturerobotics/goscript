@@ -117,7 +117,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test case: nil value of an inline interface type assigned to interface{}
-	let l: any = $.interfaceValue<any>($.typedNil("*struct{Name string}"), "*struct{Name string}")
+	let l: any = $.interfaceValue<any>(null, "*struct{Name string}")
 
 	let [ptr, ok6] = $.typeAssertTuple<$.VarRef<{"Name": string}> | null>(l, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Struct, methods: [], fields: {"Name": { kind: $.TypeKind.Basic, name: "string" }} } })
 	if (ok6) {

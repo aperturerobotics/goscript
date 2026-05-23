@@ -50,7 +50,7 @@ export function NewFoo(): Foo | $.VarRef<Foo> | null {
 
 export async function main(): globalThis.Promise<void> {
 	let f: Foo | $.VarRef<Foo> | null = NewFoo()
-	queueMicrotask(async () => { await $.pointerValue<Foo>(f).Bar() })
+	queueMicrotask(async () => { await Foo.prototype.Bar.call(f) })
 	await $.chanRecv($.pointerValue<Foo>(f).done)
 	$.println("main done")
 }

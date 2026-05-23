@@ -102,7 +102,7 @@ export async function main(): globalThis.Promise<void> {
 	buf.value.WriteString("abc")
 	let multi = io.MultiReader($.pointerValue($.interfaceValue<io.Reader | null>(buf, "*bytes.Buffer")), $.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewReader(new Uint8Array([100, 101])), "*bytes.Reader")))
 	data = $.makeSlice<number>(5, undefined, "byte")
-	let __goscriptTuple0 = $.pointerValue<Exclude<io.Reader, null>>(multi).Read(data)
+	let __goscriptTuple0: any = $.pointerValue<Exclude<io.Reader, null>>(multi).Read(data)
 	n = __goscriptTuple0[0]
 	$.println("MultiReader read", n, "bytes:", $.bytesToString($.goSlice(data, undefined, n)))
 

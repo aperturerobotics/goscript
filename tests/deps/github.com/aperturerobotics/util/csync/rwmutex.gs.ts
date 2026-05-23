@@ -295,7 +295,7 @@ export class RWMutexLocker {
 
 	public async Lock(): globalThis.Promise<void> {
 		let l: RWMutexLocker | $.VarRef<RWMutexLocker> | null = this
-		let [release, err] = await $.pointerValue<RWMutex>($.pointerValue<RWMutexLocker>(l).m).Lock(context.Background(), $.pointerValue<RWMutexLocker>(l).write)
+		let [release, err] = await RWMutex.prototype.Lock.call($.pointerValue<RWMutexLocker>(l).m, context.Background(), $.pointerValue<RWMutexLocker>(l).write)
 		if (err != null) {
 			$.panic((errors.Wrap($.pointerValueOrNil(err), "csync: failed RWMutexLocker Lock") as any))
 		}

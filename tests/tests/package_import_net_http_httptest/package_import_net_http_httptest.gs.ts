@@ -15,11 +15,11 @@ export function setAttachment(w: http.ResponseWriter | null, name: string): void
 
 export async function main(): globalThis.Promise<void> {
 	let w: httptest.ResponseRecorder | $.VarRef<httptest.ResponseRecorder> | null = httptest.NewRecorder()
-	http.Header_Set($.pointerValue<httptest.ResponseRecorder>(w).Header(), "X-Test", "ok")
-	$.println(http.Header_Get($.pointerValue<httptest.ResponseRecorder>(w).Header(), "X-Test"))
+	http.Header_Set(httptest.ResponseRecorder.prototype.Header.call(w), "X-Test", "ok")
+	$.println(http.Header_Get(httptest.ResponseRecorder.prototype.Header.call(w), "X-Test"))
 
 	setAttachment($.interfaceValue<http.ResponseWriter | null>(w, "*httptest.ResponseRecorder"), "hello.txt")
-	$.println(http.Header_Get($.pointerValue<httptest.ResponseRecorder>(w).Header(), "Content-Disposition"))
+	$.println(http.Header_Get(httptest.ResponseRecorder.prototype.Header.call(w), "Content-Disposition"))
 }
 
 if ($.isMainScript(import.meta)) {

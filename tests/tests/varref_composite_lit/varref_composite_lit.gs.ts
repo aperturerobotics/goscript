@@ -51,7 +51,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Use the pointer
 	$.println("childInode.Value:", $.pointerValue<MockInode>(childInode).Value)
-	$.println("childInode.getValue():", $.pointerValue<MockInode>(childInode).getValue())
+	$.println("childInode.getValue():", MockInode.prototype.getValue.call(childInode))
 }
 
 if ($.isMainScript(import.meta)) {

@@ -184,7 +184,7 @@ export class compiler {
 			return $.markAsStructValue($.cloneStructValue(f1))
 		}
 
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(0, 8))))
+		let f = $.markAsStructValue($.cloneStructValue(compiler.prototype.inst.call(c, $.uint(0, 8))))
 		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst!, f.i)
 		$.pointerValue<__goscript_prog.Inst>(i).Out = $.uint(f1.i, 32)
 		$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint(f2.i, 32)
@@ -195,7 +195,7 @@ export class compiler {
 
 	public cap(arg: number): frag {
 		let c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(2, 8))))
+		let f = $.markAsStructValue($.cloneStructValue(compiler.prototype.inst.call(c, $.uint(2, 8))))
 		f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))
 		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst![f.i].Arg = $.uint(arg, 32)
 
@@ -238,11 +238,11 @@ export class compiler {
 				}
 				let f: frag = $.markAsStructValue(new frag())
 				for (let __goscriptRangeTarget0 = $.pointerValue<__goscript_regexp.Regexp>(re).Rune, j = 0; j < $.len(__goscriptRangeTarget0); j++) {
-					let f1 = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune($.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune, j, j + 1), $.uint($.pointerValue<__goscript_regexp.Regexp>(re).Flags, 16))))
+					let f1 = $.markAsStructValue($.cloneStructValue(compiler.prototype.rune.call(c, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune, j, j + 1), $.uint($.pointerValue<__goscript_regexp.Regexp>(re).Flags, 16))))
 					if (j == 0) {
 						f = $.markAsStructValue($.cloneStructValue(f1))
 					} else {
-						f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cat($.markAsStructValue($.cloneStructValue(f)), $.markAsStructValue($.cloneStructValue(f1)))))
+						f = $.markAsStructValue($.cloneStructValue(compiler.prototype.cat.call(c, $.markAsStructValue($.cloneStructValue(f)), $.markAsStructValue($.cloneStructValue(f1)))))
 					}
 				}
 				return $.markAsStructValue($.cloneStructValue(f))
@@ -250,55 +250,55 @@ export class compiler {
 			}
 			case 4:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune($.pointerValue<__goscript_regexp.Regexp>(re).Rune, $.uint($.pointerValue<__goscript_regexp.Regexp>(re).Flags, 16))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.rune.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Rune, $.uint($.pointerValue<__goscript_regexp.Regexp>(re).Flags, 16))))
 				break
 			}
 			case 5:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune(anyRuneNotNL, $.uint(0, 16))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.rune.call(c, anyRuneNotNL, $.uint(0, 16))))
 				break
 			}
 			case 6:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).rune(anyRune, $.uint(0, 16))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.rune.call(c, anyRune, $.uint(0, 16))))
 				break
 			}
 			case 7:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(1, 8))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.empty.call(c, $.uint(1, 8))))
 				break
 			}
 			case 8:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(2, 8))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.empty.call(c, $.uint(2, 8))))
 				break
 			}
 			case 9:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(4, 8))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.empty.call(c, $.uint(4, 8))))
 				break
 			}
 			case 10:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(8, 8))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.empty.call(c, $.uint(8, 8))))
 				break
 			}
 			case 11:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(16, 8))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.empty.call(c, $.uint(16, 8))))
 				break
 			}
 			case 12:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).empty($.uint(32, 8))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.empty.call(c, $.uint(32, 8))))
 				break
 			}
 			case 13:
 			{
-				let bra = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cap($.uint($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Cap << 1, 32), 32))))
+				let bra = $.markAsStructValue($.cloneStructValue(compiler.prototype.cap.call(c, $.uint($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Cap << 1, 32), 32))))
 				let sub = $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0])))
-				let ket = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cap($.uint($.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Cap << 1) | 1, 32), 32))))
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cat($.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cat($.markAsStructValue($.cloneStructValue(bra)), $.markAsStructValue($.cloneStructValue(sub))))), $.markAsStructValue($.cloneStructValue(ket)))))
+				let ket = $.markAsStructValue($.cloneStructValue(compiler.prototype.cap.call(c, $.uint($.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Cap << 1) | 1, 32), 32))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.cat.call(c, $.markAsStructValue($.cloneStructValue(compiler.prototype.cat.call(c, $.markAsStructValue($.cloneStructValue(bra)), $.markAsStructValue($.cloneStructValue(sub))))), $.markAsStructValue($.cloneStructValue(ket)))))
 				break
 			}
 			case 14:
@@ -313,7 +313,7 @@ export class compiler {
 			}
 			case 16:
 			{
-				return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).quest($.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]))), $.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Flags & 32), 16) != $.uint(0, 16))))
+				return $.markAsStructValue($.cloneStructValue(compiler.prototype.quest.call(c, $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]))), $.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Flags & 32), 16) != $.uint(0, 16))))
 				break
 			}
 			case 18:
@@ -327,7 +327,7 @@ export class compiler {
 					if (i == 0) {
 						f = $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, sub)))
 					} else {
-						f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).cat($.markAsStructValue($.cloneStructValue(f)), $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, sub))))))
+						f = $.markAsStructValue($.cloneStructValue(compiler.prototype.cat.call(c, $.markAsStructValue($.cloneStructValue(f)), $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, sub))))))
 					}
 				}
 				return $.markAsStructValue($.cloneStructValue(f))
@@ -338,7 +338,7 @@ export class compiler {
 				let f: frag = $.markAsStructValue(new frag())
 				for (let __goscriptRangeTarget2 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
 					let sub = __goscriptRangeTarget2![__rangeIndex]
-					f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).alt($.markAsStructValue($.cloneStructValue(f)), $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, sub))))))
+					f = $.markAsStructValue($.cloneStructValue(compiler.prototype.alt.call(c, $.markAsStructValue($.cloneStructValue(f)), $.markAsStructValue($.cloneStructValue(compiler.prototype.compile.call(c, sub))))))
 				}
 				return $.markAsStructValue($.cloneStructValue(f))
 				break
@@ -349,7 +349,7 @@ export class compiler {
 
 	public empty(op: __goscript_prog.EmptyOp): frag {
 		let c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(3, 8))))
+		let f = $.markAsStructValue($.cloneStructValue(compiler.prototype.inst.call(c, $.uint(3, 8))))
 		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst![f.i].Arg = $.uint($.uint(op, 32), 32)
 		f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))
 		return $.markAsStructValue($.cloneStructValue(f))
@@ -364,7 +364,7 @@ export class compiler {
 		let c: compiler | $.VarRef<compiler> | null = this
 		$.pointerValue<compiler>(c).p = new __goscript_prog.Prog()
 		$.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).NumCap = 2
-		$.pointerValue<compiler>(c).inst($.uint(5, 8))
+		compiler.prototype.inst.call(c, $.uint(5, 8))
 	}
 
 	public inst(op: __goscript_prog.InstOp): frag {
@@ -377,7 +377,7 @@ export class compiler {
 
 	public loop(f1: frag, nongreedy: boolean): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(0, 8))))
+		let f = $.markAsStructValue($.cloneStructValue(compiler.prototype.inst.call(c, $.uint(0, 8))))
 		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst!, f.i)
 		if (nongreedy) {
 			$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint(f1.i, 32)
@@ -392,19 +392,19 @@ export class compiler {
 
 	public nop(): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(6, 8))))
+		let f = $.markAsStructValue($.cloneStructValue(compiler.prototype.inst.call(c, $.uint(6, 8))))
 		f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))
 		return $.markAsStructValue($.cloneStructValue(f))
 	}
 
 	public plus(f1: frag, nongreedy: boolean): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		return $.markAsStructValue(new frag({i: $.uint(f1.i, 32), out: $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).loop($.markAsStructValue($.cloneStructValue(f1)), nongreedy).out)), nullable: f1.nullable}))
+		return $.markAsStructValue(new frag({i: $.uint(f1.i, 32), out: $.markAsStructValue($.cloneStructValue(compiler.prototype.loop.call(c, $.markAsStructValue($.cloneStructValue(f1)), nongreedy).out)), nullable: f1.nullable}))
 	}
 
 	public quest(f1: frag, nongreedy: boolean): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(0, 8))))
+		let f = $.markAsStructValue($.cloneStructValue(compiler.prototype.inst.call(c, $.uint(0, 8))))
 		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst!, f.i)
 		if (nongreedy) {
 			$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint(f1.i, 32)
@@ -419,7 +419,7 @@ export class compiler {
 
 	public rune(r: $.Slice<number>, flags: __goscript_parse.Flags): frag {
 		const c: compiler | $.VarRef<compiler> | null = this
-		let f = $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).inst($.uint(7, 8))))
+		let f = $.markAsStructValue($.cloneStructValue(compiler.prototype.inst.call(c, $.uint(7, 8))))
 		f.nullable = false
 		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst!, f.i)
 		$.pointerValue<__goscript_prog.Inst>(i).Rune = r
@@ -458,9 +458,9 @@ export class compiler {
 		if (f1.nullable) {
 			// Use (f1+)? to get priority match order correct.
 			// See golang.org/issue/46123.
-			return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).quest($.markAsStructValue($.cloneStructValue(compiler.prototype.plus.call(c, $.markAsStructValue($.cloneStructValue(f1)), nongreedy))), nongreedy)))
+			return $.markAsStructValue($.cloneStructValue(compiler.prototype.quest.call(c, $.markAsStructValue($.cloneStructValue(compiler.prototype.plus.call(c, $.markAsStructValue($.cloneStructValue(f1)), nongreedy))), nongreedy)))
 		}
-		return $.markAsStructValue($.cloneStructValue($.pointerValue<compiler>(c).loop($.markAsStructValue($.cloneStructValue(f1)), nongreedy)))
+		return $.markAsStructValue($.cloneStructValue(compiler.prototype.loop.call(c, $.markAsStructValue($.cloneStructValue(f1)), nongreedy)))
 	}
 
 	static __typeInfo = $.registerStructType(

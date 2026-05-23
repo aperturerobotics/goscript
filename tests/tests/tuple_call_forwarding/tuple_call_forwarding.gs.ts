@@ -75,7 +75,7 @@ export async function main(): globalThis.Promise<void> {
 	let x: point | $.VarRef<point> | null = new point()
 	let y: point | $.VarRef<point> | null = new point()
 	let z: point | $.VarRef<point> | null = new point()
-	let __goscriptTuple0 = shift(p)
+	let __goscriptTuple0: any = shift(p)
 	x = __goscriptTuple0[0]
 	y = __goscriptTuple0[1]
 	z = __goscriptTuple0[2]

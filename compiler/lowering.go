@@ -2270,6 +2270,19 @@ func (o *LoweringOwner) lowerStmtListAfter(
 				continue
 			}
 		}
+		if stmtCtx, nextCtx, ok := o.lowerDeclStatementContext(ctx, stmt); ok {
+			stmtLowered, stmtDiagnostics := o.lowerStmt(stmtCtx, stmt)
+			diagnostics = append(diagnostics, stmtDiagnostics...)
+			if len(stmtLowered) != 0 && len(leading) != 0 {
+				stmtLowered[0].leading = append(leading, stmtLowered[0].leading...)
+			}
+			lowered = append(lowered, stmtLowered...)
+			ctx = nextCtx
+			if endLine := sourceLine(ctx, stmt.End()); endLine != 0 {
+				prevEndLine = endLine
+			}
+			continue
+		}
 		if stmtCtx, nextCtx, prelude, ok := o.lowerShortDeclStatementContext(ctx, stmt); ok {
 			stmtLowered, stmtDiagnostics := o.lowerStmt(stmtCtx, stmt)
 			diagnostics = append(diagnostics, stmtDiagnostics...)
@@ -2299,6 +2312,44 @@ func (o *LoweringOwner) lowerStmtListAfter(
 		}
 	}
 	return lowered, diagnostics
+}
+
+func (o *LoweringOwner) lowerDeclStatementContext(
+	ctx lowerFileContext,
+	stmt ast.Stmt,
+) (lowerFileContext, lowerFileContext, bool) {
+	declStmt, ok := stmt.(*ast.DeclStmt)
+	if !ok {
+		return ctx, ctx, false
+	}
+	genDecl, ok := declStmt.Decl.(*ast.GenDecl)
+	if !ok || genDecl.Tok != token.VAR {
+		return ctx, ctx, false
+	}
+	aliases := make(map[types.Object]string)
+	for _, spec := range genDecl.Specs {
+		valueSpec, ok := spec.(*ast.ValueSpec)
+		if !ok {
+			continue
+		}
+		for _, name := range valueSpec.Names {
+			if name.Name == "_" {
+				continue
+			}
+			def := ctx.semPkg.source.TypesInfo.Defs[name]
+			if def == nil || aliases[def] != "" {
+				continue
+			}
+			if shortDeclDefShadowsOuterName(name.Name, def) {
+				aliases[def] = ctx.tempName("Shadow")
+			}
+		}
+	}
+	if len(aliases) == 0 {
+		return ctx, ctx, false
+	}
+	nextCtx := ctx.withIdentAliases(aliases)
+	return nextCtx, nextCtx, true
 }
 
 type gotoStateCluster struct {
@@ -2996,7 +3047,7 @@ func (o *LoweringOwner) lowerTupleReassignmentStmt(
 	diagnostics []Diagnostic,
 ) ([]loweredStmt, []Diagnostic) {
 	tempName := ctx.tempName("Tuple")
-	stmts := []loweredStmt{{text: "let " + tempName + " = " + right}}
+	stmts := []loweredStmt{{text: "let " + tempName + ": any = " + right}}
 	for idx, lhs := range stmt.Lhs {
 		if ident, ok := lhs.(*ast.Ident); ok && ident.Name == "_" {
 			continue
@@ -3145,8 +3196,8 @@ func shortDeclDefShadowsOuterName(name string, def types.Object) bool {
 		if scope == def.Parent() {
 			continue
 		}
-		obj, ok := scope.Lookup(name).(*types.Var)
-		if ok && obj.Pos().IsValid() && obj.Pos() < def.Pos() {
+		obj := scope.Lookup(name)
+		if obj != nil && obj.Pos().IsValid() && obj.Pos() < def.Pos() {
 			return true
 		}
 	}
@@ -5030,7 +5081,7 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			if namedNonInterfaceNonStructType(receiver) {
 				return o.lowerNamedReceiverMethodCall(ctx, fun, args, diagnostics)
 			}
-			if call, callDiagnostics, ok := o.lowerNilablePointerReceiverMethodCall(ctx, fun, selection, args); ok {
+			if call, callDiagnostics, ok := o.lowerPointerReceiverMethodCall(ctx, fun, selection, args); ok {
 				return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, callDiagnostics...)
 			}
 			receiverExpr, receiverDiagnostics := o.lowerMethodReceiverExpr(ctx, fun.X, selection)
@@ -5465,8 +5516,7 @@ func (o *LoweringOwner) lowerConversionExpr(
 		return "(" + value + " as any)", diagnostics
 	}
 	if isNilExpr(expr.Args[0]) && isPointerType(targetType) {
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperTypedNil) +
-			"(" + strconv.Quote(goRuntimeTypeString(targetType)) + ")", diagnostics
+		return "null", diagnostics
 	}
 	if isInterfaceType(targetType) {
 		return o.lowerValueForTarget(ctx, expr.Args[0], targetType, value), diagnostics
@@ -5788,7 +5838,7 @@ func (o *LoweringOwner) lowerNamedReceiverMethodCall(
 	return o.awaitCallIfNeeded(ctx, selector, call), diagnostics
 }
 
-func (o *LoweringOwner) lowerNilablePointerReceiverMethodCall(
+func (o *LoweringOwner) lowerPointerReceiverMethodCall(
 	ctx lowerFileContext,
 	selector *ast.SelectorExpr,
 	selection *types.Selection,
@@ -5799,9 +5849,6 @@ func (o *LoweringOwner) lowerNilablePointerReceiverMethodCall(
 	}
 	method, _ := selection.Obj().(*types.Func)
 	if method == nil {
-		return "", nil, false
-	}
-	if !methodAllowsNilReceiver(ctx, method) {
 		return "", nil, false
 	}
 	signature, _ := method.Type().(*types.Signature)

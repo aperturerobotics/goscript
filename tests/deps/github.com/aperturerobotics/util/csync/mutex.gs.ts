@@ -227,7 +227,7 @@ export class MutexLocker {
 
 	public async Lock(): globalThis.Promise<void> {
 		const l: MutexLocker | $.VarRef<MutexLocker> | null = this
-		let __goscriptTuple0 = await $.pointerValue<Mutex>($.pointerValue<MutexLocker>(l).m).Lock(context.Background())
+		let __goscriptTuple0: any = await Mutex.prototype.Lock.call($.pointerValue<MutexLocker>(l).m, context.Background())
 		let release = $.varRef(__goscriptTuple0[0])
 		let err = __goscriptTuple0[1]
 		if (err != null) {

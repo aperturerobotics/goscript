@@ -57,7 +57,7 @@ $.registerInterfaceType(
 export function describe(value: any): void {
 	let __goscriptShadow0 = value
 	{
-		let __goscriptTuple0 = $.typeAssertTuple<named | null>(__goscriptShadow0, "main.named")
+		let __goscriptTuple0: any = $.typeAssertTuple<named | null>(__goscriptShadow0, "main.named")
 		let __goscriptShadow1 = __goscriptTuple0[0]
 		let ok = __goscriptTuple0[1]
 		if (ok) {

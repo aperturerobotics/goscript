@@ -67,18 +67,18 @@ export class Prog {
 		const p: Prog | $.VarRef<Prog> | null = this
 		let prefix: string = ""
 		let complete: boolean = false
-		let i: Inst | $.VarRef<Inst> | null = $.pointerValue<Prog>(p).skipNop($.uint($.uint($.pointerValue<Prog>(p).Start, 32), 32))
+		let i: Inst | $.VarRef<Inst> | null = Prog.prototype.skipNop.call(p, $.uint($.uint($.pointerValue<Prog>(p).Start, 32), 32))
 
 		// Avoid allocation of buffer if prefix is empty.
-		if (($.uint($.pointerValue<Inst>(i).op(), 8) != $.uint(InstRune, 8)) || ($.len($.pointerValue<Inst>(i).Rune) != 1)) {
+		if (($.uint(Inst.prototype.op.call(i), 8) != $.uint(InstRune, 8)) || ($.len($.pointerValue<Inst>(i).Rune) != 1)) {
 			return ["", $.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(InstMatch, 8)]
 		}
 
 		// Have prefix; gather characters.
 		let buf: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
-		while (((($.uint($.pointerValue<Inst>(i).op(), 8) == $.uint(InstRune, 8)) && ($.len($.pointerValue<Inst>(i).Rune) == 1)) && ($.uint(($.pointerValue<Inst>(i).Arg & 1), 16) == $.uint(0, 16))) && ($.int($.pointerValue<Inst>(i).Rune![0], 32) != $.int(utf8.RuneError, 32))) {
+		while (((($.uint(Inst.prototype.op.call(i), 8) == $.uint(InstRune, 8)) && ($.len($.pointerValue<Inst>(i).Rune) == 1)) && ($.uint(($.pointerValue<Inst>(i).Arg & 1), 16) == $.uint(0, 16))) && ($.int($.pointerValue<Inst>(i).Rune![0], 32) != $.int(utf8.RuneError, 32))) {
 			buf.value.WriteRune($.int($.pointerValue<Inst>(i).Rune![0], 32))
-			i = $.pointerValue<Prog>(p).skipNop($.uint($.pointerValue<Inst>(i).Out, 32))
+			i = Prog.prototype.skipNop.call(p, $.uint($.pointerValue<Inst>(i).Out, 32))
 		}
 		return [buf.value.String(), $.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(InstMatch, 8)]
 	}
@@ -237,7 +237,7 @@ export class Inst {
 
 	public MatchRune(r: number): boolean {
 		const i: Inst | $.VarRef<Inst> | null = this
-		return $.pointerValue<Inst>(i).MatchRunePos($.int(r, 32)) != noMatch
+		return Inst.prototype.MatchRunePos.call(i, $.int(r, 32)) != noMatch
 	}
 
 	public MatchRunePos(r: number): number {
@@ -443,7 +443,7 @@ export function IsWordChar(r: number): boolean {
 export function bw(b: strings.Builder | $.VarRef<strings.Builder> | null, args: $.Slice<string>): void {
 	for (let __goscriptRangeTarget0 = args, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let s = __goscriptRangeTarget0![__rangeIndex]
-		$.pointerValue<strings.Builder>(b).WriteString(s)
+		strings.Builder.prototype.WriteString.call(b, s)
 	}
 }
 
@@ -452,7 +452,7 @@ export function dumpProg(b: strings.Builder | $.VarRef<strings.Builder> | null, 
 		let i: Inst | $.VarRef<Inst> | null = $.indexRef($.pointerValue<Prog>(p).Inst!, j)
 		let pc = strconv.Itoa(j)
 		if ($.len(pc) < 3) {
-			$.pointerValue<strings.Builder>(b).WriteString($.sliceStringOrBytes("   ", $.len(pc), undefined))
+			strings.Builder.prototype.WriteString.call(b, $.sliceStringOrBytes("   ", $.len(pc), undefined))
 		}
 		if (j == $.pointerValue<Prog>(p).Start) {
 			pc += "*"

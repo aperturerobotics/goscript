@@ -585,8 +585,8 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"let original = $.varRef($.markAsStructValue(new Counter({Value: 1})))\n\n\t// Copy should stay readable in generated output.\n\tlet copy",
 		"let copy = $.markAsStructValue($.cloneStructValue(original.value))",
 		"let pointer: Counter | $.VarRef<Counter> | null = original",
-		"$.pointerValue<Counter>(pointer).Set(2)",
-		"$.pointerValue<Counter>(NewCounter()).Set(5)",
+		"Counter.prototype.Set.call(pointer, 2)",
+		"Counter.prototype.Set.call(NewCounter(), 5)",
 		"let [, ok] = $.typeAssertTuple<Counter | $.VarRef<Counter> | null>(iface, { kind: $.TypeKind.Pointer, elemType: \"main.Counter\" })",
 		"\"Value\": { type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\" }",
 	} {
@@ -765,7 +765,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 		"$.registerInterfaceType(\n\t\"main.ReadCloser\"",
 		"((__receiver) => () => __receiver.Inc())($.pointerValue<Counter>(counter))",
 		"$.namedFunction(greet, \"main.Greeter\")",
-		"$.typedNil(\"*struct{Name string}\")",
+		"$.interfaceValue<any>(null, \"*struct{Name string}\")",
 		"elemType: { kind: $.TypeKind.Struct, methods: [], fields: {\"Name\": { kind: $.TypeKind.Basic, name: \"string\" }} }",
 		"let fn = __goscriptTuple",
 		"switch (true)",
@@ -1130,7 +1130,7 @@ func TestCompilePackagesPacksVariadicCallsInGeneratedSubpackage(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	want := "$.pointerValue<State>(s).SetErrorf(\"bad %q\", $.arrayToSlice<any>([key]))"
+	want := "State.prototype.SetErrorf.call(s, \"bad %q\", $.arrayToSlice<any>([key]))"
 	if !strings.Contains(text, want) {
 		t.Fatalf("missing %q in generated output:\n%s", want, text)
 	}

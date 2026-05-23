@@ -11,7 +11,7 @@ export function collectValues(value: helper.Value | null): [$.Slice<helper.Value
 }
 
 export function collectAssigned(value: helper.Value | null): [$.Slice<helper.Value | null>, $.GoError] {
-	let __goscriptTuple0 = helper.Collect({T: { type: "helper.Value", zero: () => null, methods: {GetValue: (receiver: any, ...args: any[]) => receiver.GetValue(...args)} }}, value)
+	let __goscriptTuple0: any = helper.Collect({T: { type: "helper.Value", zero: () => null, methods: {GetValue: (receiver: any, ...args: any[]) => receiver.GetValue(...args)} }}, value)
 	let values = (__goscriptTuple0[0] as $.Slice<helper.Value | null>)
 	let err = __goscriptTuple0[1]
 	if (err != null) {
@@ -29,7 +29,7 @@ export async function main(): globalThis.Promise<void> {
 		return
 	}
 	$.println("collected:", $.pointerValue<Exclude<helper.Value, null>>(values![0]).GetValue())
-	let __goscriptTuple1 = collectAssigned($.interfaceValue<helper.Value | null>($.markAsStructValue(new helper.IntValue({N: 35})), "helper.IntValue"))
+	let __goscriptTuple1: any = collectAssigned($.interfaceValue<helper.Value | null>($.markAsStructValue(new helper.IntValue({N: 35})), "helper.IntValue"))
 	let assigned = __goscriptTuple1[0]
 	err = __goscriptTuple1[1]
 	if (err != null) {

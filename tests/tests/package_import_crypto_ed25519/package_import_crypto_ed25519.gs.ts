@@ -12,7 +12,7 @@ import * as rand from "@goscript/crypto/rand/index.js"
 import * as io from "@goscript/io/index.js"
 
 export async function main(): globalThis.Promise<void> {
-	let __goscriptTuple0 = await ed25519.GenerateKey($.pointerValue(rand.Reader))
+	let __goscriptTuple0: any = await ed25519.GenerateKey($.pointerValue(rand.Reader))
 	let pub = (__goscriptTuple0[0] as ed25519.PublicKey)
 	let priv = (__goscriptTuple0[1] as ed25519.PrivateKey)
 	let err = __goscriptTuple0[2]

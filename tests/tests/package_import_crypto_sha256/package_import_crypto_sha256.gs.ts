@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 	let h: hash.Hash | null = sha256.New()
 	let [n, err] = $.pointerValue<Exclude<hash.Hash, null>>(h).Write(new Uint8Array([97]))
 	$.println("write a", n, err == null)
-	let __goscriptTuple0 = $.pointerValue<Exclude<hash.Hash, null>>(h).Write(new Uint8Array([98, 99]))
+	let __goscriptTuple0: any = $.pointerValue<Exclude<hash.Hash, null>>(h).Write(new Uint8Array([98, 99]))
 	n = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	$.println("write bc", n, err == null)

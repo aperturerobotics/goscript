@@ -213,8 +213,8 @@ export class printer {
 
 export async function main(): globalThis.Promise<void> {
 	let p: printer | $.VarRef<printer> | null = new printer()
-	$.pointerValue<printer>(p).init()
-	$.pointerValue<printer>(p).format($.int(100, 32))
+	printer.prototype.init.call(p)
+	printer.prototype.format.call(p, $.int(100, 32))
 	$.println("Formatter test completed")
 }
 

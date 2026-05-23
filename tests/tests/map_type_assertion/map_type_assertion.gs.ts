@@ -7,7 +7,7 @@ export async function main(): globalThis.Promise<void> {
 	let i: any = null as any
 	i = $.interfaceValue<any>(new Map<string, number>([["age", 30]]), "map[string]int")
 
-	let __goscriptTuple0 = $.typeAssertTuple<Map<string, number> | null>(i, { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } })
+	let __goscriptTuple0: any = $.typeAssertTuple<Map<string, number> | null>(i, { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } })
 	let m: Map<string, number> | null = __goscriptTuple0[0]
 	let ok = __goscriptTuple0[1]
 	if (ok) {

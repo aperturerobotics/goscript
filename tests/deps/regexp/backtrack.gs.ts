@@ -150,7 +150,7 @@ export class bitState {
 		let b: bitState | $.VarRef<bitState> | null = this
 		// Only check shouldVisit when arg is false.
 		// When arg is true, we are continuing a previous visit.
-		if (($.uint($.pointerValue<syntax.Prog>($.pointerValue<__goscript_regexp.Regexp>(re).prog).Inst![pc].Op, 8) != $.uint(syntax.InstFail, 8)) && (arg || $.pointerValue<bitState>(b).shouldVisit($.uint(pc, 32), pos))) {
+		if (($.uint($.pointerValue<syntax.Prog>($.pointerValue<__goscript_regexp.Regexp>(re).prog).Inst![pc].Op, 8) != $.uint(syntax.InstFail, 8)) && (arg || bitState.prototype.shouldVisit.call(b, $.uint(pc, 32), pos))) {
 			$.pointerValue<bitState>(b).jobs = $.append($.pointerValue<bitState>(b).jobs, $.markAsStructValue(new job({pc: $.uint(pc, 32), arg: arg, pos: pos})))
 		}
 	}
@@ -224,7 +224,7 @@ export function __goscript_set_bitStatePool(value: sync.Pool): void {
 }
 
 export function newBitState(): bitState | $.VarRef<bitState> | null {
-	let __goscriptTuple0 = $.typeAssertTuple<bitState | $.VarRef<bitState> | null>(bitStatePool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.bitState" })
+	let __goscriptTuple0: any = $.typeAssertTuple<bitState | $.VarRef<bitState> | null>(bitStatePool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.bitState" })
 	let b: bitState | $.VarRef<bitState> | null = __goscriptTuple0[0]
 	let ok = __goscriptTuple0[1]
 	if (!ok) {

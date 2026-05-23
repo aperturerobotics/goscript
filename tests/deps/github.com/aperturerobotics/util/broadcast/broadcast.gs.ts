@@ -100,8 +100,8 @@ export class Broadcast {
 
 			let done: boolean = false
 			let err: $.GoError = null as $.GoError
-			await $.pointerValue<Broadcast>(c).HoldLock($.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
-				let __goscriptTuple0 = await cb!(broadcast, getWaitCh)
+			await Broadcast.prototype.HoldLock.call(c, $.functionValue(async (broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
+				let __goscriptTuple0: any = await cb!(broadcast, getWaitCh)
 				done = __goscriptTuple0[0]
 				err = __goscriptTuple0[1]
 				if (!done && (err == null)) {

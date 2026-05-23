@@ -85,7 +85,7 @@ export class Scanner {
 
 	public async next(): globalThis.Promise<void> {
 		const s: Scanner | $.VarRef<Scanner> | null = this
-		await $.pointerValue<FileTracker>($.pointerValue<Scanner>(s).file).AddLine(10)
+		await FileTracker.prototype.AddLine.call($.pointerValue<Scanner>(s).file, 10)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -100,7 +100,7 @@ export class Scanner {
 export async function main(): globalThis.Promise<void> {
 	let tracker: FileTracker | $.VarRef<FileTracker> | null = new FileTracker({lines: $.arrayToSlice<number>([])})
 	let scanner: Scanner | $.VarRef<Scanner> | null = new Scanner({file: tracker})
-	await $.pointerValue<Scanner>(scanner).next()
+	await Scanner.prototype.next.call(scanner)
 	$.println($.len($.pointerValue<FileTracker>(tracker).lines))
 }
 

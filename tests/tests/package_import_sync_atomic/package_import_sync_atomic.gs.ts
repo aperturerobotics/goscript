@@ -112,7 +112,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	let fnPtr: $.VarRef<atomic.Pointer<(() => void) | null>> = $.varRef($.markAsStructValue(new atomic.Pointer<(() => void) | null>()))
-	let __goscriptTuple0 = makeAtomicCallback()
+	let __goscriptTuple0: any = makeAtomicCallback()
 	let callback = $.varRef(__goscriptTuple0[0])
 	let callbackErr = __goscriptTuple0[1]
 	if (callbackErr != null) {

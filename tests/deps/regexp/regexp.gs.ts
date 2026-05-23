@@ -205,7 +205,7 @@ export class Regexp {
 
 	public AppendText(b: $.Slice<number>): [$.Slice<number>, $.GoError] {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return [$.append(b, ...($.stringToBytes($.pointerValue<Regexp>(re).String()) ?? [])), null]
+		return [$.append(b, ...($.stringToBytes(Regexp.prototype.String.call(re)) ?? [])), null]
 	}
 
 	public Copy(): Regexp | $.VarRef<Regexp> | null {
@@ -216,18 +216,18 @@ export class Regexp {
 
 	public Expand(dst: $.Slice<number>, template: $.Slice<number>, src: $.Slice<number>, match: $.Slice<number>): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return $.pointerValue<Regexp>(re).expand(dst, $.bytesToString(template), src, "", match)
+		return Regexp.prototype.expand.call(re, dst, $.bytesToString(template), src, "", match)
 	}
 
 	public ExpandString(dst: $.Slice<number>, template: string, src: string, match: $.Slice<number>): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return $.pointerValue<Regexp>(re).expand(dst, template, null, src, match)
+		return Regexp.prototype.expand.call(re, dst, template, null, src, match)
 	}
 
 	public Find(b: $.Slice<number>): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 2 }, () => 0)
-		let a = $.pointerValue<Regexp>(re).doExecute(null, b, "", 0, 2, $.goSlice(dstCap, undefined, 0))
+		let a = Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return null
 		}
@@ -240,7 +240,7 @@ export class Regexp {
 			n = $.len(b) + 1
 		}
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
-		await $.pointerValue<Regexp>(re).allMatches("", b, n, $.functionValue((match: $.Slice<number>): void => {
+		await Regexp.prototype.allMatches.call(re, "", b, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
@@ -255,7 +255,7 @@ export class Regexp {
 			n = $.len(b) + 1
 		}
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
-		await $.pointerValue<Regexp>(re).allMatches("", b, n, $.functionValue((match: $.Slice<number>): void => {
+		await Regexp.prototype.allMatches.call(re, "", b, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
@@ -270,7 +270,7 @@ export class Regexp {
 			n = $.len(s) + 1
 		}
 		let result: $.Slice<string> = null as $.Slice<string>
-		await $.pointerValue<Regexp>(re).allMatches(s, null, n, $.functionValue((match: $.Slice<number>): void => {
+		await Regexp.prototype.allMatches.call(re, s, null, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
 				result = $.makeSlice<string>(0, startSize, "string")
 			}
@@ -285,7 +285,7 @@ export class Regexp {
 			n = $.len(s) + 1
 		}
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
-		await $.pointerValue<Regexp>(re).allMatches(s, null, n, $.functionValue((match: $.Slice<number>): void => {
+		await Regexp.prototype.allMatches.call(re, s, null, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
@@ -300,7 +300,7 @@ export class Regexp {
 			n = $.len(s) + 1
 		}
 		let result: $.Slice<$.Slice<string>> = null as $.Slice<$.Slice<string>>
-		await $.pointerValue<Regexp>(re).allMatches(s, null, n, $.functionValue((match: $.Slice<number>): void => {
+		await Regexp.prototype.allMatches.call(re, s, null, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
 				result = $.makeSlice<$.Slice<string>>(0, startSize)
 			}
@@ -321,7 +321,7 @@ export class Regexp {
 			n = $.len(s) + 1
 		}
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
-		await $.pointerValue<Regexp>(re).allMatches(s, null, n, $.functionValue((match: $.Slice<number>): void => {
+		await Regexp.prototype.allMatches.call(re, s, null, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
@@ -336,7 +336,7 @@ export class Regexp {
 			n = $.len(b) + 1
 		}
 		let result: $.Slice<$.Slice<$.Slice<number>>> = null as $.Slice<$.Slice<$.Slice<number>>>
-		await $.pointerValue<Regexp>(re).allMatches("", b, n, $.functionValue((match: $.Slice<number>): void => {
+		await Regexp.prototype.allMatches.call(re, "", b, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
 				result = $.makeSlice<$.Slice<$.Slice<number>>>(0, startSize)
 			}
@@ -357,7 +357,7 @@ export class Regexp {
 			n = $.len(b) + 1
 		}
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
-		await $.pointerValue<Regexp>(re).allMatches("", b, n, $.functionValue((match: $.Slice<number>): void => {
+		await Regexp.prototype.allMatches.call(re, "", b, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
@@ -369,7 +369,7 @@ export class Regexp {
 	public FindIndex(b: $.Slice<number>): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let loc: $.Slice<number> = null as $.Slice<number>
-		let a = $.pointerValue<Regexp>(re).doExecute(null, b, "", 0, 2, null)
+		let a = Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, null)
 		if (a == null) {
 			return null
 		}
@@ -379,7 +379,7 @@ export class Regexp {
 	public FindReaderIndex(r: io.RuneReader | null): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let loc: $.Slice<number> = null as $.Slice<number>
-		let a = $.pointerValue<Regexp>(re).doExecute(r, null, "", 0, 2, null)
+		let a = Regexp.prototype.doExecute.call(re, r, null, "", 0, 2, null)
 		if (a == null) {
 			return null
 		}
@@ -388,13 +388,13 @@ export class Regexp {
 
 	public FindReaderSubmatchIndex(r: io.RuneReader | null): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return $.pointerValue<Regexp>(re).pad($.pointerValue<Regexp>(re).doExecute(r, null, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
+		return Regexp.prototype.pad.call(re, Regexp.prototype.doExecute.call(re, r, null, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
 	}
 
 	public FindString(s: string): string {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 2 }, () => 0)
-		let a = $.pointerValue<Regexp>(re).doExecute(null, null, s, 0, 2, $.goSlice(dstCap, undefined, 0))
+		let a = Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return ""
 		}
@@ -404,7 +404,7 @@ export class Regexp {
 	public FindStringIndex(s: string): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let loc: $.Slice<number> = null as $.Slice<number>
-		let a = $.pointerValue<Regexp>(re).doExecute(null, null, s, 0, 2, null)
+		let a = Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, null)
 		if (a == null) {
 			return null
 		}
@@ -414,7 +414,7 @@ export class Regexp {
 	public FindStringSubmatch(s: string): $.Slice<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 4 }, () => 0)
-		let a = $.pointerValue<Regexp>(re).doExecute(null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
+		let a = Regexp.prototype.doExecute.call(re, null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return null
 		}
@@ -429,13 +429,13 @@ export class Regexp {
 
 	public FindStringSubmatchIndex(s: string): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return $.pointerValue<Regexp>(re).pad($.pointerValue<Regexp>(re).doExecute(null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
+		return Regexp.prototype.pad.call(re, Regexp.prototype.doExecute.call(re, null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
 	}
 
 	public FindSubmatch(b: $.Slice<number>): $.Slice<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 4 }, () => 0)
-		let a = $.pointerValue<Regexp>(re).doExecute(null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
+		let a = Regexp.prototype.doExecute.call(re, null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return null
 		}
@@ -450,7 +450,7 @@ export class Regexp {
 
 	public FindSubmatchIndex(b: $.Slice<number>): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return $.pointerValue<Regexp>(re).pad($.pointerValue<Regexp>(re).doExecute(null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
+		return Regexp.prototype.pad.call(re, Regexp.prototype.doExecute.call(re, null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
 	}
 
 	public LiteralPrefix(): [string, boolean] {
@@ -497,32 +497,32 @@ export class Regexp {
 			n = 2 * ($.pointerValue<Regexp>(re).numSubexp + 1)
 		}
 		let srepl = ""
-		let b = await $.pointerValue<Regexp>(re).replaceAll(src, "", n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
+		let b = await Regexp.prototype.replaceAll.call(re, src, "", n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			if ($.len(srepl) != $.len(repl)) {
 				srepl = $.bytesToString(repl)
 			}
-			return $.pointerValue<Regexp>(re).expand(dst, srepl, src, "", match)
+			return Regexp.prototype.expand.call(re, dst, srepl, src, "", match)
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
 		return b
 	}
 
 	public async ReplaceAllFunc(src: $.Slice<number>, repl: ((_p0: $.Slice<number>) => $.Slice<number> | globalThis.Promise<$.Slice<number>>) | null): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return await $.pointerValue<Regexp>(re).replaceAll(src, "", 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
+		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
 			return $.append(dst, ...(await repl!($.goSlice(src, match![0], match![1])) ?? []))
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
 	}
 
 	public async ReplaceAllLiteral(src: $.Slice<number>, repl: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return await $.pointerValue<Regexp>(re).replaceAll(src, "", 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
+		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return $.append(dst, ...(repl ?? []))
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
 	}
 
 	public async ReplaceAllLiteralString(src: string, repl: string): globalThis.Promise<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return $.bytesToString(await $.pointerValue<Regexp>(re).replaceAll(null, src, 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
+		return $.bytesToString(await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return $.append(dst, ...($.stringToBytes(repl) ?? []))
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] })))
 	}
@@ -533,15 +533,15 @@ export class Regexp {
 		if (strings2.Contains(repl, "$")) {
 			n = 2 * ($.pointerValue<Regexp>(re).numSubexp + 1)
 		}
-		let b = await $.pointerValue<Regexp>(re).replaceAll(null, src, n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
-			return $.pointerValue<Regexp>(re).expand(dst, repl, null, src, match)
+		let b = await Regexp.prototype.replaceAll.call(re, null, src, n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
+			return Regexp.prototype.expand.call(re, dst, repl, null, src, match)
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
 		return $.bytesToString(b)
 	}
 
 	public async ReplaceAllStringFunc(src: string, repl: ((_p0: string) => string | globalThis.Promise<string>) | null): globalThis.Promise<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		let b = await $.pointerValue<Regexp>(re).replaceAll(null, src, 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
+		let b = await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
 			return $.append(dst, ...($.stringToBytes(await repl!($.sliceStringOrBytes(src, match![0], match![1]))) ?? []))
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
 		return $.bytesToString(b)
@@ -559,28 +559,28 @@ export class Regexp {
 		}
 
 		let matches = await Regexp.prototype.FindAllStringIndex.call(re, s, n)
-		let strings = $.makeSlice<string>(0, $.len(matches), "string")
+		let __goscriptShadow0 = $.makeSlice<string>(0, $.len(matches), "string")
 
 		let beg = 0
 		let end = 0
 		for (let __goscriptRangeTarget4 = matches, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget4); __rangeIndex++) {
 			let match = __goscriptRangeTarget4![__rangeIndex]
-			if ((n > 0) && ($.len(strings) >= (n - 1))) {
+			if ((n > 0) && ($.len(__goscriptShadow0) >= (n - 1))) {
 				break
 			}
 
 			end = match![0]
 			if (match![1] != 0) {
-				strings = $.append(strings, $.sliceStringOrBytes(s, beg, end))
+				__goscriptShadow0 = $.append(__goscriptShadow0, $.sliceStringOrBytes(s, beg, end))
 			}
 			beg = match![1]
 		}
 
 		if (end != $.len(s)) {
-			strings = $.append(strings, $.sliceStringOrBytes(s, beg, undefined))
+			__goscriptShadow0 = $.append(__goscriptShadow0, $.sliceStringOrBytes(s, beg, undefined))
 		}
 
-		return strings
+		return __goscriptShadow0
 	}
 
 	public String(): string {
@@ -608,7 +608,7 @@ export class Regexp {
 
 	public async UnmarshalText(text: $.Slice<number>): globalThis.Promise<$.GoError> {
 		let re: Regexp | $.VarRef<Regexp> | null = this
-		let __goscriptTuple0 = await Compile($.bytesToString(text))
+		let __goscriptTuple0: any = await Compile($.bytesToString(text))
 		let newRE: Regexp | $.VarRef<Regexp> | null = __goscriptTuple0[0]
 		let err = __goscriptTuple0[1]
 		if (err != null) {
@@ -628,7 +628,7 @@ export class Regexp {
 		}
 
 		for (let pos = 0, i = 0, prevMatchEnd = -1; (i < n) && (pos <= end); ) {
-			let matches = $.pointerValue<Regexp>(re).doExecute(null, b, s, pos, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null)
+			let matches = Regexp.prototype.doExecute.call(re, null, b, s, pos, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null)
 			if ($.len(matches) == 0) {
 				break
 			}
@@ -644,11 +644,11 @@ export class Regexp {
 				let width: number = 0
 				if (b == null) {
 					let _is = $.varRef($.markAsStructValue(new inputString({str: s})))
-					let __goscriptTuple1 = _is.value.step(pos)
+					let __goscriptTuple1: any = _is.value.step(pos)
 					width = __goscriptTuple1[1]
 				} else {
 					let ib = $.varRef($.markAsStructValue(new inputBytes({str: b})))
-					let __goscriptTuple2 = ib.value.step(pos)
+					let __goscriptTuple2: any = ib.value.step(pos)
 					width = __goscriptTuple2[1]
 				}
 				if (width > 0) {
@@ -662,7 +662,7 @@ export class Regexp {
 			prevMatchEnd = matches![1]
 
 			if (accept) {
-				await deliver!($.pointerValue<Regexp>(re).pad(matches))
+				await deliver!(Regexp.prototype.pad.call(re, matches))
 				i++
 			}
 		}
@@ -681,7 +681,7 @@ export class Regexp {
 
 		let b: __goscript_backtrack.bitState | $.VarRef<__goscript_backtrack.bitState> | null = __goscript_backtrack.newBitState()
 		let [i, end] = $.pointerValue<__goscript_backtrack.bitState>(b).inputs.init(null, ib, _is)
-		$.pointerValue<__goscript_backtrack.bitState>(b).reset($.pointerValue<Regexp>(re).prog, end, ncap)
+		__goscript_backtrack.bitState.prototype.reset.call(b, $.pointerValue<Regexp>(re).prog, end, ncap)
 
 		Match: {
 
@@ -689,7 +689,7 @@ export class Regexp {
 				if ($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap) > 0) {
 					$.pointerValue<__goscript_backtrack.bitState>(b).cap![0] = pos
 				}
-				if (!$.pointerValue<Regexp>(re).tryBacktrack(b, i, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Start, 32), 32), pos)) {
+				if (!Regexp.prototype.tryBacktrack.call(re, b, i, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Start, 32), 32), pos)) {
 					__goscript_backtrack.freeBitState(b)
 					return null
 				}
@@ -710,11 +710,11 @@ export class Regexp {
 					if ($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap) > 0) {
 						$.pointerValue<__goscript_backtrack.bitState>(b).cap![0] = pos
 					}
-					if ($.pointerValue<Regexp>(re).tryBacktrack(b, i, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Start, 32), 32), pos)) {
+					if (Regexp.prototype.tryBacktrack.call(re, b, i, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Start, 32), 32), pos)) {
 
 						break Match
 					}
-					let __goscriptTuple3 = $.pointerValue<Exclude<input, null>>(i).step(pos)
+					let __goscriptTuple3: any = $.pointerValue<Exclude<input, null>>(i).step(pos)
 					width = __goscriptTuple3[1]
 				}
 				__goscript_backtrack.freeBitState(b)
@@ -738,29 +738,29 @@ export class Regexp {
 		}
 
 		if ($.pointerValue<Regexp>(re).onepass != null) {
-			return $.pointerValue<Regexp>(re).doOnePass(r, b, s, pos, ncap, dstCap)
+			return Regexp.prototype.doOnePass.call(re, r, b, s, pos, ncap, dstCap)
 		}
 		if ((r == null) && (($.len(b) + $.len(s)) < $.pointerValue<Regexp>(re).maxBitStateLen)) {
-			return $.pointerValue<Regexp>(re).backtrack(b, s, pos, ncap, dstCap)
+			return Regexp.prototype.backtrack.call(re, b, s, pos, ncap, dstCap)
 		}
 
-		let m: __goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null = $.pointerValue<Regexp>(re).get()
+		let m: __goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null = Regexp.prototype.get.call(re)
 		let [i, ] = $.pointerValue<__goscript_exec.machine>(m).inputs.init(r, b, s)
 
-		$.pointerValue<__goscript_exec.machine>(m).init(ncap)
-		if (!$.pointerValue<__goscript_exec.machine>(m).match(i, pos)) {
-			$.pointerValue<Regexp>(re).put(m)
+		__goscript_exec.machine.prototype.init.call(m, ncap)
+		if (!__goscript_exec.machine.prototype.match.call(m, i, pos)) {
+			Regexp.prototype.put.call(re, m)
 			return null
 		}
 
 		dstCap = $.append(dstCap, ...($.pointerValue<__goscript_exec.machine>(m).matchcap ?? []))
-		$.pointerValue<Regexp>(re).put(m)
+		Regexp.prototype.put.call(re, m)
 		return dstCap
 	}
 
 	public doMatch(r: io.RuneReader | null, b: $.Slice<number>, s: string): boolean {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return $.pointerValue<Regexp>(re).doExecute(r, b, s, 0, 0, null) != null
+		return Regexp.prototype.doExecute.call(re, r, b, s, 0, 0, null) != null
 	}
 
 	public doOnePass(ir: io.RuneReader | null, ib: $.Slice<number>, _is: string, pos: number, ncap: number, dstCap: $.Slice<number>): $.Slice<number> {
@@ -788,11 +788,11 @@ export class Regexp {
 		let r1 = $.int(endOfText, 32)
 		let width = 0
 		let width1 = 0
-		let __goscriptTuple4 = $.pointerValue<Exclude<input, null>>(i).step(pos)
+		let __goscriptTuple4: any = $.pointerValue<Exclude<input, null>>(i).step(pos)
 		r = $.int(__goscriptTuple4[0], 32)
 		width = __goscriptTuple4[1]
 		if ($.int(r, 32) != $.int(endOfText, 32)) {
-			let __goscriptTuple5 = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
+			let __goscriptTuple5: any = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
 			r1 = $.int(__goscriptTuple5[0], 32)
 			width1 = __goscriptTuple5[1]
 		}
@@ -813,10 +813,10 @@ export class Regexp {
 					break Return
 				}
 				pos += $.len($.pointerValue<Regexp>(re).prefix)
-				let __goscriptTuple6 = $.pointerValue<Exclude<input, null>>(i).step(pos)
+				let __goscriptTuple6: any = $.pointerValue<Exclude<input, null>>(i).step(pos)
 				r = $.int(__goscriptTuple6[0], 32)
 				width = __goscriptTuple6[1]
-				let __goscriptTuple7 = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
+				let __goscriptTuple7: any = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
 				r1 = $.int(__goscriptTuple7[0], 32)
 				width1 = __goscriptTuple7[1]
 				flag = $.pointerValue<Exclude<input, null>>(i).context(pos)
@@ -910,7 +910,7 @@ export class Regexp {
 				r = __goscriptAssign0_0
 				width = __goscriptAssign0_1
 				if ($.int(r, 32) != $.int(endOfText, 32)) {
-					let __goscriptTuple8 = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
+					let __goscriptTuple8: any = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
 					r1 = $.int(__goscriptTuple8[0], 32)
 					width1 = __goscriptTuple8[1]
 				}
@@ -941,7 +941,7 @@ export class Regexp {
 				template = $.sliceStringOrBytes(template, 1, undefined)
 				continue
 			}
-			let __goscriptTuple9 = extract(template)
+			let __goscriptTuple9: any = extract(template)
 			let name = __goscriptTuple9[0]
 			let num = __goscriptTuple9[1]
 			let rest = __goscriptTuple9[2]
@@ -980,7 +980,7 @@ export class Regexp {
 
 	public ["get"](): __goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		let __goscriptTuple10 = $.typeAssertTuple<__goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null>(matchPool[$.pointerValue<Regexp>(re).mpool].Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.machine" })
+		let __goscriptTuple10: any = $.typeAssertTuple<__goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null>(matchPool[$.pointerValue<Regexp>(re).mpool].Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.machine" })
 		let m: __goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null = __goscriptTuple10[0]
 		let ok = __goscriptTuple10[1]
 		if (!ok) {
@@ -1047,7 +1047,7 @@ export class Regexp {
 
 		let dstCap: number[] = Array.from({ length: 2 }, () => 0)
 		while (searchPos <= endPos) {
-			let a = $.pointerValue<Regexp>(re).doExecute(null, bsrc, src, searchPos, nmatch, $.goSlice(dstCap, undefined, 0))
+			let a = Regexp.prototype.doExecute.call(re, null, bsrc, src, searchPos, nmatch, $.goSlice(dstCap, undefined, 0))
 			if ($.len(a) == 0) {
 				break
 			}
@@ -1071,10 +1071,10 @@ export class Regexp {
 			// Advance past this match; always advance at least one character.
 			let width: number = 0
 			if (bsrc != null) {
-				let __goscriptTuple11 = utf8.DecodeRune($.goSlice(bsrc, searchPos, undefined))
+				let __goscriptTuple11: any = utf8.DecodeRune($.goSlice(bsrc, searchPos, undefined))
 				width = __goscriptTuple11[1]
 			} else {
-				let __goscriptTuple12 = utf8.DecodeRuneInString($.sliceStringOrBytes(src, searchPos, undefined))
+				let __goscriptTuple12: any = utf8.DecodeRuneInString($.sliceStringOrBytes(src, searchPos, undefined))
 				width = __goscriptTuple12[1]
 			}
 			if ((searchPos + width) > a![1]) {
@@ -1104,12 +1104,12 @@ export class Regexp {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let longest = $.pointerValue<Regexp>(re).longest
 
-		$.pointerValue<__goscript_backtrack.bitState>(b).push(re, $.uint(pc, 32), pos, false)
+		__goscript_backtrack.bitState.prototype.push.call(b, re, $.uint(pc, 32), pos, false)
 		__goscriptLoop0: while ($.len($.pointerValue<__goscript_backtrack.bitState>(b).jobs) > 0) {
 			let l = $.len($.pointerValue<__goscript_backtrack.bitState>(b).jobs) - 1
 
-			let __goscriptShadow0 = $.uint($.pointerValue<__goscript_backtrack.bitState>(b).jobs![l].pc, 32)
-			let __goscriptShadow1 = $.pointerValue<__goscript_backtrack.bitState>(b).jobs![l].pos
+			let __goscriptShadow1 = $.uint($.pointerValue<__goscript_backtrack.bitState>(b).jobs![l].pc, 32)
+			let __goscriptShadow2 = $.pointerValue<__goscript_backtrack.bitState>(b).jobs![l].pos
 			let arg = $.pointerValue<__goscript_backtrack.bitState>(b).jobs![l].arg
 			$.pointerValue<__goscript_backtrack.bitState>(b).jobs = $.goSlice($.pointerValue<__goscript_backtrack.bitState>(b).jobs, undefined, l)
 
@@ -1126,7 +1126,7 @@ export class Regexp {
 					}
 					case "CheckAndLoop":
 					{
-						if (!$.pointerValue<__goscript_backtrack.bitState>(b).shouldVisit($.uint(__goscriptShadow0, 32), __goscriptShadow1)) {
+						if (!__goscript_backtrack.bitState.prototype.shouldVisit.call(b, $.uint(__goscriptShadow1, 32), __goscriptShadow2)) {
 							continue __goscriptLoop0
 						}
 						__goscriptGotoState0 = "Skip"
@@ -1136,7 +1136,7 @@ export class Regexp {
 					case "Skip":
 					{
 
-						let inst: syntax.Inst | $.VarRef<syntax.Inst> | null = $.indexRef($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Inst!, __goscriptShadow0)
+						let inst: syntax.Inst | $.VarRef<syntax.Inst> | null = $.indexRef($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Inst!, __goscriptShadow1)
 
 						switch ($.pointerValue<syntax.Inst>(inst).Op) {
 							default:
@@ -1154,12 +1154,12 @@ export class Regexp {
 								if (arg) {
 
 									arg = false
-									__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Arg, 32)
+									__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Arg, 32)
 									__goscriptGotoState0 = "CheckAndLoop"
 									continue __goscriptGotoLoop0
 								} else {
-									$.pointerValue<__goscript_backtrack.bitState>(b).push(re, $.uint(__goscriptShadow0, 32), __goscriptShadow1, true)
-									__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
+									__goscript_backtrack.bitState.prototype.push.call(b, re, $.uint(__goscriptShadow1, 32), __goscriptShadow2, true)
+									__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 									__goscriptGotoState0 = "CheckAndLoop"
 									continue __goscriptGotoLoop0
 								}
@@ -1173,73 +1173,73 @@ export class Regexp {
 									case syntax.InstRuneAny:
 									case syntax.InstRuneAnyNotNL:
 									{
-										$.pointerValue<__goscript_backtrack.bitState>(b).push(re, $.uint($.pointerValue<syntax.Inst>(inst).Arg, 32), __goscriptShadow1, false)
-										__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Arg, 32)
-										__goscriptShadow1 = $.pointerValue<__goscript_backtrack.bitState>(b).end
+										__goscript_backtrack.bitState.prototype.push.call(b, re, $.uint($.pointerValue<syntax.Inst>(inst).Arg, 32), __goscriptShadow2, false)
+										__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Arg, 32)
+										__goscriptShadow2 = $.pointerValue<__goscript_backtrack.bitState>(b).end
 										__goscriptGotoState0 = "CheckAndLoop"
 										continue __goscriptGotoLoop0
 										break
 									}
 								}
 
-								$.pointerValue<__goscript_backtrack.bitState>(b).push(re, $.uint($.pointerValue<syntax.Inst>(inst).Out, 32), $.pointerValue<__goscript_backtrack.bitState>(b).end, false)
-								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
+								__goscript_backtrack.bitState.prototype.push.call(b, re, $.uint($.pointerValue<syntax.Inst>(inst).Out, 32), $.pointerValue<__goscript_backtrack.bitState>(b).end, false)
+								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
 								break
 							}
 							case syntax.InstRune:
 							{
-								let __goscriptTuple13 = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow1)
+								let __goscriptTuple13: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple13[0], 32)
 								let width = __goscriptTuple13[1]
 								if (!syntax.Inst.prototype.MatchRune.call(inst, $.int(r, 32))) {
 									continue __goscriptLoop0
 								}
-								__goscriptShadow1 += width
-								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
+								__goscriptShadow2 += width
+								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
 								break
 							}
 							case syntax.InstRune1:
 							{
-								let __goscriptTuple14 = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow1)
+								let __goscriptTuple14: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple14[0], 32)
 								let width = __goscriptTuple14[1]
 								if ($.int(r, 32) != $.int($.pointerValue<syntax.Inst>(inst).Rune![0], 32)) {
 									continue __goscriptLoop0
 								}
-								__goscriptShadow1 += width
-								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
+								__goscriptShadow2 += width
+								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
 								break
 							}
 							case syntax.InstRuneAnyNotNL:
 							{
-								let __goscriptTuple15 = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow1)
+								let __goscriptTuple15: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple15[0], 32)
 								let width = __goscriptTuple15[1]
 								if (($.int(r, 32) == $.int(10, 32)) || ($.int(r, 32) == $.int(endOfText, 32))) {
 									continue __goscriptLoop0
 								}
-								__goscriptShadow1 += width
-								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
+								__goscriptShadow2 += width
+								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
 								break
 							}
 							case syntax.InstRuneAny:
 							{
-								let __goscriptTuple16 = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow1)
+								let __goscriptTuple16: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple16[0], 32)
 								let width = __goscriptTuple16[1]
 								if ($.int(r, 32) == $.int(endOfText, 32)) {
 									continue __goscriptLoop0
 								}
-								__goscriptShadow1 += width
-								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
+								__goscriptShadow2 += width
+								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
 								break
@@ -1248,15 +1248,15 @@ export class Regexp {
 							{
 								if (arg) {
 
-									$.pointerValue<__goscript_backtrack.bitState>(b).cap![$.pointerValue<syntax.Inst>(inst).Arg] = __goscriptShadow1
+									$.pointerValue<__goscript_backtrack.bitState>(b).cap![$.pointerValue<syntax.Inst>(inst).Arg] = __goscriptShadow2
 									continue __goscriptLoop0
 								} else {
 									if ($.pointerValue<syntax.Inst>(inst).Arg < $.uint($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap), 32)) {
 										// large pool
-										$.pointerValue<__goscript_backtrack.bitState>(b).push(re, $.uint(__goscriptShadow0, 32), $.pointerValue<__goscript_backtrack.bitState>(b).cap![$.pointerValue<syntax.Inst>(inst).Arg], true)
-										$.pointerValue<__goscript_backtrack.bitState>(b).cap![$.pointerValue<syntax.Inst>(inst).Arg] = __goscriptShadow1
+										__goscript_backtrack.bitState.prototype.push.call(b, re, $.uint(__goscriptShadow1, 32), $.pointerValue<__goscript_backtrack.bitState>(b).cap![$.pointerValue<syntax.Inst>(inst).Arg], true)
+										$.pointerValue<__goscript_backtrack.bitState>(b).cap![$.pointerValue<syntax.Inst>(inst).Arg] = __goscriptShadow2
 									}
-									__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
+									__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 									__goscriptGotoState0 = "CheckAndLoop"
 									continue __goscriptGotoLoop0
 								}
@@ -1264,18 +1264,18 @@ export class Regexp {
 							}
 							case syntax.InstEmptyWidth:
 							{
-								let flag = $.pointerValue<Exclude<input, null>>(i).context(__goscriptShadow1)
+								let flag = $.pointerValue<Exclude<input, null>>(i).context(__goscriptShadow2)
 								if (!__goscript_exec.lazyFlag_match(flag, $.uint($.pointerValue<syntax.Inst>(inst).Arg, 8))) {
 									continue __goscriptLoop0
 								}
-								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
+								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
 								break
 							}
 							case syntax.InstNop:
 							{
-								__goscriptShadow0 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
+								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
 								break
@@ -1287,11 +1287,11 @@ export class Regexp {
 								}
 
 								if ($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap) > 1) {
-									$.pointerValue<__goscript_backtrack.bitState>(b).cap![1] = __goscriptShadow1
+									$.pointerValue<__goscript_backtrack.bitState>(b).cap![1] = __goscriptShadow2
 								}
 								{
 									let old = $.pointerValue<__goscript_backtrack.bitState>(b).matchcap![1]
-									if ((old == -1) || ((longest && (__goscriptShadow1 > 0)) && (__goscriptShadow1 > old))) {
+									if ((old == -1) || ((longest && (__goscriptShadow2 > 0)) && (__goscriptShadow2 > old))) {
 										$.copy($.pointerValue<__goscript_backtrack.bitState>(b).matchcap, $.pointerValue<__goscript_backtrack.bitState>(b).cap)
 									}
 								}
@@ -1300,7 +1300,7 @@ export class Regexp {
 									return true
 								}
 
-								if (__goscriptShadow1 == $.pointerValue<__goscript_backtrack.bitState>(b).end) {
+								if (__goscriptShadow2 == $.pointerValue<__goscript_backtrack.bitState>(b).end) {
 									return true
 								}
 
@@ -1365,12 +1365,12 @@ export class inputString {
 		let r2 = $.int(endOfText, 32)
 		// 0 < pos && pos <= len(i.str)
 		if ($.uint(pos - 1, 64) < $.uint($.len($.pointerValue<inputString>(i).str), 64)) {
-			let __goscriptTuple24 = utf8.DecodeLastRuneInString($.sliceStringOrBytes($.pointerValue<inputString>(i).str, undefined, pos))
+			let __goscriptTuple24: any = utf8.DecodeLastRuneInString($.sliceStringOrBytes($.pointerValue<inputString>(i).str, undefined, pos))
 			r1 = $.int(__goscriptTuple24[0], 32)
 		}
 		// 0 <= pos && pos < len(i.str)
 		if ($.uint(pos, 64) < $.uint($.len($.pointerValue<inputString>(i).str), 64)) {
-			let __goscriptTuple25 = utf8.DecodeRuneInString($.sliceStringOrBytes($.pointerValue<inputString>(i).str, pos, undefined))
+			let __goscriptTuple25: any = utf8.DecodeRuneInString($.sliceStringOrBytes($.pointerValue<inputString>(i).str, pos, undefined))
 			r2 = $.int(__goscriptTuple25[0], 32)
 		}
 		return __goscript_exec.newLazyFlag($.int(r1, 32), $.int(r2, 32))
@@ -1441,12 +1441,12 @@ export class inputBytes {
 		let r2 = $.int(endOfText, 32)
 		// 0 < pos && pos <= len(i.str)
 		if ($.uint(pos - 1, 64) < $.uint($.len($.pointerValue<inputBytes>(i).str), 64)) {
-			let __goscriptTuple26 = utf8.DecodeLastRune($.goSlice($.pointerValue<inputBytes>(i).str, undefined, pos))
+			let __goscriptTuple26: any = utf8.DecodeLastRune($.goSlice($.pointerValue<inputBytes>(i).str, undefined, pos))
 			r1 = $.int(__goscriptTuple26[0], 32)
 		}
 		// 0 <= pos && pos < len(i.str)
 		if ($.uint(pos, 64) < $.uint($.len($.pointerValue<inputBytes>(i).str), 64)) {
-			let __goscriptTuple27 = utf8.DecodeRune($.goSlice($.pointerValue<inputBytes>(i).str, pos, undefined))
+			let __goscriptTuple27: any = utf8.DecodeRune($.goSlice($.pointerValue<inputBytes>(i).str, pos, undefined))
 			r2 = $.int(__goscriptTuple27[0], 32)
 		}
 		return __goscript_exec.newLazyFlag($.int(r1, 32), $.int(r2, 32))
@@ -1551,7 +1551,7 @@ export class inputReader {
 		if (!$.pointerValue<inputReader>(i).atEOT && (pos != $.pointerValue<inputReader>(i).pos)) {
 			return [$.int(endOfText, 32), 0]
 		}
-		let __goscriptTuple28 = $.pointerValue<Exclude<io.RuneReader, null>>($.pointerValue<inputReader>(i).r).ReadRune()
+		let __goscriptTuple28: any = $.pointerValue<Exclude<io.RuneReader, null>>($.pointerValue<inputReader>(i).r).ReadRune()
 		let r = $.int(__goscriptTuple28[0], 32)
 		let w = __goscriptTuple28[1]
 		let err = __goscriptTuple28[2]
@@ -1585,17 +1585,17 @@ export async function CompilePOSIX(expr: string): globalThis.Promise<[Regexp | $
 }
 
 export async function compile(expr: string, mode: syntax.Flags, longest: boolean): globalThis.Promise<[Regexp | $.VarRef<Regexp> | null, $.GoError]> {
-	let __goscriptTuple17 = await syntax.Parse(expr, $.uint(mode, 16))
+	let __goscriptTuple17: any = await syntax.Parse(expr, $.uint(mode, 16))
 	let re: syntax.Regexp | $.VarRef<syntax.Regexp> | null = __goscriptTuple17[0]
 	let err = __goscriptTuple17[1]
 	if (err != null) {
 		return [null, err]
 	}
-	let maxCap = $.pointerValue<syntax.Regexp>(re).MaxCap()
+	let maxCap = syntax.Regexp.prototype.MaxCap.call(re)
 	let capNames = syntax.Regexp.prototype.CapNames.call(re)
 
 	re = syntax.Regexp.prototype.Simplify.call(re)
-	let __goscriptTuple18 = syntax.Compile(re)
+	let __goscriptTuple18: any = syntax.Compile(re)
 	let prog: syntax.Prog | $.VarRef<syntax.Prog> | null = __goscriptTuple18[0]
 	err = __goscriptTuple18[1]
 	if (err != null) {
@@ -1605,14 +1605,14 @@ export async function compile(expr: string, mode: syntax.Flags, longest: boolean
 	if (matchcap < 2) {
 		matchcap = 2
 	}
-	let regexp: Regexp | $.VarRef<Regexp> | null = new Regexp({expr: expr, prog: prog, onepass: await __goscript_onepass.compileOnePass(prog), numSubexp: maxCap, subexpNames: capNames, cond: $.uint($.pointerValue<syntax.Prog>(prog).StartCond(), 8), longest: longest, matchcap: matchcap, minInputLen: minInputLen(re)})
+	let regexp: Regexp | $.VarRef<Regexp> | null = new Regexp({expr: expr, prog: prog, onepass: await __goscript_onepass.compileOnePass(prog), numSubexp: maxCap, subexpNames: capNames, cond: $.uint(syntax.Prog.prototype.StartCond.call(prog), 8), longest: longest, matchcap: matchcap, minInputLen: minInputLen(re)})
 	if ($.pointerValue<Regexp>(regexp).onepass == null) {
-		let __goscriptTuple19 = $.pointerValue<syntax.Prog>(prog).Prefix()
+		let __goscriptTuple19: any = syntax.Prog.prototype.Prefix.call(prog)
 		$.pointerValue<Regexp>(regexp).prefix = __goscriptTuple19[0]
 		$.pointerValue<Regexp>(regexp).prefixComplete = __goscriptTuple19[1]
 		$.pointerValue<Regexp>(regexp).maxBitStateLen = __goscript_backtrack.maxBitStateLen(prog)
 	} else {
-		let __goscriptTuple20 = __goscript_onepass.onePassPrefix(prog)
+		let __goscriptTuple20: any = __goscript_onepass.onePassPrefix(prog)
 		$.pointerValue<Regexp>(regexp).prefix = __goscriptTuple20[0]
 		$.pointerValue<Regexp>(regexp).prefixComplete = __goscriptTuple20[1]
 		$.pointerValue<Regexp>(regexp).prefixEnd = $.uint(__goscriptTuple20[2], 32)
@@ -1621,7 +1621,7 @@ export async function compile(expr: string, mode: syntax.Flags, longest: boolean
 		// TODO(rsc): Remove this allocation by adding
 		// IndexString to package bytes.
 		$.pointerValue<Regexp>(regexp).prefixBytes = $.stringToBytes($.pointerValue<Regexp>(regexp).prefix)
-		let __goscriptTuple21 = utf8.DecodeRuneInString($.pointerValue<Regexp>(regexp).prefix)
+		let __goscriptTuple21: any = utf8.DecodeRuneInString($.pointerValue<Regexp>(regexp).prefix)
 		$.pointerValue<Regexp>(regexp).prefixRune = $.int(__goscriptTuple21[0], 32)
 	}
 
@@ -1714,7 +1714,7 @@ export function minInputLen(re: syntax.Regexp | $.VarRef<syntax.Regexp> | null):
 }
 
 export async function MustCompile(str: string): globalThis.Promise<Regexp | $.VarRef<Regexp> | null> {
-	let __goscriptTuple22 = await Compile(str)
+	let __goscriptTuple22: any = await Compile(str)
 	let regexp: Regexp | $.VarRef<Regexp> | null = __goscriptTuple22[0]
 	let err = __goscriptTuple22[1]
 	if (err != null) {
@@ -1724,7 +1724,7 @@ export async function MustCompile(str: string): globalThis.Promise<Regexp | $.Va
 }
 
 export async function MustCompilePOSIX(str: string): globalThis.Promise<Regexp | $.VarRef<Regexp> | null> {
-	let __goscriptTuple23 = await CompilePOSIX(str)
+	let __goscriptTuple23: any = await CompilePOSIX(str)
 	let regexp: Regexp | $.VarRef<Regexp> | null = __goscriptTuple23[0]
 	let err = __goscriptTuple23[1]
 	if (err != null) {
@@ -1757,7 +1757,7 @@ $.registerInterfaceType(
 export async function MatchReader(pattern: string, r: io.RuneReader | null): globalThis.Promise<[boolean, $.GoError]> {
 	let matched: boolean = false
 	let err: $.GoError = null as $.GoError
-	let __goscriptTuple29 = await Compile(pattern)
+	let __goscriptTuple29: any = await Compile(pattern)
 	let re: Regexp | $.VarRef<Regexp> | null = __goscriptTuple29[0]
 	err = __goscriptTuple29[1]
 	if (err != null) {
@@ -1769,7 +1769,7 @@ export async function MatchReader(pattern: string, r: io.RuneReader | null): glo
 export async function MatchString(pattern: string, s: string): globalThis.Promise<[boolean, $.GoError]> {
 	let matched: boolean = false
 	let err: $.GoError = null as $.GoError
-	let __goscriptTuple30 = await Compile(pattern)
+	let __goscriptTuple30: any = await Compile(pattern)
 	let re: Regexp | $.VarRef<Regexp> | null = __goscriptTuple30[0]
 	err = __goscriptTuple30[1]
 	if (err != null) {
@@ -1781,7 +1781,7 @@ export async function MatchString(pattern: string, s: string): globalThis.Promis
 export async function Match(pattern: string, b: $.Slice<number>): globalThis.Promise<[boolean, $.GoError]> {
 	let matched: boolean = false
 	let err: $.GoError = null as $.GoError
-	let __goscriptTuple31 = await Compile(pattern)
+	let __goscriptTuple31: any = await Compile(pattern)
 	let re: Regexp | $.VarRef<Regexp> | null = __goscriptTuple31[0]
 	err = __goscriptTuple31[1]
 	if (err != null) {
@@ -1849,7 +1849,7 @@ export function extract(str: string): [string, number, string, boolean] {
 	}
 	let i = 0
 	while (i < $.len(str)) {
-		let __goscriptTuple32 = utf8.DecodeRuneInString($.sliceStringOrBytes(str, i, undefined))
+		let __goscriptTuple32: any = utf8.DecodeRuneInString($.sliceStringOrBytes(str, i, undefined))
 		let rune = $.int(__goscriptTuple32[0], 32)
 		let size = __goscriptTuple32[1]
 		if ((!unicode.IsLetter($.int(rune, 32)) && !unicode.IsDigit($.int(rune, 32))) && ($.int(rune, 32) != $.int(95, 32))) {

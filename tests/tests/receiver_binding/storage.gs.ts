@@ -78,15 +78,15 @@ export class storage {
 export async function main(): globalThis.Promise<void> {
 	let s: storage | $.VarRef<storage> | null = new storage({bytes: $.makeSlice<number>(5, undefined, "byte"), name: "test"})
 
-	$.println("Name:", $.pointerValue<storage>(s).Name())
-	$.println("Length:", $.pointerValue<storage>(s).Len())
-	$.println("Empty:", $.pointerValue<storage>(s).IsEmpty())
+	$.println("Name:", storage.prototype.Name.call(s))
+	$.println("Length:", storage.prototype.Len.call(s))
+	$.println("Empty:", storage.prototype.IsEmpty.call(s))
 
-	$.pointerValue<storage>(s).Truncate()
-	$.println("Length after truncate:", $.pointerValue<storage>(s).Len())
+	storage.prototype.Truncate.call(s)
+	$.println("Length after truncate:", storage.prototype.Len.call(s))
 
-	$.pointerValue<storage>(s).SetName("new_name")
-	$.println("New name:", $.pointerValue<storage>(s).Name())
+	storage.prototype.SetName.call(s, "new_name")
+	$.println("New name:", storage.prototype.Name.call(s))
 }
 
 if ($.isMainScript(import.meta)) {

@@ -69,15 +69,15 @@ export async function main(): globalThis.Promise<void> {
 	let buf = $.makeSlice<number>(2, undefined, "byte")
 	let [n, err] = await io.ReadFull($.pointerValue($.interfaceValue<io.Reader | null>(new fixedReader({data: new Uint8Array([97, 98, 99])}), "*main.fixedReader")), buf)
 	$.println("read:", n, $.bytesToString(buf), err == null)
-	let __goscriptTuple0 = await io.ReadFull($.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewReader(null), "*bytes.Reader")), buf)
+	let __goscriptTuple0: any = await io.ReadFull($.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewReader(null), "*bytes.Reader")), buf)
 	n = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	$.println("empty:", n, err == io.EOF)
-	let __goscriptTuple1 = await io.ReadFull($.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewReader(new Uint8Array([120])), "*bytes.Reader")), buf)
+	let __goscriptTuple1: any = await io.ReadFull($.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewReader(new Uint8Array([120])), "*bytes.Reader")), buf)
 	n = __goscriptTuple1[0]
 	err = __goscriptTuple1[1]
 	$.println("short:", n, $.bytesToString($.goSlice(buf, undefined, 1)), err == io.ErrUnexpectedEOF)
-	let __goscriptTuple2 = await io.ReadAll($.pointerValue($.interfaceValue<io.Reader | null>(new fixedReader({data: new Uint8Array([97, 98, 99, 68, 69, 70, 103, 104, 105]), size: 3}), "*main.fixedReader")))
+	let __goscriptTuple2: any = await io.ReadAll($.pointerValue($.interfaceValue<io.Reader | null>(new fixedReader({data: new Uint8Array([97, 98, 99, 68, 69, 70, 103, 104, 105]), size: 3}), "*main.fixedReader")))
 	let all = __goscriptTuple2[0]
 	err = __goscriptTuple2[1]
 	$.println("readall:", $.bytesToString(all), err == null)

@@ -25,7 +25,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test reassignment to existing variables
 	let a: number = 0
 	let b: number = 0
-	let __goscriptTuple0 = multiReturn()
+	let __goscriptTuple0: any = multiReturn()
 	a = __goscriptTuple0[0]
 	b = __goscriptTuple0[1]
 	fmt.Printf("a=%d, b=%d\n", a, b)

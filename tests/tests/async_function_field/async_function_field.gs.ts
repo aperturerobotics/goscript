@@ -64,7 +64,7 @@ export async function lookup(key: string): globalThis.Promise<[any, boolean]> {
 }
 
 export async function lookupViaGetter(key: string): globalThis.Promise<[any, boolean]> {
-	return await $.pointerValue<loader>(defaultLoader).getLoad()!(key)
+	return await loader.prototype.getLoad.call(defaultLoader)!(key)
 }
 
 export async function main(): globalThis.Promise<void> {

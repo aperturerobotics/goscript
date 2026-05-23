@@ -43,7 +43,7 @@ export class uint128 {
 
 	public addOne(): uint128 {
 		const u = this
-		let __goscriptTuple0 = bits.Add64(u.lo, 1, 0)
+		let __goscriptTuple0: any = bits.Add64(u.lo, 1, 0)
 		let lo = __goscriptTuple0[0]
 		let carry = __goscriptTuple0[1]
 		return $.markAsStructValue(new uint128({hi: $.uint64Add(u.hi, carry), lo: lo}))
@@ -86,7 +86,7 @@ export class uint128 {
 
 	public subOne(): uint128 {
 		const u = this
-		let __goscriptTuple1 = bits.Sub64(u.lo, 1, 0)
+		let __goscriptTuple1: any = bits.Sub64(u.lo, 1, 0)
 		let lo = __goscriptTuple1[0]
 		let borrow = __goscriptTuple1[1]
 		return $.markAsStructValue(new uint128({hi: $.uint64Sub(u.hi, borrow), lo: lo}))

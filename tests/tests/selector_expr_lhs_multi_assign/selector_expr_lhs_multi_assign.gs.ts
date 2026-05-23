@@ -56,7 +56,7 @@ export async function main(): globalThis.Promise<void> {
 	let p: Point = $.markAsStructValue(new Point())
 	// p.X and p.Y are *ast.SelectorExpr
 	// test writeMultiVarAssignFromCall in WriteStmtAssign
-	let __goscriptTuple0 = getCoords()
+	let __goscriptTuple0: any = getCoords()
 	p.X = __goscriptTuple0[0]
 	p.Y = __goscriptTuple0[1]
 	$.println(p.X, p.Y)

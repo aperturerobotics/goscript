@@ -48,7 +48,7 @@ export async function main(): globalThis.Promise<void> {
 		}
 	}
 
-	let [n, err] = $.pointerValue<os.File>(os.Stdout).Write(new Uint8Array([115, 116, 100, 111, 117, 116, 32, 119, 114, 105, 116, 101, 32, 119, 111, 114, 107, 115, 10]))
+	let [n, err] = os.File.prototype.Write.call(os.Stdout, new Uint8Array([115, 116, 100, 111, 117, 116, 32, 119, 114, 105, 116, 101, 32, 119, 111, 114, 107, 115, 10]))
 	if (err == null) {
 		$.println("Stdout write bytes:", n)
 	} else {
@@ -100,14 +100,14 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	{
-		let __goscriptTuple0 = os.CreateTemp("", "os-temp-file-*")
+		let __goscriptTuple0: any = os.CreateTemp("", "os-temp-file-*")
 		let tempFile: os.File | $.VarRef<os.File> | null = __goscriptTuple0[0]
 		let __goscriptShadow1 = __goscriptTuple0[1]
 		if (__goscriptShadow1 == null) {
 			$.println("CreateTemp ok")
-			$.println("CreateTemp name empty:", ($.pointerValue<os.File>(tempFile).Name() as string) == "")
-			$.pointerValue<os.File>(tempFile).Close()
-			os.Remove($.pointerValue<os.File>(tempFile).Name())
+			$.println("CreateTemp name empty:", (os.File.prototype.Name.call(tempFile) as string) == "")
+			os.File.prototype.Close.call(tempFile)
+			os.Remove(os.File.prototype.Name.call(tempFile))
 		} else {
 			$.println("CreateTemp error:", $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow1).Error())
 		}

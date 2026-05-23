@@ -583,7 +583,7 @@ export class Addr {
 			return null
 		}
 		let err: $.GoError = null as $.GoError
-		let __goscriptTuple0 = ParseAddr($.bytesToString(text))
+		let __goscriptTuple0: any = ParseAddr($.bytesToString(text))
 		$.assignStruct($.pointerValue<Addr>(ip), __goscriptTuple0[0])
 		err = __goscriptTuple0[1]
 		return err
@@ -925,7 +925,7 @@ export class AddrPort {
 
 	public AppendBinary(b: $.Slice<number>): [$.Slice<number>, $.GoError] {
 		const p = this
-		let __goscriptTuple1 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(p)).Addr())).AppendBinary(b)
+		let __goscriptTuple1: any = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(p)).Addr())).AppendBinary(b)
 		b = __goscriptTuple1[0]
 		let err = __goscriptTuple1[1]
 		if (err != null) {
@@ -1078,7 +1078,7 @@ export class AddrPort {
 			return null
 		}
 		let err: $.GoError = null as $.GoError
-		let __goscriptTuple2 = ParseAddrPort($.bytesToString(text))
+		let __goscriptTuple2: any = ParseAddrPort($.bytesToString(text))
 		$.assignStruct($.pointerValue<AddrPort>(p), __goscriptTuple2[0])
 		err = __goscriptTuple2[1]
 		return err
@@ -1138,7 +1138,7 @@ export class Prefix {
 
 	public AppendBinary(b: $.Slice<number>): [$.Slice<number>, $.GoError] {
 		const p = this
-		let __goscriptTuple5 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(p)).Addr())).withoutZone())).AppendBinary(b)
+		let __goscriptTuple5: any = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(p)).Addr())).withoutZone())).AppendBinary(b)
 		b = __goscriptTuple5[0]
 		let err = __goscriptTuple5[1]
 		if (err != null) {
@@ -1311,7 +1311,7 @@ export class Prefix {
 		// out any remaining bits in IP.
 		let err: $.GoError = null as $.GoError
 		{
-			let __goscriptTuple6 = $.markAsStructValue($.cloneStructValue(p.ip)).Prefix(minBits)
+			let __goscriptTuple6: any = $.markAsStructValue($.cloneStructValue(p.ip)).Prefix(minBits)
 			p = __goscriptTuple6[0]
 			err = __goscriptTuple6[1]
 			if (err != null) {
@@ -1319,7 +1319,7 @@ export class Prefix {
 			}
 		}
 		{
-			let __goscriptTuple7 = $.markAsStructValue($.cloneStructValue(o.ip)).Prefix(minBits)
+			let __goscriptTuple7: any = $.markAsStructValue($.cloneStructValue(o.ip)).Prefix(minBits)
 			o = __goscriptTuple7[0]
 			err = __goscriptTuple7[1]
 			if (err != null) {
@@ -1358,7 +1358,7 @@ export class Prefix {
 			return null
 		}
 		let err: $.GoError = null as $.GoError
-		let __goscriptTuple8 = ParsePrefix($.bytesToString(text))
+		let __goscriptTuple8: any = ParsePrefix($.bytesToString(text))
 		$.assignStruct($.pointerValue<Prefix>(p), __goscriptTuple8[0])
 		err = __goscriptTuple8[1]
 		return err
@@ -1804,14 +1804,14 @@ export function ParseAddrPort(s: string): [AddrPort, $.GoError] {
 	if (err != null) {
 		return [$.markAsStructValue($.cloneStructValue(ipp)), err]
 	}
-	let __goscriptTuple3 = strconv.ParseUint(port, 10, 16)
+	let __goscriptTuple3: any = strconv.ParseUint(port, 10, 16)
 	let port16 = __goscriptTuple3[0]
 	err = __goscriptTuple3[1]
 	if (err != null) {
 		return [$.markAsStructValue($.cloneStructValue(ipp)), errors.New((("invalid port " + strconv.Quote(port)) + " parsing ") + strconv.Quote(s))]
 	}
 	ipp.port = $.uint($.uint(port16, 16), 16)
-	let __goscriptTuple4 = ParseAddr(ip)
+	let __goscriptTuple4: any = ParseAddr(ip)
 	ipp.ip = __goscriptTuple4[0]
 	err = __goscriptTuple4[1]
 	if (err != null) {
@@ -1864,7 +1864,7 @@ export function ParsePrefix(s: string): [Prefix, $.GoError] {
 		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({in: s, msg: "bad bits after slash: " + strconv.Quote(bitsStr)})), "netip.parsePrefixError")]
 	}
 
-	let __goscriptTuple9 = strconv.Atoi(bitsStr)
+	let __goscriptTuple9: any = strconv.Atoi(bitsStr)
 	let bits = __goscriptTuple9[0]
 	err = __goscriptTuple9[1]
 	if (err != null) {

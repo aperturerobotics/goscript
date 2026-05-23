@@ -190,8 +190,8 @@ export class queueOnePass {
 
 	public insert(u: number): void {
 		const q: queueOnePass | $.VarRef<queueOnePass> | null = this
-		if (!$.pointerValue<queueOnePass>(q).contains($.uint(u, 32))) {
-			$.pointerValue<queueOnePass>(q).insertNew($.uint(u, 32))
+		if (!queueOnePass.prototype.contains.call(q, $.uint(u, 32))) {
+			queueOnePass.prototype.insertNew.call(q, $.uint(u, 32))
 		}
 	}
 
@@ -495,7 +495,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 		let ok: boolean = false
 		ok = true
 		let inst: onePassInst | $.VarRef<onePassInst> | null = $.indexRef($.pointerValue<onePassProg>(p).Inst!, pc)
-		if ($.pointerValue<queueOnePass>(visitQueue).contains($.uint(pc, 32))) {
+		if (queueOnePass.prototype.contains.call(visitQueue, $.uint(pc, 32))) {
 			return ok
 		}
 		queueOnePass.prototype.insert.call(visitQueue, $.uint(pc, 32))
@@ -528,7 +528,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 				}
 
 				// build a dispatch operator from the two legs of the alt.
-				let __goscriptTuple0 = await mergeRuneSets($.indexRef(onePassRunes!, $.pointerValue<onePassInst>(inst).Inst.Out), $.indexRef(onePassRunes!, $.pointerValue<onePassInst>(inst).Inst.Arg), $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32), $.uint($.pointerValue<onePassInst>(inst).Inst.Arg, 32))
+				let __goscriptTuple0: any = await mergeRuneSets($.indexRef(onePassRunes!, $.pointerValue<onePassInst>(inst).Inst.Out), $.indexRef(onePassRunes!, $.pointerValue<onePassInst>(inst).Inst.Arg), $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32), $.uint($.pointerValue<onePassInst>(inst).Inst.Arg, 32))
 				onePassRunes![pc] = __goscriptTuple0[0]
 				$.pointerValue<onePassInst>(inst).Next = __goscriptTuple0[1]
 				if (($.len($.pointerValue<onePassInst>(inst).Next) > 0) && ($.uint($.pointerValue<onePassInst>(inst).Next![0], 32) == $.uint(mergeFailed, 32))) {
@@ -654,12 +654,12 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 		return ok
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "bool" } }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })
 
-	$.pointerValue<queueOnePass>(instQueue).clear()
+	queueOnePass.prototype.clear.call(instQueue)
 	queueOnePass.prototype.insert.call(instQueue, $.uint($.uint($.pointerValue<onePassProg>(p).Start, 32), 32))
 	let m = $.makeSlice<boolean>($.len($.pointerValue<onePassProg>(p).Inst), undefined, "boolean")
-	while (!$.pointerValue<queueOnePass>(instQueue).empty()) {
-		$.pointerValue<queueOnePass>(visitQueue).clear()
-		let pc = $.uint($.pointerValue<queueOnePass>(instQueue).next(), 32)
+	while (!queueOnePass.prototype.empty.call(instQueue)) {
+		queueOnePass.prototype.clear.call(visitQueue)
+		let pc = $.uint(queueOnePass.prototype.next.call(instQueue), 32)
 		if (!await check!($.uint(pc, 32), m)) {
 			p = null
 			break

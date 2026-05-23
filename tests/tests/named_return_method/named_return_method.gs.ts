@@ -83,7 +83,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test ReadAt method
 	let buf = $.makeSlice<number>(5, undefined, "byte")
-	let [n1, err1] = $.pointerValue<content>(c).ReadAt(buf, 0)
+	let [n1, err1] = content.prototype.ReadAt.call(c, buf, 0)
 	$.println(n1)
 	if (err1 == null) {
 		$.println("nil")
@@ -94,7 +94,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test ReadAt with different offset
 	let buf2 = $.makeSlice<number>(6, undefined, "byte")
-	let [n2, err2] = $.pointerValue<content>(c).ReadAt(buf2, 7)
+	let [n2, err2] = content.prototype.ReadAt.call(c, buf2, 7)
 	$.println(n2)
 	if (err2 == null) {
 		$.println("nil")

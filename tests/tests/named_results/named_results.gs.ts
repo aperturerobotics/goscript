@@ -25,7 +25,7 @@ export async function main(): globalThis.Promise<void> {
 	let [n, label] = pair(true)
 	$.println("pair true:", n, label)
 
-	let __goscriptTuple0 = pair(false)
+	let __goscriptTuple0: any = pair(false)
 	n = __goscriptTuple0[0]
 	label = __goscriptTuple0[1]
 	$.println("pair false:", n, label)

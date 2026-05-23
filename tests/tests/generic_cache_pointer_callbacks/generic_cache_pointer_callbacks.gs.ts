@@ -137,7 +137,7 @@ export async function privateKeyToCache(k: key | $.VarRef<key> | null): globalTh
 
 export async function main(): globalThis.Promise<void> {
 	let k: key | $.VarRef<key> | null = new key({N: 7})
-	let __goscriptTuple0 = await privateKeyToCache(k)
+	let __goscriptTuple0: any = await privateKeyToCache(k)
 	let v: privateKey | $.VarRef<privateKey> | null = __goscriptTuple0[0]
 	let err = __goscriptTuple0[1]
 	if (err != null) {

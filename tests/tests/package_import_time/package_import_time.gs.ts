@@ -39,7 +39,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// other functions on setTime
 	$.println("weekday", time.Weekday_String($.markAsStructValue($.cloneStructValue(setTime)).Weekday()))
-	$.println("location", $.pointerValue<time.Location>($.markAsStructValue($.cloneStructValue(setTime)).Location()).String())
+	$.println("location", time.Location.prototype.String.call($.markAsStructValue($.cloneStructValue(setTime)).Location()))
 	$.println("utc", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(setTime)).UTC())).Format("2006-01-02T15:04:05Z07:00"))
 	$.println("seconds", time.Duration_Seconds(($.uint64Mul(1500, time.Millisecond))))
 	$.println("duration string", time.Duration_String(($.uint64Mul(1500, time.Millisecond))))
@@ -51,7 +51,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let timer: time.Timer | $.VarRef<time.Timer> | null = time.AfterFunc(9223372036854775807, $.functionValue((): void => {
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))
-	$.println("max duration timer stopped", $.pointerValue<time.Timer>(timer).Stop())
+	$.println("max duration timer stopped", time.Timer.prototype.Stop.call(timer))
 	let maxDuration = 9223372036854775807
 	$.println("max duration converted", maxDuration > 0)
 

@@ -124,9 +124,9 @@ export async function main(): globalThis.Promise<void> {
 	let c: Container | $.VarRef<Container> | null = new Container()
 
 	// Multiple type assertions that should generate unique variable names
-	let __goscriptTuple0 = $.typeAssertTuple<ConcreteA>(iface, "main.ConcreteA")
+	let __goscriptTuple0: any = $.typeAssertTuple<ConcreteA>(iface, "main.ConcreteA")
 	$.pointerValue<Container>(c).hasA = __goscriptTuple0[1]
-	let __goscriptTuple1 = $.typeAssertTuple<ConcreteB>(iface, "main.ConcreteB")
+	let __goscriptTuple1: any = $.typeAssertTuple<ConcreteB>(iface, "main.ConcreteB")
 	$.pointerValue<Container>(c).hasB = __goscriptTuple1[1]
 
 	$.println("hasA:", $.pointerValue<Container>(c).hasA)

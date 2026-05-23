@@ -94,12 +94,12 @@ export async function main(): globalThis.Promise<void> {
 
 	// Verify they point to the same data
 	{
-		let __goscriptTuple0 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i1, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+		let __goscriptTuple0: any = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i1, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 		let structPtr1: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple0[0]
 		let ok = __goscriptTuple0[1]
 		if (ok) {
 			{
-				let __goscriptTuple1 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i2, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+				let __goscriptTuple1: any = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(i2, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 				let structPtr2: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple1[0]
 				let __goscriptShadow0 = __goscriptTuple1[1]
 				if (__goscriptShadow0) {
@@ -140,7 +140,7 @@ export async function main(): globalThis.Promise<void> {
 				$.println("arr[", i, "] is MyStruct with value:", val.Value)
 			} else {
 				{
-					let __goscriptTuple2 = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(item, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
+					let __goscriptTuple2: any = $.typeAssertTuple<MyStruct | $.VarRef<MyStruct> | null>(item, { kind: $.TypeKind.Pointer, elemType: "main.MyStruct" })
 					let ptr: MyStruct | $.VarRef<MyStruct> | null = __goscriptTuple2[0]
 					let __goscriptShadow1 = __goscriptTuple2[1]
 					if (__goscriptShadow1) {

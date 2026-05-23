@@ -20,8 +20,8 @@ export async function main(): globalThis.Promise<void> {
 
 	// Also test direct make with strings.Builder
 	let builderPtr: strings.Builder | $.VarRef<strings.Builder> | null = new strings.Builder()
-	$.pointerValue<strings.Builder>(builderPtr).WriteString("Direct make test")
-	$.println("Direct:", $.pointerValue<strings.Builder>(builderPtr).String())
+	strings.Builder.prototype.WriteString.call(builderPtr, "Direct make test")
+	$.println("Direct:", strings.Builder.prototype.String.call(builderPtr))
 	$.println("LastIndexByte:", strings.LastIndexByte("hello", $.uint(108, 8)))
 	$.println("LastIndex:", strings.LastIndex("hello", "l"))
 }

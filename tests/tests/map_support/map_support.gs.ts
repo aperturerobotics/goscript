@@ -31,7 +31,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Delete a key
 	$.deleteMapEntry(scores, "Charlie")
-	let __goscriptTuple0 = $.mapGet(scores, "Charlie", 0)
+	let __goscriptTuple0: any = $.mapGet(scores, "Charlie", 0)
 	exists = __goscriptTuple0[1]
 	$.println("After delete, does Charlie exist? Expected: false, Actual:", exists)
 

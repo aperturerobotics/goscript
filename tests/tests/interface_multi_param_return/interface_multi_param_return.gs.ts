@@ -62,7 +62,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// test case: re-use success variable, ignore second variable
-	let __goscriptTuple0 = $.pointerValue<Exclude<MultiParamReturner, null>>(processor).Process(data, 5, "unused")
+	let __goscriptTuple0: any = $.pointerValue<Exclude<MultiParamReturner, null>>(processor).Process(data, 5, "unused")
 	success = __goscriptTuple0[0]
 	if (success) {
 		$.println("Main: Success reported")

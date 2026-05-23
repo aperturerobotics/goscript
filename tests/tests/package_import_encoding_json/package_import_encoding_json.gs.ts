@@ -77,7 +77,7 @@ export async function main(): globalThis.Promise<void> {
 	} else {
 		results = $.append(results, "Marshal: " + $.bytesToString(b))
 	}
-	let __goscriptTuple0 = json.MarshalIndent($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"), "", "  ")
+	let __goscriptTuple0: any = json.MarshalIndent($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"), "", "  ")
 	let indented = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	if (err != null) {

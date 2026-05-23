@@ -49,7 +49,7 @@ export function makeReader(): [concrete | $.VarRef<concrete> | null, $.GoError] 
 export async function main(): globalThis.Promise<void> {
 	let r: reader | null = null as reader | null
 	let err: $.GoError = null as $.GoError
-	let __goscriptTuple0 = makeReader()
+	let __goscriptTuple0: any = makeReader()
 	r = $.interfaceValue<reader | null>(__goscriptTuple0[0], "*main.concrete")
 	err = __goscriptTuple0[1]
 	$.println("ok", ($.pointerValue<Exclude<reader, null>>(r).Read() == 7) && (err == null))

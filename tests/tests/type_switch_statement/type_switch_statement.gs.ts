@@ -183,7 +183,7 @@ export async function main(): globalThis.Promise<void> {
 			case $.typeAssert<$.VarRef<ObjectIdentifier> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.ObjectIdentifier" }).ok:
 				{
 					let v: $.VarRef<ObjectIdentifier> | null = $.typeAssert<$.VarRef<ObjectIdentifier> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.ObjectIdentifier" }).value
-					let __goscriptTuple0 = parseObjectIdentifier()
+					let __goscriptTuple0: any = parseObjectIdentifier()
 					v!.value = (__goscriptTuple0[0] as ObjectIdentifier)
 					ok = __goscriptTuple0[1]
 				}
@@ -200,7 +200,7 @@ export async function main(): globalThis.Promise<void> {
 			case $.typeAssert<RawValue | $.VarRef<RawValue> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.RawValue" }).ok:
 				{
 					let v: RawValue | $.VarRef<RawValue> | null = $.typeAssert<RawValue | $.VarRef<RawValue> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.RawValue" }).value
-					let __goscriptTuple1 = parseRawValue()
+					let __goscriptTuple1: any = parseRawValue()
 					$.assignStruct($.pointerValue<RawValue>(v), __goscriptTuple1[0])
 					ok = __goscriptTuple1[1]
 				}

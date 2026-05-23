@@ -28,7 +28,7 @@ export async function main(): globalThis.Promise<void> {
 	let pcs = $.makeSlice<number>(0, undefined, "number")
 	$.println("Callers empty:", runtime.Callers(0, pcs))
 	let frames: runtime.Frames | $.VarRef<runtime.Frames> | null = runtime.CallersFrames(pcs)
-	let [frame, more] = $.pointerValue<runtime.Frames>(frames).Next()
+	let [frame, more] = runtime.Frames.prototype.Next.call(frames)
 	$.println("Frames empty:", frame.Line, more)
 	$.println("FuncForPC nil:", runtime.FuncForPC(0) == null)
 

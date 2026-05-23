@@ -21,7 +21,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// i already exists from the var declaration above.
 	// err is a new variable being declared.
-	let __goscriptTuple0 = returnsOneIntOneBool()
+	let __goscriptTuple0: any = returnsOneIntOneBool()
 	i = __goscriptTuple0[0]
 	let err = __goscriptTuple0[1]
 
@@ -35,14 +35,14 @@ export async function main(): globalThis.Promise<void> {
 	let value = "outer"
 	{
 		let __goscriptShadow0 = value
-		let __goscriptTuple1 = shadowTupleInput(__goscriptShadow0)
+		let __goscriptTuple1: any = shadowTupleInput(__goscriptShadow0)
 		let __goscriptShadow1 = __goscriptTuple1[0]
 		let ok = __goscriptTuple1[1]
 		$.println("shadow tuple:", __goscriptShadow1, ok)
 	}
 
 	{
-		let __goscriptTuple2 = await shadowCallbackInput($.functionValue((k: number): number => {
+		let __goscriptTuple2: any = await shadowCallbackInput($.functionValue((k: number): number => {
 			return k + 1
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
 		let k = __goscriptTuple2[0]

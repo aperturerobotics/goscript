@@ -53,8 +53,8 @@ export async function main(): globalThis.Promise<void> {
 		}
 	}
 
-	let drbg: local | $.VarRef<local> | null = newLocal(7)
-	$.println($.pointerValue<local>(drbg).value)
+	let __goscriptShadow0: local | $.VarRef<local> | null = newLocal(7)
+	$.println($.pointerValue<local>(__goscriptShadow0).value)
 }
 
 if ($.isMainScript(import.meta)) {
