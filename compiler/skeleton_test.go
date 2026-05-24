@@ -1428,6 +1428,64 @@ func TestCompilePackagesImportsSelectedExternalFieldTypes(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesErasesUnavailableOverrideFieldTypes(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/override-field-type\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"type URL struct { Path string }",
+			"",
+		}, "\n"),
+		"api/api.go": strings.Join([]string{
+			"package api",
+			"import \"example.test/override-field-type/dep\"",
+			"type Request struct { URL *dep.URL }",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/override-field-type/api\"",
+			"func requestPath(r *api.Request) string {",
+			"  return r.URL.Path",
+			"}",
+			"",
+		}, "\n"),
+	})
+	overrideDir := filepath.Join(t.TempDir(), "gs")
+	writeFixtureFile(t, overrideDir, "example.test/override-field-type/api/index.ts", strings.Join([]string{
+		"export class Request {",
+		"  public URL: any = null",
+		"}",
+		"",
+	}, "\n"))
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      outputDir,
+		AllDependencies: true,
+		OverrideDirs:    []string{overrideDir},
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "override-field-type", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.pointerValue<any>($.pointerValue<api.Request>(r).URL).Path") {
+		t.Fatalf("missing erased override field type in generated output:\n%s", text)
+	}
+	if strings.Contains(text, "dep.URL") || strings.Contains(text, "pointerValue<URL>") {
+		t.Fatalf("generated output referenced unavailable dependency type:\n%s", text)
+	}
+}
+
 func TestCompilePackagesLowersRangeOverFunctionIterators(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/iterators\n\ngo 1.25.3\n",

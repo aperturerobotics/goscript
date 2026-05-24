@@ -705,6 +705,30 @@ type tempNameOwner struct {
 	counters map[string]int
 }
 
+func (ctx lowerFileContext) canReferenceNamedType(named *types.Named) bool {
+	if named == nil || named.Obj() == nil {
+		return true
+	}
+	return ctx.canReferenceObjectPackage(named.Obj())
+}
+
+func (ctx lowerFileContext) canReferenceObjectPackage(obj types.Object) bool {
+	if obj == nil || obj.Pkg() == nil || ctx.semPkg == nil {
+		return true
+	}
+	pkgPath := obj.Pkg().Path()
+	if pkgPath == "" || pkgPath == ctx.semPkg.pkgPath {
+		return true
+	}
+	if ctx.importPaths[pkgPath] != "" {
+		return true
+	}
+	if ctx.localAliases[obj] != "" {
+		return true
+	}
+	return false
+}
+
 func newTempNameOwner() *tempNameOwner {
 	return &tempNameOwner{counters: make(map[string]int)}
 }
@@ -7707,6 +7731,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		if crossPackageUnexportedNamedType(ctx, named) {
 			return "any"
 		}
+		if !ctx.canReferenceNamedType(named) {
+			return "any"
+		}
 		name := o.namedTypeExpr(ctx, named)
 		if _, ok := named.Underlying().(*types.Interface); ok {
 			return name + " | null"
@@ -7758,10 +7785,16 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 			if crossPackageUnexportedNamedType(ctx, named) {
 				return "any"
 			}
+			if !ctx.canReferenceNamedType(named) {
+				return "any"
+			}
 			return "$.VarRef<" + o.namedTypeExpr(ctx, named) + "> | null"
 		}
 		if named := namedStructType(typed.Elem()); named != nil {
 			if crossPackageUnexportedNamedType(ctx, named) {
+				return "any"
+			}
+			if !ctx.canReferenceNamedType(named) {
 				return "any"
 			}
 			name := o.namedTypeExpr(ctx, named)
@@ -7794,6 +7827,9 @@ func (o *LoweringOwner) tsNonNilTypeFor(ctx lowerFileContext, typ types.Type) st
 func (o *LoweringOwner) aliasTypeExpr(ctx lowerFileContext, alias *types.Alias) string {
 	if alias == nil || alias.Obj() == nil {
 		return "unknown"
+	}
+	if !ctx.canReferenceObjectPackage(alias.Obj()) {
+		return "any"
 	}
 	if alias.Obj().Pkg() == nil {
 		return o.tsTypeFor(ctx, alias.Rhs())
