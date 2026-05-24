@@ -42,6 +42,32 @@ export function Compare<T extends string | number>(
   return 0
 }
 
+export function CompareFunc<T, U>(
+  s1: $.Slice<T>,
+  s2: $.Slice<U>,
+  compare: ((v1: T, v2: U) => number) | null,
+): number {
+  if (compare == null) {
+    throw new Error('slices.CompareFunc: nil comparison function')
+  }
+  const len1 = $.len(s1)
+  const len2 = $.len(s2)
+  const minLen = len1 < len2 ? len1 : len2
+  for (let i = 0; i < minLen; i++) {
+    const result = compare((s1 as any)[i] as T, (s2 as any)[i] as U)
+    if (result !== 0) {
+      return result
+    }
+  }
+  if (len1 < len2) {
+    return -1
+  }
+  if (len1 > len2) {
+    return 1
+  }
+  return 0
+}
+
 /**
  * Clone returns a shallow copy of s while preserving nilness.
  * @param s The slice to clone
@@ -149,6 +175,60 @@ export function Max<T extends cmp.Ordered>(x: $.Slice<T>): T {
   return max
 }
 
+export function Min<T extends cmp.Ordered>(x: $.Slice<T>): T {
+  if ($.len(x) === 0) {
+    throw new Error('slices.Min: empty list')
+  }
+  let min = (x as any)[0] as T
+  for (let i = 1; i < $.len(x); i++) {
+    const value = (x as any)[i] as T
+    if (cmp.Compare(value, min) < 0) {
+      min = value
+    }
+  }
+  return min
+}
+
+export function MaxFunc<T>(
+  x: $.Slice<T>,
+  compare: ((a: T, b: T) => number) | null,
+): T {
+  if (compare == null) {
+    throw new Error('slices.MaxFunc: nil comparison function')
+  }
+  if ($.len(x) === 0) {
+    throw new Error('slices.MaxFunc: empty list')
+  }
+  let max = (x as any)[0] as T
+  for (let i = 1; i < $.len(x); i++) {
+    const value = (x as any)[i] as T
+    if (compare(max, value) < 0) {
+      max = value
+    }
+  }
+  return max
+}
+
+export function MinFunc<T>(
+  x: $.Slice<T>,
+  compare: ((a: T, b: T) => number) | null,
+): T {
+  if (compare == null) {
+    throw new Error('slices.MinFunc: nil comparison function')
+  }
+  if ($.len(x) === 0) {
+    throw new Error('slices.MinFunc: empty list')
+  }
+  let min = (x as any)[0] as T
+  for (let i = 1; i < $.len(x); i++) {
+    const value = (x as any)[i] as T
+    if (compare(value, min) < 0) {
+      min = value
+    }
+  }
+  return min
+}
+
 export function Collect<T>(seq: iter.Seq<T>): $.Slice<T> {
   const out: T[] = []
   seq((value) => {
@@ -200,8 +280,11 @@ export function Delete<T>(s: $.Slice<T>, i: number, j: number): $.Slice<T> {
 
 export function DeleteFunc<T>(
   s: $.Slice<T>,
-  del: (value: T) => boolean,
+  del: ((value: T) => boolean) | null,
 ): $.Slice<T> {
+  if (del == null) {
+    throw new Error('slices.DeleteFunc: nil delete function')
+  }
   if (s === null || s === undefined) {
     return s
   }
@@ -217,6 +300,83 @@ export function DeleteFunc<T>(
     ;(s as any)[i] = clearValue(s)
   }
   return $.goSlice(s, 0, w) as $.Slice<T>
+}
+
+export function Replace<T>(
+  s: $.Slice<T>,
+  i: number,
+  j: number,
+  ...v: T[]
+): $.Slice<T> {
+  const length = $.len(s)
+  if (i < 0 || j < i || j > length) {
+    throw new Error(
+      `slice bounds out of range [${i}:${j}] with length ${length}`,
+    )
+  }
+  const out = $.makeSlice<T>(length - (j - i) + v.length)
+  let pos = 0
+  for (let idx = 0; idx < i; idx++) {
+    ;(out as any)[pos++] = (s as any)[idx]
+  }
+  for (const value of v) {
+    ;(out as any)[pos++] = value
+  }
+  for (let idx = j; idx < length; idx++) {
+    ;(out as any)[pos++] = (s as any)[idx]
+  }
+  return out
+}
+
+export function Compact<T>(s: $.Slice<T>): $.Slice<T> {
+  if (s === null || s === undefined || $.len(s) < 2) {
+    return s
+  }
+  let w = 1
+  for (let i = 1; i < $.len(s); i++) {
+    if ((s as any)[i] !== (s as any)[i - 1]) {
+      ;(s as any)[w] = (s as any)[i]
+      w++
+    }
+  }
+  for (let i = w; i < $.len(s); i++) {
+    ;(s as any)[i] = clearValue(s)
+  }
+  return $.goSlice(s, 0, w) as $.Slice<T>
+}
+
+export function CompactFunc<T>(
+  s: $.Slice<T>,
+  eq: ((v1: T, v2: T) => boolean) | null,
+): $.Slice<T> {
+  if (eq == null) {
+    throw new Error('slices.CompactFunc: nil equality function')
+  }
+  if (s === null || s === undefined || $.len(s) < 2) {
+    return s
+  }
+  let w = 1
+  for (let i = 1; i < $.len(s); i++) {
+    if (!eq((s as any)[i - 1] as T, (s as any)[i] as T)) {
+      ;(s as any)[w] = (s as any)[i]
+      w++
+    }
+  }
+  for (let i = w; i < $.len(s); i++) {
+    ;(s as any)[i] = clearValue(s)
+  }
+  return $.goSlice(s, 0, w) as $.Slice<T>
+}
+
+export function Clip<T>(s: $.Slice<T>): $.Slice<T> {
+  if (s == null) {
+    return null
+  }
+  const out = $.makeSlice<T>($.len(s), $.len(s))
+  for (let i = 0; i < $.len(s); i++) {
+    ;(out as any)[i] = (s as any)[i]
+  }
+  return out
 }
 
 export function Equal<T>(s1: $.Slice<T>, s2: $.Slice<T>): boolean {
@@ -350,7 +510,13 @@ export function Grow<T>(s: $.Slice<T>, n: number): $.Slice<T> {
  * @param s The slice to sort in place
  * @param cmp Comparison function
  */
-export function SortFunc<T>(s: $.Slice<T>, cmp: (a: T, b: T) => number): void {
+export function SortFunc<T>(
+  s: $.Slice<T>,
+  cmp: ((a: T, b: T) => number) | null,
+): void {
+  if (cmp == null) {
+    throw new Error('slices.SortFunc: nil comparison function')
+  }
   if (s === null || s === undefined) {
     return
   }
@@ -360,8 +526,11 @@ export function SortFunc<T>(s: $.Slice<T>, cmp: (a: T, b: T) => number): void {
 
 export function IsSortedFunc<T>(
   x: $.Slice<T>,
-  cmp: (a: T, b: T) => number,
+  cmp: ((a: T, b: T) => number) | null,
 ): boolean {
+  if (cmp == null) {
+    throw new Error('slices.IsSortedFunc: nil comparison function')
+  }
   for (let i = $.len(x) - 1; i > 0; i--) {
     if (cmp((x as any)[i] as T, (x as any)[i - 1] as T) < 0) {
       return false
@@ -372,8 +541,11 @@ export function IsSortedFunc<T>(
 
 export function SortStableFunc<T>(
   s: $.Slice<T>,
-  cmp: (a: T, b: T) => number,
+  cmp: ((a: T, b: T) => number) | null,
 ): void {
+  if (cmp == null) {
+    throw new Error('slices.SortStableFunc: nil comparison function')
+  }
   if (s === null || s === undefined) {
     return
   }
@@ -426,8 +598,11 @@ function clearValue<T>(s: $.Slice<T>): T | null {
 export function BinarySearchFunc<E, T>(
   x: $.Slice<E>,
   target: T,
-  cmp: (a: E, b: T) => number,
+  cmp: ((a: E, b: T) => number) | null,
 ): [number, boolean] {
+  if (cmp == null) {
+    throw new Error('slices.BinarySearchFunc: nil comparison function')
+  }
   let left = 0
   let right = $.len(x)
 
@@ -445,4 +620,11 @@ export function BinarySearchFunc<E, T>(
   }
 
   return [left, false]
+}
+
+export function BinarySearch<T extends cmp.Ordered>(
+  x: $.Slice<T>,
+  target: T,
+): [number, boolean] {
+  return BinarySearchFunc(x, target, cmp.Compare)
 }

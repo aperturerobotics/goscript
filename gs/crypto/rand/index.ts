@@ -35,6 +35,37 @@ export function Read(b: $.Bytes): [number, $.GoError] {
   return [n, null]
 }
 
+export function Int(rand: io.Reader | null, max: any): [any, $.GoError] {
+  if (max == null || typeof max.Sign !== 'function' || max.Sign() <= 0) {
+    return [null, new RandError('crypto/rand: argument to Int is <= 0')]
+  }
+
+  const bitLen = max.BitLen()
+  const byteLen = Math.ceil(bitLen / 8)
+  const excessBits = byteLen * 8 - bitLen
+  const reader = rand ?? Reader
+
+  while (true) {
+    const bytes = new Uint8Array(byteLen)
+    const [n, err] = reader.Read(bytes)
+    if (err != null) {
+      return [null, err]
+    }
+    if (n !== byteLen) {
+      return [null, io.ErrUnexpectedEOF]
+    }
+    if (excessBits > 0) {
+      bytes[0] &= 0xff >>> excessBits
+    }
+
+    const candidate = new max.constructor()
+    candidate.SetBytes(bytes)
+    if (candidate.Cmp(max) < 0) {
+      return [candidate, null]
+    }
+  }
+}
+
 export function Text(): string {
   const src = new Uint8Array(26)
   const [, err] = Read(src)

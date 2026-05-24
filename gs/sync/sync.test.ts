@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { Map, WaitGroup } from './sync.js'
+import { Cond, Map, Mutex, WaitGroup } from './sync.js'
 
 describe('sync.WaitGroup', () => {
   it('Go tracks scheduled work and unblocks Wait after completion', async () => {
@@ -20,6 +20,17 @@ describe('sync.WaitGroup', () => {
     expect(events).toEqual([])
     await wait
     expect(events).toEqual(['worker start', 'worker done', 'wait done'])
+  })
+})
+
+describe('sync.Cond', () => {
+  it('exposes the Locker as public field L', async () => {
+    const mutex = new Mutex()
+    const cond = new Cond(mutex)
+
+    expect(cond.L).toBe(mutex)
+    await cond.L.Lock()
+    cond.L.Unlock()
   })
 })
 

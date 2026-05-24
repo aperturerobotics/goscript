@@ -2,7 +2,39 @@ import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
 
-import { Read, Reader, Text } from './index.js'
+import { Int, Read, Reader, Text } from './index.js'
+
+class TestInt {
+  private value = 0
+
+  constructor(value = 0) {
+    this.value = value
+  }
+
+  Sign(): number {
+    return Math.sign(this.value)
+  }
+
+  BitLen(): number {
+    return this.value.toString(2).length
+  }
+
+  SetBytes(bytes: Uint8Array): TestInt {
+    this.value = 0
+    for (const b of bytes) {
+      this.value = this.value * 256 + b
+    }
+    return this
+  }
+
+  Cmp(other: TestInt): number {
+    return Math.sign(this.value - other.value)
+  }
+
+  Value(): number {
+    return this.value
+  }
+}
 
 describe('crypto/rand override', () => {
   it('fills byte slices from Web Crypto', () => {
@@ -28,5 +60,19 @@ describe('crypto/rand override', () => {
 
     expect(token).toHaveLength(26)
     expect(token).toMatch(/^[A-Z2-7]+$/)
+  })
+
+  it('generates integers below max from an io.Reader', () => {
+    const reader = {
+      Read(dst: Uint8Array): [number, $.GoError] {
+        dst[0] = 42
+        return [dst.length, null]
+      },
+    }
+
+    const [n, err] = Int(reader, new TestInt(100))
+
+    expect(err).toBeNull()
+    expect(n.Value()).toBe(42)
   })
 })

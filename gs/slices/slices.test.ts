@@ -5,9 +5,18 @@ import * as $ from '@goscript/builtin/index.js'
 import {
   All,
   Backward,
+  BinarySearch,
+  Clip,
+  Compact,
+  CompactFunc,
+  CompareFunc,
   IsSorted,
   IsSortedFunc,
   Max,
+  MaxFunc,
+  Min,
+  MinFunc,
+  Replace,
   Sorted,
   SortStableFunc,
 } from './slices.js'
@@ -24,6 +33,33 @@ describe('slices.SortStableFunc', () => {
     SortStableFunc(values, (a, b) => a.group - b.group)
 
     expect(values?.map((value) => value.label)).toEqual(['b', 'd', 'a', 'c'])
+  })
+})
+
+describe('slices compatibility helpers', () => {
+  it('implements comparison, min/max, compact, replace, clip, and search helpers', () => {
+    expect(
+      CompareFunc($.arrayToSlice(['a', 'c']), $.arrayToSlice(['a', 'b']), (a, b) =>
+        a.localeCompare(b),
+      ),
+    ).toBeGreaterThan(0)
+    expect(Min($.arrayToSlice([3, 1, 2]))).toBe(1)
+    expect(MaxFunc($.arrayToSlice([{ v: 1 }, { v: 4 }]), (a, b) => a.v - b.v).v).toBe(4)
+    expect(MinFunc($.arrayToSlice([{ v: 3 }, { v: 2 }]), (a, b) => a.v - b.v).v).toBe(2)
+    expect(Array.from(Compact($.arrayToSlice([1, 1, 2, 2, 3])) ?? [])).toEqual([1, 2, 3])
+    expect(
+      Array.from(
+        CompactFunc(
+          $.arrayToSlice(['a', 'A', 'b']),
+          (a, b) => a.toLowerCase() === b.toLowerCase(),
+        ) ?? [],
+      ),
+    ).toEqual(['a', 'b'])
+    expect(Array.from(Replace($.arrayToSlice([1, 2, 3, 4]), 1, 3, 9, 8)) ?? []).toEqual([
+      1, 9, 8, 4,
+    ])
+    expect(Array.from(Clip($.arrayToSlice([1, 2])) ?? [])).toEqual([1, 2])
+    expect(BinarySearch($.arrayToSlice([1, 3, 5]), 3)).toEqual([1, true])
   })
 })
 
