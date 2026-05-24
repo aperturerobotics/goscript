@@ -672,6 +672,7 @@ type lowerFileContext struct {
 	localAliases      map[types.Object]string
 	lazyPackageVars   map[types.Object]bool
 	identAliases      map[types.Object]string
+	identAliasRefs    map[types.Object]bool
 	tempNames         *tempNameOwner
 	signature         *types.Signature
 	asyncFunction     bool
@@ -717,6 +718,20 @@ func (ctx lowerFileContext) withIdentAliases(aliases map[types.Object]string) lo
 		return ctx
 	}
 	ctx.identAliases = aliases
+	return ctx
+}
+
+func (ctx lowerFileContext) withIdentRefAliases(aliases map[types.Object]string) lowerFileContext {
+	if len(aliases) == 0 {
+		return ctx
+	}
+	ctx = ctx.withIdentAliases(aliases)
+	refs := make(map[types.Object]bool, len(ctx.identAliasRefs)+len(aliases))
+	maps.Copy(refs, ctx.identAliasRefs)
+	for obj := range aliases {
+		refs[obj] = true
+	}
+	ctx.identAliasRefs = refs
 	return ctx
 }
 
@@ -2348,7 +2363,7 @@ func (o *LoweringOwner) lowerDeclStatementContext(
 	if len(aliases) == 0 {
 		return ctx, ctx, false
 	}
-	nextCtx := ctx.withIdentAliases(aliases)
+	nextCtx := ctx.withIdentRefAliases(aliases)
 	return nextCtx, nextCtx, true
 }
 
@@ -2518,10 +2533,8 @@ func (o *LoweringOwner) lowerShortDeclStatementContext(
 	if len(oldAliases) == 0 && len(newAliases) == 0 {
 		return ctx, ctx, nil, false
 	}
-	stmtAliases := make(map[types.Object]string, len(oldAliases)+len(newAliases))
-	maps.Copy(stmtAliases, oldAliases)
-	maps.Copy(stmtAliases, newAliases)
-	return ctx.withIdentAliases(stmtAliases), ctx.withIdentAliases(newAliases), prelude, true
+	stmtCtx := ctx.withIdentAliases(oldAliases).withIdentRefAliases(newAliases)
+	return stmtCtx, ctx.withIdentRefAliases(newAliases), prelude, true
 }
 
 func (o *LoweringOwner) lowerBackwardGotoLoop(
@@ -4923,6 +4936,9 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 	}
 	obj := objectForIdent(ctx, ident)
 	if alias := ctx.identAliases[obj]; alias != "" {
+		if !raw && obj != nil && ctx.identAliasRefs[obj] && ctx.model.needsVarRef[obj] {
+			return alias + ".value"
+		}
 		return alias
 	}
 	if constObj, ok := obj.(*types.Const); ok && ctx.localAliases[obj] != "" {
