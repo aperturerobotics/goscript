@@ -70,7 +70,7 @@ export class wrapper {
 	}
 
 	public Add(n: any): any {
-		return $.pointerValue<Exclude<base, null>>(this.base).Add(n)
+		return $.pointerValue<base>(this.base).Add(n)
 	}
 
 	static __typeInfo = $.registerStructType(

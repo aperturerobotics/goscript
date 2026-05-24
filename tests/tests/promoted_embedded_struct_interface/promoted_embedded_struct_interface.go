@@ -16,6 +16,10 @@ type stopStream struct {
 	stream
 }
 
+type pointerStopStream struct {
+	*stream
+}
+
 func closeIt(c closer) {
 	println(c.Close())
 }
@@ -26,4 +30,7 @@ func main() {
 
 	ptr := &stopStream{stream: stream{name: "pointer"}}
 	closeIt(ptr)
+
+	promotedPtr := pointerStopStream{stream: &stream{name: "embedded pointer"}}
+	closeIt(promotedPtr)
 }

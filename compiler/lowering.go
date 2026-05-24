@@ -1590,6 +1590,7 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 			continue
 		}
 		async := o.functionAsync(ctx, method)
+		targetType := o.tsEmbeddedForwarderTargetType(ctx, field.typ)
 		lowered := loweredFunction{
 			async:       async,
 			name:        methodMemberName(method.Name()),
@@ -1605,7 +1606,7 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 			lowered.params = append(lowered.params, loweredParam{name: name, typ: "any"})
 		}
 		call := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
-			"<Exclude<" + o.tsStructFieldTypeFor(ctx, field.typ) + ", null>>(this." +
+			"<" + targetType + ">(this." +
 			tsStructFieldName(field.name, 0) + ")." + method.Name() + "(" + strings.Join(args, ", ") + ")"
 		if async {
 			call = "await " + call
@@ -1615,6 +1616,16 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 		explicitMethods[method.Name()] = true
 	}
 	return methods
+}
+
+func (o *LoweringOwner) tsEmbeddedForwarderTargetType(ctx lowerFileContext, typ types.Type) string {
+	if named := pointerToNamedStructType(typ); named != nil {
+		return o.namedTypeExpr(ctx, named)
+	}
+	if named := namedStructType(typ); named != nil {
+		return o.namedTypeExpr(ctx, named)
+	}
+	return "Exclude<" + o.tsStructFieldTypeFor(ctx, typ) + ", null>"
 }
 
 func (o *LoweringOwner) methodDeclsForType(ctx lowerFileContext, named *types.Named) []*ast.FuncDecl {

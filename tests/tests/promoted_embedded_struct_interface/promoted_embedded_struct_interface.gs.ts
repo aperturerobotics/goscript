@@ -70,7 +70,7 @@ export class stopStream {
 	}
 
 	public Close(): any {
-		return $.pointerValue<Exclude<stream, null>>(this.stream).Close()
+		return $.pointerValue<stream>(this.stream).Close()
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -79,6 +79,45 @@ export class stopStream {
 		[{ name: "Close", args: [], returns: [] }],
 		stopStream,
 		{"stream": "main.stream"}
+	)
+}
+
+export class pointerStopStream {
+	public get stream(): stream | $.VarRef<stream> | null {
+		return this._fields.stream.value
+	}
+	public set stream(value: stream | $.VarRef<stream> | null) {
+		this._fields.stream.value = value
+	}
+
+	public _fields: {
+		stream: $.VarRef<stream | $.VarRef<stream> | null>
+	}
+
+	constructor(init?: Partial<{stream?: stream | $.VarRef<stream> | null}>) {
+		this._fields = {
+			stream: $.varRef(init?.stream ?? null)
+		}
+	}
+
+	public clone(): pointerStopStream {
+		const cloned = new pointerStopStream()
+		cloned._fields = {
+			stream: $.varRef(this._fields.stream.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Close(): any {
+		return $.pointerValue<stream>(this.stream).Close()
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.pointerStopStream",
+		() => new pointerStopStream(),
+		[{ name: "Close", args: [], returns: [] }],
+		pointerStopStream,
+		{"stream": { kind: $.TypeKind.Pointer, elemType: "main.stream" }}
 	)
 }
 
@@ -102,6 +141,9 @@ export async function main(): globalThis.Promise<void> {
 
 	let ptr: stopStream | $.VarRef<stopStream> | null = new stopStream({stream: $.markAsStructValue(new stream({name: "pointer"}))})
 	closeIt($.interfaceValue<closer | null>(ptr, "*main.stopStream"))
+
+	let promotedPtr = $.markAsStructValue(new pointerStopStream({stream: new stream({name: "embedded pointer"})}))
+	closeIt($.interfaceValue<closer | null>($.markAsStructValue($.cloneStructValue(promotedPtr)), "main.pointerStopStream"))
 }
 
 if ($.isMainScript(import.meta)) {
