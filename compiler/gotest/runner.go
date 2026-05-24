@@ -93,63 +93,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		return result, nil
 	}
 
-	for idx := range result.Packages {
-		if !shouldCompilePackage(result.Packages[idx]) {
-			continue
-		}
-		outputRoot := packageOutputRoot(norm, idx)
-		compileReq := &compiler.CompileRequest{
-			Patterns:            []string{result.Packages[idx].PackagePath},
-			Dir:                 norm.Dir,
-			OutputPath:          outputRoot,
-			BuildFlags:          append([]string(nil), norm.BuildFlags...),
-			OverrideDirs:        append([]string(nil), norm.OverrideDirs...),
-			DependencyMode:      compiler.DependencyModeAll,
-			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
-			Tests:               false,
-			AllDependencies:     true,
-		}
-		if compileResult, compileErr := r.service.Compile(ctx, compileReq); compileErr != nil {
-			result.Packages[idx].Action = ActionFail
-			if compileResult != nil {
-				result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
-				result.Packages[idx].Owner = classifyDiagnostics(compileResult.Diagnostics)
-			}
-			markCompilePhase(&result.Packages[idx], compileResult, false)
-			result.Packages[idx].Error = compileErr.Error()
-			continue
-		} else if compileResult != nil {
-			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
-			markCompilePhase(&result.Packages[idx], compileResult, true)
-		}
-		if !r.compileTestImports(ctx, norm, outputRoot, &result.Packages[idx], result) {
-			continue
-		}
-		testCompileReq := &compiler.CompileRequest{
-			Patterns:            []string{result.Packages[idx].PackagePath},
-			Dir:                 norm.Dir,
-			OutputPath:          outputRoot,
-			BuildFlags:          append([]string(nil), norm.BuildFlags...),
-			OverrideDirs:        append([]string(nil), norm.OverrideDirs...),
-			DependencyMode:      compiler.DependencyModeAll,
-			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
-			Tests:               true,
-			AllDependencies:     true,
-		}
-		if compileResult, compileErr := r.service.Compile(ctx, testCompileReq); compileErr != nil {
-			result.Packages[idx].Action = ActionFail
-			if compileResult != nil {
-				result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
-				result.Packages[idx].Owner = classifyDiagnostics(compileResult.Diagnostics)
-			}
-			markCompilePhase(&result.Packages[idx], compileResult, false)
-			result.Packages[idx].Error = compileErr.Error()
-			continue
-		} else if compileResult != nil {
-			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
-			markCompilePhase(&result.Packages[idx], compileResult, true)
-		}
-	}
+	outputRoots := r.compilePackageOutputs(ctx, norm, result)
 
 	if phase := workspace.EnsurePackageJSON(); phase.Failed() {
 		markAllFailures(result, OwnerTestRunner, phase.Error)
@@ -165,7 +109,7 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 			continue
 		}
 		result.Packages[idx].Phases.Workspace = PhaseStatusPass
-		outputRoot := packageOutputRoot(norm, idx)
+		outputRoot := outputRoots[idx]
 		runnerFile := packageRunnerFile(idx)
 		if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, runnerFile, renderRunner(result.Packages[idx], norm)); phase.Failed() {
 			result.Packages[idx].Owner = OwnerTestRunner
@@ -245,6 +189,128 @@ func (r *Runner) compileTestImports(
 		markCompilePhase(pkg, compileResult, true)
 	}
 	return true
+}
+
+func (r *Runner) compilePackageOutputs(ctx context.Context, req *normalizedRequest, result *Result) []string {
+	outputRoots := make([]string, len(result.Packages))
+	if r.compilePackageBatch(ctx, req, result, outputRoots) {
+		return outputRoots
+	}
+	return r.compilePackageOutputsIndividually(ctx, req, result)
+}
+
+func (r *Runner) compilePackageBatch(ctx context.Context, req *normalizedRequest, result *Result, outputRoots []string) bool {
+	packagePaths := runnablePackagePaths(result.Packages)
+	if len(packagePaths) == 0 {
+		return true
+	}
+	prodCompileReq := &compiler.CompileRequest{
+		Patterns:            runnableCompilePatterns(result.Packages),
+		Dir:                 req.Dir,
+		OutputPath:          req.OutputRoot,
+		BuildFlags:          append([]string(nil), req.BuildFlags...),
+		OverrideDirs:        append([]string(nil), req.OverrideDirs...),
+		DependencyMode:      compiler.DependencyModeAll,
+		RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
+		Tests:               false,
+		AllDependencies:     true,
+	}
+	prodCompileResult, prodCompileErr := r.service.Compile(ctx, prodCompileReq)
+	if prodCompileErr != nil {
+		return false
+	}
+	testCompileReq := &compiler.CompileRequest{
+		Patterns:            packagePaths,
+		Dir:                 req.Dir,
+		OutputPath:          req.OutputRoot,
+		BuildFlags:          append([]string(nil), req.BuildFlags...),
+		OverrideDirs:        append([]string(nil), req.OverrideDirs...),
+		DependencyMode:      compiler.DependencyModeAll,
+		RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
+		Tests:               true,
+		AllDependencies:     true,
+	}
+	testCompileResult, testCompileErr := r.service.Compile(ctx, testCompileReq)
+	if testCompileErr != nil {
+		return false
+	}
+	if prodCompileResult != nil {
+		result.Diagnostics = append(result.Diagnostics, prodCompileResult.Diagnostics...)
+	}
+	if testCompileResult != nil {
+		result.Diagnostics = append(result.Diagnostics, testCompileResult.Diagnostics...)
+	}
+	for idx := range result.Packages {
+		if !shouldCompilePackage(result.Packages[idx]) {
+			continue
+		}
+		outputRoots[idx] = req.OutputRoot
+		markCompilePhase(&result.Packages[idx], testCompileResult, true)
+	}
+	return true
+}
+
+func (r *Runner) compilePackageOutputsIndividually(ctx context.Context, req *normalizedRequest, result *Result) []string {
+	outputRoots := make([]string, len(result.Packages))
+	for idx := range result.Packages {
+		if !shouldCompilePackage(result.Packages[idx]) {
+			continue
+		}
+		outputRoot := packageOutputRoot(req, idx)
+		outputRoots[idx] = outputRoot
+		compileReq := &compiler.CompileRequest{
+			Patterns:            []string{result.Packages[idx].PackagePath},
+			Dir:                 req.Dir,
+			OutputPath:          outputRoot,
+			BuildFlags:          append([]string(nil), req.BuildFlags...),
+			OverrideDirs:        append([]string(nil), req.OverrideDirs...),
+			DependencyMode:      compiler.DependencyModeAll,
+			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
+			Tests:               false,
+			AllDependencies:     true,
+		}
+		if compileResult, compileErr := r.service.Compile(ctx, compileReq); compileErr != nil {
+			result.Packages[idx].Action = ActionFail
+			if compileResult != nil {
+				result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+				result.Packages[idx].Owner = classifyDiagnostics(compileResult.Diagnostics)
+			}
+			markCompilePhase(&result.Packages[idx], compileResult, false)
+			result.Packages[idx].Error = compileErr.Error()
+			continue
+		} else if compileResult != nil {
+			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+			markCompilePhase(&result.Packages[idx], compileResult, true)
+		}
+		if !r.compileTestImports(ctx, req, outputRoot, &result.Packages[idx], result) {
+			continue
+		}
+		testCompileReq := &compiler.CompileRequest{
+			Patterns:            []string{result.Packages[idx].PackagePath},
+			Dir:                 req.Dir,
+			OutputPath:          outputRoot,
+			BuildFlags:          append([]string(nil), req.BuildFlags...),
+			OverrideDirs:        append([]string(nil), req.OverrideDirs...),
+			DependencyMode:      compiler.DependencyModeAll,
+			RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
+			Tests:               true,
+			AllDependencies:     true,
+		}
+		if compileResult, compileErr := r.service.Compile(ctx, testCompileReq); compileErr != nil {
+			result.Packages[idx].Action = ActionFail
+			if compileResult != nil {
+				result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+				result.Packages[idx].Owner = classifyDiagnostics(compileResult.Diagnostics)
+			}
+			markCompilePhase(&result.Packages[idx], compileResult, false)
+			result.Packages[idx].Error = compileErr.Error()
+			continue
+		} else if compileResult != nil {
+			result.Diagnostics = append(result.Diagnostics, compileResult.Diagnostics...)
+			markCompilePhase(&result.Packages[idx], compileResult, true)
+		}
+	}
+	return outputRoots
 }
 
 func compileRunPattern(pattern string) (*regexp.Regexp, error) {
@@ -338,6 +404,42 @@ func packageVariantTests(variant *compiler.PackageTestGraphVariant, runPattern *
 
 func shouldCompilePackage(result PackageResult) bool {
 	return result.Action != ActionSkip && result.Owner == "" && result.Error == ""
+}
+
+func runnablePackagePaths(results []PackageResult) []string {
+	seen := make(map[string]bool)
+	paths := make([]string, 0, len(results))
+	for _, result := range results {
+		if !shouldCompilePackage(result) {
+			continue
+		}
+		if result.PackagePath == "" || seen[result.PackagePath] {
+			continue
+		}
+		seen[result.PackagePath] = true
+		paths = append(paths, result.PackagePath)
+	}
+	slices.Sort(paths)
+	return paths
+}
+
+func runnableCompilePatterns(results []PackageResult) []string {
+	seen := make(map[string]bool)
+	patterns := make([]string, 0, len(results))
+	for _, result := range results {
+		if !shouldCompilePackage(result) {
+			continue
+		}
+		for _, path := range append([]string{result.PackagePath}, result.TestImports...) {
+			if path == "" || seen[path] {
+				continue
+			}
+			seen[path] = true
+			patterns = append(patterns, path)
+		}
+	}
+	slices.Sort(patterns)
+	return patterns
 }
 
 func markAllFailures(result *Result, owner Owner, message string) {
