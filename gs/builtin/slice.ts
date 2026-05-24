@@ -798,28 +798,36 @@ export const len = <T = unknown, V = unknown>(
     return 0
   }
 
-  if (isGoStringValue(obj)) {
-    return stringLen(obj) // Call new stringLen for strings
-  }
-
-  if (obj instanceof Map || obj instanceof Set) {
-    return obj.size
+  if (typeof obj === 'string') {
+    return stringLen(obj)
   }
 
   if (obj instanceof Uint8Array) {
     return obj.length
   }
 
-  if (typeof (obj as any).len === 'function') {
-    return (obj as { len(): number }).len()
+  if (Array.isArray(obj)) {
+    const meta = (obj as unknown as SliceProxy<T>).__meta__
+    if (meta !== undefined) {
+      return meta.length
+    }
+    return obj.length
+  }
+
+  if (obj instanceof Map || obj instanceof Set) {
+    return obj.size
+  }
+
+  if (obj instanceof GoBinaryString) {
+    return stringLen(obj)
   }
 
   if (isComplexSlice(obj as any)) {
-    return (obj as SliceProxy<T>).__meta__.length
+    return (obj as unknown as SliceProxy<T>).__meta__.length
   }
 
-  if (Array.isArray(obj)) {
-    return obj.length
+  if (typeof (obj as any).len === 'function') {
+    return (obj as { len(): number }).len()
   }
 
   throw new Error('cannot determine len of this type')
@@ -1587,11 +1595,15 @@ export function stringCompare(
   right: GoStringBytes,
 ): number {
   if (!isGoStringValue(left) && !isGoStringValue(right)) {
-    const leftLen = len(left)
-    const rightLen = len(right)
+    const leftBytes = byteStringView(left)
+    const rightBytes = byteStringView(right)
+    const leftLen = leftBytes.length
+    const rightLen = rightBytes.length
     const sharedLen = Math.min(leftLen, rightLen)
     for (let i = 0; i < sharedLen; i++) {
-      const diff = (left as any)[i] - (right as any)[i]
+      const diff =
+        (leftBytes.backing[leftBytes.offset + i] ?? 0) -
+        (rightBytes.backing[rightBytes.offset + i] ?? 0)
       if (diff !== 0) {
         return diff
       }
@@ -1609,6 +1621,38 @@ export function stringCompare(
     }
   }
   return leftBytes.length - rightBytes.length
+}
+
+type ByteStringView = {
+  backing: ArrayLike<number>
+  offset: number
+  length: number
+}
+
+function byteStringView(value: GoStringBytes): ByteStringView {
+  if (value === null || value === undefined) {
+    return { backing: [], offset: 0, length: 0 }
+  }
+  if (value instanceof Uint8Array) {
+    return { backing: value, offset: 0, length: value.length }
+  }
+  if (Array.isArray(value)) {
+    const meta = (value as unknown as SliceProxy<number>).__meta__
+    if (meta !== undefined) {
+      return {
+        backing: meta.backing,
+        offset: meta.offset,
+        length: meta.length,
+      }
+    }
+    return { backing: value, offset: 0, length: value.length }
+  }
+  const meta = (value as unknown as SliceProxy<number>).__meta__
+  return {
+    backing: meta.backing,
+    offset: meta.offset,
+    length: meta.length,
+  }
 }
 
 function bytesToBinaryString(bytes: Uint8Array): string {

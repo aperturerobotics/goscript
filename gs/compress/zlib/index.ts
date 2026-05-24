@@ -137,7 +137,35 @@ function inflate(data: Uint8Array): Uint8Array {
 }
 
 function nodeZlib(): any {
-  return (import.meta as any).require('node:zlib')
+  const processObj = (globalThis as any).process
+  if (processObj && typeof processObj.getBuiltinModule === 'function') {
+    const mod = processObj.getBuiltinModule('zlib')
+    if (mod && typeof mod.deflateSync === 'function') {
+      return mod
+    }
+  }
+  const requireFn = (() => {
+    try {
+      return Function(
+        "return typeof require !== 'undefined' ? require : null",
+      )() as ((specifier: string) => unknown) | null
+    } catch {
+      return null
+    }
+  })()
+  if (requireFn != null) {
+    for (const specifier of ['node:zlib', 'zlib']) {
+      try {
+        const mod = requireFn(specifier) as any
+        if (mod && typeof mod.deflateSync === 'function') {
+          return mod
+        }
+      } catch {
+        // Try the next fallback.
+      }
+    }
+  }
+  throw new Error('compress/zlib: node zlib module unavailable')
 }
 
 function readAll(r: io.Reader): [Uint8Array, $.GoError] {
