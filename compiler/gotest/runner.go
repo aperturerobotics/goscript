@@ -121,39 +121,52 @@ func (r *Runner) runPackageTools(
 	outputRoots []string,
 	nodeTypesAvailable bool,
 ) {
-	parallelism := max(req.Parallelism, 1)
-	sem := make(chan struct{}, parallelism)
-	var wg sync.WaitGroup
+	indexes := r.preparePackageWorkspaces(req, workspace, result, outputRoots, nodeTypesAvailable)
+	if len(indexes) == 0 {
+		return
+	}
+	if len(indexes) == 1 {
+		r.runPackageTypeCheckAndRuntime(ctx, req, workspace, result, indexes[0])
+		return
+	}
+	typecheck := workspace.RunTool(ctx, tsworkspace.PhaseTypeCheck, req.WorkDir, "tsgo", "--project", "tsconfig.json")
+	if typecheck.Failed() {
+		r.runPackageTypeChecksAndRuntimes(ctx, req, workspace, result, indexes)
+		return
+	}
+	for _, idx := range indexes {
+		result.Packages[idx].Phases.TypeCheck = PhaseStatusPass
+	}
+	r.runPackageRuntimes(ctx, req, workspace, result, indexes)
+}
+
+func (r *Runner) preparePackageWorkspaces(
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	outputRoots []string,
+	nodeTypesAvailable bool,
+) []int {
+	var indexes []int
 	for idx := range result.Packages {
 		if !shouldCompilePackage(result.Packages[idx]) {
 			continue
 		}
-		idx := idx
-		wg.Go(func() {
-			select {
-			case sem <- struct{}{}:
-				defer func() { <-sem }()
-			case <-ctx.Done():
-				result.Packages[idx].Owner = OwnerTestRunner
-				result.Packages[idx].Phases.Workspace = PhaseStatusFail
-				result.Packages[idx].Error = ctx.Err().Error()
-				return
-			}
-			r.runPackageTool(ctx, req, workspace, result, outputRoots, nodeTypesAvailable, idx)
-		})
+		if r.preparePackageWorkspace(req, workspace, result, outputRoots, nodeTypesAvailable, idx) {
+			indexes = append(indexes, idx)
+		}
 	}
-	wg.Wait()
+	return indexes
 }
 
-func (r *Runner) runPackageTool(
-	ctx context.Context,
+func (r *Runner) preparePackageWorkspace(
 	req *normalizedRequest,
 	workspace *tsworkspace.Owner,
 	result *Result,
 	outputRoots []string,
 	nodeTypesAvailable bool,
 	idx int,
-) {
+) bool {
 	result.Packages[idx].Phases.Workspace = PhaseStatusPass
 	outputRoot := outputRoots[idx]
 	runnerFile := packageRunnerFile(idx)
@@ -161,24 +174,111 @@ func (r *Runner) runPackageTool(
 		result.Packages[idx].Owner = OwnerTestRunner
 		result.Packages[idx].Phases.Workspace = PhaseStatusFail
 		result.Packages[idx].Error = phase.Error
-		return
+		return false
 	}
 	tsconfigFile := packageTSConfigFile(idx)
 	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, tsconfigFile, renderTypeScriptProject(req, outputRoot, runnerFile, nodeTypesAvailable)); phase.Failed() {
 		result.Packages[idx].Owner = OwnerTestRunner
 		result.Packages[idx].Phases.Workspace = PhaseStatusFail
 		result.Packages[idx].Error = phase.Error
+		return false
+	}
+	return true
+}
+
+func (r *Runner) runPackageTypeChecksAndRuntimes(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	indexes []int,
+) {
+	parallelism := max(req.Parallelism, 1)
+	sem := make(chan struct{}, parallelism)
+	var wg sync.WaitGroup
+	for _, idx := range indexes {
+		wg.Go(func() {
+			select {
+			case sem <- struct{}{}:
+				defer func() { <-sem }()
+			case <-ctx.Done():
+				result.Packages[idx].Owner = OwnerTestRunner
+				result.Packages[idx].Phases.TypeCheck = PhaseStatusFail
+				result.Packages[idx].Error = ctx.Err().Error()
+				return
+			}
+			r.runPackageTypeCheckAndRuntime(ctx, req, workspace, result, idx)
+		})
+	}
+	wg.Wait()
+}
+
+func (r *Runner) runPackageTypeCheckAndRuntime(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	idx int,
+) {
+	if !r.runPackageTypeCheck(ctx, req, workspace, result, idx) {
 		return
 	}
-	typecheck := workspace.RunTool(ctx, tsworkspace.PhaseTypeCheck, req.WorkDir, "tsgo", "--project", tsconfigFile)
+	r.runPackageRuntime(ctx, req, workspace, result, idx)
+}
+
+func (r *Runner) runPackageTypeCheck(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	idx int,
+) bool {
+	typecheck := workspace.RunTool(ctx, tsworkspace.PhaseTypeCheck, req.WorkDir, "tsgo", "--project", packageTSConfigFile(idx))
 	if typecheck.Failed() {
 		result.Packages[idx].Owner = classifyProcessOutput(typecheck.Output)
 		result.Packages[idx].Phases.TypeCheck = PhaseStatusFail
 		result.Packages[idx].Error = processErrorText(typecheck)
-		return
+		return false
 	}
 	result.Packages[idx].Phases.TypeCheck = PhaseStatusPass
-	runtime := workspace.RunTool(ctx, tsworkspace.PhaseRuntime, req.WorkDir, "bun", runnerFile)
+	return true
+}
+
+func (r *Runner) runPackageRuntimes(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	indexes []int,
+) {
+	parallelism := max(req.Parallelism, 1)
+	sem := make(chan struct{}, parallelism)
+	var wg sync.WaitGroup
+	for _, idx := range indexes {
+		wg.Go(func() {
+			select {
+			case sem <- struct{}{}:
+				defer func() { <-sem }()
+			case <-ctx.Done():
+				result.Packages[idx].Owner = OwnerTestRunner
+				result.Packages[idx].Phases.Runtime = PhaseStatusFail
+				result.Packages[idx].Error = ctx.Err().Error()
+				return
+			}
+			r.runPackageRuntime(ctx, req, workspace, result, idx)
+		})
+	}
+	wg.Wait()
+}
+
+func (r *Runner) runPackageRuntime(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	idx int,
+) {
+	runtime := workspace.RunTool(ctx, tsworkspace.PhaseRuntime, req.WorkDir, "bun", packageRunnerFile(idx))
 	result.Packages[idx].Elapsed = runtime.Elapsed
 	result.Packages[idx].Output = strings.TrimSpace(runtime.Output)
 	if runtime.Failed() {
@@ -652,21 +752,29 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 
 func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string, nodeTypesAvailable bool) string {
 	var aliases []string
+	var includes []string
 	seen := make(map[string]bool)
 	for _, outputRoot := range outputRoots {
 		if outputRoot == "" {
 			continue
 		}
 		alias := "./" + typeScriptOutputAlias(req, outputRoot)
-		if seen[alias] {
+		if !seen[alias] {
+			seen[alias] = true
+			aliases = append(aliases, alias)
+		}
+		include := typeScriptOutputPattern(req, outputRoot) + "/**/*.ts"
+		if seen[include] {
 			continue
 		}
-		seen[alias] = true
-		aliases = append(aliases, alias)
+		seen[include] = true
+		includes = append(includes, include)
 	}
 	if len(aliases) == 0 && req.OutputRoot != "" {
 		aliases = append(aliases, "./"+typeScriptOutputAlias(req, req.OutputRoot))
+		includes = append(includes, typeScriptOutputPattern(req, req.OutputRoot)+"/**/*.ts")
 	}
+	includes = append(includes, "runner-*.ts", tsworkspace.NodeAmbientTypesFile)
 	var b strings.Builder
 	b.WriteString("{\n")
 	b.WriteString("  \"compilerOptions\": {\n")
@@ -676,6 +784,7 @@ func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string
 	b.WriteString("    \"lib\": [\"ESNext\", \"DOM\"],\n")
 	b.WriteString("    \"strict\": true,\n")
 	b.WriteString("    \"allowImportingTsExtensions\": true,\n")
+	b.WriteString("    \"noEmit\": true,\n")
 	if nodeTypesAvailable {
 		b.WriteString("    \"types\": [\"node\"],\n")
 	} else {
@@ -692,7 +801,15 @@ func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string
 	}
 	b.WriteString("]\n")
 	b.WriteString("    }\n")
-	b.WriteString("  }\n")
+	b.WriteString("  },\n")
+	b.WriteString("  \"include\": [")
+	for idx, include := range includes {
+		if idx != 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(strconv.Quote(include))
+	}
+	b.WriteString("]\n")
 	b.WriteString("}\n")
 	return b.String()
 }

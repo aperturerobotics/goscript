@@ -583,6 +583,13 @@ func TestRunnerScopesPackageTypecheckErrors(t *testing.T) {
 		"\tfi",
 		"\tshift || break",
 		"done",
+		"if [ \"$project\" = \"tsconfig.json\" ]; then",
+		"\tif grep -q 'example.test/mixedtypecheck/bad' runner-*.ts; then",
+		"\t\techo 'TypeScript TS9000: bad package'",
+		"\t\texit 1",
+		"\tfi",
+		"\texit 0",
+		"fi",
 		"runner=$(sed -n 's/.*\"\\(runner-[0-9][0-9]*\\.ts\\)\".*/\\1/p' \"$project\" | head -n 1)",
 		"if grep -q 'example.test/mixedtypecheck/bad' \"$runner\"; then",
 		"\techo 'TypeScript TS9000: bad package'",
@@ -619,7 +626,7 @@ func TestRunnerScopesPackageTypecheckErrors(t *testing.T) {
 	}
 }
 
-func TestRunnerUsesPackageScopedTypeScriptProjects(t *testing.T) {
+func TestRunnerUsesBatchTypeScriptProject(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/packageprojects\n\ngo 1.25.3\n",
 		"one/value.go": strings.Join([]string{
@@ -699,8 +706,98 @@ func TestRunnerUsesPackageScopedTypeScriptProjects(t *testing.T) {
 		t.Fatalf("read project log: %v", err)
 	}
 	projects := string(data)
-	if !strings.Contains(projects, "tsconfig-0.json") || !strings.Contains(projects, "tsconfig-1.json") {
-		t.Fatalf("expected package-scoped tsconfig files, got:\n%s", projects)
+	if strings.TrimSpace(projects) != "tsconfig.json" {
+		t.Fatalf("expected aggregate tsconfig project, got:\n%s", projects)
+	}
+}
+
+func TestRunnerFallsBackToPackageScopedTypeScriptProjects(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/packageprojects\n\ngo 1.25.3\n",
+		"one/value.go": strings.Join([]string{
+			"package one",
+			"",
+			"func Value() int { return 1 }",
+			"",
+		}, "\n"),
+		"one/value_test.go": strings.Join([]string{
+			"package one",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestOne(t *testing.T) {",
+			"\tif Value() != 1 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"two/value.go": strings.Join([]string{
+			"package two",
+			"",
+			"func Value() int { return 2 }",
+			"",
+		}, "\n"),
+		"two/value_test.go": strings.Join([]string{
+			"package two",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestTwo(t *testing.T) {",
+			"\tif Value() != 2 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+	workDir := filepath.Join(moduleDir, ".tmp", "package-projects")
+	projectLog := filepath.Join(moduleDir, "projects.log")
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "tsgo"), strings.Join([]string{
+		"#!/bin/sh",
+		"project=",
+		"while [ \"$#\" -gt 0 ]; do",
+		"\tif [ \"$1\" = \"--project\" ]; then",
+		"\t\tshift",
+		"\t\tproject=\"$1\"",
+		"\tfi",
+		"\tshift || break",
+		"done",
+		"printf '%s\\n' \"$project\" >> " + strconv.Quote(projectLog),
+		"if [ \"$project\" = \"tsconfig.json\" ]; then",
+		"\texit 1",
+		"fi",
+		"exit 0",
+		"",
+	}, "\n"))
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "bun"), strings.Join([]string{
+		"#!/bin/sh",
+		"exit 0",
+		"",
+	}, "\n"))
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:         moduleDir,
+		Patterns:    []string{"./..."},
+		Timeout:     30 * time.Second,
+		WorkDir:     workDir,
+		Parallelism: 2,
+	})
+	if err != nil {
+		t.Fatalf("run package projects fixture: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected package projects fixture to pass: %#v", result.Packages)
+	}
+	data, err := os.ReadFile(projectLog)
+	if err != nil {
+		t.Fatalf("read project log: %v", err)
+	}
+	projects := string(data)
+	if !strings.Contains(projects, "tsconfig.json") ||
+		!strings.Contains(projects, "tsconfig-0.json") ||
+		!strings.Contains(projects, "tsconfig-1.json") {
+		t.Fatalf("expected aggregate project and package-scoped fallback, got:\n%s", projects)
 	}
 }
 
@@ -726,6 +823,17 @@ func TestRenderTypeScriptProjectUsesNodeTypesWhenAvailable(t *testing.T) {
 	tsconfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts", true)
 	if !strings.Contains(tsconfig, "\"types\": [\"node\"]") {
 		t.Fatalf("expected generated tsconfig to opt into node types: %s", tsconfig)
+	}
+}
+
+func TestRenderRuntimeTypeScriptProjectDisablesEmit(t *testing.T) {
+	req := &normalizedRequest{
+		WorkDir: "/work",
+	}
+
+	tsconfig := renderRuntimeTypeScriptProject(req, []string{"/work/output"}, false)
+	if !strings.Contains(tsconfig, "\"noEmit\": true") {
+		t.Fatalf("expected aggregate tsconfig to disable emit: %s", tsconfig)
 	}
 }
 
