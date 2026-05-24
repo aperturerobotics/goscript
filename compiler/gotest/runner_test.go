@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -901,6 +902,43 @@ func TestDefaultParallelismCapsAtEight(t *testing.T) {
 
 	if got := DefaultParallelism(); got != 8 {
 		t.Fatalf("expected default parallelism cap 8, got %d", got)
+	}
+}
+
+func TestPackageExecutionIndexesPrioritizesLargerTestPackages(t *testing.T) {
+	result := &Result{Packages: []PackageResult{
+		{
+			PackagePath: "example.test/small",
+			Tests:       []Test{{Name: "TestSmall"}},
+		},
+		{
+			PackagePath: "example.test/large",
+			Tests: []Test{
+				{Name: "TestLargeA"},
+				{Name: "TestLargeB"},
+				{Name: "TestLargeC"},
+			},
+		},
+		{
+			PackagePath: "example.test/medium-b",
+			Tests: []Test{
+				{Name: "TestMediumB1"},
+				{Name: "TestMediumB2"},
+			},
+		},
+		{
+			PackagePath: "example.test/medium-a",
+			Tests: []Test{
+				{Name: "TestMediumA1"},
+				{Name: "TestMediumA2"},
+			},
+		},
+	}}
+
+	got := packageExecutionIndexes(result, []int{0, 1, 2, 3})
+	want := []int{1, 3, 2, 0}
+	if !slices.Equal(got, want) {
+		t.Fatalf("expected execution indexes %v, got %v", want, got)
 	}
 }
 

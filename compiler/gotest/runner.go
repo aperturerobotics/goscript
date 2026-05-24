@@ -200,7 +200,7 @@ func (r *Runner) runPackageTypeChecksAndRuntimes(
 	parallelism := max(req.Parallelism, 1)
 	sem := make(chan struct{}, parallelism)
 	var wg sync.WaitGroup
-	for _, idx := range indexes {
+	for _, idx := range packageExecutionIndexes(result, indexes) {
 		wg.Go(func() {
 			select {
 			case sem <- struct{}{}:
@@ -258,7 +258,7 @@ func (r *Runner) runPackageRuntimes(
 	parallelism := max(req.Parallelism, 1)
 	sem := make(chan struct{}, parallelism)
 	var wg sync.WaitGroup
-	for _, idx := range indexes {
+	for _, idx := range packageExecutionIndexes(result, indexes) {
 		wg.Go(func() {
 			select {
 			case sem <- struct{}{}:
@@ -551,6 +551,26 @@ func runnablePackagePaths(results []PackageResult) []string {
 	}
 	slices.Sort(paths)
 	return paths
+}
+
+func packageExecutionIndexes(result *Result, indexes []int) []int {
+	ordered := append([]int(nil), indexes...)
+	slices.SortFunc(ordered, func(a, b int) int {
+		var aPkg, bPkg PackageResult
+		if result != nil {
+			if a >= 0 && a < len(result.Packages) {
+				aPkg = result.Packages[a]
+			}
+			if b >= 0 && b < len(result.Packages) {
+				bPkg = result.Packages[b]
+			}
+		}
+		if len(aPkg.Tests) != len(bPkg.Tests) {
+			return len(bPkg.Tests) - len(aPkg.Tests)
+		}
+		return strings.Compare(aPkg.PackagePath, bPkg.PackagePath)
+	})
+	return ordered
 }
 
 func markAllFailures(result *Result, owner Owner, message string) {
