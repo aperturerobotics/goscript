@@ -82,6 +82,21 @@ type ByteSlice = Uint8Array & {
   __meta__?: GoSliceObject<number>
 }
 
+function sliceIndexProperty(prop: string | symbol): number {
+  if (typeof prop !== 'string' || prop.length === 0) {
+    return -1
+  }
+  let index = 0
+  for (let i = 0; i < prop.length; i++) {
+    const digit = prop.charCodeAt(i) - 48
+    if (digit < 0 || digit > 9) {
+      return -1
+    }
+    index = index * 10 + digit
+  }
+  return index
+}
+
 /**
  * Slice<T> is a union type that is either a plain array or a proxy
  * null represents the nil state.
@@ -103,9 +118,9 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
   meta.target = proxy
   const handler = {
     get(target: any, prop: string | symbol): any {
-      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-        const index = Number(prop)
-        if (index >= 0 && index < meta.length) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index < meta.length) {
           return meta.backing[meta.offset + index]
         }
         throw new Error(
@@ -125,9 +140,9 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
     },
 
     set(target: any, prop: string | symbol, value: any): boolean {
-      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-        const index = Number(prop)
-        if (index >= 0 && index < meta.length) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index < meta.length) {
           meta.backing[meta.offset + index] = value
           target[index] = value // Also update the proxy target for consistency
           return true
@@ -364,9 +379,9 @@ export const makeSlice = <T>(
   // Create a proper Proxy with the handler for SliceProxy behavior
   const handler = {
     get(target: any, prop: string | symbol): any {
-      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-        const index = Number(prop)
-        if (index >= 0 && index < target.__meta__.length) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index < target.__meta__.length) {
           return target.__meta__.backing[target.__meta__.offset + index]
         }
         throw new Error(
@@ -386,9 +401,9 @@ export const makeSlice = <T>(
     },
 
     set(target: any, prop: string | symbol, value: any): boolean {
-      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-        const index = Number(prop)
-        if (index >= 0 && index < target.__meta__.length) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index < target.__meta__.length) {
           target.__meta__.backing[target.__meta__.offset + index] = value
           target[index] = value // Also update the proxy target for consistency
           return true
@@ -444,9 +459,9 @@ export function goSlice<T>( // T can be number for Uint8Array case
 
   const handler = {
     get(target: any, prop: string | symbol): any {
-      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-        const index = Number(prop)
-        if (index >= 0 && index < target.__meta__.length) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index < target.__meta__.length) {
           return target.__meta__.backing[target.__meta__.offset + index]
         }
         throw new Error(
@@ -481,9 +496,9 @@ export function goSlice<T>( // T can be number for Uint8Array case
     },
 
     set(target: any, prop: string | symbol, value: any): boolean {
-      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-        const index = Number(prop)
-        if (index >= 0 && index < target.__meta__.length) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index < target.__meta__.length) {
           target.__meta__.backing[target.__meta__.offset + index] = value
           target[index] = value
           return true
@@ -700,9 +715,9 @@ export const arrayToSlice = <T>(
 
   const handler = {
     get(target: any, prop: string | symbol): any {
-      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-        const index = Number(prop)
-        if (index >= 0 && index < target.__meta__.length) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index < target.__meta__.length) {
           return target.__meta__.backing[target.__meta__.offset + index]
         }
         throw new Error(
@@ -737,9 +752,9 @@ export const arrayToSlice = <T>(
     },
 
     set(target: any, prop: string | symbol, value: any): boolean {
-      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
-        const index = Number(prop)
-        if (index >= 0 && index < target.__meta__.length) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index < target.__meta__.length) {
           target.__meta__.backing[target.__meta__.offset + index] = value
           return true
         }
