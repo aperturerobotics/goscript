@@ -59,8 +59,8 @@ func DefaultParallelism() int {
 	if parallelism < 1 {
 		return 1
 	}
-	if parallelism > 4 {
-		return 4
+	if parallelism > 8 {
+		return 8
 	}
 	return parallelism
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -626,6 +627,99 @@ func TestRunnerScopesPackageTypecheckErrors(t *testing.T) {
 	}
 }
 
+func TestRunnerDoesNotRepeatSharedOverrideTypecheckFailure(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/sharedoverride\n\ngo 1.25.3\n",
+		"one/value.go": strings.Join([]string{
+			"package one",
+			"",
+			"func Value() int { return 1 }",
+			"",
+		}, "\n"),
+		"one/value_test.go": strings.Join([]string{
+			"package one",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestOne(t *testing.T) {",
+			"\tif Value() != 1 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"two/value.go": strings.Join([]string{
+			"package two",
+			"",
+			"func Value() int { return 2 }",
+			"",
+		}, "\n"),
+		"two/value_test.go": strings.Join([]string{
+			"package two",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestTwo(t *testing.T) {",
+			"\tif Value() != 2 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+	workDir := filepath.Join(moduleDir, "work")
+	projectLog := filepath.Join(moduleDir, "projects.log")
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "tsgo"), strings.Join([]string{
+		"#!/bin/sh",
+		"project=",
+		"while [ \"$#\" -gt 0 ]; do",
+		"\tif [ \"$1\" = \"--project\" ]; then",
+		"\t\tshift",
+		"\t\tproject=\"$1\"",
+		"\tfi",
+		"\tshift || break",
+		"done",
+		"printf '%s\\n' \"$project\" >> " + strconv.Quote(projectLog),
+		"echo 'output/@goscript/example.test/override/index.ts(1,1): error TS2305: Module has no exported member Thing'",
+		"exit 1",
+		"",
+	}, "\n"))
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "bun"), strings.Join([]string{
+		"#!/bin/sh",
+		"exit 0",
+		"",
+	}, "\n"))
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"./..."},
+		Timeout:  30 * time.Second,
+		WorkDir:  workDir,
+	})
+	if err != nil {
+		t.Fatalf("run shared override typecheck fixture: %v", err)
+	}
+
+	one := requirePackageResult(t, result, "example.test/sharedoverride/one")
+	two := requirePackageResult(t, result, "example.test/sharedoverride/two")
+	for _, pkg := range []PackageResult{one, two} {
+		if pkg.Action != ActionFail || pkg.Owner != OwnerOverridePackage {
+			t.Fatalf("package should carry aggregate override failure: %#v", pkg)
+		}
+		if pkg.Phases.TypeCheck != PhaseStatusFail || pkg.Phases.Runtime != PhaseStatusSkip {
+			t.Fatalf("package should fail at aggregate typecheck without runtime: %#v", pkg)
+		}
+	}
+	data, err := os.ReadFile(projectLog)
+	if err != nil {
+		t.Fatalf("read project log: %v", err)
+	}
+	projects := strings.Fields(string(data))
+	if len(projects) != 1 || projects[0] != "tsconfig.json" {
+		t.Fatalf("expected only aggregate typecheck, got:\n%s", data)
+	}
+}
+
 func TestRunnerUsesBatchTypeScriptProject(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/packageprojects\n\ngo 1.25.3\n",
@@ -798,6 +892,15 @@ func TestRunnerFallsBackToPackageScopedTypeScriptProjects(t *testing.T) {
 		!strings.Contains(projects, "tsconfig-0.json") ||
 		!strings.Contains(projects, "tsconfig-1.json") {
 		t.Fatalf("expected aggregate project and package-scoped fallback, got:\n%s", projects)
+	}
+}
+
+func TestDefaultParallelismCapsAtEight(t *testing.T) {
+	previous := runtime.GOMAXPROCS(16)
+	t.Cleanup(func() { runtime.GOMAXPROCS(previous) })
+
+	if got := DefaultParallelism(); got != 8 {
+		t.Fatalf("expected default parallelism cap 8, got %d", got)
 	}
 }
 

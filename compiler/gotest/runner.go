@@ -131,6 +131,10 @@ func (r *Runner) runPackageTools(
 	}
 	typecheck := workspace.RunTool(ctx, tsworkspace.PhaseTypeCheck, req.WorkDir, "tsgo", "--project", "tsconfig.json")
 	if typecheck.Failed() {
+		if owner, ok := aggregateTypeCheckFailureOwner(typecheck.Output); ok {
+			markTypeCheckFailures(result, owner, processErrorText(typecheck))
+			return
+		}
 		r.runPackageTypeChecksAndRuntimes(ctx, req, workspace, result, indexes)
 		return
 	}
@@ -578,6 +582,23 @@ func markAllFailures(result *Result, owner Owner, message string) {
 	}
 }
 
+func markTypeCheckFailures(result *Result, owner Owner, message string) {
+	message = strings.TrimSpace(message)
+	if result == nil {
+		return
+	}
+	for idx := range result.Packages {
+		if !shouldCompilePackage(result.Packages[idx]) {
+			continue
+		}
+		result.Packages[idx].Action = ActionFail
+		result.Packages[idx].Owner = owner
+		result.Packages[idx].Error = message
+		result.Packages[idx].Phases.TypeCheck = PhaseStatusFail
+		result.Packages[idx].Phases.Runtime = PhaseStatusSkip
+	}
+}
+
 func failurePhases(owner Owner) PackagePhases {
 	if owner == OwnerPackageGraph {
 		return PackagePhases{
@@ -676,6 +697,18 @@ func processErrorText(result tsworkspace.Result) string {
 		return output
 	}
 	return result.Error
+}
+
+func aggregateTypeCheckFailureOwner(output string) (Owner, bool) {
+	owner := classifyProcessOutput(output)
+	// Package-scoped fallback is worth paying for package-local emitted
+	// TypeScript errors. Shared override package failures are independent of
+	// the runner file, so rerunning tsgo per package only repeats the same
+	// expensive project error.
+	if owner == OwnerOverridePackage {
+		return owner, true
+	}
+	return "", false
 }
 
 func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string, nodeTypesAvailable bool) string {
