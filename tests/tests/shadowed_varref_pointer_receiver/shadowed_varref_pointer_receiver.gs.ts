@@ -54,16 +54,16 @@ export function newLocked(value: number): locked {
 
 export async function main(): globalThis.Promise<void> {
 	let __goscriptShadow0 = $.varRef($.markAsStructValue($.cloneStructValue(newLocked(1))))
-	$.pointerValue<locked>(__goscriptShadow0.value).Inc()
-	$.println($.pointerValue<locked>(__goscriptShadow0.value).Value())
+	__goscriptShadow0.value.Inc()
+	$.println(__goscriptShadow0.value.Value())
 
 	for (let __rangeIndex = 0; __rangeIndex < 1; __rangeIndex++) {
 		let __goscriptShadow1 = $.varRef($.markAsStructValue($.cloneStructValue(newLocked(10))))
-		$.pointerValue<locked>(__goscriptShadow1.value).Inc()
-		$.println($.pointerValue<locked>(__goscriptShadow1.value).Value())
+		__goscriptShadow1.value.Inc()
+		$.println(__goscriptShadow1.value.Value())
 	}
 
-	$.println($.pointerValue<locked>(__goscriptShadow0.value).Value())
+	$.println(__goscriptShadow0.value.Value())
 }
 
 if ($.isMainScript(import.meta)) {

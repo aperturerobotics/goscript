@@ -363,6 +363,120 @@ func TestCompilePackagesInitializesLazyAsyncPackageVarsBeforeInit(t *testing.T) 
 	}
 }
 
+func TestCompilePackagesAssignsLazyPackageVarsDirectly(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/lazyassign\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"var table = []int{later}",
+			"var later = 1",
+			"func init() {",
+			"  table = append(table, 2)",
+			"}",
+			"func main() { println(len(table)) }",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "lazyassign", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "table = $.append(__goscript_get_table(), 2)") {
+		t.Fatalf("missing direct lazy package var assignment:\n%s", text)
+	}
+	if strings.Contains(text, "__goscript_get_table() =") {
+		t.Fatalf("lazy getter used as assignment target:\n%s", text)
+	}
+}
+
+func TestCompilePackagesReadsShadowedVarRefStructFieldsOnce(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/shadowvarreffield\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type key struct { pad []byte }",
+			"func fill(k *key) error { return nil }",
+			"func size() int {",
+			"  var key key",
+			"  if err := fill(&key); err != nil {",
+			"    return 0",
+			"  }",
+			"  return len(key.pad)",
+			"}",
+			"func main() { println(size()) }",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "shadowvarreffield", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.len(__goscriptShadow0.value.pad)") {
+		t.Fatalf("missing single dereference field read:\n%s", text)
+	}
+	if strings.Contains(text, ".value.value.pad") {
+		t.Fatalf("shadowed VarRef struct field was dereferenced twice:\n%s", text)
+	}
+}
+
+func TestCompilePackagesWrapsChannelSendInterfaceValues(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/chansendiface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type item interface { Name() string }",
+			"type concrete struct{}",
+			"func (*concrete) Name() string { return \"ok\" }",
+			"func send(ch chan item) {",
+			"  v := &concrete{}",
+			"  ch <- v",
+			"}",
+			"func main() {}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "chansendiface", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.chanSend(ch, $.interfaceValue<item | null>(v, \"*main.concrete\"))") {
+		t.Fatalf("missing interface wrapper for channel send:\n%s", text)
+	}
+}
+
 func TestCompilePackagesBindsFuncLiteralVarRefParams(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/funclitvarref\n\ngo 1.25.3\n",

@@ -2870,6 +2870,9 @@ func (o *LoweringOwner) lowerSendStmt(ctx lowerFileContext, stmt *ast.SendStmt) 
 	channel, channelDiagnostics := o.lowerExpr(ctx, stmt.Chan)
 	value, valueDiagnostics := o.lowerExpr(ctx, stmt.Value)
 	diagnostics := append(channelDiagnostics, valueDiagnostics...)
+	if channelType, _ := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(stmt.Chan)).Underlying().(*types.Chan); channelType != nil {
+		value = o.lowerValueForTarget(ctx, stmt.Value, channelType.Elem(), value)
+	}
 	return "await " + o.runtimeOwner.QualifiedHelper(RuntimeHelperChanSend) + "(" + channel + ", " + value + ")", diagnostics
 }
 
@@ -6415,7 +6418,13 @@ func fieldReceiverNeedsVarRefValue(ctx lowerFileContext, expr ast.Expr, obj type
 	if _, ok := expr.(*ast.Ident); !ok {
 		return true
 	}
-	return ctx.localAliases[obj] != "" || ctx.identAliases[obj] != ""
+	if ctx.identAliases[obj] != "" {
+		return !ctx.identAliasRefs[obj]
+	}
+	if ctx.localAliases[obj] != "" {
+		return !ctx.lazyPackageVars[obj]
+	}
+	return false
 }
 
 func (o *LoweringOwner) lowerMethodReceiverExpr(
@@ -6505,6 +6514,13 @@ func (o *LoweringOwner) lowerAssignmentTarget(
 	case *ast.Ident:
 		if declare {
 			return o.lowerIdent(ctx, typed, true), nil
+		}
+		if obj := objectForIdent(ctx, typed); obj != nil && ctx.lazyPackageVars[obj] {
+			target := o.lowerIdent(ctx, typed, true)
+			if ctx.model.needsVarRef[obj] {
+				target += ".value"
+			}
+			return target, nil
 		}
 		return o.lowerIdent(ctx, typed, false), nil
 	case *ast.StarExpr:
