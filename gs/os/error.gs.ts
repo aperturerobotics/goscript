@@ -184,6 +184,9 @@ export function underlyingErrorIs(err: $.GoError, target: $.GoError): boolean {
 	if (err == target) {
 		return true
 	}
+	if (err !== null && typeof (err as any).Is === "function") {
+		return (err as any).Is(target) === true
+	}
 	// To preserve prior behavior, only examine syscall errors.
 	let { value: e, ok: ok } = $.typeAssert<any>(err, 'syscallErrorType')
 	return ok && e.Is(target)
@@ -191,15 +194,11 @@ export function underlyingErrorIs(err: $.GoError, target: $.GoError): boolean {
 
 // underlyingError returns the underlying error for known os error types.
 export function underlyingError(err: $.GoError): $.GoError {
-	$.typeSwitch(err, [{ types: [{kind: $.TypeKind.Pointer, elemType: 'PathError'}], body: (err) => {
-		return err!.Err
-	}},
-	{ types: [{kind: $.TypeKind.Pointer, elemType: 'LinkError'}], body: (err) => {
-		return err!.Err
-	}},
-	{ types: [{kind: $.TypeKind.Pointer, elemType: 'SyscallError'}], body: (err) => {
-		return err!.Err
-	}}])
+	if (err !== null && typeof (err as any).Unwrap === "function") {
+		const unwrapped = (err as any).Unwrap()
+		if (unwrapped !== null && typeof unwrapped?.Error === "function") {
+			return unwrapped
+		}
+	}
 	return err
 }
-
