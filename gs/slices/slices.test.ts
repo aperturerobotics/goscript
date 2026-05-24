@@ -10,6 +10,7 @@ import {
   Compact,
   CompactFunc,
   CompareFunc,
+  Concat,
   DeleteFunc,
   EqualFunc,
   IndexFunc,
@@ -63,6 +64,17 @@ describe('slices compatibility helpers', () => {
     ])
     expect(Array.from(Clip($.arrayToSlice([1, 2])) ?? [])).toEqual([1, 2])
     expect(BinarySearch($.arrayToSlice([1, 3, 5]), 3)).toEqual([1, true])
+  })
+
+  it('concatenates slices and preserves empty concat nilness', () => {
+    expect(Concat()).toBeNull()
+    expect(Concat($.arrayToSlice<number>([]))).toBeNull()
+    expect(Array.from(Concat($.arrayToSlice([1]), null, $.arrayToSlice([2, 3])) ?? [])).toEqual([
+      1, 2, 3,
+    ])
+    expect(Array.from(Concat(new Uint8Array([1, 2]), new Uint8Array([3])) ?? [])).toEqual([
+      1, 2, 3,
+    ])
   })
 
   it('accepts generated possibly-async callback types for sync helpers', () => {

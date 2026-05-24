@@ -91,6 +91,38 @@ export function Clone<T>(s: $.Slice<T>): $.Slice<T> {
   return out
 }
 
+export function Concat<T>(...slices: $.Slice<T>[]): $.Slice<T> {
+  let size = 0
+  let byteSlice = false
+  for (const slice of slices) {
+    size += $.len(slice)
+    byteSlice = byteSlice || slice instanceof Uint8Array
+  }
+  if (size === 0) {
+    return null
+  }
+  if (byteSlice) {
+    const out = new Uint8Array(size)
+    let pos = 0
+    for (const slice of slices) {
+      const length = $.len(slice)
+      for (let i = 0; i < length; i++) {
+        out[pos++] = (slice as any)[i] as number
+      }
+    }
+    return out as $.Slice<T>
+  }
+  const out = $.makeSlice<T>(size)
+  let pos = 0
+  for (const slice of slices) {
+    const length = $.len(slice)
+    for (let i = 0; i < length; i++) {
+      ;(out as any)[pos++] = (slice as any)[i] as T
+    }
+  }
+  return out
+}
+
 /**
  * All returns an iterator over index-value pairs in the slice.
  * This is equivalent to Go's slices.All function.
