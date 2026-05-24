@@ -1,0 +1,172 @@
+import * as $ from '@goscript/builtin/index.js'
+import * as errors from '@goscript/errors/index.js'
+import * as io from '@goscript/io/index.js'
+
+export type Resetter = {
+  Reset(r: io.Reader | null, dict: $.Bytes | null): Promise<$.GoError>
+}
+
+export let ErrChecksum = errors.New('zlib: invalid checksum')
+export let ErrDictionary = errors.New('zlib: invalid dictionary')
+export let ErrHeader = errors.New('zlib: invalid header')
+
+export function __goscript_set_ErrChecksum(value: $.GoError): void {
+  ErrChecksum = value
+}
+
+export function __goscript_set_ErrDictionary(value: $.GoError): void {
+  ErrDictionary = value
+}
+
+export function __goscript_set_ErrHeader(value: $.GoError): void {
+  ErrHeader = value
+}
+
+class zlibReader implements io.ReadCloser {
+  private offset = 0
+
+  constructor(private data: Uint8Array) {}
+
+  Read(p: $.Bytes): [number, $.GoError] {
+    if (this.offset >= this.data.length) {
+      return [0, io.EOF]
+    }
+    const out = $.bytesToUint8Array(p)
+    const n = Math.min(out.length, this.data.length - this.offset)
+    out.set(this.data.subarray(this.offset, this.offset + n))
+    this.offset += n
+    return [n, null]
+  }
+
+  Close(): $.GoError {
+    return null
+  }
+}
+
+export class Writer {
+  private chunks: Uint8Array[] = []
+  private closed = false
+
+  constructor(private w: io.Writer | null) {}
+
+  Write(p: $.Bytes): [number, $.GoError] {
+    if (this.closed) {
+      return [0, errors.New('zlib: writer closed')]
+    }
+    const data = $.bytesToUint8Array(p)
+    this.chunks.push(data.slice())
+    return [data.length, null]
+  }
+
+  Close(): $.GoError {
+    if (this.closed) {
+      return null
+    }
+    this.closed = true
+    if (this.w == null) {
+      return errors.New('zlib: nil writer')
+    }
+    const compressed = deflate(concat(this.chunks))
+    const [, err] = this.w.Write(compressed)
+    return err
+  }
+
+  Flush(): $.GoError {
+    return null
+  }
+
+  Reset(w: io.Writer | null): void {
+    this.w = w
+    this.chunks = []
+    this.closed = false
+  }
+}
+
+export function NewWriter(w: io.Writer | null): Writer {
+  return new Writer(w)
+}
+
+export function NewWriterLevel(
+  w: io.Writer | null,
+  _level: number,
+): [Writer | null, $.GoError] {
+  return [new Writer(w), null]
+}
+
+export function NewWriterLevelDict(
+  w: io.Writer | null,
+  _level: number,
+  _dict: $.Bytes | null,
+): [Writer | null, $.GoError] {
+  return [new Writer(w), null]
+}
+
+export function NewReader(
+  r: io.Reader | null,
+): [io.ReadCloser | null, $.GoError] {
+  return NewReaderDict(r, null)
+}
+
+export function NewReaderDict(
+  r: io.Reader | null,
+  _dict: $.Bytes | null,
+): [io.ReadCloser | null, $.GoError] {
+  if (r == null) {
+    return [null, errors.New('zlib: nil reader')]
+  }
+  const [data, readErr] = readAll(r)
+  if (readErr != null) {
+    return [null, readErr]
+  }
+  try {
+    const out = inflate($.bytesToUint8Array(data))
+    return [new zlibReader(out), null]
+  } catch {
+    return [null, ErrHeader]
+  }
+}
+
+function deflate(data: Uint8Array): Uint8Array {
+  const zlib = nodeZlib()
+  return new Uint8Array(zlib.deflateSync(data))
+}
+
+function inflate(data: Uint8Array): Uint8Array {
+  const zlib = nodeZlib()
+  return new Uint8Array(zlib.inflateSync(data))
+}
+
+function nodeZlib(): any {
+  return (import.meta as any).require('node:zlib')
+}
+
+function readAll(r: io.Reader): [Uint8Array, $.GoError] {
+  const chunks: Uint8Array[] = []
+  const buf = $.makeSlice<number>(32 * 1024, undefined, 'byte')
+  while (true) {
+    const [n, err] = r.Read(buf)
+    if (n > 0) {
+      chunks.push($.bytesToUint8Array($.goSlice(buf, 0, n)).slice())
+    }
+    if (err != null) {
+      if (err === io.EOF) {
+        return [concat(chunks), null]
+      }
+      return [new Uint8Array(0), err]
+    }
+  }
+}
+
+function concat(chunks: Uint8Array[]): Uint8Array {
+  let total = 0
+  for (const chunk of chunks) {
+    total += chunk.length
+  }
+  const out = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    out.set(chunk, offset)
+    offset += chunk.length
+  }
+  return out
+}
