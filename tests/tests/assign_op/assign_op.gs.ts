@@ -13,8 +13,16 @@ export async function main(): globalThis.Promise<void> {
 	$.println(b)
 
 	let c: number = 16
-	c /= 4
+	c = Math.trunc(c / 4)
 	$.println(c)
+
+	let quotient: number = 5
+	quotient = Math.trunc(quotient / 2)
+	$.println(quotient)
+
+	let unsignedQuotient: number = $.uint(5, 32)
+	unsignedQuotient = (unsignedQuotient / $.uint(2, 32)) >>> 0
+	$.println($.uint(unsignedQuotient, 32))
 
 	let d: number = 3
 	d *= 5

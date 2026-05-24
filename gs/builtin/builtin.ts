@@ -259,6 +259,9 @@ export function imag(value: number | Complex | null | undefined): number {
 // This includes Uint8Array (the preferred representation) and $.Slice<number> (which includes null)
 export type Bytes = Uint8Array | Slice<number>
 
+const maxSafeBigInt = BigInt(Number.MAX_SAFE_INTEGER)
+const maxUint64BigInt = 0xffffffffffffffffn
+
 // int converts a value to a Go int type, handling proper signed integer conversion
 // This ensures that values like 2147483648 (2^31) are properly handled according to Go semantics
 export function int(value: number | bigint, bits = 0): number {
@@ -305,11 +308,26 @@ export function uint(value: number | bigint, bits = 64): number {
     }
     return Number(normalized)
   }
+  if (!Number.isFinite(value)) {
+    return value
+  }
+  if (bits === 8) {
+    return value & 0xff
+  }
+  if (bits === 16) {
+    return value & 0xffff
+  }
+  if (bits === 32) {
+    return value >>> 0
+  }
+  if (bits >= 64) {
+    const truncated = Math.trunc(value)
+    if (truncated >= 0 && truncated <= Number.MAX_SAFE_INTEGER) {
+      return truncated
+    }
+  }
   const modulo = bits >= 64 ? 2 ** 64 : 2 ** bits
   let truncated = Math.trunc(value)
-  if (!Number.isFinite(truncated)) {
-    return truncated
-  }
   truncated %= modulo
   if (truncated < 0) {
     truncated += modulo
@@ -493,11 +511,23 @@ function int64Value(value: number | bigint): bigint {
   if (typeof value === 'bigint') {
     return BigInt.asIntN(64, value)
   }
+  if (Number.isFinite(value)) {
+    const truncated = Math.trunc(value)
+    if (
+      truncated >= Number.MIN_SAFE_INTEGER &&
+      truncated <= Number.MAX_SAFE_INTEGER
+    ) {
+      return BigInt(truncated)
+    }
+  }
   return BigInt.asIntN(64, BigInt(Math.trunc(value)))
 }
 
 function int64Result(value: bigint): number {
-  const normalized = BigInt.asIntN(64, value)
+  const normalized =
+    value >= -0x8000000000000000n && value <= 0x7fffffffffffffffn
+      ? value
+      : BigInt.asIntN(64, value)
   return Number(normalized)
 }
 
@@ -505,12 +535,19 @@ function uint64Value(value: number | bigint): bigint {
   if (typeof value === 'bigint') {
     return BigInt.asUintN(64, value)
   }
+  if (Number.isFinite(value)) {
+    const truncated = Math.trunc(value)
+    if (truncated >= 0 && truncated <= Number.MAX_SAFE_INTEGER) {
+      return BigInt(truncated)
+    }
+  }
   return BigInt.asUintN(64, BigInt(Math.trunc(value)))
 }
 
 function uint64Result(value: bigint): number {
-  const normalized = BigInt.asUintN(64, value)
-  if (normalized <= BigInt(Number.MAX_SAFE_INTEGER)) {
+  const normalized =
+    value >= 0n && value <= maxUint64BigInt ? value : BigInt.asUintN(64, value)
+  if (normalized <= maxSafeBigInt) {
     return Number(normalized)
   }
   return normalized as unknown as number

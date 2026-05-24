@@ -1881,7 +1881,7 @@ export function repeatIsValid(re: __goscript_regexp.Regexp | $.VarRef<__goscript
 			return false
 		}
 		if (m > 0) {
-			n /= m
+			n = Math.trunc(n / m)
 		}
 	}
 	for (let __goscriptRangeTarget7 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget7); __rangeIndex++) {

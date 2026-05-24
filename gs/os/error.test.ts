@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  ErrExist,
   ErrNotExist,
-  ErrPermission,
   IsExist,
   IsNotExist,
   IsPermission,

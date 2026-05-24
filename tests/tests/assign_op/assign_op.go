@@ -13,6 +13,14 @@ func main() {
 	c /= 4
 	println(c) // Expected output: 4
 
+	var quotient int = 5
+	quotient /= 2
+	println(quotient) // Expected output: 2
+
+	var unsignedQuotient uint32 = 5
+	unsignedQuotient /= 2
+	println(unsignedQuotient) // Expected output: 2
+
 	var d int = 3
 	d *= 5
 	println(d) // Expected output: 15

@@ -120,6 +120,10 @@ describe('builtin runtime contract helpers', () => {
   it('exposes numeric, varref, map, and error helpers', () => {
     expect(int(1.9)).toBe(1)
     expect(int(3n)).toBe(3)
+    expect(uint(257, 8)).toBe(1)
+    expect(uint(-1.9, 8)).toBe(255)
+    expect(uint(0x1_0000_0005, 32)).toBe(5)
+    expect(uint(42, 64)).toBe(42)
     expect(uint(-1n, 8)).toBe(255)
     expect(byte(257)).toBe(1)
     expect(uint(uint64Shl(1n, 63), 32)).toBe(0)

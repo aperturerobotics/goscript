@@ -2986,6 +2986,10 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 				stmts = append(stmts, loweredStmt{text: pointer + " = " + pointer + " & ~(" + right + ")"})
 				continue
 			}
+			if value, ok := integerQuotientAssignExpr(targetType, pointer, right, stmt.Tok); ok {
+				stmts = append(stmts, loweredStmt{text: value})
+				continue
+			}
 			stmts = append(stmts, loweredStmt{text: pointer + " " + stmt.Tok.String() + " " + right})
 			continue
 		}
@@ -3004,6 +3008,10 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			stmts = append(stmts, loweredStmt{text: left + " = " + o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")"})
 			continue
 		}
+		if value, ok := integerQuotientAssignExpr(targetType, left, right, stmt.Tok); ok {
+			stmts = append(stmts, loweredStmt{text: value})
+			continue
+		}
 		op := stmt.Tok.String()
 		if stmt.Tok == token.DEFINE {
 			op = "="
@@ -3011,6 +3019,16 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		stmts = append(stmts, loweredStmt{text: left + " " + op + " " + right})
 	}
 	return stmts, diagnostics
+}
+
+func integerQuotientAssignExpr(targetType types.Type, left string, right string, tok token.Token) (string, bool) {
+	if tok != token.QUO_ASSIGN || !isIntegerType(targetType) {
+		return "", false
+	}
+	if bits, ok := unsignedIntegerBits(targetType); ok && bits <= 32 {
+		return left + " = (" + left + " / " + right + ") >>> 0", true
+	}
+	return left + " = Math.trunc(" + left + " / " + right + ")", true
 }
 
 func wideIntegerAssignHelper(targetType types.Type, tok token.Token) (RuntimeHelper, bool) {
@@ -3024,6 +3042,10 @@ func wideIntegerAssignHelper(targetType types.Type, tok token.Token) (RuntimeHel
 		return RuntimeHelperUint64Shr, true
 	case token.MUL_ASSIGN:
 		return RuntimeHelperUint64Mul, true
+	case token.QUO_ASSIGN:
+		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Div, RuntimeHelperInt64Div), true
+	case token.REM_ASSIGN:
+		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Mod, RuntimeHelperInt64Mod), true
 	case token.ADD_ASSIGN:
 		return RuntimeHelperUint64Add, true
 	case token.SUB_ASSIGN:
