@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/aperturerobotics/goscript/compiler"
 	"github.com/aperturerobotics/goscript/compiler/tsworkspace"
@@ -104,48 +105,91 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		markAllFailures(result, OwnerTestRunner, phase.Error)
 		return result, nil
 	}
+	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, "tsconfig.json", renderRuntimeTypeScriptProject(norm, outputRoots, nodeTypesAvailable)); phase.Failed() {
+		markAllFailures(result, OwnerTestRunner, phase.Error)
+		return result, nil
+	}
+	r.runPackageTools(ctx, norm, workspace, result, outputRoots, nodeTypesAvailable)
+	return result, nil
+}
+
+func (r *Runner) runPackageTools(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	outputRoots []string,
+	nodeTypesAvailable bool,
+) {
+	parallelism := max(req.Parallelism, 1)
+	sem := make(chan struct{}, parallelism)
+	var wg sync.WaitGroup
 	for idx := range result.Packages {
 		if !shouldCompilePackage(result.Packages[idx]) {
 			continue
 		}
-		result.Packages[idx].Phases.Workspace = PhaseStatusPass
-		outputRoot := outputRoots[idx]
-		runnerFile := packageRunnerFile(idx)
-		if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, runnerFile, renderRunner(result.Packages[idx], norm)); phase.Failed() {
-			result.Packages[idx].Owner = OwnerTestRunner
-			result.Packages[idx].Phases.Workspace = PhaseStatusFail
-			result.Packages[idx].Error = phase.Error
-			continue
-		}
-		tsconfigFile := "tsconfig.json"
-		if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, tsconfigFile, renderTypeScriptProject(norm, outputRoot, runnerFile, nodeTypesAvailable)); phase.Failed() {
-			result.Packages[idx].Owner = OwnerTestRunner
-			result.Packages[idx].Phases.Workspace = PhaseStatusFail
-			result.Packages[idx].Error = phase.Error
-			continue
-		}
-		typecheck := workspace.RunTool(ctx, tsworkspace.PhaseTypeCheck, norm.WorkDir, "tsgo", "--project", tsconfigFile)
-		if typecheck.Failed() {
-			result.Packages[idx].Owner = classifyProcessOutput(typecheck.Output)
-			result.Packages[idx].Phases.TypeCheck = PhaseStatusFail
-			result.Packages[idx].Error = processErrorText(typecheck)
-			continue
-		}
-		result.Packages[idx].Phases.TypeCheck = PhaseStatusPass
-		runtime := workspace.RunTool(ctx, tsworkspace.PhaseRuntime, norm.WorkDir, "bun", runnerFile)
-		result.Packages[idx].Elapsed = runtime.Elapsed
-		result.Packages[idx].Output = strings.TrimSpace(runtime.Output)
-		if runtime.Failed() {
-			result.Packages[idx].Action = ActionFail
-			result.Packages[idx].Owner = classifyProcessOutput(runtime.Output)
-			result.Packages[idx].Phases.Runtime = PhaseStatusFail
-			result.Packages[idx].Error = runtime.Error
-			continue
-		}
-		result.Packages[idx].Phases.Runtime = PhaseStatusPass
-		result.Packages[idx].Action = ActionPass
+		idx := idx
+		wg.Go(func() {
+			select {
+			case sem <- struct{}{}:
+				defer func() { <-sem }()
+			case <-ctx.Done():
+				result.Packages[idx].Owner = OwnerTestRunner
+				result.Packages[idx].Phases.Workspace = PhaseStatusFail
+				result.Packages[idx].Error = ctx.Err().Error()
+				return
+			}
+			r.runPackageTool(ctx, req, workspace, result, outputRoots, nodeTypesAvailable, idx)
+		})
 	}
-	return result, nil
+	wg.Wait()
+}
+
+func (r *Runner) runPackageTool(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	outputRoots []string,
+	nodeTypesAvailable bool,
+	idx int,
+) {
+	result.Packages[idx].Phases.Workspace = PhaseStatusPass
+	outputRoot := outputRoots[idx]
+	runnerFile := packageRunnerFile(idx)
+	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, runnerFile, renderRunner(result.Packages[idx], req)); phase.Failed() {
+		result.Packages[idx].Owner = OwnerTestRunner
+		result.Packages[idx].Phases.Workspace = PhaseStatusFail
+		result.Packages[idx].Error = phase.Error
+		return
+	}
+	tsconfigFile := packageTSConfigFile(idx)
+	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, tsconfigFile, renderTypeScriptProject(req, outputRoot, runnerFile, nodeTypesAvailable)); phase.Failed() {
+		result.Packages[idx].Owner = OwnerTestRunner
+		result.Packages[idx].Phases.Workspace = PhaseStatusFail
+		result.Packages[idx].Error = phase.Error
+		return
+	}
+	typecheck := workspace.RunTool(ctx, tsworkspace.PhaseTypeCheck, req.WorkDir, "tsgo", "--project", tsconfigFile)
+	if typecheck.Failed() {
+		result.Packages[idx].Owner = classifyProcessOutput(typecheck.Output)
+		result.Packages[idx].Phases.TypeCheck = PhaseStatusFail
+		result.Packages[idx].Error = processErrorText(typecheck)
+		return
+	}
+	result.Packages[idx].Phases.TypeCheck = PhaseStatusPass
+	runtime := workspace.RunTool(ctx, tsworkspace.PhaseRuntime, req.WorkDir, "bun", runnerFile)
+	result.Packages[idx].Elapsed = runtime.Elapsed
+	result.Packages[idx].Output = strings.TrimSpace(runtime.Output)
+	if runtime.Failed() {
+		result.Packages[idx].Action = ActionFail
+		result.Packages[idx].Owner = classifyProcessOutput(runtime.Output)
+		result.Packages[idx].Phases.Runtime = PhaseStatusFail
+		result.Packages[idx].Error = runtime.Error
+		return
+	}
+	result.Packages[idx].Phases.Runtime = PhaseStatusPass
+	result.Packages[idx].Action = ActionPass
 }
 
 func (r *Runner) compileTestImports(
@@ -498,6 +542,10 @@ func packageRunnerFile(idx int) string {
 	return "runner-" + strconv.Itoa(idx) + ".ts"
 }
 
+func packageTSConfigFile(idx int) string {
+	return "tsconfig-" + strconv.Itoa(idx) + ".json"
+}
+
 func renderRunner(result PackageResult, req *normalizedRequest) string {
 	var b strings.Builder
 	b.WriteString("import { runTests } from \"@goscript/testing/index.js\"\n")
@@ -568,12 +616,7 @@ func processErrorText(result tsworkspace.Result) string {
 }
 
 func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string, nodeTypesAvailable bool) string {
-	outputPattern := filepath.ToSlash(outputRoot)
-	outputAlias := filepath.ToSlash(filepath.Join(outputRoot, "@goscript", "*"))
-	if rel, err := filepath.Rel(req.WorkDir, outputRoot); err == nil {
-		outputPattern = filepath.ToSlash(rel)
-		outputAlias = filepath.ToSlash(filepath.Join(rel, "@goscript", "*"))
-	}
+	outputPattern := typeScriptOutputPattern(req, outputRoot)
 	var b strings.Builder
 	b.WriteString("{\n")
 	b.WriteString("  \"compilerOptions\": {\n")
@@ -592,7 +635,7 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 	b.WriteString("    \"paths\": {\n")
 	b.WriteString("      \"*\": [\"./*\"],\n")
 	b.WriteString("      \"@goscript/*\": [")
-	b.WriteString(strconv.Quote("./" + outputAlias))
+	b.WriteString(strconv.Quote("./" + typeScriptOutputAlias(req, outputRoot)))
 	b.WriteString("]\n")
 	b.WriteString("    }\n")
 	b.WriteString("  },\n")
@@ -605,6 +648,64 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 	b.WriteString("]\n")
 	b.WriteString("}\n")
 	return b.String()
+}
+
+func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string, nodeTypesAvailable bool) string {
+	var aliases []string
+	seen := make(map[string]bool)
+	for _, outputRoot := range outputRoots {
+		if outputRoot == "" {
+			continue
+		}
+		alias := "./" + typeScriptOutputAlias(req, outputRoot)
+		if seen[alias] {
+			continue
+		}
+		seen[alias] = true
+		aliases = append(aliases, alias)
+	}
+	if len(aliases) == 0 && req.OutputRoot != "" {
+		aliases = append(aliases, "./"+typeScriptOutputAlias(req, req.OutputRoot))
+	}
+	var b strings.Builder
+	b.WriteString("{\n")
+	b.WriteString("  \"compilerOptions\": {\n")
+	b.WriteString("    \"target\": \"ES2022\",\n")
+	b.WriteString("    \"module\": \"ESNext\",\n")
+	b.WriteString("    \"moduleResolution\": \"Bundler\",\n")
+	b.WriteString("    \"lib\": [\"ESNext\", \"DOM\"],\n")
+	b.WriteString("    \"strict\": true,\n")
+	b.WriteString("    \"allowImportingTsExtensions\": true,\n")
+	if nodeTypesAvailable {
+		b.WriteString("    \"types\": [\"node\"],\n")
+	} else {
+		b.WriteString("    \"types\": [],\n")
+	}
+	b.WriteString("    \"paths\": {\n")
+	b.WriteString("      \"*\": [\"./*\"],\n")
+	b.WriteString("      \"@goscript/*\": [")
+	for idx, alias := range aliases {
+		if idx != 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(strconv.Quote(alias))
+	}
+	b.WriteString("]\n")
+	b.WriteString("    }\n")
+	b.WriteString("  }\n")
+	b.WriteString("}\n")
+	return b.String()
+}
+
+func typeScriptOutputPattern(req *normalizedRequest, outputRoot string) string {
+	if rel, err := filepath.Rel(req.WorkDir, outputRoot); err == nil {
+		return filepath.ToSlash(rel)
+	}
+	return filepath.ToSlash(outputRoot)
+}
+
+func typeScriptOutputAlias(req *normalizedRequest, outputRoot string) string {
+	return filepath.ToSlash(filepath.Join(typeScriptOutputPattern(req, outputRoot), "@goscript", "*"))
 }
 
 func markCompilePhase(pkg *PackageResult, result *compiler.CompilationResult, passed bool) {

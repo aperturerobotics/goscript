@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -615,6 +616,91 @@ func TestRunnerScopesPackageTypecheckErrors(t *testing.T) {
 	}
 	if !strings.Contains(bad.Error, "TS9000") {
 		t.Fatalf("bad package error should preserve typecheck output: %#v", bad)
+	}
+}
+
+func TestRunnerUsesPackageScopedTypeScriptProjects(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/packageprojects\n\ngo 1.25.3\n",
+		"one/value.go": strings.Join([]string{
+			"package one",
+			"",
+			"func Value() int { return 1 }",
+			"",
+		}, "\n"),
+		"one/value_test.go": strings.Join([]string{
+			"package one",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestOne(t *testing.T) {",
+			"\tif Value() != 1 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"two/value.go": strings.Join([]string{
+			"package two",
+			"",
+			"func Value() int { return 2 }",
+			"",
+		}, "\n"),
+		"two/value_test.go": strings.Join([]string{
+			"package two",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestTwo(t *testing.T) {",
+			"\tif Value() != 2 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+	workDir := filepath.Join(moduleDir, ".tmp", "package-projects")
+	projectLog := filepath.Join(moduleDir, "projects.log")
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "tsgo"), strings.Join([]string{
+		"#!/bin/sh",
+		"project=",
+		"while [ \"$#\" -gt 0 ]; do",
+		"\tif [ \"$1\" = \"--project\" ]; then",
+		"\t\tshift",
+		"\t\tproject=\"$1\"",
+		"\tfi",
+		"\tshift || break",
+		"done",
+		"printf '%s\\n' \"$project\" >> " + strconv.Quote(projectLog),
+		"exit 0",
+		"",
+	}, "\n"))
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "bun"), strings.Join([]string{
+		"#!/bin/sh",
+		"exit 0",
+		"",
+	}, "\n"))
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:         moduleDir,
+		Patterns:    []string{"./..."},
+		Timeout:     30 * time.Second,
+		WorkDir:     workDir,
+		Parallelism: 2,
+	})
+	if err != nil {
+		t.Fatalf("run package projects fixture: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected package projects fixture to pass: %#v", result.Packages)
+	}
+	data, err := os.ReadFile(projectLog)
+	if err != nil {
+		t.Fatalf("read project log: %v", err)
+	}
+	projects := string(data)
+	if !strings.Contains(projects, "tsconfig-0.json") || !strings.Contains(projects, "tsconfig-1.json") {
+		t.Fatalf("expected package-scoped tsconfig files, got:\n%s", projects)
 	}
 }
 

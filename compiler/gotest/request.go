@@ -2,6 +2,7 @@ package gotest
 
 import (
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"time"
@@ -33,6 +34,8 @@ type Request struct {
 	WorkDir string
 	// OutputRoot stores generated TypeScript packages.
 	OutputRoot string
+	// Parallelism limits concurrent package typecheck/runtime subprocesses.
+	Parallelism int
 }
 
 type normalizedRequest struct {
@@ -47,6 +50,19 @@ type normalizedRequest struct {
 	Verbose      bool
 	WorkDir      string
 	OutputRoot   string
+	Parallelism  int
+}
+
+// DefaultParallelism returns the default package subprocess concurrency.
+func DefaultParallelism() int {
+	parallelism := runtime.GOMAXPROCS(0)
+	if parallelism < 1 {
+		return 1
+	}
+	if parallelism > 2 {
+		return 2
+	}
+	return parallelism
 }
 
 func (r *Request) normalize() (*normalizedRequest, error) {
@@ -104,6 +120,14 @@ func (r *Request) normalize() (*normalizedRequest, error) {
 		}
 	}
 
+	parallelism := r.Parallelism
+	if parallelism == 0 {
+		parallelism = DefaultParallelism()
+	}
+	if parallelism < 0 {
+		return nil, errors.New("test parallelism must be positive")
+	}
+
 	return &normalizedRequest{
 		Dir:          absDir,
 		Patterns:     patterns,
@@ -116,6 +140,7 @@ func (r *Request) normalize() (*normalizedRequest, error) {
 		Verbose:      r.Verbose,
 		WorkDir:      workDir,
 		OutputRoot:   outputRoot,
+		Parallelism:  parallelism,
 	}, nil
 }
 

@@ -27,6 +27,7 @@ func newTestCommand() *cli.Command {
 	var outputRoot string
 	var workDir string
 	var dir string
+	var parallelism int
 
 	return &cli.Command{
 		Name:     "test",
@@ -45,6 +46,7 @@ func newTestCommand() *cli.Command {
 				Verbose:      verbose,
 				WorkDir:      workDir,
 				OutputRoot:   outputRoot,
+				Parallelism:  parallelism,
 			}
 			result, err := gotest.NewRunner().Run(c.Context, req)
 			if err != nil {
@@ -112,6 +114,12 @@ func newTestCommand() *cli.Command {
 				Name:        "dir",
 				Usage:       "Go module working directory",
 				Destination: &dir,
+			},
+			&cli.IntFlag{
+				Name:        "p",
+				Usage:       "maximum package typecheck/runtime commands to run concurrently",
+				Destination: &parallelism,
+				Value:       gotest.DefaultParallelism(),
 			},
 		},
 	}
