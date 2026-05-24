@@ -87,34 +87,25 @@ export function FastBase58EncodingAlphabet(
   }
 
   const size = Math.trunc(((binsz - zcount) * 138) / 100) + 1
-  const buf = new Uint8Array(size * 2 + zcount)
-  const tmp = buf.subarray(size + zcount)
-
-  let high = size - 1
+  let value = 0n
   for (let i = zcount; i < binsz; i++) {
-    let j = size - 1
-    for (let carry = bytes[i]; j > high || carry !== 0; j--) {
-      carry += 256 * tmp[j]
-      tmp[j] = carry % 58
-      carry = Math.trunc(carry / 58)
-    }
-    high = j
+    value = (value << 8n) + BigInt(bytes[i])
   }
 
-  let j = 0
-  while (j < size && tmp[j] === 0) {
-    j++
+  const out = new Uint8Array(size + zcount)
+  let offset = out.length
+  while (value > 0n) {
+    const digit = Number(value % 58n)
+    value /= 58n
+    offset--
+    out[offset] = alpha.encode[digit]
   }
-
-  const out = buf.subarray(0, size - j + zcount)
   for (let i = 0; i < zcount; i++) {
-    out[i] = zero
-  }
-  for (let i = zcount; j < size; i++, j++) {
-    out[i] = alpha.encode[tmp[j]]
+    offset--
+    out[offset] = zero
   }
 
-  return $.bytesToString(out)
+  return $.bytesToString(out.subarray(offset))
 }
 
 export function TrivialBase58Encoding(a: $.Bytes): string {
