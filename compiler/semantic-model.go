@@ -1103,17 +1103,6 @@ func semanticAsyncFunctionCount(model *SemanticModel) int {
 	return count
 }
 
-func (o *SemanticModelOwner) resolveInterfaceImplementations(
-	ctx context.Context,
-	model *SemanticModel,
-) []Diagnostic {
-	interfaceGraph, diagnostics := o.resolveInterfaceImplementationGraph(ctx, model)
-	if diagnosticsHaveErrors(diagnostics) {
-		return diagnostics
-	}
-	return o.applyInterfaceAsyncMethods(ctx, model, interfaceGraph)
-}
-
 func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 	ctx context.Context,
 	model *SemanticModel,
