@@ -24,6 +24,17 @@ import * as __goscript_backtrack from "./backtrack.gs.ts"
 import * as __goscript_exec from "./exec.gs.ts"
 
 import * as __goscript_onepass from "./onepass.gs.ts"
+import "@goscript/regexp/syntax/index.js"
+import "@goscript/sync/index.js"
+import "@goscript/io/index.js"
+import "@goscript/bytes/index.js"
+import "@goscript/strconv/index.js"
+import "@goscript/strings/index.js"
+import "@goscript/unicode/index.js"
+import "@goscript/unicode/utf8/index.js"
+import "./backtrack.gs.ts"
+import "./exec.gs.ts"
+import "./onepass.gs.ts"
 
 export class Regexp {
 	public get expr(): string {

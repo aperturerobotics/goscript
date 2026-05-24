@@ -20,6 +20,15 @@ import * as __goscript_perl_groups from "./perl_groups.gs.ts"
 import * as __goscript_regexp from "./regexp.gs.ts"
 
 import * as __goscript_simplify from "./simplify.gs.ts"
+import "@goscript/sort/index.js"
+import "@goscript/strings/index.js"
+import "@goscript/sync/index.js"
+import "@goscript/unicode/index.js"
+import "@goscript/unicode/utf8/index.js"
+import "./op_string.gs.ts"
+import "./perl_groups.gs.ts"
+import "./regexp.gs.ts"
+import "./simplify.gs.ts"
 
 export type ErrorCode = string
 

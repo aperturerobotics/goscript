@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as dep2 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_import_methods/dep2/index.js"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_import_methods/dep2/index.js"
 
 export type Base = null | {
 	Use(_p0: dep2.Value | null): dep2.Result | null

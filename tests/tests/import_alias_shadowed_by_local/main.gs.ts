@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as drbg2 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_alias_shadowed_by_local/drbg/index.js"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_alias_shadowed_by_local/drbg/index.js"
 
 export class local {
 	public get value(): number {

@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as sync from "@goscript/sync/index.js"
 
 import * as time from "@goscript/time/index.js"
+import "@goscript/sync/index.js"
+import "@goscript/time/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let wg: $.VarRef<sync.WaitGroup> = $.varRef($.markAsStructValue(new sync.WaitGroup()))

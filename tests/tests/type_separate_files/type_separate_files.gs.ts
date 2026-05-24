@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as __goscript_memory from "./memory.gs.ts"
 
 import * as __goscript_storage from "./storage.gs.ts"
+import "./memory.gs.ts"
+import "./storage.gs.ts"
 
 export async function main(): globalThis.Promise<void> {
 	let s = $.markAsStructValue(new __goscript_storage.storage({files: $.makeMap<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null>(), children: $.makeMap<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null>()}))

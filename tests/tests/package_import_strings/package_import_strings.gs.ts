@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as strings from "@goscript/strings/index.js"
+import "@goscript/strings/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	// This should trigger the unhandled make call error

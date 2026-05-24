@@ -8,6 +8,9 @@ import * as fmt from "@goscript/fmt/index.js"
 import * as scanner from "@goscript/go/scanner/index.js"
 
 import * as token from "@goscript/go/token/index.js"
+import "@goscript/fmt/index.js"
+import "@goscript/go/scanner/index.js"
+import "@goscript/go/token/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	// Use scanner package functionality that should generate imports

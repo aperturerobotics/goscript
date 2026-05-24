@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as time from "@goscript/time/index.js"
+import "@goscript/time/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let utc = $.markAsStructValue($.cloneStructValue(time.Date(2025, time.May, 15, 1, 10, 42, 0, time.UTC)))

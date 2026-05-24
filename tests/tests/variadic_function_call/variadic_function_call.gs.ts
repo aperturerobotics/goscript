@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as errors from "@goscript/errors/index.js"
+import "@goscript/errors/index.js"
 
 export function TestFS(fsys: string, expected: $.Slice<string>): $.GoError {
 	return testFS(fsys, expected)

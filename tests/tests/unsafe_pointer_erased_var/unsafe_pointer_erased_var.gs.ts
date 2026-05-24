@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as unsafe from "@goscript/unsafe/index.js"
+import "@goscript/unsafe/index.js"
 
 export let table: $.VarRef<Uint8Array> = $.varRef(new Uint8Array([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8), $.uint(4, 8)]))
 

@@ -16,6 +16,13 @@ import * as __goscript_op_string from "./op_string.gs.ts"
 import * as __goscript_parse from "./parse.gs.ts"
 
 import * as __goscript_simplify from "./simplify.gs.ts"
+import "@goscript/strconv/index.js"
+import "@goscript/slices/index.js"
+import "@goscript/strings/index.js"
+import "@goscript/unicode/index.js"
+import "./op_string.gs.ts"
+import "./parse.gs.ts"
+import "./simplify.gs.ts"
 
 export type Op = number
 

@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as regexp from "@goscript/regexp/index.js"
+import "@goscript/regexp/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let label: regexp.Regexp | $.VarRef<regexp.Regexp> | null = await regexp.MustCompile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$")

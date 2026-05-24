@@ -14,6 +14,12 @@ import * as __goscript_backtrack from "./backtrack.gs.ts"
 import * as __goscript_onepass from "./onepass.gs.ts"
 
 import * as __goscript_regexp from "./regexp.gs.ts"
+import "@goscript/io/index.js"
+import "@goscript/regexp/syntax/index.js"
+import "@goscript/sync/index.js"
+import "./backtrack.gs.ts"
+import "./onepass.gs.ts"
+import "./regexp.gs.ts"
 
 export class queue {
 	public get sparse(): $.Slice<number> {

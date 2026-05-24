@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as strconv from "@goscript/strconv/index.js"
 
 import * as __goscript_regexp from "./regexp.gs.ts"
+import "@goscript/strconv/index.js"
+import "./regexp.gs.ts"
 
 export const _Op_name_0: string = "NoMatchEmptyMatchLiteralCharClassAnyCharNotNLAnyCharBeginLineEndLineBeginTextEndTextWordBoundaryNoWordBoundaryCaptureStarPlusQuestRepeatConcatAlternate"
 

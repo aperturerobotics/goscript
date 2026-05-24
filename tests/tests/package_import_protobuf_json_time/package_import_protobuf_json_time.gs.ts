@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as time from "@goscript/time/index.js"
 
 import * as json from "@goscript/github.com/aperturerobotics/protobuf-go-lite/json/index.js"
+import "@goscript/time/index.js"
+import "@goscript/github.com/aperturerobotics/protobuf-go-lite/json/index.js"
 
 export function readTime(s: json.UnmarshalState | $.VarRef<json.UnmarshalState> | null): time.Time {
 	let t: time.Time | $.VarRef<time.Time> | null = json.UnmarshalState.prototype.ReadTime.call(s)

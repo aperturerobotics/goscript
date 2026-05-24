@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as reflect from "@goscript/reflect/index.js"
 
 import * as unsafe from "@goscript/unsafe/index.js"
+import "@goscript/reflect/index.js"
+import "@goscript/unsafe/index.js"
 
 export function stringBytes(__goscriptParam0: string): $.Slice<number> {
 	let s: $.VarRef<string> = $.varRef(__goscriptParam0)

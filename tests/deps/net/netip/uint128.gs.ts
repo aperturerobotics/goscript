@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as bits from "@goscript/math/bits/index.js"
+import "@goscript/math/bits/index.js"
 
 export class uint128 {
 	public get hi(): number {

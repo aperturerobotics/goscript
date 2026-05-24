@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as unsafe from "@goscript/unsafe/index.js"
+import "@goscript/unsafe/index.js"
 
 export type shadow = Uint8Array
 

@@ -10,6 +10,10 @@ import * as ed25519 from "@goscript/crypto/ed25519/index.js"
 import * as rand from "@goscript/crypto/rand/index.js"
 
 import * as io from "@goscript/io/index.js"
+import "@goscript/bytes/index.js"
+import "@goscript/crypto/ed25519/index.js"
+import "@goscript/crypto/rand/index.js"
+import "@goscript/io/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let __goscriptTuple0: any = await ed25519.GenerateKey($.pointerValue(rand.Reader))

@@ -8,6 +8,9 @@ import * as context from "@goscript/context/index.js"
 import * as errors from "@goscript/errors/index.js"
 
 import * as sync from "@goscript/sync/index.js"
+import "@goscript/context/index.js"
+import "@goscript/errors/index.js"
+import "@goscript/sync/index.js"
 
 export class Broadcast {
 	public get mtx(): sync.Mutex {

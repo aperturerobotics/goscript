@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as dep2 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_call_result_imports/dep2/index.js"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_call_result_imports/dep2/index.js"
 
 export class maker {
 	public _fields: {

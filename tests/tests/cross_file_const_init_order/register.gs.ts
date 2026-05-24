@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_consts from "./consts.gs.ts"
+import "./consts.gs.ts"
 
 export class thing {
 	public _fields: {

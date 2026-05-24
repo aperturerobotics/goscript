@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_a from "./a.gs.ts"
+import "./a.gs.ts"
 
 export class bValue {
 	public get inner(): __goscript_a.aValue {

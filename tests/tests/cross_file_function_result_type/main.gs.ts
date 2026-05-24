@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_helper from "./helper.gs.ts"
+import "./helper.gs.ts"
 
 export async function main(): globalThis.Promise<void> {
 	let tok: __goscript_helper.token | $.VarRef<__goscript_helper.token> | null = __goscript_helper.newToken(9)

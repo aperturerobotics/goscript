@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as sync from "@goscript/sync/index.js"
+import "@goscript/sync/index.js"
 
 export class loader {
 	public get load(): ((_p0: string) => [any, boolean] | globalThis.Promise<[any, boolean]>) | null {

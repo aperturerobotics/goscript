@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_table from "./table.gs.ts"
+import "./table.gs.ts"
 
 export async function main(): globalThis.Promise<void> {
 	let p = __goscript_table.table

@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as math from "@goscript/math/index.js"
+import "@goscript/math/index.js"
 
 export function aboveSignedLimit(v: number): boolean {
 	return v > (9223372036854775808)

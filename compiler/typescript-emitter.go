@@ -132,6 +132,16 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 		b.WriteString(imp.source)
 		b.WriteString("\"\n")
 	}
+	sideEffectImports := make(map[string]bool)
+	for _, imp := range file.imports {
+		if !imp.sideEffect || sideEffectImports[imp.source] {
+			continue
+		}
+		sideEffectImports[imp.source] = true
+		b.WriteString("import \"")
+		b.WriteString(imp.source)
+		b.WriteString("\"\n")
+	}
 	if len(file.imports) != 0 {
 		b.WriteString("\n")
 	}
@@ -1071,6 +1081,9 @@ func renderTypeSwitchInlineBody(
 func renderIndex(pkg *loweredPackage) string {
 	var lines []string
 	for _, file := range pkg.files {
+		if file.sideEffect {
+			lines = append(lines, "import \"./"+file.outputName+"\"")
+		}
 		exports := slices.Clone(file.exports)
 		slices.Sort(exports)
 		if len(exports) != 0 {

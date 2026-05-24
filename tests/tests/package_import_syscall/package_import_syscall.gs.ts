@@ -10,6 +10,10 @@ import * as netip from "@goscript/net/netip/index.js"
 import * as syscall from "@goscript/syscall/index.js"
 
 import * as sync from "@goscript/sync/index.js"
+import "@goscript/fmt/index.js"
+import "@goscript/net/netip/index.js"
+import "@goscript/syscall/index.js"
+import "@goscript/sync/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	syscall.CloseOnExec(1)

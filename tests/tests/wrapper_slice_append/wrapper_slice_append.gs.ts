@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as errlist from "@goscript/github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist/index.js"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append/errlist/index.js"
 
 export class parser {
 	public get errors(): errlist.ErrorList {

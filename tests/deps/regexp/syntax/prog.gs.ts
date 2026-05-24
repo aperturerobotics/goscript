@@ -12,6 +12,11 @@ import * as unicode from "@goscript/unicode/index.js"
 import * as utf8 from "@goscript/unicode/utf8/index.js"
 
 import * as __goscript_parse from "./parse.gs.ts"
+import "@goscript/strconv/index.js"
+import "@goscript/strings/index.js"
+import "@goscript/unicode/index.js"
+import "@goscript/unicode/utf8/index.js"
+import "./parse.gs.ts"
 
 export type InstOp = number
 

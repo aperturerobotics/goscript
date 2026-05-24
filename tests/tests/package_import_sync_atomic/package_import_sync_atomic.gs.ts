@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as atomic from "@goscript/sync/atomic/index.js"
+import "@goscript/sync/atomic/index.js"
 
 export class pointerNode {
 	public get value(): string {

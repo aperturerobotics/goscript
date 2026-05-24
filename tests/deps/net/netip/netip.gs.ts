@@ -18,6 +18,14 @@ import * as strconv from "@goscript/strconv/index.js"
 import * as _unique from "@goscript/unique/index.js"
 
 import * as __goscript_uint128 from "./uint128.gs.ts"
+import "@goscript/cmp/index.js"
+import "@goscript/errors/index.js"
+import "@goscript/internal/bytealg/index.js"
+import "@goscript/internal/byteorder/index.js"
+import "@goscript/math/index.js"
+import "@goscript/strconv/index.js"
+import "@goscript/unique/index.js"
+import "./uint128.gs.ts"
 
 export class Addr {
 	// addr is the hi and lo bits of an IPv6 address. If z==z4,

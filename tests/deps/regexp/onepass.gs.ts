@@ -12,6 +12,11 @@ import * as strings from "@goscript/strings/index.js"
 import * as unicode from "@goscript/unicode/index.js"
 
 import * as utf8 from "@goscript/unicode/utf8/index.js"
+import "@goscript/regexp/syntax/index.js"
+import "@goscript/slices/index.js"
+import "@goscript/strings/index.js"
+import "@goscript/unicode/index.js"
+import "@goscript/unicode/utf8/index.js"
 
 export class onePassProg {
 	public get Inst(): $.Slice<onePassInst> {

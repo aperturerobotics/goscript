@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/tests/call_imported_interface_param/subpkg/index.js"
 
 import * as __goscript_sink from "./sink.gs.ts"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/call_imported_interface_param/subpkg/index.js"
+import "./sink.gs.ts"
 
 export class Buffer {
 	public get data(): $.Slice<number> {

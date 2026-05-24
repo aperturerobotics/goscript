@@ -14,6 +14,12 @@ import * as __goscript_prog from "./prog.gs.ts"
 import * as __goscript_regexp from "./regexp.gs.ts"
 
 import * as __goscript_simplify from "./simplify.gs.ts"
+import "@goscript/unicode/index.js"
+import "./op_string.gs.ts"
+import "./parse.gs.ts"
+import "./prog.gs.ts"
+import "./regexp.gs.ts"
+import "./simplify.gs.ts"
 
 export class patchList {
 	public get head(): number {

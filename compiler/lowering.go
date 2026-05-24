@@ -172,8 +172,9 @@ func (o *LoweringOwner) lowerFile(
 			importPaths[pkgName.Imported().Path()] = alias
 			importNames[name] = alias
 			loweredFile.imports = append(loweredFile.imports, loweredImport{
-				alias:  alias,
-				source: source,
+				alias:      alias,
+				source:     source,
+				sideEffect: true,
 			})
 		}
 	}
@@ -200,7 +201,7 @@ func (o *LoweringOwner) lowerFile(
 		}
 		seenLocalImport[alias] = true
 		source := localAliasSources[alias]
-		localImports = append(localImports, loweredImport{alias: alias, source: source})
+		localImports = append(localImports, loweredImport{alias: alias, source: source, sideEffect: true})
 	}
 	slices.SortFunc(localImports, func(a, b loweredImport) int {
 		return cmp.Compare(a.alias, b.alias)
@@ -234,6 +235,9 @@ func (o *LoweringOwner) lowerFile(
 			}
 			if decl.typeIndexExport != "" {
 				loweredFile.typeExports = append(loweredFile.typeExports, decl.typeIndexExport)
+			}
+			if decl.sideEffect {
+				loweredFile.sideEffect = true
 			}
 			if decl.function != nil && decl.function.indexExported && decl.function.name != "main" {
 				loweredFile.exports = append(loweredFile.exports, decl.function.name)
@@ -326,8 +330,9 @@ func (o *LoweringOwner) addGeneratedImportPath(
 	importAliases[alias] = pkgPath
 	importPaths[pkgPath] = alias
 	loweredFile.imports = append(loweredFile.imports, loweredImport{
-		alias:  alias,
-		source: source,
+		alias:      alias,
+		source:     source,
+		sideEffect: true,
 	})
 }
 
@@ -1504,7 +1509,7 @@ func (o *LoweringOwner) lowerInterfaceType(ctx lowerFileContext, semType *semant
 	code = code + "\n\n" + o.runtimeOwner.QualifiedHelper(RuntimeHelperRegisterInterfaceType) +
 		"(\n\t" + strconv.Quote(runtimeNamedTypeName(semType.named)) +
 		",\n\tnull,\n\t" + o.runtimeMethodSignatures(iface) + "\n)"
-	return loweredDecl{code: code, typeIndexExport: typeIndexExport}
+	return loweredDecl{code: code, typeIndexExport: typeIndexExport, sideEffect: true}
 }
 
 func (o *LoweringOwner) tsInterfaceType(ctx lowerFileContext, iface *types.Interface) string {

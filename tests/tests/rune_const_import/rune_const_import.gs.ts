@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/tests/rune_const_import/subpkg/index.js"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/rune_const_import/subpkg/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	// Test importing rune constants from another package

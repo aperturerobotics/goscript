@@ -8,6 +8,9 @@ import * as bytes from "@goscript/bytes/index.js"
 import * as fmt from "@goscript/fmt/index.js"
 
 import * as io from "@goscript/io/index.js"
+import "@goscript/bytes/index.js"
+import "@goscript/fmt/index.js"
+import "@goscript/io/index.js"
 
 export class byteFormatter {
 	public get prefix(): $.Slice<number> {

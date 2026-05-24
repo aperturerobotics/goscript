@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_error_type from "./error_type.gs.ts"
+import "./error_type.gs.ts"
 
 export function fail(): $.GoError {
 	return $.wrapPrimitiveError(1, __goscript_error_type.remoteError_Error)

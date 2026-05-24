@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as os from "@goscript/os/index.js"
 
 import * as fs from "@goscript/io/fs/index.js"
+import "@goscript/os/index.js"
+import "@goscript/io/fs/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	using __defer = new $.DisposableStack()

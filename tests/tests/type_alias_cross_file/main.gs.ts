@@ -8,6 +8,9 @@ import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/te
 import * as __goscript_alias from "./alias.gs.ts"
 
 import * as __goscript_iterator from "./iterator.gs.ts"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/type_alias_cross_file/subpkg/index.js"
+import "./alias.gs.ts"
+import "./iterator.gs.ts"
 
 export class source {
 	public _fields: {

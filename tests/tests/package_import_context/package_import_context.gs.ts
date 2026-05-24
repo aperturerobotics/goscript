@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as context from "@goscript/context/index.js"
 
 import * as time from "@goscript/time/index.js"
+import "@goscript/context/index.js"
+import "@goscript/time/index.js"
 
 export async function run(ctx: context.Context | null): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()

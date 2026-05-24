@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as context from "@goscript/context/index.js"
 
 import * as time from "@goscript/time/index.js"
+import "@goscript/context/index.js"
+import "@goscript/time/index.js"
 
 export async function AsyncFunction(): globalThis.Promise<string> {
 	await time.Sleep($.int64Mul(10, time.Millisecond))

@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as bytes from "@goscript/bytes/index.js"
 
 import * as io from "@goscript/io/index.js"
+import "@goscript/bytes/index.js"
+import "@goscript/io/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	// Test basic byte slice operations

@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_methods from "./methods.gs.ts"
+import "./methods.gs.ts"
 
 export class storage {
 	public get bytes(): $.Slice<number> {

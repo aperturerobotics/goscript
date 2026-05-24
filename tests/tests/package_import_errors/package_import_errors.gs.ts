@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as errors from "@goscript/errors/index.js"
+import "@goscript/errors/index.js"
 
 export class customErr {
 	public get msg(): string {

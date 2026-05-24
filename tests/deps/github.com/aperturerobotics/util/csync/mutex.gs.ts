@@ -12,6 +12,11 @@ import * as atomic from "@goscript/sync/atomic/index.js"
 import * as broadcast2 from "@goscript/github.com/aperturerobotics/util/broadcast/index.js"
 
 import * as errors from "@goscript/github.com/pkg/errors/index.js"
+import "@goscript/context/index.js"
+import "@goscript/sync/index.js"
+import "@goscript/sync/atomic/index.js"
+import "@goscript/github.com/aperturerobotics/util/broadcast/index.js"
+import "@goscript/github.com/pkg/errors/index.js"
 
 export class Mutex {
 	// bcast is broadcast when below fields change

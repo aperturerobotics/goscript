@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as __goscript_invoker from "./invoker.gs.ts"
 
 import * as __goscript_stream from "./stream.gs.ts"
+import "./invoker.gs.ts"
+import "./stream.gs.ts"
 
 export type Handler = null | {
 	Handle(): void

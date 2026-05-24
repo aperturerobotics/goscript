@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as testing from "@goscript/testing/index.js"
+import "@goscript/testing/index.js"
 
 export async function RunSubtest(t: testing.T | $.VarRef<testing.T> | null, ch: $.Channel<string> | null): globalThis.Promise<boolean> {
 	return await testing.T.prototype.Run.call(t, "child", $.functionValue(async (t: testing.T | $.VarRef<testing.T> | null): globalThis.Promise<void> => {

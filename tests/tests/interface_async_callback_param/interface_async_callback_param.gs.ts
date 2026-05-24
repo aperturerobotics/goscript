@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as errors from "@goscript/errors/index.js"
 
 import * as sync from "@goscript/sync/index.js"
+import "@goscript/errors/index.js"
+import "@goscript/sync/index.js"
 
 export class listScanner {
 	public _fields: {

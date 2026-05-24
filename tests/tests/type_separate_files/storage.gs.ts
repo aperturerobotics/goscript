@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_memory from "./memory.gs.ts"
+import "./memory.gs.ts"
 
 export class storage {
 	public get files(): Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null {

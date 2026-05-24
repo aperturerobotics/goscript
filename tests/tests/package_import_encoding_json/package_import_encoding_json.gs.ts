@@ -10,6 +10,10 @@ import * as slices from "@goscript/slices/index.js"
 import * as strconv from "@goscript/strconv/index.js"
 
 import * as strings from "@goscript/strings/index.js"
+import "@goscript/encoding/json/index.js"
+import "@goscript/slices/index.js"
+import "@goscript/strconv/index.js"
+import "@goscript/strings/index.js"
 
 export class Person {
 	public get Name(): string {

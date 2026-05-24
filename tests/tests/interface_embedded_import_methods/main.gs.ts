@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as dep1 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_import_methods/dep1/index.js"
 
 import * as dep2 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_import_methods/dep2/index.js"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_import_methods/dep1/index.js"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_import_methods/dep2/index.js"
 
 export type Combined = null | {
 	Extra(): void

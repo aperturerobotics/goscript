@@ -8,6 +8,9 @@ import * as bytes from "@goscript/bytes/index.js"
 import * as io from "@goscript/io/index.js"
 
 import * as sync from "@goscript/sync/index.js"
+import "@goscript/bytes/index.js"
+import "@goscript/io/index.js"
+import "@goscript/sync/index.js"
 
 export class writerHolder {
 	public get w(): io.Writer | null {

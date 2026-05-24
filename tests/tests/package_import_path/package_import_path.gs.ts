@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as path from "@goscript/path/index.js"
+import "@goscript/path/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	// Test Clean function

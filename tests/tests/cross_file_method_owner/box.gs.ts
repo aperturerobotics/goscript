@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_cross_file_method_owner from "./cross_file_method_owner.gs.ts"
+import "./cross_file_method_owner.gs.ts"
 
 export type box = number
 

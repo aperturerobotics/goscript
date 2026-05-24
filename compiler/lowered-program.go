@@ -18,11 +18,13 @@ type loweredFile struct {
 	decls       []loweredDecl
 	exports     []string
 	typeExports []string
+	sideEffect  bool
 }
 
 type loweredImport struct {
-	alias  string
-	source string
+	alias      string
+	source     string
+	sideEffect bool
 }
 
 type loweredExpr struct {
@@ -48,6 +50,7 @@ type loweredDecl struct {
 	code            string
 	indexExport     string
 	typeIndexExport string
+	sideEffect      bool
 	packageInitCall string
 	function        *loweredFunction
 	structType      *loweredStruct

@@ -8,6 +8,7 @@ import * as strings from "@goscript/strings/index.js"
 import * as foo_bar from "@goscript/strings/index.js"
 
 import * as baz from "@goscript/strings/index.js"
+import "@goscript/strings/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	// Test named imports with same package name

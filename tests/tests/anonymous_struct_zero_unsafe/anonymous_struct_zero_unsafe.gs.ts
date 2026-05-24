@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as unsafe from "@goscript/unsafe/index.js"
+import "@goscript/unsafe/index.js"
 
 export let linkinfo: {"Magic": Uint8Array, "Self": number, "Sects": {"Start": any, "End": any}[]} = {"Magic": new Uint8Array(2), "Self": 0, "Sects": Array.from({ length: 1 }, () => ({"Start": null, "End": null}))}
 

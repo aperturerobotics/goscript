@@ -14,6 +14,12 @@ import * as __goscript_exec from "./exec.gs.ts"
 import * as __goscript_onepass from "./onepass.gs.ts"
 
 import * as __goscript_regexp from "./regexp.gs.ts"
+import "@goscript/regexp/syntax/index.js"
+import "@goscript/sync/index.js"
+import "@goscript/io/index.js"
+import "./exec.gs.ts"
+import "./onepass.gs.ts"
+import "./regexp.gs.ts"
 
 export class job {
 	public get pc(): number {

@@ -10,6 +10,10 @@ import * as sync from "@goscript/sync/index.js"
 import * as time from "@goscript/time/index.js"
 
 import * as csync from "@goscript/github.com/aperturerobotics/util/csync/index.js"
+import "@goscript/context/index.js"
+import "@goscript/sync/index.js"
+import "@goscript/time/index.js"
+import "@goscript/github.com/aperturerobotics/util/csync/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()

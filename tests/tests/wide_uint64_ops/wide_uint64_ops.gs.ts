@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as math from "@goscript/math/index.js"
+import "@goscript/math/index.js"
 
 export function hash6(u: number, h: number): number {
 	const prime6bytes: number = 227718039650203

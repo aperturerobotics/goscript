@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as slices from "@goscript/slices/index.js"
 
 import * as sort from "@goscript/sort/index.js"
+import "@goscript/slices/index.js"
+import "@goscript/sort/index.js"
 
 export class descending {
 	public get values(): $.Slice<number> {

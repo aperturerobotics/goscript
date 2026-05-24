@@ -282,6 +282,38 @@ func TestSemanticModelColorsAsyncFunctionsAndOverrides(t *testing.T) {
 	}
 }
 
+func TestSemanticModelPropagatesCascadedAsyncInterfaceMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/asynciface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package asynciface",
+			"type Config interface { Equals(Config) bool }",
+			"type Directive interface { IsEquivalent(Directive) bool }",
+			"type channelConfig struct { ch chan struct{} }",
+			"func (c *channelConfig) Equals(other Config) bool { <-c.ch; return true }",
+			"type execDirective struct { c Config }",
+			"func (d *execDirective) IsEquivalent(other Directive) bool { return d.c.Equals(nil) }",
+			"func Use(d Directive, other Directive) bool { return d.IsEquivalent(other) }",
+			"",
+		}, "\n"),
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	model := buildSemanticModel(t, graph)
+
+	for _, name := range []string{"Equals", "IsEquivalent", "Use"} {
+		fn := requireDefinedFunc(t, graph, "example.test/asynciface", name)
+		if !model.functions[fn].async {
+			t.Fatalf("expected %s to be async, got %#v", name, model.functions[fn])
+		}
+	}
+}
+
 func TestSemanticModelIndexesFunctionsByFullName(t *testing.T) {
 	model := newSemanticModel()
 	semPkg := &semanticPackage{}

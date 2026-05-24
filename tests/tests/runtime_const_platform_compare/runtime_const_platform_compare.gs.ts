@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as runtime from "@goscript/runtime/index.js"
+import "@goscript/runtime/index.js"
 
 export function platform(): string {
 	switch ((true as boolean)) {

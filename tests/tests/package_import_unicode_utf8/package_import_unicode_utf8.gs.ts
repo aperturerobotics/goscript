@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as utf8 from "@goscript/unicode/utf8/index.js"
+import "@goscript/unicode/utf8/index.js"
 
 export function checkBytes(label: string, b: $.Slice<number>): void {
 	$.println(label, "RuneCount:", utf8.RuneCount(b))

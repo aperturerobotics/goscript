@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as unsafe from "@goscript/unsafe/index.js"
+import "@goscript/unsafe/index.js"
 
 export function reslice(ptr: $.VarRef<number> | null, n: number): void {
 	let s: $.Slice<number> = (unsafe.Slice!(ptr, n) as $.Slice<number>)

@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as fmt from "@goscript/fmt/index.js"
+import "@goscript/fmt/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	if (false) {

@@ -6,6 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as math from "@goscript/math/index.js"
 
 import * as time from "@goscript/time/index.js"
+import "@goscript/math/index.js"
+import "@goscript/time/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let now = $.markAsStructValue($.cloneStructValue(time.Now()))

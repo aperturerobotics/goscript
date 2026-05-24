@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as __goscript_info from "./info.gs.ts"
+import "./info.gs.ts"
 
 export async function main(): globalThis.Promise<void> {
 	__goscript_info.infoPtr()

@@ -82,11 +82,20 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 	if diagnosticsHaveErrors(diagnostics) {
 		return model, diagnostics
 	}
-	diagnostics = append(diagnostics, o.resolveInterfaceImplementations(ctx, model)...)
-	if diagnosticsHaveErrors(diagnostics) {
-		return model, diagnostics
+	for {
+		asyncCount := semanticAsyncFunctionCount(model)
+		diagnostics = append(diagnostics, o.resolveInterfaceImplementations(ctx, model)...)
+		if diagnosticsHaveErrors(diagnostics) {
+			return model, diagnostics
+		}
+		diagnostics = append(diagnostics, o.propagateFunctionAsync(ctx, model)...)
+		if diagnosticsHaveErrors(diagnostics) {
+			return model, diagnostics
+		}
+		if semanticAsyncFunctionCount(model) == asyncCount {
+			break
+		}
 	}
-	diagnostics = append(diagnostics, o.propagateFunctionAsync(ctx, model)...)
 	return model, diagnostics
 }
 
@@ -1076,10 +1085,24 @@ func markFunctionAsync(fn *semanticFunction, reason string) bool {
 	return true
 }
 
+func semanticAsyncFunctionCount(model *SemanticModel) int {
+	if model == nil {
+		return 0
+	}
+	count := 0
+	for _, fn := range model.functions {
+		if fn != nil && fn.async {
+			count++
+		}
+	}
+	return count
+}
+
 func (o *SemanticModelOwner) resolveInterfaceImplementations(
 	ctx context.Context,
 	model *SemanticModel,
 ) []Diagnostic {
+	model.interfaceImplementations = nil
 	var interfaces []*types.Named
 	var concretes []*types.Named
 	for named, semType := range model.types {

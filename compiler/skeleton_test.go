@@ -800,6 +800,79 @@ func TestCompilePackagesEmitsPackageLocalImport(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEmitsSideEffectImportsForInterfaceRegistry(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/interface-registry\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/interface-registry/dep\"",
+			"type localImpl struct{}",
+			"func (*localImpl) Ping() string { return \"pong\" }",
+			"func matchLocal(v any) bool {",
+			"  switch v.(type) {",
+			"  case Local:",
+			"    return true",
+			"  }",
+			"  return false",
+			"}",
+			"func matchDep(v any) bool {",
+			"  _, ok := v.(dep.Remote)",
+			"  return ok",
+			"}",
+			"func main() { println(matchLocal(&localImpl{}), matchDep(nil)) }",
+			"",
+		}, "\n"),
+		"local.go": strings.Join([]string{
+			"package main",
+			"type Local interface { Ping() string }",
+			"",
+		}, "\n"),
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"type Remote interface { Remote() string }",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      outputDir,
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	mainContent, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "interface-registry", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	mainText := string(mainContent)
+	for _, want := range []string{
+		"import * as dep from \"@goscript/example.test/interface-registry/dep/index.js\"",
+		"import \"@goscript/example.test/interface-registry/dep/index.js\"",
+		"import * as __goscript_local from \"./local.gs.ts\"",
+		"import \"./local.gs.ts\"",
+		"case $.typeAssert<__goscript_local.Local | null>(__goscriptTypeSwitchValue, \"main.Local\").ok",
+		"$.typeAssertTuple<dep.Remote | null>(v, \"dep.Remote\")",
+	} {
+		if !strings.Contains(mainText, want) {
+			t.Fatalf("missing %q in main output:\n%s", want, mainText)
+		}
+	}
+
+	depIndexContent, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "interface-registry", "dep", "index.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if !strings.Contains(string(depIndexContent), "import \"./dep.gs.ts\"") {
+		t.Fatalf("missing interface side-effect import in dep index:\n%s", string(depIndexContent))
+	}
+}
+
 func TestCompilePackagesEmitsIndexAddressRefs(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/indexaddr\n\ngo 1.25.3\n",

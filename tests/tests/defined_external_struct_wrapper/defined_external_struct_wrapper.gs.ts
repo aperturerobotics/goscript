@@ -4,6 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 import * as dep from "@goscript/github.com/aperturerobotics/goscript/tests/tests/defined_external_struct_wrapper/dep/index.js"
+import "@goscript/github.com/aperturerobotics/goscript/tests/tests/defined_external_struct_wrapper/dep/index.js"
 
 export class Wrapped {
 	public get Value(): string {
