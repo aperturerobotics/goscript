@@ -3,6 +3,7 @@ package compiler
 import (
 	"context"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -135,6 +136,58 @@ func TestPackageGraphOwnerLoadTestGraphScopesDiagnostics(t *testing.T) {
 	}
 	if broken.SamePackageTests == nil || len(broken.SamePackageTests.Diagnostics) == 0 {
 		t.Fatalf("broken same-package test variant should carry diagnostics: %#v", broken)
+	}
+}
+
+func TestPackageGraphOwnerLoadTestGraphDoesNotLoadDependencies(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/testgraphdeps\n\ngo 1.25.3\n",
+		"clean/value.go": strings.Join([]string{
+			"package clean",
+			"",
+			"func Value() int {",
+			"\treturn 1",
+			"}",
+			"",
+		}, "\n"),
+		"clean/value_test.go": strings.Join([]string{
+			"package clean",
+			"",
+			"import (",
+			"\t\"testing\"",
+			"",
+			"\t\"example.test/testgraphdeps/brokendep\"",
+			")",
+			"",
+			"func TestValue(t *testing.T) {",
+			"\t_ = brokendep.Value",
+			"}",
+			"",
+		}, "\n"),
+		"brokendep/value.go": strings.Join([]string{
+			"package brokendep",
+			"",
+			"const Value =",
+			"",
+		}, "\n"),
+	})
+
+	graph, diagnostics := loadPackageTestGraph(t, &CompileRequest{
+		Patterns:            []string{"./clean"},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeRequested,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("test graph discovery should not load dependency bodies: %#v", diagnostics)
+	}
+	clean := graph.PackageByPath("example.test/testgraphdeps/clean")
+	if clean == nil || clean.SamePackageTests == nil || len(clean.SamePackageTests.Tests) != 1 {
+		t.Fatalf("clean package test discovery failed: %#v", clean)
+	}
+	if !slices.Contains(clean.SamePackageTests.Imports, "example.test/testgraphdeps/brokendep") {
+		t.Fatalf("test graph should retain direct test imports: %#v", clean.SamePackageTests.Imports)
 	}
 }
 
