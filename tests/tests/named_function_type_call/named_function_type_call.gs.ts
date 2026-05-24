@@ -341,7 +341,7 @@ export async function newMorphismHolder(m: ((_p0: Shape | null) => Shape | null 
 	return new MorphismHolder({morphism: m})
 }
 
-export function cloneMorphism(m: Morphism): MorphismHolder | $.VarRef<MorphismHolder> | null {
+export function cloneMorphism(m: Morphism | null): MorphismHolder | $.VarRef<MorphismHolder> | null {
 	return new MorphismHolder({morphism: m})
 }
 

@@ -9,7 +9,7 @@ export type wrapper = ((_p0: string) => [string, $.GoError] | globalThis.Promise
 
 export type updater = (() => $.GoError | globalThis.Promise<$.GoError>) | null
 
-export function wrap(open: opener): ((_p0: string) => [string, $.GoError] | globalThis.Promise<[string, $.GoError]>) | null {
+export function wrap(open: opener | null): wrapper | null {
 	return $.functionValue(async (path: string): globalThis.Promise<[string, $.GoError]> => {
 		let [value, err] = await open!(path)
 		if (err != null) {

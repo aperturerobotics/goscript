@@ -203,7 +203,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Process result:", result)
 	}
 
-	let [result3, err3] = await maybeProcess("ignored", (null as OptionalProcessFunc))
+	let [result3, err3] = await maybeProcess("ignored", (null as OptionalProcessFunc | null))
 	if (err3 != null) {
 		$.println("Optional process error:", $.pointerValue<Exclude<$.GoError, null>>(err3).Error())
 	} else {

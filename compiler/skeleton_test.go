@@ -359,6 +359,49 @@ func TestCompilePackagesBindsFuncLiteralVarRefParams(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAnnotatesNewPointerShortDecls(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/newptrdecl\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type OID []int",
+			"func use(*OID) {}",
+			"func main() {",
+			"  oid := new(OID)",
+			"  if len(*oid) == 0 {",
+			"    oid = nil",
+			"  }",
+			"  use(oid)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "newptrdecl", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"let oid: $.VarRef<OID> | null = $.varRef<OID>(null as OID)",
+		"oid = null",
+		"use(oid)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsShadowedBuiltinCalls(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/shadowbuiltin\n\ngo 1.25.3\n",
@@ -1127,7 +1170,7 @@ func TestCompilePackagesEmitsRecursiveFunctionTypeInfo(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type Handler = ((_p0: ((_p0: Handler) => Handler | globalThis.Promise<Handler>) | null) => Handler | globalThis.Promise<Handler>) | null",
+		"export type Handler = ((_p0: ((_p0: Handler | null) => Handler | null | globalThis.Promise<Handler | null>) | null) => Handler | null | globalThis.Promise<Handler | null>) | null",
 		"\"Next\": { kind: $.TypeKind.Function, name: \"main.Handler\"",
 		"params: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
 		"results: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
@@ -1369,6 +1412,49 @@ func TestCompilePackagesLowersRangeOverFunctionIterators(t *testing.T) {
 		"continue",
 		"await backward($.arrayToSlice<number>([1, 2]))!(async (__goscriptRange",
 		"await backward($.arrayToSlice<number>([3]))!(async (__goscriptRange",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesPreservesNamedFunctionResultTypes(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/namedfuncresult\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Seq func(func(int) bool)",
+			"func values() Seq {",
+			"  return nil",
+			"}",
+			"func main() {",
+			"  if values() == nil {",
+			"    println(\"empty\")",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "namedfuncresult", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export type Seq = ((_p0: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null) => void) | null",
+		"export function values(): Seq | null",
+		"return (null as Seq | null)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

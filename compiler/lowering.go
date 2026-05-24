@@ -3070,7 +3070,7 @@ func (o *LoweringOwner) shortDeclTypeAnnotation(ctx lowerFileContext, lhs ast.Ex
 func shortDeclNeedsTypeAnnotation(typ types.Type) bool {
 	switch typed := types.Unalias(typ).Underlying().(type) {
 	case *types.Pointer:
-		return namedStructType(typed.Elem()) != nil
+		return namedStructType(typed.Elem()) != nil || namedNonStructType(typed.Elem()) != nil
 	case *types.Map:
 		return true
 	case *types.Slice:
@@ -5615,7 +5615,8 @@ func (o *LoweringOwner) lowerNewExpr(ctx lowerFileContext, expr *ast.CallExpr) (
 	if named := namedStructType(typ); named != nil {
 		return "new " + o.namedTypeExpr(ctx, named) + "()", nil
 	}
-	return o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + o.lowerZeroValueExprFor(ctx, typ) + ")", nil
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) +
+		"<" + o.tsTypeFor(ctx, typ) + ">(" + o.lowerDeclarationZeroValueExpr(ctx, typ) + ")", nil
 }
 
 func (o *LoweringOwner) lowerConversionExpr(
@@ -7499,6 +7500,11 @@ func (o *LoweringOwner) tsSignatureResultFor(ctx lowerFileContext, signature *ty
 }
 
 func (o *LoweringOwner) tsSignatureResultTypeFor(ctx lowerFileContext, typ types.Type) string {
+	if named, ok := types.Unalias(typ).(*types.Named); ok {
+		if _, ok := types.Unalias(named.Underlying()).(*types.Signature); ok {
+			return o.tsTypeFor(ctx, typ)
+		}
+	}
 	if signature := signatureForType(typ); ctx.functionTypeDepth == 0 && signature != nil {
 		return o.tsAsyncCompatibleFunctionResultTypeFor(ctx, signature)
 	}
@@ -7628,6 +7634,9 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 		}
 		name := o.namedTypeExpr(ctx, named)
 		if _, ok := named.Underlying().(*types.Interface); ok {
+			return name + " | null"
+		}
+		if _, ok := types.Unalias(named.Underlying()).(*types.Signature); ok {
 			return name + " | null"
 		}
 		return name

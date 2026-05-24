@@ -6,10 +6,10 @@ import * as $ from "@goscript/builtin/index.js"
 export type Cancel = (() => void) | null
 
 export async function main(): globalThis.Promise<void> {
-	let cancel1: Cancel = null as Cancel
-	let cancel2: Cancel = null as Cancel
-	let __goscriptAssign0_0: Cancel = (null as Cancel)
-	let __goscriptAssign0_1: Cancel = (null as Cancel)
+	let cancel1: Cancel | null = null as Cancel | null
+	let cancel2: Cancel | null = null as Cancel | null
+	let __goscriptAssign0_0: Cancel | null = (null as Cancel | null)
+	let __goscriptAssign0_1: Cancel | null = (null as Cancel | null)
 	cancel1 = __goscriptAssign0_0
 	cancel2 = __goscriptAssign0_1
 	if (cancel1 != null) {

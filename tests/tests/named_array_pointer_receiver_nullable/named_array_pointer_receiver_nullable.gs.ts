@@ -15,7 +15,9 @@ export function words_Rsh(w: $.VarRef<words> | null, n: number): number {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let [w, ok] = setWords($.varRef(Array.from({ length: 1 }, () => 0)))
+	let __goscriptTuple0: any = setWords($.varRef<words>(Array.from({ length: 1 }, () => 0)))
+	let w: $.VarRef<words> | null = __goscriptTuple0[0]
+	let ok = __goscriptTuple0[1]
 	if (!ok) {
 		$.println("missing")
 		return
