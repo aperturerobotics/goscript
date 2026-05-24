@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  append,
   bytesToUint8Array,
   byte,
   cap,
@@ -237,6 +238,15 @@ describe('builtin runtime contract helpers', () => {
     const extra = indexRef(expanded, 2)
     extra.value.value = 'zero-backed'
     expect(pointerValue(extra).value).toBe('zero-backed')
+
+    const base = makeSlice<number>(1, 4, 'number')
+    base![0] = 7
+    const beforeAppend = goSlice(base, 0, 1)
+    const afterAppend = append(beforeAppend, 8, 9)
+    expect(len(beforeAppend)).toBe(1)
+    expect(len(afterAppend)).toBe(3)
+    expect([...afterAppend!]).toEqual([7, 8, 9])
+    expect(beforeAppend![0]).toBe(7)
 
     const text = varRef('abc')
     const headerBytes = varRef(makeSlice<number>(0, 0, 'byte'))

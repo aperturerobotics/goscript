@@ -64,6 +64,7 @@ interface GoSliceObject<T> {
   offset: number // Offset into the backing array
   length: number // Length of the slice
   capacity: number // Capacity of the slice
+  target?: T[] // Materialized proxy target for JS array operations
 }
 
 const addressStride = 0x100000000
@@ -98,24 +99,26 @@ export type Slice<T> =
  * and route it through the backing array.
  */
 function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
+  const meta = proxy.__meta__
+  meta.target = proxy
   const handler = {
     get(target: any, prop: string | symbol): any {
       if (typeof prop === 'string' && /^\d+$/.test(prop)) {
         const index = Number(prop)
-        if (index >= 0 && index < target.__meta__.length) {
-          return target.__meta__.backing[target.__meta__.offset + index]
+        if (index >= 0 && index < meta.length) {
+          return meta.backing[meta.offset + index]
         }
         throw new Error(
-          `Slice index out of range: ${index} >= ${target.__meta__.length}`,
+          `Slice index out of range: ${index} >= ${meta.length}`,
         )
       }
 
       if (prop === 'length') {
-        return target.__meta__.length
+        return meta.length
       }
 
       if (prop === '__meta__') {
-        return target.__meta__
+        return meta
       }
 
       return Reflect.get(target, prop)
@@ -124,13 +127,13 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
     set(target: any, prop: string | symbol, value: any): boolean {
       if (typeof prop === 'string' && /^\d+$/.test(prop)) {
         const index = Number(prop)
-        if (index >= 0 && index < target.__meta__.length) {
-          target.__meta__.backing[target.__meta__.offset + index] = value
+        if (index >= 0 && index < meta.length) {
+          meta.backing[meta.offset + index] = value
           target[index] = value // Also update the proxy target for consistency
           return true
         }
         throw new Error(
-          `Slice index out of range: ${index} >= ${target.__meta__.length}`,
+          `Slice index out of range: ${index} >= ${meta.length}`,
         )
       }
 
@@ -143,6 +146,24 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
   }
 
   return new Proxy(proxy, handler) as SliceProxy<T>
+}
+
+function sliceProxyFromBacking<T>(
+  backing: T[],
+  offset: number,
+  length: number,
+  capacity: number,
+  target?: T[],
+): SliceProxy<T> {
+  const proxyTargetArray = (target ?? new Array<T>(length)) as SliceProxy<T>
+  proxyTargetArray.length = length
+  if (target === undefined) {
+    for (let i = 0; i < length; i++) {
+      proxyTargetArray[i] = backing[offset + i]
+    }
+  }
+  proxyTargetArray.__meta__ = { backing, offset, length, capacity }
+  return wrapSliceProxy(proxyTargetArray)
 }
 
 // asArray converts a slice to a JavaScript array.
@@ -865,28 +886,30 @@ export function append<T>(
     return slice as any
   }
 
-  let originalElements: T[] = []
+  let originalElements: T[] | undefined
+  let oldLength = 0
   let oldCapacity: number
   let isOriginalComplex = false
   let originalBacking: T[] | undefined = undefined
+  let originalTarget: T[] | undefined = undefined
   let originalOffset = 0
 
   if (slice === null || slice === undefined) {
     oldCapacity = 0
   } else if (isComplexSlice(slice)) {
     const meta = slice.__meta__
-    for (let i = 0; i < meta.length; i++)
-      originalElements.push(meta.backing[meta.offset + i])
+    oldLength = meta.length
     oldCapacity = meta.capacity
     isOriginalComplex = true
     originalBacking = meta.backing
+    originalTarget = meta.target
     originalOffset = meta.offset
   } else {
     // Simple T[] array
     originalElements = (slice as T[]).slice()
-    oldCapacity = (slice as T[]).length
+    oldLength = originalElements.length
+    oldCapacity = oldLength
   }
-  const oldLength = originalElements.length
   const newLength = oldLength + numAdded
 
   // Case 1: Modify in-place if original was SliceProxy and has enough capacity.
@@ -894,16 +917,19 @@ export function append<T>(
     for (let i = 0; i < numAdded; i++) {
       originalBacking[originalOffset + oldLength + i] = elements[i] as T
     }
-    const resultProxy = new Array(newLength) as SliceProxy<T>
-    for (let i = 0; i < newLength; i++)
-      resultProxy[i] = originalBacking[originalOffset + i]
-    resultProxy.__meta__ = {
-      backing: originalBacking,
-      offset: originalOffset,
-      length: newLength,
-      capacity: oldCapacity,
+    const target = originalTarget
+    if (target !== undefined) {
+      for (let i = 0; i < numAdded; i++) {
+        target[oldLength + i] = elements[i] as T
+      }
     }
-    return wrapSliceProxy(resultProxy) as any
+    return sliceProxyFromBacking(
+      originalBacking,
+      originalOffset,
+      newLength,
+      oldCapacity,
+      target,
+    ) as any
   }
 
   // Case 2: Reallocation is needed.
@@ -920,22 +946,20 @@ export function append<T>(
   }
 
   const newBacking = new Array<T>(newCapacity)
-  for (let i = 0; i < oldLength; i++) {
-    newBacking[i] = originalElements[i]
+  if (isOriginalComplex && originalBacking) {
+    for (let i = 0; i < oldLength; i++) {
+      newBacking[i] = originalBacking[originalOffset + i]
+    }
+  } else if (originalElements !== undefined) {
+    for (let i = 0; i < oldLength; i++) {
+      newBacking[i] = originalElements[i]
+    }
   }
   for (let i = 0; i < numAdded; i++) {
     newBacking[oldLength + i] = elements[i] as T
   }
 
-  const resultProxy = new Array(newLength) as SliceProxy<T>
-  for (let i = 0; i < newLength; i++) resultProxy[i] = newBacking[i]
-  resultProxy.__meta__ = {
-    backing: newBacking,
-    offset: 0,
-    length: newLength,
-    capacity: newCapacity,
-  }
-  return wrapSliceProxy(resultProxy) as any
+  return sliceProxyFromBacking(newBacking, 0, newLength, newCapacity) as any
 }
 
 function appendByteSlice(slice: Uint8Array, elements: any[]): Uint8Array {
