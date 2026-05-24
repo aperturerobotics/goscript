@@ -17,7 +17,7 @@ func TestTestCommandHelp(t *testing.T) {
 		t.Fatalf("test help failed: %v", err)
 	}
 	help := out.String()
-	for _, expected := range []string{"compile and run Go package tests through GoScript", "--tags", "--run", "--count", "--short", "--timeout", "-p"} {
+	for _, expected := range []string{"compile and run Go package tests through GoScript", "--tags", "--run", "--count", "--short", "--timeout", "-p", "--cpuprofile"} {
 		if !strings.Contains(help, expected) {
 			t.Fatalf("help output missing %q:\n%s", expected, help)
 		}

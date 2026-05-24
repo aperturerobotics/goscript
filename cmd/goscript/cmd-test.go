@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"io"
+	"os"
+	"runtime/pprof"
 	"strconv"
 	"strings"
 	"time"
@@ -28,6 +30,7 @@ func newTestCommand() *cli.Command {
 	var workDir string
 	var dir string
 	var parallelism int
+	var cpuProfile string
 
 	return &cli.Command{
 		Name:     "test",
@@ -47,6 +50,13 @@ func newTestCommand() *cli.Command {
 				WorkDir:      workDir,
 				OutputRoot:   outputRoot,
 				Parallelism:  parallelism,
+			}
+			stopProfile, err := startCPUProfile(cpuProfile)
+			if err != nil {
+				return err
+			}
+			if stopProfile != nil {
+				defer stopProfile()
 			}
 			result, err := gotest.NewRunner().Run(c.Context, req)
 			if err != nil {
@@ -121,8 +131,32 @@ func newTestCommand() *cli.Command {
 				Destination: &parallelism,
 				Value:       gotest.DefaultParallelism(),
 			},
+			&cli.StringFlag{
+				Name:        "cpuprofile",
+				Usage:       "write a Go CPU profile for the goscript test process",
+				Destination: &cpuProfile,
+			},
 		},
 	}
+}
+
+func startCPUProfile(path string) (func(), error) {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return nil, nil
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		return nil, errors.Wrap(err, "create CPU profile")
+	}
+	if err := pprof.StartCPUProfile(file); err != nil {
+		_ = file.Close()
+		return nil, errors.Wrap(err, "start CPU profile")
+	}
+	return func() {
+		pprof.StopCPUProfile()
+		_ = file.Close()
+	}, nil
 }
 
 func printTestResult(ctx context.Context, w io.Writer, result *gotest.Result) error {
