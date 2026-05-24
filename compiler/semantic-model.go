@@ -6,6 +6,7 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"maps"
 	"slices"
 	"strconv"
 	"strings"
@@ -1121,6 +1122,7 @@ func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 	}
 	sortNamedTypes(interfaces)
 	sortNamedTypes(concretes)
+	methodSets := implementationMethodSets(concretes)
 
 	implementationGraph := make([]semanticInterfaceImplementationGraphEntry, 0)
 	for _, ifaceNamed := range interfaces {
@@ -1132,14 +1134,15 @@ func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 			continue
 		}
 		iface.Complete()
-		for _, concrete := range concretes {
+		ifaceMethods := interfaceMethodMap(iface)
+		if len(ifaceMethods) == 0 {
+			continue
+		}
+		for _, methodSet := range methodSets {
 			if err := ctx.Err(); err != nil {
 				return nil, []Diagnostic{contextCanceledDiagnostic(err)}
 			}
-			if implementation, ok := o.interfaceImplementationGraphEntry(concrete, ifaceNamed, iface, false); ok {
-				implementationGraph = append(implementationGraph, implementation)
-			}
-			if implementation, ok := o.interfaceImplementationGraphEntry(concrete, ifaceNamed, iface, true); ok {
+			if implementation, ok := o.interfaceImplementationGraphEntry(methodSet, ifaceNamed, ifaceMethods); ok {
 				implementationGraph = append(implementationGraph, implementation)
 			}
 		}
@@ -1192,22 +1195,22 @@ func contextCanceledDiagnostic(err error) Diagnostic {
 }
 
 func (o *SemanticModelOwner) interfaceImplementationGraphEntry(
-	concrete *types.Named,
+	methodSet semanticImplementationMethodSet,
 	ifaceNamed *types.Named,
-	iface *types.Interface,
-	pointer bool,
+	ifaceMethods map[string]*types.Func,
 ) (semanticInterfaceImplementationGraphEntry, bool) {
-	var receiver types.Type = concrete
-	if pointer {
-		receiver = types.NewPointer(concrete)
+	implMethods, ok := implementationMethodMap(methodSet.methods, ifaceMethods)
+	if !ok {
+		return semanticInterfaceImplementationGraphEntry{}, false
 	}
-	implementsReceiver := receiver
-	implementsIface := types.Type(iface)
-	if concrete.TypeParams() != nil && concrete.TypeParams().Len() != 0 {
-		args := typeParamTypes(concrete.TypeParams())
-		if instantiated, err := types.Instantiate(nil, concrete, args, false); err == nil {
+
+	implementsReceiver := methodSet.receiver
+	implementsIface := types.Type(ifaceNamed.Underlying())
+	if methodSet.typ.TypeParams() != nil && methodSet.typ.TypeParams().Len() != 0 {
+		args := typeParamTypes(methodSet.typ.TypeParams())
+		if instantiated, err := types.Instantiate(nil, methodSet.typ, args, false); err == nil {
 			implementsReceiver = instantiated
-			if pointer {
+			if methodSet.pointer {
 				implementsReceiver = types.NewPointer(instantiated)
 			}
 		}
@@ -1222,22 +1225,80 @@ func (o *SemanticModelOwner) interfaceImplementationGraphEntry(
 	}
 
 	implementation := semanticInterfaceImplementationGraphEntry{
-		typ:          concrete,
+		typ:          methodSet.typ,
 		iface:        ifaceNamed,
-		pointer:      pointer,
+		pointer:      methodSet.pointer,
 		ifaceMethods: make(map[string]*types.Func),
-		implMethods:  make(map[string]*types.Func),
+		implMethods:  implMethods,
 	}
-	for ifaceMethod := range iface.Methods() {
-		obj, _, _ := types.LookupFieldOrMethod(receiver, true, concrete.Obj().Pkg(), ifaceMethod.Name())
-		implMethod, _ := obj.(*types.Func)
-		if implMethod == nil {
-			continue
-		}
-		implementation.ifaceMethods[ifaceMethod.Name()] = ifaceMethod
-		implementation.implMethods[ifaceMethod.Name()] = implMethod
-	}
+	maps.Copy(implementation.ifaceMethods, ifaceMethods)
 	return implementation, true
+}
+
+func interfaceMethodMap(iface *types.Interface) map[string]*types.Func {
+	if iface == nil {
+		return nil
+	}
+	methods := make(map[string]*types.Func)
+	for method := range iface.Methods() {
+		methods[method.Name()] = method
+	}
+	return methods
+}
+
+func implementationMethodSets(concretes []*types.Named) []semanticImplementationMethodSet {
+	methodSets := make([]semanticImplementationMethodSet, 0, len(concretes)*2)
+	for _, concrete := range concretes {
+		methodSets = append(methodSets, semanticImplementationMethodSet{
+			typ:      concrete,
+			receiver: concrete,
+			methods:  methodSetMap(concrete),
+		})
+		pointer := types.NewPointer(concrete)
+		methodSets = append(methodSets, semanticImplementationMethodSet{
+			typ:      concrete,
+			receiver: pointer,
+			pointer:  true,
+			methods:  methodSetMap(pointer),
+		})
+	}
+	return methodSets
+}
+
+func methodSetMap(receiver types.Type) map[string]*types.Func {
+	if receiver == nil {
+		return nil
+	}
+	set := types.NewMethodSet(receiver)
+	if set.Len() == 0 {
+		return nil
+	}
+	methods := make(map[string]*types.Func, set.Len())
+	for method := range set.Methods() {
+		fn, _ := method.Obj().(*types.Func)
+		if fn != nil {
+			methods[fn.Name()] = fn
+		}
+	}
+	return methods
+}
+
+func implementationMethodMap(
+	receiverMethods map[string]*types.Func,
+	ifaceMethods map[string]*types.Func,
+) (map[string]*types.Func, bool) {
+	if len(receiverMethods) == 0 || len(ifaceMethods) == 0 {
+		return nil, false
+	}
+	methods := make(map[string]*types.Func, len(ifaceMethods))
+	for methodName := range ifaceMethods {
+		implMethod := receiverMethods[methodName]
+		if implMethod == nil {
+			return nil, false
+		}
+		methods[methodName] = implMethod
+	}
+	return methods, true
 }
 
 func typeParamTypes(params *types.TypeParamList) []types.Type {

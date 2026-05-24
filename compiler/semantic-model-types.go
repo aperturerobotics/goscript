@@ -102,6 +102,13 @@ type semanticInterfaceImplementationGraphEntry struct {
 	implMethods  map[string]*types.Func
 }
 
+type semanticImplementationMethodSet struct {
+	typ      *types.Named
+	receiver types.Type
+	pointer  bool
+	methods  map[string]*types.Func
+}
+
 type semanticTypeAssertion struct {
 	position sourcePosition
 	source   types.Type
