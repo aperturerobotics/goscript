@@ -10,6 +10,9 @@ import {
   Compact,
   CompactFunc,
   CompareFunc,
+  DeleteFunc,
+  EqualFunc,
+  IndexFunc,
   IsSorted,
   IsSortedFunc,
   Max,
@@ -60,6 +63,25 @@ describe('slices compatibility helpers', () => {
     ])
     expect(Array.from(Clip($.arrayToSlice([1, 2])) ?? [])).toEqual([1, 2])
     expect(BinarySearch($.arrayToSlice([1, 3, 5]), 3)).toEqual([1, true])
+  })
+
+  it('accepts generated possibly-async callback types for sync helpers', () => {
+    const compare: (a: number, b: number) => number | Promise<number> = (a, b) => a - b
+    const keepOdd: (v: number) => boolean | Promise<boolean> = (v) => v % 2 === 0
+    const equal: (a: string, b: string) => boolean | Promise<boolean> = (a, b) => a === b
+
+    expect(CompareFunc($.arrayToSlice([1]), $.arrayToSlice([2]), compare)).toBeLessThan(0)
+    expect(Array.from(DeleteFunc($.arrayToSlice([1, 2, 3]), keepOdd) ?? [])).toEqual([1, 3])
+    expect(EqualFunc($.arrayToSlice(['a']), $.arrayToSlice(['a']), equal)).toBe(true)
+    expect(IndexFunc($.arrayToSlice([1, 2, 3]), keepOdd)).toBe(1)
+    expect(IsSortedFunc($.arrayToSlice([1, 2, 3]), compare)).toBe(true)
+    expect(BinarySearch($.arrayToSlice([1, 2, 3]), 2)).toEqual([1, true])
+  })
+
+  it('rejects actual async callback results in sync helpers', () => {
+    expect(() =>
+      CompareFunc($.arrayToSlice([1]), $.arrayToSlice([2]), async (a, b) => a - b),
+    ).toThrow('slices: asynchronous callback result is not supported')
   })
 })
 

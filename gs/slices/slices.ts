@@ -3,6 +3,11 @@ import * as $ from '@goscript/builtin/index.js'
 import * as cmp from '../cmp/index.js'
 import * as iter from '../iter/index.js'
 
+type SyncCallbackResult<T> = T | globalThis.Promise<T>
+type CompareCallback<T, U = T> = ((v1: T, v2: U) => SyncCallbackResult<number>) | null
+type PredicateCallback<T> = ((value: T) => SyncCallbackResult<boolean>) | null
+type EqualCallback<T, U = T> = ((v1: T, v2: U) => SyncCallbackResult<boolean>) | null
+
 /**
  * Compare compares the elements of s1 and s2 using cmp.Compare.
  * The elements are compared sequentially, starting at index 0,
@@ -45,7 +50,7 @@ export function Compare<T extends string | number>(
 export function CompareFunc<T, U>(
   s1: $.Slice<T>,
   s2: $.Slice<U>,
-  compare: ((v1: T, v2: U) => number) | null,
+  compare: CompareCallback<T, U>,
 ): number {
   if (compare == null) {
     throw new Error('slices.CompareFunc: nil comparison function')
@@ -54,7 +59,9 @@ export function CompareFunc<T, U>(
   const len2 = $.len(s2)
   const minLen = len1 < len2 ? len1 : len2
   for (let i = 0; i < minLen; i++) {
-    const result = compare((s1 as any)[i] as T, (s2 as any)[i] as U)
+    const result = syncNumber(
+      compare((s1 as any)[i] as T, (s2 as any)[i] as U),
+    )
     if (result !== 0) {
       return result
     }
@@ -191,7 +198,7 @@ export function Min<T extends cmp.Ordered>(x: $.Slice<T>): T {
 
 export function MaxFunc<T>(
   x: $.Slice<T>,
-  compare: ((a: T, b: T) => number) | null,
+  compare: CompareCallback<T>,
 ): T {
   if (compare == null) {
     throw new Error('slices.MaxFunc: nil comparison function')
@@ -202,7 +209,7 @@ export function MaxFunc<T>(
   let max = (x as any)[0] as T
   for (let i = 1; i < $.len(x); i++) {
     const value = (x as any)[i] as T
-    if (compare(max, value) < 0) {
+    if (syncNumber(compare(max, value)) < 0) {
       max = value
     }
   }
@@ -211,7 +218,7 @@ export function MaxFunc<T>(
 
 export function MinFunc<T>(
   x: $.Slice<T>,
-  compare: ((a: T, b: T) => number) | null,
+  compare: CompareCallback<T>,
 ): T {
   if (compare == null) {
     throw new Error('slices.MinFunc: nil comparison function')
@@ -222,7 +229,7 @@ export function MinFunc<T>(
   let min = (x as any)[0] as T
   for (let i = 1; i < $.len(x); i++) {
     const value = (x as any)[i] as T
-    if (compare(value, min) < 0) {
+    if (syncNumber(compare(value, min)) < 0) {
       min = value
     }
   }
@@ -280,7 +287,7 @@ export function Delete<T>(s: $.Slice<T>, i: number, j: number): $.Slice<T> {
 
 export function DeleteFunc<T>(
   s: $.Slice<T>,
-  del: ((value: T) => boolean) | null,
+  del: PredicateCallback<T>,
 ): $.Slice<T> {
   if (del == null) {
     throw new Error('slices.DeleteFunc: nil delete function')
@@ -291,7 +298,7 @@ export function DeleteFunc<T>(
   let w = 0
   for (let i = 0; i < s.length; i++) {
     const value = s[i] as T
-    if (!del(value)) {
+    if (!syncBoolean(del(value))) {
       ;(s as any)[w] = value
       w++
     }
@@ -347,7 +354,7 @@ export function Compact<T>(s: $.Slice<T>): $.Slice<T> {
 
 export function CompactFunc<T>(
   s: $.Slice<T>,
-  eq: ((v1: T, v2: T) => boolean) | null,
+  eq: EqualCallback<T>,
 ): $.Slice<T> {
   if (eq == null) {
     throw new Error('slices.CompactFunc: nil equality function')
@@ -357,7 +364,7 @@ export function CompactFunc<T>(
   }
   let w = 1
   for (let i = 1; i < $.len(s); i++) {
-    if (!eq((s as any)[i - 1] as T, (s as any)[i] as T)) {
+    if (!syncBoolean(eq((s as any)[i - 1] as T, (s as any)[i] as T))) {
       ;(s as any)[w] = (s as any)[i]
       w++
     }
@@ -395,14 +402,17 @@ export function Equal<T>(s1: $.Slice<T>, s2: $.Slice<T>): boolean {
 export function EqualFunc<T, U>(
   s1: $.Slice<T>,
   s2: $.Slice<U>,
-  eq: (v1: T, v2: U) => boolean,
+  eq: EqualCallback<T, U>,
 ): boolean {
+  if (eq == null) {
+    throw new Error('slices.EqualFunc: nil equality function')
+  }
   const len1 = $.len(s1)
   if (len1 !== $.len(s2)) {
     return false
   }
   for (let i = 0; i < len1; i++) {
-    if (!eq((s1 as any)[i] as T, (s2 as any)[i] as U)) {
+    if (!syncBoolean(eq((s1 as any)[i] as T, (s2 as any)[i] as U))) {
       return false
     }
   }
@@ -418,9 +428,12 @@ export function Index<T>(s: $.Slice<T>, v: T): number {
   return -1
 }
 
-export function IndexFunc<T>(s: $.Slice<T>, f: (v: T) => boolean): number {
+export function IndexFunc<T>(s: $.Slice<T>, f: PredicateCallback<T>): number {
+  if (f == null) {
+    throw new Error('slices.IndexFunc: nil predicate function')
+  }
   for (let i = 0; i < $.len(s); i++) {
-    if (f((s as any)[i] as T)) {
+    if (syncBoolean(f((s as any)[i] as T))) {
       return i
     }
   }
@@ -431,7 +444,7 @@ export function Contains<T>(s: $.Slice<T>, v: T): boolean {
   return Index(s, v) >= 0
 }
 
-export function ContainsFunc<T>(s: $.Slice<T>, f: (v: T) => boolean): boolean {
+export function ContainsFunc<T>(s: $.Slice<T>, f: PredicateCallback<T>): boolean {
   return IndexFunc(s, f) >= 0
 }
 
@@ -512,7 +525,7 @@ export function Grow<T>(s: $.Slice<T>, n: number): $.Slice<T> {
  */
 export function SortFunc<T>(
   s: $.Slice<T>,
-  cmp: ((a: T, b: T) => number) | null,
+  cmp: CompareCallback<T>,
 ): void {
   if (cmp == null) {
     throw new Error('slices.SortFunc: nil comparison function')
@@ -521,18 +534,18 @@ export function SortFunc<T>(
     return
   }
   const arr = s as any as T[]
-  arr.sort(cmp)
+  arr.sort((a, b) => syncNumber(cmp(a, b)))
 }
 
 export function IsSortedFunc<T>(
   x: $.Slice<T>,
-  cmp: ((a: T, b: T) => number) | null,
+  cmp: CompareCallback<T>,
 ): boolean {
   if (cmp == null) {
     throw new Error('slices.IsSortedFunc: nil comparison function')
   }
   for (let i = $.len(x) - 1; i > 0; i--) {
-    if (cmp((x as any)[i] as T, (x as any)[i - 1] as T) < 0) {
+    if (syncNumber(cmp((x as any)[i] as T, (x as any)[i - 1] as T)) < 0) {
       return false
     }
   }
@@ -541,7 +554,7 @@ export function IsSortedFunc<T>(
 
 export function SortStableFunc<T>(
   s: $.Slice<T>,
-  cmp: ((a: T, b: T) => number) | null,
+  cmp: CompareCallback<T>,
 ): void {
   if (cmp == null) {
     throw new Error('slices.SortStableFunc: nil comparison function')
@@ -552,7 +565,7 @@ export function SortStableFunc<T>(
   const sorted = (s as any as T[])
     .map((value, index) => ({ value, index }))
     .sort((a, b) => {
-      const result = cmp(a.value, b.value)
+      const result = syncNumber(cmp(a.value, b.value))
       if (result !== 0) {
         return result
       }
@@ -598,7 +611,7 @@ function clearValue<T>(s: $.Slice<T>): T | null {
 export function BinarySearchFunc<E, T>(
   x: $.Slice<E>,
   target: T,
-  cmp: ((a: E, b: T) => number) | null,
+  cmp: CompareCallback<E, T>,
 ): [number, boolean] {
   if (cmp == null) {
     throw new Error('slices.BinarySearchFunc: nil comparison function')
@@ -608,7 +621,7 @@ export function BinarySearchFunc<E, T>(
 
   while (left < right) {
     const mid = Math.floor((left + right) / 2)
-    const result = cmp((x as any)[mid] as E, target)
+    const result = syncNumber(cmp((x as any)[mid] as E, target))
 
     if (result < 0) {
       left = mid + 1
@@ -620,6 +633,20 @@ export function BinarySearchFunc<E, T>(
   }
 
   return [left, false]
+}
+
+function syncNumber(value: SyncCallbackResult<number>): number {
+  if (value instanceof Promise) {
+    throw new Error('slices: asynchronous callback result is not supported')
+  }
+  return value
+}
+
+function syncBoolean(value: SyncCallbackResult<boolean>): boolean {
+  if (value instanceof Promise) {
+    throw new Error('slices: asynchronous callback result is not supported')
+  }
+  return value
 }
 
 export function BinarySearch<T extends cmp.Ordered>(
