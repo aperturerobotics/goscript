@@ -156,8 +156,7 @@ export function FastBase58DecodingAlphabet(
     $.panic('base58 alphabet is nil')
   }
 
-  const runes = Array.from(str, (r) => r.codePointAt(0) ?? 0)
-  const b58sz = runes.length
+  const b58sz = str.length
   const outisz = Math.trunc((b58sz + 3) / 4)
   const binu = new Uint8Array((b58sz + 3) * 3)
   let bytesleft = b58sz % 4
@@ -172,11 +171,12 @@ export function FastBase58DecodingAlphabet(
 
   const outi = new Uint32Array(outisz)
   let zcount = 0
-  while (zcount < b58sz && runes[zcount] === zero) {
+  while (zcount < b58sz && str.charCodeAt(zcount) === zero) {
     zcount++
   }
 
-  for (const r of runes) {
+  for (let i = 0; i < b58sz; i++) {
+    const r = str.charCodeAt(i)
     if (r > 127) {
       return [null, $.newError('High-bit set on invalid digit')]
     }
@@ -190,9 +190,9 @@ export function FastBase58DecodingAlphabet(
 
     let c = decoded >>> 0
     for (let j = outisz - 1; j >= 0; j--) {
-      const t = BigInt(outi[j]) * 58n + BigInt(c)
-      c = Number((t >> 32n) & 0x3fn)
-      outi[j] = Number(t & 0xffffffffn)
+      const t = outi[j] * 58 + c
+      c = Math.floor(t / 0x100000000)
+      outi[j] = t >>> 0
     }
 
     if (c > 0) {
