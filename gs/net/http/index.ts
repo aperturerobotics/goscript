@@ -1,6 +1,7 @@
 import * as $ from '@goscript/builtin/index.js'
 import * as context from '@goscript/context/index.js'
 import * as errors from '@goscript/errors/index.js'
+import * as fs from '@goscript/io/fs/fs.js'
 import * as io from '@goscript/io/index.js'
 
 export const StatusOK = 200
@@ -220,6 +221,15 @@ export const DefaultClient = new Client()
 
 export interface RoundTripper {
   RoundTrip(req: Request | $.VarRef<Request> | null): [Response | null, $.GoError]
+}
+
+export interface FileSystem {
+  Open(name: string): [File | null, $.GoError]
+}
+
+export interface File extends io.Closer, io.Reader, io.Seeker {
+  Readdir(count: number): [$.Slice<fs.FileInfo>, $.GoError]
+  Stat(): [fs.FileInfo, $.GoError]
 }
 
 export interface Handler {

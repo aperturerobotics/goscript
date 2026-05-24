@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { varRef } from '../../builtin/varRef.js'
 import {
   Client,
+  File,
+  FileSystem,
   Header,
   HandlerFunc_ServeHTTP,
   Get,
@@ -96,5 +98,21 @@ describe('net/http override', () => {
     NotFound(writer, null)
 
     expect(writes).toEqual(['status:404', '404 page not found\n'])
+  })
+
+  it('exports file server interface shapes', () => {
+    const file: File = {
+      Close: () => null,
+      Read: (p) => [p?.length ?? 0, null],
+      Seek: (offset) => [offset, null],
+      Readdir: () => [null, null],
+      Stat: () => [null, null],
+    }
+    const fsys: FileSystem = {
+      Open: (name) => (name === 'ok' ? [file, null] : [null, new Error('missing')]),
+    }
+
+    expect(fsys.Open('ok')[0]).toBe(file)
+    expect(fsys.Open('missing')[1]?.message).toBe('missing')
   })
 })
