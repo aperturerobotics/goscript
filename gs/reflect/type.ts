@@ -206,7 +206,7 @@ export interface Type {
   NumField(): number
 
   // PkgPath returns the package path for named types, empty for unnamed types.
-  PkgPath?(): string
+  PkgPath(): string
 
   // Field returns a struct type's i'th field.
   // Panics if the type's Kind is not Struct or i is out of range.
@@ -273,6 +273,9 @@ class InvalidTypeClass implements Type {
     return '<invalid reflect.Value>'
   }
   Name(): string {
+    return ''
+  }
+  PkgPath(): string {
     return ''
   }
   Size(): number {
@@ -1157,7 +1160,7 @@ export class BasicType implements Type {
     return 0
   }
 
-  public PkgPath?(): string {
+  public PkgPath(): string {
     return ''
   }
 
@@ -1334,7 +1337,7 @@ class SliceType implements Type {
     return 0
   }
 
-  public PkgPath?(): string {
+  public PkgPath(): string {
     return ''
   }
 
@@ -1433,7 +1436,7 @@ class ArrayType implements Type {
     return this._len
   }
 
-  public PkgPath?(): string {
+  public PkgPath(): string {
     return ''
   }
 
@@ -1525,7 +1528,7 @@ class PointerType implements Type {
     return 0
   }
 
-  public PkgPath?(): string {
+  public PkgPath(): string {
     return ''
   }
 
@@ -1627,7 +1630,7 @@ class FunctionType implements Type {
     return 0
   }
 
-  public PkgPath?(): string {
+  public PkgPath(): string {
     return ''
   }
 
@@ -1730,7 +1733,7 @@ class MapType implements Type {
     return this._keyType
   }
 
-  public PkgPath?(): string {
+  public PkgPath(): string {
     return ''
   }
 
@@ -1910,7 +1913,7 @@ class StructType implements Type {
     return this._fields.length
   }
 
-  public PkgPath?(): string {
+  public PkgPath(): string {
     // Extract package path from full type name (e.g., "main.Person" -> "main")
     const dotIndex = this._name.lastIndexOf('.')
     if (dotIndex > 0) {
@@ -2119,7 +2122,7 @@ class ChannelType implements Type {
     return 0
   }
 
-  public PkgPath?(): string {
+  public PkgPath(): string {
     return ''
   }
 
@@ -2222,7 +2225,7 @@ class InterfaceType implements Type {
     return 0
   }
 
-  public PkgPath?(): string {
+  public PkgPath(): string {
     if (this._name === 'interface{}' || this._name.startsWith('interface {')) {
       return ''
     }

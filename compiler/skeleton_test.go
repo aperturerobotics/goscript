@@ -316,6 +316,53 @@ func TestCompilePackagesLazilyInitializesFunctionBodyPackageVarDependencies(t *t
 	}
 }
 
+func TestCompilePackagesInitializesLazyAsyncPackageVarsBeforeInit(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/lazyasyncvars\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"sync\"",
+			"var lock sync.Mutex",
+			"var first = makeFirst()",
+			"func makeFirst() int {",
+			"  lock.Lock()",
+			"  defer lock.Unlock()",
+			"  return later",
+			"}",
+			"var later = 7",
+			"func init() { println(first) }",
+			"func main() {}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "lazyasyncvars", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"async function __goscript_init_first(): globalThis.Promise<void>",
+		"first = await makeFirst()",
+		"export function __goscript_get_first(): number",
+		"await __goscript_init_first()",
+		"__goscriptInit0()",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesBindsFuncLiteralVarRefParams(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/funclitvarref\n\ngo 1.25.3\n",

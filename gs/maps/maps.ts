@@ -4,7 +4,7 @@ import * as _ from '@goscript/unsafe/index.js'
 
 // Equal reports whether two maps contain the same key/value pairs.
 // Values are compared using ==.
-export function Equal<K extends $.Comparable, V extends $.Comparable>(
+export function Equal<K extends $.Comparable | null, V extends $.Comparable | null>(
   m1: Map<K, V>,
   m2: Map<K, V>,
 ): boolean {
@@ -22,7 +22,7 @@ export function Equal<K extends $.Comparable, V extends $.Comparable>(
 
 // EqualFunc is like Equal, but compares values using eq.
 // Keys are still compared with ==.
-export function EqualFunc<K extends $.Comparable, V1, V2>(
+export function EqualFunc<K extends $.Comparable | null, V1, V2>(
   m1: Map<K, V1>,
   m2: Map<K, V2>,
   eq: ((p0: V1, p1: V2) => boolean) | null,
@@ -40,7 +40,7 @@ export function EqualFunc<K extends $.Comparable, V1, V2>(
 }
 
 // clone returns a shallow copy of the map.
-export function clone<K extends $.Comparable, V>(
+export function clone<K extends $.Comparable | null, V>(
   m: Map<K, V> | null,
 ): Map<K, V> | null {
   if (m == null) {
@@ -55,7 +55,7 @@ export function clone<K extends $.Comparable, V>(
 
 // Clone returns a copy of m.  This is a shallow clone:
 // the new keys and values are set using ordinary assignment.
-export function Clone<K extends $.Comparable, V>(
+export function Clone<K extends $.Comparable | null, V>(
   m: Map<K, V> | null,
 ): Map<K, V> | null {
   // Preserve nil in case it matters.
@@ -69,7 +69,7 @@ export function Clone<K extends $.Comparable, V>(
 // When a key in src is already present in dst,
 // the value in dst will be overwritten by the value associated
 // with the key in src.
-export function Copy<K extends $.Comparable, V>(
+export function Copy<K extends $.Comparable | null, V>(
   dst: Map<K, V> | null,
   src: Map<K, V> | null,
 ): void {
@@ -79,7 +79,7 @@ export function Copy<K extends $.Comparable, V>(
 }
 
 // DeleteFunc deletes any key/value pairs from m for which del returns true.
-export function DeleteFunc<K extends $.Comparable, V>(
+export function DeleteFunc<K extends $.Comparable | null, V>(
   m: Map<K, V>,
   del: ((p0: K, p1: V) => boolean) | null,
 ): void {

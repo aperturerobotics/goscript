@@ -5,7 +5,7 @@ import * as iter from '@goscript/iter/index.js'
 // All returns an iterator over key-value pairs from m.
 // The iteration order is not specified and is not guaranteed
 // to be the same from one call to the next.
-export function All<K extends $.Comparable, V>(
+export function All<K extends $.Comparable | null, V>(
   m: Map<K, V> | null,
 ): iter.Seq2<K, V> {
   return (_yield: ((p0: K, p1: V) => iter.YieldResult) | null):
@@ -16,7 +16,7 @@ export function All<K extends $.Comparable, V>(
 // Keys returns an iterator over keys in m.
 // The iteration order is not specified and is not guaranteed
 // to be the same from one call to the next.
-export function Keys<K extends $.Comparable, V>(
+export function Keys<K extends $.Comparable | null, V>(
   m: Map<K, V> | null,
 ): iter.Seq<K> {
   return (_yield: ((p0: K) => iter.YieldResult) | null):
@@ -27,7 +27,7 @@ export function Keys<K extends $.Comparable, V>(
 // Values returns an iterator over values in m.
 // The iteration order is not specified and is not guaranteed
 // to be the same from one call to the next.
-export function Values<K extends $.Comparable, V>(
+export function Values<K extends $.Comparable | null, V>(
   m: Map<K, V> | null,
 ): iter.Seq<V> {
   return (_yield: ((p0: V) => iter.YieldResult) | null):
@@ -37,7 +37,7 @@ export function Values<K extends $.Comparable, V>(
 
 // Insert adds the key-value pairs from seq to m.
 // If a key in seq already exists in m, its value will be overwritten.
-export function Insert<K extends $.Comparable, V>(
+export function Insert<K extends $.Comparable | null, V>(
   m: Map<K, V>,
   seq: iter.Seq2<K, V>,
 ): void {
@@ -52,7 +52,7 @@ export function Insert<K extends $.Comparable, V>(
 
 // Collect collects key-value pairs from seq into a new map
 // and returns it.
-export function Collect<K extends $.Comparable, V>(
+export function Collect<K extends $.Comparable | null, V>(
   seq: iter.Seq2<K, V>,
 ): Map<K, V> {
   let m = $.makeMap<K, V>()
@@ -60,11 +60,11 @@ export function Collect<K extends $.Comparable, V>(
   return m
 }
 
-function mapKeys<K extends $.Comparable, V>(m: Map<K, V> | null): K[] {
+function mapKeys<K extends $.Comparable | null, V>(m: Map<K, V> | null): K[] {
   return Array.from(m?.keys() ?? [])
 }
 
-function mapValues<K extends $.Comparable, V>(m: Map<K, V> | null): V[] {
+function mapValues<K extends $.Comparable | null, V>(m: Map<K, V> | null): V[] {
   return Array.from(m?.values() ?? [])
 }
 

@@ -31,6 +31,7 @@ describe('TypeFor', () => {
 
     expect(intType.String()).toBe('int')
     expect(intType.Kind()).toBe(Int)
+    expect(intType.PkgPath()).toBe('')
   })
 
   it('formats literal interface methods from type metadata', () => {

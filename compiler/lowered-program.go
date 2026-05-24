@@ -48,6 +48,7 @@ type loweredDecl struct {
 	code            string
 	indexExport     string
 	typeIndexExport string
+	packageInitCall string
 	function        *loweredFunction
 	structType      *loweredStruct
 }

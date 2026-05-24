@@ -35,6 +35,10 @@ class MapType implements Type {
     return '' // Map types are unnamed composite types
   }
 
+  public PkgPath(): string {
+    return ''
+  }
+
   public Size(): number {
     return 8 // pointer size
   }

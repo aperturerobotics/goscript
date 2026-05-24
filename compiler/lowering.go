@@ -221,8 +221,13 @@ func (o *LoweringOwner) lowerFile(
 		topLevel:        true,
 	}
 	var diagnostics []Diagnostic
+	var packageInitCalls []string
 	appendDecls := func(decls []loweredDecl) {
 		for _, decl := range decls {
+			if decl.packageInitCall != "" {
+				packageInitCalls = append(packageInitCalls, decl.packageInitCall)
+				continue
+			}
 			loweredFile.decls = append(loweredFile.decls, decl)
 			if decl.indexExport != "" {
 				loweredFile.exports = append(loweredFile.exports, decl.indexExport)
@@ -252,6 +257,9 @@ func (o *LoweringOwner) lowerFile(
 		if !isConstGenDecl(decl) {
 			lowerDecl(decl)
 		}
+	}
+	for _, call := range packageInitCalls {
+		loweredFile.decls = append(loweredFile.decls, loweredDecl{code: "await " + call})
 	}
 	for _, decl := range loweredFile.decls {
 		if decl.function == nil || !decl.function.init {
@@ -855,9 +863,21 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				decls = append(decls, loweredDecl{code: code, indexExport: indexExport})
 				if lazy {
 					getterName := packageVarGetterName(name.Name)
-					getterCode := "export function " + getterName + "(): " + variableType + " {\n\t" +
-						"if (((" + declName + ") as any) === undefined) {\n\t\t" +
-						declName + " = " + value + "\n\t}\n\treturn " + declName + "\n}"
+					getterCode := "export function " + getterName + "(): " + variableType + " {\n\t"
+					if strings.Contains(value, "await ") {
+						initName := packageVarInitName(name.Name)
+						initCode := "async function " + initName + "(): globalThis.Promise<void> {\n\t" +
+							"if (((" + declName + ") as any) === undefined) {\n\t\t" +
+							declName + " = " + value + "\n\t}\n}"
+						decls = append(decls, loweredDecl{code: initCode})
+						decls = append(decls, loweredDecl{packageInitCall: initName + "()"})
+						getterCode += "if (((" + declName + ") as any) === undefined) {\n\t\t" +
+							"throw new Error(" + strconv.Quote("goscript package variable "+name.Name+" read before initialization") + ")\n\t}\n"
+					} else {
+						getterCode += "if (((" + declName + ") as any) === undefined) {\n\t\t" +
+							declName + " = " + value + "\n\t}\n"
+					}
+					getterCode += "\treturn " + declName + "\n}"
 					getterIndexExport := ""
 					if ast.IsExported(name.Name) {
 						getterIndexExport = getterName
@@ -2234,6 +2254,10 @@ func packageVarSetterName(name string) string {
 
 func packageVarGetterName(name string) string {
 	return "__goscript_get_" + safeIdentifier(name)
+}
+
+func packageVarInitName(name string) string {
+	return "__goscript_init_" + safeIdentifier(name)
 }
 
 func (o *LoweringOwner) lowerElse(ctx lowerFileContext, stmt ast.Stmt) ([]loweredStmt, []Diagnostic) {
