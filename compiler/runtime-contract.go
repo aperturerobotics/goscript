@@ -46,6 +46,8 @@ const (
 	RuntimeHelperImag      RuntimeHelper = "builtin.imag"
 	RuntimeHelperUint64Shl RuntimeHelper = "builtin.uint64Shl"
 	RuntimeHelperUint64Shr RuntimeHelper = "builtin.uint64Shr"
+	RuntimeHelperInt64Shl  RuntimeHelper = "builtin.int64Shl"
+	RuntimeHelperInt64Shr  RuntimeHelper = "builtin.int64Shr"
 	RuntimeHelperUintShr   RuntimeHelper = "builtin.uintShr"
 	RuntimeHelperUint64Div RuntimeHelper = "builtin.uint64Div"
 	RuntimeHelperUint64Mod RuntimeHelper = "builtin.uint64Mod"
@@ -55,6 +57,14 @@ const (
 	RuntimeHelperUint64And RuntimeHelper = "builtin.uint64And"
 	RuntimeHelperUint64Or  RuntimeHelper = "builtin.uint64Or"
 	RuntimeHelperUint64Xor RuntimeHelper = "builtin.uint64Xor"
+	RuntimeHelperInt64Div  RuntimeHelper = "builtin.int64Div"
+	RuntimeHelperInt64Mod  RuntimeHelper = "builtin.int64Mod"
+	RuntimeHelperInt64Mul  RuntimeHelper = "builtin.int64Mul"
+	RuntimeHelperInt64Add  RuntimeHelper = "builtin.int64Add"
+	RuntimeHelperInt64Sub  RuntimeHelper = "builtin.int64Sub"
+	RuntimeHelperInt64And  RuntimeHelper = "builtin.int64And"
+	RuntimeHelperInt64Or   RuntimeHelper = "builtin.int64Or"
+	RuntimeHelperInt64Xor  RuntimeHelper = "builtin.int64Xor"
 
 	RuntimeHelperAssignStruct      RuntimeHelper = "value.assignStruct"
 	RuntimeHelperMarkAsStructValue RuntimeHelper = "value.markAsStructValue"
@@ -265,6 +275,8 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperImag, "imag", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64Shl, "uint64Shl", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64Shr, "uint64Shr", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64Shl, "int64Shl", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64Shr, "int64Shr", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUintShr, "uintShr", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64Div, "uint64Div", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64Mod, "uint64Mod", RuntimeHelperCategoryBuiltin),
@@ -274,6 +286,14 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperUint64And, "uint64And", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64Or, "uint64Or", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64Xor, "uint64Xor", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64Div, "int64Div", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64Mod, "int64Mod", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64Mul, "int64Mul", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64Add, "int64Add", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64Sub, "int64Sub", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64And, "int64And", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64Or, "int64Or", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64Xor, "int64Xor", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperAssignStruct, "assignStruct", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperMarkAsStructValue, "markAsStructValue", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperCloneStructValue, "cloneStructValue", RuntimeHelperCategoryValue),

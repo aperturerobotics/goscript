@@ -5661,47 +5661,62 @@ func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *a
 	if !resultWide && !leftWide {
 		return "", false
 	}
+	signed := isFixedSignedWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) ||
+		isFixedSignedWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X))
 	switch expr.Op {
 	case token.SHL, token.SHR:
 		helper := RuntimeHelperUint64Shr
 		if expr.Op == token.SHL {
 			helper = RuntimeHelperUint64Shl
 		}
+		if signed {
+			helper = RuntimeHelperInt64Shr
+			if expr.Op == token.SHL {
+				helper = RuntimeHelperInt64Shl
+			}
+		}
 		if _, ok := constantShiftAmount(ctx, expr.Y); !ok {
 			return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
 		}
 		amount, ok := constantShiftAmount(ctx, expr.Y)
-		if ok && amount >= 32 && expr.Op == token.SHL {
+		if ok && amount >= 32 && expr.Op == token.SHL && !signed {
 			base := o.lowerWideShiftLeftOperand(ctx, expr.X, left)
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Mul) +
 				"(" + base + ", " + shiftMultiplier(amount) + ")", true
 		}
 		return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
 	case token.MUL:
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Mul) + "(" + left + ", " + right + ")", true
+		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Mul, RuntimeHelperInt64Mul)) + "(" + left + ", " + right + ")", true
 	case token.QUO:
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Div) + "(" + left + ", " + right + ")", true
+		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Div, RuntimeHelperInt64Div)) + "(" + left + ", " + right + ")", true
 	case token.REM:
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Mod) + "(" + left + ", " + right + ")", true
+		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Mod, RuntimeHelperInt64Mod)) + "(" + left + ", " + right + ")", true
 	case token.ADD:
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Add) + "(" + left + ", " + right + ")", true
+		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Add, RuntimeHelperInt64Add)) + "(" + left + ", " + right + ")", true
 	case token.SUB:
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Sub) + "(" + left + ", " + right + ")", true
+		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Sub, RuntimeHelperInt64Sub)) + "(" + left + ", " + right + ")", true
 	case token.AND:
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64And) + "(" + left + ", " + right + ")", true
+		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64And, RuntimeHelperInt64And)) + "(" + left + ", " + right + ")", true
 	case token.XOR:
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Xor) + "(" + left + ", " + right + ")", true
+		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Xor, RuntimeHelperInt64Xor)) + "(" + left + ", " + right + ")", true
 	case token.OR:
 		shift, ok := wideLeftShiftExpr(ctx, expr.X)
-		if ok {
+		if ok && !signed {
 			if bits, ok := lowIntegerBits(ctx, expr.Y); ok && bits <= shift {
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Add) + "(" + left + ", " + right + ")", true
 			}
 		}
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Or) + "(" + left + ", " + right + ")", true
+		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Or, RuntimeHelperInt64Or)) + "(" + left + ", " + right + ")", true
 	default:
 		return "", false
 	}
+}
+
+func wideIntegerHelper(signed bool, unsigned RuntimeHelper, signedHelper RuntimeHelper) RuntimeHelper {
+	if signed {
+		return signedHelper
+	}
+	return unsigned
 }
 
 func (o *LoweringOwner) lowerWideShiftLeftOperand(ctx lowerFileContext, expr ast.Expr, fallback string) string {
@@ -7976,6 +7991,14 @@ func isFixedWideIntegerType(typ types.Type) bool {
 	default:
 		return false
 	}
+}
+
+func isFixedSignedWideIntegerType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	return ok && basic.Kind() == types.Int64
 }
 
 func isRuneSliceType(typ types.Type) bool {

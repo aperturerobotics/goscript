@@ -41,6 +41,7 @@ func main() {
 	println("utc", setTime.UTC().Format("2006-01-02T15:04:05Z07:00"))
 	println("seconds", (1500 * time.Millisecond).Seconds())
 	println("duration string", (1500 * time.Millisecond).String())
+	println("negative duration before", time.Now().After(time.Now().Add(-60*time.Second)))
 
 	duration, durationErr := time.ParseDuration("1.5s")
 	println("parsed duration", duration, durationErr == nil)

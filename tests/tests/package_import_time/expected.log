@@ -20,6 +20,7 @@ location UTC
 utc 2025-05-15T01:10:42Z
 seconds 1.5
 duration string 1.5s
+negative duration before true
 parsed duration 1500000000 true
 bad duration err true
 max duration timer stopped true

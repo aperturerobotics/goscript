@@ -60,11 +60,11 @@ export class content {
 		}
 
 		let l = $.int($.len(b))
-		if (($.uint64Add(off, l)) > $.int($.len($.pointerValue<content>(c).bytes))) {
-			l = $.uint64Sub($.int($.len($.pointerValue<content>(c).bytes)), off)
+		if (($.int64Add(off, l)) > $.int($.len($.pointerValue<content>(c).bytes))) {
+			l = $.int64Sub($.int($.len($.pointerValue<content>(c).bytes)), off)
 		}
 
-		let btr: $.Slice<number> = $.goSlice($.pointerValue<content>(c).bytes, off, $.uint64Add(off, l))
+		let btr: $.Slice<number> = $.goSlice($.pointerValue<content>(c).bytes, off, $.int64Add(off, l))
 		n = $.copy(b, btr)
 		return [n, err]
 	}

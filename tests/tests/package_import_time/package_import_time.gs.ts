@@ -10,7 +10,7 @@ import * as time from "@goscript/time/index.js"
 export async function main(): globalThis.Promise<void> {
 	let now = $.markAsStructValue($.cloneStructValue(time.Now()))
 	let setTime = $.markAsStructValue($.cloneStructValue(time.Date(2025, time.May, 15, 1, 10, 42, 0, time.UTC)))
-	if ($.markAsStructValue($.cloneStructValue(now)).Sub($.markAsStructValue($.cloneStructValue(setTime))) < ($.uint64Mul(time.Hour, 24))) {
+	if ($.markAsStructValue($.cloneStructValue(now)).Sub($.markAsStructValue($.cloneStructValue(setTime))) < ($.int64Mul(time.Hour, 24))) {
 		$.println("expected we are > 24 hrs past may 15, incorrect")
 	}
 
@@ -41,8 +41,9 @@ export async function main(): globalThis.Promise<void> {
 	$.println("weekday", time.Weekday_String($.markAsStructValue($.cloneStructValue(setTime)).Weekday()))
 	$.println("location", time.Location.prototype.String.call($.markAsStructValue($.cloneStructValue(setTime)).Location()))
 	$.println("utc", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(setTime)).UTC())).Format("2006-01-02T15:04:05Z07:00"))
-	$.println("seconds", time.Duration_Seconds(($.uint64Mul(1500, time.Millisecond))))
-	$.println("duration string", time.Duration_String(($.uint64Mul(1500, time.Millisecond))))
+	$.println("seconds", time.Duration_Seconds(($.int64Mul(1500, time.Millisecond))))
+	$.println("duration string", time.Duration_String(($.int64Mul(1500, time.Millisecond))))
+	$.println("negative duration before", $.markAsStructValue($.cloneStructValue(time.Now())).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Now())).Add($.int64Mul(-60, time.Second))))))
 
 	let [duration, durationErr] = time.ParseDuration("1.5s")
 	$.println("parsed duration", duration, durationErr == null)

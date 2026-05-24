@@ -294,13 +294,13 @@ export class parser {
 			case 13:
 			case 14:
 			{
-				size = $.uint64Add(2, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
+				size = $.int64Add(2, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
 				break
 			}
 			case 15:
 			case 16:
 			{
-				size = $.uint64Add(1, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
+				size = $.int64Add(1, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
 				break
 			}
 			case 18:
@@ -318,7 +318,7 @@ export class parser {
 					size = $.uint64Add(size, parser.prototype.calcSize.call(p, sub, false))
 				}
 				if ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) > 1) {
-					size = $.uint64Add(size, $.uint64Sub($.int($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub)), 1))
+					size = $.uint64Add(size, $.int64Sub($.int($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub)), 1))
 				}
 				break
 			}
@@ -327,14 +327,14 @@ export class parser {
 				let sub = parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false)
 				if ($.pointerValue<__goscript_regexp.Regexp>(re).Max == -1) {
 					if ($.pointerValue<__goscript_regexp.Regexp>(re).Min == 0) {
-						size = $.uint64Add(2, sub)
+						size = $.int64Add(2, sub)
 					} else {
-						size = $.uint64Add(1, ($.uint64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Min), sub)))
+						size = $.int64Add(1, ($.int64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Min), sub)))
 					}
 					break
 				}
 				// x{2,5} = xx(x(x(x)?)?)?
-				size = $.uint64Add(($.uint64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Max), sub)), $.int($.pointerValue<__goscript_regexp.Regexp>(re).Max - $.pointerValue<__goscript_regexp.Regexp>(re).Min))
+				size = $.int64Add(($.int64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Max), sub)), $.int($.pointerValue<__goscript_regexp.Regexp>(re).Max - $.pointerValue<__goscript_regexp.Regexp>(re).Min))
 				break
 			}
 		}
@@ -389,13 +389,13 @@ export class parser {
 				if (n <= 0) {
 					n = 1
 				}
-				if ($.int(n) > ($.uint64Div(maxSize, $.pointerValue<parser>(p).repeats))) {
+				if ($.int(n) > ($.int64Div(maxSize, $.pointerValue<parser>(p).repeats))) {
 					$.pointerValue<parser>(p).repeats = maxSize
 				} else {
 					$.pointerValue<parser>(p).repeats = $.uint64Mul($.pointerValue<parser>(p).repeats, $.int(n))
 				}
 			}
-			if ($.int($.pointerValue<parser>(p).numRegexp) < ($.uint64Div(maxSize, $.pointerValue<parser>(p).repeats))) {
+			if ($.int($.pointerValue<parser>(p).numRegexp) < ($.int64Div(maxSize, $.pointerValue<parser>(p).repeats))) {
 				return
 			}
 

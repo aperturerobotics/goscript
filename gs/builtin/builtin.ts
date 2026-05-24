@@ -331,6 +331,20 @@ export function uint64Shr(
   return uint64Result(uint64Value(value) >> BigInt(Math.trunc(Number(shift))))
 }
 
+export function int64Shl(
+  value: number | bigint,
+  shift: number | bigint,
+): number {
+  return int64Result(int64Value(value) << BigInt(Math.trunc(Number(shift))))
+}
+
+export function int64Shr(
+  value: number | bigint,
+  shift: number | bigint,
+): number {
+  return int64Result(int64Value(value) >> BigInt(Math.trunc(Number(shift))))
+}
+
 export function uintShr(
   value: number | bigint,
   shift: number | bigint,
@@ -354,6 +368,13 @@ export function uint64Mul(
   return uint64Result(uint64Value(left) * uint64Value(right))
 }
 
+export function int64Mul(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  return int64Result(int64Value(left) * int64Value(right))
+}
+
 export function uint64Div(
   left: number | bigint,
   right: number | bigint,
@@ -363,6 +384,17 @@ export function uint64Div(
     throw new Error('runtime error: integer divide by zero')
   }
   return uint64Result(uint64Value(left) / divisor)
+}
+
+export function int64Div(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  const divisor = int64Value(right)
+  if (divisor === 0n) {
+    throw new Error('runtime error: integer divide by zero')
+  }
+  return int64Result(int64Value(left) / divisor)
 }
 
 export function uint64Mod(
@@ -376,11 +408,29 @@ export function uint64Mod(
   return uint64Result(uint64Value(left) % divisor)
 }
 
+export function int64Mod(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  const divisor = int64Value(right)
+  if (divisor === 0n) {
+    throw new Error('runtime error: integer divide by zero')
+  }
+  return int64Result(int64Value(left) % divisor)
+}
+
 export function uint64Add(
   left: number | bigint,
   right: number | bigint,
 ): number {
   return uint64Result(uint64Value(left) + uint64Value(right))
+}
+
+export function int64Add(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  return int64Result(int64Value(left) + int64Value(right))
 }
 
 export function uint64Sub(
@@ -390,11 +440,25 @@ export function uint64Sub(
   return uint64Result(uint64Value(left) - uint64Value(right))
 }
 
+export function int64Sub(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  return int64Result(int64Value(left) - int64Value(right))
+}
+
 export function uint64And(
   left: number | bigint,
   right: number | bigint,
 ): number {
   return uint64Result(uint64Value(left) & uint64Value(right))
+}
+
+export function int64And(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  return int64Result(int64Value(left) & int64Value(right))
 }
 
 export function uint64Or(
@@ -404,11 +468,37 @@ export function uint64Or(
   return uint64Result(uint64Value(left) | uint64Value(right))
 }
 
+export function int64Or(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  return int64Result(int64Value(left) | int64Value(right))
+}
+
 export function uint64Xor(
   left: number | bigint,
   right: number | bigint,
 ): number {
   return uint64Result(uint64Value(left) ^ uint64Value(right))
+}
+
+export function int64Xor(
+  left: number | bigint,
+  right: number | bigint,
+): number {
+  return int64Result(int64Value(left) ^ int64Value(right))
+}
+
+function int64Value(value: number | bigint): bigint {
+  if (typeof value === 'bigint') {
+    return BigInt.asIntN(64, value)
+  }
+  return BigInt.asIntN(64, BigInt(Math.trunc(value)))
+}
+
+function int64Result(value: bigint): number {
+  const normalized = BigInt.asIntN(64, value)
+  return Number(normalized)
 }
 
 function uint64Value(value: number | bigint): bigint {
