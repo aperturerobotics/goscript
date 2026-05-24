@@ -28,11 +28,14 @@ export {
   New,
   MakeSlice,
   MakeMap,
+  MakeMapWithSize,
   Append,
+  AppendSlice,
   MakeChan,
   Select,
 } from './value.js'
 export { Swapper } from './swapper.js'
+export { MapIter } from './map.js'
 
 // Export new types and constants
 export {
@@ -52,7 +55,6 @@ export type {
   SelectDir,
   SliceHeader,
   StringHeader,
-  MapIter,
 } from './types.js'
 
 // Export kind constants

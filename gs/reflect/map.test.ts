@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MapIter } from './map.js'
-import { ValueOf } from './type.js'
+import { AppendSlice, MakeMapWithSize, MapIter, MapOf, TypeOf, ValueOf } from './index.js'
 
 describe('MapIter', () => {
   it('should iterate over map entries with proper typing', () => {
@@ -46,5 +45,28 @@ describe('Value.MapKeys', () => {
     const emptyMap = new Map<string, number>()
 
     expect(ValueOf(emptyMap).MapKeys()).toEqual([])
+  })
+})
+
+describe('reflect compatibility surface', () => {
+  it('constructs maps, ranges entries, and looks up values', () => {
+    const typ = MapOf(TypeOf(''), TypeOf(0))
+    const mapValue = MakeMapWithSize(typ, 4)
+    const raw = mapValue.Interface() as Map<string, number>
+    raw.set('alpha', 1)
+
+    const iter = mapValue.MapRange()
+
+    expect(iter?.Key().Interface()).toBe('alpha')
+    expect(mapValue.MapIndex(ValueOf('alpha')).Interface()).toBe(1)
+    expect(mapValue.Type().Comparable()).toBe(false)
+    expect(TypeOf('alpha').Comparable()).toBe(true)
+  })
+
+  it('slices and appends slice values', () => {
+    const sliced = ValueOf([1, 2, 3, 4]).Slice(1, 3)
+    const appended = AppendSlice(sliced, ValueOf([5, 6]))
+
+    expect(appended.Interface()).toEqual([2, 3, 5, 6])
   })
 })

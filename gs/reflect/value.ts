@@ -171,6 +171,10 @@ export function MakeMap(typ: Type | null): Value {
   return new Value(map, typ)
 }
 
+export function MakeMapWithSize(typ: Type | null, _n: number): Value {
+  return MakeMap(typ)
+}
+
 // Append appends the values x to a slice and returns the resulting slice.
 export function Append(s: Value, x: Value): Value {
   if (s.Kind() !== Slice) {
@@ -186,6 +190,18 @@ export function Append(s: Value, x: Value): Value {
   const newArray = [...array, newValue]
 
   return new Value(newArray, s.Type())
+}
+
+export function AppendSlice(s: Value, t: Value): Value {
+  if (s.Kind() !== Slice || t.Kind() !== Slice) {
+    throw new Error('reflect.AppendSlice of non-slice')
+  }
+  const left = getArrayFromValue(s)
+  const right = getArrayFromValue(t)
+  if (!left || !right) {
+    throw new Error('cannot get array from slice value')
+  }
+  return new Value([...left, ...right], s.Type())
 }
 
 // MakeChan returns a Value representing a new channel with the specified type.

@@ -247,12 +247,18 @@ export interface Type {
   // Bits returns the size of the type in bits
   // Panics if the type's Kind is not a sized type.
   Bits(): number
+
+  // Comparable reports whether values of this type are comparable.
+  Comparable(): boolean
 }
 
 // InvalidTypeInstance is a singleton type for invalid/zero reflect.Value
 class InvalidTypeClass implements Type {
   Kind(): Kind {
     return Invalid
+  }
+  Comparable(): boolean {
+    return false
   }
   String(): string {
     return '<invalid reflect.Value>'
@@ -479,6 +485,32 @@ export class Value {
     )
   }
 
+  public Slice(i: number, j: number): Value {
+    const length = this.Len()
+    if (i < 0 || j < i || j > length) {
+      throw new Error(
+        `reflect.Value.Slice: slice index out of bounds [${i}:${j}] with length ${length}`,
+      )
+    }
+    if (
+      this._value &&
+      typeof this._value === 'object' &&
+      '__meta__' in this._value
+    ) {
+      return new Value($.goSlice(this._value as $.Slice<unknown>, i, j), this._type)
+    }
+    if (globalThis.Array.isArray(this._value)) {
+      return new Value(this._value.slice(i, j), this._type)
+    }
+    if (this._value instanceof Uint8Array) {
+      return new Value(this._value.slice(i, j), this._type)
+    }
+    if (typeof this._value === 'string') {
+      return new Value(this._value.slice(i, j), this._type)
+    }
+    throw new ValueError({ Kind: this.Kind(), Method: 'Slice' })
+  }
+
   public Bytes(): Uint8Array {
     if (this._value instanceof Uint8Array) {
       return this._value
@@ -658,13 +690,30 @@ export class Value {
   }
 
   public MapRange(): MapIter<unknown, unknown> | null {
-    // Placeholder for map iteration
-    return null
+    if (this.Kind() !== Map) {
+      throw new ValueError({ Kind: this.Kind(), Method: 'MapRange' })
+    }
+    if (this._value === null || this._value === undefined) {
+      return new MapIter(new globalThis.Map())
+    }
+    if (!(this._value instanceof globalThis.Map)) {
+      throw new ValueError({ Kind: this.Kind(), Method: 'MapRange' })
+    }
+    return new MapIter(this._value)
   }
 
-  public MapIndex(_key: Value): Value {
-    // Placeholder for map access
-    return new Value(null, new BasicType(Invalid, 'invalid'))
+  public MapIndex(key: Value): Value {
+    if (this.Kind() !== Map) {
+      throw new ValueError({ Kind: this.Kind(), Method: 'MapIndex' })
+    }
+    if (!(this._value instanceof globalThis.Map)) {
+      return new Value(null, new BasicType(Invalid, 'invalid'))
+    }
+    const rawKey = key.Interface()
+    if (!this._value.has(rawKey)) {
+      return new Value(null, new BasicType(Invalid, 'invalid'))
+    }
+    return new Value(this._value.get(rawKey) as ReflectValue, this.Type().Elem())
   }
 
   public MapKeys(): $.Slice<Value> {
@@ -1058,6 +1107,10 @@ export class BasicType implements Type {
     return this._kind
   }
 
+  public Comparable(): boolean {
+    return this._kind !== Func && this._kind !== Map && this._kind !== Slice
+  }
+
   public Size(): number {
     return this._size
   }
@@ -1219,6 +1272,10 @@ class SliceType implements Type {
     return Slice
   }
 
+  public Comparable(): boolean {
+    return false
+  }
+
   public Size(): number {
     return 24 // slice header size
   }
@@ -1296,6 +1353,10 @@ class ArrayType implements Type {
 
   public Kind(): Kind {
     return Array
+  }
+
+  public Comparable(): boolean {
+    return this._elemType.Comparable()
   }
 
   public Size(): number {
@@ -1376,6 +1437,10 @@ class PointerType implements Type {
 
   public Kind(): Kind {
     return Ptr
+  }
+
+  public Comparable(): boolean {
+    return true
   }
 
   public Size(): number {
@@ -1464,6 +1529,10 @@ class FunctionType implements Type {
     return Func
   }
 
+  public Comparable(): boolean {
+    return false
+  }
+
   public Size(): number {
     return 8 // function pointer size
   }
@@ -1545,6 +1614,10 @@ class MapType implements Type {
 
   public Kind(): Kind {
     return Map
+  }
+
+  public Comparable(): boolean {
+    return false
   }
 
   public Size(): number {
@@ -1685,6 +1758,10 @@ class StructType implements Type {
 
   public Kind(): Kind {
     return Struct
+  }
+
+  public Comparable(): boolean {
+    return this._fields.every((field) => field.type.Comparable())
   }
 
   public Size(): number {
@@ -1879,6 +1956,10 @@ class ChannelType implements Type {
     return Chan
   }
 
+  public Comparable(): boolean {
+    return true
+  }
+
   public Size(): number {
     // Channels are represented as pointers, so pointer size
     return 8
@@ -1965,6 +2046,10 @@ class InterfaceType implements Type {
 
   public Kind(): Kind {
     return Interface
+  }
+
+  public Comparable(): boolean {
+    return true
   }
 
   public Size(): number {

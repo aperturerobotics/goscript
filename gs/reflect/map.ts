@@ -27,6 +27,10 @@ class MapType implements Type {
     return MapKind // Map kind
   }
 
+  public Comparable(): boolean {
+    return false
+  }
+
   public Name(): string {
     return '' // Map types are unnamed composite types
   }
