@@ -44,27 +44,27 @@ describe('net/http override', () => {
     expect(err?.Error()).toBe('net/http: Get is not implemented in GoScript')
   })
 
-  it('accepts VarRef requests for client calls', () => {
+  it('accepts VarRef requests for client calls', async () => {
     const [req, reqErr] = NewRequest(MethodPost, 'https://example.invalid', null)
     expect(reqErr).toBeNull()
     expect((req!.URL as any).Path).toBe('/')
     expect(req!.RequestURI).toBe('/')
 
-    const [resp, err] = new Client().Do(varRef(req!))
+    const [resp, err] = await new Client().Do(varRef(req!))
     expect(resp).toBeNull()
     expect(err?.Error()).toBe('net/http: Client.Do is not implemented in GoScript')
   })
 
-  it('exports the default transport surface', () => {
+  it('exports the default transport surface', async () => {
     const [req] = NewRequest(MethodPost, 'https://example.invalid', null)
 
-    const [resp, err] = DefaultTransport.RoundTrip(req)
+    const [resp, err] = await DefaultTransport.RoundTrip(req)
 
     expect(resp).toBeNull()
     expect(err?.Error()).toBe('net/http: Client.Do is not implemented in GoScript')
   })
 
-  it('delegates client calls through RoundTripper implementations', () => {
+  it('delegates client calls through RoundTripper implementations', async () => {
     const [req] = NewRequest(MethodPost, 'https://example.invalid/path', null)
     Header_Set(req!.Header, 'User-Agent', 'goscript-test')
     req!.RemoteAddr = '127.0.0.1:1234'
@@ -81,7 +81,7 @@ describe('net/http override', () => {
       },
     })
 
-    const [resp, err] = client.Do(varRef(req!))
+    const [resp, err] = await client.Do(varRef(req!))
     expect(err).toBeNull()
     expect(resp?.StatusCode).toBe(StatusOK)
   })

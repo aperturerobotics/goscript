@@ -20,7 +20,7 @@ describe('net/http/httptest override', () => {
     )
   })
 
-  it('routes Client.Do through the in-memory server handler', () => {
+  it('routes Client.Do through the in-memory server handler', async () => {
     const srv = NewServer({
       ServeHTTP(w, r) {
         Header_Set(w!.Header(), 'Content-Range', 'bytes 0-3/4')
@@ -38,7 +38,7 @@ describe('net/http/httptest override', () => {
     expect(reqErr).toBeNull()
     Header_Set(req!.Header, 'Range', 'bytes=0-3')
 
-    const [resp, err] = srv.Client().Do(req)
+    const [resp, err] = await srv.Client().Do(req)
 
     expect(err).toBeNull()
     expect(resp?.StatusCode).toBe(StatusPartialContent)

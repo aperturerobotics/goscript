@@ -202,21 +202,21 @@ export class Client {
     this.Transport = init?.Transport ?? null
   }
 
-  public Do(
+  public async Do(
     _req: Request | $.VarRef<Request> | null,
-  ): [Response | null, $.GoError] {
-    return (this.Transport ?? DefaultTransport).RoundTrip(_req)
+  ): Promise<[Response | null, $.GoError]> {
+    return await (this.Transport ?? DefaultTransport).RoundTrip(_req)
   }
 }
 
 export const DefaultClient = new Client()
 
 export interface RoundTripper {
-  RoundTrip(req: Request | $.VarRef<Request> | null): [Response | null, $.GoError]
+  RoundTrip(req: Request | $.VarRef<Request> | null): [Response | null, $.GoError] | Promise<[Response | null, $.GoError]>
 }
 
 class unsupportedTransport implements RoundTripper {
-  public RoundTrip(_req: Request | $.VarRef<Request> | null): [Response | null, $.GoError] {
+  public async RoundTrip(_req: Request | $.VarRef<Request> | null): Promise<[Response | null, $.GoError]> {
     return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
   }
 }

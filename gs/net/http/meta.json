@@ -1,0 +1,5 @@
+{
+  "asyncMethods": {
+    "Client.Do": true
+  }
+}
