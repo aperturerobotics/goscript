@@ -1170,6 +1170,54 @@ func TestCompilePackagesPacksVariadicCallsInGeneratedSubpackage(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesImportsSelectedExternalFieldTypes(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/selected-field-import\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"type URL struct { Path string }",
+			"",
+		}, "\n"),
+		"api/api.go": strings.Join([]string{
+			"package api",
+			"import \"example.test/selected-field-import/dep\"",
+			"type Request struct { URL *dep.URL }",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/selected-field-import/api\"",
+			"func requestPath(r *api.Request) string {",
+			"  return r.URL.Path",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir, AllDependencies: true}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "selected-field-import", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"import * as dep from \"@goscript/example.test/selected-field-import/dep/index.js\"",
+		"$.pointerValue<dep.URL>($.pointerValue<api.Request>(r).URL).Path",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesLowersRangeOverFunctionIterators(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/iterators\n\ngo 1.25.3\n",
