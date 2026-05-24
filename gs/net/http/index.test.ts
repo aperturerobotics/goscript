@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { varRef } from '../../builtin/varRef.js'
 import {
   Client,
+  DefaultTransport,
   File,
   FileSystem,
   Header,
@@ -50,6 +51,15 @@ describe('net/http override', () => {
     expect(req!.RequestURI).toBe('/')
 
     const [resp, err] = new Client().Do(varRef(req!))
+    expect(resp).toBeNull()
+    expect(err?.Error()).toBe('net/http: Client.Do is not implemented in GoScript')
+  })
+
+  it('exports the default transport surface', () => {
+    const [req] = NewRequest(MethodPost, 'https://example.invalid', null)
+
+    const [resp, err] = DefaultTransport.RoundTrip(req)
+
     expect(resp).toBeNull()
     expect(err?.Error()).toBe('net/http: Client.Do is not implemented in GoScript')
   })

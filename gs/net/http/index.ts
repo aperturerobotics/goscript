@@ -205,10 +205,7 @@ export class Client {
   public Do(
     _req: Request | $.VarRef<Request> | null,
   ): [Response | null, $.GoError] {
-    if (this.Transport != null) {
-      return this.Transport.RoundTrip(_req)
-    }
-    return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
+    return (this.Transport ?? DefaultTransport).RoundTrip(_req)
   }
 }
 
@@ -217,6 +214,14 @@ export const DefaultClient = new Client()
 export interface RoundTripper {
   RoundTrip(req: Request | $.VarRef<Request> | null): [Response | null, $.GoError]
 }
+
+class unsupportedTransport implements RoundTripper {
+  public RoundTrip(_req: Request | $.VarRef<Request> | null): [Response | null, $.GoError] {
+    return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
+  }
+}
+
+export const DefaultTransport: RoundTripper = new unsupportedTransport()
 
 export interface FileSystem {
   Open(name: string): [File | null, $.GoError]
