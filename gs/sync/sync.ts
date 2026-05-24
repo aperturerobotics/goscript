@@ -335,6 +335,15 @@ export class Map {
     }
   }
 
+  // CompareAndSwap swaps the old and new values for key if the stored value is old.
+  public CompareAndSwap(key: any, old: any, value: any): boolean {
+    if (!this._data.has(key) || this._data.get(key) !== old) {
+      return false
+    }
+    this._data.set(key, value)
+    return true
+  }
+
   // Load returns the value stored in the map for a key, or nil if no value is present
   public async Load(key: any): Promise<[any, boolean]> {
     await this._m.RLock()
@@ -374,16 +383,20 @@ export class Map {
   }
 
   // Range calls f sequentially for each key and value present in the map
-  public async Range(f: (key: any, value: any) => boolean): Promise<void> {
+  public async Range(
+    f: (key: any, value: any) => boolean | globalThis.Promise<boolean>,
+  ): Promise<void> {
     await this._m.RLock()
+    let entries: [any, any][]
     try {
-      for (const [key, value] of this._data) {
-        if (!f(key, value)) {
-          break
-        }
-      }
+      entries = Array.from(this._data)
     } finally {
       this._m.RUnlock()
+    }
+    for (const [key, value] of entries) {
+      if (!(await f(key, value))) {
+        break
+      }
     }
   }
 

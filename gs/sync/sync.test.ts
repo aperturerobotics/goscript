@@ -35,6 +35,16 @@ describe('sync.Cond', () => {
 })
 
 describe('sync.Map', () => {
+  it('CompareAndSwap swaps only matching entries', async () => {
+    const m = new Map()
+
+    await m.Store('key', 'value')
+    expect(await m.CompareAndSwap('key', 'other', 'next')).toBe(false)
+    expect(await m.Load('key')).toEqual(['value', true])
+    expect(await m.CompareAndSwap('key', 'value', 'next')).toBe(true)
+    expect(await m.Load('key')).toEqual(['next', true])
+  })
+
   it('CompareAndDelete deletes only matching entries', async () => {
     const m = new Map()
 
@@ -43,5 +53,19 @@ describe('sync.Map', () => {
     expect(await m.Load('key')).toEqual(['value', true])
     expect(await m.CompareAndDelete('key', 'value')).toBe(true)
     expect(await m.Load('key')).toEqual([undefined, false])
+  })
+
+  it('Range accepts generated async-shaped callbacks', async () => {
+    const m = new Map()
+    const visited: string[] = []
+
+    await m.Store('a', 1)
+    await m.Store('b', 2)
+    await m.Range(async (key, value) => {
+      visited.push(`${key}:${value}`)
+      return key !== 'a'
+    })
+
+    expect(visited).toEqual(['a:1'])
   })
 })
