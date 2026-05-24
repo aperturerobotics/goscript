@@ -43,10 +43,10 @@ export async function main(): globalThis.Promise<void> {
 		$.println("range:", i, x)
 	}
 
-	let view = $.goSlice($.pointerValue<number[]>(cache), undefined, undefined)
+	let view: $.Slice<number> = $.goSlice($.pointerValue<number[]>(cache), undefined, undefined)
 	$.println("slice:", $.len(view), view![2])
 
-	let buf = $.arrayToSlice<number>([$.uint(9, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8)])
+	let buf: $.Slice<number> = $.arrayToSlice<number>([$.uint(9, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8)])
 	fillArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null))
 	$.println("converted:", $.uint(buf![0], 8), $.uint(buf![1], 8), $.uint(buf![2], 8), $.uint(buf![3], 8), $.uint(buf![4], 8))
 	$.println("converted sum:", sumArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null)))

@@ -391,7 +391,7 @@ export class Addr {
 
 	public MarshalText(): [$.Slice<number>, $.GoError] {
 		const ip = this
-		let buf = $.arrayToSlice<number>([])
+		let buf: $.Slice<number> = $.arrayToSlice<number>([])
 		switch (ip.z) {
 			case z0:
 			{
@@ -518,7 +518,7 @@ export class Addr {
 		}
 
 		const size: number = 39
-		let ret = $.makeSlice<number>(0, size, "byte")
+		let ret: $.Slice<number> = $.makeSlice<number>(0, size, "byte")
 		for (let i = $.uint($.uint(0, 8), 8); i < 8; i++) {
 			if (i > 0) {
 				ret = $.append(ret, 58)
@@ -712,7 +712,7 @@ export class Addr {
 	public string4(): string {
 		const ip = this
 		const max: number = 15
-		let ret = $.makeSlice<number>(0, max, "byte")
+		let ret: $.Slice<number> = $.makeSlice<number>(0, max, "byte")
 		ret = $.markAsStructValue($.cloneStructValue(ip)).appendTo4(ret)
 		return $.bytesToString(ret)
 	}
@@ -720,7 +720,7 @@ export class Addr {
 	public string4In6(): string {
 		const ip = this
 		const max: number = 29
-		let ret = $.makeSlice<number>(0, max, "byte")
+		let ret: $.Slice<number> = $.makeSlice<number>(0, max, "byte")
 		ret = $.markAsStructValue($.cloneStructValue(ip)).appendTo4In6(ret)
 		return $.bytesToString(ret)
 	}
@@ -735,7 +735,7 @@ export class Addr {
 		// is to construct the returned string. As such, it's okay to be a
 		// bit greedy here, size-wise.
 		const max: number = 46
-		let ret = $.makeSlice<number>(0, max, "byte")
+		let ret: $.Slice<number> = $.makeSlice<number>(0, max, "byte")
 		ret = $.markAsStructValue($.cloneStructValue(ip)).appendTo6(ret)
 		return $.bytesToString(ret)
 	}
@@ -992,7 +992,7 @@ export class AddrPort {
 
 	public MarshalText(): [$.Slice<number>, $.GoError] {
 		const p = this
-		let buf = $.arrayToSlice<number>([])
+		let buf: $.Slice<number> = $.arrayToSlice<number>([])
 		switch (p.ip.z) {
 			case z0:
 			{
@@ -1253,7 +1253,7 @@ export class Prefix {
 
 	public MarshalText(): [$.Slice<number>, $.GoError] {
 		const p = this
-		let buf = $.arrayToSlice<number>([])
+		let buf: $.Slice<number> = $.arrayToSlice<number>([])
 		switch (p.ip.z) {
 			case z0:
 			{

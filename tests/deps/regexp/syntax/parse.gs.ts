@@ -209,7 +209,7 @@ export class parser {
 		while ((i > 0) && ($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<parser>(p).stack![i - 1]).Op < 128)) {
 			i--
 		}
-		let subs = $.goSlice($.pointerValue<parser>(p).stack, i, undefined)
+		let subs: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> = $.goSlice($.pointerValue<parser>(p).stack, i, undefined)
 		$.pointerValue<parser>(p).stack = $.goSlice($.pointerValue<parser>(p).stack, undefined, i)
 
 		// Make sure top class is clean.
@@ -236,7 +236,7 @@ export class parser {
 				r = appendClass(r, g.class)
 			}
 		} else {
-			let tmp = $.goSlice($.pointerValue<parser>(p).tmpClass, undefined, 0)
+			let tmp: $.Slice<number> = $.goSlice($.pointerValue<parser>(p).tmpClass, undefined, 0)
 			tmp = appendFoldedClass(tmp, g.class)
 			$.pointerValue<parser>(p).tmpClass = tmp
 			tmp = cleanClass($.pointerValue<parser>(p)._fields.tmpClass)
@@ -450,7 +450,7 @@ export class parser {
 		while ((i > 0) && ($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<parser>(p).stack![i - 1]).Op < 128)) {
 			i--
 		}
-		let subs = $.goSlice($.pointerValue<parser>(p).stack, i, undefined)
+		let subs: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> = $.goSlice($.pointerValue<parser>(p).stack, i, undefined)
 		$.pointerValue<parser>(p).stack = $.goSlice($.pointerValue<parser>(p).stack, undefined, i)
 
 		// Empty concatenation is special case.
@@ -471,7 +471,7 @@ export class parser {
 		let str: $.Slice<number> = null as $.Slice<number>
 		let strflags: Flags = 0
 		let start = 0
-		let out = $.goSlice(sub, undefined, 0)
+		let out: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> = $.goSlice(sub, undefined, 0)
 		for (let i = 0; i <= $.len(sub); i++) {
 			// Invariant: the Regexps that were in sub[0:start] have been
 			// used or marked for reuse, and the slice space has been reused
@@ -764,7 +764,7 @@ export class parser {
 			}
 		}
 
-		let _class = $.pointerValue<__goscript_regexp.Regexp>(re).Rune
+		let _class: $.Slice<number> = $.pointerValue<__goscript_regexp.Regexp>(re).Rune
 		let first = true
 		while ((((t as string) == "") || ($.uint($.indexStringOrBytes(t, 0), 8) != $.uint(93, 8))) || first) {
 			// POSIX: - is only okay unescaped as first or last in class.
@@ -777,7 +777,10 @@ export class parser {
 
 			// Look for POSIX [:alnum:] etc.
 			if ((($.len(t) > 2) && ($.uint($.indexStringOrBytes(t, 0), 8) == $.uint(91, 8))) && ($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(58, 8))) {
-				let [nclass, nt, __goscriptShadow0] = parser.prototype.parseNamedClass.call(p, t, _class)
+				let __goscriptTuple2: any = parser.prototype.parseNamedClass.call(p, t, _class)
+				let nclass: $.Slice<number> = __goscriptTuple2[0]
+				let nt = __goscriptTuple2[1]
+				let __goscriptShadow0 = __goscriptTuple2[2]
 				if (__goscriptShadow0 != null) {
 					return ["", __goscriptShadow0]
 				}
@@ -791,7 +794,10 @@ export class parser {
 			}
 
 			// Look for Unicode character group like \p{Han}.
-			let [nclass, nt, __goscriptShadow1] = await parser.prototype.parseUnicodeClass.call(p, t, _class)
+			let __goscriptTuple3: any = await parser.prototype.parseUnicodeClass.call(p, t, _class)
+			let nclass: $.Slice<number> = __goscriptTuple3[0]
+			let nt = __goscriptTuple3[1]
+			let __goscriptShadow1 = __goscriptTuple3[2]
 			if (__goscriptShadow1 != null) {
 				return ["", __goscriptShadow1]
 			}
@@ -805,7 +811,9 @@ export class parser {
 
 			// Look for Perl character class symbols (extension).
 			{
-				let [__goscriptShadow2, __goscriptShadow3] = parser.prototype.parsePerlClassEscape.call(p, t, _class)
+				let __goscriptTuple4: any = parser.prototype.parsePerlClassEscape.call(p, t, _class)
+				let __goscriptShadow2: $.Slice<number> = __goscriptTuple4[0]
+				let __goscriptShadow3 = __goscriptTuple4[1]
 				if (__goscriptShadow2 != null) {
 					let __goscriptAssign3_0: $.Slice<number> = __goscriptShadow2
 					let __goscriptAssign3_1: string = __goscriptShadow3
@@ -820,10 +828,10 @@ export class parser {
 			let lo: number = 0
 			let hi: number = 0
 			{
-				let __goscriptTuple2: any = parser.prototype.parseClassChar.call(p, t, s)
-				lo = $.int(__goscriptTuple2[0], 32)
-				t = __goscriptTuple2[1]
-				__goscriptShadow1 = __goscriptTuple2[2]
+				let __goscriptTuple5: any = parser.prototype.parseClassChar.call(p, t, s)
+				lo = $.int(__goscriptTuple5[0], 32)
+				t = __goscriptTuple5[1]
+				__goscriptShadow1 = __goscriptTuple5[2]
 				if (__goscriptShadow1 != null) {
 					return ["", __goscriptShadow1]
 				}
@@ -833,10 +841,10 @@ export class parser {
 			if ((($.len(t) >= 2) && ($.uint($.indexStringOrBytes(t, 0), 8) == $.uint(45, 8))) && ($.uint($.indexStringOrBytes(t, 1), 8) != $.uint(93, 8))) {
 				t = $.sliceStringOrBytes(t, 1, undefined)
 				{
-					let __goscriptTuple3: any = parser.prototype.parseClassChar.call(p, t, s)
-					hi = $.int(__goscriptTuple3[0], 32)
-					t = __goscriptTuple3[1]
-					__goscriptShadow1 = __goscriptTuple3[2]
+					let __goscriptTuple6: any = parser.prototype.parseClassChar.call(p, t, s)
+					hi = $.int(__goscriptTuple6[0], 32)
+					t = __goscriptTuple6[1]
+					__goscriptShadow1 = __goscriptTuple6[2]
 					if (__goscriptShadow1 != null) {
 						return ["", __goscriptShadow1]
 					}
@@ -894,10 +902,10 @@ export class parser {
 		if ((t as string) == "") {
 			return [$.int(0, 32), "", $.interfaceValue<$.GoError>(new Error({Code: ErrTrailingBackslash, Expr: ""}), "*syntax.Error")]
 		}
-		let __goscriptTuple4: any = nextRune(t)
-		let c = $.int(__goscriptTuple4[0], 32)
-		t = __goscriptTuple4[1]
-		err = __goscriptTuple4[2]
+		let __goscriptTuple7: any = nextRune(t)
+		let c = $.int(__goscriptTuple7[0], 32)
+		t = __goscriptTuple7[1]
+		err = __goscriptTuple7[2]
 		if (err != null) {
 			return [$.int(0, 32), "", err]
 		}
@@ -946,10 +954,10 @@ export class parser {
 						break
 					}
 					{
-						let __goscriptTuple5: any = nextRune(t)
-						c = $.int(__goscriptTuple5[0], 32)
-						t = __goscriptTuple5[1]
-						err = __goscriptTuple5[2]
+						let __goscriptTuple8: any = nextRune(t)
+						c = $.int(__goscriptTuple8[0], 32)
+						t = __goscriptTuple8[1]
+						err = __goscriptTuple8[2]
 						if (err != null) {
 							return [$.int(0, 32), "", err]
 						}
@@ -966,10 +974,10 @@ export class parser {
 								break Switch
 							}
 							{
-								let __goscriptTuple6: any = nextRune(t)
-								c = $.int(__goscriptTuple6[0], 32)
-								t = __goscriptTuple6[1]
-								err = __goscriptTuple6[2]
+								let __goscriptTuple9: any = nextRune(t)
+								c = $.int(__goscriptTuple9[0], 32)
+								t = __goscriptTuple9[1]
+								err = __goscriptTuple9[2]
 								if (err != null) {
 									return [$.int(0, 32), "", err]
 								}
@@ -996,10 +1004,10 @@ export class parser {
 					// Easy case: two hex digits.
 					let x = $.int(unhex($.int(c, 32)), 32)
 					{
-						let __goscriptTuple7: any = nextRune(t)
-						c = $.int(__goscriptTuple7[0], 32)
-						t = __goscriptTuple7[1]
-						err = __goscriptTuple7[2]
+						let __goscriptTuple10: any = nextRune(t)
+						c = $.int(__goscriptTuple10[0], 32)
+						t = __goscriptTuple10[1]
+						err = __goscriptTuple10[2]
 						if (err != null) {
 							return [$.int(0, 32), "", err]
 						}
@@ -1185,10 +1193,10 @@ export class parser {
 		let sawFlag = false
 		Loop: while ((t as string) != "") {
 			{
-				let __goscriptTuple8: any = nextRune(t)
-				c = $.int(__goscriptTuple8[0], 32)
-				t = __goscriptTuple8[1]
-				err = __goscriptTuple8[2]
+				let __goscriptTuple11: any = nextRune(t)
+				c = $.int(__goscriptTuple11[0], 32)
+				t = __goscriptTuple11[1]
+				err = __goscriptTuple11[2]
 				if (err != null) {
 					return ["", err]
 				}
@@ -1270,10 +1278,10 @@ export class parser {
 		s = $.sliceStringOrBytes(s, 1, undefined)
 		let ok1: boolean = false
 		{
-			let __goscriptTuple9: any = parser.prototype.parseInt.call(p, s)
-			min = __goscriptTuple9[0]
-			s = __goscriptTuple9[1]
-			ok1 = __goscriptTuple9[2]
+			let __goscriptTuple12: any = parser.prototype.parseInt.call(p, s)
+			min = __goscriptTuple12[0]
+			s = __goscriptTuple12[1]
+			ok1 = __goscriptTuple12[2]
 			if (!ok1) {
 				return [min, max, rest, ok]
 			}
@@ -1292,10 +1300,10 @@ export class parser {
 				max = -1
 			} else {
 				{
-					let __goscriptTuple10: any = parser.prototype.parseInt.call(p, s)
-					max = __goscriptTuple10[0]
-					s = __goscriptTuple10[1]
-					ok1 = __goscriptTuple10[2]
+					let __goscriptTuple13: any = parser.prototype.parseInt.call(p, s)
+					max = __goscriptTuple13[0]
+					s = __goscriptTuple13[1]
+					ok1 = __goscriptTuple13[2]
 					if (!ok1) {
 						return [min, max, rest, ok]
 					} else {
@@ -1363,10 +1371,10 @@ export class parser {
 			sign = -1
 		}
 		let t = $.sliceStringOrBytes(s, 2, undefined)
-		let __goscriptTuple11: any = nextRune(t)
-		let c = $.int(__goscriptTuple11[0], 32)
-		t = __goscriptTuple11[1]
-		err = __goscriptTuple11[2]
+		let __goscriptTuple14: any = nextRune(t)
+		let c = $.int(__goscriptTuple14[0], 32)
+		t = __goscriptTuple14[1]
+		err = __goscriptTuple14[2]
 		if (err != null) {
 			return [out, rest, err]
 		}
@@ -1407,10 +1415,10 @@ export class parser {
 			name = $.sliceStringOrBytes(name, 1, undefined)
 		}
 
-		let __goscriptTuple12: any = await unicodeTable(name)
-		let tab: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = __goscriptTuple12[0]
-		let fold: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = __goscriptTuple12[1]
-		let tsign = __goscriptTuple12[2]
+		let __goscriptTuple15: any = await unicodeTable(name)
+		let tab: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = __goscriptTuple15[0]
+		let fold: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = __goscriptTuple15[1]
+		let tsign = __goscriptTuple15[2]
 		if (tab == null) {
 			return [null, "", $.interfaceValue<$.GoError>(new Error({Code: ErrInvalidCharRange, Expr: seq}), "*syntax.Error")]
 		}
@@ -1428,7 +1436,7 @@ export class parser {
 			// Merge and clean tab and fold in a temporary buffer.
 			// This is necessary for the negative case and just tidy
 			// for the positive case.
-			let tmp = $.goSlice($.pointerValue<parser>(p).tmpClass, undefined, 0)
+			let tmp: $.Slice<number> = $.goSlice($.pointerValue<parser>(p).tmpClass, undefined, 0)
 			tmp = appendTable(tmp, tab)
 			tmp = appendTable(tmp, fold)
 			$.pointerValue<parser>(p).tmpClass = tmp
@@ -1738,7 +1746,7 @@ export class ranges {
 
 	public Less(i: number, j: number): boolean {
 		const ra = this
-		let p = $.pointerValue<$.Slice<number>>(ra.p)
+		let p: $.Slice<number> = $.pointerValue<$.Slice<number>>(ra.p)
 		i *= 2
 		j *= 2
 		return (p![i] < p![j]) || (($.int(p![i], 32) == $.int(p![j], 32)) && (p![i + 1] > p![j + 1]))
@@ -1746,7 +1754,7 @@ export class ranges {
 
 	public Swap(i: number, j: number): void {
 		const ra = this
-		let p = $.pointerValue<$.Slice<number>>(ra.p)
+		let p: $.Slice<number> = $.pointerValue<$.Slice<number>>(ra.p)
 		i *= 2
 		j *= 2
 		let __goscriptAssign6_0: number = $.int(p![j], 32)
@@ -1985,10 +1993,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 				default:
 				{
 					{
-						let __goscriptTuple13: any = nextRune(t)
-						c = $.int(__goscriptTuple13[0], 32)
-						t = __goscriptTuple13[1]
-						err = __goscriptTuple13[2]
+						let __goscriptTuple16: any = nextRune(t)
+						c = $.int(__goscriptTuple16[0], 32)
+						t = __goscriptTuple16[1]
+						err = __goscriptTuple16[2]
 						if (err != null) {
 							return [null, err]
 						}
@@ -2001,9 +2009,9 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 					if ((($.uint((p.value.flags & PerlX), 16) != $.uint(0, 16)) && ($.len(t) >= 2)) && ($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(63, 8))) {
 						// Flag changes and non-capturing groups.
 						{
-							let __goscriptTuple14: any = p.value.parsePerlFlags(t)
-							t = __goscriptTuple14[0]
-							err = __goscriptTuple14[1]
+							let __goscriptTuple17: any = p.value.parsePerlFlags(t)
+							t = __goscriptTuple17[0]
+							err = __goscriptTuple17[1]
 							if (err != null) {
 								return [null, err]
 							}
@@ -2065,9 +2073,9 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 				case 91:
 				{
 					{
-						let __goscriptTuple15: any = await p.value.parseClass(t)
-						t = __goscriptTuple15[0]
-						err = __goscriptTuple15[1]
+						let __goscriptTuple18: any = await p.value.parseClass(t)
+						t = __goscriptTuple18[0]
+						err = __goscriptTuple18[1]
 						if (err != null) {
 							return [null, err]
 						}
@@ -2098,9 +2106,9 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 					}
 					let after = $.sliceStringOrBytes(t, 1, undefined)
 					{
-						let __goscriptTuple16: any = p.value.repeat($.uint(op, 8), 0, 0, before, after, lastRepeat)
-						after = __goscriptTuple16[0]
-						err = __goscriptTuple16[1]
+						let __goscriptTuple19: any = p.value.repeat($.uint(op, 8), 0, 0, before, after, lastRepeat)
+						after = __goscriptTuple19[0]
+						err = __goscriptTuple19[1]
 						if (err != null) {
 							return [null, err]
 						}
@@ -2125,9 +2133,9 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 						return [null, $.interfaceValue<$.GoError>(new Error({Code: ErrInvalidRepeatSize, Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
 					}
 					{
-						let __goscriptTuple17: any = p.value.repeat($.uint(op, 8), min, max, before, after, lastRepeat)
-						after = __goscriptTuple17[0]
-						err = __goscriptTuple17[1]
+						let __goscriptTuple20: any = p.value.repeat($.uint(op, 8), min, max, before, after, lastRepeat)
+						after = __goscriptTuple20[0]
+						err = __goscriptTuple20[1]
 						if (err != null) {
 							return [null, err]
 						}
@@ -2169,14 +2177,14 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							case 81:
 							{
 								let lit: string = ""
-								let __goscriptTuple18: any = strings.Cut($.sliceStringOrBytes(t, 2, undefined), "\\E")
-								lit = __goscriptTuple18[0]
-								t = __goscriptTuple18[1]
+								let __goscriptTuple21: any = strings.Cut($.sliceStringOrBytes(t, 2, undefined), "\\E")
+								lit = __goscriptTuple21[0]
+								t = __goscriptTuple21[1]
 								while ((lit as string) != "") {
-									let __goscriptTuple19: any = nextRune(lit)
-									let __goscriptShadow5 = $.int(__goscriptTuple19[0], 32)
-									let rest = __goscriptTuple19[1]
-									let __goscriptShadow6 = __goscriptTuple19[2]
+									let __goscriptTuple22: any = nextRune(lit)
+									let __goscriptShadow5 = $.int(__goscriptTuple22[0], 32)
+									let rest = __goscriptTuple22[1]
+									let __goscriptShadow6 = __goscriptTuple22[2]
 									if (__goscriptShadow6 != null) {
 										return [null, __goscriptShadow6]
 									}
@@ -2201,7 +2209,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 
 					// Look for Unicode character group like \p{Han}
 					if (($.len(t) >= 2) && (($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(112, 8)) || ($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(80, 8)))) {
-						let [r, rest, __goscriptShadow7] = await p.value.parseUnicodeClass(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
+						let __goscriptTuple23: any = await p.value.parseUnicodeClass(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
+						let r: $.Slice<number> = __goscriptTuple23[0]
+						let rest = __goscriptTuple23[1]
+						let __goscriptShadow7 = __goscriptTuple23[2]
 						if (__goscriptShadow7 != null) {
 							return [null, __goscriptShadow7]
 						}
@@ -2215,7 +2226,9 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 
 					// Perl character class escape.
 					{
-						let [r, rest] = p.value.parsePerlClassEscape(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
+						let __goscriptTuple24: any = p.value.parsePerlClassEscape(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
+						let r: $.Slice<number> = __goscriptTuple24[0]
+						let rest = __goscriptTuple24[1]
 						if (r != null) {
 							$.pointerValue<__goscript_regexp.Regexp>(re).Rune = r
 							t = rest
@@ -2227,10 +2240,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 
 					// Ordinary single-character escape.
 					{
-						let __goscriptTuple20: any = p.value.parseEscape(t)
-						c = $.int(__goscriptTuple20[0], 32)
-						t = __goscriptTuple20[1]
-						err = __goscriptTuple20[2]
+						let __goscriptTuple25: any = p.value.parseEscape(t)
+						c = $.int(__goscriptTuple25[0], 32)
+						t = __goscriptTuple25[1]
+						err = __goscriptTuple25[2]
 						if (err != null) {
 							return [null, err]
 						}
@@ -2478,7 +2491,7 @@ export function cleanClass(rp: $.VarRef<$.Slice<number>> | null): $.Slice<number
 	// Sort by lo increasing, hi decreasing to break ties.
 	sort.Sort($.interfaceValue<sort.Interface | null>($.markAsStructValue(new ranges({p: rp})), "syntax.ranges"))
 
-	let r = $.pointerValue<$.Slice<number>>(rp)
+	let r: $.Slice<number> = $.pointerValue<$.Slice<number>>(rp)
 	if ($.len(r) < 2) {
 		return r
 	}
@@ -2714,9 +2727,9 @@ export function negateClass(r: $.Slice<number>): $.Slice<number> {
 
 export function checkUTF8(s: string): $.GoError {
 	while ((s as string) != "") {
-		let __goscriptTuple21: any = utf8.DecodeRuneInString(s)
-		let rune = $.int(__goscriptTuple21[0], 32)
-		let size = __goscriptTuple21[1]
+		let __goscriptTuple26: any = utf8.DecodeRuneInString(s)
+		let rune = $.int(__goscriptTuple26[0], 32)
+		let size = __goscriptTuple26[1]
 		if (($.int(rune, 32) == $.int(utf8.RuneError, 32)) && (size == 1)) {
 			return $.interfaceValue<$.GoError>(new Error({Code: ErrInvalidUTF8, Expr: s}), "*syntax.Error")
 		}
@@ -2729,9 +2742,9 @@ export function nextRune(s: string): [number, string, $.GoError] {
 	let c: number = 0
 	let t: string = ""
 	let err: $.GoError = null as $.GoError
-	let __goscriptTuple22: any = utf8.DecodeRuneInString(s)
-	c = $.int(__goscriptTuple22[0], 32)
-	let size = __goscriptTuple22[1]
+	let __goscriptTuple27: any = utf8.DecodeRuneInString(s)
+	c = $.int(__goscriptTuple27[0], 32)
+	let size = __goscriptTuple27[1]
 	if (($.int(c, 32) == $.int(utf8.RuneError, 32)) && (size == 1)) {
 		return [$.int(0, 32), "", $.interfaceValue<$.GoError>(new Error({Code: ErrInvalidUTF8, Expr: s}), "*syntax.Error")]
 	}

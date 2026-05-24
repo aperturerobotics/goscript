@@ -8,13 +8,13 @@ export async function main(): globalThis.Promise<void> {
 	$.println("s == nil:", s == null)
 
 	// Slicing nil with valid bounds should work
-	let s2 = $.goSlice(s, 0, 0)
+	let s2: $.Slice<number> = $.goSlice(s, 0, 0)
 	$.println("s[0:0] == nil:", s2 == null)
 
-	let s3 = $.goSlice(s, undefined, 0)
+	let s3: $.Slice<number> = $.goSlice(s, undefined, 0)
 	$.println("s[:0] == nil:", s3 == null)
 
-	let s4 = $.goSlice(s, undefined, undefined)
+	let s4: $.Slice<number> = $.goSlice(s, undefined, undefined)
 	$.println("s[:] == nil:", s4 == null)
 
 	$.println("slice_nil test passed")

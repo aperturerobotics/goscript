@@ -10,7 +10,7 @@ import * as slices from "@goscript/slices/index.js"
 import * as iter from "@goscript/iter/index.js"
 
 export async function main(): globalThis.Promise<void> {
-	let s = $.arrayToSlice<number>([1, 2, 3, 4, 5])
+	let s: $.Slice<number> = $.arrayToSlice<number>([1, 2, 3, 4, 5])
 
 	// This should trigger the interface range issue
 	// slices.All returns an iterator interface that can be ranged over
@@ -38,7 +38,7 @@ export async function main(): globalThis.Promise<void> {
 		return
 	}
 
-	let cloned = slices.Clone(s)
+	let cloned: $.Slice<number> = slices.Clone(s)
 	cloned![0] = 99
 	$.println("clone first:", cloned![0], "original first:", s![0], "same len:", $.len(cloned) == $.len(s))
 	let nilSlice: $.Slice<number> = null as $.Slice<number>
@@ -51,7 +51,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("contains:", slices.Contains(s, 3), slices.ContainsFunc(s, $.functionValue((v: number): boolean => {
 		return v > 4
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })))
-	let inserted = slices.Insert($.arrayToSlice<number>([1, 4]), 1, 2, 3)
+	let inserted: $.Slice<number> = slices.Insert($.arrayToSlice<number>([1, 4]), 1, 2, 3)
 	$.println("insert:", inserted![0], inserted![1], inserted![2], inserted![3])
 	slices.Reverse(inserted)
 	$.println("reverse:", inserted![0], inserted![1], inserted![2], inserted![3])
@@ -101,7 +101,7 @@ export async function main(): globalThis.Promise<void> {
 			{"group": { kind: $.TypeKind.Basic, name: "int" }, "label": { kind: $.TypeKind.Basic, name: "string" }}
 		)
 	}
-	let stable = $.arrayToSlice<item>([$.markAsStructValue(new item({group: 2, label: "a"})), $.markAsStructValue(new item({group: 1, label: "b"})), $.markAsStructValue(new item({group: 2, label: "c"})), $.markAsStructValue(new item({group: 1, label: "d"}))])
+	let stable: $.Slice<item> = $.arrayToSlice<item>([$.markAsStructValue(new item({group: 2, label: "a"})), $.markAsStructValue(new item({group: 1, label: "b"})), $.markAsStructValue(new item({group: 2, label: "c"})), $.markAsStructValue(new item({group: 1, label: "d"}))])
 	slices.SortStableFunc(stable, $.functionValue((a: item, b: item): number => {
 		return a.group - b.group
 	}, { kind: $.TypeKind.Function, params: ["main.item", "main.item"], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
@@ -110,12 +110,12 @@ export async function main(): globalThis.Promise<void> {
 		return a.group - b.group
 	}, { kind: $.TypeKind.Function, params: ["main.item", "main.item"], results: [{ kind: $.TypeKind.Basic, name: "int" }] })))
 
-	let filtered = slices.DeleteFunc($.arrayToSlice<number>([1, 2, 3, 4, 5]), $.functionValue((v: number): boolean => {
+	let filtered: $.Slice<number> = slices.DeleteFunc($.arrayToSlice<number>([1, 2, 3, 4, 5]), $.functionValue((v: number): boolean => {
 		return (v % 2) == 0
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
 	$.println("delete func:", filtered![0], filtered![1], filtered![2], $.len(filtered))
 
-	let sortedKeys = slices.Sorted(maps.Keys(new Map<string, number>([["c", 3], ["a", 1], ["b", 2]])))
+	let sortedKeys: $.Slice<string> = slices.Sorted(maps.Keys(new Map<string, number>([["c", 3], ["a", 1], ["b", 2]])))
 	$.println("sorted:", sortedKeys![0], sortedKeys![1], sortedKeys![2])
 
 	$.println("test finished")

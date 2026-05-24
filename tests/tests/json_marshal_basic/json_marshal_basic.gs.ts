@@ -62,7 +62,9 @@ export class Person {
 
 export async function main(): globalThis.Promise<void> {
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
-	let [b, err] = json.Marshal($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))
+	let __goscriptTuple0: any = json.Marshal($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))
+	let b: $.Slice<number> = __goscriptTuple0[0]
+	let err = __goscriptTuple0[1]
 	if (err != null) {
 		$.println("Marshal error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 	} else {

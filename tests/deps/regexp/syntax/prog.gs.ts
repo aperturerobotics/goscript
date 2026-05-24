@@ -242,7 +242,7 @@ export class Inst {
 
 	public MatchRunePos(r: number): number {
 		const i: Inst | $.VarRef<Inst> | null = this
-		let rune = $.pointerValue<Inst>(i).Rune
+		let rune: $.Slice<number> = $.pointerValue<Inst>(i).Rune
 
 		switch ($.len(rune)) {
 			case 0:

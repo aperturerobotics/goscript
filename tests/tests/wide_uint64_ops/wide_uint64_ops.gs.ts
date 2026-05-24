@@ -31,7 +31,7 @@ export function maxUint64Remainder(d: number): number {
 }
 
 export function setHighBit(idx: number): boolean {
-	let words = $.arrayToSlice<number>([0, 0])
+	let words: $.Slice<number> = $.arrayToSlice<number>([0, 0])
 	words![$.uint64Div(idx, 64)] = $.uint64Or(words![$.uint64Div(idx, 64)], $.uint64Shl($.uint(1, 64), ($.uint64Mod(idx, 64))))
 	return words![1] != 0
 }

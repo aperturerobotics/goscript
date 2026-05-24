@@ -64,7 +64,7 @@ export class content {
 			l = $.uint64Sub($.int($.len($.pointerValue<content>(c).bytes)), off)
 		}
 
-		let btr = $.goSlice($.pointerValue<content>(c).bytes, off, $.uint64Add(off, l))
+		let btr: $.Slice<number> = $.goSlice($.pointerValue<content>(c).bytes, off, $.uint64Add(off, l))
 		n = $.copy(b, btr)
 		return [n, err]
 	}
@@ -82,7 +82,7 @@ export async function main(): globalThis.Promise<void> {
 	let c: content | $.VarRef<content> | null = new content({bytes: new Uint8Array([72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33])})
 
 	// Test ReadAt method
-	let buf = $.makeSlice<number>(5, undefined, "byte")
+	let buf: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
 	let [n1, err1] = content.prototype.ReadAt.call(c, buf, 0)
 	$.println(n1)
 	if (err1 == null) {
@@ -93,7 +93,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println($.bytesToString(buf))
 
 	// Test ReadAt with different offset
-	let buf2 = $.makeSlice<number>(6, undefined, "byte")
+	let buf2: $.Slice<number> = $.makeSlice<number>(6, undefined, "byte")
 	let [n2, err2] = content.prototype.ReadAt.call(c, buf2, 7)
 	$.println(n2)
 	if (err2 == null) {

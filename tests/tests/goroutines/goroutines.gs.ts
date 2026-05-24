@@ -70,7 +70,7 @@ export async function anotherWorker(name: string): globalThis.Promise<void> {
 
 export async function main(): globalThis.Promise<void> {
 	// Create a slice to collect all messages
-	let allMessages = $.makeSlice<Message>(0, totalMessages + 3, undefined, () => $.markAsStructValue(new Message()))
+	let allMessages: $.Slice<Message> = $.makeSlice<Message>(0, totalMessages + 3, undefined, () => $.markAsStructValue(new Message()))
 
 	// Add initial message
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 0, text: "Main: Starting workers"})))

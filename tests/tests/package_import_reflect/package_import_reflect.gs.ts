@@ -84,16 +84,16 @@ export async function main(): globalThis.Promise<void> {
 	$.println("String kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(sv)).Kind()))
 
 	// Test with slice
-	let slice = $.arrayToSlice<number>([1, 2, 3])
+	let slice: $.Slice<number> = $.arrayToSlice<number>([1, 2, 3])
 	let sliceV = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(slice, "[]int"))))
 	$.println("Slice type:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }})).String())
 	$.println("Slice len:", $.markAsStructValue($.cloneStructValue(sliceV)).Len())
 	$.println("Slice kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(sliceV)).Kind()))
 
 	// Test DeepEqual
-	let a = $.arrayToSlice<number>([1, 2, 3])
-	let b = $.arrayToSlice<number>([1, 2, 3])
-	let c = $.arrayToSlice<number>([1, 2, 4])
+	let a: $.Slice<number> = $.arrayToSlice<number>([1, 2, 3])
+	let b: $.Slice<number> = $.arrayToSlice<number>([1, 2, 3])
+	let c: $.Slice<number> = $.arrayToSlice<number>([1, 2, 4])
 	$.println("DeepEqual a==b:", reflect.DeepEqual($.interfaceValue<any>(a, "[]int"), $.interfaceValue<any>(b, "[]int")))
 	$.println("DeepEqual a==c:", reflect.DeepEqual($.interfaceValue<any>(a, "[]int"), $.interfaceValue<any>(c, "[]int")))
 
@@ -133,15 +133,15 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Zero bool:", $.markAsStructValue($.cloneStructValue(zeroBool)).String())
 
 	// Test Swapper function
-	let testSlice = $.arrayToSlice<number>([1, 2, 3, 4, 5])
+	let testSlice: $.Slice<number> = $.arrayToSlice<number>([1, 2, 3, 4, 5])
 	let swapper = reflect.Swapper($.interfaceValue<any>(testSlice, "[]int"))
 	$.println("Before swap:", testSlice![0], testSlice![4])
 	await swapper!(0, 4)
 	$.println("After swap:", testSlice![0], testSlice![4])
 
 	// Test Copy function
-	let src = $.arrayToSlice<number>([10, 20, 30])
-	let dst = $.makeSlice<number>(2, undefined, "number")
+	let src: $.Slice<number> = $.arrayToSlice<number>([10, 20, 30])
+	let dst: $.Slice<number> = $.makeSlice<number>(2, undefined, "number")
 	let srcVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(src, "[]int"))))
 	let dstVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(dst, "[]int"))))
 	let copied = reflect.Copy($.markAsStructValue($.cloneStructValue(dstVal)), $.markAsStructValue($.cloneStructValue(srcVal)))
@@ -221,7 +221,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Function kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(fnVal)).Kind()))
 
 	// Test more complex types
-	let complexSlice = $.arrayToSlice<$.Slice<number>>([$.arrayToSlice<number>([1, 2]), $.arrayToSlice<number>([3, 4])])
+	let complexSlice: $.Slice<$.Slice<number>> = $.arrayToSlice<$.Slice<number>>([$.arrayToSlice<number>([1, 2]), $.arrayToSlice<number>([3, 4])])
 	let complexVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(complexSlice, "[][]int"))))
 	$.println("Complex slice type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(complexVal)).Type()).String())
 	$.println("Complex slice kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(complexVal)).Kind()))
@@ -286,10 +286,10 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Chan size:", $.pointerValue<Exclude<reflect.Type, null>>(chanType).Size())
 
 	// Test Value.Pointer on addressable slice elements.
-	let pointerBuf = $.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8), $.uint(4, 8)])
-	let pointerLeft = $.goSlice(pointerBuf, 1, 3)
-	let pointerRight = $.goSlice(pointerBuf, 2, 4)
-	let pointerOther = $.arrayToSlice<number>([$.uint(8, 8), $.uint(9, 8)])
+	let pointerBuf: $.Slice<number> = $.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8), $.uint(4, 8)])
+	let pointerLeft: $.Slice<number> = $.goSlice(pointerBuf, 1, 3)
+	let pointerRight: $.Slice<number> = $.goSlice(pointerBuf, 2, 4)
+	let pointerOther: $.Slice<number> = $.arrayToSlice<number>([$.uint(8, 8), $.uint(9, 8)])
 	$.println("Pointer overlap:", reflectOverlap(pointerLeft, pointerRight))
 	$.println("Pointer separate:", reflectOverlap(pointerLeft, pointerOther))
 	$.println("Pointer same:", reflectSameStart(pointerLeft, $.goSlice(pointerBuf, 1, undefined)))
@@ -302,7 +302,7 @@ export async function main(): globalThis.Promise<void> {
 	// Send values to only the string channel to make select deterministic
 	$.markAsStructValue($.cloneStructValue(strChan)).Send($.markAsStructValue($.cloneStructValue(reflect.ValueOf("hello"))))
 
-	let cases = $.arrayToSlice<reflect.SelectCase>([$.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectRecv, Chan: $.markAsStructValue($.cloneStructValue(intChan))})), $.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectRecv, Chan: $.markAsStructValue($.cloneStructValue(strChan))})), $.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectDefault}))])
+	let cases: $.Slice<reflect.SelectCase> = $.arrayToSlice<reflect.SelectCase>([$.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectRecv, Chan: $.markAsStructValue($.cloneStructValue(intChan))})), $.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectRecv, Chan: $.markAsStructValue($.cloneStructValue(strChan))})), $.markAsStructValue(new reflect.SelectCase({Dir: reflect.SelectDefault}))])
 	let [chosen, recv, recvOK] = reflect.Select(cases)
 	$.println("Select chosen:", chosen, "recvOK:", recvOK)
 	if ($.markAsStructValue($.cloneStructValue(recv)).IsValid()) {

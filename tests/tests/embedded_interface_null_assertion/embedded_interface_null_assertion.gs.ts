@@ -125,7 +125,7 @@ export async function main(): globalThis.Promise<void> {
 	let mr2: MyReader | $.VarRef<MyReader> | null = new MyReader({Reader: $.interfaceValue<Reader | null>(sr, "*main.StringReader"), name: "test2"})
 	$.println($.pointerValue<MyReader>(mr2).Reader != null)
 
-	let buf = $.makeSlice<number>(5, undefined, "byte")
+	let buf: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
 	let [n, ] = $.pointerValue<Exclude<Reader, null>>($.pointerValue<MyReader>(mr2).Reader).Read(buf)
 	$.println(n == 5)
 

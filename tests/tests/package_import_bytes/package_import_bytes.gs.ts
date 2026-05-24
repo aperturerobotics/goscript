@@ -9,8 +9,8 @@ import * as io from "@goscript/io/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	// Test basic byte slice operations
-	let b1 = new Uint8Array([104, 101, 108, 108, 111])
-	let b2 = new Uint8Array([119, 111, 114, 108, 100])
+	let b1: $.Slice<number> = new Uint8Array([104, 101, 108, 108, 111])
+	let b2: $.Slice<number> = new Uint8Array([119, 111, 114, 108, 100])
 
 	// Test Equal
 	if (bytes.Equal(b1, b1)) {
@@ -35,12 +35,12 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test Join
-	let slices = $.arrayToSlice<$.Slice<number>>([b1, b2])
-	let joined = bytes.Join(slices, new Uint8Array([32]))
+	let slices: $.Slice<$.Slice<number>> = $.arrayToSlice<$.Slice<number>>([b1, b2])
+	let joined: $.Slice<number> = bytes.Join(slices, new Uint8Array([32]))
 	$.println("Joined:", $.bytesToString(joined))
 
 	// Test Split
-	let split = bytes.Split(joined, new Uint8Array([32]))
+	let split: $.Slice<$.Slice<number>> = bytes.Split(joined, new Uint8Array([32]))
 	$.println("Split result length:", $.len(split))
 	if ($.len(split) == 2) {
 		$.println("Split works correctly")
@@ -56,18 +56,18 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test Trim functions
-	let whitespace = new Uint8Array([32, 32, 104, 101, 108, 108, 111, 32, 32])
-	let trimmed = bytes.TrimSpace(whitespace)
+	let whitespace: $.Slice<number> = new Uint8Array([32, 32, 104, 101, 108, 108, 111, 32, 32])
+	let trimmed: $.Slice<number> = bytes.TrimSpace(whitespace)
 	$.println("Trimmed:", $.bytesToString(trimmed))
 
 	// Test ToUpper and ToLower
-	let upper = bytes.ToUpper(b1)
-	let lower = bytes.ToLower(upper)
+	let upper: $.Slice<number> = bytes.ToUpper(b1)
+	let lower: $.Slice<number> = bytes.ToLower(upper)
 	$.println("Upper:", $.bytesToString(upper))
 	$.println("Lower:", $.bytesToString(lower))
 
 	// Test Repeat
-	let repeated = bytes.Repeat(new Uint8Array([120]), 3)
+	let repeated: $.Slice<number> = bytes.Repeat(new Uint8Array([120]), 3)
 	$.println("Repeated:", $.bytesToString(repeated))
 
 	// Test Count
@@ -75,11 +75,11 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Count of 'a' in 'banana':", count)
 
 	// Test Replace
-	let replaced = bytes.Replace(new Uint8Array([104, 101, 108, 108, 111, 32, 104, 101, 108, 108, 111]), new Uint8Array([104, 101, 108, 108, 111]), new Uint8Array([104, 105]), 1)
+	let replaced: $.Slice<number> = bytes.Replace(new Uint8Array([104, 101, 108, 108, 111, 32, 104, 101, 108, 108, 111]), new Uint8Array([104, 101, 108, 108, 111]), new Uint8Array([104, 105]), 1)
 	$.println("Replace result:", $.bytesToString(replaced))
 
 	// Test ReplaceAll
-	let replacedAll = bytes.ReplaceAll(new Uint8Array([104, 101, 108, 108, 111, 32, 104, 101, 108, 108, 111]), new Uint8Array([104, 101, 108, 108, 111]), new Uint8Array([104, 105]))
+	let replacedAll: $.Slice<number> = bytes.ReplaceAll(new Uint8Array([104, 101, 108, 108, 111, 32, 104, 101, 108, 108, 111]), new Uint8Array([104, 101, 108, 108, 111]), new Uint8Array([104, 105]))
 	$.println("ReplaceAll result:", $.bytesToString(replacedAll))
 
 	// Test Buffer
@@ -90,7 +90,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Buffer length:", buf.value.Len())
 
 	// Test Buffer Read
-	let data = $.makeSlice<number>(5, undefined, "byte")
+	let data: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
 	let [n, ] = buf.value.Read(data)
 	$.println("Read", n, "bytes:", $.bytesToString(data))
 

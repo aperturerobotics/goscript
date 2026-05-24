@@ -1,5 +1,10 @@
 package main
 
+type namedItem struct {
+	key  string
+	data []byte
+}
+
 func main() {
 	for _, tt := range []struct {
 		name  string
@@ -22,4 +27,16 @@ func main() {
 	}
 	x.Offsets = append(x.Offsets, 5)
 	println(x.Name, x.Offsets[0], x.Count)
+
+	items, _ := buildNamedItems()
+	for _, item := range items[1:] {
+		println(item.key, len(item.data))
+	}
+}
+
+func buildNamedItems() ([]namedItem, bool) {
+	return []namedItem{
+		{key: "skip", data: []byte{0}},
+		{key: "keep", data: []byte{1, 2, 3}},
+	}, true
 }

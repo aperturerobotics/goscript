@@ -62,7 +62,7 @@ export class descending {
 
 export async function main(): globalThis.Promise<void> {
 	// Test basic slice sorting
-	let ints = $.arrayToSlice<number>([3, 1, 4, 1, 5, 9])
+	let ints: $.Slice<number> = $.arrayToSlice<number>([3, 1, 4, 1, 5, 9])
 	$.println("Original ints:", ints![0], ints![1], ints![2], ints![3], ints![4], ints![5])
 	sort.Ints(ints)
 	$.println("Sorted ints:", ints![0], ints![1], ints![2], ints![3], ints![4], ints![5])
@@ -72,7 +72,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Ints are sorted:", isSorted)
 
 	// Test string sorting
-	let strings = $.arrayToSlice<string>(["banana", "apple", "cherry"])
+	let strings: $.Slice<string> = $.arrayToSlice<string>(["banana", "apple", "cherry"])
 	$.println("Original strings:", strings![0], strings![1], strings![2])
 	sort.Strings(strings)
 	$.println("Sorted strings:", strings![0], strings![1], strings![2])
@@ -82,7 +82,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Strings are sorted:", stringSorted)
 
 	// Test float64 sorting
-	let floats = $.arrayToSlice<number>([3.14, 2.71, 1.41])
+	let floats: $.Slice<number> = $.arrayToSlice<number>([3.14, 2.71, 1.41])
 	$.println("Original floats:", floats![0], floats![1], floats![2])
 	sort.Float64s(floats)
 	$.println("Sorted floats:", floats![0], floats![1], floats![2])
@@ -108,11 +108,11 @@ export async function main(): globalThis.Promise<void> {
 	$.println("First index where value >= 5:", searchResult)
 
 	// Test Slice function with custom comparator
-	let testSlice = $.arrayToSlice<number>([5, 2, 8, 1, 9])
+	let testSlice: $.Slice<number> = $.arrayToSlice<number>([5, 2, 8, 1, 9])
 	slices.Sort(testSlice)
 	$.println("Custom sorted slice:", testSlice![0], testSlice![1], testSlice![2], testSlice![3], testSlice![4])
 
-	let asyncSlice = $.arrayToSlice<number>([2, 1])
+	let asyncSlice: $.Slice<number> = $.arrayToSlice<number>([2, 1])
 	let ready = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(ready, true)
 	await sort.Slice($.interfaceValue<any>(asyncSlice, "[]int"), $.functionValue(async (i: number, j: number): globalThis.Promise<boolean> => {

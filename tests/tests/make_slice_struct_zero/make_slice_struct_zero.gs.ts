@@ -39,7 +39,7 @@ export class code {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let codes = $.makeSlice<code>(2, undefined, undefined, () => $.markAsStructValue(new code()))
+	let codes: $.Slice<code> = $.makeSlice<code>(2, undefined, undefined, () => $.markAsStructValue(new code()))
 	codes![0].len = 3
 	$.println("first:", codes![0].len)
 	$.println("second:", codes![1].len)

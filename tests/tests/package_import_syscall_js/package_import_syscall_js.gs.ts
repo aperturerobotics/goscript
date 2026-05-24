@@ -24,7 +24,7 @@ export async function main(): globalThis.Promise<void> {
 	$.markAsStructValue($.cloneStructValue(bytes)).SetIndex(0, 65)
 	$.markAsStructValue($.cloneStructValue(bytes)).SetIndex(1, 66)
 	$.markAsStructValue($.cloneStructValue(bytes)).SetIndex(2, 67)
-	let dst = $.makeSlice<number>(3, undefined, "byte")
+	let dst: $.Slice<number> = $.makeSlice<number>(3, undefined, "byte")
 	js.CopyBytesToGo(dst, $.markAsStructValue($.cloneStructValue(bytes)))
 	$.println("bytes:", $.bytesToString(dst))
 }

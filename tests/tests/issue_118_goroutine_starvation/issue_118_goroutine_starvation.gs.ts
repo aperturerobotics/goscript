@@ -39,7 +39,7 @@ export async function main(): globalThis.Promise<void> {
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 
 	// Collect results
-	let results = $.arrayToSlice<number>([])
+	let results: $.Slice<number> = $.arrayToSlice<number>([])
 	let timeout = time.After($.uint64Mul(5, time.Second))
 
 	for (let __rangeIndex = 0; __rangeIndex < 2; __rangeIndex++) {

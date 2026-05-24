@@ -19,7 +19,7 @@ export function stringBytes(__goscriptParam0: string): $.Slice<number> {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let b = stringBytes("abc")
+	let b: $.Slice<number> = stringBytes("abc")
 	$.println($.len(b), $.cap(b), $.uint(b![0], 8), $.uint(b![1], 8), $.uint(b![2], 8))
 }
 

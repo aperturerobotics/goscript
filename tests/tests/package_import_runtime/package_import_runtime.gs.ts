@@ -25,7 +25,7 @@ export async function main(): globalThis.Promise<void> {
 	runtime.GC()
 	$.println("GC called successfully")
 
-	let pcs = $.makeSlice<number>(0, undefined, "number")
+	let pcs: $.Slice<number> = $.makeSlice<number>(0, undefined, "number")
 	$.println("Callers empty:", runtime.Callers(0, pcs))
 	let frames: runtime.Frames | $.VarRef<runtime.Frames> | null = runtime.CallersFrames(pcs)
 	let [frame, more] = runtime.Frames.prototype.Next.call(frames)

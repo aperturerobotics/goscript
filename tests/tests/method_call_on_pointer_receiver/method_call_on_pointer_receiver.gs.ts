@@ -149,10 +149,10 @@ export async function main(): globalThis.Promise<void> {
 	$.println("reserved pointer method:", setterStruct.prototype.get.call(setter))
 
 	let d: digest | $.VarRef<digest> | null = new digest()
-	let pad = $.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)])
+	let pad: $.Slice<number> = $.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)])
 	{
 		digest.prototype.Write.call(d, pad)
-		let __goscriptShadow0 = $.arrayToSlice<number>([$.uint(4, 8)])
+		let __goscriptShadow0: $.Slice<number> = $.arrayToSlice<number>([$.uint(4, 8)])
 		$.println("shadowed type name after method call:", $.pointerValue<digest>(d).writes, $.len(__goscriptShadow0))
 	}
 }

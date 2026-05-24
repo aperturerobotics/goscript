@@ -3000,6 +3000,8 @@ func shortDeclNeedsTypeAnnotation(typ types.Type) bool {
 		return namedStructType(typed.Elem()) != nil
 	case *types.Map:
 		return true
+	case *types.Slice:
+		return true
 	default:
 		return false
 	}

@@ -130,7 +130,7 @@ export async function main(): globalThis.Promise<void> {
 	let nested2 = $.varRef($.markAsStructValue(new MyStruct({Value: 80})))
 
 	// Array of interfaces containing both pointers and values
-	let arr = $.arrayToSlice<any>([$.interfaceValue<any>(nested1, "*main.MyStruct"), $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(nested2.value)), "main.MyStruct"), $.interfaceValue<any>(nested2, "*main.MyStruct")])
+	let arr: $.Slice<any> = $.arrayToSlice<any>([$.interfaceValue<any>(nested1, "*main.MyStruct"), $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(nested2.value)), "main.MyStruct"), $.interfaceValue<any>(nested2, "*main.MyStruct")])
 
 	for (let __goscriptRangeTarget0 = arr, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 		let item = __goscriptRangeTarget0![i]
@@ -155,7 +155,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Scenario 6: Type Switch with Mixed Types
 	$.println("\n--- Scenario 6: Type Switch ---")
-	let testItems = $.arrayToSlice<any>([$.interfaceValue<any>($.markAsStructValue(new MyStruct({Value: 100})), "main.MyStruct"), $.interfaceValue<any>(new MyStruct({Value: 200}), "*main.MyStruct"), 300, "string"])
+	let testItems: $.Slice<any> = $.arrayToSlice<any>([$.interfaceValue<any>($.markAsStructValue(new MyStruct({Value: 100})), "main.MyStruct"), $.interfaceValue<any>(new MyStruct({Value: 200}), "*main.MyStruct"), 300, "string"])
 
 	for (let __goscriptRangeTarget1 = testItems, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
 		let item = __goscriptRangeTarget1![i]

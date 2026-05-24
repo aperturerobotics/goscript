@@ -144,7 +144,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// 5. Type assertion of a function in a slice
-	let funcSlice = $.makeSlice<any>(2)
+	let funcSlice: $.Slice<any> = $.makeSlice<any>(2)
 	funcSlice![0] = $.interfaceValue<any>($.namedFunction(greet, "main.Greeter"), "main.Greeter")
 	funcSlice![1] = $.interfaceValue<any>($.namedFunction(add, "main.Adder"), "main.Adder")
 

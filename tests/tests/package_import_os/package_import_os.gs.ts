@@ -64,7 +64,9 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	{
-		let [data, readErr] = os.ReadFile(fileName)
+		let __goscriptTuple0: any = os.ReadFile(fileName)
+		let data: $.Slice<number> = __goscriptTuple0[0]
+		let readErr = __goscriptTuple0[1]
 		if (readErr == null) {
 			$.println("ReadFile data:", $.bytesToString(data))
 		} else {
@@ -100,9 +102,9 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	{
-		let __goscriptTuple0: any = os.CreateTemp("", "os-temp-file-*")
-		let tempFile: os.File | $.VarRef<os.File> | null = __goscriptTuple0[0]
-		let __goscriptShadow1 = __goscriptTuple0[1]
+		let __goscriptTuple1: any = os.CreateTemp("", "os-temp-file-*")
+		let tempFile: os.File | $.VarRef<os.File> | null = __goscriptTuple1[0]
+		let __goscriptShadow1 = __goscriptTuple1[1]
 		if (__goscriptShadow1 == null) {
 			$.println("CreateTemp ok")
 			$.println("CreateTemp name empty:", (os.File.prototype.Name.call(tempFile) as string) == "")

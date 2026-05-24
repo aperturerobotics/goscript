@@ -13,7 +13,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test named imports with same package name
 	let result1 = foo_bar.ToUpper("hello")
 	let result2 = strings.ToLower("WORLD")
-	let result3 = baz.Split("a,b,c", ",")
+	let result3: $.Slice<string> = baz.Split("a,b,c", ",")
 
 	$.println("foo_bar.ToUpper:", result1)
 	$.println("strings.ToLower:", result2)

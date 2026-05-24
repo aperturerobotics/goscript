@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 import * as unsafe from "@goscript/unsafe/index.js"
 
 export function bytesAsString(): string {
-	let b = $.varRef(new Uint8Array([49, 50, 51]))
+	let b: $.VarRef<$.Slice<number>> = $.varRef(new Uint8Array([49, 50, 51]))
 	return $.bytesToString(b.value)
 }
 

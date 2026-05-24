@@ -71,15 +71,17 @@ export async function main(): globalThis.Promise<void> {
 
 	// Marshal a simple struct
 	let p = $.markAsStructValue(new Person({Name: "Alice", Age: 30, Active: true}))
-	let [b, err] = json.Marshal($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))
+	let __goscriptTuple0: any = json.Marshal($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))
+	let b: $.Slice<number> = __goscriptTuple0[0]
+	let err = __goscriptTuple0[1]
 	if (err != null) {
 		results = $.append(results, "Marshal error: " + $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 	} else {
 		results = $.append(results, "Marshal: " + $.bytesToString(b))
 	}
-	let __goscriptTuple0: any = json.MarshalIndent($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"), "", "  ")
-	let indented = __goscriptTuple0[0]
-	err = __goscriptTuple0[1]
+	let __goscriptTuple1: any = json.MarshalIndent($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"), "", "  ")
+	let indented: $.Slice<number> = __goscriptTuple1[0]
+	err = __goscriptTuple1[1]
 	if (err != null) {
 		results = $.append(results, "MarshalIndent error: " + $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 	} else {

@@ -72,7 +72,7 @@ export async function main(): globalThis.Promise<void> {
 	p!.value--
 	$.println(x.value)
 
-	let values = $.varRef($.arrayToSlice<number>([1, 2, 3, 4]))
+	let values: $.VarRef<$.Slice<number>> = $.varRef($.arrayToSlice<number>([1, 2, 3, 4]))
 	let h: holder | $.VarRef<holder> | null = new holder({values: values})
 	trim(h)
 	$.println("len after star:", $.len($.pointerValue<$.Slice<number>>($.pointerValue<holder>(h).values)))

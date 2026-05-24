@@ -25,7 +25,7 @@ export async function main(): globalThis.Promise<void> {
 	testVariadicInterface("test3", null)
 
 	// Test with slice expansion
-	let values = $.arrayToSlice<any>(["a", "b", "c"])
+	let values: $.Slice<any> = $.arrayToSlice<any>(["a", "b", "c"])
 	testVariadicInterface("test4", values)
 }
 

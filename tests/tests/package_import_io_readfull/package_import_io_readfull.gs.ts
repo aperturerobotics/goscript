@@ -66,7 +66,7 @@ export class fixedReader {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let buf = $.makeSlice<number>(2, undefined, "byte")
+	let buf: $.Slice<number> = $.makeSlice<number>(2, undefined, "byte")
 	let [n, err] = await io.ReadFull($.pointerValue($.interfaceValue<io.Reader | null>(new fixedReader({data: new Uint8Array([97, 98, 99])}), "*main.fixedReader")), buf)
 	$.println("read:", n, $.bytesToString(buf), err == null)
 	let __goscriptTuple0: any = await io.ReadFull($.pointerValue($.interfaceValue<io.Reader | null>(bytes.NewReader(null), "*bytes.Reader")), buf)
@@ -78,7 +78,7 @@ export async function main(): globalThis.Promise<void> {
 	err = __goscriptTuple1[1]
 	$.println("short:", n, $.bytesToString($.goSlice(buf, undefined, 1)), err == io.ErrUnexpectedEOF)
 	let __goscriptTuple2: any = await io.ReadAll($.pointerValue($.interfaceValue<io.Reader | null>(new fixedReader({data: new Uint8Array([97, 98, 99, 68, 69, 70, 103, 104, 105]), size: 3}), "*main.fixedReader")))
-	let all = __goscriptTuple2[0]
+	let all: $.Slice<number> = __goscriptTuple2[0]
 	err = __goscriptTuple2[1]
 	$.println("readall:", $.bytesToString(all), err == null)
 }

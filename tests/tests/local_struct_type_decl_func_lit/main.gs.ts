@@ -50,7 +50,7 @@ export async function main(): globalThis.Promise<void> {
 			)
 		}
 
-		let items = $.arrayToSlice<item>([$.markAsStructValue(new item({name: "alpha", count: 1})), $.markAsStructValue(new item({name: "beta", count: 2}))])
+		let items: $.Slice<item> = $.arrayToSlice<item>([$.markAsStructValue(new item({name: "alpha", count: 1})), $.markAsStructValue(new item({name: "beta", count: 2}))])
 		for (let __goscriptRangeTarget0 = items, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 			let item = __goscriptRangeTarget0![__rangeIndex]
 			$.println(item.name, item.count)

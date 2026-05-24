@@ -309,8 +309,8 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 	}
 	let lx: $.VarRef<number> = $.varRef(0)
 	let rx: $.VarRef<number> = $.varRef(0)
-	let merged = $.makeSlice<number>(0, undefined, "number")
-	let next = $.makeSlice<number>(0, undefined, "number")
+	let merged: $.Slice<number> = $.makeSlice<number>(0, undefined, "number")
+	let next: $.Slice<number> = $.makeSlice<number>(0, undefined, "number")
 	let ok = true
 	__defer.defer(() => { ($.functionValue((): void => {
 		if (!ok) {
@@ -579,7 +579,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 					$.pointerValue<onePassInst>(inst).Next = $.arrayToSlice<number>([$.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32)])
 					break
 				}
-				let runes = $.makeSlice<number>(0, undefined, "number")
+				let runes: $.Slice<number> = $.makeSlice<number>(0, undefined, "number")
 				if (($.len($.pointerValue<onePassInst>(inst).Inst.Rune) == 1) && ($.uint(($.pointerValue<onePassInst>(inst).Inst.Arg & syntax.FoldCase), 16) != $.uint(0, 16))) {
 					let r0 = $.int($.pointerValue<onePassInst>(inst).Inst.Rune![0], 32)
 					runes = $.append(runes, r0, r0)
@@ -605,7 +605,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 					break
 				}
 				queueOnePass.prototype.insert.call(instQueue, $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32))
-				let runes = $.arrayToSlice<number>([])
+				let runes: $.Slice<number> = $.arrayToSlice<number>([])
 				// expand case-folded runes
 				if ($.uint(($.pointerValue<onePassInst>(inst).Inst.Arg & syntax.FoldCase), 16) != $.uint(0, 16)) {
 					let r0 = $.int($.pointerValue<onePassInst>(inst).Inst.Rune![0], 32)
@@ -656,7 +656,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 
 	queueOnePass.prototype.clear.call(instQueue)
 	queueOnePass.prototype.insert.call(instQueue, $.uint($.uint($.pointerValue<onePassProg>(p).Start, 32), 32))
-	let m = $.makeSlice<boolean>($.len($.pointerValue<onePassProg>(p).Inst), undefined, "boolean")
+	let m: $.Slice<boolean> = $.makeSlice<boolean>($.len($.pointerValue<onePassProg>(p).Inst), undefined, "boolean")
 	while (!queueOnePass.prototype.empty.call(instQueue)) {
 		queueOnePass.prototype.clear.call(visitQueue)
 		let pc = $.uint(queueOnePass.prototype.next.call(instQueue), 32)

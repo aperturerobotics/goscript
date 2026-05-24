@@ -14,13 +14,13 @@ export async function main(): globalThis.Promise<void> {
 	let value = $.namedValueInterfaceValue<any>($.arrayToSlice<number>([1, 2, 3]), "main.filters", {size: filters_size})
 	{
 		let __goscriptTuple0: any = $.typeAssertTuple<filters>(value, "main.filters")
-		let c = (__goscriptTuple0[0] as filters)
+		let c: filters = (__goscriptTuple0[0] as filters)
 		let ok = __goscriptTuple0[1]
 		if (ok) {
 			out = ($.goSlice(c, undefined, $.len((c as filters)), $.len((c as filters))) as filters)
 		}
 	}
-	let raw = $.arrayToSlice<number>([4, 5])
+	let raw: $.Slice<number> = $.arrayToSlice<number>([4, 5])
 	let size = filters_size((raw as filters))
 	$.println("len:", $.len((out as filters)))
 	$.println("cap:", $.cap((out as filters)))

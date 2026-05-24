@@ -69,7 +69,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Result3:", result3)
 
 	// Test with slice expansion
-	let parts = $.arrayToSlice<string>(["another", "path", "here"])
+	let parts: $.Slice<string> = $.arrayToSlice<string>(["another", "path", "here"])
 	let result4 = $.pointerValue<Exclude<Basic, null>>(b).Join(parts)
 	$.println("Result4:", result4)
 }

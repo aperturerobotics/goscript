@@ -37,7 +37,7 @@ export class byteFormatter {
 
 	public Format(state: fmt.State | null, verb: number): void {
 		const b = this
-		let buf = $.append($.arrayToSlice<number>([]), ...(b.prefix ?? []))
+		let buf: $.Slice<number> = $.append($.arrayToSlice<number>([]), ...(b.prefix ?? []))
 		buf = $.append(buf, $.uint(verb, 8))
 		$.pointerValue<Exclude<fmt.State, null>>(state).Write(buf)
 	}
@@ -69,14 +69,14 @@ export async function main(): globalThis.Promise<void> {
 	// Test Sprint functions
 	let result = fmt.Sprint("Sprint", " ", "result")
 	fmt.Println("Sprint result:", result)
-	let parts = $.arrayToSlice<any>(["Spread", " ", "result"])
+	let parts: $.Slice<any> = $.arrayToSlice<any>(["Spread", " ", "result"])
 	let spreadResult = fmt.Sprint(...(parts ?? []))
 	fmt.Println("Sprint spread result:", spreadResult)
 
 	// Test Sprintf
 	let formatted = fmt.Sprintf("Number: %d, String: %s", 42, "test")
 	fmt.Println("Sprintf result:", formatted)
-	let formatArgs = $.arrayToSlice<any>([7, "spread"])
+	let formatArgs: $.Slice<any> = $.arrayToSlice<any>([7, "spread"])
 	let formattedSpread = fmt.Sprintf("Spread Number: %d, String: %s", ...(formatArgs ?? []))
 	fmt.Println("Sprintf spread result:", formattedSpread)
 
@@ -101,7 +101,7 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Printf("Precision: '%.2f'\n", 3.14159)
 	fmt.Printf("Both: '%5.2f'\n", 3.14159)
 	fmt.Printf("Formatter: %v\n", $.interfaceValue<any>($.markAsStructValue(new byteFormatter({prefix: new Uint8Array([98, 121, 116, 101, 45])})), "main.byteFormatter"))
-	let appended = fmt.Append(new Uint8Array([98, 97, 115, 101, 45]), "tail")
+	let appended: $.Slice<number> = fmt.Append(new Uint8Array([98, 97, 115, 101, 45]), "tail")
 	fmt.Println("Append bytes:", $.bytesToString(appended))
 	let buf: $.VarRef<bytes.Buffer> = $.varRef($.markAsStructValue(new bytes.Buffer()))
 	fmt.Fprintln($.pointerValue($.interfaceValue<io.Writer | null>(buf, "*bytes.Buffer")), "Buffered writer")

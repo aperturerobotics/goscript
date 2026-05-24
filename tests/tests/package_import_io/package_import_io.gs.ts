@@ -234,7 +234,7 @@ export async function main(): globalThis.Promise<void> {
 	n64 = __goscriptTuple6[0]
 	err = __goscriptTuple6[1]
 	$.println("Copy bytes WriteTo async writer - bytes:", n64, "err:", err == null)
-	let viewBacking = $.arrayToSlice<number>([$.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(99, 8)])
+	let viewBacking: $.Slice<number> = $.arrayToSlice<number>([$.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(99, 8)])
 	let __goscriptTuple7: any = bytes.Buffer.prototype.Read.call(bytes.NewBuffer(new Uint8Array([118, 105, 101, 119])), $.goSlice(viewBacking, undefined, 4))
 	n = __goscriptTuple7[0]
 	err = __goscriptTuple7[1]
@@ -250,7 +250,7 @@ export async function main(): globalThis.Promise<void> {
 	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple9[1]
 	let done = $.makeChannel<boolean>(1, false, "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
-		let __goscriptShadow0 = $.makeSlice<number>(5, undefined, "byte")
+		let __goscriptShadow0: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
 		let [__goscriptShadow1, __goscriptShadow2] = io.PipeReader.prototype.Read.call(reader, __goscriptShadow0)
 		$.println("Pipe read - bytes:", __goscriptShadow1, "data:", $.bytesToString($.goSlice(__goscriptShadow0, undefined, __goscriptShadow1)), "err:", __goscriptShadow2 == null)
 		let __goscriptTuple10: any = io.PipeReader.prototype.Read.call(reader, __goscriptShadow0)

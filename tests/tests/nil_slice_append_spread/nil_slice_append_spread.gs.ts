@@ -45,8 +45,8 @@ export function clone(items: $.Slice<item | $.VarRef<item> | null>): $.Slice<ite
 export async function main(): globalThis.Promise<void> {
 	let first: item | $.VarRef<item> | null = new item({value: "first"})
 	let second: item | $.VarRef<item> | null = new item({value: "second"})
-	let items = $.arrayToSlice<item | $.VarRef<item> | null>([first, second])
-	let cloned = clone(items)
+	let items: $.Slice<item | $.VarRef<item> | null> = $.arrayToSlice<item | $.VarRef<item> | null>([first, second])
+	let cloned: $.Slice<item | $.VarRef<item> | null> = clone(items)
 	$.println($.len(cloned), $.pointerValue<item>(cloned![0]).value, $.pointerValue<item>(cloned![1]).value)
 }
 

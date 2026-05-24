@@ -12,7 +12,7 @@ export function collectValues(value: helper.Value | null): [$.Slice<helper.Value
 
 export function collectAssigned(value: helper.Value | null): [$.Slice<helper.Value | null>, $.GoError] {
 	let __goscriptTuple0: any = helper.Collect({T: { type: "helper.Value", zero: () => null, methods: {GetValue: (receiver: any, ...args: any[]) => receiver.GetValue(...args)} }}, value)
-	let values = (__goscriptTuple0[0] as $.Slice<helper.Value | null>)
+	let values: $.Slice<helper.Value | null> = (__goscriptTuple0[0] as $.Slice<helper.Value | null>)
 	let err = __goscriptTuple0[1]
 	if (err != null) {
 		return [null, err]
@@ -23,15 +23,17 @@ export function collectAssigned(value: helper.Value | null): [$.Slice<helper.Val
 export async function main(): globalThis.Promise<void> {
 	let box = $.markAsStructValue($.cloneStructValue(helper.Wrap({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, 21)))
 	$.println("wrapped:", box.Value)
-	let [values, err] = collectValues($.interfaceValue<helper.Value | null>($.markAsStructValue(new helper.IntValue({N: 34})), "helper.IntValue"))
+	let __goscriptTuple1: any = collectValues($.interfaceValue<helper.Value | null>($.markAsStructValue(new helper.IntValue({N: 34})), "helper.IntValue"))
+	let values: $.Slice<helper.Value | null> = __goscriptTuple1[0]
+	let err = __goscriptTuple1[1]
 	if (err != null) {
 		$.println($.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
 	$.println("collected:", $.pointerValue<Exclude<helper.Value, null>>(values![0]).GetValue())
-	let __goscriptTuple1: any = collectAssigned($.interfaceValue<helper.Value | null>($.markAsStructValue(new helper.IntValue({N: 35})), "helper.IntValue"))
-	let assigned = __goscriptTuple1[0]
-	err = __goscriptTuple1[1]
+	let __goscriptTuple2: any = collectAssigned($.interfaceValue<helper.Value | null>($.markAsStructValue(new helper.IntValue({N: 35})), "helper.IntValue"))
+	let assigned: $.Slice<helper.Value | null> = __goscriptTuple2[0]
+	err = __goscriptTuple2[1]
 	if (err != null) {
 		$.println($.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return

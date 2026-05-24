@@ -137,7 +137,7 @@ export class Regexp {
 
 	public CapNames(): $.Slice<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		let names = $.makeSlice<string>(Regexp.prototype.MaxCap.call(re) + 1, undefined, "string")
+		let names: $.Slice<string> = $.makeSlice<string>(Regexp.prototype.MaxCap.call(re) + 1, undefined, "string")
 		Regexp.prototype.capNames.call(re, names)
 		return names
 	}

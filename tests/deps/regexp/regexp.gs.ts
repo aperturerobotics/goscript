@@ -227,7 +227,7 @@ export class Regexp {
 	public Find(b: $.Slice<number>): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 2 }, () => 0)
-		let a = Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, $.goSlice(dstCap, undefined, 0))
+		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return null
 		}
@@ -304,7 +304,7 @@ export class Regexp {
 			if (result == null) {
 				result = $.makeSlice<$.Slice<string>>(0, startSize)
 			}
-			let slice = $.makeSlice<string>(Math.trunc($.len(match) / 2), undefined, "string")
+			let slice: $.Slice<string> = $.makeSlice<string>(Math.trunc($.len(match) / 2), undefined, "string")
 			for (let __goscriptRangeTarget0 = slice, j = 0; j < $.len(__goscriptRangeTarget0); j++) {
 				if (match![2 * j] >= 0) {
 					slice![j] = $.sliceStringOrBytes(s, match![2 * j], match![(2 * j) + 1])
@@ -340,7 +340,7 @@ export class Regexp {
 			if (result == null) {
 				result = $.makeSlice<$.Slice<$.Slice<number>>>(0, startSize)
 			}
-			let slice = $.makeSlice<$.Slice<number>>(Math.trunc($.len(match) / 2))
+			let slice: $.Slice<$.Slice<number>> = $.makeSlice<$.Slice<number>>(Math.trunc($.len(match) / 2))
 			for (let __goscriptRangeTarget1 = slice, j = 0; j < $.len(__goscriptRangeTarget1); j++) {
 				if (match![2 * j] >= 0) {
 					slice![j] = $.goSlice(b, match![2 * j], match![(2 * j) + 1], match![(2 * j) + 1])
@@ -369,7 +369,7 @@ export class Regexp {
 	public FindIndex(b: $.Slice<number>): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let loc: $.Slice<number> = null as $.Slice<number>
-		let a = Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, null)
+		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, null)
 		if (a == null) {
 			return null
 		}
@@ -379,7 +379,7 @@ export class Regexp {
 	public FindReaderIndex(r: io.RuneReader | null): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let loc: $.Slice<number> = null as $.Slice<number>
-		let a = Regexp.prototype.doExecute.call(re, r, null, "", 0, 2, null)
+		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, r, null, "", 0, 2, null)
 		if (a == null) {
 			return null
 		}
@@ -394,7 +394,7 @@ export class Regexp {
 	public FindString(s: string): string {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 2 }, () => 0)
-		let a = Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, $.goSlice(dstCap, undefined, 0))
+		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return ""
 		}
@@ -404,7 +404,7 @@ export class Regexp {
 	public FindStringIndex(s: string): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let loc: $.Slice<number> = null as $.Slice<number>
-		let a = Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, null)
+		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, null)
 		if (a == null) {
 			return null
 		}
@@ -414,11 +414,11 @@ export class Regexp {
 	public FindStringSubmatch(s: string): $.Slice<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 4 }, () => 0)
-		let a = Regexp.prototype.doExecute.call(re, null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
+		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return null
 		}
-		let ret = $.makeSlice<string>(1 + $.pointerValue<Regexp>(re).numSubexp, undefined, "string")
+		let ret: $.Slice<string> = $.makeSlice<string>(1 + $.pointerValue<Regexp>(re).numSubexp, undefined, "string")
 		for (let __goscriptRangeTarget2 = ret, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 			if (((2 * i) < $.len(a)) && (a![2 * i] >= 0)) {
 				ret![i] = $.sliceStringOrBytes(s, a![2 * i], a![(2 * i) + 1])
@@ -435,11 +435,11 @@ export class Regexp {
 	public FindSubmatch(b: $.Slice<number>): $.Slice<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 4 }, () => 0)
-		let a = Regexp.prototype.doExecute.call(re, null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
+		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return null
 		}
-		let ret = $.makeSlice<$.Slice<number>>(1 + $.pointerValue<Regexp>(re).numSubexp)
+		let ret: $.Slice<$.Slice<number>> = $.makeSlice<$.Slice<number>>(1 + $.pointerValue<Regexp>(re).numSubexp)
 		for (let __goscriptRangeTarget3 = ret, i = 0; i < $.len(__goscriptRangeTarget3); i++) {
 			if (((2 * i) < $.len(a)) && (a![2 * i] >= 0)) {
 				ret![i] = $.goSlice(b, a![2 * i], a![(2 * i) + 1], a![(2 * i) + 1])
@@ -497,7 +497,7 @@ export class Regexp {
 			n = 2 * ($.pointerValue<Regexp>(re).numSubexp + 1)
 		}
 		let srepl = ""
-		let b = await Regexp.prototype.replaceAll.call(re, src, "", n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
+		let b: $.Slice<number> = await Regexp.prototype.replaceAll.call(re, src, "", n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			if ($.len(srepl) != $.len(repl)) {
 				srepl = $.bytesToString(repl)
 			}
@@ -533,7 +533,7 @@ export class Regexp {
 		if (strings2.Contains(repl, "$")) {
 			n = 2 * ($.pointerValue<Regexp>(re).numSubexp + 1)
 		}
-		let b = await Regexp.prototype.replaceAll.call(re, null, src, n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
+		let b: $.Slice<number> = await Regexp.prototype.replaceAll.call(re, null, src, n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return Regexp.prototype.expand.call(re, dst, repl, null, src, match)
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
 		return $.bytesToString(b)
@@ -541,7 +541,7 @@ export class Regexp {
 
 	public async ReplaceAllStringFunc(src: string, repl: ((_p0: string) => string | globalThis.Promise<string>) | null): globalThis.Promise<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		let b = await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
+		let b: $.Slice<number> = await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
 			return $.append(dst, ...($.stringToBytes(await repl!($.sliceStringOrBytes(src, match![0], match![1]))) ?? []))
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
 		return $.bytesToString(b)
@@ -558,8 +558,8 @@ export class Regexp {
 			return $.arrayToSlice<string>([""])
 		}
 
-		let matches = await Regexp.prototype.FindAllStringIndex.call(re, s, n)
-		let __goscriptShadow0 = $.makeSlice<string>(0, $.len(matches), "string")
+		let matches: $.Slice<$.Slice<number>> = await Regexp.prototype.FindAllStringIndex.call(re, s, n)
+		let __goscriptShadow0: $.Slice<string> = $.makeSlice<string>(0, $.len(matches), "string")
 
 		let beg = 0
 		let end = 0
@@ -628,7 +628,7 @@ export class Regexp {
 		}
 
 		for (let pos = 0, i = 0, prevMatchEnd = -1; (i < n) && (pos <= end); ) {
-			let matches = Regexp.prototype.doExecute.call(re, null, b, s, pos, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null)
+			let matches: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, b, s, pos, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null)
 			if ($.len(matches) == 0) {
 				break
 			}
@@ -1047,7 +1047,7 @@ export class Regexp {
 
 		let dstCap: number[] = Array.from({ length: 2 }, () => 0)
 		while (searchPos <= endPos) {
-			let a = Regexp.prototype.doExecute.call(re, null, bsrc, src, searchPos, nmatch, $.goSlice(dstCap, undefined, 0))
+			let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, bsrc, src, searchPos, nmatch, $.goSlice(dstCap, undefined, 0))
 			if ($.len(a) == 0) {
 				break
 			}
@@ -1592,7 +1592,7 @@ export async function compile(expr: string, mode: syntax.Flags, longest: boolean
 		return [null, err]
 	}
 	let maxCap = syntax.Regexp.prototype.MaxCap.call(re)
-	let capNames = syntax.Regexp.prototype.CapNames.call(re)
+	let capNames: $.Slice<string> = syntax.Regexp.prototype.CapNames.call(re)
 
 	re = syntax.Regexp.prototype.Simplify.call(re)
 	let __goscriptTuple18: any = syntax.Compile(re)
@@ -1820,7 +1820,7 @@ export function QuoteMeta(s: string): string {
 		return s
 	}
 
-	let b = $.makeSlice<number>((2 * $.len(s)) - i, undefined, "byte")
+	let b: $.Slice<number> = $.makeSlice<number>((2 * $.len(s)) - i, undefined, "byte")
 	$.copy(b, $.sliceStringOrBytes(s, undefined, i))
 	let j = i
 	for (; i < $.len(s); i++) {
