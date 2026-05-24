@@ -66,6 +66,44 @@ export function Int(rand: io.Reader | null, max: any): [any, $.GoError] {
   }
 }
 
+export async function Prime(
+  rand: io.Reader | null,
+  bits: number,
+): Promise<[any, $.GoError]> {
+  if (bits < 2) {
+    return [null, new RandError('crypto/rand: prime size must be at least 2-bit')]
+  }
+
+  const bitOffset = bits % 8
+  const topBits = bitOffset === 0 ? 8 : bitOffset
+  const bytes = new Uint8Array(Math.ceil(bits / 8))
+  const reader = rand ?? Reader
+
+  while (true) {
+    const err = readFull(reader, bytes)
+    if (err != null) {
+      return [null, err]
+    }
+
+    bytes[0] &= (1 << topBits) - 1
+    if (topBits >= 2) {
+      bytes[0] |= 3 << (topBits - 2)
+    } else {
+      bytes[0] |= 1
+      if (bytes.length > 1) {
+        bytes[1] |= 0x80
+      }
+    }
+    bytes[bytes.length - 1] |= 1
+
+    const candidate = newBigInt()
+    candidate.SetBytes(bytes)
+    if (await candidate.ProbablyPrime(20)) {
+      return [candidate, null]
+    }
+  }
+}
+
 export function Text(): string {
   const src = new Uint8Array(26)
   const [, err] = Read(src)
@@ -78,6 +116,37 @@ export function Text(): string {
     out += base32alphabet[b % 32]
   }
   return out
+}
+
+function newBigInt(): any {
+  const info = $.getTypeByName('big.Int') as
+    | { zeroValue?: unknown; ctor?: new () => unknown }
+    | undefined
+  if (info?.zeroValue !== undefined) {
+    return typeof info.zeroValue === 'function'
+      ? (info.zeroValue as () => unknown)()
+      : info.zeroValue
+  }
+  if (info?.ctor != null) {
+    return new info.ctor()
+  }
+  throw new Error('crypto/rand: math/big.Int type is not registered')
+}
+
+function readFull(reader: io.Reader, dst: Uint8Array): $.GoError {
+  let offset = 0
+  while (offset < dst.length) {
+    const chunk = dst.subarray(offset)
+    const [n, err] = reader.Read(chunk)
+    if (err != null) {
+      return err
+    }
+    if (n <= 0) {
+      return io.ErrUnexpectedEOF
+    }
+    offset += n
+  }
+  return null
 }
 
 function fillSecureBytes(dst: $.Bytes): $.GoError {

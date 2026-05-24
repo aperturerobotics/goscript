@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
 
-import { Int, Read, Reader, Text } from './index.js'
+import { Int, Prime, Read, Reader, Text } from './index.js'
 
 class TestInt {
   private value = 0
@@ -34,7 +34,26 @@ class TestInt {
   Value(): number {
     return this.value
   }
+
+  ProbablyPrime(): boolean {
+    if (this.value < 2) {
+      return false
+    }
+    for (let i = 2; i * i <= this.value; i++) {
+      if (this.value % i === 0) {
+        return false
+      }
+    }
+    return true
+  }
 }
+
+TestInt.__typeInfo = $.registerStructType(
+  'big.Int',
+  () => new TestInt(),
+  [],
+  TestInt,
+)
 
 describe('crypto/rand override', () => {
   it('fills byte slices from Web Crypto', () => {
@@ -74,5 +93,28 @@ describe('crypto/rand override', () => {
 
     expect(err).toBeNull()
     expect(n.Value()).toBe(42)
+  })
+
+  it('generates probable primes with the requested bit length', async () => {
+    const reader = {
+      Read(dst: Uint8Array): [number, $.GoError] {
+        dst.fill(0)
+        return [dst.length, null]
+      },
+    }
+
+    const [prime, err] = await Prime(reader, 8)
+
+    expect(err).toBeNull()
+    expect(prime.Value()).toBe(193)
+    expect(prime.BitLen()).toBe(8)
+    expect(prime.ProbablyPrime()).toBe(true)
+  })
+
+  it('rejects prime sizes below two bits', async () => {
+    const [prime, err] = await Prime(Reader, 1)
+
+    expect(prime).toBeNull()
+    expect(err?.Error()).toBe('crypto/rand: prime size must be at least 2-bit')
   })
 })
