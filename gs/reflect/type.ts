@@ -212,6 +212,12 @@ export interface Type {
   // Panics if the type's Kind is not Struct or i is out of range.
   Field(i: number): StructField
 
+  // FieldByName returns the struct field with the given name.
+  FieldByName(name: string): [StructField, boolean]
+
+  // FieldByNameFunc returns the first struct field whose name satisfies match.
+  FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean]
+
   // Key returns a map type's key type.
   // Panics if the type's Kind is not Map.
   Key(): Type
@@ -221,6 +227,9 @@ export interface Type {
 
   // Implements reports whether the type implements the interface type u.
   Implements(u: Type | null): boolean
+
+  // AssignableTo reports whether a value of this type is assignable to u.
+  AssignableTo(u: Type | null): boolean
 
   // common returns the common type implementation.
   common?(): rtype
@@ -281,7 +290,16 @@ class InvalidTypeClass implements Type {
   Field(_i: number): StructField {
     throw new Error('reflect: Field of invalid type')
   }
+  FieldByName(_name: string): [StructField, boolean] {
+    return [new StructField(), false]
+  }
+  FieldByNameFunc(_match: (name: string) => boolean): [StructField, boolean] {
+    return [new StructField(), false]
+  }
   Implements(_u: Type | null): boolean {
+    return false
+  }
+  AssignableTo(_u: Type | null): boolean {
     return false
   }
   OverflowInt(_x: number): boolean {
@@ -554,6 +572,22 @@ export class Value {
     }
     // Pass parent struct and field name so Set() can update the struct
     return new Value(fieldVal, field.Type, undefined, parentObj, field.Name)
+  }
+
+  public FieldByIndex(index: $.Slice<number>): Value {
+    let current: Value = this
+    for (const fieldIndex of $.asArray(index)) {
+      current = current.Field(fieldIndex)
+    }
+    return current
+  }
+
+  public FieldByName(name: string): Value {
+    const [field, ok] = this.Type().FieldByName(name)
+    if (!ok) {
+      return new Value(null, invalidTypeInstance)
+    }
+    return this.FieldByIndex(field.Index)
   }
 
   // Additional methods needed by various parts of the codebase
@@ -1136,6 +1170,14 @@ export class BasicType implements Type {
     throw new Error(`reflect: Field of non-struct type ${this._name}`)
   }
 
+  public FieldByName(name: string): [StructField, boolean] {
+    return typeFieldByName(this, name)
+  }
+
+  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+    return typeFieldByNameFunc(this, match)
+  }
+
   public Key(): Type {
     throw new Error(`reflect: Key of non-map type ${this._name}`)
   }
@@ -1148,6 +1190,10 @@ export class BasicType implements Type {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
     return false
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return typeAssignableTo(this, u)
   }
 
   public common?(): rtype {
@@ -1301,6 +1347,14 @@ class SliceType implements Type {
     throw new Error('reflect: Field of non-struct type')
   }
 
+  public FieldByName(name: string): [StructField, boolean] {
+    return typeFieldByName(this, name)
+  }
+
+  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+    return typeFieldByNameFunc(this, match)
+  }
+
   public Key(): Type {
     throw new Error('reflect: Key of non-map type')
   }
@@ -1313,6 +1367,10 @@ class SliceType implements Type {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
     return false
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return typeAssignableTo(this, u)
   }
 
   public OverflowInt(_x: number): boolean {
@@ -1388,6 +1446,14 @@ class ArrayType implements Type {
     throw new Error('reflect: Field of non-struct type')
   }
 
+  public FieldByName(name: string): [StructField, boolean] {
+    return typeFieldByName(this, name)
+  }
+
+  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+    return typeFieldByNameFunc(this, match)
+  }
+
   public Key(): Type {
     throw new Error('reflect: Key of non-map type')
   }
@@ -1400,6 +1466,10 @@ class ArrayType implements Type {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
     return false
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return typeAssignableTo(this, u)
   }
 
   public common?(): rtype {
@@ -1468,6 +1538,14 @@ class PointerType implements Type {
     throw new Error('reflect: Field of non-struct type')
   }
 
+  public FieldByName(name: string): [StructField, boolean] {
+    return typeFieldByName(this, name)
+  }
+
+  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+    return typeFieldByNameFunc(this, match)
+  }
+
   public Key(): Type {
     throw new Error('reflect: Key of non-map type')
   }
@@ -1482,6 +1560,10 @@ class PointerType implements Type {
     // For pointer types, check if the element type implements the interface
     const elemTypeName = this._elemType.String()
     return typeImplementsInterface(elemTypeName, u)
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return typeAssignableTo(this, u)
   }
 
   public common?(): rtype {
@@ -1558,6 +1640,14 @@ class FunctionType implements Type {
     throw new Error('reflect: Field of non-struct type')
   }
 
+  public FieldByName(name: string): [StructField, boolean] {
+    return typeFieldByName(this, name)
+  }
+
+  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+    return typeFieldByNameFunc(this, match)
+  }
+
   public Key(): Type {
     throw new Error('reflect: Key of non-map type')
   }
@@ -1570,6 +1660,10 @@ class FunctionType implements Type {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
     return false
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return typeAssignableTo(this, u)
   }
 
   public common?(): rtype {
@@ -1649,6 +1743,14 @@ class MapType implements Type {
     throw new Error('reflect: Field of non-struct type')
   }
 
+  public FieldByName(name: string): [StructField, boolean] {
+    return typeFieldByName(this, name)
+  }
+
+  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+    return typeFieldByNameFunc(this, match)
+  }
+
   public Implements(u: Type | null): boolean {
     if (!u) {
       return false
@@ -1657,6 +1759,10 @@ class MapType implements Type {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
     return false
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return typeAssignableTo(this, u)
   }
 
   public common?(): rtype {
@@ -1746,6 +1852,33 @@ function typeImplementsInterface(
   return true
 }
 
+function typeFieldByName(t: Type, name: string): [StructField, boolean] {
+  return typeFieldByNameFunc(t, (fieldName) => fieldName === name)
+}
+
+function typeFieldByNameFunc(
+  t: Type,
+  match: (name: string) => boolean,
+): [StructField, boolean] {
+  if (t.Kind() !== Struct) {
+    throw new Error('reflect: FieldByName of non-struct type')
+  }
+  for (let i = 0; i < t.NumField(); i++) {
+    const field = t.Field(i)
+    if (match(field.Name)) {
+      return [field, true]
+    }
+  }
+  return [new StructField(), false]
+}
+
+function typeAssignableTo(t: Type, u: Type | null): boolean {
+  if (u === null) {
+    return false
+  }
+  return t.String() === u.String() || t.Implements(u)
+}
+
 class StructType implements Type {
   constructor(
     private _name: string,
@@ -1807,7 +1940,16 @@ class StructType implements Type {
       PkgPath: '',
       Type: f.type,
       Tag: f.tag ? new StructTag(f.tag) : undefined,
+      Index: [i],
     })
+  }
+
+  public FieldByName(name: string): [StructField, boolean] {
+    return typeFieldByName(this, name)
+  }
+
+  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+    return typeFieldByNameFunc(this, match)
   }
 
   public Key(): Type {
@@ -1822,6 +1964,10 @@ class StructType implements Type {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
     return typeImplementsInterface(this._name, u)
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return typeAssignableTo(this, u)
   }
 
   public common?(): rtype {
@@ -1986,6 +2132,14 @@ class ChannelType implements Type {
     throw new Error('reflect: Field of non-struct type')
   }
 
+  public FieldByName(name: string): [StructField, boolean] {
+    return typeFieldByName(this, name)
+  }
+
+  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+    return typeFieldByNameFunc(this, match)
+  }
+
   public Key(): Type {
     throw new Error('reflect: Key of non-map type')
   }
@@ -1998,6 +2152,10 @@ class ChannelType implements Type {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
     return false
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return typeAssignableTo(this, u)
   }
 
   public common?(): rtype {
@@ -2090,12 +2248,24 @@ class InterfaceType implements Type {
     throw new Error('reflect: Field of non-struct type')
   }
 
+  public FieldByName(name: string): [StructField, boolean] {
+    return typeFieldByName(this, name)
+  }
+
+  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+    return typeFieldByNameFunc(this, match)
+  }
+
   public Key(): Type {
     throw new Error('reflect: Key of non-map type')
   }
 
   public Implements(_u: Type | null): boolean {
     return false
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return typeAssignableTo(this, u)
   }
 
   public common?(): rtype {

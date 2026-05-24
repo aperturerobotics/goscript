@@ -55,6 +55,14 @@ class MapType implements Type {
     throw new Error('reflect: Field of non-struct type map')
   }
 
+  public FieldByName(_name: string): [StructField, boolean] {
+    throw new Error('reflect: FieldByName of non-struct type map')
+  }
+
+  public FieldByNameFunc(_match: (name: string) => boolean): [StructField, boolean] {
+    throw new Error('reflect: FieldByNameFunc of non-struct type map')
+  }
+
   public Implements(u: Type | null): boolean {
     if (!u) {
       return false
@@ -64,6 +72,10 @@ class MapType implements Type {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
     return false
+  }
+
+  public AssignableTo(u: Type | null): boolean {
+    return u != null && this.String() === u.String()
   }
 
   public OverflowInt(_x: number): boolean {
