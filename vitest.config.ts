@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     exclude: [
       ...configDefaults.exclude,
+      '.tmp',
       'dist',
       'vendor',
       '**/vendor',

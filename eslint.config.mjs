@@ -10,6 +10,7 @@ export default tseslint.config(
   {
     ignores: [
       '**/*.gs.ts',
+      '.tmp',
       'dist',
       'vendor',
       'tests/tests/*/run',

@@ -171,7 +171,7 @@ export function NewRequestWithContext(
   if (method === '') {
     method = MethodGet
   }
-  let path = ''
+  let path: string
   try {
     path = new URL(url).pathname
   } catch {
