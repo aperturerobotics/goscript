@@ -140,7 +140,7 @@ export function arrayEqual(a: unknown, b: unknown): boolean {
   return comparableEqual(a, b)
 }
 
-function comparableEqual(a: unknown, b: unknown): boolean {
+export function comparableEqual(a: unknown, b: unknown): boolean {
   if (a === b) {
     return true
   }

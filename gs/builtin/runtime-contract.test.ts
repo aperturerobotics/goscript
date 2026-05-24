@@ -199,6 +199,36 @@ describe('builtin runtime contract helpers', () => {
     ])
   })
 
+  it('matches struct map keys by Go comparable value', () => {
+    class Key {
+      public _fields: {
+        name: ReturnType<typeof varRef<string>>
+        id: ReturnType<typeof varRef<number>>
+      }
+
+      constructor(name: string, id: number) {
+        this._fields = {
+          name: varRef(name),
+          id: varRef(id),
+        }
+      }
+    }
+
+    const m = makeMap<Key, string>()
+    mapSet(m, markAsStructValue(new Key('so-1', 7)), 'pending')
+    mapSet(m, markAsStructValue(new Key('so-1', 7)), 'accepted')
+
+    expect(m.size).toBe(1)
+    expect(mapGet(m, markAsStructValue(new Key('so-1', 7)), '')).toEqual([
+      'accepted',
+      true,
+    ])
+    expect(mapGet(m, markAsStructValue(new Key('so-2', 7)), '')).toEqual([
+      '',
+      false,
+    ])
+  })
+
   it('exposes addressable slice and array index references', () => {
     const values = [1, 2, 3]
     const second = indexRef(values, 1)

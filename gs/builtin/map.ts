@@ -1,3 +1,5 @@
+import { comparableEqual } from './builtin.js'
+
 /**
  * Creates a new map (TypeScript Map).
  * @returns A new TypeScript Map.
@@ -18,9 +20,9 @@ export function mapGet<K, V, D>(
   key: K,
   defaultValue: D,
 ): [V, true] | [D, false] {
-  const exists = map?.has(key)
-  if (exists) {
-    return [map!.get(key)!, true]
+  const entry = findMapEntry(map, key)
+  if (entry.found) {
+    return [entry.value, true]
   } else {
     return [defaultValue, false]
   }
@@ -36,7 +38,8 @@ export const mapSet = <K, V>(map: Map<K, V> | null, key: K, value: V): void => {
   if (!map) {
     throw new Error('assign to nil map')
   }
-  map.set(key, value)
+  const entry = findMapEntry(map, key)
+  map.set(entry.found ? entry.key : key, value)
 }
 
 /**
@@ -45,7 +48,10 @@ export const mapSet = <K, V>(map: Map<K, V> | null, key: K, value: V): void => {
  * @param key The key to delete.
  */
 export const deleteMapEntry = <K, V>(map: Map<K, V> | null, key: K): void => {
-  map?.delete(key)
+  const entry = findMapEntry(map, key)
+  if (entry.found) {
+    map!.delete(entry.key)
+  }
 }
 
 /**
@@ -55,5 +61,26 @@ export const deleteMapEntry = <K, V>(map: Map<K, V> | null, key: K): void => {
  * @returns True if the key exists, false otherwise.
  */
 export const mapHas = <K, V>(map: Map<K, V> | null, key: K): boolean => {
-  return map?.has(key) ?? false
+  return findMapEntry(map, key).found
+}
+
+function findMapEntry<K, V>(
+  map: Map<K, V> | null,
+  key: K,
+): { found: false } | { found: true; key: K; value: V } {
+  if (!map) {
+    return { found: false }
+  }
+  if (map.has(key)) {
+    return { found: true, key, value: map.get(key)! }
+  }
+  if (key === null || (typeof key !== 'object' && typeof key !== 'function')) {
+    return { found: false }
+  }
+  for (const [candidate, value] of map.entries()) {
+    if (candidate !== key && comparableEqual(candidate, key)) {
+      return { found: true, key: candidate, value }
+    }
+  }
+  return { found: false }
 }

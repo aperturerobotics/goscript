@@ -1,0 +1,3 @@
+same struct key: accepted true 1
+different struct key: false
+deleted struct key: false 0
