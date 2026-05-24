@@ -39,7 +39,7 @@ export function MyBool_String(b: $.VarRef<MyBool> | null): string {
 }
 
 export function asDoubler(v: MyInt): Doubler | null {
-	return $.namedValueInterfaceValue<Doubler | null>(v, "main.MyInt", {Double: MyInt_Double})
+	return $.namedValueInterfaceValue<Doubler | null>(v, "main.MyInt", {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)($.pointerValue(receiver), ...args)})
 }
 
 export function newMyBool(value: boolean, target: $.VarRef<boolean> | null): $.VarRef<MyBool> | null {
@@ -56,7 +56,7 @@ export async function main(): globalThis.Promise<void> {
 	let fn: (() => number | globalThis.Promise<number>) | null = ((__receiver) => () => MyInt_Double(__receiver))(10)
 	$.println("Method ref call:", await fn!())
 
-	let d: Doubler | null = $.namedValueInterfaceValue<Doubler | null>(12, "main.MyInt", {Double: MyInt_Double})
+	let d: Doubler | null = $.namedValueInterfaceValue<Doubler | null>(12, "main.MyInt", {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)($.pointerValue(receiver), ...args)})
 	$.println("Interface method call:", $.pointerValue<Exclude<Doubler, null>>(d).Double())
 
 	let ret = asDoubler(13)
@@ -66,7 +66,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Interface assertion:", $.int(asserted), ok)
 
 	let flag: $.VarRef<boolean> = $.varRef(false)
-	let stringer: Stringer | null = $.namedValueInterfaceValue<Stringer | null>(newMyBool(true, flag), "*main.MyBool", {String: MyBool_String})
+	let stringer: Stringer | null = $.namedValueInterfaceValue<Stringer | null>(newMyBool(true, flag), "*main.MyBool", {String: (receiver: any, ...args: any[]) => (MyBool_String as any)(receiver, ...args)})
 	$.println("Pointer primitive interface:", $.pointerValue<Exclude<Stringer, null>>(stringer).String(), flag.value)
 }
 

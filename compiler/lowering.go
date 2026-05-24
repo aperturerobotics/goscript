@@ -8536,7 +8536,16 @@ func (o *LoweringOwner) genericMethodDescriptorsForType(
 			methods = append(methods, method.Name()+": (receiver: any, ...args: any[]) => receiver."+method.Name()+"(...args)")
 			continue
 		}
-		methods = append(methods, method.Name()+": "+o.methodFunctionExpr(ctx, named.Origin(), method, method.Name()))
+		receiver := "receiver"
+		if sig, _ := method.Type().(*types.Signature); sig != nil {
+			if recv := sig.Recv(); recv != nil {
+				if _, ok := types.Unalias(recv.Type()).Underlying().(*types.Pointer); !ok {
+					receiver = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "(receiver)"
+				}
+			}
+		}
+		methods = append(methods, method.Name()+": (receiver: any, ...args: any[]) => "+
+			"("+o.methodFunctionExpr(ctx, named.Origin(), method, method.Name())+" as any)("+receiver+", ...args)")
 	}
 	if len(methods) == 0 {
 		return ""

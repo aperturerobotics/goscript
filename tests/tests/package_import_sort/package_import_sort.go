@@ -8,6 +8,8 @@ type descending struct {
 	values []int
 }
 
+type byFreq []int
+
 func (d descending) Len() int {
 	return len(d.values)
 }
@@ -18,6 +20,23 @@ func (d descending) Less(i, j int) bool {
 
 func (d descending) Swap(i, j int) {
 	d.values[i], d.values[j] = d.values[j], d.values[i]
+}
+
+func (s *byFreq) sort(a []int) {
+	*s = byFreq(a)
+	sort.Sort(s)
+}
+
+func (s byFreq) Len() int {
+	return len(s)
+}
+
+func (s byFreq) Less(i, j int) bool {
+	return s[i] < s[j]
+}
+
+func (s byFreq) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
 }
 
 func main() {
@@ -91,6 +110,11 @@ func main() {
 	custom := descending{values: []int{1, 3, 2}}
 	sort.Sort(custom)
 	println("Custom interface sort:", custom.values[0], custom.values[1], custom.values[2])
+
+	namedSlice := []int{4, 1, 3}
+	var namedSliceSorter byFreq
+	namedSliceSorter.sort(namedSlice)
+	println("Named slice pointer sort:", namedSlice[0], namedSlice[1], namedSlice[2])
 
 	println("test finished")
 }

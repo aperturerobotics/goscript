@@ -1391,9 +1391,9 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 		"$.mapSet(seen, 1, {})",
 		"$.genericZero(__typeArgs, \"T\", null)",
 		"$.callGenericMethod(__typeArgs, \"T\", \"String\", v)",
-		"ZeroValue({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: MyInt_String} }})",
-		"CallString({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: MyInt_String} }}, zero)",
-		"Sum({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: MyInt_String} }}, null)",
+		"ZeroValue({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }})",
+		"CallString({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }}, zero)",
+		"Sum({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }}, null)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

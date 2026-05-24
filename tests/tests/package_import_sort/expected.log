@@ -15,4 +15,5 @@ Custom sorted slice: 1 2 5 8 9
 Async sorted slice: 1 2
 Custom slice is sorted: true
 Custom interface sort: 3 2 1
+Named slice pointer sort: 1 3 4
 test finished

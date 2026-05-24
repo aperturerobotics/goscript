@@ -366,14 +366,14 @@ export class parser {
 			}
 		}
 		if (parser.prototype.calcHeight.call(p, re, true) > maxHeight) {
-			$.panic($.namedValueInterfaceValue<any>(ErrNestingDepth, "syntax.ErrorCode", {String: ErrorCode_String}))
+			$.panic($.namedValueInterfaceValue<any>(ErrNestingDepth, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)}))
 		}
 	}
 
 	public checkLimits(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): void {
 		const p: parser | $.VarRef<parser> | null = this
 		if ($.pointerValue<parser>(p).numRunes > maxRunes) {
-			$.panic($.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: ErrorCode_String}))
+			$.panic($.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)}))
 		}
 		parser.prototype.checkSize.call(p, re)
 		parser.prototype.checkHeight.call(p, re)
@@ -419,7 +419,7 @@ export class parser {
 		}
 
 		if (parser.prototype.calcSize.call(p, re, true) > maxSize) {
-			$.panic($.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: ErrorCode_String}))
+			$.panic($.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)}))
 		}
 	}
 

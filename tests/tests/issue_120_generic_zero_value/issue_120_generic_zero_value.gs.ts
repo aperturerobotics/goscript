@@ -52,22 +52,22 @@ export function Sum(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<any
 
 export async function main(): globalThis.Promise<void> {
 	// Test 1: Zero value of IntVal should be 0
-	let zeroInt = ZeroValue({T: { type: "main.IntVal", zero: () => 0, methods: {String: IntVal_String} }})
+	let zeroInt = ZeroValue({T: { type: "main.IntVal", zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (IntVal_String as any)($.pointerValue(receiver), ...args)} }})
 	$.println("ZeroValue[IntVal]:", IntVal_String(zeroInt))
 
 	// Test 2: Zero value of StringVal should be ""
-	let zeroStr = ZeroValue({T: { type: "main.StringVal", zero: () => "", methods: {String: StringVal_String} }})
+	let zeroStr = ZeroValue({T: { type: "main.StringVal", zero: () => "", methods: {String: (receiver: any, ...args: any[]) => (StringVal_String as any)($.pointerValue(receiver), ...args)} }})
 	$.println("ZeroValue[StringVal] len:", $.len(StringVal_String(zeroStr)))
 
 	// Test 3: CallString on zero value
-	$.println("CallString on zero IntVal:", CallString({T: { type: "main.IntVal", zero: () => 0, methods: {String: IntVal_String} }}, zeroInt))
-	$.println("CallString on zero StringVal len:", $.len(CallString({T: { type: "main.StringVal", zero: () => "", methods: {String: StringVal_String} }}, zeroStr)))
+	$.println("CallString on zero IntVal:", CallString({T: { type: "main.IntVal", zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (IntVal_String as any)($.pointerValue(receiver), ...args)} }}, zeroInt))
+	$.println("CallString on zero StringVal len:", $.len(CallString({T: { type: "main.StringVal", zero: () => "", methods: {String: (receiver: any, ...args: any[]) => (StringVal_String as any)($.pointerValue(receiver), ...args)} }}, zeroStr)))
 
 	// Test 4: Sum returns zero value
-	let sumInt = Sum({T: { type: "main.IntVal", zero: () => 0, methods: {String: IntVal_String} }}, null)
+	let sumInt = Sum({T: { type: "main.IntVal", zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (IntVal_String as any)($.pointerValue(receiver), ...args)} }}, null)
 	$.println("Sum[IntVal]():", IntVal_String(sumInt))
 
-	let sumStr = Sum({T: { type: "main.StringVal", zero: () => "", methods: {String: StringVal_String} }}, null)
+	let sumStr = Sum({T: { type: "main.StringVal", zero: () => "", methods: {String: (receiver: any, ...args: any[]) => (StringVal_String as any)($.pointerValue(receiver), ...args)} }}, null)
 	$.println("Sum[StringVal]() len:", $.len(StringVal_String(sumStr)))
 
 	// Test 5: Verify the actual values
