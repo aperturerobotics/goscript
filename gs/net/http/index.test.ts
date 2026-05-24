@@ -11,6 +11,7 @@ import {
   NotFound,
   Response,
   ResponseWriter,
+  Server,
   StatusNotFound,
   StatusOK,
   StatusText,
@@ -38,10 +39,46 @@ describe('net/http override', () => {
     const [req, reqErr] = NewRequest(MethodPost, 'https://example.invalid', null)
     expect(reqErr).toBeNull()
     expect((req!.URL as any).Path).toBe('/')
+    expect(req!.RequestURI).toBe('/')
 
     const [resp, err] = new Client().Do(varRef(req!))
     expect(resp).toBeNull()
     expect(err?.Error()).toBe('net/http: Client.Do is not implemented in GoScript')
+  })
+
+  it('delegates client calls through RoundTripper implementations', () => {
+    const [req] = NewRequest(MethodPost, 'https://example.invalid/path', null)
+    req!.Header.Set('User-Agent', 'goscript-test')
+    req!.RemoteAddr = '127.0.0.1:1234'
+
+    const client = new Client({
+      Transport: {
+        RoundTrip: (got) => {
+          const request = (got as any).value ?? got
+          expect(request.UserAgent()).toBe('goscript-test')
+          expect(request.RemoteAddr).toBe('127.0.0.1:1234')
+          expect(request.RequestURI).toBe('/path')
+          return [new Response({ StatusCode: StatusOK }), null]
+        },
+      },
+    })
+
+    const [resp, err] = client.Do(varRef(req!))
+    expect(err).toBeNull()
+    expect(resp?.StatusCode).toBe(StatusOK)
+  })
+
+  it('accepts server context and shutdown surfaces', () => {
+    const srv = new Server({
+      Addr: ':0',
+      BaseContext: () => ({} as any),
+      ReadHeaderTimeout: 10,
+    })
+
+    expect(srv.Addr).toBe(':0')
+    expect(srv.BaseContext?.(null)).toEqual({})
+    expect(srv.ReadHeaderTimeout).toBe(10)
+    expect(srv.Shutdown({} as any)).toBeNull()
   })
 
   it('supports handler functions and not-found responses for typechecked server tests', () => {

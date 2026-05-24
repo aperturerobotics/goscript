@@ -135,6 +135,8 @@ export class Request {
   public URL: any
   public Body: io.Reader | null
   public Header: Header
+  public RequestURI: string
+  public RemoteAddr: string
   private ctx: context.Context
 
   constructor(init?: Partial<Request> & { ctx?: context.Context }) {
@@ -142,6 +144,8 @@ export class Request {
     this.URL = init?.URL ?? null
     this.Body = init?.Body ?? null
     this.Header = init?.Header ?? new Header()
+    this.RequestURI = init?.RequestURI ?? ''
+    this.RemoteAddr = init?.RemoteAddr ?? ''
     this.ctx = (init as { ctx?: context.Context } | undefined)?.ctx ?? context.Background()
   }
 
@@ -159,8 +163,14 @@ export class Request {
       URL: this.URL?.clone != null ? this.URL.clone() : this.URL == null ? null : { ...this.URL },
       Body: this.Body,
       Header: this.Header,
+      RequestURI: this.RequestURI,
+      RemoteAddr: this.RemoteAddr,
       ctx,
     })
+  }
+
+  public UserAgent(): string {
+    return this.Header.Get('User-Agent')
   }
 
   public FormValue(key: string): string {
@@ -190,14 +200,27 @@ export class Response {
 }
 
 export class Client {
+  public Transport: RoundTripper | null
+
+  constructor(init?: Partial<Client>) {
+    this.Transport = init?.Transport ?? null
+  }
+
   public Do(
     _req: Request | $.VarRef<Request> | null,
   ): [Response | null, $.GoError] {
+    if (this.Transport != null) {
+      return this.Transport.RoundTrip(_req)
+    }
     return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
   }
 }
 
 export const DefaultClient = new Client()
+
+export interface RoundTripper {
+  RoundTrip(req: Request | $.VarRef<Request> | null): [Response | null, $.GoError]
+}
 
 export interface Handler {
   ServeHTTP(w: ResponseWriter | null, r: Request | $.VarRef<Request> | null): void | Promise<void>
@@ -217,11 +240,17 @@ export function HandlerFunc_ServeHTTP(
 }
 
 export class Server {
+  public Addr: string
+  public BaseContext: ((listener: any) => context.Context) | null
   public Handler: Handler | null
+  public ReadHeaderTimeout: number
   public WriteTimeout: number
 
   constructor(init?: Partial<Server>) {
+    this.Addr = init?.Addr ?? ''
+    this.BaseContext = init?.BaseContext ?? null
     this.Handler = init?.Handler ?? null
+    this.ReadHeaderTimeout = init?.ReadHeaderTimeout ?? 0
     this.WriteTimeout = init?.WriteTimeout ?? 0
   }
 
@@ -230,6 +259,10 @@ export class Server {
   }
 
   public Close(): $.GoError {
+    return null
+  }
+
+  public Shutdown(_ctx: context.Context): $.GoError {
     return null
   }
 }
@@ -360,7 +393,8 @@ export function NewRequestWithContext(
   if (method === '') {
     method = MethodGet
   }
-  return [new Request({ Method: method, URL: parseRequestURL(url), Body: body, ctx: _ctx }), null]
+  const parsedURL = parseRequestURL(url)
+  return [new Request({ Method: method, URL: parsedURL, Body: body, RequestURI: parsedURL.Path, ctx: _ctx }), null]
 }
 
 export function Get(_url: string): [Response | null, $.GoError] {
