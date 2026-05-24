@@ -1548,13 +1548,13 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 		}
 	}
 	for _, field := range semType.fields {
-		methods := o.lowerEmbeddedInterfaceForwarders(ctx, field, explicitMethods)
+		methods := o.lowerEmbeddedMethodForwarders(ctx, field, explicitMethods)
 		lowered.methods = append(lowered.methods, methods...)
 	}
 	return lowered, diagnostics
 }
 
-func (o *LoweringOwner) lowerEmbeddedInterfaceForwarders(
+func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 	ctx lowerFileContext,
 	field semanticField,
 	explicitMethods map[string]bool,
@@ -1562,13 +1562,26 @@ func (o *LoweringOwner) lowerEmbeddedInterfaceForwarders(
 	if !field.embedded {
 		return nil
 	}
-	iface, ok := types.Unalias(field.typ).Underlying().(*types.Interface)
-	if !ok {
+	methodSetType := field.typ
+	if named := namedStructType(field.typ); named != nil {
+		if named.Obj() == nil || named.Obj().Pkg() == nil || named.Obj().Pkg().Path() != ctx.semPkg.pkgPath {
+			return nil
+		}
+		methodSetType = types.NewPointer(field.typ)
+	} else if named := pointerToNamedStructType(field.typ); named != nil {
+		if named.Obj() == nil || named.Obj().Pkg() == nil || named.Obj().Pkg().Path() != ctx.semPkg.pkgPath {
+			return nil
+		}
+	} else if _, ok := types.Unalias(field.typ).Underlying().(*types.Interface); !ok {
 		return nil
 	}
-	iface.Complete()
+	methodSet := types.NewMethodSet(methodSetType)
+	if methodSet.Len() == 0 {
+		return nil
+	}
 	var methods []loweredFunction
-	for method := range iface.Methods() {
+	for method := range methodSet.Methods() {
+		method, _ := method.Obj().(*types.Func)
 		if method == nil || explicitMethods[method.Name()] {
 			continue
 		}

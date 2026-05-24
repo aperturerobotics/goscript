@@ -69,10 +69,14 @@ export class wrapper {
 		return $.markAsStructValue(cloned)
 	}
 
+	public Add(n: any): any {
+		return $.pointerValue<Exclude<base, null>>(this.base).Add(n)
+	}
+
 	static __typeInfo = $.registerStructType(
 		"main.wrapper",
 		() => new wrapper(),
-		[],
+		[{ name: "Add", args: [], returns: [] }],
 		wrapper,
 		{"base": "main.base"}
 	)
