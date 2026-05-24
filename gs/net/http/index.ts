@@ -5,6 +5,7 @@ import * as io from '@goscript/io/index.js'
 export const StatusOK = 200
 export const StatusNotFound = 404
 export const StatusPartialContent = 206
+export const StatusRequestedRangeNotSatisfiable = 416
 
 export const MethodGet = 'GET'
 export const MethodPost = 'POST'
@@ -17,6 +18,8 @@ export function StatusText(code: number): string {
       return 'Not Found'
     case StatusPartialContent:
       return 'Partial Content'
+    case StatusRequestedRangeNotSatisfiable:
+      return 'Requested Range Not Satisfiable'
     default:
       return ''
   }
@@ -67,13 +70,13 @@ export interface ResponseWriter {
 
 export class Request {
   public Method: string
-  public URL: string
+  public URL: any
   public Body: io.Reader | null
   public Header: Header
 
   constructor(init?: Partial<Request>) {
     this.Method = init?.Method ?? ''
-    this.URL = init?.URL ?? ''
+    this.URL = init?.URL ?? null
     this.Body = init?.Body ?? null
     this.Header = init?.Header ?? new Header()
   }
@@ -109,6 +112,48 @@ export class Client {
 
 export const DefaultClient = new Client()
 
+export interface Handler {
+  ServeHTTP(w: ResponseWriter | null, r: Request | $.VarRef<Request> | null): void | Promise<void>
+}
+
+export type HandlerFunc = (
+  w: ResponseWriter | null,
+  r: Request | $.VarRef<Request> | null,
+) => void | Promise<void>
+
+export function HandlerFunc_ServeHTTP(
+  h: HandlerFunc,
+  w: ResponseWriter | null,
+  r: Request | $.VarRef<Request> | null,
+): void | Promise<void> {
+  return h(w, r)
+}
+
+export class Server {
+  public Handler: Handler | null
+
+  constructor(init?: Partial<Server>) {
+    this.Handler = init?.Handler ?? null
+  }
+
+  public ListenAndServe(): $.GoError {
+    return errors.New('net/http: Server.ListenAndServe is not implemented in GoScript')
+  }
+
+  public Close(): $.GoError {
+    return null
+  }
+}
+
+export function Error(w: ResponseWriter | null, error: string, code: number): void {
+  w?.WriteHeader(code)
+  w?.Write($.stringToBytes(error + '\n'))
+}
+
+export function NotFound(w: ResponseWriter | null, _r: Request | $.VarRef<Request> | null): void {
+  Error(w, '404 page not found', StatusNotFound)
+}
+
 export function NewRequest(
   method: string,
   url: string,
@@ -126,7 +171,13 @@ export function NewRequestWithContext(
   if (method === '') {
     method = MethodGet
   }
-  return [new Request({ Method: method, URL: url, Body: body }), null]
+  let path = ''
+  try {
+    path = new URL(url).pathname
+  } catch {
+    path = ''
+  }
+  return [new Request({ Method: method, URL: { Path: path }, Body: body }), null]
 }
 
 export function Get(_url: string): [Response | null, $.GoError] {
