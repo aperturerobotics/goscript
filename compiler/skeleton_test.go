@@ -316,6 +316,49 @@ func TestCompilePackagesLazilyInitializesFunctionBodyPackageVarDependencies(t *t
 	}
 }
 
+func TestCompilePackagesBindsFuncLiteralVarRefParams(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/funclitvarref\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type words []int",
+			"func (w *words) Add(v int) { *w = append(*w, v) }",
+			"func main() {",
+			"  addLen := func(w words) int {",
+			"    w.Add(7)",
+			"    return len(w)",
+			"  }",
+			"  println(addLen(nil))",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "funclitvarref", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"(__goscriptParam0: words): number => {",
+		"let w: $.VarRef<words> = $.varRef(__goscriptParam0)",
+		"words_Add(w, 7)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsShadowedBuiltinCalls(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/shadowbuiltin\n\ngo 1.25.3\n",

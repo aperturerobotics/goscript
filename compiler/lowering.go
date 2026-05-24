@@ -4936,8 +4936,17 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	if asyncCompatibleParams || funcLiteralUsesFunctionIdentifierCall(ctx, lit) {
 		bodyCtx = bodyCtx.withAsyncFunction(true)
 	}
+	var params []loweredParam
+	var paramBindings []loweredStmt
+	if signature != nil && signature.Params() != nil {
+		for idx := range signature.Params().Len() {
+			param := signature.Params().At(idx)
+			params, paramBindings = o.appendLoweredParam(ctx, params, paramBindings, param, idx, asyncCompatibleParams)
+		}
+	}
 	body, diagnostics := o.lowerBlock(bodyCtx, lit.Body)
 	var rendered strings.Builder
+	renderStmts(&rendered, paramBindings, 1)
 	renderNamedResults(&rendered, o.lowerNamedResults(ctx, signature), 1)
 	renderDeferStack(&rendered, deferState, 1)
 	renderStmts(&rendered, body, 1)
@@ -4946,11 +4955,22 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	if async {
 		prefix = "async "
 	}
-	function := prefix + "(" + o.tsSignatureParamsFor(ctx, signature, asyncCompatibleParams) + "): " +
+	function := prefix + "(" + renderLoweredParams(params) + "): " +
 		asyncResultType(o.tsSignatureResultFor(ctx, signature), async) + " => {\n" +
 		rendered.String() + "}"
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
 		"(" + function + ", " + o.runtimeFunctionTypeInfo(signature, "") + ")", async, diagnostics
+}
+
+func renderLoweredParams(params []loweredParam) string {
+	if len(params) == 0 {
+		return ""
+	}
+	rendered := make([]string, 0, len(params))
+	for _, param := range params {
+		rendered = append(rendered, param.name+": "+param.typ)
+	}
+	return strings.Join(rendered, ", ")
 }
 
 func funcLiteralUsesFunctionIdentifierCall(ctx lowerFileContext, lit *ast.FuncLit) bool {
