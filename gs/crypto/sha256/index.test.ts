@@ -24,4 +24,34 @@ describe('crypto/sha256 override', () => {
       Array.from(await Sum256($.stringToBytes('abc'))),
     )
   })
+
+  test('streaming Sum does not finalize the digest', async () => {
+    const digest = New()
+    expect(digest.Write($.stringToBytes('abc'))).toEqual([3, null])
+
+    const first = await digest.Sum(null)
+    expect(Array.from(first)).toEqual(
+      Array.from(await Sum256($.stringToBytes('abc'))),
+    )
+
+    expect(digest.Write($.stringToBytes('d'))).toEqual([1, null])
+    const second = await digest.Sum(null)
+    expect(Array.from(second)).toEqual(
+      Array.from(await Sum256($.stringToBytes('abcd'))),
+    )
+  })
+
+  test('streaming digest handles many small writes', async () => {
+    const digest = New()
+    let data = ''
+    for (let i = 0; i < 4096; i++) {
+      const part = `key-${i};`
+      data += part
+      expect(digest.Write($.stringToBytes(part))).toEqual([part.length, null])
+    }
+
+    expect(Array.from(await digest.Sum(null))).toEqual(
+      Array.from(await Sum256($.stringToBytes(data))),
+    )
+  })
 })

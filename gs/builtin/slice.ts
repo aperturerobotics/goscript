@@ -1277,12 +1277,23 @@ export function arrayPointerFromIndexRef<T>(
   ref: VarRef<T>,
   length: number,
 ): VarRef<Slice<T> | T[] | Uint8Array> {
-  const collection = ref.__goCollection as Slice<T> | T[] | Uint8Array | undefined
+  const collection = ref.__goCollection as
+    | Slice<T>
+    | T[]
+    | Uint8Array
+    | undefined
   if (collection === undefined) {
-    throw new Error('unsafe array pointer requires an indexed collection reference')
+    throw new Error(
+      'unsafe array pointer requires an indexed collection reference',
+    )
   }
   const index = ref.__goIndex ?? 0
-  return varRef(goSlice(collection as any, index, index + length) as Slice<T> | T[] | Uint8Array)
+  return varRef(
+    goSlice(collection as any, index, index + length) as
+      | Slice<T>
+      | T[]
+      | Uint8Array,
+  )
 }
 
 /**
@@ -1508,7 +1519,10 @@ export const bytesToString = (
   return goStringFromBytes(Uint8Array.from(byteArray)) as string
 }
 
-export function stringEqual(left: GoStringBytes, right: GoStringBytes): boolean {
+export function stringEqual(
+  left: GoStringBytes,
+  right: GoStringBytes,
+): boolean {
   const leftBytes = goStringComparableBytes(left)
   const rightBytes = goStringComparableBytes(right)
   if (leftBytes.length !== rightBytes.length) {
@@ -1520,6 +1534,35 @@ export function stringEqual(left: GoStringBytes, right: GoStringBytes): boolean 
     }
   }
   return true
+}
+
+export function stringCompare(
+  left: GoStringBytes,
+  right: GoStringBytes,
+): number {
+  if (!isGoStringValue(left) && !isGoStringValue(right)) {
+    const leftLen = len(left)
+    const rightLen = len(right)
+    const sharedLen = Math.min(leftLen, rightLen)
+    for (let i = 0; i < sharedLen; i++) {
+      const diff = (left as any)[i] - (right as any)[i]
+      if (diff !== 0) {
+        return diff
+      }
+    }
+    return leftLen - rightLen
+  }
+
+  const leftBytes = goStringComparableBytes(left)
+  const rightBytes = goStringComparableBytes(right)
+  const sharedLen = Math.min(leftBytes.length, rightBytes.length)
+  for (let i = 0; i < sharedLen; i++) {
+    const diff = leftBytes[i] - rightBytes[i]
+    if (diff !== 0) {
+      return diff
+    }
+  }
+  return leftBytes.length - rightBytes.length
 }
 
 function bytesToBinaryString(bytes: Uint8Array): string {

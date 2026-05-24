@@ -4797,6 +4797,54 @@ func (o *LoweringOwner) lowerStringEqualityExpr(ctx lowerFileContext, expr *ast.
 	return value, true
 }
 
+func (o *LoweringOwner) lowerStringOrderExpr(
+	ctx lowerFileContext,
+	expr *ast.BinaryExpr,
+	left string,
+	right string,
+	leftDiagnostics []Diagnostic,
+	rightDiagnostics []Diagnostic,
+) (string, []Diagnostic, bool) {
+	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if !isStringType(leftType) || !isStringType(rightType) {
+		return "", nil, false
+	}
+	left, leftDiagnostics = o.lowerStringOrderOperand(ctx, expr.X, left, leftDiagnostics)
+	right, rightDiagnostics = o.lowerStringOrderOperand(ctx, expr.Y, right, rightDiagnostics)
+	compare := o.runtimeOwner.QualifiedHelper(RuntimeHelperStringCompare) + "(" + left + ", " + right + ")"
+	switch expr.Op {
+	case token.LSS:
+		return compare + " < 0", append(leftDiagnostics, rightDiagnostics...), true
+	case token.LEQ:
+		return compare + " <= 0", append(leftDiagnostics, rightDiagnostics...), true
+	case token.GTR:
+		return compare + " > 0", append(leftDiagnostics, rightDiagnostics...), true
+	case token.GEQ:
+		return compare + " >= 0", append(leftDiagnostics, rightDiagnostics...), true
+	default:
+		return "", nil, false
+	}
+}
+
+func (o *LoweringOwner) lowerStringOrderOperand(
+	ctx lowerFileContext,
+	expr ast.Expr,
+	fallback string,
+	fallbackDiagnostics []Diagnostic,
+) (string, []Diagnostic) {
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return fallback, fallbackDiagnostics
+	}
+	targetType := typeFromExpr(ctx, call.Fun)
+	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(call.Args[0])
+	if targetType == nil || sourceType == nil || !isStringType(targetType) || !isByteSliceType(sourceType) {
+		return fallback, fallbackDiagnostics
+	}
+	return o.lowerExpr(ctx, call.Args[0])
+}
+
 func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
 	if value := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)].Value; value != nil && value.Kind() == constant.Complex {
 		if constantValue, ok := lowerConstantValue(value); ok {
@@ -4858,6 +4906,9 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUintShr) +
 					"(" + left + ", " + right + ", " + strconv.Itoa(bits) + ")", append(leftDiagnostics, rightDiagnostics...)
 			}
+		}
+		if value, diagnostics, ok := o.lowerStringOrderExpr(ctx, typed, left, right, leftDiagnostics, rightDiagnostics); ok {
+			return value, diagnostics
 		}
 		return left + " " + typed.Op.String() + " " + right, append(leftDiagnostics, rightDiagnostics...)
 	case *ast.UnaryExpr:

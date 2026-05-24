@@ -1,0 +1,6 @@
+{
+  "asyncFunctions": {
+    "Walk": true,
+    "WalkDir": true
+  }
+}

@@ -208,14 +208,14 @@ describe('path/filepath - Path manipulation functions', () => {
   })
 
   describe('Walk', () => {
-    it('should visit host filesystem paths in lexical order', () => {
+    it('should visit host filesystem paths in lexical order', async () => {
       const root = mkdtempSync(join(tmpdir(), 'goscript-filepath-walk-'))
       try {
         mkdirSync(join(root, 'a', 'b'), { recursive: true })
         writeFileSync(join(root, 'a', 'b', 'file.txt'), 'ok')
 
         const visited: string[] = []
-        const err = Walk(root, (path) => {
+        const err = await Walk(root, (path) => {
           visited.push(path.slice(root.length).replace(/^\/?/, '') || '.')
           return null
         })
@@ -229,7 +229,7 @@ describe('path/filepath - Path manipulation functions', () => {
   })
 
   describe('WalkDir', () => {
-    it('should visit host filesystem dir entries in lexical order', () => {
+    it('should visit host filesystem dir entries in lexical order', async () => {
       const root = mkdtempSync(join(tmpdir(), 'goscript-filepath-walkdir-'))
       try {
         mkdirSync(join(root, 'b'), { recursive: true })
@@ -238,7 +238,7 @@ describe('path/filepath - Path manipulation functions', () => {
         writeFileSync(join(root, 'b', 'file.txt'), 'ok')
 
         const visited: string[] = []
-        const err = WalkDir(root, (path, d, walkErr) => {
+        const err = await WalkDir(root, (path, d, walkErr) => {
           expect(walkErr).toBeNull()
           visited.push(
             `${path.slice(root.length).replace(/^\/?/, '') || '.'}:${d.Name()}:${d.IsDir()}`,
@@ -256,6 +256,25 @@ describe('path/filepath - Path manipulation functions', () => {
           'b:b:true',
           'b/file.txt:file.txt:false',
         ])
+      } finally {
+        rmSync(root, { force: true, recursive: true })
+      }
+    })
+
+    it('should await async host filesystem dir callbacks', async () => {
+      const root = mkdtempSync(join(tmpdir(), 'goscript-filepath-walkdir-'))
+      try {
+        writeFileSync(join(root, 'file.txt'), 'ok')
+
+        const visited: string[] = []
+        const err = await WalkDir(root, async (path) => {
+          await Promise.resolve()
+          visited.push(path.slice(root.length).replace(/^\/?/, '') || '.')
+          return null
+        })
+
+        expect(err).toBeNull()
+        expect(visited).toEqual(['.', 'file.txt'])
       } finally {
         rmSync(root, { force: true, recursive: true })
       }

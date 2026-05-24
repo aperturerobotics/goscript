@@ -45,10 +45,10 @@ export async function main(): globalThis.Promise<void> {
 	$.println("fields before:", fields)
 
 	slices.SortFunc(fields, $.functionValue((a: field, b: field): number => {
-		if (a.name < b.name) {
+		if ($.stringCompare(a.name, b.name) < 0) {
 			return -1
 		}
-		if (a.name > b.name) {
+		if ($.stringCompare(a.name, b.name) > 0) {
 			return 1
 		}
 		return 0

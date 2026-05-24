@@ -54,6 +54,16 @@ export type NodeFSModule = {
   ): void
 }
 
+export type NodeCryptoHash = {
+  copy?(): NodeCryptoHash
+  update(data: Uint8Array): NodeCryptoHash
+  digest(): Uint8Array
+}
+
+export type NodeCryptoModule = {
+  createHash(algorithm: string): NodeCryptoHash
+}
+
 export type DenoStream = {
   readSync?(buffer: Uint8Array): number | null
   writeSync?(buffer: Uint8Array): number
@@ -74,6 +84,7 @@ type HostTextWrite = (data: string) => void
 
 export type HostRuntime = {
   deno: any | null
+  nodeCrypto: NodeCryptoModule | null
   nodeFS: NodeFSModule | null
   platform: string
   processObj: any | null
@@ -166,6 +177,31 @@ function detectNodeFS(processObj: any | null): NodeFSModule | null {
   return null
 }
 
+function detectNodeCrypto(processObj: any | null): NodeCryptoModule | null {
+  if (processObj && typeof processObj.getBuiltinModule === 'function') {
+    const module = processObj.getBuiltinModule('crypto')
+    if (module && typeof module.createHash === 'function') {
+      return module as NodeCryptoModule
+    }
+  }
+
+  const requireFn = getDynamicRequire()
+  if (requireFn) {
+    for (const specifier of ['node:crypto', 'crypto']) {
+      try {
+        const module = requireFn(specifier) as NodeCryptoModule | null
+        if (module && typeof module.createHash === 'function') {
+          return module
+        }
+      } catch {
+        // Try the next fallback.
+      }
+    }
+  }
+
+  return null
+}
+
 function hasURLScheme(path: string): boolean {
   return /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(path)
 }
@@ -247,6 +283,7 @@ function detectHostRuntime(): HostRuntime {
   const deno = globalObj.Deno ?? null
   const processObj = globalObj.process ?? null
   const nodeFS = detectNodeFS(processObj)
+  const nodeCrypto = detectNodeCrypto(processObj)
 
   const getStdioHandle = (fd: number): DenoFileLike | null => {
     if (!deno) {
@@ -344,6 +381,7 @@ function detectHostRuntime(): HostRuntime {
     deno,
     getEnv,
     getStdioHandle,
+    nodeCrypto,
     nodeFS,
     platform,
     processObj,

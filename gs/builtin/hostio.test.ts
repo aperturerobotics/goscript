@@ -36,6 +36,7 @@ function runtimeFixture(platform: string): HostRuntime {
     deno: null,
     getEnv: () => '',
     getStdioHandle: () => null,
+    nodeCrypto: null,
     nodeFS: null,
     platform,
     processObj: null,

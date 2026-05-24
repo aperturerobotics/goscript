@@ -216,10 +216,10 @@ export class Addr {
 		if ($.markAsStructValue($.cloneStructValue(ip)).Is6()) {
 			let za = $.markAsStructValue($.cloneStructValue(ip)).Zone()
 			let zb = $.markAsStructValue($.cloneStructValue(ip2)).Zone()
-			if (za < zb) {
+			if ($.stringCompare(za, zb) < 0) {
 				return -1
 			}
-			if (za > zb) {
+			if ($.stringCompare(za, zb) > 0) {
 				return 1
 			}
 		}

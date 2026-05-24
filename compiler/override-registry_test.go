@@ -293,3 +293,50 @@ func TestCompilePackagesAwaitsOverrideAsyncMethods(t *testing.T) {
 		t.Fatalf("override async method call was not awaited:\n%s", string(content))
 	}
 }
+
+func TestCompilePackagesAwaitsOverrideAsyncFunctions(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/overrideasyncfunc\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import (",
+			"  \"io/fs\"",
+			"  \"path/filepath\"",
+			"  \"sync\"",
+			")",
+			"func main() {",
+			"  var m sync.Map",
+			"  _ = filepath.WalkDir(\".\", func(path string, d fs.DirEntry, err error) error {",
+			"    if _, ok := m.Load(path); ok {",
+			"      return nil",
+			"    }",
+			"    return nil",
+			"  })",
+			"}",
+			"",
+		}, "\n"),
+	})
+	out := filepath.Join(t.TempDir(), "out")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      out,
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(out, "@goscript", "example.test", "overrideasyncfunc", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if !strings.Contains(string(content), "await filepath.WalkDir") {
+		t.Fatalf("override async function call was not awaited:\n%s", string(content))
+	}
+	if !strings.Contains(string(content), "$.functionValue(async") {
+		t.Fatalf("walk callback was not lowered as async:\n%s", string(content))
+	}
+}

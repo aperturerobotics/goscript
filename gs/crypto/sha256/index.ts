@@ -1,4 +1,8 @@
 import * as $ from '@goscript/builtin/index.js'
+import {
+  getHostRuntime,
+  type NodeCryptoHash,
+} from '@goscript/builtin/hostio.js'
 
 export const Size = 32
 export const Size224 = 28
@@ -13,23 +17,34 @@ class Sha256Error {
 }
 
 class Digest {
-  private data = new Uint8Array(0)
+  private chunks: Uint8Array[] = []
+  private dataLength = 0
+  private hash: NodeCryptoHash | null = createNodeHash()
+  private canCopyHash = typeof this.hash?.copy === 'function'
 
   Write(p: $.Bytes): [number, $.GoError] {
     const bytes = $.bytesToUint8Array(p)
-    const next = new Uint8Array(this.data.length + bytes.length)
-    next.set(this.data)
-    next.set(bytes, this.data.length)
-    this.data = next
+    this.hash?.update(bytes)
+    if (!this.canCopyHash) {
+      this.chunks.push(bytes.slice())
+      this.dataLength += bytes.length
+    }
     return [bytes.length, null]
   }
 
   async Sum(b: $.Bytes): Promise<$.Bytes> {
-    return $.append($.bytesToUint8Array(b), ...(await Sum256(this.data)))
+    const digest =
+      this.canCopyHash ?
+        new Uint8Array(this.hash!.copy!().digest())
+      : await Sum256(this.snapshotBytes())
+    return appendDigest($.bytesToUint8Array(b), digest)
   }
 
   Reset(): void {
-    this.data = new Uint8Array(0)
+    this.chunks = []
+    this.dataLength = 0
+    this.hash = createNodeHash()
+    this.canCopyHash = typeof this.hash?.copy === 'function'
   }
 
   Size(): number {
@@ -38,6 +53,10 @@ class Digest {
 
   BlockSize(): number {
     return BlockSize
+  }
+
+  private snapshotBytes(): Uint8Array {
+    return concatChunks(this.chunks, this.dataLength)
   }
 }
 
@@ -54,6 +73,11 @@ export async function Sum224(_data: $.Bytes): Promise<Uint8Array> {
 }
 
 export async function Sum256(data: $.Bytes): Promise<Uint8Array> {
+  const hash = createNodeHash()
+  if (hash != null) {
+    return new Uint8Array(hash.update($.bytesToUint8Array(data)).digest())
+  }
+
   const subtle = subtleCrypto()
   if (subtle == null) {
     throw new Error(
@@ -66,6 +90,31 @@ export async function Sum256(data: $.Bytes): Promise<Uint8Array> {
     $.bytesToUint8Array(data) as unknown as BufferSource,
   )
   return new Uint8Array(digest)
+}
+
+function appendDigest(prefix: Uint8Array, digest: Uint8Array): Uint8Array {
+  const out = new Uint8Array(prefix.length + digest.length)
+  out.set(prefix)
+  out.set(digest, prefix.length)
+  return out
+}
+
+function createNodeHash(): NodeCryptoHash | null {
+  const nodeCrypto = getHostRuntime().nodeCrypto
+  if (!nodeCrypto?.createHash) {
+    return null
+  }
+  return nodeCrypto.createHash('sha256')
+}
+
+function concatChunks(chunks: Uint8Array[], length: number): Uint8Array {
+  const out = new Uint8Array(length)
+  let offset = 0
+  for (const chunk of chunks) {
+    out.set(chunk, offset)
+    offset += chunk.length
+  }
+  return out
 }
 
 function subtleCrypto(): SubtleCrypto | null {

@@ -322,20 +322,27 @@ export function Glob(_pattern: string): [string[], $.GoError] {
 // prefix; that is, if Walk is called with "dir" and finds a file "a"
 // in that directory, the walk function will be called with argument
 // "dir/a". The info argument is the fs.FileInfo for the named path.
-export type WalkFunc = (path: string, info: any, err: $.GoError) => $.GoError
+export type WalkFunc = (
+  path: string,
+  info: any,
+  err: $.GoError,
+) => $.GoError | Promise<$.GoError>
 
-export function Walk(root: string, walkFn: WalkFunc): $.GoError {
-  return walkHost(root, walkFn)
+export async function Walk(root: string, walkFn: WalkFunc): Promise<$.GoError> {
+  return await walkHost(root, walkFn)
 }
 
 export type WalkDirFunc = (
   path: string,
   d: DirEntry,
   err: $.GoError,
-) => $.GoError
+) => $.GoError | Promise<$.GoError>
 
-export function WalkDir(root: string, walkFn: WalkDirFunc): $.GoError {
-  return walkDirHost(root, walkFn)
+export async function WalkDir(
+  root: string,
+  walkFn: WalkDirFunc,
+): Promise<$.GoError> {
+  return await walkDirHost(root, walkFn)
 }
 
 // Localize is a stub - in Go it's used for Windows path localization
@@ -444,13 +451,13 @@ function readDir(path: string): [HostEntry[] | null, $.GoError] {
   return [null, $.newError('filesystem not supported')]
 }
 
-function walkHost(path: string, walkFn: WalkFunc): $.GoError {
+async function walkHost(path: string, walkFn: WalkFunc): Promise<$.GoError> {
   const [stat, statErr] = statPath(path)
   if (statErr !== null) {
-    return walkFn(path, null, statErr)
+    return await walkFn(path, null, statErr)
   }
 
-  const visitErr = walkFn(path, fileInfo(path, stat!), null)
+  const visitErr = await walkFn(path, fileInfo(path, stat!), null)
   if (visitErr === SkipAll) {
     return null
   }
@@ -466,10 +473,10 @@ function walkHost(path: string, walkFn: WalkFunc): $.GoError {
 
   const [entries, readErr] = readDir(path)
   if (readErr !== null) {
-    return walkFn(path, fileInfo(path, stat!), readErr)
+    return await walkFn(path, fileInfo(path, stat!), readErr)
   }
   for (const entry of entries!) {
-    const err = walkHost(Join(path, entry.name), walkFn)
+    const err = await walkHost(Join(path, entry.name), walkFn)
     if (err === SkipDir) {
       if (entry.isDir) {
         continue
@@ -503,14 +510,17 @@ function normalizeRootWalkDirErr(err: $.GoError): $.GoError {
   return err
 }
 
-function walkDirHost(path: string, walkFn: WalkDirFunc): $.GoError {
+async function walkDirHost(
+  path: string,
+  walkFn: WalkDirFunc,
+): Promise<$.GoError> {
   const [stat, statErr] = statPath(path)
   if (statErr !== null) {
-    return normalizeRootWalkDirErr(walkFn(path, null, statErr))
+    return normalizeRootWalkDirErr(await walkFn(path, null, statErr))
   }
 
   const d = dirEntry(path, stat!)
-  const visitErr = walkFn(path, d, null)
+  const visitErr = await walkFn(path, d, null)
   if (visitErr === SkipAll) {
     return null
   }
@@ -523,11 +533,11 @@ function walkDirHost(path: string, walkFn: WalkDirFunc): $.GoError {
 
   const [entries, readErr] = readDir(path)
   if (readErr !== null) {
-    return normalizeWalkDirErr(d, walkFn(path, d, readErr))
+    return normalizeWalkDirErr(d, await walkFn(path, d, readErr))
   }
 
   for (const entry of entries!) {
-    const err = walkDirHost(Join(path, entry.name), walkFn)
+    const err = await walkDirHost(Join(path, entry.name), walkFn)
     if (err === SkipDir) {
       if (entry.isDir) {
         continue

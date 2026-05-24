@@ -6,6 +6,7 @@ import {
   indexString,
   len,
   sliceString,
+  stringCompare,
   stringEqual,
   stringToBytes,
 } from './slice.js'
@@ -36,5 +37,23 @@ describe('builtin string byte representation', () => {
     expect(stringEqual(peerID, bytesToString(peerID))).toBe(true)
     expect(stringEqual(peerID, '')).toBe(false)
     expect(stringEqual(new Uint8Array(0), '')).toBe(true)
+  })
+
+  it('orders byte-backed strings by Go string bytes', () => {
+    expect(
+      stringCompare(new Uint8Array([0, 255]), new Uint8Array([1])),
+    ).toBeLessThan(0)
+    expect(
+      stringCompare(new Uint8Array([1]), new Uint8Array([0, 255])),
+    ).toBeGreaterThan(0)
+    expect(
+      stringCompare(new Uint8Array([1, 2]), new Uint8Array([1, 2, 0])),
+    ).toBeLessThan(0)
+    expect(
+      stringCompare(
+        bytesToString(new Uint8Array([255])),
+        new Uint8Array([255]),
+      ),
+    ).toBe(0)
   })
 })

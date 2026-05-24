@@ -912,6 +912,45 @@ func TestCompilePackagesEmitsArraySliceMapStringAndNamedMethods(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLowersStringOrderingThroughRuntime(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/stringorder\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func less(left, right []byte) bool {",
+			"  return string(left) < string(right)",
+			"}",
+			"func ordered(left, right string) bool {",
+			"  return left <= right",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "stringorder", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"$.stringCompare(left, right) < 0",
+		"$.stringCompare(left, right) <= 0",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssertions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/interfaces\n\ngo 1.25.3\n",
