@@ -1026,6 +1026,41 @@ func TestCompilePackagesEmitsArraySliceMapStringAndNamedMethods(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesPreservesFloatConversionLiterals(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/floatconv\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"math\"",
+			"func value() float64 {",
+			"  return math.Pow(float64(0.69314718056), 2)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "floatconv", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "$.int(0.69314718056)") {
+		t.Fatalf("float64 literal conversion was truncated through $.int:\n%s", text)
+	}
+	if !strings.Contains(text, "math.Pow(0.69314718056, 2)") {
+		t.Fatalf("missing direct float literal conversion:\n%s", text)
+	}
+}
+
 func TestCompilePackagesLowersStringOrderingThroughRuntime(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/stringorder\n\ngo 1.25.3\n",
@@ -1829,6 +1864,15 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 			"  return <-w.ch",
 			"}",
 			"func call(p Processor) int { return p.Process(2) }",
+			"func stopLoop(stop chan struct{}, done chan struct{}) {",
+			"  for {",
+			"    select {",
+			"    case <-stop:",
+			"      done <- struct{}{}",
+			"      return",
+			"    }",
+			"  }",
+			"}",
 			"func main() {",
 			"  ch := make(chan int, 1)",
 			"  defer func() { <-ch }()",
@@ -1869,6 +1913,7 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 		"queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {",
 		"$.selectStatement<any, void>([",
 		"let v = result.value",
+		"return $.selectVoidReturn()",
 		"await call($.interfaceValue<Processor | null>(new Worker({ch: $.makeChannel<number>(1, 0, \"both\")}), \"*main.Worker\"))",
 	} {
 		if !strings.Contains(text, want) {

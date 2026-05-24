@@ -891,11 +891,65 @@ func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, external
 		return
 	}
 	renderStmts(b, switchCase.prelude, indent+2)
-	renderStmts(b, switchCase.body, indent+2)
+	renderSelectCaseStmts(b, switchCase.body, indent+2)
 	writeIndent(b, indent+1)
 	b.WriteString("}\n")
 	writeIndent(b, indent)
 	b.WriteString("}")
+}
+
+func renderSelectCaseStmts(b *strings.Builder, stmts []loweredStmt, indent int) {
+	for idx, stmt := range stmts {
+		renderLeadingLines(b, stmt.leading, indent)
+		if stmt.rangeFunc != nil {
+			renderRangeFunc(b, stmt.rangeFunc, indent)
+			continue
+		}
+		if stmt.switchStmt != nil {
+			renderSwitch(b, stmt.switchStmt, indent)
+			continue
+		}
+		if stmt.selectStmt != nil {
+			renderSelect(b, stmt.selectStmt, indent)
+			continue
+		}
+		if stmt.typeSwitch != nil {
+			renderTypeSwitch(b, stmt.typeSwitch, indent)
+			continue
+		}
+		writeIndent(b, indent)
+		if stmt.text == "" && (stmt.hasBlock || len(stmt.children) != 0) {
+			b.WriteString("{\n")
+			renderSelectCaseStmts(b, stmt.children, indent+1)
+			writeIndent(b, indent)
+			b.WriteString("}\n")
+			continue
+		}
+		if strings.TrimSpace(stmt.text) == "return" {
+			b.WriteString("return $.selectVoidReturn()\n")
+			continue
+		}
+		writeIndentedText(b, stmt.text, indent)
+		if !stmt.hasBlock && len(stmt.children) == 0 {
+			if idx+1 < len(stmts) && needsASIBarrier(stmt, stmts[idx+1]) {
+				b.WriteString(";")
+			}
+			b.WriteString("\n")
+			continue
+		}
+		b.WriteString(" {\n")
+		renderSelectCaseStmts(b, stmt.children, indent+1)
+		writeIndent(b, indent)
+		b.WriteString("}")
+		if len(stmt.elseBody) == 0 {
+			b.WriteString("\n")
+			continue
+		}
+		b.WriteString(" else {\n")
+		renderSelectCaseStmts(b, stmt.elseBody, indent+1)
+		writeIndent(b, indent)
+		b.WriteString("}\n")
+	}
 }
 
 func renderTypeSwitch(b *strings.Builder, stmt *loweredTypeSwitch, indent int) {

@@ -100,6 +100,27 @@ export interface SelectCase<T> {
   onSelected?: (result: SelectResult<T>) => Promise<any>
 }
 
+const selectVoidReturnMarker = '__goscriptSelectVoidReturn'
+
+export interface SelectVoidReturn {
+  readonly [selectVoidReturnMarker]: true
+}
+
+export function selectVoidReturn(): SelectVoidReturn {
+  return { [selectVoidReturnMarker]: true }
+}
+
+function selectHandlerResult<V>(handlerResult: any): [boolean, V] {
+  if (
+    handlerResult &&
+    typeof handlerResult === 'object' &&
+    handlerResult[selectVoidReturnMarker] === true
+  ) {
+    return [true, undefined as V]
+  }
+  return [handlerResult !== undefined, handlerResult as V]
+}
+
 /**
  * Helper for 'select' statements. Takes an array of select cases
  * and resolves when one of them completes, following Go's select rules.
@@ -155,13 +176,13 @@ export async function selectStatement<T, V = void>(
           const handlerResult = await selectedCase.onSelected(
             result as SelectResult<T>,
           )
-          return [handlerResult !== undefined, handlerResult as V]
+          return selectHandlerResult<V>(handlerResult)
         }
       } else {
         const result = await selectedCase.channel.selectReceive(selectedCase.id)
         if (selectedCase.onSelected) {
           const handlerResult = await selectedCase.onSelected(result)
-          return [handlerResult !== undefined, handlerResult as V]
+          return selectHandlerResult<V>(handlerResult)
         }
       }
     } else {
@@ -182,7 +203,7 @@ export async function selectStatement<T, V = void>(
         ok: false,
         id: -1,
       } as SelectResult<T>)
-      return [handlerResult !== undefined, handlerResult as V]
+      return selectHandlerResult<V>(handlerResult)
     }
     return [false, undefined as V] // Return after executing the default case
   }
@@ -218,7 +239,7 @@ export async function selectStatement<T, V = void>(
   const selectedCase = cases.find((c) => c.id === result.id)
   if (selectedCase && selectedCase.onSelected) {
     const handlerResult = await selectedCase.onSelected(result)
-    return [handlerResult !== undefined, handlerResult as V]
+    return selectHandlerResult<V>(handlerResult)
   }
 
   // No explicit return needed here, as the function will implicitly return after the await

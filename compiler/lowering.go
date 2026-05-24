@@ -5852,6 +5852,9 @@ func (o *LoweringOwner) lowerConversionExpr(
 		return value, diagnostics
 	}
 	if isNumericType(targetType) {
+		if isFloatType(targetType) {
+			return value, diagnostics
+		}
 		if bits, ok := unsignedIntegerBits(targetType); ok {
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
 				"(" + value + ", " + strconv.Itoa(bits) + ")", diagnostics
@@ -8172,6 +8175,11 @@ func isNumericType(typ types.Type) bool {
 func isIntegerType(typ types.Type) bool {
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Info()&types.IsInteger != 0
+}
+
+func isFloatType(typ types.Type) bool {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	return ok && basic.Info()&types.IsFloat != 0
 }
 
 func unsignedIntegerBits(typ types.Type) (int, bool) {

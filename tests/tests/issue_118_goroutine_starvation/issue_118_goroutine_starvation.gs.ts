@@ -59,7 +59,7 @@ export async function main(): globalThis.Promise<void> {
 				channel: timeout,
 				onSelected: async (result) => {
 					$.println("TIMEOUT: goroutine starvation detected")
-					return
+					return $.selectVoidReturn()
 				}
 			},
 			{
