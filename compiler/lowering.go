@@ -974,6 +974,11 @@ func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage) map[types.Objec
 						continue
 					}
 					if valueIdx < len(valueSpec.Values) &&
+						initializerReferencesLaterPackageVar(semPkg, varOrder, obj, valueSpec.Values[valueIdx]) {
+						lazy[obj] = true
+						continue
+					}
+					if valueIdx < len(valueSpec.Values) &&
 						initializerReferencesOtherFileObject(semPkg, declFiles, sourcePath, valueSpec.Values[valueIdx]) {
 						lazy[obj] = true
 						continue
@@ -992,6 +997,41 @@ func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage) map[types.Objec
 		}
 	}
 	return lazy
+}
+
+func initializerReferencesLaterPackageVar(
+	semPkg *semanticPackage,
+	varOrder map[types.Object]int,
+	current types.Object,
+	expr ast.Expr,
+) bool {
+	currentIdx, ok := varOrder[current]
+	if !ok {
+		return false
+	}
+	references := false
+	ast.Inspect(expr, func(node ast.Node) bool {
+		if references {
+			return false
+		}
+		if _, ok := node.(*ast.FuncLit); ok {
+			return false
+		}
+		ident, ok := node.(*ast.Ident)
+		if !ok {
+			return true
+		}
+		obj, ok := semPkg.source.TypesInfo.Uses[ident].(*types.Var)
+		if !ok || obj.Pkg() == nil || obj.Pkg().Path() != semPkg.pkgPath {
+			return true
+		}
+		if idx, ok := varOrder[obj]; ok && idx > currentIdx {
+			references = true
+			return false
+		}
+		return true
+	})
+	return references
 }
 
 func initializerCallsFunctionReferencingLaterPackageVar(

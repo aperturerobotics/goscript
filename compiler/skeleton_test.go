@@ -235,6 +235,44 @@ func TestCompilePackagesLazilyInitializesCrossFilePackageVars(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLazilyInitializesSameFileLaterPackageVars(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/lazylatervars\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type detail struct { n int }",
+			"var table = []detail{{n: later.n}}",
+			"var later = detail{n: 7}",
+			"func main() { println(table[0].n) }",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "lazylatervars", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export let table: $.Slice<detail> = undefined as unknown as $.Slice<detail>",
+		"export function __goscript_get_table(): $.Slice<detail>",
+		"export let later: detail = $.markAsStructValue(new detail({n: 7}))",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesLazilyInitializesFunctionBodyPackageVarDependencies(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/lazybodyvars\n\ngo 1.25.3\n",
