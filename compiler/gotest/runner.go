@@ -348,21 +348,6 @@ func (r *Runner) compilePackageBatch(ctx context.Context, req *normalizedRequest
 	if len(packagePaths) == 0 {
 		return true
 	}
-	prodCompileReq := &compiler.CompileRequest{
-		Patterns:            runnableCompilePatterns(result.Packages),
-		Dir:                 req.Dir,
-		OutputPath:          req.OutputRoot,
-		BuildFlags:          append([]string(nil), req.BuildFlags...),
-		OverrideDirs:        append([]string(nil), req.OverrideDirs...),
-		DependencyMode:      compiler.DependencyModeAll,
-		RuntimeEmissionMode: compiler.RuntimeEmissionModeEmit,
-		Tests:               false,
-		AllDependencies:     true,
-	}
-	prodCompileResult, prodCompileErr := r.service.Compile(ctx, prodCompileReq)
-	if prodCompileErr != nil {
-		return false
-	}
 	testCompileReq := &compiler.CompileRequest{
 		Patterns:            packagePaths,
 		Dir:                 req.Dir,
@@ -377,9 +362,6 @@ func (r *Runner) compilePackageBatch(ctx context.Context, req *normalizedRequest
 	testCompileResult, testCompileErr := r.service.Compile(ctx, testCompileReq)
 	if testCompileErr != nil {
 		return false
-	}
-	if prodCompileResult != nil {
-		result.Diagnostics = append(result.Diagnostics, prodCompileResult.Diagnostics...)
 	}
 	if testCompileResult != nil {
 		result.Diagnostics = append(result.Diagnostics, testCompileResult.Diagnostics...)
@@ -565,25 +547,6 @@ func runnablePackagePaths(results []PackageResult) []string {
 	}
 	slices.Sort(paths)
 	return paths
-}
-
-func runnableCompilePatterns(results []PackageResult) []string {
-	seen := make(map[string]bool)
-	patterns := make([]string, 0, len(results))
-	for _, result := range results {
-		if !shouldCompilePackage(result) {
-			continue
-		}
-		for _, path := range append([]string{result.PackagePath}, result.TestImports...) {
-			if path == "" || seen[path] {
-				continue
-			}
-			seen[path] = true
-			patterns = append(patterns, path)
-		}
-	}
-	slices.Sort(patterns)
-	return patterns
 }
 
 func markAllFailures(result *Result, owner Owner, message string) {
