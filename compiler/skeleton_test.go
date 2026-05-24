@@ -343,6 +343,37 @@ func TestCompilePackagesQuotesRawStringLiterals(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEmitsBinaryStringLiterals(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/binarystrings\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package binarystrings",
+			"const DecodeMap = \"\\xff\\x80A\"",
+			"func Value() string {",
+			"  return DecodeMap",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "binarystrings", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if !strings.Contains(string(content), "$.bytesToString(new Uint8Array([255, 128, 65]))") {
+		t.Fatalf("binary string literal was not emitted as byte-backed string:\n%s", string(content))
+	}
+}
+
 func TestCompilePackagesUsesEmbedOverride(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod":       "module example.test/embedblank\n\ngo 1.25.3\n",

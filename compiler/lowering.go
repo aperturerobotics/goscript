@@ -15,6 +15,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 // LoweringOwner owns conversion from the semantic model to compiler IR.
@@ -1238,7 +1239,7 @@ func lowerConstantValue(value constant.Value) (string, bool) {
 	case constant.Bool:
 		return strconv.FormatBool(constant.BoolVal(value)), true
 	case constant.String:
-		return strconv.Quote(constant.StringVal(value)), true
+		return lowerGoStringLiteral(constant.StringVal(value)), true
 	case constant.Int:
 		if intValue, ok := constant.Int64Val(value); ok {
 			return strconv.FormatInt(intValue, 10), true
@@ -1346,6 +1347,13 @@ func byteSliceLiteral(data []byte) string {
 		values = append(values, strconv.FormatUint(uint64(value), 10))
 	}
 	return "new Uint8Array([" + strings.Join(values, ", ") + "])"
+}
+
+func lowerGoStringLiteral(value string) string {
+	if utf8.ValidString(value) {
+		return strconv.Quote(value)
+	}
+	return "$.bytesToString(" + byteSliceLiteral([]byte(value)) + ")"
 }
 
 func (o *LoweringOwner) lowerTypeSpec(ctx lowerFileContext, spec *ast.TypeSpec) (loweredDecl, []Diagnostic) {
@@ -4687,6 +4695,19 @@ func (o *LoweringOwner) lowerComplexEqualityExpr(ctx lowerFileContext, expr *ast
 	return value, true
 }
 
+func (o *LoweringOwner) lowerStringEqualityExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
+	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if !isStringType(leftType) || !isStringType(rightType) {
+		return "", false
+	}
+	value := o.runtimeOwner.QualifiedHelper(RuntimeHelperStringEqual) + "(" + left + ", " + right + ")"
+	if expr.Op == token.NEQ {
+		value = "!" + value
+	}
+	return value, true
+}
+
 func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
 	if value := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)].Value; value != nil && value.Kind() == constant.Complex {
 		if constantValue, ok := lowerConstantValue(value); ok {
@@ -4730,6 +4751,9 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 				return value, append(leftDiagnostics, rightDiagnostics...)
 			}
 			if value, ok := o.lowerComplexEqualityExpr(ctx, typed, left, right); ok {
+				return value, append(leftDiagnostics, rightDiagnostics...)
+			}
+			if value, ok := o.lowerStringEqualityExpr(ctx, typed, left, right); ok {
 				return value, append(leftDiagnostics, rightDiagnostics...)
 			}
 			left, right = o.lowerEqualityOperands(ctx, typed, left, right)
@@ -4803,7 +4827,7 @@ func lowerBasicLit(lit *ast.BasicLit) string {
 		if err != nil {
 			return strconv.Quote(lit.Value)
 		}
-		return strconv.Quote(value)
+		return lowerGoStringLiteral(value)
 	}
 	if lit.Kind == token.INT && isLegacyOctalLiteral(lit.Value) {
 		digits := strings.TrimLeft(strings.ReplaceAll(lit.Value, "_", ""), "0")

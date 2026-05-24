@@ -21,7 +21,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let [value, label] = await lookup!(false)
 	$.println(value)
-	$.println((label as string) == "")
+	$.println($.stringEqual(label, ""))
 
 	let __goscriptTuple0: any = await lookup!(true)
 	value = __goscriptTuple0[0]

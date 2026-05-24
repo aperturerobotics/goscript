@@ -36,7 +36,7 @@ export async function main(): globalThis.Promise<void> {
 	let stringFromRunes = $.runesToString(runesFromString)
 	$.println(originalString)
 	$.println(stringFromRunes)
-	$.println(originalString == stringFromRunes)
+	$.println($.stringEqual(originalString, stringFromRunes))
 
 	// === Modify []rune and convert back to string ===
 	let mutableRunes: $.Slice<number> = $.stringToRunes("Mutable String")
@@ -51,15 +51,15 @@ export async function main(): globalThis.Promise<void> {
 	let bytes: $.Slice<number> = $.arrayToSlice<number>([$.uint(72, 8), $.uint(101, 8), $.uint(108, 8), $.uint(108, 8), $.uint(111, 8)])
 	let bytesString = $.bytesToString(bytes)
 	$.println(bytesString)
-	$.println(($.bytesToString($.arrayToSlice<number>([$.uint(0xea, 8), $.uint(0x08, 8), $.uint(0x00, 8)])) as string) == "\xea\b\x00")
-	$.println(($.bytesToString($.arrayToSlice<number>([$.uint(0xc3, 8), $.uint(0xa9, 8)])) as string) == "é")
-	const magic: string = "\xff\x06\x00\x00S2sTwO"
+	$.println($.stringEqual($.bytesToString($.arrayToSlice<number>([$.uint(0xea, 8), $.uint(0x08, 8), $.uint(0x00, 8)])), $.bytesToString(new Uint8Array([234, 8, 0]))))
+	$.println($.stringEqual($.bytesToString($.arrayToSlice<number>([$.uint(0xc3, 8), $.uint(0xa9, 8)])), "é"))
+	const magic: string = $.bytesToString(new Uint8Array([255, 6, 0, 0, 83, 50, 115, 84, 119, 79]))
 	$.println((10 as number) == 10)
 	let magicBytes: $.Slice<number> = new Uint8Array([255, 6, 0, 0, 83, 50, 115, 84, 119, 79])
 	$.println($.len(magicBytes) == 10)
 	$.println($.uint(magicBytes![0], 8) == $.uint(255, 8))
 	$.println($.uint(magicBytes![1], 8) == $.uint(6, 8))
-	$.println($.bytesToString(magicBytes) == magic)
+	$.println($.stringEqual($.bytesToString(magicBytes), magic))
 	$.println((2 as number) == 2)
 	let utf8Bytes: $.Slice<number> = new Uint8Array([195, 169])
 	$.println($.len(utf8Bytes) == 2)

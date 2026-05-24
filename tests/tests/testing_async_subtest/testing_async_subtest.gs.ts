@@ -7,7 +7,7 @@ import * as testing from "@goscript/testing/index.js"
 
 export async function RunSubtest(t: testing.T | $.VarRef<testing.T> | null, ch: $.Channel<string> | null): globalThis.Promise<boolean> {
 	return await testing.T.prototype.Run.call(t, "child", $.functionValue(async (t: testing.T | $.VarRef<testing.T> | null): globalThis.Promise<void> => {
-		if ((await $.chanRecv(ch) as string) != "ok") {
+		if (!$.stringEqual(await $.chanRecv(ch), "ok")) {
 			$.pointerValue<testing.T>(t).Fatalf("unexpected value")
 		}
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "testing.T" }], results: [] }))

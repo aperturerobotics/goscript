@@ -7,22 +7,22 @@ import * as runtime from "@goscript/runtime/index.js"
 
 export function platform(): string {
 	switch ((true as boolean)) {
-		case ((runtime.GOARCH as string) as string) == "wasm":
+		case $.stringEqual(runtime.GOARCH, "wasm"):
 		{
 			return "wasm"
 			break
 		}
-		case (((runtime.GOOS as string) as string) == "windows") && (((runtime.GOARCH as string) as string) == "386"):
+		case ($.stringEqual(runtime.GOOS, "windows")) && ($.stringEqual(runtime.GOARCH, "386")):
 		{
 			return "windows386"
 			break
 		}
-		case ((runtime.GOOS as string) as string) == "openbsd":
+		case $.stringEqual(runtime.GOOS, "openbsd"):
 		{
 			return "openbsd"
 			break
 		}
-		case ((runtime.GOOS as string) as string) == "aix":
+		case $.stringEqual(runtime.GOOS, "aix"):
 		{
 			return "aix"
 			break

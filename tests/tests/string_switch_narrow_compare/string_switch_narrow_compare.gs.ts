@@ -16,7 +16,7 @@ export function valid(network: string): boolean {
 			break
 		}
 	}
-	return (network as string) != ""
+	return !$.stringEqual(network, "")
 }
 
 export async function main(): globalThis.Promise<void> {

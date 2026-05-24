@@ -124,10 +124,7 @@ describe('strings/Replacer', () => {
     it('should handle unicode strings', () => {
       const r = NewReplacer('世界', '世界!')
       if (r) {
-        // This test expects an error due to UTF-8 slicing limitations in JavaScript
-        expect(() => r.Replace('Hello 世界')).toThrow(
-          'Cannot slice string at byte indices',
-        )
+        expect(r.Replace('Hello 世界')).toBe('Hello 世界!')
       }
     })
 

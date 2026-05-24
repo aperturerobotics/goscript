@@ -188,7 +188,7 @@ export class Regexp {
 			}
 			case OpCapture:
 			{
-				if ((($.pointerValue<Regexp>(x).Cap != $.pointerValue<Regexp>(y).Cap) || ($.pointerValue<Regexp>(x).Name != $.pointerValue<Regexp>(y).Name)) || !Regexp.prototype.Equal.call($.pointerValue<Regexp>(x).Sub![0], $.pointerValue<Regexp>(y).Sub![0])) {
+				if ((($.pointerValue<Regexp>(x).Cap != $.pointerValue<Regexp>(y).Cap) || (!$.stringEqual($.pointerValue<Regexp>(x).Name, $.pointerValue<Regexp>(y).Name))) || !Regexp.prototype.Equal.call($.pointerValue<Regexp>(x).Sub![0], $.pointerValue<Regexp>(y).Sub![0])) {
 					return false
 				}
 				break
@@ -688,7 +688,7 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		}
 		case OpCapture:
 		{
-			if (($.pointerValue<Regexp>(re).Name as string) != "") {
+			if (!$.stringEqual($.pointerValue<Regexp>(re).Name, "")) {
 				strings.Builder.prototype.WriteString.call(b, "(?P<")
 				strings.Builder.prototype.WriteString.call(b, $.pointerValue<Regexp>(re).Name)
 				strings.Builder.prototype.WriteRune.call(b, $.int(62, 32))

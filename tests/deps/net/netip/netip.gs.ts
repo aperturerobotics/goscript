@@ -594,7 +594,7 @@ export class Addr {
 		if (!$.markAsStructValue($.cloneStructValue(ip)).Is6()) {
 			return $.markAsStructValue($.cloneStructValue(ip))
 		}
-		if ((zone as string) == "") {
+		if ($.stringEqual(zone, "")) {
 			ip.z = $.markAsStructValue($.cloneStructValue(z6noz))
 			return $.markAsStructValue($.cloneStructValue(ip))
 		}
@@ -867,7 +867,7 @@ export class parseAddrError {
 	public async Error(): globalThis.Promise<string> {
 		const err = this
 		let q = strconv.Quote
-		if ((err.at as string) != "") {
+		if (!$.stringEqual(err.at, "")) {
 			return ((((("ParseAddr(" + await q!(err.in)) + "): ") + err.msg) + " (at ") + await q!(err.at)) + ")"
 		}
 		return (("ParseAddr(" + await q!(err.in)) + "): ") + err.msg
@@ -1575,7 +1575,7 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 		let __goscriptAssign1_1: string = $.sliceStringOrBytes(s, i + 1, undefined)
 		s = __goscriptAssign1_0
 		zone = __goscriptAssign1_1
-		if ((zone as string) == "") {
+		if ($.stringEqual(zone, "")) {
 			// Not allowed to have an empty zone if explicitly specified.
 			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "zone must be a non-empty string"})), "netip.parseAddrError")]
 		}

@@ -11,7 +11,7 @@ export async function main(): globalThis.Promise<void> {
 	{
 		let [wd, err] = os.Getwd()
 		if (err == null) {
-			if ((wd as string) != "") {
+			if (!$.stringEqual(wd, "")) {
 				$.println("Current working directory ok")
 			}
 		} else {
@@ -25,7 +25,7 @@ export async function main(): globalThis.Promise<void> {
 
 	{
 		let val = os.Getenv("TEST_VAR")
-		if ((val as string) != "") {
+		if (!$.stringEqual(val, "")) {
 			$.println("Got environment variable TEST_VAR:", val)
 		}
 	}
@@ -33,7 +33,7 @@ export async function main(): globalThis.Promise<void> {
 	os.Unsetenv("TEST_VAR")
 	{
 		let val = os.Getenv("TEST_VAR")
-		if ((val as string) == "") {
+		if ($.stringEqual(val, "")) {
 			$.println("Environment variable TEST_VAR unset successfully")
 		}
 	}
@@ -107,7 +107,7 @@ export async function main(): globalThis.Promise<void> {
 		let __goscriptShadow1 = __goscriptTuple1[1]
 		if (__goscriptShadow1 == null) {
 			$.println("CreateTemp ok")
-			$.println("CreateTemp name empty:", (os.File.prototype.Name.call(tempFile) as string) == "")
+			$.println("CreateTemp name empty:", $.stringEqual(os.File.prototype.Name.call(tempFile), ""))
 			os.File.prototype.Close.call(tempFile)
 			os.Remove(os.File.prototype.Name.call(tempFile))
 		} else {

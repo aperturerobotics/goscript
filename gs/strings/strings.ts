@@ -56,18 +56,31 @@ export function ContainsFunc(
 
 // Index returns the index of the first instance of substr in s, or -1 if substr is not present in s.
 export function Index(s: string, substr: string): number {
-  return s.indexOf(substr)
+  if (substr === '') {
+    return 0
+  }
+  return indexBytes($.stringToBytes(s), $.stringToBytes(substr))
 }
 
 // LastIndex returns the index of the last instance of substr in s, or -1 if substr is not present in s.
 export function LastIndex(s: string, substr: string): number {
-  return s.lastIndexOf(substr)
+  const haystack = $.stringToBytes(s)
+  const needle = $.stringToBytes(substr)
+  if (needle.length === 0) {
+    return haystack.length
+  }
+  return lastIndexBytes(haystack, needle)
 }
 
 // IndexByte returns the index of the first instance of c in s, or -1 if c is not present in s.
 export function IndexByte(s: string, c: number): number {
-  const char = String.fromCharCode(c)
-  return s.indexOf(char)
+  const bytes = $.stringToBytes(s)
+  for (let i = 0; i < bytes.length; i++) {
+    if (bytes[i] === (c & 0xff)) {
+      return i
+    }
+  }
+  return -1
 }
 
 // IndexRune returns the index of the first instance of the Unicode code point r, or -1 if rune is not present in s.
@@ -98,8 +111,43 @@ export function LastIndexAny(s: string, chars: string): number {
 
 // LastIndexByte returns the index of the last instance of c in s, or -1 if c is not present in s.
 export function LastIndexByte(s: string, c: number): number {
-  const char = String.fromCharCode(c)
-  return s.lastIndexOf(char)
+  const bytes = $.stringToBytes(s)
+  for (let i = bytes.length - 1; i >= 0; i--) {
+    if (bytes[i] === (c & 0xff)) {
+      return i
+    }
+  }
+  return -1
+}
+
+function indexBytes(haystack: Uint8Array, needle: Uint8Array): number {
+  if (needle.length === 0) {
+    return 0
+  }
+  outer: for (let i = 0; i <= haystack.length - needle.length; i++) {
+    for (let j = 0; j < needle.length; j++) {
+      if (haystack[i + j] !== needle[j]) {
+        continue outer
+      }
+    }
+    return i
+  }
+  return -1
+}
+
+function lastIndexBytes(haystack: Uint8Array, needle: Uint8Array): number {
+  if (needle.length === 0) {
+    return haystack.length
+  }
+  outer: for (let i = haystack.length - needle.length; i >= 0; i--) {
+    for (let j = 0; j < needle.length; j++) {
+      if (haystack[i + j] !== needle[j]) {
+        continue outer
+      }
+    }
+    return i
+  }
+  return -1
 }
 
 // IndexFunc returns the index into s of the first Unicode code point satisfying f(c), or -1 if none do.

@@ -124,13 +124,11 @@ describe('strings/iter', () => {
     it('should handle unicode', () => {
       const parts: string[] = []
       const seq = SplitSeq('世界,你好', ',')
-      // This test expects an error due to UTF-8 slicing limitations in JavaScript
-      expect(() => {
-        seq((part: string) => {
-          parts.push(part)
-          return true
-        })
-      }).toThrow('Cannot slice string at byte indices')
+      seq((part: string) => {
+        parts.push(part)
+        return true
+      })
+      expect(parts).toEqual(['世界', '你好'])
     })
   })
 

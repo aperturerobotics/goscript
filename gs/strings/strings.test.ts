@@ -203,6 +203,7 @@ describe('strings', () => {
       expect(Index('hello world', 'xyz')).toBe(-1)
       expect(Index('hello', 'hello')).toBe(0)
       expect(Index('', '')).toBe(0)
+      expect(Index('世界,你好', ',')).toBe(6)
     })
   })
 
@@ -219,6 +220,7 @@ describe('strings', () => {
       expect(IndexByte('hello', 101)).toBe(1) // 'e'
       expect(IndexByte('hello', 120)).toBe(-1) // 'x'
       expect(IndexByte('', 97)).toBe(-1) // 'a'
+      expect(IndexByte('世界,你好', 44)).toBe(6)
     })
   })
 
@@ -257,6 +259,7 @@ describe('strings', () => {
       expect(LastIndex('hello world hello', 'hello')).toBe(12)
       expect(LastIndex('hello world', 'xyz')).toBe(-1)
       expect(LastIndex('hello', 'hello')).toBe(0)
+      expect(LastIndex('世界,你好', '你好')).toBe(7)
     })
   })
 
@@ -273,6 +276,7 @@ describe('strings', () => {
       expect(LastIndexByte('hello', 108)).toBe(3) // 'l'
       expect(LastIndexByte('hello', 120)).toBe(-1) // 'x'
       expect(LastIndexByte('', 97)).toBe(-1) // 'a'
+      expect(LastIndexByte('世界,你好', 44)).toBe(6)
     })
   })
 

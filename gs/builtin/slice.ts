@@ -1,5 +1,61 @@
 import { varRef, type VarRef } from './varRef.js'
 
+export class GoBinaryString extends String {
+  readonly bytes: Uint8Array
+
+  constructor(bytes: Uint8Array) {
+    super(bytesToBinaryString(bytes))
+    this.bytes = bytes.slice()
+  }
+
+  toString(): string {
+    return bytesToBinaryString(this.bytes)
+  }
+
+  valueOf(): string {
+    return this.toString()
+  }
+
+  [Symbol.toPrimitive](): string {
+    return this.toString()
+  }
+}
+
+type GoStringValue = string | GoBinaryString
+type GoStringBytes = GoStringValue | Slice<number> | Uint8Array
+
+function isGoStringValue(value: unknown): value is GoStringValue {
+  return typeof value === 'string' || value instanceof GoBinaryString
+}
+
+function goStringBytes(str: GoStringValue): Uint8Array {
+  if (str instanceof GoBinaryString) {
+    return str.bytes.slice()
+  }
+  return new TextEncoder().encode(str)
+}
+
+function goStringComparableBytes(value: GoStringBytes): Uint8Array {
+  if (isGoStringValue(value)) {
+    return goStringBytes(value)
+  }
+  if (value instanceof Uint8Array) {
+    return value
+  }
+  if (value === null || value === undefined) {
+    return new Uint8Array(0)
+  }
+  return Uint8Array.from(asArray(value))
+}
+
+function goStringFromBytes(bytes: Uint8Array): string {
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+  } catch {
+    return new GoBinaryString(bytes) as unknown as string
+  }
+}
+
 /**
  * GoSliceObject contains metadata for complex slice views
  */
@@ -702,7 +758,7 @@ export const arrayToSlice = <T>(
  */
 export const len = <T = unknown, V = unknown>(
   obj:
-    | string
+    | GoStringValue
     | Array<T>
     | Slice<T>
     | Map<T, V>
@@ -716,7 +772,7 @@ export const len = <T = unknown, V = unknown>(
     return 0
   }
 
-  if (typeof obj === 'string') {
+  if (isGoStringValue(obj)) {
     return stringLen(obj) // Call new stringLen for strings
   }
 
@@ -939,14 +995,14 @@ export function copy<T>(dst: Slice<T>, src: Slice<T>): number
 export function copy<T>(dst: Slice<T>, src: string): number
 export function copy<T>(
   dst: Slice<T> | Uint8Array,
-  src: Slice<T> | Uint8Array | string,
+  src: Slice<T> | Uint8Array | GoStringValue,
 ): number {
   if (dst === null) {
     return 0
   }
 
   // Handle string source first
-  if (typeof src === 'string') {
+  if (isGoStringValue(src)) {
     return copyFromString(dst, src)
   }
 
@@ -987,9 +1043,13 @@ export function copy<T>(
 /**
  * Helper: Copy from string to any destination type
  */
-function copyFromString<T>(dst: Slice<T> | Uint8Array, src: string): number {
+function copyFromString<T>(
+  dst: Slice<T> | Uint8Array,
+  src: GoStringValue,
+): number {
   const dstLen = dst instanceof Uint8Array ? dst.length : len(dst)
-  const count = Math.min(dstLen, src.length)
+  const bytes = goStringBytes(src)
+  const count = Math.min(dstLen, bytes.length)
 
   if (count === 0) {
     return 0
@@ -997,18 +1057,18 @@ function copyFromString<T>(dst: Slice<T> | Uint8Array, src: string): number {
 
   if (dst instanceof Uint8Array) {
     for (let i = 0; i < count; i++) {
-      dst[i] = src.charCodeAt(i)
+      dst[i] = bytes[i]
     }
   } else if (isComplexSlice(dst)) {
     const dstMeta = dst.__meta__
     for (let i = 0; i < count; i++) {
-      const byteVal = src.charCodeAt(i)
+      const byteVal = bytes[i]
       dstMeta.backing[dstMeta.offset + i] = byteVal as unknown as T
       ;(dst as any)[i] = byteVal
     }
   } else if (Array.isArray(dst)) {
     for (let i = 0; i < count; i++) {
-      dst[i] = src.charCodeAt(i) as unknown as T
+      dst[i] = bytes[i] as unknown as T
     }
   }
 
@@ -1103,14 +1163,14 @@ function copySliceValues<T>(src: Slice<T>, count: number): T[] {
  * @throws Error if index is out of bounds or type is unsupported.
  */
 export function index<T>(
-  collection: string | Slice<T> | T[],
+  collection: GoStringValue | Slice<T> | T[],
   index: number,
 ): T | number {
   if (collection === null || collection === undefined) {
     throw new Error('runtime error: index on nil or undefined collection')
   }
 
-  if (typeof collection === 'string') {
+  if (isGoStringValue(collection)) {
     return indexString(collection, index) // Use the existing indexString for byte access
   } else if (collection instanceof Uint8Array) {
     if (index < 0 || index >= collection.length) {
@@ -1337,10 +1397,10 @@ export const byte = (n: number): number => {
  * @throws Error if index is out of bounds.
  */
 export const indexString = (
-  str: string | import('./builtin.js').Bytes,
+  str: GoStringValue | import('./builtin.js').Bytes,
   index: number,
 ): number => {
-  if (typeof str !== 'string') {
+  if (!isGoStringValue(str)) {
     // Bytes - access directly
     if (str instanceof Uint8Array) {
       if (index < 0 || index >= str.length) {
@@ -1363,7 +1423,7 @@ export const indexString = (
     }
     return str[index]
   }
-  const bytes = new TextEncoder().encode(str)
+  const bytes = goStringBytes(str)
   if (index < 0 || index >= bytes.length) {
     throw new Error(
       `runtime error: index out of range [${index}] with length ${bytes.length}`,
@@ -1378,8 +1438,8 @@ export const indexString = (
  * @param str The string.
  * @returns The number of bytes in the UTF-8 representation of the string.
  */
-export const stringLen = (str: string): number => {
-  return new TextEncoder().encode(str).length
+export const stringLen = (str: GoStringValue): number => {
+  return goStringBytes(str).length
 }
 
 /**
@@ -1392,11 +1452,11 @@ export const stringLen = (str: string): number => {
  * @throws Error if the slice would create invalid UTF-8.
  */
 export const sliceString = (
-  str: string,
+  str: GoStringValue,
   low?: number,
   high?: number,
 ): string => {
-  const bytes = new TextEncoder().encode(str)
+  const bytes = goStringBytes(str)
   const actualLow = low === undefined ? 0 : low
   const actualHigh = high === undefined ? bytes.length : high
 
@@ -1418,20 +1478,7 @@ export const sliceString = (
     )
   }
 
-  const slicedBytes = bytes.subarray(actualLow, actualHigh)
-
-  try {
-    // Attempt to decode with strict UTF-8 validation
-    const result = new TextDecoder('utf-8', { fatal: true }).decode(slicedBytes)
-    return result
-  } catch (e: unknown) {
-    // If we get here, the slice would create invalid UTF-8.
-    throw new Error(
-      `Cannot slice string at byte indices [${actualLow}:${actualHigh}] because it would create invalid UTF-8. ` +
-        `This is a limitation of JavaScript's string handling.`,
-      { cause: e },
-    )
-  }
+  return goStringFromBytes(bytes.subarray(actualLow, actualHigh))
 }
 
 /**
@@ -1445,7 +1492,7 @@ export const bytesToString = (
   if (bytes === null) return ''
   // If it's already a string, just return it
   if (typeof bytes === 'string') return bytes
-  if (bytes instanceof Uint8Array) return decodeGoStringBytes(bytes)
+  if (bytes instanceof Uint8Array) return goStringFromBytes(bytes)
   // Ensure we get a plain number[] for Uint8Array.from
   let byteArray: number[]
   if (isComplexSlice(bytes)) {
@@ -1458,15 +1505,21 @@ export const bytesToString = (
     // For simple T[] slices
     byteArray = bytes
   }
-  return decodeGoStringBytes(Uint8Array.from(byteArray))
+  return goStringFromBytes(Uint8Array.from(byteArray)) as string
 }
 
-function decodeGoStringBytes(bytes: Uint8Array): string {
-  try {
-    return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
-  } catch {
-    return bytesToBinaryString(bytes)
+export function stringEqual(left: GoStringBytes, right: GoStringBytes): boolean {
+  const leftBytes = goStringComparableBytes(left)
+  const rightBytes = goStringComparableBytes(right)
+  if (leftBytes.length !== rightBytes.length) {
+    return false
   }
+  for (let i = 0; i < leftBytes.length; i++) {
+    if (leftBytes[i] !== rightBytes[i]) {
+      return false
+    }
+  }
+  return true
 }
 
 function bytesToBinaryString(bytes: Uint8Array): string {
@@ -1484,10 +1537,10 @@ function bytesToBinaryString(bytes: Uint8Array): string {
  * @returns A Uint8Array representing the UTF-8 bytes of the string.
  */
 export function stringToBytes(
-  s: string | import('./builtin.js').Bytes,
+  s: GoStringValue | import('./builtin.js').Bytes,
 ): Uint8Array {
-  if (typeof s === 'string') {
-    return new TextEncoder().encode(s)
+  if (isGoStringValue(s)) {
+    return goStringBytes(s)
   }
   // Already bytes - normalize to Uint8Array
   if (s instanceof Uint8Array) {
@@ -1577,8 +1630,8 @@ export function genericBytesOrStringToString(
   if (value === null || value === undefined) {
     return ''
   }
-  if (typeof value === 'string') {
-    return value
+  if (isGoStringValue(value)) {
+    return value as string
   }
   return bytesToString(value)
 }
@@ -1592,10 +1645,10 @@ export function genericBytesOrStringToString(
  * @returns The byte value at the specified index
  */
 export function indexStringOrBytes(
-  value: string | import('./builtin.js').Bytes,
+  value: GoStringValue | import('./builtin.js').Bytes,
   index: number,
 ): number {
-  if (typeof value === 'string') {
+  if (isGoStringValue(value)) {
     return indexString(value, index)
   } else if (value instanceof Uint8Array) {
     // For Uint8Array, direct access returns the byte value
@@ -1631,9 +1684,9 @@ export function indexStringOrBytes(
  * @returns The sliced value of the same type as input
  */
 export function sliceStringOrBytes<
-  T extends string | import('./builtin.js').Bytes,
+  T extends GoStringValue | import('./builtin.js').Bytes,
 >(value: T, low?: number, high?: number, max?: number): T {
-  if (typeof value === 'string') {
+  if (isGoStringValue(value)) {
     // For strings, use sliceString and ignore max parameter
     return sliceString(value, low, high) as T
   } else {

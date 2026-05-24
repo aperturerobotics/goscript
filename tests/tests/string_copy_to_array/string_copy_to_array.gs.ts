@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let arr: Uint8Array = new Uint8Array(10)
-	let decodeMapInitialize = "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+	let decodeMapInitialize = $.bytesToString(new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 255]))
 	$.copy($.goSlice(arr, undefined, undefined), decodeMapInitialize)
 
 	// Check that arr is initialized with 255 values

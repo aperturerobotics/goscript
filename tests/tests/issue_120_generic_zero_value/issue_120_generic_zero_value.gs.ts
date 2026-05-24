@@ -71,7 +71,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test 5: Verify the actual values
 	$.println("zeroInt == 0:", zeroInt == 0)
-	$.println("zeroStr == \"\":", (zeroStr as string) == "")
+	$.println("zeroStr == \"\":", $.stringEqual(zeroStr, ""))
 
 	// Test 6: T{} returns the instantiated array zero value.
 	let zeroPair = ZeroArrayLiteral({T: { type: "main.Pair", zero: () => Array.from({ length: 2 }, () => 0) }})

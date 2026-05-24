@@ -169,10 +169,10 @@ export async function main(): globalThis.Promise<void> {
 	// Test type equality
 	let intType1 = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})
 	let intType2 = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})
-	$.println("Same int types:", $.pointerValue<Exclude<reflect.Type, null>>(intType1).String() == $.pointerValue<Exclude<reflect.Type, null>>(intType2).String())
+	$.println("Same int types:", $.stringEqual($.pointerValue<Exclude<reflect.Type, null>>(intType1).String(), $.pointerValue<Exclude<reflect.Type, null>>(intType2).String()))
 
 	let stringType = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})
-	$.println("Different types:", $.pointerValue<Exclude<reflect.Type, null>>(intType1).String() == $.pointerValue<Exclude<reflect.Type, null>>(stringType).String())
+	$.println("Different types:", $.stringEqual($.pointerValue<Exclude<reflect.Type, null>>(intType1).String(), $.pointerValue<Exclude<reflect.Type, null>>(stringType).String()))
 
 	// Test map type construction
 	let mapType = reflect.MapOf($.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})), $.pointerValue(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})))

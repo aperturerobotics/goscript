@@ -753,7 +753,7 @@ export class parser {
 		$.pointerValue<__goscript_regexp.Regexp>(re).Rune = $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0)
 
 		let sign = +1
-		if (((t as string) != "") && ($.uint($.indexStringOrBytes(t, 0), 8) == $.uint(94, 8))) {
+		if ((!$.stringEqual(t, "")) && ($.uint($.indexStringOrBytes(t, 0), 8) == $.uint(94, 8))) {
 			sign = -1
 			t = $.sliceStringOrBytes(t, 1, undefined)
 
@@ -766,10 +766,10 @@ export class parser {
 
 		let _class: $.Slice<number> = $.pointerValue<__goscript_regexp.Regexp>(re).Rune
 		let first = true
-		while ((((t as string) == "") || ($.uint($.indexStringOrBytes(t, 0), 8) != $.uint(93, 8))) || first) {
+		while ((($.stringEqual(t, "")) || ($.uint($.indexStringOrBytes(t, 0), 8) != $.uint(93, 8))) || first) {
 			// POSIX: - is only okay unescaped as first or last in class.
 			// Perl: - is okay anywhere.
-			if ((((((t as string) != "") && ($.uint($.indexStringOrBytes(t, 0), 8) == $.uint(45, 8))) && ($.uint(($.pointerValue<parser>(p).flags & PerlX), 16) == $.uint(0, 16))) && !first) && (($.len(t) == 1) || ($.uint($.indexStringOrBytes(t, 1), 8) != $.uint(93, 8)))) {
+			if (((((!$.stringEqual(t, "")) && ($.uint($.indexStringOrBytes(t, 0), 8) == $.uint(45, 8))) && ($.uint(($.pointerValue<parser>(p).flags & PerlX), 16) == $.uint(0, 16))) && !first) && (($.len(t) == 1) || ($.uint($.indexStringOrBytes(t, 1), 8) != $.uint(93, 8)))) {
 				let [, size] = utf8.DecodeRuneInString($.sliceStringOrBytes(t, 1, undefined))
 				return ["", $.interfaceValue<$.GoError>(new Error({Code: ErrInvalidCharRange, Expr: $.sliceStringOrBytes(t, undefined, 1 + size)}), "*syntax.Error")]
 			}
@@ -878,7 +878,7 @@ export class parser {
 		let r: number = 0
 		let rest: string = ""
 		let err: $.GoError = null as $.GoError
-		if ((s as string) == "") {
+		if ($.stringEqual(s, "")) {
 			return [$.int(0, 32), "", $.interfaceValue<$.GoError>(new Error({Code: ErrMissingBracket, Expr: wholeClass}), "*syntax.Error")]
 		}
 
@@ -899,7 +899,7 @@ export class parser {
 		let rest: string = ""
 		let err: $.GoError = null as $.GoError
 		let t = $.sliceStringOrBytes(s, 1, undefined)
-		if ((t as string) == "") {
+		if ($.stringEqual(t, "")) {
 			return [$.int(0, 32), "", $.interfaceValue<$.GoError>(new Error({Code: ErrTrailingBackslash, Expr: ""}), "*syntax.Error")]
 		}
 		let __goscriptTuple7: any = nextRune(t)
@@ -931,7 +931,7 @@ export class parser {
 				case 54:
 				case 55:
 				{
-					if ((((t as string) == "") || ($.indexStringOrBytes(t, 0) < 48)) || ($.indexStringOrBytes(t, 0) > 55)) {
+					if ((($.stringEqual(t, "")) || ($.indexStringOrBytes(t, 0) < 48)) || ($.indexStringOrBytes(t, 0) > 55)) {
 						break
 					}
 				}
@@ -939,7 +939,7 @@ export class parser {
 				{
 					r = $.int(c - 48, 32)
 					for (let i = 1; i < 3; i++) {
-						if ((((t as string) == "") || ($.indexStringOrBytes(t, 0) < 48)) || ($.indexStringOrBytes(t, 0) > 55)) {
+						if ((($.stringEqual(t, "")) || ($.indexStringOrBytes(t, 0) < 48)) || ($.indexStringOrBytes(t, 0) > 55)) {
 							break
 						}
 						r = $.int(((r * 8) + $.int($.indexStringOrBytes(t, 0), 32)) - 48, 32)
@@ -950,7 +950,7 @@ export class parser {
 				}
 				case 120:
 				{
-					if ((t as string) == "") {
+					if ($.stringEqual(t, "")) {
 						break
 					}
 					{
@@ -970,7 +970,7 @@ export class parser {
 						let nhex = 0
 						r = $.int(0, 32)
 						while (true) {
-							if ((t as string) == "") {
+							if ($.stringEqual(t, "")) {
 								break Switch
 							}
 							{
@@ -1059,7 +1059,7 @@ export class parser {
 		let n: number = 0
 		let rest: string = ""
 		let ok: boolean = false
-		if ((((s as string) == "") || ($.indexStringOrBytes(s, 0) < 48)) || (57 < $.indexStringOrBytes(s, 0))) {
+		if ((($.stringEqual(s, "")) || ($.indexStringOrBytes(s, 0) < 48)) || (57 < $.indexStringOrBytes(s, 0))) {
 			return [n, rest, ok]
 		}
 		// Disallow leading zeros.
@@ -1067,7 +1067,7 @@ export class parser {
 			return [n, rest, ok]
 		}
 		let t = s
-		while ((((s as string) != "") && (48 <= $.indexStringOrBytes(s, 0))) && ($.indexStringOrBytes(s, 0) <= 57)) {
+		while (((!$.stringEqual(s, "")) && (48 <= $.indexStringOrBytes(s, 0))) && ($.indexStringOrBytes(s, 0) <= 57)) {
 			s = $.sliceStringOrBytes(s, 1, undefined)
 		}
 		rest = s
@@ -1191,7 +1191,7 @@ export class parser {
 		let flags = $.uint($.pointerValue<parser>(p).flags, 16)
 		let sign = +1
 		let sawFlag = false
-		Loop: while ((t as string) != "") {
+		Loop: while (!$.stringEqual(t, "")) {
 			{
 				let __goscriptTuple11: any = nextRune(t)
 				c = $.int(__goscriptTuple11[0], 32)
@@ -1272,7 +1272,7 @@ export class parser {
 		let max: number = 0
 		let rest: string = ""
 		let ok: boolean = false
-		if (((s as string) == "") || ($.uint($.indexStringOrBytes(s, 0), 8) != $.uint(123, 8))) {
+		if (($.stringEqual(s, "")) || ($.uint($.indexStringOrBytes(s, 0), 8) != $.uint(123, 8))) {
 			return [min, max, rest, ok]
 		}
 		s = $.sliceStringOrBytes(s, 1, undefined)
@@ -1286,14 +1286,14 @@ export class parser {
 				return [min, max, rest, ok]
 			}
 		}
-		if ((s as string) == "") {
+		if ($.stringEqual(s, "")) {
 			return [min, max, rest, ok]
 		}
 		if ($.uint($.indexStringOrBytes(s, 0), 8) != $.uint(44, 8)) {
 			max = min
 		} else {
 			s = $.sliceStringOrBytes(s, 1, undefined)
-			if ((s as string) == "") {
+			if ($.stringEqual(s, "")) {
 				return [min, max, rest, ok]
 			}
 			if ($.uint($.indexStringOrBytes(s, 0), 8) == $.uint(125, 8)) {
@@ -1315,7 +1315,7 @@ export class parser {
 				}
 			}
 		}
-		if (((s as string) == "") || ($.uint($.indexStringOrBytes(s, 0), 8) != $.uint(125, 8))) {
+		if (($.stringEqual(s, "")) || ($.uint($.indexStringOrBytes(s, 0), 8) != $.uint(125, 8))) {
 			return [min, max, rest, ok]
 		}
 		rest = $.sliceStringOrBytes(s, 1, undefined)
@@ -1410,7 +1410,7 @@ export class parser {
 		}
 
 		// Group can have leading negation too.  \p{^Han} == \P{Han}, \P{^Han} == \p{Han}.
-		if (((name as string) != "") && ($.uint($.indexStringOrBytes(name, 0), 8) == $.uint(94, 8))) {
+		if ((!$.stringEqual(name, "")) && ($.uint($.indexStringOrBytes(name, 0), 8) == $.uint(94, 8))) {
 			sign = -sign
 			name = $.sliceStringOrBytes(name, 1, undefined)
 		}
@@ -1579,7 +1579,7 @@ export class parser {
 				after = $.sliceStringOrBytes(after, 1, undefined)
 				flags ^= $.uint(NonGreedy, 16)
 			}
-			if ((lastRepeat as string) != "") {
+			if (!$.stringEqual(lastRepeat, "")) {
 				// In Perl it is not allowed to stack repetition operators:
 				// a** is a syntax error, not a doubled star, and a++ means
 				// something else entirely, which we don't support!
@@ -1986,7 +1986,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 	p.value.flags = $.uint(flags, 16)
 	p.value.wholeRegexp = s
 	let t = s
-	while ((t as string) != "") {
+	while (!$.stringEqual(t, "")) {
 		let repeat = ""
 		BigSwitch: {
 			switch ($.indexStringOrBytes(t, 0)) {
@@ -2180,7 +2180,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 								let __goscriptTuple21: any = strings.Cut($.sliceStringOrBytes(t, 2, undefined), "\\E")
 								lit = __goscriptTuple21[0]
 								t = __goscriptTuple21[1]
-								while ((lit as string) != "") {
+								while (!$.stringEqual(lit, "")) {
 									let __goscriptTuple22: any = nextRune(lit)
 									let __goscriptShadow5 = $.int(__goscriptTuple22[0], 32)
 									let rest = __goscriptTuple22[1]
@@ -2271,7 +2271,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 }
 
 export function isValidCaptureName(name: string): boolean {
-	if ((name as string) == "") {
+	if ($.stringEqual(name, "")) {
 		return false
 	}
 	for (const [__rangeIndex, c] of $.rangeString(name)) {
@@ -2478,7 +2478,7 @@ export async function unicodeTable(name: string): globalThis.Promise<[unicode.Ra
 	await categoryAliases.once.Do(initCategoryAliases)
 	{
 		let actual = $.mapGet(categoryAliases.m, name, "")[0]
-		if ((actual as string) != "") {
+		if (!$.stringEqual(actual, "")) {
 			let t: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = $.mapGet(unicode.Categories, actual, null)[0]
 			return [t, $.mapGet(unicode.FoldCategory, actual, null)[0], +1]
 		}
@@ -2726,7 +2726,7 @@ export function negateClass(r: $.Slice<number>): $.Slice<number> {
 }
 
 export function checkUTF8(s: string): $.GoError {
-	while ((s as string) != "") {
+	while (!$.stringEqual(s, "")) {
 		let __goscriptTuple26: any = utf8.DecodeRuneInString(s)
 		let rune = $.int(__goscriptTuple26[0], 32)
 		let size = __goscriptTuple26[1]

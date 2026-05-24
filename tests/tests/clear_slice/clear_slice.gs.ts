@@ -14,7 +14,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let words: $.Slice<string> = $.arrayToSlice<string>(["a", "b"])
 	$.clear(words)
-	$.println("strings:", (words![0] as string) == "", (words![1] as string) == "")
+	$.println("strings:", $.stringEqual(words![0], ""), $.stringEqual(words![1], ""))
 }
 
 if ($.isMainScript(import.meta)) {

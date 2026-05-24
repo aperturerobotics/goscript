@@ -590,10 +590,10 @@ export class Regexp {
 
 	public SubexpIndex(name: string): number {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		if ((name as string) != "") {
+		if (!$.stringEqual(name, "")) {
 			for (let __goscriptRangeTarget5 = $.pointerValue<Regexp>(re).subexpNames, i = 0; i < $.len(__goscriptRangeTarget5); i++) {
 				let s = __goscriptRangeTarget5![i]
-				if (name == s) {
+				if ($.stringEqual(name, s)) {
 					return i
 				}
 			}
@@ -935,7 +935,7 @@ export class Regexp {
 			}
 			dst = $.append(dst, ...($.stringToBytes(before) ?? []))
 			template = after
-			if (((template as string) != "") && ($.uint($.indexStringOrBytes(template, 0), 8) == $.uint(36, 8))) {
+			if ((!$.stringEqual(template, "")) && ($.uint($.indexStringOrBytes(template, 0), 8) == $.uint(36, 8))) {
 				// Treat $$ as $.
 				dst = $.append(dst, 36)
 				template = $.sliceStringOrBytes(template, 1, undefined)
@@ -963,7 +963,7 @@ export class Regexp {
 			} else {
 				for (let __goscriptRangeTarget7 = $.pointerValue<Regexp>(re).subexpNames, i = 0; i < $.len(__goscriptRangeTarget7); i++) {
 					let namei = __goscriptRangeTarget7![i]
-					if (((name == namei) && (((2 * i) + 1) < $.len(match))) && (match![2 * i] >= 0)) {
+					if ((($.stringEqual(name, namei)) && (((2 * i) + 1) < $.len(match))) && (match![2 * i] >= 0)) {
 						if (bsrc != null) {
 							dst = $.append(dst, ...($.goSlice(bsrc, match![2 * i], match![(2 * i) + 1]) ?? []))
 						} else {
@@ -1617,7 +1617,7 @@ export async function compile(expr: string, mode: syntax.Flags, longest: boolean
 		$.pointerValue<Regexp>(regexp).prefixComplete = __goscriptTuple20[1]
 		$.pointerValue<Regexp>(regexp).prefixEnd = $.uint(__goscriptTuple20[2], 32)
 	}
-	if (($.pointerValue<Regexp>(regexp).prefix as string) != "") {
+	if (!$.stringEqual($.pointerValue<Regexp>(regexp).prefix, "")) {
 		// TODO(rsc): Remove this allocation by adding
 		// IndexString to package bytes.
 		$.pointerValue<Regexp>(regexp).prefixBytes = $.stringToBytes($.pointerValue<Regexp>(regexp).prefix)
@@ -1839,7 +1839,7 @@ export function extract(str: string): [string, number, string, boolean] {
 	let num: number = 0
 	let rest: string = ""
 	let ok: boolean = false
-	if ((str as string) == "") {
+	if ($.stringEqual(str, "")) {
 		return [name, num, rest, ok]
 	}
 	let brace = false
