@@ -100,7 +100,9 @@ export class Response {
 }
 
 export class Client {
-  public Do(_req: Request | null): [Response | null, $.GoError] {
+  public Do(
+    _req: Request | $.VarRef<Request> | null,
+  ): [Response | null, $.GoError] {
     return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
   }
 }
