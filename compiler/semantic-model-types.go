@@ -94,6 +94,14 @@ type semanticInterfaceImplementation struct {
 	asyncMethods map[string]bool
 }
 
+type semanticInterfaceImplementationGraphEntry struct {
+	typ          *types.Named
+	iface        *types.Named
+	pointer      bool
+	ifaceMethods map[string]*types.Func
+	implMethods  map[string]*types.Func
+}
+
 type semanticTypeAssertion struct {
 	position sourcePosition
 	source   types.Type

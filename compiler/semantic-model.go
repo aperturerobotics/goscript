@@ -82,9 +82,14 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 	if diagnosticsHaveErrors(diagnostics) {
 		return model, diagnostics
 	}
+	interfaceGraph, interfaceDiagnostics := o.resolveInterfaceImplementationGraph(ctx, model)
+	diagnostics = append(diagnostics, interfaceDiagnostics...)
+	if diagnosticsHaveErrors(diagnostics) {
+		return model, diagnostics
+	}
 	for {
 		asyncCount := semanticAsyncFunctionCount(model)
-		diagnostics = append(diagnostics, o.resolveInterfaceImplementations(ctx, model)...)
+		diagnostics = append(diagnostics, o.applyInterfaceAsyncMethods(ctx, model, interfaceGraph)...)
 		if diagnosticsHaveErrors(diagnostics) {
 			return model, diagnostics
 		}
@@ -1102,12 +1107,22 @@ func (o *SemanticModelOwner) resolveInterfaceImplementations(
 	ctx context.Context,
 	model *SemanticModel,
 ) []Diagnostic {
-	model.interfaceImplementations = nil
+	interfaceGraph, diagnostics := o.resolveInterfaceImplementationGraph(ctx, model)
+	if diagnosticsHaveErrors(diagnostics) {
+		return diagnostics
+	}
+	return o.applyInterfaceAsyncMethods(ctx, model, interfaceGraph)
+}
+
+func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
+	ctx context.Context,
+	model *SemanticModel,
+) ([]semanticInterfaceImplementationGraphEntry, []Diagnostic) {
 	var interfaces []*types.Named
 	var concretes []*types.Named
 	for named, semType := range model.types {
 		if err := ctx.Err(); err != nil {
-			return []Diagnostic{contextCanceledDiagnostic(err)}
+			return nil, []Diagnostic{contextCanceledDiagnostic(err)}
 		}
 		if semType.isInterface {
 			interfaces = append(interfaces, named)
@@ -1118,9 +1133,10 @@ func (o *SemanticModelOwner) resolveInterfaceImplementations(
 	sortNamedTypes(interfaces)
 	sortNamedTypes(concretes)
 
+	implementationGraph := make([]semanticInterfaceImplementationGraphEntry, 0)
 	for _, ifaceNamed := range interfaces {
 		if err := ctx.Err(); err != nil {
-			return []Diagnostic{contextCanceledDiagnostic(err)}
+			return nil, []Diagnostic{contextCanceledDiagnostic(err)}
 		}
 		iface, _ := ifaceNamed.Underlying().(*types.Interface)
 		if iface == nil {
@@ -1129,11 +1145,51 @@ func (o *SemanticModelOwner) resolveInterfaceImplementations(
 		iface.Complete()
 		for _, concrete := range concretes {
 			if err := ctx.Err(); err != nil {
-				return []Diagnostic{contextCanceledDiagnostic(err)}
+				return nil, []Diagnostic{contextCanceledDiagnostic(err)}
 			}
-			o.addInterfaceImplementation(model, concrete, ifaceNamed, iface, false)
-			o.addInterfaceImplementation(model, concrete, ifaceNamed, iface, true)
+			if implementation, ok := o.interfaceImplementationGraphEntry(concrete, ifaceNamed, iface, false); ok {
+				implementationGraph = append(implementationGraph, implementation)
+			}
+			if implementation, ok := o.interfaceImplementationGraphEntry(concrete, ifaceNamed, iface, true); ok {
+				implementationGraph = append(implementationGraph, implementation)
+			}
 		}
+	}
+	return implementationGraph, nil
+}
+
+func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
+	ctx context.Context,
+	model *SemanticModel,
+	interfaceGraph []semanticInterfaceImplementationGraphEntry,
+) []Diagnostic {
+	model.interfaceImplementations = model.interfaceImplementations[:0]
+	for _, graphEntry := range interfaceGraph {
+		if err := ctx.Err(); err != nil {
+			return []Diagnostic{contextCanceledDiagnostic(err)}
+		}
+		implementation := semanticInterfaceImplementation{
+			typ:          graphEntry.typ,
+			iface:        graphEntry.iface,
+			pointer:      graphEntry.pointer,
+			asyncMethods: make(map[string]bool),
+		}
+		for methodName, implMethod := range graphEntry.implMethods {
+			implFn := model.functions[implMethod]
+			if implFn != nil && implFn.async {
+				implementation.asyncMethods[methodName] = true
+				if ifaceFn := model.functions[graphEntry.ifaceMethods[methodName]]; ifaceFn != nil {
+					markFunctionAsync(ifaceFn, "interface-implementation")
+				}
+			}
+		}
+		for methodName, async := range implementation.asyncMethods {
+			if !async {
+				continue
+			}
+			markFunctionAsync(model.functions[graphEntry.implMethods[methodName]], "interface-method")
+		}
+		model.interfaceImplementations = append(model.interfaceImplementations, implementation)
 	}
 	return nil
 }
@@ -1146,13 +1202,12 @@ func contextCanceledDiagnostic(err error) Diagnostic {
 	}
 }
 
-func (o *SemanticModelOwner) addInterfaceImplementation(
-	model *SemanticModel,
+func (o *SemanticModelOwner) interfaceImplementationGraphEntry(
 	concrete *types.Named,
 	ifaceNamed *types.Named,
 	iface *types.Interface,
 	pointer bool,
-) {
+) (semanticInterfaceImplementationGraphEntry, bool) {
 	var receiver types.Type = concrete
 	if pointer {
 		receiver = types.NewPointer(concrete)
@@ -1174,14 +1229,15 @@ func (o *SemanticModelOwner) addInterfaceImplementation(
 		}
 	}
 	if !types.Implements(implementsReceiver, implementsIface.Underlying().(*types.Interface)) {
-		return
+		return semanticInterfaceImplementationGraphEntry{}, false
 	}
 
-	implementation := semanticInterfaceImplementation{
+	implementation := semanticInterfaceImplementationGraphEntry{
 		typ:          concrete,
 		iface:        ifaceNamed,
 		pointer:      pointer,
-		asyncMethods: make(map[string]bool),
+		ifaceMethods: make(map[string]*types.Func),
+		implMethods:  make(map[string]*types.Func),
 	}
 	for ifaceMethod := range iface.Methods() {
 		obj, _, _ := types.LookupFieldOrMethod(receiver, true, concrete.Obj().Pkg(), ifaceMethod.Name())
@@ -1189,23 +1245,10 @@ func (o *SemanticModelOwner) addInterfaceImplementation(
 		if implMethod == nil {
 			continue
 		}
-		implFn := model.functions[implMethod]
-		if implFn != nil && implFn.async {
-			implementation.asyncMethods[ifaceMethod.Name()] = true
-			if ifaceFn := model.functions[ifaceMethod]; ifaceFn != nil {
-				markFunctionAsync(ifaceFn, "interface-implementation")
-			}
-		}
+		implementation.ifaceMethods[ifaceMethod.Name()] = ifaceMethod
+		implementation.implMethods[ifaceMethod.Name()] = implMethod
 	}
-	for methodName, async := range implementation.asyncMethods {
-		if !async {
-			continue
-		}
-		obj, _, _ := types.LookupFieldOrMethod(receiver, true, concrete.Obj().Pkg(), methodName)
-		implMethod, _ := obj.(*types.Func)
-		markFunctionAsync(model.functions[implMethod], "interface-method")
-	}
-	model.interfaceImplementations = append(model.interfaceImplementations, implementation)
+	return implementation, true
 }
 
 func typeParamTypes(params *types.TypeParamList) []types.Type {
