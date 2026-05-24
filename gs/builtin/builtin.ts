@@ -258,6 +258,7 @@ export function imag(value: number | Complex | null | undefined): number {
 // Bytes represents all valid []byte representations in TypeScript
 // This includes Uint8Array (the preferred representation) and $.Slice<number> (which includes null)
 export type Bytes = Uint8Array | Slice<number>
+type ByteData = Uint8Array | number[] | SliceProxy<number>
 
 const maxSafeBigInt = BigInt(Number.MAX_SAFE_INTEGER)
 const maxUint64BigInt = 0xffffffffffffffffn
@@ -634,18 +635,15 @@ export function sortSlice<T extends string | number>(s: Slice<T>): void {
  * Optimized for different byte representations.
  */
 export function bytesEqual(a: Bytes | null, b: Bytes | null): boolean {
-  // Handle null cases
   if (a === null && b === null) return true
   if (a === null || b === null) return false
 
-  // Convert to arrays for comparison
-  const aArr = bytesToArray(a)
-  const bArr = bytesToArray(b)
+  const aLen = bytesLen(a)
+  const bLen = bytesLen(b)
+  if (aLen !== bLen) return false
 
-  if (aArr.length !== bArr.length) return false
-
-  for (let i = 0; i < aArr.length; i++) {
-    if (aArr[i] !== bArr[i]) return false
+  for (let i = 0; i < aLen; i++) {
+    if (byteAt(a, i) !== byteAt(b, i)) return false
   }
 
   return true
@@ -656,24 +654,42 @@ export function bytesEqual(a: Bytes | null, b: Bytes | null): boolean {
  * Returns -1 if a < b, 0 if a == b, +1 if a > b.
  */
 export function bytesCompare(a: Bytes | null, b: Bytes | null): number {
-  // Handle null cases
   if (a === null && b === null) return 0
   if (a === null) return -1
   if (b === null) return 1
 
-  const aArr = bytesToArray(a)
-  const bArr = bytesToArray(b)
-
-  const minLen = Math.min(aArr.length, bArr.length)
+  const aLen = bytesLen(a)
+  const bLen = bytesLen(b)
+  const minLen = Math.min(aLen, bLen)
 
   for (let i = 0; i < minLen; i++) {
-    if (aArr[i] < bArr[i]) return -1
-    if (aArr[i] > bArr[i]) return 1
+    const av = byteAt(a, i)
+    const bv = byteAt(b, i)
+    if (av < bv) return -1
+    if (av > bv) return 1
   }
 
-  if (aArr.length < bArr.length) return -1
-  if (aArr.length > bArr.length) return 1
+  if (aLen < bLen) return -1
+  if (aLen > bLen) return 1
   return 0
+}
+
+function bytesLen(bytes: ByteData): number {
+  if (bytes instanceof Uint8Array) {
+    return bytes.length
+  }
+  if (isSliceProxy(bytes)) {
+    return (bytes as SliceProxy<number>).__meta__.length
+  }
+  return bytes.length
+}
+
+function byteAt(bytes: ByteData, index: number): number {
+  if (bytes instanceof Uint8Array || Array.isArray(bytes)) {
+    return bytes[index] ?? 0
+  }
+  const meta = (bytes as SliceProxy<number>).__meta__
+  return meta.backing[meta.offset + index] ?? 0
 }
 
 /**
