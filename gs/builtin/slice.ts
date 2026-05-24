@@ -77,6 +77,10 @@ export type SliceProxy<T> = T[] & {
   __meta__: GoSliceObject<T>
 }
 
+type ByteSlice = Uint8Array & {
+  __meta__?: GoSliceObject<number>
+}
+
 /**
  * Slice<T> is a union type that is either a plain array or a proxy
  * null represents the nil state.
@@ -228,6 +232,28 @@ function normalizeSliceIndex(value: number | undefined): number | undefined {
   return Number(value)
 }
 
+function byteSliceMeta(slice: Uint8Array): GoSliceObject<number> | undefined {
+  return (slice as ByteSlice).__meta__
+}
+
+function byteSliceView(
+  backing: Uint8Array,
+  offset: number,
+  length: number,
+  capacity: number,
+): Uint8Array {
+  const view = backing.subarray(offset, offset + length) as ByteSlice
+  if (capacity !== length) {
+    view.__meta__ = {
+      backing: backing as unknown as number[],
+      offset,
+      length,
+      capacity,
+    }
+  }
+  return view
+}
+
 /**
  * isSliceProxy checks if a slice is a SliceProxy (has __meta__ property)
  * This is an alias for isComplexSlice for better type hinting
@@ -261,24 +287,7 @@ export const makeSlice = <T>(
       return new Uint8Array(length) as Slice<T>
     }
 
-    // If capacity > length, create a SliceProxy backed by a Uint8Array
-    const backingUint8 = new Uint8Array(actualCapacity)
-    const backingNumbers = Array.from(backingUint8) as T[] // Convert to number[] for backing
-
-    const proxyTargetArray = new Array<T>(length)
-    for (let i = 0; i < length; i++) {
-      proxyTargetArray[i] = 0 as T // Initialize with zeros
-    }
-
-    const proxy = proxyTargetArray as SliceProxy<T>
-    proxy.__meta__ = {
-      backing: backingNumbers,
-      offset: 0,
-      length: length,
-      capacity: actualCapacity,
-    }
-
-    return wrapSliceProxy(proxy) as Slice<T>
+    return byteSliceView(new Uint8Array(actualCapacity), 0, length, actualCapacity) as Slice<T>
   }
 
   const actualCapacity = capacity === undefined ? length : capacity
@@ -481,55 +490,51 @@ export function goSlice<T>( // T can be number for Uint8Array case
   }
 
   if (s instanceof Uint8Array) {
+    const meta = byteSliceMeta(s)
+    const metaBacking = meta?.backing as unknown
+    const backing =
+      metaBacking instanceof Uint8Array ? metaBacking : s
+    const baseOffset = meta?.offset ?? 0
+    const baseCapacity = meta?.capacity ?? s.length
     const actualLow = low ?? 0
     const actualHigh = high ?? s.length
 
-    if (actualLow < 0 || actualHigh < actualLow || actualHigh > s.length) {
+    if (
+      actualLow < 0 ||
+      actualHigh < actualLow ||
+      actualLow > baseCapacity ||
+      actualHigh > baseCapacity
+    ) {
       throw new Error(
-        `Invalid slice indices: low ${actualLow}, high ${actualHigh} for Uint8Array of length ${s.length}`,
+        `Invalid slice indices: low ${actualLow}, high ${actualHigh} for Uint8Array with capacity ${baseCapacity}`,
       )
     }
 
     const newLength = actualHigh - actualLow
 
     if (max !== undefined) {
-      if (max < actualHigh || max > s.length) {
+      if (max < actualHigh || max > baseCapacity) {
         // max is relative to the original s.length (capacity)
         throw new Error(
-          `Invalid max index: ${max}. Constraints: low ${actualLow} <= high ${actualHigh} <= max <= original_length ${s.length}`,
+          `Invalid max index: ${max}. Constraints: low ${actualLow} <= high ${actualHigh} <= max <= capacity ${baseCapacity}`,
         )
       }
 
       const newCap = max - actualLow // Capacity of the new slice view
-
-      if (newCap !== newLength) {
-        const proxyTarget = new Array<number>(newLength) as SliceProxy<number>
-        proxyTarget.__meta__ = {
-          backing: s as unknown as number[],
-          offset: actualLow,
-          length: newLength,
-          capacity: newCap,
-        }
-        return new Proxy(proxyTarget, handler) as unknown as Slice<T>
-      } else {
-        // newCap === newLength, standard Uint8Array is fine.
-        return s.subarray(actualLow, actualHigh) as Slice<T> // T is number
-      }
+      return byteSliceView(
+        backing,
+        baseOffset + actualLow,
+        newLength,
+        newCap,
+      ) as Slice<T>
     }
 
-    if (actualHigh !== s.length) {
-      const proxyTarget = new Array<number>(newLength) as SliceProxy<number>
-      proxyTarget.__meta__ = {
-        backing: s as unknown as number[],
-        offset: actualLow,
-        length: newLength,
-        capacity: s.length - actualLow,
-      }
-      return new Proxy(proxyTarget, handler) as unknown as Slice<T>
-    }
-
-    // max is not defined and length equals capacity, return the Uint8Array view directly.
-    return s.subarray(actualLow, actualHigh) as Slice<T> // T is number
+    return byteSliceView(
+      backing,
+      baseOffset + actualLow,
+      newLength,
+      baseCapacity - actualLow,
+    ) as Slice<T>
   }
 
   // Handle nil slices - in Go, slicing a nil slice with valid bounds returns nil
@@ -809,12 +814,12 @@ export const cap = <T>(obj: Slice<T> | Uint8Array): number => {
     return 0
   }
 
-  if (obj instanceof Uint8Array) {
-    return obj.length // Uint8Array capacity is its length
+  if (isComplexSlice(obj as any)) {
+    return (obj as SliceProxy<T>).__meta__.capacity
   }
 
-  if (isComplexSlice(obj)) {
-    return obj.__meta__.capacity
+  if (obj instanceof Uint8Array) {
+    return obj.length // Uint8Array capacity is its length
   }
 
   if (Array.isArray(obj)) {
@@ -848,51 +853,7 @@ export function append<T>(
 
   // If producing Uint8Array, all elements must be numbers and potentially flattened from other Uint8Arrays/number slices.
   if (produceUint8Array) {
-    let combinedBytes: number[] = []
-    // Add bytes from the original slice if it exists and is numeric.
-    if (inputIsUint8Array) {
-      appendBytes(combinedBytes, slice as Uint8Array)
-    } else if (slice !== null && slice !== undefined) {
-      // Original was Slice<number> or number[]
-      const sliceLen = len(slice)
-      for (let i = 0; i < sliceLen; i++) {
-        const val = (slice as any)[i]
-        if (typeof val !== 'number') {
-          throw new Error(
-            'Cannot produce Uint8Array: original slice contains non-number elements.',
-          )
-        }
-        combinedBytes.push(val)
-      }
-    }
-    // Add bytes from the varargs elements.
-    // For Uint8Array, elements are always flattened if they are slices/Uint8Arrays.
-    for (const item of elements) {
-      if (item instanceof Uint8Array) {
-        appendBytes(combinedBytes, item)
-      } else if (isComplexSlice(item) || Array.isArray(item)) {
-        const itemLen = len(item as Slice<any>)
-        for (let i = 0; i < itemLen; i++) {
-          const val = (item as any)[i]
-          if (typeof val !== 'number') {
-            throw new Error(
-              'Cannot produce Uint8Array: appended elements contain non-numbers.',
-            )
-          }
-          combinedBytes.push(val)
-        }
-      } else {
-        if (typeof item !== 'number') {
-          throw new Error(
-            'Cannot produce Uint8Array: appended elements contain non-numbers.',
-          )
-        }
-        combinedBytes.push(item)
-      }
-    }
-    const newArr = new Uint8Array(combinedBytes.length)
-    newArr.set(combinedBytes)
-    return newArr as any
+    return appendByteSlice(slice as Uint8Array, elements) as any
   }
 
   // Handle generic Slice<T> (non-Uint8Array result).
@@ -977,9 +938,70 @@ export function append<T>(
   return wrapSliceProxy(resultProxy) as any
 }
 
-function appendBytes(dst: number[], src: Uint8Array): void {
-  for (let i = 0; i < src.length; i++) {
-    dst.push(src[i])
+function appendByteSlice(slice: Uint8Array, elements: any[]): Uint8Array {
+  const meta = byteSliceMeta(slice)
+  const metaBacking = meta?.backing as unknown
+  const backing =
+    metaBacking instanceof Uint8Array ? metaBacking : slice
+  const offset = meta?.offset ?? 0
+  const oldLength = slice.length
+  const oldCapacity = meta?.capacity ?? oldLength
+  let added = 0
+  for (const item of elements) {
+    added += byteElementLength(item)
+  }
+  const newLength = oldLength + added
+  if (newLength <= oldCapacity) {
+    const view = byteSliceView(backing, offset, newLength, oldCapacity)
+    writeByteElements(view, oldLength, elements)
+    return view
+  }
+  const next = new Uint8Array(newLength)
+  next.set(slice)
+  writeByteElements(next, oldLength, elements)
+  return next
+}
+
+function byteElementLength(item: any): number {
+  if (item instanceof Uint8Array) {
+    return item.length
+  }
+  if (isComplexSlice(item) || Array.isArray(item)) {
+    return len(item as Slice<any>)
+  }
+  if (typeof item !== 'number') {
+    throw new Error('Cannot produce Uint8Array: appended elements contain non-numbers.')
+  }
+  return 1
+}
+
+function writeByteElements(dst: Uint8Array, offset: number, elements: any[]): void {
+  let cursor = offset
+  for (const item of elements) {
+    if (item instanceof Uint8Array) {
+      dst.set(item, cursor)
+      cursor += item.length
+      continue
+    }
+    if (isComplexSlice(item) || Array.isArray(item)) {
+      const itemLen = len(item as Slice<any>)
+      for (let i = 0; i < itemLen; i++) {
+        const value = (item as any)[i]
+        if (typeof value !== 'number') {
+          throw new Error(
+            'Cannot produce Uint8Array: appended elements contain non-numbers.',
+          )
+        }
+        dst[cursor] = value
+        cursor++
+      }
+      continue
+    }
+    if (typeof item !== 'number') {
+      throw new Error('Cannot produce Uint8Array: appended elements contain non-numbers.')
+    }
+    dst[cursor] = item
+    cursor++
   }
 }
 

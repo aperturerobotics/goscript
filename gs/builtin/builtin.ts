@@ -669,6 +669,9 @@ export function bytesToUint8Array(bytes: Bytes | null): Uint8Array {
   if (bytes === null) return new Uint8Array(0)
 
   if (bytes instanceof Uint8Array) {
+    if ((bytes as Uint8Array & { __meta__?: unknown }).__meta__ !== undefined) {
+      return bytes.subarray(0)
+    }
     return bytes
   }
 
