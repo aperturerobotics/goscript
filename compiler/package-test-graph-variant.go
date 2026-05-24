@@ -2,8 +2,8 @@ package compiler
 
 import (
 	"go/ast"
-	"go/types"
 	"slices"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -57,13 +57,10 @@ func discoverPackageTestFunctions(pkg *packages.Package) []PackageTestFunction {
 	}
 	var tests []PackageTestFunction
 	for _, file := range pkg.Syntax {
+		testingAliases := fileTestingAliases(file)
 		for _, decl := range file.Decls {
-			fn, ok := decl.(*ast.FuncDecl)
-			if !ok || fn.Recv != nil || !isTestName(fn.Name.Name) {
-				continue
-			}
-			obj, _ := pkg.TypesInfo.Defs[fn.Name].(*types.Func)
-			if !isOrdinaryTestFunc(obj) {
+			fn, _ := decl.(*ast.FuncDecl)
+			if !isOrdinaryTestFuncDecl(fn, testingAliases) {
 				continue
 			}
 			tests = append(tests, PackageTestFunction{
@@ -75,23 +72,50 @@ func discoverPackageTestFunctions(pkg *packages.Package) []PackageTestFunction {
 	return tests
 }
 
-func isOrdinaryTestFunc(fn *types.Func) bool {
-	if fn == nil {
+func isOrdinaryTestFuncDecl(fn *ast.FuncDecl, testingAliases map[string]bool) bool {
+	if fn == nil || fn.Recv != nil || !isTestName(fn.Name.Name) || fn.Type == nil {
 		return false
 	}
-	sig, _ := fn.Type().(*types.Signature)
-	if sig == nil || sig.Params().Len() != 1 || sig.Results().Len() != 0 {
+	if fn.Type.Results != nil && len(fn.Type.Results.List) != 0 {
 		return false
 	}
-	ptr, _ := sig.Params().At(0).Type().(*types.Pointer)
-	if ptr == nil {
+	if fn.Type.Params == nil || len(fn.Type.Params.List) != 1 {
 		return false
 	}
-	named, _ := ptr.Elem().(*types.Named)
-	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
+	param := fn.Type.Params.List[0]
+	if len(param.Names) > 1 {
 		return false
 	}
-	return named.Obj().Name() == "T" && named.Obj().Pkg().Path() == "testing"
+	ptr, ok := param.Type.(*ast.StarExpr)
+	return ok && isTestingT(ptr.X, testingAliases)
+}
+
+func fileTestingAliases(file *ast.File) map[string]bool {
+	aliases := make(map[string]bool)
+	for _, imp := range file.Imports {
+		path, err := strconv.Unquote(imp.Path.Value)
+		if err != nil || path != "testing" {
+			continue
+		}
+		name := "testing"
+		if imp.Name != nil {
+			name = imp.Name.Name
+		}
+		aliases[name] = true
+	}
+	return aliases
+}
+
+func isTestingT(expr ast.Expr, aliases map[string]bool) bool {
+	switch typed := expr.(type) {
+	case *ast.SelectorExpr:
+		base, _ := typed.X.(*ast.Ident)
+		return base != nil && aliases[base.Name] && typed.Sel.Name == "T"
+	case *ast.Ident:
+		return aliases["."] && typed.Name == "T"
+	default:
+		return false
+	}
 }
 
 func isTestName(name string) bool {

@@ -21,9 +21,11 @@ func TestPackageGraphOwnerLoadTestGraphFacts(t *testing.T) {
 		"same/value_test.go": strings.Join([]string{
 			"package same",
 			"",
-			"import \"testing\"",
+			"import testpkg \"testing\"",
 			"",
-			"func TestAdd(t *testing.T) {}",
+			"func TestAdd(t *testpkg.T) {}",
+			"func TestIgnoredBadSignature(t *badT) {}",
+			"type badT struct{}",
 			"",
 		}, "\n"),
 		"external/value.go": strings.Join([]string{
@@ -68,6 +70,9 @@ func TestPackageGraphOwnerLoadTestGraphFacts(t *testing.T) {
 	same := graph.PackageByPath("example.test/testgraph/same")
 	if same == nil || same.SamePackageTests == nil || same.ExternalPackageTests != nil || !same.HasTests() {
 		t.Fatalf("unexpected same-package facts: %#v", same)
+	}
+	if len(same.SamePackageTests.Tests) != 1 || same.SamePackageTests.Tests[0].Name != "TestAdd" {
+		t.Fatalf("same-package test discovery should keep only ordinary tests: %#v", same.SamePackageTests.Tests)
 	}
 	external := graph.PackageByPath("example.test/testgraph/external")
 	if external == nil || external.ExternalPackageTests == nil || external.SamePackageTests != nil || !external.HasTests() {
