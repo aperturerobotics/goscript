@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { Header, ResponseWriter } from '../index.js'
+import { Header, Header_Get, ResponseWriter } from '../index.js'
 import { Handler, Index } from './index.js'
 
 class writer implements ResponseWriter {
@@ -32,7 +32,7 @@ describe('net/http/pprof override', () => {
 
     Index(w, null)
 
-    expect(w.Header().Get('Content-Type')).toContain('text/html')
+    expect(Header_Get(w.Header(), 'Content-Type')).toContain('text/html')
     expect(w.String()).toContain('full goroutine stack dump')
   })
 
@@ -41,7 +41,7 @@ describe('net/http/pprof override', () => {
 
     Handler('goroutine').ServeHTTP(w, null)
 
-    expect(w.Header().Get('Content-Type')).toContain('text/plain')
+    expect(Header_Get(w.Header(), 'Content-Type')).toContain('text/plain')
     expect(w.String()).toContain('goroutine profile')
   })
 })

@@ -6,17 +6,21 @@ import {
   File,
   FileSystem,
   Header,
+  Header_Set,
   HandlerFunc_ServeHTTP,
   Get,
   MethodPost,
   NewRequest,
   NotFound,
+  ParseTime,
   Response,
   ResponseWriter,
   Server,
   StatusNotFound,
   StatusOK,
+  StatusServiceUnavailable,
   StatusText,
+  StatusTooManyRequests,
 } from './index.js'
 
 describe('net/http override', () => {
@@ -26,6 +30,8 @@ describe('net/http override', () => {
     expect(resp.StatusCode).toBe(200)
     expect(StatusText(resp.StatusCode)).toBe('OK')
     expect(StatusText(StatusNotFound)).toBe('Not Found')
+    expect(StatusText(StatusTooManyRequests)).toBe('Too Many Requests')
+    expect(StatusText(StatusServiceUnavailable)).toBe('Service Unavailable')
     expect(StatusText(599)).toBe('')
     expect(MethodPost).toBe('POST')
   })
@@ -50,7 +56,7 @@ describe('net/http override', () => {
 
   it('delegates client calls through RoundTripper implementations', () => {
     const [req] = NewRequest(MethodPost, 'https://example.invalid/path', null)
-    req!.Header.Set('User-Agent', 'goscript-test')
+    Header_Set(req!.Header, 'User-Agent', 'goscript-test')
     req!.RemoteAddr = '127.0.0.1:1234'
 
     const client = new Client({
@@ -98,6 +104,13 @@ describe('net/http override', () => {
     NotFound(writer, null)
 
     expect(writes).toEqual(['status:404', '404 page not found\n'])
+  })
+
+  it('parses HTTP dates', () => {
+    const [parsed, err] = ParseTime('Sun, 06 Nov 1994 08:49:37 GMT')
+
+    expect(err).toBeNull()
+    expect(parsed.Unix()).toBe(784111777)
   })
 
   it('exports file server interface shapes', () => {

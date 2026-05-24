@@ -3,16 +3,19 @@ import * as context from '@goscript/context/index.js'
 import * as errors from '@goscript/errors/index.js'
 import * as fs from '@goscript/io/fs/fs.js'
 import * as io from '@goscript/io/index.js'
+import * as time from '@goscript/time/index.js'
 
 export const StatusOK = 200
+export const StatusPartialContent = 206
 export const StatusMovedPermanently = 301
 export const StatusBadRequest = 400
 export const StatusRequestTimeout = 408
 export const StatusConflict = 409
 export const StatusNotFound = 404
-export const StatusInternalServerError = 500
-export const StatusPartialContent = 206
+export const StatusTooManyRequests = 429
 export const StatusRequestedRangeNotSatisfiable = 416
+export const StatusInternalServerError = 500
+export const StatusServiceUnavailable = 503
 
 export const MethodGet = 'GET'
 export const MethodPost = 'POST'
@@ -34,52 +37,44 @@ export function StatusText(code: number): string {
       return 'Conflict'
     case StatusNotFound:
       return 'Not Found'
-    case StatusInternalServerError:
-      return 'Internal Server Error'
+    case StatusTooManyRequests:
+      return 'Too Many Requests'
     case StatusPartialContent:
       return 'Partial Content'
     case StatusRequestedRangeNotSatisfiable:
       return 'Requested Range Not Satisfiable'
+    case StatusInternalServerError:
+      return 'Internal Server Error'
+    case StatusServiceUnavailable:
+      return 'Service Unavailable'
     default:
       return ''
   }
 }
 
-export class Header extends Map<string, $.Slice<string>> {
-  public Add(key: string, value: string): void {
-    const values = Array.from(this.get(key) ?? [])
-    values.push(value)
-    this.set(key, $.arrayToSlice(values))
-  }
+export type Header = Map<string, $.Slice<string>>
 
-  public Del(key: string): void {
-    this.delete(key)
-  }
-
-  public Get(key: string): string {
-    const values = this.get(key)
-    return values == null || values.length === 0 ? '' : String(values[0])
-  }
-
-  public Set(key: string, value: string): void {
-    this.set(key, $.arrayToSlice([value]))
-  }
+export const Header = Map as {
+  new(entries?: Iterable<readonly [string, $.Slice<string>]> | null): Header
 }
 
 export function Header_Add(h: Header, key: string, value: string): void {
-  h.Add(key, value)
+  const values = Array.from(h.get(key) ?? [])
+  values.push(value)
+  h.set(key, $.arrayToSlice(values))
 }
 
 export function Header_Del(h: Header, key: string): void {
-  h.Del(key)
+  h.delete(key)
 }
 
 export function Header_Get(h: Header, key: string): string {
-  return h.Get(key)
+  const values = h.get(key)
+  return values == null || values.length === 0 ? '' : String(values[0])
 }
 
 export function Header_Set(h: Header, key: string, value: string): void {
-  h.Set(key, value)
+  h.set(key, $.arrayToSlice([value]))
 }
 
 class QueryValues extends Map<string, $.Slice<string>> {
@@ -171,7 +166,7 @@ export class Request {
   }
 
   public UserAgent(): string {
-    return this.Header.Get('User-Agent')
+    return Header_Get(this.Header, 'User-Agent')
   }
 
   public FormValue(key: string): string {
@@ -382,8 +377,19 @@ export function Redirect(
   url: string,
   code: number,
 ): void {
-  w?.Header().Set('Location', url)
+  const header = w?.Header()
+  if (header != null) {
+    Header_Set(header, 'Location', url)
+  }
   w?.WriteHeader(code)
+}
+
+export function ParseTime(text: string): [time.Time, $.GoError] {
+  const date = new globalThis.Date(text)
+  if (isNaN(date.getTime())) {
+    return [new time.Time(), $.newError(`parsing time "${text}" as HTTP-date: cannot parse`)]
+  }
+  return [time.UnixMilli(date.getTime()), null]
 }
 
 export function NewRequest(
