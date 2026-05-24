@@ -110,7 +110,7 @@ func TestPackageGraphOwnerLoadTestGraphScopesDiagnostics(t *testing.T) {
 			"import \"testing\"",
 			"",
 			"func TestBroken(t *testing.T) {",
-			"\tMissing()",
+			"\tif {",
 			"}",
 			"",
 		}, "\n"),

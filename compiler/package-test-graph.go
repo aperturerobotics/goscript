@@ -48,8 +48,6 @@ func (o *PackageGraphOwner) LoadTestGraph(ctx context.Context, req *CompileReque
 			packages.NeedCompiledGoFiles |
 			packages.NeedImports |
 			packages.NeedDeps |
-			packages.NeedTypes |
-			packages.NeedTypesSizes |
 			packages.NeedSyntax |
 			packages.NeedForTest |
 			packages.NeedModule,
