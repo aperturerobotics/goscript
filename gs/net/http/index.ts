@@ -1,21 +1,40 @@
 import * as $ from '@goscript/builtin/index.js'
+import * as context from '@goscript/context/index.js'
 import * as errors from '@goscript/errors/index.js'
 import * as io from '@goscript/io/index.js'
 
 export const StatusOK = 200
+export const StatusMovedPermanently = 301
+export const StatusBadRequest = 400
+export const StatusRequestTimeout = 408
+export const StatusConflict = 409
 export const StatusNotFound = 404
+export const StatusInternalServerError = 500
 export const StatusPartialContent = 206
 export const StatusRequestedRangeNotSatisfiable = 416
 
 export const MethodGet = 'GET'
 export const MethodPost = 'POST'
 
+export const ErrNotSupported = errors.New('feature not supported')
+export const ServerContextKey = Symbol('net/http ServerContextKey')
+
 export function StatusText(code: number): string {
   switch (code) {
     case StatusOK:
       return 'OK'
+    case StatusMovedPermanently:
+      return 'Moved Permanently'
+    case StatusBadRequest:
+      return 'Bad Request'
+    case StatusRequestTimeout:
+      return 'Request Timeout'
+    case StatusConflict:
+      return 'Conflict'
     case StatusNotFound:
       return 'Not Found'
+    case StatusInternalServerError:
+      return 'Internal Server Error'
     case StatusPartialContent:
       return 'Partial Content'
     case StatusRequestedRangeNotSatisfiable:
@@ -62,6 +81,49 @@ export function Header_Set(h: Header, key: string, value: string): void {
   h.Set(key, value)
 }
 
+class QueryValues extends Map<string, $.Slice<string>> {
+  public Add(key: string, value: string): void {
+    const values = Array.from(this.get(key) ?? [])
+    values.push(value)
+    this.set(key, $.arrayToSlice(values))
+  }
+
+  public Get(key: string): string {
+    const values = this.get(key)
+    return values == null || values.length === 0 ? '' : String(values[0])
+  }
+}
+
+class RequestURL {
+  public Path: string
+  public RawQuery: string
+
+  constructor(path: string, rawQuery: string) {
+    this.Path = path
+    this.RawQuery = rawQuery
+  }
+
+  public Query(): QueryValues {
+    const values = new QueryValues()
+    const params = new URLSearchParams(this.RawQuery)
+    params.forEach((value, key) => values.Add(key, value))
+    return values
+  }
+
+  public clone(): RequestURL {
+    return new RequestURL(this.Path, this.RawQuery)
+  }
+}
+
+function parseRequestURL(rawURL: string): RequestURL {
+  try {
+    const parsed = new URL(rawURL, 'http://goscript.invalid')
+    return new RequestURL(parsed.pathname, parsed.search.startsWith('?') ? parsed.search.slice(1) : parsed.search)
+  } catch {
+    return new RequestURL('', '')
+  }
+}
+
 export interface ResponseWriter {
   Header(): Header
   Write(p: $.Slice<number>): [number, $.GoError]
@@ -73,12 +135,37 @@ export class Request {
   public URL: any
   public Body: io.Reader | null
   public Header: Header
+  private ctx: context.Context
 
-  constructor(init?: Partial<Request>) {
+  constructor(init?: Partial<Request> & { ctx?: context.Context }) {
     this.Method = init?.Method ?? ''
     this.URL = init?.URL ?? null
     this.Body = init?.Body ?? null
     this.Header = init?.Header ?? new Header()
+    this.ctx = (init as { ctx?: context.Context } | undefined)?.ctx ?? context.Background()
+  }
+
+  public Context(): context.Context {
+    return this.ctx
+  }
+
+  public WithContext(ctx: context.Context): Request {
+    return this.Clone(ctx)
+  }
+
+  public Clone(ctx: context.Context): Request {
+    return new Request({
+      Method: this.Method,
+      URL: this.URL?.clone != null ? this.URL.clone() : this.URL == null ? null : { ...this.URL },
+      Body: this.Body,
+      Header: this.Header,
+      ctx,
+    })
+  }
+
+  public FormValue(key: string): string {
+    const query = this.URL?.Query
+    return typeof query === 'function' ? query.call(this.URL).Get(key) : ''
   }
 }
 
@@ -131,9 +218,11 @@ export function HandlerFunc_ServeHTTP(
 
 export class Server {
   public Handler: Handler | null
+  public WriteTimeout: number
 
   constructor(init?: Partial<Server>) {
     this.Handler = init?.Handler ?? null
+    this.WriteTimeout = init?.WriteTimeout ?? 0
   }
 
   public ListenAndServe(): $.GoError {
@@ -142,6 +231,96 @@ export class Server {
 
   public Close(): $.GoError {
     return null
+  }
+}
+
+export class PushOptions {
+  public Header: Header
+
+  constructor(init?: Partial<PushOptions>) {
+    this.Header = init?.Header ?? new Header()
+  }
+}
+
+export interface Flusher {
+  Flush(): void
+}
+
+export interface Hijacker {
+  Hijack(): [any, any, $.GoError]
+}
+
+export interface Pusher {
+  Push(target: string, opts: PushOptions | $.VarRef<PushOptions> | null): $.GoError
+}
+
+export class ResponseController {
+  public rw: ResponseWriter | null
+
+  constructor(rw: ResponseWriter | null) {
+    this.rw = rw
+  }
+
+  public Flush(): $.GoError {
+    const flusher = this.rw as (Flusher & ResponseWriter) | null
+    flusher?.Flush?.()
+    return null
+  }
+}
+
+export function NewResponseController(rw: ResponseWriter | null): ResponseController {
+  return new ResponseController(rw)
+}
+
+export class ServeMux implements Handler {
+  private handlers = new Map<string, Handler>()
+
+  public Handle(pattern: string, handler: Handler | null): void {
+    if (handler != null) {
+      this.handlers.set(pattern, handler)
+    }
+  }
+
+  public HandleFunc(pattern: string, handler: HandlerFunc): void {
+    this.Handle(pattern, { ServeHTTP: handler })
+  }
+
+  public Handler(r: Request | $.VarRef<Request> | null): [Handler | null, string] {
+    const req = $.pointerValue<Request | null>(r)
+    const path = req?.URL?.Path ?? ''
+    const handler = this.handlers.get(path) ?? null
+    return [handler, handler == null ? '' : path]
+  }
+
+  public ServeHTTP(w: ResponseWriter | null, r: Request | $.VarRef<Request> | null): void | Promise<void> {
+    const [handler] = this.Handler(r)
+    if (handler == null) {
+      NotFound(w, r)
+      return
+    }
+    return handler.ServeHTTP(w, r)
+  }
+}
+
+const defaultServeMux = new ServeMux()
+
+export function NewServeMux(): ServeMux {
+  return new ServeMux()
+}
+
+export function HandleFunc(pattern: string, handler: HandlerFunc): void {
+  defaultServeMux.HandleFunc(pattern, handler)
+}
+
+export function StripPrefix(prefix: string, handler: Handler | null): Handler {
+  return {
+    ServeHTTP(w, r) {
+      const req = $.pointerValue<Request | null>(r)
+      if (req?.URL != null && typeof req.URL.Path === 'string' && req.URL.Path.startsWith(prefix)) {
+        req.URL = { ...req.URL, Path: req.URL.Path.slice(prefix.length) || '/' }
+      }
+      return handler?.ServeHTTP(w, req)
+    },
   }
 }
 
@@ -154,6 +333,16 @@ export function NotFound(w: ResponseWriter | null, _r: Request | $.VarRef<Reques
   Error(w, '404 page not found', StatusNotFound)
 }
 
+export function Redirect(
+  w: ResponseWriter | null,
+  _r: Request | $.VarRef<Request> | null,
+  url: string,
+  code: number,
+): void {
+  w?.Header().Set('Location', url)
+  w?.WriteHeader(code)
+}
+
 export function NewRequest(
   method: string,
   url: string,
@@ -163,7 +352,7 @@ export function NewRequest(
 }
 
 export function NewRequestWithContext(
-  _ctx: unknown,
+  _ctx: context.Context,
   method: string,
   url: string,
   body: io.Reader | null,
@@ -171,13 +360,7 @@ export function NewRequestWithContext(
   if (method === '') {
     method = MethodGet
   }
-  let path: string
-  try {
-    path = new URL(url).pathname
-  } catch {
-    path = ''
-  }
-  return [new Request({ Method: method, URL: { Path: path }, Body: body }), null]
+  return [new Request({ Method: method, URL: parseRequestURL(url), Body: body, ctx: _ctx }), null]
 }
 
 export function Get(_url: string): [Response | null, $.GoError] {

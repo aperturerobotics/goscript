@@ -1,10 +1,12 @@
 import * as $ from '@goscript/builtin/index.js'
+import * as bytes from '@goscript/bytes/index.js'
 import * as errors from '@goscript/errors/index.js'
 import * as http from '@goscript/net/http/index.js'
+import * as io from '@goscript/io/index.js'
 
 export class ResponseRecorder implements http.ResponseWriter {
   public Code = 200
-  public Body: $.Slice<number> = null
+  public Body = new bytes.Buffer()
   private headerMap = new http.Header()
 
   public Header(): http.Header {
@@ -12,17 +14,31 @@ export class ResponseRecorder implements http.ResponseWriter {
   }
 
   public Write(p: $.Slice<number>): [number, $.GoError] {
-    this.Body = $.append(this.Body, p)
-    return [$.len(p), null]
+    return this.Body.Write(p)
   }
 
   public WriteHeader(statusCode: number): void {
     this.Code = statusCode
   }
+
+  public Result(): http.Response {
+    return new http.Response({
+      Header: this.headerMap,
+      StatusCode: this.Code,
+    })
+  }
 }
 
 export function NewRecorder(): ResponseRecorder {
   return new ResponseRecorder()
+}
+
+export function NewRequest(method: string, target: string, body: io.Reader | null): http.Request {
+  const [req, err] = http.NewRequest(method, target, body)
+  if (err != null || req == null) {
+    throw err ?? errors.New('net/http/httptest: NewRequest returned nil request')
+  }
+  return req
 }
 
 export class Server {
