@@ -594,18 +594,7 @@ export function SortStableFunc<T>(
   if (s === null || s === undefined) {
     return
   }
-  const sorted = (s as any as T[])
-    .map((value, index) => ({ value, index }))
-    .sort((a, b) => {
-      const result = syncNumber(cmp(a.value, b.value))
-      if (result !== 0) {
-        return result
-      }
-      return a.index - b.index
-    })
-  for (let i = 0; i < sorted.length; i++) {
-    ;(s as any)[i] = sorted[i].value
-  }
+  ;(s as any as T[]).sort((a, b) => syncNumber(cmp(a, b)))
 }
 
 function clearValue<T>(s: $.Slice<T>): T | null {
