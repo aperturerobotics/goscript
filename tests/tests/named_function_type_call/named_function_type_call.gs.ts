@@ -351,7 +351,7 @@ export async function main(): globalThis.Promise<void> {
 	let fileInfo: MockFileInfo | $.VarRef<MockFileInfo> | null = new MockFileInfo({name: "test.txt", size: $.int(50), isDir: false})
 
 	// Test the walk function with custom WalkFunc
-	let walkFunc = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {
+	let walkFunc: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {
 		if (info != null) {
 			$.println("Walking:", path, "size:", $.int($.pointerValue<Exclude<FileInfo, null>>(info).Size()))
 		}
@@ -367,7 +367,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test with processFiles
-	let processFunc = $.functionValue((pattern: string): $.GoError => {
+	let processFunc: ((pattern: string) => $.GoError | globalThis.Promise<$.GoError>) | null = $.functionValue((pattern: string): $.GoError => {
 		$.println("Processing pattern:", pattern)
 		return null
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: ["error"] })

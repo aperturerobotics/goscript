@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 export async function main(): globalThis.Promise<void> {
 	using __defer = new $.DisposableStack()
 	__defer.defer(() => { $.println("deferred") })
-	let release = $.functionValue((name: string): void => {
+	let release: ((name: string) => void) | null = $.functionValue((name: string): void => {
 		using __defer = new $.DisposableStack()
 		__defer.defer(() => { $.println("func deferred", name) })
 		$.println("func body", name)

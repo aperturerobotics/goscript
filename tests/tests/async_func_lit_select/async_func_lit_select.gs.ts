@@ -8,7 +8,7 @@ import "@goscript/fmt/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	if (false) {
-		let fn = $.functionValue(async (): globalThis.Promise<boolean> => {
+		let fn: (() => boolean | globalThis.Promise<boolean>) | null = $.functionValue(async (): globalThis.Promise<boolean> => {
 			const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, boolean>([
 				{
 					id: -1,

@@ -7,7 +7,7 @@ export type Greeter = ((name: string) => string | globalThis.Promise<string>) | 
 
 export async function main(): globalThis.Promise<void> {
 	// 2. Create an inline variable with the inline function satisfying that type.
-	let theInlineVar = $.functionValue((name: string): string => {
+	let theInlineVar: ((name: string) => string | globalThis.Promise<string>) | null = $.functionValue((name: string): string => {
 		return "Hello, " + name
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 
@@ -19,7 +19,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test with a different signature
 	type Adder = ((a: number, b: number) => number | globalThis.Promise<number>) | null
-	let theInlineAdder = $.functionValue((a: number, b: number): number => {
+	let theInlineAdder: ((a: number, b: number) => number | globalThis.Promise<number>) | null = $.functionValue((a: number, b: number): number => {
 		return a + b
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	let castedAdder = $.namedFunction(theInlineAdder, "main.Adder")

@@ -29,7 +29,7 @@ export async function main(): globalThis.Promise<void> {
 	wg.value.Add(numWorkers)
 
 	// Function that will be run by each worker
-	let worker = $.functionValue(async (id: number): globalThis.Promise<void> => {
+	let worker: ((id: number) => void) | null = $.functionValue(async (id: number): globalThis.Promise<void> => {
 		await using __defer = new $.AsyncDisposableStack()
 		__defer.defer(() => { wg.value.Done() })
 

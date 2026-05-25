@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): globalThis.Promise<void> {
-	let run = $.functionValue((): void => {
+	let run: (() => void) | null = $.functionValue((): void => {
 		class item {
 			public get name(): string {
 				return this._fields.name.value

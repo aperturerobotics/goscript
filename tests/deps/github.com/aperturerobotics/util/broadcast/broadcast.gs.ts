@@ -58,7 +58,7 @@ export class Broadcast {
 
 	public async HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null) => void) | null): globalThis.Promise<void> {
 		const c: Broadcast | $.VarRef<Broadcast> | null = this
-		let holdBroadcastLock = $.functionValue(async (lock: boolean): globalThis.Promise<void> => {
+		let holdBroadcastLock: ((lock: boolean) => void) | null = $.functionValue(async (lock: boolean): globalThis.Promise<void> => {
 			using __defer = new $.DisposableStack()
 			if (lock) {
 				await $.pointerValue<Broadcast>(c).mtx.Lock()

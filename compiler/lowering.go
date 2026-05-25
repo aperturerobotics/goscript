@@ -3191,14 +3191,12 @@ func (o *LoweringOwner) shortDeclTypeAnnotation(ctx lowerFileContext, lhs ast.Ex
 	if obj == nil {
 		return ""
 	}
-	if signature := unnamedSignatureForType(obj.Type()); signature != nil && rhsIsMethodValue(ctx, rhs) {
-		return ": " + o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
-	}
 	if signature := unnamedSignatureForType(obj.Type()); signature != nil {
-		value := ctx.model.values[obj]
-		if value != nil && value.asyncCompatibleFunction {
-			return ": " + o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+		typ := o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+		if ctx.model.needsVarRef[obj] {
+			typ = "$.VarRef<" + typ + ">"
 		}
+		return ": " + typ
 	}
 	if !shortDeclNeedsTypeAnnotation(obj.Type()) {
 		return ""

@@ -70,7 +70,7 @@ export async function wrapNew(__typeArgs: $.GenericTypeArgs | undefined, newValu
 }
 
 export async function main(): globalThis.Promise<void> {
-	let fn = await wrapNew(undefined, asyncBox)
+	let fn: (() => Value | null | globalThis.Promise<Value | null>) | null = await wrapNew(undefined, asyncBox)
 	$.println($.pointerValue<Exclude<Value, null>>((await fn!())).Value())
 }
 

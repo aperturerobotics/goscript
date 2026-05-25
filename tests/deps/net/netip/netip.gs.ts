@@ -874,7 +874,7 @@ export class parseAddrError {
 
 	public async Error(): globalThis.Promise<string> {
 		const err = this
-		let q = strconv.Quote
+		let q: ((s: string) => string | globalThis.Promise<string>) | null = strconv.Quote
 		if (!$.stringEqual(err.at, "")) {
 			return ((((("ParseAddr(" + await q!(err.in)) + "): ") + err.msg) + " (at ") + await q!(err.at)) + ")"
 		}

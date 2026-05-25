@@ -150,14 +150,14 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Final counter:", counter)
 
 	// Test OnceFunc
-	let onceFunc = sync.OnceFunc($.functionValue((): void => {
+	let onceFunc: (() => void) | null = sync.OnceFunc($.functionValue((): void => {
 		$.println("OnceFunc executed")
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))
 	await onceFunc!()
 	await onceFunc!()
 
 	// Test OnceValue
-	let onceValue = sync.OnceValue($.functionValue((): number => {
+	let onceValue: (() => number | globalThis.Promise<number>) | null = sync.OnceValue($.functionValue((): number => {
 		$.println("OnceValue function executed")
 		return 42
 	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))

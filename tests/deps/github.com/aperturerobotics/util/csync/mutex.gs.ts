@@ -78,7 +78,7 @@ export class Mutex {
 			}
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 
-		let release = $.functionValue(async (): globalThis.Promise<void> => {
+		let release: (() => void) | null = $.functionValue(async (): globalThis.Promise<void> => {
 			let pre = $.int(status.value.Swap($.int(2, 32)), 32)
 			// 1: we have the lock
 			if ($.int(pre, 32) != $.int(1, 32)) {
@@ -233,7 +233,7 @@ export class MutexLocker {
 	public async Lock(): globalThis.Promise<void> {
 		const l: MutexLocker | $.VarRef<MutexLocker> | null = this
 		let __goscriptTuple0: any = await Mutex.prototype.Lock.call($.pointerValue<MutexLocker>(l).m, context.Background())
-		let release = $.varRef(__goscriptTuple0[0])
+		let release: $.VarRef<(() => void) | null> = $.varRef(__goscriptTuple0[0])
 		let err = __goscriptTuple0[1]
 		if (err != null) {
 			$.panic((errors.Wrap($.pointerValueOrNil(err)!, "csync: failed MutexLocker Lock") as any))

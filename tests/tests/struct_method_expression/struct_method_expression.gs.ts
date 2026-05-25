@@ -44,7 +44,7 @@ export class worker {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let fn = $.functionValue((w: worker | $.VarRef<worker> | null, v: number): number => $.pointerValue<worker>(w).add(v), { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "main.worker" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
+	let fn: ((w: worker | $.VarRef<worker> | null, v: number) => number | globalThis.Promise<number>) | null = $.functionValue((w: worker | $.VarRef<worker> | null, v: number): number => $.pointerValue<worker>(w).add(v), { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "main.worker" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
 	$.println("method expr:", await fn!(new worker({base: 5}), 7))
 }
 

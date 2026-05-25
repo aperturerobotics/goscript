@@ -105,7 +105,7 @@ export class RWMutex {
 			}
 		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
 
-		let release = $.functionValue(async (): globalThis.Promise<void> => {
+		let release: (() => void) | null = $.functionValue(async (): globalThis.Promise<void> => {
 			let pre = $.int(status.value.Swap($.int(2, 32)), 32)
 			if ($.int(pre, 32) == $.int(2, 32)) {
 				return
@@ -316,7 +316,7 @@ export class RWMutexLocker {
 			$.pointerValue<RWMutexLocker>(l).mtx.Unlock()
 			$.panic("csync: unlock of unlocked RWMutexLocker")
 		}
-		let rel = $.pointerValue<RWMutexLocker>(l).rels![$.len($.pointerValue<RWMutexLocker>(l).rels) - 1]
+		let rel: (() => void) | null = $.pointerValue<RWMutexLocker>(l).rels![$.len($.pointerValue<RWMutexLocker>(l).rels) - 1]
 		if ($.len($.pointerValue<RWMutexLocker>(l).rels) == 1) {
 			$.pointerValue<RWMutexLocker>(l).rels = null
 		} else {

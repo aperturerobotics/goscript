@@ -135,7 +135,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test Swapper function
 	let testSlice: $.Slice<number> = $.arrayToSlice<number>([1, 2, 3, 4, 5])
-	let swapper = reflect.Swapper($.interfaceValue<any>(testSlice, "[]int"))
+	let swapper: ((i: number, j: number) => void) | null = reflect.Swapper($.interfaceValue<any>(testSlice, "[]int"))
 	$.println("Before swap:", testSlice![0], testSlice![4])
 	await swapper!(0, 4)
 	$.println("After swap:", testSlice![0], testSlice![4])
@@ -214,7 +214,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Array type len:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.ArrayOf(3, $.pointerValueOrNil(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}))!)).Len())
 
 	// Test function type
-	let fn = $.functionValue((_p0: number): string => {
+	let fn: ((_p0: number) => string | globalThis.Promise<string>) | null = $.functionValue((_p0: number): string => {
 		return ""
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
 	let fnVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(fn, "func(int) string"))))

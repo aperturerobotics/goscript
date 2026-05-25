@@ -12,7 +12,7 @@ export async function main(): globalThis.Promise<void> {
 	let value = "someValue"
 	let err: $.GoError = null as $.GoError
 
-	let getnum = $.functionValue((v: string, flag: boolean): [number, string, $.GoError] => {
+	let getnum: ((v: string, flag: boolean) => [number, string, $.GoError] | globalThis.Promise<[number, string, $.GoError]>) | null = $.functionValue((v: string, flag: boolean): [number, string, $.GoError] => {
 		if (flag) {
 			return [12, v + "_processed_flag_true", null]
 		}

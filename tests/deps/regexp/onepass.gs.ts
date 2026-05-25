@@ -325,7 +325,7 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
 
 	let ix = -1
-	let extend = $.functionValue((newLow: $.VarRef<number> | null, newArray: $.VarRef<$.Slice<number>> | null, pc: number): boolean => {
+	let extend: ((newLow: $.VarRef<number> | null, newArray: $.VarRef<$.Slice<number>> | null, pc: number) => boolean | globalThis.Promise<boolean>) | null = $.functionValue((newLow: $.VarRef<number> | null, newArray: $.VarRef<$.Slice<number>> | null, pc: number): boolean => {
 		if ((ix > 0) && (($.pointerValue<$.Slice<number>>(newArray))![$.pointerValue<number>(newLow)] <= merged![ix])) {
 			return false
 		}

@@ -17,7 +17,7 @@ export function makeLookup(): ((_p0: boolean) => [number, string] | globalThis.P
 }
 
 export async function main(): globalThis.Promise<void> {
-	let lookup = makeLookup()
+	let lookup: ((_p0: boolean) => [number, string] | globalThis.Promise<[number, string]>) | null = makeLookup()
 
 	let [value, label] = await lookup!(false)
 	$.println(value)
