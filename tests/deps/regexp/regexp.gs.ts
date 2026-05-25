@@ -1883,12 +1883,12 @@ export function extract(str: string): [string, number, string, boolean] {
 
 	// Parse number.
 	num = 0
-	for (let i = 0; i < $.len(name); i++) {
-		if ((($.indexStringOrBytes(name, i) < 48) || (57 < $.indexStringOrBytes(name, i))) || (num >= 1e8)) {
+	for (let __goscriptShadow3 = 0; __goscriptShadow3 < $.len(name); __goscriptShadow3++) {
+		if ((($.indexStringOrBytes(name, __goscriptShadow3) < 48) || (57 < $.indexStringOrBytes(name, __goscriptShadow3))) || (num >= 1e8)) {
 			num = -1
 			break
 		}
-		num = ((num * 10) + $.int($.indexStringOrBytes(name, i))) - 48
+		num = ((num * 10) + $.int($.indexStringOrBytes(name, __goscriptShadow3))) - 48
 	}
 	// Disallow leading zeros.
 	if (($.uint($.indexStringOrBytes(name, 0), 8) == $.uint(48, 8)) && ($.len(name) > 1)) {

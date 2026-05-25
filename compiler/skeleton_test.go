@@ -448,6 +448,47 @@ func TestCompilePackagesAssignsImportedPackageVarsThroughSetters(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAliasesForInitShortDeclShadow(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/forinitshadow\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func checksum(n int) int {",
+			"  total := 0",
+			"  for n := n - 4; total <= n; total++ {",
+			"    total += n",
+			"  }",
+			"  return total + n",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "forinitshadow", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "for (let n = n - 4") {
+		t.Fatalf("for init short declaration references itself:\n%s", text)
+	}
+	if !regexp.MustCompile(`let __goscriptShadow\d+ = n\s+for \(let __goscriptShadow\d+ = __goscriptShadow\d+ - 4; total <= __goscriptShadow\d+; total\+\+\)`).MatchString(text) {
+		t.Fatalf("missing aliased for init shadow declaration:\n%s", text)
+	}
+	if !strings.Contains(text, "return total + n") {
+		t.Fatalf("outer n was not preserved after the loop:\n%s", text)
+	}
+}
+
 func TestCompilePackagesReadsShadowedVarRefStructFieldsOnce(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/shadowvarreffield\n\ngo 1.25.3\n",

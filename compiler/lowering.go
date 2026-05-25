@@ -3949,6 +3949,19 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 		loopLabel = ctx.tempName("Loop")
 		bodyCtx = bodyCtx.withLoopLabel(loopLabel)
 	}
+	initCtx := ctx
+	loopCtx := ctx
+	var initPrelude []loweredStmt
+	if assign, ok := stmt.Init.(*ast.AssignStmt); ok && assign.Tok == token.DEFINE {
+		oldAliases, prelude := o.lowerShortDeclShadowAliases(ctx, assign)
+		newAliases := o.lowerShortDeclNewShadowAliases(ctx, assign)
+		if len(oldAliases) != 0 || len(newAliases) != 0 {
+			initCtx = ctx.withIdentAliases(oldAliases).withIdentRefAliases(newAliases)
+			loopCtx = ctx.withIdentRefAliases(newAliases)
+			bodyCtx = bodyCtx.withIdentRefAliases(newAliases)
+			initPrelude = prelude
+		}
+	}
 	if stmt.Init == nil && stmt.Post == nil {
 		cond := "true"
 		var diagnostics []Diagnostic
@@ -3973,19 +3986,19 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 	init := ""
 	var diagnostics []Diagnostic
 	if stmt.Init != nil {
-		lowered, initDiagnostics := o.lowerForInitStmt(ctx, stmt.Init)
+		lowered, initDiagnostics := o.lowerForInitStmt(initCtx, stmt.Init)
 		diagnostics = append(diagnostics, initDiagnostics...)
 		init = lowered
 	}
 	cond := ""
 	if stmt.Cond != nil {
 		var condDiagnostics []Diagnostic
-		cond, condDiagnostics = o.lowerExpr(ctx, stmt.Cond)
+		cond, condDiagnostics = o.lowerExpr(loopCtx, stmt.Cond)
 		diagnostics = append(diagnostics, condDiagnostics...)
 	}
 	post := ""
 	if stmt.Post != nil {
-		lowered, postDiagnostics := o.lowerForPostStmt(ctx, stmt.Post)
+		lowered, postDiagnostics := o.lowerForPostStmt(loopCtx, stmt.Post)
 		diagnostics = append(diagnostics, postDiagnostics...)
 		post = lowered
 	}
@@ -3995,11 +4008,15 @@ func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (l
 	if loopLabel != "" {
 		text = loopLabel + ": " + text
 	}
-	return loweredStmt{
+	forStmt := loweredStmt{
 		hasBlock: true,
 		text:     text,
 		children: body,
-	}, diagnostics
+	}
+	if len(initPrelude) != 0 {
+		return loweredStmt{children: append(initPrelude, forStmt)}, diagnostics
+	}
+	return forStmt, diagnostics
 }
 
 func (o *LoweringOwner) lowerForInitStmt(ctx lowerFileContext, stmt ast.Stmt) (string, []Diagnostic) {
