@@ -46,6 +46,8 @@ type PackagePhases struct {
 type PackageResult struct {
 	// PackagePath is the package under test.
 	PackagePath string
+	// SourceDir is the package source directory used as the runtime cwd.
+	SourceDir string
 	// TestPackagePath is the package variant that contains test functions.
 	TestPackagePath string
 	// TestImports are direct imports from selected test variants.

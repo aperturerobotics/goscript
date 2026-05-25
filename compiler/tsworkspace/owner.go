@@ -238,6 +238,8 @@ func sourceDirectory() string {
 
 const nodeAmbientTypes = `declare const process: {
   env?: Record<string, string | undefined>
+  chdir?: (directory: string) => void
+  cwd?: () => string
   exit?: (code?: number) => never
 }
 

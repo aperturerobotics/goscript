@@ -574,6 +574,7 @@ func packageResults(testGraph *compiler.PackageTestGraph, runPattern *regexp.Reg
 	results := make([]PackageResult, 0, len(testGraph.Packages))
 	for _, pkg := range testGraph.Packages {
 		result := newSkippedPackageResult(pkg.PackagePath)
+		result.SourceDir = packageSourceDir(pkg)
 		result.Tests = append(result.Tests, packageVariantTests(pkg.SamePackageTests, runPattern)...)
 		result.Tests = append(result.Tests, packageVariantTests(pkg.ExternalPackageTests, runPattern)...)
 		result.TestImports = packageTestImports(pkg)
@@ -597,6 +598,39 @@ func packageResults(testGraph *compiler.PackageTestGraph, runPattern *regexp.Reg
 		results = append(results, result)
 	}
 	return results
+}
+
+func packageSourceDir(pkg *compiler.PackageTestGraphPackage) string {
+	if pkg == nil {
+		return ""
+	}
+	for _, files := range [][]string{
+		pkg.CompiledGoFiles,
+		pkg.GoFiles,
+		testVariantCompiledGoFiles(pkg.SamePackageTests),
+		testVariantGoFiles(pkg.SamePackageTests),
+		testVariantCompiledGoFiles(pkg.ExternalPackageTests),
+		testVariantGoFiles(pkg.ExternalPackageTests),
+	} {
+		if len(files) != 0 && files[0] != "" {
+			return filepath.Dir(files[0])
+		}
+	}
+	return ""
+}
+
+func testVariantCompiledGoFiles(variant *compiler.PackageTestGraphVariant) []string {
+	if variant == nil {
+		return nil
+	}
+	return variant.CompiledGoFiles
+}
+
+func testVariantGoFiles(variant *compiler.PackageTestGraphVariant) []string {
+	if variant == nil {
+		return nil
+	}
+	return variant.GoFiles
 }
 
 func newSkippedPackageResult(packagePath string) PackageResult {
@@ -778,6 +812,7 @@ func renderRunner(result PackageResult, req *normalizedRequest) string {
 		b.WriteString("\n")
 	}
 	b.WriteString("\n")
+	writeProcessChdir(&b, result.SourceDir)
 	b.WriteString("const result = await runTests(")
 	b.WriteString(strconv.Quote(result.PackagePath))
 	b.WriteString(", [\n")
@@ -862,7 +897,10 @@ func renderCombinedRunner(result *Result, indexes []int, req *normalizedRequest)
 	b.WriteString(strconv.Quote(combinedRuntimeResultPrefix))
 	b.WriteString("\n")
 	b.WriteString("const __goscriptOriginalLog = console.log\n")
-	b.WriteString("async function __goscriptRunPackage(packagePath, tests) {\n")
+	b.WriteString("async function __goscriptRunPackage(packagePath, packageDir, tests) {\n")
+	b.WriteString("\tif (packageDir && typeof process !== \"undefined\" && process.chdir) {\n")
+	b.WriteString("\t\tprocess.chdir(packageDir)\n")
+	b.WriteString("\t}\n")
 	b.WriteString("\tconst logs = []\n")
 	b.WriteString("\tconst startedAt = Date.now()\n")
 	b.WriteString("\tlet ok = false\n")
@@ -896,6 +934,8 @@ func renderCombinedRunner(result *Result, indexes []int, req *normalizedRequest)
 		pkg := result.Packages[idx]
 		b.WriteString("await __goscriptRunPackage(")
 		b.WriteString(strconv.Quote(pkg.PackagePath))
+		b.WriteString(", ")
+		b.WriteString(strconv.Quote(pkg.SourceDir))
 		b.WriteString(", [\n")
 		for testIdx, test := range pkg.Tests {
 			b.WriteString("\t{ name: ")
@@ -914,6 +954,17 @@ func renderCombinedRunner(result *Result, indexes []int, req *normalizedRequest)
 	}
 	b.WriteString("if (typeof process !== \"undefined\" && process.exit) {\n\tprocess.exit(0)\n}\n")
 	return b.String()
+}
+
+func writeProcessChdir(b *strings.Builder, dir string) {
+	if dir == "" {
+		return
+	}
+	b.WriteString("if (typeof process !== \"undefined\" && process.chdir) {\n")
+	b.WriteString("\tprocess.chdir(")
+	b.WriteString(strconv.Quote(dir))
+	b.WriteString(")\n")
+	b.WriteString("}\n")
 }
 
 func runnerImportAliases(result *Result, indexes []int) map[string]string {

@@ -1056,6 +1056,57 @@ func TestPackageExecutionIndexesPrioritizesLargerTestPackages(t *testing.T) {
 	}
 }
 
+func TestRenderRunnerChangesToPackageSourceDir(t *testing.T) {
+	req := &normalizedRequest{}
+	runner := renderRunner(PackageResult{
+		PackagePath: "example.test/pkg",
+		SourceDir:   "/workspace/pkg",
+		Tests: []Test{{
+			Name:        "TestCwd",
+			PackagePath: "example.test/pkg",
+		}},
+	}, req)
+
+	if !strings.Contains(runner, "process.chdir(\"/workspace/pkg\")") {
+		t.Fatalf("expected runner to chdir to package source dir: %s", runner)
+	}
+	if !strings.Contains(runner, "await runTests(\"example.test/pkg\"") {
+		t.Fatalf("expected runner to execute package tests: %s", runner)
+	}
+}
+
+func TestRenderCombinedRunnerChangesToEachPackageSourceDir(t *testing.T) {
+	req := &normalizedRequest{}
+	runner := renderCombinedRunner(&Result{Packages: []PackageResult{
+		{
+			PackagePath: "example.test/one",
+			SourceDir:   "/workspace/one",
+			Tests: []Test{{
+				Name:        "TestOne",
+				PackagePath: "example.test/one",
+			}},
+		},
+		{
+			PackagePath: "example.test/two",
+			SourceDir:   "/workspace/two",
+			Tests: []Test{{
+				Name:        "TestTwo",
+				PackagePath: "example.test/two",
+			}},
+		},
+	}}, []int{0, 1}, req)
+
+	if !strings.Contains(runner, "await __goscriptRunPackage(\"example.test/one\", \"/workspace/one\"") {
+		t.Fatalf("expected combined runner to pass first package source dir: %s", runner)
+	}
+	if !strings.Contains(runner, "await __goscriptRunPackage(\"example.test/two\", \"/workspace/two\"") {
+		t.Fatalf("expected combined runner to pass second package source dir: %s", runner)
+	}
+	if !strings.Contains(runner, "process.chdir(packageDir)") {
+		t.Fatalf("expected combined runner to chdir before each package: %s", runner)
+	}
+}
+
 func TestRenderTypeScriptProjectDisablesAmbientTypePackages(t *testing.T) {
 	req := &normalizedRequest{
 		WorkDir: "/work",
