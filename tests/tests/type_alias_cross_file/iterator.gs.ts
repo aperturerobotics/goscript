@@ -9,7 +9,7 @@ import * as __goscript_alias from "./alias.gs.ts"
 import "@goscript/github.com/aperturerobotics/goscript/tests/tests/type_alias_cross_file/subpkg/index.js"
 import "./alias.gs.ts"
 
-export type Reader = null | {
+export type Reader = {
 	Val(): __goscript_alias.Value
 }
 

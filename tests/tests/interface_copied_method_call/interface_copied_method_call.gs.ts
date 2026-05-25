@@ -32,7 +32,7 @@ export class task {
 	)
 }
 
-export type runner = null | {
+export type runner = {
 	Run(): void
 }
 

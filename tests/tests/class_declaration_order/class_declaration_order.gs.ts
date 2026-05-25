@@ -32,7 +32,7 @@ export class lateType {
 	)
 }
 
-export type named = null | {
+export type named = {
 	Name(): string
 }
 

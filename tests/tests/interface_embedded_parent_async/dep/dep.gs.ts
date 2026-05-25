@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Directive = null | {
+export type Directive = {
 	Validate(): $.GoError | globalThis.Promise<$.GoError>
 }
 

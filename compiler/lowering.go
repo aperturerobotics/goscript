@@ -1528,7 +1528,7 @@ func (o *LoweringOwner) tsInterfaceType(ctx lowerFileContext, iface *types.Inter
 	for method := range iface.Methods() {
 		methods = append(methods, o.tsMethodSignature(ctx, method))
 	}
-	return "null | {\n\t" + strings.Join(methods, "\n\t") + "\n}"
+	return "{\n\t" + strings.Join(methods, "\n\t") + "\n}"
 }
 
 func (o *LoweringOwner) tsMethodSignature(ctx lowerFileContext, method *types.Func) string {
@@ -4847,7 +4847,7 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 			if typ == nil {
 				tsTypes = append(tsTypes, "any")
 			} else {
-				tsTypes = append(tsTypes, o.tsTypeFor(ctx, typ))
+				tsTypes = append(tsTypes, o.tsTypeSwitchCaseTypeFor(ctx, typ))
 			}
 		}
 		switchIR.cases = append(switchIR.cases, loweredTypeSwitchCase{
@@ -4859,6 +4859,15 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 	}
 	lowered = append(lowered, loweredStmt{typeSwitch: switchIR})
 	return lowered, diagnostics
+}
+
+func (o *LoweringOwner) tsTypeSwitchCaseTypeFor(ctx lowerFileContext, typ types.Type) string {
+	if named, ok := types.Unalias(typ).(*types.Named); ok {
+		if _, ok := named.Underlying().(*types.Interface); ok {
+			return o.tsNonNilTypeFor(ctx, named)
+		}
+	}
+	return o.tsTypeFor(ctx, typ)
 }
 
 func loweredStmtsUseVarRefName(stmts []loweredStmt, name string) bool {

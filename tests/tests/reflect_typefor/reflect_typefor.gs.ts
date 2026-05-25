@@ -12,7 +12,7 @@ import "@goscript/reflect/index.js"
 import "@goscript/time/index.js"
 import "./other.gs.ts"
 
-export type MyInterface = null | {
+export type MyInterface = {
 	SomeMethod(): void
 }
 

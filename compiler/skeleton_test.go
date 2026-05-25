@@ -1006,7 +1006,7 @@ func TestCompilePackagesEmitsSideEffectImportsForInterfaceRegistry(t *testing.T)
 		"import \"@goscript/example.test/interface-registry/dep/index.js\"",
 		"import * as __goscript_local from \"./local.gs.ts\"",
 		"import \"./local.gs.ts\"",
-		"case $.typeAssert<__goscript_local.Local | null>(__goscriptTypeSwitchValue, \"main.Local\").ok",
+		"case $.typeAssert<Exclude<__goscript_local.Local, null>>(__goscriptTypeSwitchValue, \"main.Local\").ok",
 		"$.typeAssertTuple<dep.Remote | null>(v, \"dep.Remote\")",
 	} {
 		if !strings.Contains(mainText, want) {
@@ -1651,7 +1651,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 	text := string(content)
 	for _, want := range []string{
 		"export type Greeter = ((name: string) => string | globalThis.Promise<string>) | null",
-		"export type ReadCloser = null | {",
+		"export type ReadCloser = {",
 		"Read(): string",
 		"Close(): string",
 		"$.registerInterfaceType(\n\t\"main.ReadCloser\"",
@@ -1661,8 +1661,8 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 		"elemType: { kind: $.TypeKind.Struct, methods: [], fields: {\"Name\": { kind: $.TypeKind.Basic, name: \"string\" }} }",
 		"let fn = __goscriptTuple",
 		"switch (true)",
-		"case $.typeAssert<ReadCloser | null>(__goscriptTypeSwitchValue, \"main.ReadCloser\").ok",
-		"let v: ReadCloser | null = $.typeAssert<ReadCloser | null>(__goscriptTypeSwitchValue, \"main.ReadCloser\").value",
+		"case $.typeAssert<Exclude<ReadCloser, null>>(__goscriptTypeSwitchValue, \"main.ReadCloser\").ok",
+		"let v: Exclude<ReadCloser, null> = $.typeAssert<Exclude<ReadCloser, null>>(__goscriptTypeSwitchValue, \"main.ReadCloser\").value",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -1704,8 +1704,60 @@ func TestCompilePackagesAssertsInterfaceMethodReceivers(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export type FileInfo = null | {",
+		"export type FileInfo = {",
 		"$.println($.pointerValue<Exclude<FileInfo, null>>(info).Name())",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesUsesNonNilInterfaceTypeSwitchCaseVarRefs(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/interface-switch-varref\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type rawConn interface { Control() error }",
+			"type tcpConn interface {",
+			"  SyscallConn() (rawConn, error)",
+			"  SetLinger(int) error",
+			"}",
+			"type Conn struct { c rawConn }",
+			"func keep(*tcpConn) {}",
+			"func NewConn(c any) (*Conn, error) {",
+			"  cc := &Conn{}",
+			"  var err error",
+			"  switch c := c.(type) {",
+			"  case tcpConn:",
+			"    keep(&c)",
+			"    cc.c, err = c.SyscallConn()",
+			"  }",
+			"  return cc, err",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "interface-switch-varref", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export type tcpConn = {",
+		"case $.typeAssert<Exclude<tcpConn, null>>(__goscriptTypeSwitchValue, \"main.tcpConn\").ok",
+		"let c: $.VarRef<Exclude<tcpConn, null>> = $.varRef($.typeAssert<Exclude<tcpConn, null>>(__goscriptTypeSwitchValue, \"main.tcpConn\").value)",
+		"$.pointerValue<Exclude<tcpConn, null>>(c.value).SyscallConn()",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

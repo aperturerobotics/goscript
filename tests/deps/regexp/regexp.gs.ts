@@ -1751,7 +1751,7 @@ export function quote(s: string): string {
 	return strconv.Quote(s)
 }
 
-export type input = null | {
+export type input = {
 	canCheckPrefix(): boolean
 	context(pos: number): __goscript_exec.lazyFlag
 	hasPrefix(re: Regexp | $.VarRef<Regexp> | null): boolean

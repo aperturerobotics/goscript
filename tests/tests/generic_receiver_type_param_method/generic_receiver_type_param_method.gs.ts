@@ -79,7 +79,7 @@ export class point {
 	)
 }
 
-export type nistPoint = null | {
+export type nistPoint = {
 	Add(_p0: any, _p1: any): any
 }
 

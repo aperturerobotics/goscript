@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Animal = null | {
+export type Animal = {
 	Name(): string
 }
 

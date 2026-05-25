@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 import * as os from "@goscript/os/index.js"
 import "@goscript/os/index.js"
 
-export type FileInfo = null | {
+export type FileInfo = {
 	IsDir(): boolean
 	Name(): string
 	Size(): number
@@ -20,7 +20,7 @@ $.registerInterfaceType(
 
 export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null
 
-export type Filesystem = null | {
+export type Filesystem = {
 	ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError]
 }
 

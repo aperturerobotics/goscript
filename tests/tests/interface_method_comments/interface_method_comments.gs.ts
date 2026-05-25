@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type MyInterface = null | {
+export type MyInterface = {
 	MyMethod(): void
 }
 

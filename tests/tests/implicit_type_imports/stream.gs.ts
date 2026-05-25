@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Stream = null | {
+export type Stream = {
 	Send(): $.GoError
 }
 

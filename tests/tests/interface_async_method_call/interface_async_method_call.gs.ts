@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type AsyncProcessor = null | {
+export type AsyncProcessor = {
 	GetResult(): number
 	Process(data: number): number | globalThis.Promise<number>
 }
@@ -14,7 +14,7 @@ $.registerInterfaceType(
 	[{ name: "GetResult", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
-export type GenericStore = null | {
+export type GenericStore = {
 	Load(): any | globalThis.Promise<any>
 }
 

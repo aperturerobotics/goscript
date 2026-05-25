@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 import * as __goscript_method from "./method.gs.ts"
 import "./method.gs.ts"
 
-export type runner = null | {
+export type runner = {
 	Run(): string
 }
 

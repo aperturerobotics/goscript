@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Value = null | {
+export type Value = {
 	Value(): string
 }
 
@@ -13,7 +13,7 @@ $.registerInterfaceType(
 	[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 )
 
-export type Result = null | {
+export type Result = {
 	Result(): string
 }
 

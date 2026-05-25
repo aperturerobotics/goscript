@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type A = null | {
+export type A = {
 	MethodA(a: A | null): void
 }
 
@@ -13,7 +13,7 @@ $.registerInterfaceType(
 	[{ name: "MethodA", args: [{ name: "a", type: "main.A" }], returns: [] }]
 )
 
-export type C = null | {
+export type C = {
 	MethodC(d: D | null): void
 }
 
@@ -23,7 +23,7 @@ $.registerInterfaceType(
 	[{ name: "MethodC", args: [{ name: "d", type: "main.D" }], returns: [] }]
 )
 
-export type D = null | {
+export type D = {
 	MethodD(c: C | null): void
 }
 

@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Reader = null | {
+export type Reader = {
 	Read(_p0: $.Slice<number>): [number, $.GoError]
 }
 
@@ -13,7 +13,7 @@ $.registerInterfaceType(
 	[{ name: "Read", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
 )
 
-export type Closer = null | {
+export type Closer = {
 	Close(): $.GoError
 }
 
@@ -23,7 +23,7 @@ $.registerInterfaceType(
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }]
 )
 
-export type ReadCloser = null | {
+export type ReadCloser = {
 	Close(): $.GoError
 	Read(_p0: $.Slice<number>): [number, $.GoError]
 }

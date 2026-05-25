@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 import * as filepath from "@goscript/path/filepath/index.js"
 import "@goscript/path/filepath/index.js"
 
-export type FileInfo = null | {
+export type FileInfo = {
 	IsDir(): boolean
 	Name(): string
 	Size(): number
@@ -18,7 +18,7 @@ $.registerInterfaceType(
 	[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
-export type Filesystem = null | {
+export type Filesystem = {
 	ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError]
 }
 
@@ -30,7 +30,7 @@ $.registerInterfaceType(
 
 export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null
 
-export type Shape = null | {
+export type Shape = {
 	Stats(): number
 }
 

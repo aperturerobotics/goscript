@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Reader = null | {
+export type Reader = {
 	Read(p: $.Slice<number>): [number, $.GoError]
 }
 

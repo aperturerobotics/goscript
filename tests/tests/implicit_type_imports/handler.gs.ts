@@ -9,7 +9,7 @@ import * as __goscript_stream from "./stream.gs.ts"
 import "./invoker.gs.ts"
 import "./stream.gs.ts"
 
-export type Handler = null | {
+export type Handler = {
 	Handle(): void
 	Invoke(_p0: __goscript_stream.Stream | null): $.GoError
 }

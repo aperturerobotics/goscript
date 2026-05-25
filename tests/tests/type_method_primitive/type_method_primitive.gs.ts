@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 export type MyInt = number
 
-export type Doubler = null | {
+export type Doubler = {
 	Double(): number
 }
 
@@ -15,7 +15,7 @@ $.registerInterfaceType(
 	[{ name: "Double", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
-export type Stringer = null | {
+export type Stringer = {
 	String(): string
 }
 

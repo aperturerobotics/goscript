@@ -293,7 +293,7 @@ export class runnable {
 	)
 }
 
-export type runner = null | {
+export type runner = {
 	Run(): string
 }
 

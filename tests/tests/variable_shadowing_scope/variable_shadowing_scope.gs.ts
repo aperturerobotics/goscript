@@ -44,7 +44,7 @@ export function secondFunc(x: number): number {
 	return 99
 }
 
-export type named = null | {
+export type named = {
 	Name(): string
 }
 

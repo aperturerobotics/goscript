@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type MyInterface1 = null | {
+export type MyInterface1 = {
 	MyString1(): string
 	MyString2(): string
 }
@@ -14,7 +14,7 @@ $.registerInterfaceType(
 	[{ name: "MyString1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 )
 
-export type MyInterface2 = null | {
+export type MyInterface2 = {
 	MyString1(): string
 }
 
@@ -83,15 +83,15 @@ export function processInterface(i: any): void {
 	{
 		const __goscriptTypeSwitchValue = i
 		switch (true) {
-			case $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
+			case $.typeAssert<Exclude<MyInterface1, null>>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
 				{
-					let v: MyInterface1 | null = $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").value
+					let v: Exclude<MyInterface1, null> = $.typeAssert<Exclude<MyInterface1, null>>(__goscriptTypeSwitchValue, "main.MyInterface1").value
 					$.println("MyInterface1:", $.pointerValue<Exclude<MyInterface1, null>>(v).MyString1(), $.pointerValue<Exclude<MyInterface1, null>>(v).MyString2())
 				}
 				break
-			case $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
+			case $.typeAssert<Exclude<MyInterface2, null>>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
 				{
-					let v: MyInterface2 | null = $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").value
+					let v: Exclude<MyInterface2, null> = $.typeAssert<Exclude<MyInterface2, null>>(__goscriptTypeSwitchValue, "main.MyInterface2").value
 					$.println("MyInterface2:", $.pointerValue<Exclude<MyInterface2, null>>(v).MyString1())
 				}
 				break
@@ -124,15 +124,15 @@ export async function main(): globalThis.Promise<void> {
 	{
 		const __goscriptTypeSwitchValue = i3
 		switch (true) {
-			case $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
+			case $.typeAssert<Exclude<MyInterface2, null>>(__goscriptTypeSwitchValue, "main.MyInterface2").ok:
 				{
-					let v: MyInterface2 | null = $.typeAssert<MyInterface2 | null>(__goscriptTypeSwitchValue, "main.MyInterface2").value
+					let v: Exclude<MyInterface2, null> = $.typeAssert<Exclude<MyInterface2, null>>(__goscriptTypeSwitchValue, "main.MyInterface2").value
 					$.println("Matched MyInterface2 from i1:", $.pointerValue<Exclude<MyInterface2, null>>(v).MyString1())
 				}
 				break
-			case $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
+			case $.typeAssert<Exclude<MyInterface1, null>>(__goscriptTypeSwitchValue, "main.MyInterface1").ok:
 				{
-					let v: MyInterface1 | null = $.typeAssert<MyInterface1 | null>(__goscriptTypeSwitchValue, "main.MyInterface1").value
+					let v: Exclude<MyInterface1, null> = $.typeAssert<Exclude<MyInterface1, null>>(__goscriptTypeSwitchValue, "main.MyInterface1").value
 					$.println("Matched MyInterface1 from i1:", $.pointerValue<Exclude<MyInterface1, null>>(v).MyString1(), $.pointerValue<Exclude<MyInterface1, null>>(v).MyString2())
 				}
 				break

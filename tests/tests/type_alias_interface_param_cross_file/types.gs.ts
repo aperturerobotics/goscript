@@ -8,7 +8,7 @@ import "@goscript/github.com/aperturerobotics/goscript/tests/tests/type_alias_in
 
 export type Value = dep.Value
 
-export type Tx = null | {
+export type Tx = {
 	Put(v: Value): void
 }
 

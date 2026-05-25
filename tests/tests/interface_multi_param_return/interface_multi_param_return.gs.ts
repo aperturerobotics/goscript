@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type MultiParamReturner = null | {
+export type MultiParamReturner = {
 	Process(data: $.Slice<number>, count: number, _p2: string): [boolean, $.GoError]
 }
 

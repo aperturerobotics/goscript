@@ -38,7 +38,7 @@ export class listScanner {
 	)
 }
 
-export type scanner = null | {
+export type scanner = {
 	Scan(_p0: ((_p0: number) => $.GoError | globalThis.Promise<$.GoError>) | null): $.GoError | globalThis.Promise<$.GoError>
 }
 

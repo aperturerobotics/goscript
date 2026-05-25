@@ -32,7 +32,7 @@ export class concrete {
 	)
 }
 
-export type reader = null | {
+export type reader = {
 	Read(): number
 }
 

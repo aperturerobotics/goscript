@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 import * as strings from "@goscript/strings/index.js"
 import "@goscript/strings/index.js"
 
-export type Basic = null | {
+export type Basic = {
 	Join(elem: $.Slice<string>): string
 }
 

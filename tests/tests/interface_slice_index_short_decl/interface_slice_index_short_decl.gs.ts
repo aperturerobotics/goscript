@@ -8,7 +8,7 @@ import "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_sli
 
 export type Fixed = $.Slice<dep.Ref | null>
 
-export type Shape = null | {
+export type Shape = {
 	Mark(): boolean
 }
 

@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Writer = null | {
+export type Writer = {
 	Write(_p0: $.Slice<number>): [number, $.GoError]
 }
 

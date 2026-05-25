@@ -72,7 +72,7 @@ export class Packer {
 	)
 }
 
-export type blankInterface = null | {
+export type blankInterface = {
 	Value(): number
 }
 

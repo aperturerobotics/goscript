@@ -121,7 +121,7 @@ export class pointerStopStream {
 	)
 }
 
-export type closer = null | {
+export type closer = {
 	Close(): string
 }
 

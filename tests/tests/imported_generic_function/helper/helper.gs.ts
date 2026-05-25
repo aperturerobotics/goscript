@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Value = null | {
+export type Value = {
 	GetValue(): number
 }
 

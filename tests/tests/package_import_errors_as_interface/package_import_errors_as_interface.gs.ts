@@ -56,7 +56,7 @@ export class wrappedHealthError {
 	)
 }
 
-export type healthError = null | {
+export type healthError = {
 	Error(): string
 	Health(): string
 }

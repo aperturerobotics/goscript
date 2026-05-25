@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Spawner = null | {
+export type Spawner = {
 	Spawn(): $.GoError | globalThis.Promise<$.GoError>
 }
 

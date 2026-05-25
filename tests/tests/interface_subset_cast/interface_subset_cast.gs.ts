@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type MyInterface1 = null | {
+export type MyInterface1 = {
 	MyString1(): string
 	MyString2(): string
 }
@@ -14,7 +14,7 @@ $.registerInterfaceType(
 	[{ name: "MyString1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 )
 
-export type MyInterface2 = null | {
+export type MyInterface2 = {
 	MyString1(): string
 }
 

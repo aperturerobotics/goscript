@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Adder = null | {
+export type Adder = {
 	Add(value: number): number
 }
 
