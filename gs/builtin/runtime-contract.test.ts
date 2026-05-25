@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   append,
   bytesToUint8Array,
+  type Bytes,
   byte,
   cap,
   cloneArrayValue,
@@ -25,6 +26,7 @@ import {
   mapSet,
   markAsStructValue,
   namedFunction,
+  namedValueInterfaceValue,
   newError,
   pointerValue,
   print,
@@ -39,6 +41,7 @@ import {
   stringHeaderRef,
   TypeKind,
   typeAssert,
+  typeAssertTuple,
   typedNil,
   uint,
   uint64Add,
@@ -227,6 +230,80 @@ describe('builtin runtime contract helpers', () => {
       '',
       false,
     ])
+  })
+
+  it('does not compare runtime internals as generated struct values', () => {
+    class RuntimeType {
+      constructor(
+        private readonly name: string,
+        public readonly _fields: unknown[],
+      ) {}
+
+      String(): string {
+        return this.name
+      }
+    }
+
+    const m = makeMap<RuntimeType, string>()
+    mapSet(m, new RuntimeType('gob.wireType', []), 'wire')
+
+    expect(mapGet(m, new RuntimeType('gob.arrayType', []), '')).toEqual([
+      '',
+      false,
+    ])
+  })
+
+  it('tries duplicate runtime type registrations for colliding package names', () => {
+    class HashInterfaceImpl {
+      Write(_p: Bytes): [number, null] {
+        return [0, null]
+      }
+    }
+    class HashMessage {}
+
+    registerInterfaceType('collision.Hash', null, [
+      {
+        name: 'Write',
+        args: [
+          {
+            name: 'p',
+            type: {
+              kind: TypeKind.Slice,
+              elemType: { kind: TypeKind.Basic, name: 'uint8' },
+            },
+          },
+        ],
+        returns: [],
+      },
+    ])
+    registerStructType(
+      'collision.Hash',
+      new HashMessage(),
+      [],
+      HashMessage,
+      {},
+    )
+
+    expect(typeAssertTuple(new HashInterfaceImpl(), 'collision.Hash')[1]).toBe(
+      true,
+    )
+    expect(
+      typeAssertTuple(markAsStructValue(new HashMessage()), 'collision.Hash')[1],
+    ).toBe(true)
+  })
+
+  it('asserts interface-boxed named primitive values by declared type', () => {
+    const boxed = namedValueInterfaceValue(13, 'main.MyInt', {
+      Double: (receiver: number) => receiver * 2,
+    })
+
+    expect(
+      typeAssertTuple<number>(boxed, {
+        kind: TypeKind.Basic,
+        name: 'int',
+        typeName: 'main.MyInt',
+      }),
+    ).toEqual([13, true])
   })
 
   it('exposes addressable slice and array index references', () => {

@@ -236,11 +236,15 @@ function hasGoValue(value: unknown): value is {
 function isStructValue(value: unknown): value is {
   _fields: Record<string, VarRef<unknown>>
 } {
+  const fields =
+    typeof value === 'object' && value !== null ?
+      (value as { _fields?: unknown })._fields
+    : undefined
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as { _fields?: unknown })._fields === 'object' &&
-    (value as { _fields?: unknown })._fields !== null
+    typeof fields === 'object' &&
+    fields !== null &&
+    !Array.isArray(fields) &&
+    Object.values(fields).every(isVarRef)
   )
 }
 

@@ -1074,7 +1074,9 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 			"type Counter struct {",
 			"  // Value counts reads.",
 			"  Value int `json:\"value\"`",
+			"  ID ObjectID",
 			"}",
+			"type ObjectID int32",
 			"func (c Counter) Read() int {",
 			"  return c.Value",
 			"}",
@@ -1128,6 +1130,7 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"Counter.prototype.Set.call(NewCounter(), 5)",
 		"let [, ok] = $.typeAssertTuple<Counter | $.VarRef<Counter> | null>(iface, { kind: $.TypeKind.Pointer, elemType: \"main.Counter\" })",
 		"\"Value\": { type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\" }",
+		"\"ID\": { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.ObjectID\" }",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -1880,9 +1883,9 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 		"$.mapSet(seen, 1, {})",
 		"$.genericZero(__typeArgs, \"T\", null)",
 		"$.callGenericMethod(__typeArgs, \"T\", \"String\", v)",
-		"ZeroValue({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }})",
-		"CallString({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }}, zero)",
-		"Sum({T: { type: \"main.MyInt\", zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }}, null)",
+		"ZeroValue({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }})",
+		"CallString({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }}, zero)",
+		"Sum({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }}, null)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

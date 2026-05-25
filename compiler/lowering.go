@@ -7947,20 +7947,14 @@ func (o *LoweringOwner) runtimeTypeInfoExprWithSeen(typ types.Type, seen map[typ
 		return o.runtimeFunctionTypeInfoWithSeen(named.Underlying().(*types.Signature), runtimeNamedTypeName(named), seen)
 	}
 	if named := namedNonStructType(typ); named != nil {
+		if basic, ok := types.Unalias(named.Underlying()).(*types.Basic); ok {
+			return runtimeBasicTypeInfoExpr(typeKind, basic, runtimeNamedTypeName(named))
+		}
 		return strconv.Quote(runtimeNamedTypeName(named))
 	}
 	switch typed := types.Unalias(typ).Underlying().(type) {
 	case *types.Basic:
-		switch {
-		case typed.Info()&types.IsBoolean != 0:
-			return "{ kind: " + typeKind + ".Basic, name: \"bool\" }"
-		case typed.Info()&types.IsString != 0:
-			return "{ kind: " + typeKind + ".Basic, name: \"string\" }"
-		case typed.Info()&types.IsNumeric != 0:
-			return "{ kind: " + typeKind + ".Basic, name: \"" + basicRuntimeName(typed) + "\" }"
-		default:
-			return "{ kind: " + typeKind + ".Basic, name: \"unknown\" }"
-		}
+		return runtimeBasicTypeInfoExpr(typeKind, typed, "")
 	case *types.Pointer:
 		return "{ kind: " + typeKind + ".Pointer, elemType: " + o.runtimeTypeInfoExprWithSeen(typed.Elem(), seen) + " }"
 	case *types.Struct:
@@ -7981,6 +7975,23 @@ func (o *LoweringOwner) runtimeTypeInfoExprWithSeen(typ types.Type, seen map[typ
 	default:
 		return "{ kind: " + typeKind + ".Basic, name: \"unknown\" }"
 	}
+}
+
+func runtimeBasicTypeInfoExpr(typeKind string, basic *types.Basic, typeName string) string {
+	name := "unknown"
+	switch {
+	case basic.Info()&types.IsBoolean != 0:
+		name = "bool"
+	case basic.Info()&types.IsString != 0:
+		name = "string"
+	case basic.Info()&types.IsNumeric != 0:
+		name = basicRuntimeName(basic)
+	}
+	parts := []string{"kind: " + typeKind + ".Basic", "name: " + strconv.Quote(name)}
+	if typeName != "" {
+		parts = append(parts, "typeName: "+strconv.Quote(typeName))
+	}
+	return "{ " + strings.Join(parts, ", ") + " }"
 }
 
 func (o *LoweringOwner) shallowRuntimeTypeInfoExpr(typ types.Type) string {

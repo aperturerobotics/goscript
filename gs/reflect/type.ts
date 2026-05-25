@@ -182,6 +182,7 @@ export const UnsafePointer: Kind = 26
 const pointerAddressStride = 0x100000000
 const pointerAddresses = new WeakMap<object, number>()
 let nextPointerAddress = 1
+const canonicalTypes = new globalThis.Map<string, Type>()
 
 function pointerAddress(value: object): number {
   let address = pointerAddresses.get(value)
@@ -191,6 +192,16 @@ function pointerAddress(value: object): number {
     pointerAddresses.set(value, address)
   }
   return address
+}
+
+function internType(t: Type): Type {
+  const key = `${t.Kind()}:${t.PkgPath()}:${t.Name()}:${t.String()}`
+  const existing = canonicalTypes.get(key)
+  if (existing) {
+    return existing
+  }
+  canonicalTypes.set(key, t)
+  return t
 }
 
 // Type is the representation of a Go type.
@@ -1199,10 +1210,11 @@ export class BasicType implements Type {
     private _kind: Kind,
     private _name: string,
     private _size: number = 8,
+    private _typeName: string = '',
   ) {}
 
   public String(): string {
-    return this._name
+    return this._typeName || this._name
   }
 
   public Kind(): Kind {
@@ -1226,10 +1238,23 @@ export class BasicType implements Type {
   }
 
   public PkgPath(): string {
+    if (this._typeName) {
+      const dotIndex = this._typeName.lastIndexOf('.')
+      if (dotIndex > 0) {
+        return this._typeName.substring(0, dotIndex)
+      }
+    }
     return ''
   }
 
   public Name(): string {
+    if (this._typeName) {
+      const dotIndex = this._typeName.lastIndexOf('.')
+      if (dotIndex >= 0) {
+        return this._typeName.substring(dotIndex + 1)
+      }
+      return this._typeName
+    }
     // Basic types have names like 'int', 'string', etc.
     return this._name
   }
@@ -2174,28 +2199,34 @@ class StructType implements Type {
     } else if (ti && ti.kind) {
       // Handle TypeInfo objects from the builtin type system
       const name = ti.name || 'unknown'
+      const typeName = ti.typeName || ''
       switch (ti.kind) {
         case 'basic':
           // Map TypeScript type names to Go type names
           switch (name) {
             case 'string':
-              return new BasicType(String, 'string', 16)
+              return new BasicType(String, 'string', 16, typeName)
             case 'number':
             case 'int':
             case 'int32':
             case 'int64':
-              return new BasicType(Int, name === 'number' ? 'int' : name, 8)
+              return new BasicType(
+                Int,
+                name === 'number' ? 'int' : name,
+                8,
+                typeName,
+              )
             case 'boolean':
             case 'bool':
-              return new BasicType(Bool, 'bool', 1)
+              return new BasicType(Bool, 'bool', 1, typeName)
             case 'float64':
-              return new BasicType(Float64, 'float64', 8)
+              return new BasicType(Float64, 'float64', 8, typeName)
             case 'complex64':
-              return new BasicType(Complex64, 'complex64', 8)
+              return new BasicType(Complex64, 'complex64', 8, typeName)
             case 'complex128':
-              return new BasicType(Complex128, 'complex128', 16)
+              return new BasicType(Complex128, 'complex128', 16, typeName)
             default:
-              return new BasicType(Invalid, name, 8)
+              return new BasicType(Invalid, name, 8, typeName)
           }
         case 'slice':
           if (ti.elemType) {
@@ -2214,13 +2245,31 @@ class StructType implements Type {
         case 'interface':
           return new InterfaceType(name)
         case 'struct':
-          return new StructType(name, [])
+          return new StructType(name, structFieldsFromTypeInfo(ti))
         default:
           return new BasicType(Invalid, name, 8)
       }
     }
     return new BasicType(Invalid, 'unknown', 8)
   }
+}
+
+function structFieldsFromTypeInfo(
+  ti: $.StructTypeInfo,
+): Array<{ name: string; type: Type; tag?: string }> {
+  return Object.entries(ti.fields || {}).map(([name, fieldInfo]) => {
+    if (isStructFieldInfo(fieldInfo)) {
+      return {
+        name: fieldInfo.name ?? name,
+        type: typeFromTypeInfo(fieldInfo.type),
+        tag: fieldInfo.tag,
+      }
+    }
+    return {
+      name,
+      type: typeFromTypeInfo(fieldInfo),
+    }
+  })
 }
 
 class ChannelType implements Type {
@@ -2705,7 +2754,7 @@ function getTypeOf(value: ReflectValue): Type {
 
 // Exported functions as required by godoc.txt
 export function TypeOf(i: ReflectValue): Type {
-  return getTypeOf(i)
+  return internType(getTypeOf(i))
 }
 
 export function ValueOf(i: ReflectValue): Value {
@@ -2724,16 +2773,16 @@ export function TypeAssert(
 }
 
 export function ArrayOf(length: number, elem: Type): Type {
-  return new ArrayType(elem, length)
+  return internType(new ArrayType(elem, length))
 }
 
 export function SliceOf(t: Type): Type {
-  return new SliceType(t)
+  return internType(new SliceType(t))
 }
 
 export function PointerTo(t: Type | null): Type | null {
   if (t === null) return null
-  return new PointerType(t)
+  return internType(new PointerType(t))
 }
 
 export function PtrTo(t: Type | null): Type | null {
@@ -2741,76 +2790,98 @@ export function PtrTo(t: Type | null): Type | null {
 }
 
 export function MapOf(key: Type, elem: Type): Type {
-  return new MapType(key, elem)
+  return internType(new MapType(key, elem))
 }
 
 export function ChanOf(dir: ChanDir, t: Type): Type {
-  return new ChannelType(t, dir)
+  return internType(new ChannelType(t, dir))
 }
 
 export function TypeFor(typeArgs?: $.GenericTypeArgs): Type {
   const descriptor = typeArgs?.T
   if (descriptor?.type) {
-    return typeFromTypeInfo(descriptor.type)
+    return internType(typeFromTypeInfo(descriptor.type))
   }
   if (descriptor?.methods) {
     const methods = Object.keys(descriptor.methods)
     if (methods.length !== 0) {
-      return new InterfaceType(
-        `interface { ${methods.map((method) => method + '()').join('; ')} }`,
+      return internType(
+        new InterfaceType(
+          `interface { ${methods.map((method) => method + '()').join('; ')} }`,
+        ),
       )
     }
   }
   if (descriptor?.zero) {
-    return getTypeOf(descriptor.zero())
+    return internType(getTypeOf(descriptor.zero()))
   }
-  return new InterfaceType('interface{}')
+  return internType(new InterfaceType('interface{}'))
 }
 
 function typeFromTypeInfo(info: $.TypeInfo | string): Type {
   if (typeof info === 'string') {
     const registered = builtinGetTypeByName(info)
     if (registered) {
-      return typeFromTypeInfo(registered)
+      return internType(typeFromTypeInfo(registered))
     }
-    return StructType.createTypeFromFieldInfo(info)
+    return internType(StructType.createTypeFromFieldInfo(info))
   }
   switch (info.kind) {
     case $.TypeKind.Array:
-      return new ArrayType(
-        typeFromTypeInfo(
-          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+      return internType(
+        new ArrayType(
+          typeFromTypeInfo(
+            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          ),
+          info.length,
         ),
-        info.length,
       )
+    case $.TypeKind.Basic:
+      return internType(StructType.createTypeFromFieldInfo(info))
     case $.TypeKind.Channel:
-      return new ChannelType(
-        typeFromTypeInfo(
-          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+      return internType(
+        new ChannelType(
+          typeFromTypeInfo(
+            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          ),
+          chanDirFromTypeInfo(info.direction),
         ),
-        chanDirFromTypeInfo(info.direction),
       )
     case $.TypeKind.Function:
-      return functionTypeFromInfo(info)
+      return internType(functionTypeFromInfo(info))
     case $.TypeKind.Interface:
-      return interfaceTypeFromInfo(info)
+      return internType(interfaceTypeFromInfo(info))
     case $.TypeKind.Map:
-      return new MapType(
-        typeFromTypeInfo(
-          info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
-        ),
-        typeFromTypeInfo(
-          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+      return internType(
+        new MapType(
+          typeFromTypeInfo(
+            info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          ),
+          typeFromTypeInfo(
+            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          ),
         ),
       )
+    case $.TypeKind.Slice:
+      return internType(
+        new SliceType(
+          typeFromTypeInfo(
+            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          ),
+        ),
+      )
+    case $.TypeKind.Struct:
+      return internType(StructType.createTypeFromFieldInfo(info))
     case $.TypeKind.Pointer:
-      return new PointerType(
-        typeFromTypeInfo(
-          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+      return internType(
+        new PointerType(
+          typeFromTypeInfo(
+            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          ),
         ),
       )
     default:
-      return StructType.createTypeFromFieldInfo(info)
+      return internType(StructType.createTypeFromFieldInfo(info))
   }
 }
 

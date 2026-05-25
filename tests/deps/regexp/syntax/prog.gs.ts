@@ -343,7 +343,7 @@ export class Inst {
 		() => new Inst(),
 		[{ name: "MatchEmptyWidth", args: [], returns: [] }, { name: "MatchRune", args: [], returns: [] }, { name: "MatchRunePos", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "op", args: [], returns: [] }],
 		Inst,
-		{"Op": "syntax.InstOp", "Out": { kind: $.TypeKind.Basic, name: "int" }, "Arg": { kind: $.TypeKind.Basic, name: "int" }, "Rune": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"Op": { kind: $.TypeKind.Basic, name: "int", typeName: "syntax.InstOp" }, "Out": { kind: $.TypeKind.Basic, name: "int" }, "Arg": { kind: $.TypeKind.Basic, name: "int" }, "Rune": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
 	)
 }
 

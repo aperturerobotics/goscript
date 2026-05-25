@@ -361,7 +361,7 @@ export class Regexp {
 		() => new Regexp(),
 		[{ name: "CapNames", args: [], returns: [] }, { name: "Equal", args: [], returns: [] }, { name: "MaxCap", args: [], returns: [] }, { name: "Simplify", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "capNames", args: [], returns: [] }],
 		Regexp,
-		{"Op": "syntax.Op", "Flags": "syntax.Flags", "Sub": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" } }, "Sub0": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" }, length: 1 }, "Rune": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "Rune0": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 2 }, "Min": { kind: $.TypeKind.Basic, name: "int" }, "Max": { kind: $.TypeKind.Basic, name: "int" }, "Cap": { kind: $.TypeKind.Basic, name: "int" }, "Name": { kind: $.TypeKind.Basic, name: "string" }}
+		{"Op": { kind: $.TypeKind.Basic, name: "int", typeName: "syntax.Op" }, "Flags": { kind: $.TypeKind.Basic, name: "int", typeName: "syntax.Flags" }, "Sub": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" } }, "Sub0": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" }, length: 1 }, "Rune": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "Rune0": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 2 }, "Min": { kind: $.TypeKind.Basic, name: "int" }, "Max": { kind: $.TypeKind.Basic, name: "int" }, "Cap": { kind: $.TypeKind.Basic, name: "int" }, "Name": { kind: $.TypeKind.Basic, name: "string" }}
 	)
 }
 

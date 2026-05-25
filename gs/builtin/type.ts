@@ -18,6 +18,7 @@ export enum TypeKind {
  */
 export interface BaseTypeInfo {
   name?: string
+  typeName?: string
   kind: TypeKind
   zeroValue?: any
 }
@@ -204,6 +205,19 @@ export interface Comparable {
 
 // Registry to store runtime type information
 const typeRegistry = new Map<string, TypeInfo>()
+const duplicateTypeRegistry = new Map<string, TypeInfo[]>()
+
+function registerTypeInfo(name: string, typeInfo: TypeInfo): void {
+  const existing = typeRegistry.get(name)
+  if (existing && existing !== typeInfo) {
+    const candidates = duplicateTypeRegistry.get(name) ?? [existing]
+    if (!candidates.includes(typeInfo)) {
+      candidates.push(typeInfo)
+    }
+    duplicateTypeRegistry.set(name, candidates)
+  }
+  typeRegistry.set(name, typeInfo)
+}
 
 /**
  * Registers a struct type with the runtime type system.
@@ -230,7 +244,7 @@ export const registerStructType = (
     ctor,
     fields,
   }
-  typeRegistry.set(name, typeInfo)
+  registerTypeInfo(name, typeInfo)
   return typeInfo
 }
 
@@ -260,7 +274,7 @@ export const registerInterfaceType = (
     zeroValue,
     methods,
   }
-  typeRegistry.set(name, typeInfo)
+  registerTypeInfo(name, typeInfo)
   return typeInfo
 }
 
@@ -299,6 +313,14 @@ function normalizeTypeInfo(info: string | TypeInfo): TypeInfo {
   }
 
   return info
+}
+
+function typeInfoRuntimeName(info: TypeInfo): string | undefined {
+  return info.typeName || info.name
+}
+
+function goTypeMatchesTypeInfo(goType: string, info: TypeInfo): boolean {
+  return goType === typeInfoRuntimeName(info)
 }
 
 function compareOptionalTypeInfo(
@@ -912,7 +934,7 @@ function matchesType(value: any, info: TypeInfo): boolean {
   if (
     typeof value === 'object' &&
     typeof value.__goType === 'string' &&
-    value.__goType === info.name
+    goTypeMatchesTypeInfo(value.__goType, info)
   ) {
     return true
   }
@@ -1098,7 +1120,7 @@ export function typeAssert<T>(
     typeof value === 'object' &&
     value !== null &&
     typeof value.__goType === 'string' &&
-    value.__goType === normalizedType.name
+    goTypeMatchesTypeInfo(value.__goType, normalizedType)
   ) {
     if ('__goValue' in value) {
       return { value: value.__goValue as T, ok: true }
@@ -1157,6 +1179,14 @@ export function typeAssert<T>(
   const matches = matchesType(value, normalizedType)
   if (matches) {
     return { value: value as T, ok: true }
+  }
+
+  if (typeof typeInfo === 'string') {
+    for (const candidate of duplicateTypeRegistry.get(typeInfo) ?? []) {
+      if (candidate !== normalizedType && matchesType(value, candidate)) {
+        return { value: value as T, ok: true }
+      }
+    }
   }
 
   // If we get here, the assertion failed

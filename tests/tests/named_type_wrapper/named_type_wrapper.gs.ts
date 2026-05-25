@@ -46,7 +46,7 @@ export class FileStatus {
 		() => new FileStatus(),
 		[],
 		FileStatus,
-		{"mode": "main.MyFileMode", "size": { kind: $.TypeKind.Basic, name: "int" }}
+		{"mode": { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyFileMode" }, "size": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 

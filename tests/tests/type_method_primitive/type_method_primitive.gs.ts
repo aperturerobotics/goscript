@@ -62,7 +62,7 @@ export async function main(): globalThis.Promise<void> {
 	let ret = asDoubler(13)
 	$.println("Returned interface call:", $.pointerValue<Exclude<Doubler, null>>(ret).Double())
 
-	let [asserted, ok] = $.typeAssertTuple<MyInt>(ret, "main.MyInt")
+	let [asserted, ok] = $.typeAssertTuple<MyInt>(ret, { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyInt" })
 	$.println("Interface assertion:", $.int(asserted), ok)
 
 	let flag: $.VarRef<boolean> = $.varRef(false)
