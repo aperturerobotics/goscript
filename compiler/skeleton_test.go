@@ -2129,6 +2129,53 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesMarksSelectReturningIfElseCasesUnreachable(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/select-if-else\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"context\"",
+			"func finish(ctx context.Context, ch <-chan int, client bool) (int, error) {",
+			"  select {",
+			"  case <-ch:",
+			"    if client {",
+			"      return 1, nil",
+			"    } else {",
+			"      return 2, nil",
+			"    }",
+			"  case <-ctx.Done():",
+			"    return 3, ctx.Err()",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "select-if-else", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export async function finish(ctx: context.Context | null, ch: $.Channel<number> | null, client: boolean): globalThis.Promise<[number, $.GoError]>",
+		"if (__goscriptSelect0HasReturn) {",
+		"throw new Error(\"unreachable select\")",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesPropagatesImmediateFuncLitAsync(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/immediate-func-lit-async\n\ngo 1.25.3\n",

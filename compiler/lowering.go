@@ -4467,11 +4467,22 @@ func stmtsEndInReturn(stmts []loweredStmt) bool {
 		return false
 	}
 	last := stmts[len(stmts)-1]
-	if strings.HasPrefix(strings.TrimSpace(last.text), "return") {
+	return stmtEndsInReturn(last)
+}
+
+func stmtEndsInReturn(stmt loweredStmt) bool {
+	trimmed := strings.TrimSpace(stmt.text)
+	if strings.HasPrefix(trimmed, "return") {
 		return true
 	}
-	if last.selectStmt != nil {
-		return last.selectStmt.returns
+	if stmt.selectStmt != nil {
+		return stmt.selectStmt.returns
+	}
+	if trimmed == "" && (stmt.hasBlock || len(stmt.children) != 0) {
+		return stmtsEndInReturn(stmt.children)
+	}
+	if strings.HasPrefix(trimmed, "if ") && len(stmt.elseBody) != 0 {
+		return stmtsEndInReturn(stmt.children) && stmtsEndInReturn(stmt.elseBody)
 	}
 	return false
 }
