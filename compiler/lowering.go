@@ -87,10 +87,13 @@ func (o *LoweringOwner) lowerPackage(model *SemanticModel, semPkg *semanticPacka
 		pkgPath: semPkg.pkgPath,
 		name:    semPkg.name,
 	}
+	declFiles := packageDeclFiles(semPkg)
+	outputNames := packageOutputNames(semPkg)
+	lazyPackageVars := o.lazyPackageVars(semPkg, declFiles)
 	var diagnostics []Diagnostic
 	for idx, file := range semPkg.source.Syntax {
 		sourcePath := sourceFilePath(semPkg, idx, file)
-		loweredFile, fileDiagnostics := o.lowerFile(model, semPkg, file, sourcePath)
+		loweredFile, fileDiagnostics := o.lowerFile(model, semPkg, file, sourcePath, declFiles, outputNames, lazyPackageVars)
 		diagnostics = append(diagnostics, fileDiagnostics...)
 		if loweredFile != nil {
 			loweredPkg.files = append(loweredPkg.files, loweredFile)
@@ -119,6 +122,9 @@ func (o *LoweringOwner) lowerFile(
 	semPkg *semanticPackage,
 	file *ast.File,
 	sourcePath string,
+	declFiles map[types.Object]string,
+	outputNames map[string]string,
+	lazyPackageVars map[types.Object]bool,
 ) (*loweredFile, []Diagnostic) {
 	associatedMethods := o.methodDeclsForFileTypes(semPkg, file)
 	relevantImportFiles := map[string]bool{sourcePath: true}
@@ -181,8 +187,7 @@ func (o *LoweringOwner) lowerFile(
 	for importSourcePath := range relevantImportFiles {
 		o.addGeneratedTypeImports(model, semPkg, importSourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
 	}
-	localAliases, localAliasSources, implicitImports := o.localFileAliases(semPkg, file, sourcePath, associatedMethods)
-	lazyPackageVars := o.lazyPackageVars(semPkg)
+	localAliases, localAliasSources, implicitImports := o.localFileAliases(semPkg, file, sourcePath, associatedMethods, declFiles, outputNames)
 	implicitImportPaths := make([]string, 0, len(implicitImports))
 	for pkgPath := range implicitImports {
 		if pkgPath != "" && pkgPath != semPkg.pkgPath {
@@ -452,19 +457,9 @@ func (o *LoweringOwner) localFileAliases(
 	file *ast.File,
 	sourcePath string,
 	associatedMethods []*ast.FuncDecl,
+	declFiles map[types.Object]string,
+	outputNames map[string]string,
 ) (map[types.Object]string, map[string]string, map[string]bool) {
-	declFiles := make(map[types.Object]string)
-	for _, decl := range semPkg.declarations {
-		if decl.object == nil || decl.position.file == "" {
-			continue
-		}
-		declFiles[decl.object] = decl.position.file
-	}
-	outputNames := make(map[string]string)
-	for idx, syntax := range semPkg.source.Syntax {
-		outputSourcePath := sourceFilePath(semPkg, idx, syntax)
-		outputNames[outputSourcePath] = sourceOutputName(outputSourcePath)
-	}
 	aliases := make(map[types.Object]string)
 	aliasSources := make(map[string]string)
 	implicitImports := make(map[string]bool)
@@ -990,7 +985,7 @@ func initializerMayHaveRuntimeEffects(ctx lowerFileContext, expr ast.Expr) bool 
 	return hasEffects
 }
 
-func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage) map[types.Object]bool {
+func packageDeclFiles(semPkg *semanticPackage) map[types.Object]string {
 	if semPkg == nil || semPkg.source == nil {
 		return nil
 	}
@@ -999,6 +994,25 @@ func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage) map[types.Objec
 		if decl.object != nil && decl.position.file != "" {
 			declFiles[decl.object] = decl.position.file
 		}
+	}
+	return declFiles
+}
+
+func packageOutputNames(semPkg *semanticPackage) map[string]string {
+	if semPkg == nil || semPkg.source == nil {
+		return nil
+	}
+	outputNames := make(map[string]string, len(semPkg.source.Syntax))
+	for idx, syntax := range semPkg.source.Syntax {
+		outputSourcePath := sourceFilePath(semPkg, idx, syntax)
+		outputNames[outputSourcePath] = sourceOutputName(outputSourcePath)
+	}
+	return outputNames
+}
+
+func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage, declFiles map[types.Object]string) map[types.Object]bool {
+	if semPkg == nil || semPkg.source == nil {
+		return nil
 	}
 	varOrder := make(map[types.Object]int)
 	for idx, obj := range semPkg.initOrder {
