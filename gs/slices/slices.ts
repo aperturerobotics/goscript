@@ -270,7 +270,7 @@ export function MinFunc<T>(
 
 export function Collect<T>(seq: iter.Seq<T>): $.Slice<T> {
   const out: T[] = []
-  seq((value) => {
+  seq((value: T) => {
     out.push(value)
     return true
   })
@@ -280,7 +280,7 @@ export function Collect<T>(seq: iter.Seq<T>): $.Slice<T> {
 export function Sorted<T extends string | number>(
   seq: iter.Seq<T>,
 ): $.Slice<T> {
-  const out = Collect(seq)
+  const out = Collect<T>(seq)
   Sort(out)
   return out
 }
