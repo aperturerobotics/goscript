@@ -1,13 +1,25 @@
 import { describe, expect, test } from 'vitest'
 
+import * as $ from '@goscript/builtin/index.js'
+
 import {
   Bind,
   Close,
   CloseOnExec,
   Connect,
   Dup,
+  EADDRNOTAVAIL,
+  EAGAIN,
+  EINTR,
+  EMFILE,
   ENOSYS,
+  ENFILE,
   ENOTSUP,
+  ETIMEDOUT,
+  Errno_Error,
+  Errno_Is,
+  Errno_Temporary,
+  Errno_Timeout,
   GetsockoptInt,
   Iovec,
   IPPROTO_IPV6,
@@ -36,6 +48,7 @@ import {
   readv,
   writev,
 } from './index.js'
+import type { Errno } from './index.js'
 
 describe('syscall network stubs', () => {
   test('exports network constants used by generated net', () => {
@@ -45,6 +58,19 @@ describe('syscall network stubs', () => {
     expect(IPV6_V6ONLY).toBe(0x1a)
     expect(SOMAXCONN).toBe(0x80)
     expect(ENOTSUP.Error()).toBe('operation not supported')
+  })
+
+  test('models Errno numeric zero values and named primitive methods', () => {
+    const errno: $.VarRef<Errno> = $.varRef(0)
+
+    expect(Errno_Error(errno.value)).toBe('errno 0')
+    expect(Errno_Is(EADDRNOTAVAIL, EADDRNOTAVAIL)).toBe(true)
+    expect(Errno_Temporary(EINTR)).toBe(true)
+    expect(Errno_Temporary(EMFILE)).toBe(true)
+    expect(Errno_Temporary(ENFILE)).toBe(true)
+    expect(Errno_Timeout(EAGAIN)).toBe(true)
+    expect(Errno_Timeout(ETIMEDOUT)).toBe(true)
+    expect(Errno_Timeout(EADDRNOTAVAIL)).toBe(false)
   })
 
   test('reports unsupported socket operations as syscall errors', () => {

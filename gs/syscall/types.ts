@@ -3,10 +3,15 @@ import * as $ from '@goscript/builtin/index.js'
 // Essential type aliases
 export type uintptr = number
 
-// Errno type for syscall errors
-export interface Errno {
+// Errno is a named numeric Go type. Constants use object values so they can
+// satisfy error interfaces, while generated zero values may still be numbers.
+export type Errno = number | ErrnoObject
+
+export interface ErrnoObject {
   Error(): string
   Is(target: $.GoError): boolean
+  Temporary?(): boolean
+  Timeout?(): boolean
   Errno(): number
 }
 
