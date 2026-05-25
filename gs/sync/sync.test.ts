@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { Cond, Map, Mutex, WaitGroup } from './sync.js'
+import { Cond, Map, Mutex, RWMutex, WaitGroup } from './sync.js'
 
 describe('sync.WaitGroup', () => {
   it('Go tracks scheduled work and unblocks Wait after completion', async () => {
@@ -31,6 +31,16 @@ describe('sync.Cond', () => {
     expect(cond.L).toBe(mutex)
     await cond.L.Lock()
     cond.L.Unlock()
+  })
+})
+
+describe('sync.RWMutex', () => {
+  it('exposes RLocker as a read-lock Locker', async () => {
+    const rw = new RWMutex()
+    const locker = rw.RLocker()
+
+    await locker.Lock()
+    locker.Unlock()
   })
 })
 

@@ -1683,9 +1683,12 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 		return nil
 	}
 	var methods []loweredFunction
-	for method := range methodSet.Methods() {
-		method, _ := method.Obj().(*types.Func)
+	for selection := range methodSet.Methods() {
+		method, _ := selection.Obj().(*types.Func)
 		if method == nil || explicitMethods[method.Name()] {
+			continue
+		}
+		if !ast.IsExported(method.Name()) && method.Pkg() != nil && method.Pkg().Path() != ctx.semPkg.pkgPath {
 			continue
 		}
 		signature, _ := method.Type().(*types.Signature)
@@ -1708,9 +1711,8 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 			args = append(args, name)
 			lowered.params = append(lowered.params, loweredParam{name: name, typ: "any"})
 		}
-		call := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
-			"<" + targetType + ">(this." +
-			tsStructFieldName(field.name, 0) + ")." + method.Name() + "(" + strings.Join(args, ", ") + ")"
+		target := o.embeddedForwarderTargetExpr(ctx, field, selection, targetType)
+		call := target + "." + method.Name() + "(" + strings.Join(args, ", ") + ")"
 		if async {
 			call = "await " + call
 		}
@@ -1719,6 +1721,34 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 		explicitMethods[method.Name()] = true
 	}
 	return methods
+}
+
+func (o *LoweringOwner) embeddedForwarderTargetExpr(
+	ctx lowerFileContext,
+	field semanticField,
+	selection *types.Selection,
+	targetType string,
+) string {
+	pointerValue := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue)
+	expr := pointerValue + "<" + targetType + ">(this." + tsStructFieldName(field.name, 0) + ")"
+	if selection == nil || len(selection.Index()) <= 1 {
+		return expr
+	}
+
+	typ := field.typ
+	for _, index := range selection.Index()[:len(selection.Index())-1] {
+		structType, ok := types.Unalias(derefPointerType(typ)).Underlying().(*types.Struct)
+		if !ok || index < 0 || index >= structType.NumFields() {
+			return expr
+		}
+		field := structType.Field(index)
+		expr += "." + tsStructFieldName(field.Name(), index)
+		typ = field.Type()
+		if named := pointerToNamedStructType(typ); named != nil {
+			expr = pointerValue + "<" + o.namedTypeExpr(ctx, named) + ">(" + expr + ")"
+		}
+	}
+	return expr
 }
 
 func (o *LoweringOwner) tsEmbeddedForwarderTargetType(ctx lowerFileContext, typ types.Type) string {

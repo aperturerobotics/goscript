@@ -143,6 +143,15 @@ export class RWMutex {
     }
   }
 
+  // RLocker returns a Locker interface that implements Lock and Unlock by
+  // calling RLock and RUnlock.
+  public RLocker(): Locker {
+    return {
+      Lock: () => this.RLock(),
+      Unlock: () => this.RUnlock(),
+    }
+  }
+
   private _wakeUpWaiters(): void {
     // Prioritize writers
     if (this._writerWaitQueue.length > 0 && this._readers === 0) {
