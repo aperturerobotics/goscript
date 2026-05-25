@@ -1277,6 +1277,42 @@ func TestCompilePackagesWrapsAddressedMapRangeValue(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLowersPromotedNamedPrimitiveMethod(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/promotedprimitive\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"time\"",
+			"type Lifetime struct { time.Duration }",
+			"func Seconds(l Lifetime) float64 {",
+			"  return l.Seconds()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "promotedprimitive", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "return time.Duration_Seconds(l.Duration)") {
+		t.Fatalf("promoted named primitive method was not lowered through the owner function:\n%s", text)
+	}
+	if strings.Contains(text, ".Seconds()") {
+		t.Fatalf("promoted named primitive method still used a JavaScript member call:\n%s", text)
+	}
+}
+
 func TestCompilePackagesPreservesFloatConversionLiterals(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/floatconv\n\ngo 1.25.3\n",

@@ -5534,7 +5534,10 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 				call := o.runtimeOwner.QualifiedHelper(RuntimeHelperCallGenericMethod) + "(" + strings.Join(methodArgs, ", ") + ")"
 				return o.awaitCallIfNeeded(ctx, fun, call), diagnostics
 			}
-			receiver := receiverNamedType(selection.Recv())
+			receiver := methodReceiverNamedType(selection.Obj())
+			if receiver == nil {
+				receiver = receiverNamedType(selection.Recv())
+			}
 			if namedNonInterfaceNonStructType(receiver) {
 				return o.lowerNamedReceiverMethodCall(ctx, fun, args, diagnostics)
 			}
@@ -6303,7 +6306,10 @@ func (o *LoweringOwner) lowerNamedReceiverMethodCall(
 	diagnostics []Diagnostic,
 ) (string, []Diagnostic) {
 	selection := ctx.semPkg.source.TypesInfo.Selections[selector]
-	receiver := receiverNamedType(selection.Recv())
+	receiver := methodReceiverNamedType(selection.Obj())
+	if receiver == nil {
+		receiver = selectedReceiverNamedType(ctx.semPkg.source, selector, selection)
+	}
 	receiverExpr, receiverDiagnostics := o.lowerNamedReceiverForMethod(ctx, selector.X, selection)
 	diagnostics = append(diagnostics, receiverDiagnostics...)
 	allArgs := append([]string{receiverExpr}, args...)
@@ -6436,8 +6442,12 @@ func (o *LoweringOwner) lowerNamedReceiverForMethod(
 		}
 		return o.lowerAddressExpr(ctx, expr)
 	}
-	receiver, diagnostics := o.lowerExpr(ctx, expr)
-	if receiverType != nil && isPointerType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
+	receiver, diagnostics := o.lowerMethodReceiverExpr(ctx, expr, selection)
+	selectedType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	if index := selection.Index(); len(index) > 1 && !o.receiverUsesOverridePackage(selectedType) {
+		selectedType = promotedMethodReceiverType(selectedType, index[:len(index)-1])
+	}
+	if receiverType != nil && isPointerType(selectedType) {
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "<" + o.tsTypeFor(ctx, receiverType) + ">(" + receiver + ")", diagnostics
 	}
 	return receiver, diagnostics
@@ -6460,9 +6470,13 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 	if selection := ctx.semPkg.source.TypesInfo.Selections[expr]; selection != nil {
 		switch selection.Kind() {
 		case types.MethodVal:
-			if receiver := receiverNamedType(selection.Recv()); namedNonInterfaceNonStructType(receiver) {
+			namedReceiver := methodReceiverNamedType(selection.Obj())
+			if namedReceiver == nil {
+				namedReceiver = selectedReceiverNamedType(ctx.semPkg.source, expr, selection)
+			}
+			if namedNonInterfaceNonStructType(namedReceiver) {
 				receiverExpr, diagnostics := o.lowerNamedReceiverForMethod(ctx, expr.X, selection)
-				methodExpr := o.methodFunctionExpr(ctx, receiver, selection.Obj(), expr.Sel.Name)
+				methodExpr := o.methodFunctionExpr(ctx, namedReceiver, selection.Obj(), expr.Sel.Name)
 				return o.lowerMethodValueClosure(ctx, selection, receiverExpr, methodExpr, true), diagnostics
 			}
 			receiver, diagnostics := o.lowerMethodReceiverExpr(ctx, expr.X, selection)
@@ -6815,6 +6829,21 @@ func (o *LoweringOwner) lowerPromotedMethodReceiver(
 		}
 	}
 	return receiver, typ
+}
+
+func promotedMethodReceiverType(typ types.Type, index []int) types.Type {
+	typ = derefPointerType(typ)
+	for _, fieldIndex := range index {
+		structType := structUnderlyingType(typ)
+		if structType == nil || fieldIndex < 0 || fieldIndex >= structType.NumFields() {
+			return typ
+		}
+		typ = structType.Field(fieldIndex).Type()
+		if pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer); ok {
+			typ = pointer.Elem()
+		}
+	}
+	return typ
 }
 
 func (o *LoweringOwner) lowerAssignmentTarget(
@@ -9032,6 +9061,18 @@ func methodFunctionName(receiver *types.Named, method string) string {
 		return method
 	}
 	return receiver.Obj().Name() + "_" + method
+}
+
+func methodReceiverNamedType(obj types.Object) *types.Named {
+	fn, _ := obj.(*types.Func)
+	if fn == nil {
+		return nil
+	}
+	signature, _ := fn.Type().(*types.Signature)
+	if signature == nil || signature.Recv() == nil {
+		return nil
+	}
+	return receiverNamedType(signature.Recv().Type())
 }
 
 func (o *LoweringOwner) methodFunctionExpr(
