@@ -1072,8 +1072,11 @@ func TestRenderRuntimeTypeScriptProjectDisablesEmit(t *testing.T) {
 	if !strings.Contains(tsconfig, "\"runner-*.ts\"") {
 		t.Fatalf("expected aggregate tsconfig to typecheck generated runner roots: %s", tsconfig)
 	}
-	if !strings.Contains(tsconfig, "output/**/*.ts") {
-		t.Fatalf("expected aggregate tsconfig to retain output glob roots: %s", tsconfig)
+	if !strings.Contains(tsconfig, "./output/@goscript/*") {
+		t.Fatalf("expected aggregate tsconfig path aliases to reference output root: %s", tsconfig)
+	}
+	if strings.Contains(tsconfig, "output/**/*.ts") {
+		t.Fatalf("expected aggregate tsconfig to typecheck from runner roots, not output globs: %s", tsconfig)
 	}
 }
 

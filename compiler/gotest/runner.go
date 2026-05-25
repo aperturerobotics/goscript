@@ -1005,7 +1005,6 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 
 func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string, nodeTypesAvailable bool) string {
 	var aliases []string
-	var includes []string
 	seen := make(map[string]bool)
 	for _, outputRoot := range outputRoots {
 		if outputRoot == "" {
@@ -1016,18 +1015,10 @@ func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string
 			seen[alias] = true
 			aliases = append(aliases, alias)
 		}
-		include := typeScriptOutputPattern(req, outputRoot) + "/**/*.ts"
-		if seen[include] {
-			continue
-		}
-		seen[include] = true
-		includes = append(includes, include)
 	}
 	if len(aliases) == 0 && req.OutputRoot != "" {
 		aliases = append(aliases, "./"+typeScriptOutputAlias(req, req.OutputRoot))
-		includes = append(includes, typeScriptOutputPattern(req, req.OutputRoot)+"/**/*.ts")
 	}
-	includes = append(includes, "runner-*.ts", tsworkspace.NodeAmbientTypesFile)
 	var b strings.Builder
 	b.WriteString("{\n")
 	b.WriteString("  \"compilerOptions\": {\n")
@@ -1055,13 +1046,8 @@ func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string
 	b.WriteString("]\n")
 	b.WriteString("    }\n")
 	b.WriteString("  },\n")
-	b.WriteString("  \"include\": [")
-	for idx, include := range includes {
-		if idx != 0 {
-			b.WriteString(", ")
-		}
-		b.WriteString(strconv.Quote(include))
-	}
+	b.WriteString("  \"include\": [\"runner-*.ts\", ")
+	b.WriteString(strconv.Quote(tsworkspace.NodeAmbientTypesFile))
 	b.WriteString("]\n")
 	b.WriteString("}\n")
 	return b.String()
