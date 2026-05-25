@@ -889,6 +889,67 @@ func TestCompilePackagesEmitsPackageLocalImport(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesPreservesSourceImportAliasesForAssociatedMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/sourcealiases\n\ngo 1.25.3\n",
+		"dep/block/errors.go": strings.Join([]string{
+			"package block",
+			"import \"errors\"",
+			"var ErrUnexpectedType = errors.New(\"unexpected object type\")",
+			"",
+		}, "\n"),
+		"dep/kvtx/block/store.go": strings.Join([]string{
+			"package kvtx_block",
+			"type KeyValueStore struct{}",
+			"",
+		}, "\n"),
+		"world/world.go": strings.Join([]string{
+			"package world",
+			"import block \"example.test/sourcealiases/dep/kvtx/block\"",
+			"type World struct {",
+			"  Object *block.KeyValueStore",
+			"}",
+			"",
+		}, "\n"),
+		"world/block-world.go": strings.Join([]string{
+			"package world",
+			"import (",
+			"  block \"example.test/sourcealiases/dep/block\"",
+			"  block_kvtx \"example.test/sourcealiases/dep/kvtx/block\"",
+			")",
+			"func (w *World) Apply(next any) error {",
+			"  if _, ok := next.(*block_kvtx.KeyValueStore); !ok {",
+			"    return block.ErrUnexpectedType",
+			"  }",
+			"  return nil",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "./world"); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "sourcealiases", "world", "world.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	matches := regexp.MustCompile(`import \* as (\w+) from "@goscript/example\.test/sourcealiases/dep/block/index\.js"`).FindStringSubmatch(text)
+	if len(matches) != 2 {
+		t.Fatalf("missing dep/block import in generated output:\n%s", text)
+	}
+	if !strings.Contains(text, "return "+matches[1]+".ErrUnexpectedType") {
+		t.Fatalf("selector did not use the alias for its source package %q:\n%s", matches[1], text)
+	}
+}
+
 func TestCompilePackagesEmitsSideEffectImportsForInterfaceRegistry(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/interface-registry\n\ngo 1.25.3\n",

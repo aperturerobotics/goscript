@@ -145,6 +145,7 @@ func (o *LoweringOwner) lowerFile(
 	importAliases := make(map[string]string)
 	importPaths := make(map[string]string)
 	importNames := make(map[string]string)
+	importObjects := make(map[*types.PkgName]string)
 	localRefs := o.analyzeLocalFileReferences(semPkg, file, sourcePath, associatedMethods, declFiles, outputNames)
 	reservedImportAliases := localRefs.reservedNames
 	seenImport := make(map[string]bool)
@@ -178,6 +179,7 @@ func (o *LoweringOwner) lowerFile(
 			importAliases[alias] = pkgName.Imported().Path()
 			importPaths[pkgName.Imported().Path()] = alias
 			importNames[name] = alias
+			importObjects[pkgName] = alias
 			loweredFile.imports = append(loweredFile.imports, loweredImport{
 				alias:      alias,
 				source:     source,
@@ -220,6 +222,7 @@ func (o *LoweringOwner) lowerFile(
 		importAliases:   importAliases,
 		importPaths:     importPaths,
 		importNames:     importNames,
+		importObjects:   importObjects,
 		sourcePath:      sourcePath,
 		localAliases:    localRefs.aliases,
 		lazyPackageVars: lazyPackageVars,
@@ -666,6 +669,7 @@ type lowerFileContext struct {
 	importAliases     map[string]string
 	importPaths       map[string]string
 	importNames       map[string]string
+	importObjects     map[*types.PkgName]string
 	sourcePath        string
 	localAliases      map[types.Object]string
 	lazyPackageVars   map[types.Object]bool
@@ -6515,7 +6519,7 @@ func (o *LoweringOwner) lowerNamedReceiverForMethod(
 func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.SelectorExpr) (string, []Diagnostic) {
 	if ident, ok := expr.X.(*ast.Ident); ok {
 		if pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName); pkgName != nil {
-			if alias := ctx.importNames[pkgName.Name()]; alias != "" {
+			if alias := importAliasForPkgName(ctx, pkgName); alias != "" {
 				value := alias + "." + expr.Sel.Name
 				obj, _ := ctx.semPkg.source.TypesInfo.Uses[expr.Sel].(*types.Var)
 				if obj != nil && packageVarReadNeedsPointerValue(obj.Type()) {
@@ -6567,7 +6571,7 @@ func packageVarSelectorNeedsPointerValue(ctx lowerFileContext, expr ast.Expr) bo
 		return false
 	}
 	pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName)
-	if pkgName == nil || ctx.importNames[pkgName.Name()] == "" {
+	if importAliasForPkgName(ctx, pkgName) == "" {
 		return false
 	}
 	obj, _ := ctx.semPkg.source.TypesInfo.Uses[selector.Sel].(*types.Var)
@@ -6609,7 +6613,7 @@ func (o *LoweringOwner) packageVarSetterForAssignment(ctx lowerFileContext, expr
 	if pkgName == nil {
 		return "", false
 	}
-	alias := ctx.importNames[pkgName.Name()]
+	alias := importAliasForPkgName(ctx, pkgName)
 	if alias == "" {
 		return "", false
 	}
@@ -6976,7 +6980,7 @@ func (o *LoweringOwner) lowerPackageVarAddressExpr(ctx lowerFileContext, expr as
 		if pkgName == nil {
 			return "", false
 		}
-		alias := ctx.importNames[pkgName.Name()]
+		alias := importAliasForPkgName(ctx, pkgName)
 		if alias == "" {
 			return "", false
 		}
@@ -6988,6 +6992,21 @@ func (o *LoweringOwner) lowerPackageVarAddressExpr(ctx lowerFileContext, expr as
 	default:
 		return "", false
 	}
+}
+
+func importAliasForPkgName(ctx lowerFileContext, pkgName *types.PkgName) string {
+	if pkgName == nil {
+		return ""
+	}
+	if alias := ctx.importObjects[pkgName]; alias != "" {
+		return alias
+	}
+	if imported := pkgName.Imported(); imported != nil {
+		if alias := ctx.importPaths[imported.Path()]; alias != "" {
+			return alias
+		}
+	}
+	return ctx.importNames[pkgName.Name()]
 }
 
 func (o *LoweringOwner) lowerIndexAddressExpr(ctx lowerFileContext, expr *ast.IndexExpr) (string, []Diagnostic) {
