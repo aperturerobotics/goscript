@@ -69,8 +69,8 @@ export function shift(p: point | $.VarRef<point> | null): [point | $.VarRef<poin
 }
 
 export async function main(): globalThis.Promise<void> {
-	$.println("sum:", sum(...(pair(2, 3))))
-	let p: point | $.VarRef<point> | null = makePoint(...(triple(4, 5, 6)))
+	$.println("sum:", sum(...(pair(2, 3) as [number, number])))
+	let p: point | $.VarRef<point> | null = makePoint(...(triple(4, 5, 6) as [number, number, number]))
 	$.println("point:", $.pointerValue<point>(p).x, $.pointerValue<point>(p).y)
 	let x: point | $.VarRef<point> | null = new point()
 	let y: point | $.VarRef<point> | null = new point()

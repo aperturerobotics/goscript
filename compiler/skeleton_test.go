@@ -1415,6 +1415,46 @@ func TestCompilePackagesMarksPackageFunctionVariablesAsync(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesCastsConvertedTupleCallSpreads(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/tuplecallspread\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Resolver interface { Resolve() }",
+			"type relay struct{}",
+			"func (*relay) Resolve() {}",
+			"func NewRelay() (*relay, error) { return &relay{}, nil }",
+			"func R(res Resolver, err error) ([]Resolver, error) {",
+			"  if err != nil { return nil, err }",
+			"  return []Resolver{res}, nil",
+			"}",
+			"func Use() ([]Resolver, error) {",
+			"  return R(NewRelay())",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "tuplecallspread", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "return R(...(() => {") ||
+		!strings.Contains(text, "] as [Resolver | null, $.GoError]") {
+		t.Fatalf("converted tuple call spread was not cast as a TypeScript tuple:\n%s", text)
+	}
+}
+
 func TestCompilePackagesPreservesBlankNamedResultSlots(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/blankresult\n\ngo 1.25.3\n",

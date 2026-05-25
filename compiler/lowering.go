@@ -5794,17 +5794,39 @@ func (o *LoweringOwner) lowerTupleCallArgs(
 		parts = append(parts, converted)
 	}
 	if !changed {
-		return []string{"...(" + value + ")"}, diagnostics, true
+		return []string{"...(" + o.parenthesizedTupleCast(ctx, value, params) + ")"}, diagnostics, true
 	}
 	temp := ctx.tempName("TupleArg")
 	for idx, part := range parts {
 		parts[idx] = strings.ReplaceAll(part, "__goscriptTupleArg", temp)
 	}
-	body := "const " + temp + " = " + value + "; return [" + strings.Join(parts, ", ") + "]"
+	body := "const " + temp + " = " + value + "; return " + o.tupleLiteralCast(ctx, params, parts)
 	if strings.Contains(value, "await ") {
 		return []string{"...(await (async () => { " + body + " })())"}, diagnostics, true
 	}
 	return []string{"...(() => { " + body + " })()"}, diagnostics, true
+}
+
+func (o *LoweringOwner) parenthesizedTupleCast(ctx lowerFileContext, value string, params *types.Tuple) string {
+	if strings.HasPrefix(value, "await ") {
+		return "(" + value + ") as " + o.tupleTypeForParams(ctx, params)
+	}
+	return value + " as " + o.tupleTypeForParams(ctx, params)
+}
+
+func (o *LoweringOwner) tupleLiteralCast(ctx lowerFileContext, params *types.Tuple, parts []string) string {
+	return "[" + strings.Join(parts, ", ") + "] as " + o.tupleTypeForParams(ctx, params)
+}
+
+func (o *LoweringOwner) tupleTypeForParams(ctx lowerFileContext, params *types.Tuple) string {
+	if params == nil || params.Len() == 0 {
+		return "[]"
+	}
+	parts := make([]string, 0, params.Len())
+	for v := range params.Variables() {
+		parts = append(parts, o.tsTypeFor(ctx, v.Type()))
+	}
+	return "[" + strings.Join(parts, ", ") + "]"
 }
 
 func (o *LoweringOwner) lowerFixedCallArgs(
