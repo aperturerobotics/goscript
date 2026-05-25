@@ -1044,6 +1044,9 @@ func TestRenderTypeScriptProjectDisablesAmbientTypePackages(t *testing.T) {
 	if !strings.Contains(tsconfig, "\"goscript-node.d.ts\"") {
 		t.Fatalf("expected generated tsconfig to include GoScript node ambient declarations: %s", tsconfig)
 	}
+	if strings.Contains(tsconfig, "output/package-0/**/*.ts") {
+		t.Fatalf("expected generated tsconfig to typecheck from runner roots, not output globs: %s", tsconfig)
+	}
 }
 
 func TestRenderTypeScriptProjectUsesNodeTypesWhenAvailable(t *testing.T) {
@@ -1065,6 +1068,12 @@ func TestRenderRuntimeTypeScriptProjectDisablesEmit(t *testing.T) {
 	tsconfig := renderRuntimeTypeScriptProject(req, []string{"/work/output"}, false)
 	if !strings.Contains(tsconfig, "\"noEmit\": true") {
 		t.Fatalf("expected aggregate tsconfig to disable emit: %s", tsconfig)
+	}
+	if !strings.Contains(tsconfig, "\"runner-*.ts\"") {
+		t.Fatalf("expected aggregate tsconfig to typecheck generated runner roots: %s", tsconfig)
+	}
+	if !strings.Contains(tsconfig, "output/**/*.ts") {
+		t.Fatalf("expected aggregate tsconfig to retain output glob roots: %s", tsconfig)
 	}
 }
 

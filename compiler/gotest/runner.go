@@ -972,7 +972,6 @@ func aggregateTypeCheckFailureOwner(output string) (Owner, bool) {
 }
 
 func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string, nodeTypesAvailable bool) string {
-	outputPattern := typeScriptOutputPattern(req, outputRoot)
 	var b strings.Builder
 	b.WriteString("{\n")
 	b.WriteString("  \"compilerOptions\": {\n")
@@ -996,8 +995,6 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 	b.WriteString("    }\n")
 	b.WriteString("  },\n")
 	b.WriteString("  \"include\": [")
-	b.WriteString(strconv.Quote(outputPattern + "/**/*.ts"))
-	b.WriteString(", ")
 	b.WriteString(strconv.Quote(runnerFile))
 	b.WriteString(", ")
 	b.WriteString(strconv.Quote(tsworkspace.NodeAmbientTypesFile))
