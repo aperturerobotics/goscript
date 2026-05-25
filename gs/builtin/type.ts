@@ -552,11 +552,13 @@ function matchesStructType(value: any, info: TypeInfo): boolean {
  */
 function matchesInterfaceType(value: any, info: TypeInfo): boolean {
   // Check basic conditions first
-  if (
-    !isInterfaceTypeInfo(info) ||
-    typeof value !== 'object' ||
-    value === null
-  ) {
+  if (!isInterfaceTypeInfo(info) || value === null || value === undefined) {
+    return false
+  }
+  if (info.methods.length === 0) {
+    return true
+  }
+  if (typeof value !== 'object') {
     return false
   }
 

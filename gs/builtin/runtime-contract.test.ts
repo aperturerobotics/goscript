@@ -425,6 +425,21 @@ describe('builtin runtime contract helpers', () => {
     expect(typeAssert<Runner>(new Runner(), runnerInterface).ok).toBe(true)
     expect(typeAssert<Runner>(null, runnerInterface).ok).toBe(false)
 
+    const emptyInterface = registerInterfaceType('phase5.EmptyInterface', null, [])
+    const fn = functionValue(() => 'ok', {
+      kind: TypeKind.Function,
+      params: [],
+      results: [{ kind: TypeKind.Basic, name: 'string' }],
+    })
+    expect(typeAssert<typeof fn>(fn, emptyInterface)).toEqual({
+      ok: true,
+      value: fn,
+    })
+    expect(typeAssert<number>(3, emptyInterface)).toEqual({
+      ok: true,
+      value: 3,
+    })
+
     const nil = typedNil('*main.Example')
     expect(nil.__isTypedNil).toBe(true)
     expect(nil.__goType).toBe('*main.Example')
