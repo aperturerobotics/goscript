@@ -294,6 +294,53 @@ func TestCompilePackagesAwaitsOverrideAsyncMethods(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesPropagatesOverrideAsyncInterfaceMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/overrideasynciface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"net/http\"",
+			"type client struct { rt http.RoundTripper }",
+			"func (c *client) Do(req *http.Request) (*http.Response, error) {",
+			"  return c.rt.RoundTrip(req)",
+			"}",
+			"func Use(c *client, req *http.Request) (*http.Response, error) {",
+			"  return c.Do(req)",
+			"}",
+			"func main() {}",
+			"",
+		}, "\n"),
+	})
+	out := filepath.Join(t.TempDir(), "out")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      out,
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(out, "@goscript", "example.test", "overrideasynciface", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"public async Do(req: http.Request | $.VarRef<http.Request> | null): globalThis.Promise<[http.Response | $.VarRef<http.Response> | null, $.GoError]>",
+		"return await $.pointerValue<Exclude<http.RoundTripper, null>>($.pointerValue<client>(c).rt).RoundTrip(req)",
+		"export async function Use(c: client | $.VarRef<client> | null, req: http.Request | $.VarRef<http.Request> | null): globalThis.Promise<[http.Response | $.VarRef<http.Response> | null, $.GoError]>",
+		"return await client.prototype.Do.call(c, req)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesAwaitsOverrideAsyncFunctions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/overrideasyncfunc\n\ngo 1.25.3\n",

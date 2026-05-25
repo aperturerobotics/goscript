@@ -1,5 +1,6 @@
 {
   "asyncMethods": {
-    "Client.Do": true
+    "Client.Do": true,
+    "RoundTripper.RoundTrip": true
   }
 }
