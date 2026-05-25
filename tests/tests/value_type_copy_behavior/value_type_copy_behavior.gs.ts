@@ -71,7 +71,7 @@ export class NestedStruct {
 	constructor(init?: Partial<{Value?: number, InnerStruct?: MyStruct}>) {
 		this._fields = {
 			Value: $.varRef(init?.Value ?? 0),
-			InnerStruct: $.varRef(init?.InnerStruct ? $.markAsStructValue(init.InnerStruct.clone()) : $.markAsStructValue(new MyStruct()))
+			InnerStruct: $.varRef(init?.InnerStruct ? $.markAsStructValue($.cloneStructValue(init.InnerStruct)) : $.markAsStructValue(new MyStruct()))
 		}
 	}
 
@@ -79,7 +79,7 @@ export class NestedStruct {
 		const cloned = new NestedStruct()
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value),
-			InnerStruct: $.varRef($.markAsStructValue(this._fields.InnerStruct.value.clone()))
+			InnerStruct: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.InnerStruct.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

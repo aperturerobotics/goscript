@@ -57,14 +57,14 @@ export class wrapper {
 
 	constructor(init?: Partial<{base?: base}>) {
 		this._fields = {
-			base: $.varRef(init?.base ? $.markAsStructValue(init.base.clone()) : $.markAsStructValue(new base()))
+			base: $.varRef(init?.base ? $.markAsStructValue($.cloneStructValue(init.base)) : $.markAsStructValue(new base()))
 		}
 	}
 
 	public clone(): wrapper {
 		const cloned = new wrapper()
 		cloned._fields = {
-			base: $.varRef($.markAsStructValue(this._fields.base.value.clone()))
+			base: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.base.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

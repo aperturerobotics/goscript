@@ -95,7 +95,7 @@ export class onePassInst {
 
 	constructor(init?: Partial<{Inst?: syntax.Inst, Next?: $.Slice<number>}>) {
 		this._fields = {
-			Inst: $.varRef(init?.Inst ? $.markAsStructValue(init.Inst.clone()) : $.markAsStructValue(new syntax.Inst())),
+			Inst: $.varRef(init?.Inst ? $.markAsStructValue($.cloneStructValue(init.Inst)) : $.markAsStructValue(new syntax.Inst())),
 			Next: $.varRef(init?.Next ?? null)
 		}
 	}
@@ -103,7 +103,7 @@ export class onePassInst {
 	public clone(): onePassInst {
 		const cloned = new onePassInst()
 		cloned._fields = {
-			Inst: $.varRef($.markAsStructValue(this._fields.Inst.value.clone())),
+			Inst: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.Inst.value))),
 			Next: $.varRef(this._fields.Next.value)
 		}
 		return $.markAsStructValue(cloned)

@@ -52,14 +52,14 @@ export class outer {
 
 	constructor(init?: Partial<{inner?: inner}>) {
 		this._fields = {
-			inner: $.varRef(init?.inner ? $.markAsStructValue(init.inner.clone()) : $.markAsStructValue(new inner()))
+			inner: $.varRef(init?.inner ? $.markAsStructValue($.cloneStructValue(init.inner)) : $.markAsStructValue(new inner()))
 		}
 	}
 
 	public clone(): outer {
 		const cloned = new outer()
 		cloned._fields = {
-			inner: $.varRef($.markAsStructValue(this._fields.inner.value.clone()))
+			inner: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.inner.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

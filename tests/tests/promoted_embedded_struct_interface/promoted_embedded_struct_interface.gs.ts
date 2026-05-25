@@ -57,14 +57,14 @@ export class stopStream {
 
 	constructor(init?: Partial<{stream?: stream}>) {
 		this._fields = {
-			stream: $.varRef(init?.stream ? $.markAsStructValue(init.stream.clone()) : $.markAsStructValue(new stream()))
+			stream: $.varRef(init?.stream ? $.markAsStructValue($.cloneStructValue(init.stream)) : $.markAsStructValue(new stream()))
 		}
 	}
 
 	public clone(): stopStream {
 		const cloned = new stopStream()
 		cloned._fields = {
-			stream: $.varRef($.markAsStructValue(this._fields.stream.value.clone()))
+			stream: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.stream.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

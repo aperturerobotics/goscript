@@ -187,18 +187,18 @@ export class inputs {
 
 	constructor(init?: Partial<{bytes?: __goscript_regexp.inputBytes, string?: __goscript_regexp.inputString, reader?: __goscript_regexp.inputReader}>) {
 		this._fields = {
-			bytes: $.varRef(init?.bytes ? $.markAsStructValue(init.bytes.clone()) : $.markAsStructValue(new __goscript_regexp.inputBytes())),
-			string: $.varRef(init?.string ? $.markAsStructValue(init.string.clone()) : $.markAsStructValue(new __goscript_regexp.inputString())),
-			reader: $.varRef(init?.reader ? $.markAsStructValue(init.reader.clone()) : $.markAsStructValue(new __goscript_regexp.inputReader()))
+			bytes: $.varRef(init?.bytes ? $.markAsStructValue($.cloneStructValue(init.bytes)) : $.markAsStructValue(new __goscript_regexp.inputBytes())),
+			string: $.varRef(init?.string ? $.markAsStructValue($.cloneStructValue(init.string)) : $.markAsStructValue(new __goscript_regexp.inputString())),
+			reader: $.varRef(init?.reader ? $.markAsStructValue($.cloneStructValue(init.reader)) : $.markAsStructValue(new __goscript_regexp.inputReader()))
 		}
 	}
 
 	public clone(): inputs {
 		const cloned = new inputs()
 		cloned._fields = {
-			bytes: $.varRef($.markAsStructValue(this._fields.bytes.value.clone())),
-			string: $.varRef($.markAsStructValue(this._fields.string.value.clone())),
-			reader: $.varRef($.markAsStructValue(this._fields.reader.value.clone()))
+			bytes: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.bytes.value))),
+			string: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.string.value))),
+			reader: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.reader.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}
@@ -330,12 +330,12 @@ export class machine {
 		this._fields = {
 			re: $.varRef(init?.re ?? null),
 			p: $.varRef(init?.p ?? null),
-			q0: $.varRef(init?.q0 ? $.markAsStructValue(init.q0.clone()) : $.markAsStructValue(new queue())),
-			q1: $.varRef(init?.q1 ? $.markAsStructValue(init.q1.clone()) : $.markAsStructValue(new queue())),
+			q0: $.varRef(init?.q0 ? $.markAsStructValue($.cloneStructValue(init.q0)) : $.markAsStructValue(new queue())),
+			q1: $.varRef(init?.q1 ? $.markAsStructValue($.cloneStructValue(init.q1)) : $.markAsStructValue(new queue())),
 			pool: $.varRef(init?.pool ?? null),
 			matched: $.varRef(init?.matched ?? false),
 			matchcap: $.varRef(init?.matchcap ?? null),
-			inputs: $.varRef(init?.inputs ? $.markAsStructValue(init.inputs.clone()) : $.markAsStructValue(new inputs()))
+			inputs: $.varRef(init?.inputs ? $.markAsStructValue($.cloneStructValue(init.inputs)) : $.markAsStructValue(new inputs()))
 		}
 	}
 
@@ -344,12 +344,12 @@ export class machine {
 		cloned._fields = {
 			re: $.varRef(this._fields.re.value),
 			p: $.varRef(this._fields.p.value),
-			q0: $.varRef($.markAsStructValue(this._fields.q0.value.clone())),
-			q1: $.varRef($.markAsStructValue(this._fields.q1.value.clone())),
+			q0: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.q0.value))),
+			q1: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.q1.value))),
 			pool: $.varRef(this._fields.pool.value),
 			matched: $.varRef(this._fields.matched.value),
 			matchcap: $.varRef(this._fields.matchcap.value),
-			inputs: $.varRef($.markAsStructValue(this._fields.inputs.value.clone()))
+			inputs: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.inputs.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}
@@ -674,7 +674,7 @@ export class onePassMachine {
 
 	constructor(init?: Partial<{inputs?: inputs, matchcap?: $.Slice<number>}>) {
 		this._fields = {
-			inputs: $.varRef(init?.inputs ? $.markAsStructValue(init.inputs.clone()) : $.markAsStructValue(new inputs())),
+			inputs: $.varRef(init?.inputs ? $.markAsStructValue($.cloneStructValue(init.inputs)) : $.markAsStructValue(new inputs())),
 			matchcap: $.varRef(init?.matchcap ?? null)
 		}
 	}
@@ -682,7 +682,7 @@ export class onePassMachine {
 	public clone(): onePassMachine {
 		const cloned = new onePassMachine()
 		cloned._fields = {
-			inputs: $.varRef($.markAsStructValue(this._fields.inputs.value.clone())),
+			inputs: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.inputs.value))),
 			matchcap: $.varRef(this._fields.matchcap.value)
 		}
 		return $.markAsStructValue(cloned)

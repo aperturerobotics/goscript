@@ -135,7 +135,7 @@ export class bitState {
 			matchcap: $.varRef(init?.matchcap ?? null),
 			jobs: $.varRef(init?.jobs ?? null),
 			visited: $.varRef(init?.visited ?? null),
-			inputs: $.varRef(init?.inputs ? $.markAsStructValue(init.inputs.clone()) : $.markAsStructValue(new __goscript_exec.inputs()))
+			inputs: $.varRef(init?.inputs ? $.markAsStructValue($.cloneStructValue(init.inputs)) : $.markAsStructValue(new __goscript_exec.inputs()))
 		}
 	}
 
@@ -147,7 +147,7 @@ export class bitState {
 			matchcap: $.varRef(this._fields.matchcap.value),
 			jobs: $.varRef(this._fields.jobs.value),
 			visited: $.varRef(this._fields.visited.value),
-			inputs: $.varRef($.markAsStructValue(this._fields.inputs.value.clone()))
+			inputs: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.inputs.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

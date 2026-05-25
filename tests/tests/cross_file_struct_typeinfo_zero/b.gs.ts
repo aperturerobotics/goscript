@@ -20,14 +20,14 @@ export class bValue {
 
 	constructor(init?: Partial<{inner?: __goscript_a.aValue}>) {
 		this._fields = {
-			inner: $.varRef(init?.inner ? $.markAsStructValue(init.inner.clone()) : $.markAsStructValue(new __goscript_a.aValue()))
+			inner: $.varRef(init?.inner ? $.markAsStructValue($.cloneStructValue(init.inner)) : $.markAsStructValue(new __goscript_a.aValue()))
 		}
 	}
 
 	public clone(): bValue {
 		const cloned = new bValue()
 		cloned._fields = {
-			inner: $.varRef($.markAsStructValue(this._fields.inner.value.clone()))
+			inner: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.inner.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

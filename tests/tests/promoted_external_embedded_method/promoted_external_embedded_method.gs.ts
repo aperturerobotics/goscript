@@ -20,14 +20,14 @@ export class raw {
 
 	constructor(init?: Partial<{Mutex?: sync.Mutex}>) {
 		this._fields = {
-			Mutex: $.varRef(init?.Mutex ? $.markAsStructValue(init.Mutex.clone()) : $.markAsStructValue(new sync.Mutex()))
+			Mutex: $.varRef(init?.Mutex ? $.markAsStructValue($.cloneStructValue(init.Mutex)) : $.markAsStructValue(new sync.Mutex()))
 		}
 	}
 
 	public clone(): raw {
 		const cloned = new raw()
 		cloned._fields = {
-			Mutex: $.varRef($.markAsStructValue(this._fields.Mutex.value.clone()))
+			Mutex: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.Mutex.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}
@@ -55,14 +55,14 @@ export class outer {
 
 	constructor(init?: Partial<{raw?: raw}>) {
 		this._fields = {
-			raw: $.varRef(init?.raw ? $.markAsStructValue(init.raw.clone()) : $.markAsStructValue(new raw()))
+			raw: $.varRef(init?.raw ? $.markAsStructValue($.cloneStructValue(init.raw)) : $.markAsStructValue(new raw()))
 		}
 	}
 
 	public clone(): outer {
 		const cloned = new outer()
 		cloned._fields = {
-			raw: $.varRef($.markAsStructValue(this._fields.raw.value.clone()))
+			raw: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.raw.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}
@@ -102,14 +102,14 @@ export class rawRW {
 
 	constructor(init?: Partial<{RWMutex?: sync.RWMutex}>) {
 		this._fields = {
-			RWMutex: $.varRef(init?.RWMutex ? $.markAsStructValue(init.RWMutex.clone()) : $.markAsStructValue(new sync.RWMutex()))
+			RWMutex: $.varRef(init?.RWMutex ? $.markAsStructValue($.cloneStructValue(init.RWMutex)) : $.markAsStructValue(new sync.RWMutex()))
 		}
 	}
 
 	public clone(): rawRW {
 		const cloned = new rawRW()
 		cloned._fields = {
-			RWMutex: $.varRef($.markAsStructValue(this._fields.RWMutex.value.clone()))
+			RWMutex: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.RWMutex.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}
@@ -137,14 +137,14 @@ export class outerRW {
 
 	constructor(init?: Partial<{rawRW?: rawRW}>) {
 		this._fields = {
-			rawRW: $.varRef(init?.rawRW ? $.markAsStructValue(init.rawRW.clone()) : $.markAsStructValue(new rawRW()))
+			rawRW: $.varRef(init?.rawRW ? $.markAsStructValue($.cloneStructValue(init.rawRW)) : $.markAsStructValue(new rawRW()))
 		}
 	}
 
 	public clone(): outerRW {
 		const cloned = new outerRW()
 		cloned._fields = {
-			rawRW: $.varRef($.markAsStructValue(this._fields.rawRW.value.clone()))
+			rawRW: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.rawRW.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}
@@ -239,14 +239,14 @@ export class outerRunner {
 
 	constructor(init?: Partial<{rawRunner?: rawRunner}>) {
 		this._fields = {
-			rawRunner: $.varRef(init?.rawRunner ? $.markAsStructValue(init.rawRunner.clone()) : $.markAsStructValue(new rawRunner()))
+			rawRunner: $.varRef(init?.rawRunner ? $.markAsStructValue($.cloneStructValue(init.rawRunner)) : $.markAsStructValue(new rawRunner()))
 		}
 	}
 
 	public clone(): outerRunner {
 		const cloned = new outerRunner()
 		cloned._fields = {
-			rawRunner: $.varRef($.markAsStructValue(this._fields.rawRunner.value.clone()))
+			rawRunner: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.rawRunner.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

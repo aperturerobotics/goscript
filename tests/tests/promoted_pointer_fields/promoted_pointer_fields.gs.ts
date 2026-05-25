@@ -66,7 +66,7 @@ export class inner {
 	constructor(init?: Partial<{name?: string, count?: counter}>) {
 		this._fields = {
 			name: $.varRef(init?.name ?? ""),
-			count: $.varRef(init?.count ? $.markAsStructValue(init.count.clone()) : $.markAsStructValue(new counter()))
+			count: $.varRef(init?.count ? $.markAsStructValue($.cloneStructValue(init.count)) : $.markAsStructValue(new counter()))
 		}
 	}
 
@@ -74,7 +74,7 @@ export class inner {
 		const cloned = new inner()
 		cloned._fields = {
 			name: $.varRef(this._fields.name.value),
-			count: $.varRef($.markAsStructValue(this._fields.count.value.clone()))
+			count: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.count.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

@@ -61,7 +61,7 @@ export class Public {
 	constructor(init?: Partial<{Value?: string, Hidden?: hidden}>) {
 		this._fields = {
 			Value: $.varRef(init?.Value ?? ""),
-			Hidden: $.varRef(init?.Hidden ? $.markAsStructValue(init.Hidden.clone()) : $.markAsStructValue(new hidden()))
+			Hidden: $.varRef(init?.Hidden ? $.markAsStructValue($.cloneStructValue(init.Hidden)) : $.markAsStructValue(new hidden()))
 		}
 	}
 
@@ -69,7 +69,7 @@ export class Public {
 		const cloned = new Public()
 		cloned._fields = {
 			Value: $.varRef(this._fields.Value.value),
-			Hidden: $.varRef($.markAsStructValue(this._fields.Hidden.value.clone()))
+			Hidden: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.Hidden.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

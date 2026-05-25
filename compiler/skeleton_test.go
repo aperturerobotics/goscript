@@ -1074,6 +1074,51 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesClonesNestedStructFieldsWithCloneMethodCollision(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/nestedclone\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Box struct { Value int }",
+			"func (b *Box) clone() (*Box, error) {",
+			"  return &Box{Value: b.Value + 1}, nil",
+			"}",
+			"type Holder struct { Box Box }",
+			"func copyHolder(h Holder) Holder { return h }",
+			"func main() {",
+			"  _ = copyHolder(Holder{Box: Box{Value: 1}})",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "nestedclone", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"public __goscriptClone(): Box",
+		"Box: $.varRef(init?.Box ? $.markAsStructValue($.cloneStructValue(init.Box)) : $.markAsStructValue(new Box()))",
+		"Box: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.Box.value)))",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	if strings.Contains(text, "init.Box.clone()") || strings.Contains(text, "this._fields.Box.value.clone()") {
+		t.Fatalf("nested struct-field clone bypassed cloneStructValue:\n%s", text)
+	}
+}
+
 func TestCompilePackagesEmitsNestedPointerStorageAssertions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/pointers\n\ngo 1.25.3\n",

@@ -28,7 +28,7 @@ export class FileTracker {
 
 	constructor(init?: Partial<{mutex?: sync.Mutex, lines?: $.Slice<number>}>) {
 		this._fields = {
-			mutex: $.varRef(init?.mutex ? $.markAsStructValue(init.mutex.clone()) : $.markAsStructValue(new sync.Mutex())),
+			mutex: $.varRef(init?.mutex ? $.markAsStructValue($.cloneStructValue(init.mutex)) : $.markAsStructValue(new sync.Mutex())),
 			lines: $.varRef(init?.lines ?? null)
 		}
 	}
@@ -36,7 +36,7 @@ export class FileTracker {
 	public clone(): FileTracker {
 		const cloned = new FileTracker()
 		cloned._fields = {
-			mutex: $.varRef($.markAsStructValue(this._fields.mutex.value.clone())),
+			mutex: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.mutex.value))),
 			lines: $.varRef(this._fields.lines.value)
 		}
 		return $.markAsStructValue(cloned)

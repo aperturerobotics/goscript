@@ -65,16 +65,16 @@ export class Addr {
 
 	constructor(init?: Partial<{addr?: __goscript_uint128.uint128, z?: _unique.Handle<addrDetail>}>) {
 		this._fields = {
-			addr: $.varRef(init?.addr ? $.markAsStructValue(init.addr.clone()) : $.markAsStructValue(new __goscript_uint128.uint128())),
-			z: $.varRef(init?.z ? $.markAsStructValue(init.z.clone()) : $.markAsStructValue(new _unique.Handle<addrDetail>()))
+			addr: $.varRef(init?.addr ? $.markAsStructValue($.cloneStructValue(init.addr)) : $.markAsStructValue(new __goscript_uint128.uint128())),
+			z: $.varRef(init?.z ? $.markAsStructValue($.cloneStructValue(init.z)) : $.markAsStructValue(new _unique.Handle<addrDetail>()))
 		}
 	}
 
 	public clone(): Addr {
 		const cloned = new Addr()
 		cloned._fields = {
-			addr: $.varRef($.markAsStructValue(this._fields.addr.value.clone())),
-			z: $.varRef($.markAsStructValue(this._fields.z.value.clone()))
+			addr: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.addr.value))),
+			z: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.z.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}
@@ -912,7 +912,7 @@ export class AddrPort {
 
 	constructor(init?: Partial<{ip?: Addr, port?: number}>) {
 		this._fields = {
-			ip: $.varRef(init?.ip ? $.markAsStructValue(init.ip.clone()) : $.markAsStructValue(new Addr())),
+			ip: $.varRef(init?.ip ? $.markAsStructValue($.cloneStructValue(init.ip)) : $.markAsStructValue(new Addr())),
 			port: $.varRef(init?.port ?? 0)
 		}
 	}
@@ -920,7 +920,7 @@ export class AddrPort {
 	public clone(): AddrPort {
 		const cloned = new AddrPort()
 		cloned._fields = {
-			ip: $.varRef($.markAsStructValue(this._fields.ip.value.clone())),
+			ip: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.ip.value))),
 			port: $.varRef(this._fields.port.value)
 		}
 		return $.markAsStructValue(cloned)
@@ -1125,7 +1125,7 @@ export class Prefix {
 
 	constructor(init?: Partial<{ip?: Addr, bitsPlusOne?: number}>) {
 		this._fields = {
-			ip: $.varRef(init?.ip ? $.markAsStructValue(init.ip.clone()) : $.markAsStructValue(new Addr())),
+			ip: $.varRef(init?.ip ? $.markAsStructValue($.cloneStructValue(init.ip)) : $.markAsStructValue(new Addr())),
 			bitsPlusOne: $.varRef(init?.bitsPlusOne ?? 0)
 		}
 	}
@@ -1133,7 +1133,7 @@ export class Prefix {
 	public clone(): Prefix {
 		const cloned = new Prefix()
 		cloned._fields = {
-			ip: $.varRef($.markAsStructValue(this._fields.ip.value.clone())),
+			ip: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.ip.value))),
 			bitsPlusOne: $.varRef(this._fields.bitsPlusOne.value)
 		}
 		return $.markAsStructValue(cloned)

@@ -60,7 +60,7 @@ export class RWMutex {
 
 	constructor(init?: Partial<{bcast?: broadcast2.Broadcast, nreaders?: number, writing?: boolean, writeWaiting?: number}>) {
 		this._fields = {
-			bcast: $.varRef(init?.bcast ? $.markAsStructValue(init.bcast.clone()) : $.markAsStructValue(new broadcast2.Broadcast())),
+			bcast: $.varRef(init?.bcast ? $.markAsStructValue($.cloneStructValue(init.bcast)) : $.markAsStructValue(new broadcast2.Broadcast())),
 			nreaders: $.varRef(init?.nreaders ?? 0),
 			writing: $.varRef(init?.writing ?? false),
 			writeWaiting: $.varRef(init?.writeWaiting ?? 0)
@@ -70,7 +70,7 @@ export class RWMutex {
 	public clone(): RWMutex {
 		const cloned = new RWMutex()
 		cloned._fields = {
-			bcast: $.varRef($.markAsStructValue(this._fields.bcast.value.clone())),
+			bcast: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.bcast.value))),
 			nreaders: $.varRef(this._fields.nreaders.value),
 			writing: $.varRef(this._fields.writing.value),
 			writeWaiting: $.varRef(this._fields.writeWaiting.value)
@@ -282,7 +282,7 @@ export class RWMutexLocker {
 		this._fields = {
 			m: $.varRef(init?.m ?? null),
 			write: $.varRef(init?.write ?? false),
-			mtx: $.varRef(init?.mtx ? $.markAsStructValue(init.mtx.clone()) : $.markAsStructValue(new sync.Mutex())),
+			mtx: $.varRef(init?.mtx ? $.markAsStructValue($.cloneStructValue(init.mtx)) : $.markAsStructValue(new sync.Mutex())),
 			rels: $.varRef(init?.rels ?? null)
 		}
 	}
@@ -292,7 +292,7 @@ export class RWMutexLocker {
 		cloned._fields = {
 			m: $.varRef(this._fields.m.value),
 			write: $.varRef(this._fields.write.value),
-			mtx: $.varRef($.markAsStructValue(this._fields.mtx.value.clone())),
+			mtx: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.mtx.value))),
 			rels: $.varRef(this._fields.rels.value)
 		}
 		return $.markAsStructValue(cloned)

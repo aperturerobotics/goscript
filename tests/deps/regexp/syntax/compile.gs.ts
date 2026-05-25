@@ -130,7 +130,7 @@ export class frag {
 	constructor(init?: Partial<{i?: number, out?: patchList, nullable?: boolean}>) {
 		this._fields = {
 			i: $.varRef(init?.i ?? 0),
-			out: $.varRef(init?.out ? $.markAsStructValue(init.out.clone()) : $.markAsStructValue(new patchList())),
+			out: $.varRef(init?.out ? $.markAsStructValue($.cloneStructValue(init.out)) : $.markAsStructValue(new patchList())),
 			nullable: $.varRef(init?.nullable ?? false)
 		}
 	}
@@ -139,7 +139,7 @@ export class frag {
 		const cloned = new frag()
 		cloned._fields = {
 			i: $.varRef(this._fields.i.value),
-			out: $.varRef($.markAsStructValue(this._fields.out.value.clone())),
+			out: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.out.value))),
 			nullable: $.varRef(this._fields.nullable.value)
 		}
 		return $.markAsStructValue(cloned)

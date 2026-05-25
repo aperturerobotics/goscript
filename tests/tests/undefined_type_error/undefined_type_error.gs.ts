@@ -172,7 +172,7 @@ export class printer {
 		this._fields = {
 			buf: $.varRef(init?.buf ?? null),
 			arg: $.varRef(init?.arg ?? null),
-			fmt: $.varRef(init?.fmt ? $.markAsStructValue(init.fmt.clone()) : $.markAsStructValue(new formatter()))
+			fmt: $.varRef(init?.fmt ? $.markAsStructValue($.cloneStructValue(init.fmt)) : $.markAsStructValue(new formatter()))
 		}
 	}
 
@@ -181,7 +181,7 @@ export class printer {
 		cloned._fields = {
 			buf: $.varRef(this._fields.buf.value),
 			arg: $.varRef(this._fields.arg.value),
-			fmt: $.varRef($.markAsStructValue(this._fields.fmt.value.clone()))
+			fmt: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.fmt.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

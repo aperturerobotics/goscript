@@ -36,18 +36,18 @@ export class MyStruct {
 
 	constructor(init?: Partial<{closed?: atomic.Bool, count?: atomic.Int32, flag?: atomic.Uint32}>) {
 		this._fields = {
-			closed: $.varRef(init?.closed ? $.markAsStructValue(init.closed.clone()) : $.markAsStructValue(new atomic.Bool())),
-			count: $.varRef(init?.count ? $.markAsStructValue(init.count.clone()) : $.markAsStructValue(new atomic.Int32())),
-			flag: $.varRef(init?.flag ? $.markAsStructValue(init.flag.clone()) : $.markAsStructValue(new atomic.Uint32()))
+			closed: $.varRef(init?.closed ? $.markAsStructValue($.cloneStructValue(init.closed)) : $.markAsStructValue(new atomic.Bool())),
+			count: $.varRef(init?.count ? $.markAsStructValue($.cloneStructValue(init.count)) : $.markAsStructValue(new atomic.Int32())),
+			flag: $.varRef(init?.flag ? $.markAsStructValue($.cloneStructValue(init.flag)) : $.markAsStructValue(new atomic.Uint32()))
 		}
 	}
 
 	public clone(): MyStruct {
 		const cloned = new MyStruct()
 		cloned._fields = {
-			closed: $.varRef($.markAsStructValue(this._fields.closed.value.clone())),
-			count: $.varRef($.markAsStructValue(this._fields.count.value.clone())),
-			flag: $.varRef($.markAsStructValue(this._fields.flag.value.clone()))
+			closed: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.closed.value))),
+			count: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.count.value))),
+			flag: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.flag.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

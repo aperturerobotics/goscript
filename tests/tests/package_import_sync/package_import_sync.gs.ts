@@ -28,7 +28,7 @@ export class embeddedMutex {
 
 	constructor(init?: Partial<{Mutex?: sync.Mutex, value?: number}>) {
 		this._fields = {
-			Mutex: $.varRef(init?.Mutex ? $.markAsStructValue(init.Mutex.clone()) : $.markAsStructValue(new sync.Mutex())),
+			Mutex: $.varRef(init?.Mutex ? $.markAsStructValue($.cloneStructValue(init.Mutex)) : $.markAsStructValue(new sync.Mutex())),
 			value: $.varRef(init?.value ?? 0)
 		}
 	}
@@ -36,7 +36,7 @@ export class embeddedMutex {
 	public clone(): embeddedMutex {
 		const cloned = new embeddedMutex()
 		cloned._fields = {
-			Mutex: $.varRef($.markAsStructValue(this._fields.Mutex.value.clone())),
+			Mutex: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.Mutex.value))),
 			value: $.varRef(this._fields.value.value)
 		}
 		return $.markAsStructValue(cloned)
@@ -73,7 +73,7 @@ export class embeddedRWMutex {
 
 	constructor(init?: Partial<{RWMutex?: sync.RWMutex, value?: number}>) {
 		this._fields = {
-			RWMutex: $.varRef(init?.RWMutex ? $.markAsStructValue(init.RWMutex.clone()) : $.markAsStructValue(new sync.RWMutex())),
+			RWMutex: $.varRef(init?.RWMutex ? $.markAsStructValue($.cloneStructValue(init.RWMutex)) : $.markAsStructValue(new sync.RWMutex())),
 			value: $.varRef(init?.value ?? 0)
 		}
 	}
@@ -81,7 +81,7 @@ export class embeddedRWMutex {
 	public clone(): embeddedRWMutex {
 		const cloned = new embeddedRWMutex()
 		cloned._fields = {
-			RWMutex: $.varRef($.markAsStructValue(this._fields.RWMutex.value.clone())),
+			RWMutex: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.RWMutex.value))),
 			value: $.varRef(this._fields.value.value)
 		}
 		return $.markAsStructValue(cloned)

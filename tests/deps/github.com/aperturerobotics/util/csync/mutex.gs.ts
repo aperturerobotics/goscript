@@ -42,7 +42,7 @@ export class Mutex {
 
 	constructor(init?: Partial<{bcast?: broadcast2.Broadcast, locked?: boolean}>) {
 		this._fields = {
-			bcast: $.varRef(init?.bcast ? $.markAsStructValue(init.bcast.clone()) : $.markAsStructValue(new broadcast2.Broadcast())),
+			bcast: $.varRef(init?.bcast ? $.markAsStructValue($.cloneStructValue(init.bcast)) : $.markAsStructValue(new broadcast2.Broadcast())),
 			locked: $.varRef(init?.locked ?? false)
 		}
 	}
@@ -50,7 +50,7 @@ export class Mutex {
 	public clone(): Mutex {
 		const cloned = new Mutex()
 		cloned._fields = {
-			bcast: $.varRef($.markAsStructValue(this._fields.bcast.value.clone())),
+			bcast: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.bcast.value))),
 			locked: $.varRef(this._fields.locked.value)
 		}
 		return $.markAsStructValue(cloned)
@@ -217,7 +217,7 @@ export class MutexLocker {
 	constructor(init?: Partial<{m?: Mutex | $.VarRef<Mutex> | null, rel?: atomic.Pointer<(() => void) | null>}>) {
 		this._fields = {
 			m: $.varRef(init?.m ?? null),
-			rel: $.varRef(init?.rel ? $.markAsStructValue(init.rel.clone()) : $.markAsStructValue(new atomic.Pointer<(() => void) | null>()))
+			rel: $.varRef(init?.rel ? $.markAsStructValue($.cloneStructValue(init.rel)) : $.markAsStructValue(new atomic.Pointer<(() => void) | null>()))
 		}
 	}
 
@@ -225,7 +225,7 @@ export class MutexLocker {
 		const cloned = new MutexLocker()
 		cloned._fields = {
 			m: $.varRef(this._fields.m.value),
-			rel: $.varRef($.markAsStructValue(this._fields.rel.value.clone()))
+			rel: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.rel.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}

@@ -20,14 +20,14 @@ export class Setting {
 
 	constructor(init?: Partial<{once?: sync.Once}>) {
 		this._fields = {
-			once: $.varRef(init?.once ? $.markAsStructValue(init.once.clone()) : $.markAsStructValue(new sync.Once()))
+			once: $.varRef(init?.once ? $.markAsStructValue($.cloneStructValue(init.once)) : $.markAsStructValue(new sync.Once()))
 		}
 	}
 
 	public clone(): Setting {
 		const cloned = new Setting()
 		cloned._fields = {
-			once: $.varRef($.markAsStructValue(this._fields.once.value.clone()))
+			once: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.once.value)))
 		}
 		return $.markAsStructValue(cloned)
 	}
