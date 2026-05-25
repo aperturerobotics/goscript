@@ -148,12 +148,20 @@ export class ConcurrentQueue {
 
 export function NewConcurrentQueue(
   maxConcurrency: number,
-  initialElems: $.Slice<Job> = null,
+  initialElems?: $.Slice<Job>,
+): ConcurrentQueue
+export function NewConcurrentQueue(
+  maxConcurrency: number,
+  ...initialElems: Job[]
+): ConcurrentQueue
+export function NewConcurrentQueue(
+  maxConcurrency: number,
+  ...args: [$.Slice<Job>?] | Job[]
 ): ConcurrentQueue {
-  return new ConcurrentQueue(maxConcurrency, initialElems)
+  return new ConcurrentQueue(maxConcurrency, normalizeJobs(args))
 }
 
-function normalizeJobs(args: [$.Slice<Job>] | Job[]): Job[] {
+function normalizeJobs(args: [$.Slice<Job>?] | Job[]): Job[] {
   if (args.length === 0) {
     return []
   }

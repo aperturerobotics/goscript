@@ -16,8 +16,8 @@ describe('util/conc override', () => {
       done.push(idx)
     }
 
-    const q = NewConcurrentQueue(2, [job(0)])
-    const [queued, running] = q.Enqueue([job(1), job(2), job(3), job(4)])
+    const q = NewConcurrentQueue(2, job(0), job(1))
+    const [queued, running] = q.Enqueue([job(2), job(3), job(4)])
     expect([queued, running]).toEqual([3, 2])
 
     await tick()
