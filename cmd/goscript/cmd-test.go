@@ -30,6 +30,7 @@ func newTestCommand() *cli.Command {
 	var workDir string
 	var dir string
 	var parallelism int
+	var runtimeGroups bool
 	var cpuProfile string
 
 	return &cli.Command{
@@ -38,18 +39,19 @@ func newTestCommand() *cli.Command {
 		Usage:    "compile and run Go package tests through GoScript",
 		Action: func(c *cli.Context) error {
 			req := &gotest.Request{
-				Dir:          dir,
-				Patterns:     c.Args().Slice(),
-				BuildTags:    tags.Value(),
-				OverrideDirs: overrideDirs.Value(),
-				Run:          run,
-				Count:        count,
-				Short:        short,
-				Timeout:      timeout,
-				Verbose:      verbose,
-				WorkDir:      workDir,
-				OutputRoot:   outputRoot,
-				Parallelism:  parallelism,
+				Dir:           dir,
+				Patterns:      c.Args().Slice(),
+				BuildTags:     tags.Value(),
+				OverrideDirs:  overrideDirs.Value(),
+				Run:           run,
+				Count:         count,
+				Short:         short,
+				Timeout:       timeout,
+				Verbose:       verbose,
+				WorkDir:       workDir,
+				OutputRoot:    outputRoot,
+				Parallelism:   parallelism,
+				RuntimeGroups: runtimeGroups,
 			}
 			stopProfile, err := startCPUProfile(cpuProfile)
 			if err != nil {
@@ -130,6 +132,11 @@ func newTestCommand() *cli.Command {
 				Usage:       "maximum package typecheck/runtime commands to run concurrently",
 				Destination: &parallelism,
 				Value:       gotest.DefaultParallelism(),
+			},
+			&cli.BoolFlag{
+				Name:        "runtime-groups",
+				Usage:       "run package runtimes in grouped Bun worker processes",
+				Destination: &runtimeGroups,
 			},
 			&cli.StringFlag{
 				Name:        "cpuprofile",

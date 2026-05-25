@@ -259,7 +259,9 @@ func (r *Runner) runPackageRuntimes(
 	result *Result,
 	indexes []int,
 ) {
-	if req.Parallelism == 1 && len(indexes) > 1 && r.runCombinedPackageRuntime(ctx, req, workspace, result, indexes) {
+	if len(indexes) > 1 &&
+		(req.RuntimeGroups || req.Parallelism == 1) &&
+		r.runCombinedPackageRuntimes(ctx, req, workspace, result, indexes) {
 		return
 	}
 	r.runPackageRuntimesIndividually(ctx, req, workspace, result, indexes)
@@ -292,7 +294,7 @@ func (r *Runner) runPackageRuntimesIndividually(
 	wg.Wait()
 }
 
-func (r *Runner) runCombinedPackageRuntime(
+func (r *Runner) runCombinedPackageRuntimes(
 	ctx context.Context,
 	req *normalizedRequest,
 	workspace *tsworkspace.Owner,
@@ -300,8 +302,58 @@ func (r *Runner) runCombinedPackageRuntime(
 	indexes []int,
 ) bool {
 	ordered := packageExecutionIndexes(result, indexes)
-	runnerFile := "runner-all.ts"
-	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, runnerFile, renderCombinedRunner(result, ordered, req)); phase.Failed() {
+	chunks := packageRuntimeChunks(ordered, max(req.Parallelism, 1))
+	if len(chunks) == 0 {
+		return true
+	}
+	if len(chunks) == 1 {
+		return r.runCombinedPackageRuntime(ctx, req, workspace, result, "runner-all.ts", chunks[0])
+	}
+
+	var mu sync.Mutex
+	ok := true
+	var wg sync.WaitGroup
+	for chunkIdx, chunk := range chunks {
+		runnerFile := "runner-all-" + strconv.Itoa(chunkIdx) + ".ts"
+		wg.Go(func() {
+			if r.runCombinedPackageRuntime(ctx, req, workspace, result, runnerFile, chunk) {
+				return
+			}
+			mu.Lock()
+			ok = false
+			mu.Unlock()
+		})
+	}
+	wg.Wait()
+	return ok
+}
+
+func packageRuntimeChunks(indexes []int, parallelism int) [][]int {
+	if len(indexes) == 0 {
+		return nil
+	}
+	if parallelism < 1 {
+		parallelism = 1
+	}
+	if parallelism > len(indexes) {
+		parallelism = len(indexes)
+	}
+	chunks := make([][]int, parallelism)
+	for idx, packageIdx := range indexes {
+		chunks[idx%parallelism] = append(chunks[idx%parallelism], packageIdx)
+	}
+	return chunks
+}
+
+func (r *Runner) runCombinedPackageRuntime(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	runnerFile string,
+	indexes []int,
+) bool {
+	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, runnerFile, renderCombinedRunner(result, indexes, req)); phase.Failed() {
 		return false
 	}
 	runtime := workspace.RunTool(ctx, tsworkspace.PhaseRuntime, req.WorkDir, "bun", runnerFile)
@@ -316,7 +368,7 @@ func (r *Runner) runCombinedPackageRuntime(
 	for _, record := range records {
 		byPath[record.PackagePath] = record
 	}
-	for _, idx := range ordered {
+	for _, idx := range indexes {
 		record, ok := byPath[result.Packages[idx].PackagePath]
 		if !ok {
 			return false

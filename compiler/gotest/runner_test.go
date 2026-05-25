@@ -806,6 +806,96 @@ func TestRunnerUsesBatchTypeScriptProject(t *testing.T) {
 	}
 }
 
+func TestRunnerRunsCombinedRuntimeChunks(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/runtimechunks\n\ngo 1.25.3\n",
+		"one/value.go": strings.Join([]string{
+			"package one",
+			"",
+			"func Value() int { return 1 }",
+			"",
+		}, "\n"),
+		"one/value_test.go": strings.Join([]string{
+			"package one",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestOne(t *testing.T) {",
+			"\tif Value() != 1 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"two/value.go": strings.Join([]string{
+			"package two",
+			"",
+			"func Value() int { return 2 }",
+			"",
+		}, "\n"),
+		"two/value_test.go": strings.Join([]string{
+			"package two",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestTwo(t *testing.T) {",
+			"\tif Value() != 2 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+	workDir := filepath.Join(moduleDir, ".tmp", "runtime-chunks")
+	runtimeLog := filepath.Join(moduleDir, "runtime.log")
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "tsgo"), strings.Join([]string{
+		"#!/bin/sh",
+		"exit 0",
+		"",
+	}, "\n"))
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "bun"), strings.Join([]string{
+		"#!/bin/sh",
+		"runner=\"$1\"",
+		"printf '%s\\n' \"$runner\" >> " + strconv.Quote(runtimeLog),
+		"case \"$runner\" in",
+		"runner-all-*)",
+		"\tsed -n 's/.*await __goscriptRunPackage(\"\\([^\"]*\\)\".*/\\1/p' \"$runner\" | while IFS= read -r pkg; do",
+		"\t\tprintf '" + combinedRuntimeResultPrefix + "{\"packagePath\":\"%s\",\"ok\":true,\"elapsedMs\":1,\"output\":\"\"}\\n' \"$pkg\"",
+		"\tdone",
+		"\texit 0",
+		"\t;;",
+		"*)",
+		"\texit 1",
+		"\t;;",
+		"esac",
+		"",
+	}, "\n"))
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:           moduleDir,
+		Patterns:      []string{"./..."},
+		Timeout:       30 * time.Second,
+		WorkDir:       workDir,
+		Parallelism:   2,
+		RuntimeGroups: true,
+	})
+	if err != nil {
+		t.Fatalf("run runtime chunks fixture: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected runtime chunks fixture to pass: %#v", result.Packages)
+	}
+	data, err := os.ReadFile(runtimeLog)
+	if err != nil {
+		t.Fatalf("read runtime log: %v", err)
+	}
+	runners := strings.Fields(string(data))
+	slices.Sort(runners)
+	if strings.Join(runners, "\n") != "runner-all-0.ts\nrunner-all-1.ts" {
+		t.Fatalf("expected chunked combined runners, got:\n%s", data)
+	}
+}
+
 func TestRunnerFallsBackToPackageScopedTypeScriptProjects(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/packageprojects\n\ngo 1.25.3\n",
