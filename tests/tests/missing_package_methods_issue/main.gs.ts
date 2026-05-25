@@ -15,7 +15,7 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Printf("Original: %v\n", $.interfaceValue<any>(numbers, "[]int"))
 
 	// This should work but might be missing from the slices package implementation
-	numbers = slices.Delete(numbers, 1, 3)
+	numbers = (slices.Delete(numbers, 1, 3) as $.Slice<number>)
 	fmt.Printf("After delete: %v\n", $.interfaceValue<any>(numbers, "[]int"))
 
 	// Test slices.BinarySearchFunc which was also missing

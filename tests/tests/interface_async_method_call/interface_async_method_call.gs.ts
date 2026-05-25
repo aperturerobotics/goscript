@@ -185,7 +185,7 @@ export function newGenericStore(__typeArgs: $.GenericTypeArgs | undefined, value
 }
 
 export async function loadGenericStore(store: GenericStore | null): globalThis.Promise<number> {
-	return await $.pointerValue<Exclude<GenericStore, null>>(store).Load()
+	return (await $.pointerValue<Exclude<GenericStore, null>>(store).Load() as number)
 }
 
 export async function main(): globalThis.Promise<void> {
@@ -202,7 +202,7 @@ export async function main(): globalThis.Promise<void> {
 	let result2 = await processViaInterface($.interfaceValue<AsyncProcessor | null>(simpleProc, "*main.SimpleProcessor"), 5)
 	$.println("SimpleProcessor result:", result2)
 
-	let genericStore = newGenericStore({V: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, 7)
+	let genericStore = (newGenericStore({V: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, 7) as GenericStore | null)
 	$.println("GenericStore result:", await loadGenericStore(genericStore))
 
 	ch!.close()

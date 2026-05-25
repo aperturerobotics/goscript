@@ -243,7 +243,7 @@ export class MutexLocker {
 
 	public Unlock(): void {
 		const l: MutexLocker | $.VarRef<MutexLocker> | null = this
-		let rel = $.pointerValue<MutexLocker>(l).rel.Swap(null)
+		let rel = ($.pointerValue<MutexLocker>(l).rel.Swap(null) as $.VarRef<(() => void) | null> | null)
 		if (rel == null) {
 			$.panic("csync: unlock of unlocked MutexLocker")
 		}

@@ -21,7 +21,7 @@ export class nistCurve {
 
 	public Add(p1: any, p2: any): any {
 		const curve: nistCurve | $.VarRef<nistCurve> | null = this
-		return p1.Add(p1, p2)
+		return (p1.Add(p1, p2) as any)
 	}
 
 	public Zero(): any {
@@ -96,7 +96,7 @@ export function __goscript_set_curve(value: nistCurve | $.VarRef<nistCurve> | nu
 }
 
 export async function main(): globalThis.Promise<void> {
-	let p: point | $.VarRef<point> | null = nistCurve.prototype.Add.call(curve, new point({N: 2}), new point({N: 3}))
+	let p: point | $.VarRef<point> | null = (nistCurve.prototype.Add.call(curve, new point({N: 2}), new point({N: 3})) as point | $.VarRef<point> | null)
 	$.println("sum:", $.pointerValue<point>(p).N)
 	if (nistCurve.prototype.Zero.call(curve) == null) {
 		$.println("zero")

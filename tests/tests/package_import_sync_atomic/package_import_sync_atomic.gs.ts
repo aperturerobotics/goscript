@@ -98,16 +98,16 @@ export async function main(): globalThis.Promise<void> {
 	let str2 = $.varRef("world")
 
 	ptr.value.Store(str1)
-	let loaded = ptr.value.Load()
+	let loaded = (ptr.value.Load() as $.VarRef<string> | null)
 	if (loaded != null) {
 		$.println("Pointer loaded:", $.pointerValue<string>(loaded))
 	}
 
-	let old_ptr = ptr.value.Swap(str2)
+	let old_ptr = (ptr.value.Swap(str2) as $.VarRef<string> | null)
 	if (old_ptr != null) {
 		$.println("Pointer swapped, old:", $.pointerValue<string>(old_ptr))
 	}
-	loaded = ptr.value.Load()
+	loaded = (ptr.value.Load() as $.VarRef<string> | null)
 	if (loaded != null) {
 		$.println("Pointer new value:", $.pointerValue<string>(loaded))
 	}
@@ -120,7 +120,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Pointer function error:", $.pointerValue<Exclude<$.GoError, null>>(callbackErr).Error())
 	} else {
 		fnPtr.value.Store(callback)
-		let loadedFn = fnPtr.value.Load()
+		let loadedFn = (fnPtr.value.Load() as $.VarRef<(() => void) | null> | null)
 		if (loadedFn != null) {
 			void ($.pointerValue<(() => void) | null>(loadedFn))!()
 		}
@@ -130,7 +130,7 @@ export async function main(): globalThis.Promise<void> {
 	let node: pointerNode | $.VarRef<pointerNode> | null = new pointerNode()
 	$.pointerValue<pointerNode>(node).value = "node"
 	if (structPtr.value.CompareAndSwap(null, node)) {
-		let loadedNode: pointerNode | $.VarRef<pointerNode> | null = structPtr.value.Load()
+		let loadedNode: pointerNode | $.VarRef<pointerNode> | null = (structPtr.value.Load() as pointerNode | $.VarRef<pointerNode> | null)
 		if (loadedNode != null) {
 			$.println("Pointer struct CAS:", $.pointerValue<pointerNode>(loadedNode).value)
 		}

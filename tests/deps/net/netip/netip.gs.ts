@@ -606,7 +606,7 @@ export class Addr {
 			ip.z = $.markAsStructValue($.cloneStructValue(z6noz))
 			return $.markAsStructValue($.cloneStructValue(ip))
 		}
-		ip.z = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new addrDetail({isV6: true, zoneV6: zone})))))
+		ip.z = ($.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new addrDetail({isV6: true, zoneV6: zone}))))) as _unique.Handle<addrDetail>)
 		return $.markAsStructValue($.cloneStructValue(ip))
 	}
 

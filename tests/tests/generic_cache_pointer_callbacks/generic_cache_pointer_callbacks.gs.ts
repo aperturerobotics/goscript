@@ -128,11 +128,12 @@ export function __goscript_set_privateKeyCache(value: cache): void {
 }
 
 export async function privateKeyToCache(k: key | $.VarRef<key> | null): globalThis.Promise<[privateKey | $.VarRef<privateKey> | null, $.GoError]> {
-	return await privateKeyCache.value.Get(k, $.functionValue((): [privateKey | $.VarRef<privateKey> | null, $.GoError] => {
+	const __goscriptReturn0 = await privateKeyCache.value.Get(k, $.functionValue((): [privateKey | $.VarRef<privateKey> | null, $.GoError] => {
 		return [new privateKey({D: $.pointerValue<key>(k).N}), null]
 	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Pointer, elemType: "main.privateKey" }, "error"] }), $.functionValue((v: privateKey | $.VarRef<privateKey> | null): boolean => {
 		return $.pointerValue<privateKey>(v).D == $.pointerValue<key>(k).N
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "main.privateKey" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
+	return [(__goscriptReturn0[0] as privateKey | $.VarRef<privateKey> | null), __goscriptReturn0[1]]
 }
 
 export async function main(): globalThis.Promise<void> {

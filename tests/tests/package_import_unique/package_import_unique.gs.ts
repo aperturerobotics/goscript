@@ -42,9 +42,9 @@ export class zone {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let a = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth0"})))))
-	let b = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth0"})))))
-	let c = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth1"})))))
+	let a = ($.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth0"}))))) as _unique.Handle<zone>)
+	let b = ($.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth0"}))))) as _unique.Handle<zone>)
+	let c = ($.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new zone({name: "eth1"}))))) as _unique.Handle<zone>)
 
 	$.println(a == b)
 	$.println(a == c)

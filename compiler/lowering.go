@@ -3071,8 +3071,11 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		isShortDecl := stmt.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs)
 		right, rightDiagnostics := o.lowerExpr(ctx, stmt.Rhs[idx])
 		diagnostics = append(diagnostics, rightDiagnostics...)
-		targetType := ctx.semPkg.source.TypesInfo.TypeOf(lhs)
+		targetType := assignmentTargetType(ctx, lhs)
 		right = o.lowerValueForTarget(ctx, stmt.Rhs[idx], targetType, right)
+		if targetType != nil && genericCallResultUsesTypeParam(ctx, stmt.Rhs[idx]) {
+			right = "(" + right + " as " + o.tsTypeFor(ctx, targetType) + ")"
+		}
 		if setter, ok := o.packageVarSetterForAssignment(ctx, lhs); ok {
 			value, ok := o.packageVarAssignmentValue(ctx, lhs, targetType, right, stmt.Tok)
 			if !ok {
@@ -3152,6 +3155,15 @@ func integerQuotientAssignExpr(targetType types.Type, left string, right string,
 		return "", false
 	}
 	return left + " = " + value, true
+}
+
+func assignmentTargetType(ctx lowerFileContext, lhs ast.Expr) types.Type {
+	if ident, ok := lhs.(*ast.Ident); ok {
+		if obj := ctx.semPkg.source.TypesInfo.Defs[ident]; obj != nil {
+			return obj.Type()
+		}
+	}
+	return ctx.semPkg.source.TypesInfo.TypeOf(lhs)
 }
 
 func integerQuotientAssignValueExpr(targetType types.Type, left string, right string, tok token.Token) (string, bool) {
@@ -3858,6 +3870,9 @@ func genericCallResultUsesTypeParam(ctx lowerFileContext, expr ast.Expr) bool {
 		return false
 	}
 	signature := genericFunctionSignatureForCall(ctx, call.Fun)
+	if signature == nil {
+		signature = sourceFunctionSignatureForCall(ctx, call.Fun)
+	}
 	if signature == nil || signature.Results() == nil || signature.Results().Len() != 1 {
 		return false
 	}
@@ -3870,6 +3885,9 @@ func genericCallTupleResultTypeParamIndexes(ctx lowerFileContext, expr ast.Expr)
 		return nil
 	}
 	signature := genericFunctionSignatureForCall(ctx, call.Fun)
+	if signature == nil {
+		signature = sourceFunctionSignatureForCall(ctx, call.Fun)
+	}
 	if signature == nil || signature.Results() == nil || signature.Results().Len() < 2 {
 		return nil
 	}
@@ -3891,6 +3909,30 @@ func genericFunctionSignatureForCall(ctx lowerFileContext, fun ast.Expr) *types.
 			fun = typed.X
 		default:
 			return genericFunctionSignature(ctx, fun)
+		}
+	}
+}
+
+func sourceFunctionSignatureForCall(ctx lowerFileContext, fun ast.Expr) *types.Signature {
+	for {
+		switch typed := ast.Unparen(fun).(type) {
+		case *ast.IndexExpr:
+			fun = typed.X
+		case *ast.IndexListExpr:
+			fun = typed.X
+		default:
+			if ctx.semPkg == nil || ctx.semPkg.source == nil {
+				return nil
+			}
+			fn := calledFunction(ctx.semPkg.source, fun)
+			if fn == nil {
+				return nil
+			}
+			if origin := fn.Origin(); origin != nil {
+				fn = origin
+			}
+			signature, _ := fn.Type().(*types.Signature)
+			return signature
 		}
 	}
 }

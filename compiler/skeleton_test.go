@@ -1386,6 +1386,47 @@ func TestCompilePackagesPreservesBlankNamedResultSlots(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesCastsGenericMethodResultAssignments(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/genericmethodresult\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import (",
+			"  \"errors\"",
+			"  \"sync/atomic\"",
+			")",
+			"func load() error {",
+			"  var ptr atomic.Pointer[error]",
+			"  err := errors.New(\"boom\")",
+			"  ptr.Store(&err)",
+			"  if errp := ptr.Load(); errp != nil {",
+			"    return *errp",
+			"  }",
+			"  return nil",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "genericmethodresult", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "(ptr.value.Load() as $.VarRef<$.GoError> | null)") {
+		t.Fatalf("generic method result assignment was not cast to the target type:\n%s", text)
+	}
+}
+
 func TestCompilePackagesPreservesFloatConversionLiterals(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/floatconv\n\ngo 1.25.3\n",

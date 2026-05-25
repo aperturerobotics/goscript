@@ -157,10 +157,10 @@ export async function main(): globalThis.Promise<void> {
 	await onceFunc!()
 
 	// Test OnceValue
-	let onceValue: (() => number | globalThis.Promise<number>) | null = sync.OnceValue($.functionValue((): number => {
+	let onceValue: (() => number | globalThis.Promise<number>) | null = (sync.OnceValue($.functionValue((): number => {
 		$.println("OnceValue function executed")
 		return 42
-	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
+	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "int" }] })) as (() => number | globalThis.Promise<number>) | null)
 	let val1 = await onceValue!()
 	let val2 = await onceValue!()
 	$.println("OnceValue results:", val1, val2)

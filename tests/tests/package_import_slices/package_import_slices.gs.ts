@@ -41,7 +41,7 @@ export async function main(): globalThis.Promise<void> {
 		return
 	}
 
-	let cloned: $.Slice<number> = slices.Clone(s)
+	let cloned: $.Slice<number> = (slices.Clone(s) as $.Slice<number>)
 	cloned![0] = 99
 	$.println("clone first:", cloned![0], "original first:", s![0], "same len:", $.len(cloned) == $.len(s))
 	let nilSlice: $.Slice<number> = null as $.Slice<number>
@@ -54,7 +54,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("contains:", slices.Contains(s, 3), slices.ContainsFunc(s, $.functionValue((v: number): boolean => {
 		return v > 4
 	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })))
-	let inserted: $.Slice<number> = slices.Insert($.arrayToSlice<number>([1, 4]), 1, 2, 3)
+	let inserted: $.Slice<number> = (slices.Insert($.arrayToSlice<number>([1, 4]), 1, 2, 3) as $.Slice<number>)
 	$.println("insert:", inserted![0], inserted![1], inserted![2], inserted![3])
 	slices.Reverse(inserted)
 	$.println("reverse:", inserted![0], inserted![1], inserted![2], inserted![3])
@@ -113,12 +113,12 @@ export async function main(): globalThis.Promise<void> {
 		return a.group - b.group
 	}, { kind: $.TypeKind.Function, params: ["main.item", "main.item"], results: [{ kind: $.TypeKind.Basic, name: "int" }] })))
 
-	let filtered: $.Slice<number> = slices.DeleteFunc($.arrayToSlice<number>([1, 2, 3, 4, 5]), $.functionValue((v: number): boolean => {
+	let filtered: $.Slice<number> = (slices.DeleteFunc($.arrayToSlice<number>([1, 2, 3, 4, 5]), $.functionValue((v: number): boolean => {
 		return (v % 2) == 0
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
+	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })) as $.Slice<number>)
 	$.println("delete func:", filtered![0], filtered![1], filtered![2], $.len(filtered))
 
-	let sortedKeys: $.Slice<string> = slices.Sorted(maps.Keys(new Map<string, number>([["c", 3], ["a", 1], ["b", 2]])))
+	let sortedKeys: $.Slice<string> = (slices.Sorted(maps.Keys(new Map<string, number>([["c", 3], ["a", 1], ["b", 2]]))) as $.Slice<string>)
 	$.println("sorted:", sortedKeys![0], sortedKeys![1], sortedKeys![2])
 
 	$.println("test finished")
