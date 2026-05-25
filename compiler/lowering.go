@@ -145,7 +145,8 @@ func (o *LoweringOwner) lowerFile(
 	importAliases := make(map[string]string)
 	importPaths := make(map[string]string)
 	importNames := make(map[string]string)
-	reservedImportAliases := localDeclarationNames(semPkg, file, associatedMethods)
+	localRefs := o.analyzeLocalFileReferences(semPkg, file, sourcePath, associatedMethods, declFiles, outputNames)
+	reservedImportAliases := localRefs.reservedNames
 	seenImport := make(map[string]bool)
 	for idx, importFile := range semPkg.source.Syntax {
 		importSourcePath := sourceFilePath(semPkg, idx, importFile)
@@ -187,9 +188,8 @@ func (o *LoweringOwner) lowerFile(
 	for importSourcePath := range relevantImportFiles {
 		o.addGeneratedTypeImports(model, semPkg, importSourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
 	}
-	localAliases, localAliasSources, implicitImports := o.localFileAliases(semPkg, file, sourcePath, associatedMethods, declFiles, outputNames)
-	implicitImportPaths := make([]string, 0, len(implicitImports))
-	for pkgPath := range implicitImports {
+	implicitImportPaths := make([]string, 0, len(localRefs.implicitImports))
+	for pkgPath := range localRefs.implicitImports {
 		if pkgPath != "" && pkgPath != semPkg.pkgPath {
 			implicitImportPaths = append(implicitImportPaths, pkgPath)
 		}
@@ -198,14 +198,14 @@ func (o *LoweringOwner) lowerFile(
 	for _, pkgPath := range implicitImportPaths {
 		o.addGeneratedImportPath(model, pkgPath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
 	}
-	localImports := make([]loweredImport, 0, len(localAliases))
+	localImports := make([]loweredImport, 0, len(localRefs.aliases))
 	seenLocalImport := make(map[string]bool)
-	for _, alias := range localAliases {
+	for _, alias := range localRefs.aliases {
 		if seenLocalImport[alias] {
 			continue
 		}
 		seenLocalImport[alias] = true
-		source := localAliasSources[alias]
+		source := localRefs.aliasSources[alias]
 		localImports = append(localImports, loweredImport{alias: alias, source: source, sideEffect: true})
 	}
 	slices.SortFunc(localImports, func(a, b loweredImport) int {
@@ -221,7 +221,7 @@ func (o *LoweringOwner) lowerFile(
 		importPaths:     importPaths,
 		importNames:     importNames,
 		sourcePath:      sourcePath,
-		localAliases:    localAliases,
+		localAliases:    localRefs.aliases,
 		lazyPackageVars: lazyPackageVars,
 		tempNames:       newTempNameOwner(),
 		topLevel:        true,
@@ -370,36 +370,6 @@ func uniqueImportAlias(alias string, pkgPath string, importAliases map[string]st
 	}
 }
 
-func localDeclarationNames(semPkg *semanticPackage, file *ast.File, associatedMethods []*ast.FuncDecl) map[string]bool {
-	if semPkg == nil || semPkg.source == nil {
-		return nil
-	}
-	names := make(map[string]bool)
-	inspect := func(node ast.Node) bool {
-		ident, ok := node.(*ast.Ident)
-		if !ok {
-			return true
-		}
-		obj := semPkg.source.TypesInfo.Defs[ident]
-		if obj == nil {
-			return true
-		}
-		if _, ok := obj.(*types.PkgName); ok {
-			return true
-		}
-		name := safeIdentifier(obj.Name())
-		if name != "_" {
-			names[name] = true
-		}
-		return true
-	}
-	ast.Inspect(file, inspect)
-	for _, methodDecl := range associatedMethods {
-		ast.Inspect(methodDecl, inspect)
-	}
-	return names
-}
-
 func (o *LoweringOwner) methodDeclsForFileTypes(semPkg *semanticPackage, file *ast.File) []*ast.FuncDecl {
 	if semPkg == nil || semPkg.source == nil || file == nil {
 		return nil
@@ -452,17 +422,27 @@ func (o *LoweringOwner) methodDeclsForFileTypes(semPkg *semanticPackage, file *a
 	return methods
 }
 
-func (o *LoweringOwner) localFileAliases(
+type localFileReferenceAnalysis struct {
+	reservedNames   map[string]bool
+	aliases         map[types.Object]string
+	aliasSources    map[string]string
+	implicitImports map[string]bool
+}
+
+func (o *LoweringOwner) analyzeLocalFileReferences(
 	semPkg *semanticPackage,
 	file *ast.File,
 	sourcePath string,
 	associatedMethods []*ast.FuncDecl,
 	declFiles map[types.Object]string,
 	outputNames map[string]string,
-) (map[types.Object]string, map[string]string, map[string]bool) {
-	aliases := make(map[types.Object]string)
-	aliasSources := make(map[string]string)
-	implicitImports := make(map[string]bool)
+) localFileReferenceAnalysis {
+	analysis := localFileReferenceAnalysis{
+		reservedNames:   make(map[string]bool),
+		aliases:         make(map[types.Object]string),
+		aliasSources:    make(map[string]string),
+		implicitImports: make(map[string]bool),
+	}
 	seenObjects := make(map[types.Object]bool)
 	seenTypes := make(map[types.Type]bool)
 	var addTypeDeps func(typ types.Type)
@@ -480,8 +460,8 @@ func (o *LoweringOwner) localFileAliases(
 			outputName := outputNames[declFile]
 			if outputName != "" {
 				alias := "__goscript_" + safeIdentifier(strings.TrimSuffix(outputName, ".gs.ts"))
-				aliases[obj] = alias
-				aliasSources[alias] = "./" + outputName
+				analysis.aliases[obj] = alias
+				analysis.aliasSources[alias] = "./" + outputName
 			}
 		}
 		switch typed := obj.(type) {
@@ -523,7 +503,7 @@ func (o *LoweringOwner) localFileAliases(
 		seenTypes[typ] = true
 		if alias, ok := typ.(*types.Alias); ok {
 			if obj := alias.Obj(); obj != nil && obj.Pkg() != nil && obj.Pkg().Path() != semPkg.pkgPath {
-				implicitImports[obj.Pkg().Path()] = true
+				analysis.implicitImports[obj.Pkg().Path()] = true
 				if args := alias.TypeArgs(); args != nil {
 					for t := range args.Types() {
 						addTypeDeps(t)
@@ -543,7 +523,7 @@ func (o *LoweringOwner) localFileAliases(
 		}
 		if named, ok := types.Unalias(typ).(*types.Named); ok {
 			if obj := named.Obj(); obj != nil && obj.Pkg() != nil && obj.Pkg().Path() != semPkg.pkgPath {
-				implicitImports[obj.Pkg().Path()] = true
+				analysis.implicitImports[obj.Pkg().Path()] = true
 				if args := named.TypeArgs(); args != nil {
 					for t := range args.Types() {
 						addTypeDeps(t)
@@ -600,6 +580,14 @@ func (o *LoweringOwner) localFileAliases(
 	inspect := func(node ast.Node) bool {
 		switch typed := node.(type) {
 		case *ast.Ident:
+			if obj := semPkg.source.TypesInfo.Defs[typed]; obj != nil {
+				if _, ok := obj.(*types.PkgName); !ok {
+					name := safeIdentifier(obj.Name())
+					if name != "_" {
+						analysis.reservedNames[name] = true
+					}
+				}
+			}
 			addObject(semPkg.source.TypesInfo.Uses[typed])
 			addTypeDeps(semPkg.source.TypesInfo.TypeOf(typed))
 		case *ast.SelectorExpr:
@@ -619,7 +607,7 @@ func (o *LoweringOwner) localFileAliases(
 	for _, methodDecl := range associatedMethods {
 		ast.Inspect(methodDecl, inspect)
 	}
-	return aliases, aliasSources, implicitImports
+	return analysis
 }
 
 func safeIdentifier(value string) string {
