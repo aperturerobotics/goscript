@@ -1233,6 +1233,50 @@ func TestCompilePackagesEmitsArraySliceMapStringAndNamedMethods(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesWrapsAddressedMapRangeValue(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/maprange\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Item struct { Values []string }",
+			"func (i *Item) add(v string) { i.Values = append(i.Values, v) }",
+			"func Apply(m map[int]Item, values []string) {",
+			"  for k, item := range m {",
+			"    for _, v := range values {",
+			"      item.add(v)",
+			"    }",
+			"    m[k] = item",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "maprange", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"let item: $.VarRef<Item> = $.varRef($.markAsStructValue($.cloneStructValue(__goscriptRangeValue",
+		"item.value.add(v)",
+		"$.mapSet(m, k, $.markAsStructValue($.cloneStructValue(item.value)))",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesPreservesFloatConversionLiterals(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/floatconv\n\ngo 1.25.3\n",

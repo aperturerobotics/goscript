@@ -2001,6 +2001,54 @@ func rangeBindingAssignedInBody(ctx lowerFileContext, expr ast.Expr, body *ast.B
 	return objectAssignedInBlock(ctx, obj, body)
 }
 
+func (o *LoweringOwner) lowerMapRangeBinding(
+	ctx lowerFileContext,
+	expr ast.Expr,
+	name string,
+	fallback string,
+	tempPrefix string,
+	declare bool,
+) (string, []loweredStmt, []Diagnostic) {
+	if expr == nil {
+		return fallback, nil, nil
+	}
+	if ident, ok := expr.(*ast.Ident); ok && ident.Name == "_" {
+		return fallback, nil, nil
+	}
+	if declare {
+		obj := rangeBindingObject(ctx, expr)
+		if name == "" || obj == nil || !ctx.model.needsVarRef[obj] {
+			if name != "" {
+				return name, nil, nil
+			}
+			return fallback, nil, nil
+		}
+		rawName := ctx.tempName(tempPrefix)
+		value := rawName
+		if isStructValueType(obj.Type()) {
+			value = o.lowerStructClone(value)
+		}
+		return rawName, []loweredStmt{{
+			text: "let " + name + ": " + o.tsVariableTypeFor(ctx, obj.Type(), true) + " = " +
+				o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + value + ")",
+		}}, nil
+	}
+	rawName := ctx.tempName(tempPrefix)
+	left, diagnostics := o.lowerAssignmentTarget(ctx, expr, false)
+	return rawName, []loweredStmt{{text: left + " = " + rawName}}, diagnostics
+}
+
+func rangeBindingObject(ctx lowerFileContext, expr ast.Expr) types.Object {
+	ident, ok := expr.(*ast.Ident)
+	if !ok || ident.Name == "_" || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return nil
+	}
+	if obj := ctx.semPkg.source.TypesInfo.Defs[ident]; obj != nil {
+		return obj
+	}
+	return ctx.semPkg.source.TypesInfo.Uses[ident]
+}
+
 func expressionUsesObject(ctx lowerFileContext, expr ast.Expr, obj types.Object) bool {
 	if expr == nil || obj == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
 		return false
@@ -4192,23 +4240,21 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 		if strings.HasPrefix(rangeTarget, "await ") {
 			rangeTarget = "(" + rangeTarget + ")"
 		}
-		key := keyName
-		if key == "" {
-			key = "__rangeKey"
-		}
-		value := valueName
-		if value == "" {
-			value = "__rangeValue"
-		}
+		key, keyBindings, keyDiagnostics := o.lowerMapRangeBinding(ctx, stmt.Key, keyName, "__rangeKey", "RangeKey", stmt.Tok == token.DEFINE)
+		value, valueBindings, valueDiagnostics := o.lowerMapRangeBinding(ctx, stmt.Value, valueName, "__rangeValue", "RangeValue", stmt.Tok == token.DEFINE)
+		diagnostics = append(diagnostics, keyDiagnostics...)
+		diagnostics = append(diagnostics, valueDiagnostics...)
 		binding := "const"
 		if rangeBindingAssignedInBody(ctx, stmt.Key, stmt.Body) ||
 			rangeBindingAssignedInBody(ctx, stmt.Value, stmt.Body) {
 			binding = "let"
 		}
+		children := append(keyBindings, valueBindings...)
+		children = append(children, body...)
 		return loweredStmt{
 			hasBlock: true,
 			text:     "for (" + binding + " [" + key + ", " + value + "] of " + rangeTarget + "?.entries() ?? [])",
-			children: body,
+			children: children,
 		}, diagnostics
 	}
 	if isStringType(rangeType) {
