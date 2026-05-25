@@ -84,6 +84,7 @@ type loweredFunction struct {
 	init            bool
 	async           bool
 	name            string
+	typeParams      []string
 	runtimeName     string
 	receiverAlias   string
 	receiverType    string

@@ -451,6 +451,7 @@ func renderFunction(b *strings.Builder, fn *loweredFunction) {
 	}
 	b.WriteString("function ")
 	b.WriteString(fn.name)
+	renderFunctionTypeParams(b, fn)
 	b.WriteString("(")
 	for idx, param := range fn.params {
 		if idx != 0 {
@@ -493,6 +494,7 @@ func renderMethod(b *strings.Builder, fn *loweredFunction) {
 		b.WriteString("async ")
 	}
 	b.WriteString(fn.name)
+	renderFunctionTypeParams(b, fn)
 	b.WriteString("(")
 	for idx, param := range fn.params {
 		if idx != 0 {
@@ -527,6 +529,20 @@ func renderMethod(b *strings.Builder, fn *loweredFunction) {
 	renderStmts(b, fn.body, 2)
 	writeIndent(b, 1)
 	b.WriteString("}\n")
+}
+
+func renderFunctionTypeParams(b *strings.Builder, fn *loweredFunction) {
+	if len(fn.typeParams) == 0 {
+		return
+	}
+	b.WriteString("<")
+	for idx, typeParam := range fn.typeParams {
+		if idx != 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(typeParam)
+	}
+	b.WriteString(">")
 }
 
 func receiverValue(fn *loweredFunction) string {
