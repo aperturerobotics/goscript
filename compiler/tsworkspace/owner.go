@@ -106,6 +106,12 @@ func (o *Owner) RunTool(ctx context.Context, phase Phase, dir string, name strin
 	}
 	start := time.Now()
 	cmd := exec.CommandContext(ctx, tool, args...)
+	configureToolCommand(cmd)
+	cmd.Cancel = func() error {
+		killToolCommand(cmd)
+		return nil
+	}
+	cmd.WaitDelay = 5 * time.Second
 	cmd.Dir = dir
 	var output bytes.Buffer
 	cmd.Stdout = &output
