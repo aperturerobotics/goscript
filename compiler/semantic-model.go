@@ -1007,28 +1007,6 @@ func callUsesFunctionIdentifier(pkg *packages.Package, expr ast.Expr) bool {
 	return ok
 }
 
-func funcLitUsesFunctionIdentifierCall(pkg *packages.Package, lit *ast.FuncLit) bool {
-	if pkg == nil || lit == nil || lit.Body == nil {
-		return false
-	}
-	uses := false
-	ast.Inspect(lit.Body, func(node ast.Node) bool {
-		if uses {
-			return false
-		}
-		if nested, ok := node.(*ast.FuncLit); ok && nested != lit {
-			return false
-		}
-		call, ok := node.(*ast.CallExpr)
-		if !ok {
-			return true
-		}
-		uses = callUsesFunctionIdentifier(pkg, call.Fun)
-		return !uses
-	})
-	return uses
-}
-
 func callPassesAsyncFunctionArgument(
 	model *SemanticModel,
 	pkg *packages.Package,
