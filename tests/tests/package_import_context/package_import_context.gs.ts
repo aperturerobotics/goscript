@@ -11,7 +11,7 @@ import "@goscript/time/index.js"
 
 export async function run(ctx: context.Context | null): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
-	let [sctx, sctxCancel] = context.WithCancel($.pointerValue(ctx))
+	let [sctx, sctxCancel] = context.WithCancel($.pointerValueOrNil(ctx)!)
 	__defer.defer(async () => { await sctxCancel!() })
 
 	let myCh = $.makeChannel<{}>(0, {}, "both")
@@ -58,7 +58,7 @@ export async function main(): globalThis.Promise<void> {
 	let ctx = context.Background()
 	await run(ctx)
 
-	let [deadlineCtx, cancel] = context.WithDeadline($.pointerValue(ctx), $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Now())).Add(time.Hour))))
+	let [deadlineCtx, cancel] = context.WithDeadline($.pointerValueOrNil(ctx)!, $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Now())).Add(time.Hour))))
 	__defer.defer(async () => { await cancel!() })
 	let [deadline, ok] = $.pointerValue<Exclude<context.Context, null>>(deadlineCtx).Deadline()
 	$.println("deadline ok:", ok)

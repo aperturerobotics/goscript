@@ -6,3 +6,5 @@ verify ok true
 verify wrong false
 public equal true
 private seed len 32
+nil literal reader err nil true
+nil interface reader err nil true

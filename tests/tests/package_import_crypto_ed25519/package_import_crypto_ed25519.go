@@ -4,7 +4,13 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"crypto/rand"
+	"io"
 )
+
+func generateWithReader(src io.Reader) error {
+	_, _, err := ed25519.GenerateKey(src)
+	return err
+}
 
 func main() {
 	pub, priv, err := ed25519.GenerateKey(rand.Reader)
@@ -21,4 +27,7 @@ func main() {
 	pubFromPriv := priv.Public().(ed25519.PublicKey)
 	println("public equal", bytes.Equal(pub, pubFromPriv))
 	println("private seed len", len(priv.Seed()))
+	println("nil literal reader err nil", generateWithReader(nil) == nil)
+	var src io.Reader
+	println("nil interface reader err nil", generateWithReader(src) == nil)
 }

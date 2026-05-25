@@ -15,8 +15,13 @@ import "@goscript/crypto/ed25519/index.js"
 import "@goscript/crypto/rand/index.js"
 import "@goscript/io/index.js"
 
+export async function generateWithReader(src: io.Reader | null): globalThis.Promise<$.GoError> {
+	let [, , err] = await ed25519.GenerateKey($.pointerValueOrNil(src)!)
+	return err
+}
+
 export async function main(): globalThis.Promise<void> {
-	let __goscriptTuple0: any = await ed25519.GenerateKey($.pointerValue(rand.Reader))
+	let __goscriptTuple0: any = await ed25519.GenerateKey($.pointerValueOrNil(rand.Reader)!)
 	let pub: ed25519.PublicKey = (__goscriptTuple0[0] as ed25519.PublicKey)
 	let priv: ed25519.PrivateKey = (__goscriptTuple0[1] as ed25519.PrivateKey)
 	let err = __goscriptTuple0[2]
@@ -33,6 +38,9 @@ export async function main(): globalThis.Promise<void> {
 	let pubFromPriv: ed25519.PublicKey = ($.mustTypeAssert<ed25519.PublicKey>(ed25519.PrivateKey_Public(priv), "ed25519.PublicKey") as ed25519.PublicKey)
 	$.println("public equal", bytes.Equal(pub, pubFromPriv))
 	$.println("private seed len", $.len(ed25519.PrivateKey_Seed(priv)))
+	$.println("nil literal reader err nil", await generateWithReader(null) == null)
+	let src: io.Reader | null = null as io.Reader | null
+	$.println("nil interface reader err nil", await generateWithReader(src) == null)
 }
 
 if ($.isMainScript(import.meta)) {

@@ -107,7 +107,7 @@ export async function main(): globalThis.Promise<void> {
 	let appended: $.Slice<number> = fmt.Append(new Uint8Array([98, 97, 115, 101, 45]), "tail")
 	fmt.Println("Append bytes:", $.bytesToString(appended))
 	let buf: $.VarRef<bytes.Buffer> = $.varRef($.markAsStructValue(new bytes.Buffer()))
-	fmt.Fprintln($.pointerValue($.interfaceValue<io.Writer | null>(buf, "*bytes.Buffer")), "Buffered writer")
+	fmt.Fprintln($.pointerValueOrNil($.interfaceValue<io.Writer | null>(buf, "*bytes.Buffer"))!, "Buffered writer")
 	fmt.Print(buf.value.String())
 
 	$.println("test finished")

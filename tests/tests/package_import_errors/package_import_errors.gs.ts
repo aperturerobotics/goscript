@@ -115,7 +115,7 @@ export async function main(): globalThis.Promise<void> {
 	if (ok) {
 		$.println("AsType message:", $.pointerValue<customErr>(matched).msg)
 	}
-	let __goscriptTuple1: any = errors.AsType({E: { type: { kind: $.TypeKind.Pointer, elemType: "main.customErr" }, zero: () => null }}, $.pointerValueOrNil(err1))
+	let __goscriptTuple1: any = errors.AsType({E: { type: { kind: $.TypeKind.Pointer, elemType: "main.customErr" }, zero: () => null }}, $.pointerValueOrNil(err1)!)
 	ok = __goscriptTuple1[1]
 	$.println("AsType missing:", ok)
 

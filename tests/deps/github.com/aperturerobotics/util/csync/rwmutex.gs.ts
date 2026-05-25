@@ -302,7 +302,7 @@ export class RWMutexLocker {
 		let l: RWMutexLocker | $.VarRef<RWMutexLocker> | null = this
 		let [release, err] = await RWMutex.prototype.Lock.call($.pointerValue<RWMutexLocker>(l).m, context.Background(), $.pointerValue<RWMutexLocker>(l).write)
 		if (err != null) {
-			$.panic((errors.Wrap($.pointerValueOrNil(err), "csync: failed RWMutexLocker Lock") as any))
+			$.panic((errors.Wrap($.pointerValueOrNil(err)!, "csync: failed RWMutexLocker Lock") as any))
 		}
 		await $.pointerValue<RWMutexLocker>(l).mtx.Lock()
 		$.pointerValue<RWMutexLocker>(l).rels = $.append($.pointerValue<RWMutexLocker>(l).rels, release)
