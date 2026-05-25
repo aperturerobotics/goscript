@@ -2405,6 +2405,47 @@ func TestCompilePackagesLowersUnaryBitwiseComplement(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesParenthesizesRepeatedUnarySigns(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/unary-signs\n\ngo 1.25.3\n",
+		"constants.go": strings.Join([]string{
+			"package main",
+			"const extOffset = -0x1000",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Extension int32",
+			"type LoadExtension struct { Num Extension }",
+			"func Decode(k int32) LoadExtension {",
+			"  return LoadExtension{Num: Extension(-extOffset + k)}",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "unary-signs", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "--4096") {
+		t.Fatalf("generated invalid decrement token:\n%s", text)
+	}
+	if !strings.Contains(text, "-(-4096) + k") {
+		t.Fatalf("missing parenthesized negative constant:\n%s", text)
+	}
+}
+
 func TestCompileSourceToTypeScriptCompilesSingleFile(t *testing.T) {
 	output, err := CompileSourceToTypeScript("package main\nfunc main() { println(\"hi\") }\n", "main")
 	if err != nil {

@@ -5069,7 +5069,7 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 		}
 		value, diagnostics := o.lowerExpr(ctx, typed.X)
 		if typed.Op == token.NOT || typed.Op == token.SUB || typed.Op == token.ADD {
-			return typed.Op.String() + value, diagnostics
+			return lowerPrefixUnaryExpr(typed.Op, value), diagnostics
 		}
 		if typed.Op == token.XOR {
 			return "~" + value, diagnostics
@@ -7380,6 +7380,14 @@ func isRealNumericConstantExpr(ctx lowerFileContext, expr ast.Expr) bool {
 	default:
 		return false
 	}
+}
+
+func lowerPrefixUnaryExpr(op token.Token, value string) string {
+	prefix := op.String()
+	if (op == token.SUB && strings.HasPrefix(value, "-")) || (op == token.ADD && strings.HasPrefix(value, "+")) {
+		return prefix + "(" + value + ")"
+	}
+	return prefix + value
 }
 
 func (o *LoweringOwner) lowerValueForTargetTypes(
