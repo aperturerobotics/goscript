@@ -810,6 +810,7 @@ func renderRunner(result PackageResult, req *normalizedRequest) string {
 	}
 	b.WriteString(" })\n")
 	b.WriteString("if (!result.ok) {\n\tthrow new Error(\"goscript test failed\")\n}\n")
+	b.WriteString("if (typeof process !== \"undefined\" && process.exit) {\n\tprocess.exit(0)\n}\n")
 	return b.String()
 }
 
@@ -911,6 +912,7 @@ func renderCombinedRunner(result *Result, indexes []int, req *normalizedRequest)
 		}
 		b.WriteString("])\n")
 	}
+	b.WriteString("if (typeof process !== \"undefined\" && process.exit) {\n\tprocess.exit(0)\n}\n")
 	return b.String()
 }
 
