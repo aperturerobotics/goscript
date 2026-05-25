@@ -26,6 +26,7 @@ export {
   Copy,
   Indirect,
   New,
+  NewAt,
   MakeSlice,
   MakeMap,
   MakeMapWithSize,

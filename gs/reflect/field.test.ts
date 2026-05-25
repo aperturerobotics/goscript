@@ -1,20 +1,35 @@
 import { describe, expect, it } from 'vitest'
 
-import { TypeKind, arrayToSlice, registerStructType } from '../builtin/index.js'
-import { TypeOf, ValueOf } from './index.js'
+import {
+  TypeKind,
+  arrayToSlice,
+  asArray,
+  registerStructType,
+} from '../builtin/index.js'
+import { NewAt, TypeOf, ValueOf } from './index.js'
 
 class Person {
   public Name = 'Ada'
   public Count = 3
+
+  public String(): string {
+    return this.Name
+  }
 }
-(Person as any).__typeInfo = { name: 'main.Person' }
+;(Person as any).__typeInfo = { name: 'main.Person' }
 
 describe('reflect struct field access', () => {
   it('finds struct fields by name and index', () => {
-    registerStructType('main.Person', new Person(), [], Person, {
-      Name: 'string',
-      Count: { kind: TypeKind.Basic, name: 'int' },
-    })
+    registerStructType(
+      'main.Person',
+      new Person(),
+      [{ name: 'String', args: [], returns: [] }],
+      Person,
+      {
+        Name: 'string',
+        Count: { kind: TypeKind.Basic, name: 'int' },
+      },
+    )
 
     const person = new Person()
     const typ = TypeOf(person)
@@ -23,10 +38,26 @@ describe('reflect struct field access', () => {
     expect(ok).toBe(true)
     expect(field.Name).toBe('Name')
     expect(field.Index).toEqual([0])
-    expect(typ.FieldByNameFunc((name) => name === 'Count')[0].Name).toBe('Count')
+    expect(typ.FieldByNameFunc((name) => name === 'Count')[0].Name).toBe(
+      'Count',
+    )
     expect(typ.AssignableTo(typ)).toBe(true)
+    expect(typ.MethodByName('String')[1]).toBe(true)
     expect(ValueOf(person).FieldByName('Name').String()).toBe('Ada')
-    expect(ValueOf(person).FieldByIndex(arrayToSlice([1])).Int()).toBe(3)
+    expect(
+      ValueOf(person)
+        .FieldByIndex(arrayToSlice([1]))
+        .Int(),
+    ).toBe(3)
     expect(ValueOf(person).FieldByName('Missing').IsValid()).toBe(false)
+
+    const stringMethod = ValueOf(person).MethodByName('String')
+    expect(stringMethod.IsValid()).toBe(true)
+    expect(asArray(stringMethod.Call(arrayToSlice([])))[0].String()).toBe('Ada')
+
+    const nameField = ValueOf(person).FieldByName('Name')
+    const namePtr = NewAt(nameField.Type(), nameField.UnsafeAddr() as any)
+    namePtr.Elem().SetString('Grace')
+    expect(person.Name).toBe('Grace')
   })
 })

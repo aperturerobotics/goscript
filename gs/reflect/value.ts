@@ -26,7 +26,13 @@ import {
   BasicType,
   Invalid,
 } from './type.js'
-import { ReflectValue, SelectCase, SelectRecv, SelectDefault } from './types.js'
+import {
+  Pointer,
+  ReflectValue,
+  SelectCase,
+  SelectRecv,
+  SelectDefault,
+} from './types.js'
 
 interface ChannelObject {
   _sendQueue?: unknown[]
@@ -140,6 +146,33 @@ export function New(typ: Type | null): Value {
   // For the pointer value, we'll use the zero value but with pointer type
   // In a real implementation, this would be a pointer to the zero value
   return new Value(null, ptrType) // null represents the pointer value
+}
+
+// NewAt returns a Value representing a pointer to the value at p.
+export function NewAt(typ: Type | null, p: Pointer | unknown): Value {
+  if (typ === null) {
+    return new Value()
+  }
+  const ptrType = PointerTo(typ)
+  if (
+    p &&
+    typeof p === 'object' &&
+    'value' in p &&
+    (p as { value?: unknown }).value instanceof Value
+  ) {
+    const target = (p as { value: Value }).value
+    const ref: $.VarRef<ReflectValue> = {
+      get value(): ReflectValue {
+        return target.Interface() as ReflectValue
+      },
+      set value(value: ReflectValue) {
+        target.Set(new Value(value, typ))
+      },
+      __isVarRef: true,
+    }
+    return new Value(ref, ptrType)
+  }
+  return new Value($.unsupportedPointerRef<ReflectValue>(p), ptrType)
 }
 
 // MakeSlice returns a Value representing a new slice with the specified type, length, and capacity.

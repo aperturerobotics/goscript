@@ -6,6 +6,7 @@ import {
   StructField,
   TypeOf,
 } from './type.js'
+import { Method } from './types.js'
 
 // Simple MapOf implementation using JavaScript Map
 export function MapOf(key: Type, elem: Type): Type {
@@ -63,7 +64,9 @@ class MapType implements Type {
     throw new Error('reflect: FieldByName of non-struct type map')
   }
 
-  public FieldByNameFunc(_match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    _match: (name: string) => boolean,
+  ): [StructField, boolean] {
     throw new Error('reflect: FieldByNameFunc of non-struct type map')
   }
 
@@ -96,6 +99,18 @@ class MapType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+
+  public MethodByName(_name: string): [Method, boolean] {
+    return [
+      {
+        Name: '',
+        Type: TypeOf(null),
+        Func: () => undefined,
+        Index: 0,
+      },
+      false,
+    ]
   }
 
   public Len(): number {

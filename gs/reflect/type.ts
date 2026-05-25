@@ -1,4 +1,10 @@
-import { ReflectValue, StructField, StructTag, ValueError } from './types.js'
+import {
+  Method,
+  ReflectValue,
+  StructField,
+  StructTag,
+  ValueError,
+} from './types.js'
 export { StructField }
 import { MapIter } from './map.js'
 import {
@@ -249,6 +255,9 @@ export interface Type {
   // NumMethod returns the number of methods in the type's method set
   NumMethod(): number
 
+  // MethodByName returns the method with that name in the type's method set.
+  MethodByName(name: string): [Method, boolean]
+
   // Len returns an array type's length.
   // Panics if the type's Kind is not Array.
   Len(): number
@@ -316,6 +325,9 @@ class InvalidTypeClass implements Type {
   }
   NumMethod(): number {
     return 0
+  }
+  MethodByName(_name: string): [Method, boolean] {
+    return [zeroMethod(), false]
   }
   Len(): number {
     throw new Error('reflect: Len of invalid type')
@@ -518,7 +530,10 @@ export class Value {
       typeof this._value === 'object' &&
       '__meta__' in this._value
     ) {
-      return new Value($.goSlice(this._value as $.Slice<unknown>, i, j), this._type)
+      return new Value(
+        $.goSlice(this._value as $.Slice<unknown>, i, j),
+        this._type,
+      )
     }
     if (globalThis.Array.isArray(this._value)) {
       return new Value(this._value.slice(i, j), this._type)
@@ -637,6 +652,16 @@ export class Value {
     return 0
   }
 
+  public UnsafeAddr(): number | { value: Value } {
+    if (!this.CanAddr()) {
+      throw new ValueError({ Kind: this.Kind(), Method: 'UnsafeAddr' })
+    }
+    if (this._parentStruct && this._fieldName) {
+      return { value: this }
+    }
+    return this.Pointer()
+  }
+
   public pointer(): unknown {
     return this._value
   }
@@ -665,7 +690,10 @@ export class Value {
       throw new Error('reflect: call of reflect.Value.Addr on invalid Value')
     }
     const ptrType = PointerTo(this.Type())
-    return new Value(this, ptrType) // Simplified
+    if (this._parentStruct && this._fieldName) {
+      return new Value($.fieldRef(this._parentStruct, this._fieldName), ptrType)
+    }
+    return new Value($.varRef(this._value), ptrType)
   }
 
   public CanSet(): boolean {
@@ -713,6 +741,40 @@ export class Value {
     return this._value
   }
 
+  public MethodByName(name: string): Value {
+    if (!this.IsValid()) {
+      return new Value()
+    }
+    const receiver = $.isVarRef(this._value) ? this._value.value : this._value
+    if (
+      receiver === null ||
+      receiver === undefined ||
+      (typeof receiver !== 'object' && typeof receiver !== 'function')
+    ) {
+      return new Value()
+    }
+    const method = (receiver as Record<string, unknown>)[name]
+    if (typeof method !== 'function') {
+      return new Value()
+    }
+    return new Value(method.bind(receiver), new FunctionType('func'))
+  }
+
+  public Call(inArgs: $.Slice<Value>): $.Slice<Value> {
+    if (this.Kind() !== Func || typeof this._value !== 'function') {
+      throw new ValueError({ Kind: this.Kind(), Method: 'Call' })
+    }
+    const args = $.asArray(inArgs).map((arg) => arg.Interface())
+    const result = this._value(...args) as ReflectValue | ReflectValue[]
+    if (globalThis.Array.isArray(result)) {
+      return $.arrayToSlice(result.map((value) => ValueOf(value)))
+    }
+    if (result === undefined) {
+      return $.makeSlice<Value>(0)
+    }
+    return $.arrayToSlice([ValueOf(result)])
+  }
+
   public IsZero(): boolean {
     const zeroVal = Zero(this.Type()).value
     return DeepEqual(this._value, zeroVal)
@@ -750,7 +812,10 @@ export class Value {
     if (!this._value.has(rawKey)) {
       return new Value(null, new BasicType(Invalid, 'invalid'))
     }
-    return new Value(this._value.get(rawKey) as ReflectValue, this.Type().Elem())
+    return new Value(
+      this._value.get(rawKey) as ReflectValue,
+      this.Type().Elem(),
+    )
   }
 
   public MapKeys(): $.Slice<Value> {
@@ -1177,7 +1242,9 @@ export class BasicType implements Type {
     return typeFieldByName(this, name)
   }
 
-  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    match: (name: string) => boolean,
+  ): [StructField, boolean] {
     return typeFieldByNameFunc(this, match)
   }
 
@@ -1264,6 +1331,9 @@ export class BasicType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+  public MethodByName(_name: string): [Method, boolean] {
+    return [zeroMethod(), false]
   }
 
   public Len(): number {
@@ -1354,7 +1424,9 @@ class SliceType implements Type {
     return typeFieldByName(this, name)
   }
 
-  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    match: (name: string) => boolean,
+  ): [StructField, boolean] {
     return typeFieldByNameFunc(this, match)
   }
 
@@ -1390,6 +1462,9 @@ class SliceType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+  public MethodByName(_name: string): [Method, boolean] {
+    return [zeroMethod(), false]
   }
 
   public Len(): number {
@@ -1453,7 +1528,9 @@ class ArrayType implements Type {
     return typeFieldByName(this, name)
   }
 
-  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    match: (name: string) => boolean,
+  ): [StructField, boolean] {
     return typeFieldByNameFunc(this, match)
   }
 
@@ -1493,6 +1570,9 @@ class ArrayType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+  public MethodByName(_name: string): [Method, boolean] {
+    return [zeroMethod(), false]
   }
 
   public Bits(): number {
@@ -1545,7 +1625,9 @@ class PointerType implements Type {
     return typeFieldByName(this, name)
   }
 
-  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    match: (name: string) => boolean,
+  ): [StructField, boolean] {
     return typeFieldByNameFunc(this, match)
   }
 
@@ -1591,6 +1673,9 @@ class PointerType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+  public MethodByName(name: string): [Method, boolean] {
+    return typeMethodByName(this._elemType, name)
   }
 
   public Len(): number {
@@ -1647,7 +1732,9 @@ class FunctionType implements Type {
     return typeFieldByName(this, name)
   }
 
-  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    match: (name: string) => boolean,
+  ): [StructField, boolean] {
     return typeFieldByNameFunc(this, match)
   }
 
@@ -1687,6 +1774,9 @@ class FunctionType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+  public MethodByName(_name: string): [Method, boolean] {
+    return [zeroMethod(), false]
   }
 
   public Len(): number {
@@ -1750,7 +1840,9 @@ class MapType implements Type {
     return typeFieldByName(this, name)
   }
 
-  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    match: (name: string) => boolean,
+  ): [StructField, boolean] {
     return typeFieldByNameFunc(this, match)
   }
 
@@ -1786,6 +1878,9 @@ class MapType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+  public MethodByName(_name: string): [Method, boolean] {
+    return [zeroMethod(), false]
   }
 
   public Len(): number {
@@ -1875,6 +1970,47 @@ function typeFieldByNameFunc(
   return [new StructField(), false]
 }
 
+function zeroMethod(): Method {
+  return {
+    Name: '',
+    Type: new BasicType(Invalid, '<invalid>'),
+    Func: () => undefined,
+    Index: 0,
+  }
+}
+
+function methodFromSignature(
+  signature: $.MethodSignature,
+  index: number,
+): Method {
+  return {
+    Name: signature.name,
+    Type: new FunctionType('func'),
+    Func: () => undefined,
+    Index: index,
+  }
+}
+
+function typeMethods(t: Type): $.MethodSignature[] {
+  const typeInfo = builtinGetTypeByName(t.String())
+  if (!typeInfo) {
+    return []
+  }
+  if (isStructTypeInfo(typeInfo) || isInterfaceTypeInfo(typeInfo)) {
+    return typeInfo.methods || []
+  }
+  return []
+}
+
+function typeMethodByName(t: Type, name: string): [Method, boolean] {
+  const methods = typeMethods(t)
+  const index = methods.findIndex((method) => method.name === name)
+  if (index === -1) {
+    return [zeroMethod(), false]
+  }
+  return [methodFromSignature(methods[index], index), true]
+}
+
 function typeAssignableTo(t: Type, u: Type | null): boolean {
   if (u === null) {
     return false
@@ -1951,7 +2087,9 @@ class StructType implements Type {
     return typeFieldByName(this, name)
   }
 
-  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    match: (name: string) => boolean,
+  ): [StructField, boolean] {
     return typeFieldByNameFunc(this, match)
   }
 
@@ -1992,7 +2130,11 @@ class StructType implements Type {
   }
 
   public NumMethod(): number {
-    return 0
+    return typeMethods(this).length
+  }
+
+  public MethodByName(name: string): [Method, boolean] {
+    return typeMethodByName(this, name)
   }
 
   public Len(): number {
@@ -2139,7 +2281,9 @@ class ChannelType implements Type {
     return typeFieldByName(this, name)
   }
 
-  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    match: (name: string) => boolean,
+  ): [StructField, boolean] {
     return typeFieldByNameFunc(this, match)
   }
 
@@ -2183,6 +2327,9 @@ class ChannelType implements Type {
 
   public NumMethod(): number {
     return 0
+  }
+  public MethodByName(_name: string): [Method, boolean] {
+    return [zeroMethod(), false]
   }
 
   public Len(): number {
@@ -2255,7 +2402,9 @@ class InterfaceType implements Type {
     return typeFieldByName(this, name)
   }
 
-  public FieldByNameFunc(match: (name: string) => boolean): [StructField, boolean] {
+  public FieldByNameFunc(
+    match: (name: string) => boolean,
+  ): [StructField, boolean] {
     return typeFieldByNameFunc(this, match)
   }
 
@@ -2294,7 +2443,11 @@ class InterfaceType implements Type {
   }
 
   public NumMethod(): number {
-    return 0
+    return typeMethods(this).length
+  }
+
+  public MethodByName(name: string): [Method, boolean] {
+    return typeMethodByName(this, name)
   }
 
   public Len(): number {
