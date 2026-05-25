@@ -97,6 +97,7 @@ describe('net/http override', () => {
     expect(srv.BaseContext?.(null)).toEqual({})
     expect(srv.ReadHeaderTimeout).toBe(10)
     expect(srv.Shutdown({} as any)).toBeNull()
+    expect(srv.ListenAndServeTLS('cert.pem', 'key.pem')?.Error()).toBe('net/http: Server.ListenAndServeTLS is not implemented in GoScript')
   })
 
   it('supports handler functions and not-found responses for typechecked server tests', () => {

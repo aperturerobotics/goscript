@@ -268,6 +268,10 @@ export class Server {
     return errors.New('net/http: Server.ListenAndServe is not implemented in GoScript')
   }
 
+  public ListenAndServeTLS(_certFile: string, _keyFile: string): $.GoError {
+    return errors.New('net/http: Server.ListenAndServeTLS is not implemented in GoScript')
+  }
+
   public Close(): $.GoError {
     return null
   }
