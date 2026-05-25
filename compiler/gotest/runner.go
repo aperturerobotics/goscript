@@ -2,6 +2,7 @@ package gotest
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -9,11 +10,14 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/aperturerobotics/goscript/compiler"
 	"github.com/aperturerobotics/goscript/compiler/tsworkspace"
 	"github.com/pkg/errors"
 )
+
+const combinedRuntimeResultPrefix = "__GOSCRIPT_PACKAGE_RESULT__"
 
 // Runner owns GoScript package-test loading, compilation, typecheck, and execution.
 type Runner struct {
@@ -255,6 +259,19 @@ func (r *Runner) runPackageRuntimes(
 	result *Result,
 	indexes []int,
 ) {
+	if req.Parallelism == 1 && len(indexes) > 1 && r.runCombinedPackageRuntime(ctx, req, workspace, result, indexes) {
+		return
+	}
+	r.runPackageRuntimesIndividually(ctx, req, workspace, result, indexes)
+}
+
+func (r *Runner) runPackageRuntimesIndividually(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	indexes []int,
+) {
 	parallelism := max(req.Parallelism, 1)
 	sem := make(chan struct{}, parallelism)
 	var wg sync.WaitGroup
@@ -273,6 +290,53 @@ func (r *Runner) runPackageRuntimes(
 		})
 	}
 	wg.Wait()
+}
+
+func (r *Runner) runCombinedPackageRuntime(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	indexes []int,
+) bool {
+	ordered := packageExecutionIndexes(result, indexes)
+	runnerFile := "runner-all.ts"
+	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, runnerFile, renderCombinedRunner(result, ordered, req)); phase.Failed() {
+		return false
+	}
+	runtime := workspace.RunTool(ctx, tsworkspace.PhaseRuntime, req.WorkDir, "bun", runnerFile)
+	if runtime.Failed() {
+		return false
+	}
+	records, ok := parseCombinedRuntimeRecords(runtime.Output)
+	if !ok {
+		return false
+	}
+	byPath := make(map[string]combinedRuntimeRecord, len(records))
+	for _, record := range records {
+		byPath[record.PackagePath] = record
+	}
+	for _, idx := range ordered {
+		record, ok := byPath[result.Packages[idx].PackagePath]
+		if !ok {
+			return false
+		}
+		result.Packages[idx].Elapsed = time.Duration(record.ElapsedMS) * time.Millisecond
+		result.Packages[idx].Output = strings.TrimSpace(record.Output)
+		if record.OK {
+			result.Packages[idx].Phases.Runtime = PhaseStatusPass
+			result.Packages[idx].Action = ActionPass
+			continue
+		}
+		result.Packages[idx].Action = ActionFail
+		result.Packages[idx].Owner = classifyProcessOutput(record.Output)
+		result.Packages[idx].Phases.Runtime = PhaseStatusFail
+		result.Packages[idx].Error = strings.TrimSpace(record.Output)
+		if result.Packages[idx].Error == "" {
+			result.Packages[idx].Error = "goscript test failed"
+		}
+	}
+	return true
 }
 
 func (r *Runner) runPackageRuntime(
@@ -695,6 +759,130 @@ func renderRunner(result PackageResult, req *normalizedRequest) string {
 	b.WriteString(" })\n")
 	b.WriteString("if (!result.ok) {\n\tthrow new Error(\"goscript test failed\")\n}\n")
 	return b.String()
+}
+
+type combinedRuntimeRecord struct {
+	PackagePath string `json:"packagePath"`
+	OK          bool   `json:"ok"`
+	ElapsedMS   int64  `json:"elapsedMs"`
+	Output      string `json:"output"`
+}
+
+func parseCombinedRuntimeRecords(output string) ([]combinedRuntimeRecord, bool) {
+	var records []combinedRuntimeRecord
+	for line := range strings.SplitSeq(output, "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, combinedRuntimeResultPrefix) {
+			continue
+		}
+		var record combinedRuntimeRecord
+		if err := json.Unmarshal([]byte(strings.TrimPrefix(line, combinedRuntimeResultPrefix)), &record); err != nil {
+			return nil, false
+		}
+		if record.PackagePath == "" {
+			return nil, false
+		}
+		records = append(records, record)
+	}
+	return records, len(records) != 0
+}
+
+func renderCombinedRunner(result *Result, indexes []int, req *normalizedRequest) string {
+	aliases := runnerImportAliases(result, indexes)
+	var imports []string
+	for packagePath := range aliases {
+		imports = append(imports, packagePath)
+	}
+	slices.Sort(imports)
+
+	var b strings.Builder
+	b.WriteString("import { runTests } from \"@goscript/testing/index.js\"\n")
+	for _, packagePath := range imports {
+		b.WriteString("import * as ")
+		b.WriteString(aliases[packagePath])
+		b.WriteString(" from ")
+		b.WriteString(strconv.Quote("@goscript/" + packagePath + "/index.js"))
+		b.WriteString("\n")
+	}
+	b.WriteString("\n")
+	b.WriteString("const __goscriptResultPrefix = ")
+	b.WriteString(strconv.Quote(combinedRuntimeResultPrefix))
+	b.WriteString("\n")
+	b.WriteString("const __goscriptOriginalLog = console.log\n")
+	b.WriteString("async function __goscriptRunPackage(packagePath, tests) {\n")
+	b.WriteString("\tconst logs = []\n")
+	b.WriteString("\tconst startedAt = Date.now()\n")
+	b.WriteString("\tlet ok = false\n")
+	b.WriteString("\tconsole.log = (...args) => logs.push(args.map((arg) => String(arg)).join(' '))\n")
+	b.WriteString("\ttry {\n")
+	b.WriteString("\t\tconst result = await runTests(packagePath, tests, { verbose: ")
+	if req.Verbose {
+		b.WriteString("true")
+	} else {
+		b.WriteString("false")
+	}
+	b.WriteString(", count: ")
+	b.WriteString(strconv.Itoa(req.Count))
+	b.WriteString(", short: ")
+	if req.Short {
+		b.WriteString("true")
+	} else {
+		b.WriteString("false")
+	}
+	b.WriteString(" })\n")
+	b.WriteString("\t\tok = result.ok\n")
+	b.WriteString("\t} catch (err) {\n")
+	b.WriteString("\t\tok = false\n")
+	b.WriteString("\t\tlogs.push(err && err.stack ? String(err.stack) : String(err))\n")
+	b.WriteString("\t} finally {\n")
+	b.WriteString("\t\tconsole.log = __goscriptOriginalLog\n")
+	b.WriteString("\t}\n")
+	b.WriteString("\t__goscriptOriginalLog(__goscriptResultPrefix + JSON.stringify({ packagePath, ok, elapsedMs: Date.now() - startedAt, output: logs.join('\\n') }))\n")
+	b.WriteString("}\n\n")
+	for _, idx := range indexes {
+		pkg := result.Packages[idx]
+		b.WriteString("await __goscriptRunPackage(")
+		b.WriteString(strconv.Quote(pkg.PackagePath))
+		b.WriteString(", [\n")
+		for testIdx, test := range pkg.Tests {
+			b.WriteString("\t{ name: ")
+			b.WriteString(strconv.Quote(test.Name))
+			b.WriteString(", fn: async (t) => await ")
+			b.WriteString(aliases[test.PackagePath])
+			b.WriteString(".")
+			b.WriteString(test.Name)
+			b.WriteString("(t) }")
+			if testIdx != len(pkg.Tests)-1 {
+				b.WriteString(",")
+			}
+			b.WriteString("\n")
+		}
+		b.WriteString("])\n")
+	}
+	return b.String()
+}
+
+func runnerImportAliases(result *Result, indexes []int) map[string]string {
+	seen := make(map[string]bool)
+	var imports []string
+	for _, idx := range indexes {
+		if result == nil || idx < 0 || idx >= len(result.Packages) {
+			continue
+		}
+		for _, packagePath := range runnerImports(result.Packages[idx].Tests) {
+			if seen[packagePath] {
+				continue
+			}
+			seen[packagePath] = true
+			imports = append(imports, packagePath)
+		}
+	}
+	slices.Sort(imports)
+	aliases := make(map[string]string, len(imports))
+	for idx, packagePath := range imports {
+		aliases[packagePath] = "pkg" + strconv.Itoa(idx)
+	}
+	return aliases
 }
 
 func runnerImports(tests []Test) []string {
