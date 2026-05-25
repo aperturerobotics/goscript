@@ -31,7 +31,7 @@ export async function main(): globalThis.Promise<void> {
 	let frames: runtime.Frames | $.VarRef<runtime.Frames> | null = runtime.CallersFrames(pcs)
 	let [frame, more] = runtime.Frames.prototype.Next.call(frames)
 	$.println("Frames empty:", frame.Line, more)
-	$.println("FuncForPC nil:", runtime.FuncForPC(0) == null)
+	$.println("FuncForPC nil:", runtime.FuncForPC($.uint(0, 64)) == null)
 
 	let box = $.varRef({value: 1})
 	let cleanup = $.markAsStructValue($.cloneStructValue(runtime.AddCleanup(box, $.functionValue((value: number): void => {

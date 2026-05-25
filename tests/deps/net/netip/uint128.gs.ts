@@ -44,15 +44,15 @@ export class uint128 {
 
 	public addOne(): uint128 {
 		const u = this
-		let __goscriptTuple0: any = bits.Add64(u.lo, 1, 0)
-		let lo = __goscriptTuple0[0]
-		let carry = __goscriptTuple0[1]
-		return $.markAsStructValue(new uint128({hi: $.uint64Add(u.hi, carry), lo: lo}))
+		let __goscriptTuple0: any = bits.Add64($.uint(u.lo, 64), $.uint(1, 64), $.uint(0, 64))
+		let lo = $.uint(__goscriptTuple0[0], 64)
+		let carry = $.uint(__goscriptTuple0[1], 64)
+		return $.markAsStructValue(new uint128({hi: $.uint($.uint64Add(u.hi, carry), 64), lo: $.uint(lo, 64)}))
 	}
 
 	public and(m: uint128): uint128 {
 		const u = this
-		return $.markAsStructValue(new uint128({hi: $.uint64And(u.hi, m.hi), lo: $.uint64And(u.lo, m.lo)}))
+		return $.markAsStructValue(new uint128({hi: $.uint($.uint64And(u.hi, m.hi), 64), lo: $.uint($.uint64And(u.lo, m.lo), 64)}))
 	}
 
 	public bitsClearedFrom(bit: number): uint128 {
@@ -72,30 +72,30 @@ export class uint128 {
 
 	public isZero(): boolean {
 		const u = this
-		return ($.uint64Or(u.hi, u.lo)) == 0
+		return $.uint(($.uint64Or(u.hi, u.lo)), 64) == $.uint(0, 64)
 	}
 
 	public not(): uint128 {
 		const u = this
-		return $.markAsStructValue(new uint128({hi: ~u.hi, lo: ~u.lo}))
+		return $.markAsStructValue(new uint128({hi: $.uint(~u.hi, 64), lo: $.uint(~u.lo, 64)}))
 	}
 
 	public or(m: uint128): uint128 {
 		const u = this
-		return $.markAsStructValue(new uint128({hi: $.uint64Or(u.hi, m.hi), lo: $.uint64Or(u.lo, m.lo)}))
+		return $.markAsStructValue(new uint128({hi: $.uint($.uint64Or(u.hi, m.hi), 64), lo: $.uint($.uint64Or(u.lo, m.lo), 64)}))
 	}
 
 	public subOne(): uint128 {
 		const u = this
-		let __goscriptTuple1: any = bits.Sub64(u.lo, 1, 0)
-		let lo = __goscriptTuple1[0]
-		let borrow = __goscriptTuple1[1]
-		return $.markAsStructValue(new uint128({hi: $.uint64Sub(u.hi, borrow), lo: lo}))
+		let __goscriptTuple1: any = bits.Sub64($.uint(u.lo, 64), $.uint(1, 64), $.uint(0, 64))
+		let lo = $.uint(__goscriptTuple1[0], 64)
+		let borrow = $.uint(__goscriptTuple1[1], 64)
+		return $.markAsStructValue(new uint128({hi: $.uint($.uint64Sub(u.hi, borrow), 64), lo: $.uint(lo, 64)}))
 	}
 
 	public xor(m: uint128): uint128 {
 		const u = this
-		return $.markAsStructValue(new uint128({hi: $.uint64Xor(u.hi, m.hi), lo: $.uint64Xor(u.lo, m.lo)}))
+		return $.markAsStructValue(new uint128({hi: $.uint($.uint64Xor(u.hi, m.hi), 64), lo: $.uint($.uint64Xor(u.lo, m.lo), 64)}))
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -108,5 +108,5 @@ export class uint128 {
 }
 
 export function mask6(n: number): uint128 {
-	return $.markAsStructValue(new uint128({hi: ~($.uint64Shr(~$.uint(0, 64), n)), lo: $.uint64Shl(~$.uint(0, 64), (128 - n))}))
+	return $.markAsStructValue(new uint128({hi: $.uint(~($.uint64Shr(~$.uint(0, 64), n)), 64), lo: $.uint($.uint64Shl(~$.uint(0, 64), (128 - n)), 64)}))
 }

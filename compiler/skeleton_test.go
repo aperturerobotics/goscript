@@ -2446,6 +2446,38 @@ func TestCompilePackagesParenthesizesRepeatedUnarySigns(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesNormalizesWideIntegerReturnTargets(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/wide-return\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"hash\"",
+			"func Read(h hash.Hash64) uint64 {",
+			"  return h.Sum64()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "wide-return", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "return $.uint($.pointerValue<Exclude<hash.Hash64, null>>(h).Sum64(), 64)") {
+		t.Fatalf("missing uint64 return normalization:\n%s", text)
+	}
+}
+
 func TestCompileSourceToTypeScriptCompilesSingleFile(t *testing.T) {
 	output, err := CompileSourceToTypeScript("package main\nfunc main() { println(\"hi\") }\n", "main")
 	if err != nil {

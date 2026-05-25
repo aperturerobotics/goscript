@@ -11,12 +11,12 @@ export function aboveSignedLimit(v: number): boolean {
 }
 
 export function isMinInt64(v: number): boolean {
-	return v == -9223372036854775808
+	return $.int(v) == -9223372036854775808
 }
 
 export async function main(): globalThis.Promise<void> {
-	$.println(aboveSignedLimit($.uint(10, 64)))
-	$.println(isMinInt64(0))
+	$.println(aboveSignedLimit($.uint($.uint(10, 64), 64)))
+	$.println(isMinInt64($.int(0)))
 }
 
 if ($.isMainScript(import.meta)) {

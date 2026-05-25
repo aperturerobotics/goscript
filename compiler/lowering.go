@@ -7430,6 +7430,15 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 		return o.lowerStructClone(value)
 	}
 	if isIntegerType(targetType) && isIntegerType(sourceType) {
+		if isBasicFixedWideIntegerType(targetType) {
+			if bits, ok := unsignedIntegerBits(targetType); ok {
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
+					"(" + value + ", " + strconv.Itoa(bits) + ")"
+			}
+			if _, ok := signedIntegerBits(targetType); ok {
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt) + "(" + value + ")"
+			}
+		}
 		if bits, ok := unsignedIntegerBits(targetType); ok && bits < 64 {
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
 				"(" + value + ", " + strconv.Itoa(bits) + ")"
@@ -7445,6 +7454,19 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 		}
 	}
 	return value
+}
+
+func isBasicFixedWideIntegerType(typ types.Type) bool {
+	basic, ok := types.Unalias(typ).(*types.Basic)
+	if !ok {
+		return false
+	}
+	switch basic.Kind() {
+	case types.Int64, types.Uint64, types.Uintptr:
+		return true
+	default:
+		return false
+	}
 }
 
 func (o *LoweringOwner) lowerNamedValueInterfaceWrapper(

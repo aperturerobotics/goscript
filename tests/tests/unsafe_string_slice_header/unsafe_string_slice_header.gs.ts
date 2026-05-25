@@ -14,7 +14,7 @@ export function stringBytes(__goscriptParam0: string): $.Slice<number> {
 	let b: $.VarRef<$.Slice<number>> = $.varRef(null as $.Slice<number>)
 	let strh: reflect.StringHeader | $.VarRef<reflect.StringHeader> | null = ($.stringHeaderRef(s) as unknown as reflect.StringHeader | $.VarRef<reflect.StringHeader> | null)
 	let sh: reflect.SliceHeader | $.VarRef<reflect.SliceHeader> | null = ($.sliceHeaderRef(b) as unknown as reflect.SliceHeader | $.VarRef<reflect.SliceHeader> | null)
-	$.pointerValue<reflect.SliceHeader>(sh).Data = $.pointerValue<reflect.StringHeader>(strh).Data
+	$.pointerValue<reflect.SliceHeader>(sh).Data = $.uint($.pointerValue<reflect.StringHeader>(strh).Data, 64)
 	$.pointerValue<reflect.SliceHeader>(sh).Len = $.pointerValue<reflect.StringHeader>(strh).Len
 	$.pointerValue<reflect.SliceHeader>(sh).Cap = $.pointerValue<reflect.StringHeader>(strh).Len
 	return b.value

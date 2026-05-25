@@ -90,7 +90,7 @@ export async function main(): globalThis.Promise<void> {
 			case reflect.Int32:
 			case reflect.Int64:
 			{
-				$.println("  Value:", $.markAsStructValue($.cloneStructValue(fv)).Int())
+				$.println("  Value:", $.int($.markAsStructValue($.cloneStructValue(fv)).Int()))
 				break
 			}
 			case reflect.Bool:

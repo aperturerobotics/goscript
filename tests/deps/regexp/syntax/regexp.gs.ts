@@ -825,7 +825,7 @@ export function escape(b: strings.Builder | $.VarRef<strings.Builder> | null, r:
 		{
 			if (r < 0x100) {
 				strings.Builder.prototype.WriteString.call(b, "\\x")
-				let s = strconv.FormatInt($.int(r), 16)
+				let s = strconv.FormatInt($.int($.int(r)), 16)
 				if ($.len(s) == 1) {
 					strings.Builder.prototype.WriteRune.call(b, $.int(48, 32))
 				}
@@ -833,7 +833,7 @@ export function escape(b: strings.Builder | $.VarRef<strings.Builder> | null, r:
 				break
 			}
 			strings.Builder.prototype.WriteString.call(b, "\\x{")
-			strings.Builder.prototype.WriteString.call(b, strconv.FormatInt($.int(r), 16))
+			strings.Builder.prototype.WriteString.call(b, strconv.FormatInt($.int($.int(r)), 16))
 			strings.Builder.prototype.WriteString.call(b, "}")
 			break
 		}

@@ -285,10 +285,10 @@ export class parser {
 		if (!force) {
 			{
 				let __goscriptTuple0: any = $.mapGet($.pointerValue<parser>(p).size, re, 0)
-				let size = __goscriptTuple0[0]
+				let size = $.int(__goscriptTuple0[0])
 				let ok = __goscriptTuple0[1]
 				if (ok) {
-					return size
+					return $.int(size)
 				}
 			}
 		}
@@ -297,26 +297,26 @@ export class parser {
 		switch ($.pointerValue<__goscript_regexp.Regexp>(re).Op) {
 			case 3:
 			{
-				size = $.int($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune))
+				size = $.int($.int($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune)))
 				break
 			}
 			case 13:
 			case 14:
 			{
-				size = $.int64Add(2, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
+				size = $.int($.int64Add(2, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false)))
 				break
 			}
 			case 15:
 			case 16:
 			{
-				size = $.int64Add(1, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
+				size = $.int($.int64Add(1, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false)))
 				break
 			}
 			case 18:
 			{
 				for (let __goscriptRangeTarget1 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 					let sub = __goscriptRangeTarget1![__rangeIndex]
-					size = $.uint64Add(size, parser.prototype.calcSize.call(p, sub, false))
+					size = $.uint64Add(size, $.int(parser.prototype.calcSize.call(p, sub, false)))
 				}
 				break
 			}
@@ -324,33 +324,33 @@ export class parser {
 			{
 				for (let __goscriptRangeTarget2 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
 					let sub = __goscriptRangeTarget2![__rangeIndex]
-					size = $.uint64Add(size, parser.prototype.calcSize.call(p, sub, false))
+					size = $.uint64Add(size, $.int(parser.prototype.calcSize.call(p, sub, false)))
 				}
 				if ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) > 1) {
-					size = $.uint64Add(size, $.int64Sub($.int($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub)), 1))
+					size = $.uint64Add(size, $.int($.int64Sub($.int($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub)), 1)))
 				}
 				break
 			}
 			case 17:
 			{
-				let sub = parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false)
+				let sub = $.int(parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
 				if ($.pointerValue<__goscript_regexp.Regexp>(re).Max == -1) {
 					if ($.pointerValue<__goscript_regexp.Regexp>(re).Min == 0) {
-						size = $.int64Add(2, sub)
+						size = $.int($.int64Add(2, sub))
 					} else {
-						size = $.int64Add(1, ($.int64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Min), sub)))
+						size = $.int($.int64Add(1, ($.int64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Min), sub))))
 					}
 					break
 				}
 				// x{2,5} = xx(x(x(x)?)?)?
-				size = $.int64Add(($.int64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Max), sub)), $.int($.pointerValue<__goscript_regexp.Regexp>(re).Max - $.pointerValue<__goscript_regexp.Regexp>(re).Min))
+				size = $.int($.int64Add(($.int64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Max), sub)), $.int($.pointerValue<__goscript_regexp.Regexp>(re).Max - $.pointerValue<__goscript_regexp.Regexp>(re).Min)))
 				break
 			}
 		}
 
-		size = $.max(1, size)
-		$.mapSet($.pointerValue<parser>(p).size, re, size)
-		return size
+		size = $.int($.max($.int(1), $.int(size)))
+		$.mapSet($.pointerValue<parser>(p).size, re, $.int(size))
+		return $.int(size)
 	}
 
 	public checkHeight(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): void {
@@ -387,8 +387,8 @@ export class parser {
 			// Maintain the product of all the repeats we've seen
 			// and don't track if the total number of regexp nodes
 			// we've seen times the repeat product is in budget.
-			if ($.pointerValue<parser>(p).repeats == 0) {
-				$.pointerValue<parser>(p).repeats = 1
+			if ($.int($.pointerValue<parser>(p).repeats) == $.int(0)) {
+				$.pointerValue<parser>(p).repeats = $.int(1)
 			}
 			if ($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(17, 8)) {
 				let n = $.pointerValue<__goscript_regexp.Regexp>(re).Max
@@ -399,9 +399,9 @@ export class parser {
 					n = 1
 				}
 				if ($.int(n) > ($.int64Div(maxSize, $.pointerValue<parser>(p).repeats))) {
-					$.pointerValue<parser>(p).repeats = maxSize
+					$.pointerValue<parser>(p).repeats = $.int(maxSize)
 				} else {
-					$.pointerValue<parser>(p).repeats = $.uint64Mul($.pointerValue<parser>(p).repeats, $.int(n))
+					$.pointerValue<parser>(p).repeats = $.uint64Mul($.pointerValue<parser>(p).repeats, $.int($.int(n)))
 				}
 			}
 			if ($.int($.pointerValue<parser>(p).numRegexp) < ($.int64Div(maxSize, $.pointerValue<parser>(p).repeats))) {

@@ -66,7 +66,7 @@ export function reflectOverlap(x: $.Slice<number>, y: $.Slice<number>): boolean 
 }
 
 export function reflectSameStart(x: $.Slice<number>, y: $.Slice<number>): boolean {
-	return (($.len(x) > 0) && ($.len(y) > 0)) && ($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(x!, 0), "*byte")))).Pointer() == $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(y!, 0), "*byte")))).Pointer())
+	return (($.len(x) > 0) && ($.len(y) > 0)) && ($.uint($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(x!, 0), "*byte")))).Pointer(), 64) == $.uint($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(y!, 0), "*byte")))).Pointer(), 64))
 }
 
 export async function main(): globalThis.Promise<void> {
@@ -74,7 +74,7 @@ export async function main(): globalThis.Promise<void> {
 	let x = 42
 	let v = $.markAsStructValue($.cloneStructValue(reflect.ValueOf(x)))
 	$.println("Type:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})).String())
-	$.println("Value:", $.markAsStructValue($.cloneStructValue(v)).Int())
+	$.println("Value:", $.int($.markAsStructValue($.cloneStructValue(v)).Int()))
 	$.println("Kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(v)).Kind()))
 
 	// Test with string
@@ -100,7 +100,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test Zero value
 	let zeroInt = $.markAsStructValue($.cloneStructValue(reflect.Zero($.pointerValueOrNil(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}))!)))
-	$.println("Zero int:", $.markAsStructValue($.cloneStructValue(zeroInt)).Int())
+	$.println("Zero int:", $.int($.markAsStructValue($.cloneStructValue(zeroInt)).Int()))
 
 	// Test type construction functions
 	let intType = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})
@@ -230,9 +230,9 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test type methods
 	$.println("Type size methods:")
-	$.println("Int size:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})).Size())
-	$.println("String size:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})).Size())
-	$.println("Slice size:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }})).Size())
+	$.println("Int size:", $.uint($.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})).Size(), 64))
+	$.println("String size:", $.uint($.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})).Size(), 64))
+	$.println("Slice size:", $.uint($.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }})).Size(), 64))
 
 	// Test enhanced API surface - functions to implement
 	$.println("Enhanced API tests:")
@@ -284,7 +284,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test channel reflection properties
 	$.println("Chan elem type:", $.pointerValue<Exclude<reflect.Type, null>>($.pointerValue<Exclude<reflect.Type, null>>(chanType).Elem()).String())
 	$.println("Chan elem kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>($.pointerValue<Exclude<reflect.Type, null>>(chanType).Elem()).Kind()))
-	$.println("Chan size:", $.pointerValue<Exclude<reflect.Type, null>>(chanType).Size())
+	$.println("Chan size:", $.uint($.pointerValue<Exclude<reflect.Type, null>>(chanType).Size(), 64))
 
 	// Test Value.Pointer on addressable slice elements.
 	let pointerBuf: $.Slice<number> = $.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8), $.uint(4, 8)])
@@ -310,7 +310,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Select recv type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(recv)).Type()).String())
 		// Print the actual received value
 		if (chosen == 0) {
-			$.println("Select recv value:", $.markAsStructValue($.cloneStructValue(recv)).Int())
+			$.println("Select recv value:", $.int($.markAsStructValue($.cloneStructValue(recv)).Int()))
 		} else {
 			if (chosen == 1) {
 				$.println("Select recv value:", $.markAsStructValue($.cloneStructValue(recv)).String())

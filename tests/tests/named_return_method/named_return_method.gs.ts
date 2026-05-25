@@ -59,9 +59,9 @@ export class content {
 			return [n, err]
 		}
 
-		let l = $.int($.len(b))
+		let l = $.int($.int($.len(b)))
 		if (($.int64Add(off, l)) > $.int($.len($.pointerValue<content>(c).bytes))) {
-			l = $.int64Sub($.int($.len($.pointerValue<content>(c).bytes)), off)
+			l = $.int($.int64Sub($.int($.len($.pointerValue<content>(c).bytes)), off))
 		}
 
 		let btr: $.Slice<number> = $.goSlice($.pointerValue<content>(c).bytes, off, $.int64Add(off, l))
@@ -83,7 +83,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test ReadAt method
 	let buf: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
-	let [n1, err1] = content.prototype.ReadAt.call(c, buf, 0)
+	let [n1, err1] = content.prototype.ReadAt.call(c, buf, $.int(0))
 	$.println(n1)
 	if (err1 == null) {
 		$.println("nil")
@@ -94,7 +94,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test ReadAt with different offset
 	let buf2: $.Slice<number> = $.makeSlice<number>(6, undefined, "byte")
-	let [n2, err2] = content.prototype.ReadAt.call(c, buf2, 7)
+	let [n2, err2] = content.prototype.ReadAt.call(c, buf2, $.int(7))
 	$.println(n2)
 	if (err2 == null) {
 		$.println("nil")

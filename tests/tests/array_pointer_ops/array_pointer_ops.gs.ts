@@ -34,17 +34,17 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("len:", $.len($.pointerValue<number[]>(cache)))
 
-	$.pointerValue<number[]>(cache)[0] = 5
-	$.pointerValue<number[]>(cache)[1] = 7
-	$.println("index:", $.pointerValue<number[]>(cache)[0], $.pointerValue<number[]>(cache)[1])
+	$.pointerValue<number[]>(cache)[0] = $.uint(5, 64)
+	$.pointerValue<number[]>(cache)[1] = $.uint(7, 64)
+	$.println("index:", $.uint($.pointerValue<number[]>(cache)[0], 64), $.uint($.pointerValue<number[]>(cache)[1], 64))
 
 	for (let __goscriptRangeTarget2 = $.pointerValue<number[]>(cache), i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 		let x = __goscriptRangeTarget2![i]
-		$.println("range:", i, x)
+		$.println("range:", i, $.uint(x, 64))
 	}
 
 	let view: $.Slice<number> = $.goSlice($.pointerValue<number[]>(cache), undefined, undefined)
-	$.println("slice:", $.len(view), view![2])
+	$.println("slice:", $.len(view), $.uint(view![2], 64))
 
 	let buf: $.Slice<number> = $.arrayToSlice<number>([$.uint(9, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8)])
 	fillArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null))

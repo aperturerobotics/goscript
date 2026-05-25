@@ -80,7 +80,7 @@ export async function main(): globalThis.Promise<void> {
 		let [info, statErr] = os.Stat(fileName)
 		if (statErr == null) {
 			$.println("Stat name:", $.pointerValue<Exclude<fs.FileInfo, null>>(info).Name())
-			$.println("Stat size:", $.pointerValue<Exclude<fs.FileInfo, null>>(info).Size())
+			$.println("Stat size:", $.int($.pointerValue<Exclude<fs.FileInfo, null>>(info).Size()))
 		} else {
 			$.println("Stat error:", $.pointerValue<Exclude<$.GoError, null>>(statErr).Error())
 		}

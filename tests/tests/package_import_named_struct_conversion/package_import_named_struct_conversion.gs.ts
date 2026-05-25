@@ -70,11 +70,11 @@ export function asLocal(t: time.Time): LocalTime {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let first = $.markAsStructValue($.cloneStructValue(($.markAsStructValue($.cloneStructValue(time.Unix(11, 0))).UTC() as unknown as LocalTime)))
-	$.println("as time:", $.markAsStructValue($.cloneStructValue(asTime($.markAsStructValue($.cloneStructValue(first))))).Unix())
+	let first = $.markAsStructValue($.cloneStructValue(($.markAsStructValue($.cloneStructValue(time.Unix($.int(11), $.int(0)))).UTC() as unknown as LocalTime)))
+	$.println("as time:", $.int($.markAsStructValue($.cloneStructValue(asTime($.markAsStructValue($.cloneStructValue(first))))).Unix()))
 
-	let second = $.markAsStructValue($.cloneStructValue(asLocal($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Unix(22, 0))).UTC())))))
-	$.println("as local:", $.markAsStructValue($.cloneStructValue((second as unknown as time.Time))).Unix())
+	let second = $.markAsStructValue($.cloneStructValue(asLocal($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Unix($.int(22), $.int(0)))).UTC())))))
+	$.println("as local:", $.int($.markAsStructValue($.cloneStructValue((second as unknown as time.Time))).Unix()))
 }
 
 if ($.isMainScript(import.meta)) {

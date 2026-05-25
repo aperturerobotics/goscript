@@ -92,7 +92,7 @@ export class MockFileInfo {
 
 	public Size(): number {
 		const m: MockFileInfo | $.VarRef<MockFileInfo> | null = this
-		return $.pointerValue<MockFileInfo>(m).size
+		return $.int($.pointerValue<MockFileInfo>(m).size)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -122,7 +122,7 @@ export class MockFilesystem {
 
 	public ReadDir(path: string): [$.Slice<FileInfo | null>, $.GoError] {
 		const m: MockFilesystem | $.VarRef<MockFilesystem> | null = this
-		return [$.arrayToSlice<FileInfo | null>([$.interfaceValue<FileInfo | null>(new MockFileInfo({name: "file1.txt", size: 100, isDir: false}), "*main.MockFileInfo"), $.interfaceValue<FileInfo | null>(new MockFileInfo({name: "subdir", size: 0, isDir: true}), "*main.MockFileInfo")]), null]
+		return [$.arrayToSlice<FileInfo | null>([$.interfaceValue<FileInfo | null>(new MockFileInfo({name: "file1.txt", size: $.int(100), isDir: false}), "*main.MockFileInfo"), $.interfaceValue<FileInfo | null>(new MockFileInfo({name: "subdir", size: $.int(0), isDir: true}), "*main.MockFileInfo")]), null]
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -176,11 +176,11 @@ export async function maybeProcess(input: string, processor: ((data: string) => 
 
 export async function main(): globalThis.Promise<void> {
 	let fs: MockFilesystem | $.VarRef<MockFilesystem> | null = new MockFilesystem()
-	let fileInfo: MockFileInfo | $.VarRef<MockFileInfo> | null = new MockFileInfo({name: "test.txt", size: 50, isDir: false})
+	let fileInfo: MockFileInfo | $.VarRef<MockFileInfo> | null = new MockFileInfo({name: "test.txt", size: $.int(50), isDir: false})
 
 	// Test the walk function with a callback
 	let walkFunc = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {
-		$.println("Walking:", path, "size:", $.pointerValue<Exclude<FileInfo, null>>(info).Size())
+		$.println("Walking:", path, "size:", $.int($.pointerValue<Exclude<FileInfo, null>>(info).Size()))
 		if (err != null) {
 			$.println("Error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		}

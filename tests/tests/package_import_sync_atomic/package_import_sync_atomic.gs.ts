@@ -65,11 +65,11 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test atomic.Int64
 	let i64: $.VarRef<atomic.Int64> = $.varRef($.markAsStructValue(new atomic.Int64()))
-	i64.value.Store(1000)
-	$.println("Int64 stored 1000, value:", i64.value.Load())
+	i64.value.Store($.int(1000))
+	$.println("Int64 stored 1000, value:", $.int(i64.value.Load()))
 
-	i64.value.Add(-100)
-	$.println("Int64 after subtracting 100:", i64.value.Load())
+	i64.value.Add($.int(-100))
+	$.println("Int64 after subtracting 100:", $.int(i64.value.Load()))
 
 	// Test atomic.Uint32
 	let u32: $.VarRef<atomic.Uint32> = $.varRef($.markAsStructValue(new atomic.Uint32()))
@@ -81,8 +81,8 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test atomic.Uint64
 	let u64: $.VarRef<atomic.Uint64> = $.varRef($.markAsStructValue(new atomic.Uint64()))
-	u64.value.Store(2000)
-	$.println("Uint64 stored 2000, value:", u64.value.Load())
+	u64.value.Store($.uint(2000, 64))
+	$.println("Uint64 stored 2000, value:", $.uint(u64.value.Load(), 64))
 
 	// Test atomic.Bool
 	let b: $.VarRef<atomic.Bool> = $.varRef($.markAsStructValue(new atomic.Bool()))

@@ -60,7 +60,7 @@ export function Op_String(i: __goscript_regexp.Op): string {
 		}
 		default:
 		{
-			return ("Op(" + strconv.FormatInt($.int(i), 10)) + ")"
+			return ("Op(" + strconv.FormatInt($.int($.int(i)), 10)) + ")"
 			break
 		}
 	}

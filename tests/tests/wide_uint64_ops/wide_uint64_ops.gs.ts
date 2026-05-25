@@ -12,40 +12,40 @@ export function hash6(u: number, h: number): number {
 }
 
 export function mix(a: number, b: number): number {
-	return $.uint64Shr(($.uint64Xor(($.uint64And(a, b)), ($.uint64Or(a, 1)))), 60)
+	return $.uint($.uint64Shr(($.uint64Xor(($.uint64And(a, b)), ($.uint64Or(a, 1)))), 60), 64)
 }
 
 export function highAfterMask(v: number): number {
-	return $.uint64Mul(($.uint64And(v, 0xffff)), (2 ** 48))
+	return $.uint($.uint64Mul(($.uint64And(v, 0xffff)), (2 ** 48)), 64)
 }
 
 export function combineHighLow(v: number, low: number): number {
-	return $.uint64Add(($.uint64Mul(($.uint64And(v, 0xffff)), (2 ** 48))), $.uint($.uint(low, 16), 64))
+	return $.uint($.uint64Add(($.uint64Mul(($.uint64And(v, 0xffff)), (2 ** 48))), $.uint($.uint(low, 16), 64)), 64)
 }
 
 export function maxUint64Divisor(d: number): number {
-	return $.uint64Div(math.MaxUint64, d)
+	return $.uint($.uint64Div(math.MaxUint64, d), 64)
 }
 
 export function maxUint64Remainder(d: number): number {
-	return $.uint64Mod(math.MaxUint64, d)
+	return $.uint($.uint64Mod(math.MaxUint64, d), 64)
 }
 
 export function setHighBit(idx: number): boolean {
-	let words: $.Slice<number> = $.arrayToSlice<number>([0, 0])
-	words![$.uint64Div(idx, 64)] = $.uint64Or(words![$.uint64Div(idx, 64)], $.uint64Shl($.uint(1, 64), ($.uint64Mod(idx, 64))))
-	return words![1] != 0
+	let words: $.Slice<number> = $.arrayToSlice<number>([$.uint(0, 64), $.uint(0, 64)])
+	words![$.uint64Div(idx, 64)] = $.uint64Or(words![$.uint64Div(idx, 64)], $.uint($.uint64Shl($.uint(1, 64), ($.uint64Mod(idx, 64))), 64))
+	return $.uint(words![1], 64) != $.uint(0, 64)
 }
 
 export async function main(): globalThis.Promise<void> {
-	$.println($.uint(hash6(0x0102030405, 14), 32))
-	$.println(mix(0xf0f0f0f0f0f0f0f0, 0x0f0f0f0f0f0f0f0f))
-	$.println($.uint($.uint($.uint64Shr(highAfterMask(0x1234), 48), 32), 32))
-	$.println($.uint($.uint($.uint64Shr(combineHighLow(0x1234, 0xbeef), 48), 32), 32))
-	$.println($.uint($.uint($.uint64And(combineHighLow(0x1234, 0xbeef), 0xffff), 32), 32))
-	$.println(maxUint64Divisor(4114))
-	$.println(maxUint64Remainder(4114))
-	$.println(setHighBit(maxUint64Remainder(128)))
+	$.println($.uint(hash6($.uint(0x0102030405, 64), 14), 32))
+	$.println($.uint(mix($.uint(0xf0f0f0f0f0f0f0f0, 64), $.uint(0x0f0f0f0f0f0f0f0f, 64)), 64))
+	$.println($.uint($.uint($.uint64Shr(highAfterMask($.uint(0x1234, 64)), 48), 32), 32))
+	$.println($.uint($.uint($.uint64Shr(combineHighLow($.uint(0x1234, 64), $.uint(0xbeef, 64)), 48), 32), 32))
+	$.println($.uint($.uint($.uint64And(combineHighLow($.uint(0x1234, 64), $.uint(0xbeef, 64)), 0xffff), 32), 32))
+	$.println($.uint(maxUint64Divisor($.uint(4114, 64)), 64))
+	$.println($.uint(maxUint64Remainder($.uint(4114, 64)), 64))
+	$.println(setHighBit($.uint(maxUint64Remainder($.uint(128, 64)), 64)))
 }
 
 if ($.isMainScript(import.meta)) {

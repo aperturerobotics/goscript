@@ -469,7 +469,7 @@ export function dumpProg(b: strings.Builder | $.VarRef<strings.Builder> | null, 
 }
 
 export function u32(i: number): string {
-	return strconv.FormatUint($.uint(i, 64), 10)
+	return strconv.FormatUint($.uint($.uint(i, 64), 64), 10)
 }
 
 export function dumpInst(b: strings.Builder | $.VarRef<strings.Builder> | null, i: Inst | $.VarRef<Inst> | null): void {

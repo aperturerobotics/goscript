@@ -17,10 +17,10 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	$.println("preset time", $.markAsStructValue($.cloneStructValue(setTime)).String())
-	$.println("unix", $.markAsStructValue($.cloneStructValue(setTime)).Unix())
-	$.println("unix micro", $.markAsStructValue($.cloneStructValue(setTime)).UnixMicro())
-	$.println("unix nano", $.markAsStructValue($.cloneStructValue(setTime)).UnixNano())
-	$.println("unix milli", $.markAsStructValue($.cloneStructValue(setTime)).UnixMilli())
+	$.println("unix", $.int($.markAsStructValue($.cloneStructValue(setTime)).Unix()))
+	$.println("unix micro", $.int($.markAsStructValue($.cloneStructValue(setTime)).UnixMicro()))
+	$.println("unix nano", $.int($.markAsStructValue($.cloneStructValue(setTime)).UnixNano()))
+	$.println("unix milli", $.int($.markAsStructValue($.cloneStructValue(setTime)).UnixMilli()))
 
 	// day, month, etc.
 	$.println("day", $.markAsStructValue($.cloneStructValue(setTime)).Day())

@@ -61,10 +61,10 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Mode string:", MyFileMode_String(mode))
 
 	// Test using in struct
-	let status = $.markAsStructValue(new FileStatus({mode: 0o755, size: 1024}))
+	let status = $.markAsStructValue(new FileStatus({mode: 0o755, size: $.int(1024)}))
 
 	$.println("Status mode:", $.int(status.mode))
-	$.println("Status size:", status.size)
+	$.println("Status size:", $.int(status.size))
 
 	// Test type assertion and conversion
 	let genericMode: MyFileMode = 0o777
