@@ -5283,7 +5283,13 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 	if alias := ctx.localAliases[obj]; alias != "" {
 		if ctx.lazyPackageVars[obj] {
 			lazyValue := alias + "." + packageVarGetterName(value) + "()"
+			if raw {
+				return lazyValue
+			}
 			return o.lowerPackageVarReadValue(ctx, obj, lazyValue)
+		}
+		if raw {
+			return alias + "." + value
 		}
 		return o.lowerPackageVarReadValue(ctx, obj, alias+"."+value)
 	}
@@ -6763,6 +6769,9 @@ func (o *LoweringOwner) lowerAssignmentTarget(
 }
 
 func (o *LoweringOwner) lowerAddressExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
+	if value, ok := o.lowerPackageVarAddressExpr(ctx, expr); ok {
+		return value, nil
+	}
 	switch typed := unwrapParenExpr(expr).(type) {
 	case *ast.Ident:
 		return o.lowerIdent(ctx, typed, true), nil
@@ -6782,6 +6791,40 @@ func (o *LoweringOwner) lowerAddressExpr(ctx lowerFileContext, expr ast.Expr) (s
 		return o.lowerIndexAddressExpr(ctx, typed)
 	default:
 		return "undefined", []Diagnostic{loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported address expression")}
+	}
+}
+
+func (o *LoweringOwner) lowerPackageVarAddressExpr(ctx lowerFileContext, expr ast.Expr) (string, bool) {
+	switch typed := unwrapParenExpr(expr).(type) {
+	case *ast.Ident:
+		obj, _ := objectForIdent(ctx, typed).(*types.Var)
+		if obj == nil || !objectNeedsVarRef(ctx, obj) {
+			return "", false
+		}
+		return o.lowerIdent(ctx, typed, true), true
+	case *ast.SelectorExpr:
+		if selection := ctx.semPkg.source.TypesInfo.Selections[typed]; selection != nil {
+			return "", false
+		}
+		ident, ok := unwrapParenExpr(typed.X).(*ast.Ident)
+		if !ok {
+			return "", false
+		}
+		pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName)
+		if pkgName == nil {
+			return "", false
+		}
+		alias := ctx.importNames[pkgName.Name()]
+		if alias == "" {
+			return "", false
+		}
+		obj, _ := ctx.semPkg.source.TypesInfo.Uses[typed.Sel].(*types.Var)
+		if obj == nil || !objectNeedsVarRef(ctx, obj) {
+			return "", false
+		}
+		return alias + "." + typed.Sel.Name, true
+	default:
+		return "", false
 	}
 }
 
