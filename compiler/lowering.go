@@ -3009,6 +3009,25 @@ func (o *LoweringOwner) lowerGoStmt(ctx lowerFileContext, stmt *ast.GoStmt) (str
 }
 
 func (o *LoweringOwner) lowerDeferStmt(ctx lowerFileContext, stmt *ast.DeferStmt) (string, []Diagnostic) {
+	if nestedCall, ok := stmt.Call.Fun.(*ast.CallExpr); ok {
+		callee, diagnostics := o.lowerCallExpr(ctx, nestedCall)
+		args, argDiagnostics := o.lowerCallArgs(ctx, stmt.Call, callTargetSignature(ctx, stmt.Call.Fun))
+		diagnostics = append(diagnostics, argDiagnostics...)
+		calleeTemp := ctx.tempName("DeferCallee")
+		call := o.lowerCallableExpr(ctx, stmt.Call.Fun, calleeTemp) + "(" + strings.Join(args, ", ") + ")"
+		call = o.awaitCallIfNeeded(ctx, stmt.Call.Fun, call)
+		async := strings.Contains(callee, "await ") || strings.Contains(call, "await ")
+		if ctx.deferState != nil {
+			ctx.deferState.used = true
+			if async {
+				ctx.deferState.async = true
+			}
+		}
+		if async {
+			return "const " + calleeTemp + " = " + callee + "\n__defer.defer(async () => { " + call + " })", diagnostics
+		}
+		return "const " + calleeTemp + " = " + callee + "\n__defer.defer(() => { " + call + " })", diagnostics
+	}
 	call, diagnostics := o.lowerCallExpr(ctx, stmt.Call)
 	async := strings.Contains(call, "await ")
 	if ctx.deferState != nil {
