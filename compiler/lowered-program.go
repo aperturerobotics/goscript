@@ -156,6 +156,7 @@ type loweredSwitchCase struct {
 type loweredSelect struct {
 	hasReturn  string
 	value      string
+	result     string
 	resultType string
 	cases      []loweredSelectCase
 	hasDefault bool

@@ -39,7 +39,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 				id: 0,
 				isSend: false,
 				channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
-				onSelected: async (result) => {
+				onSelected: async (__goscriptSelect0Result) => {
 					return $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
 				}
 			},
@@ -47,7 +47,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 				id: 1,
 				isSend: false,
 				channel: ch,
-				onSelected: async (result) => {
+				onSelected: async (__goscriptSelect0Result) => {
 				}
 			}
 		], false)

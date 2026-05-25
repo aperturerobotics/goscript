@@ -10,15 +10,15 @@ export async function main(): globalThis.Promise<void> {
 				id: -1,
 				isSend: false,
 				channel: null,
-				onSelected: async (result) => {
-					return result
+				onSelected: async (__goscriptSelect0Result) => {
+					return __goscriptSelect0Result
 				}
 			}
 		], true)
 		switch (__goscriptSelect0Value?.id) {
 			case -1:
 				{
-					const result = __goscriptSelect0Value
+					const __goscriptSelect0Result = __goscriptSelect0Value
 					if (i == 1) {
 						continue
 					}

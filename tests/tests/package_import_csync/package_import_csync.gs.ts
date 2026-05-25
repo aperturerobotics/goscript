@@ -65,7 +65,7 @@ export async function main(): globalThis.Promise<void> {
 			id: 0,
 			isSend: false,
 			channel: done,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("All workers completed successfully")
 			}
 		},
@@ -73,7 +73,7 @@ export async function main(): globalThis.Promise<void> {
 			id: 1,
 			isSend: false,
 			channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("Test timed out:", $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<Exclude<context.Context, null>>(ctx).Err()).Error())
 			}
 		}

@@ -27,7 +27,7 @@ export async function run(ctx: context.Context | null): globalThis.Promise<void>
 			id: 0,
 			isSend: false,
 			channel: myCh,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("myCh should not be readable yet")
 			}
 		},
@@ -35,7 +35,7 @@ export async function run(ctx: context.Context | null): globalThis.Promise<void>
 			id: -1,
 			isSend: false,
 			channel: null,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("myCh is not be readable yet")
 			}
 		}

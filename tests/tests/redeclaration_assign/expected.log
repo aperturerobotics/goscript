@@ -3,3 +3,6 @@ after assign i: 7
 err is true
 shadow tuple: outer-inner true
 callback shadow: 6 true
+select result: ready
+type hashed: int
+type hashed: string

@@ -24,7 +24,7 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 			id: 0,
 			isSend: false,
 			channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("Context done, returning")
 				return "context_done"
 			}
@@ -33,8 +33,8 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 			id: 1,
 			isSend: false,
 			channel: ch1,
-			onSelected: async (result) => {
-				let msg = result.value
+			onSelected: async (__goscriptSelect0Result) => {
+				let msg = __goscriptSelect0Result.value
 				$.println("Received from ch1:", msg)
 				return "ch1_result"
 			}
@@ -43,8 +43,8 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 			id: 2,
 			isSend: false,
 			channel: ch2,
-			onSelected: async (result) => {
-				let num = result.value
+			onSelected: async (__goscriptSelect0Result) => {
+				let num = __goscriptSelect0Result.value
 				$.println("Received from ch2:", num)
 				$.println("Processing ch2 value...")
 			}
@@ -53,8 +53,8 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 			id: 3,
 			isSend: false,
 			channel: ch3,
-			onSelected: async (result) => {
-				let flag = result.value
+			onSelected: async (__goscriptSelect0Result) => {
+				let flag = __goscriptSelect0Result.value
 				$.println("Received from ch3:", flag)
 				return "ch3_result"
 			}
@@ -63,8 +63,8 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 			id: 4,
 			isSend: false,
 			channel: ch4,
-			onSelected: async (result) => {
-				let val = result.value
+			onSelected: async (__goscriptSelect0Result) => {
+				let val = __goscriptSelect0Result.value
 				$.println("Received from ch4:", val)
 				$.println("Processing ch4 value...")
 			}
@@ -73,7 +73,7 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 			id: 5,
 			isSend: false,
 			channel: ch5,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("Received from ch5")
 				$.println("Processing ch5 data...")
 			}
@@ -82,7 +82,7 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 			id: -1,
 			isSend: false,
 			channel: null,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("No channels ready, using default")
 			}
 		}
@@ -116,8 +116,8 @@ export async function testReturnCase(ctx: context.Context | null): globalThis.Pr
 			id: 0,
 			isSend: false,
 			channel: ch1,
-			onSelected: async (result) => {
-				let msg = result.value
+			onSelected: async (__goscriptSelect1Result) => {
+				let msg = __goscriptSelect1Result.value
 				$.println("Received from ch1:", msg)
 				return "ch1_result"
 			}
@@ -126,8 +126,8 @@ export async function testReturnCase(ctx: context.Context | null): globalThis.Pr
 			id: 1,
 			isSend: false,
 			channel: ch2,
-			onSelected: async (result) => {
-				let num = result.value
+			onSelected: async (__goscriptSelect1Result) => {
+				let num = __goscriptSelect1Result.value
 				$.println("Received from ch2:", num)
 				$.println("Processing ch2 value...")
 			}
@@ -136,8 +136,8 @@ export async function testReturnCase(ctx: context.Context | null): globalThis.Pr
 			id: 2,
 			isSend: false,
 			channel: ch3,
-			onSelected: async (result) => {
-				let flag = result.value
+			onSelected: async (__goscriptSelect1Result) => {
+				let flag = __goscriptSelect1Result.value
 				$.println("Received from ch3:", flag)
 				return "ch3_result"
 			}
@@ -146,8 +146,8 @@ export async function testReturnCase(ctx: context.Context | null): globalThis.Pr
 			id: 3,
 			isSend: false,
 			channel: ch4,
-			onSelected: async (result) => {
-				let val = result.value
+			onSelected: async (__goscriptSelect1Result) => {
+				let val = __goscriptSelect1Result.value
 				$.println("Received from ch4:", val)
 				$.println("Processing ch4 value...")
 			}
@@ -156,7 +156,7 @@ export async function testReturnCase(ctx: context.Context | null): globalThis.Pr
 			id: 4,
 			isSend: false,
 			channel: ch5,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect1Result) => {
 				$.println("Received from ch5")
 				$.println("Processing ch5 data...")
 			}
@@ -165,7 +165,7 @@ export async function testReturnCase(ctx: context.Context | null): globalThis.Pr
 			id: -1,
 			isSend: false,
 			channel: null,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect1Result) => {
 				$.println("No channels ready, using default")
 			}
 		}

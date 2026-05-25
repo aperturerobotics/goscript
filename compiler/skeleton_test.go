@@ -1985,7 +1985,7 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 		"await using __defer = new $.AsyncDisposableStack()",
 		"queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {",
 		"$.selectStatement<any, void>([",
-		"let v = result.value",
+		"let v = __goscriptSelect1Result.value",
 		"return $.selectVoidReturn()",
 		"await call($.interfaceValue<Processor | null>(new Worker({ch: $.makeChannel<number>(1, 0, \"both\")}), \"*main.Worker\"))",
 	} {

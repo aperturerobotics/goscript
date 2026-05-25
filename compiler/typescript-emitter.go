@@ -799,7 +799,7 @@ func renderSelect(b *strings.Builder, stmt *loweredSelect, indent int) {
 	}
 	b.WriteString(">([\n")
 	for idx, switchCase := range stmt.cases {
-		renderSelectCase(b, switchCase, stmt.external, indent+1)
+		renderSelectCase(b, switchCase, stmt.external, stmt.result, indent+1)
 		if idx != len(stmt.cases)-1 {
 			b.WriteString(",")
 		}
@@ -846,7 +846,9 @@ func renderSelectExternalBodies(b *strings.Builder, stmt *loweredSelect, indent 
 		writeIndent(b, indent+2)
 		b.WriteString("{\n")
 		writeIndent(b, indent+3)
-		b.WriteString("const result = ")
+		b.WriteString("const ")
+		b.WriteString(stmt.result)
+		b.WriteString(" = ")
 		b.WriteString(stmt.value)
 		b.WriteString("\n")
 		renderStmts(b, switchCase.prelude, indent+3)
@@ -864,7 +866,7 @@ func renderSelectExternalBodies(b *strings.Builder, stmt *loweredSelect, indent 
 	}
 }
 
-func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, external bool, indent int) {
+func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, external bool, resultName string, indent int) {
 	writeIndent(b, indent)
 	b.WriteString("{\n")
 	writeIndent(b, indent+1)
@@ -890,10 +892,14 @@ func renderSelectCase(b *strings.Builder, switchCase loweredSelectCase, external
 		b.WriteString(",\n")
 	}
 	writeIndent(b, indent+1)
-	b.WriteString("onSelected: async (result) => {\n")
+	b.WriteString("onSelected: async (")
+	b.WriteString(resultName)
+	b.WriteString(") => {\n")
 	if external {
 		writeIndent(b, indent+2)
-		b.WriteString("return result\n")
+		b.WriteString("return ")
+		b.WriteString(resultName)
+		b.WriteString("\n")
 		writeIndent(b, indent+1)
 		b.WriteString("}\n")
 		writeIndent(b, indent)
@@ -1044,7 +1050,11 @@ func renderTypeSwitchInlineBody(
 	indent int,
 ) {
 	if varName == "" {
-		renderStmts(b, body, indent)
+		writeIndent(b, indent)
+		b.WriteString("{\n")
+		renderStmts(b, body, indent+1)
+		writeIndent(b, indent)
+		b.WriteString("}\n")
 		return
 	}
 	writeIndent(b, indent)

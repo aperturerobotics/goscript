@@ -73,10 +73,14 @@ export async function main(): globalThis.Promise<void> {
 		const __goscriptTypeSwitchValue = x
 		switch (true) {
 			case $.typeAssert<boolean>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "bool" }).ok:
-				$.println("bool")
+				{
+					$.println("bool")
+				}
 				break
 			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
-				$.println("int")
+				{
+					$.println("int")
+				}
 				break
 		}
 	}
@@ -121,7 +125,9 @@ export async function main(): globalThis.Promise<void> {
 		const __goscriptTypeSwitchValue = w
 		switch (true) {
 			default:
-				$.println("default only")
+				{
+					$.println("default only")
+				}
 				break
 		}
 	}
@@ -129,7 +135,9 @@ export async function main(): globalThis.Promise<void> {
 		const __goscriptTypeSwitchValue = w
 		switch (true) {
 			default:
-				$.println("default only, value is", $.mustTypeAssert<string>(w, { kind: $.TypeKind.Basic, name: "string" }))
+				{
+					$.println("default only, value is", $.mustTypeAssert<string>(w, { kind: $.TypeKind.Basic, name: "string" }))
+				}
 				break
 		}
 	}

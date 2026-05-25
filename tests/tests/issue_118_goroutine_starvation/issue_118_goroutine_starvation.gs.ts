@@ -50,8 +50,8 @@ export async function main(): globalThis.Promise<void> {
 				id: 0,
 				isSend: false,
 				channel: result,
-				onSelected: async (result) => {
-					let r = result.value
+				onSelected: async (__goscriptSelect0Result) => {
+					let r = __goscriptSelect0Result.value
 					results = $.append(results, r)
 				}
 			},
@@ -59,7 +59,7 @@ export async function main(): globalThis.Promise<void> {
 				id: 1,
 				isSend: false,
 				channel: timeout,
-				onSelected: async (result) => {
+				onSelected: async (__goscriptSelect0Result) => {
 					$.println("TIMEOUT: goroutine starvation detected")
 					return $.selectVoidReturn()
 				}
@@ -68,7 +68,7 @@ export async function main(): globalThis.Promise<void> {
 				id: 2,
 				isSend: false,
 				channel: done,
-				onSelected: async (result) => {
+				onSelected: async (__goscriptSelect0Result) => {
 				}
 			}
 		], false)

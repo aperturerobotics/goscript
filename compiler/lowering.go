@@ -4337,6 +4337,7 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 	lowered := &loweredSelect{
 		hasReturn:  selectName + "HasReturn",
 		value:      selectName + "Value",
+		result:     selectName + "Result",
 		resultType: resultType,
 	}
 	var diagnostics []Diagnostic
@@ -4373,7 +4374,7 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 			})
 			caseID++
 		case *ast.ExprStmt:
-			channel, prelude, receiveDiagnostics := o.lowerSelectReceiveComm(ctx, nil, comm.X)
+			channel, prelude, receiveDiagnostics := o.lowerSelectReceiveComm(ctx, nil, comm.X, lowered.result)
 			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak(), clause.Body)
 			diagnostics = append(diagnostics, receiveDiagnostics...)
 			diagnostics = append(diagnostics, bodyDiagnostics...)
@@ -4385,7 +4386,7 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 			})
 			caseID++
 		case *ast.AssignStmt:
-			channel, prelude, receiveDiagnostics := o.lowerSelectReceiveComm(ctx, comm, nil)
+			channel, prelude, receiveDiagnostics := o.lowerSelectReceiveComm(ctx, comm, nil, lowered.result)
 			body, bodyDiagnostics := o.lowerStmtList(ctx.withLocalScope().withoutRangeBreak(), clause.Body)
 			diagnostics = append(diagnostics, receiveDiagnostics...)
 			diagnostics = append(diagnostics, bodyDiagnostics...)
@@ -4482,6 +4483,7 @@ func (o *LoweringOwner) lowerSelectReceiveComm(
 	ctx lowerFileContext,
 	assign *ast.AssignStmt,
 	expr ast.Expr,
+	resultName string,
 ) (string, []loweredStmt, []Diagnostic) {
 	receiveExpr := expr
 	if assign != nil && len(assign.Rhs) == 1 {
@@ -4510,7 +4512,7 @@ func (o *LoweringOwner) lowerSelectReceiveComm(
 		if assign.Tok == token.DEFINE && isShortAssignTargetNew(ctx, lhs) {
 			prefix = "let "
 		}
-		prelude = append(prelude, loweredStmt{text: prefix + left + " = result" + fields[idx]})
+		prelude = append(prelude, loweredStmt{text: prefix + left + " = " + resultName + fields[idx]})
 	}
 	return channel, prelude, diagnostics
 }

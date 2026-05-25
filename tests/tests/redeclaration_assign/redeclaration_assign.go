@@ -12,6 +12,26 @@ func shadowCallbackInput(fn func(int) int) (int, bool) {
 	return fn(5), true
 }
 
+func selectResultRedeclare() {
+	resultCh := make(chan string, 1)
+	resultCh <- "ready"
+	select {
+	case result := <-resultCh:
+		println("select result:", result)
+	}
+}
+
+func typeSwitchCaseRedeclare(value any) {
+	switch value.(type) {
+	case int:
+		hashed := "int"
+		println("type hashed:", hashed)
+	case string:
+		hashed := "string"
+		println("type hashed:", hashed)
+	}
+}
+
 func main() {
 	var i int
 	println("initial i:", i) /* Use i to avoid unused error before := */
@@ -39,4 +59,8 @@ func main() {
 		})
 		println("callback shadow:", k, ok)
 	}
+
+	selectResultRedeclare()
+	typeSwitchCaseRedeclare(1)
+	typeSwitchCaseRedeclare("two")
 }

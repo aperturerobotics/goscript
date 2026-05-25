@@ -14,7 +14,7 @@ export async function main(): globalThis.Promise<void> {
 					id: -1,
 					isSend: false,
 					channel: null,
-					onSelected: async (result) => {
+					onSelected: async (__goscriptSelect0Result) => {
 						return true
 					}
 				}

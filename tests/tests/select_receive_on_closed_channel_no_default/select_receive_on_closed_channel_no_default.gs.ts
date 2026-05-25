@@ -12,9 +12,9 @@ export async function main(): globalThis.Promise<void> {
 			id: 0,
 			isSend: false,
 			channel: ch,
-			onSelected: async (result) => {
-				let val = result.value
-				let ok = result.ok
+			onSelected: async (__goscriptSelect0Result) => {
+				let val = __goscriptSelect0Result.value
+				let ok = __goscriptSelect0Result.ok
 				if (ok) {
 					$.println("Received value with ok==true:", val)
 				} else {

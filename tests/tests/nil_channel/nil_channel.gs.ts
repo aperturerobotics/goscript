@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 			isSend: true,
 			channel: nilCh,
 			value: 42,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("ERROR: Should not send to nil channel")
 			}
 		},
@@ -24,7 +24,7 @@ export async function main(): globalThis.Promise<void> {
 			id: 1,
 			isSend: false,
 			channel: nilCh,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("ERROR: Should not receive from nil channel")
 			}
 		},
@@ -32,7 +32,7 @@ export async function main(): globalThis.Promise<void> {
 			id: -1,
 			isSend: false,
 			channel: null,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("PASS: Default case executed correctly")
 			}
 		}
@@ -52,7 +52,7 @@ export async function main(): globalThis.Promise<void> {
 			isSend: true,
 			channel: nilCh1,
 			value: "test",
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect1Result) => {
 				$.println("ERROR: Should not send to nil channel 1")
 			}
 		},
@@ -60,7 +60,7 @@ export async function main(): globalThis.Promise<void> {
 			id: 1,
 			isSend: false,
 			channel: nilCh2,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect1Result) => {
 				$.println("ERROR: Should not receive from nil channel 2")
 			}
 		},
@@ -68,8 +68,8 @@ export async function main(): globalThis.Promise<void> {
 			id: 2,
 			isSend: false,
 			channel: nilCh1,
-			onSelected: async (result) => {
-				let msg = result.value
+			onSelected: async (__goscriptSelect1Result) => {
+				let msg = __goscriptSelect1Result.value
 				$.println("ERROR: Should not receive from nil channel 1:", msg)
 			}
 		},
@@ -77,7 +77,7 @@ export async function main(): globalThis.Promise<void> {
 			id: -1,
 			isSend: false,
 			channel: null,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect1Result) => {
 				$.println("PASS: Default case executed with multiple nil channels")
 			}
 		}
@@ -98,7 +98,7 @@ export async function main(): globalThis.Promise<void> {
 			isSend: true,
 			channel: nilCh3,
 			value: true,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect2Result) => {
 				$.println("ERROR: Should not send to nil channel")
 			}
 		},
@@ -106,7 +106,7 @@ export async function main(): globalThis.Promise<void> {
 			id: 1,
 			isSend: false,
 			channel: nilCh3,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect2Result) => {
 				$.println("ERROR: Should not receive from nil channel")
 			}
 		},
@@ -114,8 +114,8 @@ export async function main(): globalThis.Promise<void> {
 			id: 2,
 			isSend: false,
 			channel: validCh,
-			onSelected: async (result) => {
-				let val = result.value
+			onSelected: async (__goscriptSelect2Result) => {
+				let val = __goscriptSelect2Result.value
 				$.println("PASS: Received from valid channel:", val)
 			}
 		},
@@ -123,7 +123,7 @@ export async function main(): globalThis.Promise<void> {
 			id: -1,
 			isSend: false,
 			channel: null,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect2Result) => {
 				$.println("ERROR: Should not hit default with valid channel ready")
 			}
 		}

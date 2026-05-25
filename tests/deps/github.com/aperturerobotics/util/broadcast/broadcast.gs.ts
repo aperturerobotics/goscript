@@ -121,7 +121,7 @@ export class Broadcast {
 					id: 0,
 					isSend: false,
 					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
-					onSelected: async (result) => {
+					onSelected: async (__goscriptSelect0Result) => {
 						return context.Canceled
 					}
 				},
@@ -129,7 +129,7 @@ export class Broadcast {
 					id: 1,
 					isSend: false,
 					channel: waitCh,
-					onSelected: async (result) => {
+					onSelected: async (__goscriptSelect0Result) => {
 					}
 				}
 			], false)

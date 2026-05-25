@@ -14,7 +14,7 @@ export async function main(): globalThis.Promise<void> {
 			isSend: true,
 			channel: ch,
 			value: 2,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("Sent value")
 			}
 		},
@@ -22,7 +22,7 @@ export async function main(): globalThis.Promise<void> {
 			id: -1,
 			isSend: false,
 			channel: null,
-			onSelected: async (result) => {
+			onSelected: async (__goscriptSelect0Result) => {
 				$.println("Default case hit")
 			}
 		}

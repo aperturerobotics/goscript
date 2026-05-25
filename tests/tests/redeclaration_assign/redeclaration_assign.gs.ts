@@ -15,6 +15,45 @@ export async function shadowCallbackInput(fn: ((_p0: number) => number | globalT
 	return [await fn!(5), true]
 }
 
+export async function selectResultRedeclare(): globalThis.Promise<void> {
+	let resultCh = $.makeChannel<string>(1, "", "both")
+	await $.chanSend(resultCh, "ready")
+	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
+		{
+			id: 0,
+			isSend: false,
+			channel: resultCh,
+			onSelected: async (__goscriptSelect0Result) => {
+				let result = __goscriptSelect0Result.value
+				$.println("select result:", result)
+			}
+		}
+	], false)
+	if (__goscriptSelect0HasReturn) {
+		return __goscriptSelect0Value
+	}
+}
+
+export function typeSwitchCaseRedeclare(value: any): void {
+	{
+		const __goscriptTypeSwitchValue = value
+		switch (true) {
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+				{
+					let hashed = "int"
+					$.println("type hashed:", hashed)
+				}
+				break
+			case $.typeAssert<string>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).ok:
+				{
+					let hashed = "string"
+					$.println("type hashed:", hashed)
+				}
+				break
+		}
+	}
+}
+
 export async function main(): globalThis.Promise<void> {
 	let i: number = 0
 	$.println("initial i:", i)
@@ -49,6 +88,10 @@ export async function main(): globalThis.Promise<void> {
 		let ok = __goscriptTuple2[1]
 		$.println("callback shadow:", k, ok)
 	}
+
+	await selectResultRedeclare()
+	typeSwitchCaseRedeclare(1)
+	typeSwitchCaseRedeclare("two")
 }
 
 if ($.isMainScript(import.meta)) {

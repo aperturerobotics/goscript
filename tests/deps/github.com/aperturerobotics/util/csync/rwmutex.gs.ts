@@ -141,7 +141,7 @@ export class RWMutex {
 					id: 0,
 					isSend: false,
 					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
-					onSelected: async (result) => {
+					onSelected: async (__goscriptSelect0Result) => {
 						await release!()
 						return [(null as (() => void) | null), context.Canceled]
 					}
@@ -150,7 +150,7 @@ export class RWMutex {
 					id: 1,
 					isSend: false,
 					channel: waitCh,
-					onSelected: async (result) => {
+					onSelected: async (__goscriptSelect0Result) => {
 					}
 				}
 			], false)
