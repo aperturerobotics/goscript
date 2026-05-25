@@ -1313,6 +1313,47 @@ func TestCompilePackagesLowersPromotedNamedPrimitiveMethod(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesMarksPackageFunctionVariablesAsync(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/packagefuncvar\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"func parse(raw string) (int, error) { return len(raw), nil }",
+			"var Parse = parse",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/packagefuncvar/dep\"",
+			"func parse() (int, error) {",
+			"  return dep.Parse(\"turn\")",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "packagefuncvar", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "export async function parse(): globalThis.Promise<[number, $.GoError]>") {
+		t.Fatalf("package function variable caller was not marked async:\n%s", text)
+	}
+	if !strings.Contains(text, "return await dep.Parse!(\"turn\")") {
+		t.Fatalf("package function variable call was not awaited:\n%s", text)
+	}
+}
+
 func TestCompilePackagesPreservesFloatConversionLiterals(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/floatconv\n\ngo 1.25.3\n",

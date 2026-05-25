@@ -972,10 +972,11 @@ func callUsesFunctionValue(pkg *packages.Package, expr ast.Expr) bool {
 		return true
 	case *ast.SelectorExpr:
 		selection := pkg.TypesInfo.Selections[typed]
-		if selection == nil || selection.Kind() != types.FieldVal {
-			return false
+		if selection != nil {
+			return selection.Kind() == types.FieldVal && signatureForType(selection.Type()) != nil
 		}
-		return signatureForType(selection.Type()) != nil
+		obj, _ := pkg.TypesInfo.Uses[typed.Sel].(*types.Var)
+		return obj != nil && signatureForType(obj.Type()) != nil
 	case *ast.IndexExpr:
 		if signatureForType(pkg.TypesInfo.TypeOf(typed.X)) != nil {
 			return false
