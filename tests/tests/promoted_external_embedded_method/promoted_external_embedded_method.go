@@ -18,6 +18,24 @@ type outerRW struct {
 	rawRW
 }
 
+type runner interface {
+	Run() string
+}
+
+type rawRunner struct {
+	runner
+}
+
+type outerRunner struct {
+	rawRunner
+}
+
+type runnable struct{}
+
+func (runnable) Run() string {
+	return "runner"
+}
+
 func main() {
 	var o outer
 	o.Lock()
@@ -30,5 +48,7 @@ func main() {
 	locker.Lock()
 	locker.Unlock()
 
+	or := outerRunner{rawRunner: rawRunner{runner: runnable{}}}
+	println(or.Run())
 	println("ok")
 }

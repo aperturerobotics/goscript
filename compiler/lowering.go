@@ -1744,9 +1744,18 @@ func (o *LoweringOwner) embeddedForwarderTargetExpr(
 		field := structType.Field(index)
 		expr += "." + tsStructFieldName(field.Name(), index)
 		typ = field.Type()
-		if named := pointerToNamedStructType(typ); named != nil {
-			expr = pointerValue + "<" + o.namedTypeExpr(ctx, named) + ">(" + expr + ")"
-		}
+		expr = o.embeddedForwarderSelectableExpr(ctx, typ, expr)
+	}
+	return expr
+}
+
+func (o *LoweringOwner) embeddedForwarderSelectableExpr(ctx lowerFileContext, typ types.Type, expr string) string {
+	pointerValue := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue)
+	if named := pointerToNamedStructType(typ); named != nil {
+		return pointerValue + "<" + o.namedTypeExpr(ctx, named) + ">(" + expr + ")"
+	}
+	if _, ok := types.Unalias(typ).Underlying().(*types.Interface); ok {
+		return pointerValue + "<Exclude<" + o.tsStructFieldTypeFor(ctx, typ) + ", null>>(" + expr + ")"
 	}
 	return expr
 }

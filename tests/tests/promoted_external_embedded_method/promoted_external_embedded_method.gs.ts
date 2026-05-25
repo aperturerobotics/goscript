@@ -186,6 +186,123 @@ export class outerRW {
 	)
 }
 
+export class rawRunner {
+	public get runner(): runner | null {
+		return this._fields.runner.value
+	}
+	public set runner(value: runner | null) {
+		this._fields.runner.value = value
+	}
+
+	public _fields: {
+		runner: $.VarRef<runner | null>
+	}
+
+	constructor(init?: Partial<{runner?: runner | null}>) {
+		this._fields = {
+			runner: $.varRef(init?.runner ?? null)
+		}
+	}
+
+	public clone(): rawRunner {
+		const cloned = new rawRunner()
+		cloned._fields = {
+			runner: $.varRef(this._fields.runner.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Run(): any {
+		return $.pointerValue<Exclude<runner | null, null>>(this.runner).Run()
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.rawRunner",
+		() => new rawRunner(),
+		[{ name: "Run", args: [], returns: [] }],
+		rawRunner,
+		{"runner": "main.runner"}
+	)
+}
+
+export class outerRunner {
+	public get rawRunner(): rawRunner {
+		return this._fields.rawRunner.value
+	}
+	public set rawRunner(value: rawRunner) {
+		this._fields.rawRunner.value = value
+	}
+
+	public _fields: {
+		rawRunner: $.VarRef<rawRunner>
+	}
+
+	constructor(init?: Partial<{rawRunner?: rawRunner}>) {
+		this._fields = {
+			rawRunner: $.varRef(init?.rawRunner ? $.markAsStructValue(init.rawRunner.clone()) : $.markAsStructValue(new rawRunner()))
+		}
+	}
+
+	public clone(): outerRunner {
+		const cloned = new outerRunner()
+		cloned._fields = {
+			rawRunner: $.varRef($.markAsStructValue(this._fields.rawRunner.value.clone()))
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Run(): any {
+		return $.pointerValue<Exclude<runner | null, null>>($.pointerValue<rawRunner>(this.rawRunner).runner).Run()
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.outerRunner",
+		() => new outerRunner(),
+		[{ name: "Run", args: [], returns: [] }],
+		outerRunner,
+		{"rawRunner": "main.rawRunner"}
+	)
+}
+
+export class runnable {
+	public _fields: {
+	}
+
+	constructor(init?: Partial<{}>) {
+		this._fields = {
+		}
+	}
+
+	public clone(): runnable {
+		const cloned = new runnable()
+		cloned._fields = {
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public Run(): string {
+		return "runner"
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.runnable",
+		() => new runnable(),
+		[{ name: "Run", args: [], returns: [] }],
+		runnable,
+		{}
+	)
+}
+
+export type runner = null | {
+	Run(): string
+}
+
+$.registerInterfaceType(
+	"main.runner",
+	null,
+	[{ name: "Run", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
+
 export async function main(): globalThis.Promise<void> {
 	let o: $.VarRef<outer> = $.varRef($.markAsStructValue(new outer()))
 	await o.value.raw.Mutex.Lock()
@@ -198,6 +315,8 @@ export async function main(): globalThis.Promise<void> {
 	$.pointerValue<Exclude<sync.Locker, null>>(locker).Lock()
 	$.pointerValue<Exclude<sync.Locker, null>>(locker).Unlock()
 
+	let or = $.markAsStructValue(new outerRunner({rawRunner: $.markAsStructValue(new rawRunner({runner: $.interfaceValue<runner | null>($.markAsStructValue(new runnable()), "main.runnable")}))}))
+	$.println($.pointerValue<Exclude<runner, null>>(or.rawRunner.runner).Run())
 	$.println("ok")
 }
 
