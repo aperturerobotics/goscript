@@ -38,22 +38,25 @@ type Request struct {
 	Parallelism int
 	// RuntimeGroups allows package runtimes to share worker Bun processes.
 	RuntimeGroups bool
+	// IncrementalTypeCheck reuses TypeScript build-info files inside WorkDir.
+	IncrementalTypeCheck bool
 }
 
 type normalizedRequest struct {
-	Dir           string
-	Patterns      []string
-	BuildFlags    []string
-	OverrideDirs  []string
-	Run           string
-	Count         int
-	Short         bool
-	Timeout       time.Duration
-	Verbose       bool
-	WorkDir       string
-	OutputRoot    string
-	Parallelism   int
-	RuntimeGroups bool
+	Dir                  string
+	Patterns             []string
+	BuildFlags           []string
+	OverrideDirs         []string
+	Run                  string
+	Count                int
+	Short                bool
+	Timeout              time.Duration
+	Verbose              bool
+	WorkDir              string
+	OutputRoot           string
+	Parallelism          int
+	RuntimeGroups        bool
+	IncrementalTypeCheck bool
 }
 
 // DefaultParallelism returns the default package subprocess concurrency.
@@ -132,19 +135,20 @@ func (r *Request) normalize() (*normalizedRequest, error) {
 	}
 
 	return &normalizedRequest{
-		Dir:           absDir,
-		Patterns:      patterns,
-		BuildFlags:    buildFlags,
-		OverrideDirs:  overrideDirs,
-		Run:           strings.TrimSpace(r.Run),
-		Count:         count,
-		Short:         r.Short,
-		Timeout:       r.Timeout,
-		Verbose:       r.Verbose,
-		WorkDir:       workDir,
-		OutputRoot:    outputRoot,
-		Parallelism:   parallelism,
-		RuntimeGroups: r.RuntimeGroups,
+		Dir:                  absDir,
+		Patterns:             patterns,
+		BuildFlags:           buildFlags,
+		OverrideDirs:         overrideDirs,
+		Run:                  strings.TrimSpace(r.Run),
+		Count:                count,
+		Short:                r.Short,
+		Timeout:              r.Timeout,
+		Verbose:              r.Verbose,
+		WorkDir:              workDir,
+		OutputRoot:           outputRoot,
+		Parallelism:          parallelism,
+		RuntimeGroups:        r.RuntimeGroups,
+		IncrementalTypeCheck: r.IncrementalTypeCheck,
 	}, nil
 }
 

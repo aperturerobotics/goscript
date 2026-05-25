@@ -32,6 +32,7 @@ func newTestCommand() *cli.Command {
 	var parallelism int
 	var runtimeGroups bool
 	var cpuProfile string
+	var incrementalTypeCheck bool
 
 	return &cli.Command{
 		Name:     "test",
@@ -39,19 +40,20 @@ func newTestCommand() *cli.Command {
 		Usage:    "compile and run Go package tests through GoScript",
 		Action: func(c *cli.Context) error {
 			req := &gotest.Request{
-				Dir:           dir,
-				Patterns:      c.Args().Slice(),
-				BuildTags:     tags.Value(),
-				OverrideDirs:  overrideDirs.Value(),
-				Run:           run,
-				Count:         count,
-				Short:         short,
-				Timeout:       timeout,
-				Verbose:       verbose,
-				WorkDir:       workDir,
-				OutputRoot:    outputRoot,
-				Parallelism:   parallelism,
-				RuntimeGroups: runtimeGroups,
+				Dir:                  dir,
+				Patterns:             c.Args().Slice(),
+				BuildTags:            tags.Value(),
+				OverrideDirs:         overrideDirs.Value(),
+				Run:                  run,
+				Count:                count,
+				Short:                short,
+				Timeout:              timeout,
+				Verbose:              verbose,
+				WorkDir:              workDir,
+				OutputRoot:           outputRoot,
+				Parallelism:          parallelism,
+				RuntimeGroups:        runtimeGroups,
+				IncrementalTypeCheck: incrementalTypeCheck,
 			}
 			stopProfile, err := startCPUProfile(cpuProfile)
 			if err != nil {
@@ -137,6 +139,11 @@ func newTestCommand() *cli.Command {
 				Name:        "runtime-groups",
 				Usage:       "run package runtimes in grouped Bun worker processes",
 				Destination: &runtimeGroups,
+			},
+			&cli.BoolFlag{
+				Name:        "incremental-typecheck",
+				Usage:       "reuse TypeScript build-info files in the test workdir",
+				Destination: &incrementalTypeCheck,
 			},
 			&cli.StringFlag{
 				Name:        "cpuprofile",

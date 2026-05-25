@@ -995,6 +995,30 @@ func TestDefaultParallelismCapsAtEight(t *testing.T) {
 	}
 }
 
+func TestNormalizeKeepsIncrementalTypeCheckExplicit(t *testing.T) {
+	norm, err := (&Request{
+		Patterns: []string{"./..."},
+		WorkDir:  t.TempDir(),
+	}).normalize()
+	if err != nil {
+		t.Fatalf("normalize request: %v", err)
+	}
+	if norm.IncrementalTypeCheck {
+		t.Fatalf("expected explicit workdir alone to skip incremental typecheck cache")
+	}
+
+	norm, err = (&Request{
+		Patterns:             []string{"./..."},
+		IncrementalTypeCheck: true,
+	}).normalize()
+	if err != nil {
+		t.Fatalf("normalize incremental request: %v", err)
+	}
+	if !norm.IncrementalTypeCheck {
+		t.Fatalf("expected incremental flag to enable typecheck cache")
+	}
+}
+
 func TestPackageExecutionIndexesPrioritizesLargerTestPackages(t *testing.T) {
 	result := &Result{Packages: []PackageResult{
 		{
@@ -1037,12 +1061,15 @@ func TestRenderTypeScriptProjectDisablesAmbientTypePackages(t *testing.T) {
 		WorkDir: "/work",
 	}
 
-	tsconfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts", false)
+	tsconfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts", "tsconfig-0.json", false)
 	if !strings.Contains(tsconfig, "\"types\": []") {
 		t.Fatalf("expected generated tsconfig to disable ambient @types packages: %s", tsconfig)
 	}
 	if !strings.Contains(tsconfig, "\"goscript-node.d.ts\"") {
 		t.Fatalf("expected generated tsconfig to include GoScript node ambient declarations: %s", tsconfig)
+	}
+	if strings.Contains(tsconfig, "\"incremental\": true") || strings.Contains(tsconfig, "\"tsBuildInfoFile\"") {
+		t.Fatalf("expected generated tsconfig to keep one-shot typecheck by default: %s", tsconfig)
 	}
 	if strings.Contains(tsconfig, "output/package-0/**/*.ts") {
 		t.Fatalf("expected generated tsconfig to typecheck from runner roots, not output globs: %s", tsconfig)
@@ -1054,7 +1081,7 @@ func TestRenderTypeScriptProjectUsesNodeTypesWhenAvailable(t *testing.T) {
 		WorkDir: "/work",
 	}
 
-	tsconfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts", true)
+	tsconfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts", "tsconfig-0.json", true)
 	if !strings.Contains(tsconfig, "\"types\": [\"node\"]") {
 		t.Fatalf("expected generated tsconfig to opt into node types: %s", tsconfig)
 	}
@@ -1069,6 +1096,9 @@ func TestRenderRuntimeTypeScriptProjectDisablesEmit(t *testing.T) {
 	if !strings.Contains(tsconfig, "\"noEmit\": true") {
 		t.Fatalf("expected aggregate tsconfig to disable emit: %s", tsconfig)
 	}
+	if strings.Contains(tsconfig, "\"incremental\": true") || strings.Contains(tsconfig, "\"tsBuildInfoFile\"") {
+		t.Fatalf("expected aggregate tsconfig to keep one-shot typecheck by default: %s", tsconfig)
+	}
 	if !strings.Contains(tsconfig, "\"runner-*.ts\"") {
 		t.Fatalf("expected aggregate tsconfig to typecheck generated runner roots: %s", tsconfig)
 	}
@@ -1077,6 +1107,25 @@ func TestRenderRuntimeTypeScriptProjectDisablesEmit(t *testing.T) {
 	}
 	if strings.Contains(tsconfig, "output/**/*.ts") {
 		t.Fatalf("expected aggregate tsconfig to typecheck from runner roots, not output globs: %s", tsconfig)
+	}
+}
+
+func TestRenderTypeScriptProjectsCanUseIncrementalBuildInfo(t *testing.T) {
+	req := &normalizedRequest{
+		WorkDir:              "/work",
+		IncrementalTypeCheck: true,
+	}
+
+	packageTSConfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts", "tsconfig-0.json", false)
+	if !strings.Contains(packageTSConfig, "\"incremental\": true") ||
+		!strings.Contains(packageTSConfig, "\"tsBuildInfoFile\": \".goscript/tsconfig-0.tsbuildinfo\"") {
+		t.Fatalf("expected package tsconfig to cache package typecheck state: %s", packageTSConfig)
+	}
+
+	aggregateTSConfig := renderRuntimeTypeScriptProject(req, []string{"/work/output"}, false)
+	if !strings.Contains(aggregateTSConfig, "\"incremental\": true") ||
+		!strings.Contains(aggregateTSConfig, "\"tsBuildInfoFile\": \".goscript/tsconfig.tsbuildinfo\"") {
+		t.Fatalf("expected aggregate tsconfig to cache typecheck state: %s", aggregateTSConfig)
 	}
 }
 

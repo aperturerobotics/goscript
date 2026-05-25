@@ -185,7 +185,7 @@ func (r *Runner) preparePackageWorkspace(
 		return false
 	}
 	tsconfigFile := packageTSConfigFile(idx)
-	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, tsconfigFile, renderTypeScriptProject(req, outputRoot, runnerFile, nodeTypesAvailable)); phase.Failed() {
+	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, tsconfigFile, renderTypeScriptProject(req, outputRoot, runnerFile, tsconfigFile, nodeTypesAvailable)); phase.Failed() {
 		result.Packages[idx].Owner = OwnerTestRunner
 		result.Packages[idx].Phases.Workspace = PhaseStatusFail
 		result.Packages[idx].Error = phase.Error
@@ -971,7 +971,7 @@ func aggregateTypeCheckFailureOwner(output string) (Owner, bool) {
 	return "", false
 }
 
-func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string, nodeTypesAvailable bool) string {
+func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string, projectFile string, nodeTypesAvailable bool) string {
 	var b strings.Builder
 	b.WriteString("{\n")
 	b.WriteString("  \"compilerOptions\": {\n")
@@ -981,6 +981,12 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 	b.WriteString("    \"lib\": [\"ESNext\", \"DOM\"],\n")
 	b.WriteString("    \"strict\": true,\n")
 	b.WriteString("    \"allowImportingTsExtensions\": true,\n")
+	if req.IncrementalTypeCheck {
+		b.WriteString("    \"incremental\": true,\n")
+		b.WriteString("    \"tsBuildInfoFile\": ")
+		b.WriteString(strconv.Quote(typeScriptBuildInfoFile(projectFile)))
+		b.WriteString(",\n")
+	}
 	b.WriteString("    \"noEmit\": true,\n")
 	if nodeTypesAvailable {
 		b.WriteString("    \"types\": [\"node\"],\n")
@@ -1028,6 +1034,12 @@ func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string
 	b.WriteString("    \"lib\": [\"ESNext\", \"DOM\"],\n")
 	b.WriteString("    \"strict\": true,\n")
 	b.WriteString("    \"allowImportingTsExtensions\": true,\n")
+	if req.IncrementalTypeCheck {
+		b.WriteString("    \"incremental\": true,\n")
+		b.WriteString("    \"tsBuildInfoFile\": ")
+		b.WriteString(strconv.Quote(typeScriptBuildInfoFile("tsconfig.json")))
+		b.WriteString(",\n")
+	}
 	b.WriteString("    \"noEmit\": true,\n")
 	if nodeTypesAvailable {
 		b.WriteString("    \"types\": [\"node\"],\n")
@@ -1051,6 +1063,14 @@ func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string
 	b.WriteString("]\n")
 	b.WriteString("}\n")
 	return b.String()
+}
+
+func typeScriptBuildInfoFile(projectFile string) string {
+	name := strings.TrimSuffix(projectFile, filepath.Ext(projectFile))
+	if name == "" {
+		name = "tsconfig"
+	}
+	return ".goscript/" + name + ".tsbuildinfo"
 }
 
 func typeScriptOutputPattern(req *normalizedRequest, outputRoot string) string {
