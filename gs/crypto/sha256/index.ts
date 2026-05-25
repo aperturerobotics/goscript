@@ -8,6 +8,8 @@ export const Size = 32
 export const Size224 = 28
 export const BlockSize = 64
 
+type ShaAlgorithm = 'sha224' | 'sha256'
+
 class Sha256Error {
   constructor(private readonly message: string) {}
 
@@ -19,8 +21,13 @@ class Sha256Error {
 class Digest {
   private chunks: Uint8Array[] = []
   private dataLength = 0
-  private hash: NodeCryptoHash | null = createNodeHash()
-  private canCopyHash = typeof this.hash?.copy === 'function'
+  private hash: NodeCryptoHash | null
+  private canCopyHash: boolean
+
+  constructor(private readonly algorithm: ShaAlgorithm) {
+    this.hash = createNodeHash(algorithm)
+    this.canCopyHash = typeof this.hash?.copy === 'function'
+  }
 
   Write(p: $.Bytes): [number, $.GoError] {
     const bytes = $.bytesToUint8Array(p)
@@ -36,19 +43,19 @@ class Digest {
     const digest =
       this.canCopyHash ?
         new Uint8Array(this.hash!.copy!().digest())
-      : await Sum256(this.snapshotBytes())
+      : await sum(this.algorithm, this.snapshotBytes())
     return appendDigest($.bytesToUint8Array(b), digest)
   }
 
   Reset(): void {
     this.chunks = []
     this.dataLength = 0
-    this.hash = createNodeHash()
+    this.hash = createNodeHash(this.algorithm)
     this.canCopyHash = typeof this.hash?.copy === 'function'
   }
 
   Size(): number {
-    return Size
+    return this.algorithm === 'sha224' ? Size224 : Size
   }
 
   BlockSize(): number {
@@ -61,21 +68,34 @@ class Digest {
 }
 
 export function New(): any {
-  return new Digest()
+  return new Digest('sha256')
 }
 
 export function New224(): any {
-  throw new Error('crypto/sha256: SHA-224 is not supported by WebCrypto')
+  return new Digest('sha224')
 }
 
-export async function Sum224(_data: $.Bytes): Promise<Uint8Array> {
-  throw new Error('crypto/sha256: SHA-224 is not supported by WebCrypto')
+export async function Sum224(data: $.Bytes): Promise<Uint8Array> {
+  return sum('sha224', data)
 }
 
 export async function Sum256(data: $.Bytes): Promise<Uint8Array> {
-  const hash = createNodeHash()
+  return sum('sha256', data)
+}
+
+async function sum(
+  algorithm: ShaAlgorithm,
+  data: $.Bytes,
+): Promise<Uint8Array> {
+  const hash = createNodeHash(algorithm)
   if (hash != null) {
     return new Uint8Array(hash.update($.bytesToUint8Array(data)).digest())
+  }
+
+  if (algorithm === 'sha224') {
+    throw new Error(
+      new Sha256Error('crypto/sha256: SHA-224 digest is unavailable').Error(),
+    )
   }
 
   const subtle = subtleCrypto()
@@ -99,12 +119,16 @@ function appendDigest(prefix: Uint8Array, digest: Uint8Array): Uint8Array {
   return out
 }
 
-function createNodeHash(): NodeCryptoHash | null {
+function createNodeHash(algorithm: ShaAlgorithm): NodeCryptoHash | null {
   const nodeCrypto = getHostRuntime().nodeCrypto
   if (!nodeCrypto?.createHash) {
     return null
   }
-  return nodeCrypto.createHash('sha256')
+  try {
+    return nodeCrypto.createHash(algorithm)
+  } catch {
+    return null
+  }
 }
 
 function concatChunks(chunks: Uint8Array[], length: number): Uint8Array {
