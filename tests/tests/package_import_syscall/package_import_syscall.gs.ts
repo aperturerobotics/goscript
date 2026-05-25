@@ -59,7 +59,7 @@ export async function main(): globalThis.Promise<void> {
 		syscall.Shutdown(-1, 0)
 		syscall.Write(-1, buf)
 		syscall.F_DUPFD_CLOEXEC
-		syscall.ForkLock
+		$.pointerValue<sync.RWMutex>(syscall.ForkLock)
 		iovecs
 	}
 	let sa4: syscall.SockaddrInet4 = $.markAsStructValue(new syscall.SockaddrInet4())

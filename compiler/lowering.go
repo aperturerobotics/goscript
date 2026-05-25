@@ -5283,27 +5283,32 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 	if alias := ctx.localAliases[obj]; alias != "" {
 		if ctx.lazyPackageVars[obj] {
 			lazyValue := alias + "." + packageVarGetterName(value) + "()"
-			if obj != nil && ctx.model.needsVarRef[obj] {
-				return lazyValue + ".value"
-			}
-			return lazyValue
+			return o.lowerPackageVarReadValue(ctx, obj, lazyValue)
 		}
-		return alias + "." + value
+		return o.lowerPackageVarReadValue(ctx, obj, alias+"."+value)
 	}
 	if raw {
 		return value
 	}
 	if ctx.lazyPackageVars[obj] {
 		lazyValue := packageVarGetterName(value) + "()"
-		if obj != nil && ctx.model.needsVarRef[obj] {
-			return lazyValue + ".value"
-		}
-		return lazyValue
+		return o.lowerPackageVarReadValue(ctx, obj, lazyValue)
 	}
 	if obj != nil && ctx.model.needsVarRef[obj] {
 		return value + ".value"
 	}
 	return value
+}
+
+func (o *LoweringOwner) lowerPackageVarReadValue(ctx lowerFileContext, obj types.Object, value string) string {
+	if obj == nil || ctx.model == nil || !ctx.model.needsVarRef[obj] {
+		return value
+	}
+	if varObj, ok := obj.(*types.Var); ok && packageVarReadNeedsPointerValue(varObj.Type()) {
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+			"<" + o.tsNonNilTypeFor(ctx, varObj.Type()) + ">(" + value + ")"
+	}
+	return value + ".value"
 }
 
 func objectForIdent(ctx lowerFileContext, ident *ast.Ident) types.Object {
@@ -5353,21 +5358,6 @@ func objectNeedsVarRef(ctx lowerFileContext, obj types.Object) bool {
 		}
 	}
 	return false
-}
-
-func packageVarSelectorObject(ctx lowerFileContext, expr ast.Expr) *types.Var {
-	selector, ok := ast.Unparen(expr).(*ast.SelectorExpr)
-	if !ok || ctx.semPkg == nil || ctx.semPkg.source == nil {
-		return nil
-	}
-	if selection := ctx.semPkg.source.TypesInfo.Selections[selector]; selection != nil {
-		return nil
-	}
-	if _, ok := ast.Unparen(selector.X).(*ast.Ident); !ok {
-		return nil
-	}
-	obj, _ := ctx.semPkg.source.TypesInfo.Uses[selector.Sel].(*types.Var)
-	return obj
 }
 
 func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) (string, []Diagnostic) {
@@ -6377,7 +6367,13 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 	if ident, ok := expr.X.(*ast.Ident); ok {
 		if pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName); pkgName != nil {
 			if alias := ctx.importNames[pkgName.Name()]; alias != "" {
-				return alias + "." + expr.Sel.Name, nil
+				value := alias + "." + expr.Sel.Name
+				obj, _ := ctx.semPkg.source.TypesInfo.Uses[expr.Sel].(*types.Var)
+				if obj != nil && packageVarReadNeedsPointerValue(obj.Type()) {
+					value = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+						"<" + o.tsNonNilTypeFor(ctx, obj.Type()) + ">(" + value + ")"
+				}
+				return value, nil
 			}
 		}
 	}
@@ -6403,6 +6399,37 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 	left, diagnostics := o.lowerExpr(ctx, expr.X)
 	left = parenthesizeAwaitedExpr(left)
 	return left + "." + expr.Sel.Name, diagnostics
+}
+
+func packageVarSelectorNeedsPointerValue(ctx lowerFileContext, expr ast.Expr) bool {
+	selector, ok := ast.Unparen(expr).(*ast.SelectorExpr)
+	if !ok || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	if selection := ctx.semPkg.source.TypesInfo.Selections[selector]; selection != nil {
+		return false
+	}
+	ident, ok := ast.Unparen(selector.X).(*ast.Ident)
+	if !ok {
+		return false
+	}
+	pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName)
+	if pkgName == nil || ctx.importNames[pkgName.Name()] == "" {
+		return false
+	}
+	obj, _ := ctx.semPkg.source.TypesInfo.Uses[selector.Sel].(*types.Var)
+	return obj != nil && packageVarReadNeedsPointerValue(obj.Type())
+}
+
+func packageVarReadNeedsPointerValue(typ types.Type) bool {
+	if typ == nil || isPointerType(typ) {
+		return false
+	}
+	if isStructValueType(typ) {
+		return true
+	}
+	_, ok := types.Unalias(typ).Underlying().(*types.Array)
+	return ok
 }
 
 func (o *LoweringOwner) packageVarSetterForAssignment(ctx lowerFileContext, expr ast.Expr) (string, bool) {
@@ -6596,13 +6623,10 @@ func (o *LoweringOwner) lowerFieldReceiverExpr(ctx lowerFileContext, expr ast.Ex
 	}
 	value, diagnostics := o.lowerExpr(ctx, expr)
 	value = parenthesizeAwaitedExpr(value)
-	if obj := packageVarSelectorObject(ctx, expr); obj != nil && isStructValueType(obj.Type()) {
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
-			"<" + o.tsNonNilTypeFor(ctx, obj.Type()) + ">(" + value + ")", diagnostics
-	}
 	if obj := objectForValueExpr(ctx, expr); obj != nil &&
 		objectNeedsVarRef(ctx, obj) &&
 		isStructValueType(obj.Type()) &&
+		!packageVarSelectorNeedsPointerValue(ctx, expr) &&
 		fieldReceiverNeedsVarRefValue(ctx, expr, obj) {
 		return value + ".value", diagnostics
 	}
@@ -6617,6 +6641,9 @@ func fieldReceiverNeedsVarRefValue(ctx lowerFileContext, expr ast.Expr, obj type
 		return !ctx.identAliasRefs[obj]
 	}
 	if ctx.localAliases[obj] != "" {
+		if varObj, ok := obj.(*types.Var); ok && packageVarReadNeedsPointerValue(varObj.Type()) {
+			return false
+		}
 		return !ctx.lazyPackageVars[obj]
 	}
 	return false
@@ -6646,12 +6673,10 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 	}
 	receiverType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
 	if !receiverPointer {
-		if obj := packageVarSelectorObject(ctx, expr); obj != nil && isStructValueType(obj.Type()) {
-			receiver = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
-				"<" + o.tsNonNilTypeFor(ctx, obj.Type()) + ">(" + receiver + ")"
-		} else if obj := objectForValueExpr(ctx, expr); obj != nil &&
+		if obj := objectForValueExpr(ctx, expr); obj != nil &&
 			objectNeedsVarRef(ctx, obj) &&
 			isStructValueType(obj.Type()) &&
+			!packageVarSelectorNeedsPointerValue(ctx, expr) &&
 			fieldReceiverNeedsVarRefValue(ctx, expr, obj) {
 			receiver += ".value"
 		}

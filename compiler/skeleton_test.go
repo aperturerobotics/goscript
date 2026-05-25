@@ -2522,6 +2522,95 @@ func TestCompilePackagesUnwrapsImportedVarRefValueMethodReceiver(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesUnwrapsImportedArrayPackageVarReads(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/imported-array-var\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"var Table = [2]int{3, 5}",
+			"func touch(v *[2]int) { v[0]++ }",
+			"func init() { touch(&Table) }",
+			"func Sum(v [2]int) int { return v[0] + v[1] }",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/imported-array-var/dep\"",
+			"func Read() int {",
+			"  return dep.Table[1] + dep.Sum(dep.Table)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "imported-array-var", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"$.pointerValue<number[]>(dep.Table)[1]",
+		"dep.Sum($.pointerValue<number[]>(dep.Table))",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing imported array package var read %q:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesUnwrapsAliasedArrayPackageVarReads(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/aliased-array-var\n\ngo 1.25.3\n",
+		"table.go": strings.Join([]string{
+			"package main",
+			"var Table = [2]int{3, 5}",
+			"func touch(v *[2]int) { v[0]++ }",
+			"func init() { touch(&Table) }",
+			"func Sum(v [2]int) int { return v[0] + v[1] }",
+			"",
+		}, "\n"),
+		"read.go": strings.Join([]string{
+			"package main",
+			"func Read() int {",
+			"  return Table[1] + Sum(Table)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "aliased-array-var", "read.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"$.pointerValue<number[]>(__goscript_table.Table)[1]",
+		"Sum($.pointerValue<number[]>(__goscript_table.Table))",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing aliased array package var read %q:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompileSourceToTypeScriptCompilesSingleFile(t *testing.T) {
 	output, err := CompileSourceToTypeScript("package main\nfunc main() { println(\"hi\") }\n", "main")
 	if err != nil {
