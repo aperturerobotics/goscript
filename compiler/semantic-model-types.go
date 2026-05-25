@@ -13,6 +13,7 @@ type SemanticModel struct {
 	needsVarRef              map[types.Object]bool
 	functions                map[*types.Func]*semanticFunction
 	functionsByFullName      map[string]*semanticFunction
+	functionLookupMisses     map[*types.Func]bool
 	types                    map[*types.Named]*semanticType
 	values                   map[types.Object]*semanticValue
 	generatedImports         map[string]map[string]bool

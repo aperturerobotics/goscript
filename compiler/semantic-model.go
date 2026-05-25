@@ -107,14 +107,15 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 
 func newSemanticModel() *SemanticModel {
 	return &SemanticModel{
-		packages:            make(map[string]*semanticPackage),
-		addressTaken:        make(map[types.Object]bool),
-		needsVarRef:         make(map[types.Object]bool),
-		functions:           make(map[*types.Func]*semanticFunction),
-		functionsByFullName: make(map[string]*semanticFunction),
-		types:               make(map[*types.Named]*semanticType),
-		values:              make(map[types.Object]*semanticValue),
-		generatedImports:    make(map[string]map[string]bool),
+		packages:             make(map[string]*semanticPackage),
+		addressTaken:         make(map[types.Object]bool),
+		needsVarRef:          make(map[types.Object]bool),
+		functions:            make(map[*types.Func]*semanticFunction),
+		functionsByFullName:  make(map[string]*semanticFunction),
+		functionLookupMisses: make(map[*types.Func]bool),
+		types:                make(map[*types.Named]*semanticType),
+		values:               make(map[types.Object]*semanticValue),
+		generatedImports:     make(map[string]map[string]bool),
 	}
 }
 
@@ -866,12 +867,22 @@ func semanticFunctionFor(model *SemanticModel, fn *types.Func) *semanticFunction
 	if semFn := model.functions[fn]; semFn != nil {
 		return semFn
 	}
-	if semFn := model.functions[fn.Origin()]; semFn != nil {
-		return semFn
+	if model.functionLookupMisses[fn] {
+		return nil
 	}
-	if semFn := model.functionsByFullName[fn.FullName()]; semFn != nil {
-		return semFn
+	if origin := fn.Origin(); origin != nil {
+		if semFn := model.functions[origin]; semFn != nil {
+			model.functions[fn] = semFn
+			return semFn
+		}
 	}
+	if fullName := fn.FullName(); fullName != "" {
+		if semFn := model.functionsByFullName[fullName]; semFn != nil {
+			model.functions[fn] = semFn
+			return semFn
+		}
+	}
+	model.functionLookupMisses[fn] = true
 	return nil
 }
 
@@ -1199,8 +1210,7 @@ func (o *SemanticModelOwner) interfaceImplementationGraphEntry(
 	ifaceNamed *types.Named,
 	ifaceMethods map[string]*types.Func,
 ) (semanticInterfaceImplementationGraphEntry, bool) {
-	implMethods, ok := implementationMethodMap(methodSet.methods, ifaceMethods)
-	if !ok {
+	if !implementationHasMethods(methodSet.methods, ifaceMethods) {
 		return semanticInterfaceImplementationGraphEntry{}, false
 	}
 
@@ -1229,7 +1239,7 @@ func (o *SemanticModelOwner) interfaceImplementationGraphEntry(
 		iface:        ifaceNamed,
 		pointer:      methodSet.pointer,
 		ifaceMethods: make(map[string]*types.Func),
-		implMethods:  implMethods,
+		implMethods:  implementationMethodMap(methodSet.methods, ifaceMethods),
 	}
 	maps.Copy(implementation.ifaceMethods, ifaceMethods)
 	return implementation, true
@@ -1283,22 +1293,30 @@ func methodSetMap(receiver types.Type) map[string]*types.Func {
 	return methods
 }
 
+func implementationHasMethods(
+	receiverMethods map[string]*types.Func,
+	ifaceMethods map[string]*types.Func,
+) bool {
+	if len(receiverMethods) == 0 || len(ifaceMethods) == 0 {
+		return false
+	}
+	for methodName := range ifaceMethods {
+		if receiverMethods[methodName] == nil {
+			return false
+		}
+	}
+	return true
+}
+
 func implementationMethodMap(
 	receiverMethods map[string]*types.Func,
 	ifaceMethods map[string]*types.Func,
-) (map[string]*types.Func, bool) {
-	if len(receiverMethods) == 0 || len(ifaceMethods) == 0 {
-		return nil, false
-	}
+) map[string]*types.Func {
 	methods := make(map[string]*types.Func, len(ifaceMethods))
 	for methodName := range ifaceMethods {
-		implMethod := receiverMethods[methodName]
-		if implMethod == nil {
-			return nil, false
-		}
-		methods[methodName] = implMethod
+		methods[methodName] = receiverMethods[methodName]
 	}
-	return methods, true
+	return methods
 }
 
 func typeParamTypes(params *types.TypeParamList) []types.Type {
