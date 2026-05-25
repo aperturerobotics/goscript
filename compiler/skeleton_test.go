@@ -2478,6 +2478,50 @@ func TestCompilePackagesNormalizesWideIntegerReturnTargets(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesUnwrapsImportedVarRefValueMethodReceiver(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/imported-varref-receiver\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"type Info struct { Count int }",
+			"func (i Info) Enabled() bool { return i.Count > 0 }",
+			"func addInfo(i *Info) { i.Count = 1 }",
+			"var CPU Info",
+			"func init() { addInfo(&CPU) }",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/imported-varref-receiver/dep\"",
+			"func Enabled() bool {",
+			"  return dep.CPU.Enabled()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "imported-varref-receiver", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.cloneStructValue($.pointerValue<dep.Info>(dep.CPU))") {
+		t.Fatalf("missing imported VarRef receiver unwrap:\n%s", text)
+	}
+	if strings.Contains(text, "$.cloneStructValue(dep.CPU))") {
+		t.Fatalf("imported VarRef receiver stayed wrapped:\n%s", text)
+	}
+}
+
 func TestCompileSourceToTypeScriptCompilesSingleFile(t *testing.T) {
 	output, err := CompileSourceToTypeScript("package main\nfunc main() { println(\"hi\") }\n", "main")
 	if err != nil {

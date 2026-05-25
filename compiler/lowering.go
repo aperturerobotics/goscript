@@ -5333,6 +5333,43 @@ func objectForValueExpr(ctx lowerFileContext, expr ast.Expr) types.Object {
 	}
 }
 
+func objectNeedsVarRef(ctx lowerFileContext, obj types.Object) bool {
+	if obj == nil || ctx.model == nil {
+		return false
+	}
+	if ctx.model.needsVarRef[obj] {
+		return true
+	}
+	if obj.Pkg() == nil {
+		return false
+	}
+	semPkg := ctx.model.packages[obj.Pkg().Path()]
+	if semPkg == nil {
+		return false
+	}
+	for _, value := range semPkg.values {
+		if value.name == obj.Name() && ctx.model.needsVarRef[value.object] {
+			return true
+		}
+	}
+	return false
+}
+
+func packageVarSelectorObject(ctx lowerFileContext, expr ast.Expr) *types.Var {
+	selector, ok := ast.Unparen(expr).(*ast.SelectorExpr)
+	if !ok || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return nil
+	}
+	if selection := ctx.semPkg.source.TypesInfo.Selections[selector]; selection != nil {
+		return nil
+	}
+	if _, ok := ast.Unparen(selector.X).(*ast.Ident); !ok {
+		return nil
+	}
+	obj, _ := ctx.semPkg.source.TypesInfo.Uses[selector.Sel].(*types.Var)
+	return obj
+}
+
 func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) (string, []Diagnostic) {
 	if ident, ok := expr.Fun.(*ast.Ident); ok && isBuiltinCallTarget(ctx, ident) {
 		switch ident.Name {
@@ -6559,8 +6596,12 @@ func (o *LoweringOwner) lowerFieldReceiverExpr(ctx lowerFileContext, expr ast.Ex
 	}
 	value, diagnostics := o.lowerExpr(ctx, expr)
 	value = parenthesizeAwaitedExpr(value)
+	if obj := packageVarSelectorObject(ctx, expr); obj != nil && isStructValueType(obj.Type()) {
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+			"<" + o.tsNonNilTypeFor(ctx, obj.Type()) + ">(" + value + ")", diagnostics
+	}
 	if obj := objectForValueExpr(ctx, expr); obj != nil &&
-		ctx.model.needsVarRef[obj] &&
+		objectNeedsVarRef(ctx, obj) &&
 		isStructValueType(obj.Type()) &&
 		fieldReceiverNeedsVarRefValue(ctx, expr, obj) {
 		return value + ".value", diagnostics
@@ -6604,12 +6645,23 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 		receiver = parenthesizeAwaitedExpr(receiver)
 	}
 	receiverType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	if !receiverPointer {
+		if obj := packageVarSelectorObject(ctx, expr); obj != nil && isStructValueType(obj.Type()) {
+			receiver = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+				"<" + o.tsNonNilTypeFor(ctx, obj.Type()) + ">(" + receiver + ")"
+		} else if obj := objectForValueExpr(ctx, expr); obj != nil &&
+			objectNeedsVarRef(ctx, obj) &&
+			isStructValueType(obj.Type()) &&
+			fieldReceiverNeedsVarRefValue(ctx, expr, obj) {
+			receiver += ".value"
+		}
+	}
 	if index := selection.Index(); len(index) > 1 && !o.receiverUsesOverridePackage(receiverType) {
 		receiver, receiverType = o.lowerPromotedMethodReceiver(ctx, receiver, receiverType, index[:len(index)-1])
 	}
 	if receiverPointer {
 		if obj := objectForValueExpr(ctx, expr); obj != nil &&
-			ctx.model.needsVarRef[obj] &&
+			objectNeedsVarRef(ctx, obj) &&
 			isStructValueType(obj.Type()) &&
 			fieldReceiverNeedsVarRefValue(ctx, expr, obj) {
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
