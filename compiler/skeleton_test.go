@@ -1354,6 +1354,38 @@ func TestCompilePackagesMarksPackageFunctionVariablesAsync(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesPreservesBlankNamedResultSlots(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/blankresult\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func values() (first, second bool, _ error) {",
+			"  first = true",
+			"  return",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "blankresult", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "return [first, second, null as $.GoError]") {
+		t.Fatalf("blank named result slot was not preserved in naked return:\n%s", text)
+	}
+}
+
 func TestCompilePackagesPreservesFloatConversionLiterals(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/floatconv\n\ngo 1.25.3\n",

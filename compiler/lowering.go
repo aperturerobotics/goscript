@@ -3993,16 +3993,33 @@ func (o *LoweringOwner) lowerNamedResults(ctx lowerFileContext, signature *types
 }
 
 func (o *LoweringOwner) lowerNamedResultReturn(ctx lowerFileContext) (string, bool) {
-	results := o.lowerNamedResults(ctx, ctx.signature)
-	if len(results) == 0 {
+	if ctx.signature == nil || ctx.signature.Results() == nil || ctx.signature.Results().Len() == 0 {
 		return "", false
 	}
-	if len(results) == 1 {
-		return results[0].returnExpr, true
+	parts := make([]string, 0, ctx.signature.Results().Len())
+	hasNamedResult := false
+	for result := range ctx.signature.Results().Variables() {
+		name := result.Name()
+		if name == "" {
+			parts = append(parts, o.lowerDeclarationZeroValueExpr(ctx, result.Type()))
+			continue
+		}
+		hasNamedResult = true
+		if name == "_" {
+			parts = append(parts, o.lowerDeclarationZeroValueExpr(ctx, result.Type()))
+			continue
+		}
+		returnExpr := safeIdentifier(name)
+		if ctx.model.needsVarRef[result] {
+			returnExpr += ".value"
+		}
+		parts = append(parts, returnExpr)
 	}
-	parts := make([]string, 0, len(results))
-	for _, result := range results {
-		parts = append(parts, result.returnExpr)
+	if !hasNamedResult {
+		return "", false
+	}
+	if len(parts) == 1 {
+		return parts[0], true
 	}
 	return "[" + strings.Join(parts, ", ") + "]", true
 }
