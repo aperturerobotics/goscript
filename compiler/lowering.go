@@ -4564,15 +4564,24 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 	}
 
 	value := "true"
+	var tagType types.Type
 	if stmt.Tag != nil {
 		var valueDiagnostics []Diagnostic
 		value, valueDiagnostics = o.lowerExpr(ctx, stmt.Tag)
 		diagnostics = append(diagnostics, valueDiagnostics...)
 		value = lowerConstantComparableValue(ctx, stmt.Tag, value)
+		tagType = ctx.semPkg.source.TypesInfo.TypeOf(stmt.Tag)
 	} else if switchHasConstantCaseExpr(ctx, stmt) {
 		value = "(true as boolean)"
 	}
 
+	compareCases := tagType != nil && isInterfaceType(tagType)
+	compareValue := value
+	if compareCases {
+		compareValue = ctx.tempName("Switch")
+		init = append(init, loweredStmt{text: "let " + compareValue + " = " + value})
+		value = "true"
+	}
 	switchIR := &loweredSwitch{value: value}
 	for _, raw := range stmt.Body.List {
 		clause, ok := raw.(*ast.CaseClause)
@@ -4594,6 +4603,11 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 		for _, expr := range clause.List {
 			lowered, exprDiagnostics := o.lowerExpr(ctx, expr)
 			diagnostics = append(diagnostics, exprDiagnostics...)
+			if compareCases {
+				sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+				lowered = o.lowerValueForTargetTypes(ctx, tagType, sourceType, lowered, shouldCloneStructValue(expr))
+				lowered = o.runtimeOwner.QualifiedHelper(RuntimeHelperComparableEqual) + "(" + compareValue + ", " + lowered + ")"
+			}
 			values = append(values, lowered)
 		}
 		switchIR.cases = append(switchIR.cases, loweredSwitchCase{
@@ -7471,8 +7485,9 @@ func (o *LoweringOwner) lowerPrimitiveErrorWrapper(ctx lowerFileContext, sourceT
 	if fn == nil {
 		return ""
 	}
-	return o.runtimeOwner.QualifiedHelper(RuntimeHelperWrapPrimitiveError) +
-		"(" + value + ", " + o.methodFunctionExpr(ctx, named, fn, "Error") + ")"
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedValueInterfaceValue) +
+		"<$.GoError>(" + value + ", " + strconv.Quote(goRuntimeTypeString(sourceType)) +
+		", {\"Error\": " + o.methodFunctionExpr(ctx, named, fn, "Error") + "})"
 }
 
 func (o *LoweringOwner) lowerStructClone(value string) string {

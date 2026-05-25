@@ -73,6 +73,7 @@ const (
 	RuntimeHelperPointerValue      RuntimeHelper = "value.pointerValue"
 	RuntimeHelperPointerValueOrNil RuntimeHelper = "value.pointerValueOrNil"
 	RuntimeHelperArrayEqual        RuntimeHelper = "value.arrayEqual"
+	RuntimeHelperComparableEqual   RuntimeHelper = "value.comparableEqual"
 
 	RuntimeHelperVarRef                RuntimeHelper = "varref.varRef"
 	RuntimeHelperFieldRef              RuntimeHelper = "varref.fieldRef"
@@ -302,6 +303,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperPointerValue, "pointerValue", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperPointerValueOrNil, "pointerValueOrNil", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperArrayEqual, "arrayEqual", RuntimeHelperCategoryValue),
+		runtimeHelper(RuntimeHelperComparableEqual, "comparableEqual", RuntimeHelperCategoryValue),
 		runtimeHelper(RuntimeHelperVarRef, "varRef", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperFieldRef, "fieldRef", RuntimeHelperCategoryVarRef),
 		runtimeHelper(RuntimeHelperUnref, "unref", RuntimeHelperCategoryVarRef),

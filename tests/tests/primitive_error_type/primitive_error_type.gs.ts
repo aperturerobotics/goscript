@@ -5,6 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 export type MyError = number
 
+export const ErrNegative: MyError = -1
+
 export function MyError_Error(e: MyError): string {
 	if (e == 0) {
 		return "no error"
@@ -14,7 +16,7 @@ export function MyError_Error(e: MyError): string {
 
 export function mayFail(n: number): $.GoError {
 	if (n < 0) {
-		return $.wrapPrimitiveError(n, MyError_Error)
+		return $.namedValueInterfaceValue<$.GoError>(n, "main.MyError", {"Error": MyError_Error})
 	}
 	return null
 }
@@ -32,6 +34,22 @@ export async function main(): globalThis.Promise<void> {
 		$.println("mayFail(-1): no error")
 	} else {
 		$.println("mayFail(-1):", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
+	}
+
+	{
+		let __goscriptSwitch0 = err
+		switch (true) {
+			case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<$.GoError>(ErrNegative, "main.MyError", {"Error": MyError_Error})):
+			{
+				$.println("switch: matched primitive error")
+				break
+			}
+			default:
+			{
+				$.println("switch: missed primitive error")
+				break
+			}
+		}
 	}
 }
 

@@ -173,6 +173,9 @@ export function comparableEqual(a: unknown, b: unknown): boolean {
     if (a.__isTypedNil || b.__isTypedNil) {
       return a.__isTypedNil === true && b.__isTypedNil === true
     }
+    if (hasGoValue(a) || hasGoValue(b)) {
+      return hasGoValue(a) && hasGoValue(b) && comparableEqual(a.__goValue, b.__goValue)
+    }
   }
   if (isStructValue(a) && isStructValue(b)) {
     return fieldsEqual(a._fields, b._fields)
@@ -193,6 +196,12 @@ function hasGoType(value: unknown): value is {
     value !== null &&
     typeof (value as { __goType?: unknown }).__goType === 'string'
   )
+}
+
+function hasGoValue(value: unknown): value is {
+  __goValue: unknown
+} {
+  return typeof value === 'object' && value !== null && '__goValue' in value
 }
 
 function isStructValue(value: unknown): value is {

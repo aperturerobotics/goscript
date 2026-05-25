@@ -1952,22 +1952,23 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 	__defer.defer(() => { ($.functionValue((): void => {
 		{
 			let r = $.recover()
-			switch (r) {
+			let __goscriptSwitch0 = r
+			switch (true) {
 				default:
 				{
 					$.panic(r)
 					break
 				}
-				case null:
+				case $.comparableEqual(__goscriptSwitch0, null):
 				{
 					break
 				}
-				case ErrLarge:
+				case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)})):
 				{
 					err = $.interfaceValue<$.GoError>(new Error({Code: ErrLarge, Expr: s}), "*syntax.Error")
 					break
 				}
-				case ErrNestingDepth:
+				case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>(ErrNestingDepth, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)})):
 				{
 					err = $.interfaceValue<$.GoError>(new Error({Code: ErrNestingDepth, Expr: s}), "*syntax.Error")
 					break

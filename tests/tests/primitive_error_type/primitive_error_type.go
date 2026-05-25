@@ -3,6 +3,8 @@ package main
 // MyError is a primitive int type that implements error
 type MyError int
 
+const ErrNegative MyError = -1
+
 func (e MyError) Error() string {
 	if e == 0 {
 		return "no error"
@@ -31,5 +33,12 @@ func main() {
 		println("mayFail(-1): no error")
 	} else {
 		println("mayFail(-1):", err.Error())
+	}
+
+	switch err {
+	case ErrNegative:
+		println("switch: matched primitive error")
+	default:
+		println("switch: missed primitive error")
 	}
 }
