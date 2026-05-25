@@ -86,6 +86,11 @@ export interface Channel<T> {
    * Reports the number of buffered values currently queued in the channel.
    */
   len(): number
+
+  /**
+   * Reports the channel buffer capacity.
+   */
+  cap(): number
 }
 
 /**
@@ -633,6 +638,10 @@ class BufferedChannel<T> implements Channel<T> {
   len(): number {
     return this.buffer.length
   }
+
+  cap(): number {
+    return this.capacity
+  }
 }
 
 /**
@@ -663,6 +672,7 @@ export interface ChannelRef<T> {
   ): Promise<SelectResult<boolean>>
   selectReceive(id: number, signal?: AbortSignal): Promise<SelectResult<T>>
   len(): number
+  cap(): number
 }
 
 /**
@@ -712,6 +722,10 @@ export class BidirectionalChannelRef<T> implements ChannelRef<T> {
 
   len(): number {
     return this.channel.len()
+  }
+
+  cap(): number {
+    return this.channel.cap()
   }
 }
 
@@ -765,6 +779,10 @@ export class SendOnlyChannelRef<T> implements ChannelRef<T> {
   len(): number {
     return this.channel.len()
   }
+
+  cap(): number {
+    return this.channel.cap()
+  }
 }
 
 /**
@@ -816,6 +834,10 @@ export class ReceiveOnlyChannelRef<T> implements ChannelRef<T> {
 
   len(): number {
     return this.channel.len()
+  }
+
+  cap(): number {
+    return this.channel.cap()
   }
 }
 

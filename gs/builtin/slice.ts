@@ -853,7 +853,9 @@ export const len = <T = unknown, V = unknown>(
  * @param obj The slice.
  * @returns The capacity of the slice.
  */
-export const cap = <T>(obj: Slice<T> | Uint8Array): number => {
+export const cap = <T>(
+  obj: Slice<T> | Uint8Array | { cap(): number } | null | undefined,
+): number => {
   if (obj === null || obj === undefined) {
     return 0
   }
@@ -868,6 +870,10 @@ export const cap = <T>(obj: Slice<T> | Uint8Array): number => {
 
   if (Array.isArray(obj)) {
     return obj.length
+  }
+
+  if (typeof (obj as any).cap === 'function') {
+    return (obj as { cap(): number }).cap()
   }
 
   return 0

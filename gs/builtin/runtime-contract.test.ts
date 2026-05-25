@@ -438,8 +438,10 @@ describe('builtin runtime contract helpers', () => {
 
   it('exposes channel helpers used by future lowering', async () => {
     const channel = makeChannel<number>(1, 0, 'both')
+    expect(cap(channel)).toBe(1)
     await channel.send(7)
     expect(len(channel)).toBe(1)
+    expect(cap(channel)).toBe(1)
     expect(await chanRecvWithOk(channel)).toEqual({ value: 7, ok: true })
     expect(len(channel)).toBe(0)
     channel.close()
