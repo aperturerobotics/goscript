@@ -6721,23 +6721,25 @@ func (o *LoweringOwner) lowerFieldSelectionExpr(
 	receiver = parenthesizeAwaitedExpr(receiver)
 	index := selection.Index()
 	if len(index) == 0 {
+		fieldName := tsStructFieldName(expr.Sel.Name, 0)
 		if address {
-			return o.lowerFieldAddressExpr(ctx, receiver, ctx.semPkg.source.TypesInfo.TypeOf(expr.X), expr.Sel.Name), diagnostics
+			return o.lowerFieldAddressExpr(ctx, receiver, ctx.semPkg.source.TypesInfo.TypeOf(expr.X), fieldName), diagnostics
 		}
-		return receiver + "." + expr.Sel.Name, diagnostics
+		return receiver + "." + fieldName, diagnostics
 	}
 
 	typ := derefPointerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X))
 	for idx, fieldIndex := range index {
 		structType := structUnderlyingType(typ)
 		if structType == nil || fieldIndex < 0 || fieldIndex >= structType.NumFields() {
+			fieldName := tsStructFieldName(expr.Sel.Name, 0)
 			if address {
-				return receiver + "._fields." + expr.Sel.Name, diagnostics
+				return receiver + "._fields." + fieldName, diagnostics
 			}
-			return receiver + "." + expr.Sel.Name, diagnostics
+			return receiver + "." + fieldName, diagnostics
 		}
 		field := structType.Field(fieldIndex)
-		name := field.Name()
+		name := tsStructFieldName(field.Name(), fieldIndex)
 		if idx == len(index)-1 {
 			if address {
 				return o.lowerFieldAddressExpr(ctx, receiver, typ, name), diagnostics
@@ -6755,9 +6757,9 @@ func (o *LoweringOwner) lowerFieldSelectionExpr(
 	}
 
 	if address {
-		return o.lowerFieldAddressExpr(ctx, receiver, typ, expr.Sel.Name), diagnostics
+		return o.lowerFieldAddressExpr(ctx, receiver, typ, tsStructFieldName(expr.Sel.Name, 0)), diagnostics
 	}
-	return receiver + "." + expr.Sel.Name, diagnostics
+	return receiver + "." + tsStructFieldName(expr.Sel.Name, 0), diagnostics
 }
 
 func (o *LoweringOwner) lowerFieldAddressExpr(ctx lowerFileContext, receiver string, typ types.Type, fieldName string) string {
@@ -7443,9 +7445,13 @@ func (o *LoweringOwner) lowerStructCompositeLit(
 		if keyed, ok := elt.(*ast.KeyValueExpr); ok {
 			valueExpr = keyed.Value
 			if ident, ok := keyed.Key.(*ast.Ident); ok {
-				fieldName = ident.Name
-				if field := fieldByName(structType, fieldName); field != nil {
-					fieldType = field.Type()
+				for index := range structType.NumFields() {
+					field := structType.Field(index)
+					if field.Name() == ident.Name {
+						fieldName = tsStructFieldName(field.Name(), index)
+						fieldType = field.Type()
+						break
+					}
 				}
 			}
 		} else if idx < structType.NumFields() {
@@ -7493,10 +7499,10 @@ func (o *LoweringOwner) lowerAnonymousStructCompositeLit(
 		if keyed, ok := elt.(*ast.KeyValueExpr); ok {
 			valueExpr = keyed.Value
 			if ident, ok := keyed.Key.(*ast.Ident); ok {
-				fieldName = ident.Name
 				for index := range structType.NumFields() {
 					field := structType.Field(index)
-					if field.Name() == fieldName {
+					if field.Name() == ident.Name {
+						fieldName = tsStructFieldName(field.Name(), index)
 						fieldIndex = index
 						fieldType = field.Type()
 						break
@@ -8085,7 +8091,8 @@ func (o *LoweringOwner) runtimeFunctionTypeInfoWithSeen(signature *types.Signatu
 	if signature.Variadic() {
 		parts = append(parts, "isVariadic: true")
 	}
-	return "{ " + strings.Join(parts, ", ") + " }"
+	runtimePackage := strings.TrimSuffix(typeKind, ".TypeKind")
+	return "({ " + strings.Join(parts, ", ") + " } as " + runtimePackage + ".FunctionTypeInfo)"
 }
 
 func (o *LoweringOwner) runtimeSignatureTypes(tuple *types.Tuple, seen map[types.Type]bool) string {
@@ -8099,20 +8106,11 @@ func (o *LoweringOwner) runtimeSignatureTypes(tuple *types.Tuple, seen map[types
 	return "[" + strings.Join(types, ", ") + "]"
 }
 
-func fieldByName(structType *types.Struct, name string) *types.Var {
-	for field := range structType.Fields() {
-		if field.Name() == name {
-			return field
-		}
-	}
-	return nil
-}
-
 func tsStructFieldName(name string, idx int) string {
 	if name == "_" {
 		return "_blank" + strconv.Itoa(idx)
 	}
-	return name
+	return safeIdentifier(name)
 }
 
 func shouldCloneStructValue(expr ast.Expr) bool {
