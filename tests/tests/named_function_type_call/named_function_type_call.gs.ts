@@ -210,12 +210,12 @@ export class MorphismHolder {
 
 	public async apply(s: Shape | null): globalThis.Promise<number> {
 		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
-		return $.pointerValue<Exclude<Shape, null>>(await $.pointerValue<MorphismHolder>(h).morphism!(s)).Stats()
+		return $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(h).morphism!(s))).Stats()
 	}
 
 	public async cloneApply(s: Shape | null): globalThis.Promise<number> {
 		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
-		return $.pointerValue<Exclude<Shape, null>>(await $.pointerValue<MorphismHolder>(cloneMorphism($.pointerValue<MorphismHolder>(h).morphism)).morphism!(s)).Stats()
+		return $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(cloneMorphism($.pointerValue<MorphismHolder>(h).morphism)).morphism!(s))).Stats()
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -335,7 +335,7 @@ export async function indexedCallback(cbs: $.Slice<((_p0: string) => boolean | g
 }
 
 export async function useMorphism(m: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null, s: Shape | null): globalThis.Promise<number> {
-	return $.pointerValue<Exclude<Shape, null>>(await m!(s)).Stats()
+	return $.pointerValue<Exclude<Shape, null>>((await m!(s))).Stats()
 }
 
 export async function newMorphismHolder(m: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null): globalThis.Promise<MorphismHolder | $.VarRef<MorphismHolder> | null> {

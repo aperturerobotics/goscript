@@ -1995,6 +1995,50 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesParenthesizesAsyncFieldReceivers(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/asyncfield\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Result struct { ok bool }",
+			"type Box struct { ch chan int }",
+			"func (b *Box) next() Result {",
+			"  b.ch <- 1",
+			"  return Result{ok: true}",
+			"}",
+			"func (b *Box) OK() bool {",
+			"  return b.next().ok",
+			"}",
+			"func main() {",
+			"  box := &Box{ch: make(chan int, 1)}",
+			"  println(box.OK())",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "asyncfield", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "return (await Box.prototype.next.call(b)).ok") {
+		t.Fatalf("async field receiver was not parenthesized:\n%s", text)
+	}
+	if strings.Contains(text, "return await Box.prototype.next.call(b).ok") {
+		t.Fatalf("async field receiver selected the promise before await:\n%s", text)
+	}
+}
+
 func TestCompilePackagesScopesIfInitDeclarations(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/ifinit\n\ngo 1.25.3\n",

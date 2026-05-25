@@ -6287,6 +6287,7 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 		}
 	}
 	left, diagnostics := o.lowerExpr(ctx, expr.X)
+	left = parenthesizeAwaitedExpr(left)
 	return left + "." + expr.Sel.Name, diagnostics
 }
 
@@ -6339,6 +6340,7 @@ func (o *LoweringOwner) lowerFieldSelectionExpr(
 	address bool,
 ) (string, []Diagnostic) {
 	receiver, diagnostics := o.lowerFieldReceiverExpr(ctx, expr.X)
+	receiver = parenthesizeAwaitedExpr(receiver)
 	index := selection.Index()
 	if len(index) == 0 {
 		if address {
@@ -6449,6 +6451,7 @@ func (o *LoweringOwner) lowerFieldReceiverExpr(ctx lowerFileContext, expr ast.Ex
 		return o.lowerPointerValueExpr(ctx, expr)
 	}
 	value, diagnostics := o.lowerExpr(ctx, expr)
+	value = parenthesizeAwaitedExpr(value)
 	if obj := objectForValueExpr(ctx, expr); obj != nil &&
 		ctx.model.needsVarRef[obj] &&
 		isStructValueType(obj.Type()) &&
@@ -6491,6 +6494,7 @@ func (o *LoweringOwner) lowerMethodReceiverExpr(
 		receiver, diagnostics = o.lowerPointerValueExpr(ctx, expr)
 	} else {
 		receiver, diagnostics = o.lowerExpr(ctx, expr)
+		receiver = parenthesizeAwaitedExpr(receiver)
 	}
 	receiverType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
 	if index := selection.Index(); len(index) > 1 && !o.receiverUsesOverridePackage(receiverType) {
@@ -8434,6 +8438,13 @@ func (o *LoweringOwner) awaitCallIfNeeded(ctx lowerFileContext, fun ast.Expr, ca
 		return "await " + call
 	}
 	return call
+}
+
+func parenthesizeAwaitedExpr(expr string) string {
+	if strings.HasPrefix(expr, "await ") {
+		return "(" + expr + ")"
+	}
+	return expr
 }
 
 func (o *LoweringOwner) genericTypeArgsExpr(ctx lowerFileContext, callee ast.Expr, typeArgExprs []ast.Expr) string {

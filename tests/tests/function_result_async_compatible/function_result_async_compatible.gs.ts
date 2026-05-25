@@ -71,7 +71,7 @@ export async function wrapNew(__typeArgs: $.GenericTypeArgs | undefined, newValu
 
 export async function main(): globalThis.Promise<void> {
 	let fn = await wrapNew(undefined, asyncBox)
-	$.println($.pointerValue<Exclude<Value, null>>(await fn!()).Value())
+	$.println($.pointerValue<Exclude<Value, null>>((await fn!())).Value())
 }
 
 if ($.isMainScript(import.meta)) {
