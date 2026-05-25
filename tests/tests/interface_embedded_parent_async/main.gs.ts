@@ -7,8 +7,8 @@ import * as dep from "@goscript/github.com/aperturerobotics/goscript/tests/tests
 import "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_parent_async/dep/index.js"
 
 export type Specific = null | {
-	Name(): globalThis.Promise<string>
-	Validate(): globalThis.Promise<$.GoError>
+	Name(): string | globalThis.Promise<string>
+	Validate(): $.GoError | globalThis.Promise<$.GoError>
 }
 
 $.registerInterfaceType(

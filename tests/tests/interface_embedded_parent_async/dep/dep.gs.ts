@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export type Directive = null | {
-	Validate(): globalThis.Promise<$.GoError>
+	Validate(): $.GoError | globalThis.Promise<$.GoError>
 }
 
 $.registerInterfaceType(

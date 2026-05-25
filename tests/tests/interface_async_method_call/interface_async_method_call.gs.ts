@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 export type AsyncProcessor = null | {
 	GetResult(): number
-	Process(data: number): globalThis.Promise<number>
+	Process(data: number): number | globalThis.Promise<number>
 }
 
 $.registerInterfaceType(
@@ -15,7 +15,7 @@ $.registerInterfaceType(
 )
 
 export type GenericStore = null | {
-	Load(): globalThis.Promise<any>
+	Load(): any | globalThis.Promise<any>
 }
 
 $.registerInterfaceType(

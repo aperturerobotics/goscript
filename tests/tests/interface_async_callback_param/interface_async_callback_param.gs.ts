@@ -39,7 +39,7 @@ export class listScanner {
 }
 
 export type scanner = null | {
-	Scan(_p0: ((_p0: number) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError>
+	Scan(_p0: ((_p0: number) => $.GoError | globalThis.Promise<$.GoError>) | null): $.GoError | globalThis.Promise<$.GoError>
 }
 
 $.registerInterfaceType(

@@ -1977,7 +1977,7 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"Process(v: number): globalThis.Promise<number>",
+		"Process(v: number): number | globalThis.Promise<number>",
 		"public async Process(v: number): globalThis.Promise<number>",
 		"let ch = $.makeChannel<number>(1, 0, \"both\")",
 		"await $.chanSend($.pointerValue<Worker>(w).ch, v)",

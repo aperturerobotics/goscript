@@ -1544,7 +1544,7 @@ func (o *LoweringOwner) tsMethodSignature(ctx lowerFileContext, method *types.Fu
 	}
 	async := o.functionAsync(ctx, method)
 	return method.Name() + "(" + o.tsSignatureParamsFor(ctx, signature, async) + "): " +
-		asyncResultType(o.tsSignatureResultFor(ctx, signature), async)
+		asyncCompatibleMethodResultType(o.tsSignatureResultFor(ctx, signature), async)
 }
 
 func (o *LoweringOwner) runtimeMethodSignatures(iface *types.Interface) string {
@@ -7725,6 +7725,13 @@ func asyncCompatibleResultType(result string) string {
 		return result
 	}
 	return result + " | " + tsPromiseType(result)
+}
+
+func asyncCompatibleMethodResultType(result string, async bool) string {
+	if !async {
+		return result
+	}
+	return asyncCompatibleResultType(result)
 }
 
 func tsPromiseType(result string) string {
