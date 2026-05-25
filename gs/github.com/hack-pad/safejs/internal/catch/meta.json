@@ -1,0 +1,9 @@
+{
+  "asyncFunctions": {
+    "Try": true,
+    "TrySideEffect": true
+  },
+  "dependencies": [
+    "syscall/js"
+  ]
+}

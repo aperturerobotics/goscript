@@ -21,12 +21,41 @@ export function println(...args: any[]): void {
   writeHostStdoutText(message)
 }
 
+export class GoPanic extends Error {
+  constructor(public readonly value: unknown) {
+    super(`panic: ${formatPanicValue(value)}`)
+  }
+}
+
 /**
  * Implementation of Go's built-in panic function
  * @param args Arguments passed to panic
  */
-export function panic(...args: any[]): never {
-  throw new Error(`panic: ${args.map((arg) => String(arg)).join(' ')}`)
+export function panic(...args: unknown[]): never {
+  const value = args.length === 1 ? args[0] : args
+  throw new GoPanic(value)
+}
+
+export function panicValue(value: unknown): unknown {
+  if (value instanceof GoPanic) {
+    return value.value
+  }
+  return value
+}
+
+function formatPanicValue(value: unknown): string {
+  if (value instanceof Error) {
+    return value.message
+  }
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    'Error' in value &&
+    typeof (value as { Error?: unknown }).Error === 'function'
+  ) {
+    return String((value as { Error(): string }).Error())
+  }
+  return String(value)
 }
 
 /**
