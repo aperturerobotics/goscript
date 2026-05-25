@@ -685,8 +685,8 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				if called := calledFunction(pkg, typed.Fun); called != nil {
 					semFn.calls[called.Origin()] = true
 				}
-				if fun, ok := ast.Unparen(typed.Fun).(*ast.FuncLit); ok && funcLitUsesFunctionIdentifierCall(pkg, fun) {
-					markFunctionAsync(semFn, "async-function-literal-call")
+				if fun, ok := ast.Unparen(typed.Fun).(*ast.FuncLit); ok {
+					recordImmediateFuncLitAsyncFacts(model, pkg, overrideFacts, semFn, fun)
 				}
 				if callUsesFunctionValue(pkg, typed.Fun) {
 					markFunctionAsync(semFn, "function-value-call")
@@ -705,6 +705,56 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 		})
 	}
 	return diagnostics
+}
+
+func recordImmediateFuncLitAsyncFacts(
+	model *SemanticModel,
+	pkg *packages.Package,
+	overrideFacts *OverrideFacts,
+	semFn *semanticFunction,
+	lit *ast.FuncLit,
+) {
+	if lit == nil || lit.Body == nil {
+		return
+	}
+	ast.Inspect(lit.Body, func(node ast.Node) bool {
+		switch typed := node.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.SendStmt:
+			markFunctionAsync(semFn, "async-function-literal-call")
+		case *ast.SelectStmt:
+			markFunctionAsync(semFn, "async-function-literal-call")
+		case *ast.UnaryExpr:
+			if typed.Op == token.ARROW {
+				markFunctionAsync(semFn, "async-function-literal-call")
+			}
+		case *ast.CallExpr:
+			called := calledFunction(pkg, typed.Fun)
+			if called != nil {
+				semFn.calls[called.Origin()] = true
+			}
+			if callUsesFunctionValue(pkg, typed.Fun) {
+				markFunctionAsync(semFn, "async-function-literal-call")
+			}
+			if callUsesFunctionIdentifier(pkg, typed.Fun) {
+				markFunctionAsync(semFn, "async-function-literal-call")
+			}
+			if called != nil {
+				calledFn := semanticFunctionFor(model, called)
+				if calledFn != nil && calledFn.async {
+					markFunctionAsync(semFn, "async-function-literal-call")
+				}
+			}
+			if overrideFacts.IsMethodAsync(overrideCallPackage(pkg, typed.Fun), overrideCallMethod(pkg, typed.Fun)) {
+				markFunctionAsync(semFn, "async-function-literal-call")
+			}
+			if overrideFacts.IsFunctionAsync(overrideFunctionCallPackage(pkg, typed.Fun), overrideFunctionCallName(pkg, typed.Fun)) {
+				markFunctionAsync(semFn, "async-function-literal-call")
+			}
+		}
+		return true
+	})
 }
 
 func (o *SemanticModelOwner) propagateAsyncFunctionArguments(

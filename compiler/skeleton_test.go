@@ -2084,6 +2084,64 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesPropagatesImmediateFuncLitAsync(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/immediate-func-lit-async\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"sync\"",
+			"type resolver struct {",
+			"  parent *resolver",
+			"  mutex sync.Mutex",
+			"}",
+			"func (r *resolver) lookup() (int, error) {",
+			"  value := func() int {",
+			"    r.mutex.Lock()",
+			"    defer r.mutex.Unlock()",
+			"    return 7",
+			"  }()",
+			"  if r.parent != nil {",
+			"    return r.parent.lookup()",
+			"  }",
+			"  return value, nil",
+			"}",
+			"func use(r *resolver) (int, error) {",
+			"  return r.lookup()",
+			"}",
+			"func main() {}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "immediate-func-lit-async", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"public async lookup(): globalThis.Promise<[number, $.GoError]>",
+		"return await resolver.prototype.lookup.call($.pointerValue<resolver>(r).parent)",
+		"export async function use(r: resolver | $.VarRef<resolver> | null): globalThis.Promise<[number, $.GoError]>",
+		"return await resolver.prototype.lookup.call(r)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	if strings.Contains(text, "const __goscriptReturn0 = resolver.prototype.lookup.call") {
+		t.Fatalf("immediate func-literal async method call was not awaited:\n%s", text)
+	}
+}
+
 func TestCompilePackagesParenthesizesAsyncFieldReceivers(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/asyncfield\n\ngo 1.25.3\n",

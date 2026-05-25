@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export type Spawner = null | {
-	Spawn(): $.GoError
+	Spawn(): $.GoError | globalThis.Promise<$.GoError>
 }
 
 $.registerInterfaceType(
@@ -39,7 +39,7 @@ export class Worker {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Spawn(): $.GoError {
+	public async Spawn(): globalThis.Promise<$.GoError> {
 		const w: Worker | $.VarRef<Worker> | null = this
 		queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 			await $.chanRecv($.pointerValue<Worker>(w).ch)
@@ -70,7 +70,7 @@ export async function main(): globalThis.Promise<void> {
 	await run(((__receiver) => () => __receiver.Spawn())($.pointerValue<Worker>(w)))
 
 	let s: Spawner | null = $.interfaceValue<Spawner | null>(w, "*main.Worker")
-	let err = $.pointerValue<Exclude<Spawner, null>>(s).Spawn()
+	let err = await $.pointerValue<Exclude<Spawner, null>>(s).Spawn()
 	if (err == null) {
 		$.println("iface err: nil")
 	} else {
