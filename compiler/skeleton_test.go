@@ -400,6 +400,54 @@ func TestCompilePackagesAssignsLazyPackageVarsDirectly(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAssignsImportedPackageVarsThroughSetters(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/pkgvarassign\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"var Count int",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/pkgvarassign/dep\"",
+			"func bump() {",
+			"  dep.Count = 1",
+			"  dep.Count += 16",
+			"  dep.Count++",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "pkgvarassign", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"dep.__goscript_set_Count(1)",
+		"dep.__goscript_set_Count(dep.Count + 16)",
+		"dep.__goscript_set_Count(dep.Count + 1)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing imported package var setter assignment %q:\n%s", want, text)
+		}
+	}
+	if strings.Contains(text, "dep.Count +=") || strings.Contains(text, "dep.Count++") {
+		t.Fatalf("imported package var assigned directly:\n%s", text)
+	}
+}
+
 func TestCompilePackagesReadsShadowedVarRefStructFieldsOnce(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/shadowvarreffield\n\ngo 1.25.3\n",

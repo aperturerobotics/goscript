@@ -2257,6 +2257,14 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 			expr, diagnostics := o.lowerPointerStorageExpr(ctx, star.X)
 			return []loweredStmt{{text: expr + typed.Tok.String()}}, diagnostics
 		}
+		if setter, ok := o.packageVarSetterForAssignment(ctx, typed.X); ok {
+			expr, diagnostics := o.lowerExpr(ctx, typed.X)
+			op := "+"
+			if typed.Tok == token.DEC {
+				op = "-"
+			}
+			return []loweredStmt{{text: setter + "(" + expr + " " + op + " 1)"}}, diagnostics
+		}
 		expr, diagnostics := o.lowerExpr(ctx, typed.X)
 		return []loweredStmt{{text: expr + typed.Tok.String()}}, diagnostics
 	case *ast.BranchStmt:
@@ -2998,8 +3006,12 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		diagnostics = append(diagnostics, rightDiagnostics...)
 		targetType := ctx.semPkg.source.TypesInfo.TypeOf(lhs)
 		right = o.lowerValueForTarget(ctx, stmt.Rhs[idx], targetType, right)
-		if setter, ok := o.packageVarSetterForAssignment(ctx, lhs); ok && stmt.Tok == token.ASSIGN {
-			stmts = append(stmts, loweredStmt{text: setter + "(" + right + ")"})
+		if setter, ok := o.packageVarSetterForAssignment(ctx, lhs); ok {
+			value, ok := o.packageVarAssignmentValue(ctx, lhs, targetType, right, stmt.Tok)
+			if !ok {
+				value = right
+			}
+			stmts = append(stmts, loweredStmt{text: setter + "(" + value + ")"})
 			continue
 		}
 		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, isShortDecl)
@@ -3068,13 +3080,21 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 }
 
 func integerQuotientAssignExpr(targetType types.Type, left string, right string, tok token.Token) (string, bool) {
+	value, ok := integerQuotientAssignValueExpr(targetType, left, right, tok)
+	if !ok {
+		return "", false
+	}
+	return left + " = " + value, true
+}
+
+func integerQuotientAssignValueExpr(targetType types.Type, left string, right string, tok token.Token) (string, bool) {
 	if tok != token.QUO_ASSIGN || !isIntegerType(targetType) {
 		return "", false
 	}
 	if bits, ok := unsignedIntegerBits(targetType); ok && bits <= 32 {
-		return left + " = (" + left + " / " + right + ") >>> 0", true
+		return "(" + left + " / " + right + ") >>> 0", true
 	}
-	return left + " = Math.trunc(" + left + " / " + right + ")", true
+	return "Math.trunc(" + left + " / " + right + ")", true
 }
 
 func wideIntegerAssignHelper(targetType types.Type, tok token.Token) (RuntimeHelper, bool) {
@@ -6350,6 +6370,36 @@ func (o *LoweringOwner) packageVarSetterForAssignment(ctx lowerFileContext, expr
 		return "", false
 	}
 	return alias + "." + packageVarSetterName(selector.Sel.Name), true
+}
+
+func (o *LoweringOwner) packageVarAssignmentValue(
+	ctx lowerFileContext,
+	lhs ast.Expr,
+	targetType types.Type,
+	right string,
+	tok token.Token,
+) (string, bool) {
+	if tok == token.ASSIGN {
+		return right, true
+	}
+	left, diagnostics := o.lowerExpr(ctx, lhs)
+	if len(diagnostics) != 0 {
+		return "", false
+	}
+	if tok == token.AND_NOT_ASSIGN {
+		return left + " & ~(" + right + ")", true
+	}
+	if helper, ok := wideIntegerAssignHelper(targetType, tok); ok {
+		return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
+	}
+	if value, ok := integerQuotientAssignValueExpr(targetType, left, right, tok); ok {
+		return value, true
+	}
+	op := tok.String()
+	if before, ok := strings.CutSuffix(op, "="); ok {
+		op = before
+	}
+	return left + " " + op + " " + right, true
 }
 
 func (o *LoweringOwner) tsPackageVarSetterValueTypeFor(ctx lowerFileContext, typ types.Type) string {
