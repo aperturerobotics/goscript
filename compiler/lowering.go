@@ -7125,6 +7125,9 @@ func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Exp
 	if value, diagnostics, ok := o.lowerUnsafeStringPointerValue(ctx, expr); ok {
 		return value, diagnostics
 	}
+	if value, diagnostics, ok := o.lowerUnsafeStringByteSlicePointerValue(ctx, expr); ok {
+		return value, diagnostics
+	}
 	base, diagnostics := o.lowerExpr(ctx, expr)
 	typeArg := ""
 	if pointer, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(expr)).Underlying().(*types.Pointer); ok {
@@ -7157,6 +7160,36 @@ func (o *LoweringOwner) lowerUnsafeStringPointerValue(ctx lowerFileContext, expr
 	}
 	value, diagnostics := o.lowerExpr(ctx, address.X)
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperBytesToString) + "(" + value + ")", diagnostics, true
+}
+
+func (o *LoweringOwner) lowerUnsafeStringByteSlicePointerValue(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic, bool) {
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return "", nil, false
+	}
+	targetType := typeFromExpr(ctx, call.Fun)
+	if targetType == nil {
+		return "", nil, false
+	}
+	targetPointer, _ := types.Unalias(targetType).Underlying().(*types.Pointer)
+	if targetPointer == nil || !isByteSliceType(targetPointer.Elem()) {
+		return "", nil, false
+	}
+	unsafeCall, ok := unwrapParenExpr(call.Args[0]).(*ast.CallExpr)
+	unsafeTargetType := typeFromExpr(ctx, unsafeCall.Fun)
+	if !ok || len(unsafeCall.Args) != 1 || unsafeTargetType == nil || !isUnsafePointerType(unsafeTargetType) {
+		return "", nil, false
+	}
+	address, ok := unwrapParenExpr(unsafeCall.Args[0]).(*ast.UnaryExpr)
+	if !ok || address.Op != token.AND {
+		return "", nil, false
+	}
+	source, ok := localStringSliceHeaderSource(ctx, address.X)
+	if !ok {
+		return "", nil, false
+	}
+	value, diagnostics := o.lowerExpr(ctx, source)
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperStringToBytes) + "(" + value + ")", diagnostics, true
 }
 
 func (o *LoweringOwner) lowerReflectHeaderPointerConversion(
@@ -7239,6 +7272,85 @@ func (o *LoweringOwner) lowerAddressedValueRef(ctx lowerFileContext, expr ast.Ex
 	}
 	value, diagnostics := o.lowerExpr(ctx, expr)
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + value + ")", diagnostics
+}
+
+func localStringSliceHeaderSource(ctx lowerFileContext, expr ast.Expr) (ast.Expr, bool) {
+	lit, ok := unwrapParenExpr(expr).(*ast.CompositeLit)
+	if !ok {
+		return nil, false
+	}
+	structType, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(lit)).Underlying().(*types.Struct)
+	if !ok || structType.NumFields() != 2 {
+		return nil, false
+	}
+	if !isStringType(structType.Field(0).Type()) || !isIntegerType(structType.Field(1).Type()) {
+		return nil, false
+	}
+	var source ast.Expr
+	var capacity ast.Expr
+	for idx, elt := range lit.Elts {
+		fieldIndex := idx
+		valueExpr := elt
+		if keyed, ok := elt.(*ast.KeyValueExpr); ok {
+			valueExpr = keyed.Value
+			ident, ok := keyed.Key.(*ast.Ident)
+			if !ok {
+				return nil, false
+			}
+			fieldIndex = -1
+			for index := range structType.NumFields() {
+				if structType.Field(index).Name() == ident.Name {
+					fieldIndex = index
+					break
+				}
+			}
+			if fieldIndex < 0 {
+				return nil, false
+			}
+		}
+		switch fieldIndex {
+		case 0:
+			source = valueExpr
+		case 1:
+			capacity = valueExpr
+		}
+	}
+	if source == nil || capacity == nil {
+		return nil, false
+	}
+	if !isStringType(ctx.semPkg.source.TypesInfo.TypeOf(source)) ||
+		!isIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(capacity)) {
+		return nil, false
+	}
+	if !isLenCallOfExpr(ctx, capacity, source) {
+		return nil, false
+	}
+	return source, true
+}
+
+func isLenCallOfExpr(ctx lowerFileContext, expr ast.Expr, target ast.Expr) bool {
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return false
+	}
+	ident, ok := unwrapParenExpr(call.Fun).(*ast.Ident)
+	if !ok || ident.Name != "len" {
+		return false
+	}
+	if objectForIdent(ctx, ident) != types.Universe.Lookup("len") {
+		return false
+	}
+	return sameLoweredSourceExpr(ctx, call.Args[0], target)
+}
+
+func sameLoweredSourceExpr(ctx lowerFileContext, left ast.Expr, right ast.Expr) bool {
+	left = unwrapParenExpr(left)
+	right = unwrapParenExpr(right)
+	if leftIdent, ok := left.(*ast.Ident); ok {
+		rightIdent, ok := right.(*ast.Ident)
+		return ok && objectForIdent(ctx, leftIdent) == objectForIdent(ctx, rightIdent)
+	}
+	return false
 }
 
 func (o *LoweringOwner) lowerPointerStorageExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
