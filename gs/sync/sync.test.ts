@@ -45,6 +45,17 @@ describe('sync.RWMutex', () => {
 })
 
 describe('sync.Map', () => {
+  it('Clear deletes all entries', async () => {
+    const m = new Map()
+
+    await m.Store('first', 1)
+    await m.Store('second', 2)
+    await m.Clear()
+
+    expect(await m.Load('first')).toEqual([undefined, false])
+    expect(await m.Load('second')).toEqual([undefined, false])
+  })
+
   it('CompareAndSwap swaps only matching entries', async () => {
     const m = new Map()
 

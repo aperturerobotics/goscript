@@ -51,8 +51,19 @@ export class AsyncDisposableStack implements AsyncDisposable {
    */
   async [Symbol.asyncDispose](): Promise<void> {
     // Execute in LIFO order, awaiting each potentially async function
-    for (let i = this.stack.length - 1; i >= 0; --i) {
-      await this.stack[i]()
+    while (this.stack.length) {
+      const fn = this.stack.pop()!
+      await fn()
+    }
+  }
+
+  [Symbol.dispose](): void {
+    while (this.stack.length) {
+      const fn = this.stack.pop()!
+      const result = fn()
+      if (result && typeof (result as Promise<void>).then === "function") {
+        throw new Error("async deferred function disposed synchronously")
+      }
     }
   }
 }

@@ -241,7 +241,7 @@ export class Once {
   }
 
   // Do calls the function f if and only if Do is being called for the first time for this instance of Once
-  public async Do(f: () => void): Promise<void> {
+  public async Do(f: () => void | Promise<void>): Promise<void> {
     if (this._done) {
       return
     }
@@ -249,7 +249,7 @@ export class Once {
     await this._m.Lock()
     try {
       if (!this._done) {
-        f()
+        await f()
         this._done = true
       }
     } finally {
@@ -318,6 +318,16 @@ export class Map {
 
   constructor(_init?: Partial<{}>) {
     // Map has no public fields to initialize
+  }
+
+  // Clear deletes all entries.
+  public async Clear(): Promise<void> {
+    await this._m.Lock()
+    try {
+      this._data.clear()
+    } finally {
+      this._m.Unlock()
+    }
   }
 
   // Delete deletes the value for a key
