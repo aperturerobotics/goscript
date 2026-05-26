@@ -8,6 +8,9 @@ import * as utf8 from "@goscript/unicode/utf8/index.js"
 // for linkname
 import * as _ from "@goscript/unsafe/index.js"
 
+type SyncCallbackResult<T> = T | globalThis.Promise<T>
+type PredicateCallback = ((r: number) => SyncCallbackResult<boolean>) | null
+
 // Equal reports whether a and b
 // are the same length and contain the same bytes.
 // A nil argument is equivalent to an empty slice.
@@ -90,7 +93,7 @@ export function ContainsRune(b: $.Bytes, r: number): boolean {
 }
 
 // ContainsFunc reports whether any of the UTF-8-encoded code points r within b satisfy f(r).
-export function ContainsFunc(b: $.Bytes, f: ((p0: number) => boolean) | null): boolean {
+export function ContainsFunc(b: $.Bytes, f: PredicateCallback): boolean {
 	return IndexFunc(b, f) >= 0
 }
 
@@ -794,21 +797,21 @@ export function TrimSuffix(s: $.Bytes, suffix: $.Bytes): $.Bytes {
 // IndexFunc interprets s as a sequence of UTF-8-encoded code points.
 // It returns the byte index in s of the first Unicode
 // code point satisfying f(c), or -1 if none do.
-export function IndexFunc(s: $.Bytes, f: ((r: number) => boolean) | null): number {
+export function IndexFunc(s: $.Bytes, f: PredicateCallback): number {
 	return indexFunc(s, f, true)
 }
 
 // LastIndexFunc interprets s as a sequence of UTF-8-encoded code points.
 // It returns the byte index in s of the last Unicode
 // code point satisfying f(c), or -1 if none do.
-export function LastIndexFunc(s: $.Bytes, f: ((r: number) => boolean) | null): number {
+export function LastIndexFunc(s: $.Bytes, f: PredicateCallback): number {
 	return lastIndexFunc(s, f, true)
 }
 
 // indexFunc is the same as IndexFunc except that if
 // truth==false, the sense of the predicate function is
 // inverted.
-export function indexFunc(s: $.Bytes, f: ((r: number) => boolean) | null, truth: boolean): number {
+export function indexFunc(s: $.Bytes, f: PredicateCallback, truth: boolean): number {
 	if (s === null || f === null) {
 		return -1
 	}
@@ -817,12 +820,12 @@ export function indexFunc(s: $.Bytes, f: ((r: number) => boolean) | null, truth:
 		const [r, size] = utf8.DecodeRune($.goSlice(s, i, undefined))
 		if (size <= 0) {
 			// Invalid UTF-8
-			if (f(utf8.RuneError) === truth) {
+			if (syncBoolean(f(utf8.RuneError)) === truth) {
 				return i
 			}
 			i++
 		} else {
-			if (f(r) === truth) {
+			if (syncBoolean(f(r)) === truth) {
 				return i
 			}
 			i += size
@@ -835,7 +838,7 @@ export function indexFunc(s: $.Bytes, f: ((r: number) => boolean) | null, truth:
 // lastIndexFunc is the same as LastIndexFunc except that if
 // truth==false, the sense of the predicate function is
 // inverted.
-export function lastIndexFunc(s: $.Bytes, f: ((r: number) => boolean) | null, truth: boolean): number {
+export function lastIndexFunc(s: $.Bytes, f: PredicateCallback, truth: boolean): number {
 	if (s === null || f === null) {
 		return -1
 	}
@@ -846,12 +849,12 @@ export function lastIndexFunc(s: $.Bytes, f: ((r: number) => boolean) | null, tr
 		const [r, size] = utf8.DecodeRune($.goSlice(s, i, undefined))
 		if (size <= 0) {
 			// Invalid UTF-8
-			if (f(utf8.RuneError) === truth) {
+			if (syncBoolean(f(utf8.RuneError)) === truth) {
 				lastIndex = i
 			}
 			i++
 		} else {
-			if (f(r) === truth) {
+			if (syncBoolean(f(r)) === truth) {
 				lastIndex = i
 			}
 			i += size
@@ -859,6 +862,13 @@ export function lastIndexFunc(s: $.Bytes, f: ((r: number) => boolean) | null, tr
 	}
 	
 	return lastIndex
+}
+
+function syncBoolean(value: SyncCallbackResult<boolean>): boolean {
+	if (value instanceof Promise) {
+		throw new Error("bytes: asynchronous callback result is not supported")
+	}
+	return value
 }
 
 class asciiSet {
@@ -1285,4 +1295,3 @@ export function CutSuffix(s: $.Bytes, suffix: $.Bytes): [$.Bytes, boolean] {
 	}
 	return [$.goSlice(s, undefined, $.len(s) - $.len(suffix)), true]
 }
-

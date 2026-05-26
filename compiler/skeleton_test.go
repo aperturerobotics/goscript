@@ -1138,6 +1138,101 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEscapesReservedTypeNames(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/reservedtypes\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type static struct {",
+			"  Value int",
+			"}",
+			"func newStatic() *static {",
+			"  return &static{Value: 7}",
+			"}",
+			"func (s *static) Read() int {",
+			"  return s.Value",
+			"}",
+			"func main() {",
+			"  println(newStatic().Read())",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "reservedtypes", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export class _static",
+		"new _static({Value: 7})",
+		"public Read(): number",
+		"_static.prototype.Read.call(newStatic())",
+		"\"main.static\"",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	if strings.Contains(text, "class static") {
+		t.Fatalf("reserved type name was not escaped:\n%s", text)
+	}
+}
+
+func TestCompilePackagesAvoidsPointerMethodTypeNameShadow(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/methodshadow\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type item struct {",
+			"  Value int",
+			"}",
+			"func (i *item) read() int {",
+			"  return i.Value",
+			"}",
+			"func total(items []*item) int {",
+			"  sum := 0",
+			"  for _, item := range items {",
+			"    sum += item.read()",
+			"  }",
+			"  return sum",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "methodshadow", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.pointerValue<item>(item).read()") {
+		t.Fatalf("missing direct pointer method call for shadowed type name:\n%s", text)
+	}
+	if strings.Contains(text, "item.prototype.read.call(item") {
+		t.Fatalf("shadowed local variable used as method class:\n%s", text)
+	}
+}
+
 func TestCompilePackagesClonesNestedStructFieldsWithCloneMethodCollision(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/nestedclone\n\ngo 1.25.3\n",

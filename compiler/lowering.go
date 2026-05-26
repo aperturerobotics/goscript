@@ -1493,12 +1493,13 @@ func (o *LoweringOwner) lowerTypeSpec(ctx lowerFileContext, spec *ast.TypeSpec) 
 	if signature, ok := named.Underlying().(*types.Signature); ok {
 		loweredType = o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
 	}
-	code := "type " + semType.name + " = " + loweredType
+	typeName := safeIdentifier(semType.name)
+	code := "type " + typeName + " = " + loweredType
 	typeIndexExport := ""
 	if ctx.topLevel {
 		code = "export " + code
 		if ast.IsExported(semType.name) {
-			typeIndexExport = semType.name
+			typeIndexExport = typeName
 		}
 	}
 	return loweredDecl{code: code, typeIndexExport: typeIndexExport}, nil
@@ -1506,12 +1507,13 @@ func (o *LoweringOwner) lowerTypeSpec(ctx lowerFileContext, spec *ast.TypeSpec) 
 
 func (o *LoweringOwner) lowerInterfaceType(ctx lowerFileContext, semType *semanticType, iface *types.Interface) loweredDecl {
 	iface.Complete()
-	code := "type " + semType.name + " = " + o.tsInterfaceType(ctx, iface)
+	typeName := safeIdentifier(semType.name)
+	code := "type " + typeName + " = " + o.tsInterfaceType(ctx, iface)
 	typeIndexExport := ""
 	if ctx.topLevel {
 		code = "export " + code
 		if ast.IsExported(semType.name) {
-			typeIndexExport = semType.name
+			typeIndexExport = typeName
 		}
 	}
 	code = code + "\n\n" + o.runtimeOwner.QualifiedHelper(RuntimeHelperRegisterInterfaceType) +
@@ -1599,7 +1601,7 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 	lowered := &loweredStruct{
 		exported:      ctx.topLevel,
 		indexExported: ctx.topLevel && ast.IsExported(semType.name),
-		name:          semType.name,
+		name:          safeIdentifier(semType.name),
 		typeName:      runtimeNamedTypeName(semType.named),
 		cloneMethod:   "clone",
 	}
@@ -6709,6 +6711,12 @@ func (o *LoweringOwner) lowerPointerReceiverMethodCall(
 		receiverExpr = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
 			"<" + o.tsTypeFor(ctx, signature.Recv().Type().(*types.Pointer).Elem()) + ">(" + receiverExpr + ")"
 	}
+	if receiverExpr == o.namedTypeExpr(ctx, receiver) {
+		call := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+			"<" + o.namedTypeExpr(ctx, receiver) + ">(" + receiverExpr + ")." +
+			methodMemberName(selector.Sel.Name) + "(" + strings.Join(args, ", ") + ")"
+		return call, diagnostics, true
+	}
 	callArgs := append([]string{receiverExpr}, args...)
 	call := o.namedTypeExpr(ctx, receiver) + ".prototype." + selector.Sel.Name + ".call(" + strings.Join(callArgs, ", ") + ")"
 	return call, diagnostics, true
@@ -8277,7 +8285,7 @@ func (o *LoweringOwner) lowerStructClone(value string) string {
 
 func (o *LoweringOwner) lowerZeroValueExpr(typ types.Type) string {
 	if named := namedStructType(typ); named != nil && isStructValueType(typ) {
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) + "(new " + named.Obj().Name() + "())"
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) + "(new " + safeIdentifier(named.Obj().Name()) + "())"
 	}
 	return zeroValueExpr(typ)
 }
@@ -8864,7 +8872,7 @@ func zeroValueExpr(typ types.Type) string {
 		return "undefined"
 	}
 	if named := namedStructType(typ); named != nil && isStructValueType(typ) {
-		return "new " + named.Obj().Name() + "()"
+		return "new " + safeIdentifier(named.Obj().Name()) + "()"
 	}
 	switch typed := types.Unalias(typ).Underlying().(type) {
 	case *types.Basic:
@@ -9603,9 +9611,9 @@ func namedNonStructMethodSetType(typ types.Type) (*types.Named, types.Type) {
 
 func methodFunctionName(receiver *types.Named, method string) string {
 	if receiver == nil || receiver.Obj() == nil {
-		return method
+		return safeIdentifier(method)
 	}
-	return receiver.Obj().Name() + "_" + method
+	return safeIdentifier(receiver.Obj().Name()) + "_" + safeIdentifier(method)
 }
 
 func methodReceiverNamedType(obj types.Object) *types.Named {
@@ -9642,7 +9650,7 @@ func (o *LoweringOwner) namedTypeExpr(ctx lowerFileContext, named *types.Named) 
 	if named == nil || named.Obj() == nil {
 		return "unknown"
 	}
-	baseName := named.Obj().Name()
+	baseName := safeIdentifier(named.Obj().Name())
 	if alias := ctx.localAliases[named.Obj()]; alias != "" {
 		baseName = alias + "." + baseName
 	} else if named.Obj().Pkg() != nil {
