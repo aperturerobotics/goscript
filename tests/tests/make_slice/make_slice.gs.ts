@@ -57,7 +57,7 @@ export async function main(): globalThis.Promise<void> {
 	let b3: $.Slice<number> = $.makeSlice<number>(1, 10, "byte")
 	b3![0] = $.uint(65, 8)
 	$.println("Before append - len:", $.len(b3), "cap:", $.cap(b3))
-	b3 = $.append(b3, 66)
+	b3 = $.append(b3, $.uint(66, 8))
 	$.println("After append - len:", $.len(b3), "cap:", $.cap(b3))
 	$.println("b3[0]:", $.uint(b3![0], 8))
 	$.println("b3[1]:", $.uint(b3![1], 8))

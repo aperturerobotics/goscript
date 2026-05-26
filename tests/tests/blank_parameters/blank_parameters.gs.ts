@@ -60,7 +60,7 @@ export class Packer {
 	}
 
 	public pack(msg: $.Slice<number>, _p1: Map<string, number> | null, _p2: number): $.Slice<number> {
-		return $.append(msg, 1)
+		return $.append(msg, $.uint(1, 8))
 	}
 
 	static __typeInfo = $.registerStructType(

@@ -948,7 +948,7 @@ export class Regexp {
 			template = after
 			if ((!$.stringEqual(template, "")) && ($.uint($.indexStringOrBytes(template, 0), 8) == $.uint(36, 8))) {
 				// Treat $$ as $.
-				dst = $.append(dst, 36)
+				dst = $.append(dst, $.uint(36, 8))
 				template = $.sliceStringOrBytes(template, 1, undefined)
 				continue
 			}
@@ -959,7 +959,7 @@ export class Regexp {
 			ok = __goscriptTuple9[3]
 			if (!ok) {
 				// Malformed; treat $ as raw text.
-				dst = $.append(dst, 36)
+				dst = $.append(dst, $.uint(36, 8))
 				continue
 			}
 			template = rest

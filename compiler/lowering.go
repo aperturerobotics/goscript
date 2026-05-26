@@ -1661,14 +1661,9 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 	}
 	methodSetType := field.typ
 	if named := namedStructType(field.typ); named != nil {
-		if named.Obj() == nil || named.Obj().Pkg() == nil || named.Obj().Pkg().Path() != ctx.semPkg.pkgPath {
-			return nil
-		}
 		methodSetType = types.NewPointer(field.typ)
-	} else if named := pointerToNamedStructType(field.typ); named != nil {
-		if named.Obj() == nil || named.Obj().Pkg() == nil || named.Obj().Pkg().Path() != ctx.semPkg.pkgPath {
-			return nil
-		}
+	} else if pointerToNamedStructType(field.typ) != nil {
+		methodSetType = field.typ
 	} else if _, ok := types.Unalias(field.typ).Underlying().(*types.Interface); !ok {
 		return nil
 	}
@@ -1746,10 +1741,10 @@ func (o *LoweringOwner) embeddedForwarderTargetExpr(
 func (o *LoweringOwner) embeddedForwarderSelectableExpr(ctx lowerFileContext, typ types.Type, expr string) string {
 	pointerValue := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue)
 	if named := pointerToNamedStructType(typ); named != nil {
-		return pointerValue + "<" + o.namedTypeExpr(ctx, named) + ">(" + expr + ")"
+		return pointerValue + "<any>(" + expr + ")"
 	}
 	if _, ok := types.Unalias(typ).Underlying().(*types.Interface); ok {
-		return pointerValue + "<Exclude<" + o.tsStructFieldTypeFor(ctx, typ) + ", null>>(" + expr + ")"
+		return pointerValue + "<any>(" + expr + ")"
 	}
 	return expr
 }
@@ -3209,21 +3204,21 @@ func wideIntegerAssignHelper(targetType types.Type, tok token.Token) (RuntimeHel
 	case token.SHR_ASSIGN:
 		return RuntimeHelperUint64Shr, true
 	case token.MUL_ASSIGN:
-		return RuntimeHelperUint64Mul, true
+		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Mul, RuntimeHelperInt64Mul), true
 	case token.QUO_ASSIGN:
 		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Div, RuntimeHelperInt64Div), true
 	case token.REM_ASSIGN:
 		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Mod, RuntimeHelperInt64Mod), true
 	case token.ADD_ASSIGN:
-		return RuntimeHelperUint64Add, true
+		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Add, RuntimeHelperInt64Add), true
 	case token.SUB_ASSIGN:
-		return RuntimeHelperUint64Sub, true
+		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Sub, RuntimeHelperInt64Sub), true
 	case token.AND_ASSIGN:
-		return RuntimeHelperUint64And, true
+		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64And, RuntimeHelperInt64And), true
 	case token.OR_ASSIGN:
-		return RuntimeHelperUint64Or, true
+		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Or, RuntimeHelperInt64Or), true
 	case token.XOR_ASSIGN:
-		return RuntimeHelperUint64Xor, true
+		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Xor, RuntimeHelperInt64Xor), true
 	default:
 		return "", false
 	}
@@ -3740,6 +3735,9 @@ func (o *LoweringOwner) lowerReturnStmt(ctx lowerFileContext, stmt *ast.ReturnSt
 	if ctx.rangeBranch != nil {
 		return o.lowerRangeFuncReturnStmt(ctx, stmt)
 	}
+	if o.returnNeedsNamedResultDefer(ctx) {
+		return o.lowerNamedResultDeferReturnStmt(ctx, stmt)
+	}
 	if len(stmt.Results) == 0 {
 		if result, ok := o.lowerNamedResultReturn(ctx); ok {
 			return "return " + result, nil
@@ -3770,6 +3768,125 @@ func (o *LoweringOwner) lowerReturnStmt(ctx lowerFileContext, stmt *ast.ReturnSt
 		parts = append(parts, expr)
 	}
 	return "return [" + strings.Join(parts, ", ") + "]", diagnostics
+}
+
+func (o *LoweringOwner) returnNeedsNamedResultDefer(ctx lowerFileContext) bool {
+	if ctx.deferState == nil || !ctx.deferState.used || ctx.signature == nil || ctx.signature.Results() == nil {
+		return false
+	}
+	for result := range ctx.signature.Results().Variables() {
+		if result.Name() != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *LoweringOwner) lowerNamedResultDeferReturnStmt(ctx lowerFileContext, stmt *ast.ReturnStmt) (string, []Diagnostic) {
+	var diagnostics []Diagnostic
+	var lines []string
+	explicitTemp := ""
+	if len(stmt.Results) != 0 {
+		var value string
+		var values []string
+		if len(stmt.Results) == 1 && ctx.signature.Results().Len() > 1 {
+			expr, exprDiagnostics := o.lowerExpr(ctx, stmt.Results[0])
+			diagnostics = append(diagnostics, exprDiagnostics...)
+			if prefix, tuple, ok := o.lowerTupleReturnValue(ctx, stmt.Results[0], expr); ok {
+				lines = append(lines, prefix)
+				value = tuple
+			} else {
+				value = expr
+			}
+		} else {
+			values = make([]string, 0, len(stmt.Results))
+			for idx, result := range stmt.Results {
+				expr, exprDiagnostics := o.lowerExpr(ctx, result)
+				diagnostics = append(diagnostics, exprDiagnostics...)
+				if idx < ctx.signature.Results().Len() {
+					expr = o.lowerValueForTarget(ctx, result, ctx.signature.Results().At(idx).Type(), expr)
+				}
+				values = append(values, expr)
+			}
+		}
+		temp := ctx.tempName("Return")
+		explicitTemp = temp
+		tempType := o.tsSignatureResultFor(ctx, ctx.signature)
+		if value != "" {
+			lines = append(lines, "const "+temp+": "+tempType+" = "+value)
+		} else if len(values) == 1 {
+			lines = append(lines, "const "+temp+": "+tempType+" = "+values[0])
+		} else {
+			lines = append(lines, "const "+temp+": "+tempType+" = ["+strings.Join(values, ", ")+"]")
+		}
+		for idx := range ctx.signature.Results().Len() {
+			result := ctx.signature.Results().At(idx)
+			name := result.Name()
+			if name == "" || name == "_" {
+				continue
+			}
+			target := safeIdentifier(name)
+			if ctx.model.needsVarRef[result] {
+				target += ".value"
+			}
+			source := temp
+			if ctx.signature.Results().Len() > 1 {
+				source += "[" + strconv.Itoa(idx) + "]"
+			}
+			lines = append(lines, target+" = "+source)
+		}
+	}
+	lines = append(lines, o.lowerDeferDisposeStmt(ctx))
+	if result, ok := o.lowerNamedResultReturnWithExplicitTemp(ctx, explicitTemp); ok {
+		lines = append(lines, "return "+result)
+	} else {
+		lines = append(lines, "return")
+	}
+	return strings.Join(lines, "\n"), diagnostics
+}
+
+func (o *LoweringOwner) lowerNamedResultReturnWithExplicitTemp(ctx lowerFileContext, explicitTemp string) (string, bool) {
+	if explicitTemp == "" {
+		return o.lowerNamedResultReturn(ctx)
+	}
+	parts := make([]string, 0, ctx.signature.Results().Len())
+	hasNamedResult := false
+	multi := ctx.signature.Results().Len() > 1
+	for idx := range ctx.signature.Results().Len() {
+		result := ctx.signature.Results().At(idx)
+		name := result.Name()
+		if name == "" || name == "_" {
+			source := explicitTemp
+			if multi {
+				source += "[" + strconv.Itoa(idx) + "]"
+			}
+			parts = append(parts, source)
+			if name != "" {
+				hasNamedResult = true
+			}
+			continue
+		}
+		hasNamedResult = true
+		returnExpr := safeIdentifier(name)
+		if ctx.model.needsVarRef[result] {
+			returnExpr += ".value"
+		}
+		parts = append(parts, returnExpr)
+	}
+	if !hasNamedResult {
+		return "", false
+	}
+	if len(parts) == 1 {
+		return parts[0], true
+	}
+	return "[" + strings.Join(parts, ", ") + "]", true
+}
+
+func (o *LoweringOwner) lowerDeferDisposeStmt(ctx lowerFileContext) string {
+	if ctx.deferState != nil && ctx.deferState.async {
+		return "await __defer[Symbol.asyncDispose]()"
+	}
+	return "__defer[Symbol.dispose]()"
 }
 
 func (o *LoweringOwner) lowerBodylessReturnStmt(ctx lowerFileContext, signature *types.Signature) (string, bool) {

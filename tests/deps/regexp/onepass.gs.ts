@@ -329,10 +329,10 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 		if ((ix > 0) && (($.pointerValue<$.Slice<number>>(newArray))![$.pointerValue<number>(newLow)] <= merged![ix])) {
 			return false
 		}
-		merged = $.append(merged, ($.pointerValue<$.Slice<number>>(newArray))![$.pointerValue<number>(newLow)], ($.pointerValue<$.Slice<number>>(newArray))![$.pointerValue<number>(newLow) + 1])
+		merged = $.append(merged, $.int(($.pointerValue<$.Slice<number>>(newArray))![$.pointerValue<number>(newLow)], 32), $.int(($.pointerValue<$.Slice<number>>(newArray))![$.pointerValue<number>(newLow) + 1], 32))
 		newLow!.value += 2
 		ix += 2
-		next = $.append(next, pc)
+		next = $.append(next, $.uint(pc, 32))
 		return true
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))
 
@@ -587,9 +587,9 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 				let runes: $.Slice<number> = $.makeSlice<number>(0, undefined, "number")
 				if (($.len($.pointerValue<onePassInst>(inst).Inst.Rune) == 1) && ($.uint(($.pointerValue<onePassInst>(inst).Inst.Arg & syntax.FoldCase), 16) != $.uint(0, 16))) {
 					let r0 = $.int($.pointerValue<onePassInst>(inst).Inst.Rune![0], 32)
-					runes = $.append(runes, r0, r0)
+					runes = $.append(runes, $.int(r0, 32), $.int(r0, 32))
 					for (let r1 = $.int(unicode.SimpleFold($.int(r0, 32)), 32); $.int(r1, 32) != $.int(r0, 32); r1 = $.int(unicode.SimpleFold($.int(r1, 32)), 32)) {
-						runes = $.append(runes, r1, r1)
+						runes = $.append(runes, $.int(r1, 32), $.int(r1, 32))
 					}
 					slices.Sort(runes)
 				} else {
@@ -614,13 +614,13 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 				// expand case-folded runes
 				if ($.uint(($.pointerValue<onePassInst>(inst).Inst.Arg & syntax.FoldCase), 16) != $.uint(0, 16)) {
 					let r0 = $.int($.pointerValue<onePassInst>(inst).Inst.Rune![0], 32)
-					runes = $.append(runes, r0, r0)
+					runes = $.append(runes, $.int(r0, 32), $.int(r0, 32))
 					for (let r1 = $.int(unicode.SimpleFold($.int(r0, 32)), 32); $.int(r1, 32) != $.int(r0, 32); r1 = $.int(unicode.SimpleFold($.int(r1, 32)), 32)) {
-						runes = $.append(runes, r1, r1)
+						runes = $.append(runes, $.int(r1, 32), $.int(r1, 32))
 					}
 					slices.Sort(runes)
 				} else {
-					runes = $.append(runes, $.pointerValue<onePassInst>(inst).Inst.Rune![0], $.pointerValue<onePassInst>(inst).Inst.Rune![0])
+					runes = $.append(runes, $.int($.pointerValue<onePassInst>(inst).Inst.Rune![0], 32), $.int($.pointerValue<onePassInst>(inst).Inst.Rune![0], 32))
 				}
 				onePassRunes![pc] = runes
 				$.pointerValue<onePassInst>(inst).Next = $.makeSlice<number>((Math.trunc($.len(onePassRunes![pc]) / 2)) + 1, undefined, "number")

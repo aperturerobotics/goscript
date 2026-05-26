@@ -769,7 +769,7 @@ export class parser {
 			// If character class does not match \n, add it here,
 			// so that negation later will do the right thing.
 			if ($.uint(($.pointerValue<parser>(p).flags & ClassNL), 16) == $.uint(0, 16)) {
-				$.pointerValue<__goscript_regexp.Regexp>(re).Rune = $.append($.pointerValue<__goscript_regexp.Regexp>(re).Rune, 10, 10)
+				$.pointerValue<__goscript_regexp.Regexp>(re).Rune = $.append($.pointerValue<__goscript_regexp.Regexp>(re).Rune, $.int(10, 32), $.int(10, 32))
 			}
 		}
 
@@ -1937,7 +1937,7 @@ export function literalRegexp(s: string, flags: Flags): __goscript_regexp.Regexp
 			$.pointerValue<__goscript_regexp.Regexp>(re).Rune = $.stringToRunes(s)
 			break
 		}
-		$.pointerValue<__goscript_regexp.Regexp>(re).Rune = $.append($.pointerValue<__goscript_regexp.Regexp>(re).Rune, c)
+		$.pointerValue<__goscript_regexp.Regexp>(re).Rune = $.append($.pointerValue<__goscript_regexp.Regexp>(re).Rune, $.int(c, 32))
 	}
 	return re
 }
@@ -1982,10 +1982,16 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 		{
 			let __goscriptShadow4 = checkUTF8(s)
 			if (__goscriptShadow4 != null) {
-				return [null, __goscriptShadow4]
+				const __goscriptReturn3: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow4]
+				err = __goscriptReturn3[1]
+				__defer[Symbol.dispose]()
+				return [__goscriptReturn3[0], err]
 			}
 		}
-		return [literalRegexp(s, $.uint(flags, 16)), null]
+		const __goscriptReturn4: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [literalRegexp(s, $.uint(flags, 16)), null]
+		err = __goscriptReturn4[1]
+		__defer[Symbol.dispose]()
+		return [__goscriptReturn4[0], err]
 	}
 
 	// Otherwise, must do real work.
@@ -2008,7 +2014,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 						t = __goscriptTuple16[1]
 						err = __goscriptTuple16[2]
 						if (err != null) {
-							return [null, err]
+							const __goscriptReturn5: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+							err = __goscriptReturn5[1]
+							__defer[Symbol.dispose]()
+							return [__goscriptReturn5[0], err]
 						}
 					}
 					p.value.literal($.int(c, 32))
@@ -2023,7 +2032,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							t = __goscriptTuple17[0]
 							err = __goscriptTuple17[1]
 							if (err != null) {
-								return [null, err]
+								const __goscriptReturn6: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+								err = __goscriptReturn6[1]
+								__defer[Symbol.dispose]()
+								return [__goscriptReturn6[0], err]
 							}
 						}
 						break
@@ -2044,7 +2056,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 					{
 						err = p.value.parseRightParen()
 						if (err != null) {
-							return [null, err]
+							const __goscriptReturn7: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+							err = __goscriptReturn7[1]
+							__defer[Symbol.dispose]()
+							return [__goscriptReturn7[0], err]
 						}
 					}
 					t = $.sliceStringOrBytes(t, 1, undefined)
@@ -2087,7 +2102,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 						t = __goscriptTuple18[0]
 						err = __goscriptTuple18[1]
 						if (err != null) {
-							return [null, err]
+							const __goscriptReturn8: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+							err = __goscriptReturn8[1]
+							__defer[Symbol.dispose]()
+							return [__goscriptReturn8[0], err]
 						}
 					}
 					break
@@ -2120,7 +2138,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 						after = __goscriptTuple19[0]
 						err = __goscriptTuple19[1]
 						if (err != null) {
-							return [null, err]
+							const __goscriptReturn9: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+							err = __goscriptReturn9[1]
+							__defer[Symbol.dispose]()
+							return [__goscriptReturn9[0], err]
 						}
 					}
 					repeat = before
@@ -2140,14 +2161,20 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 					}
 					if ((((min < 0) || (min > 1000)) || (max > 1000)) || ((max >= 0) && (min > max))) {
 						// Numbers were too big, or max is present and min > max.
-						return [null, $.interfaceValue<$.GoError>(new Error({Code: ErrInvalidRepeatSize, Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
+						const __goscriptReturn10: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: ErrInvalidRepeatSize, Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
+						err = __goscriptReturn10[1]
+						__defer[Symbol.dispose]()
+						return [__goscriptReturn10[0], err]
 					}
 					{
 						let __goscriptTuple20: any = p.value.repeat($.uint(op, 8), min, max, before, after, lastRepeat)
 						after = __goscriptTuple20[0]
 						err = __goscriptTuple20[1]
 						if (err != null) {
-							return [null, err]
+							const __goscriptReturn11: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+							err = __goscriptReturn11[1]
+							__defer[Symbol.dispose]()
+							return [__goscriptReturn11[0], err]
 						}
 					}
 					repeat = before
@@ -2181,7 +2208,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							}
 							case 67:
 							{
-								return [null, $.interfaceValue<$.GoError>(new Error({Code: ErrInvalidEscape, Expr: $.sliceStringOrBytes(t, undefined, 2)}), "*syntax.Error")]
+								const __goscriptReturn12: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: ErrInvalidEscape, Expr: $.sliceStringOrBytes(t, undefined, 2)}), "*syntax.Error")]
+								err = __goscriptReturn12[1]
+								__defer[Symbol.dispose]()
+								return [__goscriptReturn12[0], err]
 								break
 							}
 							case 81:
@@ -2196,7 +2226,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 									let rest = __goscriptTuple22[1]
 									let __goscriptShadow6 = __goscriptTuple22[2]
 									if (__goscriptShadow6 != null) {
-										return [null, __goscriptShadow6]
+										const __goscriptReturn13: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow6]
+										err = __goscriptReturn13[1]
+										__defer[Symbol.dispose]()
+										return [__goscriptReturn13[0], err]
 									}
 									p.value.literal($.int(__goscriptShadow5, 32))
 									lit = rest
@@ -2224,7 +2257,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 						let rest = __goscriptTuple23[1]
 						let __goscriptShadow7 = __goscriptTuple23[2]
 						if (__goscriptShadow7 != null) {
-							return [null, __goscriptShadow7]
+							const __goscriptReturn14: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow7]
+							err = __goscriptReturn14[1]
+							__defer[Symbol.dispose]()
+							return [__goscriptReturn14[0], err]
 						}
 						if (r != null) {
 							$.pointerValue<__goscript_regexp.Regexp>(re).Rune = r
@@ -2255,7 +2291,10 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 						t = __goscriptTuple25[1]
 						err = __goscriptTuple25[2]
 						if (err != null) {
-							return [null, err]
+							const __goscriptReturn15: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+							err = __goscriptReturn15[1]
+							__defer[Symbol.dispose]()
+							return [__goscriptReturn15[0], err]
 						}
 					}
 					p.value.literal($.int(c, 32))
@@ -2275,9 +2314,15 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 
 	let n = $.len(p.value.stack)
 	if (n != 1) {
-		return [null, $.interfaceValue<$.GoError>(new Error({Code: ErrMissingParen, Expr: s}), "*syntax.Error")]
+		const __goscriptReturn16: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: ErrMissingParen, Expr: s}), "*syntax.Error")]
+		err = __goscriptReturn16[1]
+		__defer[Symbol.dispose]()
+		return [__goscriptReturn16[0], err]
 	}
-	return [p.value.stack![0], null]
+	const __goscriptReturn17: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [p.value.stack![0], null]
+	err = __goscriptReturn17[1]
+	__defer[Symbol.dispose]()
+	return [__goscriptReturn17[0], err]
 }
 
 export function isValidCaptureName(name: string): boolean {
@@ -2431,7 +2476,7 @@ export function canonicalName(name: string): string {
 		if ($.uint(c, 8) == $.uint(32, 8)) {
 			continue
 		}
-		b = $.append(b, c)
+		b = $.append(b, $.uint(c, 8))
 	}
 	if (b == null) {
 		return name
@@ -2571,7 +2616,7 @@ export function appendRange(r: $.Slice<number>, lo: number, hi: number): $.Slice
 		}
 	}
 
-	return $.append(r, lo, hi)
+	return $.append(r, $.int(lo, 32), $.int(hi, 32))
 }
 
 export function appendFoldedRange(r: $.Slice<number>, lo: number, hi: number): $.Slice<number> {
@@ -2730,7 +2775,7 @@ export function negateClass(r: $.Slice<number>): $.Slice<number> {
 	if (nextLo <= unicode.MaxRune) {
 		// It's possible for the negation to have one more
 		// range - this one - than the original class, so use append.
-		r = $.append(r, nextLo, unicode.MaxRune)
+		r = $.append(r, $.int(nextLo, 32), $.int(unicode.MaxRune, 32))
 	}
 	return r
 }

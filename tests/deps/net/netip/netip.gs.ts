@@ -529,7 +529,7 @@ export class Addr {
 		let ret: $.Slice<number> = $.makeSlice<number>(0, size, "byte")
 		for (let i = $.uint($.uint(0, 8), 8); i < 8; i++) {
 			if (i > 0) {
-				ret = $.append(ret, 58)
+				ret = $.append(ret, $.uint(58, 8))
 			}
 
 			ret = appendHexPad(ret, $.uint($.markAsStructValue($.cloneStructValue(ip)).v6u16($.uint(i, 8)), 16))
@@ -538,7 +538,7 @@ export class Addr {
 		if (ip.z != z6noz) {
 			// The addition of a zone will cause a second allocation, but when there
 			// is no zone the ret slice will be stack allocated.
-			ret = $.append(ret, 37)
+			ret = $.append(ret, $.uint(37, 8))
 			ret = $.append(ret, ...($.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()) ?? []))
 		}
 		return $.bytesToString(ret)
@@ -621,11 +621,11 @@ export class Addr {
 	public appendTo4(ret: $.Slice<number>): $.Slice<number> {
 		const ip = this
 		ret = appendDecimal(ret, $.uint($.markAsStructValue($.cloneStructValue(ip)).v4($.uint(0, 8)), 8))
-		ret = $.append(ret, 46)
+		ret = $.append(ret, $.uint(46, 8))
 		ret = appendDecimal(ret, $.uint($.markAsStructValue($.cloneStructValue(ip)).v4($.uint(1, 8)), 8))
-		ret = $.append(ret, 46)
+		ret = $.append(ret, $.uint(46, 8))
 		ret = appendDecimal(ret, $.uint($.markAsStructValue($.cloneStructValue(ip)).v4($.uint(2, 8)), 8))
-		ret = $.append(ret, 46)
+		ret = $.append(ret, $.uint(46, 8))
 		ret = appendDecimal(ret, $.uint($.markAsStructValue($.cloneStructValue(ip)).v4($.uint(3, 8)), 8))
 		return ret
 	}
@@ -635,7 +635,7 @@ export class Addr {
 		ret = $.append(ret, ...($.stringToBytes("::ffff:") ?? []))
 		ret = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(ip)).Unmap())).appendTo4(ret)
 		if (ip.z != z6noz) {
-			ret = $.append(ret, 37)
+			ret = $.append(ret, $.uint(37, 8))
 			ret = $.append(ret, ...($.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()) ?? []))
 		}
 		return ret
@@ -663,14 +663,14 @@ export class Addr {
 
 		for (let i = $.uint($.uint(0, 8), 8); i < 8; i++) {
 			if ($.uint(i, 8) == $.uint(zeroStart, 8)) {
-				ret = $.append(ret, 58, 58)
+				ret = $.append(ret, $.uint(58, 8), $.uint(58, 8))
 				i = $.uint(zeroEnd, 8)
 				if (i >= 8) {
 					break
 				}
 			} else {
 				if (i > 0) {
-					ret = $.append(ret, 58)
+					ret = $.append(ret, $.uint(58, 8))
 				}
 			}
 
@@ -678,7 +678,7 @@ export class Addr {
 		}
 
 		if (ip.z != z6noz) {
-			ret = $.append(ret, 37)
+			ret = $.append(ret, $.uint(37, 8))
 			ret = $.append(ret, ...($.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()) ?? []))
 		}
 		return ret
@@ -962,17 +962,17 @@ export class AddrPort {
 			}
 			default:
 			{
-				b = $.append(b, 91)
+				b = $.append(b, $.uint(91, 8))
 				if ($.markAsStructValue($.cloneStructValue(p.ip)).Is4In6()) {
 					b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo4In6(b)
 				} else {
 					b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo6(b)
 				}
-				b = $.append(b, 93)
+				b = $.append(b, $.uint(93, 8))
 				break
 			}
 		}
-		b = $.append(b, 58)
+		b = $.append(b, $.uint(58, 8))
 		b = strconv.AppendUint(b, $.uint($.uint(p.port, 64), 64), 10)
 		return b
 	}
@@ -1048,19 +1048,19 @@ export class AddrPort {
 				if ($.markAsStructValue($.cloneStructValue(p.ip)).Is4In6()) {
 					const max: number = 37
 					b = $.makeSlice<number>(0, max, "byte")
-					b = $.append(b, 91)
+					b = $.append(b, $.uint(91, 8))
 					b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo4In6(b)
 				} else {
 					const max: number = 54
 					b = $.makeSlice<number>(0, max, "byte")
-					b = $.append(b, 91)
+					b = $.append(b, $.uint(91, 8))
 					b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo6(b)
 				}
-				b = $.append(b, 93)
+				b = $.append(b, $.uint(93, 8))
 				break
 			}
 		}
-		b = $.append(b, 58)
+		b = $.append(b, $.uint(58, 8))
 		b = strconv.AppendUint(b, $.uint($.uint(p.port, 64), 64), 10)
 		return $.bytesToString(b)
 	}
@@ -1152,7 +1152,7 @@ export class Prefix {
 		if (err != null) {
 			return [null, err]
 		}
-		return [$.append(b, $.uint($.markAsStructValue($.cloneStructValue(p)).Bits(), 8)), null]
+		return [$.append(b, $.uint($.uint($.markAsStructValue($.cloneStructValue(p)).Bits(), 8), 8)), null]
 	}
 
 	public AppendText(b: $.Slice<number>): [$.Slice<number>, $.GoError] {
@@ -1181,7 +1181,7 @@ export class Prefix {
 			}
 		}
 
-		b = $.append(b, 47)
+		b = $.append(b, $.uint(47, 8))
 		b = appendDecimal(b, $.uint($.uint($.markAsStructValue($.cloneStructValue(p)).Bits(), 8), 8))
 		return b
 	}
@@ -1743,12 +1743,12 @@ export function appendDecimal(b: $.Slice<number>, x: number): $.Slice<number> {
 	// string building 2x faster.
 
 	if (x >= 100) {
-		b = $.append(b, $.indexStringOrBytes(digits, Math.trunc(x / 100)))
+		b = $.append(b, $.uint($.indexStringOrBytes(digits, Math.trunc(x / 100)), 8))
 	}
 	if (x >= 10) {
-		b = $.append(b, $.indexStringOrBytes(digits, (Math.trunc(x / 10)) % 10))
+		b = $.append(b, $.uint($.indexStringOrBytes(digits, (Math.trunc(x / 10)) % 10), 8))
 	}
-	return $.append(b, $.indexStringOrBytes(digits, x % 10))
+	return $.append(b, $.uint($.indexStringOrBytes(digits, x % 10), 8))
 }
 
 export function appendHex(b: $.Slice<number>, x: number): $.Slice<number> {
@@ -1756,19 +1756,19 @@ export function appendHex(b: $.Slice<number>, x: number): $.Slice<number> {
 	// string building 2x faster.
 
 	if (x >= 0x1000) {
-		b = $.append(b, $.indexStringOrBytes(digits, $.uintShr(x, 12, 16)))
+		b = $.append(b, $.uint($.indexStringOrBytes(digits, $.uintShr(x, 12, 16)), 8))
 	}
 	if (x >= 0x100) {
-		b = $.append(b, $.indexStringOrBytes(digits, ($.uintShr(x, 8, 16)) & 0xf))
+		b = $.append(b, $.uint($.indexStringOrBytes(digits, ($.uintShr(x, 8, 16)) & 0xf), 8))
 	}
 	if (x >= 0x10) {
-		b = $.append(b, $.indexStringOrBytes(digits, ($.uintShr(x, 4, 16)) & 0xf))
+		b = $.append(b, $.uint($.indexStringOrBytes(digits, ($.uintShr(x, 4, 16)) & 0xf), 8))
 	}
-	return $.append(b, $.indexStringOrBytes(digits, x & 0xf))
+	return $.append(b, $.uint($.indexStringOrBytes(digits, x & 0xf), 8))
 }
 
 export function appendHexPad(b: $.Slice<number>, x: number): $.Slice<number> {
-	return $.append(b, $.indexStringOrBytes(digits, $.uintShr(x, 12, 16)), $.indexStringOrBytes(digits, ($.uintShr(x, 8, 16)) & 0xf), $.indexStringOrBytes(digits, ($.uintShr(x, 4, 16)) & 0xf), $.indexStringOrBytes(digits, x & 0xf))
+	return $.append(b, $.uint($.indexStringOrBytes(digits, $.uintShr(x, 12, 16)), 8), $.uint($.indexStringOrBytes(digits, ($.uintShr(x, 8, 16)) & 0xf), 8), $.uint($.indexStringOrBytes(digits, ($.uintShr(x, 4, 16)) & 0xf), 8), $.uint($.indexStringOrBytes(digits, x & 0xf), 8))
 }
 
 export function AddrPortFrom(ip: Addr, port: number): AddrPort {

@@ -41,7 +41,7 @@ export class byteFormatter {
 	public Format(state: fmt.State | null, verb: number): void {
 		const b = this
 		let buf: $.Slice<number> = $.append($.arrayToSlice<number>([]), ...(b.prefix ?? []))
-		buf = $.append(buf, $.uint(verb, 8))
+		buf = $.append(buf, $.uint($.uint(verb, 8), 8))
 		$.pointerValue<Exclude<fmt.State, null>>(state).Write(buf)
 	}
 

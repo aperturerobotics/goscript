@@ -97,8 +97,8 @@ export async function main(): globalThis.Promise<void> {
 				case $.typeAssert<Fixed>(__goscriptTypeSwitchValue, "main.Fixed").ok:
 					{
 						let shape: Fixed = $.typeAssert<Fixed>(__goscriptTypeSwitchValue, "main.Fixed").value
-						shape = ($.append((shape as Fixed), new Uint8Array([$.uint(3, 8), $.uint(4, 8)])) as Fixed)
-						fixed = $.append(fixed, shape)
+						shape = ($.append((shape as Fixed), $.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(3, 8), $.uint(4, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)($.pointerValue(receiver), ...args)})) as Fixed)
+						fixed = $.append(fixed, (shape as Fixed))
 					}
 					break
 				case $.typeAssert<Action>(__goscriptTypeSwitchValue, "main.Action").ok:
