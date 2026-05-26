@@ -71,15 +71,17 @@ export class Server {
   private handler: http.Handler | null
 
   constructor(init?: Partial<Server> & { Handler?: http.Handler | null }) {
-    this.URL = init?.URL ?? 'http://127.0.0.1'
     this.handler = init?.Handler ?? null
+    this.URL = init?.URL ?? http.RegisterInProcessServer(this.handler)
   }
 
   public Client(): http.Client {
     return new http.Client({ Transport: new serverTransport(this) })
   }
 
-  public Close(): void {}
+  public Close(): void {
+    http.UnregisterInProcessServer(this.URL)
+  }
 
   public Config(): http.Server {
     return new http.Server({ Handler: this.handler })

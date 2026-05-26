@@ -1,4 +1,5 @@
 import * as $ from '@goscript/builtin/index.js'
+import * as bytes from '@goscript/bytes/index.js'
 import * as context from '@goscript/context/index.js'
 import * as errors from '@goscript/errors/index.js'
 import * as fs from '@goscript/io/fs/fs.js'
@@ -90,13 +91,27 @@ class QueryValues extends Map<string, $.Slice<string>> {
     const values = this.get(key)
     return values == null || values.length === 0 ? '' : String(values[0])
   }
+
+  public Encode(): string {
+    const params = new URLSearchParams()
+    for (const [key, values] of this.entries()) {
+      for (const value of Array.from(values ?? [])) {
+        params.append(key, String(value))
+      }
+    }
+    return params.toString()
+  }
 }
 
 class RequestURL {
+  public Scheme: string
+  public Host: string
   public Path: string
   public RawQuery: string
 
-  constructor(path: string, rawQuery: string) {
+  constructor(path: string, rawQuery: string, scheme = '', host = '') {
+    this.Scheme = scheme
+    this.Host = host
     this.Path = path
     this.RawQuery = rawQuery
   }
@@ -109,16 +124,97 @@ class RequestURL {
   }
 
   public clone(): RequestURL {
-    return new RequestURL(this.Path, this.RawQuery)
+    return new RequestURL(this.Path, this.RawQuery, this.Scheme, this.Host)
+  }
+
+  public String(): string {
+    const query = this.RawQuery === '' ? '' : `?${this.RawQuery}`
+    const path = this.Path === '' ? '/' : this.Path
+    if (this.Scheme === '' || this.Host === '') {
+      return `${path}${query}`
+    }
+    return `${this.Scheme}://${this.Host}${path}${query}`
   }
 }
 
 function parseRequestURL(rawURL: string): RequestURL {
   try {
     const parsed = new URL(rawURL, 'http://goscript.invalid')
-    return new RequestURL(parsed.pathname, parsed.search.startsWith('?') ? parsed.search.slice(1) : parsed.search)
+    const hasHost = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(rawURL)
+    return new RequestURL(
+      parsed.pathname,
+      parsed.search.startsWith('?') ? parsed.search.slice(1) : parsed.search,
+      hasHost ? parsed.protocol.replace(/:$/, '') : '',
+      hasHost ? parsed.host : '',
+    )
   } catch {
     return new RequestURL('', '')
+  }
+}
+
+class responseBody implements io.ReadCloser {
+  private reader: bytes.Reader
+
+  constructor(data: $.Bytes) {
+    this.reader = bytes.NewReader(Uint8Array.from(data ?? []))
+  }
+
+  public Read(p: $.Bytes): [number, $.GoError] {
+    return this.reader.Read(p)
+  }
+
+  public Close(): $.GoError {
+    return null
+  }
+}
+
+class memoryResponseWriter implements ResponseWriter {
+  public Code = StatusOK
+  public Body = new bytes.Buffer()
+  private headerMap = new Header()
+  private wroteHeader = false
+
+  public Header(): Header {
+    return this.headerMap
+  }
+
+  public Write(p: $.Slice<number>): [number, $.GoError] {
+    if (!this.wroteHeader) {
+      this.WriteHeader(StatusOK)
+    }
+    return this.Body.Write(p)
+  }
+
+  public WriteHeader(statusCode: number): void {
+    if (this.wroteHeader) {
+      return
+    }
+    this.wroteHeader = true
+    this.Code = statusCode
+  }
+
+  public Result(): Response {
+    return new Response({
+      Body: new responseBody(this.Body.Bytes()),
+      Header: this.headerMap,
+      StatusCode: this.Code,
+    })
+  }
+}
+
+const inProcessServers = new Map<string, Handler>()
+let nextInProcessServerID = 1
+
+export function RegisterInProcessServer(handler: Handler | null): string {
+  const host = `goscript-httptest-${nextInProcessServerID++}.invalid`
+  inProcessServers.set(host, handler ?? { ServeHTTP: NotFound })
+  return `http://${host}`
+}
+
+export function UnregisterInProcessServer(rawURL: string): void {
+  const parsed = parseRequestURL(rawURL)
+  if (parsed.Host !== '') {
+    inProcessServers.delete(parsed.Host)
   }
 }
 
@@ -181,20 +277,27 @@ export class Request {
 }
 
 export class Response {
+  public Status: string
   public StatusCode: number
   public Body: io.ReadCloser | null
   public Header: Header
 
   constructor(init?: Partial<Response>) {
+    this.Status = init?.Status ?? ''
     this.StatusCode = init?.StatusCode ?? 0
     this.Body = init?.Body ?? null
     this.Header = init?.Header ?? new Header()
+    if (this.Status === '' && this.StatusCode !== 0) {
+      const text = StatusText(this.StatusCode)
+      this.Status = text === '' ? String(this.StatusCode) : `${this.StatusCode} ${text}`
+    }
   }
 
   public clone(): Response {
     return new Response({
       Body: this.Body,
       Header: this.Header,
+      Status: this.Status,
       StatusCode: this.StatusCode,
     })
   }
@@ -220,13 +323,27 @@ export interface RoundTripper {
   RoundTrip(req: Request | $.VarRef<Request> | null): [Response | null, $.GoError] | Promise<[Response | null, $.GoError]>
 }
 
-class unsupportedTransport implements RoundTripper {
-  public async RoundTrip(_req: Request | $.VarRef<Request> | null): Promise<[Response | null, $.GoError]> {
-    return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
+class defaultTransport implements RoundTripper {
+  public async RoundTrip(req: Request | $.VarRef<Request> | null): Promise<[Response | null, $.GoError]> {
+    const request = $.pointerValue<Request | null>(req)
+    if (request == null) {
+      return [null, errors.New('net/http: nil Request')]
+    }
+    const host = request.URL?.Host ?? ''
+    const handler = host === '' ? null : inProcessServers.get(host)
+    if (handler == null) {
+      return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
+    }
+    const recorder = new memoryResponseWriter()
+    const served = handler.ServeHTTP(recorder, request)
+    if (served instanceof Promise) {
+      await served
+    }
+    return [recorder.Result(), null]
   }
 }
 
-export const DefaultTransport: RoundTripper = new unsupportedTransport()
+export const DefaultTransport: RoundTripper = new defaultTransport()
 
 export interface FileSystem {
   Open(name: string): [File | null, $.GoError]

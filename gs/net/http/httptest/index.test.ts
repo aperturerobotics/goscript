@@ -12,12 +12,13 @@ describe('net/http/httptest override', () => {
     }
 
     const srv = NewServer(handler)
-    expect(srv.URL).toBe('http://127.0.0.1')
+    expect(srv.URL).toMatch(/^http:\/\/goscript-httptest-\d+\.invalid$/)
     expect(srv.Client()).toBeTruthy()
     expect(srv.Config().Handler).toBe(handler)
     expect(Server_Start(NewUnstartedServer(handler))?.Error()).toBe(
       'net/http/httptest: Server.Start is not implemented in GoScript',
     )
+    srv.Close()
   })
 
   it('routes Client.Do through the in-memory server handler', async () => {
@@ -49,5 +50,6 @@ describe('net/http/httptest override', () => {
     expect(n).toBe(4)
     expect(Buffer.from(buf).toString('utf8')).toBe('data')
     expect(resp!.Body!.Close()).toBeNull()
+    srv.Close()
   })
 })
