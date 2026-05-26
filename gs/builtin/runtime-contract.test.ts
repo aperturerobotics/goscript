@@ -164,6 +164,24 @@ describe('builtin runtime contract helpers', () => {
       }),
     ).toEqual({ value: nilNamedSlice, ok: true })
     expect(pointerValue({ ok: true })).toEqual({ ok: true })
+    const namedPointerBox = namedValueInterfaceValue(
+      varRef(new Uint8Array([1, 2])),
+      '*main.Bytes',
+      {},
+    )
+    expect(pointerValue(namedPointerBox)).toEqual(new Uint8Array([1, 2]))
+    const namedPointerMethodBox = namedValueInterfaceValue(
+      varRef(true),
+      '*main.Flag',
+      { String: (receiver: any) => String(receiver.value) },
+    )
+    expect(pointerValue(namedPointerMethodBox)).toBe(namedPointerMethodBox)
+    expect(pointerValue(namedPointerMethodBox).String()).toBe('true')
+    const namedStringBox = namedValueInterfaceValue('id', 'main.Name', {
+      String: (receiver: string) => `name:${receiver}`,
+    })
+    expect(pointerValue(namedStringBox)).toBe(namedStringBox)
+    expect(pointerValue(namedStringBox).String()).toBe('name:id')
     expect(cloneStructValue({ clone: () => ({ ok: true }) })).toEqual({
       ok: true,
     })

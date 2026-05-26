@@ -150,6 +150,20 @@ export function pointerValue<T>(value: T | VarRef<T> | null | undefined): T {
   if (isVarRef(value)) {
     return value.value as T
   }
+  const boxed =
+    typeof value === 'object' &&
+    value !== null &&
+    '__goValue' in value ?
+      (value as { __goType?: unknown; __goValue: T | VarRef<T> })
+    : null
+  if (
+    boxed !== null &&
+    typeof boxed.__goType === 'string' &&
+    boxed.__goType.startsWith('*') &&
+    !hasGoMethodSurface(value)
+  ) {
+    return pointerValue(boxed.__goValue)
+  }
   return value
 }
 
@@ -161,6 +175,20 @@ export function pointerValueOrNil<T>(
   }
   if (isVarRef(value)) {
     return value.value as T
+  }
+  const boxed =
+    typeof value === 'object' &&
+    value !== null &&
+    '__goValue' in value ?
+      (value as { __goType?: unknown; __goValue: T | VarRef<T> })
+    : null
+  if (
+    boxed !== null &&
+    typeof boxed.__goType === 'string' &&
+    boxed.__goType.startsWith('*') &&
+    !hasGoMethodSurface(value)
+  ) {
+    return pointerValueOrNil(boxed.__goValue)
   }
   return value
 }
@@ -231,6 +259,21 @@ function hasGoValue(value: unknown): value is {
   __goValue: unknown
 } {
   return typeof value === 'object' && value !== null && '__goValue' in value
+}
+
+function hasGoMethodSurface(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+  return Object.keys(value).some((key) => {
+    return (
+      key !== '__goType' &&
+      key !== '__goValue' &&
+      key !== 'valueOf' &&
+      key !== 'toString' &&
+      typeof (value as Record<string, unknown>)[key] === 'function'
+    )
+  })
 }
 
 function isStructValue(value: unknown): value is {
