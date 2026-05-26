@@ -3401,6 +3401,15 @@ func (o *LoweringOwner) lowerTupleTargetAssignmentStmt(
 	declare bool,
 ) (loweredStmt, []Diagnostic) {
 	if !declare {
+		if index, ok := unwrapParenExpr(lhs).(*ast.IndexExpr); ok && isMapType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)) {
+			targetType := assignmentTargetType(ctx, lhs)
+			value = o.lowerValueForTarget(ctx, lhs, targetType, value)
+			stmts, diagnostics := o.lowerMapIndexUpdateStmts(ctx, index, token.ASSIGN, value, targetType)
+			if len(stmts) != 0 {
+				return stmts[0], diagnostics
+			}
+			return loweredStmt{}, diagnostics
+		}
 		if stmt, diagnostics, ok := o.lowerStarTargetAssignmentStmt(ctx, lhs, value); ok {
 			return stmt, diagnostics
 		}

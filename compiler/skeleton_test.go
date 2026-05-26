@@ -1341,6 +1341,47 @@ func TestCompilePackagesWrapsAddressedMapRangeValue(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLowersTupleAssignmentToMapIndexSet(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/maptupleassign\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func resolve(k string) (int, error) { return 7, nil }",
+			"func Apply(keys []string) (map[string]int, error) {",
+			"  out := make(map[string]int)",
+			"  var err error",
+			"  for _, k := range keys {",
+			"    out[k], err = resolve(k)",
+			"    if err != nil { return nil, err }",
+			"  }",
+			"  return out, nil",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "maptupleassign", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.mapSet(out, k, __goscriptTuple") {
+		t.Fatalf("tuple assignment to map index did not write through mapSet:\n%s", text)
+	}
+	if strings.Contains(text, "$.mapGet(out, k, 0)[0] =") {
+		t.Fatalf("tuple assignment still mutates mapGet tuple instead of map:\n%s", text)
+	}
+}
+
 func TestCompilePackagesLowersPromotedNamedPrimitiveMethod(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/promotedprimitive\n\ngo 1.25.3\n",
