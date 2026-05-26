@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
+import * as $ from '../../../builtin/index.js'
 import {
   AppendVarint,
+  type CloneMessage,
   CompareEqualVT,
   ConsumeVarint,
   DecodeFixed32,
@@ -26,6 +28,30 @@ class TestValue {
   }
 }
 
+class TestCloneMessage implements CloneMessage {
+  SizeVT(): number {
+    return 0
+  }
+
+  MarshalToSizedBufferVT(): [$.Slice<number>, $.GoError] {
+    return [null, null]
+  }
+
+  MarshalVT(): [$.Slice<number>, $.GoError] {
+    return [null, null]
+  }
+
+  UnmarshalVT(): $.GoError {
+    return null
+  }
+
+  Reset(): void {}
+
+  CloneMessageVT(): CloneMessage | null {
+    return new TestCloneMessage()
+  }
+}
+
 describe('protobuf-go-lite EqualVT helpers', () => {
   it('accepts compiler-emitted runtime type arguments', () => {
     const equal = CompareEqualVT<TestValue>({
@@ -35,6 +61,18 @@ describe('protobuf-go-lite EqualVT helpers', () => {
     expect(equal(new TestValue('a'), new TestValue('a'))).toBe(true)
     expect(equal(new TestValue('a'), new TestValue('b'))).toBe(false)
     expect(equal(null, null)).toBe(true)
+  })
+})
+
+describe('protobuf-go-lite runtime interfaces', () => {
+  it('registers CloneMessage metadata for Go type assertions', () => {
+    const [value, ok] = $.typeAssertTuple<CloneMessage | null>(
+      new TestCloneMessage(),
+      'protobuf_go_lite.CloneMessage',
+    )
+
+    expect(ok).toBe(true)
+    expect(value?.CloneMessageVT()).toBeInstanceOf(TestCloneMessage)
   })
 })
 

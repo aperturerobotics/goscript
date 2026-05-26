@@ -16,14 +16,36 @@ export interface Message {
   Reset(): void
 }
 
+$.registerInterfaceType('protobuf_go_lite.Message', null, [
+  { name: 'SizeVT', args: [], returns: [] },
+  { name: 'MarshalToSizedBufferVT', args: [], returns: [] },
+  { name: 'MarshalVT', args: [], returns: [] },
+  { name: 'UnmarshalVT', args: [], returns: [] },
+  { name: 'Reset', args: [], returns: [] },
+])
+
 export interface JSONMessage {
   MarshalJSON(): [$.Slice<number>, $.GoError]
   UnmarshalJSON(data: $.Slice<number>): $.GoError
 }
 
+$.registerInterfaceType('protobuf_go_lite.JSONMessage', null, [
+  { name: 'MarshalJSON', args: [], returns: [] },
+  { name: 'UnmarshalJSON', args: [], returns: [] },
+])
+
 export interface CloneMessage extends Message {
   CloneMessageVT(): CloneMessage | null
 }
+
+$.registerInterfaceType('protobuf_go_lite.CloneMessage', null, [
+  { name: 'SizeVT', args: [], returns: [] },
+  { name: 'MarshalToSizedBufferVT', args: [], returns: [] },
+  { name: 'MarshalVT', args: [], returns: [] },
+  { name: 'UnmarshalVT', args: [], returns: [] },
+  { name: 'Reset', args: [], returns: [] },
+  { name: 'CloneMessageVT', args: [], returns: [] },
+])
 
 export interface CloneVT<T> extends CloneMessage {
   CloneVT(): T
