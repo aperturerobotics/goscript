@@ -781,6 +781,7 @@ function byteAt(bytes: ByteData, index: number): number {
  * bytesToArray converts any Bytes representation to a number array.
  */
 export function bytesToArray(bytes: Bytes | null): number[] {
+  bytes = bytesValue(bytes) as Bytes | null
   if (bytes === null) return []
 
   if (bytes instanceof Uint8Array) {
@@ -804,6 +805,7 @@ export function bytesToArray(bytes: Bytes | null): number[] {
  * bytesToUint8Array converts any Bytes representation to a Uint8Array.
  */
 export function bytesToUint8Array(bytes: Bytes | null): Uint8Array {
+  bytes = bytesValue(bytes) as Bytes | null
   if (bytes === null) return new Uint8Array(0)
 
   if (bytes instanceof Uint8Array) {
@@ -814,6 +816,21 @@ export function bytesToUint8Array(bytes: Bytes | null): Uint8Array {
   }
 
   return new Uint8Array(bytesToArray(bytes))
+}
+
+function bytesValue(value: unknown): unknown {
+  if (isVarRef(value)) {
+    return bytesValue(value.value)
+  }
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { __goType?: unknown }).__goType === 'string' &&
+    '__goValue' in value
+  ) {
+    return bytesValue((value as { __goValue: unknown }).__goValue)
+  }
+  return value
 }
 
 /**

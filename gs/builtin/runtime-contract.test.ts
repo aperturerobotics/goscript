@@ -171,12 +171,19 @@ describe('builtin runtime contract helpers', () => {
     )
     expect(pointerValue(namedPointerBox)).toEqual(new Uint8Array([1, 2]))
     const namedPointerMethodBox = namedValueInterfaceValue(
-      varRef(true),
-      '*main.Flag',
-      { String: (receiver: any) => String(receiver.value) },
+      varRef(new Uint8Array([1, 2, 3])),
+      '*main.Bytes',
+      { Len: (receiver: any) => len(receiver.value) },
     )
     expect(pointerValue(namedPointerMethodBox)).toBe(namedPointerMethodBox)
-    expect(pointerValue(namedPointerMethodBox).String()).toBe('true')
+    expect(pointerValue(namedPointerMethodBox).Len()).toBe(3)
+    expect(len(pointerValue(namedPointerMethodBox))).toBe(3)
+    expect(bytesToUint8Array(pointerValue(namedPointerMethodBox))).toEqual(
+      new Uint8Array([1, 2, 3]),
+    )
+    expect(bytesToUint8Array(goSlice(pointerValue(namedPointerMethodBox), 1))).toEqual(
+      new Uint8Array([2, 3]),
+    )
     const namedStringBox = namedValueInterfaceValue('id', 'main.Name', {
       String: (receiver: string) => `name:${receiver}`,
     })

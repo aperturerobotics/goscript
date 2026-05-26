@@ -1,4 +1,4 @@
-import { varRef, type VarRef } from './varRef.js'
+import { isVarRef, varRef, type VarRef } from './varRef.js'
 
 export class GoBinaryString extends String {
   readonly bytes: Uint8Array
@@ -453,6 +453,7 @@ export function goSlice<T>( // T can be number for Uint8Array case
   high?: number,
   max?: number,
 ): Slice<T> {
+  s = collectionValue(s) as Slice<T> | Uint8Array
   low = normalizeSliceIndex(low)
   high = normalizeSliceIndex(high)
   max = normalizeSliceIndex(max)
@@ -809,6 +810,7 @@ export const len = <T = unknown, V = unknown>(
     | null
     | undefined,
 ): number => {
+  obj = collectionValue(obj) as typeof obj
   if (obj === null || obj === undefined) {
     return 0
   }
@@ -856,6 +858,7 @@ export const len = <T = unknown, V = unknown>(
 export const cap = <T>(
   obj: Slice<T> | Uint8Array | { cap(): number } | null | undefined,
 ): number => {
+  obj = collectionValue(obj) as typeof obj
   if (obj === null || obj === undefined) {
     return 0
   }
@@ -1651,6 +1654,7 @@ type ByteStringView = {
 }
 
 function byteStringView(value: GoStringBytes): ByteStringView {
+  value = collectionValue(value) as GoStringBytes
   if (value === null || value === undefined) {
     return { backing: [], offset: 0, length: 0 }
   }
@@ -1674,6 +1678,21 @@ function byteStringView(value: GoStringBytes): ByteStringView {
     offset: meta.offset,
     length: meta.length,
   }
+}
+
+function collectionValue(value: unknown): unknown {
+  if (isVarRef(value)) {
+    return collectionValue(value.value)
+  }
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { __goType?: unknown }).__goType === 'string' &&
+    '__goValue' in value
+  ) {
+    return collectionValue((value as { __goValue: unknown }).__goValue)
+  }
+  return value
 }
 
 function bytesToBinaryString(bytes: Uint8Array): string {
