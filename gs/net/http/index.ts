@@ -13,9 +13,11 @@ export const StatusMovedPermanently = 301
 export const StatusBadRequest = 400
 export const StatusUnauthorized = 401
 export const StatusForbidden = 403
+export const StatusMethodNotAllowed = 405
 export const StatusRequestTimeout = 408
 export const StatusConflict = 409
 export const StatusNotFound = 404
+export const StatusUnsupportedMediaType = 415
 export const StatusTeapot = 418
 export const StatusTooManyRequests = 429
 export const StatusRequestedRangeNotSatisfiable = 416
@@ -39,6 +41,8 @@ export function StatusText(code: number): string {
       return 'Unauthorized'
     case StatusForbidden:
       return 'Forbidden'
+    case StatusMethodNotAllowed:
+      return 'Method Not Allowed'
     case StatusBadRequest:
       return 'Bad Request'
     case StatusRequestTimeout:
@@ -47,6 +51,8 @@ export function StatusText(code: number): string {
       return 'Conflict'
     case StatusNotFound:
       return 'Not Found'
+    case StatusUnsupportedMediaType:
+      return 'Unsupported Media Type'
     case StatusTooManyRequests:
       return 'Too Many Requests'
     case StatusPartialContent:

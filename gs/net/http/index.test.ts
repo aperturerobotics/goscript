@@ -20,6 +20,7 @@ import {
   Server,
   StatusCreated,
   StatusForbidden,
+  StatusMethodNotAllowed,
   StatusNotFound,
   StatusOK,
   StatusServiceUnavailable,
@@ -27,6 +28,7 @@ import {
   StatusText,
   StatusTooManyRequests,
   StatusUnauthorized,
+  StatusUnsupportedMediaType,
 } from './index.js'
 
 describe('net/http override', () => {
@@ -38,6 +40,8 @@ describe('net/http override', () => {
     expect(StatusText(StatusNotFound)).toBe('Not Found')
     expect(StatusText(StatusUnauthorized)).toBe('Unauthorized')
     expect(StatusText(StatusForbidden)).toBe('Forbidden')
+    expect(StatusText(StatusMethodNotAllowed)).toBe('Method Not Allowed')
+    expect(StatusText(StatusUnsupportedMediaType)).toBe('Unsupported Media Type')
     expect(StatusText(StatusTeapot)).toBe("I'm a teapot")
     expect(StatusText(StatusTooManyRequests)).toBe('Too Many Requests')
     expect(StatusText(StatusServiceUnavailable)).toBe('Service Unavailable')
