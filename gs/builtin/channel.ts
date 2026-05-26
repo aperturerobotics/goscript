@@ -15,6 +15,14 @@ export interface SelectResult<T> {
   id: number
 }
 
+function scheduleClosedChannelWake(wake: () => void): void {
+  // Closed-channel wakeups represent goroutine scheduling, not an immediate
+  // Promise continuation. Keep them on a task boundary so goroutine work queued
+  // around the close can observe state published before the blocked receiver
+  // resumes.
+  setTimeout(wake, 0)
+}
+
 /**
  * Represents a Go channel in TypeScript.
  * Supports asynchronous sending and receiving of values.
@@ -600,7 +608,7 @@ class BufferedChannel<T> implements Channel<T> {
     const sendersToNotify = [...this.senders] // Shallow copy for iteration
     this.senders = []
     for (const senderTask of sendersToNotify) {
-      queueMicrotask(() =>
+      scheduleClosedChannelWake(() =>
         senderTask.rejectSend(new Error('send on closed channel')),
       )
     }
@@ -608,13 +616,15 @@ class BufferedChannel<T> implements Channel<T> {
     const receiversToNotify = [...this.receivers]
     this.receivers = []
     for (const receiverTask of receiversToNotify) {
-      queueMicrotask(() => receiverTask.resolveReceive(this.zeroValue))
+      scheduleClosedChannelWake(() =>
+        receiverTask.resolveReceive(this.zeroValue),
+      )
     }
 
     const receiversWithOkToNotify = [...this.receiversWithOk]
     this.receiversWithOk = []
     for (const receiverTask of receiversWithOkToNotify) {
-      queueMicrotask(() =>
+      scheduleClosedChannelWake(() =>
         receiverTask.resolveReceive({ value: this.zeroValue, ok: false }),
       )
     }

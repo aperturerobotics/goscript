@@ -8,6 +8,10 @@ async function nextMicrotask(): Promise<void> {
   await new Promise<void>((resolve) => queueMicrotask(resolve))
 }
 
+async function nextTask(): Promise<void> {
+  await new Promise<void>((resolve) => setTimeout(resolve, 0))
+}
+
 describe('context override', () => {
   it('matches generated struct keys by Go comparable value', () => {
     class Key {
@@ -39,7 +43,7 @@ describe('context override', () => {
 
     cancel?.()
     await nextMicrotask()
-    await nextMicrotask()
+    await nextTask()
 
     expect(called).toBe(true)
     expect(stop()).toBe(false)

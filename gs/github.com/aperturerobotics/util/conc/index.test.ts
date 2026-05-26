@@ -25,6 +25,6 @@ describe('util/conc override', () => {
 
     release.close()
     expect(await q.WaitIdle(Background(), null)).toBeNull()
-    expect(done).toEqual([0, 1, 2, 3, 4])
+    expect([...done].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4])
   })
 })

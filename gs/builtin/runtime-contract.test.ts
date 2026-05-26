@@ -576,6 +576,20 @@ describe('builtin runtime contract helpers', () => {
     expect(await chanRecvWithOk(channel)).toEqual({ value: 0, ok: false })
   })
 
+  it('resumes closed-channel receivers after queued goroutine work', async () => {
+    const channel = makeChannel<number>(0, 0, 'both')
+    const events: string[] = []
+
+    const receive = channel.receive().then(() => {
+      events.push('receiver')
+    })
+    channel.close()
+    queueMicrotask(() => events.push('queued'))
+
+    await receive
+    expect(events).toEqual(['queued', 'receiver'])
+  })
+
   it('cancels losing select receive cases', async () => {
     const signal = makeChannel<string>(1, '', 'both')
     const timeout = makeChannel<string>(0, '', 'both')
