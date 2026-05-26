@@ -12,6 +12,7 @@ export const StatusPartialContent = 206
 export const StatusMovedPermanently = 301
 export const StatusBadRequest = 400
 export const StatusUnauthorized = 401
+export const StatusForbidden = 403
 export const StatusRequestTimeout = 408
 export const StatusConflict = 409
 export const StatusNotFound = 404
@@ -35,6 +36,8 @@ export function StatusText(code: number): string {
       return 'Moved Permanently'
     case StatusUnauthorized:
       return 'Unauthorized'
+    case StatusForbidden:
+      return 'Forbidden'
     case StatusBadRequest:
       return 'Bad Request'
     case StatusRequestTimeout:

@@ -19,6 +19,7 @@ import {
   ResponseWriter,
   Server,
   StatusCreated,
+  StatusForbidden,
   StatusNotFound,
   StatusOK,
   StatusServiceUnavailable,
@@ -35,6 +36,7 @@ describe('net/http override', () => {
     expect(StatusText(resp.StatusCode)).toBe('OK')
     expect(StatusText(StatusNotFound)).toBe('Not Found')
     expect(StatusText(StatusUnauthorized)).toBe('Unauthorized')
+    expect(StatusText(StatusForbidden)).toBe('Forbidden')
     expect(StatusText(StatusTooManyRequests)).toBe('Too Many Requests')
     expect(StatusText(StatusServiceUnavailable)).toBe('Service Unavailable')
     expect(StatusText(599)).toBe('')
