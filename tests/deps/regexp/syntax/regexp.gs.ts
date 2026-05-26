@@ -426,7 +426,9 @@ export function addSpan(start: Regexp | $.VarRef<Regexp> | null, last: Regexp | 
 		flags!.value = $.makeMap<Regexp | $.VarRef<Regexp> | null, printFlags>()
 	}
 	$.mapSet(($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags)), start, $.uint(f, 8))
-	$.mapGet(($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags)), last, 0)[0] |= $.uint(flagOff, 8)
+	const __goscriptMap0 = ($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags))
+	const __goscriptMapKey0 = last
+	$.mapSet(__goscriptMap0, __goscriptMapKey0, $.mapGet(__goscriptMap0, __goscriptMapKey0, 0)[0] | $.uint(flagOff, 8))
 }
 
 export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> | null): [printFlags, printFlags] {

@@ -23,6 +23,18 @@ export async function main(): globalThis.Promise<void> {
 	// Modify a value
 	$.mapSet(scores, "Bob", 88)
 	$.println("Bob's updated score: Expected: 88, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	const __goscriptMap0 = scores
+	const __goscriptMapKey0 = "Bob"
+	$.mapSet(__goscriptMap0, __goscriptMapKey0, $.mapGet(__goscriptMap0, __goscriptMapKey0, 0)[0] + 1)
+	$.println("Bob's incremented score: Expected: 89, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	const __goscriptMap1 = scores
+	const __goscriptMapKey1 = "Bob"
+	$.mapSet(__goscriptMap1, __goscriptMapKey1, $.mapGet(__goscriptMap1, __goscriptMapKey1, 0)[0] + 3)
+	$.println("Bob's compound score: Expected: 92, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	const __goscriptMap2 = scores
+	const __goscriptMapKey2 = "Bob"
+	$.mapSet(__goscriptMap2, __goscriptMapKey2, $.mapGet(__goscriptMap2, __goscriptMapKey2, 0)[0] - 1)
+	$.println("Bob's decremented score: Expected: 91, Actual:", $.mapGet(scores, "Bob", 0)[0])
 
 	// Check if key exists (comma-ok idiom)
 	let [value, exists] = $.mapGet(scores, "David", 0)

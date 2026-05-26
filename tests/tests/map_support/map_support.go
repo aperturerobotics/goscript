@@ -20,6 +20,12 @@ func main() {
 	// Modify a value
 	scores["Bob"] = 88
 	println("Bob's updated score: Expected: 88, Actual:", scores["Bob"])
+	scores["Bob"]++
+	println("Bob's incremented score: Expected: 89, Actual:", scores["Bob"])
+	scores["Bob"] += 3
+	println("Bob's compound score: Expected: 92, Actual:", scores["Bob"])
+	scores["Bob"]--
+	println("Bob's decremented score: Expected: 91, Actual:", scores["Bob"])
 
 	// Check if key exists (comma-ok idiom)
 	value, exists := scores["David"]

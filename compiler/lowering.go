@@ -2323,6 +2323,14 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 			expr, diagnostics := o.lowerPointerStorageExpr(ctx, star.X)
 			return []loweredStmt{{text: expr + typed.Tok.String()}}, diagnostics
 		}
+		if index, ok := unwrapParenExpr(typed.X).(*ast.IndexExpr); ok && isMapType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)) {
+			right := "1"
+			tok := token.ADD_ASSIGN
+			if typed.Tok == token.DEC {
+				tok = token.SUB_ASSIGN
+			}
+			return o.lowerMapIndexUpdateStmts(ctx, index, tok, right, ctx.semPkg.source.TypesInfo.TypeOf(typed.X))
+		}
 		if setter, ok := o.packageVarSetterForAssignment(ctx, typed.X); ok {
 			expr, diagnostics := o.lowerExpr(ctx, typed.X)
 			op := "+"
@@ -3102,16 +3110,14 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			stmts = append(stmts, loweredStmt{text: setter + "(" + value + ")"})
 			continue
 		}
-		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, isShortDecl)
-		diagnostics = append(diagnostics, leftDiagnostics...)
-		if index, ok := lhs.(*ast.IndexExpr); ok && isMapType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)) && stmt.Tok == token.ASSIGN {
-			mapExpr, mapDiagnostics := o.lowerExpr(ctx, index.X)
-			keyExpr, keyDiagnostics := o.lowerExpr(ctx, index.Index)
-			diagnostics = append(diagnostics, mapDiagnostics...)
-			diagnostics = append(diagnostics, keyDiagnostics...)
-			stmts = append(stmts, loweredStmt{text: o.runtimeOwner.QualifiedHelper(RuntimeHelperMapSet) + "(" + mapExpr + ", " + keyExpr + ", " + right + ")"})
+		if index, ok := lhs.(*ast.IndexExpr); ok && isMapType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)) && stmt.Tok != token.DEFINE {
+			update, updateDiagnostics := o.lowerMapIndexUpdateStmts(ctx, index, stmt.Tok, right, targetType)
+			diagnostics = append(diagnostics, updateDiagnostics...)
+			stmts = append(stmts, update...)
 			continue
 		}
+		left, leftDiagnostics := o.lowerAssignmentTarget(ctx, lhs, isShortDecl)
+		diagnostics = append(diagnostics, leftDiagnostics...)
 		star, starTarget := unwrapParenExpr(lhs).(*ast.StarExpr)
 		if starTarget && stmt.Tok == token.ASSIGN && isStructValueType(targetType) {
 			pointer, pointerDiagnostics := o.lowerPointerValueExpr(ctx, star.X)
@@ -3165,6 +3171,71 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		stmts = append(stmts, loweredStmt{text: left + " " + op + " " + right})
 	}
 	return stmts, diagnostics
+}
+
+func (o *LoweringOwner) lowerMapIndexUpdateStmts(
+	ctx lowerFileContext,
+	index *ast.IndexExpr,
+	tok token.Token,
+	right string,
+	targetType types.Type,
+) ([]loweredStmt, []Diagnostic) {
+	mapExpr, mapDiagnostics := o.lowerExpr(ctx, index.X)
+	keyExpr, keyDiagnostics := o.lowerExpr(ctx, index.Index)
+	diagnostics := append(mapDiagnostics, keyDiagnostics...)
+	if tok == token.ASSIGN {
+		return []loweredStmt{{text: o.runtimeOwner.QualifiedHelper(RuntimeHelperMapSet) + "(" + mapExpr + ", " + keyExpr + ", " + right + ")"}}, diagnostics
+	}
+	mapTemp := ctx.tempName("Map")
+	keyTemp := ctx.tempName("MapKey")
+	current := o.lowerMapGetValue(ctx, index, mapTemp, keyTemp)
+	value := lowerCompoundAssignValue(o.runtimeOwner, targetType, current, right, tok)
+	return []loweredStmt{
+		{text: "const " + mapTemp + " = " + mapExpr},
+		{text: "const " + keyTemp + " = " + keyExpr},
+		{text: o.runtimeOwner.QualifiedHelper(RuntimeHelperMapSet) + "(" + mapTemp + ", " + keyTemp + ", " + value + ")"},
+	}, diagnostics
+}
+
+func lowerCompoundAssignValue(
+	runtimeOwner *RuntimeContractOwner,
+	targetType types.Type,
+	left string,
+	right string,
+	tok token.Token,
+) string {
+	if helper, ok := wideIntegerAssignHelper(targetType, tok); ok {
+		return runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")"
+	}
+	if value, ok := integerQuotientAssignValueExpr(targetType, left, right, tok); ok {
+		return value
+	}
+	switch tok {
+	case token.ADD_ASSIGN:
+		return left + " + " + right
+	case token.SUB_ASSIGN:
+		return left + " - " + right
+	case token.MUL_ASSIGN:
+		return left + " * " + right
+	case token.QUO_ASSIGN:
+		return left + " / " + right
+	case token.REM_ASSIGN:
+		return left + " % " + right
+	case token.AND_ASSIGN:
+		return left + " & " + right
+	case token.OR_ASSIGN:
+		return left + " | " + right
+	case token.XOR_ASSIGN:
+		return left + " ^ " + right
+	case token.SHL_ASSIGN:
+		return left + " << " + right
+	case token.SHR_ASSIGN:
+		return left + " >> " + right
+	case token.AND_NOT_ASSIGN:
+		return left + " & ~(" + right + ")"
+	default:
+		return right
+	}
 }
 
 func integerQuotientAssignExpr(targetType types.Type, left string, right string, tok token.Token) (string, bool) {

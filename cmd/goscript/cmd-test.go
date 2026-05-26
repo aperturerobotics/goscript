@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"runtime"
 	"runtime/pprof"
 	"strconv"
 	"strings"
@@ -32,13 +33,14 @@ func newTestCommand() *cli.Command {
 	var parallelism int
 	var runtimeGroups bool
 	var cpuProfile string
+	var memProfile string
 	var incrementalTypeCheck bool
 
 	return &cli.Command{
 		Name:     "test",
 		Category: "test",
 		Usage:    "compile and run Go package tests through GoScript",
-		Action: func(c *cli.Context) error {
+		Action: func(c *cli.Context) (err error) {
 			req := &gotest.Request{
 				Dir:                  dir,
 				Patterns:             c.Args().Slice(),
@@ -62,6 +64,11 @@ func newTestCommand() *cli.Command {
 			if stopProfile != nil {
 				defer stopProfile()
 			}
+			defer func() {
+				if profileErr := writeMemProfile(memProfile); profileErr != nil && err == nil {
+					err = profileErr
+				}
+			}()
 			result, err := gotest.NewRunner().Run(c.Context, req)
 			if err != nil {
 				return err
@@ -150,6 +157,11 @@ func newTestCommand() *cli.Command {
 				Usage:       "write a Go CPU profile for the goscript test process",
 				Destination: &cpuProfile,
 			},
+			&cli.StringFlag{
+				Name:        "memprofile",
+				Usage:       "write a Go heap profile for the goscript test process",
+				Destination: &memProfile,
+			},
 		},
 	}
 }
@@ -171,6 +183,23 @@ func startCPUProfile(path string) (func(), error) {
 		pprof.StopCPUProfile()
 		_ = file.Close()
 	}, nil
+}
+
+func writeMemProfile(path string) error {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return nil
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		return errors.Wrap(err, "create memory profile")
+	}
+	defer func() { _ = file.Close() }()
+	runtime.GC()
+	if err := pprof.WriteHeapProfile(file); err != nil {
+		return errors.Wrap(err, "write memory profile")
+	}
+	return nil
 }
 
 func printTestResult(ctx context.Context, w io.Writer, result *gotest.Result) error {

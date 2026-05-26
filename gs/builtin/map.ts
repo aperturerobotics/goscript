@@ -1,4 +1,5 @@
 import { comparableEqual } from './builtin.js'
+import { GoBinaryString, stringEqual } from './slice.js'
 
 /**
  * Creates a new map (TypeScript Map).
@@ -74,6 +75,14 @@ function findMapEntry<K, V>(
   if (map.has(key)) {
     return { found: true, key, value: map.get(key)! }
   }
+  if (isGoStringKey(key)) {
+    for (const [candidate, value] of map.entries()) {
+      if (isGoStringKey(candidate) && stringEqual(candidate as string, key as string)) {
+        return { found: true, key: candidate, value }
+      }
+    }
+    return { found: false }
+  }
   if (key === null || (typeof key !== 'object' && typeof key !== 'function')) {
     return { found: false }
   }
@@ -83,4 +92,8 @@ function findMapEntry<K, V>(
     }
   }
   return { found: false }
+}
+
+function isGoStringKey(value: unknown): value is string | GoBinaryString {
+  return typeof value === 'string' || value instanceof GoBinaryString
 }

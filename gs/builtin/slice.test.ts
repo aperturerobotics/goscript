@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { makeMap, mapGet, mapSet } from './map.js'
 import {
   bytesToString,
   copy,
@@ -37,6 +38,16 @@ describe('builtin string byte representation', () => {
     expect(stringEqual(peerID, bytesToString(peerID))).toBe(true)
     expect(stringEqual(peerID, '')).toBe(false)
     expect(stringEqual(new Uint8Array(0), '')).toBe(true)
+  })
+
+  it('matches byte-backed strings as map keys', () => {
+    const raw = new Uint8Array([10, 36, 8, 1, 18, 32, 222, 187])
+    const key = bytesToString(raw)
+    const m = makeMap<string, string>()
+
+    mapSet(m, key, 'cached')
+
+    expect(mapGet(m, bytesToString(raw), '')).toEqual(['cached', true])
   })
 
   it('orders byte-backed strings by Go string bytes', () => {
