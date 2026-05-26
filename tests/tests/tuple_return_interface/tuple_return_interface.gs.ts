@@ -63,6 +63,7 @@ export function newInterface(size: number): [Block | null, $.GoError] {
 	}
 	const __goscriptReturn0 = newBlock(size)
 	return [$.interfaceValue<Block | null>(__goscriptReturn0[0], "*main.blockImpl"), __goscriptReturn0[1]]
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export async function main(): globalThis.Promise<void> {

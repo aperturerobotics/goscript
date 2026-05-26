@@ -150,6 +150,7 @@ export class Mutex {
 				}
 			}
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public Locker(): sync.Locker | null {

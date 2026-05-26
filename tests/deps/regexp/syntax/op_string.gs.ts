@@ -64,4 +64,5 @@ export function Op_String(i: __goscript_regexp.Op): string {
 			break
 		}
 	}
+	throw new globalThis.Error("goscript: unreachable return")
 }

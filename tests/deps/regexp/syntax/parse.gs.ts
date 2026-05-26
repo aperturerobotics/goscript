@@ -900,6 +900,7 @@ export class parser {
 
 		const __goscriptReturn1 = nextRune(s)
 		return [$.int(__goscriptReturn1[0], 32), __goscriptReturn1[1], __goscriptReturn1[2]]
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public parseEscape(s: string): [number, string, $.GoError] {
@@ -2323,6 +2324,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 	err = __goscriptReturn17[1]
 	__defer[Symbol.dispose]()
 	return [__goscriptReturn17[0], err]
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export function isValidCaptureName(name: string): boolean {

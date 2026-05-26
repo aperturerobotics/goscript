@@ -84,6 +84,7 @@ export class iterator {
 				break
 			}
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	static __typeInfo = $.registerStructType(

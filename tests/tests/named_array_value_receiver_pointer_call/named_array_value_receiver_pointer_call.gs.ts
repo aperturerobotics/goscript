@@ -5,14 +5,14 @@ import * as $ from "@goscript/builtin/index.js"
 
 export type flags = number[]
 
-export function flags_set(f: $.VarRef<flags> | null, idx: number): void {
+export function flags__set(f: $.VarRef<flags> | null, idx: number): void {
 	$.pointerValue<number[]>(f)[idx] = idx + 1
 }
 
 export function flags_values(__goscriptReceiver0: flags): [number, number] {
 	let f: $.VarRef<flags> = $.varRef(__goscriptReceiver0)
-	flags_set(f, 0)
-	flags_set(f, 1)
+	flags__set(f, 0)
+	flags__set(f, 1)
 	return [f.value[0], f.value[1] + 1]
 }
 

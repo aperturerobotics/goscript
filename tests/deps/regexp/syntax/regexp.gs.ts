@@ -550,6 +550,7 @@ export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<
 			break
 		}
 	}
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | null, re: Regexp | $.VarRef<Regexp> | null, f: printFlags, flags: Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null): void {

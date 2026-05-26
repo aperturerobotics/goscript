@@ -157,6 +157,7 @@ export class Broadcast {
 				return __goscriptSelect0Value
 			}
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	static __typeInfo = $.registerStructType(

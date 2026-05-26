@@ -1722,6 +1722,7 @@ export function minInputLen(re: syntax.Regexp | $.VarRef<syntax.Regexp> | null):
 			break
 		}
 	}
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export async function MustCompile(str: string): globalThis.Promise<Regexp | $.VarRef<Regexp> | null> {

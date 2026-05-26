@@ -15,6 +15,7 @@ export function syncReturn(): [number, string] {
 	err = __goscriptReturn0[1]
 	__defer[Symbol.dispose]()
 	return [value, err]
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export async function asyncReturn(ch: $.Channel<string> | null): globalThis.Promise<[number, string]> {
@@ -30,6 +31,7 @@ export async function asyncReturn(ch: $.Channel<string> | null): globalThis.Prom
 	err = __goscriptReturn1[1]
 	await __defer[Symbol.asyncDispose]()
 	return [value, err]
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export function blankReturn(): [number, string] {
@@ -42,6 +44,7 @@ export function blankReturn(): [number, string] {
 	err = __goscriptReturn2[1]
 	__defer[Symbol.dispose]()
 	return [__goscriptReturn2[0], err]
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export async function main(): globalThis.Promise<void> {

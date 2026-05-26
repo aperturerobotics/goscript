@@ -134,6 +134,7 @@ export async function privateKeyToCache(k: key | $.VarRef<key> | null): globalTh
 		return $.pointerValue<privateKey>(v).D == $.pointerValue<key>(k).N
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "main.privateKey" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))
 	return [(__goscriptReturn0[0] as privateKey | $.VarRef<privateKey> | null), __goscriptReturn0[1]]
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export async function main(): globalThis.Promise<void> {

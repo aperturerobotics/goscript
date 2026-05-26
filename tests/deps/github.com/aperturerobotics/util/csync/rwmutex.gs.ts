@@ -181,6 +181,7 @@ export class RWMutex {
 				return [release, null]
 			}
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public Locker(): sync.Locker | null {

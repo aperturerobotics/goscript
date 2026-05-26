@@ -19,6 +19,7 @@ export function classify(value: number): string {
 			break
 		}
 	}
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export async function main(): globalThis.Promise<void> {

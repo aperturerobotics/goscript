@@ -3368,10 +3368,18 @@ func (o *LoweringOwner) shortDeclTypeAnnotation(ctx lowerFileContext, lhs ast.Ex
 		}
 		return ": " + typ
 	}
+	if rhs != nil && isIdentLikeExpr(rhs) && isInterfaceType(obj.Type()) {
+		return ": " + o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj])
+	}
 	if !shortDeclNeedsTypeAnnotation(obj.Type()) {
 		return ""
 	}
 	return ": " + o.tsVariableTypeFor(ctx, obj.Type(), ctx.model.needsVarRef[obj])
+}
+
+func isIdentLikeExpr(expr ast.Expr) bool {
+	_, ok := ast.Unparen(expr).(*ast.Ident)
+	return ok
 }
 
 func shortDeclNeedsTypeAnnotation(typ types.Type) bool {

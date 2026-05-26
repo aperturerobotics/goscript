@@ -9,6 +9,7 @@ import "@goscript/github.com/aperturerobotics/goscript/tests/tests/imported_gene
 export function collectValues(value: helper.Value | null): [$.Slice<helper.Value | null>, $.GoError] {
 	const __goscriptReturn0 = helper.Collect({T: { type: "helper.Value", zero: () => null, methods: {GetValue: (receiver: any, ...args: any[]) => receiver.GetValue(...args)} }}, value)
 	return [(__goscriptReturn0[0] as $.Slice<helper.Value | null>), __goscriptReturn0[1]]
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export function collectAssigned(value: helper.Value | null): [$.Slice<helper.Value | null>, $.GoError] {

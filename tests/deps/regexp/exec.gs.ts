@@ -443,6 +443,7 @@ export class machine {
 			return t
 			break
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public alloc(i: syntax.Inst | $.VarRef<syntax.Inst> | null): thread | $.VarRef<thread> | null {

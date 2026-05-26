@@ -2831,6 +2831,91 @@ func TestCompilePackagesMarksSelectReturningIfElseCasesUnreachable(t *testing.T)
 	}
 }
 
+func TestCompilePackagesAddsUnreachableReturnFallback(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/select-named\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"context\"",
+			"func wait(ctx context.Context, ch <-chan error) (rerr error) {",
+			"  select {",
+			"  case <-ctx.Done():",
+			"    return context.Canceled",
+			"  case err := <-ch:",
+			"    return err",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "select-named", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export async function wait(ctx: context.Context | null, ch: $.Channel<$.GoError> | null): globalThis.Promise<$.GoError>",
+		"let rerr: $.GoError = null as $.GoError",
+		"throw new globalThis.Error(\"goscript: unreachable return\")",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesAnnotatesShortDeclInterfaceValues(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/interface-short-decl\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Reader interface { Read() int }",
+			"type impl struct{ value int }",
+			"func (i *impl) Read() int { return i.value }",
+			"func replacement() Reader { return &impl{value: 2} }",
+			"func use(r Reader, swap bool) int {",
+			"  if r == nil {",
+			"    return 0",
+			"  }",
+			"  current := r",
+			"  if swap {",
+			"    current = replacement()",
+			"  }",
+			"  return current.Read()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "interface-short-decl", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "let current: Reader | null = r") {
+		t.Fatalf("missing interface short declaration annotation:\n%s", text)
+	}
+}
+
 func TestCompilePackagesPropagatesImmediateFuncLitAsync(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/immediate-func-lit-async\n\ngo 1.25.3\n",

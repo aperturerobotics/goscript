@@ -1,5 +1,6 @@
 import * as $ from "@goscript/builtin/index.js"
 import { IndexFunc } from "./index.js"
+import { describe, expect, test } from "vitest"
 
 describe("bytes", () => {
 	test("IndexFunc accepts generated async-shaped callbacks", () => {

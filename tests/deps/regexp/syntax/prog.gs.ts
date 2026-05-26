@@ -238,6 +238,7 @@ export class Inst {
 			}
 		}
 		$.panic("unknown empty width arg")
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public MatchRune(r: number): boolean {

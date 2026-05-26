@@ -351,6 +351,7 @@ export class compiler {
 			}
 		}
 		$.panic("regexp: unhandled case in compile")
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public empty(op: __goscript_prog.EmptyOp): frag {

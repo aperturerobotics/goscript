@@ -1,5 +1,6 @@
 import * as $ from '@goscript/builtin/index.js'
 import { LimitedReader, MultiWriter, TeeReader } from './index.js'
+import { describe, expect, test } from 'vitest'
 
 class sliceReader {
   constructor(private data: Uint8Array) {}

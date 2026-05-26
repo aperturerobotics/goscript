@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.js"
 
 export type state = number
 
-export function state_set(s: $.VarRef<state> | null, v: number): void {
+export function state__set(s: $.VarRef<state> | null, v: number): void {
 	s!.value = v
 }
 
@@ -16,7 +16,7 @@ export async function call(fn: (() => void) | null): globalThis.Promise<void> {
 export async function main(): globalThis.Promise<void> {
 	let s: $.VarRef<state> = $.varRef(0)
 	await call($.functionValue((): void => {
-		state_set(s, 7)
+		state__set(s, 7)
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	$.println($.int(s.value))
 }

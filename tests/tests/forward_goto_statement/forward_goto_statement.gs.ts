@@ -204,6 +204,7 @@ export function nestedBackwardGoto(limit: number): number {
 		}
 		break
 	}
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export function nestedInnerBreakWithGoto(limit: number): number {
@@ -235,6 +236,7 @@ export function nestedInnerBreakWithGoto(limit: number): number {
 		}
 		break
 	}
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export async function rangeFuncBreakIterator(_yield: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<void> {

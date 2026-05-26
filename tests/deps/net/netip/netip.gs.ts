@@ -129,6 +129,7 @@ export class Addr {
 				break
 			}
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public As16(): Uint8Array {
@@ -150,6 +151,7 @@ export class Addr {
 			$.panic("As4 called on IP zero value")
 		}
 		$.panic("As4 called on IPv6 address")
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public AsSlice(): $.Slice<number> {
@@ -176,6 +178,7 @@ export class Addr {
 				break
 			}
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public BitLen(): number {
@@ -512,6 +515,7 @@ export class Addr {
 				break
 			}
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public StringExpanded(): string {
@@ -715,6 +719,7 @@ export class Addr {
 				break
 			}
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public string4(): string {
@@ -1241,6 +1246,7 @@ export class Prefix {
 			// If all the bits we care about are equal, the result will be zero.
 			return $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(ip.addr)).xor($.markAsStructValue($.cloneStructValue(p.ip.addr))))).and($.markAsStructValue($.cloneStructValue(__goscript_uint128.mask6($.markAsStructValue($.cloneStructValue(p)).Bits())))))).isZero()
 		}
+		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public IsSingleIP(): boolean {

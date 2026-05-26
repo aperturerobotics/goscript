@@ -484,6 +484,7 @@ func renderFunction(b *strings.Builder, fn *loweredFunction) {
 	renderNamedResults(b, fn.namedResults, 1)
 	renderDeferStack(b, fn.deferState, 1)
 	renderStmts(b, fn.body, 1)
+	renderUnreachableReturn(b, fn, 1)
 	b.WriteString("}\n")
 }
 
@@ -527,8 +528,29 @@ func renderMethod(b *strings.Builder, fn *loweredFunction) {
 	renderNamedResults(b, fn.namedResults, 2)
 	renderDeferStack(b, fn.deferState, 2)
 	renderStmts(b, fn.body, 2)
+	renderUnreachableReturn(b, fn, 2)
 	writeIndent(b, 1)
 	b.WriteString("}\n")
+}
+
+func renderUnreachableReturn(b *strings.Builder, fn *loweredFunction, indent int) {
+	if fn.result == "void" || fn.result == "globalThis.Promise<void>" {
+		return
+	}
+	if loweredStmtsEndWithTerminal(fn.body) {
+		return
+	}
+	writeIndent(b, indent)
+	b.WriteString("throw new globalThis.Error(\"goscript: unreachable return\")\n")
+}
+
+func loweredStmtsEndWithTerminal(stmts []loweredStmt) bool {
+	if len(stmts) == 0 {
+		return false
+	}
+	last := stmts[len(stmts)-1]
+	text := strings.TrimSpace(last.text)
+	return strings.HasPrefix(text, "return") || strings.HasPrefix(text, "throw ")
 }
 
 func renderFunctionTypeParams(b *strings.Builder, fn *loweredFunction) {

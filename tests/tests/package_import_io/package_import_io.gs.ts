@@ -187,6 +187,7 @@ export function __goscript_set_asyncWrites(value: sync.Map): void {
 export async function copyInterfaces(dst: io.Writer | null, src: io.Reader | null): globalThis.Promise<[number, $.GoError]> {
 	const __goscriptReturn0 = await io.Copy($.pointerValueOrNil(dst)!, $.pointerValueOrNil(src)!)
 	return [$.int(__goscriptReturn0[0]), __goscriptReturn0[1]]
+	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export async function main(): globalThis.Promise<void> {
