@@ -17,7 +17,9 @@ function useBigIntResult(...values: Word64[]): boolean {
 }
 
 function word64Result(value: bigint, useBigInt: boolean): Word64 {
-  return useBigInt ? value : Number(value)
+  return useBigInt || value > BigInt(Number.MAX_SAFE_INTEGER) ?
+      value
+    : Number(value)
 }
 
 // --- Leading zeros ---
@@ -303,27 +305,13 @@ export function Mul64(x: Word64, y: Word64): [Word64, Word64] {
   const useBigInt = useBigIntResult(x, y)
   x = toUint64(x)
   y = toUint64(y)
-  const mask32 = 0xffffffffn
-
-  // Split into 32-bit parts
-  const x0 = x & mask32
-  const x1 = x >> 32n
-  const y0 = y & mask32
-  const y1 = y >> 32n
-
-  // Multiply parts
-  const p00 = x0 * y0
-  const p01 = x0 * y1
-  const p10 = x1 * y0
-  const p11 = x1 * y1
-
-  // Combine results
-  const lo = p00 + ((p01 + p10) << 32n)
-  const hi = p11 + ((p01 + p10) >> 32n) + (lo < p00 ? 1n : 0n)
+  const product = x * y
+  const lo = product & uint64Mask
+  const hi = product >> 64n
 
   return [
     word64Result(hi & uint64Mask, useBigInt),
-    word64Result(lo & uint64Mask, useBigInt),
+    word64Result(lo, useBigInt),
   ]
 }
 

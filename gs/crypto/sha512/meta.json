@@ -1,0 +1,11 @@
+{
+  "asyncFunctions": {
+    "Sum384": true,
+    "Sum512": true,
+    "Sum512_224": true,
+    "Sum512_256": true
+  },
+  "asyncMethods": {
+    "Digest.Sum": true
+  }
+}
