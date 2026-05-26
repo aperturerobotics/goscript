@@ -30,6 +30,5 @@ export function tryLimitedReader(r: io.Reader): [io.LimitedReader | null, io.Rea
 	}
 
 	remain = lr!.N
-	return [lr, lr!.R, remain]
+	return [lr, lr!.R ?? r, remain]
 }
-

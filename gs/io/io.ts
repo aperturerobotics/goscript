@@ -232,7 +232,7 @@ class DiscardWriter implements Writer {
   }
 }
 
-export const Discard: Writer = new DiscardWriter()
+export const Discard: Writer | null = new DiscardWriter()
 
 // WriteString writes the contents of the string s to w, which accepts a slice of bytes
 export function WriteString(w: Writer, s: string): [number, $.GoError] {
@@ -248,18 +248,27 @@ export function WriteString(w: Writer, s: string): [number, $.GoError] {
 
 // LimitedReader reads from R but limits the amount of data returned to just N bytes
 export class LimitedReader implements Reader {
-  public R: Reader
+  public R: Reader | null
   public N: number
 
-  constructor(r: Reader, n: number) {
-    this.R = r
-    this.N = n
+  constructor(r?: Reader | { R?: Reader | null; N?: number } | null, n?: number) {
+    if (r != null && typeof (r as { Read?: unknown }).Read !== 'function') {
+      const init = r as { R?: Reader | null; N?: number }
+      this.R = init.R ?? null
+      this.N = init.N ?? 0
+      return
+    }
+    this.R = (r as Reader | null | undefined) ?? null
+    this.N = n ?? 0
   }
 
   Read(p: $.Bytes): [number, $.GoError] {
     return (async (): Promise<[number, $.GoError]> => {
       if (this.N <= 0) {
         return [0, EOF]
+      }
+      if (this.R == null) {
+        throw new Error('io.LimitedReader: nil reader')
       }
 
       let readBuf = p
@@ -645,19 +654,22 @@ class multiReader implements Reader {
 }
 
 // MultiWriter creates a writer that duplicates its writes to all the provided writers
-export function MultiWriter(...writers: Writer[]): Writer {
+export function MultiWriter(...writers: (Writer | null)[]): Writer {
   return new multiWriter(writers.slice())
 }
 
 class multiWriter implements Writer {
-  private writers: Writer[]
+  private writers: (Writer | null)[]
 
-  constructor(writers: Writer[]) {
+  constructor(writers: (Writer | null)[]) {
     this.writers = writers
   }
 
   Write(p: $.Bytes): [number, $.GoError] {
     for (const w of this.writers) {
+      if (w == null) {
+        throw new Error('io.MultiWriter: nil writer')
+      }
       const [n, err] = w.Write(p)
       if (err !== null) {
         return [n, err]
@@ -671,22 +683,28 @@ class multiWriter implements Writer {
 }
 
 // TeeReader returns a Reader that writes to w what it reads from r
-export function TeeReader(r: Reader, w: Writer): Reader {
+export function TeeReader(r: Reader | null, w: Writer | null): Reader {
   return new teeReader(r, w)
 }
 
 class teeReader implements Reader {
-  private r: Reader
-  private w: Writer
+  private r: Reader | null
+  private w: Writer | null
 
-  constructor(r: Reader, w: Writer) {
+  constructor(r: Reader | null, w: Writer | null) {
     this.r = r
     this.w = w
   }
 
   Read(p: $.Bytes): [number, $.GoError] {
+    if (this.r == null) {
+      throw new Error('io.TeeReader: nil reader')
+    }
     const [n, err] = this.r.Read(p)
     if (n > 0) {
+      if (this.w == null) {
+        throw new Error('io.TeeReader: nil writer')
+      }
       const [nw, ew] = this.w.Write($.goSlice(p, 0, n))
       if (ew !== null) {
         return [n, ew]

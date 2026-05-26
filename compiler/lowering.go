@@ -8810,6 +8810,9 @@ func (o *LoweringOwner) tsNonNilTypeFor(ctx lowerFileContext, typ types.Type) st
 	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
 		if _, ok := named.Underlying().(*types.Interface); ok {
+			if !ctx.canReferenceNamedType(named) {
+				return "any"
+			}
 			return "Exclude<" + o.namedTypeExpr(ctx, named) + ", null>"
 		}
 	}

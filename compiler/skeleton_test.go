@@ -1233,6 +1233,57 @@ func TestCompilePackagesAvoidsPointerMethodTypeNameShadow(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesErasesUnimportedTransitiveInterfaceField(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/transitivefield\n\ngo 1.25.3\n",
+		"hash/hash.go": strings.Join([]string{
+			"package hash",
+			"type Hash interface {",
+			"  Write([]byte) (int, error)",
+			"}",
+			"",
+		}, "\n"),
+		"holder/holder.go": strings.Join([]string{
+			"package holder",
+			"import \"example.test/transitivefield/hash\"",
+			"type Hasher struct {",
+			"  hash.Hash",
+			"}",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/transitivefield/holder\"",
+			"func write(h holder.Hasher, p []byte) error {",
+			"  _, err := h.Hash.Write(p)",
+			"  return err",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "transitivefield", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.pointerValue<any>(h.Hash).Write(p)") {
+		t.Fatalf("missing erased transitive interface field type:\n%s", text)
+	}
+	if strings.Contains(text, "Exclude<Hash") {
+		t.Fatalf("unimported transitive interface type leaked into output:\n%s", text)
+	}
+}
+
 func TestCompilePackagesClonesNestedStructFieldsWithCloneMethodCollision(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/nestedclone\n\ngo 1.25.3\n",
