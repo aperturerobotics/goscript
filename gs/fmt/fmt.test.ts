@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { resetHostRuntimeForTests } from '@goscript/builtin/hostio.js'
+import * as $ from '@goscript/builtin/index.js'
 import * as fmt from './fmt.js'
 
 const originalDeno = (globalThis as any).Deno
@@ -185,5 +186,24 @@ describe('fmt parseFormat basic cases', () => {
 
   it('Printf %c for code points', () => {
     expect(fmt.Sprintf('%c', 65)).toBe('A')
+  })
+})
+
+describe('fmt scanning', () => {
+  it('scans decimal fields separated by literals', () => {
+    const start = $.varRef(0)
+    const end = $.varRef(0)
+
+    const [n, err] = fmt.Sscanf(
+      'bytes=12-34',
+      'bytes=%d-%d',
+      $.interfaceValue(start, '*int64'),
+      $.interfaceValue(end, '*int64'),
+    )
+
+    expect(err).toBeNull()
+    expect(n).toBe(2)
+    expect(start.value).toBe(12)
+    expect(end.value).toBe(34)
   })
 })

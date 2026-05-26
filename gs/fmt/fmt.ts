@@ -488,12 +488,82 @@ export function Sscan(_str: string, ..._a: any[]): [number, $.GoError | null] {
 }
 
 export function Sscanf(
-  _str: string,
-  _format: string,
-  ..._a: any[]
+  str: string,
+  format: string,
+  ...a: any[]
 ): [number, $.GoError | null] {
-  // TODO: Implement formatted scanning from string
-  return [0, $.newError('Sscanf not implemented')]
+  const parts = buildScanPattern(format)
+  if (parts == null) {
+    return [0, $.newError(`unsupported Sscanf format: ${format}`)]
+  }
+  const match = parts.pattern.exec(str)
+  if (match == null) {
+    return [0, $.newError('input does not match format')]
+  }
+
+  let assigned = 0
+  for (let i = 0; i < parts.verbs.length && i < a.length; i++) {
+    const raw = match[i + 1]
+    const value = parts.verbs[i] === 'd' ? Number.parseInt(raw, 10) : raw
+    if (!assignScanValue(a[i], value)) {
+      return [assigned, $.newError('scan destination is not assignable')]
+    }
+    assigned++
+  }
+  return [assigned, null]
+}
+
+function buildScanPattern(
+  format: string,
+): { pattern: RegExp; verbs: string[] } | null {
+  let source = '^'
+  const verbs: string[] = []
+  for (let i = 0; i < format.length; i++) {
+    const ch = format[i]
+    if (ch !== '%') {
+      source += /\s/.test(ch) ? '\\s+' : escapeRegExp(ch)
+      continue
+    }
+    const verb = format[++i]
+    if (verb === '%') {
+      source += '%'
+      continue
+    }
+    if (verb === 'd') {
+      source += '([+-]?\\d+)'
+      verbs.push(verb)
+      continue
+    }
+    if (verb === 's') {
+      source += '(\\S+)'
+      verbs.push(verb)
+      continue
+    }
+    return null
+  }
+  source += '$'
+  return { pattern: new RegExp(source), verbs }
+}
+
+function assignScanValue(target: any, value: string | number): boolean {
+  const ref =
+    $.isVarRef(target) ? target
+    : (
+      target != null &&
+      typeof target === 'object' &&
+      $.isVarRef(target.__goValue)
+    ) ?
+      target.__goValue
+    : null
+  if (ref == null) {
+    return false
+  }
+  ref.value = value
+  return true
+}
+
+function escapeRegExp(ch: string): string {
+  return ch.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
 }
 
 export function Sscanln(

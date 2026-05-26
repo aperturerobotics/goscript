@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
 
-import { Handler, Header_Get, Header_Set, MethodGet, NewRequest, StatusPartialContent } from '../index.js'
+import {
+  Handler,
+  Header_Get,
+  Header_Set,
+  MethodGet,
+  NewRequest,
+  StatusPartialContent,
+} from '../index.js'
 import { NewServer, NewUnstartedServer, Server_Start } from './index.js'
 
 describe('net/http/httptest override', () => {
@@ -50,6 +57,29 @@ describe('net/http/httptest override', () => {
     expect(n).toBe(4)
     expect(Buffer.from(buf).toString('utf8')).toBe('data')
     expect(resp!.Body!.Close()).toBeNull()
+    srv.Close()
+  })
+
+  it('awaits async handlers through Server.Client transport', async () => {
+    const srv = NewServer({
+      async ServeHTTP(w) {
+        await Promise.resolve()
+        w!.WriteHeader(StatusPartialContent)
+        w!.Write($.stringToBytes('async'))
+      },
+    })
+    const [req, reqErr] = NewRequest(MethodGet, srv.URL + '/async', null)
+    expect(reqErr).toBeNull()
+
+    const [resp, err] = await srv.Client().Do(req)
+
+    expect(err).toBeNull()
+    expect(resp?.StatusCode).toBe(StatusPartialContent)
+    const buf = new Uint8Array(5)
+    const [n, readErr] = resp!.Body!.Read(buf)
+    expect(readErr).toBeNull()
+    expect(n).toBe(5)
+    expect(Buffer.from(buf).toString('utf8')).toBe('async')
     srv.Close()
   })
 })

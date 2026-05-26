@@ -58,10 +58,16 @@ export function NewRecorder(): ResponseRecorder {
   return new ResponseRecorder()
 }
 
-export function NewRequest(method: string, target: string, body: io.Reader | null): http.Request {
+export function NewRequest(
+  method: string,
+  target: string,
+  body: io.Reader | null,
+): http.Request {
   const [req, err] = http.NewRequest(method, target, body)
   if (err != null || req == null) {
-    throw err ?? errors.New('net/http/httptest: NewRequest returned nil request')
+    throw (
+      err ?? errors.New('net/http/httptest: NewRequest returned nil request')
+    )
   }
   return req
 }
@@ -87,7 +93,10 @@ export class Server {
     return new http.Server({ Handler: this.handler })
   }
 
-  public ServeHTTP(w: http.ResponseWriter | null, r: http.Request | $.VarRef<http.Request> | null): void | Promise<void> {
+  public ServeHTTP(
+    w: http.ResponseWriter | null,
+    r: http.Request | $.VarRef<http.Request> | null,
+  ): void | Promise<void> {
     return this.handler?.ServeHTTP(w, r)
   }
 }
@@ -95,7 +104,9 @@ export class Server {
 class serverTransport implements http.RoundTripper {
   constructor(private server: Server) {}
 
-  public RoundTrip(req: http.Request | $.VarRef<http.Request> | null): [http.Response | null, $.GoError] {
+  public async RoundTrip(
+    req: http.Request | $.VarRef<http.Request> | null,
+  ): Promise<[http.Response | null, $.GoError]> {
     const request = $.pointerValue<http.Request | null>(req)
     if (request == null) {
       return [null, errors.New('net/http: nil Request')]
@@ -103,7 +114,7 @@ class serverTransport implements http.RoundTripper {
     const recorder = NewRecorder()
     const served = this.server.ServeHTTP(recorder, request)
     if (served instanceof Promise) {
-      return [null, errors.New('net/http/httptest: async handlers are not supported by Client.Do')]
+      await served
     }
     return [recorder.Result(), null]
   }
@@ -118,5 +129,7 @@ export function NewUnstartedServer(handler: http.Handler | null): Server {
 }
 
 export function Server_Start(_s: Server | $.VarRef<Server> | null): $.GoError {
-  return errors.New('net/http/httptest: Server.Start is not implemented in GoScript')
+  return errors.New(
+    'net/http/httptest: Server.Start is not implemented in GoScript',
+  )
 }
