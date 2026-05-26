@@ -43,7 +43,7 @@ export function CallString(__typeArgs: $.GenericTypeArgs | undefined, v: any): s
 	return $.callGenericMethod(__typeArgs, "T", "String", v)
 }
 
-export function Sum(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<any>): any {
+export function Sum<T>(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<T>): any {
 	let sum: any = $.genericZero(__typeArgs, "T", null)
 	// Note: We can't actually add T values in Go without more constraints
 	// This just tests that sum has the right zero value and String() works

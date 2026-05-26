@@ -58,7 +58,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 			ch = await getWaitCh!()
 			val = await snapshot!()
 		}, ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo)))
-		if (val == prev) {
+		if ((val as any) == (prev as any)) {
 			continue
 		}
 		if ((equal != null) && await equal!(val, prev)) {

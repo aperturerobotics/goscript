@@ -325,7 +325,24 @@ func TestSemanticModelIndexesFunctionsByFullName(t *testing.T) {
 	duplicatePkg := types.NewPackage("example.test/indexed", "indexed")
 	duplicate := types.NewFunc(token.NoPos, duplicatePkg, "Call", signature)
 	if got := semanticFunctionFor(model, duplicate); got != semFn {
-		t.Fatalf("semanticFunctionFor() = %#v, want %#v", got, semFn)
+		t.Fatalf("semanticFunctionFor duplicate before add = %#v, want %#v", got, semFn)
+	}
+	stalePkg := types.NewPackage("example.test/indexed", "indexed")
+	stale := types.NewFunc(token.NoPos, stalePkg, "Call", signature)
+	staleModel := newSemanticModel()
+	if got := semanticFunctionFor(staleModel, stale); got != nil {
+		t.Fatalf("semanticFunctionFor stale before add = %#v, want nil", got)
+	}
+	NewSemanticModelOwner().addFunction(staleModel, &semanticPackage{}, fn, sourcePosition{})
+	if got := semanticFunctionFor(staleModel, stale); got == nil {
+		t.Fatalf("semanticFunctionFor stale miss did not retry full-name lookup")
+	}
+	duplicatePkgEntry := &semanticPackage{}
+	if got := NewSemanticModelOwner().addFunction(model, duplicatePkgEntry, duplicate, sourcePosition{}); got != semFn {
+		t.Fatalf("addFunction duplicate = %#v, want %#v", got, semFn)
+	}
+	if got := semanticFunctionFor(model, duplicate); got != semFn {
+		t.Fatalf("semanticFunctionFor duplicate = %#v, want %#v", got, semFn)
 	}
 }
 

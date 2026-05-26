@@ -39,7 +39,7 @@ export class item {
 }
 
 export function clone(items: $.Slice<item | $.VarRef<item> | null>): $.Slice<item | $.VarRef<item> | null> {
-	return $.append(null, ...(items ?? []))
+	return $.append<item | $.VarRef<item> | null>(null, ...(items ?? []))
 }
 
 export async function main(): globalThis.Promise<void> {

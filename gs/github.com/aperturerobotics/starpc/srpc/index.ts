@@ -1036,6 +1036,15 @@ export function NewMuxedConn(
   return [new MuxedConn(rwc, outbound), null]
 }
 
+export function NewWebSocketConn(
+  _ctx: context.Context,
+  conn: unknown,
+  isServer: boolean,
+  yamuxConf: unknown,
+): [MuxedConn | null, $.GoError] {
+  return NewMuxedConn(conn, !isServer, yamuxConf)
+}
+
 export function NewClientWithMuxedConn(_conn: MuxedConn | null): Client {
   return NewClientWithInvoker(null)
 }

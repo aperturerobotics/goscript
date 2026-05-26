@@ -16,6 +16,7 @@ import {
   ErrIntOverflow,
   ErrInvalidLength,
   ErrUnexpectedEndOfGroup,
+  IsEqualVTSlice,
   SizeOfVarint,
   Skip,
 } from './index.js'
@@ -61,6 +62,19 @@ describe('protobuf-go-lite EqualVT helpers', () => {
     expect(equal(new TestValue('a'), new TestValue('a'))).toBe(true)
     expect(equal(new TestValue('a'), new TestValue('b'))).toBe(false)
     expect(equal(null, null)).toBe(true)
+  })
+
+  it('accepts nullable generated message slices', () => {
+    const left: $.Slice<TestValue | $.VarRef<TestValue> | null> = [
+      $.varRef(new TestValue('x')),
+      null,
+    ]
+    const right: $.Slice<TestValue | $.VarRef<TestValue> | null> = [
+      new TestValue('x'),
+      null,
+    ]
+
+    expect(IsEqualVTSlice(left, right)).toBe(true)
   })
 })
 

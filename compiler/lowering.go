@@ -2109,7 +2109,7 @@ func (ctx lowerFileContext) withSignature(signature *types.Signature) lowerFileC
 		maps.Copy(nextStatic, ctx.staticTypeParams)
 		for typeParam := range signature.TypeParams().TypeParams() {
 			next[typeParam.Obj().Name()] = true
-			if typeParamConstraintIsAny(typeParam) {
+			if signatureUsesTypeParamAsSliceElem(signature, typeParam) {
 				nextStatic[typeParam.Obj().Name()] = true
 			}
 		}
@@ -5158,6 +5158,12 @@ func (o *LoweringOwner) lowerStringOrderOperand(
 	return o.lowerExpr(ctx, call.Args[0])
 }
 
+func binaryOperandUsesTypeParam(ctx lowerFileContext, expr ast.Expr) bool {
+	typ := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	_, ok := types.Unalias(typ).(*types.TypeParam)
+	return ok
+}
+
 func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
 	if value := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)].Value; value != nil && value.Kind() == constant.Complex {
 		if constantValue, ok := lowerConstantValue(value); ok {
@@ -5222,6 +5228,12 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 		}
 		if value, diagnostics, ok := o.lowerStringOrderExpr(ctx, typed, left, right, leftDiagnostics, rightDiagnostics); ok {
 			return value, diagnostics
+		}
+		if binaryOperandUsesTypeParam(ctx, typed.X) {
+			left = "(" + left + " as any)"
+		}
+		if binaryOperandUsesTypeParam(ctx, typed.Y) {
+			right = "(" + right + " as any)"
 		}
 		return left + " " + typed.Op.String() + " " + right, append(leftDiagnostics, rightDiagnostics...)
 	case *ast.UnaryExpr:
@@ -5565,7 +5577,13 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 					}
 					args[last] = "...(" + spread + " ?? [])"
 				}
-				return o.runtimeOwner.QualifiedHelper(RuntimeHelperAppend) + "(" + strings.Join(args, ", ") + ")", diagnostics
+				appendHelper := o.runtimeOwner.QualifiedHelper(RuntimeHelperAppend)
+				if len(args) > 0 && args[0] == "null" {
+					if slice, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(expr)).Underlying().(*types.Slice); ok {
+						appendHelper += "<" + o.tsTypeFor(ctx, slice.Elem()) + ">"
+					}
+				}
+				return appendHelper + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "cap":
 				if len(expr.Args) == 1 {
 					args[0] = o.lowerArrayPointerTarget(ctx, args[0], ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[0]))
@@ -6030,7 +6048,7 @@ func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			args = append(args, "() => "+o.lowerZeroValueExprFor(ctx, typed.Elem()))
 		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMakeSlice) +
-			"<" + o.tsTypeFor(ctx, typed.Elem()) + ">(" + strings.Join(args, ", ") + ")", diagnostics
+			"<" + o.tsSliceElemTypeFor(ctx, typed.Elem()) + ">(" + strings.Join(args, ", ") + ")", diagnostics
 	case *types.Map:
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMakeMap) +
 			"<" + o.tsTypeFor(ctx, typed.Key()) + ", " + o.tsTypeFor(ctx, typed.Elem()) + ">()", nil
@@ -8497,6 +8515,12 @@ func (o *LoweringOwner) tsSliceElemTypeFor(ctx lowerFileContext, typ types.Type)
 	if typeParam, ok := types.Unalias(typ).(*types.TypeParam); ok && staticTypeParamInScope(ctx, typeParam) {
 		return safeIdentifier(typeParam.Obj().Name())
 	}
+	if pointer, ok := types.Unalias(typ).(*types.Pointer); ok {
+		if typeParam, ok := types.Unalias(pointer.Elem()).(*types.TypeParam); ok && staticTypeParamInScope(ctx, typeParam) {
+			name := safeIdentifier(typeParam.Obj().Name())
+			return name + " | $.VarRef<" + name + "> | null"
+		}
+	}
 	return o.tsTypeFor(ctx, typ)
 }
 
@@ -8711,7 +8735,7 @@ func staticTypeParamInScope(ctx lowerFileContext, target *types.TypeParam) bool 
 	if target == nil || !typeParamInScope(ctx, target) {
 		return false
 	}
-	return ctx.staticTypeParams[target.Obj().Name()] || typeParamConstraintIsAny(target)
+	return ctx.staticTypeParams[target.Obj().Name()]
 }
 
 func typeParamConstraintIsAny(typeParam *types.TypeParam) bool {
@@ -8732,7 +8756,7 @@ func signatureTypeParamNames(signature *types.Signature) []string {
 	typeParams := signature.TypeParams()
 	names := make([]string, 0, typeParams.Len())
 	for typeParam := range typeParams.TypeParams() {
-		if !typeParamConstraintIsAny(typeParam) || !signatureUsesTypeParamAsSliceElem(signature, typeParam) {
+		if !signatureUsesTypeParamAsSliceElem(signature, typeParam) {
 			continue
 		}
 		names = append(names, safeIdentifier(typeParam.Obj().Name()))

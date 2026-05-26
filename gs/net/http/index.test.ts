@@ -11,12 +11,14 @@ import {
   HandlerFunc_ServeHTTP,
   Get,
   MethodPost,
+  MethodDelete,
   NewRequest,
   NotFound,
   ParseTime,
   Response,
   ResponseWriter,
   Server,
+  StatusCreated,
   StatusNotFound,
   StatusOK,
   StatusServiceUnavailable,
@@ -35,6 +37,8 @@ describe('net/http override', () => {
     expect(StatusText(StatusServiceUnavailable)).toBe('Service Unavailable')
     expect(StatusText(599)).toBe('')
     expect(MethodPost).toBe('POST')
+    expect(MethodDelete).toBe('DELETE')
+    expect(StatusCreated).toBe(201)
   })
 
   it('returns an explicit unsupported error for Get', () => {
@@ -68,6 +72,7 @@ describe('net/http override', () => {
     const [req] = NewRequest(MethodPost, 'https://example.invalid/path', null)
     Header_Set(req!.Header, 'User-Agent', 'goscript-test')
     req!.RemoteAddr = '127.0.0.1:1234'
+    req!.ContentLength = 42
 
     const client = new Client({
       Transport: {
@@ -76,6 +81,7 @@ describe('net/http override', () => {
           expect(request.UserAgent()).toBe('goscript-test')
           expect(request.RemoteAddr).toBe('127.0.0.1:1234')
           expect(request.RequestURI).toBe('/path')
+          expect(request.ContentLength).toBe(42)
           return [new Response({ StatusCode: StatusOK }), null]
         },
       },

@@ -1418,6 +1418,74 @@ func TestCompilePackagesMarksPackageFunctionVariablesAsync(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAwaitsImportedAsyncMethodsAndFunctions(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/importedasync\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"type Host struct{ ch chan struct{} }",
+			"func (h *Host) Snapshot() (int, error) { <-h.ch; return 1, nil }",
+			"func Read(h *Host) (int, error) { return h.Snapshot() }",
+			"",
+		}, "\n"),
+		"dep/dep_test.go": strings.Join([]string{
+			"package dep",
+			"import \"testing\"",
+			"func TestHost(t *testing.T) {}",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/importedasync/dep\"",
+			"func UseMethod(h *dep.Host) (int, error) {",
+			"  return h.Snapshot()",
+			"}",
+			"func UseFunction(h *dep.Host) (int, error) {",
+			"  return dep.Read(h)",
+			"}",
+			"",
+		}, "\n"),
+		"main_test.go": strings.Join([]string{
+			"package main",
+			"import \"testing\"",
+			"func TestUse(t *testing.T) {}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	service := NewCompileService()
+	_, err := service.Compile(context.Background(), &CompileRequest{
+		Patterns:            []string{".", "./dep"},
+		Dir:                 moduleDir,
+		OutputPath:          outputDir,
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+		Tests:               true,
+		AllDependencies:     true,
+	})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "importedasync", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "export async function UseMethod") {
+		t.Fatalf("imported async method caller was not marked async:\n%s", text)
+	}
+	if !strings.Contains(text, "return await dep.Host.prototype.Snapshot.call(h)") {
+		t.Fatalf("imported async method call was not awaited:\n%s", text)
+	}
+	if !strings.Contains(text, "export async function UseFunction") {
+		t.Fatalf("imported async function caller was not marked async:\n%s", text)
+	}
+	if !strings.Contains(text, "return await dep.Read(h)") {
+		t.Fatalf("imported async function call was not awaited:\n%s", text)
+	}
+}
+
 func TestCompilePackagesCastsConvertedTupleCallSpreads(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/tuplecallspread\n\ngo 1.25.3\n",
@@ -1876,7 +1944,7 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 		"export function NewBox(__typeArgs: $.GenericTypeArgs | undefined, value: any): Box",
 		"export function ZeroValue(__typeArgs: $.GenericTypeArgs | undefined): any",
 		"export function CallString(__typeArgs: $.GenericTypeArgs | undefined, v: any): string",
-		"export function Sum(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<any>): any",
+		"export function Sum<T>(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<T>): any",
 		"export function Copy<T>(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<T>): $.Slice<T>",
 		"return $.append($.arrayToSlice<T>([]), ...(vals ?? []))",
 		"let seen: Set = $.makeMap<number, {}>()",

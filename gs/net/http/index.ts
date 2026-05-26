@@ -6,6 +6,7 @@ import * as io from '@goscript/io/index.js'
 import * as time from '@goscript/time/index.js'
 
 export const StatusOK = 200
+export const StatusCreated = 201
 export const StatusPartialContent = 206
 export const StatusMovedPermanently = 301
 export const StatusBadRequest = 400
@@ -19,6 +20,7 @@ export const StatusServiceUnavailable = 503
 
 export const MethodGet = 'GET'
 export const MethodPost = 'POST'
+export const MethodDelete = 'DELETE'
 
 export const ErrNotSupported = errors.New('feature not supported')
 export const ServerContextKey = Symbol('net/http ServerContextKey')
@@ -131,6 +133,7 @@ export class Request {
   public URL: any
   public Body: io.Reader | null
   public Header: Header
+  public ContentLength: number
   public RequestURI: string
   public RemoteAddr: string
   private ctx: context.Context
@@ -140,6 +143,7 @@ export class Request {
     this.URL = init?.URL ?? null
     this.Body = init?.Body ?? null
     this.Header = init?.Header ?? new Header()
+    this.ContentLength = init?.ContentLength ?? 0
     this.RequestURI = init?.RequestURI ?? ''
     this.RemoteAddr = init?.RemoteAddr ?? ''
     this.ctx = (init as { ctx?: context.Context } | undefined)?.ctx ?? context.Background()
@@ -159,6 +163,7 @@ export class Request {
       URL: this.URL?.clone != null ? this.URL.clone() : this.URL == null ? null : { ...this.URL },
       Body: this.Body,
       Header: this.Header,
+      ContentLength: this.ContentLength,
       RequestURI: this.RequestURI,
       RemoteAddr: this.RemoteAddr,
       ctx,

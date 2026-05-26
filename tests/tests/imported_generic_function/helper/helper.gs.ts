@@ -92,6 +92,6 @@ export function Wrap(__typeArgs: $.GenericTypeArgs | undefined, value: any): Box
 	return $.markAsStructValue(new Box({Value: value}))
 }
 
-export function Collect(__typeArgs: $.GenericTypeArgs | undefined, value: any): [$.Slice<any>, $.GoError] {
-	return [$.arrayToSlice<any>([value]), null]
+export function Collect<T>(__typeArgs: $.GenericTypeArgs | undefined, value: any): [$.Slice<T>, $.GoError] {
+	return [$.arrayToSlice<T>([value]), null]
 }

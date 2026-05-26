@@ -59,37 +59,37 @@ export function CompareComparable<T>(): (t1: T, t2: T) => boolean {
   return (t1, t2) => t1 === t2
 }
 
-export function IsEqualVT<T extends EqualVT<T>>(
-  t1: T | null,
-  t2: T | null,
+export function IsEqualVT<T>(
+  t1: T | $.VarRef<T> | null,
+  t2: T | $.VarRef<T> | null,
 ): boolean
-export function IsEqualVT<T extends EqualVT<T>>(
+export function IsEqualVT<T>(
   _typeArgs: unknown,
-  t1: T | null,
-  t2: T | null,
+  t1: T | $.VarRef<T> | null,
+  t2: T | $.VarRef<T> | null,
 ): boolean
-export function IsEqualVT<T extends EqualVT<T>>(
+export function IsEqualVT<T>(
   arg0: unknown,
-  arg1: T | null,
-  arg2?: T | null,
+  arg1: T | $.VarRef<T> | null,
+  arg2?: T | $.VarRef<T> | null,
 ): boolean {
-  const t1 = arg2 === undefined ? (arg0 as T | null) : arg1
-  const t2 = arg2 === undefined ? arg1 : arg2
+  const t1 = $.pointerValueOrNil(arg2 === undefined ? (arg0 as T | $.VarRef<T> | null) : arg1)
+  const t2 = $.pointerValueOrNil(arg2 === undefined ? arg1 : arg2)
   if (t1 == null || t2 == null) {
     return t1 == t2
   }
-  return t1.EqualVT(t2)
+  return (t1 as unknown as EqualVT<T>).EqualVT(t2)
 }
 
-export function CompareEqualVT<T extends EqualVT<T>>(
+export function CompareEqualVT<T>(
   _typeArgs?: unknown,
-): (t1: T | null, t2: T | null) => boolean {
+): (t1: T | $.VarRef<T> | null, t2: T | $.VarRef<T> | null) => boolean {
   return (t1, t2) => IsEqualVT(t1, t2)
 }
 
-export function IsEqualVTSlice<T extends EqualVT<T>>(
-  s1: $.Slice<T>,
-  s2: $.Slice<T>,
+export function IsEqualVTSlice<T>(
+  s1: $.Slice<T | $.VarRef<T> | null>,
+  s2: $.Slice<T | $.VarRef<T> | null>,
 ): boolean {
   if ($.len(s1) !== $.len(s2)) {
     return false

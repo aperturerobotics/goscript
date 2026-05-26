@@ -388,8 +388,8 @@ export function Cause(ctx: Context): $.GoError {
   return c.Err()
 }
 
-// AfterFunc runs f in a separate goroutine after ctx is done
-export function AfterFunc(ctx: Context, f: () => void): () => boolean {
+// AfterFunc runs f in a separate goroutine after ctx is done.
+export function AfterFunc(ctx: Context, f: (() => void) | null): () => boolean {
   if (ctx === null) {
     throw new Error('cannot create context from nil parent')
   }
@@ -405,7 +405,12 @@ export function AfterFunc(ctx: Context, f: () => void): () => boolean {
     if (!stopped) {
       done = true
       // Run in next tick to simulate goroutine
-      queueMicrotask(f)
+      queueMicrotask(() => {
+        if (f === null) {
+          throw new Error('context: nil AfterFunc callback')
+        }
+        f()
+      })
     }
   })()
 

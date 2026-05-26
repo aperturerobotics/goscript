@@ -60,4 +60,12 @@ describe('context override', () => {
 
     expect(called).toBe(false)
   })
+
+  it('accepts nil AfterFunc callbacks for type compatibility', () => {
+    const [ctx] = WithCancel(Background())
+
+    const stop = AfterFunc(ctx, null)
+
+    expect(stop()).toBe(true)
+  })
 })

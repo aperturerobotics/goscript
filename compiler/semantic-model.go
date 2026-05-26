@@ -555,6 +555,15 @@ func (o *SemanticModelOwner) addFunction(
 			return existing
 		}
 	}
+	if fullName := fn.FullName(); fullName != "" {
+		if existing := model.functionsByFullName[fullName]; existing != nil {
+			model.functions[fn] = existing
+			if origin := fn.Origin(); origin != nil {
+				model.functions[origin] = existing
+			}
+			return existing
+		}
+	}
 	signature, _ := fn.Type().(*types.Signature)
 	semFn := &semanticFunction{
 		name:      fn.Name(),
@@ -683,7 +692,7 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				}
 			case *ast.CallExpr:
 				if called := calledFunction(pkg, typed.Fun); called != nil {
-					semFn.calls[called.Origin()] = true
+					semFn.calls[functionOriginOrSelf(called)] = true
 				}
 				if fun, ok := ast.Unparen(typed.Fun).(*ast.FuncLit); ok {
 					recordImmediateFuncLitAsyncFacts(model, pkg, overrideFacts, semFn, fun)
@@ -732,7 +741,7 @@ func recordImmediateFuncLitAsyncFacts(
 		case *ast.CallExpr:
 			called := calledFunction(pkg, typed.Fun)
 			if called != nil {
-				semFn.calls[called.Origin()] = true
+				semFn.calls[functionOriginOrSelf(called)] = true
 			}
 			if callUsesFunctionValue(pkg, typed.Fun) {
 				markFunctionAsync(semFn, "async-function-literal-call")
@@ -917,9 +926,6 @@ func semanticFunctionFor(model *SemanticModel, fn *types.Func) *semanticFunction
 	if semFn := model.functions[fn]; semFn != nil {
 		return semFn
 	}
-	if model.functionLookupMisses[fn] {
-		return nil
-	}
 	if origin := fn.Origin(); origin != nil {
 		if semFn := model.functions[origin]; semFn != nil {
 			model.functions[fn] = semFn
@@ -931,6 +937,9 @@ func semanticFunctionFor(model *SemanticModel, fn *types.Func) *semanticFunction
 			model.functions[fn] = semFn
 			return semFn
 		}
+	}
+	if model.functionLookupMisses[fn] {
+		return nil
 	}
 	model.functionLookupMisses[fn] = true
 	return nil
@@ -961,6 +970,16 @@ unwrapped:
 		return fn
 	}
 	return nil
+}
+
+func functionOriginOrSelf(fn *types.Func) *types.Func {
+	if fn == nil {
+		return nil
+	}
+	if origin := fn.Origin(); origin != nil {
+		return origin
+	}
+	return fn
 }
 
 func callUsesFunctionValue(pkg *packages.Package, expr ast.Expr) bool {
