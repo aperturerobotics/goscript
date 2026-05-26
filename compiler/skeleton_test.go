@@ -1928,6 +1928,48 @@ func TestCompilePackagesBoxesTypedNilInterfaceValues(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesBoxesAliasPointerInterfacesWithTargetRuntimeType(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/alias-interface-box\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"type CloudError struct{}",
+			"func (*CloudError) Error() string { return \"cloud\" }",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/alias-interface-box/dep\"",
+			"type cloudError = dep.CloudError",
+			"func Build() error {",
+			"  return &cloudError{}",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "alias-interface-box", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.interfaceValue<$.GoError>(new dep.CloudError(), \"*dep.CloudError\")") {
+		t.Fatalf("alias pointer was not boxed with target runtime type:\n%s", text)
+	}
+	if strings.Contains(text, "*main.cloudError") {
+		t.Fatalf("alias pointer leaked alias runtime type:\n%s", text)
+	}
+}
+
 func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/generics\n\ngo 1.25.3\n",

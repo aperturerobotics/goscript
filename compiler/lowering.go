@@ -9705,9 +9705,28 @@ func runtimeNamedTypeName(named *types.Named) string {
 }
 
 func goRuntimeTypeString(typ types.Type) string {
-	return types.TypeString(typ, func(pkg *types.Package) string {
+	return types.TypeString(runtimeIdentityType(typ), func(pkg *types.Package) string {
 		return pkg.Name()
 	})
+}
+
+func runtimeIdentityType(typ types.Type) types.Type {
+	switch typed := typ.(type) {
+	case *types.Alias:
+		return runtimeIdentityType(types.Unalias(typed))
+	case *types.Pointer:
+		return types.NewPointer(runtimeIdentityType(typed.Elem()))
+	case *types.Slice:
+		return types.NewSlice(runtimeIdentityType(typed.Elem()))
+	case *types.Array:
+		return types.NewArray(runtimeIdentityType(typed.Elem()), typed.Len())
+	case *types.Map:
+		return types.NewMap(runtimeIdentityType(typed.Key()), runtimeIdentityType(typed.Elem()))
+	case *types.Chan:
+		return types.NewChan(typed.Dir(), runtimeIdentityType(typed.Elem()))
+	default:
+		return typ
+	}
 }
 
 func basicRuntimeName(basic *types.Basic) string {
