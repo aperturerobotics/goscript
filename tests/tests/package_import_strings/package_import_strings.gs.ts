@@ -23,16 +23,16 @@ export async function main(): globalThis.Promise<void> {
 
 	// Also test direct make with strings.Builder
 	let builderPtr: strings.Builder | $.VarRef<strings.Builder> | null = new strings.Builder()
-	strings.Builder.prototype.WriteString.call(builderPtr, "Direct make test")
-	$.println("Direct:", strings.Builder.prototype.String.call(builderPtr))
+	strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(builderPtr), "Direct make test")
+	$.println("Direct:", strings.Builder.prototype.String.call($.pointerValue<strings.Builder>(builderPtr)))
 	$.println("LastIndexByte:", strings.LastIndexByte("hello", $.uint(108, 8)))
 	$.println("LastIndex:", strings.LastIndex("hello", "l"))
 }
 
 export function printBuilderPointer(builder: strings.Builder | $.VarRef<strings.Builder> | null): void {
-	$.println("Pointer Len Before:", strings.Builder.prototype.Len.call(builder))
-	strings.Builder.prototype.WriteString.call(builder, " Pointer")
-	$.println("Pointer Len After:", strings.Builder.prototype.Len.call(builder))
+	$.println("Pointer Len Before:", strings.Builder.prototype.Len.call($.pointerValue<strings.Builder>(builder)))
+	strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(builder), " Pointer")
+	$.println("Pointer Len After:", strings.Builder.prototype.Len.call($.pointerValue<strings.Builder>(builder)))
 }
 
 if ($.isMainScript(import.meta)) {

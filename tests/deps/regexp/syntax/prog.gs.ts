@@ -448,7 +448,7 @@ export function IsWordChar(r: number): boolean {
 export function bw(b: strings.Builder | $.VarRef<strings.Builder> | null, args: $.Slice<string>): void {
 	for (let __goscriptRangeTarget0 = args, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let s = __goscriptRangeTarget0![__rangeIndex]
-		strings.Builder.prototype.WriteString.call(b, s)
+		strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), s)
 	}
 }
 
@@ -457,7 +457,7 @@ export function dumpProg(b: strings.Builder | $.VarRef<strings.Builder> | null, 
 		let i: Inst | $.VarRef<Inst> | null = $.indexRef($.pointerValue<Prog>(p).Inst!, j)
 		let pc = strconv.Itoa(j)
 		if ($.len(pc) < 3) {
-			strings.Builder.prototype.WriteString.call(b, $.sliceStringOrBytes("   ", $.len(pc), undefined))
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), $.sliceStringOrBytes("   ", $.len(pc), undefined))
 		}
 		if (j == $.pointerValue<Prog>(p).Start) {
 			pc += "*"

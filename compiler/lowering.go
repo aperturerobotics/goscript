@@ -6705,6 +6705,10 @@ func (o *LoweringOwner) lowerPointerReceiverMethodCall(
 		return "", nil, false
 	}
 	receiverExpr, diagnostics := o.lowerExpr(ctx, selector.X)
+	if o.receiverUsesOverridePackage(signature.Recv().Type()) {
+		receiverExpr = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+			"<" + o.tsTypeFor(ctx, signature.Recv().Type().(*types.Pointer).Elem()) + ">(" + receiverExpr + ")"
+	}
 	callArgs := append([]string{receiverExpr}, args...)
 	call := o.namedTypeExpr(ctx, receiver) + ".prototype." + selector.Sel.Name + ".call(" + strings.Join(callArgs, ", ") + ")"
 	return call, diagnostics, true

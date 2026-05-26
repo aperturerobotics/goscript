@@ -562,9 +562,18 @@ function matchesInterfaceType(value: any, info: TypeInfo): boolean {
     return false
   }
 
+  const methodTarget =
+    value.__isVarRef === true && 'value' in value ? value.value : value
+  if (
+    (typeof methodTarget !== 'object' && typeof methodTarget !== 'function') ||
+    methodTarget === null
+  ) {
+    return false
+  }
+
   // For interfaces, check if the value has all the required methods with compatible signatures
   return info.methods.every((requiredMethodSig) => {
-    const actualMethod = (value as any)[requiredMethodSig.name]
+    const actualMethod = (methodTarget as any)[requiredMethodSig.name]
 
     // Method must exist and be a function
     if (typeof actualMethod !== 'function') {
@@ -587,8 +596,8 @@ function matchesInterfaceType(value: any, info: TypeInfo): boolean {
 
     // If the value has a __goTypeName property, it might be a registered type
     // with more type information available
-    if (value.__goTypeName) {
-      const valueTypeInfo = typeRegistry.get(value.__goTypeName)
+    if (methodTarget.__goTypeName) {
+      const valueTypeInfo = typeRegistry.get(methodTarget.__goTypeName)
       if (valueTypeInfo && isStructTypeInfo(valueTypeInfo)) {
         // Find the matching method in the value's type info
         const valueMethodSig = valueTypeInfo.methods.find(

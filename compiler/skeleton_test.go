@@ -3139,6 +3139,41 @@ func TestCompilePackagesUnwrapsImportedVarRefValueMethodReceiver(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesUnwrapsOverridePointerMethodReceiver(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/override-pointer-receiver\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"sync/atomic\"",
+			"func Read(active *atomic.Int32) int32 {",
+			"  return active.Load()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "override-pointer-receiver", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "atomic.Int32.prototype.Load.call($.pointerValue<atomic.Int32>(active))") {
+		t.Fatalf("override pointer receiver was not unwrapped:\n%s", text)
+	}
+	if strings.Contains(text, "atomic.Int32.prototype.Load.call(active)") {
+		t.Fatalf("override pointer receiver stayed wrapped:\n%s", text)
+	}
+}
+
 func TestCompilePackagesUnwrapsImportedArrayPackageVarReads(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/imported-array-var\n\ngo 1.25.3\n",

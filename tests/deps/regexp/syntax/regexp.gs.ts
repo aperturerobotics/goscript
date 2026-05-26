@@ -560,49 +560,49 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		f = f & ~($.uint(flagPrec, 8))
 	}
 	if ($.uint((f & ~((flagOff | flagPrec))), 8) != $.uint(0, 8)) {
-		strings.Builder.prototype.WriteString.call(b, "(?")
+		strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "(?")
 		if ($.uint((f & flagI), 8) != $.uint(0, 8)) {
-			strings.Builder.prototype.WriteString.call(b, "i")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "i")
 		}
 		if ($.uint((f & flagM), 8) != $.uint(0, 8)) {
-			strings.Builder.prototype.WriteString.call(b, "m")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "m")
 		}
 		if ($.uint((f & flagS), 8) != $.uint(0, 8)) {
-			strings.Builder.prototype.WriteString.call(b, "s")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "s")
 		}
 		if ($.uint((f & (192)), 8) != $.uint(0, 8)) {
-			strings.Builder.prototype.WriteString.call(b, "-")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "-")
 			if ($.uint((f & (64)), 8) != $.uint(0, 8)) {
-				strings.Builder.prototype.WriteString.call(b, "m")
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "m")
 			}
 			if ($.uint((f & (128)), 8) != $.uint(0, 8)) {
-				strings.Builder.prototype.WriteString.call(b, "s")
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "s")
 			}
 		}
-		strings.Builder.prototype.WriteString.call(b, ":")
+		strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), ":")
 	}
 	if ($.uint((f & flagOff), 8) != $.uint(0, 8)) {
-		__defer.defer(() => { strings.Builder.prototype.WriteString.call(b, ")") })
+		__defer.defer(() => { strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), ")") })
 	}
 	if ($.uint((f & flagPrec), 8) != $.uint(0, 8)) {
-		strings.Builder.prototype.WriteString.call(b, "(?:")
-		__defer.defer(() => { strings.Builder.prototype.WriteString.call(b, ")") })
+		strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "(?:")
+		__defer.defer(() => { strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), ")") })
 	}
 
 	switch ($.pointerValue<Regexp>(re).Op) {
 		default:
 		{
-			strings.Builder.prototype.WriteString.call(b, ("<invalid op" + strconv.Itoa($.int($.pointerValue<Regexp>(re).Op))) + ">")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), ("<invalid op" + strconv.Itoa($.int($.pointerValue<Regexp>(re).Op))) + ">")
 			break
 		}
 		case OpNoMatch:
 		{
-			strings.Builder.prototype.WriteString.call(b, "[^\\x00-\\x{10FFFF}]")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "[^\\x00-\\x{10FFFF}]")
 			break
 		}
 		case OpEmptyMatch:
 		{
-			strings.Builder.prototype.WriteString.call(b, "(?:)")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "(?:)")
 			break
 		}
 		case OpLiteral:
@@ -616,24 +616,24 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 		case OpCharClass:
 		{
 			if (($.len($.pointerValue<Regexp>(re).Rune) % 2) != 0) {
-				strings.Builder.prototype.WriteString.call(b, "[invalid char class]")
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "[invalid char class]")
 				break
 			}
-			strings.Builder.prototype.WriteRune.call(b, $.int(91, 32))
+			strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(91, 32))
 			if ($.len($.pointerValue<Regexp>(re).Rune) == 0) {
-				strings.Builder.prototype.WriteString.call(b, "^\\x00-\\x{10FFFF}")
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "^\\x00-\\x{10FFFF}")
 			} else {
 				if ((($.int($.pointerValue<Regexp>(re).Rune![0], 32) == $.int(0, 32)) && ($.int($.pointerValue<Regexp>(re).Rune![$.len($.pointerValue<Regexp>(re).Rune) - 1], 32) == $.int(unicode.MaxRune, 32))) && ($.len($.pointerValue<Regexp>(re).Rune) > 2)) {
 					// Contains 0 and MaxRune. Probably a negated class.
 					// Print the gaps.
-					strings.Builder.prototype.WriteRune.call(b, $.int(94, 32))
+					strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(94, 32))
 					for (let i = 1; i < ($.len($.pointerValue<Regexp>(re).Rune) - 1); i += 2) {
 						let lo = $.int($.pointerValue<Regexp>(re).Rune![i] + 1, 32)
 						let hi = $.int($.pointerValue<Regexp>(re).Rune![i + 1] - 1, 32)
 						escape(b, $.int(lo, 32), $.int(lo, 32) == $.int(45, 32))
 						if ($.int(lo, 32) != $.int(hi, 32)) {
 							if ($.int(hi, 32) != $.int((lo + 1), 32)) {
-								strings.Builder.prototype.WriteRune.call(b, $.int(45, 32))
+								strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(45, 32))
 							}
 							escape(b, $.int(hi, 32), $.int(hi, 32) == $.int(45, 32))
 						}
@@ -645,69 +645,69 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 						escape(b, $.int(lo, 32), $.int(lo, 32) == $.int(45, 32))
 						if ($.int(lo, 32) != $.int(hi, 32)) {
 							if ($.int(hi, 32) != $.int((lo + 1), 32)) {
-								strings.Builder.prototype.WriteRune.call(b, $.int(45, 32))
+								strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(45, 32))
 							}
 							escape(b, $.int(hi, 32), $.int(hi, 32) == $.int(45, 32))
 						}
 					}
 				}
 			}
-			strings.Builder.prototype.WriteRune.call(b, $.int(93, 32))
+			strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(93, 32))
 			break
 		}
 		case OpAnyCharNotNL:
 		case OpAnyChar:
 		{
-			strings.Builder.prototype.WriteString.call(b, ".")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), ".")
 			break
 		}
 		case OpBeginLine:
 		{
-			strings.Builder.prototype.WriteString.call(b, "^")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "^")
 			break
 		}
 		case OpEndLine:
 		{
-			strings.Builder.prototype.WriteString.call(b, "$")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "$")
 			break
 		}
 		case OpBeginText:
 		{
-			strings.Builder.prototype.WriteString.call(b, "\\A")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\A")
 			break
 		}
 		case OpEndText:
 		{
 			if ($.uint(($.pointerValue<Regexp>(re).Flags & 256), 16) != $.uint(0, 16)) {
-				strings.Builder.prototype.WriteString.call(b, "$")
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "$")
 			} else {
-				strings.Builder.prototype.WriteString.call(b, "\\z")
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\z")
 			}
 			break
 		}
 		case OpWordBoundary:
 		{
-			strings.Builder.prototype.WriteString.call(b, "\\b")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\b")
 			break
 		}
 		case OpNoWordBoundary:
 		{
-			strings.Builder.prototype.WriteString.call(b, "\\B")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\B")
 			break
 		}
 		case OpCapture:
 		{
 			if (!$.stringEqual($.pointerValue<Regexp>(re).Name, "")) {
-				strings.Builder.prototype.WriteString.call(b, "(?P<")
-				strings.Builder.prototype.WriteString.call(b, $.pointerValue<Regexp>(re).Name)
-				strings.Builder.prototype.WriteRune.call(b, $.int(62, 32))
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "(?P<")
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), $.pointerValue<Regexp>(re).Name)
+				strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(62, 32))
 			} else {
-				strings.Builder.prototype.WriteRune.call(b, $.int(40, 32))
+				strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(40, 32))
 			}
 			if ($.uint($.pointerValue<Regexp>($.pointerValue<Regexp>(re).Sub![0]).Op, 8) != $.uint(OpEmptyMatch, 8)) {
 				writeRegexp(b, $.pointerValue<Regexp>(re).Sub![0], $.uint($.mapGet(flags, $.pointerValue<Regexp>(re).Sub![0], 0)[0], 8), flags)
 			}
-			strings.Builder.prototype.WriteRune.call(b, $.int(41, 32))
+			strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(41, 32))
 			break
 		}
 		case OpStar:
@@ -725,35 +725,35 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 			switch ($.pointerValue<Regexp>(re).Op) {
 				case OpStar:
 				{
-					strings.Builder.prototype.WriteRune.call(b, $.int(42, 32))
+					strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(42, 32))
 					break
 				}
 				case OpPlus:
 				{
-					strings.Builder.prototype.WriteRune.call(b, $.int(43, 32))
+					strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(43, 32))
 					break
 				}
 				case OpQuest:
 				{
-					strings.Builder.prototype.WriteRune.call(b, $.int(63, 32))
+					strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(63, 32))
 					break
 				}
 				case OpRepeat:
 				{
-					strings.Builder.prototype.WriteRune.call(b, $.int(123, 32))
-					strings.Builder.prototype.WriteString.call(b, strconv.Itoa($.pointerValue<Regexp>(re).Min))
+					strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(123, 32))
+					strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), strconv.Itoa($.pointerValue<Regexp>(re).Min))
 					if ($.pointerValue<Regexp>(re).Max != $.pointerValue<Regexp>(re).Min) {
-						strings.Builder.prototype.WriteRune.call(b, $.int(44, 32))
+						strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(44, 32))
 						if ($.pointerValue<Regexp>(re).Max >= 0) {
-							strings.Builder.prototype.WriteString.call(b, strconv.Itoa($.pointerValue<Regexp>(re).Max))
+							strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), strconv.Itoa($.pointerValue<Regexp>(re).Max))
 						}
 					}
-					strings.Builder.prototype.WriteRune.call(b, $.int(125, 32))
+					strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(125, 32))
 					break
 				}
 			}
 			if ($.uint(($.pointerValue<Regexp>(re).Flags & 32), 16) != $.uint(0, 16)) {
-				strings.Builder.prototype.WriteRune.call(b, $.int(63, 32))
+				strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(63, 32))
 			}
 			break
 		}
@@ -774,7 +774,7 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 			for (let __goscriptRangeTarget7 = $.pointerValue<Regexp>(re).Sub, i = 0; i < $.len(__goscriptRangeTarget7); i++) {
 				let sub = __goscriptRangeTarget7![i]
 				if (i > 0) {
-					strings.Builder.prototype.WriteRune.call(b, $.int(124, 32))
+					strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(124, 32))
 				}
 				writeRegexp(b, sub, $.uint(0, 8), flags)
 			}
@@ -786,57 +786,57 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 export function escape(b: strings.Builder | $.VarRef<strings.Builder> | null, r: number, force: boolean): void {
 	if (unicode.IsPrint($.int(r, 32))) {
 		if (strings.ContainsRune(meta, $.int(r, 32)) || force) {
-			strings.Builder.prototype.WriteRune.call(b, $.int(92, 32))
+			strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(92, 32))
 		}
-		strings.Builder.prototype.WriteRune.call(b, $.int(r, 32))
+		strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(r, 32))
 		return
 	}
 
 	switch (r) {
 		case 7:
 		{
-			strings.Builder.prototype.WriteString.call(b, "\\a")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\a")
 			break
 		}
 		case 12:
 		{
-			strings.Builder.prototype.WriteString.call(b, "\\f")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\f")
 			break
 		}
 		case 10:
 		{
-			strings.Builder.prototype.WriteString.call(b, "\\n")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\n")
 			break
 		}
 		case 13:
 		{
-			strings.Builder.prototype.WriteString.call(b, "\\r")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\r")
 			break
 		}
 		case 9:
 		{
-			strings.Builder.prototype.WriteString.call(b, "\\t")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\t")
 			break
 		}
 		case 11:
 		{
-			strings.Builder.prototype.WriteString.call(b, "\\v")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\v")
 			break
 		}
 		default:
 		{
 			if (r < 0x100) {
-				strings.Builder.prototype.WriteString.call(b, "\\x")
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\x")
 				let s = strconv.FormatInt($.int($.int(r)), 16)
 				if ($.len(s) == 1) {
-					strings.Builder.prototype.WriteRune.call(b, $.int(48, 32))
+					strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(48, 32))
 				}
-				strings.Builder.prototype.WriteString.call(b, s)
+				strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), s)
 				break
 			}
-			strings.Builder.prototype.WriteString.call(b, "\\x{")
-			strings.Builder.prototype.WriteString.call(b, strconv.FormatInt($.int($.int(r)), 16))
-			strings.Builder.prototype.WriteString.call(b, "}")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "\\x{")
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), strconv.FormatInt($.int($.int(r)), 16))
+			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), "}")
 			break
 		}
 	}

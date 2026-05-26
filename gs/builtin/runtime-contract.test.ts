@@ -513,6 +513,12 @@ describe('builtin runtime contract helpers', () => {
       }),
     ).toEqual({ value: null, ok: true })
 
+    const dogRef = interfaceValue<{ Name(): string } | null>(
+      { value: markAsStructValue(new TypedDog()), __isVarRef: true },
+      '*phase5.TypedDog',
+    )
+    expect(typeAssert<{ Name(): string }>(dogRef, dogInterface).ok).toBe(true)
+
     const greet = namedFunction(
       (name: string) => `hello ${name}`,
       'phase5.Greet',

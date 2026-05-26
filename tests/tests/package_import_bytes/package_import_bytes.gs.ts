@@ -102,9 +102,9 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test Buffer pointer receiver calls through an address-taken pointer.
 	let ptr: bytes.Buffer | $.VarRef<bytes.Buffer> | null = buf
-	bytes.Buffer.prototype.Write.call(ptr, new Uint8Array([112, 116, 114]))
-	$.println("Pointer buffer content:", bytes.Buffer.prototype.String.call(ptr))
-	bytes.Buffer.prototype.Reset.call(ptr)
+	bytes.Buffer.prototype.Write.call($.pointerValue<bytes.Buffer>(ptr), new Uint8Array([112, 116, 114]))
+	$.println("Pointer buffer content:", bytes.Buffer.prototype.String.call($.pointerValue<bytes.Buffer>(ptr)))
+	bytes.Buffer.prototype.Reset.call($.pointerValue<bytes.Buffer>(ptr))
 
 	// Test Buffer as Reader interface through an address expression.
 	buf.value.WriteString("abc")

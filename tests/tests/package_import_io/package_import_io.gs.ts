@@ -239,7 +239,7 @@ export async function main(): globalThis.Promise<void> {
 	err = __goscriptTuple6[1]
 	$.println("Copy bytes WriteTo async writer - bytes:", $.int(n64), "err:", err == null)
 	let viewBacking: $.Slice<number> = $.arrayToSlice<number>([$.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(99, 8)])
-	let __goscriptTuple7: any = bytes.Buffer.prototype.Read.call(bytes.NewBuffer(new Uint8Array([118, 105, 101, 119])), $.goSlice(viewBacking, undefined, 4))
+	let __goscriptTuple7: any = bytes.Buffer.prototype.Read.call($.pointerValue<bytes.Buffer>(bytes.NewBuffer(new Uint8Array([118, 105, 101, 119]))), $.goSlice(viewBacking, undefined, 4))
 	n = __goscriptTuple7[0]
 	err = __goscriptTuple7[1]
 	$.println("Read into byte slice view - bytes:", n, "data:", $.bytesToString(viewBacking), "err:", err == null)
@@ -255,22 +255,22 @@ export async function main(): globalThis.Promise<void> {
 	let done = $.makeChannel<boolean>(1, false, "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		let __goscriptShadow0: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
-		let [__goscriptShadow1, __goscriptShadow2] = io.PipeReader.prototype.Read.call(reader, __goscriptShadow0)
+		let [__goscriptShadow1, __goscriptShadow2] = io.PipeReader.prototype.Read.call($.pointerValue<io.PipeReader>(reader), __goscriptShadow0)
 		$.println("Pipe read - bytes:", __goscriptShadow1, "data:", $.bytesToString($.goSlice(__goscriptShadow0, undefined, __goscriptShadow1)), "err:", __goscriptShadow2 == null)
-		let __goscriptTuple10: any = io.PipeReader.prototype.Read.call(reader, __goscriptShadow0)
+		let __goscriptTuple10: any = io.PipeReader.prototype.Read.call($.pointerValue<io.PipeReader>(reader), __goscriptShadow0)
 		__goscriptShadow1 = __goscriptTuple10[0]
 		__goscriptShadow2 = __goscriptTuple10[1]
 		$.println("Pipe read EOF - bytes:", __goscriptShadow1, "err EOF:", $.comparableEqual(__goscriptShadow2, io.EOF))
 		await $.chanSend(done, true)
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
-	let __goscriptTuple11: any = io.PipeWriter.prototype.Write.call(writer, new Uint8Array([104, 101, 108, 108, 111]))
+	let __goscriptTuple11: any = io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([104, 101, 108, 108, 111]))
 	n = __goscriptTuple11[0]
 	err = __goscriptTuple11[1]
 	$.println("Pipe write - bytes:", n, "err:", err == null)
-	err = io.PipeWriter.prototype.Close.call(writer)
+	err = io.PipeWriter.prototype.Close.call($.pointerValue<io.PipeWriter>(writer))
 	$.println("Pipe close err:", err == null)
 	await $.chanRecv(done)
-	let __goscriptTuple12: any = io.PipeWriter.prototype.Write.call(writer, new Uint8Array([97, 103, 97, 105, 110]))
+	let __goscriptTuple12: any = io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([97, 103, 97, 105, 110]))
 	n = __goscriptTuple12[0]
 	err = __goscriptTuple12[1]
 	$.println("Pipe write after close - bytes:", n, "err closed:", $.comparableEqual(err, io.ErrClosedPipe))
