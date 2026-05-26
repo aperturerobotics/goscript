@@ -661,7 +661,7 @@ export function goSlice<T>( // T can be number for Uint8Array case
   const newOffset = oldOffset + low
 
   // OPTIMIZATION: If the result would have offset=0 and length=capacity, return backing directly
-  if (newOffset === 0 && newLength === newCap) {
+  if (newOffset === 0 && newLength === newCap && backing.length === newLength) {
     return backing as Slice<T>
   }
 

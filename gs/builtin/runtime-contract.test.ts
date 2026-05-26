@@ -359,6 +359,11 @@ describe('builtin runtime contract helpers', () => {
     expect([...afterAppend!]).toEqual([7, 8, 9])
     expect(beforeAppend![0]).toBe(7)
 
+    const splitLeft = goSlice(afterAppend, 0, 1, 1)
+    expect(len(splitLeft)).toBe(1)
+    expect(cap(splitLeft)).toBe(1)
+    expect([...splitLeft!]).toEqual([7])
+
     const text = varRef('abc')
     const headerBytes = varRef(makeSlice<number>(0, 0, 'byte'))
     const strh = pointerValue(stringHeaderRef(text))
