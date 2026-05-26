@@ -10,10 +10,16 @@ import * as proto from "@goscript/github.com/aperturerobotics/protobuf-go-lite/i
 import * as sync from "@goscript/sync/index.js"
 
 import * as __goscript_broadcast from "./broadcast.gs.ts"
+
+import * as __goscript_compat from "./compat.gs.ts"
+
+import * as __goscript_locked from "./locked.gs.ts"
 import "@goscript/context/index.js"
 import "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
 import "@goscript/sync/index.js"
 import "./broadcast.gs.ts"
+import "./compat.gs.ts"
+import "./locked.gs.ts"
 
 export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, (null as ((a: any, b: any) => boolean | globalThis.Promise<boolean>) | null))
@@ -22,10 +28,10 @@ export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, 
 export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null, equal: ((a: any, b: any) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<$.GoError> {
 	let ch: $.Channel<{}> | null = null as $.Channel<{}> | null
 	let val: any = $.genericZero(__typeArgs, "T", null)
-	await __goscript_broadcast.Broadcast.prototype.HoldLock.call(bcast, $.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
-		ch = await getWaitCh!()
-		val = await snapshot!()
-	}, ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo)))
+	let locked = $.varRef($.markAsStructValue($.cloneStructValue(await __goscript_broadcast.Broadcast.prototype.Lock.call(bcast))))
+	ch = locked.value.WaitCh()
+	val = await snapshot!()
+	locked.value.Unlock()
 	{
 		let err = await send!(val)
 		if (err != null) {
@@ -54,10 +60,10 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 		if (__goscriptSelect0HasReturn) {
 			return __goscriptSelect0Value
 		}
-		await __goscript_broadcast.Broadcast.prototype.HoldLock.call(bcast, $.functionValue(async (_p0: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null): globalThis.Promise<void> => {
-			ch = await getWaitCh!()
-			val = await snapshot!()
-		}, ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo)))
+		let __goscriptShadow0 = $.varRef($.markAsStructValue($.cloneStructValue(await __goscript_broadcast.Broadcast.prototype.Lock.call(bcast))))
+		ch = __goscriptShadow0.value.WaitCh()
+		val = await snapshot!()
+		__goscriptShadow0.value.Unlock()
 		if ($.comparableEqual(val, prev)) {
 			continue
 		}
