@@ -39,7 +39,7 @@ export class helperState {
 }
 
 export function newHelperState(): helperState | $.VarRef<helperState> | null {
-	return new helperState({text: suffix()})
+	return (() => { const __goscriptLiteralField0 = suffix(); return new helperState({text: __goscriptLiteralField0}) })()
 }
 
 export function suffix(): string {

@@ -1616,7 +1616,7 @@ export async function compile(expr: string, mode: syntax.Flags, longest: boolean
 	if (matchcap < 2) {
 		matchcap = 2
 	}
-	let regexp: Regexp | $.VarRef<Regexp> | null = new Regexp({expr: expr, prog: prog, onepass: await __goscript_onepass.compileOnePass(prog), numSubexp: maxCap, subexpNames: capNames, cond: $.uint(syntax.Prog.prototype.StartCond.call(prog), 8), longest: longest, matchcap: matchcap, minInputLen: minInputLen(re)})
+	let regexp: Regexp | $.VarRef<Regexp> | null = (await (async () => { const __goscriptLiteralField0 = await __goscript_onepass.compileOnePass(prog); const __goscriptLiteralField1 = $.uint(syntax.Prog.prototype.StartCond.call(prog), 8); const __goscriptLiteralField2 = minInputLen(re); return new Regexp({expr: expr, prog: prog, onepass: __goscriptLiteralField0, numSubexp: maxCap, subexpNames: capNames, cond: __goscriptLiteralField1, longest: longest, matchcap: matchcap, minInputLen: __goscriptLiteralField2}) })())
 	if ($.pointerValue<Regexp>(regexp).onepass == null) {
 		let __goscriptTuple19: any = syntax.Prog.prototype.Prefix.call(prog)
 		$.pointerValue<Regexp>(regexp).prefix = __goscriptTuple19[0]

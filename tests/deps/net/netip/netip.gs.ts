@@ -1481,7 +1481,7 @@ export function AddrFrom4(addr: Uint8Array): Addr {
 }
 
 export function AddrFrom16(addr: Uint8Array): Addr {
-	return $.markAsStructValue(new Addr({addr: $.markAsStructValue(new __goscript_uint128.uint128({hi: $.uint(byteorder.BEUint64($.goSlice(addr, undefined, 8)), 64), lo: $.uint(byteorder.BEUint64($.goSlice(addr, 8, undefined)), 64)})), z: $.markAsStructValue($.cloneStructValue(z6noz))}))
+	return $.markAsStructValue(new Addr({addr: (() => { const __goscriptLiteralField0 = $.uint(byteorder.BEUint64($.goSlice(addr, undefined, 8)), 64); const __goscriptLiteralField1 = $.uint(byteorder.BEUint64($.goSlice(addr, 8, undefined)), 64); return $.markAsStructValue(new __goscript_uint128.uint128({hi: __goscriptLiteralField0, lo: __goscriptLiteralField1})) })(), z: $.markAsStructValue($.cloneStructValue(z6noz))}))
 }
 
 export function ParseAddr(s: string): [Addr, $.GoError] {
@@ -1848,7 +1848,7 @@ export function PrefixFrom(ip: Addr, bits: number): Prefix {
 	if ((!$.markAsStructValue($.cloneStructValue(ip)).isZero() && (bits >= 0)) && (bits <= $.markAsStructValue($.cloneStructValue(ip)).BitLen())) {
 		bitsPlusOne = $.uint($.uint(bits, 8) + 1, 8)
 	}
-	return $.markAsStructValue(new Prefix({ip: $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(ip)).withoutZone())), bitsPlusOne: $.uint(bitsPlusOne, 8)}))
+	return (() => { const __goscriptLiteralField2 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(ip)).withoutZone())); return $.markAsStructValue(new Prefix({ip: __goscriptLiteralField2, bitsPlusOne: $.uint(bitsPlusOne, 8)})) })()
 }
 
 export function ParsePrefix(s: string): [Prefix, $.GoError] {
@@ -1858,7 +1858,7 @@ export function ParsePrefix(s: string): [Prefix, $.GoError] {
 	}
 	let [ip, err] = ParseAddr($.sliceStringOrBytes(s, undefined, i))
 	if (err != null) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: $.pointerValue<Exclude<$.GoError, null>>(err).Error()})), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField3 = $.pointerValue<Exclude<$.GoError, null>>(err).Error(); return $.markAsStructValue(new parsePrefixError({_in: s, msg: __goscriptLiteralField3})) })(), "netip.parsePrefixError")]
 	}
 	// IPv6 zones are not allowed: https://go.dev/issue/51899
 	if ($.markAsStructValue($.cloneStructValue(ip)).Is6() && (ip.z != z6noz)) {

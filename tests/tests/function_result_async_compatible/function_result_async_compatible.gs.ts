@@ -56,7 +56,7 @@ export class box {
 export async function asyncBox(): globalThis.Promise<box | $.VarRef<box> | null> {
 	let ch = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(ch, 7)
-	return new box({value: await $.chanRecv(ch)})
+	return (await (async () => { const __goscriptLiteralField0 = await $.chanRecv(ch); return new box({value: __goscriptLiteralField0}) })())
 }
 
 export function unwrap(v: Value | null): Value | null {

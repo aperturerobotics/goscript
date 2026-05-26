@@ -7719,6 +7719,7 @@ func (o *LoweringOwner) lowerStructCompositeLit(
 ) (string, []Diagnostic) {
 	structType, _ := named.Underlying().(*types.Struct)
 	fields := make([]string, 0, len(lit.Elts))
+	var prelude []string
 	var diagnostics []Diagnostic
 	for idx, elt := range lit.Elts {
 		fieldName := ""
@@ -7748,6 +7749,11 @@ func (o *LoweringOwner) lowerStructCompositeLit(
 		value, valueDiagnostics := o.lowerExpr(ctx, valueExpr)
 		diagnostics = append(diagnostics, valueDiagnostics...)
 		value = o.lowerValueForTarget(ctx, valueExpr, fieldType, value)
+		if compositeLiteralFieldNeedsPreEval(ctx, valueExpr) {
+			temp := ctx.tempName("LiteralField")
+			prelude = append(prelude, "const "+temp+" = "+value)
+			value = temp
+		}
 		fields = append(fields, fieldName+": "+value)
 	}
 
@@ -7758,7 +7764,28 @@ func (o *LoweringOwner) lowerStructCompositeLit(
 	if markStruct {
 		expr = o.runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue) + "(" + expr + ")"
 	}
+	if len(prelude) != 0 {
+		body := strings.Join(prelude, "; ") + "; return " + expr
+		if strings.Contains(body, "await ") {
+			return "(await (async () => { " + body + " })())", diagnostics
+		}
+		return "(() => { " + body + " })()", diagnostics
+	}
 	return expr, diagnostics
+}
+
+func compositeLiteralFieldNeedsPreEval(ctx lowerFileContext, expr ast.Expr) bool {
+	switch typed := unwrapParenExpr(expr).(type) {
+	case *ast.CallExpr:
+		if ident, ok := typed.Fun.(*ast.Ident); ok && isBuiltinCallTarget(ctx, ident) {
+			return false
+		}
+		return typeFromExpr(ctx, typed.Fun) == nil
+	case *ast.UnaryExpr:
+		return typed.Op == token.ARROW
+	default:
+		return false
+	}
 }
 
 func (o *LoweringOwner) lowerAnonymousStructCompositeLit(

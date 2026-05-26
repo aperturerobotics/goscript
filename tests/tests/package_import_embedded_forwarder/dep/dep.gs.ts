@@ -61,5 +61,5 @@ export class BaseStore {
 }
 
 export function NewBaseStore(prefix: string): BaseStore | $.VarRef<BaseStore> | null {
-	return new BaseStore({CoreStore: inner.NewCoreStore(prefix)})
+	return (() => { const __goscriptLiteralField0 = inner.NewCoreStore(prefix); return new BaseStore({CoreStore: __goscriptLiteralField0}) })()
 }

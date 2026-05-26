@@ -75,7 +75,7 @@ export class VerboseStore {
 }
 
 export function NewVerboseStore(name: string): VerboseStore | $.VarRef<VerboseStore> | null {
-	return new VerboseStore({BaseStore: dep.NewBaseStore(name), name: name})
+	return (() => { const __goscriptLiteralField0 = dep.NewBaseStore(name); return new VerboseStore({BaseStore: __goscriptLiteralField0, name: name}) })()
 }
 
 export function useStore(store: Store | null): void {

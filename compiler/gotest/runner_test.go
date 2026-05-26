@@ -161,6 +161,55 @@ func TestRunnerAwaitsAsyncDependencyCallsInTests(t *testing.T) {
 	}
 }
 
+func TestRunnerEvaluatesStructLiteralCallsBeforeFieldCopies(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/literalorder\n\ngo 1.25.3\n",
+		"value_test.go": strings.Join([]string{
+			"package literalorder",
+			"",
+			"import \"testing\"",
+			"",
+			"type result struct {",
+			"\tvalue int",
+			"\terr error",
+			"}",
+			"",
+			"func fill(value *int) error {",
+			"\t*value = 7",
+			"\treturn nil",
+			"}",
+			"",
+			"func recv() result {",
+			"\tvar value int",
+			"\treturn result{value: value, err: fill(&value)}",
+			"}",
+			"",
+			"func TestLiteralOrder(t *testing.T) {",
+			"\tres := recv()",
+			"\tif res.err != nil {",
+			"\t\tt.Fatalf(\"unexpected error: %v\", res.err)",
+			"\t}",
+			"\tif res.value != 7 {",
+			"\t\tt.Fatalf(\"unexpected value: %d\", res.value)",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"."},
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("run literal order package: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected literal order package to pass: %#v", result.Packages)
+	}
+}
+
 func TestRunnerRunsExternalPackageTest(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/external\n\ngo 1.25.3\n",
