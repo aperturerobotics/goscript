@@ -8,14 +8,14 @@ export async function register(cb: (() => void) | null): globalThis.Promise<(() 
 	await cb!()
 	return $.functionValue((): void => {
 		$.println("release")
-	}, { kind: $.TypeKind.Function, params: [], results: [] })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo))
 }
 
 export async function main(): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
 	const __goscriptDeferCallee0 = await register($.functionValue((): void => {
 		$.println("callback")
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	__defer.defer(async () => { await __goscriptDeferCallee0!() })
 	$.println("body")
 }

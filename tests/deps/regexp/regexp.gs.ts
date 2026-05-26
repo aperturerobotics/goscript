@@ -256,7 +256,7 @@ export class Regexp {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
 			result = $.append(result, $.goSlice(b, match![0], match![1], match![1]))
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
 		return result
 	}
 
@@ -271,7 +271,7 @@ export class Regexp {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
 			result = $.append(result, $.goSlice(match, 0, 2))
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
 		return result
 	}
 
@@ -286,7 +286,7 @@ export class Regexp {
 				result = $.makeSlice<string>(0, startSize, "string")
 			}
 			result = $.append(result, $.sliceStringOrBytes(s, match![0], match![1]))
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
 		return result
 	}
 
@@ -301,7 +301,7 @@ export class Regexp {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
 			result = $.append(result, $.goSlice(match, 0, 2))
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
 		return result
 	}
 
@@ -322,7 +322,7 @@ export class Regexp {
 				}
 			}
 			result = $.append(result, slice)
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
 		return result
 	}
 
@@ -337,7 +337,7 @@ export class Regexp {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
 			result = $.append(result, match)
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
 		return result
 	}
 
@@ -358,7 +358,7 @@ export class Regexp {
 				}
 			}
 			result = $.append(result, slice)
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
 		return result
 	}
 
@@ -373,7 +373,7 @@ export class Regexp {
 				result = $.makeSlice<$.Slice<number>>(0, startSize)
 			}
 			result = $.append(result, match)
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
 		return result
 	}
 
@@ -513,7 +513,7 @@ export class Regexp {
 				srepl = $.bytesToString(repl)
 			}
 			return Regexp.prototype.expand.call(re, dst, srepl, src, "", match)
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
 		return b
 	}
 
@@ -521,21 +521,21 @@ export class Regexp {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
 			return $.append(dst, ...(await repl!($.goSlice(src, match![0], match![1])) ?? []))
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
 	}
 
 	public async ReplaceAllLiteral(src: $.Slice<number>, repl: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return $.append(dst, ...(repl ?? []))
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
 	}
 
 	public async ReplaceAllLiteralString(src: string, repl: string): globalThis.Promise<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		return $.bytesToString(await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return $.append(dst, ...($.stringToBytes(repl) ?? []))
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] })))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo))))
 	}
 
 	public async ReplaceAllString(src: string, repl: string): globalThis.Promise<string> {
@@ -546,7 +546,7 @@ export class Regexp {
 		}
 		let b: $.Slice<number> = await Regexp.prototype.replaceAll.call(re, null, src, n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return Regexp.prototype.expand.call(re, dst, repl, null, src, match)
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
 		return $.bytesToString(b)
 	}
 
@@ -554,7 +554,7 @@ export class Regexp {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let b: $.Slice<number> = await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
 			return $.append(dst, ...($.stringToBytes(await repl!($.sliceStringOrBytes(src, match![0], match![1]))) ?? []))
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
 		return $.bytesToString(b)
 	}
 

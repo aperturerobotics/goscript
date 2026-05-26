@@ -8,7 +8,7 @@ export async function main(): globalThis.Promise<void> {
 	let msgs = $.makeChannel<string>(1, "", "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanSend(msgs, "anonymous function worker")
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 	$.println(await $.chanRecv(msgs))
 }
 

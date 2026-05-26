@@ -17,7 +17,7 @@ export async function main(): globalThis.Promise<void> {
 			return [12, v + "_processed_flag_true", null]
 		}
 		return [1, v + "_processed_flag_false", null]
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, "error"] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, "error"] } as $.FunctionTypeInfo))
 
 	let std = 2
 

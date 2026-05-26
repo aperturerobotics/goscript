@@ -16,7 +16,7 @@ export function newOpener(ch: $.Channel<$.GoError> | null): ((_p0: Callback) => 
 			}
 		}
 		return await $.chanRecv(ch)
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: ["error"] }], results: ["error"] })
+	}, ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)], results: ["error"] } as $.FunctionTypeInfo))
 }
 
 export async function use(op: ((_p0: Callback) => $.GoError | globalThis.Promise<$.GoError>) | null, cb: (() => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
@@ -28,7 +28,7 @@ export async function main(): globalThis.Promise<void> {
 	await $.chanSend(ch, null)
 	let err = await use(newOpener(ch), $.functionValue((): $.GoError => {
 		return null
-	}, { kind: $.TypeKind.Function, params: [], results: ["error"] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)))
 	$.println("alias opener ok", err == null)
 }
 

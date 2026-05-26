@@ -23,7 +23,7 @@ export function simpleIterator(m: Map<string, number> | null): ((_p0: ((_p0: str
 				break
 			}
 		}
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }], results: [] })
+	}, ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo))
 }
 
 export async function main(): globalThis.Promise<void> {

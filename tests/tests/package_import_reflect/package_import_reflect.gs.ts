@@ -216,7 +216,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test function type
 	let fn: ((_p0: number) => string | globalThis.Promise<string>) | null = $.functionValue((_p0: number): string => {
 		return ""
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] } as $.FunctionTypeInfo))
 	let fnVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(fn, "func(int) string"))))
 	$.println("Function type:", $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(fnVal)).Type()).String())
 	$.println("Function kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(fnVal)).Kind()))

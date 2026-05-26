@@ -10,7 +10,7 @@ export async function main(): globalThis.Promise<void> {
 		using __defer = new $.DisposableStack()
 		__defer.defer(() => { $.println("func deferred", name) })
 		$.println("func body", name)
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [] } as $.FunctionTypeInfo))
 	await release!("first")
 	await release!("second")
 	$.println("main")

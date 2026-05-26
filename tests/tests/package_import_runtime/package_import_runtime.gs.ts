@@ -36,7 +36,7 @@ export async function main(): globalThis.Promise<void> {
 	let box = $.varRef({value: 1})
 	let cleanup = $.markAsStructValue($.cloneStructValue(runtime.AddCleanup(box, $.functionValue((value: number): void => {
 		$.println("cleanup should not run during test:", value)
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] }), 1)))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] } as $.FunctionTypeInfo)), 1)))
 	$.markAsStructValue($.cloneStructValue(cleanup)).Stop()
 	runtime.KeepAlive($.interfaceValue<any>(box, "*struct{value int}"))
 	$.println("Cleanup stopped")

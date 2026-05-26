@@ -46,7 +46,7 @@ export async function main(): globalThis.Promise<void> {
 		let current = counter
 		await time.Sleep($.int64Mul(100, time.Millisecond))
 		counter = current + 1
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] } as $.FunctionTypeInfo))
 
 	// Start worker goroutines
 	for (let i = 0; i < numWorkers; i++) {
@@ -58,7 +58,7 @@ export async function main(): globalThis.Promise<void> {
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await wg.value.Wait()
 		done!.close()
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 
 	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{

@@ -35,7 +35,7 @@ export class Setting {
 	public async Value(): globalThis.Promise<string> {
 		const s: Setting | $.VarRef<Setting> | null = this
 		await $.pointerValue<Setting>(s).once.Do($.functionValue((): void => {
-		}, { kind: $.TypeKind.Function, params: [], results: [] }))
+		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 		return ""
 	}
 
@@ -56,7 +56,7 @@ export async function newCallback(name: string): globalThis.Promise<(() => void)
 	await Setting.prototype.Value.call(s)
 	return $.functionValue((): void => {
 		$.println("callback:", name)
-	}, { kind: $.TypeKind.Function, params: [], results: [] })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo))
 }
 
 function __goscriptInit0(): void {

@@ -43,7 +43,7 @@ export class Worker {
 		const w: Worker | $.VarRef<Worker> | null = this
 		queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 			await $.chanRecv($.pointerValue<Worker>(w).ch)
-		}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 		return null
 	}
 

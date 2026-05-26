@@ -240,13 +240,13 @@ export class parser {
 		let p: parser | $.VarRef<parser> | null = this
 		if ($.uint(($.pointerValue<parser>(p).flags & FoldCase), 16) == $.uint(0, 16)) {
 			if (g.sign < 0) {
-				r = appendNegatedClass(r, g.class)
+				r = appendNegatedClass(r, g._class)
 			} else {
-				r = appendClass(r, g.class)
+				r = appendClass(r, g._class)
 			}
 		} else {
 			let tmp: $.Slice<number> = $.goSlice($.pointerValue<parser>(p).tmpClass, undefined, 0)
-			tmp = appendFoldedClass(tmp, g.class)
+			tmp = appendFoldedClass(tmp, g._class)
 			$.pointerValue<parser>(p).tmpClass = tmp
 			tmp = cleanClass($.pointerValue<parser>(p)._fields.tmpClass)
 			if (g.sign < 0) {
@@ -1685,22 +1685,22 @@ export class charGroup {
 		this._fields.sign.value = value
 	}
 
-	public get class(): $.Slice<number> {
-		return this._fields.class.value
+	public get _class(): $.Slice<number> {
+		return this._fields._class.value
 	}
-	public set class(value: $.Slice<number>) {
-		this._fields.class.value = value
+	public set _class(value: $.Slice<number>) {
+		this._fields._class.value = value
 	}
 
 	public _fields: {
 		sign: $.VarRef<number>
-		class: $.VarRef<$.Slice<number>>
+		_class: $.VarRef<$.Slice<number>>
 	}
 
-	constructor(init?: Partial<{sign?: number, class?: $.Slice<number>}>) {
+	constructor(init?: Partial<{sign?: number, _class?: $.Slice<number>}>) {
 		this._fields = {
 			sign: $.varRef(init?.sign ?? 0),
-			class: $.varRef(init?.class ?? null)
+			_class: $.varRef(init?._class ?? null)
 		}
 	}
 
@@ -1708,7 +1708,7 @@ export class charGroup {
 		const cloned = new charGroup()
 		cloned._fields = {
 			sign: $.varRef(this._fields.sign.value),
-			class: $.varRef(this._fields.class.value)
+			_class: $.varRef(this._fields._class.value)
 		}
 		return $.markAsStructValue(cloned)
 	}
@@ -1718,7 +1718,7 @@ export class charGroup {
 		() => new charGroup(),
 		[],
 		charGroup,
-		{"sign": { kind: $.TypeKind.Basic, name: "int" }, "class": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"sign": { kind: $.TypeKind.Basic, name: "int" }, "_class": { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, name: "class" }}
 	)
 }
 
@@ -1975,7 +1975,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 				}
 			}
 		}
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 
 	if ($.uint((flags & Literal), 16) != $.uint(0, 16)) {
 		// Trivial parser for literal string.
@@ -2538,7 +2538,7 @@ export function inCharClass(r: number, _class: $.Slice<number>): boolean {
 			return -1
 		}
 		return 0
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 	return ok
 }
 

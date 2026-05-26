@@ -53,7 +53,7 @@ export async function main(): globalThis.Promise<void> {
 			return 1
 		}
 		return 0
-	}, { kind: $.TypeKind.Function, params: ["main.field", "main.field"], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
+	}, ({ kind: $.TypeKind.Function, params: ["main.field", "main.field"], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 
 	$.println("fields after:", fields)
 }

@@ -1971,7 +1971,7 @@ func TestCompilePackagesEmitsRecursiveFunctionTypeInfo(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export type Handler = ((_p0: ((_p0: Handler | null) => Handler | null | globalThis.Promise<Handler | null>) | null) => Handler | null | globalThis.Promise<Handler | null>) | null",
-		"\"Next\": { kind: $.TypeKind.Function, name: \"main.Handler\"",
+		"\"Next\": ({ kind: $.TypeKind.Function, name: \"main.Handler\"",
 		"params: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
 		"results: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
 	} {

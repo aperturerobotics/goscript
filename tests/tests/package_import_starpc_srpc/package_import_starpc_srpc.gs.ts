@@ -121,7 +121,7 @@ export async function main(): globalThis.Promise<void> {
 	$.pointerValue<Exclude<srpc.Mux, null>>(mux).Register($.interfaceValue<srpc.Handler | null>($.markAsStructValue(new handler()), "main.handler"))
 	await $.pointerValue<Exclude<srpc.Mux, null>>(mux).InvokeMethod("svc", "method", null)
 	closeEmbedded
-	$.functionValue(async (strm: srpc.StreamRecv<any> | null): globalThis.Promise<$.GoError> => await recvOne({T: { type: { kind: $.TypeKind.Interface, methods: [] }, zero: () => null }}, strm), { kind: $.TypeKind.Function, params: ["srpc.StreamRecv"], results: ["error"] })
+	$.functionValue(async (strm: srpc.StreamRecv<any> | null): globalThis.Promise<$.GoError> => await recvOne({T: { type: { kind: $.TypeKind.Interface, methods: [] }, zero: () => null }}, strm), ({ kind: $.TypeKind.Function, params: ["srpc.StreamRecv"], results: ["error"] } as $.FunctionTypeInfo))
 	srpc.NewRawMessage($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]), true)
 	let server: srpc.Server | $.VarRef<srpc.Server> | null = srpc.NewServer($.pointerValueOrNil((mux as srpc.Invoker | null))!)
 	let client = srpc.NewClient(srpc.NewServerPipe(server))

@@ -45,7 +45,7 @@ export type scanner = {
 $.registerInterfaceType(
 	"main.scanner",
 	null,
-	[{ name: "Scan", args: [{ name: "_p0", type: { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } }], returns: [{ name: "_r0", type: "error" }] }]
+	[{ name: "Scan", args: [{ name: "_p0", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }]
 )
 
 export async function run(s: scanner | null): globalThis.Promise<$.GoError> {
@@ -54,7 +54,7 @@ export async function run(s: scanner | null): globalThis.Promise<$.GoError> {
 			return errors.New("wrong value")
 		}
 		return null
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } as $.FunctionTypeInfo)))
 }
 
 export async function main(): globalThis.Promise<void> {
@@ -64,7 +64,7 @@ export async function main(): globalThis.Promise<void> {
 	let callbacks = [$.functionValue(async (v: number): globalThis.Promise<$.GoError> => {
 		await m.value.Load(v)
 		return null
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] })]
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } as $.FunctionTypeInfo))]
 	$.println(await callbacks[0]!(1) == null)
 }
 

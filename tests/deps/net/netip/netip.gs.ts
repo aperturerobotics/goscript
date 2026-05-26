@@ -827,11 +827,11 @@ export class addrDetail {
 }
 
 export class parseAddrError {
-	public get in(): string {
-		return this._fields.in.value
+	public get _in(): string {
+		return this._fields._in.value
 	}
-	public set in(value: string) {
-		this._fields.in.value = value
+	public set _in(value: string) {
+		this._fields._in.value = value
 	}
 
 	public get msg(): string {
@@ -849,14 +849,14 @@ export class parseAddrError {
 	}
 
 	public _fields: {
-		in: $.VarRef<string>
+		_in: $.VarRef<string>
 		msg: $.VarRef<string>
 		at: $.VarRef<string>
 	}
 
-	constructor(init?: Partial<{in?: string, msg?: string, at?: string}>) {
+	constructor(init?: Partial<{_in?: string, msg?: string, at?: string}>) {
 		this._fields = {
-			in: $.varRef(init?.in ?? ""),
+			_in: $.varRef(init?._in ?? ""),
 			msg: $.varRef(init?.msg ?? ""),
 			at: $.varRef(init?.at ?? "")
 		}
@@ -865,7 +865,7 @@ export class parseAddrError {
 	public clone(): parseAddrError {
 		const cloned = new parseAddrError()
 		cloned._fields = {
-			in: $.varRef(this._fields.in.value),
+			_in: $.varRef(this._fields._in.value),
 			msg: $.varRef(this._fields.msg.value),
 			at: $.varRef(this._fields.at.value)
 		}
@@ -876,9 +876,9 @@ export class parseAddrError {
 		const err = this
 		let q: ((s: string) => string | globalThis.Promise<string>) | null = strconv.Quote
 		if (!$.stringEqual(err.at, "")) {
-			return ((((("ParseAddr(" + await q!(err.in)) + "): ") + err.msg) + " (at ") + await q!(err.at)) + ")"
+			return ((((("ParseAddr(" + await q!(err._in)) + "): ") + err.msg) + " (at ") + await q!(err.at)) + ")"
 		}
-		return (("ParseAddr(" + await q!(err.in)) + "): ") + err.msg
+		return (("ParseAddr(" + await q!(err._in)) + "): ") + err.msg
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -886,7 +886,7 @@ export class parseAddrError {
 		() => new parseAddrError(),
 		[{ name: "Error", args: [], returns: [] }],
 		parseAddrError,
-		{"in": { kind: $.TypeKind.Basic, name: "string" }, "msg": { kind: $.TypeKind.Basic, name: "string" }, "at": { kind: $.TypeKind.Basic, name: "string" }}
+		{"_in": { type: { kind: $.TypeKind.Basic, name: "string" }, name: "in" }, "msg": { kind: $.TypeKind.Basic, name: "string" }, "at": { kind: $.TypeKind.Basic, name: "string" }}
 	)
 }
 
@@ -1387,11 +1387,11 @@ export class Prefix {
 }
 
 export class parsePrefixError {
-	public get in(): string {
-		return this._fields.in.value
+	public get _in(): string {
+		return this._fields._in.value
 	}
-	public set in(value: string) {
-		this._fields.in.value = value
+	public set _in(value: string) {
+		this._fields._in.value = value
 	}
 
 	public get msg(): string {
@@ -1402,13 +1402,13 @@ export class parsePrefixError {
 	}
 
 	public _fields: {
-		in: $.VarRef<string>
+		_in: $.VarRef<string>
 		msg: $.VarRef<string>
 	}
 
-	constructor(init?: Partial<{in?: string, msg?: string}>) {
+	constructor(init?: Partial<{_in?: string, msg?: string}>) {
 		this._fields = {
-			in: $.varRef(init?.in ?? ""),
+			_in: $.varRef(init?._in ?? ""),
 			msg: $.varRef(init?.msg ?? "")
 		}
 	}
@@ -1416,7 +1416,7 @@ export class parsePrefixError {
 	public clone(): parsePrefixError {
 		const cloned = new parsePrefixError()
 		cloned._fields = {
-			in: $.varRef(this._fields.in.value),
+			_in: $.varRef(this._fields._in.value),
 			msg: $.varRef(this._fields.msg.value)
 		}
 		return $.markAsStructValue(cloned)
@@ -1424,7 +1424,7 @@ export class parsePrefixError {
 
 	public Error(): string {
 		const err = this
-		return (("netip.ParsePrefix(" + strconv.Quote(err.in)) + "): ") + err.msg
+		return (("netip.ParsePrefix(" + strconv.Quote(err._in)) + "): ") + err.msg
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -1432,7 +1432,7 @@ export class parsePrefixError {
 		() => new parsePrefixError(),
 		[{ name: "Error", args: [], returns: [] }],
 		parsePrefixError,
-		{"in": { kind: $.TypeKind.Basic, name: "string" }, "msg": { kind: $.TypeKind.Basic, name: "string" }}
+		{"_in": { type: { kind: $.TypeKind.Basic, name: "string" }, name: "in" }, "msg": { kind: $.TypeKind.Basic, name: "string" }}
 	)
 }
 
@@ -1499,12 +1499,12 @@ export function ParseAddr(s: string): [Addr, $.GoError] {
 			}
 			case 37:
 			{
-				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: s, msg: "missing IPv6 address"})), "netip.parseAddrError")]
+				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: s, msg: "missing IPv6 address"})), "netip.parseAddrError")]
 				break
 			}
 		}
 	}
-	return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: s, msg: "unable to parse IP"})), "netip.parseAddrError")]
+	return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: s, msg: "unable to parse IP"})), "netip.parseAddrError")]
 }
 
 export function MustParseAddr(s: string): Addr {
@@ -1523,12 +1523,12 @@ export function parseIPv4Fields(_in: string, off: number, end: number, fields: $
 	for (let i = 0; i < $.len(s); i++) {
 		if (($.indexStringOrBytes(s, i) >= 48) && ($.indexStringOrBytes(s, i) <= 57)) {
 			if ((digLen == 1) && (val == 0)) {
-				return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "IPv4 field has octet with leading zero"})), "netip.parseAddrError")
+				return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "IPv4 field has octet with leading zero"})), "netip.parseAddrError")
 			}
 			val = ((val * 10) + $.int($.indexStringOrBytes(s, i))) - 48
 			digLen++
 			if (val > 255) {
-				return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "IPv4 field has value >255"})), "netip.parseAddrError")
+				return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "IPv4 field has value >255"})), "netip.parseAddrError")
 			}
 		} else {
 			if ($.uint($.indexStringOrBytes(s, i), 8) == $.uint(46, 8)) {
@@ -1536,23 +1536,23 @@ export function parseIPv4Fields(_in: string, off: number, end: number, fields: $
 				// 1.2.3.
 				// 1..2.3
 				if (((i == 0) || (i == ($.len(s) - 1))) || ($.uint($.indexStringOrBytes(s, i - 1), 8) == $.uint(46, 8))) {
-					return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "IPv4 field must have at least one digit", at: $.sliceStringOrBytes(s, i, undefined)})), "netip.parseAddrError")
+					return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "IPv4 field must have at least one digit", at: $.sliceStringOrBytes(s, i, undefined)})), "netip.parseAddrError")
 				}
 				// 1.2.3.4.5
 				if (pos == 3) {
-					return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "IPv4 address too long"})), "netip.parseAddrError")
+					return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "IPv4 address too long"})), "netip.parseAddrError")
 				}
 				fields![pos] = $.uint($.uint(val, 8), 8)
 				pos++
 				val = 0
 				digLen = 0
 			} else {
-				return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "unexpected character", at: $.sliceStringOrBytes(s, i, undefined)})), "netip.parseAddrError")
+				return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "unexpected character", at: $.sliceStringOrBytes(s, i, undefined)})), "netip.parseAddrError")
 			}
 		}
 	}
 	if (pos < 3) {
-		return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "IPv4 address too short"})), "netip.parseAddrError")
+		return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "IPv4 address too short"})), "netip.parseAddrError")
 	}
 	fields![3] = $.uint($.uint(val, 8), 8)
 	return null
@@ -1585,7 +1585,7 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 		zone = __goscriptAssign1_1
 		if ($.stringEqual(zone, "")) {
 			// Not allowed to have an empty zone if explicitly specified.
-			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "zone must be a non-empty string"})), "netip.parseAddrError")]
+			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "zone must be a non-empty string"})), "netip.parseAddrError")]
 		}
 	}
 
@@ -1626,27 +1626,27 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 			}
 			if (off > 3) {
 				//more than 4 digits in group, fail.
-				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "each group must have 4 or less digits", at: s})), "netip.parseAddrError")]
+				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "each group must have 4 or less digits", at: s})), "netip.parseAddrError")]
 			}
 			if (acc > math.MaxUint16) {
 				// Overflow, fail.
-				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "IPv6 field has value >=2^16", at: s})), "netip.parseAddrError")]
+				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "IPv6 field has value >=2^16", at: s})), "netip.parseAddrError")]
 			}
 		}
 		if (off == 0) {
 			// No digits found, fail.
-			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "each colon-separated field must have at least one digit", at: s})), "netip.parseAddrError")]
+			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "each colon-separated field must have at least one digit", at: s})), "netip.parseAddrError")]
 		}
 
 		// If followed by dot, might be in trailing IPv4.
 		if ((off < $.len(s)) && ($.uint($.indexStringOrBytes(s, off), 8) == $.uint(46, 8))) {
 			if ((ellipsis < 0) && (i != 12)) {
 				// Not the right place.
-				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "embedded IPv4 address must replace the final 2 fields of the address", at: s})), "netip.parseAddrError")]
+				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "embedded IPv4 address must replace the final 2 fields of the address", at: s})), "netip.parseAddrError")]
 			}
 			if ((i + 4) > 16) {
 				// Not enough room.
-				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "too many hex fields to fit an embedded IPv4 at the end of the address", at: s})), "netip.parseAddrError")]
+				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "too many hex fields to fit an embedded IPv4 at the end of the address", at: s})), "netip.parseAddrError")]
 			}
 
 			let end = $.len(_in)
@@ -1675,10 +1675,10 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 
 		// Otherwise must be followed by colon and more.
 		if ($.uint($.indexStringOrBytes(s, 0), 8) != $.uint(58, 8)) {
-			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "unexpected character, want colon", at: s})), "netip.parseAddrError")]
+			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "unexpected character, want colon", at: s})), "netip.parseAddrError")]
 		} else {
 			if ($.len(s) == 1) {
-				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "colon must be followed by more characters", at: s})), "netip.parseAddrError")]
+				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "colon must be followed by more characters", at: s})), "netip.parseAddrError")]
 			}
 		}
 		s = $.sliceStringOrBytes(s, 1, undefined)
@@ -1686,7 +1686,7 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 		// Look for ellipsis.
 		if ($.uint($.indexStringOrBytes(s, 0), 8) == $.uint(58, 8)) {
 			if (ellipsis >= 0) {
-				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "multiple :: in address", at: s})), "netip.parseAddrError")]
+				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "multiple :: in address", at: s})), "netip.parseAddrError")]
 			}
 			ellipsis = i
 			s = $.sliceStringOrBytes(s, 1, undefined)
@@ -1698,13 +1698,13 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 
 	// Must have used entire string.
 	if ($.len(s) != 0) {
-		return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "trailing garbage after address", at: s})), "netip.parseAddrError")]
+		return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "trailing garbage after address", at: s})), "netip.parseAddrError")]
 	}
 
 	// If didn't parse enough, expand ellipsis.
 	if (i < 16) {
 		if (ellipsis < 0) {
-			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "address string too short"})), "netip.parseAddrError")]
+			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "address string too short"})), "netip.parseAddrError")]
 		}
 		let n = 16 - i
 		for (let j = i - 1; j >= ellipsis; j--) {
@@ -1714,7 +1714,7 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 	} else {
 		if (ellipsis >= 0) {
 			// Ellipsis must represent at least one 0 group.
-			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({in: _in, msg: "the :: must expand to at least one field of zeros"})), "netip.parseAddrError")]
+			return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "the :: must expand to at least one field of zeros"})), "netip.parseAddrError")]
 		}
 	}
 	return [$.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(AddrFrom16(ip))).WithZone(zone))), null]
@@ -1854,36 +1854,36 @@ export function PrefixFrom(ip: Addr, bits: number): Prefix {
 export function ParsePrefix(s: string): [Prefix, $.GoError] {
 	let i = bytealg.LastIndexByteString(s, $.uint(47, 8))
 	if (i < 0) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({in: s, msg: "no '/'"})), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "no '/'"})), "netip.parsePrefixError")]
 	}
 	let [ip, err] = ParseAddr($.sliceStringOrBytes(s, undefined, i))
 	if (err != null) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({in: s, msg: $.pointerValue<Exclude<$.GoError, null>>(err).Error()})), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: $.pointerValue<Exclude<$.GoError, null>>(err).Error()})), "netip.parsePrefixError")]
 	}
 	// IPv6 zones are not allowed: https://go.dev/issue/51899
 	if ($.markAsStructValue($.cloneStructValue(ip)).Is6() && (ip.z != z6noz)) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({in: s, msg: "IPv6 zones cannot be present in a prefix"})), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "IPv6 zones cannot be present in a prefix"})), "netip.parsePrefixError")]
 	}
 
 	let bitsStr = $.sliceStringOrBytes(s, i + 1, undefined)
 
 	// strconv.Atoi accepts a leading sign and leading zeroes, but we don't want that.
 	if (($.len(bitsStr) > 1) && (($.indexStringOrBytes(bitsStr, 0) < 49) || ($.indexStringOrBytes(bitsStr, 0) > 57))) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({in: s, msg: "bad bits after slash: " + strconv.Quote(bitsStr)})), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "bad bits after slash: " + strconv.Quote(bitsStr)})), "netip.parsePrefixError")]
 	}
 
 	let __goscriptTuple9: any = strconv.Atoi(bitsStr)
 	let bits = __goscriptTuple9[0]
 	err = __goscriptTuple9[1]
 	if (err != null) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({in: s, msg: "bad bits after slash: " + strconv.Quote(bitsStr)})), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "bad bits after slash: " + strconv.Quote(bitsStr)})), "netip.parsePrefixError")]
 	}
 	let maxBits = 32
 	if ($.markAsStructValue($.cloneStructValue(ip)).Is6()) {
 		maxBits = 128
 	}
 	if ((bits < 0) || (bits > maxBits)) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({in: s, msg: "prefix length out of range"})), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "prefix length out of range"})), "netip.parsePrefixError")]
 	}
 	return [$.markAsStructValue($.cloneStructValue(PrefixFrom($.markAsStructValue($.cloneStructValue(ip)), bits))), null]
 }

@@ -16,7 +16,7 @@ export function wrap(open: opener | null): wrapper | null {
 			return ["", err]
 		}
 		return ["wrapped:" + value, null]
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }, "error"] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }, "error"] } as $.FunctionTypeInfo))
 }
 
 export function open(path: string): [string, $.GoError] {
@@ -26,7 +26,7 @@ export function open(path: string): [string, $.GoError] {
 export async function run(update: (() => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	let err = await ($.functionValue(async (): globalThis.Promise<$.GoError> => {
 		return await update!()
-	}, { kind: $.TypeKind.Function, params: [], results: ["error"] }))()
+	}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)))()
 	if (err != null) {
 		return err
 	}

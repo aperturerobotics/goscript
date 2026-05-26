@@ -53,7 +53,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("bad duration err", badDurationErr != null)
 
 	let timer: time.Timer | $.VarRef<time.Timer> | null = time.AfterFunc(9223372036854775807, $.functionValue((): void => {
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	$.println("max duration timer stopped", time.Timer.prototype.Stop.call(timer))
 	let maxDuration = 9223372036854775807
 	$.println("max duration converted", maxDuration > 0)

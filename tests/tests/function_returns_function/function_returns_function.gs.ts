@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 export function getAdder(x: number): ((_p0: number) => number | globalThis.Promise<number>) | null {
 	return $.functionValue((y: number): number => {
 		return x + y
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 }
 
 export async function main(): globalThis.Promise<void> {

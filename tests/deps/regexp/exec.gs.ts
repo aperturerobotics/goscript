@@ -165,11 +165,11 @@ export class inputs {
 		this._fields.bytes.value = value
 	}
 
-	public get string(): __goscript_regexp.inputString {
-		return this._fields.string.value
+	public get _string(): __goscript_regexp.inputString {
+		return this._fields._string.value
 	}
-	public set string(value: __goscript_regexp.inputString) {
-		this._fields.string.value = value
+	public set _string(value: __goscript_regexp.inputString) {
+		this._fields._string.value = value
 	}
 
 	public get reader(): __goscript_regexp.inputReader {
@@ -181,14 +181,14 @@ export class inputs {
 
 	public _fields: {
 		bytes: $.VarRef<__goscript_regexp.inputBytes>
-		string: $.VarRef<__goscript_regexp.inputString>
+		_string: $.VarRef<__goscript_regexp.inputString>
 		reader: $.VarRef<__goscript_regexp.inputReader>
 	}
 
-	constructor(init?: Partial<{bytes?: __goscript_regexp.inputBytes, string?: __goscript_regexp.inputString, reader?: __goscript_regexp.inputReader}>) {
+	constructor(init?: Partial<{bytes?: __goscript_regexp.inputBytes, _string?: __goscript_regexp.inputString, reader?: __goscript_regexp.inputReader}>) {
 		this._fields = {
 			bytes: $.varRef(init?.bytes ? $.markAsStructValue($.cloneStructValue(init.bytes)) : $.markAsStructValue(new __goscript_regexp.inputBytes())),
-			string: $.varRef(init?.string ? $.markAsStructValue($.cloneStructValue(init.string)) : $.markAsStructValue(new __goscript_regexp.inputString())),
+			_string: $.varRef(init?._string ? $.markAsStructValue($.cloneStructValue(init._string)) : $.markAsStructValue(new __goscript_regexp.inputString())),
 			reader: $.varRef(init?.reader ? $.markAsStructValue($.cloneStructValue(init.reader)) : $.markAsStructValue(new __goscript_regexp.inputReader()))
 		}
 	}
@@ -197,7 +197,7 @@ export class inputs {
 		const cloned = new inputs()
 		cloned._fields = {
 			bytes: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.bytes.value))),
-			string: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.string.value))),
+			_string: $.varRef($.markAsStructValue($.cloneStructValue(this._fields._string.value))),
 			reader: $.varRef($.markAsStructValue($.cloneStructValue(this._fields.reader.value)))
 		}
 		return $.markAsStructValue(cloned)
@@ -213,7 +213,7 @@ export class inputs {
 			if ($.pointerValue<inputs>(i).reader.r != null) {
 				$.pointerValue<inputs>(i).reader.r = null
 			} else {
-				$.pointerValue<inputs>(i).string.str = ""
+				$.pointerValue<inputs>(i)._string.str = ""
 			}
 		}
 	}
@@ -245,8 +245,8 @@ export class inputs {
 
 	public newString(s: string): __goscript_regexp.input | null {
 		let i: inputs | $.VarRef<inputs> | null = this
-		$.pointerValue<inputs>(i).string.str = s
-		return $.interfaceValue<__goscript_regexp.input | null>($.pointerValue<inputs>(i)._fields.string, "*regexp.inputString")
+		$.pointerValue<inputs>(i)._string.str = s
+		return $.interfaceValue<__goscript_regexp.input | null>($.pointerValue<inputs>(i)._fields._string, "*regexp.inputString")
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -254,7 +254,7 @@ export class inputs {
 		() => new inputs(),
 		[{ name: "clear", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "newBytes", args: [], returns: [] }, { name: "newReader", args: [], returns: [] }, { name: "newString", args: [], returns: [] }],
 		inputs,
-		{"bytes": "regexp.inputBytes", "string": "regexp.inputString", "reader": "regexp.inputReader"}
+		{"bytes": "regexp.inputBytes", "_string": { type: "regexp.inputString", name: "string" }, "reader": "regexp.inputReader"}
 	)
 }
 

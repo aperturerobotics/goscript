@@ -46,7 +46,7 @@ export function callCopied(r: runner | null): void {
 	let curr: runner | null = null as runner | null
 	void ($.functionValue((): void => {
 		curr = r
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))()
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))()
 	$.pointerValue<Exclude<runner, null>>(curr).Run()
 }
 

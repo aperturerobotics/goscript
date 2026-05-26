@@ -13,7 +13,7 @@ export async function main(): globalThis.Promise<void> {
 	await subpkg.Run("async callback", $.functionValue(async (): globalThis.Promise<$.GoError> => {
 		$.println("value:", await $.chanRecv(ch))
 		return null
-	}, { kind: $.TypeKind.Function, params: [], results: ["error"] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)))
 }
 
 if ($.isMainScript(import.meta)) {

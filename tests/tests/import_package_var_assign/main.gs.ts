@@ -11,7 +11,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println(dep.Current())
 	dep.__goscript_set_Hook($.functionValue(async (): globalThis.Promise<$.GoError> => {
 		return await dep.Wait()
-	}, { kind: $.TypeKind.Function, params: [], results: ["error"] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)))
 	{
 		let err = await dep.Run()
 		if (err != null) {

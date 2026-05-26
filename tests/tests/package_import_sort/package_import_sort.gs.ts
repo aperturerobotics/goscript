@@ -128,7 +128,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test generic Search function
 	let searchResult = sort2.Search($.len(ints), $.functionValue((i: number): boolean => {
 		return ints![i] >= 5
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))
 	$.println("First index where value >= 5:", searchResult)
 
 	// Test Slice function with custom comparator
@@ -142,13 +142,13 @@ export async function main(): globalThis.Promise<void> {
 	await sort2.Slice($.interfaceValue<any>(asyncSlice, "[]int"), $.functionValue(async (i: number, j: number): globalThis.Promise<boolean> => {
 		await $.chanRecv(ready)
 		return asyncSlice![i] < asyncSlice![j]
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))
 	$.println("Async sorted slice:", asyncSlice![0], asyncSlice![1])
 
 	// Test SliceIsSorted
 	let isSliceSorted = await sort2.SliceIsSorted($.interfaceValue<any>(testSlice, "[]int"), $.functionValue((i: number, j: number): boolean => {
 		return testSlice![i] < testSlice![j]
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))
 	$.println("Custom slice is sorted:", isSliceSorted)
 
 	// Test custom sort.Interface values.

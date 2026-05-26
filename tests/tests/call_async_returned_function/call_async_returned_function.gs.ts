@@ -16,7 +16,7 @@ export async function getCallback(): globalThis.Promise<((_p0: string) => void) 
 	await cache.value.Load(1)
 	return $.functionValue((msg: string): void => {
 		$.println("Callback:", msg)
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [] } as $.FunctionTypeInfo))
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -62,7 +62,7 @@ export async function main(): globalThis.Promise<void> {
 			return 1
 		}
 		return 0
-	}, { kind: $.TypeKind.Function, params: ["main.Person", "main.Person"], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
+	}, ({ kind: $.TypeKind.Function, params: ["main.Person", "main.Person"], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 
 	for (let __goscriptRangeTarget0 = people, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let p = __goscriptRangeTarget0![__rangeIndex]

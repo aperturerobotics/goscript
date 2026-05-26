@@ -142,17 +142,17 @@ export async function main(): globalThis.Promise<void> {
 	await once.value.Do($.functionValue((): void => {
 		counter++
 		$.println("Once function executed, counter:", counter)
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	await once.value.Do($.functionValue((): void => {
 		counter++
 		$.println("This should not execute")
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	$.println("Final counter:", counter)
 
 	// Test OnceFunc
 	let onceFunc: (() => void) | null = sync.OnceFunc($.functionValue((): void => {
 		$.println("OnceFunc executed")
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	await onceFunc!()
 	await onceFunc!()
 
@@ -160,7 +160,7 @@ export async function main(): globalThis.Promise<void> {
 	let onceValue: (() => number | globalThis.Promise<number>) | null = (sync.OnceValue($.functionValue((): number => {
 		$.println("OnceValue function executed")
 		return 42
-	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "int" }] })) as (() => number | globalThis.Promise<number>) | null)
+	}, ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))) as (() => number | globalThis.Promise<number>) | null)
 	let val1 = await onceValue!()
 	let val2 = await onceValue!()
 	$.println("OnceValue results:", val1, val2)
@@ -212,7 +212,7 @@ export async function main(): globalThis.Promise<void> {
 	await m.value.Range($.functionValue((key: any, value: any): boolean => {
 		$.println("Range:", key, "->", value)
 		return true
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Interface, methods: [] }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Interface, methods: [] }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))
 
 	await m.value.Delete("key1")
 	{
@@ -226,7 +226,7 @@ export async function main(): globalThis.Promise<void> {
 	let pool: sync.Pool | $.VarRef<sync.Pool> | null = new sync.Pool({New: $.functionValue((): any => {
 		$.println("Pool creating new object")
 		return "new object"
-	}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [] }] })})
+	}, ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo))})
 
 	let obj1 = sync.Pool.prototype.Get.call(pool)
 	$.println("Got from pool:", obj1)

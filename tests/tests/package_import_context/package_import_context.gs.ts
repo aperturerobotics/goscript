@@ -19,7 +19,7 @@ export async function run(ctx: context.Context | null): globalThis.Promise<void>
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanRecv($.pointerValue<Exclude<context.Context, null>>(sctx).Done())
 		await $.chanSend(myCh, {})
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 
 	// Check that myCh is not readable yet
 	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([

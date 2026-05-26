@@ -101,7 +101,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let f: ((_p0: number, _p1: number) => number | globalThis.Promise<number>) | null = $.functionValue((_p0: number, _p1: number): number => {
 		return 9
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 	$.println(await f!(1, 2))
 
 	let [left, right] = unicodeNames(3, 4)

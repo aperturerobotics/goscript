@@ -66,7 +66,7 @@ export class Broadcast {
 			// use defer to catch panic cases
 			__defer.defer(() => { $.pointerValue<Broadcast>(c).mtx.Unlock() })
 			await cb!(((__receiver) => () => __receiver.broadcastLocked())($.pointerValue<Broadcast>(c)), ((__receiver) => () => __receiver.getWaitChLocked())($.pointerValue<Broadcast>(c)))
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [] })
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [] } as $.FunctionTypeInfo))
 
 		// fast path: lock immediately
 		if ($.pointerValue<Broadcast>(c).mtx.TryLock()) {
@@ -110,7 +110,7 @@ export class Broadcast {
 				if (!done && (err == null)) {
 					waitCh = await getWaitCh!()
 				}
-			}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] }], results: [] }))
+			}, ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo)))
 
 			if (done || (err != null)) {
 				return err

@@ -9,9 +9,9 @@ export async function run(_set: ((_p0: (() => void) | null) => void) | null): gl
 		await _set!($.functionValue((): void => {
 			cb.value = $.functionValue((): void => {
 				$.println("called")
-			}, { kind: $.TypeKind.Function, params: [], results: [] })
-		}, { kind: $.TypeKind.Function, params: [], results: [] }))
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+			}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo))
+		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	if (cb.value != null) {
 		await cb.value!()
 	}
@@ -20,7 +20,7 @@ export async function run(_set: ((_p0: (() => void) | null) => void) | null): gl
 export async function main(): globalThis.Promise<void> {
 	await run($.functionValue(async (fn: (() => void) | null): globalThis.Promise<void> => {
 		await fn!()
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Function, params: [], results: [] }], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo)))
 }
 
 if ($.isMainScript(import.meta)) {

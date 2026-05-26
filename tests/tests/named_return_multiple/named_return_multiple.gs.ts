@@ -42,7 +42,7 @@ export async function main(): globalThis.Promise<void> {
 			}
 		}
 		return [resInt, resStr, resBool]
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] }))(1)
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))(1)
 
 	$.println(n3)
 	$.println(t3)
@@ -61,7 +61,7 @@ export async function main(): globalThis.Promise<void> {
 			}
 		}
 		return [resInt, resStr, resBool]
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] }))(2)
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))(2)
 
 	$.println(n4)
 	$.println(t4)
@@ -80,7 +80,7 @@ export async function main(): globalThis.Promise<void> {
 			}
 		}
 		return [resInt, resStr, resBool]
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] }))(3)
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))(3)
 
 	$.println(n5)
 	$.println(t5)

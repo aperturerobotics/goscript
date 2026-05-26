@@ -24,7 +24,7 @@ export function closureArrayAddress(): number {
 		let table = $.varRef(new Uint8Array([$.uint(6, 8), $.uint(7, 8), $.uint(8, 8), $.uint(9, 8)]))
 		let ptr = table
 		result = $.int($.pointerValue<Uint8Array>(ptr)[2])
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))()
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))()
 	return result
 }
 

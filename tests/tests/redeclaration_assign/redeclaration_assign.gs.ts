@@ -83,7 +83,7 @@ export async function main(): globalThis.Promise<void> {
 	{
 		let __goscriptTuple2: any = await shadowCallbackInput($.functionValue((k: number): number => {
 			return k + 1
-		}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 		let k = __goscriptTuple2[0]
 		let ok = __goscriptTuple2[1]
 		$.println("callback shadow:", k, ok)

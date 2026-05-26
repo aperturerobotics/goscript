@@ -42,7 +42,7 @@ export class loader {
 		() => new loader(),
 		[{ name: "getLoad", args: [], returns: [] }],
 		loader,
-		{"load": { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] }}
+		{"load": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)}
 	)
 }
 
@@ -54,7 +54,7 @@ export function __goscript_set_cache(value: sync.Map): void {
 
 export let defaultLoader: loader | $.VarRef<loader> | null = new loader({load: $.functionValue(async (key: string): globalThis.Promise<[any, boolean]> => {
 	return await cache.value.Load(key)
-}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] })})
+}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))})
 
 export function __goscript_set_defaultLoader(value: loader | $.VarRef<loader> | null): void {
 	defaultLoader = value

@@ -55,7 +55,7 @@ export async function main(): globalThis.Promise<void> {
 			let item = __goscriptRangeTarget0![__rangeIndex]
 			$.println(item.name, item.count)
 		}
-	}, { kind: $.TypeKind.Function, params: [], results: [] })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo))
 
 	await run!()
 }

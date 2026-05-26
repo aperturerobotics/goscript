@@ -25,20 +25,20 @@ export async function main(): globalThis.Promise<void> {
 			sum += i
 		}
 		await $.chanSend(result, sum)
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 
 	// Worker 2: Quick task that should complete
 	// In Go: Will run concurrently with worker1
 	// In GoScript: Would never run if worker1 starves the event loop
 	wg.value.Go($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanSend(result, 42)
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 
 	// Wait for both workers with a timeout
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await wg.value.Wait()
 		done!.close()
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 
 	// Collect results
 	let results: $.Slice<number> = $.arrayToSlice<number>([])

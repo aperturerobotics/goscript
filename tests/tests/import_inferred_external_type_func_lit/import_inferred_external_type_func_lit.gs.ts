@@ -32,7 +32,7 @@ export async function main(): globalThis.Promise<void> {
 		} else {
 			$.println("stat closure ok")
 		}
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))()
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))()
 }
 
 if ($.isMainScript(import.meta)) {

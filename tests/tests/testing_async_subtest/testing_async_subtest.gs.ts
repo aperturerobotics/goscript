@@ -11,7 +11,7 @@ export async function RunSubtest(t: testing.T | $.VarRef<testing.T> | null, ch: 
 		if (!$.stringEqual(await $.chanRecv(ch), "ok")) {
 			$.pointerValue<testing.T>(t).Fatalf("unexpected value")
 		}
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "testing.T" }], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "testing.T" }], results: [] } as $.FunctionTypeInfo)))
 }
 
 export async function main(): globalThis.Promise<void> {

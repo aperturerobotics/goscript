@@ -223,7 +223,7 @@ export class MorphismHolder {
 		() => new MorphismHolder(),
 		[{ name: "apply", args: [], returns: [] }, { name: "cloneApply", args: [], returns: [] }],
 		MorphismHolder,
-		{"morphism": { kind: $.TypeKind.Function, name: "main.Morphism", params: ["main.Shape"], results: ["main.Shape"] }}
+		{"morphism": ({ kind: $.TypeKind.Function, name: "main.Morphism", params: ["main.Shape"], results: ["main.Shape"] } as $.FunctionTypeInfo)}
 	)
 }
 
@@ -279,7 +279,7 @@ export async function walk(fs: Filesystem | null, path: string, info: FileInfo |
 	return await walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo | null, e: $.GoError): $.GoError => {
 		// This simulates the issue by calling filepath.WalkFunc indirectly
 		return null
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] } as $.FunctionTypeInfo)))
 }
 
 export async function walkWithCustomFunc(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
@@ -359,7 +359,7 @@ export async function main(): globalThis.Promise<void> {
 			$.println("Error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		}
 		return null
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] } as $.FunctionTypeInfo))
 
 	let err = await walkWithCustomFunc($.interfaceValue<Filesystem | null>(fs, "*main.MockFilesystem"), "/test", $.interfaceValue<FileInfo | null>(fileInfo, "*main.MockFileInfo"), walkFunc)
 	if (err != null) {
@@ -370,7 +370,7 @@ export async function main(): globalThis.Promise<void> {
 	let processFunc: ((pattern: string) => $.GoError | globalThis.Promise<$.GoError>) | null = $.functionValue((pattern: string): $.GoError => {
 		$.println("Processing pattern:", pattern)
 		return null
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: ["error"] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: ["error"] } as $.FunctionTypeInfo))
 
 	let err2 = await processFiles("*.go", processFunc)
 	if (err2 != null) {
@@ -386,7 +386,7 @@ export async function main(): globalThis.Promise<void> {
 	await indexedCallback($.arrayToSlice<((_p0: string) => boolean | globalThis.Promise<boolean>) | null>([$.functionValue((value: string): boolean => {
 		$.println("Indexed callback:", value)
 		return true
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })]), "slice")
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))]), "slice")
 
 	let worker: morphismWorker | $.VarRef<morphismWorker> | null = new morphismWorker({ready: $.makeChannel<boolean>(1, false, "both")})
 	let shape: shapeNode | $.VarRef<shapeNode> | null = new shapeNode({value: 7})

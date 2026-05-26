@@ -23,7 +23,7 @@ export async function main(): globalThis.Promise<void> {
 				return __goscriptSelect0Value
 			}
 			throw new Error("unreachable select")
-		}, { kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })
+		}, ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))
 		fn
 	}
 	fmt.Println("select literal ok")

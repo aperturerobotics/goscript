@@ -17,7 +17,7 @@ export async function main(): globalThis.Promise<void> {
 	let s: $.VarRef<state> = $.varRef(0)
 	await call($.functionValue((): void => {
 		state_set(s, 7)
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	$.println($.int(s.value))
 }
 

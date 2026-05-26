@@ -185,7 +185,7 @@ export async function main(): globalThis.Promise<void> {
 			$.println("Error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		}
 		return null
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] } as $.FunctionTypeInfo))
 
 	let err = await walk($.interfaceValue<Filesystem | null>(fs, "*main.MockFilesystem"), "/test", $.interfaceValue<FileInfo | null>(fileInfo, "*main.MockFileInfo"), walkFunc)
 	if (err != null) {
@@ -195,7 +195,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test the process function with a callback
 	let processFunc: ((data: string) => [string, $.GoError] | globalThis.Promise<[string, $.GoError]>) | null = $.functionValue((data: string): [string, $.GoError] => {
 		return ["processed: " + data, null]
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }, "error"] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }, "error"] } as $.FunctionTypeInfo))
 
 	let [result, err2] = await processWithCallback("hello", processFunc)
 	if (err2 != null) {

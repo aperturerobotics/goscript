@@ -46,7 +46,7 @@ export async function main(): globalThis.Promise<void> {
 	let values: $.Slice<item> = null as $.Slice<item>
 	await fill($.functionValue((value: number): void => {
 		values = $.append(values, $.markAsStructValue(new item({Value: value})))
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] } as $.FunctionTypeInfo)))
 	if ($.len(values) != 0) {
 		$.println("first:", values![0].Value)
 	}

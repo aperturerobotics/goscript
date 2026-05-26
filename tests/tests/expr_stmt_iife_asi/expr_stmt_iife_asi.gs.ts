@@ -9,7 +9,7 @@ export async function main(): globalThis.Promise<void> {
 		if (_unique) {
 			_unique = false
 		}
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))()
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))()
 	$.println(_unique)
 }
 

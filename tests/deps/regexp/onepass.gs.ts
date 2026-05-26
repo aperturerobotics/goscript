@@ -322,7 +322,7 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 			merged = null
 			next = null
 		}
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 
 	let ix = -1
 	let extend: ((newLow: $.VarRef<number> | null, newArray: $.VarRef<$.Slice<number>> | null, pc: number) => boolean | globalThis.Promise<boolean>) | null = $.functionValue((newLow: $.VarRef<number> | null, newArray: $.VarRef<$.Slice<number>> | null, pc: number): boolean => {
@@ -334,7 +334,7 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 		ix += 2
 		next = $.append(next, pc)
 		return true
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))
 
 	while ((lx.value < leftLen) || (rx.value < rightLen)) {
 		switch (true) {
@@ -657,7 +657,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 			}
 		}
 		return ok
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "bool" } }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "bool" } }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))
 
 	queueOnePass.prototype.clear.call(instQueue)
 	queueOnePass.prototype.insert.call(instQueue, $.uint($.uint($.pointerValue<onePassProg>(p).Start, 32), 32))

@@ -262,7 +262,7 @@ export async function main(): globalThis.Promise<void> {
 		__goscriptShadow2 = __goscriptTuple10[1]
 		$.println("Pipe read EOF - bytes:", __goscriptShadow1, "err EOF:", __goscriptShadow2 == io.EOF)
 		await $.chanSend(done, true)
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 	let __goscriptTuple11: any = io.PipeWriter.prototype.Write.call(writer, new Uint8Array([104, 101, 108, 108, 111]))
 	n = __goscriptTuple11[0]
 	err = __goscriptTuple11[1]

@@ -7,7 +7,7 @@ export async function main(): globalThis.Promise<void> {
 	let callbacks: $.Slice<((_p0: number) => number | globalThis.Promise<number>) | null> = null as $.Slice<((_p0: number) => number | globalThis.Promise<number>) | null>
 	callbacks = $.append(callbacks, $.functionValue((value: number): number => {
 		return value + 1
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] }))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 	let value = await callbacks![0]!(2)
 	$.println("value:", value)
 }

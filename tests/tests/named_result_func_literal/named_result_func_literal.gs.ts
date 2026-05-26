@@ -13,7 +13,7 @@ export function makeLookup(): ((_p0: boolean) => [number, string] | globalThis.P
 		value = 7
 		label = "set"
 		return [value, label]
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }] })
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }] } as $.FunctionTypeInfo))
 }
 
 export async function main(): globalThis.Promise<void> {

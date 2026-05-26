@@ -11,7 +11,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("deferred start")
 		await $.chanRecv(ch)
 		$.println("deferred end")
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 
 	$.println("main start")
 	$.println("main signaling defer")

@@ -44,7 +44,7 @@ export class pointerNode {
 export function makeAtomicCallback(): [(() => void) | null, $.GoError] {
 	return [$.functionValue((): void => {
 		$.println("Pointer function callback called")
-	}, { kind: $.TypeKind.Function, params: [], results: [] }), null]
+	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)), null]
 }
 
 export async function main(): globalThis.Promise<void> {
