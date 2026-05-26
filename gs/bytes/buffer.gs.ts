@@ -66,7 +66,7 @@ export class Buffer {
 	// The slice aliases the buffer content at least until the next buffer modification,
 	// so immediate changes to the slice will affect the result of future reads.
 	public Bytes(): $.Bytes {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		return $.goSlice(b.buf, b.off, undefined)
 	}
 
@@ -75,7 +75,7 @@ export class Buffer {
 	// passed to an immediately succeeding [Buffer.Write] call.
 	// The buffer is only valid until the next write operation on b.
 	public AvailableBuffer(): $.Bytes {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		return $.goSlice(b.buf, $.len(b.buf), undefined)
 	}
 
@@ -84,7 +84,7 @@ export class Buffer {
 	//
 	// To build strings more efficiently, see the [strings.Builder] type.
 	public String(): string {
-		const b = this
+		const b = $.pointerValueOrNil<Buffer>(this)
 		if (b == null) {
 			// Special case, useful in debugging.
 			return "<nil>"
@@ -97,27 +97,27 @@ export class Buffer {
 
 	// empty reports whether the unread portion of the buffer is empty.
 	public empty(): boolean {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		return $.len(b.buf) <= b.off
 	}
 
 	// Len returns the number of bytes of the unread portion of the buffer;
 	// b.Len() == len(b.Bytes()).
 	public Len(): number {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		return $.len(b.buf) - b.off
 	}
 
 	// Cap returns the capacity of the buffer's underlying byte slice, that is, the
 	// total space allocated for the buffer's data.
 	public Cap(): number {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		return $.cap(b.buf)
 	}
 
 	// Available returns how many bytes are unused in the buffer.
 	public Available(): number {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		return $.cap(b.buf) - $.len(b.buf)
 	}
 
@@ -125,7 +125,7 @@ export class Buffer {
 	// but continues to use the same allocated storage.
 	// It panics if n is negative or greater than the length of the buffer.
 	public Truncate(n: number): void {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		if (n == 0) {
 			b.Reset()
 			return 
@@ -141,7 +141,7 @@ export class Buffer {
 	// but it retains the underlying storage for use by future writes.
 	// Reset is the same as [Buffer.Truncate](0).
 	public Reset(): void {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		b.buf = $.goSlice(b.buf, undefined, 0)
 		b.off = 0
 		b.lastRead = 0
@@ -151,7 +151,7 @@ export class Buffer {
 	// internal buffer only needs to be resliced.
 	// It returns the index where bytes should be written and whether it succeeded.
 	public tryGrowByReslice(n: number): [number, boolean] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		if (b.buf === null) {
 			return [0, false]
 		}
@@ -169,7 +169,7 @@ export class Buffer {
 	// It returns the index where bytes should be written.
 	// If the buffer can't grow it will panic with ErrTooLarge.
 	public grow(n: number): number {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		let m = b.Len()
 		if (m == 0 && b.off != 0) {
 			b.Reset()
@@ -210,7 +210,7 @@ export class Buffer {
 	// If n is negative, Grow will panic.
 	// If the buffer can't grow it will panic with [ErrTooLarge].
 	public Grow(n: number): void {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		if (n < 0) {
 			$.panic("bytes.Buffer.Grow: negative count")
 		}
@@ -222,7 +222,7 @@ export class Buffer {
 	// needed. The return value n is the length of p; err is always nil. If the
 	// buffer becomes too large, Write will panic with [ErrTooLarge].
 	public Write(p: $.Bytes): [number, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		b.lastRead = 0
 		let [m, ok] = b.tryGrowByReslice($.len(p))
 		if (!ok) {
@@ -248,7 +248,7 @@ export class Buffer {
 	// needed. The return value n is the length of s; err is always nil. If the
 	// buffer becomes too large, WriteString will panic with [ErrTooLarge].
 	public WriteString(s: string): [number, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		b.lastRead = 0
 		let [m, ok] = b.tryGrowByReslice($.len(s))
 		if (!ok) {
@@ -270,7 +270,7 @@ export class Buffer {
 	// buffer becomes too large, ReadFrom will panic with [ErrTooLarge].
 	public ReadFrom(r: io.Reader): [number, $.GoError] {
 		return (async (): Promise<[number, $.GoError]> => {
-			const b = this
+			const b = $.pointerValue<Buffer>(this)
 			b.lastRead = 0
 			let n = 0
 			for (; ; ) {
@@ -301,7 +301,7 @@ export class Buffer {
 	// encountered during the write is also returned.
 	public WriteTo(w: io.Writer): [number, $.GoError] {
 		return (async (): Promise<[number, $.GoError]> => {
-			const b = this
+			const b = $.pointerValue<Buffer>(this)
 			b.lastRead = 0
 			let n = 0
 			{
@@ -333,7 +333,7 @@ export class Buffer {
 	// WriteByte. If the buffer becomes too large, WriteByte will panic with
 	// [ErrTooLarge].
 	public WriteByte(c: number): $.GoError {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		b.lastRead = 0
 		let [m, ok] = b.tryGrowByReslice(1)
 		if (!ok) {
@@ -348,7 +348,7 @@ export class Buffer {
 	// included to match [bufio.Writer]'s WriteRune. The buffer is grown as needed;
 	// if it becomes too large, WriteRune will panic with [ErrTooLarge].
 	public WriteRune(r: number): [number, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		if ((r as number) < utf8.RuneSelf) {
 			b.WriteByte($.byte(r))
 			return [1, null]
@@ -367,7 +367,7 @@ export class Buffer {
 	// buffer has no data to return, err is [io.EOF] (unless len(p) is zero);
 	// otherwise it is nil.
 	public Read(p: $.Bytes): [number, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		b.lastRead = 0
 		if (b.empty()) {
 			// Buffer is empty, reset to recover space.
@@ -390,7 +390,7 @@ export class Buffer {
 	// If there are fewer than n bytes in the buffer, Next returns the entire buffer.
 	// The slice is only valid until the next call to a read or write method.
 	public Next(n: number): $.Bytes {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		b.lastRead = 0
 		let m = b.Len()
 		if (n > m) {
@@ -407,7 +407,7 @@ export class Buffer {
 	// Peek returns the next n bytes without advancing the buffer.
 	// If fewer than n bytes are available, it returns the unread bytes and io.EOF.
 	public Peek(n: number): [$.Bytes, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		if (n < 0) {
 			return [null, errors.New("bytes.Buffer.Peek: negative count")]
 		}
@@ -428,7 +428,7 @@ export class Buffer {
 	// ReadByte reads and returns the next byte from the buffer.
 	// If no byte is available, it returns error [io.EOF].
 	public ReadByte(): [number, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		if (b.empty()) {
 			// Buffer is empty, reset to recover space.
 			b.Reset()
@@ -446,7 +446,7 @@ export class Buffer {
 	// If the bytes are an erroneous UTF-8 encoding, it
 	// consumes one byte and returns U+FFFD, 1.
 	public ReadRune(): [number, number, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		if (b.empty()) {
 			// Buffer is empty, reset to recover space.
 			b.Reset()
@@ -472,7 +472,7 @@ export class Buffer {
 	// it is stricter than [Buffer.UnreadByte], which will unread the last byte
 	// from any read operation.)
 	public UnreadRune(): $.GoError {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		if (b.lastRead <= 0) {
 			return errors.New("bytes.Buffer: UnreadRune: previous operation was not a successful ReadRune")
 		}
@@ -488,7 +488,7 @@ export class Buffer {
 	// the last read, if the last read returned an error, or if the read read zero
 	// bytes, UnreadByte returns an error.
 	public UnreadByte(): $.GoError {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		if (b.lastRead == 0) {
 			return errUnreadByte
 		}
@@ -506,7 +506,7 @@ export class Buffer {
 	// ReadBytes returns err != nil if and only if the returned data does not end in
 	// delim.
 	public ReadBytes(delim: number): [$.Bytes, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		let [slice, err] = b.readSlice(delim)
 		let line = $.append<number>(null, slice)
 		return [line, err]
@@ -514,7 +514,7 @@ export class Buffer {
 
 	// readSlice is like ReadBytes but returns a reference to internal buffer data.
 	public readSlice(delim: number): [$.Bytes, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		let i = IndexByte($.goSlice(b.buf, b.off, undefined), delim)
 		let end = b.off + i + 1
 		let err: $.GoError = null
@@ -536,7 +536,7 @@ export class Buffer {
 	// ReadString returns err != nil if and only if the returned data does not end
 	// in delim.
 	public ReadString(delim: number): [string, $.GoError] {
-		const b = this
+		const b = $.pointerValue<Buffer>(this)
 		let slice: $.Bytes
 		let err: $.GoError
 		[slice, err] = b.readSlice(delim)

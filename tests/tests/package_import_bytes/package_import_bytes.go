@@ -96,6 +96,12 @@ func main() {
 	buf.Reset()
 	println("Buffer after reset, length:", buf.Len())
 
+	// Test Buffer pointer receiver calls through an address-taken pointer.
+	ptr := &buf
+	ptr.Write([]byte("ptr"))
+	println("Pointer buffer content:", ptr.String())
+	ptr.Reset()
+
 	// Test Buffer as Reader interface through an address expression.
 	buf.WriteString("abc")
 	multi := io.MultiReader(&buf, bytes.NewReader([]byte("de")))

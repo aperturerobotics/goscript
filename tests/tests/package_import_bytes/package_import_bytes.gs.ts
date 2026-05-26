@@ -100,6 +100,12 @@ export async function main(): globalThis.Promise<void> {
 	buf.value.Reset()
 	$.println("Buffer after reset, length:", buf.value.Len())
 
+	// Test Buffer pointer receiver calls through an address-taken pointer.
+	let ptr: bytes.Buffer | $.VarRef<bytes.Buffer> | null = buf
+	bytes.Buffer.prototype.Write.call(ptr, new Uint8Array([112, 116, 114]))
+	$.println("Pointer buffer content:", bytes.Buffer.prototype.String.call(ptr))
+	bytes.Buffer.prototype.Reset.call(ptr)
+
 	// Test Buffer as Reader interface through an address expression.
 	buf.value.WriteString("abc")
 	let multi = io.MultiReader($.pointerValueOrNil($.interfaceValue<io.Reader | null>(buf, "*bytes.Buffer"))!, $.pointerValueOrNil($.interfaceValue<io.Reader | null>(bytes.NewReader(new Uint8Array([100, 101])), "*bytes.Reader"))!)

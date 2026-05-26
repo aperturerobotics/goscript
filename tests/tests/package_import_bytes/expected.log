@@ -18,5 +18,6 @@ Buffer content: Hello World
 Buffer length: 11
 Read 5 bytes: Hello
 Buffer after reset, length: 0
+Pointer buffer content: ptr
 MultiReader read 3 bytes: abc
 test finished
