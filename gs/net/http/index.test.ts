@@ -23,6 +23,7 @@ import {
   StatusNotFound,
   StatusOK,
   StatusServiceUnavailable,
+  StatusTeapot,
   StatusText,
   StatusTooManyRequests,
   StatusUnauthorized,
@@ -37,6 +38,7 @@ describe('net/http override', () => {
     expect(StatusText(StatusNotFound)).toBe('Not Found')
     expect(StatusText(StatusUnauthorized)).toBe('Unauthorized')
     expect(StatusText(StatusForbidden)).toBe('Forbidden')
+    expect(StatusText(StatusTeapot)).toBe("I'm a teapot")
     expect(StatusText(StatusTooManyRequests)).toBe('Too Many Requests')
     expect(StatusText(StatusServiceUnavailable)).toBe('Service Unavailable')
     expect(StatusText(599)).toBe('')

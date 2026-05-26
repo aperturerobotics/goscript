@@ -16,6 +16,7 @@ export const StatusForbidden = 403
 export const StatusRequestTimeout = 408
 export const StatusConflict = 409
 export const StatusNotFound = 404
+export const StatusTeapot = 418
 export const StatusTooManyRequests = 429
 export const StatusRequestedRangeNotSatisfiable = 416
 export const StatusInternalServerError = 500
@@ -52,6 +53,8 @@ export function StatusText(code: number): string {
       return 'Partial Content'
     case StatusRequestedRangeNotSatisfiable:
       return 'Requested Range Not Satisfiable'
+    case StatusTeapot:
+      return "I'm a teapot"
     case StatusInternalServerError:
       return 'Internal Server Error'
     case StatusServiceUnavailable:
