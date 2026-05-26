@@ -28,6 +28,15 @@ func asDoubler(v MyInt) Doubler {
 	return v
 }
 
+func sumDoublers(vals []Doubler) int {
+	return vals[0].Double() + vals[1].Double()
+}
+
+func assertDoubler[T Doubler](v Doubler) (T, bool) {
+	out, ok := v.(T)
+	return out, ok
+}
+
 func newMyBool(value bool, target *bool) *MyBool {
 	*target = value
 	return (*MyBool)(target)
@@ -50,6 +59,13 @@ func main() {
 
 	asserted, ok := ret.(MyInt)
 	println("Interface assertion:", int(asserted), ok)
+
+	var vals []Doubler
+	vals = append(vals, MyInt(14), MyInt(15))
+	println("Interface slice append:", sumDoublers(vals))
+
+	genericAsserted, genericOK := assertDoubler[MyInt](ret)
+	println("Generic interface assertion:", int(genericAsserted), genericOK)
 
 	var flag bool
 	var stringer Stringer = newMyBool(true, &flag)

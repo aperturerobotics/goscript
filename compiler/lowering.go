@@ -5569,6 +5569,22 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 				}
 				return o.runtimeOwner.QualifiedHelper(helper) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "append":
+				if len(expr.Args) > 0 {
+					if slice, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[0])).Underlying().(*types.Slice); ok {
+						for idx := 1; idx < len(args); idx++ {
+							if expr.Ellipsis != token.NoPos && idx == len(args)-1 {
+								continue
+							}
+							args[idx] = o.lowerValueForTargetTypes(
+								ctx,
+								slice.Elem(),
+								ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[idx]),
+								args[idx],
+								false,
+							)
+						}
+					}
+				}
 				if expr.Ellipsis != token.NoPos && len(args) > 1 {
 					last := len(args) - 1
 					spread := args[last]
@@ -7771,7 +7787,7 @@ func (o *LoweringOwner) lowerTypeAssertExpr(ctx lowerFileContext, expr *ast.Type
 	targetType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Type)
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMustTypeAssert) +
 		"<" + o.tsTypeAssertionTypeFor(ctx, targetType) + ">(" +
-		value + ", " + o.runtimeTypeInfoExpr(targetType) + ")", diagnostics
+		value + ", " + o.runtimeTypeAssertInfoExpr(ctx, targetType) + ")", diagnostics
 }
 
 func (o *LoweringOwner) lowerTupleExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
@@ -7781,7 +7797,7 @@ func (o *LoweringOwner) lowerTupleExpr(ctx lowerFileContext, expr ast.Expr) (str
 		targetType := ctx.semPkg.source.TypesInfo.TypeOf(typed.Type)
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeAssertTuple) +
 			"<" + o.tsTypeAssertionTypeFor(ctx, targetType) + ">(" +
-			value + ", " + o.runtimeTypeInfoExpr(targetType) + ")", diagnostics
+			value + ", " + o.runtimeTypeAssertInfoExpr(ctx, targetType) + ")", diagnostics
 	case *ast.IndexExpr:
 		if isMapType(ctx.semPkg.source.TypesInfo.TypeOf(typed.X)) {
 			target, targetDiagnostics := o.lowerExpr(ctx, typed.X)
@@ -8080,6 +8096,15 @@ func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ 
 
 func (o *LoweringOwner) runtimeTypeInfoExpr(typ types.Type) string {
 	return o.runtimeTypeInfoExprWithSeen(typ, make(map[types.Type]bool))
+}
+
+func (o *LoweringOwner) runtimeTypeAssertInfoExpr(ctx lowerFileContext, typ types.Type) string {
+	typeParam, ok := types.Unalias(typ).(*types.TypeParam)
+	if !ok || !typeParamInScope(ctx, typeParam) {
+		return o.runtimeTypeInfoExpr(typ)
+	}
+	return "__typeArgs?.[" + strconv.Quote(typeParam.Obj().Name()) + "]?.type ?? " +
+		o.runtimeTypeInfoExpr(typ)
 }
 
 func (o *LoweringOwner) runtimeTypeInfoExprWithSeen(typ types.Type, seen map[types.Type]bool) string {

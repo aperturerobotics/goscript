@@ -42,6 +42,15 @@ export function asDoubler(v: MyInt): Doubler | null {
 	return $.namedValueInterfaceValue<Doubler | null>(v, "main.MyInt", {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)($.pointerValue(receiver), ...args)})
 }
 
+export function sumDoublers(vals: $.Slice<Doubler | null>): number {
+	return $.pointerValue<Exclude<Doubler, null>>(vals![0]).Double() + $.pointerValue<Exclude<Doubler, null>>(vals![1]).Double()
+}
+
+export function assertDoubler(__typeArgs: $.GenericTypeArgs | undefined, v: Doubler | null): [any, boolean] {
+	let [out, ok] = $.typeAssertTuple<any>(v, __typeArgs?.["T"]?.type ?? { kind: $.TypeKind.Interface, methods: [{ name: "Double", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }] })
+	return [out, ok]
+}
+
 export function newMyBool(value: boolean, target: $.VarRef<boolean> | null): $.VarRef<MyBool> | null {
 	target!.value = value
 	return target
@@ -64,6 +73,15 @@ export async function main(): globalThis.Promise<void> {
 
 	let [asserted, ok] = $.typeAssertTuple<MyInt>(ret, { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyInt" })
 	$.println("Interface assertion:", $.int(asserted), ok)
+
+	let vals: $.Slice<Doubler | null> = null as $.Slice<Doubler | null>
+	vals = $.append(vals, $.namedValueInterfaceValue<Doubler | null>(14, "main.MyInt", {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)($.pointerValue(receiver), ...args)}), $.namedValueInterfaceValue<Doubler | null>(15, "main.MyInt", {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)($.pointerValue(receiver), ...args)}))
+	$.println("Interface slice append:", sumDoublers(vals))
+
+	let __goscriptTuple0: any = assertDoubler({T: { type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyInt" }, zero: () => 0, methods: {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)($.pointerValue(receiver), ...args)} }}, ret)
+	let genericAsserted = (__goscriptTuple0[0] as MyInt)
+	let genericOK = __goscriptTuple0[1]
+	$.println("Generic interface assertion:", $.int(genericAsserted), genericOK)
 
 	let flag: $.VarRef<boolean> = $.varRef(false)
 	let stringer: Stringer | null = $.namedValueInterfaceValue<Stringer | null>(newMyBool(true, flag), "*main.MyBool", {String: (receiver: any, ...args: any[]) => (MyBool_String as any)(receiver, ...args)})
