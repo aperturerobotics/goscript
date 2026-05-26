@@ -5227,6 +5227,22 @@ func (o *LoweringOwner) lowerStringEqualityExpr(ctx lowerFileContext, expr *ast.
 	return value, true
 }
 
+func (o *LoweringOwner) lowerInterfaceEqualityExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
+	if isNilExpr(expr.X) || isNilExpr(expr.Y) {
+		return "", false
+	}
+	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if !isInterfaceType(leftType) && !isInterfaceType(rightType) {
+		return "", false
+	}
+	value := o.runtimeOwner.QualifiedHelper(RuntimeHelperComparableEqual) + "(" + left + ", " + right + ")"
+	if expr.Op == token.NEQ {
+		value = "!" + value
+	}
+	return value, true
+}
+
 func (o *LoweringOwner) lowerStringOrderExpr(
 	ctx lowerFileContext,
 	expr *ast.BinaryExpr,
@@ -5327,6 +5343,9 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 				return value, append(leftDiagnostics, rightDiagnostics...)
 			}
 			if value, ok := o.lowerStringEqualityExpr(ctx, typed, left, right); ok {
+				return value, append(leftDiagnostics, rightDiagnostics...)
+			}
+			if value, ok := o.lowerInterfaceEqualityExpr(ctx, typed, left, right); ok {
 				return value, append(leftDiagnostics, rightDiagnostics...)
 			}
 			left, right = o.lowerEqualityOperands(ctx, typed, left, right)

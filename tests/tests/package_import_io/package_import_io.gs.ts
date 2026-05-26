@@ -65,7 +65,7 @@ export class asyncBuffer {
 
 	public Reset(w: io.Writer | null): void {
 		const b: asyncBuffer | $.VarRef<asyncBuffer> | null = this
-		if ($.interfaceValue<io.Writer | null>(b, "*main.asyncBuffer") == w) {
+		if ($.comparableEqual(b, w)) {
 			$.println("Reset same writer")
 			return
 		}
@@ -260,7 +260,7 @@ export async function main(): globalThis.Promise<void> {
 		let __goscriptTuple10: any = io.PipeReader.prototype.Read.call(reader, __goscriptShadow0)
 		__goscriptShadow1 = __goscriptTuple10[0]
 		__goscriptShadow2 = __goscriptTuple10[1]
-		$.println("Pipe read EOF - bytes:", __goscriptShadow1, "err EOF:", __goscriptShadow2 == io.EOF)
+		$.println("Pipe read EOF - bytes:", __goscriptShadow1, "err EOF:", $.comparableEqual(__goscriptShadow2, io.EOF))
 		await $.chanSend(done, true)
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 	let __goscriptTuple11: any = io.PipeWriter.prototype.Write.call(writer, new Uint8Array([104, 101, 108, 108, 111]))
@@ -273,7 +273,7 @@ export async function main(): globalThis.Promise<void> {
 	let __goscriptTuple12: any = io.PipeWriter.prototype.Write.call(writer, new Uint8Array([97, 103, 97, 105, 110]))
 	n = __goscriptTuple12[0]
 	err = __goscriptTuple12[1]
-	$.println("Pipe write after close - bytes:", n, "err closed:", err == io.ErrClosedPipe)
+	$.println("Pipe write after close - bytes:", n, "err closed:", $.comparableEqual(err, io.ErrClosedPipe))
 
 	$.println("test finished")
 }

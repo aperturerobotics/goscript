@@ -288,7 +288,7 @@ export async function walkWithCustomFunc(fs: Filesystem | null, path: string, in
 	// But currently generates: walkFn(path, info, nil) - missing !
 	{
 		let err = await walkFn!(path, info, null)
-		if ((err != null) && (err != filepath.SkipDir)) {
+		if ((err != null) && (!$.comparableEqual(err, filepath.SkipDir))) {
 			return err
 		}
 	}
@@ -298,7 +298,7 @@ export async function walkWithCustomFunc(fs: Filesystem | null, path: string, in
 	// This should also generate: walkFn!(path, info, walkErr)
 	{
 		let err = await walkFn!(path, info, walkErr)
-		if ((err != null) && (err != filepath.SkipDir)) {
+		if ((err != null) && (!$.comparableEqual(err, filepath.SkipDir))) {
 			return err
 		}
 	}

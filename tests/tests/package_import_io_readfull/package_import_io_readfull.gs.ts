@@ -74,11 +74,11 @@ export async function main(): globalThis.Promise<void> {
 	let __goscriptTuple0: any = await io.ReadFull($.pointerValueOrNil($.interfaceValue<io.Reader | null>(bytes.NewReader(null), "*bytes.Reader"))!, buf)
 	n = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
-	$.println("empty:", n, err == io.EOF)
+	$.println("empty:", n, $.comparableEqual(err, io.EOF))
 	let __goscriptTuple1: any = await io.ReadFull($.pointerValueOrNil($.interfaceValue<io.Reader | null>(bytes.NewReader(new Uint8Array([120])), "*bytes.Reader"))!, buf)
 	n = __goscriptTuple1[0]
 	err = __goscriptTuple1[1]
-	$.println("short:", n, $.bytesToString($.goSlice(buf, undefined, 1)), err == io.ErrUnexpectedEOF)
+	$.println("short:", n, $.bytesToString($.goSlice(buf, undefined, 1)), $.comparableEqual(err, io.ErrUnexpectedEOF))
 	let __goscriptTuple2: any = await io.ReadAll($.pointerValueOrNil($.interfaceValue<io.Reader | null>(new fixedReader({data: new Uint8Array([97, 98, 99, 68, 69, 70, 103, 104, 105]), size: 3}), "*main.fixedReader"))!)
 	let all: $.Slice<number> = __goscriptTuple2[0]
 	err = __goscriptTuple2[1]

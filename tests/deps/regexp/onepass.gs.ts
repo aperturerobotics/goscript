@@ -109,10 +109,26 @@ export class onePassInst {
 		return $.markAsStructValue(cloned)
 	}
 
+	public MatchEmptyWidth(before: any, after: any): any {
+		return $.pointerValue<syntax.Inst>(this.Inst).MatchEmptyWidth(before, after)
+	}
+
+	public MatchRune(r: any): any {
+		return $.pointerValue<syntax.Inst>(this.Inst).MatchRune(r)
+	}
+
+	public MatchRunePos(r: any): any {
+		return $.pointerValue<syntax.Inst>(this.Inst).MatchRunePos(r)
+	}
+
+	public String(): any {
+		return $.pointerValue<syntax.Inst>(this.Inst).String()
+	}
+
 	static __typeInfo = $.registerStructType(
 		"regexp.onePassInst",
 		() => new onePassInst(),
-		[],
+		[{ name: "MatchEmptyWidth", args: [], returns: [] }, { name: "MatchRune", args: [], returns: [] }, { name: "MatchRunePos", args: [], returns: [] }, { name: "String", args: [], returns: [] }],
 		onePassInst,
 		{"Inst": "syntax.Inst", "Next": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
 	)

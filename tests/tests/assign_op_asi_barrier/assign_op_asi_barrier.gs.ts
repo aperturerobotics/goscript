@@ -10,7 +10,7 @@ export function consume(v: $.VarRef<$.Slice<$.Slice<number>>> | null, n: number)
 			($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0], n, undefined)
 			return
 		}
-		n = $.uint64Sub(n, $.int(ln0));
+		n = $.int64Sub(n, $.int(ln0));
 		($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = null
 		v!.value = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v)), 1, undefined)
 	}

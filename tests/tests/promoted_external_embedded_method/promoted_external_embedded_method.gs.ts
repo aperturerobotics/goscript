@@ -32,10 +32,22 @@ export class raw {
 		return $.markAsStructValue(cloned)
 	}
 
+	public Lock(): any {
+		return $.pointerValue<sync.Mutex>(this.Mutex).Lock()
+	}
+
+	public TryLock(): any {
+		return $.pointerValue<sync.Mutex>(this.Mutex).TryLock()
+	}
+
+	public Unlock(): any {
+		return $.pointerValue<sync.Mutex>(this.Mutex).Unlock()
+	}
+
 	static __typeInfo = $.registerStructType(
 		"main.raw",
 		() => new raw(),
-		[],
+		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		raw,
 		{"Mutex": "sync.Mutex"}
 	)
@@ -114,10 +126,38 @@ export class rawRW {
 		return $.markAsStructValue(cloned)
 	}
 
+	public Lock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).Lock()
+	}
+
+	public RLock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).RLock()
+	}
+
+	public RLocker(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).RLocker()
+	}
+
+	public RUnlock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).RUnlock()
+	}
+
+	public TryLock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).TryLock()
+	}
+
+	public TryRLock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).TryRLock()
+	}
+
+	public Unlock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).Unlock()
+	}
+
 	static __typeInfo = $.registerStructType(
 		"main.rawRW",
 		() => new rawRW(),
-		[],
+		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "TryRLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		rawRW,
 		{"RWMutex": "sync.RWMutex"}
 	)
@@ -252,7 +292,7 @@ export class outerRunner {
 	}
 
 	public Run(): any {
-		return $.pointerValue<Exclude<runner | null, null>>($.pointerValue<rawRunner>(this.rawRunner).runner).Run()
+		return $.pointerValue<any>($.pointerValue<rawRunner>(this.rawRunner).runner).Run()
 	}
 
 	static __typeInfo = $.registerStructType(

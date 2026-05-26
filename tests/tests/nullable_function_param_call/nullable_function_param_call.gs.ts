@@ -145,7 +145,7 @@ export async function walk(fs: Filesystem | null, path: string, info: FileInfo |
 	// This should generate: walkFn!(path, info, nil)
 	// But currently generates: walkFn(path, info, nil) - missing !
 	let err = await walkFn!(path, info, null)
-	if ((err != null) && (err != SkipDir)) {
+	if ((err != null) && (!$.comparableEqual(err, SkipDir))) {
 		return err
 	}
 

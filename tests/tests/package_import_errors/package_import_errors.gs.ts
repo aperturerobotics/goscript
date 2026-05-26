@@ -100,7 +100,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("err2:", $.pointerValue<Exclude<$.GoError, null>>(err2).Error())
 
 	// Test error comparison
-	$.println("err1 == err2:", err1 == err2)
+	$.println("err1 == err2:", $.comparableEqual(err1, err2))
 	$.println("err1 == nil:", err1 == null)
 
 	// Test nil error

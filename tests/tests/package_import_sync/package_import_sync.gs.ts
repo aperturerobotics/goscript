@@ -42,10 +42,22 @@ export class embeddedMutex {
 		return $.markAsStructValue(cloned)
 	}
 
+	public Lock(): any {
+		return $.pointerValue<sync.Mutex>(this.Mutex).Lock()
+	}
+
+	public TryLock(): any {
+		return $.pointerValue<sync.Mutex>(this.Mutex).TryLock()
+	}
+
+	public Unlock(): any {
+		return $.pointerValue<sync.Mutex>(this.Mutex).Unlock()
+	}
+
 	static __typeInfo = $.registerStructType(
 		"main.embeddedMutex",
 		() => new embeddedMutex(),
-		[],
+		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		embeddedMutex,
 		{"Mutex": "sync.Mutex", "value": { kind: $.TypeKind.Basic, name: "int" }}
 	)
@@ -87,10 +99,38 @@ export class embeddedRWMutex {
 		return $.markAsStructValue(cloned)
 	}
 
+	public Lock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).Lock()
+	}
+
+	public RLock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).RLock()
+	}
+
+	public RLocker(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).RLocker()
+	}
+
+	public RUnlock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).RUnlock()
+	}
+
+	public TryLock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).TryLock()
+	}
+
+	public TryRLock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).TryRLock()
+	}
+
+	public Unlock(): any {
+		return $.pointerValue<sync.RWMutex>(this.RWMutex).Unlock()
+	}
+
 	static __typeInfo = $.registerStructType(
 		"main.embeddedRWMutex",
 		() => new embeddedRWMutex(),
-		[],
+		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "TryRLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		embeddedRWMutex,
 		{"RWMutex": "sync.RWMutex", "value": { kind: $.TypeKind.Basic, name: "int" }}
 	)
