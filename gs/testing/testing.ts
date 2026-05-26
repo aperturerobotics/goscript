@@ -113,8 +113,13 @@ export class T {
 
   public Helper(): void {}
 
-  public Cleanup(fn: () => void | Promise<void>): void {
-    this.cleanups.push(fn)
+  public Cleanup(fn: (() => void | Promise<void>) | null): void {
+    this.cleanups.push(() => {
+      if (fn == null) {
+        throw new Error('testing: nil cleanup function')
+      }
+      return fn()
+    })
   }
 
   public async Run(name: string, fn: TestFunc): Promise<boolean> {
@@ -366,7 +371,7 @@ export async function runTests(
 
 function formatMessage(format: string, args: unknown[]): string {
   let index = 0
-  return format.replace(/%#v|%q|%[vds]/g, (verb) => {
+  return format.replace(/%#v|%\+v|%q|%[vds]/g, (verb) => {
     const value = args[index++]
     if (verb === '%q') {
       return JSON.stringify(String(value))

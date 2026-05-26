@@ -87,7 +87,7 @@ class valueContext extends baseContext {
   }
 
   Value(key: any): any {
-    if (this.key === key) {
+    if (this.key === key || $.comparableEqual(this.key, key)) {
       return this.val
     }
     return this.parent.Value(key)

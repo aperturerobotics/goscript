@@ -96,6 +96,14 @@ describe('testing.T', () => {
     expect(t.Failed()).toBe(false)
   })
 
+  it('accepts nil cleanup values and fails when cleanup runs', async () => {
+    const t = new T('root')
+
+    t.Cleanup(null)
+
+    await expect(t.runCleanups()).rejects.toThrow('testing: nil cleanup function')
+  })
+
   it('returns a non-nil context', () => {
     const t = new T('root')
 
@@ -110,13 +118,13 @@ describe('testing.T', () => {
       messages.push(String(message))
     }
     try {
-      t.Logf('quoted=%q value=%#v number=%d string=%s plain=%v', 'key', 7, 3, 'ok', true)
+      t.Logf('quoted=%q value=%#v plus=%+v number=%d string=%s plain=%v', 'key', 7, { ok: true }, 3, 'ok', true)
       t.flushLogs()
     } finally {
       console.log = originalLog
     }
 
-    expect(messages).toEqual(['    quoted="key" value=7 number=3 string=ok plain=true'])
+    expect(messages).toEqual(['    quoted="key" value=7 plus=[object Object] number=3 string=ok plain=true'])
   })
 
   it('formats Go-style error objects with Error methods', () => {
