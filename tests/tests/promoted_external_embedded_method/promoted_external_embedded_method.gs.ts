@@ -352,7 +352,7 @@ export async function main(): globalThis.Promise<void> {
 	await rw.value.rawRW.RWMutex.RLock()
 	rw.value.rawRW.RWMutex.RUnlock()
 	let locker = rw.value.rawRW.RWMutex.RLocker()
-	$.pointerValue<Exclude<sync.Locker, null>>(locker).Lock()
+	await $.pointerValue<Exclude<sync.Locker, null>>(locker).Lock()
 	$.pointerValue<Exclude<sync.Locker, null>>(locker).Unlock()
 
 	let or = $.markAsStructValue(new outerRunner({rawRunner: $.markAsStructValue(new rawRunner({runner: $.interfaceValue<runner | null>($.markAsStructValue(new runnable()), "main.runnable")}))}))

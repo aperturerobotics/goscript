@@ -341,6 +341,49 @@ func TestCompilePackagesPropagatesOverrideAsyncInterfaceMethods(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAwaitsOverrideAsyncInterfaceMethodCalls(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/overrideasyncinterfacemethod\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"sync\"",
+			"func Use(l sync.Locker) {",
+			"  l.Lock()",
+			"  l.Unlock()",
+			"}",
+			"func main() {}",
+			"",
+		}, "\n"),
+	})
+	out := filepath.Join(t.TempDir(), "out")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      out,
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(out, "@goscript", "example.test", "overrideasyncinterfacemethod", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export async function Use(l: sync.Locker | null): globalThis.Promise<void>",
+		"await $.pointerValue<Exclude<sync.Locker, null>>(l).Lock()",
+		"$.pointerValue<Exclude<sync.Locker, null>>(l).Unlock()",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesAwaitsOverrideAsyncFunctions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/overrideasyncfunc\n\ngo 1.25.3\n",

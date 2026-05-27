@@ -3,6 +3,7 @@
     "unsafe"
   ],
   "asyncMethods": {
+    "Locker.Lock": true,
     "Mutex.Lock": true,
     "RWMutex.Lock": true,
     "RWMutex.RLock": true,
