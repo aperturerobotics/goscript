@@ -1365,14 +1365,14 @@ export class Prefix {
 		return null
 	}
 
-	public UnmarshalText(text: $.Slice<number>): $.GoError {
+	public async UnmarshalText(text: $.Slice<number>): globalThis.Promise<$.GoError> {
 		let p: Prefix | $.VarRef<Prefix> | null = this
 		if ($.len(text) == 0) {
 			$.assignStruct($.pointerValue<Prefix>(p), $.markAsStructValue(new Prefix()))
 			return null
 		}
 		let err: $.GoError = null as $.GoError
-		let __goscriptTuple8: any = ParsePrefix($.bytesToString(text))
+		let __goscriptTuple8: any = await ParsePrefix($.bytesToString(text))
 		$.assignStruct($.pointerValue<Prefix>(p), __goscriptTuple8[0])
 		err = __goscriptTuple8[1]
 		return err
@@ -1857,14 +1857,14 @@ export function PrefixFrom(ip: Addr, bits: number): Prefix {
 	return (() => { const __goscriptLiteralField2 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(ip)).withoutZone())); return $.markAsStructValue(new Prefix({ip: __goscriptLiteralField2, bitsPlusOne: $.uint(bitsPlusOne, 8)})) })()
 }
 
-export function ParsePrefix(s: string): [Prefix, $.GoError] {
+export async function ParsePrefix(s: string): globalThis.Promise<[Prefix, $.GoError]> {
 	let i = bytealg.LastIndexByteString(s, $.uint(47, 8))
 	if (i < 0) {
 		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "no '/'"})), "netip.parsePrefixError")]
 	}
 	let [ip, err] = ParseAddr($.sliceStringOrBytes(s, undefined, i))
 	if (err != null) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField3 = $.pointerValue<Exclude<$.GoError, null>>(err).Error(); return $.markAsStructValue(new parsePrefixError({_in: s, msg: __goscriptLiteralField3})) })(), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField3 = await $.pointerValue<Exclude<$.GoError, null>>(err).Error(); return $.markAsStructValue(new parsePrefixError({_in: s, msg: __goscriptLiteralField3})) })()), "netip.parsePrefixError")]
 	}
 	// IPv6 zones are not allowed: https://go.dev/issue/51899
 	if ($.markAsStructValue($.cloneStructValue(ip)).Is6() && (ip.z != z6noz)) {
@@ -1894,8 +1894,8 @@ export function ParsePrefix(s: string): [Prefix, $.GoError] {
 	return [$.markAsStructValue($.cloneStructValue(PrefixFrom($.markAsStructValue($.cloneStructValue(ip)), bits))), null]
 }
 
-export function MustParsePrefix(s: string): Prefix {
-	let [ip, err] = ParsePrefix(s)
+export async function MustParsePrefix(s: string): globalThis.Promise<Prefix> {
+	let [ip, err] = await ParsePrefix(s)
 	if (err != null) {
 		$.panic((err as any))
 	}

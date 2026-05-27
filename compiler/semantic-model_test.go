@@ -366,6 +366,92 @@ func TestSemanticModelPropagatesAsyncToOverrideInterfaceMethods(t *testing.T) {
 	}
 }
 
+func TestSemanticModelPropagatesAsyncToAnonymousInterfaceMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/anonymousiface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package anonymousiface",
+			"import \"context\"",
+			"type Snapshot int",
+			"type Watcher struct { ch chan Snapshot }",
+			"func (w *Watcher) WaitValueChange(ctx context.Context, old Snapshot, errCh <-chan error) (Snapshot, error) {",
+			"  select {",
+			"  case v := <-w.ch:",
+			"    return v, nil",
+			"  case err := <-errCh:",
+			"    return old, err",
+			"  case <-ctx.Done():",
+			"    return old, ctx.Err()",
+			"  }",
+			"}",
+			"func Use(ctx context.Context, w interface {",
+			"  WaitValueChange(context.Context, Snapshot, <-chan error) (Snapshot, error)",
+			"}, old Snapshot) (Snapshot, error) {",
+			"  return w.WaitValueChange(ctx, old, nil)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	model := buildSemanticModel(t, graph)
+
+	fn := requireDefinedFunc(t, graph, "example.test/anonymousiface", "Use")
+	if !model.functions[fn].async {
+		t.Fatalf("expected Use to be async, got %#v", model.functions[fn])
+	}
+}
+
+func TestSemanticModelPropagatesAsyncThroughInstantiatedNamedInterface(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/instantiatediface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package instantiatediface",
+			"import \"context\"",
+			"type Snapshot int",
+			"type Watchable[T any] interface {",
+			"  WaitValueChange(context.Context, T, <-chan error) (T, error)",
+			"}",
+			"type Container[T any] struct { ch chan T }",
+			"func (c *Container[T]) WaitValueChange(ctx context.Context, old T, errCh <-chan error) (T, error) {",
+			"  select {",
+			"  case v := <-c.ch:",
+			"    return v, nil",
+			"  case err := <-errCh:",
+			"    return old, err",
+			"  case <-ctx.Done():",
+			"    return old, ctx.Err()",
+			"  }",
+			"}",
+			"func Bind(w Watchable[Snapshot]) {}",
+			"func Use(ctx context.Context, w interface {",
+			"  WaitValueChange(context.Context, Snapshot, <-chan error) (Snapshot, error)",
+			"}, old Snapshot) (Snapshot, error) {",
+			"  return w.WaitValueChange(ctx, old, nil)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	model := buildSemanticModel(t, graph)
+
+	fn := requireDefinedFunc(t, graph, "example.test/instantiatediface", "Use")
+	if !model.functions[fn].async {
+		t.Fatalf("expected Use to be async, got %#v", model.functions[fn])
+	}
+}
+
 func TestSemanticModelIndexesFunctionsByFullName(t *testing.T) {
 	model := newSemanticModel()
 	semPkg := &semanticPackage{}

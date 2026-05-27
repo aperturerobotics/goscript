@@ -5273,7 +5273,7 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 		diagnostics = append(diagnostics, assignmentDiagnostics...)
 		body = append(assignments, body...)
 	}
-	async := ctx.asyncFunction
+	async := ctx.asyncFunction || stmtsContainAwait(body) || o.rangeFunctionValueNeedsAwait(ctx, stmt.X)
 
 	return loweredStmt{rangeFunc: &loweredRangeFunc{
 		value:        rangeValue,
@@ -6159,7 +6159,7 @@ func isLegacyOctalLiteral(value string) bool {
 func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (string, bool, []Diagnostic) {
 	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
 	deferState := &loweredDeferState{}
-	bodyCtx := ctx.withSignature(signature).withDeferState(deferState).withoutRangeBranch()
+	bodyCtx := ctx.withSignature(signature).withAsyncFunction(false).withDeferState(deferState).withoutRangeBranch()
 	asyncCompatibleParams := funcLiteralNeedsAsyncFunctionParamCalls(signature)
 	if asyncCompatibleParams || funcLiteralUsesFunctionIdentifierCall(ctx, lit) {
 		bodyCtx = bodyCtx.withAsyncFunction(true)

@@ -2988,6 +2988,249 @@ func TestCompilePackagesPropagatesAsyncGenericInterfaceMethods(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesPropagatesAsyncAnonymousInterfaceMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/anonymousasynciface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package anonymousasynciface",
+			"import \"context\"",
+			"type Snapshot int",
+			"type Watcher struct { ch chan Snapshot }",
+			"func (w *Watcher) WaitValueChange(ctx context.Context, old Snapshot, errCh <-chan error) (Snapshot, error) {",
+			"  select {",
+			"  case v := <-w.ch:",
+			"    return v, nil",
+			"  case err := <-errCh:",
+			"    return old, err",
+			"  case <-ctx.Done():",
+			"    return old, ctx.Err()",
+			"  }",
+			"}",
+			"func Use(ctx context.Context, w interface {",
+			"  WaitValueChange(context.Context, Snapshot, <-chan error) (Snapshot, error)",
+			"}, old Snapshot) (Snapshot, error) {",
+			"  return w.WaitValueChange(ctx, old, nil)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "anonymousasynciface", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export async function Use(ctx: context.Context | null, w: any, old: Snapshot): globalThis.Promise<[Snapshot, $.GoError]>",
+		"return await $.pointerValue<any>(w).WaitValueChange(ctx, old, null)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesPropagatesAsyncThroughInstantiatedNamedInterface(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/instantiatedasynciface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package instantiatedasynciface",
+			"import \"context\"",
+			"type Snapshot int",
+			"type Watchable[T any] interface {",
+			"  WaitValueChange(context.Context, T, <-chan error) (T, error)",
+			"}",
+			"type Container[T any] struct { ch chan T }",
+			"func (c *Container[T]) WaitValueChange(ctx context.Context, old T, errCh <-chan error) (T, error) {",
+			"  select {",
+			"  case v := <-c.ch:",
+			"    return v, nil",
+			"  case err := <-errCh:",
+			"    return old, err",
+			"  case <-ctx.Done():",
+			"    return old, ctx.Err()",
+			"  }",
+			"}",
+			"func Bind(w Watchable[Snapshot]) {}",
+			"func Use(ctx context.Context, w interface {",
+			"  WaitValueChange(context.Context, Snapshot, <-chan error) (Snapshot, error)",
+			"}, old Snapshot) (Snapshot, error) {",
+			"  return w.WaitValueChange(ctx, old, nil)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "instantiatedasynciface", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export async function Use(ctx: context.Context | null, w: any, old: Snapshot): globalThis.Promise<[Snapshot, $.GoError]>",
+		"return await $.pointerValue<any>(w).WaitValueChange(ctx, old, null)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesDoesNotAwaitUnmarkedAnonymousInterfaceMethod(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/anonymousifaceawait\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package anonymousifaceawait",
+			"import \"context\"",
+			"type Snapshot int",
+			"func Use(ctx context.Context, w interface {",
+			"  WaitValueChange(context.Context, Snapshot, <-chan error) (Snapshot, error)",
+			"}, ch <-chan struct{}, old Snapshot) (Snapshot, error) {",
+			"  select {",
+			"  case <-ch:",
+			"  default:",
+			"  }",
+			"  return w.WaitValueChange(ctx, old, nil)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "anonymousifaceawait", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "return await $.pointerValue<any>(w).WaitValueChange(ctx, old, null)") {
+		t.Fatalf("anonymous interface method call without an async implementation was awaited:\n%s", text)
+	}
+}
+
+func TestCompilePackagesDoesNotInheritAsyncIntoSyncFunctionLiteral(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/syncfunclit\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package syncfunclit",
+			"type Directive interface{ GetDirective() any }",
+			"type Bridge struct{ keep func(Directive) (bool, error) }",
+			"func NewBridge(keep func(Directive) (bool, error)) *Bridge { return &Bridge{keep: keep} }",
+			"func Execute(ch <-chan struct{}) error {",
+			"  select {",
+			"  case <-ch:",
+			"  default:",
+			"  }",
+			"  _ = NewBridge(func(di Directive) (bool, error) {",
+			"    switch di.GetDirective().(type) {",
+			"    default:",
+			"      return true, nil",
+			"    }",
+			"  })",
+			"  return nil",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "syncfunclit", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "await $.pointerValue<Exclude<Directive, null>>(di).GetDirective()") {
+		t.Fatalf("sync function literal inherited async await:\n%s", text)
+	}
+}
+
+func TestCompilePackagesMarksRangeFuncAsyncWhenBodyAwaits(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/rangefuncawaitbody\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package rangefuncawaitbody",
+			"type Item struct{}",
+			"func (i *Item) Release(ch <-chan struct{}) {",
+			"  select {",
+			"  case <-ch:",
+			"  default:",
+			"  }",
+			"}",
+			"func Back(items []Item) func(func(int, Item) bool) {",
+			"  return func(yield func(int, Item) bool) {",
+			"    for i := len(items)-1; i >= 0; i-- {",
+			"      if !yield(i, items[i]) { return }",
+			"    }",
+			"  }",
+			"}",
+			"func Use(ch <-chan struct{}, items []Item) {",
+			"  defer func() {",
+			"    for _, v := range Back(items) {",
+			"      v.Release(ch)",
+			"    }",
+			"  }()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "rangefuncawaitbody", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		";await (async () => {",
+		"await v.value.Release(ch)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesPropagatesImportedAsyncGenericInterfaceMethods(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/importedgenericasynciface\n\ngo 1.25.3\n",
