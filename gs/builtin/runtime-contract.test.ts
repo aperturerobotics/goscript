@@ -576,6 +576,19 @@ describe('builtin runtime contract helpers', () => {
     expect(await chanRecvWithOk(channel)).toEqual({ value: 0, ok: false })
   })
 
+  it('does not resume an unbuffered sender before the waiting receiver accepts the value', async () => {
+    const channel = makeChannel<number>(0, 0, 'both')
+    let received = 0
+
+    const receiver = (async () => {
+      received = await channel.receive()
+    })()
+
+    await channel.send(7)
+    expect(received).toBe(7)
+    await receiver
+  })
+
   it('resumes closed-channel receivers after queued goroutine work', async () => {
     const channel = makeChannel<number>(0, 0, 'both')
     const events: string[] = []

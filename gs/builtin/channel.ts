@@ -23,6 +23,30 @@ function scheduleClosedChannelWake(wake: () => void): void {
   setTimeout(wake, 0)
 }
 
+function completeUnbufferedReceive<T>(
+  resolveReceive: (value: T) => void,
+  value: T,
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    queueMicrotask(() => {
+      resolveReceive(value)
+      queueMicrotask(resolve)
+    })
+  })
+}
+
+function completeUnbufferedReceiveWithOk<T>(
+  resolveReceive: (result: ChannelReceiveResult<T>) => void,
+  result: ChannelReceiveResult<T>,
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    queueMicrotask(() => {
+      resolveReceive(result)
+      queueMicrotask(resolve)
+    })
+  })
+}
+
 /**
  * Represents a Go channel in TypeScript.
  * Supports asynchronous sending and receiving of values.
@@ -388,13 +412,14 @@ class BufferedChannel<T> implements Channel<T> {
     // Attempt to hand off to a waiting receiver (rendezvous)
     if (this.receivers.length > 0) {
       const receiverTask = this.receivers.shift()!
-      queueMicrotask(() => receiverTask.resolveReceive(value))
-      return
+      return completeUnbufferedReceive(receiverTask.resolveReceive, value)
     }
     if (this.receiversWithOk.length > 0) {
       const receiverTask = this.receiversWithOk.shift()!
-      queueMicrotask(() => receiverTask.resolveReceive({ value, ok: true }))
-      return
+      return completeUnbufferedReceiveWithOk(receiverTask.resolveReceive, {
+        value,
+        ok: true,
+      })
     }
 
     // If no waiting receivers, try to buffer if space is available
@@ -544,12 +569,15 @@ class BufferedChannel<T> implements Channel<T> {
 
     if (this.receivers.length > 0) {
       const receiverTask = this.receivers.shift()!
-      queueMicrotask(() => receiverTask.resolveReceive(value))
+      await completeUnbufferedReceive(receiverTask.resolveReceive, value)
       return { value: true, ok: true, id }
     }
     if (this.receiversWithOk.length > 0) {
       const receiverTask = this.receiversWithOk.shift()!
-      queueMicrotask(() => receiverTask.resolveReceive({ value, ok: true }))
+      await completeUnbufferedReceiveWithOk(receiverTask.resolveReceive, {
+        value,
+        ok: true,
+      })
       return { value: true, ok: true, id }
     }
 
