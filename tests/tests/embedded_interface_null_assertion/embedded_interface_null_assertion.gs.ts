@@ -104,7 +104,7 @@ export class StringReader {
 			return [0, null]
 		}
 		let n = $.copy(p, $.stringToBytes($.sliceStringOrBytes($.pointerValue<StringReader>(s).data, $.pointerValue<StringReader>(s).pos, undefined)))
-		$.pointerValue<StringReader>(s).pos += n
+		$.pointerValue<StringReader>(s).pos = $.pointerValue<StringReader>(s).pos + (n)
 		return [n, null]
 	}
 

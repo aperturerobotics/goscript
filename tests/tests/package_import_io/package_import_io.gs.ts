@@ -203,11 +203,11 @@ export async function main(): globalThis.Promise<void> {
 	$.println("SeekEnd:", io.SeekEnd)
 
 	// Test Discard writer
-	let [n, err] = io.WriteString($.pointerValueOrNil(io.Discard)!, "hello world")
+	let [n, err] = await io.WriteString($.pointerValueOrNil(io.Discard)!, "hello world")
 	$.println("WriteString to Discard - bytes:", n, "err:", err == null)
 
 	let holder = $.markAsStructValue(new writerHolder({w: io.Discard}))
-	let __goscriptTuple0: any = io.WriteString($.pointerValueOrNil(holder.w)!, "field writer")
+	let __goscriptTuple0: any = await io.WriteString($.pointerValueOrNil(holder.w)!, "field writer")
 	n = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	$.println("WriteString field writer - bytes:", n, "err:", err == null)

@@ -165,7 +165,7 @@ describe('strings/Reader', () => {
       expect(err).not.toBeNull()
     })
 
-    it('should write to writer', () => {
+    it('should write to writer', async () => {
       const r = new Reader({ s: 'hello world' })
       r.ReadByte() // advance position
 
@@ -177,7 +177,7 @@ describe('strings/Reader', () => {
         },
       }
 
-      const [n, err] = r.WriteTo(writer)
+      const [n, err] = await r.WriteTo(writer)
       expect(n).toBe(10) // remaining bytes
       expect(err).toBeNull()
       expect(r.Len()).toBe(0)

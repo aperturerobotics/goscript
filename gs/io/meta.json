@@ -12,6 +12,7 @@
     "CopyN": true,
     "ReadAtLeast": true,
     "ReadFull": true,
-    "ReadAll": true
+    "ReadAll": true,
+    "WriteString": true
   }
 }

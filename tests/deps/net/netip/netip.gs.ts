@@ -463,7 +463,7 @@ export class Addr {
 				if (b > 32) {
 					return [$.markAsStructValue(new Prefix()), errors.New(("prefix length " + strconv.Itoa(b)) + " too large for IPv4")]
 				}
-				effectiveBits += 96
+				effectiveBits = effectiveBits + (96)
 				break
 			}
 			default:
@@ -1657,21 +1657,21 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 
 			let end = $.len(_in)
 			if ($.len(zone) > 0) {
-				end -= $.len(zone) + 1
+				end = end - ($.len(zone) + 1)
 			}
 			let err = parseIPv4Fields(_in, end - $.len(s), end, $.goSlice(ip, i, i + 4))
 			if (err != null) {
 				return [$.markAsStructValue(new Addr()), err]
 			}
 			s = ""
-			i += 4
+			i = i + (4)
 			break
 		}
 
 		// Save this 16-bit chunk.
 		ip[i] = $.uint($.uint($.uintShr(acc, 8, 32), 8), 8)
 		ip[i + 1] = $.uint($.uint(acc, 8), 8)
-		i += 2
+		i = i + (2)
 
 		// Stop at end of string.
 		s = $.sliceStringOrBytes(s, off, undefined)
@@ -1875,14 +1875,14 @@ export function ParsePrefix(s: string): [Prefix, $.GoError] {
 
 	// strconv.Atoi accepts a leading sign and leading zeroes, but we don't want that.
 	if (($.len(bitsStr) > 1) && (($.indexStringOrBytes(bitsStr, 0) < 49) || ($.indexStringOrBytes(bitsStr, 0) > 57))) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "bad bits after slash: " + strconv.Quote(bitsStr)})), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField4 = "bad bits after slash: " + strconv.Quote(bitsStr); return $.markAsStructValue(new parsePrefixError({_in: s, msg: __goscriptLiteralField4})) })(), "netip.parsePrefixError")]
 	}
 
 	let __goscriptTuple9: any = strconv.Atoi(bitsStr)
 	let bits = __goscriptTuple9[0]
 	err = __goscriptTuple9[1]
 	if (err != null) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "bad bits after slash: " + strconv.Quote(bitsStr)})), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField5 = "bad bits after slash: " + strconv.Quote(bitsStr); return $.markAsStructValue(new parsePrefixError({_in: s, msg: __goscriptLiteralField5})) })(), "netip.parsePrefixError")]
 	}
 	let maxBits = 32
 	if ($.markAsStructValue($.cloneStructValue(ip)).Is6()) {

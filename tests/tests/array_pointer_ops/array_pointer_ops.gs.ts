@@ -13,7 +13,7 @@ export function sumArray(src: $.VarRef<Uint8Array> | null): number {
 	let sum = 0
 	for (let __goscriptRangeTarget1 = $.pointerValue<Uint8Array>(src), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 		let v = __goscriptRangeTarget1![__rangeIndex]
-		sum += $.int(v)
+		sum = sum + ($.int(v))
 	}
 	return sum
 }

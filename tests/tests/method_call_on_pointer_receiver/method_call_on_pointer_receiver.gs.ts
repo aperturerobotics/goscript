@@ -126,7 +126,7 @@ export class digest {
 
 	public Write(p: $.Slice<number>): void {
 		let d: digest | $.VarRef<digest> | null = this
-		$.pointerValue<digest>(d).writes += $.len(p)
+		$.pointerValue<digest>(d).writes = $.pointerValue<digest>(d).writes + ($.len(p))
 	}
 
 	static __typeInfo = $.registerStructType(

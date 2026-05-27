@@ -314,6 +314,58 @@ func TestSemanticModelPropagatesCascadedAsyncInterfaceMethods(t *testing.T) {
 	}
 }
 
+func TestSemanticModelPropagatesAsyncToOverrideInterfaceMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/overrideiface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package overrideiface",
+			"import (",
+			"  \"io\"",
+			"  \"sync\"",
+			")",
+			"type asyncWriter struct { mu sync.Mutex }",
+			"func (w *asyncWriter) Write(p []byte) (int, error) {",
+			"  w.mu.Lock()",
+			"  defer w.mu.Unlock()",
+			"  return len(p), nil",
+			"}",
+			"func Use(w io.Writer) {",
+			"  _, _ = w.Write(nil)",
+			"}",
+			"func main() { Use(&asyncWriter{}) }",
+			"",
+		}, "\n"),
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	model := buildSemanticModel(t, graph)
+
+	for _, name := range []string{"Write", "Use", "main"} {
+		fn := requireDefinedFunc(t, graph, "example.test/overrideiface", name)
+		if !model.functions[fn].async {
+			t.Fatalf("expected %s to be async, got %#v", name, model.functions[fn])
+		}
+	}
+	found := false
+	for _, implementation := range model.interfaceImplementations {
+		if implementation.typ != nil && implementation.typ.Obj().Name() == "asyncWriter" &&
+			implementation.iface != nil && implementation.iface.Obj().Pkg().Path() == "io" &&
+			implementation.iface.Obj().Name() == "Writer" &&
+			implementation.pointer && implementation.asyncMethods["Write"] {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("missing async *asyncWriter -> io.Writer implementation: %#v", model.interfaceImplementations)
+	}
+}
+
 func TestSemanticModelIndexesFunctionsByFullName(t *testing.T) {
 	model := newSemanticModel()
 	semPkg := &semanticPackage{}

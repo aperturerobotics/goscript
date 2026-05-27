@@ -1,0 +1,7 @@
+create true
+write 5 true
+close true true
+open true 1
+file open true
+file hello.txt hello true
+file close true

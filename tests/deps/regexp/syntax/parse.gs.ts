@@ -1108,7 +1108,7 @@ export class parser {
 		if (i < 0) {
 			return [out, rest, err]
 		}
-		i += 2
+		i = i + (2)
 		let name = $.sliceStringOrBytes(s, 0, i + 2)
 		s = $.sliceStringOrBytes(s, i + 2, undefined)
 		let g = $.markAsStructValue($.cloneStructValue($.mapGet(__goscript_perl_groups.__goscript_get_posixGroup(), name, $.markAsStructValue(new charGroup()))[0]))
@@ -1219,25 +1219,25 @@ export class parser {
 				}
 				case 105:
 				{
-					flags |= $.uint(FoldCase, 16)
+					flags = flags | ($.uint(FoldCase, 16))
 					sawFlag = true
 					break
 				}
 				case 109:
 				{
-					flags = flags & ~($.uint(OneLine, 16))
+					flags = flags & ~(($.uint(OneLine, 16)))
 					sawFlag = true
 					break
 				}
 				case 115:
 				{
-					flags |= $.uint(DotNL, 16)
+					flags = flags | ($.uint(DotNL, 16))
 					sawFlag = true
 					break
 				}
 				case 85:
 				{
-					flags |= $.uint(NonGreedy, 16)
+					flags = flags | ($.uint(NonGreedy, 16))
 					sawFlag = true
 					break
 				}
@@ -1249,7 +1249,7 @@ export class parser {
 					sign = -1
 					// Invert flags so that | above turn into &^ and vice versa.
 					// We'll invert flags again before using it below.
-					flags = $.uint(~flags, 16)
+					flags = $.uint($.uint(~flags, 16), 16)
 					sawFlag = false
 					break
 				}
@@ -1260,7 +1260,7 @@ export class parser {
 						if (!sawFlag) {
 							break Loop
 						}
-						flags = $.uint(~flags, 16)
+						flags = $.uint($.uint(~flags, 16), 16)
 					}
 					if ($.int(c, 32) == $.int(58, 32)) {
 						// Open new group
@@ -1475,7 +1475,7 @@ export class parser {
 
 	public push(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null {
 		let p: parser | $.VarRef<parser> | null = this
-		$.pointerValue<parser>(p).numRunes += $.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune)
+		$.pointerValue<parser>(p).numRunes = $.pointerValue<parser>(p).numRunes + ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune))
 		if ((($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(4, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 2)) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![1], 32))) {
 			// Single rune.
 			if (parser.prototype.maybeConcat.call(p, $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32), $.uint($.pointerValue<parser>(p).flags & ~(FoldCase), 16))) {
@@ -1587,7 +1587,7 @@ export class parser {
 		if ($.uint(($.pointerValue<parser>(p).flags & PerlX), 16) != $.uint(0, 16)) {
 			if (($.len(after) > 0) && ($.uint($.indexStringOrBytes(after, 0), 8) == $.uint(63, 8))) {
 				after = $.sliceStringOrBytes(after, 1, undefined)
-				flags ^= $.uint(NonGreedy, 16)
+				flags = flags ^ ($.uint(NonGreedy, 16))
 			}
 			if (!$.stringEqual(lastRepeat, "")) {
 				// In Perl it is not allowed to stack repetition operators:
@@ -1757,16 +1757,16 @@ export class ranges {
 	public Less(i: number, j: number): boolean {
 		const ra = this
 		let p: $.Slice<number> = $.pointerValue<$.Slice<number>>(ra.p)
-		i *= 2
-		j *= 2
+		i = i * (2)
+		j = j * (2)
 		return (p![i] < p![j]) || (($.int(p![i], 32) == $.int(p![j], 32)) && (p![i + 1] > p![j + 1]))
 	}
 
 	public Swap(i: number, j: number): void {
 		const ra = this
 		let p: $.Slice<number> = $.pointerValue<$.Slice<number>>(ra.p)
-		i *= 2
-		j *= 2
+		i = i * (2)
+		j = j * (2)
 		let __goscriptAssign6_0: number = $.int(p![j], 32)
 		let __goscriptAssign6_1: number = $.int(p![j + 1], 32)
 		let __goscriptAssign6_2: number = $.int(p![i], 32)
@@ -2079,7 +2079,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 				case 36:
 				{
 					if ($.uint((p.value.flags & OneLine), 16) != $.uint(0, 16)) {
-						$.pointerValue<__goscript_regexp.Regexp>(p.value.op($.uint(10, 8))).Flags |= $.uint(WasDollar, 16)
+						$.pointerValue<__goscript_regexp.Regexp>(p.value.op($.uint(10, 8))).Flags = $.pointerValue<__goscript_regexp.Regexp>(p.value.op($.uint(10, 8))).Flags | ($.uint(WasDollar, 16))
 					} else {
 						p.value.op($.uint(8, 8))
 					}
@@ -2352,7 +2352,7 @@ export function matchRune(re: __goscript_regexp.Regexp | $.VarRef<__goscript_reg
 		}
 		case 4:
 		{
-			for (let i = 0; i < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune); i += 2) {
+			for (let i = 0; i < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune); i = i + (2)) {
 				if (($.pointerValue<__goscript_regexp.Regexp>(re).Rune![i] <= r) && (r <= $.pointerValue<__goscript_regexp.Regexp>(re).Rune![i + 1])) {
 					return true
 				}
@@ -2454,7 +2454,7 @@ export function canonicalName(name: string): string {
 			case first:
 			{
 				if ((97 <= c) && (c <= 122)) {
-					c -= $.uint(97 - 65, 8)
+					c = c - ($.uint(97 - 65, 8))
 				}
 				first = false
 				break
@@ -2462,7 +2462,7 @@ export function canonicalName(name: string): string {
 			default:
 			{
 				if ((65 <= c) && (c <= 90)) {
-					c += $.uint(97 - 65, 8)
+					c = c + ($.uint(97 - 65, 8))
 				}
 				break
 			}
@@ -2555,7 +2555,7 @@ export function cleanClass(rp: $.VarRef<$.Slice<number>> | null): $.Slice<number
 
 	// Merge abutting, overlapping.
 	let w = 2
-	for (let i = 2; i < $.len(r); i += 2) {
+	for (let i = 2; i < $.len(r); i = i + (2)) {
 		let lo = $.int(r![i], 32)
 		let hi = $.int(r![i + 1], 32)
 		if (lo <= (r![w - 1] + 1)) {
@@ -2568,7 +2568,7 @@ export function cleanClass(rp: $.VarRef<$.Slice<number>> | null): $.Slice<number
 		// new disjoint range
 		r![w] = $.int(lo, 32)
 		r![w + 1] = $.int(hi, 32)
-		w += 2
+		w = w + (2)
 	}
 
 	return $.goSlice(r, undefined, w)
@@ -2602,7 +2602,7 @@ export function appendRange(r: $.Slice<number>, lo: number, hi: number): $.Slice
 	// alphabets, so that one range can be expanding A-Z and the
 	// other expanding a-z.
 	let n = $.len(r)
-	for (let i = 2; i <= 4; i += 2) {
+	for (let i = 2; i <= 4; i = i + (2)) {
 		if (n >= i) {
 			let rlo = $.int(r![n - i], 32)
 			let rhi = $.int(r![(n - i) + 1], 32)
@@ -2655,14 +2655,14 @@ export function appendFoldedRange(r: $.Slice<number>, lo: number, hi: number): $
 }
 
 export function appendClass(r: $.Slice<number>, x: $.Slice<number>): $.Slice<number> {
-	for (let i = 0; i < $.len(x); i += 2) {
+	for (let i = 0; i < $.len(x); i = i + (2)) {
 		r = appendRange(r, $.int(x![i], 32), $.int(x![i + 1], 32))
 	}
 	return r
 }
 
 export function appendFoldedClass(r: $.Slice<number>, x: $.Slice<number>): $.Slice<number> {
-	for (let i = 0; i < $.len(x); i += 2) {
+	for (let i = 0; i < $.len(x); i = i + (2)) {
 		r = appendFoldedRange(r, $.int(x![i], 32), $.int(x![i + 1], 32))
 	}
 	return r
@@ -2670,7 +2670,7 @@ export function appendFoldedClass(r: $.Slice<number>, x: $.Slice<number>): $.Sli
 
 export function appendNegatedClass(r: $.Slice<number>, x: $.Slice<number>): $.Slice<number> {
 	let nextLo = $.int(0, 32)
-	for (let i = 0; i < $.len(x); i += 2) {
+	for (let i = 0; i < $.len(x); i = i + (2)) {
 		let lo = $.int(x![i], 32)
 		let hi = $.int(x![i + 1], 32)
 		if (nextLo <= (lo - 1)) {
@@ -2694,7 +2694,7 @@ export function appendTable(r: $.Slice<number>, x: unicode.RangeTable | $.VarRef
 			r = appendRange(r, $.int(lo, 32), $.int(hi, 32))
 			continue
 		}
-		for (let c = $.int(lo, 32); c <= hi; c += $.int(stride, 32)) {
+		for (let c = $.int(lo, 32); c <= hi; c = c + ($.int(stride, 32))) {
 			r = appendRange(r, $.int(c, 32), $.int(c, 32))
 		}
 	}
@@ -2707,7 +2707,7 @@ export function appendTable(r: $.Slice<number>, x: unicode.RangeTable | $.VarRef
 			r = appendRange(r, $.int(lo, 32), $.int(hi, 32))
 			continue
 		}
-		for (let c = $.int(lo, 32); c <= hi; c += $.int(stride, 32)) {
+		for (let c = $.int(lo, 32); c <= hi; c = c + ($.int(stride, 32))) {
 			r = appendRange(r, $.int(c, 32), $.int(c, 32))
 		}
 	}
@@ -2728,7 +2728,7 @@ export function appendNegatedTable(r: $.Slice<number>, x: unicode.RangeTable | $
 			nextLo = $.int(hi + 1, 32)
 			continue
 		}
-		for (let c = $.int(lo, 32); c <= hi; c += $.int(stride, 32)) {
+		for (let c = $.int(lo, 32); c <= hi; c = c + ($.int(stride, 32))) {
 			if (nextLo <= (c - 1)) {
 				r = appendRange(r, $.int(nextLo, 32), $.int(c - 1, 32))
 			}
@@ -2747,7 +2747,7 @@ export function appendNegatedTable(r: $.Slice<number>, x: unicode.RangeTable | $
 			nextLo = $.int(hi + 1, 32)
 			continue
 		}
-		for (let c = $.int(lo, 32); c <= hi; c += $.int(stride, 32)) {
+		for (let c = $.int(lo, 32); c <= hi; c = c + ($.int(stride, 32))) {
 			if (nextLo <= (c - 1)) {
 				r = appendRange(r, $.int(nextLo, 32), $.int(c - 1, 32))
 			}
@@ -2763,13 +2763,13 @@ export function appendNegatedTable(r: $.Slice<number>, x: unicode.RangeTable | $
 export function negateClass(r: $.Slice<number>): $.Slice<number> {
 	let nextLo = $.int(0, 32)
 	let w = 0
-	for (let i = 0; i < $.len(r); i += 2) {
+	for (let i = 0; i < $.len(r); i = i + (2)) {
 		let lo = $.int(r![i], 32)
 		let hi = $.int(r![i + 1], 32)
 		if (nextLo <= (lo - 1)) {
 			r![w] = $.int(nextLo, 32)
 			r![w + 1] = $.int(lo - 1, 32)
-			w += 2
+			w = w + (2)
 		}
 		nextLo = $.int(hi + 1, 32)
 	}

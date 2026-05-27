@@ -1,0 +1,6 @@
+export type { Compressor, Decompressor } from "./register.gs.ts"
+export { Deflate, FileHeader, FileInfoHeader, Store } from "./struct.gs.ts"
+export { ErrAlgorithm, ErrChecksum, ErrFormat, ErrInsecurePath, File, NewReader, OpenReader, ReadCloser, Reader, __goscript_set_ErrAlgorithm, __goscript_set_ErrChecksum, __goscript_set_ErrFormat, __goscript_set_ErrInsecurePath } from "./reader.gs.ts"
+export { NewWriter, Writer } from "./writer.gs.ts"
+export { RegisterCompressor, RegisterDecompressor } from "./register.gs.ts"
+import "./reader.gs.ts"

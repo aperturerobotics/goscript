@@ -49,7 +49,7 @@ export class writeLogger {
 		const l: writeLogger | $.VarRef<writeLogger> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
-		let __goscriptTuple0: any = $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<writeLogger>(l).w).Write(p)
+		let __goscriptTuple0: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<writeLogger>(l).w).Write(p)
 		n = __goscriptTuple0[0]
 		err = __goscriptTuple0[1]
 		if (err != null) {
@@ -109,7 +109,7 @@ export class readLogger {
 		const l: readLogger | $.VarRef<readLogger> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
-		let __goscriptTuple1: any = $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<readLogger>(l).r).Read(p)
+		let __goscriptTuple1: any = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<readLogger>(l).r).Read(p)
 		n = __goscriptTuple1[0]
 		err = __goscriptTuple1[1]
 		if (err != null) {

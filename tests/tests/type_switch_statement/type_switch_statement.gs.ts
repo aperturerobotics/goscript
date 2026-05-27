@@ -173,7 +173,7 @@ export async function main(): globalThis.Promise<void> {
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
-						count += v
+						count = count + (v)
 					}
 					break
 			}

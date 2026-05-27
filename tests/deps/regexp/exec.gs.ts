@@ -486,7 +486,7 @@ export class machine {
 	public match(i: __goscript_regexp.input | null, pos: number): boolean {
 		let m: machine | $.VarRef<machine> | null = this
 		let startCond = $.uint($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).cond, 8)
-		if ($.uint(startCond, 8) == $.uint(~0, 8)) {
+		if ($.uint(startCond, 8) == $.uint($.uint(~0, 8), 8)) {
 			return false
 		}
 		$.pointerValue<machine>(m).matched = false
@@ -529,7 +529,7 @@ export class machine {
 					if (advance < 0) {
 						break
 					}
-					pos += advance
+					pos = pos + (advance)
 					let __goscriptTuple2: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
 					r = $.int(__goscriptTuple2[0], 32)
 					width = __goscriptTuple2[1]
@@ -554,7 +554,7 @@ export class machine {
 				// to where it is, so any match will do.
 				break
 			}
-			pos += width
+			pos = pos + (width)
 			let __goscriptAssign0_0: number = $.int(r1, 32)
 			let __goscriptAssign0_1: number = width1
 			r = __goscriptAssign0_0
@@ -713,13 +713,13 @@ export function lazyFlag_match(f: lazyFlag, op: syntax.EmptyOp): boolean {
 		if (($.int(r1, 32) != $.int(10, 32)) && (r1 >= 0)) {
 			return false
 		}
-		op = op & ~($.uint(syntax.EmptyBeginLine, 8))
+		op = op & ~(($.uint(syntax.EmptyBeginLine, 8)))
 	}
 	if ($.uint((op & syntax.EmptyBeginText), 8) != $.uint(0, 8)) {
 		if (r1 >= 0) {
 			return false
 		}
-		op = op & ~($.uint(syntax.EmptyBeginText, 8))
+		op = op & ~(($.uint(syntax.EmptyBeginText, 8)))
 	}
 	if ($.uint(op, 8) == $.uint(0, 8)) {
 		return true
@@ -729,21 +729,21 @@ export function lazyFlag_match(f: lazyFlag, op: syntax.EmptyOp): boolean {
 		if (($.int(r2, 32) != $.int(10, 32)) && (r2 >= 0)) {
 			return false
 		}
-		op = op & ~($.uint(syntax.EmptyEndLine, 8))
+		op = op & ~(($.uint(syntax.EmptyEndLine, 8)))
 	}
 	if ($.uint((op & syntax.EmptyEndText), 8) != $.uint(0, 8)) {
 		if (r2 >= 0) {
 			return false
 		}
-		op = op & ~($.uint(syntax.EmptyEndText, 8))
+		op = op & ~(($.uint(syntax.EmptyEndText, 8)))
 	}
 	if ($.uint(op, 8) == $.uint(0, 8)) {
 		return true
 	}
 	if (syntax.IsWordChar($.int(r1, 32)) != syntax.IsWordChar($.int(r2, 32))) {
-		op = op & ~($.uint(syntax.EmptyWordBoundary, 8))
+		op = op & ~(($.uint(syntax.EmptyWordBoundary, 8)))
 	} else {
-		op = op & ~($.uint(syntax.EmptyNoWordBoundary, 8))
+		op = op & ~(($.uint(syntax.EmptyNoWordBoundary, 8)))
 	}
 	return $.uint(op, 8) == $.uint(0, 8)
 }

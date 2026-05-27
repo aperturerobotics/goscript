@@ -18,6 +18,7 @@ type SemanticModel struct {
 	values                   map[types.Object]*semanticValue
 	generatedImports         map[string]map[string]bool
 	interfaceImplementations []semanticInterfaceImplementation
+	asyncInterfaceMethods    map[string]bool
 }
 
 type semanticPackage struct {

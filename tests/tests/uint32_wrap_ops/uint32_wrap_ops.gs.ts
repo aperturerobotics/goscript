@@ -14,6 +14,9 @@ export async function main(): globalThis.Promise<void> {
 	$.println($.uint($.uint(v, 8), 8) == $.uint(1, 8))
 	let high: number = $.uint(0x80000000, 32)
 	$.println($.uint(($.uintShr(high, 31, 32)), 32) == $.uint(1, 32))
+	high = (high >>> ($.uint(1, 32))) >>> 0
+	$.println($.uint(high, 32) == $.uint(0x40000000, 32))
+	$.println($.uint(($.uint(~$.uint(0, 16), 16) as number), 16) == $.uint(0xffff, 16))
 	$.println($.uint(($.uintShr(high, 32, 32)), 32) == $.uint(0, 32))
 	let count: number = 0
 	for (let mask = $.uint($.uint(8, 8), 8); mask <= 24; [mask, count] = [$.uint(mask - 8, 8), count + 1]) {

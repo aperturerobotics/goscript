@@ -49,7 +49,7 @@ export function Op_String(i: __goscript_regexp.Op): string {
 	switch (true) {
 		case (1 <= i) && (i <= 19):
 		{
-			i -= $.uint(1, 8)
+			i = i - ($.uint(1, 8))
 			return $.sliceStringOrBytes(_Op_name_0, _Op_index_0[i], _Op_index_0[i + 1])
 			break
 		}

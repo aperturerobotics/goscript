@@ -50,20 +50,20 @@ export async function main(): globalThis.Promise<void> {
 	let x: $.VarRef<number> = $.varRef(2)
 	let p: $.VarRef<number> | null = x
 
-	p!.value += 3
+	p!.value = p!.value + (3)
 	$.println(x.value)
 
-	p!.value = p!.value & ~(1)
+	p!.value = p!.value & ~((1))
 	// 5 (0101) &^ 1 (0001) = 4 (0100)
 	$.println(x.value)
 
-	p!.value <<= 2
+	p!.value = p!.value << (2)
 	$.println(x.value)
 
-	p!.value >>= 1
+	p!.value = p!.value >> (1)
 	$.println(x.value)
 
-	p!.value |= 3
+	p!.value = p!.value | (3)
 	$.println(x.value)
 
 	p!.value++

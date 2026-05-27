@@ -485,7 +485,7 @@ export class mapDir {
 		for (let __goscriptRangeTarget1 = list, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
 			list![i] = $.interfaceValue<fs.DirEntry | null>($.indexRef($.pointerValue<mapDir>(d).entry!, $.pointerValue<mapDir>(d).offset + i), "*fstest.mapFileInfo")
 		}
-		$.pointerValue<mapDir>(d).offset += n
+		$.pointerValue<mapDir>(d).offset = $.pointerValue<mapDir>(d).offset + (n)
 		return [list, null]
 	}
 
@@ -637,7 +637,7 @@ export function MapFS_resolveSymlinks(fsys: MapFS, name: string): [string, boole
 			i = $.len(name)
 		} else {
 			dir = $.sliceStringOrBytes(name, undefined, i + j)
-			i += j
+			i = i + (j)
 		}
 		{
 			let file: MapFile | $.VarRef<MapFile> | null = $.mapGet(fsys, dir, null)[0]
@@ -649,7 +649,7 @@ export function MapFS_resolveSymlinks(fsys: MapFS, name: string): [string, boole
 				return MapFS_resolveSymlinks(fsys, path2.Join(path2.Dir(dir), target) + $.sliceStringOrBytes(name, i, undefined))
 			}
 		}
-		i += 1
+		i = i + (1)
 	}
 	return [name, fs.ValidPath(name)]
 }

@@ -97,12 +97,12 @@ export class Prog {
 			switch ($.pointerValue<Inst>(i).Op) {
 				case InstEmptyWidth:
 				{
-					flag |= $.uint($.pointerValue<Inst>(i).Arg, 8)
+					flag = flag | ($.uint($.pointerValue<Inst>(i).Arg, 8))
 					break
 				}
 				case InstFail:
 				{
-					return $.uint(~0, 8)
+					return $.uint($.uint(~0, 8), 8)
 					break
 				}
 				case InstCapture:
@@ -284,7 +284,7 @@ export class Inst {
 			case 6:
 			case 8:
 			{
-				for (let j = 0; j < $.len(rune); j += 2) {
+				for (let j = 0; j < $.len(rune); j = j + (2)) {
 					if (r < rune![j]) {
 						return noMatch
 					}
@@ -408,34 +408,34 @@ export function EmptyOpContext(r1: number, r2: number): EmptyOp {
 		}
 		case $.int(r1, 32) == $.int(10, 32):
 		{
-			op |= $.uint(EmptyBeginLine, 8)
+			op = op | ($.uint(EmptyBeginLine, 8))
 			break
 		}
 		case r1 < 0:
 		{
-			op |= $.uint(EmptyBeginText | EmptyBeginLine, 8)
+			op = op | ($.uint(EmptyBeginText | EmptyBeginLine, 8))
 			break
 		}
 	}
 	switch (true) {
 		case IsWordChar($.int(r2, 32)):
 		{
-			boundary ^= $.uint(1, 8)
+			boundary = boundary ^ ($.uint(1, 8))
 			break
 		}
 		case $.int(r2, 32) == $.int(10, 32):
 		{
-			op |= $.uint(EmptyEndLine, 8)
+			op = op | ($.uint(EmptyEndLine, 8))
 			break
 		}
 		case r2 < 0:
 		{
-			op |= $.uint(EmptyEndText | EmptyEndLine, 8)
+			op = op | ($.uint(EmptyEndText | EmptyEndLine, 8))
 			break
 		}
 	}
 	if ($.uint(boundary, 8) != $.uint(0, 8)) {
-		op ^= $.uint((EmptyWordBoundary | EmptyNoWordBoundary), 8)
+		op = op ^ ($.uint((EmptyWordBoundary | EmptyNoWordBoundary), 8))
 	}
 	return $.uint(op, 8)
 }
@@ -461,7 +461,7 @@ export function dumpProg(b: strings.Builder | $.VarRef<strings.Builder> | null, 
 			strings.Builder.prototype.WriteString.call($.pointerValue<strings.Builder>(b), $.sliceStringOrBytes("   ", $.len(pc), undefined))
 		}
 		if (j == $.pointerValue<Prog>(p).Start) {
-			pc += "*"
+			pc = pc + ("*")
 		}
 		bw(b, $.arrayToSlice<string>([pc, "\t"]))
 		dumpInst(b, i)

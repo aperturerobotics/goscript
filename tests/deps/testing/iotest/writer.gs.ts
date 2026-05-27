@@ -42,7 +42,7 @@ export class truncateWriter {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Write(p: $.Slice<number>): [number, $.GoError] {
+	public async Write(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		let t: truncateWriter | $.VarRef<truncateWriter> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
@@ -54,7 +54,7 @@ export class truncateWriter {
 		if ($.int(n) > $.pointerValue<truncateWriter>(t).n) {
 			n = $.int($.pointerValue<truncateWriter>(t).n)
 		}
-		let __goscriptTuple0: any = $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<truncateWriter>(t).w).Write($.goSlice(p, 0, n))
+		let __goscriptTuple0: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<truncateWriter>(t).w).Write($.goSlice(p, 0, n))
 		n = __goscriptTuple0[0]
 		err = __goscriptTuple0[1]
 		$.pointerValue<truncateWriter>(t).n = $.int64Sub($.pointerValue<truncateWriter>(t).n, $.int($.int(n)))

@@ -188,7 +188,7 @@ export class Reader {
   }
 
   // WriteTo implements the [io.WriterTo] interface.
-  public WriteTo(w: io.Writer): [number, $.GoError] {
+  public async WriteTo(w: io.Writer): Promise<[number, $.GoError]> {
     const r = this
     r!.prevRune = -1
     if (r!.i >= ($.len(r!.s) as number)) {
@@ -197,7 +197,7 @@ export class Reader {
     let s = $.sliceString(r!.s, r!.i, undefined)
     let m: number
     let err: $.GoError
-    ;[m, err] = io.WriteString(w, s)
+    ;[m, err] = await io.WriteString(w, s)
     if (m > $.len(s)) {
       $.panic('strings.Reader.WriteTo: invalid WriteString count')
     }

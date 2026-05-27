@@ -1,0 +1,3 @@
+export type { SplitFunc } from "./scan.gs.ts"
+export { ErrAdvanceTooFar, ErrBadReadCount, ErrFinalToken, ErrNegativeAdvance, ErrTooLong, MaxScanTokenSize, NewScanner, ScanBytes, ScanLines, ScanRunes, ScanWords, Scanner, __goscript_set_ErrAdvanceTooFar, __goscript_set_ErrBadReadCount, __goscript_set_ErrFinalToken, __goscript_set_ErrNegativeAdvance, __goscript_set_ErrTooLong } from "./scan.gs.ts"
+export { ErrBufferFull, ErrInvalidUnreadByte, ErrInvalidUnreadRune, ErrNegativeCount, NewReadWriter, NewReader, NewReaderSize, NewWriter, NewWriterSize, ReadWriter, Reader, Writer, __goscript_set_ErrBufferFull, __goscript_set_ErrInvalidUnreadByte, __goscript_set_ErrInvalidUnreadRune, __goscript_set_ErrNegativeCount } from "./bufio.gs.ts"

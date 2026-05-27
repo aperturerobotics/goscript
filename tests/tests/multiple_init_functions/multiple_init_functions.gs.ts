@@ -20,7 +20,7 @@ export function __goscript_set_increment(__goscriptValue: number): void {
 }
 
 function __goscriptInit1(): void {
-	value += increment
+	value = value + (increment)
 }
 
 export async function main(): globalThis.Promise<void> {

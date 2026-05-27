@@ -264,7 +264,7 @@ export class Logger {
 
 		await $.pointerValue<Logger>(l).outMu.Lock()
 		__defer.defer(() => { $.pointerValue<Logger>(l).outMu.Unlock() })
-		let [, err] = $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<Logger>(l).out).Write($.pointerValue<$.Slice<number>>(buf))
+		let [, err] = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<Logger>(l).out).Write($.pointerValue<$.Slice<number>>(buf))
 		return err
 	}
 

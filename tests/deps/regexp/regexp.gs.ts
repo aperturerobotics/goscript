@@ -663,7 +663,7 @@ export class Regexp {
 					width = __goscriptTuple2[1]
 				}
 				if (width > 0) {
-					pos += width
+					pos = pos + (width)
 				} else {
 					pos = end + 1
 				}
@@ -682,7 +682,7 @@ export class Regexp {
 	public backtrack(ib: $.Slice<number>, _is: string, pos: number, ncap: number, dstCap: $.Slice<number>): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let startCond = $.uint($.pointerValue<Regexp>(re).cond, 8)
-		if ($.uint(startCond, 8) == $.uint(~0, 8)) {
+		if ($.uint(startCond, 8) == $.uint($.uint(~0, 8), 8)) {
 			return null
 		}
 		if (($.uint((startCond & syntax.EmptyBeginText), 8) != $.uint(0, 8)) && (pos != 0)) {
@@ -707,7 +707,7 @@ export class Regexp {
 			} else {
 
 				let width = -1
-				for (; (pos <= end) && (width != 0); pos += width) {
+				for (; (pos <= end) && (width != 0); pos = pos + (width)) {
 					if ($.len($.pointerValue<Regexp>(re).prefix) > 0) {
 
 						let advance = $.pointerValue<Exclude<input, null>>(i).index(re, pos)
@@ -715,7 +715,7 @@ export class Regexp {
 							__goscript_backtrack.freeBitState(b)
 							return null
 						}
-						pos += advance
+						pos = pos + (advance)
 					}
 
 					if ($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap) > 0) {
@@ -777,7 +777,7 @@ export class Regexp {
 	public doOnePass(ir: io.RuneReader | null, ib: $.Slice<number>, _is: string, pos: number, ncap: number, dstCap: $.Slice<number>): $.Slice<number> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let startCond = $.uint($.pointerValue<Regexp>(re).cond, 8)
-		if ($.uint(startCond, 8) == $.uint(~0, 8)) {
+		if ($.uint(startCond, 8) == $.uint($.uint(~0, 8), 8)) {
 			return null
 		}
 
@@ -823,7 +823,7 @@ export class Regexp {
 				if (!$.pointerValue<Exclude<input, null>>(i).hasPrefix(re)) {
 					break Return
 				}
-				pos += $.len($.pointerValue<Regexp>(re).prefix)
+				pos = pos + ($.len($.pointerValue<Regexp>(re).prefix))
 				let __goscriptTuple6: any = $.pointerValue<Exclude<input, null>>(i).step(pos)
 				r = $.int(__goscriptTuple6[0], 32)
 				width = __goscriptTuple6[1]
@@ -915,7 +915,7 @@ export class Regexp {
 					break
 				}
 				flag = __goscript_exec.newLazyFlag($.int(r, 32), $.int(r1, 32))
-				pos += width
+				pos = pos + (width)
 				let __goscriptAssign0_0: number = $.int(r1, 32)
 				let __goscriptAssign0_1: number = width1
 				r = __goscriptAssign0_0
@@ -1089,7 +1089,7 @@ export class Regexp {
 				width = __goscriptTuple12[1]
 			}
 			if ((searchPos + width) > a![1]) {
-				searchPos += width
+				searchPos = searchPos + (width)
 			} else {
 				if ((searchPos + 1) > a![1]) {
 					// This clause is only needed at the end of the input
@@ -1207,7 +1207,7 @@ export class Regexp {
 								if (!syntax.Inst.prototype.MatchRune.call(inst, $.int(r, 32))) {
 									continue __goscriptLoop0
 								}
-								__goscriptShadow2 += width
+								__goscriptShadow2 = __goscriptShadow2 + (width)
 								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
@@ -1221,7 +1221,7 @@ export class Regexp {
 								if ($.int(r, 32) != $.int($.pointerValue<syntax.Inst>(inst).Rune![0], 32)) {
 									continue __goscriptLoop0
 								}
-								__goscriptShadow2 += width
+								__goscriptShadow2 = __goscriptShadow2 + (width)
 								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
@@ -1235,7 +1235,7 @@ export class Regexp {
 								if (($.int(r, 32) == $.int(10, 32)) || ($.int(r, 32) == $.int(endOfText, 32))) {
 									continue __goscriptLoop0
 								}
-								__goscriptShadow2 += width
+								__goscriptShadow2 = __goscriptShadow2 + (width)
 								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
@@ -1249,7 +1249,7 @@ export class Regexp {
 								if ($.int(r, 32) == $.int(endOfText, 32)) {
 									continue __goscriptLoop0
 								}
-								__goscriptShadow2 += width
+								__goscriptShadow2 = __goscriptShadow2 + (width)
 								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)
 								__goscriptGotoState0 = "CheckAndLoop"
 								continue __goscriptGotoLoop0
@@ -1570,7 +1570,7 @@ export class inputReader {
 			$.pointerValue<inputReader>(i).atEOT = true
 			return [$.int(endOfText, 32), 0]
 		}
-		$.pointerValue<inputReader>(i).pos += w
+		$.pointerValue<inputReader>(i).pos = $.pointerValue<inputReader>(i).pos + (w)
 		return [$.int(r, 32), w]
 	}
 
@@ -1680,7 +1680,7 @@ export function minInputLen(re: syntax.Regexp | $.VarRef<syntax.Regexp> | null):
 				if ($.int(r, 32) == $.int(utf8.RuneError, 32)) {
 					l++
 				} else {
-					l += utf8.RuneLen($.int(r, 32))
+					l = l + (utf8.RuneLen($.int(r, 32)))
 				}
 			}
 			return l
@@ -1702,7 +1702,7 @@ export function minInputLen(re: syntax.Regexp | $.VarRef<syntax.Regexp> | null):
 			let l = 0
 			for (let __goscriptRangeTarget10 = $.pointerValue<syntax.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget10); __rangeIndex++) {
 				let sub = __goscriptRangeTarget10![__rangeIndex]
-				l += minInputLen(sub)
+				l = l + (minInputLen(sub))
 			}
 			return l
 			break
@@ -1815,7 +1815,7 @@ export function special(b: number): boolean {
 function __goscriptInit0(): void {
 	for (let __goscriptRangeTarget12 = new Uint8Array([92, 46, 43, 42, 63, 40, 41, 124, 91, 93, 123, 125, 94, 36]), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget12); __rangeIndex++) {
 		let b = __goscriptRangeTarget12![__rangeIndex]
-		specialBytes[b % 16] |= $.uint(1 << (Math.trunc(b / 16)), 8)
+		specialBytes[b % 16] = specialBytes[b % 16] | ($.uint(1 << (Math.trunc(b / 16)), 8))
 	}
 }
 
@@ -1867,7 +1867,7 @@ export function extract(str: string): [string, number, string, boolean] {
 		if ((!unicode.IsLetter($.int(rune, 32)) && !unicode.IsDigit($.int(rune, 32))) && ($.int(rune, 32) != $.int(95, 32))) {
 			break
 		}
-		i += size
+		i = i + (size)
 	}
 	if (i == 0) {
 		// empty name is not okay

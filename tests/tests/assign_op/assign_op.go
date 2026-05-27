@@ -53,4 +53,8 @@ func main() {
 	var k int = 5
 	k >>= 1    // 101 >> 1 = 010
 	println(k) // Expected output: 2
+
+	var m int = 10
+	m -= 1 + 2
+	println(m) // Expected output: 7
 }

@@ -1,0 +1,5 @@
+export type { CorruptInputError, InternalError, Reader, Resetter } from "./inflate.gs.ts"
+export { BestCompression, BestSpeed, DefaultCompression, HuffmanOnly, NewWriter, NewWriterDict, NoCompression, Writer } from "./deflate.gs.ts"
+export { CorruptInputError_Error, InternalError_Error, NewReader, NewReaderDict, ReadError, WriteError } from "./inflate.gs.ts"
+export { byFreq_Len, byFreq_Less, byFreq_Swap, byLiteral_Len, byLiteral_Less, byLiteral_Swap } from "./huffman_code.gs.ts"
+import "./inflate.gs.ts"

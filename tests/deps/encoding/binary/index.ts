@@ -1,0 +1,5 @@
+export type { AppendByteOrder, ByteOrder } from "./binary.gs.ts"
+export { Append, BigEndian, Decode, Encode, LittleEndian, Read, Size, Write, __goscript_set_BigEndian, __goscript_set_LittleEndian } from "./binary.gs.ts"
+export { AppendUvarint, AppendVarint, MaxVarintLen16, MaxVarintLen32, MaxVarintLen64, PutUvarint, PutVarint, ReadUvarint, ReadVarint, Uvarint, Varint } from "./varint.gs.ts"
+export { NativeEndian, __goscript_get_NativeEndian, __goscript_init_NativeEndian, __goscript_set_NativeEndian } from "./native_endian_little.gs.ts"
+import "./binary.gs.ts"

@@ -204,7 +204,7 @@ export class bitState {
 		if ($.uint(($.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] & (1 << (n & (visitedBits - 1)))), 32) != $.uint(0, 32)) {
 			return false
 		}
-		$.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] |= $.uint(1 << (n & (visitedBits - 1)), 32)
+		$.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] = $.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] | ($.uint(1 << (n & (visitedBits - 1)), 32))
 		return true
 	}
 

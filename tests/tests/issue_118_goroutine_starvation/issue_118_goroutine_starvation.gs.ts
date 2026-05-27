@@ -22,7 +22,7 @@ export async function main(): globalThis.Promise<void> {
 		// Simulate CPU-bound work with a tight loop
 		// In real code this might be a computation without I/O
 		for (let i = 0; i < 1000000; i++) {
-			sum += i
+			sum = sum + (i)
 		}
 		await $.chanSend(result, sum)
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))

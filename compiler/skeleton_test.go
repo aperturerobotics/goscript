@@ -3389,7 +3389,7 @@ func TestCompilePackagesLowersUnaryBitwiseComplement(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"mask = mask & ~(3)",
+		"mask = mask & ~((3))",
 		"$.println(~value, value & ~(3), mask, 0o700)",
 	} {
 		if !strings.Contains(text, want) {

@@ -9,9 +9,9 @@ export function skipToLabel(v: number): number {
 		if (v < 0) {
 			break done
 		}
-		total += 1
+		total = total + (1)
 	}
-	total += 10
+	total = total + (10)
 	return total
 }
 
@@ -22,7 +22,7 @@ export function skipLoop(v: number): number {
 			break afterLoop
 		}
 		for (let i = 0; i < 3; i++) {
-			total += i
+			total = total + (i)
 		}
 	}
 	return total + 1
@@ -57,14 +57,14 @@ export function mixedForwardBackward(limit: number): number {
 					switch (total % 3) {
 						case 0:
 						{
-							total += 2
+							total = total + (2)
 							__goscriptGotoState0 = "checkAndLoop"
 							continue __goscriptGotoLoop0
 							break
 						}
 						case 1:
 						{
-							total += 3
+							total = total + (3)
 							__goscriptGotoState0 = "checkAndLoop"
 							continue __goscriptGotoLoop0
 							break
@@ -166,7 +166,7 @@ export function stateMachineGoto(start: number): number {
 			case "copyHistory":
 			{
 				{
-					total += 10
+					total = total + (10)
 					if (total < 15) {
 						__goscriptGotoState2 = "readLiteral"
 						continue __goscriptGotoLoop2
@@ -220,7 +220,7 @@ export function nestedInnerBreakWithGoto(limit: number): number {
 					if (i == 1) {
 						break
 					}
-					total += 10
+					total = total + (10)
 				}
 
 				total++
@@ -277,13 +277,13 @@ export async function main(): globalThis.Promise<void> {
 						;await (async () => {
 							await rangeFuncBreakIterator!(async (v) => {
 								if (v == 0) {
-									rangeTotal += 5
+									rangeTotal = rangeTotal + (5)
 									return true
 								}
 								if (v == 1) {
 									return false
 								}
-								rangeTotal += 10
+								rangeTotal = rangeTotal + (10)
 								return true
 							})
 						})()

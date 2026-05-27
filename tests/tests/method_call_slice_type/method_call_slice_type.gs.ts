@@ -13,7 +13,7 @@ export function MySlice_Sum(s: MySlice): number {
 	let total = 0
 	for (let __goscriptRangeTarget0 = s, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let v = __goscriptRangeTarget0![__rangeIndex]
-		total += v
+		total = total + (v)
 	}
 	return total
 }

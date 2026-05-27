@@ -346,8 +346,8 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 			return false
 		}
 		merged = $.append(merged, $.int(($.pointerValue<$.Slice<number>>(newArray))![$.pointerValue<number>(newLow)], 32), $.int(($.pointerValue<$.Slice<number>>(newArray))![$.pointerValue<number>(newLow) + 1], 32))
-		newLow!.value += 2
-		ix += 2
+		newLow!.value = newLow!.value + (2)
+		ix = ix + (2)
 		next = $.append(next, $.uint(pc, 32))
 		return true
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))

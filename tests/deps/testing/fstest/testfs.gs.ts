@@ -557,7 +557,7 @@ export class fsTester {
 		if (c > 122) {
 			c = $.int(97, 32)
 		}
-		glob += ("*" + String.fromCodePoint(c)) + "*"
+		glob = glob + (("*" + String.fromCodePoint(c)) + "*")
 
 		let want: $.Slice<string> = null as $.Slice<string>
 		for (let __goscriptRangeTarget12 = list, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget12); __rangeIndex++) {

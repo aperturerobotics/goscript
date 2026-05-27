@@ -3734,15 +3734,11 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		if starTarget && stmt.Tok != token.DEFINE {
 			pointer, pointerDiagnostics := o.lowerPointerStorageExpr(ctx, star.X)
 			diagnostics = append(diagnostics, pointerDiagnostics...)
-			if stmt.Tok == token.AND_NOT_ASSIGN {
-				stmts = append(stmts, loweredStmt{text: pointer + " = " + pointer + " & ~(" + right + ")"})
-				continue
-			}
 			if value, ok := integerQuotientAssignExpr(targetType, pointer, right, stmt.Tok); ok {
 				stmts = append(stmts, loweredStmt{text: value})
 				continue
 			}
-			stmts = append(stmts, loweredStmt{text: pointer + " " + stmt.Tok.String() + " " + right})
+			stmts = append(stmts, loweredStmt{text: pointer + " = " + lowerCompoundAssignValue(o.runtimeOwner, targetType, pointer, right, stmt.Tok)})
 			continue
 		}
 		if isShortDecl {
@@ -3750,10 +3746,6 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 				right = o.lowerDeclaredValue(ctx, ident, right)
 			}
 			stmts = append(stmts, loweredStmt{text: "let " + left + o.shortDeclTypeAnnotation(ctx, lhs, stmt.Rhs[idx]) + " = " + right})
-			continue
-		}
-		if stmt.Tok == token.AND_NOT_ASSIGN {
-			stmts = append(stmts, loweredStmt{text: left + " = " + left + " & ~(" + right + ")"})
 			continue
 		}
 		if helper, ok := wideIntegerAssignHelper(targetType, stmt.Tok); ok {
@@ -3767,6 +3759,10 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		op := stmt.Tok.String()
 		if stmt.Tok == token.DEFINE {
 			op = "="
+		}
+		if stmt.Tok != token.ASSIGN && stmt.Tok != token.DEFINE {
+			stmts = append(stmts, loweredStmt{text: left + " = " + lowerCompoundAssignValue(o.runtimeOwner, targetType, left, right, stmt.Tok)})
+			continue
 		}
 		stmts = append(stmts, loweredStmt{text: left + " " + op + " " + right})
 	}
@@ -3810,6 +3806,7 @@ func lowerCompoundAssignValue(
 	if value, ok := integerQuotientAssignValueExpr(targetType, left, right, tok); ok {
 		return value
 	}
+	right = "(" + right + ")"
 	switch tok {
 	case token.ADD_ASSIGN:
 		return left + " + " + right
@@ -3830,6 +3827,9 @@ func lowerCompoundAssignValue(
 	case token.SHL_ASSIGN:
 		return left + " << " + right
 	case token.SHR_ASSIGN:
+		if bits, ok := unsignedIntegerBits(targetType); ok && bits <= 32 {
+			return "(" + left + " >>> " + right + ") >>> 0"
+		}
 		return left + " >> " + right
 	case token.AND_NOT_ASSIGN:
 		return left + " & ~(" + right + ")"
@@ -6073,6 +6073,10 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 			return lowerPrefixUnaryExpr(typed.Op, value), diagnostics
 		}
 		if typed.Op == token.XOR {
+			if bits, ok := unsignedIntegerBits(ctx.semPkg.source.TypesInfo.TypeOf(typed)); ok && bits <= 32 {
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
+					"(~" + value + ", " + strconv.Itoa(bits) + ")", diagnostics
+			}
 			return "~" + value, diagnostics
 		}
 		return value, append(diagnostics, loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported unary operator"))
@@ -8492,12 +8496,40 @@ func (o *LoweringOwner) lowerStructCompositeLit(
 func compositeLiteralFieldNeedsPreEval(ctx lowerFileContext, expr ast.Expr) bool {
 	switch typed := unwrapParenExpr(expr).(type) {
 	case *ast.CallExpr:
+		for _, arg := range typed.Args {
+			if compositeLiteralFieldNeedsPreEval(ctx, arg) {
+				return true
+			}
+		}
 		if ident, ok := typed.Fun.(*ast.Ident); ok && isBuiltinCallTarget(ctx, ident) {
 			return false
 		}
 		return typeFromExpr(ctx, typed.Fun) == nil
 	case *ast.UnaryExpr:
-		return typed.Op == token.ARROW
+		return typed.Op == token.ARROW || compositeLiteralFieldNeedsPreEval(ctx, typed.X)
+	case *ast.BinaryExpr:
+		return compositeLiteralFieldNeedsPreEval(ctx, typed.X) ||
+			compositeLiteralFieldNeedsPreEval(ctx, typed.Y)
+	case *ast.IndexExpr:
+		return compositeLiteralFieldNeedsPreEval(ctx, typed.X) ||
+			compositeLiteralFieldNeedsPreEval(ctx, typed.Index)
+	case *ast.IndexListExpr:
+		if compositeLiteralFieldNeedsPreEval(ctx, typed.X) {
+			return true
+		}
+		for _, index := range typed.Indices {
+			if compositeLiteralFieldNeedsPreEval(ctx, index) {
+				return true
+			}
+		}
+		return false
+	case *ast.SliceExpr:
+		return compositeLiteralFieldNeedsPreEval(ctx, typed.X) ||
+			compositeLiteralFieldNeedsPreEval(ctx, typed.Low) ||
+			compositeLiteralFieldNeedsPreEval(ctx, typed.High) ||
+			compositeLiteralFieldNeedsPreEval(ctx, typed.Max)
+	case *ast.StarExpr:
+		return compositeLiteralFieldNeedsPreEval(ctx, typed.X)
 	default:
 		return false
 	}
@@ -10002,8 +10034,7 @@ func (o *LoweringOwner) functionAsync(ctx lowerFileContext, fn *types.Func) bool
 	if fn == nil || ctx.model == nil {
 		return false
 	}
-	semFn := semanticFunctionFor(ctx.model, fn)
-	return semFn != nil && semFn.async
+	return ctx.model.functionAsync(fn)
 }
 
 func (o *LoweringOwner) callNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool {

@@ -6,12 +6,12 @@ import * as $ from "@goscript/builtin/index.js"
 export function scopedTotal(seed: number): number {
 	let total = seed
 	{
-		total += 1
+		total = total + (1)
 		let inner = total * 2
 		$.println("inner:", inner)
 	}
 	{
-		total += 3
+		total = total + (3)
 	}
 	return total
 }

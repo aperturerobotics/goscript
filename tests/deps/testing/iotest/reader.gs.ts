@@ -41,12 +41,12 @@ export class oneByteReader {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Read(p: $.Slice<number>): [number, $.GoError] {
+	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		const r: oneByteReader | $.VarRef<oneByteReader> | null = this
 		if ($.len(p) == 0) {
 			return [0, null]
 		}
-		return $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<oneByteReader>(r).r).Read($.goSlice(p, 0, 1))
+		return await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<oneByteReader>(r).r).Read($.goSlice(p, 0, 1))
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -84,9 +84,9 @@ export class halfReader {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Read(p: $.Slice<number>): [number, $.GoError] {
+	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		const r: halfReader | $.VarRef<halfReader> | null = this
-		return $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<halfReader>(r).r).Read($.goSlice(p, 0, Math.trunc(($.len(p) + 1) / 2)))
+		return await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<halfReader>(r).r).Read($.goSlice(p, 0, Math.trunc(($.len(p) + 1) / 2)))
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -144,7 +144,7 @@ export class dataErrReader {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Read(p: $.Slice<number>): [number, $.GoError] {
+	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		let r: dataErrReader | $.VarRef<dataErrReader> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
@@ -152,7 +152,7 @@ export class dataErrReader {
 		// one to get data and a second to look for an error.
 		while (true) {
 			if ($.len($.pointerValue<dataErrReader>(r).unread) == 0) {
-				let [n1, err1] = $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<dataErrReader>(r).r).Read($.pointerValue<dataErrReader>(r).data)
+				let [n1, err1] = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<dataErrReader>(r).r).Read($.pointerValue<dataErrReader>(r).data)
 				$.pointerValue<dataErrReader>(r).unread = $.goSlice($.pointerValue<dataErrReader>(r).data, 0, n1)
 				err = err1
 			}
@@ -210,13 +210,13 @@ export class timeoutReader {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Read(p: $.Slice<number>): [number, $.GoError] {
+	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		let r: timeoutReader | $.VarRef<timeoutReader> | null = this
 		$.pointerValue<timeoutReader>(r).count++
 		if ($.pointerValue<timeoutReader>(r).count == 2) {
 			return [0, ErrTimeout]
 		}
-		return $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<timeoutReader>(r).r).Read(p)
+		return await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<timeoutReader>(r).r).Read(p)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -314,7 +314,7 @@ export class smallByteReader {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Read(p: $.Slice<number>): [number, $.GoError] {
+	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		let r: smallByteReader | $.VarRef<smallByteReader> | null = this
 		if ($.len(p) == 0) {
 			return [0, null]
@@ -324,13 +324,13 @@ export class smallByteReader {
 		if (n > $.len(p)) {
 			n = $.len(p)
 		}
-		let __goscriptTuple0: any = $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<smallByteReader>(r).r).Read($.goSlice(p, 0, n))
+		let __goscriptTuple0: any = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<smallByteReader>(r).r).Read($.goSlice(p, 0, n))
 		n = __goscriptTuple0[0]
 		let err = __goscriptTuple0[1]
 		if ((err != null) && (!$.comparableEqual(err, io.EOF))) {
 			err = fmt.Errorf("Read(%d bytes at offset %d): %v", n, $.pointerValue<smallByteReader>(r).off, (err as any))
 		}
-		$.pointerValue<smallByteReader>(r).off += n
+		$.pointerValue<smallByteReader>(r).off = $.pointerValue<smallByteReader>(r).off + (n)
 		return [n, err]
 	}
 
@@ -371,7 +371,7 @@ export function ErrReader(err: $.GoError): io.Reader | null {
 
 export async function TestReader(r: io.Reader | null, content: $.Slice<number>): globalThis.Promise<$.GoError> {
 	if ($.len(content) > 0) {
-		let [n, err] = $.pointerValue<Exclude<io.Reader, null>>(r).Read(null)
+		let [n, err] = await $.pointerValue<Exclude<io.Reader, null>>(r).Read(null)
 		if ((n != 0) || (err != null)) {
 			return fmt.Errorf("Read(0) = %d, %v, want 0, nil", n, (err as any))
 		}
@@ -386,7 +386,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 	if (!bytes.Equal(data, content)) {
 		return fmt.Errorf("ReadAll(small amounts) = %q\n\twant %q", $.interfaceValue<any>(data, "[]byte"), $.interfaceValue<any>(content, "[]byte"))
 	}
-	let __goscriptTuple2: any = $.pointerValue<Exclude<io.Reader, null>>(r).Read($.makeSlice<number>(10, undefined, "byte"))
+	let __goscriptTuple2: any = await $.pointerValue<Exclude<io.Reader, null>>(r).Read($.makeSlice<number>(10, undefined, "byte"))
 	let n = __goscriptTuple2[0]
 	err = __goscriptTuple2[1]
 	if ((n != 0) || (!$.comparableEqual(err, io.EOF))) {

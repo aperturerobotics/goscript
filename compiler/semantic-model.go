@@ -107,15 +107,16 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 
 func newSemanticModel() *SemanticModel {
 	return &SemanticModel{
-		packages:             make(map[string]*semanticPackage),
-		addressTaken:         make(map[types.Object]bool),
-		needsVarRef:          make(map[types.Object]bool),
-		functions:            make(map[*types.Func]*semanticFunction),
-		functionsByFullName:  make(map[string]*semanticFunction),
-		functionLookupMisses: make(map[*types.Func]bool),
-		types:                make(map[*types.Named]*semanticType),
-		values:               make(map[types.Object]*semanticValue),
-		generatedImports:     make(map[string]map[string]bool),
+		packages:              make(map[string]*semanticPackage),
+		addressTaken:          make(map[types.Object]bool),
+		needsVarRef:           make(map[types.Object]bool),
+		functions:             make(map[*types.Func]*semanticFunction),
+		functionsByFullName:   make(map[string]*semanticFunction),
+		functionLookupMisses:  make(map[*types.Func]bool),
+		types:                 make(map[*types.Named]*semanticType),
+		values:                make(map[types.Object]*semanticValue),
+		generatedImports:      make(map[string]map[string]bool),
+		asyncInterfaceMethods: make(map[string]bool),
 	}
 }
 
@@ -1125,8 +1126,7 @@ func (o *SemanticModelOwner) propagateFunctionAsync(ctx context.Context, model *
 				return []Diagnostic{contextCanceledDiagnostic(err)}
 			}
 			for called := range semFn.calls {
-				calledFn := semanticFunctionFor(model, called)
-				if calledFn != nil && calledFn.async {
+				if model.functionAsync(called) {
 					if markFunctionAsync(semFn, "call:"+called.FullName()) {
 						changed = true
 					}
@@ -1167,17 +1167,15 @@ func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 	ctx context.Context,
 	model *SemanticModel,
 ) ([]semanticInterfaceImplementationGraphEntry, []Diagnostic) {
-	var interfaces []*types.Named
+	interfaces := collectInterfaceImplementationCandidates(model)
 	var concretes []*types.Named
 	for named, semType := range model.types {
 		if err := ctx.Err(); err != nil {
 			return nil, []Diagnostic{contextCanceledDiagnostic(err)}
 		}
-		if semType.isInterface {
-			interfaces = append(interfaces, named)
-			continue
+		if !semType.isInterface {
+			concretes = append(concretes, named)
 		}
-		concretes = append(concretes, named)
 	}
 	sortNamedTypes(interfaces)
 	sortNamedTypes(concretes)
@@ -1209,6 +1207,102 @@ func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 	return implementationGraph, nil
 }
 
+func collectInterfaceImplementationCandidates(model *SemanticModel) []*types.Named {
+	if model == nil {
+		return nil
+	}
+	seen := make(map[string]bool)
+	var interfaces []*types.Named
+	add := func(named *types.Named) {
+		if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
+			return
+		}
+		if _, ok := types.Unalias(named.Underlying()).(*types.Interface); !ok {
+			return
+		}
+		key := named.Obj().Pkg().Path() + "." + named.Obj().Name()
+		if seen[key] {
+			return
+		}
+		seen[key] = true
+		interfaces = append(interfaces, named)
+	}
+	var collect func(types.Type)
+	seenTypes := make(map[types.Type]bool)
+	collect = func(typ types.Type) {
+		if typ == nil {
+			return
+		}
+		typ = types.Unalias(typ)
+		if seenTypes[typ] {
+			return
+		}
+		seenTypes[typ] = true
+		switch typed := typ.(type) {
+		case *types.Named:
+			add(typed)
+			collect(typed.Underlying())
+		case *types.Pointer:
+			collect(typed.Elem())
+		case *types.Slice:
+			collect(typed.Elem())
+		case *types.Array:
+			collect(typed.Elem())
+		case *types.Map:
+			collect(typed.Key())
+			collect(typed.Elem())
+		case *types.Chan:
+			collect(typed.Elem())
+		case *types.Struct:
+			for field := range typed.Fields() {
+				collect(field.Type())
+			}
+		case *types.Interface:
+			typed.Complete()
+			for method := range typed.Methods() {
+				collect(method.Type())
+			}
+		case *types.Signature:
+			if typed.Recv() != nil {
+				collect(typed.Recv().Type())
+			}
+			collectTuple(collect, typed.Params())
+			collectTuple(collect, typed.Results())
+		}
+	}
+	for _, semType := range model.types {
+		collect(semType.named)
+		for _, field := range semType.fields {
+			collect(field.typ)
+		}
+	}
+	for _, semFn := range model.functions {
+		collect(semFn.signature)
+	}
+	for _, semValue := range model.values {
+		collect(semValue.typ)
+	}
+	for _, semPkg := range model.packages {
+		for _, assertion := range semPkg.typeAssertions {
+			collect(assertion.source)
+			collect(assertion.target)
+		}
+		for _, fact := range semPkg.nilFacts {
+			collect(fact.typ)
+		}
+	}
+	return interfaces
+}
+
+func collectTuple(collect func(types.Type), tuple *types.Tuple) {
+	if tuple == nil {
+		return
+	}
+	for v := range tuple.Variables() {
+		collect(v.Type())
+	}
+}
+
 func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 	ctx context.Context,
 	model *SemanticModel,
@@ -1229,6 +1323,7 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 			implFn := model.functions[implMethod]
 			if implFn != nil && implFn.async {
 				implementation.asyncMethods[methodName] = true
+				model.markInterfaceMethodAsync(graphEntry.ifaceMethods[methodName])
 				if ifaceFn := model.functions[graphEntry.ifaceMethods[methodName]]; ifaceFn != nil {
 					markFunctionAsync(ifaceFn, "interface-implementation")
 				}
@@ -1243,6 +1338,32 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 		model.interfaceImplementations = append(model.interfaceImplementations, implementation)
 	}
 	return nil
+}
+
+func (m *SemanticModel) functionAsync(fn *types.Func) bool {
+	semFn := semanticFunctionFor(m, fn)
+	if semFn != nil {
+		return semFn.async
+	}
+	return m.interfaceMethodAsync(fn)
+}
+
+func (m *SemanticModel) markInterfaceMethodAsync(fn *types.Func) {
+	if m == nil || fn == nil {
+		return
+	}
+	key := functionAsyncKey(fn)
+	if key != "" {
+		m.asyncInterfaceMethods[key] = true
+	}
+}
+
+func (m *SemanticModel) interfaceMethodAsync(fn *types.Func) bool {
+	if m == nil || fn == nil {
+		return false
+	}
+	key := functionAsyncKey(fn)
+	return key != "" && m.asyncInterfaceMethods[key]
 }
 
 func contextCanceledDiagnostic(err error) Diagnostic {
@@ -1302,6 +1423,16 @@ func interfaceMethodMap(iface *types.Interface) map[string]*types.Func {
 		methods[method.Name()] = method
 	}
 	return methods
+}
+
+func functionAsyncKey(fn *types.Func) string {
+	if fn == nil {
+		return ""
+	}
+	if origin := fn.Origin(); origin != nil && origin != fn {
+		fn = origin
+	}
+	return fn.FullName()
 }
 
 func implementationMethodSets(concretes []*types.Named) []semanticImplementationMethodSet {

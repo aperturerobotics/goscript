@@ -5,5 +5,8 @@
     "iter",
     "unicode",
     "unicode/utf8"
-  ]
-} 
+  ],
+  "asyncMethods": {
+    "Reader.WriteTo": true
+  }
+}

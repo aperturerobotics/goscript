@@ -430,10 +430,10 @@ export class compiler {
 		f.nullable = false
 		let i: __goscript_prog.Inst | $.VarRef<__goscript_prog.Inst> | null = $.indexRef($.pointerValue<__goscript_prog.Prog>($.pointerValue<compiler>(c).p).Inst!, f.i)
 		$.pointerValue<__goscript_prog.Inst>(i).Rune = r
-		flags &= $.uint(1, 16)
+		flags = flags & ($.uint(1, 16))
 		if (($.len(r) != 1) || ($.int(unicode.SimpleFold($.int(r![0], 32)), 32) == $.int(r![0], 32))) {
 			// and sometimes not even that
-			flags = flags & ~($.uint(1, 16))
+			flags = flags & ~(($.uint(1, 16)))
 		}
 		$.pointerValue<__goscript_prog.Inst>(i).Arg = $.uint($.uint(flags, 32), 32)
 		f.out = $.markAsStructValue($.cloneStructValue(makePatchList($.uint(f.i << 1, 32))))

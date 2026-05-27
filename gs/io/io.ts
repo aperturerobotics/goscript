@@ -235,15 +235,18 @@ class DiscardWriter implements Writer {
 export const Discard: Writer | null = new DiscardWriter()
 
 // WriteString writes the contents of the string s to w, which accepts a slice of bytes
-export function WriteString(w: Writer, s: string): [number, $.GoError] {
+export async function WriteString(
+  w: Writer,
+  s: string,
+): Promise<[number, $.GoError]> {
   // Check if w implements StringWriter interface
   if ('WriteString' in w && typeof (w as any).WriteString === 'function') {
-    return (w as StringWriter).WriteString(s)
+    return await ((w as StringWriter).WriteString(s) as any)
   }
 
   // Convert string to bytes and write
   const bytes = new TextEncoder().encode(s)
-  return w.Write(bytes)
+  return await (w.Write(bytes) as any)
 }
 
 // LimitedReader reads from R but limits the amount of data returned to just N bytes
