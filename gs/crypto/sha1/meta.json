@@ -1,0 +1,8 @@
+{
+  "asyncFunctions": {
+    "Sum": true
+  },
+  "asyncMethods": {
+    "Digest.Sum": true
+  }
+}
