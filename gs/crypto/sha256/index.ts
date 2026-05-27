@@ -44,7 +44,7 @@ class Digest {
       this.canCopyHash ?
         new Uint8Array(this.hash!.copy!().digest())
       : await sum(this.algorithm, this.snapshotBytes())
-    return appendDigest($.bytesToUint8Array(b), digest)
+    return appendDigest(b, digest)
   }
 
   Reset(): void {
@@ -112,11 +112,8 @@ async function sum(
   return new Uint8Array(digest)
 }
 
-function appendDigest(prefix: Uint8Array, digest: Uint8Array): Uint8Array {
-  const out = new Uint8Array(prefix.length + digest.length)
-  out.set(prefix)
-  out.set(digest, prefix.length)
-  return out
+function appendDigest(prefix: $.Bytes, digest: Uint8Array): $.Bytes {
+  return $.append(prefix as any, ...digest) as $.Bytes
 }
 
 function createNodeHash(algorithm: ShaAlgorithm): NodeCryptoHash | null {

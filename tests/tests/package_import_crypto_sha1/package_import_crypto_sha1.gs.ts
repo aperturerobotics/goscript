@@ -29,6 +29,11 @@ export async function main(): globalThis.Promise<void> {
 	$.println("stream len", $.len(stream))
 	$.println("stream prefix", $.uint(stream![0], 8), $.uint(stream![1], 8))
 	$.println("stream digest", $.uint(stream![2], 8), $.uint(stream![21], 8))
+
+	let backing: $.Slice<number> = $.makeSlice<number>(sha1.Size, undefined, "byte")
+	let backed: $.Slice<number> = await $.pointerValue<Exclude<hash.Hash, null>>(h).Sum($.goSlice(backing, undefined, 0))
+	$.println("backed len", $.len(backed), $.len(backing))
+	$.println("backed digest", $.uint(backing![0], 8), $.uint(backing![19], 8), $.uint(backed![0], 8), $.uint(backed![19], 8))
 }
 
 if ($.isMainScript(import.meta)) {

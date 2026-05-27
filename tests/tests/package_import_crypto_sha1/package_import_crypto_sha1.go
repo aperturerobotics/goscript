@@ -20,4 +20,9 @@ func main() {
 	println("stream len", len(stream))
 	println("stream prefix", stream[0], stream[1])
 	println("stream digest", stream[2], stream[21])
+
+	backing := make([]byte, sha1.Size)
+	backed := h.Sum(backing[:0])
+	println("backed len", len(backed), len(backing))
+	println("backed digest", backing[0], backing[19], backed[0], backed[19])
 }

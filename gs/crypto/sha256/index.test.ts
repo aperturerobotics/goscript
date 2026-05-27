@@ -25,11 +25,23 @@ describe('crypto/sha256 override', () => {
     )
   })
 
+  test('streaming digest appends into spare byte-slice backing', async () => {
+    const digest = New()
+    expect(digest.Write($.stringToBytes('abc'))).toEqual([3, null])
+
+    const backing = $.makeSlice<number>(Size, undefined, 'byte')
+    const out = await digest.Sum($.goSlice(backing, 0, 0))
+    expect(out.length).toBe(Size)
+    expect(Array.from($.bytesToUint8Array(backing))).toEqual(
+      Array.from(await Sum256($.stringToBytes('abc'))),
+    )
+  })
+
   test('sums SHA-224 with host crypto', async () => {
     const sum = await Sum224($.stringToBytes('abc'))
     expect(Array.from(sum)).toEqual([
-      35, 9, 125, 34, 52, 5, 216, 34, 134, 66, 164, 119, 189, 162, 85, 179,
-      42, 173, 188, 228, 189, 160, 179, 247, 227, 108, 157, 167,
+      35, 9, 125, 34, 52, 5, 216, 34, 134, 66, 164, 119, 189, 162, 85, 179, 42,
+      173, 188, 228, 189, 160, 179, 247, 227, 108, 157, 167,
     ])
   })
 

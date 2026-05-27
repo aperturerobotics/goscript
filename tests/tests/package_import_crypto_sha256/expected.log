@@ -6,3 +6,5 @@ write bc 2 true
 stream len 34
 stream prefix 1 2
 stream digest 186 173
+backed len 32 32
+backed digest 186 173 186 173
