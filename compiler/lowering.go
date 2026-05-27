@@ -187,9 +187,6 @@ func (o *LoweringOwner) lowerFile(
 			})
 		}
 	}
-	for importSourcePath := range relevantImportFiles {
-		o.addGeneratedTypeImports(model, semPkg, importSourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
-	}
 	implicitImportPaths := make([]string, 0, len(localRefs.implicitImports))
 	for pkgPath := range localRefs.implicitImports {
 		if pkgPath != "" && pkgPath != semPkg.pkgPath {
@@ -198,7 +195,19 @@ func (o *LoweringOwner) lowerFile(
 	}
 	slices.Sort(implicitImportPaths)
 	for _, pkgPath := range implicitImportPaths {
-		o.addGeneratedImportPath(model, pkgPath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
+		o.addGeneratedImportPath(
+			model,
+			pkgPath,
+			loweredFile,
+			importAliases,
+			importPaths,
+			reservedImportAliases,
+			seenImport,
+			!localRefs.implicitRuntime[pkgPath],
+		)
+	}
+	for importSourcePath := range relevantImportFiles {
+		o.addGeneratedTypeImports(model, semPkg, importSourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
 	}
 	localImports := make([]loweredImport, 0, len(localRefs.aliases))
 	seenLocalImport := make(map[string]bool)
@@ -208,7 +217,13 @@ func (o *LoweringOwner) lowerFile(
 		}
 		seenLocalImport[alias] = true
 		source := localRefs.aliasSources[alias]
-		localImports = append(localImports, loweredImport{alias: alias, source: source, sideEffect: true})
+		typeOnly := !localRefs.runtimeAliases[alias]
+		localImports = append(localImports, loweredImport{
+			alias:      alias,
+			source:     source,
+			sideEffect: !typeOnly,
+			typeOnly:   typeOnly,
+		})
 	}
 	slices.SortFunc(localImports, func(a, b loweredImport) int {
 		return cmp.Compare(a.alias, b.alias)
@@ -308,7 +323,7 @@ func (o *LoweringOwner) addGeneratedTypeImports(
 	}
 	slices.Sort(pkgPaths)
 	for _, pkgPath := range pkgPaths {
-		o.addGeneratedImportPath(model, pkgPath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
+		o.addGeneratedImportPath(model, pkgPath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport, true)
 	}
 }
 
@@ -320,6 +335,7 @@ func (o *LoweringOwner) addGeneratedImportPath(
 	importPaths map[string]string,
 	reservedImportAliases map[string]bool,
 	seenImport map[string]bool,
+	typeOnly bool,
 ) {
 	if !o.hasGeneratedImportPackage(model, pkgPath) {
 		return
@@ -340,7 +356,8 @@ func (o *LoweringOwner) addGeneratedImportPath(
 	loweredFile.imports = append(loweredFile.imports, loweredImport{
 		alias:      alias,
 		source:     source,
-		sideEffect: true,
+		sideEffect: !typeOnly,
+		typeOnly:   typeOnly,
 	})
 }
 
@@ -429,7 +446,9 @@ type localFileReferenceAnalysis struct {
 	reservedNames   map[string]bool
 	aliases         map[types.Object]string
 	aliasSources    map[string]string
+	runtimeAliases  map[string]bool
 	implicitImports map[string]bool
+	implicitRuntime map[string]bool
 }
 
 func (o *LoweringOwner) analyzeLocalFileReferences(
@@ -444,35 +463,68 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 		reservedNames:   make(map[string]bool),
 		aliases:         make(map[types.Object]string),
 		aliasSources:    make(map[string]string),
+		runtimeAliases:  make(map[string]bool),
 		implicitImports: make(map[string]bool),
+		implicitRuntime: make(map[string]bool),
 	}
 	seenObjects := make(map[types.Object]bool)
 	seenTypes := make(map[types.Type]bool)
 	var addTypeDeps func(typ types.Type)
-	var addObject func(obj types.Object)
-	addObject = func(obj types.Object) {
-		if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() != semPkg.pkgPath {
+	var addRuntimeTypeDeps func(typ types.Type)
+	var addRuntimeTypeOwnerDeps func(typ types.Type)
+	var addObject func(obj types.Object, runtime bool)
+	addObject = func(obj types.Object, runtime bool) {
+		if obj == nil || obj.Pkg() == nil {
 			return
 		}
-		if seenObjects[obj] {
+		if obj.Pkg().Path() != semPkg.pkgPath {
+			if runtime {
+				analysis.implicitImports[obj.Pkg().Path()] = true
+				analysis.implicitRuntime[obj.Pkg().Path()] = true
+			}
 			return
 		}
-		seenObjects[obj] = true
 		declFile := declFiles[obj]
+		if declFile == "" {
+			if fn, ok := obj.(*types.Func); ok {
+				if decl := functionDeclForObject(semPkg, fn); decl != nil {
+					declFile = sourcePos(semPkg.source, decl.Pos()).file
+				}
+			}
+		}
 		if declFile != "" && declFile != sourcePath {
 			outputName := outputNames[declFile]
 			if outputName != "" {
 				alias := "__goscript_" + safeIdentifier(strings.TrimSuffix(outputName, ".gs.ts"))
 				analysis.aliases[obj] = alias
 				analysis.aliasSources[alias] = "./" + outputName
+				if runtime {
+					analysis.runtimeAliases[alias] = true
+				}
 			}
 		}
+		if runtime {
+			if alias := analysis.aliases[obj]; alias != "" {
+				analysis.runtimeAliases[alias] = true
+			}
+		}
+		if seenObjects[obj] {
+			return
+		}
+		seenObjects[obj] = true
 		switch typed := obj.(type) {
 		case *types.TypeName:
 			addTypeDeps(typed.Type())
 			if named, ok := types.Unalias(typed.Type()).(*types.Named); ok {
+				if structType := structUnderlyingType(named); structType != nil {
+					for field := range structType.Fields() {
+						addRuntimeTypeDeps(field.Type())
+					}
+				}
+			}
+			if named, ok := types.Unalias(typed.Type()).(*types.Named); ok {
 				for method := range named.Methods() {
-					addObject(method)
+					addObject(method, false)
 				}
 			}
 		case *types.Var:
@@ -515,7 +567,7 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 				addTypeDeps(alias.Rhs())
 				return
 			}
-			addObject(alias.Obj())
+			addObject(alias.Obj(), false)
 			if args := alias.TypeArgs(); args != nil {
 				for t := range args.Types() {
 					addTypeDeps(t)
@@ -534,7 +586,7 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 				}
 				return
 			}
-			addObject(named.Obj())
+			addObject(named.Obj(), false)
 			if args := named.TypeArgs(); args != nil {
 				for t := range args.Types() {
 					addTypeDeps(t)
@@ -580,8 +632,93 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 			}
 		}
 	}
+	addRuntimeTypeDeps = func(typ types.Type) {
+		if typ == nil {
+			return
+		}
+		if alias, ok := typ.(*types.Alias); ok {
+			addObject(alias.Obj(), true)
+			if args := alias.TypeArgs(); args != nil {
+				for t := range args.Types() {
+					addRuntimeTypeDeps(t)
+				}
+			}
+			addRuntimeTypeDeps(alias.Rhs())
+			return
+		}
+		if named, ok := types.Unalias(typ).(*types.Named); ok {
+			addObject(named.Obj(), true)
+			for method := range named.Methods() {
+				addObject(method, true)
+			}
+			methodSet := types.NewMethodSet(types.NewPointer(named))
+			for method := range methodSet.Methods() {
+				addObject(method.Obj(), true)
+			}
+			if args := named.TypeArgs(); args != nil {
+				for t := range args.Types() {
+					addRuntimeTypeDeps(t)
+				}
+			}
+			return
+		}
+		switch typed := types.Unalias(typ).Underlying().(type) {
+		case *types.Pointer:
+			addRuntimeTypeDeps(typed.Elem())
+		case *types.Slice:
+			addRuntimeTypeDeps(typed.Elem())
+		case *types.Array:
+			addRuntimeTypeDeps(typed.Elem())
+		case *types.Map:
+			addRuntimeTypeDeps(typed.Key())
+			addRuntimeTypeDeps(typed.Elem())
+		case *types.Chan:
+			addRuntimeTypeDeps(typed.Elem())
+		}
+	}
+	addRuntimeTypeOwnerDeps = func(typ types.Type) {
+		if typ == nil {
+			return
+		}
+		if alias, ok := typ.(*types.Alias); ok {
+			addObject(alias.Obj(), true)
+			if args := alias.TypeArgs(); args != nil {
+				for t := range args.Types() {
+					addRuntimeTypeOwnerDeps(t)
+				}
+			}
+			addRuntimeTypeOwnerDeps(alias.Rhs())
+			return
+		}
+		if named, ok := types.Unalias(typ).(*types.Named); ok {
+			addObject(named.Obj(), true)
+			if args := named.TypeArgs(); args != nil {
+				for t := range args.Types() {
+					addRuntimeTypeOwnerDeps(t)
+				}
+			}
+			return
+		}
+		switch typed := types.Unalias(typ).Underlying().(type) {
+		case *types.Pointer:
+			addRuntimeTypeOwnerDeps(typed.Elem())
+		case *types.Slice:
+			addRuntimeTypeOwnerDeps(typed.Elem())
+		case *types.Array:
+			addRuntimeTypeOwnerDeps(typed.Elem())
+		case *types.Map:
+			addRuntimeTypeOwnerDeps(typed.Key())
+			addRuntimeTypeOwnerDeps(typed.Elem())
+		case *types.Chan:
+			addRuntimeTypeOwnerDeps(typed.Elem())
+		}
+	}
 	inspect := func(node ast.Node) bool {
 		switch typed := node.(type) {
+		case *ast.ValueSpec:
+			if len(typed.Values) == 0 && typed.Type != nil {
+				addRuntimeTypeDeps(semPkg.source.TypesInfo.TypeOf(typed.Type))
+			}
 		case *ast.Ident:
 			if obj := semPkg.source.TypesInfo.Defs[typed]; obj != nil {
 				if _, ok := obj.(*types.PkgName); !ok {
@@ -591,18 +728,46 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 					}
 				}
 			}
-			addObject(semPkg.source.TypesInfo.Uses[typed])
+			if tv, ok := semPkg.source.TypesInfo.Types[typed]; ok && tv.IsValue() {
+				addObject(semPkg.source.TypesInfo.Uses[typed], true)
+			}
 			addTypeDeps(semPkg.source.TypesInfo.TypeOf(typed))
 		case *ast.SelectorExpr:
 			if selection := semPkg.source.TypesInfo.Selections[typed]; selection != nil {
-				addObject(selection.Obj())
+				switch selection.Kind() {
+				case types.FieldVal, types.MethodVal, types.MethodExpr:
+					addObject(selection.Obj(), true)
+					if selection.Kind() != types.FieldVal {
+						addRuntimeTypeOwnerDeps(selection.Recv())
+					}
+				default:
+					addObject(selection.Obj(), false)
+				}
 				addTypeDeps(selection.Obj().Type())
 			} else if obj := semPkg.source.TypesInfo.Uses[typed.Sel]; obj != nil {
+				if tv, ok := semPkg.source.TypesInfo.Types[typed]; ok && tv.IsValue() {
+					addObject(obj, true)
+				}
 				addTypeDeps(obj.Type())
 			}
 			if pointer, ok := types.Unalias(semPkg.source.TypesInfo.TypeOf(typed.X)).Underlying().(*types.Pointer); ok {
 				addTypeDeps(pointer.Elem())
 			}
+		case *ast.CompositeLit:
+			addRuntimeTypeDeps(semPkg.source.TypesInfo.TypeOf(typed))
+			addCompositeInterfaceValueDeps(semPkg.source.TypesInfo, typed, addRuntimeTypeDeps)
+		case *ast.CallExpr:
+			if ident, ok := ast.Unparen(typed.Fun).(*ast.Ident); ok && ident.Name == "new" {
+				for _, arg := range typed.Args {
+					addRuntimeTypeDeps(semPkg.source.TypesInfo.TypeOf(arg))
+				}
+			}
+			if ident, ok := ast.Unparen(typed.Fun).(*ast.Ident); ok && ident.Name == "make" && len(typed.Args) != 0 {
+				addRuntimeTypeDeps(semPkg.source.TypesInfo.TypeOf(typed.Args[0]))
+			}
+			addReflectTypeForRuntimeDeps(semPkg.source.TypesInfo, typed, addRuntimeTypeDeps)
+			addInterfaceArgumentRuntimeDeps(semPkg.source.TypesInfo, typed, addRuntimeTypeDeps)
+			addRuntimeTypeDeps(semPkg.source.TypesInfo.TypeOf(typed.Fun))
 		}
 		return true
 	}
@@ -611,6 +776,162 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 		ast.Inspect(methodDecl, inspect)
 	}
 	return analysis
+}
+
+func addInterfaceArgumentRuntimeDeps(
+	info *types.Info,
+	call *ast.CallExpr,
+	addRuntimeTypeDeps func(types.Type),
+) {
+	if info == nil || call == nil {
+		return
+	}
+	signature, _ := types.Unalias(info.TypeOf(call.Fun)).(*types.Signature)
+	if signature == nil || signature.Params() == nil {
+		return
+	}
+	params := signature.Params()
+	for idx, arg := range call.Args {
+		paramIdx := idx
+		if signature.Variadic() && paramIdx >= params.Len()-1 {
+			paramIdx = params.Len() - 1
+		}
+		if paramIdx < 0 || paramIdx >= params.Len() {
+			continue
+		}
+		paramType := params.At(paramIdx).Type()
+		if signature.Variadic() && idx >= params.Len()-1 {
+			if slice, ok := types.Unalias(paramType).Underlying().(*types.Slice); ok {
+				paramType = slice.Elem()
+			}
+		}
+		if typeIsInterface(paramType) {
+			addRuntimeTypeDeps(info.TypeOf(arg))
+		}
+	}
+}
+
+func addReflectTypeForRuntimeDeps(
+	info *types.Info,
+	call *ast.CallExpr,
+	addRuntimeTypeDeps func(types.Type),
+) {
+	if info == nil || call == nil || !isReflectTypeForExpr(info, call.Fun) {
+		return
+	}
+	switch typed := ast.Unparen(call.Fun).(type) {
+	case *ast.IndexExpr:
+		addRuntimeTypeDeps(info.TypeOf(typed.Index))
+	case *ast.IndexListExpr:
+		for _, index := range typed.Indices {
+			addRuntimeTypeDeps(info.TypeOf(index))
+		}
+	}
+}
+
+func isReflectTypeForExpr(info *types.Info, expr ast.Expr) bool {
+	var base ast.Expr
+	switch typed := ast.Unparen(expr).(type) {
+	case *ast.IndexExpr:
+		base = typed.X
+	case *ast.IndexListExpr:
+		base = typed.X
+	default:
+		return false
+	}
+	selector, ok := ast.Unparen(base).(*ast.SelectorExpr)
+	if !ok || selector.Sel.Name != "TypeFor" {
+		return false
+	}
+	ident, ok := ast.Unparen(selector.X).(*ast.Ident)
+	if !ok {
+		return false
+	}
+	pkgName, _ := info.Uses[ident].(*types.PkgName)
+	return pkgName != nil && pkgName.Imported() != nil && pkgName.Imported().Path() == "reflect"
+}
+
+func addCompositeInterfaceValueDeps(
+	info *types.Info,
+	lit *ast.CompositeLit,
+	addRuntimeTypeDeps func(types.Type),
+) {
+	if info == nil || lit == nil {
+		return
+	}
+	typ := types.Unalias(info.TypeOf(lit))
+	if pointer, ok := typ.Underlying().(*types.Pointer); ok {
+		typ = types.Unalias(pointer.Elem())
+	}
+	switch typed := typ.Underlying().(type) {
+	case *types.Array:
+		addCompositeElementsRuntimeDeps(info, lit.Elts, typed.Elem(), addRuntimeTypeDeps)
+	case *types.Slice:
+		addCompositeElementsRuntimeDeps(info, lit.Elts, typed.Elem(), addRuntimeTypeDeps)
+	case *types.Map:
+		for _, elt := range lit.Elts {
+			keyValue, ok := elt.(*ast.KeyValueExpr)
+			if !ok {
+				continue
+			}
+			if typeIsInterface(typed.Key()) {
+				addRuntimeTypeDeps(info.TypeOf(keyValue.Key))
+			}
+			if typeIsInterface(typed.Elem()) {
+				addRuntimeTypeDeps(info.TypeOf(keyValue.Value))
+			}
+		}
+	case *types.Struct:
+		nextField := 0
+		for _, elt := range lit.Elts {
+			fieldIdx := nextField
+			value := elt
+			if keyValue, ok := elt.(*ast.KeyValueExpr); ok {
+				value = keyValue.Value
+				if ident, ok := keyValue.Key.(*ast.Ident); ok {
+					for idx := range typed.NumFields() {
+						if typed.Field(idx).Name() == ident.Name {
+							fieldIdx = idx
+							break
+						}
+					}
+				}
+			} else {
+				nextField++
+			}
+			if fieldIdx < 0 || fieldIdx >= typed.NumFields() {
+				continue
+			}
+			if typeIsInterface(typed.Field(fieldIdx).Type()) {
+				addRuntimeTypeDeps(info.TypeOf(value))
+			}
+		}
+	}
+}
+
+func addCompositeElementsRuntimeDeps(
+	info *types.Info,
+	elements []ast.Expr,
+	elemType types.Type,
+	addRuntimeTypeDeps func(types.Type),
+) {
+	if !typeIsInterface(elemType) {
+		return
+	}
+	for _, elt := range elements {
+		if keyValue, ok := elt.(*ast.KeyValueExpr); ok {
+			elt = keyValue.Value
+		}
+		addRuntimeTypeDeps(info.TypeOf(elt))
+	}
+}
+
+func typeIsInterface(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
+	_, ok := types.Unalias(typ).Underlying().(*types.Interface)
+	return ok
 }
 
 func safeIdentifier(value string) string {
@@ -868,8 +1189,8 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				lazy := ctx.topLevel && ctx.lazyPackageVars[obj]
 				code := keyword + " " + declName + ": " + variableType + " = " + value
 				if lazy {
-					keyword = "let"
-					code = "let " + declName + ": " + variableType + " = undefined as unknown as " + variableType
+					keyword = "var"
+					code = "var " + declName + ": " + variableType + " = undefined as unknown as " + variableType
 				}
 				indexExport := ""
 				if ctx.topLevel && name.Name != "_" {
@@ -881,19 +1202,27 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				decls = append(decls, loweredDecl{code: code, indexExport: indexExport})
 				if lazy {
 					getterName := packageVarGetterName(name.Name)
+					initName := packageVarInitName(name.Name)
+					initIndexExport := ""
+					if ast.IsExported(name.Name) {
+						initIndexExport = initName
+					}
 					getterCode := "export function " + getterName + "(): " + variableType + " {\n\t"
 					if strings.Contains(value, "await ") {
-						initName := packageVarInitName(name.Name)
-						initCode := "async function " + initName + "(): globalThis.Promise<void> {\n\t" +
+						initCode := "export async function " + initName + "(): globalThis.Promise<void> {\n\t" +
 							"if (((" + declName + ") as any) === undefined) {\n\t\t" +
 							declName + " = " + value + "\n\t}\n}"
-						decls = append(decls, loweredDecl{code: initCode})
+						decls = append(decls, loweredDecl{code: initCode, indexExport: initIndexExport})
 						decls = append(decls, loweredDecl{packageInitCall: initName + "()"})
 						getterCode += "if (((" + declName + ") as any) === undefined) {\n\t\t" +
 							"throw new Error(" + strconv.Quote("goscript package variable "+name.Name+" read before initialization") + ")\n\t}\n"
 					} else {
+						initCode := "export function " + initName + "(): void {\n\t" +
+							"if (((" + declName + ") as any) === undefined) {\n\t\t" +
+							declName + " = " + value + "\n\t}\n}"
+						decls = append(decls, loweredDecl{code: initCode, indexExport: initIndexExport})
 						getterCode += "if (((" + declName + ") as any) === undefined) {\n\t\t" +
-							declName + " = " + value + "\n\t}\n"
+							initName + "()\n\t}\n"
 					}
 					getterCode += "\treturn " + declName + "\n}"
 					getterIndexExport := ""
@@ -907,10 +1236,15 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					setterType := o.tsPackageVarSetterValueTypeFor(ctx, obj.Type())
 					setterTarget := declName
 					if ctx.model.needsVarRef[obj] {
-						setterTarget += ".value"
+						if lazy {
+							setterTarget = packageVarGetterName(name.Name) + "().value"
+						} else {
+							setterTarget += ".value"
+						}
 					}
-					setterCode := "export function " + setterName + "(value: " + setterType + "): void {\n\t" +
-						setterTarget + " = value\n}"
+					setterValue := "__goscriptValue"
+					setterCode := "export function " + setterName + "(" + setterValue + ": " + setterType + "): void {\n\t" +
+						setterTarget + " = " + setterValue + "\n}"
 					setterIndexExport := ""
 					if ast.IsExported(name.Name) {
 						setterIndexExport = setterName
@@ -964,6 +1298,9 @@ func initializerMayHaveRuntimeEffects(ctx lowerFileContext, expr ast.Expr) bool 
 		}
 		switch typed := node.(type) {
 		case *ast.CallExpr:
+			if isEffectFreePackageInitializerCall(ctx, typed) {
+				return true
+			}
 			if callTargetSignature(ctx, typed.Fun) != nil {
 				hasEffects = true
 				return false
@@ -977,6 +1314,65 @@ func initializerMayHaveRuntimeEffects(ctx lowerFileContext, expr ast.Expr) bool 
 		return true
 	})
 	return hasEffects
+}
+
+func isEffectFreePackageInitializerCall(ctx lowerFileContext, call *ast.CallExpr) bool {
+	if call == nil {
+		return false
+	}
+	if isEffectFreePackageInitializerBuiltin(ctx, call.Fun) {
+		return true
+	}
+	if isReflectTypeOfCall(ctx, call) {
+		return true
+	}
+	if isMathBigNewIntCall(ctx, call) {
+		return true
+	}
+	selector, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr)
+	if !ok || selector.Sel.Name != "Elem" {
+		return false
+	}
+	receiver, ok := ast.Unparen(selector.X).(*ast.CallExpr)
+	return ok && isReflectTypeOfCall(ctx, receiver)
+}
+
+func isEffectFreePackageInitializerBuiltin(ctx lowerFileContext, expr ast.Expr) bool {
+	ident, ok := expr.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	if ident.Name != "make" && ident.Name != "new" {
+		return false
+	}
+	_, ok = objectForIdent(ctx, ident).(*types.Builtin)
+	return ok
+}
+
+func isReflectTypeOfCall(ctx lowerFileContext, call *ast.CallExpr) bool {
+	selector, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr)
+	if !ok || selector.Sel.Name != "TypeOf" {
+		return false
+	}
+	ident, ok := ast.Unparen(selector.X).(*ast.Ident)
+	if !ok {
+		return false
+	}
+	pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName)
+	return pkgName != nil && pkgName.Imported() != nil && pkgName.Imported().Path() == "reflect"
+}
+
+func isMathBigNewIntCall(ctx lowerFileContext, call *ast.CallExpr) bool {
+	selector, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr)
+	if !ok || selector.Sel.Name != "NewInt" {
+		return false
+	}
+	ident, ok := ast.Unparen(selector.X).(*ast.Ident)
+	if !ok {
+		return false
+	}
+	pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName)
+	return pkgName != nil && pkgName.Imported() != nil && pkgName.Imported().Path() == "math/big"
 }
 
 func packageDeclFiles(semPkg *semanticPackage) map[types.Object]string {
@@ -1012,6 +1408,7 @@ func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage, declFiles map[t
 	for idx, obj := range semPkg.initOrder {
 		varOrder[obj] = idx
 	}
+	funcRefs := packageVarsReferencedFromOtherFileTopLevelCalls(semPkg, declFiles)
 	lazy := make(map[types.Object]bool)
 	for idx, file := range semPkg.source.Syntax {
 		sourcePath := sourceFilePath(semPkg, idx, file)
@@ -1048,12 +1445,190 @@ func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage, declFiles map[t
 					if valueIdx >= len(valueSpec.Values) &&
 						zeroValueReferencesOtherFileObject(semPkg, declFiles, sourcePath, obj.Type()) {
 						lazy[obj] = true
+						continue
+					}
+					if funcRefs[obj] &&
+						(valueIdx >= len(valueSpec.Values) ||
+							!initializerMayHaveRuntimeEffects(lowerFileContext{semPkg: semPkg}, valueSpec.Values[valueIdx])) {
+						lazy[obj] = true
 					}
 				}
 			}
 		}
 	}
 	return lazy
+}
+
+func packageVarsReferencedFromOtherFileTopLevelCalls(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+) map[*types.Var]bool {
+	refs := make(map[*types.Var]bool)
+	if semPkg == nil || semPkg.source == nil || semPkg.source.TypesInfo == nil {
+		return refs
+	}
+	var collectFuncRefs func(rootSource string, fn *types.Func, seen map[*types.Func]bool)
+	collectFuncRefs = func(rootSource string, fn *types.Func, seen map[*types.Func]bool) {
+		if fn == nil || seen[fn] {
+			return
+		}
+		seen[fn] = true
+		decl := functionDeclForObject(semPkg, fn)
+		if decl == nil || decl.Body == nil {
+			return
+		}
+		ast.Inspect(decl.Body, func(node ast.Node) bool {
+			switch typed := node.(type) {
+			case *ast.Ident:
+				obj, _ := semPkg.source.TypesInfo.Uses[typed].(*types.Var)
+				if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() != semPkg.pkgPath {
+					return true
+				}
+				if declFiles[obj] != "" && declFiles[obj] != rootSource {
+					refs[obj] = true
+				}
+			case *ast.CallExpr:
+				called := calledFunction(semPkg.source, typed.Fun)
+				if called != nil && called.Pkg() != nil && called.Pkg().Path() == semPkg.pkgPath {
+					collectFuncRefs(rootSource, called, seen)
+				}
+			}
+			return true
+		})
+	}
+	for _, file := range semPkg.source.Syntax {
+		sourcePath := sourcePos(semPkg.source, file.Pos()).file
+		for _, decl := range file.Decls {
+			switch typed := decl.(type) {
+			case *ast.GenDecl:
+				if typed.Tok != token.VAR {
+					continue
+				}
+				for _, spec := range typed.Specs {
+					valueSpec, ok := spec.(*ast.ValueSpec)
+					if !ok {
+						continue
+					}
+					for _, value := range valueSpec.Values {
+						collectTopLevelRefs(semPkg, declFiles, refs, sourcePath, value, collectFuncRefs)
+					}
+				}
+			case *ast.FuncDecl:
+				if typed.Name.Name == "init" && typed.Body != nil {
+					collectTopLevelRefs(semPkg, declFiles, refs, sourcePath, typed.Body, collectFuncRefs)
+				}
+			}
+		}
+	}
+	return refs
+}
+
+func collectTopLevelRefs(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	refs map[*types.Var]bool,
+	sourcePath string,
+	node ast.Node,
+	collectFuncRefs func(string, *types.Func, map[*types.Func]bool),
+) {
+	ast.Inspect(node, func(node ast.Node) bool {
+		switch typed := node.(type) {
+		case *ast.Ident:
+			obj, _ := semPkg.source.TypesInfo.Uses[typed].(*types.Var)
+			if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() != semPkg.pkgPath {
+				return true
+			}
+			if declFiles[obj] != "" && declFiles[obj] != sourcePath {
+				refs[obj] = true
+			}
+		case *ast.CallExpr:
+			called := calledFunction(semPkg.source, typed.Fun)
+			if called == nil || called.Pkg() == nil || called.Pkg().Path() != semPkg.pkgPath {
+				return true
+			}
+			collectFuncRefs(sourcePath, called, make(map[*types.Func]bool))
+		}
+		return true
+	})
+}
+
+func (o *LoweringOwner) packageVarIsLazy(ctx lowerFileContext, obj *types.Var) bool {
+	if obj == nil {
+		return false
+	}
+	if ctx.lazyPackageVars[obj] {
+		return true
+	}
+	if ctx.model == nil || obj.Pkg() == nil {
+		return false
+	}
+	semPkg := ctx.model.packages[obj.Pkg().Path()]
+	if semPkg == nil {
+		return false
+	}
+	for lazyObj := range o.lazyPackageVars(semPkg, packageDeclFiles(semPkg)) {
+		if lazyObj != nil && lazyObj.Name() == obj.Name() &&
+			lazyObj.Pkg() != nil && lazyObj.Pkg().Path() == obj.Pkg().Path() {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *LoweringOwner) packageVarNameIsLazy(ctx lowerFileContext, pkgPath, name string) bool {
+	if ctx.model == nil || pkgPath == "" || name == "" {
+		return false
+	}
+	semPkg := ctx.model.packages[pkgPath]
+	if semPkg == nil {
+		return false
+	}
+	for lazyObj := range o.lazyPackageVars(semPkg, packageDeclFiles(semPkg)) {
+		if lazyObj != nil && lazyObj.Name() == name {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *LoweringOwner) packageVarHasAsyncLazyInit(ctx lowerFileContext, obj types.Object) bool {
+	varObj, _ := obj.(*types.Var)
+	if varObj == nil || varObj.Pkg() == nil {
+		return false
+	}
+	return o.packageVarNameHasAsyncLazyInit(ctx, varObj.Pkg().Path(), varObj.Name())
+}
+
+func (o *LoweringOwner) packageVarNameHasAsyncLazyInit(ctx lowerFileContext, pkgPath, name string) bool {
+	if ctx.model == nil || pkgPath == "" || name == "" {
+		return false
+	}
+	semPkg := ctx.model.packages[pkgPath]
+	if semPkg == nil || semPkg.source == nil {
+		return false
+	}
+	initCtx := lowerFileContext{model: ctx.model, semPkg: semPkg, topLevel: true}
+	for _, file := range semPkg.source.Syntax {
+		for _, decl := range file.Decls {
+			genDecl, ok := decl.(*ast.GenDecl)
+			if !ok || genDecl.Tok != token.VAR {
+				continue
+			}
+			for _, spec := range genDecl.Specs {
+				valueSpec, ok := spec.(*ast.ValueSpec)
+				if !ok {
+					continue
+				}
+				for idx, ident := range valueSpec.Names {
+					if ident.Name != name || idx >= len(valueSpec.Values) {
+						continue
+					}
+					return o.topLevelInitializerNeedsAwait(initCtx, valueSpec.Values[idx])
+				}
+			}
+		}
+	}
+	return false
 }
 
 func initializerReferencesLaterPackageVar(
@@ -1278,7 +1853,7 @@ func (o *LoweringOwner) lowerTupleValueSpec(
 	tupleExpr := tempName
 	if lazyTuple {
 		tupleGetterName := packageVarGetterName(tempName)
-		decls = append(decls, loweredDecl{code: "let " + tempName + ": any = undefined as any"})
+		decls = append(decls, loweredDecl{code: "var " + tempName + ": any = undefined as any"})
 		decls = append(decls, loweredDecl{code: "function " + tupleGetterName + "(): any {\n\t" +
 			"if (((" + tempName + ") as any) === undefined) {\n\t\t" +
 			tempName + " = " + right + "\n\t}\n\treturn " + tempName + "\n}"})
@@ -1303,8 +1878,8 @@ func (o *LoweringOwner) lowerTupleValueSpec(
 		code := keyword + " " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = " + value
 		lazy := lazyTuple || ctx.topLevel && ctx.lazyPackageVars[obj]
 		if lazy {
-			keyword = "let"
-			code = "let " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = undefined as unknown as " + variableType
+			keyword = "var"
+			code = "var " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = undefined as unknown as " + variableType
 		}
 		indexExport := ""
 		if ctx.topLevel {
@@ -5686,6 +6261,9 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 	if alias := ctx.localAliases[obj]; alias != "" {
 		if ctx.lazyPackageVars[obj] {
 			lazyValue := alias + "." + packageVarGetterName(value) + "()"
+			if (ctx.asyncFunction || ctx.topLevel) && o.packageVarHasAsyncLazyInit(ctx, obj) {
+				lazyValue = "(await " + alias + "." + packageVarInitName(value) + "(), " + lazyValue + ")"
+			}
 			if raw {
 				return lazyValue
 			}
@@ -5701,6 +6279,9 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 	}
 	if ctx.lazyPackageVars[obj] {
 		lazyValue := packageVarGetterName(value) + "()"
+		if (ctx.asyncFunction || ctx.topLevel) && o.packageVarHasAsyncLazyInit(ctx, obj) {
+			lazyValue = "(await " + packageVarInitName(value) + "(), " + lazyValue + ")"
+		}
 		return o.lowerPackageVarReadValue(ctx, obj, lazyValue)
 	}
 	if obj != nil && ctx.model.needsVarRef[obj] {
@@ -6842,6 +7423,14 @@ func (o *LoweringOwner) lowerSelectorExpr(ctx lowerFileContext, expr *ast.Select
 			if alias := importAliasForPkgName(ctx, pkgName); alias != "" {
 				value := alias + "." + expr.Sel.Name
 				obj, _ := ctx.semPkg.source.TypesInfo.Uses[expr.Sel].(*types.Var)
+				if o.packageVarIsLazy(ctx, obj) ||
+					o.packageVarNameIsLazy(ctx, pkgName.Imported().Path(), expr.Sel.Name) {
+					value = alias + "." + packageVarGetterName(expr.Sel.Name) + "()"
+					if (ctx.asyncFunction || ctx.topLevel) &&
+						o.packageVarNameHasAsyncLazyInit(ctx, pkgName.Imported().Path(), expr.Sel.Name) {
+						value = "(await " + alias + "." + packageVarInitName(expr.Sel.Name) + "(), " + value + ")"
+					}
+				}
 				if obj != nil && packageVarReadNeedsPointerValue(obj.Type()) {
 					value = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
 						"<" + o.tsNonNilTypeFor(ctx, obj.Type()) + ">(" + value + ")"
@@ -6916,10 +7505,13 @@ func (o *LoweringOwner) packageVarSetterForAssignment(ctx lowerFileContext, expr
 			return "", false
 		}
 		alias := ctx.localAliases[obj]
-		if alias == "" {
-			return "", false
+		if alias != "" {
+			return alias + "." + packageVarSetterName(ident.Name), true
 		}
-		return alias + "." + packageVarSetterName(ident.Name), true
+		if ctx.lazyPackageVars[obj] {
+			return packageVarSetterName(ident.Name), true
+		}
+		return "", false
 	}
 	selector, ok := unwrapParenExpr(expr).(*ast.SelectorExpr)
 	if !ok {
@@ -9592,7 +10184,12 @@ func (o *LoweringOwner) genericMethodDescriptorsForType(
 		if sig, _ := method.Type().(*types.Signature); sig != nil {
 			if recv := sig.Recv(); recv != nil {
 				if _, ok := types.Unalias(recv.Type()).Underlying().(*types.Pointer); !ok {
-					receiver = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "(receiver)"
+					if _, ok := types.Unalias(methodSetType).Underlying().(*types.Pointer); ok {
+						receiver = o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) + "(receiver)"
+					} else {
+						receiver = "(" + o.runtimeOwner.QualifiedHelper(RuntimeHelperIsVarRef) +
+							"(receiver) ? receiver.value : receiver)"
+					}
 				}
 			}
 		}

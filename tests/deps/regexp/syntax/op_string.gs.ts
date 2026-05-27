@@ -41,8 +41,8 @@ function __goscriptBlankFunc0(): void {
 
 export let _Op_index_0: Uint8Array = new Uint8Array([$.uint(0, 8), $.uint(7, 8), $.uint(17, 8), $.uint(24, 8), $.uint(33, 8), $.uint(45, 8), $.uint(52, 8), $.uint(61, 8), $.uint(68, 8), $.uint(77, 8), $.uint(84, 8), $.uint(96, 8), $.uint(110, 8), $.uint(117, 8), $.uint(121, 8), $.uint(125, 8), $.uint(130, 8), $.uint(136, 8), $.uint(142, 8), $.uint(151, 8)])
 
-export function __goscript_set__Op_index_0(value: Uint8Array): void {
-	_Op_index_0 = value
+export function __goscript_set__Op_index_0(__goscriptValue: Uint8Array): void {
+	_Op_index_0 = __goscriptValue
 }
 
 export function Op_String(i: __goscript_regexp.Op): string {

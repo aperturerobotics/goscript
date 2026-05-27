@@ -25,6 +25,7 @@ type loweredImport struct {
 	alias      string
 	source     string
 	sideEffect bool
+	typeOnly   bool
 }
 
 type loweredExpr struct {

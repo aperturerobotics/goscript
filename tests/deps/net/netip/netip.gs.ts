@@ -1446,20 +1446,20 @@ export const digits: string = "0123456789abcdef"
 
 export let z0: _unique.Handle<addrDetail> = $.markAsStructValue(new _unique.Handle<addrDetail>())
 
-export function __goscript_set_z0(value: _unique.Handle<addrDetail>): void {
-	z0 = value
+export function __goscript_set_z0(__goscriptValue: _unique.Handle<addrDetail>): void {
+	z0 = __goscriptValue
 }
 
 export let z4: _unique.Handle<addrDetail> = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new addrDetail()))))
 
-export function __goscript_set_z4(value: _unique.Handle<addrDetail>): void {
-	z4 = value
+export function __goscript_set_z4(__goscriptValue: _unique.Handle<addrDetail>): void {
+	z4 = __goscriptValue
 }
 
 export let z6noz: _unique.Handle<addrDetail> = $.markAsStructValue($.cloneStructValue(_unique.Make($.markAsStructValue(new addrDetail({isV6: true})))))
 
-export function __goscript_set_z6noz(value: _unique.Handle<addrDetail>): void {
-	z6noz = value
+export function __goscript_set_z6noz(__goscriptValue: _unique.Handle<addrDetail>): void {
+	z6noz = __goscriptValue
 }
 
 export function IPv6LinkLocalAllNodes(): Addr {

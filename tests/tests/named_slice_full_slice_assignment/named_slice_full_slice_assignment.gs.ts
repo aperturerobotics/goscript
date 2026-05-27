@@ -11,7 +11,7 @@ export function filters_size(f: filters): number {
 
 export async function main(): globalThis.Promise<void> {
 	let out: filters = null as filters
-	let value = $.namedValueInterfaceValue<any>($.arrayToSlice<number>([1, 2, 3]), "main.filters", {size: (receiver: any, ...args: any[]) => (filters_size as any)($.pointerValue(receiver), ...args)})
+	let value = $.namedValueInterfaceValue<any>($.arrayToSlice<number>([1, 2, 3]), "main.filters", {size: (receiver: any, ...args: any[]) => (filters_size as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})
 	{
 		let __goscriptTuple0: any = $.typeAssertTuple<filters>(value, "main.filters")
 		let c: filters = (__goscriptTuple0[0] as filters)

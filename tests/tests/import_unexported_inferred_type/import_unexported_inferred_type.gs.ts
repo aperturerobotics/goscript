@@ -8,8 +8,8 @@ import "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_unexpo
 
 export let closed: any = $.markAsStructValue($.cloneStructValue($.pointerValue<any>(dep.ErrClosed)))
 
-export function __goscript_set_closed(value: any): void {
-	closed = value
+export function __goscript_set_closed(__goscriptValue: any): void {
+	closed = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

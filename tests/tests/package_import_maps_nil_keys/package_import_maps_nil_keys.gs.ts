@@ -5,9 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as maps from "@goscript/maps/index.js"
 
-import * as iter from "@goscript/iter/index.js"
+import type * as iter from "@goscript/iter/index.js"
 import "@goscript/maps/index.js"
-import "@goscript/iter/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let m: Map<string, number> | null = null as Map<string, number> | null

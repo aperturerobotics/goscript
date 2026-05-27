@@ -34,6 +34,6 @@ export class hiddenError {
 
 export let ErrClosed: hiddenError = $.markAsStructValue(new hiddenError())
 
-export function __goscript_set_ErrClosed(value: hiddenError): void {
-	ErrClosed = value
+export function __goscript_set_ErrClosed(__goscriptValue: hiddenError): void {
+	ErrClosed = __goscriptValue
 }

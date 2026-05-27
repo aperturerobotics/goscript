@@ -48,16 +48,16 @@ export class loader {
 
 export let cache: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
-export function __goscript_set_cache(value: sync.Map): void {
-	cache.value = value
+export function __goscript_set_cache(__goscriptValue: sync.Map): void {
+	cache.value = __goscriptValue
 }
 
 export let defaultLoader: loader | $.VarRef<loader> | null = new loader({load: $.functionValue(async (key: string): globalThis.Promise<[any, boolean]> => {
 	return await cache.value.Load(key)
 }, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))})
 
-export function __goscript_set_defaultLoader(value: loader | $.VarRef<loader> | null): void {
-	defaultLoader = value
+export function __goscript_set_defaultLoader(__goscriptValue: loader | $.VarRef<loader> | null): void {
+	defaultLoader = __goscriptValue
 }
 
 export async function lookup(key: string): globalThis.Promise<[any, boolean]> {

@@ -1648,14 +1648,14 @@ export async function compile(expr: string, mode: syntax.Flags, longest: boolean
 
 export let matchSize: number[] = [128, 512, 2048, 16384, 0]
 
-export function __goscript_set_matchSize(value: number[]): void {
-	matchSize = value
+export function __goscript_set_matchSize(__goscriptValue: number[]): void {
+	matchSize = __goscriptValue
 }
 
 export let matchPool: sync.Pool[] = Array.from({ length: 5 }, () => $.markAsStructValue(new sync.Pool()))
 
-export function __goscript_set_matchPool(value: sync.Pool[]): void {
-	matchPool = value
+export function __goscript_set_matchPool(__goscriptValue: sync.Pool[]): void {
+	matchPool = __goscriptValue
 }
 
 export function minInputLen(re: syntax.Regexp | $.VarRef<syntax.Regexp> | null): number {
@@ -1804,8 +1804,8 @@ export async function Match(pattern: string, b: $.Slice<number>): globalThis.Pro
 
 export let specialBytes: Uint8Array = new Uint8Array(16)
 
-export function __goscript_set_specialBytes(value: Uint8Array): void {
-	specialBytes = value
+export function __goscript_set_specialBytes(__goscriptValue: Uint8Array): void {
+	specialBytes = __goscriptValue
 }
 
 export function special(b: number): boolean {

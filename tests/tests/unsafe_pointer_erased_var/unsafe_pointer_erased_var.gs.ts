@@ -8,8 +8,8 @@ import "@goscript/unsafe/index.js"
 
 export let table: $.VarRef<Uint8Array> = $.varRef(new Uint8Array([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8), $.uint(4, 8)]))
 
-export function __goscript_set_table(value: Uint8Array): void {
-	table.value = value
+export function __goscript_set_table(__goscriptValue: Uint8Array): void {
+	table.value = __goscriptValue
 }
 
 export function acceptMatrix(_p0: $.VarRef<Uint8Array[]> | null): void {

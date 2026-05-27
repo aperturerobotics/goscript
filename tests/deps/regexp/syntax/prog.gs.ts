@@ -386,8 +386,8 @@ export const noMatch: number = -1
 
 export let instOpNames: $.Slice<string> = $.arrayToSlice<string>(["InstAlt", "InstAltMatch", "InstCapture", "InstEmptyWidth", "InstMatch", "InstFail", "InstNop", "InstRune", "InstRune1", "InstRuneAny", "InstRuneAnyNotNL"])
 
-export function __goscript_set_instOpNames(value: $.Slice<string>): void {
-	instOpNames = value
+export function __goscript_set_instOpNames(__goscriptValue: $.Slice<string>): void {
+	instOpNames = __goscriptValue
 }
 
 export function InstOp_String(i: InstOp): string {

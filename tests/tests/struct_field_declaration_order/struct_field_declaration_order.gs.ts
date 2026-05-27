@@ -75,8 +75,8 @@ export class outer {
 
 export let defaultOuter: outer = $.markAsStructValue(new outer())
 
-export function __goscript_set_defaultOuter(value: outer): void {
-	defaultOuter = value
+export function __goscript_set_defaultOuter(__goscriptValue: outer): void {
+	defaultOuter = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -16,7 +16,7 @@ $.registerInterfaceType(
 export type valueHash = Uint8Array
 
 export function valueHash_Key(h: valueHash): any {
-	return $.namedValueInterfaceValue<any>(h, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)($.pointerValue(receiver), ...args)})
+	return $.namedValueInterfaceValue<any>(h, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})
 }
 
 export function sameKey(a: ref | null, b: ref | null): boolean {
@@ -32,8 +32,8 @@ export async function main(): globalThis.Promise<void> {
 	let b = new Uint8Array([0, $.uint(7, 8), 0, 0])
 	let c = new Uint8Array([0, 0, $.uint(7, 8), 0])
 
-	$.println("same:", sameKey($.namedValueInterfaceValue<ref | null>(a, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)($.pointerValue(receiver), ...args)}), $.namedValueInterfaceValue<ref | null>(b, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)($.pointerValue(receiver), ...args)})))
-	$.println("different:", differentKey($.namedValueInterfaceValue<ref | null>(a, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)($.pointerValue(receiver), ...args)}), $.namedValueInterfaceValue<ref | null>(c, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)($.pointerValue(receiver), ...args)})))
+	$.println("same:", sameKey($.namedValueInterfaceValue<ref | null>(a, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}), $.namedValueInterfaceValue<ref | null>(b, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})))
+	$.println("different:", differentKey($.namedValueInterfaceValue<ref | null>(a, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}), $.namedValueInterfaceValue<ref | null>(c, "main.valueHash", {Key: (receiver: any, ...args: any[]) => (valueHash_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})))
 }
 
 if ($.isMainScript(import.meta)) {

@@ -7,10 +7,9 @@ import * as maps from "@goscript/maps/index.js"
 
 import * as slices from "@goscript/slices/index.js"
 
-import * as iter from "@goscript/iter/index.js"
+import type * as iter from "@goscript/iter/index.js"
 import "@goscript/maps/index.js"
 import "@goscript/slices/index.js"
-import "@goscript/iter/index.js"
 
 export function getValue(): [string, number] {
 	return ["test", 42]

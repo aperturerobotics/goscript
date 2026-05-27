@@ -44,8 +44,8 @@ $.registerInterfaceType(
 
 export let defaultNamed: named | null = $.interfaceValue<named | null>(new lateType(), "*main.lateType")
 
-export function __goscript_set_defaultNamed(value: named | null): void {
-	defaultNamed = value
+export function __goscript_set_defaultNamed(__goscriptValue: named | null): void {
+	defaultNamed = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

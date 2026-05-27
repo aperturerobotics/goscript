@@ -33,8 +33,8 @@ export class thing {
 
 export let Seen: number = 0
 
-export function __goscript_set_Seen(value: number): void {
-	Seen = value
+export function __goscript_set_Seen(__goscriptValue: number): void {
+	Seen = __goscriptValue
 }
 
 export function newThing(): thing {

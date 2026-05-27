@@ -3,6 +3,5 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as __goscript_storage from "./storage.gs.ts"
-import "./storage.gs.ts"
+import type * as __goscript_storage from "./storage.gs.ts"
 

@@ -91,8 +91,8 @@ $.registerInterfaceType(
 
 export let curve: nistCurve | $.VarRef<nistCurve> | null = new nistCurve()
 
-export function __goscript_set_curve(value: nistCurve | $.VarRef<nistCurve> | null): void {
-	curve = value
+export function __goscript_set_curve(__goscriptValue: nistCurve | $.VarRef<nistCurve> | null): void {
+	curve = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -8,8 +8,8 @@ import "@goscript/unsafe/index.js"
 
 export let linkinfo: {"Magic": Uint8Array, "Self": number, "Sects": {"Start": any, "End": any}[]} = {"Magic": new Uint8Array(2), "Self": 0, "Sects": Array.from({ length: 1 }, () => ({"Start": null, "End": null}))}
 
-export function __goscript_set_linkinfo(value: {"Magic": Uint8Array, "Self": number, "Sects": {"Start": any, "End": any}[]}): void {
-	linkinfo = value
+export function __goscript_set_linkinfo(__goscriptValue: {"Magic": Uint8Array, "Self": number, "Sects": {"Start": any, "End": any}[]}): void {
+	linkinfo = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

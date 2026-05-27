@@ -60,8 +60,8 @@ export class padded {
 
 export let featureBlock: {"_blank0": padded, "Enabled": boolean, "_blank2": padded} = {"_blank0": $.markAsStructValue(new padded()), "Enabled": false, "_blank2": $.markAsStructValue(new padded())}
 
-export function __goscript_set_featureBlock(value: {"_blank0": padded, "Enabled": boolean, "_blank2": padded}): void {
-	featureBlock = value
+export function __goscript_set_featureBlock(__goscriptValue: {"_blank0": padded, "Enabled": boolean, "_blank2": padded}): void {
+	featureBlock = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -49,14 +49,14 @@ export function NewT(v: number): T | $.VarRef<T> | null {
 
 export let Base: T | $.VarRef<T> | null = NewT(10)
 
-export function __goscript_set_Base(value: T | $.VarRef<T> | null): void {
-	Base = value
+export function __goscript_set_Base(__goscriptValue: T | $.VarRef<T> | null): void {
+	Base = __goscriptValue
 }
 
 export let Derived: T | $.VarRef<T> | null = T.prototype.WithDelta.call(Base, 5)
 
-export function __goscript_set_Derived(value: T | $.VarRef<T> | null): void {
-	Derived = value
+export function __goscript_set_Derived(__goscriptValue: T | $.VarRef<T> | null): void {
+	Derived = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

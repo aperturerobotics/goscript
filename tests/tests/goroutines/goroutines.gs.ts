@@ -52,8 +52,8 @@ export const totalMessages: number = 8
 
 export let messages: $.Channel<Message> | null = $.makeChannel<Message>(0, $.markAsStructValue(new Message()), "both")
 
-export function __goscript_set_messages(value: $.Channel<Message> | null): void {
-	messages = value
+export function __goscript_set_messages(__goscriptValue: $.Channel<Message> | null): void {
+	messages = __goscriptValue
 }
 
 export async function worker(id: number): globalThis.Promise<void> {

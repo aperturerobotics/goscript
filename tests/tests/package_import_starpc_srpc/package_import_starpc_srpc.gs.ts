@@ -7,13 +7,11 @@ import * as context from "@goscript/context/index.js"
 
 import * as srpc from "@goscript/github.com/aperturerobotics/starpc/srpc/index.js"
 
-import * as protobuf_go_lite from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
+import type * as protobuf_go_lite from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
 
-import * as io from "@goscript/io/index.js"
+import type * as io from "@goscript/io/index.js"
 import "@goscript/context/index.js"
 import "@goscript/github.com/aperturerobotics/starpc/srpc/index.js"
-import "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
-import "@goscript/io/index.js"
 
 export class handler {
 	public _fields: {

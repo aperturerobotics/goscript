@@ -225,8 +225,8 @@ export const maxBacktrackVector: number = 262144
 
 export let bitStatePool: $.VarRef<sync.Pool> = $.varRef($.markAsStructValue(new sync.Pool()))
 
-export function __goscript_set_bitStatePool(value: sync.Pool): void {
-	bitStatePool.value = value
+export function __goscript_set_bitStatePool(__goscriptValue: sync.Pool): void {
+	bitStatePool.value = __goscriptValue
 }
 
 export function newBitState(): bitState | $.VarRef<bitState> | null {

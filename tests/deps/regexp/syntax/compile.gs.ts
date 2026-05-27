@@ -494,12 +494,12 @@ export function Compile(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regex
 
 export let anyRuneNotNL: $.Slice<number> = $.arrayToSlice<number>([$.int(0, 32), $.int(10 - 1, 32), $.int(10 + 1, 32), $.int(unicode.MaxRune, 32)])
 
-export function __goscript_set_anyRuneNotNL(value: $.Slice<number>): void {
-	anyRuneNotNL = value
+export function __goscript_set_anyRuneNotNL(__goscriptValue: $.Slice<number>): void {
+	anyRuneNotNL = __goscriptValue
 }
 
 export let anyRune: $.Slice<number> = $.arrayToSlice<number>([$.int(0, 32), $.int(unicode.MaxRune, 32)])
 
-export function __goscript_set_anyRune(value: $.Slice<number>): void {
-	anyRune = value
+export function __goscript_set_anyRune(__goscriptValue: $.Slice<number>): void {
+	anyRune = __goscriptValue
 }

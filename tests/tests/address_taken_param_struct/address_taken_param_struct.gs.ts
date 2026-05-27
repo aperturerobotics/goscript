@@ -50,14 +50,14 @@ export class Format {
 
 export let byName: Map<string, Format | $.VarRef<Format> | null> | null = $.makeMap<string, Format | $.VarRef<Format> | null>()
 
-export function __goscript_set_byName(value: Map<string, Format | $.VarRef<Format> | null> | null): void {
-	byName = value
+export function __goscript_set_byName(__goscriptValue: Map<string, Format | $.VarRef<Format> | null> | null): void {
+	byName = __goscriptValue
 }
 
 export let byExt: Map<string, Format | $.VarRef<Format> | null> | null = $.makeMap<string, Format | $.VarRef<Format> | null>()
 
-export function __goscript_set_byExt(value: Map<string, Format | $.VarRef<Format> | null> | null): void {
-	byExt = value
+export function __goscript_set_byExt(__goscriptValue: Map<string, Format | $.VarRef<Format> | null> | null): void {
+	byExt = __goscriptValue
 }
 
 export function registerFormat(__goscriptParam0: Format): void {

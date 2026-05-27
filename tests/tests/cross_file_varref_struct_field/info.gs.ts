@@ -50,8 +50,8 @@ export class floatInfo {
 
 export let info: $.VarRef<floatInfo> = $.varRef($.markAsStructValue(new floatInfo({mantbits: 52, expbits: 11})))
 
-export function __goscript_set_info(value: floatInfo): void {
-	info.value = value
+export function __goscript_set_info(__goscriptValue: floatInfo): void {
+	info.value = __goscriptValue
 }
 
 export function infoPtr(): floatInfo | $.VarRef<floatInfo> | null {

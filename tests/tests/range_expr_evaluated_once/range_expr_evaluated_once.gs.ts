@@ -5,8 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 export let calls: number = 0
 
-export function __goscript_set_calls(value: number): void {
-	calls = value
+export function __goscript_set_calls(__goscriptValue: number): void {
+	calls = __goscriptValue
 }
 
 export function values(): $.Slice<number> {

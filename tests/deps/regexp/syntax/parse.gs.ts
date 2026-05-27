@@ -366,14 +366,14 @@ export class parser {
 			}
 		}
 		if (parser.prototype.calcHeight.call(p, re, true) > maxHeight) {
-			$.panic($.namedValueInterfaceValue<any>(ErrNestingDepth, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)}))
+			$.panic($.namedValueInterfaceValue<any>(ErrNestingDepth, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}))
 		}
 	}
 
 	public checkLimits(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): void {
 		const p: parser | $.VarRef<parser> | null = this
 		if ($.pointerValue<parser>(p).numRunes > maxRunes) {
-			$.panic($.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)}))
+			$.panic($.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}))
 		}
 		parser.prototype.checkSize.call(p, re)
 		parser.prototype.checkHeight.call(p, re)
@@ -419,7 +419,7 @@ export class parser {
 		}
 
 		if (parser.prototype.calcSize.call(p, re, true) > maxSize) {
-			$.panic($.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)}))
+			$.panic($.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}))
 		}
 	}
 
@@ -1964,12 +1964,12 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 				{
 					break
 				}
-				case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)})):
+				case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>(ErrLarge, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})):
 				{
 					err = $.interfaceValue<$.GoError>(new Error({Code: ErrLarge, Expr: s}), "*syntax.Error")
 					break
 				}
-				case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>(ErrNestingDepth, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)($.pointerValue(receiver), ...args)})):
+				case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>(ErrNestingDepth, "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})):
 				{
 					err = $.interfaceValue<$.GoError>(new Error({Code: ErrNestingDepth, Expr: s}), "*syntax.Error")
 					break
@@ -2411,26 +2411,26 @@ export function mergeCharClass(dst: __goscript_regexp.Regexp | $.VarRef<__goscri
 
 export let anyTable: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = new unicode.RangeTable({R16: $.arrayToSlice<unicode.Range16>([$.markAsStructValue(new unicode.Range16({Lo: $.uint(0, 16), Hi: $.uint((65536) - 1, 16), Stride: $.uint(1, 16)}))]), R32: $.arrayToSlice<unicode.Range32>([$.markAsStructValue(new unicode.Range32({Lo: $.uint(65536, 32), Hi: $.uint(unicode.MaxRune, 32), Stride: $.uint(1, 32)}))])})
 
-export function __goscript_set_anyTable(value: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null): void {
-	anyTable = value
+export function __goscript_set_anyTable(__goscriptValue: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null): void {
+	anyTable = __goscriptValue
 }
 
 export let asciiTable: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = new unicode.RangeTable({R16: $.arrayToSlice<unicode.Range16>([$.markAsStructValue(new unicode.Range16({Lo: $.uint(0, 16), Hi: $.uint(0x7F, 16), Stride: $.uint(1, 16)}))])})
 
-export function __goscript_set_asciiTable(value: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null): void {
-	asciiTable = value
+export function __goscript_set_asciiTable(__goscriptValue: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null): void {
+	asciiTable = __goscriptValue
 }
 
 export let asciiFoldTable: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = new unicode.RangeTable({R16: $.arrayToSlice<unicode.Range16>([$.markAsStructValue(new unicode.Range16({Lo: $.uint(0, 16), Hi: $.uint(0x7F, 16), Stride: $.uint(1, 16)})), $.markAsStructValue(new unicode.Range16({Lo: $.uint(0x017F, 16), Hi: $.uint(0x017F, 16), Stride: $.uint(1, 16)})), $.markAsStructValue(new unicode.Range16({Lo: $.uint(0x212A, 16), Hi: $.uint(0x212A, 16), Stride: $.uint(1, 16)}))])})
 
-export function __goscript_set_asciiFoldTable(value: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null): void {
-	asciiFoldTable = value
+export function __goscript_set_asciiFoldTable(__goscriptValue: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null): void {
+	asciiFoldTable = __goscriptValue
 }
 
 export let categoryAliases: {"once": sync.Once, "m": Map<string, string> | null} = {"once": $.markAsStructValue(new sync.Once()), "m": null}
 
-export function __goscript_set_categoryAliases(value: {"once": sync.Once, "m": Map<string, string> | null}): void {
-	categoryAliases = value
+export function __goscript_set_categoryAliases(__goscriptValue: {"once": sync.Once, "m": Map<string, string> | null}): void {
+	categoryAliases = __goscriptValue
 }
 
 export function initCategoryAliases(): void {

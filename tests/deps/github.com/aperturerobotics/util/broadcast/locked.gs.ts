@@ -3,15 +3,14 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as sync from "@goscript/sync/index.js"
+import type * as context from "@goscript/context/index.js"
 
-import * as context from "@goscript/context/index.js"
+import * as sync from "@goscript/sync/index.js"
 
 import * as __goscript_broadcast from "./broadcast.gs.ts"
 
 import * as __goscript_compat from "./compat.gs.ts"
 import "@goscript/sync/index.js"
-import "@goscript/context/index.js"
 import "./broadcast.gs.ts"
 import "./compat.gs.ts"
 

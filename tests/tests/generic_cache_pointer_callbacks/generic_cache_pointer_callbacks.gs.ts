@@ -123,8 +123,8 @@ export class privateKey {
 
 export let privateKeyCache: $.VarRef<cache> = $.varRef($.markAsStructValue(new cache()))
 
-export function __goscript_set_privateKeyCache(value: cache): void {
-	privateKeyCache.value = value
+export function __goscript_set_privateKeyCache(__goscriptValue: cache): void {
+	privateKeyCache.value = __goscriptValue
 }
 
 export async function privateKeyToCache(k: key | $.VarRef<key> | null): globalThis.Promise<[privateKey | $.VarRef<privateKey> | null, $.GoError]> {

@@ -180,8 +180,8 @@ export class asyncReader {
 
 export let asyncWrites: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 
-export function __goscript_set_asyncWrites(value: sync.Map): void {
-	asyncWrites.value = value
+export function __goscript_set_asyncWrites(__goscriptValue: sync.Map): void {
+	asyncWrites.value = __goscriptValue
 }
 
 export async function copyInterfaces(dst: io.Writer | null, src: io.Reader | null): globalThis.Promise<[number, $.GoError]> {

@@ -8,15 +8,21 @@ import "./register.gs.ts"
 
 export const Store: number = 0
 
-export let Default: __goscript_register.thing = undefined as unknown as __goscript_register.thing
+export var Default: __goscript_register.thing = undefined as unknown as __goscript_register.thing
+
+export function __goscript_init_Default(): void {
+	if (((Default) as any) === undefined) {
+		Default = $.markAsStructValue($.cloneStructValue(__goscript_register.newThing()))
+	}
+}
 
 export function __goscript_get_Default(): __goscript_register.thing {
 	if (((Default) as any) === undefined) {
-		Default = $.markAsStructValue($.cloneStructValue(__goscript_register.newThing()))
+		__goscript_init_Default()
 	}
 	return Default
 }
 
-export function __goscript_set_Default(value: __goscript_register.thing): void {
-	Default = value
+export function __goscript_set_Default(__goscriptValue: __goscript_register.thing): void {
+	Default = __goscriptValue
 }

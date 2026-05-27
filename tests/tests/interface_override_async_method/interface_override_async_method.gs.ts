@@ -49,8 +49,8 @@ export class asyncReader {
 
 export let Reader: io.Reader | null = $.interfaceValue<io.Reader | null>($.markAsStructValue(new asyncReader({ch: $.makeChannel<number>(1, 0, "both")})), "main.asyncReader")
 
-export function __goscript_set_Reader(value: io.Reader | null): void {
-	Reader = value
+export function __goscript_set_Reader(__goscriptValue: io.Reader | null): void {
+	Reader = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

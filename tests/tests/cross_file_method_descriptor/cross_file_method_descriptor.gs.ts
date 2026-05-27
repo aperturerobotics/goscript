@@ -19,7 +19,7 @@ $.registerInterfaceType(
 export type mode = number
 
 export function asRunner(m: mode): runner | null {
-	return $.namedValueInterfaceValue<runner | null>(m, "main.mode", {Run: (receiver: any, ...args: any[]) => (__goscript_method.mode_Run as any)($.pointerValue(receiver), ...args)})
+	return $.namedValueInterfaceValue<runner | null>(m, "main.mode", {Run: (receiver: any, ...args: any[]) => (__goscript_method.mode_Run as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})
 }
 
 export async function main(): globalThis.Promise<void> {

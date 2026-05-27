@@ -136,8 +136,8 @@ export class MockFilesystem {
 
 export let SkipDir: $.GoError = os.ErrNotExist
 
-export function __goscript_set_SkipDir(value: $.GoError): void {
-	SkipDir = value
+export function __goscript_set_SkipDir(__goscriptValue: $.GoError): void {
+	SkipDir = __goscriptValue
 }
 
 export async function walk(fs: Filesystem | null, path: string, info: FileInfo | null, walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {

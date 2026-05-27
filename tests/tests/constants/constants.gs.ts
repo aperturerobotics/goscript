@@ -17,14 +17,14 @@ export const IV2: number = 3
 
 export let DigestIV: number[] = [$.uint(IV0, 32), $.uint(IV1, 32), $.uint(IV2, 32)]
 
-export function __goscript_set_DigestIV(value: number[]): void {
-	DigestIV = value
+export function __goscript_set_DigestIV(__goscriptValue: number[]): void {
+	DigestIV = __goscriptValue
 }
 
 export let Nothing: any = null
 
-export function __goscript_set_Nothing(value: any): void {
-	Nothing = value
+export function __goscript_set_Nothing(__goscriptValue: any): void {
+	Nothing = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

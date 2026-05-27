@@ -5,8 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 export let counter: number = 0
 
-export function __goscript_set_counter(value: number): void {
-	counter = value
+export function __goscript_set_counter(__goscriptValue: number): void {
+	counter = __goscriptValue
 }
 
 export function increment_counter(): void {

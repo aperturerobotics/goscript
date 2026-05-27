@@ -5,20 +5,20 @@ import * as $ from "@goscript/builtin/index.js"
 
 export let a: number = 10
 
-export function __goscript_set_a(value: number): void {
-	a = value
+export function __goscript_set_a(__goscriptValue: number): void {
+	a = __goscriptValue
 }
 
 export let b: number = a + 5
 
-export function __goscript_set_b(value: number): void {
-	b = value
+export function __goscript_set_b(__goscriptValue: number): void {
+	b = __goscriptValue
 }
 
 export let c: number = b * 2
 
-export function __goscript_set_c(value: number): void {
-	c = value
+export function __goscript_set_c(__goscriptValue: number): void {
+	c = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {

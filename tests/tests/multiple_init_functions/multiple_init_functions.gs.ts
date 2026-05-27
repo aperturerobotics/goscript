@@ -5,8 +5,8 @@ import * as $ from "@goscript/builtin/index.js"
 
 export let value: number = 0
 
-export function __goscript_set_value(value: number): void {
-	value = value
+export function __goscript_set_value(__goscriptValue: number): void {
+	value = __goscriptValue
 }
 
 function __goscriptInit0(): void {
@@ -15,8 +15,8 @@ function __goscriptInit0(): void {
 
 export let increment: number = 2
 
-export function __goscript_set_increment(value: number): void {
-	increment = value
+export function __goscript_set_increment(__goscriptValue: number): void {
+	increment = __goscriptValue
 }
 
 function __goscriptInit1(): void {

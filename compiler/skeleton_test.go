@@ -215,11 +215,11 @@ func TestCompilePackagesLazilyInitializesCrossFilePackageVars(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export let two: holder = undefined as unknown as holder",
+		"export var two: holder = undefined as unknown as holder",
 		"export function __goscript_get_two(): holder",
-		"export let remoteZero: __goscript_a.remote = undefined as unknown as __goscript_a.remote",
+		"export var remoteZero: __goscript_a.remote = undefined as unknown as __goscript_a.remote",
 		"export function __goscript_get_remoteZero(): __goscript_a.remote",
-		"__goscript_a.one",
+		"__goscript_a.__goscript_get_one()",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -263,7 +263,7 @@ func TestCompilePackagesLazilyInitializesSameFileLaterPackageVars(t *testing.T) 
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export let table: $.Slice<detail> = undefined as unknown as $.Slice<detail>",
+		"export var table: $.Slice<detail> = undefined as unknown as $.Slice<detail>",
 		"export function __goscript_get_table(): $.Slice<detail>",
 		"export let later: detail = $.markAsStructValue(new detail({n: 7}))",
 	} {
@@ -305,7 +305,7 @@ func TestCompilePackagesLazilyInitializesFunctionBodyPackageVarDependencies(t *t
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export let first: Point | $.VarRef<Point> | null = undefined as unknown as Point | $.VarRef<Point> | null",
+		"export var first: Point | $.VarRef<Point> | null = undefined as unknown as Point | $.VarRef<Point> | null",
 		"export function __goscript_get_first(): Point | $.VarRef<Point> | null",
 		"function __goscript_get___goscriptTuple",
 		"export let later: number = 7",
@@ -392,8 +392,8 @@ func TestCompilePackagesAssignsLazyPackageVarsDirectly(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if !strings.Contains(text, "table = $.append(__goscript_get_table(), 2)") {
-		t.Fatalf("missing direct lazy package var assignment:\n%s", text)
+	if !strings.Contains(text, "__goscript_set_table($.append(__goscript_get_table(), 2))") {
+		t.Fatalf("missing lazy package var assignment through setter:\n%s", text)
 	}
 	if strings.Contains(text, "__goscript_get_table() =") {
 		t.Fatalf("lazy getter used as assignment target:\n%s", text)
@@ -889,6 +889,49 @@ func TestCompilePackagesEmitsPackageLocalImport(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEmitsTypeOnlyLocalImports(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/typeonlylocal\n\ngo 1.25.3\n",
+		"a.go": strings.Join([]string{
+			"package main",
+			"type Acceptor interface {",
+			"  Accept(Payload)",
+			"}",
+			"",
+		}, "\n"),
+		"payload.go": strings.Join([]string{
+			"package main",
+			"type Payload struct {",
+			"  Value string",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{
+		Dir:        moduleDir,
+		OutputPath: outputDir,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "typeonlylocal", "a.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "import type * as __goscript_payload from \"./payload.gs.ts\"") {
+		t.Fatalf("missing type-only same-package import:\n%s", text)
+	}
+	if strings.Contains(text, "import \"./payload.gs.ts\"") {
+		t.Fatalf("type-only same-package import should not force sibling module execution:\n%s", text)
+	}
+}
+
 func TestCompilePackagesPreservesSourceImportAliasesForAssociatedMethods(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/sourcealiases\n\ngo 1.25.3\n",
@@ -1004,8 +1047,7 @@ func TestCompilePackagesEmitsSideEffectImportsForInterfaceRegistry(t *testing.T)
 	for _, want := range []string{
 		"import * as dep from \"@goscript/example.test/interface-registry/dep/index.js\"",
 		"import \"@goscript/example.test/interface-registry/dep/index.js\"",
-		"import * as __goscript_local from \"./local.gs.ts\"",
-		"import \"./local.gs.ts\"",
+		"import type * as __goscript_local from \"./local.gs.ts\"",
 		"case $.typeAssert<Exclude<__goscript_local.Local, null>>(__goscriptTypeSwitchValue, \"main.Local\").ok",
 		"$.typeAssertTuple<dep.Remote | null>(v, \"dep.Remote\")",
 	} {
@@ -2180,9 +2222,9 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 		"$.mapSet(seen, 1, {})",
 		"$.genericZero(__typeArgs, \"T\", null)",
 		"$.callGenericMethod(__typeArgs, \"T\", \"String\", v)",
-		"ZeroValue({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }})",
-		"CallString({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }}, zero)",
-		"Sum({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)($.pointerValue(receiver), ...args)} }}, null)",
+		"ZeroValue({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)} }})",
+		"CallString({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)} }}, zero)",
+		"Sum({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)} }}, null)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

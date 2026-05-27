@@ -58,8 +58,8 @@ export class impl {
 
 export let ready: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 
-export function __goscript_set_ready(value: $.Channel<boolean> | null): void {
-	ready = value
+export function __goscript_set_ready(__goscriptValue: $.Channel<boolean> | null): void {
+	ready = __goscriptValue
 }
 
 export function NewSpecific(): Specific | null {

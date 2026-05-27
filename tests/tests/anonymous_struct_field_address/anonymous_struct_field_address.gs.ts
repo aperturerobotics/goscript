@@ -45,8 +45,8 @@ export class entry {
 
 export let box: {"table": entry[]} = {"table": Array.from({ length: 2 }, () => $.markAsStructValue(new entry()))}
 
-export function __goscript_set_box(value: {"table": entry[]}): void {
-	box = value
+export function __goscript_set_box(__goscriptValue: {"table": entry[]}): void {
+	box = __goscriptValue
 }
 
 export function entries(): $.VarRef<entry[]> | null {

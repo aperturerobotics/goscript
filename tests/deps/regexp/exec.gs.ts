@@ -750,8 +750,8 @@ export function lazyFlag_match(f: lazyFlag, op: syntax.EmptyOp): boolean {
 
 export let onePassPool: $.VarRef<sync.Pool> = $.varRef($.markAsStructValue(new sync.Pool()))
 
-export function __goscript_set_onePassPool(value: sync.Pool): void {
-	onePassPool.value = value
+export function __goscript_set_onePassPool(__goscriptValue: sync.Pool): void {
+	onePassPool.value = __goscriptValue
 }
 
 export function newOnePassMachine(): onePassMachine | $.VarRef<onePassMachine> | null {
@@ -771,6 +771,6 @@ export function freeOnePassMachine(m: onePassMachine | $.VarRef<onePassMachine> 
 
 export let arrayNoInts: number[] = Array.from({ length: 0 }, () => 0)
 
-export function __goscript_set_arrayNoInts(value: number[]): void {
-	arrayNoInts = value
+export function __goscript_set_arrayNoInts(__goscriptValue: number[]): void {
+	arrayNoInts = __goscriptValue
 }

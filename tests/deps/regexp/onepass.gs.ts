@@ -311,14 +311,14 @@ export function newQueue(size: number): queueOnePass | $.VarRef<queueOnePass> | 
 
 export let noRune: $.Slice<number> = $.arrayToSlice<number>([])
 
-export function __goscript_set_noRune(value: $.Slice<number>): void {
-	noRune = value
+export function __goscript_set_noRune(__goscriptValue: $.Slice<number>): void {
+	noRune = __goscriptValue
 }
 
 export let noNext: $.Slice<number> = $.arrayToSlice<number>([$.uint(mergeFailed, 32)])
 
-export function __goscript_set_noNext(value: $.Slice<number>): void {
-	noNext = value
+export function __goscript_set_noNext(__goscriptValue: $.Slice<number>): void {
+	noNext = __goscriptValue
 }
 
 export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null, rightRunes: $.VarRef<$.Slice<number>> | null, leftPC: number, rightPC: number): globalThis.Promise<[$.Slice<number>, $.Slice<number>]> {
@@ -489,14 +489,14 @@ export function onePassCopy(prog: syntax.Prog | $.VarRef<syntax.Prog> | null): o
 
 export let anyRuneNotNL: $.Slice<number> = $.arrayToSlice<number>([$.int(0, 32), $.int(10 - 1, 32), $.int(10 + 1, 32), $.int(unicode.MaxRune, 32)])
 
-export function __goscript_set_anyRuneNotNL(value: $.Slice<number>): void {
-	anyRuneNotNL = value
+export function __goscript_set_anyRuneNotNL(__goscriptValue: $.Slice<number>): void {
+	anyRuneNotNL = __goscriptValue
 }
 
 export let anyRune: $.Slice<number> = $.arrayToSlice<number>([$.int(0, 32), $.int(unicode.MaxRune, 32)])
 
-export function __goscript_set_anyRune(value: $.Slice<number>): void {
-	anyRune = value
+export function __goscript_set_anyRune(__goscriptValue: $.Slice<number>): void {
+	anyRune = __goscriptValue
 }
 
 export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null): globalThis.Promise<onePassProg | $.VarRef<onePassProg> | null> {

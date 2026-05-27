@@ -8,8 +8,8 @@ import "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_impor
 
 export let cached: number = await subpkg.Next()
 
-export function __goscript_set_cached(value: number): void {
-	cached = value
+export function __goscript_set_cached(__goscriptValue: number): void {
+	cached = __goscriptValue
 }
 
 export async function main(): globalThis.Promise<void> {
