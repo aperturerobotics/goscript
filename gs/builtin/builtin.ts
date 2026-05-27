@@ -230,6 +230,9 @@ export function comparableEqual(a: unknown, b: unknown): boolean {
     if (a.__isTypedNil || b.__isTypedNil) {
       return a.__isTypedNil === true && b.__isTypedNil === true
     }
+    if (a.__goType.startsWith('*')) {
+      return false
+    }
     if (hasGoValue(a) || hasGoValue(b)) {
       return hasGoValue(a) && hasGoValue(b) && comparableEqual(a.__goValue, b.__goValue)
     }

@@ -176,7 +176,7 @@ export class huffmanEncoder {
 		// A bogus "Level 0" whose sole purpose is so that
 		// level1.prev.needed==0.  This makes level1.nextPairFreq
 		// be a legitimate value that never gets chosen.
-		let __goscriptShadow0: levelInfo[] = Array.from({ length: 16 }, () => $.markAsStructValue(new levelInfo()))
+		let levels: levelInfo[] = Array.from({ length: 16 }, () => $.markAsStructValue(new levelInfo()))
 		// leafCounts[i] counts the number of literals at the left
 		// of ancestors of the rightmost node at level i.
 		// leafCounts[i][j] is the number of literals at the left
@@ -186,26 +186,26 @@ export class huffmanEncoder {
 		for (let level = $.int($.int(1, 32), 32); level <= maxBits; level++) {
 			// For every level, the first two items are the first two characters.
 			// We initialize the levels as if we had already figured this out.
-			__goscriptShadow0[level] = $.markAsStructValue(new levelInfo({level: $.int(level, 32), lastFreq: $.int(list![1].freq, 32), nextCharFreq: $.int(list![2].freq, 32), nextPairFreq: $.int(list![0].freq + list![1].freq, 32)}))
+			levels[level] = $.markAsStructValue(new levelInfo({level: $.int(level, 32), lastFreq: $.int(list![1].freq, 32), nextCharFreq: $.int(list![2].freq, 32), nextPairFreq: $.int(list![0].freq + list![1].freq, 32)}))
 			leafCounts[level][level] = $.int(2, 32)
 			if ($.int(level, 32) == $.int(1, 32)) {
-				__goscriptShadow0[level].nextPairFreq = $.int(math.MaxInt32, 32)
+				levels[level].nextPairFreq = $.int(math.MaxInt32, 32)
 			}
 		}
 
 		// We need a total of 2*n - 2 items at top level and have already generated 2.
-		__goscriptShadow0[maxBits].needed = $.int((2 * n) - 4, 32)
+		levels[maxBits].needed = $.int((2 * n) - 4, 32)
 
 		let level = $.int(maxBits, 32)
 		while (true) {
-			let l: levelInfo | $.VarRef<levelInfo> | null = $.indexRef(__goscriptShadow0, level)
+			let l: levelInfo | $.VarRef<levelInfo> | null = $.indexRef(levels, level)
 			if (($.int($.pointerValue<levelInfo>(l).nextPairFreq, 32) == $.int(math.MaxInt32, 32)) && ($.int($.pointerValue<levelInfo>(l).nextCharFreq, 32) == $.int(math.MaxInt32, 32))) {
 				// We've run out of both leaves and pairs.
 				// End all calculations for this level.
 				// To make sure we never come back to this level or any lower level,
 				// set nextPairFreq impossibly large.
 				$.pointerValue<levelInfo>(l).needed = $.int(0, 32)
-				__goscriptShadow0[level + 1].nextPairFreq = $.int(math.MaxInt32, 32)
+				levels[level + 1].nextPairFreq = $.int(math.MaxInt32, 32)
 				level++
 				continue
 			}
@@ -213,11 +213,11 @@ export class huffmanEncoder {
 			let prevFreq = $.int($.pointerValue<levelInfo>(l).lastFreq, 32)
 			if ($.pointerValue<levelInfo>(l).nextCharFreq < $.pointerValue<levelInfo>(l).nextPairFreq) {
 				// The next item on this row is a leaf node.
-				let __goscriptShadow1 = $.int(leafCounts[level][level] + 1, 32)
+				let __goscriptShadow0 = $.int(leafCounts[level][level] + 1, 32)
 				$.pointerValue<levelInfo>(l).lastFreq = $.int($.pointerValue<levelInfo>(l).nextCharFreq, 32)
 				// Lower leafCounts are the same of the previous node.
-				leafCounts[level][level] = $.int(__goscriptShadow1, 32)
-				$.pointerValue<levelInfo>(l).nextCharFreq = $.int(list![__goscriptShadow1].freq, 32)
+				leafCounts[level][level] = $.int(__goscriptShadow0, 32)
+				$.pointerValue<levelInfo>(l).nextCharFreq = $.int(list![__goscriptShadow0].freq, 32)
 			} else {
 				// The next item on this row is a pair from the previous row.
 				// nextPairFreq isn't valid until we generate two
@@ -225,7 +225,7 @@ export class huffmanEncoder {
 				$.pointerValue<levelInfo>(l).lastFreq = $.int($.pointerValue<levelInfo>(l).nextPairFreq, 32)
 				// Take leaf counts from the lower level, except counts[level] remains the same.
 				$.copy($.goSlice(leafCounts[level], undefined, level), $.goSlice(leafCounts[level - 1], undefined, level))
-				__goscriptShadow0[$.pointerValue<levelInfo>(l).level - 1].needed = $.int(2, 32)
+				levels[$.pointerValue<levelInfo>(l).level - 1].needed = $.int(2, 32)
 			}
 
 			{
@@ -239,11 +239,11 @@ export class huffmanEncoder {
 						// All done!
 						break
 					}
-					__goscriptShadow0[$.pointerValue<levelInfo>(l).level + 1].nextPairFreq = $.int(prevFreq + $.pointerValue<levelInfo>(l).lastFreq, 32)
+					levels[$.pointerValue<levelInfo>(l).level + 1].nextPairFreq = $.int(prevFreq + $.pointerValue<levelInfo>(l).lastFreq, 32)
 					level++
 				} else {
 					// If we stole from below, move down temporarily to replenish it.
-					while (__goscriptShadow0[level - 1].needed > 0) {
+					while (levels[level - 1].needed > 0) {
 						level--
 					}
 				}
@@ -257,13 +257,13 @@ export class huffmanEncoder {
 		}
 
 		let bitCount: $.Slice<number> = $.goSlice($.pointerValue<huffmanEncoder>(h).bitCount, undefined, maxBits + 1)
-		let __goscriptShadow2 = 1
+		let __goscriptShadow1 = 1
 		let counts = $.indexRef(leafCounts, maxBits)
-		for (let __goscriptShadow3 = $.int(maxBits, 32); __goscriptShadow3 > 0; __goscriptShadow3--) {
+		for (let __goscriptShadow2 = $.int(maxBits, 32); __goscriptShadow2 > 0; __goscriptShadow2--) {
 			// chain.leafCount gives the number of literals requiring at least "bits"
 			// bits to encode.
-			bitCount![__goscriptShadow2] = $.int($.pointerValue<number[]>(counts)[__goscriptShadow3] - $.pointerValue<number[]>(counts)[__goscriptShadow3 - 1], 32)
-			__goscriptShadow2++
+			bitCount![__goscriptShadow1] = $.int($.pointerValue<number[]>(counts)[__goscriptShadow2] - $.pointerValue<number[]>(counts)[__goscriptShadow2 - 1], 32)
+			__goscriptShadow1++
 		}
 		return bitCount
 	}
@@ -472,35 +472,35 @@ export function generateFixedLiteralEncoding(): huffmanEncoder | $.VarRef<huffma
 	let codes: $.Slice<hcode> = $.pointerValue<huffmanEncoder>(h).codes
 	let ch: number = 0
 	for (ch = $.uint(0, 16); ch < 286; ch++) {
-		let __goscriptShadow4: number = 0
+		let __goscriptShadow3: number = 0
 		let size: number = 0
 		switch (true) {
 			case ch < 144:
 			{
-				__goscriptShadow4 = $.uint(ch + 48, 16)
+				__goscriptShadow3 = $.uint(ch + 48, 16)
 				size = $.uint(8, 16)
 				break
 			}
 			case ch < 256:
 			{
-				__goscriptShadow4 = $.uint((ch + 400) - 144, 16)
+				__goscriptShadow3 = $.uint((ch + 400) - 144, 16)
 				size = $.uint(9, 16)
 				break
 			}
 			case ch < 280:
 			{
-				__goscriptShadow4 = $.uint(ch - 256, 16)
+				__goscriptShadow3 = $.uint(ch - 256, 16)
 				size = $.uint(7, 16)
 				break
 			}
 			default:
 			{
-				__goscriptShadow4 = $.uint((ch + 192) - 280, 16)
+				__goscriptShadow3 = $.uint((ch + 192) - 280, 16)
 				size = $.uint(8, 16)
 				break
 			}
 		}
-		codes![ch] = (() => { const __goscriptLiteralField1 = $.uint(reverseBits($.uint(__goscriptShadow4, 16), $.uint($.uint(size, 8), 8)), 16); return $.markAsStructValue(new hcode({code: __goscriptLiteralField1, len: $.uint(size, 16)})) })()
+		codes![ch] = (() => { const __goscriptLiteralField1 = $.uint(reverseBits($.uint(__goscriptShadow3, 16), $.uint($.uint(size, 8), 8)), 16); return $.markAsStructValue(new hcode({code: __goscriptLiteralField1, len: $.uint(size, 16)})) })()
 	}
 	return h
 }

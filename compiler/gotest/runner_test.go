@@ -64,6 +64,53 @@ func TestRunnerRunsOrdinaryPackageTest(t *testing.T) {
 	}
 }
 
+func TestRunnerComparesInterfacePointerValuesByIdentity(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/ifaceptr\n\ngo 1.25.3\n",
+		"value_test.go": strings.Join([]string{
+			"package ifaceptr",
+			"",
+			"import \"testing\"",
+			"",
+			"type Snapshot interface {",
+			"\tValue() int",
+			"}",
+			"",
+			"type snapshot struct {",
+			"\tvalue int",
+			"}",
+			"",
+			"func (s *snapshot) Value() int { return s.value }",
+			"",
+			"func TestInterfacePointerValuesUsePointerIdentity(t *testing.T) {",
+			"\tvar first Snapshot = &snapshot{value: 1}",
+			"\tvar second Snapshot = &snapshot{value: 1}",
+			"\tif first == second {",
+			"\t\tt.Fatalf(\"distinct pointers stored in interfaces compared equal\")",
+			"\t}",
+			"\tsecond = first",
+			"\tif first != second {",
+			"\t\tt.Fatalf(\"same pointer stored in interfaces compared unequal\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"."},
+		Timeout:  30 * time.Second,
+		Verbose:  true,
+	})
+	if err != nil {
+		t.Fatalf("run package test: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected package test to pass: %#v", result.Packages)
+	}
+}
+
 func TestRunnerReportsShortMode(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/short\n\ngo 1.25.3\n",

@@ -2891,6 +2891,130 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesPropagatesAsyncGenericInterfaceMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/genericasynciface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package genericasynciface",
+			"import \"context\"",
+			"type Watchable[T comparable] interface {",
+			"  Get() T",
+			"  Wait(ctx context.Context, old T) T",
+			"}",
+			"type Box[T comparable] struct { ch chan T; val T }",
+			"func (b *Box[T]) Get() T { return b.val }",
+			"func (b *Box[T]) Wait(ctx context.Context, old T) T {",
+			"  select {",
+			"  case v := <-b.ch:",
+			"    return v",
+			"  case <-ctx.Done():",
+			"    return old",
+			"  }",
+			"}",
+			"func Use(ctx context.Context, w Watchable[int], old int) int {",
+			"  return w.Wait(ctx, old)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "genericasynciface", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"Wait(ctx: context.Context | null, old: any): any | globalThis.Promise<any>",
+		"public async Wait(ctx: context.Context | null, old: any): globalThis.Promise<any>",
+		"return (await $.pointerValue<Exclude<Watchable, null>>(w).Wait(ctx, old) as number)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesPropagatesImportedAsyncGenericInterfaceMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/importedgenericasynciface\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"import \"context\"",
+			"type Watchable[T comparable] interface {",
+			"  Get() T",
+			"  Wait(ctx context.Context, old T) T",
+			"}",
+			"type Box[T comparable] struct { ch chan T; val T }",
+			"func (b *Box[T]) Get() T { return b.val }",
+			"func (b *Box[T]) Wait(ctx context.Context, old T) T {",
+			"  select {",
+			"  case v := <-b.ch:",
+			"    return v",
+			"  case <-ctx.Done():",
+			"    return old",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package importedgenericasynciface",
+			"import (",
+			"  \"context\"",
+			"  \"example.test/importedgenericasynciface/dep\"",
+			")",
+			"func Use(ctx context.Context, w dep.Watchable[int], old int) int {",
+			"  return w.Wait(ctx, old)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	service := NewCompileService()
+	_, err := service.Compile(context.Background(), &CompileRequest{
+		Patterns:            []string{".", "./dep"},
+		Dir:                 moduleDir,
+		OutputPath:          outputDir,
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	depOutputFile := filepath.Join(outputDir, "@goscript", "example.test", "importedgenericasynciface", "dep", "dep.gs.ts")
+	depContent, err := os.ReadFile(depOutputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	depText := string(depContent)
+	for _, want := range []string{
+		"Wait(ctx: context.Context | null, old: any): any | globalThis.Promise<any>",
+		"public async Wait(ctx: context.Context | null, old: any): globalThis.Promise<any>",
+	} {
+		if !strings.Contains(depText, want) {
+			t.Fatalf("missing %q in generated dep output:\n%s", want, depText)
+		}
+	}
+
+	mainOutputFile := filepath.Join(outputDir, "@goscript", "example.test", "importedgenericasynciface", "main.gs.ts")
+	mainContent, err := os.ReadFile(mainOutputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	mainText := string(mainContent)
+	if want := "return (await $.pointerValue<Exclude<dep.Watchable, null>>(w).Wait(ctx, old) as number)"; !strings.Contains(mainText, want) {
+		t.Fatalf("missing %q in generated main output:\n%s", want, mainText)
+	}
+}
+
 func TestCompilePackagesMarksSelectReturningIfElseCasesUnreachable(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/select-if-else\n\ngo 1.25.3\n",

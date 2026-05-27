@@ -1174,7 +1174,7 @@ func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 			return nil, []Diagnostic{contextCanceledDiagnostic(err)}
 		}
 		if !semType.isInterface {
-			concretes = append(concretes, named)
+			concretes = append(concretes, namedOriginOrSelf(named))
 		}
 	}
 	sortNamedTypes(interfaces)
@@ -1217,6 +1217,7 @@ func collectInterfaceImplementationCandidates(model *SemanticModel) []*types.Nam
 		if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
 			return
 		}
+		named = namedOriginOrSelf(named)
 		if _, ok := types.Unalias(named.Underlying()).(*types.Interface); !ok {
 			return
 		}
@@ -1320,11 +1321,11 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 			asyncMethods: make(map[string]bool),
 		}
 		for methodName, implMethod := range graphEntry.implMethods {
-			implFn := model.functions[implMethod]
+			implFn := semanticFunctionFor(model, implMethod)
 			if implFn != nil && implFn.async {
 				implementation.asyncMethods[methodName] = true
 				model.markInterfaceMethodAsync(graphEntry.ifaceMethods[methodName])
-				if ifaceFn := model.functions[graphEntry.ifaceMethods[methodName]]; ifaceFn != nil {
+				if ifaceFn := semanticFunctionFor(model, graphEntry.ifaceMethods[methodName]); ifaceFn != nil {
 					markFunctionAsync(ifaceFn, "interface-implementation")
 				}
 			}
@@ -1333,7 +1334,7 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 			if !async {
 				continue
 			}
-			markFunctionAsync(model.functions[graphEntry.implMethods[methodName]], "interface-method")
+			markFunctionAsync(semanticFunctionFor(model, graphEntry.implMethods[methodName]), "interface-method")
 		}
 		model.interfaceImplementations = append(model.interfaceImplementations, implementation)
 	}
@@ -1507,6 +1508,16 @@ func typeParamTypes(params *types.TypeParamList) []types.Type {
 		args = append(args, tparam)
 	}
 	return args
+}
+
+func namedOriginOrSelf(named *types.Named) *types.Named {
+	if named == nil {
+		return nil
+	}
+	if origin := named.Origin(); origin != nil {
+		return origin
+	}
+	return named
 }
 
 func sortNamedTypes(named []*types.Named) {
