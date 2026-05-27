@@ -40,7 +40,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	let ch = $.makeChannel<result>(1, $.markAsStructValue(new result()), "both")
-	let fn: (() => result | globalThis.Promise<result>) | null = null as (() => result | globalThis.Promise<result>) | null
+	let fn: (() => result | globalThis.Promise<result>) | null = null as unknown as (() => result | globalThis.Promise<result>) | null
 	fn = $.functionValue(async (): globalThis.Promise<result> => {
 		return $.markAsStructValue($.cloneStructValue(await $.chanRecv(ch)))
 	}, ({ kind: $.TypeKind.Function, params: [], results: ["main.result"] } as $.FunctionTypeInfo))

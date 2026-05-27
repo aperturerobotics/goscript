@@ -507,7 +507,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 
 	let instQueue: queueOnePass | $.VarRef<queueOnePass> | null = newQueue($.len($.pointerValue<onePassProg>(p).Inst))
 	let visitQueue: queueOnePass | $.VarRef<queueOnePass> | null = newQueue($.len($.pointerValue<onePassProg>(p).Inst))
-	let check: ((_p0: number, _p1: $.Slice<boolean>) => boolean | globalThis.Promise<boolean>) | null = null as ((_p0: number, _p1: $.Slice<boolean>) => boolean | globalThis.Promise<boolean>) | null
+	let check: ((_p0: number, _p1: $.Slice<boolean>) => boolean | globalThis.Promise<boolean>) | null = null as unknown as ((_p0: number, _p1: $.Slice<boolean>) => boolean | globalThis.Promise<boolean>) | null
 	let onePassRunes: $.Slice<$.Slice<number>> = $.makeSlice<$.Slice<number>>($.len($.pointerValue<onePassProg>(p).Inst))
 
 	// check that paths from Alt instructions are unambiguous, and rebuild the new

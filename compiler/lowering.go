@@ -8987,7 +8987,7 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 
 func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ types.Type) string {
 	if isFunctionType(typ) {
-		return "null as " + o.tsTypeFor(ctx, typ)
+		return "null as unknown as " + o.tsFunctionZeroValueTypeFor(ctx, typ)
 	}
 	typeParam, ok := types.Unalias(typ).(*types.TypeParam)
 	if !ok {
@@ -9002,6 +9002,13 @@ func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ 
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperGenericZero) +
 		"(__typeArgs, " + strconv.Quote(typeParam.Obj().Name()) + ", " + zeroValueExpr(typ) + ")"
+}
+
+func (o *LoweringOwner) tsFunctionZeroValueTypeFor(ctx lowerFileContext, typ types.Type) string {
+	if signature := unnamedSignatureForType(typ); signature != nil {
+		return o.tsAsyncCompatibleFunctionTypeFor(ctx, signature)
+	}
+	return o.tsTypeFor(ctx, typ)
 }
 
 func (o *LoweringOwner) runtimeTypeInfoExpr(typ types.Type) string {
