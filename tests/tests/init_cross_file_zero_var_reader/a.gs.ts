@@ -51,7 +51,7 @@ export var stringType: reflect.Type | null = undefined as unknown as reflect.Typ
 
 export function __goscript_init_stringType(): void {
 	if (((stringType) as any) === undefined) {
-		stringType = $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf($.interfaceValue<any>(null, "*string"))).Elem()
+		stringType = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }})
 	}
 }
 

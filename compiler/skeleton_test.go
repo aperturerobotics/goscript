@@ -316,6 +316,67 @@ func TestCompilePackagesLazilyInitializesFunctionBodyPackageVarDependencies(t *t
 	}
 }
 
+func TestCompilePackagesLazilyInitializesEffectFreeTypeForFromCrossFileInit(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/lazytypefor\n\ngo 1.25.3\n",
+		"a.go": strings.Join([]string{
+			"package main",
+			"import \"reflect\"",
+			"var stringType = reflect.TypeFor[string]()",
+			"var _ = marker",
+			"",
+		}, "\n"),
+		"b.go": strings.Join([]string{
+			"package main",
+			"func readStringType() { println(stringType != nil) }",
+			"func main() {}",
+			"",
+		}, "\n"),
+		"c.go": strings.Join([]string{
+			"package main",
+			"var marker = 1",
+			"func init() { readStringType() }",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	aFile := filepath.Join(outputDir, "@goscript", "example.test", "lazytypefor", "a.gs.ts")
+	aContent, err := os.ReadFile(aFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	aText := string(aContent)
+	for _, want := range []string{
+		"export var stringType: reflect.Type | null = undefined as unknown as reflect.Type | null",
+		"export function __goscript_get_stringType(): reflect.Type | null",
+		"stringType = reflect.TypeFor",
+	} {
+		if !strings.Contains(aText, want) {
+			t.Fatalf("missing %q in generated a.go output:\n%s", want, aText)
+		}
+	}
+	bFile := filepath.Join(outputDir, "@goscript", "example.test", "lazytypefor", "b.gs.ts")
+	bContent, err := os.ReadFile(bFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	bText := string(bContent)
+	if !strings.Contains(bText, "__goscript_a.__goscript_get_stringType() != null") {
+		t.Fatalf("missing lazy TypeFor package var getter use:\n%s", bText)
+	}
+	if strings.Contains(bText, "__goscript_a.stringType != null") {
+		t.Fatalf("cross-file init still reads TypeFor package var directly:\n%s", bText)
+	}
+}
+
 func TestCompilePackagesInitializesLazyAsyncPackageVarsBeforeInit(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/lazyasyncvars\n\ngo 1.25.3\n",

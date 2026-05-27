@@ -1326,6 +1326,9 @@ func isEffectFreePackageInitializerCall(ctx lowerFileContext, call *ast.CallExpr
 	if isReflectTypeOfCall(ctx, call) {
 		return true
 	}
+	if isReflectTypeForCall(ctx, call) {
+		return true
+	}
 	if isMathBigNewIntCall(ctx, call) {
 		return true
 	}
@@ -1352,6 +1355,26 @@ func isEffectFreePackageInitializerBuiltin(ctx lowerFileContext, expr ast.Expr) 
 func isReflectTypeOfCall(ctx lowerFileContext, call *ast.CallExpr) bool {
 	selector, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr)
 	if !ok || selector.Sel.Name != "TypeOf" {
+		return false
+	}
+	ident, ok := ast.Unparen(selector.X).(*ast.Ident)
+	if !ok {
+		return false
+	}
+	pkgName, _ := objectForIdent(ctx, ident).(*types.PkgName)
+	return pkgName != nil && pkgName.Imported() != nil && pkgName.Imported().Path() == "reflect"
+}
+
+func isReflectTypeForCall(ctx lowerFileContext, call *ast.CallExpr) bool {
+	fun := ast.Unparen(call.Fun)
+	switch typed := fun.(type) {
+	case *ast.IndexExpr:
+		fun = ast.Unparen(typed.X)
+	case *ast.IndexListExpr:
+		fun = ast.Unparen(typed.X)
+	}
+	selector, ok := fun.(*ast.SelectorExpr)
+	if !ok || selector.Sel.Name != "TypeFor" {
 		return false
 	}
 	ident, ok := ast.Unparen(selector.X).(*ast.Ident)
