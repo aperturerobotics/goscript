@@ -320,7 +320,11 @@ function typeInfoRuntimeName(info: TypeInfo): string | undefined {
 }
 
 function goTypeMatchesTypeInfo(goType: string, info: TypeInfo): boolean {
-  return goType === typeInfoRuntimeName(info)
+  const runtimeName = typeInfoRuntimeName(info)
+  return (
+    (runtimeName !== undefined && goType === runtimeName) ||
+    compareTypeStringWithTypeInfo(goType, info)
+  )
 }
 
 function compareOptionalTypeInfo(
@@ -994,15 +998,21 @@ function matchesType(value: any, info: TypeInfo): boolean {
  */
 function compareTypeStringWithTypeInfo(
   typeStr: string,
-  typeInfo: TypeInfo,
+  typeInfo: string | TypeInfo,
 ): boolean {
+  const normalized = normalizeTypeInfo(typeInfo)
+  const runtimeName = typeInfoRuntimeName(normalized)
+  if (runtimeName !== undefined && typeStr === runtimeName) {
+    return true
+  }
+
   // For pointer types, strip the leading * and compare element types
-  if (isPointerTypeInfo(typeInfo)) {
+  if (isPointerTypeInfo(normalized)) {
     if (!typeStr.startsWith('*')) {
       return false
     }
     const elemStr = typeStr.slice(1)
-    const elemType = typeInfo.elemType
+    const elemType = normalized.elemType
     if (!elemType) {
       return false
     }
@@ -1084,6 +1094,52 @@ function compareTypeStringWithTypeInfo(
     if (elemType.name) {
       return elemStr === elemType.name
     }
+    return compareTypeStringWithTypeInfo(elemStr, elemType)
+  }
+
+  if (isSliceTypeInfo(normalized)) {
+    if (!typeStr.startsWith('[]') || !normalized.elemType) {
+      return false
+    }
+    return compareTypeStringWithTypeInfo(typeStr.slice(2), normalized.elemType)
+  }
+
+  if (isArrayTypeInfo(normalized)) {
+    const match = typeStr.match(/^\[(\d+)\](.+)$/)
+    if (!match || !normalized.elemType) {
+      return false
+    }
+    return (
+      Number(match[1]) === normalized.length &&
+      compareTypeStringWithTypeInfo(match[2], normalized.elemType)
+    )
+  }
+
+  if (isBasicTypeInfo(normalized)) {
+    const name = typeInfoRuntimeName(normalized)
+    if (name === undefined) {
+      return false
+    }
+    if (typeStr === name) {
+      return true
+    }
+    return (
+      name === 'int' &&
+      [
+        'byte',
+        'rune',
+        'int8',
+        'int16',
+        'int32',
+        'int64',
+        'uint',
+        'uint8',
+        'uint16',
+        'uint32',
+        'uint64',
+        'uintptr',
+      ].includes(typeStr)
+    )
   }
 
   return false

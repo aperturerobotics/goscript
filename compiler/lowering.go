@@ -7333,6 +7333,12 @@ func (o *LoweringOwner) lowerPointerReceiverMethodCall(
 			methodMemberName(selector.Sel.Name) + "(" + strings.Join(args, ", ") + ")"
 		return call, diagnostics, true
 	}
+	if crossPackageUnexportedNamedType(ctx, receiver) {
+		call := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
+			"<any>(" + receiverExpr + ")." + methodMemberName(selector.Sel.Name) +
+			"(" + strings.Join(args, ", ") + ")"
+		return call, diagnostics, true
+	}
 	callArgs := append([]string{receiverExpr}, args...)
 	call := o.namedTypeExpr(ctx, receiver) + ".prototype." + selector.Sel.Name + ".call(" + strings.Join(callArgs, ", ") + ")"
 	return call, diagnostics, true

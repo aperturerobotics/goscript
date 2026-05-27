@@ -950,6 +950,51 @@ func TestCompilePackagesEmitsPackageLocalImport(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesCallsCrossPackageUnexportedReceiverDynamically(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/unexportedreceiver\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"type hidden struct{}",
+			"func NewHidden() *hidden { return &hidden{} }",
+			"func (h *hidden) Value() int { return 7 }",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/unexportedreceiver/dep\"",
+			"func main() {",
+			"  h := dep.NewHidden()",
+			"  println(h.Value())",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      outputDir,
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	mainFile := filepath.Join(outputDir, "@goscript", "example.test", "unexportedreceiver", "main.gs.ts")
+	mainContent, err := os.ReadFile(mainFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if !strings.Contains(string(mainContent), "$.pointerValue<any>(h).Value()") {
+		t.Fatalf("cross-package unexported receiver method call was not dynamic:\n%s", string(mainContent))
+	}
+	if strings.Contains(string(mainContent), "dep.hidden.prototype.Value.call") {
+		t.Fatalf("cross-package unexported receiver leaked through imported prototype:\n%s", string(mainContent))
+	}
+}
+
 func TestCompilePackagesEmitsTypeOnlyLocalImports(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/typeonlylocal\n\ngo 1.25.3\n",

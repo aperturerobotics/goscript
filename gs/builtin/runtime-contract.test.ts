@@ -519,6 +519,21 @@ describe('builtin runtime contract helpers', () => {
     )
     expect(typeAssert<{ Name(): string }>(dogRef, dogInterface).ok).toBe(true)
 
+    const bytesRef = varRef<Bytes>(new Uint8Array([1, 2, 3]))
+    const boxedBytesRef = interfaceValue<any>(bytesRef, '*[]byte')
+    const [assertedBytesRef, bytesOk] = typeAssertTuple<typeof bytesRef>(
+      boxedBytesRef,
+      {
+        kind: TypeKind.Pointer,
+        elemType: {
+          kind: TypeKind.Slice,
+          elemType: { kind: TypeKind.Basic, name: 'int' },
+        },
+      },
+    )
+    expect(bytesOk).toBe(true)
+    expect(pointerValue(assertedBytesRef)).toBe(bytesRef.value)
+
     const greet = namedFunction(
       (name: string) => `hello ${name}`,
       'phase5.Greet',
