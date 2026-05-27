@@ -77,22 +77,39 @@ export const Header = Map as {
 }
 
 export function Header_Add(h: Header, key: string, value: string): void {
+  key = canonicalMIMEHeaderKey(key)
   const values = Array.from(h.get(key) ?? [])
   values.push(value)
   h.set(key, $.arrayToSlice(values))
 }
 
 export function Header_Del(h: Header, key: string): void {
-  h.delete(key)
+  h.delete(canonicalMIMEHeaderKey(key))
 }
 
 export function Header_Get(h: Header, key: string): string {
-  const values = h.get(key)
+  const values = h.get(canonicalMIMEHeaderKey(key))
   return values == null || values.length === 0 ? '' : String(values[0])
 }
 
 export function Header_Set(h: Header, key: string, value: string): void {
-  h.set(key, $.arrayToSlice([value]))
+  h.set(canonicalMIMEHeaderKey(key), $.arrayToSlice([value]))
+}
+
+function canonicalMIMEHeaderKey(key: string): string {
+  let upper = true
+  let out = ''
+  for (let i = 0; i < key.length; i++) {
+    const ch = key[i]
+    if (ch === '-') {
+      upper = true
+      out += ch
+      continue
+    }
+    out += upper ? ch.toUpperCase() : ch.toLowerCase()
+    upper = false
+  }
+  return out
 }
 
 class QueryValues extends Map<string, $.Slice<string>> {

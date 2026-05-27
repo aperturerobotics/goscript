@@ -7,6 +7,9 @@ import {
   File,
   FileSystem,
   Header,
+  Header_Add,
+  Header_Del,
+  Header_Get,
   Header_Set,
   HandlerFunc_ServeHTTP,
   Get,
@@ -100,6 +103,23 @@ describe('net/http override', () => {
     const [resp, err] = await client.Do(varRef(req!))
     expect(err).toBeNull()
     expect(resp?.StatusCode).toBe(StatusOK)
+  })
+
+  it('canonicalizes header keys for case-insensitive lookup', () => {
+    const header = new Header()
+
+    Header_Set(header, 'Content-Type', 'application/json')
+
+    expect(header.has('Content-Type')).toBe(true)
+    expect(header.has('content-type')).toBe(false)
+    expect(Header_Get(header, 'content-type')).toBe('application/json')
+
+    Header_Add(header, 'x-pack-id', 'pack-1')
+    Header_Add(header, 'X-Pack-Id', 'pack-2')
+    expect(Array.from(header.get('X-Pack-Id') ?? [])).toEqual(['pack-1', 'pack-2'])
+
+    Header_Del(header, 'x-pack-id')
+    expect(Header_Get(header, 'X-Pack-ID')).toBe('')
   })
 
   it('accepts server context and shutdown surfaces', () => {
