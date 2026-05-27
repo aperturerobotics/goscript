@@ -93,7 +93,9 @@ export function ReadDir(
   let list: $.Slice<DirEntry>
   ;[list, err] = dir!.ReadDir(-1)
   list!.sort((a: DirEntry, b: DirEntry): number => {
-    return a!.Name().localeCompare(b!.Name())
+    return $.pointerValue<Exclude<DirEntry, null>>(a).Name().localeCompare(
+      $.pointerValue<Exclude<DirEntry, null>>(b).Name(),
+    )
   })
   return [list, err]
 }
