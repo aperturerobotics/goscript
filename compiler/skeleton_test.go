@@ -2008,6 +2008,51 @@ func TestCompilePackagesLowersStringOrderingThroughRuntime(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesConvertsOverrideNamedStringToString(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/reflecttag\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import (",
+			"  \"reflect\"",
+			"  \"strings\"",
+			")",
+			"func tagText(st reflect.Type) string {",
+			"  field := st.Field(0)",
+			"  tag := field.Tag.Get(\"yaml\")",
+			"  if tag == \"\" && strings.Index(string(field.Tag), \":\") < 0 {",
+			"    tag = string(field.Tag)",
+			"  }",
+			"  return tag",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "reflecttag", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		`strings.Index(String(field.Tag), ":")`,
+		`tag = String(field.Tag)`,
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssertions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/interfaces\n\ngo 1.25.3\n",

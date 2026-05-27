@@ -6966,6 +6966,8 @@ func (o *LoweringOwner) lowerConversionExpr(
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperRunesToString) + "(" + value + ")", diagnostics
 		case isByteSliceType(sourceType):
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperBytesToString) + "(" + value + ")", diagnostics
+		case overrideNamedStringType(ctx, o, sourceType):
+			return "String(" + value + ")", diagnostics
 		case isStringType(sourceType):
 			return value, diagnostics
 		case isNumericType(sourceType):
@@ -9631,6 +9633,11 @@ func namedFunctionType(typ types.Type) *types.Named {
 		return nil
 	}
 	return named
+}
+
+func overrideNamedStringType(ctx lowerFileContext, owner *LoweringOwner, typ types.Type) bool {
+	named, _ := types.Unalias(typ).(*types.Named)
+	return named != nil && isStringType(named) && owner.typeUsesOverride(named)
 }
 
 func isBuiltinErrorType(typ types.Type) bool {
