@@ -254,7 +254,10 @@ export class LimitedReader implements Reader {
   public R: Reader | null
   public N: number
 
-  constructor(r?: Reader | { R?: Reader | null; N?: number } | null, n?: number) {
+  constructor(
+    r?: Reader | { R?: Reader | null; N?: number } | null,
+    n?: number,
+  ) {
     if (r != null && typeof (r as { Read?: unknown }).Read !== 'function') {
       const init = r as { R?: Reader | null; N?: number }
       this.R = init.R ?? null
@@ -658,22 +661,22 @@ class multiReader implements Reader {
 
 // MultiWriter creates a writer that duplicates its writes to all the provided writers
 export function MultiWriter(...writers: (Writer | null)[]): Writer {
-  return new multiWriter(writers.slice())
+  return new multiWriter(writers.slice()) as any
 }
 
-class multiWriter implements Writer {
+class multiWriter {
   private writers: (Writer | null)[]
 
   constructor(writers: (Writer | null)[]) {
     this.writers = writers
   }
 
-  Write(p: $.Bytes): [number, $.GoError] {
+  async Write(p: $.Bytes): Promise<[number, $.GoError]> {
     for (const w of this.writers) {
       if (w == null) {
         throw new Error('io.MultiWriter: nil writer')
       }
-      const [n, err] = w.Write(p)
+      const [n, err] = await w.Write(p)
       if (err !== null) {
         return [n, err]
       }

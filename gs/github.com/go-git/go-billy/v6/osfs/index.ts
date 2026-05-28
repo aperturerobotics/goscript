@@ -253,14 +253,27 @@ export class BoundOS {
       return [this.baseDir, null]
     }
     const normalized = filepath.Clean(filepath.ToSlash(name))
-    if (
-      filepath.IsAbs(normalized) ||
-      normalized === '..' ||
-      normalized.startsWith('../')
-    ) {
+    if (filepath.IsAbs(normalized)) {
+      const full = filepath.Clean(filepath.FromSlash(normalized))
+      if (!this.insideBase(full)) {
+        return ['', ErrCrossedBoundary]
+      }
+      return [full, null]
+    }
+    if (normalized === '..' || normalized.startsWith('../')) {
       return ['', ErrCrossedBoundary]
     }
     return [filepath.Join(this.baseDir, filepath.FromSlash(normalized)), null]
+  }
+
+  private insideBase(path: string): boolean {
+    const full = filepath.Clean(path)
+    if (full === this.baseDir) {
+      return true
+    }
+    return full.startsWith(
+      this.baseDir.endsWith('/') ? this.baseDir : this.baseDir + '/',
+    )
   }
 }
 

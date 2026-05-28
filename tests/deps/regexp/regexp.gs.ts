@@ -235,10 +235,10 @@ export class Regexp {
 		return Regexp.prototype.expand.call(re, dst, template, null, src, match)
 	}
 
-	public Find(b: $.Slice<number>): $.Slice<number> {
+	public async Find(b: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 2 }, () => 0)
-		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, $.goSlice(dstCap, undefined, 0))
+		let a: $.Slice<number> = await Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return null
 		}
@@ -377,55 +377,55 @@ export class Regexp {
 		return result
 	}
 
-	public FindIndex(b: $.Slice<number>): $.Slice<number> {
+	public async FindIndex(b: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let loc: $.Slice<number> = null as $.Slice<number>
-		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, null)
+		let a: $.Slice<number> = await Regexp.prototype.doExecute.call(re, null, b, "", 0, 2, null)
 		if (a == null) {
 			return null
 		}
 		return $.goSlice(a, 0, 2)
 	}
 
-	public FindReaderIndex(r: io.RuneReader | null): $.Slice<number> {
+	public async FindReaderIndex(r: io.RuneReader | null): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let loc: $.Slice<number> = null as $.Slice<number>
-		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, r, null, "", 0, 2, null)
+		let a: $.Slice<number> = await Regexp.prototype.doExecute.call(re, r, null, "", 0, 2, null)
 		if (a == null) {
 			return null
 		}
 		return $.goSlice(a, 0, 2)
 	}
 
-	public FindReaderSubmatchIndex(r: io.RuneReader | null): $.Slice<number> {
+	public async FindReaderSubmatchIndex(r: io.RuneReader | null): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return Regexp.prototype.pad.call(re, Regexp.prototype.doExecute.call(re, r, null, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
+		return Regexp.prototype.pad.call(re, await Regexp.prototype.doExecute.call(re, r, null, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
 	}
 
-	public FindString(s: string): string {
+	public async FindString(s: string): globalThis.Promise<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 2 }, () => 0)
-		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, $.goSlice(dstCap, undefined, 0))
+		let a: $.Slice<number> = await Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return ""
 		}
 		return $.sliceStringOrBytes(s, a![0], a![1])
 	}
 
-	public FindStringIndex(s: string): $.Slice<number> {
+	public async FindStringIndex(s: string): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let loc: $.Slice<number> = null as $.Slice<number>
-		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, null)
+		let a: $.Slice<number> = await Regexp.prototype.doExecute.call(re, null, null, s, 0, 2, null)
 		if (a == null) {
 			return null
 		}
 		return $.goSlice(a, 0, 2)
 	}
 
-	public FindStringSubmatch(s: string): $.Slice<string> {
+	public async FindStringSubmatch(s: string): globalThis.Promise<$.Slice<string>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 4 }, () => 0)
-		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
+		let a: $.Slice<number> = await Regexp.prototype.doExecute.call(re, null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return null
 		}
@@ -438,15 +438,15 @@ export class Regexp {
 		return ret
 	}
 
-	public FindStringSubmatchIndex(s: string): $.Slice<number> {
+	public async FindStringSubmatchIndex(s: string): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return Regexp.prototype.pad.call(re, Regexp.prototype.doExecute.call(re, null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
+		return Regexp.prototype.pad.call(re, await Regexp.prototype.doExecute.call(re, null, null, s, 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
 	}
 
-	public FindSubmatch(b: $.Slice<number>): $.Slice<$.Slice<number>> {
+	public async FindSubmatch(b: $.Slice<number>): globalThis.Promise<$.Slice<$.Slice<number>>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let dstCap: number[] = Array.from({ length: 4 }, () => 0)
-		let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
+		let a: $.Slice<number> = await Regexp.prototype.doExecute.call(re, null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, $.goSlice(dstCap, undefined, 0))
 		if (a == null) {
 			return null
 		}
@@ -459,9 +459,9 @@ export class Regexp {
 		return ret
 	}
 
-	public FindSubmatchIndex(b: $.Slice<number>): $.Slice<number> {
+	public async FindSubmatchIndex(b: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return Regexp.prototype.pad.call(re, Regexp.prototype.doExecute.call(re, null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
+		return Regexp.prototype.pad.call(re, await Regexp.prototype.doExecute.call(re, null, b, "", 0, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null))
 	}
 
 	public LiteralPrefix(): [string, boolean] {
@@ -481,19 +481,19 @@ export class Regexp {
 		return Regexp.prototype.AppendText.call(re, null)
 	}
 
-	public Match(b: $.Slice<number>): boolean {
+	public async Match(b: $.Slice<number>): globalThis.Promise<boolean> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return Regexp.prototype.doMatch.call(re, null, b, "")
+		return await Regexp.prototype.doMatch.call(re, null, b, "")
 	}
 
-	public MatchReader(r: io.RuneReader | null): boolean {
+	public async MatchReader(r: io.RuneReader | null): globalThis.Promise<boolean> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return Regexp.prototype.doMatch.call(re, r, null, "")
+		return await Regexp.prototype.doMatch.call(re, r, null, "")
 	}
 
-	public MatchString(s: string): boolean {
+	public async MatchString(s: string): globalThis.Promise<boolean> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return Regexp.prototype.doMatch.call(re, null, null, s)
+		return await Regexp.prototype.doMatch.call(re, null, null, s)
 	}
 
 	public NumSubexp(): number {
@@ -639,7 +639,7 @@ export class Regexp {
 		}
 
 		for (let pos = 0, i = 0, prevMatchEnd = -1; (i < n) && (pos <= end); ) {
-			let matches: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, b, s, pos, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null)
+			let matches: $.Slice<number> = await Regexp.prototype.doExecute.call(re, null, b, s, pos, $.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).NumCap, null)
 			if ($.len(matches) == 0) {
 				break
 			}
@@ -679,7 +679,7 @@ export class Regexp {
 		}
 	}
 
-	public backtrack(ib: $.Slice<number>, _is: string, pos: number, ncap: number, dstCap: $.Slice<number>): $.Slice<number> {
+	public async backtrack(ib: $.Slice<number>, _is: string, pos: number, ncap: number, dstCap: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let startCond = $.uint($.pointerValue<Regexp>(re).cond, 8)
 		if ($.uint(startCond, 8) == $.uint($.uint(~0, 8), 8)) {
@@ -690,7 +690,7 @@ export class Regexp {
 			return null
 		}
 
-		let b: __goscript_backtrack.bitState | $.VarRef<__goscript_backtrack.bitState> | null = __goscript_backtrack.newBitState()
+		let b: __goscript_backtrack.bitState | $.VarRef<__goscript_backtrack.bitState> | null = await __goscript_backtrack.newBitState()
 		let [i, end] = $.pointerValue<__goscript_backtrack.bitState>(b).inputs.init(null, ib, _is)
 		__goscript_backtrack.bitState.prototype.reset.call(b, $.pointerValue<Regexp>(re).prog, end, ncap)
 
@@ -737,7 +737,7 @@ export class Regexp {
 		return dstCap
 	}
 
-	public doExecute(r: io.RuneReader | null, b: $.Slice<number>, s: string, pos: number, ncap: number, dstCap: $.Slice<number>): $.Slice<number> {
+	public async doExecute(r: io.RuneReader | null, b: $.Slice<number>, s: string, pos: number, ncap: number, dstCap: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		if (dstCap == null) {
 
@@ -749,13 +749,13 @@ export class Regexp {
 		}
 
 		if ($.pointerValue<Regexp>(re).onepass != null) {
-			return Regexp.prototype.doOnePass.call(re, r, b, s, pos, ncap, dstCap)
+			return await Regexp.prototype.doOnePass.call(re, r, b, s, pos, ncap, dstCap)
 		}
 		if ((r == null) && (($.len(b) + $.len(s)) < $.pointerValue<Regexp>(re).maxBitStateLen)) {
-			return Regexp.prototype.backtrack.call(re, b, s, pos, ncap, dstCap)
+			return await Regexp.prototype.backtrack.call(re, b, s, pos, ncap, dstCap)
 		}
 
-		let m: __goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null = Regexp.prototype.get.call(re)
+		let m: __goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null = await Regexp.prototype.get.call(re)
 		let [i, ] = $.pointerValue<__goscript_exec.machine>(m).inputs.init(r, b, s)
 
 		__goscript_exec.machine.prototype.init.call(m, ncap)
@@ -769,19 +769,19 @@ export class Regexp {
 		return dstCap
 	}
 
-	public doMatch(r: io.RuneReader | null, b: $.Slice<number>, s: string): boolean {
+	public async doMatch(r: io.RuneReader | null, b: $.Slice<number>, s: string): globalThis.Promise<boolean> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return Regexp.prototype.doExecute.call(re, r, b, s, 0, 0, null) != null
+		return await Regexp.prototype.doExecute.call(re, r, b, s, 0, 0, null) != null
 	}
 
-	public doOnePass(ir: io.RuneReader | null, ib: $.Slice<number>, _is: string, pos: number, ncap: number, dstCap: $.Slice<number>): $.Slice<number> {
+	public async doOnePass(ir: io.RuneReader | null, ib: $.Slice<number>, _is: string, pos: number, ncap: number, dstCap: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let startCond = $.uint($.pointerValue<Regexp>(re).cond, 8)
 		if ($.uint(startCond, 8) == $.uint($.uint(~0, 8), 8)) {
 			return null
 		}
 
-		let m: __goscript_exec.onePassMachine | $.VarRef<__goscript_exec.onePassMachine> | null = __goscript_exec.newOnePassMachine()
+		let m: __goscript_exec.onePassMachine | $.VarRef<__goscript_exec.onePassMachine> | null = await __goscript_exec.newOnePassMachine()
 		if ($.cap($.pointerValue<__goscript_exec.onePassMachine>(m).matchcap) < ncap) {
 			$.pointerValue<__goscript_exec.onePassMachine>(m).matchcap = $.makeSlice<number>(ncap, undefined, "number")
 		} else {
@@ -989,9 +989,9 @@ export class Regexp {
 		return dst
 	}
 
-	public ["get"](): __goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null {
+	public async ["get"](): globalThis.Promise<__goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		let __goscriptTuple10: any = $.typeAssertTuple<__goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null>(matchPool[$.pointerValue<Regexp>(re).mpool].Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.machine" })
+		let __goscriptTuple10: any = $.typeAssertTuple<__goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null>(await matchPool[$.pointerValue<Regexp>(re).mpool].Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.machine" })
 		let m: __goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null = __goscriptTuple10[0]
 		let ok = __goscriptTuple10[1]
 		if (!ok) {
@@ -1058,7 +1058,7 @@ export class Regexp {
 
 		let dstCap: number[] = Array.from({ length: 2 }, () => 0)
 		while (searchPos <= endPos) {
-			let a: $.Slice<number> = Regexp.prototype.doExecute.call(re, null, bsrc, src, searchPos, nmatch, $.goSlice(dstCap, undefined, 0))
+			let a: $.Slice<number> = await Regexp.prototype.doExecute.call(re, null, bsrc, src, searchPos, nmatch, $.goSlice(dstCap, undefined, 0))
 			if ($.len(a) == 0) {
 				break
 			}
@@ -1775,7 +1775,7 @@ export async function MatchReader(pattern: string, r: io.RuneReader | null): glo
 	if (err != null) {
 		return [false, err]
 	}
-	return [Regexp.prototype.MatchReader.call(re, r), null]
+	return [await Regexp.prototype.MatchReader.call(re, r), null]
 }
 
 export async function MatchString(pattern: string, s: string): globalThis.Promise<[boolean, $.GoError]> {
@@ -1787,7 +1787,7 @@ export async function MatchString(pattern: string, s: string): globalThis.Promis
 	if (err != null) {
 		return [false, err]
 	}
-	return [Regexp.prototype.MatchString.call(re, s), null]
+	return [await Regexp.prototype.MatchString.call(re, s), null]
 }
 
 export async function Match(pattern: string, b: $.Slice<number>): globalThis.Promise<[boolean, $.GoError]> {
@@ -1799,7 +1799,7 @@ export async function Match(pattern: string, b: $.Slice<number>): globalThis.Pro
 	if (err != null) {
 		return [false, err]
 	}
-	return [Regexp.prototype.Match.call(re, b), null]
+	return [await Regexp.prototype.Match.call(re, b), null]
 }
 
 export let specialBytes: Uint8Array = new Uint8Array(16)

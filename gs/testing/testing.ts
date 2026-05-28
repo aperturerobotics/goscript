@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs'
+import * as nodeFS from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -153,20 +153,23 @@ export class T {
   }
 
   public TempDir(): string {
-    const path = join(
-      tmpdir(),
-      'goscript-test-' +
-        this.testName.replace(/[^A-Za-z0-9_.-]/g, '_') +
-        '-' +
-        String(this.tempDirs.length),
+    const path = (nodeFS as any).mkdtempSync(
+      join(
+        tmpdir(),
+        'goscript-test-' +
+          this.testName.replace(/[^A-Za-z0-9_.-]/g, '_') +
+          '-' +
+          String(this.tempDirs.length),
+      ) + '-',
     )
-    mkdirSync(path, { recursive: true })
     this.tempDirs.push(path)
+    this.Cleanup(() => {
+      ;(nodeFS as any).rmSync(path, { force: true, recursive: true })
+    })
     return path
   }
 
-  public Parallel(): void {
-  }
+  public Parallel(): void {}
 
   public Setenv(key: string, value: string): void {
     const proc = (globalThis as any).process as

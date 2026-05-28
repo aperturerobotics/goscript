@@ -9,7 +9,7 @@ class sliceReader {
     const n = Math.min($.len(p), this.data.length)
     p!.set(this.data.subarray(0, n), 0)
     this.data = this.data.subarray(n)
-    return [n, n === 0 ? new Error('EOF') as $.GoError : null]
+    return [n, n === 0 ? (new Error('EOF') as $.GoError) : null]
   }
 }
 
@@ -49,16 +49,33 @@ describe('io override', () => {
     expect(Buffer.from(writer.chunks).toString('utf8')).toBe('abc')
   })
 
-  test('MultiWriter accepts nullable generated interface values', () => {
+  test('MultiWriter accepts nullable generated interface values', async () => {
     const first = new captureWriter()
     const second = new captureWriter()
     const writer = MultiWriter(first, second)
 
-    const [n, err] = writer.Write($.stringToBytes('abc'))
+    const [n, err] = await writer.Write($.stringToBytes('abc'))
 
     expect(err).toBeNull()
     expect(n).toBe(3)
     expect(Buffer.from(first.chunks).toString('utf8')).toBe('abc')
     expect(Buffer.from(second.chunks).toString('utf8')).toBe('abc')
+  })
+
+  test('MultiWriter awaits async generated writers', async () => {
+    const chunks: number[] = []
+    const writer = MultiWriter({
+      async Write(p: $.Bytes): Promise<[number, $.GoError]> {
+        await Promise.resolve()
+        chunks.push(...Array.from(p ?? []))
+        return [$.len(p), null]
+      },
+    })
+
+    const [n, err] = await writer.Write($.stringToBytes('abc'))
+
+    expect(err).toBeNull()
+    expect(n).toBe(3)
+    expect(Buffer.from(chunks).toString('utf8')).toBe('abc')
   })
 })

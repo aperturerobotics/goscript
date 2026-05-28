@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { DeepEqual } from './deepequal.js'
-import { Value, BasicType, Int, String as StringType } from './type.js'
+import { Value, BasicType, Int, String as StringType, Uint32 } from './type.js'
 
 describe('DeepEqual', () => {
   it('should compare primitive values correctly', () => {
@@ -37,5 +37,14 @@ describe('DeepEqual', () => {
 
     expect(DeepEqual(v1, v2)).toBe(true)
     expect(DeepEqual(v1, v3)).toBe(false)
+  })
+
+  it('reads numeric boxed values with basic numeric kinds', () => {
+    const v = new Value(
+      { sentinel: true, valueOf: () => 7 } as any,
+      new BasicType(Uint32, 'uint32'),
+    )
+
+    expect(v.Uint()).toBe(7)
   })
 })

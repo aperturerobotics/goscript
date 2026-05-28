@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { existsSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 import { B, F, Short, T, type TB } from './testing.js'
 import { runTests } from './testing.js'
@@ -101,13 +103,30 @@ describe('testing.T', () => {
 
     t.Cleanup(null)
 
-    await expect(t.runCleanups()).rejects.toThrow('testing: nil cleanup function')
+    await expect(t.runCleanups()).rejects.toThrow(
+      'testing: nil cleanup function',
+    )
   })
 
   it('returns a non-nil context', () => {
     const t = new T('root')
 
     expect(t.Context()).not.toBeNull()
+  })
+
+  it('creates unique TempDir paths and removes them during cleanup', async () => {
+    const t = new T('root')
+
+    const first = t.TempDir()
+    const second = t.TempDir()
+    expect(first).not.toBe(second)
+    writeFileSync(join(first, 'marker.txt'), 'marker')
+    expect(existsSync(first)).toBe(true)
+
+    await t.runCleanups()
+
+    expect(existsSync(first)).toBe(false)
+    expect(existsSync(second)).toBe(false)
   })
 
   it('formats common testing printf verbs', () => {
@@ -118,13 +137,23 @@ describe('testing.T', () => {
       messages.push(String(message))
     }
     try {
-      t.Logf('quoted=%q value=%#v plus=%+v number=%d string=%s plain=%v', 'key', 7, { ok: true }, 3, 'ok', true)
+      t.Logf(
+        'quoted=%q value=%#v plus=%+v number=%d string=%s plain=%v',
+        'key',
+        7,
+        { ok: true },
+        3,
+        'ok',
+        true,
+      )
       t.flushLogs()
     } finally {
       console.log = originalLog
     }
 
-    expect(messages).toEqual(['    quoted="key" value=7 plus=[object Object] number=3 string=ok plain=true'])
+    expect(messages).toEqual([
+      '    quoted="key" value=7 plus=[object Object] number=3 string=ok plain=true',
+    ])
   })
 
   it('formats Go-style error objects with Error methods', () => {

@@ -229,8 +229,8 @@ export function __goscript_set_bitStatePool(__goscriptValue: sync.Pool): void {
 	bitStatePool.value = __goscriptValue
 }
 
-export function newBitState(): bitState | $.VarRef<bitState> | null {
-	let __goscriptTuple0: any = $.typeAssertTuple<bitState | $.VarRef<bitState> | null>(bitStatePool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.bitState" })
+export async function newBitState(): globalThis.Promise<bitState | $.VarRef<bitState> | null> {
+	let __goscriptTuple0: any = $.typeAssertTuple<bitState | $.VarRef<bitState> | null>(await bitStatePool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.bitState" })
 	let b: bitState | $.VarRef<bitState> | null = __goscriptTuple0[0]
 	let ok = __goscriptTuple0[1]
 	if (!ok) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { Cond, Map, Mutex, RWMutex, WaitGroup } from './sync.js'
+import { Cond, Map, Mutex, Pool, RWMutex, WaitGroup } from './sync.js'
 
 describe('sync.WaitGroup', () => {
   it('Go tracks scheduled work and unblocks Wait after completion', async () => {
@@ -88,5 +88,20 @@ describe('sync.Map', () => {
     })
 
     expect(visited).toEqual(['a:1'])
+  })
+})
+
+describe('sync.Pool', () => {
+  it('awaits async New functions before returning a pooled value', async () => {
+    const pool = new Pool({
+      New: async () => {
+        await Promise.resolve()
+        return 'created'
+      },
+    })
+
+    expect(await pool.Get()).toBe('created')
+    pool.Put('reused')
+    expect(await pool.Get()).toBe('reused')
   })
 })

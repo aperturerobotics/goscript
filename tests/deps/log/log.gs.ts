@@ -254,7 +254,7 @@ export class Logger {
 			}
 		}
 
-		let buf = getBuffer()
+		let buf = await getBuffer()
 		__defer.defer(() => { putBuffer(buf) })
 		formatHeader(buf, $.markAsStructValue($.cloneStructValue(now)), prefix, flag, file, line)
 		buf!.value = await appendOutput!($.pointerValue<$.Slice<number>>(buf))
@@ -387,8 +387,8 @@ export function __goscript_set_bufferPool(__goscriptValue: sync.Pool): void {
 	bufferPool.value = __goscriptValue
 }
 
-export function getBuffer(): $.VarRef<$.Slice<number>> | null {
-	let p = $.mustTypeAssert<$.VarRef<$.Slice<number>> | null>(bufferPool.value.Get(), { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } })
+export async function getBuffer(): globalThis.Promise<$.VarRef<$.Slice<number>> | null> {
+	let p = $.mustTypeAssert<$.VarRef<$.Slice<number>> | null>(await bufferPool.value.Get(), { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } })
 	p!.value = $.goSlice(($.pointerValue<$.Slice<number>>(p)), undefined, 0)
 	return p
 }

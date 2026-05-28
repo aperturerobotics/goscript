@@ -10,6 +10,7 @@
     "WaitGroup.Wait": true,
     "Once.Do": true,
     "Cond.Wait": true,
+    "Pool.Get": true,
     "Map.CompareAndDelete": true,
     "Map.Delete": true,
     "Map.Load": true,

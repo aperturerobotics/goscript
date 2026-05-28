@@ -67,6 +67,31 @@ describe('go-billy osfs override', () => {
     expect(err).not.toBeNull()
   })
 
+  it('accepts absolute paths inside the base directory', () => {
+    const root = tempRoot()
+    const fsys = New(root)
+    const absolute = join(root, 'inside.txt')
+
+    const [file, openErr] = fsys.Create(absolute)
+    expect(openErr).toBeNull()
+    const [, writeErr] = file!.Write($.stringToBytes('inside'))
+    expect(writeErr).toBeNull()
+    expect(file!.Close()).toBeNull()
+
+    expect(readFileSync(absolute, 'utf8')).toBe('inside')
+  })
+
+  it('rejects absolute paths outside the base directory', () => {
+    const root = tempRoot()
+    const outside = tempRoot()
+    const fsys = New(root)
+
+    const [file, err] = fsys.Create(join(outside, 'outside.txt'))
+
+    expect(file).toBeNull()
+    expect(err).not.toBeNull()
+  })
+
   it('reads host directory entries', () => {
     const root = tempRoot()
     writeFileSync(join(root, 'one.txt'), 'one')

@@ -754,8 +754,8 @@ export function __goscript_set_onePassPool(__goscriptValue: sync.Pool): void {
 	onePassPool.value = __goscriptValue
 }
 
-export function newOnePassMachine(): onePassMachine | $.VarRef<onePassMachine> | null {
-	let __goscriptTuple5: any = $.typeAssertTuple<onePassMachine | $.VarRef<onePassMachine> | null>(onePassPool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.onePassMachine" })
+export async function newOnePassMachine(): globalThis.Promise<onePassMachine | $.VarRef<onePassMachine> | null> {
+	let __goscriptTuple5: any = $.typeAssertTuple<onePassMachine | $.VarRef<onePassMachine> | null>(await onePassPool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "regexp.onePassMachine" })
 	let m: onePassMachine | $.VarRef<onePassMachine> | null = __goscriptTuple5[0]
 	let ok = __goscriptTuple5[1]
 	if (!ok) {

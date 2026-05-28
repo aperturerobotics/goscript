@@ -194,7 +194,7 @@ export function __goscript_set_flateWriterPool(__goscriptValue: sync.Pool): void
 }
 
 export async function newFlateWriter(w: io.Writer | null): globalThis.Promise<io.WriteCloser | null> {
-	let __goscriptTuple0: any = $.typeAssertTuple<flate.Writer | $.VarRef<flate.Writer> | null>(flateWriterPool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "flate.Writer" })
+	let __goscriptTuple0: any = $.typeAssertTuple<flate.Writer | $.VarRef<flate.Writer> | null>(await flateWriterPool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "flate.Writer" })
 	let fw: flate.Writer | $.VarRef<flate.Writer> | null = __goscriptTuple0[0]
 	let ok = __goscriptTuple0[1]
 	if (ok) {
@@ -213,7 +213,7 @@ export function __goscript_set_flateReaderPool(__goscriptValue: sync.Pool): void
 }
 
 export async function newFlateReader(r: io.Reader | null): globalThis.Promise<io.ReadCloser | null> {
-	let [fr, ok] = $.typeAssertTuple<io.ReadCloser | null>(flateReaderPool.value.Get(), "io.ReadCloser")
+	let [fr, ok] = $.typeAssertTuple<io.ReadCloser | null>(await flateReaderPool.value.Get(), "io.ReadCloser")
 	if (ok) {
 		$.pointerValue<Exclude<flate.Resetter, null>>($.mustTypeAssert<flate.Resetter | null>(fr, "flate.Resetter")).Reset(r, null)
 	} else {

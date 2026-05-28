@@ -458,12 +458,12 @@ export class Pool {
   }
 
   // Get selects an arbitrary item from the Pool, removes it from the Pool, and returns it to the caller
-  public Get(): any {
+  public async Get(): Promise<any> {
     if (this._pool.length > 0) {
       return this._pool.pop()
     }
     if (this.New) {
-      return this.New()
+      return await this.New()
     }
     return null
   }

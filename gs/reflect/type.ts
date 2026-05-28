@@ -401,8 +401,9 @@ export class Value {
 
   // Methods required by godoc.txt and used throughout the codebase
   public Int(): number {
-    if (typeof this._value === 'number' && Number.isInteger(this._value)) {
-      return this._value
+    const value = this.numericValue()
+    if (value !== null && Number.isInteger(value)) {
+      return value
     }
     throw new Error(
       'reflect: call of reflect.Value.Int on ' +
@@ -412,8 +413,9 @@ export class Value {
   }
 
   public Uint(): number {
-    if (typeof this._value === 'number' && this._value >= 0) {
-      return this._value
+    const value = this.numericValue()
+    if (value !== null && value >= 0) {
+      return value
     }
     throw new Error(
       'reflect: call of reflect.Value.Uint on ' +
@@ -423,8 +425,9 @@ export class Value {
   }
 
   public Float(): number {
-    if (typeof this._value === 'number') {
-      return this._value
+    const value = this.numericValue()
+    if (value !== null) {
+      return value
     }
     throw new Error(
       'reflect: call of reflect.Value.Float on ' +
@@ -442,6 +445,23 @@ export class Value {
         Kind_String(this._type.Kind()) +
         ' Value',
     )
+  }
+
+  private numericValue(): number | null {
+    if (typeof this._value === 'number') {
+      return this._value
+    }
+    if (
+      this._value !== null &&
+      typeof this._value === 'object' &&
+      typeof (this._value as { valueOf?: unknown }).valueOf === 'function'
+    ) {
+      const value = (this._value as { valueOf(): unknown }).valueOf()
+      if (typeof value === 'number') {
+        return value
+      }
+    }
+    return null
   }
 
   public String(): string {
