@@ -125,6 +125,7 @@ func newSemanticModel() *SemanticModel {
 		types:                    make(map[*types.Named]*semanticType),
 		values:                   make(map[types.Object]*semanticValue),
 		generatedImports:         make(map[string]map[string]bool),
+		generatedImportTypes:     make(map[string]map[types.Type]bool),
 		asyncInterfaceMethods:    make(map[string]bool),
 		asyncInterfaceMethodObjs: make(map[*types.Func]bool),
 	}
@@ -391,8 +392,9 @@ func (o *SemanticModelOwner) recordCallSignatureImports(
 		return
 	}
 	position := sourcePos(pkg, expr.Pos())
-	o.recordTupleImports(model, semPkg, position.file, pkg.PkgPath, signature.Params(), make(map[types.Type]bool))
-	o.recordTupleImports(model, semPkg, position.file, pkg.PkgPath, signature.Results(), make(map[types.Type]bool))
+	seen := model.generatedImportSeen(position.file)
+	o.recordTupleImports(model, semPkg, position.file, pkg.PkgPath, signature.Params(), seen)
+	o.recordTupleImports(model, semPkg, position.file, pkg.PkgPath, signature.Results(), seen)
 }
 
 func (o *SemanticModelOwner) recordAsyncCompatibleFunctionAssignments(
@@ -1942,7 +1944,16 @@ func (o *SemanticModelOwner) recordGeneratedImports(
 	if file == "" || typ == nil {
 		return
 	}
-	o.recordTypeImports(model, semPkg, file, currentPkg, typ, make(map[types.Type]bool))
+	o.recordTypeImports(model, semPkg, file, currentPkg, typ, model.generatedImportSeen(file))
+}
+
+func (m *SemanticModel) generatedImportSeen(file string) map[types.Type]bool {
+	seen := m.generatedImportTypes[file]
+	if seen == nil {
+		seen = make(map[types.Type]bool)
+		m.generatedImportTypes[file] = seen
+	}
+	return seen
 }
 
 func (o *SemanticModelOwner) recordTypeImports(
