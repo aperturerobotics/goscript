@@ -1479,7 +1479,7 @@ export function IPv6Unspecified(): Addr {
 }
 
 export function IPv4Unspecified(): Addr {
-	return $.markAsStructValue($.cloneStructValue(AddrFrom4(new Uint8Array([0, 0, 0, 0]))))
+	return $.markAsStructValue($.cloneStructValue(AddrFrom4(new Uint8Array(4))))
 }
 
 export function AddrFrom4(addr: Uint8Array): Addr {

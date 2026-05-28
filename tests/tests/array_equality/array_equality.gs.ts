@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 export type Hash = Uint8Array
 
 export function Hash_Valid(h: Hash): boolean {
-	return !$.arrayEqual(h, new Uint8Array([0, 0, 0, 0]))
+	return !$.arrayEqual(h, new Uint8Array(4))
 }
 
 export async function main(): globalThis.Promise<void> {
