@@ -1062,6 +1062,47 @@ func TestCompilePackagesUsesEmbedOverride(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEmbedsFS(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod":             "module example.test/embedfs\n\ngo 1.25.3\n",
+		"assets/config.json": `{"ok":true}`,
+		"assets/nested.txt":  "nested",
+		"extra.txt":          "extra",
+		"main.go": strings.Join([]string{
+			"package embedfs",
+			"import \"embed\"",
+			"//go:embed assets *.txt",
+			"var StaticFS embed.FS",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir, AllDependencies: true}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "embedfs", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if !strings.Contains(string(content), `export let StaticFS: embed.FS = $.markAsStructValue(new embed.FS`) {
+		t.Fatalf("embedded FS was not emitted as embed.FS:\n%s", string(content))
+	}
+	if !strings.Contains(string(content), `["assets/config.json", new Uint8Array([123, 34, 111, 107, 34, 58, 116, 114, 117, 101, 125])]`) {
+		t.Fatalf("embedded FS file content was not emitted:\n%s", string(content))
+	}
+	if !strings.Contains(string(content), `["assets/nested.txt", new Uint8Array([110, 101, 115, 116, 101, 100])]`) {
+		t.Fatalf("embedded FS directory file content was not emitted:\n%s", string(content))
+	}
+	if !strings.Contains(string(content), `["extra.txt", new Uint8Array([101, 120, 116, 114, 97])]`) {
+		t.Fatalf("embedded FS glob file content was not emitted:\n%s", string(content))
+	}
+}
+
 func TestCompilePackagesEmitsPackageLocalImport(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/imports\n\ngo 1.25.3\n",
