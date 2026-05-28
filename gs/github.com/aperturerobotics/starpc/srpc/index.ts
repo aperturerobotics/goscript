@@ -115,6 +115,33 @@ export interface Client {
   ): Promise<[Stream | null, $.GoError]>
 }
 
+$.registerInterfaceType('srpc.Client', null, [
+  {
+    name: 'ExecCall',
+    args: [
+      { name: 'ctx', type: 'context.Context' },
+      { name: 'service', type: { kind: $.TypeKind.Basic, name: 'string' } },
+      { name: 'method', type: { kind: $.TypeKind.Basic, name: 'string' } },
+      { name: 'in', type: 'srpc.Message' },
+      { name: 'out', type: 'srpc.Message' },
+    ],
+    returns: [{ name: '_r0', type: 'error' }],
+  },
+  {
+    name: 'NewStream',
+    args: [
+      { name: 'ctx', type: 'context.Context' },
+      { name: 'service', type: { kind: $.TypeKind.Basic, name: 'string' } },
+      { name: 'method', type: { kind: $.TypeKind.Basic, name: 'string' } },
+      { name: 'firstMsg', type: 'srpc.Message' },
+    ],
+    returns: [
+      { name: '_r0', type: 'srpc.Stream' },
+      { name: '_r1', type: 'error' },
+    ],
+  },
+])
+
 export class ClientSet implements Client {
   private clients: $.Slice<Client | null>
 
