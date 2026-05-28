@@ -305,6 +305,86 @@ func TestRunnerRunsExternalPackageTest(t *testing.T) {
 	}
 }
 
+func TestRunnerBatchCompilesSamePackageTests(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/samebatch\n\ngo 1.25.3\n",
+		"helper/value.go": strings.Join([]string{
+			"package helper",
+			"",
+			"func Value() int { return 2 }",
+			"",
+		}, "\n"),
+		"one/value.go": strings.Join([]string{
+			"package one",
+			"",
+			"func Value() int { return 1 }",
+			"",
+		}, "\n"),
+		"one/value_test.go": strings.Join([]string{
+			"package one",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestOne(t *testing.T) {",
+			"\tif Value() != 1 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"two/value.go": strings.Join([]string{
+			"package two",
+			"",
+			"import \"example.test/samebatch/one\"",
+			"",
+			"func Value() int { return one.Value() + 1 }",
+			"",
+		}, "\n"),
+		"two/value_test.go": strings.Join([]string{
+			"package two",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestTwo(t *testing.T) {",
+			"\tif Value() != 2 {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+		"two/external_test.go": strings.Join([]string{
+			"package two_test",
+			"",
+			"import (",
+			"\t\"testing\"",
+			"",
+			"\t\"example.test/samebatch/helper\"",
+			"\t\"example.test/samebatch/two\"",
+			")",
+			"",
+			"func TestTwoExternal(t *testing.T) {",
+			"\tif two.Value() != helper.Value() {",
+			"\t\tt.Fatal(\"bad value\")",
+			"\t}",
+			"}",
+			"",
+		}, "\n"),
+	})
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:      moduleDir,
+		Patterns: []string{"./..."},
+		Timeout:  30 * time.Second,
+		Verbose:  true,
+	})
+	if err != nil {
+		t.Fatalf("run same-package batch tests: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected same-package batch tests to pass: %#v", result.Packages)
+	}
+}
+
 func TestRunnerAppliesOverridesToTestImports(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/testoverride\n\ngo 1.25.3\n",

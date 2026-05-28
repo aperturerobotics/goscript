@@ -131,6 +131,15 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 		graph.RequestedPackagePaths = append(graph.RequestedPackagePaths, path)
 	}
 	slices.Sort(graph.RequestedPackagePaths)
+	samePackageTestVariants := make(map[string]bool)
+	if req.Tests {
+		for _, pkg := range pkgs {
+			if pkg == nil || pkg.ForTest == "" || strings.HasSuffix(pkg.Name, "_test") {
+				continue
+			}
+			samePackageTestVariants[pkg.ForTest] = true
+		}
+	}
 
 	var diagnostics []Diagnostic
 	seen := make(map[string]bool)
@@ -138,7 +147,7 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 		if isTestMainPackage(pkg) {
 			continue
 		}
-		o.collect(graph, pkg, req.DependencyMode, requested, overrideFacts, seen)
+		o.collect(graph, pkg, req.DependencyMode, requested, samePackageTestVariants, overrideFacts, seen)
 		diagnostics = append(diagnostics, packageDiagnostics(pkg)...)
 	}
 	slices.SortFunc(graph.Nodes, func(a, b *PackageGraphNode) int {
@@ -162,23 +171,33 @@ func (o *PackageGraphOwner) collect(
 	pkg *packages.Package,
 	mode DependencyMode,
 	requested map[string]bool,
+	samePackageTestVariants map[string]bool,
 	overrideFacts *OverrideFacts,
 	seen map[string]bool,
 ) {
 	if pkg == nil || seen[pkg.ID] {
 		return
 	}
+	path := packagePath(pkg)
+	if pkg.ForTest != "" && path != pkg.ForTest && !strings.HasSuffix(pkg.Name, "_test") && samePackageTestVariants[path] {
+		return
+	}
+	if pkg.ForTest == "" && samePackageTestVariants[path] {
+		return
+	}
 	if pkg.ForTest != "" && !requested[pkg.ForTest] {
 		if prod := pkg.Imports[pkg.ForTest]; prod != nil {
-			o.collect(graph, prod, mode, requested, overrideFacts, seen)
+			o.collect(graph, prod, mode, requested, samePackageTestVariants, overrideFacts, seen)
 		}
+		return
+	}
+	if graph.NodesByPackagePath[path] != nil {
 		return
 	}
 	seen[pkg.ID] = true
 
 	normalizePackageFileOrder(pkg)
 
-	path := packagePath(pkg)
 	node := newPackageGraphNode(pkg, requested[path], overrideFacts)
 	graph.Nodes = append(graph.Nodes, node)
 	graph.NodesByPackagePath[path] = node
@@ -193,7 +212,7 @@ func (o *PackageGraphOwner) collect(
 	}
 	slices.Sort(imports)
 	for _, importPath := range imports {
-		o.collect(graph, pkg.Imports[importPath], mode, requested, overrideFacts, seen)
+		o.collect(graph, pkg.Imports[importPath], mode, requested, samePackageTestVariants, overrideFacts, seen)
 	}
 }
 

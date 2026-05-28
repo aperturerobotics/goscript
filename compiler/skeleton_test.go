@@ -3685,6 +3685,101 @@ func TestCompilePackagesPropagatesImportedAsyncGenericInterfaceMethods(t *testin
 	}
 }
 
+func TestCompilePackagesPropagatesAsyncInterfaceMethodsFromTestImports(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/testimportasynciface\n\ngo 1.25.3\n",
+		"iface/provider.go": strings.Join([]string{
+			"package iface",
+			"import \"context\"",
+			"type Provider interface {",
+			"  Create(context.Context) (string, error)",
+			"}",
+			"",
+		}, "\n"),
+		"impl/provider.go": strings.Join([]string{
+			"package impl",
+			"import (",
+			"  \"context\"",
+			"  \"example.test/testimportasynciface/iface\"",
+			")",
+			"type Provider struct { ch chan string }",
+			"func NewProvider() iface.Provider {",
+			"  return &Provider{ch: make(chan string, 1)}",
+			"}",
+			"func (p *Provider) Create(ctx context.Context) (string, error) {",
+			"  select {",
+			"  case p.ch <- \"ok\":",
+			"  case <-ctx.Done():",
+			"    return \"\", ctx.Err()",
+			"  }",
+			"  return <-p.ch, nil",
+			"}",
+			"",
+		}, "\n"),
+		"use.go": strings.Join([]string{
+			"package testimportasynciface",
+			"import (",
+			"  \"context\"",
+			"  \"example.test/testimportasynciface/iface\"",
+			")",
+			"func Use(ctx context.Context, p iface.Provider) (string, error) {",
+			"  return p.Create(ctx)",
+			"}",
+			"",
+		}, "\n"),
+		"use_test.go": strings.Join([]string{
+			"package testimportasynciface",
+			"import (",
+			"  \"context\"",
+			"  \"testing\"",
+			"  \"example.test/testimportasynciface/impl\"",
+			")",
+			"func TestUse(t *testing.T) {",
+			"  p := impl.NewProvider()",
+			"  got, err := p.Create(context.Background())",
+			"  if err != nil || got != \"ok\" {",
+			"    t.Fatal(got, err)",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	service := NewCompileService()
+	_, err := service.Compile(context.Background(), &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          outputDir,
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+		Tests:               true,
+		AllDependencies:     true,
+	})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	ifaceOutputFile := filepath.Join(outputDir, "@goscript", "example.test", "testimportasynciface", "iface", "provider.gs.ts")
+	ifaceContent, err := os.ReadFile(ifaceOutputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	ifaceText := string(ifaceContent)
+	if want := "Create(_p0: context.Context | null): [string, $.GoError] | globalThis.Promise<[string, $.GoError]>"; !strings.Contains(ifaceText, want) {
+		t.Fatalf("test-import implementation did not color interface method async:\n%s", ifaceText)
+	}
+
+	testOutputFile := filepath.Join(outputDir, "@goscript", "example.test", "testimportasynciface", "use_test.gs.ts")
+	testContent, err := os.ReadFile(testOutputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	testText := string(testContent)
+	if want := "let [got, err] = await $.pointerValue<Exclude<iface.Provider, null>>(p).Create(context.Background())"; !strings.Contains(testText, want) {
+		t.Fatalf("test package call was not awaited:\n%s", testText)
+	}
+}
+
 func TestCompilePackagesMarksSelectReturningIfElseCasesUnreachable(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/select-if-else\n\ngo 1.25.3\n",
