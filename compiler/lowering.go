@@ -3224,104 +3224,112 @@ func (o *LoweringOwner) lowerStmtListAfter(
 ) ([]loweredStmt, []Diagnostic) {
 	lowered := make([]loweredStmt, 0, len(stmts))
 	var diagnostics []Diagnostic
-	gotoSpans := backwardGotoLabelSpans(stmts)
-	gotoLabels := make(map[string]bool, len(gotoSpans))
-	for label := range gotoSpans {
-		gotoLabels[label] = true
-	}
-	forwardSpans := forwardGotoLabelSpans(stmts, gotoSpans)
-	forwardStarts := make(map[int]forwardGotoLabelSpan, len(forwardSpans))
-	for label, span := range forwardSpans {
-		span.label = label
-		group := forwardStarts[span.start]
-		if group.forwardLabels == nil {
-			group.forwardLabels = make(map[string]bool)
+	hasGoto := stmtListHasGoto(stmts)
+	var gotoSpans map[string]int
+	var gotoLabels map[string]bool
+	var forwardStarts map[int]forwardGotoLabelSpan
+	if hasGoto {
+		gotoSpans = backwardGotoLabelSpans(stmts)
+		gotoLabels = make(map[string]bool, len(gotoSpans))
+		for label := range gotoSpans {
+			gotoLabels[label] = true
 		}
-		group.forwardLabels[label] = true
-		if group.label == "" || span.labelIdx > group.labelIdx {
-			group.label = span.label
-			group.start = span.start
-			group.labelIdx = span.labelIdx
+		forwardSpans := forwardGotoLabelSpans(stmts, gotoSpans)
+		forwardStarts = make(map[int]forwardGotoLabelSpan, len(forwardSpans))
+		for label, span := range forwardSpans {
+			span.label = label
+			group := forwardStarts[span.start]
+			if group.forwardLabels == nil {
+				group.forwardLabels = make(map[string]bool)
+			}
+			group.forwardLabels[label] = true
+			if group.label == "" || span.labelIdx > group.labelIdx {
+				group.label = span.label
+				group.start = span.start
+				group.labelIdx = span.labelIdx
+			}
+			forwardStarts[span.start] = group
 		}
-		forwardStarts[span.start] = group
 	}
 	for idx := 0; idx < len(stmts); idx++ {
 		stmt := stmts[idx]
 		startLine := sourceLine(ctx, stmt.Pos())
 		leading := leadingStmtLines(ctx, prevEndLine, startLine)
-		if cluster, ok := gotoStateClusterAt(stmts, idx); ok {
-			clusterLowered, clusterDiagnostics := o.lowerGotoStateCluster(ctx, stmts, cluster, leading)
-			diagnostics = append(diagnostics, clusterDiagnostics...)
-			lowered = append(lowered, clusterLowered...)
-			if endLine := sourceLine(ctx, stmts[cluster.endIdx].End()); endLine != 0 {
-				prevEndLine = endLine
-			}
-			idx = cluster.endIdx
-			continue
-		}
-		if span, ok := leadingGotoBackwardLoopSpan(stmts, idx, gotoSpans); ok {
-			loop, loopDiagnostics := o.lowerBackwardGotoLoop(
-				ctx,
-				gotoLabels,
-				span.label,
-				span.labelIdx,
-				span.endIdx,
-				span.forwardLabel,
-				stmts,
-				leading,
-			)
-			diagnostics = append(diagnostics, loopDiagnostics...)
-			lowered = append(lowered, loop...)
-			if endLine := sourceLine(ctx, stmts[span.endIdx].End()); endLine != 0 {
-				prevEndLine = endLine
-			}
-			idx = span.endIdx
-			continue
-		}
-		if span, ok := forwardStarts[idx]; ok {
-			bodyStmts := stmts[idx:span.labelIdx]
-			body, bodyDiagnostics := o.lowerStmtListAfter(
-				ctx.withForwardGotos(span.forwardLabels),
-				bodyStmts,
-				prevEndLine,
-			)
-			diagnostics = append(diagnostics, bodyDiagnostics...)
-			block := loweredStmt{hasBlock: true, text: span.label + ":", children: body}
-			if len(leading) != 0 {
-				block.leading = append(leading, block.leading...)
-			}
-			lowered = append(lowered, block)
-			if labeled, ok := stmts[span.labelIdx].(*ast.LabeledStmt); ok {
-				labelLowered, labelDiagnostics := o.lowerStmt(ctx, labeled.Stmt)
-				diagnostics = append(diagnostics, labelDiagnostics...)
-				lowered = append(lowered, labelLowered...)
-				if endLine := sourceLine(ctx, labeled.End()); endLine != 0 {
+		if hasGoto {
+			if cluster, ok := gotoStateClusterAt(stmts, idx); ok {
+				clusterLowered, clusterDiagnostics := o.lowerGotoStateCluster(ctx, stmts, cluster, leading)
+				diagnostics = append(diagnostics, clusterDiagnostics...)
+				lowered = append(lowered, clusterLowered...)
+				if endLine := sourceLine(ctx, stmts[cluster.endIdx].End()); endLine != 0 {
 					prevEndLine = endLine
 				}
+				idx = cluster.endIdx
+				continue
 			}
-			idx = span.labelIdx
-			continue
-		}
-		if labeled, ok := stmt.(*ast.LabeledStmt); ok {
-			label := safeIdentifier(labeled.Label.Name)
-			if endIdx, ok := gotoSpans[label]; ok {
+			if span, ok := leadingGotoBackwardLoopSpan(stmts, idx, gotoSpans); ok {
 				loop, loopDiagnostics := o.lowerBackwardGotoLoop(
 					ctx,
 					gotoLabels,
-					label,
-					idx,
-					endIdx,
-					"",
+					span.label,
+					span.labelIdx,
+					span.endIdx,
+					span.forwardLabel,
 					stmts,
 					leading,
 				)
 				diagnostics = append(diagnostics, loopDiagnostics...)
 				lowered = append(lowered, loop...)
-				if endLine := sourceLine(ctx, stmts[endIdx].End()); endLine != 0 {
+				if endLine := sourceLine(ctx, stmts[span.endIdx].End()); endLine != 0 {
 					prevEndLine = endLine
 				}
-				idx = endIdx
+				idx = span.endIdx
 				continue
+			}
+			if span, ok := forwardStarts[idx]; ok {
+				bodyStmts := stmts[idx:span.labelIdx]
+				body, bodyDiagnostics := o.lowerStmtListAfter(
+					ctx.withForwardGotos(span.forwardLabels),
+					bodyStmts,
+					prevEndLine,
+				)
+				diagnostics = append(diagnostics, bodyDiagnostics...)
+				block := loweredStmt{hasBlock: true, text: span.label + ":", children: body}
+				if len(leading) != 0 {
+					block.leading = append(leading, block.leading...)
+				}
+				lowered = append(lowered, block)
+				if labeled, ok := stmts[span.labelIdx].(*ast.LabeledStmt); ok {
+					labelLowered, labelDiagnostics := o.lowerStmt(ctx, labeled.Stmt)
+					diagnostics = append(diagnostics, labelDiagnostics...)
+					lowered = append(lowered, labelLowered...)
+					if endLine := sourceLine(ctx, labeled.End()); endLine != 0 {
+						prevEndLine = endLine
+					}
+				}
+				idx = span.labelIdx
+				continue
+			}
+			if labeled, ok := stmt.(*ast.LabeledStmt); ok {
+				label := safeIdentifier(labeled.Label.Name)
+				if endIdx, ok := gotoSpans[label]; ok {
+					loop, loopDiagnostics := o.lowerBackwardGotoLoop(
+						ctx,
+						gotoLabels,
+						label,
+						idx,
+						endIdx,
+						"",
+						stmts,
+						leading,
+					)
+					diagnostics = append(diagnostics, loopDiagnostics...)
+					lowered = append(lowered, loop...)
+					if endLine := sourceLine(ctx, stmts[endIdx].End()); endLine != 0 {
+						prevEndLine = endLine
+					}
+					idx = endIdx
+					continue
+				}
 			}
 		}
 		if stmtCtx, nextCtx, ok := o.lowerDeclStatementContext(ctx, stmt); ok {
@@ -3642,7 +3650,28 @@ type leadingGotoBackwardLoop struct {
 }
 
 func stmtListNeedsLoopBranchLabel(stmts []ast.Stmt) bool {
+	if !stmtListHasGoto(stmts) {
+		return false
+	}
 	return len(backwardGotoLabelSpans(stmts)) != 0
+}
+
+func stmtListHasGoto(stmts []ast.Stmt) bool {
+	for _, stmt := range stmts {
+		hasGoto := false
+		ast.Inspect(stmt, func(node ast.Node) bool {
+			branch, ok := node.(*ast.BranchStmt)
+			if ok && branch.Tok == token.GOTO && branch.Label != nil {
+				hasGoto = true
+				return false
+			}
+			return !hasGoto
+		})
+		if hasGoto {
+			return true
+		}
+	}
+	return false
 }
 
 func backwardGotoLabelSpans(stmts []ast.Stmt) map[string]int {
