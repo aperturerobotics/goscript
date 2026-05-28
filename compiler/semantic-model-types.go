@@ -106,6 +106,11 @@ type semanticInterfaceImplementationGraphEntry struct {
 	implMethods  map[string]*types.Func
 }
 
+type semanticAnonymousInterfaceImplementation struct {
+	ifaceMethods map[string]*types.Func
+	implMethods  map[string]*types.Func
+}
+
 type semanticImplementationMethodSet struct {
 	typ      *types.Named
 	receiver types.Type

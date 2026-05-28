@@ -88,13 +88,18 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 	if diagnosticsHaveErrors(diagnostics) {
 		return model, diagnostics
 	}
+	anonymousInterfaceGraph, anonymousInterfaceDiagnostics := o.resolveAnonymousInterfaceImplementationGraph(ctx, model)
+	diagnostics = append(diagnostics, anonymousInterfaceDiagnostics...)
+	if diagnosticsHaveErrors(diagnostics) {
+		return model, diagnostics
+	}
 	for {
 		asyncCount := semanticAsyncFunctionCount(model)
 		diagnostics = append(diagnostics, o.applyInterfaceAsyncMethods(ctx, model, interfaceGraph)...)
 		if diagnosticsHaveErrors(diagnostics) {
 			return model, diagnostics
 		}
-		diagnostics = append(diagnostics, o.applyAnonymousInterfaceAsyncMethods(ctx, model)...)
+		diagnostics = append(diagnostics, o.applyAnonymousInterfaceAsyncMethods(ctx, model, anonymousInterfaceGraph)...)
 		if diagnosticsHaveErrors(diagnostics) {
 			return model, diagnostics
 		}
@@ -1215,6 +1220,69 @@ func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 	return implementationGraph, nil
 }
 
+func (o *SemanticModelOwner) resolveAnonymousInterfaceImplementationGraph(
+	ctx context.Context,
+	model *SemanticModel,
+) ([]semanticAnonymousInterfaceImplementation, []Diagnostic) {
+	interfaces := collectAnonymousInterfaceImplementationCandidates(model)
+	var concretes []*types.Named
+	for named, semType := range model.types {
+		if err := ctx.Err(); err != nil {
+			return nil, []Diagnostic{contextCanceledDiagnostic(err)}
+		}
+		if !semType.isInterface {
+			concretes = append(concretes, namedOriginOrSelf(named))
+		}
+	}
+	methodSets := implementationMethodSets(concretes)
+	for _, namedIface := range collectNamedInterfaceImplementationCandidates(model) {
+		methodSets = append(methodSets, semanticImplementationMethodSet{
+			typ:      namedIface,
+			receiver: namedIface,
+			methods:  methodSetMap(namedIface),
+		})
+	}
+
+	implementationGraph := make([]semanticAnonymousInterfaceImplementation, 0)
+	for _, iface := range interfaces {
+		if err := ctx.Err(); err != nil {
+			return nil, []Diagnostic{contextCanceledDiagnostic(err)}
+		}
+		iface.Complete()
+		ifaceMethods := interfaceMethodMap(iface)
+		if len(ifaceMethods) == 0 {
+			continue
+		}
+		for _, methodSet := range methodSets {
+			if err := ctx.Err(); err != nil {
+				return nil, []Diagnostic{contextCanceledDiagnostic(err)}
+			}
+			if !implementationHasMethods(methodSet.methods, ifaceMethods) {
+				continue
+			}
+			receiver := methodSet.receiver
+			if (methodSet.typ.TypeArgs() == nil || methodSet.typ.TypeArgs().Len() == 0) &&
+				methodSet.typ.TypeParams() != nil && methodSet.typ.TypeParams().Len() != 0 {
+				args := typeParamTypes(methodSet.typ.TypeParams())
+				if instantiated, err := types.Instantiate(nil, methodSet.typ, args, false); err == nil {
+					receiver = instantiated
+					if methodSet.pointer {
+						receiver = types.NewPointer(instantiated)
+					}
+				}
+			}
+			if !types.Implements(receiver, iface) {
+				continue
+			}
+			implementationGraph = append(implementationGraph, semanticAnonymousInterfaceImplementation{
+				ifaceMethods: ifaceMethods,
+				implMethods:  implementationMethodMap(methodSet.methods, ifaceMethods),
+			})
+		}
+	}
+	return implementationGraph, nil
+}
+
 func collectInterfaceImplementationCandidates(model *SemanticModel) []*types.Named {
 	if model == nil {
 		return nil
@@ -1521,60 +1589,18 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 	return nil
 }
 
-func (o *SemanticModelOwner) applyAnonymousInterfaceAsyncMethods(ctx context.Context, model *SemanticModel) []Diagnostic {
-	interfaces := collectAnonymousInterfaceImplementationCandidates(model)
-	var concretes []*types.Named
-	for named, semType := range model.types {
+func (o *SemanticModelOwner) applyAnonymousInterfaceAsyncMethods(
+	ctx context.Context,
+	model *SemanticModel,
+	interfaceGraph []semanticAnonymousInterfaceImplementation,
+) []Diagnostic {
+	for _, graphEntry := range interfaceGraph {
 		if err := ctx.Err(); err != nil {
 			return []Diagnostic{contextCanceledDiagnostic(err)}
 		}
-		if !semType.isInterface {
-			concretes = append(concretes, namedOriginOrSelf(named))
-		}
-	}
-	methodSets := implementationMethodSets(concretes)
-	for _, namedIface := range collectNamedInterfaceImplementationCandidates(model) {
-		methodSets = append(methodSets, semanticImplementationMethodSet{
-			typ:      namedIface,
-			receiver: namedIface,
-			methods:  methodSetMap(namedIface),
-		})
-	}
-	for _, iface := range interfaces {
-		if err := ctx.Err(); err != nil {
-			return []Diagnostic{contextCanceledDiagnostic(err)}
-		}
-		iface.Complete()
-		ifaceMethods := interfaceMethodMap(iface)
-		if len(ifaceMethods) == 0 {
-			continue
-		}
-		for _, methodSet := range methodSets {
-			if err := ctx.Err(); err != nil {
-				return []Diagnostic{contextCanceledDiagnostic(err)}
-			}
-			if !implementationHasMethods(methodSet.methods, ifaceMethods) {
-				continue
-			}
-			receiver := methodSet.receiver
-			if (methodSet.typ.TypeArgs() == nil || methodSet.typ.TypeArgs().Len() == 0) &&
-				methodSet.typ.TypeParams() != nil && methodSet.typ.TypeParams().Len() != 0 {
-				args := typeParamTypes(methodSet.typ.TypeParams())
-				if instantiated, err := types.Instantiate(nil, methodSet.typ, args, false); err == nil {
-					receiver = instantiated
-					if methodSet.pointer {
-						receiver = types.NewPointer(instantiated)
-					}
-				}
-			}
-			if !types.Implements(receiver, iface) {
-				continue
-			}
-			implMethods := implementationMethodMap(methodSet.methods, ifaceMethods)
-			for methodName, implMethod := range implMethods {
-				if model.functionAsync(implMethod) {
-					model.markInterfaceMethodAsync(ifaceMethods[methodName])
-				}
+		for methodName, implMethod := range graphEntry.implMethods {
+			if model.functionAsync(implMethod) {
+				model.markInterfaceMethodAsync(graphEntry.ifaceMethods[methodName])
 			}
 		}
 	}
