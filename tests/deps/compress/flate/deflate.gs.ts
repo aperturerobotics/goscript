@@ -428,8 +428,8 @@ export class compressor {
 			}
 			if ($.pointerValue<compressor>(d).index < $.pointerValue<compressor>(d).maxInsertIndex) {
 				// Update the hash
-				let __goscriptShadow0 = $.uint(hash4($.goSlice($.pointerValue<compressor>(d).window, $.pointerValue<compressor>(d).index, $.pointerValue<compressor>(d).index + minMatchLength)), 32)
-				let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, __goscriptShadow0 & hashMask)
+				let hash = $.uint(hash4($.goSlice($.pointerValue<compressor>(d).window, $.pointerValue<compressor>(d).index, $.pointerValue<compressor>(d).index + minMatchLength)), 32)
+				let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, hash & hashMask)
 				$.pointerValue<compressor>(d).chainHead = $.int($.pointerValue<number>(hh))
 				$.pointerValue<compressor>(d).hashPrev[$.pointerValue<compressor>(d).index & windowMask] = $.uint($.uint($.pointerValue<compressor>(d).chainHead, 32), 32)
 				hh!.value = $.uint($.uint($.pointerValue<compressor>(d).index + $.pointerValue<compressor>(d).hashOffset, 32), 32)
@@ -474,10 +474,10 @@ export class compressor {
 					let index = $.pointerValue<compressor>(d).index
 					for (index++; index < newIndex; index++) {
 						if (index < $.pointerValue<compressor>(d).maxInsertIndex) {
-							let __goscriptShadow1 = $.uint(hash4($.goSlice($.pointerValue<compressor>(d).window, index, index + minMatchLength)), 32)
+							let hash = $.uint(hash4($.goSlice($.pointerValue<compressor>(d).window, index, index + minMatchLength)), 32)
 							// Get previous value with the same hash.
 							// Our chain should point to the previous value.
-							let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, __goscriptShadow1 & hashMask)
+							let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, hash & hashMask)
 							$.pointerValue<compressor>(d).hashPrev[index & windowMask] = $.uint($.pointerValue<number>(hh), 32)
 							// Set the head of the hash chain to us.
 							hh!.value = $.uint($.uint(index + $.pointerValue<compressor>(d).hashOffset, 32), 32)
