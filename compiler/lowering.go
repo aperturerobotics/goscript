@@ -2013,27 +2013,19 @@ func (o *LoweringOwner) lowerGoEmbedValue(
 	typ types.Type,
 	patterns []string,
 ) (string, []Diagnostic) {
+	if isEmbedFSType(typ) {
+		return o.lowerGoEmbedFSValue(ctx, patterns)
+	}
 	if len(patterns) != 1 {
 		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern list")}
 	}
-	pattern := strings.Trim(patterns[0], "`\"")
-	cleanPattern := path.Clean(pattern)
-	if pattern == "" ||
-		strings.Contains(pattern, "*") ||
-		path.IsAbs(pattern) ||
-		cleanPattern == "." ||
-		cleanPattern == ".." ||
-		strings.HasPrefix(cleanPattern, "../") {
-		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
+	cleanPattern, diagnostics := cleanGoEmbedFilePattern(ctx, patterns[0])
+	if len(diagnostics) != 0 {
+		return "", diagnostics
 	}
-	data, err := os.ReadFile(filepath.Join(filepath.Dir(ctx.sourcePath), filepath.FromSlash(cleanPattern)))
-	if err != nil {
-		return "", []Diagnostic{{
-			Severity: DiagnosticSeverityError,
-			Code:     "goscript/lowering:embed",
-			Message:  "failed to read go:embed file",
-			Detail:   ctx.semPkg.pkgPath + ": " + err.Error(),
-		}}
+	data, diagnostics := readGoEmbedFile(ctx, cleanPattern)
+	if len(diagnostics) != 0 {
+		return "", diagnostics
 	}
 	if isStringType(typ) {
 		return strconv.Quote(string(data)), nil
@@ -2041,7 +2033,198 @@ func (o *LoweringOwner) lowerGoEmbedValue(
 	if slice, ok := types.Unalias(typ).Underlying().(*types.Slice); ok && isByteType(slice.Elem()) {
 		return byteSliceLiteral(data), nil
 	}
-	return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed target type")}
+	diag := loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed target type")
+	diag.Detail = "target type: " + types.TypeString(typ, func(pkg *types.Package) string {
+		if pkg == nil {
+			return ""
+		}
+		return pkg.Path()
+	})
+	return "", []Diagnostic{diag}
+}
+
+func (o *LoweringOwner) lowerGoEmbedFSValue(ctx lowerFileContext, patterns []string) (string, []Diagnostic) {
+	embedAlias := ctx.importPaths["embed"]
+	if embedAlias == "" {
+		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed FS import")}
+	}
+	if len(patterns) == 0 {
+		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern list")}
+	}
+
+	filesByPath := make(map[string][]byte)
+	for _, pattern := range patterns {
+		files, diagnostics := expandGoEmbedPattern(ctx, pattern)
+		if len(diagnostics) != 0 {
+			return "", diagnostics
+		}
+		for _, file := range files {
+			filesByPath[file.path] = file.data
+		}
+	}
+	paths := make([]string, 0, len(filesByPath))
+	for path := range filesByPath {
+		paths = append(paths, path)
+	}
+	slices.Sort(paths)
+	entries := make([]string, 0, len(paths))
+	for _, path := range paths {
+		entries = append(entries, "["+strconv.Quote(path)+", "+byteSliceLiteral(filesByPath[path])+"]")
+	}
+	builtinAlias := o.runtimeOwner.BuiltinImport().Alias
+	return builtinAlias + ".markAsStructValue(new " + embedAlias + ".FS(new Map<string, Uint8Array>([" + strings.Join(entries, ", ") + "])))", nil
+}
+
+type goEmbedFile struct {
+	path string
+	data []byte
+}
+
+func cleanGoEmbedFilePattern(ctx lowerFileContext, pattern string) (string, []Diagnostic) {
+	cleanPattern, _, diagnostics := cleanGoEmbedPattern(ctx, pattern)
+	if len(diagnostics) != 0 {
+		return "", diagnostics
+	}
+	if strings.Contains(cleanPattern, "*") {
+		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
+	}
+	info, err := os.Stat(filepath.Join(filepath.Dir(ctx.sourcePath), filepath.FromSlash(cleanPattern)))
+	if err != nil {
+		return "", []Diagnostic{goEmbedReadDiagnostic(ctx, err)}
+	}
+	if info.IsDir() {
+		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed directory target")}
+	}
+	return cleanPattern, nil
+}
+
+func cleanGoEmbedPattern(ctx lowerFileContext, pattern string) (string, bool, []Diagnostic) {
+	pattern = strings.Trim(pattern, "`\"")
+	all := false
+	if strings.HasPrefix(pattern, "all:") {
+		all = true
+		pattern = strings.TrimPrefix(pattern, "all:")
+	}
+	cleanPattern := path.Clean(pattern)
+	if pattern == "" ||
+		path.IsAbs(pattern) ||
+		cleanPattern == "." ||
+		cleanPattern == ".." ||
+		strings.HasPrefix(cleanPattern, "../") {
+		return "", false, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
+	}
+	return cleanPattern, all, nil
+}
+
+func expandGoEmbedPattern(ctx lowerFileContext, pattern string) ([]goEmbedFile, []Diagnostic) {
+	cleanPattern, all, diagnostics := cleanGoEmbedPattern(ctx, pattern)
+	if len(diagnostics) != 0 {
+		return nil, diagnostics
+	}
+	pkgDir := filepath.Dir(ctx.sourcePath)
+	paths := []string{filepath.Join(pkgDir, filepath.FromSlash(cleanPattern))}
+	if strings.Contains(cleanPattern, "*") {
+		matches, err := filepath.Glob(filepath.Join(pkgDir, filepath.FromSlash(cleanPattern)))
+		if err != nil {
+			return nil, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
+		}
+		if len(matches) == 0 {
+			return nil, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "go:embed pattern matched no files")}
+		}
+		paths = matches
+	}
+
+	var files []goEmbedFile
+	for _, path := range paths {
+		collected, diagnostics := collectGoEmbedPath(ctx, pkgDir, path, all)
+		if len(diagnostics) != 0 {
+			return nil, diagnostics
+		}
+		files = append(files, collected...)
+	}
+	slices.SortFunc(files, func(a, b goEmbedFile) int {
+		return cmp.Compare(a.path, b.path)
+	})
+	return files, nil
+}
+
+func collectGoEmbedPath(ctx lowerFileContext, pkgDir, absPath string, all bool) ([]goEmbedFile, []Diagnostic) {
+	info, err := os.Stat(absPath)
+	if err != nil {
+		return nil, []Diagnostic{goEmbedReadDiagnostic(ctx, err)}
+	}
+	if !info.IsDir() {
+		file, diagnostics := readGoEmbedAbsFile(ctx, pkgDir, absPath)
+		if len(diagnostics) != 0 {
+			return nil, diagnostics
+		}
+		return []goEmbedFile{file}, nil
+	}
+
+	var files []goEmbedFile
+	if err := filepath.WalkDir(absPath, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if path != absPath && !all && (strings.HasPrefix(entry.Name(), ".") || strings.HasPrefix(entry.Name(), "_")) {
+			if entry.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		file, diagnostics := readGoEmbedAbsFile(ctx, pkgDir, path)
+		if len(diagnostics) != 0 {
+			return fmt.Errorf("%s", diagnostics[0].Detail)
+		}
+		files = append(files, file)
+		return nil
+	}); err != nil {
+		return nil, []Diagnostic{goEmbedReadDiagnostic(ctx, err)}
+	}
+	if len(files) == 0 {
+		return nil, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "go:embed directory matched no files")}
+	}
+	return files, nil
+}
+
+func readGoEmbedFile(ctx lowerFileContext, cleanPattern string) ([]byte, []Diagnostic) {
+	file, diagnostics := readGoEmbedAbsFile(ctx, filepath.Dir(ctx.sourcePath), filepath.Join(filepath.Dir(ctx.sourcePath), filepath.FromSlash(cleanPattern)))
+	if len(diagnostics) != 0 {
+		return nil, diagnostics
+	}
+	return file.data, nil
+}
+
+func readGoEmbedAbsFile(ctx lowerFileContext, pkgDir, absPath string) (goEmbedFile, []Diagnostic) {
+	relPath, err := filepath.Rel(pkgDir, absPath)
+	if err != nil {
+		return goEmbedFile{}, []Diagnostic{goEmbedReadDiagnostic(ctx, err)}
+	}
+	data, err := os.ReadFile(absPath)
+	if err != nil {
+		return goEmbedFile{}, []Diagnostic{goEmbedReadDiagnostic(ctx, err)}
+	}
+	return goEmbedFile{path: filepath.ToSlash(relPath), data: data}, nil
+}
+
+func goEmbedReadDiagnostic(ctx lowerFileContext, err error) Diagnostic {
+	return Diagnostic{
+		Severity: DiagnosticSeverityError,
+		Code:     "goscript/lowering:embed",
+		Message:  "failed to read go:embed file",
+		Detail:   ctx.semPkg.pkgPath + ": " + err.Error(),
+	}
+}
+
+func isEmbedFSType(typ types.Type) bool {
+	named, _ := types.Unalias(typ).(*types.Named)
+	if named == nil || named.Obj() == nil || named.Obj().Pkg() == nil {
+		return false
+	}
+	return named.Obj().Pkg().Path() == "embed" && named.Obj().Name() == "FS"
 }
 
 func byteSliceLiteral(data []byte) string {
