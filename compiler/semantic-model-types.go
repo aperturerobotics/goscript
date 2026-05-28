@@ -14,6 +14,7 @@ type SemanticModel struct {
 	functions                map[*types.Func]*semanticFunction
 	functionsByFullName      map[string]*semanticFunction
 	functionLookupMisses     map[*types.Func]bool
+	functionFullNames        map[*types.Func]string
 	types                    map[*types.Named]*semanticType
 	values                   map[types.Object]*semanticValue
 	generatedImports         map[string]map[string]bool

@@ -117,6 +117,7 @@ func newSemanticModel() *SemanticModel {
 		functions:                make(map[*types.Func]*semanticFunction),
 		functionsByFullName:      make(map[string]*semanticFunction),
 		functionLookupMisses:     make(map[*types.Func]bool),
+		functionFullNames:        make(map[*types.Func]string),
 		types:                    make(map[*types.Named]*semanticType),
 		values:                   make(map[types.Object]*semanticValue),
 		generatedImports:         make(map[string]map[string]bool),
@@ -561,7 +562,7 @@ func (o *SemanticModelOwner) addFunction(
 			return existing
 		}
 	}
-	if fullName := fn.FullName(); fullName != "" {
+	if fullName := model.functionFullName(fn); fullName != "" {
 		if existing := model.functionsByFullName[fullName]; existing != nil {
 			model.functions[fn] = existing
 			if origin := fn.Origin(); origin != nil {
@@ -589,7 +590,7 @@ func (o *SemanticModelOwner) addFunction(
 	if origin := fn.Origin(); origin != nil {
 		model.functions[origin] = semFn
 	}
-	if fullName := fn.FullName(); fullName != "" {
+	if fullName := model.functionFullName(fn); fullName != "" {
 		if existing := model.functionsByFullName[fullName]; existing == nil {
 			model.functionsByFullName[fullName] = semFn
 		}
@@ -938,7 +939,7 @@ func semanticFunctionFor(model *SemanticModel, fn *types.Func) *semanticFunction
 			return semFn
 		}
 	}
-	if fullName := fn.FullName(); fullName != "" {
+	if fullName := model.functionFullName(fn); fullName != "" {
 		if semFn := model.functionsByFullName[fullName]; semFn != nil {
 			model.functions[fn] = semFn
 			return semFn
@@ -1593,7 +1594,7 @@ func (m *SemanticModel) markInterfaceMethodAsync(fn *types.Func) {
 		return
 	}
 	m.asyncInterfaceMethodObjs[fn] = true
-	key := functionAsyncKey(fn)
+	key := m.functionFullName(fn)
 	if key != "" {
 		m.asyncInterfaceMethods[key] = true
 	}
@@ -1606,7 +1607,7 @@ func (m *SemanticModel) interfaceMethodAsync(fn *types.Func) bool {
 	if m.asyncInterfaceMethodObjs[fn] {
 		return true
 	}
-	key := functionAsyncKey(fn)
+	key := m.functionFullName(fn)
 	return key != "" && m.asyncInterfaceMethods[key]
 }
 
@@ -1669,14 +1670,27 @@ func interfaceMethodMap(iface *types.Interface) map[string]*types.Func {
 	return methods
 }
 
-func functionAsyncKey(fn *types.Func) string {
-	if fn == nil {
+func (m *SemanticModel) functionFullName(fn *types.Func) string {
+	if m == nil || fn == nil {
 		return ""
 	}
+	original := fn
+	if fullName, ok := m.functionFullNames[original]; ok {
+		return fullName
+	}
 	if origin := fn.Origin(); origin != nil && origin != fn {
+		if fullName, ok := m.functionFullNames[origin]; ok {
+			m.functionFullNames[original] = fullName
+			return fullName
+		}
 		fn = origin
 	}
-	return fn.FullName()
+	fullName := fn.FullName()
+	m.functionFullNames[fn] = fullName
+	if original != fn {
+		m.functionFullNames[original] = fullName
+	}
+	return fullName
 }
 
 func implementationMethodSets(concretes []*types.Named) []semanticImplementationMethodSet {
