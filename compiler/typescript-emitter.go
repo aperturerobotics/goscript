@@ -134,6 +134,7 @@ func (o *TypeScriptEmitOwner) EmitToMemory(
 
 func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *loweredFile) string {
 	var b strings.Builder
+	b.Grow(estimateLoweredFileSize(file))
 	if file.sourcePath != "" {
 		b.WriteString("// Generated file based on ")
 		b.WriteString(filepath.Base(file.sourcePath))
@@ -217,6 +218,104 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 		b.WriteString("}\n")
 	}
 	return b.String()
+}
+
+func estimateLoweredFileSize(file *loweredFile) int {
+	if file == nil {
+		return 0
+	}
+	size := 128 + len(file.imports)*96 + len(file.decls)*32
+	for _, imp := range file.imports {
+		size += len(imp.alias) + len(imp.source)
+	}
+	for _, decl := range file.decls {
+		size += len(decl.code)
+		if decl.function != nil {
+			size += estimateLoweredFunctionSize(decl.function)
+		}
+		if decl.structType != nil {
+			size += estimateLoweredStructSize(decl.structType)
+		}
+	}
+	return size
+}
+
+func estimateLoweredStructSize(structType *loweredStruct) int {
+	if structType == nil {
+		return 0
+	}
+	size := 256 + len(structType.name) + len(structType.typeName) + len(structType.fields)*128
+	for _, field := range structType.fields {
+		size += len(field.name) + len(field.runtimeName) + len(field.typ) + len(field.zero) + len(field.runtimeType) +
+			len(field.doc) + len(field.tag)
+	}
+	for idx := range structType.methods {
+		size += estimateLoweredFunctionSize(&structType.methods[idx])
+	}
+	return size
+}
+
+func estimateLoweredFunctionSize(fn *loweredFunction) int {
+	if fn == nil {
+		return 0
+	}
+	size := 192 + len(fn.name) + len(fn.result) + len(fn.receiverAlias) + len(fn.receiverType) + len(fn.receiverValue)
+	for _, typeParam := range fn.typeParams {
+		size += len(typeParam) + 2
+	}
+	for _, param := range fn.params {
+		size += len(param.name) + len(param.typ) + 4
+	}
+	for _, result := range fn.namedResults {
+		size += len(result.name) + len(result.typ) + len(result.zero) + len(result.returnExpr) + 16
+	}
+	size += estimateLoweredStmtsSize(fn.paramBindings)
+	size += estimateLoweredStmtsSize(fn.body)
+	return size
+}
+
+func estimateLoweredStmtsSize(stmts []loweredStmt) int {
+	size := len(stmts) * 24
+	for _, stmt := range stmts {
+		size += len(stmt.text) + len(stmt.leading)*16
+		for _, line := range stmt.leading {
+			size += len(line)
+		}
+		size += estimateLoweredStmtsSize(stmt.children)
+		size += estimateLoweredStmtsSize(stmt.elseBody)
+		if stmt.rangeFunc != nil {
+			size += len(stmt.rangeFunc.value) + len(stmt.rangeFunc.params)*16 + estimateLoweredStmtsSize(stmt.rangeFunc.body)
+		}
+		if stmt.switchStmt != nil {
+			size += len(stmt.switchStmt.value)
+			for _, switchCase := range stmt.switchStmt.cases {
+				size += len(switchCase.values)*16 + estimateLoweredStmtsSize(switchCase.body)
+				for _, value := range switchCase.values {
+					size += len(value)
+				}
+			}
+		}
+		if stmt.selectStmt != nil {
+			size += len(stmt.selectStmt.hasReturn) + len(stmt.selectStmt.value) + len(stmt.selectStmt.result) + len(stmt.selectStmt.resultType)
+			for _, selectCase := range stmt.selectStmt.cases {
+				size += len(selectCase.channel) + len(selectCase.value) + estimateLoweredStmtsSize(selectCase.prelude) +
+					estimateLoweredStmtsSize(selectCase.body)
+			}
+		}
+		if stmt.typeSwitch != nil {
+			size += len(stmt.typeSwitch.value) + len(stmt.typeSwitch.varName) + estimateLoweredStmtsSize(stmt.typeSwitch.defaultBody)
+			for _, switchCase := range stmt.typeSwitch.cases {
+				for _, typ := range switchCase.types {
+					size += len(typ)
+				}
+				for _, typ := range switchCase.tsTypes {
+					size += len(typ)
+				}
+				size += estimateLoweredStmtsSize(switchCase.body)
+			}
+		}
+	}
+	return size
 }
 
 func sortedStructDecls(decls []loweredDecl) []loweredDecl {
