@@ -17,7 +17,7 @@ func compileCommands() []*cli.Command {
 func newCompileCommand() *cli.Command {
 	var config compiler.Config
 	var packages cli.StringSlice
-	var buildFlags cli.StringSlice
+	var buildFlags rawStringSlice
 	var overrideDirs cli.StringSlice
 
 	return &cli.Command{
@@ -25,7 +25,7 @@ func newCompileCommand() *cli.Command {
 		Category: "compile",
 		Usage:    "compile a Go package to TypeScript",
 		Action: func(c *cli.Context) error {
-			config.BuildFlags = slices.Clone(buildFlags.Value())
+			config.BuildFlags = buildFlags.Value()
 			config.OverrideDirs = slices.Clone(overrideDirs.Value())
 			return compilePackage(c.Context, &config, packages.Value())
 		},
@@ -51,12 +51,12 @@ func newCompileCommand() *cli.Command {
 				Value:       "",
 				EnvVars:     []string{"GOSCRIPT_DIR"},
 			},
-			&cli.StringSliceFlag{
-				Name:        "build-flags",
-				Aliases:     []string{"b", "buildflags", "build-flag", "buildflag"},
-				Usage:       "Go build flags (tags) to use during analysis",
-				Destination: &buildFlags,
-				EnvVars:     []string{"GOSCRIPT_BUILD_FLAGS"},
+			&cli.GenericFlag{
+				Name:    "build-flags",
+				Aliases: []string{"b", "buildflags", "build-flag", "buildflag"},
+				Usage:   "Go build flags (tags) to use during analysis",
+				Value:   &buildFlags,
+				EnvVars: []string{"GOSCRIPT_BUILD_FLAGS"},
 			},
 			&cli.StringSliceFlag{
 				Name:        "gs-path",
@@ -82,6 +82,26 @@ func newCompileCommand() *cli.Command {
 			},
 		},
 	}
+}
+
+type rawStringSlice []string
+
+func (s *rawStringSlice) Set(value string) error {
+	if value == "" {
+		return nil
+	}
+	*s = append(*s, value)
+	return nil
+}
+
+func (s *rawStringSlice) String() string {
+	// Keep the flag default empty. The CLI package registers aliases against
+	// the same flag value, and echoing accumulated values here re-parses them.
+	return ""
+}
+
+func (s *rawStringSlice) Value() []string {
+	return slices.Clone(*s)
 }
 
 // compilePackage tries to compile the package.

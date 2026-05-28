@@ -1,7 +1,5 @@
 package compiler
 
-import "slices"
-
 import "strings"
 
 const goScriptBuildTag = "goscript"
@@ -25,14 +23,14 @@ func appendBuildTag(value string, tag string) string {
 	tags := strings.FieldsFunc(value, func(r rune) bool {
 		return r == ',' || r == ' ' || r == '\t' || r == '\n'
 	})
-	if slices.Contains(tags, tag) {
-		return value
+	for _, existing := range tags {
+		if existing == tag {
+			return strings.Join(tags, " ")
+		}
 	}
-	if strings.TrimSpace(value) == "" {
-		return tag
+	tags = append(tags, tag)
+	if len(tags) == 0 {
+		return ""
 	}
-	if strings.ContainsAny(value, " \t\n") {
-		return value + " " + tag
-	}
-	return value + "," + tag
+	return strings.Join(tags, " ")
 }
