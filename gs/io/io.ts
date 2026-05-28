@@ -655,7 +655,15 @@ export async function ReadAll(r: Reader): Promise<[$.Bytes, $.GoError]> {
 }
 
 // NopCloser returns a ReadCloser with a no-op Close method wrapping the provided Reader r
-export function NopCloser(r: Reader): ReadCloser {
+export function NopCloser(r: Reader | null): ReadCloser {
+  if (r == null) {
+    return {
+      Read: () => {
+        throw new Error('nil Reader')
+      },
+      Close: () => null,
+    }
+  }
   return {
     Read: r.Read.bind(r),
     Close: () => null,

@@ -1,5 +1,5 @@
 import * as $ from '@goscript/builtin/index.js'
-import { LimitedReader, MultiWriter, Pipe, TeeReader } from './index.js'
+import { LimitedReader, MultiWriter, NopCloser, Pipe, TeeReader } from './index.js'
 import { describe, expect, test } from 'vitest'
 
 class sliceReader {
@@ -47,6 +47,18 @@ describe('io override', () => {
     expect(err).toBeNull()
     expect(n).toBe(3)
     expect(Buffer.from(writer.chunks).toString('utf8')).toBe('abc')
+  })
+
+  test('NopCloser accepts nullable generated interface values', () => {
+    const reader: sliceReader | null = new sliceReader($.stringToBytes('abc'))
+    const body = NopCloser(reader)
+    const buf = new Uint8Array(4)
+
+    const [n, err] = body.Read(buf)
+
+    expect(err).toBeNull()
+    expect(n).toBe(3)
+    expect(body.Close()).toBeNull()
   })
 
   test('TeeReader awaits async readers and writers', async () => {

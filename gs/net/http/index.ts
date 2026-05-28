@@ -259,7 +259,7 @@ export interface ResponseWriter {
 export class Request {
   public Method: string
   public URL: any
-  public Body: io.Reader | null
+  public Body: io.ReadCloser | null
   public Header: Header
   public ContentLength: number
   public RequestURI: string
@@ -313,12 +313,16 @@ export class Response {
   public StatusCode: number
   public Body: io.ReadCloser | null
   public Header: Header
+  public ContentLength: number
+  public Request: Request | $.VarRef<Request> | null
 
   constructor(init?: Partial<Response>) {
     this.Status = init?.Status ?? ''
     this.StatusCode = init?.StatusCode ?? 0
     this.Body = init?.Body ?? null
     this.Header = init?.Header ?? new Header()
+    this.ContentLength = init?.ContentLength ?? 0
+    this.Request = init?.Request ?? null
     if (this.Status === '' && this.StatusCode !== 0) {
       const text = StatusText(this.StatusCode)
       this.Status = text === '' ? String(this.StatusCode) : `${this.StatusCode} ${text}`
@@ -331,6 +335,8 @@ export class Response {
       Header: this.Header,
       Status: this.Status,
       StatusCode: this.StatusCode,
+      ContentLength: this.ContentLength,
+      Request: this.Request,
     })
   }
 }
@@ -573,9 +579,20 @@ export function NewRequestWithContext(
     method = MethodGet
   }
   const parsedURL = parseRequestURL(url)
-  return [new Request({ Method: method, URL: parsedURL, Body: body, RequestURI: parsedURL.Path, ctx: _ctx }), null]
+  return [new Request({ Method: method, URL: parsedURL, Body: readCloserForBody(body), RequestURI: parsedURL.Path, ctx: _ctx }), null]
 }
 
 export function Get(_url: string): [Response | null, $.GoError] {
   return [null, errors.New('net/http: Get is not implemented in GoScript')]
+}
+
+function readCloserForBody(body: io.Reader | null): io.ReadCloser | null {
+  if (body == null) {
+    return null
+  }
+  const closer = body as io.Reader & Partial<io.Closer>
+  if (typeof closer.Close === 'function') {
+    return closer as io.ReadCloser
+  }
+  return io.NopCloser(body)
 }

@@ -72,6 +72,22 @@ describe('net/http override', () => {
     expect(err?.Error()).toBe('net/http: Client.Do is not implemented in GoScript')
   })
 
+  it('wraps request body readers and keeps response metadata', () => {
+    const reader = {
+      Read: (p: Uint8Array) => [p.length, null] as [number, null],
+    }
+
+    const [req, reqErr] = NewRequest(MethodPost, 'https://example.invalid/upload', reader)
+
+    expect(reqErr).toBeNull()
+    expect(req!.Body).not.toBeNull()
+    expect(req!.Body!.Close()).toBeNull()
+
+    const resp = new Response({ StatusCode: StatusCreated, ContentLength: -1, Request: varRef(req!) })
+    expect(resp.ContentLength).toBe(-1)
+    expect((resp.Request as any).value).toBe(req)
+  })
+
   it('exports the default transport surface', async () => {
     const [req] = NewRequest(MethodPost, 'https://example.invalid', null)
 
