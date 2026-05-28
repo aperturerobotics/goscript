@@ -1,4 +1,8 @@
 {
+  "asyncMethods": {
+    "File.ReadFrom": true,
+    "File.WriteTo": true
+  },
   "dependencies": [
     "errors",
     "internal/byteorder",

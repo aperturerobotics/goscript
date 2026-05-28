@@ -286,4 +286,56 @@ describe('os stdio', () => {
     expect(readSync).toHaveBeenCalledTimes(1)
     expect(writeSync).toHaveBeenCalledTimes(1)
   })
+
+  it('copies from File without recursing through io.Copy', async () => {
+    const readSync = vi
+      .fn<(buffer: Uint8Array) => number>()
+      .mockImplementationOnce((buffer) => {
+        buffer.set([65, 66, 67], 0)
+        return 3
+      })
+      .mockImplementationOnce(() => 0)
+
+    const file = createHostFile('descriptor-file', 7, { readSync })
+    const chunks: number[] = []
+    const writer = {
+      Write(p: Uint8Array): [number, null] {
+        chunks.push(...Array.from(p))
+        return [p.length, null]
+      },
+    }
+
+    const [n, err] = await io.Copy(writer, file)
+
+    expect(err).toBeNull()
+    expect(n).toBe(3)
+    expect(Buffer.from(chunks).toString('utf8')).toBe('ABC')
+  })
+
+  it('copies into File without recursing through io.Copy', async () => {
+    const writes: number[] = []
+    const writeSync = vi.fn((buffer: Uint8Array) => {
+      writes.push(...Array.from(buffer))
+      return buffer.length
+    })
+
+    let sent = false
+    const reader = {
+      Read(p: Uint8Array): [number, typeof io.EOF | null] {
+        if (sent) {
+          return [0, io.EOF]
+        }
+        sent = true
+        p.set([88, 89, 90], 0)
+        return [3, null]
+      },
+    }
+    const file = createHostFile('descriptor-file', 7, { writeSync })
+
+    const [n, err] = await io.Copy(file, reader)
+
+    expect(err).toBeNull()
+    expect(n).toBe(3)
+    expect(Buffer.from(writes).toString('utf8')).toBe('XYZ')
+  })
 })

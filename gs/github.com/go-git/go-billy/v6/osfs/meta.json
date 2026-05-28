@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "io/fs",
+    "os",
+    "path/filepath"
+  ],
+  "asyncMethods": {}
+}

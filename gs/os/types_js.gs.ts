@@ -478,11 +478,34 @@ export class File {
 		return [0, ErrUnimplemented]
 	}
 
-	public ReadFrom(r: io.Reader): [number, $.GoError] {
+	public async ReadFrom(r: io.Reader): Promise<[number, $.GoError]> {
 		if (this.closed) {
 			return [0, ErrClosed]
 		}
-		return io.Copy(this, r) as any
+		const buf = $.makeSlice<number>(32 * 1024, undefined, "byte")
+		let written = 0
+		while (true) {
+			const [nr, er] = await (r.Read(buf) as any)
+			if (nr > 0) {
+				const [nw, ew] = this.Write($.goSlice(buf, 0, nr))
+				if (nw < 0 || nr < nw) {
+					return [written, ew ?? io.ErrShortWrite]
+				}
+				written += nw
+				if (ew !== null) {
+					return [written, ew]
+				}
+				if (nr !== nw) {
+					return [written, io.ErrShortWrite]
+				}
+			}
+			if (er !== null) {
+				if (er === io.EOF) {
+					return [written, null]
+				}
+				return [written, er]
+			}
+		}
 	}
 
 	public Write(b: $.Bytes): [number, $.GoError] {
@@ -536,11 +559,34 @@ export class File {
 		return [0, ErrUnimplemented]
 	}
 
-	public WriteTo(w: io.Writer): [number, $.GoError] {
+	public async WriteTo(w: io.Writer): Promise<[number, $.GoError]> {
 		if (this.closed) {
 			return [0, ErrClosed]
 		}
-		return io.Copy(w, this) as any
+		const buf = $.makeSlice<number>(32 * 1024, undefined, "byte")
+		let written = 0
+		while (true) {
+			const [nr, er] = this.Read(buf)
+			if (nr > 0) {
+				const [nw, ew] = await (w.Write($.goSlice(buf, 0, nr)) as any)
+				if (nw < 0 || nr < nw) {
+					return [written, ew ?? io.ErrShortWrite]
+				}
+				written += nw
+				if (ew !== null) {
+					return [written, ew]
+				}
+				if (nr !== nw) {
+					return [written, io.ErrShortWrite]
+				}
+			}
+			if (er !== null) {
+				if (er === io.EOF) {
+					return [written, null]
+				}
+				return [written, er]
+			}
+		}
 	}
 
 	public Seek(offset: number, whence: number): [number, $.GoError] {
