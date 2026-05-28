@@ -1275,7 +1275,7 @@ func (o *SemanticModelOwner) resolveAnonymousInterfaceImplementationGraph(
 			}
 			implementationGraph = append(implementationGraph, semanticAnonymousInterfaceImplementation{
 				ifaceMethods: ifaceMethods,
-				implMethods:  implementationMethodMap(methodSet.methods, ifaceMethods),
+				implMethods:  methodSet.methods,
 			})
 		}
 	}
@@ -1566,15 +1566,16 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 			iface:   graphEntry.iface,
 			pointer: graphEntry.pointer,
 		}
-		for methodName, implMethod := range graphEntry.implMethods {
+		for methodName, ifaceMethod := range graphEntry.ifaceMethods {
+			implMethod := graphEntry.implMethods[methodName]
 			implFn := semanticFunctionFor(model, implMethod)
 			if implFn != nil && implFn.async {
 				if implementation.asyncMethods == nil {
 					implementation.asyncMethods = make(map[string]bool)
 				}
 				implementation.asyncMethods[methodName] = true
-				model.markInterfaceMethodAsync(graphEntry.ifaceMethods[methodName])
-				if ifaceFn := semanticFunctionFor(model, graphEntry.ifaceMethods[methodName]); ifaceFn != nil {
+				model.markInterfaceMethodAsync(ifaceMethod)
+				if ifaceFn := semanticFunctionFor(model, ifaceMethod); ifaceFn != nil {
 					markFunctionAsync(ifaceFn, "interface-implementation")
 				}
 			}
@@ -1599,9 +1600,10 @@ func (o *SemanticModelOwner) applyAnonymousInterfaceAsyncMethods(
 		if err := ctx.Err(); err != nil {
 			return []Diagnostic{contextCanceledDiagnostic(err)}
 		}
-		for methodName, implMethod := range graphEntry.implMethods {
+		for methodName, ifaceMethod := range graphEntry.ifaceMethods {
+			implMethod := graphEntry.implMethods[methodName]
 			if model.functionAsync(implMethod) {
-				model.markInterfaceMethodAsync(graphEntry.ifaceMethods[methodName])
+				model.markInterfaceMethodAsync(ifaceMethod)
 			}
 		}
 	}
@@ -1680,7 +1682,7 @@ func (o *SemanticModelOwner) interfaceImplementationGraphEntry(
 		iface:        ifaceNamed,
 		pointer:      methodSet.pointer,
 		ifaceMethods: ifaceMethods,
-		implMethods:  implementationMethodMap(methodSet.methods, ifaceMethods),
+		implMethods:  methodSet.methods,
 	}
 	return implementation, true
 }
@@ -1769,17 +1771,6 @@ func implementationHasMethods(
 		}
 	}
 	return true
-}
-
-func implementationMethodMap(
-	receiverMethods map[string]*types.Func,
-	ifaceMethods map[string]*types.Func,
-) map[string]*types.Func {
-	methods := make(map[string]*types.Func, len(ifaceMethods))
-	for methodName := range ifaceMethods {
-		methods[methodName] = receiverMethods[methodName]
-	}
-	return methods
 }
 
 func typeParamTypes(params *types.TypeParamList) []types.Type {
