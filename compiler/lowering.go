@@ -8888,6 +8888,9 @@ func (o *LoweringOwner) lowerArrayCompositeLit(
 	lit *ast.CompositeLit,
 	array *types.Array,
 ) (string, []Diagnostic) {
+	if len(lit.Elts) == 0 && isByteType(array.Elem()) {
+		return "new Uint8Array(" + strconv.FormatInt(array.Len(), 10) + ")", nil
+	}
 	values := make([]string, int(array.Len()))
 	for idx := range values {
 		values[idx] = o.lowerZeroValueExprFor(ctx, array.Elem())

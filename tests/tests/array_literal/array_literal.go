@@ -12,4 +12,8 @@ func main() {
 	// Test array literal with specific element initialization
 	c := [5]int{1: 10, 3: 30}
 	println(c[0], c[1], c[2], c[3], c[4])
+
+	// Test empty byte array literal
+	d := [4]byte{}
+	println(len(d), d[0], d[3])
 }

@@ -15,6 +15,10 @@ export async function main(): globalThis.Promise<void> {
 	// Test array literal with specific element initialization
 	let c = [0, 10, 0, 30, 0]
 	$.println(c[0], c[1], c[2], c[3], c[4])
+
+	// Test empty byte array literal
+	let d = new Uint8Array(4)
+	$.println($.len(d), $.uint(d[0], 8), $.uint(d[3], 8))
 }
 
 if ($.isMainScript(import.meta)) {
