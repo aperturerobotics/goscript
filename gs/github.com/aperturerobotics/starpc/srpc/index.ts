@@ -395,6 +395,84 @@ class memoryStream implements Stream {
   }
 }
 
+class streamQueue {
+  private queue: (Message | null)[] = []
+  private waiters: ((msg: Message | null, err: $.GoError) => void)[] = []
+  private closed = false
+
+  public send(msg: Message | null): $.GoError {
+    if (this.closed) {
+      return ErrCompleted
+    }
+    const waiter = this.waiters.shift()
+    if (waiter != null) {
+      waiter(msg, null)
+      return null
+    }
+    this.queue.push(msg)
+    return null
+  }
+
+  public recv(msg: Message | null): MaybePromise<$.GoError> {
+    const next = this.queue.shift()
+    if (next !== undefined) {
+      if (msg != null && next != null) {
+        Object.assign(msg, next)
+      }
+      return null
+    }
+    if (this.closed) {
+      return io.EOF
+    }
+    return new Promise<$.GoError>((resolve) => {
+      this.waiters.push((sent, err) => {
+        if (msg != null && sent != null) {
+          Object.assign(msg, sent)
+        }
+        resolve(err)
+      })
+    })
+  }
+
+  public close(): $.GoError {
+    this.closed = true
+    for (const waiter of this.waiters.splice(0)) {
+      waiter(null, io.EOF)
+    }
+    return null
+  }
+}
+
+class pairedMemoryStream implements Stream {
+  constructor(
+    private ctx: context.Context,
+    private incoming: streamQueue,
+    private outgoing: streamQueue,
+  ) {}
+
+  public Context(): context.Context {
+    return this.ctx
+  }
+
+  public MsgSend(msg: Message | null): $.GoError {
+    return this.outgoing.send(msg)
+  }
+
+  public MsgRecv(msg: Message | null): MaybePromise<$.GoError> {
+    return this.incoming.recv(msg)
+  }
+
+  public CloseSend(): $.GoError {
+    return this.outgoing.close()
+  }
+
+  public Close(): $.GoError {
+    const incomingErr = this.incoming.close()
+    const outgoingErr = this.outgoing.close()
+    return incomingErr ?? outgoingErr
+  }
+}
+
 class streamWithClose implements Stream {
   constructor(
     private stream: Stream,
@@ -738,7 +816,7 @@ class transportClient implements Client {
     if (output != null) {
       output.Reset()
     }
-    return await writer?.Close() ?? null
+    return (await writer?.Close()) ?? null
   }
 
   public async NewStream(
@@ -792,7 +870,9 @@ export function NewClient(openStream: OpenStreamFunc | null): Client {
 class invokerClient implements Client {
   constructor(
     private invoker: Invoker | null,
-    private contextFn: ((ctx: context.Context) => context.Context) | null = null,
+    private contextFn:
+      | ((ctx: context.Context) => context.Context)
+      | null = null,
   ) {}
 
   public async ExecCall(
@@ -833,19 +913,36 @@ class invokerClient implements Client {
     if (this.invoker == null) {
       return [null, ErrNoAvailableClients]
     }
-    const stream = new memoryStream(
-      this.contextFn == null ? ctx : this.contextFn(ctx),
-      firstMsg,
+    const streamCtx = this.contextFn == null ? ctx : this.contextFn(ctx)
+    const clientInput = new streamQueue()
+    const serverInput = new streamQueue()
+    const clientStream = new pairedMemoryStream(
+      streamCtx,
+      clientInput,
+      serverInput,
     )
+    const serverStream = new pairedMemoryStream(
+      streamCtx,
+      serverInput,
+      clientInput,
+    )
+    if (firstMsg != null) {
+      const err = serverInput.send(firstMsg)
+      if (err != null) {
+        return [null, err]
+      }
+    }
     const pending = Promise.resolve(
-      this.invoker.InvokeMethod(service, method, stream),
+      this.invoker.InvokeMethod(service, method, serverStream),
     )
     pending.then(([handled, err]) => {
       if (!handled || err != null) {
-        stream.Close()
+        clientStream.Close()
+        return
       }
+      serverStream.CloseSend()
     })
-    return [stream, null]
+    return [clientStream, null]
   }
 }
 
@@ -936,7 +1033,9 @@ export class ServerRPC {
       stream,
     )
     const callErr = err ?? (handled ? null : ErrUnimplemented)
-    await this.writer?.WritePacket(NewCallDataPacket(null, false, true, callErr))
+    await this.writer?.WritePacket(
+      NewCallDataPacket(null, false, true, callErr),
+    )
     return callErr
   }
 
@@ -995,8 +1094,10 @@ export function NewServerPipe(server: Server | null): OpenStreamFunc {
     _ctx: context.Context,
     _msgHandler: PacketDataHandler,
     _closeHandler: CloseHandler,
-  ): [PacketWriter | null, $.GoError] => [new closedPacketWriter(), null]) as
-    OpenStreamFunc
+  ): [PacketWriter | null, $.GoError] => [
+    new closedPacketWriter(),
+    null,
+  ]) as OpenStreamFunc
   if (server != null) {
     openStream.__server = server
   }

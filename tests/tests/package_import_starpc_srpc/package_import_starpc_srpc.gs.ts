@@ -5,12 +5,13 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as context from "@goscript/context/index.js"
 
+import * as io from "@goscript/io/index.js"
+
 import * as srpc from "@goscript/github.com/aperturerobotics/starpc/srpc/index.js"
 
 import type * as protobuf_go_lite from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
-
-import type * as io from "@goscript/io/index.js"
 import "@goscript/context/index.js"
+import "@goscript/io/index.js"
 import "@goscript/github.com/aperturerobotics/starpc/srpc/index.js"
 
 export class handler {
@@ -30,14 +31,29 @@ export class handler {
 	}
 
 	public GetMethodIDs(): $.Slice<string> {
-		return $.arrayToSlice<string>(["method"])
+		return $.arrayToSlice<string>(["method", "stream"])
 	}
 
 	public GetServiceID(): string {
 		return "svc"
 	}
 
-	public InvokeMethod(serviceID: string, methodID: string, strm: srpc.Stream | null): [boolean, $.GoError] {
+	public async InvokeMethod(serviceID: string, methodID: string, strm: srpc.Stream | null): globalThis.Promise<[boolean, $.GoError]> {
+		if ($.stringEqual(methodID, "stream")) {
+			let total = 0
+			while (true) {
+				let msg: srpc.RawMessage | $.VarRef<srpc.RawMessage> | null = srpc.NewRawMessage(null, false)
+				let err = await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgRecv($.pointerValueOrNil($.interfaceValue<srpc.Message>(msg, "*srpc.RawMessage"))!)
+				if ($.comparableEqual(err, io.EOF)) {
+					break
+				}
+				if (err != null) {
+					return [true, err]
+				}
+				total = total + ($.len(srpc.RawMessage.prototype.GetData.call($.pointerValue<srpc.RawMessage>(msg))))
+			}
+			return [true, await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.pointerValueOrNil($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint($.uint(total, 8), 8)]), false), "*srpc.RawMessage"))!)]
+		}
 		return [true, null]
 	}
 
@@ -128,6 +144,30 @@ export async function main(): globalThis.Promise<void> {
 		$.println("exec error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
+	let __goscriptTuple0: any = await $.pointerValue<Exclude<srpc.Client, null>>(client).NewStream($.pointerValueOrNil(context.Background())!, "svc", "stream", null)
+	let strm = __goscriptTuple0[0]
+	err = __goscriptTuple0[1]
+	if (err != null) {
+		$.println("stream open error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
+		return
+	}
+	await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.pointerValueOrNil($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]), false), "*srpc.RawMessage"))!)
+	await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.pointerValueOrNil($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint(4, 8), $.uint(5, 8)]), false), "*srpc.RawMessage"))!)
+	await $.pointerValue<Exclude<srpc.Stream, null>>(strm).CloseSend()
+	let resp: srpc.RawMessage | $.VarRef<srpc.RawMessage> | null = srpc.NewRawMessage(null, false)
+	{
+		let __goscriptShadow0 = await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgRecv($.pointerValueOrNil($.interfaceValue<srpc.Message>(resp, "*srpc.RawMessage"))!)
+		if (__goscriptShadow0 != null) {
+			$.println("stream recv error:", $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow0).Error())
+			return
+		}
+	}
+	let data: $.Slice<number> = srpc.RawMessage.prototype.GetData.call($.pointerValue<srpc.RawMessage>(resp))
+	if ($.len(data) != 1) {
+		$.println("stream response length:", $.len(data))
+		return
+	}
+	$.println("stream bytes:", $.uint(data![0], 8))
 	let prw: srpc.PacketReadWriter | $.VarRef<srpc.PacketReadWriter> | null = srpc.NewPacketReadWriter(null)
 	srpc.PacketReadWriter.prototype.ReadPump.call($.pointerValue<srpc.PacketReadWriter>(prw), (null as srpc.PacketDataHandler), (null as srpc.CloseHandler))
 	srpc.PacketReadWriter.prototype.ReadToHandler.call($.pointerValue<srpc.PacketReadWriter>(prw), (null as srpc.PacketDataHandler))
