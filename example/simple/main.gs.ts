@@ -3,248 +3,311 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export class MyStruct {
-	// MyInt is a public integer field, initialized to zero.
-	public get MyInt(): number {
-		return this._fields.MyInt.value
+export type Score = number
+
+export type Describer = {
+	Describe(): string
+}
+
+$.registerInterfaceType(
+	"main.Describer",
+	null,
+	[{ name: "Describe", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+)
+
+export type Ordered = any
+
+$.registerInterfaceType(
+	"main.Ordered",
+	null,
+	[]
+)
+
+export type Set = Map<any, {}> | null
+
+export class User {
+	public get Name(): string {
+		return this._fields.Name.value
 	}
-	public set MyInt(value: number) {
-		this._fields.MyInt.value = value
+	public set Name(value: string) {
+		this._fields.Name.value = value
 	}
 
-	// MyString is a public string field, initialized to empty string.
-	public get MyString(): string {
-		return this._fields.MyString.value
+	public get Points(): Score {
+		return this._fields.Points.value
 	}
-	public set MyString(value: string) {
-		this._fields.MyString.value = value
+	public set Points(value: Score) {
+		this._fields.Points.value = value
 	}
 
-	// myBool is a private boolean field, initialized to false.
-	public get myBool(): boolean {
-		return this._fields.myBool.value
+	public get Tags(): $.Slice<string> {
+		return this._fields.Tags.value
 	}
-	public set myBool(value: boolean) {
-		this._fields.myBool.value = value
+	public set Tags(value: $.Slice<string>) {
+		this._fields.Tags.value = value
 	}
 
 	public _fields: {
-		MyInt: $.VarRef<number>
-		MyString: $.VarRef<string>
-		myBool: $.VarRef<boolean>
+		Name: $.VarRef<string>
+		Points: $.VarRef<Score>
+		Tags: $.VarRef<$.Slice<string>>
 	}
 
-	constructor(init?: Partial<{MyInt?: number, MyString?: string, myBool?: boolean}>) {
+	constructor(init?: Partial<{Name?: string, Points?: Score, Tags?: $.Slice<string>}>) {
 		this._fields = {
-			MyInt: $.varRef(init?.MyInt ?? 0),
-			MyString: $.varRef(init?.MyString ?? ""),
-			myBool: $.varRef(init?.myBool ?? false)
+			Name: $.varRef(init?.Name ?? ""),
+			Points: $.varRef(init?.Points ?? 0),
+			Tags: $.varRef(init?.Tags ?? null)
 		}
 	}
 
-	public clone(): MyStruct {
-		const cloned = new MyStruct()
+	public clone(): User {
+		const cloned = new User()
 		cloned._fields = {
-			MyInt: $.varRef(this._fields.MyInt.value),
-			MyString: $.varRef(this._fields.MyString.value),
-			myBool: $.varRef(this._fields.myBool.value)
+			Name: $.varRef(this._fields.Name.value),
+			Points: $.varRef(this._fields.Points.value),
+			Tags: $.varRef(this._fields.Tags.value)
 		}
 		return $.markAsStructValue(cloned)
 	}
 
-	public GetMyBool(): boolean {
-		const m = this
-		return $.pointerValue(m).myBool
+	public AddPoints(points: Score): void {
+		let u: User | $.VarRef<User> | null = this
+		$.pointerValue<User>(u).Points = $.pointerValue<User>(u).Points + (points)
 	}
 
-	public GetMyString(): string {
-		const m = this
-		return $.pointerValue(m).MyString
+	public Clone(): User {
+		const u = this
+		return $.markAsStructValue(new User({Name: u.Name, Points: u.Points, Tags: $.append($.arrayToSlice<string>([]), ...(u.Tags ?? []))}))
+	}
+
+	public Describe(): string {
+		const u = this
+		return u.Name
 	}
 
 	static __typeInfo = $.registerStructType(
-		"main.MyStruct",
-		new MyStruct(),
-		[{ name: "GetMyBool", args: [], returns: [] }, { name: "GetMyString", args: [], returns: [] }],
-		MyStruct,
-		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }, "myBool": { kind: $.TypeKind.Basic, name: "bool" }}
+		"main.User",
+		() => new User(),
+		[{ name: "AddPoints", args: [], returns: [] }, { name: "Clone", args: [], returns: [] }, { name: "Describe", args: [], returns: [] }],
+		User,
+		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Points": { kind: $.TypeKind.Basic, name: "int", typeName: "main.Score" }, "Tags": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }}
 	)
 }
 
-export function NewMyStruct(s: string): MyStruct {
-	return $.markAsStructValue(new MyStruct({MyString: s}))
-}
-
-export function vals(): [number, number] {
-	return [1, 2]
-}
-
-export async function main(): Promise<void> {
-	$.println("Hello from GoScript example!")
-
-	// Basic arithmetic
-	let a = 10
-	let b = 3
-	$.println("Addition:", a + b, "Subtraction:", a - b, "Multiplication:", a * b, "Division:", a / b, "Modulo:", a % b)
-
-	// Boolean logic and comparisons
-	$.println("Logic &&:", true && false, "||:", true || false, "!:!", !true)
-	$.println("Comparisons:", a == b, a != b, a < b, a > b, a <= b, a >= b)
-
-	// string(rune) conversion
-	let r: number = 88
-	let s = String.fromCodePoint(r)
-	$.println("string('X'):", s)
-
-	let r2: number = 121
-	let s2 = String.fromCodePoint(r2)
-	$.println("string(121):", s2)
-
-	let r3: number = 0x221A
-	let s3 = String.fromCodePoint(r3)
-	$.println("string(0x221A):", s3)
-
-	// Arrays
-	let arr = [1, 2, 3]
-	$.println("Array elements:", arr[0], arr[1], arr[2])
-
-	// Slices - Basic initialization and access
-	let slice = $.arrayToSlice<number>([4, 5, 6])
-	$.println("Slice elements:", slice![0], slice![1], slice![2])
-	$.println("Slice length:", $.len(slice), "capacity:", $.cap(slice))
-
-	let sliceWithCap = $.makeSlice<number>(3, 5, "number")
-	$.println("\nSlice created with make([]int, 3, 5):")
-	$.println("Length:", $.len(sliceWithCap), "Capacity:", $.cap(sliceWithCap))
-
-	$.println("\nAppend and capacity growth:")
-	let growingSlice = $.makeSlice<number>(0, 2, "number")
-	$.println("Initial - Length:", $.len(growingSlice), "Capacity:", $.cap(growingSlice))
-
-	for (let i = 1; i <= 4; i++) {
-		growingSlice = $.append(growingSlice, i)
-		$.println("After append", i, "- Length:", $.len(growingSlice), "Capacity:", $.cap(growingSlice))
+export class Pair {
+	public get First(): any {
+		return this._fields.First.value
+	}
+	public set First(value: any) {
+		this._fields.First.value = value
 	}
 
-	$.println("\nSlicing operations and shared backing arrays:")
-	let original = $.arrayToSlice<number>([10, 20, 30, 40, 50])
-	$.println("Original slice - Length:", $.len(original), "Capacity:", $.cap(original))
+	public get Second(): any {
+		return this._fields.Second.value
+	}
+	public set Second(value: any) {
+		this._fields.Second.value = value
+	}
 
-	let slice1 = $.goSlice(original, 1, 3)
-	$.println("slice1 := original[1:3] - Values:", slice1![0], slice1![1])
-	$.println("slice1 - Length:", $.len(slice1), "Capacity:", $.cap(slice1))
+	public _fields: {
+		First: $.VarRef<any>
+		Second: $.VarRef<any>
+	}
 
-	let slice2 = $.goSlice(original, 1, 3, 4)
-	$.println("slice2 := original[1:3:4] - Values:", slice2![0], slice2![1])
-	$.println("slice2 - Length:", $.len(slice2), "Capacity:", $.cap(slice2))
+	constructor(init?: Partial<{First?: any, Second?: any}>) {
+		this._fields = {
+			First: $.varRef(init?.First ?? null),
+			Second: $.varRef(init?.Second ?? null)
+		}
+	}
 
-	$.println("\nShared backing arrays:")
-	slice1![0] = 999
-	$.println("After slice1[0] = 999:")
-	$.println("original[1]:", original![1], "slice1[0]:", slice1![0], "slice2[0]:", slice2![0])
+	public clone(): Pair {
+		const cloned = new Pair()
+		cloned._fields = {
+			First: $.varRef(this._fields.First.value),
+			Second: $.varRef(this._fields.Second.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
 
+	static __typeInfo = $.registerStructType(
+		"main.Pair",
+		() => new Pair(),
+		[],
+		Pair,
+		{"First": { kind: $.TypeKind.Interface, methods: [] }, "Second": { kind: $.TypeKind.Interface, methods: [] }}
+	)
+}
+
+export function NewUser(name: string, points: Score, tags: $.Slice<string>): User {
+	return $.markAsStructValue(new User({Name: name, Points: points, Tags: $.append($.arrayToSlice<string>([]), ...(tags ?? []))}))
+}
+
+export function Min(__typeArgs: $.GenericTypeArgs | undefined, a: any, b: any): any {
+	if ((b as any) < (a as any)) {
+		return b
+	}
+	return a
+}
+
+export function NewSet<T>(__typeArgs: $.GenericTypeArgs | undefined, values: $.Slice<T>): Set {
+	let _set: Set = $.makeMap<any, {}>()
+	for (let __goscriptRangeTarget0 = values, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+		let value = __goscriptRangeTarget0![__rangeIndex]
+		$.mapSet(_set, value, {})
+	}
+	return _set
+}
+
+export function Set_Add(s: Set, value: any): void {
+	$.mapSet(s, value, {})
+}
+
+export function Set_Has(s: Set, value: any): boolean {
+	let [, ok] = $.mapGet(s, value, {})
+	return ok
+}
+
+export function Swap(__typeArgs: $.GenericTypeArgs | undefined, pair: Pair): Pair {
+	return $.markAsStructValue(new Pair({First: pair.Second, Second: pair.First}))
+}
+
+export async function Filter<T>(__typeArgs: $.GenericTypeArgs | undefined, items: $.Slice<T>, keep: ((_p0: any) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<$.Slice<T>> {
+	let filtered: $.Slice<T> = $.makeSlice<T>(0, $.len(items))
+	for (let __goscriptRangeTarget1 = items, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
+		let item = __goscriptRangeTarget1![__rangeIndex]
+		if (await keep!(item)) {
+			filtered = $.append(filtered, item)
+		}
+	}
+	return filtered
+}
+
+export function SumValues(__typeArgs: $.GenericTypeArgs | undefined, values: Map<any, number> | null): number {
 	let sum = 0
-	for (let idx = 0; idx < $.len(slice); idx++) {
-		let val = slice![idx]
-		sum += val
-		$.println("Range idx:", idx, "val:", val)
+	for (const [__rangeKey, value] of values?.entries() ?? []) {
+		sum = sum + (value)
 	}
-	$.println("Range sum:", sum)
+	return sum
+}
 
-	// Basic for loop
-	let prod = 1
-	for (let i = 1; i <= 3; i++) {
-		prod *= i
+export function Classify(value: any): string {
+	{
+		const __goscriptTypeSwitchValue = value
+		switch (true) {
+			case $.typeAssert<User>(__goscriptTypeSwitchValue, "main.User").ok:
+				{
+					let v: User = $.typeAssert<User>(__goscriptTypeSwitchValue, "main.User").value
+					return v.Name
+				}
+				break
+			case $.typeAssert<User | $.VarRef<User> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.User" }).ok:
+				{
+					let v: User | $.VarRef<User> | null = $.typeAssert<User | $.VarRef<User> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "main.User" }).value
+					return $.pointerValue<User>(v).Name
+				}
+				break
+			case $.typeAssert<string>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).ok:
+				{
+					let v: string = $.typeAssert<string>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "string" }).value
+					return v
+				}
+				break
+			default:
+				{
+					let v: any = __goscriptTypeSwitchValue
+					return "unknown"
+				}
+				break
+		}
 	}
-	$.println("Product via for:", prod)
+	throw new globalThis.Error("goscript: unreachable return")
+}
 
-	// Struct, pointers, copy independence
-	let instance = $.varRef($.markAsStructValue(NewMyStruct("go-script").clone()))
-	$.println("instance.MyString:", instance.value.GetMyString())
-	instance.value.MyInt = 42
-	let copyInst = $.markAsStructValue(instance.value.clone())
-	copyInst.MyInt = 7
-	$.println("instance.MyInt:", instance.value.MyInt, "copyInst.MyInt:", copyInst.MyInt)
-
-	// Pointer initialization and dereference assignment
-	let ptr = new MyStruct()
-	$.pointerValue(ptr).MyInt = 9
-	$.println("ptr.MyInt:", $.pointerValue(ptr).MyInt)
-	let deref = $.markAsStructValue($.pointerValue(ptr).clone())
-	deref.MyInt = 8
-	$.println("After deref assign, ptr.MyInt:", $.pointerValue(ptr).MyInt, "deref.MyInt:", deref.MyInt)
-
-	// Method calls on pointer receiver
-	$.pointerValue(ptr).myBool = true
-	$.println("ptr.GetMyBool():", $.pointerValue(ptr).GetMyBool())
-
-	// Composite literal assignment
-	let comp = $.varRef($.markAsStructValue(new MyStruct({MyInt: 100, MyString: "composite", myBool: false})))
-	$.println("comp fields:", comp.value.MyInt, comp.value.GetMyString(), comp.value.GetMyBool())
-
-	// Multiple return values and blank identifier
-	let [x, ] = vals()
-	let [, y] = vals()
-	$.println("vals x:", x, "y:", y)
-
-	// If/else
-	if (a > b) {
-		$.println("If branch: a>b")
-	} else {
-		$.println("Else branch: a<=b")
+export async function SendAll<T>(__typeArgs: $.GenericTypeArgs | undefined, out: $.Channel<any> | null, values: $.Slice<T>): globalThis.Promise<void> {
+	for (let __goscriptRangeTarget2 = values, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
+		let value = __goscriptRangeTarget2![__rangeIndex]
+		await $.chanSend(out, value)
 	}
+}
 
-	// Goroutines and Channels
-	$.println("\nGoroutines and Channels:")
-	let ch = $.makeChannel<string>(0, "", "both")
-	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
-		$.println("Goroutine: Sending message")
-		await $.chanSend(ch, "Hello from goroutine!")
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
+export async function Collect<T>(__typeArgs: $.GenericTypeArgs | undefined, _in: $.Channel<any> | null, count: number): globalThis.Promise<$.Slice<T>> {
+	let values: $.Slice<T> = $.makeSlice<T>(0, count)
+	for (let __rangeIndex = 0; __rangeIndex < count; __rangeIndex++) {
+		values = $.append(values, await $.chanRecv(_in))
+	}
+	return values
+}
 
-	let msg = await $.chanRecv(ch)
-	$.println("Main goroutine: Received message:", msg)
+export function cleanup(label: string): void {
+	$.println("cleanup:", label)
+}
 
-	// Select statement
-	$.println("\nSelect statement:")
-	let selectCh = $.makeChannel<string>(0, "", "both")
-	queueMicrotask(async () => { await ($.functionValue(async (): Promise<void> => {
-		await $.chanSend(selectCh, "Message from select goroutine!")
-	}, { kind: $.TypeKind.Function, params: [], results: [] }))() })
-	let anotherCh = $.makeChannel<string>(0, "", "both")
-	const [__goscriptSelectHasReturn4514, __goscriptSelectValue4514] = await $.selectStatement<any, void>([
+export async function main(): globalThis.Promise<void> {
+	using __defer = new $.DisposableStack()
+	__defer.defer(() => { cleanup("simple") })
+
+	$.println("GoScript feature tour")
+
+	let user = $.varRef($.markAsStructValue($.cloneStructValue(NewUser("ada", 7, $.arrayToSlice<string>(["go", "wasm"])))))
+	user.value.AddPoints(5)
+	let clone = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(user.value)).Clone()))
+	clone.Tags![0] = "typescript"
+	$.println("struct:", user.value.Name, user.value.Points, user.value.Tags![0], clone.Tags![0])
+
+	let describer: Describer | null = $.interfaceValue<Describer | null>($.markAsStructValue($.cloneStructValue(user.value)), "main.User")
+	$.println("interface:", $.pointerValue<Exclude<Describer, null>>(describer).Describe())
+	$.println("type switch:", Classify($.interfaceValue<any>(user, "*main.User")), Classify(42))
+
+	let seen: Set = (NewSet(undefined, $.arrayToSlice<string>(["go", "ts"])) as Set)
+	Set_Add(seen, "wasm")
+	$.println("set:", Set_Has(seen, "go"), Set_Has(seen, "rust"), $.len(seen))
+
+	let scores: Map<string, number> | null = new Map<string, number>([["go", 3], ["ts", 4], ["wasm", 5]])
+	$.println("map:", SumValues(undefined, scores))
+
+	let nums: $.Slice<number> = $.arrayToSlice<number>([1, 2, 3, 4, 5])
+	let evens: $.Slice<number> = (await Filter({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, nums, $.functionValue((n: number): boolean => {
+		return (n % 2) == 0
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))) as $.Slice<number>)
+	$.println("filter:", $.len(evens), evens![0], evens![1])
+
+	let swapped = ($.markAsStructValue($.cloneStructValue(Swap({A: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }, B: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, $.markAsStructValue(new Pair({First: "answer", Second: 42}))))) as Pair)
+	$.println("pair:", swapped.First, swapped.Second)
+
+	$.println("min:", Min({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, 8, 3), Min({T: { type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.Score" }, zero: () => 0 }}, 9, 4), Min({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, "go", "ts"))
+
+	let ch = $.makeChannel<number>(3, 0, "both")
+	queueMicrotask(async () => { await SendAll({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, ch, $.goSlice(nums, undefined, 3)) })
+	let collected: $.Slice<number> = (await Collect(undefined, ch, 3) as $.Slice<number>)
+	$.println("channel:", $.len(collected), collected![0], collected![2])
+
+	let ready = $.makeChannel<string>(1, "", "both")
+	await $.chanSend(ready, "buffered")
+	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{
 			id: 0,
 			isSend: false,
-			channel: selectCh,
-			onSelected: async (result) => {
-				let selectMsg = result.value
-				$.println("Select received:", selectMsg)
+			channel: ready,
+			onSelected: async (__goscriptSelect0Result) => {
+				let msg = __goscriptSelect0Result.value
+				$.println("select:", msg)
 			}
 		},
 		{
-			id: 1,
+			id: -1,
 			isSend: false,
-			channel: anotherCh,
-			onSelected: async (result) => {
-				let anotherMsg = result.value
-				$.println("Select received from another channel:", anotherMsg)
+			channel: null,
+			onSelected: async (__goscriptSelect0Result) => {
+				$.println("select: default")
 			}
 		}
-	], false)
-	if (__goscriptSelectHasReturn4514) {
-		return __goscriptSelectValue4514
+	], true)
+	if (__goscriptSelect0HasReturn) {
+		return __goscriptSelect0Value
 	}
-
-	// Function Literals
-	$.println("\nFunction Literals:")
-	let add = $.functionValue((x: number, y: number): number => {
-		return x + y
-	}, { kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] })
-	sum = add!(5, 7)
-	$.println("Function literal result:", sum)
 }
-
 
 if ($.isMainScript(import.meta)) {
 	await main()

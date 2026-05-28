@@ -1,178 +1,171 @@
 package main
 
-// MyStruct demonstrates a simple struct with public and private fields.
-// It will be converted into a TypeScript class by goscript.
-type MyStruct struct {
-	// MyInt is a public integer field, initialized to zero.
-	MyInt int
-	// MyString is a public string field, initialized to empty string.
-	MyString string
-	// myBool is a private boolean field, initialized to false.
-	myBool bool
+type Score int
+
+type User struct {
+	Name   string
+	Points Score
+	Tags   []string
 }
 
-// GetMyString returns the MyString field.
-func (m *MyStruct) GetMyString() string {
-	return m.MyString
+func NewUser(name string, points Score, tags ...string) User {
+	return User{
+		Name:   name,
+		Points: points,
+		Tags:   append([]string{}, tags...),
+	}
 }
 
-// GetMyBool returns the myBool field.
-func (m *MyStruct) GetMyBool() bool {
-	return m.myBool
+func (u *User) AddPoints(points Score) {
+	u.Points += points
 }
 
-// NewMyStruct creates a new MyStruct instance.
-func NewMyStruct(s string) MyStruct {
-	return MyStruct{MyString: s}
+func (u User) Clone() User {
+	return User{
+		Name:   u.Name,
+		Points: u.Points,
+		Tags:   append([]string{}, u.Tags...),
+	}
 }
 
-func vals() (int, int) {
-	return 1, 2
+func (u User) Describe() string {
+	return u.Name
+}
+
+type Describer interface {
+	Describe() string
+}
+
+type Ordered interface {
+	~int | ~float64 | ~string
+}
+
+func Min[T Ordered](a, b T) T {
+	if b < a {
+		return b
+	}
+	return a
+}
+
+type Set[T comparable] map[T]struct{}
+
+func NewSet[T comparable](values ...T) Set[T] {
+	set := make(Set[T])
+	for _, value := range values {
+		set[value] = struct{}{}
+	}
+	return set
+}
+
+func (s Set[T]) Add(value T) {
+	s[value] = struct{}{}
+}
+
+func (s Set[T]) Has(value T) bool {
+	_, ok := s[value]
+	return ok
+}
+
+type Pair[A, B any] struct {
+	First  A
+	Second B
+}
+
+func Swap[A, B any](pair Pair[A, B]) Pair[B, A] {
+	return Pair[B, A]{First: pair.Second, Second: pair.First}
+}
+
+func Filter[T any](items []T, keep func(T) bool) []T {
+	filtered := make([]T, 0, len(items))
+	for _, item := range items {
+		if keep(item) {
+			filtered = append(filtered, item)
+		}
+	}
+	return filtered
+}
+
+func SumValues[K comparable](values map[K]int) int {
+	sum := 0
+	for _, value := range values {
+		sum += value
+	}
+	return sum
+}
+
+func Classify(value any) string {
+	switch v := value.(type) {
+	case User:
+		return v.Name
+	case *User:
+		return v.Name
+	case string:
+		return v
+	default:
+		return "unknown"
+	}
+}
+
+func SendAll[T any](out chan<- T, values []T) {
+	for _, value := range values {
+		out <- value
+	}
+}
+
+func Collect[T any](in <-chan T, count int) []T {
+	values := make([]T, 0, count)
+	for range count {
+		values = append(values, <-in)
+	}
+	return values
+}
+
+func cleanup(label string) {
+	println("cleanup:", label)
 }
 
 func main() {
-	println("Hello from GoScript example!")
+	defer cleanup("simple")
 
-	// Basic arithmetic
-	a, b := 10, 3
-	println("Addition:", a+b, "Subtraction:", a-b, "Multiplication:", a*b, "Division:", a/b, "Modulo:", a%b)
+	println("GoScript feature tour")
 
-	// Boolean logic and comparisons
-	println("Logic &&:", true && false, "||:", true || false, "!:!", !true)
-	println("Comparisons:", a == b, a != b, a < b, a > b, a <= b, a >= b)
+	user := NewUser("ada", 7, "go", "wasm")
+	user.AddPoints(5)
+	clone := user.Clone()
+	clone.Tags[0] = "typescript"
+	println("struct:", user.Name, user.Points, user.Tags[0], clone.Tags[0])
 
-	// string(rune) conversion
-	var r rune = 'X'
-	s := string(r)
-	println("string('X'):", s)
+	var describer Describer = user
+	println("interface:", describer.Describe())
+	println("type switch:", Classify(&user), Classify(42))
 
-	var r2 rune = 121 // 'y'
-	s2 := string(r2)
-	println("string(121):", s2)
+	seen := NewSet("go", "ts")
+	seen.Add("wasm")
+	println("set:", seen.Has("go"), seen.Has("rust"), len(seen))
 
-	var r3 rune = 0x221A // '√'
-	s3 := string(r3)
-	println("string(0x221A):", s3)
+	scores := map[string]int{"go": 3, "ts": 4, "wasm": 5}
+	println("map:", SumValues(scores))
 
-	// Arrays
-	arr := [3]int{1, 2, 3}
-	println("Array elements:", arr[0], arr[1], arr[2])
+	nums := []int{1, 2, 3, 4, 5}
+	evens := Filter(nums, func(n int) bool { return n%2 == 0 })
+	println("filter:", len(evens), evens[0], evens[1])
 
-	// Slices - Basic initialization and access
-	slice := []int{4, 5, 6}
-	println("Slice elements:", slice[0], slice[1], slice[2])
-	println("Slice length:", len(slice), "capacity:", cap(slice))
+	swapped := Swap(Pair[string, int]{First: "answer", Second: 42})
+	println("pair:", swapped.First, swapped.Second)
 
-	sliceWithCap := make([]int, 3, 5)
-	println("\nSlice created with make([]int, 3, 5):")
-	println("Length:", len(sliceWithCap), "Capacity:", cap(sliceWithCap))
+	println("min:", Min(8, 3), Min(Score(9), Score(4)), Min("go", "ts"))
 
-	println("\nAppend and capacity growth:")
-	growingSlice := make([]int, 0, 2)
-	println("Initial - Length:", len(growingSlice), "Capacity:", cap(growingSlice))
+	ch := make(chan int, 3)
+	go SendAll(ch, nums[:3])
+	collected := Collect(ch, 3)
+	println("channel:", len(collected), collected[0], collected[2])
 
-	for i := 1; i <= 4; i++ {
-		growingSlice = append(growingSlice, i)
-		println("After append", i, "- Length:", len(growingSlice), "Capacity:", cap(growingSlice))
-	}
-
-	println("\nSlicing operations and shared backing arrays:")
-	original := []int{10, 20, 30, 40, 50}
-	println("Original slice - Length:", len(original), "Capacity:", cap(original))
-
-	slice1 := original[1:3]
-	println("slice1 := original[1:3] - Values:", slice1[0], slice1[1])
-	println("slice1 - Length:", len(slice1), "Capacity:", cap(slice1))
-
-	slice2 := original[1:3:4]
-	println("slice2 := original[1:3:4] - Values:", slice2[0], slice2[1])
-	println("slice2 - Length:", len(slice2), "Capacity:", cap(slice2))
-
-	println("\nShared backing arrays:")
-	slice1[0] = 999
-	println("After slice1[0] = 999:")
-	println("original[1]:", original[1], "slice1[0]:", slice1[0], "slice2[0]:", slice2[0])
-
-	sum := 0
-	for idx, val := range slice {
-		sum += val
-		println("Range idx:", idx, "val:", val)
-	}
-	println("Range sum:", sum)
-
-	// Basic for loop
-	prod := 1
-	for i := 1; i <= 3; i++ {
-		prod *= i
-	}
-	println("Product via for:", prod)
-
-	// Struct, pointers, copy independence
-	instance := NewMyStruct("go-script")
-	println("instance.MyString:", instance.GetMyString())
-	instance.MyInt = 42
-	copyInst := instance
-	copyInst.MyInt = 7
-	println("instance.MyInt:", instance.MyInt, "copyInst.MyInt:", copyInst.MyInt)
-
-	// Pointer initialization and dereference assignment
-	ptr := new(MyStruct)
-	ptr.MyInt = 9
-	println("ptr.MyInt:", ptr.MyInt)
-	deref := *ptr
-	deref.MyInt = 8
-	println("After deref assign, ptr.MyInt:", ptr.MyInt, "deref.MyInt:", deref.MyInt)
-
-	// Method calls on pointer receiver
-	ptr.myBool = true
-	println("ptr.GetMyBool():", ptr.GetMyBool())
-
-	// Composite literal assignment
-	comp := MyStruct{MyInt: 100, MyString: "composite", myBool: false}
-	println("comp fields:", comp.MyInt, comp.GetMyString(), comp.GetMyBool())
-
-	// Multiple return values and blank identifier
-	x, _ := vals()
-	_, y := vals()
-	println("vals x:", x, "y:", y)
-
-	// If/else
-	if a > b {
-		println("If branch: a>b")
-	} else {
-		println("Else branch: a<=b")
-	}
-
-	// Goroutines and Channels
-	println("\nGoroutines and Channels:")
-	ch := make(chan string)
-	go func() {
-		println("Goroutine: Sending message")
-		ch <- "Hello from goroutine!"
-	}()
-
-	msg := <-ch
-	println("Main goroutine: Received message:", msg)
-
-	// Select statement
-	println("\nSelect statement:")
-	selectCh := make(chan string)
-	go func() {
-		selectCh <- "Message from select goroutine!"
-	}()
-	anotherCh := make(chan string)
+	ready := make(chan string, 1)
+	ready <- "buffered"
 	select {
-	case selectMsg := <-selectCh:
-		println("Select received:", selectMsg)
-	case anotherMsg := <-anotherCh: // Add another case
-		println("Select received from another channel:", anotherMsg)
+	case msg := <-ready:
+		println("select:", msg)
+	default:
+		println("select: default")
 	}
-
-	// Function Literals
-	println("\nFunction Literals:")
-	add := func(x, y int) int {
-		return x + y
-	}
-	sum = add(5, 7)
-	println("Function literal result:", sum)
 }

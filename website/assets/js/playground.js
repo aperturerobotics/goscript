@@ -2,10 +2,7 @@
 // This loads the GoScript WASM compiler and allows running Go code in the browser
 
 import * as goscriptRuntime from '@goscript/builtin'
-import {
-  ready as wasmReady,
-  compileGoToTypeScript,
-} from './goscript-wasm.js'
+import { ready as wasmReady, compileGoToTypeScript } from './goscript-wasm.js'
 import { stripGeneratedMainGuard } from './generated-code.js'
 import { packages as goscriptPackages } from 'virtual:goscript-packages'
 
@@ -50,7 +47,7 @@ function decodeCodeFromUrl(encoded) {
     base64 += '='
   }
   const binary = atob(base64)
-  const bytes = new Uint8Array([...binary].map(c => c.charCodeAt(0)))
+  const bytes = new Uint8Array([...binary].map((c) => c.charCodeAt(0)))
   return new TextDecoder().decode(bytes)
 }
 
@@ -383,7 +380,11 @@ async function runCode() {
   }
 
   const tsCode = tsEditor.getValue()
-  if (!tsCode.trim() || tsCode.startsWith('// Click "Compile"') || tsCode.startsWith('// TypeScript output')) {
+  if (
+    !tsCode.trim() ||
+    tsCode.startsWith('// Click "Compile"') ||
+    tsCode.startsWith('// TypeScript output')
+  ) {
     outputBody.textContent = 'No TypeScript code to run. Enter Go code first.'
     return
   }
@@ -505,7 +506,9 @@ async function runTypeScript(code) {
     }
 
     // Create an async function to run the code
-    const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
+    const AsyncFunction = Object.getPrototypeOf(
+      async function () {},
+    ).constructor
 
     // Run with the global runtime
     const fn = new AsyncFunction('$', jsCode)
@@ -671,6 +674,65 @@ func main() {
 
     for _, animal := range animals {
         println(animal.Speak())
+    }
+}`,
+    },
+    {
+      name: 'Generics',
+      go: `package main
+
+type Ordered interface {
+    ~int | ~string
+}
+
+type Set[T comparable] map[T]struct{}
+
+func Min[T Ordered](a, b T) T {
+    if b < a {
+        return b
+    }
+    return a
+}
+
+func NewSet[T comparable](values ...T) Set[T] {
+    set := make(Set[T])
+    for _, value := range values {
+        set[value] = struct{}{}
+    }
+    return set
+}
+
+func (s Set[T]) Has(value T) bool {
+    _, ok := s[value]
+    return ok
+}
+
+func main() {
+    println("min int:", Min(8, 3))
+    println("min string:", Min("go", "ts"))
+
+    names := NewSet("go", "typescript", "wasm")
+    println("has go:", names.Has("go"))
+    println("has rust:", names.Has("rust"))
+}`,
+    },
+    {
+      name: 'Concurrency',
+      go: `package main
+
+func send(ch chan string) {
+    ch <- "ready"
+}
+
+func main() {
+    ch := make(chan string, 1)
+    go send(ch)
+
+    select {
+    case msg := <-ch:
+        println("received:", msg)
+    default:
+        println("waiting")
     }
 }`,
     },

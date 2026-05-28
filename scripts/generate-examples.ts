@@ -22,12 +22,7 @@ interface RequiredPackages {
   packages: string[] // e.g., ["@goscript/io", "@goscript/fmt"]
 }
 
-const COMPLIANCE_DIR = path.join(
-  import.meta.dirname,
-  '..',
-  'tests',
-  'tests',
-)
+const COMPLIANCE_DIR = path.join(import.meta.dirname, '..', 'tests', 'tests')
 const OUTPUT_FILE = path.join(
   import.meta.dirname,
   '..',
@@ -49,25 +44,114 @@ const GS_DIR = path.join(import.meta.dirname, '..', 'gs')
 // Curated list of compliance tests that make good examples
 // Format: [testDirName, displayTitle, description]
 const CURATED_EXAMPLES: [string, string, string][] = [
-  ['basic_arithmetic', 'Arithmetic', 'Basic arithmetic operations'],
+  [
+    'basic_arithmetic',
+    'Arithmetic',
+    'Arithmetic, precedence, and numeric operators',
+  ],
   ['boolean_logic', 'Boolean Logic', 'Boolean operators and comparisons'],
+  [
+    'constants_iota',
+    'Constants and iota',
+    'Constant blocks, iota, and typed constants',
+  ],
   ['if_statement', 'If Statement', 'Conditional statements'],
-  ['for_loop_basic', 'For Loop', 'Loop constructs'],
-  ['for_range', 'Range Loop', 'Iterating with range'],
-  ['switch_statement', 'Switch', 'Switch statement patterns'],
-  ['comments_struct', 'Structs', 'Struct definitions and usage'],
-  ['struct_field_access', 'Struct Fields', 'Accessing struct fields'],
-  ['simple_interface', 'Interfaces', 'Interface type assertions'],
-  ['slice', 'Slices', 'Slice creation and manipulation'],
-  ['map_support', 'Maps', 'Map operations'],
-  ['pointers', 'Pointers', 'Pointer semantics in GoScript'],
-  ['channel_basic', 'Channels', 'Channel operations'],
-  ['goroutines', 'Goroutines', 'Concurrent execution with goroutines'],
-  ['defer_statement', 'Defer', 'Defer statements'],
+  [
+    'switch_multi_case',
+    'Switch Cases',
+    'Multiple cases, defaults, and fallthrough-free control flow',
+  ],
+  [
+    'type_switch_statement',
+    'Type Switch',
+    'Interface type switches over concrete values',
+  ],
+  ['for_loop_basic', 'For Loop', 'Classic loops and integer range loops'],
+  ['for_range_index_use', 'Range Indexes', 'Using range indexes and values'],
+  [
+    'comments_struct',
+    'Structs',
+    'Struct definitions and comments in generated output',
+  ],
+  [
+    'struct_field_access',
+    'Struct Fields',
+    'Struct literals, field reads, and field writes',
+  ],
+  ['receiver_method', 'Methods', 'Value and pointer receiver method calls'],
+  [
+    'method_call_on_pointer_receiver',
+    'Pointer Receivers',
+    'Calling pointer receiver methods from values and pointers',
+  ],
+  [
+    'simple_interface',
+    'Interfaces',
+    'Interface values and dynamic method dispatch',
+  ],
+  [
+    'interface_type_assertion',
+    'Type Assertion',
+    'Checked type assertions on interface values',
+  ],
+  [
+    'slice',
+    'Slices',
+    'Slice literals, slicing, append, capacity, nil, and nested slices',
+  ],
+  ['map_support', 'Maps', 'Map creation, assignment, lookup, and deletion'],
+  ['map_struct_key', 'Struct Map Keys', 'Comparable structs used as map keys'],
+  ['pointers', 'Pointers', 'Pointer creation, dereference, and mutation'],
+  [
+    'varref_pointers_deref',
+    'Addressed Values',
+    'Address-taken locals and pointer dereference writes',
+  ],
   ['func_literal', 'Function Literals', 'Anonymous functions and closures'],
-  ['interface_type_assertion', 'Type Assertion', 'Type assertions'],
-  ['generics_basic', 'Generics', 'Generic types and functions'],
+  [
+    'function_returns_function',
+    'Function Values',
+    'Functions that return callable functions',
+  ],
+  [
+    'defer_statement',
+    'Defer',
+    'Deferred calls and last-in-first-out execution',
+  ],
+  ['channel_basic', 'Channels', 'Buffered and unbuffered channel operations'],
+  ['goroutines', 'Goroutines', 'Concurrent execution with goroutines'],
+  ['select_statement', 'Select', 'Channel select cases and defaults'],
   ['async_basic', 'Async/Await', 'Async function translation'],
+  [
+    'async_function_type_assertion',
+    'Async Function Assertions',
+    'Async function values behind interfaces',
+  ],
+  [
+    'generics_basic',
+    'Generics Tour',
+    'Constraints, generic structs, methods, map aliases, and function instantiation',
+  ],
+  [
+    'make_generic_type',
+    'Generic make',
+    'make with instantiated generic map types',
+  ],
+  [
+    'generic_function_instantiation_value',
+    'Generic Function Values',
+    'Explicit generic function instantiation',
+  ],
+  [
+    'generic_cache_pointer_callbacks',
+    'Generic Callbacks',
+    'Generic structs with pointer callback fields',
+  ],
+  [
+    'generic_async_wrapper',
+    'Generic Channels',
+    'Generic functions wrapping channel receive paths',
+  ],
   // TODO: Enable once playground supports compiling dependencies
   // ['json_marshal_basic', 'JSON', 'JSON encoding with encoding/json'],
 ]
@@ -105,19 +189,37 @@ function resolvePackagePath(pkg: string): string | null {
   return null
 }
 
+function singleFileWithSuffix(testDir: string, suffix: string): string | null {
+  const files = fs
+    .readdirSync(testDir)
+    .filter((file) => file.endsWith(suffix))
+    .sort()
+  if (files.length !== 1) {
+    return null
+  }
+  return path.join(testDir, files[0])
+}
+
 function generateExamples(): void {
   const examples: Example[] = []
   const allPackages = new Set<string>()
 
   for (const [testName, title, description] of CURATED_EXAMPLES) {
     const testDir = path.join(COMPLIANCE_DIR, testName)
-    const goFile = path.join(testDir, `${testName}.go`)
-    const tsFile = path.join(testDir, `${testName}.gs.ts`)
+    const goFile = singleFileWithSuffix(testDir, '.go')
+    const tsFile = singleFileWithSuffix(testDir, '.gs.ts')
     const expectedFile = path.join(testDir, 'expected.log')
 
     // Skip if files don't exist
-    if (!fs.existsSync(goFile) || !fs.existsSync(tsFile)) {
-      console.warn(`Skipping example ${testName}: missing files`)
+    if (
+      !goFile ||
+      !tsFile ||
+      !fs.existsSync(goFile) ||
+      !fs.existsSync(tsFile)
+    ) {
+      console.warn(
+        `Skipping example ${testName}: expected exactly one Go file and one generated TypeScript file`,
+      )
       continue
     }
 

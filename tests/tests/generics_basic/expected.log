@@ -1,3 +1,15 @@
-10
-hello
-true
+=== Generic constraints ===
+min: 3 4 go
+=== Generic stack ===
+pop: 20 true 1
+pop: 10 true 0
+=== Generic map alias ===
+set: true false 3
+=== Interface constraint ===
+clone: alpha copy beta copy false
+=== Generic struct with map field ===
+mapper: 42 true
+=== Function instantiation ===
+apply: 42
+=== Generic pair method ===
+pair: right left

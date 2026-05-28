@@ -2,9 +2,10 @@ package main_test
 
 import (
 	"context"
-	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/aperturerobotics/goscript/compiler"
@@ -44,25 +45,34 @@ func TestBuildRunExampleSimple(t *testing.T) {
 		t.Fatalf("failed to create compiler: %v", err)
 	}
 
-	_, err = comp.CompilePackages(context.Background(), ".")
-	if err == nil {
-		t.Fatalf("expected complex example to exceed the v2 seed subset")
+	if _, err = comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatalf("failed to compile example: %v", err)
 	}
-	var compileErr *compiler.CompileError
-	if !errors.As(err, &compileErr) {
-		t.Fatalf("expected CompileError, got %T: %v", err, err)
+	if _, statErr := os.Stat(filepath.Join(outputDir, "@goscript", "example", "main.gs.ts")); statErr != nil {
+		t.Fatalf("generated main output missing: %v", statErr)
 	}
-	foundUnsupported := false
-	for _, diagnostic := range compileErr.Diagnostics {
-		if diagnostic.Code == "goscript/lowering:unsupported" {
-			foundUnsupported = true
-			break
+
+	cmd := exec.Command("bun", "run", "./main.ts")
+	cmd.Dir = projectDir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("failed to run generated example: %v\n%s", err, output)
+	}
+
+	out := string(output)
+	for _, want := range []string{
+		"GoScript feature tour",
+		"struct: ada 12 go typescript",
+		"interface: ada",
+		"set: true false 3",
+		"filter: 2 2 4",
+		"min: 3 4 go",
+		"channel: 3 1 3",
+		"select: buffered",
+		"cleanup: simple",
+	} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("missing %q in example output:\n%s", want, out)
 		}
-	}
-	if !foundUnsupported {
-		t.Fatalf("expected unsupported lowering diagnostic, got %#v", compileErr.Diagnostics)
-	}
-	if _, statErr := os.Stat(outputDir); !os.IsNotExist(statErr) {
-		t.Fatalf("compile wrote output directory before unsupported lowering stopped: %v", statErr)
 	}
 }
