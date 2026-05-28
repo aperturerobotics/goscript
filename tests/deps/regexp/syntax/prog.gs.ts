@@ -301,7 +301,7 @@ export class Inst {
 		let lo = 0
 		let hi = Math.trunc($.len(rune) / 2)
 		while (lo < hi) {
-			let m = $.int($.uint(lo + hi, 64) >> 1)
+			let m = $.int($.uint64Shr($.uint(lo + hi, 64), 1))
 			{
 				let c = $.int(rune![2 * m], 32)
 				if (c <= r) {

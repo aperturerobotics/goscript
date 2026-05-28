@@ -2,7 +2,7 @@
 // This replaces the auto-generated version that has TypeScript syntax errors
 
 // UintSize is the size of a uint in bits
-export const UintSize = 32 // Assuming 32-bit for JavaScript numbers
+export const UintSize = 64
 
 type Word64 = number | bigint
 
@@ -23,8 +23,8 @@ function word64Result(value: bigint, useBigInt: boolean): Word64 {
 }
 
 // --- Leading zeros ---
-export function LeadingZeros(x: number): number {
-  return Math.clz32(x >>> 0)
+export function LeadingZeros(x: Word64): number {
+  return LeadingZeros64(x)
 }
 
 export function LeadingZeros8(x: number): number {
@@ -53,9 +53,8 @@ export function LeadingZeros64(x: Word64): number {
 }
 
 // --- Trailing zeros ---
-export function TrailingZeros(x: number): number {
-  if (x === 0) return UintSize
-  return TrailingZeros32(x)
+export function TrailingZeros(x: Word64): number {
+  return TrailingZeros64(x)
 }
 
 export function TrailingZeros8(x: number): number {
@@ -90,8 +89,8 @@ export function TrailingZeros64(x: Word64): number {
 }
 
 // --- Ones count ---
-export function OnesCount(x: number): number {
-  return OnesCount32(x)
+export function OnesCount(x: Word64): number {
+  return OnesCount64(x)
 }
 
 export function OnesCount8(x: number): number {
@@ -124,8 +123,11 @@ export function OnesCount64(x: Word64): number {
 }
 
 // --- Rotate left ---
-export function RotateLeft(x: number, k: number): number {
-  return RotateLeft32(x, k)
+export function RotateLeft(x: number, k: number): number
+export function RotateLeft(x: bigint, k: number): bigint
+export function RotateLeft(x: Word64, k: number): number
+export function RotateLeft(x: Word64, k: number): Word64 {
+  return RotateLeft64(x, k)
 }
 
 export function RotateLeft8(x: number, k: number): number {
@@ -151,6 +153,7 @@ export function RotateLeft32(x: number, k: number): number {
 
 export function RotateLeft64(x: number, k: number): number
 export function RotateLeft64(x: bigint, k: number): bigint
+export function RotateLeft64(x: Word64, k: number): number
 export function RotateLeft64(x: Word64, k: number): Word64 {
   const n = 64
   k = k % n
@@ -163,8 +166,11 @@ export function RotateLeft64(x: Word64, k: number): Word64 {
 }
 
 // --- Reverse ---
-export function Reverse(x: number): number {
-  return Reverse32(x)
+export function Reverse(x: number): number
+export function Reverse(x: bigint): bigint
+export function Reverse(x: Word64): number
+export function Reverse(x: Word64): Word64 {
+  return Reverse64(x)
 }
 
 export function Reverse8(x: number): number {
@@ -196,6 +202,7 @@ export function Reverse32(x: number): number {
 
 export function Reverse64(x: number): number
 export function Reverse64(x: bigint): bigint
+export function Reverse64(x: Word64): number
 export function Reverse64(x: Word64): Word64 {
   // Implement 64-bit reverse using similar bit manipulation
   const useBigInt = useBigIntResult(x)
@@ -226,8 +233,11 @@ export function Reverse64(x: Word64): Word64 {
 }
 
 // --- ReverseBytes ---
-export function ReverseBytes(x: number): number {
-  return ReverseBytes32(x)
+export function ReverseBytes(x: number): number
+export function ReverseBytes(x: bigint): bigint
+export function ReverseBytes(x: Word64): number
+export function ReverseBytes(x: Word64): Word64 {
+  return ReverseBytes64(x)
 }
 
 export function ReverseBytes16(x: number): number {
@@ -247,6 +257,7 @@ export function ReverseBytes32(x: number): number {
 
 export function ReverseBytes64(x: number): number
 export function ReverseBytes64(x: bigint): bigint
+export function ReverseBytes64(x: Word64): number
 export function ReverseBytes64(x: Word64): Word64 {
   const useBigInt = useBigIntResult(x)
   const word = toUint64(x)
@@ -266,8 +277,8 @@ export function ReverseBytes64(x: Word64): Word64 {
 }
 
 // --- Len ---
-export function Len(x: number): number {
-  return Len32(x)
+export function Len(x: Word64): number {
+  return Len64(x)
 }
 
 export function Len8(x: number): number {
@@ -287,8 +298,11 @@ export function Len64(x: Word64): number {
 }
 
 // --- Multiplication functions ---
-export function Mul(x: number, y: number): [number, number] {
-  return Mul32(x, y)
+export function Mul(x: number, y: number): [number, number]
+export function Mul(x: bigint, y: bigint): [bigint, bigint]
+export function Mul(x: Word64, y: Word64): [number, number]
+export function Mul(x: Word64, y: Word64): [Word64, Word64] {
+  return Mul64(x, y)
 }
 
 export function Mul32(x: number, y: number): [number, number] {
@@ -301,6 +315,7 @@ export function Mul32(x: number, y: number): [number, number] {
 
 export function Mul64(x: number, y: number): [number, number]
 export function Mul64(x: bigint, y: bigint): [bigint, bigint]
+export function Mul64(x: Word64, y: Word64): [number, number]
 export function Mul64(x: Word64, y: Word64): [Word64, Word64] {
   const useBigInt = useBigIntResult(x, y)
   x = toUint64(x)
@@ -309,15 +324,15 @@ export function Mul64(x: Word64, y: Word64): [Word64, Word64] {
   const lo = product & uint64Mask
   const hi = product >> 64n
 
-  return [
-    word64Result(hi & uint64Mask, useBigInt),
-    word64Result(lo, useBigInt),
-  ]
+  return [word64Result(hi & uint64Mask, useBigInt), word64Result(lo, useBigInt)]
 }
 
 // --- Division functions ---
-export function Div(hi: number, lo: number, y: number): [number, number] {
-  return Div32(hi, lo, y)
+export function Div(hi: number, lo: number, y: number): [number, number]
+export function Div(hi: bigint, lo: bigint, y: bigint): [bigint, bigint]
+export function Div(hi: Word64, lo: Word64, y: Word64): [number, number]
+export function Div(hi: Word64, lo: Word64, y: Word64): [Word64, Word64] {
+  return Div64(hi, lo, y)
 }
 
 export function Div32(hi: number, lo: number, y: number): [number, number] {
@@ -337,6 +352,7 @@ export function Div32(hi: number, lo: number, y: number): [number, number] {
 
 export function Div64(hi: number, lo: number, y: number): [number, number]
 export function Div64(hi: bigint, lo: bigint, y: bigint): [bigint, bigint]
+export function Div64(hi: Word64, lo: Word64, y: Word64): [number, number]
 export function Div64(hi: Word64, lo: Word64, y: Word64): [Word64, Word64] {
   const useBigInt = useBigIntResult(hi, lo, y)
   hi = toUint64(hi)
@@ -356,8 +372,11 @@ export function Div64(hi: Word64, lo: Word64, y: Word64): [Word64, Word64] {
 }
 
 // --- Add and Sub with carry ---
-export function Add(x: number, y: number, carry: number): [number, number] {
-  return Add32(x, y, carry)
+export function Add(x: number, y: number, carry: number): [number, number]
+export function Add(x: bigint, y: bigint, carry: bigint): [bigint, bigint]
+export function Add(x: Word64, y: Word64, carry: Word64): [number, number]
+export function Add(x: Word64, y: Word64, carry: Word64): [Word64, Word64] {
+  return Add64(x, y, carry)
 }
 
 export function Add32(x: number, y: number, carry: number): [number, number] {
@@ -369,6 +388,7 @@ export function Add32(x: number, y: number, carry: number): [number, number] {
 
 export function Add64(x: number, y: number, carry: number): [number, number]
 export function Add64(x: bigint, y: bigint, carry: bigint): [bigint, bigint]
+export function Add64(x: Word64, y: Word64, carry: Word64): [number, number]
 export function Add64(x: Word64, y: Word64, carry: Word64): [Word64, Word64] {
   const useBigInt = useBigIntResult(x, y, carry)
   const sum = toUint64(x) + toUint64(y) + toUint64(carry)
@@ -377,8 +397,11 @@ export function Add64(x: Word64, y: Word64, carry: Word64): [Word64, Word64] {
   return [word64Result(result, useBigInt), word64Result(carryOut, useBigInt)]
 }
 
-export function Sub(x: number, y: number, borrow: number): [number, number] {
-  return Sub32(x, y, borrow)
+export function Sub(x: number, y: number, borrow: number): [number, number]
+export function Sub(x: bigint, y: bigint, borrow: bigint): [bigint, bigint]
+export function Sub(x: Word64, y: Word64, borrow: Word64): [number, number]
+export function Sub(x: Word64, y: Word64, borrow: Word64): [Word64, Word64] {
+  return Sub64(x, y, borrow)
 }
 
 export function Sub32(x: number, y: number, borrow: number): [number, number] {
@@ -390,6 +413,7 @@ export function Sub32(x: number, y: number, borrow: number): [number, number] {
 
 export function Sub64(x: number, y: number, borrow: number): [number, number]
 export function Sub64(x: bigint, y: bigint, borrow: bigint): [bigint, bigint]
+export function Sub64(x: Word64, y: Word64, borrow: Word64): [number, number]
 export function Sub64(x: Word64, y: Word64, borrow: Word64): [Word64, Word64] {
   const useBigInt = useBigIntResult(x, y, borrow)
   const diff = toUint64(x) - toUint64(y) - toUint64(borrow)

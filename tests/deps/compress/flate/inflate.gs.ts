@@ -268,7 +268,7 @@ export class huffmanDecoder {
 
 		$.pointerValue<huffmanDecoder>(h).min = min
 		if (max > huffmanChunkBits) {
-			let numLinks = 1 << ($.uint(max, 64) - huffmanChunkBits)
+			let numLinks = 1 << ($.uint64Sub($.uint(max, 64), huffmanChunkBits))
 			$.pointerValue<huffmanDecoder>(h).linkMask = $.uint($.uint(numLinks - 1, 32), 32)
 
 			// create link tables
@@ -276,12 +276,12 @@ export class huffmanDecoder {
 			$.pointerValue<huffmanDecoder>(h).links = $.makeSlice<$.Slice<number>>(huffmanNumChunks - link)
 			for (let j = $.uint(link, 64); j < huffmanNumChunks; j++) {
 				let reverse = $.int(bits2.Reverse16($.uint($.uint(j, 16), 16)))
-				reverse = reverse >> ($.uint(16 - huffmanChunkBits, 64))
-				let off = j - $.uint(link, 64)
+				reverse = reverse >> ($.uint($.uint64Sub(16, huffmanChunkBits), 64))
+				let off = $.uint64Sub(j, $.uint(link, 64))
 				if (sanity && ($.uint($.pointerValue<huffmanDecoder>(h).chunks[reverse], 32) != $.uint(0, 32))) {
 					$.panic("impossible: overwriting existing chunk")
 				}
-				$.pointerValue<huffmanDecoder>(h).chunks[reverse] = $.uint($.uint((off << huffmanValueShift) | (huffmanChunkBits + 1), 32), 32)
+				$.pointerValue<huffmanDecoder>(h).chunks[reverse] = $.uint($.uint($.uint64Or(($.uint64Shl(off, huffmanValueShift)), ($.uint64Add(huffmanChunkBits, 1))), 32), 32)
 				$.pointerValue<huffmanDecoder>(h).links![off] = $.makeSlice<number>(numLinks, undefined, "number")
 			}
 		}
@@ -718,8 +718,8 @@ export class decompressor {
 					return [0, noEOF(err)]
 				}
 				$.pointerValue<decompressor>(f).roffset++
-				b = b | ($.uint($.uint(c, 32) << (nb & 31), 32))
-				nb = nb + (8)
+				b = b | ($.uint($.uint(c, 32) << ($.uint64And(nb, 31)), 32))
+				nb = $.uint64Add(nb, 8)
 			}
 			let chunk = $.uint($.pointerValue<huffmanDecoder>(h).chunks[b & (huffmanNumChunks - 1)], 32)
 			n = $.uint(chunk & huffmanCountMask, 64)
@@ -734,8 +734,8 @@ export class decompressor {
 					$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
 					return [0, $.pointerValue<decompressor>(f).err]
 				}
-				$.pointerValue<decompressor>(f).b = $.uint($.uintShr(b, (n & 31), 32), 32)
-				$.pointerValue<decompressor>(f).nb = nb - n
+				$.pointerValue<decompressor>(f).b = $.uint($.uintShr(b, ($.uint64And(n, 31)), 32), 32)
+				$.pointerValue<decompressor>(f).nb = $.uint64Sub(nb, n)
 				return [$.int($.uintShr(chunk, huffmanValueShift, 32)), null]
 			}
 		}
@@ -862,7 +862,7 @@ export class decompressor {
 							}
 							length = length + ($.int($.pointerValue<decompressor>(f).b & $.uint((1 << n) - 1, 32)))
 							$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(n, 32))) >>> 0
-							$.pointerValue<decompressor>(f).nb = $.pointerValue<decompressor>(f).nb - (n)
+							$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, n)
 						}
 
 						let dist: number = 0
@@ -878,7 +878,7 @@ export class decompressor {
 							}
 							dist = $.int(bits2.Reverse8($.uint($.uint(($.pointerValue<decompressor>(f).b & 0x1F) << 3, 8), 8)))
 							$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(5, 32))) >>> 0
-							$.pointerValue<decompressor>(f).nb = $.pointerValue<decompressor>(f).nb - (5)
+							$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, 5)
 						} else {
 							{
 								let __goscriptTuple1: any = await decompressor.prototype.huffSym.call(f, $.pointerValue<decompressor>(f).hd)
@@ -899,7 +899,7 @@ export class decompressor {
 							}
 							case dist < maxNumDist:
 							{
-								let nb = $.uint(dist - 2, 64) >> 1
+								let nb = $.uint64Shr($.uint(dist - 2, 64), 1)
 								// have 1 bit in bottom of dist, need nb more.
 								let extra = (dist & 1) << nb
 								while ($.pointerValue<decompressor>(f).nb < nb) {
@@ -913,8 +913,8 @@ export class decompressor {
 								}
 								extra = extra | ($.int($.pointerValue<decompressor>(f).b & $.uint((1 << nb) - 1, 32)))
 								$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(nb, 32))) >>> 0
-								$.pointerValue<decompressor>(f).nb = $.pointerValue<decompressor>(f).nb - (nb)
-								dist = ((1 << (nb + 1)) + 1) + extra
+								$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, nb)
+								dist = ((1 << ($.uint64Add(nb, 1))) + 1) + extra
 								break
 							}
 							default:
@@ -999,13 +999,13 @@ export class decompressor {
 		}
 		$.pointerValue<decompressor>(f).roffset++
 		$.pointerValue<decompressor>(f).b = $.pointerValue<decompressor>(f).b | ($.uint($.uint(c, 32) << $.pointerValue<decompressor>(f).nb, 32))
-		$.pointerValue<decompressor>(f).nb = $.pointerValue<decompressor>(f).nb + (8)
+		$.pointerValue<decompressor>(f).nb = $.uint64Add($.pointerValue<decompressor>(f).nb, 8)
 		return null
 	}
 
 	public async nextBlock(): globalThis.Promise<void> {
 		let f: decompressor | $.VarRef<decompressor> | null = this
-		while ($.pointerValue<decompressor>(f).nb < (1 + 2)) {
+		while ($.pointerValue<decompressor>(f).nb < ($.uint64Add(1, 2))) {
 			{
 				$.pointerValue<decompressor>(f).err = await decompressor.prototype.moreBits.call(f)
 				if ($.pointerValue<decompressor>(f).err != null) {
@@ -1017,7 +1017,7 @@ export class decompressor {
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(1, 32))) >>> 0
 		let typ = $.uint($.pointerValue<decompressor>(f).b & 3, 32)
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(2, 32))) >>> 0
-		$.pointerValue<decompressor>(f).nb = $.pointerValue<decompressor>(f).nb - (1 + 2)
+		$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, $.uint64Add(1, 2))
 		switch (typ) {
 			case 0:
 			{
@@ -1055,7 +1055,7 @@ export class decompressor {
 	public async readHuffman(): globalThis.Promise<$.GoError> {
 		let f: decompressor | $.VarRef<decompressor> | null = this
 		// HLIT[5], HDIST[5], HCLEN[4].
-		while ($.pointerValue<decompressor>(f).nb < ((5 + 5) + 4)) {
+		while ($.pointerValue<decompressor>(f).nb < ($.uint64Add((5 + 5), 4))) {
 			{
 				let err = await decompressor.prototype.moreBits.call(f)
 				if (err != null) {
@@ -1076,7 +1076,7 @@ export class decompressor {
 		let nclen = $.int($.pointerValue<decompressor>(f).b & 0xF) + 4
 		// numCodes is 19, so nclen is always valid.
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(4, 32))) >>> 0
-		$.pointerValue<decompressor>(f).nb = $.pointerValue<decompressor>(f).nb - ((5 + 5) + 4)
+		$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, $.uint64Add((5 + 5), 4))
 
 		// (HCLEN+4)*3 bits: code lengths in the magic codeOrder order.
 		for (let i = 0; i < nclen; i++) {
@@ -1090,7 +1090,7 @@ export class decompressor {
 			}
 			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[codeOrder[i]] = $.int($.pointerValue<decompressor>(f).b & 0x7)
 			$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(3, 32))) >>> 0
-			$.pointerValue<decompressor>(f).nb = $.pointerValue<decompressor>(f).nb - (3)
+			$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, 3)
 		}
 		for (let i = nclen; i < $.len(codeOrder); i++) {
 			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[codeOrder[i]] = 0
@@ -1157,7 +1157,7 @@ export class decompressor {
 			}
 			rep = rep + ($.int($.pointerValue<decompressor>(f).b & $.uint((1 << nb) - 1, 32)))
 			$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(nb, 32))) >>> 0
-			$.pointerValue<decompressor>(f).nb = $.pointerValue<decompressor>(f).nb - (nb)
+			$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, nb)
 			if ((i + rep) > n) {
 				return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
 			}

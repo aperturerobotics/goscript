@@ -33,6 +33,20 @@ func setHighBit(idx uint64) bool {
 	return words[1] != 0
 }
 
+func uintBitLen(n uint) int {
+	len := 0
+	for n != 0 {
+		len++
+		n = n >> 1
+	}
+	return len
+}
+
+func uintShiftAssign(n uint) uint {
+	n >>= 40
+	return n
+}
+
 func main() {
 	println(hash6(0x0102030405, 14))
 	println(mix(0xf0f0f0f0f0f0f0f0, 0x0f0f0f0f0f0f0f0f))
@@ -42,4 +56,6 @@ func main() {
 	println(maxUint64Divisor(4114))
 	println(maxUint64Remainder(4114))
 	println(setHighBit(maxUint64Remainder(128)))
+	println(uintBitLen(^uint(0)))
+	println(uintShiftAssign(^uint(0)))
 }

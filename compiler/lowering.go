@@ -3866,30 +3866,31 @@ func integerQuotientAssignValueExpr(targetType types.Type, left string, right st
 }
 
 func wideIntegerAssignHelper(targetType types.Type, tok token.Token) (RuntimeHelper, bool) {
-	if !isFixedWideIntegerType(targetType) {
+	if !isRuntimeWideIntegerType(targetType) {
 		return "", false
 	}
+	signed := isFixedSignedWideIntegerType(targetType)
 	switch tok {
 	case token.SHL_ASSIGN:
-		return RuntimeHelperUint64Shl, true
+		return wideIntegerHelper(signed, RuntimeHelperUint64Shl, RuntimeHelperInt64Shl), true
 	case token.SHR_ASSIGN:
-		return RuntimeHelperUint64Shr, true
+		return wideIntegerHelper(signed, RuntimeHelperUint64Shr, RuntimeHelperInt64Shr), true
 	case token.MUL_ASSIGN:
-		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Mul, RuntimeHelperInt64Mul), true
+		return wideIntegerHelper(signed, RuntimeHelperUint64Mul, RuntimeHelperInt64Mul), true
 	case token.QUO_ASSIGN:
-		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Div, RuntimeHelperInt64Div), true
+		return wideIntegerHelper(signed, RuntimeHelperUint64Div, RuntimeHelperInt64Div), true
 	case token.REM_ASSIGN:
-		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Mod, RuntimeHelperInt64Mod), true
+		return wideIntegerHelper(signed, RuntimeHelperUint64Mod, RuntimeHelperInt64Mod), true
 	case token.ADD_ASSIGN:
-		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Add, RuntimeHelperInt64Add), true
+		return wideIntegerHelper(signed, RuntimeHelperUint64Add, RuntimeHelperInt64Add), true
 	case token.SUB_ASSIGN:
-		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Sub, RuntimeHelperInt64Sub), true
+		return wideIntegerHelper(signed, RuntimeHelperUint64Sub, RuntimeHelperInt64Sub), true
 	case token.AND_ASSIGN:
-		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64And, RuntimeHelperInt64And), true
+		return wideIntegerHelper(signed, RuntimeHelperUint64And, RuntimeHelperInt64And), true
 	case token.OR_ASSIGN:
-		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Or, RuntimeHelperInt64Or), true
+		return wideIntegerHelper(signed, RuntimeHelperUint64Or, RuntimeHelperInt64Or), true
 	case token.XOR_ASSIGN:
-		return wideIntegerHelper(isFixedSignedWideIntegerType(targetType), RuntimeHelperUint64Xor, RuntimeHelperInt64Xor), true
+		return wideIntegerHelper(signed, RuntimeHelperUint64Xor, RuntimeHelperInt64Xor), true
 	default:
 		return "", false
 	}
@@ -7058,8 +7059,8 @@ func (o *LoweringOwner) lowerConversionExpr(
 }
 
 func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
-	resultWide := isFixedWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr))
-	leftWide := isFixedWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X))
+	resultWide := isRuntimeWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr))
+	leftWide := isRuntimeWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X))
 	if !resultWide && !leftWide {
 		return "", false
 	}
@@ -9967,6 +9968,14 @@ func isFixedSignedWideIntegerType(typ types.Type) bool {
 	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Kind() == types.Int64
+}
+
+func isRuntimeWideIntegerType(typ types.Type) bool {
+	if isFixedWideIntegerType(typ) {
+		return true
+	}
+	bits, ok := unsignedIntegerBits(typ)
+	return ok && bits > 32
 }
 
 func isRuneSliceType(typ types.Type) bool {

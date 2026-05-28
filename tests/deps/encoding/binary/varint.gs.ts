@@ -51,7 +51,7 @@ export function Uvarint(buf: $.Slice<number>): [number, number] {
 			return [$.uint($.uint64Or(x, ($.uint64Shl($.uint(b, 64), s))), 64), i + 1]
 		}
 		x = $.uint64Or(x, $.uint($.uint64Shl($.uint(b & 0x7f, 64), s), 64))
-		s = s + (7)
+		s = $.uint64Add(s, 7)
 	}
 	return [$.uint(0, 64), 0]
 }
@@ -109,7 +109,7 @@ export async function ReadUvarint(r: io.ByteReader | null): globalThis.Promise<[
 			return [$.uint($.uint64Or(x, ($.uint64Shl($.uint(b, 64), s))), 64), null]
 		}
 		x = $.uint64Or(x, $.uint($.uint64Shl($.uint(b & 0x7f, 64), s), 64))
-		s = s + (7)
+		s = $.uint64Add(s, 7)
 	}
 	return [$.uint(x, 64), errOverflow]
 }

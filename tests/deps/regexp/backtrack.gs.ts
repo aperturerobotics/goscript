@@ -201,10 +201,10 @@ export class bitState {
 	public shouldVisit(pc: number, pos: number): boolean {
 		let b: bitState | $.VarRef<bitState> | null = this
 		let n = $.uint(($.int(pc) * ($.pointerValue<bitState>(b).end + 1)) + pos, 64)
-		if ($.uint(($.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] & (1 << (n & (visitedBits - 1)))), 32) != $.uint(0, 32)) {
+		if ($.uint(($.pointerValue<bitState>(b).visited![$.uint64Div(n, visitedBits)] & (1 << ($.uint64And(n, ($.uint64Sub(visitedBits, 1)))))), 32) != $.uint(0, 32)) {
 			return false
 		}
-		$.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] = $.pointerValue<bitState>(b).visited![Math.trunc(n / visitedBits)] | ($.uint(1 << (n & (visitedBits - 1)), 32))
+		$.pointerValue<bitState>(b).visited![$.uint64Div(n, visitedBits)] = $.pointerValue<bitState>(b).visited![$.uint64Div(n, visitedBits)] | ($.uint(1 << ($.uint64And(n, ($.uint64Sub(visitedBits, 1)))), 32))
 		return true
 	}
 
