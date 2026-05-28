@@ -14,6 +14,12 @@ export async function main(): globalThis.Promise<void> {
 
 	value = $.int64Mul(value, $.int($.int(-3)))
 	$.println("int64-mul", $.int(value))
+
+	let shifted = $.int($.int(-8))
+	shifted = $.int64Shr(shifted, $.int(1))
+	$.println("int64-shr", $.int(shifted))
+	shifted = $.int64Shl(shifted, $.int(2))
+	$.println("int64-shl", $.int(shifted))
 }
 
 if ($.isMainScript(import.meta)) {

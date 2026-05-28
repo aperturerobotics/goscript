@@ -11,4 +11,10 @@ func main() {
 
 	value *= int64(-3)
 	println("int64-mul", value)
+
+	shifted := int64(-8)
+	shifted >>= 1
+	println("int64-shr", shifted)
+	shifted <<= 2
+	println("int64-shl", shifted)
 }

@@ -1,3 +1,5 @@
 int64-add -2
 int64-sub 0
 int64-mul 0
+int64-shr -4
+int64-shl -16
