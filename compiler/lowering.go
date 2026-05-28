@@ -1124,7 +1124,7 @@ func isConstGenDecl(decl ast.Decl) bool {
 }
 
 func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([]loweredDecl, []Diagnostic) {
-	var decls []loweredDecl
+	decls := make([]loweredDecl, 0, len(decl.Specs))
 	var diagnostics []Diagnostic
 	for _, spec := range decl.Specs {
 		switch typed := spec.(type) {
@@ -2392,6 +2392,7 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 		name:          safeIdentifier(semType.name),
 		typeName:      runtimeNamedTypeName(semType.named),
 		cloneMethod:   "clone",
+		fields:        make([]loweredStructField, 0, len(semType.fields)),
 	}
 	for idx, field := range semType.fields {
 		structValue := isStructValueType(field.typ)
@@ -2418,9 +2419,12 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 
 	methodDecls := o.methodDeclsForType(ctx, semType.named)
 	explicitMethods := make(map[string]bool, len(methodDecls))
-	for _, methodDecl := range methodDecls {
-		if methodDecl != nil {
-			explicitMethods[methodDecl.Name.Name] = true
+	if len(methodDecls) != 0 {
+		lowered.methods = make([]loweredFunction, 0, len(methodDecls))
+		for _, methodDecl := range methodDecls {
+			if methodDecl != nil {
+				explicitMethods[methodDecl.Name.Name] = true
+			}
 		}
 	}
 	var diagnostics []Diagnostic
