@@ -34,15 +34,20 @@ function formatValue(value: any, verb: string): string {
   switch (verb) {
     case 'v': // default format
       return defaultFormat(value)
+    case 'w': // wrapped error
+      return defaultFormat(value)
     case 'd': // decimal integer
       return String(Math.trunc(Number(value)))
     case 'f': // decimal point, no exponent
       return Number(value).toString()
     case 's': // string
-      return String(value)
+      if (typeof value === 'string') return value
+      if (value instanceof Uint8Array) return $.bytesToString(value)
+      return defaultFormat(value)
     case 't': // boolean
       return value ? 'true' : 'false'
     case 'T': // type (approximate Go names for primitives we need)
+      if (hasGoTypeName(value)) return value.__goType
       if (typeof value === 'number') {
         return Number.isInteger(value) ? 'int' : 'float64'
       }
@@ -85,6 +90,14 @@ function formatValue(value: any, verb: string): string {
   }
 }
 
+function hasGoTypeName(value: unknown): value is { __goType: string } {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof (value as { __goType?: unknown }).__goType === 'string'
+  )
+}
+
 function defaultFormat(value: any): string {
   if (value === null || value === undefined) return '<nil>'
   if (typeof value === 'boolean') return value ? 'true' : 'false'
@@ -119,6 +132,9 @@ function defaultFormat(value: any): string {
       } catch {
         // Ignore error by continuing to next case.
       }
+    }
+    if ('__goValue' in value) {
+      return defaultFormat((value as { __goValue: unknown }).__goValue)
     }
     // Basic Map/Set rendering
     if (value instanceof Map) {

@@ -330,6 +330,7 @@ export function complex(real: number, imag: number): Complex {
 }
 
 export function real(value: number | Complex | null | undefined): number {
+  value = unwrapGoValue(value)
   if (typeof value === 'number') {
     return value
   }
@@ -337,10 +338,23 @@ export function real(value: number | Complex | null | undefined): number {
 }
 
 export function imag(value: number | Complex | null | undefined): number {
+  value = unwrapGoValue(value)
   if (typeof value === 'number') {
     return 0
   }
   return value?.imag ?? 0
+}
+
+function unwrapGoValue<T>(value: T): T {
+  if (
+    value !== null &&
+    value !== undefined &&
+    typeof value === 'object' &&
+    '__goValue' in value
+  ) {
+    return (value as { __goValue: T }).__goValue
+  }
+  return value
 }
 
 // Bytes represents all valid []byte representations in TypeScript

@@ -58,6 +58,15 @@ describe('fmt basic value formatting', () => {
     expect(fmt.Sprintf('Type: %T', 3.14)).toBe('Type: float64')
     expect(fmt.Sprintf('Type: %T', 'hello')).toBe('Type: string')
     expect(fmt.Sprintf('Type: %T', true)).toBe('Type: bool')
+    expect(
+      fmt.Sprintf(
+        'Type: %T',
+        $.namedValueInterfaceValue(123, 'int', {}, {
+          kind: $.TypeKind.Basic,
+          name: 'int',
+        }),
+      ),
+    ).toBe('Type: int')
   })
 
   it('%d truncation behavior including negatives', () => {
@@ -114,6 +123,20 @@ describe('fmt basic value formatting', () => {
     }
     // We prefer GoString() first
     expect(fmt.Sprintf('%v', goStringer)).toBe('<go stringer>')
+  })
+
+  it('%w formats errors by Error method', () => {
+    const err = $.newError('root')
+    expect(fmt.Errorf('wrap: %w', err)?.Error()).toBe('wrap: root')
+  })
+
+  it('%s formats stringers by String method', () => {
+    const stringer = {
+      String() {
+        return 'string-value'
+      },
+    }
+    expect(fmt.Sprintf('value=%s', stringer)).toBe('value=string-value')
   })
 })
 

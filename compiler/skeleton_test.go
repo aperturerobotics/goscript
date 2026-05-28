@@ -2843,6 +2843,44 @@ func TestCompilePackagesPacksVariadicCallsInGeneratedSubpackage(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesBoxesNumericVariadicInterfaceArgs(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/numeric-interface\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package numericinterface",
+			"func collect(values ...any) {}",
+			"func main() {",
+			"  var version int32 = 2",
+			"  collect(version, uint32(3))",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "numeric-interface", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"$.namedValueInterfaceValue<any>(version, \"int32\", {}, { kind: $.TypeKind.Basic, name: \"int32\" })",
+		"$.namedValueInterfaceValue<any>($.uint(3, 32), \"uint32\", {}, { kind: $.TypeKind.Basic, name: \"uint32\" })",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesAwaitsFmtWriterOverrides(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/fmt-writer\n\ngo 1.25.3\n",

@@ -72,66 +72,110 @@ export interface WriteSeeker extends Writer, Seeker {}
 export interface ReadWriteSeeker extends Reader, Writer, Seeker {}
 
 class pipeState {
-  private chunks: Uint8Array[] = []
-  private readOffset = 0
   private readerClosed = false
   private writerClosed = false
   private readerErr: $.GoError = null
   private writerErr: $.GoError = null
+  private pendingReads: Array<{
+    data: $.Bytes
+    resolve: (result: [number, $.GoError]) => void
+  }> = []
+  private pendingWrites: Array<{
+    data: Uint8Array
+    offset: number
+    resolve: (result: [number, $.GoError]) => void
+  }> = []
 
-  Read(p: $.Bytes): [number, $.GoError] {
-    if (this.readerClosed) {
-      return [0, this.readerErr ?? ErrClosedPipe]
-    }
-    if ($.len(p) === 0) {
-      return [0, null]
-    }
-    if (this.chunks.length === 0) {
+  Read(p: $.Bytes): Promise<[number, $.GoError]> {
+    return (async (): Promise<[number, $.GoError]> => {
+      if (this.readerClosed) {
+        return [0, this.readerErr ?? ErrClosedPipe]
+      }
+      if ($.len(p) === 0) {
+        return [0, null]
+      }
+      if (this.pendingWrites.length > 0) {
+        return this.consumeNextWrite(p)
+      }
       if (this.writerClosed) {
         return [0, this.writerErr ?? EOF]
       }
-      return [0, EOF]
-    }
-
-    let copied = 0
-    while (copied < $.len(p) && this.chunks.length > 0) {
-      const chunk = this.chunks[0]
-      const available = chunk.length - this.readOffset
-      const want = Math.min($.len(p) - copied, available)
-      const target = $.goSlice(p, copied, copied + want)
-      $.copy(target, chunk.subarray(this.readOffset, this.readOffset + want))
-      copied += want
-      this.readOffset += want
-      if (this.readOffset === chunk.length) {
-        this.chunks.shift()
-        this.readOffset = 0
-      }
-    }
-    return [copied, null]
+      return await new Promise<[number, $.GoError]>((resolve) => {
+        this.pendingReads.push({ data: p, resolve })
+      })
+    })()
   }
 
-  Write(p: $.Bytes): [number, $.GoError] {
-    if (this.writerClosed || this.readerClosed) {
-      return [0, this.readerErr ?? ErrClosedPipe]
-    }
-    const data = new Uint8Array($.len(p))
-    $.copy(data, p)
-    this.chunks.push(data)
-    return [$.len(p), null]
+  Write(p: $.Bytes): Promise<[number, $.GoError]> {
+    return (async (): Promise<[number, $.GoError]> => {
+      if (this.writerClosed || this.readerClosed) {
+        return [0, this.readerErr ?? ErrClosedPipe]
+      }
+      if ($.len(p) === 0) {
+        return [0, null]
+      }
+      const data = new Uint8Array($.len(p))
+      $.copy(data, p)
+      return await new Promise<[number, $.GoError]>((resolve) => {
+        this.pendingWrites.push({ data, offset: 0, resolve })
+        this.drain()
+      })
+    })()
   }
 
   CloseReader(err: $.GoError): $.GoError {
     this.readerClosed = true
     this.readerErr = err
-    this.chunks = []
-    this.readOffset = 0
+    this.resolvePendingReads(ErrClosedPipe)
+    this.resolvePendingWrites(ErrClosedPipe)
     return null
   }
 
   CloseWriter(err: $.GoError): $.GoError {
     this.writerClosed = true
     this.writerErr = err
+    if (this.pendingWrites.length === 0) {
+      this.resolvePendingReads(err ?? EOF)
+    }
     return null
+  }
+
+  private drain(): void {
+    while (this.pendingWrites.length > 0 && this.pendingReads.length > 0) {
+      if (this.readerClosed) {
+        this.resolvePendingWrites(this.readerErr ?? ErrClosedPipe)
+        return
+      }
+      const pending = this.pendingReads.shift()!
+      pending.resolve(this.consumeNextWrite(pending.data))
+    }
+  }
+
+  private consumeNextWrite(p: $.Bytes): [number, $.GoError] {
+    const pending = this.pendingWrites[0]
+    const n = Math.min($.len(p), pending.data.length - pending.offset)
+    $.copy(p, pending.data.subarray(pending.offset, pending.offset + n))
+    pending.offset += n
+    if (pending.offset === pending.data.length) {
+      this.pendingWrites.shift()
+      pending.resolve([pending.data.length, null])
+      if (this.writerClosed && this.pendingWrites.length === 0) {
+        this.resolvePendingReads(this.writerErr ?? EOF)
+      }
+    }
+    return [n, null]
+  }
+
+  private resolvePendingReads(err: $.GoError): void {
+    while (this.pendingReads.length > 0) {
+      this.pendingReads.shift()!.resolve([0, err])
+    }
+  }
+
+  private resolvePendingWrites(err: $.GoError): void {
+    while (this.pendingWrites.length > 0) {
+      this.pendingWrites.shift()!.resolve([0, err])
+    }
   }
 }
 
@@ -140,7 +184,7 @@ export class PipeReader implements Reader, Closer {
   constructor(private pipe: pipeState) {}
 
   Read(data: $.Bytes): [number, $.GoError] {
-    return this.pipe.Read(data)
+    return this.pipe.Read(data) as any
   }
 
   Close(): $.GoError {
@@ -157,7 +201,7 @@ export class PipeWriter implements Writer, Closer {
   constructor(private pipe: pipeState) {}
 
   Write(data: $.Bytes): [number, $.GoError] {
-    return this.pipe.Write(data)
+    return this.pipe.Write(data) as any
   }
 
   Close(): $.GoError {
@@ -703,15 +747,19 @@ class teeReader implements Reader {
   }
 
   Read(p: $.Bytes): [number, $.GoError] {
+    return this.read(p) as any
+  }
+
+  private async read(p: $.Bytes): Promise<[number, $.GoError]> {
     if (this.r == null) {
       throw new Error('io.TeeReader: nil reader')
     }
-    const [n, err] = this.r.Read(p)
+    const [n, err] = await this.r.Read(p)
     if (n > 0) {
       if (this.w == null) {
         throw new Error('io.TeeReader: nil writer')
       }
-      const [nw, ew] = this.w.Write($.goSlice(p, 0, n))
+      const [nw, ew] = await this.w.Write($.goSlice(p, 0, n))
       if (ew !== null) {
         return [n, ew]
       }

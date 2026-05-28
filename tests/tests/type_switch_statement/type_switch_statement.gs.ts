@@ -68,7 +68,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Type switch without variable
-	let x: any = 123
+	let x: any = $.namedValueInterfaceValue<any>(123, "int", {}, { kind: $.TypeKind.Basic, name: "int" })
 	{
 		const __goscriptTypeSwitchValue = x
 		switch (true) {
@@ -142,7 +142,7 @@ export async function main(): globalThis.Promise<void> {
 		}
 	}
 
-	for (let __goscriptRangeTarget0 = $.arrayToSlice<any>([$.int(7, 32)]), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+	for (let __goscriptRangeTarget0 = $.arrayToSlice<any>([$.namedValueInterfaceValue<any>($.int(7, 32), "int32", {}, { kind: $.TypeKind.Basic, name: "int32" })]), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let v = __goscriptRangeTarget0![__rangeIndex]
 		{
 			const __goscriptTypeSwitchValue = v
@@ -158,7 +158,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	let count = 0
-	for (let __goscriptRangeTarget1 = $.arrayToSlice<any>([1, "skip", 2]), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
+	for (let __goscriptRangeTarget1 = $.arrayToSlice<any>([$.namedValueInterfaceValue<any>(1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), "skip", $.namedValueInterfaceValue<any>(2, "int", {}, { kind: $.TypeKind.Basic, name: "int" })]), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 		let v = __goscriptRangeTarget1![__rangeIndex]
 		{
 			const __goscriptTypeSwitchValue = v
@@ -219,7 +219,7 @@ export async function main(): globalThis.Promise<void> {
 }
 
 export function getInterface(): any {
-	return 42
+	return $.namedValueInterfaceValue<any>(42, "int", {}, { kind: $.TypeKind.Basic, name: "int" })
 }
 
 export function parseObjectIdentifier(): [ObjectIdentifier, boolean] {

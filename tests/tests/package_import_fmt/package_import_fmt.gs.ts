@@ -63,7 +63,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test Printf with basic formatting
 	let name = "Go"
 	let version = 1.21
-	fmt.Printf("Welcome to %s %.2f\n", name, version)
+	fmt.Printf("Welcome to %s %.2f\n", name, $.namedValueInterfaceValue<any>(version, "float64", {}, { kind: $.TypeKind.Basic, name: "float64" }))
 
 	// Test Println
 	fmt.Println("This is println")
@@ -76,9 +76,9 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Println("Sprint spread result:", spreadResult)
 
 	// Test Sprintf
-	let formatted = fmt.Sprintf("Number: %d, String: %s", 42, "test")
+	let formatted = fmt.Sprintf("Number: %d, String: %s", $.namedValueInterfaceValue<any>(42, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), "test")
 	fmt.Println("Sprintf result:", formatted)
-	let formatArgs: $.Slice<any> = $.arrayToSlice<any>([7, "spread"])
+	let formatArgs: $.Slice<any> = $.arrayToSlice<any>([$.namedValueInterfaceValue<any>(7, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), "spread"])
 	let formattedSpread = fmt.Sprintf("Spread Number: %d, String: %s", ...(formatArgs ?? []))
 	fmt.Println("Sprintf spread result:", formattedSpread)
 
@@ -87,21 +87,21 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Print("Sprintln result:", sprintln_result)
 
 	// Test Errorf
-	let err = fmt.Errorf("error code: %d", 404)
+	let err = fmt.Errorf("error code: %d", $.namedValueInterfaceValue<any>(404, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 	fmt.Println("Error:", (err as any))
 
 	// Test various format verbs
 	fmt.Printf("Boolean: %t\n", true)
-	fmt.Printf("Integer: %d\n", 123)
-	fmt.Printf("Float: %f\n", 3.14159)
+	fmt.Printf("Integer: %d\n", $.namedValueInterfaceValue<any>(123, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
+	fmt.Printf("Float: %f\n", $.namedValueInterfaceValue<any>(3.14159, "float64", {}, { kind: $.TypeKind.Basic, name: "float64" }))
 	fmt.Printf("String: %s\n", "hello")
-	fmt.Printf("Type: %T\n", 42)
+	fmt.Printf("Type: %T\n", $.namedValueInterfaceValue<any>(42, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 	fmt.Printf("Value: %v\n", $.interfaceValue<any>($.arrayToSlice<number>([1, 2, 3]), "[]int"))
 
 	// Test width and precision
 	fmt.Printf("Width: '%5s'\n", "hi")
-	fmt.Printf("Precision: '%.2f'\n", 3.14159)
-	fmt.Printf("Both: '%5.2f'\n", 3.14159)
+	fmt.Printf("Precision: '%.2f'\n", $.namedValueInterfaceValue<any>(3.14159, "float64", {}, { kind: $.TypeKind.Basic, name: "float64" }))
+	fmt.Printf("Both: '%5.2f'\n", $.namedValueInterfaceValue<any>(3.14159, "float64", {}, { kind: $.TypeKind.Basic, name: "float64" }))
 	fmt.Printf("Formatter: %v\n", $.interfaceValue<any>($.markAsStructValue(new byteFormatter({prefix: new Uint8Array([98, 121, 116, 101, 45])})), "main.byteFormatter"))
 	let appended: $.Slice<number> = fmt.Append(new Uint8Array([98, 97, 115, 101, 45]), "tail")
 	fmt.Println("Append bytes:", $.bytesToString(appended))

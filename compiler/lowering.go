@@ -8921,6 +8921,9 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 			return wrapper
 		}
 	}
+	if wrapper := o.lowerNumericInterfaceWrapper(ctx, targetType, sourceType, value); wrapper != "" {
+		return wrapper
+	}
 	if isInterfaceType(targetType) && isStructValueType(sourceType) {
 		if cloneStructValue {
 			value = o.lowerStructClone(value)
@@ -8967,6 +8970,25 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 		}
 	}
 	return value
+}
+
+func (o *LoweringOwner) lowerNumericInterfaceWrapper(
+	ctx lowerFileContext,
+	targetType types.Type,
+	sourceType types.Type,
+	value string,
+) string {
+	if targetType == nil || sourceType == nil || !isInterfaceType(targetType) || isInterfaceType(sourceType) {
+		return ""
+	}
+	basic, ok := types.Unalias(sourceType).(*types.Basic)
+	if !ok || basic.Info()&types.IsNumeric == 0 || basic.Info()&types.IsUntyped != 0 {
+		return ""
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedValueInterfaceValue) +
+		"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " +
+		strconv.Quote(goRuntimeTypeString(sourceType)) + ", {}, " +
+		o.runtimeTypeInfoExpr(sourceType) + ")"
 }
 
 func isBasicFixedWideIntegerType(typ types.Type) bool {

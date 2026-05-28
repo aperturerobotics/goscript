@@ -12,7 +12,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("New error:", $.pointerValue<Exclude<$.GoError, null>>(err1).Error())
 
 	// Test Errorf
-	let err2 = errors.Errorf("formatted error: %d", 42)
+	let err2 = errors.Errorf("formatted error: %d", $.namedValueInterfaceValue<any>(42, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 	$.println("Errorf error:", $.pointerValue<Exclude<$.GoError, null>>(err2).Error())
 
 	// Test WithStack
@@ -33,7 +33,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("WithMessage error:", $.pointerValue<Exclude<$.GoError, null>>(err6).Error())
 
 	// Test WithMessagef
-	let err7 = errors.WithMessagef($.pointerValueOrNil(baseErr)!, "additional formatted message: %d", 123)
+	let err7 = errors.WithMessagef($.pointerValueOrNil(baseErr)!, "additional formatted message: %d", $.namedValueInterfaceValue<any>(123, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 	$.println("WithMessagef error:", $.pointerValue<Exclude<$.GoError, null>>(err7).Error())
 
 	// Test Cause

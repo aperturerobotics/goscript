@@ -235,20 +235,20 @@ export function __goscript_set_decompressors(__goscriptValue: sync.Map): void {
 }
 
 async function __goscriptInit0(): globalThis.Promise<void> {
-	await compressors.value.Store(0, $.interfaceValue<any>($.namedFunction($.functionValue((w: io.Writer | null): [io.WriteCloser | null, $.GoError] => {
+	await compressors.value.Store($.namedValueInterfaceValue<any>(0, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction($.functionValue((w: io.Writer | null): [io.WriteCloser | null, $.GoError] => {
 		return [$.interfaceValue<io.WriteCloser | null>(new __goscript_writer.nopCloser({Writer: w}), "*zip.nopCloser"), null]
 	}, ({ kind: $.TypeKind.Function, params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo)), "zip.Compressor"), "zip.Compressor"))
-	await compressors.value.Store(8, $.interfaceValue<any>($.namedFunction($.functionValue(async (w: io.Writer | null): globalThis.Promise<[io.WriteCloser | null, $.GoError]> => {
+	await compressors.value.Store($.namedValueInterfaceValue<any>(8, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction($.functionValue(async (w: io.Writer | null): globalThis.Promise<[io.WriteCloser | null, $.GoError]> => {
 		return [await newFlateWriter(w), null]
 	}, ({ kind: $.TypeKind.Function, params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo)), "zip.Compressor"), "zip.Compressor"))
 
-	await decompressors.value.Store(0, $.interfaceValue<any>($.namedFunction(io.NopCloser, "zip.Decompressor"), "zip.Decompressor"))
-	await decompressors.value.Store(8, $.interfaceValue<any>($.namedFunction(newFlateReader, "zip.Decompressor"), "zip.Decompressor"))
+	await decompressors.value.Store($.namedValueInterfaceValue<any>(0, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction(io.NopCloser, "zip.Decompressor"), "zip.Decompressor"))
+	await decompressors.value.Store($.namedValueInterfaceValue<any>(8, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction(newFlateReader, "zip.Decompressor"), "zip.Decompressor"))
 }
 
 export async function RegisterDecompressor(method: number, dcomp: ((r: io.Reader | null) => io.ReadCloser | null | globalThis.Promise<io.ReadCloser | null>) | null): globalThis.Promise<void> {
 	{
-		let [, dup] = await decompressors.value.LoadOrStore(method, $.interfaceValue<any>(dcomp, "zip.Decompressor"))
+		let [, dup] = await decompressors.value.LoadOrStore($.namedValueInterfaceValue<any>(method, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>(dcomp, "zip.Decompressor"))
 		if (dup) {
 			$.panic("decompressor already registered")
 		}
@@ -257,7 +257,7 @@ export async function RegisterDecompressor(method: number, dcomp: ((r: io.Reader
 
 export async function RegisterCompressor(method: number, comp: ((w: io.Writer | null) => [io.WriteCloser | null, $.GoError] | globalThis.Promise<[io.WriteCloser | null, $.GoError]>) | null): globalThis.Promise<void> {
 	{
-		let [, dup] = await compressors.value.LoadOrStore(method, $.interfaceValue<any>(comp, "zip.Compressor"))
+		let [, dup] = await compressors.value.LoadOrStore($.namedValueInterfaceValue<any>(method, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>(comp, "zip.Compressor"))
 		if (dup) {
 			$.panic("compressor already registered")
 		}
@@ -265,7 +265,7 @@ export async function RegisterCompressor(method: number, comp: ((w: io.Writer | 
 }
 
 export async function compressor(method: number): globalThis.Promise<Compressor | null> {
-	let [ci, ok] = await compressors.value.Load(method)
+	let [ci, ok] = await compressors.value.Load($.namedValueInterfaceValue<any>(method, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }))
 	if (!ok) {
 		return (null as Compressor | null)
 	}
@@ -273,7 +273,7 @@ export async function compressor(method: number): globalThis.Promise<Compressor 
 }
 
 export async function decompressor(method: number): globalThis.Promise<Decompressor | null> {
-	let [di, ok] = await decompressors.value.Load(method)
+	let [di, ok] = await decompressors.value.Load($.namedValueInterfaceValue<any>(method, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }))
 	if (!ok) {
 		return (null as Decompressor | null)
 	}

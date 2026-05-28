@@ -3,7 +3,7 @@ import * as errors from '@goscript/errors/index.js'
 import * as io from '@goscript/io/index.js'
 
 export type Resetter = {
-  Reset(r: io.Reader | null, dict: $.Bytes | null): Promise<$.GoError>
+  Reset(r: io.Reader | null, dict: $.Bytes | null): $.GoError
 }
 
 type maybeAsyncWriter = {
@@ -26,12 +26,30 @@ export function __goscript_set_ErrHeader(value: $.GoError): void {
   ErrHeader = value
 }
 
-class zlibReader implements io.ReadCloser {
+class zlibReader implements Resetter {
+  private data: Uint8Array = new Uint8Array(0)
   private offset = 0
+  private pending:
+    | Promise<{ data: Uint8Array | null; err: $.GoError }>
+    | null = null
 
-  constructor(private data: Uint8Array) {}
+  constructor(data?: Uint8Array) {
+    if (data != null) {
+      this.data = data
+    }
+  }
 
-  Read(p: $.Bytes): [number, $.GoError] {
+  async Read(p: $.Bytes): Promise<[number, $.GoError]> {
+    const pending = this.pending
+    if (pending != null) {
+      this.pending = null
+      const result = await pending
+      if (result.err != null) {
+        return [0, result.err]
+      }
+      this.data = result.data ?? new Uint8Array(0)
+      this.offset = 0
+    }
     if (this.offset >= this.data.length) {
       return [0, io.EOF]
     }
@@ -43,6 +61,26 @@ class zlibReader implements io.ReadCloser {
   }
 
   Close(): $.GoError {
+    return null
+  }
+
+  Reset(r: io.Reader | null, dict: $.Bytes | null): $.GoError {
+    if (r == null) {
+      return errors.New('zlib: nil reader')
+    }
+    const result = readInflated(r, dict)
+    if (result instanceof Promise) {
+      this.data = new Uint8Array(0)
+      this.offset = 0
+      this.pending = result
+      return null
+    }
+    if (result.err != null) {
+      return result.err
+    }
+    this.data = result.data ?? new Uint8Array(0)
+    this.offset = 0
+    this.pending = null
     return null
   }
 }
@@ -114,21 +152,14 @@ export function NewReader(
 
 export function NewReaderDict(
   r: io.Reader | null,
-  _dict: $.Bytes | null,
+  dict: $.Bytes | null,
 ): [io.ReadCloser | null, $.GoError] {
-  if (r == null) {
-    return [null, errors.New('zlib: nil reader')]
+  const reader = new zlibReader()
+  const err = reader.Reset(r, dict)
+  if (err != null) {
+    return [null, err]
   }
-  const [data, readErr] = readAll(r)
-  if (readErr != null) {
-    return [null, readErr]
-  }
-  try {
-    const out = inflate($.bytesToUint8Array(data))
-    return [new zlibReader(out), null]
-  } catch {
-    return [null, ErrHeader]
-  }
+  return [reader as any, null]
 }
 
 function deflate(data: Uint8Array): Uint8Array {
@@ -173,20 +204,74 @@ function nodeZlib(): any {
   throw new Error('compress/zlib: node zlib module unavailable')
 }
 
-function readAll(r: io.Reader): [Uint8Array, $.GoError] {
-  const chunks: Uint8Array[] = []
-  const buf = $.makeSlice<number>(32 * 1024, undefined, 'byte')
+function readInflated(
+  r: io.Reader,
+  dict: $.Bytes | null,
+):
+  | { data: Uint8Array | null; err: $.GoError }
+  | Promise<{ data: Uint8Array | null; err: $.GoError }> {
+  const chunks: number[] = []
+  const buf = $.makeSlice<number>(1, undefined, 'byte')
   while (true) {
-    const [n, err] = r.Read(buf)
-    if (n > 0) {
-      chunks.push($.bytesToUint8Array($.goSlice(buf, 0, n)).slice())
+    const read = r.Read(buf)
+    if (read instanceof Promise) {
+      return readInflatedAsync(read, r, buf, chunks, dict)
+    }
+    const [n, err] = read
+    const result = recordCompressedBytes(chunks, buf, n, dict)
+    if (result.err == null && result.data != null) {
+      return result
     }
     if (err != null) {
       if (err === io.EOF) {
-        return [concat(chunks), null]
+        return result
       }
-      return [new Uint8Array(0), err]
+      return { data: null, err }
     }
+  }
+}
+
+async function readInflatedAsync(
+  first: Promise<[number, $.GoError]>,
+  r: io.Reader,
+  buf: $.Bytes,
+  chunks: number[],
+  dict: $.Bytes | null,
+): Promise<{ data: Uint8Array | null; err: $.GoError }> {
+  let read = await first
+  while (true) {
+    const [n, err] = read
+    const result = recordCompressedBytes(chunks, buf, n, dict)
+    if (result.err == null && result.data != null) {
+      return result
+    }
+    if (err != null) {
+      if (err === io.EOF) {
+        return result
+      }
+      return { data: null, err }
+    }
+    read = await r.Read(buf)
+  }
+}
+
+function recordCompressedBytes(
+  chunks: number[],
+  buf: $.Bytes,
+  n: number,
+  dict: $.Bytes | null,
+): { data: Uint8Array | null; err: $.GoError } {
+  if (n > 0) {
+    chunks.push(...$.bytesToUint8Array($.goSlice(buf, 0, n)))
+  }
+  const compressed = new Uint8Array(chunks)
+  try {
+    return { data: inflate(compressed), err: null }
+  } catch {
+    if (dict != null && $.len(dict) > 0) {
+      return { data: null, err: ErrDictionary }
+    }
+    return { data: null, err: ErrHeader }
   }
 }
 

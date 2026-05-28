@@ -31,7 +31,7 @@ export async function main(): globalThis.Promise<void> {
 		return 0
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 
-	fmt.Printf("Index: %d, Found: %t\n", index, found)
+	fmt.Printf("Index: %d, Found: %t\n", $.namedValueInterfaceValue<any>(index, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), found)
 }
 
 if ($.isMainScript(import.meta)) {

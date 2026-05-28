@@ -328,7 +328,7 @@ export class smallByteReader {
 		n = __goscriptTuple0[0]
 		let err = __goscriptTuple0[1]
 		if ((err != null) && (!$.comparableEqual(err, io.EOF))) {
-			err = fmt.Errorf("Read(%d bytes at offset %d): %v", n, $.pointerValue<smallByteReader>(r).off, (err as any))
+			err = fmt.Errorf("Read(%d bytes at offset %d): %v", $.namedValueInterfaceValue<any>(n, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>($.pointerValue<smallByteReader>(r).off, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (err as any))
 		}
 		$.pointerValue<smallByteReader>(r).off = $.pointerValue<smallByteReader>(r).off + (n)
 		return [n, err]
@@ -373,7 +373,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 	if ($.len(content) > 0) {
 		let [n, err] = await $.pointerValue<Exclude<io.Reader, null>>(r).Read(null)
 		if ((n != 0) || (err != null)) {
-			return fmt.Errorf("Read(0) = %d, %v, want 0, nil", n, (err as any))
+			return fmt.Errorf("Read(0) = %d, %v, want 0, nil", $.namedValueInterfaceValue<any>(n, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (err as any))
 		}
 	}
 
@@ -390,7 +390,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 	let n = __goscriptTuple2[0]
 	err = __goscriptTuple2[1]
 	if ((n != 0) || (!$.comparableEqual(err, io.EOF))) {
-		return fmt.Errorf("Read(10) at EOF = %v, %v, want 0, EOF", n, (err as any))
+		return fmt.Errorf("Read(10) at EOF = %v, %v, want 0, EOF", $.namedValueInterfaceValue<any>(n, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (err as any))
 	}
 
 	let __goscriptShadow0 = r
@@ -405,7 +405,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				let off = $.int(__goscriptTuple4[0])
 				let __goscriptShadow2 = __goscriptTuple4[1]
 				if (($.int(off) != $.int($.int($.len(content)))) || (__goscriptShadow2 != null)) {
-					return fmt.Errorf("Seek(0, 1) from EOF = %d, %v, want %d, nil", off, (__goscriptShadow2 as any), $.len(content))
+					return fmt.Errorf("Seek(0, 1) from EOF = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow2 as any), $.namedValueInterfaceValue<any>($.len(content), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
 
@@ -418,7 +418,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 					let off = $.int(__goscriptTuple5[0])
 					let __goscriptShadow3 = __goscriptTuple5[1]
 					if (($.int(off) != $.int($.int($.len(content) - 1))) || (__goscriptShadow3 != null)) {
-						return fmt.Errorf("Seek(-1, 1) from EOF = %d, %v, want %d, nil", -off, (__goscriptShadow3 as any), $.len(content) - 1)
+						return fmt.Errorf("Seek(-1, 1) from EOF = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(-off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow3 as any), $.namedValueInterfaceValue<any>($.len(content) - 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 				}
 				{
@@ -426,7 +426,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 					let off = $.int(__goscriptTuple6[0])
 					let __goscriptShadow4 = __goscriptTuple6[1]
 					if (($.int(off) != $.int($.int(middle - 1))) || (__goscriptShadow4 != null)) {
-						return fmt.Errorf("Seek(%d, 1) from %d = %d, %v, want %d, nil", Math.trunc(-$.len(content) / 3), $.len(content) - 1, off, (__goscriptShadow4 as any), middle - 1)
+						return fmt.Errorf("Seek(%d, 1) from %d = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(Math.trunc(-$.len(content) / 3), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>($.len(content) - 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow4 as any), $.namedValueInterfaceValue<any>(middle - 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 				}
 				{
@@ -434,7 +434,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 					let off = $.int(__goscriptTuple7[0])
 					let __goscriptShadow5 = __goscriptTuple7[1]
 					if (($.int(off) != $.int($.int(middle))) || (__goscriptShadow5 != null)) {
-						return fmt.Errorf("Seek(+1, 1) from %d = %d, %v, want %d, nil", middle - 1, off, (__goscriptShadow5 as any), middle)
+						return fmt.Errorf("Seek(+1, 1) from %d = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(middle - 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow5 as any), $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 				}
 			}
@@ -445,7 +445,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				let off = $.int(__goscriptTuple8[0])
 				let __goscriptShadow6 = __goscriptTuple8[1]
 				if (($.int(off) != $.int($.int(middle))) || (__goscriptShadow6 != null)) {
-					return fmt.Errorf("Seek(0, 1) from %d = %d, %v, want %d, nil", middle, off, (__goscriptShadow6 as any), middle)
+					return fmt.Errorf("Seek(0, 1) from %d = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow6 as any), $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
 
@@ -454,10 +454,10 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 			let __goscriptShadow7: $.Slice<number> = __goscriptTuple9[0]
 			let __goscriptShadow8 = __goscriptTuple9[1]
 			if (__goscriptShadow8 != null) {
-				return fmt.Errorf("ReadAll from offset %d: %v", middle, (__goscriptShadow8 as any))
+				return fmt.Errorf("ReadAll from offset %d: %v", $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow8 as any))
 			}
 			if (!bytes.Equal(__goscriptShadow7, $.goSlice(content, middle, undefined))) {
-				return fmt.Errorf("ReadAll from offset %d = %q\n\twant %q", middle, $.interfaceValue<any>(__goscriptShadow7, "[]byte"), $.interfaceValue<any>($.goSlice(content, middle, undefined), "[]byte"))
+				return fmt.Errorf("ReadAll from offset %d = %q\n\twant %q", $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.interfaceValue<any>(__goscriptShadow7, "[]byte"), $.interfaceValue<any>($.goSlice(content, middle, undefined), "[]byte"))
 			}
 
 			// Seek relative to end of file, but start elsewhere.
@@ -466,7 +466,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				let off = $.int(__goscriptTuple10[0])
 				let __goscriptShadow9 = __goscriptTuple10[1]
 				if (($.int(off) != $.int($.int(Math.trunc(middle / 2)))) || (__goscriptShadow9 != null)) {
-					return fmt.Errorf("Seek(%d, 0) from EOF = %d, %v, want %d, nil", Math.trunc(middle / 2), off, (__goscriptShadow9 as any), Math.trunc(middle / 2))
+					return fmt.Errorf("Seek(%d, 0) from EOF = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow9 as any), $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
 			{
@@ -474,7 +474,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				let off = $.int(__goscriptTuple11[0])
 				let __goscriptShadow10 = __goscriptTuple11[1]
 				if (($.int(off) != $.int($.int(middle))) || (__goscriptShadow10 != null)) {
-					return fmt.Errorf("Seek(%d, 2) from %d = %d, %v, want %d, nil", Math.trunc(-$.len(content) / 3), Math.trunc(middle / 2), off, (__goscriptShadow10 as any), middle)
+					return fmt.Errorf("Seek(%d, 2) from %d = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(Math.trunc(-$.len(content) / 3), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow10 as any), $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
 
@@ -483,10 +483,10 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 			__goscriptShadow7 = __goscriptTuple12[0]
 			__goscriptShadow8 = __goscriptTuple12[1]
 			if (__goscriptShadow8 != null) {
-				return fmt.Errorf("ReadAll from offset %d: %v", middle, (__goscriptShadow8 as any))
+				return fmt.Errorf("ReadAll from offset %d: %v", $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow8 as any))
 			}
 			if (!bytes.Equal(__goscriptShadow7, $.goSlice(content, middle, undefined))) {
-				return fmt.Errorf("ReadAll from offset %d = %q\n\twant %q", middle, $.interfaceValue<any>(__goscriptShadow7, "[]byte"), $.interfaceValue<any>($.goSlice(content, middle, undefined), "[]byte"))
+				return fmt.Errorf("ReadAll from offset %d = %q\n\twant %q", $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.interfaceValue<any>(__goscriptShadow7, "[]byte"), $.interfaceValue<any>($.goSlice(content, middle, undefined), "[]byte"))
 			}
 
 			// Absolute seek & read forward.
@@ -495,17 +495,17 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				let off = $.int(__goscriptTuple13[0])
 				let __goscriptShadow11 = __goscriptTuple13[1]
 				if (($.int(off) != $.int($.int(Math.trunc(middle / 2)))) || (__goscriptShadow11 != null)) {
-					return fmt.Errorf("Seek(%d, 0) from EOF = %d, %v, want %d, nil", Math.trunc(middle / 2), off, (__goscriptShadow11 as any), Math.trunc(middle / 2))
+					return fmt.Errorf("Seek(%d, 0) from EOF = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow11 as any), $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
 			let __goscriptTuple14: any = await io.ReadAll($.pointerValueOrNil((__goscriptShadow1 as io.Reader | null))!)
 			__goscriptShadow7 = __goscriptTuple14[0]
 			__goscriptShadow8 = __goscriptTuple14[1]
 			if (__goscriptShadow8 != null) {
-				return fmt.Errorf("ReadAll from offset %d: %v", Math.trunc(middle / 2), (__goscriptShadow8 as any))
+				return fmt.Errorf("ReadAll from offset %d: %v", $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow8 as any))
 			}
 			if (!bytes.Equal(__goscriptShadow7, $.goSlice(content, Math.trunc(middle / 2), undefined))) {
-				return fmt.Errorf("ReadAll from offset %d = %q\n\twant %q", Math.trunc(middle / 2), $.interfaceValue<any>(__goscriptShadow7, "[]byte"), $.interfaceValue<any>($.goSlice(content, Math.trunc(middle / 2), undefined), "[]byte"))
+				return fmt.Errorf("ReadAll from offset %d = %q\n\twant %q", $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.interfaceValue<any>(__goscriptShadow7, "[]byte"), $.interfaceValue<any>($.goSlice(content, Math.trunc(middle / 2), undefined), "[]byte"))
 			}
 		}
 	}
@@ -522,17 +522,17 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 			}
 			let [__goscriptShadow15, __goscriptShadow16] = $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt(__goscriptShadow14, $.int(0))
 			if ((__goscriptShadow15 != $.len(__goscriptShadow14)) || ((__goscriptShadow16 != null) && (!$.comparableEqual(__goscriptShadow16, io.EOF)))) {
-				return fmt.Errorf("ReadAt(%d, 0) = %v, %v, want %d, nil or EOF", $.len(__goscriptShadow14), __goscriptShadow15, (__goscriptShadow16 as any), $.len(__goscriptShadow14))
+				return fmt.Errorf("ReadAt(%d, 0) = %v, %v, want %d, nil or EOF", $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(__goscriptShadow15, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow16 as any), $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 			}
 			if (!bytes.Equal(__goscriptShadow14, content)) {
-				return fmt.Errorf("ReadAt(%d, 0) = %q\n\twant %q", $.len(__goscriptShadow14), $.interfaceValue<any>(__goscriptShadow14, "[]byte"), $.interfaceValue<any>(content, "[]byte"))
+				return fmt.Errorf("ReadAt(%d, 0) = %q\n\twant %q", $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.interfaceValue<any>(__goscriptShadow14, "[]byte"), $.interfaceValue<any>(content, "[]byte"))
 			}
 
 			let __goscriptTuple16: any = $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, undefined, 1), $.int($.int($.len(__goscriptShadow14))))
 			__goscriptShadow15 = __goscriptTuple16[0]
 			__goscriptShadow16 = __goscriptTuple16[1]
 			if ((__goscriptShadow15 != 0) || (!$.comparableEqual(__goscriptShadow16, io.EOF))) {
-				return fmt.Errorf("ReadAt(1, %d) = %v, %v, want 0, EOF", $.len(__goscriptShadow14), __goscriptShadow15, (__goscriptShadow16 as any))
+				return fmt.Errorf("ReadAt(1, %d) = %v, %v, want 0, EOF", $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(__goscriptShadow15, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow16 as any))
 			}
 
 			for (let __goscriptRangeTarget1 = __goscriptShadow14, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
@@ -542,10 +542,10 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 			__goscriptShadow15 = __goscriptTuple17[0]
 			__goscriptShadow16 = __goscriptTuple17[1]
 			if ((__goscriptShadow15 != $.len(__goscriptShadow14)) || (!$.comparableEqual(__goscriptShadow16, io.EOF))) {
-				return fmt.Errorf("ReadAt(%d, 0) = %v, %v, want %d, EOF", $.cap(__goscriptShadow14), __goscriptShadow15, (__goscriptShadow16 as any), $.len(__goscriptShadow14))
+				return fmt.Errorf("ReadAt(%d, 0) = %v, %v, want %d, EOF", $.namedValueInterfaceValue<any>($.cap(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(__goscriptShadow15, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow16 as any), $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 			}
 			if (!bytes.Equal(__goscriptShadow14, content)) {
-				return fmt.Errorf("ReadAt(%d, 0) = %q\n\twant %q", $.len(__goscriptShadow14), $.interfaceValue<any>(__goscriptShadow14, "[]byte"), $.interfaceValue<any>(content, "[]byte"))
+				return fmt.Errorf("ReadAt(%d, 0) = %q\n\twant %q", $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.interfaceValue<any>(__goscriptShadow14, "[]byte"), $.interfaceValue<any>(content, "[]byte"))
 			}
 
 			for (let __goscriptRangeTarget2 = __goscriptShadow14, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
@@ -560,10 +560,10 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 					if (i == ($.len(__goscriptShadow14) - 1)) {
 						want = "nil or EOF"
 					}
-					return fmt.Errorf("ReadAt(1, %d) = %v, %v, want 1, %s", i, __goscriptShadow15, (__goscriptShadow16 as any), want)
+					return fmt.Errorf("ReadAt(1, %d) = %v, %v, want 1, %s", $.namedValueInterfaceValue<any>(i, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(__goscriptShadow15, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow16 as any), want)
 				}
 				if ($.uint(__goscriptShadow14![i], 8) != $.uint(content![i], 8)) {
-					return fmt.Errorf("ReadAt(1, %d) = %q want %q", i, $.interfaceValue<any>($.goSlice(__goscriptShadow14, i, i + 1), "[]byte"), $.interfaceValue<any>($.goSlice(content, i, i + 1), "[]byte"))
+					return fmt.Errorf("ReadAt(1, %d) = %q want %q", $.namedValueInterfaceValue<any>(i, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.interfaceValue<any>($.goSlice(__goscriptShadow14, i, i + 1), "[]byte"), $.interfaceValue<any>($.goSlice(content, i, i + 1), "[]byte"))
 				}
 			}
 		}

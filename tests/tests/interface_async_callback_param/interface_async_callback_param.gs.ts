@@ -62,7 +62,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let m: $.VarRef<sync.Map> = $.varRef($.markAsStructValue(new sync.Map()))
 	let callbacks = [$.functionValue(async (v: number): globalThis.Promise<$.GoError> => {
-		await m.value.Load(v)
+		await m.value.Load($.namedValueInterfaceValue<any>(v, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 		return null
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } as $.FunctionTypeInfo))]
 	$.println(await callbacks[0]!(1) == null)

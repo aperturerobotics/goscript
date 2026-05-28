@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
+import * as $ from '@goscript/builtin/index.js'
+
 import { Cond, Map, Mutex, Pool, RWMutex, WaitGroup } from './sync.js'
 
 describe('sync.WaitGroup', () => {
@@ -88,6 +90,29 @@ describe('sync.Map', () => {
     })
 
     expect(visited).toEqual(['a:1'])
+  })
+
+  it('matches boxed comparable interface keys', async () => {
+    const m = new Map()
+    const first = $.namedValueInterfaceValue(8, 'uint16', {}, {
+      kind: $.TypeKind.Basic,
+      name: 'uint16',
+    })
+    const second = $.namedValueInterfaceValue(8, 'uint16', {}, {
+      kind: $.TypeKind.Basic,
+      name: 'uint16',
+    })
+
+    await m.Store(first, 'compressor')
+    expect(await m.Load(second)).toEqual(['compressor', true])
+    expect(await m.LoadOrStore(second, 'duplicate')).toEqual([
+      'compressor',
+      true,
+    ])
+    expect(await m.CompareAndSwap(second, 'compressor', 'updated')).toBe(true)
+    expect(await m.Load(first)).toEqual(['updated', true])
+    expect(await m.CompareAndDelete(first, 'updated')).toBe(true)
+    expect(await m.Load(second)).toEqual([undefined, false])
   })
 })
 

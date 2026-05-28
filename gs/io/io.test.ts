@@ -1,5 +1,5 @@
 import * as $ from '@goscript/builtin/index.js'
-import { LimitedReader, MultiWriter, TeeReader } from './index.js'
+import { LimitedReader, MultiWriter, Pipe, TeeReader } from './index.js'
 import { describe, expect, test } from 'vitest'
 
 class sliceReader {
@@ -37,16 +37,43 @@ describe('io override', () => {
     expect(Buffer.from(buf.subarray(0, n)).toString('utf8')).toBe('abc')
   })
 
-  test('TeeReader accepts nullable generated interface values', () => {
+  test('TeeReader accepts nullable generated interface values', async () => {
     const writer = new captureWriter()
     const reader = TeeReader(new sliceReader($.stringToBytes('abc')), writer)
     const buf = new Uint8Array(4)
 
-    const [n, err] = reader.Read(buf)
+    const [n, err] = await reader.Read(buf)
 
     expect(err).toBeNull()
     expect(n).toBe(3)
     expect(Buffer.from(writer.chunks).toString('utf8')).toBe('abc')
+  })
+
+  test('TeeReader awaits async readers and writers', async () => {
+    const chunks: number[] = []
+    const reader = TeeReader(
+      {
+        async Read(p: $.Bytes): Promise<[number, $.GoError]> {
+          await Promise.resolve()
+          p!.set($.stringToBytes('abc'), 0)
+          return [3, null]
+        },
+      } as any,
+      {
+        async Write(p: $.Bytes): Promise<[number, $.GoError]> {
+          await Promise.resolve()
+          chunks.push(...Array.from(p ?? []))
+          return [$.len(p), null]
+        },
+      } as any,
+    )
+    const buf = new Uint8Array(4)
+
+    const [n, err] = await reader.Read(buf)
+
+    expect(err).toBeNull()
+    expect(n).toBe(3)
+    expect(Buffer.from(chunks).toString('utf8')).toBe('abc')
   })
 
   test('MultiWriter accepts nullable generated interface values', async () => {
@@ -77,5 +104,20 @@ describe('io override', () => {
     expect(err).toBeNull()
     expect(n).toBe(3)
     expect(Buffer.from(chunks).toString('utf8')).toBe('abc')
+  })
+
+  test('PipeReader waits for a later write', async () => {
+    const [reader, writer] = Pipe()
+    const buf = new Uint8Array(5)
+
+    const read = reader.Read(buf)
+    const [written, writeErr] = await writer.Write($.stringToBytes('later'))
+    const [readBytes, readErr] = await read
+
+    expect(writeErr).toBeNull()
+    expect(written).toBe(5)
+    expect(readErr).toBeNull()
+    expect(readBytes).toBe(5)
+    expect(Buffer.from(buf).toString('utf8')).toBe('later')
   })
 })

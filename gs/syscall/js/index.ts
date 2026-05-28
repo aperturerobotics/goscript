@@ -365,6 +365,9 @@ export function ValueOf(x: unknown): Value {
   if (x instanceof Func) {
     return x.Value.clone()
   }
+  if (isGoInterfaceValue(x)) {
+    return ValueOf(x.__goValue)
+  }
   if (x === null || x === undefined) {
     return Null()
   }
@@ -392,6 +395,15 @@ export function ValueOf(x: unknown): Value {
     return new Value({ raw: out })
   }
   return new Value({ raw: x })
+}
+
+function isGoInterfaceValue(value: unknown): value is { __goValue: unknown } {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    '__goValue' in value &&
+    typeof (value as { __goType?: unknown }).__goType === 'string'
+  )
 }
 
 export function FuncOf(

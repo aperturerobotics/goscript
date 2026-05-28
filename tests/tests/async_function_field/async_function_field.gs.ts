@@ -69,7 +69,7 @@ export async function lookupViaGetter(key: string): globalThis.Promise<[any, boo
 }
 
 export async function main(): globalThis.Promise<void> {
-	await cache.value.Store("answer", 42)
+	await cache.value.Store("answer", $.namedValueInterfaceValue<any>(42, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 	let [value, ok] = await lookup("answer")
 	if (ok) {
 		$.println("value:", $.mustTypeAssert<number>(value, { kind: $.TypeKind.Basic, name: "int" }))

@@ -22,6 +22,13 @@ type asyncReader struct {
 	done bool
 }
 
+type pipeReadResult struct {
+	n      int
+	data   string
+	errNil bool
+	errEOF bool
+}
+
 func (b *asyncBuffer) Write(p []byte) (int, error) {
 	asyncWrites.Load("last")
 	return len(p), nil
@@ -102,12 +109,22 @@ func main() {
 
 	reader, writer := io.Pipe()
 	done := make(chan bool, 1)
+	pipeReads := make(chan pipeReadResult, 2)
 	go func() {
 		buf := make([]byte, 5)
 		n, err := reader.Read(buf)
-		println("Pipe read - bytes:", n, "data:", string(buf[:n]), "err:", err == nil)
+		pipeReads <- pipeReadResult{
+			n:      n,
+			data:   string(buf[:n]),
+			errNil: err == nil,
+			errEOF: err == io.EOF,
+		}
 		n, err = reader.Read(buf)
-		println("Pipe read EOF - bytes:", n, "err EOF:", err == io.EOF)
+		pipeReads <- pipeReadResult{
+			n:      n,
+			errNil: err == nil,
+			errEOF: err == io.EOF,
+		}
 		done <- true
 	}()
 	n, err = writer.Write([]byte("hello"))
@@ -115,8 +132,34 @@ func main() {
 	err = writer.Close()
 	println("Pipe close err:", err == nil)
 	<-done
+	firstRead := <-pipeReads
+	eofRead := <-pipeReads
+	println("Pipe read - bytes:", firstRead.n, "data:", firstRead.data, "err:", firstRead.errNil)
+	println("Pipe read EOF - bytes:", eofRead.n, "err EOF:", eofRead.errEOF)
 	n, err = writer.Write([]byte("again"))
 	println("Pipe write after close - bytes:", n, "err closed:", err == io.ErrClosedPipe)
+
+	reader, writer = io.Pipe()
+	ready := make(chan bool, 1)
+	readResult := make(chan pipeReadResult, 1)
+	go func() {
+		buf := make([]byte, 5)
+		ready <- true
+		n, err := reader.Read(buf)
+		readResult <- pipeReadResult{
+			n:      n,
+			data:   string(buf[:n]),
+			errNil: err == nil,
+			errEOF: err == io.EOF,
+		}
+	}()
+	<-ready
+	n, err = writer.Write([]byte("later"))
+	delayed := <-readResult
+	println("Pipe delayed write - bytes:", n, "err:", err == nil)
+	println("Pipe delayed read - bytes:", delayed.n, "data:", delayed.data, "err:", delayed.errNil, "err EOF:", delayed.errEOF)
+	err = writer.Close()
+	println("Pipe delayed close err:", err == nil)
 
 	println("test finished")
 }

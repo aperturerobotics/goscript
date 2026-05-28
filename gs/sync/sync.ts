@@ -3,6 +3,8 @@
 // low-level library routines. Higher-level synchronization is better done via
 // channels and communication.
 
+import { comparableEqual } from '@goscript/builtin/index.js'
+
 // Locker represents an object that can be locked and unlocked
 export interface Locker {
   Lock(): Promise<void>
@@ -334,7 +336,10 @@ export class Map {
   public async Delete(key: any): Promise<void> {
     await this._m.Lock()
     try {
-      this._data.delete(key)
+      const entry = this.findEntry(key)
+      if (entry.found) {
+        this._data.delete(entry.key)
+      }
     } finally {
       this._m.Unlock()
     }
@@ -344,10 +349,11 @@ export class Map {
   public async CompareAndDelete(key: any, old: any): Promise<boolean> {
     await this._m.Lock()
     try {
-      if (!this._data.has(key) || this._data.get(key) !== old) {
+      const entry = this.findEntry(key)
+      if (!entry.found || !comparableEqual(entry.value, old)) {
         return false
       }
-      this._data.delete(key)
+      this._data.delete(entry.key)
       return true
     } finally {
       this._m.Unlock()
@@ -356,10 +362,11 @@ export class Map {
 
   // CompareAndSwap swaps the old and new values for key if the stored value is old.
   public CompareAndSwap(key: any, old: any, value: any): boolean {
-    if (!this._data.has(key) || this._data.get(key) !== old) {
+    const entry = this.findEntry(key)
+    if (!entry.found || !comparableEqual(entry.value, old)) {
       return false
     }
-    this._data.set(key, value)
+    this._data.set(entry.key, value)
     return true
   }
 
@@ -367,8 +374,8 @@ export class Map {
   public async Load(key: any): Promise<[any, boolean]> {
     await this._m.RLock()
     try {
-      const value = this._data.get(key)
-      return [value, this._data.has(key)]
+      const entry = this.findEntry(key)
+      return entry.found ? [entry.value, true] : [undefined, false]
     } finally {
       this._m.RUnlock()
     }
@@ -378,10 +385,12 @@ export class Map {
   public async LoadAndDelete(key: any): Promise<[any, boolean]> {
     await this._m.Lock()
     try {
-      const value = this._data.get(key)
-      const loaded = this._data.has(key)
-      this._data.delete(key)
-      return [value, loaded]
+      const entry = this.findEntry(key)
+      if (!entry.found) {
+        return [undefined, false]
+      }
+      this._data.delete(entry.key)
+      return [entry.value, true]
     } finally {
       this._m.Unlock()
     }
@@ -391,8 +400,9 @@ export class Map {
   public async LoadOrStore(key: any, value: any): Promise<[any, boolean]> {
     await this._m.Lock()
     try {
-      if (this._data.has(key)) {
-        return [this._data.get(key), true]
+      const entry = this.findEntry(key)
+      if (entry.found) {
+        return [entry.value, true]
       }
       this._data.set(key, value)
       return [value, false]
@@ -423,10 +433,25 @@ export class Map {
   public async Store(key: any, value: any): Promise<void> {
     await this._m.Lock()
     try {
-      this._data.set(key, value)
+      const entry = this.findEntry(key)
+      this._data.set(entry.found ? entry.key : key, value)
     } finally {
       this._m.Unlock()
     }
+  }
+
+  private findEntry(
+    key: any,
+  ): { found: false } | { found: true; key: any; value: any } {
+    if (this._data.has(key)) {
+      return { found: true, key, value: this._data.get(key) }
+    }
+    for (const [candidate, value] of this._data.entries()) {
+      if (candidate !== key && comparableEqual(candidate, key)) {
+        return { found: true, key: candidate, value }
+      }
+    }
+    return { found: false }
   }
 
   // Swap swaps the value for a key and returns the previous value if any

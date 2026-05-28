@@ -20,7 +20,7 @@ export function testVariadicInterface(name: string, values: $.Slice<any>): void 
 
 export async function main(): globalThis.Promise<void> {
 	// Test with various argument types
-	testVariadicInterface("test1", $.arrayToSlice<any>(["hello", 42, true]))
+	testVariadicInterface("test1", $.arrayToSlice<any>(["hello", $.namedValueInterfaceValue<any>(42, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), true]))
 	testVariadicInterface("test2", $.arrayToSlice<any>([null, "world"]))
 	testVariadicInterface("test3", null)
 

@@ -14,5 +14,10 @@
     "ReadFull": true,
     "ReadAll": true,
     "WriteString": true
+  },
+  "asyncMethods": {
+    "PipeReader.Read": true,
+    "PipeWriter.Write": true,
+    "TeeReader.Read": true
   }
 }

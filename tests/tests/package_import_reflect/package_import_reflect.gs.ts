@@ -72,7 +72,7 @@ export function reflectSameStart(x: $.Slice<number>, y: $.Slice<number>): boolea
 export async function main(): globalThis.Promise<void> {
 	// Test basic reflect functions
 	let x = 42
-	let v = $.markAsStructValue($.cloneStructValue(reflect.ValueOf(x)))
+	let v = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.namedValueInterfaceValue<any>(x, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))))
 	$.println("Type:", $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})).String())
 	$.println("Value:", $.int($.markAsStructValue($.cloneStructValue(v)).Int()))
 	$.println("Kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(v)).Kind()))
@@ -160,7 +160,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test with different kinds
 	let f: number = 3.14
-	let fVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf(f)))
+	let fVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.namedValueInterfaceValue<any>(f, "float64", {}, { kind: $.TypeKind.Basic, name: "float64" }))))
 	$.println("Float kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(fVal)).Kind()))
 
 	let boolVal: boolean = true
@@ -202,7 +202,7 @@ export async function main(): globalThis.Promise<void> {
 	let [, assertedIntOK] = reflect.TypeAssert({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, $.markAsStructValue($.cloneStructValue(reflect.ValueOf("typed"))))
 	$.println("TypeAssert int:", assertedIntOK)
 	let complexValue = $.complex(3, -2)
-	let complexReflect = $.markAsStructValue($.cloneStructValue(reflect.ValueOf(complexValue)))
+	let complexReflect = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.namedValueInterfaceValue<any>(complexValue, "complex128", {}, { kind: $.TypeKind.Basic, name: "complex128" }))))
 	$.println("Complex value kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(complexReflect)).Kind()))
 	$.println("Complex real:", $.int($.real($.markAsStructValue($.cloneStructValue(complexReflect)).Complex())))
 	$.println("Complex imag:", $.int($.imag($.markAsStructValue($.cloneStructValue(complexReflect)).Complex())))
@@ -250,7 +250,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test Append
 	let originalSlice = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.arrayToSlice<number>([1, 2]), "[]int"))))
-	let appendedSlice = $.markAsStructValue($.cloneStructValue(reflect.Append($.markAsStructValue($.cloneStructValue(originalSlice)), $.markAsStructValue($.cloneStructValue(reflect.ValueOf(3))))))
+	let appendedSlice = $.markAsStructValue($.cloneStructValue(reflect.Append($.markAsStructValue($.cloneStructValue(originalSlice)), $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.namedValueInterfaceValue<any>(3, "int", {}, { kind: $.TypeKind.Basic, name: "int" })))))))
 	$.println("Append result len:", $.markAsStructValue($.cloneStructValue(appendedSlice)).Len())
 
 	// Test channel types

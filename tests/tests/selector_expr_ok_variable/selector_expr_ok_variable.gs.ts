@@ -39,7 +39,7 @@ export class Result {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let x: any = 42
+	let x: any = $.namedValueInterfaceValue<any>(42, "int", {}, { kind: $.TypeKind.Basic, name: "int" })
 	let result = $.markAsStructValue(new Result())
 
 	// This should trigger the error: ok expression is not an identifier: *ast.SelectorExpr

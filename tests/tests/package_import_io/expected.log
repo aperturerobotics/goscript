@@ -22,4 +22,7 @@ Pipe close err: true
 Pipe read - bytes: 5 data: hello err: true
 Pipe read EOF - bytes: 0 err EOF: true
 Pipe write after close - bytes: 0 err closed: true
+Pipe delayed write - bytes: 5 err: true
+Pipe delayed read - bytes: 5 data: later err: true err EOF: false
+Pipe delayed close err: true
 test finished

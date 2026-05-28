@@ -17,11 +17,11 @@ export function multiReturnThree(): [string, number, number] {
 export async function main(): globalThis.Promise<void> {
 	// Test simple destructuring that should work
 	let [x, y] = multiReturn()
-	fmt.Printf("x=%d, y=%d\n", x, y)
+	fmt.Printf("x=%d, y=%d\n", $.namedValueInterfaceValue<any>(x, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(y, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 
 	// Test three-value destructuring
 	let [name, line, col] = multiReturnThree()
-	fmt.Printf("name=%s, line=%d, col=%d\n", name, line, col)
+	fmt.Printf("name=%s, line=%d, col=%d\n", name, $.namedValueInterfaceValue<any>(line, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(col, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 
 	// Test reassignment to existing variables
 	let a: number = 0
@@ -29,7 +29,7 @@ export async function main(): globalThis.Promise<void> {
 	let __goscriptTuple0: any = multiReturn()
 	a = __goscriptTuple0[0]
 	b = __goscriptTuple0[1]
-	fmt.Printf("a=%d, b=%d\n", a, b)
+	fmt.Printf("a=%d, b=%d\n", $.namedValueInterfaceValue<any>(a, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(b, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 }
 
 if ($.isMainScript(import.meta)) {
