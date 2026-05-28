@@ -6,7 +6,6 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
-	"maps"
 	"slices"
 	"strconv"
 	"strings"
@@ -1678,10 +1677,9 @@ func (o *SemanticModelOwner) interfaceImplementationGraphEntry(
 		typ:          methodSet.typ,
 		iface:        ifaceNamed,
 		pointer:      methodSet.pointer,
-		ifaceMethods: make(map[string]*types.Func),
+		ifaceMethods: ifaceMethods,
 		implMethods:  implementationMethodMap(methodSet.methods, ifaceMethods),
 	}
-	maps.Copy(implementation.ifaceMethods, ifaceMethods)
 	return implementation, true
 }
 
