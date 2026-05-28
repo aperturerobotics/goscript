@@ -469,6 +469,8 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 	}
 	seenObjects := make(map[types.Object]bool)
 	seenTypes := make(map[types.Type]bool)
+	seenRuntimeTypes := make(map[types.Type]bool)
+	seenRuntimeOwnerTypes := make(map[types.Type]bool)
 	var addTypeDeps func(typ types.Type)
 	var addRuntimeTypeDeps func(typ types.Type)
 	var addRuntimeTypeOwnerDeps func(typ types.Type)
@@ -636,6 +638,10 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 		if typ == nil {
 			return
 		}
+		if seenRuntimeTypes[typ] {
+			return
+		}
+		seenRuntimeTypes[typ] = true
 		if alias, ok := typ.(*types.Alias); ok {
 			addObject(alias.Obj(), true)
 			if args := alias.TypeArgs(); args != nil {
@@ -680,6 +686,10 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 		if typ == nil {
 			return
 		}
+		if seenRuntimeOwnerTypes[typ] {
+			return
+		}
+		seenRuntimeOwnerTypes[typ] = true
 		if alias, ok := typ.(*types.Alias); ok {
 			addObject(alias.Obj(), true)
 			if args := alias.TypeArgs(); args != nil {
