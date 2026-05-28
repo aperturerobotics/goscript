@@ -6,6 +6,10 @@ export type Resetter = {
   Reset(r: io.Reader | null, dict: $.Bytes | null): Promise<$.GoError>
 }
 
+type maybeAsyncWriter = {
+  Write(p: $.Bytes): [number, $.GoError] | Promise<[number, $.GoError]>
+}
+
 export let ErrChecksum = errors.New('zlib: invalid checksum')
 export let ErrDictionary = errors.New('zlib: invalid dictionary')
 export let ErrHeader = errors.New('zlib: invalid header')
@@ -58,7 +62,7 @@ export class Writer {
     return [data.length, null]
   }
 
-  Close(): $.GoError {
+  async Close(): Promise<$.GoError> {
     if (this.closed) {
       return null
     }
@@ -67,7 +71,8 @@ export class Writer {
       return errors.New('zlib: nil writer')
     }
     const compressed = deflate(concat(this.chunks))
-    const [, err] = this.w.Write(compressed)
+    const writer = $.pointerValue<maybeAsyncWriter>(this.w)
+    const [, err] = await writer.Write(compressed)
     return err
   }
 
