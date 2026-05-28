@@ -1412,6 +1412,9 @@ func packageDeclFiles(semPkg *semanticPackage) map[types.Object]string {
 	if semPkg == nil || semPkg.source == nil {
 		return nil
 	}
+	if len(semPkg.source.Syntax) <= 1 {
+		return nil
+	}
 	declFiles := make(map[types.Object]string, len(semPkg.declarations))
 	for _, decl := range semPkg.declarations {
 		if decl.object != nil && decl.position.file != "" {
