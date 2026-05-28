@@ -1562,14 +1562,16 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 			return []Diagnostic{contextCanceledDiagnostic(err)}
 		}
 		implementation := semanticInterfaceImplementation{
-			typ:          graphEntry.typ,
-			iface:        graphEntry.iface,
-			pointer:      graphEntry.pointer,
-			asyncMethods: make(map[string]bool),
+			typ:     graphEntry.typ,
+			iface:   graphEntry.iface,
+			pointer: graphEntry.pointer,
 		}
 		for methodName, implMethod := range graphEntry.implMethods {
 			implFn := semanticFunctionFor(model, implMethod)
 			if implFn != nil && implFn.async {
+				if implementation.asyncMethods == nil {
+					implementation.asyncMethods = make(map[string]bool)
+				}
 				implementation.asyncMethods[methodName] = true
 				model.markInterfaceMethodAsync(graphEntry.ifaceMethods[methodName])
 				if ifaceFn := semanticFunctionFor(model, graphEntry.ifaceMethods[methodName]); ifaceFn != nil {
