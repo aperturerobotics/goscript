@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"context"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -73,18 +74,34 @@ func (o *TypeScriptEmitOwner) Emit(
 		for _, file := range pkg.files {
 			filePath := "@goscript/" + pkg.pkgPath + "/" + file.outputName
 			path := filepath.Join(req.OutputPath, filepath.FromSlash(filePath))
-			if err := os.WriteFile(path, []byte(files[filePath]), 0o644); err != nil {
+			if err := writeFileString(path, files[filePath], 0o644); err != nil {
 				diagnostics = append(diagnostics, emitError("write TypeScript file", path, err))
 			}
 		}
 		indexPath := "@goscript/" + pkg.pkgPath + "/index.ts"
-		if err := os.WriteFile(filepath.Join(pkgDir, "index.ts"), []byte(files[indexPath]), 0o644); err != nil {
+		if err := writeFileString(filepath.Join(pkgDir, "index.ts"), files[indexPath], 0o644); err != nil {
 			diagnostics = append(diagnostics, emitError("write package index", pkg.pkgPath, err))
 			continue
 		}
 		compiled = append(compiled, pkg.pkgPath)
 	}
 	return compiled, diagnostics
+}
+
+func writeFileString(path string, contents string, perm os.FileMode) error {
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
+	if err != nil {
+		return err
+	}
+	written, writeErr := file.WriteString(contents)
+	closeErr := file.Close()
+	if writeErr != nil {
+		return writeErr
+	}
+	if written != len(contents) {
+		return io.ErrShortWrite
+	}
+	return closeErr
 }
 
 // EmitToMemory renders a lowered program into deterministic slash-path files.
