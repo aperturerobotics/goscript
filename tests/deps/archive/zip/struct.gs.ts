@@ -256,15 +256,15 @@ export class FileHeader {
 		const h: FileHeader | $.VarRef<FileHeader> | null = this
 		let mode: fs.FileMode = 0
 		switch ($.uintShr($.pointerValue<FileHeader>(h).CreatorVersion, 8, 16)) {
-			case creatorUnix:
-			case creatorMacOSX:
+			case 3:
+			case 19:
 			{
 				mode = $.uint(unixModeToFileMode($.uint($.uintShr($.pointerValue<FileHeader>(h).ExternalAttrs, 16, 32), 32)), 32)
 				break
 			}
-			case creatorNTFS:
-			case creatorVFAT:
-			case creatorFAT:
+			case 11:
+			case 14:
+			case 0:
 			{
 				mode = $.uint(msdosModeToFileMode($.uint($.pointerValue<FileHeader>(h).ExternalAttrs, 32)), 32)
 				break
@@ -292,10 +292,10 @@ export class FileHeader {
 
 		// set MSDOS attributes too, as the original zip does.
 		if ($.uint((mode & fs.ModeDir), 32) != $.uint(0, 32)) {
-			$.pointerValue<FileHeader>(h).ExternalAttrs = $.pointerValue<FileHeader>(h).ExternalAttrs | ($.uint(msdosDir, 32))
+			$.pointerValue<FileHeader>(h).ExternalAttrs = $.pointerValue<FileHeader>(h).ExternalAttrs | ($.uint(16, 32))
 		}
 		if ($.uint((mode & 0o200), 32) == $.uint(0, 32)) {
-			$.pointerValue<FileHeader>(h).ExternalAttrs = $.pointerValue<FileHeader>(h).ExternalAttrs | ($.uint(msdosReadOnly, 32))
+			$.pointerValue<FileHeader>(h).ExternalAttrs = $.pointerValue<FileHeader>(h).ExternalAttrs | ($.uint(1, 32))
 		}
 	}
 
@@ -306,7 +306,7 @@ export class FileHeader {
 
 	public isZip64(): boolean {
 		const h: FileHeader | $.VarRef<FileHeader> | null = this
-		return ($.pointerValue<FileHeader>(h).CompressedSize64 >= uint32max) || ($.pointerValue<FileHeader>(h).UncompressedSize64 >= uint32max)
+		return ($.pointerValue<FileHeader>(h).CompressedSize64 >= 4294967295) || ($.pointerValue<FileHeader>(h).UncompressedSize64 >= 4294967295)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -314,7 +314,7 @@ export class FileHeader {
 		() => new FileHeader(),
 		[{ name: "FileInfo", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "SetModTime", args: [], returns: [] }, { name: "SetMode", args: [], returns: [] }, { name: "hasDataDescriptor", args: [], returns: [] }, { name: "isZip64", args: [], returns: [] }],
 		FileHeader,
-		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Comment": { kind: $.TypeKind.Basic, name: "string" }, "NonUTF8": { kind: $.TypeKind.Basic, name: "bool" }, "CreatorVersion": { kind: $.TypeKind.Basic, name: "int" }, "ReaderVersion": { kind: $.TypeKind.Basic, name: "int" }, "Flags": { kind: $.TypeKind.Basic, name: "int" }, "Method": { kind: $.TypeKind.Basic, name: "int" }, "Modified": "time.Time", "ModifiedTime": { kind: $.TypeKind.Basic, name: "int" }, "ModifiedDate": { kind: $.TypeKind.Basic, name: "int" }, "CRC32": { kind: $.TypeKind.Basic, name: "int" }, "CompressedSize": { kind: $.TypeKind.Basic, name: "int" }, "UncompressedSize": { kind: $.TypeKind.Basic, name: "int" }, "CompressedSize64": { kind: $.TypeKind.Basic, name: "int" }, "UncompressedSize64": { kind: $.TypeKind.Basic, name: "int" }, "Extra": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "ExternalAttrs": { kind: $.TypeKind.Basic, name: "int" }}
+		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Comment": { kind: $.TypeKind.Basic, name: "string" }, "NonUTF8": { kind: $.TypeKind.Basic, name: "bool" }, "CreatorVersion": { kind: $.TypeKind.Basic, name: "uint16" }, "ReaderVersion": { kind: $.TypeKind.Basic, name: "uint16" }, "Flags": { kind: $.TypeKind.Basic, name: "uint16" }, "Method": { kind: $.TypeKind.Basic, name: "uint16" }, "Modified": "time.Time", "ModifiedTime": { kind: $.TypeKind.Basic, name: "uint16" }, "ModifiedDate": { kind: $.TypeKind.Basic, name: "uint16" }, "CRC32": { kind: $.TypeKind.Basic, name: "uint32" }, "CompressedSize": { kind: $.TypeKind.Basic, name: "uint32" }, "UncompressedSize": { kind: $.TypeKind.Basic, name: "uint32" }, "CompressedSize64": { kind: $.TypeKind.Basic, name: "uint64" }, "UncompressedSize64": { kind: $.TypeKind.Basic, name: "uint64" }, "Extra": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "ExternalAttrs": { kind: $.TypeKind.Basic, name: "uint32" }}
 	)
 }
 
@@ -505,7 +505,7 @@ export class directoryEnd {
 		() => new directoryEnd(),
 		[],
 		directoryEnd,
-		{"diskNbr": { kind: $.TypeKind.Basic, name: "int" }, "dirDiskNbr": { kind: $.TypeKind.Basic, name: "int" }, "dirRecordsThisDisk": { kind: $.TypeKind.Basic, name: "int" }, "directoryRecords": { kind: $.TypeKind.Basic, name: "int" }, "directorySize": { kind: $.TypeKind.Basic, name: "int" }, "directoryOffset": { kind: $.TypeKind.Basic, name: "int" }, "commentLen": { kind: $.TypeKind.Basic, name: "int" }, "comment": { kind: $.TypeKind.Basic, name: "string" }}
+		{"diskNbr": { kind: $.TypeKind.Basic, name: "uint32" }, "dirDiskNbr": { kind: $.TypeKind.Basic, name: "uint32" }, "dirRecordsThisDisk": { kind: $.TypeKind.Basic, name: "uint64" }, "directoryRecords": { kind: $.TypeKind.Basic, name: "uint64" }, "directorySize": { kind: $.TypeKind.Basic, name: "uint64" }, "directoryOffset": { kind: $.TypeKind.Basic, name: "uint64" }, "commentLen": { kind: $.TypeKind.Basic, name: "uint16" }, "comment": { kind: $.TypeKind.Basic, name: "string" }}
 	)
 }
 
@@ -598,8 +598,8 @@ export function FileInfoHeader(fi: fs.FileInfo | null): [FileHeader | $.VarRef<F
 	let fh: FileHeader | $.VarRef<FileHeader> | null = (() => { const __goscriptLiteralField0 = $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Name(); return new FileHeader({Name: __goscriptLiteralField0, UncompressedSize64: $.uint($.uint(size, 64), 64)}) })()
 	FileHeader.prototype.SetModTime.call(fh, $.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime())))
 	FileHeader.prototype.SetMode.call(fh, $.uint($.pointerValue<Exclude<fs.FileInfo, null>>(fi).Mode(), 32))
-	if ($.pointerValue<FileHeader>(fh).UncompressedSize64 > uint32max) {
-		$.pointerValue<FileHeader>(fh).UncompressedSize = $.uint(uint32max, 32)
+	if ($.pointerValue<FileHeader>(fh).UncompressedSize64 > 4294967295) {
+		$.pointerValue<FileHeader>(fh).UncompressedSize = $.uint(4294967295, 32)
 	} else {
 		$.pointerValue<FileHeader>(fh).UncompressedSize = $.uint($.uint($.pointerValue<FileHeader>(fh).UncompressedSize64, 32), 32)
 	}
@@ -610,8 +610,8 @@ export function timeZone(offset: time.Duration): time.Location | $.VarRef<time.L
 	const minOffset: time.Duration = -43200000000000
 	const maxOffset: time.Duration = 50400000000000
 	const offsetAlias: time.Duration = 900000000000
-	offset = time.Duration_Round(offset, offsetAlias)
-	if ((offset < minOffset) || (maxOffset < offset)) {
+	offset = time.Duration_Round(offset, 900000000000)
+	if ((offset < -43200000000000) || (50400000000000 < offset)) {
 		offset = 0
 	}
 	return time.FixedZone("", $.int($.int64Div(offset, time.Second)))
@@ -631,12 +631,12 @@ export function timeToMsDosTime(t: time.Time): [number, number] {
 
 export function msdosModeToFileMode(m: number): fs.FileMode {
 	let mode: fs.FileMode = 0
-	if ($.uint((m & msdosDir), 32) != $.uint(0, 32)) {
+	if ($.uint((m & 16), 32) != $.uint(0, 32)) {
 		mode = $.uint(fs.ModeDir | 0o777, 32)
 	} else {
 		mode = $.uint(0o666, 32)
 	}
-	if ($.uint((m & msdosReadOnly), 32) != $.uint(0, 32)) {
+	if ($.uint((m & 1), 32) != $.uint(0, 32)) {
 		mode = mode & ~(($.uint(0o222, 32)))
 	}
 	return $.uint(mode, 32)
@@ -647,97 +647,97 @@ export function fileModeToUnixMode(mode: fs.FileMode): number {
 	switch (mode & fs.ModeType) {
 		default:
 		{
-			m = $.uint(s_IFREG, 32)
+			m = $.uint(32768, 32)
 			break
 		}
 		case fs.ModeDir:
 		{
-			m = $.uint(s_IFDIR, 32)
+			m = $.uint(16384, 32)
 			break
 		}
 		case fs.ModeSymlink:
 		{
-			m = $.uint(s_IFLNK, 32)
+			m = $.uint(40960, 32)
 			break
 		}
 		case fs.ModeNamedPipe:
 		{
-			m = $.uint(s_IFIFO, 32)
+			m = $.uint(4096, 32)
 			break
 		}
 		case fs.ModeSocket:
 		{
-			m = $.uint(s_IFSOCK, 32)
+			m = $.uint(49152, 32)
 			break
 		}
 		case fs.ModeDevice:
 		{
-			m = $.uint(s_IFBLK, 32)
+			m = $.uint(24576, 32)
 			break
 		}
 		case fs.ModeDevice | fs.ModeCharDevice:
 		{
-			m = $.uint(s_IFCHR, 32)
+			m = $.uint(8192, 32)
 			break
 		}
 	}
 	if ($.uint((mode & fs.ModeSetuid), 32) != $.uint(0, 32)) {
-		m = m | ($.uint(s_ISUID, 32))
+		m = m | ($.uint(2048, 32))
 	}
 	if ($.uint((mode & fs.ModeSetgid), 32) != $.uint(0, 32)) {
-		m = m | ($.uint(s_ISGID, 32))
+		m = m | ($.uint(1024, 32))
 	}
 	if ($.uint((mode & fs.ModeSticky), 32) != $.uint(0, 32)) {
-		m = m | ($.uint(s_ISVTX, 32))
+		m = m | ($.uint(512, 32))
 	}
 	return $.uint(m | $.uint(mode & 0o777, 32), 32)
 }
 
 export function unixModeToFileMode(m: number): fs.FileMode {
 	let mode = $.uint(m & 0o777, 32)
-	switch (m & s_IFMT) {
-		case s_IFBLK:
+	switch (m & 61440) {
+		case 24576:
 		{
 			mode = mode | ($.uint(fs.ModeDevice, 32))
 			break
 		}
-		case s_IFCHR:
+		case 8192:
 		{
 			mode = mode | ($.uint(fs.ModeDevice | fs.ModeCharDevice, 32))
 			break
 		}
-		case s_IFDIR:
+		case 16384:
 		{
 			mode = mode | ($.uint(fs.ModeDir, 32))
 			break
 		}
-		case s_IFIFO:
+		case 4096:
 		{
 			mode = mode | ($.uint(fs.ModeNamedPipe, 32))
 			break
 		}
-		case s_IFLNK:
+		case 40960:
 		{
 			mode = mode | ($.uint(fs.ModeSymlink, 32))
 			break
 		}
-		case s_IFREG:
+		case 32768:
 		{
 			break
 		}
-		case s_IFSOCK:
+		case 49152:
 		{
 			mode = mode | ($.uint(fs.ModeSocket, 32))
 			break
 		}
 	}
-	if ($.uint((m & s_ISGID), 32) != $.uint(0, 32)) {
+	if ($.uint((m & 1024), 32) != $.uint(0, 32)) {
 		mode = mode | ($.uint(fs.ModeSetgid, 32))
 	}
-	if ($.uint((m & s_ISUID), 32) != $.uint(0, 32)) {
+	if ($.uint((m & 2048), 32) != $.uint(0, 32)) {
 		mode = mode | ($.uint(fs.ModeSetuid, 32))
 	}
-	if ($.uint((m & s_ISVTX), 32) != $.uint(0, 32)) {
+	if ($.uint((m & 512), 32) != $.uint(0, 32)) {
 		mode = mode | ($.uint(fs.ModeSticky, 32))
 	}
 	return $.uint(mode, 32)

@@ -56,7 +56,7 @@ export class ObjectID {
 		() => new ObjectID(),
 		[{ name: "IsZero", args: [], returns: [] }, { name: "Valid", args: [], returns: [] }],
 		ObjectID,
-		{"hash": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 4 }, "format": { kind: $.TypeKind.Basic, name: "int" }}
+		{"hash": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 4 }, "format": { kind: $.TypeKind.Basic, name: "uint8" }}
 	)
 }
 

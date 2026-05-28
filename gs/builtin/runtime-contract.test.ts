@@ -139,6 +139,9 @@ describe('builtin runtime contract helpers', () => {
     expect(uint(uint64And(0xf0n, 0x3cn), 32)).toBe(0x30)
     expect(uint(uint64Or(0xf0n, 0x0fn), 32)).toBe(0xff)
     expect(uint(uint64Xor(0xf0n, 0xffn), 32)).toBe(0x0f)
+    expect(uint64And(uint('18446744073709551615', 64), uint('18014398509481983', 64))).toBe(
+      18014398509481983n,
+    )
     expect(uintShr(0x80000000, 31, 32)).toBe(1)
     expect(uintShr(0x80000000, 32, 32)).toBe(0)
     expect(uintShr(0xff, 4, 8)).toBe(15)
@@ -164,6 +167,9 @@ describe('builtin runtime contract helpers', () => {
       }),
     ).toEqual({ value: nilNamedSlice, ok: true })
     expect(pointerValue({ ok: true })).toEqual({ ok: true })
+    const nilSliceIface = interfaceValue(null, '[]*main.StatusEntry')
+    expect(len(nilSliceIface as any)).toBe(0)
+    expect(cap(nilSliceIface as any)).toBe(0)
     const namedPointerBox = namedValueInterfaceValue(
       varRef(new Uint8Array([1, 2])),
       '*main.Bytes',
@@ -329,6 +335,30 @@ describe('builtin runtime contract helpers', () => {
         typeName: 'main.MyInt',
       }),
     ).toEqual([13, true])
+  })
+
+  it('asserts fixed-width numeric values by runtime type name', () => {
+    expect(
+      typeAssertTuple<number>(13, { kind: TypeKind.Basic, name: 'uint64' }),
+    ).toEqual([13, true])
+    expect(
+      typeAssertTuple<number>(13, { kind: TypeKind.Basic, name: 'int32' }),
+    ).toEqual([13, true])
+  })
+
+  it('asserts typed byte-slice pointers through uint8 descriptors', () => {
+    const bytes = varRef(makeSlice<number>(4, undefined, 'byte'))
+    const boxed = interfaceValue(bytes, '*[]byte')
+
+    expect(
+      typeAssertTuple<typeof bytes>(boxed, {
+        kind: TypeKind.Pointer,
+        elemType: {
+          kind: TypeKind.Slice,
+          elemType: { kind: TypeKind.Basic, name: 'uint8' },
+        },
+      }),
+    ).toEqual([bytes, true])
   })
 
   it('exposes addressable slice and array index references', () => {

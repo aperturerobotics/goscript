@@ -74,7 +74,7 @@ export class content {
 		() => new content(),
 		[{ name: "ProcessData", args: [], returns: [] }, { name: "ReadAt", args: [], returns: [] }],
 		content,
-		{"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
 	)
 }
 

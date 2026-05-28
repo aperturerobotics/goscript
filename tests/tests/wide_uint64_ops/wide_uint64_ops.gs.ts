@@ -8,7 +8,7 @@ import "@goscript/math/index.js"
 
 export function hash6(u: number, h: number): number {
 	const prime6bytes: number = 227718039650203
-	return $.uint($.uint($.uint64Shr(($.uint64Mul(($.uint64Shl(u, (64 - 48))), prime6bytes)), ($.uint64And(($.uint64Sub(64, h)), 63))), 32), 32)
+	return $.uint($.uint($.uint64Shr(($.uint64Mul(($.uint64Shl(u, (64 - 48))), 227718039650203)), ($.uint64And(($.uint64Sub(64, h)), 63))), 32), 32)
 }
 
 export function mix(a: number, b: number): number {
@@ -53,15 +53,15 @@ export function uintShiftAssign(n: number): number {
 
 export async function main(): globalThis.Promise<void> {
 	$.println($.uint(hash6($.uint(0x0102030405, 64), 14), 32))
-	$.println($.uint(mix($.uint(0xf0f0f0f0f0f0f0f0, 64), $.uint(0x0f0f0f0f0f0f0f0f, 64)), 64))
+	$.println($.uint(mix($.uint("17361641481138401520", 64), $.uint("1085102592571150095", 64)), 64))
 	$.println($.uint($.uint($.uint64Shr(highAfterMask($.uint(0x1234, 64)), 48), 32), 32))
 	$.println($.uint($.uint($.uint64Shr(combineHighLow($.uint(0x1234, 64), $.uint(0xbeef, 64)), 48), 32), 32))
 	$.println($.uint($.uint($.uint64And(combineHighLow($.uint(0x1234, 64), $.uint(0xbeef, 64)), 0xffff), 32), 32))
 	$.println($.uint(maxUint64Divisor($.uint(4114, 64)), 64))
 	$.println($.uint(maxUint64Remainder($.uint(4114, 64)), 64))
 	$.println(setHighBit($.uint(maxUint64Remainder($.uint(128, 64)), 64)))
-	$.println(uintBitLen(~$.uint(0, 64)))
-	$.println(uintShiftAssign(~$.uint(0, 64)))
+	$.println(uintBitLen($.uint("18446744073709551615", 64)))
+	$.println(uintShiftAssign($.uint("18446744073709551615", 64)))
 }
 
 if ($.isMainScript(import.meta)) {

@@ -389,18 +389,18 @@ export class compressor {
 
 	public async deflate(): globalThis.Promise<void> {
 		let d: compressor | $.VarRef<compressor> | null = this
-		if ((($.pointerValue<compressor>(d).windowEnd - $.pointerValue<compressor>(d).index) < (minMatchLength + maxMatchLength)) && !$.pointerValue<compressor>(d).sync) {
+		if ((($.pointerValue<compressor>(d).windowEnd - $.pointerValue<compressor>(d).index) < (4 + 258)) && !$.pointerValue<compressor>(d).sync) {
 			return
 		}
 
-		$.pointerValue<compressor>(d).maxInsertIndex = $.pointerValue<compressor>(d).windowEnd - (minMatchLength - 1)
+		$.pointerValue<compressor>(d).maxInsertIndex = $.pointerValue<compressor>(d).windowEnd - (4 - 1)
 
 		Loop: while (true) {
 			if ($.pointerValue<compressor>(d).index > $.pointerValue<compressor>(d).windowEnd) {
 				$.panic("index > windowEnd")
 			}
 			let lookahead = $.pointerValue<compressor>(d).windowEnd - $.pointerValue<compressor>(d).index
-			if (lookahead < (minMatchLength + maxMatchLength)) {
+			if (lookahead < (4 + 258)) {
 				if (!$.pointerValue<compressor>(d).sync) {
 					break Loop
 				}
@@ -428,37 +428,37 @@ export class compressor {
 			}
 			if ($.pointerValue<compressor>(d).index < $.pointerValue<compressor>(d).maxInsertIndex) {
 				// Update the hash
-				let hash = $.uint(hash4($.goSlice($.pointerValue<compressor>(d).window, $.pointerValue<compressor>(d).index, $.pointerValue<compressor>(d).index + minMatchLength)), 32)
-				let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, hash & hashMask)
+				let hash = $.uint(hash4($.goSlice($.pointerValue<compressor>(d).window, $.pointerValue<compressor>(d).index, $.pointerValue<compressor>(d).index + 4)), 32)
+				let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, hash & 131071)
 				$.pointerValue<compressor>(d).chainHead = $.int($.pointerValue<number>(hh))
-				$.pointerValue<compressor>(d).hashPrev[$.pointerValue<compressor>(d).index & windowMask] = $.uint($.uint($.pointerValue<compressor>(d).chainHead, 32), 32)
+				$.pointerValue<compressor>(d).hashPrev[$.pointerValue<compressor>(d).index & 32767] = $.uint($.uint($.pointerValue<compressor>(d).chainHead, 32), 32)
 				hh!.value = $.uint($.uint($.pointerValue<compressor>(d).index + $.pointerValue<compressor>(d).hashOffset, 32), 32)
 			}
 			let prevLength = $.pointerValue<compressor>(d).length
 			let prevOffset = $.pointerValue<compressor>(d).offset
-			$.pointerValue<compressor>(d).length = minMatchLength - 1
+			$.pointerValue<compressor>(d).length = 4 - 1
 			$.pointerValue<compressor>(d).offset = 0
-			let minIndex = $.pointerValue<compressor>(d).index - windowSize
+			let minIndex = $.pointerValue<compressor>(d).index - 32768
 			if (minIndex < 0) {
 				minIndex = 0
 			}
 
-			if ((($.pointerValue<compressor>(d).chainHead - $.pointerValue<compressor>(d).hashOffset) >= minIndex) && ((($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != skipNever) && (lookahead > (minMatchLength - 1))) || ((($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing == skipNever) && (lookahead > prevLength)) && (prevLength < $.pointerValue<compressor>(d).compressionLevel.lazy)))) {
+			if ((($.pointerValue<compressor>(d).chainHead - $.pointerValue<compressor>(d).hashOffset) >= minIndex) && ((($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != 2147483647) && (lookahead > (4 - 1))) || ((($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing == 2147483647) && (lookahead > prevLength)) && (prevLength < $.pointerValue<compressor>(d).compressionLevel.lazy)))) {
 				{
-					let [newLength, newOffset, ok] = compressor.prototype.findMatch.call(d, $.pointerValue<compressor>(d).index, $.pointerValue<compressor>(d).chainHead - $.pointerValue<compressor>(d).hashOffset, minMatchLength - 1, lookahead)
+					let [newLength, newOffset, ok] = compressor.prototype.findMatch.call(d, $.pointerValue<compressor>(d).index, $.pointerValue<compressor>(d).chainHead - $.pointerValue<compressor>(d).hashOffset, 4 - 1, lookahead)
 					if (ok) {
 						$.pointerValue<compressor>(d).length = newLength
 						$.pointerValue<compressor>(d).offset = newOffset
 					}
 				}
 			}
-			if ((($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != skipNever) && ($.pointerValue<compressor>(d).length >= minMatchLength)) || ((($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing == skipNever) && (prevLength >= minMatchLength)) && ($.pointerValue<compressor>(d).length <= prevLength))) {
+			if ((($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != 2147483647) && ($.pointerValue<compressor>(d).length >= 4)) || ((($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing == 2147483647) && (prevLength >= 4)) && ($.pointerValue<compressor>(d).length <= prevLength))) {
 				// There was a match at the previous step, and the current match is
 				// not better. Output the previous match.
-				if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != skipNever) {
-					$.pointerValue<compressor>(d).tokens = $.append($.pointerValue<compressor>(d).tokens, $.uint(__goscript_token.matchToken($.uint($.uint($.pointerValue<compressor>(d).length - baseMatchLength, 32), 32), $.uint($.uint($.pointerValue<compressor>(d).offset - baseMatchOffset, 32), 32)), 32))
+				if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != 2147483647) {
+					$.pointerValue<compressor>(d).tokens = $.append($.pointerValue<compressor>(d).tokens, $.uint(__goscript_token.matchToken($.uint($.uint($.pointerValue<compressor>(d).length - 3, 32), 32), $.uint($.uint($.pointerValue<compressor>(d).offset - 1, 32), 32)), 32))
 				} else {
-					$.pointerValue<compressor>(d).tokens = $.append($.pointerValue<compressor>(d).tokens, $.uint(__goscript_token.matchToken($.uint($.uint(prevLength - baseMatchLength, 32), 32), $.uint($.uint(prevOffset - baseMatchOffset, 32), 32)), 32))
+					$.pointerValue<compressor>(d).tokens = $.append($.pointerValue<compressor>(d).tokens, $.uint(__goscript_token.matchToken($.uint($.uint(prevLength - 3, 32), 32), $.uint($.uint(prevOffset - 1, 32), 32)), 32))
 				}
 				// Insert in the hash table all strings up to the end of the match.
 				// index and index-1 are already inserted. If there is not enough
@@ -466,7 +466,7 @@ export class compressor {
 				// table.
 				if ($.pointerValue<compressor>(d).length <= $.pointerValue<compressor>(d).compressionLevel.fastSkipHashing) {
 					let newIndex: number = 0
-					if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != skipNever) {
+					if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != 2147483647) {
 						newIndex = $.pointerValue<compressor>(d).index + $.pointerValue<compressor>(d).length
 					} else {
 						newIndex = ($.pointerValue<compressor>(d).index + prevLength) - 1
@@ -474,27 +474,27 @@ export class compressor {
 					let index = $.pointerValue<compressor>(d).index
 					for (index++; index < newIndex; index++) {
 						if (index < $.pointerValue<compressor>(d).maxInsertIndex) {
-							let hash = $.uint(hash4($.goSlice($.pointerValue<compressor>(d).window, index, index + minMatchLength)), 32)
+							let hash = $.uint(hash4($.goSlice($.pointerValue<compressor>(d).window, index, index + 4)), 32)
 							// Get previous value with the same hash.
 							// Our chain should point to the previous value.
-							let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, hash & hashMask)
-							$.pointerValue<compressor>(d).hashPrev[index & windowMask] = $.uint($.pointerValue<number>(hh), 32)
+							let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, hash & 131071)
+							$.pointerValue<compressor>(d).hashPrev[index & 32767] = $.uint($.pointerValue<number>(hh), 32)
 							// Set the head of the hash chain to us.
 							hh!.value = $.uint($.uint(index + $.pointerValue<compressor>(d).hashOffset, 32), 32)
 						}
 					}
 					$.pointerValue<compressor>(d).index = index
 
-					if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing == skipNever) {
+					if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing == 2147483647) {
 						$.pointerValue<compressor>(d).byteAvailable = false
-						$.pointerValue<compressor>(d).length = minMatchLength - 1
+						$.pointerValue<compressor>(d).length = 4 - 1
 					}
 				} else {
 					// For matches this long, we don't bother inserting each individual
 					// item into the table.
 					$.pointerValue<compressor>(d).index = $.pointerValue<compressor>(d).index + ($.pointerValue<compressor>(d).length)
 				}
-				if ($.len($.pointerValue<compressor>(d).tokens) == maxFlateBlockTokens) {
+				if ($.len($.pointerValue<compressor>(d).tokens) == 16384) {
 					// The block includes the current character
 					{
 						$.pointerValue<compressor>(d).err = await compressor.prototype.writeBlock.call(d, $.pointerValue<compressor>(d).tokens, $.pointerValue<compressor>(d).index)
@@ -505,13 +505,13 @@ export class compressor {
 					$.pointerValue<compressor>(d).tokens = $.goSlice($.pointerValue<compressor>(d).tokens, undefined, 0)
 				}
 			} else {
-				if (($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != skipNever) || $.pointerValue<compressor>(d).byteAvailable) {
+				if (($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != 2147483647) || $.pointerValue<compressor>(d).byteAvailable) {
 					let i = $.pointerValue<compressor>(d).index - 1
-					if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != skipNever) {
+					if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != 2147483647) {
 						i = $.pointerValue<compressor>(d).index
 					}
 					$.pointerValue<compressor>(d).tokens = $.append($.pointerValue<compressor>(d).tokens, $.uint(__goscript_token.literalToken($.uint($.uint($.pointerValue<compressor>(d).window![i], 32), 32)), 32))
-					if ($.len($.pointerValue<compressor>(d).tokens) == maxFlateBlockTokens) {
+					if ($.len($.pointerValue<compressor>(d).tokens) == 16384) {
 						{
 							$.pointerValue<compressor>(d).err = await compressor.prototype.writeBlock.call(d, $.pointerValue<compressor>(d).tokens, i + 1)
 							if ($.pointerValue<compressor>(d).err != null) {
@@ -522,7 +522,7 @@ export class compressor {
 					}
 				}
 				$.pointerValue<compressor>(d).index++
-				if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing == skipNever) {
+				if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing == 2147483647) {
 					$.pointerValue<compressor>(d).byteAvailable = true
 				}
 			}
@@ -532,7 +532,7 @@ export class compressor {
 	public async encSpeed(): globalThis.Promise<void> {
 		let d: compressor | $.VarRef<compressor> | null = this
 		// We only compress if we have maxStoreBlockSize.
-		if ($.pointerValue<compressor>(d).windowEnd < maxStoreBlockSize) {
+		if ($.pointerValue<compressor>(d).windowEnd < 65535) {
 			if (!$.pointerValue<compressor>(d).sync) {
 				return
 			}
@@ -577,18 +577,18 @@ export class compressor {
 
 	public fillDeflate(b: $.Slice<number>): number {
 		let d: compressor | $.VarRef<compressor> | null = this
-		if ($.pointerValue<compressor>(d).index >= ((2 * windowSize) - (minMatchLength + maxMatchLength))) {
+		if ($.pointerValue<compressor>(d).index >= ((2 * 32768) - (4 + 258))) {
 			// shift the window by windowSize
-			$.copy($.pointerValue<compressor>(d).window, $.goSlice($.pointerValue<compressor>(d).window, windowSize, 2 * windowSize))
-			$.pointerValue<compressor>(d).index = $.pointerValue<compressor>(d).index - (windowSize)
-			$.pointerValue<compressor>(d).windowEnd = $.pointerValue<compressor>(d).windowEnd - (windowSize)
-			if ($.pointerValue<compressor>(d).blockStart >= windowSize) {
-				$.pointerValue<compressor>(d).blockStart = $.pointerValue<compressor>(d).blockStart - (windowSize)
+			$.copy($.pointerValue<compressor>(d).window, $.goSlice($.pointerValue<compressor>(d).window, 32768, 2 * 32768))
+			$.pointerValue<compressor>(d).index = $.pointerValue<compressor>(d).index - (32768)
+			$.pointerValue<compressor>(d).windowEnd = $.pointerValue<compressor>(d).windowEnd - (32768)
+			if ($.pointerValue<compressor>(d).blockStart >= 32768) {
+				$.pointerValue<compressor>(d).blockStart = $.pointerValue<compressor>(d).blockStart - (32768)
 			} else {
 				$.pointerValue<compressor>(d).blockStart = math.MaxInt32
 			}
-			$.pointerValue<compressor>(d).hashOffset = $.pointerValue<compressor>(d).hashOffset + (windowSize)
-			if ($.pointerValue<compressor>(d).hashOffset > maxHashOffset) {
+			$.pointerValue<compressor>(d).hashOffset = $.pointerValue<compressor>(d).hashOffset + (32768)
+			if ($.pointerValue<compressor>(d).hashOffset > 16777216) {
 				let delta = $.pointerValue<compressor>(d).hashOffset - 1
 				$.pointerValue<compressor>(d).hashOffset = $.pointerValue<compressor>(d).hashOffset - (delta)
 				$.pointerValue<compressor>(d).chainHead = $.pointerValue<compressor>(d).chainHead - (delta)
@@ -636,22 +636,22 @@ export class compressor {
 		}
 
 		// If we are given too much, cut it.
-		if ($.len(b) > windowSize) {
-			b = $.goSlice(b, $.len(b) - windowSize, undefined)
+		if ($.len(b) > 32768) {
+			b = $.goSlice(b, $.len(b) - 32768, undefined)
 		}
 		// Add all to window.
 		let n = $.copy($.pointerValue<compressor>(d).window, b)
 
 		// Calculate 256 hashes at the time (more L1 cache hits)
-		let loops = Math.trunc(((n + 256) - minMatchLength) / 256)
+		let loops = Math.trunc(((n + 256) - 4) / 256)
 		for (let j = 0; j < loops; j++) {
 			let index = j * 256
-			let end = ((index + 256) + minMatchLength) - 1
+			let end = ((index + 256) + 4) - 1
 			if (end > n) {
 				end = n
 			}
 			let toCheck: $.Slice<number> = $.goSlice($.pointerValue<compressor>(d).window, index, end)
-			let dstSize = ($.len(toCheck) - minMatchLength) + 1
+			let dstSize = ($.len(toCheck) - 4) + 1
 
 			if (dstSize <= 0) {
 				continue
@@ -662,10 +662,10 @@ export class compressor {
 			for (let __goscriptRangeTarget2 = dst, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 				let val = __goscriptRangeTarget2![i]
 				let di = i + index
-				let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, val & hashMask)
+				let hh = $.indexRef($.pointerValue<compressor>(d).hashHead, val & 131071)
 				// Get previous value with the same hash.
 				// Our chain should point to the previous value.
-				$.pointerValue<compressor>(d).hashPrev[di & windowMask] = $.uint($.pointerValue<number>(hh), 32)
+				$.pointerValue<compressor>(d).hashPrev[di & 32767] = $.uint($.pointerValue<number>(hh), 32)
 				// Set the head of the hash chain to us.
 				hh!.value = $.uint($.uint(di + $.pointerValue<compressor>(d).hashOffset, 32), 32)
 			}
@@ -680,7 +680,7 @@ export class compressor {
 		let length: number = 0
 		let offset: number = 0
 		let ok: boolean = false
-		let minMatchLook = maxMatchLength
+		let minMatchLook = 258
 		if (lookahead < minMatchLook) {
 			minMatchLook = lookahead
 		}
@@ -702,13 +702,13 @@ export class compressor {
 
 		let wEnd = $.uint(win![pos + length], 8)
 		let wPos: $.Slice<number> = $.goSlice(win, pos, undefined)
-		let minIndex = pos - windowSize
+		let minIndex = pos - 32768
 
 		for (let i = prevHead; tries > 0; tries--) {
 			if ($.uint(wEnd, 8) == $.uint(win![i + length], 8)) {
 				let n = matchLen($.goSlice(win, i, undefined), wPos, minMatchLook)
 
-				if ((n > length) && ((n > minMatchLength) || ((pos - i) <= 4096))) {
+				if ((n > length) && ((n > 4) || ((pos - i) <= 4096))) {
 					length = n
 					offset = pos - i
 					ok = true
@@ -723,7 +723,7 @@ export class compressor {
 				// hashPrev[i & windowMask] has already been overwritten, so stop now.
 				break
 			}
-			i = $.int($.pointerValue<compressor>(d).hashPrev[i & windowMask]) - $.pointerValue<compressor>(d).hashOffset
+			i = $.int($.pointerValue<compressor>(d).hashPrev[i & 32767]) - $.pointerValue<compressor>(d).hashOffset
 			if ((i < minIndex) || (i < 0)) {
 				break
 			}
@@ -737,31 +737,31 @@ export class compressor {
 		$.pointerValue<compressor>(d).w = __goscript_huffman_bit_writer.newHuffmanBitWriter(w)
 
 		switch (true) {
-			case level == NoCompression:
+			case level == 0:
 			{
-				$.pointerValue<compressor>(d).window = $.makeSlice<number>(maxStoreBlockSize, undefined, "byte")
-				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillStore(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
+				$.pointerValue<compressor>(d).window = $.makeSlice<number>(65535, undefined, "byte")
+				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillStore(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 				$.pointerValue<compressor>(d).step = $.functionValue(async (d: compressor | $.VarRef<compressor> | null): globalThis.Promise<void> => await $.pointerValue<compressor>(d).store(), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }], results: [] } as $.FunctionTypeInfo))
 				break
 			}
-			case level == HuffmanOnly:
+			case level == -2:
 			{
-				$.pointerValue<compressor>(d).window = $.makeSlice<number>(maxStoreBlockSize, undefined, "byte")
-				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillStore(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
+				$.pointerValue<compressor>(d).window = $.makeSlice<number>(65535, undefined, "byte")
+				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillStore(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 				$.pointerValue<compressor>(d).step = $.functionValue(async (d: compressor | $.VarRef<compressor> | null): globalThis.Promise<void> => await $.pointerValue<compressor>(d).storeHuff(), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }], results: [] } as $.FunctionTypeInfo))
 				break
 			}
-			case level == BestSpeed:
+			case level == 1:
 			{
 				$.pointerValue<compressor>(d).compressionLevel = $.markAsStructValue($.cloneStructValue(levels![level]))
-				$.pointerValue<compressor>(d).window = $.makeSlice<number>(maxStoreBlockSize, undefined, "byte")
-				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillStore(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
+				$.pointerValue<compressor>(d).window = $.makeSlice<number>(65535, undefined, "byte")
+				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillStore(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 				$.pointerValue<compressor>(d).step = $.functionValue(async (d: compressor | $.VarRef<compressor> | null): globalThis.Promise<void> => await $.pointerValue<compressor>(d).encSpeed(), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }], results: [] } as $.FunctionTypeInfo))
 				$.pointerValue<compressor>(d).bestSpeed = __goscript_deflatefast.newDeflateFast()
-				$.pointerValue<compressor>(d).tokens = $.makeSlice<__goscript_token.token>(maxStoreBlockSize, undefined, "number")
+				$.pointerValue<compressor>(d).tokens = $.makeSlice<__goscript_token.token>(65535, undefined, "number")
 				break
 			}
-			case level == DefaultCompression:
+			case level == -1:
 			{
 				level = 6
 			}
@@ -769,7 +769,7 @@ export class compressor {
 			{
 				$.pointerValue<compressor>(d).compressionLevel = $.markAsStructValue($.cloneStructValue(levels![level]))
 				compressor.prototype.initDeflate.call(d)
-				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillDeflate(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
+				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillDeflate(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 				$.pointerValue<compressor>(d).step = $.functionValue(async (d: compressor | $.VarRef<compressor> | null): globalThis.Promise<void> => await $.pointerValue<compressor>(d).deflate(), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }], results: [] } as $.FunctionTypeInfo))
 				break
 			}
@@ -784,10 +784,10 @@ export class compressor {
 
 	public initDeflate(): void {
 		let d: compressor | $.VarRef<compressor> | null = this
-		$.pointerValue<compressor>(d).window = $.makeSlice<number>(2 * windowSize, undefined, "byte")
+		$.pointerValue<compressor>(d).window = $.makeSlice<number>(2 * 32768, undefined, "byte")
 		$.pointerValue<compressor>(d).hashOffset = 1
-		$.pointerValue<compressor>(d).tokens = $.makeSlice<__goscript_token.token>(0, maxFlateBlockTokens + 1, "number")
-		$.pointerValue<compressor>(d).length = minMatchLength - 1
+		$.pointerValue<compressor>(d).tokens = $.makeSlice<__goscript_token.token>(0, 16384 + 1, "number")
+		$.pointerValue<compressor>(d).length = 4 - 1
 		$.pointerValue<compressor>(d).offset = 0
 		$.pointerValue<compressor>(d).byteAvailable = false
 		$.pointerValue<compressor>(d).index = 0
@@ -801,12 +801,12 @@ export class compressor {
 		$.pointerValue<compressor>(d).sync = false
 		$.pointerValue<compressor>(d).err = null
 		switch ($.pointerValue<compressor>(d).compressionLevel.level) {
-			case NoCompression:
+			case 0:
 			{
 				$.pointerValue<compressor>(d).windowEnd = 0
 				break
 			}
-			case BestSpeed:
+			case 1:
 			{
 				$.pointerValue<compressor>(d).windowEnd = 0
 				$.pointerValue<compressor>(d).tokens = $.goSlice($.pointerValue<compressor>(d).tokens, undefined, 0)
@@ -828,7 +828,7 @@ export class compressor {
 				$.pointerValue<compressor>(d).blockStart = __goscriptAssign1_0
 				$.pointerValue<compressor>(d).byteAvailable = __goscriptAssign1_1
 				$.pointerValue<compressor>(d).tokens = $.goSlice($.pointerValue<compressor>(d).tokens, undefined, 0)
-				$.pointerValue<compressor>(d).length = minMatchLength - 1
+				$.pointerValue<compressor>(d).length = 4 - 1
 				$.pointerValue<compressor>(d).offset = 0
 				$.pointerValue<compressor>(d).maxInsertIndex = 0
 				break
@@ -838,7 +838,7 @@ export class compressor {
 
 	public async store(): globalThis.Promise<void> {
 		let d: compressor | $.VarRef<compressor> | null = this
-		if (($.pointerValue<compressor>(d).windowEnd > 0) && (($.pointerValue<compressor>(d).windowEnd == maxStoreBlockSize) || $.pointerValue<compressor>(d).sync)) {
+		if (($.pointerValue<compressor>(d).windowEnd > 0) && (($.pointerValue<compressor>(d).windowEnd == 65535) || $.pointerValue<compressor>(d).sync)) {
 			$.pointerValue<compressor>(d).err = await compressor.prototype.writeStoredBlock.call(d, $.goSlice($.pointerValue<compressor>(d).window, undefined, $.pointerValue<compressor>(d).windowEnd))
 			$.pointerValue<compressor>(d).windowEnd = 0
 		}
@@ -919,7 +919,7 @@ export class compressor {
 		() => new compressor(),
 		[{ name: "close", args: [], returns: [] }, { name: "deflate", args: [], returns: [] }, { name: "encSpeed", args: [], returns: [] }, { name: "fillDeflate", args: [], returns: [] }, { name: "fillStore", args: [], returns: [] }, { name: "fillWindow", args: [], returns: [] }, { name: "findMatch", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "initDeflate", args: [], returns: [] }, { name: "reset", args: [], returns: [] }, { name: "store", args: [], returns: [] }, { name: "storeHuff", args: [], returns: [] }, { name: "syncFlush", args: [], returns: [] }, { name: "write", args: [], returns: [] }, { name: "writeBlock", args: [], returns: [] }, { name: "writeStoredBlock", args: [], returns: [] }],
 		compressor,
-		{"compressionLevel": "flate.compressionLevel", "w": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanBitWriter" }, "bulkHasher": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo), "fill": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo), "step": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }], results: [] } as $.FunctionTypeInfo), "bestSpeed": { kind: $.TypeKind.Pointer, elemType: "flate.deflateFast" }, "index": { kind: $.TypeKind.Basic, name: "int" }, "window": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "windowEnd": { kind: $.TypeKind.Basic, name: "int" }, "blockStart": { kind: $.TypeKind.Basic, name: "int" }, "byteAvailable": { kind: $.TypeKind.Basic, name: "bool" }, "sync": { kind: $.TypeKind.Basic, name: "bool" }, "tokens": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int", typeName: "flate.token" } }, "length": { kind: $.TypeKind.Basic, name: "int" }, "offset": { kind: $.TypeKind.Basic, name: "int" }, "maxInsertIndex": { kind: $.TypeKind.Basic, name: "int" }, "err": "error", "chainHead": { kind: $.TypeKind.Basic, name: "int" }, "hashHead": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 131072 }, "hashPrev": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 32768 }, "hashOffset": { kind: $.TypeKind.Basic, name: "int" }, "hashMatch": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 257 }}
+		{"compressionLevel": "flate.compressionLevel", "w": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanBitWriter" }, "bulkHasher": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }], results: [] } as $.FunctionTypeInfo), "fill": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo), "step": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }], results: [] } as $.FunctionTypeInfo), "bestSpeed": { kind: $.TypeKind.Pointer, elemType: "flate.deflateFast" }, "index": { kind: $.TypeKind.Basic, name: "int" }, "window": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "windowEnd": { kind: $.TypeKind.Basic, name: "int" }, "blockStart": { kind: $.TypeKind.Basic, name: "int" }, "byteAvailable": { kind: $.TypeKind.Basic, name: "bool" }, "sync": { kind: $.TypeKind.Basic, name: "bool" }, "tokens": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32", typeName: "flate.token" } }, "length": { kind: $.TypeKind.Basic, name: "int" }, "offset": { kind: $.TypeKind.Basic, name: "int" }, "maxInsertIndex": { kind: $.TypeKind.Basic, name: "int" }, "err": "error", "chainHead": { kind: $.TypeKind.Basic, name: "int" }, "hashHead": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint32" }, length: 131072 }, "hashPrev": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint32" }, length: 32768 }, "hashOffset": { kind: $.TypeKind.Basic, name: "int" }, "hashMatch": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint32" }, length: 257 }}
 	)
 }
 
@@ -1043,7 +1043,7 @@ export class Writer {
 		() => new Writer(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Flush", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		Writer,
-		{"d": "flate.compressor", "dict": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"d": "flate.compressor", "dict": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
 	)
 }
 
@@ -1089,26 +1089,26 @@ export const skipNever: number = 2147483647
 
 export const hashmul: number = 506832829
 
-export let levels: $.Slice<compressionLevel> = $.arrayToSlice<compressionLevel>([$.markAsStructValue(new compressionLevel({level: 0, good: 0, lazy: 0, nice: 0, chain: 0, fastSkipHashing: 0})), $.markAsStructValue(new compressionLevel({level: 1, good: 0, lazy: 0, nice: 0, chain: 0, fastSkipHashing: 0})), $.markAsStructValue(new compressionLevel({level: 2, good: 4, lazy: 0, nice: 16, chain: 8, fastSkipHashing: 5})), $.markAsStructValue(new compressionLevel({level: 3, good: 4, lazy: 0, nice: 32, chain: 32, fastSkipHashing: 6})), $.markAsStructValue(new compressionLevel({level: 4, good: 4, lazy: 4, nice: 16, chain: 16, fastSkipHashing: skipNever})), $.markAsStructValue(new compressionLevel({level: 5, good: 8, lazy: 16, nice: 32, chain: 32, fastSkipHashing: skipNever})), $.markAsStructValue(new compressionLevel({level: 6, good: 8, lazy: 16, nice: 128, chain: 128, fastSkipHashing: skipNever})), $.markAsStructValue(new compressionLevel({level: 7, good: 8, lazy: 32, nice: 128, chain: 256, fastSkipHashing: skipNever})), $.markAsStructValue(new compressionLevel({level: 8, good: 32, lazy: 128, nice: 258, chain: 1024, fastSkipHashing: skipNever})), $.markAsStructValue(new compressionLevel({level: 9, good: 32, lazy: 258, nice: 258, chain: 4096, fastSkipHashing: skipNever}))])
+export let levels: $.Slice<compressionLevel> = $.arrayToSlice<compressionLevel>([$.markAsStructValue(new compressionLevel({level: 0, good: 0, lazy: 0, nice: 0, chain: 0, fastSkipHashing: 0})), $.markAsStructValue(new compressionLevel({level: 1, good: 0, lazy: 0, nice: 0, chain: 0, fastSkipHashing: 0})), $.markAsStructValue(new compressionLevel({level: 2, good: 4, lazy: 0, nice: 16, chain: 8, fastSkipHashing: 5})), $.markAsStructValue(new compressionLevel({level: 3, good: 4, lazy: 0, nice: 32, chain: 32, fastSkipHashing: 6})), $.markAsStructValue(new compressionLevel({level: 4, good: 4, lazy: 4, nice: 16, chain: 16, fastSkipHashing: 2147483647})), $.markAsStructValue(new compressionLevel({level: 5, good: 8, lazy: 16, nice: 32, chain: 32, fastSkipHashing: 2147483647})), $.markAsStructValue(new compressionLevel({level: 6, good: 8, lazy: 16, nice: 128, chain: 128, fastSkipHashing: 2147483647})), $.markAsStructValue(new compressionLevel({level: 7, good: 8, lazy: 32, nice: 128, chain: 256, fastSkipHashing: 2147483647})), $.markAsStructValue(new compressionLevel({level: 8, good: 32, lazy: 128, nice: 258, chain: 1024, fastSkipHashing: 2147483647})), $.markAsStructValue(new compressionLevel({level: 9, good: 32, lazy: 258, nice: 258, chain: 4096, fastSkipHashing: 2147483647}))])
 
 export function __goscript_set_levels(__goscriptValue: $.Slice<compressionLevel>): void {
 	levels = __goscriptValue
 }
 
 export function hash4(b: $.Slice<number>): number {
-	return $.uint($.uintShr((((($.uint(b![3], 32) | ($.uint(b![2], 32) << 8)) | ($.uint(b![1], 32) << 16)) | ($.uint(b![0], 32) << 24)) * hashmul), (32 - hashBits), 32), 32)
+	return $.uint($.uintShr((((($.uint(b![3], 32) | ($.uint(b![2], 32) << 8)) | ($.uint(b![1], 32) << 16)) | ($.uint(b![0], 32) << 24)) * 506832829), (32 - 17), 32), 32)
 }
 
 export function bulkHash4(b: $.Slice<number>, dst: $.Slice<number>): void {
-	if ($.len(b) < minMatchLength) {
+	if ($.len(b) < 4) {
 		return
 	}
 	let hb = $.uint((($.uint(b![3], 32) | ($.uint(b![2], 32) << 8)) | ($.uint(b![1], 32) << 16)) | ($.uint(b![0], 32) << 24), 32)
-	dst![0] = $.uint($.uintShr((hb * hashmul), (32 - hashBits), 32), 32)
-	let end = ($.len(b) - minMatchLength) + 1
+	dst![0] = $.uint($.uintShr((hb * 506832829), (32 - 17), 32), 32)
+	let end = ($.len(b) - 4) + 1
 	for (let i = 1; i < end; i++) {
 		hb = $.uint((hb << 8) | $.uint(b![i + 3], 32), 32)
-		dst![i] = $.uint($.uintShr((hb * hashmul), (32 - hashBits), 32), 32)
+		dst![i] = $.uint($.uintShr((hb * 506832829), (32 - 17), 32), 32)
 	}
 }
 

@@ -3,12 +3,14 @@ import {
   makeMap,
   mapGet,
   mapSet,
+  namedValueInterfaceValue,
   TypeKind,
   registerInterfaceType,
   registerStructType,
+  varRef,
 } from '../builtin/index.js'
 import { StructField } from './types.js'
-import { Int, Struct, TypeFor } from './type.js'
+import { Int, Ptr, Struct, TypeFor, TypeOf, Uint64, ValueOf } from './type.js'
 
 describe('TypeFor', () => {
   it('exposes StructField PkgPath and exported semantics', () => {
@@ -46,6 +48,34 @@ describe('TypeFor', () => {
     expect(namedIntType.Name()).toBe('typeId')
     expect(namedIntType.PkgPath()).toBe('gob')
     expect(namedIntType.Kind()).toBe(Int)
+  })
+
+  it('preserves named pointer type metadata on interface boxes', () => {
+    const target = varRef(0)
+    const boxed = namedValueInterfaceValue(
+      target,
+      '*chunker.Pol',
+      {},
+      {
+        kind: TypeKind.Pointer,
+        elemType: {
+          kind: TypeKind.Basic,
+          name: 'uint64',
+          typeName: 'chunker.Pol',
+        },
+      },
+    )
+
+    const typ = TypeOf(boxed)
+    expect(typ.String()).toBe('*chunker.Pol')
+    expect(typ.Kind()).toBe(Ptr)
+    expect(typ.Elem().Kind()).toBe(Uint64)
+    expect(typ.Elem().Name()).toBe('Pol')
+
+    const elem = ValueOf(boxed).Elem()
+    expect(elem.Kind()).toBe(Uint64)
+    elem.SetUint(15)
+    expect(target.value).toBe(15)
   })
 
   it('formats literal interface methods from type metadata', () => {

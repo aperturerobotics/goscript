@@ -103,7 +103,7 @@ export class uint128 {
 		() => new uint128(),
 		[{ name: "addOne", args: [], returns: [] }, { name: "and", args: [], returns: [] }, { name: "bitsClearedFrom", args: [], returns: [] }, { name: "bitsSetFrom", args: [], returns: [] }, { name: "halves", args: [], returns: [] }, { name: "isZero", args: [], returns: [] }, { name: "not", args: [], returns: [] }, { name: "or", args: [], returns: [] }, { name: "subOne", args: [], returns: [] }, { name: "xor", args: [], returns: [] }],
 		uint128,
-		{"hi": { kind: $.TypeKind.Basic, name: "int" }, "lo": { kind: $.TypeKind.Basic, name: "int" }}
+		{"hi": { kind: $.TypeKind.Basic, name: "uint64" }, "lo": { kind: $.TypeKind.Basic, name: "uint64" }}
 	)
 }
 

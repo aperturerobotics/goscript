@@ -53,7 +53,7 @@ export class tableEntry {
 		() => new tableEntry(),
 		[],
 		tableEntry,
-		{"val": { kind: $.TypeKind.Basic, name: "int" }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
+		{"val": { kind: $.TypeKind.Basic, name: "uint32" }, "offset": { kind: $.TypeKind.Basic, name: "int32" }}
 	)
 }
 
@@ -106,13 +106,13 @@ export class deflateFast {
 	public encode(dst: $.Slice<__goscript_token.token>, src: $.Slice<number>): $.Slice<__goscript_token.token> {
 		let e: deflateFast | $.VarRef<deflateFast> | null = this
 		// Ensure that e.cur doesn't wrap.
-		if ($.pointerValue<deflateFast>(e).cur >= bufferReset) {
+		if ($.pointerValue<deflateFast>(e).cur >= 2147352577) {
 			deflateFast.prototype.shiftOffsets.call(e)
 		}
 
 		// This check isn't in the Snappy implementation, but there, the caller
 		// instead of the callee handles this case.
-		if ($.len(src) < minNonLiteralBlockSize) {
+		if ($.len(src) < 17) {
 			$.pointerValue<deflateFast>(e).cur = $.pointerValue<deflateFast>(e).cur + ($.int(65535, 32))
 			$.pointerValue<deflateFast>(e).prev = $.goSlice($.pointerValue<deflateFast>(e).prev, undefined, 0)
 			return emitLiteral(dst, src)
@@ -121,7 +121,7 @@ export class deflateFast {
 		// sLimit is when to stop looking for offset/length copies. The inputMargin
 		// lets us use a fast path for emitLiteral in the main loop, while we are
 		// looking for copies.
-		let sLimit = $.int($.int($.len(src) - inputMargin, 32), 32)
+		let sLimit = $.int($.int($.len(src) - 15, 32), 32)
 
 		// nextEmit is where in src the next emitLiteral should start from.
 		let nextEmit = $.int($.int(0, 32), 32)
@@ -159,9 +159,9 @@ export class deflateFast {
 					if (nextS > sLimit) {
 						break emitRemainder
 					}
-					candidate = $.markAsStructValue($.cloneStructValue($.pointerValue<deflateFast>(e).table[nextHash & tableMask]))
+					candidate = $.markAsStructValue($.cloneStructValue($.pointerValue<deflateFast>(e).table[nextHash & 16383]))
 					let now = $.uint(load32(src, $.int(nextS, 32)), 32)
-					$.pointerValue<deflateFast>(e).table[nextHash & tableMask] = $.markAsStructValue(new tableEntry({offset: $.int(s + $.pointerValue<deflateFast>(e).cur, 32), val: $.uint(cv, 32)}))
+					$.pointerValue<deflateFast>(e).table[nextHash & 16383] = $.markAsStructValue(new tableEntry({offset: $.int(s + $.pointerValue<deflateFast>(e).cur, 32), val: $.uint(cv, 32)}))
 					nextHash = $.uint(hash($.uint(now, 32)), 32)
 
 					let offset = $.int(s - (candidate.offset - $.pointerValue<deflateFast>(e).cur), 32)
@@ -212,11 +212,11 @@ export class deflateFast {
 					// three load32 calls.
 					let x = $.uint(load64(src, $.int(s - 1, 32)), 64)
 					let prevHash = $.uint(hash($.uint($.uint(x, 32), 32)), 32)
-					$.pointerValue<deflateFast>(e).table[prevHash & tableMask] = $.markAsStructValue(new tableEntry({offset: $.int(($.pointerValue<deflateFast>(e).cur + s) - 1, 32), val: $.uint($.uint(x, 32), 32)}))
+					$.pointerValue<deflateFast>(e).table[prevHash & 16383] = $.markAsStructValue(new tableEntry({offset: $.int(($.pointerValue<deflateFast>(e).cur + s) - 1, 32), val: $.uint($.uint(x, 32), 32)}))
 					x = $.uint64Shr(x, $.uint(8, 64))
 					let currHash = $.uint(hash($.uint($.uint(x, 32), 32)), 32)
-					candidate = $.markAsStructValue($.cloneStructValue($.pointerValue<deflateFast>(e).table[currHash & tableMask]))
-					$.pointerValue<deflateFast>(e).table[currHash & tableMask] = $.markAsStructValue(new tableEntry({offset: $.int($.pointerValue<deflateFast>(e).cur + s, 32), val: $.uint($.uint(x, 32), 32)}))
+					candidate = $.markAsStructValue($.cloneStructValue($.pointerValue<deflateFast>(e).table[currHash & 16383]))
+					$.pointerValue<deflateFast>(e).table[currHash & 16383] = $.markAsStructValue(new tableEntry({offset: $.int($.pointerValue<deflateFast>(e).cur + s, 32), val: $.uint($.uint(x, 32), 32)}))
 
 					let offset = $.int(s - (candidate.offset - $.pointerValue<deflateFast>(e).cur), 32)
 					if ((offset > 32768) || ($.uint($.uint(x, 32), 32) != $.uint(candidate.val, 32))) {
@@ -303,7 +303,7 @@ export class deflateFast {
 		$.pointerValue<deflateFast>(e).cur = $.pointerValue<deflateFast>(e).cur + ($.int(32768, 32))
 
 		// Protect against e.cur wraparound.
-		if ($.pointerValue<deflateFast>(e).cur >= bufferReset) {
+		if ($.pointerValue<deflateFast>(e).cur >= 2147352577) {
 			deflateFast.prototype.shiftOffsets.call(e)
 		}
 	}
@@ -337,7 +337,7 @@ export class deflateFast {
 		() => new deflateFast(),
 		[{ name: "encode", args: [], returns: [] }, { name: "matchLen", args: [], returns: [] }, { name: "reset", args: [], returns: [] }, { name: "shiftOffsets", args: [], returns: [] }],
 		deflateFast,
-		{"table": { kind: $.TypeKind.Array, elemType: "flate.tableEntry", length: 16384 }, "prev": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "cur": { kind: $.TypeKind.Basic, name: "int" }}
+		{"table": { kind: $.TypeKind.Array, elemType: "flate.tableEntry", length: 16384 }, "prev": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "cur": { kind: $.TypeKind.Basic, name: "int32" }}
 	)
 }
 
@@ -366,7 +366,7 @@ export function load64(b: $.Slice<number>, i: number): number {
 }
 
 export function hash(u: number): number {
-	return $.uint($.uintShr((u * 0x1e35a7bd), tableShift, 32), 32)
+	return $.uint($.uintShr((u * 0x1e35a7bd), 18, 32), 32)
 }
 
 export function newDeflateFast(): deflateFast | $.VarRef<deflateFast> | null {

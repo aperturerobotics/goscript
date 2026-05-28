@@ -36,7 +36,7 @@ export type ByteOrder = {
 $.registerInterfaceType(
 	"binary.ByteOrder",
 	null,
-	[{ name: "PutUint16", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "PutUint32", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "PutUint64", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Uint16", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Uint32", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Uint64", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+	[{ name: "PutUint16", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "uint16" } }], returns: [] }, { name: "PutUint32", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [] }, { name: "PutUint64", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "uint64" } }], returns: [] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Uint16", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint16" } }] }, { name: "Uint32", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint32" } }] }, { name: "Uint64", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint64" } }] }]
 )
 
 export type AppendByteOrder = {
@@ -49,7 +49,7 @@ export type AppendByteOrder = {
 $.registerInterfaceType(
 	"binary.AppendByteOrder",
 	null,
-	[{ name: "AppendUint16", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }] }, { name: "AppendUint32", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }] }, { name: "AppendUint64", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+	[{ name: "AppendUint16", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "uint16" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }] }, { name: "AppendUint32", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }] }, { name: "AppendUint64", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_p1", type: { kind: $.TypeKind.Basic, name: "uint64" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 )
 
 export class littleEndian {
@@ -275,7 +275,7 @@ export class coder {
 		() => new coder(),
 		[],
 		coder,
-		{"order": "binary.ByteOrder", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
+		{"order": "binary.ByteOrder", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 
@@ -499,7 +499,7 @@ export class decoder {
 		() => new decoder(),
 		[{ name: "bool", args: [], returns: [] }, { name: "int16", args: [], returns: [] }, { name: "int32", args: [], returns: [] }, { name: "int64", args: [], returns: [] }, { name: "int8", args: [], returns: [] }, { name: "skip", args: [], returns: [] }, { name: "uint16", args: [], returns: [] }, { name: "uint32", args: [], returns: [] }, { name: "uint64", args: [], returns: [] }, { name: "uint8", args: [], returns: [] }, { name: "value", args: [], returns: [] }],
 		decoder,
-		{"order": "binary.ByteOrder", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
+		{"order": "binary.ByteOrder", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 
@@ -724,7 +724,7 @@ export class encoder {
 		() => new encoder(),
 		[{ name: "bool", args: [], returns: [] }, { name: "int16", args: [], returns: [] }, { name: "int32", args: [], returns: [] }, { name: "int64", args: [], returns: [] }, { name: "int8", args: [], returns: [] }, { name: "skip", args: [], returns: [] }, { name: "uint16", args: [], returns: [] }, { name: "uint32", args: [], returns: [] }, { name: "uint64", args: [], returns: [] }, { name: "uint8", args: [], returns: [] }, { name: "value", args: [], returns: [] }],
 		encoder,
-		{"order": "binary.ByteOrder", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
+		{"order": "binary.ByteOrder", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 
@@ -848,63 +848,63 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					data!.value = $.uint(bs![0], 8) != $.uint(0, 8)
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).value
 					data!.value = $.int($.int(bs![0], 8), 8)
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).value
 					data!.value = $.uint(bs![0], 8)
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
 					data!.value = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint16(bs), 16), 16)
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
 					data!.value = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint16(bs), 16)
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
 					data!.value = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32(bs), 32), 32)
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
 					data!.value = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32(bs), 32)
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
 					data!.value = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64(bs)))
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
 					data!.value = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64(bs), 64)
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
 					data!.value = math.Float32frombits($.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32(bs), 32))
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
 					data!.value = math.Float64frombits($.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64(bs), 64))
 				}
 				break
@@ -917,80 +917,80 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					}
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).value
 					for (let __goscriptRangeTarget1 = bs, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
 						let x = __goscriptRangeTarget1![i]
 						data![i] = $.int($.int(x, 8), 8)
 					}
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).value
 					$.copy(data, bs)
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
 					for (let __goscriptRangeTarget2 = data, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 						data![i] = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint16($.goSlice(bs, 2 * i, undefined)), 16), 16)
 					}
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
 					for (let __goscriptRangeTarget3 = data, i = 0; i < $.len(__goscriptRangeTarget3); i++) {
 						data![i] = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint16($.goSlice(bs, 2 * i, undefined)), 16)
 					}
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
 					for (let __goscriptRangeTarget4 = data, i = 0; i < $.len(__goscriptRangeTarget4); i++) {
 						data![i] = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32($.goSlice(bs, 4 * i, undefined)), 32), 32)
 					}
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
 					for (let __goscriptRangeTarget5 = data, i = 0; i < $.len(__goscriptRangeTarget5); i++) {
 						data![i] = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32($.goSlice(bs, 4 * i, undefined)), 32)
 					}
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
 					for (let __goscriptRangeTarget6 = data, i = 0; i < $.len(__goscriptRangeTarget6); i++) {
 						data![i] = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64($.goSlice(bs, 8 * i, undefined))))
 					}
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
 					for (let __goscriptRangeTarget7 = data, i = 0; i < $.len(__goscriptRangeTarget7); i++) {
 						data![i] = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64($.goSlice(bs, 8 * i, undefined)), 64)
 					}
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
 					for (let __goscriptRangeTarget8 = data, i = 0; i < $.len(__goscriptRangeTarget8); i++) {
 						data![i] = math.Float32frombits($.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32($.goSlice(bs, 4 * i, undefined)), 32))
 					}
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
 					for (let __goscriptRangeTarget9 = data, i = 0; i < $.len(__goscriptRangeTarget9); i++) {
 						data![i] = math.Float64frombits($.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64($.goSlice(bs, 8 * i, undefined)), 64))
 					}
@@ -1133,207 +1133,207 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					}
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).value
 					bs![0] = $.uint($.uint($.pointerValue<number>(v), 8), 8)
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int8" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int8" }).value
 					bs![0] = $.uint($.uint(v, 8), 8)
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).value
 					for (let __goscriptRangeTarget11 = v, i = 0; i < $.len(__goscriptRangeTarget11); i++) {
 						let x = __goscriptRangeTarget11![i]
 						bs![i] = $.uint($.uint(x, 8), 8)
 					}
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).value
 					bs![0] = $.uint($.pointerValue<number>(v), 8)
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint8" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint8" }).value
 					bs![0] = $.uint(v, 8)
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).value
 					$.copy(bs, v)
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint($.uint($.pointerValue<number>(v), 16), 16))
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int16" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int16" }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint($.uint(v, 16), 16))
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
 					for (let __goscriptRangeTarget12 = v, i = 0; i < $.len(__goscriptRangeTarget12); i++) {
 						let x = __goscriptRangeTarget12![i]
 						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16($.goSlice(bs, 2 * i, undefined), $.uint($.uint(x, 16), 16))
 					}
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint($.pointerValue<number>(v), 16))
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint16" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint16" }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint(v, 16))
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
 					for (let __goscriptRangeTarget13 = v, i = 0; i < $.len(__goscriptRangeTarget13); i++) {
 						let x = __goscriptRangeTarget13![i]
 						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16($.goSlice(bs, 2 * i, undefined), $.uint(x, 16))
 					}
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint($.uint($.pointerValue<number>(v), 32), 32))
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int32" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int32" }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint($.uint(v, 32), 32))
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
 					for (let __goscriptRangeTarget14 = v, i = 0; i < $.len(__goscriptRangeTarget14); i++) {
 						let x = __goscriptRangeTarget14![i]
 						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32($.goSlice(bs, 4 * i, undefined), $.uint($.uint(x, 32), 32))
 					}
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint($.pointerValue<number>(v), 32))
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint32" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint32" }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint(v, 32))
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
 					for (let __goscriptRangeTarget15 = v, i = 0; i < $.len(__goscriptRangeTarget15); i++) {
 						let x = __goscriptRangeTarget15![i]
 						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32($.goSlice(bs, 4 * i, undefined), $.uint(x, 32))
 					}
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint($.uint($.pointerValue<number>(v), 64), 64))
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint($.uint(v, 64), 64))
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
 					for (let __goscriptRangeTarget16 = v, i = 0; i < $.len(__goscriptRangeTarget16); i++) {
 						let x = __goscriptRangeTarget16![i]
 						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64($.goSlice(bs, 8 * i, undefined), $.uint($.uint(x, 64), 64))
 					}
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint($.pointerValue<number>(v), 64))
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint(v, 64))
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
 					for (let __goscriptRangeTarget17 = v, i = 0; i < $.len(__goscriptRangeTarget17); i++) {
 						let x = __goscriptRangeTarget17![i]
 						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64($.goSlice(bs, 8 * i, undefined), $.uint(x, 64))
 					}
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint(math.Float32bits($.pointerValue<number>(v)), 32))
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float32" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float32" }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint(math.Float32bits(v), 32))
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
 					for (let __goscriptRangeTarget18 = v, i = 0; i < $.len(__goscriptRangeTarget18); i++) {
 						let x = __goscriptRangeTarget18![i]
 						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32($.goSlice(bs, 4 * i, undefined), $.uint(math.Float32bits(x), 32))
 					}
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
 				{
-					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint(math.Float64bits($.pointerValue<number>(v)), 64))
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float64" }).ok:
 				{
-					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float64" }).value
 					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint(math.Float64bits(v), 64))
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
 				{
-					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
 					for (let __goscriptRangeTarget19 = v, i = 0; i < $.len(__goscriptRangeTarget19); i++) {
 						let x = __goscriptRangeTarget19![i]
 						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64($.goSlice(bs, 8 * i, undefined), $.uint(math.Float64bits(x), 64))
@@ -1348,7 +1348,7 @@ export async function Size(v: any): globalThis.Promise<number> {
 	{
 		const __goscriptTypeSwitchValue = v
 		switch (true) {
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "bool" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "bool" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int8" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint8" }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return 1
@@ -1363,18 +1363,18 @@ export async function Size(v: any): globalThis.Promise<number> {
 					return 1
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).value
 					if (data == null) {
 						return -1
 					}
 					return 1
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).value
 					if (data == null) {
 						return -1
 					}
@@ -1387,165 +1387,165 @@ export async function Size(v: any): globalThis.Promise<number> {
 					return $.len(data)
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).value
 					return $.len(data)
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).value
 					return $.len(data)
 				}
 				break
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int16" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint16" }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return 2
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
 					if (data == null) {
 						return -1
 					}
 					return 2
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
 					if (data == null) {
 						return -1
 					}
 					return 2
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
 					return 2 * $.len(data)
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
 					return 2 * $.len(data)
 				}
 				break
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int32" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint32" }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return 4
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
 					if (data == null) {
 						return -1
 					}
 					return 4
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
 					if (data == null) {
 						return -1
 					}
 					return 4
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
 					return 4 * $.len(data)
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
 					return 4 * $.len(data)
 				}
 				break
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return 8
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
 					if (data == null) {
 						return -1
 					}
 					return 8
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
 					if (data == null) {
 						return -1
 					}
 					return 8
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
 					return 8 * $.len(data)
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
 					return 8 * $.len(data)
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float32" }).ok:
 				{
-					let data: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let data: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float32" }).value
 					return 4
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
 					if (data == null) {
 						return -1
 					}
 					return 4
 				}
 				break
-			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
+			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float64" }).ok:
 				{
-					let data: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
+					let data: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float64" }).value
 					return 8
 				}
 				break
-			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
 				{
-					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
 					if (data == null) {
 						return -1
 					}
 					return 8
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
 					return 4 * $.len(data)
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
 					return 8 * $.len(data)
 				}
 				break
@@ -1659,7 +1659,7 @@ export function intDataSize(data: any): [number, $.Slice<number>] {
 	{
 		const __goscriptTypeSwitchValue = data
 		switch (true) {
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "bool" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "bool" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "bool" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int8" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint8" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "bool" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int8" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return [1, null]
@@ -1671,93 +1671,93 @@ export function intDataSize(data: any): [number, $.Slice<number>] {
 					return [$.len(data), null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int8" } }).value
 					return [$.len(data), null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }).value
 					return [$.len(data), data]
 				}
 				break
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int16" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint16" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return [2, null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
 					return [2 * $.len(data), null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
 					return [2 * $.len(data), null]
 				}
 				break
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int32" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint32" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return [4, null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
 					return [4 * $.len(data), null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
 					return [4 * $.len(data), null]
 				}
 				break
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return [8, null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
 					return [8 * $.len(data), null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
 					return [8 * $.len(data), null]
 				}
 				break
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float32" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return [4, null]
 				}
 				break
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float64" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }):
 				{
 					let data = __goscriptTypeSwitchValue
 					return [8, null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
 					return [4 * $.len(data), null]
 				}
 				break
-			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).ok:
+			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
 				{
-					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }).value
+					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
 					return [8 * $.len(data), null]
 				}
 				break

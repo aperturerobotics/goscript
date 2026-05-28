@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export var hook: (() => number | globalThis.Promise<number>) | null = undefined as unknown as (() => number | globalThis.Promise<number>) | null
+export var hook: (() => number | globalThis.Promise<number>) | null
 
 export function __goscript_init_hook(): void {
 	if (((hook) as any) === undefined) {

@@ -34,7 +34,7 @@ export class buffer {
 		() => new buffer(),
 		[],
 		buffer,
-		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
 	)
 }
 

@@ -63,7 +63,7 @@ export class fixedReader {
 		() => new fixedReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		fixedReader,
-		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "size": { kind: $.TypeKind.Basic, name: "int" }}
+		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "size": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 

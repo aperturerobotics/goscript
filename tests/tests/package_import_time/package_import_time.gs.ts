@@ -52,10 +52,10 @@ export async function main(): globalThis.Promise<void> {
 	let [, badDurationErr] = time.ParseDuration("not-a-duration")
 	$.println("bad duration err", badDurationErr != null)
 
-	let timer: time.Timer | $.VarRef<time.Timer> | null = time.AfterFunc(9223372036854775807, $.functionValue((): void => {
+	let timer: time.Timer | $.VarRef<time.Timer> | null = time.AfterFunc($.int("9223372036854775807", 64), $.functionValue((): void => {
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	$.println("max duration timer stopped", time.Timer.prototype.Stop.call($.pointerValue<time.Timer>(timer)))
-	let maxDuration = 9223372036854775807
+	let maxDuration = $.int("9223372036854775807", 64)
 	$.println("max duration converted", maxDuration > 0)
 
 	let [parsed, parseErr] = time.Parse(time.RFC3339, "2025-05-15T01:10:42Z")

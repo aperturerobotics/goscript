@@ -207,7 +207,7 @@ export class printer {
 		() => new printer(),
 		[{ name: "format", args: [], returns: [] }, { name: "init", args: [], returns: [] }],
 		printer,
-		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "arg": { kind: $.TypeKind.Interface, methods: [] }, "fmt": "main.formatter"}
+		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "arg": { kind: $.TypeKind.Interface, methods: [] }, "fmt": "main.formatter"}
 	)
 }
 

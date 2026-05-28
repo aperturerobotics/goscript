@@ -9,7 +9,7 @@ import * as __goscript_c from "./c.gs.ts"
 import "@goscript/reflect/index.js"
 import "./c.gs.ts"
 
-export var table: $.Slice<number> = undefined as unknown as $.Slice<number>
+export var table: $.Slice<number>
 
 export function __goscript_init_table(): void {
 	if (((table) as any) === undefined) {
@@ -28,7 +28,7 @@ export function __goscript_set_table(__goscriptValue: $.Slice<number>): void {
 	table = __goscriptValue
 }
 
-export var remoteCounter: number = undefined as unknown as number
+export var remoteCounter: number
 
 export function __goscript_init_remoteCounter(): void {
 	if (((remoteCounter) as any) === undefined) {
@@ -47,7 +47,7 @@ export function __goscript_set_remoteCounter(__goscriptValue: number): void {
 	remoteCounter = __goscriptValue
 }
 
-export var stringType: reflect.Type | null = undefined as unknown as reflect.Type | null
+export var stringType: reflect.Type | null
 
 export function __goscript_init_stringType(): void {
 	if (((stringType) as any) === undefined) {

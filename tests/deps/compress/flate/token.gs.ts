@@ -28,23 +28,23 @@ export function __goscript_set_offsetCodes(__goscriptValue: number[]): void {
 export type token = number
 
 export function literalToken(literal: number): token {
-	return $.uint(literalType + literal, 32)
+	return $.uint(0 + literal, 32)
 }
 
 export function matchToken(xlength: number, xoffset: number): token {
-	return $.uint((matchType + (xlength << lengthShift)) + xoffset, 32)
+	return $.uint((1073741824 + (xlength << 22)) + xoffset, 32)
 }
 
 export function token_literal(t: token): number {
-	return $.uint($.uint(t - literalType, 32), 32)
+	return $.uint($.uint(t - 0, 32), 32)
 }
 
 export function token_offset(t: token): number {
-	return $.uint($.uint(t, 32) & offsetMask, 32)
+	return $.uint($.uint(t, 32) & 4194303, 32)
 }
 
 export function token_length(t: token): number {
-	return $.uint($.uint($.uintShr((t - matchType), lengthShift, 32), 32), 32)
+	return $.uint($.uint($.uintShr((t - 1073741824), 22, 32), 32), 32)
 }
 
 export function lengthCode(len: number): number {

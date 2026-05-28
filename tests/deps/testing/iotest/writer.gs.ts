@@ -69,7 +69,7 @@ export class truncateWriter {
 		() => new truncateWriter(),
 		[{ name: "Write", args: [], returns: [] }],
 		truncateWriter,
-		{"w": "io.Writer", "n": { kind: $.TypeKind.Basic, name: "int" }}
+		{"w": "io.Writer", "n": { kind: $.TypeKind.Basic, name: "int64" }}
 	)
 }
 

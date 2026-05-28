@@ -7,7 +7,7 @@ import * as __goscript_error_type from "./error_type.gs.ts"
 import "./error_type.gs.ts"
 
 export function fail(): $.GoError {
-	return $.namedValueInterfaceValue<$.GoError>(1, "main.remoteError", {"Error": __goscript_error_type.remoteError_Error})
+	return $.namedValueInterfaceValue<$.GoError>(1, "main.remoteError", {"Error": __goscript_error_type.remoteError_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "main.remoteError" })
 }
 
 export async function main(): globalThis.Promise<void> {

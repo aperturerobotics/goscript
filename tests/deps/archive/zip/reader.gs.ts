@@ -397,7 +397,7 @@ export class Reader {
 		() => new Reader(),
 		[{ name: "Open", args: [], returns: [] }, { name: "RegisterDecompressor", args: [], returns: [] }, { name: "decompressor", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "initFileList", args: [], returns: [] }, { name: "openLookup", args: [], returns: [] }, { name: "openReadDir", args: [], returns: [] }],
 		Reader,
-		{"r": "io.ReaderAt", "File": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "zip.File" } }, "Comment": { kind: $.TypeKind.Basic, name: "string" }, "decompressors": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: ({ kind: $.TypeKind.Function, name: "zip.Decompressor", params: ["io.Reader"], results: ["io.ReadCloser"] } as $.FunctionTypeInfo) }, "baseOffset": { kind: $.TypeKind.Basic, name: "int" }, "fileListOnce": "sync.Once", "fileList": { kind: $.TypeKind.Slice, elemType: "zip.fileListEntry" }}
+		{"r": "io.ReaderAt", "File": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "zip.File" } }, "Comment": { kind: $.TypeKind.Basic, name: "string" }, "decompressors": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "uint16" }, elemType: ({ kind: $.TypeKind.Function, name: "zip.Decompressor", params: ["io.Reader"], results: ["io.ReadCloser"] } as $.FunctionTypeInfo) }, "baseOffset": { kind: $.TypeKind.Basic, name: "int64" }, "fileListOnce": "sync.Once", "fileList": { kind: $.TypeKind.Slice, elemType: "zip.fileListEntry" }}
 	)
 }
 
@@ -664,7 +664,7 @@ export class File {
 		() => new File(),
 		[{ name: "DataOffset", args: [], returns: [] }, { name: "Open", args: [], returns: [] }, { name: "OpenRaw", args: [], returns: [] }, { name: "findBodyOffset", args: [], returns: [] }, { name: "FileInfo", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "SetModTime", args: [], returns: [] }, { name: "SetMode", args: [], returns: [] }, { name: "hasDataDescriptor", args: [], returns: [] }, { name: "isZip64", args: [], returns: [] }],
 		File,
-		{"FileHeader": "zip.FileHeader", "zip": { kind: $.TypeKind.Pointer, elemType: "zip.Reader" }, "zipr": "io.ReaderAt", "headerOffset": { kind: $.TypeKind.Basic, name: "int" }, "zip64": { kind: $.TypeKind.Basic, name: "bool" }}
+		{"FileHeader": "zip.FileHeader", "zip": { kind: $.TypeKind.Pointer, elemType: "zip.Reader" }, "zipr": "io.ReaderAt", "headerOffset": { kind: $.TypeKind.Basic, name: "int64" }, "zip64": { kind: $.TypeKind.Basic, name: "bool" }}
 	)
 }
 
@@ -854,7 +854,7 @@ export class checksumReader {
 		() => new checksumReader(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Stat", args: [], returns: [] }],
 		checksumReader,
-		{"rc": "io.ReadCloser", "hash": "hash.Hash32", "nread": { kind: $.TypeKind.Basic, name: "int" }, "f": { kind: $.TypeKind.Pointer, elemType: "zip.File" }, "desr": "io.Reader", "err": "error"}
+		{"rc": "io.ReadCloser", "hash": "hash.Hash32", "nread": { kind: $.TypeKind.Basic, name: "uint64" }, "f": { kind: $.TypeKind.Pointer, elemType: "zip.File" }, "desr": "io.Reader", "err": "error"}
 	)
 }
 
@@ -1285,8 +1285,8 @@ export async function readDirectoryHeader(f: File | $.VarRef<File> | null, r: io
 
 					const ticksPerSecond: number = 10000000
 					let ts = $.int($.int(readBuf_uint64(attrBuf)))
-					let secs = $.int($.int64Div(ts, ticksPerSecond))
-					let nsecs = $.int($.int64Mul(($.int64Div(1e9, ticksPerSecond)), ($.int64Mod(ts, ticksPerSecond))))
+					let secs = $.int($.int64Div(ts, 10000000))
+					let nsecs = $.int($.int64Mul(($.int64Div(1e9, 10000000)), ($.int64Mod(ts, 10000000))))
 					let epoch = $.markAsStructValue($.cloneStructValue(time.Date(1601, time.January, 1, 0, 0, 0, 0, time.UTC)))
 					modified = $.markAsStructValue($.cloneStructValue(time.Unix($.int($.int64Add($.markAsStructValue($.cloneStructValue(epoch)).Unix(), secs)), $.int(nsecs))))
 				}
@@ -1450,7 +1450,7 @@ export async function readDirectoryEnd(r: io.ReaderAt | null, size: number): glo
 		}
 	}
 
-	let maxInt64 = $.uint($.uint(9223372036854775807, 64), 64)
+	let maxInt64 = $.uint("9223372036854775807", 64)
 	if (($.pointerValue<__goscript_struct.directoryEnd>(d).directorySize > maxInt64) || ($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset > maxInt64)) {
 		return [null, $.int(0), ErrFormat]
 	}
@@ -1603,7 +1603,7 @@ export type fileInfoDirEntry = {
 $.registerInterfaceType(
 	"zip.fileInfoDirEntry",
 	null,
-	[{ name: "Info", args: [], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }, { name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ name: "_r0", type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int", typeName: "fs.FileMode" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Sys", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Type", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int", typeName: "fs.FileMode" } }] }]
+	[{ name: "Info", args: [], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }, { name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ name: "_r0", type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "Sys", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Type", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }]
 )
 
 export function toValidName(name: string): string {

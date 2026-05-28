@@ -239,7 +239,7 @@ export class Scanner {
 				}
 				let newSize = $.len($.pointerValue<Scanner>(s).buf) * 2
 				if (newSize == 0) {
-					newSize = startBufSize
+					newSize = 4096
 				}
 				newSize = $.min(newSize, $.pointerValue<Scanner>(s).maxTokenSize)
 				let newBuf: $.Slice<number> = $.makeSlice<number>(newSize, undefined, "byte")
@@ -315,7 +315,7 @@ export class Scanner {
 		() => new Scanner(),
 		[{ name: "Buffer", args: [], returns: [] }, { name: "Bytes", args: [], returns: [] }, { name: "Err", args: [], returns: [] }, { name: "Scan", args: [], returns: [] }, { name: "Split", args: [], returns: [] }, { name: "Text", args: [], returns: [] }, { name: "advance", args: [], returns: [] }, { name: "setErr", args: [], returns: [] }],
 		Scanner,
-		{"r": "io.Reader", "split": ({ kind: $.TypeKind.Function, name: "bufio.SplitFunc", params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Basic, name: "bool" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "error"] } as $.FunctionTypeInfo), "maxTokenSize": { kind: $.TypeKind.Basic, name: "int" }, "token": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "start": { kind: $.TypeKind.Basic, name: "int" }, "end": { kind: $.TypeKind.Basic, name: "int" }, "err": "error", "empties": { kind: $.TypeKind.Basic, name: "int" }, "scanCalled": { kind: $.TypeKind.Basic, name: "bool" }, "done": { kind: $.TypeKind.Basic, name: "bool" }}
+		{"r": "io.Reader", "split": ({ kind: $.TypeKind.Function, name: "bufio.SplitFunc", params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Basic, name: "bool" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "error"] } as $.FunctionTypeInfo), "maxTokenSize": { kind: $.TypeKind.Basic, name: "int" }, "token": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "start": { kind: $.TypeKind.Basic, name: "int" }, "end": { kind: $.TypeKind.Basic, name: "int" }, "err": "error", "empties": { kind: $.TypeKind.Basic, name: "int" }, "scanCalled": { kind: $.TypeKind.Basic, name: "bool" }, "done": { kind: $.TypeKind.Basic, name: "bool" }}
 	)
 }
 
@@ -348,7 +348,7 @@ export function __goscript_set_ErrBadReadCount(__goscriptValue: $.GoError): void
 }
 
 export function NewScanner(r: io.Reader | null): Scanner | $.VarRef<Scanner> | null {
-	return new Scanner({r: r, split: ScanLines, maxTokenSize: MaxScanTokenSize})
+	return new Scanner({r: r, split: ScanLines, maxTokenSize: 65536})
 }
 
 export let ErrFinalToken: $.GoError = errors.New("final token")

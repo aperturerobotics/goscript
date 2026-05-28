@@ -1687,6 +1687,13 @@ function collectionValue(value: unknown): unknown {
   if (
     typeof value === 'object' &&
     value !== null &&
+    (value as { __isTypedNil?: unknown }).__isTypedNil === true
+  ) {
+    return null
+  }
+  if (
+    typeof value === 'object' &&
+    value !== null &&
     typeof (value as { __goType?: unknown }).__goType === 'string' &&
     '__goValue' in value
   ) {

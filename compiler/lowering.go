@@ -1190,7 +1190,7 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				code := keyword + " " + declName + ": " + variableType + " = " + value
 				if lazy {
 					keyword = "var"
-					code = "var " + declName + ": " + variableType + " = undefined as unknown as " + variableType
+					code = "var " + declName + ": " + variableType
 				}
 				indexExport := ""
 				if ctx.topLevel && name.Name != "_" {
@@ -1956,6 +1956,13 @@ func lowerConstantValue(value constant.Value) (string, bool) {
 }
 
 func lowerLargeIntegerConstantValue(value constant.Value) (string, bool) {
+	if value == nil || value.Kind() != constant.Int || constant.BitLen(value) <= 53 {
+		return "", false
+	}
+	return value.ExactString(), true
+}
+
+func lowerWideIntegerConstantValue(value constant.Value) (string, bool) {
 	if value == nil || value.Kind() != constant.Int || constant.BitLen(value) <= 53 {
 		return "", false
 	}
@@ -6343,7 +6350,7 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 		}
 		return alias
 	}
-	if constObj, ok := obj.(*types.Const); ok && ctx.localAliases[obj] != "" {
+	if constObj, ok := obj.(*types.Const); ok && !raw {
 		if constValue, ok := lowerConstantValue(constObj.Val()); ok {
 			return constValue
 		}
@@ -7089,7 +7096,7 @@ func (o *LoweringOwner) lowerConversionExpr(
 		return renderNamedStructConversion(conversion), diagnostics
 	}
 	if isNumericType(targetType) {
-		if constantValue, ok := lowerRealNumericConstantExpr(ctx, expr.Args[0]); ok {
+		if constantValue, ok := o.lowerNumericConstantExprForTarget(ctx, expr.Args[0], targetType); ok {
 			return constantValue, diagnostics
 		}
 	}
@@ -8818,7 +8825,7 @@ func (o *LoweringOwner) lowerValueForTarget(
 		}
 	}
 	if isNumericType(targetType) {
-		if constantValue, ok := lowerRealNumericConstantExpr(ctx, expr); ok {
+		if constantValue, ok := o.lowerNumericConstantExprForTarget(ctx, expr, targetType); ok {
 			return constantValue
 		}
 	}
@@ -8845,6 +8852,28 @@ func lowerRealNumericConstantExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 	default:
 		return "", false
 	}
+}
+
+func (o *LoweringOwner) lowerNumericConstantExprForTarget(ctx lowerFileContext, expr ast.Expr, targetType types.Type) (string, bool) {
+	if ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return "", false
+	}
+	tv, ok := ctx.semPkg.source.TypesInfo.Types[expr]
+	if ok && tv.Value != nil {
+		if bits, ok := unsignedIntegerBits(targetType); ok && bits >= 64 {
+			if value, ok := lowerWideIntegerConstantValue(tv.Value); ok {
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) + "(" +
+					strconv.Quote(value) + ", 64)", true
+			}
+		}
+		if bits, ok := signedIntegerBits(targetType); ok && bits >= 64 {
+			if value, ok := lowerWideIntegerConstantValue(tv.Value); ok {
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt) + "(" +
+					strconv.Quote(value) + ", 64)", true
+			}
+		}
+	}
+	return lowerRealNumericConstantExpr(ctx, expr)
 }
 
 func isRealNumericConstantExpr(ctx lowerFileContext, expr ast.Expr) bool {
@@ -8979,7 +9008,8 @@ func (o *LoweringOwner) lowerNamedValueInterfaceWrapper(
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedValueInterfaceValue) +
 		"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ", " +
-		strconv.Quote(goRuntimeTypeString(sourceType)) + ", " + methods + ")"
+		strconv.Quote(goRuntimeTypeString(sourceType)) + ", " + methods + ", " +
+		o.runtimeTypeInfoExpr(sourceType) + ")"
 }
 
 func (o *LoweringOwner) lowerPrimitiveErrorWrapper(ctx lowerFileContext, sourceType types.Type, value string) string {
@@ -9001,7 +9031,8 @@ func (o *LoweringOwner) lowerPrimitiveErrorWrapper(ctx lowerFileContext, sourceT
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedValueInterfaceValue) +
 		"<$.GoError>(" + value + ", " + strconv.Quote(goRuntimeTypeString(sourceType)) +
-		", {\"Error\": " + o.methodFunctionExpr(ctx, named, fn, "Error") + "})"
+		", {\"Error\": " + o.methodFunctionExpr(ctx, named, fn, "Error") + "}, " +
+		o.runtimeTypeInfoExpr(sourceType) + ")"
 }
 
 func (o *LoweringOwner) lowerStructClone(value string) string {
@@ -10284,6 +10315,18 @@ func (o *LoweringOwner) inferGenericTypeArg(
 		}
 		return
 	}
+	if paramNamed, ok := types.Unalias(paramType).(*types.Named); ok {
+		if argNamed, ok := types.Unalias(argType).(*types.Named); ok &&
+			namedOriginsEqual(paramNamed, argNamed) {
+			paramArgs := paramNamed.TypeArgs()
+			argArgs := argNamed.TypeArgs()
+			if paramArgs != nil && argArgs != nil {
+				for idx := range min(paramArgs.Len(), argArgs.Len()) {
+					o.inferGenericTypeArg(inferred, paramArgs.At(idx), argArgs.At(idx))
+				}
+			}
+		}
+	}
 	switch param := types.Unalias(paramType).Underlying().(type) {
 	case *types.Slice:
 		if arg, ok := types.Unalias(argType).Underlying().(*types.Slice); ok {
@@ -10294,6 +10337,24 @@ func (o *LoweringOwner) inferGenericTypeArg(
 			o.inferGenericTypeArg(inferred, param.Elem(), arg.Elem())
 		}
 	}
+}
+
+func namedOriginsEqual(a, b *types.Named) bool {
+	if a == nil || b == nil {
+		return false
+	}
+	aOrigin := a.Origin()
+	if aOrigin == nil {
+		aOrigin = a
+	}
+	bOrigin := b.Origin()
+	if bOrigin == nil {
+		bOrigin = b
+	}
+	if aOrigin.Obj() == nil || bOrigin.Obj() == nil {
+		return aOrigin == bOrigin
+	}
+	return aOrigin.Obj() == bOrigin.Obj()
 }
 
 func (o *LoweringOwner) genericTypeDescriptorExpr(ctx lowerFileContext, typ types.Type) string {
@@ -10509,6 +10570,32 @@ func basicRuntimeName(basic *types.Basic) string {
 		return "bool"
 	case types.String:
 		return "string"
+	case types.Int:
+		return "int"
+	case types.Int8:
+		return "int8"
+	case types.Int16:
+		return "int16"
+	case types.Int32:
+		return "int32"
+	case types.Int64:
+		return "int64"
+	case types.Uint:
+		return "uint"
+	case types.Uint8:
+		return "uint8"
+	case types.Uint16:
+		return "uint16"
+	case types.Uint32:
+		return "uint32"
+	case types.Uint64:
+		return "uint64"
+	case types.Uintptr:
+		return "uintptr"
+	case types.Float32:
+		return "float32"
+	case types.Float64:
+		return "float64"
 	case types.Complex64:
 		return "complex64"
 	case types.Complex128:

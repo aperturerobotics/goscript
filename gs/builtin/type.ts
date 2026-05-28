@@ -491,7 +491,23 @@ function validateMapKey(key: any, keyTypeInfo: TypeInfo): boolean {
  */
 function matchesBasicType(value: any, info: TypeInfo): boolean {
   if (info.name === 'string') return typeof value === 'string'
-  if (info.name === 'number' || info.name === 'int' || info.name === 'float64')
+  if (
+    info.name === 'number' ||
+    info.name === 'int' ||
+    info.name === 'int8' ||
+    info.name === 'int16' ||
+    info.name === 'int32' ||
+    info.name === 'int64' ||
+    info.name === 'uint' ||
+    info.name === 'uint8' ||
+    info.name === 'byte' ||
+    info.name === 'uint16' ||
+    info.name === 'uint32' ||
+    info.name === 'uint64' ||
+    info.name === 'uintptr' ||
+    info.name === 'float32' ||
+    info.name === 'float64'
+  )
     return typeof value === 'number'
   if (info.name === 'boolean' || info.name === 'bool')
     return typeof value === 'boolean'
@@ -1123,6 +1139,12 @@ function compareTypeStringWithTypeInfo(
     if (typeStr === name) {
       return true
     }
+    if (name === 'uint8' && typeStr === 'byte') {
+      return true
+    }
+    if (name === 'int32' && typeStr === 'rune') {
+      return true
+    }
     return (
       name === 'int' &&
       [
@@ -1425,10 +1447,12 @@ export function namedValueInterfaceValue<T>(
   value: unknown,
   typeName: string,
   methods: Record<string, (receiver: any, ...args: any[]) => any>,
+  typeInfo?: TypeInfo | string,
 ): T {
   const boxed: any = {
     __goType: typeName,
     __goValue: value,
+    __goTypeInfo: typeInfo,
     valueOf: () => value,
     toString: () => String(value),
     [Symbol.toPrimitive]: () => value as any,

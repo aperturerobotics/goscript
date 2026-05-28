@@ -59,7 +59,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println($.len(magicBytes) == 10)
 	$.println($.uint(magicBytes![0], 8) == $.uint(255, 8))
 	$.println($.uint(magicBytes![1], 8) == $.uint(6, 8))
-	$.println($.stringEqual($.bytesToString(magicBytes), magic))
+	$.println($.stringEqual($.bytesToString(magicBytes), $.bytesToString(new Uint8Array([255, 6, 0, 0, 83, 50, 115, 84, 119, 79]))))
 	$.println((2 as number) == 2)
 	let utf8Bytes: $.Slice<number> = new Uint8Array([195, 169])
 	$.println($.len(utf8Bytes) == 2)

@@ -44,7 +44,7 @@ export class namedItem {
 		() => new namedItem(),
 		[],
 		namedItem,
-		{"key": { kind: $.TypeKind.Basic, name: "string" }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"key": { kind: $.TypeKind.Basic, name: "string" }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
 	)
 }
 

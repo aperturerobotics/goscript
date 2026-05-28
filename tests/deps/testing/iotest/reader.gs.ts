@@ -170,7 +170,7 @@ export class dataErrReader {
 		() => new dataErrReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		dataErrReader,
-		{"r": "io.Reader", "unread": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"r": "io.Reader", "unread": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
 	)
 }
 

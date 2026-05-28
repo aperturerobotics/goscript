@@ -24,7 +24,7 @@ export function __goscript_set_code3(__goscriptValue: $.Slice<number>): void {
 	code3 = __goscriptValue
 }
 
-export var perlGroup: Map<string, __goscript_parse.charGroup> | null = undefined as unknown as Map<string, __goscript_parse.charGroup> | null
+export var perlGroup: Map<string, __goscript_parse.charGroup> | null
 
 export function __goscript_init_perlGroup(): void {
 	if (((perlGroup) as any) === undefined) {
@@ -127,7 +127,7 @@ export function __goscript_set_code17(__goscriptValue: $.Slice<number>): void {
 	code17 = __goscriptValue
 }
 
-export var posixGroup: Map<string, __goscript_parse.charGroup> | null = undefined as unknown as Map<string, __goscript_parse.charGroup> | null
+export var posixGroup: Map<string, __goscript_parse.charGroup> | null
 
 export function __goscript_init_posixGroup(): void {
 	if (((posixGroup) as any) === undefined) {

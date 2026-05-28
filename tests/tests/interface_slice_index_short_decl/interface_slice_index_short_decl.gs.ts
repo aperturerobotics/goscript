@@ -79,7 +79,7 @@ export class Action {
 export type value = Uint8Array
 
 export function value_Key(v: value): any {
-	return $.namedValueInterfaceValue<any>(v, "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})
+	return $.namedValueInterfaceValue<any>(v, "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.value")
 }
 
 export function Fixed_Mark(f: Fixed): boolean {
@@ -87,7 +87,7 @@ export function Fixed_Mark(f: Fixed): boolean {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let shapes: $.Slice<Shape | null> = $.arrayToSlice<Shape | null>([$.namedValueInterfaceValue<Shape | null>($.arrayToSlice<dep.Ref | null>([$.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})]), "main.Fixed", {Mark: (receiver: any, ...args: any[]) => (Fixed_Mark as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}), $.interfaceValue<Shape | null>($.markAsStructValue(new Action({Result: 1, Filter: new Map<number, dep.Ref | null>([[1, $.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})]])})), "main.Action")])
+	let shapes: $.Slice<Shape | null> = $.arrayToSlice<Shape | null>([$.namedValueInterfaceValue<Shape | null>($.arrayToSlice<dep.Ref | null>([$.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.value")]), "main.Fixed", {Mark: (receiver: any, ...args: any[]) => (Fixed_Mark as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.Fixed"), $.interfaceValue<Shape | null>($.markAsStructValue(new Action({Result: 1, Filter: new Map<number, dep.Ref | null>([[1, $.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.value")]])})), "main.Action")])
 	let fixed: $.Slice<Fixed> = null as $.Slice<Fixed>
 	for (let __goscriptRangeTarget0 = shapes, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let shape = __goscriptRangeTarget0![__rangeIndex]
@@ -97,7 +97,7 @@ export async function main(): globalThis.Promise<void> {
 				case $.typeAssert<Fixed>(__goscriptTypeSwitchValue, "main.Fixed").ok:
 					{
 						let shape: Fixed = $.typeAssert<Fixed>(__goscriptTypeSwitchValue, "main.Fixed").value
-						shape = ($.append((shape as Fixed), $.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(3, 8), $.uint(4, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)})) as Fixed)
+						shape = ($.append((shape as Fixed), $.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(3, 8), $.uint(4, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.value")) as Fixed)
 						fixed = $.append(fixed, (shape as Fixed))
 					}
 					break

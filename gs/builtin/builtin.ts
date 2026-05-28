@@ -353,7 +353,10 @@ const maxUint64BigInt = 0xffffffffffffffffn
 
 // int converts a value to a Go int type, handling proper signed integer conversion
 // This ensures that values like 2147483648 (2^31) are properly handled according to Go semantics
-export function int(value: number | bigint, bits = 0): number {
+export function int(value: number | bigint | string, bits = 0): number {
+  if (typeof value === 'string') {
+    value = BigInt(value)
+  }
   if (typeof value === 'bigint') {
     if (bits > 0 && bits <= 64) {
       return Number(BigInt.asIntN(bits, value))
@@ -389,7 +392,10 @@ export function int(value: number | bigint, bits = 0): number {
 }
 
 // uint converts a value to an unsigned Go integer width.
-export function uint(value: number | bigint, bits = 64): number {
+export function uint(value: number | bigint | string, bits = 64): number {
+  if (typeof value === 'string') {
+    value = BigInt(value)
+  }
   if (typeof value === 'bigint') {
     const normalized = BigInt.asUintN(Math.min(bits, 64), value)
     if (bits >= 64) {

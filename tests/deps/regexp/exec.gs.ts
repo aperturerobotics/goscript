@@ -62,7 +62,7 @@ export class queue {
 		() => new queue(),
 		[],
 		queue,
-		{"sparse": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "dense": { kind: $.TypeKind.Slice, elemType: "regexp.entry" }}
+		{"sparse": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, "dense": { kind: $.TypeKind.Slice, elemType: "regexp.entry" }}
 	)
 }
 
@@ -107,7 +107,7 @@ export class entry {
 		() => new entry(),
 		[],
 		entry,
-		{"pc": { kind: $.TypeKind.Basic, name: "int" }, "t": { kind: $.TypeKind.Pointer, elemType: "regexp.thread" }}
+		{"pc": { kind: $.TypeKind.Basic, name: "uint32" }, "t": { kind: $.TypeKind.Pointer, elemType: "regexp.thread" }}
 	)
 }
 

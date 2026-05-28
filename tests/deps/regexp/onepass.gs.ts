@@ -130,7 +130,7 @@ export class onePassInst {
 		() => new onePassInst(),
 		[{ name: "MatchEmptyWidth", args: [], returns: [] }, { name: "MatchRune", args: [], returns: [] }, { name: "MatchRunePos", args: [], returns: [] }, { name: "String", args: [], returns: [] }],
 		onePassInst,
-		{"Inst": "syntax.Inst", "Next": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"Inst": "syntax.Inst", "Next": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }}
 	)
 }
 
@@ -239,7 +239,7 @@ export class queueOnePass {
 		() => new queueOnePass(),
 		[{ name: "clear", args: [], returns: [] }, { name: "contains", args: [], returns: [] }, { name: "empty", args: [], returns: [] }, { name: "insert", args: [], returns: [] }, { name: "insertNew", args: [], returns: [] }, { name: "next", args: [], returns: [] }],
 		queueOnePass,
-		{"sparse": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "dense": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "size": { kind: $.TypeKind.Basic, name: "int" }, "nextIndex": { kind: $.TypeKind.Basic, name: "int" }}
+		{"sparse": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, "dense": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, "size": { kind: $.TypeKind.Basic, name: "uint32" }, "nextIndex": { kind: $.TypeKind.Basic, name: "uint32" }}
 	)
 }
 
@@ -315,7 +315,7 @@ export function __goscript_set_noRune(__goscriptValue: $.Slice<number>): void {
 	noRune = __goscriptValue
 }
 
-export let noNext: $.Slice<number> = $.arrayToSlice<number>([$.uint(mergeFailed, 32)])
+export let noNext: $.Slice<number> = $.arrayToSlice<number>([$.uint(4294967295, 32)])
 
 export function __goscript_set_noNext(__goscriptValue: $.Slice<number>): void {
 	noNext = __goscriptValue
@@ -350,7 +350,7 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 		ix = ix + (2)
 		next = $.append(next, $.uint(pc, 32))
 		return true
-	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } } }, { kind: $.TypeKind.Basic, name: "uint32" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))
 
 	while ((lx.value < leftLen) || (rx.value < rightLen)) {
 		switch (true) {
@@ -552,7 +552,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 				let __goscriptTuple0: any = await mergeRuneSets($.indexRef(onePassRunes!, $.pointerValue<onePassInst>(inst).Inst.Out), $.indexRef(onePassRunes!, $.pointerValue<onePassInst>(inst).Inst.Arg), $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32), $.uint($.pointerValue<onePassInst>(inst).Inst.Arg, 32))
 				onePassRunes![pc] = __goscriptTuple0[0]
 				$.pointerValue<onePassInst>(inst).Next = __goscriptTuple0[1]
-				if (($.len($.pointerValue<onePassInst>(inst).Next) > 0) && ($.uint($.pointerValue<onePassInst>(inst).Next![0], 32) == $.uint(mergeFailed, 32))) {
+				if (($.len($.pointerValue<onePassInst>(inst).Next) > 0) && ($.uint($.pointerValue<onePassInst>(inst).Next![0], 32) == $.uint(4294967295, 32))) {
 					ok = false
 					break
 				}
@@ -673,7 +673,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 			}
 		}
 		return ok
-	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "bool" } }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uint32" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "bool" } }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))
 
 	queueOnePass.prototype.clear.call(instQueue)
 	queueOnePass.prototype.insert.call(instQueue, $.uint($.uint($.pointerValue<onePassProg>(p).Start, 32), 32))

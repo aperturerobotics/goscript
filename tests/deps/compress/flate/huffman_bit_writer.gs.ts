@@ -229,12 +229,12 @@ export class huffmanBitWriter {
 		for (let __goscriptRangeTarget1 = cgnl, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
 			cgnl![i] = $.uint($.uint($.pointerValue<__goscript_huffman_code.huffmanEncoder>(offEnc).codes![i].len, 8), 8)
 		}
-		codegen![numLiterals + numOffsets] = $.uint(badCode, 8)
+		codegen![numLiterals + numOffsets] = $.uint(255, 8)
 
 		let size = $.uint(codegen![0], 8)
 		let count = 1
 		let outIndex = 0
-		for (let inIndex = 1; $.uint(size, 8) != $.uint(badCode, 8); inIndex++) {
+		for (let inIndex = 1; $.uint(size, 8) != $.uint(255, 8); inIndex++) {
 			// INVARIANT: We have seen "count" copies of size that have not yet
 			// had output generated for them.
 			let nextSize = $.uint(codegen![inIndex], 8)
@@ -294,7 +294,7 @@ export class huffmanBitWriter {
 			count = 1
 		}
 		// Marker indicating the end of the codegen.
-		codegen![outIndex] = $.uint(badCode, 8)
+		codegen![outIndex] = $.uint(255, 8)
 	}
 
 	public indexTokens(tokens: $.Slice<__goscript_token.token>): [number, number] {
@@ -312,7 +312,7 @@ export class huffmanBitWriter {
 			}
 			let length = $.uint(__goscript_token.token_length(t), 32)
 			let offset = $.uint(__goscript_token.token_offset(t), 32)
-			$.pointerValue<huffmanBitWriter>(w).literalFreq![lengthCodesStart + __goscript_token.lengthCode($.uint(length, 32))]++
+			$.pointerValue<huffmanBitWriter>(w).literalFreq![257 + __goscript_token.lengthCode($.uint(length, 32))]++
 			$.pointerValue<huffmanBitWriter>(w).offsetFreq![__goscript_token.offsetCode($.uint(offset, 32))]++
 		}
 
@@ -390,7 +390,7 @@ export class huffmanBitWriter {
 			bytes![4] = $.uint($.uint($.uint64Shr(bits, 32), 8), 8)
 			bytes![5] = $.uint($.uint($.uint64Shr(bits, 40), 8), 8)
 			n = n + (6)
-			if (n >= bufferFlushSize) {
+			if (n >= 240) {
 				await huffmanBitWriter.prototype.write.call(w, $.goSlice($.pointerValue<huffmanBitWriter>(w).bytes, undefined, n))
 				n = 0
 			}
@@ -404,7 +404,7 @@ export class huffmanBitWriter {
 			return
 		}
 
-		tokens = $.append(tokens, $.uint(endBlockMarker, 32))
+		tokens = $.append(tokens, $.uint(256, 32))
 		let [numLiterals, numOffsets] = huffmanBitWriter.prototype.indexTokens.call(w, tokens)
 
 		let extraBits: number = 0
@@ -416,9 +416,9 @@ export class huffmanBitWriter {
 			// the length of offset fields (which will be the same for both fixed
 			// and dynamic encoding), if we need to compare those two encodings
 			// against stored encoding.
-			for (let lengthCode = lengthCodesStart + 8; lengthCode < numLiterals; lengthCode++) {
+			for (let lengthCode = 257 + 8; lengthCode < numLiterals; lengthCode++) {
 				// First eight length codes have extra size = 0.
-				extraBits = extraBits + ($.int($.pointerValue<huffmanBitWriter>(w).literalFreq![lengthCode]) * $.int(lengthExtraBits![lengthCode - lengthCodesStart]))
+				extraBits = extraBits + ($.int($.pointerValue<huffmanBitWriter>(w).literalFreq![lengthCode]) * $.int(lengthExtraBits![lengthCode - 257]))
 			}
 			for (let offsetCode = 4; offsetCode < numOffsets; offsetCode++) {
 				// First four offset codes have extra size = 0.
@@ -473,7 +473,7 @@ export class huffmanBitWriter {
 			return
 		}
 
-		tokens = $.append(tokens, $.uint(endBlockMarker, 32))
+		tokens = $.append(tokens, $.uint(256, 32))
 		let [numLiterals, numOffsets] = huffmanBitWriter.prototype.indexTokens.call(w, tokens)
 
 		// Generate codegen and codegenFrequencies, which indicates how to encode
@@ -511,7 +511,7 @@ export class huffmanBitWriter {
 		// Add everything as literals
 		histogram(input, $.pointerValue<huffmanBitWriter>(w).literalFreq)
 
-		$.pointerValue<huffmanBitWriter>(w).literalFreq![endBlockMarker] = $.int(1, 32)
+		$.pointerValue<huffmanBitWriter>(w).literalFreq![256] = $.int(1, 32)
 
 		const numLiterals: number = 257
 		$.pointerValue<huffmanBitWriter>(w).offsetFreq![0] = $.int(1, 32)
@@ -525,7 +525,7 @@ export class huffmanBitWriter {
 
 		// Generate codegen and codegenFrequencies, which indicates how to encode
 		// the literalEncoding and the offsetEncoding.
-		huffmanBitWriter.prototype.generateCodegen.call(w, numLiterals, numOffsets, $.pointerValue<huffmanBitWriter>(w).literalEncoding, huffOffset)
+		huffmanBitWriter.prototype.generateCodegen.call(w, 257, 1, $.pointerValue<huffmanBitWriter>(w).literalEncoding, huffOffset)
 		__goscript_huffman_code.huffmanEncoder.prototype.generate.call($.pointerValue<huffmanBitWriter>(w).codegenEncoding, $.goSlice($.pointerValue<huffmanBitWriter>(w).codegenFreq, undefined, undefined), $.int(7, 32))
 		let __goscriptTuple3: any = huffmanBitWriter.prototype.dynamicSize.call(w, $.pointerValue<huffmanBitWriter>(w).literalEncoding, huffOffset, 0)
 		let size = __goscriptTuple3[0]
@@ -542,7 +542,7 @@ export class huffmanBitWriter {
 		}
 
 		// Huffman.
-		await huffmanBitWriter.prototype.writeDynamicHeader.call(w, numLiterals, numOffsets, numCodegens, eof)
+		await huffmanBitWriter.prototype.writeDynamicHeader.call(w, 257, 1, numCodegens, eof)
 		let encoding: $.Slice<__goscript_huffman_code.hcode> = $.goSlice($.pointerValue<__goscript_huffman_code.huffmanEncoder>($.pointerValue<huffmanBitWriter>(w).literalEncoding).codes, undefined, 257)
 		let n = $.pointerValue<huffmanBitWriter>(w).nbytes
 		for (let __goscriptRangeTarget3 = input, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget3); __rangeIndex++) {
@@ -566,7 +566,7 @@ export class huffmanBitWriter {
 			bytes![4] = $.uint($.uint($.uint64Shr(bits, 32), 8), 8)
 			bytes![5] = $.uint($.uint($.uint64Shr(bits, 40), 8), 8)
 			n = n + (6)
-			if (n < bufferFlushSize) {
+			if (n < 240) {
 				continue
 			}
 			await huffmanBitWriter.prototype.write.call(w, $.goSlice($.pointerValue<huffmanBitWriter>(w).bytes, undefined, n))
@@ -576,7 +576,7 @@ export class huffmanBitWriter {
 			n = 0
 		}
 		$.pointerValue<huffmanBitWriter>(w).nbytes = n
-		await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(encoding![endBlockMarker])))
+		await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(encoding![256])))
 	}
 
 	public async writeBytes(bytes: $.Slice<number>): globalThis.Promise<void> {
@@ -586,7 +586,7 @@ export class huffmanBitWriter {
 		}
 		let n = $.pointerValue<huffmanBitWriter>(w).nbytes
 		if (($.uint64And($.pointerValue<huffmanBitWriter>(w).nbits, 7)) != 0) {
-			$.pointerValue<huffmanBitWriter>(w).err = $.namedValueInterfaceValue<$.GoError>("writeBytes with unfinished bits", "flate.InternalError", {"Error": __goscript_inflate.InternalError_Error})
+			$.pointerValue<huffmanBitWriter>(w).err = $.namedValueInterfaceValue<$.GoError>("writeBytes with unfinished bits", "flate.InternalError", {"Error": __goscript_inflate.InternalError_Error}, { kind: $.TypeKind.Basic, name: "string", typeName: "flate.InternalError" })
 			return
 		}
 		while ($.pointerValue<huffmanBitWriter>(w).nbits != 0) {
@@ -622,7 +622,7 @@ export class huffmanBitWriter {
 			bytes![4] = $.uint($.uint($.uint64Shr(bits, 32), 8), 8)
 			bytes![5] = $.uint($.uint($.uint64Shr(bits, 40), 8), 8)
 			n = n + (6)
-			if (n >= bufferFlushSize) {
+			if (n >= 240) {
 				await huffmanBitWriter.prototype.write.call(w, $.goSlice($.pointerValue<huffmanBitWriter>(w).bytes, undefined, n))
 				n = 0
 			}
@@ -653,7 +653,7 @@ export class huffmanBitWriter {
 		while (true) {
 			let codeWord: number = $.int($.pointerValue<huffmanBitWriter>(w).codegen![i])
 			i++
-			if (codeWord == badCode) {
+			if (codeWord == 255) {
 				break
 			}
 			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue($.pointerValue<__goscript_huffman_code.huffmanEncoder>($.pointerValue<huffmanBitWriter>(w).codegenEncoding).codes![$.uint(codeWord, 32)])))
@@ -724,7 +724,7 @@ export class huffmanBitWriter {
 			let length = $.uint(__goscript_token.token_length(t), 32)
 			let __goscriptShadow0 = __goscript_token.lengthCode
 			let __goscriptShadow1 = $.uint(__goscriptShadow0($.uint(length, 32)), 32)
-			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(leCodes![__goscriptShadow1 + lengthCodesStart])))
+			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(leCodes![__goscriptShadow1 + 257])))
 			let extraLengthBits = $.uint(lengthExtraBits![__goscriptShadow1], 64)
 			if (extraLengthBits > 0) {
 				let extraLength = $.int($.int(length - lengthBase![__goscriptShadow1], 32), 32)
@@ -748,7 +748,7 @@ export class huffmanBitWriter {
 		() => new huffmanBitWriter(),
 		[{ name: "dynamicSize", args: [], returns: [] }, { name: "fixedSize", args: [], returns: [] }, { name: "flush", args: [], returns: [] }, { name: "generateCodegen", args: [], returns: [] }, { name: "indexTokens", args: [], returns: [] }, { name: "reset", args: [], returns: [] }, { name: "storedSize", args: [], returns: [] }, { name: "write", args: [], returns: [] }, { name: "writeBits", args: [], returns: [] }, { name: "writeBlock", args: [], returns: [] }, { name: "writeBlockDynamic", args: [], returns: [] }, { name: "writeBlockHuff", args: [], returns: [] }, { name: "writeBytes", args: [], returns: [] }, { name: "writeCode", args: [], returns: [] }, { name: "writeDynamicHeader", args: [], returns: [] }, { name: "writeFixedHeader", args: [], returns: [] }, { name: "writeStoredHeader", args: [], returns: [] }, { name: "writeTokens", args: [], returns: [] }],
 		huffmanBitWriter,
-		{"writer": "io.Writer", "bits": { kind: $.TypeKind.Basic, name: "int" }, "nbits": { kind: $.TypeKind.Basic, name: "int" }, "bytes": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 248 }, "codegenFreq": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 19 }, "nbytes": { kind: $.TypeKind.Basic, name: "int" }, "literalFreq": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "offsetFreq": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "codegen": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "literalEncoding": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanEncoder" }, "offsetEncoding": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanEncoder" }, "codegenEncoding": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanEncoder" }, "err": "error"}
+		{"writer": "io.Writer", "bits": { kind: $.TypeKind.Basic, name: "uint64" }, "nbits": { kind: $.TypeKind.Basic, name: "uint" }, "bytes": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 248 }, "codegenFreq": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int32" }, length: 19 }, "nbytes": { kind: $.TypeKind.Basic, name: "int" }, "literalFreq": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }, "offsetFreq": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }, "codegen": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "literalEncoding": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanEncoder" }, "offsetEncoding": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanEncoder" }, "codegenEncoding": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanEncoder" }, "err": "error"}
 	)
 }
 
@@ -797,7 +797,7 @@ export function __goscript_set_codegenOrder(__goscriptValue: $.Slice<number>): v
 }
 
 export function newHuffmanBitWriter(w: io.Writer | null): huffmanBitWriter | $.VarRef<huffmanBitWriter> | null {
-	return (() => { const __goscriptLiteralField0 = __goscript_huffman_code.newHuffmanEncoder(286); const __goscriptLiteralField1 = __goscript_huffman_code.newHuffmanEncoder(codegenCodeCount); const __goscriptLiteralField2 = __goscript_huffman_code.newHuffmanEncoder(offsetCodeCount); return new huffmanBitWriter({writer: w, literalFreq: $.makeSlice<number>(286, undefined, "number"), offsetFreq: $.makeSlice<number>(offsetCodeCount, undefined, "number"), codegen: $.makeSlice<number>((286 + offsetCodeCount) + 1, undefined, "byte"), literalEncoding: __goscriptLiteralField0, codegenEncoding: __goscriptLiteralField1, offsetEncoding: __goscriptLiteralField2}) })()
+	return (() => { const __goscriptLiteralField0 = __goscript_huffman_code.newHuffmanEncoder(286); const __goscriptLiteralField1 = __goscript_huffman_code.newHuffmanEncoder(19); const __goscriptLiteralField2 = __goscript_huffman_code.newHuffmanEncoder(30); return new huffmanBitWriter({writer: w, literalFreq: $.makeSlice<number>(286, undefined, "number"), offsetFreq: $.makeSlice<number>(30, undefined, "number"), codegen: $.makeSlice<number>((286 + 30) + 1, undefined, "byte"), literalEncoding: __goscriptLiteralField0, codegenEncoding: __goscriptLiteralField1, offsetEncoding: __goscriptLiteralField2}) })()
 }
 
 export let huffOffset: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null = null as __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null
@@ -807,9 +807,9 @@ export function __goscript_set_huffOffset(__goscriptValue: __goscript_huffman_co
 }
 
 function __goscriptInit0(): void {
-	let offsetFreq: $.Slice<number> = $.makeSlice<number>(offsetCodeCount, undefined, "number")
+	let offsetFreq: $.Slice<number> = $.makeSlice<number>(30, undefined, "number")
 	offsetFreq![0] = $.int(1, 32)
-	huffOffset = __goscript_huffman_code.newHuffmanEncoder(offsetCodeCount)
+	huffOffset = __goscript_huffman_code.newHuffmanEncoder(30)
 	__goscript_huffman_code.huffmanEncoder.prototype.generate.call(huffOffset, offsetFreq, $.int(15, 32))
 }
 

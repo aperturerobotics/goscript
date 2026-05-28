@@ -587,7 +587,7 @@ export class Writer {
 		() => new Writer(),
 		[{ name: "AddFS", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "Copy", args: [], returns: [] }, { name: "Create", args: [], returns: [] }, { name: "CreateHeader", args: [], returns: [] }, { name: "CreateRaw", args: [], returns: [] }, { name: "Flush", args: [], returns: [] }, { name: "RegisterCompressor", args: [], returns: [] }, { name: "SetComment", args: [], returns: [] }, { name: "SetOffset", args: [], returns: [] }, { name: "compressor", args: [], returns: [] }, { name: "prepare", args: [], returns: [] }],
 		Writer,
-		{"cw": { kind: $.TypeKind.Pointer, elemType: "zip.countWriter" }, "dir": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "zip.header" } }, "last": { kind: $.TypeKind.Pointer, elemType: "zip.fileWriter" }, "closed": { kind: $.TypeKind.Basic, name: "bool" }, "compressors": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: ({ kind: $.TypeKind.Function, name: "zip.Compressor", params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo) }, "comment": { kind: $.TypeKind.Basic, name: "string" }, "testHookCloseSizeOffset": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [] } as $.FunctionTypeInfo)}
+		{"cw": { kind: $.TypeKind.Pointer, elemType: "zip.countWriter" }, "dir": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "zip.header" } }, "last": { kind: $.TypeKind.Pointer, elemType: "zip.fileWriter" }, "closed": { kind: $.TypeKind.Basic, name: "bool" }, "compressors": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "uint16" }, elemType: ({ kind: $.TypeKind.Function, name: "zip.Compressor", params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo) }, "comment": { kind: $.TypeKind.Basic, name: "string" }, "testHookCloseSizeOffset": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uint64" }, { kind: $.TypeKind.Basic, name: "uint64" }], results: [] } as $.FunctionTypeInfo)}
 	)
 }
 
@@ -670,7 +670,7 @@ export class header {
 		() => new header(),
 		[{ name: "FileInfo", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "SetModTime", args: [], returns: [] }, { name: "SetMode", args: [], returns: [] }, { name: "hasDataDescriptor", args: [], returns: [] }, { name: "isZip64", args: [], returns: [] }],
 		header,
-		{"FileHeader": { kind: $.TypeKind.Pointer, elemType: "zip.FileHeader" }, "offset": { kind: $.TypeKind.Basic, name: "int" }, "raw": { kind: $.TypeKind.Basic, name: "bool" }}
+		{"FileHeader": { kind: $.TypeKind.Pointer, elemType: "zip.FileHeader" }, "offset": { kind: $.TypeKind.Basic, name: "uint64" }, "raw": { kind: $.TypeKind.Basic, name: "bool" }}
 	)
 }
 
@@ -953,7 +953,7 @@ export class countWriter {
 		() => new countWriter(),
 		[{ name: "Write", args: [], returns: [] }],
 		countWriter,
-		{"w": "io.Writer", "count": { kind: $.TypeKind.Basic, name: "int" }}
+		{"w": "io.Writer", "count": { kind: $.TypeKind.Basic, name: "int64" }}
 	)
 }
 
@@ -1043,10 +1043,10 @@ export function detectUTF8(s: string): [boolean, boolean] {
 
 export async function writeHeader(w: io.Writer | null, h: header | $.VarRef<header> | null): globalThis.Promise<$.GoError> {
 	const maxUint16: number = 65535
-	if ($.len($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Name) > maxUint16) {
+	if ($.len($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Name) > 65535) {
 		return errLongName
 	}
-	if ($.len($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Extra) > maxUint16) {
+	if ($.len($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Extra) > 65535) {
 		return errLongExtra
 	}
 

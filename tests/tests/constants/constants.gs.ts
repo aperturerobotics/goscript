@@ -15,7 +15,7 @@ export const IV1: number = 2
 
 export const IV2: number = 3
 
-export let DigestIV: number[] = [$.uint(IV0, 32), $.uint(IV1, 32), $.uint(IV2, 32)]
+export let DigestIV: number[] = [$.uint(1, 32), $.uint(2, 32), $.uint(3, 32)]
 
 export function __goscript_set_DigestIV(__goscriptValue: number[]): void {
 	DigestIV = __goscriptValue
@@ -28,11 +28,11 @@ export function __goscript_set_Nothing(__goscriptValue: any): void {
 }
 
 export async function main(): globalThis.Promise<void> {
-	$.println(Pi)
-	$.println(Truth)
+	$.println(157/50)
+	$.println(false)
 	// println(Big) // Commented out until large integer handling is implemented
 	// println(Small) // Commented out as it depends on Big
-	$.println(Greeting)
+	$.println("Hello, Constants!")
 	$.println($.uint(DigestIV[0], 32), $.uint(DigestIV[1], 32), $.uint(DigestIV[2], 32))
 	$.println($.uint($.uint(4, 8), 8))
 }

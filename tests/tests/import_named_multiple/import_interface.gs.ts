@@ -45,7 +45,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("strings.Fields:", strings.Fields("hello world"))
 	$.println("strings.FieldsFunc:", strings.FieldsFunc("hello world", $.functionValue((r: number): boolean => {
 		return $.int(r, 32) == $.int(32, 32)
-	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int32" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo))))
 	$.println("strings.HasPrefix:", strings.HasPrefix("hello", "he"))
 	$.println("strings.HasSuffix:", strings.HasSuffix("hello", "lo"))
 }

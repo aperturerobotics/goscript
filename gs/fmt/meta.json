@@ -1,5 +1,10 @@
 {
+  "asyncFunctions": {
+    "Fprint": true,
+    "Fprintf": true,
+    "Fprintln": true
+  },
   "dependencies": [
     "errors"
   ]
-} 
+}

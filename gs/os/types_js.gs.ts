@@ -2,6 +2,7 @@ import * as $ from "@goscript/builtin/index.js";
 import { ErrClosed, ErrInvalid, ErrUnimplemented } from "./error.gs.js";
 
 import * as fs from "@goscript/io/fs/index.js"
+import { FileInfoToDirEntry } from "@goscript/io/fs/readdir.js"
 import * as io from "@goscript/io/index.js"
 import * as time from "@goscript/time/index.js"
 import * as syscall from "@goscript/syscall/index.js"
@@ -219,6 +220,70 @@ export function createFileInfo(name: string, stat: HostStatLike): fs.FileInfo {
 	})
 }
 
+function joinFilePath(dir: string, name: string): string {
+	if (dir === "" || dir === ".") {
+		return name
+	}
+	return dir.replace(/\/+$/, "") + "/" + name
+}
+
+function readDirectoryInfos(name: string): [fs.FileInfo[] | null, $.GoError] {
+	const denoObj = getDeno()
+	if (denoObj?.readDirSync) {
+		try {
+			const infos: fs.FileInfo[] = []
+			for (const entry of denoObj.readDirSync(name)) {
+				infos.push(createFileInfo(entry.name, {
+					isDirectory: () => entry.isDirectory,
+					isSymbolicLink: () => entry.isSymlink,
+					mode: 0,
+					size: 0,
+				}))
+			}
+			return [infos, null]
+		} catch (err) {
+			return [null, newHostError(err)]
+		}
+	}
+	const nodeFS = getNodeFS()
+	if (nodeFS?.readdirSync) {
+		try {
+			const infos = nodeFS.readdirSync(name, { withFileTypes: true }).map((entry: any) => {
+				const childName = String(entry.name)
+				const childPath = joinFilePath(name, childName)
+				if (nodeFS.lstatSync) {
+					try {
+						return createFileInfo(childName, nodeFS.lstatSync(childPath))
+					} catch {
+						// Fall back to Dirent metadata when the child cannot be statted.
+					}
+				}
+				return createFileInfo(childName, {
+					isDirectory: () => typeof entry.isDirectory === "function" ? entry.isDirectory() : false,
+					isSymbolicLink: () => typeof entry.isSymbolicLink === "function" ? entry.isSymbolicLink() : false,
+					mode: 0,
+					size: 0,
+				})
+			})
+			return [infos, null]
+		} catch (err) {
+			return [null, newHostError(err)]
+		}
+	}
+	return [null, ErrUnimplemented]
+}
+
+function consumeDirectoryEntries<T>(entries: T[], offset: number, n: number): [$.Slice<T>, number, $.GoError] {
+	if (n <= 0) {
+		return [$.arrayToSlice(entries.slice(offset)), entries.length, null]
+	}
+	if (offset >= entries.length) {
+		return [null, offset, io.EOF]
+	}
+	const next = Math.min(entries.length, offset + n)
+	return [$.arrayToSlice(entries.slice(offset, next)), next, null]
+}
+
 export function createHostFile(name: string, fd: number = -1, handle: DenoFileLike | null = null): File {
 	return new File({
 		fd,
@@ -260,6 +325,10 @@ export class File {
 	public name: string
 	public closed: boolean
 	public fd: number
+	public dirEntryOffset: number
+	public dirInfoOffset: number
+	public cachedDirEntries: fs.DirEntry[] | null
+	public cachedDirInfos: fs.FileInfo[] | null
 
 	public _fields: {
 		file: $.VarRef<file | null>;
@@ -269,6 +338,10 @@ export class File {
 		this.name = init?.name ?? ""
 		this.closed = init?.closed ?? false
 		this.fd = init?.fd ?? -1
+		this.dirEntryOffset = 0
+		this.dirInfoOffset = 0
+		this.cachedDirEntries = null
+		this.cachedDirInfos = null
 		this._fields = {
 			file: $.varRef(init?.file ?? null)
 		}
@@ -284,19 +357,58 @@ export class File {
 	}
 
 	public Readdir(n: number): [$.Slice<fs.FileInfo>, $.GoError] {
-		return [null, ErrUnimplemented]
+		if (this.closed) {
+			return [null, ErrClosed]
+		}
+		if (this.cachedDirInfos === null) {
+			const [infos, err] = readDirectoryInfos(this.name)
+			if (err !== null) {
+				return [null, err]
+			}
+			this.cachedDirInfos = infos ?? []
+			this.dirInfoOffset = 0
+		}
+		const [out, next, err] = consumeDirectoryEntries(this.cachedDirInfos, this.dirInfoOffset, n)
+		this.dirInfoOffset = next
+		return [out, err]
 	}
 
 	public Readdirnames(n: number): [$.Slice<string>, $.GoError] {
-		return [null, ErrUnimplemented]
+		const [infos, err] = this.Readdir(n)
+		if (err !== null) {
+			return [null, err]
+		}
+		return [$.arrayToSlice((infos ?? []).map((info) => info!.Name())), null]
 	}
 
 	public ReadDir(n: number): [$.Slice<fs.DirEntry>, $.GoError] {
-		return [null, ErrUnimplemented]
+		if (this.closed) {
+			return [null, ErrClosed]
+		}
+		if (this.cachedDirEntries === null) {
+			const [infos, err] = readDirectoryInfos(this.name)
+			if (err !== null) {
+				return [null, err]
+			}
+			this.cachedDirEntries = (infos ?? []).map((info) => FileInfoToDirEntry(info)).filter((entry): entry is fs.DirEntry => entry !== null)
+			this.dirEntryOffset = 0
+		}
+		const [out, next, err] = consumeDirectoryEntries(this.cachedDirEntries, this.dirEntryOffset, n)
+		this.dirEntryOffset = next
+		return [out, err]
 	}
 
 	public readdir(n: number, mode: readdirMode): [$.Slice<string>, $.Slice<fs.DirEntry>, $.Slice<fs.FileInfo>, $.GoError] {
-		return [null, null, null, ErrUnimplemented]
+		if (mode === readdirName) {
+			const [names, err] = this.Readdirnames(n)
+			return [names, null, null, err]
+		}
+		if (mode === readdirDirEntry) {
+			const [entries, err] = this.ReadDir(n)
+			return [null, entries, null, err]
+		}
+		const [infos, err] = this.Readdir(n)
+		return [null, null, infos, err]
 	}
 
 	public Name(): string {
@@ -681,6 +793,9 @@ class file {
 
 // readdirMode mirrors the Go runtime helper enum.
 type readdirMode = number
+const readdirName: readdirMode = 0
+const readdirDirEntry: readdirMode = 1
+const readdirFileInfo: readdirMode = 2
 
 // File mode constants
 export let ModeDir: fs.FileMode = fs.ModeDir

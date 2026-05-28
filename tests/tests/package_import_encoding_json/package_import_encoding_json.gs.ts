@@ -111,7 +111,7 @@ export async function main(): globalThis.Promise<void> {
 			results = $.append(results, "Unmarshal map error: " + $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow1).Error())
 		} else {
 			let name = $.mustTypeAssert<string>($.mapGet(m.value, "name", null)[0], { kind: $.TypeKind.Basic, name: "string" })
-			let age = $.int($.mustTypeAssert<number>($.mapGet(m.value, "age", null)[0], { kind: $.TypeKind.Basic, name: "int" }))
+			let age = $.int($.mustTypeAssert<number>($.mapGet(m.value, "age", null)[0], { kind: $.TypeKind.Basic, name: "float64" }))
 			let active = $.mustTypeAssert<boolean>($.mapGet(m.value, "active", null)[0], { kind: $.TypeKind.Basic, name: "bool" })
 			results = $.append(results, (((("Unmarshal map: name=" + name) + ", age=") + strconv.Itoa(age)) + ", active=") + strconv.FormatBool(active))
 		}

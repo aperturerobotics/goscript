@@ -56,7 +56,7 @@ export function slicingMakeTable(poly: number): $.VarRef<slicing8Table> | null {
 }
 
 export function slicingUpdate(crc: number, tab: $.VarRef<slicing8Table> | null, p: $.Slice<number>): number {
-	if ($.len(p) >= slicing8Cutoff) {
+	if ($.len(p) >= 16) {
 		crc = $.uint($.uint(~crc, 32), 32)
 		while ($.len(p) > 8) {
 			crc = crc ^ ($.uint(byteorder.LEUint32(p), 32))

@@ -407,7 +407,7 @@ export class Reader {
 			return
 		}
 		if ($.pointerValue<Reader>(b).buf == null) {
-			$.pointerValue<Reader>(b).buf = $.makeSlice<number>(defaultBufSize, undefined, "byte")
+			$.pointerValue<Reader>(b).buf = $.makeSlice<number>(4096, undefined, "byte")
 		}
 		Reader.prototype.reset.call(b, $.pointerValue<Reader>(b).buf, r)
 	}
@@ -555,7 +555,7 @@ export class Reader {
 		}
 
 		// Read new data: try a limited number of times.
-		for (let i = maxConsecutiveEmptyReads; i > 0; i--) {
+		for (let i = 100; i > 0; i--) {
 			let [n, err] = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<Reader>(b).rd).Read($.goSlice($.pointerValue<Reader>(b).buf, $.pointerValue<Reader>(b).w, undefined))
 			if (n < 0) {
 				$.panic((errNegativeRead as any))
@@ -599,7 +599,7 @@ export class Reader {
 		() => new Reader(),
 		[{ name: "Buffered", args: [], returns: [] }, { name: "Discard", args: [], returns: [] }, { name: "Peek", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "ReadByte", args: [], returns: [] }, { name: "ReadBytes", args: [], returns: [] }, { name: "ReadLine", args: [], returns: [] }, { name: "ReadRune", args: [], returns: [] }, { name: "ReadSlice", args: [], returns: [] }, { name: "ReadString", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "UnreadByte", args: [], returns: [] }, { name: "UnreadRune", args: [], returns: [] }, { name: "WriteTo", args: [], returns: [] }, { name: "collectFragments", args: [], returns: [] }, { name: "fill", args: [], returns: [] }, { name: "readErr", args: [], returns: [] }, { name: "reset", args: [], returns: [] }, { name: "writeBuf", args: [], returns: [] }],
 		Reader,
-		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "rd": "io.Reader", "r": { kind: $.TypeKind.Basic, name: "int" }, "w": { kind: $.TypeKind.Basic, name: "int" }, "err": "error", "lastByte": { kind: $.TypeKind.Basic, name: "int" }, "lastRuneSize": { kind: $.TypeKind.Basic, name: "int" }}
+		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "rd": "io.Reader", "r": { kind: $.TypeKind.Basic, name: "int" }, "w": { kind: $.TypeKind.Basic, name: "int" }, "err": "error", "lastByte": { kind: $.TypeKind.Basic, name: "int" }, "lastRuneSize": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 
@@ -727,7 +727,7 @@ export class Writer {
 				return [$.int(n), __goscriptShadow5]
 			}
 			let nr = 0
-			while (nr < maxConsecutiveEmptyReads) {
+			while (nr < 100) {
 				let __goscriptTuple15: any = await $.pointerValue<Exclude<io.Reader, null>>(r).Read($.goSlice($.pointerValue<Writer>(b).buf, $.pointerValue<Writer>(b).n, undefined))
 				m = __goscriptTuple15[0]
 				err = __goscriptTuple15[1]
@@ -736,7 +736,7 @@ export class Writer {
 				}
 				nr++
 			}
-			if (nr == maxConsecutiveEmptyReads) {
+			if (nr == 100) {
 				return [$.int(n), io.ErrNoProgress]
 			}
 			$.pointerValue<Writer>(b).n = $.pointerValue<Writer>(b).n + (m)
@@ -765,7 +765,7 @@ export class Writer {
 			return
 		}
 		if ($.pointerValue<Writer>(b).buf == null) {
-			$.pointerValue<Writer>(b).buf = $.makeSlice<number>(defaultBufSize, undefined, "byte")
+			$.pointerValue<Writer>(b).buf = $.makeSlice<number>(4096, undefined, "byte")
 		}
 		$.pointerValue<Writer>(b).err = null
 		$.pointerValue<Writer>(b).n = 0
@@ -896,7 +896,7 @@ export class Writer {
 		() => new Writer(),
 		[{ name: "Available", args: [], returns: [] }, { name: "AvailableBuffer", args: [], returns: [] }, { name: "Buffered", args: [], returns: [] }, { name: "Flush", args: [], returns: [] }, { name: "ReadFrom", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "WriteByte", args: [], returns: [] }, { name: "WriteRune", args: [], returns: [] }, { name: "WriteString", args: [], returns: [] }],
 		Writer,
-		{"err": "error", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "n": { kind: $.TypeKind.Basic, name: "int" }, "wr": "io.Writer"}
+		{"err": "error", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "n": { kind: $.TypeKind.Basic, name: "int" }, "wr": "io.Writer"}
 	)
 }
 
@@ -1096,12 +1096,12 @@ export function NewReaderSize(rd: io.Reader | null, size: number): Reader | $.Va
 		return b
 	}
 	let r: Reader | $.VarRef<Reader> | null = new Reader()
-	Reader.prototype.reset.call(r, $.makeSlice<number>($.max(size, minReadBufferSize), undefined, "byte"), rd)
+	Reader.prototype.reset.call(r, $.makeSlice<number>($.max(size, 16), undefined, "byte"), rd)
 	return r
 }
 
 export function NewReader(rd: io.Reader | null): Reader | $.VarRef<Reader> | null {
-	return NewReaderSize(rd, defaultBufSize)
+	return NewReaderSize(rd, 4096)
 }
 
 export let errNegativeRead: $.GoError = errors.New("bufio: reader returned negative count from Read")
@@ -1125,13 +1125,13 @@ export function NewWriterSize(w: io.Writer | null, size: number): Writer | $.Var
 		return b
 	}
 	if (size <= 0) {
-		size = defaultBufSize
+		size = 4096
 	}
 	return new Writer({buf: $.makeSlice<number>(size, undefined, "byte"), wr: w})
 }
 
 export function NewWriter(w: io.Writer | null): Writer | $.VarRef<Writer> | null {
-	return NewWriterSize(w, defaultBufSize)
+	return NewWriterSize(w, 4096)
 }
 
 export function NewReadWriter(r: Reader | $.VarRef<Reader> | null, w: Writer | $.VarRef<Writer> | null): ReadWriter | $.VarRef<ReadWriter> | null {

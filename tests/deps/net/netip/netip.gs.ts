@@ -411,18 +411,18 @@ export class Addr {
 			case z4:
 			{
 				const maxCap: number = 15
-				buf = $.makeSlice<number>(0, maxCap, "byte")
+				buf = $.makeSlice<number>(0, 15, "byte")
 				break
 			}
 			default:
 			{
 				if ($.markAsStructValue($.cloneStructValue(ip)).Is4In6()) {
 					const maxCap: number = 29
-					buf = $.makeSlice<number>(0, maxCap, "byte")
+					buf = $.makeSlice<number>(0, 29, "byte")
 					break
 				}
 				const maxCap: number = 46
-				buf = $.makeSlice<number>(0, maxCap, "byte")
+				buf = $.makeSlice<number>(0, 46, "byte")
 				break
 			}
 		}
@@ -530,7 +530,7 @@ export class Addr {
 		}
 
 		const size: number = 39
-		let ret: $.Slice<number> = $.makeSlice<number>(0, size, "byte")
+		let ret: $.Slice<number> = $.makeSlice<number>(0, 39, "byte")
 		for (let i = $.uint($.uint(0, 8), 8); i < 8; i++) {
 			if (i > 0) {
 				ret = $.append(ret, $.uint(58, 8))
@@ -725,7 +725,7 @@ export class Addr {
 	public string4(): string {
 		const ip = this
 		const max: number = 15
-		let ret: $.Slice<number> = $.makeSlice<number>(0, max, "byte")
+		let ret: $.Slice<number> = $.makeSlice<number>(0, 15, "byte")
 		ret = $.markAsStructValue($.cloneStructValue(ip)).appendTo4(ret)
 		return $.bytesToString(ret)
 	}
@@ -733,7 +733,7 @@ export class Addr {
 	public string4In6(): string {
 		const ip = this
 		const max: number = 29
-		let ret: $.Slice<number> = $.makeSlice<number>(0, max, "byte")
+		let ret: $.Slice<number> = $.makeSlice<number>(0, 29, "byte")
 		ret = $.markAsStructValue($.cloneStructValue(ip)).appendTo4In6(ret)
 		return $.bytesToString(ret)
 	}
@@ -748,7 +748,7 @@ export class Addr {
 		// is to construct the returned string. As such, it's okay to be a
 		// bit greedy here, size-wise.
 		const max: number = 46
-		let ret: $.Slice<number> = $.makeSlice<number>(0, max, "byte")
+		let ret: $.Slice<number> = $.makeSlice<number>(0, 46, "byte")
 		ret = $.markAsStructValue($.cloneStructValue(ip)).appendTo6(ret)
 		return $.bytesToString(ret)
 	}
@@ -1014,13 +1014,13 @@ export class AddrPort {
 			case z4:
 			{
 				const maxCap: number = 21
-				buf = $.makeSlice<number>(0, maxCap, "byte")
+				buf = $.makeSlice<number>(0, 21, "byte")
 				break
 			}
 			default:
 			{
 				const maxCap: number = 54
-				buf = $.makeSlice<number>(0, maxCap, "byte")
+				buf = $.makeSlice<number>(0, 54, "byte")
 				break
 			}
 		}
@@ -1044,7 +1044,7 @@ export class AddrPort {
 			case z4:
 			{
 				const max: number = 21
-				b = $.makeSlice<number>(0, max, "byte")
+				b = $.makeSlice<number>(0, 21, "byte")
 				b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo4(b)
 				break
 			}
@@ -1052,12 +1052,12 @@ export class AddrPort {
 			{
 				if ($.markAsStructValue($.cloneStructValue(p.ip)).Is4In6()) {
 					const max: number = 37
-					b = $.makeSlice<number>(0, max, "byte")
+					b = $.makeSlice<number>(0, 37, "byte")
 					b = $.append(b, $.uint(91, 8))
 					b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo4In6(b)
 				} else {
 					const max: number = 54
-					b = $.makeSlice<number>(0, max, "byte")
+					b = $.makeSlice<number>(0, 54, "byte")
 					b = $.append(b, $.uint(91, 8))
 					b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo6(b)
 				}
@@ -1102,7 +1102,7 @@ export class AddrPort {
 		() => new AddrPort(),
 		[{ name: "Addr", args: [], returns: [] }, { name: "AppendBinary", args: [], returns: [] }, { name: "AppendText", args: [], returns: [] }, { name: "AppendTo", args: [], returns: [] }, { name: "Compare", args: [], returns: [] }, { name: "IsValid", args: [], returns: [] }, { name: "MarshalBinary", args: [], returns: [] }, { name: "MarshalText", args: [], returns: [] }, { name: "Port", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "UnmarshalBinary", args: [], returns: [] }, { name: "UnmarshalText", args: [], returns: [] }],
 		AddrPort,
-		{"ip": "netip.Addr", "port": { kind: $.TypeKind.Basic, name: "int" }}
+		{"ip": "netip.Addr", "port": { kind: $.TypeKind.Basic, name: "uint16" }}
 	)
 }
 
@@ -1276,13 +1276,13 @@ export class Prefix {
 			case z4:
 			{
 				const maxCap: number = 18
-				buf = $.makeSlice<number>(0, maxCap, "byte")
+				buf = $.makeSlice<number>(0, 18, "byte")
 				break
 			}
 			default:
 			{
 				const maxCap: number = 50
-				buf = $.makeSlice<number>(0, maxCap, "byte")
+				buf = $.makeSlice<number>(0, 50, "byte")
 				break
 			}
 		}
@@ -1388,7 +1388,7 @@ export class Prefix {
 		() => new Prefix(),
 		[{ name: "Addr", args: [], returns: [] }, { name: "AppendBinary", args: [], returns: [] }, { name: "AppendText", args: [], returns: [] }, { name: "AppendTo", args: [], returns: [] }, { name: "Bits", args: [], returns: [] }, { name: "Compare", args: [], returns: [] }, { name: "Contains", args: [], returns: [] }, { name: "IsSingleIP", args: [], returns: [] }, { name: "IsValid", args: [], returns: [] }, { name: "MarshalBinary", args: [], returns: [] }, { name: "MarshalText", args: [], returns: [] }, { name: "Masked", args: [], returns: [] }, { name: "Overlaps", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "UnmarshalBinary", args: [], returns: [] }, { name: "UnmarshalText", args: [], returns: [] }, { name: "isZero", args: [], returns: [] }],
 		Prefix,
-		{"ip": "netip.Addr", "bitsPlusOne": { kind: $.TypeKind.Basic, name: "int" }}
+		{"ip": "netip.Addr", "bitsPlusOne": { kind: $.TypeKind.Basic, name: "uint8" }}
 	)
 }
 
@@ -1749,12 +1749,12 @@ export function appendDecimal(b: $.Slice<number>, x: number): $.Slice<number> {
 	// string building 2x faster.
 
 	if (x >= 100) {
-		b = $.append(b, $.uint($.indexStringOrBytes(digits, Math.trunc(x / 100)), 8))
+		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", Math.trunc(x / 100)), 8))
 	}
 	if (x >= 10) {
-		b = $.append(b, $.uint($.indexStringOrBytes(digits, (Math.trunc(x / 10)) % 10), 8))
+		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", (Math.trunc(x / 10)) % 10), 8))
 	}
-	return $.append(b, $.uint($.indexStringOrBytes(digits, x % 10), 8))
+	return $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", x % 10), 8))
 }
 
 export function appendHex(b: $.Slice<number>, x: number): $.Slice<number> {
@@ -1762,19 +1762,19 @@ export function appendHex(b: $.Slice<number>, x: number): $.Slice<number> {
 	// string building 2x faster.
 
 	if (x >= 0x1000) {
-		b = $.append(b, $.uint($.indexStringOrBytes(digits, $.uintShr(x, 12, 16)), 8))
+		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", $.uintShr(x, 12, 16)), 8))
 	}
 	if (x >= 0x100) {
-		b = $.append(b, $.uint($.indexStringOrBytes(digits, ($.uintShr(x, 8, 16)) & 0xf), 8))
+		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", ($.uintShr(x, 8, 16)) & 0xf), 8))
 	}
 	if (x >= 0x10) {
-		b = $.append(b, $.uint($.indexStringOrBytes(digits, ($.uintShr(x, 4, 16)) & 0xf), 8))
+		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", ($.uintShr(x, 4, 16)) & 0xf), 8))
 	}
-	return $.append(b, $.uint($.indexStringOrBytes(digits, x & 0xf), 8))
+	return $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", x & 0xf), 8))
 }
 
 export function appendHexPad(b: $.Slice<number>, x: number): $.Slice<number> {
-	return $.append(b, $.uint($.indexStringOrBytes(digits, $.uintShr(x, 12, 16)), 8), $.uint($.indexStringOrBytes(digits, ($.uintShr(x, 8, 16)) & 0xf), 8), $.uint($.indexStringOrBytes(digits, ($.uintShr(x, 4, 16)) & 0xf), 8), $.uint($.indexStringOrBytes(digits, x & 0xf), 8))
+	return $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", $.uintShr(x, 12, 16)), 8), $.uint($.indexStringOrBytes("0123456789abcdef", ($.uintShr(x, 8, 16)) & 0xf), 8), $.uint($.indexStringOrBytes("0123456789abcdef", ($.uintShr(x, 4, 16)) & 0xf), 8), $.uint($.indexStringOrBytes("0123456789abcdef", x & 0xf), 8))
 }
 
 export function AddrPortFrom(ip: Addr, port: number): AddrPort {

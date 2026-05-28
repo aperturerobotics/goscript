@@ -90,7 +90,7 @@ export async function main(): globalThis.Promise<void> {
 	{
 		const __goscriptTypeSwitchValue = y
 		switch (true) {
-			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }):
+			case $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }) || $.is(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float64" }):
 				{
 					let v = __goscriptTypeSwitchValue
 					$.println("number", v)
@@ -150,7 +150,7 @@ export async function main(): globalThis.Promise<void> {
 				default:
 					{
 						let v: any = __goscriptTypeSwitchValue
-						$.println("shadow default", $.int($.mustTypeAssert<number>(v, { kind: $.TypeKind.Basic, name: "int" }), 32))
+						$.println("shadow default", $.int($.mustTypeAssert<number>(v, { kind: $.TypeKind.Basic, name: "int32" }), 32))
 					}
 					break
 			}

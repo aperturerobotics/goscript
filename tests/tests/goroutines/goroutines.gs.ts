@@ -70,7 +70,7 @@ export async function anotherWorker(name: string): globalThis.Promise<void> {
 
 export async function main(): globalThis.Promise<void> {
 	// Create a slice to collect all messages
-	let allMessages: $.Slice<Message> = $.makeSlice<Message>(0, totalMessages + 3, undefined, () => $.markAsStructValue(new Message()))
+	let allMessages: $.Slice<Message> = $.makeSlice<Message>(0, 8 + 3, undefined, () => $.markAsStructValue(new Message()))
 
 	// Add initial message
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 0, text: "Main: Starting workers"})))
@@ -92,7 +92,7 @@ export async function main(): globalThis.Promise<void> {
 	allMessages = $.append(allMessages, $.markAsStructValue(new Message({priority: 1, text: "Main: Workers started"})))
 
 	// Collect all messages from goroutines
-	for (let __rangeIndex = 0; __rangeIndex < totalMessages; __rangeIndex++) {
+	for (let __rangeIndex = 0; __rangeIndex < 8; __rangeIndex++) {
 		allMessages = $.append(allMessages, await $.chanRecv(messages))
 	}
 

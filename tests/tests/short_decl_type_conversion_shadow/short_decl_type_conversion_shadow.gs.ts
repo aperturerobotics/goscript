@@ -12,12 +12,12 @@ export type blockType = number
 export async function main(): globalThis.Promise<void> {
 	let __goscriptShadow0 = $.uint(1, 8)
 	switch (__goscriptShadow0) {
-		case blockTypeRaw:
+		case 0:
 		{
 			$.println("raw")
 			break
 		}
-		case blockTypeRLE:
+		case 1:
 		{
 			$.println("rle")
 			break

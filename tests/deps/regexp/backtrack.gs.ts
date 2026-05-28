@@ -72,7 +72,7 @@ export class job {
 		() => new job(),
 		[],
 		job,
-		{"pc": { kind: $.TypeKind.Basic, name: "int" }, "arg": { kind: $.TypeKind.Basic, name: "bool" }, "pos": { kind: $.TypeKind.Basic, name: "int" }}
+		{"pc": { kind: $.TypeKind.Basic, name: "uint32" }, "arg": { kind: $.TypeKind.Basic, name: "bool" }, "pos": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 
@@ -171,9 +171,9 @@ export class bitState {
 			$.pointerValue<bitState>(b).jobs = $.goSlice($.pointerValue<bitState>(b).jobs, undefined, 0)
 		}
 
-		let visitedSize = Math.trunc(((($.len($.pointerValue<syntax.Prog>(prog).Inst) * (end + 1)) + visitedBits) - 1) / visitedBits)
+		let visitedSize = Math.trunc(((($.len($.pointerValue<syntax.Prog>(prog).Inst) * (end + 1)) + 32) - 1) / 32)
 		if ($.cap($.pointerValue<bitState>(b).visited) < visitedSize) {
-			$.pointerValue<bitState>(b).visited = $.makeSlice<number>(visitedSize, Math.trunc(maxBacktrackVector / visitedBits), "number")
+			$.pointerValue<bitState>(b).visited = $.makeSlice<number>(visitedSize, Math.trunc(262144 / 32), "number")
 		} else {
 			$.pointerValue<bitState>(b).visited = $.goSlice($.pointerValue<bitState>(b).visited, undefined, visitedSize)
 			$.clear($.pointerValue<bitState>(b).visited)
@@ -201,10 +201,10 @@ export class bitState {
 	public shouldVisit(pc: number, pos: number): boolean {
 		let b: bitState | $.VarRef<bitState> | null = this
 		let n = $.uint(($.int(pc) * ($.pointerValue<bitState>(b).end + 1)) + pos, 64)
-		if ($.uint(($.pointerValue<bitState>(b).visited![$.uint64Div(n, visitedBits)] & (1 << ($.uint64And(n, ($.uint64Sub(visitedBits, 1)))))), 32) != $.uint(0, 32)) {
+		if ($.uint(($.pointerValue<bitState>(b).visited![$.uint64Div(n, 32)] & (1 << ($.uint64And(n, ($.uint64Sub(32, 1)))))), 32) != $.uint(0, 32)) {
 			return false
 		}
-		$.pointerValue<bitState>(b).visited![$.uint64Div(n, visitedBits)] = $.pointerValue<bitState>(b).visited![$.uint64Div(n, visitedBits)] | ($.uint(1 << ($.uint64And(n, ($.uint64Sub(visitedBits, 1)))), 32))
+		$.pointerValue<bitState>(b).visited![$.uint64Div(n, 32)] = $.pointerValue<bitState>(b).visited![$.uint64Div(n, 32)] | ($.uint(1 << ($.uint64And(n, ($.uint64Sub(32, 1)))), 32))
 		return true
 	}
 
@@ -213,7 +213,7 @@ export class bitState {
 		() => new bitState(),
 		[{ name: "push", args: [], returns: [] }, { name: "reset", args: [], returns: [] }, { name: "shouldVisit", args: [], returns: [] }],
 		bitState,
-		{"end": { kind: $.TypeKind.Basic, name: "int" }, "cap": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "matchcap": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "jobs": { kind: $.TypeKind.Slice, elemType: "regexp.job" }, "visited": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "inputs": "regexp.inputs"}
+		{"end": { kind: $.TypeKind.Basic, name: "int" }, "cap": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "matchcap": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "jobs": { kind: $.TypeKind.Slice, elemType: "regexp.job" }, "visited": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, "inputs": "regexp.inputs"}
 	)
 }
 
@@ -248,9 +248,9 @@ export function maxBitStateLen(prog: syntax.Prog | $.VarRef<syntax.Prog> | null)
 	if (!shouldBacktrack(prog)) {
 		return 0
 	}
-	return Math.trunc(maxBacktrackVector / $.len($.pointerValue<syntax.Prog>(prog).Inst))
+	return Math.trunc(262144 / $.len($.pointerValue<syntax.Prog>(prog).Inst))
 }
 
 export function shouldBacktrack(prog: syntax.Prog | $.VarRef<syntax.Prog> | null): boolean {
-	return $.len($.pointerValue<syntax.Prog>(prog).Inst) <= maxBacktrackProg
+	return $.len($.pointerValue<syntax.Prog>(prog).Inst) <= 500
 }

@@ -75,17 +75,17 @@ export class Prog {
 		let i: Inst | $.VarRef<Inst> | null = Prog.prototype.skipNop.call(p, $.uint($.uint($.pointerValue<Prog>(p).Start, 32), 32))
 
 		// Avoid allocation of buffer if prefix is empty.
-		if (($.uint(Inst.prototype.op.call(i), 8) != $.uint(InstRune, 8)) || ($.len($.pointerValue<Inst>(i).Rune) != 1)) {
-			return ["", $.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(InstMatch, 8)]
+		if (($.uint(Inst.prototype.op.call(i), 8) != $.uint(7, 8)) || ($.len($.pointerValue<Inst>(i).Rune) != 1)) {
+			return ["", $.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(4, 8)]
 		}
 
 		// Have prefix; gather characters.
 		let buf: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
-		while (((($.uint(Inst.prototype.op.call(i), 8) == $.uint(InstRune, 8)) && ($.len($.pointerValue<Inst>(i).Rune) == 1)) && ($.uint(($.pointerValue<Inst>(i).Arg & 1), 16) == $.uint(0, 16))) && ($.int($.pointerValue<Inst>(i).Rune![0], 32) != $.int(utf8.RuneError, 32))) {
+		while (((($.uint(Inst.prototype.op.call(i), 8) == $.uint(7, 8)) && ($.len($.pointerValue<Inst>(i).Rune) == 1)) && ($.uint(($.pointerValue<Inst>(i).Arg & 1), 16) == $.uint(0, 16))) && ($.int($.pointerValue<Inst>(i).Rune![0], 32) != $.int(utf8.RuneError, 32))) {
 			buf.value.WriteRune($.int($.pointerValue<Inst>(i).Rune![0], 32))
 			i = Prog.prototype.skipNop.call(p, $.uint($.pointerValue<Inst>(i).Out, 32))
 		}
-		return [buf.value.String(), $.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(InstMatch, 8)]
+		return [buf.value.String(), $.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(4, 8)]
 	}
 
 	public StartCond(): EmptyOp {
@@ -95,18 +95,18 @@ export class Prog {
 		let i: Inst | $.VarRef<Inst> | null = $.indexRef($.pointerValue<Prog>(p).Inst!, pc)
 		Loop: while (true) {
 			switch ($.pointerValue<Inst>(i).Op) {
-				case InstEmptyWidth:
+				case 3:
 				{
 					flag = flag | ($.uint($.pointerValue<Inst>(i).Arg, 8))
 					break
 				}
-				case InstFail:
+				case 5:
 				{
 					return $.uint($.uint(~0, 8), 8)
 					break
 				}
-				case InstCapture:
-				case InstNop:
+				case 2:
+				case 6:
 				{
 					break
 				}
@@ -132,7 +132,7 @@ export class Prog {
 	public skipNop(pc: number): Inst | $.VarRef<Inst> | null {
 		const p: Prog | $.VarRef<Prog> | null = this
 		let i: Inst | $.VarRef<Inst> | null = $.indexRef($.pointerValue<Prog>(p).Inst!, pc)
-		while (($.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(InstNop, 8)) || ($.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(InstCapture, 8))) {
+		while (($.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(6, 8)) || ($.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(2, 8))) {
 			i = $.indexRef($.pointerValue<Prog>(p).Inst!, $.pointerValue<Inst>(i).Out)
 		}
 		return i
@@ -206,32 +206,32 @@ export class Inst {
 	public MatchEmptyWidth(before: number, after: number): boolean {
 		const i: Inst | $.VarRef<Inst> | null = this
 		switch ($.pointerValue<Inst>(i).Arg) {
-			case EmptyBeginLine:
+			case 1:
 			{
 				return ($.int(before, 32) == $.int(10, 32)) || ($.int(before, 32) == $.int(-1, 32))
 				break
 			}
-			case EmptyEndLine:
+			case 2:
 			{
 				return ($.int(after, 32) == $.int(10, 32)) || ($.int(after, 32) == $.int(-1, 32))
 				break
 			}
-			case EmptyBeginText:
+			case 4:
 			{
 				return $.int(before, 32) == $.int(-1, 32)
 				break
 			}
-			case EmptyEndText:
+			case 8:
 			{
 				return $.int(after, 32) == $.int(-1, 32)
 				break
 			}
-			case EmptyWordBoundary:
+			case 16:
 			{
 				return IsWordChar($.int(before, 32)) != IsWordChar($.int(after, 32))
 				break
 			}
-			case EmptyNoWordBoundary:
+			case 32:
 			{
 				return IsWordChar($.int(before, 32)) == IsWordChar($.int(after, 32))
 				break
@@ -243,7 +243,7 @@ export class Inst {
 
 	public MatchRune(r: number): boolean {
 		const i: Inst | $.VarRef<Inst> | null = this
-		return Inst.prototype.MatchRunePos.call(i, $.int(r, 32)) != noMatch
+		return Inst.prototype.MatchRunePos.call(i, $.int(r, 32)) != -1
 	}
 
 	public MatchRunePos(r: number): number {
@@ -253,7 +253,7 @@ export class Inst {
 		switch ($.len(rune)) {
 			case 0:
 			{
-				return noMatch
+				return -1
 				break
 			}
 			case 1:
@@ -269,7 +269,7 @@ export class Inst {
 						}
 					}
 				}
-				return noMatch
+				return -1
 				break
 			}
 			case 2:
@@ -277,7 +277,7 @@ export class Inst {
 				if ((r >= rune![0]) && (r <= rune![1])) {
 					return 0
 				}
-				return noMatch
+				return -1
 				break
 			}
 			case 4:
@@ -286,13 +286,13 @@ export class Inst {
 			{
 				for (let j = 0; j < $.len(rune); j = j + (2)) {
 					if (r < rune![j]) {
-						return noMatch
+						return -1
 					}
 					if (r <= rune![j + 1]) {
 						return Math.trunc(j / 2)
 					}
 				}
-				return noMatch
+				return -1
 				break
 			}
 		}
@@ -314,7 +314,7 @@ export class Inst {
 				}
 			}
 		}
-		return noMatch
+		return -1
 	}
 
 	public String(): string {
@@ -328,11 +328,11 @@ export class Inst {
 		const i: Inst | $.VarRef<Inst> | null = this
 		let op = $.uint($.pointerValue<Inst>(i).Op, 8)
 		switch (op) {
-			case InstRune1:
-			case InstRuneAny:
-			case InstRuneAnyNotNL:
+			case 8:
+			case 9:
+			case 10:
 			{
-				op = $.uint(InstRune, 8)
+				op = $.uint(7, 8)
 				break
 			}
 		}
@@ -344,7 +344,7 @@ export class Inst {
 		() => new Inst(),
 		[{ name: "MatchEmptyWidth", args: [], returns: [] }, { name: "MatchRune", args: [], returns: [] }, { name: "MatchRunePos", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "op", args: [], returns: [] }],
 		Inst,
-		{"Op": { kind: $.TypeKind.Basic, name: "int", typeName: "syntax.InstOp" }, "Out": { kind: $.TypeKind.Basic, name: "int" }, "Arg": { kind: $.TypeKind.Basic, name: "int" }, "Rune": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"Op": { kind: $.TypeKind.Basic, name: "uint8", typeName: "syntax.InstOp" }, "Out": { kind: $.TypeKind.Basic, name: "uint32" }, "Arg": { kind: $.TypeKind.Basic, name: "uint32" }, "Rune": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }}
 	)
 }
 
@@ -398,7 +398,7 @@ export function InstOp_String(i: InstOp): string {
 }
 
 export function EmptyOpContext(r1: number, r2: number): EmptyOp {
-	let op: EmptyOp = $.uint(EmptyNoWordBoundary, 8)
+	let op: EmptyOp = $.uint(32, 8)
 	let boundary: number = 0
 	switch (true) {
 		case IsWordChar($.int(r1, 32)):
@@ -408,12 +408,12 @@ export function EmptyOpContext(r1: number, r2: number): EmptyOp {
 		}
 		case $.int(r1, 32) == $.int(10, 32):
 		{
-			op = op | ($.uint(EmptyBeginLine, 8))
+			op = op | ($.uint(1, 8))
 			break
 		}
 		case r1 < 0:
 		{
-			op = op | ($.uint(EmptyBeginText | EmptyBeginLine, 8))
+			op = op | ($.uint(4 | 1, 8))
 			break
 		}
 	}
@@ -425,17 +425,17 @@ export function EmptyOpContext(r1: number, r2: number): EmptyOp {
 		}
 		case $.int(r2, 32) == $.int(10, 32):
 		{
-			op = op | ($.uint(EmptyEndLine, 8))
+			op = op | ($.uint(2, 8))
 			break
 		}
 		case r2 < 0:
 		{
-			op = op | ($.uint(EmptyEndText | EmptyEndLine, 8))
+			op = op | ($.uint(8 | 2, 8))
 			break
 		}
 	}
 	if ($.uint(boundary, 8) != $.uint(0, 8)) {
-		op = op ^ ($.uint((EmptyWordBoundary | EmptyNoWordBoundary), 8))
+		op = op ^ ($.uint((16 | 32), 8))
 	}
 	return $.uint(op, 8)
 }
@@ -475,42 +475,42 @@ export function u32(i: number): string {
 
 export function dumpInst(b: strings.Builder | $.VarRef<strings.Builder> | null, i: Inst | $.VarRef<Inst> | null): void {
 	switch ($.pointerValue<Inst>(i).Op) {
-		case InstAlt:
+		case 0:
 		{
 			bw(b, $.arrayToSlice<string>(["alt -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32)), ", ", u32($.uint($.pointerValue<Inst>(i).Arg, 32))]))
 			break
 		}
-		case InstAltMatch:
+		case 1:
 		{
 			bw(b, $.arrayToSlice<string>(["altmatch -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32)), ", ", u32($.uint($.pointerValue<Inst>(i).Arg, 32))]))
 			break
 		}
-		case InstCapture:
+		case 2:
 		{
 			bw(b, $.arrayToSlice<string>(["cap ", u32($.uint($.pointerValue<Inst>(i).Arg, 32)), " -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32))]))
 			break
 		}
-		case InstEmptyWidth:
+		case 3:
 		{
 			bw(b, $.arrayToSlice<string>(["empty ", u32($.uint($.pointerValue<Inst>(i).Arg, 32)), " -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32))]))
 			break
 		}
-		case InstMatch:
+		case 4:
 		{
 			bw(b, $.arrayToSlice<string>(["match"]))
 			break
 		}
-		case InstFail:
+		case 5:
 		{
 			bw(b, $.arrayToSlice<string>(["fail"]))
 			break
 		}
-		case InstNop:
+		case 6:
 		{
 			bw(b, $.arrayToSlice<string>(["nop -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32))]))
 			break
 		}
-		case InstRune:
+		case 7:
 		{
 			if ($.pointerValue<Inst>(i).Rune == null) {
 				// shouldn't happen
@@ -523,17 +523,17 @@ export function dumpInst(b: strings.Builder | $.VarRef<strings.Builder> | null, 
 			bw(b, $.arrayToSlice<string>([" -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32))]))
 			break
 		}
-		case InstRune1:
+		case 8:
 		{
 			bw(b, $.arrayToSlice<string>(["rune1 ", strconv.QuoteToASCII($.runesToString($.pointerValue<Inst>(i).Rune)), " -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32))]))
 			break
 		}
-		case InstRuneAny:
+		case 9:
 		{
 			bw(b, $.arrayToSlice<string>(["any -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32))]))
 			break
 		}
-		case InstRuneAnyNotNL:
+		case 10:
 		{
 			bw(b, $.arrayToSlice<string>(["anynotnl -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32))]))
 			break

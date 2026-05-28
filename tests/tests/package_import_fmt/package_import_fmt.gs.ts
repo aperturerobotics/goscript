@@ -49,7 +49,7 @@ export class byteFormatter {
 		() => new byteFormatter(),
 		[{ name: "Format", args: [], returns: [] }],
 		byteFormatter,
-		{"prefix": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"prefix": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
 	)
 }
 
@@ -106,7 +106,7 @@ export async function main(): globalThis.Promise<void> {
 	let appended: $.Slice<number> = fmt.Append(new Uint8Array([98, 97, 115, 101, 45]), "tail")
 	fmt.Println("Append bytes:", $.bytesToString(appended))
 	let buf: $.VarRef<bytes.Buffer> = $.varRef($.markAsStructValue(new bytes.Buffer()))
-	fmt.Fprintln($.pointerValueOrNil($.interfaceValue<io.Writer | null>(buf, "*bytes.Buffer"))!, "Buffered writer")
+	await fmt.Fprintln($.pointerValueOrNil($.interfaceValue<io.Writer | null>(buf, "*bytes.Buffer"))!, "Buffered writer")
 	fmt.Print(buf.value.String())
 
 	$.println("test finished")

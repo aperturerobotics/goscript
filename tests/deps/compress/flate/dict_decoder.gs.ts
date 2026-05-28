@@ -197,6 +197,6 @@ export class dictDecoder {
 		() => new dictDecoder(),
 		[{ name: "availRead", args: [], returns: [] }, { name: "availWrite", args: [], returns: [] }, { name: "histSize", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "readFlush", args: [], returns: [] }, { name: "tryWriteCopy", args: [], returns: [] }, { name: "writeByte", args: [], returns: [] }, { name: "writeCopy", args: [], returns: [] }, { name: "writeMark", args: [], returns: [] }, { name: "writeSlice", args: [], returns: [] }],
 		dictDecoder,
-		{"hist": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "wrPos": { kind: $.TypeKind.Basic, name: "int" }, "rdPos": { kind: $.TypeKind.Basic, name: "int" }, "full": { kind: $.TypeKind.Basic, name: "bool" }}
+		{"hist": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "wrPos": { kind: $.TypeKind.Basic, name: "int" }, "rdPos": { kind: $.TypeKind.Basic, name: "int" }, "full": { kind: $.TypeKind.Basic, name: "bool" }}
 	)
 }

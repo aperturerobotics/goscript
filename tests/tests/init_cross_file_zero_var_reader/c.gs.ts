@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 import * as __goscript_b from "./b.gs.ts"
 import "./b.gs.ts"
 
-export var marker: number = undefined as unknown as number
+export var marker: number
 
 export function __goscript_init_marker(): void {
 	if (((marker) as any) === undefined) {

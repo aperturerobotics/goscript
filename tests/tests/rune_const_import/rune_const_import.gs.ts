@@ -13,24 +13,24 @@ export async function main(): globalThis.Promise<void> {
 	const space: number = 32
 
 	// Print the imported rune constants
-	$.println("separator:", $.int(separator, 32))
-	$.println("newline:", $.int(newline, 32))
-	$.println("space:", $.int(space, 32))
+	$.println("separator:", $.int(47, 32))
+	$.println("newline:", $.int(10, 32))
+	$.println("space:", $.int(32, 32))
 
 	// Use them in comparisons to ensure they're actually numbers
-	if ((separator as number) == 47) {
+	if ((47 as number) == 47) {
 		$.println("separator matches '/'")
 	}
-	if ((newline as number) == 10) {
+	if ((10 as number) == 10) {
 		$.println("newline matches '\\n'")
 	}
-	if ((space as number) == 32) {
+	if ((32 as number) == 32) {
 		$.println("space matches ' '")
 	}
 
 	// Test arithmetic operations (only works with numbers)
-	$.println("separator + 1:", $.int(separator + 1, 32))
-	$.println("space - 1:", $.int(space - 1, 32))
+	$.println("separator + 1:", $.int(47 + 1, 32))
+	$.println("space - 1:", $.int(32 - 1, 32))
 }
 
 if ($.isMainScript(import.meta)) {

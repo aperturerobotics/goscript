@@ -253,7 +253,7 @@ export class Regexp {
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
 		await Regexp.prototype.allMatches.call(re, "", b, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
-				result = $.makeSlice<$.Slice<number>>(0, startSize)
+				result = $.makeSlice<$.Slice<number>>(0, 10)
 			}
 			result = $.append(result, $.goSlice(b, match![0], match![1], match![1]))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
@@ -268,7 +268,7 @@ export class Regexp {
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
 		await Regexp.prototype.allMatches.call(re, "", b, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
-				result = $.makeSlice<$.Slice<number>>(0, startSize)
+				result = $.makeSlice<$.Slice<number>>(0, 10)
 			}
 			result = $.append(result, $.goSlice(match, 0, 2))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
@@ -283,7 +283,7 @@ export class Regexp {
 		let result: $.Slice<string> = null as $.Slice<string>
 		await Regexp.prototype.allMatches.call(re, s, null, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
-				result = $.makeSlice<string>(0, startSize, "string")
+				result = $.makeSlice<string>(0, 10, "string")
 			}
 			result = $.append(result, $.sliceStringOrBytes(s, match![0], match![1]))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
@@ -298,7 +298,7 @@ export class Regexp {
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
 		await Regexp.prototype.allMatches.call(re, s, null, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
-				result = $.makeSlice<$.Slice<number>>(0, startSize)
+				result = $.makeSlice<$.Slice<number>>(0, 10)
 			}
 			result = $.append(result, $.goSlice(match, 0, 2))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
@@ -313,7 +313,7 @@ export class Regexp {
 		let result: $.Slice<$.Slice<string>> = null as $.Slice<$.Slice<string>>
 		await Regexp.prototype.allMatches.call(re, s, null, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
-				result = $.makeSlice<$.Slice<string>>(0, startSize)
+				result = $.makeSlice<$.Slice<string>>(0, 10)
 			}
 			let slice: $.Slice<string> = $.makeSlice<string>(Math.trunc($.len(match) / 2), undefined, "string")
 			for (let __goscriptRangeTarget0 = slice, j = 0; j < $.len(__goscriptRangeTarget0); j++) {
@@ -334,7 +334,7 @@ export class Regexp {
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
 		await Regexp.prototype.allMatches.call(re, s, null, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
-				result = $.makeSlice<$.Slice<number>>(0, startSize)
+				result = $.makeSlice<$.Slice<number>>(0, 10)
 			}
 			result = $.append(result, match)
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
@@ -349,7 +349,7 @@ export class Regexp {
 		let result: $.Slice<$.Slice<$.Slice<number>>> = null as $.Slice<$.Slice<$.Slice<number>>>
 		await Regexp.prototype.allMatches.call(re, "", b, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
-				result = $.makeSlice<$.Slice<$.Slice<number>>>(0, startSize)
+				result = $.makeSlice<$.Slice<$.Slice<number>>>(0, 10)
 			}
 			let slice: $.Slice<$.Slice<number>> = $.makeSlice<$.Slice<number>>(Math.trunc($.len(match) / 2))
 			for (let __goscriptRangeTarget1 = slice, j = 0; j < $.len(__goscriptRangeTarget1); j++) {
@@ -370,7 +370,7 @@ export class Regexp {
 		let result: $.Slice<$.Slice<number>> = null as $.Slice<$.Slice<number>>
 		await Regexp.prototype.allMatches.call(re, "", b, n, $.functionValue((match: $.Slice<number>): void => {
 			if (result == null) {
-				result = $.makeSlice<$.Slice<number>>(0, startSize)
+				result = $.makeSlice<$.Slice<number>>(0, 10)
 			}
 			result = $.append(result, match)
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [] } as $.FunctionTypeInfo)))
@@ -513,7 +513,7 @@ export class Regexp {
 				srepl = $.bytesToString(repl)
 			}
 			return Regexp.prototype.expand.call(re, dst, srepl, src, "", match)
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 		return b
 	}
 
@@ -521,21 +521,21 @@ export class Regexp {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
 			return $.append(dst, ...(await repl!($.goSlice(src, match![0], match![1])) ?? []))
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 	}
 
 	public async ReplaceAllLiteral(src: $.Slice<number>, repl: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return $.append(dst, ...(repl ?? []))
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 	}
 
 	public async ReplaceAllLiteralString(src: string, repl: string): globalThis.Promise<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		return $.bytesToString(await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return $.append(dst, ...($.stringToBytes(repl) ?? []))
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo))))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo))))
 	}
 
 	public async ReplaceAllString(src: string, repl: string): globalThis.Promise<string> {
@@ -546,7 +546,7 @@ export class Regexp {
 		}
 		let b: $.Slice<number> = await Regexp.prototype.replaceAll.call(re, null, src, n, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return Regexp.prototype.expand.call(re, dst, repl, null, src, match)
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 		return $.bytesToString(b)
 	}
 
@@ -554,7 +554,7 @@ export class Regexp {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let b: $.Slice<number> = await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
 			return $.append(dst, ...($.stringToBytes(await repl!($.sliceStringOrBytes(src, match![0], match![1]))) ?? []))
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }] } as $.FunctionTypeInfo)))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 		return $.bytesToString(b)
 	}
 
@@ -795,14 +795,14 @@ export class Regexp {
 
 		let [i, ] = $.pointerValue<__goscript_exec.onePassMachine>(m).inputs.init(ir, ib, _is)
 
-		let r = $.int(endOfText, 32)
-		let r1 = $.int(endOfText, 32)
+		let r = $.int(-1, 32)
+		let r1 = $.int(-1, 32)
 		let width = 0
 		let width1 = 0
 		let __goscriptTuple4: any = $.pointerValue<Exclude<input, null>>(i).step(pos)
 		r = $.int(__goscriptTuple4[0], 32)
 		width = __goscriptTuple4[1]
-		if ($.int(r, 32) != $.int(endOfText, 32)) {
+		if ($.int(r, 32) != $.int(-1, 32)) {
 			let __goscriptTuple5: any = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
 			r1 = $.int(__goscriptTuple5[0], 32)
 			width1 = __goscriptTuple5[1]
@@ -920,7 +920,7 @@ export class Regexp {
 				let __goscriptAssign0_1: number = width1
 				r = __goscriptAssign0_0
 				width = __goscriptAssign0_1
-				if ($.int(r, 32) != $.int(endOfText, 32)) {
+				if ($.int(r, 32) != $.int(-1, 32)) {
 					let __goscriptTuple8: any = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
 					r1 = $.int(__goscriptTuple8[0], 32)
 					width1 = __goscriptTuple8[1]
@@ -1232,7 +1232,7 @@ export class Regexp {
 								let __goscriptTuple15: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple15[0], 32)
 								let width = __goscriptTuple15[1]
-								if (($.int(r, 32) == $.int(10, 32)) || ($.int(r, 32) == $.int(endOfText, 32))) {
+								if (($.int(r, 32) == $.int(10, 32)) || ($.int(r, 32) == $.int(-1, 32))) {
 									continue __goscriptLoop0
 								}
 								__goscriptShadow2 = __goscriptShadow2 + (width)
@@ -1246,7 +1246,7 @@ export class Regexp {
 								let __goscriptTuple16: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple16[0], 32)
 								let width = __goscriptTuple16[1]
-								if ($.int(r, 32) == $.int(endOfText, 32)) {
+								if ($.int(r, 32) == $.int(-1, 32)) {
 									continue __goscriptLoop0
 								}
 								__goscriptShadow2 = __goscriptShadow2 + (width)
@@ -1335,7 +1335,7 @@ export class Regexp {
 		() => new Regexp(),
 		[{ name: "AppendText", args: [], returns: [] }, { name: "Copy", args: [], returns: [] }, { name: "Expand", args: [], returns: [] }, { name: "ExpandString", args: [], returns: [] }, { name: "Find", args: [], returns: [] }, { name: "FindAll", args: [], returns: [] }, { name: "FindAllIndex", args: [], returns: [] }, { name: "FindAllString", args: [], returns: [] }, { name: "FindAllStringIndex", args: [], returns: [] }, { name: "FindAllStringSubmatch", args: [], returns: [] }, { name: "FindAllStringSubmatchIndex", args: [], returns: [] }, { name: "FindAllSubmatch", args: [], returns: [] }, { name: "FindAllSubmatchIndex", args: [], returns: [] }, { name: "FindIndex", args: [], returns: [] }, { name: "FindReaderIndex", args: [], returns: [] }, { name: "FindReaderSubmatchIndex", args: [], returns: [] }, { name: "FindString", args: [], returns: [] }, { name: "FindStringIndex", args: [], returns: [] }, { name: "FindStringSubmatch", args: [], returns: [] }, { name: "FindStringSubmatchIndex", args: [], returns: [] }, { name: "FindSubmatch", args: [], returns: [] }, { name: "FindSubmatchIndex", args: [], returns: [] }, { name: "LiteralPrefix", args: [], returns: [] }, { name: "Longest", args: [], returns: [] }, { name: "MarshalText", args: [], returns: [] }, { name: "Match", args: [], returns: [] }, { name: "MatchReader", args: [], returns: [] }, { name: "MatchString", args: [], returns: [] }, { name: "NumSubexp", args: [], returns: [] }, { name: "ReplaceAll", args: [], returns: [] }, { name: "ReplaceAllFunc", args: [], returns: [] }, { name: "ReplaceAllLiteral", args: [], returns: [] }, { name: "ReplaceAllLiteralString", args: [], returns: [] }, { name: "ReplaceAllString", args: [], returns: [] }, { name: "ReplaceAllStringFunc", args: [], returns: [] }, { name: "Split", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "SubexpIndex", args: [], returns: [] }, { name: "SubexpNames", args: [], returns: [] }, { name: "UnmarshalText", args: [], returns: [] }, { name: "allMatches", args: [], returns: [] }, { name: "backtrack", args: [], returns: [] }, { name: "doExecute", args: [], returns: [] }, { name: "doMatch", args: [], returns: [] }, { name: "doOnePass", args: [], returns: [] }, { name: "expand", args: [], returns: [] }, { name: "get", args: [], returns: [] }, { name: "pad", args: [], returns: [] }, { name: "put", args: [], returns: [] }, { name: "replaceAll", args: [], returns: [] }, { name: "tryBacktrack", args: [], returns: [] }],
 		Regexp,
-		{"expr": { kind: $.TypeKind.Basic, name: "string" }, "prog": { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" }, "onepass": { kind: $.TypeKind.Pointer, elemType: "regexp.onePassProg" }, "numSubexp": { kind: $.TypeKind.Basic, name: "int" }, "maxBitStateLen": { kind: $.TypeKind.Basic, name: "int" }, "subexpNames": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, "prefix": { kind: $.TypeKind.Basic, name: "string" }, "prefixBytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "prefixRune": { kind: $.TypeKind.Basic, name: "int" }, "prefixEnd": { kind: $.TypeKind.Basic, name: "int" }, "mpool": { kind: $.TypeKind.Basic, name: "int" }, "matchcap": { kind: $.TypeKind.Basic, name: "int" }, "prefixComplete": { kind: $.TypeKind.Basic, name: "bool" }, "cond": { kind: $.TypeKind.Basic, name: "int", typeName: "syntax.EmptyOp" }, "minInputLen": { kind: $.TypeKind.Basic, name: "int" }, "longest": { kind: $.TypeKind.Basic, name: "bool" }}
+		{"expr": { kind: $.TypeKind.Basic, name: "string" }, "prog": { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" }, "onepass": { kind: $.TypeKind.Pointer, elemType: "regexp.onePassProg" }, "numSubexp": { kind: $.TypeKind.Basic, name: "int" }, "maxBitStateLen": { kind: $.TypeKind.Basic, name: "int" }, "subexpNames": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, "prefix": { kind: $.TypeKind.Basic, name: "string" }, "prefixBytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "prefixRune": { kind: $.TypeKind.Basic, name: "int32" }, "prefixEnd": { kind: $.TypeKind.Basic, name: "uint32" }, "mpool": { kind: $.TypeKind.Basic, name: "int" }, "matchcap": { kind: $.TypeKind.Basic, name: "int" }, "prefixComplete": { kind: $.TypeKind.Basic, name: "bool" }, "cond": { kind: $.TypeKind.Basic, name: "uint8", typeName: "syntax.EmptyOp" }, "minInputLen": { kind: $.TypeKind.Basic, name: "int" }, "longest": { kind: $.TypeKind.Basic, name: "bool" }}
 	)
 }
 
@@ -1372,8 +1372,8 @@ export class inputString {
 
 	public context(pos: number): __goscript_exec.lazyFlag {
 		const i: inputString | $.VarRef<inputString> | null = this
-		let r1 = $.int(endOfText, 32)
-		let r2 = $.int(endOfText, 32)
+		let r1 = $.int(-1, 32)
+		let r2 = $.int(-1, 32)
 		// 0 < pos && pos <= len(i.str)
 		if ($.uint(pos - 1, 64) < $.uint($.len($.pointerValue<inputString>(i).str), 64)) {
 			let __goscriptTuple24: any = utf8.DecodeLastRuneInString($.sliceStringOrBytes($.pointerValue<inputString>(i).str, undefined, pos))
@@ -1403,7 +1403,7 @@ export class inputString {
 			const __goscriptReturn3 = utf8.DecodeRuneInString($.sliceStringOrBytes($.pointerValue<inputString>(i).str, pos, undefined))
 			return [$.int(__goscriptReturn3[0], 32), __goscriptReturn3[1]]
 		}
-		return [$.int(endOfText, 32), 0]
+		return [$.int(-1, 32), 0]
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -1448,8 +1448,8 @@ export class inputBytes {
 
 	public context(pos: number): __goscript_exec.lazyFlag {
 		const i: inputBytes | $.VarRef<inputBytes> | null = this
-		let r1 = $.int(endOfText, 32)
-		let r2 = $.int(endOfText, 32)
+		let r1 = $.int(-1, 32)
+		let r2 = $.int(-1, 32)
 		// 0 < pos && pos <= len(i.str)
 		if ($.uint(pos - 1, 64) < $.uint($.len($.pointerValue<inputBytes>(i).str), 64)) {
 			let __goscriptTuple26: any = utf8.DecodeLastRune($.goSlice($.pointerValue<inputBytes>(i).str, undefined, pos))
@@ -1479,7 +1479,7 @@ export class inputBytes {
 			const __goscriptReturn4 = utf8.DecodeRune($.goSlice($.pointerValue<inputBytes>(i).str, pos, undefined))
 			return [$.int(__goscriptReturn4[0], 32), __goscriptReturn4[1]]
 		}
-		return [$.int(endOfText, 32), 0]
+		return [$.int(-1, 32), 0]
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -1487,7 +1487,7 @@ export class inputBytes {
 		() => new inputBytes(),
 		[{ name: "canCheckPrefix", args: [], returns: [] }, { name: "context", args: [], returns: [] }, { name: "hasPrefix", args: [], returns: [] }, { name: "index", args: [], returns: [] }, { name: "step", args: [], returns: [] }],
 		inputBytes,
-		{"str": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		{"str": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
 	)
 }
 
@@ -1560,7 +1560,7 @@ export class inputReader {
 	public step(pos: number): [number, number] {
 		let i: inputReader | $.VarRef<inputReader> | null = this
 		if (!$.pointerValue<inputReader>(i).atEOT && (pos != $.pointerValue<inputReader>(i).pos)) {
-			return [$.int(endOfText, 32), 0]
+			return [$.int(-1, 32), 0]
 		}
 		let __goscriptTuple28: any = $.pointerValue<Exclude<io.RuneReader, null>>($.pointerValue<inputReader>(i).r).ReadRune()
 		let r = $.int(__goscriptTuple28[0], 32)
@@ -1568,7 +1568,7 @@ export class inputReader {
 		let err = __goscriptTuple28[2]
 		if (err != null) {
 			$.pointerValue<inputReader>(i).atEOT = true
-			return [$.int(endOfText, 32), 0]
+			return [$.int(-1, 32), 0]
 		}
 		$.pointerValue<inputReader>(i).pos = $.pointerValue<inputReader>(i).pos + (w)
 		return [$.int(r, 32), w]
@@ -1763,7 +1763,7 @@ export type input = {
 $.registerInterfaceType(
 	"regexp.input",
 	null,
-	[{ name: "canCheckPrefix", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "context", args: [{ name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int", typeName: "regexp.lazyFlag" } }] }, { name: "hasPrefix", args: [{ name: "re", type: { kind: $.TypeKind.Pointer, elemType: "regexp.Regexp" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "index", args: [{ name: "re", type: { kind: $.TypeKind.Pointer, elemType: "regexp.Regexp" } }, { name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "step", args: [{ name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "r", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "width", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+	[{ name: "canCheckPrefix", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "context", args: [{ name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint64", typeName: "regexp.lazyFlag" } }] }, { name: "hasPrefix", args: [{ name: "re", type: { kind: $.TypeKind.Pointer, elemType: "regexp.Regexp" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "index", args: [{ name: "re", type: { kind: $.TypeKind.Pointer, elemType: "regexp.Regexp" } }, { name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "step", args: [{ name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "r", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "width", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 )
 
 export async function MatchReader(pattern: string, r: io.RuneReader | null): globalThis.Promise<[boolean, $.GoError]> {

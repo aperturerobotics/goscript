@@ -38,7 +38,7 @@ export type Resetter = {
 $.registerInterfaceType(
 	"flate.Resetter",
 	null,
-	[{ name: "Reset", args: [{ name: "r", type: "io.Reader" }, { name: "dict", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ name: "_r0", type: "error" }] }]
+	[{ name: "Reset", args: [{ name: "r", type: "io.Reader" }, { name: "dict", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "error" }] }]
 )
 
 export type Reader = {
@@ -49,7 +49,7 @@ export type Reader = {
 $.registerInterfaceType(
 	"flate.Reader",
 	null,
-	[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }, { name: "ReadByte", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
+	[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }, { name: "ReadByte", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint8" } }, { name: "_r1", type: "error" }] }]
 )
 
 export class ReadError {
@@ -98,7 +98,7 @@ export class ReadError {
 		() => new ReadError(),
 		[{ name: "Error", args: [], returns: [] }],
 		ReadError,
-		{"Offset": { kind: $.TypeKind.Basic, name: "int" }, "Err": "error"}
+		{"Offset": { kind: $.TypeKind.Basic, name: "int64" }, "Err": "error"}
 	)
 }
 
@@ -148,7 +148,7 @@ export class WriteError {
 		() => new WriteError(),
 		[{ name: "Error", args: [], returns: [] }],
 		WriteError,
-		{"Offset": { kind: $.TypeKind.Basic, name: "int" }, "Err": "error"}
+		{"Offset": { kind: $.TypeKind.Basic, name: "int64" }, "Err": "error"}
 	)
 }
 
@@ -267,21 +267,21 @@ export class huffmanDecoder {
 		}
 
 		$.pointerValue<huffmanDecoder>(h).min = min
-		if (max > huffmanChunkBits) {
-			let numLinks = 1 << ($.uint64Sub($.uint(max, 64), huffmanChunkBits))
+		if (max > 9) {
+			let numLinks = 1 << ($.uint64Sub($.uint(max, 64), 9))
 			$.pointerValue<huffmanDecoder>(h).linkMask = $.uint($.uint(numLinks - 1, 32), 32)
 
 			// create link tables
-			let link = nextcode[huffmanChunkBits + 1] >> 1
-			$.pointerValue<huffmanDecoder>(h).links = $.makeSlice<$.Slice<number>>(huffmanNumChunks - link)
-			for (let j = $.uint(link, 64); j < huffmanNumChunks; j++) {
+			let link = nextcode[9 + 1] >> 1
+			$.pointerValue<huffmanDecoder>(h).links = $.makeSlice<$.Slice<number>>(512 - link)
+			for (let j = $.uint(link, 64); j < 512; j++) {
 				let reverse = $.int(bits2.Reverse16($.uint($.uint(j, 16), 16)))
-				reverse = reverse >> ($.uint($.uint64Sub(16, huffmanChunkBits), 64))
+				reverse = reverse >> ($.uint($.uint64Sub(16, 9), 64))
 				let off = $.uint64Sub(j, $.uint(link, 64))
-				if (sanity && ($.uint($.pointerValue<huffmanDecoder>(h).chunks[reverse], 32) != $.uint(0, 32))) {
+				if (false && ($.uint($.pointerValue<huffmanDecoder>(h).chunks[reverse], 32) != $.uint(0, 32))) {
 					$.panic("impossible: overwriting existing chunk")
 				}
-				$.pointerValue<huffmanDecoder>(h).chunks[reverse] = $.uint($.uint($.uint64Or(($.uint64Shl(off, huffmanValueShift)), ($.uint64Add(huffmanChunkBits, 1))), 32), 32)
+				$.pointerValue<huffmanDecoder>(h).chunks[reverse] = $.uint($.uint($.uint64Or(($.uint64Shl(off, 4)), ($.uint64Add(9, 1))), 32), 32)
 				$.pointerValue<huffmanDecoder>(h).links![off] = $.makeSlice<number>(numLinks, undefined, "number")
 			}
 		}
@@ -293,33 +293,33 @@ export class huffmanDecoder {
 			}
 			let __goscriptShadow0 = nextcode[n]
 			nextcode[n]++
-			let chunk = $.uint($.uint((i << huffmanValueShift) | n, 32), 32)
+			let chunk = $.uint($.uint((i << 4) | n, 32), 32)
 			let reverse = $.int(bits2.Reverse16($.uint($.uint(__goscriptShadow0, 16), 16)))
 			reverse = reverse >> ($.uint(16 - n, 64))
-			if (n <= huffmanChunkBits) {
+			if (n <= 9) {
 				for (let off = reverse; off < $.len($.pointerValue<huffmanDecoder>(h).chunks); off = off + (1 << $.uint(n, 64))) {
 					// We should never need to overwrite
 					// an existing chunk. Also, 0 is
 					// never a valid chunk, because the
 					// lower 4 "count" bits should be
 					// between 1 and 15.
-					if (sanity && ($.uint($.pointerValue<huffmanDecoder>(h).chunks[off], 32) != $.uint(0, 32))) {
+					if (false && ($.uint($.pointerValue<huffmanDecoder>(h).chunks[off], 32) != $.uint(0, 32))) {
 						$.panic("impossible: overwriting existing chunk")
 					}
 					$.pointerValue<huffmanDecoder>(h).chunks[off] = $.uint(chunk, 32)
 				}
 			} else {
-				let j = reverse & (huffmanNumChunks - 1)
-				if (sanity && ($.uint(($.pointerValue<huffmanDecoder>(h).chunks[j] & huffmanCountMask), 32) != $.uint((huffmanChunkBits + 1), 32))) {
+				let j = reverse & (512 - 1)
+				if (false && ($.uint(($.pointerValue<huffmanDecoder>(h).chunks[j] & 15), 32) != $.uint((9 + 1), 32))) {
 					// Longer codes should have been
 					// associated with a link table above.
 					$.panic("impossible: not an indirect chunk")
 				}
-				let value = $.uint($.uintShr($.pointerValue<huffmanDecoder>(h).chunks[j], huffmanValueShift, 32), 32)
+				let value = $.uint($.uintShr($.pointerValue<huffmanDecoder>(h).chunks[j], 4, 32), 32)
 				let linktab: $.Slice<number> = $.pointerValue<huffmanDecoder>(h).links![value]
-				reverse = reverse >> (huffmanChunkBits)
-				for (let off = reverse; off < $.len(linktab); off = off + (1 << $.uint(n - huffmanChunkBits, 64))) {
-					if (sanity && ($.uint(linktab![off], 32) != $.uint(0, 32))) {
+				reverse = reverse >> (9)
+				for (let off = reverse; off < $.len(linktab); off = off + (1 << $.uint(n - 9, 64))) {
+					if (false && ($.uint(linktab![off], 32) != $.uint(0, 32))) {
 						$.panic("impossible: overwriting existing chunk")
 					}
 					linktab![off] = $.uint(chunk, 32)
@@ -327,7 +327,7 @@ export class huffmanDecoder {
 			}
 		}
 
-		if (sanity) {
+		if (false) {
 			// Above we've sanity checked that we never overwrote
 			// an existing entry. Here we additionally check that
 			// we filled the tables completely.
@@ -362,7 +362,7 @@ export class huffmanDecoder {
 		() => new huffmanDecoder(),
 		[{ name: "init", args: [], returns: [] }],
 		huffmanDecoder,
-		{"min": { kind: $.TypeKind.Basic, name: "int" }, "chunks": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 512 }, "links": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, "linkMask": { kind: $.TypeKind.Basic, name: "int" }}
+		{"min": { kind: $.TypeKind.Basic, name: "int" }, "chunks": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint32" }, length: 512 }, "links": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } } }, "linkMask": { kind: $.TypeKind.Basic, name: "uint32" }}
 	)
 }
 
@@ -670,7 +670,7 @@ export class decompressor {
 		let n = $.int($.pointerValue<decompressor>(f).buf[0]) | ($.int($.pointerValue<decompressor>(f).buf[1]) << 8)
 		let nn = $.int($.pointerValue<decompressor>(f).buf[2]) | ($.int($.pointerValue<decompressor>(f).buf[3]) << 8)
 		if ($.uint($.uint(nn, 16), 16) != $.uint($.uint(~n, 16), 16)) {
-			$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+			$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 			return
 		}
 
@@ -721,22 +721,22 @@ export class decompressor {
 				b = b | ($.uint($.uint(c, 32) << ($.uint64And(nb, 31)), 32))
 				nb = $.uint64Add(nb, 8)
 			}
-			let chunk = $.uint($.pointerValue<huffmanDecoder>(h).chunks[b & (huffmanNumChunks - 1)], 32)
-			n = $.uint(chunk & huffmanCountMask, 64)
-			if (n > huffmanChunkBits) {
-				chunk = $.uint($.pointerValue<huffmanDecoder>(h).links![$.uintShr(chunk, huffmanValueShift, 32)]![($.uintShr(b, huffmanChunkBits, 32)) & $.pointerValue<huffmanDecoder>(h).linkMask], 32)
-				n = $.uint(chunk & huffmanCountMask, 64)
+			let chunk = $.uint($.pointerValue<huffmanDecoder>(h).chunks[b & (512 - 1)], 32)
+			n = $.uint(chunk & 15, 64)
+			if (n > 9) {
+				chunk = $.uint($.pointerValue<huffmanDecoder>(h).links![$.uintShr(chunk, 4, 32)]![($.uintShr(b, 9, 32)) & $.pointerValue<huffmanDecoder>(h).linkMask], 32)
+				n = $.uint(chunk & 15, 64)
 			}
 			if (n <= nb) {
 				if (n == 0) {
 					$.pointerValue<decompressor>(f).b = $.uint(b, 32)
 					$.pointerValue<decompressor>(f).nb = nb
-					$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+					$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 					return [0, $.pointerValue<decompressor>(f).err]
 				}
 				$.pointerValue<decompressor>(f).b = $.uint($.uintShr(b, ($.uint64And(n, 31)), 32), 32)
 				$.pointerValue<decompressor>(f).nb = $.uint64Sub(nb, n)
-				return [$.int($.uintShr(chunk, huffmanValueShift, 32)), null]
+				return [$.int($.uintShr(chunk, 4, 32)), null]
 			}
 		}
 		throw new globalThis.Error("goscript: unreachable return")
@@ -753,13 +753,13 @@ export class decompressor {
 				case "__entry":
 				{
 					switch ($.pointerValue<decompressor>(f).stepState) {
-						case stateInit:
+						case 0:
 						{
 							__goscriptGotoState0 = "readLiteral"
 							continue __goscriptGotoLoop0
 							break
 						}
-						case stateDict:
+						case 1:
 						{
 							__goscriptGotoState0 = "copyHistory"
 							continue __goscriptGotoLoop0
@@ -788,7 +788,7 @@ export class decompressor {
 								if ($.pointerValue<decompressor>(f).dict.availWrite() == 0) {
 									$.pointerValue<decompressor>(f).toRead = $.pointerValue<decompressor>(f).dict.readFlush()
 									$.pointerValue<decompressor>(f).step = $.functionValue(async (f: decompressor | $.VarRef<decompressor> | null): globalThis.Promise<void> => await $.pointerValue<decompressor>(f).huffmanBlock(), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.decompressor" }], results: [] } as $.FunctionTypeInfo))
-									$.pointerValue<decompressor>(f).stepState = stateInit
+									$.pointerValue<decompressor>(f).stepState = 0
 									return
 								}
 								__goscriptGotoState0 = "readLiteral"
@@ -837,7 +837,7 @@ export class decompressor {
 								n = 5
 								break
 							}
-							case v < maxNumLit:
+							case v < 286:
 							{
 								length = 258
 								n = 0
@@ -845,7 +845,7 @@ export class decompressor {
 							}
 							default:
 							{
-								$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+								$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 								return
 								break
 							}
@@ -897,7 +897,7 @@ export class decompressor {
 								dist++
 								break
 							}
-							case dist < maxNumDist:
+							case dist < 30:
 							{
 								let nb = $.uint64Shr($.uint(dist - 2, 64), 1)
 								// have 1 bit in bottom of dist, need nb more.
@@ -919,7 +919,7 @@ export class decompressor {
 							}
 							default:
 							{
-								$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+								$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 								return
 								break
 							}
@@ -927,7 +927,7 @@ export class decompressor {
 
 						// No check on length; encoding can be prescient.
 						if (dist > $.pointerValue<decompressor>(f).dict.histSize()) {
-							$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+							$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 							return
 						}
 
@@ -955,7 +955,7 @@ export class decompressor {
 						if (($.pointerValue<decompressor>(f).dict.availWrite() == 0) || ($.pointerValue<decompressor>(f).copyLen > 0)) {
 							$.pointerValue<decompressor>(f).toRead = $.pointerValue<decompressor>(f).dict.readFlush()
 							$.pointerValue<decompressor>(f).step = $.functionValue(async (f: decompressor | $.VarRef<decompressor> | null): globalThis.Promise<void> => await $.pointerValue<decompressor>(f).huffmanBlock(), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.decompressor" }], results: [] } as $.FunctionTypeInfo))
-							$.pointerValue<decompressor>(f).stepState = stateDict
+							$.pointerValue<decompressor>(f).stepState = 1
 							return
 						}
 						__goscriptGotoState0 = "readLiteral"
@@ -1046,7 +1046,7 @@ export class decompressor {
 			}
 			default:
 			{
-				$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+				$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 				break
 			}
 		}
@@ -1064,13 +1064,13 @@ export class decompressor {
 			}
 		}
 		let nlit = $.int($.pointerValue<decompressor>(f).b & 0x1F) + 257
-		if (nlit > maxNumLit) {
-			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+		if (nlit > 286) {
+			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 		}
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(5, 32))) >>> 0
 		let ndist = $.int($.pointerValue<decompressor>(f).b & 0x1F) + 1
-		if (ndist > maxNumDist) {
-			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+		if (ndist > 30) {
+			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 		}
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(5, 32))) >>> 0
 		let nclen = $.int($.pointerValue<decompressor>(f).b & 0xF) + 4
@@ -1096,7 +1096,7 @@ export class decompressor {
 			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[codeOrder[i]] = 0
 		}
 		if (!$.pointerValue<decompressor>(f).h1.init($.goSlice($.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits), 0, undefined))) {
-			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 		}
 
 		// HLIT + 257 code lengths, HDIST + 1 code lengths,
@@ -1119,7 +1119,7 @@ export class decompressor {
 			switch (x) {
 				default:
 				{
-					return $.namedValueInterfaceValue<$.GoError>("unexpected length code", "flate.InternalError", {"Error": InternalError_Error})
+					return $.namedValueInterfaceValue<$.GoError>("unexpected length code", "flate.InternalError", {"Error": InternalError_Error}, { kind: $.TypeKind.Basic, name: "string", typeName: "flate.InternalError" })
 					break
 				}
 				case 16:
@@ -1127,7 +1127,7 @@ export class decompressor {
 					rep = 3
 					nb = 2
 					if (i == 0) {
-						return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+						return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 					}
 					b = $.pointerValue<number[]>($.pointerValue<decompressor>(f).bits)[i - 1]
 					break
@@ -1159,7 +1159,7 @@ export class decompressor {
 			$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(nb, 32))) >>> 0
 			$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, nb)
 			if ((i + rep) > n) {
-				return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+				return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 			}
 			for (let j = 0; j < rep; j++) {
 				$.pointerValue<number[]>($.pointerValue<decompressor>(f).bits)[i] = b
@@ -1168,7 +1168,7 @@ export class decompressor {
 		}
 
 		if (!$.pointerValue<decompressor>(f).h1.init($.goSlice($.pointerValue<number[]>($.pointerValue<decompressor>(f).bits), 0, nlit)) || !$.pointerValue<decompressor>(f).h2.init($.goSlice($.pointerValue<number[]>($.pointerValue<decompressor>(f).bits), nlit, nlit + ndist))) {
-			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error})
+			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 		}
 
 		// As an optimization, we can initialize the min bits to read at a time
@@ -1187,7 +1187,7 @@ export class decompressor {
 		() => new decompressor(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "copyData", args: [], returns: [] }, { name: "dataBlock", args: [], returns: [] }, { name: "finishBlock", args: [], returns: [] }, { name: "huffSym", args: [], returns: [] }, { name: "huffmanBlock", args: [], returns: [] }, { name: "makeReader", args: [], returns: [] }, { name: "moreBits", args: [], returns: [] }, { name: "nextBlock", args: [], returns: [] }, { name: "readHuffman", args: [], returns: [] }],
 		decompressor,
-		{"r": "flate.Reader", "rBuf": { kind: $.TypeKind.Pointer, elemType: "bufio.Reader" }, "roffset": { kind: $.TypeKind.Basic, name: "int" }, "b": { kind: $.TypeKind.Basic, name: "int" }, "nb": { kind: $.TypeKind.Basic, name: "int" }, "h1": "flate.huffmanDecoder", "h2": "flate.huffmanDecoder", "bits": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 316 } }, "codebits": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 19 } }, "dict": "flate.dictDecoder", "buf": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 4 }, "step": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.decompressor" }], results: [] } as $.FunctionTypeInfo), "stepState": { kind: $.TypeKind.Basic, name: "int" }, "final": { kind: $.TypeKind.Basic, name: "bool" }, "err": "error", "toRead": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "hl": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanDecoder" }, "hd": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanDecoder" }, "copyLen": { kind: $.TypeKind.Basic, name: "int" }, "copyDist": { kind: $.TypeKind.Basic, name: "int" }}
+		{"r": "flate.Reader", "rBuf": { kind: $.TypeKind.Pointer, elemType: "bufio.Reader" }, "roffset": { kind: $.TypeKind.Basic, name: "int64" }, "b": { kind: $.TypeKind.Basic, name: "uint32" }, "nb": { kind: $.TypeKind.Basic, name: "uint" }, "h1": "flate.huffmanDecoder", "h2": "flate.huffmanDecoder", "bits": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 316 } }, "codebits": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 19 } }, "dict": "flate.dictDecoder", "buf": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 4 }, "step": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.decompressor" }], results: [] } as $.FunctionTypeInfo), "stepState": { kind: $.TypeKind.Basic, name: "int" }, "final": { kind: $.TypeKind.Basic, name: "bool" }, "err": "error", "toRead": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "hl": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanDecoder" }, "hd": { kind: $.TypeKind.Pointer, elemType: "flate.huffmanDecoder" }, "copyLen": { kind: $.TypeKind.Basic, name: "int" }, "copyDist": { kind: $.TypeKind.Basic, name: "int" }}
 	)
 }
 

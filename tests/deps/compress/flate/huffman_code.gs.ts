@@ -62,7 +62,7 @@ export class hcode {
 		() => new hcode(),
 		[{ name: "set", args: [], returns: [] }],
 		hcode,
-		{"code": { kind: $.TypeKind.Basic, name: "int" }, "len": { kind: $.TypeKind.Basic, name: "int" }}
+		{"code": { kind: $.TypeKind.Basic, name: "uint16" }, "len": { kind: $.TypeKind.Basic, name: "uint16" }}
 	)
 }
 
@@ -159,7 +159,7 @@ export class huffmanEncoder {
 
 	public bitCounts(list: $.Slice<literalNode>, maxBits: number): $.Slice<number> {
 		const h: huffmanEncoder | $.VarRef<huffmanEncoder> | null = this
-		if (maxBits >= maxBitsLimit) {
+		if (maxBits >= 16) {
 			$.panic("flate: maxBits too large")
 		}
 		let n = $.int($.int($.len(list), 32), 32)
@@ -326,7 +326,7 @@ export class huffmanEncoder {
 		() => new huffmanEncoder(),
 		[{ name: "assignEncodingAndSize", args: [], returns: [] }, { name: "bitCounts", args: [], returns: [] }, { name: "bitLength", args: [], returns: [] }, { name: "generate", args: [], returns: [] }],
 		huffmanEncoder,
-		{"codes": { kind: $.TypeKind.Slice, elemType: "flate.hcode" }, "freqcache": { kind: $.TypeKind.Slice, elemType: "flate.literalNode" }, "bitCount": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 17 }, "lns": "flate.byLiteral", "lfs": "flate.byFreq"}
+		{"codes": { kind: $.TypeKind.Slice, elemType: "flate.hcode" }, "freqcache": { kind: $.TypeKind.Slice, elemType: "flate.literalNode" }, "bitCount": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int32" }, length: 17 }, "lns": "flate.byLiteral", "lfs": "flate.byFreq"}
 	)
 }
 
@@ -371,7 +371,7 @@ export class literalNode {
 		() => new literalNode(),
 		[],
 		literalNode,
-		{"literal": { kind: $.TypeKind.Basic, name: "int" }, "freq": { kind: $.TypeKind.Basic, name: "int" }}
+		{"literal": { kind: $.TypeKind.Basic, name: "uint16" }, "freq": { kind: $.TypeKind.Basic, name: "int32" }}
 	)
 }
 
@@ -453,7 +453,7 @@ export class levelInfo {
 		() => new levelInfo(),
 		[],
 		levelInfo,
-		{"level": { kind: $.TypeKind.Basic, name: "int" }, "lastFreq": { kind: $.TypeKind.Basic, name: "int" }, "nextCharFreq": { kind: $.TypeKind.Basic, name: "int" }, "nextPairFreq": { kind: $.TypeKind.Basic, name: "int" }, "needed": { kind: $.TypeKind.Basic, name: "int" }}
+		{"level": { kind: $.TypeKind.Basic, name: "int32" }, "lastFreq": { kind: $.TypeKind.Basic, name: "int32" }, "nextCharFreq": { kind: $.TypeKind.Basic, name: "int32" }, "nextPairFreq": { kind: $.TypeKind.Basic, name: "int32" }, "needed": { kind: $.TypeKind.Basic, name: "int32" }}
 	)
 }
 
@@ -530,7 +530,7 @@ export type byLiteral = $.Slice<literalNode>
 
 export function byLiteral_sort(s: $.VarRef<byLiteral> | null, a: $.Slice<literalNode>): void {
 	s!.value = ((a as byLiteral) as byLiteral)
-	sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*flate.byLiteral", {Len: (receiver: any, ...args: any[]) => (byLiteral_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byLiteral_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byLiteral_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byLiteral_sort as any)(receiver, ...args)}))!)
+	sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*flate.byLiteral", {Len: (receiver: any, ...args: any[]) => (byLiteral_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byLiteral_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byLiteral_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byLiteral_sort as any)(receiver, ...args)}, { kind: $.TypeKind.Pointer, elemType: "flate.byLiteral" }))!)
 }
 
 export function byLiteral_Len(s: byLiteral): number {
@@ -552,7 +552,7 @@ export type byFreq = $.Slice<literalNode>
 
 export function byFreq_sort(s: $.VarRef<byFreq> | null, a: $.Slice<literalNode>): void {
 	s!.value = ((a as byFreq) as byFreq)
-	sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*flate.byFreq", {Len: (receiver: any, ...args: any[]) => (byFreq_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byFreq_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byFreq_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byFreq_sort as any)(receiver, ...args)}))!)
+	sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*flate.byFreq", {Len: (receiver: any, ...args: any[]) => (byFreq_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byFreq_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byFreq_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byFreq_sort as any)(receiver, ...args)}, { kind: $.TypeKind.Pointer, elemType: "flate.byFreq" }))!)
 }
 
 export function byFreq_Len(s: byFreq): number {

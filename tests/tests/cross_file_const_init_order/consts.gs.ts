@@ -8,7 +8,7 @@ import "./register.gs.ts"
 
 export const Store: number = 0
 
-export var Default: __goscript_register.thing = undefined as unknown as __goscript_register.thing
+export var Default: __goscript_register.thing
 
 export function __goscript_init_Default(): void {
 	if (((Default) as any) === undefined) {

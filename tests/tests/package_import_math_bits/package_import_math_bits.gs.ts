@@ -8,9 +8,9 @@ import "@goscript/math/bits/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	$.println(bits.UintSize)
-	$.println(bits.Len(~$.uint(0, 64)))
+	$.println(bits.Len($.uint("18446744073709551615", 64)))
 	$.println(bits.LeadingZeros($.uint(1, 64)))
-	let [lo, carry] = bits.Add(~$.uint(0, 64), 1, 0)
+	let [lo, carry] = bits.Add($.uint("18446744073709551615", 64), 1, 0)
 	$.println(lo == 0, carry)
 }
 

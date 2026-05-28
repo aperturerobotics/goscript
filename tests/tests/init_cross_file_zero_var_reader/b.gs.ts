@@ -8,7 +8,7 @@ import type * as reflect from "@goscript/reflect/index.js"
 import * as __goscript_a from "./a.gs.ts"
 import "./a.gs.ts"
 
-export var registry: Map<number, number> | null = undefined as unknown as Map<number, number> | null
+export var registry: Map<number, number> | null
 
 export function __goscript_init_registry(): void {
 	if (((registry) as any) === undefined) {
@@ -27,7 +27,7 @@ export function __goscript_set_registry(__goscriptValue: Map<number, number> | n
 	registry = __goscriptValue
 }
 
-export var counter: number = undefined as unknown as number
+export var counter: number
 
 export function __goscript_init_counter(): void {
 	if (((counter) as any) === undefined) {
@@ -46,7 +46,7 @@ export function __goscript_set_counter(__goscriptValue: number): void {
 	counter = __goscriptValue
 }
 
-export var shared: $.VarRef<number> = undefined as unknown as $.VarRef<number>
+export var shared: $.VarRef<number>
 
 export function __goscript_init_shared(): void {
 	if (((shared) as any) === undefined) {

@@ -95,7 +95,7 @@ export class patchList {
 		() => new patchList(),
 		[{ name: "append", args: [], returns: [] }, { name: "patch", args: [], returns: [] }],
 		patchList,
-		{"head": { kind: $.TypeKind.Basic, name: "int" }, "tail": { kind: $.TypeKind.Basic, name: "int" }}
+		{"head": { kind: $.TypeKind.Basic, name: "uint32" }, "tail": { kind: $.TypeKind.Basic, name: "uint32" }}
 	)
 }
 
@@ -150,7 +150,7 @@ export class frag {
 		() => new frag(),
 		[],
 		frag,
-		{"i": { kind: $.TypeKind.Basic, name: "int" }, "out": "syntax.patchList", "nullable": { kind: $.TypeKind.Basic, name: "bool" }}
+		{"i": { kind: $.TypeKind.Basic, name: "uint32" }, "out": "syntax.patchList", "nullable": { kind: $.TypeKind.Basic, name: "bool" }}
 	)
 }
 

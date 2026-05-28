@@ -64,7 +64,7 @@ export class digest {
 
 	public async AppendBinary(b: $.Slice<number>): globalThis.Promise<[$.Slice<number>, $.GoError]> {
 		const d: digest | $.VarRef<digest> | null = this
-		b = $.append(b, ...($.stringToBytes(magic) ?? []))
+		b = $.append(b, ...($.stringToBytes("crc\x01") ?? []))
 		b = byteorder.BEAppendUint32(b, $.uint(await tableSum($.pointerValue<digest>(d).tab), 32))
 		b = byteorder.BEAppendUint32(b, $.uint($.pointerValue<digest>(d).crc, 32))
 		return [b, null]
@@ -83,7 +83,7 @@ export class digest {
 
 	public async MarshalBinary(): globalThis.Promise<[$.Slice<number>, $.GoError]> {
 		const d: digest | $.VarRef<digest> | null = this
-		return await digest.prototype.AppendBinary.call(d, $.makeSlice<number>(0, marshaledSize, "byte"))
+		return await digest.prototype.AppendBinary.call(d, $.makeSlice<number>(0, 12, "byte"))
 	}
 
 	public Reset(): void {
@@ -93,7 +93,7 @@ export class digest {
 
 	public Size(): number {
 		const d: digest | $.VarRef<digest> | null = this
-		return Size
+		return 4
 	}
 
 	public Sum(_in: $.Slice<number>): $.Slice<number> {
@@ -109,10 +109,10 @@ export class digest {
 
 	public async UnmarshalBinary(b: $.Slice<number>): globalThis.Promise<$.GoError> {
 		let d: digest | $.VarRef<digest> | null = this
-		if (($.len(b) < 4) || (!$.stringEqual($.bytesToString($.goSlice(b, undefined, 4)), magic))) {
+		if (($.len(b) < 4) || (!$.stringEqual($.bytesToString($.goSlice(b, undefined, 4)), "crc\x01"))) {
 			return errors.New("hash/crc32: invalid hash state identifier")
 		}
-		if ($.len(b) != marshaledSize) {
+		if ($.len(b) != 12) {
 			return errors.New("hash/crc32: invalid hash state size")
 		}
 		if ($.uint(await tableSum($.pointerValue<digest>(d).tab), 32) != $.uint(byteorder.BEUint32($.goSlice(b, 4, undefined)), 32)) {
@@ -137,7 +137,7 @@ export class digest {
 		() => new digest(),
 		[{ name: "AppendBinary", args: [], returns: [] }, { name: "BlockSize", args: [], returns: [] }, { name: "Clone", args: [], returns: [] }, { name: "MarshalBinary", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "Sum", args: [], returns: [] }, { name: "Sum32", args: [], returns: [] }, { name: "UnmarshalBinary", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		digest,
-		{"crc": { kind: $.TypeKind.Basic, name: "int" }, "tab": { kind: $.TypeKind.Pointer, elemType: "crc32.Table" }}
+		{"crc": { kind: $.TypeKind.Basic, name: "uint32" }, "tab": { kind: $.TypeKind.Pointer, elemType: "crc32.Table" }}
 	)
 }
 
@@ -177,22 +177,22 @@ export function __goscript_set_haveCastagnoli(__goscriptValue: atomic.Bool): voi
 	haveCastagnoli.value = __goscriptValue
 }
 
-export var castagnoliInitOnce: (() => void) | null = undefined as unknown as (() => void) | null
+export var castagnoliInitOnce: (() => void) | null
 
 export function __goscript_init_castagnoliInitOnce(): void {
 	if (((castagnoliInitOnce) as any) === undefined) {
 		castagnoliInitOnce = sync.OnceFunc($.functionValue((): void => {
-	castagnoliTable = __goscript_crc32_generic.simpleMakeTable($.uint(Castagnoli, 32))
+	castagnoliTable = __goscript_crc32_generic.simpleMakeTable($.uint(2197175160, 32))
 
 	if (__goscript_crc32_otherarch.archAvailableCastagnoli()) {
 		__goscript_crc32_otherarch.archInitCastagnoli()
 		updateCastagnoli.value = __goscript_crc32_otherarch.archUpdateCastagnoli
 	} else {
 		// Initialize the slicing-by-8 table.
-		castagnoliTable8 = __goscript_crc32_generic.slicingMakeTable($.uint(Castagnoli, 32))
+		castagnoliTable8 = __goscript_crc32_generic.slicingMakeTable($.uint(2197175160, 32))
 		updateCastagnoli.value = $.functionValue((crc: number, p: $.Slice<number>): number => {
 			return $.uint(__goscript_crc32_generic.slicingUpdate($.uint(crc, 32), castagnoliTable8, p), 32)
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uint32" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Basic, name: "uint32" }] } as $.FunctionTypeInfo))
 	}
 
 	haveCastagnoli.value.Store(true)
@@ -211,11 +211,11 @@ export function __goscript_set_castagnoliInitOnce(__goscriptValue: (() => void) 
 	castagnoliInitOnce = __goscriptValue
 }
 
-export var IEEETable: $.VarRef<Table> | null = undefined as unknown as $.VarRef<Table> | null
+export var IEEETable: $.VarRef<Table> | null
 
 export function __goscript_init_IEEETable(): void {
 	if (((IEEETable) as any) === undefined) {
-		IEEETable = __goscript_crc32_generic.simpleMakeTable($.uint(IEEE, 32))
+		IEEETable = __goscript_crc32_generic.simpleMakeTable($.uint(3988292384, 32))
 	}
 }
 
@@ -242,7 +242,7 @@ export function __goscript_set_updateIEEE(__goscriptValue: ((crc: number, p: $.S
 	updateIEEE.value = __goscriptValue
 }
 
-export var ieeeInitOnce: (() => void) | null = undefined as unknown as (() => void) | null
+export var ieeeInitOnce: (() => void) | null
 
 export function __goscript_init_ieeeInitOnce(): void {
 	if (((ieeeInitOnce) as any) === undefined) {
@@ -252,10 +252,10 @@ export function __goscript_init_ieeeInitOnce(): void {
 		updateIEEE.value = __goscript_crc32_otherarch.archUpdateIEEE
 	} else {
 		// Initialize the slicing-by-8 table.
-		ieeeTable8 = __goscript_crc32_generic.slicingMakeTable($.uint(IEEE, 32))
+		ieeeTable8 = __goscript_crc32_generic.slicingMakeTable($.uint(3988292384, 32))
 		updateIEEE.value = $.functionValue((crc: number, p: $.Slice<number>): number => {
 			return $.uint(__goscript_crc32_generic.slicingUpdate($.uint(crc, 32), ieeeTable8, p), 32)
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
+		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uint32" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Basic, name: "uint32" }] } as $.FunctionTypeInfo))
 	}
 }, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	}
@@ -274,13 +274,13 @@ export function __goscript_set_ieeeInitOnce(__goscriptValue: (() => void) | null
 
 export async function MakeTable(poly: number): globalThis.Promise<$.VarRef<Table> | null> {
 	switch (poly) {
-		case IEEE:
+		case 3988292384:
 		{
 			await __goscript_get_ieeeInitOnce()!()
 			return __goscript_get_IEEETable()
 			break
 		}
-		case Castagnoli:
+		case 2197175160:
 		{
 			await __goscript_get_castagnoliInitOnce()!()
 			return castagnoliTable

@@ -995,6 +995,8 @@ func callUsesFunctionValue(pkg *packages.Package, expr ast.Expr) bool {
 	switch typed := expr.(type) {
 	case *ast.CallExpr:
 		return true
+	case *ast.TypeAssertExpr:
+		return true
 	case *ast.SelectorExpr:
 		selection := pkg.TypesInfo.Selections[typed]
 		if selection != nil {

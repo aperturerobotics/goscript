@@ -50,12 +50,12 @@ export function Op_String(i: __goscript_regexp.Op): string {
 		case (1 <= i) && (i <= 19):
 		{
 			i = i - ($.uint(1, 8))
-			return $.sliceStringOrBytes(_Op_name_0, _Op_index_0[i], _Op_index_0[i + 1])
+			return $.sliceStringOrBytes("NoMatchEmptyMatchLiteralCharClassAnyCharNotNLAnyCharBeginLineEndLineBeginTextEndTextWordBoundaryNoWordBoundaryCaptureStarPlusQuestRepeatConcatAlternate", _Op_index_0[i], _Op_index_0[i + 1])
 			break
 		}
 		case $.uint(i, 8) == $.uint(128, 8):
 		{
-			return _Op_name_1
+			return "opPseudo"
 			break
 		}
 		default:

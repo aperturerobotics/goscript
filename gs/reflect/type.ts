@@ -576,6 +576,17 @@ export class Value {
       const elemType = this._type.Elem()
       return new Value(varRef.value, elemType, varRef)
     }
+    if (
+      this._type.Kind() === Ptr &&
+      this._value &&
+      typeof this._value === 'object' &&
+      '__goValue' in this._value &&
+      $.isVarRef((this._value as { __goValue: unknown }).__goValue)
+    ) {
+      const varRef = (this._value as { __goValue: $.VarRef<ReflectValue> })
+        .__goValue
+      return new Value(varRef.value, this._type.Elem(), varRef)
+    }
     // For interfaces, return the underlying value
     return new Value(this._value, this._type, this._parentVarRef)
   }
@@ -2172,62 +2183,14 @@ class StructType implements Type {
 
   static createTypeFromFieldInfo(ti: any): Type {
     if (typeof ti === 'string') {
-      switch (ti) {
-        case 'string':
-          return new BasicType(String, ti, 16)
-        case 'int':
-        case 'int32':
-        case 'int64':
-        case 'number':
-          return new BasicType(Int, ti === 'number' ? 'int' : ti, 8)
-        case 'bool':
-        case 'boolean':
-          return new BasicType(Bool, 'bool', 1)
-        case 'float64':
-          return new BasicType(Float64, ti, 8)
-        case 'complex64':
-          return new BasicType(Complex64, ti, 8)
-        case 'complex128':
-          return new BasicType(Complex128, ti, 16)
-        case 'uint':
-        case 'uint32':
-        case 'uint64':
-          return new BasicType(Uint, ti, 8)
-        default:
-          return new BasicType(Invalid, ti, 8)
-      }
+      return basicTypeFromName(ti === 'number' ? 'int' : ti)
     } else if (ti && ti.kind) {
       // Handle TypeInfo objects from the builtin type system
       const name = ti.name || 'unknown'
       const typeName = ti.typeName || ''
       switch (ti.kind) {
         case 'basic':
-          // Map TypeScript type names to Go type names
-          switch (name) {
-            case 'string':
-              return new BasicType(String, 'string', 16, typeName)
-            case 'number':
-            case 'int':
-            case 'int32':
-            case 'int64':
-              return new BasicType(
-                Int,
-                name === 'number' ? 'int' : name,
-                8,
-                typeName,
-              )
-            case 'boolean':
-            case 'bool':
-              return new BasicType(Bool, 'bool', 1, typeName)
-            case 'float64':
-              return new BasicType(Float64, 'float64', 8, typeName)
-            case 'complex64':
-              return new BasicType(Complex64, 'complex64', 8, typeName)
-            case 'complex128':
-              return new BasicType(Complex128, 'complex128', 16, typeName)
-            default:
-              return new BasicType(Invalid, name, 8, typeName)
-          }
+          return basicTypeFromName(name === 'number' ? 'int' : name, typeName)
         case 'slice':
           if (ti.elemType) {
             return new SliceType(
@@ -2251,6 +2214,49 @@ class StructType implements Type {
       }
     }
     return new BasicType(Invalid, 'unknown', 8)
+  }
+}
+
+function basicTypeFromName(name: string, typeName = ''): BasicType {
+  switch (name) {
+    case 'string':
+      return new BasicType(String, 'string', 16, typeName)
+    case 'bool':
+    case 'boolean':
+      return new BasicType(Bool, 'bool', 1, typeName)
+    case 'int':
+      return new BasicType(Int, 'int', 8, typeName)
+    case 'int8':
+      return new BasicType(Int8, 'int8', 1, typeName)
+    case 'int16':
+      return new BasicType(Int16, 'int16', 2, typeName)
+    case 'int32':
+      return new BasicType(Int32, 'int32', 4, typeName)
+    case 'int64':
+      return new BasicType(Int64, 'int64', 8, typeName)
+    case 'uint':
+      return new BasicType(Uint, 'uint', 8, typeName)
+    case 'uint8':
+    case 'byte':
+      return new BasicType(Uint8, name, 1, typeName)
+    case 'uint16':
+      return new BasicType(Uint16, 'uint16', 2, typeName)
+    case 'uint32':
+      return new BasicType(Uint32, 'uint32', 4, typeName)
+    case 'uint64':
+      return new BasicType(Uint64, 'uint64', 8, typeName)
+    case 'uintptr':
+      return new BasicType(Uintptr, 'uintptr', 8, typeName)
+    case 'float32':
+      return new BasicType(Float32, 'float32', 4, typeName)
+    case 'float64':
+      return new BasicType(Float64, 'float64', 8, typeName)
+    case 'complex64':
+      return new BasicType(Complex64, 'complex64', 8, typeName)
+    case 'complex128':
+      return new BasicType(Complex128, 'complex128', 16, typeName)
+    default:
+      return new BasicType(Invalid, name, 8, typeName)
   }
 }
 
@@ -2612,6 +2618,15 @@ function getTypeOf(value: ReflectValue): Type {
       if ($.isVarRef(value)) {
         const elemType = getTypeOf(value.value as ReflectValue)
         return new PointerType(elemType)
+      }
+
+      if (
+        '__goTypeInfo' in value &&
+        (value as { __goTypeInfo?: $.TypeInfo | string }).__goTypeInfo
+      ) {
+        return typeFromTypeInfo(
+          (value as { __goTypeInfo: $.TypeInfo | string }).__goTypeInfo,
+        )
       }
 
       if (

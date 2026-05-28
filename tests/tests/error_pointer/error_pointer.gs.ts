@@ -10,7 +10,7 @@ export function customErr_Error(e: customErr): string {
 }
 
 export function setErr(err: $.VarRef<$.GoError> | null): void {
-	err!.value = $.namedValueInterfaceValue<$.GoError>("pointer error", "main.customErr", {"Error": customErr_Error})
+	err!.value = $.namedValueInterfaceValue<$.GoError>("pointer error", "main.customErr", {"Error": customErr_Error}, { kind: $.TypeKind.Basic, name: "string", typeName: "main.customErr" })
 }
 
 export async function main(): globalThis.Promise<void> {

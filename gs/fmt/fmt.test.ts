@@ -146,7 +146,7 @@ describe('fmt spacing rules', () => {
     expect(output).toBe('hi there 1 2\n')
   })
 
-  it('Fprint/Fprintln behave like Print/Println with writers', () => {
+  it('Fprint/Fprintln behave like Print/Println with writers', async () => {
     const chunks: Uint8Array[] = []
     const writer = {
       Write(b: Uint8Array): [number, any] {
@@ -155,13 +155,28 @@ describe('fmt spacing rules', () => {
       },
     }
 
-    let [n, err] = fmt.Fprint(writer, 1, 2, 'x', 3)
+    let [n, err] = await fmt.Fprint(writer, 1, 2, 'x', 3)
     expect(err).toBeNull()
     expect(n).toBe(5) // "1 2x3".length
     expect(new TextDecoder().decode(chunks[0])).toBe('1 2x3')
-    ;[, err] = fmt.Fprintln(writer, 'hi', 'there', 1, 2)
+    ;[, err] = await fmt.Fprintln(writer, 'hi', 'there', 1, 2)
     expect(err).toBeNull()
     expect(new TextDecoder().decode(chunks[1])).toBe('hi there 1 2\n')
+  })
+
+  it('Fprintf awaits async writers', async () => {
+    const chunks: Uint8Array[] = []
+    const writer = {
+      async Write(b: Uint8Array): Promise<[number, any]> {
+        chunks.push(b)
+        return [b.length, null]
+      },
+    }
+
+    const [n, err] = await fmt.Fprintf(writer, 'n=%d s=%s', 7, 'ok')
+    expect(err).toBeNull()
+    expect(n).toBe(8)
+    expect(new TextDecoder().decode(chunks[0])).toBe('n=7 s=ok')
   })
 })
 

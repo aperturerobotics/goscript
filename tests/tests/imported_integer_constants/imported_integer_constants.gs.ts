@@ -11,7 +11,7 @@ export function aboveSignedLimit(v: number): boolean {
 }
 
 export function isMinInt64(v: number): boolean {
-	return $.int(v) == -9223372036854775808
+	return $.int(v) == $.int("-9223372036854775808", 64)
 }
 
 export async function main(): globalThis.Promise<void> {

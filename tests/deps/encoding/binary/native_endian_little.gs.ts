@@ -103,7 +103,7 @@ export class nativeEndian {
 	)
 }
 
-export var NativeEndian: nativeEndian = undefined as unknown as nativeEndian
+export var NativeEndian: nativeEndian
 
 export function __goscript_init_NativeEndian(): void {
 	if (((NativeEndian) as any) === undefined) {

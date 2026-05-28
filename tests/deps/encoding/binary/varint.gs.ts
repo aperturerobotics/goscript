@@ -39,13 +39,13 @@ export function Uvarint(buf: $.Slice<number>): [number, number] {
 	let s: number = 0
 	for (let __goscriptRangeTarget0 = buf, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 		let b = __goscriptRangeTarget0![i]
-		if (i == MaxVarintLen64) {
+		if (i == 10) {
 			// Catch byte reads past MaxVarintLen64.
 			// See issue https://golang.org/issues/41185
 			return [$.uint(0, 64), -(i + 1)]
 		}
 		if (b < 0x80) {
-			if ((i == (MaxVarintLen64 - 1)) && (b > 1)) {
+			if ((i == (10 - 1)) && (b > 1)) {
 				return [$.uint(0, 64), -(i + 1)]
 			}
 			return [$.uint($.uint64Or(x, ($.uint64Shl($.uint(b, 64), s))), 64), i + 1]
@@ -92,7 +92,7 @@ export function __goscript_set_errOverflow(__goscriptValue: $.GoError): void {
 export async function ReadUvarint(r: io.ByteReader | null): globalThis.Promise<[number, $.GoError]> {
 	let x: number = 0
 	let s: number = 0
-	for (let i = 0; i < MaxVarintLen64; i++) {
+	for (let i = 0; i < 10; i++) {
 		let __goscriptTuple1: any = await $.pointerValue<Exclude<io.ByteReader, null>>(r).ReadByte()
 		let b = $.uint(__goscriptTuple1[0], 8)
 		let err = __goscriptTuple1[1]
@@ -103,7 +103,7 @@ export async function ReadUvarint(r: io.ByteReader | null): globalThis.Promise<[
 			return [$.uint(x, 64), err]
 		}
 		if (b < 0x80) {
-			if ((i == (MaxVarintLen64 - 1)) && (b > 1)) {
+			if ((i == (10 - 1)) && (b > 1)) {
 				return [$.uint(x, 64), errOverflow]
 			}
 			return [$.uint($.uint64Or(x, ($.uint64Shl($.uint(b, 64), s))), 64), null]

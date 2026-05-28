@@ -132,7 +132,7 @@ func TestCompilePackagesEmitsSimplePackage(t *testing.T) {
 		"export async function main(): globalThis.Promise<void>",
 		"let size = 5",
 		"$.print(\"total:\", size)",
-		"$.println(Greeting, total)",
+		"$.println(\"Hello\", total)",
 		"$.panic(\"unreachable\")",
 		"await main()",
 	} {
@@ -215,9 +215,9 @@ func TestCompilePackagesLazilyInitializesCrossFilePackageVars(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export var two: holder = undefined as unknown as holder",
+		"export var two: holder",
 		"export function __goscript_get_two(): holder",
-		"export var remoteZero: __goscript_a.remote = undefined as unknown as __goscript_a.remote",
+		"export var remoteZero: __goscript_a.remote",
 		"export function __goscript_get_remoteZero(): __goscript_a.remote",
 		"__goscript_a.__goscript_get_one()",
 	} {
@@ -263,7 +263,7 @@ func TestCompilePackagesLazilyInitializesSameFileLaterPackageVars(t *testing.T) 
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export var table: $.Slice<detail> = undefined as unknown as $.Slice<detail>",
+		"export var table: $.Slice<detail>",
 		"export function __goscript_get_table(): $.Slice<detail>",
 		"export let later: detail = $.markAsStructValue(new detail({n: 7}))",
 	} {
@@ -305,7 +305,7 @@ func TestCompilePackagesLazilyInitializesFunctionBodyPackageVarDependencies(t *t
 	}
 	text := string(content)
 	for _, want := range []string{
-		"export var first: Point | $.VarRef<Point> | null = undefined as unknown as Point | $.VarRef<Point> | null",
+		"export var first: Point | $.VarRef<Point> | null",
 		"export function __goscript_get_first(): Point | $.VarRef<Point> | null",
 		"function __goscript_get___goscriptTuple",
 		"export let later: number = 7",
@@ -355,7 +355,7 @@ func TestCompilePackagesLazilyInitializesEffectFreeTypeForFromCrossFileInit(t *t
 	}
 	aText := string(aContent)
 	for _, want := range []string{
-		"export var stringType: reflect.Type | null = undefined as unknown as reflect.Type | null",
+		"export var stringType: reflect.Type | null",
 		"export function __goscript_get_stringType(): reflect.Type | null",
 		"stringType = reflect.TypeFor",
 	} {
@@ -630,6 +630,121 @@ func TestCompilePackagesAliasesPackageShadowInitializerReads(t *testing.T) {
 	}
 	if strings.Count(text, "__goscriptShadow") < 3 {
 		t.Fatalf("missing shadow aliases for initializer reads:\n%s", text)
+	}
+}
+
+func TestCompilePackagesLowersPackageConstBeforeLocalShadow(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/constshadow\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"const headerLength = 4",
+			"func parse(buf []byte) int {",
+			"  if len(buf) < headerLength {",
+			"    return headerLength",
+			"  }",
+			"  n := len(buf)",
+			"  headerLength := n",
+			"  return headerLength",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "constshadow", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "$.len(buf) < headerLength") || strings.Contains(text, "return headerLength\n\t}") {
+		t.Fatalf("package const read was emitted through local TDZ shadow:\n%s", text)
+	}
+	if !strings.Contains(text, "$.len(buf) < 4") || !strings.Contains(text, "return 4") {
+		t.Fatalf("package const read was not lowered to a value before local shadow:\n%s", text)
+	}
+	if !strings.Contains(text, "let headerLength = n") {
+		t.Fatalf("local shadow was not preserved:\n%s", text)
+	}
+}
+
+func TestCompilePackagesPreservesNamedUint64InterfaceTypeInfo(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/nameduint64\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Pol uint64",
+			"func (p Pol) String() string { return \"\" }",
+			"func box() any {",
+			"  var p Pol",
+			"  return &p",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "nameduint64", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	want := `$.namedValueInterfaceValue<any>(p, "*main.Pol"`
+	if !strings.Contains(text, want) {
+		t.Fatalf("missing named interface box %q in generated output:\n%s", want, text)
+	}
+	want = `elemType: { kind: $.TypeKind.Basic, name: "uint64", typeName: "main.Pol" }`
+	if !strings.Contains(text, want) {
+		t.Fatalf("named uint64 pointer interface box lost type metadata:\n%s", text)
+	}
+}
+
+func TestCompilePackagesLowersWideIntegerConstantsForUint64Targets(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/wideconst\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Pol uint64",
+			"func normalize(f Pol) Pol {",
+			"  f &= Pol((1 << 54) - 1)",
+			"  f |= (1 << 53) | 1",
+			"  return f",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "wideconst", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{`$.uint("18014398509481983", 64)`, `$.uint("9007199254740993", 64)`} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing wide integer constant %q in generated output:\n%s", want, text)
+		}
 	}
 }
 
@@ -1361,7 +1476,7 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"Counter.prototype.Set.call(NewCounter(), 5)",
 		"let [, ok] = $.typeAssertTuple<Counter | $.VarRef<Counter> | null>(iface, { kind: $.TypeKind.Pointer, elemType: \"main.Counter\" })",
 		"\"Value\": { type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\" }",
-		"\"ID\": { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.ObjectID\" }",
+		"\"ID\": { kind: $.TypeKind.Basic, name: \"int32\", typeName: \"main.ObjectID\" }",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -2466,6 +2581,63 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 	}
 }
 
+func TestCompilePackagesInfersGenericTypeArgsFromNamedArgument(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/genericnamedarg\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package genericnamedarg",
+			"type Source interface { Load() int }",
+			"type auto struct{}",
+			"func (a *auto) Load() int { return 7 }",
+			"type key[T any] struct { name string }",
+			"type entry struct { factory any }",
+			"var entries = map[string]*entry{}",
+			"func NewKey[T any](name string) key[T] {",
+			"  entries[name] = &entry{}",
+			"  return key[T]{name: name}",
+			"}",
+			"func Register[T any](key key[T], factory func() T) {",
+			"  entries[key.name].factory = factory",
+			"}",
+			"func Get[T any](key key[T]) T {",
+			"  f := entries[key.name].factory",
+			"  return f.(func() T)()",
+			"}",
+			"var loader = NewKey[Source](\"source\")",
+			"func Use() int {",
+			"  Register(loader, func() Source { return &auto{} })",
+			"  src := Get(loader)",
+			"  return src.Load()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "genericnamedarg", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"await Get({T: { type: \"genericnamedarg.Source\", zero: () => null, methods: {Load: (receiver: any, ...args: any[]) => receiver.Load(...args)} }}, $.markAsStructValue($.cloneStructValue(loader)))",
+		"return await $.mustTypeAssert<(() => any | globalThis.Promise<any>) | null>(f, ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo))!()",
+		"return $.pointerValue<Exclude<Source, null>>(src).Load()",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/function-type-info\n\ngo 1.25.3\n",
@@ -2668,6 +2840,50 @@ func TestCompilePackagesPacksVariadicCallsInGeneratedSubpackage(t *testing.T) {
 	}
 	if strings.Contains(text, "$.pointerValue<State>(s).SetErrorf(\"bad %q\", key)") {
 		t.Fatalf("generated override subpackage call was not packed:\n%s", text)
+	}
+}
+
+func TestCompilePackagesAwaitsFmtWriterOverrides(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/fmt-writer\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package fmtwriter",
+			"import \"fmt\"",
+			"type writer struct { buf []byte }",
+			"func (w *writer) Write(p []byte) (int, error) {",
+			"  w.buf = append(w.buf, p...)",
+			"  return len(p), nil",
+			"}",
+			"func Use(w *writer) error {",
+			"  _, err := fmt.Fprintf(w, \"%s\", \"ok\")",
+			"  return err",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "fmt-writer", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export async function Use",
+		"await fmt.Fprintf(",
+		"return err",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
 	}
 }
 

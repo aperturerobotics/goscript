@@ -16,7 +16,7 @@ export function MyError_Error(e: MyError): string {
 
 export function mayFail(n: number): $.GoError {
 	if (n < 0) {
-		return $.namedValueInterfaceValue<$.GoError>(n, "main.MyError", {"Error": MyError_Error})
+		return $.namedValueInterfaceValue<$.GoError>(n, "main.MyError", {"Error": MyError_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyError" })
 	}
 	return null
 }
@@ -39,7 +39,7 @@ export async function main(): globalThis.Promise<void> {
 	{
 		let __goscriptSwitch0 = err
 		switch (true) {
-			case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<$.GoError>(ErrNegative, "main.MyError", {"Error": MyError_Error})):
+			case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<$.GoError>(-1, "main.MyError", {"Error": MyError_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyError" })):
 			{
 				$.println("switch: matched primitive error")
 				break

@@ -357,8 +357,21 @@ export function Sprintln(...a: any[]): string {
   return a.map(defaultFormat).join(' ') + '\n'
 }
 
+async function writeToWriter(
+  w: any,
+  out: string,
+): Promise<[number, $.GoError | null]> {
+  if (w && w.Write) {
+    return await w.Write(new TextEncoder().encode(out))
+  }
+  return [0, $.newError('Writer does not implement Write method')]
+}
+
 // Fprint functions (write to Writer) - simplified implementation
-export function Fprint(w: any, ...a: any[]): [number, $.GoError | null] {
+export async function Fprint(
+  w: any,
+  ...a: any[]
+): Promise<[number, $.GoError | null]> {
   // Same spacing as Print
   let out = ''
   for (let i = 0; i < a.length; i++) {
@@ -369,32 +382,26 @@ export function Fprint(w: any, ...a: any[]): [number, $.GoError | null] {
     }
     out += defaultFormat(a[i])
   }
-  if (w && w.Write) {
-    return w.Write(new TextEncoder().encode(out))
-  }
-  return [0, $.newError('Writer does not implement Write method')]
+  return await writeToWriter(w, out)
 }
 
-export function Fprintf(
+export async function Fprintf(
   w: any,
   format: string,
   ...a: any[]
-): [number, $.GoError | null] {
+): Promise<[number, $.GoError | null]> {
   const result = parseFormat(format, a)
-  if (w && w.Write) {
-    return w.Write(new TextEncoder().encode(result))
-  }
-  return [0, $.newError('Writer does not implement Write method')]
+  return await writeToWriter(w, result)
 }
 
-export function Fprintln(w: any, ...a: any[]): [number, $.GoError | null] {
+export async function Fprintln(
+  w: any,
+  ...a: any[]
+): Promise<[number, $.GoError | null]> {
   // Same behavior as Println
   const body = a.map(defaultFormat).join(' ')
   const result = body + '\n'
-  if (w && w.Write) {
-    return w.Write(new TextEncoder().encode(result))
-  }
-  return [0, $.newError('Writer does not implement Write method')]
+  return await writeToWriter(w, result)
 }
 
 // Append functions (append to byte slice)

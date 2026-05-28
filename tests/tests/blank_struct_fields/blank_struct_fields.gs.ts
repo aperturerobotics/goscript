@@ -54,7 +54,7 @@ export class padded {
 		() => new padded(),
 		[],
 		padded,
-		{"_blank0": { type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 2 }, name: "_" }, "Value": { kind: $.TypeKind.Basic, name: "int" }, "_blank2": { type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 3 }, name: "_" }}
+		{"_blank0": { type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 2 }, name: "_" }, "Value": { kind: $.TypeKind.Basic, name: "int" }, "_blank2": { type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 3 }, name: "_" }}
 	)
 }
 

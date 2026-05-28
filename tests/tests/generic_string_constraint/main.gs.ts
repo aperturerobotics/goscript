@@ -28,12 +28,12 @@ export async function main(): globalThis.Promise<void> {
 	$.println(toStringString({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, "hello"))
 
 	// bytes-only
-	$.println(toStringBytes({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }}, $.arrayToSlice<number>([$.uint(119, 8), $.uint(111, 8), $.uint(114, 8), $.uint(108, 8), $.uint(100, 8)])))
+	$.println(toStringBytes({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, zero: () => null }}, $.arrayToSlice<number>([$.uint(119, 8), $.uint(111, 8), $.uint(114, 8), $.uint(108, 8), $.uint(100, 8)])))
 
 	// union: string
 	$.println(toStringGeneric({T: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }}, "foo"))
 	// union: []byte
-	$.println(toStringGeneric({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, zero: () => null }}, $.arrayToSlice<number>([$.uint(98, 8), $.uint(97, 8), $.uint(114, 8)])))
+	$.println(toStringGeneric({T: { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, zero: () => null }}, $.arrayToSlice<number>([$.uint(98, 8), $.uint(97, 8), $.uint(114, 8)])))
 }
 
 if ($.isMainScript(import.meta)) {
