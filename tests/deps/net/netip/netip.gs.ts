@@ -143,11 +143,11 @@ export class Addr {
 	public As4(): Uint8Array {
 		const ip = this
 		let a4: Uint8Array = new Uint8Array(4)
-		if ((ip.z == z4) || $.markAsStructValue($.cloneStructValue(ip)).Is4In6()) {
+		if (($.comparableEqual(ip.z, z4)) || $.markAsStructValue($.cloneStructValue(ip)).Is4In6()) {
 			byteorder.BEPutUint32($.goSlice(a4, undefined, undefined), $.uint($.uint(ip.addr.lo, 32), 32))
 			return a4
 		}
-		if (ip.z == z0) {
+		if ($.comparableEqual(ip.z, z0)) {
 			$.panic("As4 called on IP zero value")
 		}
 		$.panic("As4 called on IPv6 address")
@@ -239,7 +239,7 @@ export class Addr {
 
 	public Is4(): boolean {
 		const ip = this
-		return ip.z == z4
+		return $.comparableEqual(ip.z, z4)
 	}
 
 	public Is4In6(): boolean {
@@ -249,12 +249,12 @@ export class Addr {
 
 	public Is6(): boolean {
 		const ip = this
-		return (ip.z != z0) && (ip.z != z4)
+		return (!$.comparableEqual(ip.z, z0)) && (!$.comparableEqual(ip.z, z4))
 	}
 
 	public IsGlobalUnicast(): boolean {
 		let ip: Addr = this
-		if (ip.z == z0) {
+		if ($.comparableEqual(ip.z, z0)) {
 			// Invalid or zero-value.
 			return false
 		}
@@ -265,11 +265,11 @@ export class Addr {
 
 		// Match package net's IsGlobalUnicast logic. Notably private IPv4 addresses
 		// and ULA IPv6 addresses are still considered "global unicast".
-		if ($.markAsStructValue($.cloneStructValue(ip)).Is4() && ((ip == IPv4Unspecified()) || (ip == AddrFrom4(new Uint8Array([$.uint(255, 8), $.uint(255, 8), $.uint(255, 8), $.uint(255, 8)]))))) {
+		if ($.markAsStructValue($.cloneStructValue(ip)).Is4() && (($.comparableEqual(ip, IPv4Unspecified())) || ($.comparableEqual(ip, AddrFrom4(new Uint8Array([$.uint(255, 8), $.uint(255, 8), $.uint(255, 8), $.uint(255, 8)])))))) {
 			return false
 		}
 
-		return (((ip != IPv6Unspecified()) && !$.markAsStructValue($.cloneStructValue(ip)).IsLoopback()) && !$.markAsStructValue($.cloneStructValue(ip)).IsMulticast()) && !$.markAsStructValue($.cloneStructValue(ip)).IsLinkLocalUnicast()
+		return (((!$.comparableEqual(ip, IPv6Unspecified())) && !$.markAsStructValue($.cloneStructValue(ip)).IsLoopback()) && !$.markAsStructValue($.cloneStructValue(ip)).IsMulticast()) && !$.markAsStructValue($.cloneStructValue(ip)).IsLinkLocalUnicast()
 	}
 
 	public IsInterfaceLocalMulticast(): boolean {
@@ -382,12 +382,12 @@ export class Addr {
 
 	public IsUnspecified(): boolean {
 		const ip = this
-		return (ip == IPv4Unspecified()) || (ip == IPv6Unspecified())
+		return ($.comparableEqual(ip, IPv4Unspecified())) || ($.comparableEqual(ip, IPv6Unspecified()))
 	}
 
 	public IsValid(): boolean {
 		const ip = this
-		return ip.z != z0
+		return !$.comparableEqual(ip.z, z0)
 	}
 
 	public Less(ip2: Addr): boolean {
@@ -539,7 +539,7 @@ export class Addr {
 			ret = appendHexPad(ret, $.uint($.markAsStructValue($.cloneStructValue(ip)).v6u16($.uint(i, 8)), 16))
 		}
 
-		if (ip.z != z6noz) {
+		if (!$.comparableEqual(ip.z, z6noz)) {
 			// The addition of a zone will cause a second allocation, but when there
 			// is no zone the ret slice will be stack allocated.
 			ret = $.append(ret, $.uint(37, 8))
@@ -616,7 +616,7 @@ export class Addr {
 
 	public Zone(): string {
 		const ip = this
-		if (ip.z == z0) {
+		if ($.comparableEqual(ip.z, z0)) {
 			return ""
 		}
 		return $.markAsStructValue($.cloneStructValue(ip.z)).Value().zoneV6
@@ -638,7 +638,7 @@ export class Addr {
 		const ip = this
 		ret = $.append(ret, ...($.stringToBytes("::ffff:") ?? []))
 		ret = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(ip)).Unmap())).appendTo4(ret)
-		if (ip.z != z6noz) {
+		if (!$.comparableEqual(ip.z, z6noz)) {
 			ret = $.append(ret, $.uint(37, 8))
 			ret = $.append(ret, ...($.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()) ?? []))
 		}
@@ -681,7 +681,7 @@ export class Addr {
 			ret = appendHex(ret, $.uint($.markAsStructValue($.cloneStructValue(ip)).v6u16($.uint(i, 8)), 16))
 		}
 
-		if (ip.z != z6noz) {
+		if (!$.comparableEqual(ip.z, z6noz)) {
 			ret = $.append(ret, $.uint(37, 8))
 			ret = $.append(ret, ...($.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()) ?? []))
 		}
@@ -690,14 +690,14 @@ export class Addr {
 
 	public hasZone(): boolean {
 		const ip = this
-		return ((ip.z != z0) && (ip.z != z4)) && (ip.z != z6noz)
+		return ((!$.comparableEqual(ip.z, z0)) && (!$.comparableEqual(ip.z, z4))) && (!$.comparableEqual(ip.z, z6noz))
 	}
 
 	public isZero(): boolean {
 		const ip = this
 		// Faster than comparing ip == Addr{}, but effectively equivalent,
 		// as there's no way to make an IP with a nil z from this package.
-		return ip.z == z0
+		return $.comparableEqual(ip.z, z0)
 	}
 
 	public marshalBinarySize(): number {
@@ -1175,7 +1175,7 @@ export class Prefix {
 		}
 
 		// p.ip is non-nil, because p is valid.
-		if (p.ip.z == z4) {
+		if ($.comparableEqual(p.ip.z, z4)) {
 			b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo4(b)
 		} else {
 			if ($.markAsStructValue($.cloneStructValue(p.ip)).Is4In6()) {
@@ -1300,7 +1300,7 @@ export class Prefix {
 		if (!$.markAsStructValue($.cloneStructValue(p)).IsValid() || !$.markAsStructValue($.cloneStructValue(o)).IsValid()) {
 			return false
 		}
-		if (p == o) {
+		if ($.comparableEqual(p, o)) {
 			return true
 		}
 		if ($.markAsStructValue($.cloneStructValue(p.ip)).Is4() != $.markAsStructValue($.cloneStructValue(o.ip)).Is4()) {
@@ -1340,7 +1340,7 @@ export class Prefix {
 				return false
 			}
 		}
-		return p.ip == o.ip
+		return $.comparableEqual(p.ip, o.ip)
 	}
 
 	public String(): string {
@@ -1380,7 +1380,7 @@ export class Prefix {
 
 	public isZero(): boolean {
 		const p = this
-		return p == $.markAsStructValue(new Prefix())
+		return $.comparableEqual(p, $.markAsStructValue(new Prefix()))
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -1867,7 +1867,7 @@ export async function ParsePrefix(s: string): globalThis.Promise<[Prefix, $.GoEr
 		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField3 = await $.pointerValue<Exclude<$.GoError, null>>(err).Error(); return $.markAsStructValue(new parsePrefixError({_in: s, msg: __goscriptLiteralField3})) })()), "netip.parsePrefixError")]
 	}
 	// IPv6 zones are not allowed: https://go.dev/issue/51899
-	if ($.markAsStructValue($.cloneStructValue(ip)).Is6() && (ip.z != z6noz)) {
+	if ($.markAsStructValue($.cloneStructValue(ip)).Is6() && (!$.comparableEqual(ip.z, z6noz))) {
 		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "IPv6 zones cannot be present in a prefix"})), "netip.parsePrefixError")]
 	}
 

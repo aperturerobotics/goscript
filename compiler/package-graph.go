@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"context"
+	"go/ast"
 	"os"
 	"slices"
 	"strings"
@@ -175,6 +176,8 @@ func (o *PackageGraphOwner) collect(
 	}
 	seen[pkg.ID] = true
 
+	normalizePackageFileOrder(pkg)
+
 	path := packagePath(pkg)
 	node := newPackageGraphNode(pkg, requested[path], overrideFacts)
 	graph.Nodes = append(graph.Nodes, node)
@@ -221,6 +224,41 @@ func newPackageGraphNode(pkg *packages.Package, requested bool, overrideFacts *O
 		Requested:         requested,
 		OverrideCandidate: overrideFacts.HasPackage(packagePath(pkg)),
 	}
+}
+
+func normalizePackageFileOrder(pkg *packages.Package) {
+	if pkg == nil {
+		return
+	}
+	slices.Sort(pkg.GoFiles)
+	if len(pkg.Syntax) == len(pkg.CompiledGoFiles) {
+		type sourceFile struct {
+			name string
+			file *ast.File
+		}
+		files := make([]sourceFile, len(pkg.Syntax))
+		for idx, file := range pkg.Syntax {
+			files[idx] = sourceFile{name: pkg.CompiledGoFiles[idx], file: file}
+		}
+		slices.SortFunc(files, func(a, b sourceFile) int {
+			return strings.Compare(a.name, b.name)
+		})
+		for idx, file := range files {
+			pkg.CompiledGoFiles[idx] = file.name
+			pkg.Syntax[idx] = file.file
+		}
+		return
+	}
+	slices.Sort(pkg.CompiledGoFiles)
+	slices.SortFunc(pkg.Syntax, func(a, b *ast.File) int {
+		if pkg.Fset == nil {
+			return strings.Compare(a.Name.Name, b.Name.Name)
+		}
+		return strings.Compare(
+			pkg.Fset.Position(a.Package).Filename,
+			pkg.Fset.Position(b.Package).Filename,
+		)
+	})
 }
 
 func isTestMainPackage(pkg *packages.Package) bool {

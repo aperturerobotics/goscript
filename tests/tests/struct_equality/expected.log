@@ -1,0 +1,6 @@
+zero is zero: true
+zero valid: false
+zero equals zero: true
+one valid: true
+one equals other one: true
+one differs: true

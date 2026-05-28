@@ -3204,7 +3204,7 @@ func (o *LoweringOwner) lowerDeclStatementContext(
 			if def == nil || aliases[def] != "" {
 				continue
 			}
-			if shortDeclDefShadowsOuterName(name.Name, def) {
+			if shortDeclDefShadowsOuterName(ctx, name.Name, def) || valueSpecUsesOuterName(ctx, valueSpec, name.Name, def) {
 				aliases[def] = ctx.tempName("Shadow")
 			}
 		}
@@ -4173,7 +4173,7 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 		if entry.def == nil || aliases[entry.def] != "" {
 			continue
 		}
-		if shortDeclDefShadowsOuterName(entry.name, entry.def) {
+		if shortDeclDefShadowsOuterName(ctx, entry.name, entry.def) {
 			aliases[entry.def] = ctx.tempName("Shadow")
 		}
 	}
@@ -4202,13 +4202,59 @@ func shortDeclShadowNonValueIdents(ctx lowerFileContext, expr ast.Expr) map[*ast
 	return idents
 }
 
-func shortDeclDefShadowsOuterName(name string, def types.Object) bool {
+func shortDeclDefShadowsOuterName(ctx lowerFileContext, name string, def types.Object) bool {
 	for scope := def.Parent(); scope != nil; scope = scope.Parent() {
 		if scope == def.Parent() {
 			continue
 		}
 		obj := scope.Lookup(name)
+		if scope.Parent() == types.Universe {
+			if obj == nil {
+				return false
+			}
+			if _, isTypeName := obj.(*types.TypeName); isTypeName {
+				return true
+			}
+			if _, isFunc := obj.(*types.Func); isFunc {
+				return sameSourceFile(ctx, obj.Pos(), def.Pos()) && obj.Pos() < def.Pos()
+			}
+			return false
+		}
 		if obj != nil && obj.Pos().IsValid() && obj.Pos() < def.Pos() {
+			return true
+		}
+	}
+	return false
+}
+
+func sameSourceFile(ctx lowerFileContext, left token.Pos, right token.Pos) bool {
+	if !left.IsValid() || !right.IsValid() || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	leftPos := sourcePos(ctx.semPkg.source, left)
+	rightPos := sourcePos(ctx.semPkg.source, right)
+	return leftPos.file != "" && leftPos.file == rightPos.file
+}
+
+func valueSpecUsesOuterName(ctx lowerFileContext, spec *ast.ValueSpec, name string, def types.Object) bool {
+	if spec == nil || name == "" || def == nil {
+		return false
+	}
+	usesOuter := false
+	for _, value := range spec.Values {
+		ast.Inspect(value, func(node ast.Node) bool {
+			ident, ok := node.(*ast.Ident)
+			if !ok || ident.Name != name {
+				return true
+			}
+			obj := ctx.semPkg.source.TypesInfo.Uses[ident]
+			if obj != nil && obj != def {
+				usesOuter = true
+				return false
+			}
+			return true
+		})
+		if usesOuter {
 			return true
 		}
 	}
@@ -5903,6 +5949,19 @@ func (o *LoweringOwner) lowerComplexEqualityExpr(ctx lowerFileContext, expr *ast
 	return value, true
 }
 
+func (o *LoweringOwner) lowerStructEqualityExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
+	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if !isStructComparableType(leftType) || !isStructComparableType(rightType) {
+		return "", false
+	}
+	value := o.runtimeOwner.QualifiedHelper(RuntimeHelperComparableEqual) + "(" + left + ", " + right + ")"
+	if expr.Op == token.NEQ {
+		value = "!" + value
+	}
+	return value, true
+}
+
 func (o *LoweringOwner) lowerStringEqualityExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
 	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
 	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
@@ -6029,6 +6088,9 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 				return value, append(leftDiagnostics, rightDiagnostics...)
 			}
 			if value, ok := o.lowerComplexEqualityExpr(ctx, typed, left, right); ok {
+				return value, append(leftDiagnostics, rightDiagnostics...)
+			}
+			if value, ok := o.lowerStructEqualityExpr(ctx, typed, left, right); ok {
 				return value, append(leftDiagnostics, rightDiagnostics...)
 			}
 			if value, ok := o.lowerStringEqualityExpr(ctx, typed, left, right); ok {
@@ -9789,6 +9851,16 @@ func namedNonInterfaceNonStructType(named *types.Named) bool {
 
 func isStructValueType(typ types.Type) bool {
 	return namedStructType(typ) != nil
+}
+
+func isStructComparableType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
+	if _, ok := types.Unalias(typ).Underlying().(*types.Struct); !ok {
+		return false
+	}
+	return types.Comparable(typ)
 }
 
 func isPointerToStructType(typ types.Type) bool {

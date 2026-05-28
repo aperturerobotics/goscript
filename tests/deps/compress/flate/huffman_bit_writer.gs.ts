@@ -416,13 +416,13 @@ export class huffmanBitWriter {
 			// the length of offset fields (which will be the same for both fixed
 			// and dynamic encoding), if we need to compare those two encodings
 			// against stored encoding.
-			for (let __goscriptShadow0 = lengthCodesStart + 8; __goscriptShadow0 < numLiterals; __goscriptShadow0++) {
+			for (let lengthCode = lengthCodesStart + 8; lengthCode < numLiterals; lengthCode++) {
 				// First eight length codes have extra size = 0.
-				extraBits = extraBits + ($.int($.pointerValue<huffmanBitWriter>(w).literalFreq![__goscriptShadow0]) * $.int(lengthExtraBits![__goscriptShadow0 - lengthCodesStart]))
+				extraBits = extraBits + ($.int($.pointerValue<huffmanBitWriter>(w).literalFreq![lengthCode]) * $.int(lengthExtraBits![lengthCode - lengthCodesStart]))
 			}
-			for (let __goscriptShadow1 = 4; __goscriptShadow1 < numOffsets; __goscriptShadow1++) {
+			for (let offsetCode = 4; offsetCode < numOffsets; offsetCode++) {
 				// First four offset codes have extra size = 0.
-				extraBits = extraBits + ($.int($.pointerValue<huffmanBitWriter>(w).offsetFreq![__goscriptShadow1]) * $.int(offsetExtraBits![__goscriptShadow1]))
+				extraBits = extraBits + ($.int($.pointerValue<huffmanBitWriter>(w).offsetFreq![offsetCode]) * $.int(offsetExtraBits![offsetCode]))
 			}
 		}
 
@@ -722,22 +722,22 @@ export class huffmanBitWriter {
 			}
 			// Write the length
 			let length = $.uint(__goscript_token.token_length(t), 32)
-			let __goscriptShadow2 = __goscript_token.lengthCode
-			let __goscriptShadow3 = $.uint(__goscriptShadow2($.uint(length, 32)), 32)
-			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(leCodes![__goscriptShadow3 + lengthCodesStart])))
-			let extraLengthBits = $.uint(lengthExtraBits![__goscriptShadow3], 64)
+			let __goscriptShadow0 = __goscript_token.lengthCode
+			let __goscriptShadow1 = $.uint(__goscriptShadow0($.uint(length, 32)), 32)
+			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(leCodes![__goscriptShadow1 + lengthCodesStart])))
+			let extraLengthBits = $.uint(lengthExtraBits![__goscriptShadow1], 64)
 			if (extraLengthBits > 0) {
-				let extraLength = $.int($.int(length - lengthBase![__goscriptShadow3], 32), 32)
+				let extraLength = $.int($.int(length - lengthBase![__goscriptShadow1], 32), 32)
 				await huffmanBitWriter.prototype.writeBits.call(w, $.int(extraLength, 32), extraLengthBits)
 			}
 			// Write the offset
 			let offset = $.uint(__goscript_token.token_offset(t), 32)
-			let __goscriptShadow4 = __goscript_token.offsetCode
-			let __goscriptShadow5 = $.uint(__goscriptShadow4($.uint(offset, 32)), 32)
-			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(oeCodes![__goscriptShadow5])))
-			let extraOffsetBits = $.uint(offsetExtraBits![__goscriptShadow5], 64)
+			let __goscriptShadow2 = __goscript_token.offsetCode
+			let __goscriptShadow3 = $.uint(__goscriptShadow2($.uint(offset, 32)), 32)
+			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(oeCodes![__goscriptShadow3])))
+			let extraOffsetBits = $.uint(offsetExtraBits![__goscriptShadow3], 64)
 			if (extraOffsetBits > 0) {
-				let extraOffset = $.int($.int(offset - offsetBase![__goscriptShadow5], 32), 32)
+				let extraOffset = $.int($.int(offset - offsetBase![__goscriptShadow3], 32), 32)
 				await huffmanBitWriter.prototype.writeBits.call(w, $.int(extraOffset, 32), extraOffsetBits)
 			}
 		}

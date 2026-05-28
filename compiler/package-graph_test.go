@@ -176,6 +176,36 @@ func TestPackageGraphHonorsBuildFlags(t *testing.T) {
 	}
 }
 
+func TestPackageGraphNormalizesCompiledFileOrder(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/order\n\ngo 1.25.3\n",
+		"z.go":   "package order\nconst Z = 1\n",
+		"a.go":   "package order\nconst A = 1\n",
+		"m.go":   "package order\nconst M = 1\n",
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeRequested,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+
+	pkg := graph.packagesByPath["example.test/order"]
+	if pkg == nil {
+		t.Fatalf("missing loaded package")
+	}
+	var compiled []string
+	var syntax []string
+	for idx, file := range pkg.Syntax {
+		compiled = append(compiled, filepath.Base(pkg.CompiledGoFiles[idx]))
+		syntax = append(syntax, filepath.Base(pkg.Fset.Position(file.Package).Filename))
+	}
+	if want := []string{"a.go", "m.go", "z.go"}; !slices.Equal(compiled, want) || !slices.Equal(syntax, want) {
+		t.Fatalf("compiled files and syntax must sort together, got compiled=%v syntax=%v", compiled, syntax)
+	}
+}
+
 func TestPackageGraphAddsGoScriptBuildTag(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod":       "module example.test/goscripttag\n\ngo 1.25.3\n",

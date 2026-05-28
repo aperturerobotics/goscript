@@ -550,6 +550,89 @@ func TestCompilePackagesAliasesForInitShortDeclShadow(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesDoesNotAliasPackageShadowWithoutRead(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/packageshadow\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"var value = 1",
+			"func main() {",
+			"  value := 2",
+			"  var other = 3",
+			"  println(value, other)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "packageshadow", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "let value = 2") {
+		t.Fatalf("local package shadow was not emitted with its source name:\n%s", text)
+	}
+	if strings.Contains(text, "__goscriptShadow") {
+		t.Fatalf("package shadow without initializer read should not allocate a shadow alias:\n%s", text)
+	}
+}
+
+func TestCompilePackagesAliasesPackageShadowInitializerReads(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/packageshadowread\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"var value = 1",
+			"func helper() int { return 4 }",
+			"func main() {",
+			"  println(helper())",
+			"  helper := 5",
+			"  println(helper)",
+			"  first := value",
+			"  value := value + 1",
+			"  {",
+			"    var first = first + value",
+			"    println(first)",
+			"  }",
+			"  println(value)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "packageshadowread", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "let value = value + 1") || strings.Contains(text, "let first: number = 0\n\t\tfirst = first + value") {
+		t.Fatalf("initializer read was emitted through a TDZ self-reference:\n%s", text)
+	}
+	if strings.Contains(text, "let helper = 5") {
+		t.Fatalf("same-file package function shadow was emitted with a TDZ-prone source name:\n%s", text)
+	}
+	if strings.Count(text, "__goscriptShadow") < 3 {
+		t.Fatalf("missing shadow aliases for initializer reads:\n%s", text)
+	}
+}
+
 func TestCompilePackagesReadsShadowedVarRefStructFieldsOnce(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/shadowvarreffield\n\ngo 1.25.3\n",
