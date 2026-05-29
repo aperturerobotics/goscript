@@ -362,20 +362,20 @@ export class machine {
 			}
 
 			{
-				let j = $.uint($.pointerValue<queue>(q).sparse![pc], 32)
+				var j = $.uint($.pointerValue<queue>(q).sparse![pc], 32)
 				if ((j < $.uint($.len($.pointerValue<queue>(q).dense), 32)) && ($.uint($.pointerValue<queue>(q).dense![j].pc, 32) == $.uint(pc, 32))) {
 					return t
 				}
 			}
 
-			let j = $.len($.pointerValue<queue>(q).dense)
+			var j = $.len($.pointerValue<queue>(q).dense)
 			$.pointerValue<queue>(q).dense = $.goSlice($.pointerValue<queue>(q).dense, undefined, j + 1)
-			let d: entry | $.VarRef<entry> | null = $.indexRef($.pointerValue<queue>(q).dense!, j)
+			var d: entry | $.VarRef<entry> | null = $.indexRef($.pointerValue<queue>(q).dense!, j)
 			$.pointerValue<entry>(d).t = null
 			$.pointerValue<entry>(d).pc = $.uint(pc, 32)
 			$.pointerValue<queue>(q).sparse![pc] = $.uint($.uint(j, 32), 32)
 
-			let i: syntax.Inst | $.VarRef<syntax.Inst> | null = $.indexRef($.pointerValue<syntax.Prog>($.pointerValue<machine>(m).p).Inst!, pc)
+			var i: syntax.Inst | $.VarRef<syntax.Inst> | null = $.indexRef($.pointerValue<syntax.Prog>($.pointerValue<machine>(m).p).Inst!, pc)
 			switch ($.pointerValue<syntax.Inst>(i).Op) {
 				default:
 				{

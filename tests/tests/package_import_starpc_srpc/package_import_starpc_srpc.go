@@ -33,7 +33,10 @@ func (handler) InvokeMethod(serviceID, methodID string, strm srpc.Stream) (bool,
 		}
 		return true, strm.MsgSend(srpc.NewRawMessage([]byte{byte(total)}, false))
 	}
-	return true, nil
+	if strm == nil {
+		return true, nil
+	}
+	return true, strm.MsgSend(srpc.NewRawMessage([]byte("ok"), false))
 }
 
 type embeddedStream struct {
@@ -58,11 +61,13 @@ func main() {
 	_ = srpc.NewRawMessage([]byte{1, 2, 3}, true)
 	server := srpc.NewServer(mux)
 	client := srpc.NewClient(srpc.NewServerPipe(server))
-	err := client.ExecCall(context.Background(), "svc", "method", srpc.NewRawMessage(nil, false), srpc.NewRawMessage(nil, false))
+	unaryResp := srpc.NewRawMessage(nil, false)
+	err := client.ExecCall(context.Background(), "svc", "method", srpc.NewRawMessage(nil, false), unaryResp)
 	if err != nil {
 		println("exec error:", err.Error())
 		return
 	}
+	println("exec bytes:", len(unaryResp.GetData()))
 	strm, err := client.NewStream(context.Background(), "svc", "stream", nil)
 	if err != nil {
 		println("stream open error:", err.Error())
@@ -82,8 +87,5 @@ func main() {
 		return
 	}
 	println("stream bytes:", data[0])
-	prw := srpc.NewPacketReadWriter(nil)
-	prw.ReadPump(nil, nil)
-	_ = prw.ReadToHandler(nil)
-	println("success: starpc srpc override")
+	println("success: native starpc srpc")
 }

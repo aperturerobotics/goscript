@@ -22,14 +22,22 @@ export const StatusTeapot = 418
 export const StatusTooManyRequests = 429
 export const StatusRequestedRangeNotSatisfiable = 416
 export const StatusInternalServerError = 500
+export const StatusBadGateway = 502
 export const StatusServiceUnavailable = 503
 
 export const MethodGet = 'GET'
+export const MethodHead = 'HEAD'
 export const MethodPost = 'POST'
 export const MethodDelete = 'DELETE'
 
 export const ErrNotSupported = errors.New('feature not supported')
+export const ErrServerClosed = errors.New('http: Server closed')
 export const ServerContextKey = Symbol('net/http ServerContextKey')
+
+export const SameSiteDefaultMode = 1
+export const SameSiteLaxMode = 2
+export const SameSiteStrictMode = 3
+export const SameSiteNoneMode = 4
 
 export function StatusText(code: number): string {
   switch (code) {
@@ -63,6 +71,8 @@ export function StatusText(code: number): string {
       return "I'm a teapot"
     case StatusInternalServerError:
       return 'Internal Server Error'
+    case StatusBadGateway:
+      return 'Bad Gateway'
     case StatusServiceUnavailable:
       return 'Service Unavailable'
     default:
@@ -198,6 +208,88 @@ class responseBody implements io.ReadCloser {
   public Close(): $.GoError {
     return null
   }
+}
+
+export class Cookie {
+  public Name: string
+  public Value: string
+  public Quoted: boolean
+  public Path: string
+  public Domain: string
+  public Expires: time.Time
+  public RawExpires: string
+  public MaxAge: number
+  public Secure: boolean
+  public HttpOnly: boolean
+  public SameSite: number
+  public Partitioned: boolean
+  public Raw: string
+  public Unparsed: $.Slice<string>
+
+  constructor(init?: Partial<Cookie>) {
+    this.Name = init?.Name ?? ''
+    this.Value = init?.Value ?? ''
+    this.Quoted = init?.Quoted ?? false
+    this.Path = init?.Path ?? ''
+    this.Domain = init?.Domain ?? ''
+    this.Expires = init?.Expires ?? new time.Time()
+    this.RawExpires = init?.RawExpires ?? ''
+    this.MaxAge = init?.MaxAge ?? 0
+    this.Secure = init?.Secure ?? false
+    this.HttpOnly = init?.HttpOnly ?? false
+    this.SameSite = init?.SameSite ?? 0
+    this.Partitioned = init?.Partitioned ?? false
+    this.Raw = init?.Raw ?? ''
+    this.Unparsed = init?.Unparsed ?? null
+  }
+
+  public String(): string {
+    const parts = [`${this.Name}=${this.Quoted ? quoteCookieValue(this.Value) : this.Value}`]
+    if (this.Path !== '') {
+      parts.push(`Path=${this.Path}`)
+    }
+    if (this.Domain !== '') {
+      parts.push(`Domain=${this.Domain}`)
+    }
+    if (this.MaxAge > 0) {
+      parts.push(`Max-Age=${this.MaxAge}`)
+    } else if (this.MaxAge < 0) {
+      parts.push('Max-Age=0')
+    }
+    if (this.HttpOnly) {
+      parts.push('HttpOnly')
+    }
+    if (this.Secure) {
+      parts.push('Secure')
+    }
+    switch (this.SameSite) {
+      case SameSiteLaxMode:
+        parts.push('SameSite=Lax')
+        break
+      case SameSiteStrictMode:
+        parts.push('SameSite=Strict')
+        break
+      case SameSiteNoneMode:
+        parts.push('SameSite=None')
+        break
+    }
+    if (this.Partitioned) {
+      parts.push('Partitioned')
+    }
+    return parts.join('; ')
+  }
+}
+
+function quoteCookieValue(value: string): string {
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+}
+
+export function SetCookie(w: ResponseWriter | null, cookie: Cookie | $.VarRef<Cookie> | null): void {
+  const c = $.pointerValue<Cookie | null>(cookie)
+  if (w == null || c == null) {
+    return
+  }
+  Header_Add(w.Header(), 'Set-Cookie', c.String())
 }
 
 class memoryResponseWriter implements ResponseWriter {
@@ -370,18 +462,95 @@ class defaultTransport implements RoundTripper {
     const host = request.URL?.Host ?? ''
     const handler = host === '' ? null : inProcessServers.get(host)
     if (handler == null) {
-      return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
+      return await fetchRoundTrip(request)
     }
     const recorder = new memoryResponseWriter()
-    const served = handler.ServeHTTP(recorder, request)
-    if (served instanceof Promise) {
-      await served
+    let closeErr: $.GoError = null
+    try {
+      const served = handler.ServeHTTP(recorder, request)
+      if (served instanceof Promise) {
+        await served
+      }
+    } finally {
+      closeErr = request.Body?.Close?.() ?? null
+    }
+    if (closeErr != null) {
+      return [null, closeErr]
     }
     return [recorder.Result(), null]
   }
 }
 
 export const DefaultTransport: RoundTripper = new defaultTransport()
+
+async function fetchRoundTrip(request: Request): Promise<[Response | null, $.GoError]> {
+  const requestBody = request.Body
+  const closeRequestBody = (): $.GoError => {
+    if (requestBody == null) {
+      return null
+    }
+    return requestBody.Close()
+  }
+  if (typeof globalThis.fetch !== 'function') {
+    closeRequestBody()
+    return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
+  }
+  const ctxErr = request.Context()?.Err?.()
+  if (ctxErr != null) {
+    closeRequestBody()
+    return [null, ctxErr]
+  }
+  const headers = new globalThis.Headers()
+  for (const [key, values] of request.Header.entries()) {
+    for (const value of Array.from(values ?? [])) {
+      headers.append(key, String(value))
+    }
+  }
+  let body: Uint8Array | undefined
+  if (requestBody != null && request.Method !== MethodGet && request.Method !== MethodHead) {
+    const [data, err] = await io.ReadAll(requestBody)
+    const closeErr = closeRequestBody()
+    if (err != null) {
+      return [null, err]
+    }
+    if (closeErr != null) {
+      return [null, closeErr]
+    }
+    body = Uint8Array.from(data ?? [])
+  } else {
+    const closeErr = closeRequestBody()
+    if (closeErr != null) {
+      return [null, closeErr]
+    }
+  }
+  try {
+    const bodyInit = body == null ? undefined : Uint8Array.from(body).buffer
+    const fetched = await globalThis.fetch(request.URL?.String?.() ?? '', {
+      method: request.Method || MethodGet,
+      headers,
+      body: bodyInit,
+    })
+    const data = new Uint8Array(await fetched.arrayBuffer())
+    const respHeader = new Header()
+    fetched.headers.forEach((value, key) => Header_Add(respHeader, key, value))
+    return [
+      new Response({
+        Status: `${fetched.status} ${fetched.statusText}`,
+        StatusCode: fetched.status,
+        Body: new responseBody(data),
+        Header: respHeader,
+        ContentLength: Number(fetched.headers.get('content-length') ?? -1),
+        Request: request,
+      }),
+      null,
+    ]
+  } catch (err) {
+    const message = typeof err === 'object' && err != null && 'message' in err
+      ? String((err as { message: unknown }).message)
+      : String(err)
+    return [null, errors.New(message)]
+  }
+}
 
 export interface FileSystem {
   Open(name: string): [File | null, $.GoError]
@@ -390,6 +559,91 @@ export interface FileSystem {
 export interface File extends io.Closer, io.Reader, io.Seeker {
   Readdir(count: number): [$.Slice<fs.FileInfo>, $.GoError]
   Stat(): [fs.FileInfo, $.GoError]
+}
+
+export function FS(fsys: fs.FS): FileSystem {
+  return {
+    Open(name: string): [File | null, $.GoError] {
+      const cleaned = cleanFileServerPath(name)
+      const [file, err] = fsys?.Open(cleaned) ?? [null, fs.ErrInvalid]
+      if (err != null || file == null) {
+        return [null, err]
+      }
+      return [httpFileFromFSFile(file), null]
+    },
+  }
+}
+
+function httpFileFromFSFile(file: Exclude<fs.File, null>): File {
+  const seek = (file as Partial<io.Seeker>).Seek
+  const readdir = (file as { Readdir?: (count: number) => [$.Slice<fs.FileInfo>, $.GoError] }).Readdir
+  return {
+    Read: (p) => file.Read(p instanceof Uint8Array ? p : Uint8Array.from(p ?? [])),
+    Close: () => file.Close(),
+    Stat: () => file.Stat(),
+    Seek: seek == null ? () => [0, errors.New('net/http: file does not support seek')] : seek.bind(file),
+    Readdir: readdir == null ? () => [null, io.EOF] : readdir.bind(file),
+  }
+}
+
+export function FileServer(root: FileSystem | null): Handler {
+  return {
+    async ServeHTTP(w, r): Promise<void> {
+      const req = $.pointerValue<Request | null>(r)
+      if (w == null || req == null) {
+        return
+      }
+      if (req.Method !== MethodGet && req.Method !== MethodHead) {
+        Error(w, 'method not allowed', StatusMethodNotAllowed)
+        return
+      }
+      const [file, err] = root?.Open(cleanFileServerPath(req.URL?.Path ?? '')) ?? [null, fs.ErrInvalid]
+      if (err != null || file == null) {
+        NotFound(w, req)
+        return
+      }
+      try {
+        const [info, statErr] = file.Stat()
+        if (statErr != null) {
+          Error(w, statErr.Error(), StatusInternalServerError)
+          return
+        }
+        if (info?.IsDir?.() === true) {
+          NotFound(w, req)
+          return
+        }
+        const [data, readErr] = await io.ReadAll(file)
+        if (readErr != null) {
+          Error(w, readErr.Error(), StatusInternalServerError)
+          return
+        }
+        if (info?.Size != null) {
+          Header_Set(w.Header(), 'Content-Length', String(info.Size()))
+        }
+        w.WriteHeader(StatusOK)
+        if (req.Method !== MethodHead) {
+          w.Write(data)
+        }
+      } finally {
+        file.Close()
+      }
+    },
+  }
+}
+
+function cleanFileServerPath(name: string): string {
+  const parts: string[] = []
+  for (const part of name.split('?')[0].split('/')) {
+    if (part === '' || part === '.') {
+      continue
+    }
+    if (part === '..') {
+      parts.pop()
+      continue
+    }
+    parts.push(part)
+  }
+  return parts.length === 0 ? '.' : parts.join('/')
 }
 
 export interface Handler {
@@ -582,8 +836,12 @@ export function NewRequestWithContext(
   return [new Request({ Method: method, URL: parsedURL, Body: readCloserForBody(body), RequestURI: parsedURL.Path, ctx: _ctx }), null]
 }
 
-export function Get(_url: string): [Response | null, $.GoError] {
-  return [null, errors.New('net/http: Get is not implemented in GoScript')]
+export async function Get(_url: string): Promise<[Response | null, $.GoError]> {
+  const [req, err] = NewRequest(MethodGet, _url, null)
+  if (err != null) {
+    return [null, err]
+  }
+  return await DefaultClient.Do(req)
 }
 
 function readCloserForBody(body: io.Reader | null): io.ReadCloser | null {

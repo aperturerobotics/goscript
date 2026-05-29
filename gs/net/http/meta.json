@@ -1,4 +1,7 @@
 {
+  "asyncFunctions": {
+    "Get": true
+  },
   "asyncMethods": {
     "Client.Do": true,
     "RoundTripper.RoundTrip": true

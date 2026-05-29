@@ -89,11 +89,11 @@ export function __goscript_set_errOverflow(__goscriptValue: $.GoError): void {
 	errOverflow = __goscriptValue
 }
 
-export function ReadUvarint(r: io.ByteReader | null): [number, $.GoError] {
+export async function ReadUvarint(r: io.ByteReader | null): globalThis.Promise<[number, $.GoError]> {
 	let x: number = 0
 	let s: number = 0
 	for (let i = 0; i < 10; i++) {
-		let __goscriptTuple1: any = $.pointerValue<Exclude<io.ByteReader, null>>(r).ReadByte()
+		let __goscriptTuple1: any = await $.pointerValue<Exclude<io.ByteReader, null>>(r).ReadByte()
 		let b = $.uint(__goscriptTuple1[0], 8)
 		let err = __goscriptTuple1[1]
 		if (err != null) {
@@ -114,8 +114,8 @@ export function ReadUvarint(r: io.ByteReader | null): [number, $.GoError] {
 	return [$.uint(x, 64), errOverflow]
 }
 
-export function ReadVarint(r: io.ByteReader | null): [number, $.GoError] {
-	let __goscriptTuple2: any = ReadUvarint(r)
+export async function ReadVarint(r: io.ByteReader | null): globalThis.Promise<[number, $.GoError]> {
+	let __goscriptTuple2: any = await ReadUvarint(r)
 	let ux = $.uint(__goscriptTuple2[0], 64)
 	let err = __goscriptTuple2[1]
 	let x = $.int($.int($.uint64Shr(ux, 1)))

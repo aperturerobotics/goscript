@@ -1,0 +1,5 @@
+export type { CompressionMode, MessageType, StatusCode } from "./ws_js.gs.ts"
+export { Accept, AcceptOptions, CloseError, CloseStatus, CompressionContextTakeover, CompressionDisabled, CompressionNoContextTakeover, Conn, Dial, DialOptions, MessageBinary, MessageText, StatusAbnormalClosure, StatusBadGateway, StatusGoingAway, StatusInternalError, StatusInvalidFramePayloadData, StatusMandatoryExtension, StatusMessageTooBig, StatusNoStatusRcvd, StatusNormalClosure, StatusPolicyViolation, StatusProtocolError, StatusServiceRestart, StatusTLSHandshake, StatusTryAgainLater, StatusUnsupportedData } from "./ws_js.gs.ts"
+export { ErrMessageTooBig, __goscript_set_ErrMessageTooBig } from "./errors.gs.ts"
+export { MessageType_String, StatusCode_String, opcode_String } from "./stringer.gs.ts"
+export { NetConn } from "./netconn.gs.ts"

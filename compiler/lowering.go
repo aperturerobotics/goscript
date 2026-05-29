@@ -1038,6 +1038,7 @@ type lowerFileContext struct {
 	gotoStateLabels      map[string]bool
 	gotoStateVar         string
 	gotoStateLoop        string
+	functionScopedDecls  bool
 	loopLabel            string
 	switchBreak          bool
 	topLevel             bool
@@ -1198,7 +1199,7 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				if _, ok := obj.(*types.Const); !ok && ctx.model.needsVarRef[obj] {
 					value = o.runtimeOwner.QualifiedHelper(RuntimeHelperVarRef) + "(" + value + ")"
 				}
-				keyword := "let"
+				keyword := strings.TrimSpace(declarationKeyword(ctx))
 				if _, ok := obj.(*types.Const); ok || decl.Tok == token.CONST {
 					keyword = "const"
 				}
@@ -2980,7 +2981,20 @@ func (ctx lowerFileContext) withDeferState(deferState *loweredDeferState) lowerF
 
 func (ctx lowerFileContext) withLocalScope() lowerFileContext {
 	ctx.topLevel = false
+	ctx.functionScopedDecls = false
 	return ctx
+}
+
+func (ctx lowerFileContext) withFunctionScopedDecls() lowerFileContext {
+	ctx.functionScopedDecls = true
+	return ctx
+}
+
+func declarationKeyword(ctx lowerFileContext) string {
+	if ctx.functionScopedDecls {
+		return "var "
+	}
+	return "let "
 }
 
 func (ctx lowerFileContext) withRangeBranch(branch *loweredRangeBranch) lowerFileContext {
@@ -3565,7 +3579,7 @@ func (o *LoweringOwner) lowerGotoStateCluster(
 	for _, label := range cluster.labels {
 		labels[label.name] = true
 	}
-	stateCtx := ctx.withGotoState(labels, stateVar, loopLabel)
+	stateCtx := ctx.withGotoState(labels, stateVar, loopLabel).withFunctionScopedDecls()
 
 	var diagnostics []Diagnostic
 	initialState := cluster.labels[0].name
@@ -3661,7 +3675,7 @@ func (o *LoweringOwner) lowerBackwardGotoLoop(
 	var lowered []loweredStmt
 	var body []loweredStmt
 	var diagnostics []Diagnostic
-	bodyCtx := ctx.withGotoLabels(gotoLabels)
+	bodyCtx := ctx.withGotoLabels(gotoLabels).withFunctionScopedDecls()
 	if initialForwardLabel != "" {
 		skipVar := ctx.tempName("Skip")
 		init := loweredStmt{text: "let " + skipVar + " = true"}
@@ -3951,7 +3965,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 		}
 		prefix := ""
 		if stmt.Tok == token.DEFINE {
-			prefix = "let "
+			prefix = declarationKeyword(ctx)
 			if !allShortAssignTargetsNew(ctx, stmt.Lhs) || o.tupleDeclarationNeedsElementStatements(ctx, stmt) {
 				return o.lowerTupleReassignmentStmt(ctx, stmt, right, diagnostics)
 			}
@@ -4023,7 +4037,7 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			if ident, ok := lhs.(*ast.Ident); ok {
 				right = o.lowerDeclaredValue(ctx, ident, right)
 			}
-			stmts = append(stmts, loweredStmt{text: "let " + left + o.shortDeclTypeAnnotation(ctx, lhs, stmt.Rhs[idx]) + " = " + right})
+			stmts = append(stmts, loweredStmt{text: declarationKeyword(ctx) + left + o.shortDeclTypeAnnotation(ctx, lhs, stmt.Rhs[idx]) + " = " + right})
 			continue
 		}
 		if helper, ok := wideIntegerAssignHelper(targetType, stmt.Tok); ok {
@@ -4201,7 +4215,7 @@ func (o *LoweringOwner) lowerChannelReceiveAssignStmt(
 		diagnostics = append(diagnostics, leftDiagnostics...)
 		prefix := ""
 		if stmt.Tok == token.DEFINE {
-			prefix = "let "
+			prefix = declarationKeyword(ctx)
 			left += o.shortDeclTypeAnnotation(ctx, stmt.Lhs[0], nil)
 			value = o.lowerDeclaredValue(ctx, stmt.Lhs[0], value)
 		}
@@ -4305,7 +4319,7 @@ func (o *LoweringOwner) lowerTupleTargetAssignmentStmt(
 	left, diagnostics := o.lowerAssignmentTarget(ctx, lhs, declare)
 	prefix := ""
 	if declare {
-		prefix = "let "
+		prefix = declarationKeyword(ctx)
 		left += o.shortDeclTypeAnnotation(ctx, lhs, nil)
 		value = o.lowerDeclaredValue(ctx, lhs, value)
 	}

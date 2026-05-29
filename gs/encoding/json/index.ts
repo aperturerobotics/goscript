@@ -1,7 +1,65 @@
 import * as $ from '@goscript/builtin/index.js'
+import type * as io from '@goscript/io/index.js'
 
 export interface Unmarshaler {
   UnmarshalJSON(data: $.Slice<number>): $.GoError
+}
+
+export class Encoder {
+  private escapeHTML = true
+  private indent = ''
+  private prefix = ''
+
+  public constructor(private readonly writer: io.Writer) {}
+
+  public Encode(v: unknown): $.GoError {
+    const [data, err] =
+      this.indent === '' && this.prefix === '' ?
+        Marshal(v)
+      : MarshalIndent(v, this.prefix, this.indent)
+    if (err !== null) {
+      return err
+    }
+
+    let text = $.bytesToString(data)
+    if (this.escapeHTML) {
+      text = text.replace(/[<>&]/g, (char) => {
+        switch (char) {
+          case '<':
+            return '\\u003c'
+          case '>':
+            return '\\u003e'
+          case '&':
+            return '\\u0026'
+          default:
+            return char
+        }
+      })
+    }
+
+    const out = $.stringToBytes(text + '\n')
+    const [n, writeErr] = this.writer.Write(out)
+    if (writeErr !== null) {
+      return writeErr
+    }
+    if (n < $.len(out)) {
+      return $.newError('short write')
+    }
+    return null
+  }
+
+  public SetEscapeHTML(on: boolean): void {
+    this.escapeHTML = on
+  }
+
+  public SetIndent(prefix: string, indent: string): void {
+    this.prefix = prefix
+    this.indent = indent
+  }
+}
+
+export function NewEncoder(w: io.Writer): Encoder {
+  return new Encoder(w)
 }
 
 $.registerInterfaceType('json.Unmarshaler', null, [

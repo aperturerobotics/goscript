@@ -1,0 +1,7 @@
+export type { String } from "./fd.gs.ts"
+export { AcceptFunc, CloseFunc, __goscript_set_AcceptFunc, __goscript_set_CloseFunc } from "./hook_unix.gs.ts"
+export { DeadlineExceededError, ErrDeadlineExceeded, ErrFileClosing, ErrNetClosing, ErrNoDeadline, ErrNotPollable, TestHookDidWritev, __goscript_set_ErrDeadlineExceeded, __goscript_set_ErrFileClosing, __goscript_set_ErrNetClosing, __goscript_set_ErrNoDeadline, __goscript_set_ErrNotPollable, __goscript_set_TestHookDidWritev } from "./fd.gs.ts"
+export { DupCloseOnExec, FD } from "./fd_unix.gs.ts"
+export { IsPollDescriptor } from "./fd_poll_js.gs.ts"
+export { SysFile } from "./fd_unixjs.gs.ts"
+export { TestHookDidSendFile, __goscript_get_TestHookDidSendFile, __goscript_init_TestHookDidSendFile, __goscript_set_TestHookDidSendFile } from "./sendfile.gs.ts"

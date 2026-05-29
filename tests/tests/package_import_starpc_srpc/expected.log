@@ -1,2 +1,3 @@
+exec bytes: 2
 stream bytes: 5
-success: starpc srpc override
+success: native starpc srpc

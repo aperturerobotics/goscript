@@ -117,7 +117,7 @@ export function mixedForwardBackwardDecl(limit: number): number {
 				}
 				case "skip":
 				{
-					let x = total + 1
+					var x = total + 1
 					total = x
 					__goscriptGotoState1 = "check"
 					continue __goscriptGotoLoop1

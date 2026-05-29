@@ -1,44 +1,34 @@
-import * as $ from "@goscript/builtin/index.ts"
+// Generated file based on base64.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
 
-import * as byteorder from "@goscript/internal/byteorder/index.ts"
+import * as $ from "@goscript/builtin/index.js"
 
-import * as io from "@goscript/io/index.ts"
+import * as byteorder from "@goscript/internal/byteorder/index.js"
 
-import * as slices from "@goscript/slices/index.ts"
+import * as io from "@goscript/io/index.js"
 
-import * as strconv from "@goscript/strconv/index.ts"
+import * as slices from "@goscript/slices/index.js"
 
-// Standard padding character
-export let StdPadding: number = 61
+import * as strconv from "@goscript/strconv/index.js"
+import "@goscript/internal/byteorder/index.js"
+import "@goscript/io/index.js"
+import "@goscript/slices/index.js"
+import "@goscript/strconv/index.js"
 
-// No padding
-export let NoPadding: number = -1
-
-export let decodeMapInitialize: string = "" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" + "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
-
-export let invalidIndex: number = 255
-
-export type CorruptInputError = number;
-
-export function CorruptInputError_Error(e: CorruptInputError): string {
-	return "illegal base64 data at input byte " + strconv.FormatInt(e, 10)
-}
-
+export type CorruptInputError = number
 
 export class Encoding {
-	// mapping of symbol index to symbol byte value
-	public get encode(): number[] {
+	public get encode(): Uint8Array {
 		return this._fields.encode.value
 	}
-	public set encode(value: number[]) {
+	public set encode(value: Uint8Array) {
 		this._fields.encode.value = value
 	}
 
-	// mapping of symbol byte value to symbol index
-	public get decodeMap(): number[] {
+	public get decodeMap(): Uint8Array {
 		return this._fields.decodeMap.value
 	}
-	public set decodeMap(value: number[]) {
+	public set decodeMap(value: Uint8Array) {
 		this._fields.decodeMap.value = value
 	}
 
@@ -57,16 +47,16 @@ export class Encoding {
 	}
 
 	public _fields: {
-		encode: $.VarRef<number[]>;
-		decodeMap: $.VarRef<number[]>;
-		padChar: $.VarRef<number>;
-		strict: $.VarRef<boolean>;
+		encode: $.VarRef<Uint8Array>
+		decodeMap: $.VarRef<Uint8Array>
+		padChar: $.VarRef<number>
+		strict: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{decodeMap?: number[], encode?: number[], padChar?: number, strict?: boolean}>) {
+	constructor(init?: Partial<{encode?: Uint8Array, decodeMap?: Uint8Array, padChar?: number, strict?: boolean}>) {
 		this._fields = {
-			encode: $.varRef(init?.encode ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-			decodeMap: $.varRef(init?.decodeMap ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+			encode: $.varRef(init?.encode !== undefined ? $.cloneArrayValue(init.encode) : new Uint8Array(64)),
+			decodeMap: $.varRef(init?.decodeMap !== undefined ? $.cloneArrayValue(init.decodeMap) : new Uint8Array(256)),
 			padChar: $.varRef(init?.padChar ?? 0),
 			strict: $.varRef(init?.strict ?? false)
 		}
@@ -75,328 +65,107 @@ export class Encoding {
 	public clone(): Encoding {
 		const cloned = new Encoding()
 		cloned._fields = {
-			encode: $.varRef(this._fields.encode.value),
-			decodeMap: $.varRef(this._fields.decodeMap.value),
+			encode: $.varRef($.cloneArrayValue(this._fields.encode.value)),
+			decodeMap: $.varRef($.cloneArrayValue(this._fields.decodeMap.value)),
 			padChar: $.varRef(this._fields.padChar.value),
 			strict: $.varRef(this._fields.strict.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	// WithPadding creates a new encoding identical to enc except
-	// with a specified padding character, or [NoPadding] to disable padding.
-	// The padding character must not be '\r' or '\n',
-	// must not be contained in the encoding's alphabet,
-	// must not be negative, and must be a rune equal or below '\xff'.
-	// Padding characters above '\x7f' are encoded as their exact byte value
-	// rather than using the UTF-8 representation of the codepoint.
-	public WithPadding(padding: number): Encoding | null {
-		const enc = this
-		switch (true) {
-			case padding < -1 || padding == 13 || padding == 10 || padding > 0xff: {
-				$.panic("invalid padding")
-			}
-			case padding != -1 && enc.decodeMap![$.byte(padding)] != 255: {
-				$.panic("padding contained in alphabet")
-			}
-		}
-		enc.padChar = padding
-		return enc
-	}
-
-	// Strict creates a new encoding identical to enc except with
-	// strict decoding enabled. In this mode, the decoder requires that
-	// trailing padding bits are zero, as described in RFC 4648 section 3.5.
-	//
-	// Note that the input is still malleable, as new line characters
-	// (CR and LF) are still ignored.
-	public Strict(): Encoding | null {
-		const enc = this
-		enc.strict = true
-		return enc
-	}
-
-	// Encode encodes src using the encoding enc,
-	// writing [Encoding.EncodedLen](len(src)) bytes to dst.
-	//
-	// The encoding pads the output to a multiple of 4 bytes,
-	// so Encode is not appropriate for use on individual blocks
-	// of a large data stream. Use [NewEncoder] instead.
-	public Encode(dst: $.Bytes, src: $.Bytes): void {
-		const enc = this
-		if ($.len(src) == 0) {
-			return 
-		}
-		/* _ = */ enc.encode
-		let [di, si] = [0, 0]
-		let n = (Math.trunc($.len(src) / 3)) * 3
-		for (; si < n; ) {
-			// Convert 3x 8bit source bytes into 4 bytes
-			let val = ((((src![si + 0] as number) << 16) | ((src![si + 1] as number) << 8)) | (src![si + 2] as number))
-
-			dst![di + 0] = enc.encode![((val >> 18) & 0x3F)]
-			dst![di + 1] = enc.encode![((val >> 12) & 0x3F)]
-			dst![di + 2] = enc.encode![((val >> 6) & 0x3F)]
-			dst![di + 3] = enc.encode![(val & 0x3F)]
-
-			si += 3
-			di += 4
-		}
-		let remain = $.len(src) - si
-		if (remain == 0) {
-			return 
-		}
-		let val = ((src![si + 0] as number) << 16)
-		if (remain == 2) {
-			val |= ((src![si + 1] as number) << 8)
-		}
-		dst![di + 0] = enc.encode![((val >> 18) & 0x3F)]
-		dst![di + 1] = enc.encode![((val >> 12) & 0x3F)]
-		switch (remain) {
-			case 2: {
-				dst![di + 2] = enc.encode![((val >> 6) & 0x3F)]
-				if (Number(enc.padChar) != -1) {
-					dst![di + 3] = $.byte(enc.padChar)
-				}
-				break
-			}
-			case 1: {
-				if (Number(enc.padChar) != -1) {
-					dst![di + 2] = $.byte(enc.padChar)
-					dst![di + 3] = $.byte(enc.padChar)
-				}
-				break
-			}
-		}
-	}
-
-	// AppendEncode appends the base64 encoded src to dst
-	// and returns the extended buffer.
-	public AppendEncode(dst: $.Bytes, src: $.Bytes): $.Bytes {
-		const enc = this
-		let n = enc.EncodedLen($.len(src))
-		dst = slices.Grow(dst, n)
-		enc.Encode($.goSlice($.goSlice(dst, $.len(dst), undefined), undefined, n), src)
-		return $.goSlice(dst, undefined, $.len(dst) + n)
-	}
-
-	// EncodeToString returns the base64 encoding of src.
-	public EncodeToString(src: $.Bytes): string {
-		const enc = this
-		let buf = new Uint8Array(enc.EncodedLen($.len(src)))
-		enc.Encode(buf, src)
-		return $.bytesToString(buf)
-	}
-
-	// EncodedLen returns the length in bytes of the base64 encoding
-	// of an input buffer of length n.
-	public EncodedLen(n: number): number {
-		const enc = this
-		if (Number(enc.padChar) == -1) {
-			return Math.trunc(n / 3) * 4 + Math.trunc((n % 3 * 8 + 5) / 6)
-		}
-		return Math.trunc((n + 2) / 3) * 4
-	}
-
-	// decodeQuantum decodes up to 4 base64 bytes. The received parameters are
-	// the destination buffer dst, the source buffer src and an index in the
-	// source buffer si.
-	// It returns the number of bytes read from src, the number of bytes written
-	// to dst, and an error, if any.
-	public decodeQuantum(dst: $.Bytes, src: $.Bytes, si: number): [number, number, $.GoError] {
-		const enc = this
-		let nsi: number = 0
-		let n: number = 0
-		let err: $.GoError = null
-		let dbuf: number[] = [0, 0, 0, 0]
-		let dlen = 4
-		/* _ = */ enc.decodeMap
-		for (let j = 0; j < $.len(dbuf); j++) {
-			if ($.len(src) == si) {
-				switch (true) {
-					case j == 0: {
-						return [si, 0, null]
-					}
-					case j == 1:
-					case Number(enc.padChar) != -1: {
-						return [si, 0, $.wrapPrimitiveError((si - j as CorruptInputError), CorruptInputError_Error)]
-					}
-				}
-				dlen = j
-				break
-			}
-			let _in = src![si]
-			si++
-
-			let out = enc.decodeMap![_in]
-			if (out != 0xff) {
-				dbuf![j] = out
-				continue
-			}
-
-			if (_in == 10 || _in == 13) {
-				j--
-				continue
-			}
-
-			if ((_in as number) != enc.padChar) {
-				return [si, 0, $.wrapPrimitiveError((si - 1 as CorruptInputError), CorruptInputError_Error)]
-			}
-
-			// We've reached the end and there's padding
-
-			// incorrect padding
-
-			// "==" is expected, the first "=" is already consumed.
-			// skip over newlines
-
-			// not enough padding
-
-			// incorrect padding
-			switch (j) {
-				case 0:
-				case 1: {
-					return [si, 0, $.wrapPrimitiveError((si - 1 as CorruptInputError), CorruptInputError_Error)]
-				}
-				case 2: {
-					for (; si < $.len(src) && (src![si] == 10 || src![si] == 13); ) {
-						si++
-					}
-					if (si == $.len(src)) {
-						// not enough padding
-						return [si, 0, $.wrapPrimitiveError(($.len(src) as CorruptInputError), CorruptInputError_Error)]
-					}
-					if ((src![si] as number) != enc.padChar) {
-						// incorrect padding
-						return [si, 0, $.wrapPrimitiveError((si - 1 as CorruptInputError), CorruptInputError_Error)]
-					}
-					si++
-					break
-				}
-			}
-
-			// skip over newlines
-			for (; si < $.len(src) && (src![si] == 10 || src![si] == 13); ) {
-				si++
-			}
-
-			// trailing garbage
-			if (si < $.len(src)) {
-				// trailing garbage
-				err = $.wrapPrimitiveError((si as CorruptInputError), CorruptInputError_Error)
-			}
-			dlen = j
-			break
-		}
-		let val = (((((dbuf![0] as number) << 18) | ((dbuf![1] as number) << 12)) | ((dbuf![2] as number) << 6)) | (dbuf![3] as number))
-		;[dbuf![2], dbuf![1], dbuf![0]] = [$.byte((val >> 0)), $.byte((val >> 8)), $.byte((val >> 16))]
-		switch (dlen) {
-			case 4: {
-				dst![2] = dbuf![2]
-				dbuf![2] = 0
-				// fallthrough // fallthrough statement skipped
-			}
-			case 3: {
-				dst![1] = dbuf![1]
-				if (enc.strict && dbuf![2] != 0) {
-					return [si, 0, $.wrapPrimitiveError((si - 1 as CorruptInputError), CorruptInputError_Error)]
-				}
-				dbuf![1] = 0
-				// fallthrough // fallthrough statement skipped
-			}
-			case 2: {
-				dst![0] = dbuf![0]
-				if (enc.strict && (dbuf![1] != 0 || dbuf![2] != 0)) {
-					return [si, 0, $.wrapPrimitiveError((si - 2 as CorruptInputError), CorruptInputError_Error)]
-				}
-				break
-			}
-		}
-		return [si, dlen - 1, err]
-	}
-
-	// AppendDecode appends the base64 decoded src to dst
-	// and returns the extended buffer.
-	// If the input is malformed, it returns the partially decoded src and an error.
-	// New line characters (\r and \n) are ignored.
-	public AppendDecode(dst: $.Bytes, src: $.Bytes): [$.Bytes, $.GoError] {
-		const enc = this
+	public AppendDecode(dst: $.Slice<number>, src: $.Slice<number>): [$.Slice<number>, $.GoError] {
+		const enc: Encoding | $.VarRef<Encoding> | null = this
+		// Compute the output size without padding to avoid over allocating.
 		let n = $.len(src)
-		for (; n > 0 && (src![n - 1] as number) == enc.padChar; ) {
+		while ((n > 0) && ($.int($.int(src![n - 1], 32), 32) == $.int($.pointerValue<Encoding>(enc).padChar, 32))) {
 			n--
 		}
-		n = decodedLen(n, -1)
-		dst = slices.Grow(dst, n)
-		let err: $.GoError
-		[n, err] = enc.Decode($.goSlice($.goSlice(dst, $.len(dst), undefined), undefined, n), src)
+		n = decodedLen(n, $.int(-1, 32))
+
+		dst = (slices.Grow(dst, n) as $.Slice<number>)
+		let __goscriptTuple0: any = Encoding.prototype.Decode.call(enc, $.goSlice($.goSlice(dst, $.len(dst), undefined), undefined, n), src)
+		n = __goscriptTuple0[0]
+		let err = __goscriptTuple0[1]
 		return [$.goSlice(dst, undefined, $.len(dst) + n), err]
 	}
 
-	// DecodeString returns the bytes represented by the base64 string s.
-	// If the input is malformed, it returns the partially decoded data and
-	// [CorruptInputError]. New line characters (\r and \n) are ignored.
-	public DecodeString(s: string): [$.Bytes, $.GoError] {
-		const enc = this
-		let dbuf = new Uint8Array(enc.DecodedLen($.len(s)))
-		let [n, err] = enc.Decode(dbuf, $.stringToBytes(s))
-		return [$.goSlice(dbuf, undefined, n), err]
+	public AppendEncode(dst: $.Slice<number>, src: $.Slice<number>): $.Slice<number> {
+		const enc: Encoding | $.VarRef<Encoding> | null = this
+		let n = Encoding.prototype.EncodedLen.call(enc, $.len(src))
+		dst = (slices.Grow(dst, n) as $.Slice<number>)
+		Encoding.prototype.Encode.call(enc, $.goSlice($.goSlice(dst, $.len(dst), undefined), undefined, n), src)
+		return $.goSlice(dst, undefined, $.len(dst) + n)
 	}
 
-	// Decode decodes src using the encoding enc. It writes at most
-	// [Encoding.DecodedLen](len(src)) bytes to dst and returns the number of bytes
-	// written. The caller must ensure that dst is large enough to hold all
-	// the decoded data. If src contains invalid base64 data, it will return the
-	// number of bytes successfully written and [CorruptInputError].
-	// New line characters (\r and \n) are ignored.
-	public Decode(dst: $.Bytes, src: $.Bytes): [number, $.GoError] {
-		const enc = this
+	public Decode(dst: $.Slice<number>, src: $.Slice<number>): [number, $.GoError] {
+		const enc: Encoding | $.VarRef<Encoding> | null = this
 		let n: number = 0
-		let err: $.GoError = null
+		let err: $.GoError = null as $.GoError
 		if ($.len(src) == 0) {
 			return [0, null]
 		}
-		/* _ = */ enc.decodeMap
+
+		// Lift the nil check outside of the loop. enc.decodeMap is directly
+		// used later in this function, to let the compiler know that the
+		// receiver can't be nil.
+		$.pointerValue<Encoding>(enc).decodeMap
+
 		let si = 0
-		for (; strconv.IntSize >= 64 && $.len(src) - si >= 8 && $.len(dst) - n >= 8; ) {
-			let src2 = $.goSlice(src, si, si + 8)
+		while (((strconv.IntSize >= 64) && (($.len(src) - si) >= 8)) && (($.len(dst) - n) >= 8)) {
+			let src2: $.Slice<number> = $.goSlice(src, si, si + 8)
 			{
-				let [dn, ok] = assemble64(enc.decodeMap![src2![0]], enc.decodeMap![src2![1]], enc.decodeMap![src2![2]], enc.decodeMap![src2![3]], enc.decodeMap![src2![4]], enc.decodeMap![src2![5]], enc.decodeMap![src2![6]], enc.decodeMap![src2![7]])
+				let __goscriptTuple1: any = assemble64($.uint($.pointerValue<Encoding>(enc).decodeMap[src2![0]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![1]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![2]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![3]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![4]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![5]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![6]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![7]], 8))
+				let dn = $.uint(__goscriptTuple1[0], 64)
+				let ok = __goscriptTuple1[1]
 				if (ok) {
-					byteorder.BEPutUint64($.goSlice(dst, n, undefined), dn)
-					n += 6
-					si += 8
+					byteorder.BEPutUint64($.goSlice(dst, n, undefined), $.uint(dn, 64))
+					n = n + (6)
+					si = si + (8)
 				} else {
 					let ninc: number = 0
-					;[si, ninc, err] = enc.decodeQuantum($.goSlice(dst, n, undefined), src, si)
-					n += ninc
+					let __goscriptTuple2: any = Encoding.prototype.decodeQuantum.call(enc, $.goSlice(dst, n, undefined), src, si)
+					si = __goscriptTuple2[0]
+					ninc = __goscriptTuple2[1]
+					err = __goscriptTuple2[2]
+					n = n + (ninc)
 					if (err != null) {
 						return [n, err]
 					}
 				}
 			}
 		}
-		for (; $.len(src) - si >= 4 && $.len(dst) - n >= 4; ) {
-			let src2 = $.goSlice(src, si, si + 4)
+
+		while ((($.len(src) - si) >= 4) && (($.len(dst) - n) >= 4)) {
+			let src2: $.Slice<number> = $.goSlice(src, si, si + 4)
 			{
-				let [dn, ok] = assemble32(enc.decodeMap![src2![0]], enc.decodeMap![src2![1]], enc.decodeMap![src2![2]], enc.decodeMap![src2![3]])
+				let __goscriptTuple3: any = assemble32($.uint($.pointerValue<Encoding>(enc).decodeMap[src2![0]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![1]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![2]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![3]], 8))
+				let dn = $.uint(__goscriptTuple3[0], 32)
+				let ok = __goscriptTuple3[1]
 				if (ok) {
-					byteorder.BEPutUint32($.goSlice(dst, n, undefined), dn)
-					n += 3
-					si += 4
+					byteorder.BEPutUint32($.goSlice(dst, n, undefined), $.uint(dn, 32))
+					n = n + (3)
+					si = si + (4)
 				} else {
 					let ninc: number = 0
-					;[si, ninc, err] = enc.decodeQuantum($.goSlice(dst, n, undefined), src, si)
-					n += ninc
+					let __goscriptTuple4: any = Encoding.prototype.decodeQuantum.call(enc, $.goSlice(dst, n, undefined), src, si)
+					si = __goscriptTuple4[0]
+					ninc = __goscriptTuple4[1]
+					err = __goscriptTuple4[2]
+					n = n + (ninc)
 					if (err != null) {
 						return [n, err]
 					}
 				}
 			}
 		}
-		for (; si < $.len(src); ) {
+
+		while (si < $.len(src)) {
 			let ninc: number = 0
-			;[si, ninc, err] = enc.decodeQuantum($.goSlice(dst, n, undefined), src, si)
-			n += ninc
+			let __goscriptTuple5: any = Encoding.prototype.decodeQuantum.call(enc, $.goSlice(dst, n, undefined), src, si)
+			si = __goscriptTuple5[0]
+			ninc = __goscriptTuple5[1]
+			err = __goscriptTuple5[2]
+			n = n + (ninc)
 			if (err != null) {
 				return [n, err]
 			}
@@ -404,208 +173,245 @@ export class Encoding {
 		return [n, err]
 	}
 
-	// DecodedLen returns the maximum length in bytes of the decoded data
-	// corresponding to n bytes of base64-encoded data.
+	public DecodeString(s: string): [$.Slice<number>, $.GoError] {
+		const enc: Encoding | $.VarRef<Encoding> | null = this
+		let dbuf: $.Slice<number> = $.makeSlice<number>(Encoding.prototype.DecodedLen.call(enc, $.len(s)), undefined, "byte")
+		let [n, err] = Encoding.prototype.Decode.call(enc, dbuf, $.stringToBytes(s))
+		return [$.goSlice(dbuf, undefined, n), err]
+	}
+
 	public DecodedLen(n: number): number {
-		const enc = this
-		return decodedLen(n, enc.padChar)
+		const enc: Encoding | $.VarRef<Encoding> | null = this
+		return decodedLen(n, $.int($.pointerValue<Encoding>(enc).padChar, 32))
 	}
 
-	// Register this type with the runtime type system
-	static __typeInfo = $.registerStructType(
-	  'encoding/base64.Encoding',
-	  new Encoding(),
-	  [{ name: "WithPadding", args: [{ name: "padding", type: { kind: $.TypeKind.Basic, name: "rune" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "encoding/base64.Encoding" } }] }, { name: "Strict", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "encoding/base64.Encoding" } }] }, { name: "Encode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [] }, { name: "AppendEncode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }] }, { name: "EncodeToString", args: [{ name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "EncodedLen", args: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "decodeQuantum", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "si", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "AppendDecode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "DecodeString", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Decode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "DecodedLen", args: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
-	  Encoding,
-	  {"encode": { kind: $.TypeKind.Array, length: 64, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "decodeMap": { kind: $.TypeKind.Array, length: 256, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "padChar": { kind: $.TypeKind.Basic, name: "rune" }, "strict": { kind: $.TypeKind.Basic, name: "bool" }}
-	);
-}
+	public Encode(dst: $.Slice<number>, src: $.Slice<number>): void {
+		const enc: Encoding | $.VarRef<Encoding> | null = this
+		if ($.len(src) == 0) {
+			return
+		}
+		// enc is a pointer receiver, so the use of enc.encode within the hot
+		// loop below means a nil check at every operation. Lift that nil check
+		// outside of the loop to speed up the encoder.
+		$.pointerValue<Encoding>(enc).encode
 
-export class decoder {
-	public get err(): $.GoError {
-		return this._fields.err.value
-	}
-	public set err(value: $.GoError) {
-		this._fields.err.value = value
-	}
+		let di = 0
+		let si = 0
+		let n = (Math.trunc($.len(src) / 3)) * 3
+		while (si < n) {
+			// Convert 3x 8bit source bytes into 4 bytes
+			let val = $.uint64Or(($.uint64Or(($.uint64Shl($.uint(src![si + 0], 64), 16)), ($.uint64Shl($.uint(src![si + 1], 64), 8)))), $.uint(src![si + 2], 64))
 
-	// error from r.Read
-	public get readErr(): $.GoError {
-		return this._fields.readErr.value
-	}
-	public set readErr(value: $.GoError) {
-		this._fields.readErr.value = value
-	}
+			dst![di + 0] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 18)), 0x3F)], 8)
+			dst![di + 1] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 12)), 0x3F)], 8)
+			dst![di + 2] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 6)), 0x3F)], 8)
+			dst![di + 3] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(val, 0x3F)], 8)
 
-	public get enc(): Encoding | null {
-		return this._fields.enc.value
-	}
-	public set enc(value: Encoding | null) {
-		this._fields.enc.value = value
-	}
+			si = si + (3)
+			di = di + (4)
+		}
 
-	public get r(): null | io.Reader {
-		return this._fields.r.value
-	}
-	public set r(value: null | io.Reader) {
-		this._fields.r.value = value
-	}
+		let remain = $.len(src) - si
+		if (remain == 0) {
+			return
+		}
+		// Add the remaining small block
+		let val = $.uint64Shl($.uint(src![si + 0], 64), 16)
+		if (remain == 2) {
+			val = $.uint64Or(val, $.uint64Shl($.uint(src![si + 1], 64), 8))
+		}
 
-	// leftover input
-	public get buf(): number[] {
-		return this._fields.buf.value
-	}
-	public set buf(value: number[]) {
-		this._fields.buf.value = value
-	}
+		dst![di + 0] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 18)), 0x3F)], 8)
+		dst![di + 1] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 12)), 0x3F)], 8)
 
-	public get nbuf(): number {
-		return this._fields.nbuf.value
-	}
-	public set nbuf(value: number) {
-		this._fields.nbuf.value = value
-	}
-
-	// leftover decoded output
-	public get out(): $.Bytes {
-		return this._fields.out.value
-	}
-	public set out(value: $.Bytes) {
-		this._fields.out.value = value
-	}
-
-	public get outbuf(): number[] {
-		return this._fields.outbuf.value
-	}
-	public set outbuf(value: number[]) {
-		this._fields.outbuf.value = value
-	}
-
-	public _fields: {
-		err: $.VarRef<$.GoError>;
-		readErr: $.VarRef<$.GoError>;
-		enc: $.VarRef<Encoding | null>;
-		r: $.VarRef<null | io.Reader>;
-		buf: $.VarRef<number[]>;
-		nbuf: $.VarRef<number>;
-		out: $.VarRef<$.Bytes>;
-		outbuf: $.VarRef<number[]>;
-	}
-
-	constructor(init?: Partial<{buf?: number[], enc?: Encoding | null, err?: $.GoError, nbuf?: number, out?: $.Bytes, outbuf?: number[], r?: null | io.Reader, readErr?: $.GoError}>) {
-		this._fields = {
-			err: $.varRef(init?.err ?? null),
-			readErr: $.varRef(init?.readErr ?? null),
-			enc: $.varRef(init?.enc ?? null),
-			r: $.varRef(init?.r ?? null),
-			buf: $.varRef(init?.buf ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-			nbuf: $.varRef(init?.nbuf ?? 0),
-			out: $.varRef(init?.out ?? new Uint8Array(0)),
-			outbuf: $.varRef(init?.outbuf ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+		switch (remain) {
+			case 2:
+			{
+				dst![di + 2] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 6)), 0x3F)], 8)
+				if ($.int($.pointerValue<Encoding>(enc).padChar, 32) != $.int(-1, 32)) {
+					dst![di + 3] = $.uint($.uint($.pointerValue<Encoding>(enc).padChar, 8), 8)
+				}
+				break
+			}
+			case 1:
+			{
+				if ($.int($.pointerValue<Encoding>(enc).padChar, 32) != $.int(-1, 32)) {
+					dst![di + 2] = $.uint($.uint($.pointerValue<Encoding>(enc).padChar, 8), 8)
+					dst![di + 3] = $.uint($.uint($.pointerValue<Encoding>(enc).padChar, 8), 8)
+				}
+				break
+			}
 		}
 	}
 
-	public clone(): decoder {
-		const cloned = new decoder()
-		cloned._fields = {
-			err: $.varRef(this._fields.err.value),
-			readErr: $.varRef(this._fields.readErr.value),
-			enc: $.varRef(this._fields.enc.value ? $.markAsStructValue(this._fields.enc.value.clone()) : null),
-			r: $.varRef(this._fields.r.value),
-			buf: $.varRef(this._fields.buf.value),
-			nbuf: $.varRef(this._fields.nbuf.value),
-			out: $.varRef(this._fields.out.value),
-			outbuf: $.varRef(this._fields.outbuf.value)
-		}
-		return cloned
+	public EncodeToString(src: $.Slice<number>): string {
+		const enc: Encoding | $.VarRef<Encoding> | null = this
+		let buf: $.Slice<number> = $.makeSlice<number>(Encoding.prototype.EncodedLen.call(enc, $.len(src)), undefined, "byte")
+		Encoding.prototype.Encode.call(enc, buf, src)
+		return $.bytesToString(buf)
 	}
 
-	public Read(p: $.Bytes): [number, $.GoError] {
-		const d = this
+	public EncodedLen(n: number): number {
+		const enc: Encoding | $.VarRef<Encoding> | null = this
+		if ($.int($.pointerValue<Encoding>(enc).padChar, 32) == $.int(-1, 32)) {
+			return ((Math.trunc(n / 3)) * 4) + (Math.trunc((((n % 3) * 8) + 5) / 6))
+		}
+		return (Math.trunc((n + 2) / 3)) * 4
+	}
+
+	public Strict(): Encoding | $.VarRef<Encoding> | null {
+		let enc = $.varRef(this)
+		enc.value.strict = true
+		return enc
+	}
+
+	public WithPadding(padding: number): Encoding | $.VarRef<Encoding> | null {
+		let enc = $.varRef(this)
+		switch (true) {
+			case (((padding < -1) || ($.int(padding, 32) == $.int(13, 32))) || ($.int(padding, 32) == $.int(10, 32))) || (padding > 0xff):
+			{
+				$.panic("invalid padding")
+				break
+			}
+			case ($.int(padding, 32) != $.int(-1, 32)) && ($.uint(enc.value.decodeMap[$.uint(padding, 8)], 8) != $.uint(255, 8)):
+			{
+				$.panic("padding contained in alphabet")
+				break
+			}
+		}
+		enc.value.padChar = $.int(padding, 32)
+		return enc
+	}
+
+	public decodeQuantum(dst: $.Slice<number>, src: $.Slice<number>, si: number): [number, number, $.GoError] {
+		const enc: Encoding | $.VarRef<Encoding> | null = this
+		let nsi: number = 0
 		let n: number = 0
-		let err: $.GoError = null
-		if ($.len(d.out) > 0) {
-			n = $.copy(p, d.out)
-			d.out = $.goSlice(d.out, n, undefined)
-			return [n, null]
-		}
-		if (d.err != null) {
-			return [0, d.err]
-		}
-		for (; d.nbuf < 4 && d.readErr == null; ) {
-			let nn = Math.trunc($.len(p) / 3) * 4
-			if (nn < 4) {
-				nn = 4
-			}
-			if (nn > $.len(d.buf)) {
-				nn = $.len(d.buf)
-			}
-			{
-			  const _tmp = d.r!.Read($.goSlice(d.buf, d.nbuf, nn))
-			  nn = _tmp[0]
-			  d.readErr = _tmp[1]
-			}
-			d.nbuf += nn
-		}
-		if (d.nbuf < 4) {
+		let err: $.GoError = null as $.GoError
+		// Decode quantum using the base64 alphabet
+		let dbuf: Uint8Array = new Uint8Array(4)
+		let dlen = 4
 
-			// Decode final fragment, without padding.
-			if (Number(d.enc!.padChar) == -1 && d.nbuf > 0) {
-				// Decode final fragment, without padding.
-				let nw: number = 0
+		// Lift the nil check outside of the loop.
+		$.pointerValue<Encoding>(enc).decodeMap
+
+		for (let j = 0; j < $.len(dbuf); j++) {
+			if ($.len(src) == si) {
+				switch (true) {
+					case j == 0:
+					{
+						return [si, 0, null]
+						break
+					}
+					case j == 1:
+					case $.int($.pointerValue<Encoding>(enc).padChar, 32) != $.int(-1, 32):
+					{
+						return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - j, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+						break
+					}
+				}
+				dlen = j
+				break
+			}
+			let _in = $.uint(src![si], 8)
+			si++
+
+			let out = $.uint($.pointerValue<Encoding>(enc).decodeMap[_in], 8)
+			if ($.uint(out, 8) != $.uint(0xff, 8)) {
+				dbuf[j] = $.uint(out, 8)
+				continue
+			}
+
+			if (($.uint(_in, 8) == $.uint(10, 8)) || ($.uint(_in, 8) == $.uint(13, 8))) {
+				j--
+				continue
+			}
+
+			if ($.int($.int(_in, 32), 32) != $.int($.pointerValue<Encoding>(enc).padChar, 32)) {
+				return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+			}
+
+			// We've reached the end and there's padding
+			switch (j) {
+				case 0:
+				case 1:
 				{
-				  const _tmp = d.enc!.Decode($.goSlice(d.outbuf, undefined, undefined), $.goSlice(d.buf, undefined, d.nbuf))
-				  nw = _tmp[0]
-				  d.err = _tmp[1]
+					return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+					break
 				}
-				d.nbuf = 0
-				d.out = $.goSlice(d.outbuf, undefined, nw)
-				n = $.copy(p, d.out)
-				d.out = $.goSlice(d.out, n, undefined)
-				if (n > 0 || $.len(p) == 0 && $.len(d.out) > 0) {
-					return [n, null]
-				}
-				if (d.err != null) {
-					return [0, d.err]
+				case 2:
+				{
+					while ((si < $.len(src)) && (($.uint(src![si], 8) == $.uint(10, 8)) || ($.uint(src![si], 8) == $.uint(13, 8)))) {
+						si++
+					}
+					if (si == $.len(src)) {
+						// not enough padding
+						return [si, 0, $.namedValueInterfaceValue<$.GoError>($.len(src), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+					}
+					if ($.int($.int(src![si], 32), 32) != $.int($.pointerValue<Encoding>(enc).padChar, 32)) {
+						// incorrect padding
+						return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+					}
+
+					si++
+					break
 				}
 			}
-			d.err = d.readErr
-			if (d.err == io.EOF && d.nbuf > 0) {
-				d.err = io.ErrUnexpectedEOF
+
+			// skip over newlines
+			while ((si < $.len(src)) && (($.uint(src![si], 8) == $.uint(10, 8)) || ($.uint(src![si], 8) == $.uint(13, 8)))) {
+				si++
 			}
-			return [0, d.err]
+			if (si < $.len(src)) {
+				// trailing garbage
+				err = $.namedValueInterfaceValue<$.GoError>(si, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })
+			}
+			dlen = j
+			break
 		}
-		let nr = Math.trunc(d.nbuf / 4) * 4
-		let nw = Math.trunc(d.nbuf / 4) * 3
-		if (nw > $.len(p)) {
+
+		// Convert 4x 6bit source bytes into 3 bytes
+		let val = $.uint64Or(($.uint64Or(($.uint64Or(($.uint64Shl($.uint(dbuf[0], 64), 18)), ($.uint64Shl($.uint(dbuf[1], 64), 12)))), ($.uint64Shl($.uint(dbuf[2], 64), 6)))), $.uint(dbuf[3], 64))
+		let __goscriptAssign0_0: number = $.uint($.uint($.uint64Shr(val, 0), 8), 8)
+		let __goscriptAssign0_1: number = $.uint($.uint($.uint64Shr(val, 8), 8), 8)
+		let __goscriptAssign0_2: number = $.uint($.uint($.uint64Shr(val, 16), 8), 8)
+		dbuf[2] = __goscriptAssign0_0
+		dbuf[1] = __goscriptAssign0_1
+		dbuf[0] = __goscriptAssign0_2
+		switch (dlen) {
+			case 4:
 			{
-			  const _tmp = d.enc!.Decode($.goSlice(d.outbuf, undefined, undefined), $.goSlice(d.buf, undefined, nr))
-			  nw = _tmp[0]
-			  d.err = _tmp[1]
+				dst![2] = $.uint(dbuf[2], 8)
+				dbuf[2] = $.uint(0, 8)
 			}
-			d.out = $.goSlice(d.outbuf, undefined, nw)
-			n = $.copy(p, d.out)
-			d.out = $.goSlice(d.out, n, undefined)
-		} else {
+			case 3:
 			{
-			  const _tmp = d.enc!.Decode(p, $.goSlice(d.buf, undefined, nr))
-			  n = _tmp[0]
-			  d.err = _tmp[1]
+				dst![1] = $.uint(dbuf[1], 8)
+				if ($.pointerValue<Encoding>(enc).strict && ($.uint(dbuf[2], 8) != $.uint(0, 8))) {
+					return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+				}
+				dbuf[1] = $.uint(0, 8)
+			}
+			case 2:
+			{
+				dst![0] = $.uint(dbuf[0], 8)
+				if ($.pointerValue<Encoding>(enc).strict && (($.uint(dbuf[1], 8) != $.uint(0, 8)) || ($.uint(dbuf[2], 8) != $.uint(0, 8)))) {
+					return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 2, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+				}
+				break
 			}
 		}
-		d.nbuf -= nr
-		$.copy($.goSlice(d.buf, undefined, d.nbuf), $.goSlice(d.buf, nr, undefined))
-		return [n, d.err]
+
+		return [si, dlen - 1, err]
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'encoding/base64.decoder',
-	  new decoder(),
-	  [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  decoder,
-	  {"err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "readErr": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "enc": { kind: $.TypeKind.Pointer, elemType: "encoding/base64.Encoding" }, "r": "io.Reader", "buf": { kind: $.TypeKind.Array, length: 1024, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "nbuf": { kind: $.TypeKind.Basic, name: "int" }, "out": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "outbuf": { kind: $.TypeKind.Array, length: 768, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
-	);
+		"base64.Encoding",
+		() => new Encoding(),
+		[{ name: "AppendDecode", args: [], returns: [] }, { name: "AppendEncode", args: [], returns: [] }, { name: "Decode", args: [], returns: [] }, { name: "DecodeString", args: [], returns: [] }, { name: "DecodedLen", args: [], returns: [] }, { name: "Encode", args: [], returns: [] }, { name: "EncodeToString", args: [], returns: [] }, { name: "EncodedLen", args: [], returns: [] }, { name: "Strict", args: [], returns: [] }, { name: "WithPadding", args: [], returns: [] }, { name: "decodeQuantum", args: [], returns: [] }],
+		Encoding,
+		{"encode": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 64 }, "decodeMap": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 256 }, "padChar": { kind: $.TypeKind.Basic, name: "int32" }, "strict": { kind: $.TypeKind.Basic, name: "bool" }}
+	)
 }
 
 export class encoder {
@@ -616,29 +422,27 @@ export class encoder {
 		this._fields.err.value = value
 	}
 
-	public get enc(): Encoding | null {
+	public get enc(): Encoding | $.VarRef<Encoding> | null {
 		return this._fields.enc.value
 	}
-	public set enc(value: Encoding | null) {
+	public set enc(value: Encoding | $.VarRef<Encoding> | null) {
 		this._fields.enc.value = value
 	}
 
-	public get w(): null | io.Writer {
+	public get w(): io.Writer | null {
 		return this._fields.w.value
 	}
-	public set w(value: null | io.Writer) {
+	public set w(value: io.Writer | null) {
 		this._fields.w.value = value
 	}
 
-	// buffered data waiting to be encoded
-	public get buf(): number[] {
+	public get buf(): Uint8Array {
 		return this._fields.buf.value
 	}
-	public set buf(value: number[]) {
+	public set buf(value: Uint8Array) {
 		this._fields.buf.value = value
 	}
 
-	// number of bytes in buf
 	public get nbuf(): number {
 		return this._fields.nbuf.value
 	}
@@ -646,31 +450,30 @@ export class encoder {
 		this._fields.nbuf.value = value
 	}
 
-	// output buffer
-	public get out(): number[] {
+	public get out(): Uint8Array {
 		return this._fields.out.value
 	}
-	public set out(value: number[]) {
+	public set out(value: Uint8Array) {
 		this._fields.out.value = value
 	}
 
 	public _fields: {
-		err: $.VarRef<$.GoError>;
-		enc: $.VarRef<Encoding | null>;
-		w: $.VarRef<null | io.Writer>;
-		buf: $.VarRef<number[]>;
-		nbuf: $.VarRef<number>;
-		out: $.VarRef<number[]>;
+		err: $.VarRef<$.GoError>
+		enc: $.VarRef<Encoding | $.VarRef<Encoding> | null>
+		w: $.VarRef<io.Writer | null>
+		buf: $.VarRef<Uint8Array>
+		nbuf: $.VarRef<number>
+		out: $.VarRef<Uint8Array>
 	}
 
-	constructor(init?: Partial<{buf?: number[], enc?: Encoding | null, err?: $.GoError, nbuf?: number, out?: number[], w?: null | io.Writer}>) {
+	constructor(init?: Partial<{err?: $.GoError, enc?: Encoding | $.VarRef<Encoding> | null, w?: io.Writer | null, buf?: Uint8Array, nbuf?: number, out?: Uint8Array}>) {
 		this._fields = {
 			err: $.varRef(init?.err ?? null),
 			enc: $.varRef(init?.enc ?? null),
 			w: $.varRef(init?.w ?? null),
-			buf: $.varRef(init?.buf ?? [0, 0, 0]),
+			buf: $.varRef(init?.buf !== undefined ? $.cloneArrayValue(init.buf) : new Uint8Array(3)),
 			nbuf: $.varRef(init?.nbuf ?? 0),
-			out: $.varRef(init?.out ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+			out: $.varRef(init?.out !== undefined ? $.cloneArrayValue(init.out) : new Uint8Array(1024))
 		}
 	}
 
@@ -678,108 +481,288 @@ export class encoder {
 		const cloned = new encoder()
 		cloned._fields = {
 			err: $.varRef(this._fields.err.value),
-			enc: $.varRef(this._fields.enc.value ? $.markAsStructValue(this._fields.enc.value.clone()) : null),
+			enc: $.varRef(this._fields.enc.value),
 			w: $.varRef(this._fields.w.value),
-			buf: $.varRef(this._fields.buf.value),
+			buf: $.varRef($.cloneArrayValue(this._fields.buf.value)),
 			nbuf: $.varRef(this._fields.nbuf.value),
-			out: $.varRef(this._fields.out.value)
+			out: $.varRef($.cloneArrayValue(this._fields.out.value))
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public Write(p: $.Bytes): [number, $.GoError] {
-		const e = this
-		let n: number = 0
-		let err: $.GoError = null
-		if (e.err != null) {
-			return [0, e.err]
+	public async Close(): globalThis.Promise<$.GoError> {
+		let e: encoder | $.VarRef<encoder> | null = this
+		// If there's anything left in the buffer, flush it out
+		if (($.pointerValue<encoder>(e).err == null) && ($.pointerValue<encoder>(e).nbuf > 0)) {
+			Encoding.prototype.Encode.call($.pointerValue<encoder>(e).enc, $.goSlice($.pointerValue<encoder>(e).out, undefined, undefined), $.goSlice($.pointerValue<encoder>(e).buf, undefined, $.pointerValue<encoder>(e).nbuf))
+			let __goscriptTuple6: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<encoder>(e).w).Write($.goSlice($.pointerValue<encoder>(e).out, undefined, Encoding.prototype.EncodedLen.call($.pointerValue<encoder>(e).enc, $.pointerValue<encoder>(e).nbuf)))
+			$.pointerValue<encoder>(e).err = __goscriptTuple6[1]
+			$.pointerValue<encoder>(e).nbuf = 0
 		}
-		if (e.nbuf > 0) {
+		return $.pointerValue<encoder>(e).err
+	}
+
+	public async Write(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
+		let e: encoder | $.VarRef<encoder> | null = this
+		let n: number = 0
+		let err: $.GoError = null as $.GoError
+		if ($.pointerValue<encoder>(e).err != null) {
+			return [0, $.pointerValue<encoder>(e).err]
+		}
+
+		// Leading fringe.
+		if ($.pointerValue<encoder>(e).nbuf > 0) {
 			let i: number = 0
-			for (i = 0; i < $.len(p) && e.nbuf < 3; i++) {
-				e.buf![e.nbuf] = p![i]
-				e.nbuf++
+			for (i = 0; (i < $.len(p)) && ($.pointerValue<encoder>(e).nbuf < 3); i++) {
+				$.pointerValue<encoder>(e).buf[$.pointerValue<encoder>(e).nbuf] = $.uint(p![i], 8)
+				$.pointerValue<encoder>(e).nbuf++
 			}
-			n += i
+			n = n + (i)
 			p = $.goSlice(p, i, undefined)
-			if (e.nbuf < 3) {
+			if ($.pointerValue<encoder>(e).nbuf < 3) {
 				return [n, err]
 			}
-			e.enc!.Encode($.goSlice(e.out, undefined, undefined), $.goSlice(e.buf, undefined, undefined))
+			Encoding.prototype.Encode.call($.pointerValue<encoder>(e).enc, $.goSlice($.pointerValue<encoder>(e).out, undefined, undefined), $.goSlice($.pointerValue<encoder>(e).buf, undefined, undefined))
 			{
-				{
-				  const _tmp = e.w!.Write($.goSlice(e.out, undefined, 4))
-				  e.err = _tmp[1]
-				}
-				if (e.err != null) {
-					return [n, e.err]
+				let __goscriptTuple7: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<encoder>(e).w).Write($.goSlice($.pointerValue<encoder>(e).out, undefined, 4))
+				$.pointerValue<encoder>(e).err = __goscriptTuple7[1]
+				if ($.pointerValue<encoder>(e).err != null) {
+					return [n, $.pointerValue<encoder>(e).err]
 				}
 			}
-			e.nbuf = 0
+			$.pointerValue<encoder>(e).nbuf = 0
 		}
-		for (; $.len(p) >= 3; ) {
-			let nn = Math.trunc($.len(e.out) / 4) * 3
+
+		// Large interior chunks.
+		while ($.len(p) >= 3) {
+			let nn = (Math.trunc($.len($.pointerValue<encoder>(e).out) / 4)) * 3
 			if (nn > $.len(p)) {
 				nn = $.len(p)
-				nn -= nn % 3
+				nn = nn - (nn % 3)
 			}
-			e.enc!.Encode($.goSlice(e.out, undefined, undefined), $.goSlice(p, undefined, nn))
+			Encoding.prototype.Encode.call($.pointerValue<encoder>(e).enc, $.goSlice($.pointerValue<encoder>(e).out, undefined, undefined), $.goSlice(p, undefined, nn))
 			{
-				{
-				  const _tmp = e.w!.Write($.goSlice(e.out, 0, Math.trunc(nn / 3) * 4))
-				  e.err = _tmp[1]
-				}
-				if (e.err != null) {
-					return [n, e.err]
+				let __goscriptTuple8: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<encoder>(e).w).Write($.goSlice($.pointerValue<encoder>(e).out, 0, (Math.trunc(nn / 3)) * 4))
+				$.pointerValue<encoder>(e).err = __goscriptTuple8[1]
+				if ($.pointerValue<encoder>(e).err != null) {
+					return [n, $.pointerValue<encoder>(e).err]
 				}
 			}
-			n += nn
+			n = n + (nn)
 			p = $.goSlice(p, nn, undefined)
 		}
-		$.copy($.goSlice(e.buf, undefined, undefined), p)
-		e.nbuf = $.len(p)
-		n += $.len(p)
+
+		// Trailing fringe.
+		$.copy($.goSlice($.pointerValue<encoder>(e).buf, undefined, undefined), p)
+		$.pointerValue<encoder>(e).nbuf = $.len(p)
+		n = n + ($.len(p))
 		return [n, err]
 	}
 
-	// Close flushes any pending output from the encoder.
-	// It is an error to call Write after calling Close.
-	public Close(): $.GoError {
-		const e = this
-		if (e.err == null && e.nbuf > 0) {
-			e.enc!.Encode($.goSlice(e.out, undefined, undefined), $.goSlice(e.buf, undefined, e.nbuf))
-			{
-			  const _tmp = e.w!.Write($.goSlice(e.out, undefined, e.enc!.EncodedLen(e.nbuf)))
-			  e.err = _tmp[1]
-			}
-			e.nbuf = 0
-		}
-		return e.err
+	static __typeInfo = $.registerStructType(
+		"base64.encoder",
+		() => new encoder(),
+		[{ name: "Close", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
+		encoder,
+		{"err": "error", "enc": { kind: $.TypeKind.Pointer, elemType: "base64.Encoding" }, "w": "io.Writer", "buf": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 3 }, "nbuf": { kind: $.TypeKind.Basic, name: "int" }, "out": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 1024 }}
+	)
+}
+
+export class decoder {
+	public get err(): $.GoError {
+		return this._fields.err.value
+	}
+	public set err(value: $.GoError) {
+		this._fields.err.value = value
 	}
 
-	// Register this type with the runtime type system
+	public get readErr(): $.GoError {
+		return this._fields.readErr.value
+	}
+	public set readErr(value: $.GoError) {
+		this._fields.readErr.value = value
+	}
+
+	public get enc(): Encoding | $.VarRef<Encoding> | null {
+		return this._fields.enc.value
+	}
+	public set enc(value: Encoding | $.VarRef<Encoding> | null) {
+		this._fields.enc.value = value
+	}
+
+	public get r(): io.Reader | null {
+		return this._fields.r.value
+	}
+	public set r(value: io.Reader | null) {
+		this._fields.r.value = value
+	}
+
+	public get buf(): Uint8Array {
+		return this._fields.buf.value
+	}
+	public set buf(value: Uint8Array) {
+		this._fields.buf.value = value
+	}
+
+	public get nbuf(): number {
+		return this._fields.nbuf.value
+	}
+	public set nbuf(value: number) {
+		this._fields.nbuf.value = value
+	}
+
+	public get out(): $.Slice<number> {
+		return this._fields.out.value
+	}
+	public set out(value: $.Slice<number>) {
+		this._fields.out.value = value
+	}
+
+	public get outbuf(): Uint8Array {
+		return this._fields.outbuf.value
+	}
+	public set outbuf(value: Uint8Array) {
+		this._fields.outbuf.value = value
+	}
+
+	public _fields: {
+		err: $.VarRef<$.GoError>
+		readErr: $.VarRef<$.GoError>
+		enc: $.VarRef<Encoding | $.VarRef<Encoding> | null>
+		r: $.VarRef<io.Reader | null>
+		buf: $.VarRef<Uint8Array>
+		nbuf: $.VarRef<number>
+		out: $.VarRef<$.Slice<number>>
+		outbuf: $.VarRef<Uint8Array>
+	}
+
+	constructor(init?: Partial<{err?: $.GoError, readErr?: $.GoError, enc?: Encoding | $.VarRef<Encoding> | null, r?: io.Reader | null, buf?: Uint8Array, nbuf?: number, out?: $.Slice<number>, outbuf?: Uint8Array}>) {
+		this._fields = {
+			err: $.varRef(init?.err ?? null),
+			readErr: $.varRef(init?.readErr ?? null),
+			enc: $.varRef(init?.enc ?? null),
+			r: $.varRef(init?.r ?? null),
+			buf: $.varRef(init?.buf !== undefined ? $.cloneArrayValue(init.buf) : new Uint8Array(1024)),
+			nbuf: $.varRef(init?.nbuf ?? 0),
+			out: $.varRef(init?.out ?? null),
+			outbuf: $.varRef(init?.outbuf !== undefined ? $.cloneArrayValue(init.outbuf) : new Uint8Array(768))
+		}
+	}
+
+	public clone(): decoder {
+		const cloned = new decoder()
+		cloned._fields = {
+			err: $.varRef(this._fields.err.value),
+			readErr: $.varRef(this._fields.readErr.value),
+			enc: $.varRef(this._fields.enc.value),
+			r: $.varRef(this._fields.r.value),
+			buf: $.varRef($.cloneArrayValue(this._fields.buf.value)),
+			nbuf: $.varRef(this._fields.nbuf.value),
+			out: $.varRef(this._fields.out.value),
+			outbuf: $.varRef($.cloneArrayValue(this._fields.outbuf.value))
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
+		let d: decoder | $.VarRef<decoder> | null = this
+		let n: number = 0
+		let err: $.GoError = null as $.GoError
+		// Use leftover decoded output from last read.
+		if ($.len($.pointerValue<decoder>(d).out) > 0) {
+			n = $.copy(p, $.pointerValue<decoder>(d).out)
+			$.pointerValue<decoder>(d).out = $.goSlice($.pointerValue<decoder>(d).out, n, undefined)
+			return [n, null]
+		}
+
+		if ($.pointerValue<decoder>(d).err != null) {
+			return [0, $.pointerValue<decoder>(d).err]
+		}
+
+		// This code assumes that d.r strips supported whitespace ('\r' and '\n').
+
+		// Refill buffer.
+		while (($.pointerValue<decoder>(d).nbuf < 4) && ($.pointerValue<decoder>(d).readErr == null)) {
+			let nn = (Math.trunc($.len(p) / 3)) * 4
+			if (nn < 4) {
+				nn = 4
+			}
+			if (nn > $.len($.pointerValue<decoder>(d).buf)) {
+				nn = $.len($.pointerValue<decoder>(d).buf)
+			}
+			let __goscriptTuple9: any = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<decoder>(d).r).Read($.goSlice($.pointerValue<decoder>(d).buf, $.pointerValue<decoder>(d).nbuf, nn))
+			nn = __goscriptTuple9[0]
+			$.pointerValue<decoder>(d).readErr = __goscriptTuple9[1]
+			$.pointerValue<decoder>(d).nbuf = $.pointerValue<decoder>(d).nbuf + (nn)
+		}
+
+		if ($.pointerValue<decoder>(d).nbuf < 4) {
+			if (($.int($.pointerValue<Encoding>($.pointerValue<decoder>(d).enc).padChar, 32) == $.int(-1, 32)) && ($.pointerValue<decoder>(d).nbuf > 0)) {
+				// Decode final fragment, without padding.
+				let nw: number = 0
+				let __goscriptTuple10: any = Encoding.prototype.Decode.call($.pointerValue<decoder>(d).enc, $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, undefined), $.goSlice($.pointerValue<decoder>(d).buf, undefined, $.pointerValue<decoder>(d).nbuf))
+				nw = __goscriptTuple10[0]
+				$.pointerValue<decoder>(d).err = __goscriptTuple10[1]
+				$.pointerValue<decoder>(d).nbuf = 0
+				$.pointerValue<decoder>(d).out = $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, nw)
+				n = $.copy(p, $.pointerValue<decoder>(d).out)
+				$.pointerValue<decoder>(d).out = $.goSlice($.pointerValue<decoder>(d).out, n, undefined)
+				if ((n > 0) || (($.len(p) == 0) && ($.len($.pointerValue<decoder>(d).out) > 0))) {
+					return [n, null]
+				}
+				if ($.pointerValue<decoder>(d).err != null) {
+					return [0, $.pointerValue<decoder>(d).err]
+				}
+			}
+			$.pointerValue<decoder>(d).err = $.pointerValue<decoder>(d).readErr
+			if (($.comparableEqual($.pointerValue<decoder>(d).err, io.EOF)) && ($.pointerValue<decoder>(d).nbuf > 0)) {
+				$.pointerValue<decoder>(d).err = io.ErrUnexpectedEOF
+			}
+			return [0, $.pointerValue<decoder>(d).err]
+		}
+
+		// Decode chunk into p, or d.out and then p if p is too small.
+		let nr = (Math.trunc($.pointerValue<decoder>(d).nbuf / 4)) * 4
+		let nw = (Math.trunc($.pointerValue<decoder>(d).nbuf / 4)) * 3
+		if (nw > $.len(p)) {
+			let __goscriptTuple11: any = Encoding.prototype.Decode.call($.pointerValue<decoder>(d).enc, $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, undefined), $.goSlice($.pointerValue<decoder>(d).buf, undefined, nr))
+			nw = __goscriptTuple11[0]
+			$.pointerValue<decoder>(d).err = __goscriptTuple11[1]
+			$.pointerValue<decoder>(d).out = $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, nw)
+			n = $.copy(p, $.pointerValue<decoder>(d).out)
+			$.pointerValue<decoder>(d).out = $.goSlice($.pointerValue<decoder>(d).out, n, undefined)
+		} else {
+			let __goscriptTuple12: any = Encoding.prototype.Decode.call($.pointerValue<decoder>(d).enc, p, $.goSlice($.pointerValue<decoder>(d).buf, undefined, nr))
+			n = __goscriptTuple12[0]
+			$.pointerValue<decoder>(d).err = __goscriptTuple12[1]
+		}
+		$.pointerValue<decoder>(d).nbuf = $.pointerValue<decoder>(d).nbuf - (nr)
+		$.copy($.goSlice($.pointerValue<decoder>(d).buf, undefined, $.pointerValue<decoder>(d).nbuf), $.goSlice($.pointerValue<decoder>(d).buf, nr, undefined))
+		return [n, $.pointerValue<decoder>(d).err]
+	}
+
 	static __typeInfo = $.registerStructType(
-	  'encoding/base64.encoder',
-	  new encoder(),
-	  [{ name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  encoder,
-	  {"err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }, "enc": { kind: $.TypeKind.Pointer, elemType: "encoding/base64.Encoding" }, "w": "io.Writer", "buf": { kind: $.TypeKind.Array, length: 3, elemType: { kind: $.TypeKind.Basic, name: "byte" } }, "nbuf": { kind: $.TypeKind.Basic, name: "int" }, "out": { kind: $.TypeKind.Array, length: 1024, elemType: { kind: $.TypeKind.Basic, name: "byte" } }}
-	);
+		"base64.decoder",
+		() => new decoder(),
+		[{ name: "Read", args: [], returns: [] }],
+		decoder,
+		{"err": "error", "readErr": "error", "enc": { kind: $.TypeKind.Pointer, elemType: "base64.Encoding" }, "r": "io.Reader", "buf": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 1024 }, "nbuf": { kind: $.TypeKind.Basic, name: "int" }, "out": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "outbuf": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 768 }}
+	)
 }
 
 export class newlineFilteringReader {
-	public get wrapped(): null | io.Reader {
+	public get wrapped(): io.Reader | null {
 		return this._fields.wrapped.value
 	}
-	public set wrapped(value: null | io.Reader) {
+	public set wrapped(value: io.Reader | null) {
 		this._fields.wrapped.value = value
 	}
 
 	public _fields: {
-		wrapped: $.VarRef<null | io.Reader>;
+		wrapped: $.VarRef<io.Reader | null>
 	}
 
-	constructor(init?: Partial<{wrapped?: null | io.Reader}>) {
+	constructor(init?: Partial<{wrapped?: io.Reader | null}>) {
 		this._fields = {
 			wrapped: $.varRef(init?.wrapped ?? null)
 		}
@@ -790,143 +773,145 @@ export class newlineFilteringReader {
 		cloned._fields = {
 			wrapped: $.varRef(this._fields.wrapped.value)
 		}
-		return cloned
+		return $.markAsStructValue(cloned)
 	}
 
-	public Read(p: $.Bytes): [number, $.GoError] {
-		const r = this
-		let [n, err] = r.wrapped!.Read(p)
-		for (; n > 0; ) {
+	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
+		const r: newlineFilteringReader | $.VarRef<newlineFilteringReader> | null = this
+		let [n, err] = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<newlineFilteringReader>(r).wrapped).Read(p)
+		while (n > 0) {
 			let offset = 0
-			for (let i = 0; i < $.len($.goSlice(p, undefined, n)); i++) {
-				let b = $.goSlice(p, undefined, n)![i]
-				{
-					if (b != 13 && b != 10) {
-						if (i != offset) {
-							p![offset] = b
-						}
-						offset++
+			for (let __goscriptRangeTarget0 = $.goSlice(p, undefined, n), i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+				let b = __goscriptRangeTarget0![i]
+				if (($.uint(b, 8) != $.uint(13, 8)) && ($.uint(b, 8) != $.uint(10, 8))) {
+					if (i != offset) {
+						p![offset] = $.uint(b, 8)
 					}
+					offset++
 				}
 			}
 			if (offset > 0) {
 				return [offset, err]
 			}
 			// Previous buffer entirely whitespace, read again
-			;[n, err] = r.wrapped!.Read(p)
+			let __goscriptTuple13: any = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<newlineFilteringReader>(r).wrapped).Read(p)
+			n = __goscriptTuple13[0]
+			err = __goscriptTuple13[1]
 		}
 		return [n, err]
 	}
 
-	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'encoding/base64.newlineFilteringReader',
-	  new newlineFilteringReader(),
-	  [{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
-	  newlineFilteringReader,
-	  {"wrapped": "io.Reader"}
-	);
+		"base64.newlineFilteringReader",
+		() => new newlineFilteringReader(),
+		[{ name: "Read", args: [], returns: [] }],
+		newlineFilteringReader,
+		{"wrapped": "io.Reader"}
+	)
 }
 
-export let StdEncoding: Encoding | null = NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+export const StdPadding: number = 61
 
-export let URLEncoding: Encoding | null = NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_")
+export const NoPadding: number = -1
 
-export let RawStdEncoding: Encoding | null = StdEncoding!.WithPadding(-1)
+export const decodeMapInitialize: string = $.bytesToString(new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]))
 
-export let RawURLEncoding: Encoding | null = URLEncoding!.WithPadding(-1)
+export const invalidIndex: number = 255
 
-// NewEncoding returns a new padded Encoding defined by the given alphabet,
-// which must be a 64-byte string that contains unique byte values and
-// does not contain the padding character or CR / LF ('\r', '\n').
-// The alphabet is treated as a sequence of byte values
-// without any special treatment for multi-byte UTF-8.
-// The resulting Encoding uses the default padding character ('='),
-// which may be changed or disabled via [Encoding.WithPadding].
-export function NewEncoding(encoder: string): Encoding | null {
+export function NewEncoding(encoder: string): Encoding | $.VarRef<Encoding> | null {
 	if ($.len(encoder) != 64) {
 		$.panic("encoding alphabet is not 64-bytes long")
 	}
 
-	let e = new Encoding()
-	e!.padChar = 61
-	$.copy($.goSlice(e!.encode, undefined, undefined), encoder)
-	$.copy($.goSlice(e!.decodeMap, undefined, undefined), "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff")
+	let e: Encoding | $.VarRef<Encoding> | null = new Encoding()
+	$.pointerValue<Encoding>(e).padChar = $.int(61, 32)
+	$.copy($.goSlice($.pointerValue<Encoding>(e).encode, undefined, undefined), encoder)
+	$.copy($.goSlice($.pointerValue<Encoding>(e).decodeMap, undefined, undefined), $.bytesToString(new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255])))
 
-	// Note: While we document that the alphabet cannot contain
-	// the padding character, we do not enforce it since we do not know
-	// if the caller intends to switch the padding from StdPadding later.
 	for (let i = 0; i < $.len(encoder); i++) {
 		// Note: While we document that the alphabet cannot contain
 		// the padding character, we do not enforce it since we do not know
 		// if the caller intends to switch the padding from StdPadding later.
 		switch (true) {
-			case $.indexString(encoder, i) == 10 || $.indexString(encoder, i) == 13: {
+			case ($.uint($.indexStringOrBytes(encoder, i), 8) == $.uint(10, 8)) || ($.uint($.indexStringOrBytes(encoder, i), 8) == $.uint(13, 8)):
+			{
 				$.panic("encoding alphabet contains newline character")
+				break
 			}
-			case e!.decodeMap![$.indexString(encoder, i)] != 255: {
+			case $.uint($.pointerValue<Encoding>(e).decodeMap[$.indexStringOrBytes(encoder, i)], 8) != $.uint(255, 8):
+			{
 				$.panic("encoding alphabet includes duplicate symbols")
+				break
 			}
 		}
-		e!.decodeMap![$.indexString(encoder, i)] = (i as number)
+		$.pointerValue<Encoding>(e).decodeMap[$.indexStringOrBytes(encoder, i)] = $.uint($.uint(i, 8), 8)
 	}
 	return e
 }
 
-// NewEncoder returns a new base64 stream encoder. Data written to
-// the returned writer will be encoded using enc and then written to w.
-// Base64 encodings operate in 4-byte blocks; when finished
-// writing, the caller must Close the returned encoder to flush any
-// partially written blocks.
-export function NewEncoder(enc: Encoding | null, w: null | io.Writer): null | io.WriteCloser {
-	return new encoder({enc: enc, w: w})
+export let StdEncoding: Encoding | $.VarRef<Encoding> | null = NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+
+export function __goscript_set_StdEncoding(__goscriptValue: Encoding | $.VarRef<Encoding> | null): void {
+	StdEncoding = __goscriptValue
 }
 
-// assemble32 assembles 4 base64 digits into 3 bytes.
-// Each digit comes from the decode map, and will be 0xff
-// if it came from an invalid character.
+export let URLEncoding: Encoding | $.VarRef<Encoding> | null = NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_")
+
+export function __goscript_set_URLEncoding(__goscriptValue: Encoding | $.VarRef<Encoding> | null): void {
+	URLEncoding = __goscriptValue
+}
+
+export let RawStdEncoding: Encoding | $.VarRef<Encoding> | null = $.markAsStructValue($.cloneStructValue($.pointerValue<Encoding>(StdEncoding))).WithPadding($.int(-1, 32))
+
+export function __goscript_set_RawStdEncoding(__goscriptValue: Encoding | $.VarRef<Encoding> | null): void {
+	RawStdEncoding = __goscriptValue
+}
+
+export let RawURLEncoding: Encoding | $.VarRef<Encoding> | null = $.markAsStructValue($.cloneStructValue($.pointerValue<Encoding>(URLEncoding))).WithPadding($.int(-1, 32))
+
+export function __goscript_set_RawURLEncoding(__goscriptValue: Encoding | $.VarRef<Encoding> | null): void {
+	RawURLEncoding = __goscriptValue
+}
+
+export function NewEncoder(enc: Encoding | $.VarRef<Encoding> | null, w: io.Writer | null): io.WriteCloser | null {
+	return $.interfaceValue<io.WriteCloser | null>(new encoder({enc: enc, w: w}), "*base64.encoder")
+}
+
+export function CorruptInputError_Error(e: CorruptInputError): string {
+	return "illegal base64 data at input byte " + strconv.FormatInt($.int($.int(e)), 10)
+}
+
 export function assemble32(n1: number, n2: number, n3: number, n4: number): [number, boolean] {
 	let dn: number = 0
 	let ok: boolean = false
-	{
-		// Check that all the digits are valid. If any of them was 0xff, their
-		// bitwise OR will be 0xff.
-		if ((((n1 | n2) | n3) | n4) == 0xff) {
-			return [0, false]
-		}
-		return [(((((n1 as number) << 26) | ((n2 as number) << 20)) | ((n3 as number) << 14)) | ((n4 as number) << 8)), true]
+	// Check that all the digits are valid. If any of them was 0xff, their
+	// bitwise OR will be 0xff.
+	if ($.uint((((n1 | n2) | n3) | n4), 8) == $.uint(0xff, 8)) {
+		return [$.uint(0, 32), false]
 	}
+	return [$.uint(((($.uint(n1, 32) << 26) | ($.uint(n2, 32) << 20)) | ($.uint(n3, 32) << 14)) | ($.uint(n4, 32) << 8), 32), true]
 }
 
-// assemble64 assembles 8 base64 digits into 6 bytes.
-// Each digit comes from the decode map, and will be 0xff
-// if it came from an invalid character.
 export function assemble64(n1: number, n2: number, n3: number, n4: number, n5: number, n6: number, n7: number, n8: number): [number, boolean] {
 	let dn: number = 0
 	let ok: boolean = false
-	{
-		// Check that all the digits are valid. If any of them was 0xff, their
-		// bitwise OR will be 0xff.
-		if ((((((((n1 | n2) | n3) | n4) | n5) | n6) | n7) | n8) == 0xff) {
-			return [0, false]
-		}
-		return [(((((((((n1 as number) << 58) | ((n2 as number) << 52)) | ((n3 as number) << 46)) | ((n4 as number) << 40)) | ((n5 as number) << 34)) | ((n6 as number) << 28)) | ((n7 as number) << 22)) | ((n8 as number) << 16)), true]
+	// Check that all the digits are valid. If any of them was 0xff, their
+	// bitwise OR will be 0xff.
+	if ($.uint((((((((n1 | n2) | n3) | n4) | n5) | n6) | n7) | n8), 8) == $.uint(0xff, 8)) {
+		return [$.uint(0, 64), false]
 	}
+	return [$.uint($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Mul($.uint(n1, 64), (2 ** 58))), ($.uint64Mul($.uint(n2, 64), (2 ** 52))))), ($.uint64Mul($.uint(n3, 64), (2 ** 46))))), ($.uint64Mul($.uint(n4, 64), (2 ** 40))))), ($.uint64Mul($.uint(n5, 64), (2 ** 34))))), ($.uint64Shl($.uint(n6, 64), 28)))), ($.uint64Shl($.uint(n7, 64), 22)))), ($.uint64Shl($.uint(n8, 64), 16))), 64), true]
 }
 
-// NewDecoder constructs a new base64 stream decoder.
-export function NewDecoder(enc: Encoding | null, r: null | io.Reader): null | io.Reader {
-	return new decoder({enc: enc, r: new newlineFilteringReader({wrapped: r})})
+export function NewDecoder(enc: Encoding | $.VarRef<Encoding> | null, r: io.Reader | null): io.Reader | null {
+	return $.interfaceValue<io.Reader | null>(new decoder({enc: enc, r: $.interfaceValue<io.Reader | null>(new newlineFilteringReader({wrapped: r}), "*base64.newlineFilteringReader")}), "*base64.decoder")
 }
 
 export function decodedLen(n: number, padChar: number): number {
-
-	// Unpadded data may end with partial block of 2-3 characters.
-	if (padChar == -1) {
+	if ($.int(padChar, 32) == $.int(-1, 32)) {
 		// Unpadded data may end with partial block of 2-3 characters.
-		return Math.trunc(n / 4) * 3 + Math.trunc(n % 4 * 6 / 8)
+		return ((Math.trunc(n / 4)) * 3) + (Math.trunc(((n % 4) * 6) / 8))
 	}
 	// Padded base64 should always be a multiple of 4 characters in length.
-	return Math.trunc(n / 4) * 3
+	return (Math.trunc(n / 4)) * 3
 }
-

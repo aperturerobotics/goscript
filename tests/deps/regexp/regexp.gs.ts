@@ -1147,7 +1147,7 @@ export class Regexp {
 					case "Skip":
 					{
 
-						let inst: syntax.Inst | $.VarRef<syntax.Inst> | null = $.indexRef($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Inst!, __goscriptShadow1)
+						var inst: syntax.Inst | $.VarRef<syntax.Inst> | null = $.indexRef($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Inst!, __goscriptShadow1)
 
 						switch ($.pointerValue<syntax.Inst>(inst).Op) {
 							default:

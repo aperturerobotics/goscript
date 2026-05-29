@@ -1,0 +1,215 @@
+// Generated file based on itoa.go
+// Updated when compliance tests are re-run, DO NOT EDIT!
+
+import * as $ from "@goscript/builtin/index.js"
+
+import * as bits from "@goscript/math/bits/index.js"
+import "@goscript/math/bits/index.js"
+
+export const digits: string = "0123456789abcdefghijklmnopqrstuvwxyz"
+
+export const nSmalls: number = 100
+
+export const smalls: string = "00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899"
+
+export const host64bit: boolean = true
+
+export function FormatUint(i: number, base: number): string {
+	if (base == 10) {
+		if (i < 100) {
+			return small($.int(i))
+		}
+		let a: Uint8Array = new Uint8Array(24)
+		let j = formatBase10($.goSlice(a, undefined, undefined), $.uint(i, 64))
+		return $.bytesToString($.goSlice(a, j, undefined))
+	}
+	let [, s] = formatBits(null, $.uint(i, 64), base, false, false)
+	return s
+}
+
+export function FormatInt(i: number, base: number): string {
+	if (base == 10) {
+		if ((0 <= i) && (i < 100)) {
+			return small($.int(i))
+		}
+		let a: Uint8Array = new Uint8Array(24)
+		let u = $.uint($.uint(i, 64), 64)
+		if (i < 0) {
+			u = $.uint(-u, 64)
+		}
+		let j = formatBase10($.goSlice(a, undefined, undefined), $.uint(u, 64))
+		if (i < 0) {
+			j--
+			a[j] = $.uint(45, 8)
+		}
+		return $.bytesToString($.goSlice(a, j, undefined))
+	}
+	let [, s] = formatBits(null, $.uint($.uint(i, 64), 64), base, i < 0, false)
+	return s
+}
+
+export function Itoa(i: number): string {
+	return FormatInt($.int($.int(i)), 10)
+}
+
+export function AppendInt(dst: $.Slice<number>, i: number, base: number): $.Slice<number> {
+	let u = $.uint($.uint(i, 64), 64)
+	if (i < 0) {
+		dst = $.append(dst, $.uint(45, 8))
+		u = $.uint(-u, 64)
+	}
+	return AppendUint(dst, $.uint(u, 64), base)
+}
+
+export function AppendUint(dst: $.Slice<number>, i: number, base: number): $.Slice<number> {
+	if (base == 10) {
+		if (i < 100) {
+			return $.append(dst, ...($.stringToBytes(small($.int(i))) ?? []))
+		}
+		let a: Uint8Array = new Uint8Array(24)
+		let j = formatBase10($.goSlice(a, undefined, undefined), $.uint(i, 64))
+		return $.append(dst, ...($.goSlice(a, j, undefined) ?? []))
+	}
+	let __goscriptTuple0: any = formatBits(dst, $.uint(i, 64), base, false, true)
+	dst = __goscriptTuple0[0]
+	return dst
+}
+
+export function formatBits(dst: $.Slice<number>, u: number, base: number, neg: boolean, append_: boolean): [$.Slice<number>, string] {
+	let d: $.Slice<number> = null as $.Slice<number>
+	let s: string = ""
+	if (((base < 2) || (base == 10)) || (base > 36)) {
+		$.panic("strconv: illegal AppendInt/FormatInt base")
+	}
+	// 2 <= base && base <= len(digits)
+
+	let a: Uint8Array = new Uint8Array(65)
+	let i = $.len(a)
+	if (neg) {
+		u = $.uint(-u, 64)
+	}
+
+	// convert bits
+	// We use uint values where we can because those will
+	// fit into a single register even on a 32bit machine.
+	if (isPowerOfTwo(base)) {
+		// Use shifts and masks instead of / and %.
+		let shift = $.uint(bits.TrailingZeros($.uint(base, 64)), 64)
+		let b = $.uint($.uint(base, 64), 64)
+		let m = $.uint64Sub($.uint(base, 64), 1)
+		while (u >= b) {
+			i--
+			a[i] = $.uint($.indexStringOrBytes("0123456789abcdefghijklmnopqrstuvwxyz", $.uint64And($.uint(u, 64), m)), 8)
+			u = $.uint64Shr(u, $.uint(shift, 64))
+		}
+		// u < base
+		i--
+		a[i] = $.uint($.indexStringOrBytes("0123456789abcdefghijklmnopqrstuvwxyz", $.uint(u, 64)), 8)
+	} else {
+		// general case
+		let b = $.uint($.uint(base, 64), 64)
+		while (u >= b) {
+			i--
+			// Avoid using r = a%b in addition to q = a/b
+			// since 64bit division and modulo operations
+			// are calculated by runtime functions on 32bit machines.
+			let q = $.uint($.uint64Div(u, b), 64)
+			a[i] = $.uint($.indexStringOrBytes("0123456789abcdefghijklmnopqrstuvwxyz", $.uint($.uint64Sub(u, ($.uint64Mul(q, b))), 64)), 8)
+			u = $.uint(q, 64)
+		}
+		// u < base
+		i--
+		a[i] = $.uint($.indexStringOrBytes("0123456789abcdefghijklmnopqrstuvwxyz", $.uint(u, 64)), 8)
+	}
+
+	// add sign, if any
+	if (neg) {
+		i--
+		a[i] = $.uint(45, 8)
+	}
+
+	if (append_) {
+		d = $.append(dst, ...($.goSlice(a, i, undefined) ?? []))
+		return [d, s]
+	}
+	s = $.bytesToString($.goSlice(a, i, undefined))
+	return [d, s]
+}
+
+export function isPowerOfTwo(x: number): boolean {
+	return (x & (x - 1)) == 0
+}
+
+export function small(i: number): string {
+	if (i < 10) {
+		return $.sliceStringOrBytes("0123456789abcdefghijklmnopqrstuvwxyz", i, i + 1)
+	}
+	return $.sliceStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", i * 2, (i * 2) + 2)
+}
+
+export function RuntimeFormatBase10(a: $.Slice<number>, u: number): number {
+	return formatBase10(a, $.uint(u, 64))
+}
+
+export function formatBase10(a: $.Slice<number>, u: number): number {
+	// Split into 9-digit chunks that fit in uint32s
+	// and convert each chunk using uint32 math instead of uint64 math.
+	// The obvious way to write the outer loop is "for u >= 1e9", but most numbers are small,
+	// so the setup for the comparison u >= 1e9 is usually pure overhead.
+	// Instead, we approximate it by u>>29 != 0, which is usually faster and good enough.
+	let i = $.len(a)
+	while ((true && ($.uint(($.uint64Shr(u, 29)), 64) != $.uint(0, 64))) || (!true && ($.uint((($.uintShr($.uint(u, 32), 29, 32)) | $.uint($.uint64Shr(u, 32), 32)), 32) != $.uint(0, 32)))) {
+		let lo: number = 0
+		let __goscriptAssign0_0: number = $.uint($.uint64Div(u, 1e9), 64)
+		let __goscriptAssign0_1: number = $.uint($.uint($.uint64Mod(u, 1e9), 32), 32)
+		u = __goscriptAssign0_0
+		lo = __goscriptAssign0_1
+
+		// Convert 9 digits.
+		for (let __rangeIndex = 0; __rangeIndex < 4; __rangeIndex++) {
+			let dd: number = 0
+			let __goscriptAssign1_0: number = $.uint(Math.trunc(lo / 100), 32)
+			let __goscriptAssign1_1: number = $.uint((lo % 100) * 2, 32)
+			lo = __goscriptAssign1_0
+			dd = __goscriptAssign1_1
+			i = i - (2)
+			let __goscriptAssign2_0: number = $.uint($.indexStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", dd + 0), 8)
+			let __goscriptAssign2_1: number = $.uint($.indexStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", dd + 1), 8)
+			a![i + 0] = __goscriptAssign2_0
+			a![i + 1] = __goscriptAssign2_1
+		}
+		i--
+		a![i] = $.uint($.indexStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", (lo * 2) + 1), 8)
+
+		// If we'd been using u >= 1e9 then we would be guaranteed that u/1e9 > 0,
+		// but since we used u>>29 != 0, u/1e9 might be 0, so we might be done.
+		// (If u is now 0, then at the start we had 2²⁹ ≤ u < 10⁹, so it was still correct
+		// to write 9 digits; we have not accidentally written any leading zeros.)
+		if ($.uint(u, 64) == $.uint(0, 64)) {
+			return i
+		}
+	}
+
+	// Convert final chunk, at most 8 digits.
+	let lo = $.uint($.uint(u, 32), 32)
+	while (lo >= 100) {
+		let dd: number = 0
+		let __goscriptAssign3_0: number = $.uint(Math.trunc(lo / 100), 32)
+		let __goscriptAssign3_1: number = $.uint((lo % 100) * 2, 32)
+		lo = __goscriptAssign3_0
+		dd = __goscriptAssign3_1
+		i = i - (2)
+		let __goscriptAssign4_0: number = $.uint($.indexStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", dd + 0), 8)
+		let __goscriptAssign4_1: number = $.uint($.indexStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", dd + 1), 8)
+		a![i + 0] = __goscriptAssign4_0
+		a![i + 1] = __goscriptAssign4_1
+	}
+	i--
+	let dd = $.uint(lo * 2, 32)
+	a![i] = $.uint($.indexStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", dd + 1), 8)
+	if (lo >= 10) {
+		i--
+		a![i] = $.uint($.indexStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", dd + 0), 8)
+	}
+	return i
+}

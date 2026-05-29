@@ -43,18 +43,21 @@ export class handler {
 			let total = 0
 			while (true) {
 				let msg: srpc.RawMessage | $.VarRef<srpc.RawMessage> | null = srpc.NewRawMessage(null, false)
-				let err = await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgRecv($.pointerValueOrNil($.interfaceValue<srpc.Message>(msg, "*srpc.RawMessage"))!)
+				let err = await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgRecv($.interfaceValue<srpc.Message>(msg, "*srpc.RawMessage"))
 				if ($.comparableEqual(err, io.EOF)) {
 					break
 				}
 				if (err != null) {
 					return [true, err]
 				}
-				total = total + ($.len(srpc.RawMessage.prototype.GetData.call($.pointerValue<srpc.RawMessage>(msg))))
+				total = total + ($.len(srpc.RawMessage.prototype.GetData.call(msg)))
 			}
-			return [true, await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.pointerValueOrNil($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint($.uint(total, 8), 8)]), false), "*srpc.RawMessage"))!)]
+			return [true, await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint($.uint(total, 8), 8)]), false), "*srpc.RawMessage"))]
 		}
-		return [true, null]
+		if (strm == null) {
+			return [true, null]
+		}
+		return [true, await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.interfaceValue<srpc.Message>(srpc.NewRawMessage(new Uint8Array([111, 107]), false), "*srpc.RawMessage"))]
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -92,24 +95,24 @@ export class embeddedStream {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Close(): any {
-		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).Close()
+	public async Close(): globalThis.Promise<any> {
+		return await $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).Close()
 	}
 
-	public CloseSend(): any {
-		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).CloseSend()
+	public async CloseSend(): globalThis.Promise<any> {
+		return await $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).CloseSend()
 	}
 
 	public Context(): any {
 		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).Context()
 	}
 
-	public MsgRecv(msg: any): any {
-		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).MsgRecv(msg)
+	public async MsgRecv(msg: any): globalThis.Promise<any> {
+		return await $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).MsgRecv(msg)
 	}
 
-	public MsgSend(msg: any): any {
-		return $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).MsgSend(msg)
+	public async MsgSend(msg: any): globalThis.Promise<any> {
+		return await $.pointerValue<Exclude<srpc.Stream | null, null>>(this.Stream).MsgSend(msg)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -125,53 +128,52 @@ export async function closeEmbedded(strm: embeddedStream): globalThis.Promise<$.
 	return await $.pointerValue<Exclude<srpc.Stream, null>>(strm.Stream).CloseSend()
 }
 
-export async function recvOne(__typeArgs: $.GenericTypeArgs | undefined, strm: srpc.StreamRecv<any> | null): globalThis.Promise<$.GoError> {
-	let [, err] = await $.pointerValue<Exclude<srpc.StreamRecv<any>, null>>(strm).Recv()
+export function recvOne(__typeArgs: $.GenericTypeArgs | undefined, strm: srpc.StreamRecv | null): $.GoError {
+	let [, err] = $.pointerValue<Exclude<srpc.StreamRecv, null>>(strm).Recv()
 	return err
 }
 
 export async function main(): globalThis.Promise<void> {
-	let mux = srpc.NewMux()
-	$.pointerValue<Exclude<srpc.Mux, null>>(mux).Register($.interfaceValue<srpc.Handler | null>($.markAsStructValue(new handler()), "main.handler"))
+	let mux = srpc.NewMux(null)
+	await $.pointerValue<Exclude<srpc.Mux, null>>(mux).Register($.interfaceValue<srpc.Handler | null>($.markAsStructValue(new handler()), "main.handler"))
 	await $.pointerValue<Exclude<srpc.Mux, null>>(mux).InvokeMethod("svc", "method", null)
 	closeEmbedded
-	$.functionValue(async (strm: srpc.StreamRecv<any> | null): globalThis.Promise<$.GoError> => await recvOne({T: { type: { kind: $.TypeKind.Interface, methods: [] }, zero: () => null }}, strm), ({ kind: $.TypeKind.Function, params: ["srpc.StreamRecv"], results: ["error"] } as $.FunctionTypeInfo))
+	$.functionValue((strm: srpc.StreamRecv | null): $.GoError => recvOne({T: { type: { kind: $.TypeKind.Interface, methods: [] }, zero: () => null }}, strm), ({ kind: $.TypeKind.Function, params: ["srpc.StreamRecv"], results: ["error"] } as $.FunctionTypeInfo))
 	srpc.NewRawMessage($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]), true)
-	let server: srpc.Server | $.VarRef<srpc.Server> | null = srpc.NewServer($.pointerValueOrNil((mux as srpc.Invoker | null))!)
+	let server: srpc.Server | $.VarRef<srpc.Server> | null = srpc.NewServer((mux as srpc.Invoker | null))
 	let client = srpc.NewClient(srpc.NewServerPipe(server))
-	let err = await $.pointerValue<Exclude<srpc.Client, null>>(client).ExecCall($.pointerValueOrNil(context.Background())!, "svc", "method", $.pointerValueOrNil($.interfaceValue<srpc.Message>(srpc.NewRawMessage(null, false), "*srpc.RawMessage"))!, $.pointerValueOrNil($.interfaceValue<srpc.Message>(srpc.NewRawMessage(null, false), "*srpc.RawMessage"))!)
+	let unaryResp: srpc.RawMessage | $.VarRef<srpc.RawMessage> | null = srpc.NewRawMessage(null, false)
+	let err = await $.pointerValue<Exclude<srpc.Client, null>>(client).ExecCall(context.Background(), "svc", "method", $.interfaceValue<srpc.Message>(srpc.NewRawMessage(null, false), "*srpc.RawMessage"), $.interfaceValue<srpc.Message>(unaryResp, "*srpc.RawMessage"))
 	if (err != null) {
-		$.println("exec error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
+		$.println("exec error:", await $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	let __goscriptTuple0: any = await $.pointerValue<Exclude<srpc.Client, null>>(client).NewStream($.pointerValueOrNil(context.Background())!, "svc", "stream", null)
+	$.println("exec bytes:", $.len(srpc.RawMessage.prototype.GetData.call(unaryResp)))
+	let __goscriptTuple0: any = await $.pointerValue<Exclude<srpc.Client, null>>(client).NewStream(context.Background(), "svc", "stream", null)
 	let strm = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	if (err != null) {
-		$.println("stream open error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
+		$.println("stream open error:", await $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.pointerValueOrNil($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]), false), "*srpc.RawMessage"))!)
-	await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.pointerValueOrNil($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint(4, 8), $.uint(5, 8)]), false), "*srpc.RawMessage"))!)
+	await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]), false), "*srpc.RawMessage"))
+	await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint(4, 8), $.uint(5, 8)]), false), "*srpc.RawMessage"))
 	await $.pointerValue<Exclude<srpc.Stream, null>>(strm).CloseSend()
 	let resp: srpc.RawMessage | $.VarRef<srpc.RawMessage> | null = srpc.NewRawMessage(null, false)
 	{
-		let __goscriptShadow0 = await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgRecv($.pointerValueOrNil($.interfaceValue<srpc.Message>(resp, "*srpc.RawMessage"))!)
+		let __goscriptShadow0 = await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgRecv($.interfaceValue<srpc.Message>(resp, "*srpc.RawMessage"))
 		if (__goscriptShadow0 != null) {
-			$.println("stream recv error:", $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow0).Error())
+			$.println("stream recv error:", await $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow0).Error())
 			return
 		}
 	}
-	let data: $.Slice<number> = srpc.RawMessage.prototype.GetData.call($.pointerValue<srpc.RawMessage>(resp))
+	let data: $.Slice<number> = srpc.RawMessage.prototype.GetData.call(resp)
 	if ($.len(data) != 1) {
 		$.println("stream response length:", $.len(data))
 		return
 	}
 	$.println("stream bytes:", $.uint(data![0], 8))
-	let prw: srpc.PacketReadWriter | $.VarRef<srpc.PacketReadWriter> | null = srpc.NewPacketReadWriter(null)
-	srpc.PacketReadWriter.prototype.ReadPump.call($.pointerValue<srpc.PacketReadWriter>(prw), (null as srpc.PacketDataHandler), (null as srpc.CloseHandler))
-	srpc.PacketReadWriter.prototype.ReadToHandler.call($.pointerValue<srpc.PacketReadWriter>(prw), (null as srpc.PacketDataHandler))
-	$.println("success: starpc srpc override")
+	$.println("success: native starpc srpc")
 }
 
 if ($.isMainScript(import.meta)) {

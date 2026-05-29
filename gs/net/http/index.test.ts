@@ -1,23 +1,36 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { varRef } from '../../builtin/varRef.js'
+import * as $ from '../../builtin/index.js'
+import * as bytes from '../../bytes/index.js'
+import * as context from '../../context/index.js'
 import {
   Client,
+  Cookie,
   DefaultTransport,
+  ErrServerClosed,
   File,
+  FileServer,
   FileSystem,
+  FS,
+  Get,
   Header,
   Header_Add,
   Header_Del,
   Header_Get,
   Header_Set,
   HandlerFunc_ServeHTTP,
-  Get,
+  MethodGet,
+  MethodHead,
   MethodPost,
   MethodDelete,
   NewRequest,
   NotFound,
   ParseTime,
+  RegisterInProcessServer,
+  SameSiteStrictMode,
+  SetCookie,
+  StatusBadGateway,
   Response,
   ResponseWriter,
   Server,
@@ -32,9 +45,20 @@ import {
   StatusTooManyRequests,
   StatusUnauthorized,
   StatusUnsupportedMediaType,
+  UnregisterInProcessServer,
 } from './index.js'
 
+const originalFetch = globalThis.fetch
+
 describe('net/http override', () => {
+  afterEach(() => {
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: originalFetch,
+    })
+  })
+
   it('exports response status helpers', () => {
     const resp = new Response({ StatusCode: StatusOK })
 
@@ -47,21 +71,44 @@ describe('net/http override', () => {
     expect(StatusText(StatusUnsupportedMediaType)).toBe('Unsupported Media Type')
     expect(StatusText(StatusTeapot)).toBe("I'm a teapot")
     expect(StatusText(StatusTooManyRequests)).toBe('Too Many Requests')
+    expect(StatusText(StatusBadGateway)).toBe('Bad Gateway')
     expect(StatusText(StatusServiceUnavailable)).toBe('Service Unavailable')
     expect(StatusText(599)).toBe('')
+    expect(MethodGet).toBe('GET')
+    expect(MethodHead).toBe('HEAD')
     expect(MethodPost).toBe('POST')
     expect(MethodDelete).toBe('DELETE')
     expect(StatusCreated).toBe(201)
+    expect(ErrServerClosed.Error()).toBe('http: Server closed')
   })
 
-  it('returns an explicit unsupported error for Get', () => {
-    const [resp, err] = Get('https://example.invalid')
+  it('routes Get through fetch-backed DefaultTransport', async () => {
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async () =>
+        new globalThis.Response('hello', {
+          status: StatusOK,
+          statusText: 'OK',
+          headers: { 'Content-Length': '5', 'X-Test': 'ok' },
+        }),
+    })
 
-    expect(resp).toBeNull()
-    expect(err?.Error()).toBe('net/http: Get is not implemented in GoScript')
+    const [resp, err] = await Get('https://example.invalid')
+
+    expect(err).toBeNull()
+    expect(resp?.StatusCode).toBe(StatusOK)
+    expect(Header_Get(resp!.Header, 'x-test')).toBe('ok')
   })
 
   it('accepts VarRef requests for client calls', async () => {
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async () => {
+        throw new Error('network down')
+      },
+    })
     const [req, reqErr] = NewRequest(MethodPost, 'https://example.invalid', null)
     expect(reqErr).toBeNull()
     expect((req!.URL as any).Path).toBe('/')
@@ -69,7 +116,7 @@ describe('net/http override', () => {
 
     const [resp, err] = await new Client().Do(varRef(req!))
     expect(resp).toBeNull()
-    expect(err?.Error()).toBe('net/http: Client.Do is not implemented in GoScript')
+    expect(err?.Error()).toContain('network down')
   })
 
   it('wraps request body readers and keeps response metadata', () => {
@@ -88,13 +135,172 @@ describe('net/http override', () => {
     expect((resp.Request as any).value).toBe(req)
   })
 
-  it('exports the default transport surface', async () => {
-    const [req] = NewRequest(MethodPost, 'https://example.invalid', null)
+  it('exports fetch-backed default transport surface', async () => {
+    let requestBodyClosed = false
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async (input: RequestInfo | URL, init?: RequestInit) => {
+        expect(String(input)).toBe('https://example.invalid/upload')
+        expect(init?.method).toBe(MethodPost)
+        const headers = init?.headers as Headers
+        expect(headers.get('Range')).toBe('bytes=0-9')
+        expect(headers.get('Authorization')).toBe('Bearer test')
+        expect(Buffer.from((init?.body as Uint8Array) ?? []).toString('utf8')).toBe('payload')
+        return new globalThis.Response('accepted', {
+          status: StatusCreated,
+          statusText: 'Created',
+          headers: { 'Content-Length': '8', 'X-Reply': 'yes' },
+        })
+      },
+    })
+    const payload = bytes.NewReader($.stringToBytes('payload'))
+    const requestBody = {
+      Read: payload.Read.bind(payload),
+      Close: () => {
+        requestBodyClosed = true
+        return null
+      },
+    }
+    const [req] = NewRequest(MethodPost, 'https://example.invalid/upload', requestBody)
+    Header_Set(req!.Header, 'Range', 'bytes=0-9')
+    Header_Set(req!.Header, 'Authorization', 'Bearer test')
+
+    const [resp, err] = await DefaultTransport.RoundTrip(req)
+
+    expect(err).toBeNull()
+    expect(resp?.StatusCode).toBe(StatusCreated)
+    expect(resp?.ContentLength).toBe(8)
+    expect(Header_Get(resp!.Header, 'x-reply')).toBe('yes')
+    expect(requestBodyClosed).toBe(true)
+  })
+
+  it('closes request bodies when fetch body reads fail', async () => {
+    let requestBodyClosed = false
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async () => {
+        throw new Error('fetch should not run')
+      },
+    })
+    const readErr = $.newError('read failed')
+    const [req] = NewRequest(MethodPost, 'https://example.invalid/upload', {
+      Read: () => [0, readErr],
+      Close: () => {
+        requestBodyClosed = true
+        return null
+      },
+    })
 
     const [resp, err] = await DefaultTransport.RoundTrip(req)
 
     expect(resp).toBeNull()
-    expect(err?.Error()).toBe('net/http: Client.Do is not implemented in GoScript')
+    expect(err).toBe(readErr)
+    expect(requestBodyClosed).toBe(true)
+  })
+
+  it('closes request bodies before unsupported and canceled requests return', async () => {
+    let unsupportedClosed = false
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: undefined,
+    })
+    const [unsupportedReq] = NewRequest(MethodPost, 'https://example.invalid/upload', {
+      Read: () => [0, null],
+      Close: () => {
+        unsupportedClosed = true
+        return null
+      },
+    })
+
+    const [unsupportedResp, unsupportedErr] = await DefaultTransport.RoundTrip(unsupportedReq)
+
+    expect(unsupportedResp).toBeNull()
+    expect(unsupportedErr?.Error()).toContain('Client.Do is not implemented')
+    expect(unsupportedClosed).toBe(true)
+
+    let canceledClosed = false
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async () => {
+        throw new Error('fetch should not run')
+      },
+    })
+    const [ctx, cancel] = context.WithCancel(context.Background())
+    cancel?.()
+    const [canceledReq] = NewRequest(MethodPost, 'https://example.invalid/upload', {
+      Read: () => [0, null],
+      Close: () => {
+        canceledClosed = true
+        return null
+      },
+    })
+
+    const [canceledResp, canceledErr] = await DefaultTransport.RoundTrip(canceledReq!.WithContext(ctx))
+
+    expect(canceledResp).toBeNull()
+    expect(canceledErr).toBe(context.Canceled)
+    expect(canceledClosed).toBe(true)
+  })
+
+  it('closes request bodies for methods that do not send a fetch body', async () => {
+    let requestBodyClosed = false
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async (_input: RequestInfo | URL, init?: RequestInit) => {
+        expect(init?.method).toBe(MethodGet)
+        expect(init?.body).toBeUndefined()
+        return new globalThis.Response('ok', { status: StatusOK })
+      },
+    })
+    const [req] = NewRequest(MethodGet, 'https://example.invalid/read', {
+      Read: () => {
+        throw new Error('GET body should not be read')
+      },
+      Close: () => {
+        requestBodyClosed = true
+        return null
+      },
+    })
+
+    const [resp, err] = await DefaultTransport.RoundTrip(req)
+
+    expect(err).toBeNull()
+    expect(resp?.StatusCode).toBe(StatusOK)
+    expect(requestBodyClosed).toBe(true)
+  })
+
+  it('closes request bodies after in-process handlers return', async () => {
+    let handlerSawBody = false
+    let requestBodyClosed = false
+    const url = RegisterInProcessServer({
+      ServeHTTP: (w, r) => {
+        handlerSawBody = r?.Body != null
+        w?.WriteHeader(StatusOK)
+      },
+    })
+    try {
+      const [req] = NewRequest(MethodPost, url, {
+        Read: () => [0, null],
+        Close: () => {
+          requestBodyClosed = true
+          return null
+        },
+      })
+
+      const [resp, err] = await DefaultTransport.RoundTrip(req)
+
+      expect(err).toBeNull()
+      expect(resp?.StatusCode).toBe(StatusOK)
+      expect(handlerSawBody).toBe(true)
+      expect(requestBodyClosed).toBe(true)
+    } finally {
+      UnregisterInProcessServer(url)
+    }
   })
 
   it('delegates client calls through RoundTripper implementations', async () => {
@@ -169,6 +375,29 @@ describe('net/http override', () => {
     expect(writes).toEqual(['status:404', '404 page not found\n'])
   })
 
+  it('formats Set-Cookie headers for browser bootstrap routes', () => {
+    const header = new Header()
+    const writer: ResponseWriter = {
+      Header: () => header,
+      Write: (p) => [p?.length ?? 0, null],
+      WriteHeader: () => undefined,
+    }
+
+    SetCookie(writer, new Cookie({
+      Name: 'spacewave_local_capability',
+      Value: 'token',
+      Path: '/',
+      MaxAge: 300,
+      HttpOnly: true,
+      Secure: true,
+      SameSite: SameSiteStrictMode,
+    }))
+
+    expect(Array.from(header.get('Set-Cookie') ?? [])).toEqual([
+      'spacewave_local_capability=token; Path=/; Max-Age=300; HttpOnly; Secure; SameSite=Strict',
+    ])
+  })
+
   it('parses HTTP dates', () => {
     const [parsed, err] = ParseTime('Sun, 06 Nov 1994 08:49:37 GMT')
 
@@ -190,5 +419,62 @@ describe('net/http override', () => {
 
     expect(fsys.Open('ok')[0]).toBe(file)
     expect(fsys.Open('missing')[1]?.message).toBe('missing')
+  })
+
+  it('serves files and omits HEAD response bodies', async () => {
+    const opened: string[] = []
+    const makeFile = () => {
+      const reader = bytes.NewReader($.stringToBytes('hello'))
+      return {
+        Close: () => null,
+        Read: (p: Uint8Array) => reader.Read(p),
+        Seek: (offset: number, whence: number) => reader.Seek(offset, whence),
+        Readdir: () => [null, null] as [null, null],
+        Stat: () => [
+          {
+            IsDir: () => false,
+            ModTime: () => null as never,
+            Mode: () => 0,
+            Name: () => 'file.txt',
+            Size: () => 5,
+            Sys: () => null,
+          },
+          null,
+        ] as const,
+      }
+    }
+    const root = FS({
+      Open: (name) => {
+        opened.push(name)
+        return name === 'file.txt' ? [makeFile(), null] : [null, new Error('missing')]
+      },
+    })
+    const writes: string[] = []
+    const header = new Header()
+    const writer: ResponseWriter = {
+      Header: () => header,
+      Write: (p) => {
+        writes.push(Buffer.from(p ?? []).toString('utf8'))
+        return [p?.length ?? 0, null]
+      },
+      WriteHeader: (code) => writes.push(`status:${code}`),
+    }
+    const handler = FileServer(root)
+    const [getReq] = NewRequest(MethodGet, 'http://example.invalid/../file.txt', null)
+
+    await handler.ServeHTTP(writer, getReq)
+
+    expect(opened).toEqual(['file.txt'])
+    expect(writes).toEqual(['status:200', 'hello'])
+    expect(Header_Get(header, 'Content-Length')).toBe('5')
+
+    writes.length = 0
+    opened.length = 0
+    const [headReq] = NewRequest(MethodHead, 'http://example.invalid/file.txt', null)
+
+    await handler.ServeHTTP(writer, headReq)
+
+    expect(opened).toEqual(['file.txt'])
+    expect(writes).toEqual(['status:200'])
   })
 })

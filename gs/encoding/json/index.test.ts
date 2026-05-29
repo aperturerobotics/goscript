@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
 
-import { Marshal, MarshalIndent, Unmarshal, type Unmarshaler } from './index.js'
+import {
+  Marshal,
+  MarshalIndent,
+  NewEncoder,
+  Unmarshal,
+  type Unmarshaler,
+} from './index.js'
 
 class Person {
   public _fields = {
@@ -97,5 +103,26 @@ describe('encoding/json override', () => {
     expect(mapRef.value?.get('name')).toBe('Carol')
     expect(mapRef.value?.get('age')).toBe(22)
     expect(mapRef.value?.get('active')).toBe(true)
+  })
+
+  it('encodes JSON to an io.Writer with newline, indentation, and HTML escaping', () => {
+    const chunks: string[] = []
+    const writer = {
+      Write(p: $.Bytes): [number, $.GoError] {
+        chunks.push($.bytesToString(p))
+        return [$.len(p), null]
+      },
+    }
+
+    const encoder = NewEncoder(writer)
+    expect(encoder.Encode(new Map([['text', '<tag>&']]))).toBeNull()
+    encoder.SetEscapeHTML(false)
+    encoder.SetIndent('', '  ')
+    expect(encoder.Encode(new Map([['text', '<tag>&']]))).toBeNull()
+
+    expect(chunks).toEqual([
+      '{"text":"\\u003ctag\\u003e\\u0026"}\n',
+      '{\n  "text": "<tag>&"\n}\n',
+    ])
   })
 })
