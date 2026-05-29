@@ -1141,7 +1141,7 @@ func (o *SemanticModelOwner) propagateFunctionAsync(ctx context.Context, model *
 			}
 			for called := range semFn.calls {
 				if model.functionAsync(called) {
-					if markFunctionAsync(semFn, "call:"+called.FullName()) {
+					if markFunctionAsync(semFn, "call:"+model.functionFullName(called)) {
 						changed = true
 					}
 				}
