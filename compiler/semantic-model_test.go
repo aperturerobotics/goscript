@@ -242,6 +242,87 @@ func TestSemanticModelRecordsInterfaceAssertionAndNilFacts(t *testing.T) {
 	}
 }
 
+func TestSemanticModelRejectsInterfaceMethodSignatureMismatch(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/signaturemismatch\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package signaturemismatch",
+			"type Reader interface { Read() int }",
+			"type Impl struct{}",
+			"func (Impl) Read() string { return \"bad\" }",
+			"",
+		}, "\n"),
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeRequested,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	model := buildSemanticModel(t, graph)
+
+	if hasInterfaceImplementation(model, "Impl", "Reader", false) {
+		t.Fatalf("unexpected Impl -> Reader implementation: %#v", model.interfaceImplementations)
+	}
+}
+
+func TestSemanticModelAcceptsPromotedInterfaceMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/promoted\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package promoted",
+			"type Reader interface { Read() int }",
+			"type Base struct{}",
+			"func (Base) Read() int { return 1 }",
+			"type Impl struct { Base }",
+			"",
+		}, "\n"),
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeRequested,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	model := buildSemanticModel(t, graph)
+
+	if !hasInterfaceImplementation(model, "Impl", "Reader", false) {
+		t.Fatalf("missing promoted Impl -> Reader implementation: %#v", model.interfaceImplementations)
+	}
+}
+
+func TestSemanticModelKeepsUnexportedInterfaceMethodsPackageScoped(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/unexportediface\n\ngo 1.25.3\n",
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"type private interface { read() int }",
+			"",
+		}, "\n"),
+		"main.go": strings.Join([]string{
+			"package unexportediface",
+			"import _ \"example.test/unexportediface/dep\"",
+			"type Impl struct{}",
+			"func (Impl) read() int { return 1 }",
+			"",
+		}, "\n"),
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	model := buildSemanticModel(t, graph)
+
+	if hasInterfaceImplementation(model, "Impl", "private", false) {
+		t.Fatalf("unexpected cross-package unexported implementation: %#v", model.interfaceImplementations)
+	}
+}
+
 func TestSemanticModelColorsAsyncFunctionsAndOverrides(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/async\n\ngo 1.25.3\n",

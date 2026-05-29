@@ -1280,6 +1280,18 @@ func (o *SemanticModelOwner) resolveAnonymousInterfaceImplementationGraph(
 			if !implementationHasMethods(methodSet.methods, ifaceMethods) {
 				continue
 			}
+			if !namedTypeHasParams(methodSet.typ) {
+				if matches, exact := implementationHasExactMethodSignatures(methodSet.methods, ifaceMethods); exact {
+					if !matches {
+						continue
+					}
+					implementationGraph = append(implementationGraph, semanticAnonymousInterfaceImplementation{
+						ifaceMethods: ifaceMethods,
+						implMethods:  methodSet.methods,
+					})
+					continue
+				}
+			}
 			receiver := methodSet.receiver
 			if (methodSet.typ.TypeArgs() == nil || methodSet.typ.TypeArgs().Len() == 0) &&
 				methodSet.typ.TypeParams() != nil && methodSet.typ.TypeParams().Len() != 0 {
@@ -1690,6 +1702,22 @@ func (o *SemanticModelOwner) interfaceImplementationGraphEntry(
 		return semanticInterfaceImplementationGraphEntry{}, false
 	}
 
+	if !namedTypeHasParams(methodSet.typ) && !namedTypeHasParams(ifaceNamed) {
+		if matches, exact := implementationHasExactMethodSignatures(methodSet.methods, ifaceMethods); exact {
+			if !matches {
+				return semanticInterfaceImplementationGraphEntry{}, false
+			}
+			implementation := semanticInterfaceImplementationGraphEntry{
+				typ:          methodSet.typ,
+				iface:        ifaceNamed,
+				pointer:      methodSet.pointer,
+				ifaceMethods: ifaceMethods,
+				implMethods:  methodSet.methods,
+			}
+			return implementation, true
+		}
+	}
+
 	implementsReceiver := methodSet.receiver
 	implementsIface := types.Type(ifaceNamed.Underlying())
 	if methodSet.typ.TypeParams() != nil && methodSet.typ.TypeParams().Len() != 0 {
@@ -1804,6 +1832,64 @@ func implementationHasMethods(
 		}
 	}
 	return true
+}
+
+func implementationHasExactMethodSignatures(
+	receiverMethods map[string]*types.Func,
+	ifaceMethods map[string]*types.Func,
+) (bool, bool) {
+	for methodName, ifaceMethod := range ifaceMethods {
+		implMethod := receiverMethods[methodName]
+		if implMethod == nil {
+			return false, true
+		}
+		if !methodPackagesCompatible(implMethod, ifaceMethod) {
+			return false, true
+		}
+		implSignature, _ := implMethod.Type().(*types.Signature)
+		ifaceSignature, _ := ifaceMethod.Type().(*types.Signature)
+		if implSignature == nil || ifaceSignature == nil {
+			return false, false
+		}
+		if !types.IdenticalIgnoreTags(signatureWithoutReceiver(implSignature), signatureWithoutReceiver(ifaceSignature)) {
+			return false, true
+		}
+	}
+	return true, true
+}
+
+func methodPackagesCompatible(implMethod *types.Func, ifaceMethod *types.Func) bool {
+	if implMethod == nil || ifaceMethod == nil {
+		return false
+	}
+	if ifaceMethod.Exported() {
+		return true
+	}
+	return packagePathOfObject(implMethod) == packagePathOfObject(ifaceMethod)
+}
+
+func packagePathOfObject(obj types.Object) string {
+	if obj == nil || obj.Pkg() == nil {
+		return ""
+	}
+	return obj.Pkg().Path()
+}
+
+func signatureWithoutReceiver(signature *types.Signature) *types.Signature {
+	if signature == nil {
+		return nil
+	}
+	return types.NewSignatureType(nil, nil, nil, signature.Params(), signature.Results(), signature.Variadic())
+}
+
+func namedTypeHasParams(named *types.Named) bool {
+	if named == nil {
+		return false
+	}
+	if params := named.TypeParams(); params != nil && params.Len() != 0 {
+		return true
+	}
+	return named.TypeArgs() != nil && named.TypeArgs().Len() != 0
 }
 
 func typeParamTypes(params *types.TypeParamList) []types.Type {
