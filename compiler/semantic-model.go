@@ -82,12 +82,17 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 	if diagnosticsHaveErrors(diagnostics) {
 		return model, diagnostics
 	}
-	interfaceGraph, interfaceDiagnostics := o.resolveInterfaceImplementationGraph(ctx, model)
+	methodSets, methodSetDiagnostics := o.resolveImplementationMethodSets(ctx, model)
+	diagnostics = append(diagnostics, methodSetDiagnostics...)
+	if diagnosticsHaveErrors(diagnostics) {
+		return model, diagnostics
+	}
+	interfaceGraph, interfaceDiagnostics := o.resolveInterfaceImplementationGraph(ctx, model, methodSets)
 	diagnostics = append(diagnostics, interfaceDiagnostics...)
 	if diagnosticsHaveErrors(diagnostics) {
 		return model, diagnostics
 	}
-	anonymousInterfaceGraph, anonymousInterfaceDiagnostics := o.resolveAnonymousInterfaceImplementationGraph(ctx, model)
+	anonymousInterfaceGraph, anonymousInterfaceDiagnostics := o.resolveAnonymousInterfaceImplementationGraph(ctx, model, methodSets)
 	diagnostics = append(diagnostics, anonymousInterfaceDiagnostics...)
 	if diagnosticsHaveErrors(diagnostics) {
 		return model, diagnostics
@@ -1180,20 +1185,10 @@ func semanticAsyncFunctionCount(model *SemanticModel) int {
 func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 	ctx context.Context,
 	model *SemanticModel,
+	methodSets []semanticImplementationMethodSet,
 ) ([]semanticInterfaceImplementationGraphEntry, []Diagnostic) {
 	interfaces := collectInterfaceImplementationCandidates(model)
-	var concretes []*types.Named
-	for named, semType := range model.types {
-		if err := ctx.Err(); err != nil {
-			return nil, []Diagnostic{contextCanceledDiagnostic(err)}
-		}
-		if !semType.isInterface {
-			concretes = append(concretes, namedOriginOrSelf(named))
-		}
-	}
 	sortNamedTypes(interfaces)
-	sortNamedTypes(concretes)
-	methodSets := implementationMethodSets(concretes)
 
 	implementationGraph := make([]semanticInterfaceImplementationGraphEntry, 0)
 	for _, ifaceNamed := range interfaces {
@@ -1224,19 +1219,13 @@ func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 func (o *SemanticModelOwner) resolveAnonymousInterfaceImplementationGraph(
 	ctx context.Context,
 	model *SemanticModel,
+	methodSets []semanticImplementationMethodSet,
 ) ([]semanticAnonymousInterfaceImplementation, []Diagnostic) {
 	interfaces := collectAnonymousInterfaceImplementationCandidates(model)
-	var concretes []*types.Named
-	for named, semType := range model.types {
+	for _, namedIface := range collectNamedInterfaceImplementationCandidates(model) {
 		if err := ctx.Err(); err != nil {
 			return nil, []Diagnostic{contextCanceledDiagnostic(err)}
 		}
-		if !semType.isInterface {
-			concretes = append(concretes, namedOriginOrSelf(named))
-		}
-	}
-	methodSets := implementationMethodSets(concretes)
-	for _, namedIface := range collectNamedInterfaceImplementationCandidates(model) {
 		methodSets = append(methodSets, semanticImplementationMethodSet{
 			typ:      namedIface,
 			receiver: namedIface,
@@ -1282,6 +1271,23 @@ func (o *SemanticModelOwner) resolveAnonymousInterfaceImplementationGraph(
 		}
 	}
 	return implementationGraph, nil
+}
+
+func (o *SemanticModelOwner) resolveImplementationMethodSets(
+	ctx context.Context,
+	model *SemanticModel,
+) ([]semanticImplementationMethodSet, []Diagnostic) {
+	var concretes []*types.Named
+	for named, semType := range model.types {
+		if err := ctx.Err(); err != nil {
+			return nil, []Diagnostic{contextCanceledDiagnostic(err)}
+		}
+		if !semType.isInterface {
+			concretes = append(concretes, namedOriginOrSelf(named))
+		}
+	}
+	sortNamedTypes(concretes)
+	return implementationMethodSets(concretes), nil
 }
 
 func collectInterfaceImplementationCandidates(model *SemanticModel) []*types.Named {
