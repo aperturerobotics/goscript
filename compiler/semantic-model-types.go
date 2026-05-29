@@ -96,7 +96,7 @@ type semanticInterfaceImplementation struct {
 	typ          *types.Named
 	iface        *types.Named
 	pointer      bool
-	asyncMethods map[string]bool
+	asyncMethods []string
 }
 
 type semanticInterfaceImplementationGraphEntry struct {

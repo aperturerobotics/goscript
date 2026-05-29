@@ -1558,7 +1558,11 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 	model *SemanticModel,
 	interfaceGraph []semanticInterfaceImplementationGraphEntry,
 ) []Diagnostic {
-	model.interfaceImplementations = model.interfaceImplementations[:0]
+	if cap(model.interfaceImplementations) < len(interfaceGraph) {
+		model.interfaceImplementations = make([]semanticInterfaceImplementation, 0, len(interfaceGraph))
+	} else {
+		model.interfaceImplementations = model.interfaceImplementations[:0]
+	}
 	for _, graphEntry := range interfaceGraph {
 		if err := ctx.Err(); err != nil {
 			return []Diagnostic{contextCanceledDiagnostic(err)}
@@ -1572,20 +1576,14 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 			implMethod := graphEntry.implMethods[methodName]
 			implFn := semanticFunctionFor(model, implMethod)
 			if implFn != nil && implFn.async {
-				if implementation.asyncMethods == nil {
-					implementation.asyncMethods = make(map[string]bool)
-				}
-				implementation.asyncMethods[methodName] = true
+				implementation.asyncMethods = append(implementation.asyncMethods, methodName)
 				model.markInterfaceMethodAsync(ifaceMethod)
 				if ifaceFn := semanticFunctionFor(model, ifaceMethod); ifaceFn != nil {
 					markFunctionAsync(ifaceFn, "interface-implementation")
 				}
 			}
 		}
-		for methodName, async := range implementation.asyncMethods {
-			if !async {
-				continue
-			}
+		for _, methodName := range implementation.asyncMethods {
 			markFunctionAsync(semanticFunctionFor(model, graphEntry.implMethods[methodName]), "interface-method")
 		}
 		model.interfaceImplementations = append(model.interfaceImplementations, implementation)
