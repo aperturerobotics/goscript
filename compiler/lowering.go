@@ -821,6 +821,9 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 	}
 	ast.Inspect(file, inspect)
 	for _, methodDecl := range associatedMethods {
+		if sourcePos(semPkg.source, methodDecl.Pos()).file == sourcePath {
+			continue
+		}
 		ast.Inspect(methodDecl, inspect)
 	}
 	return analysis
