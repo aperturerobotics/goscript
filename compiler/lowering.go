@@ -4220,7 +4220,8 @@ func isIdentLikeExpr(expr ast.Expr) bool {
 func shortDeclNeedsTypeAnnotation(typ types.Type) bool {
 	switch typed := types.Unalias(typ).Underlying().(type) {
 	case *types.Pointer:
-		return namedStructType(typed.Elem()) != nil || namedNonStructType(typed.Elem()) != nil
+		_, pointsToArray := types.Unalias(typed.Elem()).Underlying().(*types.Array)
+		return pointsToArray || namedStructType(typed.Elem()) != nil || namedNonStructType(typed.Elem()) != nil
 	case *types.Map:
 		return true
 	case *types.Slice:

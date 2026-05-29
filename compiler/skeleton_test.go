@@ -911,6 +911,49 @@ func TestCompilePackagesAnnotatesNewPointerShortDecls(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAnnotatesNewArrayPointerShortDecls(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/newarrayptrdecl\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func use(*[32]byte) {}",
+			"func main() {",
+			"  buf := new([32]byte)",
+			"  use(buf)",
+			"  if true {",
+			"    buf = nil",
+			"  }",
+			"  use(buf)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "newarrayptrdecl", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"let buf: $.VarRef<Uint8Array> | null = $.varRef<Uint8Array>(new Uint8Array(32))",
+		"buf = null",
+		"use(buf)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesEmitsShadowedBuiltinCalls(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/shadowbuiltin\n\ngo 1.25.3\n",
