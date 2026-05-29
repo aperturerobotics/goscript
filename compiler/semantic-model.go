@@ -1220,6 +1220,7 @@ func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 	interfaces := collectInterfaceImplementationCandidates(model)
 	sortNamedTypes(interfaces)
 
+	methodSetIndexByName := indexImplementationMethodSets(methodSets)
 	implementationGraph := make([]semanticInterfaceImplementationGraphEntry, 0)
 	for _, ifaceNamed := range interfaces {
 		if err := ctx.Err(); err != nil {
@@ -1234,10 +1235,11 @@ func (o *SemanticModelOwner) resolveInterfaceImplementationGraph(
 		if len(ifaceMethods) == 0 {
 			continue
 		}
-		for _, methodSet := range methodSets {
+		for _, methodSetIdx := range implementationMethodSetCandidates(methodSetIndexByName, ifaceMethods) {
 			if err := ctx.Err(); err != nil {
 				return nil, []Diagnostic{contextCanceledDiagnostic(err)}
 			}
+			methodSet := methodSets[methodSetIdx]
 			if implementation, ok := o.interfaceImplementationGraphEntry(methodSet, ifaceNamed, ifaceMethods); ok {
 				implementationGraph = append(implementationGraph, implementation)
 			}
@@ -1263,6 +1265,7 @@ func (o *SemanticModelOwner) resolveAnonymousInterfaceImplementationGraph(
 		})
 	}
 
+	methodSetIndexByName := indexImplementationMethodSets(methodSets)
 	implementationGraph := make([]semanticAnonymousInterfaceImplementation, 0)
 	for _, iface := range interfaces {
 		if err := ctx.Err(); err != nil {
@@ -1273,10 +1276,11 @@ func (o *SemanticModelOwner) resolveAnonymousInterfaceImplementationGraph(
 		if len(ifaceMethods) == 0 {
 			continue
 		}
-		for _, methodSet := range methodSets {
+		for _, methodSetIdx := range implementationMethodSetCandidates(methodSetIndexByName, ifaceMethods) {
 			if err := ctx.Err(); err != nil {
 				return nil, []Diagnostic{contextCanceledDiagnostic(err)}
 			}
+			methodSet := methodSets[methodSetIdx]
 			if !implementationHasMethods(methodSet.methods, ifaceMethods) {
 				continue
 			}
@@ -1757,6 +1761,33 @@ func interfaceMethodMap(iface *types.Interface) map[string]*types.Func {
 		methods[method.Name()] = method
 	}
 	return methods
+}
+
+func indexImplementationMethodSets(methodSets []semanticImplementationMethodSet) map[string][]int {
+	index := make(map[string][]int)
+	for methodSetIndex, methodSet := range methodSets {
+		for methodName := range methodSet.methods {
+			index[methodName] = append(index[methodName], methodSetIndex)
+		}
+	}
+	return index
+}
+
+func implementationMethodSetCandidates(
+	index map[string][]int,
+	ifaceMethods map[string]*types.Func,
+) []int {
+	var candidates []int
+	for methodName := range ifaceMethods {
+		methodSets := index[methodName]
+		if len(methodSets) == 0 {
+			return nil
+		}
+		if candidates == nil || len(methodSets) < len(candidates) {
+			candidates = methodSets
+		}
+	}
+	return candidates
 }
 
 func (m *SemanticModel) functionFullName(fn *types.Func) string {
