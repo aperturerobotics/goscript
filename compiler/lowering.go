@@ -57,6 +57,7 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel) (*Lower
 
 	program := &LoweredProgram{}
 	lazyPackageVars := make(map[string]map[types.Object]bool, len(model.packages))
+	runtimeMethodSets := make(runtimeMethodSetCache)
 	semPkgs := make([]*semanticPackage, 0, len(model.packages))
 	for _, semPkg := range model.packages {
 		semPkgs = append(semPkgs, semPkg)
@@ -71,7 +72,7 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel) (*Lower
 			diagnostics = append(diagnostics, loweringUnsupported("package", semPkg.pkgPath, "missing semantic source package"))
 			continue
 		}
-		loweredPkg, pkgDiagnostics := o.lowerPackage(model, semPkg, lazyPackageVars)
+		loweredPkg, pkgDiagnostics := o.lowerPackage(model, semPkg, lazyPackageVars, runtimeMethodSets)
 		diagnostics = append(diagnostics, pkgDiagnostics...)
 		if loweredPkg != nil {
 			program.packages = append(program.packages, loweredPkg)
@@ -87,6 +88,7 @@ func (o *LoweringOwner) lowerPackage(
 	model *SemanticModel,
 	semPkg *semanticPackage,
 	lazyPackageVarsByPkg map[string]map[types.Object]bool,
+	runtimeMethodSets runtimeMethodSetCache,
 ) (*loweredPackage, []Diagnostic) {
 	loweredPkg := &loweredPackage{
 		pkgPath: semPkg.pkgPath,
@@ -107,6 +109,7 @@ func (o *LoweringOwner) lowerPackage(
 			outputNames,
 			lazyPackageVars,
 			lazyPackageVarsByPkg,
+			runtimeMethodSets,
 		)
 		diagnostics = append(diagnostics, fileDiagnostics...)
 		if loweredFile != nil {
@@ -140,6 +143,7 @@ func (o *LoweringOwner) lowerFile(
 	outputNames map[string]string,
 	lazyPackageVars map[types.Object]bool,
 	lazyPackageVarsByPkg map[string]map[types.Object]bool,
+	runtimeMethodSets runtimeMethodSetCache,
 ) (*loweredFile, []Diagnostic) {
 	associatedMethods := o.methodDeclsForFileTypes(semPkg, file)
 	relevantImportFiles := map[string]bool{sourcePath: true}
@@ -161,7 +165,7 @@ func (o *LoweringOwner) lowerFile(
 	importPaths := make(map[string]string)
 	importNames := make(map[string]string)
 	importObjects := make(map[*types.PkgName]string)
-	localRefs := o.analyzeLocalFileReferences(semPkg, file, sourcePath, associatedMethods, declFiles, outputNames)
+	localRefs := o.analyzeLocalFileReferences(semPkg, file, sourcePath, associatedMethods, declFiles, outputNames, runtimeMethodSets)
 	reservedImportAliases := localRefs.reservedNames
 	seenImport := make(map[string]bool)
 	for idx, importFile := range semPkg.source.Syntax {
@@ -467,6 +471,24 @@ type localFileReferenceAnalysis struct {
 	implicitRuntime map[string]bool
 }
 
+type runtimeMethodSetCache map[*types.Named][]types.Object
+
+func (c runtimeMethodSetCache) methods(named *types.Named) []types.Object {
+	if named == nil {
+		return nil
+	}
+	if methods, ok := c[named]; ok {
+		return methods
+	}
+	methodSet := types.NewMethodSet(types.NewPointer(named))
+	methods := make([]types.Object, 0, methodSet.Len())
+	for method := range methodSet.Methods() {
+		methods = append(methods, method.Obj())
+	}
+	c[named] = methods
+	return methods
+}
+
 func (o *LoweringOwner) analyzeLocalFileReferences(
 	semPkg *semanticPackage,
 	file *ast.File,
@@ -474,6 +496,7 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 	associatedMethods []*ast.FuncDecl,
 	declFiles map[types.Object]string,
 	outputNames map[string]string,
+	runtimeMethodSets runtimeMethodSetCache,
 ) localFileReferenceAnalysis {
 	analysis := localFileReferenceAnalysis{
 		reservedNames:   make(map[string]bool),
@@ -673,9 +696,8 @@ func (o *LoweringOwner) analyzeLocalFileReferences(
 			for method := range named.Methods() {
 				addObject(method, true)
 			}
-			methodSet := types.NewMethodSet(types.NewPointer(named))
-			for method := range methodSet.Methods() {
-				addObject(method.Obj(), true)
+			for _, method := range runtimeMethodSets.methods(named) {
+				addObject(method, true)
 			}
 			if args := named.TypeArgs(); args != nil {
 				for t := range args.Types() {

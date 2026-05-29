@@ -47,6 +47,7 @@ func BenchmarkLoweringPackage(b *testing.B) {
 			fixture.model,
 			fixture.semPkg,
 			make(map[string]map[types.Object]bool),
+			make(runtimeMethodSetCache),
 		); diagnosticsHaveErrors(diagnostics) {
 			b.Fatal(diagnostics)
 		}
@@ -65,6 +66,7 @@ func BenchmarkLoweringAnalyzeLocalFileReferences(b *testing.B) {
 			fixture.file.associated,
 			fixture.file.declFiles,
 			fixture.file.outputNames,
+			make(runtimeMethodSetCache),
 		)
 	}
 }
@@ -83,6 +85,7 @@ func BenchmarkLoweringFile(b *testing.B) {
 			fixture.file.outputNames,
 			fixture.file.lazyPackageVars,
 			fixture.lazyPackageVarsByPkg,
+			make(runtimeMethodSetCache),
 		); diagnosticsHaveErrors(diagnostics) {
 			b.Fatal(diagnostics)
 		}
@@ -175,7 +178,7 @@ func newLoweringBenchFixture(tb testing.TB) *loweringBenchFixture {
 	for idx, file := range semPkg.source.Syntax {
 		sourcePath := sourceFilePath(semPkg, idx, file)
 		associated := owner.methodDeclsForFileTypes(semPkg, file)
-		localRefs := owner.analyzeLocalFileReferences(semPkg, file, sourcePath, associated, declFiles, outputNames)
+		localRefs := owner.analyzeLocalFileReferences(semPkg, file, sourcePath, associated, declFiles, outputNames, make(runtimeMethodSetCache))
 		ctx := lowerFileContext{
 			model:                model,
 			semPkg:               semPkg,
