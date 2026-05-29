@@ -5,7 +5,7 @@
 
   <p>
     Compile Go packages into TypeScript modules for shared application logic.<br/>
-    Built for Bun, modern bundlers, browser demos, and package-level workflows.<br/>
+    Performance-optimized for fast package builds, Bun, modern bundlers, and browser demos.<br/>
   </p>
 
   <p>
@@ -29,7 +29,10 @@ GoScript compiles Go packages from inside a Go module and writes deterministic
 TypeScript packages under `@goscript/<go-package>/`. The compiler keeps package
 loading, semantic modeling, lowering, TypeScript emission, runtime helpers, and
 handwritten override packages as explicit pipeline stages so generated output is
-readable and semantic decisions have one owner.
+readable and semantic decisions have one owner. The compiler is also
+performance-tuned through real package dogfooding, so large package sets can be
+rebuilt quickly instead of treating Go-to-TypeScript generation as an offline
+batch step.
 
 > "Right now goscript looks pretty cool if [your] problem is 'I want this
 > self-sufficient algorithm [to] be available in Go and JS runtimes.'"
