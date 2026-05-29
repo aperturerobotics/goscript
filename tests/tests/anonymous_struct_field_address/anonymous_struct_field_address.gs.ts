@@ -54,7 +54,7 @@ export function entries(): $.VarRef<entry[]> | null {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let table = entries()
+	let table: $.VarRef<entry[]> | null = entries()
 	$.pointerValue<entry[]>(table)[0].add(5)
 	$.println($.pointerValue<entry[]>(table)[0].value)
 }

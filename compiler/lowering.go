@@ -56,6 +56,7 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel) (*Lower
 	}
 
 	program := &LoweredProgram{}
+	lazyPackageVars := make(map[string]map[types.Object]bool, len(model.packages))
 	semPkgs := make([]*semanticPackage, 0, len(model.packages))
 	for _, semPkg := range model.packages {
 		semPkgs = append(semPkgs, semPkg)
@@ -70,7 +71,7 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel) (*Lower
 			diagnostics = append(diagnostics, loweringUnsupported("package", semPkg.pkgPath, "missing semantic source package"))
 			continue
 		}
-		loweredPkg, pkgDiagnostics := o.lowerPackage(model, semPkg)
+		loweredPkg, pkgDiagnostics := o.lowerPackage(model, semPkg, lazyPackageVars)
 		diagnostics = append(diagnostics, pkgDiagnostics...)
 		if loweredPkg != nil {
 			program.packages = append(program.packages, loweredPkg)
@@ -82,18 +83,31 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel) (*Lower
 	return program, nil
 }
 
-func (o *LoweringOwner) lowerPackage(model *SemanticModel, semPkg *semanticPackage) (*loweredPackage, []Diagnostic) {
+func (o *LoweringOwner) lowerPackage(
+	model *SemanticModel,
+	semPkg *semanticPackage,
+	lazyPackageVarsByPkg map[string]map[types.Object]bool,
+) (*loweredPackage, []Diagnostic) {
 	loweredPkg := &loweredPackage{
 		pkgPath: semPkg.pkgPath,
 		name:    semPkg.name,
 	}
 	declFiles := packageDeclFiles(semPkg)
 	outputNames := packageOutputNames(semPkg)
-	lazyPackageVars := o.lazyPackageVars(semPkg, declFiles)
+	lazyPackageVars := o.packageLazyVars(semPkg, lazyPackageVarsByPkg, declFiles)
 	var diagnostics []Diagnostic
 	for idx, file := range semPkg.source.Syntax {
 		sourcePath := sourceFilePath(semPkg, idx, file)
-		loweredFile, fileDiagnostics := o.lowerFile(model, semPkg, file, sourcePath, declFiles, outputNames, lazyPackageVars)
+		loweredFile, fileDiagnostics := o.lowerFile(
+			model,
+			semPkg,
+			file,
+			sourcePath,
+			declFiles,
+			outputNames,
+			lazyPackageVars,
+			lazyPackageVarsByPkg,
+		)
 		diagnostics = append(diagnostics, fileDiagnostics...)
 		if loweredFile != nil {
 			loweredPkg.files = append(loweredPkg.files, loweredFile)
@@ -125,6 +139,7 @@ func (o *LoweringOwner) lowerFile(
 	declFiles map[types.Object]string,
 	outputNames map[string]string,
 	lazyPackageVars map[types.Object]bool,
+	lazyPackageVarsByPkg map[string]map[types.Object]bool,
 ) (*loweredFile, []Diagnostic) {
 	associatedMethods := o.methodDeclsForFileTypes(semPkg, file)
 	relevantImportFiles := map[string]bool{sourcePath: true}
@@ -231,18 +246,19 @@ func (o *LoweringOwner) lowerFile(
 	loweredFile.imports = append(loweredFile.imports, localImports...)
 
 	ctx := lowerFileContext{
-		model:           model,
-		semPkg:          semPkg,
-		file:            file,
-		importAliases:   importAliases,
-		importPaths:     importPaths,
-		importNames:     importNames,
-		importObjects:   importObjects,
-		sourcePath:      sourcePath,
-		localAliases:    localRefs.aliases,
-		lazyPackageVars: lazyPackageVars,
-		tempNames:       newTempNameOwner(),
-		topLevel:        true,
+		model:                model,
+		semPkg:               semPkg,
+		file:                 file,
+		importAliases:        importAliases,
+		importPaths:          importPaths,
+		importNames:          importNames,
+		importObjects:        importObjects,
+		sourcePath:           sourcePath,
+		localAliases:         localRefs.aliases,
+		lazyPackageVars:      lazyPackageVars,
+		lazyPackageVarsByPkg: lazyPackageVarsByPkg,
+		tempNames:            newTempNameOwner(),
+		topLevel:             true,
 	}
 	var diagnostics []Diagnostic
 	var packageInitCalls []string
@@ -994,36 +1010,37 @@ func safeParamName(param *types.Var, idx int) string {
 }
 
 type lowerFileContext struct {
-	model             *SemanticModel
-	semPkg            *semanticPackage
-	file              *ast.File
-	importAliases     map[string]string
-	importPaths       map[string]string
-	importNames       map[string]string
-	importObjects     map[*types.PkgName]string
-	sourcePath        string
-	localAliases      map[types.Object]string
-	lazyPackageVars   map[types.Object]bool
-	identAliases      map[types.Object]string
-	identAliasRefs    map[types.Object]bool
-	tempNames         *tempNameOwner
-	signature         *types.Signature
-	typeParams        map[string]bool
-	staticTypeParams  map[string]bool
-	asyncFunction     bool
-	functionTypeDepth int
-	deferState        *loweredDeferState
-	rangeBranch       *loweredRangeBranch
-	rangeBreak        bool
-	rangeContinue     bool
-	gotoLabels        map[string]bool
-	forwardGotos      map[string]bool
-	gotoStateLabels   map[string]bool
-	gotoStateVar      string
-	gotoStateLoop     string
-	loopLabel         string
-	switchBreak       bool
-	topLevel          bool
+	model                *SemanticModel
+	semPkg               *semanticPackage
+	file                 *ast.File
+	importAliases        map[string]string
+	importPaths          map[string]string
+	importNames          map[string]string
+	importObjects        map[*types.PkgName]string
+	sourcePath           string
+	localAliases         map[types.Object]string
+	lazyPackageVars      map[types.Object]bool
+	lazyPackageVarsByPkg map[string]map[types.Object]bool
+	identAliases         map[types.Object]string
+	identAliasRefs       map[types.Object]bool
+	tempNames            *tempNameOwner
+	signature            *types.Signature
+	typeParams           map[string]bool
+	staticTypeParams     map[string]bool
+	asyncFunction        bool
+	functionTypeDepth    int
+	deferState           *loweredDeferState
+	rangeBranch          *loweredRangeBranch
+	rangeBreak           bool
+	rangeContinue        bool
+	gotoLabels           map[string]bool
+	forwardGotos         map[string]bool
+	gotoStateLabels      map[string]bool
+	gotoStateVar         string
+	gotoStateLoop        string
+	loopLabel            string
+	switchBreak          bool
+	topLevel             bool
 }
 
 type tempNameOwner struct {
@@ -1436,6 +1453,31 @@ func packageOutputNames(semPkg *semanticPackage) map[string]string {
 	return outputNames
 }
 
+func (o *LoweringOwner) packageLazyVars(
+	semPkg *semanticPackage,
+	cache map[string]map[types.Object]bool,
+	declFiles map[types.Object]string,
+) map[types.Object]bool {
+	if semPkg == nil {
+		return nil
+	}
+	if cache == nil {
+		if declFiles == nil {
+			declFiles = packageDeclFiles(semPkg)
+		}
+		return o.lazyPackageVars(semPkg, declFiles)
+	}
+	if lazy, ok := cache[semPkg.pkgPath]; ok {
+		return lazy
+	}
+	if declFiles == nil {
+		declFiles = packageDeclFiles(semPkg)
+	}
+	lazy := o.lazyPackageVars(semPkg, declFiles)
+	cache[semPkg.pkgPath] = lazy
+	return lazy
+}
+
 func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage, declFiles map[types.Object]string) map[types.Object]bool {
 	if semPkg == nil || semPkg.source == nil {
 		return nil
@@ -1602,7 +1644,7 @@ func (o *LoweringOwner) packageVarIsLazy(ctx lowerFileContext, obj *types.Var) b
 	if semPkg == nil {
 		return false
 	}
-	for lazyObj := range o.lazyPackageVars(semPkg, packageDeclFiles(semPkg)) {
+	for lazyObj := range o.packageLazyVars(semPkg, ctx.lazyPackageVarsByPkg, nil) {
 		if lazyObj != nil && lazyObj.Name() == obj.Name() &&
 			lazyObj.Pkg() != nil && lazyObj.Pkg().Path() == obj.Pkg().Path() {
 			return true
@@ -1619,7 +1661,7 @@ func (o *LoweringOwner) packageVarNameIsLazy(ctx lowerFileContext, pkgPath, name
 	if semPkg == nil {
 		return false
 	}
-	for lazyObj := range o.lazyPackageVars(semPkg, packageDeclFiles(semPkg)) {
+	for lazyObj := range o.packageLazyVars(semPkg, ctx.lazyPackageVarsByPkg, nil) {
 		if lazyObj != nil && lazyObj.Name() == name {
 			return true
 		}

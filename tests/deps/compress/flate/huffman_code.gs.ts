@@ -258,7 +258,7 @@ export class huffmanEncoder {
 
 		let bitCount: $.Slice<number> = $.goSlice($.pointerValue<huffmanEncoder>(h).bitCount, undefined, maxBits + 1)
 		let __goscriptShadow1 = 1
-		let counts = $.indexRef(leafCounts, maxBits)
+		let counts: $.VarRef<number[]> | null = $.indexRef(leafCounts, maxBits)
 		for (let __goscriptShadow2 = $.int(maxBits, 32); __goscriptShadow2 > 0; __goscriptShadow2--) {
 			// chain.leafCount gives the number of literals requiring at least "bits"
 			// bits to encode.
