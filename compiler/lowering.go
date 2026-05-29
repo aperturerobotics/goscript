@@ -3106,6 +3106,10 @@ func (o *LoweringOwner) lowerBlock(ctx lowerFileContext, block *ast.BlockStmt) (
 }
 
 func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]loweredStmt, []Diagnostic) {
+	return o.lowerStmtInto(ctx, stmt, nil)
+}
+
+func (o *LoweringOwner) lowerStmtInto(ctx lowerFileContext, stmt ast.Stmt, out []loweredStmt) ([]loweredStmt, []Diagnostic) {
 	switch typed := stmt.(type) {
 	case *ast.DeclStmt:
 		decls, diagnostics := o.lowerDecl(ctx, typed.Decl)
@@ -3121,27 +3125,28 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 				stmts = append(stmts, loweredStmt{text: strings.TrimRight(b.String(), "\n")})
 			}
 		}
-		return stmts, diagnostics
+		return append(out, stmts...), diagnostics
 	case *ast.BlockStmt:
 		body, diagnostics := o.lowerBlock(ctx, typed)
-		return []loweredStmt{{hasBlock: true, children: body}}, diagnostics
+		return append(out, loweredStmt{hasBlock: true, children: body}), diagnostics
 	case *ast.AssignStmt:
-		return o.lowerAssignStmt(ctx, typed)
+		stmts, diagnostics := o.lowerAssignStmt(ctx, typed)
+		return append(out, stmts...), diagnostics
 	case *ast.SendStmt:
 		text, diagnostics := o.lowerSendStmt(ctx, typed)
-		return []loweredStmt{{text: text}}, diagnostics
+		return append(out, loweredStmt{text: text}), diagnostics
 	case *ast.GoStmt:
 		text, diagnostics := o.lowerGoStmt(ctx, typed)
-		return []loweredStmt{{text: text}}, diagnostics
+		return append(out, loweredStmt{text: text}), diagnostics
 	case *ast.DeferStmt:
 		text, diagnostics := o.lowerDeferStmt(ctx, typed)
-		return []loweredStmt{{text: text}}, diagnostics
+		return append(out, loweredStmt{text: text}), diagnostics
 	case *ast.ExprStmt:
 		text, diagnostics := o.lowerExpr(ctx, typed.X)
-		return []loweredStmt{{text: expressionStmtText(text)}}, diagnostics
+		return append(out, loweredStmt{text: expressionStmtText(text)}), diagnostics
 	case *ast.ReturnStmt:
 		text, diagnostics := o.lowerReturnStmt(ctx, typed)
-		return []loweredStmt{{text: text}}, diagnostics
+		return append(out, loweredStmt{text: text}), diagnostics
 	case *ast.IfStmt:
 		var diagnostics []Diagnostic
 		var init []loweredStmt
@@ -3174,39 +3179,43 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 		}
 		if len(init) != 0 {
 			init = append(init, stmt)
-			return append(initPrelude, loweredStmt{children: init}), diagnostics
+			initPrelude = append(initPrelude, loweredStmt{children: init})
+			return append(out, initPrelude...), diagnostics
 		}
-		return []loweredStmt{stmt}, diagnostics
+		return append(out, stmt), diagnostics
 	case *ast.ForStmt:
 		lowered, diagnostics := o.lowerForStmt(ctx, typed)
-		return []loweredStmt{lowered}, diagnostics
+		return append(out, lowered), diagnostics
 	case *ast.RangeStmt:
 		lowered, diagnostics := o.lowerRangeStmt(ctx, typed)
-		return []loweredStmt{lowered}, diagnostics
+		return append(out, lowered), diagnostics
 	case *ast.SelectStmt:
 		lowered, diagnostics := o.lowerSelectStmt(ctx, typed)
-		return []loweredStmt{{selectStmt: lowered}}, diagnostics
+		return append(out, loweredStmt{selectStmt: lowered}), diagnostics
 	case *ast.SwitchStmt:
-		return o.lowerSwitchStmt(ctx, typed)
+		stmts, diagnostics := o.lowerSwitchStmt(ctx, typed)
+		return append(out, stmts...), diagnostics
 	case *ast.TypeSwitchStmt:
-		return o.lowerTypeSwitchStmt(ctx, typed)
+		stmts, diagnostics := o.lowerTypeSwitchStmt(ctx, typed)
+		return append(out, stmts...), diagnostics
 	case *ast.LabeledStmt:
 		lowered, diagnostics := o.lowerStmt(ctx, typed.Stmt)
 		if len(lowered) != 0 {
 			label := safeIdentifier(typed.Label.Name)
 			if lowered[0].text == "" {
-				return []loweredStmt{{text: label + ":", children: lowered}}, diagnostics
+				return append(out, loweredStmt{text: label + ":", children: lowered}), diagnostics
 			}
 			if labeledTextCannotPrefix(lowered[0].text) {
-				return append([]loweredStmt{{text: label + ":;"}}, lowered...), diagnostics
+				out = append(out, loweredStmt{text: label + ":;"})
+				return append(out, lowered...), diagnostics
 			}
 			lowered[0].text = label + ": " + lowered[0].text
 		}
-		return lowered, diagnostics
+		return append(out, lowered...), diagnostics
 	case *ast.IncDecStmt:
 		if star, ok := unwrapParenExpr(typed.X).(*ast.StarExpr); ok {
 			expr, diagnostics := o.lowerPointerStorageExpr(ctx, star.X)
-			return []loweredStmt{{text: expr + typed.Tok.String()}}, diagnostics
+			return append(out, loweredStmt{text: expr + typed.Tok.String()}), diagnostics
 		}
 		if index, ok := unwrapParenExpr(typed.X).(*ast.IndexExpr); ok && isMapType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)) {
 			right := "1"
@@ -3214,7 +3223,8 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 			if typed.Tok == token.DEC {
 				tok = token.SUB_ASSIGN
 			}
-			return o.lowerMapIndexUpdateStmts(ctx, index, tok, right, ctx.semPkg.source.TypesInfo.TypeOf(typed.X))
+			stmts, diagnostics := o.lowerMapIndexUpdateStmts(ctx, index, tok, right, ctx.semPkg.source.TypesInfo.TypeOf(typed.X))
+			return append(out, stmts...), diagnostics
 		}
 		if setter, ok := o.packageVarSetterForAssignment(ctx, typed.X); ok {
 			expr, diagnostics := o.lowerExpr(ctx, typed.X)
@@ -3222,58 +3232,58 @@ func (o *LoweringOwner) lowerStmt(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 			if typed.Tok == token.DEC {
 				op = "-"
 			}
-			return []loweredStmt{{text: setter + "(" + expr + " " + op + " 1)"}}, diagnostics
+			return append(out, loweredStmt{text: setter + "(" + expr + " " + op + " 1)"}), diagnostics
 		}
 		expr, diagnostics := o.lowerExpr(ctx, typed.X)
-		return []loweredStmt{{text: expr + typed.Tok.String()}}, diagnostics
+		return append(out, loweredStmt{text: expr + typed.Tok.String()}), diagnostics
 	case *ast.BranchStmt:
 		if typed.Label != nil {
 			switch typed.Tok {
 			case token.BREAK, token.CONTINUE:
-				return []loweredStmt{{text: typed.Tok.String() + " " + safeIdentifier(typed.Label.Name)}}, nil
+				return append(out, loweredStmt{text: typed.Tok.String() + " " + safeIdentifier(typed.Label.Name)}), nil
 			case token.GOTO:
 				label := safeIdentifier(typed.Label.Name)
 				if ctx.gotoStateLabels[label] {
-					return []loweredStmt{
-						{text: ctx.gotoStateVar + " = " + strconv.Quote(label)},
-						{text: "continue " + ctx.gotoStateLoop},
-					}, nil
+					return append(out,
+						loweredStmt{text: ctx.gotoStateVar + " = " + strconv.Quote(label)},
+						loweredStmt{text: "continue " + ctx.gotoStateLoop},
+					), nil
 				}
 				if ctx.forwardGotos[label] {
-					return []loweredStmt{{text: "break " + label}}, nil
+					return append(out, loweredStmt{text: "break " + label}), nil
 				}
 				if ctx.gotoLabels[label] {
-					return []loweredStmt{{text: "continue " + label}}, nil
+					return append(out, loweredStmt{text: "continue " + label}), nil
 				}
-				return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported goto branch to "+label)}
+				return out, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported goto branch to "+label)}
 			default:
-				return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported labeled branch")}
+				return out, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported labeled branch")}
 			}
 		}
 		switch typed.Tok {
 		case token.BREAK, token.CONTINUE:
 			if typed.Tok == token.BREAK && ctx.loopLabel != "" && !ctx.switchBreak {
-				return []loweredStmt{{text: "break " + ctx.loopLabel}}, nil
+				return append(out, loweredStmt{text: "break " + ctx.loopLabel}), nil
 			}
 			if typed.Tok == token.CONTINUE && ctx.loopLabel != "" {
-				return []loweredStmt{{text: "continue " + ctx.loopLabel}}, nil
+				return append(out, loweredStmt{text: "continue " + ctx.loopLabel}), nil
 			}
 			if typed.Tok == token.BREAK && ctx.rangeBranch != nil && ctx.rangeBreak {
-				return []loweredStmt{{text: "return false"}}, nil
+				return append(out, loweredStmt{text: "return false"}), nil
 			}
 			if typed.Tok == token.CONTINUE && ctx.rangeBranch != nil && ctx.rangeContinue {
-				return []loweredStmt{{text: "return true"}}, nil
+				return append(out, loweredStmt{text: "return true"}), nil
 			}
-			return []loweredStmt{{text: typed.Tok.String()}}, nil
+			return append(out, loweredStmt{text: typed.Tok.String()}), nil
 		case token.FALLTHROUGH:
-			return []loweredStmt{{text: "fallthrough"}}, nil
+			return append(out, loweredStmt{text: "fallthrough"}), nil
 		default:
-			return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported branch")}
+			return out, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported branch")}
 		}
 	case *ast.EmptyStmt:
-		return nil, nil
+		return out, nil
 	default:
-		return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported statement kind")}
+		return out, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported statement kind")}
 	}
 }
 
@@ -3428,12 +3438,13 @@ func (o *LoweringOwner) lowerStmtListAfter(
 			}
 		}
 		if stmtCtx, nextCtx, ok := o.lowerDeclStatementContext(ctx, stmt); ok {
-			stmtLowered, stmtDiagnostics := o.lowerStmt(stmtCtx, stmt)
+			start := len(lowered)
+			var stmtDiagnostics []Diagnostic
+			lowered, stmtDiagnostics = o.lowerStmtInto(stmtCtx, stmt, lowered)
 			diagnostics = append(diagnostics, stmtDiagnostics...)
-			if len(stmtLowered) != 0 && len(leading) != 0 {
-				stmtLowered[0].leading = append(leading, stmtLowered[0].leading...)
+			if len(lowered) > start && len(leading) != 0 {
+				lowered[start].leading = append(leading, lowered[start].leading...)
 			}
-			lowered = append(lowered, stmtLowered...)
 			ctx = nextCtx
 			if endLine := sourceLine(ctx, stmt.End()); endLine != 0 {
 				prevEndLine = endLine
@@ -3458,12 +3469,13 @@ func (o *LoweringOwner) lowerStmtListAfter(
 			}
 			continue
 		}
-		stmtLowered, stmtDiagnostics := o.lowerStmt(ctx, stmt)
+		start := len(lowered)
+		var stmtDiagnostics []Diagnostic
+		lowered, stmtDiagnostics = o.lowerStmtInto(ctx, stmt, lowered)
 		diagnostics = append(diagnostics, stmtDiagnostics...)
-		if len(stmtLowered) != 0 && len(leading) != 0 {
-			stmtLowered[0].leading = append(leading, stmtLowered[0].leading...)
+		if len(lowered) > start && len(leading) != 0 {
+			lowered[start].leading = append(leading, lowered[start].leading...)
 		}
-		lowered = append(lowered, stmtLowered...)
 		if endLine := sourceLine(ctx, stmt.End()); endLine != 0 {
 			prevEndLine = endLine
 		}
