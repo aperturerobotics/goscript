@@ -2927,6 +2927,9 @@ func expressionUsesObject(ctx lowerFileContext, expr ast.Expr, obj types.Object)
 	if expr == nil || obj == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
 		return false
 	}
+	if ident, ok := ast.Unparen(expr).(*ast.Ident); ok {
+		return ctx.semPkg.source.TypesInfo.Uses[ident] == obj || ctx.semPkg.source.TypesInfo.Defs[ident] == obj
+	}
 	uses := false
 	ast.Inspect(expr, func(node ast.Node) bool {
 		if uses {
