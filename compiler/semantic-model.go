@@ -1851,7 +1851,7 @@ func implementationHasExactMethodSignatures(
 		if implSignature == nil || ifaceSignature == nil {
 			return false, false
 		}
-		if !types.IdenticalIgnoreTags(signatureWithoutReceiver(implSignature), signatureWithoutReceiver(ifaceSignature)) {
+		if !methodSignaturesIdentical(implSignature, ifaceSignature) {
 			return false, true
 		}
 	}
@@ -1875,11 +1875,27 @@ func packagePathOfObject(obj types.Object) string {
 	return obj.Pkg().Path()
 }
 
-func signatureWithoutReceiver(signature *types.Signature) *types.Signature {
-	if signature == nil {
-		return nil
+func methodSignaturesIdentical(implSignature *types.Signature, ifaceSignature *types.Signature) bool {
+	if implSignature == nil || ifaceSignature == nil || implSignature.Variadic() != ifaceSignature.Variadic() {
+		return false
 	}
-	return types.NewSignatureType(nil, nil, nil, signature.Params(), signature.Results(), signature.Variadic())
+	return tupleTypesIdentical(implSignature.Params(), ifaceSignature.Params()) &&
+		tupleTypesIdentical(implSignature.Results(), ifaceSignature.Results())
+}
+
+func tupleTypesIdentical(a *types.Tuple, b *types.Tuple) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	if a.Len() != b.Len() {
+		return false
+	}
+	for idx := range a.Len() {
+		if !types.IdenticalIgnoreTags(a.At(idx).Type(), b.At(idx).Type()) {
+			return false
+		}
+	}
+	return true
 }
 
 func namedTypeHasParams(named *types.Named) bool {
