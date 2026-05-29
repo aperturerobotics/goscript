@@ -74,6 +74,7 @@ func (o *SemanticModelOwner) Build(ctx context.Context, graph *PackageGraph) (*S
 		return model, diagnostics
 	}
 
+	model.functionCallers = semanticFunctionCallers(model)
 	diagnostics = append(diagnostics, o.propagateFunctionAsync(ctx, model)...)
 	if diagnosticsHaveErrors(diagnostics) {
 		return model, diagnostics
@@ -124,6 +125,7 @@ func newSemanticModel() *SemanticModel {
 		addressTaken:             make(map[types.Object]bool),
 		needsVarRef:              make(map[types.Object]bool),
 		functions:                make(map[*types.Func]*semanticFunction),
+		functionCallers:          make(map[*types.Func][]*semanticFunction),
 		functionsByFullName:      make(map[string]*semanticFunction),
 		functionLookupMisses:     make(map[*types.Func]bool),
 		functionFullNames:        make(map[*types.Func]string),
@@ -1134,26 +1136,54 @@ func receiverNamedType(typ types.Type) *types.Named {
 }
 
 func (o *SemanticModelOwner) propagateFunctionAsync(ctx context.Context, model *SemanticModel) []Diagnostic {
-	changed := true
-	for changed {
+	if err := ctx.Err(); err != nil {
+		return []Diagnostic{contextCanceledDiagnostic(err)}
+	}
+	queued := make(map[*types.Func]bool)
+	queue := make([]*types.Func, 0)
+	enqueue := func(fn *types.Func) {
+		fn = functionOriginOrSelf(fn)
+		if fn == nil || queued[fn] {
+			return
+		}
+		queued[fn] = true
+		queue = append(queue, fn)
+	}
+	for called := range model.functionCallers {
+		if model.functionAsync(called) {
+			enqueue(called)
+		}
+	}
+	for len(queue) != 0 {
 		if err := ctx.Err(); err != nil {
 			return []Diagnostic{contextCanceledDiagnostic(err)}
 		}
-		changed = false
-		for _, semFn := range model.functions {
+		called := queue[0]
+		queue = queue[1:]
+		for _, semFn := range model.functionCallers[called] {
 			if err := ctx.Err(); err != nil {
 				return []Diagnostic{contextCanceledDiagnostic(err)}
 			}
-			for called := range semFn.calls {
-				if model.functionAsync(called) {
-					if markFunctionAsync(semFn, "call:"+model.functionFullName(called)) {
-						changed = true
-					}
-				}
+			if markFunctionAsync(semFn, "call:"+model.functionFullName(called)) {
+				enqueue(semFn.function)
 			}
 		}
 	}
 	return nil
+}
+
+func semanticFunctionCallers(model *SemanticModel) map[*types.Func][]*semanticFunction {
+	callers := make(map[*types.Func][]*semanticFunction)
+	for _, semFn := range model.functions {
+		for called := range semFn.calls {
+			called = functionOriginOrSelf(called)
+			if called == nil {
+				continue
+			}
+			callers[called] = append(callers[called], semFn)
+		}
+	}
+	return callers
 }
 
 func markFunctionAsync(fn *semanticFunction, reason string) bool {
