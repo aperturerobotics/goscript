@@ -5,7 +5,6 @@ import (
 	"go/token"
 	"go/types"
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 )
@@ -357,7 +356,7 @@ func TestSemanticModelPropagatesAsyncToOverrideInterfaceMethods(t *testing.T) {
 		if implementation.typ != nil && implementation.typ.Obj().Name() == "asyncWriter" &&
 			implementation.iface != nil && implementation.iface.Obj().Pkg().Path() == "io" &&
 			implementation.iface.Obj().Name() == "Writer" &&
-			implementation.pointer && hasAsyncImplementationMethod(implementation, "Write") {
+			implementation.pointer {
 			found = true
 			break
 		}
@@ -656,8 +655,4 @@ func hasInterfaceImplementation(model *SemanticModel, typ string, iface string, 
 		}
 	}
 	return false
-}
-
-func hasAsyncImplementationMethod(implementation semanticInterfaceImplementation, method string) bool {
-	return slices.Contains(implementation.asyncMethods, method)
 }

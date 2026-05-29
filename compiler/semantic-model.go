@@ -1576,15 +1576,12 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 			implMethod := graphEntry.implMethods[methodName]
 			implFn := semanticFunctionFor(model, implMethod)
 			if implFn != nil && implFn.async {
-				implementation.asyncMethods = append(implementation.asyncMethods, methodName)
 				model.markInterfaceMethodAsync(ifaceMethod)
 				if ifaceFn := semanticFunctionFor(model, ifaceMethod); ifaceFn != nil {
 					markFunctionAsync(ifaceFn, "interface-implementation")
 				}
+				markFunctionAsync(implFn, "interface-method")
 			}
-		}
-		for _, methodName := range implementation.asyncMethods {
-			markFunctionAsync(semanticFunctionFor(model, graphEntry.implMethods[methodName]), "interface-method")
 		}
 		model.interfaceImplementations = append(model.interfaceImplementations, implementation)
 	}

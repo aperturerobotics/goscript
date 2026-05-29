@@ -93,10 +93,9 @@ type semanticFunction struct {
 }
 
 type semanticInterfaceImplementation struct {
-	typ          *types.Named
-	iface        *types.Named
-	pointer      bool
-	asyncMethods []string
+	typ     *types.Named
+	iface   *types.Named
+	pointer bool
 }
 
 type semanticInterfaceImplementationGraphEntry struct {
