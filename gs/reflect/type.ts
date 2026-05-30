@@ -229,7 +229,12 @@ function mergeTypeMetadata(target: Type, source: Type): void {
     target.mergeMethodSignatures(source.methodSignatures())
     return
   }
+  if (target instanceof PointerType && source instanceof PointerType) {
+    target.mergeMethodSignatures(source.methodSignatures())
+    return
+  }
   if (target instanceof FunctionType && source instanceof FunctionType) {
+    target.mergeSignature(source)
     target.mergeMethodSignatures(source.methodSignatures())
   }
 }
@@ -252,6 +257,9 @@ function typeIdentityKey(t: Type, seen = new Set<Type>()): string {
     case Map:
       return `${t.Kind()}:${typeIdentityKey(t.Key(), seen)}:${typeIdentityKey(t.Elem(), seen)}`
     case Func: {
+      if (t.Name() !== '') {
+        return `${t.Kind()}:named:${t.PkgPath()}:${t.Name()}`
+      }
       const params = globalThis.Array.from(
         { length: t.NumIn() },
         (_unused, idx) => typeIdentityKey(t.In(idx), seen),
@@ -1892,7 +1900,10 @@ class ArrayType implements Type {
 
 // Pointer type implementation
 class PointerType implements Type {
-  constructor(private _elemType: Type) {}
+  constructor(
+    private _elemType: Type,
+    private _methods: $.MethodSignature[] = [],
+  ) {}
 
   public String(): string {
     return '*' + this._elemType.String()
@@ -2000,10 +2011,18 @@ class PointerType implements Type {
   }
 
   public NumMethod(): number {
-    return 0
+    return typeMethods(this).length
   }
   public MethodByName(name: string): [Method, boolean] {
     return typeMethodByName(this, name)
+  }
+
+  public methodSignatures(): $.MethodSignature[] {
+    return this._methods
+  }
+
+  public mergeMethodSignatures(methods: $.MethodSignature[]): void {
+    this._methods = mergeMethodSignatureList(this._methods, methods)
   }
 
   public Len(): number {
@@ -2031,6 +2050,7 @@ class FunctionType implements Type {
   private _params: Type[]
   private _results: Type[]
   private _variadic: boolean
+  private _hasSignature: boolean
   private _methods: $.MethodSignature[]
 
   constructor(signatureOrDescriptor: string | FunctionTypeDescriptor) {
@@ -2040,6 +2060,7 @@ class FunctionType implements Type {
       this._params = []
       this._results = []
       this._variadic = false
+      this._hasSignature = false
       this._methods = []
       return
     }
@@ -2048,6 +2069,10 @@ class FunctionType implements Type {
     this._params = signatureOrDescriptor.params ?? []
     this._results = signatureOrDescriptor.results ?? []
     this._variadic = signatureOrDescriptor.variadic ?? false
+    this._hasSignature =
+      signatureOrDescriptor.signature !== undefined ||
+      signatureOrDescriptor.params !== undefined ||
+      signatureOrDescriptor.results !== undefined
     this._methods = signatureOrDescriptor.methods ?? []
     this._signature =
       signatureOrDescriptor.signature ??
@@ -2193,6 +2218,17 @@ class FunctionType implements Type {
 
   public mergeMethodSignatures(methods: $.MethodSignature[]): void {
     this._methods = mergeMethodSignatureList(this._methods, methods)
+  }
+
+  public mergeSignature(source: FunctionType): void {
+    if (!source._hasSignature || this._hasSignature) {
+      return
+    }
+    this._params = source._params
+    this._results = source._results
+    this._variadic = source._variadic
+    this._signature = source._signature
+    this._hasSignature = true
   }
 
   public Len(): number {
@@ -2712,6 +2748,9 @@ function typeInfoIdentityKey(
         seen,
       )}`
     case $.TypeKind.Function:
+      if (info.name) {
+        return `named:${info.name}`
+      }
       return `func:${info.isVariadic === true}:${(info.params ?? [])
         .map((param) => typeInfoIdentityKey(param, seen))
         .join(',')}:${(info.results ?? [])
@@ -2857,6 +2896,12 @@ function typeMethods(t: Type): $.MethodSignature[] {
   }
   if (!typeInfo && t instanceof InterfaceType) {
     return t.methodSignatures()
+  }
+  if (!typeInfo && t instanceof PointerType) {
+    return mergeMethodSignatureList(
+      typeMethods(t.Elem()),
+      t.methodSignatures(),
+    )
   }
   if (!typeInfo && t instanceof BasicType) {
     return t.methodSignatures()
@@ -4061,6 +4106,10 @@ function typeWithMethodSignatures(
     return typ
   }
   if (typ instanceof BasicType) {
+    typ.mergeMethodSignatures(methods)
+    return typ
+  }
+  if (typ instanceof PointerType) {
     typ.mergeMethodSignatures(methods)
     return typ
   }

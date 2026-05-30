@@ -51,6 +51,11 @@ export function assertDoubler(__typeArgs: $.GenericTypeArgs | undefined, v: Doub
 	return [out, ok]
 }
 
+export function assertStringer(__typeArgs: $.GenericTypeArgs | undefined, v: Stringer | null): [any, boolean] {
+	let [out, ok] = $.typeAssertTuple<any>(v, __typeArgs?.["T"]?.type ?? { kind: $.TypeKind.Interface, methods: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] })
+	return [out, ok]
+}
+
 export function newMyBool(value: boolean, target: $.VarRef<boolean> | null): $.VarRef<MyBool> | null {
 	target!.value = value
 	return target
@@ -86,6 +91,11 @@ export async function main(): globalThis.Promise<void> {
 	let flag: $.VarRef<boolean> = $.varRef(false)
 	let stringer: Stringer | null = $.namedValueInterfaceValue<Stringer | null>(newMyBool(true, flag), "*main.MyBool", {String: (receiver: any, ...args: any[]) => (MyBool_String as any)(receiver, ...args)}, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "bool", typeName: "main.MyBool" } })
 	$.println("Pointer primitive interface:", $.pointerValue<Exclude<Stringer, null>>(stringer).String(), flag.value)
+
+	let __goscriptTuple1: any = assertStringer({T: { type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "bool", typeName: "main.MyBool" } }, zero: () => null, methods: {String: (receiver: any, ...args: any[]) => (MyBool_String as any)(receiver, ...args)}, methodSignatures: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] }}, stringer)
+	let genericPointer: $.VarRef<MyBool> | null = (__goscriptTuple1[0] as $.VarRef<MyBool> | null)
+	let genericPointerOK = __goscriptTuple1[1]
+	$.println("Generic pointer interface assertion:", MyBool_String(genericPointer), genericPointerOK)
 }
 
 if ($.isMainScript(import.meta)) {

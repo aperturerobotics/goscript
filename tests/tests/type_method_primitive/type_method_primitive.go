@@ -37,6 +37,11 @@ func assertDoubler[T Doubler](v Doubler) (T, bool) {
 	return out, ok
 }
 
+func assertStringer[T Stringer](v Stringer) (T, bool) {
+	out, ok := v.(T)
+	return out, ok
+}
+
 func newMyBool(value bool, target *bool) *MyBool {
 	*target = value
 	return (*MyBool)(target)
@@ -70,4 +75,7 @@ func main() {
 	var flag bool
 	var stringer Stringer = newMyBool(true, &flag)
 	println("Pointer primitive interface:", stringer.String(), flag)
+
+	genericPointer, genericPointerOK := assertStringer[*MyBool](stringer)
+	println("Generic pointer interface assertion:", genericPointer.String(), genericPointerOK)
 }

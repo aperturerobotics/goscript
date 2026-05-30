@@ -3,6 +3,7 @@ import {
   arrayToSlice,
   asArray,
   functionValue,
+  namedFunction,
   registerStructType,
   typeAssertTuple,
   TypeKind,
@@ -281,6 +282,55 @@ describe('Function Type Detection', () => {
 
     await ValueOf(acceptsNamed).Call(arrayToSlice([ValueOf(unnamedArg)]))
     expect(seen).toBe(12)
+  })
+
+  it('merges named function signature metadata into canonical type identity', () => {
+    const intType = TypeOf(0)
+    const unnamedFnType = FuncOf(
+      arrayToSlice([intType]),
+      arrayToSlice([]),
+      false,
+    )
+    const nameOnlyFirst = TypeOf(
+      namedFunction((value: number) => String(value), 'main.NameOnlyFirst'),
+    )
+    const fullFirst = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Function,
+          name: 'main.FullFirst',
+          params: [{ kind: TypeKind.Basic, name: 'int' }],
+          results: [],
+        },
+        zero: () => null,
+      },
+    })
+
+    const nameOnlyFirstFull = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Function,
+          name: 'main.NameOnlyFirst',
+          params: [{ kind: TypeKind.Basic, name: 'int' }],
+          results: [],
+        },
+        zero: () => null,
+      },
+    })
+    const fullFirstNameOnly = TypeOf(
+      namedFunction((value: number) => String(value), 'main.FullFirst'),
+    )
+
+    expect(nameOnlyFirstFull).toBe(nameOnlyFirst)
+    expect(nameOnlyFirst.NumIn()).toBe(1)
+    expect(nameOnlyFirst.In(0).String()).toBe('int')
+    expect(nameOnlyFirst.AssignableTo(unnamedFnType)).toBe(true)
+    expect(unnamedFnType.AssignableTo(nameOnlyFirst)).toBe(true)
+
+    expect(fullFirstNameOnly).toBe(fullFirst)
+    expect(fullFirst.NumIn()).toBe(1)
+    expect(fullFirst.AssignableTo(unnamedFnType)).toBe(true)
+    expect(unnamedFnType.AssignableTo(fullFirst)).toBe(true)
   })
 
   it('should validate Value.Call counts and normalize results by descriptor', async () => {

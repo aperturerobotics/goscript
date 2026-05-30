@@ -6,3 +6,4 @@ Interface assertion: 13 true
 Interface slice append: 58
 Generic interface assertion: 13 true
 Pointer primitive interface: true true
+Generic pointer interface assertion: true true

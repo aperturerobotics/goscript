@@ -10785,7 +10785,7 @@ func (o *LoweringOwner) genericTypeDescriptorExpr(ctx lowerFileContext, typ type
 }
 
 func genericTypeDescriptorNeedsMethodSignatures(typ types.Type) bool {
-	named, _ := types.Unalias(typ).(*types.Named)
+	named, _ := genericMethodSetDescriptorTarget(typ)
 	if named == nil {
 		return false
 	}
@@ -10793,11 +10793,11 @@ func genericTypeDescriptorNeedsMethodSignatures(typ types.Type) bool {
 }
 
 func (o *LoweringOwner) genericMethodDescriptors(ctx lowerFileContext, typ types.Type) string {
-	named, _ := types.Unalias(typ).(*types.Named)
+	named, methodSetType := genericMethodSetDescriptorTarget(typ)
 	if named == nil {
 		return ""
 	}
-	return o.genericMethodDescriptorsForType(ctx, named, named)
+	return o.genericMethodDescriptorsForType(ctx, named, methodSetType)
 }
 
 func (o *LoweringOwner) genericMethodDescriptorsForType(
@@ -10839,11 +10839,11 @@ func (o *LoweringOwner) genericMethodDescriptorsForType(
 }
 
 func (o *LoweringOwner) genericMethodSignatureDescriptors(typ types.Type) string {
-	named, _ := types.Unalias(typ).(*types.Named)
-	if named == nil {
+	_, methodSetType := genericMethodSetDescriptorTarget(typ)
+	if methodSetType == nil {
 		return ""
 	}
-	methodSet := types.NewMethodSet(named)
+	methodSet := types.NewMethodSet(methodSetType)
 	methods := make([]string, 0, methodSet.Len())
 	for method := range methodSet.Methods() {
 		fn, _ := method.Obj().(*types.Func)
@@ -10855,6 +10855,14 @@ func (o *LoweringOwner) genericMethodSignatureDescriptors(typ types.Type) string
 		return ""
 	}
 	return "[" + strings.Join(methods, ", ") + "]"
+}
+
+func genericMethodSetDescriptorTarget(typ types.Type) (*types.Named, types.Type) {
+	named, _ := types.Unalias(typ).(*types.Named)
+	if named == nil {
+		return namedNonStructMethodSetType(typ)
+	}
+	return named, named
 }
 
 func namedNonStructMethodSetType(typ types.Type) (*types.Named, types.Type) {

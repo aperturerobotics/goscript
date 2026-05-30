@@ -101,6 +101,52 @@ describe('TypeFor', () => {
     expect(namedIntType.Implements(stringerType)).toBe(true)
   })
 
+  it('preserves generic method signatures for pointers to named basic types', () => {
+    const stringResult = { kind: TypeKind.Basic, name: 'string' } as const
+    const methodSignatures = [
+      {
+        name: 'String',
+        args: [],
+        returns: [{ type: stringResult }],
+      },
+    ]
+    const pointerType = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Pointer,
+          elemType: {
+            kind: TypeKind.Basic,
+            name: 'bool',
+            typeName: 'main.MyBool',
+          },
+        },
+        zero: () => null,
+        methods: { String: () => 'true' },
+        methodSignatures,
+      },
+    })
+    const stringerType = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Interface,
+          methods: methodSignatures,
+        },
+        zero: () => null,
+      },
+    })
+
+    expect(pointerType.Kind()).toBe(Ptr)
+    expect(pointerType.String()).toBe('*main.MyBool')
+    expect(pointerType.NumMethod()).toBe(1)
+    const [method, ok] = pointerType.MethodByName('String')
+    expect(ok).toBe(true)
+    expect(method.Type.NumIn()).toBe(1)
+    expect(method.Type.In(0)).toBe(pointerType)
+    expect(method.Type.NumOut()).toBe(1)
+    expect(method.Type.Out(0).String()).toBe('string')
+    expect(pointerType.Implements(stringerType)).toBe(true)
+  })
+
   it('preserves named pointer type metadata on interface boxes', () => {
     const target = varRef(0)
     const boxed = namedValueInterfaceValue(

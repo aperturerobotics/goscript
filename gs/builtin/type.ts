@@ -1262,9 +1262,6 @@ function compareTypeStringWithTypeInfo(
     if (typeof elemType === 'string') {
       return elemStr === elemType
     }
-    if (elemType.name) {
-      return elemStr === elemType.name
-    }
     return compareTypeStringWithTypeInfo(elemStr, elemType)
   }
 
