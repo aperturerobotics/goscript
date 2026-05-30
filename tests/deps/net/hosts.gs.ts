@@ -74,7 +74,7 @@ export class byName {
 		() => new byName(),
 		[],
 		byName,
-		{"addrs": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, "canonicalName": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "addrs", key: "addrs", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "canonicalName", key: "canonicalName", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [1], offset: 24, exported: false }]
 	)
 }
 

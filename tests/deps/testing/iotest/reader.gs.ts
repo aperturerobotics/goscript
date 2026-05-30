@@ -54,7 +54,7 @@ export class oneByteReader {
 		() => new oneByteReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		oneByteReader,
-		{"r": "io.Reader"}
+		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -94,7 +94,7 @@ export class halfReader {
 		() => new halfReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		halfReader,
-		{"r": "io.Reader"}
+		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -170,7 +170,7 @@ export class dataErrReader {
 		() => new dataErrReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		dataErrReader,
-		{"r": "io.Reader", "unread": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
+		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "unread", key: "unread", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "testing/iotest", index: [2], offset: 40, exported: false }]
 	)
 }
 
@@ -224,7 +224,7 @@ export class timeoutReader {
 		() => new timeoutReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		timeoutReader,
-		{"r": "io.Reader", "count": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "count", key: "count", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }]
 	)
 }
 
@@ -264,7 +264,7 @@ export class errReader {
 		() => new errReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		errReader,
-		{"err": "error"}
+		[{ name: "err", key: "err", type: "error", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -339,7 +339,7 @@ export class smallByteReader {
 		() => new smallByteReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		smallByteReader,
-		{"r": "io.Reader", "off": { kind: $.TypeKind.Basic, name: "int" }, "n": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "off", key: "off", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }, { name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "testing/iotest", index: [2], offset: 24, exported: false }]
 	)
 }
 

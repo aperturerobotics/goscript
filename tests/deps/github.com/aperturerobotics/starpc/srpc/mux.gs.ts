@@ -193,7 +193,7 @@ export class mux {
 		() => new mux(),
 		[{ name: "HasService", args: [], returns: [] }, { name: "HasServiceMethod", args: [], returns: [] }, { name: "InvokeMethod", args: [], returns: [] }, { name: "Register", args: [], returns: [] }],
 		mux,
-		{"fallback": { kind: $.TypeKind.Slice, elemType: "srpc.Invoker" }, "rmtx": "sync.RWMutex", "services": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: "srpc.muxMethods" }}
+		[{ name: "fallback", key: "fallback", type: { kind: $.TypeKind.Slice, elemType: "srpc.Invoker" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "rmtx", key: "rmtx", type: "sync.RWMutex", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 24, exported: false }, { name: "services", key: "services", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: "srpc.muxMethods" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [2], offset: 48, exported: false }]
 	)
 }
 

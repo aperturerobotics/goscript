@@ -55,10 +55,14 @@ export class Error {
       },
     ],
     Error,
-    {
-      Pos: { type: 'go/token.Position' },
-      Msg: { kind: $.TypeKind.Basic, name: 'string' },
-    },
+    [
+      { name: 'Pos', key: 'Pos', type: 'go/token.Position' },
+      {
+        name: 'Msg',
+        key: 'Msg',
+        type: { kind: $.TypeKind.Basic, name: 'string' },
+      },
+    ],
   )
 }
 

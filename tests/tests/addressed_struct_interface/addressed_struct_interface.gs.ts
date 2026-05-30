@@ -50,7 +50,7 @@ export class Buffer {
 		() => new Buffer(),
 		[{ name: "Write", args: [], returns: [] }],
 		Buffer,
-		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
+		[{ name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/addressed_struct_interface", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -204,7 +204,7 @@ export class IPAddr {
 		() => new IPAddr(),
 		[{ name: "Network", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "family", args: [], returns: [] }, { name: "isWildcard", args: [], returns: [] }, { name: "opAddr", args: [], returns: [] }, { name: "sockaddr", args: [], returns: [] }, { name: "toLocal", args: [], returns: [] }],
 		IPAddr,
-		{"IP": "net.IP", "Zone": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "IP", key: "IP", type: "net.IP", index: [0], offset: 0, exported: true }, { name: "Zone", key: "Zone", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 24, exported: true }]
 	)
 }
 
@@ -494,7 +494,7 @@ export class IPConn {
 		() => new IPConn(),
 		[{ name: "ReadFrom", args: [], returns: [] }, { name: "ReadFromIP", args: [], returns: [] }, { name: "ReadMsgIP", args: [], returns: [] }, { name: "SyscallConn", args: [], returns: [] }, { name: "WriteMsgIP", args: [], returns: [] }, { name: "WriteTo", args: [], returns: [] }, { name: "WriteToIP", args: [], returns: [] }, { name: "readFrom", args: [], returns: [] }, { name: "readMsg", args: [], returns: [] }, { name: "writeMsg", args: [], returns: [] }, { name: "writeTo", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "File", args: [], returns: [] }, { name: "LocalAddr", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "RemoteAddr", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetReadBuffer", args: [], returns: [] }, { name: "SetReadDeadline", args: [], returns: [] }, { name: "SetWriteBuffer", args: [], returns: [] }, { name: "SetWriteDeadline", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
 		IPConn,
-		{"conn": "net.conn"}
+		[{ name: "conn", key: "conn", type: "net.conn", pkgPath: "net", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 

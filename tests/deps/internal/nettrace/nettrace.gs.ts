@@ -24,7 +24,7 @@ export class TraceKey {
 		() => new TraceKey(),
 		[],
 		TraceKey,
-		{}
+		[]
 	)
 }
 
@@ -49,7 +49,7 @@ export class LookupIPAltResolverKey {
 		() => new LookupIPAltResolverKey(),
 		[],
 		LookupIPAltResolverKey,
-		{}
+		[]
 	)
 }
 
@@ -127,6 +127,6 @@ export class Trace {
 		() => new Trace(),
 		[],
 		Trace,
-		{"DNSStart": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [] } as $.FunctionTypeInfo), "DNSDone": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }, { kind: $.TypeKind.Basic, name: "bool" }, "error"], results: [] } as $.FunctionTypeInfo), "ConnectStart": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }], results: [] } as $.FunctionTypeInfo), "ConnectDone": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }, "error"], results: [] } as $.FunctionTypeInfo)}
+		[{ name: "DNSStart", key: "DNSStart", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [] } as $.FunctionTypeInfo), index: [0], offset: 0, exported: true }, { name: "DNSDone", key: "DNSDone", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }, { kind: $.TypeKind.Basic, name: "bool" }, "error"], results: [] } as $.FunctionTypeInfo), index: [1], offset: 8, exported: true }, { name: "ConnectStart", key: "ConnectStart", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }], results: [] } as $.FunctionTypeInfo), index: [2], offset: 16, exported: true }, { name: "ConnectDone", key: "ConnectDone", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }, "error"], results: [] } as $.FunctionTypeInfo), index: [3], offset: 24, exported: true }]
 	)
 }

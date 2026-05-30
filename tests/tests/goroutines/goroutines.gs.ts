@@ -44,7 +44,7 @@ export class Message {
 		() => new Message(),
 		[],
 		Message,
-		{"priority": { kind: $.TypeKind.Basic, name: "int" }, "text": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "priority", key: "priority", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/goroutines", index: [0], offset: 0, exported: false }, { name: "text", key: "text", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/goroutines", index: [1], offset: 8, exported: false }]
 	)
 }
 

@@ -618,20 +618,32 @@ export class PathError {
       },
     ],
     PathError,
-    {
-      Op: { kind: $.TypeKind.Basic, name: 'string' },
-      Path: { kind: $.TypeKind.Basic, name: 'string' },
-      Err: {
-        kind: $.TypeKind.Interface,
-        name: 'GoError',
-        methods: [
-          {
-            name: 'Error',
-            args: [],
-            returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
-          },
-        ],
+    [
+      {
+        name: 'Op',
+        key: 'Op',
+        type: { kind: $.TypeKind.Basic, name: 'string' },
       },
-    },
+      {
+        name: 'Path',
+        key: 'Path',
+        type: { kind: $.TypeKind.Basic, name: 'string' },
+      },
+      {
+        name: 'Err',
+        key: 'Err',
+        type: {
+          kind: $.TypeKind.Interface,
+          name: 'GoError',
+          methods: [
+            {
+              name: 'Error',
+              args: [],
+              returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
+            },
+          ],
+        },
+      },
+    ],
   )
 }

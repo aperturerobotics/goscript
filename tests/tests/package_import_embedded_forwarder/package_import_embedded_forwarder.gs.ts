@@ -73,7 +73,7 @@ export class VerboseStore {
 		() => new VerboseStore(),
 		[{ name: "Execute", args: [], returns: [] }, { name: "NewTransaction", args: [], returns: [] }],
 		VerboseStore,
-		{"BaseStore": { kind: $.TypeKind.Pointer, elemType: "dep.BaseStore" }, "name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "BaseStore", key: "BaseStore", type: { kind: $.TypeKind.Pointer, elemType: "dep.BaseStore" }, anonymous: true, index: [0], offset: 0, exported: true }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder", index: [1], offset: 8, exported: false }]
 	)
 }
 

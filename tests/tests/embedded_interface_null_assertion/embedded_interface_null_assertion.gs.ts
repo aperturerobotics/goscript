@@ -58,7 +58,7 @@ export class MyReader {
 		() => new MyReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		MyReader,
-		{"Reader": "main.Reader", "name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Reader", key: "Reader", type: "main.Reader", anonymous: true, index: [0], offset: 0, exported: true }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/embedded_interface_null_assertion", index: [1], offset: 16, exported: false }]
 	)
 }
 
@@ -113,7 +113,7 @@ export class StringReader {
 		() => new StringReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		StringReader,
-		{"data": { kind: $.TypeKind.Basic, name: "string" }, "pos": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "data", key: "data", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/embedded_interface_null_assertion", index: [0], offset: 0, exported: false }, { name: "pos", key: "pos", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/embedded_interface_null_assertion", index: [1], offset: 16, exported: false }]
 	)
 }
 

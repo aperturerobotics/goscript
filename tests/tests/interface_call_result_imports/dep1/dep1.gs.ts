@@ -31,7 +31,7 @@ export class maker {
 		() => new maker(),
 		[{ name: "Value", args: [], returns: [] }],
 		maker,
-		{}
+		[]
 	)
 }
 

@@ -43,7 +43,7 @@ export class writerHolder {
 		() => new writerHolder(),
 		[],
 		writerHolder,
-		{"w": "io.Writer"}
+		[{ name: "w", key: "w", type: "io.Writer", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -83,7 +83,7 @@ export class asyncBuffer {
 		() => new asyncBuffer(),
 		[{ name: "Reset", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		asyncBuffer,
-		{}
+		[]
 	)
 }
 
@@ -128,7 +128,7 @@ export class staticReader {
 		() => new staticReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		staticReader,
-		{"done": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "done", key: "done", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -174,7 +174,7 @@ export class asyncReader {
 		() => new asyncReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		asyncReader,
-		{"done": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "done", key: "done", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -239,7 +239,7 @@ export class pipeReadResult {
 		() => new pipeReadResult(),
 		[],
 		pipeReadResult,
-		{"n": { kind: $.TypeKind.Basic, name: "int" }, "data": { kind: $.TypeKind.Basic, name: "string" }, "errNil": { kind: $.TypeKind.Basic, name: "bool" }, "errEOF": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [0], offset: 0, exported: false }, { name: "data", key: "data", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [1], offset: 8, exported: false }, { name: "errNil", key: "errNil", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [2], offset: 24, exported: false }, { name: "errEOF", key: "errEOF", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [3], offset: 25, exported: false }]
 	)
 }
 

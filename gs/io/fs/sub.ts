@@ -444,6 +444,13 @@ class subFS {
       },
     ],
     subFS,
-    { fsys: 'FS', dir: { kind: $.TypeKind.Basic, name: 'string' } },
+    [
+      { name: 'fsys', key: 'fsys', type: 'FS' },
+      {
+        name: 'dir',
+        key: 'dir',
+        type: { kind: $.TypeKind.Basic, name: 'string' },
+      },
+    ],
   )
 }

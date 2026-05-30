@@ -248,7 +248,7 @@ export class resolverConfig {
 		() => new resolverConfig(),
 		[{ name: "init", args: [], returns: [] }, { name: "releaseSema", args: [], returns: [] }, { name: "tryAcquireSema", args: [], returns: [] }, { name: "tryUpdate", args: [], returns: [] }],
 		resolverConfig,
-		{"initOnce": "sync.Once", "ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }, "lastChecked": "time.Time", "dnsConfig": "atomic.Pointer"}
+		[{ name: "initOnce", key: "initOnce", type: "sync.Once", pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "net", index: [1], offset: 16, exported: false }, { name: "lastChecked", key: "lastChecked", type: "time.Time", pkgPath: "net", index: [2], offset: 24, exported: false }, { name: "dnsConfig", key: "dnsConfig", type: "atomic.Pointer", pkgPath: "net", index: [3], offset: 48, exported: false }]
 	)
 }
 

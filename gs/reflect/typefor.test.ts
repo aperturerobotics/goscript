@@ -166,25 +166,39 @@ describe('TypeFor', () => {
       new RegisteredStruct(),
       [],
       RegisteredStruct,
-      {},
+      [],
     )
     registerStructType(
       'main.RegisteredWithFields',
       new RegisteredWithFields(),
       [],
       RegisteredWithFields,
-      {
-        Name: { kind: TypeKind.Basic, name: 'string' },
-        Count: {
+      [
+        {
+          name: 'Name',
+          key: 'Name',
+          type: { kind: TypeKind.Basic, name: 'string' },
+        },
+        {
+          key: 'Count',
           name: 'Total',
           type: { kind: TypeKind.Basic, name: 'int' },
           tag: 'json:"total"',
+          pkgPath: 'main',
+          anonymous: true,
+          index: [3],
+          offset: 24,
+          exported: false,
         },
-        Items: {
-          kind: TypeKind.Slice,
-          elemType: 'main.RegisteredStruct',
+        {
+          name: 'Items',
+          key: 'Items',
+          type: {
+            kind: TypeKind.Slice,
+            elemType: 'main.RegisteredStruct',
+          },
         },
-      },
+      ],
     )
     registerInterfaceType('main.RegisteredInterface', null, [
       { name: 'SomeMethod', args: [], returns: [] },
@@ -211,6 +225,11 @@ describe('TypeFor', () => {
     expect(fieldsType.Field(0).Name).toBe('Name')
     expect(fieldsType.Field(0).Type.String()).toBe('string')
     expect(fieldsType.Field(1).Name).toBe('Total')
+    expect(fieldsType.Field(1).PkgPath).toBe('main')
+    expect(fieldsType.Field(1).IsExported()).toBe(false)
+    expect(fieldsType.Field(1).Anonymous).toBe(true)
+    expect(fieldsType.Field(1).Index).toEqual([3])
+    expect(fieldsType.Field(1).Offset).toBe(24)
     expect(fieldsType.Field(1).Tag.Get('json')).toBe('total')
     expect(fieldsType.Field(2).Type.String()).toBe('[]main.RegisteredStruct')
     expect(fieldsType.Field(2).Type.Elem().String()).toBe(

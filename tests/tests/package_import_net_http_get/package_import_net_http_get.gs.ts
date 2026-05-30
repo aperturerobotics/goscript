@@ -50,7 +50,7 @@ export async function main(): globalThis.Promise<void> {
 				return
 			}
 		}
-	}, ({ kind: $.TypeKind.Function, params: ["http.ResponseWriter", { kind: $.TypeKind.Pointer, elemType: "http.Request" }], results: [] } as $.FunctionTypeInfo)), "http.HandlerFunc"), "http.HandlerFunc", {ServeHTTP: (receiver: any, ...args: any[]) => (http.HandlerFunc_ServeHTTP as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, ({ kind: $.TypeKind.Function, name: "http.HandlerFunc", params: ["http.ResponseWriter", { kind: $.TypeKind.Pointer, elemType: "http.Request" }], results: [] } as $.FunctionTypeInfo)))!)
+	}, ({ kind: $.TypeKind.Function, params: ["http.ResponseWriter", { kind: $.TypeKind.Pointer, elemType: "http.Request" }], results: [] } as $.FunctionTypeInfo)), "http.HandlerFunc", ({ kind: $.TypeKind.Function, name: "http.HandlerFunc", params: ["http.ResponseWriter", { kind: $.TypeKind.Pointer, elemType: "http.Request" }], results: [] } as $.FunctionTypeInfo)), "http.HandlerFunc", {ServeHTTP: (receiver: any, ...args: any[]) => (http.HandlerFunc_ServeHTTP as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, ({ kind: $.TypeKind.Function, name: "http.HandlerFunc", params: ["http.ResponseWriter", { kind: $.TypeKind.Pointer, elemType: "http.Request" }], results: [] } as $.FunctionTypeInfo)))!)
 	__defer.defer(() => { httptest.Server.prototype.Close.call($.pointerValue<httptest.Server>(server)) })
 
 	let __goscriptTuple1: any = await http.Get($.pointerValue<httptest.Server>(server).URL)

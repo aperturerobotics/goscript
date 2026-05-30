@@ -530,16 +530,24 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 	}
 	b.WriteString("],\n\t\t")
 	b.WriteString(structType.name)
-	b.WriteString(",\n\t\t{")
+	b.WriteString(",\n\t\t[")
 	for idx, field := range structType.fields {
 		if idx != 0 {
 			b.WriteString(", ")
 		}
-		b.WriteString(strconvQuote(field.name))
-		b.WriteString(": ")
-		b.WriteString(runtimeStructFieldInfoExpr(field.runtimeType, field.runtimeName, field.tag))
+		b.WriteString(runtimeStructFieldInfoExpr(
+			field.runtimeType,
+			field.name,
+			field.runtimeName,
+			field.tag,
+			field.pkgPath,
+			field.anonymous,
+			field.index,
+			field.offset,
+			field.exported,
+		))
 	}
-	b.WriteString("}\n\t)\n")
+	b.WriteString("]\n\t)\n")
 	b.WriteString("}\n")
 }
 

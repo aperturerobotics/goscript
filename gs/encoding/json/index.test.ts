@@ -42,17 +42,46 @@ class Person {
     new Person(),
     [],
     Person,
-    {
-      Name: {
+    [
+      {
+        name: 'Name',
+        key: 'Name',
         type: { kind: $.TypeKind.Basic, name: 'string' },
         tag: 'json:"name"',
       },
-      Age: { type: { kind: $.TypeKind.Basic, name: 'int' }, tag: 'json:"age"' },
-      Active: {
+      {
+        name: 'Age',
+        key: 'Age',
+        type: { kind: $.TypeKind.Basic, name: 'int' },
+        tag: 'json:"age"',
+      },
+      {
+        name: 'Active',
+        key: 'Active',
         type: { kind: $.TypeKind.Basic, name: 'bool' },
         tag: 'json:"active"',
       },
-    },
+    ],
+  )
+}
+
+class FieldAlias {
+  public _fields = {
+    Name: $.varRef(''),
+  }
+
+  static __typeInfo = $.registerStructType(
+    'test.FieldAlias',
+    new FieldAlias(),
+    [],
+    FieldAlias,
+    [
+      {
+        name: 'FullName',
+        key: 'Name',
+        type: { kind: $.TypeKind.Basic, name: 'string' },
+      },
+    ],
   )
 }
 
@@ -113,6 +142,21 @@ describe('encoding/json override', () => {
     )
   })
 
+  it('uses descriptor names separately from storage keys', () => {
+    const alias = new FieldAlias()
+    alias._fields.Name.value = 'Ada'
+
+    const [data, err] = Marshal(alias)
+    expect(err).toBeNull()
+    expect($.bytesToString(data)).toBe('{"FullName":"Ada"}')
+
+    const target = $.varRef(new FieldAlias())
+    expect(
+      Unmarshal($.stringToBytes('{"FullName":"Grace"}'), target),
+    ).toBeNull()
+    expect(target.value._fields.Name.value).toBe('Grace')
+  })
+
   it('rejects unsupported values and invalid unmarshal targets', () => {
     const [nanData, nanErr] = Marshal(Number.NaN)
     expect(nanData).toBeNull()
@@ -120,10 +164,16 @@ describe('encoding/json override', () => {
 
     const [htmlData, htmlErr] = Marshal(new Map([['text', '<tag>&']]))
     expect(htmlErr).toBeNull()
-    expect($.bytesToString(htmlData)).toBe('{"text":"\\u003ctag\\u003e\\u0026"}')
+    expect($.bytesToString(htmlData)).toBe(
+      '{"text":"\\u003ctag\\u003e\\u0026"}',
+    )
 
-    expect(Unmarshal($.stringToBytes('{}'), null)).toBeInstanceOf(InvalidUnmarshalError)
-    expect(Unmarshal($.stringToBytes('{}'), 1)).toBeInstanceOf(InvalidUnmarshalError)
+    expect(Unmarshal($.stringToBytes('{}'), null)).toBeInstanceOf(
+      InvalidUnmarshalError,
+    )
+    expect(Unmarshal($.stringToBytes('{}'), 1)).toBeInstanceOf(
+      InvalidUnmarshalError,
+    )
   })
 
   it('uses custom marshal and unmarshal hooks', () => {
@@ -150,9 +200,14 @@ describe('encoding/json override', () => {
         new RawEnvelope(),
         [],
         RawEnvelope,
-        {
-          Raw: { type: 'json.RawMessage', tag: 'json:"raw"' },
-        },
+        [
+          {
+            name: 'Raw',
+            key: 'Raw',
+            type: 'json.RawMessage',
+            tag: 'json:"raw"',
+          },
+        ],
       )
     }
 
@@ -169,19 +224,25 @@ describe('encoding/json override', () => {
         new Envelope(),
         [],
         Envelope,
-        {
-          Person: {
+        [
+          {
+            name: 'Person',
+            key: 'Person',
             type: { kind: $.TypeKind.Struct, name: 'test.Person' },
             tag: 'json:"person"',
           },
-          Data: {
+          {
+            name: 'Data',
+            key: 'Data',
             type: {
               kind: $.TypeKind.Slice,
               elemType: { kind: $.TypeKind.Basic, name: 'uint8' },
             },
             tag: 'json:"data"',
           },
-          Raw: {
+          {
+            name: 'Raw',
+            key: 'Raw',
             type: {
               kind: $.TypeKind.Slice,
               elemType: { kind: $.TypeKind.Basic, name: 'uint8' },
@@ -189,11 +250,13 @@ describe('encoding/json override', () => {
             },
             tag: 'json:"raw"',
           },
-          Hook: {
+          {
+            name: 'Hook',
+            key: 'Hook',
             type: { kind: $.TypeKind.Struct, name: 'test.CustomJSON' },
             tag: 'json:"hook"',
           },
-        },
+        ],
       )
     }
 
@@ -224,9 +287,7 @@ describe('encoding/json override', () => {
 
     const [rawEnvelopeData, rawEnvelopeErr] = Marshal(new RawEnvelope())
     expect(rawEnvelopeErr).toBeNull()
-    expect($.bytesToString(rawEnvelopeData)).toBe(
-      '{"raw":{"embedded":true}}',
-    )
+    expect($.bytesToString(rawEnvelopeData)).toBe('{"raw":{"embedded":true}}')
 
     const rawEnvelopeTarget = $.varRef(new RawEnvelope())
     expect(
@@ -243,14 +304,18 @@ describe('encoding/json override', () => {
     const envelope = $.varRef(new Envelope())
     expect(
       Unmarshal(
-        $.stringToBytes('{"person":{"name":"Eve","age":31},"data":"eA==","raw":{"keep":true},"hook":{"nested":true}}'),
+        $.stringToBytes(
+          '{"person":{"name":"Eve","age":31},"data":"eA==","raw":{"keep":true},"hook":{"nested":true}}',
+        ),
         envelope,
       ),
     ).toBeNull()
     expect(envelope.value._fields.Person.value._fields.Name.value).toBe('Eve')
     expect(envelope.value._fields.Person.value._fields.Age.value).toBe(31)
     expect($.bytesToString(envelope.value._fields.Data.value)).toBe('x')
-    expect($.bytesToString(envelope.value._fields.Raw.value)).toBe('{"keep":true}')
+    expect($.bytesToString(envelope.value._fields.Raw.value)).toBe(
+      '{"keep":true}',
+    )
     expect(envelope.value._fields.Hook.value.Text).toBe('{"nested":true}')
 
     const [envelopeData, envelopeErr] = Marshal(envelope.value)
@@ -326,7 +391,9 @@ describe('encoding/json override', () => {
     expect(compact.String()).toBe('{"ok":true}')
 
     const indented = new bytes.Buffer()
-    expect(Indent(indented, $.stringToBytes('{"ok":true}'), '> ', '  ')).toBeNull()
+    expect(
+      Indent(indented, $.stringToBytes('{"ok":true}'), '> ', '  '),
+    ).toBeNull()
     expect(indented.String()).toBe('{\n>   "ok": true\n> }')
 
     const escaped = new bytes.Buffer()
@@ -350,7 +417,9 @@ describe('encoding/json override', () => {
     expect($.bytesToString(marshaled)).toBe('{"raw":true}')
 
     const rawRef = $.varRef<$.Bytes>(null)
-    expect(RawMessage_UnmarshalJSON(rawRef, $.stringToBytes('[1,2]'))).toBeNull()
+    expect(
+      RawMessage_UnmarshalJSON(rawRef, $.stringToBytes('[1,2]')),
+    ).toBeNull()
     expect($.bytesToString(rawRef.value)).toBe('[1,2]')
 
     expect(Number_String('42')).toBe('42')
@@ -379,6 +448,8 @@ describe('encoding/json override', () => {
     strictDecoder.DisallowUnknownFields()
     const strictTarget = $.varRef(new Person())
 
-    expect(strictDecoder.Decode(strictTarget)?.Error()).toBe('json: unknown field "extra"')
+    expect(strictDecoder.Decode(strictTarget)?.Error()).toBe(
+      'json: unknown field "extra"',
+    )
   })
 })

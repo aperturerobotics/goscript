@@ -12,7 +12,7 @@ import {
   TypeKind,
   isStructTypeInfo,
   isInterfaceTypeInfo,
-  isStructFieldInfo,
+  structFieldRuntimeKey,
 } from '../builtin/type.js'
 import { Zero } from './value.js'
 import { DeepEqual } from './deepequal.js'
@@ -660,17 +660,18 @@ export class Value {
     }
 
     const field = this.Type().Field(i)
+    const fieldKey = structFieldStorageKey(this.Type(), i)
     if (!field) {
       throw new Error('reflect: struct field index out of range')
     }
 
     const parentObj = this._value as Record<string, any>
-    let fieldVal = parentObj[field.Name]
+    let fieldVal = parentObj[fieldKey]
     if (fieldVal === undefined) {
       fieldVal = null
     }
     // Pass parent struct and field name so Set() can update the struct
-    return new Value(fieldVal, field.Type, undefined, parentObj, field.Name)
+    return new Value(fieldVal, field.Type, undefined, parentObj, fieldKey)
   }
 
   public FieldByIndex(index: $.Slice<number>): Value {
@@ -2586,10 +2587,29 @@ function typeAssignableTo(t: Type, u: Type | null): boolean {
   return t.Implements(u)
 }
 
+function structFieldStorageKey(t: Type, i: number): string {
+  if (t instanceof StructType) {
+    return t.fieldKey(i)
+  }
+  return t.Field(i).Name
+}
+
+interface StructFieldDescriptor {
+  name: string
+  key: string
+  type: Type
+  tag?: string
+  pkgPath: string
+  anonymous: boolean
+  index: number[]
+  offset: number
+  exported: boolean
+}
+
 class StructType implements Type {
   constructor(
     private _name: string,
-    private _fields: Array<{ name: string; type: Type; tag?: string }> = [],
+    private _fields: StructFieldDescriptor[] = [],
   ) {}
 
   public String(): string {
@@ -2664,11 +2684,22 @@ class StructType implements Type {
     const f = this._fields[i]
     return new StructField({
       Name: f.name,
-      PkgPath: '',
+      PkgPath: f.pkgPath,
       Type: f.type,
       Tag: f.tag ? new StructTag(f.tag) : undefined,
-      Index: [i],
+      Offset: f.offset,
+      Index: [...f.index],
+      Anonymous: f.anonymous,
     })
+  }
+
+  public fieldKey(i: number): string {
+    if (i < 0 || i >= this.NumField()) {
+      throw new Error(
+        `reflect: Field index out of range [${i}] with length ${this.NumField()}`,
+      )
+    }
+    return this._fields[i].key
   }
 
   public FieldByName(name: string): [StructField, boolean] {
@@ -2814,18 +2845,18 @@ function basicTypeFromName(name: string, typeName = ''): BasicType {
 
 function structFieldsFromTypeInfo(
   ti: $.StructTypeInfo,
-): Array<{ name: string; type: Type; tag?: string }> {
-  return Object.entries(ti.fields || {}).map(([name, fieldInfo]) => {
-    if (isStructFieldInfo(fieldInfo)) {
-      return {
-        name: fieldInfo.name ?? name,
-        type: typeFromTypeInfo(fieldInfo.type),
-        tag: fieldInfo.tag,
-      }
-    }
+): StructFieldDescriptor[] {
+  return (ti.fields || []).map((fieldInfo, index) => {
     return {
-      name,
-      type: typeFromTypeInfo(fieldInfo),
+      name: fieldInfo.name,
+      key: structFieldRuntimeKey(fieldInfo),
+      type: typeFromTypeInfo(fieldInfo.type),
+      tag: fieldInfo.tag,
+      pkgPath: fieldInfo.pkgPath ?? '',
+      anonymous: fieldInfo.anonymous ?? false,
+      index: fieldInfo.index ? [...fieldInfo.index] : [index],
+      offset: fieldInfo.offset ?? index * 8,
+      exported: fieldInfo.exported ?? (fieldInfo.pkgPath ?? '') === '',
     }
   })
 }
@@ -3317,25 +3348,9 @@ function getTypeOf(value: ReflectValue): Type {
               typeInfo.name
             : `main.${typeInfo.name}`
           const regTypeInfo = builtinGetTypeByName(typeName)
-          let fields: Array<{ name: string; type: Type; tag?: string }> = []
+          let fields: StructFieldDescriptor[] = []
           if (regTypeInfo && isStructTypeInfo(regTypeInfo)) {
-            fields = Object.entries(regTypeInfo.fields || {}).map(
-              ([name, fieldInfo]) => {
-                // Check if fieldInfo is a StructFieldInfo with type and tag
-                if (isStructFieldInfo(fieldInfo)) {
-                  return {
-                    name: fieldInfo.name ?? name,
-                    type: StructType.createTypeFromFieldInfo(fieldInfo.type),
-                    tag: fieldInfo.tag,
-                  }
-                }
-                // Otherwise it's just the type info directly (backwards compatible)
-                return {
-                  name,
-                  type: StructType.createTypeFromFieldInfo(fieldInfo),
-                }
-              },
-            )
+            fields = structFieldsFromTypeInfo(regTypeInfo)
           }
           return new StructType(typeName, fields)
         }

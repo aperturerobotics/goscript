@@ -244,7 +244,7 @@ export class TCPAddr {
 		() => new TCPAddr(),
 		[{ name: "AddrPort", args: [], returns: [] }, { name: "Network", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "family", args: [], returns: [] }, { name: "isWildcard", args: [], returns: [] }, { name: "opAddr", args: [], returns: [] }, { name: "sockaddr", args: [], returns: [] }, { name: "toLocal", args: [], returns: [] }],
 		TCPAddr,
-		{"IP": "net.IP", "Port": { kind: $.TypeKind.Basic, name: "int" }, "Zone": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "IP", key: "IP", type: "net.IP", index: [0], offset: 0, exported: true }, { name: "Port", key: "Port", type: { kind: $.TypeKind.Basic, name: "int" }, index: [1], offset: 24, exported: true }, { name: "Zone", key: "Zone", type: { kind: $.TypeKind.Basic, name: "string" }, index: [2], offset: 32, exported: true }]
 	)
 }
 
@@ -530,7 +530,7 @@ export class TCPConn {
 		() => new TCPConn(),
 		[{ name: "CloseRead", args: [], returns: [] }, { name: "CloseWrite", args: [], returns: [] }, { name: "MultipathTCP", args: [], returns: [] }, { name: "ReadFrom", args: [], returns: [] }, { name: "SetKeepAlive", args: [], returns: [] }, { name: "SetKeepAliveConfig", args: [], returns: [] }, { name: "SetKeepAlivePeriod", args: [], returns: [] }, { name: "SetLinger", args: [], returns: [] }, { name: "SetNoDelay", args: [], returns: [] }, { name: "SyscallConn", args: [], returns: [] }, { name: "WriteTo", args: [], returns: [] }, { name: "readFrom", args: [], returns: [] }, { name: "writeTo", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "File", args: [], returns: [] }, { name: "LocalAddr", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "RemoteAddr", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetReadBuffer", args: [], returns: [] }, { name: "SetReadDeadline", args: [], returns: [] }, { name: "SetWriteBuffer", args: [], returns: [] }, { name: "SetWriteDeadline", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
 		TCPConn,
-		{"conn": "net.conn"}
+		[{ name: "conn", key: "conn", type: "net.conn", pkgPath: "net", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -604,7 +604,7 @@ export class KeepAliveConfig {
 		() => new KeepAliveConfig(),
 		[],
 		KeepAliveConfig,
-		{"Enable": { kind: $.TypeKind.Basic, name: "bool" }, "Idle": { kind: $.TypeKind.Basic, name: "int64", typeName: "time.Duration" }, "Interval": { kind: $.TypeKind.Basic, name: "int64", typeName: "time.Duration" }, "Count": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "Enable", key: "Enable", type: { kind: $.TypeKind.Basic, name: "bool" }, index: [0], offset: 0, exported: true }, { name: "Idle", key: "Idle", type: { kind: $.TypeKind.Basic, name: "int64", typeName: "time.Duration" }, index: [1], offset: 8, exported: true }, { name: "Interval", key: "Interval", type: { kind: $.TypeKind.Basic, name: "int64", typeName: "time.Duration" }, index: [2], offset: 16, exported: true }, { name: "Count", key: "Count", type: { kind: $.TypeKind.Basic, name: "int" }, index: [3], offset: 24, exported: true }]
 	)
 }
 
@@ -760,7 +760,7 @@ export class TCPListener {
 		() => new TCPListener(),
 		[{ name: "Accept", args: [], returns: [] }, { name: "AcceptTCP", args: [], returns: [] }, { name: "Addr", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "File", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SyscallConn", args: [], returns: [] }, { name: "accept", args: [], returns: [] }, { name: "close", args: [], returns: [] }, { name: "file", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
 		TCPListener,
-		{"fd": { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, "lc": "net.ListenConfig"}
+		[{ name: "fd", key: "fd", type: { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "lc", key: "lc", type: "net.ListenConfig", pkgPath: "net", index: [1], offset: 8, exported: false }]
 	)
 }
 

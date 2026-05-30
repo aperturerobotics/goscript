@@ -44,7 +44,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[],
 		MyStruct,
-		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "MyInt", key: "MyInt", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "MyString", key: "MyString", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 8, exported: true }]
 	)
 }
 
@@ -89,7 +89,7 @@ export class NestedStruct {
 		() => new NestedStruct(),
 		[],
 		NestedStruct,
-		{"Value": { kind: $.TypeKind.Basic, name: "int" }, "InnerStruct": "main.MyStruct"}
+		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "InnerStruct", key: "InnerStruct", type: "main.MyStruct", index: [1], offset: 8, exported: true }]
 	)
 }
 

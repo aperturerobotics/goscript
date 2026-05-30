@@ -63,7 +63,7 @@ export class lvlPrefix {
 		() => new lvlPrefix(),
 		[],
 		lvlPrefix,
-		{"full": { kind: $.TypeKind.Basic, name: "string" }, "truncated": { kind: $.TypeKind.Basic, name: "string" }, "padded": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "full", key: "full", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/sirupsen/logrus", index: [0], offset: 0, exported: false }, { name: "truncated", key: "truncated", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/sirupsen/logrus", index: [1], offset: 16, exported: false }, { name: "padded", key: "padded", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/sirupsen/logrus", index: [2], offset: 32, exported: false }]
 	)
 }
 

@@ -137,7 +137,7 @@ export class digest {
 		() => new digest(),
 		[{ name: "AppendBinary", args: [], returns: [] }, { name: "BlockSize", args: [], returns: [] }, { name: "Clone", args: [], returns: [] }, { name: "MarshalBinary", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "Sum", args: [], returns: [] }, { name: "Sum32", args: [], returns: [] }, { name: "UnmarshalBinary", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		digest,
-		{"crc": { kind: $.TypeKind.Basic, name: "uint32" }, "tab": { kind: $.TypeKind.Pointer, elemType: "crc32.Table" }}
+		[{ name: "crc", key: "crc", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "hash/crc32", index: [0], offset: 0, exported: false }, { name: "tab", key: "tab", type: { kind: $.TypeKind.Pointer, elemType: "crc32.Table" }, pkgPath: "hash/crc32", index: [1], offset: 8, exported: false }]
 	)
 }
 

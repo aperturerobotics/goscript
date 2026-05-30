@@ -93,7 +93,7 @@ class dirInfo {
 	  new dirInfo(),
 	  [{ name: "close", args: [], returns: [] }],
 	  dirInfo,
-	  {"mu": "Mutex", "buf": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } }, "nbuf": { kind: $.TypeKind.Basic, name: "number" }, "bufp": { kind: $.TypeKind.Basic, name: "number" }}
+	  [{ name: "mu", key: "mu", type: "Mutex" }, { name: "buf", key: "buf", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "number" } } } }, { name: "nbuf", key: "nbuf", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "bufp", key: "bufp", type: { kind: $.TypeKind.Basic, name: "number" } }]
 	);
 }
 

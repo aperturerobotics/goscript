@@ -75,6 +75,11 @@ type loweredStructField struct {
 	runtimeType string
 	doc         string
 	tag         string
+	pkgPath     string
+	index       []int
+	offset      int64
+	anonymous   bool
+	exported    bool
 	structValue bool
 	arrayValue  bool
 }

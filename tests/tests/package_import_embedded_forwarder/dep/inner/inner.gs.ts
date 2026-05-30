@@ -45,7 +45,7 @@ export class CoreStore {
 		() => new CoreStore(),
 		[{ name: "NewTransaction", args: [], returns: [] }],
 		CoreStore,
-		{"Prefix": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Prefix", key: "Prefix", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

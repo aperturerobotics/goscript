@@ -156,22 +156,38 @@ class visibleFieldsWalker {
     new visibleFieldsWalker(),
     [{ name: 'walk', args: [{ name: 't', type: 'Type' }], returns: [] }],
     visibleFieldsWalker,
-    {
-      byName: {
-        kind: $.TypeKind.Map,
-        keyType: { kind: $.TypeKind.Basic, name: 'string' },
-        elemType: { kind: $.TypeKind.Basic, name: 'number' },
+    [
+      {
+        name: 'byName',
+        key: 'byName',
+        type: {
+          kind: $.TypeKind.Map,
+          keyType: { kind: $.TypeKind.Basic, name: 'string' },
+          elemType: { kind: $.TypeKind.Basic, name: 'number' },
+        },
       },
-      visiting: {
-        kind: $.TypeKind.Map,
-        keyType: 'Type',
-        elemType: { kind: $.TypeKind.Basic, name: 'boolean' },
+      {
+        name: 'visiting',
+        key: 'visiting',
+        type: {
+          kind: $.TypeKind.Map,
+          keyType: 'Type',
+          elemType: { kind: $.TypeKind.Basic, name: 'boolean' },
+        },
       },
-      fields: { kind: $.TypeKind.Slice, elemType: 'StructField' },
-      index: {
-        kind: $.TypeKind.Slice,
-        elemType: { kind: $.TypeKind.Basic, name: 'number' },
+      {
+        name: 'fields',
+        key: 'fields',
+        type: { kind: $.TypeKind.Slice, elemType: 'StructField' },
       },
-    },
+      {
+        name: 'index',
+        key: 'index',
+        type: {
+          kind: $.TypeKind.Slice,
+          elemType: { kind: $.TypeKind.Basic, name: 'number' },
+        },
+      },
+    ],
   )
 }

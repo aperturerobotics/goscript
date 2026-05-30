@@ -44,7 +44,7 @@ export class point {
 		() => new point(),
 		[],
 		point,
-		{"x": { kind: $.TypeKind.Basic, name: "int" }, "y": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "x", key: "x", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/tuple_call_forwarding", index: [0], offset: 0, exported: false }, { name: "y", key: "y", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/tuple_call_forwarding", index: [1], offset: 8, exported: false }]
 	)
 }
 

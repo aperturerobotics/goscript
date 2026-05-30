@@ -28,7 +28,7 @@ export class task {
 		() => new task(),
 		[{ name: "Run", args: [], returns: [] }],
 		task,
-		{}
+		[]
 	)
 }
 

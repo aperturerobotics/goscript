@@ -50,7 +50,7 @@ export class localSliceHeader {
 		() => new localSliceHeader(),
 		[],
 		localSliceHeader,
-		{"s": { kind: $.TypeKind.Basic, name: "string" }, "cap": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "s", key: "s", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/unsafe_string_slice_header", index: [0], offset: 0, exported: false }, { name: "cap", key: "cap", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/unsafe_string_slice_header", index: [1], offset: 16, exported: false }]
 	)
 }
 

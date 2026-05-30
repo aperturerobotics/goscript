@@ -119,7 +119,7 @@ export class Root {
 			{ name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }
 		],
 		Root,
-		{ "name": { kind: $.TypeKind.Basic, name: "string" } }
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	);
 }
 

@@ -34,7 +34,7 @@ export class item {
 		() => new item(),
 		[],
 		item,
-		{"values": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		[{ name: "values", key: "values", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/map_index_type_shadow", index: [0], offset: 0, exported: false }]
 	)
 }
 

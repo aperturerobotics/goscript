@@ -65,7 +65,7 @@ export class handler {
 		() => new handler(),
 		[{ name: "GetMethodIDs", args: [], returns: [] }, { name: "GetServiceID", args: [], returns: [] }, { name: "InvokeMethod", args: [], returns: [] }],
 		handler,
-		{}
+		[]
 	)
 }
 
@@ -120,7 +120,7 @@ export class embeddedStream {
 		() => new embeddedStream(),
 		[{ name: "Close", args: [], returns: [] }, { name: "CloseSend", args: [], returns: [] }, { name: "Context", args: [], returns: [] }, { name: "MsgRecv", args: [], returns: [] }, { name: "MsgSend", args: [], returns: [] }],
 		embeddedStream,
-		{"Stream": "srpc.Stream"}
+		[{ name: "Stream", key: "Stream", type: "srpc.Stream", anonymous: true, index: [0], offset: 0, exported: true }]
 	)
 }
 

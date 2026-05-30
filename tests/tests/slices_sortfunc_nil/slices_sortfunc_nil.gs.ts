@@ -37,7 +37,7 @@ export class field {
 		() => new field(),
 		[],
 		field,
-		{"name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/slices_sortfunc_nil", index: [0], offset: 0, exported: false }]
 	)
 }
 

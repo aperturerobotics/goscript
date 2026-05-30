@@ -42,7 +42,7 @@ export class item {
 		() => new item(),
 		[{ name: "Name", args: [], returns: [] }],
 		item,
-		{"name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/range_value_pointer_receiver", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -56,7 +56,7 @@ export class BaseStore {
 		() => new BaseStore(),
 		[{ name: "NewTransaction", args: [], returns: [] }],
 		BaseStore,
-		{"CoreStore": { kind: $.TypeKind.Pointer, elemType: "inner.CoreStore" }}
+		[{ name: "CoreStore", key: "CoreStore", type: { kind: $.TypeKind.Pointer, elemType: "inner.CoreStore" }, anonymous: true, index: [0], offset: 0, exported: true }]
 	)
 }
 

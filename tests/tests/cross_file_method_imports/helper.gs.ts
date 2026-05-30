@@ -34,7 +34,7 @@ export class helperState {
 		() => new helperState(),
 		[],
 		helperState,
-		{"text": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "text", key: "text", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/cross_file_method_imports", index: [0], offset: 0, exported: false }]
 	)
 }
 

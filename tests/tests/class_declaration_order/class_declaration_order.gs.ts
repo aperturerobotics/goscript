@@ -28,7 +28,7 @@ export class lateType {
 		() => new lateType(),
 		[{ name: "Name", args: [], returns: [] }],
 		lateType,
-		{}
+		[]
 	)
 }
 

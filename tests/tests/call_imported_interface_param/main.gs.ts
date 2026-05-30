@@ -45,7 +45,7 @@ export class Buffer {
 		() => new Buffer(),
 		[{ name: "Write", args: [], returns: [] }],
 		Buffer,
-		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
+		[{ name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/call_imported_interface_param", index: [0], offset: 0, exported: false }]
 	)
 }
 

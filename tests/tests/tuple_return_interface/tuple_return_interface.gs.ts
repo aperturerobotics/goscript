@@ -49,7 +49,7 @@ export class blockImpl {
 		() => new blockImpl(),
 		[{ name: "Size", args: [], returns: [] }],
 		blockImpl,
-		{"size": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/tuple_return_interface", index: [0], offset: 0, exported: false }]
 	)
 }
 

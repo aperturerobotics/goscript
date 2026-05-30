@@ -94,9 +94,9 @@ export function ReadDir(
   ;[list, err] = dir!.ReadDir(-1)
   if (list) {
     list.sort((a: DirEntry, b: DirEntry): number => {
-      return $.pointerValue<Exclude<DirEntry, null>>(a).Name().localeCompare(
-        $.pointerValue<Exclude<DirEntry, null>>(b).Name(),
-      )
+      return $.pointerValue<Exclude<DirEntry, null>>(a)
+        .Name()
+        .localeCompare($.pointerValue<Exclude<DirEntry, null>>(b).Name())
     })
   }
   return [list, err]
@@ -198,7 +198,7 @@ class dirInfo {
       },
     ],
     dirInfo,
-    { fileInfo: 'FileInfo' },
+    [{ name: 'fileInfo', key: 'fileInfo', type: 'FileInfo' }],
   )
 }
 

@@ -34,7 +34,7 @@ export class frame {
 		() => new frame(),
 		[],
 		frame,
-		{"name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/for_post_multi_assign", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -92,7 +92,7 @@ export class iterator {
 		() => new iterator(),
 		[{ name: "Next", args: [], returns: [] }],
 		iterator,
-		{"idx": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "idx", key: "idx", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/for_post_multi_assign", index: [0], offset: 0, exported: false }]
 	)
 }
 

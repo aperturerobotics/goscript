@@ -124,7 +124,7 @@ export class Server {
 		() => new Server(),
 		[{ name: "AcceptMuxedConn", args: [], returns: [] }, { name: "GetInvoker", args: [], returns: [] }, { name: "HandleStream", args: [], returns: [] }],
 		Server,
-		{"invoker": "srpc.Invoker"}
+		[{ name: "invoker", key: "invoker", type: "srpc.Invoker", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -34,7 +34,7 @@ export class hidden {
 		() => new hidden(),
 		[],
 		hidden,
-		{"label": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "label", key: "label", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/defined_external_struct_wrapper/dep", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -84,6 +84,6 @@ export class Public {
 		() => new Public(),
 		[{ name: "Label", args: [], returns: [] }],
 		Public,
-		{"Value": { kind: $.TypeKind.Basic, name: "string" }, "Hidden": "dep.hidden"}
+		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Hidden", key: "Hidden", type: "dep.hidden", index: [1], offset: 16, exported: true }]
 	)
 }

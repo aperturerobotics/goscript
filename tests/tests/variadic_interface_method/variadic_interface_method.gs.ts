@@ -50,7 +50,7 @@ export class PathJoiner {
 		() => new PathJoiner(),
 		[{ name: "Join", args: [], returns: [] }],
 		PathJoiner,
-		{}
+		[]
 	)
 }
 

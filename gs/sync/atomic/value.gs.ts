@@ -96,7 +96,7 @@ export class Value {
 	  new Value(),
 	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "new", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
 	  Value,
-	  {"v": { kind: $.TypeKind.Interface, methods: [] }}
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Interface, methods: [] } }]
 	);
 }
 
@@ -143,7 +143,7 @@ class efaceWords {
 	  new efaceWords(),
 	  [],
 	  efaceWords,
-	  {"data": { kind: $.TypeKind.Basic, name: "Pointer" }, "typ": { kind: $.TypeKind.Basic, name: "Pointer" }}
+	  [{ name: "data", key: "data", type: { kind: $.TypeKind.Basic, name: "Pointer" } }, { name: "typ", key: "typ", type: { kind: $.TypeKind.Basic, name: "Pointer" } }]
 	);
 }
 

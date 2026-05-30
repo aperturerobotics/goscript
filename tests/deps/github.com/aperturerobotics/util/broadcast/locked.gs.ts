@@ -69,6 +69,6 @@ export class Locked {
 		() => new Locked(),
 		[{ name: "Broadcast", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }, { name: "WaitCh", args: [], returns: [] }],
 		Locked,
-		{"b": { kind: $.TypeKind.Pointer, elemType: "broadcast.Broadcast" }}
+		[{ name: "b", key: "b", type: { kind: $.TypeKind.Pointer, elemType: "broadcast.Broadcast" }, pkgPath: "github.com/aperturerobotics/util/broadcast", index: [0], offset: 0, exported: false }]
 	)
 }

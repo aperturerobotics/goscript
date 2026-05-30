@@ -44,7 +44,7 @@ export class errNetClosing {
 		() => new errNetClosing(),
 		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }],
 		errNetClosing,
-		{}
+		[]
 	)
 }
 
@@ -84,7 +84,7 @@ export class DeadlineExceededError {
 		() => new DeadlineExceededError(),
 		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }],
 		DeadlineExceededError,
-		{}
+		[]
 	)
 }
 

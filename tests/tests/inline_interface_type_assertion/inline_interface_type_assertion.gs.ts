@@ -39,7 +39,7 @@ export class Greeter {
 		() => new Greeter(),
 		[{ name: "Greet", args: [], returns: [] }],
 		Greeter,
-		{}
+		[]
 	)
 }
 
@@ -69,7 +69,7 @@ export class MyStringer {
 		() => new MyStringer(),
 		[{ name: "String", args: [], returns: [] }],
 		MyStringer,
-		{}
+		[]
 	)
 }
 
@@ -119,7 +119,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test case: nil value of an inline interface type assigned to interface{}
 	let l: any = $.interfaceValue<any>(null, "*struct{Name string}")
 
-	let [ptr, ok6] = $.typeAssertTuple<$.VarRef<{"Name": string}> | null>(l, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Struct, methods: [], fields: {"Name": { kind: $.TypeKind.Basic, name: "string" }} } })
+	let [ptr, ok6] = $.typeAssertTuple<$.VarRef<{"Name": string}> | null>(l, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Struct, methods: [], fields: [{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }] } })
 	if (ok6) {
 		if (ptr == null) {
 			$.println("l.(*struct{ Name string }) successful, ptr is nil as expected")

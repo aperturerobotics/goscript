@@ -27,7 +27,7 @@ export class thing {
 		() => new thing(),
 		[],
 		thing,
-		{}
+		[]
 	)
 }
 

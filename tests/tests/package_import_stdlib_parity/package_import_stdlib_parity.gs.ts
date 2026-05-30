@@ -80,7 +80,7 @@ export class xof {
 		() => new xof(),
 		[{ name: "BlockSize", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		xof,
-		{}
+		[]
 	)
 }
 

@@ -34,6 +34,6 @@ export class OtherStruct {
 		() => new OtherStruct(),
 		[],
 		OtherStruct,
-		{"Label": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Label", key: "Label", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
 	)
 }

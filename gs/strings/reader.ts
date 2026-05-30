@@ -434,11 +434,15 @@ export class Reader {
       },
     ],
     Reader,
-    {
-      s: { kind: $.TypeKind.Basic, name: 'string' },
-      i: { kind: $.TypeKind.Basic, name: 'number' },
-      prevRune: { kind: $.TypeKind.Basic, name: 'number' },
-    },
+    [
+      { name: 's', key: 's', type: { kind: $.TypeKind.Basic, name: 'string' } },
+      { name: 'i', key: 'i', type: { kind: $.TypeKind.Basic, name: 'number' } },
+      {
+        name: 'prevRune',
+        key: 'prevRune',
+        type: { kind: $.TypeKind.Basic, name: 'number' },
+      },
+    ],
   )
 }
 

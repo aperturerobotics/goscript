@@ -58,7 +58,7 @@ export class descending {
 		() => new descending(),
 		[{ name: "Len", args: [], returns: [] }, { name: "Less", args: [], returns: [] }, { name: "Swap", args: [], returns: [] }],
 		descending,
-		{"values": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		[{ name: "values", key: "values", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_sort", index: [0], offset: 0, exported: false }]
 	)
 }
 

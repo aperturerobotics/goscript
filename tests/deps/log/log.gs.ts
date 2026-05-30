@@ -273,7 +273,7 @@ export class Logger {
 		() => new Logger(),
 		[{ name: "Fatal", args: [], returns: [] }, { name: "Fatalf", args: [], returns: [] }, { name: "Fatalln", args: [], returns: [] }, { name: "Flags", args: [], returns: [] }, { name: "Output", args: [], returns: [] }, { name: "Panic", args: [], returns: [] }, { name: "Panicf", args: [], returns: [] }, { name: "Panicln", args: [], returns: [] }, { name: "Prefix", args: [], returns: [] }, { name: "Print", args: [], returns: [] }, { name: "Printf", args: [], returns: [] }, { name: "Println", args: [], returns: [] }, { name: "SetFlags", args: [], returns: [] }, { name: "SetOutput", args: [], returns: [] }, { name: "SetPrefix", args: [], returns: [] }, { name: "Writer", args: [], returns: [] }, { name: "output", args: [], returns: [] }],
 		Logger,
-		{"outMu": "sync.Mutex", "out": "io.Writer", "prefix": "atomic.Pointer", "flag": "atomic.Int32", "isDiscard": "atomic.Bool"}
+		[{ name: "outMu", key: "outMu", type: "sync.Mutex", pkgPath: "log", index: [0], offset: 0, exported: false }, { name: "out", key: "out", type: "io.Writer", pkgPath: "log", index: [1], offset: 8, exported: false }, { name: "prefix", key: "prefix", type: "atomic.Pointer", pkgPath: "log", index: [2], offset: 24, exported: false }, { name: "flag", key: "flag", type: "atomic.Int32", pkgPath: "log", index: [3], offset: 32, exported: false }, { name: "isDiscard", key: "isDiscard", type: "atomic.Bool", pkgPath: "log", index: [4], offset: 36, exported: false }]
 	)
 }
 

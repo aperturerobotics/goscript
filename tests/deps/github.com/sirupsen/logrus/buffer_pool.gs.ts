@@ -61,7 +61,7 @@ export class defaultPool {
 		() => new defaultPool(),
 		[{ name: "Get", args: [], returns: [] }, { name: "Put", args: [], returns: [] }],
 		defaultPool,
-		{"pool": { kind: $.TypeKind.Pointer, elemType: "sync.Pool" }}
+		[{ name: "pool", key: "pool", type: { kind: $.TypeKind.Pointer, elemType: "sync.Pool" }, pkgPath: "github.com/sirupsen/logrus", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -285,12 +285,28 @@ export class Position {
       },
     ],
     Position,
-    {
-      Filename: { kind: $.TypeKind.Basic, name: 'string' },
-      Offset: { kind: $.TypeKind.Basic, name: 'int' },
-      Line: { kind: $.TypeKind.Basic, name: 'int' },
-      Column: { kind: $.TypeKind.Basic, name: 'int' },
-    },
+    [
+      {
+        name: 'Filename',
+        key: 'Filename',
+        type: { kind: $.TypeKind.Basic, name: 'string' },
+      },
+      {
+        name: 'Offset',
+        key: 'Offset',
+        type: { kind: $.TypeKind.Basic, name: 'int' },
+      },
+      {
+        name: 'Line',
+        key: 'Line',
+        type: { kind: $.TypeKind.Basic, name: 'int' },
+      },
+      {
+        name: 'Column',
+        key: 'Column',
+        type: { kind: $.TypeKind.Basic, name: 'int' },
+      },
+    ],
   )
 }
 

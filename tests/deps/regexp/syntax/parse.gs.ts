@@ -80,7 +80,7 @@ export class Error {
 		() => new Error(),
 		[{ name: "Error", args: [], returns: [] }],
 		Error,
-		{"Code": { kind: $.TypeKind.Basic, name: "string", typeName: "syntax.ErrorCode" }, "Expr": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Code", key: "Code", type: { kind: $.TypeKind.Basic, name: "string", typeName: "syntax.ErrorCode" }, index: [0], offset: 0, exported: true }, { name: "Expr", key: "Expr", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 16, exported: true }]
 	)
 }
 
@@ -1674,7 +1674,7 @@ export class parser {
 		() => new parser(),
 		[{ name: "alternate", args: [], returns: [] }, { name: "appendGroup", args: [], returns: [] }, { name: "calcHeight", args: [], returns: [] }, { name: "calcSize", args: [], returns: [] }, { name: "checkHeight", args: [], returns: [] }, { name: "checkLimits", args: [], returns: [] }, { name: "checkSize", args: [], returns: [] }, { name: "collapse", args: [], returns: [] }, { name: "concat", args: [], returns: [] }, { name: "factor", args: [], returns: [] }, { name: "leadingRegexp", args: [], returns: [] }, { name: "leadingString", args: [], returns: [] }, { name: "literal", args: [], returns: [] }, { name: "maybeConcat", args: [], returns: [] }, { name: "newRegexp", args: [], returns: [] }, { name: "op", args: [], returns: [] }, { name: "parseClass", args: [], returns: [] }, { name: "parseClassChar", args: [], returns: [] }, { name: "parseEscape", args: [], returns: [] }, { name: "parseInt", args: [], returns: [] }, { name: "parseNamedClass", args: [], returns: [] }, { name: "parsePerlClassEscape", args: [], returns: [] }, { name: "parsePerlFlags", args: [], returns: [] }, { name: "parseRepeat", args: [], returns: [] }, { name: "parseRightParen", args: [], returns: [] }, { name: "parseUnicodeClass", args: [], returns: [] }, { name: "parseVerticalBar", args: [], returns: [] }, { name: "push", args: [], returns: [] }, { name: "removeLeadingRegexp", args: [], returns: [] }, { name: "removeLeadingString", args: [], returns: [] }, { name: "repeat", args: [], returns: [] }, { name: "reuse", args: [], returns: [] }, { name: "swapVerticalBar", args: [], returns: [] }],
 		parser,
-		{"flags": { kind: $.TypeKind.Basic, name: "uint16", typeName: "syntax.Flags" }, "stack": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" } }, "free": { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" }, "numCap": { kind: $.TypeKind.Basic, name: "int" }, "wholeRegexp": { kind: $.TypeKind.Basic, name: "string" }, "tmpClass": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }, "numRegexp": { kind: $.TypeKind.Basic, name: "int" }, "numRunes": { kind: $.TypeKind.Basic, name: "int" }, "repeats": { kind: $.TypeKind.Basic, name: "int64" }, "height": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" }, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "size": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" }, elemType: { kind: $.TypeKind.Basic, name: "int64" } }}
+		[{ name: "flags", key: "flags", type: { kind: $.TypeKind.Basic, name: "uint16", typeName: "syntax.Flags" }, pkgPath: "regexp/syntax", index: [0], offset: 0, exported: false }, { name: "stack", key: "stack", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" } }, pkgPath: "regexp/syntax", index: [1], offset: 8, exported: false }, { name: "free", key: "free", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" }, pkgPath: "regexp/syntax", index: [2], offset: 32, exported: false }, { name: "numCap", key: "numCap", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "regexp/syntax", index: [3], offset: 40, exported: false }, { name: "wholeRegexp", key: "wholeRegexp", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "regexp/syntax", index: [4], offset: 48, exported: false }, { name: "tmpClass", key: "tmpClass", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }, pkgPath: "regexp/syntax", index: [5], offset: 64, exported: false }, { name: "numRegexp", key: "numRegexp", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "regexp/syntax", index: [6], offset: 88, exported: false }, { name: "numRunes", key: "numRunes", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "regexp/syntax", index: [7], offset: 96, exported: false }, { name: "repeats", key: "repeats", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "regexp/syntax", index: [8], offset: 104, exported: false }, { name: "height", key: "height", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" }, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "regexp/syntax", index: [9], offset: 112, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" }, elemType: { kind: $.TypeKind.Basic, name: "int64" } }, pkgPath: "regexp/syntax", index: [10], offset: 120, exported: false }]
 	)
 }
 
@@ -1719,7 +1719,7 @@ export class charGroup {
 		() => new charGroup(),
 		[],
 		charGroup,
-		{"sign": { kind: $.TypeKind.Basic, name: "int" }, "_class": { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }, name: "class" }}
+		[{ name: "sign", key: "sign", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "regexp/syntax", index: [0], offset: 0, exported: false }, { name: "class", key: "_class", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }, pkgPath: "regexp/syntax", index: [1], offset: 8, exported: false }]
 	)
 }
 
@@ -1782,7 +1782,7 @@ export class ranges {
 		() => new ranges(),
 		[{ name: "Len", args: [], returns: [] }, { name: "Less", args: [], returns: [] }, { name: "Swap", args: [], returns: [] }],
 		ranges,
-		{"p": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } } }}
+		[{ name: "p", key: "p", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } } }, pkgPath: "regexp/syntax", index: [0], offset: 0, exported: false }]
 	)
 }
 

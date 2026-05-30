@@ -34,7 +34,7 @@ export class listScanner {
 		() => new listScanner(),
 		[{ name: "Scan", args: [], returns: [] }],
 		listScanner,
-		{}
+		[]
 	)
 }
 

@@ -42,7 +42,7 @@ export class msg {
 		() => new msg(),
 		[{ name: "EqualVT", args: [], returns: [] }],
 		msg,
-		{"v": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_protobuf_equalvt", index: [0], offset: 0, exported: false }]
 	)
 }
 

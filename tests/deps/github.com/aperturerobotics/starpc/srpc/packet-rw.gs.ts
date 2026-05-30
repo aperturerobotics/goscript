@@ -64,7 +64,7 @@ export class writeBuffer {
 		() => new writeBuffer(),
 		[],
 		writeBuffer,
-		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
+		[{ name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -267,7 +267,7 @@ export class PacketReadWriter {
 		() => new PacketReadWriter(),
 		[{ name: "Close", args: [], returns: [] }, { name: "ReadPump", args: [], returns: [] }, { name: "ReadToHandler", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "WritePacket", args: [], returns: [] }, { name: "readLengthPrefix", args: [], returns: [] }],
 		PacketReadWriter,
-		{"rw": "io.ReadWriteCloser", "buf": "bytes.Buffer", "writeMtx": "sync.Mutex"}
+		[{ name: "rw", key: "rw", type: "io.ReadWriteCloser", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "buf", key: "buf", type: "bytes.Buffer", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }, { name: "writeMtx", key: "writeMtx", type: "sync.Mutex", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [2], offset: 56, exported: false }]
 	)
 }
 

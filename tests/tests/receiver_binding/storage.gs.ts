@@ -72,7 +72,7 @@ export class storage {
 		() => new storage(),
 		[{ name: "IsEmpty", args: [], returns: [] }, { name: "Len", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "SetName", args: [], returns: [] }, { name: "Truncate", args: [], returns: [] }],
 		storage,
-		{"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "bytes", key: "bytes", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/receiver_binding", index: [0], offset: 0, exported: false }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/receiver_binding", index: [1], offset: 24, exported: false }]
 	)
 }
 

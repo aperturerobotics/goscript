@@ -88,7 +88,7 @@ export class ClientInvoker {
 		() => new ClientInvoker(),
 		[{ name: "InvokeMethod", args: [], returns: [] }],
 		ClientInvoker,
-		{"client": "srpc.Client"}
+		[{ name: "client", key: "client", type: "srpc.Client", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }]
 	)
 }
 

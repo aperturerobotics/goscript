@@ -39,7 +39,7 @@ export class MockInode {
 		() => new MockInode(),
 		[{ name: "getValue", args: [], returns: [] }],
 		MockInode,
-		{"Value": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

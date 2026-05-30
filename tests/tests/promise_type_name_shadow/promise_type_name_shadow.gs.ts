@@ -34,7 +34,7 @@ export class Promise {
 		() => new Promise(),
 		[],
 		Promise,
-		{"value": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promise_type_name_shadow", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -143,7 +143,7 @@ export class Prog {
 		() => new Prog(),
 		[{ name: "Prefix", args: [], returns: [] }, { name: "StartCond", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "skipNop", args: [], returns: [] }],
 		Prog,
-		{"Inst": { kind: $.TypeKind.Slice, elemType: "syntax.Inst" }, "Start": { kind: $.TypeKind.Basic, name: "int" }, "NumCap": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "Inst", key: "Inst", type: { kind: $.TypeKind.Slice, elemType: "syntax.Inst" }, index: [0], offset: 0, exported: true }, { name: "Start", key: "Start", type: { kind: $.TypeKind.Basic, name: "int" }, index: [1], offset: 24, exported: true }, { name: "NumCap", key: "NumCap", type: { kind: $.TypeKind.Basic, name: "int" }, index: [2], offset: 32, exported: true }]
 	)
 }
 
@@ -344,7 +344,7 @@ export class Inst {
 		() => new Inst(),
 		[{ name: "MatchEmptyWidth", args: [], returns: [] }, { name: "MatchRune", args: [], returns: [] }, { name: "MatchRunePos", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "op", args: [], returns: [] }],
 		Inst,
-		{"Op": { kind: $.TypeKind.Basic, name: "uint8", typeName: "syntax.InstOp" }, "Out": { kind: $.TypeKind.Basic, name: "uint32" }, "Arg": { kind: $.TypeKind.Basic, name: "uint32" }, "Rune": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }}
+		[{ name: "Op", key: "Op", type: { kind: $.TypeKind.Basic, name: "uint8", typeName: "syntax.InstOp" }, index: [0], offset: 0, exported: true }, { name: "Out", key: "Out", type: { kind: $.TypeKind.Basic, name: "uint32" }, index: [1], offset: 4, exported: true }, { name: "Arg", key: "Arg", type: { kind: $.TypeKind.Basic, name: "uint32" }, index: [2], offset: 8, exported: true }, { name: "Rune", key: "Rune", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }, index: [3], offset: 16, exported: true }]
 	)
 }
 

@@ -62,7 +62,7 @@ export class hcode {
 		() => new hcode(),
 		[{ name: "set", args: [], returns: [] }],
 		hcode,
-		{"code": { kind: $.TypeKind.Basic, name: "uint16" }, "len": { kind: $.TypeKind.Basic, name: "uint16" }}
+		[{ name: "code", key: "code", type: { kind: $.TypeKind.Basic, name: "uint16" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "len", key: "len", type: { kind: $.TypeKind.Basic, name: "uint16" }, pkgPath: "compress/flate", index: [1], offset: 2, exported: false }]
 	)
 }
 
@@ -326,7 +326,7 @@ export class huffmanEncoder {
 		() => new huffmanEncoder(),
 		[{ name: "assignEncodingAndSize", args: [], returns: [] }, { name: "bitCounts", args: [], returns: [] }, { name: "bitLength", args: [], returns: [] }, { name: "generate", args: [], returns: [] }],
 		huffmanEncoder,
-		{"codes": { kind: $.TypeKind.Slice, elemType: "flate.hcode" }, "freqcache": { kind: $.TypeKind.Slice, elemType: "flate.literalNode" }, "bitCount": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int32" }, length: 17 }, "lns": "flate.byLiteral", "lfs": "flate.byFreq"}
+		[{ name: "codes", key: "codes", type: { kind: $.TypeKind.Slice, elemType: "flate.hcode" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "freqcache", key: "freqcache", type: { kind: $.TypeKind.Slice, elemType: "flate.literalNode" }, pkgPath: "compress/flate", index: [1], offset: 24, exported: false }, { name: "bitCount", key: "bitCount", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int32" }, length: 17 }, pkgPath: "compress/flate", index: [2], offset: 48, exported: false }, { name: "lns", key: "lns", type: "flate.byLiteral", pkgPath: "compress/flate", index: [3], offset: 120, exported: false }, { name: "lfs", key: "lfs", type: "flate.byFreq", pkgPath: "compress/flate", index: [4], offset: 144, exported: false }]
 	)
 }
 
@@ -371,7 +371,7 @@ export class literalNode {
 		() => new literalNode(),
 		[],
 		literalNode,
-		{"literal": { kind: $.TypeKind.Basic, name: "uint16" }, "freq": { kind: $.TypeKind.Basic, name: "int32" }}
+		[{ name: "literal", key: "literal", type: { kind: $.TypeKind.Basic, name: "uint16" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "freq", key: "freq", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [1], offset: 4, exported: false }]
 	)
 }
 
@@ -453,7 +453,7 @@ export class levelInfo {
 		() => new levelInfo(),
 		[],
 		levelInfo,
-		{"level": { kind: $.TypeKind.Basic, name: "int32" }, "lastFreq": { kind: $.TypeKind.Basic, name: "int32" }, "nextCharFreq": { kind: $.TypeKind.Basic, name: "int32" }, "nextPairFreq": { kind: $.TypeKind.Basic, name: "int32" }, "needed": { kind: $.TypeKind.Basic, name: "int32" }}
+		[{ name: "level", key: "level", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "lastFreq", key: "lastFreq", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [1], offset: 4, exported: false }, { name: "nextCharFreq", key: "nextCharFreq", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [2], offset: 8, exported: false }, { name: "nextPairFreq", key: "nextPairFreq", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [3], offset: 12, exported: false }, { name: "needed", key: "needed", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [4], offset: 16, exported: false }]
 	)
 }
 

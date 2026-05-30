@@ -397,7 +397,7 @@ export class Reader {
 		() => new Reader(),
 		[{ name: "Open", args: [], returns: [] }, { name: "RegisterDecompressor", args: [], returns: [] }, { name: "decompressor", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "initFileList", args: [], returns: [] }, { name: "openLookup", args: [], returns: [] }, { name: "openReadDir", args: [], returns: [] }],
 		Reader,
-		{"r": "io.ReaderAt", "File": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "zip.File" } }, "Comment": { kind: $.TypeKind.Basic, name: "string" }, "decompressors": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "uint16" }, elemType: ({ kind: $.TypeKind.Function, name: "zip.Decompressor", params: ["io.Reader"], results: ["io.ReadCloser"] } as $.FunctionTypeInfo) }, "baseOffset": { kind: $.TypeKind.Basic, name: "int64" }, "fileListOnce": "sync.Once", "fileList": { kind: $.TypeKind.Slice, elemType: "zip.fileListEntry" }}
+		[{ name: "r", key: "r", type: "io.ReaderAt", pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "File", key: "File", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "zip.File" } }, index: [1], offset: 16, exported: true }, { name: "Comment", key: "Comment", type: { kind: $.TypeKind.Basic, name: "string" }, index: [2], offset: 40, exported: true }, { name: "decompressors", key: "decompressors", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "uint16" }, elemType: ({ kind: $.TypeKind.Function, name: "zip.Decompressor", params: ["io.Reader"], results: ["io.ReadCloser"] } as $.FunctionTypeInfo) }, pkgPath: "archive/zip", index: [3], offset: 56, exported: false }, { name: "baseOffset", key: "baseOffset", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "archive/zip", index: [4], offset: 64, exported: false }, { name: "fileListOnce", key: "fileListOnce", type: "sync.Once", pkgPath: "archive/zip", index: [5], offset: 72, exported: false }, { name: "fileList", key: "fileList", type: { kind: $.TypeKind.Slice, elemType: "zip.fileListEntry" }, pkgPath: "archive/zip", index: [6], offset: 88, exported: false }]
 	)
 }
 
@@ -475,7 +475,7 @@ export class ReadCloser {
 		() => new ReadCloser(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Open", args: [], returns: [] }, { name: "RegisterDecompressor", args: [], returns: [] }, { name: "decompressor", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "initFileList", args: [], returns: [] }, { name: "openLookup", args: [], returns: [] }, { name: "openReadDir", args: [], returns: [] }],
 		ReadCloser,
-		{"f": { kind: $.TypeKind.Pointer, elemType: "os.File" }, "Reader": "zip.Reader"}
+		[{ name: "f", key: "f", type: { kind: $.TypeKind.Pointer, elemType: "os.File" }, pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "Reader", key: "Reader", type: "zip.Reader", anonymous: true, index: [1], offset: 8, exported: true }]
 	)
 }
 
@@ -664,7 +664,7 @@ export class File {
 		() => new File(),
 		[{ name: "DataOffset", args: [], returns: [] }, { name: "Open", args: [], returns: [] }, { name: "OpenRaw", args: [], returns: [] }, { name: "findBodyOffset", args: [], returns: [] }, { name: "FileInfo", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "SetModTime", args: [], returns: [] }, { name: "SetMode", args: [], returns: [] }, { name: "hasDataDescriptor", args: [], returns: [] }, { name: "isZip64", args: [], returns: [] }],
 		File,
-		{"FileHeader": "zip.FileHeader", "zip": { kind: $.TypeKind.Pointer, elemType: "zip.Reader" }, "zipr": "io.ReaderAt", "headerOffset": { kind: $.TypeKind.Basic, name: "int64" }, "zip64": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "FileHeader", key: "FileHeader", type: "zip.FileHeader", anonymous: true, index: [0], offset: 0, exported: true }, { name: "zip", key: "zip", type: { kind: $.TypeKind.Pointer, elemType: "zip.Reader" }, pkgPath: "archive/zip", index: [1], offset: 136, exported: false }, { name: "zipr", key: "zipr", type: "io.ReaderAt", pkgPath: "archive/zip", index: [2], offset: 144, exported: false }, { name: "headerOffset", key: "headerOffset", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "archive/zip", index: [3], offset: 160, exported: false }, { name: "zip64", key: "zip64", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "archive/zip", index: [4], offset: 168, exported: false }]
 	)
 }
 
@@ -709,7 +709,7 @@ export class dirReader {
 		() => new dirReader(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }],
 		dirReader,
-		{"err": "error"}
+		[{ name: "err", key: "err", type: "error", pkgPath: "archive/zip", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -854,7 +854,7 @@ export class checksumReader {
 		() => new checksumReader(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Stat", args: [], returns: [] }],
 		checksumReader,
-		{"rc": "io.ReadCloser", "hash": "hash.Hash32", "nread": { kind: $.TypeKind.Basic, name: "uint64" }, "f": { kind: $.TypeKind.Pointer, elemType: "zip.File" }, "desr": "io.Reader", "err": "error"}
+		[{ name: "rc", key: "rc", type: "io.ReadCloser", pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "hash", key: "hash", type: "hash.Hash32", pkgPath: "archive/zip", index: [1], offset: 16, exported: false }, { name: "nread", key: "nread", type: { kind: $.TypeKind.Basic, name: "uint64" }, pkgPath: "archive/zip", index: [2], offset: 32, exported: false }, { name: "f", key: "f", type: { kind: $.TypeKind.Pointer, elemType: "zip.File" }, pkgPath: "archive/zip", index: [3], offset: 40, exported: false }, { name: "desr", key: "desr", type: "io.Reader", pkgPath: "archive/zip", index: [4], offset: 48, exported: false }, { name: "err", key: "err", type: "error", pkgPath: "archive/zip", index: [5], offset: 64, exported: false }]
 	)
 }
 
@@ -979,7 +979,7 @@ export class fileListEntry {
 		() => new fileListEntry(),
 		[{ name: "Info", args: [], returns: [] }, { name: "IsDir", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "Sys", args: [], returns: [] }, { name: "Type", args: [], returns: [] }, { name: "stat", args: [], returns: [] }],
 		fileListEntry,
-		{"name": { kind: $.TypeKind.Basic, name: "string" }, "file": { kind: $.TypeKind.Pointer, elemType: "zip.File" }, "isDir": { kind: $.TypeKind.Basic, name: "bool" }, "isDup": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "file", key: "file", type: { kind: $.TypeKind.Pointer, elemType: "zip.File" }, pkgPath: "archive/zip", index: [1], offset: 16, exported: false }, { name: "isDir", key: "isDir", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "archive/zip", index: [2], offset: 24, exported: false }, { name: "isDup", key: "isDup", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "archive/zip", index: [3], offset: 25, exported: false }]
 	)
 }
 
@@ -1079,7 +1079,7 @@ export class openDir {
 		() => new openDir(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "ReadDir", args: [], returns: [] }, { name: "Stat", args: [], returns: [] }],
 		openDir,
-		{"e": { kind: $.TypeKind.Pointer, elemType: "zip.fileListEntry" }, "files": { kind: $.TypeKind.Slice, elemType: "zip.fileListEntry" }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "e", key: "e", type: { kind: $.TypeKind.Pointer, elemType: "zip.fileListEntry" }, pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "files", key: "files", type: { kind: $.TypeKind.Slice, elemType: "zip.fileListEntry" }, pkgPath: "archive/zip", index: [1], offset: 8, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "archive/zip", index: [2], offset: 32, exported: false }]
 	)
 }
 

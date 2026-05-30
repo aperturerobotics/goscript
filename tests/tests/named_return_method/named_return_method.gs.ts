@@ -74,7 +74,7 @@ export class content {
 		() => new content(),
 		[{ name: "ProcessData", args: [], returns: [] }, { name: "ReadAt", args: [], returns: [] }],
 		content,
-		{"bytes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
+		[{ name: "bytes", key: "bytes", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_return_method", index: [0], offset: 0, exported: false }]
 	)
 }
 

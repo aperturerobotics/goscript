@@ -67,7 +67,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }],
 		MyStruct,
-		{}
+		[]
 	)
 }
 

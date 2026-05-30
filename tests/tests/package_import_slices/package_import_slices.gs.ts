@@ -100,7 +100,7 @@ export async function main(): globalThis.Promise<void> {
 			() => new item(),
 			[],
 			item,
-			{"group": { kind: $.TypeKind.Basic, name: "int" }, "label": { kind: $.TypeKind.Basic, name: "string" }}
+			[{ name: "group", key: "group", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_slices", index: [0], offset: 0, exported: false }, { name: "label", key: "label", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_slices", index: [1], offset: 8, exported: false }]
 		)
 	}
 	let stable: $.Slice<item> = $.arrayToSlice<item>([$.markAsStructValue(new item({group: 2, label: "a"})), $.markAsStructValue(new item({group: 1, label: "b"})), $.markAsStructValue(new item({group: 2, label: "c"})), $.markAsStructValue(new item({group: 1, label: "d"}))])

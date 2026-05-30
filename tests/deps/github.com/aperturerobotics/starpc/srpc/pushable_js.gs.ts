@@ -91,7 +91,7 @@ export class PushablePacketWriter {
 		() => new PushablePacketWriter(),
 		[{ name: "Close", args: [], returns: [] }, { name: "WritePacket", args: [], returns: [] }],
 		PushablePacketWriter,
-		{"closed": "atomic.Bool", "pushable": "js.Value"}
+		[{ name: "closed", key: "closed", type: "atomic.Bool", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "pushable", key: "pushable", type: "js.Value", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 8, exported: false }]
 	)
 }
 

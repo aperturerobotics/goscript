@@ -587,7 +587,7 @@ export class Writer {
 		() => new Writer(),
 		[{ name: "AddFS", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "Copy", args: [], returns: [] }, { name: "Create", args: [], returns: [] }, { name: "CreateHeader", args: [], returns: [] }, { name: "CreateRaw", args: [], returns: [] }, { name: "Flush", args: [], returns: [] }, { name: "RegisterCompressor", args: [], returns: [] }, { name: "SetComment", args: [], returns: [] }, { name: "SetOffset", args: [], returns: [] }, { name: "compressor", args: [], returns: [] }, { name: "prepare", args: [], returns: [] }],
 		Writer,
-		{"cw": { kind: $.TypeKind.Pointer, elemType: "zip.countWriter" }, "dir": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "zip.header" } }, "last": { kind: $.TypeKind.Pointer, elemType: "zip.fileWriter" }, "closed": { kind: $.TypeKind.Basic, name: "bool" }, "compressors": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "uint16" }, elemType: ({ kind: $.TypeKind.Function, name: "zip.Compressor", params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo) }, "comment": { kind: $.TypeKind.Basic, name: "string" }, "testHookCloseSizeOffset": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uint64" }, { kind: $.TypeKind.Basic, name: "uint64" }], results: [] } as $.FunctionTypeInfo)}
+		[{ name: "cw", key: "cw", type: { kind: $.TypeKind.Pointer, elemType: "zip.countWriter" }, pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "dir", key: "dir", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "zip.header" } }, pkgPath: "archive/zip", index: [1], offset: 8, exported: false }, { name: "last", key: "last", type: { kind: $.TypeKind.Pointer, elemType: "zip.fileWriter" }, pkgPath: "archive/zip", index: [2], offset: 32, exported: false }, { name: "closed", key: "closed", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "archive/zip", index: [3], offset: 40, exported: false }, { name: "compressors", key: "compressors", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "uint16" }, elemType: ({ kind: $.TypeKind.Function, name: "zip.Compressor", params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo) }, pkgPath: "archive/zip", index: [4], offset: 48, exported: false }, { name: "comment", key: "comment", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "archive/zip", index: [5], offset: 56, exported: false }, { name: "testHookCloseSizeOffset", key: "testHookCloseSizeOffset", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uint64" }, { kind: $.TypeKind.Basic, name: "uint64" }], results: [] } as $.FunctionTypeInfo), pkgPath: "archive/zip", index: [6], offset: 72, exported: false }]
 	)
 }
 
@@ -670,7 +670,7 @@ export class header {
 		() => new header(),
 		[{ name: "FileInfo", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "SetModTime", args: [], returns: [] }, { name: "SetMode", args: [], returns: [] }, { name: "hasDataDescriptor", args: [], returns: [] }, { name: "isZip64", args: [], returns: [] }],
 		header,
-		{"FileHeader": { kind: $.TypeKind.Pointer, elemType: "zip.FileHeader" }, "offset": { kind: $.TypeKind.Basic, name: "uint64" }, "raw": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "FileHeader", key: "FileHeader", type: { kind: $.TypeKind.Pointer, elemType: "zip.FileHeader" }, anonymous: true, index: [0], offset: 0, exported: true }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "uint64" }, pkgPath: "archive/zip", index: [1], offset: 8, exported: false }, { name: "raw", key: "raw", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "archive/zip", index: [2], offset: 16, exported: false }]
 	)
 }
 
@@ -702,7 +702,7 @@ export class dirWriter {
 		() => new dirWriter(),
 		[{ name: "Write", args: [], returns: [] }],
 		dirWriter,
-		{}
+		[]
 	)
 }
 
@@ -901,7 +901,7 @@ export class fileWriter {
 		() => new fileWriter(),
 		[{ name: "Write", args: [], returns: [] }, { name: "close", args: [], returns: [] }, { name: "writeDataDescriptor", args: [], returns: [] }, { name: "FileInfo", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "SetModTime", args: [], returns: [] }, { name: "SetMode", args: [], returns: [] }, { name: "hasDataDescriptor", args: [], returns: [] }, { name: "isZip64", args: [], returns: [] }],
 		fileWriter,
-		{"header": { kind: $.TypeKind.Pointer, elemType: "zip.header" }, "zipw": "io.Writer", "rawCount": { kind: $.TypeKind.Pointer, elemType: "zip.countWriter" }, "comp": "io.WriteCloser", "compCount": { kind: $.TypeKind.Pointer, elemType: "zip.countWriter" }, "crc32": "hash.Hash32", "closed": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "header", key: "header", type: { kind: $.TypeKind.Pointer, elemType: "zip.header" }, pkgPath: "archive/zip", anonymous: true, index: [0], offset: 0, exported: false }, { name: "zipw", key: "zipw", type: "io.Writer", pkgPath: "archive/zip", index: [1], offset: 8, exported: false }, { name: "rawCount", key: "rawCount", type: { kind: $.TypeKind.Pointer, elemType: "zip.countWriter" }, pkgPath: "archive/zip", index: [2], offset: 24, exported: false }, { name: "comp", key: "comp", type: "io.WriteCloser", pkgPath: "archive/zip", index: [3], offset: 32, exported: false }, { name: "compCount", key: "compCount", type: { kind: $.TypeKind.Pointer, elemType: "zip.countWriter" }, pkgPath: "archive/zip", index: [4], offset: 48, exported: false }, { name: "crc32", key: "crc32", type: "hash.Hash32", pkgPath: "archive/zip", index: [5], offset: 56, exported: false }, { name: "closed", key: "closed", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "archive/zip", index: [6], offset: 72, exported: false }]
 	)
 }
 
@@ -953,7 +953,7 @@ export class countWriter {
 		() => new countWriter(),
 		[{ name: "Write", args: [], returns: [] }],
 		countWriter,
-		{"w": "io.Writer", "count": { kind: $.TypeKind.Basic, name: "int64" }}
+		[{ name: "w", key: "w", type: "io.Writer", pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "count", key: "count", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "archive/zip", index: [1], offset: 16, exported: false }]
 	)
 }
 
@@ -997,7 +997,7 @@ export class nopCloser {
 		() => new nopCloser(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		nopCloser,
-		{"Writer": "io.Writer"}
+		[{ name: "Writer", key: "Writer", type: "io.Writer", anonymous: true, index: [0], offset: 0, exported: true }]
 	)
 }
 

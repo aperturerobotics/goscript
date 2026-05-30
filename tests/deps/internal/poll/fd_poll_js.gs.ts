@@ -134,7 +134,7 @@ export class pollDesc {
 		() => new pollDesc(),
 		[{ name: "close", args: [], returns: [] }, { name: "evict", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "pollable", args: [], returns: [] }, { name: "prepare", args: [], returns: [] }, { name: "prepareRead", args: [], returns: [] }, { name: "prepareWrite", args: [], returns: [] }, { name: "wait", args: [], returns: [] }, { name: "waitCanceled", args: [], returns: [] }, { name: "waitRead", args: [], returns: [] }, { name: "waitWrite", args: [], returns: [] }],
 		pollDesc,
-		{"fd": { kind: $.TypeKind.Pointer, elemType: "poll.FD" }, "closing": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "fd", key: "fd", type: { kind: $.TypeKind.Pointer, elemType: "poll.FD" }, pkgPath: "internal/poll", index: [0], offset: 0, exported: false }, { name: "closing", key: "closing", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "internal/poll", index: [1], offset: 8, exported: false }]
 	)
 }
 

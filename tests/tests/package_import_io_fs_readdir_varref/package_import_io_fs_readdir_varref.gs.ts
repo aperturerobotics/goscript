@@ -45,7 +45,7 @@ export class openOnlyFS {
 		() => new openOnlyFS(),
 		[{ name: "Open", args: [], returns: [] }],
 		openOnlyFS,
-		{"fsys": "fstest.MapFS"}
+		[{ name: "fsys", key: "fsys", type: "fstest.MapFS", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io_fs_readdir_varref", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -35,7 +35,7 @@ export class nistCurve {
 		() => new nistCurve(),
 		[{ name: "Add", args: [], returns: [] }, { name: "Zero", args: [], returns: [] }],
 		nistCurve,
-		{}
+		[]
 	)
 }
 
@@ -75,7 +75,7 @@ export class point {
 		() => new point(),
 		[{ name: "Add", args: [], returns: [] }],
 		point,
-		{"N": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "N", key: "N", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

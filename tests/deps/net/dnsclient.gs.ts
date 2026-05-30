@@ -88,7 +88,7 @@ export class SRV {
 		() => new SRV(),
 		[],
 		SRV,
-		{"Target": { kind: $.TypeKind.Basic, name: "string" }, "Port": { kind: $.TypeKind.Basic, name: "uint16" }, "Priority": { kind: $.TypeKind.Basic, name: "uint16" }, "Weight": { kind: $.TypeKind.Basic, name: "uint16" }}
+		[{ name: "Target", key: "Target", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Port", key: "Port", type: { kind: $.TypeKind.Basic, name: "uint16" }, index: [1], offset: 16, exported: true }, { name: "Priority", key: "Priority", type: { kind: $.TypeKind.Basic, name: "uint16" }, index: [2], offset: 18, exported: true }, { name: "Weight", key: "Weight", type: { kind: $.TypeKind.Basic, name: "uint16" }, index: [3], offset: 20, exported: true }]
 	)
 }
 
@@ -133,7 +133,7 @@ export class MX {
 		() => new MX(),
 		[],
 		MX,
-		{"Host": { kind: $.TypeKind.Basic, name: "string" }, "Pref": { kind: $.TypeKind.Basic, name: "uint16" }}
+		[{ name: "Host", key: "Host", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Pref", key: "Pref", type: { kind: $.TypeKind.Basic, name: "uint16" }, index: [1], offset: 16, exported: true }]
 	)
 }
 
@@ -168,7 +168,7 @@ export class NS {
 		() => new NS(),
 		[],
 		NS,
-		{"Host": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Host", key: "Host", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

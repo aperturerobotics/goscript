@@ -49,7 +49,7 @@ export class box {
 		() => new box(),
 		[{ name: "Value", args: [], returns: [] }],
 		box,
-		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/function_result_async_compatible", index: [0], offset: 0, exported: false }]
 	)
 }
 

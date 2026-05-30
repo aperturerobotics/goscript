@@ -197,6 +197,6 @@ export class dictDecoder {
 		() => new dictDecoder(),
 		[{ name: "availRead", args: [], returns: [] }, { name: "availWrite", args: [], returns: [] }, { name: "histSize", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "readFlush", args: [], returns: [] }, { name: "tryWriteCopy", args: [], returns: [] }, { name: "writeByte", args: [], returns: [] }, { name: "writeCopy", args: [], returns: [] }, { name: "writeMark", args: [], returns: [] }, { name: "writeSlice", args: [], returns: [] }],
 		dictDecoder,
-		{"hist": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "wrPos": { kind: $.TypeKind.Basic, name: "int" }, "rdPos": { kind: $.TypeKind.Basic, name: "int" }, "full": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "hist", key: "hist", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "wrPos", key: "wrPos", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "compress/flate", index: [1], offset: 24, exported: false }, { name: "rdPos", key: "rdPos", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "compress/flate", index: [2], offset: 32, exported: false }, { name: "full", key: "full", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "compress/flate", index: [3], offset: 40, exported: false }]
 	)
 }

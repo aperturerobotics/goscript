@@ -108,7 +108,7 @@ export class fakeSockAddr {
 		() => new fakeSockAddr(),
 		[],
 		fakeSockAddr,
-		{"family": { kind: $.TypeKind.Basic, name: "int" }, "address": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "family", key: "family", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "address", key: "address", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [1], offset: 8, exported: false }]
 	)
 }
 
@@ -933,7 +933,7 @@ export class fakeNetFD {
 		() => new fakeNetFD(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetReadDeadline", args: [], returns: [] }, { name: "SetWriteDeadline", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "accept", args: [], returns: [] }, { name: "assignFakeAddr", args: [], returns: [] }, { name: "closeRead", args: [], returns: [] }, { name: "closeWrite", args: [], returns: [] }, { name: "dup", args: [], returns: [] }, { name: "readFrom", args: [], returns: [] }, { name: "readFromInet4", args: [], returns: [] }, { name: "readFromInet6", args: [], returns: [] }, { name: "readMsg", args: [], returns: [] }, { name: "readMsgInet4", args: [], returns: [] }, { name: "readMsgInet6", args: [], returns: [] }, { name: "setLinger", args: [], returns: [] }, { name: "setReadBuffer", args: [], returns: [] }, { name: "setWriteBuffer", args: [], returns: [] }, { name: "writeMsg", args: [], returns: [] }, { name: "writeMsgInet4", args: [], returns: [] }, { name: "writeMsgInet6", args: [], returns: [] }, { name: "writeTo", args: [], returns: [] }, { name: "writeToInet4", args: [], returns: [] }, { name: "writeToInet6", args: [], returns: [] }],
 		fakeNetFD,
-		{"fd": { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, "assignedPort": { kind: $.TypeKind.Basic, name: "int" }, "queue": { kind: $.TypeKind.Pointer, elemType: "net.packetQueue" }, "peer": { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, "readDeadline": "atomic.Pointer", "writeDeadline": "atomic.Pointer", "fakeAddr": "net.fakeSockAddr", "incoming": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "net.netFD" } } }, "incomingFull": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "net.netFD" } } }, "incomingEmpty": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }}
+		[{ name: "fd", key: "fd", type: { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "assignedPort", key: "assignedPort", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "net", index: [1], offset: 8, exported: false }, { name: "queue", key: "queue", type: { kind: $.TypeKind.Pointer, elemType: "net.packetQueue" }, pkgPath: "net", index: [2], offset: 16, exported: false }, { name: "peer", key: "peer", type: { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, pkgPath: "net", index: [3], offset: 24, exported: false }, { name: "readDeadline", key: "readDeadline", type: "atomic.Pointer", pkgPath: "net", index: [4], offset: 32, exported: false }, { name: "writeDeadline", key: "writeDeadline", type: "atomic.Pointer", pkgPath: "net", index: [5], offset: 40, exported: false }, { name: "fakeAddr", key: "fakeAddr", type: "net.fakeSockAddr", pkgPath: "net", index: [6], offset: 48, exported: false }, { name: "incoming", key: "incoming", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "net.netFD" } } }, pkgPath: "net", index: [7], offset: 72, exported: false }, { name: "incomingFull", key: "incomingFull", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "net.netFD" } } }, pkgPath: "net", index: [8], offset: 80, exported: false }, { name: "incomingEmpty", key: "incomingEmpty", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }, pkgPath: "net", index: [9], offset: 88, exported: false }]
 	)
 }
 
@@ -1006,7 +1006,7 @@ export class packet {
 		() => new packet(),
 		[{ name: "clear", args: [], returns: [] }],
 		packet,
-		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "bufOffset": { kind: $.TypeKind.Basic, name: "int" }, "next": { kind: $.TypeKind.Pointer, elemType: "net.packet" }, "_from": { type: "net.sockaddr", name: "from" }}
+		[{ name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "bufOffset", key: "bufOffset", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "net", index: [1], offset: 24, exported: false }, { name: "next", key: "next", type: { kind: $.TypeKind.Pointer, elemType: "net.packet" }, pkgPath: "net", index: [2], offset: 32, exported: false }, { name: "from", key: "_from", type: "net.sockaddr", pkgPath: "net", index: [3], offset: 40, exported: false }]
 	)
 }
 
@@ -1101,7 +1101,7 @@ export class packetQueueState {
 		() => new packetQueueState(),
 		[],
 		packetQueueState,
-		{"head": { kind: $.TypeKind.Pointer, elemType: "net.packet" }, "tail": { kind: $.TypeKind.Pointer, elemType: "net.packet" }, "nBytes": { kind: $.TypeKind.Basic, name: "int" }, "readBufferBytes": { kind: $.TypeKind.Basic, name: "int" }, "readClosed": { kind: $.TypeKind.Basic, name: "bool" }, "writeClosed": { kind: $.TypeKind.Basic, name: "bool" }, "noLinger": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "head", key: "head", type: { kind: $.TypeKind.Pointer, elemType: "net.packet" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "tail", key: "tail", type: { kind: $.TypeKind.Pointer, elemType: "net.packet" }, pkgPath: "net", index: [1], offset: 8, exported: false }, { name: "nBytes", key: "nBytes", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "net", index: [2], offset: 16, exported: false }, { name: "readBufferBytes", key: "readBufferBytes", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "net", index: [3], offset: 24, exported: false }, { name: "readClosed", key: "readClosed", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [4], offset: 32, exported: false }, { name: "writeClosed", key: "writeClosed", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [5], offset: 33, exported: false }, { name: "noLinger", key: "noLinger", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [6], offset: 34, exported: false }]
 	)
 }
 
@@ -1576,7 +1576,7 @@ export class packetQueue {
 		() => new packetQueue(),
 		[{ name: "closeRead", args: [], returns: [] }, { name: "closeWrite", args: [], returns: [] }, { name: "get", args: [], returns: [] }, { name: "put", args: [], returns: [] }, { name: "recvfrom", args: [], returns: [] }, { name: "send", args: [], returns: [] }, { name: "setLinger", args: [], returns: [] }, { name: "setReadBuffer", args: [], returns: [] }, { name: "write", args: [], returns: [] }],
 		packetQueue,
-		{"empty": { kind: $.TypeKind.Channel, direction: "both", elemType: "net.packetQueueState" }, "ready": { kind: $.TypeKind.Channel, direction: "both", elemType: "net.packetQueueState" }, "full": { kind: $.TypeKind.Channel, direction: "both", elemType: "net.packetQueueState" }}
+		[{ name: "empty", key: "empty", type: { kind: $.TypeKind.Channel, direction: "both", elemType: "net.packetQueueState" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "ready", key: "ready", type: { kind: $.TypeKind.Channel, direction: "both", elemType: "net.packetQueueState" }, pkgPath: "net", index: [1], offset: 8, exported: false }, { name: "full", key: "full", type: { kind: $.TypeKind.Channel, direction: "both", elemType: "net.packetQueueState" }, pkgPath: "net", index: [2], offset: 16, exported: false }]
 	)
 }
 
@@ -1657,7 +1657,7 @@ export class deadlineTimer {
 		() => new deadlineTimer(),
 		[{ name: "Reset", args: [], returns: [] }],
 		deadlineTimer,
-		{"timer": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Pointer, elemType: "time.Timer" } }, "expired": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }}
+		[{ name: "timer", key: "timer", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Pointer, elemType: "time.Timer" } }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "expired", key: "expired", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "net", index: [1], offset: 8, exported: false }]
 	)
 }
 

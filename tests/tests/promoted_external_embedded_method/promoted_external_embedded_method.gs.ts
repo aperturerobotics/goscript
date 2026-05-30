@@ -49,7 +49,7 @@ export class raw {
 		() => new raw(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		raw,
-		{"Mutex": "sync.Mutex"}
+		[{ name: "Mutex", key: "Mutex", type: "sync.Mutex", anonymous: true, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -96,7 +96,7 @@ export class outer {
 		() => new outer(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		outer,
-		{"raw": "main.raw"}
+		[{ name: "raw", key: "raw", type: "main.raw", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -159,7 +159,7 @@ export class rawRW {
 		() => new rawRW(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "TryRLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		rawRW,
-		{"RWMutex": "sync.RWMutex"}
+		[{ name: "RWMutex", key: "RWMutex", type: "sync.RWMutex", anonymous: true, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -222,7 +222,7 @@ export class outerRW {
 		() => new outerRW(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "TryRLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		outerRW,
-		{"rawRW": "main.rawRW"}
+		[{ name: "rawRW", key: "rawRW", type: "main.rawRW", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -261,7 +261,7 @@ export class rawRunner {
 		() => new rawRunner(),
 		[{ name: "Run", args: [], returns: [] }],
 		rawRunner,
-		{"runner": "main.runner"}
+		[{ name: "runner", key: "runner", type: "main.runner", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -300,7 +300,7 @@ export class outerRunner {
 		() => new outerRunner(),
 		[{ name: "Run", args: [], returns: [] }],
 		outerRunner,
-		{"rawRunner": "main.rawRunner"}
+		[{ name: "rawRunner", key: "rawRunner", type: "main.rawRunner", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -329,7 +329,7 @@ export class runnable {
 		() => new runnable(),
 		[{ name: "Run", args: [], returns: [] }],
 		runnable,
-		{}
+		[]
 	)
 }
 

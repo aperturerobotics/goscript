@@ -68,7 +68,7 @@ export class NumError {
 		new NumError(),
 		[{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Unwrap", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 		NumError,
-		{"Func": { kind: $.TypeKind.Basic, name: "string" }, "Num": { kind: $.TypeKind.Basic, name: "string" }, "Err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }}
+		[{ name: "Func", key: "Func", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "Num", key: "Num", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "Err", key: "Err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }]
 	);
 }
 

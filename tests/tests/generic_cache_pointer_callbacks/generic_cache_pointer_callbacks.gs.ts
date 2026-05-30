@@ -47,7 +47,7 @@ export class cache {
 		() => new cache(),
 		[{ name: "Get", args: [], returns: [] }],
 		cache,
-		{"stored": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } }}
+		[{ name: "stored", key: "stored", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/generic_cache_pointer_callbacks", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -82,7 +82,7 @@ export class key {
 		() => new key(),
 		[],
 		key,
-		{"N": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "N", key: "N", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -117,7 +117,7 @@ export class privateKey {
 		() => new privateKey(),
 		[],
 		privateKey,
-		{"D": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "D", key: "D", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

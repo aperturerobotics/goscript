@@ -511,7 +511,7 @@ export class conf {
 		() => new conf(),
 		[{ name: "addrLookupOrder", args: [], returns: [] }, { name: "hostLookupOrder", args: [], returns: [] }, { name: "lookupOrder", args: [], returns: [] }, { name: "mustUseGoResolver", args: [], returns: [] }],
 		conf,
-		{"netGo": { kind: $.TypeKind.Basic, name: "bool" }, "netCgo": { kind: $.TypeKind.Basic, name: "bool" }, "dnsDebugLevel": { kind: $.TypeKind.Basic, name: "int" }, "preferCgo": { kind: $.TypeKind.Basic, name: "bool" }, "goos": { kind: $.TypeKind.Basic, name: "string" }, "mdnsTest": { kind: $.TypeKind.Basic, name: "int", typeName: "net.mdnsTest" }}
+		[{ name: "netGo", key: "netGo", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "netCgo", key: "netCgo", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [1], offset: 1, exported: false }, { name: "dnsDebugLevel", key: "dnsDebugLevel", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "net", index: [2], offset: 8, exported: false }, { name: "preferCgo", key: "preferCgo", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [3], offset: 16, exported: false }, { name: "goos", key: "goos", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [4], offset: 24, exported: false }, { name: "mdnsTest", key: "mdnsTest", type: { kind: $.TypeKind.Basic, name: "int", typeName: "net.mdnsTest" }, pkgPath: "net", index: [5], offset: 40, exported: false }]
 	)
 }
 

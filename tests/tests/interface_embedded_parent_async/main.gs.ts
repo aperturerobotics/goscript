@@ -52,7 +52,7 @@ export class impl {
 		() => new impl(),
 		[{ name: "Name", args: [], returns: [] }, { name: "Validate", args: [], returns: [] }],
 		impl,
-		{}
+		[]
 	)
 }
 

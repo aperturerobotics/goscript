@@ -44,7 +44,7 @@ export class Format {
 		() => new Format(),
 		[],
 		Format,
-		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Ext": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }}
+		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Ext", key: "Ext", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, index: [1], offset: 16, exported: true }]
 	)
 }
 

@@ -134,7 +134,7 @@ export class littleEndian {
 		() => new littleEndian(),
 		[{ name: "AppendUint16", args: [], returns: [] }, { name: "AppendUint32", args: [], returns: [] }, { name: "AppendUint64", args: [], returns: [] }, { name: "GoString", args: [], returns: [] }, { name: "PutUint16", args: [], returns: [] }, { name: "PutUint32", args: [], returns: [] }, { name: "PutUint64", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "Uint16", args: [], returns: [] }, { name: "Uint32", args: [], returns: [] }, { name: "Uint64", args: [], returns: [] }],
 		littleEndian,
-		{}
+		[]
 	)
 }
 
@@ -220,7 +220,7 @@ export class bigEndian {
 		() => new bigEndian(),
 		[{ name: "AppendUint16", args: [], returns: [] }, { name: "AppendUint32", args: [], returns: [] }, { name: "AppendUint64", args: [], returns: [] }, { name: "GoString", args: [], returns: [] }, { name: "PutUint16", args: [], returns: [] }, { name: "PutUint32", args: [], returns: [] }, { name: "PutUint64", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "Uint16", args: [], returns: [] }, { name: "Uint32", args: [], returns: [] }, { name: "Uint64", args: [], returns: [] }],
 		bigEndian,
-		{}
+		[]
 	)
 }
 
@@ -275,7 +275,7 @@ export class coder {
 		() => new coder(),
 		[],
 		coder,
-		{"order": "binary.ByteOrder", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "order", key: "order", type: "binary.ByteOrder", pkgPath: "encoding/binary", index: [0], offset: 0, exported: false }, { name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "encoding/binary", index: [1], offset: 16, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "encoding/binary", index: [2], offset: 40, exported: false }]
 	)
 }
 
@@ -499,7 +499,7 @@ export class decoder {
 		() => new decoder(),
 		[{ name: "bool", args: [], returns: [] }, { name: "int16", args: [], returns: [] }, { name: "int32", args: [], returns: [] }, { name: "int64", args: [], returns: [] }, { name: "int8", args: [], returns: [] }, { name: "skip", args: [], returns: [] }, { name: "uint16", args: [], returns: [] }, { name: "uint32", args: [], returns: [] }, { name: "uint64", args: [], returns: [] }, { name: "uint8", args: [], returns: [] }, { name: "value", args: [], returns: [] }],
 		decoder,
-		{"order": "binary.ByteOrder", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "order", key: "order", type: "binary.ByteOrder", pkgPath: "encoding/binary", index: [0], offset: 0, exported: false }, { name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "encoding/binary", index: [1], offset: 16, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "encoding/binary", index: [2], offset: 40, exported: false }]
 	)
 }
 
@@ -724,7 +724,7 @@ export class encoder {
 		() => new encoder(),
 		[{ name: "bool", args: [], returns: [] }, { name: "int16", args: [], returns: [] }, { name: "int32", args: [], returns: [] }, { name: "int64", args: [], returns: [] }, { name: "int8", args: [], returns: [] }, { name: "skip", args: [], returns: [] }, { name: "uint16", args: [], returns: [] }, { name: "uint32", args: [], returns: [] }, { name: "uint64", args: [], returns: [] }, { name: "uint8", args: [], returns: [] }, { name: "value", args: [], returns: [] }],
 		encoder,
-		{"order": "binary.ByteOrder", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "order", key: "order", type: "binary.ByteOrder", pkgPath: "encoding/binary", index: [0], offset: 0, exported: false }, { name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "encoding/binary", index: [1], offset: 16, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "encoding/binary", index: [2], offset: 40, exported: false }]
 	)
 }
 

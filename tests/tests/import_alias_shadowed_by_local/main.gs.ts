@@ -37,7 +37,7 @@ export class local {
 		() => new local(),
 		[],
 		local,
-		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/import_alias_shadowed_by_local", index: [0], offset: 0, exported: false }]
 	)
 }
 

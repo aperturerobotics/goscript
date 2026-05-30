@@ -41,7 +41,7 @@ export class localReadWriteCloser {
 		() => new localReadWriteCloser(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		localReadWriteCloser,
-		{}
+		[]
 	)
 }
 

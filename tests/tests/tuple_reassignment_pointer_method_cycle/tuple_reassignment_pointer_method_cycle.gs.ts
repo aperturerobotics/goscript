@@ -34,7 +34,7 @@ export class box {
 		() => new box(),
 		[],
 		box,
-		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/tuple_reassignment_pointer_method_cycle", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -63,7 +63,7 @@ export class cursor {
 		() => new cursor(),
 		[{ name: "rotate", args: [], returns: [] }],
 		cursor,
-		{}
+		[]
 	)
 }
 

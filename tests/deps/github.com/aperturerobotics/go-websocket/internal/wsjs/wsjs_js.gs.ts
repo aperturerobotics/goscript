@@ -139,7 +139,7 @@ export class WebSocket {
 		() => new WebSocket(),
 		[{ name: "Close", args: [], returns: [] }, { name: "OnClose", args: [], returns: [] }, { name: "OnError", args: [], returns: [] }, { name: "OnMessage", args: [], returns: [] }, { name: "OnOpen", args: [], returns: [] }, { name: "SendBytes", args: [], returns: [] }, { name: "SendText", args: [], returns: [] }, { name: "Subprotocol", args: [], returns: [] }, { name: "addEventListener", args: [], returns: [] }, { name: "setBinaryType", args: [], returns: [] }],
 		WebSocket,
-		{"v": "js.Value"}
+		[{ name: "v", key: "v", type: "js.Value", pkgPath: "github.com/aperturerobotics/go-websocket/internal/wsjs", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -194,7 +194,7 @@ export class CloseEvent {
 		() => new CloseEvent(),
 		[],
 		CloseEvent,
-		{"Code": { kind: $.TypeKind.Basic, name: "uint16" }, "Reason": { kind: $.TypeKind.Basic, name: "string" }, "WasClean": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "Code", key: "Code", type: { kind: $.TypeKind.Basic, name: "uint16" }, index: [0], offset: 0, exported: true }, { name: "Reason", key: "Reason", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 8, exported: true }, { name: "WasClean", key: "WasClean", type: { kind: $.TypeKind.Basic, name: "bool" }, index: [2], offset: 24, exported: true }]
 	)
 }
 
@@ -230,7 +230,7 @@ export class MessageEvent {
 		() => new MessageEvent(),
 		[],
 		MessageEvent,
-		{"Data": { kind: $.TypeKind.Interface, methods: [] }}
+		[{ name: "Data", key: "Data", type: { kind: $.TypeKind.Interface, methods: [] }, index: [0], offset: 0, exported: true }]
 	)
 }
 

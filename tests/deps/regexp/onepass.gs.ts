@@ -69,7 +69,7 @@ export class onePassProg {
 		() => new onePassProg(),
 		[],
 		onePassProg,
-		{"Inst": { kind: $.TypeKind.Slice, elemType: "regexp.onePassInst" }, "Start": { kind: $.TypeKind.Basic, name: "int" }, "NumCap": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "Inst", key: "Inst", type: { kind: $.TypeKind.Slice, elemType: "regexp.onePassInst" }, index: [0], offset: 0, exported: true }, { name: "Start", key: "Start", type: { kind: $.TypeKind.Basic, name: "int" }, index: [1], offset: 24, exported: true }, { name: "NumCap", key: "NumCap", type: { kind: $.TypeKind.Basic, name: "int" }, index: [2], offset: 32, exported: true }]
 	)
 }
 
@@ -130,7 +130,7 @@ export class onePassInst {
 		() => new onePassInst(),
 		[{ name: "MatchEmptyWidth", args: [], returns: [] }, { name: "MatchRune", args: [], returns: [] }, { name: "MatchRunePos", args: [], returns: [] }, { name: "String", args: [], returns: [] }],
 		onePassInst,
-		{"Inst": "syntax.Inst", "Next": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }}
+		[{ name: "Inst", key: "Inst", type: "syntax.Inst", anonymous: true, index: [0], offset: 0, exported: true }, { name: "Next", key: "Next", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, index: [1], offset: 40, exported: true }]
 	)
 }
 
@@ -239,7 +239,7 @@ export class queueOnePass {
 		() => new queueOnePass(),
 		[{ name: "clear", args: [], returns: [] }, { name: "contains", args: [], returns: [] }, { name: "empty", args: [], returns: [] }, { name: "insert", args: [], returns: [] }, { name: "insertNew", args: [], returns: [] }, { name: "next", args: [], returns: [] }],
 		queueOnePass,
-		{"sparse": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, "dense": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, "size": { kind: $.TypeKind.Basic, name: "uint32" }, "nextIndex": { kind: $.TypeKind.Basic, name: "uint32" }}
+		[{ name: "sparse", key: "sparse", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "dense", key: "dense", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, pkgPath: "regexp", index: [1], offset: 24, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp", index: [2], offset: 48, exported: false }, { name: "nextIndex", key: "nextIndex", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp", index: [3], offset: 52, exported: false }]
 	)
 }
 

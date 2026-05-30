@@ -109,10 +109,18 @@ class fundamental {
       },
     ],
     fundamental,
-    {
-      msg: { kind: $.TypeKind.Basic, name: 'string' },
-      stack: { kind: $.TypeKind.Pointer, elemType: 'stack' },
-    },
+    [
+      {
+        name: 'msg',
+        key: 'msg',
+        type: { kind: $.TypeKind.Basic, name: 'string' },
+      },
+      {
+        name: 'stack',
+        key: 'stack',
+        type: { kind: $.TypeKind.Pointer, elemType: 'stack' },
+      },
+    ],
   )
 }
 
@@ -231,20 +239,28 @@ class withStack {
       },
     ],
     withStack,
-    {
-      error: {
-        kind: $.TypeKind.Interface,
-        name: 'GoError',
-        methods: [
-          {
-            name: 'Error',
-            args: [],
-            returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
-          },
-        ],
+    [
+      {
+        name: 'error',
+        key: 'error',
+        type: {
+          kind: $.TypeKind.Interface,
+          name: 'GoError',
+          methods: [
+            {
+              name: 'Error',
+              args: [],
+              returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
+            },
+          ],
+        },
       },
-      stack: { kind: $.TypeKind.Pointer, elemType: 'stack' },
-    },
+      {
+        name: 'stack',
+        key: 'stack',
+        type: { kind: $.TypeKind.Pointer, elemType: 'stack' },
+      },
+    ],
   )
 }
 
@@ -405,20 +421,28 @@ class withMessage {
       },
     ],
     withMessage,
-    {
-      cause: {
-        kind: $.TypeKind.Interface,
-        name: 'GoError',
-        methods: [
-          {
-            name: 'Error',
-            args: [],
-            returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
-          },
-        ],
+    [
+      {
+        name: 'cause',
+        key: 'cause',
+        type: {
+          kind: $.TypeKind.Interface,
+          name: 'GoError',
+          methods: [
+            {
+              name: 'Error',
+              args: [],
+              returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
+            },
+          ],
+        },
       },
-      msg: { kind: $.TypeKind.Basic, name: 'string' },
-    },
+      {
+        name: 'msg',
+        key: 'msg',
+        type: { kind: $.TypeKind.Basic, name: 'string' },
+      },
+    ],
   )
 }
 

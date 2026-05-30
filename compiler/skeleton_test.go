@@ -2393,7 +2393,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 		"params: [{ kind: $.TypeKind.Basic, name: \"string\" }]",
 		"results: [{ kind: $.TypeKind.Basic, name: \"string\" }]",
 		"$.interfaceValue<any>(null, \"*struct{Name string}\")",
-		"elemType: { kind: $.TypeKind.Struct, methods: [], fields: {\"Name\": { kind: $.TypeKind.Basic, name: \"string\" }} }",
+		"elemType: { kind: $.TypeKind.Struct, methods: [], fields: [{ name: \"Name\", key: \"Name\", type: { kind: $.TypeKind.Basic, name: \"string\" }",
 		"let fn = __goscriptTuple",
 		"switch (true)",
 		"case $.typeAssert<Exclude<ReadCloser, null>>(__goscriptTypeSwitchValue, \"main.ReadCloser\").ok",
@@ -2806,7 +2806,7 @@ func TestCompilePackagesEmitsRecursiveFunctionTypeInfo(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export type Handler = ((_p0: ((_p0: Handler | null) => Handler | null | globalThis.Promise<Handler | null>) | null) => Handler | null | globalThis.Promise<Handler | null>) | null",
-		"\"Next\": ({ kind: $.TypeKind.Function, name: \"main.Handler\"",
+		"{ name: \"Next\", key: \"Next\", type: ({ kind: $.TypeKind.Function, name: \"main.Handler\"",
 		"params: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
 		"results: [{ kind: $.TypeKind.Function, params: [], results: [] }]",
 	} {

@@ -143,7 +143,7 @@ export class file {
 		() => new file(),
 		[{ name: "close", args: [], returns: [] }, { name: "getLineFromData", args: [], returns: [] }, { name: "readLine", args: [], returns: [] }, { name: "stat", args: [], returns: [] }],
 		file,
-		{"file": { kind: $.TypeKind.Pointer, elemType: "os.File" }, "data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "atEOF": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "file", key: "file", type: { kind: $.TypeKind.Pointer, elemType: "os.File" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "net", index: [1], offset: 8, exported: false }, { name: "atEOF", key: "atEOF", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [2], offset: 32, exported: false }]
 	)
 }
 

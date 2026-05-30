@@ -44,7 +44,7 @@ export class floatInfo {
 		() => new floatInfo(),
 		[],
 		floatInfo,
-		{"mantbits": { kind: $.TypeKind.Basic, name: "int" }, "expbits": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "mantbits", key: "mantbits", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/cross_file_varref_struct_field", index: [0], offset: 0, exported: false }, { name: "expbits", key: "expbits", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/cross_file_varref_struct_field", index: [1], offset: 8, exported: false }]
 	)
 }
 

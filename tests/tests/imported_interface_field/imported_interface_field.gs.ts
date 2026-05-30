@@ -37,7 +37,7 @@ export class holder {
 		() => new holder(),
 		[],
 		holder,
-		{"w": "io.Writer"}
+		[{ name: "w", key: "w", type: "io.Writer", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/imported_interface_field", index: [0], offset: 0, exported: false }]
 	)
 }
 

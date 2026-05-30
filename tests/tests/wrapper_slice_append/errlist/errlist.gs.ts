@@ -41,7 +41,7 @@ export class AStruct {
 		() => new AStruct(),
 		[{ name: "Set", args: [], returns: [] }],
 		AStruct,
-		{"Msg": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Msg", key: "Msg", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

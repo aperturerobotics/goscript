@@ -44,7 +44,7 @@ export class Setting {
 		() => new Setting(),
 		[{ name: "Value", args: [], returns: [] }],
 		Setting,
-		{"once": "sync.Once"}
+		[{ name: "once", key: "once", type: "sync.Once", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/bodyless_async_callback", index: [0], offset: 0, exported: false }]
 	)
 }
 

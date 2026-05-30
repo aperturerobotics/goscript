@@ -62,7 +62,7 @@ export class Bool {
 	  new Bool(),
 	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "boolean" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "boolean" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
 	  Bool,
-	  {"v": { kind: $.TypeKind.Basic, name: "number" }}
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "number" } }]
 	);
 }
 
@@ -138,7 +138,7 @@ export class Pointer<T> {
 	  new Pointer(),
 	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } } }, { name: "new", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
 	  Pointer,
-	  {"v": { kind: $.TypeKind.Basic, name: "Pointer" }}
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "Pointer" } }]
 	);
 }
 
@@ -218,7 +218,7 @@ export class Int32 {
 	  new Int32(),
 	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Add", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "And", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Or", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  Int32,
-	  {"v": { kind: $.TypeKind.Basic, name: "number" }}
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "number" } }]
 	);
 }
 
@@ -298,7 +298,7 @@ export class Int64 {
 	  new Int64(),
 	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Add", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "And", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Or", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  Int64,
-	  {"v": { kind: $.TypeKind.Basic, name: "number" }}
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "number" } }]
 	);
 }
 
@@ -378,7 +378,7 @@ export class Uint32 {
 	  new Uint32(),
 	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Add", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "And", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Or", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  Uint32,
-	  {"v": { kind: $.TypeKind.Basic, name: "number" }}
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "number" } }]
 	);
 }
 
@@ -458,7 +458,7 @@ export class Uint64 {
 	  new Uint64(),
 	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Add", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "And", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Or", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
 	  Uint64,
-	  {"v": { kind: $.TypeKind.Basic, name: "number" }}
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "number" } }]
 	);
 }
 
@@ -538,7 +538,7 @@ export class Uintptr {
 	  new Uintptr(),
 	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uintptr" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "uintptr" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "uintptr" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "uintptr" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "uintptr" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "uintptr" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Add", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "uintptr" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "uintptr" } }] }, { name: "And", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "uintptr" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "uintptr" } }] }, { name: "Or", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "uintptr" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "uintptr" } }] }],
 	  Uintptr,
-	  {"v": { kind: $.TypeKind.Basic, name: "uintptr" }}
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "uintptr" } }]
 	);
 }
 
@@ -570,7 +570,7 @@ class noCopy {
 	  new noCopy(),
 	  [{ name: "Lock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 	  noCopy,
-	  {}
+	  []
 	);
 }
 
@@ -595,6 +595,6 @@ class align64 {
 	  new align64(),
 	  [],
 	  align64,
-	  {}
+	  []
 	);
 }

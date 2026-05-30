@@ -34,7 +34,7 @@ export class A {
 		() => new A(),
 		[],
 		A,
-		{"BB": { kind: $.TypeKind.Slice, elemType: "main.B" }}
+		[{ name: "BB", key: "BB", type: { kind: $.TypeKind.Slice, elemType: "main.B" }, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -69,7 +69,7 @@ export class B {
 		() => new B(),
 		[],
 		B,
-		{"AA": { kind: $.TypeKind.Slice, elemType: "main.A" }}
+		[{ name: "AA", key: "AA", type: { kind: $.TypeKind.Slice, elemType: "main.A" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

@@ -45,8 +45,14 @@ export interface MethodSignature {
  */
 export interface StructFieldInfo {
   type: TypeInfo | string // The field's type
-  name?: string // The Go field name when it differs from the TypeScript key.
+  name: string // The Go field name.
+  key?: string // The runtime storage key on generated or dynamic values.
   tag?: string // The struct field tag (e.g., `json:"name,omitempty"`)
+  pkgPath?: string // Non-empty for unexported fields.
+  anonymous?: boolean
+  index?: number[]
+  offset?: number
+  exported?: boolean
 }
 
 /**
@@ -56,7 +62,7 @@ export interface StructTypeInfo extends BaseTypeInfo {
   kind: TypeKind.Struct
   methods: MethodSignature[] // Array of method signatures
   ctor?: new (...args: any[]) => any
-  fields: Record<string, TypeInfo | string | StructFieldInfo> // Field names and types for struct fields
+  fields: StructFieldInfo[] // Ordered field descriptors.
 }
 
 /**
@@ -185,12 +191,13 @@ export function isChannelTypeInfo(info: TypeInfo): info is ChannelTypeInfo {
  * vs a direct TypeInfo or string
  */
 export function isStructFieldInfo(
-  fieldValue: TypeInfo | string | StructFieldInfo,
+  fieldValue: unknown,
 ): fieldValue is StructFieldInfo {
   return (
     typeof fieldValue === 'object' &&
     fieldValue !== null &&
     'type' in fieldValue &&
+    'name' in fieldValue &&
     !('kind' in fieldValue)
   )
 }
@@ -234,7 +241,7 @@ export const registerStructType = (
   zeroValue: any,
   methods: MethodSignature[],
   ctor: new (...args: any[]) => any,
-  fields: Record<string, TypeInfo | string | StructFieldInfo> = {},
+  fields: StructFieldInfo[] = [],
 ): StructTypeInfo => {
   const typeInfo: StructTypeInfo = {
     name,
@@ -539,7 +546,8 @@ function matchesStructType(value: any, info: TypeInfo): boolean {
 
   // For anonymous struct types (no constructor), use structural matching
   if (typeof value === 'object' && value !== null && info.fields) {
-    const fieldNames = Object.keys(info.fields || {})
+    const fields = info.fields || []
+    const fieldNames = fields.map((field) => structFieldRuntimeKey(field))
     const valueFields = Object.keys(value)
 
     const fieldsExist = fieldNames.every((field) => field in value)
@@ -549,10 +557,9 @@ function matchesStructType(value: any, info: TypeInfo): boolean {
     )
 
     if (fieldsExist && sameFieldCount && allFieldsInStruct) {
-      return Object.entries(info.fields).every(([fieldName, fieldType]) => {
-        const fieldTypeInfo =
-          isStructFieldInfo(fieldType) ? fieldType.type : fieldType
-        return matchesType(value[fieldName], normalizeTypeInfo(fieldTypeInfo))
+      return fields.every((field) => {
+        const key = structFieldRuntimeKey(field)
+        return matchesType(value[key], normalizeTypeInfo(field.type))
       })
     }
 
@@ -560,6 +567,10 @@ function matchesStructType(value: any, info: TypeInfo): boolean {
   }
 
   return false
+}
+
+export function structFieldRuntimeKey(field: StructFieldInfo): string {
+  return field.key || field.name
 }
 
 /**
@@ -1075,8 +1086,8 @@ function compareTypeStringWithTypeInfo(
       }
 
       // Compare fields
-      const typeInfoFields = elemTypeInfo.fields || {}
-      const typeInfoFieldNames = Object.keys(typeInfoFields)
+      const typeInfoFields = elemTypeInfo.fields || []
+      const typeInfoFieldNames = typeInfoFields.map((field) => field.name)
       const parsedFieldNames = Object.keys(parsedFields)
 
       if (typeInfoFieldNames.length !== parsedFieldNames.length) {
@@ -1084,16 +1095,13 @@ function compareTypeStringWithTypeInfo(
       }
 
       // Check if all field names match and types are compatible
-      for (const fieldName of typeInfoFieldNames) {
+      for (const field of typeInfoFields) {
+        const fieldName = field.name
         if (!(fieldName in parsedFields)) {
           return false
         }
 
-        const fieldValue = typeInfoFields[fieldName]
-        // Handle StructFieldInfo (which has 'type' and optional 'tag' properties)
-        const fieldTypeInfo: TypeInfo | string =
-          isStructFieldInfo(fieldValue) ? fieldValue.type : fieldValue
-        const typeInfoFieldType = normalizeTypeInfo(fieldTypeInfo)
+        const typeInfoFieldType = normalizeTypeInfo(field.type)
         const parsedFieldType = parsedFields[fieldName]
 
         // Compare basic types

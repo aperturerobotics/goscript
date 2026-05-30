@@ -52,7 +52,7 @@ export class wrappedHealthError {
 		() => new wrappedHealthError(),
 		[{ name: "Error", args: [], returns: [] }, { name: "Health", args: [], returns: [] }, { name: "Unwrap", args: [], returns: [] }],
 		wrappedHealthError,
-		{"err": "error"}
+		[{ name: "err", key: "err", type: "error", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_errors_as_interface", index: [0], offset: 0, exported: false }]
 	)
 }
 

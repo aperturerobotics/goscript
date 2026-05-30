@@ -140,7 +140,7 @@ export class File {
 			{ name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }
 		],
 		File,
-		{ "name": { kind: $.TypeKind.Basic, name: "string" }, "closed": { kind: $.TypeKind.Basic, name: "boolean" } }
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "closed", key: "closed", type: { kind: $.TypeKind.Basic, name: "boolean" } }]
 	);
 }
 

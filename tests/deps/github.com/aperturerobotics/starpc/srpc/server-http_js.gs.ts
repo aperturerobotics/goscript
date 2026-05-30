@@ -45,7 +45,7 @@ export class HTTPServer {
 		() => new HTTPServer(),
 		[{ name: "ServeHTTP", args: [], returns: [] }],
 		HTTPServer,
-		{}
+		[]
 	)
 }
 

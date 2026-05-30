@@ -39,7 +39,7 @@ export class ConcreteA {
 		() => new ConcreteA(),
 		[{ name: "Method", args: [], returns: [] }],
 		ConcreteA,
-		{}
+		[]
 	)
 }
 
@@ -69,7 +69,7 @@ export class ConcreteB {
 		() => new ConcreteB(),
 		[{ name: "Method", args: [], returns: [] }],
 		ConcreteB,
-		{}
+		[]
 	)
 }
 
@@ -114,7 +114,7 @@ export class Container {
 		() => new Container(),
 		[],
 		Container,
-		{"hasA": { kind: $.TypeKind.Basic, name: "bool" }, "hasB": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "hasA", key: "hasA", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/type_assertion_duplicate_vars", index: [0], offset: 0, exported: false }, { name: "hasB", key: "hasB", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/type_assertion_duplicate_vars", index: [1], offset: 1, exported: false }]
 	)
 }
 

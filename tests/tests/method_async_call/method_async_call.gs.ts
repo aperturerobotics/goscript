@@ -54,7 +54,7 @@ export class FileTracker {
 		() => new FileTracker(),
 		[{ name: "AddLine", args: [], returns: [] }],
 		FileTracker,
-		{"mutex": "sync.Mutex", "lines": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		[{ name: "mutex", key: "mutex", type: "sync.Mutex", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_async_call", index: [0], offset: 0, exported: false }, { name: "lines", key: "lines", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_async_call", index: [1], offset: 8, exported: false }]
 	)
 }
 
@@ -94,7 +94,7 @@ export class Scanner {
 		() => new Scanner(),
 		[{ name: "next", args: [], returns: [] }],
 		Scanner,
-		{"file": { kind: $.TypeKind.Pointer, elemType: "main.FileTracker" }}
+		[{ name: "file", key: "file", type: { kind: $.TypeKind.Pointer, elemType: "main.FileTracker" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_async_call", index: [0], offset: 0, exported: false }]
 	)
 }
 

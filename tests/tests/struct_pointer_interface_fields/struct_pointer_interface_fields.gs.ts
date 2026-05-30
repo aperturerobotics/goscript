@@ -54,7 +54,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[],
 		MyStruct,
-		{"PointerField": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "interfaceField": "main.MyInterface"}
+		[{ name: "PointerField", key: "PointerField", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, index: [0], offset: 0, exported: true }, { name: "interfaceField", key: "interfaceField", type: "main.MyInterface", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/struct_pointer_interface_fields", index: [1], offset: 8, exported: false }]
 	)
 }
 

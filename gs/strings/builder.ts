@@ -231,6 +231,6 @@ export class Builder {
       },
     ],
     Builder,
-    {},
+    [],
   )
 }

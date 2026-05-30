@@ -622,7 +622,7 @@ export class Packet {
 		() => new Packet(),
 		[{ name: "CloneMessageVT", args: [], returns: [] }, { name: "CloneVT", args: [], returns: [] }, { name: "EqualMessageVT", args: [], returns: [] }, { name: "EqualVT", args: [], returns: [] }, { name: "GetBody", args: [], returns: [] }, { name: "GetCallCancel", args: [], returns: [] }, { name: "GetCallData", args: [], returns: [] }, { name: "GetCallStart", args: [], returns: [] }, { name: "MarshalJSON", args: [], returns: [] }, { name: "MarshalProtoJSON", args: [], returns: [] }, { name: "MarshalProtoText", args: [], returns: [] }, { name: "MarshalToSizedBufferVT", args: [], returns: [] }, { name: "MarshalToVT", args: [], returns: [] }, { name: "MarshalVT", args: [], returns: [] }, { name: "ProtoMessage", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "SizeVT", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "UnmarshalJSON", args: [], returns: [] }, { name: "UnmarshalProtoJSON", args: [], returns: [] }, { name: "UnmarshalVT", args: [], returns: [] }, { name: "Validate", args: [], returns: [] }],
 		Packet,
-		{"unknownFields": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "Body": { type: "srpc.isPacket_Body", tag: "protobuf_oneof:\"body\"" }}
+		[{ name: "unknownFields", key: "unknownFields", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "Body", key: "Body", type: "srpc.isPacket_Body", tag: "protobuf_oneof:\"body\"", index: [1], offset: 24, exported: true }]
 	)
 }
 
@@ -751,7 +751,7 @@ export class Packet_CallStart {
 		() => new Packet_CallStart(),
 		[{ name: "CloneOneofVT", args: [], returns: [] }, { name: "CloneVT", args: [], returns: [] }, { name: "EqualVT", args: [], returns: [] }, { name: "MarshalToSizedBufferVT", args: [], returns: [] }, { name: "MarshalToVT", args: [], returns: [] }, { name: "SizeVT", args: [], returns: [] }, { name: "isPacket_Body", args: [], returns: [] }],
 		Packet_CallStart,
-		{"CallStart": { type: { kind: $.TypeKind.Pointer, elemType: "srpc.CallStart" }, tag: "protobuf:\"bytes,1,opt,name=call_start,json=callStart,proto3,oneof\"" }}
+		[{ name: "CallStart", key: "CallStart", type: { kind: $.TypeKind.Pointer, elemType: "srpc.CallStart" }, tag: "protobuf:\"bytes,1,opt,name=call_start,json=callStart,proto3,oneof\"", index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -880,7 +880,7 @@ export class Packet_CallData {
 		() => new Packet_CallData(),
 		[{ name: "CloneOneofVT", args: [], returns: [] }, { name: "CloneVT", args: [], returns: [] }, { name: "EqualVT", args: [], returns: [] }, { name: "MarshalToSizedBufferVT", args: [], returns: [] }, { name: "MarshalToVT", args: [], returns: [] }, { name: "SizeVT", args: [], returns: [] }, { name: "isPacket_Body", args: [], returns: [] }],
 		Packet_CallData,
-		{"CallData": { type: { kind: $.TypeKind.Pointer, elemType: "srpc.CallData" }, tag: "protobuf:\"bytes,2,opt,name=call_data,json=callData,proto3,oneof\"" }}
+		[{ name: "CallData", key: "CallData", type: { kind: $.TypeKind.Pointer, elemType: "srpc.CallData" }, tag: "protobuf:\"bytes,2,opt,name=call_data,json=callData,proto3,oneof\"", index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -986,7 +986,7 @@ export class Packet_CallCancel {
 		() => new Packet_CallCancel(),
 		[{ name: "CloneOneofVT", args: [], returns: [] }, { name: "CloneVT", args: [], returns: [] }, { name: "EqualVT", args: [], returns: [] }, { name: "MarshalToSizedBufferVT", args: [], returns: [] }, { name: "MarshalToVT", args: [], returns: [] }, { name: "SizeVT", args: [], returns: [] }, { name: "isPacket_Body", args: [], returns: [] }],
 		Packet_CallCancel,
-		{"CallCancel": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "protobuf:\"varint,3,opt,name=call_cancel,json=callCancel,proto3,oneof\"" }}
+		[{ name: "CallCancel", key: "CallCancel", type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "protobuf:\"varint,3,opt,name=call_cancel,json=callCancel,proto3,oneof\"", index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -1563,7 +1563,7 @@ export class CallStart {
 		() => new CallStart(),
 		[{ name: "CloneMessageVT", args: [], returns: [] }, { name: "CloneVT", args: [], returns: [] }, { name: "EqualMessageVT", args: [], returns: [] }, { name: "EqualVT", args: [], returns: [] }, { name: "GetData", args: [], returns: [] }, { name: "GetDataIsZero", args: [], returns: [] }, { name: "GetRpcMethod", args: [], returns: [] }, { name: "GetRpcService", args: [], returns: [] }, { name: "MarshalJSON", args: [], returns: [] }, { name: "MarshalProtoJSON", args: [], returns: [] }, { name: "MarshalProtoText", args: [], returns: [] }, { name: "MarshalToSizedBufferVT", args: [], returns: [] }, { name: "MarshalToVT", args: [], returns: [] }, { name: "MarshalVT", args: [], returns: [] }, { name: "ProtoMessage", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "SizeVT", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "UnmarshalJSON", args: [], returns: [] }, { name: "UnmarshalProtoJSON", args: [], returns: [] }, { name: "UnmarshalVT", args: [], returns: [] }, { name: "Validate", args: [], returns: [] }],
 		CallStart,
-		{"unknownFields": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "RpcService": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "protobuf:\"bytes,1,opt,name=rpc_service,json=rpcService,proto3\" json:\"rpcService,omitempty\"" }, "RpcMethod": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "protobuf:\"bytes,2,opt,name=rpc_method,json=rpcMethod,proto3\" json:\"rpcMethod,omitempty\"" }, "Data": { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, tag: "protobuf:\"bytes,3,opt,name=data,proto3\" json:\"data,omitempty\"" }, "DataIsZero": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "protobuf:\"varint,4,opt,name=data_is_zero,json=dataIsZero,proto3\" json:\"dataIsZero,omitempty\"" }}
+		[{ name: "unknownFields", key: "unknownFields", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "RpcService", key: "RpcService", type: { kind: $.TypeKind.Basic, name: "string" }, tag: "protobuf:\"bytes,1,opt,name=rpc_service,json=rpcService,proto3\" json:\"rpcService,omitempty\"", index: [1], offset: 24, exported: true }, { name: "RpcMethod", key: "RpcMethod", type: { kind: $.TypeKind.Basic, name: "string" }, tag: "protobuf:\"bytes,2,opt,name=rpc_method,json=rpcMethod,proto3\" json:\"rpcMethod,omitempty\"", index: [2], offset: 40, exported: true }, { name: "Data", key: "Data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, tag: "protobuf:\"bytes,3,opt,name=data,proto3\" json:\"data,omitempty\"", index: [3], offset: 56, exported: true }, { name: "DataIsZero", key: "DataIsZero", type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "protobuf:\"varint,4,opt,name=data_is_zero,json=dataIsZero,proto3\" json:\"dataIsZero,omitempty\"", index: [4], offset: 80, exported: true }]
 	)
 }
 
@@ -2123,7 +2123,7 @@ export class CallData {
 		() => new CallData(),
 		[{ name: "CloneMessageVT", args: [], returns: [] }, { name: "CloneVT", args: [], returns: [] }, { name: "EqualMessageVT", args: [], returns: [] }, { name: "EqualVT", args: [], returns: [] }, { name: "GetComplete", args: [], returns: [] }, { name: "GetData", args: [], returns: [] }, { name: "GetDataIsZero", args: [], returns: [] }, { name: "GetError", args: [], returns: [] }, { name: "MarshalJSON", args: [], returns: [] }, { name: "MarshalProtoJSON", args: [], returns: [] }, { name: "MarshalProtoText", args: [], returns: [] }, { name: "MarshalToSizedBufferVT", args: [], returns: [] }, { name: "MarshalToVT", args: [], returns: [] }, { name: "MarshalVT", args: [], returns: [] }, { name: "ProtoMessage", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "SizeVT", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "UnmarshalJSON", args: [], returns: [] }, { name: "UnmarshalProtoJSON", args: [], returns: [] }, { name: "UnmarshalVT", args: [], returns: [] }, { name: "Validate", args: [], returns: [] }],
 		CallData,
-		{"unknownFields": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "Data": { type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, tag: "protobuf:\"bytes,1,opt,name=data,proto3\" json:\"data,omitempty\"" }, "DataIsZero": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "protobuf:\"varint,2,opt,name=data_is_zero,json=dataIsZero,proto3\" json:\"dataIsZero,omitempty\"" }, "Complete": { type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "protobuf:\"varint,3,opt,name=complete,proto3\" json:\"complete,omitempty\"" }, "Error": { type: { kind: $.TypeKind.Basic, name: "string" }, tag: "protobuf:\"bytes,4,opt,name=error,proto3\" json:\"error,omitempty\"" }}
+		[{ name: "unknownFields", key: "unknownFields", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "Data", key: "Data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, tag: "protobuf:\"bytes,1,opt,name=data,proto3\" json:\"data,omitempty\"", index: [1], offset: 24, exported: true }, { name: "DataIsZero", key: "DataIsZero", type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "protobuf:\"varint,2,opt,name=data_is_zero,json=dataIsZero,proto3\" json:\"dataIsZero,omitempty\"", index: [2], offset: 48, exported: true }, { name: "Complete", key: "Complete", type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "protobuf:\"varint,3,opt,name=complete,proto3\" json:\"complete,omitempty\"", index: [3], offset: 49, exported: true }, { name: "Error", key: "Error", type: { kind: $.TypeKind.Basic, name: "string" }, tag: "protobuf:\"bytes,4,opt,name=error,proto3\" json:\"error,omitempty\"", index: [4], offset: 56, exported: true }]
 	)
 }
 

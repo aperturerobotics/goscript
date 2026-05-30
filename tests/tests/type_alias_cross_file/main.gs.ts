@@ -37,7 +37,7 @@ export class source {
 		() => new source(),
 		[{ name: "Val", args: [], returns: [] }],
 		source,
-		{}
+		[]
 	)
 }
 

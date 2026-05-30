@@ -599,7 +599,7 @@ export class Reader {
 		() => new Reader(),
 		[{ name: "Buffered", args: [], returns: [] }, { name: "Discard", args: [], returns: [] }, { name: "Peek", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "ReadByte", args: [], returns: [] }, { name: "ReadBytes", args: [], returns: [] }, { name: "ReadLine", args: [], returns: [] }, { name: "ReadRune", args: [], returns: [] }, { name: "ReadSlice", args: [], returns: [] }, { name: "ReadString", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "UnreadByte", args: [], returns: [] }, { name: "UnreadRune", args: [], returns: [] }, { name: "WriteTo", args: [], returns: [] }, { name: "collectFragments", args: [], returns: [] }, { name: "fill", args: [], returns: [] }, { name: "readErr", args: [], returns: [] }, { name: "reset", args: [], returns: [] }, { name: "writeBuf", args: [], returns: [] }],
 		Reader,
-		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "rd": "io.Reader", "r": { kind: $.TypeKind.Basic, name: "int" }, "w": { kind: $.TypeKind.Basic, name: "int" }, "err": "error", "lastByte": { kind: $.TypeKind.Basic, name: "int" }, "lastRuneSize": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "bufio", index: [0], offset: 0, exported: false }, { name: "rd", key: "rd", type: "io.Reader", pkgPath: "bufio", index: [1], offset: 24, exported: false }, { name: "r", key: "r", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "bufio", index: [2], offset: 40, exported: false }, { name: "w", key: "w", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "bufio", index: [3], offset: 48, exported: false }, { name: "err", key: "err", type: "error", pkgPath: "bufio", index: [4], offset: 56, exported: false }, { name: "lastByte", key: "lastByte", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "bufio", index: [5], offset: 72, exported: false }, { name: "lastRuneSize", key: "lastRuneSize", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "bufio", index: [6], offset: 80, exported: false }]
 	)
 }
 
@@ -896,7 +896,7 @@ export class Writer {
 		() => new Writer(),
 		[{ name: "Available", args: [], returns: [] }, { name: "AvailableBuffer", args: [], returns: [] }, { name: "Buffered", args: [], returns: [] }, { name: "Flush", args: [], returns: [] }, { name: "ReadFrom", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "WriteByte", args: [], returns: [] }, { name: "WriteRune", args: [], returns: [] }, { name: "WriteString", args: [], returns: [] }],
 		Writer,
-		{"err": "error", "buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "n": { kind: $.TypeKind.Basic, name: "int" }, "wr": "io.Writer"}
+		[{ name: "err", key: "err", type: "error", pkgPath: "bufio", index: [0], offset: 0, exported: false }, { name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "bufio", index: [1], offset: 16, exported: false }, { name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "bufio", index: [2], offset: 40, exported: false }, { name: "wr", key: "wr", type: "io.Writer", pkgPath: "bufio", index: [3], offset: 48, exported: false }]
 	)
 }
 
@@ -1053,7 +1053,7 @@ export class ReadWriter {
 		() => new ReadWriter(),
 		[{ name: "Buffered", args: [], returns: [] }, { name: "Discard", args: [], returns: [] }, { name: "Peek", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "ReadByte", args: [], returns: [] }, { name: "ReadBytes", args: [], returns: [] }, { name: "ReadLine", args: [], returns: [] }, { name: "ReadRune", args: [], returns: [] }, { name: "ReadSlice", args: [], returns: [] }, { name: "ReadString", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "UnreadByte", args: [], returns: [] }, { name: "UnreadRune", args: [], returns: [] }, { name: "WriteTo", args: [], returns: [] }, { name: "collectFragments", args: [], returns: [] }, { name: "fill", args: [], returns: [] }, { name: "readErr", args: [], returns: [] }, { name: "reset", args: [], returns: [] }, { name: "writeBuf", args: [], returns: [] }, { name: "Available", args: [], returns: [] }, { name: "AvailableBuffer", args: [], returns: [] }, { name: "Flush", args: [], returns: [] }, { name: "ReadFrom", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "WriteByte", args: [], returns: [] }, { name: "WriteRune", args: [], returns: [] }, { name: "WriteString", args: [], returns: [] }],
 		ReadWriter,
-		{"Reader": { kind: $.TypeKind.Pointer, elemType: "bufio.Reader" }, "Writer": { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" }}
+		[{ name: "Reader", key: "Reader", type: { kind: $.TypeKind.Pointer, elemType: "bufio.Reader" }, anonymous: true, index: [0], offset: 0, exported: true }, { name: "Writer", key: "Writer", type: { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" }, anonymous: true, index: [1], offset: 8, exported: true }]
 	)
 }
 

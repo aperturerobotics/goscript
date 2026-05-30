@@ -84,7 +84,7 @@ export class MapFile {
 		() => new MapFile(),
 		[],
 		MapFile,
-		{"Data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "Mode": { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" }, "ModTime": "time.Time", "Sys": { kind: $.TypeKind.Interface, methods: [] }}
+		[{ name: "Data", key: "Data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, index: [0], offset: 0, exported: true }, { name: "Mode", key: "Mode", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" }, index: [1], offset: 24, exported: true }, { name: "ModTime", key: "ModTime", type: "time.Time", index: [2], offset: 32, exported: true }, { name: "Sys", key: "Sys", type: { kind: $.TypeKind.Interface, methods: [] }, index: [3], offset: 56, exported: true }]
 	)
 }
 
@@ -123,7 +123,7 @@ export class fsOnly {
 		() => new fsOnly(),
 		[{ name: "Open", args: [], returns: [] }],
 		fsOnly,
-		{"FS": "fs.FS"}
+		[{ name: "FS", key: "FS", type: "fs.FS", anonymous: true, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -161,7 +161,7 @@ export class noSub {
 		() => new noSub(),
 		[{ name: "Sub", args: [], returns: [] }],
 		noSub,
-		{"MapFS": "fstest.MapFS"}
+		[{ name: "MapFS", key: "MapFS", type: "fstest.MapFS", anonymous: true, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -251,7 +251,7 @@ export class mapFileInfo {
 		() => new mapFileInfo(),
 		[{ name: "Info", args: [], returns: [] }, { name: "IsDir", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "Sys", args: [], returns: [] }, { name: "Type", args: [], returns: [] }],
 		mapFileInfo,
-		{"name": { kind: $.TypeKind.Basic, name: "string" }, "f": { kind: $.TypeKind.Pointer, elemType: "fstest.MapFile" }}
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/fstest", index: [0], offset: 0, exported: false }, { name: "f", key: "f", type: { kind: $.TypeKind.Pointer, elemType: "fstest.MapFile" }, pkgPath: "testing/fstest", index: [1], offset: 16, exported: false }]
 	)
 }
 
@@ -402,7 +402,7 @@ export class openMapFile {
 		() => new openMapFile(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "ReadAt", args: [], returns: [] }, { name: "Seek", args: [], returns: [] }, { name: "Stat", args: [], returns: [] }, { name: "Info", args: [], returns: [] }, { name: "IsDir", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "Sys", args: [], returns: [] }, { name: "Type", args: [], returns: [] }],
 		openMapFile,
-		{"path": { kind: $.TypeKind.Basic, name: "string" }, "mapFileInfo": "fstest.mapFileInfo", "offset": { kind: $.TypeKind.Basic, name: "int64" }}
+		[{ name: "path", key: "path", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/fstest", index: [0], offset: 0, exported: false }, { name: "mapFileInfo", key: "mapFileInfo", type: "fstest.mapFileInfo", pkgPath: "testing/fstest", anonymous: true, index: [1], offset: 16, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "testing/fstest", index: [2], offset: 40, exported: false }]
 	)
 }
 
@@ -535,7 +535,7 @@ export class mapDir {
 		() => new mapDir(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "ReadDir", args: [], returns: [] }, { name: "Stat", args: [], returns: [] }, { name: "Info", args: [], returns: [] }, { name: "IsDir", args: [], returns: [] }, { name: "ModTime", args: [], returns: [] }, { name: "Mode", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "Sys", args: [], returns: [] }, { name: "Type", args: [], returns: [] }],
 		mapDir,
-		{"path": { kind: $.TypeKind.Basic, name: "string" }, "mapFileInfo": "fstest.mapFileInfo", "entry": { kind: $.TypeKind.Slice, elemType: "fstest.mapFileInfo" }, "offset": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "path", key: "path", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/fstest", index: [0], offset: 0, exported: false }, { name: "mapFileInfo", key: "mapFileInfo", type: "fstest.mapFileInfo", pkgPath: "testing/fstest", anonymous: true, index: [1], offset: 16, exported: false }, { name: "entry", key: "entry", type: { kind: $.TypeKind.Slice, elemType: "fstest.mapFileInfo" }, pkgPath: "testing/fstest", index: [2], offset: 40, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "testing/fstest", index: [3], offset: 64, exported: false }]
 	)
 }
 

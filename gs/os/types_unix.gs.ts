@@ -108,7 +108,7 @@ class fileStat {
 	  new fileStat(),
 	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Mode", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "ModTime", args: [], returns: [{ type: "Time" }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }],
 	  fileStat,
-	  {"name": { kind: $.TypeKind.Basic, name: "string" }, "size": { kind: $.TypeKind.Basic, name: "number" }, "mode": { kind: $.TypeKind.Basic, name: "number" }, "modTime": "Time", "sys": "Stat_t"}
+	  [{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "mode", key: "mode", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "modTime", key: "modTime", type: "Time" }, { name: "sys", key: "sys", type: "Stat_t" }]
 	);
 }
 

@@ -78,7 +78,7 @@ export class floatInfo {
 		() => new floatInfo(),
 		[],
 		floatInfo,
-		{"mantbits": { kind: $.TypeKind.Basic, name: "uint" }, "expbits": { kind: $.TypeKind.Basic, name: "uint" }, "bias": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "mantbits", key: "mantbits", type: { kind: $.TypeKind.Basic, name: "uint" }, pkgPath: "internal/strconv", index: [0], offset: 0, exported: false }, { name: "expbits", key: "expbits", type: { kind: $.TypeKind.Basic, name: "uint" }, pkgPath: "internal/strconv", index: [1], offset: 8, exported: false }, { name: "bias", key: "bias", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "internal/strconv", index: [2], offset: 16, exported: false }]
 	)
 }
 
@@ -133,7 +133,7 @@ export class decimalSlice {
 		() => new decimalSlice(),
 		[],
 		decimalSlice,
-		{"d": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "nd": { kind: $.TypeKind.Basic, name: "int" }, "dp": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "d", key: "d", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "internal/strconv", index: [0], offset: 0, exported: false }, { name: "nd", key: "nd", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "internal/strconv", index: [1], offset: 24, exported: false }, { name: "dp", key: "dp", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "internal/strconv", index: [2], offset: 32, exported: false }]
 	)
 }
 

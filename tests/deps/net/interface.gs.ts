@@ -128,7 +128,7 @@ export class Interface {
 		() => new Interface(),
 		[{ name: "Addrs", args: [], returns: [] }, { name: "MulticastAddrs", args: [], returns: [] }],
 		Interface,
-		{"Index": { kind: $.TypeKind.Basic, name: "int" }, "MTU": { kind: $.TypeKind.Basic, name: "int" }, "Name": { kind: $.TypeKind.Basic, name: "string" }, "HardwareAddr": "net.HardwareAddr", "Flags": { kind: $.TypeKind.Basic, name: "uint", typeName: "net.Flags" }}
+		[{ name: "Index", key: "Index", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "MTU", key: "MTU", type: { kind: $.TypeKind.Basic, name: "int" }, index: [1], offset: 8, exported: true }, { name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [2], offset: 16, exported: true }, { name: "HardwareAddr", key: "HardwareAddr", type: "net.HardwareAddr", index: [3], offset: 32, exported: true }, { name: "Flags", key: "Flags", type: { kind: $.TypeKind.Basic, name: "uint", typeName: "net.Flags" }, index: [4], offset: 56, exported: true }]
 	)
 }
 
@@ -317,7 +317,7 @@ export class ipv6ZoneCache {
 		() => new ipv6ZoneCache(),
 		[{ name: "index", args: [], returns: [] }, { name: "name", args: [], returns: [] }, { name: "update", args: [], returns: [] }, { name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "TryRLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		ipv6ZoneCache,
-		{"RWMutex": "sync.RWMutex", "lastFetched": "time.Time", "toIndex": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "toName": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: { kind: $.TypeKind.Basic, name: "string" } }}
+		[{ name: "RWMutex", key: "RWMutex", type: "sync.RWMutex", anonymous: true, index: [0], offset: 0, exported: true }, { name: "lastFetched", key: "lastFetched", type: "time.Time", pkgPath: "net", index: [1], offset: 24, exported: false }, { name: "toIndex", key: "toIndex", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "net", index: [2], offset: 48, exported: false }, { name: "toName", key: "toName", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: { kind: $.TypeKind.Basic, name: "string" } }, pkgPath: "net", index: [3], offset: 56, exported: false }]
 	)
 }
 

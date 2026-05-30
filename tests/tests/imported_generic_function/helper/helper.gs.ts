@@ -44,7 +44,7 @@ export class Box {
 		() => new Box(),
 		[],
 		Box,
-		{"Value": { kind: $.TypeKind.Interface, methods: [] }}
+		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Interface, methods: [] }, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -84,7 +84,7 @@ export class IntValue {
 		() => new IntValue(),
 		[{ name: "GetValue", args: [], returns: [] }],
 		IntValue,
-		{"N": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "N", key: "N", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

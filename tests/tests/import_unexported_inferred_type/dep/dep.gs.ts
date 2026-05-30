@@ -28,7 +28,7 @@ export class hiddenError {
 		() => new hiddenError(),
 		[{ name: "Error", args: [], returns: [] }],
 		hiddenError,
-		{}
+		[]
 	)
 }
 

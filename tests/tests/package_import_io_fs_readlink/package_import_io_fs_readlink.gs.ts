@@ -31,7 +31,7 @@ export class emptyFS {
 		() => new emptyFS(),
 		[{ name: "Open", args: [], returns: [] }],
 		emptyFS,
-		{}
+		[]
 	)
 }
 
@@ -68,7 +68,7 @@ export class linkFS {
 		() => new linkFS(),
 		[{ name: "Lstat", args: [], returns: [] }, { name: "Open", args: [], returns: [] }, { name: "ReadLink", args: [], returns: [] }],
 		linkFS,
-		{}
+		[]
 	)
 }
 

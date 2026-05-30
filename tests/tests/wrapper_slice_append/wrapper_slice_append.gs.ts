@@ -47,7 +47,7 @@ export class parser {
 		() => new parser(),
 		[],
 		parser,
-		{"errors": "errlist.ErrorList", "astruct": "errlist.AStruct"}
+		[{ name: "errors", key: "errors", type: "errlist.ErrorList", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append", index: [0], offset: 0, exported: false }, { name: "astruct", key: "astruct", type: "errlist.AStruct", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/wrapper_slice_append", index: [1], offset: 24, exported: false }]
 	)
 }
 

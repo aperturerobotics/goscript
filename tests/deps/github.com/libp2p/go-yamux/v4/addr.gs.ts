@@ -83,7 +83,7 @@ export class yamuxAddr {
 		() => new yamuxAddr(),
 		[{ name: "Network", args: [], returns: [] }, { name: "String", args: [], returns: [] }],
 		yamuxAddr,
-		{"Addr": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Addr", key: "Addr", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

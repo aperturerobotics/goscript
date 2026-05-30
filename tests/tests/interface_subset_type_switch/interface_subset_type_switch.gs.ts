@@ -75,7 +75,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[{ name: "MyString1", args: [], returns: [] }, { name: "MyString2", args: [], returns: [] }],
 		MyStruct,
-		{"Value1": { kind: $.TypeKind.Basic, name: "string" }, "Value2": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Value1", key: "Value1", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Value2", key: "Value2", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 16, exported: true }]
 	)
 }
 

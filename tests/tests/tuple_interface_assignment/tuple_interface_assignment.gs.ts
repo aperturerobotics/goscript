@@ -28,7 +28,7 @@ export class concrete {
 		() => new concrete(),
 		[{ name: "Read", args: [], returns: [] }],
 		concrete,
-		{}
+		[]
 	)
 }
 

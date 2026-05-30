@@ -34,7 +34,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[],
 		MyStruct,
-		{"myPrivate": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "myPrivate", key: "myPrivate", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/struct_private_field", index: [0], offset: 0, exported: false }]
 	)
 }
 

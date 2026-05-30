@@ -712,7 +712,7 @@ export class Resolver {
 				() => new result(),
 				[{ name: "Error", args: [], returns: [] }],
 				result,
-				{"p": "dnsmessage.Parser", "server": { kind: $.TypeKind.Basic, name: "string" }, "error": "error"}
+				[{ name: "p", key: "p", type: "dnsmessage.Parser", pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "server", key: "server", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [1], offset: 80, exported: false }, { name: "error", key: "error", type: "error", pkgPath: "net", anonymous: true, index: [2], offset: 96, exported: false }]
 			)
 		}
 
@@ -1678,7 +1678,7 @@ export class Resolver {
 		() => new Resolver(),
 		[{ name: "LookupAddr", args: [], returns: [] }, { name: "LookupCNAME", args: [], returns: [] }, { name: "LookupHost", args: [], returns: [] }, { name: "LookupIP", args: [], returns: [] }, { name: "LookupIPAddr", args: [], returns: [] }, { name: "LookupMX", args: [], returns: [] }, { name: "LookupNS", args: [], returns: [] }, { name: "LookupNetIP", args: [], returns: [] }, { name: "LookupPort", args: [], returns: [] }, { name: "LookupSRV", args: [], returns: [] }, { name: "LookupTXT", args: [], returns: [] }, { name: "dial", args: [], returns: [] }, { name: "exchange", args: [], returns: [] }, { name: "getLookupGroup", args: [], returns: [] }, { name: "goLookupCNAME", args: [], returns: [] }, { name: "goLookupHostOrder", args: [], returns: [] }, { name: "goLookupIP", args: [], returns: [] }, { name: "goLookupIPCNAMEOrder", args: [], returns: [] }, { name: "goLookupMX", args: [], returns: [] }, { name: "goLookupNS", args: [], returns: [] }, { name: "goLookupPTR", args: [], returns: [] }, { name: "goLookupSRV", args: [], returns: [] }, { name: "goLookupTXT", args: [], returns: [] }, { name: "internetAddrList", args: [], returns: [] }, { name: "lookup", args: [], returns: [] }, { name: "lookupAddr", args: [], returns: [] }, { name: "lookupCNAME", args: [], returns: [] }, { name: "lookupHost", args: [], returns: [] }, { name: "lookupIP", args: [], returns: [] }, { name: "lookupIPAddr", args: [], returns: [] }, { name: "lookupMX", args: [], returns: [] }, { name: "lookupNS", args: [], returns: [] }, { name: "lookupPort", args: [], returns: [] }, { name: "lookupSRV", args: [], returns: [] }, { name: "lookupTXT", args: [], returns: [] }, { name: "preferGo", args: [], returns: [] }, { name: "resolveAddrList", args: [], returns: [] }, { name: "strictErrors", args: [], returns: [] }, { name: "tryOneName", args: [], returns: [] }],
 		Resolver,
-		{"PreferGo": { kind: $.TypeKind.Basic, name: "bool" }, "StrictErrors": { kind: $.TypeKind.Basic, name: "bool" }, "Dial": ({ kind: $.TypeKind.Function, params: ["context.Context", { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }], results: ["net.Conn", "error"] } as $.FunctionTypeInfo), "lookupGroup": "singleflight.Group"}
+		[{ name: "PreferGo", key: "PreferGo", type: { kind: $.TypeKind.Basic, name: "bool" }, index: [0], offset: 0, exported: true }, { name: "StrictErrors", key: "StrictErrors", type: { kind: $.TypeKind.Basic, name: "bool" }, index: [1], offset: 1, exported: true }, { name: "Dial", key: "Dial", type: ({ kind: $.TypeKind.Function, params: ["context.Context", { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }], results: ["net.Conn", "error"] } as $.FunctionTypeInfo), index: [2], offset: 8, exported: true }, { name: "lookupGroup", key: "lookupGroup", type: "singleflight.Group", pkgPath: "net", index: [3], offset: 16, exported: false }]
 	)
 }
 
@@ -1762,7 +1762,7 @@ export class onlyValuesCtx {
 		() => new onlyValuesCtx(),
 		[{ name: "Value", args: [], returns: [] }, { name: "Deadline", args: [], returns: [] }, { name: "Done", args: [], returns: [] }, { name: "Err", args: [], returns: [] }],
 		onlyValuesCtx,
-		{"Context": "context.Context", "lookupValues": "context.Context"}
+		[{ name: "Context", key: "Context", type: "context.Context", anonymous: true, index: [0], offset: 0, exported: true }, { name: "lookupValues", key: "lookupValues", type: "context.Context", pkgPath: "net", index: [1], offset: 16, exported: false }]
 	)
 }
 

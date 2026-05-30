@@ -43,7 +43,7 @@ export class asyncReader {
 		() => new asyncReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		asyncReader,
-		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		[{ name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/interface_override_async_method", index: [0], offset: 0, exported: false }]
 	)
 }
 

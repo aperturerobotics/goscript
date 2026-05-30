@@ -210,7 +210,7 @@ export class segmentedBuffer {
 		() => new segmentedBuffer(),
 		[{ name: "Append", args: [], returns: [] }, { name: "GrowTo", args: [], returns: [] }, { name: "Len", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "checkOverflow", args: [], returns: [] }],
 		segmentedBuffer,
-		{"cap": { kind: $.TypeKind.Basic, name: "uint32" }, "len": { kind: $.TypeKind.Basic, name: "uint32" }, "bm": "sync.Mutex", "readPos": { kind: $.TypeKind.Basic, name: "int" }, "bPos": { kind: $.TypeKind.Basic, name: "int" }, "b": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }}
+		[{ name: "cap", key: "cap", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [0], offset: 0, exported: false }, { name: "len", key: "len", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [1], offset: 4, exported: false }, { name: "bm", key: "bm", type: "sync.Mutex", pkgPath: "github.com/libp2p/go-yamux/v4", index: [2], offset: 8, exported: false }, { name: "readPos", key: "readPos", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [3], offset: 16, exported: false }, { name: "bPos", key: "bPos", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [4], offset: 24, exported: false }, { name: "b", key: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [5], offset: 32, exported: false }]
 	)
 }
 

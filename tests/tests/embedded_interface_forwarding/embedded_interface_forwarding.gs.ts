@@ -48,7 +48,7 @@ export class Box {
 		() => new Box(),
 		[{ name: "Add", args: [], returns: [] }],
 		Box,
-		{"Adder": "main.Adder"}
+		[{ name: "Adder", key: "Adder", type: "main.Adder", anonymous: true, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -88,7 +88,7 @@ export class Counter {
 		() => new Counter(),
 		[{ name: "Add", args: [], returns: [] }],
 		Counter,
-		{"base": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "base", key: "base", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/embedded_interface_forwarding", index: [0], offset: 0, exported: false }]
 	)
 }
 

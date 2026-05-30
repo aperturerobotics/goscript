@@ -72,7 +72,7 @@ export class Action {
 		() => new Action(),
 		[{ name: "Mark", args: [], returns: [] }, { name: "SetFilter", args: [], returns: [] }],
 		Action,
-		{"Result": { kind: $.TypeKind.Basic, name: "int" }, "Filter": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: "dep.Ref" }}
+		[{ name: "Result", key: "Result", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "Filter", key: "Filter", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: "dep.Ref" }, index: [1], offset: 8, exported: true }]
 	)
 }
 

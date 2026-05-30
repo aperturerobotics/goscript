@@ -40,7 +40,7 @@ export class Worker {
 		() => new Worker(),
 		[{ name: "lookup", args: [], returns: [] }],
 		Worker,
-		{"ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }}
+		[{ name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/async_function_type_assertion", index: [0], offset: 0, exported: false }]
 	)
 }
 

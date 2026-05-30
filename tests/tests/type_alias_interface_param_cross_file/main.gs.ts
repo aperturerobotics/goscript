@@ -45,7 +45,7 @@ export class sink {
 		() => new sink(),
 		[{ name: "Put", args: [], returns: [] }],
 		sink,
-		{"size": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/type_alias_interface_param_cross_file", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -45,7 +45,7 @@ export class MyProcessor {
 		() => new MyProcessor(),
 		[{ name: "Process", args: [], returns: [] }],
 		MyProcessor,
-		{}
+		[]
 	)
 }
 

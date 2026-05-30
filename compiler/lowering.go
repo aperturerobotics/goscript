@@ -2493,6 +2493,11 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 			runtimeType: o.runtimeTypeInfoExpr(field.typ),
 			doc:         field.doc,
 			tag:         field.tag,
+			pkgPath:     field.pkgPath,
+			index:       field.index,
+			offset:      field.offset,
+			anonymous:   field.embedded,
+			exported:    field.exported,
 			structValue: structValue,
 			arrayValue:  isArrayType(field.typ),
 		})
@@ -9556,7 +9561,7 @@ func (o *LoweringOwner) shallowRuntimeTypeInfoExpr(typ types.Type) string {
 	case *types.Pointer:
 		return "{ kind: " + typeKind + ".Pointer, elemType: { kind: " + typeKind + ".Basic, name: \"unknown\" } }"
 	case *types.Struct:
-		return "{ kind: " + typeKind + ".Struct, methods: [], fields: {} }"
+		return "{ kind: " + typeKind + ".Struct, methods: [], fields: [] }"
 	case *types.Slice:
 		return "{ kind: " + typeKind + ".Slice, elemType: { kind: " + typeKind + ".Basic, name: \"unknown\" } }"
 	case *types.Array:
@@ -9572,6 +9577,11 @@ func (o *LoweringOwner) shallowRuntimeTypeInfoExpr(typ types.Type) string {
 
 func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct, seen map[types.Type]bool) string {
 	fields := make([]string, 0, structType.NumFields())
+	var vars []*types.Var
+	for idx := range structType.NumFields() {
+		vars = append(vars, structType.Field(idx))
+	}
+	offsets := structFieldOffsets(goScriptTypeSizes(), vars)
 	for idx := range structType.NumFields() {
 		field := structType.Field(idx)
 		fieldName := tsStructFieldName(field.Name(), idx)
@@ -9579,28 +9589,69 @@ func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct, seen m
 		if fieldName != field.Name() {
 			runtimeName = field.Name()
 		}
+		pkgPath := ""
+		if !field.Exported() && field.Pkg() != nil {
+			pkgPath = field.Pkg().Path()
+		}
 		fieldInfo := runtimeStructFieldInfoExpr(
 			o.runtimeTypeInfoExprWithSeen(field.Type(), seen),
+			fieldName,
 			runtimeName,
 			structType.Tag(idx),
+			pkgPath,
+			field.Embedded(),
+			[]int{idx},
+			offsets[idx],
+			field.Exported(),
 		)
-		fields = append(fields, strconv.Quote(fieldName)+": "+fieldInfo)
+		fields = append(fields, fieldInfo)
 	}
-	return "{" + strings.Join(fields, ", ") + "}"
+	return "[" + strings.Join(fields, ", ") + "]"
 }
 
-func runtimeStructFieldInfoExpr(runtimeType string, runtimeName string, tag string) string {
-	if runtimeName == "" && tag == "" {
-		return runtimeType
+func runtimeStructFieldInfoExpr(
+	runtimeType string,
+	storageKey string,
+	runtimeName string,
+	tag string,
+	pkgPath string,
+	anonymous bool,
+	index []int,
+	offset int64,
+	exported bool,
+) string {
+	name := runtimeName
+	if name == "" {
+		name = storageKey
 	}
-	fields := []string{"type: " + runtimeType}
+	fields := []string{
+		"name: " + strconv.Quote(name),
+		"key: " + strconv.Quote(storageKey),
+		"type: " + runtimeType,
+	}
 	if runtimeName != "" {
-		fields = append(fields, "name: "+strconv.Quote(runtimeName))
+		fields = append(fields, "pkgPath: "+strconv.Quote(pkgPath))
+	} else if pkgPath != "" {
+		fields = append(fields, "pkgPath: "+strconv.Quote(pkgPath))
 	}
 	if tag != "" {
 		fields = append(fields, "tag: "+strconv.Quote(tag))
 	}
+	if anonymous {
+		fields = append(fields, "anonymous: true")
+	}
+	fields = append(fields, "index: "+runtimeStructFieldIndexExpr(index))
+	fields = append(fields, "offset: "+strconv.FormatInt(offset, 10))
+	fields = append(fields, "exported: "+strconv.FormatBool(exported))
 	return "{ " + strings.Join(fields, ", ") + " }"
+}
+
+func runtimeStructFieldIndexExpr(index []int) string {
+	values := make([]string, 0, len(index))
+	for _, value := range index {
+		values = append(values, strconv.Itoa(value))
+	}
+	return "[" + strings.Join(values, ", ") + "]"
 }
 
 func (o *LoweringOwner) runtimeFunctionTypeInfo(signature *types.Signature, name string) string {

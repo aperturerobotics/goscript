@@ -415,7 +415,7 @@ export class netFD {
 		() => new netFD(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetReadDeadline", args: [], returns: [] }, { name: "SetWriteDeadline", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "accept", args: [], returns: [] }, { name: "addrFunc", args: [], returns: [] }, { name: "closeRead", args: [], returns: [] }, { name: "closeWrite", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "name", args: [], returns: [] }, { name: "setAddr", args: [], returns: [] }, { name: "shutdown", args: [], returns: [] }, { name: "assignFakeAddr", args: [], returns: [] }, { name: "dup", args: [], returns: [] }, { name: "readFrom", args: [], returns: [] }, { name: "readFromInet4", args: [], returns: [] }, { name: "readFromInet6", args: [], returns: [] }, { name: "readMsg", args: [], returns: [] }, { name: "readMsgInet4", args: [], returns: [] }, { name: "readMsgInet6", args: [], returns: [] }, { name: "setLinger", args: [], returns: [] }, { name: "setReadBuffer", args: [], returns: [] }, { name: "setWriteBuffer", args: [], returns: [] }, { name: "writeMsg", args: [], returns: [] }, { name: "writeMsgInet4", args: [], returns: [] }, { name: "writeMsgInet6", args: [], returns: [] }, { name: "writeTo", args: [], returns: [] }, { name: "writeToInet4", args: [], returns: [] }, { name: "writeToInet6", args: [], returns: [] }],
 		netFD,
-		{"pfd": "poll.FD", "family": { kind: $.TypeKind.Basic, name: "int" }, "sotype": { kind: $.TypeKind.Basic, name: "int" }, "isConnected": { kind: $.TypeKind.Basic, name: "bool" }, "net": { kind: $.TypeKind.Basic, name: "string" }, "laddr": "net.Addr", "raddr": "net.Addr", "fakeNetFD": { kind: $.TypeKind.Pointer, elemType: "net.fakeNetFD" }}
+		[{ name: "pfd", key: "pfd", type: "poll.FD", pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "family", key: "family", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "net", index: [1], offset: 64, exported: false }, { name: "sotype", key: "sotype", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "net", index: [2], offset: 72, exported: false }, { name: "isConnected", key: "isConnected", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [3], offset: 80, exported: false }, { name: "net", key: "net", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [4], offset: 88, exported: false }, { name: "laddr", key: "laddr", type: "net.Addr", pkgPath: "net", index: [5], offset: 104, exported: false }, { name: "raddr", key: "raddr", type: "net.Addr", pkgPath: "net", index: [6], offset: 120, exported: false }, { name: "fakeNetFD", key: "fakeNetFD", type: { kind: $.TypeKind.Pointer, elemType: "net.fakeNetFD" }, pkgPath: "net", anonymous: true, index: [7], offset: 136, exported: false }]
 	)
 }
 
@@ -448,7 +448,7 @@ export class unknownAddr {
 		() => new unknownAddr(),
 		[{ name: "Network", args: [], returns: [] }, { name: "String", args: [], returns: [] }],
 		unknownAddr,
-		{}
+		[]
 	)
 }
 

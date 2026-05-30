@@ -123,7 +123,7 @@ export class rawConn {
 		() => new rawConn(),
 		[{ name: "Control", args: [], returns: [] }, { name: "Network", args: [], returns: [] }, { name: "PollFD", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
 		rawConn,
-		{"fd": { kind: $.TypeKind.Pointer, elemType: "net.netFD" }}
+		[{ name: "fd", key: "fd", type: { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, pkgPath: "net", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -184,7 +184,7 @@ export class rawListener {
 		() => new rawListener(),
 		[{ name: "Read", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "Control", args: [], returns: [] }, { name: "Network", args: [], returns: [] }, { name: "PollFD", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
 		rawListener,
-		{"rawConn": "net.rawConn"}
+		[{ name: "rawConn", key: "rawConn", type: "net.rawConn", pkgPath: "net", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 

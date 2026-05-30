@@ -77,7 +77,7 @@ export class Stack {
 		() => new Stack(),
 		[{ name: "Len", args: [], returns: [] }, { name: "Pop", args: [], returns: [] }, { name: "Push", args: [], returns: [] }],
 		Stack,
-		{"items": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }}
+		[{ name: "items", key: "items", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/generics_basic", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -120,7 +120,7 @@ export class Item {
 		() => new Item(),
 		[{ name: "Clone", args: [], returns: [] }],
 		Item,
-		{"Name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -166,7 +166,7 @@ export class Mapper {
 		() => new Mapper(),
 		[{ name: "Get", args: [], returns: [] }, { name: "Put", args: [], returns: [] }],
 		Mapper,
-		{"values": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Interface, methods: [] } }}
+		[{ name: "values", key: "values", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/generics_basic", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -216,7 +216,7 @@ export class Pair {
 		() => new Pair(),
 		[{ name: "Swap", args: [], returns: [] }],
 		Pair,
-		{"First": { kind: $.TypeKind.Interface, methods: [] }, "Second": { kind: $.TypeKind.Interface, methods: [] }}
+		[{ name: "First", key: "First", type: { kind: $.TypeKind.Interface, methods: [] }, index: [0], offset: 0, exported: true }, { name: "Second", key: "Second", type: { kind: $.TypeKind.Interface, methods: [] }, index: [1], offset: 0, exported: true }]
 	)
 }
 

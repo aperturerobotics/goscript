@@ -52,7 +52,7 @@ export class Wrapped {
 		() => new Wrapped(),
 		[{ name: "public", args: [], returns: [] }],
 		Wrapped,
-		{"Value": { kind: $.TypeKind.Basic, name: "string" }, "Hidden": "dep.hidden"}
+		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Hidden", key: "Hidden", type: "dep.hidden", index: [1], offset: 16, exported: true }]
 	)
 }
 

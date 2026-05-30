@@ -34,7 +34,7 @@ export class token {
 		() => new token(),
 		[],
 		token,
-		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/cross_file_function_result_type", index: [0], offset: 0, exported: false }]
 	)
 }
 

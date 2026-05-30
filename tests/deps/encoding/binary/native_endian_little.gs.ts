@@ -99,7 +99,7 @@ export class nativeEndian {
 		() => new nativeEndian(),
 		[{ name: "GoString", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "AppendUint16", args: [], returns: [] }, { name: "AppendUint32", args: [], returns: [] }, { name: "AppendUint64", args: [], returns: [] }, { name: "PutUint16", args: [], returns: [] }, { name: "PutUint32", args: [], returns: [] }, { name: "PutUint64", args: [], returns: [] }, { name: "Uint16", args: [], returns: [] }, { name: "Uint32", args: [], returns: [] }, { name: "Uint64", args: [], returns: [] }],
 		nativeEndian,
-		{"littleEndian": "binary.littleEndian"}
+		[{ name: "littleEndian", key: "littleEndian", type: "binary.littleEndian", pkgPath: "encoding/binary", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 

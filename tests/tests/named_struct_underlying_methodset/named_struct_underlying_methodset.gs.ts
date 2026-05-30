@@ -38,7 +38,7 @@ export class Base {
 		() => new Base(),
 		[{ name: "String", args: [], returns: [] }],
 		Base,
-		{}
+		[]
 	)
 }
 
@@ -67,7 +67,7 @@ export class Derived {
 		() => new Derived(),
 		[{ name: "Own", args: [], returns: [] }],
 		Derived,
-		{}
+		[]
 	)
 }
 

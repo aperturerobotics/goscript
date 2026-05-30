@@ -130,7 +130,7 @@ export class MsgStream {
 		() => new MsgStream(),
 		[{ name: "Close", args: [], returns: [] }, { name: "CloseSend", args: [], returns: [] }, { name: "Context", args: [], returns: [] }, { name: "MsgRecv", args: [], returns: [] }, { name: "MsgSend", args: [], returns: [] }],
 		MsgStream,
-		{"ctx": "context.Context", "rw": "srpc.MsgStreamRw", "closeCb": ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)}
+		[{ name: "ctx", key: "ctx", type: "context.Context", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "rw", key: "rw", type: "srpc.MsgStreamRw", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }, { name: "closeCb", key: "closeCb", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [2], offset: 32, exported: false }]
 	)
 }
 

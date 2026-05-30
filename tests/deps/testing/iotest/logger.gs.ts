@@ -65,7 +65,7 @@ export class writeLogger {
 		() => new writeLogger(),
 		[{ name: "Write", args: [], returns: [] }],
 		writeLogger,
-		{"prefix": { kind: $.TypeKind.Basic, name: "string" }, "w": "io.Writer"}
+		[{ name: "prefix", key: "prefix", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "w", key: "w", type: "io.Writer", pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }]
 	)
 }
 
@@ -125,7 +125,7 @@ export class readLogger {
 		() => new readLogger(),
 		[{ name: "Read", args: [], returns: [] }],
 		readLogger,
-		{"prefix": { kind: $.TypeKind.Basic, name: "string" }, "r": "io.Reader"}
+		[{ name: "prefix", key: "prefix", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }]
 	)
 }
 

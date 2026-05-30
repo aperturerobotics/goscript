@@ -28,7 +28,7 @@ export class item {
 		() => new item(),
 		[{ name: "Name", args: [], returns: [] }],
 		item,
-		{}
+		[]
 	)
 }
 

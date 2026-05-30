@@ -35,7 +35,7 @@ export async function main(): globalThis.Promise<void> {
 			() => new result(),
 			[],
 			result,
-			{"value": { kind: $.TypeKind.Basic, name: "int" }}
+			[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/local_struct_type_decl", index: [0], offset: 0, exported: false }]
 		)
 	}
 

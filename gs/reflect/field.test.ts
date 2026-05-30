@@ -31,18 +31,22 @@ describe('reflect struct field access', () => {
         },
       ],
       Person,
-      {
-        Name: 'string',
-        Count: { kind: TypeKind.Basic, name: 'int' },
-      },
+      [
+        { name: 'FullName', key: 'Name', type: 'string' },
+        {
+          name: 'Count',
+          key: 'Count',
+          type: { kind: TypeKind.Basic, name: 'int' },
+        },
+      ],
     )
 
     const person = new Person()
     const typ = TypeOf(person)
-    const [field, ok] = typ.FieldByName('Name')
+    const [field, ok] = typ.FieldByName('FullName')
 
     expect(ok).toBe(true)
-    expect(field.Name).toBe('Name')
+    expect(field.Name).toBe('FullName')
     expect(field.Index).toEqual([0])
     expect(typ.FieldByNameFunc((name) => name === 'Count')[0].Name).toBe(
       'Count',
@@ -54,7 +58,7 @@ describe('reflect struct field access', () => {
     expect(method.Type.In(0).String()).toBe('main.Person')
     expect(method.Type.NumOut()).toBe(1)
     expect(method.Type.Out(0).String()).toBe('string')
-    expect(ValueOf(person).FieldByName('Name').String()).toBe('Ada')
+    expect(ValueOf(person).FieldByName('FullName').String()).toBe('Ada')
     expect(
       ValueOf(person)
         .FieldByIndex(arrayToSlice([1]))
@@ -71,7 +75,7 @@ describe('reflect struct field access', () => {
       'Ada',
     )
 
-    const nameField = ValueOf(person).FieldByName('Name')
+    const nameField = ValueOf(person).FieldByName('FullName')
     const namePtr = NewAt(nameField.Type(), nameField.UnsafeAddr() as any)
     namePtr.Elem().SetString('Grace')
     expect(person.Name).toBe('Grace')

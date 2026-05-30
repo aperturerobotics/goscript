@@ -28,7 +28,7 @@ export class Parser {
 		() => new Parser(),
 		[{ name: "Parse", args: [], returns: [] }],
 		Parser,
-		{}
+		[]
 	)
 }
 

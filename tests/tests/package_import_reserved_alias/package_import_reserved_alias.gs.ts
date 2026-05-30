@@ -37,7 +37,7 @@ export class Holder {
 		() => new Holder(),
 		[],
 		Holder,
-		{"Box": { kind: $.TypeKind.Pointer, elemType: "unique.Box" }}
+		[{ name: "Box", key: "Box", type: { kind: $.TypeKind.Pointer, elemType: "unique.Box" }, index: [0], offset: 0, exported: true }]
 	)
 }
 

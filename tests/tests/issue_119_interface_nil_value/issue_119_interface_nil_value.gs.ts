@@ -52,7 +52,7 @@ export class Dog {
 		() => new Dog(),
 		[{ name: "Name", args: [], returns: [] }],
 		Dog,
-		{"name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/issue_119_interface_nil_value", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -95,7 +95,7 @@ export class Cat {
 		() => new Cat(),
 		[{ name: "Name", args: [], returns: [] }],
 		Cat,
-		{"name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/issue_119_interface_nil_value", index: [0], offset: 0, exported: false }]
 	)
 }
 

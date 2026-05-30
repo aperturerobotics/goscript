@@ -34,7 +34,7 @@ export class Result {
 		() => new Result(),
 		[],
 		Result,
-		{"ok": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "ok", key: "ok", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/selector_expr_ok_variable", index: [0], offset: 0, exported: false }]
 	)
 }
 

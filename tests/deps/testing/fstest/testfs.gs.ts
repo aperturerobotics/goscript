@@ -745,7 +745,7 @@ export class fsTester {
 		() => new fsTester(),
 		[{ name: "checkBadPath", args: [], returns: [] }, { name: "checkDir", args: [], returns: [] }, { name: "checkDirList", args: [], returns: [] }, { name: "checkFile", args: [], returns: [] }, { name: "checkFileRead", args: [], returns: [] }, { name: "checkGlob", args: [], returns: [] }, { name: "checkOpen", args: [], returns: [] }, { name: "checkStat", args: [], returns: [] }, { name: "errorf", args: [], returns: [] }, { name: "openDir", args: [], returns: [] }],
 		fsTester,
-		{"fsys": "fs.FS", "errors": { kind: $.TypeKind.Slice, elemType: "error" }, "dirs": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, "files": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }}
+		[{ name: "fsys", key: "fsys", type: "fs.FS", pkgPath: "testing/fstest", index: [0], offset: 0, exported: false }, { name: "errors", key: "errors", type: { kind: $.TypeKind.Slice, elemType: "error" }, pkgPath: "testing/fstest", index: [1], offset: 16, exported: false }, { name: "dirs", key: "dirs", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, pkgPath: "testing/fstest", index: [2], offset: 40, exported: false }, { name: "files", key: "files", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, pkgPath: "testing/fstest", index: [3], offset: 64, exported: false }]
 	)
 }
 

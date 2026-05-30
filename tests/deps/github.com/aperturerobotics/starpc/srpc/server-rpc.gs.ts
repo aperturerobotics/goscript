@@ -239,7 +239,7 @@ export class ServerRPC {
 		() => new ServerRPC(),
 		[{ name: "HandleCallStart", args: [], returns: [] }, { name: "HandlePacket", args: [], returns: [] }, { name: "HandlePacketData", args: [], returns: [] }, { name: "invokeRPC", args: [], returns: [] }, { name: "Context", args: [], returns: [] }, { name: "HandleCallCancel", args: [], returns: [] }, { name: "HandleCallData", args: [], returns: [] }, { name: "HandleStreamClose", args: [], returns: [] }, { name: "ReadOne", args: [], returns: [] }, { name: "Wait", args: [], returns: [] }, { name: "WriteCallCancel", args: [], returns: [] }, { name: "WriteCallData", args: [], returns: [] }, { name: "closeLocked", args: [], returns: [] }, { name: "closeWriterLocked", args: [], returns: [] }],
 		ServerRPC,
-		{"commonRPC": "srpc.commonRPC", "invoker": "srpc.Invoker"}
+		[{ name: "commonRPC", key: "commonRPC", type: "srpc.commonRPC", pkgPath: "github.com/aperturerobotics/starpc/srpc", anonymous: true, index: [0], offset: 0, exported: false }, { name: "invoker", key: "invoker", type: "srpc.Invoker", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 152, exported: false }]
 	)
 }
 

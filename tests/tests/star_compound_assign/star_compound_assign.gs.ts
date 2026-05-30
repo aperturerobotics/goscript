@@ -34,7 +34,7 @@ export class holder {
 		() => new holder(),
 		[],
 		holder,
-		{"values": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }}
+		[{ name: "values", key: "values", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/star_compound_assign", index: [0], offset: 0, exported: false }]
 	)
 }
 

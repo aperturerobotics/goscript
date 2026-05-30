@@ -75,7 +75,7 @@ export class SysFile {
 		() => new SysFile(),
 		[{ name: "destroy", args: [], returns: [] }, { name: "init", args: [], returns: [] }],
 		SysFile,
-		{"iovecs": { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: "syscall.Iovec" } }}
+		[{ name: "iovecs", key: "iovecs", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: "syscall.Iovec" } }, pkgPath: "internal/poll", index: [0], offset: 0, exported: false }]
 	)
 }
 

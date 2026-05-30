@@ -103,7 +103,7 @@ export class ipAttr {
 		() => new ipAttr(),
 		[],
 		ipAttr,
-		{"Scope": { kind: $.TypeKind.Basic, name: "uint8", typeName: "net.scope" }, "Precedence": { kind: $.TypeKind.Basic, name: "uint8" }, "Label": { kind: $.TypeKind.Basic, name: "uint8" }}
+		[{ name: "Scope", key: "Scope", type: { kind: $.TypeKind.Basic, name: "uint8", typeName: "net.scope" }, index: [0], offset: 0, exported: true }, { name: "Precedence", key: "Precedence", type: { kind: $.TypeKind.Basic, name: "uint8" }, index: [1], offset: 1, exported: true }, { name: "Label", key: "Label", type: { kind: $.TypeKind.Basic, name: "uint8" }, index: [2], offset: 2, exported: true }]
 	)
 }
 
@@ -168,7 +168,7 @@ export class byRFC6724Info {
 		() => new byRFC6724Info(),
 		[],
 		byRFC6724Info,
-		{"addr": "net.IPAddr", "addrAttr": "net.ipAttr", "src": "netip.Addr", "srcAttr": "net.ipAttr"}
+		[{ name: "addr", key: "addr", type: "net.IPAddr", pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "addrAttr", key: "addrAttr", type: "net.ipAttr", pkgPath: "net", index: [1], offset: 40, exported: false }, { name: "src", key: "src", type: "netip.Addr", pkgPath: "net", index: [2], offset: 48, exported: false }, { name: "srcAttr", key: "srcAttr", type: "net.ipAttr", pkgPath: "net", index: [3], offset: 72, exported: false }]
 	)
 }
 
@@ -223,7 +223,7 @@ export class policyTableEntry {
 		() => new policyTableEntry(),
 		[],
 		policyTableEntry,
-		{"Prefix": "netip.Prefix", "Precedence": { kind: $.TypeKind.Basic, name: "uint8" }, "Label": { kind: $.TypeKind.Basic, name: "uint8" }}
+		[{ name: "Prefix", key: "Prefix", type: "netip.Prefix", index: [0], offset: 0, exported: true }, { name: "Precedence", key: "Precedence", type: { kind: $.TypeKind.Basic, name: "uint8" }, index: [1], offset: 32, exported: true }, { name: "Label", key: "Label", type: { kind: $.TypeKind.Basic, name: "uint8" }, index: [2], offset: 33, exported: true }]
 	)
 }
 

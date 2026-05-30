@@ -63,7 +63,7 @@ export class fixedReader {
 		() => new fixedReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		fixedReader,
-		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "size": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io_readfull", index: [0], offset: 0, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io_readfull", index: [1], offset: 24, exported: false }]
 	)
 }
 

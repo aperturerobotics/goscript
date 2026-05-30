@@ -108,7 +108,7 @@ export class pipeDeadline {
 		() => new pipeDeadline(),
 		[{ name: "set", args: [], returns: [] }, { name: "wait", args: [], returns: [] }],
 		pipeDeadline,
-		{"mu": "sync.Mutex", "timer": { kind: $.TypeKind.Pointer, elemType: "time.Timer" }, "cancel": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }}
+		[{ name: "mu", key: "mu", type: "sync.Mutex", pkgPath: "github.com/libp2p/go-yamux/v4", index: [0], offset: 0, exported: false }, { name: "timer", key: "timer", type: { kind: $.TypeKind.Pointer, elemType: "time.Timer" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [1], offset: 8, exported: false }, { name: "cancel", key: "cancel", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [2], offset: 16, exported: false }]
 	)
 }
 

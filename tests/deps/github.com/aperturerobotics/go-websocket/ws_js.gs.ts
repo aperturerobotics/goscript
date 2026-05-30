@@ -84,7 +84,7 @@ export class noCopy {
 		() => new noCopy(),
 		[{ name: "Lock", args: [], returns: [] }],
 		noCopy,
-		{}
+		[]
 	)
 }
 
@@ -649,7 +649,7 @@ export class Conn {
 		() => new Conn(),
 		[{ name: "Close", args: [], returns: [] }, { name: "CloseNow", args: [], returns: [] }, { name: "CloseRead", args: [], returns: [] }, { name: "Ping", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Reader", args: [], returns: [] }, { name: "SetReadLimit", args: [], returns: [] }, { name: "Subprotocol", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "Writer", args: [], returns: [] }, { name: "close", args: [], returns: [] }, { name: "closeWithInternal", args: [], returns: [] }, { name: "exportedClose", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "isClosed", args: [], returns: [] }, { name: "read", args: [], returns: [] }, { name: "setCloseErr", args: [], returns: [] }, { name: "write", args: [], returns: [] }],
 		Conn,
-		{"noCopy": "websocket.noCopy", "ws": "wsjs.WebSocket", "msgReadLimit": "atomic.Int64", "closeReadMu": "sync.Mutex", "closeReadCtx": "context.Context", "closingMu": "sync.Mutex", "closeOnce": "sync.Once", "closed": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }, "closeErrOnce": "sync.Once", "closeErr": "error", "closeWasClean": { kind: $.TypeKind.Basic, name: "bool" }, "releaseOnClose": ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), "releaseOnError": ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), "releaseOnMessage": ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), "readSignal": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }, "readBufMu": "sync.Mutex", "readBuf": { kind: $.TypeKind.Slice, elemType: "wsjs.MessageEvent" }}
+		[{ name: "noCopy", key: "noCopy", type: "websocket.noCopy", pkgPath: "github.com/aperturerobotics/go-websocket", index: [0], offset: 0, exported: false }, { name: "ws", key: "ws", type: "wsjs.WebSocket", pkgPath: "github.com/aperturerobotics/go-websocket", index: [1], offset: 0, exported: false }, { name: "msgReadLimit", key: "msgReadLimit", type: "atomic.Int64", pkgPath: "github.com/aperturerobotics/go-websocket", index: [2], offset: 16, exported: false }, { name: "closeReadMu", key: "closeReadMu", type: "sync.Mutex", pkgPath: "github.com/aperturerobotics/go-websocket", index: [3], offset: 24, exported: false }, { name: "closeReadCtx", key: "closeReadCtx", type: "context.Context", pkgPath: "github.com/aperturerobotics/go-websocket", index: [4], offset: 32, exported: false }, { name: "closingMu", key: "closingMu", type: "sync.Mutex", pkgPath: "github.com/aperturerobotics/go-websocket", index: [5], offset: 48, exported: false }, { name: "closeOnce", key: "closeOnce", type: "sync.Once", pkgPath: "github.com/aperturerobotics/go-websocket", index: [6], offset: 56, exported: false }, { name: "closed", key: "closed", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [7], offset: 72, exported: false }, { name: "closeErrOnce", key: "closeErrOnce", type: "sync.Once", pkgPath: "github.com/aperturerobotics/go-websocket", index: [8], offset: 80, exported: false }, { name: "closeErr", key: "closeErr", type: "error", pkgPath: "github.com/aperturerobotics/go-websocket", index: [9], offset: 96, exported: false }, { name: "closeWasClean", key: "closeWasClean", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [10], offset: 112, exported: false }, { name: "releaseOnClose", key: "releaseOnClose", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/go-websocket", index: [11], offset: 120, exported: false }, { name: "releaseOnError", key: "releaseOnError", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/go-websocket", index: [12], offset: 128, exported: false }, { name: "releaseOnMessage", key: "releaseOnMessage", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/go-websocket", index: [13], offset: 136, exported: false }, { name: "readSignal", key: "readSignal", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [14], offset: 144, exported: false }, { name: "readBufMu", key: "readBufMu", type: "sync.Mutex", pkgPath: "github.com/aperturerobotics/go-websocket", index: [15], offset: 152, exported: false }, { name: "readBuf", key: "readBuf", type: { kind: $.TypeKind.Slice, elemType: "wsjs.MessageEvent" }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [16], offset: 160, exported: false }]
 	)
 }
 
@@ -685,7 +685,7 @@ export class DialOptions {
 		() => new DialOptions(),
 		[],
 		DialOptions,
-		{"Subprotocols": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }}
+		[{ name: "Subprotocols", key: "Subprotocols", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, index: [0], offset: 0, exported: true }]
 	)
 }
 
@@ -788,7 +788,7 @@ export class writer {
 		() => new writer(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		writer,
-		{"closed": { kind: $.TypeKind.Basic, name: "bool" }, "c": { kind: $.TypeKind.Pointer, elemType: "websocket.Conn" }, "ctx": "context.Context", "typ": { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.MessageType" }, "b": { kind: $.TypeKind.Pointer, elemType: "bytes.Buffer" }}
+		[{ name: "closed", key: "closed", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [0], offset: 0, exported: false }, { name: "c", key: "c", type: { kind: $.TypeKind.Pointer, elemType: "websocket.Conn" }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [1], offset: 8, exported: false }, { name: "ctx", key: "ctx", type: "context.Context", pkgPath: "github.com/aperturerobotics/go-websocket", index: [2], offset: 16, exported: false }, { name: "typ", key: "typ", type: { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.MessageType" }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [3], offset: 32, exported: false }, { name: "b", key: "b", type: { kind: $.TypeKind.Pointer, elemType: "bytes.Buffer" }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [4], offset: 40, exported: false }]
 	)
 }
 
@@ -863,7 +863,7 @@ export class AcceptOptions {
 		() => new AcceptOptions(),
 		[],
 		AcceptOptions,
-		{"Subprotocols": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, "InsecureSkipVerify": { kind: $.TypeKind.Basic, name: "bool" }, "OriginPatterns": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, "CompressionMode": { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.CompressionMode" }, "CompressionThreshold": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "Subprotocols", key: "Subprotocols", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, index: [0], offset: 0, exported: true }, { name: "InsecureSkipVerify", key: "InsecureSkipVerify", type: { kind: $.TypeKind.Basic, name: "bool" }, index: [1], offset: 24, exported: true }, { name: "OriginPatterns", key: "OriginPatterns", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, index: [2], offset: 32, exported: true }, { name: "CompressionMode", key: "CompressionMode", type: { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.CompressionMode" }, index: [3], offset: 56, exported: true }, { name: "CompressionThreshold", key: "CompressionThreshold", type: { kind: $.TypeKind.Basic, name: "int" }, index: [4], offset: 64, exported: true }]
 	)
 }
 
@@ -913,7 +913,7 @@ export class CloseError {
 		() => new CloseError(),
 		[{ name: "Error", args: [], returns: [] }],
 		CloseError,
-		{"Code": { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.StatusCode" }, "Reason": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Code", key: "Code", type: { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.StatusCode" }, index: [0], offset: 0, exported: true }, { name: "Reason", key: "Reason", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 8, exported: true }]
 	)
 }
 
@@ -1014,7 +1014,7 @@ export class mu {
 		() => new mu(),
 		[{ name: "forceLock", args: [], returns: [] }, { name: "tryLock", args: [], returns: [] }, { name: "unlock", args: [], returns: [] }],
 		mu,
-		{"c": { kind: $.TypeKind.Pointer, elemType: "websocket.Conn" }, "ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }}
+		[{ name: "c", key: "c", type: { kind: $.TypeKind.Pointer, elemType: "websocket.Conn" }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [0], offset: 0, exported: false }, { name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/aperturerobotics/go-websocket", index: [1], offset: 8, exported: false }]
 	)
 }
 

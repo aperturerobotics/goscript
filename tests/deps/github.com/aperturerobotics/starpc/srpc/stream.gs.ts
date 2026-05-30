@@ -138,7 +138,7 @@ export class streamWithClose {
 		() => new streamWithClose(),
 		[{ name: "Close", args: [], returns: [] }, { name: "CloseSend", args: [], returns: [] }, { name: "Context", args: [], returns: [] }, { name: "MsgRecv", args: [], returns: [] }, { name: "MsgSend", args: [], returns: [] }],
 		streamWithClose,
-		{"Stream": "srpc.Stream", "closeFn": ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)}
+		[{ name: "Stream", key: "Stream", type: "srpc.Stream", anonymous: true, index: [0], offset: 0, exported: true }, { name: "closeFn", key: "closeFn", type: ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }]
 	)
 }
 
@@ -204,7 +204,7 @@ export class streamWithContext {
 		() => new streamWithContext(),
 		[{ name: "Context", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "CloseSend", args: [], returns: [] }, { name: "MsgRecv", args: [], returns: [] }, { name: "MsgSend", args: [], returns: [] }],
 		streamWithContext,
-		{"Stream": "srpc.Stream", "ctx": "context.Context"}
+		[{ name: "Stream", key: "Stream", type: "srpc.Stream", anonymous: true, index: [0], offset: 0, exported: true }, { name: "ctx", key: "ctx", type: "context.Context", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }]
 	)
 }
 

@@ -38,7 +38,7 @@ export class Holder {
 		() => new Holder(),
 		[{ name: "Run", args: [], returns: [] }],
 		Holder,
-		{}
+		[]
 	)
 }
 

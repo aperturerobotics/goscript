@@ -82,7 +82,7 @@ export class call {
 		() => new call(),
 		[],
 		call,
-		{"wg": "sync.WaitGroup", "val": { kind: $.TypeKind.Interface, methods: [] }, "err": "error", "dups": { kind: $.TypeKind.Basic, name: "int" }, "chans": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Channel, direction: "send", elemType: "singleflight.Result" } }}
+		[{ name: "wg", key: "wg", type: "sync.WaitGroup", pkgPath: "internal/singleflight", index: [0], offset: 0, exported: false }, { name: "val", key: "val", type: { kind: $.TypeKind.Interface, methods: [] }, pkgPath: "internal/singleflight", index: [1], offset: 16, exported: false }, { name: "err", key: "err", type: "error", pkgPath: "internal/singleflight", index: [2], offset: 32, exported: false }, { name: "dups", key: "dups", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "internal/singleflight", index: [3], offset: 48, exported: false }, { name: "chans", key: "chans", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Channel, direction: "send", elemType: "singleflight.Result" } }, pkgPath: "internal/singleflight", index: [4], offset: 56, exported: false }]
 	)
 }
 
@@ -220,7 +220,7 @@ export class Group {
 		() => new Group(),
 		[{ name: "Do", args: [], returns: [] }, { name: "DoChan", args: [], returns: [] }, { name: "ForgetUnshared", args: [], returns: [] }, { name: "doCall", args: [], returns: [] }],
 		Group,
-		{"mu": "sync.Mutex", "m": { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "singleflight.call" } }}
+		[{ name: "mu", key: "mu", type: "sync.Mutex", pkgPath: "internal/singleflight", index: [0], offset: 0, exported: false }, { name: "m", key: "m", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "singleflight.call" } }, pkgPath: "internal/singleflight", index: [1], offset: 8, exported: false }]
 	)
 }
 
@@ -275,6 +275,6 @@ export class Result {
 		() => new Result(),
 		[],
 		Result,
-		{"Val": { kind: $.TypeKind.Interface, methods: [] }, "Err": "error", "Shared": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "Val", key: "Val", type: { kind: $.TypeKind.Interface, methods: [] }, index: [0], offset: 0, exported: true }, { name: "Err", key: "Err", type: "error", index: [1], offset: 16, exported: true }, { name: "Shared", key: "Shared", type: { kind: $.TypeKind.Basic, name: "bool" }, index: [2], offset: 32, exported: true }]
 	)
 }

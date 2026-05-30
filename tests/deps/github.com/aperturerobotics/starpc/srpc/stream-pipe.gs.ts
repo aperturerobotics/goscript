@@ -185,7 +185,7 @@ export class pipeStream {
 		() => new pipeStream(),
 		[{ name: "Close", args: [], returns: [] }, { name: "CloseSend", args: [], returns: [] }, { name: "Context", args: [], returns: [] }, { name: "MsgRecv", args: [], returns: [] }, { name: "MsgSend", args: [], returns: [] }, { name: "closeRemote", args: [], returns: [] }],
 		pipeStream,
-		{"ctx": "context.Context", "ctxCancel": ({ kind: $.TypeKind.Function, name: "context.CancelFunc", params: [], results: [] } as $.FunctionTypeInfo), "other": { kind: $.TypeKind.Pointer, elemType: "srpc.pipeStream" }, "closeOnce": "sync.Once", "dataCh": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }}
+		[{ name: "ctx", key: "ctx", type: "context.Context", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "ctxCancel", key: "ctxCancel", type: ({ kind: $.TypeKind.Function, name: "context.CancelFunc", params: [], results: [] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }, { name: "other", key: "other", type: { kind: $.TypeKind.Pointer, elemType: "srpc.pipeStream" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [2], offset: 24, exported: false }, { name: "closeOnce", key: "closeOnce", type: "sync.Once", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [3], offset: 32, exported: false }, { name: "dataCh", key: "dataCh", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [4], offset: 48, exported: false }]
 	)
 }
 

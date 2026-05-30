@@ -119,7 +119,7 @@ export class SyscallError {
 	  new SyscallError(),
 	  [{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Unwrap", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Timeout", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }],
 	  SyscallError,
-	  {"Syscall": { kind: $.TypeKind.Basic, name: "string" }, "Err": { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] }}
+	  [{ name: "Syscall", key: "Syscall", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "Err", key: "Err", type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }]
 	);
 }
 

@@ -53,7 +53,7 @@ export class tableEntry {
 		() => new tableEntry(),
 		[],
 		tableEntry,
-		{"val": { kind: $.TypeKind.Basic, name: "uint32" }, "offset": { kind: $.TypeKind.Basic, name: "int32" }}
+		[{ name: "val", key: "val", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [1], offset: 4, exported: false }]
 	)
 }
 
@@ -337,7 +337,7 @@ export class deflateFast {
 		() => new deflateFast(),
 		[{ name: "encode", args: [], returns: [] }, { name: "matchLen", args: [], returns: [] }, { name: "reset", args: [], returns: [] }, { name: "shiftOffsets", args: [], returns: [] }],
 		deflateFast,
-		{"table": { kind: $.TypeKind.Array, elemType: "flate.tableEntry", length: 16384 }, "prev": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "cur": { kind: $.TypeKind.Basic, name: "int32" }}
+		[{ name: "table", key: "table", type: { kind: $.TypeKind.Array, elemType: "flate.tableEntry", length: 16384 }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "prev", key: "prev", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "compress/flate", index: [1], offset: 131072, exported: false }, { name: "cur", key: "cur", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [2], offset: 131096, exported: false }]
 	)
 }
 

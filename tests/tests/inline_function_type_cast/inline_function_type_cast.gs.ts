@@ -12,7 +12,7 @@ export async function main(): globalThis.Promise<void> {
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] } as $.FunctionTypeInfo))
 
 	// 3. Use Greeter(theInlineVar) to cast to the Greeter declared function type.
-	let castedGreeter = $.namedFunction(theInlineVar, "main.Greeter")
+	let castedGreeter = $.namedFunction(theInlineVar, "main.Greeter", ({ kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] } as $.FunctionTypeInfo))
 
 	// 4. Call that
 	$.println(await castedGreeter!("Inline World"))
@@ -22,7 +22,7 @@ export async function main(): globalThis.Promise<void> {
 	let theInlineAdder: ((a: number, b: number) => number | globalThis.Promise<number>) | null = $.functionValue((a: number, b: number): number => {
 		return a + b
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
-	let castedAdder = $.namedFunction(theInlineAdder, "main.Adder")
+	let castedAdder = $.namedFunction(theInlineAdder, "main.Adder", ({ kind: $.TypeKind.Function, name: "main.Adder", params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 	$.println(await castedAdder!(5, 7))
 }
 

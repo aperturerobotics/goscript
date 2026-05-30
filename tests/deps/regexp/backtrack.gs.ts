@@ -72,7 +72,7 @@ export class job {
 		() => new job(),
 		[],
 		job,
-		{"pc": { kind: $.TypeKind.Basic, name: "uint32" }, "arg": { kind: $.TypeKind.Basic, name: "bool" }, "pos": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "pc", key: "pc", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "arg", key: "arg", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "regexp", index: [1], offset: 4, exported: false }, { name: "pos", key: "pos", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "regexp", index: [2], offset: 8, exported: false }]
 	)
 }
 
@@ -213,7 +213,7 @@ export class bitState {
 		() => new bitState(),
 		[{ name: "push", args: [], returns: [] }, { name: "reset", args: [], returns: [] }, { name: "shouldVisit", args: [], returns: [] }],
 		bitState,
-		{"end": { kind: $.TypeKind.Basic, name: "int" }, "cap": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "matchcap": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, "jobs": { kind: $.TypeKind.Slice, elemType: "regexp.job" }, "visited": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, "inputs": "regexp.inputs"}
+		[{ name: "end", key: "end", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "cap", key: "cap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "regexp", index: [1], offset: 8, exported: false }, { name: "matchcap", key: "matchcap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "regexp", index: [2], offset: 32, exported: false }, { name: "jobs", key: "jobs", type: { kind: $.TypeKind.Slice, elemType: "regexp.job" }, pkgPath: "regexp", index: [3], offset: 56, exported: false }, { name: "visited", key: "visited", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, pkgPath: "regexp", index: [4], offset: 80, exported: false }, { name: "inputs", key: "inputs", type: "regexp.inputs", pkgPath: "regexp", index: [5], offset: 104, exported: false }]
 	)
 }
 

@@ -823,7 +823,7 @@ export class File {
 			{ name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }
 		],
 		File,
-		{ "file": { kind: $.TypeKind.Pointer, elemType: "file" }, "name": { kind: $.TypeKind.Basic, name: "string" }, "closed": { kind: $.TypeKind.Basic, name: "boolean" }, "fd": { kind: $.TypeKind.Basic, name: "number" } }
+		[{ name: "file", key: "file", type: { kind: $.TypeKind.Pointer, elemType: "file" } }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "closed", key: "closed", type: { kind: $.TypeKind.Basic, name: "boolean" } }, { name: "fd", key: "fd", type: { kind: $.TypeKind.Basic, name: "number" } }]
 	);
 }
 

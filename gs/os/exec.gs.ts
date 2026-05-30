@@ -62,7 +62,7 @@ export class Process {
 			{ name: "Signal", args: [{ name: "sig", type: "Signal" }], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }
 		],
 		Process,
-		{ "Pid": { kind: $.TypeKind.Basic, name: "number" } }
+		[{ name: "Pid", key: "Pid", type: { kind: $.TypeKind.Basic, name: "number" } }]
 	);
 }
 
@@ -129,12 +129,7 @@ export class ProcAttr {
 		new ProcAttr(),
 		[],
 		ProcAttr,
-		{ 
-			"Dir": { kind: $.TypeKind.Basic, name: "string" },
-			"Env": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } },
-			"Files": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "any" } },
-			"Sys": { kind: $.TypeKind.Basic, name: "any" }
-		}
+		[{ name: "Dir", key: "Dir", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "Env", key: "Env", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } } }, { name: "Files", key: "Files", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "any" } } }, { name: "Sys", key: "Sys", type: { kind: $.TypeKind.Basic, name: "any" } }]
 	);
 }
 
@@ -156,7 +151,7 @@ export class ProcessState {
 		new ProcessState(),
 		[],
 		ProcessState,
-		{}
+		[]
 	);
 }
 

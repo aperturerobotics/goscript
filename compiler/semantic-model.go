@@ -226,7 +226,7 @@ func (o *SemanticModelOwner) collectGenDecl(
 				continue
 			}
 			position := sourcePos(pkg, typed.Name.Pos())
-			o.addType(model, semPkg, obj, position, typed.Type)
+			o.addType(model, semPkg, obj, position, typed.Type, pkg.TypesSizes)
 			o.recordGeneratedImports(model, semPkg, position.file, pkg.PkgPath, obj.Type())
 			semPkg.declarations = append(semPkg.declarations, semanticDeclaration{
 				kind:     "type",
@@ -361,7 +361,7 @@ func (o *SemanticModelOwner) recordTypeSpec(
 		return
 	}
 	position := sourcePos(pkg, spec.Name.Pos())
-	o.addType(model, semPkg, obj, position, spec.Type)
+	o.addType(model, semPkg, obj, position, spec.Type, pkg.TypesSizes)
 	o.recordGeneratedImports(model, semPkg, position.file, pkg.PkgPath, obj.Type())
 }
 
@@ -486,7 +486,7 @@ func (o *SemanticModelOwner) addDefinedObject(
 		o.addValue(model, semPkg, typed, position, false)
 		o.recordGeneratedImports(model, semPkg, position.file, pkg.PkgPath, typed.Type())
 	case *types.TypeName:
-		o.addType(model, semPkg, typed, sourcePos(pkg, ident.Pos()), nil)
+		o.addType(model, semPkg, typed, sourcePos(pkg, ident.Pos()), nil, pkg.TypesSizes)
 	case *types.Func:
 		o.addFunction(model, semPkg, typed, sourcePos(pkg, ident.Pos()))
 	}
@@ -498,6 +498,7 @@ func (o *SemanticModelOwner) addType(
 	obj *types.TypeName,
 	position sourcePosition,
 	typeExpr ast.Expr,
+	sizes types.Sizes,
 ) *semanticType {
 	named, _ := obj.Type().(*types.Named)
 	if named == nil {
@@ -505,7 +506,7 @@ func (o *SemanticModelOwner) addType(
 	}
 	if existing := model.types[named]; existing != nil {
 		if typeExpr != nil && len(existing.fields) == 0 {
-			existing.fields = semanticFields(named, typeExpr)
+			existing.fields = semanticFields(named, typeExpr, sizes)
 		}
 		return existing
 	}
@@ -514,7 +515,7 @@ func (o *SemanticModelOwner) addType(
 		name:        obj.Name(),
 		named:       named,
 		isInterface: isInterface,
-		fields:      semanticFields(named, typeExpr),
+		fields:      semanticFields(named, typeExpr, sizes),
 		position:    position,
 	}
 	model.types[named] = semType
@@ -612,7 +613,7 @@ func (o *SemanticModelOwner) addFunction(
 	return semFn
 }
 
-func semanticFields(named *types.Named, typeExpr ast.Expr) []semanticField {
+func semanticFields(named *types.Named, typeExpr ast.Expr, sizes types.Sizes) []semanticField {
 	if named == nil {
 		return nil
 	}
@@ -622,17 +623,62 @@ func semanticFields(named *types.Named, typeExpr ast.Expr) []semanticField {
 	}
 	docs := structFieldDocs(typeExpr)
 	fields := make([]semanticField, 0, structType.NumFields())
+	var vars []*types.Var
+	for i := range structType.NumFields() {
+		vars = append(vars, structType.Field(i))
+	}
+	offsets := structFieldOffsets(sizes, vars)
 	for i := range structType.NumFields() {
 		field := structType.Field(i)
+		pkgPath := ""
+		if !field.Exported() && field.Pkg() != nil {
+			pkgPath = field.Pkg().Path()
+		}
 		fields = append(fields, semanticField{
 			name:     field.Name(),
 			typ:      field.Type(),
 			doc:      docs[field.Name()],
 			tag:      structType.Tag(i),
 			embedded: field.Embedded(),
+			pkgPath:  pkgPath,
+			index:    []int{i},
+			offset:   offsets[i],
+			exported: field.Exported(),
 		})
 	}
 	return fields
+}
+
+func goScriptTypeSizes() types.Sizes {
+	if sizes := types.SizesFor("gc", "wasm"); sizes != nil {
+		return sizes
+	}
+	return types.SizesFor("gc", "amd64")
+}
+
+func structFieldOffsets(sizes types.Sizes, fields []*types.Var) (offsets []int64) {
+	offsets = make([]int64, len(fields))
+	if len(fields) == 0 {
+		return offsets
+	}
+	if sizes == nil {
+		sizes = goScriptTypeSizes()
+	}
+	if sizes == nil {
+		return offsets
+	}
+	defer func() {
+		if recover() != nil {
+			// Generic field layouts do not have concrete target offsets during
+			// package-level metadata emission; keep compiling and leave them zero.
+			offsets = make([]int64, len(fields))
+		}
+	}()
+	computed := sizes.Offsetsof(fields)
+	if len(computed) == len(fields) {
+		copy(offsets, computed)
+	}
+	return offsets
 }
 
 func structFieldDocs(typeExpr ast.Expr) map[string]string {

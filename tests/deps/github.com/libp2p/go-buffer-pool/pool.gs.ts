@@ -97,7 +97,7 @@ export class BufferPool {
 		() => new BufferPool(),
 		[{ name: "Get", args: [], returns: [] }, { name: "Put", args: [], returns: [] }],
 		BufferPool,
-		{"pools": { kind: $.TypeKind.Array, elemType: "sync.Pool", length: 32 }, "ptrs": "sync.Pool"}
+		[{ name: "pools", key: "pools", type: { kind: $.TypeKind.Array, elemType: "sync.Pool", length: 32 }, pkgPath: "github.com/libp2p/go-buffer-pool", index: [0], offset: 0, exported: false }, { name: "ptrs", key: "ptrs", type: "sync.Pool", pkgPath: "github.com/libp2p/go-buffer-pool", index: [1], offset: 1280, exported: false }]
 	)
 }
 
@@ -132,7 +132,7 @@ export class bufp {
 		() => new bufp(),
 		[],
 		bufp,
-		{"buf": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }}
+		[{ name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/libp2p/go-buffer-pool", index: [0], offset: 0, exported: false }]
 	)
 }
 

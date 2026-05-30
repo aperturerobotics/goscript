@@ -89,6 +89,6 @@ export class ProcessState {
 			{ name: "ExitCode", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }
 		],
 		ProcessState,
-		{ "pid": { kind: $.TypeKind.Basic, name: "number" } }
+		[{ name: "pid", key: "pid", type: { kind: $.TypeKind.Basic, name: "number" } }]
 	);
 }

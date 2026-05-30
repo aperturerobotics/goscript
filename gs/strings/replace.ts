@@ -205,14 +205,22 @@ export class Replacer {
       },
     ],
     Replacer,
-    {
-      built: { kind: $.TypeKind.Basic, name: 'boolean' },
-      r: 'replacer',
-      oldnew: {
-        kind: $.TypeKind.Slice,
-        elemType: { kind: $.TypeKind.Basic, name: 'string' },
+    [
+      {
+        name: 'built',
+        key: 'built',
+        type: { kind: $.TypeKind.Basic, name: 'boolean' },
       },
-    },
+      { name: 'r', key: 'r', type: 'replacer' },
+      {
+        name: 'oldnew',
+        key: 'oldnew',
+        type: {
+          kind: $.TypeKind.Slice,
+          elemType: { kind: $.TypeKind.Basic, name: 'string' },
+        },
+      },
+    ],
   )
 }
 

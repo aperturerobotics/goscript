@@ -132,7 +132,7 @@ export class ClientSet {
 		() => new ClientSet(),
 		[{ name: "ExecCall", args: [], returns: [] }, { name: "NewStream", args: [], returns: [] }, { name: "execCall", args: [], returns: [] }],
 		ClientSet,
-		{"clients": { kind: $.TypeKind.Slice, elemType: "srpc.Client" }}
+		[{ name: "clients", key: "clients", type: { kind: $.TypeKind.Slice, elemType: "srpc.Client" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }]
 	)
 }
 

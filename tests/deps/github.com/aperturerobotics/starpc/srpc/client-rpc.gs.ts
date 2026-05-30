@@ -227,7 +227,7 @@ export class ClientRPC {
 		() => new ClientRPC(),
 		[{ name: "Close", args: [], returns: [] }, { name: "HandleCallStart", args: [], returns: [] }, { name: "HandlePacket", args: [], returns: [] }, { name: "HandlePacketData", args: [], returns: [] }, { name: "HandleStreamClose", args: [], returns: [] }, { name: "Start", args: [], returns: [] }, { name: "Context", args: [], returns: [] }, { name: "HandleCallCancel", args: [], returns: [] }, { name: "HandleCallData", args: [], returns: [] }, { name: "ReadOne", args: [], returns: [] }, { name: "Wait", args: [], returns: [] }, { name: "WriteCallCancel", args: [], returns: [] }, { name: "WriteCallData", args: [], returns: [] }, { name: "closeLocked", args: [], returns: [] }, { name: "closeWriterLocked", args: [], returns: [] }],
 		ClientRPC,
-		{"commonRPC": "srpc.commonRPC"}
+		[{ name: "commonRPC", key: "commonRPC", type: "srpc.commonRPC", pkgPath: "github.com/aperturerobotics/starpc/srpc", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -410,7 +410,7 @@ export class Encoding {
 		() => new Encoding(),
 		[{ name: "AppendDecode", args: [], returns: [] }, { name: "AppendEncode", args: [], returns: [] }, { name: "Decode", args: [], returns: [] }, { name: "DecodeString", args: [], returns: [] }, { name: "DecodedLen", args: [], returns: [] }, { name: "Encode", args: [], returns: [] }, { name: "EncodeToString", args: [], returns: [] }, { name: "EncodedLen", args: [], returns: [] }, { name: "Strict", args: [], returns: [] }, { name: "WithPadding", args: [], returns: [] }, { name: "decodeQuantum", args: [], returns: [] }],
 		Encoding,
-		{"encode": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 64 }, "decodeMap": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 256 }, "padChar": { kind: $.TypeKind.Basic, name: "int32" }, "strict": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "encode", key: "encode", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 64 }, pkgPath: "encoding/base64", index: [0], offset: 0, exported: false }, { name: "decodeMap", key: "decodeMap", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 256 }, pkgPath: "encoding/base64", index: [1], offset: 64, exported: false }, { name: "padChar", key: "padChar", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "encoding/base64", index: [2], offset: 320, exported: false }, { name: "strict", key: "strict", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "encoding/base64", index: [3], offset: 324, exported: false }]
 	)
 }
 
@@ -564,7 +564,7 @@ export class encoder {
 		() => new encoder(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		encoder,
-		{"err": "error", "enc": { kind: $.TypeKind.Pointer, elemType: "base64.Encoding" }, "w": "io.Writer", "buf": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 3 }, "nbuf": { kind: $.TypeKind.Basic, name: "int" }, "out": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 1024 }}
+		[{ name: "err", key: "err", type: "error", pkgPath: "encoding/base64", index: [0], offset: 0, exported: false }, { name: "enc", key: "enc", type: { kind: $.TypeKind.Pointer, elemType: "base64.Encoding" }, pkgPath: "encoding/base64", index: [1], offset: 16, exported: false }, { name: "w", key: "w", type: "io.Writer", pkgPath: "encoding/base64", index: [2], offset: 24, exported: false }, { name: "buf", key: "buf", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 3 }, pkgPath: "encoding/base64", index: [3], offset: 40, exported: false }, { name: "nbuf", key: "nbuf", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "encoding/base64", index: [4], offset: 48, exported: false }, { name: "out", key: "out", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 1024 }, pkgPath: "encoding/base64", index: [5], offset: 56, exported: false }]
 	)
 }
 
@@ -746,7 +746,7 @@ export class decoder {
 		() => new decoder(),
 		[{ name: "Read", args: [], returns: [] }],
 		decoder,
-		{"err": "error", "readErr": "error", "enc": { kind: $.TypeKind.Pointer, elemType: "base64.Encoding" }, "r": "io.Reader", "buf": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 1024 }, "nbuf": { kind: $.TypeKind.Basic, name: "int" }, "out": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "outbuf": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 768 }}
+		[{ name: "err", key: "err", type: "error", pkgPath: "encoding/base64", index: [0], offset: 0, exported: false }, { name: "readErr", key: "readErr", type: "error", pkgPath: "encoding/base64", index: [1], offset: 16, exported: false }, { name: "enc", key: "enc", type: { kind: $.TypeKind.Pointer, elemType: "base64.Encoding" }, pkgPath: "encoding/base64", index: [2], offset: 32, exported: false }, { name: "r", key: "r", type: "io.Reader", pkgPath: "encoding/base64", index: [3], offset: 40, exported: false }, { name: "buf", key: "buf", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 1024 }, pkgPath: "encoding/base64", index: [4], offset: 56, exported: false }, { name: "nbuf", key: "nbuf", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "encoding/base64", index: [5], offset: 1080, exported: false }, { name: "out", key: "out", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "encoding/base64", index: [6], offset: 1088, exported: false }, { name: "outbuf", key: "outbuf", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 768 }, pkgPath: "encoding/base64", index: [7], offset: 1112, exported: false }]
 	)
 }
 
@@ -806,7 +806,7 @@ export class newlineFilteringReader {
 		() => new newlineFilteringReader(),
 		[{ name: "Read", args: [], returns: [] }],
 		newlineFilteringReader,
-		{"wrapped": "io.Reader"}
+		[{ name: "wrapped", key: "wrapped", type: "io.Reader", pkgPath: "encoding/base64", index: [0], offset: 0, exported: false }]
 	)
 }
 

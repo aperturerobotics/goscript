@@ -112,14 +112,18 @@ class lazybuf {
       },
     ],
     lazybuf,
-    {
-      s: { kind: $.TypeKind.Basic, name: 'string' },
-      buf: {
-        kind: $.TypeKind.Slice,
-        elemType: { kind: $.TypeKind.Basic, name: 'number' },
+    [
+      { name: 's', key: 's', type: { kind: $.TypeKind.Basic, name: 'string' } },
+      {
+        name: 'buf',
+        key: 'buf',
+        type: {
+          kind: $.TypeKind.Slice,
+          elemType: { kind: $.TypeKind.Basic, name: 'number' },
+        },
       },
-      w: { kind: $.TypeKind.Basic, name: 'number' },
-    },
+      { name: 'w', key: 'w', type: { kind: $.TypeKind.Basic, name: 'number' } },
+    ],
   )
 }
 

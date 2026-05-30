@@ -37,7 +37,7 @@ export class bValue {
 		() => new bValue(),
 		[],
 		bValue,
-		{"inner": "main.aValue"}
+		[{ name: "inner", key: "inner", type: "main.aValue", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/cross_file_struct_typeinfo_zero", index: [0], offset: 0, exported: false }]
 	)
 }
 

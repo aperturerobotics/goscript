@@ -68,6 +68,10 @@ type semanticField struct {
 	doc      string
 	tag      string
 	embedded bool
+	pkgPath  string
+	index    []int
+	offset   int64
+	exported bool
 }
 
 type semanticValue struct {

@@ -39,7 +39,7 @@ export class blankImpl {
 		() => new blankImpl(),
 		[{ name: "Value", args: [], returns: [] }],
 		blankImpl,
-		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/blank_parameters", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -68,7 +68,7 @@ export class Packer {
 		() => new Packer(),
 		[{ name: "pack", args: [], returns: [] }],
 		Packer,
-		{}
+		[]
 	)
 }
 

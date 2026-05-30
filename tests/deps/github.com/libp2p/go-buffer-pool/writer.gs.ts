@@ -149,7 +149,7 @@ export class Writer {
 		() => new Writer(),
 		[{ name: "Available", args: [], returns: [] }, { name: "Buffered", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "Flush", args: [], returns: [] }, { name: "Size", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "WriteByte", args: [], returns: [] }, { name: "WriteRune", args: [], returns: [] }, { name: "WriteString", args: [], returns: [] }, { name: "ensureBuffer", args: [], returns: [] }],
 		Writer,
-		{"W": "io.Writer", "bufw": { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" }}
+		[{ name: "W", key: "W", type: "io.Writer", index: [0], offset: 0, exported: true }, { name: "bufw", key: "bufw", type: { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" }, pkgPath: "github.com/libp2p/go-buffer-pool", index: [1], offset: 16, exported: false }]
 	)
 }
 

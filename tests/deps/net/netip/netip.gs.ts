@@ -782,7 +782,7 @@ export class Addr {
 		() => new Addr(),
 		[{ name: "AppendBinary", args: [], returns: [] }, { name: "AppendText", args: [], returns: [] }, { name: "AppendTo", args: [], returns: [] }, { name: "As16", args: [], returns: [] }, { name: "As4", args: [], returns: [] }, { name: "AsSlice", args: [], returns: [] }, { name: "BitLen", args: [], returns: [] }, { name: "Compare", args: [], returns: [] }, { name: "Is4", args: [], returns: [] }, { name: "Is4In6", args: [], returns: [] }, { name: "Is6", args: [], returns: [] }, { name: "IsGlobalUnicast", args: [], returns: [] }, { name: "IsInterfaceLocalMulticast", args: [], returns: [] }, { name: "IsLinkLocalMulticast", args: [], returns: [] }, { name: "IsLinkLocalUnicast", args: [], returns: [] }, { name: "IsLoopback", args: [], returns: [] }, { name: "IsMulticast", args: [], returns: [] }, { name: "IsPrivate", args: [], returns: [] }, { name: "IsUnspecified", args: [], returns: [] }, { name: "IsValid", args: [], returns: [] }, { name: "Less", args: [], returns: [] }, { name: "MarshalBinary", args: [], returns: [] }, { name: "MarshalText", args: [], returns: [] }, { name: "Next", args: [], returns: [] }, { name: "Prefix", args: [], returns: [] }, { name: "Prev", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "StringExpanded", args: [], returns: [] }, { name: "Unmap", args: [], returns: [] }, { name: "UnmarshalBinary", args: [], returns: [] }, { name: "UnmarshalText", args: [], returns: [] }, { name: "WithZone", args: [], returns: [] }, { name: "Zone", args: [], returns: [] }, { name: "appendTo4", args: [], returns: [] }, { name: "appendTo4In6", args: [], returns: [] }, { name: "appendTo6", args: [], returns: [] }, { name: "hasZone", args: [], returns: [] }, { name: "isZero", args: [], returns: [] }, { name: "marshalBinarySize", args: [], returns: [] }, { name: "string4", args: [], returns: [] }, { name: "string4In6", args: [], returns: [] }, { name: "string6", args: [], returns: [] }, { name: "v4", args: [], returns: [] }, { name: "v6", args: [], returns: [] }, { name: "v6u16", args: [], returns: [] }, { name: "withoutZone", args: [], returns: [] }],
 		Addr,
-		{"addr": "netip.uint128", "z": "unique.Handle"}
+		[{ name: "addr", key: "addr", type: "netip.uint128", pkgPath: "net/netip", index: [0], offset: 0, exported: false }, { name: "z", key: "z", type: "unique.Handle", pkgPath: "net/netip", index: [1], offset: 16, exported: false }]
 	)
 }
 
@@ -827,7 +827,7 @@ export class addrDetail {
 		() => new addrDetail(),
 		[],
 		addrDetail,
-		{"isV6": { kind: $.TypeKind.Basic, name: "bool" }, "zoneV6": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "isV6", key: "isV6", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net/netip", index: [0], offset: 0, exported: false }, { name: "zoneV6", key: "zoneV6", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net/netip", index: [1], offset: 8, exported: false }]
 	)
 }
 
@@ -891,7 +891,7 @@ export class parseAddrError {
 		() => new parseAddrError(),
 		[{ name: "Error", args: [], returns: [] }],
 		parseAddrError,
-		{"_in": { type: { kind: $.TypeKind.Basic, name: "string" }, name: "in" }, "msg": { kind: $.TypeKind.Basic, name: "string" }, "at": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "in", key: "_in", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net/netip", index: [0], offset: 0, exported: false }, { name: "msg", key: "msg", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net/netip", index: [1], offset: 16, exported: false }, { name: "at", key: "at", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net/netip", index: [2], offset: 32, exported: false }]
 	)
 }
 
@@ -1102,7 +1102,7 @@ export class AddrPort {
 		() => new AddrPort(),
 		[{ name: "Addr", args: [], returns: [] }, { name: "AppendBinary", args: [], returns: [] }, { name: "AppendText", args: [], returns: [] }, { name: "AppendTo", args: [], returns: [] }, { name: "Compare", args: [], returns: [] }, { name: "IsValid", args: [], returns: [] }, { name: "MarshalBinary", args: [], returns: [] }, { name: "MarshalText", args: [], returns: [] }, { name: "Port", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "UnmarshalBinary", args: [], returns: [] }, { name: "UnmarshalText", args: [], returns: [] }],
 		AddrPort,
-		{"ip": "netip.Addr", "port": { kind: $.TypeKind.Basic, name: "uint16" }}
+		[{ name: "ip", key: "ip", type: "netip.Addr", pkgPath: "net/netip", index: [0], offset: 0, exported: false }, { name: "port", key: "port", type: { kind: $.TypeKind.Basic, name: "uint16" }, pkgPath: "net/netip", index: [1], offset: 24, exported: false }]
 	)
 }
 
@@ -1388,7 +1388,7 @@ export class Prefix {
 		() => new Prefix(),
 		[{ name: "Addr", args: [], returns: [] }, { name: "AppendBinary", args: [], returns: [] }, { name: "AppendText", args: [], returns: [] }, { name: "AppendTo", args: [], returns: [] }, { name: "Bits", args: [], returns: [] }, { name: "Compare", args: [], returns: [] }, { name: "Contains", args: [], returns: [] }, { name: "IsSingleIP", args: [], returns: [] }, { name: "IsValid", args: [], returns: [] }, { name: "MarshalBinary", args: [], returns: [] }, { name: "MarshalText", args: [], returns: [] }, { name: "Masked", args: [], returns: [] }, { name: "Overlaps", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "UnmarshalBinary", args: [], returns: [] }, { name: "UnmarshalText", args: [], returns: [] }, { name: "isZero", args: [], returns: [] }],
 		Prefix,
-		{"ip": "netip.Addr", "bitsPlusOne": { kind: $.TypeKind.Basic, name: "uint8" }}
+		[{ name: "ip", key: "ip", type: "netip.Addr", pkgPath: "net/netip", index: [0], offset: 0, exported: false }, { name: "bitsPlusOne", key: "bitsPlusOne", type: { kind: $.TypeKind.Basic, name: "uint8" }, pkgPath: "net/netip", index: [1], offset: 24, exported: false }]
 	)
 }
 
@@ -1438,7 +1438,7 @@ export class parsePrefixError {
 		() => new parsePrefixError(),
 		[{ name: "Error", args: [], returns: [] }],
 		parsePrefixError,
-		{"_in": { type: { kind: $.TypeKind.Basic, name: "string" }, name: "in" }, "msg": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "in", key: "_in", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net/netip", index: [0], offset: 0, exported: false }, { name: "msg", key: "msg", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net/netip", index: [1], offset: 16, exported: false }]
 	)
 }
 

@@ -116,7 +116,7 @@ export class VClient {
 		() => new VClient(),
 		[{ name: "ExecCall", args: [], returns: [] }, { name: "NewStream", args: [], returns: [] }],
 		VClient,
-		{"le": { kind: $.TypeKind.Pointer, elemType: "logrus.Entry" }, "client": "srpc.Client", "execID": "atomic.Int32"}
+		[{ name: "le", key: "le", type: { kind: $.TypeKind.Pointer, elemType: "logrus.Entry" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "client", key: "client", type: "srpc.Client", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 8, exported: false }, { name: "execID", key: "execID", type: "atomic.Int32", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [2], offset: 24, exported: false }]
 	)
 }
 

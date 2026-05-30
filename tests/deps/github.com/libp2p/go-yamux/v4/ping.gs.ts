@@ -93,7 +93,7 @@ export class ping {
 		() => new ping(),
 		[{ name: "finish", args: [], returns: [] }, { name: "wait", args: [], returns: [] }],
 		ping,
-		{"id": { kind: $.TypeKind.Basic, name: "uint32" }, "pingResponse": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }, "done": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }, "err": "error", "duration": { kind: $.TypeKind.Basic, name: "int64", typeName: "time.Duration" }}
+		[{ name: "id", key: "id", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [0], offset: 0, exported: false }, { name: "pingResponse", key: "pingResponse", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [1], offset: 8, exported: false }, { name: "done", key: "done", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [2], offset: 16, exported: false }, { name: "err", key: "err", type: "error", pkgPath: "github.com/libp2p/go-yamux/v4", index: [3], offset: 24, exported: false }, { name: "duration", key: "duration", type: { kind: $.TypeKind.Basic, name: "int64", typeName: "time.Duration" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [4], offset: 40, exported: false }]
 	)
 }
 

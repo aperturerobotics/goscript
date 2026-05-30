@@ -450,7 +450,7 @@ export class decimal {
 		() => new decimal(),
 		[{ name: "Assign", args: [], returns: [] }, { name: "Round", args: [], returns: [] }, { name: "RoundDown", args: [], returns: [] }, { name: "RoundUp", args: [], returns: [] }, { name: "RoundedInteger", args: [], returns: [] }, { name: "Shift", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "floatBits", args: [], returns: [] }, { name: "set", args: [], returns: [] }],
 		decimal,
-		{"d": { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 800 }, "nd": { kind: $.TypeKind.Basic, name: "int" }, "dp": { kind: $.TypeKind.Basic, name: "int" }, "neg": { kind: $.TypeKind.Basic, name: "bool" }, "trunc": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "d", key: "d", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 800 }, pkgPath: "internal/strconv", index: [0], offset: 0, exported: false }, { name: "nd", key: "nd", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "internal/strconv", index: [1], offset: 800, exported: false }, { name: "dp", key: "dp", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "internal/strconv", index: [2], offset: 808, exported: false }, { name: "neg", key: "neg", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "internal/strconv", index: [3], offset: 816, exported: false }, { name: "trunc", key: "trunc", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "internal/strconv", index: [4], offset: 817, exported: false }]
 	)
 }
 
@@ -495,7 +495,7 @@ export class leftCheat {
 		() => new leftCheat(),
 		[],
 		leftCheat,
-		{"delta": { kind: $.TypeKind.Basic, name: "int" }, "cutoff": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "delta", key: "delta", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "internal/strconv", index: [0], offset: 0, exported: false }, { name: "cutoff", key: "cutoff", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "internal/strconv", index: [1], offset: 8, exported: false }]
 	)
 }
 

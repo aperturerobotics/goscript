@@ -310,7 +310,7 @@ describe('builtin runtime contract helpers', () => {
         returns: [],
       },
     ])
-    registerStructType('collision.Hash', new HashMessage(), [], HashMessage, {})
+    registerStructType('collision.Hash', new HashMessage(), [], HashMessage, [])
 
     expect(typeAssertTuple(new HashInterfaceImpl(), 'collision.Hash')[1]).toBe(
       true,
@@ -596,12 +596,14 @@ describe('builtin runtime contract helpers', () => {
         {
           kind: TypeKind.Struct,
           methods: [],
-          fields: {
-            Name: {
+          fields: [
+            {
+              name: 'Name',
+              key: 'Name',
               type: { kind: TypeKind.Basic, name: 'string' },
               tag: 'json:"name"',
             },
-          },
+          ],
         },
       ).ok,
     ).toBe(true)

@@ -102,7 +102,7 @@ export class pooledFlateWriter {
 		() => new pooledFlateWriter(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
 		pooledFlateWriter,
-		{"mu": "sync.Mutex", "fw": { kind: $.TypeKind.Pointer, elemType: "flate.Writer" }}
+		[{ name: "mu", key: "mu", type: "sync.Mutex", pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "fw", key: "fw", type: { kind: $.TypeKind.Pointer, elemType: "flate.Writer" }, pkgPath: "archive/zip", index: [1], offset: 8, exported: false }]
 	)
 }
 
@@ -183,7 +183,7 @@ export class pooledFlateReader {
 		() => new pooledFlateReader(),
 		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }],
 		pooledFlateReader,
-		{"mu": "sync.Mutex", "fr": "io.ReadCloser"}
+		[{ name: "mu", key: "mu", type: "sync.Mutex", pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "fr", key: "fr", type: "io.ReadCloser", pkgPath: "archive/zip", index: [1], offset: 8, exported: false }]
 	)
 }
 
@@ -237,13 +237,13 @@ export function __goscript_set_decompressors(__goscriptValue: sync.Map): void {
 async function __goscriptInit0(): globalThis.Promise<void> {
 	await compressors.value.Store($.namedValueInterfaceValue<any>(0, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction($.functionValue((w: io.Writer | null): [io.WriteCloser | null, $.GoError] => {
 		return [$.interfaceValue<io.WriteCloser | null>(new __goscript_writer.nopCloser({Writer: w}), "*zip.nopCloser"), null]
-	}, ({ kind: $.TypeKind.Function, params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo)), "zip.Compressor"), "zip.Compressor"))
+	}, ({ kind: $.TypeKind.Function, params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo)), "zip.Compressor", ({ kind: $.TypeKind.Function, name: "zip.Compressor", params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo)), "zip.Compressor"))
 	await compressors.value.Store($.namedValueInterfaceValue<any>(8, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction($.functionValue(async (w: io.Writer | null): globalThis.Promise<[io.WriteCloser | null, $.GoError]> => {
 		return [await newFlateWriter(w), null]
-	}, ({ kind: $.TypeKind.Function, params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo)), "zip.Compressor"), "zip.Compressor"))
+	}, ({ kind: $.TypeKind.Function, params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo)), "zip.Compressor", ({ kind: $.TypeKind.Function, name: "zip.Compressor", params: ["io.Writer"], results: ["io.WriteCloser", "error"] } as $.FunctionTypeInfo)), "zip.Compressor"))
 
-	await decompressors.value.Store($.namedValueInterfaceValue<any>(0, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction(io.NopCloser, "zip.Decompressor"), "zip.Decompressor"))
-	await decompressors.value.Store($.namedValueInterfaceValue<any>(8, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction(newFlateReader, "zip.Decompressor"), "zip.Decompressor"))
+	await decompressors.value.Store($.namedValueInterfaceValue<any>(0, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction(io.NopCloser, "zip.Decompressor", ({ kind: $.TypeKind.Function, name: "zip.Decompressor", params: ["io.Reader"], results: ["io.ReadCloser"] } as $.FunctionTypeInfo)), "zip.Decompressor"))
+	await decompressors.value.Store($.namedValueInterfaceValue<any>(8, "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.interfaceValue<any>($.namedFunction(newFlateReader, "zip.Decompressor", ({ kind: $.TypeKind.Function, name: "zip.Decompressor", params: ["io.Reader"], results: ["io.ReadCloser"] } as $.FunctionTypeInfo)), "zip.Decompressor"))
 }
 
 export async function RegisterDecompressor(method: number, dcomp: ((r: io.Reader | null) => io.ReadCloser | null | globalThis.Promise<io.ReadCloser | null>) | null): globalThis.Promise<void> {

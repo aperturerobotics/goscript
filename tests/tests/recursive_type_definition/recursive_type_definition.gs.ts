@@ -58,7 +58,7 @@ export class B {
 		() => new B(),
 		[{ name: "MethodB", args: [], returns: [] }],
 		B,
-		{}
+		[]
 	)
 }
 

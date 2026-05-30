@@ -46,7 +46,7 @@ export class FileStatus {
 		() => new FileStatus(),
 		[],
 		FileStatus,
-		{"mode": { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyFileMode" }, "size": { kind: $.TypeKind.Basic, name: "int64" }}
+		[{ name: "mode", key: "mode", type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyFileMode" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_type_wrapper", index: [0], offset: 0, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_type_wrapper", index: [1], offset: 8, exported: false }]
 	)
 }
 

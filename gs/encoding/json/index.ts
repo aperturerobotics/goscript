@@ -27,6 +27,8 @@ type decodeOptions = {
 }
 
 type fieldMetadata = {
+  key: string
+  name: string
   tag?: string
   type?: unknown
 }
@@ -287,17 +289,25 @@ function marshalBytes(
   }
 }
 
-export function Compact(dst: bytes.Buffer | $.VarRef<bytes.Buffer>, src: $.Slice<number>): $.GoError {
+export function Compact(
+  dst: bytes.Buffer | $.VarRef<bytes.Buffer>,
+  src: $.Slice<number>,
+): $.GoError {
   try {
     const text = JSON.stringify(JSON.parse($.bytesToString(src)))
-    const [, err] = $.pointerValue<bytes.Buffer>(dst).Write($.stringToBytes(text))
+    const [, err] = $.pointerValue<bytes.Buffer>(dst).Write(
+      $.stringToBytes(text),
+    )
     return err
   } catch (err) {
     return goError(err)
   }
 }
 
-export function HTMLEscape(dst: bytes.Buffer | $.VarRef<bytes.Buffer>, src: $.Slice<number>): void {
+export function HTMLEscape(
+  dst: bytes.Buffer | $.VarRef<bytes.Buffer>,
+  src: $.Slice<number>,
+): void {
   const escaped = $.bytesToString(src).replace(/[<>&\u2028\u2029]/g, (char) => {
     switch (char) {
       case '<':
@@ -332,7 +342,9 @@ export function Indent(
           .map((line, idx) => (idx === 0 ? line : prefix + line))
           .join('\n')
       )
-    const [, err] = $.pointerValue<bytes.Buffer>(dst).Write($.stringToBytes(prefixed))
+    const [, err] = $.pointerValue<bytes.Buffer>(dst).Write(
+      $.stringToBytes(prefixed),
+    )
     return err
   } catch (err) {
     return goError(err)
@@ -351,7 +363,11 @@ export function Unmarshal(data: $.Slice<number>, v: unknown): $.GoError {
   return decode(data, v, {})
 }
 
-function decode(data: $.Slice<number>, v: unknown, opts: decodeOptions): $.GoError {
+function decode(
+  data: $.Slice<number>,
+  v: unknown,
+  opts: decodeOptions,
+): $.GoError {
   try {
     if (!validUnmarshalTarget(v)) {
       return $.toGoError(new InvalidUnmarshalError())
@@ -380,7 +396,9 @@ export function Valid(data: $.Slice<number>): boolean {
   }
 }
 
-export function RawMessage_MarshalJSON(m: RawMessage): [$.Slice<number>, $.GoError] {
+export function RawMessage_MarshalJSON(
+  m: RawMessage,
+): [$.Slice<number>, $.GoError] {
   if (m === null) {
     return [$.stringToBytes('null'), null]
   }
@@ -419,7 +437,10 @@ export function Number_Float64(n: Number): [number, $.GoError] {
     return [0, $.newError(`strconv.ParseFloat: parsing "${n}": invalid syntax`)]
   }
   if (!Number.isFinite(value) && !/^[+-]?(?:inf(?:inity)?|nan)$/i.test(n)) {
-    return [value, $.newError(`strconv.ParseFloat: parsing "${n}": value out of range`)]
+    return [
+      value,
+      $.newError(`strconv.ParseFloat: parsing "${n}": value out of range`),
+    ]
   }
   return [value, null]
 }
@@ -433,7 +454,10 @@ export function Number_Int64(n: Number): [number, $.GoError] {
   const max = (1n << 63n) - 1n
   if (value < min || value > max) {
     const clamped = value < min ? min : max
-    return [Number(clamped), $.newError(`strconv.ParseInt: parsing "${n}": value out of range`)]
+    return [
+      Number(clamped),
+      $.newError(`strconv.ParseInt: parsing "${n}": value out of range`),
+    ]
   }
   return [Number(value), null]
 }
@@ -443,7 +467,9 @@ export function Number_String(n: Number): string {
 }
 
 function isValidFloat(value: string): boolean {
-  return /^[+-]?(?:(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|inf(?:inity)?|nan)$/i.test(value)
+  return /^[+-]?(?:(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|inf(?:inity)?|nan)$/i.test(
+    value,
+  )
 }
 
 function readAllSync(r: io.Reader): [$.Bytes, $.GoError] {
@@ -519,13 +545,16 @@ function marshalValue(v: unknown): unknown {
   }
 
   const out: Record<string, unknown> = {}
-  const typeFields = structFieldMetadata(v)
-  for (const [fieldName, ref] of Object.entries(v._fields)) {
-    const jsonName = jsonFieldName(fieldName, typeFields[fieldName]?.tag)
+  for (const field of structFields(v)) {
+    const ref = v._fields[field.key]
+    if (ref === undefined) {
+      continue
+    }
+    const jsonName = jsonFieldName(field.name, field.tag)
     if (jsonName === '') {
       continue
     }
-    out[jsonName] = marshalFieldValue(ref.value, typeFields[fieldName]?.type)
+    out[jsonName] = marshalFieldValue(ref.value, field.type)
   }
   return out
 }
@@ -582,16 +611,24 @@ function validUnmarshalTarget(value: unknown): boolean {
 function parseJSON(data: $.Slice<number>, opts: decodeOptions): unknown {
   const text = $.bytesToString(data)
   if (opts.useNumber) {
-    return JSON.parse(text, (_key, value) => (typeof value === 'number' ? String(value) : value))
+    return JSON.parse(text, (_key, value) =>
+      typeof value === 'number' ? String(value) : value,
+    )
   }
   return JSON.parse(text)
 }
 
-function assignDecodedValue(target: unknown, decoded: unknown, opts: decodeOptions): void {
+function assignDecodedValue(
+  target: unknown,
+  decoded: unknown,
+  opts: decodeOptions,
+): void {
   if ($.isVarRef(target)) {
     const unmarshaler = unmarshalJSONTarget(target.value)
     if (unmarshaler !== null) {
-      const err = unmarshaler.UnmarshalJSON($.stringToBytes(JSON.stringify(decoded)))
+      const err = unmarshaler.UnmarshalJSON(
+        $.stringToBytes(JSON.stringify(decoded)),
+      )
       if (err !== null) {
         throw err
       }
@@ -622,10 +659,10 @@ function assignStructFields(
   decoded: Record<string, unknown>,
   opts: decodeOptions,
 ): void {
-  const typeFields = structFieldMetadata(target)
+  const fields = structFields(target)
   const knownNames = new Set<string>()
-  for (const fieldName of Object.keys(target._fields)) {
-    const jsonName = jsonFieldName(fieldName, typeFields[fieldName]?.tag)
+  for (const field of fields) {
+    const jsonName = jsonFieldName(field.name, field.tag)
     if (jsonName !== '') {
       knownNames.add(jsonName)
     }
@@ -637,13 +674,17 @@ function assignStructFields(
       }
     }
   }
-  for (const [fieldName, ref] of Object.entries(target._fields)) {
-    const jsonName = jsonFieldName(fieldName, typeFields[fieldName]?.tag)
+  for (const field of fields) {
+    const ref = target._fields[field.key]
+    if (ref === undefined) {
+      continue
+    }
+    const jsonName = jsonFieldName(field.name, field.tag)
     if (
       jsonName !== '' &&
       Object.prototype.hasOwnProperty.call(decoded, jsonName)
     ) {
-      assignDecodedFieldValue(ref, decoded[jsonName], opts, typeFields[fieldName]?.type)
+      assignDecodedFieldValue(ref, decoded[jsonName], opts, field.type)
     }
   }
 }
@@ -694,9 +735,19 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   )
 }
 
-function structFieldMetadata(value: unknown): Record<string, fieldMetadata> {
+function structFields(value: {
+  _fields: Record<string, $.VarRef<unknown>>
+}): fieldMetadata[] {
+  const fields = structFieldMetadata(value)
+  if (fields.length !== 0) {
+    return fields
+  }
+  return Object.keys(value._fields).map((key) => ({ key, name: key }))
+}
+
+function structFieldMetadata(value: unknown): fieldMetadata[] {
   if (value === null || typeof value !== 'object') {
-    return {}
+    return []
   }
   const ctor = Reflect.get(value, 'constructor')
   if (
@@ -704,7 +755,7 @@ function structFieldMetadata(value: unknown): Record<string, fieldMetadata> {
     ctor === undefined ||
     (typeof ctor !== 'object' && typeof ctor !== 'function')
   ) {
-    return {}
+    return []
   }
   const typeInfo = Reflect.get(ctor, '__typeInfo')
   if (
@@ -712,29 +763,26 @@ function structFieldMetadata(value: unknown): Record<string, fieldMetadata> {
     typeInfo === undefined ||
     typeof typeInfo !== 'object'
   ) {
-    return {}
+    return []
   }
   const fields = Reflect.get(typeInfo, 'fields')
-  if (isPlainObject(fields)) {
-    const out: Record<string, fieldMetadata> = {}
-    for (const [name, field] of Object.entries(fields)) {
-      if (typeof field === 'string') {
-        out[name] = { type: field }
-        continue
-      }
-      if (!isPlainObject(field)) {
-        out[name] = { type: field }
+  if (Array.isArray(fields)) {
+    const out: fieldMetadata[] = []
+    for (const field of fields) {
+      if (!$.isStructFieldInfo(field)) {
         continue
       }
       const tag = field.tag
-      out[name] = {
-        type: Object.prototype.hasOwnProperty.call(field, 'type') ? field.type : field,
+      out.push({
+        key: $.structFieldRuntimeKey(field),
+        name: field.name,
+        type: field.type,
         ...(typeof tag === 'string' ? { tag } : {}),
-      }
+      })
     }
     return out
   }
-  return {}
+  return []
 }
 
 function isRawMessageType(value: unknown): boolean {

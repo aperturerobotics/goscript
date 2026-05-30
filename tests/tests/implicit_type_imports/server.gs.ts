@@ -31,6 +31,6 @@ export class Server {
 		() => new Server(),
 		[{ name: "Handle", args: [], returns: [] }],
 		Server,
-		{}
+		[]
 	)
 }

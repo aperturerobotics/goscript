@@ -50,7 +50,7 @@ export class uint128 {
 		() => new uint128(),
 		[],
 		uint128,
-		{"Hi": { kind: $.TypeKind.Basic, name: "uint64" }, "Lo": { kind: $.TypeKind.Basic, name: "uint64" }}
+		[{ name: "Hi", key: "Hi", type: { kind: $.TypeKind.Basic, name: "uint64" }, index: [0], offset: 0, exported: true }, { name: "Lo", key: "Lo", type: { kind: $.TypeKind.Basic, name: "uint64" }, index: [1], offset: 8, exported: true }]
 	)
 }
 

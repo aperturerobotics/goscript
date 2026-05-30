@@ -166,7 +166,7 @@ export class StreamRwc {
 		() => new StreamRwc(),
 		[{ name: "Read", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "CloseSend", args: [], returns: [] }, { name: "Context", args: [], returns: [] }, { name: "MsgRecv", args: [], returns: [] }, { name: "MsgSend", args: [], returns: [] }],
 		StreamRwc,
-		{"Stream": "srpc.Stream", "buf": "bytes.Buffer", "readMsg": "srpc.RawMessage", "writeMsg": "srpc.RawMessage"}
+		[{ name: "Stream", key: "Stream", type: "srpc.Stream", anonymous: true, index: [0], offset: 0, exported: true }, { name: "buf", key: "buf", type: "bytes.Buffer", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }, { name: "readMsg", key: "readMsg", type: "srpc.RawMessage", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [2], offset: 56, exported: false }, { name: "writeMsg", key: "writeMsg", type: "srpc.RawMessage", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [3], offset: 88, exported: false }]
 	)
 }
 

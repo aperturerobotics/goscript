@@ -146,7 +146,7 @@ export class VMux {
 		() => new VMux(),
 		[{ name: "HasService", args: [], returns: [] }, { name: "HasServiceMethod", args: [], returns: [] }, { name: "InvokeMethod", args: [], returns: [] }, { name: "Register", args: [], returns: [] }],
 		VMux,
-		{"mx": "srpc.Mux", "le": { kind: $.TypeKind.Pointer, elemType: "logrus.Entry" }, "veryVerbose": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "mx", key: "mx", type: "srpc.Mux", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "le", key: "le", type: { kind: $.TypeKind.Pointer, elemType: "logrus.Entry" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }, { name: "veryVerbose", key: "veryVerbose", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [2], offset: 24, exported: false }]
 	)
 }
 

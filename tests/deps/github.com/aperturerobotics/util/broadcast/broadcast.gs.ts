@@ -165,7 +165,7 @@ export class Broadcast {
 		() => new Broadcast(),
 		[{ name: "HoldLock", args: [], returns: [] }, { name: "HoldLockMaybeAsync", args: [], returns: [] }, { name: "Lock", args: [], returns: [] }, { name: "TryHoldLock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "Wait", args: [], returns: [] }],
 		Broadcast,
-		{"mtx": "sync.Mutex", "ch": { kind: $.TypeKind.Pointer, elemType: "broadcast.broadcastWaitCh" }}
+		[{ name: "mtx", key: "mtx", type: "sync.Mutex", pkgPath: "github.com/aperturerobotics/util/broadcast", index: [0], offset: 0, exported: false }, { name: "ch", key: "ch", type: { kind: $.TypeKind.Pointer, elemType: "broadcast.broadcastWaitCh" }, pkgPath: "github.com/aperturerobotics/util/broadcast", index: [1], offset: 8, exported: false }]
 	)
 }
 
@@ -217,7 +217,7 @@ export class broadcastWaitCh {
 		() => new broadcastWaitCh(),
 		[{ name: "close", args: [], returns: [] }],
 		broadcastWaitCh,
-		{"once": "sync.Once", "ch": { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: {} } }}
+		[{ name: "once", key: "once", type: "sync.Once", pkgPath: "github.com/aperturerobotics/util/broadcast", index: [0], offset: 0, exported: false }, { name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/aperturerobotics/util/broadcast", index: [1], offset: 16, exported: false }]
 	)
 }
 

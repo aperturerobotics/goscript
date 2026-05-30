@@ -194,7 +194,7 @@ export class UnixAddr {
 		() => new UnixAddr(),
 		[{ name: "Network", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "family", args: [], returns: [] }, { name: "isWildcard", args: [], returns: [] }, { name: "opAddr", args: [], returns: [] }, { name: "sockaddr", args: [], returns: [] }, { name: "toLocal", args: [], returns: [] }],
 		UnixAddr,
-		{"Name": { kind: $.TypeKind.Basic, name: "string" }, "Net": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Net", key: "Net", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 16, exported: true }]
 	)
 }
 
@@ -503,7 +503,7 @@ export class UnixConn {
 		() => new UnixConn(),
 		[{ name: "CloseRead", args: [], returns: [] }, { name: "CloseWrite", args: [], returns: [] }, { name: "ReadFrom", args: [], returns: [] }, { name: "ReadFromUnix", args: [], returns: [] }, { name: "ReadMsgUnix", args: [], returns: [] }, { name: "SyscallConn", args: [], returns: [] }, { name: "WriteMsgUnix", args: [], returns: [] }, { name: "WriteTo", args: [], returns: [] }, { name: "WriteToUnix", args: [], returns: [] }, { name: "readFrom", args: [], returns: [] }, { name: "readMsg", args: [], returns: [] }, { name: "writeMsg", args: [], returns: [] }, { name: "writeTo", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "File", args: [], returns: [] }, { name: "LocalAddr", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "RemoteAddr", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetReadBuffer", args: [], returns: [] }, { name: "SetReadDeadline", args: [], returns: [] }, { name: "SetWriteBuffer", args: [], returns: [] }, { name: "SetWriteDeadline", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
 		UnixConn,
-		{"conn": "net.conn"}
+		[{ name: "conn", key: "conn", type: "net.conn", pkgPath: "net", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -690,7 +690,7 @@ export class UnixListener {
 		() => new UnixListener(),
 		[{ name: "Accept", args: [], returns: [] }, { name: "AcceptUnix", args: [], returns: [] }, { name: "Addr", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "File", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetUnlinkOnClose", args: [], returns: [] }, { name: "SyscallConn", args: [], returns: [] }, { name: "accept", args: [], returns: [] }, { name: "close", args: [], returns: [] }, { name: "file", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
 		UnixListener,
-		{"fd": { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, "path": { kind: $.TypeKind.Basic, name: "string" }, "unlink": { kind: $.TypeKind.Basic, name: "bool" }, "unlinkOnce": "sync.Once"}
+		[{ name: "fd", key: "fd", type: { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "path", key: "path", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [1], offset: 8, exported: false }, { name: "unlink", key: "unlink", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [2], offset: 24, exported: false }, { name: "unlinkOnce", key: "unlinkOnce", type: "sync.Once", pkgPath: "net", index: [3], offset: 28, exported: false }]
 	)
 }
 

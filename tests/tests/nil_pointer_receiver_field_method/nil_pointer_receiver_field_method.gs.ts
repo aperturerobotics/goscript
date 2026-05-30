@@ -42,7 +42,7 @@ export class child {
 		() => new child(),
 		[{ name: "Clone", args: [], returns: [] }],
 		child,
-		{"value": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/nil_pointer_receiver_field_method", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -77,7 +77,7 @@ export class parent {
 		() => new parent(),
 		[],
 		parent,
-		{"child": { kind: $.TypeKind.Pointer, elemType: "main.child" }}
+		[{ name: "child", key: "child", type: { kind: $.TypeKind.Pointer, elemType: "main.child" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/nil_pointer_receiver_field_method", index: [0], offset: 0, exported: false }]
 	)
 }
 

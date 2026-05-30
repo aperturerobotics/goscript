@@ -39,7 +39,7 @@ export class stream {
 		() => new stream(),
 		[{ name: "Close", args: [], returns: [] }],
 		stream,
-		{"name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_embedded_struct_interface", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -78,7 +78,7 @@ export class stopStream {
 		() => new stopStream(),
 		[{ name: "Close", args: [], returns: [] }],
 		stopStream,
-		{"stream": "main.stream"}
+		[{ name: "stream", key: "stream", type: "main.stream", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_embedded_struct_interface", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -117,7 +117,7 @@ export class pointerStopStream {
 		() => new pointerStopStream(),
 		[{ name: "Close", args: [], returns: [] }],
 		pointerStopStream,
-		{"stream": { kind: $.TypeKind.Pointer, elemType: "main.stream" }}
+		[{ name: "stream", key: "stream", type: { kind: $.TypeKind.Pointer, elemType: "main.stream" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_embedded_struct_interface", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 

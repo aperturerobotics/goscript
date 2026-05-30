@@ -42,7 +42,7 @@ export class loader {
 		() => new loader(),
 		[{ name: "getLoad", args: [], returns: [] }],
 		loader,
-		{"load": ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)}
+		[{ name: "load", key: "load", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/goscript/tests/tests/async_function_field", index: [0], offset: 0, exported: false }]
 	)
 }
 

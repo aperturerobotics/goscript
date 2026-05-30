@@ -95,7 +95,7 @@ export class patchList {
 		() => new patchList(),
 		[{ name: "append", args: [], returns: [] }, { name: "patch", args: [], returns: [] }],
 		patchList,
-		{"head": { kind: $.TypeKind.Basic, name: "uint32" }, "tail": { kind: $.TypeKind.Basic, name: "uint32" }}
+		[{ name: "head", key: "head", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp/syntax", index: [0], offset: 0, exported: false }, { name: "tail", key: "tail", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp/syntax", index: [1], offset: 4, exported: false }]
 	)
 }
 
@@ -150,7 +150,7 @@ export class frag {
 		() => new frag(),
 		[],
 		frag,
-		{"i": { kind: $.TypeKind.Basic, name: "uint32" }, "out": "syntax.patchList", "nullable": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "i", key: "i", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp/syntax", index: [0], offset: 0, exported: false }, { name: "out", key: "out", type: "syntax.patchList", pkgPath: "regexp/syntax", index: [1], offset: 4, exported: false }, { name: "nullable", key: "nullable", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "regexp/syntax", index: [2], offset: 12, exported: false }]
 	)
 }
 
@@ -475,7 +475,7 @@ export class compiler {
 		() => new compiler(),
 		[{ name: "alt", args: [], returns: [] }, { name: "cap", args: [], returns: [] }, { name: "cat", args: [], returns: [] }, { name: "compile", args: [], returns: [] }, { name: "empty", args: [], returns: [] }, { name: "fail", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "inst", args: [], returns: [] }, { name: "loop", args: [], returns: [] }, { name: "nop", args: [], returns: [] }, { name: "plus", args: [], returns: [] }, { name: "quest", args: [], returns: [] }, { name: "rune", args: [], returns: [] }, { name: "star", args: [], returns: [] }],
 		compiler,
-		{"p": { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" }}
+		[{ name: "p", key: "p", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" }, pkgPath: "regexp/syntax", index: [0], offset: 0, exported: false }]
 	)
 }
 

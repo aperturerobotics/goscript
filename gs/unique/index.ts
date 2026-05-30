@@ -26,7 +26,13 @@ export class Handle<T = any> {
     new Handle(),
     [{ name: 'Value', args: [], returns: [] }],
     Handle,
-    { value: { kind: $.TypeKind.Interface, methods: [] } },
+    [
+      {
+        name: 'value',
+        key: 'value',
+        type: { kind: $.TypeKind.Interface, methods: [] },
+      },
+    ],
   )
 }
 

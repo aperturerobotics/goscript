@@ -112,7 +112,7 @@ export class RawMessage {
 		() => new RawMessage(),
 		[{ name: "Clear", args: [], returns: [] }, { name: "GetData", args: [], returns: [] }, { name: "MarshalToSizedBufferVT", args: [], returns: [] }, { name: "MarshalVT", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "SetData", args: [], returns: [] }, { name: "SizeVT", args: [], returns: [] }, { name: "UnmarshalVT", args: [], returns: [] }],
 		RawMessage,
-		{"data": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, "copy": { kind: $.TypeKind.Basic, name: "bool" }}
+		[{ name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "copy", key: "copy", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 24, exported: false }]
 	)
 }
 

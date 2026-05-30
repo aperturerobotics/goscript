@@ -49,7 +49,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[{ name: "GetMyString", args: [], returns: [] }],
 		MyStruct,
-		{"MyInt": { kind: $.TypeKind.Basic, name: "int" }, "MyString": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "MyInt", key: "MyInt", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "MyString", key: "MyString", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 8, exported: true }]
 	)
 }
 
@@ -94,7 +94,7 @@ export class setterStruct {
 		() => new setterStruct(),
 		[{ name: "get", args: [], returns: [] }, { name: "set", args: [], returns: [] }],
 		setterStruct,
-		{"value": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -134,7 +134,7 @@ export class digest {
 		() => new digest(),
 		[{ name: "Write", args: [], returns: [] }],
 		digest,
-		{"writes": { kind: $.TypeKind.Basic, name: "int" }}
+		[{ name: "writes", key: "writes", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
 	)
 }
 

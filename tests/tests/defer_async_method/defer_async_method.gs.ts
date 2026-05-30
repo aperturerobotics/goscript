@@ -44,7 +44,7 @@ export class AsyncResource {
 		() => new AsyncResource(),
 		[{ name: "Release", args: [], returns: [] }],
 		AsyncResource,
-		{"name": { kind: $.TypeKind.Basic, name: "string" }}
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/defer_async_method", index: [0], offset: 0, exported: false }]
 	)
 }
 

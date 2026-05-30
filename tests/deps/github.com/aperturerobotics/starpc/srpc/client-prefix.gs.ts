@@ -100,7 +100,7 @@ export class PrefixClient {
 		() => new PrefixClient(),
 		[{ name: "ExecCall", args: [], returns: [] }, { name: "NewStream", args: [], returns: [] }, { name: "stripCheckServiceIDPrefix", args: [], returns: [] }],
 		PrefixClient,
-		{"client": "srpc.Client", "serviceIDPrefixes": { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }}
+		[{ name: "client", key: "client", type: "srpc.Client", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "serviceIDPrefixes", key: "serviceIDPrefixes", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }]
 	)
 }
 
