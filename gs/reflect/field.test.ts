@@ -4,6 +4,7 @@ import {
   TypeKind,
   arrayToSlice,
   asArray,
+  isOwnedPointerHandle,
   registerStructType,
 } from '../builtin/index.js'
 import { NewAt, TypeOf, ValueOf } from './index.js'
@@ -75,7 +76,9 @@ describe('reflect struct field access', () => {
     )
 
     const nameField = ValueOf(person).FieldByName('FullName')
-    const namePtr = NewAt(nameField.Type(), nameField.UnsafeAddr() as any)
+    const nameAddress = nameField.UnsafeAddr()
+    expect(isOwnedPointerHandle(nameAddress)).toBe(true)
+    const namePtr = NewAt(nameField.Type(), nameAddress as any)
     namePtr.Elem().SetString('Grace')
     expect(person.Name).toBe('Grace')
   })

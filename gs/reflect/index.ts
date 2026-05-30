@@ -30,6 +30,7 @@ export {
   Indirect,
   New,
   NewAt,
+  SliceAt,
   MakeSlice,
   MakeMap,
   MakeMapWithSize,

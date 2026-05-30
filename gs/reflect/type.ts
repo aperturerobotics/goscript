@@ -181,6 +181,10 @@ export const UnsafePointer: Kind = 26
 
 const pointerAddressStride = 0x100000000
 const pointerAddresses = new WeakMap<object, number>()
+const fieldPointerAddresses = new WeakMap<
+  object,
+  globalThis.Map<string, number>
+>()
 let nextPointerAddress = 1
 const canonicalTypes = new globalThis.Map<string, Type>()
 
@@ -190,6 +194,21 @@ function pointerAddress(value: object): number {
     address = nextPointerAddress * pointerAddressStride
     nextPointerAddress++
     pointerAddresses.set(value, address)
+  }
+  return address
+}
+
+function fieldPointerAddress(target: object, key: string): number {
+  let addresses = fieldPointerAddresses.get(target)
+  if (addresses === undefined) {
+    addresses = new globalThis.Map<string, number>()
+    fieldPointerAddresses.set(target, addresses)
+  }
+  let address = addresses.get(key)
+  if (address === undefined) {
+    address = nextPointerAddress * pointerAddressStride
+    nextPointerAddress++
+    addresses.set(key, address)
   }
   return address
 }
@@ -548,6 +567,10 @@ export class Value {
   }
 
   public Len(): number {
+    if (this.Kind() === Slice || this.Kind() === Array) {
+      return $.len(this._value as any)
+    }
+
     // Check for slice objects created by $.arrayToSlice
     if (
       this._value &&
@@ -611,8 +634,9 @@ export class Value {
   }
 
   public Index(i: number): Value {
-    if (globalThis.Array.isArray(this._value)) {
-      return new Value(this._value[i], getTypeOf(this._value[i]))
+    if (this.Kind() === Slice || this.Kind() === Array) {
+      const ref = $.indexRef(this._value as any, i) as $.VarRef<ReflectValue>
+      return new Value(ref.value, this._type.Elem(), ref)
     }
     throw new Error(
       'reflect: call of reflect.Value.Index on ' +
@@ -743,6 +767,9 @@ export class Value {
     if (this._value === null || this._value === undefined) {
       return 0
     }
+    if ($.isOwnedPointerHandle(this._value)) {
+      return $.ownedPointerAddress(this._value)
+    }
     if ($.isVarRef(this._value)) {
       const address = this._value.__goAddress?.()
       if (address !== undefined) {
@@ -767,12 +794,25 @@ export class Value {
     return 0
   }
 
-  public UnsafeAddr(): number | { value: Value } {
+  public UnsafeAddr(): number | $.OwnedPointerHandle<ReflectValue> {
     if (!this.CanAddr()) {
       throw new ValueError({ Kind: this.Kind(), Method: 'UnsafeAddr' })
     }
     if (this._parentStruct && this._fieldName) {
-      return { value: this }
+      const target = this._parentStruct
+      const key = this._fieldName
+      const ref = $.fieldRef(
+        target,
+        key as keyof typeof target,
+      ) as $.VarRef<ReflectValue>
+      return {
+        __goOwnedPointer: true,
+        __goAddress: () => fieldPointerAddress(target, key),
+        __goRef: () => ref,
+      }
+    }
+    if (this._parentVarRef?.__goPointer) {
+      return this._parentVarRef.__goPointer as $.OwnedPointerHandle<ReflectValue>
     }
     return this.Pointer()
   }
@@ -807,6 +847,9 @@ export class Value {
     const ptrType = PointerTo(this.Type())
     if (this._parentStruct && this._fieldName) {
       return new Value($.fieldRef(this._parentStruct, this._fieldName), ptrType)
+    }
+    if (this._parentVarRef) {
+      return new Value(this._parentVarRef, ptrType)
     }
     return new Value($.varRef(this._value), ptrType)
   }
@@ -1236,10 +1279,7 @@ export class Value {
   public Cap(): number {
     const k = this.Kind()
     if (k === Slice || k === Array) {
-      if (globalThis.Array.isArray(this._value)) {
-        return this._value.length
-      }
-      return 0
+      return $.cap(this._value as any)
     }
     if (k === Chan) {
       return 0 // Simplified

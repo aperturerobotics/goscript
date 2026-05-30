@@ -1,3 +1,10 @@
+export interface OwnedPointerHandle<T = unknown> {
+  readonly __goOwnedPointer: true
+  __goAddress: () => number
+  __goRef: () => VarRef<T>
+  __goSlice?: (length: number) => unknown
+}
+
 /**
  * VarRef represents a Go variable which can be referred to by other variables.
  *
@@ -12,6 +19,7 @@ export type VarRef<T> = {
   __goAddress?: () => number
   __goCollection?: unknown
   __goIndex?: number
+  __goPointer?: OwnedPointerHandle<T>
 }
 
 /** Wrap a non-null T in a variable reference. */
@@ -41,6 +49,32 @@ export function fieldRef<T extends object, K extends keyof T>(
 /** Check if a value is a VarRef (pointer) */
 export function isVarRef(v: unknown): v is VarRef<unknown> {
   return v !== null && typeof v === 'object' && (v as any).__isVarRef === true
+}
+
+export function isOwnedPointerHandle(
+  value: unknown,
+): value is OwnedPointerHandle {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    (value as { __goOwnedPointer?: unknown }).__goOwnedPointer === true
+  )
+}
+
+export function ownedPointerFromRef<T>(
+  ref: VarRef<T>,
+): OwnedPointerHandle<T> | undefined {
+  return ref.__goPointer
+}
+
+export function ownedPointerAddress(pointer: OwnedPointerHandle): number {
+  return pointer.__goAddress()
+}
+
+export function ownedPointerRef<T>(
+  pointer: OwnedPointerHandle<T>,
+): VarRef<T> {
+  return pointer.__goRef()
 }
 
 /** Dereference a variable reference, throws on null → simulates Go panic. */

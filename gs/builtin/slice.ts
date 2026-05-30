@@ -1,4 +1,10 @@
-import { isVarRef, varRef, type VarRef } from './varRef.js'
+import {
+  isOwnedPointerHandle,
+  isVarRef,
+  varRef,
+  type OwnedPointerHandle,
+  type VarRef,
+} from './varRef.js'
 
 export class GoBinaryString extends String {
   readonly bytes: Uint8Array
@@ -1291,7 +1297,7 @@ export function indexRef<T>(
         `runtime error: index out of range [${index}] with length ${collection.length}`,
       )
     }
-    return {
+    const ref: VarRef<T> = {
       get value() {
         return collection[index] as T
       },
@@ -1303,6 +1309,8 @@ export function indexRef<T>(
       __goCollection: collection,
       __goIndex: index,
     }
+    ref.__goPointer = collectionPointer(ref, collection, index)
+    return ref
   }
   if (isComplexSlice(collection)) {
     if (index < 0 || index >= collection.__meta__.length) {
@@ -1311,7 +1319,7 @@ export function indexRef<T>(
       )
     }
     const backingIndex = collection.__meta__.offset + index
-    return {
+    const ref: VarRef<T> = {
       get value() {
         return collection.__meta__.backing[backingIndex]
       },
@@ -1323,6 +1331,8 @@ export function indexRef<T>(
       __goCollection: collection,
       __goIndex: index,
     }
+    ref.__goPointer = collectionPointer(ref, collection, index)
+    return ref
   }
   if (Array.isArray(collection)) {
     if (index < 0 || index >= collection.length) {
@@ -1330,7 +1340,7 @@ export function indexRef<T>(
         `runtime error: index out of range [${index}] with length ${collection.length}`,
       )
     }
-    return {
+    const ref: VarRef<T> = {
       get value() {
         return collection[index]
       },
@@ -1342,8 +1352,38 @@ export function indexRef<T>(
       __goCollection: collection,
       __goIndex: index,
     }
+    ref.__goPointer = collectionPointer(ref, collection, index)
+    return ref
   }
   throw new Error('runtime error: index on unsupported type')
+}
+
+function collectionPointer<T>(
+  ref: VarRef<T>,
+  collection: Slice<T> | T[] | Uint8Array,
+  index: number,
+): OwnedPointerHandle<T> {
+  return {
+    __goOwnedPointer: true,
+    __goAddress: () => indexAddress(collection, index),
+    __goRef: () => ref,
+    __goSlice: (length: number) => {
+      if (length < 0) {
+        throw new Error('runtime error: unsafe slice length out of range')
+      }
+      return goSlice(collection as any, index, index + length, index + length)
+    },
+  }
+}
+
+export function sliceFromOwnedPointer<T>(
+  pointer: OwnedPointerHandle<T>,
+  length: number,
+): Slice<T> | Uint8Array {
+  if (!isOwnedPointerHandle(pointer) || pointer.__goSlice === undefined) {
+    throw new Error('reflect.SliceAt requires a GoScript-owned pointer')
+  }
+  return pointer.__goSlice(length) as Slice<T> | Uint8Array
 }
 
 /**

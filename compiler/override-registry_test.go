@@ -855,6 +855,36 @@ func TestOverrideParityVerifierAllowsRealStructOfUse(t *testing.T) {
 	}
 }
 
+func TestOverrideParityVerifierAllowsRealSliceAtUse(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/sliceatparity\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import (",
+			"  \"reflect\"",
+			"  \"unsafe\"",
+			")",
+			"func main() {",
+			"  buf := []byte{1, 2, 3}",
+			"  _ = reflect.SliceAt(reflect.TypeFor[byte](), unsafe.Pointer(&buf[0]), len(buf))",
+			"}",
+			"",
+		}, "\n"),
+	})
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      filepath.Join(t.TempDir(), "out"),
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	result, err := comp.CompilePackages(context.Background(), ".")
+	if err != nil {
+		t.Fatalf("expected reflect.SliceAt use to compile: %v\n%#v", err, result.Diagnostics)
+	}
+}
+
 func compileParityFixture(
 	t *testing.T,
 	symbols map[string]overrideParityEntry,

@@ -153,8 +153,7 @@
       "status": "real"
     },
     "SliceAt": {
-      "status": "blocked",
-      "reason": "unsafe-pointer-backed slices require host pointer and ABI ownership outside this override"
+      "status": "real"
     },
     "SliceHeader": {
       "status": "real"

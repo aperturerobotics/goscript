@@ -28,6 +28,9 @@ import {
   namedFunction,
   namedValueInterfaceValue,
   newError,
+  ownedPointerAddress,
+  ownedPointerFromRef,
+  ownedPointerRef,
   pointerValue,
   print,
   println,
@@ -36,6 +39,7 @@ import {
   registerStructType,
   resetHostRuntimeForTests,
   selectStatement,
+  sliceFromOwnedPointer,
   sliceToArray,
   sliceHeaderRef,
   stringHeaderRef,
@@ -441,6 +445,27 @@ describe('builtin runtime contract helpers', () => {
     expect(indexAddress(left, 1)).toBe(indexAddress(right, 0))
     expect(indexAddress(left, 1)).toBeGreaterThan(indexAddress(left, 0))
     expect(indexAddress(other, 0)).not.toBe(indexAddress(left, 0))
+  })
+
+  it('exposes owned pointer handles for addressable collection elements', () => {
+    const values = [1, 2, 3, 4]
+    const second = indexRef(values, 1)
+    const pointer = ownedPointerFromRef(second)
+
+    expect(pointer).toBeDefined()
+    expect(ownedPointerAddress(pointer!)).toBe(indexAddress(values, 1))
+    ownedPointerRef(pointer!).value = 8
+    expect(values).toEqual([1, 8, 3, 4])
+
+    const view = sliceFromOwnedPointer(pointer!, 2) as number[]
+    view[1] = 12
+    expect(values).toEqual([1, 8, 12, 4])
+
+    const bytes = new Uint8Array([5, 6, 7])
+    const bytePointer = ownedPointerFromRef(indexRef<number>(bytes, 1))
+    const byteView = sliceFromOwnedPointer(bytePointer!, 2) as Uint8Array
+    byteView[0] = 9
+    expect(Array.from(bytes)).toEqual([5, 9, 7])
   })
 
   it('copies slices into fixed arrays with Go length checks', () => {

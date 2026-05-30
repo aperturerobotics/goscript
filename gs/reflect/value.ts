@@ -13,6 +13,7 @@ import {
   PointerTo,
   Ptr,
   Slice,
+  SliceOf,
   Struct,
   String,
   Type,
@@ -189,6 +190,10 @@ export function NewAt(typ: Type | null, p: Pointer | unknown): Value {
     return new Value()
   }
   const ptrType = PointerTo(typ)
+  const pointer = ownedPointerHandleFromPointerArg(p)
+  if (pointer !== undefined) {
+    return new Value($.ownedPointerRef(pointer) as $.VarRef<ReflectValue>, ptrType)
+  }
   if (
     p &&
     typeof p === 'object' &&
@@ -207,7 +212,39 @@ export function NewAt(typ: Type | null, p: Pointer | unknown): Value {
     }
     return new Value(ref, ptrType)
   }
-  return new Value($.unsupportedPointerRef<ReflectValue>(p), ptrType)
+  throw new Error('reflect.NewAt requires a GoScript-owned pointer')
+}
+
+export function SliceAt(typ: Type | null, p: Pointer | unknown, n: number): Value {
+  if (typ === null) {
+    return new Value()
+  }
+  if (n < 0) {
+    throw new Error('reflect.SliceAt: negative length')
+  }
+  if (p === null && n === 0) {
+    return new Value(null, SliceOf(typ))
+  }
+  const pointer = ownedPointerHandleFromPointerArg(p)
+  if (pointer === undefined) {
+    throw new Error('reflect.SliceAt requires a GoScript-owned pointer')
+  }
+  const slice = $.sliceFromOwnedPointer(pointer, n)
+  return new Value(slice as ReflectValue, SliceOf(typ))
+}
+
+function ownedPointerHandleFromPointerArg(
+  p: unknown,
+): $.OwnedPointerHandle<ReflectValue> | undefined {
+  if ($.isOwnedPointerHandle(p)) {
+    return p as $.OwnedPointerHandle<ReflectValue>
+  }
+  if ($.isVarRef(p)) {
+    return $.ownedPointerFromRef(
+      p as $.VarRef<ReflectValue>,
+    ) as $.OwnedPointerHandle<ReflectValue> | undefined
+  }
+  return undefined
 }
 
 // MakeSlice returns a Value representing a new slice with the specified type, length, and capacity.
