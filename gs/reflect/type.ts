@@ -2245,7 +2245,7 @@ function normalizeReflectCallResults(
     return $.makeSlice<Value>(0)
   }
   if (expected === 1) {
-    return $.arrayToSlice([ValueOf(result as ReflectValue)])
+    return $.arrayToSlice([new Value(result as ReflectValue, fnType.Out(0))])
   }
   if (!globalThis.Array.isArray(result)) {
     throw new Error(
@@ -2257,7 +2257,11 @@ function normalizeReflectCallResults(
       `reflect: Call returned ${result.length} results for function with ${expected} outputs`,
     )
   }
-  return $.arrayToSlice(result.map((value) => ValueOf(value as ReflectValue)))
+  return $.arrayToSlice(
+    result.map(
+      (value, index) => new Value(value as ReflectValue, fnType.Out(index)),
+    ),
+  )
 }
 
 export function MakeFunc(
@@ -2960,6 +2964,9 @@ class StructType implements Type {
   }
 
   public identityKey(seen: Set<Type>): string {
+    if (this._name !== '') {
+      return `struct:${this._name}`
+    }
     const fields = this._fields
       .map((field) =>
         [

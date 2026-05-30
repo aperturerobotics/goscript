@@ -771,6 +771,37 @@ describe('builtin runtime contract helpers', () => {
         results: [{ kind: TypeKind.Basic, name: 'string' }],
       }).ok,
     ).toBe(false)
+
+    const acceptsAlias = functionValue((value: number) => value, {
+      kind: TypeKind.Function,
+      name: 'main.AcceptsAlias',
+      params: [{ kind: TypeKind.Basic, name: 'int', typeName: 'main.A' }],
+      results: [{ kind: TypeKind.Basic, name: 'int' }],
+    })
+    expect(
+      typeAssert<typeof acceptsAlias>(acceptsAlias, {
+        kind: TypeKind.Function,
+        name: 'main.AcceptsAlias',
+        params: [{ kind: TypeKind.Basic, name: 'int', typeName: 'main.A' }],
+        results: [{ kind: TypeKind.Basic, name: 'int' }],
+      }).ok,
+    ).toBe(true)
+    expect(
+      typeAssert<typeof acceptsAlias>(acceptsAlias, {
+        kind: TypeKind.Function,
+        name: 'main.AcceptsAlias',
+        params: [{ kind: TypeKind.Basic, name: 'int', typeName: 'main.B' }],
+        results: [{ kind: TypeKind.Basic, name: 'int' }],
+      }).ok,
+    ).toBe(false)
+    expect(
+      typeAssert<typeof acceptsAlias>(acceptsAlias, {
+        kind: TypeKind.Function,
+        name: 'main.AcceptsAlias',
+        params: [{ kind: TypeKind.Basic, name: 'int' }],
+        results: [{ kind: TypeKind.Basic, name: 'int' }],
+      }).ok,
+    ).toBe(false)
   })
 
   it('exposes channel helpers used by future lowering', async () => {

@@ -168,6 +168,56 @@ describe('TypeFor', () => {
     expect(TypeOf(new RecursiveNode()).Field(0).Type.Elem().NumField()).toBe(1)
   })
 
+  it('keeps mutually recursive registered struct identity canonical', () => {
+    class RecursiveA {
+      public B: RecursiveB | null = null
+    }
+    class RecursiveB {
+      public A: RecursiveA | null = null
+    }
+
+    const aInfo = registerStructType(
+      'main.RecursiveA',
+      new RecursiveA(),
+      [],
+      RecursiveA,
+      [
+        {
+          name: 'B',
+          key: 'B',
+          type: { kind: TypeKind.Pointer, elemType: 'main.RecursiveB' },
+        },
+      ],
+    )
+    const bInfo = registerStructType(
+      'main.RecursiveB',
+      new RecursiveB(),
+      [],
+      RecursiveB,
+      [
+        {
+          name: 'A',
+          key: 'A',
+          type: { kind: TypeKind.Pointer, elemType: 'main.RecursiveA' },
+        },
+      ],
+    )
+    Object.assign(RecursiveA, { __typeInfo: aInfo })
+    Object.assign(RecursiveB, { __typeInfo: bInfo })
+
+    const aType = TypeFor({
+      T: { type: 'main.RecursiveA', zero: () => new RecursiveA() },
+    })
+    const bType = TypeFor({
+      T: { type: 'main.RecursiveB', zero: () => new RecursiveB() },
+    })
+    const bFromA = aType.Field(0).Type.Elem()
+
+    expect(bFromA.NumField()).toBe(1)
+    expect(bFromA).toBe(bType)
+    expect(bType.Field(0).Type.Elem()).toBe(aType)
+  })
+
   it('formats unnamed function signatures from type metadata', () => {
     const fnType = TypeFor({
       T: {

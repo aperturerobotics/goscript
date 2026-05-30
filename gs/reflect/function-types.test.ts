@@ -270,6 +270,17 @@ describe('Function Type Detection', () => {
     expect(sliceResult).toHaveLength(1)
     expect(sliceResult[0].Len()).toBe(2)
 
+    const namedResultFunc = functionValue(() => 7, {
+      kind: TypeKind.Function,
+      params: [],
+      results: [{ kind: TypeKind.Basic, name: 'int', typeName: 'main.MyInt' }],
+    })
+    const namedResult = asArray(
+      await ValueOf(namedResultFunc).Call(arrayToSlice([])),
+    )
+    expect(namedResult[0].Type().String()).toBe('main.MyInt')
+    expect(namedResult[0].Int()).toBe(7)
+
     const badTupleFunc = functionValue(() => [1], {
       kind: TypeKind.Function,
       params: [],

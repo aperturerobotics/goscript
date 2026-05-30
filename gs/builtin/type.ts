@@ -432,6 +432,7 @@ function areTypeInfosIdenticalWithSeen(
   if (t1Norm === t2Norm) return true
   if (t1Norm.kind !== t2Norm.kind) return false
 
+  if ((t1Norm.typeName ?? '') !== (t2Norm.typeName ?? '')) return false
   if (t1Norm.name !== t2Norm.name) return false
 
   if (
