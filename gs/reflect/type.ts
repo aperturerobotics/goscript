@@ -186,6 +186,7 @@ const fieldPointerAddresses = new WeakMap<
 >()
 let nextPointerAddress = 1
 const canonicalTypes = new globalThis.Map<string, Type>()
+const constructingRegisteredTypes = new globalThis.Map<string, Type>()
 
 function pointerAddress(value: object): number {
   let address = pointerAddresses.get(value)
@@ -2954,6 +2955,10 @@ class StructType implements Type {
     }))
   }
 
+  public replaceDescriptors(fields: StructFieldDescriptor[]): void {
+    this._fields = fields
+  }
+
   public identityKey(seen: Set<Type>): string {
     const fields = this._fields
       .map((field) =>
@@ -3897,8 +3902,24 @@ function typeFromTypeInfoWithSeen(
   }
   const recursiveName = recursiveTypeInfoName(info)
   if (recursiveName !== '') {
+    const constructing = constructingRegisteredTypes.get(recursiveName)
+    if (constructing) {
+      return constructing
+    }
     if (seen.has(recursiveName)) {
       return internType(shallowTypeFromRegisteredInfo(recursiveName, info))
+    }
+    if (info.kind === $.TypeKind.Struct) {
+      const typ = new StructType(recursiveName, [])
+      constructingRegisteredTypes.set(recursiveName, typ)
+      seen.add(recursiveName)
+      try {
+        typ.replaceDescriptors(structFieldsFromTypeInfo(info, seen))
+        return internType(typ)
+      } finally {
+        seen.delete(recursiveName)
+        constructingRegisteredTypes.delete(recursiveName)
+      }
     }
     seen.add(recursiveName)
     const typ = typeFromStructuredTypeInfoWithSeen(info, seen)

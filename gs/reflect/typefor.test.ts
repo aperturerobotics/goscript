@@ -158,9 +158,14 @@ describe('TypeFor', () => {
     expect(nodeType.Kind()).toBe(Struct)
     expect(nodeType.Field(0).Name).toBe('Next')
     expect(nodeType.Field(0).Type.String()).toBe('*main.RecursiveNode')
+    expect(nodeType.Field(0).Type.Elem().NumField()).toBe(1)
+    expect(nodeType.Field(0).Type.Elem().Field(0).Type.String()).toBe(
+      '*main.RecursiveNode',
+    )
     expect(TypeOf(new RecursiveNode()).Field(0).Type.String()).toBe(
       '*main.RecursiveNode',
     )
+    expect(TypeOf(new RecursiveNode()).Field(0).Type.Elem().NumField()).toBe(1)
   })
 
   it('formats unnamed function signatures from type metadata', () => {
