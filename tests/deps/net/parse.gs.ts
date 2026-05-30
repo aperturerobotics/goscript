@@ -141,7 +141,7 @@ export class file {
 	static __typeInfo = $.registerStructType(
 		"net.file",
 		() => new file(),
-		[{ name: "close", args: [], returns: [] }, { name: "getLineFromData", args: [], returns: [] }, { name: "readLine", args: [], returns: [] }, { name: "stat", args: [], returns: [] }],
+		[{ name: "close", args: [], returns: [] }, { name: "getLineFromData", args: [], returns: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "ok", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "readLine", args: [], returns: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "ok", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "stat", args: [], returns: [{ name: "mtime", type: "time.Time" }, { name: "size", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "err", type: "error" }] }],
 		file,
 		[{ name: "file", key: "file", type: { kind: $.TypeKind.Pointer, elemType: "os.File" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "net", index: [1], offset: 8, exported: false }, { name: "atEOF", key: "atEOF", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [2], offset: 32, exported: false }]
 	)

@@ -59,7 +59,7 @@ export class defaultPool {
 	static __typeInfo = $.registerStructType(
 		"logrus.defaultPool",
 		() => new defaultPool(),
-		[{ name: "Get", args: [], returns: [] }, { name: "Put", args: [], returns: [] }],
+		[{ name: "Get", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "bytes.Buffer" } }] }, { name: "Put", args: [{ name: "buf", type: { kind: $.TypeKind.Pointer, elemType: "bytes.Buffer" } }], returns: [] }],
 		defaultPool,
 		[{ name: "pool", key: "pool", type: { kind: $.TypeKind.Pointer, elemType: "sync.Pool" }, pkgPath: "github.com/sirupsen/logrus", index: [0], offset: 0, exported: false }]
 	)

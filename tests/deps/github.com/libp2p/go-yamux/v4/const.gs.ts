@@ -73,7 +73,7 @@ export class Error {
 	static __typeInfo = $.registerStructType(
 		"yamux.Error",
 		() => new Error(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		Error,
 		[{ name: "msg", key: "msg", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [0], offset: 0, exported: false }, { name: "timeout", key: "timeout", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [1], offset: 16, exported: false }, { name: "temporary", key: "temporary", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [2], offset: 17, exported: false }]
 	)

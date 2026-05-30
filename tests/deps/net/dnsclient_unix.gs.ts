@@ -246,7 +246,7 @@ export class resolverConfig {
 	static __typeInfo = $.registerStructType(
 		"net.resolverConfig",
 		() => new resolverConfig(),
-		[{ name: "init", args: [], returns: [] }, { name: "releaseSema", args: [], returns: [] }, { name: "tryAcquireSema", args: [], returns: [] }, { name: "tryUpdate", args: [], returns: [] }],
+		[{ name: "init", args: [], returns: [] }, { name: "releaseSema", args: [], returns: [] }, { name: "tryAcquireSema", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "tryUpdate", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }],
 		resolverConfig,
 		[{ name: "initOnce", key: "initOnce", type: "sync.Once", pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "net", index: [1], offset: 16, exported: false }, { name: "lastChecked", key: "lastChecked", type: "time.Time", pkgPath: "net", index: [2], offset: 24, exported: false }, { name: "dnsConfig", key: "dnsConfig", type: "atomic.Pointer", pkgPath: "net", index: [3], offset: 48, exported: false }]
 	)

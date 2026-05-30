@@ -40,7 +40,7 @@ export class msg {
 	static __typeInfo = $.registerStructType(
 		"main.msg",
 		() => new msg(),
-		[{ name: "EqualVT", args: [], returns: [] }],
+		[{ name: "EqualVT", args: [{ name: "other", type: { kind: $.TypeKind.Pointer, elemType: "main.msg" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		msg,
 		[{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_protobuf_equalvt", index: [0], offset: 0, exported: false }]
 	)

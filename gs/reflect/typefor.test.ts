@@ -94,6 +94,40 @@ describe('TypeFor', () => {
     expect(ifaceType.String()).toBe('interface { SomeMethod() }')
   })
 
+  it('handles recursive interface method metadata', () => {
+    const recursiveMethod = {
+      name: 'Visit',
+      args: [{ name: 'next', type: 'main.RecursiveInterface' }],
+      returns: [{ name: '_r0', type: 'main.RecursiveInterface' }],
+    }
+    registerInterfaceType('main.RecursiveInterface', null, [recursiveMethod])
+
+    class RecursiveImpl {
+      public Visit(next: unknown): unknown {
+        return next
+      }
+    }
+
+    const typeInfo = registerStructType(
+      'main.RecursiveImpl',
+      new RecursiveImpl(),
+      [recursiveMethod],
+      RecursiveImpl,
+      [],
+    )
+    ;(RecursiveImpl as any).__typeInfo = typeInfo
+
+    const ifaceType = TypeFor({
+      T: { type: 'main.RecursiveInterface', zero: () => null },
+    })
+
+    expect(ifaceType.String()).toBe(
+      'interface { Visit(main.RecursiveInterface) main.RecursiveInterface }',
+    )
+    expect(ifaceType.AssignableTo(ifaceType)).toBe(true)
+    expect(TypeOf(new RecursiveImpl()).AssignableTo(ifaceType)).toBe(true)
+  })
+
   it('formats unnamed function signatures from type metadata', () => {
     const fnType = TypeFor({
       T: {

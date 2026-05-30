@@ -56,7 +56,7 @@ export class B {
 	static __typeInfo = $.registerStructType(
 		"main.B",
 		() => new B(),
-		[{ name: "MethodB", args: [], returns: [] }],
+		[{ name: "MethodB", args: [{ name: "valB", type: { kind: $.TypeKind.Pointer, elemType: "main.B" } }], returns: [] }],
 		B,
 		[]
 	)

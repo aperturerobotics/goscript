@@ -78,7 +78,7 @@ export class xof {
 	static __typeInfo = $.registerStructType(
 		"main.xof",
 		() => new xof(),
-		[{ name: "BlockSize", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Reset", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
+		[{ name: "BlockSize", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "Reset", args: [], returns: [] }, { name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		xof,
 		[]
 	)

@@ -42,7 +42,7 @@ export class errNetClosing {
 	static __typeInfo = $.registerStructType(
 		"poll.errNetClosing",
 		() => new errNetClosing(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		errNetClosing,
 		[]
 	)
@@ -82,7 +82,7 @@ export class DeadlineExceededError {
 	static __typeInfo = $.registerStructType(
 		"poll.DeadlineExceededError",
 		() => new DeadlineExceededError(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		DeadlineExceededError,
 		[]
 	)

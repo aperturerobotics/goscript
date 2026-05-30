@@ -76,7 +76,7 @@ export class packetWriterWithClose {
 	static __typeInfo = $.registerStructType(
 		"srpc.packetWriterWithClose",
 		() => new packetWriterWithClose(),
-		[{ name: "Close", args: [], returns: [] }, { name: "WritePacket", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "WritePacket", args: [{ name: "p", type: { kind: $.TypeKind.Pointer, elemType: "srpc.Packet" } }], returns: [{ name: "_r0", type: "error" }] }],
 		packetWriterWithClose,
 		[{ name: "PacketWriter", key: "PacketWriter", type: "srpc.PacketWriter", anonymous: true, index: [0], offset: 0, exported: true }, { name: "closeFn", key: "closeFn", type: ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }]
 	)

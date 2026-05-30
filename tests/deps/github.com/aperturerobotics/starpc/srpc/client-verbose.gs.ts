@@ -114,7 +114,7 @@ export class VClient {
 	static __typeInfo = $.registerStructType(
 		"srpc.VClient",
 		() => new VClient(),
-		[{ name: "ExecCall", args: [], returns: [] }, { name: "NewStream", args: [], returns: [] }],
+		[{ name: "ExecCall", args: [{ name: "ctx", type: "context.Context" }, { name: "service", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "method", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "in", type: "protobuf_go_lite.Message" }, { name: "out", type: "protobuf_go_lite.Message" }], returns: [{ name: "err", type: "error" }] }, { name: "NewStream", args: [{ name: "ctx", type: "context.Context" }, { name: "service", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "method", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "firstMsg", type: "protobuf_go_lite.Message" }], returns: [{ name: "stream", type: "srpc.Stream" }, { name: "err", type: "error" }] }],
 		VClient,
 		[{ name: "le", key: "le", type: { kind: $.TypeKind.Pointer, elemType: "logrus.Entry" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "client", key: "client", type: "srpc.Client", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 8, exported: false }, { name: "execID", key: "execID", type: "atomic.Int32", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [2], offset: 24, exported: false }]
 	)

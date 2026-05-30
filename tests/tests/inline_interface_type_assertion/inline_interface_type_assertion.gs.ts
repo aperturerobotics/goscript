@@ -37,7 +37,7 @@ export class Greeter {
 	static __typeInfo = $.registerStructType(
 		"main.Greeter",
 		() => new Greeter(),
-		[{ name: "Greet", args: [], returns: [] }],
+		[{ name: "Greet", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		Greeter,
 		[]
 	)
@@ -67,7 +67,7 @@ export class MyStringer {
 	static __typeInfo = $.registerStructType(
 		"main.MyStringer",
 		() => new MyStringer(),
-		[{ name: "String", args: [], returns: [] }],
+		[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		MyStringer,
 		[]
 	)

@@ -50,7 +50,7 @@ export class Dog {
 	static __typeInfo = $.registerStructType(
 		"main.Dog",
 		() => new Dog(),
-		[{ name: "Name", args: [], returns: [] }],
+		[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		Dog,
 		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/issue_119_interface_nil_value", index: [0], offset: 0, exported: false }]
 	)
@@ -93,7 +93,7 @@ export class Cat {
 	static __typeInfo = $.registerStructType(
 		"main.Cat",
 		() => new Cat(),
-		[{ name: "Name", args: [], returns: [] }],
+		[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		Cat,
 		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/issue_119_interface_nil_value", index: [0], offset: 0, exported: false }]
 	)

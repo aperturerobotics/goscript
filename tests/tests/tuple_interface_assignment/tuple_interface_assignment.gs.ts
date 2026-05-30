@@ -26,7 +26,7 @@ export class concrete {
 	static __typeInfo = $.registerStructType(
 		"main.concrete",
 		() => new concrete(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		concrete,
 		[]
 	)

@@ -43,7 +43,7 @@ export class HTTPServer {
 	static __typeInfo = $.registerStructType(
 		"srpc.HTTPServer",
 		() => new HTTPServer(),
-		[{ name: "ServeHTTP", args: [], returns: [] }],
+		[{ name: "ServeHTTP", args: [{ name: "w", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "r", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }],
 		HTTPServer,
 		[]
 	)

@@ -144,7 +144,7 @@ export class VMux {
 	static __typeInfo = $.registerStructType(
 		"srpc.VMux",
 		() => new VMux(),
-		[{ name: "HasService", args: [], returns: [] }, { name: "HasServiceMethod", args: [], returns: [] }, { name: "InvokeMethod", args: [], returns: [] }, { name: "Register", args: [], returns: [] }],
+		[{ name: "HasService", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "has", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "HasServiceMethod", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "methodID", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "has", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "InvokeMethod", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "methodID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "strm", type: "srpc.Stream" }], returns: [{ name: "done", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "err", type: "error" }] }, { name: "Register", args: [{ name: "handler", type: "srpc.Handler" }], returns: [{ name: "err", type: "error" }] }],
 		VMux,
 		[{ name: "mx", key: "mx", type: "srpc.Mux", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "le", key: "le", type: { kind: $.TypeKind.Pointer, elemType: "logrus.Entry" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }, { name: "veryVerbose", key: "veryVerbose", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [2], offset: 24, exported: false }]
 	)

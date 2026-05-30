@@ -67,7 +67,7 @@ export class truncateWriter {
 	static __typeInfo = $.registerStructType(
 		"iotest.truncateWriter",
 		() => new truncateWriter(),
-		[{ name: "Write", args: [], returns: [] }],
+		[{ name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }],
 		truncateWriter,
 		[{ name: "w", key: "w", type: "io.Writer", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }]
 	)

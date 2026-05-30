@@ -42,7 +42,7 @@ export class MyStruct {
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
 		() => new MyStruct(),
-		[{ name: "DoesNotUseReceiver", args: [], returns: [] }, { name: "UsesReceiver", args: [], returns: [] }],
+		[{ name: "DoesNotUseReceiver", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "UsesReceiver", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		MyStruct,
 		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
 	)

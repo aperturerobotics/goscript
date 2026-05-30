@@ -306,7 +306,7 @@ export class conn {
 	static __typeInfo = $.registerStructType(
 		"net.conn",
 		() => new conn(),
-		[{ name: "Close", args: [], returns: [] }, { name: "File", args: [], returns: [] }, { name: "LocalAddr", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "RemoteAddr", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetReadBuffer", args: [], returns: [] }, { name: "SetReadDeadline", args: [], returns: [] }, { name: "SetWriteBuffer", args: [], returns: [] }, { name: "SetWriteDeadline", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "File", args: [], returns: [{ name: "f", type: { kind: $.TypeKind.Pointer, elemType: "os.File" } }, { name: "err", type: "error" }] }, { name: "LocalAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "Read", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "RemoteAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "SetDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadBuffer", args: [{ name: "bytes", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteBuffer", args: [{ name: "bytes", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "Write", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "ok", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		conn,
 		[{ name: "fd", key: "fd", type: { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, pkgPath: "net", index: [0], offset: 0, exported: false }]
 	)
@@ -339,7 +339,7 @@ export class canceledError {
 	static __typeInfo = $.registerStructType(
 		"net.canceledError",
 		() => new canceledError(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Is", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Is", args: [{ name: "err", type: "error" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		canceledError,
 		[]
 	)
@@ -494,7 +494,7 @@ export class OpError {
 	static __typeInfo = $.registerStructType(
 		"net.OpError",
 		() => new OpError(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }, { name: "Unwrap", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unwrap", args: [], returns: [{ name: "_r0", type: "error" }] }],
 		OpError,
 		[{ name: "Op", key: "Op", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Net", key: "Net", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 16, exported: true }, { name: "Source", key: "Source", type: "net.Addr", index: [2], offset: 32, exported: true }, { name: "Addr", key: "Addr", type: "net.Addr", index: [3], offset: 48, exported: true }, { name: "Err", key: "Err", type: "error", index: [4], offset: 64, exported: true }]
 	)
@@ -557,7 +557,7 @@ export class ParseError {
 	static __typeInfo = $.registerStructType(
 		"net.ParseError",
 		() => new ParseError(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		ParseError,
 		[{ name: "Type", key: "Type", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Text", key: "Text", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 16, exported: true }]
 	)
@@ -624,7 +624,7 @@ export class AddrError {
 	static __typeInfo = $.registerStructType(
 		"net.AddrError",
 		() => new AddrError(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		AddrError,
 		[{ name: "Err", key: "Err", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Addr", key: "Addr", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 16, exported: true }]
 	)
@@ -669,7 +669,7 @@ export class timeoutError {
 	static __typeInfo = $.registerStructType(
 		"net.timeoutError",
 		() => new timeoutError(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Is", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Is", args: [{ name: "err", type: "error" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		timeoutError,
 		[]
 	)
@@ -724,7 +724,7 @@ export class DNSConfigError {
 	static __typeInfo = $.registerStructType(
 		"net.DNSConfigError",
 		() => new DNSConfigError(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }, { name: "Unwrap", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unwrap", args: [], returns: [{ name: "_r0", type: "error" }] }],
 		DNSConfigError,
 		[{ name: "Err", key: "Err", type: "error", index: [0], offset: 0, exported: true }]
 	)
@@ -764,7 +764,7 @@ export class notFoundError {
 	static __typeInfo = $.registerStructType(
 		"net.notFoundError",
 		() => new notFoundError(),
-		[{ name: "Error", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		notFoundError,
 		[{ name: "s", key: "s", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [0], offset: 0, exported: false }]
 	)
@@ -814,7 +814,7 @@ export class temporaryError {
 	static __typeInfo = $.registerStructType(
 		"net.temporaryError",
 		() => new temporaryError(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		temporaryError,
 		[{ name: "s", key: "s", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [0], offset: 0, exported: false }]
 	)
@@ -940,7 +940,7 @@ export class DNSError {
 	static __typeInfo = $.registerStructType(
 		"net.DNSError",
 		() => new DNSError(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Temporary", args: [], returns: [] }, { name: "Timeout", args: [], returns: [] }, { name: "Unwrap", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unwrap", args: [], returns: [{ name: "_r0", type: "error" }] }],
 		DNSError,
 		[{ name: "UnwrapErr", key: "UnwrapErr", type: "error", index: [0], offset: 0, exported: true }, { name: "Err", key: "Err", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 16, exported: true }, { name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [2], offset: 32, exported: true }, { name: "Server", key: "Server", type: { kind: $.TypeKind.Basic, name: "string" }, index: [3], offset: 48, exported: true }, { name: "IsTimeout", key: "IsTimeout", type: { kind: $.TypeKind.Basic, name: "bool" }, index: [4], offset: 64, exported: true }, { name: "IsTemporary", key: "IsTemporary", type: { kind: $.TypeKind.Basic, name: "bool" }, index: [5], offset: 65, exported: true }, { name: "IsNotFound", key: "IsNotFound", type: { kind: $.TypeKind.Basic, name: "bool" }, index: [6], offset: 66, exported: true }]
 	)
@@ -970,7 +970,7 @@ export class noReadFrom {
 	static __typeInfo = $.registerStructType(
 		"net.noReadFrom",
 		() => new noReadFrom(),
-		[{ name: "ReadFrom", args: [], returns: [] }],
+		[{ name: "ReadFrom", args: [{ name: "_p0", type: "io.Reader" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }],
 		noReadFrom,
 		[]
 	)
@@ -1115,7 +1115,7 @@ export class tcpConnWithoutReadFrom {
 	static __typeInfo = $.registerStructType(
 		"net.tcpConnWithoutReadFrom",
 		() => new tcpConnWithoutReadFrom(),
-		[{ name: "ReadFrom", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "CloseRead", args: [], returns: [] }, { name: "CloseWrite", args: [], returns: [] }, { name: "File", args: [], returns: [] }, { name: "LocalAddr", args: [], returns: [] }, { name: "MultipathTCP", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "RemoteAddr", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetKeepAlive", args: [], returns: [] }, { name: "SetKeepAliveConfig", args: [], returns: [] }, { name: "SetKeepAlivePeriod", args: [], returns: [] }, { name: "SetLinger", args: [], returns: [] }, { name: "SetNoDelay", args: [], returns: [] }, { name: "SetReadBuffer", args: [], returns: [] }, { name: "SetReadDeadline", args: [], returns: [] }, { name: "SetWriteBuffer", args: [], returns: [] }, { name: "SetWriteDeadline", args: [], returns: [] }, { name: "SyscallConn", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "WriteTo", args: [], returns: [] }, { name: "ok", args: [], returns: [] }, { name: "readFrom", args: [], returns: [] }, { name: "writeTo", args: [], returns: [] }],
+		[{ name: "ReadFrom", args: [{ name: "_p0", type: "io.Reader" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }, { name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseRead", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseWrite", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "File", args: [], returns: [{ name: "f", type: { kind: $.TypeKind.Pointer, elemType: "os.File" } }, { name: "err", type: "error" }] }, { name: "LocalAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "MultipathTCP", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "_r1", type: "error" }] }, { name: "Read", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "RemoteAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "SetDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetKeepAlive", args: [{ name: "keepalive", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetKeepAliveConfig", args: [{ name: "config", type: "net.KeepAliveConfig" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetKeepAlivePeriod", args: [{ name: "d", type: { kind: $.TypeKind.Basic, name: "int64", typeName: "time.Duration" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetLinger", args: [{ name: "sec", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetNoDelay", args: [{ name: "noDelay", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadBuffer", args: [{ name: "bytes", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteBuffer", args: [{ name: "bytes", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SyscallConn", args: [], returns: [{ name: "_r0", type: "syscall.RawConn" }, { name: "_r1", type: "error" }] }, { name: "Write", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "WriteTo", args: [{ name: "w", type: "io.Writer" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }, { name: "ok", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "readFrom", args: [{ name: "r", type: "io.Reader" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }, { name: "writeTo", args: [{ name: "w", type: "io.Writer" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }],
 		tcpConnWithoutReadFrom,
 		[{ name: "noReadFrom", key: "noReadFrom", type: "net.noReadFrom", pkgPath: "net", anonymous: true, index: [0], offset: 0, exported: false }, { name: "TCPConn", key: "TCPConn", type: { kind: $.TypeKind.Pointer, elemType: "net.TCPConn" }, anonymous: true, index: [1], offset: 0, exported: true }]
 	)
@@ -1145,7 +1145,7 @@ export class noWriteTo {
 	static __typeInfo = $.registerStructType(
 		"net.noWriteTo",
 		() => new noWriteTo(),
-		[{ name: "WriteTo", args: [], returns: [] }],
+		[{ name: "WriteTo", args: [{ name: "_p0", type: "io.Writer" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }],
 		noWriteTo,
 		[]
 	)
@@ -1290,7 +1290,7 @@ export class tcpConnWithoutWriteTo {
 	static __typeInfo = $.registerStructType(
 		"net.tcpConnWithoutWriteTo",
 		() => new tcpConnWithoutWriteTo(),
-		[{ name: "WriteTo", args: [], returns: [] }, { name: "Close", args: [], returns: [] }, { name: "CloseRead", args: [], returns: [] }, { name: "CloseWrite", args: [], returns: [] }, { name: "File", args: [], returns: [] }, { name: "LocalAddr", args: [], returns: [] }, { name: "MultipathTCP", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "ReadFrom", args: [], returns: [] }, { name: "RemoteAddr", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetKeepAlive", args: [], returns: [] }, { name: "SetKeepAliveConfig", args: [], returns: [] }, { name: "SetKeepAlivePeriod", args: [], returns: [] }, { name: "SetLinger", args: [], returns: [] }, { name: "SetNoDelay", args: [], returns: [] }, { name: "SetReadBuffer", args: [], returns: [] }, { name: "SetReadDeadline", args: [], returns: [] }, { name: "SetWriteBuffer", args: [], returns: [] }, { name: "SetWriteDeadline", args: [], returns: [] }, { name: "SyscallConn", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "ok", args: [], returns: [] }, { name: "readFrom", args: [], returns: [] }, { name: "writeTo", args: [], returns: [] }],
+		[{ name: "WriteTo", args: [{ name: "_p0", type: "io.Writer" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }, { name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseRead", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseWrite", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "File", args: [], returns: [{ name: "f", type: { kind: $.TypeKind.Pointer, elemType: "os.File" } }, { name: "err", type: "error" }] }, { name: "LocalAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "MultipathTCP", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "_r1", type: "error" }] }, { name: "Read", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "ReadFrom", args: [{ name: "r", type: "io.Reader" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }, { name: "RemoteAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "SetDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetKeepAlive", args: [{ name: "keepalive", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetKeepAliveConfig", args: [{ name: "config", type: "net.KeepAliveConfig" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetKeepAlivePeriod", args: [{ name: "d", type: { kind: $.TypeKind.Basic, name: "int64", typeName: "time.Duration" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetLinger", args: [{ name: "sec", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetNoDelay", args: [{ name: "noDelay", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadBuffer", args: [{ name: "bytes", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteBuffer", args: [{ name: "bytes", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SyscallConn", args: [], returns: [{ name: "_r0", type: "syscall.RawConn" }, { name: "_r1", type: "error" }] }, { name: "Write", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "ok", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "readFrom", args: [{ name: "r", type: "io.Reader" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }, { name: "writeTo", args: [{ name: "w", type: "io.Writer" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }],
 		tcpConnWithoutWriteTo,
 		[{ name: "noWriteTo", key: "noWriteTo", type: "net.noWriteTo", pkgPath: "net", anonymous: true, index: [0], offset: 0, exported: false }, { name: "TCPConn", key: "TCPConn", type: { kind: $.TypeKind.Pointer, elemType: "net.TCPConn" }, anonymous: true, index: [1], offset: 0, exported: true }]
 	)

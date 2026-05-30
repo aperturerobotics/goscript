@@ -26,7 +26,7 @@ export class lateType {
 	static __typeInfo = $.registerStructType(
 		"main.lateType",
 		() => new lateType(),
-		[{ name: "Name", args: [], returns: [] }],
+		[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		lateType,
 		[]
 	)

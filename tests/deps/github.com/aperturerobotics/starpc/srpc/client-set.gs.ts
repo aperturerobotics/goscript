@@ -130,7 +130,7 @@ export class ClientSet {
 	static __typeInfo = $.registerStructType(
 		"srpc.ClientSet",
 		() => new ClientSet(),
-		[{ name: "ExecCall", args: [], returns: [] }, { name: "NewStream", args: [], returns: [] }, { name: "execCall", args: [], returns: [] }],
+		[{ name: "ExecCall", args: [{ name: "ctx", type: "context.Context" }, { name: "service", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "method", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "in", type: "protobuf_go_lite.Message" }, { name: "out", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "NewStream", args: [{ name: "ctx", type: "context.Context" }, { name: "service", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "method", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "firstMsg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "srpc.Stream" }, { name: "_r1", type: "error" }] }, { name: "execCall", args: [{ name: "ctx", type: "context.Context" }, { name: "doCall", type: ({ kind: $.TypeKind.Function, params: ["srpc.Client"], results: ["error"] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }],
 		ClientSet,
 		[{ name: "clients", key: "clients", type: { kind: $.TypeKind.Slice, elemType: "srpc.Client" }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }]
 	)

@@ -67,7 +67,7 @@ export class ChannelProcessor {
 	static __typeInfo = $.registerStructType(
 		"main.ChannelProcessor",
 		() => new ChannelProcessor(),
-		[{ name: "GetResult", args: [], returns: [] }, { name: "Process", args: [], returns: [] }],
+		[{ name: "GetResult", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		ChannelProcessor,
 		[{ name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/interface_async_method_call", index: [0], offset: 0, exported: false }]
 	)
@@ -113,7 +113,7 @@ export class SimpleProcessor {
 	static __typeInfo = $.registerStructType(
 		"main.SimpleProcessor",
 		() => new SimpleProcessor(),
-		[{ name: "GetResult", args: [], returns: [] }, { name: "Process", args: [], returns: [] }],
+		[{ name: "GetResult", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		SimpleProcessor,
 		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/interface_async_method_call", index: [0], offset: 0, exported: false }]
 	)
@@ -164,7 +164,7 @@ export class GenericChannelStore {
 	static __typeInfo = $.registerStructType(
 		"main.GenericChannelStore",
 		() => new GenericChannelStore(),
-		[{ name: "Load", args: [], returns: [] }],
+		[{ name: "Load", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }],
 		GenericChannelStore,
 		[{ name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/interface_async_method_call", index: [0], offset: 0, exported: false }, { name: "value", key: "value", type: { kind: $.TypeKind.Interface, methods: [] }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/interface_async_method_call", index: [1], offset: 0, exported: false }]
 	)

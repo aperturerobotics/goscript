@@ -121,7 +121,7 @@ export class rawConn {
 	static __typeInfo = $.registerStructType(
 		"net.rawConn",
 		() => new rawConn(),
-		[{ name: "Control", args: [], returns: [] }, { name: "Network", args: [], returns: [] }, { name: "PollFD", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
+		[{ name: "Control", args: [{ name: "f", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uintptr" }], results: [] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }, { name: "Network", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string", typeName: "poll.String" } }] }, { name: "PollFD", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "poll.FD" } }] }, { name: "Read", args: [{ name: "f", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uintptr" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }, { name: "Write", args: [{ name: "f", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uintptr" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }, { name: "ok", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		rawConn,
 		[{ name: "fd", key: "fd", type: { kind: $.TypeKind.Pointer, elemType: "net.netFD" }, pkgPath: "net", index: [0], offset: 0, exported: false }]
 	)
@@ -182,7 +182,7 @@ export class rawListener {
 	static __typeInfo = $.registerStructType(
 		"net.rawListener",
 		() => new rawListener(),
-		[{ name: "Read", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "Control", args: [], returns: [] }, { name: "Network", args: [], returns: [] }, { name: "PollFD", args: [], returns: [] }, { name: "ok", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "_p0", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uintptr" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }, { name: "Write", args: [{ name: "_p0", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uintptr" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }, { name: "Control", args: [{ name: "f", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uintptr" }], results: [] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }, { name: "Network", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string", typeName: "poll.String" } }] }, { name: "PollFD", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "poll.FD" } }] }, { name: "ok", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		rawListener,
 		[{ name: "rawConn", key: "rawConn", type: "net.rawConn", pkgPath: "net", anonymous: true, index: [0], offset: 0, exported: false }]
 	)

@@ -52,7 +52,7 @@ export class FileTracker {
 	static __typeInfo = $.registerStructType(
 		"main.FileTracker",
 		() => new FileTracker(),
-		[{ name: "AddLine", args: [], returns: [] }],
+		[{ name: "AddLine", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
 		FileTracker,
 		[{ name: "mutex", key: "mutex", type: "sync.Mutex", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_async_call", index: [0], offset: 0, exported: false }, { name: "lines", key: "lines", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_async_call", index: [1], offset: 8, exported: false }]
 	)

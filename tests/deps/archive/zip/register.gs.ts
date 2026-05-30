@@ -100,7 +100,7 @@ export class pooledFlateWriter {
 	static __typeInfo = $.registerStructType(
 		"zip.pooledFlateWriter",
 		() => new pooledFlateWriter(),
-		[{ name: "Close", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }],
 		pooledFlateWriter,
 		[{ name: "mu", key: "mu", type: "sync.Mutex", pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "fw", key: "fw", type: { kind: $.TypeKind.Pointer, elemType: "flate.Writer" }, pkgPath: "archive/zip", index: [1], offset: 8, exported: false }]
 	)
@@ -181,7 +181,7 @@ export class pooledFlateReader {
 	static __typeInfo = $.registerStructType(
 		"zip.pooledFlateReader",
 		() => new pooledFlateReader(),
-		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }],
 		pooledFlateReader,
 		[{ name: "mu", key: "mu", type: "sync.Mutex", pkgPath: "archive/zip", index: [0], offset: 0, exported: false }, { name: "fr", key: "fr", type: "io.ReadCloser", pkgPath: "archive/zip", index: [1], offset: 8, exported: false }]
 	)

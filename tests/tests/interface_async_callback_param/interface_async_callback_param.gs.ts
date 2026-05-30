@@ -32,7 +32,7 @@ export class listScanner {
 	static __typeInfo = $.registerStructType(
 		"main.listScanner",
 		() => new listScanner(),
-		[{ name: "Scan", args: [], returns: [] }],
+		[{ name: "Scan", args: [{ name: "fn", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }],
 		listScanner,
 		[]
 	)

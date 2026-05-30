@@ -122,7 +122,7 @@ export class Server {
 	static __typeInfo = $.registerStructType(
 		"srpc.Server",
 		() => new Server(),
-		[{ name: "AcceptMuxedConn", args: [], returns: [] }, { name: "GetInvoker", args: [], returns: [] }, { name: "HandleStream", args: [], returns: [] }],
+		[{ name: "AcceptMuxedConn", args: [{ name: "ctx", type: "context.Context" }, { name: "mc", type: "srpc.MuxedConn" }], returns: [{ name: "_r0", type: "error" }] }, { name: "GetInvoker", args: [], returns: [{ name: "_r0", type: "srpc.Invoker" }] }, { name: "HandleStream", args: [{ name: "ctx", type: "context.Context" }, { name: "rwc", type: "io.ReadWriteCloser" }], returns: [] }],
 		Server,
 		[{ name: "invoker", key: "invoker", type: "srpc.Invoker", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }]
 	)

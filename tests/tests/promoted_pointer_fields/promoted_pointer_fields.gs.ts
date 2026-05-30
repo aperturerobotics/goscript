@@ -37,7 +37,7 @@ export class counter {
 	static __typeInfo = $.registerStructType(
 		"main.counter",
 		() => new counter(),
-		[{ name: "Load", args: [], returns: [] }],
+		[{ name: "Load", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		counter,
 		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_pointer_fields", index: [0], offset: 0, exported: false }]
 	)

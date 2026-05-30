@@ -26,7 +26,7 @@ export class Parser {
 	static __typeInfo = $.registerStructType(
 		"main.Parser",
 		() => new Parser(),
-		[{ name: "Parse", args: [], returns: [] }],
+		[{ name: "Parse", args: [{ name: "arguments", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		Parser,
 		[]
 	)

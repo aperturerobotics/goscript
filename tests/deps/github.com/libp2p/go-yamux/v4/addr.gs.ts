@@ -81,7 +81,7 @@ export class yamuxAddr {
 	static __typeInfo = $.registerStructType(
 		"yamux.yamuxAddr",
 		() => new yamuxAddr(),
-		[{ name: "Network", args: [], returns: [] }, { name: "String", args: [], returns: [] }],
+		[{ name: "Network", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		yamuxAddr,
 		[{ name: "Addr", key: "Addr", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
 	)

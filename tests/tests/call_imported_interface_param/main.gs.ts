@@ -43,7 +43,7 @@ export class Buffer {
 	static __typeInfo = $.registerStructType(
 		"main.Buffer",
 		() => new Buffer(),
-		[{ name: "Write", args: [], returns: [] }],
+		[{ name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		Buffer,
 		[{ name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/call_imported_interface_param", index: [0], offset: 0, exported: false }]
 	)

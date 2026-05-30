@@ -113,7 +113,7 @@ export class IPNet {
 	static __typeInfo = $.registerStructType(
 		"net.IPNet",
 		() => new IPNet(),
-		[{ name: "Contains", args: [], returns: [] }, { name: "Network", args: [], returns: [] }, { name: "String", args: [], returns: [] }],
+		[{ name: "Contains", args: [{ name: "ip", type: "net.IP" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Network", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		IPNet,
 		[{ name: "IP", key: "IP", type: "net.IP", index: [0], offset: 0, exported: true }, { name: "Mask", key: "Mask", type: "net.IPMask", index: [1], offset: 24, exported: true }]
 	)

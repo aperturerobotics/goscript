@@ -73,7 +73,7 @@ export class MyStruct {
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
 		() => new MyStruct(),
-		[{ name: "MyString1", args: [], returns: [] }, { name: "MyString2", args: [], returns: [] }],
+		[{ name: "MyString1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		MyStruct,
 		[{ name: "Value1", key: "Value1", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Value2", key: "Value2", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 16, exported: true }]
 	)

@@ -50,7 +50,7 @@ export class Worker {
 	static __typeInfo = $.registerStructType(
 		"main.Worker",
 		() => new Worker(),
-		[{ name: "Spawn", args: [], returns: [] }],
+		[{ name: "Spawn", args: [], returns: [{ name: "_r0", type: "error" }] }],
 		Worker,
 		[{ name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/nested_async_method_value", index: [0], offset: 0, exported: false }]
 	)

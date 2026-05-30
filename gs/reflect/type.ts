@@ -2507,9 +2507,101 @@ function methodArgListIdentical(
   }
   return actual.every(
     (arg, index) =>
-      typeIdentityKey(methodArgType(arg)) ===
-      typeIdentityKey(methodArgType(required[index])),
+      methodArgIdentityKey(arg) === methodArgIdentityKey(required[index]),
   )
+}
+
+function methodArgIdentityKey(arg: $.MethodArg): string {
+  return typeInfoIdentityKey(arg.type, new Set())
+}
+
+function methodSignatureIdentityKey(method: $.MethodSignature): string {
+  const args = method.args.map(methodArgIdentityKey).join(',')
+  const returns = method.returns.map(methodArgIdentityKey).join(',')
+  return `${method.name}(${args})(${returns})`
+}
+
+function typeInfoIdentityKey(
+  info: $.TypeInfo | string,
+  seen: Set<string>,
+): string {
+  if (typeof info === 'string') {
+    const registered = builtinGetTypeByName(info)
+    if (!registered) {
+      return `named:${info}`
+    }
+    const registeredName = registered.name ?? info
+    if (registeredName !== '') {
+      return `named:${registeredName}`
+    }
+    if (seen.has(info)) {
+      return `named:${info}`
+    }
+    seen.add(info)
+    const key = typeInfoIdentityKey(registered, seen)
+    seen.delete(info)
+    return key
+  }
+  switch (info.kind) {
+    case $.TypeKind.Basic:
+      if (info.typeName) {
+        return `named:${info.typeName}`
+      }
+      return `basic:${info.name ?? 'unknown'}`
+    case $.TypeKind.Interface:
+      if (info.name) {
+        return `named:${info.name}`
+      }
+      return `interface:${(info.methods ?? [])
+        .map(methodSignatureIdentityKey)
+        .join('|')}`
+    case $.TypeKind.Struct:
+      if (info.name) {
+        return `named:${info.name}`
+      }
+      return `struct:${(info.fields ?? [])
+        .map(
+          (field) =>
+            `${field.name}:${field.pkgPath ?? ''}:${typeInfoIdentityKey(field.type, seen)}`,
+        )
+        .join('|')}`
+    case $.TypeKind.Pointer:
+      return `ptr:${typeInfoIdentityKey(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    case $.TypeKind.Slice:
+      return `slice:${typeInfoIdentityKey(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    case $.TypeKind.Array:
+      return `array:${info.length}:${typeInfoIdentityKey(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    case $.TypeKind.Map:
+      return `map:${typeInfoIdentityKey(
+        info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}:${typeInfoIdentityKey(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    case $.TypeKind.Function:
+      return `func:${info.isVariadic === true}:${(info.params ?? [])
+        .map((param) => typeInfoIdentityKey(param, seen))
+        .join(',')}:${(info.results ?? [])
+        .map((result) => typeInfoIdentityKey(result, seen))
+        .join(',')}`
+    case $.TypeKind.Channel:
+      return `chan:${info.direction ?? 'both'}:${typeInfoIdentityKey(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    default:
+      return 'unknown'
+  }
 }
 
 function typeFieldByName(t: Type, name: string): [StructField, boolean] {
@@ -2626,7 +2718,7 @@ function methodTypeFromSignature(
 }
 
 function methodArgType(arg: $.MethodArg): Type {
-  return typeFromTypeInfo(arg.type)
+  return typeFromTypeInfoWithSeen(arg.type, new Set())
 }
 
 function typeMethods(t: Type): $.MethodSignature[] {
@@ -3787,10 +3879,26 @@ export function TypeFor(typeArgs?: $.GenericTypeArgs): Type {
 }
 
 function typeFromTypeInfo(info: $.TypeInfo | string): Type {
+  return typeFromTypeInfoWithSeen(info, new Set())
+}
+
+function typeFromTypeInfoWithSeen(
+  info: $.TypeInfo | string,
+  seen: Set<string>,
+): Type {
   if (typeof info === 'string') {
     const registered = builtinGetTypeByName(info)
     if (registered) {
-      return internType(typeFromTypeInfo(registered))
+      const registeredName = registered.name ?? info
+      if (seen.has(registeredName)) {
+        return internType(
+          shallowTypeFromRegisteredInfo(registeredName, registered),
+        )
+      }
+      seen.add(registeredName)
+      const typ = typeFromTypeInfoWithSeen(registered, seen)
+      seen.delete(registeredName)
+      return internType(typ)
     }
     return internType(StructType.createTypeFromFieldInfo(info))
   }
@@ -3798,8 +3906,9 @@ function typeFromTypeInfo(info: $.TypeInfo | string): Type {
     case $.TypeKind.Array:
       return internType(
         new ArrayType(
-          typeFromTypeInfo(
+          typeFromTypeInfoWithSeen(
             info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+            seen,
           ),
           info.length,
         ),
@@ -3809,32 +3918,36 @@ function typeFromTypeInfo(info: $.TypeInfo | string): Type {
     case $.TypeKind.Channel:
       return internType(
         new ChannelType(
-          typeFromTypeInfo(
+          typeFromTypeInfoWithSeen(
             info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+            seen,
           ),
           chanDirFromTypeInfo(info.direction),
         ),
       )
     case $.TypeKind.Function:
-      return internType(functionTypeFromInfo(info))
+      return internType(functionTypeFromInfo(info, seen))
     case $.TypeKind.Interface:
-      return internType(interfaceTypeFromInfo(info))
+      return internType(interfaceTypeFromInfo(info, seen))
     case $.TypeKind.Map:
       return internType(
         new MapType(
-          typeFromTypeInfo(
+          typeFromTypeInfoWithSeen(
             info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+            seen,
           ),
-          typeFromTypeInfo(
+          typeFromTypeInfoWithSeen(
             info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+            seen,
           ),
         ),
       )
     case $.TypeKind.Slice:
       return internType(
         new SliceType(
-          typeFromTypeInfo(
+          typeFromTypeInfoWithSeen(
             info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+            seen,
           ),
         ),
       )
@@ -3843,8 +3956,9 @@ function typeFromTypeInfo(info: $.TypeInfo | string): Type {
     case $.TypeKind.Pointer:
       return internType(
         new PointerType(
-          typeFromTypeInfo(
+          typeFromTypeInfoWithSeen(
             info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+            seen,
           ),
         ),
       )
@@ -3853,9 +3967,35 @@ function typeFromTypeInfo(info: $.TypeInfo | string): Type {
   }
 }
 
-function functionTypeFromInfo(info: $.FunctionTypeInfo): Type {
-  const params = (info.params ?? []).map((param) => typeFromTypeInfo(param))
-  const results = (info.results ?? []).map((result) => typeFromTypeInfo(result))
+function shallowTypeFromRegisteredInfo(name: string, info: $.TypeInfo): Type {
+  switch (info.kind) {
+    case $.TypeKind.Interface:
+      return new InterfaceType(name, name, info.methods ?? [])
+    case $.TypeKind.Struct:
+      return new StructType(name, [])
+    case $.TypeKind.Function:
+      return new FunctionType({ name })
+    case $.TypeKind.Basic:
+      return StructType.createTypeFromFieldInfo({
+        kind: $.TypeKind.Basic,
+        name: info.name ?? 'unknown',
+        typeName: info.typeName ?? name,
+      })
+    default:
+      return StructType.createTypeFromFieldInfo(name)
+  }
+}
+
+function functionTypeFromInfo(
+  info: $.FunctionTypeInfo,
+  seen = new Set<string>(),
+): Type {
+  const params = (info.params ?? []).map((param) =>
+    typeFromTypeInfoWithSeen(param, seen),
+  )
+  const results = (info.results ?? []).map((result) =>
+    typeFromTypeInfoWithSeen(result, seen),
+  )
   return new FunctionType({
     name: info.name,
     params,
@@ -4002,21 +4142,36 @@ function channelDirectionFromString(
   return 'both'
 }
 
-function interfaceTypeFromInfo(info: $.InterfaceTypeInfo): Type {
+function interfaceTypeFromInfo(
+  info: $.InterfaceTypeInfo,
+  seen = new Set<string>(),
+): Type {
   const methods = info.methods ?? []
   if (methods.length === 0) {
     return new InterfaceType('interface{}', info.name, methods)
   }
-  return new InterfaceType(interfaceTypeString(methods), info.name, methods)
+  return new InterfaceType(
+    interfaceTypeString(methods, seen),
+    info.name,
+    methods,
+  )
 }
 
-function interfaceTypeString(methods: $.MethodSignature[]): string {
-  return `interface { ${methods.map(interfaceMethodString).join('; ')} }`
+function interfaceTypeString(
+  methods: $.MethodSignature[],
+  seen = new Set<string>(),
+): string {
+  return `interface { ${methods
+    .map((method) => interfaceMethodString(method, seen))
+    .join('; ')} }`
 }
 
-function interfaceMethodString(method: $.MethodSignature): string {
-  const args = method.args.map(methodArgString).join(', ')
-  const returns = method.returns.map(methodArgString)
+function interfaceMethodString(
+  method: $.MethodSignature,
+  seen: Set<string>,
+): string {
+  const args = method.args.map((arg) => methodArgString(arg, seen)).join(', ')
+  const returns = method.returns.map((arg) => methodArgString(arg, seen))
   if (returns.length === 0) {
     return `${method.name}(${args})`
   }
@@ -4026,8 +4181,82 @@ function interfaceMethodString(method: $.MethodSignature): string {
   return `${method.name}(${args}) (${returns.join(', ')})`
 }
 
-function methodArgString(arg: $.MethodArg): string {
-  return methodArgType(arg).String()
+function methodArgString(arg: $.MethodArg, seen: Set<string>): string {
+  return typeInfoString(arg.type, seen)
+}
+
+function typeInfoString(info: $.TypeInfo | string, seen: Set<string>): string {
+  if (typeof info === 'string') {
+    return info
+  }
+  switch (info.kind) {
+    case $.TypeKind.Basic:
+      return info.typeName ?? info.name ?? 'unknown'
+    case $.TypeKind.Interface: {
+      const name = info.name ?? ''
+      if (name !== '' && seen.has(name)) {
+        return name
+      }
+      if (info.methods.length === 0) {
+        return 'interface{}'
+      }
+      if (name !== '') {
+        seen.add(name)
+      }
+      const text = interfaceTypeString(info.methods, seen)
+      if (name !== '') {
+        seen.delete(name)
+      }
+      return text
+    }
+    case $.TypeKind.Struct:
+      return info.name ?? 'struct'
+    case $.TypeKind.Pointer:
+      return `*${typeInfoString(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    case $.TypeKind.Slice:
+      return `[]${typeInfoString(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    case $.TypeKind.Array:
+      return `[${info.length}]${typeInfoString(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    case $.TypeKind.Map:
+      return `map[${typeInfoString(
+        info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}]${typeInfoString(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    case $.TypeKind.Function: {
+      const params = (info.params ?? [])
+        .map((param) => typeInfoString(param, seen))
+        .join(', ')
+      const results = (info.results ?? []).map((result) =>
+        typeInfoString(result, seen),
+      )
+      if (results.length === 0) {
+        return `func(${params})`
+      }
+      if (results.length === 1) {
+        return `func(${params}) ${results[0]}`
+      }
+      return `func(${params}) (${results.join(', ')})`
+    }
+    case $.TypeKind.Channel:
+      return `chan ${typeInfoString(
+        info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+        seen,
+      )}`
+    default:
+      return 'unknown'
+  }
 }
 
 function chanDirFromTypeInfo(direction?: 'send' | 'receive' | 'both'): ChanDir {

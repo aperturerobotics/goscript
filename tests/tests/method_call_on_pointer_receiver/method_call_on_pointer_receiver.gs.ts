@@ -47,7 +47,7 @@ export class MyStruct {
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
 		() => new MyStruct(),
-		[{ name: "GetMyString", args: [], returns: [] }],
+		[{ name: "GetMyString", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		MyStruct,
 		[{ name: "MyInt", key: "MyInt", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "MyString", key: "MyString", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 8, exported: true }]
 	)
@@ -92,7 +92,7 @@ export class setterStruct {
 	static __typeInfo = $.registerStructType(
 		"main.setterStruct",
 		() => new setterStruct(),
-		[{ name: "get", args: [], returns: [] }, { name: "set", args: [], returns: [] }],
+		[{ name: "get", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "set", args: [{ name: "value", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
 		setterStruct,
 		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
 	)
@@ -132,7 +132,7 @@ export class digest {
 	static __typeInfo = $.registerStructType(
 		"main.digest",
 		() => new digest(),
-		[{ name: "Write", args: [], returns: [] }],
+		[{ name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [] }],
 		digest,
 		[{ name: "writes", key: "writes", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
 	)

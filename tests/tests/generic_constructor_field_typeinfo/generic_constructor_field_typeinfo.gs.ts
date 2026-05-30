@@ -63,7 +63,7 @@ export class blockType {
 	static __typeInfo = $.registerStructType(
 		"main.blockType",
 		() => new blockType(),
-		[{ name: "Constructor", args: [], returns: [] }, { name: "GetBlockTypeID", args: [], returns: [] }],
+		[{ name: "Constructor", args: [], returns: [{ name: "_r0", type: "main.Block" }] }, { name: "GetBlockTypeID", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		blockType,
 		[{ name: "typeID", key: "typeID", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/generic_constructor_field_typeinfo", index: [0], offset: 0, exported: false }, { name: "constructor", key: "_constructor", type: ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [{ name: "MarshalBlock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_r1", type: "error" }] }, { name: "UnmarshalBlock", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "error" }] }] }] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/goscript/tests/tests/generic_constructor_field_typeinfo", index: [1], offset: 16, exported: false }]
 	)
@@ -96,7 +96,7 @@ export class sampleBlock {
 	static __typeInfo = $.registerStructType(
 		"main.sampleBlock",
 		() => new sampleBlock(),
-		[{ name: "MarshalBlock", args: [], returns: [] }, { name: "UnmarshalBlock", args: [], returns: [] }],
+		[{ name: "MarshalBlock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_r1", type: "error" }] }, { name: "UnmarshalBlock", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "error" }] }],
 		sampleBlock,
 		[]
 	)

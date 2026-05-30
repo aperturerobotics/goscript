@@ -29,7 +29,7 @@ export class emptyFS {
 	static __typeInfo = $.registerStructType(
 		"main.emptyFS",
 		() => new emptyFS(),
-		[{ name: "Open", args: [], returns: [] }],
+		[{ name: "Open", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "fs.File" }, { name: "_r1", type: "error" }] }],
 		emptyFS,
 		[]
 	)
@@ -66,7 +66,7 @@ export class linkFS {
 	static __typeInfo = $.registerStructType(
 		"main.linkFS",
 		() => new linkFS(),
-		[{ name: "Lstat", args: [], returns: [] }, { name: "Open", args: [], returns: [] }, { name: "ReadLink", args: [], returns: [] }],
+		[{ name: "Lstat", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }, { name: "Open", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "fs.File" }, { name: "_r1", type: "error" }] }, { name: "ReadLink", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "_r1", type: "error" }] }],
 		linkFS,
 		[]
 	)

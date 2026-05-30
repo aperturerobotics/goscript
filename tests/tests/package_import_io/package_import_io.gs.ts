@@ -81,7 +81,7 @@ export class asyncBuffer {
 	static __typeInfo = $.registerStructType(
 		"main.asyncBuffer",
 		() => new asyncBuffer(),
-		[{ name: "Reset", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
+		[{ name: "Reset", args: [{ name: "w", type: "io.Writer" }], returns: [] }, { name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		asyncBuffer,
 		[]
 	)
@@ -126,7 +126,7 @@ export class staticReader {
 	static __typeInfo = $.registerStructType(
 		"main.staticReader",
 		() => new staticReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		staticReader,
 		[{ name: "done", key: "done", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [0], offset: 0, exported: false }]
 	)
@@ -172,7 +172,7 @@ export class asyncReader {
 	static __typeInfo = $.registerStructType(
 		"main.asyncReader",
 		() => new asyncReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		asyncReader,
 		[{ name: "done", key: "done", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [0], offset: 0, exported: false }]
 	)

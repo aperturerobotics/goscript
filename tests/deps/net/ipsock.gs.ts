@@ -210,7 +210,7 @@ export class ipStackCapabilities {
 	static __typeInfo = $.registerStructType(
 		"net.ipStackCapabilities",
 		() => new ipStackCapabilities(),
-		[{ name: "probe", args: [], returns: [] }, { name: "Do", args: [], returns: [] }],
+		[{ name: "probe", args: [], returns: [] }, { name: "Do", args: [{ name: "f", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }], returns: [] }],
 		ipStackCapabilities,
 		[{ name: "Once", key: "Once", type: "sync.Once", anonymous: true, index: [0], offset: 0, exported: true }, { name: "ipv4Enabled", key: "ipv4Enabled", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [1], offset: 12, exported: false }, { name: "ipv6Enabled", key: "ipv6Enabled", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [2], offset: 13, exported: false }, { name: "ipv4MappedIPv6Enabled", key: "ipv4MappedIPv6Enabled", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [3], offset: 14, exported: false }]
 	)

@@ -225,7 +225,7 @@ export class fdMutex {
 	static __typeInfo = $.registerStructType(
 		"poll.fdMutex",
 		() => new fdMutex(),
-		[{ name: "decref", args: [], returns: [] }, { name: "incref", args: [], returns: [] }, { name: "increfAndClose", args: [], returns: [] }, { name: "rwlock", args: [], returns: [] }, { name: "rwunlock", args: [], returns: [] }],
+		[{ name: "decref", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "incref", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "increfAndClose", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "rwlock", args: [{ name: "read", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "rwunlock", args: [{ name: "read", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		fdMutex,
 		[{ name: "state", key: "state", type: { kind: $.TypeKind.Basic, name: "uint64" }, pkgPath: "internal/poll", index: [0], offset: 0, exported: false }, { name: "rsema", key: "rsema", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "internal/poll", index: [1], offset: 8, exported: false }, { name: "wsema", key: "wsema", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "internal/poll", index: [2], offset: 12, exported: false }]
 	)

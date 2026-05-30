@@ -82,7 +82,7 @@ export class IntValue {
 	static __typeInfo = $.registerStructType(
 		"helper.IntValue",
 		() => new IntValue(),
-		[{ name: "GetValue", args: [], returns: [] }],
+		[{ name: "GetValue", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		IntValue,
 		[{ name: "N", key: "N", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
 	)

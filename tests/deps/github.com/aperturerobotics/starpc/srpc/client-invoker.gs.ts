@@ -86,7 +86,7 @@ export class ClientInvoker {
 	static __typeInfo = $.registerStructType(
 		"srpc.ClientInvoker",
 		() => new ClientInvoker(),
-		[{ name: "InvokeMethod", args: [], returns: [] }],
+		[{ name: "InvokeMethod", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "methodID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "strm", type: "srpc.Stream" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "_r1", type: "error" }] }],
 		ClientInvoker,
 		[{ name: "client", key: "client", type: "srpc.Client", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }]
 	)

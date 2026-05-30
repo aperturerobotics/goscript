@@ -72,7 +72,7 @@ export class PrefixInvoker {
 	static __typeInfo = $.registerStructType(
 		"srpc.PrefixInvoker",
 		() => new PrefixInvoker(),
-		[{ name: "InvokeMethod", args: [], returns: [] }],
+		[{ name: "InvokeMethod", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "methodID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "strm", type: "srpc.Stream" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "_r1", type: "error" }] }],
 		PrefixInvoker,
 		[{ name: "inv", key: "inv", type: "srpc.Invoker", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "serviceIDPrefixes", key: "serviceIDPrefixes", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }, pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 16, exported: false }]
 	)

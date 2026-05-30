@@ -172,7 +172,6 @@ var expectedV2ComplianceGaps = map[string]bool{
 	"promise_return_type":               true,
 	"protobuf_lite_ts":                  true,
 	"receiver_variable":                 true,
-	"reflect_implements":                true,
 	"reflect_numfield":                  true,
 	"reserved_words":                    true,
 	"star_expr_destructuring":           true,

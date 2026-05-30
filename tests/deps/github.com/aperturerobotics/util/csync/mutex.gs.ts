@@ -189,7 +189,7 @@ export class Mutex {
 	static __typeInfo = $.registerStructType(
 		"csync.Mutex",
 		() => new Mutex(),
-		[{ name: "Lock", args: [], returns: [] }, { name: "Locker", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }],
+		[{ name: "Lock", args: [{ name: "ctx", type: "context.Context" }], returns: [{ name: "_r0", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { name: "_r1", type: "error" }] }, { name: "Locker", args: [], returns: [{ name: "_r0", type: "sync.Locker" }] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		Mutex,
 		[{ name: "bcast", key: "bcast", type: "broadcast.Broadcast", pkgPath: "github.com/aperturerobotics/util/csync", index: [0], offset: 0, exported: false }, { name: "locked", key: "locked", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/util/csync", index: [1], offset: 16, exported: false }]
 	)

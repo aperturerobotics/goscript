@@ -40,7 +40,7 @@ export class child {
 	static __typeInfo = $.registerStructType(
 		"main.child",
 		() => new child(),
-		[{ name: "Clone", args: [], returns: [] }],
+		[{ name: "Clone", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "main.child" } }] }],
 		child,
 		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/nil_pointer_receiver_field_method", index: [0], offset: 0, exported: false }]
 	)

@@ -106,7 +106,7 @@ export class MockFileInfo {
 	static __typeInfo = $.registerStructType(
 		"main.MockFileInfo",
 		() => new MockFileInfo(),
-		[{ name: "IsDir", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "Size", args: [], returns: [] }],
+		[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }],
 		MockFileInfo,
 		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_function_type_call", index: [0], offset: 0, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_function_type_call", index: [1], offset: 16, exported: false }, { name: "isDir", key: "isDir", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_function_type_call", index: [2], offset: 24, exported: false }]
 	)
@@ -136,7 +136,7 @@ export class MockFilesystem {
 	static __typeInfo = $.registerStructType(
 		"main.MockFilesystem",
 		() => new MockFilesystem(),
-		[{ name: "ReadDir", args: [], returns: [] }],
+		[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }],
 		MockFilesystem,
 		[]
 	)
@@ -176,7 +176,7 @@ export class shapeNode {
 	static __typeInfo = $.registerStructType(
 		"main.shapeNode",
 		() => new shapeNode(),
-		[{ name: "Stats", args: [], returns: [] }],
+		[{ name: "Stats", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		shapeNode,
 		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_function_type_call", index: [0], offset: 0, exported: false }]
 	)
@@ -221,7 +221,7 @@ export class MorphismHolder {
 	static __typeInfo = $.registerStructType(
 		"main.MorphismHolder",
 		() => new MorphismHolder(),
-		[{ name: "apply", args: [], returns: [] }, { name: "cloneApply", args: [], returns: [] }],
+		[{ name: "apply", args: [{ name: "s", type: "main.Shape" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "cloneApply", args: [{ name: "s", type: "main.Shape" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		MorphismHolder,
 		[{ name: "morphism", key: "morphism", type: ({ kind: $.TypeKind.Function, name: "main.Morphism", params: ["main.Shape"], results: ["main.Shape"] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_function_type_call", index: [0], offset: 0, exported: false }]
 	)
@@ -263,7 +263,7 @@ export class morphismWorker {
 	static __typeInfo = $.registerStructType(
 		"main.morphismWorker",
 		() => new morphismWorker(),
-		[{ name: "lookup", args: [], returns: [] }],
+		[{ name: "lookup", args: [{ name: "s", type: "main.Shape" }], returns: [{ name: "_r0", type: "main.Shape" }] }],
 		morphismWorker,
 		[{ name: "ready", key: "ready", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_function_type_call", index: [0], offset: 0, exported: false }]
 	)

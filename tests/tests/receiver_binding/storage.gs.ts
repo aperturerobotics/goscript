@@ -70,7 +70,7 @@ export class storage {
 	static __typeInfo = $.registerStructType(
 		"main.storage",
 		() => new storage(),
-		[{ name: "IsEmpty", args: [], returns: [] }, { name: "Len", args: [], returns: [] }, { name: "Name", args: [], returns: [] }, { name: "SetName", args: [], returns: [] }, { name: "Truncate", args: [], returns: [] }],
+		[{ name: "IsEmpty", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Len", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "SetName", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "Truncate", args: [], returns: [] }],
 		storage,
 		[{ name: "bytes", key: "bytes", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/receiver_binding", index: [0], offset: 0, exported: false }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/receiver_binding", index: [1], offset: 24, exported: false }]
 	)

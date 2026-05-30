@@ -174,7 +174,7 @@ export class nsswitchConfig {
 	static __typeInfo = $.registerStructType(
 		"net.nsswitchConfig",
 		() => new nsswitchConfig(),
-		[{ name: "acquireSema", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "releaseSema", args: [], returns: [] }, { name: "tryAcquireSema", args: [], returns: [] }, { name: "tryUpdate", args: [], returns: [] }],
+		[{ name: "acquireSema", args: [], returns: [] }, { name: "init", args: [], returns: [] }, { name: "releaseSema", args: [], returns: [] }, { name: "tryAcquireSema", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "tryUpdate", args: [], returns: [] }],
 		nsswitchConfig,
 		[{ name: "initOnce", key: "initOnce", type: "sync.Once", pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "net", index: [1], offset: 16, exported: false }, { name: "lastChecked", key: "lastChecked", type: "time.Time", pkgPath: "net", index: [2], offset: 24, exported: false }, { name: "mu", key: "mu", type: "sync.Mutex", pkgPath: "net", index: [3], offset: 48, exported: false }, { name: "nssConf", key: "nssConf", type: { kind: $.TypeKind.Pointer, elemType: "net.nssConf" }, pkgPath: "net", index: [4], offset: 56, exported: false }]
 	)
@@ -285,7 +285,7 @@ export class nssSource {
 	static __typeInfo = $.registerStructType(
 		"net.nssSource",
 		() => new nssSource(),
-		[{ name: "standardCriteria", args: [], returns: [] }],
+		[{ name: "standardCriteria", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		nssSource,
 		[{ name: "source", key: "source", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "criteria", key: "criteria", type: { kind: $.TypeKind.Slice, elemType: "net.nssCriterion" }, pkgPath: "net", index: [1], offset: 16, exported: false }]
 	)
@@ -371,7 +371,7 @@ export class nssCriterion {
 	static __typeInfo = $.registerStructType(
 		"net.nssCriterion",
 		() => new nssCriterion(),
-		[{ name: "standardStatusAction", args: [], returns: [] }],
+		[{ name: "standardStatusAction", args: [{ name: "last", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		nssCriterion,
 		[{ name: "negate", key: "negate", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "status", key: "status", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [1], offset: 8, exported: false }, { name: "action", key: "action", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "net", index: [2], offset: 24, exported: false }]
 	)

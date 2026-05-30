@@ -33,7 +33,7 @@ export class nistCurve {
 	static __typeInfo = $.registerStructType(
 		"main.nistCurve",
 		() => new nistCurve(),
-		[{ name: "Add", args: [], returns: [] }, { name: "Zero", args: [], returns: [] }],
+		[{ name: "Add", args: [{ name: "p1", type: { kind: $.TypeKind.Interface, methods: [{ name: "Add", args: [{ name: "_p0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_p1", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }] } }, { name: "p2", type: { kind: $.TypeKind.Interface, methods: [{ name: "Add", args: [{ name: "_p0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_p1", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [{ name: "Add", args: [{ name: "_p0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_p1", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }] } }] }, { name: "Zero", args: [], returns: [{ name: "p", type: { kind: $.TypeKind.Interface, methods: [{ name: "Add", args: [{ name: "_p0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_p1", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }] } }] }],
 		nistCurve,
 		[]
 	)
@@ -73,7 +73,7 @@ export class point {
 	static __typeInfo = $.registerStructType(
 		"main.point",
 		() => new point(),
-		[{ name: "Add", args: [], returns: [] }],
+		[{ name: "Add", args: [{ name: "a", type: { kind: $.TypeKind.Pointer, elemType: "main.point" } }, { name: "b", type: { kind: $.TypeKind.Pointer, elemType: "main.point" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "main.point" } }] }],
 		point,
 		[{ name: "N", key: "N", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
 	)

@@ -126,7 +126,7 @@ export class Interface {
 	static __typeInfo = $.registerStructType(
 		"net.Interface",
 		() => new Interface(),
-		[{ name: "Addrs", args: [], returns: [] }, { name: "MulticastAddrs", args: [], returns: [] }],
+		[{ name: "Addrs", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "net.Addr" } }, { name: "_r1", type: "error" }] }, { name: "MulticastAddrs", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "net.Addr" } }, { name: "_r1", type: "error" }] }],
 		Interface,
 		[{ name: "Index", key: "Index", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "MTU", key: "MTU", type: { kind: $.TypeKind.Basic, name: "int" }, index: [1], offset: 8, exported: true }, { name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [2], offset: 16, exported: true }, { name: "HardwareAddr", key: "HardwareAddr", type: "net.HardwareAddr", index: [3], offset: 32, exported: true }, { name: "Flags", key: "Flags", type: { kind: $.TypeKind.Basic, name: "uint", typeName: "net.Flags" }, index: [4], offset: 56, exported: true }]
 	)
@@ -315,7 +315,7 @@ export class ipv6ZoneCache {
 	static __typeInfo = $.registerStructType(
 		"net.ipv6ZoneCache",
 		() => new ipv6ZoneCache(),
-		[{ name: "index", args: [], returns: [] }, { name: "name", args: [], returns: [] }, { name: "update", args: [], returns: [] }, { name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "TryRLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
+		[{ name: "index", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "name", args: [{ name: "index", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "update", args: [{ name: "ift", type: { kind: $.TypeKind.Slice, elemType: "net.Interface" } }, { name: "force", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "updated", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [{ name: "_r0", type: "sync.Locker" }] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "TryRLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
 		ipv6ZoneCache,
 		[{ name: "RWMutex", key: "RWMutex", type: "sync.RWMutex", anonymous: true, index: [0], offset: 0, exported: true }, { name: "lastFetched", key: "lastFetched", type: "time.Time", pkgPath: "net", index: [1], offset: 24, exported: false }, { name: "toIndex", key: "toIndex", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "net", index: [2], offset: 48, exported: false }, { name: "toName", key: "toName", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: { kind: $.TypeKind.Basic, name: "string" } }, pkgPath: "net", index: [3], offset: 56, exported: false }]
 	)

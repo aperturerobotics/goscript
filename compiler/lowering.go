@@ -2567,11 +2567,12 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 		async := o.functionAsync(ctx, method)
 		targetType := o.tsEmbeddedForwarderTargetType(ctx, field.typ)
 		lowered := loweredFunction{
-			async:       async,
-			name:        methodMemberName(method.Name()),
-			runtimeName: method.Name(),
-			result:      asyncResultType("any", async),
-			deferState:  &loweredDeferState{},
+			async:            async,
+			name:             methodMemberName(method.Name()),
+			runtimeName:      method.Name(),
+			runtimeSignature: o.runtimeMethodSignature(method, make(map[types.Type]bool)),
+			result:           asyncResultType("any", async),
+			deferState:       &loweredDeferState{},
 		}
 		args := make([]string, 0, signature.Params().Len())
 		for idx := range signature.Params().Len() {
@@ -2789,6 +2790,9 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		result:        asyncResultType(result, async),
 		deferState:    deferState,
 		namedResults:  o.lowerNamedResults(functionCtx, signature),
+	}
+	if decl.Recv != nil {
+		lowered.runtimeSignature = o.runtimeMethodSignature(fnObj, make(map[types.Type]bool))
 	}
 	if signature.TypeParams() != nil && signature.TypeParams().Len() != 0 {
 		lowered.typeParams = signatureTypeParamNames(signature)

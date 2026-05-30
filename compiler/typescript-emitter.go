@@ -520,13 +520,7 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 		if idx != 0 {
 			b.WriteString(", ")
 		}
-		methodName := method.name
-		if method.runtimeName != "" {
-			methodName = method.runtimeName
-		}
-		b.WriteString("{ name: ")
-		b.WriteString(strconvQuote(methodName))
-		b.WriteString(", args: [], returns: [] }")
+		b.WriteString(runtimeMethodSignatureExpr(method))
 	}
 	b.WriteString("],\n\t\t")
 	b.WriteString(structType.name)
@@ -549,6 +543,17 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 	}
 	b.WriteString("]\n\t)\n")
 	b.WriteString("}\n")
+}
+
+func runtimeMethodSignatureExpr(method loweredFunction) string {
+	if method.runtimeSignature != "" {
+		return method.runtimeSignature
+	}
+	methodName := method.name
+	if method.runtimeName != "" {
+		methodName = method.runtimeName
+	}
+	return "{ name: " + strconvQuote(methodName) + ", args: [], returns: [] }"
 }
 
 func writeLineComment(b *strings.Builder, indent string, comment string) {

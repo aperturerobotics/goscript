@@ -45,7 +45,7 @@ export class cache {
 	static __typeInfo = $.registerStructType(
 		"main.cache",
 		() => new cache(),
-		[{ name: "Get", args: [], returns: [] }],
+		[{ name: "Get", args: [{ name: "k", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } } }, { name: "new", type: ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } }, "error"] } as $.FunctionTypeInfo) }, { name: "check", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } } }, { name: "_r1", type: "error" }] }],
 		cache,
 		[{ name: "stored", key: "stored", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/generic_cache_pointer_callbacks", index: [0], offset: 0, exported: false }]
 	)

@@ -37,7 +37,7 @@ export class stream {
 	static __typeInfo = $.registerStructType(
 		"main.stream",
 		() => new stream(),
-		[{ name: "Close", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		stream,
 		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_embedded_struct_interface", index: [0], offset: 0, exported: false }]
 	)
@@ -76,7 +76,7 @@ export class stopStream {
 	static __typeInfo = $.registerStructType(
 		"main.stopStream",
 		() => new stopStream(),
-		[{ name: "Close", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		stopStream,
 		[{ name: "stream", key: "stream", type: "main.stream", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_embedded_struct_interface", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
@@ -115,7 +115,7 @@ export class pointerStopStream {
 	static __typeInfo = $.registerStructType(
 		"main.pointerStopStream",
 		() => new pointerStopStream(),
-		[{ name: "Close", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		pointerStopStream,
 		[{ name: "stream", key: "stream", type: { kind: $.TypeKind.Pointer, elemType: "main.stream" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_embedded_struct_interface", anonymous: true, index: [0], offset: 0, exported: false }]
 	)

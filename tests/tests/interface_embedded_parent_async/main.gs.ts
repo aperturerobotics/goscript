@@ -50,7 +50,7 @@ export class impl {
 	static __typeInfo = $.registerStructType(
 		"main.impl",
 		() => new impl(),
-		[{ name: "Name", args: [], returns: [] }, { name: "Validate", args: [], returns: [] }],
+		[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Validate", args: [], returns: [{ name: "_r0", type: "error" }] }],
 		impl,
 		[]
 	)

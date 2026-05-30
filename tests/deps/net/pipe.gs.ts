@@ -115,7 +115,7 @@ export class pipeDeadline {
 	static __typeInfo = $.registerStructType(
 		"net.pipeDeadline",
 		() => new pipeDeadline(),
-		[{ name: "set", args: [], returns: [] }, { name: "wait", args: [], returns: [] }],
+		[{ name: "set", args: [{ name: "t", type: "time.Time" }], returns: [] }, { name: "wait", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } } }] }],
 		pipeDeadline,
 		[{ name: "mu", key: "mu", type: "sync.Mutex", pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "timer", key: "timer", type: { kind: $.TypeKind.Pointer, elemType: "time.Timer" }, pkgPath: "net", index: [1], offset: 8, exported: false }, { name: "cancel", key: "cancel", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "net", index: [2], offset: 16, exported: false }]
 	)
@@ -148,7 +148,7 @@ export class pipeAddr {
 	static __typeInfo = $.registerStructType(
 		"net.pipeAddr",
 		() => new pipeAddr(),
-		[{ name: "Network", args: [], returns: [] }, { name: "String", args: [], returns: [] }],
+		[{ name: "Network", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		pipeAddr,
 		[]
 	)
@@ -492,7 +492,7 @@ export class pipe {
 	static __typeInfo = $.registerStructType(
 		"net.pipe",
 		() => new pipe(),
-		[{ name: "Close", args: [], returns: [] }, { name: "LocalAddr", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "RemoteAddr", args: [], returns: [] }, { name: "SetDeadline", args: [], returns: [] }, { name: "SetReadDeadline", args: [], returns: [] }, { name: "SetWriteDeadline", args: [], returns: [] }, { name: "Write", args: [], returns: [] }, { name: "read", args: [], returns: [] }, { name: "write", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "LocalAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "Read", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "RemoteAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "SetDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "Write", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "read", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }, { name: "write", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }],
 		pipe,
 		[{ name: "wrMu", key: "wrMu", type: "sync.Mutex", pkgPath: "net", index: [0], offset: 0, exported: false }, { name: "rdRx", key: "rdRx", type: { kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, pkgPath: "net", index: [1], offset: 8, exported: false }, { name: "rdTx", key: "rdTx", type: { kind: $.TypeKind.Channel, direction: "send", elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "net", index: [2], offset: 16, exported: false }, { name: "wrTx", key: "wrTx", type: { kind: $.TypeKind.Channel, direction: "send", elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, pkgPath: "net", index: [3], offset: 24, exported: false }, { name: "wrRx", key: "wrRx", type: { kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "net", index: [4], offset: 32, exported: false }, { name: "once", key: "once", type: "sync.Once", pkgPath: "net", index: [5], offset: 40, exported: false }, { name: "localDone", key: "localDone", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "net", index: [6], offset: 56, exported: false }, { name: "remoteDone", key: "remoteDone", type: { kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "net", index: [7], offset: 64, exported: false }, { name: "readDeadline", key: "readDeadline", type: "net.pipeDeadline", pkgPath: "net", index: [8], offset: 72, exported: false }, { name: "writeDeadline", key: "writeDeadline", type: "net.pipeDeadline", pkgPath: "net", index: [9], offset: 96, exported: false }]
 	)

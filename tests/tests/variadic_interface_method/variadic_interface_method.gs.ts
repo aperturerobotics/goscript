@@ -48,7 +48,7 @@ export class PathJoiner {
 	static __typeInfo = $.registerStructType(
 		"main.PathJoiner",
 		() => new PathJoiner(),
-		[{ name: "Join", args: [], returns: [] }],
+		[{ name: "Join", args: [{ name: "elem", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		PathJoiner,
 		[]
 	)

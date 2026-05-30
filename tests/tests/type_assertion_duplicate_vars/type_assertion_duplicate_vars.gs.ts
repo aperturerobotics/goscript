@@ -37,7 +37,7 @@ export class ConcreteA {
 	static __typeInfo = $.registerStructType(
 		"main.ConcreteA",
 		() => new ConcreteA(),
-		[{ name: "Method", args: [], returns: [] }],
+		[{ name: "Method", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		ConcreteA,
 		[]
 	)
@@ -67,7 +67,7 @@ export class ConcreteB {
 	static __typeInfo = $.registerStructType(
 		"main.ConcreteB",
 		() => new ConcreteB(),
-		[{ name: "Method", args: [], returns: [] }],
+		[{ name: "Method", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		ConcreteB,
 		[]
 	)

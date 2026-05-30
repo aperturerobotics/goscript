@@ -67,7 +67,7 @@ export class Locked {
 	static __typeInfo = $.registerStructType(
 		"broadcast.Locked",
 		() => new Locked(),
-		[{ name: "Broadcast", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }, { name: "WaitCh", args: [], returns: [] }],
+		[{ name: "Broadcast", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }, { name: "WaitCh", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } } }] }],
 		Locked,
 		[{ name: "b", key: "b", type: { kind: $.TypeKind.Pointer, elemType: "broadcast.Broadcast" }, pkgPath: "github.com/aperturerobotics/util/broadcast", index: [0], offset: 0, exported: false }]
 	)

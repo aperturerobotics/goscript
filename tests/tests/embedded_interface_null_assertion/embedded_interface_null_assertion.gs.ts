@@ -56,7 +56,7 @@ export class MyReader {
 	static __typeInfo = $.registerStructType(
 		"main.MyReader",
 		() => new MyReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		MyReader,
 		[{ name: "Reader", key: "Reader", type: "main.Reader", anonymous: true, index: [0], offset: 0, exported: true }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/embedded_interface_null_assertion", index: [1], offset: 16, exported: false }]
 	)
@@ -111,7 +111,7 @@ export class StringReader {
 	static __typeInfo = $.registerStructType(
 		"main.StringReader",
 		() => new StringReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		StringReader,
 		[{ name: "data", key: "data", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/embedded_interface_null_assertion", index: [0], offset: 0, exported: false }, { name: "pos", key: "pos", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/embedded_interface_null_assertion", index: [1], offset: 16, exported: false }]
 	)

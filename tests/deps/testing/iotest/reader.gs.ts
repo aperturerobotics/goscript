@@ -52,7 +52,7 @@ export class oneByteReader {
 	static __typeInfo = $.registerStructType(
 		"iotest.oneByteReader",
 		() => new oneByteReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		oneByteReader,
 		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }]
 	)
@@ -92,7 +92,7 @@ export class halfReader {
 	static __typeInfo = $.registerStructType(
 		"iotest.halfReader",
 		() => new halfReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		halfReader,
 		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }]
 	)
@@ -168,7 +168,7 @@ export class dataErrReader {
 	static __typeInfo = $.registerStructType(
 		"iotest.dataErrReader",
 		() => new dataErrReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }],
 		dataErrReader,
 		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "unread", key: "unread", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "testing/iotest", index: [2], offset: 40, exported: false }]
 	)
@@ -222,7 +222,7 @@ export class timeoutReader {
 	static __typeInfo = $.registerStructType(
 		"iotest.timeoutReader",
 		() => new timeoutReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		timeoutReader,
 		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "count", key: "count", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }]
 	)
@@ -262,7 +262,7 @@ export class errReader {
 	static __typeInfo = $.registerStructType(
 		"iotest.errReader",
 		() => new errReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		errReader,
 		[{ name: "err", key: "err", type: "error", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }]
 	)
@@ -337,7 +337,7 @@ export class smallByteReader {
 	static __typeInfo = $.registerStructType(
 		"iotest.smallByteReader",
 		() => new smallByteReader(),
-		[{ name: "Read", args: [], returns: [] }],
+		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		smallByteReader,
 		[{ name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "off", key: "off", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }, { name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "testing/iotest", index: [2], offset: 24, exported: false }]
 	)

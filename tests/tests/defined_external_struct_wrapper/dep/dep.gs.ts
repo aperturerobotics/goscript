@@ -82,7 +82,7 @@ export class Public {
 	static __typeInfo = $.registerStructType(
 		"dep.Public",
 		() => new Public(),
-		[{ name: "Label", args: [], returns: [] }],
+		[{ name: "Label", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		Public,
 		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Hidden", key: "Hidden", type: "dep.hidden", index: [1], offset: 16, exported: true }]
 	)

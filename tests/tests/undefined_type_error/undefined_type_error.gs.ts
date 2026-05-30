@@ -205,7 +205,7 @@ export class printer {
 	static __typeInfo = $.registerStructType(
 		"main.printer",
 		() => new printer(),
-		[{ name: "format", args: [], returns: [] }, { name: "init", args: [], returns: [] }],
+		[{ name: "format", args: [{ name: "verb", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [] }, { name: "init", args: [], returns: [] }],
 		printer,
 		[{ name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/undefined_type_error", index: [0], offset: 0, exported: false }, { name: "arg", key: "arg", type: { kind: $.TypeKind.Interface, methods: [] }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/undefined_type_error", index: [1], offset: 24, exported: false }, { name: "fmt", key: "fmt", type: "main.formatter", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/undefined_type_error", index: [2], offset: 40, exported: false }]
 	)

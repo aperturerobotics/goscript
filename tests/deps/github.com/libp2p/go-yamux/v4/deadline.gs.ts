@@ -106,7 +106,7 @@ export class pipeDeadline {
 	static __typeInfo = $.registerStructType(
 		"yamux.pipeDeadline",
 		() => new pipeDeadline(),
-		[{ name: "set", args: [], returns: [] }, { name: "wait", args: [], returns: [] }],
+		[{ name: "set", args: [{ name: "t", type: "time.Time" }], returns: [] }, { name: "wait", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } } }] }],
 		pipeDeadline,
 		[{ name: "mu", key: "mu", type: "sync.Mutex", pkgPath: "github.com/libp2p/go-yamux/v4", index: [0], offset: 0, exported: false }, { name: "timer", key: "timer", type: { kind: $.TypeKind.Pointer, elemType: "time.Timer" }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [1], offset: 8, exported: false }, { name: "cancel", key: "cancel", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/libp2p/go-yamux/v4", index: [2], offset: 16, exported: false }]
 	)

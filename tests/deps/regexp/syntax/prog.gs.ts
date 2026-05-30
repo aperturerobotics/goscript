@@ -141,7 +141,7 @@ export class Prog {
 	static __typeInfo = $.registerStructType(
 		"syntax.Prog",
 		() => new Prog(),
-		[{ name: "Prefix", args: [], returns: [] }, { name: "StartCond", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "skipNop", args: [], returns: [] }],
+		[{ name: "Prefix", args: [], returns: [{ name: "prefix", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "complete", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "StartCond", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint8", typeName: "syntax.EmptyOp" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "skipNop", args: [{ name: "pc", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Inst" } }] }],
 		Prog,
 		[{ name: "Inst", key: "Inst", type: { kind: $.TypeKind.Slice, elemType: "syntax.Inst" }, index: [0], offset: 0, exported: true }, { name: "Start", key: "Start", type: { kind: $.TypeKind.Basic, name: "int" }, index: [1], offset: 24, exported: true }, { name: "NumCap", key: "NumCap", type: { kind: $.TypeKind.Basic, name: "int" }, index: [2], offset: 32, exported: true }]
 	)
@@ -342,7 +342,7 @@ export class Inst {
 	static __typeInfo = $.registerStructType(
 		"syntax.Inst",
 		() => new Inst(),
-		[{ name: "MatchEmptyWidth", args: [], returns: [] }, { name: "MatchRune", args: [], returns: [] }, { name: "MatchRunePos", args: [], returns: [] }, { name: "String", args: [], returns: [] }, { name: "op", args: [], returns: [] }],
+		[{ name: "MatchEmptyWidth", args: [{ name: "before", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "after", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "MatchRune", args: [{ name: "r", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "MatchRunePos", args: [{ name: "r", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "op", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint8", typeName: "syntax.InstOp" } }] }],
 		Inst,
 		[{ name: "Op", key: "Op", type: { kind: $.TypeKind.Basic, name: "uint8", typeName: "syntax.InstOp" }, index: [0], offset: 0, exported: true }, { name: "Out", key: "Out", type: { kind: $.TypeKind.Basic, name: "uint32" }, index: [1], offset: 4, exported: true }, { name: "Arg", key: "Arg", type: { kind: $.TypeKind.Basic, name: "uint32" }, index: [2], offset: 8, exported: true }, { name: "Rune", key: "Rune", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }, index: [3], offset: 16, exported: true }]
 	)

@@ -85,23 +85,24 @@ type loweredStructField struct {
 }
 
 type loweredFunction struct {
-	exported        bool
-	indexExported   bool
-	init            bool
-	async           bool
-	name            string
-	typeParams      []string
-	runtimeName     string
-	receiverAlias   string
-	receiverType    string
-	receiverValue   string
-	receiverMutable bool
-	params          []loweredParam
-	paramBindings   []loweredStmt
-	namedResults    []loweredNamedResult
-	result          string
-	body            []loweredStmt
-	deferState      *loweredDeferState
+	exported         bool
+	indexExported    bool
+	init             bool
+	async            bool
+	name             string
+	typeParams       []string
+	runtimeName      string
+	runtimeSignature string
+	receiverAlias    string
+	receiverType     string
+	receiverValue    string
+	receiverMutable  bool
+	params           []loweredParam
+	paramBindings    []loweredStmt
+	namedResults     []loweredNamedResult
+	result           string
+	body             []loweredStmt
+	deferState       *loweredDeferState
 }
 
 type loweredParam struct {

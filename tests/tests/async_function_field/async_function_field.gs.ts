@@ -40,7 +40,7 @@ export class loader {
 	static __typeInfo = $.registerStructType(
 		"main.loader",
 		() => new loader(),
-		[{ name: "getLoad", args: [], returns: [] }],
+		[{ name: "getLoad", args: [], returns: [{ name: "_r0", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo) }] }],
 		loader,
 		[{ name: "load", key: "load", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Interface, methods: [] }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/goscript/tests/tests/async_function_field", index: [0], offset: 0, exported: false }]
 	)

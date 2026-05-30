@@ -39,7 +39,7 @@ export class localReadWriteCloser {
 	static __typeInfo = $.registerStructType(
 		"main.localReadWriteCloser",
 		() => new localReadWriteCloser(),
-		[{ name: "Close", args: [], returns: [] }, { name: "Read", args: [], returns: [] }, { name: "Write", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
 		localReadWriteCloser,
 		[]
 	)

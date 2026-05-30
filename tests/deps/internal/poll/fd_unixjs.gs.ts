@@ -73,7 +73,7 @@ export class SysFile {
 	static __typeInfo = $.registerStructType(
 		"poll.SysFile",
 		() => new SysFile(),
-		[{ name: "destroy", args: [], returns: [] }, { name: "init", args: [], returns: [] }],
+		[{ name: "destroy", args: [{ name: "fd", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "init", args: [], returns: [] }],
 		SysFile,
 		[{ name: "iovecs", key: "iovecs", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Slice, elemType: "syscall.Iovec" } }, pkgPath: "internal/poll", index: [0], offset: 0, exported: false }]
 	)

@@ -57,7 +57,7 @@ export class embeddedMutex {
 	static __typeInfo = $.registerStructType(
 		"main.embeddedMutex",
 		() => new embeddedMutex(),
-		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
+		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
 		embeddedMutex,
 		[{ name: "Mutex", key: "Mutex", type: "sync.Mutex", anonymous: true, index: [0], offset: 0, exported: true }, { name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_sync", index: [1], offset: 8, exported: false }]
 	)
@@ -130,7 +130,7 @@ export class embeddedRWMutex {
 	static __typeInfo = $.registerStructType(
 		"main.embeddedRWMutex",
 		() => new embeddedRWMutex(),
-		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [] }, { name: "TryRLock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
+		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [{ name: "_r0", type: "sync.Locker" }] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "TryRLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
 		embeddedRWMutex,
 		[{ name: "RWMutex", key: "RWMutex", type: "sync.RWMutex", anonymous: true, index: [0], offset: 0, exported: true }, { name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_sync", index: [1], offset: 24, exported: false }]
 	)

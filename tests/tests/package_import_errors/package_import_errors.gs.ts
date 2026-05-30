@@ -40,7 +40,7 @@ export class customErr {
 	static __typeInfo = $.registerStructType(
 		"main.customErr",
 		() => new customErr(),
-		[{ name: "Error", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		customErr,
 		[{ name: "msg", key: "msg", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_errors", index: [0], offset: 0, exported: false }]
 	)
@@ -85,7 +85,7 @@ export class wrappedErr {
 	static __typeInfo = $.registerStructType(
 		"main.wrappedErr",
 		() => new wrappedErr(),
-		[{ name: "Error", args: [], returns: [] }, { name: "Unwrap", args: [], returns: [] }],
+		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Unwrap", args: [], returns: [{ name: "_r0", type: "error" }] }],
 		wrappedErr,
 		[{ name: "err", key: "err", type: "error", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_errors", index: [0], offset: 0, exported: false }]
 	)

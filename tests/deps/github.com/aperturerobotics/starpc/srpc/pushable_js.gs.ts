@@ -89,7 +89,7 @@ export class PushablePacketWriter {
 	static __typeInfo = $.registerStructType(
 		"srpc.PushablePacketWriter",
 		() => new PushablePacketWriter(),
-		[{ name: "Close", args: [], returns: [] }, { name: "WritePacket", args: [], returns: [] }],
+		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "WritePacket", args: [{ name: "pkt", type: { kind: $.TypeKind.Pointer, elemType: "srpc.Packet" } }], returns: [{ name: "_r0", type: "error" }] }],
 		PushablePacketWriter,
 		[{ name: "closed", key: "closed", type: "atomic.Bool", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [0], offset: 0, exported: false }, { name: "pushable", key: "pushable", type: "js.Value", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 8, exported: false }]
 	)

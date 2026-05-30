@@ -47,7 +47,7 @@ export class blockImpl {
 	static __typeInfo = $.registerStructType(
 		"main.blockImpl",
 		() => new blockImpl(),
-		[{ name: "Size", args: [], returns: [] }],
+		[{ name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		blockImpl,
 		[{ name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/tuple_return_interface", index: [0], offset: 0, exported: false }]
 	)

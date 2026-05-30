@@ -128,7 +128,7 @@ export class onePassInst {
 	static __typeInfo = $.registerStructType(
 		"regexp.onePassInst",
 		() => new onePassInst(),
-		[{ name: "MatchEmptyWidth", args: [], returns: [] }, { name: "MatchRune", args: [], returns: [] }, { name: "MatchRunePos", args: [], returns: [] }, { name: "String", args: [], returns: [] }],
+		[{ name: "MatchEmptyWidth", args: [{ name: "before", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "after", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "MatchRune", args: [{ name: "r", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "MatchRunePos", args: [{ name: "r", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		onePassInst,
 		[{ name: "Inst", key: "Inst", type: "syntax.Inst", anonymous: true, index: [0], offset: 0, exported: true }, { name: "Next", key: "Next", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, index: [1], offset: 40, exported: true }]
 	)
@@ -237,7 +237,7 @@ export class queueOnePass {
 	static __typeInfo = $.registerStructType(
 		"regexp.queueOnePass",
 		() => new queueOnePass(),
-		[{ name: "clear", args: [], returns: [] }, { name: "contains", args: [], returns: [] }, { name: "empty", args: [], returns: [] }, { name: "insert", args: [], returns: [] }, { name: "insertNew", args: [], returns: [] }, { name: "next", args: [], returns: [] }],
+		[{ name: "clear", args: [], returns: [] }, { name: "contains", args: [{ name: "u", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "empty", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "insert", args: [{ name: "u", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [] }, { name: "insertNew", args: [{ name: "u", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [] }, { name: "next", args: [], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "uint32" } }] }],
 		queueOnePass,
 		[{ name: "sparse", key: "sparse", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "dense", key: "dense", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, pkgPath: "regexp", index: [1], offset: 24, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp", index: [2], offset: 48, exported: false }, { name: "nextIndex", key: "nextIndex", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp", index: [3], offset: 52, exported: false }]
 	)
