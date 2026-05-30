@@ -11,7 +11,16 @@ import {
   varRef,
 } from '../builtin/index.js'
 import { StructField } from './types.js'
-import { Int, Ptr, Struct, TypeFor, TypeOf, Uint64, ValueOf } from './type.js'
+import {
+  Int,
+  Ptr,
+  Struct,
+  StructOf,
+  TypeFor,
+  TypeOf,
+  Uint64,
+  ValueOf,
+} from './type.js'
 import { Indirect, New, Zero } from './value.js'
 
 describe('TypeFor', () => {
@@ -377,6 +386,143 @@ describe('TypeFor', () => {
     expect(variadicFnType.NumOut()).toBe(1)
     expect(variadicFnType.Out(0).String()).toBe('int')
     expect(variadicFnType.IsVariadic()).toBe(true)
+  })
+
+  it('rehydrates anonymous struct descriptors as unnamed struct types', () => {
+    const intType = TypeOf(0)
+    const descriptor = {
+      kind: TypeKind.Struct,
+      methods: [],
+      fields: [
+        {
+          name: 'X',
+          key: 'X',
+          type: { kind: TypeKind.Basic, name: 'int' },
+          tag: 'json:"x"',
+          index: [0],
+          offset: 0,
+          exported: true,
+        },
+      ],
+    } as const
+
+    const typ = TypeFor({
+      T: {
+        type: descriptor,
+        zero: () => ({ X: 0 }),
+      },
+    })
+    const dynamic = StructOf([
+      new StructField({
+        Name: 'X',
+        Type: intType,
+        Tag: 'json:"x"',
+      }),
+    ])
+
+    expect(typ.String()).toBe('struct { X int "json:\\"x\\"" }')
+    expect(typ.Name()).toBe('')
+    expect(typ.PkgPath()).toBe('')
+    expect(typ.NumField()).toBe(1)
+    expect(typ.Field(0).Name).toBe('X')
+    expect(typ.Field(0).Tag.Get('json')).toBe('x')
+    expect(typ.AssignableTo(dynamic)).toBe(true)
+    expect(dynamic.AssignableTo(typ)).toBe(true)
+  })
+
+  it('uses full anonymous struct identity in method signatures', () => {
+    const baseField = {
+      name: 'X',
+      key: 'X',
+      type: { kind: TypeKind.Basic, name: 'int' },
+      index: [0],
+      offset: 0,
+      exported: true,
+    } as const
+    const taggedParam = {
+      kind: TypeKind.Struct,
+      methods: [],
+      fields: [{ ...baseField, tag: 'json:"a"' }],
+    } as const
+    const methodSignatures = [
+      {
+        name: 'Accept',
+        args: [{ type: taggedParam }],
+        returns: [],
+      },
+    ]
+    const receiverType = TypeFor({
+      T: {
+        type: { kind: TypeKind.Basic, name: 'int', typeName: 'main.Receiver' },
+        zero: () => 0,
+        methodSignatures,
+      },
+    })
+    const sameInterface = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Interface,
+          methods: methodSignatures,
+        },
+        zero: () => null,
+      },
+    })
+    const differentTagInterface = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Interface,
+          methods: [
+            {
+              name: 'Accept',
+              args: [
+                {
+                  type: {
+                    kind: TypeKind.Struct,
+                    methods: [],
+                    fields: [{ ...baseField, tag: 'json:"b"' }],
+                  },
+                },
+              ],
+              returns: [],
+            },
+          ],
+        },
+        zero: () => null,
+      },
+    })
+    const differentEmbeddingInterface = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Interface,
+          methods: [
+            {
+              name: 'Accept',
+              args: [
+                {
+                  type: {
+                    kind: TypeKind.Struct,
+                    methods: [],
+                    fields: [
+                      {
+                        ...baseField,
+                        tag: 'json:"a"',
+                        anonymous: true,
+                      },
+                    ],
+                  },
+                },
+              ],
+              returns: [],
+            },
+          ],
+        },
+        zero: () => null,
+      },
+    })
+
+    expect(receiverType.Implements(sameInterface)).toBe(true)
+    expect(receiverType.Implements(differentTagInterface)).toBe(false)
+    expect(receiverType.Implements(differentEmbeddingInterface)).toBe(false)
   })
 
   it('resolves registered type names from descriptors', () => {

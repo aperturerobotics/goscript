@@ -2721,9 +2721,15 @@ function typeInfoIdentityKey(
       return `struct:${(info.fields ?? [])
         .map(
           (field) =>
-            `${field.name}:${field.pkgPath ?? ''}:${typeInfoIdentityKey(field.type, seen)}`,
+            [
+              field.name,
+              field.pkgPath ?? '',
+              field.tag ?? '',
+              field.anonymous === true ? 'anonymous' : 'named',
+              typeInfoIdentityKey(field.type, seen),
+            ].join('\u0000'),
         )
-        .join('|')}`
+        .join('\u0001')}`
     case $.TypeKind.Pointer:
       return `ptr:${typeInfoIdentityKey(
         info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
@@ -3259,8 +3265,16 @@ class StructType implements Type {
           return new PointerType(new BasicType(Invalid, 'unknown', 8))
         case 'interface':
           return interfaceTypeFromInfo(ti, seen)
-        case 'struct':
-          return new StructType(name, structFieldsFromTypeInfo(ti, seen))
+        case 'struct': {
+          const structName = ti.name ?? ''
+          const fields = structFieldsFromTypeInfo(ti, seen)
+          return new StructType(
+            structName,
+            fields,
+            '',
+            structName === '' ? structTypeString(fields) : structName,
+          )
+        }
         default:
           return new BasicType(Invalid, name, 8)
       }
@@ -4445,6 +4459,31 @@ function interfaceMethodString(
   return `${method.name}(${args}) (${returns.join(', ')})`
 }
 
+function structTypeInfoString(
+  info: $.StructTypeInfo,
+  seen: Set<string>,
+): string {
+  if (info.name) {
+    return info.name
+  }
+  const fields = info.fields ?? []
+  if (fields.length === 0) {
+    return 'struct {}'
+  }
+  return `struct { ${fields
+    .map((field) => structFieldInfoString(field, seen))
+    .join('; ')} }`
+}
+
+function structFieldInfoString(
+  field: $.StructFieldInfo,
+  seen: Set<string>,
+): string {
+  const tag = field.tag ? ` ${JSON.stringify(field.tag)}` : ''
+  const prefix = field.anonymous ? '' : `${field.name} `
+  return `${prefix}${typeInfoString(field.type, seen)}${tag}`
+}
+
 function methodArgString(arg: $.MethodArg, seen: Set<string>): string {
   return typeInfoString(arg.type, seen)
 }
@@ -4474,7 +4513,7 @@ function typeInfoString(info: $.TypeInfo | string, seen: Set<string>): string {
       return text
     }
     case $.TypeKind.Struct:
-      return info.name ?? 'struct'
+      return structTypeInfoString(info, seen)
     case $.TypeKind.Pointer:
       return `*${typeInfoString(
         info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
