@@ -1072,6 +1072,130 @@ func TestRunnerRunsCombinedRuntimeChunks(t *testing.T) {
 	}
 }
 
+func TestRunnerRunsBrowserRuntimeBackend(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/browser\n\ngo 1.25.3\n",
+		"value_test.go": strings.Join([]string{
+			"package browser",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestBrowser(t *testing.T) {}",
+			"",
+		}, "\n"),
+	})
+	workDir := filepath.Join(moduleDir, ".tmp", "browser-runtime")
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "vitest"), strings.Join([]string{
+		"#!/bin/sh",
+		"printf '" + combinedRuntimeResultPrefix + "{\"packagePath\":\"example.test/browser\",\"ok\":true,\"elapsedMs\":7,\"output\":\"browser ok\"}\\n'",
+		"exit 0",
+		"",
+	}, "\n"))
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:            moduleDir,
+		Patterns:       []string{"."},
+		Timeout:        30 * time.Second,
+		WorkDir:        workDir,
+		RuntimeBackend: RuntimeBackendBrowser,
+	})
+	if err != nil {
+		t.Fatalf("run browser runtime fixture: %v", err)
+	}
+	if !result.Passed() {
+		t.Fatalf("expected browser runtime fixture to pass: %#v", result.Packages)
+	}
+	if got := result.Packages[0].Output; got != "browser ok" {
+		t.Fatalf("expected browser runtime output, got %q", got)
+	}
+	config, err := os.ReadFile(filepath.Join(workDir, "vitest-browser-0.config.mts"))
+	if err != nil {
+		t.Fatalf("read browser vitest config: %v", err)
+	}
+	if !strings.Contains(string(config), "browser: \"chromium\"") {
+		t.Fatalf("expected Chromium browser config, got:\n%s", config)
+	}
+}
+
+func TestRunnerReportsBrowserRuntimeFailureRecord(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/browserfail\n\ngo 1.25.3\n",
+		"value_test.go": strings.Join([]string{
+			"package browserfail",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestBrowser(t *testing.T) {}",
+			"",
+		}, "\n"),
+	})
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "tsgo"), "#!/bin/sh\nexit 0\n")
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "vitest"), strings.Join([]string{
+		"#!/bin/sh",
+		"printf '" + combinedRuntimeResultPrefix + "{\"packagePath\":\"example.test/browserfail\",\"ok\":false,\"elapsedMs\":3,\"output\":\"page exploded\"}\\n'",
+		"exit 1",
+		"",
+	}, "\n"))
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:            moduleDir,
+		Patterns:       []string{"."},
+		Timeout:        30 * time.Second,
+		RuntimeBackend: RuntimeBackendBrowser,
+	})
+	if err != nil {
+		t.Fatalf("run browser failure fixture: %v", err)
+	}
+	if result.Passed() {
+		t.Fatalf("expected browser runtime failure")
+	}
+	pkg := requirePackageResult(t, result, "example.test/browserfail")
+	if pkg.Action != ActionFail || pkg.Phases.Runtime != PhaseStatusFail || pkg.Error != "page exploded" {
+		t.Fatalf("unexpected browser failure result: %#v", pkg)
+	}
+}
+
+func TestRunnerReportsBrowserRuntimeMissingResult(t *testing.T) {
+	moduleDir := writeFixture(t, map[string]string{
+		"go.mod": "module example.test/browsermissing\n\ngo 1.25.3\n",
+		"value_test.go": strings.Join([]string{
+			"package browsermissing",
+			"",
+			"import \"testing\"",
+			"",
+			"func TestBrowser(t *testing.T) {}",
+			"",
+		}, "\n"),
+	})
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "tsgo"), "#!/bin/sh\nexit 0\n")
+	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "vitest"), strings.Join([]string{
+		"#!/bin/sh",
+		"printf 'page exploded before result\\n'",
+		"exit 1",
+		"",
+	}, "\n"))
+
+	result, err := NewRunner().Run(context.Background(), &Request{
+		Dir:            moduleDir,
+		Patterns:       []string{"."},
+		Timeout:        30 * time.Second,
+		RuntimeBackend: RuntimeBackendBrowser,
+	})
+	if err != nil {
+		t.Fatalf("run browser missing-result fixture: %v", err)
+	}
+	if result.Passed() {
+		t.Fatalf("expected browser runtime failure")
+	}
+	pkg := requirePackageResult(t, result, "example.test/browsermissing")
+	if pkg.Action != ActionFail || pkg.Phases.Runtime != PhaseStatusFail {
+		t.Fatalf("unexpected browser missing-result status: %#v", pkg)
+	}
+	if !strings.Contains(pkg.Error, "page exploded before result") {
+		t.Fatalf("expected browser process output in error, got %#v", pkg)
+	}
+}
+
 func TestRunnerFallsBackToPackageScopedTypeScriptProjects(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/packageprojects\n\ngo 1.25.3\n",
@@ -1195,6 +1319,34 @@ func TestNormalizeKeepsIncrementalTypeCheckExplicit(t *testing.T) {
 	}
 }
 
+func TestNormalizeRuntimeBackend(t *testing.T) {
+	norm, err := (&Request{Patterns: []string{"."}}).normalize()
+	if err != nil {
+		t.Fatalf("normalize default runtime backend: %v", err)
+	}
+	if norm.RuntimeBackend != RuntimeBackendBun {
+		t.Fatalf("runtime backend = %q, want %q", norm.RuntimeBackend, RuntimeBackendBun)
+	}
+
+	norm, err = (&Request{
+		Patterns:       []string{"."},
+		RuntimeBackend: RuntimeBackendBrowser,
+	}).normalize()
+	if err != nil {
+		t.Fatalf("normalize browser runtime backend: %v", err)
+	}
+	if norm.RuntimeBackend != RuntimeBackendBrowser {
+		t.Fatalf("runtime backend = %q, want %q", norm.RuntimeBackend, RuntimeBackendBrowser)
+	}
+
+	if _, err := (&Request{
+		Patterns:       []string{"."},
+		RuntimeBackend: RuntimeBackend("deno"),
+	}).normalize(); err == nil {
+		t.Fatal("expected unsupported runtime backend to fail")
+	}
+}
+
 func TestPackageExecutionIndexesPrioritizesLargerTestPackages(t *testing.T) {
 	result := &Result{Packages: []PackageResult{
 		{
@@ -1251,6 +1403,76 @@ func TestRenderRunnerChangesToPackageSourceDir(t *testing.T) {
 	}
 }
 
+func TestRenderBrowserRunnerAvoidsProcessAPIs(t *testing.T) {
+	req := &normalizedRequest{
+		RuntimeBackend: RuntimeBackendBrowser,
+	}
+	runner := renderPackageRunner(PackageResult{
+		PackagePath: "example.test/pkg",
+		SourceDir:   "/workspace/pkg",
+		Tests: []Test{{
+			Name:        "TestBrowser",
+			PackagePath: "example.test/pkg",
+		}},
+	}, req)
+
+	if strings.Contains(runner, "process.") {
+		t.Fatalf("browser runner should not use process APIs: %s", runner)
+	}
+	if !strings.Contains(runner, "import { test } from \"vitest\"") {
+		t.Fatalf("expected browser runner to use Vitest: %s", runner)
+	}
+	if !strings.Contains(runner, "await runTests(\"example.test/pkg\"") {
+		t.Fatalf("expected browser runner to execute package tests: %s", runner)
+	}
+}
+
+func TestRenderBrowserRunnerReportsProcessExit(t *testing.T) {
+	req := &normalizedRequest{
+		RuntimeBackend: RuntimeBackendBrowser,
+	}
+	runner := renderPackageRunner(PackageResult{
+		PackagePath: "example.test/pkg",
+		SourceDir:   "/workspace/pkg",
+		Tests: []Test{{
+			Name:        "TestBrowser",
+			PackagePath: "example.test/pkg",
+		}},
+	}, req)
+
+	if !strings.Contains(runner, "__goscriptProcessExitCode") {
+		t.Fatalf("expected browser runner to classify process exit: %s", runner)
+	}
+	if !strings.Contains(runner, "goscript process exited with code") {
+		t.Fatalf("expected browser runner to report process exit code: %s", runner)
+	}
+	if !strings.Contains(runner, "__goscriptOK = exitCode === 0") {
+		t.Fatalf("expected zero exit to pass and nonzero exit to fail: %s", runner)
+	}
+}
+
+func TestRenderBrowserRunnerHonorsPanicOnExitZero(t *testing.T) {
+	req := &normalizedRequest{
+		RuntimeBackend: RuntimeBackendBrowser,
+		PanicOnExit0:   true,
+	}
+	runner := renderPackageRunner(PackageResult{
+		PackagePath: "example.test/pkg",
+		SourceDir:   "/workspace/pkg",
+		Tests: []Test{{
+			Name:        "TestBrowser",
+			PackagePath: "example.test/pkg",
+		}},
+	}, req)
+
+	if !strings.Contains(runner, "exitCode === 0 && true") {
+		t.Fatalf("expected panic-on-exit-zero to reject os.Exit(0): %s", runner)
+	}
+	if !strings.Contains(runner, "unexpected os.Exit(0) during test") {
+		t.Fatalf("expected panic-on-exit-zero error text: %s", runner)
+	}
+}
+
 func TestRenderCombinedRunnerChangesToEachPackageSourceDir(t *testing.T) {
 	req := &normalizedRequest{}
 	runner := renderCombinedRunner(&Result{Packages: []PackageResult{
@@ -1300,6 +1522,29 @@ func TestRenderTypeScriptProjectDisablesAmbientTypePackages(t *testing.T) {
 	}
 	if strings.Contains(tsconfig, "output/package-0/**/*.ts") {
 		t.Fatalf("expected generated tsconfig to typecheck from runner roots, not output globs: %s", tsconfig)
+	}
+}
+
+func TestRenderBrowserTypeScriptProjectsExcludeNodeAmbientDeclarations(t *testing.T) {
+	req := &normalizedRequest{
+		WorkDir:        "/work",
+		RuntimeBackend: RuntimeBackendBrowser,
+	}
+
+	packageTSConfig := renderTypeScriptProject(req, "/work/output/package-0", "runner-0.ts", "tsconfig-0.json", false)
+	if strings.Contains(packageTSConfig, "goscript-node.d.ts") {
+		t.Fatalf("browser package tsconfig should not include node ambient declarations: %s", packageTSConfig)
+	}
+	if !strings.Contains(packageTSConfig, "goscript-browser.d.ts") {
+		t.Fatalf("browser package tsconfig should include browser ambient declarations: %s", packageTSConfig)
+	}
+
+	aggregateTSConfig := renderRuntimeTypeScriptProject(req, []string{"/work/output"}, false)
+	if strings.Contains(aggregateTSConfig, "goscript-node.d.ts") {
+		t.Fatalf("browser aggregate tsconfig should not include node ambient declarations: %s", aggregateTSConfig)
+	}
+	if !strings.Contains(aggregateTSConfig, "goscript-browser.d.ts") {
+		t.Fatalf("browser aggregate tsconfig should include browser ambient declarations: %s", aggregateTSConfig)
 	}
 }
 

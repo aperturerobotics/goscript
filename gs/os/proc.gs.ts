@@ -6,6 +6,20 @@ import * as runtime from "@goscript/runtime/index.js"
 
 import * as syscall from "@goscript/syscall/index.js"
 
+interface ProcessLike {
+	exit?: (code?: number) => never | void
+}
+
+export class ProcessExitError extends Error {
+	public readonly __goscriptExitCode: number
+
+	constructor(code: number) {
+		super("process exited with status " + String(code))
+		this.name = "ProcessExitError"
+		this.__goscriptExitCode = code
+	}
+}
+
 export let Args: $.Slice<string> = null
 
 export function init(): void {
@@ -72,13 +86,12 @@ export function Exit(code: number): void {
 	// enable us to write out a coverage data file.
 	runtime_beforeExit(code)
 
-	// In JavaScript environment, use process.exit if available
-	if (typeof process !== 'undefined' && process.exit) {
+	// In JavaScript environment, use process.exit if available.
+	const process = (globalThis as { process?: ProcessLike }).process
+	if (process?.exit !== undefined) {
 		process.exit(code)
-	} else {
-		// Fallback: just return (can't really exit in browser)
-		return
 	}
+	throw new ProcessExitError(code)
 }
 
 export function runtime_beforeExit(exitCode: number): void {

@@ -32,6 +32,7 @@ func newTestCommand() *cli.Command {
 	var dir string
 	var parallelism int
 	var runtimeGroups bool
+	var browser bool
 	var cpuProfile string
 	var memProfile string
 	var incrementalTypeCheck bool
@@ -54,6 +55,7 @@ func newTestCommand() *cli.Command {
 				WorkDir:              workDir,
 				OutputRoot:           outputRoot,
 				Parallelism:          parallelism,
+				RuntimeBackend:       testRuntimeBackend(browser),
 				RuntimeGroups:        runtimeGroups,
 				IncrementalTypeCheck: incrementalTypeCheck,
 			}
@@ -148,6 +150,11 @@ func newTestCommand() *cli.Command {
 				Destination: &runtimeGroups,
 			},
 			&cli.BoolFlag{
+				Name:        "browser",
+				Usage:       "run package runtimes in a Chromium browser",
+				Destination: &browser,
+			},
+			&cli.BoolFlag{
 				Name:        "incremental-typecheck",
 				Usage:       "reuse TypeScript build-info files in the test workdir",
 				Destination: &incrementalTypeCheck,
@@ -164,6 +171,13 @@ func newTestCommand() *cli.Command {
 			},
 		},
 	}
+}
+
+func testRuntimeBackend(browser bool) gotest.RuntimeBackend {
+	if browser {
+		return gotest.RuntimeBackendBrowser
+	}
+	return gotest.RuntimeBackendBun
 }
 
 func startCPUProfile(path string) (func(), error) {

@@ -1,7 +1,3 @@
-import * as nodeFS from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-
 import * as context from '@goscript/context/index.js'
 
 export type TestFunc = (t: T) => void | Promise<void>
@@ -22,6 +18,18 @@ export type RunResult = {
   ok: boolean
   failed: number
   skipped: number
+}
+
+interface HostProcess {
+  env?: Record<string, string | undefined>
+  cwd?: () => string
+  chdir?: (dir: string) => void
+  getBuiltinModule?: (name: string) => unknown
+}
+
+interface HostGlobal {
+  process?: HostProcess
+  require?: (name: string) => unknown
 }
 
 class TestControl extends Error {
@@ -127,6 +135,9 @@ export class T {
     try {
       await fn(child)
     } catch (err) {
+      if (isProcessExitError(err)) {
+        throw err
+      }
       if (err instanceof TestControl && err.kind === 'skip') {
         // A skipped subtest is still a successful Run result.
       } else {
@@ -139,6 +150,9 @@ export class T {
     try {
       await child.runCleanups()
     } catch (err) {
+      if (isProcessExitError(err)) {
+        throw err
+      }
       child.Fail()
       if (!(err instanceof TestControl)) {
         child.Log(formatValue(err))
@@ -153,9 +167,21 @@ export class T {
   }
 
   public TempDir(): string {
-    const path = (nodeFS as any).mkdtempSync(
-      join(
-        tmpdir(),
+    const fs = requireHostModule<{
+      mkdtempSync(prefix: string): string
+      rmSync(path: string, opts: { force: boolean; recursive: boolean }): void
+    }>('node:fs', 'testing.TempDir')
+    const os = requireHostModule<{ tmpdir(): string }>(
+      'node:os',
+      'testing.TempDir',
+    )
+    const pathMod = requireHostModule<{ join(...parts: string[]): string }>(
+      'node:path',
+      'testing.TempDir',
+    )
+    const path = fs.mkdtempSync(
+      pathMod.join(
+        os.tmpdir(),
         'goscript-test-' +
           this.testName.replace(/[^A-Za-z0-9_.-]/g, '_') +
           '-' +
@@ -164,7 +190,7 @@ export class T {
     )
     this.tempDirs.push(path)
     this.Cleanup(() => {
-      ;(nodeFS as any).rmSync(path, { force: true, recursive: true })
+      fs.rmSync(path, { force: true, recursive: true })
     })
     return path
   }
@@ -172,12 +198,9 @@ export class T {
   public Parallel(): void {}
 
   public Setenv(key: string, value: string): void {
-    const proc = (globalThis as any).process as
-      | { env?: Record<string, string | undefined> }
-      | undefined
-    const env = proc?.env
+    const env = (globalThis as HostGlobal).process?.env
     if (env === undefined) {
-      return
+      throw new Error('testing.Setenv is not supported without a host process')
     }
     const oldValue = env[key]
     env[key] = value
@@ -191,11 +214,9 @@ export class T {
   }
 
   public Chdir(dir: string): void {
-    const proc = (globalThis as any).process as
-      | { cwd?: () => string; chdir?: (dir: string) => void }
-      | undefined
+    const proc = (globalThis as HostGlobal).process
     if (proc?.cwd === undefined || proc.chdir === undefined) {
-      return
+      throw new Error('testing.Chdir is not supported without a host process')
     }
     const oldDir = proc.cwd()
     proc.chdir(dir)
@@ -249,6 +270,9 @@ export class B extends T {
     try {
       await fn(child)
     } catch (err) {
+      if (isProcessExitError(err)) {
+        throw err
+      }
       child.Error(err)
     }
     if (child.Failed()) {
@@ -328,6 +352,9 @@ export async function runTests(
         try {
           await test.fn(t)
         } catch (err) {
+          if (isProcessExitError(err)) {
+            throw err
+          }
           if (err instanceof TestControl && err.kind === 'skip') {
             skipped++
           } else {
@@ -336,9 +363,8 @@ export async function runTests(
               t.Log(formatValue(err))
             }
           }
-        } finally {
-          await t.runCleanups()
         }
+        await t.runCleanups()
         const elapsed = ((Date.now() - start) / 1000).toFixed(2)
         if (t.Skipped()) {
           if (options.verbose) {
@@ -381,6 +407,48 @@ function formatMessage(format: string, args: unknown[]): string {
     }
     return formatValue(value)
   })
+}
+
+function requireHostModule<T>(name: string, api: string): T {
+  const fromProcess = (globalThis as HostGlobal).process?.getBuiltinModule?.(
+    name,
+  )
+  if (fromProcess !== undefined && fromProcess !== null) {
+    return fromProcess as T
+  }
+  const req = hostRequire()
+  if (req !== undefined) {
+    return req(name) as T
+  }
+  throw new Error(
+    api + ' is not supported without Node-compatible host modules',
+  )
+}
+
+function hostRequire(): ((name: string) => unknown) | undefined {
+  const globalRequire = (globalThis as HostGlobal).require
+  if (typeof globalRequire === 'function') {
+    return globalRequire
+  }
+  try {
+    const req = eval(
+      'typeof require === "function" ? require : undefined',
+    ) as unknown
+    if (typeof req === 'function') {
+      return req as (name: string) => unknown
+    }
+  } catch {
+    return undefined
+  }
+  return undefined
+}
+
+function isProcessExitError(err: unknown): boolean {
+  if (err === null || typeof err !== 'object') {
+    return false
+  }
+  const code = (err as { __goscriptExitCode?: unknown }).__goscriptExitCode
+  return typeof code === 'number'
 }
 
 function formatValue(value: unknown): string {

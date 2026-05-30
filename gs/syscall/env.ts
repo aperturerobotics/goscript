@@ -1,47 +1,62 @@
 import * as $ from '@goscript/builtin/index.js'
 
+type ProcessEnv = Record<string, string | undefined>
+
+interface ProcessLike {
+  env?: ProcessEnv
+}
+
+function hostEnv(): ProcessEnv | undefined {
+  return (globalThis as { process?: ProcessLike }).process?.env
+}
+
 // Environment variable functions using Node.js/browser APIs
 export function Getenv(key: string): [string, boolean] {
-  if (typeof process !== 'undefined' && process.env) {
-    const value = process.env[key]
+  const env = hostEnv()
+  if (env !== undefined) {
+    const value = env[key]
     return value !== undefined ? [value, true] : ['', false]
   }
   return ['', false]
 }
 
 export function Setenv(key: string, value: string): $.GoError {
-  if (typeof process !== 'undefined' && process.env) {
-    process.env[key] = value
+  const env = hostEnv()
+  if (env !== undefined) {
+    env[key] = value
     return null
   }
   return { Error: () => 'setenv not supported' }
 }
 
 export function Unsetenv(key: string): $.GoError {
-  if (typeof process !== 'undefined' && process.env) {
-    delete process.env[key]
+  const env = hostEnv()
+  if (env !== undefined) {
+    delete env[key]
     return null
   }
   return { Error: () => 'unsetenv not supported' }
 }
 
 export function Clearenv(): void {
-  if (typeof process !== 'undefined' && process.env) {
-    for (const key in process.env) {
-      delete process.env[key]
+  const env = hostEnv()
+  if (env !== undefined) {
+    for (const key in env) {
+      delete env[key]
     }
   }
 }
 
 export function Environ(): $.Slice<string> {
-  if (typeof process !== 'undefined' && process.env) {
-    const env: string[] = []
-    for (const [key, value] of Object.entries(process.env)) {
+  const host = hostEnv()
+  if (host !== undefined) {
+    const values: string[] = []
+    for (const [key, value] of Object.entries(host)) {
       if (value !== undefined) {
-        env.push(`${key}=${value}`)
+        values.push(`${key}=${value}`)
       }
     }
-    return $.arrayToSlice(env)
+    return $.arrayToSlice(values)
   }
   return $.arrayToSlice([])
 }

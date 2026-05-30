@@ -108,6 +108,73 @@ describe('testing.T', () => {
     )
   })
 
+  it('propagates process exits out of subtests without cleanup', async () => {
+    const t = new T('root')
+    const exit = { __goscriptExitCode: 7 }
+    let cleaned = false
+
+    await expect(
+      t.Run('child', (child) => {
+        child.Cleanup(() => {
+          cleaned = true
+        })
+        throw exit
+      }),
+    ).rejects.toBe(exit)
+    expect(cleaned).toBe(false)
+  })
+
+  it('propagates process exits out of subtest cleanups', async () => {
+    const t = new T('root')
+    const exit = { __goscriptExitCode: 8 }
+
+    await expect(
+      t.Run('child', (child) => {
+        child.Cleanup(() => {
+          throw exit
+        })
+      }),
+    ).rejects.toBe(exit)
+    expect(t.Failed()).toBe(false)
+  })
+
+  it('propagates process exits out of package tests without cleanup', async () => {
+    const exit = { __goscriptExitCode: 9 }
+    let cleaned = false
+
+    await expect(
+      runTests('example.test/exit', [
+        {
+          name: 'TestExit',
+          fn: (t) => {
+            t.Cleanup(() => {
+              cleaned = true
+            })
+            throw exit
+          },
+        },
+      ]),
+    ).rejects.toBe(exit)
+    expect(cleaned).toBe(false)
+  })
+
+  it('propagates process exits out of package test cleanups', async () => {
+    const exit = { __goscriptExitCode: 10 }
+
+    await expect(
+      runTests('example.test/exit-cleanup', [
+        {
+          name: 'TestExitCleanup',
+          fn: (t) => {
+            t.Cleanup(() => {
+              throw exit
+            })
+          },
+        },
+      ]),
+    ).rejects.toBe(exit)
+  })
+
   it('returns a non-nil context', () => {
     const t = new T('root')
 

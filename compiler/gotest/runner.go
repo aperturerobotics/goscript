@@ -19,6 +19,10 @@ import (
 
 const combinedRuntimeResultPrefix = "__GOSCRIPT_PACKAGE_RESULT__"
 
+const browserAmbientTypesFile = "goscript-browser.d.ts"
+
+const browserAmbientTypes = "declare module \"vitest\" {\n\texport function test(name: string, fn: () => void | Promise<void>): void\n}\n"
+
 // Runner owns GoScript package-test loading, compilation, typecheck, and execution.
 type Runner struct {
 	service *compiler.CompileService
@@ -105,7 +109,15 @@ func (r *Runner) Run(ctx context.Context, req *Request) (*Result, error) {
 		return result, nil
 	}
 	nodeTypesAvailable := tsworkspace.NodeTypesPresent(norm.WorkDir, norm.Dir)
-	if phase := workspace.EnsureNodeAmbientTypes(); phase.Failed() {
+	if norm.RuntimeBackend == RuntimeBackendBrowser {
+		nodeTypesAvailable = false
+	}
+	if norm.RuntimeBackend == RuntimeBackendBrowser {
+		if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, browserAmbientTypesFile, browserAmbientTypes); phase.Failed() {
+			markAllFailures(result, OwnerTestRunner, phase.Error)
+			return result, nil
+		}
+	} else if phase := workspace.EnsureNodeAmbientTypes(); phase.Failed() {
 		markAllFailures(result, OwnerTestRunner, phase.Error)
 		return result, nil
 	}
@@ -130,7 +142,7 @@ func (r *Runner) runPackageTools(
 		return
 	}
 	if len(indexes) == 1 {
-		r.runPackageTypeCheckAndRuntime(ctx, req, workspace, result, indexes[0])
+		r.runPackageTypeCheckAndRuntime(ctx, req, workspace, result, outputRoots, indexes[0])
 		return
 	}
 	typecheck := workspace.RunTool(ctx, tsworkspace.PhaseTypeCheck, req.WorkDir, "tsgo", "--project", "tsconfig.json")
@@ -139,13 +151,13 @@ func (r *Runner) runPackageTools(
 			markTypeCheckFailures(result, owner, processErrorText(typecheck))
 			return
 		}
-		r.runPackageTypeChecksAndRuntimes(ctx, req, workspace, result, indexes)
+		r.runPackageTypeChecksAndRuntimes(ctx, req, workspace, result, outputRoots, indexes)
 		return
 	}
 	for _, idx := range indexes {
 		result.Packages[idx].Phases.TypeCheck = PhaseStatusPass
 	}
-	r.runPackageRuntimes(ctx, req, workspace, result, indexes)
+	r.runPackageRuntimes(ctx, req, workspace, result, outputRoots, indexes)
 }
 
 func (r *Runner) preparePackageWorkspaces(
@@ -178,7 +190,7 @@ func (r *Runner) preparePackageWorkspace(
 	result.Packages[idx].Phases.Workspace = PhaseStatusPass
 	outputRoot := outputRoots[idx]
 	runnerFile := packageRunnerFile(idx)
-	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, runnerFile, renderRunner(result.Packages[idx], req)); phase.Failed() {
+	if phase := workspace.WriteFile(tsworkspace.PhaseWorkspace, runnerFile, renderPackageRunner(result.Packages[idx], req)); phase.Failed() {
 		result.Packages[idx].Owner = OwnerTestRunner
 		result.Packages[idx].Phases.Workspace = PhaseStatusFail
 		result.Packages[idx].Error = phase.Error
@@ -199,6 +211,7 @@ func (r *Runner) runPackageTypeChecksAndRuntimes(
 	req *normalizedRequest,
 	workspace *tsworkspace.Owner,
 	result *Result,
+	outputRoots []string,
 	indexes []int,
 ) {
 	parallelism := max(req.Parallelism, 1)
@@ -215,7 +228,7 @@ func (r *Runner) runPackageTypeChecksAndRuntimes(
 				result.Packages[idx].Error = ctx.Err().Error()
 				return
 			}
-			r.runPackageTypeCheckAndRuntime(ctx, req, workspace, result, idx)
+			r.runPackageTypeCheckAndRuntime(ctx, req, workspace, result, outputRoots, idx)
 		})
 	}
 	wg.Wait()
@@ -226,12 +239,13 @@ func (r *Runner) runPackageTypeCheckAndRuntime(
 	req *normalizedRequest,
 	workspace *tsworkspace.Owner,
 	result *Result,
+	outputRoots []string,
 	idx int,
 ) {
 	if !r.runPackageTypeCheck(ctx, req, workspace, result, idx) {
 		return
 	}
-	r.runPackageRuntime(ctx, req, workspace, result, idx)
+	r.runPackageRuntime(ctx, req, workspace, result, outputRootAt(outputRoots, idx), idx)
 }
 
 func (r *Runner) runPackageTypeCheck(
@@ -257,14 +271,19 @@ func (r *Runner) runPackageRuntimes(
 	req *normalizedRequest,
 	workspace *tsworkspace.Owner,
 	result *Result,
+	outputRoots []string,
 	indexes []int,
 ) {
+	if req.RuntimeBackend == RuntimeBackendBrowser {
+		r.runPackageRuntimesIndividually(ctx, req, workspace, result, outputRoots, indexes)
+		return
+	}
 	if len(indexes) > 1 &&
 		(req.RuntimeGroups || req.Parallelism == 1) &&
 		r.runCombinedPackageRuntimes(ctx, req, workspace, result, indexes) {
 		return
 	}
-	r.runPackageRuntimesIndividually(ctx, req, workspace, result, indexes)
+	r.runPackageRuntimesIndividually(ctx, req, workspace, result, outputRoots, indexes)
 }
 
 func (r *Runner) runPackageRuntimesIndividually(
@@ -272,6 +291,7 @@ func (r *Runner) runPackageRuntimesIndividually(
 	req *normalizedRequest,
 	workspace *tsworkspace.Owner,
 	result *Result,
+	outputRoots []string,
 	indexes []int,
 ) {
 	parallelism := max(req.Parallelism, 1)
@@ -288,7 +308,7 @@ func (r *Runner) runPackageRuntimesIndividually(
 				result.Packages[idx].Error = ctx.Err().Error()
 				return
 			}
-			r.runPackageRuntime(ctx, req, workspace, result, idx)
+			r.runPackageRuntime(ctx, req, workspace, result, outputRootAt(outputRoots, idx), idx)
 		})
 	}
 	wg.Wait()
@@ -396,8 +416,13 @@ func (r *Runner) runPackageRuntime(
 	req *normalizedRequest,
 	workspace *tsworkspace.Owner,
 	result *Result,
+	outputRoot string,
 	idx int,
 ) {
+	if req.RuntimeBackend == RuntimeBackendBrowser {
+		r.runPackageBrowserRuntime(ctx, req, workspace, result, outputRoot, idx)
+		return
+	}
 	runtime := workspace.RunTool(ctx, tsworkspace.PhaseRuntime, req.WorkDir, "bun", packageRunnerFile(idx))
 	result.Packages[idx].Elapsed = runtime.Elapsed
 	result.Packages[idx].Output = strings.TrimSpace(runtime.Output)
@@ -410,6 +435,83 @@ func (r *Runner) runPackageRuntime(
 	}
 	result.Packages[idx].Phases.Runtime = PhaseStatusPass
 	result.Packages[idx].Action = ActionPass
+}
+
+func outputRootAt(outputRoots []string, idx int) string {
+	if idx < 0 || idx >= len(outputRoots) {
+		return ""
+	}
+	return outputRoots[idx]
+}
+
+func (r *Runner) runPackageBrowserRuntime(
+	ctx context.Context,
+	req *normalizedRequest,
+	workspace *tsworkspace.Owner,
+	result *Result,
+	outputRoot string,
+	idx int,
+) {
+	if outputRoot == "" {
+		result.Packages[idx].Action = ActionFail
+		result.Packages[idx].Owner = OwnerTestRunner
+		result.Packages[idx].Phases.Runtime = PhaseStatusFail
+		result.Packages[idx].Error = "browser runtime output root is empty"
+		return
+	}
+	configFile := browserVitestConfigFile(idx)
+	if phase := workspace.WriteFile(
+		tsworkspace.PhaseWorkspace,
+		configFile,
+		renderBrowserVitestConfig(req, outputRoot, packageRunnerFile(idx)),
+	); phase.Failed() {
+		result.Packages[idx].Action = ActionFail
+		result.Packages[idx].Owner = OwnerTestRunner
+		result.Packages[idx].Phases.Workspace = PhaseStatusFail
+		result.Packages[idx].Error = phase.Error
+		return
+	}
+	runtime := workspace.RunTool(ctx, tsworkspace.PhaseRuntime, req.WorkDir, "vitest", "run", "--config", configFile, "--reporter", "verbose")
+	result.Packages[idx].Elapsed = runtime.Elapsed
+	result.Packages[idx].Output = strings.TrimSpace(runtime.Output)
+	records, ok := parseCombinedRuntimeRecords(runtime.Output)
+	if !ok {
+		result.Packages[idx].Action = ActionFail
+		result.Packages[idx].Owner = classifyProcessOutput(runtime.Output)
+		result.Packages[idx].Phases.Runtime = PhaseStatusFail
+		result.Packages[idx].Error = processErrorText(runtime)
+		if result.Packages[idx].Error == "" {
+			result.Packages[idx].Error = "browser test did not report a GoScript package result"
+		}
+		return
+	}
+	for _, record := range records {
+		if record.PackagePath != result.Packages[idx].PackagePath {
+			continue
+		}
+		result.Packages[idx].Elapsed = time.Duration(record.ElapsedMS) * time.Millisecond
+		result.Packages[idx].Output = strings.TrimSpace(record.Output)
+		if record.OK && !runtime.Failed() {
+			result.Packages[idx].Phases.Runtime = PhaseStatusPass
+			result.Packages[idx].Action = ActionPass
+			return
+		}
+		result.Packages[idx].Action = ActionFail
+		result.Packages[idx].Owner = classifyProcessOutput(record.Output)
+		result.Packages[idx].Phases.Runtime = PhaseStatusFail
+		result.Packages[idx].Error = strings.TrimSpace(record.Output)
+		if result.Packages[idx].Error == "" {
+			result.Packages[idx].Error = processErrorText(runtime)
+		}
+		if result.Packages[idx].Error == "" {
+			result.Packages[idx].Error = "goscript browser test failed"
+		}
+		return
+	}
+	result.Packages[idx].Action = ActionFail
+	result.Packages[idx].Owner = OwnerTestRunner
+	result.Packages[idx].Phases.Runtime = PhaseStatusFail
+	result.Packages[idx].Error = "browser test did not report package " + result.Packages[idx].PackagePath
 }
 
 func (r *Runner) compileTestImports(
@@ -800,6 +902,17 @@ func packageTSConfigFile(idx int) string {
 	return "tsconfig-" + strconv.Itoa(idx) + ".json"
 }
 
+func browserVitestConfigFile(idx int) string {
+	return "vitest-browser-" + strconv.Itoa(idx) + ".config.mts"
+}
+
+func renderPackageRunner(result PackageResult, req *normalizedRequest) string {
+	if req.RuntimeBackend == RuntimeBackendBrowser {
+		return renderBrowserRunner(result, req)
+	}
+	return renderRunner(result, req)
+}
+
 func renderRunner(result PackageResult, req *normalizedRequest) string {
 	var b strings.Builder
 	b.WriteString("import { runTests } from \"@goscript/testing/index.js\"\n")
@@ -846,6 +959,112 @@ func renderRunner(result PackageResult, req *normalizedRequest) string {
 	b.WriteString(" })\n")
 	b.WriteString("if (!result.ok) {\n\tthrow new Error(\"goscript test failed\")\n}\n")
 	b.WriteString("if (typeof process !== \"undefined\" && process.exit) {\n\tprocess.exit(0)\n}\n")
+	return b.String()
+}
+
+func renderBrowserRunner(result PackageResult, req *normalizedRequest) string {
+	var b strings.Builder
+	b.WriteString("import { test } from \"vitest\"\n")
+	b.WriteString("import { runTests } from \"@goscript/testing/index.js\"\n")
+	imports := runnerImports(result.Tests)
+	for idx, packagePath := range imports {
+		b.WriteString("import * as pkg")
+		b.WriteString(strconv.Itoa(idx))
+		b.WriteString(" from ")
+		b.WriteString(strconv.Quote("@goscript/" + packagePath + "/index.js"))
+		b.WriteString("\n")
+	}
+	b.WriteString("\n")
+	b.WriteString("test(")
+	b.WriteString(strconv.Quote(result.PackagePath))
+	b.WriteString(", async () => {\n")
+	b.WriteString("\tconst __goscriptResultPrefix = ")
+	b.WriteString(strconv.Quote(combinedRuntimeResultPrefix))
+	b.WriteString("\n")
+	b.WriteString("\tconst __goscriptOriginalLog = console.log\n")
+	b.WriteString("\tconst __goscriptLogs: string[] = []\n")
+	b.WriteString("\tconst __goscriptStartedAt = Date.now()\n")
+	b.WriteString("\tlet __goscriptOK = false\n")
+	b.WriteString("\tlet __goscriptError: unknown = null\n")
+	b.WriteString("\tconsole.log = (...args) => __goscriptLogs.push(args.map((arg) => String(arg)).join(' '))\n")
+	b.WriteString("\ttry {\n")
+	b.WriteString("\t\tconst result = await runTests(")
+	b.WriteString(strconv.Quote(result.PackagePath))
+	b.WriteString(", [\n")
+	for idx, test := range result.Tests {
+		b.WriteString("\t\t\t{ name: ")
+		b.WriteString(strconv.Quote(test.Name))
+		b.WriteString(", fn: async (t) => await pkg")
+		b.WriteString(strconv.Itoa(slices.Index(imports, test.PackagePath)))
+		b.WriteString(".")
+		b.WriteString(test.Name)
+		b.WriteString("(t) }")
+		if idx != len(result.Tests)-1 {
+			b.WriteString(",")
+		}
+		b.WriteString("\n")
+	}
+	b.WriteString("\t\t], { verbose: ")
+	if req.Verbose {
+		b.WriteString("true")
+	} else {
+		b.WriteString("false")
+	}
+	b.WriteString(", count: ")
+	b.WriteString(strconv.Itoa(req.Count))
+	b.WriteString(", short: ")
+	if req.Short {
+		b.WriteString("true")
+	} else {
+		b.WriteString("false")
+	}
+	b.WriteString(" })\n")
+	b.WriteString("\t\t__goscriptOK = result.ok\n")
+	b.WriteString("\t\tif (!result.ok) {\n")
+	b.WriteString("\t\t\t__goscriptError = new Error(\"goscript test failed\")\n")
+	b.WriteString("\t\t}\n")
+	b.WriteString("\t} catch (err) {\n")
+	b.WriteString("\t\tconst exitCode = __goscriptProcessExitCode(err)\n")
+	b.WriteString("\t\tif (exitCode !== null) {\n")
+	b.WriteString("\t\t\t__goscriptLogs.push(\"goscript process exited with code \" + String(exitCode))\n")
+	b.WriteString("\t\t\tif (exitCode === 0 && ")
+	if req.PanicOnExit0 {
+		b.WriteString("true")
+	} else {
+		b.WriteString("false")
+	}
+	b.WriteString(") {\n")
+	b.WriteString("\t\t\t\t__goscriptOK = false\n")
+	b.WriteString("\t\t\t\t__goscriptError = new Error(\"unexpected os.Exit(0) during test\")\n")
+	b.WriteString("\t\t\t} else {\n")
+	b.WriteString("\t\t\t\t__goscriptOK = exitCode === 0\n")
+	b.WriteString("\t\t\t\tif (exitCode !== 0) {\n")
+	b.WriteString("\t\t\t\t__goscriptError = new Error(\"goscript process exited with code \" + String(exitCode))\n")
+	b.WriteString("\t\t\t\t}\n")
+	b.WriteString("\t\t\t}\n")
+	b.WriteString("\t\t} else {\n")
+	b.WriteString("\t\t\t__goscriptOK = false\n")
+	b.WriteString("\t\t\t__goscriptError = err\n")
+	b.WriteString("\t\t\t__goscriptLogs.push(err && (err as Error).stack ? String((err as Error).stack) : String(err))\n")
+	b.WriteString("\t\t}\n")
+	b.WriteString("\t} finally {\n")
+	b.WriteString("\t\tconsole.log = __goscriptOriginalLog\n")
+	b.WriteString("\t\t__goscriptOriginalLog(__goscriptResultPrefix + JSON.stringify({ packagePath: ")
+	b.WriteString(strconv.Quote(result.PackagePath))
+	b.WriteString(", ok: __goscriptOK, elapsedMs: Date.now() - __goscriptStartedAt, output: __goscriptLogs.join('\\n') }))\n")
+	b.WriteString("\t}\n")
+	b.WriteString("\tif (__goscriptError) {\n")
+	b.WriteString("\t\tthrow __goscriptError\n")
+	b.WriteString("\t}\n")
+	b.WriteString("})\n")
+	b.WriteString("\n")
+	b.WriteString("function __goscriptProcessExitCode(err: unknown): number | null {\n")
+	b.WriteString("\tif (err === null || typeof err !== \"object\") {\n")
+	b.WriteString("\t\treturn null\n")
+	b.WriteString("\t}\n")
+	b.WriteString("\tconst code = (err as { __goscriptExitCode?: unknown }).__goscriptExitCode\n")
+	b.WriteString("\treturn typeof code === \"number\" ? code : null\n")
+	b.WriteString("}\n")
 	return b.String()
 }
 
@@ -1024,6 +1243,49 @@ func aggregateTypeCheckFailureOwner(output string) (Owner, bool) {
 	return "", false
 }
 
+func renderBrowserVitestConfig(req *normalizedRequest, outputRoot string, runnerFile string) string {
+	outputRoot = filepath.ToSlash(outputRoot)
+	runnerFile = filepath.ToSlash(runnerFile)
+	timeoutMS := int64(30000)
+	if req.Timeout > 0 {
+		timeoutMS = int64(req.Timeout / time.Millisecond)
+	}
+
+	var b strings.Builder
+	b.WriteString("import { defineConfig } from \"vitest/config\"\n")
+	b.WriteString("import { playwright } from \"@vitest/browser-playwright\"\n\n")
+	b.WriteString("export default defineConfig({\n")
+	b.WriteString("  test: {\n")
+	b.WriteString("    include: [")
+	b.WriteString(strconv.Quote(runnerFile))
+	b.WriteString("],\n")
+	b.WriteString("    browser: {\n")
+	b.WriteString("      enabled: true,\n")
+	b.WriteString("      headless: true,\n")
+	b.WriteString("      provider: playwright(),\n")
+	b.WriteString("      instances: [{ browser: \"chromium\" }],\n")
+	b.WriteString("    },\n")
+	b.WriteString("    testTimeout: ")
+	b.WriteString(strconv.FormatInt(timeoutMS, 10))
+	b.WriteString(",\n")
+	b.WriteString("    hookTimeout: ")
+	b.WriteString(strconv.FormatInt(timeoutMS, 10))
+	b.WriteString(",\n")
+	b.WriteString("  },\n")
+	b.WriteString("  resolve: {\n")
+	b.WriteString("    alias: [\n")
+	b.WriteString("      { find: /^@goscript\\/(.*)\\.js$/, replacement: ")
+	b.WriteString(strconv.Quote(outputRoot + "/@goscript/$1.ts"))
+	b.WriteString(" },\n")
+	b.WriteString("      { find: /^@goscript\\/(.*)$/, replacement: ")
+	b.WriteString(strconv.Quote(outputRoot + "/@goscript/$1"))
+	b.WriteString(" },\n")
+	b.WriteString("    ],\n")
+	b.WriteString("  },\n")
+	b.WriteString("})\n")
+	return b.String()
+}
+
 func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFile string, projectFile string, nodeTypesAvailable bool) string {
 	var b strings.Builder
 	b.WriteString("{\n")
@@ -1053,10 +1315,17 @@ func renderTypeScriptProject(req *normalizedRequest, outputRoot string, runnerFi
 	b.WriteString("]\n")
 	b.WriteString("    }\n")
 	b.WriteString("  },\n")
-	b.WriteString("  \"include\": [")
-	b.WriteString(strconv.Quote(runnerFile))
-	b.WriteString(", ")
-	b.WriteString(strconv.Quote(tsworkspace.NodeAmbientTypesFile))
+	if req.RuntimeBackend == RuntimeBackendBrowser {
+		b.WriteString("  \"include\": [")
+		b.WriteString(strconv.Quote(runnerFile))
+		b.WriteString(", ")
+		b.WriteString(strconv.Quote(browserAmbientTypesFile))
+	} else {
+		b.WriteString("  \"include\": [")
+		b.WriteString(strconv.Quote(runnerFile))
+		b.WriteString(", ")
+		b.WriteString(strconv.Quote(tsworkspace.NodeAmbientTypesFile))
+	}
 	b.WriteString("]\n")
 	b.WriteString("}\n")
 	return b.String()
@@ -1111,8 +1380,13 @@ func renderRuntimeTypeScriptProject(req *normalizedRequest, outputRoots []string
 	b.WriteString("]\n")
 	b.WriteString("    }\n")
 	b.WriteString("  },\n")
-	b.WriteString("  \"include\": [\"runner-*.ts\", ")
-	b.WriteString(strconv.Quote(tsworkspace.NodeAmbientTypesFile))
+	if req.RuntimeBackend == RuntimeBackendBrowser {
+		b.WriteString("  \"include\": [\"runner-*.ts\", ")
+		b.WriteString(strconv.Quote(browserAmbientTypesFile))
+	} else {
+		b.WriteString("  \"include\": [\"runner-*.ts\", ")
+		b.WriteString(strconv.Quote(tsworkspace.NodeAmbientTypesFile))
+	}
 	b.WriteString("]\n")
 	b.WriteString("}\n")
 	return b.String()

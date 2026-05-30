@@ -30,12 +30,16 @@ type Request struct {
 	Timeout time.Duration
 	// Verbose emits test-level output.
 	Verbose bool
+	// PanicOnExit0 makes os.Exit(0) fail like go test's -test.paniconexit0.
+	PanicOnExit0 bool
 	// WorkDir stores generated runner files and logs.
 	WorkDir string
 	// OutputRoot stores generated TypeScript packages.
 	OutputRoot string
 	// Parallelism limits concurrent package typecheck/runtime subprocesses.
 	Parallelism int
+	// RuntimeBackend selects the JavaScript host used for package runtime tests.
+	RuntimeBackend RuntimeBackend
 	// RuntimeGroups allows package runtimes to share worker Bun processes.
 	RuntimeGroups bool
 	// IncrementalTypeCheck reuses TypeScript build-info files inside WorkDir.
@@ -52,12 +56,24 @@ type normalizedRequest struct {
 	Short                bool
 	Timeout              time.Duration
 	Verbose              bool
+	PanicOnExit0         bool
 	WorkDir              string
 	OutputRoot           string
 	Parallelism          int
+	RuntimeBackend       RuntimeBackend
 	RuntimeGroups        bool
 	IncrementalTypeCheck bool
 }
+
+// RuntimeBackend selects the JavaScript host used for package runtime tests.
+type RuntimeBackend string
+
+const (
+	// RuntimeBackendBun runs generated package-test modules directly in Bun.
+	RuntimeBackendBun RuntimeBackend = "bun"
+	// RuntimeBackendBrowser runs generated package-test modules in Chromium.
+	RuntimeBackendBrowser RuntimeBackend = "browser"
+)
 
 // DefaultParallelism returns the default package subprocess concurrency.
 func DefaultParallelism() int {
@@ -134,6 +150,16 @@ func (r *Request) normalize() (*normalizedRequest, error) {
 		return nil, errors.New("test parallelism must be positive")
 	}
 
+	runtimeBackend := r.RuntimeBackend
+	if runtimeBackend == "" {
+		runtimeBackend = RuntimeBackendBun
+	}
+	switch runtimeBackend {
+	case RuntimeBackendBun, RuntimeBackendBrowser:
+	default:
+		return nil, errors.Errorf("unsupported runtime backend %q", runtimeBackend)
+	}
+
 	return &normalizedRequest{
 		Dir:                  absDir,
 		Patterns:             patterns,
@@ -144,9 +170,11 @@ func (r *Request) normalize() (*normalizedRequest, error) {
 		Short:                r.Short,
 		Timeout:              r.Timeout,
 		Verbose:              r.Verbose,
+		PanicOnExit0:         r.PanicOnExit0,
 		WorkDir:              workDir,
 		OutputRoot:           outputRoot,
 		Parallelism:          parallelism,
+		RuntimeBackend:       runtimeBackend,
 		RuntimeGroups:        r.RuntimeGroups,
 		IncrementalTypeCheck: r.IncrementalTypeCheck,
 	}, nil

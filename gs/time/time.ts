@@ -928,7 +928,7 @@ export class ParseError extends Error {
 
 // Timer represents a single event timer
 export class Timer {
-  private _timeout: NodeJS.Timeout | number
+  private _timeout: ReturnType<typeof setTimeout>
   private _duration: Duration
   private _callback?: () => void
   private _channel = makeChannel(1, new Time(), 'both')
@@ -958,7 +958,7 @@ export class Timer {
     return true
   }
 
-  private start(d: Duration): NodeJS.Timeout | number {
+  private start(d: Duration): ReturnType<typeof setTimeout> {
     const ms = timeoutMilliseconds(d)
     if (this._callback) {
       return setTimeout(this._callback, ms)
@@ -971,7 +971,7 @@ export class Timer {
 
 // Ticker holds a channel that delivers ticks at intervals
 export class Ticker {
-  private _interval: NodeJS.Timeout | number
+  private _interval: ReturnType<typeof setInterval>
   private _duration: Duration
   private _stopped: boolean = false
   private _channel = makeChannel(1, new Time(), 'both')
@@ -1007,7 +1007,7 @@ export class Ticker {
     }
   }
 
-  private start(d: Duration): NodeJS.Timeout | number {
+  private start(d: Duration): ReturnType<typeof setInterval> {
     const ms = timeoutMilliseconds(d)
     return setInterval(() => {
       this._channel.send(Now()).catch(() => {})

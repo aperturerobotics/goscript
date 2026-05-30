@@ -36,8 +36,9 @@ export function NumCPU(): number {
 export function GC(): void {
   // In JavaScript, we can't force garbage collection
   // Some engines have gc() function in development, but it's not standard
-  if (typeof globalThis.gc === 'function') {
-    ;(globalThis as any).gc()
+  const gc = (globalThis as { gc?: () => void }).gc
+  if (typeof gc === 'function') {
+    gc()
   }
   // Otherwise, this is a no-op
 }
