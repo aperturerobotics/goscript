@@ -879,17 +879,30 @@ function matchesPointerType(value: any, info: TypeInfo): boolean {
  * @returns True if the value matches the function type, false otherwise.
  */
 function matchesFunctionType(value: any, info: FunctionTypeInfo): boolean {
-  // First check if the value is a function
   if (typeof value !== 'function') {
     return false
   }
-
-  // This is important for named function types
-  if (info.name && value.__goTypeName) {
-    return info.name === value.__goTypeName
+  const valueInfo = functionValueTypeInfo(value)
+  if (!valueInfo) {
+    return false
   }
+  return areTypeInfosIdentical(valueInfo, info)
+}
 
-  return true
+function functionValueTypeInfo(value: any): FunctionTypeInfo | null {
+  const typeInfo = value.__typeInfo
+  if (!typeInfo || typeInfo.kind !== TypeKind.Function) {
+    return null
+  }
+  const goTypeName =
+    typeof value.__goTypeName === 'string' ? value.__goTypeName : undefined
+  if (goTypeName && typeInfo.name && goTypeName !== typeInfo.name) {
+    return null
+  }
+  if (goTypeName && !typeInfo.name) {
+    return { ...typeInfo, name: goTypeName }
+  }
+  return typeInfo
 }
 
 /**
@@ -1463,18 +1476,32 @@ export function namedValueInterfaceValue<T>(
   return boxed as T
 }
 
-export function namedFunction<T>(fn: T, typeName: string): T {
+export function namedFunction<T>(
+  fn: T,
+  typeName: string,
+  typeInfo?: FunctionTypeInfo,
+): T {
   if (typeof fn !== 'function') {
     return fn
   }
-  return Object.assign(fn, { __goTypeName: typeName })
+  return Object.assign(
+    fn,
+    typeInfo ?
+      { __goTypeName: typeName, __typeInfo: typeInfo }
+    : { __goTypeName: typeName },
+  )
 }
 
 export function functionValue<T extends (...args: any[]) => any>(
   fn: T,
   typeInfo: FunctionTypeInfo,
 ): T {
-  return Object.assign(fn, { __typeInfo: typeInfo })
+  return Object.assign(
+    fn,
+    typeInfo.name ?
+      { __typeInfo: typeInfo, __goTypeName: typeInfo.name }
+    : { __typeInfo: typeInfo },
+  )
 }
 
 export interface GenericTypeDescriptor<T = any> {

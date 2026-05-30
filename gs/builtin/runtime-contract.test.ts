@@ -139,9 +139,12 @@ describe('builtin runtime contract helpers', () => {
     expect(uint(uint64And(0xf0n, 0x3cn), 32)).toBe(0x30)
     expect(uint(uint64Or(0xf0n, 0x0fn), 32)).toBe(0xff)
     expect(uint(uint64Xor(0xf0n, 0xffn), 32)).toBe(0x0f)
-    expect(uint64And(uint('18446744073709551615', 64), uint('18014398509481983', 64))).toBe(
-      18014398509481983n,
-    )
+    expect(
+      uint64And(
+        uint('18446744073709551615', 64),
+        uint('18014398509481983', 64),
+      ),
+    ).toBe(18014398509481983n)
     expect(uintShr(0x80000000, 31, 32)).toBe(1)
     expect(uintShr(0x80000000, 32, 32)).toBe(0)
     expect(uintShr(0xff, 4, 8)).toBe(15)
@@ -187,9 +190,9 @@ describe('builtin runtime contract helpers', () => {
     expect(bytesToUint8Array(pointerValue(namedPointerMethodBox))).toEqual(
       new Uint8Array([1, 2, 3]),
     )
-    expect(bytesToUint8Array(goSlice(pointerValue(namedPointerMethodBox), 1))).toEqual(
-      new Uint8Array([2, 3]),
-    )
+    expect(
+      bytesToUint8Array(goSlice(pointerValue(namedPointerMethodBox), 1)),
+    ).toEqual(new Uint8Array([2, 3]))
     const namedStringBox = namedValueInterfaceValue('id', 'main.Name', {
       String: (receiver: string) => `name:${receiver}`,
     })
@@ -307,19 +310,16 @@ describe('builtin runtime contract helpers', () => {
         returns: [],
       },
     ])
-    registerStructType(
-      'collision.Hash',
-      new HashMessage(),
-      [],
-      HashMessage,
-      {},
-    )
+    registerStructType('collision.Hash', new HashMessage(), [], HashMessage, {})
 
     expect(typeAssertTuple(new HashInterfaceImpl(), 'collision.Hash')[1]).toBe(
       true,
     )
     expect(
-      typeAssertTuple(markAsStructValue(new HashMessage()), 'collision.Hash')[1],
+      typeAssertTuple(
+        markAsStructValue(new HashMessage()),
+        'collision.Hash',
+      )[1],
     ).toBe(true)
   })
 
@@ -426,7 +426,9 @@ describe('builtin runtime contract helpers', () => {
     sh.Data = strh.Data
     sh.Len = strh.Len
     sh.Cap = strh.Len
-    expect(bytesToUint8Array(headerBytes.value)).toEqual(new Uint8Array([97, 98, 99]))
+    expect(bytesToUint8Array(headerBytes.value)).toEqual(
+      new Uint8Array([97, 98, 99]),
+    )
   })
 
   it('exposes stable synthetic slice index addresses', () => {
@@ -485,7 +487,11 @@ describe('builtin runtime contract helpers', () => {
     expect(typeAssert<Runner>(new Runner(), runnerInterface).ok).toBe(true)
     expect(typeAssert<Runner>(null, runnerInterface).ok).toBe(false)
 
-    const emptyInterface = registerInterfaceType('phase5.EmptyInterface', null, [])
+    const emptyInterface = registerInterfaceType(
+      'phase5.EmptyInterface',
+      null,
+      [],
+    )
     const fn = functionValue(() => 'ok', {
       kind: TypeKind.Function,
       params: [],
@@ -564,16 +570,26 @@ describe('builtin runtime contract helpers', () => {
     expect(bytesOk).toBe(true)
     expect(pointerValue(assertedBytesRef)).toBe(bytesRef.value)
 
+    const greetInfo = {
+      kind: TypeKind.Function,
+      name: 'phase5.Greet',
+      params: [{ kind: TypeKind.Basic, name: 'string' }],
+      results: [{ kind: TypeKind.Basic, name: 'string' }],
+    }
     const greet = namedFunction(
       (name: string) => `hello ${name}`,
       'phase5.Greet',
+      greetInfo,
     )
+    expect(typeAssert<typeof greet>(greet, greetInfo).ok).toBe(true)
     expect(
       typeAssert<typeof greet>(greet, {
         kind: TypeKind.Function,
         name: 'phase5.Greet',
+        params: [{ kind: TypeKind.Basic, name: 'int' }],
+        results: [{ kind: TypeKind.Basic, name: 'string' }],
       }).ok,
-    ).toBe(true)
+    ).toBe(false)
     expect(
       typeAssert<{ Name: string }>(
         { Name: 'Alice' },
@@ -596,6 +612,20 @@ describe('builtin runtime contract helpers', () => {
     })
     expect(literal(7)).toBe('7')
     expect(literal).toHaveProperty('__typeInfo')
+    expect(
+      typeAssert<typeof literal>(literal, {
+        kind: TypeKind.Function,
+        params: [{ kind: TypeKind.Basic, name: 'int' }],
+        results: [{ kind: TypeKind.Basic, name: 'string' }],
+      }).ok,
+    ).toBe(true)
+    expect(
+      typeAssert<(...args: unknown[]) => unknown>(() => undefined, {
+        kind: TypeKind.Function,
+        params: [],
+        results: [],
+      }).ok,
+    ).toBe(false)
 
     const genericArgs = {
       T: {
@@ -674,7 +704,9 @@ describe('builtin runtime contract helpers', () => {
     await signal.send('value')
     const received = await Promise.race([
       signal.receive(),
-      new Promise<string>((resolve) => setTimeout(() => resolve('timeout'), 20)),
+      new Promise<string>((resolve) =>
+        setTimeout(() => resolve('timeout'), 20),
+      ),
     ])
     expect(received).toBe('value')
   })

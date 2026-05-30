@@ -222,6 +222,26 @@ export interface Type {
   // NumField returns a struct type's field count.
   NumField(): number
 
+  // NumIn returns a function type's input count.
+  // Panics if the type's Kind is not Func.
+  NumIn(): number
+
+  // In returns a function type's i'th input type.
+  // Panics if the type's Kind is not Func or i is out of range.
+  In(i: number): Type
+
+  // NumOut returns a function type's output count.
+  // Panics if the type's Kind is not Func.
+  NumOut(): number
+
+  // Out returns a function type's i'th output type.
+  // Panics if the type's Kind is not Func or i is out of range.
+  Out(i: number): Type
+
+  // IsVariadic reports whether a function type's final input is variadic.
+  // Panics if the type's Kind is not Func.
+  IsVariadic(): boolean
+
   // PkgPath returns the package path for named types, empty for unnamed types.
   PkgPath(): string
 
@@ -281,6 +301,10 @@ export interface Type {
   Comparable(): boolean
 }
 
+function nonFunctionTypePanic(method: string, t: Type): never {
+  throw new Error(`reflect: ${method} of non-func type ${t.String()}`)
+}
+
 // InvalidTypeInstance is a singleton type for invalid/zero reflect.Value
 class InvalidTypeClass implements Type {
   Kind(): Kind {
@@ -309,6 +333,21 @@ class InvalidTypeClass implements Type {
   }
   NumField(): number {
     return 0
+  }
+  NumIn(): number {
+    return nonFunctionTypePanic('NumIn', this)
+  }
+  In(_i: number): Type {
+    return nonFunctionTypePanic('In', this)
+  }
+  NumOut(): number {
+    return nonFunctionTypePanic('NumOut', this)
+  }
+  Out(_i: number): Type {
+    return nonFunctionTypePanic('Out', this)
+  }
+  IsVariadic(): boolean {
+    return nonFunctionTypePanic('IsVariadic', this)
   }
   Field(_i: number): StructField {
     throw new Error('reflect: Field of invalid type')
@@ -799,7 +838,12 @@ export class Value {
     if (typeof method !== 'function') {
       return new Value()
     }
-    return new Value(method.bind(receiver), new FunctionType('func'))
+    const [signature] = methodSignatureByName(this.Type(), name)
+    const methodType =
+      signature ?
+        methodTypeFromSignature(signature, this.Type(), false)
+      : new FunctionType('func')
+    return new Value(method.bind(receiver), methodType)
   }
 
   public Call(inArgs: $.Slice<Value>): $.Slice<Value> {
@@ -1268,6 +1312,26 @@ export class BasicType implements Type {
     return 0
   }
 
+  public NumIn(): number {
+    return nonFunctionTypePanic('NumIn', this)
+  }
+
+  public In(_i: number): Type {
+    return nonFunctionTypePanic('In', this)
+  }
+
+  public NumOut(): number {
+    return nonFunctionTypePanic('NumOut', this)
+  }
+
+  public Out(_i: number): Type {
+    return nonFunctionTypePanic('Out', this)
+  }
+
+  public IsVariadic(): boolean {
+    return nonFunctionTypePanic('IsVariadic', this)
+  }
+
   public PkgPath(): string {
     if (this._typeName) {
       const dotIndex = this._typeName.lastIndexOf('.')
@@ -1463,6 +1527,26 @@ class SliceType implements Type {
     return 0
   }
 
+  public NumIn(): number {
+    return nonFunctionTypePanic('NumIn', this)
+  }
+
+  public In(_i: number): Type {
+    return nonFunctionTypePanic('In', this)
+  }
+
+  public NumOut(): number {
+    return nonFunctionTypePanic('NumOut', this)
+  }
+
+  public Out(_i: number): Type {
+    return nonFunctionTypePanic('Out', this)
+  }
+
+  public IsVariadic(): boolean {
+    return nonFunctionTypePanic('IsVariadic', this)
+  }
+
   public PkgPath(): string {
     return ''
   }
@@ -1561,6 +1645,26 @@ class ArrayType implements Type {
 
   public NumField(): number {
     return 0
+  }
+
+  public NumIn(): number {
+    return nonFunctionTypePanic('NumIn', this)
+  }
+
+  public In(_i: number): Type {
+    return nonFunctionTypePanic('In', this)
+  }
+
+  public NumOut(): number {
+    return nonFunctionTypePanic('NumOut', this)
+  }
+
+  public Out(_i: number): Type {
+    return nonFunctionTypePanic('Out', this)
+  }
+
+  public IsVariadic(): boolean {
+    return nonFunctionTypePanic('IsVariadic', this)
   }
 
   public Len(): number {
@@ -1664,6 +1768,26 @@ class PointerType implements Type {
     return 0
   }
 
+  public NumIn(): number {
+    return nonFunctionTypePanic('NumIn', this)
+  }
+
+  public In(_i: number): Type {
+    return nonFunctionTypePanic('In', this)
+  }
+
+  public NumOut(): number {
+    return nonFunctionTypePanic('NumOut', this)
+  }
+
+  public Out(_i: number): Type {
+    return nonFunctionTypePanic('Out', this)
+  }
+
+  public IsVariadic(): boolean {
+    return nonFunctionTypePanic('IsVariadic', this)
+  }
+
   public PkgPath(): string {
     return ''
   }
@@ -1731,7 +1855,7 @@ class PointerType implements Type {
     return 0
   }
   public MethodByName(name: string): [Method, boolean] {
-    return typeMethodByName(this._elemType, name)
+    return typeMethodByName(this, name)
   }
 
   public Len(): number {
@@ -1744,10 +1868,44 @@ class PointerType implements Type {
 }
 
 // Function type implementation
+interface FunctionTypeDescriptor {
+  name?: string
+  signature?: string
+  params?: Type[]
+  results?: Type[]
+  variadic?: boolean
+}
+
 class FunctionType implements Type {
-  constructor(private _signature: string) {}
+  private _name: string
+  private _signature: string
+  private _params: Type[]
+  private _results: Type[]
+  private _variadic: boolean
+
+  constructor(signatureOrDescriptor: string | FunctionTypeDescriptor) {
+    if (typeof signatureOrDescriptor === 'string') {
+      this._name = ''
+      this._signature = signatureOrDescriptor
+      this._params = []
+      this._results = []
+      this._variadic = false
+      return
+    }
+
+    this._name = signatureOrDescriptor.name ?? ''
+    this._params = signatureOrDescriptor.params ?? []
+    this._results = signatureOrDescriptor.results ?? []
+    this._variadic = signatureOrDescriptor.variadic ?? false
+    this._signature =
+      signatureOrDescriptor.signature ??
+      formatFunctionSignature(this._params, this._results, this._variadic)
+  }
 
   public String(): string {
+    if (this._name !== '') {
+      return this._name
+    }
     return this._signature
   }
 
@@ -1771,12 +1929,54 @@ class FunctionType implements Type {
     return 0
   }
 
+  public NumIn(): number {
+    return this._params.length
+  }
+
+  public In(i: number): Type {
+    if (i < 0 || i >= this._params.length) {
+      throw new Error(
+        `reflect: In index out of range [${i}] with length ${this._params.length}`,
+      )
+    }
+    return this._params[i]
+  }
+
+  public NumOut(): number {
+    return this._results.length
+  }
+
+  public Out(i: number): Type {
+    if (i < 0 || i >= this._results.length) {
+      throw new Error(
+        `reflect: Out index out of range [${i}] with length ${this._results.length}`,
+      )
+    }
+    return this._results[i]
+  }
+
+  public IsVariadic(): boolean {
+    return this._variadic
+  }
+
   public PkgPath(): string {
+    if (this._name !== '') {
+      const dotIndex = this._name.lastIndexOf('.')
+      if (dotIndex > 0) {
+        return this._name.substring(0, dotIndex)
+      }
+    }
     return ''
   }
 
   public Name(): string {
-    // Function types are unnamed composite types
+    if (this._name !== '') {
+      const dotIndex = this._name.lastIndexOf('.')
+      if (dotIndex >= 0) {
+        return this._name.substring(dotIndex + 1)
+      }
+      return this._name
+    }
     return ''
   }
 
@@ -1844,6 +2044,30 @@ class FunctionType implements Type {
   }
 }
 
+function formatFunctionSignature(
+  params: Type[],
+  results: Type[],
+  variadic: boolean,
+): string {
+  const paramStrings = params.map((param, index) => {
+    const typeName = param.String()
+    if (!variadic || index !== params.length - 1) {
+      return typeName
+    }
+    if (typeName.startsWith('[]')) {
+      return '...' + typeName.slice(2)
+    }
+    return '...' + typeName
+  })
+  let signature = `func(${paramStrings.join(', ')})`
+  if (results.length === 1) {
+    signature += ` ${results[0].String()}`
+  } else if (results.length > 1) {
+    signature += ` (${results.map((result) => result.String()).join(', ')})`
+  }
+  return signature
+}
+
 // Map type implementation
 class MapType implements Type {
   constructor(
@@ -1873,6 +2097,26 @@ class MapType implements Type {
 
   public NumField(): number {
     return 0
+  }
+
+  public NumIn(): number {
+    return nonFunctionTypePanic('NumIn', this)
+  }
+
+  public In(_i: number): Type {
+    return nonFunctionTypePanic('In', this)
+  }
+
+  public NumOut(): number {
+    return nonFunctionTypePanic('NumOut', this)
+  }
+
+  public Out(_i: number): Type {
+    return nonFunctionTypePanic('Out', this)
+  }
+
+  public IsVariadic(): boolean {
+    return nonFunctionTypePanic('IsVariadic', this)
   }
 
   public Key(): Type {
@@ -2038,17 +2282,50 @@ function zeroMethod(): Method {
 function methodFromSignature(
   signature: $.MethodSignature,
   index: number,
+  receiver: Type,
 ): Method {
   return {
     Name: signature.name,
-    Type: new FunctionType('func'),
+    Type: methodTypeFromSignature(
+      signature,
+      receiver,
+      receiver.Kind() !== Interface,
+    ),
     Func: () => undefined,
     Index: index,
   }
 }
 
+function methodTypeFromSignature(
+  signature: $.MethodSignature,
+  receiver: Type,
+  includeReceiver: boolean,
+): Type {
+  const params = signature.args.map(methodArgType)
+  if (includeReceiver) {
+    params.unshift(receiver)
+  }
+  return new FunctionType({
+    params,
+    results: signature.returns.map(methodArgType),
+  })
+}
+
+function methodArgType(arg: $.MethodArg): Type {
+  return typeFromTypeInfo(arg.type)
+}
+
 function typeMethods(t: Type): $.MethodSignature[] {
-  const typeInfo = builtinGetTypeByName(t.String())
+  let typeInfo = builtinGetTypeByName(t.String())
+  if (!typeInfo && t.Kind() === Ptr) {
+    typeInfo = builtinGetTypeByName(t.Elem().String())
+  }
+  if (!typeInfo && t instanceof InterfaceType) {
+    const registeredName = t.registeredName()
+    if (registeredName) {
+      typeInfo = builtinGetTypeByName(registeredName)
+    }
+  }
   if (!typeInfo) {
     return []
   }
@@ -2058,13 +2335,24 @@ function typeMethods(t: Type): $.MethodSignature[] {
   return []
 }
 
-function typeMethodByName(t: Type, name: string): [Method, boolean] {
+function methodSignatureByName(
+  t: Type,
+  name: string,
+): [$.MethodSignature | undefined, number] {
   const methods = typeMethods(t)
   const index = methods.findIndex((method) => method.name === name)
   if (index === -1) {
+    return [undefined, -1]
+  }
+  return [methods[index], index]
+}
+
+function typeMethodByName(t: Type, name: string): [Method, boolean] {
+  const [signature, index] = methodSignatureByName(t, name)
+  if (!signature) {
     return [zeroMethod(), false]
   }
-  return [methodFromSignature(methods[index], index), true]
+  return [methodFromSignature(signature, index, t), true]
 }
 
 function typeAssignableTo(t: Type, u: Type | null): boolean {
@@ -2103,6 +2391,26 @@ class StructType implements Type {
 
   public NumField(): number {
     return this._fields.length
+  }
+
+  public NumIn(): number {
+    return nonFunctionTypePanic('NumIn', this)
+  }
+
+  public In(_i: number): Type {
+    return nonFunctionTypePanic('In', this)
+  }
+
+  public NumOut(): number {
+    return nonFunctionTypePanic('NumOut', this)
+  }
+
+  public Out(_i: number): Type {
+    return nonFunctionTypePanic('Out', this)
+  }
+
+  public IsVariadic(): boolean {
+    return nonFunctionTypePanic('IsVariadic', this)
   }
 
   public PkgPath(): string {
@@ -2339,6 +2647,26 @@ class ChannelType implements Type {
     return 0
   }
 
+  public NumIn(): number {
+    return nonFunctionTypePanic('NumIn', this)
+  }
+
+  public In(_i: number): Type {
+    return nonFunctionTypePanic('In', this)
+  }
+
+  public NumOut(): number {
+    return nonFunctionTypePanic('NumOut', this)
+  }
+
+  public Out(_i: number): Type {
+    return nonFunctionTypePanic('Out', this)
+  }
+
+  public IsVariadic(): boolean {
+    return nonFunctionTypePanic('IsVariadic', this)
+  }
+
   public PkgPath(): string {
     return ''
   }
@@ -2445,6 +2773,26 @@ class InterfaceType implements Type {
 
   public NumField(): number {
     return 0
+  }
+
+  public NumIn(): number {
+    return nonFunctionTypePanic('NumIn', this)
+  }
+
+  public In(_i: number): Type {
+    return nonFunctionTypePanic('In', this)
+  }
+
+  public NumOut(): number {
+    return nonFunctionTypePanic('NumOut', this)
+  }
+
+  public Out(_i: number): Type {
+    return nonFunctionTypePanic('Out', this)
+  }
+
+  public IsVariadic(): boolean {
+    return nonFunctionTypePanic('IsVariadic', this)
   }
 
   public PkgPath(): string {
@@ -2583,24 +2931,20 @@ function getTypeOf(value: ReflectValue): Type {
           typeInfo.params &&
           typeInfo.results
         ) {
+          if (funcWithMeta.__goTypeName && !typeInfo.name) {
+            return functionTypeFromInfo({
+              ...typeInfo,
+              name: funcWithMeta.__goTypeName,
+            })
+          }
           return functionTypeFromInfo(typeInfo)
         }
       }
 
       // Then check for __goTypeName which indicates a typed function
       if (funcWithMeta.__goTypeName) {
-        // This is a typed Go function - try to reconstruct the signature
         const typeName = funcWithMeta.__goTypeName
-
-        // For known Go function types, construct proper signatures
-        if (typeName === 'Greeter') {
-          return new FunctionType('func(string) string')
-        } else if (typeName === 'Adder') {
-          return new FunctionType('func(int, int) int')
-        }
-
-        // Generic fallback for typed functions
-        return new FunctionType(`func`) // Could be enhanced with parameter parsing
+        return new FunctionType({ name: typeName })
       }
 
       // For untyped functions, try to parse the signature
@@ -2832,6 +3176,32 @@ export function ChanOf(dir: ChanDir, t: Type): Type {
   return internType(new ChannelType(t, dir))
 }
 
+export function FuncOf(
+  inTypes: $.Slice<Type | null>,
+  outTypes: $.Slice<Type | null>,
+  variadic: boolean,
+): Type {
+  const params = $.asArray(inTypes).map(funcOfType)
+  const results = $.asArray(outTypes).map(funcOfType)
+  if (
+    variadic &&
+    (params.length === 0 || params[params.length - 1].Kind() !== Slice)
+  ) {
+    throw new Error('reflect.FuncOf: last arg of variadic func must be slice')
+  }
+  if (params.length + results.length > 128) {
+    throw new Error('reflect.FuncOf: too many arguments')
+  }
+  return internType(new FunctionType({ params, results, variadic }))
+}
+
+function funcOfType(typ: Type | null | undefined): Type {
+  if (!typ) {
+    throw new Error('reflect.FuncOf: nil Type')
+  }
+  return typ
+}
+
 export function TypeFor(typeArgs?: $.GenericTypeArgs): Type {
   const descriptor = typeArgs?.T
   if (descriptor?.type) {
@@ -2921,33 +3291,14 @@ function typeFromTypeInfo(info: $.TypeInfo | string): Type {
 }
 
 function functionTypeFromInfo(info: $.FunctionTypeInfo): Type {
-  if (info.name) {
-    return new FunctionType(info.name)
-  }
-  const params = info.params ?? []
-  const paramTypes = params.map((param, index) => {
-    const typeName = functionSignatureTypeName(param)
-    if (!info.isVariadic || index !== params.length - 1) {
-      return typeName
-    }
-    if (typeName.startsWith('[]')) {
-      return '...' + typeName.slice(2)
-    }
-    return '...' + typeName
+  const params = (info.params ?? []).map((param) => typeFromTypeInfo(param))
+  const results = (info.results ?? []).map((result) => typeFromTypeInfo(result))
+  return new FunctionType({
+    name: info.name,
+    params,
+    results,
+    variadic: info.isVariadic ?? false,
   })
-  const resultTypes = (info.results ?? []).map(functionSignatureTypeName)
-  let signature = `func(${paramTypes.join(', ')})`
-  if (resultTypes.length === 1) {
-    signature += ` ${resultTypes[0]}`
-  }
-  if (resultTypes.length > 1) {
-    signature += ` (${resultTypes.join(', ')})`
-  }
-  return new FunctionType(signature)
-}
-
-function functionSignatureTypeName(info: $.TypeInfo | string): string {
-  return typeFromTypeInfo(info).String()
 }
 
 function interfaceTypeFromInfo(info: $.InterfaceTypeInfo): Type {

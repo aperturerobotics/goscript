@@ -7427,8 +7427,10 @@ func (o *LoweringOwner) lowerConversionExpr(
 		}
 	}
 	if named := namedFunctionType(targetType); named != nil {
+		typeName := runtimeNamedTypeName(named)
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperNamedFunction) +
-			"(" + value + ", " + strconv.Quote(runtimeNamedTypeName(named)) + ")", diagnostics
+			"(" + value + ", " + strconv.Quote(typeName) + ", " +
+			o.runtimeFunctionTypeInfo(named.Underlying().(*types.Signature), typeName) + ")", diagnostics
 	}
 	if named := namedNonStructType(targetType); named != nil {
 		if _, ok := named.Underlying().(*types.Slice); ok {

@@ -105,6 +105,57 @@ describe('TypeFor', () => {
     })
 
     expect(fnType.String()).toBe('func(int) string')
+    expect(fnType.NumIn()).toBe(1)
+    expect(fnType.In(0).String()).toBe('int')
+    expect(fnType.NumOut()).toBe(1)
+    expect(fnType.Out(0).String()).toBe('string')
+    expect(fnType.IsVariadic()).toBe(false)
+  })
+
+  it('preserves named and variadic function descriptors', () => {
+    const namedFnType = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Function,
+          name: 'example.test.Callback',
+          params: [{ kind: TypeKind.Basic, name: 'int' }],
+          results: [{ kind: TypeKind.Basic, name: 'string' }],
+        },
+        zero: () => null,
+      },
+    })
+
+    expect(namedFnType.String()).toBe('example.test.Callback')
+    expect(namedFnType.PkgPath()).toBe('example.test')
+    expect(namedFnType.Name()).toBe('Callback')
+    expect(namedFnType.NumIn()).toBe(1)
+    expect(namedFnType.In(0).String()).toBe('int')
+    expect(namedFnType.NumOut()).toBe(1)
+    expect(namedFnType.Out(0).String()).toBe('string')
+
+    const variadicFnType = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Function,
+          params: [
+            {
+              kind: TypeKind.Slice,
+              elemType: { kind: TypeKind.Basic, name: 'string' },
+            },
+          ],
+          results: [{ kind: TypeKind.Basic, name: 'int' }],
+          isVariadic: true,
+        },
+        zero: () => null,
+      },
+    })
+
+    expect(variadicFnType.String()).toBe('func(...string) int')
+    expect(variadicFnType.NumIn()).toBe(1)
+    expect(variadicFnType.In(0).String()).toBe('[]string')
+    expect(variadicFnType.NumOut()).toBe(1)
+    expect(variadicFnType.Out(0).String()).toBe('int')
+    expect(variadicFnType.IsVariadic()).toBe(true)
   })
 
   it('resolves registered type names from descriptors', () => {
@@ -162,7 +213,9 @@ describe('TypeFor', () => {
     expect(fieldsType.Field(1).Name).toBe('Total')
     expect(fieldsType.Field(1).Tag.Get('json')).toBe('total')
     expect(fieldsType.Field(2).Type.String()).toBe('[]main.RegisteredStruct')
-    expect(fieldsType.Field(2).Type.Elem().String()).toBe('main.RegisteredStruct')
+    expect(fieldsType.Field(2).Type.Elem().String()).toBe(
+      'main.RegisteredStruct',
+    )
   })
 
   it('interns runtime type descriptors for reflect.Type map keys', () => {

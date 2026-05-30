@@ -12,6 +12,7 @@ export {
   PtrTo,
   MapOf,
   ChanOf,
+  FuncOf,
   ChanDir_String,
   RecvDir,
   SendDir,
@@ -54,10 +55,7 @@ export {
   StringHeader,
   bitVector,
 } from './types.js'
-export type {
-  uintptr,
-  SelectDir,
-} from './types.js'
+export type { uintptr, SelectDir } from './types.js'
 
 // Export kind constants
 export {

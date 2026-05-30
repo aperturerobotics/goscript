@@ -1,0 +1,3 @@
+func: func(int) string true 1 int 1 string false
+variadic: func(...string) int 1 []string 1 int true
+reflect_func_of test finished

@@ -729,9 +729,9 @@ func TestOverrideParityVerifierAcceptsPhase4Ledgers(t *testing.T) {
 	}
 }
 
-func TestOverrideParityVerifierReportsBlockedUse(t *testing.T) {
+func TestOverrideParityVerifierAllowsRealFuncOfUse(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
-		"go.mod": "module example.test/blockedparity\n\ngo 1.25.3\n",
+		"go.mod": "module example.test/funcparity\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
 			"package main",
 			"import \"reflect\"",
@@ -750,10 +750,9 @@ func TestOverrideParityVerifierReportsBlockedUse(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	result, err := comp.CompilePackages(context.Background(), ".")
-	if err == nil {
-		t.Fatalf("expected blocked reflect.FuncOf use to fail")
+	if err != nil {
+		t.Fatalf("expected reflect.FuncOf use to compile: %v\n%#v", err, result.Diagnostics)
 	}
-	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-blocked-use")
 }
 
 func compileParityFixture(

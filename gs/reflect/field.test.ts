@@ -23,7 +23,13 @@ describe('reflect struct field access', () => {
     registerStructType(
       'main.Person',
       new Person(),
-      [{ name: 'String', args: [], returns: [] }],
+      [
+        {
+          name: 'String',
+          args: [],
+          returns: [{ type: { kind: TypeKind.Basic, name: 'string' } }],
+        },
+      ],
       Person,
       {
         Name: 'string',
@@ -42,7 +48,12 @@ describe('reflect struct field access', () => {
       'Count',
     )
     expect(typ.AssignableTo(typ)).toBe(true)
-    expect(typ.MethodByName('String')[1]).toBe(true)
+    const [method, methodOK] = typ.MethodByName('String')
+    expect(methodOK).toBe(true)
+    expect(method.Type.NumIn()).toBe(1)
+    expect(method.Type.In(0).String()).toBe('main.Person')
+    expect(method.Type.NumOut()).toBe(1)
+    expect(method.Type.Out(0).String()).toBe('string')
     expect(ValueOf(person).FieldByName('Name').String()).toBe('Ada')
     expect(
       ValueOf(person)
@@ -53,6 +64,9 @@ describe('reflect struct field access', () => {
 
     const stringMethod = ValueOf(person).MethodByName('String')
     expect(stringMethod.IsValid()).toBe(true)
+    expect(stringMethod.Type().NumIn()).toBe(0)
+    expect(stringMethod.Type().NumOut()).toBe(1)
+    expect(stringMethod.Type().Out(0).String()).toBe('string')
     expect(asArray(stringMethod.Call(arrayToSlice([])))[0].String()).toBe('Ada')
 
     const nameField = ValueOf(person).FieldByName('Name')

@@ -56,6 +56,26 @@ class MapType implements Type {
     return 0
   }
 
+  public NumIn(): number {
+    throw new Error(`reflect: NumIn of non-func type ${this.String()}`)
+  }
+
+  public In(_i: number): Type {
+    throw new Error(`reflect: In of non-func type ${this.String()}`)
+  }
+
+  public NumOut(): number {
+    throw new Error(`reflect: NumOut of non-func type ${this.String()}`)
+  }
+
+  public Out(_i: number): Type {
+    throw new Error(`reflect: Out of non-func type ${this.String()}`)
+  }
+
+  public IsVariadic(): boolean {
+    throw new Error(`reflect: IsVariadic of non-func type ${this.String()}`)
+  }
+
   public Field(_i: number): StructField {
     throw new Error('reflect: Field of non-struct type map')
   }
