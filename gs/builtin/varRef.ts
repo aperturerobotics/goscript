@@ -22,12 +22,59 @@ export type VarRef<T> = {
   __goPointer?: OwnedPointerHandle<T>
 }
 
+const pointerAddressStride = 0x100000000
+const pointerAddresses = new WeakMap<object, number>()
+const fieldPointerAddresses = new WeakMap<
+  object,
+  globalThis.Map<PropertyKey, number>
+>()
+let nextPointerAddress = 1
+
+function pointerAddress(value: object): number {
+  let address = pointerAddresses.get(value)
+  if (address === undefined) {
+    address = nextPointerAddress * pointerAddressStride
+    nextPointerAddress++
+    pointerAddresses.set(value, address)
+  }
+  return address
+}
+
+function fieldPointerAddress(target: object, key: PropertyKey): number {
+  let addresses = fieldPointerAddresses.get(target)
+  if (addresses === undefined) {
+    addresses = new globalThis.Map<PropertyKey, number>()
+    fieldPointerAddresses.set(target, addresses)
+  }
+  let address = addresses.get(key)
+  if (address === undefined) {
+    address = nextPointerAddress * pointerAddressStride
+    nextPointerAddress++
+    addresses.set(key, address)
+  }
+  return address
+}
+
+function refPointer<T>(
+  ref: VarRef<T>,
+  address: () => number,
+): OwnedPointerHandle<T> {
+  return {
+    __goOwnedPointer: true,
+    __goAddress: address,
+    __goRef: () => ref,
+  }
+}
+
 /** Wrap a non-null T in a variable reference. */
 export function varRef<T>(v: T): VarRef<T> {
   // We create a new object wrapper for every varRef call to ensure
   // distinct pointer identity, crucial for pointer comparisons (p1 == p2).
   // The __isVarRef marker allows the reflect system to identify this as a pointer type.
-  return { value: v, __isVarRef: true }
+  const ref: VarRef<T> = { value: v, __isVarRef: true }
+  ref.__goAddress = () => pointerAddress(ref)
+  ref.__goPointer = refPointer(ref, ref.__goAddress)
+  return ref
 }
 
 /** Create a variable reference to an object field. */
@@ -35,7 +82,8 @@ export function fieldRef<T extends object, K extends keyof T>(
   target: T,
   key: K,
 ): VarRef<T[K]> {
-  return {
+  const address = () => fieldPointerAddress(target, key)
+  const ref: VarRef<T[K]> = {
     get value(): T[K] {
       return target[key]
     },
@@ -43,7 +91,10 @@ export function fieldRef<T extends object, K extends keyof T>(
       target[key] = value
     },
     __isVarRef: true,
+    __goAddress: address,
   }
+  ref.__goPointer = refPointer(ref, address)
+  return ref
 }
 
 /** Check if a value is a VarRef (pointer) */
@@ -71,9 +122,7 @@ export function ownedPointerAddress(pointer: OwnedPointerHandle): number {
   return pointer.__goAddress()
 }
 
-export function ownedPointerRef<T>(
-  pointer: OwnedPointerHandle<T>,
-): VarRef<T> {
+export function ownedPointerRef<T>(pointer: OwnedPointerHandle<T>): VarRef<T> {
   return pointer.__goRef()
 }
 

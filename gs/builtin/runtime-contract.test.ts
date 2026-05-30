@@ -10,6 +10,7 @@ import {
   cloneStructValue,
   callGenericMethod,
   chanRecvWithOk,
+  fieldRef,
   functionValue,
   genericZero,
   goSlice,
@@ -238,6 +239,31 @@ describe('builtin runtime contract helpers', () => {
       [1, 162],
       [3, 8364],
     ])
+  })
+
+  it('attaches owned pointer handles to variable and field refs', () => {
+    const local = varRef(1)
+    const localPointer = ownedPointerFromRef(local)
+    expect(localPointer).toBeDefined()
+    expect(ownedPointerRef(localPointer!)).toBe(local)
+    expect(ownedPointerAddress(localPointer!)).toBe(local.__goAddress!())
+    ownedPointerRef(localPointer!).value = 3
+    expect(local.value).toBe(3)
+    expect(() => sliceFromOwnedPointer(localPointer!, 1)).toThrow(
+      'reflect.SliceAt requires a GoScript-owned pointer',
+    )
+
+    const target = { count: 2 }
+    const count = fieldRef(target, 'count')
+    const countPointer = ownedPointerFromRef(count)
+    expect(countPointer).toBeDefined()
+    ownedPointerRef(countPointer!).value = 4
+    expect(target.count).toBe(4)
+
+    const sameField = fieldRef(target, 'count')
+    expect(ownedPointerAddress(ownedPointerFromRef(sameField)!)).toBe(
+      ownedPointerAddress(countPointer!),
+    )
   })
 
   it('matches struct map keys by Go comparable value', () => {

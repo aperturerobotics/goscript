@@ -86,7 +86,9 @@ function newStructValue(typ: Type): ReflectValue {
     public _fields: Record<string, $.VarRef<unknown>> = {}
 
     public clone(): unknown {
-      const cloned = new StructValue()
+      const cloned = newStructValue(typ) as {
+        _fields: Record<string, $.VarRef<unknown>>
+      }
       for (const key of Object.keys(this._fields)) {
         cloned._fields[key].value = this._fields[key].value
       }
@@ -192,12 +194,19 @@ export function NewAt(typ: Type | null, p: Pointer | unknown): Value {
   const ptrType = PointerTo(typ)
   const pointer = ownedPointerHandleFromPointerArg(p)
   if (pointer !== undefined) {
-    return new Value($.ownedPointerRef(pointer) as $.VarRef<ReflectValue>, ptrType)
+    return new Value(
+      $.ownedPointerRef(pointer) as $.VarRef<ReflectValue>,
+      ptrType,
+    )
   }
   throw new Error('reflect.NewAt requires a GoScript-owned pointer')
 }
 
-export function SliceAt(typ: Type | null, p: Pointer | unknown, n: number): Value {
+export function SliceAt(
+  typ: Type | null,
+  p: Pointer | unknown,
+  n: number,
+): Value {
   if (typ === null) {
     return new Value()
   }
@@ -222,9 +231,9 @@ function ownedPointerHandleFromPointerArg(
     return p as $.OwnedPointerHandle<ReflectValue>
   }
   if ($.isVarRef(p)) {
-    return $.ownedPointerFromRef(
-      p as $.VarRef<ReflectValue>,
-    ) as $.OwnedPointerHandle<ReflectValue> | undefined
+    return $.ownedPointerFromRef(p as $.VarRef<ReflectValue>) as
+      | $.OwnedPointerHandle<ReflectValue>
+      | undefined
   }
   return undefined
 }

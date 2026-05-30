@@ -65,18 +65,36 @@ describe('reflect owned pointer handles', () => {
     expect(values).toEqual([13, 2])
   })
 
+  it('lets NewAt write through owned variable and field refs', () => {
+    const intType = TypeOf(0)
+    const local = $.varRef(1)
+
+    NewAt(intType, local as any)
+      .Elem()
+      .SetInt(4)
+    expect(local.value).toBe(4)
+
+    const target = { count: 2 }
+    NewAt(intType, $.fieldRef(target, 'count') as any)
+      .Elem()
+      .SetInt(5)
+    expect(target.count).toBe(5)
+
+    expect(() => SliceAt(intType, local as any, 1)).toThrow(
+      /GoScript-owned pointer/,
+    )
+  })
+
   it('rejects raw and foreign pointers for NewAt', () => {
     const intType = TypeOf(0)
 
-    expect(() => NewAt(intType, 123 as any)).toThrow(
-      /GoScript-owned pointer/,
-    )
+    expect(() => NewAt(intType, 123 as any)).toThrow(/GoScript-owned pointer/)
     expect(() => NewAt(intType, { value: 1 } as any)).toThrow(
       /GoScript-owned pointer/,
     )
-    expect(() => NewAt(intType, { value: new Value(1, intType) } as any)).toThrow(
-      /GoScript-owned pointer/,
-    )
+    expect(() =>
+      NewAt(intType, { value: new Value(1, intType) } as any),
+    ).toThrow(/GoScript-owned pointer/)
   })
 
   it('builds pointer-backed slices from owned array element handles', () => {
@@ -131,8 +149,8 @@ describe('reflect owned pointer handles', () => {
     expect(() => SliceAt(intType, fieldAddress as any, 1)).toThrow(
       /GoScript-owned pointer/,
     )
-    expect(() => SliceAt(intType, ValueOf([1]).Index(0).UnsafeAddr() as any, -1)).toThrow(
-      /negative length/,
-    )
+    expect(() =>
+      SliceAt(intType, ValueOf([1]).Index(0).UnsafeAddr() as any, -1),
+    ).toThrow(/negative length/)
   })
 })

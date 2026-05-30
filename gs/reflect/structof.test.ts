@@ -46,23 +46,24 @@ describe('StructOf', () => {
     const [data, err] = Marshal(value.Interface())
     expect(err).toBeNull()
     expect($.bytesToString(data)).toBe('{"name":"Ada","count":3}')
+
+    const clone = $.cloneStructValue(value.Interface()) as any
+    expect(TypeOf(clone).String()).toBe(typ.String())
+    expect(clone.Name).toBe('Ada')
+    expect(clone.Count).toBe(3)
+    value.FieldByName('Count').SetInt(4)
+    expect(clone.Count).toBe(3)
   })
 
   it('rejects invalid field descriptors before creating a type', () => {
     const intType = TypeOf(0)
 
     expect(() =>
-      StructOf(
-        $.arrayToSlice([
-          new StructField({ Name: '', Type: intType }),
-        ]),
-      ),
+      StructOf($.arrayToSlice([new StructField({ Name: '', Type: intType })])),
     ).toThrow(/field 0 has no name/)
     expect(() =>
       StructOf(
-        $.arrayToSlice([
-          new StructField({ Name: '1Name', Type: intType }),
-        ]),
+        $.arrayToSlice([new StructField({ Name: '1Name', Type: intType })]),
       ),
     ).toThrow(/field 0 has invalid name/)
     expect(() =>
@@ -87,17 +88,11 @@ describe('StructOf', () => {
 
     expect(() =>
       StructOf(
-        $.arrayToSlice([
-          new StructField({ Name: 'secret', Type: intType }),
-        ]),
+        $.arrayToSlice([new StructField({ Name: 'secret', Type: intType })]),
       ),
     ).toThrow(/field "secret" is unexported but missing PkgPath/)
     expect(() =>
-      StructOf(
-        $.arrayToSlice([
-          new StructField({ Name: '_', Type: intType }),
-        ]),
-      ),
+      StructOf($.arrayToSlice([new StructField({ Name: '_', Type: intType })])),
     ).toThrow(/field "_" is unexported but missing PkgPath/)
     expect(() =>
       StructOf(
@@ -162,6 +157,28 @@ describe('StructOf', () => {
       StructOf(
         $.arrayToSlice([
           new StructField({
+            Name: 'EmbeddedWithMethod',
+            Type: embeddedPointer,
+            Anonymous: true,
+          }),
+        ]),
+      ),
+    ).toThrow(/embedded type with methods/)
+    expect(() =>
+      StructOf(
+        $.arrayToSlice([
+          new StructField({
+            Name: 'EmbeddedWithMethod',
+            Type: embeddedType,
+            Anonymous: true,
+          }),
+        ]),
+      ),
+    ).toThrow(/embedded type with methods/)
+    expect(() =>
+      StructOf(
+        $.arrayToSlice([
+          new StructField({
             Name: 'IntPtr',
             Type: PointerTo(PointerTo(intType)!)!,
             Anonymous: true,
@@ -180,7 +197,7 @@ describe('StructOf', () => {
           new StructField({ Name: 'Count', Type: intType }),
         ]),
       ),
-    ).toThrow(/more than one field/)
+    ).toThrow(/embedded type with methods/)
     expect(() =>
       StructOf(
         $.arrayToSlice([
@@ -192,7 +209,7 @@ describe('StructOf', () => {
           }),
         ]),
       ),
-    ).toThrow(/type is not first field/)
+    ).toThrow(/embedded type with methods/)
     expect(() =>
       StructOf(
         $.arrayToSlice([
@@ -204,7 +221,7 @@ describe('StructOf', () => {
           new StructField({ Name: 'Count', Type: intType }),
         ]),
       ),
-    ).toThrow(/not implemented for non-pointer type/)
+    ).toThrow(/embedded type with methods/)
   })
 
   it('computes dynamic layout, identity, and comparability from descriptors', () => {
@@ -255,9 +272,7 @@ describe('StructOf', () => {
 
     expect(
       StructOf(
-        $.arrayToSlice([
-          new StructField({ Name: 'Name', Type: TypeOf('') }),
-        ]),
+        $.arrayToSlice([new StructField({ Name: 'Name', Type: TypeOf('') })]),
       ).Comparable(),
     ).toBe(true)
     expect(
@@ -289,10 +304,7 @@ describe('StructOf', () => {
     )
 
     expect(
-      $.asArray(VisibleFields(outer)).map((field) => [
-        field.Name,
-        field.Index,
-      ]),
+      $.asArray(VisibleFields(outer)).map((field) => [field.Name, field.Index]),
     ).toEqual([
       ['Inner', [0]],
       ['ID', [0, 0]],
@@ -346,9 +358,9 @@ describe('StructOf', () => {
         new StructField({ Name: 'Right', Type: right, Anonymous: true }),
       ]),
     )
-    expect($.asArray(VisibleFields(canceled)).map((field) => field.Name)).toEqual(
-      ['Left', 'Right'],
-    )
+    expect(
+      $.asArray(VisibleFields(canceled)).map((field) => field.Name),
+    ).toEqual(['Left', 'Right'])
     expect(canceled.FieldByName('X')[1]).toBe(false)
   })
 })

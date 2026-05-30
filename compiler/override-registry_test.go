@@ -685,6 +685,45 @@ func TestOverrideParityVerifierReportsBlockedTypeScriptExport(t *testing.T) {
 	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-unexpected-export")
 }
 
+func TestOverrideParityVerifierReportsBlockedGoUse(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/blockeduse\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/blockeduse/lib\"",
+			"func main() { lib.Missing() }",
+			"",
+		}, "\n"),
+		"lib/lib.go": strings.Join([]string{
+			"package lib",
+			"func Present() {}",
+			"func Missing() {}",
+			"",
+		}, "\n"),
+	})
+	overrideDir := filepath.Join(t.TempDir(), "gs")
+	writeFixtureFile(t, overrideDir, "example.test/blockeduse/lib/index.ts", "export function Present(): void {}\n")
+	writeFixtureFile(t, overrideDir, "example.test/blockeduse/lib/parity.json", parityFixtureJSON(t, map[string]overrideParityEntry{
+		"Present": {Status: overrideParityStatusReal},
+		"Missing": {Status: overrideParityStatusBlocked, Reason: "blocked by fixture"},
+	}))
+
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      filepath.Join(t.TempDir(), "out"),
+		OverrideDirs:    []string{overrideDir},
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	result, err := comp.CompilePackages(context.Background(), ".")
+	if err == nil {
+		t.Fatalf("expected compile to fail")
+	}
+	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-blocked-use")
+}
+
 func TestOverrideParityVerifierAllowsDeferredMissingExports(t *testing.T) {
 	result, err := compileParityFixture(t, map[string]overrideParityEntry{
 		"Present": {Status: overrideParityStatusReal},

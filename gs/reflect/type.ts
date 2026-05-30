@@ -812,7 +812,8 @@ export class Value {
       }
     }
     if (this._parentVarRef?.__goPointer) {
-      return this._parentVarRef.__goPointer as $.OwnedPointerHandle<ReflectValue>
+      return this._parentVarRef
+        .__goPointer as $.OwnedPointerHandle<ReflectValue>
     }
     return this.Pointer()
   }
@@ -3638,7 +3639,7 @@ export function StructOf(fields: $.Slice<StructField>): Type {
   let pkgPath = ''
   let offset = 0
   for (const [idx, field] of inputFields.entries()) {
-    validateStructOfField(field, idx, inputFields.length)
+    validateStructOfField(field, idx)
     if (field.PkgPath !== '') {
       if (pkgPath === '') {
         pkgPath = field.PkgPath
@@ -3674,11 +3675,7 @@ export function StructOf(fields: $.Slice<StructField>): Type {
   )
 }
 
-function validateStructOfField(
-  field: StructField,
-  idx: number,
-  fieldCount: number,
-): void {
+function validateStructOfField(field: StructField, idx: number): void {
   if (field.Name === '') {
     throw new Error(`reflect.StructOf: field ${idx} has no name`)
   }
@@ -3698,7 +3695,7 @@ function validateStructOfField(
       `reflect.StructOf: field "${field.Name}" is unexported but missing PkgPath`,
     )
   }
-  validateAnonymousStructOfField(field, idx, fieldCount)
+  validateAnonymousStructOfField(field)
 }
 
 function isValidStructFieldName(name: string): boolean {
@@ -3710,11 +3707,7 @@ function isUnexportedStructFieldName(name: string): boolean {
   return name[0] === '_' || (first >= 97 && first <= 122)
 }
 
-function validateAnonymousStructOfField(
-  field: StructField,
-  idx: number,
-  fieldCount: number,
-): void {
+function validateAnonymousStructOfField(field: StructField): void {
   if (!field.Anonymous) {
     return
   }
@@ -3727,30 +3720,12 @@ function validateAnonymousStructOfField(
       )
     }
     if (embeddedMethodCount(typ) > 0) {
-      if (idx > 0) {
-        throw new Error(
-          'reflect: embedded type with methods not implemented if type is not first field',
-        )
-      }
-      if (fieldCount > 1) {
-        throw new Error(
-          'reflect: embedded type with methods not implemented if there is more than one field',
-        )
-      }
+      throw new Error('reflect: embedded type with methods not implemented')
     }
     return
   }
   if (embeddedMethodCount(typ) > 0) {
-    if (idx > 0) {
-      throw new Error(
-        'reflect: embedded type with methods not implemented if type is not first field',
-      )
-    }
-    if (fieldCount > 1) {
-      throw new Error(
-        'reflect: embedded type with methods not implemented for non-pointer type',
-      )
-    }
+    throw new Error('reflect: embedded type with methods not implemented')
   }
 }
 

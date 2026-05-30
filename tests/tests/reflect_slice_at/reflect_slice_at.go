@@ -6,6 +6,17 @@ import (
 )
 
 func main() {
+	local := 41
+	reflect.NewAt(reflect.TypeFor[int](), unsafe.Pointer(&local)).Elem().SetInt(42)
+	println("newat-local:", local)
+
+	type holder struct {
+		Count int
+	}
+	h := holder{Count: 5}
+	reflect.NewAt(reflect.TypeFor[int](), unsafe.Pointer(&h.Count)).Elem().SetInt(6)
+	println("newat-field:", h.Count)
+
 	buf := []byte{1, 2, 3, 4}
 	bytes := reflect.SliceAt(reflect.TypeFor[byte](), unsafe.Pointer(&buf[1]), 2)
 	println("bytes:", bytes.Len(), bytes.Cap(), bytes.Index(0).Uint(), bytes.Index(1).Uint())
