@@ -271,6 +271,9 @@ describe('StructOf', () => {
     expect(pkgA).not.toBe(pkgB)
     expect(pkgA.AssignableTo(pkgB)).toBe(false)
     expect(pkgB.AssignableTo(pkgA)).toBe(false)
+    expect(() => New(pkgA).Elem().Set(New(pkgB).Elem())).toThrow(
+      /reflect: assign to wrong type/,
+    )
 
     expect(
       StructOf(

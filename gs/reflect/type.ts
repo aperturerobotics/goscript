@@ -9,7 +9,6 @@ export { StructField }
 import { MapIter } from './map.js'
 import {
   getTypeByName as builtinGetTypeByName,
-  TypeKind,
   isStructTypeInfo,
   isInterfaceTypeInfo,
   structFieldRuntimeKey,
@@ -865,23 +864,9 @@ export class Value {
     if (!this.CanSet()) {
       throw new Error('reflect: assign to invalid value')
     }
-    // Interface types can accept any value
-    if (this.Kind() === Interface) {
-      this._value = x.value
-      // Also update the parent VarRef if we were dereferenced from one
-      if (this._parentVarRef) {
-        this._parentVarRef.value = x.value
-      }
-      // Also update the parent struct field if this is a struct field
-      if (this._parentStruct && this._fieldName) {
-        this._parentStruct[this._fieldName] = x.value
-      }
-      return
-    }
-    // For other types, check if types are compatible (simplified check)
     const thisType = this.Type()
     const xType = x.Type()
-    if (thisType.Kind() !== xType.Kind()) {
+    if (!xType.AssignableTo(thisType)) {
       throw new Error('reflect: assign to wrong type')
     }
     this._value = x.value
@@ -1463,7 +1448,7 @@ export class BasicType implements Type {
     if (u.Kind() !== Interface) {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
-    return false
+    return typeImplementsInterface(this, u)
   }
 
   public AssignableTo(u: Type | null): boolean {
@@ -1665,7 +1650,7 @@ class SliceType implements Type {
     if (u.Kind() !== Interface) {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
-    return false
+    return typeImplementsInterface(this, u)
   }
 
   public AssignableTo(u: Type | null): boolean {
@@ -1789,7 +1774,7 @@ class ArrayType implements Type {
     if (u.Kind() !== Interface) {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
-    return false
+    return typeImplementsInterface(this, u)
   }
 
   public AssignableTo(u: Type | null): boolean {
@@ -1906,9 +1891,7 @@ class PointerType implements Type {
     if (u.Kind() !== Interface) {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
-    // For pointer types, check if the element type implements the interface
-    const elemTypeName = this._elemType.String()
-    return typeImplementsInterface(elemTypeName, u)
+    return typeImplementsInterface(this, u)
   }
 
   public AssignableTo(u: Type | null): boolean {
@@ -2089,7 +2072,7 @@ class FunctionType implements Type {
     if (u.Kind() !== Interface) {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
-    return false
+    return typeImplementsInterface(this, u)
   }
 
   public AssignableTo(u: Type | null): boolean {
@@ -2446,7 +2429,7 @@ class MapType implements Type {
     if (u.Kind() !== Interface) {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
-    return false
+    return typeImplementsInterface(this, u)
   }
 
   public AssignableTo(u: Type | null): boolean {
@@ -2486,61 +2469,47 @@ class MapType implements Type {
 }
 
 // Struct type implementation
-/**
- * Helper function to check if a type's method set contains all methods
- * required by an interface.
- *
- * @param typeName The name of the type to check (e.g., "main.MyType")
- * @param interfaceType The interface type that must be implemented
- * @returns True if the type implements the interface, false otherwise
- */
-function typeImplementsInterface(
-  typeName: string,
-  interfaceType: Type,
+function typeImplementsInterface(t: Type, interfaceType: Type): boolean {
+  if (interfaceType.Kind() !== Interface) {
+    throw new Error('reflect: non-interface type passed to Type.Implements')
+  }
+  const requiredMethods = typeMethods(interfaceType)
+  if (requiredMethods.length === 0) {
+    return true
+  }
+  const methods = typeMethods(t)
+  return requiredMethods.every((requiredMethod) => {
+    const method = methods.find(
+      (candidate) => candidate.name === requiredMethod.name,
+    )
+    return (
+      method !== undefined && methodSignatureIdentical(method, requiredMethod)
+    )
+  })
+}
+
+function methodSignatureIdentical(
+  actual: $.MethodSignature,
+  required: $.MethodSignature,
 ): boolean {
-  // Get the interface name and look it up in the type registry
-  const interfaceName =
-    interfaceType instanceof InterfaceType ?
-      interfaceType.registeredName() || interfaceType.String()
-    : interfaceType.String()
-  const interfaceTypeInfo = builtinGetTypeByName(interfaceName)
+  return (
+    methodArgListIdentical(actual.args, required.args) &&
+    methodArgListIdentical(actual.returns, required.returns)
+  )
+}
 
-  if (!interfaceTypeInfo || !isInterfaceTypeInfo(interfaceTypeInfo)) {
+function methodArgListIdentical(
+  actual: $.MethodArg[],
+  required: $.MethodArg[],
+): boolean {
+  if (actual.length !== required.length) {
     return false
   }
-
-  // Get the type info for the struct/type
-  const typeInfo = builtinGetTypeByName(typeName)
-
-  if (!typeInfo || !isStructTypeInfo(typeInfo)) {
-    return false
-  }
-
-  // Check if the type has all required methods
-  const requiredMethods = interfaceTypeInfo.methods || []
-  const typeMethods = typeInfo.methods || []
-
-  // For each required method, check if the type has a matching method
-  for (const requiredMethod of requiredMethods) {
-    const typeMethod = typeMethods.find((m) => m.name === requiredMethod.name)
-
-    if (!typeMethod) {
-      return false
-    }
-
-    // Check if method signatures match (simplified - just check counts)
-    if (typeMethod.args.length !== requiredMethod.args.length) {
-      return false
-    }
-
-    if (typeMethod.returns.length !== requiredMethod.returns.length) {
-      return false
-    }
-
-    // Could add deeper type checking here, but for now this is sufficient
-  }
-
-  return true
+  return actual.every(
+    (arg, index) =>
+      typeIdentityKey(methodArgType(arg)) ===
+      typeIdentityKey(methodArgType(required[index])),
+  )
 }
 
 function typeFieldByName(t: Type, name: string): [StructField, boolean] {
@@ -2670,6 +2639,9 @@ function typeMethods(t: Type): $.MethodSignature[] {
     if (registeredName) {
       typeInfo = builtinGetTypeByName(registeredName)
     }
+  }
+  if (!typeInfo && t instanceof InterfaceType) {
+    return t.methodSignatures()
   }
   if (!typeInfo) {
     return []
@@ -2926,7 +2898,7 @@ class StructType implements Type {
     if (u.Kind() !== Interface) {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
-    return typeImplementsInterface(this._name, u)
+    return typeImplementsInterface(this, u)
   }
 
   public AssignableTo(u: Type | null): boolean {
@@ -2992,7 +2964,7 @@ class StructType implements Type {
           }
           return new PointerType(new BasicType(Invalid, 'unknown', 8))
         case 'interface':
-          return new InterfaceType(name)
+          return interfaceTypeFromInfo(ti)
         case 'struct':
           return new StructType(name, structFieldsFromTypeInfo(ti))
         default:
@@ -3159,7 +3131,7 @@ class ChannelType implements Type {
     if (u.Kind() !== Interface) {
       throw new Error('reflect: non-interface type passed to Type.Implements')
     }
-    return false
+    return typeImplementsInterface(this, u)
   }
 
   public AssignableTo(u: Type | null): boolean {
@@ -3207,6 +3179,7 @@ class InterfaceType implements Type {
   constructor(
     private _name: string = 'interface{}',
     private _registeredName?: string,
+    private _methods: $.MethodSignature[] = [],
   ) {}
 
   public String(): string {
@@ -3293,8 +3266,14 @@ class InterfaceType implements Type {
     throw new Error('reflect: Key of non-map type')
   }
 
-  public Implements(_u: Type | null): boolean {
-    return false
+  public Implements(u: Type | null): boolean {
+    if (!u) {
+      return false
+    }
+    if (u.Kind() !== Interface) {
+      throw new Error('reflect: non-interface type passed to Type.Implements')
+    }
+    return typeImplementsInterface(this, u)
   }
 
   public AssignableTo(u: Type | null): boolean {
@@ -3341,6 +3320,10 @@ class InterfaceType implements Type {
 
   public registeredName(): string | undefined {
     return this._registeredName
+  }
+
+  public methodSignatures(): $.MethodSignature[] {
+    return this._methods
   }
 }
 
@@ -3783,9 +3766,16 @@ export function TypeFor(typeArgs?: $.GenericTypeArgs): Type {
   if (descriptor?.methods) {
     const methods = Object.keys(descriptor.methods)
     if (methods.length !== 0) {
+      const methodSignatures = methods.map((method) => ({
+        name: method,
+        args: [],
+        returns: [],
+      }))
       return internType(
         new InterfaceType(
-          `interface { ${methods.map((method) => method + '()').join('; ')} }`,
+          interfaceTypeString(methodSignatures),
+          undefined,
+          methodSignatures,
         ),
       )
     }
@@ -3922,7 +3912,14 @@ export function typeInfoFromReflectType(typ: Type): string | $.TypeInfo {
     case UnsafePointer:
       return { kind: $.TypeKind.Basic, name: typ.String() }
     case Interface:
-      return { kind: $.TypeKind.Interface, methods: [] }
+      return {
+        kind: $.TypeKind.Interface,
+        methods: typeMethods(typ).map((method) => ({
+          name: method.name,
+          args: method.args,
+          returns: method.returns,
+        })),
+      }
     case Slice:
       return {
         kind: $.TypeKind.Slice,
@@ -4006,13 +4003,31 @@ function channelDirectionFromString(
 }
 
 function interfaceTypeFromInfo(info: $.InterfaceTypeInfo): Type {
-  if (info.methods.length === 0) {
-    return new InterfaceType('interface{}', info.name)
+  const methods = info.methods ?? []
+  if (methods.length === 0) {
+    return new InterfaceType('interface{}', info.name, methods)
   }
-  return new InterfaceType(
-    `interface { ${info.methods.map((method) => method.name + '()').join('; ')} }`,
-    info.name,
-  )
+  return new InterfaceType(interfaceTypeString(methods), info.name, methods)
+}
+
+function interfaceTypeString(methods: $.MethodSignature[]): string {
+  return `interface { ${methods.map(interfaceMethodString).join('; ')} }`
+}
+
+function interfaceMethodString(method: $.MethodSignature): string {
+  const args = method.args.map(methodArgString).join(', ')
+  const returns = method.returns.map(methodArgString)
+  if (returns.length === 0) {
+    return `${method.name}(${args})`
+  }
+  if (returns.length === 1) {
+    return `${method.name}(${args}) ${returns[0]}`
+  }
+  return `${method.name}(${args}) (${returns.join(', ')})`
+}
+
+function methodArgString(arg: $.MethodArg): string {
+  return methodArgType(arg).String()
 }
 
 function chanDirFromTypeInfo(direction?: 'send' | 'receive' | 'both'): ChanDir {
@@ -4032,38 +4047,16 @@ function chanDirFromTypeInfo(direction?: 'send' | 'receive' | 'both'): ChanDir {
  */
 export function getInterfaceTypeByName(name: string): Type {
   const typeInfo = builtinGetTypeByName(name)
-  if (typeInfo && typeInfo.kind === TypeKind.Interface) {
-    return new InterfaceType(name, name)
+  if (typeInfo && isInterfaceTypeInfo(typeInfo)) {
+    return new InterfaceType(name, name, typeInfo.methods ?? [])
   }
   return new InterfaceType('interface{}')
 }
 
 export function getInterfaceLiteralTypeByName(name: string): Type {
   const typeInfo = builtinGetTypeByName(name)
-  if (typeInfo && typeInfo.kind === TypeKind.Interface) {
-    const methods = (typeInfo as any).methods || []
-    if (methods.length === 0) {
-      return new InterfaceType('interface{}', name)
-    }
-    const methodSigs = methods
-      .map((m: any) => {
-        const args =
-          m.args
-            ?.map((a: any) => (typeof a === 'string' ? a : 'any'))
-            .join(', ') || ''
-        const returns = m.returns?.map((r: any) =>
-          typeof r === 'string' ? r : 'any',
-        )
-        let returnSig = ''
-        if (returns && returns.length === 1) {
-          returnSig = ` ${returns[0]}`
-        } else if (returns && returns.length > 1) {
-          returnSig = ` (${returns.join(', ')})`
-        }
-        return `${m.name}(${args})${returnSig}`
-      })
-      .join('; ')
-    return new InterfaceType(`interface { ${methodSigs} }`, name)
+  if (typeInfo && isInterfaceTypeInfo(typeInfo)) {
+    return interfaceTypeFromInfo(typeInfo)
   }
   return new InterfaceType('interface{}')
 }

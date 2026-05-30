@@ -3,6 +3,7 @@ import {
   arrayToSlice,
   asArray,
   functionValue,
+  registerStructType,
   typeAssertTuple,
   TypeKind,
 } from '../builtin/index.js'
@@ -11,6 +12,7 @@ import {
   Kind_String,
   MakeFunc,
   SliceOf,
+  TypeFor,
   TypeOf,
   ValueOf,
 } from './type.js'
@@ -392,6 +394,110 @@ describe('Function Type Detection', () => {
     await expect(
       variadicValue.CallSlice(arrayToSlice([ValueOf(1), ValueOf('bad')])),
     ).rejects.toThrow(/reflect: CallSlice using string as type \[\]string/)
+  })
+
+  it('should assign concrete values to interface parameters', async () => {
+    class CallableStringer {
+      public label = 'callable'
+
+      public String(): string {
+        return this.label
+      }
+    }
+
+    const stringResult = { kind: TypeKind.Basic, name: 'string' } as const
+    const stringerMethod = {
+      name: 'String',
+      args: [],
+      returns: [{ type: stringResult }],
+    }
+    const stringerInfo = registerStructType(
+      'main.CallableStringer',
+      new CallableStringer(),
+      [stringerMethod],
+      CallableStringer,
+      [],
+    )
+    ;(CallableStringer as any).__typeInfo = stringerInfo
+
+    const anyType = TypeFor({
+      T: {
+        type: { kind: TypeKind.Interface, methods: [] },
+        zero: () => null,
+      },
+    })
+    const stringerType = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Interface,
+          methods: [stringerMethod],
+        },
+        zero: () => null,
+      },
+    })
+    const stringType = TypeOf('')
+
+    const acceptsAny = functionValue((value: unknown) => String(value), {
+      kind: TypeKind.Function,
+      params: [{ kind: TypeKind.Interface, methods: [] }],
+      results: [stringResult],
+    })
+    const anyCallResult = asArray(
+      await ValueOf(acceptsAny).Call(arrayToSlice([ValueOf(7)])),
+    )
+    expect(anyCallResult[0].String()).toBe('7')
+
+    const anyMakeValue = MakeFunc(
+      FuncOf(arrayToSlice([anyType]), arrayToSlice([stringType]), false),
+      (args) => arrayToSlice([ValueOf(String(asArray(args)[0].Interface()))]),
+    )
+    expect(
+      await (anyMakeValue.Interface() as (value: unknown) => Promise<string>)(
+        8,
+      ),
+    ).toBe('8')
+    const reflectedAnyMake = asArray(
+      await anyMakeValue.Call(arrayToSlice([ValueOf('ok')])),
+    )
+    expect(reflectedAnyMake[0].String()).toBe('ok')
+
+    const acceptsStringer = functionValue(
+      (value: CallableStringer) => value.String(),
+      {
+        kind: TypeKind.Function,
+        params: [{ kind: TypeKind.Interface, methods: [stringerMethod] }],
+        results: [stringResult],
+      },
+    )
+    const stringerCallResult = asArray(
+      await ValueOf(acceptsStringer).Call(
+        arrayToSlice([ValueOf(new CallableStringer())]),
+      ),
+    )
+    expect(stringerCallResult[0].String()).toBe('callable')
+    await expect(
+      ValueOf(acceptsStringer).Call(arrayToSlice([ValueOf(7)])),
+    ).rejects.toThrow(/reflect: Call using int as type interface/)
+
+    const stringerMakeValue = MakeFunc(
+      FuncOf(arrayToSlice([stringerType]), arrayToSlice([stringType]), false),
+      (args) =>
+        arrayToSlice([
+          ValueOf((asArray(args)[0].Interface() as CallableStringer).String()),
+        ]),
+    )
+    expect(
+      await (
+        stringerMakeValue.Interface() as (
+          value: CallableStringer,
+        ) => Promise<string>
+      )(new CallableStringer()),
+    ).toBe('callable')
+    await expect(
+      (stringerMakeValue.Interface() as (value: unknown) => Promise<string>)(7),
+    ).rejects.toThrow(
+      /reflect.MakeFunc: cannot use int as type interface .* in argument 0/,
+    )
   })
 
   it('should handle arrow functions', () => {
