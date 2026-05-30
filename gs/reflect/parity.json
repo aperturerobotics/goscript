@@ -84,8 +84,7 @@
       "status": "real"
     },
     "MakeFunc": {
-      "status": "blocked",
-      "reason": "dynamic callable synthesis requires reflect call ABI support that is not present in the GoScript runtime yet"
+      "status": "real"
     },
     "MakeMap": {
       "status": "real"

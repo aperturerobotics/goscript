@@ -19,7 +19,7 @@ class Person {
 ;(Person as any).__typeInfo = { name: 'main.Person' }
 
 describe('reflect struct field access', () => {
-  it('finds struct fields by name and index', () => {
+  it('finds struct fields by name and index', async () => {
     registerStructType(
       'main.Person',
       new Person(),
@@ -67,7 +67,9 @@ describe('reflect struct field access', () => {
     expect(stringMethod.Type().NumIn()).toBe(0)
     expect(stringMethod.Type().NumOut()).toBe(1)
     expect(stringMethod.Type().Out(0).String()).toBe('string')
-    expect(asArray(stringMethod.Call(arrayToSlice([])))[0].String()).toBe('Ada')
+    expect(asArray(await stringMethod.Call(arrayToSlice([])))[0].String()).toBe(
+      'Ada',
+    )
 
     const nameField = ValueOf(person).FieldByName('Name')
     const namePtr = NewAt(nameField.Type(), nameField.UnsafeAddr() as any)

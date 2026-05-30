@@ -13,6 +13,7 @@ export {
   MapOf,
   ChanOf,
   FuncOf,
+  MakeFunc,
   ChanDir_String,
   RecvDir,
   SendDir,

@@ -1,0 +1,10 @@
+direct: value-7
+reflected: value-8
+wrong assertion: false
+zero: true
+tuple direct: 3 true
+tuple reflected: 3 true
+variadic direct: 12
+variadic reflected: 23
+variadic callslice: 32
+reflect_make_func test finished

@@ -846,19 +846,28 @@ export class Value {
     return new Value(method.bind(receiver), methodType)
   }
 
-  public Call(inArgs: $.Slice<Value>): $.Slice<Value> {
+  public async Call(inArgs: $.Slice<Value>): Promise<$.Slice<Value>> {
     if (this.Kind() !== Func || typeof this._value !== 'function') {
       throw new ValueError({ Kind: this.Kind(), Method: 'Call' })
     }
-    const args = $.asArray(inArgs).map((arg) => arg.Interface())
-    const result = this._value(...args) as ReflectValue | ReflectValue[]
-    if (globalThis.Array.isArray(result)) {
-      return $.arrayToSlice(result.map((value) => ValueOf(value)))
+    return await callReflectFunction(
+      this._value as (...args: unknown[]) => unknown,
+      this._type,
+      inArgs,
+      'Call',
+    )
+  }
+
+  public async CallSlice(inArgs: $.Slice<Value>): Promise<$.Slice<Value>> {
+    if (this.Kind() !== Func || typeof this._value !== 'function') {
+      throw new ValueError({ Kind: this.Kind(), Method: 'CallSlice' })
     }
-    if (result === undefined) {
-      return $.makeSlice<Value>(0)
-    }
-    return $.arrayToSlice([ValueOf(result)])
+    return await callReflectFunction(
+      this._value as (...args: unknown[]) => unknown,
+      this._type,
+      inArgs,
+      'CallSlice',
+    )
   }
 
   public IsZero(): boolean {
@@ -2068,6 +2077,215 @@ function formatFunctionSignature(
   return signature
 }
 
+async function callReflectFunction(
+  fn: (...args: unknown[]) => unknown | Promise<unknown>,
+  fnType: Type,
+  inArgs: $.Slice<Value>,
+  op: ReflectCallOp,
+): Promise<$.Slice<Value>> {
+  const args = $.asArray(inArgs)
+  const rawArgs = reflectCallRawArgs(fnType, args, op)
+  const result = await fn(...rawArgs)
+  return normalizeReflectCallResults(fnType, result)
+}
+
+type ReflectCallOp = 'Call' | 'CallSlice'
+
+function reflectCallRawArgs(
+  fnType: Type,
+  args: Value[],
+  op: ReflectCallOp,
+): unknown[] {
+  if (op === 'CallSlice') {
+    return reflectCallSliceRawArgs(fnType, args)
+  }
+  if (!fnType.IsVariadic()) {
+    validateReflectCallInputCount(fnType, args.length)
+    return args.map((arg, index) =>
+      reflectCallValueInterface(op, arg, fnType.In(index), index),
+    )
+  }
+  const fixedCount = fnType.NumIn() - 1
+  if (args.length < fixedCount) {
+    throw new Error('reflect: Call with too few input arguments')
+  }
+  const rawArgs: unknown[] = []
+  for (let i = 0; i < fixedCount; i++) {
+    rawArgs.push(reflectCallValueInterface(op, args[i], fnType.In(i), i))
+  }
+  const variadicElemType = fnType.In(fixedCount).Elem()
+  const variadicValues = args.slice(fixedCount)
+  for (let i = 0; i < variadicValues.length; i++) {
+    const value = variadicValues[i]
+    if (!value.IsValid()) {
+      throw new Error(`reflect: ${op} using zero Value argument`)
+    }
+    if (!value.Type().AssignableTo(variadicElemType)) {
+      throw new Error(
+        `reflect: cannot use ${value.Type().String()} as type ${variadicElemType.String()} in ${op}`,
+      )
+    }
+  }
+  rawArgs.push($.arrayToSlice(variadicValues.map((value) => value.Interface())))
+  return rawArgs
+}
+
+function reflectCallSliceRawArgs(fnType: Type, args: Value[]): unknown[] {
+  if (!fnType.IsVariadic()) {
+    throw new Error('reflect: CallSlice of non-variadic function')
+  }
+  const expected = fnType.NumIn()
+  if (args.length < expected) {
+    throw new Error('reflect: CallSlice with too few input arguments')
+  }
+  if (args.length > expected) {
+    throw new Error('reflect: CallSlice with too many input arguments')
+  }
+  return args.map((arg, index) =>
+    reflectCallValueInterface('CallSlice', arg, fnType.In(index), index),
+  )
+}
+
+function reflectCallValueInterface(
+  op: ReflectCallOp,
+  value: Value,
+  target: Type,
+  _index: number,
+): unknown {
+  if (!value.IsValid()) {
+    throw new Error(`reflect: ${op} using zero Value argument`)
+  }
+  if (!value.Type().AssignableTo(target)) {
+    throw new Error(
+      `reflect: ${op} using ${value.Type().String()} as type ${target.String()}`,
+    )
+  }
+  return value.Interface()
+}
+
+function validateReflectCallInputCount(fnType: Type, actual: number): void {
+  const expected = fnType.NumIn()
+  if (actual !== expected) {
+    throw new Error(
+      `reflect: Call with ${actual} input arguments for function with ${expected} inputs`,
+    )
+  }
+}
+
+function normalizeReflectCallResults(
+  fnType: Type,
+  result: unknown,
+): $.Slice<Value> {
+  const expected = fnType.NumOut()
+  if (expected === 0) {
+    if (result !== undefined) {
+      throw new Error(
+        'reflect: Call returned 1 results for function with 0 outputs',
+      )
+    }
+    return $.makeSlice<Value>(0)
+  }
+  if (expected === 1) {
+    return $.arrayToSlice([ValueOf(result as ReflectValue)])
+  }
+  if (!globalThis.Array.isArray(result)) {
+    throw new Error(
+      `reflect: Call returned 1 results for function with ${expected} outputs`,
+    )
+  }
+  if (result.length !== expected) {
+    throw new Error(
+      `reflect: Call returned ${result.length} results for function with ${expected} outputs`,
+    )
+  }
+  return $.arrayToSlice(result.map((value) => ValueOf(value as ReflectValue)))
+}
+
+export function MakeFunc(
+  typ: Type | null,
+  fn:
+    | ((args: $.Slice<Value>) => $.Slice<Value> | Promise<$.Slice<Value>>)
+    | null,
+): Value {
+  if (!typ || typ.Kind() !== Func) {
+    throw new Error('reflect: call of MakeFunc with non-Func type')
+  }
+  if (typeof fn !== 'function') {
+    throw new Error('reflect.MakeFunc: nil implementation')
+  }
+  const typeInfo = functionTypeInfoFromType(typ)
+  const wrapper = $.functionValue(async (...rawArgs: unknown[]) => {
+    const args = makeFuncArgs(typ, rawArgs)
+    const resultValues = $.asArray(await fn($.arrayToSlice(args)))
+    validateMakeFuncResults(typ, resultValues)
+    if (typ.NumOut() === 0) {
+      return undefined
+    }
+    if (typ.NumOut() === 1) {
+      return makeFuncReturnInterface(resultValues[0], typ.Out(0))
+    }
+    return resultValues.map((value, index) =>
+      makeFuncReturnInterface(value, typ.Out(index)),
+    )
+  }, typeInfo)
+  return new Value(wrapper, typ)
+}
+
+function makeFuncArgs(typ: Type, rawArgs: unknown[]): Value[] {
+  validateReflectCallInputCount(typ, rawArgs.length)
+  return rawArgs.map((arg, index) => {
+    const value = ValueOf(arg as ReflectValue)
+    const target = typ.In(index)
+    if (!value.Type().AssignableTo(target)) {
+      throw new Error(
+        `reflect.MakeFunc: cannot use ${value.Type().String()} as type ${target.String()} in argument ${index}`,
+      )
+    }
+    return value
+  })
+}
+
+function validateMakeFuncResults(typ: Type, resultValues: Value[]): void {
+  const expected = typ.NumOut()
+  if (resultValues.length !== expected) {
+    throw new Error(
+      `reflect.MakeFunc: returned ${resultValues.length} results for function with ${expected} outputs`,
+    )
+  }
+  for (let i = 0; i < resultValues.length; i++) {
+    const result = resultValues[i]
+    if (!result.IsValid()) {
+      throw new Error(`reflect.MakeFunc: returned zero Value for result ${i}`)
+    }
+    const target = typ.Out(i)
+    if (!result.Type().AssignableTo(target)) {
+      throw new Error(
+        `reflect.MakeFunc: cannot use ${result.Type().String()} as type ${target.String()} in result ${i}`,
+      )
+    }
+  }
+}
+
+function makeFuncReturnInterface(value: Value, target: Type): unknown {
+  const raw = value.Interface()
+  if (target.Kind() === Interface) {
+    return raw
+  }
+  return unwrapGoInterfaceBox(raw)
+}
+
+function unwrapGoInterfaceBox(value: unknown): unknown {
+  if (
+    value !== null &&
+    value !== undefined &&
+    typeof value === 'object' &&
+    '__goValue' in value
+  ) {
+    return (value as { __goValue: unknown }).__goValue
+  }
+  return value
+}
+
 // Map type implementation
 class MapType implements Type {
   constructor(
@@ -2359,7 +2577,13 @@ function typeAssignableTo(t: Type, u: Type | null): boolean {
   if (u === null) {
     return false
   }
-  return t.String() === u.String() || t.Implements(u)
+  if (t.String() === u.String()) {
+    return true
+  }
+  if (u.Kind() !== Interface) {
+    return false
+  }
+  return t.Implements(u)
 }
 
 class StructType implements Type {
@@ -3299,6 +3523,102 @@ function functionTypeFromInfo(info: $.FunctionTypeInfo): Type {
     results,
     variadic: info.isVariadic ?? false,
   })
+}
+
+function functionTypeInfoFromType(typ: Type): $.FunctionTypeInfo {
+  const params: (string | $.TypeInfo)[] = []
+  for (let i = 0; i < typ.NumIn(); i++) {
+    params.push(typeInfoFromReflectType(typ.In(i)))
+  }
+  const results: (string | $.TypeInfo)[] = []
+  for (let i = 0; i < typ.NumOut(); i++) {
+    results.push(typeInfoFromReflectType(typ.Out(i)))
+  }
+  const info: $.FunctionTypeInfo = {
+    kind: $.TypeKind.Function,
+    params,
+    results,
+  }
+  if (typ.Name() !== '') {
+    info.name = typ.String()
+  }
+  if (typ.IsVariadic()) {
+    info.isVariadic = true
+  }
+  return info
+}
+
+function typeInfoFromReflectType(typ: Type): string | $.TypeInfo {
+  if (typ.PkgPath() !== '' && typ.Name() !== '') {
+    return typ.String()
+  }
+  switch (typ.Kind()) {
+    case Bool:
+    case Int:
+    case Int8:
+    case Int16:
+    case Int32:
+    case Int64:
+    case Uint:
+    case Uint8:
+    case Uint16:
+    case Uint32:
+    case Uint64:
+    case Uintptr:
+    case Float32:
+    case Float64:
+    case Complex64:
+    case Complex128:
+    case String:
+    case UnsafePointer:
+      return { kind: $.TypeKind.Basic, name: typ.String() }
+    case Interface:
+      return { kind: $.TypeKind.Interface, methods: [] }
+    case Slice:
+      return {
+        kind: $.TypeKind.Slice,
+        elemType: typeInfoFromReflectType(typ.Elem()),
+      }
+    case Array:
+      return {
+        kind: $.TypeKind.Array,
+        elemType: typeInfoFromReflectType(typ.Elem()),
+        length: typ.Len(),
+      }
+    case Ptr:
+      return {
+        kind: $.TypeKind.Pointer,
+        elemType: typeInfoFromReflectType(typ.Elem()),
+      }
+    case Map:
+      return {
+        kind: $.TypeKind.Map,
+        keyType: typeInfoFromReflectType(typ.Key()),
+        elemType: typeInfoFromReflectType(typ.Elem()),
+      }
+    case Chan:
+      return {
+        kind: $.TypeKind.Channel,
+        elemType: typeInfoFromReflectType(typ.Elem()),
+        direction: channelDirectionFromString(typ.String()),
+      }
+    case Func:
+      return functionTypeInfoFromType(typ)
+    default:
+      return typ.String()
+  }
+}
+
+function channelDirectionFromString(
+  typeName: string,
+): 'send' | 'receive' | 'both' {
+  if (typeName.startsWith('<-chan ')) {
+    return 'receive'
+  }
+  if (typeName.startsWith('chan<- ')) {
+    return 'send'
+  }
+  return 'both'
 }
 
 function interfaceTypeFromInfo(info: $.InterfaceTypeInfo): Type {

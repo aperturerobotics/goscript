@@ -488,6 +488,53 @@ func TestCompilePackagesAwaitsOverrideAsyncFunctions(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAwaitsReflectValueCall(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/reflectcallasync\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"reflect\"",
+			"func Use(fn func()) []reflect.Value {",
+			"  return reflect.ValueOf(fn).Call(nil)",
+			"}",
+			"func UseSlice(fn func(...int), args []reflect.Value) []reflect.Value {",
+			"  return reflect.ValueOf(fn).CallSlice(args)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	out := filepath.Join(t.TempDir(), "out")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      out,
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(out, "@goscript", "example.test", "reflectcallasync", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "export async function Use") {
+		t.Fatalf("reflect.Value.Call caller was not marked async:\n%s", text)
+	}
+	if !strings.Contains(text, "return await ") || !strings.Contains(text, ".Call(null)") {
+		t.Fatalf("reflect.Value.Call was not awaited:\n%s", text)
+	}
+	if !strings.Contains(text, "export async function UseSlice") {
+		t.Fatalf("reflect.Value.CallSlice caller was not marked async:\n%s", text)
+	}
+	if !strings.Contains(text, "return await ") || !strings.Contains(text, ".CallSlice(args)") {
+		t.Fatalf("reflect.Value.CallSlice was not awaited:\n%s", text)
+	}
+}
+
 func TestOverrideParityVerifierResolvesEffectiveTypeScriptExports(t *testing.T) {
 	files := map[string]string{
 		"example.test/lib/index.ts": strings.Join([]string{
@@ -752,6 +799,33 @@ func TestOverrideParityVerifierAllowsRealFuncOfUse(t *testing.T) {
 	result, err := comp.CompilePackages(context.Background(), ".")
 	if err != nil {
 		t.Fatalf("expected reflect.FuncOf use to compile: %v\n%#v", err, result.Diagnostics)
+	}
+}
+
+func TestOverrideParityVerifierAllowsRealMakeFuncUse(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/makefuncparity\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"reflect\"",
+			"func main() {",
+			"  typ := reflect.FuncOf(nil, nil, false)",
+			"  _ = reflect.MakeFunc(typ, func(args []reflect.Value) []reflect.Value { return nil })",
+			"}",
+			"",
+		}, "\n"),
+	})
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      filepath.Join(t.TempDir(), "out"),
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	result, err := comp.CompilePackages(context.Background(), ".")
+	if err != nil {
+		t.Fatalf("expected reflect.MakeFunc use to compile: %v\n%#v", err, result.Diagnostics)
 	}
 }
 

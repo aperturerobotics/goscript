@@ -1,6 +1,19 @@
 import { describe, it, expect } from 'vitest'
-import { TypeKind } from '../builtin/index.js'
-import { FuncOf, Kind_String, SliceOf, TypeOf } from './type.js'
+import {
+  arrayToSlice,
+  asArray,
+  functionValue,
+  typeAssertTuple,
+  TypeKind,
+} from '../builtin/index.js'
+import {
+  FuncOf,
+  Kind_String,
+  MakeFunc,
+  SliceOf,
+  TypeOf,
+  ValueOf,
+} from './type.js'
 
 describe('Function Type Detection', () => {
   it('should detect regular function types', () => {
@@ -211,6 +224,174 @@ describe('Function Type Detection', () => {
     expect(() =>
       FuncOf(globalThis.Array(129).fill(intType), [], false),
     ).toThrow(/reflect.FuncOf: too many arguments/)
+  })
+
+  it('should validate Value.Call counts and normalize results by descriptor', async () => {
+    const scalarFunc = functionValue((value: number) => String(value), {
+      kind: TypeKind.Function,
+      params: [{ kind: TypeKind.Basic, name: 'int' }],
+      results: [{ kind: TypeKind.Basic, name: 'string' }],
+    })
+    const scalarResult = asArray(
+      await ValueOf(scalarFunc).Call(arrayToSlice([ValueOf(7)])),
+    )
+    expect(scalarResult).toHaveLength(1)
+    expect(scalarResult[0].String()).toBe('7')
+    await expect(ValueOf(scalarFunc).Call(arrayToSlice([]))).rejects.toThrow(
+      /reflect: Call with 0 input arguments for function with 1 inputs/,
+    )
+
+    const tupleFunc = functionValue(() => [1, 'ok'], {
+      kind: TypeKind.Function,
+      params: [],
+      results: [
+        { kind: TypeKind.Basic, name: 'int' },
+        { kind: TypeKind.Basic, name: 'string' },
+      ],
+    })
+    const tupleResult = asArray(await ValueOf(tupleFunc).Call(arrayToSlice([])))
+    expect(tupleResult).toHaveLength(2)
+    expect(tupleResult[0].Int()).toBe(1)
+    expect(tupleResult[1].String()).toBe('ok')
+
+    const sliceFunc = functionValue(() => [1, 2], {
+      kind: TypeKind.Function,
+      params: [],
+      results: [
+        {
+          kind: TypeKind.Slice,
+          elemType: { kind: TypeKind.Basic, name: 'int' },
+        },
+      ],
+    })
+    const sliceResult = asArray(await ValueOf(sliceFunc).Call(arrayToSlice([])))
+    expect(sliceResult).toHaveLength(1)
+    expect(sliceResult[0].Len()).toBe(2)
+
+    const badTupleFunc = functionValue(() => [1], {
+      kind: TypeKind.Function,
+      params: [],
+      results: [
+        { kind: TypeKind.Basic, name: 'int' },
+        { kind: TypeKind.Basic, name: 'string' },
+      ],
+    })
+    await expect(ValueOf(badTupleFunc).Call(arrayToSlice([]))).rejects.toThrow(
+      /reflect: Call returned 1 results for function with 2 outputs/,
+    )
+  })
+
+  it('should construct typed functions with MakeFunc', async () => {
+    const intType = TypeOf(0)
+    const stringType = TypeOf('')
+    const boolType = TypeOf(false)
+    const unaryType = FuncOf(
+      arrayToSlice([intType]),
+      arrayToSlice([stringType]),
+      false,
+    )
+    const unaryValue = MakeFunc(unaryType, (args) =>
+      arrayToSlice([ValueOf(String(asArray(args)[0].Int()))]),
+    )
+    const [unary, ok] = typeAssertTuple<
+      ((value: number) => string | Promise<string>) | null
+    >(unaryValue.Interface(), {
+      kind: TypeKind.Function,
+      params: [{ kind: TypeKind.Basic, name: 'int' }],
+      results: [{ kind: TypeKind.Basic, name: 'string' }],
+    })
+    expect(ok).toBe(true)
+    expect(await unary!(7)).toBe('7')
+    const reflectedUnary = asArray(
+      await unaryValue.Call(arrayToSlice([ValueOf(8)])),
+    )
+    expect(reflectedUnary).toHaveLength(1)
+    expect(reflectedUnary[0].String()).toBe('8')
+
+    const asyncValue = MakeFunc(unaryType, async (args) =>
+      arrayToSlice([ValueOf(`async-${asArray(args)[0].Int()}`)]),
+    )
+    expect(
+      await (asyncValue.Interface() as (value: number) => Promise<string>)(9),
+    ).toBe('async-9')
+    const reflectedAsync = asArray(
+      await asyncValue.Call(arrayToSlice([ValueOf(10)])),
+    )
+    expect(reflectedAsync[0].String()).toBe('async-10')
+
+    const [, wrongOk] = typeAssertTuple<
+      ((value: string) => string | Promise<string>) | null
+    >(unaryValue.Interface(), {
+      kind: TypeKind.Function,
+      params: [{ kind: TypeKind.Basic, name: 'string' }],
+      results: [{ kind: TypeKind.Basic, name: 'string' }],
+    })
+    expect(wrongOk).toBe(false)
+
+    const tupleType = FuncOf(
+      arrayToSlice([]),
+      arrayToSlice([intType, boolType]),
+      false,
+    )
+    const tupleValue = MakeFunc(tupleType, () =>
+      arrayToSlice([ValueOf(3), ValueOf(true)]),
+    )
+    const tuple = await (
+      tupleValue.Interface() as () => Promise<[number, boolean]>
+    )()
+    expect(tuple).toEqual([3, true])
+    const reflectedTuple = asArray(await tupleValue.Call(arrayToSlice([])))
+    expect(reflectedTuple[0].Int()).toBe(3)
+    expect(reflectedTuple[1].Bool()).toBe(true)
+
+    const zeroType = FuncOf(arrayToSlice([]), arrayToSlice([]), false)
+    let called = false
+    const zeroValue = MakeFunc(zeroType, () => {
+      called = true
+      return arrayToSlice([])
+    })
+    expect(
+      await (zeroValue.Interface() as () => Promise<void>)(),
+    ).toBeUndefined()
+    expect(called).toBe(true)
+
+    const variadicType = FuncOf(
+      arrayToSlice([intType, SliceOf(stringType)]),
+      arrayToSlice([intType]),
+      true,
+    )
+    const variadicValue = MakeFunc(variadicType, (args) => {
+      const values = asArray(args)
+      expect(values).toHaveLength(2)
+      return arrayToSlice([ValueOf(values[0].Int() + values[1].Len())])
+    })
+    const variadic = variadicValue.Interface() as (
+      prefix: number,
+      values: unknown,
+    ) => Promise<number>
+    expect(await variadic(1, arrayToSlice(['a', 'b']))).toBe(3)
+    const reflectedVariadic = asArray(
+      await variadicValue.Call(
+        arrayToSlice([ValueOf(10), ValueOf('a'), ValueOf('b')]),
+      ),
+    )
+    expect(reflectedVariadic[0].Int()).toBe(12)
+    const reflectedSliceCall = asArray(
+      await variadicValue.CallSlice(
+        arrayToSlice([ValueOf(10), ValueOf(arrayToSlice(['a', 'b', 'c']))]),
+      ),
+    )
+    expect(reflectedSliceCall[0].Int()).toBe(13)
+
+    const badResult = MakeFunc(unaryType, () => arrayToSlice([]))
+    await expect(
+      (badResult.Interface() as (value: number) => Promise<string>)(1),
+    ).rejects.toThrow(
+      /reflect.MakeFunc: returned 0 results for function with 1 outputs/,
+    )
+    await expect(
+      variadicValue.CallSlice(arrayToSlice([ValueOf(1), ValueOf('bad')])),
+    ).rejects.toThrow(/reflect: CallSlice using string as type \[\]string/)
   })
 
   it('should handle arrow functions', () => {
