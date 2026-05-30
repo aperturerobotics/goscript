@@ -1559,8 +1559,8 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"Counter.prototype.Set.call(pointer, 2)",
 		"Counter.prototype.Set.call(NewCounter(), 5)",
 		"let [, ok] = $.typeAssertTuple<Counter | $.VarRef<Counter> | null>(iface, { kind: $.TypeKind.Pointer, elemType: \"main.Counter\" })",
-		"\"Value\": { type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\" }",
-		"\"ID\": { kind: $.TypeKind.Basic, name: \"int32\", typeName: \"main.ObjectID\" }",
+		"{ name: \"Value\", key: \"Value\", type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\", index: [0], offset: 0, exported: true }",
+		"{ name: \"ID\", key: \"ID\", type: { kind: $.TypeKind.Basic, name: \"int32\", typeName: \"main.ObjectID\" }, index: [1], offset: 8, exported: true }",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
