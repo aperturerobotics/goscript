@@ -194,24 +194,6 @@ export function NewAt(typ: Type | null, p: Pointer | unknown): Value {
   if (pointer !== undefined) {
     return new Value($.ownedPointerRef(pointer) as $.VarRef<ReflectValue>, ptrType)
   }
-  if (
-    p &&
-    typeof p === 'object' &&
-    'value' in p &&
-    (p as { value?: unknown }).value instanceof Value
-  ) {
-    const target = (p as { value: Value }).value
-    const ref: $.VarRef<ReflectValue> = {
-      get value(): ReflectValue {
-        return target.Interface() as ReflectValue
-      },
-      set value(value: ReflectValue) {
-        target.Set(new Value(value, typ))
-      },
-      __isVarRef: true,
-    }
-    return new Value(ref, ptrType)
-  }
   throw new Error('reflect.NewAt requires a GoScript-owned pointer')
 }
 

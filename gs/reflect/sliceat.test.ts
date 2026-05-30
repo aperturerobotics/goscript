@@ -74,6 +74,9 @@ describe('reflect owned pointer handles', () => {
     expect(() => NewAt(intType, { value: 1 } as any)).toThrow(
       /GoScript-owned pointer/,
     )
+    expect(() => NewAt(intType, { value: new Value(1, intType) } as any)).toThrow(
+      /GoScript-owned pointer/,
+    )
   })
 
   it('builds pointer-backed slices from owned array element handles', () => {
