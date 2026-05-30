@@ -217,10 +217,21 @@ function internType(t: Type): Type {
   const key = typeIdentityKey(t)
   const existing = canonicalTypes.get(key)
   if (existing) {
+    mergeTypeMetadata(existing, t)
     return existing
   }
   canonicalTypes.set(key, t)
   return t
+}
+
+function mergeTypeMetadata(target: Type, source: Type): void {
+  if (target instanceof BasicType && source instanceof BasicType) {
+    target.mergeMethodSignatures(source.methodSignatures())
+    return
+  }
+  if (target instanceof FunctionType && source instanceof FunctionType) {
+    target.mergeMethodSignatures(source.methodSignatures())
+  }
 }
 
 function typeIdentityKey(t: Type, seen = new Set<Type>()): string {
@@ -254,6 +265,62 @@ function typeIdentityKey(t: Type, seen = new Set<Type>()): string {
     default:
       return `${t.Kind()}:${t.PkgPath()}:${t.Name()}:${t.String()}`
   }
+}
+
+function typeUnderlyingIdentityKey(t: Type, seen = new Set<Type>()): string {
+  if (seen.has(t)) {
+    return `${t.Kind()}:${t.PkgPath()}:${t.Name()}:${t.String()}`
+  }
+  seen.add(t)
+  if (t instanceof BasicType) {
+    return `basic:${t.underlyingName()}`
+  }
+  if (t instanceof StructType) {
+    return t.underlyingIdentityKey(seen)
+  }
+  switch (t.Kind()) {
+    case Array:
+      return `array:${t.Len()}:${typeIdentityKey(t.Elem(), seen)}`
+    case Chan:
+      return `chan:${t.String()}:${typeIdentityKey(t.Elem(), seen)}`
+    case Ptr:
+      return `ptr:${typeIdentityKey(t.Elem(), seen)}`
+    case Slice:
+      return `slice:${typeIdentityKey(t.Elem(), seen)}`
+    case Map:
+      return `map:${typeIdentityKey(t.Key(), seen)}:${typeIdentityKey(
+        t.Elem(),
+        seen,
+      )}`
+    case Func: {
+      const params = globalThis.Array.from(
+        { length: t.NumIn() },
+        (_unused, idx) => typeIdentityKey(t.In(idx), seen),
+      )
+      const results = globalThis.Array.from(
+        { length: t.NumOut() },
+        (_unused, idx) => typeIdentityKey(t.Out(idx), seen),
+      )
+      return `func:${t.IsVariadic()}:${params.join(',')}:${results.join(',')}`
+    }
+    case Interface:
+      return `interface:${typeMethods(t).map(methodSignatureIdentityKey).join('|')}`
+    default:
+      return `${t.Kind()}:${t.PkgPath()}:${t.Name()}:${t.String()}`
+  }
+}
+
+function typeIsNamed(t: Type): boolean {
+  if (t.Kind() === Interface) {
+    return t.String() !== 'interface{}' && !t.String().startsWith('interface {')
+  }
+  if (t.Kind() === Struct || t.Kind() === Func) {
+    return t.Name() !== ''
+  }
+  if (t instanceof BasicType) {
+    return t.Kind() !== Invalid && t.Name() !== ''
+  }
+  return t.Name() !== ''
 }
 
 // Type is the representation of a Go type.
@@ -1356,6 +1423,7 @@ export class BasicType implements Type {
     private _name: string,
     private _size: number = 8,
     private _typeName: string = '',
+    private _methods: $.MethodSignature[] = [],
   ) {}
 
   public String(): string {
@@ -1364,6 +1432,10 @@ export class BasicType implements Type {
 
   public Kind(): Kind {
     return this._kind
+  }
+
+  public underlyingName(): string {
+    return Kind_String(this._kind)
   }
 
   public Comparable(): boolean {
@@ -1520,10 +1592,18 @@ export class BasicType implements Type {
   }
 
   public NumMethod(): number {
-    return 0
+    return typeMethods(this).length
   }
-  public MethodByName(_name: string): [Method, boolean] {
-    return [zeroMethod(), false]
+  public MethodByName(name: string): [Method, boolean] {
+    return typeMethodByName(this, name)
+  }
+
+  public methodSignatures(): $.MethodSignature[] {
+    return this._methods
+  }
+
+  public mergeMethodSignatures(methods: $.MethodSignature[]): void {
+    this._methods = mergeMethodSignatureList(this._methods, methods)
   }
 
   public Len(): number {
@@ -1942,6 +2022,7 @@ interface FunctionTypeDescriptor {
   params?: Type[]
   results?: Type[]
   variadic?: boolean
+  methods?: $.MethodSignature[]
 }
 
 class FunctionType implements Type {
@@ -1950,6 +2031,7 @@ class FunctionType implements Type {
   private _params: Type[]
   private _results: Type[]
   private _variadic: boolean
+  private _methods: $.MethodSignature[]
 
   constructor(signatureOrDescriptor: string | FunctionTypeDescriptor) {
     if (typeof signatureOrDescriptor === 'string') {
@@ -1958,6 +2040,7 @@ class FunctionType implements Type {
       this._params = []
       this._results = []
       this._variadic = false
+      this._methods = []
       return
     }
 
@@ -1965,6 +2048,7 @@ class FunctionType implements Type {
     this._params = signatureOrDescriptor.params ?? []
     this._results = signatureOrDescriptor.results ?? []
     this._variadic = signatureOrDescriptor.variadic ?? false
+    this._methods = signatureOrDescriptor.methods ?? []
     this._signature =
       signatureOrDescriptor.signature ??
       formatFunctionSignature(this._params, this._results, this._variadic)
@@ -2097,10 +2181,18 @@ class FunctionType implements Type {
   }
 
   public NumMethod(): number {
-    return 0
+    return typeMethods(this).length
   }
-  public MethodByName(_name: string): [Method, boolean] {
-    return [zeroMethod(), false]
+  public MethodByName(name: string): [Method, boolean] {
+    return typeMethodByName(this, name)
+  }
+
+  public methodSignatures(): $.MethodSignature[] {
+    return this._methods
+  }
+
+  public mergeMethodSignatures(methods: $.MethodSignature[]): void {
+    this._methods = mergeMethodSignatureList(this._methods, methods)
   }
 
   public Len(): number {
@@ -2526,6 +2618,32 @@ function methodSignatureIdentityKey(method: $.MethodSignature): string {
   return `${method.name}(${args})(${returns})`
 }
 
+function mergeMethodSignatureList(
+  existing: $.MethodSignature[],
+  incoming: $.MethodSignature[],
+): $.MethodSignature[] {
+  if (incoming.length === 0) {
+    return existing
+  }
+  const merged = [...existing]
+  for (const method of incoming) {
+    const existingIndex = merged.findIndex(
+      (candidate) => candidate.name === method.name,
+    )
+    if (existingIndex === -1) {
+      merged.push(method)
+      continue
+    }
+    if (
+      methodSignatureIdentityKey(merged[existingIndex]) !==
+      methodSignatureIdentityKey(method)
+    ) {
+      merged[existingIndex] = method
+    }
+  }
+  return merged.sort((left, right) => left.name.localeCompare(right.name))
+}
+
 function typeInfoIdentityKey(
   info: $.TypeInfo | string,
   seen: Set<string>,
@@ -2740,6 +2858,12 @@ function typeMethods(t: Type): $.MethodSignature[] {
   if (!typeInfo && t instanceof InterfaceType) {
     return t.methodSignatures()
   }
+  if (!typeInfo && t instanceof BasicType) {
+    return t.methodSignatures()
+  }
+  if (!typeInfo && t instanceof FunctionType) {
+    return t.methodSignatures()
+  }
   if (!typeInfo) {
     return []
   }
@@ -2774,6 +2898,12 @@ function typeAssignableTo(t: Type, u: Type | null): boolean {
     return false
   }
   if (typeIdentityKey(t) === typeIdentityKey(u)) {
+    return true
+  }
+  if (
+    (!typeIsNamed(t) || !typeIsNamed(u)) &&
+    typeUnderlyingIdentityKey(t) === typeUnderlyingIdentityKey(u)
+  ) {
     return true
   }
   if (u.Kind() !== Interface) {
@@ -2979,6 +3109,21 @@ class StructType implements Type {
       )
       .join('\u0001')
     return `struct:${this._pkgPath}:${this._name}:${fields}`
+  }
+
+  public underlyingIdentityKey(seen: Set<Type>): string {
+    const fields = this._fields
+      .map((field) =>
+        [
+          field.name,
+          field.pkgPath,
+          field.tag ?? '',
+          field.anonymous ? 'anonymous' : 'named',
+          typeIdentityKey(field.type, seen),
+        ].join('\u0000'),
+      )
+      .join('\u0001')
+    return `struct:${fields}`
   }
 
   public FieldByName(name: string): [StructField, boolean] {
@@ -3865,30 +4010,65 @@ function funcOfType(typ: Type | null | undefined): Type {
 
 export function TypeFor(typeArgs?: $.GenericTypeArgs): Type {
   const descriptor = typeArgs?.T
+  const methodSignatures = genericMethodSignatures(descriptor)
   if (descriptor?.type) {
-    return internType(typeFromTypeInfo(descriptor.type))
+    return internType(
+      typeWithMethodSignatures(
+        typeFromTypeInfo(descriptor.type),
+        methodSignatures,
+      ),
+    )
   }
-  if (descriptor?.methods) {
-    const methods = Object.keys(descriptor.methods)
-    if (methods.length !== 0) {
-      const methodSignatures = methods.map((method) => ({
-        name: method,
-        args: [],
-        returns: [],
-      }))
-      return internType(
-        new InterfaceType(
-          interfaceTypeString(methodSignatures),
-          undefined,
-          methodSignatures,
-        ),
-      )
-    }
+  if (methodSignatures.length !== 0) {
+    return internType(
+      new InterfaceType(
+        interfaceTypeString(methodSignatures),
+        undefined,
+        methodSignatures,
+      ),
+    )
   }
   if (descriptor?.zero) {
     return internType(getTypeOf(descriptor.zero()))
   }
   return internType(new InterfaceType('interface{}'))
+}
+
+function genericMethodSignatures(
+  descriptor: $.GenericTypeDescriptor | undefined,
+): $.MethodSignature[] {
+  if (!descriptor) {
+    return []
+  }
+  if (descriptor.methodSignatures && descriptor.methodSignatures.length !== 0) {
+    return descriptor.methodSignatures
+  }
+  if (!descriptor.methods) {
+    return []
+  }
+  return Object.keys(descriptor.methods).map((method) => ({
+    name: method,
+    args: [],
+    returns: [],
+  }))
+}
+
+function typeWithMethodSignatures(
+  typ: Type,
+  methods: $.MethodSignature[],
+): Type {
+  if (methods.length === 0) {
+    return typ
+  }
+  if (typ instanceof BasicType) {
+    typ.mergeMethodSignatures(methods)
+    return typ
+  }
+  if (typ instanceof FunctionType) {
+    typ.mergeMethodSignatures(methods)
+    return typ
+  }
+  return typ
 }
 
 function typeFromTypeInfo(info: $.TypeInfo | string): Type {

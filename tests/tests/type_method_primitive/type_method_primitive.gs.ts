@@ -78,7 +78,7 @@ export async function main(): globalThis.Promise<void> {
 	vals = $.append(vals, $.namedValueInterfaceValue<Doubler | null>(14, "main.MyInt", {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyInt" }), $.namedValueInterfaceValue<Doubler | null>(15, "main.MyInt", {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyInt" }))
 	$.println("Interface slice append:", sumDoublers(vals))
 
-	let __goscriptTuple0: any = assertDoubler({T: { type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyInt" }, zero: () => 0, methods: {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)} }}, ret)
+	let __goscriptTuple0: any = assertDoubler({T: { type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyInt" }, zero: () => 0, methods: {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: "Double", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }] }}, ret)
 	let genericAsserted = (__goscriptTuple0[0] as MyInt)
 	let genericOK = __goscriptTuple0[1]
 	$.println("Generic interface assertion:", $.int(genericAsserted), genericOK)

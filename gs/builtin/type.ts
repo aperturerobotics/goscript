@@ -1650,6 +1650,7 @@ export interface GenericTypeDescriptor<T = any> {
   type?: TypeInfo | string
   zero?: () => T
   methods?: Record<string, (receiver: T, ...args: any[]) => any>
+  methodSignatures?: MethodSignature[]
 }
 
 export type GenericTypeArgs = Record<string, GenericTypeDescriptor>

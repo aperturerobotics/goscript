@@ -10776,8 +10776,20 @@ func (o *LoweringOwner) genericTypeDescriptorExpr(ctx lowerFileContext, typ type
 	}
 	if methods := o.genericMethodDescriptors(ctx, typ); methods != "" {
 		parts = append(parts, "methods: "+methods)
+		if signatures := o.genericMethodSignatureDescriptors(typ); signatures != "" &&
+			genericTypeDescriptorNeedsMethodSignatures(typ) {
+			parts = append(parts, "methodSignatures: "+signatures)
+		}
 	}
 	return "{ " + strings.Join(parts, ", ") + " }"
+}
+
+func genericTypeDescriptorNeedsMethodSignatures(typ types.Type) bool {
+	named, _ := types.Unalias(typ).(*types.Named)
+	if named == nil {
+		return false
+	}
+	return namedStructType(named) == nil && !isInterfaceType(named)
 }
 
 func (o *LoweringOwner) genericMethodDescriptors(ctx lowerFileContext, typ types.Type) string {
@@ -10824,6 +10836,25 @@ func (o *LoweringOwner) genericMethodDescriptorsForType(
 		return ""
 	}
 	return "{" + strings.Join(methods, ", ") + "}"
+}
+
+func (o *LoweringOwner) genericMethodSignatureDescriptors(typ types.Type) string {
+	named, _ := types.Unalias(typ).(*types.Named)
+	if named == nil {
+		return ""
+	}
+	methodSet := types.NewMethodSet(named)
+	methods := make([]string, 0, methodSet.Len())
+	for method := range methodSet.Methods() {
+		fn, _ := method.Obj().(*types.Func)
+		if fn != nil {
+			methods = append(methods, o.runtimeMethodSignature(fn, make(map[types.Type]bool)))
+		}
+	}
+	if len(methods) == 0 {
+		return ""
+	}
+	return "[" + strings.Join(methods, ", ") + "]"
 }
 
 func namedNonStructMethodSetType(typ types.Type) (*types.Named, types.Type) {

@@ -2657,9 +2657,9 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 		"$.mapSet(seen, 1, {})",
 		"$.genericZero(__typeArgs, \"T\", null)",
 		"$.callGenericMethod(__typeArgs, \"T\", \"String\", v)",
-		"ZeroValue({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)} }})",
-		"CallString({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)} }}, zero)",
-		"Sum({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)} }}, null)",
+		"ZeroValue({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: \"String\", args: [], returns: [{ name: \"_r0\", type: { kind: $.TypeKind.Basic, name: \"string\" } }] }] }})",
+		"CallString({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: \"String\", args: [], returns: [{ name: \"_r0\", type: { kind: $.TypeKind.Basic, name: \"string\" } }] }] }}, zero)",
+		"Sum({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: \"String\", args: [], returns: [{ name: \"_r0\", type: { kind: $.TypeKind.Basic, name: \"string\" } }] }] }}, null)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

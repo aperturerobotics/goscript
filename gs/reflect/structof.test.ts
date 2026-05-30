@@ -292,6 +292,36 @@ describe('StructOf', () => {
     ).toBe(false)
   })
 
+  it('assigns unnamed dynamic structs to named structs with matching underlying fields', () => {
+    class NamedLayout {
+      public X = 0
+    }
+
+    const intType = TypeOf(0)
+    $.registerStructType(
+      'main.NamedLayout',
+      new NamedLayout(),
+      [],
+      NamedLayout,
+      [
+        {
+          name: 'X',
+          key: 'X',
+          type: { kind: $.TypeKind.Basic, name: 'int' },
+        },
+      ],
+    )
+    const namedType = TypeFor({
+      T: { type: 'main.NamedLayout', zero: () => new NamedLayout() },
+    })
+    const dynamicType = StructOf(
+      $.arrayToSlice([new StructField({ Name: 'X', Type: intType })]),
+    )
+
+    expect(dynamicType.AssignableTo(namedType)).toBe(true)
+    expect(namedType.AssignableTo(dynamicType)).toBe(true)
+  })
+
   it('walks embedded dynamic fields in visible-field order', () => {
     const intType = TypeOf(0)
     const stringType = TypeOf('')

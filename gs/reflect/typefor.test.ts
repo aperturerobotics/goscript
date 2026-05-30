@@ -52,6 +52,55 @@ describe('TypeFor', () => {
     expect(namedIntType.Kind()).toBe(Int)
   })
 
+  it('preserves generic method signatures for named basic types', () => {
+    const stringResult = { kind: TypeKind.Basic, name: 'string' } as const
+    const namedIntDescriptor = {
+      kind: TypeKind.Basic,
+      name: 'int',
+      typeName: 'main.MyInt',
+    } as const
+    const methodSignatures = [
+      {
+        name: 'String',
+        args: [],
+        returns: [{ type: stringResult }],
+      },
+    ]
+    const preexisting = TypeFor({
+      T: {
+        type: namedIntDescriptor,
+        zero: () => 0,
+      },
+    })
+
+    const namedIntType = TypeFor({
+      T: {
+        type: namedIntDescriptor,
+        zero: () => 0,
+        methods: { String: (receiver: number) => String(receiver) },
+        methodSignatures,
+      },
+    })
+    const stringerType = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Interface,
+          methods: methodSignatures,
+        },
+        zero: () => null,
+      },
+    })
+
+    expect(namedIntType).toBe(preexisting)
+    expect(namedIntType.NumMethod()).toBe(1)
+    const [method, ok] = namedIntType.MethodByName('String')
+    expect(ok).toBe(true)
+    expect(method.Type.NumIn()).toBe(1)
+    expect(method.Type.NumOut()).toBe(1)
+    expect(method.Type.Out(0).String()).toBe('string')
+    expect(namedIntType.Implements(stringerType)).toBe(true)
+  })
+
   it('preserves named pointer type metadata on interface boxes', () => {
     const target = varRef(0)
     const boxed = namedValueInterfaceValue(

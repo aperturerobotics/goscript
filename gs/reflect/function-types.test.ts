@@ -228,6 +228,61 @@ describe('Function Type Detection', () => {
     ).toThrow(/reflect.FuncOf: too many arguments/)
   })
 
+  it('assigns unnamed function types to named function types with matching underlying signatures', async () => {
+    const intType = TypeOf(0)
+    const unnamedFnType = FuncOf(
+      arrayToSlice([intType]),
+      arrayToSlice([]),
+      false,
+    )
+    const namedFnType = TypeFor({
+      T: {
+        type: {
+          kind: TypeKind.Function,
+          name: 'main.IntSink',
+          params: [{ kind: TypeKind.Basic, name: 'int' }],
+          results: [],
+        },
+        zero: () => null,
+      },
+    })
+
+    expect(unnamedFnType.AssignableTo(namedFnType)).toBe(true)
+    expect(namedFnType.AssignableTo(unnamedFnType)).toBe(true)
+
+    let seen = 0
+    const acceptsNamed = functionValue(
+      (fn: (value: number) => void) => {
+        fn(12)
+      },
+      {
+        kind: TypeKind.Function,
+        params: [
+          {
+            kind: TypeKind.Function,
+            name: 'main.IntSink',
+            params: [{ kind: TypeKind.Basic, name: 'int' }],
+            results: [],
+          },
+        ],
+        results: [],
+      },
+    )
+    const unnamedArg = functionValue(
+      (value: number) => {
+        seen = value
+      },
+      {
+        kind: TypeKind.Function,
+        params: [{ kind: TypeKind.Basic, name: 'int' }],
+        results: [],
+      },
+    )
+
+    await ValueOf(acceptsNamed).Call(arrayToSlice([ValueOf(unnamedArg)]))
+    expect(seen).toBe(12)
+  })
+
   it('should validate Value.Call counts and normalize results by descriptor', async () => {
     const scalarFunc = functionValue((value: number) => String(value), {
       kind: TypeKind.Function,
