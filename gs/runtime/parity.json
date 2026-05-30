@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "strict": false,
+  "symbols": {
+    "Compiler": {
+      "status": "real"
+    },
+    "GOARCH": {
+      "status": "real"
+    },
+    "GOOS": {
+      "status": "real"
+    },
+    "ReadTrace": {
+      "status": "real"
+    },
+    "StartTrace": {
+      "status": "real"
+    },
+    "StopTrace": {
+      "status": "real"
+    }
+  }
+}

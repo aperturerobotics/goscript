@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "ByteReader": {
+      "status": "real"
+    },
+    "ByteScanner": {
+      "status": "real"
+    },
+    "ByteWriter": {
+      "status": "real"
+    },
+    "Closer": {
+      "status": "real"
+    },
+    "Copy": {
+      "status": "real"
+    },
+    "CopyBuffer": {
+      "status": "real"
+    },
+    "CopyN": {
+      "status": "real"
+    },
+    "Discard": {
+      "status": "real"
+    },
+    "EOF": {
+      "status": "real"
+    },
+    "ErrClosedPipe": {
+      "status": "real"
+    },
+    "ErrNoProgress": {
+      "status": "real"
+    },
+    "ErrShortBuffer": {
+      "status": "real"
+    },
+    "ErrShortWrite": {
+      "status": "real"
+    },
+    "ErrUnexpectedEOF": {
+      "status": "real"
+    },
+    "LimitedReader": {
+      "status": "real"
+    },
+    "LimitReader": {
+      "status": "real"
+    },
+    "MultiReader": {
+      "status": "real"
+    },
+    "MultiWriter": {
+      "status": "real"
+    },
+    "NewOffsetWriter": {
+      "status": "real"
+    },
+    "NewSectionReader": {
+      "status": "real"
+    },
+    "NopCloser": {
+      "status": "real"
+    },
+    "OffsetWriter": {
+      "status": "real"
+    },
+    "Pipe": {
+      "status": "real"
+    },
+    "PipeReader": {
+      "status": "real"
+    },
+    "PipeWriter": {
+      "status": "real"
+    },
+    "ReadAll": {
+      "status": "real"
+    },
+    "ReadAtLeast": {
+      "status": "real"
+    },
+    "ReadCloser": {
+      "status": "real"
+    },
+    "Reader": {
+      "status": "real"
+    },
+    "ReaderAt": {
+      "status": "real"
+    },
+    "ReaderFrom": {
+      "status": "real"
+    },
+    "ReadFull": {
+      "status": "real"
+    },
+    "ReadSeekCloser": {
+      "status": "real"
+    },
+    "ReadSeeker": {
+      "status": "real"
+    },
+    "ReadWriteCloser": {
+      "status": "real"
+    },
+    "ReadWriter": {
+      "status": "real"
+    },
+    "ReadWriteSeeker": {
+      "status": "real"
+    },
+    "RuneReader": {
+      "status": "real"
+    },
+    "RuneScanner": {
+      "status": "real"
+    },
+    "SectionReader": {
+      "status": "real"
+    },
+    "SeekCurrent": {
+      "status": "real"
+    },
+    "SeekEnd": {
+      "status": "real"
+    },
+    "Seeker": {
+      "status": "real"
+    },
+    "SeekStart": {
+      "status": "real"
+    },
+    "StringWriter": {
+      "status": "real"
+    },
+    "TeeReader": {
+      "status": "real"
+    },
+    "WriteCloser": {
+      "status": "real"
+    },
+    "Writer": {
+      "status": "real"
+    },
+    "WriterAt": {
+      "status": "real"
+    },
+    "WriterTo": {
+      "status": "real"
+    },
+    "WriteSeeker": {
+      "status": "real"
+    },
+    "WriteString": {
+      "status": "real"
+    }
+  }
+}

@@ -27,6 +27,7 @@ export {
   SyscallError,
 } from './error.gs.js'
 export {
+  ErrNoHandle,
   ErrProcessDone,
   FindProcess,
   Getpid,

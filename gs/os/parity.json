@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "strict": false,
+  "symbols": {
+    "ErrNoHandle": {
+      "status": "real"
+    }
+  }
+}

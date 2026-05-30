@@ -1,2 +1,9 @@
 get status: 200
-get body: ok
+get body: GET
+client get status: 200
+client get body: GET
+head status: 200
+post status: 200
+post body: POST:payload
+transport status: 200
+transport body: GET

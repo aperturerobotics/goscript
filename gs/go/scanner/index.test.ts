@@ -3,70 +3,53 @@ import { describe, expect, it } from 'vitest'
 import * as $ from '@goscript/builtin/index.js'
 import * as token from '@goscript/go/token/index.js'
 
-import {
-  ErrorList_Add,
-  ErrorList_Err,
-  ErrorList_Error,
-  ErrorList_Len,
-  ErrorList_RemoveMultiples,
-  Scanner,
-  type ErrorList,
-} from './index.js'
+import { Error as ScannerError, ErrorList_Err, PrintError } from './index.js'
 
 describe('go/scanner override', () => {
-  it('adds and formats scanner errors', () => {
-    const list: $.VarRef<ErrorList> = $.varRef(null)
+  it('prints errors to an io.Writer', () => {
+    const chunks: string[] = []
+    const writer = {
+      Write(p: $.Bytes): [number, $.GoError] {
+        chunks.push($.bytesToString(p))
+        return [$.len(p), null]
+      },
+    }
 
-    ErrorList_Add(
-      list,
-      $.markAsStructValue(
-        new token.Position({
-          Filename: 'test.go',
-          Line: 1,
-          Column: 1,
-        }),
-      ),
-      'test error',
-    )
+    PrintError(writer, $.newError('scan failed'))
 
-    expect(ErrorList_Len(list.value)).toBe(1)
-    expect(ErrorList_Error(list.value)).toBe('test.go:1:1: test error')
+    expect(chunks).toEqual(['scan failed\n'])
   })
 
-  it('removes repeated line errors', () => {
-    const list: $.VarRef<ErrorList> = $.varRef(null)
-    const pos = $.markAsStructValue(
-      new token.Position({
-        Filename: 'test.go',
-        Line: 1,
-        Column: 1,
+  it('prints every ErrorList entry', () => {
+    const chunks: string[] = []
+    const writer = {
+      Write(p: $.Bytes): [number, $.GoError] {
+        chunks.push($.bytesToString(p))
+        return [$.len(p), null]
+      },
+    }
+
+    const errors = [
+      new ScannerError({
+        Pos: new token.Position({ Filename: 'a.go', Line: 1, Column: 2 }),
+        Msg: 'first',
       }),
-    )
+      new ScannerError({
+        Pos: new token.Position({ Filename: 'a.go', Line: 3, Column: 4 }),
+        Msg: 'second',
+      }),
+    ]
 
-    ErrorList_Add(list, pos, 'first')
-    ErrorList_Add(list, pos, 'second')
-    ErrorList_RemoveMultiples(list)
+    PrintError(writer, errors as $.GoError)
 
-    expect(ErrorList_Len(list.value)).toBe(1)
-  })
+    expect(chunks).toEqual(['a.go:1:2: first\n', 'a.go:3:4: second\n'])
 
-  it('returns nil Err for an empty list and an error for non-empty lists', () => {
-    const empty: ErrorList = null
-    expect(ErrorList_Err(empty)).toBeNull()
+    chunks.length = 0
+    const err = ErrorList_Err(errors)
+    expect(Array.isArray(err)).toBe(true)
+    expect(err?.Error()).toBe('a.go:1:2: first (and 1 more errors)')
+    PrintError(writer, err)
 
-    const list: $.VarRef<ErrorList> = $.varRef(null)
-    ErrorList_Add(list, new token.Position({ Line: 1 }), 'first')
-    expect(ErrorList_Err(list.value)?.Error()).toBe('1: first')
-  })
-
-  it('provides a Scanner surface for generated go/parser code', () => {
-    const fset = token.NewFileSet()
-    const file = fset.AddFile('test.go', -1, 0)
-    const scanner = new Scanner()
-
-    scanner.Init(file, null, null, 0)
-
-    expect(scanner.Scan()).toEqual([file.Pos(0), token.EOF, ''])
-    expect(scanner.Scan()).toEqual([file.Pos(0), token.EOF, ''])
+    expect(chunks).toEqual(['a.go:1:2: first\n', 'a.go:3:4: second\n'])
   })
 })

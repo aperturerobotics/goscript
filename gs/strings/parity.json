@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "Builder": {
+      "status": "real"
+    },
+    "Clone": {
+      "status": "real"
+    },
+    "Compare": {
+      "status": "real"
+    },
+    "Contains": {
+      "status": "real"
+    },
+    "ContainsAny": {
+      "status": "real"
+    },
+    "ContainsFunc": {
+      "status": "real"
+    },
+    "ContainsRune": {
+      "status": "real"
+    },
+    "Count": {
+      "status": "real"
+    },
+    "Cut": {
+      "status": "real"
+    },
+    "CutPrefix": {
+      "status": "real"
+    },
+    "CutSuffix": {
+      "status": "real"
+    },
+    "EqualFold": {
+      "status": "real"
+    },
+    "Fields": {
+      "status": "real"
+    },
+    "FieldsFunc": {
+      "status": "real"
+    },
+    "FieldsFuncSeq": {
+      "status": "real"
+    },
+    "FieldsSeq": {
+      "status": "real"
+    },
+    "HasPrefix": {
+      "status": "real"
+    },
+    "HasSuffix": {
+      "status": "real"
+    },
+    "Index": {
+      "status": "real"
+    },
+    "IndexAny": {
+      "status": "real"
+    },
+    "IndexByte": {
+      "status": "real"
+    },
+    "IndexFunc": {
+      "status": "real"
+    },
+    "IndexRune": {
+      "status": "real"
+    },
+    "Join": {
+      "status": "real"
+    },
+    "LastIndex": {
+      "status": "real"
+    },
+    "LastIndexAny": {
+      "status": "real"
+    },
+    "LastIndexByte": {
+      "status": "real"
+    },
+    "LastIndexFunc": {
+      "status": "real"
+    },
+    "Lines": {
+      "status": "real"
+    },
+    "Map": {
+      "status": "real"
+    },
+    "NewReader": {
+      "status": "real"
+    },
+    "NewReplacer": {
+      "status": "real"
+    },
+    "Reader": {
+      "status": "real"
+    },
+    "Repeat": {
+      "status": "real"
+    },
+    "Replace": {
+      "status": "real"
+    },
+    "ReplaceAll": {
+      "status": "real"
+    },
+    "Replacer": {
+      "status": "real"
+    },
+    "Split": {
+      "status": "real"
+    },
+    "SplitAfter": {
+      "status": "real"
+    },
+    "SplitAfterN": {
+      "status": "real"
+    },
+    "SplitAfterSeq": {
+      "status": "real"
+    },
+    "SplitN": {
+      "status": "real"
+    },
+    "SplitSeq": {
+      "status": "real"
+    },
+    "Title": {
+      "status": "real"
+    },
+    "ToLower": {
+      "status": "real"
+    },
+    "ToLowerSpecial": {
+      "status": "real"
+    },
+    "ToTitle": {
+      "status": "real"
+    },
+    "ToTitleSpecial": {
+      "status": "real"
+    },
+    "ToUpper": {
+      "status": "real"
+    },
+    "ToUpperSpecial": {
+      "status": "real"
+    },
+    "ToValidUTF8": {
+      "status": "real"
+    },
+    "Trim": {
+      "status": "real"
+    },
+    "TrimFunc": {
+      "status": "real"
+    },
+    "TrimLeft": {
+      "status": "real"
+    },
+    "TrimLeftFunc": {
+      "status": "real"
+    },
+    "TrimPrefix": {
+      "status": "real"
+    },
+    "TrimRight": {
+      "status": "real"
+    },
+    "TrimRightFunc": {
+      "status": "real"
+    },
+    "TrimSpace": {
+      "status": "real"
+    },
+    "TrimSuffix": {
+      "status": "real"
+    }
+  }
+}

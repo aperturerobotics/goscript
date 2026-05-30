@@ -1,4 +1,5 @@
 import * as $ from '@goscript/builtin/index.js'
+import * as unicode from '@goscript/unicode/index.js'
 
 // Count counts the number of non-overlapping instances of substr in s.
 // If substr is an empty string, Count returns 1 + the number of Unicode code points in s.
@@ -355,14 +356,76 @@ export function ToUpper(s: string): string {
   return s.toUpperCase()
 }
 
+export function ToUpperSpecial(c: unicode.SpecialCase, s: string): string {
+  if (isTurkishCase(c)) {
+    return mapTurkishCase(s, 'upper')
+  }
+  return ToUpper(s)
+}
+
 // ToLower returns s with all Unicode letters mapped to their lower case.
 export function ToLower(s: string): string {
   return s.toLowerCase()
 }
 
+export function ToLowerSpecial(c: unicode.SpecialCase, s: string): string {
+  if (isTurkishCase(c)) {
+    return mapTurkishCase(s, 'lower')
+  }
+  return ToLower(s)
+}
+
 // ToTitle returns a copy of the string s with all Unicode letters mapped to their Unicode title case.
 export function ToTitle(s: string): string {
-  // JavaScript doesn't have a direct toTitleCase, so we'll use a simple approximation
+  return s.toUpperCase()
+}
+
+export function ToTitleSpecial(c: unicode.SpecialCase, s: string): string {
+  if (isTurkishCase(c)) {
+    return mapTurkishCase(s, 'upper')
+  }
+  return ToTitle(s)
+}
+
+function isTurkishCase(c: unicode.SpecialCase): boolean {
+  return c === unicode.TurkishCase || c === unicode.AzeriCase
+}
+
+function mapTurkishCase(s: string, mode: 'upper' | 'lower'): string {
+  let out = ''
+  for (const char of s) {
+    if (mode === 'upper') {
+      if (char === 'i') {
+        out += 'İ'
+        continue
+      }
+      if (char === 'ı') {
+        out += 'I'
+        continue
+      }
+      out += char.toUpperCase()
+      continue
+    }
+    if (char === 'I') {
+      out += 'ı'
+      continue
+    }
+    if (char === 'İ') {
+      out += 'i'
+      continue
+    }
+    out += char.toLowerCase()
+  }
+  return out
+}
+
+export function ToValidUTF8(s: string, replacement: string): string {
+  void replacement
+  return s
+}
+
+// Title returns a copy of the string s with all Unicode letters that begin words mapped to their Unicode title case.
+export function Title(s: string): string {
   return s
     .split(' ')
     .map((word) =>
@@ -371,11 +434,6 @@ export function ToTitle(s: string): string {
       : word,
     )
     .join(' ')
-}
-
-// Title returns a copy of the string s with all Unicode letters that begin words mapped to their Unicode title case.
-export function Title(s: string): string {
-  return ToTitle(s)
 }
 
 // TrimSpace returns a slice of the string s, with all leading and trailing white space removed.

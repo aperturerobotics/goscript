@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { Mul64 } from './index.js'
+import { Mul64, Rem, Rem32, Rem64, RotateLeft16, RotateLeft32, RotateLeft64, RotateLeft8 } from './index.js'
 
 describe('math/bits override', () => {
   it('returns the full 128-bit product from Mul64', () => {
@@ -16,5 +16,18 @@ describe('math/bits override', () => {
       0x3ffffffffff,
       0xffc0000000000001n,
     ])
+  })
+
+  it('returns remainders from double-word division helpers', () => {
+    expect(Rem32(1, 0, 3)).toBe(1)
+    expect(Rem(1n, 0n, 3n)).toBe(1n)
+    expect(Rem64(1n, 0n, 3n)).toBe(1n)
+  })
+
+  it('rotates right for negative counts', () => {
+    expect(RotateLeft8(1, -1)).toBe(0x80)
+    expect(RotateLeft16(1, -1)).toBe(0x8000)
+    expect(RotateLeft32(1, -1)).toBe(0x80000000)
+    expect(RotateLeft64(1n, -1)).toBe(0x8000000000000000n)
   })
 })

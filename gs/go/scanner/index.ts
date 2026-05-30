@@ -1,5 +1,6 @@
 import * as $ from '@goscript/builtin/index.js'
 import * as token from '@goscript/go/token/index.js'
+import type * as io from '@goscript/io/index.js'
 
 export class Error {
   public get Pos(): token.Position {
@@ -196,9 +197,32 @@ export function ErrorList_Error(list: ErrorList): string {
   return `${errors[0]!.Error()} (and ${errors.length - 1} more errors)`
 }
 
+type errorListWithError = ErrorList & { Error?: () => string }
+
 export function ErrorList_Err(list: ErrorList): $.GoError {
   if ($.len(list) === 0) {
     return null
   }
-  return $.newError(ErrorList_Error(list))
+  const err = list as errorListWithError
+  err.Error = () => ErrorList_Error(list)
+  return err as unknown as $.GoError
+}
+
+export function PrintError(w: io.Writer, err: $.GoError): void {
+  if (err === null) {
+    return
+  }
+  if (Array.isArray(err)) {
+    for (const entry of Array.from((err as ErrorList) ?? [])) {
+      if (entry == null) {
+        continue
+      }
+      w.Write($.stringToBytes(`${entry.Error()}\n`))
+    }
+    return
+  }
+  const text = err.Error()
+  for (const line of text.split('\n')) {
+    w.Write($.stringToBytes(line + '\n'))
+  }
 }

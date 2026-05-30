@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -79,6 +80,17 @@ func TestOverrideRegistryFactsAreImmutable(t *testing.T) {
 	}
 	if len(pkg.files) == 0 || pkg.files[0].data[0] == '!' {
 		t.Fatalf("copy file mutation leaked back into facts")
+	}
+
+	ledger := facts.parityLedger("net/http")
+	if got := ledger.Symbols["ServeFile"].Status; got != overrideParityStatusReal {
+		t.Fatalf("expected net/http ServeFile real parity, got %q", got)
+	}
+	ledger.Symbols["ServeFile"] = overrideParityEntry{Status: overrideParityStatusDeferred}
+
+	ledger = facts.parityLedger("net/http")
+	if got := ledger.Symbols["ServeFile"].Status; got != overrideParityStatusReal {
+		t.Fatalf("parity ledger mutation leaked back into facts: %q", got)
 	}
 }
 
@@ -384,6 +396,51 @@ func TestCompilePackagesAwaitsOverrideAsyncInterfaceMethodCalls(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAwaitsNetHTTPServeHTTPOverrideMethods(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/httpserveasync\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"net/http\"",
+			"func Use(h http.Handler, hf http.HandlerFunc, mux *http.ServeMux, w http.ResponseWriter, r *http.Request) {",
+			"  h.ServeHTTP(w, r)",
+			"  hf.ServeHTTP(w, r)",
+			"  mux.ServeHTTP(w, r)",
+			"}",
+			"func main() {}",
+			"",
+		}, "\n"),
+	})
+	out := filepath.Join(t.TempDir(), "out")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      out,
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(out, "@goscript", "example.test", "httpserveasync", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export async function Use(",
+		"await $.pointerValue<Exclude<http.Handler, null>>(h).ServeHTTP($.pointerValueOrNil(w)!, r)",
+		"await http.HandlerFunc_ServeHTTP(hf, $.pointerValueOrNil(w)!, r)",
+		"await http.ServeMux.prototype.ServeHTTP.call($.pointerValue<http.ServeMux>(mux), $.pointerValueOrNil(w)!, r)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesAwaitsOverrideAsyncFunctions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/overrideasyncfunc\n\ngo 1.25.3\n",
@@ -429,4 +486,338 @@ func TestCompilePackagesAwaitsOverrideAsyncFunctions(t *testing.T) {
 	if !strings.Contains(string(content), "$.functionValue(async") {
 		t.Fatalf("walk callback was not lowered as async:\n%s", string(content))
 	}
+}
+
+func TestOverrideParityVerifierResolvesEffectiveTypeScriptExports(t *testing.T) {
+	files := map[string]string{
+		"example.test/lib/index.ts": strings.Join([]string{
+			"export { RenamedSource as Renamed } from './named.js'",
+			"export type { TypeShape } from './types.js'",
+			"export * from './star.js'",
+			"",
+		}, "\n"),
+		"example.test/lib/named.ts": "export function RenamedSource(): void {}\n",
+		"example.test/lib/star.ts":  "export class Star {}\n",
+		"example.test/lib/types.ts": "export interface TypeShape {}\n",
+	}
+	exports := make(map[string]typeScriptExport)
+	if err := collectTypeScriptExports("example.test/lib/index.ts", files, exports, make(map[string]bool)); err != nil {
+		t.Fatal(err.Error())
+	}
+	for _, name := range []string{"Renamed", "TypeShape", "Star"} {
+		if !exports[name].present() {
+			t.Fatalf("effective TypeScript exports missing %s: %v", name, exports)
+		}
+	}
+	if exports["RenamedSource"].present() {
+		t.Fatalf("named re-export source leaked into effective exports: %v", exports)
+	}
+	if !exports["Renamed"].value || exports["Renamed"].typ {
+		t.Fatalf("renamed function export should be value-only: %#v", exports["Renamed"])
+	}
+	if !exports["TypeShape"].typ || exports["TypeShape"].value {
+		t.Fatalf("type re-export should be type-only: %#v", exports["TypeShape"])
+	}
+	if !exports["Star"].value || !exports["Star"].typ {
+		t.Fatalf("class star export should carry value and type shapes: %#v", exports["Star"])
+	}
+}
+
+func TestOverrideParityVerifierValidatesNamedReExportSources(t *testing.T) {
+	files := map[string]string{
+		"example.test/lib/index.ts": "export { Missing } from './named.js'\n",
+		"example.test/lib/named.ts": "export function Present(): void {}\n",
+	}
+	err := collectTypeScriptExports("example.test/lib/index.ts", files, make(map[string]typeScriptExport), make(map[string]bool))
+	if err == nil {
+		t.Fatalf("expected missing named re-export source to fail")
+	}
+	if !strings.Contains(err.Error(), "re-exports missing symbol Missing") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestOverrideParityVerifierValidatesLocalNamedExportSources(t *testing.T) {
+	files := map[string]string{
+		"example.test/lib/index.ts": "export { Missing }\n",
+	}
+	err := collectTypeScriptExports("example.test/lib/index.ts", files, make(map[string]typeScriptExport), make(map[string]bool))
+	if err == nil {
+		t.Fatalf("expected missing local named export source to fail")
+	}
+	if !strings.Contains(err.Error(), "exports missing local value symbol Missing") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestOverrideParityVerifierReportsStrictUnclassifiedSymbol(t *testing.T) {
+	result, err := compileParityFixture(t, map[string]overrideParityEntry{
+		"Present": {Status: overrideParityStatusReal},
+	}, "export function Present(): void {}\n")
+	if err == nil {
+		t.Fatalf("expected compile to fail")
+	}
+	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-unclassified")
+}
+
+func TestOverrideParityVerifierReportsMissingTypeScriptExport(t *testing.T) {
+	result, err := compileParityFixture(t, map[string]overrideParityEntry{
+		"Present": {Status: overrideParityStatusReal},
+		"Missing": {Status: overrideParityStatusReal},
+	}, "export function Present(): void {}\n")
+	if err == nil {
+		t.Fatalf("expected compile to fail")
+	}
+	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-missing-export")
+}
+
+func TestOverrideParityVerifierRejectsTypeOnlyValueExport(t *testing.T) {
+	result, err := compileParityFixture(t, map[string]overrideParityEntry{
+		"Present": {Status: overrideParityStatusReal},
+		"Missing": {Status: overrideParityStatusReal},
+	}, strings.Join([]string{
+		"export function Present(): void {}",
+		"export type Missing = unknown",
+		"",
+	}, "\n"))
+	if err == nil {
+		t.Fatalf("expected compile to fail")
+	}
+	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-missing-export")
+}
+
+func TestOverrideParityVerifierRejectsTypeOnlyStructExport(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/structparity\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/structparity/lib\"",
+			"func main() { _ = lib.StructExport{} }",
+			"",
+		}, "\n"),
+		"lib/lib.go": strings.Join([]string{
+			"package lib",
+			"type StructExport struct{}",
+			"",
+		}, "\n"),
+	})
+	overrideDir := filepath.Join(t.TempDir(), "gs")
+	writeFixtureFile(t, overrideDir, "example.test/structparity/lib/index.ts", "export type StructExport = {}\n")
+	writeFixtureFile(t, overrideDir, "example.test/structparity/lib/parity.json", parityFixtureJSON(t, map[string]overrideParityEntry{
+		"StructExport": {Status: overrideParityStatusReal},
+	}))
+
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      filepath.Join(t.TempDir(), "out"),
+		OverrideDirs:    []string{overrideDir},
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	result, err := comp.CompilePackages(context.Background(), ".")
+	if err == nil {
+		t.Fatalf("expected compile to fail")
+	}
+	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-missing-export")
+}
+
+func TestOverrideParityVerifierReportsBlockedTypeScriptExport(t *testing.T) {
+	result, err := compileParityFixture(t, map[string]overrideParityEntry{
+		"Present": {Status: overrideParityStatusReal},
+		"Missing": {Status: overrideParityStatusBlocked, Reason: "blocked by fixture"},
+	}, strings.Join([]string{
+		"export function Present(): void {}",
+		"export function Missing(): void {}",
+		"",
+	}, "\n"))
+	if err == nil {
+		t.Fatalf("expected compile to fail")
+	}
+	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-unexpected-export")
+}
+
+func TestOverrideParityVerifierAllowsDeferredMissingExports(t *testing.T) {
+	result, err := compileParityFixture(t, map[string]overrideParityEntry{
+		"Present": {Status: overrideParityStatusReal},
+		"Missing": {Status: overrideParityStatusDeferred},
+	}, "export function Present(): void {}\n")
+	if err != nil {
+		t.Fatalf("compile failed: %v\n%#v", err, result.Diagnostics)
+	}
+}
+
+func TestOverrideParityVerifierReportsDeferredAtPhaseClose(t *testing.T) {
+	owner := NewOverrideRegistryOwner()
+	facts, diagnostics := owner.Facts(context.Background())
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("override facts failed: %#v", diagnostics)
+	}
+
+	diagnostics = NewOverrideParityVerifier().VerifyNoDeferred(facts,
+		"net/http",
+		"net/http/httptest",
+		"encoding/json",
+		"mime",
+		"time",
+		"reflect",
+		"math/bits",
+		"strings",
+		"strconv",
+		"compress/zlib",
+		"io",
+		"go/scanner",
+		"hash",
+		"internal/goarch",
+		"os",
+		"runtime",
+		"runtime/pprof",
+		"runtime/trace",
+	)
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("override ledgers still contain deferred entries: %#v", diagnostics)
+	}
+}
+
+func TestOverrideParityVerifierAcceptsPhase4Ledgers(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/phase4parity\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import (",
+			"  \"compress/zlib\"",
+			"  \"encoding/json\"",
+			"  \"go/scanner\"",
+			"  \"hash\"",
+			"  \"io\"",
+			"  \"math/bits\"",
+			"  \"mime\"",
+			"  \"os\"",
+			"  \"reflect\"",
+			"  \"strconv\"",
+			"  \"strings\"",
+			"  \"time\"",
+			")",
+			"var _ = json.Valid",
+			"var _ = mime.TypeByExtension",
+			"var _ = time.RFC1123",
+			"var _ = reflect.VisibleFields",
+			"var _ = bits.Rem32",
+			"var _ = strings.ToValidUTF8",
+			"var _ = strconv.FormatComplex",
+			"var _ = zlib.NoCompression",
+			"var _ io.ReadSeekCloser",
+			"var _ = scanner.PrintError",
+			"var _ hash.XOF",
+			"var _ = os.ErrNoHandle",
+			"func main() {}",
+			"",
+		}, "\n"),
+	})
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      filepath.Join(t.TempDir(), "out"),
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	result, err := comp.CompilePackages(context.Background(), ".")
+	if err != nil {
+		t.Fatalf("compile failed: %v\n%#v", err, result.Diagnostics)
+	}
+}
+
+func TestOverrideParityVerifierReportsBlockedUse(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/blockedparity\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"reflect\"",
+			"func main() {",
+			"  _ = reflect.FuncOf(nil, nil, false)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      filepath.Join(t.TempDir(), "out"),
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	result, err := comp.CompilePackages(context.Background(), ".")
+	if err == nil {
+		t.Fatalf("expected blocked reflect.FuncOf use to fail")
+	}
+	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-blocked-use")
+}
+
+func compileParityFixture(
+	t *testing.T,
+	symbols map[string]overrideParityEntry,
+	index string,
+) (*CompilationResult, error) {
+	t.Helper()
+
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/parity\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"example.test/parity/lib\"",
+			"func main() { lib.Present() }",
+			"",
+		}, "\n"),
+		"lib/lib.go": strings.Join([]string{
+			"package lib",
+			"func Present() {}",
+			"func Missing() {}",
+			"",
+		}, "\n"),
+	})
+	overrideDir := filepath.Join(t.TempDir(), "gs")
+	writeFixtureFile(t, overrideDir, "example.test/parity/lib/index.ts", index)
+	writeFixtureFile(t, overrideDir, "example.test/parity/lib/parity.json", parityFixtureJSON(t, symbols))
+
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      filepath.Join(t.TempDir(), "out"),
+		OverrideDirs:    []string{overrideDir},
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	return comp.CompilePackages(context.Background(), ".")
+}
+
+func parityFixtureJSON(t *testing.T, symbols map[string]overrideParityEntry) string {
+	t.Helper()
+
+	var b strings.Builder
+	b.WriteString("{\"schemaVersion\":1,\"strict\":true,\"symbols\":{")
+	names := make([]string, 0, len(symbols))
+	for name := range symbols {
+		names = append(names, name)
+	}
+	slices.Sort(names)
+	for idx, name := range names {
+		if idx != 0 {
+			b.WriteByte(',')
+		}
+		entry := symbols[name]
+		b.WriteString(strconv.Quote(name))
+		b.WriteString(":{\"status\":")
+		b.WriteString(strconv.Quote(string(entry.Status)))
+		if entry.Reason != "" {
+			b.WriteString(",\"reason\":")
+			b.WriteString(strconv.Quote(entry.Reason))
+		}
+		b.WriteString("}")
+	}
+	b.WriteString("}}\n")
+	return b.String()
 }

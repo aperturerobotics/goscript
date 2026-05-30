@@ -22,6 +22,10 @@ function word64Result(value: bigint, useBigInt: boolean): Word64 {
     : Number(value)
 }
 
+function rotateCount(k: number, n: number): number {
+  return ((k % n) + n) % n
+}
+
 // --- Leading zeros ---
 export function LeadingZeros(x: Word64): number {
   return LeadingZeros64(x)
@@ -132,21 +136,21 @@ export function RotateLeft(x: Word64, k: number): Word64 {
 
 export function RotateLeft8(x: number, k: number): number {
   const n = 8
-  k = k % n
+  k = rotateCount(k, n)
   x = x & 0xff
   return ((x << k) | (x >> (n - k))) & 0xff
 }
 
 export function RotateLeft16(x: number, k: number): number {
   const n = 16
-  k = k % n
+  k = rotateCount(k, n)
   x = x & 0xffff
   return ((x << k) | (x >> (n - k))) & 0xffff
 }
 
 export function RotateLeft32(x: number, k: number): number {
   const n = 32
-  k = k % n
+  k = rotateCount(k, n)
   x = x >>> 0 // Ensure unsigned
   return ((x << k) | (x >>> (n - k))) >>> 0
 }
@@ -156,7 +160,7 @@ export function RotateLeft64(x: bigint, k: number): bigint
 export function RotateLeft64(x: Word64, k: number): number
 export function RotateLeft64(x: Word64, k: number): Word64 {
   const n = 64
-  k = k % n
+  k = rotateCount(k, n)
   const useBigInt = useBigIntResult(x)
   const word = toUint64(x)
   return word64Result(
@@ -369,6 +373,21 @@ export function Div64(hi: Word64, lo: Word64, y: Word64): [Word64, Word64] {
   const remainder = dividend % y
 
   return [word64Result(quotient, useBigInt), word64Result(remainder, useBigInt)]
+}
+
+export function Rem(hi: Word64, lo: Word64, y: Word64): Word64 {
+  return Div(hi, lo, y)[1]
+}
+
+export function Rem32(hi: number, lo: number, y: number): number {
+  return Div32(hi, lo, y)[1]
+}
+
+export function Rem64(hi: number, lo: number, y: number): number
+export function Rem64(hi: bigint, lo: bigint, y: bigint): bigint
+export function Rem64(hi: Word64, lo: Word64, y: Word64): number
+export function Rem64(hi: Word64, lo: Word64, y: Word64): Word64 {
+  return Div64(hi, lo, y)[1]
 }
 
 // --- Add and Sub with carry ---

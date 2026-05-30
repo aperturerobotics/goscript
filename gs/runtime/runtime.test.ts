@@ -12,7 +12,9 @@ describe('runtime override', () => {
   it('exposes stack and trace compatibility helpers', () => {
     expect(Compiler).toBe('gc')
     expect(FuncForPC(0)).toBeNull()
-    expect(StartTrace()).toBeNull()
+    expect(StartTrace()?.Error()).toBe(
+      'runtime: execution tracing is unsupported in GoScript',
+    )
     expect(ReadTrace()).toBeNull()
     expect(() => StopTrace()).not.toThrow()
   })

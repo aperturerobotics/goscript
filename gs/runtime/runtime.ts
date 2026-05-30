@@ -104,7 +104,7 @@ export function FuncForPC(_pc: number): Func | null {
 
 // StartTrace enables execution tracing.
 export function StartTrace(): $.GoError {
-  return null
+  return $.newError('runtime: execution tracing is unsupported in GoScript')
 }
 
 // StopTrace stops execution tracing.

@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "Append": {
+      "status": "real"
+    },
+    "AppendSlice": {
+      "status": "real"
+    },
+    "Array": {
+      "status": "real"
+    },
+    "ArrayOf": {
+      "status": "real"
+    },
+    "Bool": {
+      "status": "real"
+    },
+    "BothDir": {
+      "status": "real"
+    },
+    "Chan": {
+      "status": "real"
+    },
+    "ChanDir": {
+      "status": "real"
+    },
+    "ChanOf": {
+      "status": "real"
+    },
+    "Complex128": {
+      "status": "real"
+    },
+    "Complex64": {
+      "status": "real"
+    },
+    "Copy": {
+      "status": "real"
+    },
+    "DeepEqual": {
+      "status": "real"
+    },
+    "Float32": {
+      "status": "real"
+    },
+    "Float64": {
+      "status": "real"
+    },
+    "Func": {
+      "status": "real"
+    },
+    "FuncOf": {
+      "status": "blocked",
+      "reason": "dynamic function type construction requires runtime function type metadata synthesis that this override does not own yet"
+    },
+    "Indirect": {
+      "status": "real"
+    },
+    "Int": {
+      "status": "real"
+    },
+    "Int16": {
+      "status": "real"
+    },
+    "Int32": {
+      "status": "real"
+    },
+    "Int64": {
+      "status": "real"
+    },
+    "Int8": {
+      "status": "real"
+    },
+    "Interface": {
+      "status": "real"
+    },
+    "Invalid": {
+      "status": "real"
+    },
+    "Kind": {
+      "status": "real"
+    },
+    "MakeChan": {
+      "status": "real"
+    },
+    "MakeFunc": {
+      "status": "blocked",
+      "reason": "dynamic callable synthesis requires reflect call ABI support that is not present in the GoScript runtime yet"
+    },
+    "MakeMap": {
+      "status": "real"
+    },
+    "MakeMapWithSize": {
+      "status": "real"
+    },
+    "MakeSlice": {
+      "status": "real"
+    },
+    "Map": {
+      "status": "real"
+    },
+    "MapIter": {
+      "status": "real"
+    },
+    "MapOf": {
+      "status": "real"
+    },
+    "Method": {
+      "status": "real"
+    },
+    "New": {
+      "status": "real"
+    },
+    "NewAt": {
+      "status": "real"
+    },
+    "Pointer": {
+      "status": "real"
+    },
+    "PointerTo": {
+      "status": "real"
+    },
+    "Ptr": {
+      "status": "real"
+    },
+    "PtrTo": {
+      "status": "real"
+    },
+    "RecvDir": {
+      "status": "real"
+    },
+    "Select": {
+      "status": "real"
+    },
+    "SelectCase": {
+      "status": "real"
+    },
+    "SelectDefault": {
+      "status": "real"
+    },
+    "SelectDir": {
+      "status": "real"
+    },
+    "SelectRecv": {
+      "status": "real"
+    },
+    "SelectSend": {
+      "status": "real"
+    },
+    "SendDir": {
+      "status": "real"
+    },
+    "Slice": {
+      "status": "real"
+    },
+    "SliceAt": {
+      "status": "blocked",
+      "reason": "unsafe-pointer-backed slices require host pointer and ABI ownership outside this override"
+    },
+    "SliceHeader": {
+      "status": "real"
+    },
+    "SliceOf": {
+      "status": "real"
+    },
+    "String": {
+      "status": "real"
+    },
+    "StringHeader": {
+      "status": "real"
+    },
+    "Struct": {
+      "status": "real"
+    },
+    "StructField": {
+      "status": "real"
+    },
+    "StructOf": {
+      "status": "blocked",
+      "reason": "dynamic struct type construction requires runtime struct metadata synthesis that this override does not own yet"
+    },
+    "StructTag": {
+      "status": "real"
+    },
+    "Swapper": {
+      "status": "real"
+    },
+    "Type": {
+      "status": "real"
+    },
+    "TypeAssert": {
+      "status": "real"
+    },
+    "TypeFor": {
+      "status": "real"
+    },
+    "TypeOf": {
+      "status": "real"
+    },
+    "Uint": {
+      "status": "real"
+    },
+    "Uint16": {
+      "status": "real"
+    },
+    "Uint32": {
+      "status": "real"
+    },
+    "Uint64": {
+      "status": "real"
+    },
+    "Uint8": {
+      "status": "real"
+    },
+    "Uintptr": {
+      "status": "real"
+    },
+    "UnsafePointer": {
+      "status": "real"
+    },
+    "Value": {
+      "status": "real"
+    },
+    "ValueError": {
+      "status": "real"
+    },
+    "ValueOf": {
+      "status": "real"
+    },
+    "VisibleFields": {
+      "status": "real"
+    },
+    "Zero": {
+      "status": "real"
+    }
+  }
+}

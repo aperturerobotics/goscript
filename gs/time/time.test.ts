@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import * as $ from '@goscript/builtin/index.js'
 
 import {
+  ANSIC,
   Duration_Abs,
   Duration_Hours,
   Duration_Microseconds,
@@ -14,14 +15,22 @@ import {
   Duration_String,
   Duration_Truncate,
   FixedZone,
+  Friday,
   January,
+  Kitchen,
+  Local,
   Microsecond,
   Millisecond,
   Minute,
+  Month_String,
   NewTicker,
   NewTimer,
+  RFC1123,
   RFC3339Nano,
+  Saturday,
   Second,
+  StampMicro,
+  Sunday,
   Date,
   May,
   RFC3339,
@@ -67,12 +76,21 @@ describe('time.Duration methods', () => {
 })
 
 describe('time constants and timers', () => {
-  it('exports RFC3339Nano', () => {
+  it('exports layout and location constants', () => {
+    expect(ANSIC).toBe('Mon Jan _2 15:04:05 2006')
+    expect(RFC1123).toBe('Mon, 02 Jan 2006 15:04:05 MST')
     expect(RFC3339Nano).toBe('2006-01-02T15:04:05.999999999Z07:00')
+    expect(Kitchen).toBe('3:04PM')
+    expect(StampMicro).toBe('Jan _2 15:04:05.000000')
+    expect(Local.String()).toBe('Local')
   })
 
-  it('exports month constants directly', () => {
+  it('exports month and weekday constants directly', () => {
     expect(January).toBe(1)
+    expect(Month_String(May)).toBe('May')
+    expect(Sunday).toBe(0)
+    expect(Friday).toBe(5)
+    expect(Saturday).toBe(6)
   })
 
   it('delivers NewTimer values on C', async () => {

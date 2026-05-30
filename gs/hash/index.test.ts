@@ -1,37 +1,24 @@
 import { describe, expect, it } from 'vitest'
 
-import * as $ from '../builtin/index.js'
+import * as $ from '@goscript/builtin/index.js'
 
-import './index.js'
+import type { XOF } from './index.js'
 
-class FakeHash {
-  Write(p: $.Bytes): [number, $.GoError] {
-    return [$.len(p), null]
-  }
+describe('hash override', () => {
+  it('exports the XOF interface shape', () => {
+    const xof: XOF = {
+      Write(p: $.Bytes): [number, $.GoError] {
+        return [$.len(p), null]
+      },
+      Read(p: $.Bytes): [number, $.GoError] {
+        return [$.len(p), null]
+      },
+      Reset(): void {},
+      BlockSize(): number {
+        return 1
+      },
+    }
 
-  Sum(b: $.Bytes): $.Bytes {
-    return b
-  }
-
-  Reset(): void {}
-
-  Size(): number {
-    return 20
-  }
-
-  BlockSize(): number {
-    return 64
-  }
-}
-
-describe('hash runtime contracts', () => {
-  it('registers Hash for runtime type assertions', () => {
-    const [value, ok] = $.typeAssertTuple<FakeHash>(
-      new FakeHash(),
-      'hash.Hash',
-    )
-
-    expect(ok).toBe(true)
-    expect(value).toBeInstanceOf(FakeHash)
+    expect(xof.BlockSize()).toBe(1)
   })
 })

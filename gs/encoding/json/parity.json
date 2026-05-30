@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "Compact": {
+      "status": "real"
+    },
+    "Decoder": {
+      "status": "real"
+    },
+    "Delim": {
+      "status": "real"
+    },
+    "Encoder": {
+      "status": "real"
+    },
+    "HTMLEscape": {
+      "status": "real"
+    },
+    "Indent": {
+      "status": "real"
+    },
+    "InvalidUnmarshalError": {
+      "status": "real"
+    },
+    "InvalidUTF8Error": {
+      "status": "real"
+    },
+    "Marshal": {
+      "status": "real"
+    },
+    "Marshaler": {
+      "status": "real"
+    },
+    "MarshalerError": {
+      "status": "real"
+    },
+    "MarshalIndent": {
+      "status": "real"
+    },
+    "NewDecoder": {
+      "status": "real"
+    },
+    "NewEncoder": {
+      "status": "real"
+    },
+    "Number": {
+      "status": "real"
+    },
+    "RawMessage": {
+      "status": "real"
+    },
+    "SyntaxError": {
+      "status": "real"
+    },
+    "Token": {
+      "status": "real"
+    },
+    "Unmarshal": {
+      "status": "real"
+    },
+    "Unmarshaler": {
+      "status": "real"
+    },
+    "UnmarshalFieldError": {
+      "status": "real"
+    },
+    "UnmarshalTypeError": {
+      "status": "real"
+    },
+    "UnsupportedTypeError": {
+      "status": "real"
+    },
+    "UnsupportedValueError": {
+      "status": "real"
+    },
+    "Valid": {
+      "status": "real"
+    }
+  }
+}

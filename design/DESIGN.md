@@ -25,7 +25,7 @@ Public entrypoints are adapters over one compiler service:
 1.  `CompileRequestOwner` normalizes adapter inputs and rejects invalid requests before output is written. Package patterns such as `.` or `./pkg` are supported from inside a Go module; direct `.go` file inputs are rejected with `goscript/request:single-file-unsupported`.
 2.  `PackageGraphOwner` loads Go packages with `go/packages`, using `GOOS=js`, `GOARCH=wasm`, and caller-supplied build flags.
 3.  `SemanticModelOwner` computes package, file, type, method, addressability, async, interface, generic, and override facts.
-4.  `OverrideRegistryOwner` discovers handwritten `gs/` packages, validates metadata/dependencies, supplies async method facts, builds copy plans, and copies required runtime/override packages.
+4.  `OverrideRegistryOwner` discovers handwritten `gs/` packages, validates metadata/dependencies, supplies async method and parity ledger facts, builds copy plans, and copies required runtime/override packages.
 5.  `LoweringOwner` converts the semantic model and Go AST into GoScript's compiler-owned intermediate model. Unsupported syntax produces structured lowering diagnostics before emission.
 6.  `TypeScriptEmitOwner` renders deterministic semicolon-free TypeScript files and package indexes only from the lowered model.
 

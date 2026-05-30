@@ -24,6 +24,7 @@ type OverrideFacts struct {
 
 type overridePackageFacts struct {
 	metadata     OverrideMetadata
+	parity       overrideParityLedger
 	copyPackage  overrideCopyPackage
 	dependencies []string
 }
@@ -50,6 +51,14 @@ func (f *OverrideFacts) Metadata(pkgPath string) OverrideMetadata {
 	}
 	pkg := f.packages[pkgPath]
 	return cloneOverrideMetadata(pkg.metadata)
+}
+
+func (f *OverrideFacts) parityLedger(pkgPath string) overrideParityLedger {
+	if f == nil {
+		return newOverrideParityLedger()
+	}
+	pkg := f.packages[pkgPath]
+	return cloneOverrideParityLedger(pkg.parity)
 }
 
 // IsMethodAsync returns true when override metadata marks a method async.
@@ -122,6 +131,11 @@ func buildOverrideFacts(ctx context.Context, overrideDirs []string) (*OverrideFa
 			diagnostics = append(diagnostics, overrideError("read override metadata", pkgPath, err))
 			continue
 		}
+		parity, err := loadOverrideParityLedger(roots[pkgPath])
+		if err != nil {
+			diagnostics = append(diagnostics, overrideError("read override parity ledger", pkgPath, err))
+			continue
+		}
 		copyPackage, dependencies, packageDiagnostics := loadOverrideCopyPackage(roots[pkgPath], roots, metadata)
 		diagnostics = append(diagnostics, packageDiagnostics...)
 		if diagnosticsHaveErrors(packageDiagnostics) {
@@ -129,6 +143,7 @@ func buildOverrideFacts(ctx context.Context, overrideDirs []string) (*OverrideFa
 		}
 		facts.packages[pkgPath] = overridePackageFacts{
 			metadata:     cloneOverrideMetadata(metadata),
+			parity:       cloneOverrideParityLedger(parity),
 			copyPackage:  copyPackage,
 			dependencies: dependencies,
 		}

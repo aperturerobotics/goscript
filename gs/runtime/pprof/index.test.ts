@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { Lookup, StartCPUProfile, StopCPUProfile } from './index.js'
+import { Lookup, NewProfile, StartCPUProfile, StopCPUProfile, WriteHeapProfile } from './index.js'
 
 describe('runtime/pprof override', () => {
-  it('writes deterministic CPU profile bytes', () => {
+  it('reports CPU profiles as unsupported', () => {
     const chunks: Uint8Array[] = []
     const writer = {
       Write(p: Uint8Array): [number, null] {
@@ -12,13 +12,15 @@ describe('runtime/pprof override', () => {
       },
     }
 
-    expect(StartCPUProfile(writer)).toBeNull()
+    expect(StartCPUProfile(writer)?.Error()).toBe(
+      'runtime/pprof: profiles are unsupported in GoScript',
+    )
     StopCPUProfile()
 
-    expect(chunks.reduce((total, chunk) => total + chunk.length, 0)).toBeGreaterThan(0)
+    expect(chunks).toHaveLength(0)
   })
 
-  it('writes deterministic memory profile bytes', () => {
+  it('reports memory profiles as unsupported', () => {
     const chunks: Uint8Array[] = []
     const writer = {
       Write(p: Uint8Array): [number, null] {
@@ -30,7 +32,27 @@ describe('runtime/pprof override', () => {
     const profile = Lookup('allocs')
 
     expect(profile).not.toBeNull()
-    expect(profile!.WriteTo(writer, 0)).toBeNull()
-    expect(chunks.reduce((total, chunk) => total + chunk.length, 0)).toBeGreaterThan(0)
+    expect(profile!.WriteTo(writer, 0)?.Error()).toBe(
+      'runtime/pprof: profiles are unsupported in GoScript',
+    )
+    expect(WriteHeapProfile(writer)?.Error()).toBe(
+      'runtime/pprof: profiles are unsupported in GoScript',
+    )
+    expect(chunks).toHaveLength(0)
+  })
+
+  it('tracks custom profile values', () => {
+    const profile = NewProfile('goscript.test')
+    const value = { key: 'value' }
+
+    expect(Lookup('goscript.test')).toBe(profile)
+    expect(profile.Count()).toBe(0)
+    profile.Add(value, 0)
+    expect(profile.Count()).toBe(1)
+    profile.Remove(value)
+    expect(profile.Count()).toBe(0)
+    expect(() => NewProfile('goscript.test')).toThrow(
+      'pprof: NewProfile name already in use: goscript.test',
+    )
   })
 })

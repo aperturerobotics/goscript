@@ -1,0 +1,6 @@
+json: true {"x":1} 42
+mime: text/plain utf-8 application/json hi
+time: Mon, 02 Jan 2006 15:04:05 MST May
+leaf: 1 abc (1-2i) 1 -2 0 os: process handle unavailable GO true
+scanner: scan failed
+hash: 1

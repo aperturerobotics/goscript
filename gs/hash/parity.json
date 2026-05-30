@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "Cloner": {
+      "status": "real"
+    },
+    "Hash": {
+      "status": "real"
+    },
+    "Hash32": {
+      "status": "real"
+    },
+    "Hash64": {
+      "status": "real"
+    },
+    "XOF": {
+      "status": "real"
+    }
+  }
+}

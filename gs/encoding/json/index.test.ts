@@ -1,12 +1,32 @@
 import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
+import * as bytes from '@goscript/bytes/index.js'
 
 import {
+  Compact,
+  HTMLEscape,
+  Indent,
+  InvalidUTF8Error,
+  InvalidUnmarshalError,
+  MarshalerError,
   Marshal,
   MarshalIndent,
+  NewDecoder,
   NewEncoder,
+  Number_Float64,
+  Number_Int64,
+  Number_String,
+  RawMessage_MarshalJSON,
+  RawMessage_UnmarshalJSON,
+  SyntaxError as JSONSyntaxError,
+  UnmarshalFieldError,
   Unmarshal,
+  UnmarshalTypeError,
+  UnsupportedTypeError,
+  UnsupportedValueError,
+  Valid,
+  type Marshaler,
   type Unmarshaler,
 } from './index.js'
 
@@ -38,19 +58,45 @@ class Person {
 
 describe('encoding/json override', () => {
   it('registers the Unmarshaler interface shape', () => {
+    class CustomMarshaler implements Marshaler {
+      MarshalJSON(): [$.Slice<number>, $.GoError] {
+        return [$.stringToBytes('{"ok":true}'), null]
+      }
+    }
+
     class CustomUnmarshaler implements Unmarshaler {
       UnmarshalJSON(_data: $.Slice<number>): $.GoError {
         return null
       }
     }
 
+    const [, marshalOK] = $.typeAssertTuple<Marshaler>(
+      new CustomMarshaler(),
+      'json.Marshaler',
+    )
     const [value, ok] = $.typeAssertTuple<Unmarshaler>(
       new CustomUnmarshaler(),
       'json.Unmarshaler',
     )
 
+    expect(marshalOK).toBe(true)
     expect(ok).toBe(true)
     expect(value.UnmarshalJSON($.stringToBytes('{}'))).toBeNull()
+  })
+
+  it('exposes JSON error structs as Go errors', () => {
+    for (const err of [
+      new JSONSyntaxError(),
+      new InvalidUTF8Error({ S: 'bad' }),
+      new InvalidUnmarshalError(),
+      new MarshalerError({ Err: $.newError('bad marshal') }),
+      new UnmarshalFieldError({ Key: 'field' }),
+      new UnmarshalTypeError({ Value: 'string' }),
+      new UnsupportedTypeError(),
+      new UnsupportedValueError({ Str: 'NaN' }),
+    ]) {
+      expect(err.Error()).toBe(err.message)
+    }
   })
 
   it('marshals struct fields through json tags', () => {
@@ -65,6 +111,151 @@ describe('encoding/json override', () => {
     expect($.bytesToString(data)).toBe(
       '{"name":"Alice","age":30,"active":true}',
     )
+  })
+
+  it('rejects unsupported values and invalid unmarshal targets', () => {
+    const [nanData, nanErr] = Marshal(Number.NaN)
+    expect(nanData).toBeNull()
+    expect(nanErr).toBeInstanceOf(UnsupportedValueError)
+
+    const [htmlData, htmlErr] = Marshal(new Map([['text', '<tag>&']]))
+    expect(htmlErr).toBeNull()
+    expect($.bytesToString(htmlData)).toBe('{"text":"\\u003ctag\\u003e\\u0026"}')
+
+    expect(Unmarshal($.stringToBytes('{}'), null)).toBeInstanceOf(InvalidUnmarshalError)
+    expect(Unmarshal($.stringToBytes('{}'), 1)).toBeInstanceOf(InvalidUnmarshalError)
+  })
+
+  it('uses custom marshal and unmarshal hooks', () => {
+    class CustomJSON implements Marshaler, Unmarshaler {
+      public Text = ''
+
+      MarshalJSON(): [$.Slice<number>, $.GoError] {
+        return [$.stringToBytes('{"hook":true}'), null]
+      }
+
+      UnmarshalJSON(data: $.Slice<number>): $.GoError {
+        this.Text = $.bytesToString(data)
+        return null
+      }
+    }
+
+    class RawEnvelope {
+      public _fields = {
+        Raw: $.varRef($.stringToBytes('{"embedded":true}')),
+      }
+
+      static __typeInfo = $.registerStructType(
+        'test.RawEnvelope',
+        new RawEnvelope(),
+        [],
+        RawEnvelope,
+        {
+          Raw: { type: 'json.RawMessage', tag: 'json:"raw"' },
+        },
+      )
+    }
+
+    class Envelope {
+      public _fields = {
+        Person: $.varRef(new Person()),
+        Data: $.varRef(new Uint8Array(0)),
+        Raw: $.varRef(new Uint8Array(0)),
+        Hook: $.varRef(new CustomJSON()),
+      }
+
+      static __typeInfo = $.registerStructType(
+        'test.Envelope',
+        new Envelope(),
+        [],
+        Envelope,
+        {
+          Person: {
+            type: { kind: $.TypeKind.Struct, name: 'test.Person' },
+            tag: 'json:"person"',
+          },
+          Data: {
+            type: {
+              kind: $.TypeKind.Slice,
+              elemType: { kind: $.TypeKind.Basic, name: 'uint8' },
+            },
+            tag: 'json:"data"',
+          },
+          Raw: {
+            type: {
+              kind: $.TypeKind.Slice,
+              elemType: { kind: $.TypeKind.Basic, name: 'uint8' },
+              typeName: 'json.RawMessage',
+            },
+            tag: 'json:"raw"',
+          },
+          Hook: {
+            type: { kind: $.TypeKind.Struct, name: 'test.CustomJSON' },
+            tag: 'json:"hook"',
+          },
+        },
+      )
+    }
+
+    const [data, err] = Marshal(new CustomJSON())
+    expect(err).toBeNull()
+    expect($.bytesToString(data)).toBe('{"hook":true}')
+
+    const [indented, indentErr] = MarshalIndent(new CustomJSON(), '', '  ')
+    expect(indentErr).toBeNull()
+    expect($.bytesToString(indented)).toBe('{\n  "hook": true\n}')
+
+    const target = $.varRef(new CustomJSON())
+    expect(Unmarshal($.stringToBytes('{"input":1}'), target)).toBeNull()
+    expect(target.value.Text).toBe('{"input":1}')
+
+    const raw = $.namedValueInterfaceValue<unknown>(
+      $.stringToBytes('{"raw":true}'),
+      'json.RawMessage',
+      { MarshalJSON: RawMessage_MarshalJSON },
+    )
+    const [rawData, rawErr] = Marshal(raw)
+    expect(rawErr).toBeNull()
+    expect($.bytesToString(rawData)).toBe('{"raw":true}')
+
+    const [byteData, byteErr] = Marshal($.stringToBytes('x'))
+    expect(byteErr).toBeNull()
+    expect($.bytesToString(byteData)).toBe('"eA=="')
+
+    const [rawEnvelopeData, rawEnvelopeErr] = Marshal(new RawEnvelope())
+    expect(rawEnvelopeErr).toBeNull()
+    expect($.bytesToString(rawEnvelopeData)).toBe(
+      '{"raw":{"embedded":true}}',
+    )
+
+    const rawEnvelopeTarget = $.varRef(new RawEnvelope())
+    expect(
+      Unmarshal($.stringToBytes('{"raw":{"next":1}}'), rawEnvelopeTarget),
+    ).toBeNull()
+    expect($.bytesToString(rawEnvelopeTarget.value._fields.Raw.value)).toBe(
+      '{"next":1}',
+    )
+
+    const byteTarget = $.varRef(new Uint8Array(0))
+    expect(Unmarshal($.stringToBytes('"eA=="'), byteTarget)).toBeNull()
+    expect($.bytesToString(byteTarget.value)).toBe('x')
+
+    const envelope = $.varRef(new Envelope())
+    expect(
+      Unmarshal(
+        $.stringToBytes('{"person":{"name":"Eve","age":31},"data":"eA==","raw":{"keep":true},"hook":{"nested":true}}'),
+        envelope,
+      ),
+    ).toBeNull()
+    expect(envelope.value._fields.Person.value._fields.Name.value).toBe('Eve')
+    expect(envelope.value._fields.Person.value._fields.Age.value).toBe(31)
+    expect($.bytesToString(envelope.value._fields.Data.value)).toBe('x')
+    expect($.bytesToString(envelope.value._fields.Raw.value)).toBe('{"keep":true}')
+    expect(envelope.value._fields.Hook.value.Text).toBe('{"nested":true}')
+
+    const [envelopeData, envelopeErr] = Marshal(envelope.value)
+    expect(envelopeErr).toBeNull()
+    expect($.bytesToString(envelopeData)).toContain('"raw":{"keep":true}')
   })
 
   it('marshals indented JSON with a line prefix', () => {
@@ -124,5 +315,70 @@ describe('encoding/json override', () => {
       '{"text":"\\u003ctag\\u003e\\u0026"}\n',
       '{\n  "text": "<tag>&"\n}\n',
     ])
+  })
+
+  it('validates, compacts, indents, and escapes JSON bytes', () => {
+    expect(Valid($.stringToBytes('{"ok":true}'))).toBe(true)
+    expect(Valid($.stringToBytes('{'))).toBe(false)
+
+    const compact = new bytes.Buffer()
+    expect(Compact(compact, $.stringToBytes('{ "ok" : true }'))).toBeNull()
+    expect(compact.String()).toBe('{"ok":true}')
+
+    const indented = new bytes.Buffer()
+    expect(Indent(indented, $.stringToBytes('{"ok":true}'), '> ', '  ')).toBeNull()
+    expect(indented.String()).toBe('{\n>   "ok": true\n> }')
+
+    const escaped = new bytes.Buffer()
+    HTMLEscape(escaped, $.stringToBytes('"<tag>&"'))
+    expect(escaped.String()).toBe('"\\u003ctag\\u003e\\u0026"')
+  })
+
+  it('decodes from readers and exposes raw message and number helpers', () => {
+    const reader = bytes.NewBufferString('{"name":"Dana","age":28}')!
+    const decoder = NewDecoder(reader)
+    const target = $.varRef(new Person())
+
+    expect(decoder.Decode(target)).toBeNull()
+    expect(target.value._fields.Name.value).toBe('Dana')
+    expect(target.value._fields.Age.value).toBe(28)
+    expect(decoder.InputOffset()).toBeGreaterThan(0)
+
+    const raw = $.stringToBytes('{"raw":true}')
+    const [marshaled, marshalErr] = RawMessage_MarshalJSON(raw)
+    expect(marshalErr).toBeNull()
+    expect($.bytesToString(marshaled)).toBe('{"raw":true}')
+
+    const rawRef = $.varRef<$.Bytes>(null)
+    expect(RawMessage_UnmarshalJSON(rawRef, $.stringToBytes('[1,2]'))).toBeNull()
+    expect($.bytesToString(rawRef.value)).toBe('[1,2]')
+
+    expect(Number_String('42')).toBe('42')
+    expect(Number_Int64('42')).toEqual([42, null])
+    expect(Number_Float64('3.5')).toEqual([3.5, null])
+    expect(Number.isNaN(Number_Float64('NaN')[0])).toBe(true)
+    expect(Number_Float64('-Inf')).toEqual([-Infinity, null])
+    expect(Number_Float64('1x')[1]?.Error()).toContain('invalid syntax')
+    expect(Number_Float64('1e999')[1]?.Error()).toContain('value out of range')
+    expect(Number_Int64('9223372036854775808')[1]?.Error()).toContain(
+      'value out of range',
+    )
+  })
+
+  it('applies decoder UseNumber and DisallowUnknownFields options', () => {
+    const numberReader = bytes.NewBufferString('{"n":12}')!
+    const numberDecoder = NewDecoder(numberReader)
+    numberDecoder.UseNumber()
+    const numberTarget = $.varRef<Map<string, unknown> | null>(null)
+
+    expect(numberDecoder.Decode(numberTarget)).toBeNull()
+    expect(numberTarget.value?.get('n')).toBe('12')
+
+    const strictReader = bytes.NewBufferString('{"name":"Ada","extra":true}')!
+    const strictDecoder = NewDecoder(strictReader)
+    strictDecoder.DisallowUnknownFields()
+    const strictTarget = $.varRef(new Person())
+
+    expect(strictDecoder.Decode(strictTarget)?.Error()).toBe('json: unknown field "extra"')
   })
 })

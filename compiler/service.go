@@ -14,6 +14,7 @@ type CompileService struct {
 	emitterOwner  *TypeScriptEmitOwner
 	runtimeOwner  *RuntimeContractOwner
 	overrideOwner *OverrideRegistryOwner
+	parityOwner   *OverrideParityVerifier
 }
 
 // NewCompileService creates a compile service with every pipeline owner.
@@ -28,6 +29,7 @@ func NewCompileService(overrideDirs ...string) *CompileService {
 		emitterOwner:  NewTypeScriptEmitOwner(runtimeOwner),
 		runtimeOwner:  runtimeOwner,
 		overrideOwner: overrideOwner,
+		parityOwner:   NewOverrideParityVerifier(),
 	}
 }
 
@@ -91,6 +93,19 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 	if graph != nil {
 		result.OriginalPackages = append([]string(nil), graph.RequestedPackagePaths...)
 	}
+	if diagnosticsHaveErrors(diagnostics) {
+		result.Diagnostics = diagnostics
+		return result, NewCompileError(diagnostics)
+	}
+
+	overrideFacts, factsDiagnostics := s.overrideOwner.Facts(ctx)
+	diagnostics = append(diagnostics, factsDiagnostics...)
+	if diagnosticsHaveErrors(diagnostics) {
+		result.Diagnostics = diagnostics
+		return result, NewCompileError(diagnostics)
+	}
+	parityDiagnostics := s.parityOwner.Verify(ctx, graph, overrideFacts)
+	diagnostics = append(diagnostics, parityDiagnostics...)
 	if diagnosticsHaveErrors(diagnostics) {
 		result.Diagnostics = diagnostics
 		return result, NewCompileError(diagnostics)

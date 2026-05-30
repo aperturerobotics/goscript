@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "AppendBool": {
+      "status": "real"
+    },
+    "AppendFloat": {
+      "status": "real"
+    },
+    "AppendInt": {
+      "status": "real"
+    },
+    "AppendQuote": {
+      "status": "real"
+    },
+    "AppendQuoteRune": {
+      "status": "real"
+    },
+    "AppendQuoteRuneToASCII": {
+      "status": "real"
+    },
+    "AppendQuoteRuneToGraphic": {
+      "status": "real"
+    },
+    "AppendQuoteToASCII": {
+      "status": "real"
+    },
+    "AppendQuoteToGraphic": {
+      "status": "real"
+    },
+    "AppendUint": {
+      "status": "real"
+    },
+    "Atoi": {
+      "status": "real"
+    },
+    "CanBackquote": {
+      "status": "real"
+    },
+    "ErrRange": {
+      "status": "real"
+    },
+    "ErrSyntax": {
+      "status": "real"
+    },
+    "FormatBool": {
+      "status": "real"
+    },
+    "FormatComplex": {
+      "status": "real"
+    },
+    "FormatFloat": {
+      "status": "real"
+    },
+    "FormatInt": {
+      "status": "real"
+    },
+    "FormatUint": {
+      "status": "real"
+    },
+    "IntSize": {
+      "status": "real"
+    },
+    "IsGraphic": {
+      "status": "real"
+    },
+    "IsPrint": {
+      "status": "real"
+    },
+    "Itoa": {
+      "status": "real"
+    },
+    "NumError": {
+      "status": "real"
+    },
+    "ParseBool": {
+      "status": "real"
+    },
+    "ParseComplex": {
+      "status": "real"
+    },
+    "ParseFloat": {
+      "status": "real"
+    },
+    "ParseInt": {
+      "status": "real"
+    },
+    "ParseUint": {
+      "status": "real"
+    },
+    "Quote": {
+      "status": "real"
+    },
+    "QuotedPrefix": {
+      "status": "real"
+    },
+    "QuoteRune": {
+      "status": "real"
+    },
+    "QuoteRuneToASCII": {
+      "status": "real"
+    },
+    "QuoteRuneToGraphic": {
+      "status": "real"
+    },
+    "QuoteToASCII": {
+      "status": "real"
+    },
+    "QuoteToGraphic": {
+      "status": "real"
+    },
+    "Unquote": {
+      "status": "real"
+    },
+    "UnquoteChar": {
+      "status": "real"
+    }
+  }
+}

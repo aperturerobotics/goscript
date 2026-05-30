@@ -13,6 +13,7 @@ gs/
 ├── {package}/
 │   ├── {package}.ts      # Main TypeScript implementation
 │   ├── meta.json         # Metadata file with async methods and dependencies
+│   ├── parity.json       # Optional exported API parity ledger
 │   └── index.ts          # Export file
 ```
 
@@ -23,6 +24,36 @@ gs/sync/
 ├── meta.json             # Metadata defining which functions are async
 └── index.ts              # Exports from ./sync.js
 ```
+
+## API Parity Ledgers
+
+Override packages can include `parity.json` to make exported Go API coverage a
+compiler-owned contract. A strict ledger lists every exported symbol from the
+JS/WASM Go package and classifies each symbol:
+
+```json
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "Marshal": { "status": "real" },
+    "FuncOf": {
+      "status": "blocked",
+      "reason": "dynamic function type construction is not implemented"
+    }
+  }
+}
+```
+
+`real` means the effective TypeScript package export exists. The verifier
+resolves `index.ts`, named re-exports, and `export *` chains using the same
+override package roots as copy planning. `blocked` means the symbol is not
+exported and carries the reason callers cannot use it yet. If Go source selects
+a blocked symbol, compilation fails with a structured parity diagnostic before
+TypeScript typechecking or bundling sees an undefined import.
+
+`deferred` is accepted only while a ledger is being seeded. Package-local tests
+should keep checked-in ledgers at zero deferred symbols.
 
 ## Metadata System
 

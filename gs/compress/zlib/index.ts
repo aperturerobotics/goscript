@@ -10,9 +10,17 @@ type maybeAsyncWriter = {
   Write(p: $.Bytes): [number, $.GoError] | Promise<[number, $.GoError]>
 }
 
+export const NoCompression = 0
+export const BestSpeed = 1
+export const BestCompression = 9
+export const DefaultCompression = -1
+export const HuffmanOnly = -2
+
 export let ErrChecksum = errors.New('zlib: invalid checksum')
 export let ErrDictionary = errors.New('zlib: invalid dictionary')
 export let ErrHeader = errors.New('zlib: invalid header')
+
+type nodeZlibError = Error & { code?: unknown }
 
 export function __goscript_set_ErrChecksum(value: $.GoError): void {
   ErrChecksum = value
@@ -89,7 +97,11 @@ export class Writer {
   private chunks: Uint8Array[] = []
   private closed = false
 
-  constructor(private w: io.Writer | null) {}
+  constructor(
+    private w: io.Writer | null,
+    private dict: $.Bytes | null = null,
+    private level = DefaultCompression,
+  ) {}
 
   Write(p: $.Bytes): [number, $.GoError] {
     if (this.closed) {
@@ -108,7 +120,7 @@ export class Writer {
     if (this.w == null) {
       return errors.New('zlib: nil writer')
     }
-    const compressed = deflate(concat(this.chunks))
+    const compressed = deflate(concat(this.chunks), this.dict, this.level)
     const writer = $.pointerValue<maybeAsyncWriter>(this.w)
     const [, err] = await writer.Write(compressed)
     return err
@@ -131,17 +143,23 @@ export function NewWriter(w: io.Writer | null): Writer {
 
 export function NewWriterLevel(
   w: io.Writer | null,
-  _level: number,
+  level: number,
 ): [Writer | null, $.GoError] {
-  return [new Writer(w), null]
+  if (level < HuffmanOnly || level > BestCompression) {
+    return [null, errors.New(`zlib: invalid compression level: ${level}`)]
+  }
+  return [new Writer(w, null, level), null]
 }
 
 export function NewWriterLevelDict(
   w: io.Writer | null,
-  _level: number,
+  level: number,
   _dict: $.Bytes | null,
 ): [Writer | null, $.GoError] {
-  return [new Writer(w), null]
+  if (level < HuffmanOnly || level > BestCompression) {
+    return [null, errors.New(`zlib: invalid compression level: ${level}`)]
+  }
+  return [new Writer(w, _dict, level), null]
 }
 
 export function NewReader(
@@ -162,14 +180,25 @@ export function NewReaderDict(
   return [reader as any, null]
 }
 
-function deflate(data: Uint8Array): Uint8Array {
+function deflate(data: Uint8Array, dict: $.Bytes | null, level: number): Uint8Array {
   const zlib = nodeZlib()
-  return new Uint8Array(zlib.deflateSync(data))
+  const opts: Record<string, unknown> = {}
+  if (dict != null && $.len(dict) > 0) {
+    opts.dictionary = $.bytesToUint8Array(dict)
+  }
+  if (level === HuffmanOnly) {
+    opts.strategy = zlib.constants?.Z_HUFFMAN_ONLY
+    opts.level = DefaultCompression
+  } else {
+    opts.level = level
+  }
+  return new Uint8Array(zlib.deflateSync(data, opts))
 }
 
-function inflate(data: Uint8Array): Uint8Array {
+function inflate(data: Uint8Array, dict: $.Bytes | null): Uint8Array {
   const zlib = nodeZlib()
-  return new Uint8Array(zlib.inflateSync(data))
+  const opts = dict != null && $.len(dict) > 0 ? { dictionary: $.bytesToUint8Array(dict) } : undefined
+  return new Uint8Array(zlib.inflateSync(data, opts))
 }
 
 function nodeZlib(): any {
@@ -266,13 +295,21 @@ function recordCompressedBytes(
   }
   const compressed = new Uint8Array(chunks)
   try {
-    return { data: inflate(compressed), err: null }
-  } catch {
-    if (dict != null && $.len(dict) > 0) {
-      return { data: null, err: ErrDictionary }
-    }
-    return { data: null, err: ErrHeader }
+    return { data: inflate(compressed, dict), err: null }
+  } catch (err) {
+    return { data: null, err: classifyInflateError(err) }
   }
+}
+
+function classifyInflateError(err: unknown): $.GoError {
+  const zerr = err instanceof Error ? err as nodeZlibError : null
+  if (zerr?.code === 'Z_NEED_DICT') {
+    return ErrDictionary
+  }
+  if (zerr?.code === 'Z_DATA_ERROR' && zerr.message.includes('incorrect data check')) {
+    return ErrChecksum
+  }
+  return ErrHeader
 }
 
 function concat(chunks: Uint8Array[]): Uint8Array {

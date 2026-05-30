@@ -16,6 +16,13 @@ export interface Hash64 extends Hash {
   Sum64(): bigint
 }
 
+export interface XOF {
+  Write(p: $.Bytes): [number, $.GoError]
+  Read(p: $.Bytes): [number, $.GoError]
+  Reset(): void
+  BlockSize(): number
+}
+
 export interface Cloner {
   Clone(): [Hash, $.GoError]
 }
@@ -115,4 +122,25 @@ $.registerInterfaceType('hash.Cloner', null, [
       { name: 'err', type: errorType },
     ],
   },
+])
+
+$.registerInterfaceType('hash.XOF', null, [
+  {
+    name: 'Write',
+    args: [{ name: 'p', type: bytesType }],
+    returns: [
+      { name: 'n', type: intType },
+      { name: 'err', type: errorType },
+    ],
+  },
+  {
+    name: 'Read',
+    args: [{ name: 'p', type: bytesType }],
+    returns: [
+      { name: 'n', type: intType },
+      { name: 'err', type: errorType },
+    ],
+  },
+  { name: 'Reset', args: [], returns: [] },
+  { name: 'BlockSize', args: [], returns: [{ name: '_r0', type: intType }] },
 ])

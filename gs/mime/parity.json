@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "AddExtensionType": {
+      "status": "real"
+    },
+    "BEncoding": {
+      "status": "real"
+    },
+    "ErrInvalidMediaParameter": {
+      "status": "real"
+    },
+    "ExtensionsByType": {
+      "status": "real"
+    },
+    "FormatMediaType": {
+      "status": "real"
+    },
+    "ParseMediaType": {
+      "status": "real"
+    },
+    "QEncoding": {
+      "status": "real"
+    },
+    "TypeByExtension": {
+      "status": "real"
+    },
+    "WordDecoder": {
+      "status": "real"
+    },
+    "WordEncoder": {
+      "status": "real"
+    }
+  }
+}

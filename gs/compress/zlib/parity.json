@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "BestCompression": {
+      "status": "real"
+    },
+    "BestSpeed": {
+      "status": "real"
+    },
+    "DefaultCompression": {
+      "status": "real"
+    },
+    "ErrChecksum": {
+      "status": "real"
+    },
+    "ErrDictionary": {
+      "status": "real"
+    },
+    "ErrHeader": {
+      "status": "real"
+    },
+    "HuffmanOnly": {
+      "status": "real"
+    },
+    "NewReader": {
+      "status": "real"
+    },
+    "NewReaderDict": {
+      "status": "real"
+    },
+    "NewWriter": {
+      "status": "real"
+    },
+    "NewWriterLevel": {
+      "status": "real"
+    },
+    "NewWriterLevelDict": {
+      "status": "real"
+    },
+    "NoCompression": {
+      "status": "real"
+    },
+    "Resetter": {
+      "status": "real"
+    },
+    "Writer": {
+      "status": "real"
+    }
+  }
+}

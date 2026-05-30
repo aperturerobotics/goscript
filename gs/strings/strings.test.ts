@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import * as $ from '../builtin/index.js'
+import * as unicode from '../unicode/unicode.js'
 import {
   Clone,
   Compare,
@@ -36,8 +37,12 @@ import {
   SplitN,
   Title,
   ToLower,
+  ToLowerSpecial,
   ToTitle,
+  ToTitleSpecial,
   ToUpper,
+  ToUpperSpecial,
+  ToValidUTF8,
   Trim,
   TrimFunc,
   TrimLeft,
@@ -390,8 +395,8 @@ describe('strings', () => {
 
   describe('ToTitle', () => {
     it('should convert to title case', () => {
-      expect(ToTitle('hello world')).toBe('Hello World')
-      expect(ToTitle('HELLO WORLD')).toBe('Hello World')
+      expect(ToTitle('hello world')).toBe('HELLO WORLD')
+      expect(ToTitle('HELLO WORLD')).toBe('HELLO WORLD')
       expect(ToTitle('')).toBe('')
     })
   })
@@ -401,6 +406,21 @@ describe('strings', () => {
       expect(ToUpper('hello world')).toBe('HELLO WORLD')
       expect(ToUpper('Hello World')).toBe('HELLO WORLD')
       expect(ToUpper('')).toBe('')
+    })
+  })
+
+  describe('special casing and UTF-8 cleanup', () => {
+    it('should expose special-case string helpers', () => {
+      expect(ToUpperSpecial([], 'hello')).toBe('HELLO')
+      expect(ToLowerSpecial([], 'HELLO')).toBe('hello')
+      expect(ToTitleSpecial([], 'hello world')).toBe('HELLO WORLD')
+      expect(ToUpperSpecial(unicode.TurkishCase, 'iki')).toBe('İKİ')
+      expect(ToLowerSpecial(unicode.TurkishCase, 'Iİ')).toBe('ıi')
+      expect(ToTitleSpecial(unicode.TurkishCase, 'iki')).toBe('İKİ')
+    })
+
+    it('should preserve valid replacement runes', () => {
+      expect(ToValidUTF8('a\uFFFDb', '?')).toBe('a\uFFFDb')
     })
   })
 

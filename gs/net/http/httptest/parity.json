@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "DefaultRemoteAddr": { "status": "real" },
+    "NewRecorder": { "status": "real" },
+    "NewRequest": { "status": "real" },
+    "NewRequestWithContext": { "status": "real" },
+    "NewServer": { "status": "real" },
+    "NewTLSServer": { "status": "real" },
+    "NewUnstartedServer": { "status": "real" },
+    "ResponseRecorder": { "status": "real" },
+    "Server": { "status": "real" }
+  }
+}

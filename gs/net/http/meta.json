@@ -1,9 +1,21 @@
 {
   "asyncFunctions": {
-    "Get": true
+    "Get": true,
+    "Head": true,
+    "Post": true,
+    "PostForm": true,
+    "ServeContent": true
   },
   "asyncMethods": {
     "Client.Do": true,
-    "RoundTripper.RoundTrip": true
+    "Client.Get": true,
+    "Client.Head": true,
+    "Client.Post": true,
+    "Client.PostForm": true,
+    "Handler.ServeHTTP": true,
+    "HandlerFunc.ServeHTTP": true,
+    "ServeMux.ServeHTTP": true,
+    "RoundTripper.RoundTrip": true,
+    "Transport.RoundTrip": true
   }
 }

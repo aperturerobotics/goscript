@@ -4,9 +4,43 @@ import * as $ from '@goscript/builtin/index.js'
 import * as bytes from '@goscript/bytes/index.js'
 import * as io from '@goscript/io/index.js'
 
-import { NewReader, NewWriter } from './index.js'
+import {
+  BestCompression,
+  BestSpeed,
+  DefaultCompression,
+  ErrChecksum,
+  ErrDictionary,
+  HuffmanOnly,
+  NewReader,
+  NewReaderDict,
+  NewWriter,
+  NewWriterLevel,
+  NewWriterLevelDict,
+  NoCompression,
+} from './index.js'
 
 describe('compress/zlib override', () => {
+  test('exports flate compression level constants', () => {
+    expect(NoCompression).toBe(0)
+    expect(BestSpeed).toBe(1)
+    expect(BestCompression).toBe(9)
+    expect(DefaultCompression).toBe(-1)
+    expect(HuffmanOnly).toBe(-2)
+  })
+
+  test('rejects invalid compression levels', () => {
+    const buf = $.markAsStructValue(new bytes.Buffer())
+
+    expect(NewWriterLevel(buf, HuffmanOnly)[1]).toBeNull()
+    expect(NewWriterLevel(buf, BestCompression)[1]).toBeNull()
+    expect(NewWriterLevel(buf, HuffmanOnly - 1)[1]?.Error()).toBe(
+      'zlib: invalid compression level: -3',
+    )
+    expect(NewWriterLevelDict(buf, BestCompression + 1, null)[1]?.Error()).toBe(
+      'zlib: invalid compression level: 10',
+    )
+  })
+
   test('round trips bytes through writer and reader', async () => {
     const input = $.stringToBytes('hello compressed world')
     const buf = $.markAsStructValue(new bytes.Buffer())
@@ -80,6 +114,33 @@ describe('compress/zlib override', () => {
     const [secondOut, secondReadErr] = await io.ReadAll(zlibReader)
     expect(secondReadErr).toBeNull()
     expect($.bytesToString(secondOut)).toBe('second stream')
+  })
+
+  test('writer and reader honor preset dictionaries', async () => {
+    const dict = $.stringToBytes('hello dictionary')
+    const compressed = $.markAsStructValue(new bytes.Buffer())
+    const [writer, writerErr] = NewWriterLevelDict(compressed, DefaultCompression, dict)
+    expect(writerErr).toBeNull()
+    expect(writer!.Write($.stringToBytes('hello dictionary payload'))[1]).toBeNull()
+    expect(await writer!.Close()).toBeNull()
+
+    const [missingDictReader, missingDictErr] = NewReader(bytes.NewReader(compressed.Bytes()))
+    expect(missingDictReader).toBeNull()
+    expect(missingDictErr).toBe(ErrDictionary)
+
+    const [reader, readerErr] = NewReaderDict(bytes.NewReader(compressed.Bytes()), dict)
+    expect(readerErr).toBeNull()
+    const [out, readErr] = await io.ReadAll(reader!)
+    expect(readErr).toBeNull()
+    expect($.bytesToString(out)).toBe('hello dictionary payload')
+
+    const [, wrongDictErr] = NewReaderDict(bytes.NewReader(compressed.Bytes()), $.stringToBytes('wrong dictionary'))
+    expect(wrongDictErr).toBe(ErrDictionary)
+
+    const corrupt = Uint8Array.from(compressed.Bytes())
+    corrupt[corrupt.length - 1] ^= 0xff
+    const [, corruptErr] = NewReaderDict(bytes.NewReader(corrupt), dict)
+    expect(corruptErr).toBe(ErrChecksum)
   })
 
   test('reader reset accepts async generated readers', async () => {

@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "Add": {
+      "status": "real"
+    },
+    "Add32": {
+      "status": "real"
+    },
+    "Add64": {
+      "status": "real"
+    },
+    "Div": {
+      "status": "real"
+    },
+    "Div32": {
+      "status": "real"
+    },
+    "Div64": {
+      "status": "real"
+    },
+    "LeadingZeros": {
+      "status": "real"
+    },
+    "LeadingZeros16": {
+      "status": "real"
+    },
+    "LeadingZeros32": {
+      "status": "real"
+    },
+    "LeadingZeros64": {
+      "status": "real"
+    },
+    "LeadingZeros8": {
+      "status": "real"
+    },
+    "Len": {
+      "status": "real"
+    },
+    "Len16": {
+      "status": "real"
+    },
+    "Len32": {
+      "status": "real"
+    },
+    "Len64": {
+      "status": "real"
+    },
+    "Len8": {
+      "status": "real"
+    },
+    "Mul": {
+      "status": "real"
+    },
+    "Mul32": {
+      "status": "real"
+    },
+    "Mul64": {
+      "status": "real"
+    },
+    "OnesCount": {
+      "status": "real"
+    },
+    "OnesCount16": {
+      "status": "real"
+    },
+    "OnesCount32": {
+      "status": "real"
+    },
+    "OnesCount64": {
+      "status": "real"
+    },
+    "OnesCount8": {
+      "status": "real"
+    },
+    "Rem": {
+      "status": "real"
+    },
+    "Rem32": {
+      "status": "real"
+    },
+    "Rem64": {
+      "status": "real"
+    },
+    "Reverse": {
+      "status": "real"
+    },
+    "Reverse16": {
+      "status": "real"
+    },
+    "Reverse32": {
+      "status": "real"
+    },
+    "Reverse64": {
+      "status": "real"
+    },
+    "Reverse8": {
+      "status": "real"
+    },
+    "ReverseBytes": {
+      "status": "real"
+    },
+    "ReverseBytes16": {
+      "status": "real"
+    },
+    "ReverseBytes32": {
+      "status": "real"
+    },
+    "ReverseBytes64": {
+      "status": "real"
+    },
+    "RotateLeft": {
+      "status": "real"
+    },
+    "RotateLeft16": {
+      "status": "real"
+    },
+    "RotateLeft32": {
+      "status": "real"
+    },
+    "RotateLeft64": {
+      "status": "real"
+    },
+    "RotateLeft8": {
+      "status": "real"
+    },
+    "Sub": {
+      "status": "real"
+    },
+    "Sub32": {
+      "status": "real"
+    },
+    "Sub64": {
+      "status": "real"
+    },
+    "TrailingZeros": {
+      "status": "real"
+    },
+    "TrailingZeros16": {
+      "status": "real"
+    },
+    "TrailingZeros32": {
+      "status": "real"
+    },
+    "TrailingZeros64": {
+      "status": "real"
+    },
+    "TrailingZeros8": {
+      "status": "real"
+    },
+    "UintSize": {
+      "status": "real"
+    }
+  }
+}

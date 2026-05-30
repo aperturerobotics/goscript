@@ -11,6 +11,8 @@ export interface UnsafePointer {
 
 export type Pointer = UnsafePointer | null
 
+export type ReflectFunc = (...args: unknown[]) => unknown
+
 // Define the possible JavaScript values that can be reflected
 export type ReflectValue =
   | null
@@ -20,7 +22,7 @@ export type ReflectValue =
   | bigint
   | string
   | symbol
-  | Function //eslint-disable-line @typescript-eslint/no-unsafe-function-type
+  | ReflectFunc
   | object
   | unknown[]
   | Map<unknown, unknown>
@@ -102,12 +104,17 @@ export function StructTag_Get(tag: StructTag | undefined, key: string): string {
   return tag.Get(key)
 }
 
-// Method representation
-export interface Method {
-  Name: string
-  Type: Type
-  Func: Function //eslint-disable-line @typescript-eslint/no-unsafe-function-type
-  Index: number
+export class Method {
+  public Name = ''
+  public Type!: Type
+  public Func!: ReflectFunc
+  public Index = 0
+
+  constructor(init?: Partial<Method>) {
+    if (init) {
+      Object.assign(this, init)
+    }
+  }
 }
 
 // Channel type for reflection
@@ -139,17 +146,27 @@ export const SelectSend: SelectDir = 1
 export const SelectRecv: SelectDir = 2
 export const SelectDefault: SelectDir = 3
 
-// Slice header (internal representation)
-export interface SliceHeader {
-  Data: uintptr
-  Len: number
-  Cap: number
+export class SliceHeader {
+  public Data: uintptr = 0
+  public Len = 0
+  public Cap = 0
+
+  constructor(init?: Partial<SliceHeader>) {
+    if (init) {
+      Object.assign(this, init)
+    }
+  }
 }
 
-// String header (internal representation)
-export interface StringHeader {
-  Data: uintptr
-  Len: number
+export class StringHeader {
+  public Data: uintptr = 0
+  public Len = 0
+
+  constructor(init?: Partial<StringHeader>) {
+    if (init) {
+      Object.assign(this, init)
+    }
+  }
 }
 
 // Map iterator with proper typing

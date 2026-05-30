@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "AMD64": {
+      "status": "real"
+    },
+    "ArchFamily": {
+      "status": "real"
+    },
+    "ArchFamilyType": {
+      "status": "real"
+    },
+    "ARM": {
+      "status": "real"
+    },
+    "ARM64": {
+      "status": "real"
+    },
+    "BigEndian": {
+      "status": "real"
+    },
+    "DefaultPhysPageSize": {
+      "status": "real"
+    },
+    "GOARCH": {
+      "status": "real"
+    },
+    "I386": {
+      "status": "real"
+    },
+    "Int64Align": {
+      "status": "real"
+    },
+    "Is386": {
+      "status": "real"
+    },
+    "IsAmd64": {
+      "status": "real"
+    },
+    "IsAmd64p32": {
+      "status": "real"
+    },
+    "IsArm": {
+      "status": "real"
+    },
+    "IsArm64": {
+      "status": "real"
+    },
+    "IsArm64be": {
+      "status": "real"
+    },
+    "IsArmbe": {
+      "status": "real"
+    },
+    "IsLoong64": {
+      "status": "real"
+    },
+    "IsMips": {
+      "status": "real"
+    },
+    "IsMips64": {
+      "status": "real"
+    },
+    "IsMips64le": {
+      "status": "real"
+    },
+    "IsMips64p32": {
+      "status": "real"
+    },
+    "IsMips64p32le": {
+      "status": "real"
+    },
+    "IsMipsle": {
+      "status": "real"
+    },
+    "IsPpc": {
+      "status": "real"
+    },
+    "IsPpc64": {
+      "status": "real"
+    },
+    "IsPpc64le": {
+      "status": "real"
+    },
+    "IsRiscv": {
+      "status": "real"
+    },
+    "IsRiscv64": {
+      "status": "real"
+    },
+    "IsS390": {
+      "status": "real"
+    },
+    "IsS390x": {
+      "status": "real"
+    },
+    "IsSparc": {
+      "status": "real"
+    },
+    "IsSparc64": {
+      "status": "real"
+    },
+    "IsWasm": {
+      "status": "real"
+    },
+    "LOONG64": {
+      "status": "real"
+    },
+    "MinFrameSize": {
+      "status": "real"
+    },
+    "MIPS": {
+      "status": "real"
+    },
+    "MIPS64": {
+      "status": "real"
+    },
+    "PCQuantum": {
+      "status": "real"
+    },
+    "PPC64": {
+      "status": "real"
+    },
+    "PtrBits": {
+      "status": "real"
+    },
+    "PtrSize": {
+      "status": "real"
+    },
+    "RISCV64": {
+      "status": "real"
+    },
+    "S390X": {
+      "status": "real"
+    },
+    "StackAlign": {
+      "status": "real"
+    },
+    "WASM": {
+      "status": "real"
+    }
+  }
+}

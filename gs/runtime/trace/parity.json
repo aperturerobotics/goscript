@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "strict": false,
+  "symbols": {
+    "IsEnabled": {
+      "status": "real"
+    },
+    "Log": {
+      "status": "real"
+    },
+    "Logf": {
+      "status": "real"
+    },
+    "NewTask": {
+      "status": "real"
+    },
+    "Region": {
+      "status": "real"
+    },
+    "Start": {
+      "status": "real"
+    },
+    "StartRegion": {
+      "status": "real"
+    },
+    "Stop": {
+      "status": "real"
+    },
+    "Task": {
+      "status": "real"
+    },
+    "WithRegion": {
+      "status": "real"
+    }
+  }
+}

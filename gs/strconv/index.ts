@@ -10,6 +10,7 @@ export {
   ParseUint,
 } from './atoi.gs.js'
 export { AppendFloat, FormatFloat } from './ftoa.gs.js'
+export { FormatComplex, ParseComplex } from './complex.gs.js'
 export {
   AppendInt,
   AppendUint,

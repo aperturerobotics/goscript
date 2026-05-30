@@ -68,6 +68,7 @@ export interface ReadCloser extends Reader, Closer {}
 export interface WriteCloser extends Writer, Closer {}
 export interface ReadWriteCloser extends Reader, Writer, Closer {}
 export interface ReadSeeker extends Reader, Seeker {}
+export interface ReadSeekCloser extends Reader, Seeker, Closer {}
 export interface WriteSeeker extends Writer, Seeker {}
 export interface ReadWriteSeeker extends Reader, Writer, Seeker {}
 

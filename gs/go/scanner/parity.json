@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "Error": {
+      "status": "real"
+    },
+    "ErrorHandler": {
+      "status": "real"
+    },
+    "ErrorList": {
+      "status": "real"
+    },
+    "Mode": {
+      "status": "real"
+    },
+    "PrintError": {
+      "status": "real"
+    },
+    "ScanComments": {
+      "status": "real"
+    },
+    "Scanner": {
+      "status": "real"
+    }
+  }
+}

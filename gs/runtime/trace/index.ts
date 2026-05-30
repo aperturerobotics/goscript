@@ -6,9 +6,12 @@ import * as io from '@goscript/io/index.js'
 class traceContextKey {}
 
 const traceState = {
-  activeWriter: null as io.Writer | null,
   nextTaskID: 0,
 }
+
+const unsupportedTraceError = errors.New(
+  'runtime/trace: execution tracing is unsupported in GoScript',
+)
 
 export class Task {
   public id: number
@@ -41,7 +44,8 @@ export function NewTask(
 }
 
 export function Log(_ctx: context.Context | null, category: string, message: string): void {
-  writeTrace(`log ${category} ${message}\n`)
+  void category
+  void message
 }
 
 export function Logf(
@@ -75,23 +79,7 @@ export function Start(w: io.Writer | $.VarRef<io.Writer> | null): $.GoError {
   if (writer == null) {
     return errors.New('runtime/trace: nil trace writer')
   }
-  if (traceState.activeWriter != null) {
-    return errors.New('runtime/trace: trace already active')
-  }
-  traceState.activeWriter = writer
-  return writeTrace('goscript trace start\n')
+  return unsupportedTraceError
 }
 
-export function Stop(): void {
-  writeTrace('goscript trace stop\n')
-  traceState.activeWriter = null
-}
-
-function writeTrace(text: string): $.GoError {
-  const writer = traceState.activeWriter
-  if (writer == null) {
-    return null
-  }
-  const [, err] = writer.Write($.stringToBytes(text))
-  return err
-}
+export function Stop(): void {}

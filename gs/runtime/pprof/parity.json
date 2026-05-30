@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "strict": false,
+  "symbols": {
+    "Lookup": {
+      "status": "real"
+    },
+    "NewProfile": {
+      "status": "real"
+    },
+    "Profile": {
+      "status": "real"
+    },
+    "Profiles": {
+      "status": "real"
+    },
+    "StartCPUProfile": {
+      "status": "real"
+    },
+    "StopCPUProfile": {
+      "status": "real"
+    },
+    "WriteHeapProfile": {
+      "status": "real"
+    }
+  }
+}

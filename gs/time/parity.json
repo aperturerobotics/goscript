@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "After": {
+      "status": "real"
+    },
+    "AfterFunc": {
+      "status": "real"
+    },
+    "ANSIC": {
+      "status": "real"
+    },
+    "April": {
+      "status": "real"
+    },
+    "August": {
+      "status": "real"
+    },
+    "Date": {
+      "status": "real"
+    },
+    "DateOnly": {
+      "status": "real"
+    },
+    "DateTime": {
+      "status": "real"
+    },
+    "December": {
+      "status": "real"
+    },
+    "Duration": {
+      "status": "real"
+    },
+    "February": {
+      "status": "real"
+    },
+    "FixedZone": {
+      "status": "real"
+    },
+    "Friday": {
+      "status": "real"
+    },
+    "Hour": {
+      "status": "real"
+    },
+    "January": {
+      "status": "real"
+    },
+    "July": {
+      "status": "real"
+    },
+    "June": {
+      "status": "real"
+    },
+    "Kitchen": {
+      "status": "real"
+    },
+    "Layout": {
+      "status": "real"
+    },
+    "LoadLocation": {
+      "status": "real"
+    },
+    "LoadLocationFromTZData": {
+      "status": "real"
+    },
+    "Local": {
+      "status": "real"
+    },
+    "Location": {
+      "status": "real"
+    },
+    "March": {
+      "status": "real"
+    },
+    "May": {
+      "status": "real"
+    },
+    "Microsecond": {
+      "status": "real"
+    },
+    "Millisecond": {
+      "status": "real"
+    },
+    "Minute": {
+      "status": "real"
+    },
+    "Monday": {
+      "status": "real"
+    },
+    "Month": {
+      "status": "real"
+    },
+    "Nanosecond": {
+      "status": "real"
+    },
+    "NewTicker": {
+      "status": "real"
+    },
+    "NewTimer": {
+      "status": "real"
+    },
+    "November": {
+      "status": "real"
+    },
+    "Now": {
+      "status": "real"
+    },
+    "October": {
+      "status": "real"
+    },
+    "Parse": {
+      "status": "real"
+    },
+    "ParseDuration": {
+      "status": "real"
+    },
+    "ParseError": {
+      "status": "real"
+    },
+    "ParseInLocation": {
+      "status": "real"
+    },
+    "RFC1123": {
+      "status": "real"
+    },
+    "RFC1123Z": {
+      "status": "real"
+    },
+    "RFC3339": {
+      "status": "real"
+    },
+    "RFC3339Nano": {
+      "status": "real"
+    },
+    "RFC822": {
+      "status": "real"
+    },
+    "RFC822Z": {
+      "status": "real"
+    },
+    "RFC850": {
+      "status": "real"
+    },
+    "RubyDate": {
+      "status": "real"
+    },
+    "Saturday": {
+      "status": "real"
+    },
+    "Second": {
+      "status": "real"
+    },
+    "September": {
+      "status": "real"
+    },
+    "Since": {
+      "status": "real"
+    },
+    "Sleep": {
+      "status": "real"
+    },
+    "Stamp": {
+      "status": "real"
+    },
+    "StampMicro": {
+      "status": "real"
+    },
+    "StampMilli": {
+      "status": "real"
+    },
+    "StampNano": {
+      "status": "real"
+    },
+    "Sunday": {
+      "status": "real"
+    },
+    "Thursday": {
+      "status": "real"
+    },
+    "Tick": {
+      "status": "real"
+    },
+    "Ticker": {
+      "status": "real"
+    },
+    "Time": {
+      "status": "real"
+    },
+    "TimeOnly": {
+      "status": "real"
+    },
+    "Timer": {
+      "status": "real"
+    },
+    "Tuesday": {
+      "status": "real"
+    },
+    "Unix": {
+      "status": "real"
+    },
+    "UnixDate": {
+      "status": "real"
+    },
+    "UnixMicro": {
+      "status": "real"
+    },
+    "UnixMilli": {
+      "status": "real"
+    },
+    "Until": {
+      "status": "real"
+    },
+    "UTC": {
+      "status": "real"
+    },
+    "Wednesday": {
+      "status": "real"
+    },
+    "Weekday": {
+      "status": "real"
+    }
+  }
+}

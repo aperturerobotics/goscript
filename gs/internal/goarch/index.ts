@@ -1,18 +1,50 @@
-// Architecture constants for JavaScript/WebAssembly target
-// This replaces the auto-generated version with appropriate values for JS
+export type ArchFamilyType = number
 
-// Pointer size in bytes (64-bit in modern JavaScript environments)
+export const AMD64: ArchFamilyType = 0
+export const ARM: ArchFamilyType = 1
+export const ARM64: ArchFamilyType = 2
+export const I386: ArchFamilyType = 3
+export const LOONG64: ArchFamilyType = 4
+export const MIPS: ArchFamilyType = 5
+export const MIPS64: ArchFamilyType = 6
+export const PPC64: ArchFamilyType = 7
+export const RISCV64: ArchFamilyType = 8
+export const S390X: ArchFamilyType = 9
+export const WASM: ArchFamilyType = 10
+
+export const GOARCH = 'wasm'
+
+export const Is386 = 0
+export const IsAmd64 = 0
+export const IsAmd64p32 = 0
+export const IsArm = 0
+export const IsArmbe = 0
+export const IsArm64 = 0
+export const IsArm64be = 0
+export const IsLoong64 = 0
+export const IsMips = 0
+export const IsMipsle = 0
+export const IsMips64 = 0
+export const IsMips64le = 0
+export const IsMips64p32 = 0
+export const IsMips64p32le = 0
+export const IsPpc = 0
+export const IsPpc64 = 0
+export const IsPpc64le = 0
+export const IsRiscv = 0
+export const IsRiscv64 = 0
+export const IsS390 = 0
+export const IsS390x = 0
+export const IsSparc = 0
+export const IsSparc64 = 0
+export const IsWasm = 1
+
 export const PtrSize = 8
-
-// JavaScript is little-endian
+export const PtrBits = PtrSize * 8
+export const Int64Align = PtrSize
 export const BigEndian = false
-
-// Architecture family
-export const ArchFamily = 'wasm'
-
-// Other common architecture constants
-export const Int64Align = 8
+export const ArchFamily: ArchFamilyType = WASM
+export const DefaultPhysPageSize = 65536
+export const PCQuantum = 1
 export const MinFrameSize = 0
-
-// CPU cache line size (not really applicable in JS, but some code might reference it)
-export const CacheLineSize = 64
+export const StackAlign = PtrSize

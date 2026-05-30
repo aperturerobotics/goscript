@@ -37,6 +37,7 @@ export {
 } from './value.js'
 export { Swapper } from './swapper.js'
 export { MapIter } from './map.js'
+export { VisibleFields } from './visiblefields.js'
 
 // Export new types and constants
 export {
@@ -44,18 +45,18 @@ export {
   StructTag_Get,
   StructField,
   ValueError,
+  Method,
   SelectSend,
   SelectRecv,
   SelectDefault,
   SelectCase,
+  SliceHeader,
+  StringHeader,
   bitVector,
 } from './types.js'
 export type {
   uintptr,
-  Method,
   SelectDir,
-  SliceHeader,
-  StringHeader,
 } from './types.js'
 
 // Export kind constants

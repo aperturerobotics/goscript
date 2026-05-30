@@ -5,6 +5,7 @@ import * as errors from "@goscript/errors/index.js"
 import * as syscall from "@goscript/syscall/index.js"
 
 export let ErrProcessDone: $.GoError = errors.New("os: process already finished")
+export let ErrNoHandle: $.GoError = errors.New("os: process handle unavailable")
 
 // Simplified Process class for JavaScript environment
 export class Process {

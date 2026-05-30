@@ -27,7 +27,7 @@ describe('runtime/trace override', () => {
     expect(called.value).toBe(true)
   })
 
-  it('writes deterministic trace bytes', () => {
+  it('reports execution tracing as unsupported', () => {
     const chunks: Uint8Array[] = []
     const writer = {
       Write(p: Uint8Array): [number, null] {
@@ -36,10 +36,12 @@ describe('runtime/trace override', () => {
       },
     }
 
-    expect(Start(writer)).toBeNull()
+    expect(Start(writer)?.Error()).toBe(
+      'runtime/trace: execution tracing is unsupported in GoScript',
+    )
     Log(context.Background(), 'category', 'message')
     Stop()
 
-    expect(chunks.reduce((total, chunk) => total + chunk.length, 0)).toBeGreaterThan(0)
+    expect(chunks).toHaveLength(0)
   })
 })

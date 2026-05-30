@@ -1,0 +1,9 @@
+header: X-Test text/plain 2
+proto: 2 0 true
+status: PATCH 511 Network Authentication Required
+request: PUT /path true 1
+recorder: 403 feature not supported
+
+servecontent: 200 served
+servecontent head: 200 0
+server: true true 1.2.3.4

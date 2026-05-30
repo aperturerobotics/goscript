@@ -877,6 +877,25 @@ export function WeekdayString(w: Weekday): string {
   return names[w] || 'Unknown'
 }
 
+export function Month_String(m: Month): string {
+  const names = [
+    '',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ]
+  return names[m] || `%!Month(${m})`
+}
+
 // Weekday_String returns the string representation of a Weekday (wrapper function naming)
 export function Weekday_String(w: Weekday): string {
   return WeekdayString(w)
@@ -1058,6 +1077,7 @@ export function Date(
 
 // Common locations
 export const UTC = new Location('UTC', 0)
+export const Local = new Location('Local')
 
 // FixedZone returns a Location that always uses the given zone name and offset (seconds east of UTC)
 export function FixedZone(name: string, offset: number): Location {
@@ -1104,12 +1124,35 @@ export const October = Month.October
 export const November = Month.November
 export const December = Month.December
 
+// Export weekday constants
+export const Sunday = Weekday.Sunday
+export const Monday = Weekday.Monday
+export const Tuesday = Weekday.Tuesday
+export const Wednesday = Weekday.Wednesday
+export const Thursday = Weekday.Thursday
+export const Friday = Weekday.Friday
+export const Saturday = Weekday.Saturday
+
 // Time layout constants (matching Go's time package)
-export const DateTime = '2006-01-02 15:04:05'
 export const Layout = "01/02 03:04:05PM '06 -0700"
+export const ANSIC = 'Mon Jan _2 15:04:05 2006'
+export const UnixDate = 'Mon Jan _2 15:04:05 MST 2006'
+export const RubyDate = 'Mon Jan 02 15:04:05 -0700 2006'
+export const RFC822 = '02 Jan 06 15:04 MST'
+export const RFC822Z = '02 Jan 06 15:04 -0700'
+export const RFC850 = 'Monday, 02-Jan-06 15:04:05 MST'
+export const RFC1123 = 'Mon, 02 Jan 2006 15:04:05 MST'
+export const RFC1123Z = 'Mon, 02 Jan 2006 15:04:05 -0700'
 export const RFC3339 = '2006-01-02T15:04:05Z07:00'
 export const RFC3339Nano = '2006-01-02T15:04:05.999999999Z07:00'
 export const Kitchen = '3:04PM'
+export const Stamp = 'Jan _2 15:04:05'
+export const StampMilli = 'Jan _2 15:04:05.000'
+export const StampMicro = 'Jan _2 15:04:05.000000'
+export const StampNano = 'Jan _2 15:04:05.000000000'
+export const DateTime = '2006-01-02 15:04:05'
+export const DateOnly = '2006-01-02'
+export const TimeOnly = '15:04:05'
 
 // Unix returns the local Time corresponding to the given Unix time,
 // sec seconds and nsec nanoseconds since January 1, 1970 UTC
@@ -1298,8 +1341,7 @@ export function LoadLocation(name: string): Location {
     case 'UTC':
       return UTC
     case 'Local':
-      // Return a location that uses local time (no fixed offset)
-      return new Location('Local')
+      return Local
     default:
       throw new Error(`time: unknown time zone ${name}`)
   }
