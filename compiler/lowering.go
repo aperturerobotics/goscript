@@ -9582,8 +9582,8 @@ func (o *LoweringOwner) shallowRuntimeTypeInfoExpr(typ types.Type) string {
 func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct, seen map[types.Type]bool) string {
 	fields := make([]string, 0, structType.NumFields())
 	var vars []*types.Var
-	for idx := range structType.NumFields() {
-		vars = append(vars, structType.Field(idx))
+	for field := range structType.Fields() {
+		vars = append(vars, field)
 	}
 	offsets := structFieldOffsets(goScriptTypeSizes(), vars)
 	for idx := range structType.NumFields() {

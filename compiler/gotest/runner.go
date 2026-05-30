@@ -2,7 +2,7 @@ package gotest
 
 import (
 	"context"
-	"encoding/json"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -987,6 +987,7 @@ func renderBrowserRunner(result PackageResult, req *normalizedRequest) string {
 	b.WriteString("\tlet __goscriptOK = false\n")
 	b.WriteString("\tlet __goscriptError: unknown = null\n")
 	b.WriteString("\tconsole.log = (...args) => __goscriptLogs.push(args.map((arg) => String(arg)).join(' '))\n")
+	writeRuntimeRecordFunction(&b, "\t")
 	b.WriteString("\ttry {\n")
 	b.WriteString("\t\tconst result = await runTests(")
 	b.WriteString(strconv.Quote(result.PackagePath))
@@ -1049,9 +1050,9 @@ func renderBrowserRunner(result PackageResult, req *normalizedRequest) string {
 	b.WriteString("\t\t}\n")
 	b.WriteString("\t} finally {\n")
 	b.WriteString("\t\tconsole.log = __goscriptOriginalLog\n")
-	b.WriteString("\t\t__goscriptOriginalLog(__goscriptResultPrefix + JSON.stringify({ packagePath: ")
+	b.WriteString("\t\t__goscriptOriginalLog(__goscriptRuntimeRecord(")
 	b.WriteString(strconv.Quote(result.PackagePath))
-	b.WriteString(", ok: __goscriptOK, elapsedMs: Date.now() - __goscriptStartedAt, output: __goscriptLogs.join('\\n') }))\n")
+	b.WriteString(", __goscriptOK, Date.now() - __goscriptStartedAt, __goscriptLogs.join('\\n')))\n")
 	b.WriteString("\t}\n")
 	b.WriteString("\tif (__goscriptError) {\n")
 	b.WriteString("\t\tthrow __goscriptError\n")
@@ -1069,29 +1070,70 @@ func renderBrowserRunner(result PackageResult, req *normalizedRequest) string {
 }
 
 type combinedRuntimeRecord struct {
-	PackagePath string `json:"packagePath"`
-	OK          bool   `json:"ok"`
-	ElapsedMS   int64  `json:"elapsedMs"`
-	Output      string `json:"output"`
+	PackagePath string
+	OK          bool
+	ElapsedMS   int64
+	Output      string
 }
 
 func parseCombinedRuntimeRecords(output string) ([]combinedRuntimeRecord, bool) {
 	var records []combinedRuntimeRecord
 	for line := range strings.SplitSeq(output, "\n") {
-		line = strings.TrimSpace(line)
+		line = strings.TrimSuffix(line, "\r")
 		if !strings.HasPrefix(line, combinedRuntimeResultPrefix) {
 			continue
 		}
-		var record combinedRuntimeRecord
-		if err := json.Unmarshal([]byte(strings.TrimPrefix(line, combinedRuntimeResultPrefix)), &record); err != nil {
-			return nil, false
-		}
-		if record.PackagePath == "" {
+		record, ok := parseCombinedRuntimeRecord(strings.TrimPrefix(line, combinedRuntimeResultPrefix))
+		if !ok {
 			return nil, false
 		}
 		records = append(records, record)
 	}
 	return records, len(records) != 0
+}
+
+func parseCombinedRuntimeRecord(line string) (combinedRuntimeRecord, bool) {
+	packagePath, rest, ok := strings.Cut(line, "\t")
+	if !ok {
+		return combinedRuntimeRecord{}, false
+	}
+	okField, rest, ok := strings.Cut(rest, "\t")
+	if !ok {
+		return combinedRuntimeRecord{}, false
+	}
+	elapsedField, outputField, ok := strings.Cut(rest, "\t")
+	if !ok {
+		return combinedRuntimeRecord{}, false
+	}
+	packagePath, err := url.PathUnescape(packagePath)
+	if err != nil || packagePath == "" {
+		return combinedRuntimeRecord{}, false
+	}
+	output, err := url.PathUnescape(outputField)
+	if err != nil {
+		return combinedRuntimeRecord{}, false
+	}
+	elapsedMS, err := strconv.ParseInt(elapsedField, 10, 64)
+	if err != nil {
+		return combinedRuntimeRecord{}, false
+	}
+	switch okField {
+	case "1", "true":
+		return combinedRuntimeRecord{
+			PackagePath: packagePath,
+			OK:          true,
+			ElapsedMS:   elapsedMS,
+			Output:      output,
+		}, true
+	case "0", "false":
+		return combinedRuntimeRecord{
+			PackagePath: packagePath,
+			ElapsedMS:   elapsedMS,
+			Output:      output,
+		}, true
+	default:
+		return combinedRuntimeRecord{}, false
+	}
 }
 
 func renderCombinedRunner(result *Result, indexes []int, req *normalizedRequest) string {
@@ -1116,6 +1158,7 @@ func renderCombinedRunner(result *Result, indexes []int, req *normalizedRequest)
 	b.WriteString(strconv.Quote(combinedRuntimeResultPrefix))
 	b.WriteString("\n")
 	b.WriteString("const __goscriptOriginalLog = console.log\n")
+	writeRuntimeRecordFunction(&b, "")
 	b.WriteString("async function __goscriptRunPackage(packagePath, packageDir, tests) {\n")
 	b.WriteString("\tif (packageDir && typeof process !== \"undefined\" && process.chdir) {\n")
 	b.WriteString("\t\tprocess.chdir(packageDir)\n")
@@ -1147,7 +1190,7 @@ func renderCombinedRunner(result *Result, indexes []int, req *normalizedRequest)
 	b.WriteString("\t} finally {\n")
 	b.WriteString("\t\tconsole.log = __goscriptOriginalLog\n")
 	b.WriteString("\t}\n")
-	b.WriteString("\t__goscriptOriginalLog(__goscriptResultPrefix + JSON.stringify({ packagePath, ok, elapsedMs: Date.now() - startedAt, output: logs.join('\\n') }))\n")
+	b.WriteString("\t__goscriptOriginalLog(__goscriptRuntimeRecord(packagePath, ok, Date.now() - startedAt, logs.join('\\n')))\n")
 	b.WriteString("}\n\n")
 	for _, idx := range indexes {
 		pkg := result.Packages[idx]
@@ -1173,6 +1216,15 @@ func renderCombinedRunner(result *Result, indexes []int, req *normalizedRequest)
 	}
 	b.WriteString("if (typeof process !== \"undefined\" && process.exit) {\n\tprocess.exit(0)\n}\n")
 	return b.String()
+}
+
+func writeRuntimeRecordFunction(b *strings.Builder, indent string) {
+	b.WriteString(indent)
+	b.WriteString("function __goscriptRuntimeRecord(packagePath: string, ok: boolean, elapsedMs: number, output: string): string {\n")
+	b.WriteString(indent)
+	b.WriteString("\treturn __goscriptResultPrefix + encodeURIComponent(packagePath) + \"\\t\" + (ok ? \"1\" : \"0\") + \"\\t\" + String(elapsedMs) + \"\\t\" + encodeURIComponent(output)\n")
+	b.WriteString(indent)
+	b.WriteString("}\n")
 }
 
 func writeProcessChdir(b *strings.Builder, dir string) {

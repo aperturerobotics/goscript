@@ -1036,7 +1036,7 @@ func TestRunnerRunsCombinedRuntimeChunks(t *testing.T) {
 		"case \"$runner\" in",
 		"runner-all-*)",
 		"\tsed -n 's/.*await __goscriptRunPackage(\"\\([^\"]*\\)\".*/\\1/p' \"$runner\" | while IFS= read -r pkg; do",
-		"\t\tprintf '" + combinedRuntimeResultPrefix + "{\"packagePath\":\"%s\",\"ok\":true,\"elapsedMs\":1,\"output\":\"\"}\\n' \"$pkg\"",
+		"\t\tprintf '" + combinedRuntimeResultPrefix + "%s\\t1\\t1\\t\\n' \"$pkg\"",
 		"\tdone",
 		"\texit 0",
 		"\t;;",
@@ -1087,7 +1087,7 @@ func TestRunnerRunsBrowserRuntimeBackend(t *testing.T) {
 	workDir := filepath.Join(moduleDir, ".tmp", "browser-runtime")
 	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "vitest"), strings.Join([]string{
 		"#!/bin/sh",
-		"printf '" + combinedRuntimeResultPrefix + "{\"packagePath\":\"example.test/browser\",\"ok\":true,\"elapsedMs\":7,\"output\":\"browser ok\"}\\n'",
+		"printf '" + combinedRuntimeResultPrefix + "example.test%%2Fbrowser\\t1\\t7\\tbrowser%%20ok\\n'",
 		"exit 0",
 		"",
 	}, "\n"))
@@ -1132,7 +1132,7 @@ func TestRunnerReportsBrowserRuntimeFailureRecord(t *testing.T) {
 	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "tsgo"), "#!/bin/sh\nexit 0\n")
 	writeExecutable(t, filepath.Join(moduleDir, "node_modules", ".bin", "vitest"), strings.Join([]string{
 		"#!/bin/sh",
-		"printf '" + combinedRuntimeResultPrefix + "{\"packagePath\":\"example.test/browserfail\",\"ok\":false,\"elapsedMs\":3,\"output\":\"page exploded\"}\\n'",
+		"printf '" + combinedRuntimeResultPrefix + "example.test%%2Fbrowserfail\\t0\\t3\\tpage%%20exploded\\n'",
 		"exit 1",
 		"",
 	}, "\n"))
@@ -1152,6 +1152,33 @@ func TestRunnerReportsBrowserRuntimeFailureRecord(t *testing.T) {
 	pkg := requirePackageResult(t, result, "example.test/browserfail")
 	if pkg.Action != ActionFail || pkg.Phases.Runtime != PhaseStatusFail || pkg.Error != "page exploded" {
 		t.Fatalf("unexpected browser failure result: %#v", pkg)
+	}
+}
+
+func TestParseCombinedRuntimeRecordsLineProtocol(t *testing.T) {
+	records, ok := parseCombinedRuntimeRecords(strings.Join([]string{
+		"ordinary output",
+		combinedRuntimeResultPrefix + "example.test%2Fpkg\t1\t42\tline%201%0Aline%202%09tail",
+		"",
+	}, "\n"))
+	if !ok {
+		t.Fatal("expected combined runtime record")
+	}
+	if len(records) != 1 {
+		t.Fatalf("expected one combined runtime record, got %#v", records)
+	}
+	record := records[0]
+	if record.PackagePath != "example.test/pkg" {
+		t.Fatalf("unexpected package path: %q", record.PackagePath)
+	}
+	if !record.OK {
+		t.Fatal("expected passing runtime record")
+	}
+	if record.ElapsedMS != 42 {
+		t.Fatalf("unexpected elapsed ms: %d", record.ElapsedMS)
+	}
+	if record.Output != "line 1\nline 2\ttail" {
+		t.Fatalf("unexpected output: %q", record.Output)
 	}
 }
 

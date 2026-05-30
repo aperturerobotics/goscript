@@ -624,8 +624,8 @@ func semanticFields(named *types.Named, typeExpr ast.Expr, sizes types.Sizes) []
 	docs := structFieldDocs(typeExpr)
 	fields := make([]semanticField, 0, structType.NumFields())
 	var vars []*types.Var
-	for i := range structType.NumFields() {
-		vars = append(vars, structType.Field(i))
+	for field := range structType.Fields() {
+		vars = append(vars, field)
 	}
 	offsets := structFieldOffsets(sizes, vars)
 	for i := range structType.NumFields() {
