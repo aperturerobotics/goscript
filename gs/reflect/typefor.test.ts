@@ -3,6 +3,7 @@ import {
   makeMap,
   mapGet,
   mapSet,
+  markAsStructValue,
   namedValueInterfaceValue,
   TypeKind,
   registerInterfaceType,
@@ -11,6 +12,7 @@ import {
 } from '../builtin/index.js'
 import { StructField } from './types.js'
 import { Int, Ptr, Struct, TypeFor, TypeOf, Uint64, ValueOf } from './type.js'
+import { Indirect, New, Zero } from './value.js'
 
 describe('TypeFor', () => {
   it('exposes StructField PkgPath and exported semantics', () => {
@@ -235,6 +237,67 @@ describe('TypeFor', () => {
     expect(fieldsType.Field(2).Type.Elem().String()).toBe(
       'main.RegisteredStruct',
     )
+  })
+
+  it('allocates registered struct zero values through the named constructor', () => {
+    class RegisteredZero {
+      public get Name(): string {
+        return this._fields.Name.value
+      }
+      public set Name(value: string) {
+        this._fields.Name.value = value
+      }
+
+      public _fields: {
+        Name: ReturnType<typeof varRef<string>>
+      }
+
+      constructor(init?: Partial<{ Name?: string }>) {
+        this._fields = {
+          Name: varRef(init?.Name ?? ''),
+        }
+      }
+
+      public clone(): RegisteredZero {
+        return markAsStructValue(new RegisteredZero({ Name: this.Name }))
+      }
+    }
+
+    const typeInfo = registerStructType(
+      'main.RegisteredZero',
+      () => new RegisteredZero(),
+      [],
+      RegisteredZero,
+      [
+        {
+          name: 'Name',
+          key: 'Name',
+          type: { kind: TypeKind.Basic, name: 'string' },
+          index: [0],
+          offset: 0,
+          exported: true,
+        },
+      ],
+    )
+    ;(RegisteredZero as any).__typeInfo = typeInfo
+
+    const typ = TypeOf(new RegisteredZero())
+    expect(Zero(typ).Interface()).toBeInstanceOf(RegisteredZero)
+    expect(TypeOf(Zero(typ).Interface()).String()).toBe('main.RegisteredZero')
+
+    const ptr = New(typ)
+    expect(ptr.Elem().Interface()).toBeInstanceOf(RegisteredZero)
+    ptr.Elem().FieldByName('Name').SetString('Ada')
+    expect((ptr.Elem().Interface() as RegisteredZero).Name).toBe('Ada')
+  })
+
+  it('unwraps New pointers through Indirect', () => {
+    const pointer = New(TypeOf(0))
+    const value = Indirect(pointer)
+
+    expect(value.Int()).toBe(0)
+    value.SetInt(7)
+    expect(pointer.Elem().Int()).toBe(7)
   })
 
   it('interns runtime type descriptors for reflect.Type map keys', () => {

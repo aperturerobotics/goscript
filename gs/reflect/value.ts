@@ -74,8 +74,13 @@ function zeroReflectValue(typ: Type): ReflectValue {
     case Slice:
     case Array:
       return []
-    case Struct:
+    case Struct: {
+      const typeInfo = $.getTypeByName(typ.String())
+      if (typeInfo && $.isStructTypeInfo(typeInfo) && typeInfo.ctor) {
+        return $.markAsStructValue(new typeInfo.ctor()) as ReflectValue
+      }
       return newStructValue(typ)
+    }
     default:
       return null
   }
@@ -160,20 +165,12 @@ function getArrayFromValue(value: Value): unknown[] | null {
 
 // Indirect returns the value that v points to.
 export function Indirect(v: Value): Value {
-  // Check if this is a pointer type
-  const type = v.Type()
-  if (type.Kind() === Ptr) {
-    // Ptr kind
-    const elemType = type.Elem()
-    if (elemType) {
-      // Return a new Value with the same underlying value but the element type
-      return new Value(
-        (v as unknown as { value: ReflectValue }).value,
-        elemType,
-      )
+  if (v.Kind() === Ptr) {
+    if (v.IsNil()) {
+      return new Value()
     }
+    return v.Elem()
   }
-  // For non-pointer types, just return the value as-is
   return v
 }
 

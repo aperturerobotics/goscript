@@ -2704,7 +2704,7 @@ function typeAssignableTo(t: Type, u: Type | null): boolean {
   if (u === null) {
     return false
   }
-  if (t.String() === u.String()) {
+  if (typeIdentityKey(t) === typeIdentityKey(u)) {
     return true
   }
   if (u.Kind() !== Interface) {

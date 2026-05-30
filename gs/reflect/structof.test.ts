@@ -269,6 +269,8 @@ describe('StructOf', () => {
     )
     expect(pkgA.String()).toBe(pkgB.String())
     expect(pkgA).not.toBe(pkgB)
+    expect(pkgA.AssignableTo(pkgB)).toBe(false)
+    expect(pkgB.AssignableTo(pkgA)).toBe(false)
 
     expect(
       StructOf(
