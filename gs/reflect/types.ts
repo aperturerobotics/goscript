@@ -39,6 +39,10 @@ export type ReflectValue =
 // Import Type and Kind from the main type module
 import { Type, Kind, Value, Kind_String, ChanDir } from './type.js'
 
+type StructFieldInit = Omit<Partial<StructField>, 'Tag'> & {
+  Tag?: StructTag | string
+}
+
 // Struct field representation
 export class StructField {
   public Name: string = ''
@@ -49,9 +53,13 @@ export class StructField {
   public Index: number[] = []
   public Anonymous: boolean = false
 
-  constructor(init?: Partial<StructField>) {
+  constructor(init?: StructFieldInit) {
     if (init) {
-      Object.assign(this, init)
+      const { Tag, ...rest } = init
+      Object.assign(this, rest)
+      if (Tag !== undefined) {
+        this.Tag = typeof Tag === 'string' ? new StructTag(Tag) : Tag
+      }
     }
   }
 

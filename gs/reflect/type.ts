@@ -195,13 +195,46 @@ function pointerAddress(value: object): number {
 }
 
 function internType(t: Type): Type {
-  const key = `${t.Kind()}:${t.PkgPath()}:${t.Name()}:${t.String()}`
+  const key = typeIdentityKey(t)
   const existing = canonicalTypes.get(key)
   if (existing) {
     return existing
   }
   canonicalTypes.set(key, t)
   return t
+}
+
+function typeIdentityKey(t: Type, seen = new Set<Type>()): string {
+  if (seen.has(t)) {
+    return `${t.Kind()}:${t.PkgPath()}:${t.Name()}:${t.String()}`
+  }
+  seen.add(t)
+  if (t instanceof StructType) {
+    return t.identityKey(seen)
+  }
+  switch (t.Kind()) {
+    case Array:
+      return `${t.Kind()}:${t.Len()}:${typeIdentityKey(t.Elem(), seen)}`
+    case Chan:
+    case Ptr:
+    case Slice:
+      return `${t.Kind()}:${t.String()}:${typeIdentityKey(t.Elem(), seen)}`
+    case Map:
+      return `${t.Kind()}:${typeIdentityKey(t.Key(), seen)}:${typeIdentityKey(t.Elem(), seen)}`
+    case Func: {
+      const params = globalThis.Array.from(
+        { length: t.NumIn() },
+        (_unused, idx) => typeIdentityKey(t.In(idx), seen),
+      )
+      const results = globalThis.Array.from(
+        { length: t.NumOut() },
+        (_unused, idx) => typeIdentityKey(t.Out(idx), seen),
+      )
+      return `${t.Kind()}:${t.PkgPath()}:${t.Name()}:${t.String()}:${t.IsVariadic()}:${params.join(',')}:${results.join(',')}`
+    }
+    default:
+      return `${t.Kind()}:${t.PkgPath()}:${t.Name()}:${t.String()}`
+  }
 }
 
 // Type is the representation of a Go type.
@@ -2480,13 +2513,65 @@ function typeFieldByNameFunc(
   if (t.Kind() !== Struct) {
     throw new Error('reflect: FieldByName of non-struct type')
   }
-  for (let i = 0; i < t.NumField(); i++) {
-    const field = t.Field(i)
+  for (const field of visibleStructFields(t)) {
     if (match(field.Name)) {
       return [field, true]
     }
   }
   return [new StructField(), false]
+}
+
+export function visibleStructFields(t: Type): StructField[] {
+  const fields: StructField[] = []
+  const byName = new globalThis.Map<string, number>()
+  const visiting = new Set<Type>()
+  const index: number[] = []
+
+  const walk = (typ: Type): void => {
+    if (visiting.has(typ)) {
+      return
+    }
+    visiting.add(typ)
+    for (let i = 0; i < typ.NumField(); i++) {
+      const field = typ.Field(i).clone()
+      index.push(i)
+
+      let add = true
+      const oldIndex = byName.get(field.Name)
+      if (oldIndex !== undefined) {
+        const old = fields[oldIndex]
+        if (index.length === old.Index.length) {
+          old.Name = ''
+          add = false
+        } else if (index.length < old.Index.length) {
+          old.Name = ''
+        } else {
+          add = false
+        }
+      }
+      if (add) {
+        field.Index = [...index]
+        byName.set(field.Name, fields.length)
+        fields.push(field)
+      }
+
+      if (field.Anonymous) {
+        let fieldType = field.Type
+        if (fieldType.Kind() === Ptr) {
+          fieldType = fieldType.Elem()
+        }
+        if (fieldType.Kind() === Struct) {
+          walk(fieldType)
+        }
+      }
+
+      index.pop()
+    }
+    visiting.delete(typ)
+  }
+
+  walk(t)
+  return fields.filter((field) => field.Name !== '')
 }
 
 function zeroMethod(): Method {
@@ -2587,7 +2672,7 @@ function typeAssignableTo(t: Type, u: Type | null): boolean {
   return t.Implements(u)
 }
 
-function structFieldStorageKey(t: Type, i: number): string {
+export function structFieldStorageKey(t: Type, i: number): string {
   if (t instanceof StructType) {
     return t.fieldKey(i)
   }
@@ -2606,14 +2691,61 @@ interface StructFieldDescriptor {
   exported: boolean
 }
 
+function typeAlignment(typ: Type): number {
+  switch (typ.Kind()) {
+    case Bool:
+    case Int8:
+    case Uint8:
+      return 1
+    case Int16:
+    case Uint16:
+      return 2
+    case Int32:
+    case Uint32:
+    case Float32:
+    case Complex64:
+      return 4
+    case Array:
+      return typeAlignment(typ.Elem())
+    case Struct: {
+      let align = 1
+      for (let i = 0; i < typ.NumField(); i++) {
+        align = Math.max(align, typeAlignment(typ.Field(i).Type))
+      }
+      return align
+    }
+    default:
+      return 8
+  }
+}
+
+function alignOffset(offset: number, alignment: number): number {
+  if (alignment <= 1) {
+    return offset
+  }
+  return Math.ceil(offset / alignment) * alignment
+}
+
+function structDescriptorSize(fields: StructFieldDescriptor[]): number {
+  let size = 0
+  let alignment = 1
+  for (const field of fields) {
+    alignment = Math.max(alignment, typeAlignment(field.type))
+    size = Math.max(size, field.offset + field.type.Size())
+  }
+  return alignOffset(size, alignment)
+}
+
 class StructType implements Type {
   constructor(
     private _name: string,
     private _fields: StructFieldDescriptor[] = [],
+    private _pkgPath = '',
+    private _string = _name,
   ) {}
 
   public String(): string {
-    return this._name
+    return this._string
   }
 
   public Kind(): Kind {
@@ -2625,8 +2757,7 @@ class StructType implements Type {
   }
 
   public Size(): number {
-    // Struct size is implementation-defined, we'll use a reasonable default
-    return this._fields.reduce((sum, field) => sum + field.type.Size(), 0)
+    return structDescriptorSize(this._fields)
   }
 
   public Elem(): Type {
@@ -2658,6 +2789,12 @@ class StructType implements Type {
   }
 
   public PkgPath(): string {
+    if (this._pkgPath !== '') {
+      return this._pkgPath
+    }
+    if (this._name === '') {
+      return ''
+    }
     // Extract package path from full type name (e.g., "main.Person" -> "main")
     const dotIndex = this._name.lastIndexOf('.')
     if (dotIndex > 0) {
@@ -2667,6 +2804,9 @@ class StructType implements Type {
   }
 
   public Name(): string {
+    if (this._name === '') {
+      return ''
+    }
     // Extract type name from full type name (e.g., "main.Person" -> "Person")
     const dotIndex = this._name.lastIndexOf('.')
     if (dotIndex >= 0) {
@@ -2700,6 +2840,28 @@ class StructType implements Type {
       )
     }
     return this._fields[i].key
+  }
+
+  public descriptors(): StructFieldDescriptor[] {
+    return this._fields.map((field) => ({
+      ...field,
+      index: [...field.index],
+    }))
+  }
+
+  public identityKey(seen: Set<Type>): string {
+    const fields = this._fields
+      .map((field) =>
+        [
+          field.name,
+          field.pkgPath,
+          field.tag ?? '',
+          field.anonymous ? 'anonymous' : 'named',
+          typeIdentityKey(field.type, seen),
+        ].join('\u0000'),
+      )
+      .join('\u0001')
+    return `struct:${this._pkgPath}:${this._name}:${fields}`
   }
 
   public FieldByName(name: string): [StructField, boolean] {
@@ -3337,21 +3499,35 @@ function getTypeOf(value: ReflectValue): Type {
         value &&
         typeof value === 'object' &&
         value.constructor &&
+        '__reflectType' in value.constructor
+      ) {
+        const reflectType = (value.constructor as { __reflectType?: Type })
+          .__reflectType
+        if (reflectType) {
+          return reflectType
+        }
+      }
+
+      if (
+        value &&
+        typeof value === 'object' &&
+        value.constructor &&
         '__typeInfo' in value.constructor
       ) {
         const typeInfo = (
-          value.constructor as { __typeInfo?: { name?: string } }
+          value.constructor as { __typeInfo?: $.StructTypeInfo }
         ).__typeInfo
-        if (typeInfo && typeInfo.name) {
-          const typeName =
-            typeInfo.name.includes('.') ?
-              typeInfo.name
-            : `main.${typeInfo.name}`
-          const regTypeInfo = builtinGetTypeByName(typeName)
-          let fields: StructFieldDescriptor[] = []
-          if (regTypeInfo && isStructTypeInfo(regTypeInfo)) {
-            fields = structFieldsFromTypeInfo(regTypeInfo)
+        if (typeInfo && isStructTypeInfo(typeInfo)) {
+          const name = typeInfo.name ?? ''
+          if (name === '') {
+            return new StructType('', structFieldsFromTypeInfo(typeInfo))
           }
+          const typeName = name.includes('.') ? name : `main.${name}`
+          const regTypeInfo = builtinGetTypeByName(typeName)
+          const fields =
+            regTypeInfo && isStructTypeInfo(regTypeInfo) ?
+              structFieldsFromTypeInfo(regTypeInfo)
+            : structFieldsFromTypeInfo(typeInfo)
           return new StructType(typeName, fields)
         }
       }
@@ -3413,6 +3589,149 @@ export function MapOf(key: Type, elem: Type): Type {
 
 export function ChanOf(dir: ChanDir, t: Type): Type {
   return internType(new ChannelType(t, dir))
+}
+
+export function StructOf(fields: $.Slice<StructField>): Type {
+  const inputFields = $.asArray(fields)
+  const descriptors: StructFieldDescriptor[] = []
+  const names = new Set<string>()
+  let pkgPath = ''
+  let offset = 0
+  for (const [idx, field] of inputFields.entries()) {
+    validateStructOfField(field, idx, inputFields.length)
+    if (field.PkgPath !== '') {
+      if (pkgPath === '') {
+        pkgPath = field.PkgPath
+      } else if (pkgPath !== field.PkgPath) {
+        throw new Error(
+          `reflect.Struct: fields with different PkgPath ${pkgPath} and ${field.PkgPath}`,
+        )
+      }
+    }
+    if (names.has(field.Name) && field.Name !== '_') {
+      throw new Error(`reflect.StructOf: duplicate field ${field.Name}`)
+    }
+    names.add(field.Name)
+
+    const fieldOffset = alignOffset(offset, typeAlignment(field.Type))
+    const tag = field.Tag?.toString()
+    const descriptor: StructFieldDescriptor = {
+      name: field.Name,
+      key: field.Name === '_' ? `_${idx}` : field.Name,
+      type: field.Type,
+      ...(tag ? { tag } : {}),
+      pkgPath: field.PkgPath,
+      anonymous: field.Anonymous,
+      index: [idx],
+      offset: fieldOffset,
+      exported: field.IsExported(),
+    }
+    descriptors.push(descriptor)
+    offset = fieldOffset + field.Type.Size()
+  }
+  return internType(
+    new StructType('', descriptors, '', structTypeString(descriptors)),
+  )
+}
+
+function validateStructOfField(
+  field: StructField,
+  idx: number,
+  fieldCount: number,
+): void {
+  if (field.Name === '') {
+    throw new Error(`reflect.StructOf: field ${idx} has no name`)
+  }
+  if (!isValidStructFieldName(field.Name)) {
+    throw new Error(`reflect.StructOf: field ${idx} has invalid name`)
+  }
+  if (!field.Type) {
+    throw new Error(`reflect.StructOf: field ${idx} has no type`)
+  }
+  if (field.Anonymous && field.PkgPath !== '') {
+    throw new Error(
+      `reflect.StructOf: field "${field.Name}" is anonymous but has PkgPath set`,
+    )
+  }
+  if (field.IsExported() && isUnexportedStructFieldName(field.Name)) {
+    throw new Error(
+      `reflect.StructOf: field "${field.Name}" is unexported but missing PkgPath`,
+    )
+  }
+  validateAnonymousStructOfField(field, idx, fieldCount)
+}
+
+function isValidStructFieldName(name: string): boolean {
+  return /^[\p{L}_][\p{L}\p{N}_]*$/u.test(name)
+}
+
+function isUnexportedStructFieldName(name: string): boolean {
+  const first = name.charCodeAt(0)
+  return name[0] === '_' || (first >= 97 && first <= 122)
+}
+
+function validateAnonymousStructOfField(
+  field: StructField,
+  idx: number,
+  fieldCount: number,
+): void {
+  if (!field.Anonymous) {
+    return
+  }
+  const typ = field.Type
+  if (typ.Kind() === Ptr) {
+    const elem = typ.Elem()
+    if (elem.Kind() === Ptr || elem.Kind() === Interface) {
+      throw new Error(
+        `reflect.StructOf: illegal embedded field type ${typ.String()}`,
+      )
+    }
+    if (embeddedMethodCount(typ) > 0) {
+      if (idx > 0) {
+        throw new Error(
+          'reflect: embedded type with methods not implemented if type is not first field',
+        )
+      }
+      if (fieldCount > 1) {
+        throw new Error(
+          'reflect: embedded type with methods not implemented if there is more than one field',
+        )
+      }
+    }
+    return
+  }
+  if (embeddedMethodCount(typ) > 0) {
+    if (idx > 0) {
+      throw new Error(
+        'reflect: embedded type with methods not implemented if type is not first field',
+      )
+    }
+    if (fieldCount > 1) {
+      throw new Error(
+        'reflect: embedded type with methods not implemented for non-pointer type',
+      )
+    }
+  }
+}
+
+function embeddedMethodCount(typ: Type): number {
+  if (typ.Kind() === Ptr) {
+    return Math.max(typ.NumMethod(), typ.Elem().NumMethod())
+  }
+  return typ.NumMethod()
+}
+
+function structTypeString(fields: StructFieldDescriptor[]): string {
+  if (fields.length === 0) {
+    return 'struct {}'
+  }
+  return `struct { ${fields.map(structFieldString).join('; ')} }`
+}
+
+function structFieldString(field: StructFieldDescriptor): string {
+  const tag = field.tag ? ` ${JSON.stringify(field.tag)}` : ''
+  const prefix = field.anonymous ? '' : `${field.name} `
+  return `${prefix}${field.type.String()}${tag}`
 }
 
 export function FuncOf(
@@ -3563,7 +3882,7 @@ function functionTypeInfoFromType(typ: Type): $.FunctionTypeInfo {
   return info
 }
 
-function typeInfoFromReflectType(typ: Type): string | $.TypeInfo {
+export function typeInfoFromReflectType(typ: Type): string | $.TypeInfo {
   if (typ.PkgPath() !== '' && typ.Name() !== '') {
     return typ.String()
   }
@@ -3619,6 +3938,41 @@ function typeInfoFromReflectType(typ: Type): string | $.TypeInfo {
       }
     case Func:
       return functionTypeInfoFromType(typ)
+    case Struct: {
+      const fields =
+        typ instanceof StructType ?
+          typ.descriptors()
+        : globalThis.Array.from({ length: typ.NumField() }, (_unused, idx) => {
+            const field = typ.Field(idx)
+            return {
+              name: field.Name,
+              key: structFieldStorageKey(typ, idx),
+              type: field.Type,
+              tag: field.Tag?.toString(),
+              pkgPath: field.PkgPath,
+              anonymous: field.Anonymous,
+              index: [...field.Index],
+              offset: field.Offset,
+              exported: field.IsExported(),
+            }
+          })
+      return {
+        kind: $.TypeKind.Struct,
+        name: typ.Name() === '' ? '' : typ.String(),
+        methods: [],
+        fields: fields.map((field) => ({
+          name: field.name,
+          key: field.key,
+          type: typeInfoFromReflectType(field.type),
+          ...(field.tag ? { tag: field.tag } : {}),
+          ...(field.pkgPath ? { pkgPath: field.pkgPath } : {}),
+          ...(field.anonymous ? { anonymous: true } : {}),
+          index: [...field.index],
+          offset: field.offset,
+          exported: field.exported,
+        })),
+      }
+    }
     default:
       return typ.String()
   }

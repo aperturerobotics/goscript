@@ -829,6 +829,32 @@ func TestOverrideParityVerifierAllowsRealMakeFuncUse(t *testing.T) {
 	}
 }
 
+func TestOverrideParityVerifierAllowsRealStructOfUse(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/structofparity\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"reflect\"",
+			"func main() {",
+			"  _ = reflect.StructOf([]reflect.StructField{{Name: \"Count\", Type: reflect.TypeFor[int]()}})",
+			"}",
+			"",
+		}, "\n"),
+	})
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      filepath.Join(t.TempDir(), "out"),
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	result, err := comp.CompilePackages(context.Background(), ".")
+	if err != nil {
+		t.Fatalf("expected reflect.StructOf use to compile: %v\n%#v", err, result.Diagnostics)
+	}
+}
+
 func compileParityFixture(
 	t *testing.T,
 	symbols map[string]overrideParityEntry,

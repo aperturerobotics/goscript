@@ -14,6 +14,7 @@ export {
   ChanOf,
   FuncOf,
   MakeFunc,
+  StructOf,
   ChanDir_String,
   RecvDir,
   SendDir,

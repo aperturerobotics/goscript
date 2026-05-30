@@ -1,0 +1,8 @@
+type: struct { Name string "json:\"name\""; Count int "json:\"count\"" }   2 true true
+json: {"name":"Ada","count":3}
+layout: 0 8 16 0
+visible: 4 Inner 2 0 0
+promoted: 9
+same: true
+different-pkg: false
+reflect_struct_of test finished

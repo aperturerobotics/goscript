@@ -13,6 +13,7 @@ import {
   PointerTo,
   Ptr,
   Slice,
+  Struct,
   String,
   Type,
   Uint,
@@ -25,6 +26,8 @@ import {
   Chan,
   BasicType,
   Invalid,
+  structFieldStorageKey,
+  typeInfoFromReflectType,
 } from './type.js'
 import {
   Pointer,
@@ -44,12 +47,13 @@ export function Zero(typ: Type | null): Value {
   if (typ === null) {
     return new Value() // Return invalid value for null type
   }
-  let zeroValue: ReflectValue
+  return new Value(zeroReflectValue(typ), typ)
+}
 
+function zeroReflectValue(typ: Type): ReflectValue {
   switch (typ.Kind()) {
     case Bool:
-      zeroValue = false
-      break
+      return false
     case Int:
     case Int8:
     case Int16:
@@ -63,21 +67,54 @@ export function Zero(typ: Type | null): Value {
     case Uintptr:
     case Float32:
     case Float64:
-      zeroValue = 0
-      break
+      return 0
     case String:
-      zeroValue = ''
-      break
+      return ''
     case Slice:
     case Array:
-      zeroValue = []
-      break
+      return []
+    case Struct:
+      return newStructValue(typ)
     default:
-      zeroValue = null
-      break
+      return null
   }
+}
 
-  return new Value(zeroValue, typ)
+function newStructValue(typ: Type): ReflectValue {
+  const StructValue = class {
+    public _fields: Record<string, $.VarRef<unknown>> = {}
+
+    public clone(): unknown {
+      const cloned = new StructValue()
+      for (const key of Object.keys(this._fields)) {
+        cloned._fields[key].value = this._fields[key].value
+      }
+      return cloned
+    }
+  }
+  Object.defineProperty(StructValue, '__reflectType', { value: typ })
+  Object.defineProperty(StructValue, '__typeInfo', {
+    value: typeInfoFromReflectType(typ),
+  })
+
+  const value = new StructValue() as unknown as {
+    _fields: Record<string, $.VarRef<ReflectValue>>
+  } & Record<string, unknown>
+  for (let i = 0; i < typ.NumField(); i++) {
+    const field = typ.Field(i)
+    const key = structFieldStorageKey(typ, i)
+    const ref = $.varRef<ReflectValue>(zeroReflectValue(field.Type))
+    value._fields[key] = ref
+    Object.defineProperty(value, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => ref.value,
+      set: (next: unknown) => {
+        ref.value = next as ReflectValue
+      },
+    })
+  }
+  return value
 }
 
 // Copy copies the contents of src to dst until either dst has been filled
@@ -143,9 +180,7 @@ export function New(typ: Type | null): Value {
     return new Value() // Return invalid value for null type
   }
   const ptrType = PointerTo(typ)
-  // For the pointer value, we'll use the zero value but with pointer type
-  // In a real implementation, this would be a pointer to the zero value
-  return new Value(null, ptrType) // null represents the pointer value
+  return new Value($.varRef(zeroReflectValue(typ)), ptrType)
 }
 
 // NewAt returns a Value representing a pointer to the value at p.

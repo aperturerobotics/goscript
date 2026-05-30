@@ -16,11 +16,10 @@ class Person {
     return this.Name
   }
 }
-;(Person as any).__typeInfo = { name: 'main.Person' }
 
 describe('reflect struct field access', () => {
   it('finds struct fields by name and index', async () => {
-    registerStructType(
+    ;(Person as any).__typeInfo = registerStructType(
       'main.Person',
       new Person(),
       [

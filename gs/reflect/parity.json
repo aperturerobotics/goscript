@@ -175,8 +175,7 @@
       "status": "real"
     },
     "StructOf": {
-      "status": "blocked",
-      "reason": "dynamic struct type construction requires runtime struct metadata synthesis that this override does not own yet"
+      "status": "real"
     },
     "StructTag": {
       "status": "real"
