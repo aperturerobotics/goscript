@@ -3031,7 +3031,7 @@ class StructType implements Type {
     throw new Error('reflect: call of reflect.Type.Bits on struct Type')
   }
 
-  static createTypeFromFieldInfo(ti: any): Type {
+  static createTypeFromFieldInfo(ti: any, seen = new Set<string>()): Type {
     if (typeof ti === 'string') {
       return basicTypeFromName(ti === 'number' ? 'int' : ti)
     } else if (ti && ti.kind) {
@@ -3044,21 +3044,21 @@ class StructType implements Type {
         case 'slice':
           if (ti.elemType) {
             return new SliceType(
-              StructType.createTypeFromFieldInfo(ti.elemType),
+              StructType.createTypeFromFieldInfo(ti.elemType, seen),
             )
           }
           return new SliceType(new BasicType(Invalid, 'unknown', 8))
         case 'pointer':
           if (ti.elemType) {
             return new PointerType(
-              StructType.createTypeFromFieldInfo(ti.elemType),
+              StructType.createTypeFromFieldInfo(ti.elemType, seen),
             )
           }
           return new PointerType(new BasicType(Invalid, 'unknown', 8))
         case 'interface':
-          return interfaceTypeFromInfo(ti)
+          return interfaceTypeFromInfo(ti, seen)
         case 'struct':
-          return new StructType(name, structFieldsFromTypeInfo(ti))
+          return new StructType(name, structFieldsFromTypeInfo(ti, seen))
         default:
           return new BasicType(Invalid, name, 8)
       }
@@ -3112,12 +3112,13 @@ function basicTypeFromName(name: string, typeName = ''): BasicType {
 
 function structFieldsFromTypeInfo(
   ti: $.StructTypeInfo,
+  seen = new Set<string>(),
 ): StructFieldDescriptor[] {
   return (ti.fields || []).map((fieldInfo, index) => {
     return {
       name: fieldInfo.name,
       key: structFieldRuntimeKey(fieldInfo),
-      type: typeFromTypeInfo(fieldInfo.type),
+      type: typeFromTypeInfoWithSeen(fieldInfo.type, seen),
       tag: fieldInfo.tag,
       pkgPath: fieldInfo.pkgPath ?? '',
       anonymous: fieldInfo.anonymous ?? false,
@@ -3889,81 +3890,87 @@ function typeFromTypeInfoWithSeen(
   if (typeof info === 'string') {
     const registered = builtinGetTypeByName(info)
     if (registered) {
-      const registeredName = registered.name ?? info
-      if (seen.has(registeredName)) {
-        return internType(
-          shallowTypeFromRegisteredInfo(registeredName, registered),
-        )
-      }
-      seen.add(registeredName)
       const typ = typeFromTypeInfoWithSeen(registered, seen)
-      seen.delete(registeredName)
       return internType(typ)
     }
-    return internType(StructType.createTypeFromFieldInfo(info))
+    return internType(StructType.createTypeFromFieldInfo(info, seen))
   }
+  const recursiveName = recursiveTypeInfoName(info)
+  if (recursiveName !== '') {
+    if (seen.has(recursiveName)) {
+      return internType(shallowTypeFromRegisteredInfo(recursiveName, info))
+    }
+    seen.add(recursiveName)
+    const typ = typeFromStructuredTypeInfoWithSeen(info, seen)
+    seen.delete(recursiveName)
+    return internType(typ)
+  }
+  return internType(typeFromStructuredTypeInfoWithSeen(info, seen))
+}
+
+function recursiveTypeInfoName(info: $.TypeInfo): string {
+  if (info.kind === $.TypeKind.Basic) {
+    return info.typeName ?? ''
+  }
+  return info.name ?? ''
+}
+
+function typeFromStructuredTypeInfoWithSeen(
+  info: $.TypeInfo,
+  seen: Set<string>,
+): Type {
   switch (info.kind) {
     case $.TypeKind.Array:
-      return internType(
-        new ArrayType(
-          typeFromTypeInfoWithSeen(
-            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
-            seen,
-          ),
-          info.length,
+      return new ArrayType(
+        typeFromTypeInfoWithSeen(
+          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          seen,
         ),
+        info.length,
       )
     case $.TypeKind.Basic:
-      return internType(StructType.createTypeFromFieldInfo(info))
+      return StructType.createTypeFromFieldInfo(info, seen)
     case $.TypeKind.Channel:
-      return internType(
-        new ChannelType(
-          typeFromTypeInfoWithSeen(
-            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
-            seen,
-          ),
-          chanDirFromTypeInfo(info.direction),
+      return new ChannelType(
+        typeFromTypeInfoWithSeen(
+          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          seen,
         ),
+        chanDirFromTypeInfo(info.direction),
       )
     case $.TypeKind.Function:
-      return internType(functionTypeFromInfo(info, seen))
+      return functionTypeFromInfo(info, seen)
     case $.TypeKind.Interface:
-      return internType(interfaceTypeFromInfo(info, seen))
+      return interfaceTypeFromInfo(info, seen)
     case $.TypeKind.Map:
-      return internType(
-        new MapType(
-          typeFromTypeInfoWithSeen(
-            info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
-            seen,
-          ),
-          typeFromTypeInfoWithSeen(
-            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
-            seen,
-          ),
+      return new MapType(
+        typeFromTypeInfoWithSeen(
+          info.keyType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          seen,
+        ),
+        typeFromTypeInfoWithSeen(
+          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          seen,
         ),
       )
     case $.TypeKind.Slice:
-      return internType(
-        new SliceType(
-          typeFromTypeInfoWithSeen(
-            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
-            seen,
-          ),
+      return new SliceType(
+        typeFromTypeInfoWithSeen(
+          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          seen,
         ),
       )
     case $.TypeKind.Struct:
-      return internType(StructType.createTypeFromFieldInfo(info))
+      return StructType.createTypeFromFieldInfo(info, seen)
     case $.TypeKind.Pointer:
-      return internType(
-        new PointerType(
-          typeFromTypeInfoWithSeen(
-            info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
-            seen,
-          ),
+      return new PointerType(
+        typeFromTypeInfoWithSeen(
+          info.elemType ?? { kind: $.TypeKind.Basic, name: 'unknown' },
+          seen,
         ),
       )
     default:
-      return internType(StructType.createTypeFromFieldInfo(info))
+      return StructType.createTypeFromFieldInfo(info, seen)
   }
 }
 

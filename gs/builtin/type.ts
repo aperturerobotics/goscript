@@ -334,26 +334,62 @@ function goTypeMatchesTypeInfo(goType: string, info: TypeInfo): boolean {
   )
 }
 
+interface TypeInfoComparisonState {
+  seenPairs: Set<string>
+  objectIDs: WeakMap<object, number>
+  nextObjectID: number
+}
+
+function newTypeInfoComparisonState(): TypeInfoComparisonState {
+  return {
+    seenPairs: new Set(),
+    objectIDs: new WeakMap(),
+    nextObjectID: 0,
+  }
+}
+
+function typeInfoComparisonID(
+  raw: string | TypeInfo,
+  normalized: TypeInfo,
+  state: TypeInfoComparisonState,
+): string {
+  const runtimeName = typeInfoRuntimeName(normalized)
+  if (runtimeName !== undefined) {
+    return `${normalized.kind}:${runtimeName}`
+  }
+  if (typeof raw === 'string') {
+    return `string:${raw}`
+  }
+  const existing = state.objectIDs.get(raw)
+  if (existing !== undefined) {
+    return `object:${existing}`
+  }
+  const id = state.nextObjectID
+  state.nextObjectID += 1
+  state.objectIDs.set(raw, id)
+  return `object:${id}`
+}
+
 function compareOptionalTypeInfo(
-  type1?: string | TypeInfo,
-  type2?: string | TypeInfo,
+  type1: string | TypeInfo | undefined,
+  type2: string | TypeInfo | undefined,
+  state: TypeInfoComparisonState,
 ): boolean {
   if (type1 === undefined && type2 === undefined) return true
   if (type1 === undefined || type2 === undefined) return false
-  // Assuming areTypeInfosIdentical will handle normalization if needed,
-  // but type1 and type2 here are expected to be direct fields from TypeInfo objects.
-  return areTypeInfosIdentical(type1, type2)
+  return areTypeInfosIdenticalWithSeen(type1, type2, state)
 }
 
 function areFuncParamOrResultArraysIdentical(
   arr1?: (string | TypeInfo)[],
   arr2?: (string | TypeInfo)[],
+  state = newTypeInfoComparisonState(),
 ): boolean {
   if (arr1 === undefined && arr2 === undefined) return true
   if (arr1 === undefined || arr2 === undefined) return false
   if (arr1.length !== arr2.length) return false
-  for (let i = 0; i < arr1.length; i++) {
-    if (!areTypeInfosIdentical(arr1[i], arr2[i])) {
+  for (const [index, typeInfo] of arr1.entries()) {
+    if (!areTypeInfosIdenticalWithSeen(typeInfo, arr2[index], state)) {
       return false
     }
   }
@@ -363,13 +399,14 @@ function areFuncParamOrResultArraysIdentical(
 function areFuncSignaturesIdentical(
   func1: FunctionTypeInfo,
   func2: FunctionTypeInfo,
+  state = newTypeInfoComparisonState(),
 ): boolean {
   if ((func1.isVariadic || false) !== (func2.isVariadic || false)) {
     return false
   }
   return (
-    areFuncParamOrResultArraysIdentical(func1.params, func2.params) &&
-    areFuncParamOrResultArraysIdentical(func1.results, func2.results)
+    areFuncParamOrResultArraysIdentical(func1.params, func2.params, state) &&
+    areFuncParamOrResultArraysIdentical(func1.results, func2.results, state)
   )
 }
 
@@ -377,44 +414,59 @@ export function areTypeInfosIdentical(
   type1InfoOrName: string | TypeInfo,
   type2InfoOrName: string | TypeInfo,
 ): boolean {
+  return areTypeInfosIdenticalWithSeen(
+    type1InfoOrName,
+    type2InfoOrName,
+    newTypeInfoComparisonState(),
+  )
+}
+
+function areTypeInfosIdenticalWithSeen(
+  type1InfoOrName: string | TypeInfo,
+  type2InfoOrName: string | TypeInfo,
+  state: TypeInfoComparisonState,
+): boolean {
   const t1Norm = normalizeTypeInfo(type1InfoOrName)
   const t2Norm = normalizeTypeInfo(type2InfoOrName)
 
-  if (t1Norm === t2Norm) return true // Object identity
+  if (t1Norm === t2Norm) return true
   if (t1Norm.kind !== t2Norm.kind) return false
 
-  // If types have names, the names must match for identity.
-  // If one has a name and the other doesn't, they are not identical.
   if (t1Norm.name !== t2Norm.name) return false
 
-  // If both are named and names match, for Basic, Struct, Interface, this is sufficient for identity.
   if (
-    t1Norm.name !== undefined /* && t2Norm.name is also defined and equal */
-  ) {
-    if (
-      t1Norm.kind === TypeKind.Basic ||
+    t1Norm.name !== undefined &&
+    (t1Norm.kind === TypeKind.Basic ||
       t1Norm.kind === TypeKind.Struct ||
-      t1Norm.kind === TypeKind.Interface
-    ) {
-      return true
-    }
+      t1Norm.kind === TypeKind.Interface)
+  ) {
+    return true
   }
-  // For other types (Pointer, Slice, etc.), or if both are anonymous (name is undefined),
-  // structural comparison is needed.
+
+  const pairKey = `${typeInfoComparisonID(
+    type1InfoOrName,
+    t1Norm,
+    state,
+  )}|${typeInfoComparisonID(type2InfoOrName, t2Norm, state)}`
+  if (state.seenPairs.has(pairKey)) {
+    return true
+  }
+  state.seenPairs.add(pairKey)
 
   switch (t1Norm.kind) {
     case TypeKind.Basic:
-      // Names matched if they were defined, or both undefined (which means true by t1Norm.name !== t2Norm.name being false)
       return true
     case TypeKind.Pointer:
       return compareOptionalTypeInfo(
         (t1Norm as PointerTypeInfo).elemType,
         (t2Norm as PointerTypeInfo).elemType,
+        state,
       )
     case TypeKind.Slice:
       return compareOptionalTypeInfo(
         (t1Norm as SliceTypeInfo).elemType,
         (t2Norm as SliceTypeInfo).elemType,
+        state,
       )
     case TypeKind.Array:
       return (
@@ -422,6 +474,7 @@ export function areTypeInfosIdentical(
         compareOptionalTypeInfo(
           (t1Norm as ArrayTypeInfo).elemType,
           (t2Norm as ArrayTypeInfo).elemType,
+          state,
         )
       )
     case TypeKind.Map:
@@ -429,37 +482,117 @@ export function areTypeInfosIdentical(
         compareOptionalTypeInfo(
           (t1Norm as MapTypeInfo).keyType,
           (t2Norm as MapTypeInfo).keyType,
+          state,
         ) &&
         compareOptionalTypeInfo(
           (t1Norm as MapTypeInfo).elemType,
           (t2Norm as MapTypeInfo).elemType,
+          state,
         )
       )
     case TypeKind.Channel:
       return (
-        // Ensure direction property exists before comparing, or handle undefined if it can be
         ((t1Norm as ChannelTypeInfo).direction || 'both') ===
           ((t2Norm as ChannelTypeInfo).direction || 'both') &&
         compareOptionalTypeInfo(
           (t1Norm as ChannelTypeInfo).elemType,
           (t2Norm as ChannelTypeInfo).elemType,
+          state,
         )
       )
     case TypeKind.Function:
       return areFuncSignaturesIdentical(
         t1Norm as FunctionTypeInfo,
         t2Norm as FunctionTypeInfo,
+        state,
       )
     case TypeKind.Struct:
+      if (t2Norm.kind !== TypeKind.Struct) {
+        return false
+      }
+      return areStructTypeInfosIdentical(t1Norm, t2Norm, state)
     case TypeKind.Interface:
-      // If we reach here, names were undefined (both anonymous) or names matched but was not Basic/Struct/Interface.
-      // For anonymous Struct/Interface, strict identity means full structural comparison.
-      // For now, we consider anonymous types not identical unless they are the same object (caught above).
-      // If they were named and matched, 'return true' was hit earlier for these kinds.
-      return false
+      if (t2Norm.kind !== TypeKind.Interface) {
+        return false
+      }
+      return areInterfaceTypeInfosIdentical(t1Norm, t2Norm, state)
     default:
       return false
   }
+}
+
+function areStructTypeInfosIdentical(
+  struct1: StructTypeInfo,
+  struct2: StructTypeInfo,
+  state: TypeInfoComparisonState,
+): boolean {
+  if (struct1.fields.length !== struct2.fields.length) {
+    return false
+  }
+  for (const [index, field1] of struct1.fields.entries()) {
+    const field2 = struct2.fields[index]
+    if (
+      field2 === undefined ||
+      field1.name !== field2.name ||
+      (field1.pkgPath ?? '') !== (field2.pkgPath ?? '') ||
+      (field1.tag ?? '') !== (field2.tag ?? '') ||
+      (field1.anonymous ?? false) !== (field2.anonymous ?? false) ||
+      !areTypeInfosIdenticalWithSeen(field1.type, field2.type, state)
+    ) {
+      return false
+    }
+  }
+  return true
+}
+
+function areInterfaceTypeInfosIdentical(
+  interface1: InterfaceTypeInfo,
+  interface2: InterfaceTypeInfo,
+  state: TypeInfoComparisonState,
+): boolean {
+  const methods1 = sortedMethodSignatures(interface1.methods)
+  const methods2 = sortedMethodSignatures(interface2.methods)
+  if (methods1.length !== methods2.length) {
+    return false
+  }
+  for (const [index, method1] of methods1.entries()) {
+    const method2 = methods2[index]
+    if (
+      method2 === undefined ||
+      method1.name !== method2.name ||
+      !areMethodArgArraysIdentical(method1.args, method2.args, state) ||
+      !areMethodArgArraysIdentical(method1.returns, method2.returns, state)
+    ) {
+      return false
+    }
+  }
+  return true
+}
+
+function sortedMethodSignatures(
+  methods: MethodSignature[] = [],
+): MethodSignature[] {
+  return [...methods].sort((left, right) => left.name.localeCompare(right.name))
+}
+
+function areMethodArgArraysIdentical(
+  args1: MethodArg[],
+  args2: MethodArg[],
+  state: TypeInfoComparisonState,
+): boolean {
+  if (args1.length !== args2.length) {
+    return false
+  }
+  for (const [index, arg1] of args1.entries()) {
+    const arg2 = args2[index]
+    if (
+      arg2 === undefined ||
+      !areTypeInfosIdenticalWithSeen(arg1.type, arg2.type, state)
+    ) {
+      return false
+    }
+  }
+  return true
 }
 
 /**

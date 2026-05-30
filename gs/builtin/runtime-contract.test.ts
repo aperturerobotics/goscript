@@ -692,6 +692,87 @@ describe('builtin runtime contract helpers', () => {
     expect(callGenericMethod(genericArgs, 'T', 'String', 12)).toBe('12')
   })
 
+  it('compares anonymous descriptors inside function assertions', () => {
+    const acceptsAny = functionValue((value: unknown) => String(value), {
+      kind: TypeKind.Function,
+      name: 'main.AcceptsAny',
+      params: [{ kind: TypeKind.Interface, methods: [] }],
+      results: [{ kind: TypeKind.Basic, name: 'string' }],
+    })
+
+    expect(
+      typeAssert<typeof acceptsAny>(acceptsAny, {
+        kind: TypeKind.Function,
+        name: 'main.AcceptsAny',
+        params: [{ kind: TypeKind.Interface, methods: [] }],
+        results: [{ kind: TypeKind.Basic, name: 'string' }],
+      }).ok,
+    ).toBe(true)
+
+    const acceptsStruct = functionValue(
+      (value: { Name: string }) => value.Name,
+      {
+        kind: TypeKind.Function,
+        name: 'main.AcceptsStruct',
+        params: [
+          {
+            kind: TypeKind.Struct,
+            methods: [],
+            fields: [
+              {
+                name: 'Name',
+                type: { kind: TypeKind.Basic, name: 'string' },
+                tag: 'json:"name"',
+              },
+            ],
+          },
+        ],
+        results: [{ kind: TypeKind.Basic, name: 'string' }],
+      },
+    )
+
+    expect(
+      typeAssert<typeof acceptsStruct>(acceptsStruct, {
+        kind: TypeKind.Function,
+        name: 'main.AcceptsStruct',
+        params: [
+          {
+            kind: TypeKind.Struct,
+            methods: [],
+            fields: [
+              {
+                name: 'Name',
+                type: { kind: TypeKind.Basic, name: 'string' },
+                tag: 'json:"name"',
+              },
+            ],
+          },
+        ],
+        results: [{ kind: TypeKind.Basic, name: 'string' }],
+      }).ok,
+    ).toBe(true)
+    expect(
+      typeAssert<typeof acceptsStruct>(acceptsStruct, {
+        kind: TypeKind.Function,
+        name: 'main.AcceptsStruct',
+        params: [
+          {
+            kind: TypeKind.Struct,
+            methods: [],
+            fields: [
+              {
+                name: 'Name',
+                type: { kind: TypeKind.Basic, name: 'string' },
+                tag: 'json:"other"',
+              },
+            ],
+          },
+        ],
+        results: [{ kind: TypeKind.Basic, name: 'string' }],
+      }).ok,
+    ).toBe(false)
+  })
+
   it('exposes channel helpers used by future lowering', async () => {
     const channel = makeChannel<number>(1, 0, 'both')
     expect(cap(channel)).toBe(1)

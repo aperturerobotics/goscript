@@ -128,6 +128,41 @@ describe('TypeFor', () => {
     expect(TypeOf(new RecursiveImpl()).AssignableTo(ifaceType)).toBe(true)
   })
 
+  it('handles recursive struct field metadata', () => {
+    class RecursiveNode {
+      public Next: RecursiveNode | null = null
+    }
+
+    const typeInfo = registerStructType(
+      'main.RecursiveNode',
+      new RecursiveNode(),
+      [],
+      RecursiveNode,
+      [
+        {
+          name: 'Next',
+          key: 'Next',
+          type: {
+            kind: TypeKind.Pointer,
+            elemType: 'main.RecursiveNode',
+          },
+        },
+      ],
+    )
+    Object.assign(RecursiveNode, { __typeInfo: typeInfo })
+
+    const nodeType = TypeFor({
+      T: { type: 'main.RecursiveNode', zero: () => new RecursiveNode() },
+    })
+
+    expect(nodeType.Kind()).toBe(Struct)
+    expect(nodeType.Field(0).Name).toBe('Next')
+    expect(nodeType.Field(0).Type.String()).toBe('*main.RecursiveNode')
+    expect(TypeOf(new RecursiveNode()).Field(0).Type.String()).toBe(
+      '*main.RecursiveNode',
+    )
+  })
+
   it('formats unnamed function signatures from type metadata', () => {
     const fnType = TypeFor({
       T: {
