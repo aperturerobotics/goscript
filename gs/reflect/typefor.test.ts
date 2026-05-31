@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
+  interfaceValue,
+  makeChannel,
   makeMap,
   mapGet,
   mapSet,
@@ -11,7 +13,9 @@ import {
   varRef,
 } from '../builtin/index.js'
 import { StructField } from './types.js'
+import { SelectCase, SelectRecv } from './types.js'
 import {
+  Chan,
   Int,
   Ptr,
   Struct,
@@ -21,7 +25,7 @@ import {
   Uint64,
   ValueOf,
 } from './type.js'
-import { Indirect, New, Zero } from './value.js'
+import { Indirect, New, Select, Zero } from './value.js'
 
 describe('TypeFor', () => {
   it('exposes StructField PkgPath and exported semantics', () => {
@@ -182,6 +186,22 @@ describe('TypeFor', () => {
     expect(elem.Kind()).toBe(Uint64)
     elem.SetUint(15)
     expect(target.value).toBe(15)
+  })
+
+  it('preserves channel type metadata on interface boxes', () => {
+    const ch = makeChannel<{}>(0, {}, 'both')
+    const chanValue = ValueOf(interfaceValue(ch, '<-chan struct{}'))
+
+    expect(chanValue.Type().Kind()).toBe(Chan)
+    expect(chanValue.Type().String()).toBe('<-chan struct {}')
+    expect(chanValue.Type().Elem().Kind()).toBe(Struct)
+
+    const [chosen, recv, ok] = Select([
+      new SelectCase({ Dir: SelectRecv, Chan: chanValue }),
+    ])
+    expect(chosen).toBe(0)
+    expect(ok).toBe(true)
+    expect(recv.Type().String()).toBe('struct {}')
   })
 
   it('formats literal interface methods from type metadata', () => {

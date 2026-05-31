@@ -4,6 +4,7 @@
 import * as goscriptRuntime from '@goscript/builtin'
 import { ready as wasmReady, compileGoToTypeScript } from './goscript-wasm.js'
 import { stripGeneratedMainGuard } from './generated-code.js'
+import { formatCompileError } from './diagnostics.js'
 import { packages as goscriptPackages } from 'virtual:goscript-packages'
 
 // Make runtime available globally for executed code
@@ -351,7 +352,7 @@ async function compileCode() {
     outputBody.textContent = 'Compiled successfully!'
     outputBody.className = 'panel-body output-panel'
   } catch (err) {
-    outputBody.textContent = `Compile Error: ${err.message}`
+    outputBody.textContent = `Compile Error: ${formatCompileError(err)}`
     outputBody.className = 'panel-body output-panel error'
   }
 }
@@ -372,7 +373,7 @@ async function runCode() {
         const tsCode = await compileGoToTypeScript(goCode, 'main')
         tsEditor.setValue(tsCode)
       } catch (err) {
-        outputBody.textContent = `Compile Error: ${err.message}`
+        outputBody.textContent = `Compile Error: ${formatCompileError(err)}`
         outputBody.className = 'panel-body output-panel error'
         return
       }

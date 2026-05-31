@@ -76,6 +76,14 @@ interface GoSliceObject<T> {
 const addressStride = 0x100000000
 let nextAddressBase = 1
 const addressBases = new WeakMap<object, number>()
+const byteAddressBases = new WeakMap<object, number>()
+const byteAddressSources = new globalThis.Map<number, ByteAddressSource>()
+
+interface ByteAddressSource {
+  byteLength: number
+  getByte(offset: number): number
+  setByte(offset: number, value: number): void
+}
 
 /**
  * SliceProxy is a proxy object for complex slices
@@ -129,9 +137,7 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
         if (index < meta.length) {
           return meta.backing[meta.offset + index]
         }
-        throw new Error(
-          `Slice index out of range: ${index} >= ${meta.length}`,
-        )
+        throw new Error(`Slice index out of range: ${index} >= ${meta.length}`)
       }
 
       if (prop === 'length') {
@@ -153,9 +159,7 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
           target[index] = value // Also update the proxy target for consistency
           return true
         }
-        throw new Error(
-          `Slice index out of range: ${index} >= ${meta.length}`,
-        )
+        throw new Error(`Slice index out of range: ${index} >= ${meta.length}`)
       }
 
       if (prop === 'length' || prop === '__meta__') {
@@ -329,7 +333,12 @@ export const makeSlice = <T>(
       return new Uint8Array(length) as Slice<T>
     }
 
-    return byteSliceView(new Uint8Array(actualCapacity), 0, length, actualCapacity) as Slice<T>
+    return byteSliceView(
+      new Uint8Array(actualCapacity),
+      0,
+      length,
+      actualCapacity,
+    ) as Slice<T>
   }
 
   const actualCapacity = capacity === undefined ? length : capacity
@@ -535,8 +544,7 @@ export function goSlice<T>( // T can be number for Uint8Array case
   if (s instanceof Uint8Array) {
     const meta = byteSliceMeta(s)
     const metaBacking = meta?.backing as unknown
-    const backing =
-      metaBacking instanceof Uint8Array ? metaBacking : s
+    const backing = metaBacking instanceof Uint8Array ? metaBacking : s
     const baseOffset = meta?.offset ?? 0
     const baseCapacity = meta?.capacity ?? s.length
     const actualLow = low ?? 0
@@ -1003,8 +1011,7 @@ export function append<T>(
 function appendByteSlice(slice: Uint8Array, elements: any[]): Uint8Array {
   const meta = byteSliceMeta(slice)
   const metaBacking = meta?.backing as unknown
-  const backing =
-    metaBacking instanceof Uint8Array ? metaBacking : slice
+  const backing = metaBacking instanceof Uint8Array ? metaBacking : slice
   const offset = meta?.offset ?? 0
   const oldLength = slice.length
   const oldCapacity = meta?.capacity ?? oldLength
@@ -1032,12 +1039,18 @@ function byteElementLength(item: any): number {
     return len(item as Slice<any>)
   }
   if (typeof item !== 'number') {
-    throw new Error('Cannot produce Uint8Array: appended elements contain non-numbers.')
+    throw new Error(
+      'Cannot produce Uint8Array: appended elements contain non-numbers.',
+    )
   }
   return 1
 }
 
-function writeByteElements(dst: Uint8Array, offset: number, elements: any[]): void {
+function writeByteElements(
+  dst: Uint8Array,
+  offset: number,
+  elements: any[],
+): void {
   let cursor = offset
   for (const item of elements) {
     if (item instanceof Uint8Array) {
@@ -1060,7 +1073,9 @@ function writeByteElements(dst: Uint8Array, offset: number, elements: any[]): vo
       continue
     }
     if (typeof item !== 'number') {
-      throw new Error('Cannot produce Uint8Array: appended elements contain non-numbers.')
+      throw new Error(
+        'Cannot produce Uint8Array: appended elements contain non-numbers.',
+      )
     }
     dst[cursor] = item
     cursor++
@@ -1394,6 +1409,8 @@ export function sliceFromOwnedPointer<T>(
 export function arrayPointerFromIndexRef<T>(
   ref: VarRef<T>,
   length: number,
+  sourceElementByteSize = 1,
+  targetElementByteSize = sourceElementByteSize,
 ): VarRef<Slice<T> | T[] | Uint8Array> {
   const collection = ref.__goCollection as
     | Slice<T>
@@ -1406,12 +1423,25 @@ export function arrayPointerFromIndexRef<T>(
     )
   }
   const index = ref.__goIndex ?? 0
-  return varRef(
-    goSlice(collection as any, index, index + length) as
-      | Slice<T>
-      | T[]
-      | Uint8Array,
-  )
+  const view =
+    targetElementByteSize === 1 && sourceElementByteSize > 1 ?
+      byteArrayFromAddress(
+        indexByteAddress(collection, index, sourceElementByteSize),
+        length,
+      )
+    : (goSlice(collection as any, index, index + length) as
+        | Slice<T>
+        | T[]
+        | Uint8Array)
+  return {
+    get value() {
+      return view as Slice<T> | T[] | Uint8Array
+    },
+    set value(value: Slice<T> | T[] | Uint8Array) {
+      copy(view as any, value as any)
+    },
+    __isVarRef: true,
+  }
 }
 
 /**
@@ -1458,6 +1488,181 @@ export function indexAddress<T>(
     addressBases.set(backing, base)
   }
   return base + backingIndex
+}
+
+function uintElementValue(value: unknown, byteSize: number): bigint {
+  const bits = BigInt(byteSize * 8)
+  if (typeof value === 'bigint') {
+    return BigInt.asUintN(Number(bits), value)
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return BigInt.asUintN(Number(bits), BigInt(Math.trunc(value)))
+  }
+  return 0n
+}
+
+function uintElementResult(value: bigint, byteSize: number): number {
+  const normalized = BigInt.asUintN(byteSize * 8, value)
+  if (normalized <= BigInt(Number.MAX_SAFE_INTEGER)) {
+    return Number(normalized)
+  }
+  return normalized as unknown as number
+}
+
+function byteAddressBase(backing: object, source: ByteAddressSource): number {
+  let base = byteAddressBases.get(backing)
+  if (base === undefined) {
+    base = nextAddressBase * addressStride
+    nextAddressBase++
+    byteAddressBases.set(backing, base)
+  }
+  byteAddressSources.set(base, source)
+  return base
+}
+
+function numericByteSource(
+  backing: number[],
+  elementByteSize: number,
+): ByteAddressSource {
+  const byteSize = Math.max(1, Math.trunc(elementByteSize))
+  return {
+    byteLength: backing.length * byteSize,
+    getByte(offset: number): number {
+      const elementIndex = Math.trunc(offset / byteSize)
+      const byteOffset = offset % byteSize
+      const value = uintElementValue(backing[elementIndex], byteSize)
+      return Number((value >> BigInt(byteOffset * 8)) & 0xffn)
+    },
+    setByte(offset: number, value: number): void {
+      const elementIndex = Math.trunc(offset / byteSize)
+      const byteOffset = offset % byteSize
+      const shift = BigInt(byteOffset * 8)
+      const mask = 0xffn << shift
+      const current = uintElementValue(backing[elementIndex], byteSize)
+      const next = (current & ~mask) | ((BigInt(value) & 0xffn) << shift)
+      backing[elementIndex] = uintElementResult(next, byteSize)
+    },
+  }
+}
+
+/**
+ * indexByteAddress returns a byte-addressed synthetic address for unsafe
+ * uintptr arithmetic rooted at a slice or array element.
+ */
+export function indexByteAddress<T>(
+  collection: Slice<T> | T[] | Uint8Array,
+  index: number,
+  elementByteSize: number,
+): number {
+  if (collection === null || collection === undefined) {
+    throw new Error('runtime error: index on nil or undefined collection')
+  }
+
+  if (collection instanceof Uint8Array) {
+    if (index < 0 || index >= collection.length) {
+      throw new Error(
+        `runtime error: index out of range [${index}] with length ${collection.length}`,
+      )
+    }
+    const view = new Uint8Array(collection.buffer)
+    const base = byteAddressBase(collection.buffer, {
+      byteLength: view.length,
+      getByte(offset: number): number {
+        return view[offset]
+      },
+      setByte(offset: number, value: number): void {
+        view[offset] = value
+      },
+    })
+    return base + collection.byteOffset + index
+  }
+
+  if (isComplexSlice(collection)) {
+    if (index < 0 || index >= collection.__meta__.length) {
+      throw new Error(
+        `runtime error: index out of range [${index}] with length ${collection.__meta__.length}`,
+      )
+    }
+    const backing = collection.__meta__.backing as unknown as number[]
+    const byteSize = Math.max(1, Math.trunc(elementByteSize))
+    const base = byteAddressBase(backing, numericByteSource(backing, byteSize))
+    return base + (collection.__meta__.offset + index) * byteSize
+  }
+
+  if (Array.isArray(collection)) {
+    if (index < 0 || index >= collection.length) {
+      throw new Error(
+        `runtime error: index out of range [${index}] with length ${collection.length}`,
+      )
+    }
+    const byteSize = Math.max(1, Math.trunc(elementByteSize))
+    const base = byteAddressBase(
+      collection,
+      numericByteSource(collection as unknown as number[], byteSize),
+    )
+    return base + index * byteSize
+  }
+
+  throw new Error('runtime error: index on unsupported type')
+}
+
+/**
+ * unsafePointerRef resolves a byte-addressed synthetic unsafe pointer created
+ * by indexByteAddress back to an addressable byte reference.
+ */
+export function unsafePointerRef<T>(address: number | bigint): VarRef<T> {
+  const numericAddress = Number(address)
+  const base = Math.floor(numericAddress / addressStride) * addressStride
+  const source = byteAddressSources.get(base)
+  if (source === undefined) {
+    throw new Error(
+      'unsafe pointer dereference is not supported in JavaScript/TypeScript',
+    )
+  }
+  const offset = numericAddress - base
+  if (offset < 0 || offset >= source.byteLength) {
+    throw new Error('runtime error: unsafe pointer address out of range')
+  }
+  return {
+    get value(): T {
+      return source.getByte(offset) as T
+    },
+    set value(value: T) {
+      source.setByte(offset, value as number)
+    },
+    __isVarRef: true,
+  }
+}
+
+function byteArrayFromAddress(
+  address: number | bigint,
+  length: number,
+): number[] {
+  const start = Number(address)
+  const target = new Array<number>(length)
+  return new Proxy(target, {
+    get(arrayTarget, prop, receiver) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index >= length) {
+          throw new Error(`Slice index out of range: ${index} >= ${length}`)
+        }
+        return unsafePointerRef<number>(start + index).value
+      }
+      return Reflect.get(arrayTarget, prop, receiver)
+    },
+    set(arrayTarget, prop, value, receiver) {
+      const index = sliceIndexProperty(prop)
+      if (index >= 0) {
+        if (index >= length) {
+          throw new Error(`Slice index out of range: ${index} >= ${length}`)
+        }
+        unsafePointerRef<number>(start + index).value = value
+        return true
+      }
+      return Reflect.set(arrayTarget, prop, value, receiver)
+    },
+  })
 }
 
 /**

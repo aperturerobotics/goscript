@@ -423,6 +423,7 @@ export class UnmarshalState {
   private path: string[]
   private objectEntries: Array<[string, unknown]> | null = null
   private objectIndex = 0
+  private objectValue: unknown = undefined
 
   constructor(
     init?: Partial<{
@@ -612,16 +613,21 @@ export class UnmarshalState {
   }
 
   public ReadObjectField(): string {
-    const record = recordValue(this.value)
-    if (record == null) {
-      this.SetErrorf('expected JSON object')
-      return ''
-    }
     if (this.objectEntries == null) {
+      const record = recordValue(this.value)
+      if (record == null) {
+        this.SetErrorf('expected JSON object')
+        return ''
+      }
       this.objectEntries = Object.entries(record)
       this.objectIndex = 0
+      this.objectValue = this.value
     }
     if (this.objectIndex >= this.objectEntries.length) {
+      this.value = this.objectValue
+      this.objectEntries = null
+      this.objectIndex = 0
+      this.objectValue = undefined
       return ''
     }
     const [key, value] = this.objectEntries[this.objectIndex]
@@ -747,22 +753,22 @@ export class UnmarshalState {
 
   public WhatIsNext(): number {
     if (this.value === null) {
-      return 0
-    }
-    if (Array.isArray(this.value)) {
-      return 1
-    }
-    if (typeof this.value === 'object') {
-      return 2
-    }
-    if (typeof this.value === 'string') {
       return 3
     }
+    if (Array.isArray(this.value)) {
+      return 5
+    }
+    if (typeof this.value === 'object') {
+      return 6
+    }
+    if (typeof this.value === 'string') {
+      return 1
+    }
     if (typeof this.value === 'number') {
-      return 4
+      return 2
     }
     if (typeof this.value === 'boolean') {
-      return 5
+      return 4
     }
     return 0
   }

@@ -59,7 +59,7 @@ export class Broadcast {
 		using __defer = new $.DisposableStack()
 		let locked = $.varRef($.markAsStructValue($.cloneStructValue(await Broadcast.prototype.Lock.call(c))))
 		__defer.defer(() => { locked.value.Unlock() })
-		await cb!(Broadcast.prototype.broadcastLockedFunc.call(c), Broadcast.prototype.waitChLockedFunc.call(c))
+		await cb!(((__receiver) => () => __receiver.Broadcast())(locked.value), ((__receiver) => () => __receiver.WaitCh())(locked.value))
 	}
 
 	public async HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null) => void) | null): globalThis.Promise<void> {
@@ -70,7 +70,8 @@ export class Broadcast {
 				await $.pointerValue<Broadcast>(c).mtx.Lock()
 			}
 			__defer.defer(() => { $.pointerValue<Broadcast>(c).mtx.Unlock() })
-			await cb!(Broadcast.prototype.broadcastLockedFunc.call(c), Broadcast.prototype.waitChLockedFunc.call(c))
+			let locked = $.varRef($.markAsStructValue(new __goscript_locked.Locked({b: c})))
+			await cb!(((__receiver) => () => __receiver.Broadcast())(locked.value), ((__receiver) => () => __receiver.WaitCh())(locked.value))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [] } as $.FunctionTypeInfo))
 
 		if ($.pointerValue<Broadcast>(c).mtx.TryLock()) {
@@ -96,7 +97,7 @@ export class Broadcast {
 			return false
 		}
 		__defer.defer(() => { locked.value.Unlock() })
-		await cb!(Broadcast.prototype.broadcastLockedFunc.call(c), Broadcast.prototype.waitChLockedFunc.call(c))
+		await cb!(((__receiver) => () => __receiver.Broadcast())(locked.value), ((__receiver) => () => __receiver.WaitCh())(locked.value))
 		return true
 	}
 
@@ -123,13 +124,11 @@ export class Broadcast {
 			let done: boolean = false
 			let err: $.GoError = null as $.GoError
 			let locked = $.varRef($.markAsStructValue($.cloneStructValue(await Broadcast.prototype.Lock.call(c))))
-			let broadcast: (() => void) | null = Broadcast.prototype.broadcastLockedFunc.call(c)
-			let getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null = Broadcast.prototype.waitChLockedFunc.call(c)
-			let __goscriptTuple1: any = await cb!(broadcast, getWaitCh)
+			let __goscriptTuple1: any = await cb!(((__receiver) => () => __receiver.Broadcast())(locked.value), ((__receiver) => () => __receiver.WaitCh())(locked.value))
 			done = __goscriptTuple1[0]
 			err = __goscriptTuple1[1]
 			if (!done && (err == null)) {
-				waitCh = await getWaitCh!()
+				waitCh = locked.value.WaitCh()
 			}
 			locked.value.Unlock()
 
@@ -161,32 +160,10 @@ export class Broadcast {
 		throw new globalThis.Error("goscript: unreachable return")
 	}
 
-	public broadcastLockedFunc(): (() => void) | null {
-		const c: Broadcast | $.VarRef<Broadcast> | null = this
-		return $.functionValue(async (): globalThis.Promise<void> => {
-			if ($.pointerValue<Broadcast>(c).ch == null) {
-				return
-			}
-			let ch: broadcastWaitCh | $.VarRef<broadcastWaitCh> | null = $.pointerValue<Broadcast>(c).ch
-			$.pointerValue<Broadcast>(c).ch = null
-			await broadcastWaitCh.prototype.close.call(ch)
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo))
-	}
-
-	public waitChLockedFunc(): (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null {
-		const c: Broadcast | $.VarRef<Broadcast> | null = this
-		return $.functionValue((): $.Channel<{}> | null => {
-			if ($.pointerValue<Broadcast>(c).ch == null) {
-				$.pointerValue<Broadcast>(c).ch = newBroadcastWaitCh()
-			}
-			return $.pointerValue<broadcastWaitCh>($.pointerValue<Broadcast>(c).ch).ch
-		}, ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo))
-	}
-
 	static __typeInfo = $.registerStructType(
 		"broadcast.Broadcast",
 		() => new Broadcast(),
-		[{ name: "HoldLock", args: [{ name: "cb", type: ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo) }], returns: [] }, { name: "HoldLockMaybeAsync", args: [{ name: "cb", type: ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo) }], returns: [] }, { name: "Lock", args: [], returns: [{ name: "_r0", type: "broadcast.Locked" }] }, { name: "TryHoldLock", args: [{ name: "cb", type: ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: "broadcast.Locked" }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Wait", args: [{ name: "ctx", type: "context.Context" }, { name: "cb", type: ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)], results: [{ kind: $.TypeKind.Basic, name: "bool" }, "error"] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }, { name: "broadcastLockedFunc", args: [], returns: [{ name: "_r0", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }] }, { name: "waitChLockedFunc", args: [], returns: [{ name: "_r0", type: ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo) }] }],
+		[{ name: "HoldLock", args: [{ name: "cb", type: ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo) }], returns: [] }, { name: "HoldLockMaybeAsync", args: [{ name: "cb", type: ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo) }], returns: [] }, { name: "Lock", args: [], returns: [{ name: "_r0", type: "broadcast.Locked" }] }, { name: "TryHoldLock", args: [{ name: "cb", type: ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)], results: [] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: "broadcast.Locked" }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Wait", args: [{ name: "ctx", type: "context.Context" }, { name: "cb", type: ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)], results: [{ kind: $.TypeKind.Basic, name: "bool" }, "error"] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }],
 		Broadcast,
 		[{ name: "mtx", key: "mtx", type: "sync.Mutex", pkgPath: "github.com/aperturerobotics/util/broadcast", index: [0], offset: 0, exported: false }, { name: "ch", key: "ch", type: { kind: $.TypeKind.Pointer, elemType: "broadcast.broadcastWaitCh" }, pkgPath: "github.com/aperturerobotics/util/broadcast", index: [1], offset: 8, exported: false }]
 	)

@@ -28,4 +28,27 @@ describe('GoScript Compiler API', () => {
     expect(generated).toContain('export async function main(): globalThis.Promise<void>')
     expect(generated).toContain('$.println("api")')
   }, 30000)
+
+  it('inherits positioned compiler diagnostics on stderr', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'goscript-api-diagnostic-'))
+    const output = join(dir, 'output')
+    await mkdir(dir, { recursive: true })
+    await writeFile(join(dir, 'go.mod'), 'module example.test/apierr\n\ngo 1.25.3\n')
+    await writeFile(join(dir, 'main.go'), [
+      'package apierr',
+      '',
+      'func Make[T ~[]int]() T {',
+      '  return make(T, 1)',
+      '}',
+      '',
+    ].join('\n'))
+
+    await expect(compile({
+      pkg: '.',
+      output,
+      dir,
+    })).rejects.toMatchObject({
+      stderr: expect.stringContaining('main.go:4:'),
+    })
+  }, 30000)
 })

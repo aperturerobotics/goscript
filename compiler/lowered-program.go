@@ -59,13 +59,14 @@ type loweredDecl struct {
 }
 
 type loweredStruct struct {
-	exported      bool
-	indexExported bool
-	name          string
-	typeName      string
-	cloneMethod   string
-	fields        []loweredStructField
-	methods       []loweredFunction
+	exported             bool
+	indexExported        bool
+	protobufPreserveJSON bool
+	name                 string
+	typeName             string
+	cloneMethod          string
+	fields               []loweredStructField
+	methods              []loweredFunction
 }
 
 type loweredStructField struct {
@@ -90,6 +91,7 @@ type loweredFunction struct {
 	indexExported    bool
 	init             bool
 	async            bool
+	sourcePath       string
 	name             string
 	typeParams       []string
 	runtimeName      string

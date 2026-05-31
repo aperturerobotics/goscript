@@ -113,6 +113,24 @@ describe('protobuf-go-lite/json override', () => {
     ])
   })
 
+  it('matches jsoniter value types while reading object fields', () => {
+    const state = NewUnmarshalState(
+      jsonBytes('{"id":"step","config":{"kind":"inline"}}'),
+      DefaultUnmarshalerConfig,
+    )
+
+    expect(state?.ReadObjectField()).toBe('id')
+    expect(state?.WhatIsNext()).toBe(1)
+    expect(state?.ReadString()).toBe('step')
+    expect(state?.ReadObjectField()).toBe('config')
+    expect(state?.WhatIsNext()).toBe(6)
+    expect(
+      new TextDecoder().decode(new Uint8Array(state?.SkipAndReturnBytes())),
+    ).toBe('{"kind":"inline"}')
+    expect(state?.ReadObjectField()).toBe('')
+    expect(state?.Err()).toBeNull()
+  })
+
   it('tracks unmarshaled field masks through nested fields', () => {
     const state = NewUnmarshalState(jsonBytes('{}'), DefaultUnmarshalerConfig)
     state?.AddField('top')

@@ -77,10 +77,18 @@ export async function compileGoToTypeScript(goSource, packageName = 'main') {
   const result = window.goscriptCompile(goSource, packageName)
 
   if (result.error) {
-    throw new Error(result.error)
+    throw compileErrorFromResult(result)
   }
 
   return result.output
+}
+
+export function compileErrorFromResult(result) {
+  const error = new Error(result?.error || 'GoScript compilation failed')
+  error.diagnostics = Array.isArray(result?.diagnostics)
+    ? result.diagnostics
+    : []
+  return error
 }
 
 // Check if the WASM compiler is ready

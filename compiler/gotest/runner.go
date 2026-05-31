@@ -1531,21 +1531,5 @@ func diagnosticsHaveErrors(diagnostics []compiler.Diagnostic) bool {
 }
 
 func diagnosticsSummary(diagnostics []compiler.Diagnostic) string {
-	var b strings.Builder
-	for idx, diagnostic := range diagnostics {
-		if idx != 0 {
-			b.WriteString("; ")
-		}
-		if diagnostic.Code != "" {
-			b.WriteString(diagnostic.Code)
-			b.WriteString(": ")
-		}
-		b.WriteString(diagnostic.Message)
-		if diagnostic.Detail != "" {
-			b.WriteString(" (")
-			b.WriteString(diagnostic.Detail)
-			b.WriteString(")")
-		}
-	}
-	return b.String()
+	return compiler.FormatDiagnostics(diagnostics)
 }

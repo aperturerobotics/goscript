@@ -4,6 +4,7 @@ import (
 	"context"
 	"go/ast"
 	"go/parser"
+	"go/scanner"
 	"go/token"
 	"go/types"
 	"strconv"
@@ -29,7 +30,9 @@ func CompileSourceToTypeScript(source string, packageName string) (string, error
 		return "", NewCompileError(diagnostics)
 	}
 
-	program, loweringDiagnostics := service.loweringOwner.Build(ctx, model)
+	program, loweringDiagnostics := service.loweringOwner.Build(ctx, model, LoweringOptions{
+		DisplayRoot: ".",
+	})
 	diagnostics = append(diagnostics, loweringDiagnostics...)
 	if diagnosticsHaveErrors(diagnostics) {
 		return "", NewCompileError(diagnostics)
@@ -79,10 +82,11 @@ func browserSourceGraph(source string, packageName string) (*PackageGraph, []Dia
 			Code:     "goscript/wasm:parse",
 			Message:  "browser source compilation failed to parse Go source",
 			Detail:   err.Error(),
+			Position: browserParseDiagnosticPosition(fset, err),
 		}}
 	}
 	if len(file.Imports) != 0 {
-		return nil, []Diagnostic{browserImportsUnsupportedDiagnostic(file)}
+		return nil, []Diagnostic{browserImportsUnsupportedDiagnostic(fset, file)}
 	}
 
 	pkgPath := strings.TrimSpace(packageName)
@@ -106,23 +110,27 @@ func browserSourceGraph(source string, packageName string) (*PackageGraph, []Dia
 	config := types.Config{
 		Sizes: sizes,
 		Error: func(err error) {
-			typeDiagnostics = append(typeDiagnostics, Diagnostic{
+			diag := Diagnostic{
 				Severity: DiagnosticSeverityError,
 				Code:     "goscript/wasm:typecheck",
 				Message:  "browser source compilation failed to type-check Go source",
 				Detail:   err.Error(),
-			})
+			}
+			diag.Position = browserTypeCheckDiagnosticPosition(fset, err)
+			typeDiagnostics = append(typeDiagnostics, diag)
 		},
 	}
 	typedPkg, err := config.Check(pkgPath, fset, []*ast.File{file}, info)
 	if err != nil {
 		if len(typeDiagnostics) == 0 {
-			typeDiagnostics = append(typeDiagnostics, Diagnostic{
+			diag := Diagnostic{
 				Severity: DiagnosticSeverityError,
 				Code:     "goscript/wasm:typecheck",
 				Message:  "browser source compilation failed to type-check Go source",
 				Detail:   err.Error(),
-			})
+			}
+			diag.Position = browserTypeCheckDiagnosticPosition(fset, err)
+			typeDiagnostics = append(typeDiagnostics, diag)
 		}
 		return nil, typeDiagnostics
 	}
@@ -161,9 +169,13 @@ func browserSourceGraph(source string, packageName string) (*PackageGraph, []Dia
 	}, nil
 }
 
-func browserImportsUnsupportedDiagnostic(file *ast.File) Diagnostic {
+func browserImportsUnsupportedDiagnostic(fset *token.FileSet, file *ast.File) Diagnostic {
 	imports := make([]string, 0, len(file.Imports))
+	var importPos token.Pos
 	for _, spec := range file.Imports {
+		if !importPos.IsValid() {
+			importPos = spec.Pos()
+		}
 		importPath := spec.Path.Value
 		if unquoted, err := strconv.Unquote(importPath); err == nil {
 			importPath = unquoted
@@ -175,5 +187,43 @@ func browserImportsUnsupportedDiagnostic(file *ast.File) Diagnostic {
 		Code:     "goscript/wasm:imports-unsupported",
 		Message:  "browser source compilation does not support imports yet",
 		Detail:   "Use goscript compile --package . from inside a Go module for imported packages. Imports: " + strings.Join(imports, ", "),
+		Position: browserTokenDiagnosticPosition(fset, importPos),
 	}
+}
+
+func browserParseDiagnosticPosition(fset *token.FileSet, err error) *DiagnosticPosition {
+	switch typed := err.(type) {
+	case scanner.ErrorList:
+		if len(typed) != 0 {
+			return diagnosticPositionFromSource(sourcePosFromTokenPosition(typed[0].Pos), "")
+		}
+	case *scanner.ErrorList:
+		if typed != nil && len(*typed) != 0 {
+			return diagnosticPositionFromSource(sourcePosFromTokenPosition((*typed)[0].Pos), "")
+		}
+	case *scanner.Error:
+		if typed != nil {
+			return diagnosticPositionFromSource(sourcePosFromTokenPosition(typed.Pos), "")
+		}
+	}
+	return browserTokenDiagnosticPosition(fset, token.NoPos)
+}
+
+func browserTypeCheckDiagnosticPosition(fset *token.FileSet, err error) *DiagnosticPosition {
+	switch typed := err.(type) {
+	case types.Error:
+		return browserTokenDiagnosticPosition(fset, typed.Pos)
+	case *types.Error:
+		if typed != nil {
+			return browserTokenDiagnosticPosition(fset, typed.Pos)
+		}
+	}
+	return nil
+}
+
+func browserTokenDiagnosticPosition(fset *token.FileSet, pos token.Pos) *DiagnosticPosition {
+	if fset == nil || !pos.IsValid() {
+		return nil
+	}
+	return diagnosticPositionFromSource(sourcePosFromTokenPosition(fset.Position(pos)), "")
 }

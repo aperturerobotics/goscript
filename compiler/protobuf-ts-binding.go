@@ -66,7 +66,7 @@ func protobufTypeScriptBindings(semPkg *semanticPackage, options LoweringOptions
 			sourcePath:   sourcePath,
 			outputName:   strings.TrimSuffix(filepath.Base(sourcePath), ".go") + ".ts",
 			importSource: importSource,
-			messageNames: protobufTypeScriptBindingMessageNames(syntax),
+			messageNames: protobufTypeScriptBindingMessageNames(syntax, tsPath),
 			hasOneof:     protobufTypeScriptBindingHasOneof(syntax),
 		}
 	}
@@ -158,11 +158,12 @@ func protobufTypeScriptBindingHasOneof(file *ast.File) bool {
 	return false
 }
 
-func protobufTypeScriptBindingMessageNames(file *ast.File) map[string]string {
+func protobufTypeScriptBindingMessageNames(file *ast.File, tsPath string) map[string]string {
 	names := make(map[string]string)
 	if file == nil {
 		return names
 	}
+	exportedTSMessages := protobufTypeScriptBindingExportedConsts(tsPath)
 	for _, decl := range file.Decls {
 		genDecl, ok := decl.(*ast.GenDecl)
 		if !ok {
@@ -177,10 +178,44 @@ func protobufTypeScriptBindingMessageNames(file *ast.File) map[string]string {
 				continue
 			}
 			name := typeSpec.Name.Name
-			names[name] = protobufTypeScriptBindingSafeIdentifier(name)
+			safeName := protobufTypeScriptBindingSafeIdentifier(name)
+			if len(exportedTSMessages) != 0 && !exportedTSMessages[safeName] {
+				continue
+			}
+			names[name] = safeName
 		}
 	}
 	return names
+}
+
+func protobufTypeScriptBindingExportedConsts(tsPath string) map[string]bool {
+	data, err := os.ReadFile(tsPath)
+	if err != nil {
+		return nil
+	}
+	exports := make(map[string]bool)
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "export const ") {
+			continue
+		}
+		rest := strings.TrimPrefix(line, "export const ")
+		end := 0
+		for end < len(rest) && protobufTypeScriptBindingIdentifierByte(rest[end]) {
+			end++
+		}
+		if end != 0 {
+			exports[rest[:end]] = true
+		}
+	}
+	return exports
+}
+
+func protobufTypeScriptBindingIdentifierByte(ch byte) bool {
+	return ch == '_' || ch == '$' ||
+		ch >= '0' && ch <= '9' ||
+		ch >= 'A' && ch <= 'Z' ||
+		ch >= 'a' && ch <= 'z'
 }
 
 func protobufTypeScriptBindingSafeIdentifier(name string) string {
@@ -250,9 +285,6 @@ func rewriteProtobufTypeScriptBindingFile(file *loweredFile, binding protobufTyp
 		return
 	}
 	file.outputName = binding.outputName
-	if binding.hasOneof {
-		return
-	}
 	const importAlias = "__protobuf_ts"
 	file.imports = append(file.imports, loweredImport{
 		alias:      importAlias,
@@ -267,8 +299,14 @@ func rewriteProtobufTypeScriptBindingFile(file *loweredFile, binding protobufTyp
 		if protobufTypeScriptBindingSyntheticMapEntry(decl.structType.name) {
 			continue
 		}
-		rewriteProtobufTypeScriptBindingStruct(decl.structType)
-		setup := protobufTypeScriptBindingStructSetupDecl(decl.structType, importAlias, binding.messageNames[decl.structType.name])
+		if !binding.hasOneof {
+			rewriteProtobufTypeScriptBindingStruct(decl.structType, binding.sourcePath)
+		}
+		messageName, ok := binding.messageNames[decl.structType.name]
+		if !ok {
+			continue
+		}
+		setup := protobufTypeScriptBindingStructSetupDecl(decl.structType, importAlias, messageName)
 		if setup.code != "" {
 			setupDecls = append(setupDecls, setup)
 		}
@@ -322,12 +360,18 @@ func protobufSRPCHasGoScriptReplacement(sourcePath string) bool {
 	return err == nil
 }
 
-func rewriteProtobufTypeScriptBindingStruct(structType *loweredStruct) {
+func rewriteProtobufTypeScriptBindingStruct(structType *loweredStruct, bindingSourcePath string) {
 	if structType == nil {
 		return
 	}
 	for idx := range structType.methods {
 		method := &structType.methods[idx]
+		if method.sourcePath != bindingSourcePath {
+			continue
+		}
+		if structType.protobufPreserveJSON && protobufTypeScriptBindingJSONMethodName(method.name) {
+			continue
+		}
 		body := protobufTypeScriptBindingMethodBody(structType, method)
 		if body == "" {
 			continue
@@ -380,6 +424,15 @@ func protobufTypeScriptBindingMethodBody(structType *loweredStruct, method *lowe
 		return "return protobuf_go_lite.UnmarshalBoundMessageVT(" + ctor + ", this, " + protobufBindingParam(method, 0, "null") + ")"
 	default:
 		return ""
+	}
+}
+
+func protobufTypeScriptBindingJSONMethodName(name string) bool {
+	switch name {
+	case "MarshalJSON", "MarshalProtoJSON", "UnmarshalJSON", "UnmarshalProtoJSON":
+		return true
+	default:
+		return false
 	}
 }
 
@@ -448,11 +501,11 @@ func protobufTypeScriptBindingFieldLocalName(field loweredStructField) string {
 }
 
 func protobufTypeScriptBindingTagValue(tag, key string) string {
-	idx := strings.Index(tag, key)
-	if idx < 0 {
+	_, after, ok := strings.Cut(tag, key)
+	if !ok {
 		return ""
 	}
-	rest := tag[idx+len(key):]
+	rest := after
 	end := len(rest)
 	for idx, ch := range rest {
 		if ch == ',' || ch == '"' || ch == '`' || ch == ' ' {

@@ -88,6 +88,7 @@ func BenchmarkLoweringFile(b *testing.B) {
 			fixture.lazyPackageVarsByPkg,
 			make(runtimeMethodSetCache),
 			false,
+			"",
 		); diagnosticsHaveErrors(diagnostics) {
 			b.Fatal(diagnostics)
 		}

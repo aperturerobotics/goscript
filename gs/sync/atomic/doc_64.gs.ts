@@ -59,7 +59,7 @@ export function CompareAndSwapUint64(addr: $.VarRef<number> | null, old: number,
 //go:noescape
 export function AddInt64(addr: $.VarRef<number> | null, delta: number): number {
 	if (!addr) return 0;
-	addr.value = addr.value + delta;
+	addr.value = $.int64Add(addr.value, delta);
 	return addr.value;
 }
 
@@ -72,7 +72,7 @@ export function AddInt64(addr: $.VarRef<number> | null, delta: number): number {
 //go:noescape
 export function AddUint64(addr: $.VarRef<number> | null, delta: number): number {
 	if (!addr) return 0;
-	addr.value = addr.value + delta;
+	addr.value = $.uint64Add(addr.value, delta);
 	return addr.value;
 }
 
@@ -84,7 +84,7 @@ export function AddUint64(addr: $.VarRef<number> | null, delta: number): number 
 export function AndInt64(addr: $.VarRef<number> | null, mask: number): number {
 	if (!addr) return 0;
 	let old = addr.value;
-	addr.value = addr.value & mask;
+	addr.value = $.int64And(addr.value, mask);
 	return old;
 }
 
@@ -96,7 +96,7 @@ export function AndInt64(addr: $.VarRef<number> | null, mask: number): number {
 export function AndUint64(addr: $.VarRef<number> | null, mask: number): number {
 	if (!addr) return 0;
 	let old = addr.value;
-	addr.value = addr.value & mask;
+	addr.value = $.uint64And(addr.value, mask);
 	return old;
 }
 
@@ -108,7 +108,7 @@ export function AndUint64(addr: $.VarRef<number> | null, mask: number): number {
 export function OrInt64(addr: $.VarRef<number> | null, mask: number): number {
 	if (!addr) return 0;
 	let old = addr.value;
-	addr.value = addr.value | mask;
+	addr.value = $.int64Or(addr.value, mask);
 	return old;
 }
 
@@ -120,7 +120,7 @@ export function OrInt64(addr: $.VarRef<number> | null, mask: number): number {
 export function OrUint64(addr: $.VarRef<number> | null, mask: number): number {
 	if (!addr) return 0;
 	let old = addr.value;
-	addr.value = addr.value | mask;
+	addr.value = $.uint64Or(addr.value, mask);
 	return old;
 }
 
@@ -165,4 +165,3 @@ export function StoreUint64(addr: $.VarRef<number> | null, val: number): void {
 		addr.value = val;
 	}
 }
-

@@ -13,7 +13,7 @@ export function BEUint32(b: $.Bytes): number {
 }
 
 export function BEUint64(b: $.Bytes): number {
-  return Number(
+  return $.uint(
     (BigInt(b![0]) << 56n) |
       (BigInt(b![1]) << 48n) |
       (BigInt(b![2]) << 40n) |
@@ -34,7 +34,7 @@ export function LEUint32(b: $.Bytes): number {
 }
 
 export function LEUint64(b: $.Bytes): number {
-  return Number(
+  return $.uint(
     BigInt(b![0]) |
       (BigInt(b![1]) << 8n) |
       (BigInt(b![2]) << 16n) |

@@ -28,6 +28,8 @@ type LoweringOwner struct {
 type LoweringOptions struct {
 	// SourceRoot is the request source root that may contain sibling protobuf TypeScript files.
 	SourceRoot string
+	// DisplayRoot is the request root used to format source file names in diagnostics.
+	DisplayRoot string
 	// OutputPath is the TypeScript output root used for generated relative imports.
 	OutputPath string
 	// ProtobufTypeScriptBinding binds .pb.go files to sibling .pb.ts files.
@@ -141,6 +143,7 @@ func (o *LoweringOwner) lowerPackage(
 				lazyPackageVarsByPkg,
 				runtimeMethodSets,
 				protobufAdapter,
+				options.DisplayRoot,
 			)
 			diagnostics = append(diagnostics, fileDiagnostics...)
 			rewriteProtobufTypeScriptBindingFile(loweredFile, binding)
@@ -160,6 +163,7 @@ func (o *LoweringOwner) lowerPackage(
 			lazyPackageVarsByPkg,
 			runtimeMethodSets,
 			false,
+			options.DisplayRoot,
 		)
 		diagnostics = append(diagnostics, fileDiagnostics...)
 		if loweredFile != nil {
@@ -195,6 +199,7 @@ func (o *LoweringOwner) lowerFile(
 	lazyPackageVarsByPkg map[string]map[types.Object]bool,
 	runtimeMethodSets runtimeMethodSetCache,
 	protobufTypeScriptAdapter bool,
+	displayRoot string,
 ) (*loweredFile, []Diagnostic) {
 	associatedMethods := o.methodDeclsForFileTypes(semPkg, file)
 	relevantImportFiles := map[string]bool{sourcePath: true}
@@ -315,6 +320,7 @@ func (o *LoweringOwner) lowerFile(
 		tempNames:            newTempNameOwner(),
 		topLevel:             true,
 		protobufTSAdapter:    protobufTypeScriptAdapter,
+		displayRoot:          displayRoot,
 	}
 	var diagnostics []Diagnostic
 	var packageInitCalls []string
@@ -1120,6 +1126,28 @@ type lowerFileContext struct {
 	switchBreak          bool
 	topLevel             bool
 	protobufTSAdapter    bool
+	displayRoot          string
+}
+
+func (ctx lowerFileContext) diagnosticPosition(pos token.Pos) *DiagnosticPosition {
+	if ctx.semPkg == nil {
+		return nil
+	}
+	return diagnosticPositionFromSource(sourcePos(ctx.semPkg.source, pos), ctx.displayRoot)
+}
+
+func loweringUnsupportedAt(ctx lowerFileContext, node ast.Node, kind string, subject string, detail string) Diagnostic {
+	diag := loweringUnsupported(kind, subject, detail)
+	if node != nil {
+		diag.Position = ctx.diagnosticPosition(node.Pos())
+	}
+	return diag
+}
+
+func loweringUnsupportedPos(ctx lowerFileContext, pos token.Pos, kind string, subject string, detail string) Diagnostic {
+	diag := loweringUnsupported(kind, subject, detail)
+	diag.Position = ctx.diagnosticPosition(pos)
+	return diag
 }
 
 type tempNameOwner struct {
@@ -1208,7 +1236,7 @@ func (o *LoweringOwner) lowerDecl(ctx lowerFileContext, decl ast.Decl) ([]lowere
 			if receiver := receiverNamedTypeFromDecl(ctx, typed); receiver != nil && namedStructType(receiver) == nil {
 				fn, diagnostics := o.lowerNamedReceiverMethodDecl(ctx, typed, receiver)
 				if fn == nil {
-					return nil, []Diagnostic{loweringUnsupported("function", typed.Name.Name, "missing type information")}
+					return nil, []Diagnostic{loweringUnsupportedAt(ctx, typed, "function", typed.Name.Name, "missing type information")}
 				}
 				return []loweredDecl{{function: fn}}, diagnostics
 			}
@@ -1216,11 +1244,11 @@ func (o *LoweringOwner) lowerDecl(ctx lowerFileContext, decl ast.Decl) ([]lowere
 		}
 		fn, diagnostics := o.lowerFuncDecl(ctx, typed)
 		if fn == nil {
-			return nil, []Diagnostic{loweringUnsupported("function", typed.Name.Name, "missing type information")}
+			return nil, []Diagnostic{loweringUnsupportedAt(ctx, typed, "function", typed.Name.Name, "missing type information")}
 		}
 		return []loweredDecl{{function: fn}}, diagnostics
 	default:
-		return nil, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported declaration kind")}
+		return nil, []Diagnostic{loweringUnsupportedAt(ctx, decl, "declaration", ctx.semPkg.pkgPath, "unsupported declaration kind")}
 	}
 }
 
@@ -1268,7 +1296,7 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 					value = o.lowerValueForTarget(ctx, typed.Values[idx], obj.Type(), lowered)
 					value = o.lowerTopLevelInitializerValue(ctx, typed.Values[idx], value)
 				} else if len(embedPatterns) != 0 {
-					embedded, embedDiagnostics := o.lowerGoEmbedValue(ctx, obj.Type(), embedPatterns)
+					embedded, embedDiagnostics := o.lowerGoEmbedValue(ctx, typed.Pos(), obj.Type(), embedPatterns)
 					diagnostics = append(diagnostics, embedDiagnostics...)
 					if embedded != "" {
 						value = embedded
@@ -1359,7 +1387,7 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				}
 			}
 		default:
-			diagnostics = append(diagnostics, loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported general declaration"))
+			diagnostics = append(diagnostics, loweringUnsupportedAt(ctx, typed, "declaration", ctx.semPkg.pkgPath, "unsupported general declaration"))
 		}
 	}
 	return decls, diagnostics
@@ -2144,16 +2172,17 @@ func goEmbedPatterns(groups ...*ast.CommentGroup) []string {
 
 func (o *LoweringOwner) lowerGoEmbedValue(
 	ctx lowerFileContext,
+	diagPos token.Pos,
 	typ types.Type,
 	patterns []string,
 ) (string, []Diagnostic) {
 	if isEmbedFSType(typ) {
-		return o.lowerGoEmbedFSValue(ctx, patterns)
+		return o.lowerGoEmbedFSValue(ctx, diagPos, patterns)
 	}
 	if len(patterns) != 1 {
-		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern list")}
+		return "", []Diagnostic{loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern list")}
 	}
-	cleanPattern, diagnostics := cleanGoEmbedFilePattern(ctx, patterns[0])
+	cleanPattern, diagnostics := cleanGoEmbedFilePattern(ctx, diagPos, patterns[0])
 	if len(diagnostics) != 0 {
 		return "", diagnostics
 	}
@@ -2167,7 +2196,7 @@ func (o *LoweringOwner) lowerGoEmbedValue(
 	if slice, ok := types.Unalias(typ).Underlying().(*types.Slice); ok && isByteType(slice.Elem()) {
 		return byteSliceLiteral(data), nil
 	}
-	diag := loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed target type")
+	diag := loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "unsupported go:embed target type")
 	diag.Detail = "target type: " + types.TypeString(typ, func(pkg *types.Package) string {
 		if pkg == nil {
 			return ""
@@ -2177,18 +2206,18 @@ func (o *LoweringOwner) lowerGoEmbedValue(
 	return "", []Diagnostic{diag}
 }
 
-func (o *LoweringOwner) lowerGoEmbedFSValue(ctx lowerFileContext, patterns []string) (string, []Diagnostic) {
+func (o *LoweringOwner) lowerGoEmbedFSValue(ctx lowerFileContext, diagPos token.Pos, patterns []string) (string, []Diagnostic) {
 	embedAlias := ctx.importPaths["embed"]
 	if embedAlias == "" {
-		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed FS import")}
+		return "", []Diagnostic{loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "unsupported go:embed FS import")}
 	}
 	if len(patterns) == 0 {
-		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern list")}
+		return "", []Diagnostic{loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern list")}
 	}
 
 	filesByPath := make(map[string][]byte)
 	for _, pattern := range patterns {
-		files, diagnostics := expandGoEmbedPattern(ctx, pattern)
+		files, diagnostics := expandGoEmbedPattern(ctx, diagPos, pattern)
 		if len(diagnostics) != 0 {
 			return "", diagnostics
 		}
@@ -2214,25 +2243,25 @@ type goEmbedFile struct {
 	data []byte
 }
 
-func cleanGoEmbedFilePattern(ctx lowerFileContext, pattern string) (string, []Diagnostic) {
-	cleanPattern, _, diagnostics := cleanGoEmbedPattern(ctx, pattern)
+func cleanGoEmbedFilePattern(ctx lowerFileContext, diagPos token.Pos, pattern string) (string, []Diagnostic) {
+	cleanPattern, _, diagnostics := cleanGoEmbedPattern(ctx, diagPos, pattern)
 	if len(diagnostics) != 0 {
 		return "", diagnostics
 	}
 	if strings.Contains(cleanPattern, "*") {
-		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
+		return "", []Diagnostic{loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
 	}
 	info, err := os.Stat(filepath.Join(filepath.Dir(ctx.sourcePath), filepath.FromSlash(cleanPattern)))
 	if err != nil {
 		return "", []Diagnostic{goEmbedReadDiagnostic(ctx, err)}
 	}
 	if info.IsDir() {
-		return "", []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed directory target")}
+		return "", []Diagnostic{loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "unsupported go:embed directory target")}
 	}
 	return cleanPattern, nil
 }
 
-func cleanGoEmbedPattern(ctx lowerFileContext, pattern string) (string, bool, []Diagnostic) {
+func cleanGoEmbedPattern(ctx lowerFileContext, diagPos token.Pos, pattern string) (string, bool, []Diagnostic) {
 	pattern = strings.Trim(pattern, "`\"")
 	all := false
 	if strings.HasPrefix(pattern, "all:") {
@@ -2245,13 +2274,13 @@ func cleanGoEmbedPattern(ctx lowerFileContext, pattern string) (string, bool, []
 		cleanPattern == "." ||
 		cleanPattern == ".." ||
 		strings.HasPrefix(cleanPattern, "../") {
-		return "", false, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
+		return "", false, []Diagnostic{loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
 	}
 	return cleanPattern, all, nil
 }
 
-func expandGoEmbedPattern(ctx lowerFileContext, pattern string) ([]goEmbedFile, []Diagnostic) {
-	cleanPattern, all, diagnostics := cleanGoEmbedPattern(ctx, pattern)
+func expandGoEmbedPattern(ctx lowerFileContext, diagPos token.Pos, pattern string) ([]goEmbedFile, []Diagnostic) {
+	cleanPattern, all, diagnostics := cleanGoEmbedPattern(ctx, diagPos, pattern)
 	if len(diagnostics) != 0 {
 		return nil, diagnostics
 	}
@@ -2260,17 +2289,17 @@ func expandGoEmbedPattern(ctx lowerFileContext, pattern string) ([]goEmbedFile, 
 	if strings.Contains(cleanPattern, "*") {
 		matches, err := filepath.Glob(filepath.Join(pkgDir, filepath.FromSlash(cleanPattern)))
 		if err != nil {
-			return nil, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
+			return nil, []Diagnostic{loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "unsupported go:embed pattern")}
 		}
 		if len(matches) == 0 {
-			return nil, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "go:embed pattern matched no files")}
+			return nil, []Diagnostic{loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "go:embed pattern matched no files")}
 		}
 		paths = matches
 	}
 
 	var files []goEmbedFile
 	for _, path := range paths {
-		collected, diagnostics := collectGoEmbedPath(ctx, pkgDir, path, all)
+		collected, diagnostics := collectGoEmbedPath(ctx, diagPos, pkgDir, path, all)
 		if len(diagnostics) != 0 {
 			return nil, diagnostics
 		}
@@ -2282,7 +2311,7 @@ func expandGoEmbedPattern(ctx lowerFileContext, pattern string) ([]goEmbedFile, 
 	return files, nil
 }
 
-func collectGoEmbedPath(ctx lowerFileContext, pkgDir, absPath string, all bool) ([]goEmbedFile, []Diagnostic) {
+func collectGoEmbedPath(ctx lowerFileContext, diagPos token.Pos, pkgDir, absPath string, all bool) ([]goEmbedFile, []Diagnostic) {
 	info, err := os.Stat(absPath)
 	if err != nil {
 		return nil, []Diagnostic{goEmbedReadDiagnostic(ctx, err)}
@@ -2319,7 +2348,7 @@ func collectGoEmbedPath(ctx lowerFileContext, pkgDir, absPath string, all bool) 
 		return nil, []Diagnostic{goEmbedReadDiagnostic(ctx, err)}
 	}
 	if len(files) == 0 {
-		return nil, []Diagnostic{loweringUnsupported("declaration", ctx.semPkg.pkgPath, "go:embed directory matched no files")}
+		return nil, []Diagnostic{loweringUnsupportedPos(ctx, diagPos, "declaration", ctx.semPkg.pkgPath, "go:embed directory matched no files")}
 	}
 	return files, nil
 }
@@ -2440,7 +2469,7 @@ func (o *LoweringOwner) lowerInterfaceType(ctx lowerFileContext, semType *semant
 	}
 	code = code + "\n\n" + o.runtimeOwner.QualifiedHelper(RuntimeHelperRegisterInterfaceType) +
 		"(\n\t" + strconv.Quote(runtimeNamedTypeName(semType.named)) +
-		",\n\tnull,\n\t" + o.runtimeMethodSignatures(iface) + "\n)"
+		",\n\tnull,\n\t" + o.runtimeMethodSignatures(iface) + "\n);"
 	return loweredDecl{code: code, typeIndexExport: typeIndexExport, sideEffect: true}
 }
 
@@ -2521,12 +2550,13 @@ func (o *LoweringOwner) runtimeMethodReturns(tuple *types.Tuple, seen map[types.
 
 func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticType) (*loweredStruct, []Diagnostic) {
 	lowered := &loweredStruct{
-		exported:      ctx.topLevel,
-		indexExported: ctx.topLevel && ast.IsExported(semType.name),
-		name:          safeIdentifier(semType.name),
-		typeName:      runtimeNamedTypeName(semType.named),
-		cloneMethod:   "clone",
-		fields:        make([]loweredStructField, 0, len(semType.fields)),
+		exported:             ctx.topLevel,
+		indexExported:        ctx.topLevel && ast.IsExported(semType.name),
+		protobufPreserveJSON: ctx.protobufTSAdapter && o.protobufTypeScriptAdapterPreserveJSON(ctx, semType, make(map[*types.Named]bool)),
+		name:                 safeIdentifier(semType.name),
+		typeName:             runtimeNamedTypeName(semType.named),
+		cloneMethod:          "clone",
+		fields:               make([]loweredStructField, 0, len(semType.fields)),
 	}
 	for idx, field := range semType.fields {
 		structValue := isStructValueType(field.typ)
@@ -2569,7 +2599,11 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 	var diagnostics []Diagnostic
 	for _, methodDecl := range methodDecls {
 		lowerDecl := methodDecl
-		if ctx.protobufTSAdapter && protobufTypeScriptBindingReplacesMethodName(methodDecl.Name.Name) {
+		methodSourcePath := sourcePos(ctx.semPkg.source, methodDecl.Pos()).file
+		if ctx.protobufTSAdapter &&
+			methodSourcePath == ctx.sourcePath &&
+			protobufTypeScriptBindingReplacesMethodName(methodDecl.Name.Name) &&
+			!(lowered.protobufPreserveJSON && protobufTypeScriptBindingJSONMethodName(methodDecl.Name.Name)) {
 			bodyless := *methodDecl
 			bodyless.Body = nil
 			lowerDecl = &bodyless
@@ -2588,6 +2622,133 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 		lowered.methods = append(lowered.methods, methods...)
 	}
 	return lowered, diagnostics
+}
+
+func (o *LoweringOwner) protobufTypeScriptAdapterPreserveJSON(
+	ctx lowerFileContext,
+	semType *semanticType,
+	seen map[*types.Named]bool,
+) bool {
+	if semType == nil || semType.named == nil {
+		return false
+	}
+	named := semType.named.Origin()
+	if named == nil || seen[named] {
+		return false
+	}
+	seen[named] = true
+	for _, methodDecl := range o.methodDeclsForType(ctx, named) {
+		if methodDecl == nil || !protobufTypeScriptBindingJSONMethodName(methodDecl.Name.Name) {
+			continue
+		}
+		if sourcePos(ctx.semPkg.source, methodDecl.Pos()).file != ctx.sourcePath {
+			return true
+		}
+	}
+	for _, field := range semType.fields {
+		if o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, field.typ, seen) {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *LoweringOwner) protobufTypeScriptAdapterTypeHasCustomJSON(
+	ctx lowerFileContext,
+	typ types.Type,
+	seen map[*types.Named]bool,
+) bool {
+	if typ == nil {
+		return false
+	}
+	if alias, ok := typ.(*types.Alias); ok {
+		if o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, alias.Rhs(), seen) {
+			return true
+		}
+		if args := alias.TypeArgs(); args != nil {
+			for t := range args.Types() {
+				if o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, t, seen) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	if named, ok := types.Unalias(typ).(*types.Named); ok {
+		if o.protobufTypeScriptAdapterNamedTypeHasCustomJSON(ctx, named) {
+			return true
+		}
+		if obj := named.Obj(); obj != nil && obj.Pkg() != nil && obj.Pkg().Path() == ctx.semPkg.pkgPath {
+			semType := ctx.model.types[named]
+			if semType == nil {
+				semType = ctx.model.types[named.Origin()]
+			}
+			if semType != nil && o.protobufTypeScriptAdapterPreserveJSON(ctx, semType, seen) {
+				return true
+			}
+		}
+		origin := named.Origin()
+		if origin != nil {
+			if seen[origin] {
+				return false
+			}
+			seen[origin] = true
+		}
+		if args := named.TypeArgs(); args != nil {
+			for t := range args.Types() {
+				if o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, t, seen) {
+					return true
+				}
+			}
+		}
+		if o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, named.Underlying(), seen) {
+			return true
+		}
+	}
+	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Pointer:
+		return o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, typed.Elem(), seen)
+	case *types.Slice:
+		return o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, typed.Elem(), seen)
+	case *types.Array:
+		return o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, typed.Elem(), seen)
+	case *types.Map:
+		return o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, typed.Key(), seen) ||
+			o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, typed.Elem(), seen)
+	case *types.Struct:
+		for field := range typed.Fields() {
+			if o.protobufTypeScriptAdapterTypeHasCustomJSON(ctx, field.Type(), seen) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (o *LoweringOwner) protobufTypeScriptAdapterNamedTypeHasCustomJSON(
+	ctx lowerFileContext,
+	named *types.Named,
+) bool {
+	if named == nil {
+		return false
+	}
+	methodSet := types.NewMethodSet(types.NewPointer(named))
+	for _, name := range []string{"MarshalJSON", "MarshalProtoJSON", "UnmarshalJSON", "UnmarshalProtoJSON"} {
+		selection := methodSet.Lookup(nil, name)
+		if selection == nil {
+			continue
+		}
+		method, ok := selection.Obj().(*types.Func)
+		if !ok {
+			continue
+		}
+		sourcePath := sourcePos(ctx.semPkg.source, method.Pos()).file
+		if sourcePath == "" || strings.HasSuffix(sourcePath, ".pb.go") {
+			continue
+		}
+		return true
+	}
+	return false
 }
 
 func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
@@ -2627,6 +2788,7 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 		targetType := o.tsEmbeddedForwarderTargetType(ctx, field.typ)
 		lowered := loweredFunction{
 			async:            async,
+			sourcePath:       ctx.sourcePath,
 			name:             methodMemberName(method.Name()),
 			runtimeName:      method.Name(),
 			runtimeSignature: o.runtimeMethodSignature(method, make(map[types.Type]bool)),
@@ -2770,6 +2932,7 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 		exported:      ctx.topLevel,
 		indexExported: ctx.topLevel && (ast.IsExported(receiver.Obj().Name()) || ast.IsExported(decl.Name.Name)),
 		async:         async,
+		sourcePath:    sourcePos(ctx.semPkg.source, decl.Pos()).file,
 		name:          methodFunctionName(receiver, decl.Name.Name),
 		result:        asyncResultType(result, async),
 		deferState:    deferState,
@@ -2844,6 +3007,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		indexExported: ctx.topLevel && !blankName && !initFunc && (ast.IsExported(decl.Name.Name) || decl.Name.Name == "main"),
 		init:          initFunc,
 		async:         async,
+		sourcePath:    sourcePos(ctx.semPkg.source, decl.Pos()).file,
 		name:          name,
 		runtimeName:   runtimeName,
 		result:        asyncResultType(result, async),
@@ -3329,9 +3493,9 @@ func (o *LoweringOwner) lowerStmtInto(ctx lowerFileContext, stmt ast.Stmt, out [
 				if ctx.gotoLabels[label] {
 					return append(out, loweredStmt{text: "continue " + label}), nil
 				}
-				return out, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported goto branch to "+label)}
+				return out, []Diagnostic{loweringUnsupportedAt(ctx, typed, "statement", ctx.semPkg.pkgPath, "unsupported goto branch to "+label)}
 			default:
-				return out, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported labeled branch")}
+				return out, []Diagnostic{loweringUnsupportedAt(ctx, typed, "statement", ctx.semPkg.pkgPath, "unsupported labeled branch")}
 			}
 		}
 		switch typed.Tok {
@@ -3352,12 +3516,12 @@ func (o *LoweringOwner) lowerStmtInto(ctx lowerFileContext, stmt ast.Stmt, out [
 		case token.FALLTHROUGH:
 			return append(out, loweredStmt{text: "fallthrough"}), nil
 		default:
-			return out, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported branch")}
+			return out, []Diagnostic{loweringUnsupportedAt(ctx, typed, "statement", ctx.semPkg.pkgPath, "unsupported branch")}
 		}
 	case *ast.EmptyStmt:
 		return out, nil
 	default:
-		return out, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported statement kind")}
+		return out, []Diagnostic{loweringUnsupportedAt(ctx, typed, "statement", ctx.semPkg.pkgPath, "unsupported statement kind")}
 	}
 }
 
@@ -3388,7 +3552,7 @@ func (o *LoweringOwner) lowerElse(ctx lowerFileContext, stmt ast.Stmt) ([]lowere
 	case *ast.IfStmt:
 		return o.lowerStmt(ctx, typed)
 	default:
-		return nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported else statement")}
+		return nil, []Diagnostic{loweringUnsupportedAt(ctx, typed, "statement", ctx.semPkg.pkgPath, "unsupported else statement")}
 	}
 }
 
@@ -5617,7 +5781,7 @@ func (o *LoweringOwner) lowerRangeStmt(ctx lowerFileContext, stmt *ast.RangeStmt
 	if isFunctionType(rangeType) {
 		signature := rangeFunctionSignature(rangeType)
 		if signature == nil {
-			return loweredStmt{}, append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported function range signature"))
+			return loweredStmt{}, append(diagnostics, loweringUnsupportedAt(ctx, stmt, "statement", ctx.semPkg.pkgPath, "unsupported function range signature"))
 		}
 		lowered, funcDiagnostics := o.lowerRangeFuncStmt(ctx, stmt, rangeValue, signature)
 		diagnostics = append(diagnostics, funcDiagnostics...)
@@ -5697,7 +5861,7 @@ func (o *LoweringOwner) lowerRangeFuncStmt(
 ) (loweredStmt, []Diagnostic) {
 	yieldSignature, ok := types.Unalias(signature.Params().At(0).Type()).Underlying().(*types.Signature)
 	if !ok {
-		return loweredStmt{}, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported function range yield signature")}
+		return loweredStmt{}, []Diagnostic{loweringUnsupportedAt(ctx, stmt, "statement", ctx.semPkg.pkgPath, "unsupported function range yield signature")}
 	}
 	keyName := rangeKeyName(stmt.Key)
 	valueName := rangeKeyName(stmt.Value)
@@ -5780,7 +5944,7 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 	for _, raw := range stmt.Body.List {
 		clause, ok := raw.(*ast.CommClause)
 		if !ok {
-			diagnostics = append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported select clause"))
+			diagnostics = append(diagnostics, loweringUnsupportedAt(ctx, raw, "statement", ctx.semPkg.pkgPath, "unsupported select clause"))
 			continue
 		}
 		switch comm := clause.Comm.(type) {
@@ -5833,7 +5997,7 @@ func (o *LoweringOwner) lowerSelectStmt(ctx lowerFileContext, stmt *ast.SelectSt
 			})
 			caseID++
 		default:
-			diagnostics = append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported select communication"))
+			diagnostics = append(diagnostics, loweringUnsupportedAt(ctx, comm, "statement", ctx.semPkg.pkgPath, "unsupported select communication"))
 		}
 	}
 	lowered.returns = selectCasesReturn(lowered.cases)
@@ -5937,7 +6101,7 @@ func (o *LoweringOwner) lowerSelectReceiveComm(
 	}
 	receive, ok := receiveExpr.(*ast.UnaryExpr)
 	if !ok || receive.Op != token.ARROW {
-		return "null", nil, []Diagnostic{loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported select receive")}
+		return "null", nil, []Diagnostic{loweringUnsupportedAt(ctx, receiveExpr, "statement", ctx.semPkg.pkgPath, "unsupported select receive")}
 	}
 	channel, diagnostics := o.lowerExpr(ctx, receive.X)
 	if assign == nil {
@@ -5995,7 +6159,7 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 	for _, raw := range stmt.Body.List {
 		clause, ok := raw.(*ast.CaseClause)
 		if !ok {
-			diagnostics = append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported switch clause"))
+			diagnostics = append(diagnostics, loweringUnsupportedAt(ctx, raw, "statement", ctx.semPkg.pkgPath, "unsupported switch clause"))
 			continue
 		}
 		bodyStmts := clause.Body
@@ -6090,7 +6254,7 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 	valueExpr, varName, varRef, assignDiagnostics := o.lowerTypeSwitchAssign(ctx, stmt.Assign)
 	diagnostics = append(diagnostics, assignDiagnostics...)
 	if valueExpr == "" {
-		return lowered, append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported type switch assignment"))
+		return lowered, append(diagnostics, loweringUnsupportedAt(ctx, stmt.Assign, "statement", ctx.semPkg.pkgPath, "unsupported type switch assignment"))
 	}
 
 	switchIR := &loweredTypeSwitch{
@@ -6101,7 +6265,7 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 	for _, clauseStmt := range stmt.Body.List {
 		clause, ok := clauseStmt.(*ast.CaseClause)
 		if !ok {
-			diagnostics = append(diagnostics, loweringUnsupported("statement", ctx.semPkg.pkgPath, "unsupported type switch clause"))
+			diagnostics = append(diagnostics, loweringUnsupportedAt(ctx, clauseStmt, "statement", ctx.semPkg.pkgPath, "unsupported type switch clause"))
 			continue
 		}
 		body, bodyDiagnostics := o.lowerStmtList(ctx.withoutRangeBreak().withSwitchBreak(), clause.Body)
@@ -6537,13 +6701,21 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 			return lowerPrefixUnaryExpr(typed.Op, value), diagnostics
 		}
 		if typed.Op == token.XOR {
-			if bits, ok := unsignedIntegerBits(ctx.semPkg.source.TypesInfo.TypeOf(typed)); ok && bits <= 32 {
-				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
-					"(~" + value + ", " + strconv.Itoa(bits) + ")", diagnostics
+			if bits, ok := unsignedIntegerBits(ctx.semPkg.source.TypesInfo.TypeOf(typed)); ok {
+				if bits <= 32 {
+					return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
+						"(~" + value + ", " + strconv.Itoa(bits) + ")", diagnostics
+				}
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Xor) +
+					"(" + value + ", -1n)", diagnostics
+			}
+			if bits, ok := signedIntegerBits(ctx.semPkg.source.TypesInfo.TypeOf(typed)); ok && bits > 32 {
+				return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt64Xor) +
+					"(" + value + ", -1n)", diagnostics
 			}
 			return "~" + value, diagnostics
 		}
-		return value, append(diagnostics, loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported unary operator"))
+		return value, append(diagnostics, loweringUnsupportedAt(ctx, typed, "expression", ctx.semPkg.pkgPath, "unsupported unary operator"))
 	case *ast.StarExpr:
 		return o.lowerPointerValueExpr(ctx, typed.X)
 	case *ast.ParenExpr:
@@ -6567,7 +6739,7 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 	case *ast.IndexListExpr:
 		return o.lowerExpr(ctx, typed.X)
 	default:
-		return "undefined", []Diagnostic{loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported expression kind")}
+		return "undefined", []Diagnostic{loweringUnsupportedAt(ctx, typed, "expression", ctx.semPkg.pkgPath, "unsupported expression kind")}
 	}
 }
 
@@ -6933,7 +7105,7 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperRecover) + "(" + strings.Join(args, ", ") + ")", diagnostics
 			case "close":
 				if len(args) != 1 {
-					return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, "close requires one argument"))
+					return "undefined", append(diagnostics, loweringUnsupportedAt(ctx, expr, "call", ctx.semPkg.pkgPath, "close requires one argument"))
 				}
 				return args[0] + "!.close()", diagnostics
 			}
@@ -7030,9 +7202,9 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			call := o.lowerCallableExpr(ctx, expr.Fun, callee) + "(" + strings.Join(args, ", ") + ")"
 			return o.awaitCallIfNeeded(ctx, expr.Fun, call), append(diagnostics, calleeDiagnostics...)
 		}
-		return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, fmt.Sprintf("unsupported call target %T", expr.Fun)))
+		return "undefined", append(diagnostics, loweringUnsupportedAt(ctx, expr.Fun, "call", ctx.semPkg.pkgPath, fmt.Sprintf("unsupported call target %T", expr.Fun)))
 	}
-	return "undefined", append(diagnostics, loweringUnsupported("call", ctx.semPkg.pkgPath, fmt.Sprintf("unsupported call target %T", expr.Fun)))
+	return "undefined", append(diagnostics, loweringUnsupportedAt(ctx, expr.Fun, "call", ctx.semPkg.pkgPath, fmt.Sprintf("unsupported call target %T", expr.Fun)))
 }
 
 func (o *LoweringOwner) lowerCallableExpr(ctx lowerFileContext, expr ast.Expr, callee string) string {
@@ -7321,11 +7493,11 @@ func unsafePackageFunction(ctx lowerFileContext, expr ast.Expr, name string) boo
 
 func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) (string, []Diagnostic) {
 	if len(expr.Args) < 1 {
-		return "undefined", []Diagnostic{loweringUnsupported("call", ctx.semPkg.pkgPath, "make requires a type argument")}
+		return "undefined", []Diagnostic{loweringUnsupportedAt(ctx, expr, "call", ctx.semPkg.pkgPath, "make requires a type argument")}
 	}
 	targetType := typeFromExpr(ctx, expr.Args[0])
 	if targetType == nil {
-		return "undefined", []Diagnostic{loweringUnsupported("call", ctx.semPkg.pkgPath, "make requires a type expression")}
+		return "undefined", []Diagnostic{loweringUnsupportedAt(ctx, expr.Args[0], "call", ctx.semPkg.pkgPath, "make requires a type expression")}
 	}
 	switch typed := types.Unalias(targetType).Underlying().(type) {
 	case *types.Slice:
@@ -7378,13 +7550,13 @@ func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			"<" + o.tsTypeFor(ctx, typed.Elem()) + ">(" + capacity + ", " +
 			o.lowerZeroValueExprFor(ctx, typed.Elem()) + ", " + strconv.Quote(channelDirectionString(typed.Dir())) + ")", diagnostics
 	default:
-		return "undefined", []Diagnostic{loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported make type")}
+		return "undefined", []Diagnostic{loweringUnsupportedAt(ctx, expr.Args[0], "call", ctx.semPkg.pkgPath, "unsupported make type")}
 	}
 }
 
 func (o *LoweringOwner) lowerNewExpr(ctx lowerFileContext, expr *ast.CallExpr) (string, []Diagnostic) {
 	if len(expr.Args) != 1 {
-		return "undefined", []Diagnostic{loweringUnsupported("call", ctx.semPkg.pkgPath, "new requires one type argument")}
+		return "undefined", []Diagnostic{loweringUnsupportedAt(ctx, expr, "call", ctx.semPkg.pkgPath, "new requires one type argument")}
 	}
 	typ := typeFromExpr(ctx, expr.Args[0])
 	if named := namedStructType(typ); named != nil {
@@ -7400,7 +7572,7 @@ func (o *LoweringOwner) lowerConversionExpr(
 	targetType types.Type,
 ) (string, []Diagnostic) {
 	if len(expr.Args) != 1 {
-		return "undefined", []Diagnostic{loweringUnsupported("call", ctx.semPkg.pkgPath, "unsupported conversion arity")}
+		return "undefined", []Diagnostic{loweringUnsupportedAt(ctx, expr, "call", ctx.semPkg.pkgPath, "unsupported conversion arity")}
 	}
 	value, diagnostics := o.lowerExpr(ctx, expr.Args[0])
 	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[0])
@@ -8371,7 +8543,7 @@ func (o *LoweringOwner) lowerAddressExpr(ctx lowerFileContext, expr ast.Expr) (s
 	case *ast.IndexExpr:
 		return o.lowerIndexAddressExpr(ctx, typed)
 	default:
-		return "undefined", []Diagnostic{loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported address expression")}
+		return "undefined", []Diagnostic{loweringUnsupportedAt(ctx, typed, "expression", ctx.semPkg.pkgPath, "unsupported address expression")}
 	}
 }
 
@@ -8430,7 +8602,7 @@ func (o *LoweringOwner) lowerIndexAddressExpr(ctx lowerFileContext, expr *ast.In
 	diagnostics := append(targetDiagnostics, indexDiagnostics...)
 	targetType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
 	if isStringType(targetType) || isMapType(targetType) {
-		return "undefined", append(diagnostics, loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported address expression"))
+		return "undefined", append(diagnostics, loweringUnsupportedAt(ctx, expr, "expression", ctx.semPkg.pkgPath, "unsupported address expression"))
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexRef) + "(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + index + ")", diagnostics
 }
@@ -8458,7 +8630,7 @@ func (o *LoweringOwner) lowerUnsafePointerIntegerExpr(
 	if !ok || len(call.Args) != 1 || !isUnsafePointerType(typeFromExpr(ctx, call.Fun)) {
 		return "", nil, false
 	}
-	return o.lowerIndexAddressIntegerExpr(ctx, call.Args[0])
+	return o.lowerIndexByteAddressIntegerExpr(ctx, call.Args[0])
 }
 
 func (o *LoweringOwner) lowerIndexAddressIntegerExpr(
@@ -8484,12 +8656,42 @@ func (o *LoweringOwner) lowerIndexAddressIntegerExpr(
 		"(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + index + ")", diagnostics, true
 }
 
+func (o *LoweringOwner) lowerIndexByteAddressIntegerExpr(
+	ctx lowerFileContext,
+	expr ast.Expr,
+) (string, []Diagnostic, bool) {
+	address, ok := unwrapParenExpr(expr).(*ast.UnaryExpr)
+	if !ok || address.Op != token.AND {
+		return "", nil, false
+	}
+	indexExpr, ok := unwrapParenExpr(address.X).(*ast.IndexExpr)
+	if !ok {
+		return "", nil, false
+	}
+	target, targetDiagnostics := o.lowerExpr(ctx, indexExpr.X)
+	index, indexDiagnostics := o.lowerExpr(ctx, indexExpr.Index)
+	diagnostics := append(targetDiagnostics, indexDiagnostics...)
+	targetType := ctx.semPkg.source.TypesInfo.TypeOf(indexExpr.X)
+	if isStringType(targetType) || isMapType(targetType) {
+		return "", diagnostics, false
+	}
+	elementSize := goScriptElementByteSize(ctx, indexElementType(targetType))
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexByteAddress) +
+		"(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + index + ", " + strconv.FormatInt(elementSize, 10) + ")", diagnostics, true
+}
+
 func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
 	if value, diagnostics, ok := o.lowerUnsafeStringPointerValue(ctx, expr); ok {
 		return value, diagnostics
 	}
 	if value, diagnostics, ok := o.lowerUnsafeStringByteSlicePointerValue(ctx, expr); ok {
 		return value, diagnostics
+	}
+	if ref, diagnostics, ok := o.lowerUnsafeArrayPointerRefExpr(ctx, expr); ok {
+		return ref + ".value", diagnostics
+	}
+	if ref, diagnostics, ok := o.lowerUnsafePointerRefExpr(ctx, expr); ok {
+		return ref + ".value", diagnostics
 	}
 	base, diagnostics := o.lowerExpr(ctx, expr)
 	typeArg := ""
@@ -8622,8 +8824,13 @@ func (o *LoweringOwner) lowerUnsafeArrayPointerConversion(
 		return "", nil, false
 	}
 	ref, diagnostics := o.lowerAddressExpr(ctx, index)
+	sourceElementSize := goScriptElementByteSize(ctx, indexElementType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)))
+	targetElementSize := goScriptElementByteSize(ctx, array.Elem())
 	helper := o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayPointerFromIndexRef) +
-		"<" + o.tsTypeFor(ctx, array.Elem()) + ">(" + ref + ", " + strconv.FormatInt(array.Len(), 10) + ")"
+		"<" + o.tsTypeFor(ctx, array.Elem()) + ">(" + ref + ", " +
+		strconv.FormatInt(array.Len(), 10) + ", " +
+		strconv.FormatInt(sourceElementSize, 10) + ", " +
+		strconv.FormatInt(targetElementSize, 10) + ")"
 	return "(" + helper + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics, true
 }
 
@@ -8717,11 +8924,53 @@ func sameLoweredSourceExpr(ctx lowerFileContext, left ast.Expr, right ast.Expr) 
 }
 
 func (o *LoweringOwner) lowerPointerStorageExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
+	if ref, diagnostics, ok := o.lowerUnsafeArrayPointerRefExpr(ctx, expr); ok {
+		return ref + ".value", diagnostics
+	}
+	if ref, diagnostics, ok := o.lowerUnsafePointerRefExpr(ctx, expr); ok {
+		return ref + ".value", diagnostics
+	}
 	if ref, diagnostics, ok := o.lowerUnsafePointerStorageExpr(ctx, expr); ok {
 		return ref, diagnostics
 	}
 	base, diagnostics := o.lowerExpr(ctx, expr)
 	return base + "!.value", diagnostics
+}
+
+func (o *LoweringOwner) lowerUnsafeArrayPointerRefExpr(
+	ctx lowerFileContext,
+	expr ast.Expr,
+) (string, []Diagnostic, bool) {
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return "", nil, false
+	}
+	targetType := typeFromExpr(ctx, call.Fun)
+	if targetType == nil {
+		return "", nil, false
+	}
+	return o.lowerUnsafeArrayPointerConversion(ctx, targetType, call.Args[0])
+}
+
+func (o *LoweringOwner) lowerUnsafePointerRefExpr(
+	ctx lowerFileContext,
+	expr ast.Expr,
+) (string, []Diagnostic, bool) {
+	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return "", nil, false
+	}
+	targetType := typeFromExpr(ctx, call.Fun)
+	if targetType == nil {
+		return "", nil, false
+	}
+	pointer, _ := types.Unalias(targetType).Underlying().(*types.Pointer)
+	if pointer == nil || !isUnsafePointerType(ctx.semPkg.source.TypesInfo.TypeOf(call.Args[0])) {
+		return "", nil, false
+	}
+	value, diagnostics := o.lowerExpr(ctx, call.Args[0])
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperUnsafePointerRef) +
+		"<" + o.tsTypeFor(ctx, pointer.Elem()) + ">(" + value + ")", diagnostics, true
 }
 
 func (o *LoweringOwner) lowerUnsafePointerStorageExpr(
@@ -8893,15 +9142,11 @@ func (o *LoweringOwner) lowerCompositeLit(
 	if mapType, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(lit)).Underlying().(*types.Map); ok {
 		return o.lowerMapCompositeLit(ctx, lit, mapType)
 	}
-	position := sourcePos(ctx.semPkg.source, lit.Pos())
 	detail := "unsupported composite literal"
-	if position.file != "" {
-		detail += " at " + filepath.Base(position.file) + ":" + strconv.Itoa(position.line)
-	}
 	if typ := ctx.semPkg.source.TypesInfo.TypeOf(lit); typ != nil {
 		detail += " of type " + typ.String()
 	}
-	return "undefined", []Diagnostic{loweringUnsupported("expression", ctx.semPkg.pkgPath, detail)}
+	return "undefined", []Diagnostic{loweringUnsupportedAt(ctx, lit, "expression", ctx.semPkg.pkgPath, detail)}
 }
 
 func (o *LoweringOwner) lowerStructCompositeLit(
@@ -8936,7 +9181,7 @@ func (o *LoweringOwner) lowerStructCompositeLit(
 			fieldType = field.Type()
 		}
 		if fieldName == "" {
-			diagnostics = append(diagnostics, loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported struct literal field"))
+			diagnostics = append(diagnostics, loweringUnsupportedAt(ctx, elt, "expression", ctx.semPkg.pkgPath, "unsupported struct literal field"))
 			continue
 		}
 		value, valueDiagnostics := o.lowerExpr(ctx, valueExpr)
@@ -9047,7 +9292,7 @@ func (o *LoweringOwner) lowerAnonymousStructCompositeLit(
 			fieldType = field.Type()
 		}
 		if fieldName == "" {
-			diagnostics = append(diagnostics, loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported anonymous struct literal field"))
+			diagnostics = append(diagnostics, loweringUnsupportedAt(ctx, elt, "expression", ctx.semPkg.pkgPath, "unsupported anonymous struct literal field"))
 			continue
 		}
 		value, valueDiagnostics := o.lowerExpr(ctx, valueExpr)
@@ -9156,7 +9401,7 @@ func (o *LoweringOwner) lowerMapCompositeLit(
 	for _, elt := range lit.Elts {
 		keyed, ok := elt.(*ast.KeyValueExpr)
 		if !ok {
-			diagnostics = append(diagnostics, loweringUnsupported("expression", ctx.semPkg.pkgPath, "unsupported map literal entry"))
+			diagnostics = append(diagnostics, loweringUnsupportedAt(ctx, elt, "expression", ctx.semPkg.pkgPath, "unsupported map literal entry"))
 			continue
 		}
 		key, keyDiagnostics := o.lowerExpr(ctx, keyed.Key)
@@ -10398,6 +10643,42 @@ func isMapType(typ types.Type) bool {
 	return ok
 }
 
+func indexElementType(typ types.Type) types.Type {
+	if pointer, ok := types.Unalias(typ).Underlying().(*types.Pointer); ok {
+		typ = pointer.Elem()
+	}
+	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Slice:
+		return typed.Elem()
+	case *types.Array:
+		return typed.Elem()
+	default:
+		return nil
+	}
+}
+
+func goScriptElementByteSize(ctx lowerFileContext, typ types.Type) int64 {
+	if typ == nil {
+		return 1
+	}
+	if sizes := ctx.semPkg.source.TypesSizes; sizes != nil {
+		if size := sizes.Sizeof(typ); size > 0 {
+			return size
+		}
+	}
+	if bits, ok := integerBits(typ); ok && bits > 0 {
+		return int64((bits + 7) / 8)
+	}
+	if isFloatType(typ) {
+		basic, _ := types.Unalias(typ).Underlying().(*types.Basic)
+		if basic != nil && basic.Kind() == types.Float32 {
+			return 4
+		}
+		return 8
+	}
+	return 1
+}
+
 func isChannelType(typ types.Type) bool {
 	if typ == nil {
 		return false
@@ -10471,6 +10752,9 @@ func isFloatType(typ types.Type) bool {
 }
 
 func unsignedIntegerBits(typ types.Type) (int, bool) {
+	if typ == nil {
+		return 0, false
+	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	if !ok || basic.Info()&types.IsUnsigned == 0 {
 		return 0, false
@@ -10488,6 +10772,9 @@ func unsignedIntegerBits(typ types.Type) (int, bool) {
 }
 
 func signedIntegerBits(typ types.Type) (int, bool) {
+	if typ == nil {
+		return 0, false
+	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	if !ok || basic.Info()&types.IsInteger == 0 || basic.Info()&types.IsUnsigned != 0 {
 		return 0, false

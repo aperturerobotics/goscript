@@ -3326,6 +3326,60 @@ function basicTypeFromName(name: string, typeName = ''): BasicType {
   }
 }
 
+function typeFromGoTypeName(typeName: string): Type | null {
+  const trimmed = typeName.trim()
+  if (trimmed === '') return null
+
+  if (trimmed.startsWith('<-chan ')) {
+    return new ChannelType(typeFromGoTypeName(trimmed.slice(7)) ?? anyType(), RecvDir)
+  }
+  if (trimmed.startsWith('chan<- ')) {
+    return new ChannelType(typeFromGoTypeName(trimmed.slice(7)) ?? anyType(), SendDir)
+  }
+  if (trimmed.startsWith('chan ')) {
+    return new ChannelType(typeFromGoTypeName(trimmed.slice(5)) ?? anyType(), BothDir)
+  }
+  if (trimmed.startsWith('[]')) {
+    return new SliceType(typeFromGoTypeName(trimmed.slice(2)) ?? anyType())
+  }
+  if (trimmed.startsWith('*')) {
+    return new PointerType(typeFromGoTypeName(trimmed.slice(1)) ?? anyType())
+  }
+  if (trimmed === 'struct{}' || trimmed === 'struct {}') {
+    return new StructType('', [], '', 'struct {}')
+  }
+  if (trimmed === 'interface{}' || trimmed === 'any') {
+    return anyType()
+  }
+  if (trimmed === 'error') {
+    return new InterfaceType('error', 'error')
+  }
+
+  const registered = builtinGetTypeByName(trimmed)
+  if (registered) {
+    return typeFromTypeInfo(registered)
+  }
+
+  const basic = basicTypeFromName(trimmed)
+  if (basic.Kind() !== Invalid) {
+    return basic
+  }
+
+  return null
+}
+
+function channelTypeFromGoTypeName(typeName: string): Type | null {
+  const typ = typeFromGoTypeName(typeName)
+  if (typ?.Kind() === Chan) {
+    return typ
+  }
+  return null
+}
+
+function anyType(): Type {
+  return new BasicType(Interface, 'interface{}', 16)
+}
+
 function structFieldsFromTypeInfo(
   ti: $.StructTypeInfo,
   seen = new Set<string>(),
@@ -3741,6 +3795,16 @@ function getTypeOf(value: ReflectValue): Type {
         return typeFromTypeInfo(
           (value as { __goTypeInfo: $.TypeInfo | string }).__goTypeInfo,
         )
+      }
+
+      if ('__goType' in value) {
+        const goType = (value as { __goType?: unknown }).__goType
+        if (typeof goType === 'string') {
+          const channelType = channelTypeFromGoTypeName(goType)
+          if (channelType) {
+            return channelType
+          }
+        }
       }
 
       if (

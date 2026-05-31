@@ -38,6 +38,8 @@ import {
   EqualVTSliceImplicit,
   type EqualVT,
   IsEqualVTSlice,
+  MarshalBoundMessageVT,
+  MarshalBoundMessageToSizedBufferVT,
   SizeBoolNonZero,
   SizeBoolPacked,
   SizeBoolPtr,
@@ -76,6 +78,7 @@ import {
   SizeZigzagSlice,
   SizeZigzagValue,
   Skip,
+  UnmarshalBoundMessageVT,
 } from './index.js'
 
 class TestValue {
@@ -144,6 +147,115 @@ class TestCloneMessage implements CloneMessage {
   CloneMessageVT(): CloneMessage | null {
     return new TestCloneMessage()
   }
+}
+
+class BrokenBoundMessage {}
+
+;(BrokenBoundMessage as any).__protobufTypeScriptMessage = {
+  typeName: 'test.BrokenBoundMessage',
+  fields: { list: () => [] },
+  fromBinary: () => ({}),
+  toBinary: () => {
+    throw new Error('invalid uint 32: undefined')
+  },
+}
+
+class BytesBoundMessage {
+  Config: $.Slice<number>
+
+  constructor(config: $.Slice<number>) {
+    this.Config = config
+  }
+}
+
+;(BytesBoundMessage as any).__protobufTypeScriptMessage = {
+  typeName: 'test.BytesBoundMessage',
+  fields: {
+    list: () => [{ localName: 'config', kind: 'scalar', T: 12 }],
+  },
+  fromBinary: () => ({}),
+  toBinary: (value: { config?: Uint8Array }) => {
+    expect(value.config).toBeInstanceOf(Uint8Array)
+    expect(Array.from(value.config ?? [])).toEqual([1, 2, 3])
+    return new Uint8Array([9])
+  },
+}
+
+class TimestampBoundMessage {
+  public get Seconds(): number {
+    return this._fields.Seconds.value
+  }
+  public set Seconds(value: number) {
+    this._fields.Seconds.value = value
+  }
+
+  public get Nanos(): number {
+    return this._fields.Nanos.value
+  }
+  public set Nanos(value: number) {
+    this._fields.Nanos.value = value
+  }
+
+  public _fields: {
+    Seconds: $.VarRef<number>
+    Nanos: $.VarRef<number>
+  }
+
+  constructor(init?: Partial<{ Seconds?: number; Nanos?: number }>) {
+    this._fields = {
+      Seconds: $.varRef(init?.Seconds ?? 0),
+      Nanos: $.varRef(init?.Nanos ?? 0),
+    }
+  }
+}
+
+const timestampMessageType = {
+  typeName: 'google.protobuf.Timestamp',
+  fields: {
+    list: () => [
+      { localName: 'seconds', kind: 'scalar' },
+      { localName: 'nanos', kind: 'scalar' },
+    ],
+  },
+}
+
+class TimestampParentBoundMessage {
+  public get Timestamp(): TimestampBoundMessage | null {
+    return this._fields.Timestamp.value
+  }
+  public set Timestamp(value: TimestampBoundMessage | null) {
+    this._fields.Timestamp.value = value
+  }
+
+  public _fields: {
+    Timestamp: $.VarRef<TimestampBoundMessage | null>
+  }
+
+  constructor(init?: Partial<{ Timestamp?: TimestampBoundMessage | null }>) {
+    this._fields = {
+      Timestamp: $.varRef(init?.Timestamp ?? null),
+    }
+  }
+}
+
+;(TimestampParentBoundMessage as any).__protobufTypeScriptMessage = {
+  typeName: 'test.TimestampParentBoundMessage',
+  fields: {
+    list: () => [
+      {
+        localName: 'timestamp',
+        kind: 'message',
+        T: timestampMessageType,
+      },
+    ],
+  },
+  fromBinary: () => ({
+    timestamp: new Date(Date.UTC(2026, 4, 31, 12, 34, 56, 789)),
+  }),
+  toBinary: () => new Uint8Array(),
+}
+;(TimestampParentBoundMessage as any).__protobufTypeScriptFields = {
+  timestamp: TimestampBoundMessage,
 }
 
 describe('protobuf-go-lite EqualVT helpers', () => {
@@ -242,6 +354,56 @@ describe('protobuf-go-lite runtime interfaces', () => {
 
     expect(ok).toBe(true)
     expect(value?.CloneMessageVT()).toBeInstanceOf(TestCloneMessage)
+  })
+})
+
+describe('protobuf-go-lite TypeScript binding helpers', () => {
+  it('adds message type context to binary marshal errors', () => {
+    const [, err] = MarshalBoundMessageVT(
+      BrokenBoundMessage as any,
+      new BrokenBoundMessage(),
+    )
+
+    expect(err?.Error()).toBe(
+      'marshal test.BrokenBoundMessage: invalid uint 32: undefined',
+    )
+  })
+
+  it('normalizes Go byte slices before binary marshal', () => {
+    const [bytes, err] = MarshalBoundMessageVT(
+      BytesBoundMessage as any,
+      new BytesBoundMessage([1, 2, 3]),
+    )
+
+    expect(err).toBeNull()
+    expect(Array.from(bytes ?? [])).toEqual([9])
+  })
+
+  it('returns bytes written after marshaling into a sized buffer', () => {
+    const target = new Uint8Array([0, 0, 0])
+    const [n, err] = MarshalBoundMessageToSizedBufferVT(
+      BytesBoundMessage as any,
+      new BytesBoundMessage([1, 2, 3]),
+      target,
+    )
+
+    expect(err).toBeNull()
+    expect(n).toBe(1)
+    expect(Array.from(target)).toEqual([0, 0, 9])
+  })
+
+  it('hydrates protobuf-es-lite timestamp Date fields into Go timestamp structs', () => {
+    const target = new TimestampParentBoundMessage()
+
+    const err = UnmarshalBoundMessageVT(
+      TimestampParentBoundMessage as any,
+      target,
+      new Uint8Array(),
+    )
+
+    expect(err).toBeNull()
+    expect(target.Timestamp?.Seconds).toBe(1780230896)
+    expect(target.Timestamp?.Nanos).toBe(789000000)
   })
 })
 

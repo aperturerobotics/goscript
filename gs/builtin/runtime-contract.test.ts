@@ -17,6 +17,7 @@ import {
   int,
   arrayPointerFromIndexRef,
   indexAddress,
+  indexByteAddress,
   indexRef,
   interfaceValue,
   len,
@@ -62,6 +63,7 @@ import {
   uintShr,
   unref,
   unsupportedPointerRef,
+  unsafePointerRef,
   varRef,
 } from './index.js'
 
@@ -423,6 +425,16 @@ describe('builtin runtime contract helpers', () => {
     arrayView[2] = 19
     expect((byteBacking as Uint8Array)[3]).toBe(19)
 
+    const words = [0x11223344, 0]
+    const wordBytes = arrayPointerFromIndexRef(indexRef(words, 0), 8, 4, 1)
+    const byteView = pointerValue(wordBytes) as number[]
+    expect(byteView[0]).toBe(0x44)
+    expect(byteView[3]).toBe(0x11)
+    byteView[4] = 0xaa
+    expect(words[1]).toBe(0xaa)
+    wordBytes.value = [1, 2, 3, 4]
+    expect(words[0]).toBe(0x04030201)
+
     shortBytes![0] = 14
     expect(bytesToUint8Array(shortBytes)).toEqual(new Uint8Array([14, 0]))
 
@@ -471,6 +483,22 @@ describe('builtin runtime contract helpers', () => {
     expect(indexAddress(left, 1)).toBe(indexAddress(right, 0))
     expect(indexAddress(left, 1)).toBeGreaterThan(indexAddress(left, 0))
     expect(indexAddress(other, 0)).not.toBe(indexAddress(left, 0))
+  })
+
+  it('resolves unsafe byte addresses within numeric slice elements', () => {
+    const words = makeSlice<number>(2, undefined, 'number')
+    const first = indexByteAddress(words, 0, 8)
+    const second = indexByteAddress(words, 1, 8)
+
+    expect(second - first).toBe(8)
+    unsafePointerRef<number>(first + 1).value = 0x12
+    unsafePointerRef<number>(first + 7).value = 0x80
+    expect(unsafePointerRef<number>(first + 1).value).toBe(0x12)
+    expect(unsafePointerRef<number>(first + 7).value).toBe(0x80)
+    expect(words![0]).toBe(0x8000000000001200n as unknown as number)
+
+    unsafePointerRef<number>(second).value = 0x34
+    expect(words![1]).toBe(0x34)
   })
 
   it('exposes owned pointer handles for addressable collection elements', () => {

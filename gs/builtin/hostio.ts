@@ -104,6 +104,7 @@ export type MainScriptMeta = {
 }
 
 const encoder = new TextEncoder()
+const decoder = new TextDecoder()
 
 function getDynamicRequire(): ((specifier: string) => unknown) | null {
   try {
@@ -341,6 +342,12 @@ function detectHostRuntime(): HostRuntime {
           nodeFS.writeSync(fd, chunk, 0, chunk.length, null),
         buffer,
       )
+    }
+    if (fd === 1 || fd === 2) {
+      fallbackConsoleWriter(fd === 2 ? 'error' : 'log')(
+        decoder.decode(buffer),
+      )
+      return buffer.length
     }
     throw new HostUnsupportedError()
   }

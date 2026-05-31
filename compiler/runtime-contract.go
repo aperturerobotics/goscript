@@ -105,6 +105,8 @@ const (
 	RuntimeHelperSliceStringOrBytes           RuntimeHelper = "slice.sliceStringOrBytes"
 	RuntimeHelperIndexRef                     RuntimeHelper = "slice.indexRef"
 	RuntimeHelperIndexAddress                 RuntimeHelper = "slice.indexAddress"
+	RuntimeHelperIndexByteAddress             RuntimeHelper = "slice.indexByteAddress"
+	RuntimeHelperUnsafePointerRef             RuntimeHelper = "slice.unsafePointerRef"
 
 	RuntimeHelperMakeMap        RuntimeHelper = "map.makeMap"
 	RuntimeHelperMapGet         RuntimeHelper = "map.mapGet"
@@ -333,6 +335,8 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperSliceStringOrBytes, "sliceStringOrBytes", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperIndexRef, "indexRef", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperIndexAddress, "indexAddress", RuntimeHelperCategorySlice),
+		runtimeHelper(RuntimeHelperIndexByteAddress, "indexByteAddress", RuntimeHelperCategorySlice),
+		runtimeHelper(RuntimeHelperUnsafePointerRef, "unsafePointerRef", RuntimeHelperCategorySlice),
 		runtimeHelper(RuntimeHelperMakeMap, "makeMap", RuntimeHelperCategoryMap),
 		runtimeHelper(RuntimeHelperMapGet, "mapGet", RuntimeHelperCategoryMap),
 		runtimeHelper(RuntimeHelperMapSet, "mapSet", RuntimeHelperCategoryMap),

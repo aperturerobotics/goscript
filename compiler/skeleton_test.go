@@ -1496,6 +1496,53 @@ func TestCompilePackagesEmitsIndexAddressRefs(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLowersUnsafeBytePointerArithmetic(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/unsafeaddr\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"unsafe\"",
+			"func Set(bits []uint64, idx uint64, mask []uint8) uint8 {",
+			"  ptr := unsafe.Pointer(uintptr(unsafe.Pointer(&bits[idx>>6])) + uintptr((idx%64)>>3))",
+			"  *(*uint8)(ptr) |= mask[idx%8]",
+			"  return *(*uint8)(ptr)",
+			"}",
+			"func CopyBlock(dst []byte, words *[16]uint32) {",
+			"  *(*[64]byte)(unsafe.Pointer(&dst[0])) = *(*[64]byte)(unsafe.Pointer(&words[0]))",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	_, err = comp.CompilePackages(context.Background(), ".")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "unsafeaddr", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.indexByteAddress(bits!, $.uint64Shr(idx, 6), 8)") {
+		t.Fatalf("missing byte-addressed unsafe pointer root:\n%s", text)
+	}
+	if !strings.Contains(text, "$.unsafePointerRef<number>(ptr).value =") {
+		t.Fatalf("missing unsafe pointer storage ref:\n%s", text)
+	}
+	if !strings.Contains(text, "return $.uint($.unsafePointerRef<number>(ptr).value, 8)") {
+		t.Fatalf("missing unsafe pointer value ref:\n%s", text)
+	}
+	if !strings.Contains(text, "$.arrayPointerFromIndexRef<number>($.indexRef($.pointerValue<number[]>(words), 0), 64, 4, 1)") {
+		t.Fatalf("missing byte-view array pointer conversion:\n%s", text)
+	}
+}
+
 func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/structs\n\ngo 1.25.3\n",
@@ -2388,6 +2435,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 		"Read(): string",
 		"Close(): string",
 		"$.registerInterfaceType(\n\t\"main.ReadCloser\"",
+		"{ name: \"Close\", args: [], returns: [{ name: \"_r0\", type: { kind: $.TypeKind.Basic, name: \"string\" } }] }]\n);",
 		"((__receiver) => () => __receiver.Inc())($.pointerValue<Counter>(counter))",
 		"$.namedFunction(greet, \"main.Greeter\", ({ kind: $.TypeKind.Function, name: \"main.Greeter\"",
 		"params: [{ kind: $.TypeKind.Basic, name: \"string\" }]",
@@ -4353,10 +4401,15 @@ func TestCompilePackagesLowersUnaryBitwiseComplement(t *testing.T) {
 		"main.go": strings.Join([]string{
 			"package main",
 			"var value = 1",
+			"var wide uint64 = 1",
+			"var signed int64 = 1",
+			"func invert(crc uint64) uint64 {",
+			"  return ^crc",
+			"}",
 			"func main() {",
 			"  mask := 7",
 			"  mask &^= 3",
-			"  println(^value, value &^ 3, mask, 0700)",
+			"  println(^value, ^wide, ^signed, invert(wide), value &^ 3, mask, 0700)",
 			"}",
 			"",
 		}, "\n"),
@@ -4377,8 +4430,9 @@ func TestCompilePackagesLowersUnaryBitwiseComplement(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
+		"return $.uint($.uint64Xor(crc, -1n), 64)",
 		"mask = mask & ~((3))",
-		"$.println(~value, value & ~(3), mask, 0o700)",
+		"$.println($.int64Xor(value, -1n), $.uint($.uint64Xor(wide, -1n), 64), $.int($.int64Xor(signed, -1n)), $.uint(invert($.uint(wide, 64)), 64), value & ~(3), mask, 0o700)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)

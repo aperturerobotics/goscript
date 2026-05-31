@@ -195,6 +195,22 @@ describe('hostio text writes', () => {
     expect(getHostRuntime().nodeFS).toBeNull()
     expect(consoleLog).toHaveBeenCalledWith('browser')
   })
+
+  it('writes stdout and stderr file descriptors to console in browser-like hosts', () => {
+    const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    delete (globalThis as any).Deno
+    delete (globalThis as any).process
+    resetHostRuntimeForTests()
+
+    const runtime = getHostRuntime()
+    expect(runtime.writeFD(1, new Uint8Array([111, 107, 10]))).toBe(3)
+    expect(runtime.writeFD(2, new Uint8Array([101, 114, 114, 10]))).toBe(4)
+
+    expect(consoleLog).toHaveBeenCalledWith('ok')
+    expect(consoleError).toHaveBeenCalledWith('err')
+  })
 })
 
 describe('hostio isMainScript', () => {

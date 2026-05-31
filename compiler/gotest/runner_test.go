@@ -10,7 +10,27 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/aperturerobotics/goscript/compiler"
 )
+
+func TestDiagnosticsSummaryUsesCompilerFormatter(t *testing.T) {
+	got := diagnosticsSummary([]compiler.Diagnostic{{
+		Severity: compiler.DiagnosticSeverityError,
+		Code:     "goscript/test",
+		Message:  "failed",
+		Detail:   "bad input",
+		Position: &compiler.DiagnosticPosition{
+			DisplayFile: "pkg/main.go",
+			Line:        4,
+			Column:      2,
+		},
+	}})
+	want := "pkg/main.go:4:2: goscript/test: failed (bad input)"
+	if got != want {
+		t.Fatalf("diagnosticsSummary() = %q, want %q", got, want)
+	}
+}
 
 func TestRunnerRunsOrdinaryPackageTest(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{

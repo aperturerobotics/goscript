@@ -345,6 +345,7 @@ export function EqualVTMapImplicit<K, V extends EqualVT<V>>(
 }
 
 type BoundMessageType = {
+  typeName?: string
   fields?: { list(): readonly BoundFieldInfo[] }
   clone?: (value: any) => any
   equals?: (a: any, b: any) => boolean
@@ -370,6 +371,8 @@ type BoundMessageCtor<T = any> = {
   __protobufTypeScriptFields?: Record<string, BoundMessageCtor>
   __protobufTypeScriptMessage?: BoundMessageType
 }
+
+const protobufScalarTypeBytes = 12
 
 function boundMessageType(ctor: BoundMessageCtor): BoundMessageType {
   const messageType = ctor.__protobufTypeScriptMessage
@@ -401,8 +404,16 @@ function boundFieldValue(source: any, field: BoundFieldInfo): any {
   return source[boundFieldGoName(field)]
 }
 
-function toTypeScriptScalarValue(value: any): any {
+function toTypeScriptScalarValue(value: any, field?: BoundFieldInfo): any {
   const unwrapped = $.pointerValueOrNil(value)
+  if (
+    field?.kind === 'scalar' &&
+    field.T === protobufScalarTypeBytes &&
+    unwrapped != null &&
+    !(unwrapped instanceof Uint8Array)
+  ) {
+    return Uint8Array.from($.asArray(unwrapped))
+  }
   if (unwrapped instanceof Uint8Array) {
     return unwrapped
   }
@@ -440,7 +451,7 @@ function toTypeScriptFieldValue(
     const messageType = resolveBoundMessageType(field.T)
     return toTypeScriptMessage(value, messageType, ctor)
   }
-  return toTypeScriptScalarValue(value)
+  return toTypeScriptScalarValue(value, field)
 }
 
 function toTypeScriptMessage(
@@ -520,6 +531,23 @@ function fromTypeScriptFieldValue(
   return fromTypeScriptScalarValue(value)
 }
 
+function fromTypeScriptWellKnownMessage(
+  value: any,
+  ctor: BoundMessageCtor,
+  messageType?: BoundMessageType,
+): any {
+  if (
+    messageType?.typeName === 'google.protobuf.Timestamp' &&
+    value instanceof Date
+  ) {
+    const ms = value.getTime()
+    const seconds = Math.floor(ms / 1000)
+    const nanos = Math.trunc((ms - seconds * 1000) * 1000000)
+    return new ctor({ Seconds: seconds, Nanos: nanos })
+  }
+  return undefined
+}
+
 function fromTypeScriptMessage(
   value: any,
   ctor: BoundMessageCtor,
@@ -527,6 +555,10 @@ function fromTypeScriptMessage(
 ): any {
   if (value == null) {
     return null
+  }
+  const wellKnown = fromTypeScriptWellKnownMessage(value, ctor, messageType)
+  if (wellKnown !== undefined) {
+    return wellKnown
   }
   const out = new ctor()
   const fields = (messageType ?? boundMessageType(ctor)).fields?.list()
@@ -579,14 +611,17 @@ export function MarshalBoundMessageVT<T>(
   ctor: BoundMessageCtor<T>,
   value: T | $.VarRef<T> | null,
 ): [$.Slice<number>, $.GoError] {
+  let typeName = ctor.name
   try {
     const messageType = boundMessageType(ctor)
+    typeName = messageType.typeName ?? typeName
     return [
       messageType.toBinary(toTypeScriptMessage(value, messageType, ctor)),
       null,
     ]
   } catch (err) {
-    return [null, $.toGoError(err as Error)]
+    const msg = err instanceof Error ? err.message : String(err)
+    return [null, $.toGoError(new Error(`marshal ${typeName}: ${msg}`))]
   }
 }
 
@@ -599,12 +634,13 @@ export function MarshalBoundMessageToSizedBufferVT<T>(
   if (err != null) {
     return [0, err]
   }
-  const offset = $.len(dAtA) - $.len(bytes)
+  const byteCount = $.len(bytes)
+  const offset = $.len(dAtA) - byteCount
   const src = $.asArray(bytes)
   for (let i = 0; i < src.length; i++) {
     ;(dAtA as any)[offset + i] = src[i]
   }
-  return [offset, null]
+  return [byteCount, null]
 }
 
 export function SizeBoundMessageVT<T>(
