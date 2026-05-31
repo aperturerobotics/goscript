@@ -1019,7 +1019,7 @@ export async function Write(w: io.Writer | null, order: ByteOrder | null, data: 
 				encodeFast(bs, order, data)
 			}
 
-			let [, err] = await $.pointerValue<Exclude<io.Writer, null>>(w).Write(bs)
+			let [, err] = $.pointerValue<Exclude<io.Writer, null>>(w).Write(bs)
 			return err
 		}
 	}
@@ -1034,7 +1034,7 @@ export async function Write(w: io.Writer | null, order: ByteOrder | null, data: 
 	let buf: $.Slice<number> = $.makeSlice<number>(size, undefined, "byte")
 	let e: encoder | $.VarRef<encoder> | null = new encoder({order: order, buf: buf})
 	await encoder.prototype.value.call(e, $.markAsStructValue($.cloneStructValue(v)))
-	let [, err] = await $.pointerValue<Exclude<io.Writer, null>>(w).Write(buf)
+	let [, err] = $.pointerValue<Exclude<io.Writer, null>>(w).Write(buf)
 	return err
 }
 
