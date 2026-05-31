@@ -21,7 +21,7 @@ $.registerInterfaceType(
 	"srpc.PacketWriter",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "WritePacket", args: [{ name: "p", type: { kind: $.TypeKind.Pointer, elemType: "srpc.Packet" } }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export class packetWriterWithClose {
 	public get PacketWriter(): PacketWriter | null {

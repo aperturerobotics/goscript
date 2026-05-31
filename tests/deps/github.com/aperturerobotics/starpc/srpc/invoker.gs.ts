@@ -20,7 +20,7 @@ $.registerInterfaceType(
 	"srpc.Invoker",
 	null,
 	[{ name: "InvokeMethod", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "methodID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "strm", type: "srpc.Stream" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "_r1", type: "error" }] }]
-)
+);
 
 export type QueryableInvoker = {
 	HasService(serviceID: string): boolean | globalThis.Promise<boolean>
@@ -31,7 +31,7 @@ $.registerInterfaceType(
 	"srpc.QueryableInvoker",
 	null,
 	[{ name: "HasService", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "HasServiceMethod", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "methodID", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }]
-)
+);
 
 export type InvokerSlice = $.Slice<Invoker | null>
 

@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.A",
 	null,
 	[{ name: "MethodA", args: [{ name: "a", type: "main.A" }], returns: [] }]
-)
+);
 
 export type C = {
 	MethodC(d: D | null): void
@@ -21,7 +21,7 @@ $.registerInterfaceType(
 	"main.C",
 	null,
 	[{ name: "MethodC", args: [{ name: "d", type: "main.D" }], returns: [] }]
-)
+);
 
 export type D = {
 	MethodD(c: C | null): void
@@ -31,7 +31,7 @@ $.registerInterfaceType(
 	"main.D",
 	null,
 	[{ name: "MethodD", args: [{ name: "c", type: "main.C" }], returns: [] }]
-)
+);
 
 export class B {
 	public _fields: {

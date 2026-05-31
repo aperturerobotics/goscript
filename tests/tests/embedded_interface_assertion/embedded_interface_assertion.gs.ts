@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.Reader",
 	null,
 	[{ name: "Read", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
-)
+);
 
 export type Closer = {
 	Close(): $.GoError
@@ -21,7 +21,7 @@ $.registerInterfaceType(
 	"main.Closer",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export type ReadCloser = {
 	Close(): $.GoError
@@ -32,7 +32,7 @@ $.registerInterfaceType(
 	"main.ReadCloser",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
-)
+);
 
 export class MyStruct {
 	public _fields: {

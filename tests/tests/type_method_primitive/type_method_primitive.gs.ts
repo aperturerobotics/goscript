@@ -13,7 +13,7 @@ $.registerInterfaceType(
 	"main.Doubler",
 	null,
 	[{ name: "Double", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export type Stringer = {
 	String(): string
@@ -23,7 +23,7 @@ $.registerInterfaceType(
 	"main.Stringer",
 	null,
 	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export type MyBool = boolean
 

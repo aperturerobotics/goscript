@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.MyInterface",
 	null,
 	[{ name: "Method", args: [], returns: [] }]
-)
+);
 
 export class MyStruct {
 	public get PointerField(): $.VarRef<number> | null {

@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.Block",
 	null,
 	[{ name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export class blockImpl {
 	public get size(): number {

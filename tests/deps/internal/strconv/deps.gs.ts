@@ -8,22 +8,22 @@ import "@goscript/unsafe/index.js"
 
 export function float64frombits(__goscriptParam0: number): number {
 	let b: $.VarRef<number> = $.varRef(__goscriptParam0)
-	return $.pointerValue<number>((b as any))
+	return $.unsafePointerRef<number>((b as any)).value
 }
 
 export function float32frombits(__goscriptParam1: number): number {
 	let b: $.VarRef<number> = $.varRef(__goscriptParam1)
-	return $.pointerValue<number>((b as any))
+	return $.unsafePointerRef<number>((b as any)).value
 }
 
 export function float64bits(__goscriptParam2: number): number {
 	let f: $.VarRef<number> = $.varRef(__goscriptParam2)
-	return $.uint($.pointerValue<number>((f as any)), 64)
+	return $.uint($.unsafePointerRef<number>((f as any)).value, 64)
 }
 
 export function float32bits(__goscriptParam3: number): number {
 	let f: $.VarRef<number> = $.varRef(__goscriptParam3)
-	return $.uint($.pointerValue<number>((f as any)), 32)
+	return $.uint($.unsafePointerRef<number>((f as any)).value, 32)
 }
 
 export function inf(sign: number): number {

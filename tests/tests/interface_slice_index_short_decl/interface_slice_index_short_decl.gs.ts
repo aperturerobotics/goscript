@@ -16,7 +16,7 @@ $.registerInterfaceType(
 	"main.Shape",
 	null,
 	[{ name: "Mark", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }]
-)
+);
 
 export class Action {
 	public get Result(): number {

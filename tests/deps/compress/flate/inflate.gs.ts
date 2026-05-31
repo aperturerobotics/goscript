@@ -39,7 +39,7 @@ $.registerInterfaceType(
 	"flate.Resetter",
 	null,
 	[{ name: "Reset", args: [{ name: "r", type: "io.Reader" }, { name: "dict", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export type Reader = {
 	Read(p: $.Slice<number>): [number, $.GoError] | globalThis.Promise<[number, $.GoError]>
@@ -50,7 +50,7 @@ $.registerInterfaceType(
 	"flate.Reader",
 	null,
 	[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }, { name: "ReadByte", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint8" } }, { name: "_r1", type: "error" }] }]
-)
+);
 
 export class ReadError {
 	public get Offset(): number {
@@ -669,7 +669,7 @@ export class decompressor {
 		}
 		let n = $.int($.pointerValue<decompressor>(f).buf[0]) | ($.int($.pointerValue<decompressor>(f).buf[1]) << 8)
 		let nn = $.int($.pointerValue<decompressor>(f).buf[2]) | ($.int($.pointerValue<decompressor>(f).buf[3]) << 8)
-		if ($.uint($.uint(nn, 16), 16) != $.uint($.uint(~n, 16), 16)) {
+		if ($.uint($.uint(nn, 16), 16) != $.uint($.uint($.int64Xor(n, -1n), 16), 16)) {
 			$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 			return
 		}

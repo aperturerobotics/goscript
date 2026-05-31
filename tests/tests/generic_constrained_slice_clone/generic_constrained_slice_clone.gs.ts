@@ -54,7 +54,7 @@ $.registerInterfaceType(
 	"main.clonable",
 	null,
 	[{ name: "CloneVT", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
-)
+);
 
 export function cloneSlice<T>(__typeArgs: $.GenericTypeArgs | undefined, items: $.Slice<T>): $.Slice<T> {
 	let cloned: $.Slice<T> = $.makeSlice<T>(0, $.len(items))

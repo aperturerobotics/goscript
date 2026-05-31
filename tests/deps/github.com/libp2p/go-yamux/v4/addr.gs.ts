@@ -96,4 +96,4 @@ $.registerInterfaceType(
 	"yamux.hasAddr",
 	null,
 	[{ name: "LocalAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "RemoteAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }]
-)
+);

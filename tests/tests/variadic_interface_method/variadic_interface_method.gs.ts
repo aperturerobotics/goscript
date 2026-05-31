@@ -14,7 +14,7 @@ $.registerInterfaceType(
 	"main.Basic",
 	null,
 	[{ name: "Join", args: [{ name: "elem", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export class PathJoiner {
 	public _fields: {

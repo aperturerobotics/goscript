@@ -19,7 +19,7 @@ $.registerInterfaceType(
 	"dep.Store",
 	null,
 	[{ name: "NewTransaction", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }]
-)
+);
 
 export class BaseStore {
 	public get CoreStore(): inner.CoreStore | $.VarRef<inner.CoreStore> | null {

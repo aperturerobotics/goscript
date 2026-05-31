@@ -54,4 +54,4 @@ $.registerInterfaceType(
 	"net.sockaddr",
 	null,
 	[{ name: "Network", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "family", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "isWildcard", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "sockaddr", args: [{ name: "family", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: "syscall.Sockaddr" }, { name: "_r1", type: "error" }] }, { name: "toLocal", args: [{ name: "net", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "net.sockaddr" }] }]
-)
+);

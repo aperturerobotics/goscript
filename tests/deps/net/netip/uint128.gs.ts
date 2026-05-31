@@ -77,7 +77,7 @@ export class uint128 {
 
 	public not(): uint128 {
 		const u = this
-		return $.markAsStructValue(new uint128({hi: $.uint(~u.hi, 64), lo: $.uint(~u.lo, 64)}))
+		return $.markAsStructValue(new uint128({hi: $.uint($.uint64Xor(u.hi, -1n), 64), lo: $.uint($.uint64Xor(u.lo, -1n), 64)}))
 	}
 
 	public or(m: uint128): uint128 {
@@ -108,5 +108,5 @@ export class uint128 {
 }
 
 export function mask6(n: number): uint128 {
-	return $.markAsStructValue(new uint128({hi: $.uint(~($.uint64Shr(~$.uint(0, 64), n)), 64), lo: $.uint($.uint64Shl(~$.uint(0, 64), (128 - n)), 64)}))
+	return $.markAsStructValue(new uint128({hi: $.uint($.uint64Xor(($.uint64Shr($.uint64Xor($.uint(0, 64), -1n), n)), -1n), 64), lo: $.uint($.uint64Shl($.uint64Xor($.uint(0, 64), -1n), (128 - n)), 64)}))
 }

@@ -21,7 +21,7 @@ $.registerInterfaceType(
 	"main.Store",
 	null,
 	[{ name: "Execute", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "NewTransaction", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }]
-)
+);
 
 export class VerboseStore {
 	public get BaseStore(): dep.BaseStore | $.VarRef<dep.BaseStore> | null {

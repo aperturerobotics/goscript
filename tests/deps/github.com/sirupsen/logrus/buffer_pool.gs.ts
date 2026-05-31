@@ -18,7 +18,7 @@ $.registerInterfaceType(
 	"logrus.BufferPool",
 	null,
 	[{ name: "Get", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "bytes.Buffer" } }] }, { name: "Put", args: [{ name: "_p0", type: { kind: $.TypeKind.Pointer, elemType: "bytes.Buffer" } }], returns: [] }]
-)
+);
 
 export class defaultPool {
 	public get pool(): sync.Pool | $.VarRef<sync.Pool> | null {

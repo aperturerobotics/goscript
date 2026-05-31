@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"helper.Value",
 	null,
 	[{ name: "GetValue", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export class Box {
 	public get Value(): any {

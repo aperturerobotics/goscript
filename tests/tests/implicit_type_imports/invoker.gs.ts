@@ -13,4 +13,4 @@ $.registerInterfaceType(
 	"main.Invoker",
 	null,
 	[{ name: "Invoke", args: [{ name: "_p0", type: "main.Stream" }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);

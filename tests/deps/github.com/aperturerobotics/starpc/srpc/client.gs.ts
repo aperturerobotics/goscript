@@ -54,7 +54,7 @@ $.registerInterfaceType(
 	"srpc.Client",
 	null,
 	[{ name: "ExecCall", args: [{ name: "ctx", type: "context.Context" }, { name: "service", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "method", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "in", type: "protobuf_go_lite.Message" }, { name: "out", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "NewStream", args: [{ name: "ctx", type: "context.Context" }, { name: "service", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "method", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "firstMsg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "srpc.Stream" }, { name: "_r1", type: "error" }] }]
-)
+);
 
 export type OpenStreamFunc = ((ctx: context.Context | null, msgHandler: ((data: $.Slice<number>) => $.GoError | globalThis.Promise<$.GoError>) | null, closeHandler: ((closeErr: $.GoError) => void) | null) => [__goscript_writer.PacketWriter | null, $.GoError] | globalThis.Promise<[__goscript_writer.PacketWriter | null, $.GoError]>) | null
 

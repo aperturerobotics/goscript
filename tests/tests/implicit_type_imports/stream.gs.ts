@@ -11,4 +11,4 @@ $.registerInterfaceType(
 	"main.Stream",
 	null,
 	[{ name: "Send", args: [], returns: [{ name: "_r0", type: "error" }] }]
-)
+);

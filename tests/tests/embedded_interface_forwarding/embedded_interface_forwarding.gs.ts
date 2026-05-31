@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.Adder",
 	null,
 	[{ name: "Add", args: [{ name: "value", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export class Box {
 	public get Adder(): Adder | null {

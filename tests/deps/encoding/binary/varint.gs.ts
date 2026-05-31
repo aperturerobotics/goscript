@@ -59,7 +59,7 @@ export function Uvarint(buf: $.Slice<number>): [number, number] {
 export function AppendVarint(buf: $.Slice<number>, x: number): $.Slice<number> {
 	let ux = $.uint($.uint64Shl($.uint(x, 64), 1), 64)
 	if (x < 0) {
-		ux = $.uint(~ux, 64)
+		ux = $.uint($.uint64Xor(ux, -1n), 64)
 	}
 	return AppendUvarint(buf, $.uint(ux, 64))
 }
@@ -67,7 +67,7 @@ export function AppendVarint(buf: $.Slice<number>, x: number): $.Slice<number> {
 export function PutVarint(buf: $.Slice<number>, x: number): number {
 	let ux = $.uint($.uint64Shl($.uint(x, 64), 1), 64)
 	if (x < 0) {
-		ux = $.uint(~ux, 64)
+		ux = $.uint($.uint64Xor(ux, -1n), 64)
 	}
 	return PutUvarint(buf, $.uint(ux, 64))
 }
@@ -78,7 +78,7 @@ export function Varint(buf: $.Slice<number>): [number, number] {
 	let n = __goscriptTuple0[1]
 	let x = $.int($.int($.uint64Shr(ux, 1)))
 	if ($.uint(($.uint64And(ux, 1)), 64) != $.uint(0, 64)) {
-		x = $.int(~x)
+		x = $.int($.int64Xor(x, -1n))
 	}
 	return [$.int(x), n]
 }
@@ -120,7 +120,7 @@ export async function ReadVarint(r: io.ByteReader | null): globalThis.Promise<[n
 	let err = __goscriptTuple2[1]
 	let x = $.int($.int($.uint64Shr(ux, 1)))
 	if ($.uint(($.uint64And(ux, 1)), 64) != $.uint(0, 64)) {
-		x = $.int(~x)
+		x = $.int($.int64Xor(x, -1n))
 	}
 	return [$.int(x), err]
 }

@@ -1764,7 +1764,7 @@ $.registerInterfaceType(
 	"regexp.input",
 	null,
 	[{ name: "canCheckPrefix", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "context", args: [{ name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint64", typeName: "regexp.lazyFlag" } }] }, { name: "hasPrefix", args: [{ name: "re", type: { kind: $.TypeKind.Pointer, elemType: "regexp.Regexp" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "index", args: [{ name: "re", type: { kind: $.TypeKind.Pointer, elemType: "regexp.Regexp" } }, { name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "step", args: [{ name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "r", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "width", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export async function MatchReader(pattern: string, r: io.RuneReader | null): globalThis.Promise<[boolean, $.GoError]> {
 	let matched: boolean = false

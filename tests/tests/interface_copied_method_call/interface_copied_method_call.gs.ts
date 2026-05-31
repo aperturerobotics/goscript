@@ -40,7 +40,7 @@ $.registerInterfaceType(
 	"main.runner",
 	null,
 	[{ name: "Run", args: [], returns: [] }]
-)
+);
 
 export function callCopied(r: runner | null): void {
 	let curr: runner | null = null as runner | null

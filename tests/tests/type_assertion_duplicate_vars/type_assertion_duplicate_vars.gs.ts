@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.Interface",
 	null,
 	[{ name: "Method", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export class ConcreteA {
 	public _fields: {

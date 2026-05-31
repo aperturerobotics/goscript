@@ -20,7 +20,7 @@ $.registerInterfaceType(
 	"main.MyInterface",
 	null,
 	[{ name: "SomeMethod", args: [], returns: [] }]
-)
+);
 
 export class MyStruct {
 	public get Name(): string {

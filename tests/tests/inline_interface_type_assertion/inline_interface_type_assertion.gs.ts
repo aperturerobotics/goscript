@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.Stringer",
 	null,
 	[{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export class Greeter {
 	public _fields: {

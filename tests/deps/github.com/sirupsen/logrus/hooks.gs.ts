@@ -47,7 +47,7 @@ $.registerInterfaceType(
 	"logrus.Hook",
 	null,
 	[{ name: "Fire", args: [{ name: "_p0", type: { kind: $.TypeKind.Pointer, elemType: "logrus.Entry" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "Levels", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32", typeName: "logrus.Level" } } }] }]
-)
+);
 
 export type LevelHooks = Map<__goscript_logrus.Level, $.Slice<Hook | null>> | null
 

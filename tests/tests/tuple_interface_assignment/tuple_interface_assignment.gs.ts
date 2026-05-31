@@ -40,7 +40,7 @@ $.registerInterfaceType(
 	"main.reader",
 	null,
 	[{ name: "Read", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export function makeReader(): [concrete | $.VarRef<concrete> | null, $.GoError] {
 	return [new concrete(), null]

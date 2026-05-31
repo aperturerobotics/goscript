@@ -16,4 +16,4 @@ $.registerInterfaceType(
 	"main.Tx",
 	null,
 	[{ name: "Put", args: [{ name: "v", type: "dep.Value" }], returns: [] }]
-)
+);

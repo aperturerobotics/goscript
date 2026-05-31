@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.Animal",
 	null,
 	[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export class Dog {
 	public get name(): string {

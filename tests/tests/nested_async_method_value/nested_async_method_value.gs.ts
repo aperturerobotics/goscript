@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.Spawner",
 	null,
 	[{ name: "Spawn", args: [], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export class Worker {
 	public get ch(): $.Channel<number> | null {

@@ -9,7 +9,7 @@ $.registerInterfaceType(
 	"main.StrOrBytes",
 	null,
 	[]
-)
+);
 
 export function toStringString(__typeArgs: $.GenericTypeArgs | undefined, v: any): string {
 	return $.genericBytesOrStringToString(v)

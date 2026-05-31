@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.ref",
 	null,
 	[{ name: "Key", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
-)
+);
 
 export type valueHash = Uint8Array
 

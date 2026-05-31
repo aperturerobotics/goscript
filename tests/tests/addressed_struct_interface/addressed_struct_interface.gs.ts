@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.Writer",
 	null,
 	[{ name: "Write", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
-)
+);
 
 export class Buffer {
 	public get data(): $.Slice<number> {

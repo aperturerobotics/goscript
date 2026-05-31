@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"dep.Directive",
 	null,
 	[{ name: "Validate", args: [], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export async function Use(d: Directive | null): globalThis.Promise<boolean> {
 	return await $.pointerValue<Exclude<Directive, null>>(d).Validate() == null

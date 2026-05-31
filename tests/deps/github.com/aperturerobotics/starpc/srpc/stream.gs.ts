@@ -22,7 +22,7 @@ $.registerInterfaceType(
 	"srpc.Stream",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseSend", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Context", args: [], returns: [{ name: "_r0", type: "context.Context" }] }, { name: "MsgRecv", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "MsgSend", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export type StreamRecv = {
 	Close(): $.GoError | globalThis.Promise<$.GoError>
@@ -38,7 +38,7 @@ $.registerInterfaceType(
 	"srpc.StreamRecv",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseSend", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Context", args: [], returns: [{ name: "_r0", type: "context.Context" }] }, { name: "MsgRecv", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "MsgSend", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "Recv", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_r1", type: "error" }] }, { name: "RecvTo", args: [{ name: "_p0", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export type StreamSend = {
 	Close(): $.GoError | globalThis.Promise<$.GoError>
@@ -53,7 +53,7 @@ $.registerInterfaceType(
 	"srpc.StreamSend",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseSend", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Context", args: [], returns: [{ name: "_r0", type: "context.Context" }] }, { name: "MsgRecv", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "MsgSend", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "Send", args: [{ name: "_p0", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export type StreamSendAndClose = {
 	Close(): $.GoError | globalThis.Promise<$.GoError>
@@ -69,7 +69,7 @@ $.registerInterfaceType(
 	"srpc.StreamSendAndClose",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseSend", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Context", args: [], returns: [{ name: "_r0", type: "context.Context" }] }, { name: "MsgRecv", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "MsgSend", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "Send", args: [{ name: "_p0", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: "error" }] }, { name: "SendAndClose", args: [{ name: "_p0", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export class streamWithClose {
 	public get Stream(): Stream | null {

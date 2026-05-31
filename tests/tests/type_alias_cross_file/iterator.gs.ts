@@ -15,7 +15,7 @@ $.registerInterfaceType(
 	"main.Reader",
 	null,
 	[{ name: "Val", args: [], returns: [{ name: "_r0", type: "subpkg.Value" }] }]
-)
+);
 
 export function Read(r: Reader | null): __goscript_alias.Value {
 	return ($.pointerValue<Exclude<Reader, null>>(r).Val() as __goscript_alias.Value)

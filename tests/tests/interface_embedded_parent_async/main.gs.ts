@@ -15,7 +15,7 @@ $.registerInterfaceType(
 	"main.Specific",
 	null,
 	[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Validate", args: [], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export class impl {
 	public _fields: {

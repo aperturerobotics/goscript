@@ -12,7 +12,7 @@ $.registerInterfaceType(
 	"main.AsyncProcessor",
 	null,
 	[{ name: "GetResult", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export type GenericStore = {
 	Load(): any | globalThis.Promise<any>
@@ -22,7 +22,7 @@ $.registerInterfaceType(
 	"main.GenericStore",
 	null,
 	[{ name: "Load", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
-)
+);
 
 export class ChannelProcessor {
 	public get ch(): $.Channel<number> | null {

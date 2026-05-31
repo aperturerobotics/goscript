@@ -129,7 +129,7 @@ $.registerInterfaceType(
 	"main.closer",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export function closeIt(c: closer | null): void {
 	$.println($.pointerValue<Exclude<closer, null>>(c).Close())

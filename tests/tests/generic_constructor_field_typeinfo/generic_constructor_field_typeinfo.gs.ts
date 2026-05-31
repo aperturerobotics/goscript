@@ -12,7 +12,7 @@ $.registerInterfaceType(
 	"main.Block",
 	null,
 	[{ name: "MarshalBlock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_r1", type: "error" }] }, { name: "UnmarshalBlock", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export class blockType {
 	public get typeID(): string {

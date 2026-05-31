@@ -7,7 +7,7 @@ import * as unsafe from "@goscript/unsafe/index.js"
 import "@goscript/unsafe/index.js"
 
 export function anyOverlap(x: $.Slice<number>, y: $.Slice<number>): boolean {
-	return ((($.len(x) > 0) && ($.len(y) > 0)) && ($.indexAddress(x!, 0) <= $.indexAddress(y!, $.len(y) - 1))) && ($.indexAddress(y!, 0) <= $.indexAddress(x!, $.len(x) - 1))
+	return ((($.len(x) > 0) && ($.len(y) > 0)) && ($.indexByteAddress(x!, 0, 1) <= $.indexByteAddress(y!, $.len(y) - 1, 1))) && ($.indexByteAddress(y!, 0, 1) <= $.indexByteAddress(x!, $.len(x) - 1, 1))
 }
 
 export function sameStart(x: $.Slice<number>, y: $.Slice<number>): boolean {

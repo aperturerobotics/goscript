@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"dep.Ref",
 	null,
 	[{ name: "Key", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
-)
+);
 
 export function ToKey(v: Ref | null): any {
 	if (v == null) {

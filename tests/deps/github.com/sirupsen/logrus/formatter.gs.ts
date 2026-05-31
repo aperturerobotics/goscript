@@ -49,7 +49,7 @@ $.registerInterfaceType(
 	"logrus.Formatter",
 	null,
 	[{ name: "Format", args: [{ name: "_p0", type: { kind: $.TypeKind.Pointer, elemType: "logrus.Entry" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_r1", type: "error" }] }]
-)
+);
 
 export const defaultTimestampFormat: string = "2006-01-02T15:04:05Z07:00"
 

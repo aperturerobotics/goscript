@@ -2135,4 +2135,4 @@ $.registerInterfaceType(
 	"srpc.isPacket_Body",
 	null,
 	[{ name: "isPacket_Body", args: [], returns: [] }]
-)
+);

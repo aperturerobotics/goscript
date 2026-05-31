@@ -12,7 +12,7 @@ $.registerInterfaceType(
 	"main.MyInterface1",
 	null,
 	[{ name: "MyString1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "MyString2", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export type MyInterface2 = {
 	MyString1(): string
@@ -22,7 +22,7 @@ $.registerInterfaceType(
 	"main.MyInterface2",
 	null,
 	[{ name: "MyString1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export class MyStruct {
 	public get Value1(): string {

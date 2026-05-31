@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.MyInterface",
 	null,
 	[{ name: "MyMethod", args: [], returns: [] }]
-)
+);
 
 export async function main(): globalThis.Promise<void> {
 	// This test verifies that comments on interface methods are preserved.

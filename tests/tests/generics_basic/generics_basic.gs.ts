@@ -9,7 +9,7 @@ $.registerInterfaceType(
 	"main.Ordered",
 	null,
 	[]
-)
+);
 
 export type Score = number
 
@@ -23,7 +23,7 @@ $.registerInterfaceType(
 	"main.Cloner",
 	null,
 	[{ name: "Clone", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
-)
+);
 
 export class Stack {
 	public get items(): $.Slice<any> {

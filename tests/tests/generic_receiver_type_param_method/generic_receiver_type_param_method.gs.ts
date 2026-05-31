@@ -87,7 +87,7 @@ $.registerInterfaceType(
 	"main.nistPoint",
 	null,
 	[{ name: "Add", args: [{ name: "_p0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_p1", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
-)
+);
 
 export let curve: nistCurve | $.VarRef<nistCurve> | null = new nistCurve()
 

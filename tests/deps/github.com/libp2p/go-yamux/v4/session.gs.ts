@@ -76,7 +76,7 @@ $.registerInterfaceType(
 	"yamux.MemoryManager",
 	null,
 	[{ name: "Done", args: [], returns: [] }, { name: "ReleaseMemory", args: [{ name: "size", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "ReserveMemory", args: [{ name: "size", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "prio", type: { kind: $.TypeKind.Basic, name: "uint8" } }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export class nullMemoryManagerImpl {
 	public _fields: {

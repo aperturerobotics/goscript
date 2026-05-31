@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.MyInterface",
 	null,
 	[{ name: "Method1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export type MyOtherInterface = {
 	Method1(): number
@@ -21,7 +21,7 @@ $.registerInterfaceType(
 	"main.MyOtherInterface",
 	null,
 	[{ name: "Method1", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export class MyStruct {
 	public get Value(): number {

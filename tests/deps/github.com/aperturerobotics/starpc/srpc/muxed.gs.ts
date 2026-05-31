@@ -23,7 +23,7 @@ $.registerInterfaceType(
 	"srpc.MuxedConn",
 	null,
 	[{ name: "AcceptStream", args: [], returns: [{ name: "_r0", type: "srpc.MuxedStream" }, { name: "_r1", type: "error" }] }, { name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "IsClosed", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "OpenStream", args: [{ name: "_p0", type: "context.Context" }], returns: [{ name: "_r0", type: "srpc.MuxedStream" }, { name: "_r1", type: "error" }] }]
-)
+);
 
 export type MuxedStream = {
 	Close(): $.GoError | globalThis.Promise<$.GoError>
@@ -41,4 +41,4 @@ $.registerInterfaceType(
 	"srpc.MuxedStream",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseRead", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseWrite", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }, { name: "Reset", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "SetDeadline", args: [{ name: "_p0", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadDeadline", args: [{ name: "_p0", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteDeadline", args: [{ name: "_p0", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }]
-)
+);

@@ -16,4 +16,4 @@ $.registerInterfaceType(
 	"main.Handler",
 	null,
 	[{ name: "Handle", args: [], returns: [] }, { name: "Invoke", args: [{ name: "_p0", type: "main.Stream" }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);

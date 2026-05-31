@@ -11,7 +11,7 @@ $.registerInterfaceType(
 	"main.sizer",
 	null,
 	[{ name: "Len", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
-)
+);
 
 export type bytesEncoder = $.Slice<number>
 

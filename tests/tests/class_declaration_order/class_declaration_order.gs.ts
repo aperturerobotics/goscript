@@ -40,7 +40,7 @@ $.registerInterfaceType(
 	"main.named",
 	null,
 	[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export let defaultNamed: named | null = $.interfaceValue<named | null>(new lateType(), "*main.lateType")
 

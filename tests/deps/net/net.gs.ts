@@ -72,7 +72,7 @@ $.registerInterfaceType(
 	"net.Addr",
 	null,
 	[{ name: "Network", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export type Conn = {
 	Close(): $.GoError | globalThis.Promise<$.GoError>
@@ -89,7 +89,7 @@ $.registerInterfaceType(
 	"net.Conn",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "LocalAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "Read", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }, { name: "RemoteAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "SetDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "Write", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }]
-)
+);
 
 export type PacketConn = {
 	Close(): $.GoError | globalThis.Promise<$.GoError>
@@ -105,7 +105,7 @@ $.registerInterfaceType(
 	"net.PacketConn",
 	null,
 	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "LocalAddr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "ReadFrom", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "addr", type: "net.Addr" }, { name: "err", type: "error" }] }, { name: "SetDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetReadDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "SetWriteDeadline", args: [{ name: "t", type: "time.Time" }], returns: [{ name: "_r0", type: "error" }] }, { name: "WriteTo", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "addr", type: "net.Addr" }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }]
-)
+);
 
 export type Listener = {
 	Accept(): [Conn | null, $.GoError] | globalThis.Promise<[Conn | null, $.GoError]>
@@ -117,7 +117,7 @@ $.registerInterfaceType(
 	"net.Listener",
 	null,
 	[{ name: "Accept", args: [], returns: [{ name: "_r0", type: "net.Conn" }, { name: "_r1", type: "error" }] }, { name: "Addr", args: [], returns: [{ name: "_r0", type: "net.Addr" }] }, { name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export type Error = {
 	Error(): string | globalThis.Promise<string>
@@ -129,7 +129,7 @@ $.registerInterfaceType(
 	"net.Error",
 	null,
 	[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }]
-)
+);
 
 export type UnknownNetworkError = string
 
@@ -1383,7 +1383,7 @@ $.registerInterfaceType(
 	"net.timeout",
 	null,
 	[{ name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }]
-)
+);
 
 export type temporary = {
 	Temporary(): boolean
@@ -1393,7 +1393,7 @@ $.registerInterfaceType(
 	"net.temporary",
 	null,
 	[{ name: "Temporary", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }]
-)
+);
 
 export function UnknownNetworkError_Error(e: UnknownNetworkError): string {
 	return "unknown network " + e
@@ -1547,7 +1547,7 @@ $.registerInterfaceType(
 	"net.buffersWriter",
 	null,
 	[{ name: "writeBuffers", args: [{ name: "_p0", type: { kind: $.TypeKind.Pointer, elemType: "net.Buffers" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }]
-)
+);
 
 export async function Buffers_WriteTo(v: $.VarRef<Buffers> | null, w: io.Writer | null): globalThis.Promise<[number, $.GoError]> {
 	let n: number = 0

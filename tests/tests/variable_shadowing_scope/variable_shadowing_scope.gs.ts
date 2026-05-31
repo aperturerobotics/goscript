@@ -52,7 +52,7 @@ $.registerInterfaceType(
 	"main.named",
 	null,
 	[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export function describe(value: any): void {
 	let __goscriptShadow0 = value

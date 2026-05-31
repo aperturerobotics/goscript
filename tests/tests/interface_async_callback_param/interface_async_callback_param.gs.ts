@@ -46,7 +46,7 @@ $.registerInterfaceType(
 	"main.scanner",
 	null,
 	[{ name: "Scan", args: [{ name: "_p0", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }]
-)
+);
 
 export async function run(s: scanner | null): globalThis.Promise<$.GoError> {
 	return await $.pointerValue<Exclude<scanner, null>>(s).Scan($.functionValue((v: number): $.GoError => {

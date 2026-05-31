@@ -341,7 +341,7 @@ $.registerInterfaceType(
 	"main.runner",
 	null,
 	[{ name: "Run", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
-)
+);
 
 export async function main(): globalThis.Promise<void> {
 	let o: $.VarRef<outer> = $.varRef($.markAsStructValue(new outer()))
