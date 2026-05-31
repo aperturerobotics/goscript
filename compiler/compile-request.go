@@ -42,6 +42,8 @@ type CompileRequest struct {
 	DependencyMode DependencyMode
 	// RuntimeEmissionMode controls runtime package emission policy.
 	RuntimeEmissionMode RuntimeEmissionMode
+	// ProtobufTypeScriptBinding binds .pb.go files to sibling .pb.ts files.
+	ProtobufTypeScriptBinding bool
 	// Tests controls whether package loading includes Go package-test variants.
 	Tests bool
 	// AllDependencies controls whether the package graph should include deps.
@@ -75,15 +77,16 @@ func (o *CompileRequestOwner) NewRequest(conf Config, patterns []string) *Compil
 	}
 
 	return &CompileRequest{
-		Patterns:            normalizePatterns(patterns),
-		Dir:                 strings.TrimSpace(dir),
-		OutputPath:          strings.TrimSpace(conf.OutputPath),
-		BuildFlags:          append([]string(nil), conf.BuildFlags...),
-		OverrideDirs:        append([]string(nil), conf.OverrideDirs...),
-		DependencyMode:      dependencyMode,
-		RuntimeEmissionMode: runtimeEmissionMode,
-		AllDependencies:     conf.AllDependencies,
-		DisableEmitBuiltin:  conf.DisableEmitBuiltin,
+		Patterns:                  normalizePatterns(patterns),
+		Dir:                       strings.TrimSpace(dir),
+		OutputPath:                strings.TrimSpace(conf.OutputPath),
+		BuildFlags:                append([]string(nil), conf.BuildFlags...),
+		OverrideDirs:              append([]string(nil), conf.OverrideDirs...),
+		DependencyMode:            dependencyMode,
+		RuntimeEmissionMode:       runtimeEmissionMode,
+		ProtobufTypeScriptBinding: conf.ProtobufTypeScriptBinding,
+		AllDependencies:           conf.AllDependencies,
+		DisableEmitBuiltin:        conf.DisableEmitBuiltin,
 	}
 }
 

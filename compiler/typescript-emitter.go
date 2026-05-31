@@ -1270,6 +1270,9 @@ func renderIndex(pkg *loweredPackage) string {
 		if file.sideEffect {
 			lines = append(lines, "import \"./"+file.outputName+"\"")
 		}
+		if file.exportAll {
+			lines = append(lines, "export * from \"./"+file.outputName+"\"")
+		}
 		exports := slices.Clone(file.exports)
 		slices.Sort(exports)
 		if len(exports) != 0 {

@@ -18,6 +18,7 @@ type loweredFile struct {
 	decls       []loweredDecl
 	exports     []string
 	typeExports []string
+	exportAll   bool
 	sideEffect  bool
 }
 

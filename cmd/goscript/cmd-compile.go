@@ -80,6 +80,13 @@ func newCompileCommand() *cli.Command {
 				Value:       false,
 				EnvVars:     []string{"GOSCRIPT_ALL_DEPENDENCIES"},
 			},
+			&cli.BoolFlag{
+				Name:        "protobuf-ts-binding",
+				Usage:       "bind .pb.go files to sibling .pb.ts files instead of emitting .pb.gs.ts",
+				Destination: &config.ProtobufTypeScriptBinding,
+				Value:       false,
+				EnvVars:     []string{"GOSCRIPT_PROTOBUF_TS_BINDING"},
+			},
 		},
 	}
 }

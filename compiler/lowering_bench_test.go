@@ -48,6 +48,7 @@ func BenchmarkLoweringPackage(b *testing.B) {
 			fixture.semPkg,
 			make(map[string]map[types.Object]bool),
 			make(runtimeMethodSetCache),
+			LoweringOptions{},
 		); diagnosticsHaveErrors(diagnostics) {
 			b.Fatal(diagnostics)
 		}
@@ -86,6 +87,7 @@ func BenchmarkLoweringFile(b *testing.B) {
 			fixture.file.lazyPackageVars,
 			fixture.lazyPackageVarsByPkg,
 			make(runtimeMethodSetCache),
+			false,
 		); diagnosticsHaveErrors(diagnostics) {
 			b.Fatal(diagnostics)
 		}

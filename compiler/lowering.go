@@ -24,6 +24,16 @@ type LoweringOwner struct {
 	overrideOwner *OverrideRegistryOwner
 }
 
+// LoweringOptions are request-scoped lowering switches.
+type LoweringOptions struct {
+	// SourceRoot is the request source root that may contain sibling protobuf TypeScript files.
+	SourceRoot string
+	// OutputPath is the TypeScript output root used for generated relative imports.
+	OutputPath string
+	// ProtobufTypeScriptBinding binds .pb.go files to sibling .pb.ts files.
+	ProtobufTypeScriptBinding bool
+}
+
 // NewLoweringOwner creates the lowering owner.
 func NewLoweringOwner(runtimeOwner *RuntimeContractOwner, overrideOwner *OverrideRegistryOwner) *LoweringOwner {
 	if runtimeOwner == nil {
@@ -39,7 +49,7 @@ func NewLoweringOwner(runtimeOwner *RuntimeContractOwner, overrideOwner *Overrid
 }
 
 // Build converts the semantic model into the compiler IR.
-func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel) (*LoweredProgram, []Diagnostic) {
+func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel, opts ...LoweringOptions) (*LoweredProgram, []Diagnostic) {
 	if err := ctx.Err(); err != nil {
 		return nil, []Diagnostic{{
 			Severity: DiagnosticSeverityError,
@@ -53,6 +63,11 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel) (*Lower
 			Code:     "goscript/lowering:no-model",
 			Message:  "lowering requires a semantic model",
 		}}
+	}
+
+	var options LoweringOptions
+	if len(opts) != 0 {
+		options = opts[0]
 	}
 
 	program := &LoweredProgram{}
@@ -72,7 +87,7 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel) (*Lower
 			diagnostics = append(diagnostics, loweringUnsupported("package", semPkg.pkgPath, "missing semantic source package"))
 			continue
 		}
-		loweredPkg, pkgDiagnostics := o.lowerPackage(model, semPkg, lazyPackageVars, runtimeMethodSets)
+		loweredPkg, pkgDiagnostics := o.lowerPackage(model, semPkg, lazyPackageVars, runtimeMethodSets, options)
 		diagnostics = append(diagnostics, pkgDiagnostics...)
 		if loweredPkg != nil {
 			program.packages = append(program.packages, loweredPkg)
@@ -89,6 +104,7 @@ func (o *LoweringOwner) lowerPackage(
 	semPkg *semanticPackage,
 	lazyPackageVarsByPkg map[string]map[types.Object]bool,
 	runtimeMethodSets runtimeMethodSetCache,
+	options LoweringOptions,
 ) (*loweredPackage, []Diagnostic) {
 	loweredPkg := &loweredPackage{
 		pkgPath: semPkg.pkgPath,
@@ -96,10 +112,43 @@ func (o *LoweringOwner) lowerPackage(
 	}
 	declFiles := packageDeclFiles(semPkg)
 	outputNames := packageOutputNames(semPkg)
+	protobufBindings, bindingDiagnostics := protobufTypeScriptBindings(semPkg, options)
+	for sourcePath, binding := range protobufBindings {
+		outputNames[sourcePath] = binding.outputName
+	}
 	lazyPackageVars := o.packageLazyVars(semPkg, lazyPackageVarsByPkg, declFiles)
-	var diagnostics []Diagnostic
+	diagnostics := append([]Diagnostic(nil), bindingDiagnostics...)
 	for idx, file := range semPkg.source.Syntax {
 		sourcePath := sourceFilePath(semPkg, idx, file)
+		if options.ProtobufTypeScriptBinding && protobufSRPCHasGoScriptReplacement(sourcePath) {
+			stub, stubDiagnostics := lowerProtobufSRPCTypeScriptBindingStub(semPkg, sourcePath, options)
+			diagnostics = append(diagnostics, stubDiagnostics...)
+			if stub != nil {
+				loweredPkg.files = append(loweredPkg.files, stub)
+			}
+			continue
+		}
+		if binding, ok := protobufBindings[sourcePath]; ok {
+			protobufAdapter := !binding.hasOneof && !strings.HasSuffix(filepath.Base(binding.sourcePath), "_srpc.pb.go")
+			loweredFile, fileDiagnostics := o.lowerFile(
+				model,
+				semPkg,
+				file,
+				sourcePath,
+				declFiles,
+				outputNames,
+				lazyPackageVars,
+				lazyPackageVarsByPkg,
+				runtimeMethodSets,
+				protobufAdapter,
+			)
+			diagnostics = append(diagnostics, fileDiagnostics...)
+			rewriteProtobufTypeScriptBindingFile(loweredFile, binding)
+			if loweredFile != nil {
+				loweredPkg.files = append(loweredPkg.files, loweredFile)
+			}
+			continue
+		}
 		loweredFile, fileDiagnostics := o.lowerFile(
 			model,
 			semPkg,
@@ -110,6 +159,7 @@ func (o *LoweringOwner) lowerPackage(
 			lazyPackageVars,
 			lazyPackageVarsByPkg,
 			runtimeMethodSets,
+			false,
 		)
 		diagnostics = append(diagnostics, fileDiagnostics...)
 		if loweredFile != nil {
@@ -144,6 +194,7 @@ func (o *LoweringOwner) lowerFile(
 	lazyPackageVars map[types.Object]bool,
 	lazyPackageVarsByPkg map[string]map[types.Object]bool,
 	runtimeMethodSets runtimeMethodSetCache,
+	protobufTypeScriptAdapter bool,
 ) (*loweredFile, []Diagnostic) {
 	associatedMethods := o.methodDeclsForFileTypes(semPkg, file)
 	relevantImportFiles := map[string]bool{sourcePath: true}
@@ -263,6 +314,7 @@ func (o *LoweringOwner) lowerFile(
 		lazyPackageVarsByPkg: lazyPackageVarsByPkg,
 		tempNames:            newTempNameOwner(),
 		topLevel:             true,
+		protobufTSAdapter:    protobufTypeScriptAdapter,
 	}
 	var diagnostics []Diagnostic
 	var packageInitCalls []string
@@ -1067,6 +1119,7 @@ type lowerFileContext struct {
 	loopLabel            string
 	switchBreak          bool
 	topLevel             bool
+	protobufTSAdapter    bool
 }
 
 type tempNameOwner struct {
@@ -2515,7 +2568,13 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 	}
 	var diagnostics []Diagnostic
 	for _, methodDecl := range methodDecls {
-		method, methodDiagnostics := o.lowerFuncDecl(ctx, methodDecl)
+		lowerDecl := methodDecl
+		if ctx.protobufTSAdapter && protobufTypeScriptBindingReplacesMethodName(methodDecl.Name.Name) {
+			bodyless := *methodDecl
+			bodyless.Body = nil
+			lowerDecl = &bodyless
+		}
+		method, methodDiagnostics := o.lowerFuncDecl(ctx, lowerDecl)
 		diagnostics = append(diagnostics, methodDiagnostics...)
 		if method != nil {
 			if method.name == "clone" {

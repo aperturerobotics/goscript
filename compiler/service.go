@@ -125,7 +125,11 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 		return result, NewCompileError(diagnostics)
 	}
 
-	loweredProgram, loweringDiagnostics := s.loweringOwner.Build(ctx, semanticModel)
+	loweredProgram, loweringDiagnostics := s.loweringOwner.Build(ctx, semanticModel, LoweringOptions{
+		SourceRoot:                protobufTypeScriptBindingRoot(req.Dir),
+		OutputPath:                req.OutputPath,
+		ProtobufTypeScriptBinding: req.ProtobufTypeScriptBinding,
+	})
 	diagnostics = append(diagnostics, loweringDiagnostics...)
 	if diagnosticsHaveErrors(diagnostics) {
 		result.Diagnostics = diagnostics

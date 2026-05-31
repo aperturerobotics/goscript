@@ -22,6 +22,8 @@ type Config struct {
 	AllDependencies bool
 	// DisableEmitBuiltin controls whether runtime packages are emitted.
 	DisableEmitBuiltin bool
+	// ProtobufTypeScriptBinding binds .pb.go files to sibling .pb.ts files.
+	ProtobufTypeScriptBinding bool
 }
 
 // Validate checks the config and initializes owned defaults.
