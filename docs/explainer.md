@@ -838,7 +838,7 @@ goscript/
 │   ├── typescript-emitter.go # Deterministic TypeScript rendering
 │   ├── runtime-contract.go   # Generated helper/import contract
 │   ├── override-registry.go  # Handwritten gs/ package metadata/copy plans
-│   └── wasm_api.go       # Browser source-compilation adapter
+│   └── wasm-api.go       # Browser source-compilation adapter
 ├── gs/                    # Runtime & handwritten packages
 │   ├── builtin/           # @goscript/builtin runtime
 │   │   ├── index.ts       # Main exports
