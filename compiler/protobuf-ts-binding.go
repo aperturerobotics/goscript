@@ -428,8 +428,8 @@ func protobufTypeScriptBindingStructSetupDecl(structType *loweredStruct, importA
 		}
 		entries = append(entries, strconvQuote(protobufTypeScriptBindingFieldLocalName(field))+": "+ctor)
 	}
-	return loweredDecl{code: "(" + structType.name + " as any).__protobufTypeScriptMessage = " + importAlias + "." + messageName + "\n" +
-		"(" + structType.name + " as any).__protobufTypeScriptFields = {" + strings.Join(entries, ", ") + "}"}
+	return loweredDecl{code: "(" + structType.name + " as any).__protobufTypeScriptMessage = " + importAlias + "." + messageName + ";\n" +
+		"(" + structType.name + " as any).__protobufTypeScriptFields = {" + strings.Join(entries, ", ") + "};"}
 }
 
 func protobufTypeScriptBindingFieldLocalName(field loweredStructField) string {

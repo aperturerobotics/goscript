@@ -66,6 +66,10 @@ func NewFoo() Foo {
 	if !strings.Contains(binding, `class Object`) || !strings.Contains(binding, `__protobufTypeScriptMessage = __protobuf_ts.Object$`) {
 		t.Fatalf("binding file should use protobuf-es-lite safe identifier for Object, got:\n%s", binding)
 	}
+	if !strings.Contains(binding, `__protobufTypeScriptMessage = __protobuf_ts.Foo;`) ||
+		!strings.Contains(binding, `__protobufTypeScriptFields = {};`) {
+		t.Fatalf("binding metadata assignments should be semicolon-terminated to avoid ASI calls, got:\n%s", binding)
+	}
 	index := readTestFile(t, filepath.Join(pkgDir, "index.ts"))
 	if !strings.Contains(index, `export { Foo, Object } from "./foo.pb.ts"`) {
 		t.Fatalf("package index should re-export binding file, got:\n%s", index)
