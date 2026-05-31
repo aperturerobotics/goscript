@@ -94,7 +94,7 @@
     "./{src,builtin,example}/**/(*.ts|*.tsx|*.html|*.css|*.scss)": "prettier --config .prettierrc.yaml --write"
   },
   "devDependencies": {
-    "@aptre/protobuf-es-lite": "^1.0.2",
+    "@aptre/protobuf-es-lite": "1.1.0",
     "@eslint/js": "^10.0.0",
     "@types/node": "^25.5.2",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
@@ -115,5 +115,11 @@
   },
   "dependencies": {
     "globals": "^17.4.0"
+  },
+  "resolutions": {
+    "@aptre/protobuf-es-lite": "1.1.0"
+  },
+  "overrides": {
+    "@aptre/protobuf-es-lite": "1.1.0"
   }
 }
