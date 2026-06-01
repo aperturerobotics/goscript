@@ -1,0 +1,6 @@
+{
+  "asyncMethods": {
+    "AEAD.Open": true,
+    "AEAD.Seal": true
+  }
+}

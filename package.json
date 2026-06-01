@@ -114,6 +114,7 @@
     "vitest": "^4.1.2"
   },
   "dependencies": {
+    "@noble/ciphers": "2.2.0",
     "globals": "^17.4.0"
   },
   "resolutions": {
