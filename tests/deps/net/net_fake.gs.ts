@@ -2051,7 +2051,7 @@ export async function fakeConnect(ctx: context.Context | null, fd: __goscript_fd
 	if ($.pointerValue<__goscript_fd_fake.netFD>(fd).isConnected) {
 		return await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EISCONN, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 	}
-	if ($.pointerValue<Exclude<context.Context, null>>(ctx).Err() != null) {
+	if (await $.pointerValue<Exclude<context.Context, null>>(ctx).Err() != null) {
 		return await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.ETIMEDOUT, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 	}
 

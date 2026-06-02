@@ -7,6 +7,8 @@ import * as context from "@goscript/context/index.js"
 
 import * as io from "@goscript/io/index.js"
 
+import * as contextutil from "@goscript/github.com/aperturerobotics/starpc/internal/contextutil/index.js"
+
 import * as bytes from "@goscript/bytes/index.js"
 
 import type * as protobuf_go_lite from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
@@ -42,6 +44,7 @@ import type * as __goscript_stream from "./stream.gs.ts"
 import * as __goscript_writer from "./writer.gs.ts"
 import "@goscript/context/index.js"
 import "@goscript/io/index.js"
+import "@goscript/github.com/aperturerobotics/starpc/internal/contextutil/index.js"
 import "@goscript/bytes/index.js"
 import "@goscript/github.com/aperturerobotics/util/broadcast/index.js"
 import "@goscript/sync/index.js"
@@ -85,7 +88,7 @@ export class Server {
 		const s: Server | $.VarRef<Server> | null = this
 		while (true) {
 			{
-				let err = $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
+				let err = await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
 				if (err != null) {
 					return context.Canceled
 				}
@@ -112,7 +115,7 @@ export class Server {
 	public async HandleStream(ctx: context.Context | null, rwc: io.ReadWriteCloser | null): globalThis.Promise<void> {
 		const s: Server | $.VarRef<Server> | null = this
 		await using __defer = new $.AsyncDisposableStack()
-		let [subCtx, subCtxCancel] = context.WithCancel($.pointerValueOrNil(ctx)!)
+		let [subCtx, subCtxCancel] = contextutil.WithCancel(ctx)
 		__defer.defer(async () => { await subCtxCancel!() })
 		let prw: __goscript_packet_rw.PacketReadWriter | $.VarRef<__goscript_packet_rw.PacketReadWriter> | null = __goscript_packet_rw.NewPacketReadWriter(rwc)
 		let serverRPC: __goscript_server_rpc.ServerRPC | $.VarRef<__goscript_server_rpc.ServerRPC> | null = __goscript_server_rpc.NewServerRPC(subCtx, $.pointerValue<Server>(s).invoker, $.interfaceValue<__goscript_writer.PacketWriter | null>(prw, "*srpc.PacketReadWriter"))

@@ -9,6 +9,8 @@ import * as io from "@goscript/io/index.js"
 
 import * as sync from "@goscript/sync/index.js"
 
+import * as contextutil from "@goscript/github.com/aperturerobotics/starpc/internal/contextutil/index.js"
+
 import * as protobuf_go_lite from "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
 
 import * as __goscript_message from "./message.gs.ts"
@@ -17,6 +19,7 @@ import type * as __goscript_stream from "./stream.gs.ts"
 import "@goscript/context/index.js"
 import "@goscript/io/index.js"
 import "@goscript/sync/index.js"
+import "@goscript/github.com/aperturerobotics/starpc/internal/contextutil/index.js"
 import "@goscript/github.com/aperturerobotics/protobuf-go-lite/index.js"
 import "./message.gs.ts"
 
@@ -191,11 +194,11 @@ export class pipeStream {
 
 export function NewPipeStream(ctx: context.Context | null): [__goscript_stream.Stream | null, __goscript_stream.Stream | null] {
 	let s1: pipeStream | $.VarRef<pipeStream> | null = new pipeStream({dataCh: $.makeChannel<$.Slice<number>>(5, null, "both")})
-	let __goscriptTuple1: any = context.WithCancel($.pointerValueOrNil(ctx)!)
+	let __goscriptTuple1: any = contextutil.WithCancel(ctx)
 	$.pointerValue<pipeStream>(s1).ctx = __goscriptTuple1[0]
 	$.pointerValue<pipeStream>(s1).ctxCancel = __goscriptTuple1[1]
 	let s2: pipeStream | $.VarRef<pipeStream> | null = new pipeStream({other: s1, dataCh: $.makeChannel<$.Slice<number>>(5, null, "both")})
-	let __goscriptTuple2: any = context.WithCancel($.pointerValueOrNil(ctx)!)
+	let __goscriptTuple2: any = contextutil.WithCancel(ctx)
 	$.pointerValue<pipeStream>(s2).ctx = __goscriptTuple2[0]
 	$.pointerValue<pipeStream>(s2).ctxCancel = __goscriptTuple2[1]
 	$.pointerValue<pipeStream>(s1).other = s2

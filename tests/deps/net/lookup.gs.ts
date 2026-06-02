@@ -1412,7 +1412,7 @@ export class Resolver {
 					} else {
 						queueMicrotask(async () => { await dnsWaitGroupDone!(ch, lookupGroupCancel) })
 					}
-					let err: __goscript_net.DNSError | $.VarRef<__goscript_net.DNSError> | null = await __goscript_net.newDNSError(__goscript_net.mapErr($.pointerValue<Exclude<context.Context, null>>(ctx).Err()), host, "")
+					let err: __goscript_net.DNSError | $.VarRef<__goscript_net.DNSError> | null = await __goscript_net.newDNSError(__goscript_net.mapErr(await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()), host, "")
 					if ((trace != null) && ($.pointerValue<nettrace.Trace>(trace).DNSDone != null)) {
 						await $.pointerValue<nettrace.Trace>(trace).DNSDone!(null, false, $.interfaceValue<$.GoError>(err, "*net.DNSError"))
 					}
@@ -1753,8 +1753,8 @@ export class onlyValuesCtx {
 		return $.pointerValue<Exclude<context.Context | null, null>>(this.Context).Done()
 	}
 
-	public Err(): any {
-		return $.pointerValue<Exclude<context.Context | null, null>>(this.Context).Err()
+	public async Err(): globalThis.Promise<any> {
+		return await $.pointerValue<Exclude<context.Context | null, null>>(this.Context).Err()
 	}
 
 	static __typeInfo = $.registerStructType(

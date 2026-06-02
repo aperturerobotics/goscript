@@ -183,15 +183,15 @@ export class ServerRPC {
 	public async invokeRPC(serviceID: string, methodID: string): globalThis.Promise<void> {
 		const r: ServerRPC | $.VarRef<ServerRPC> | null = this
 		// on the server side, the writer is closed by invokeRPC.
-		let strm: __goscript_msg_stream.MsgStream | $.VarRef<__goscript_msg_stream.MsgStream> | null = await __goscript_msg_stream.NewMsgStream($.pointerValue<ServerRPC>(r).commonRPC.ctx, $.interfaceValue<__goscript_msg_stream.MsgStreamRw | null>(r, "*srpc.ServerRPC"), $.pointerValue<ServerRPC>(r).commonRPC.ctxCancel)
+		let strm: __goscript_msg_stream.MsgStream | $.VarRef<__goscript_msg_stream.MsgStream> | null = await __goscript_msg_stream.NewMsgStream($.pointerValue<ServerRPC>(r).commonRPC.ctx, $.interfaceValue<__goscript_msg_stream.MsgStreamRw | null>(r, "*srpc.ServerRPC"), ((__receiver) => () => __receiver.cancelContext())($.pointerValue<ServerRPC>(r).commonRPC))
 		let [ok, err] = await $.pointerValue<Exclude<__goscript_invoker.Invoker, null>>($.pointerValue<ServerRPC>(r).invoker).InvokeMethod(serviceID, methodID, $.interfaceValue<__goscript_stream.Stream | null>(strm, "*srpc.MsgStream"))
 		if ((err == null) && !ok) {
 			err = __goscript_errors.ErrUnimplemented
 		}
+		await $.pointerValue<ServerRPC>(r).commonRPC.beginLocalCompletion()
 		let outPkt: __goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null = await __goscript_packet.NewCallDataPacket(null, false, true, err)
 		await $.pointerValue<Exclude<__goscript_writer.PacketWriter, null>>($.pointerValue<ServerRPC>(r).commonRPC.writer).WritePacket(outPkt)
-		await $.pointerValue<Exclude<__goscript_writer.PacketWriter, null>>($.pointerValue<ServerRPC>(r).commonRPC.writer).Close()
-		await $.pointerValue<ServerRPC>(r).commonRPC.ctxCancel!()
+		await $.pointerValue<ServerRPC>(r).commonRPC.finishLocalCompletion()
 	}
 
 	public Context(): any {
@@ -226,6 +226,14 @@ export class ServerRPC {
 		return await $.pointerValue<__goscript_common_rpc.commonRPC>(this.commonRPC).WriteCallData(data, dataIsZero, complete, err)
 	}
 
+	public async beginLocalCompletion(): globalThis.Promise<any> {
+		return await $.pointerValue<__goscript_common_rpc.commonRPC>(this.commonRPC).beginLocalCompletion()
+	}
+
+	public async cancelContext(): globalThis.Promise<any> {
+		return await $.pointerValue<__goscript_common_rpc.commonRPC>(this.commonRPC).cancelContext()
+	}
+
 	public async closeLocked(locked: any): globalThis.Promise<any> {
 		return await $.pointerValue<__goscript_common_rpc.commonRPC>(this.commonRPC).closeLocked(locked)
 	}
@@ -234,12 +242,16 @@ export class ServerRPC {
 		return $.pointerValue<__goscript_common_rpc.commonRPC>(this.commonRPC).closeWriterLocked()
 	}
 
+	public async finishLocalCompletion(): globalThis.Promise<any> {
+		return await $.pointerValue<__goscript_common_rpc.commonRPC>(this.commonRPC).finishLocalCompletion()
+	}
+
 	static __typeInfo = $.registerStructType(
 		"srpc.ServerRPC",
 		() => new ServerRPC(),
-		[{ name: "HandleCallStart", args: [{ name: "pkt", type: { kind: $.TypeKind.Pointer, elemType: "srpc.CallStart" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "HandlePacket", args: [{ name: "msg", type: { kind: $.TypeKind.Pointer, elemType: "srpc.Packet" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "HandlePacketData", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "error" }] }, { name: "invokeRPC", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "methodID", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "Context", args: [], returns: [{ name: "_r0", type: "context.Context" }] }, { name: "HandleCallCancel", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "HandleCallData", args: [{ name: "pkt", type: { kind: $.TypeKind.Pointer, elemType: "srpc.CallData" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "HandleStreamClose", args: [{ name: "closeErr", type: "error" }], returns: [] }, { name: "ReadOne", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_r1", type: "error" }] }, { name: "Wait", args: [{ name: "ctx", type: "context.Context" }], returns: [{ name: "_r0", type: "error" }] }, { name: "WriteCallCancel", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "WriteCallData", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "dataIsZero", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "complete", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "err", type: "error" }], returns: [{ name: "_r0", type: "error" }] }, { name: "closeLocked", args: [{ name: "locked", type: { kind: $.TypeKind.Pointer, elemType: "broadcast.Locked" } }], returns: [{ name: "_r0", type: "srpc.PacketWriter" }] }, { name: "closeWriterLocked", args: [], returns: [{ name: "_r0", type: "srpc.PacketWriter" }] }],
+		[{ name: "HandleCallStart", args: [{ name: "pkt", type: { kind: $.TypeKind.Pointer, elemType: "srpc.CallStart" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "HandlePacket", args: [{ name: "msg", type: { kind: $.TypeKind.Pointer, elemType: "srpc.Packet" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "HandlePacketData", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "error" }] }, { name: "invokeRPC", args: [{ name: "serviceID", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "methodID", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }, { name: "Context", args: [], returns: [{ name: "_r0", type: "context.Context" }] }, { name: "HandleCallCancel", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "HandleCallData", args: [{ name: "pkt", type: { kind: $.TypeKind.Pointer, elemType: "srpc.CallData" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "HandleStreamClose", args: [{ name: "closeErr", type: "error" }], returns: [] }, { name: "ReadOne", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_r1", type: "error" }] }, { name: "Wait", args: [{ name: "ctx", type: "context.Context" }], returns: [{ name: "_r0", type: "error" }] }, { name: "WriteCallCancel", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "WriteCallData", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "dataIsZero", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "complete", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "err", type: "error" }], returns: [{ name: "_r0", type: "error" }] }, { name: "beginLocalCompletion", args: [], returns: [] }, { name: "cancelContext", args: [], returns: [] }, { name: "closeLocked", args: [{ name: "locked", type: { kind: $.TypeKind.Pointer, elemType: "broadcast.Locked" } }], returns: [{ name: "_r0", type: "srpc.PacketWriter" }] }, { name: "closeWriterLocked", args: [], returns: [{ name: "_r0", type: "srpc.PacketWriter" }] }, { name: "finishLocalCompletion", args: [], returns: [] }],
 		ServerRPC,
-		[{ name: "commonRPC", key: "commonRPC", type: "srpc.commonRPC", pkgPath: "github.com/aperturerobotics/starpc/srpc", anonymous: true, index: [0], offset: 0, exported: false }, { name: "invoker", key: "invoker", type: "srpc.Invoker", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 152, exported: false }]
+		[{ name: "commonRPC", key: "commonRPC", type: "srpc.commonRPC", pkgPath: "github.com/aperturerobotics/starpc/srpc", anonymous: true, index: [0], offset: 0, exported: false }, { name: "invoker", key: "invoker", type: "srpc.Invoker", pkgPath: "github.com/aperturerobotics/starpc/srpc", index: [1], offset: 160, exported: false }]
 	)
 }
 

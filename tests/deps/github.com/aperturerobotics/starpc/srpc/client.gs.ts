@@ -156,7 +156,7 @@ export class client {
 		}
 
 		return [$.interfaceValue<__goscript_stream.Stream | null>(await __goscript_msg_stream.NewMsgStream(ctx, $.interfaceValue<__goscript_msg_stream.MsgStreamRw | null>(clientRPC, "*srpc.ClientRPC"), $.functionValue(async (): globalThis.Promise<void> => {
-			await $.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC).commonRPC.ctxCancel!()
+			await $.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC).commonRPC.cancelContext()
 			await $.pointerValue<Exclude<__goscript_writer.PacketWriter, null>>(writer).Close()
 		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo))), "*srpc.MsgStream"), null]
 	}

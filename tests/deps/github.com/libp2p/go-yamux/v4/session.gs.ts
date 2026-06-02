@@ -656,7 +656,7 @@ export class Session {
 				isSend: false,
 				channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 				onSelected: async (__goscriptSelect2Result) => {
-					return [null, $.pointerValue<Exclude<context.Context, null>>(ctx).Err()]
+					return [null, await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()]
 				}
 			},
 			{

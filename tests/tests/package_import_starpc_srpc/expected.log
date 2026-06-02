@@ -1,3 +1,8 @@
 exec bytes: 2
 stream bytes: 5
+empty exec bytes: 0
+pressure streams: ok
+pushable writer: ok
+rpcstream handle: ok
+rpcstream pressure: ok
 success: native starpc srpc

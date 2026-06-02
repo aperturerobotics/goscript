@@ -530,7 +530,7 @@ export class Conn {
 				channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 				onSelected: async (__goscriptSelect2Result) => {
 					await Conn.prototype.Close.call(c, 1008, "read timed out")
-					return [0, null, $.pointerValue<Exclude<context.Context, null>>(ctx).Err()]
+					return [0, null, await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()]
 				}
 			},
 			{
@@ -1125,7 +1125,7 @@ export async function dial(ctx: context.Context | null, url: string, opts: DialO
 			channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 			onSelected: async (__goscriptSelect4Result) => {
 				await Conn.prototype.Close.call(c, 1008, "dial timed out")
-				return [null, null, $.pointerValue<Exclude<context.Context, null>>(ctx).Err()]
+				return [null, null, await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()]
 			}
 		},
 		{

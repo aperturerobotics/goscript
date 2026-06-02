@@ -859,7 +859,7 @@ export class sysDialer {
 					isSend: false,
 					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 					onSelected: async (__goscriptSelect3Result) => {
-						return [null, $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField0 = __goscript_net.mapErr($.pointerValue<Exclude<context.Context, null>>(ctx).Err()); return new __goscript_net.OpError({Op: "dial", Net: $.pointerValue<sysDialer>(sd).network, Source: $.pointerValue<sysDialer>(sd).Dialer.LocalAddr, Addr: ra, Err: __goscriptLiteralField0}) })(), "*net.OpError")]
+						return [null, $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField0 = __goscript_net.mapErr(await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()); return new __goscript_net.OpError({Op: "dial", Net: $.pointerValue<sysDialer>(sd).network, Source: $.pointerValue<sysDialer>(sd).Dialer.LocalAddr, Addr: ra, Err: __goscriptLiteralField0}) })()), "*net.OpError")]
 					}
 				},
 				{

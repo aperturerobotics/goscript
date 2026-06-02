@@ -14,12 +14,15 @@ import * as os from "@goscript/os/index.js"
 import * as sync from "@goscript/sync/index.js"
 
 import * as time from "@goscript/time/index.js"
+
+import * as contextutil from "@goscript/github.com/aperturerobotics/starpc/internal/contextutil/index.js"
 import "@goscript/context/index.js"
 import "@goscript/io/index.js"
 import "@goscript/net/index.js"
 import "@goscript/os/index.js"
 import "@goscript/sync/index.js"
 import "@goscript/time/index.js"
+import "@goscript/github.com/aperturerobotics/starpc/internal/contextutil/index.js"
 
 export class bufPool {
 	public get ch(): $.Channel<$.Slice<number>> | null {
@@ -486,7 +489,7 @@ export function newBufPool(poolSize: number, bufSize: number): bufPool | $.VarRe
 }
 
 export async function NewRwcConn(ctx: context.Context | null, rwc: io.ReadWriteCloser | null, laddr: net.Addr | null, raddr: net.Addr | null, bufferPacketN: number): globalThis.Promise<RwcConn | $.VarRef<RwcConn> | null> {
-	let __goscriptTuple1: any = context.WithCancel($.pointerValueOrNil(ctx)!)
+	let __goscriptTuple1: any = contextutil.WithCancel(ctx)
 	ctx = __goscriptTuple1[0]
 	let ctxCancel = __goscriptTuple1[1]
 	if (bufferPacketN <= 0) {

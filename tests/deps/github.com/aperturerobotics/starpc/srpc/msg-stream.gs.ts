@@ -109,7 +109,7 @@ export class MsgStream {
 	public async MsgSend(msg: __goscript_message.Message): globalThis.Promise<$.GoError> {
 		const r: MsgStream | $.VarRef<MsgStream> | null = this
 		{
-			let err = $.pointerValue<Exclude<context.Context, null>>($.pointerValue<MsgStream>(r).ctx).Err()
+			let err = await $.pointerValue<Exclude<context.Context, null>>($.pointerValue<MsgStream>(r).ctx).Err()
 			if (err != null) {
 				return context.Canceled
 			}

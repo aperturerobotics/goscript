@@ -1524,7 +1524,7 @@ export async function acquireThread(ctx: context.Context | null): globalThis.Pro
 			isSend: false,
 			channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 			onSelected: async (__goscriptSelect0Result) => {
-				return $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
+				return await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
 			}
 		}
 	], false)

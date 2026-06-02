@@ -115,7 +115,7 @@ export function NewOpenStreamWithMuxedConn(conn: __goscript_muxed.MuxedConn | nu
 			// If the error is a timeout, context may be canceled.
 			// Prefer the context canceled error (yamux returns timeout for context cancel.)
 			let [timeoutErr, ok] = $.typeAssertTuple<any>(err, { kind: $.TypeKind.Interface, methods: [{ name: "Timeout", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }] })
-			if ((ok && $.pointerValue<any>(timeoutErr).Timeout()) && ($.pointerValue<Exclude<context.Context, null>>(ctx).Err() != null)) {
+			if ((ok && $.pointerValue<any>(timeoutErr).Timeout()) && (await $.pointerValue<Exclude<context.Context, null>>(ctx).Err() != null)) {
 				return [null, context.Canceled]
 			}
 			return [null, err]

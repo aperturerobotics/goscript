@@ -116,7 +116,7 @@ export class Broadcast {
 		}
 
 		while (true) {
-			if ($.pointerValue<Exclude<context.Context, null>>(ctx).Err() != null) {
+			if (await $.pointerValue<Exclude<context.Context, null>>(ctx).Err() != null) {
 				return context.Canceled
 			}
 
