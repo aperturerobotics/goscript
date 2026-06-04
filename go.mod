@@ -2,13 +2,13 @@ module github.com/aperturerobotics/goscript
 
 go 1.25.3
 
-toolchain go1.26.3
+toolchain go1.26.4
 
 require (
 	github.com/aperturerobotics/cli v1.1.0
 	github.com/aperturerobotics/json-iterator-lite v1.1.0
 	github.com/aperturerobotics/protobuf-go-lite v0.14.0
-	github.com/aperturerobotics/util v1.34.6
+	github.com/aperturerobotics/util v1.34.9
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.5-0.20260508084601-d4a50659cfd6
 	golang.org/x/tools v0.45.0
