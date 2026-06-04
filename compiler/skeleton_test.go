@@ -1541,6 +1541,9 @@ func TestCompilePackagesLowersUnsafeBytePointerArithmetic(t *testing.T) {
 	if !strings.Contains(text, "$.arrayPointerFromIndexRef<number>($.indexRef($.pointerValue<number[]>(words), 0), 64, 4, 1)") {
 		t.Fatalf("missing byte-view array pointer conversion:\n%s", text)
 	}
+	if !strings.Contains(text, "($.arrayPointerFromIndexRef<number>($.indexRef(dst!, 0), 64, 1, 1) as unknown as $.VarRef<Uint8Array> | null)!.value =") {
+		t.Fatalf("missing non-null byte-view array pointer storage:\n%s", text)
+	}
 }
 
 func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {

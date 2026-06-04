@@ -8688,7 +8688,7 @@ func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Exp
 		return value, diagnostics
 	}
 	if ref, diagnostics, ok := o.lowerUnsafeArrayPointerRefExpr(ctx, expr); ok {
-		return ref + ".value", diagnostics
+		return ref + "!.value", diagnostics
 	}
 	if ref, diagnostics, ok := o.lowerUnsafePointerRefExpr(ctx, expr); ok {
 		return ref + ".value", diagnostics
@@ -8925,7 +8925,7 @@ func sameLoweredSourceExpr(ctx lowerFileContext, left ast.Expr, right ast.Expr) 
 
 func (o *LoweringOwner) lowerPointerStorageExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
 	if ref, diagnostics, ok := o.lowerUnsafeArrayPointerRefExpr(ctx, expr); ok {
-		return ref + ".value", diagnostics
+		return ref + "!.value", diagnostics
 	}
 	if ref, diagnostics, ok := o.lowerUnsafePointerRefExpr(ctx, expr); ok {
 		return ref + ".value", diagnostics
