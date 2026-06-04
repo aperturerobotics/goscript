@@ -1,5 +1,12 @@
 import * as $ from '@goscript/builtin/index.js'
-import { LimitedReader, MultiWriter, NopCloser, Pipe, TeeReader } from './index.js'
+import {
+  LimitedReader,
+  MultiWriter,
+  NewSectionReader,
+  NopCloser,
+  Pipe,
+  TeeReader,
+} from './index.js'
 import { describe, expect, test } from 'vitest'
 
 class sliceReader {
@@ -19,6 +26,15 @@ class captureWriter {
   Write(p: $.Bytes): [number, $.GoError] {
     this.chunks.push(...Array.from(p ?? []))
     return [$.len(p), null]
+  }
+}
+
+class syncReaderAt {
+  constructor(private data: Uint8Array) {}
+
+  ReadAt(p: $.Bytes, off: number): [number, $.GoError] {
+    const n = $.copy(p, this.data.subarray(off))
+    return [n, n < $.len(p) ? (new Error('EOF') as $.GoError) : null]
   }
 }
 
@@ -116,6 +132,45 @@ describe('io override', () => {
     expect(err).toBeNull()
     expect(n).toBe(3)
     expect(Buffer.from(chunks).toString('utf8')).toBe('abc')
+  })
+
+  test('SectionReader preserves sync reads for sync ReaderAt', () => {
+    const reader = NewSectionReader(
+      new syncReaderAt($.stringToBytes('abcdef')),
+      1,
+      3,
+    )
+    const buf = new Uint8Array(4)
+
+    const result = reader.Read(buf)
+    expect(result).not.toBeInstanceOf(Promise)
+    const [n, err] = result
+
+    expect(err).toBeNull()
+    expect(n).toBe(3)
+    expect(Buffer.from(buf.subarray(0, n)).toString('utf8')).toBe('bcd')
+  })
+
+  test('SectionReader awaits async ReaderAt', async () => {
+    const reader = NewSectionReader(
+      {
+        async ReadAt(p: $.Bytes, off: number): Promise<[number, $.GoError]> {
+          await Promise.resolve()
+          const data = $.stringToBytes('abcdef')
+          const n = $.copy(p, data.subarray(off))
+          return [n, n < $.len(p) ? (new Error('EOF') as $.GoError) : null]
+        },
+      } as any,
+      1,
+      3,
+    )
+    const buf = new Uint8Array(4)
+
+    const [n, err] = await reader.Read(buf)
+
+    expect(err).toBeNull()
+    expect(n).toBe(3)
+    expect(Buffer.from(buf.subarray(0, n)).toString('utf8')).toBe('bcd')
   })
 
   test('PipeReader waits for a later write', async () => {

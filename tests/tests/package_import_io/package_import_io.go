@@ -22,6 +22,10 @@ type asyncReader struct {
 	done bool
 }
 
+type asyncReaderAt struct {
+	data []byte
+}
+
 type pipeReadResult struct {
 	n      int
 	data   string
@@ -42,6 +46,18 @@ func (r *asyncReader) Read(p []byte) (int, error) {
 	copy(p, []byte("async"))
 	r.done = true
 	return 5, nil
+}
+
+func (r *asyncReaderAt) ReadAt(p []byte, off int64) (int, error) {
+	asyncWrites.Load("readat")
+	if off >= int64(len(r.data)) {
+		return 0, io.EOF
+	}
+	n := copy(p, r.data[off:])
+	if n < len(p) {
+		return n, io.EOF
+	}
+	return n, nil
 }
 
 func (r *staticReader) Read(p []byte) (int, error) {
@@ -106,6 +122,9 @@ func main() {
 	var dst bytes.Buffer
 	n64, err = io.Copy(&dst, &asyncReader{})
 	println("Copy bytes ReadFrom async reader - bytes:", n64, "data:", dst.String(), "err:", err == nil)
+	sectionReader := io.NewSectionReader(&asyncReaderAt{data: []byte("abcdef")}, 1, 3)
+	n64, err = io.CopyBuffer(io.Discard, sectionReader, make([]byte, 2))
+	println("Copy section async readerat - bytes:", n64, "err:", err == nil)
 
 	reader, writer := io.Pipe()
 	done := make(chan bool, 1)

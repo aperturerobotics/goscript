@@ -17,6 +17,7 @@ CopyN async reader - bytes: 5 err: true
 Copy bytes WriteTo async writer - bytes: 4 err: true
 Read into byte slice view - bytes: 4 data: viewc err: true
 Copy bytes ReadFrom async reader - bytes: 5 data: async err: true
+Copy section async readerat - bytes: 3 err: true
 Pipe write - bytes: 5 err: true
 Pipe close err: true
 Pipe read - bytes: 5 data: hello err: true

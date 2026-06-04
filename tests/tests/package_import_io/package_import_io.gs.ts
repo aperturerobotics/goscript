@@ -178,6 +178,54 @@ export class asyncReader {
 	)
 }
 
+export class asyncReaderAt {
+	public get data(): $.Slice<number> {
+		return this._fields.data.value
+	}
+	public set data(value: $.Slice<number>) {
+		this._fields.data.value = value
+	}
+
+	public _fields: {
+		data: $.VarRef<$.Slice<number>>
+	}
+
+	constructor(init?: Partial<{data?: $.Slice<number>}>) {
+		this._fields = {
+			data: $.varRef(init?.data ?? null)
+		}
+	}
+
+	public clone(): asyncReaderAt {
+		const cloned = new asyncReaderAt()
+		cloned._fields = {
+			data: $.varRef(this._fields.data.value)
+		}
+		return $.markAsStructValue(cloned)
+	}
+
+	public async ReadAt(p: $.Slice<number>, off: number): globalThis.Promise<[number, $.GoError]> {
+		const r: asyncReaderAt | $.VarRef<asyncReaderAt> | null = this
+		await asyncWrites.value.Load("readat")
+		if (off >= $.int($.len($.pointerValue<asyncReaderAt>(r).data))) {
+			return [0, io.EOF]
+		}
+		let n = $.copy(p, $.goSlice($.pointerValue<asyncReaderAt>(r).data, off, undefined))
+		if (n < $.len(p)) {
+			return [n, io.EOF]
+		}
+		return [n, null]
+	}
+
+	static __typeInfo = $.registerStructType(
+		"main.asyncReaderAt",
+		() => new asyncReaderAt(),
+		[{ name: "ReadAt", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
+		asyncReaderAt,
+		[{ name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io", index: [0], offset: 0, exported: false }]
+	)
+}
+
 export class pipeReadResult {
 	public get n(): number {
 		return this._fields.n.value
@@ -314,25 +362,30 @@ export async function main(): globalThis.Promise<void> {
 	n64 = $.int(__goscriptTuple8[0])
 	err = __goscriptTuple8[1]
 	$.println("Copy bytes ReadFrom async reader - bytes:", $.int(n64), "data:", dst.value.String(), "err:", err == null)
+	let sectionReader: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil($.interfaceValue<io.ReaderAt | null>(new asyncReaderAt({data: new Uint8Array([97, 98, 99, 100, 101, 102])}), "*main.asyncReaderAt"))!, $.int(1), $.int(3))
+	let __goscriptTuple9: any = await io.CopyBuffer($.pointerValueOrNil(io.Discard)!, $.pointerValueOrNil($.interfaceValue<io.Reader | null>(sectionReader, "*io.SectionReader"))!, $.makeSlice<number>(2, undefined, "byte"))
+	n64 = $.int(__goscriptTuple9[0])
+	err = __goscriptTuple9[1]
+	$.println("Copy section async readerat - bytes:", $.int(n64), "err:", err == null)
 
-	let __goscriptTuple9: any = io.Pipe()
-	let reader: io.PipeReader | $.VarRef<io.PipeReader> | null = __goscriptTuple9[0]
-	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple9[1]
+	let __goscriptTuple10: any = io.Pipe()
+	let reader: io.PipeReader | $.VarRef<io.PipeReader> | null = __goscriptTuple10[0]
+	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple10[1]
 	let done = $.makeChannel<boolean>(1, false, "both")
 	let pipeReads = $.makeChannel<pipeReadResult>(2, $.markAsStructValue(new pipeReadResult()), "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		let __goscriptShadow0: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
 		let [__goscriptShadow1, __goscriptShadow2] = await io.PipeReader.prototype.Read.call($.pointerValue<io.PipeReader>(reader), __goscriptShadow0)
 		await $.chanSend(pipeReads, $.markAsStructValue(new pipeReadResult({n: __goscriptShadow1, data: $.bytesToString($.goSlice(__goscriptShadow0, undefined, __goscriptShadow1)), errNil: __goscriptShadow2 == null, errEOF: $.comparableEqual(__goscriptShadow2, io.EOF)})))
-		let __goscriptTuple10: any = await io.PipeReader.prototype.Read.call($.pointerValue<io.PipeReader>(reader), __goscriptShadow0)
-		__goscriptShadow1 = __goscriptTuple10[0]
-		__goscriptShadow2 = __goscriptTuple10[1]
+		let __goscriptTuple11: any = await io.PipeReader.prototype.Read.call($.pointerValue<io.PipeReader>(reader), __goscriptShadow0)
+		__goscriptShadow1 = __goscriptTuple11[0]
+		__goscriptShadow2 = __goscriptTuple11[1]
 		await $.chanSend(pipeReads, $.markAsStructValue(new pipeReadResult({n: __goscriptShadow1, errNil: __goscriptShadow2 == null, errEOF: $.comparableEqual(__goscriptShadow2, io.EOF)})))
 		await $.chanSend(done, true)
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
-	let __goscriptTuple11: any = await io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([104, 101, 108, 108, 111]))
-	n = __goscriptTuple11[0]
-	err = __goscriptTuple11[1]
+	let __goscriptTuple12: any = await io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([104, 101, 108, 108, 111]))
+	n = __goscriptTuple12[0]
+	err = __goscriptTuple12[1]
 	$.println("Pipe write - bytes:", n, "err:", err == null)
 	err = io.PipeWriter.prototype.Close.call($.pointerValue<io.PipeWriter>(writer))
 	$.println("Pipe close err:", err == null)
@@ -341,14 +394,14 @@ export async function main(): globalThis.Promise<void> {
 	let eofRead = await $.chanRecv(pipeReads)
 	$.println("Pipe read - bytes:", firstRead.n, "data:", firstRead.data, "err:", firstRead.errNil)
 	$.println("Pipe read EOF - bytes:", eofRead.n, "err EOF:", eofRead.errEOF)
-	let __goscriptTuple12: any = await io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([97, 103, 97, 105, 110]))
-	n = __goscriptTuple12[0]
-	err = __goscriptTuple12[1]
+	let __goscriptTuple13: any = await io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([97, 103, 97, 105, 110]))
+	n = __goscriptTuple13[0]
+	err = __goscriptTuple13[1]
 	$.println("Pipe write after close - bytes:", n, "err closed:", $.comparableEqual(err, io.ErrClosedPipe))
 
-	let __goscriptTuple13: any = io.Pipe()
-	reader = __goscriptTuple13[0]
-	writer = __goscriptTuple13[1]
+	let __goscriptTuple14: any = io.Pipe()
+	reader = __goscriptTuple14[0]
+	writer = __goscriptTuple14[1]
 	let ready = $.makeChannel<boolean>(1, false, "both")
 	let readResult = $.makeChannel<pipeReadResult>(1, $.markAsStructValue(new pipeReadResult()), "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
@@ -358,9 +411,9 @@ export async function main(): globalThis.Promise<void> {
 		await $.chanSend(readResult, $.markAsStructValue(new pipeReadResult({n: __goscriptShadow4, data: $.bytesToString($.goSlice(__goscriptShadow3, undefined, __goscriptShadow4)), errNil: __goscriptShadow5 == null, errEOF: $.comparableEqual(__goscriptShadow5, io.EOF)})))
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 	await $.chanRecv(ready)
-	let __goscriptTuple14: any = await io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([108, 97, 116, 101, 114]))
-	n = __goscriptTuple14[0]
-	err = __goscriptTuple14[1]
+	let __goscriptTuple15: any = await io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([108, 97, 116, 101, 114]))
+	n = __goscriptTuple15[0]
+	err = __goscriptTuple15[1]
 	let delayed = await $.chanRecv(readResult)
 	$.println("Pipe delayed write - bytes:", n, "err:", err == null)
 	$.println("Pipe delayed read - bytes:", delayed.n, "data:", delayed.data, "err:", delayed.errNil, "err EOF:", delayed.errEOF)

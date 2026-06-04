@@ -363,7 +363,15 @@ export class SectionReader implements Reader, Seeker, ReaderAt {
       p = $.goSlice(p, 0, max)
     }
 
-    const [n, err] = this.r.ReadAt(p, this.off)
+    const res = this.r.ReadAt(p, this.off) as any
+    if (res instanceof Promise) {
+      return res.then(([n, err]: [number, $.GoError]) => {
+        this.off += n
+        return [n, err]
+      }) as any
+    }
+
+    const [n, err] = res
     this.off += n
     return [n, err]
   }
@@ -400,7 +408,16 @@ export class SectionReader implements Reader, Seeker, ReaderAt {
     off += this.base
     if (off + $.len(p) > this.limit) {
       p = $.goSlice(p, 0, this.limit - off)
-      const [n, err] = this.r.ReadAt(p, off)
+      const res = this.r.ReadAt(p, off) as any
+      if (res instanceof Promise) {
+        return res.then(([n, err]: [number, $.GoError]) => {
+          if (err === null) {
+            return [n, EOF]
+          }
+          return [n, err]
+        }) as any
+      }
+      const [n, err] = res
       if (err === null) {
         return [n, EOF]
       }
