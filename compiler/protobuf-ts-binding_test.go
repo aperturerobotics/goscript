@@ -80,6 +80,103 @@ func NewFoo() Foo {
 	}
 }
 
+func TestProtobufTypeScriptBindingRewritesGeneratedMethodsToBoundHelpers(t *testing.T) {
+	dir := t.TempDir()
+	writeTestFile(t, dir, "go.mod", `module example.test/protobufbindingmethods
+
+go 1.25
+
+require github.com/aperturerobotics/protobuf-go-lite v0.14.0
+`)
+	writeTestFile(t, dir, "foo.pb.go", `package protobufbindingmethods
+
+import protobuf_go_lite "github.com/aperturerobotics/protobuf-go-lite"
+
+type Foo struct {
+	Name string
+}
+
+func (x *Foo) CloneMessageVT() protobuf_go_lite.CloneMessage {
+	println("inline CloneMessageVT marker")
+	return x.CloneVT()
+}
+
+func (x *Foo) CloneVT() *Foo {
+	println("inline CloneVT marker")
+	return &Foo{Name: x.Name}
+}
+
+func (x *Foo) EqualVT(other *Foo) bool {
+	println("inline EqualVT marker")
+	return other != nil && x.Name == other.Name
+}
+
+func (x *Foo) MarshalVT() ([]byte, error) {
+	println("inline MarshalVT marker")
+	return []byte(x.Name), nil
+}
+
+func (x *Foo) MarshalToSizedBufferVT(data []byte) (int, error) {
+	println("inline MarshalToSizedBufferVT marker")
+	return copy(data, x.Name), nil
+}
+
+func (x *Foo) SizeVT() int {
+	println("inline SizeVT marker")
+	return len(x.Name)
+}
+
+func (x *Foo) UnmarshalVT(data []byte) error {
+	println("inline UnmarshalVT marker")
+	x.Name = string(data)
+	return nil
+}
+
+func (x *Foo) Reset() {
+	println("inline Reset marker")
+	*x = Foo{}
+}
+`)
+	writeTestFile(t, dir, "foo.pb.ts", `export interface Foo {
+  name?: string
+}
+export const Foo = {} as any
+`)
+
+	out := filepath.Join(dir, "out")
+	comp, err := NewCompiler(&Config{
+		Dir:                       dir,
+		OutputPath:                out,
+		ProtobufTypeScriptBinding: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatalf("compile with protobuf TypeScript binding: %v", err)
+	}
+
+	binding := readTestFile(t, filepath.Join(out, "@goscript", "example.test", "protobufbindingmethods", "foo.pb.ts"))
+	wantSnippets := []string{
+		`$.interfaceValue<protobuf_go_lite.CloneMessage | null>(protobuf_go_lite.CloneBoundMessage(Foo, this) as any, "*protobufbindingmethods.Foo")`,
+		`return protobuf_go_lite.CloneBoundMessage(Foo, this) as any`,
+		`protobuf_go_lite.EqualBoundMessage(Foo, this, other)`,
+		`protobuf_go_lite.MarshalBoundMessageVT(Foo, this)`,
+		`protobuf_go_lite.MarshalBoundMessageToSizedBufferVT(Foo, this, data)`,
+		`protobuf_go_lite.SizeBoundMessageVT(Foo, this)`,
+		`protobuf_go_lite.UnmarshalBoundMessageVT(Foo, this, data)`,
+		`$.assignStruct($.pointerValue<Foo>(this), $.markAsStructValue(new Foo()))`,
+	}
+	for _, snippet := range wantSnippets {
+		if !strings.Contains(binding, snippet) {
+			t.Fatalf("binding file should rewrite generated methods through %q, got:\n%s", snippet, binding)
+		}
+	}
+	if strings.Contains(binding, "inline ") {
+		t.Fatalf("binding file should not preserve inline generated method bodies, got:\n%s", binding)
+	}
+}
+
 func TestProtobufTypeScriptBindingEmitsMetadataForPreservedOneofFiles(t *testing.T) {
 	dir := t.TempDir()
 	writeTestFile(t, dir, "go.mod", "module example.test/oneofpb\n\ngo 1.25\n")
