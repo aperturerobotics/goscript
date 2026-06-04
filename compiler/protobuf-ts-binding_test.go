@@ -86,7 +86,19 @@ func TestProtobufTypeScriptBindingRewritesGeneratedMethodsToBoundHelpers(t *test
 
 go 1.25
 
-require github.com/aperturerobotics/protobuf-go-lite v0.14.0
+require github.com/aperturerobotics/protobuf-go-lite v0.0.0
+
+replace github.com/aperturerobotics/protobuf-go-lite => ./protobuf-go-lite
+`)
+	writeTestFile(t, dir, "protobuf-go-lite/go.mod", `module github.com/aperturerobotics/protobuf-go-lite
+
+go 1.25
+`)
+	writeTestFile(t, dir, "protobuf-go-lite/protobuf-go-lite.go", `package protobuf_go_lite
+
+type CloneMessage interface {
+	CloneMessageVT() CloneMessage
+}
 `)
 	writeTestFile(t, dir, "foo.pb.go", `package protobufbindingmethods
 
