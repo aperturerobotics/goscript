@@ -77,7 +77,10 @@ function findMapEntry<K, V>(
   }
   if (isGoStringKey(key)) {
     for (const [candidate, value] of map.entries()) {
-      if (isGoStringKey(candidate) && stringEqual(candidate as string, key as string)) {
+      if (
+        isGoStringKey(candidate) &&
+        stringEqual(candidate as string, key as string)
+      ) {
         return { found: true, key: candidate, value }
       }
     }

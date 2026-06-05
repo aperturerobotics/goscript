@@ -43,14 +43,22 @@ describe('slices.SortStableFunc', () => {
 describe('slices compatibility helpers', () => {
   it('implements comparison, min/max, compact, replace, clip, and search helpers', () => {
     expect(
-      CompareFunc($.arrayToSlice(['a', 'c']), $.arrayToSlice(['a', 'b']), (a, b) =>
-        a.localeCompare(b),
+      CompareFunc(
+        $.arrayToSlice(['a', 'c']),
+        $.arrayToSlice(['a', 'b']),
+        (a, b) => a.localeCompare(b),
       ),
     ).toBeGreaterThan(0)
     expect(Min($.arrayToSlice([3, 1, 2]))).toBe(1)
-    expect(MaxFunc($.arrayToSlice([{ v: 1 }, { v: 4 }]), (a, b) => a.v - b.v).v).toBe(4)
-    expect(MinFunc($.arrayToSlice([{ v: 3 }, { v: 2 }]), (a, b) => a.v - b.v).v).toBe(2)
-    expect(Array.from(Compact($.arrayToSlice([1, 1, 2, 2, 3])) ?? [])).toEqual([1, 2, 3])
+    expect(
+      MaxFunc($.arrayToSlice([{ v: 1 }, { v: 4 }]), (a, b) => a.v - b.v).v,
+    ).toBe(4)
+    expect(
+      MinFunc($.arrayToSlice([{ v: 3 }, { v: 2 }]), (a, b) => a.v - b.v).v,
+    ).toBe(2)
+    expect(Array.from(Compact($.arrayToSlice([1, 1, 2, 2, 3])) ?? [])).toEqual([
+      1, 2, 3,
+    ])
     expect(
       Array.from(
         CompactFunc(
@@ -59,9 +67,9 @@ describe('slices compatibility helpers', () => {
         ) ?? [],
       ),
     ).toEqual(['a', 'b'])
-    expect(Array.from(Replace($.arrayToSlice([1, 2, 3, 4]), 1, 3, 9, 8)) ?? []).toEqual([
-      1, 9, 8, 4,
-    ])
+    expect(
+      Array.from(Replace($.arrayToSlice([1, 2, 3, 4]), 1, 3, 9, 8)) ?? [],
+    ).toEqual([1, 9, 8, 4])
     expect(Array.from(Clip($.arrayToSlice([1, 2])) ?? [])).toEqual([1, 2])
     expect(BinarySearch($.arrayToSlice([1, 3, 5]), 3)).toEqual([1, true])
   })
@@ -69,22 +77,37 @@ describe('slices compatibility helpers', () => {
   it('concatenates slices and preserves empty concat nilness', () => {
     expect(Concat()).toBeNull()
     expect(Concat($.arrayToSlice<number>([]))).toBeNull()
-    expect(Array.from(Concat($.arrayToSlice([1]), null, $.arrayToSlice([2, 3])) ?? [])).toEqual([
-      1, 2, 3,
-    ])
-    expect(Array.from(Concat(new Uint8Array([1, 2]), new Uint8Array([3])) ?? [])).toEqual([
-      1, 2, 3,
-    ])
+    expect(
+      Array.from(
+        Concat($.arrayToSlice([1]), null, $.arrayToSlice([2, 3])) ?? [],
+      ),
+    ).toEqual([1, 2, 3])
+    expect(
+      Array.from(Concat(new Uint8Array([1, 2]), new Uint8Array([3])) ?? []),
+    ).toEqual([1, 2, 3])
   })
 
   it('accepts generated possibly-async callback types for sync helpers', () => {
-    const compare: (a: number, b: number) => number | Promise<number> = (a, b) => a - b
-    const keepOdd: (v: number) => boolean | Promise<boolean> = (v) => v % 2 === 0
-    const equal: (a: string, b: string) => boolean | Promise<boolean> = (a, b) => a === b
+    const compare: (a: number, b: number) => number | Promise<number> = (
+      a,
+      b,
+    ) => a - b
+    const keepOdd: (v: number) => boolean | Promise<boolean> = (v) =>
+      v % 2 === 0
+    const equal: (a: string, b: string) => boolean | Promise<boolean> = (
+      a,
+      b,
+    ) => a === b
 
-    expect(CompareFunc($.arrayToSlice([1]), $.arrayToSlice([2]), compare)).toBeLessThan(0)
-    expect(Array.from(DeleteFunc($.arrayToSlice([1, 2, 3]), keepOdd) ?? [])).toEqual([1, 3])
-    expect(EqualFunc($.arrayToSlice(['a']), $.arrayToSlice(['a']), equal)).toBe(true)
+    expect(
+      CompareFunc($.arrayToSlice([1]), $.arrayToSlice([2]), compare),
+    ).toBeLessThan(0)
+    expect(
+      Array.from(DeleteFunc($.arrayToSlice([1, 2, 3]), keepOdd) ?? []),
+    ).toEqual([1, 3])
+    expect(EqualFunc($.arrayToSlice(['a']), $.arrayToSlice(['a']), equal)).toBe(
+      true,
+    )
     expect(IndexFunc($.arrayToSlice([1, 2, 3]), keepOdd)).toBe(1)
     expect(IsSortedFunc($.arrayToSlice([1, 2, 3]), compare)).toBe(true)
     expect(BinarySearch($.arrayToSlice([1, 2, 3]), 2)).toEqual([1, true])
@@ -92,7 +115,11 @@ describe('slices compatibility helpers', () => {
 
   it('rejects actual async callback results in sync helpers', () => {
     expect(() =>
-      CompareFunc($.arrayToSlice([1]), $.arrayToSlice([2]), async (a, b) => a - b),
+      CompareFunc(
+        $.arrayToSlice([1]),
+        $.arrayToSlice([2]),
+        async (a, b) => a - b,
+      ),
     ).toThrow('slices: asynchronous callback result is not supported')
   })
 })

@@ -2719,15 +2719,14 @@ function typeInfoIdentityKey(
         return `named:${info.name}`
       }
       return `struct:${(info.fields ?? [])
-        .map(
-          (field) =>
-            [
-              field.name,
-              field.pkgPath ?? '',
-              field.tag ?? '',
-              field.anonymous === true ? 'anonymous' : 'named',
-              typeInfoIdentityKey(field.type, seen),
-            ].join('\u0000'),
+        .map((field) =>
+          [
+            field.name,
+            field.pkgPath ?? '',
+            field.tag ?? '',
+            field.anonymous === true ? 'anonymous' : 'named',
+            typeInfoIdentityKey(field.type, seen),
+          ].join('\u0000'),
         )
         .join('\u0001')}`
     case $.TypeKind.Pointer:
@@ -2904,10 +2903,7 @@ function typeMethods(t: Type): $.MethodSignature[] {
     return t.methodSignatures()
   }
   if (!typeInfo && t instanceof PointerType) {
-    return mergeMethodSignatureList(
-      typeMethods(t.Elem()),
-      t.methodSignatures(),
-    )
+    return mergeMethodSignatureList(typeMethods(t.Elem()), t.methodSignatures())
   }
   if (!typeInfo && t instanceof BasicType) {
     return t.methodSignatures()
@@ -3331,13 +3327,22 @@ function typeFromGoTypeName(typeName: string): Type | null {
   if (trimmed === '') return null
 
   if (trimmed.startsWith('<-chan ')) {
-    return new ChannelType(typeFromGoTypeName(trimmed.slice(7)) ?? anyType(), RecvDir)
+    return new ChannelType(
+      typeFromGoTypeName(trimmed.slice(7)) ?? anyType(),
+      RecvDir,
+    )
   }
   if (trimmed.startsWith('chan<- ')) {
-    return new ChannelType(typeFromGoTypeName(trimmed.slice(7)) ?? anyType(), SendDir)
+    return new ChannelType(
+      typeFromGoTypeName(trimmed.slice(7)) ?? anyType(),
+      SendDir,
+    )
   }
   if (trimmed.startsWith('chan ')) {
-    return new ChannelType(typeFromGoTypeName(trimmed.slice(5)) ?? anyType(), BothDir)
+    return new ChannelType(
+      typeFromGoTypeName(trimmed.slice(5)) ?? anyType(),
+      BothDir,
+    )
   }
   if (trimmed.startsWith('[]')) {
     return new SliceType(typeFromGoTypeName(trimmed.slice(2)) ?? anyType())

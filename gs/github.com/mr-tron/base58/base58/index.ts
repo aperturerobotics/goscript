@@ -1,7 +1,8 @@
 import * as $ from '@goscript/builtin/index.js'
 
 const btcAlphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-const flickrAlphabet = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
+const flickrAlphabet =
+  '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 
 export class Alphabet {
   decode: Int8Array
@@ -130,7 +131,9 @@ export function DecodeAlphabet(
   return FastBase58DecodingAlphabet(str, alphabet)
 }
 
-export function FastBase58Decoding(str: string): [Uint8Array | null, $.GoError] {
+export function FastBase58Decoding(
+  str: string,
+): [Uint8Array | null, $.GoError] {
   return FastBase58DecodingAlphabet(str, BTCAlphabet)
 }
 
@@ -187,7 +190,10 @@ export function FastBase58DecodingAlphabet(
     }
 
     if (c > 0) {
-      return [null, $.newError('Output number too big (carry to the next int32)')]
+      return [
+        null,
+        $.newError('Output number too big (carry to the next int32)'),
+      ]
     }
     if ((outi[0] & zmask) !== 0) {
       return [

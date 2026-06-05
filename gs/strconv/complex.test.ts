@@ -48,10 +48,22 @@ describe('strconv complex helpers', () => {
   })
 
   it('rejects whitespace and malformed imaginary forms', () => {
-    for (const input of [' 1+2i', '1+2i ', '1 +2i', 'i', '+i', '-i', '1++2i', '1-+2i', '0xp1']) {
+    for (const input of [
+      ' 1+2i',
+      '1+2i ',
+      '1 +2i',
+      'i',
+      '+i',
+      '-i',
+      '1++2i',
+      '1-+2i',
+      '0xp1',
+    ]) {
       const [, err] = ParseComplex(input, 128)
 
-      expect(err?.Error(), input).toBe(`strconv.ParseComplex: parsing "${input}": invalid syntax`)
+      expect(err?.Error(), input).toBe(
+        `strconv.ParseComplex: parsing "${input}": invalid syntax`,
+      )
     }
   })
 
@@ -60,6 +72,8 @@ describe('strconv complex helpers', () => {
 
     expect($.real(value)).toBe(Infinity)
     expect($.imag(value)).toBe(0)
-    expect(err?.Error()).toBe('strconv.ParseComplex: parsing "0x1p1025": value out of range')
+    expect(err?.Error()).toBe(
+      'strconv.ParseComplex: parsing "0x1p1025": value out of range',
+    )
   })
 })

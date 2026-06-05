@@ -4,9 +4,13 @@ import * as cmp from '../cmp/index.js'
 import * as iter from '../iter/index.js'
 
 type SyncCallbackResult<T> = T | globalThis.Promise<T>
-type CompareCallback<T, U = T> = ((v1: T, v2: U) => SyncCallbackResult<number>) | null
+type CompareCallback<T, U = T> =
+  | ((v1: T, v2: U) => SyncCallbackResult<number>)
+  | null
 type PredicateCallback<T> = ((value: T) => SyncCallbackResult<boolean>) | null
-type EqualCallback<T, U = T> = ((v1: T, v2: U) => SyncCallbackResult<boolean>) | null
+type EqualCallback<T, U = T> =
+  | ((v1: T, v2: U) => SyncCallbackResult<boolean>)
+  | null
 
 /**
  * Compare compares the elements of s1 and s2 using cmp.Compare.
@@ -59,9 +63,7 @@ export function CompareFunc<T, U>(
   const len2 = $.len(s2)
   const minLen = len1 < len2 ? len1 : len2
   for (let i = 0; i < minLen; i++) {
-    const result = syncNumber(
-      compare((s1 as any)[i] as T, (s2 as any)[i] as U),
-    )
+    const result = syncNumber(compare((s1 as any)[i] as T, (s2 as any)[i] as U))
     if (result !== 0) {
       return result
     }
@@ -131,7 +133,9 @@ export function Concat<T>(...slices: $.Slice<T>[]): $.Slice<T> {
  */
 export function All<T>(
   s: $.Slice<T>,
-): (yieldFunc: (index: number, value: T) => iter.YieldResult) => void | globalThis.Promise<void> {
+): (
+  yieldFunc: (index: number, value: T) => iter.YieldResult,
+) => void | globalThis.Promise<void> {
   return function (
     _yield: (index: number, value: T) => iter.YieldResult,
   ): void | globalThis.Promise<void> {
@@ -228,10 +232,7 @@ export function Min<T extends cmp.Ordered>(x: $.Slice<T>): T {
   return min
 }
 
-export function MaxFunc<T>(
-  x: $.Slice<T>,
-  compare: CompareCallback<T>,
-): T {
+export function MaxFunc<T>(x: $.Slice<T>, compare: CompareCallback<T>): T {
   if (compare == null) {
     throw new Error('slices.MaxFunc: nil comparison function')
   }
@@ -248,10 +249,7 @@ export function MaxFunc<T>(
   return max
 }
 
-export function MinFunc<T>(
-  x: $.Slice<T>,
-  compare: CompareCallback<T>,
-): T {
+export function MinFunc<T>(x: $.Slice<T>, compare: CompareCallback<T>): T {
   if (compare == null) {
     throw new Error('slices.MinFunc: nil comparison function')
   }
@@ -476,7 +474,10 @@ export function Contains<T>(s: $.Slice<T>, v: T): boolean {
   return Index(s, v) >= 0
 }
 
-export function ContainsFunc<T>(s: $.Slice<T>, f: PredicateCallback<T>): boolean {
+export function ContainsFunc<T>(
+  s: $.Slice<T>,
+  f: PredicateCallback<T>,
+): boolean {
   return IndexFunc(s, f) >= 0
 }
 
@@ -555,10 +556,7 @@ export function Grow<T>(s: $.Slice<T>, n: number): $.Slice<T> {
  * @param s The slice to sort in place
  * @param cmp Comparison function
  */
-export function SortFunc<T>(
-  s: $.Slice<T>,
-  cmp: CompareCallback<T>,
-): void {
+export function SortFunc<T>(s: $.Slice<T>, cmp: CompareCallback<T>): void {
   if (cmp == null) {
     throw new Error('slices.SortFunc: nil comparison function')
   }

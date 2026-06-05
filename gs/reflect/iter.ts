@@ -11,7 +11,9 @@ export function rangeNum<T extends number | uintptr, N extends number | number>(
 
   // if the iteration value type is define by
   // type T built-in type.
-  return async (_yield: ((v: Value) => iter.YieldResult) | null): Promise<void> => {
+  return async (
+    _yield: ((v: Value) => iter.YieldResult) | null,
+  ): Promise<void> => {
     let convert = t!.PkgPath!() != ''
     // cannot use range T(v) because no core type.
 
@@ -24,7 +26,7 @@ export function rangeNum<T extends number | uintptr, N extends number | number>(
       if (convert) {
         tmp = tmp.Convert(t).clone()
       }
-      if (!await _yield!(tmp)) {
+      if (!(await _yield!(tmp))) {
         return
       }
     }

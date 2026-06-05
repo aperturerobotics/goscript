@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { AppendSlice, MakeMapWithSize, MapIter, MapOf, TypeOf, ValueOf } from './index.js'
+import {
+  AppendSlice,
+  MakeMapWithSize,
+  MapIter,
+  MapOf,
+  TypeOf,
+  ValueOf,
+} from './index.js'
 
 describe('MapIter', () => {
   it('should iterate over map entries with proper typing', () => {

@@ -4,10 +4,10 @@ import * as _ from '@goscript/unsafe/index.js'
 
 // Equal reports whether two maps contain the same key/value pairs.
 // Values are compared using ==.
-export function Equal<K extends $.Comparable | null, V extends $.Comparable | null>(
-  m1: Map<K, V>,
-  m2: Map<K, V>,
-): boolean {
+export function Equal<
+  K extends $.Comparable | null,
+  V extends $.Comparable | null,
+>(m1: Map<K, V>, m2: Map<K, V>): boolean {
   if ($.len(m1) != $.len(m2)) {
     return false
   }

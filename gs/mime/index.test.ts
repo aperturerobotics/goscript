@@ -22,14 +22,15 @@ describe('mime override', () => {
     expect(mediaType).toBe('text/plain')
     expect(params.get('charset')).toBe('utf-8')
     expect(params.get('format')).toBe('flowed')
-    const [trailingMediaType, trailingParams, trailingErr] = ParseMediaType('text/plain;')
+    const [trailingMediaType, trailingParams, trailingErr] =
+      ParseMediaType('text/plain;')
     expect(trailingErr).toBeNull()
     expect(trailingMediaType).toBe('text/plain')
     expect(trailingParams.size).toBe(0)
 
-    expect(
-      FormatMediaType('text/plain', new Map([['charset', 'utf-8']])),
-    ).toBe('text/plain; charset=utf-8')
+    expect(FormatMediaType('text/plain', new Map([['charset', 'utf-8']]))).toBe(
+      'text/plain; charset=utf-8',
+    )
     expect(
       FormatMediaType('Attachment', new Map([['FileName', 'hello.txt']])),
     ).toBe('attachment; filename=hello.txt')
@@ -37,10 +38,13 @@ describe('mime override', () => {
       FormatMediaType('attachment', new Map([['filename', 'foo bar.txt']])),
     ).toBe('attachment; filename="foo bar.txt"')
     expect(
-      FormatMediaType('text/plain', new Map([
-        ['z', 'last'],
-        ['a', 'first'],
-      ])),
+      FormatMediaType(
+        'text/plain',
+        new Map([
+          ['z', 'last'],
+          ['a', 'first'],
+        ]),
+      ),
     ).toBe('text/plain; a=first; z=last')
 
     const encoded = FormatMediaType(
@@ -51,13 +55,17 @@ describe('mime override', () => {
     const [, encodedParams, encodedErr] = ParseMediaType(encoded)
     expect(encodedErr).toBeNull()
     expect(encodedParams.get('filename')).toBe('résumé.txt')
-    const [, pathParams, pathErr] = ParseMediaType('form-data; filename="C:\\dev\\go.txt"; quoted="a\\"b"')
+    const [, pathParams, pathErr] = ParseMediaType(
+      'form-data; filename="C:\\dev\\go.txt"; quoted="a\\"b"',
+    )
     expect(pathErr).toBeNull()
     expect(pathParams.get('filename')).toBe('C:\\dev\\go.txt')
     expect(pathParams.get('quoted')).toBe('a"b')
 
     expect(TypeByExtension('.json')).toBe('application/json')
-    expect(AddExtensionType('.goscript', 'text/plain; charset=utf-8')).toBeNull()
+    expect(
+      AddExtensionType('.goscript', 'text/plain; charset=utf-8'),
+    ).toBeNull()
     const [extensions, extensionErr] = ExtensionsByType('text/plain')
     expect(extensionErr).toBeNull()
     expect(extensions).toContain('.goscript')
@@ -66,10 +74,18 @@ describe('mime override', () => {
   it('reports invalid media parameters', () => {
     const [, , err] = ParseMediaType('text/plain; broken')
     expect(err).toBe(ErrInvalidMediaParameter)
-    expect(ParseMediaType('text/plain; filename=foo bar')[2]).toBe(ErrInvalidMediaParameter)
-    expect(ParseMediaType('text/plain; filename="unterminated')[2]).toBe(ErrInvalidMediaParameter)
-    expect(ParseMediaType('text/plain; x=1; x=2')[2]).toBe(ErrInvalidMediaParameter)
-    expect(ParseMediaType('text/plain; bad[]=x')[2]).toBe(ErrInvalidMediaParameter)
+    expect(ParseMediaType('text/plain; filename=foo bar')[2]).toBe(
+      ErrInvalidMediaParameter,
+    )
+    expect(ParseMediaType('text/plain; filename="unterminated')[2]).toBe(
+      ErrInvalidMediaParameter,
+    )
+    expect(ParseMediaType('text/plain; x=1; x=2')[2]).toBe(
+      ErrInvalidMediaParameter,
+    )
+    expect(ParseMediaType('text/plain; bad[]=x')[2]).toBe(
+      ErrInvalidMediaParameter,
+    )
     expect(ParseMediaType('text/plain; bad{}=x')[1].get('bad{}')).toBe('x')
   })
 
@@ -83,7 +99,9 @@ describe('mime override', () => {
     expect(qWord).toBe('hello world')
 
     const encodedQWord = WordEncoder_Encode(QEncoding, 'utf-8', 'héllo world')
-    const [header, err] = new WordDecoder().DecodeHeader(`subject ${encodedQWord}`)
+    const [header, err] = new WordDecoder().DecodeHeader(
+      `subject ${encodedQWord}`,
+    )
     expect(err).toBeNull()
     expect(header).toBe('subject héllo world')
   })

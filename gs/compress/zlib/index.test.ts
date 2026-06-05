@@ -119,22 +119,36 @@ describe('compress/zlib override', () => {
   test('writer and reader honor preset dictionaries', async () => {
     const dict = $.stringToBytes('hello dictionary')
     const compressed = $.markAsStructValue(new bytes.Buffer())
-    const [writer, writerErr] = NewWriterLevelDict(compressed, DefaultCompression, dict)
+    const [writer, writerErr] = NewWriterLevelDict(
+      compressed,
+      DefaultCompression,
+      dict,
+    )
     expect(writerErr).toBeNull()
-    expect(writer!.Write($.stringToBytes('hello dictionary payload'))[1]).toBeNull()
+    expect(
+      writer!.Write($.stringToBytes('hello dictionary payload'))[1],
+    ).toBeNull()
     expect(await writer!.Close()).toBeNull()
 
-    const [missingDictReader, missingDictErr] = NewReader(bytes.NewReader(compressed.Bytes()))
+    const [missingDictReader, missingDictErr] = NewReader(
+      bytes.NewReader(compressed.Bytes()),
+    )
     expect(missingDictReader).toBeNull()
     expect(missingDictErr).toBe(ErrDictionary)
 
-    const [reader, readerErr] = NewReaderDict(bytes.NewReader(compressed.Bytes()), dict)
+    const [reader, readerErr] = NewReaderDict(
+      bytes.NewReader(compressed.Bytes()),
+      dict,
+    )
     expect(readerErr).toBeNull()
     const [out, readErr] = await io.ReadAll(reader!)
     expect(readErr).toBeNull()
     expect($.bytesToString(out)).toBe('hello dictionary payload')
 
-    const [, wrongDictErr] = NewReaderDict(bytes.NewReader(compressed.Bytes()), $.stringToBytes('wrong dictionary'))
+    const [, wrongDictErr] = NewReaderDict(
+      bytes.NewReader(compressed.Bytes()),
+      $.stringToBytes('wrong dictionary'),
+    )
     expect(wrongDictErr).toBe(ErrDictionary)
 
     const corrupt = Uint8Array.from(compressed.Bytes())

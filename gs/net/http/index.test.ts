@@ -124,12 +124,16 @@ describe('net/http override', () => {
     expect(StatusText(StatusUnauthorized)).toBe('Unauthorized')
     expect(StatusText(StatusForbidden)).toBe('Forbidden')
     expect(StatusText(StatusMethodNotAllowed)).toBe('Method Not Allowed')
-    expect(StatusText(StatusUnsupportedMediaType)).toBe('Unsupported Media Type')
+    expect(StatusText(StatusUnsupportedMediaType)).toBe(
+      'Unsupported Media Type',
+    )
     expect(StatusText(StatusTeapot)).toBe("I'm a teapot")
     expect(StatusText(StatusTooManyRequests)).toBe('Too Many Requests')
     expect(StatusText(StatusBadGateway)).toBe('Bad Gateway')
     expect(StatusText(StatusServiceUnavailable)).toBe('Service Unavailable')
-    expect(StatusText(StatusNetworkAuthenticationRequired)).toBe('Network Authentication Required')
+    expect(StatusText(StatusNetworkAuthenticationRequired)).toBe(
+      'Network Authentication Required',
+    )
     expect(StatusText(599)).toBe('')
     Header_Set(resp.Header, 'X-Test', 'ok')
     resp.Body = io.NopCloser(bytes.NewReader($.stringToBytes('body')))
@@ -164,12 +168,18 @@ describe('net/http override', () => {
       'text/plain',
       'charset=utf-8',
     ])
-    expect(Array.from(Header_Values(cloned, 'Content-Type') ?? [])).toContain('copy')
-    expect(Array.from(Header_Values(header, 'Content-Type') ?? [])).not.toContain('copy')
+    expect(Array.from(Header_Values(cloned, 'Content-Type') ?? [])).toContain(
+      'copy',
+    )
+    expect(
+      Array.from(Header_Values(header, 'Content-Type') ?? []),
+    ).not.toContain('copy')
 
     const written = new bytes.Buffer()
     expect(Header_Write(header, written)).toBeNull()
-    expect(Buffer.from(written.Bytes()).toString('utf8')).toContain('Content-Type: text/plain\r\n')
+    expect(Buffer.from(written.Bytes()).toString('utf8')).toContain(
+      'Content-Type: text/plain\r\n',
+    )
 
     expect(ParseHTTPVersion('HTTP/2.0')).toEqual([2, 0, true])
     expect(ParseHTTPVersion('h2')).toEqual([0, 0, false])
@@ -195,22 +205,58 @@ describe('net/http override', () => {
     expect(req?.URL?.Path).toBe('/path')
     expect(req?.URL?.RawQuery).toBe('q=1')
 
-    expect(NewRequestWithContext(context.Background(), 'bad method', 'https://example.invalid/', null)[1]?.Error()).toBe(
-      'net/http: invalid method "bad method"',
-    )
-    expect(NewRequestWithContext(null, MethodGet, 'https://example.invalid/', null)[1]?.Error()).toBe(
-      'net/http: nil Context',
-    )
-    expect(NewRequestWithContext(context.Background(), MethodGet, 'http://[::1', null)[1]).not.toBeNull()
-    expect(NewRequestWithContext(context.Background(), MethodGet, 'http://x/%zz', null)[1]).not.toBeNull()
+    expect(
+      NewRequestWithContext(
+        context.Background(),
+        'bad method',
+        'https://example.invalid/',
+        null,
+      )[1]?.Error(),
+    ).toBe('net/http: invalid method "bad method"')
+    expect(
+      NewRequestWithContext(
+        null,
+        MethodGet,
+        'https://example.invalid/',
+        null,
+      )[1]?.Error(),
+    ).toBe('net/http: nil Context')
+    expect(
+      NewRequestWithContext(
+        context.Background(),
+        MethodGet,
+        'http://[::1',
+        null,
+      )[1],
+    ).not.toBeNull()
+    expect(
+      NewRequestWithContext(
+        context.Background(),
+        MethodGet,
+        'http://x/%zz',
+        null,
+      )[1],
+    ).not.toBeNull()
 
-    const [bodyReq, bodyReqErr] = NewRequest(MethodPost, 'https://example.invalid/upload', bytes.NewReader($.stringToBytes('abc')))
+    const [bodyReq, bodyReqErr] = NewRequest(
+      MethodPost,
+      'https://example.invalid/upload',
+      bytes.NewReader($.stringToBytes('abc')),
+    )
     expect(bodyReqErr).toBeNull()
     expect(bodyReq?.ContentLength).toBe(3)
-    const [stringReq, stringReqErr] = NewRequest(MethodPost, 'https://example.invalid/upload', strings.NewReader('abcd'))
+    const [stringReq, stringReqErr] = NewRequest(
+      MethodPost,
+      'https://example.invalid/upload',
+      strings.NewReader('abcd'),
+    )
     expect(stringReqErr).toBeNull()
     expect(stringReq?.ContentLength).toBe(4)
-    const [noBodyReq, noBodyErr] = NewRequest(MethodPost, 'https://example.invalid/upload', NoBody)
+    const [noBodyReq, noBodyErr] = NewRequest(
+      MethodPost,
+      'https://example.invalid/upload',
+      NoBody,
+    )
     expect(noBodyErr).toBeNull()
     expect(noBodyReq?.ContentLength).toBe(0)
     expect(noBodyReq?.Body).toBe(NoBody)
@@ -218,44 +264,84 @@ describe('net/http override', () => {
 
   it('applies cross-origin protection checks', () => {
     const protection = NewCrossOriginProtection()
-    const [sameOrigin] = NewRequest(MethodPost, 'https://example.invalid/update', null)
+    const [sameOrigin] = NewRequest(
+      MethodPost,
+      'https://example.invalid/update',
+      null,
+    )
     Header_Set(sameOrigin!.Header, 'Sec-Fetch-Site', 'same-origin')
     expect(protection.Check(sameOrigin)).toBeNull()
 
-    const [noHeaders] = NewRequest(MethodPost, 'https://example.invalid/update', null)
+    const [noHeaders] = NewRequest(
+      MethodPost,
+      'https://example.invalid/update',
+      null,
+    )
     expect(protection.Check(noHeaders)).toBeNull()
 
-    const [safe] = NewRequest(MethodOptions, 'https://example.invalid/update', null)
+    const [safe] = NewRequest(
+      MethodOptions,
+      'https://example.invalid/update',
+      null,
+    )
     Header_Set(safe!.Header, 'Sec-Fetch-Site', 'cross-site')
     expect(protection.Check(safe)).toBeNull()
 
-    const [matchingOrigin] = NewRequest(MethodPost, 'https://example.invalid/update', null)
+    const [matchingOrigin] = NewRequest(
+      MethodPost,
+      'https://example.invalid/update',
+      null,
+    )
     Header_Set(matchingOrigin!.Header, 'Origin', 'https://example.invalid')
     expect(protection.Check(matchingOrigin)).toBeNull()
 
-    const [crossSite] = NewRequest(MethodPost, 'https://example.invalid/update', null)
+    const [crossSite] = NewRequest(
+      MethodPost,
+      'https://example.invalid/update',
+      null,
+    )
     Header_Set(crossSite!.Header, 'Sec-Fetch-Site', 'cross-site')
     expect(protection.Check(crossSite)?.Error()).toContain('Sec-Fetch-Site')
 
-    const [oldBrowser] = NewRequest(MethodPost, 'https://example.invalid/update', null)
+    const [oldBrowser] = NewRequest(
+      MethodPost,
+      'https://example.invalid/update',
+      null,
+    )
     Header_Set(oldBrowser!.Header, 'Origin', 'https://attacker.invalid')
-    expect(protection.Check(oldBrowser)?.Error()).toContain('Origin does not match Host')
+    expect(protection.Check(oldBrowser)?.Error()).toContain(
+      'Origin does not match Host',
+    )
 
     expect(protection.AddTrustedOrigin('https://trusted.invalid')).toBeNull()
-    expect(protection.AddTrustedOrigin('https://trusted.invalid/')).not.toBeNull()
-    const [trusted] = NewRequest(MethodPost, 'https://example.invalid/update', null)
+    expect(
+      protection.AddTrustedOrigin('https://trusted.invalid/'),
+    ).not.toBeNull()
+    const [trusted] = NewRequest(
+      MethodPost,
+      'https://example.invalid/update',
+      null,
+    )
     Header_Set(trusted!.Header, 'Origin', 'https://trusted.invalid')
     Header_Set(trusted!.Header, 'Sec-Fetch-Site', 'cross-site')
     expect(protection.Check(trusted)).toBeNull()
 
     protection.AddInsecureBypassPattern('/bypass/')
     protection.AddInsecureBypassPattern('POST /post-only/')
-    const [bypass] = NewRequest(MethodPost, 'https://example.invalid/bypass/ok', null)
+    const [bypass] = NewRequest(
+      MethodPost,
+      'https://example.invalid/bypass/ok',
+      null,
+    )
     Header_Set(bypass!.Header, 'Origin', 'https://attacker.invalid')
     Header_Set(bypass!.Header, 'Sec-Fetch-Site', 'cross-site')
     expect(protection.Check(bypass)).toBeNull()
 
-    const [methodBypass] = NewRequest(MethodPost, 'https://example.invalid/post-only/', null)
+    const [methodBypass] = NewRequest(
+      MethodPost,
+      'https://example.invalid/post-only/',
+      null,
+    )
     Header_Set(methodBypass!.Header, 'Origin', 'https://attacker.invalid')
     expect(protection.Check(methodBypass)).toBeNull()
   })
@@ -269,7 +355,11 @@ describe('net/http override', () => {
         w?.WriteHeader(StatusOK)
       },
     })
-    const [blocked] = NewRequest(MethodPost, 'https://example.invalid/update', null)
+    const [blocked] = NewRequest(
+      MethodPost,
+      'https://example.invalid/update',
+      null,
+    )
     Header_Set(blocked!.Header, 'Sec-Fetch-Site', 'cross-site')
     const blockedWriter = new testResponseWriter()
 
@@ -304,7 +394,9 @@ describe('net/http override', () => {
     expect(cookies?.[1]?.Value).toBe('v2')
 
     expect(ParseCookie('')[1]?.Error()).toBe('http: blank cookie')
-    expect(ParseCookie('missing-equals')[1]?.Error()).toBe("http: '=' not found in cookie")
+    expect(ParseCookie('missing-equals')[1]?.Error()).toBe(
+      "http: '=' not found in cookie",
+    )
     expect(ParseCookie('=v1')[1]?.Error()).toBe('http: invalid cookie name')
     expect(ParseCookie('k1=\\')[1]?.Error()).toBe('http: invalid cookie value')
 
@@ -330,9 +422,13 @@ describe('net/http override', () => {
     expect(spaced?.Quoted).toBe(true)
 
     expect(ParseSetCookie('')[1]?.Error()).toBe('http: blank cookie')
-    expect(ParseSetCookie('missing-equals')[1]?.Error()).toBe("http: '=' not found in cookie")
+    expect(ParseSetCookie('missing-equals')[1]?.Error()).toBe(
+      "http: '=' not found in cookie",
+    )
     expect(ParseSetCookie('=v1')[1]?.Error()).toBe('http: invalid cookie name')
-    expect(ParseSetCookie('k1=\\')[1]?.Error()).toBe('http: invalid cookie value')
+    expect(ParseSetCookie('k1=\\')[1]?.Error()).toBe(
+      'http: invalid cookie value',
+    )
   })
 
   it('exports no-body, limit-reader, and unsupported controller surfaces', async () => {
@@ -342,34 +438,48 @@ describe('net/http override', () => {
     expect(err).toBe(io.EOF)
     expect(NoBody.Close()).toBeNull()
 
-    const limited = MaxBytesReader(null, {
-      Read: (p: Uint8Array) => {
-        p[0] = 1
-        if (p.length > 1) {
-          p[1] = 2
-        }
-        return [1, null]
+    const limited = MaxBytesReader(
+      null,
+      {
+        Read: (p: Uint8Array) => {
+          p[0] = 1
+          if (p.length > 1) {
+            p[1] = 2
+          }
+          return [1, null]
+        },
+        Close: () => null,
       },
-      Close: () => null,
-    }, 1)
+      1,
+    )
     const limitedBuf = new Uint8Array(2)
     expect(limited.Read(limitedBuf)).toEqual([1, null])
     expect(limitedBuf[0]).toBe(1)
     const [, limitErr] = limited.Read(new Uint8Array(1))
     expect(limitErr).toBeInstanceOf(MaxBytesError)
 
-    const exactReader = MaxBytesReader(null, io.NopCloser(bytes.NewReader($.stringToBytes('ok'))), 2)
+    const exactReader = MaxBytesReader(
+      null,
+      io.NopCloser(bytes.NewReader($.stringToBytes('ok'))),
+      2,
+    )
     const [exactData, exactErr] = await io.ReadAll(exactReader)
     expect(exactErr).toBeNull()
     expect(Buffer.from(exactData ?? []).toString('utf8')).toBe('ok')
 
-    const tooLarge = MaxBytesReader(null, io.NopCloser(bytes.NewReader($.stringToBytes('toolarge'))), 2)
+    const tooLarge = MaxBytesReader(
+      null,
+      io.NopCloser(bytes.NewReader($.stringToBytes('toolarge'))),
+      2,
+    )
     const tooLargeBuf = new Uint8Array(8)
     const [tooLargeN, tooLargeErr] = tooLarge.Read(tooLargeBuf)
     expect(tooLargeN).toBe(2)
     expect(tooLargeErr).toBeInstanceOf(MaxBytesError)
     expect((tooLargeErr as MaxBytesError).Limit).toBe(2)
-    expect(Buffer.from(tooLargeBuf.slice(0, tooLargeN)).toString('utf8')).toBe('to')
+    expect(Buffer.from(tooLargeBuf.slice(0, tooLargeN)).toString('utf8')).toBe(
+      'to',
+    )
 
     const controller = NewResponseController(null)
     expect(controller.Hijack()[2]).toBe(ErrNotSupported)
@@ -382,12 +492,15 @@ describe('net/http override', () => {
     const body = io.NopCloser(bytes.NewReader($.stringToBytes('ok')))
     const [req] = NewRequest(MethodPost, 'http://example.invalid/upload', body)
     let servedReq: any = null
-    const handler = MaxBytesHandler({
-      ServeHTTP(_w, r) {
-        servedReq = $.pointerValue(r)
-        Header_Set(servedReq.Header, 'X-Shared', 'true')
+    const handler = MaxBytesHandler(
+      {
+        ServeHTTP(_w, r) {
+          servedReq = $.pointerValue(r)
+          Header_Set(servedReq.Header, 'X-Shared', 'true')
+        },
       },
-    }, 1)
+      1,
+    )
 
     handler.ServeHTTP(null, req)
 
@@ -424,7 +537,11 @@ describe('net/http override', () => {
         throw new Error('network down')
       },
     })
-    const [req, reqErr] = NewRequest(MethodPost, 'https://example.invalid', null)
+    const [req, reqErr] = NewRequest(
+      MethodPost,
+      'https://example.invalid',
+      null,
+    )
     expect(reqErr).toBeNull()
     expect((req!.URL as any).Path).toBe('/')
     expect(req!.Host).toBe('example.invalid')
@@ -440,13 +557,21 @@ describe('net/http override', () => {
       Read: (p: Uint8Array) => [p.length, null] as [number, null],
     }
 
-    const [req, reqErr] = NewRequest(MethodPost, 'https://example.invalid/upload', reader)
+    const [req, reqErr] = NewRequest(
+      MethodPost,
+      'https://example.invalid/upload',
+      reader,
+    )
 
     expect(reqErr).toBeNull()
     expect(req!.Body).not.toBeNull()
     expect(req!.Body!.Close()).toBeNull()
 
-    const resp = new Response({ StatusCode: StatusCreated, ContentLength: -1, Request: varRef(req!) })
+    const resp = new Response({
+      StatusCode: StatusCreated,
+      ContentLength: -1,
+      Request: varRef(req!),
+    })
     expect(resp.ContentLength).toBe(-1)
     expect((resp.Request as any).value).toBe(req)
   })
@@ -462,7 +587,9 @@ describe('net/http override', () => {
         const headers = init?.headers as Headers
         expect(headers.get('Range')).toBe('bytes=0-9')
         expect(headers.get('Authorization')).toBe('Bearer test')
-        expect(Buffer.from((init?.body as Uint8Array) ?? []).toString('utf8')).toBe('payload')
+        expect(
+          Buffer.from((init?.body as Uint8Array) ?? []).toString('utf8'),
+        ).toBe('payload')
         return new globalThis.Response('accepted', {
           status: StatusCreated,
           statusText: 'Created',
@@ -478,7 +605,11 @@ describe('net/http override', () => {
         return null
       },
     }
-    const [req] = NewRequest(MethodPost, 'https://example.invalid/upload', requestBody)
+    const [req] = NewRequest(
+      MethodPost,
+      'https://example.invalid/upload',
+      requestBody,
+    )
     Header_Set(req!.Header, 'Range', 'bytes=0-9')
     Header_Set(req!.Header, 'Authorization', 'Bearer test')
 
@@ -523,15 +654,20 @@ describe('net/http override', () => {
       writable: true,
       value: undefined,
     })
-    const [unsupportedReq] = NewRequest(MethodPost, 'https://example.invalid/upload', {
-      Read: () => [0, null],
-      Close: () => {
-        unsupportedClosed = true
-        return null
+    const [unsupportedReq] = NewRequest(
+      MethodPost,
+      'https://example.invalid/upload',
+      {
+        Read: () => [0, null],
+        Close: () => {
+          unsupportedClosed = true
+          return null
+        },
       },
-    })
+    )
 
-    const [unsupportedResp, unsupportedErr] = await DefaultTransport.RoundTrip(unsupportedReq)
+    const [unsupportedResp, unsupportedErr] =
+      await DefaultTransport.RoundTrip(unsupportedReq)
 
     expect(unsupportedResp).toBeNull()
     expect(unsupportedErr?.Error()).toContain('Client.Do is not implemented')
@@ -547,15 +683,21 @@ describe('net/http override', () => {
     })
     const [ctx, cancel] = context.WithCancel(context.Background())
     cancel?.()
-    const [canceledReq] = NewRequest(MethodPost, 'https://example.invalid/upload', {
-      Read: () => [0, null],
-      Close: () => {
-        canceledClosed = true
-        return null
+    const [canceledReq] = NewRequest(
+      MethodPost,
+      'https://example.invalid/upload',
+      {
+        Read: () => [0, null],
+        Close: () => {
+          canceledClosed = true
+          return null
+        },
       },
-    })
+    )
 
-    const [canceledResp, canceledErr] = await DefaultTransport.RoundTrip(canceledReq!.WithContext(ctx))
+    const [canceledResp, canceledErr] = await DefaultTransport.RoundTrip(
+      canceledReq!.WithContext(ctx),
+    )
 
     expect(canceledResp).toBeNull()
     expect(canceledErr).toBe(context.Canceled)
@@ -670,10 +812,14 @@ describe('net/http override', () => {
 
   it('posts URL-encoded forms through clients and package helper', async () => {
     const transport = {
-      async RoundTrip(got: Request | $.VarRef<Request> | null): Promise<[Response | null, $.GoError]> {
+      async RoundTrip(
+        got: Request | $.VarRef<Request> | null,
+      ): Promise<[Response | null, $.GoError]> {
         const request = $.pointerValue<Request>(got)
         expect(request.Method).toBe(MethodPost)
-        expect(Header_Get(request.Header, 'Content-Type')).toBe('application/x-www-form-urlencoded')
+        expect(Header_Get(request.Header, 'Content-Type')).toBe(
+          'application/x-www-form-urlencoded',
+        )
         const [data, err] = await io.ReadAll(request.Body!)
         expect(err).toBeNull()
         expect($.bytesToString(data)).toBe('a=one&a=two&space=x+y')
@@ -686,7 +832,10 @@ describe('net/http override', () => {
     ])
     const client = new Client({ Transport: transport })
 
-    const [clientResp, clientErr] = await client.PostForm('https://example.invalid/form', form)
+    const [clientResp, clientErr] = await client.PostForm(
+      'https://example.invalid/form',
+      form,
+    )
     expect(clientErr).toBeNull()
     expect(clientResp?.StatusCode).toBe(StatusOK)
 
@@ -712,7 +861,10 @@ describe('net/http override', () => {
 
     Header_Add(header, 'x-pack-id', 'pack-1')
     Header_Add(header, 'X-Pack-Id', 'pack-2')
-    expect(Array.from(header.get('X-Pack-Id') ?? [])).toEqual(['pack-1', 'pack-2'])
+    expect(Array.from(header.get('X-Pack-Id') ?? [])).toEqual([
+      'pack-1',
+      'pack-2',
+    ])
 
     Header_Del(header, 'x-pack-id')
     expect(Header_Get(header, 'X-Pack-ID')).toBe('')
@@ -721,7 +873,7 @@ describe('net/http override', () => {
   it('accepts server context and shutdown surfaces', () => {
     const srv = new Server({
       Addr: ':0',
-      BaseContext: () => ({} as any),
+      BaseContext: () => ({}) as any,
       ReadHeaderTimeout: 10,
     })
 
@@ -729,7 +881,9 @@ describe('net/http override', () => {
     expect(srv.BaseContext?.(null)).toEqual({})
     expect(srv.ReadHeaderTimeout).toBe(10)
     expect(srv.Shutdown({} as any)).toBeNull()
-    expect(srv.ListenAndServeTLS('cert.pem', 'key.pem')?.Error()).toBe('net/http: Server.ListenAndServeTLS is not implemented in GoScript')
+    expect(srv.ListenAndServeTLS('cert.pem', 'key.pem')?.Error()).toBe(
+      'net/http: Server.ListenAndServeTLS is not implemented in GoScript',
+    )
   })
 
   it('supports handler functions and not-found responses for typechecked server tests', () => {
@@ -786,15 +940,18 @@ describe('net/http override', () => {
       WriteHeader: () => undefined,
     }
 
-    SetCookie(writer, new Cookie({
-      Name: 'spacewave_local_capability',
-      Value: 'token',
-      Path: '/',
-      MaxAge: 300,
-      HttpOnly: true,
-      Secure: true,
-      SameSite: SameSiteStrictMode,
-    }))
+    SetCookie(
+      writer,
+      new Cookie({
+        Name: 'spacewave_local_capability',
+        Value: 'token',
+        Path: '/',
+        MaxAge: 300,
+        HttpOnly: true,
+        Secure: true,
+        SameSite: SameSiteStrictMode,
+      }),
+    )
 
     expect(Array.from(header.get('Set-Cookie') ?? [])).toEqual([
       'spacewave_local_capability=token; Path=/; Max-Age=300; HttpOnly; Secure; SameSite=Strict',
@@ -806,26 +963,43 @@ describe('net/http override', () => {
 
     expect(err).toBeNull()
     expect(parsed.Unix()).toBe(784111777)
-    expect(DetectContentType($.stringToBytes('<HTML>ok'))).toBe('text/html; charset=utf-8')
+    expect(DetectContentType($.stringToBytes('<HTML>ok'))).toBe(
+      'text/html; charset=utf-8',
+    )
     expect(
-      DetectContentType(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
+      DetectContentType(
+        new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      ),
     ).toBe('image/png')
-    expect(DetectContentType(new Uint8Array([0xff, 0xd8, 0xff, 0x00]))).toBe('image/jpeg')
-    expect(DetectContentType($.stringToBytes('%PDF-1.7'))).toBe('application/pdf')
-    expect(DetectContentType($.stringToBytes('RIFFxxxxWEBPVP'))).toBe('image/webp')
-    expect(DetectContentType($.stringToBytes('FORMxxxxAIFF'))).toBe('audio/aiff')
+    expect(DetectContentType(new Uint8Array([0xff, 0xd8, 0xff, 0x00]))).toBe(
+      'image/jpeg',
+    )
+    expect(DetectContentType($.stringToBytes('%PDF-1.7'))).toBe(
+      'application/pdf',
+    )
+    expect(DetectContentType($.stringToBytes('RIFFxxxxWEBPVP'))).toBe(
+      'image/webp',
+    )
+    expect(DetectContentType($.stringToBytes('FORMxxxxAIFF'))).toBe(
+      'audio/aiff',
+    )
     expect(DetectContentType($.stringToBytes('ID3payload'))).toBe('audio/mpeg')
     expect(DetectContentType($.stringToBytes('wOFFpayload'))).toBe('font/woff')
-    expect(DetectContentType(new Uint8Array([
-      0x00, 0x00, 0x00, 0x18,
-      0x66, 0x74, 0x79, 0x70,
-      0x69, 0x73, 0x6f, 0x6d,
-      0x00, 0x00, 0x00, 0x00,
-      0x6d, 0x70, 0x34, 0x31,
-      0x00, 0x00, 0x00, 0x00,
-    ]))).toBe('video/mp4')
-    expect(DetectContentType(new Uint8Array([0x00, 0x01, 0x02]))).toBe('application/octet-stream')
-    expect(DetectContentType(new Uint8Array())).toBe('text/plain; charset=utf-8')
+    expect(
+      DetectContentType(
+        new Uint8Array([
+          0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f,
+          0x6d, 0x00, 0x00, 0x00, 0x00, 0x6d, 0x70, 0x34, 0x31, 0x00, 0x00,
+          0x00, 0x00,
+        ]),
+      ),
+    ).toBe('video/mp4')
+    expect(DetectContentType(new Uint8Array([0x00, 0x01, 0x02]))).toBe(
+      'application/octet-stream',
+    )
+    expect(DetectContentType(new Uint8Array())).toBe(
+      'text/plain; charset=utf-8',
+    )
   })
 
   it('exports file server interface shapes', () => {
@@ -837,7 +1011,8 @@ describe('net/http override', () => {
       Stat: () => [null, null],
     }
     const fsys: FileSystem = {
-      Open: (name) => (name === 'ok' ? [file, null] : [null, new Error('missing')]),
+      Open: (name) =>
+        name === 'ok' ? [file, null] : [null, new Error('missing')],
     }
 
     expect(fsys.Open('ok')[0]).toBe(file)
@@ -853,23 +1028,26 @@ describe('net/http override', () => {
         Read: (p: Uint8Array) => reader.Read(p),
         Seek: (offset: number, whence: number) => reader.Seek(offset, whence),
         Readdir: () => [null, null] as [null, null],
-        Stat: () => [
-          {
-            IsDir: () => false,
-            ModTime: () => null as never,
-            Mode: () => 0,
-            Name: () => 'file.txt',
-            Size: () => 5,
-            Sys: () => null,
-          },
-          null,
-        ] as const,
+        Stat: () =>
+          [
+            {
+              IsDir: () => false,
+              ModTime: () => null as never,
+              Mode: () => 0,
+              Name: () => 'file.txt',
+              Size: () => 5,
+              Sys: () => null,
+            },
+            null,
+          ] as const,
       }
     }
     const root = FS({
       Open: (name) => {
         opened.push(name)
-        return name === 'file.txt' ? [makeFile(), null] : [null, new Error('missing')]
+        return name === 'file.txt' ?
+            [makeFile(), null]
+          : [null, new Error('missing')]
       },
     })
     const writes: string[] = []
@@ -883,7 +1061,11 @@ describe('net/http override', () => {
       WriteHeader: (code) => writes.push(`status:${code}`),
     }
     const handler = FileServer(root)
-    const [getReq] = NewRequest(MethodGet, 'http://example.invalid/../file.txt', null)
+    const [getReq] = NewRequest(
+      MethodGet,
+      'http://example.invalid/../file.txt',
+      null,
+    )
 
     await handler.ServeHTTP(writer, getReq)
 
@@ -893,7 +1075,11 @@ describe('net/http override', () => {
 
     writes.length = 0
     opened.length = 0
-    const [headReq] = NewRequest(MethodHead, 'http://example.invalid/file.txt', null)
+    const [headReq] = NewRequest(
+      MethodHead,
+      'http://example.invalid/file.txt',
+      null,
+    )
 
     await handler.ServeHTTP(writer, headReq)
 
@@ -911,15 +1097,35 @@ describe('net/http override', () => {
       },
       WriteHeader: (code) => writes.push(`status:${code}`),
     }
-    const [req] = NewRequest(MethodGet, 'http://example.invalid/content.txt', null)
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/content.txt',
+      null,
+    )
 
-    await ServeContent(writer, req, 'content.txt', null as never, bytes.NewReader($.stringToBytes('served')))
+    await ServeContent(
+      writer,
+      req,
+      'content.txt',
+      null as never,
+      bytes.NewReader($.stringToBytes('served')),
+    )
 
     expect(writes).toEqual(['status:200', 'served'])
 
     writes.length = 0
-    const [headReq] = NewRequest(MethodHead, 'http://example.invalid/content.txt', null)
-    await ServeContent(writer, headReq, 'content.txt', null as never, bytes.NewReader($.stringToBytes('hidden')))
+    const [headReq] = NewRequest(
+      MethodHead,
+      'http://example.invalid/content.txt',
+      null,
+    )
+    await ServeContent(
+      writer,
+      headReq,
+      'content.txt',
+      null as never,
+      bytes.NewReader($.stringToBytes('hidden')),
+    )
 
     expect(writes).toEqual(['status:200'])
   })
@@ -954,7 +1160,11 @@ describe('net/http override', () => {
       },
       WriteHeader: (code) => writes.push(`status:${code}`),
     }
-    const [req] = NewRequest(MethodGet, 'http://example.invalid/eval/missing.js', null)
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/eval/missing.js',
+      null,
+    )
 
     ServeFile(writer, req, '/host-only/missing.js')
 

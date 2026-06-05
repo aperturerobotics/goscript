@@ -117,7 +117,11 @@ function requestBodyContentLength(body: io.Reader | null): number {
   if (value === http.NoBody) {
     return 0
   }
-  if (value instanceof bytes.Buffer || value instanceof bytes.Reader || value instanceof strings.Reader) {
+  if (
+    value instanceof bytes.Buffer ||
+    value instanceof bytes.Reader ||
+    value instanceof strings.Reader
+  ) {
     return value.Len()
   }
   return -1
@@ -133,7 +137,8 @@ export class Server {
 
   constructor(init?: Partial<Server> & { Handler?: http.Handler | null }) {
     this.handler = init?.Handler ?? null
-    this.ConfigValue = init?.ConfigValue ?? new http.Server({ Handler: this.handler })
+    this.ConfigValue =
+      init?.ConfigValue ?? new http.Server({ Handler: this.handler })
     this.URL = init?.URL ?? http.RegisterInProcessServer(this.handler)
   }
 
@@ -200,7 +205,7 @@ function serverRequest(request: http.Request): http.Request {
   const rawQuery = request.URL?.RawQuery ?? ''
   const query = rawQuery === '' ? '' : `?${rawQuery}`
   req.RequestURI = `${request.URL?.Path ?? '/'}${query}`
-  req.Host = request.Host === '' ? request.URL?.Host ?? '' : request.Host
+  req.Host = request.Host === '' ? (request.URL?.Host ?? '') : request.Host
   if (req.URL?.clone != null) {
     req.URL = req.URL.clone()
     req.URL.Scheme = ''

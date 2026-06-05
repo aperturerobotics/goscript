@@ -29,7 +29,9 @@ export class PublicKey {
 
   public Equal(x: PublicKey | $.VarRef<PublicKey> | null): boolean {
     const other = $.pointerValueOrNil(x)
-    return other instanceof PublicKey && bytesEqual(this.publicKey, other.publicKey)
+    return (
+      other instanceof PublicKey && bytesEqual(this.publicKey, other.publicKey)
+    )
   }
 }
 
@@ -54,17 +56,27 @@ export class PrivateKey {
     return this.curve
   }
 
-  public ECDH(remote: PublicKey | $.VarRef<PublicKey> | null): [$.Bytes, $.GoError] {
+  public ECDH(
+    remote: PublicKey | $.VarRef<PublicKey> | null,
+  ): [$.Bytes, $.GoError] {
     const remoteKey = $.pointerValueOrNil(remote)
     if (remoteKey == null || remoteKey.curve !== this.curve) {
-      return [null, $.newError('crypto/ecdh: private key and public key curves do not match')]
+      return [
+        null,
+        $.newError(
+          'crypto/ecdh: private key and public key curves do not match',
+        ),
+      ]
     }
     return this.curve.ecdh(this, remoteKey)
   }
 
   public Equal(x: PrivateKey | $.VarRef<PrivateKey> | null): boolean {
     const other = $.pointerValueOrNil(x)
-    return other instanceof PrivateKey && bytesEqual(this.privateKey, other.privateKey)
+    return (
+      other instanceof PrivateKey &&
+      bytesEqual(this.privateKey, other.privateKey)
+    )
   }
 
   public Public(): PublicKey {
@@ -80,7 +92,9 @@ export class x25519Curve {
   public GenerateKey(r: io.Reader | null): [PrivateKey | null, $.GoError] {
     const key = new Uint8Array(x25519PrivateKeySize)
     if (r != null) {
-      throw new Error('crypto/ecdh: custom random readers are not implemented in GoScript')
+      throw new Error(
+        'crypto/ecdh: custom random readers are not implemented in GoScript',
+      )
     }
     globalThis.crypto.getRandomValues(key)
     return this.NewPrivateKey(key)
@@ -113,10 +127,18 @@ export class x25519Curve {
     return 'X25519'
   }
 
-  public ecdh(local: PrivateKey | null, remote: PublicKey | null): [$.Bytes, $.GoError] {
+  public ecdh(
+    local: PrivateKey | null,
+    remote: PublicKey | null,
+  ): [$.Bytes, $.GoError] {
     const out = scalarMult(local?.privateKey ?? null, remote?.publicKey ?? null)
     if (isZero(out)) {
-      return [null, $.newError('crypto/ecdh: bad X25519 remote ECDH input: low order point')]
+      return [
+        null,
+        $.newError(
+          'crypto/ecdh: bad X25519 remote ECDH input: low order point',
+        ),
+      ]
     }
     return [out, null]
   }
@@ -132,23 +154,38 @@ export class unsupportedCurve {
   constructor(private readonly name: string) {}
 
   public GenerateKey(_r: io.Reader | null): [PrivateKey | null, $.GoError] {
-    return [null, $.newError(`crypto/ecdh: ${this.name} is not implemented in GoScript`)]
+    return [
+      null,
+      $.newError(`crypto/ecdh: ${this.name} is not implemented in GoScript`),
+    ]
   }
 
   public NewPrivateKey(_key: $.Bytes): [PrivateKey | null, $.GoError] {
-    return [null, $.newError(`crypto/ecdh: ${this.name} is not implemented in GoScript`)]
+    return [
+      null,
+      $.newError(`crypto/ecdh: ${this.name} is not implemented in GoScript`),
+    ]
   }
 
   public NewPublicKey(_key: $.Bytes): [PublicKey | null, $.GoError] {
-    return [null, $.newError(`crypto/ecdh: ${this.name} is not implemented in GoScript`)]
+    return [
+      null,
+      $.newError(`crypto/ecdh: ${this.name} is not implemented in GoScript`),
+    ]
   }
 
   public String(): string {
     return this.name
   }
 
-  public ecdh(_local: PrivateKey | null, _remote: PublicKey | null): [$.Bytes, $.GoError] {
-    return [null, $.newError(`crypto/ecdh: ${this.name} is not implemented in GoScript`)]
+  public ecdh(
+    _local: PrivateKey | null,
+    _remote: PublicKey | null,
+  ): [$.Bytes, $.GoError] {
+    return [
+      null,
+      $.newError(`crypto/ecdh: ${this.name} is not implemented in GoScript`),
+    ]
   }
 }
 

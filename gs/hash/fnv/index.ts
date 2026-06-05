@@ -65,7 +65,10 @@ class FNV32 {
   }
 
   AppendBinary(prefix: $.Bytes | null): [$.Bytes, $.GoError] {
-    return [appendBytes($.bytesToUint8Array(prefix), this.magic, be32(this.hash)), null]
+    return [
+      appendBytes($.bytesToUint8Array(prefix), this.magic, be32(this.hash)),
+      null,
+    ]
   }
 
   MarshalBinary(): [$.Bytes, $.GoError] {
@@ -136,7 +139,10 @@ class FNV64 {
   }
 
   AppendBinary(prefix: $.Bytes | null): [$.Bytes, $.GoError] {
-    return [appendBytes($.bytesToUint8Array(prefix), this.magic, be64(this.hash)), null]
+    return [
+      appendBytes($.bytesToUint8Array(prefix), this.magic, be64(this.hash)),
+      null,
+    ]
   }
 
   MarshalBinary(): [$.Bytes, $.GoError] {
@@ -185,7 +191,11 @@ class FNV128 {
   }
 
   async Sum(prefix: $.Bytes | null): Promise<$.Bytes> {
-    return appendBytes($.bytesToUint8Array(prefix), be64(this.high()), be64(this.low()))
+    return appendBytes(
+      $.bytesToUint8Array(prefix),
+      be64(this.high()),
+      be64(this.low()),
+    )
   }
 
   Reset(): void {
@@ -202,7 +212,12 @@ class FNV128 {
 
   AppendBinary(prefix: $.Bytes | null): [$.Bytes, $.GoError] {
     return [
-      appendBytes($.bytesToUint8Array(prefix), this.magic, be64(this.high()), be64(this.low())),
+      appendBytes(
+        $.bytesToUint8Array(prefix),
+        this.magic,
+        be64(this.high()),
+        be64(this.low()),
+      ),
       null,
     ]
   }
@@ -217,7 +232,8 @@ class FNV128 {
     if (err != null) {
       return err
     }
-    this.hash = ((readBE64(state, 4) << 64n) | readBE64(state, 12)) & uint128Mask
+    this.hash =
+      ((readBE64(state, 4) << 64n) | readBE64(state, 12)) & uint128Mask
     return null
   }
 
@@ -304,11 +320,12 @@ function be64(value: bigint): Uint8Array {
 
 function readBE32(bytes: Uint8Array, offset: number): number {
   return (
-    ((bytes[offset] << 24) >>> 0) |
-    (bytes[offset + 1] << 16) |
-    (bytes[offset + 2] << 8) |
-    bytes[offset + 3]
-  ) >>> 0
+    (((bytes[offset] << 24) >>> 0) |
+      (bytes[offset + 1] << 16) |
+      (bytes[offset + 2] << 8) |
+      bytes[offset + 3]) >>>
+    0
+  )
 }
 
 function readBE64(bytes: Uint8Array, offset: number): bigint {

@@ -71,7 +71,10 @@ export async function Prime(
   bits: number,
 ): Promise<[any, $.GoError]> {
   if (bits < 2) {
-    return [null, new RandError('crypto/rand: prime size must be at least 2-bit')]
+    return [
+      null,
+      new RandError('crypto/rand: prime size must be at least 2-bit'),
+    ]
   }
 
   const bitOffset = bits % 8
@@ -123,8 +126,8 @@ function newBigInt(): any {
     | { zeroValue?: unknown; ctor?: new () => unknown }
     | undefined
   if (info?.zeroValue !== undefined) {
-    return typeof info.zeroValue === 'function'
-      ? (info.zeroValue as () => unknown)()
+    return typeof info.zeroValue === 'function' ?
+        (info.zeroValue as () => unknown)()
       : info.zeroValue
   }
   if (info?.ctor != null) {

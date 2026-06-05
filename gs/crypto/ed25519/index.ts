@@ -14,8 +14,8 @@ export const SignatureSize = 64
 export const SeedSize = 32
 
 const pkcs8Prefix = new Uint8Array([
-  0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70,
-  0x04, 0x22, 0x04, 0x20,
+  0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x04,
+  0x22, 0x04, 0x20,
 ])
 
 export class Options {
@@ -32,7 +32,10 @@ export class Options {
   }
 }
 
-export function PublicKey_Equal(pub: PublicKey, x: PublicKeyInterface | null): boolean {
+export function PublicKey_Equal(
+  pub: PublicKey,
+  x: PublicKeyInterface | null,
+): boolean {
   const [xx, ok] = $.typeAssertTuple<PublicKey>(x, 'ed25519.PublicKey')
   return ok && bytesEqual(pub, xx)
 }
@@ -47,7 +50,10 @@ export function PrivateKey_Public(priv: PrivateKey): PublicKeyInterface | null {
   )
 }
 
-export function PrivateKey_Equal(priv: PrivateKey, x: PrivateKeyInterface | null): boolean {
+export function PrivateKey_Equal(
+  priv: PrivateKey,
+  x: PrivateKeyInterface | null,
+): boolean {
   const [xx, ok] = $.typeAssertTuple<PrivateKey>(x, 'ed25519.PrivateKey')
   return ok && bytesEqual(priv, xx)
 }
@@ -68,7 +74,9 @@ export async function PrivateKey_Sign(
   return [await Sign(priv, message), null]
 }
 
-export async function GenerateKey(random: io.Reader | null): Promise<[PublicKey, PrivateKey, $.GoError]> {
+export async function GenerateKey(
+  random: io.Reader | null,
+): Promise<[PublicKey, PrivateKey, $.GoError]> {
   const seed = new Uint8Array(SeedSize)
   if (random == null) {
     const subtle = subtleCrypto()
@@ -124,7 +132,10 @@ export async function NewKeyFromSeed(seed: $.Bytes): Promise<PrivateKey> {
   return privateKey
 }
 
-export async function Sign(privateKey: PrivateKey, message: $.Bytes): Promise<$.Bytes> {
+export async function Sign(
+  privateKey: PrivateKey,
+  message: $.Bytes,
+): Promise<$.Bytes> {
   const priv = $.bytesToUint8Array(privateKey)
   if (priv.length !== PrivateKeySize) {
     throw new Error(`ed25519: bad private key length: ${priv.length}`)
@@ -150,7 +161,9 @@ export async function Verify(
   message: $.Bytes,
   sig: $.Bytes,
 ): Promise<boolean> {
-  return (await VerifyWithOptions(publicKey, message, sig, new Options())) == null
+  return (
+    (await VerifyWithOptions(publicKey, message, sig, new Options())) == null
+  )
 }
 
 export async function VerifyWithOptions(

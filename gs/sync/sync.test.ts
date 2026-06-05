@@ -94,14 +94,24 @@ describe('sync.Map', () => {
 
   it('matches boxed comparable interface keys', async () => {
     const m = new Map()
-    const first = $.namedValueInterfaceValue(8, 'uint16', {}, {
-      kind: $.TypeKind.Basic,
-      name: 'uint16',
-    })
-    const second = $.namedValueInterfaceValue(8, 'uint16', {}, {
-      kind: $.TypeKind.Basic,
-      name: 'uint16',
-    })
+    const first = $.namedValueInterfaceValue(
+      8,
+      'uint16',
+      {},
+      {
+        kind: $.TypeKind.Basic,
+        name: 'uint16',
+      },
+    )
+    const second = $.namedValueInterfaceValue(
+      8,
+      'uint16',
+      {},
+      {
+        kind: $.TypeKind.Basic,
+        name: 'uint16',
+      },
+    )
 
     await m.Store(first, 'compressor')
     expect(await m.Load(second)).toEqual(['compressor', true])

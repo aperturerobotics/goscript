@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest'
 
 import * as context from '@goscript/context/index.js'
 
-import { IsEnabled, Log, NewTask, Start, StartRegion, Stop, WithRegion } from './index.js'
+import {
+  IsEnabled,
+  Log,
+  NewTask,
+  Start,
+  StartRegion,
+  Stop,
+  WithRegion,
+} from './index.js'
 
 describe('runtime/trace override', () => {
   it('creates no-op tasks from nil context', () => {

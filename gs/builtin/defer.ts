@@ -61,8 +61,8 @@ export class AsyncDisposableStack implements AsyncDisposable {
     while (this.stack.length) {
       const fn = this.stack.pop()!
       const result = fn()
-      if (result && typeof (result as Promise<void>).then === "function") {
-        throw new Error("async deferred function disposed synchronously")
+      if (result && typeof (result as Promise<void>).then === 'function') {
+        throw new Error('async deferred function disposed synchronously')
       }
     }
   }

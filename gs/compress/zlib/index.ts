@@ -37,9 +37,8 @@ export function __goscript_set_ErrHeader(value: $.GoError): void {
 class zlibReader implements Resetter {
   private data: Uint8Array = new Uint8Array(0)
   private offset = 0
-  private pending:
-    | Promise<{ data: Uint8Array | null; err: $.GoError }>
-    | null = null
+  private pending: Promise<{ data: Uint8Array | null; err: $.GoError }> | null =
+    null
 
   constructor(data?: Uint8Array) {
     if (data != null) {
@@ -180,7 +179,11 @@ export function NewReaderDict(
   return [reader as any, null]
 }
 
-function deflate(data: Uint8Array, dict: $.Bytes | null, level: number): Uint8Array {
+function deflate(
+  data: Uint8Array,
+  dict: $.Bytes | null,
+  level: number,
+): Uint8Array {
   const zlib = nodeZlib()
   const opts: Record<string, unknown> = {}
   if (dict != null && $.len(dict) > 0) {
@@ -197,7 +200,10 @@ function deflate(data: Uint8Array, dict: $.Bytes | null, level: number): Uint8Ar
 
 function inflate(data: Uint8Array, dict: $.Bytes | null): Uint8Array {
   const zlib = nodeZlib()
-  const opts = dict != null && $.len(dict) > 0 ? { dictionary: $.bytesToUint8Array(dict) } : undefined
+  const opts =
+    dict != null && $.len(dict) > 0 ?
+      { dictionary: $.bytesToUint8Array(dict) }
+    : undefined
   return new Uint8Array(zlib.inflateSync(data, opts))
 }
 
@@ -302,11 +308,14 @@ function recordCompressedBytes(
 }
 
 function classifyInflateError(err: unknown): $.GoError {
-  const zerr = err instanceof Error ? err as nodeZlibError : null
+  const zerr = err instanceof Error ? (err as nodeZlibError) : null
   if (zerr?.code === 'Z_NEED_DICT') {
     return ErrDictionary
   }
-  if (zerr?.code === 'Z_DATA_ERROR' && zerr.message.includes('incorrect data check')) {
+  if (
+    zerr?.code === 'Z_DATA_ERROR' &&
+    zerr.message.includes('incorrect data check')
+  ) {
     return ErrChecksum
   }
   return ErrHeader

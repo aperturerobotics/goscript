@@ -2,8 +2,10 @@ package main
 
 import "reflect"
 
-var table []int
-var remoteCounter int
-var stringType = reflect.TypeFor[string]()
+var (
+	table         []int
+	remoteCounter int
+	stringType    = reflect.TypeFor[string]()
+)
 
 var _ = marker

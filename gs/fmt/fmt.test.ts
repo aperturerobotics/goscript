@@ -61,10 +61,15 @@ describe('fmt basic value formatting', () => {
     expect(
       fmt.Sprintf(
         'Type: %T',
-        $.namedValueInterfaceValue(123, 'int', {}, {
-          kind: $.TypeKind.Basic,
-          name: 'int',
-        }),
+        $.namedValueInterfaceValue(
+          123,
+          'int',
+          {},
+          {
+            kind: $.TypeKind.Basic,
+            name: 'int',
+          },
+        ),
       ),
     ).toBe('Type: int')
   })

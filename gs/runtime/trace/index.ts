@@ -43,7 +43,11 @@ export function NewTask(
   ]
 }
 
-export function Log(_ctx: context.Context | null, category: string, message: string): void {
+export function Log(
+  _ctx: context.Context | null,
+  category: string,
+  message: string,
+): void {
   void category
   void message
 }

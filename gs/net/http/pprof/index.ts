@@ -6,15 +6,24 @@ function writeString(w: http.ResponseWriter | null, value: string): void {
   w?.Write($.stringToBytes(value))
 }
 
-export function Index(w: http.ResponseWriter | null, _r: http.Request | $.VarRef<http.Request> | null): void {
+export function Index(
+  w: http.ResponseWriter | null,
+  _r: http.Request | $.VarRef<http.Request> | null,
+): void {
   const header = w?.Header()
   if (header != null) {
     http.Header_Set(header, 'Content-Type', 'text/html; charset=utf-8')
   }
-  writeString(w, '<html><body><a href="goroutine?debug=2">full goroutine stack dump</a></body></html>')
+  writeString(
+    w,
+    '<html><body><a href="goroutine?debug=2">full goroutine stack dump</a></body></html>',
+  )
 }
 
-export function Cmdline(w: http.ResponseWriter | null, _r: http.Request | $.VarRef<http.Request> | null): void {
+export function Cmdline(
+  w: http.ResponseWriter | null,
+  _r: http.Request | $.VarRef<http.Request> | null,
+): void {
   const header = w?.Header()
   if (header != null) {
     http.Header_Set(header, 'Content-Type', 'text/plain; charset=utf-8')
@@ -22,7 +31,10 @@ export function Cmdline(w: http.ResponseWriter | null, _r: http.Request | $.VarR
   writeString(w, 'goscript')
 }
 
-export function Profile(w: http.ResponseWriter | null, _r: http.Request | $.VarRef<http.Request> | null): void {
+export function Profile(
+  w: http.ResponseWriter | null,
+  _r: http.Request | $.VarRef<http.Request> | null,
+): void {
   const header = w?.Header()
   if (header != null) {
     http.Header_Set(header, 'Content-Type', 'application/octet-stream')
@@ -30,7 +42,10 @@ export function Profile(w: http.ResponseWriter | null, _r: http.Request | $.VarR
   writeString(w, 'cpu profile\n')
 }
 
-export function Symbol(w: http.ResponseWriter | null, _r: http.Request | $.VarRef<http.Request> | null): void {
+export function Symbol(
+  w: http.ResponseWriter | null,
+  _r: http.Request | $.VarRef<http.Request> | null,
+): void {
   const header = w?.Header()
   if (header != null) {
     http.Header_Set(header, 'Content-Type', 'text/plain; charset=utf-8')
@@ -38,7 +53,10 @@ export function Symbol(w: http.ResponseWriter | null, _r: http.Request | $.VarRe
   writeString(w, 'num_symbols: 0\n')
 }
 
-export function Trace(w: http.ResponseWriter | null, _r: http.Request | $.VarRef<http.Request> | null): void {
+export function Trace(
+  w: http.ResponseWriter | null,
+  _r: http.Request | $.VarRef<http.Request> | null,
+): void {
   const header = w?.Header()
   if (header != null) {
     http.Header_Set(header, 'Content-Type', 'application/octet-stream')

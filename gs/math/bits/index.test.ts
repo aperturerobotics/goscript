@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { Mul64, Rem, Rem32, Rem64, RotateLeft16, RotateLeft32, RotateLeft64, RotateLeft8 } from './index.js'
+import {
+  Mul64,
+  Rem,
+  Rem32,
+  Rem64,
+  RotateLeft16,
+  RotateLeft32,
+  RotateLeft64,
+  RotateLeft8,
+} from './index.js'
 
 describe('math/bits override', () => {
   it('returns the full 128-bit product from Mul64', () => {

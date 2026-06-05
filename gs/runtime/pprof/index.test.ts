@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { Lookup, NewProfile, StartCPUProfile, StopCPUProfile, WriteHeapProfile } from './index.js'
+import {
+  Lookup,
+  NewProfile,
+  StartCPUProfile,
+  StopCPUProfile,
+  WriteHeapProfile,
+} from './index.js'
 
 describe('runtime/pprof override', () => {
   it('reports CPU profiles as unsupported', () => {

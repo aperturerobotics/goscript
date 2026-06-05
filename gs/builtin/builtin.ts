@@ -151,9 +151,7 @@ export function pointerValue<T>(value: T | VarRef<T> | null | undefined): T {
     return value.value as T
   }
   const boxed =
-    typeof value === 'object' &&
-    value !== null &&
-    '__goValue' in value ?
+    typeof value === 'object' && value !== null && '__goValue' in value ?
       (value as { __goType?: unknown; __goValue: T | VarRef<T> })
     : null
   if (
@@ -177,9 +175,7 @@ export function pointerValueOrNil<T>(
     return value.value as T
   }
   const boxed =
-    typeof value === 'object' &&
-    value !== null &&
-    '__goValue' in value ?
+    typeof value === 'object' && value !== null && '__goValue' in value ?
       (value as { __goType?: unknown; __goValue: T | VarRef<T> })
     : null
   if (
@@ -234,7 +230,11 @@ export function comparableEqual(a: unknown, b: unknown): boolean {
       return false
     }
     if (hasGoValue(a) || hasGoValue(b)) {
-      return hasGoValue(a) && hasGoValue(b) && comparableEqual(a.__goValue, b.__goValue)
+      return (
+        hasGoValue(a) &&
+        hasGoValue(b) &&
+        comparableEqual(a.__goValue, b.__goValue)
+      )
     }
   }
   if (isStructValue(a) && isStructValue(b)) {
@@ -595,10 +595,7 @@ export function uint64Or(
   return uint64Result(uint64Value(left) | uint64Value(right))
 }
 
-export function int64Or(
-  left: number | bigint,
-  right: number | bigint,
-): number {
+export function int64Or(left: number | bigint, right: number | bigint): number {
   return int64Result(int64Value(left) | int64Value(right))
 }
 
@@ -634,9 +631,9 @@ function int64Value(value: number | bigint): bigint {
 
 function int64Result(value: bigint): number {
   const normalized =
-    value >= -0x8000000000000000n && value <= 0x7fffffffffffffffn
-      ? value
-      : BigInt.asIntN(64, value)
+    value >= -0x8000000000000000n && value <= 0x7fffffffffffffffn ?
+      value
+    : BigInt.asIntN(64, value)
   return Number(normalized)
 }
 

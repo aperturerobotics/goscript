@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"compress/zlib"
+	"encoding/json"
 	"errors"
 	"go/scanner"
 	"hash"
@@ -12,9 +14,6 @@ import (
 	"strings"
 	"time"
 	"unicode"
-
-	"compress/zlib"
-	"encoding/json"
 )
 
 type xof struct{}

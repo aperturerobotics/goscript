@@ -35,9 +35,13 @@ describe('crypto/ecdh override', () => {
 })
 
 function hex(value: string): Uint8Array {
-  return new Uint8Array(value.match(/../g)!.map((byte) => Number.parseInt(byte, 16)))
+  return new Uint8Array(
+    value.match(/../g)!.map((byte) => Number.parseInt(byte, 16)),
+  )
 }
 
 function toHex(value: Uint8Array | null): string {
-  return Array.from(value ?? [], (byte) => byte.toString(16).padStart(2, '0')).join('')
+  return Array.from(value ?? [], (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('')
 }

@@ -8,9 +8,9 @@ import * as iter from '@goscript/iter/index.js'
 export function All<K extends $.Comparable | null, V>(
   m: Map<K, V> | null,
 ): iter.Seq2<K, V> {
-  return (_yield: ((p0: K, p1: V) => iter.YieldResult) | null):
-    | void
-    | globalThis.Promise<void> => iteratePairs(m?.entries() ?? [], _yield)
+  return (
+    _yield: ((p0: K, p1: V) => iter.YieldResult) | null,
+  ): void | globalThis.Promise<void> => iteratePairs(m?.entries() ?? [], _yield)
 }
 
 // Keys returns an iterator over keys in m.
@@ -19,9 +19,9 @@ export function All<K extends $.Comparable | null, V>(
 export function Keys<K extends $.Comparable | null, V>(
   m: Map<K, V> | null,
 ): iter.Seq<K> {
-  return (_yield: ((p0: K) => iter.YieldResult) | null):
-    | void
-    | globalThis.Promise<void> => iterateValues(mapKeys(m), _yield)
+  return (
+    _yield: ((p0: K) => iter.YieldResult) | null,
+  ): void | globalThis.Promise<void> => iterateValues(mapKeys(m), _yield)
 }
 
 // Values returns an iterator over values in m.
@@ -30,9 +30,9 @@ export function Keys<K extends $.Comparable | null, V>(
 export function Values<K extends $.Comparable | null, V>(
   m: Map<K, V> | null,
 ): iter.Seq<V> {
-  return (_yield: ((p0: V) => iter.YieldResult) | null):
-    | void
-    | globalThis.Promise<void> => iterateValues(mapValues(m), _yield)
+  return (
+    _yield: ((p0: V) => iter.YieldResult) | null,
+  ): void | globalThis.Promise<void> => iterateValues(mapValues(m), _yield)
 }
 
 // Insert adds the key-value pairs from seq to m.

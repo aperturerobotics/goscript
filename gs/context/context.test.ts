@@ -29,7 +29,9 @@ describe('context override', () => {
     )
 
     expect(
-      ctx.Value($.interfaceValue($.markAsStructValue(new Key()), 'example.key')),
+      ctx.Value(
+        $.interfaceValue($.markAsStructValue(new Key()), 'example.key'),
+      ),
     ).toBe('stored')
   })
 

@@ -47,20 +47,34 @@ describe('net/http/httptest override', () => {
   })
 
   it('exports request defaults and recorder compatibility helpers', () => {
-    const req = NewRequestWithContext(context.Background(), '', 'https://example.invalid/path', null)
+    const req = NewRequestWithContext(
+      context.Background(),
+      '',
+      'https://example.invalid/path',
+      null,
+    )
     expect(DefaultRemoteAddr).toBe('1.2.3.4')
     expect(req.Method).toBe(MethodGet)
     expect(req.Host).toBe('example.invalid')
     expect(req.RemoteAddr).toBe('192.0.2.1:1234')
     expect(req.TLS).not.toBeNull()
 
-    const pathReq = NewRequestWithContext(context.Background(), MethodGet, '/local?x=1', null)
+    const pathReq = NewRequestWithContext(
+      context.Background(),
+      MethodGet,
+      '/local?x=1',
+      null,
+    )
     expect(pathReq.Host).toBe('example.com')
     expect(pathReq.RequestURI).toBe('/local?x=1')
     expect(pathReq.URL.Host).toBe('')
     expect(pathReq.URL.Scheme).toBe('')
 
-    const bodyReq = NewTestRequest(MethodPost, '/body', bytes.NewReader($.stringToBytes('abc')))
+    const bodyReq = NewTestRequest(
+      MethodPost,
+      '/body',
+      bytes.NewReader($.stringToBytes('abc')),
+    )
     expect(bodyReq.ContentLength).toBe(3)
     const noBodyReq = NewTestRequest(MethodPost, '/empty', NoBody)
     expect(noBodyReq.ContentLength).toBe(0)

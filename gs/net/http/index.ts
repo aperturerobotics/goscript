@@ -110,33 +110,55 @@ export class MaxBytesError {
 }
 
 export const ErrNotSupported = new ProtocolError('feature not supported')
-export const ErrUnexpectedTrailer = new ProtocolError('trailer header without chunked transfer encoding')
-export const ErrMissingBoundary = new ProtocolError('no multipart boundary param in Content-Type')
-export const ErrNotMultipart = new ProtocolError("request Content-Type isn't multipart/form-data")
+export const ErrUnexpectedTrailer = new ProtocolError(
+  'trailer header without chunked transfer encoding',
+)
+export const ErrMissingBoundary = new ProtocolError(
+  'no multipart boundary param in Content-Type',
+)
+export const ErrNotMultipart = new ProtocolError(
+  "request Content-Type isn't multipart/form-data",
+)
 export const ErrHeaderTooLong = new ProtocolError('header too long')
 export const ErrShortBody = new ProtocolError('entity body too short')
-export const ErrMissingContentLength = new ProtocolError('missing ContentLength in HEAD response')
-export const ErrBodyNotAllowed = errors.New('http: request method or response status code does not allow body')
-export const ErrBodyReadAfterClose = errors.New('http: invalid Read on closed Body')
-export const ErrContentLength = errors.New('http: wrote more than the declared Content-Length')
+export const ErrMissingContentLength = new ProtocolError(
+  'missing ContentLength in HEAD response',
+)
+export const ErrBodyNotAllowed = errors.New(
+  'http: request method or response status code does not allow body',
+)
+export const ErrBodyReadAfterClose = errors.New(
+  'http: invalid Read on closed Body',
+)
+export const ErrContentLength = errors.New(
+  'http: wrote more than the declared Content-Length',
+)
 export const ErrHandlerTimeout = errors.New('http: Handler timeout')
 export const ErrHijacked = errors.New('http: connection has been hijacked')
 export const ErrLineTooLong = errors.New('header line too long')
 export const ErrMissingFile = errors.New('http: no such file')
 export const ErrNoCookie = errors.New('http: named cookie not present')
 export const ErrNoLocation = errors.New('http: no Location header in response')
-export const ErrSchemeMismatch = errors.New('http: server gave HTTP response to HTTPS client')
+export const ErrSchemeMismatch = errors.New(
+  'http: server gave HTTP response to HTTPS client',
+)
 export const ErrServerClosed = errors.New('http: Server closed')
 export const ErrAbortHandler = errors.New('net/http: abort Handler')
-export const ErrSkipAltProtocol = errors.New('net/http: skip alternate protocol')
+export const ErrSkipAltProtocol = errors.New(
+  'net/http: skip alternate protocol',
+)
 export const ErrUseLastResponse = errors.New('net/http: use last response')
 export const ErrWriteAfterFlush = errors.New('unused')
 const errBlankCookie = errors.New('http: blank cookie')
 const errEqualNotFoundInCookie = errors.New("http: '=' not found in cookie")
 const errInvalidCookieName = errors.New('http: invalid cookie name')
 const errInvalidCookieValue = errors.New('http: invalid cookie value')
-const errCookieNumLimitExceeded = errors.New('http: number of cookies exceeded limit')
-const errCrossOriginRequest = errors.New('cross-origin request detected from Sec-Fetch-Site header')
+const errCookieNumLimitExceeded = errors.New(
+  'http: number of cookies exceeded limit',
+)
+const errCrossOriginRequest = errors.New(
+  'cross-origin request detected from Sec-Fetch-Site header',
+)
 const errCrossOriginRequestFromOldBrowser = errors.New(
   'cross-origin request detected, and/or browser is out of date: Sec-Fetch-Site is missing, and Origin does not match Host',
 )
@@ -228,7 +250,7 @@ export function StatusText(code: number): string {
 export type Header = Map<string, $.Slice<string>>
 
 export const Header = Map as {
-  new(entries?: Iterable<readonly [string, $.Slice<string>]> | null): Header
+  new (entries?: Iterable<readonly [string, $.Slice<string>]> | null): Header
 }
 
 export function CanonicalHeaderKey(s: string): string {
@@ -271,7 +293,11 @@ export function Header_Write(h: Header, w: io.Writer): $.GoError {
   return Header_WriteSubset(h, w, null)
 }
 
-export function Header_WriteSubset(h: Header, w: io.Writer, exclude: Map<string, boolean> | null): $.GoError {
+export function Header_WriteSubset(
+  h: Header,
+  w: io.Writer,
+  exclude: Map<string, boolean> | null,
+): $.GoError {
   for (const [key, values] of h.entries()) {
     if (exclude?.get(key) === true) {
       continue
@@ -377,12 +403,15 @@ function parseRequestURL(rawURL: string): [RequestURL | null, $.GoError] {
     }
     const parsed = new URL(rawURL, 'http://goscript.invalid')
     const hasHost = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(rawURL)
-    return [new RequestURL(
-      parsed.pathname,
-      parsed.search.startsWith('?') ? parsed.search.slice(1) : parsed.search,
-      hasHost ? parsed.protocol.replace(/:$/, '') : '',
-      hasHost ? parsed.host : '',
-    ), null]
+    return [
+      new RequestURL(
+        parsed.pathname,
+        parsed.search.startsWith('?') ? parsed.search.slice(1) : parsed.search,
+        hasHost ? parsed.protocol.replace(/:$/, '') : '',
+        hasHost ? parsed.host : '',
+      ),
+      null,
+    ]
   } catch {
     return [null, errors.New(`parse "${rawURL}": invalid URL`)]
   }
@@ -454,7 +483,9 @@ export class Cookie {
   }
 
   public String(): string {
-    const parts = [`${this.Name}=${this.Quoted ? quoteCookieValue(this.Value) : this.Value}`]
+    const parts = [
+      `${this.Name}=${this.Quoted ? quoteCookieValue(this.Value) : this.Value}`,
+    ]
     if (this.Path !== '') {
       parts.push(`Path=${this.Path}`)
     }
@@ -499,13 +530,27 @@ function isToken(value: string): boolean {
 }
 
 function validCookieValueByte(code: number): boolean {
-  return code >= 0x20 && code < 0x7f && code !== 0x22 && code !== 0x3b && code !== 0x5c
+  return (
+    code >= 0x20 &&
+    code < 0x7f &&
+    code !== 0x22 &&
+    code !== 0x3b &&
+    code !== 0x5c
+  )
 }
 
-function parseCookieValue(raw: string, allowDoubleQuote: boolean): [string, boolean, boolean] {
+function parseCookieValue(
+  raw: string,
+  allowDoubleQuote: boolean,
+): [string, boolean, boolean] {
   let value = raw
   let quoted = false
-  if (allowDoubleQuote && value.length > 1 && value[0] === '"' && value[value.length - 1] === '"') {
+  if (
+    allowDoubleQuote &&
+    value.length > 1 &&
+    value[0] === '"' &&
+    value[value.length - 1] === '"'
+  ) {
     value = value.slice(1, -1)
     quoted = true
   }
@@ -526,7 +571,10 @@ function asciiLower(value: string): [string, boolean] {
   return [value.toLowerCase(), true]
 }
 
-export function SetCookie(w: ResponseWriter | null, cookie: Cookie | $.VarRef<Cookie> | null): void {
+export function SetCookie(
+  w: ResponseWriter | null,
+  cookie: Cookie | $.VarRef<Cookie> | null,
+): void {
   const c = $.pointerValue<Cookie | null>(cookie)
   if (w == null || c == null) {
     return
@@ -592,7 +640,7 @@ function inProcessServerRequest(request: Request): Request {
   const rawQuery = request.URL?.RawQuery ?? ''
   const query = rawQuery === '' ? '' : `?${rawQuery}`
   req.RequestURI = `${request.URL?.Path ?? '/'}${query}`
-  req.Host = request.Host === '' ? request.URL?.Host ?? '' : request.Host
+  req.Host = request.Host === '' ? (request.URL?.Host ?? '') : request.Host
   if (req.URL?.clone != null) {
     req.URL = req.URL.clone()
     req.URL.Scheme = ''
@@ -653,7 +701,9 @@ export class Request {
     this.Cancel = init?.Cancel ?? null
     this.Response = init?.Response ?? null
     this.Pattern = init?.Pattern ?? ''
-    this.ctx = (init as { ctx?: context.Context } | undefined)?.ctx ?? context.Background()
+    this.ctx =
+      (init as { ctx?: context.Context } | undefined)?.ctx ??
+      context.Background()
   }
 
   public Context(): context.Context {
@@ -667,7 +717,10 @@ export class Request {
   public Clone(ctx: context.Context): Request {
     return new Request({
       Method: this.Method,
-      URL: this.URL?.clone != null ? this.URL.clone() : this.URL == null ? null : { ...this.URL },
+      URL:
+        this.URL?.clone != null ? this.URL.clone()
+        : this.URL == null ? null
+        : { ...this.URL },
       Proto: this.Proto,
       ProtoMajor: this.ProtoMajor,
       ProtoMinor: this.ProtoMinor,
@@ -700,7 +753,10 @@ export class Request {
   }
 
   public ProtoAtLeast(major: number, minor: number): boolean {
-    return this.ProtoMajor > major || (this.ProtoMajor === major && this.ProtoMinor >= minor)
+    return (
+      this.ProtoMajor > major ||
+      (this.ProtoMajor === major && this.ProtoMinor >= minor)
+    )
   }
 
   public Cookie(name: string): [Cookie | null, $.GoError] {
@@ -785,7 +841,8 @@ export class Response {
     this.TLS = init?.TLS ?? null
     if (this.Status === '' && this.StatusCode !== 0) {
       const text = StatusText(this.StatusCode)
-      this.Status = text === '' ? String(this.StatusCode) : `${this.StatusCode} ${text}`
+      this.Status =
+        text === '' ? String(this.StatusCode) : `${this.StatusCode} ${text}`
     }
   }
 
@@ -836,7 +893,10 @@ export class Response {
   }
 
   public ProtoAtLeast(major: number, minor: number): boolean {
-    return this.ProtoMajor > major || (this.ProtoMajor === major && this.ProtoMinor >= minor)
+    return (
+      this.ProtoMajor > major ||
+      (this.ProtoMajor === major && this.ProtoMinor >= minor)
+    )
   }
 
   public Write(w: io.Writer): $.GoError {
@@ -910,7 +970,11 @@ export class Client {
     return await this.Do(req)
   }
 
-  public async Post(url: string, contentType: string, body: io.Reader | null): Promise<[Response | null, $.GoError]> {
+  public async Post(
+    url: string,
+    contentType: string,
+    body: io.Reader | null,
+  ): Promise<[Response | null, $.GoError]> {
     const [req, err] = NewRequest(MethodPost, url, body)
     if (err != null || req == null) {
       return [null, err]
@@ -919,12 +983,21 @@ export class Client {
     return await this.Do(req)
   }
 
-  public async PostForm(url: string, data: any): Promise<[Response | null, $.GoError]> {
-    return await this.Post(url, 'application/x-www-form-urlencoded', bytes.NewReader($.stringToBytes(encodeFormData(data))))
+  public async PostForm(
+    url: string,
+    data: any,
+  ): Promise<[Response | null, $.GoError]> {
+    return await this.Post(
+      url,
+      'application/x-www-form-urlencoded',
+      bytes.NewReader($.stringToBytes(encodeFormData(data))),
+    )
   }
 
   public CloseIdleConnections(): void {
-    const closer = this.Transport as { CloseIdleConnections?: () => void } | null
+    const closer = this.Transport as {
+      CloseIdleConnections?: () => void
+    } | null
     closer?.CloseIdleConnections?.()
   }
 }
@@ -944,10 +1017,8 @@ function encodeFormData(data: any): string {
     return data.toString()
   }
   const entries =
-    data instanceof Map ?
-      Array.from(data.entries())
-    : typeof data === 'object' ?
-      Object.entries(data)
+    data instanceof Map ? Array.from(data.entries())
+    : typeof data === 'object' ? Object.entries(data)
     : []
   entries.sort(([a], [b]) => String(a).localeCompare(String(b)))
   const params = new URLSearchParams()
@@ -957,7 +1028,11 @@ function encodeFormData(data: any): string {
   return params.toString()
 }
 
-function appendFormValue(params: URLSearchParams, key: string, value: unknown): void {
+function appendFormValue(
+  params: URLSearchParams,
+  key: string,
+  value: unknown,
+): void {
   const unwrapped = unwrapFormValue(value)
   if (unwrapped == null) {
     return
@@ -982,7 +1057,9 @@ function unwrapFormValue(value: unknown): unknown {
 }
 
 export interface RoundTripper {
-  RoundTrip(req: Request | $.VarRef<Request> | null): [Response | null, $.GoError] | Promise<[Response | null, $.GoError]>
+  RoundTrip(
+    req: Request | $.VarRef<Request> | null,
+  ): [Response | null, $.GoError] | Promise<[Response | null, $.GoError]>
 }
 
 export class Protocols {
@@ -1051,8 +1128,17 @@ export class HTTP2Config {
 }
 
 export class Transport implements RoundTripper {
-  public Proxy: ((req: Request | $.VarRef<Request> | null) => [any, $.GoError]) | null = null
-  public OnProxyConnectResponse: ((ctx: context.Context, proxyURL: any, connectReq: Request, connectRes: Response) => $.GoError) | null = null
+  public Proxy:
+    | ((req: Request | $.VarRef<Request> | null) => [any, $.GoError])
+    | null = null
+  public OnProxyConnectResponse:
+    | ((
+        ctx: context.Context,
+        proxyURL: any,
+        connectReq: Request,
+        connectRes: Response,
+      ) => $.GoError)
+    | null = null
   public DialContext: any = null
   public Dial: any = null
   public DialTLSContext: any = null
@@ -1069,7 +1155,13 @@ export class Transport implements RoundTripper {
   public ExpectContinueTimeout = 0
   public TLSNextProto: Map<string, any> | null = null
   public ProxyConnectHeader = new Header()
-  public GetProxyConnectHeader: ((ctx: context.Context, proxyURL: any, target: string) => [Header | null, $.GoError]) | null = null
+  public GetProxyConnectHeader:
+    | ((
+        ctx: context.Context,
+        proxyURL: any,
+        target: string,
+      ) => [Header | null, $.GoError])
+    | null = null
   public MaxResponseHeaderBytes = 0
   public WriteBufferSize = 0
   public ReadBufferSize = 0
@@ -1081,7 +1173,9 @@ export class Transport implements RoundTripper {
     Object.assign(this, init)
   }
 
-  public async RoundTrip(req: Request | $.VarRef<Request> | null): Promise<[Response | null, $.GoError]> {
+  public async RoundTrip(
+    req: Request | $.VarRef<Request> | null,
+  ): Promise<[Response | null, $.GoError]> {
     const request = $.pointerValue<Request | null>(req)
     if (request == null) {
       return [null, errors.New('net/http: nil Request')]
@@ -1094,7 +1188,10 @@ export class Transport implements RoundTripper {
     const recorder = new memoryResponseWriter()
     let closeErr: $.GoError | undefined
     try {
-      const served = handler.ServeHTTP(recorder, inProcessServerRequest(request))
+      const served = handler.ServeHTTP(
+        recorder,
+        inProcessServerRequest(request),
+      )
       if (served instanceof Promise) {
         await served
       }
@@ -1117,7 +1214,11 @@ export class Transport implements RoundTripper {
 
   public RegisterProtocol(_scheme: string, _rt: RoundTripper): void {}
 
-  public NewClientConn(_ctx: context.Context, _scheme: string, _address: string): [ClientConn | null, $.GoError] {
+  public NewClientConn(
+    _ctx: context.Context,
+    _scheme: string,
+    _address: string,
+  ): [ClientConn | null, $.GoError] {
     return [null, ErrNotSupported]
   }
 
@@ -1131,7 +1232,9 @@ export const DefaultTransport: RoundTripper = new Transport()
 class fileTransport implements RoundTripper {
   constructor(private root: FileSystem | null) {}
 
-  public async RoundTrip(req: Request | $.VarRef<Request> | null): Promise<[Response | null, $.GoError]> {
+  public async RoundTrip(
+    req: Request | $.VarRef<Request> | null,
+  ): Promise<[Response | null, $.GoError]> {
     const request = $.pointerValue<Request | null>(req)
     const recorder = new memoryResponseWriter()
     let closeErr: $.GoError | undefined
@@ -1155,7 +1258,9 @@ export function NewFileTransportFS(fsys: fs.FS): RoundTripper {
   return NewFileTransport(FS(fsys))
 }
 
-async function fetchRoundTrip(request: Request): Promise<[Response | null, $.GoError]> {
+async function fetchRoundTrip(
+  request: Request,
+): Promise<[Response | null, $.GoError]> {
   const requestBody = request.Body
   const closeRequestBody = (): $.GoError => {
     if (requestBody == null) {
@@ -1165,7 +1270,10 @@ async function fetchRoundTrip(request: Request): Promise<[Response | null, $.GoE
   }
   if (typeof globalThis.fetch !== 'function') {
     closeRequestBody()
-    return [null, errors.New('net/http: Client.Do is not implemented in GoScript')]
+    return [
+      null,
+      errors.New('net/http: Client.Do is not implemented in GoScript'),
+    ]
   }
   const ctxErr = request.Context()?.Err?.()
   if (ctxErr != null) {
@@ -1179,7 +1287,11 @@ async function fetchRoundTrip(request: Request): Promise<[Response | null, $.GoE
     }
   }
   let body: Uint8Array | undefined
-  if (requestBody != null && request.Method !== MethodGet && request.Method !== MethodHead) {
+  if (
+    requestBody != null &&
+    request.Method !== MethodGet &&
+    request.Method !== MethodHead
+  ) {
     const [data, err] = await io.ReadAll(requestBody)
     const closeErr = closeRequestBody()
     if (err != null) {
@@ -1217,8 +1329,9 @@ async function fetchRoundTrip(request: Request): Promise<[Response | null, $.GoE
       null,
     ]
   } catch (err) {
-    const message = typeof err === 'object' && err != null && 'message' in err
-      ? String((err as { message: unknown }).message)
+    const message =
+      typeof err === 'object' && err != null && 'message' in err ?
+        String((err as { message: unknown }).message)
       : String(err)
     return [null, errors.New(message)]
   }
@@ -1248,12 +1361,18 @@ export function FS(fsys: fs.FS): FileSystem {
 
 function httpFileFromFSFile(file: Exclude<fs.File, null>): File {
   const seek = (file as Partial<io.Seeker>).Seek
-  const readdir = (file as { Readdir?: (count: number) => [$.Slice<fs.FileInfo>, $.GoError] }).Readdir
+  const readdir = (
+    file as { Readdir?: (count: number) => [$.Slice<fs.FileInfo>, $.GoError] }
+  ).Readdir
   return {
-    Read: (p) => file.Read(p instanceof Uint8Array ? p : Uint8Array.from(p ?? [])),
+    Read: (p) =>
+      file.Read(p instanceof Uint8Array ? p : Uint8Array.from(p ?? [])),
     Close: () => file.Close(),
     Stat: () => file.Stat(),
-    Seek: seek == null ? () => [0, errors.New('net/http: file does not support seek')] : seek.bind(file),
+    Seek:
+      seek == null ?
+        () => [0, errors.New('net/http: file does not support seek')]
+      : seek.bind(file),
     Readdir: readdir == null ? () => [null, io.EOF] : readdir.bind(file),
   }
 }
@@ -1269,7 +1388,9 @@ export function FileServer(root: FileSystem | null): Handler {
         Error(w, 'method not allowed', StatusMethodNotAllowed)
         return
       }
-      const [file, err] = root?.Open(cleanFileServerPath(req.URL?.Path ?? '')) ?? [null, fs.ErrInvalid]
+      const [file, err] = root?.Open(
+        cleanFileServerPath(req.URL?.Path ?? ''),
+      ) ?? [null, fs.ErrInvalid]
       if (err != null || file == null) {
         NotFound(w, req)
         return
@@ -1348,7 +1469,10 @@ function cleanFileServerPath(name: string): string {
 }
 
 export interface Handler {
-  ServeHTTP(w: ResponseWriter | null, r: Request | $.VarRef<Request> | null): void | Promise<void>
+  ServeHTTP(
+    w: ResponseWriter | null,
+    r: Request | $.VarRef<Request> | null,
+  ): void | Promise<void>
 }
 
 export type HandlerFunc = (
@@ -1512,7 +1636,9 @@ function wildcardPatternMatches(pattern: string, path: string): boolean {
 export class Server {
   public Addr: string
   public BaseContext: ((listener: any) => context.Context) | null
-  public ConnContext: ((ctx: context.Context, conn: any) => context.Context) | null
+  public ConnContext:
+    | ((ctx: context.Context, conn: any) => context.Context)
+    | null
   public Handler: Handler | null
   public DisableGeneralOptionsHandler: boolean
   public TLSConfig: any
@@ -1533,7 +1659,8 @@ export class Server {
     this.BaseContext = init?.BaseContext ?? null
     this.ConnContext = init?.ConnContext ?? null
     this.Handler = init?.Handler ?? null
-    this.DisableGeneralOptionsHandler = init?.DisableGeneralOptionsHandler ?? false
+    this.DisableGeneralOptionsHandler =
+      init?.DisableGeneralOptionsHandler ?? false
     this.TLSConfig = init?.TLSConfig ?? null
     this.ReadTimeout = init?.ReadTimeout ?? 0
     this.ReadTimeoutHandler = (init as any)?.ReadTimeoutHandler ?? null
@@ -1549,11 +1676,15 @@ export class Server {
   }
 
   public ListenAndServe(): $.GoError {
-    return errors.New('net/http: Server.ListenAndServe is not implemented in GoScript')
+    return errors.New(
+      'net/http: Server.ListenAndServe is not implemented in GoScript',
+    )
   }
 
   public ListenAndServeTLS(_certFile: string, _keyFile: string): $.GoError {
-    return errors.New('net/http: Server.ListenAndServeTLS is not implemented in GoScript')
+    return errors.New(
+      'net/http: Server.ListenAndServeTLS is not implemented in GoScript',
+    )
   }
 
   public Close(): $.GoError {
@@ -1568,11 +1699,18 @@ export class Server {
     return ErrNotSupported
   }
 
-  public ServeTLS(_listener: any, _certFile: string, _keyFile: string): $.GoError {
+  public ServeTLS(
+    _listener: any,
+    _certFile: string,
+    _keyFile: string,
+  ): $.GoError {
     return ErrNotSupported
   }
 
-  public ServeHTTP(w: ResponseWriter | null, r: Request | $.VarRef<Request> | null): void | Promise<void> {
+  public ServeHTTP(
+    w: ResponseWriter | null,
+    r: Request | $.VarRef<Request> | null,
+  ): void | Promise<void> {
     return (this.Handler ?? DefaultServeMux).ServeHTTP(w, r)
   }
 
@@ -1581,7 +1719,10 @@ export class Server {
   public SetKeepAlivesEnabled(_v: boolean): void {}
 }
 
-export function ListenAndServe(_addr: string, _handler: Handler | null): $.GoError {
+export function ListenAndServe(
+  _addr: string,
+  _handler: Handler | null,
+): $.GoError {
   return ErrNotSupported
 }
 
@@ -1624,7 +1765,10 @@ export interface Hijacker {
 }
 
 export interface Pusher {
-  Push(target: string, opts: PushOptions | $.VarRef<PushOptions> | null): $.GoError
+  Push(
+    target: string,
+    opts: PushOptions | $.VarRef<PushOptions> | null,
+  ): $.GoError
 }
 
 export class ResponseController {
@@ -1657,7 +1801,9 @@ export class ResponseController {
   }
 }
 
-export function NewResponseController(rw: ResponseWriter | null): ResponseController {
+export function NewResponseController(
+  rw: ResponseWriter | null,
+): ResponseController {
   return new ResponseController(rw)
 }
 
@@ -1666,7 +1812,10 @@ class maxBytesReader implements io.ReadCloser {
   private remaining: number
   private err: $.GoError = null
 
-  constructor(private reader: io.ReadCloser, limit: number) {
+  constructor(
+    private reader: io.ReadCloser,
+    limit: number,
+  ) {
     this.initialLimit = Math.max(0, limit)
     this.remaining = this.initialLimit
   }
@@ -1719,14 +1868,19 @@ export class ServeMux implements Handler {
     this.Handle(pattern, { ServeHTTP: handler })
   }
 
-  public Handler(r: Request | $.VarRef<Request> | null): [Handler | null, string] {
+  public Handler(
+    r: Request | $.VarRef<Request> | null,
+  ): [Handler | null, string] {
     const req = $.pointerValue<Request | null>(r)
     const path = req?.URL?.Path ?? ''
     const handler = this.handlers.get(path) ?? null
     return [handler, handler == null ? '' : path]
   }
 
-  public ServeHTTP(w: ResponseWriter | null, r: Request | $.VarRef<Request> | null): void | Promise<void> {
+  public ServeHTTP(
+    w: ResponseWriter | null,
+    r: Request | $.VarRef<Request> | null,
+  ): void | Promise<void> {
     const [handler] = this.Handler(r)
     if (handler == null) {
       NotFound(w, r)
@@ -1754,7 +1908,11 @@ export function StripPrefix(prefix: string, handler: Handler | null): Handler {
   return {
     ServeHTTP(w, r) {
       const req = $.pointerValue<Request | null>(r)
-      if (req?.URL != null && typeof req.URL.Path === 'string' && req.URL.Path.startsWith(prefix)) {
+      if (
+        req?.URL != null &&
+        typeof req.URL.Path === 'string' &&
+        req.URL.Path.startsWith(prefix)
+      ) {
         req.URL = { ...req.URL, Path: req.URL.Path.slice(prefix.length) || '/' }
       }
       return handler?.ServeHTTP(w, req)
@@ -1796,7 +1954,11 @@ export function RedirectHandler(url: string, code: number): Handler {
   }
 }
 
-export function TimeoutHandler(handler: Handler | null, _dt: number, msg: string): Handler {
+export function TimeoutHandler(
+  handler: Handler | null,
+  _dt: number,
+  msg: string,
+): Handler {
   return {
     ServeHTTP(w, r) {
       if (handler == null) {
@@ -1808,12 +1970,19 @@ export function TimeoutHandler(handler: Handler | null, _dt: number, msg: string
   }
 }
 
-export function Error(w: ResponseWriter | null, error: string, code: number): void {
+export function Error(
+  w: ResponseWriter | null,
+  error: string,
+  code: number,
+): void {
   w?.WriteHeader(code)
   w?.Write($.stringToBytes(error + '\n'))
 }
 
-export function NotFound(w: ResponseWriter | null, _r: Request | $.VarRef<Request> | null): void {
+export function NotFound(
+  w: ResponseWriter | null,
+  _r: Request | $.VarRef<Request> | null,
+): void {
   Error(w, '404 page not found', StatusNotFound)
 }
 
@@ -1833,7 +2002,10 @@ export function Redirect(
 export function ParseTime(text: string): [time.Time, $.GoError] {
   const date = new globalThis.Date(text)
   if (isNaN(date.getTime())) {
-    return [new time.Time(), $.newError(`parsing time "${text}" as HTTP-date: cannot parse`)]
+    return [
+      new time.Time(),
+      $.newError(`parsing time "${text}" as HTTP-date: cannot parse`),
+    ]
   }
   return [time.UnixMilli(date.getTime()), null]
 }
@@ -1881,7 +2053,10 @@ export function DetectContentType(data: $.Slice<number>): string {
   if (startsWithBytes(bytes, new Uint8Array([0xef, 0xbb, 0xbf]))) {
     return 'text/plain; charset=utf-8'
   }
-  if (startsWithBytes(bytes, new Uint8Array([0x00, 0x00, 0x01, 0x00])) || startsWithBytes(bytes, new Uint8Array([0x00, 0x00, 0x02, 0x00]))) {
+  if (
+    startsWithBytes(bytes, new Uint8Array([0x00, 0x00, 0x01, 0x00])) ||
+    startsWithBytes(bytes, new Uint8Array([0x00, 0x00, 0x02, 0x00]))
+  ) {
     return 'image/x-icon'
   }
   if (startsWithASCII(bytes, 'BM')) {
@@ -1893,7 +2068,12 @@ export function DetectContentType(data: $.Slice<number>): string {
   if (isRIFFSignature(bytes, 'WEBPVP')) {
     return 'image/webp'
   }
-  if (startsWithBytes(bytes, new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+  if (
+    startsWithBytes(
+      bytes,
+      new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    )
+  ) {
     return 'image/png'
   }
   if (startsWithBytes(bytes, new Uint8Array([0xff, 0xd8, 0xff]))) {
@@ -1908,7 +2088,12 @@ export function DetectContentType(data: $.Slice<number>): string {
   if (startsWithBytes(bytes, new Uint8Array([0x4f, 0x67, 0x67, 0x53, 0x00]))) {
     return 'application/ogg'
   }
-  if (startsWithBytes(bytes, new Uint8Array([0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06]))) {
+  if (
+    startsWithBytes(
+      bytes,
+      new Uint8Array([0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06]),
+    )
+  ) {
     return 'audio/midi'
   }
   if (isRIFFSignature(bytes, 'AVI ')) {
@@ -1947,17 +2132,32 @@ export function DetectContentType(data: $.Slice<number>): string {
   if (startsWithBytes(bytes, new Uint8Array([0x50, 0x4b, 0x03, 0x04]))) {
     return 'application/zip'
   }
-  if (startsWithBytes(bytes, new Uint8Array([0x52, 0x61, 0x72, 0x21, 0x1a, 0x07, 0x00]))) {
+  if (
+    startsWithBytes(
+      bytes,
+      new Uint8Array([0x52, 0x61, 0x72, 0x21, 0x1a, 0x07, 0x00]),
+    )
+  ) {
     return 'application/x-rar-compressed'
   }
-  if (startsWithBytes(bytes, new Uint8Array([0x52, 0x61, 0x72, 0x21, 0x1a, 0x07, 0x01, 0x00]))) {
+  if (
+    startsWithBytes(
+      bytes,
+      new Uint8Array([0x52, 0x61, 0x72, 0x21, 0x1a, 0x07, 0x01, 0x00]),
+    )
+  ) {
     return 'application/x-rar-compressed'
   }
   if (startsWithBytes(bytes, new Uint8Array([0x00, 0x61, 0x73, 0x6d]))) {
     return 'application/wasm'
   }
   for (const byte of afterWS) {
-    if (byte <= 0x08 || byte === 0x0b || (byte >= 0x0e && byte <= 0x1a) || (byte >= 0x1c && byte <= 0x1f)) {
+    if (
+      byte <= 0x08 ||
+      byte === 0x0b ||
+      (byte >= 0x0e && byte <= 0x1a) ||
+      (byte >= 0x1c && byte <= 0x1f)
+    ) {
       return 'application/octet-stream'
     }
   }
@@ -1967,7 +2167,13 @@ export function DetectContentType(data: $.Slice<number>): string {
 function firstNonWhitespace(data: Uint8Array): number {
   for (let i = 0; i < data.length; i++) {
     const byte = data[i]
-    if (byte !== 0x09 && byte !== 0x0a && byte !== 0x0c && byte !== 0x0d && byte !== 0x20) {
+    if (
+      byte !== 0x09 &&
+      byte !== 0x0a &&
+      byte !== 0x0c &&
+      byte !== 0x0d &&
+      byte !== 0x20
+    ) {
       return i
     }
   }
@@ -1990,7 +2196,11 @@ function startsWithASCII(data: Uint8Array, prefix: string): boolean {
   return asciiMatchesAt(data, 0, prefix)
 }
 
-function asciiMatchesAt(data: Uint8Array, offset: number, text: string): boolean {
+function asciiMatchesAt(
+  data: Uint8Array,
+  offset: number,
+  text: string,
+): boolean {
   if (data.length < offset + text.length) {
     return false
   }
@@ -2102,7 +2312,12 @@ export function ParseSetCookie(line: string): [Cookie | null, $.GoError] {
   if (!ok) {
     return [null, errInvalidCookieValue]
   }
-  const cookie = new Cookie({ Name: name, Value: value, Quoted: quoted, Raw: line })
+  const cookie = new Cookie({
+    Name: name,
+    Value: value,
+    Quoted: quoted,
+    Raw: line,
+  })
   const unparsed: string[] = []
   for (const raw of parts.slice(1)) {
     const part = raw.trim()
@@ -2158,7 +2373,10 @@ export function ParseSetCookie(line: string): [Cookie | null, $.GoError] {
           break
         }
         let secs = Number.parseInt(attrValue, 10)
-        if ((secs !== 0 && attrValue[0] === '0') || !Number.isSafeInteger(secs)) {
+        if (
+          (secs !== 0 && attrValue[0] === '0') ||
+          !Number.isSafeInteger(secs)
+        ) {
           break
         }
         if (secs <= 0) {
@@ -2207,7 +2425,10 @@ export function NewRequestWithContext(
     method = MethodGet
   }
   if (!isToken(method)) {
-    return [null, errors.New(`net/http: invalid method ${JSON.stringify(method)}`)]
+    return [
+      null,
+      errors.New(`net/http: invalid method ${JSON.stringify(method)}`),
+    ]
   }
   if (ctx == null) {
     return [null, errors.New('net/http: nil Context')]
@@ -2217,7 +2438,17 @@ export function NewRequestWithContext(
     return [null, err]
   }
   const bodyInfo = requestBodyInfo(body, 0)
-  return [new Request({ Method: method, URL: parsedURL, Body: bodyInfo.Body, ContentLength: bodyInfo.ContentLength, Host: parsedURL.Host, ctx }), null]
+  return [
+    new Request({
+      Method: method,
+      URL: parsedURL,
+      Body: bodyInfo.Body,
+      ContentLength: bodyInfo.ContentLength,
+      Host: parsedURL.Host,
+      ctx,
+    }),
+    null,
+  ]
 }
 
 export async function Get(_url: string): Promise<[Response | null, $.GoError]> {
@@ -2228,7 +2459,9 @@ export async function Get(_url: string): Promise<[Response | null, $.GoError]> {
   return await DefaultClient.Do(req)
 }
 
-export async function Head(_url: string): Promise<[Response | null, $.GoError]> {
+export async function Head(
+  _url: string,
+): Promise<[Response | null, $.GoError]> {
   const [req, err] = NewRequest(MethodHead, _url, null)
   if (err != null) {
     return [null, err]
@@ -2249,15 +2482,22 @@ export async function Post(
   return await DefaultClient.Do(req)
 }
 
-export async function PostForm(_url: string, data: any): Promise<[Response | null, $.GoError]> {
+export async function PostForm(
+  _url: string,
+  data: any,
+): Promise<[Response | null, $.GoError]> {
   return await DefaultClient.PostForm(_url, data)
 }
 
-export function ProxyFromEnvironment(_req: Request | $.VarRef<Request> | null): [any, $.GoError] {
+export function ProxyFromEnvironment(
+  _req: Request | $.VarRef<Request> | null,
+): [any, $.GoError] {
   return [null, null]
 }
 
-export function ProxyURL(fixedURL: any): (req: Request | $.VarRef<Request> | null) => [any, $.GoError] {
+export function ProxyURL(
+  fixedURL: any,
+): (req: Request | $.VarRef<Request> | null) => [any, $.GoError] {
   return () => [fixedURL, null]
 }
 
@@ -2265,7 +2505,10 @@ export function ReadRequest(_reader: any): [Request | null, $.GoError] {
   return [null, ErrNotSupported]
 }
 
-export function ReadResponse(_reader: any, _req: Request | $.VarRef<Request> | null): [Response | null, $.GoError] {
+export function ReadResponse(
+  _reader: any,
+  _req: Request | $.VarRef<Request> | null,
+): [Response | null, $.GoError] {
   return [null, ErrNotSupported]
 }
 
@@ -2303,7 +2546,10 @@ function readCloserForBody(body: io.Reader | null): io.ReadCloser | null {
   return io.NopCloser(body)
 }
 
-function requestBodyInfo(body: io.Reader | null, unknownLength: number): { Body: io.ReadCloser | null; ContentLength: number } {
+function requestBodyInfo(
+  body: io.Reader | null,
+  unknownLength: number,
+): { Body: io.ReadCloser | null; ContentLength: number } {
   if (body == null) {
     return { Body: null, ContentLength: 0 }
   }
@@ -2311,9 +2557,16 @@ function requestBodyInfo(body: io.Reader | null, unknownLength: number): { Body:
   if (value === NoBody) {
     return { Body: NoBody, ContentLength: 0 }
   }
-  if (value instanceof bytes.Buffer || value instanceof bytes.Reader || value instanceof strings.Reader) {
+  if (
+    value instanceof bytes.Buffer ||
+    value instanceof bytes.Reader ||
+    value instanceof strings.Reader
+  ) {
     const length = value.Len()
-    return { Body: length === 0 ? NoBody : readCloserForBody(body), ContentLength: length }
+    return {
+      Body: length === 0 ? NoBody : readCloserForBody(body),
+      ContentLength: length,
+    }
   }
   return { Body: readCloserForBody(body), ContentLength: unknownLength }
 }

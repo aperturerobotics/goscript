@@ -166,9 +166,15 @@ class embedFile {
 
   Stat(): [fs.FileInfo, $.GoError] {
     if (this.data === null) {
-      return [new embedFileInfo(baseName(this.name), 0, fs.ModeDir | 0o555), null]
+      return [
+        new embedFileInfo(baseName(this.name), 0, fs.ModeDir | 0o555),
+        null,
+      ]
     }
-    return [new embedFileInfo(baseName(this.name), this.data.byteLength, 0o444), null]
+    return [
+      new embedFileInfo(baseName(this.name), this.data.byteLength, 0o444),
+      null,
+    ]
   }
 }
 

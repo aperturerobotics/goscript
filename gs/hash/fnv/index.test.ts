@@ -1,14 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import * as $ from '../../builtin/index.js'
-import {
-  New128,
-  New128a,
-  New32,
-  New32a,
-  New64,
-  New64a,
-} from './index.js'
+import { New128, New128a, New32, New32a, New64, New64a } from './index.js'
 
 describe('hash/fnv override', () => {
   it('matches Go FNV sums for hello', async () => {

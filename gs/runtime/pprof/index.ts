@@ -105,7 +105,11 @@ export function WriteHeapProfile(w: WriterArg): $.GoError {
 
 export function SetGoroutineLabels(_ctx: unknown): void {}
 
-export function Do(_ctx: unknown, _labels: unknown, fn: (() => void) | null): void {
+export function Do(
+  _ctx: unknown,
+  _labels: unknown,
+  fn: (() => void) | null,
+): void {
   fn?.()
 }
 

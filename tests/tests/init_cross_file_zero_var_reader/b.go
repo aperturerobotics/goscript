@@ -1,8 +1,10 @@
 package main
 
-var registry = make(map[int]int)
-var counter uint64
-var shared int
+var (
+	registry = make(map[int]int)
+	counter  uint64
+	shared   int
+)
 
 func readTable() {
 	counter++

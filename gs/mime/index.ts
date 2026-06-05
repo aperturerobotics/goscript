@@ -52,7 +52,11 @@ export function FormatMediaType(
     param instanceof Map ?
       Array.from(param.entries())
     : Object.entries(param ?? {})
-  entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+  entries.sort(([a], [b]) =>
+    a < b ? -1
+    : a > b ? 1
+    : 0,
+  )
   for (const [key, value] of entries) {
     if (!isToken(key)) {
       return ''
@@ -92,7 +96,10 @@ export function ParseMediaType(
     if (key.endsWith('*')) {
       const decoded = decode2231Value(value)
       if (decoded !== null) {
-        if (params.has(key.slice(0, -1)) && params.get(key.slice(0, -1)) !== decoded) {
+        if (
+          params.has(key.slice(0, -1)) &&
+          params.get(key.slice(0, -1)) !== decoded
+        ) {
           return ['', new Map(), ErrInvalidMediaParameter]
         }
         params.set(key.slice(0, -1), decoded)
