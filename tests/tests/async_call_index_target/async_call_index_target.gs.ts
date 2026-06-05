@@ -4,14 +4,14 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export async function values(): globalThis.Promise<$.Slice<number>> {
-	let ready = $.makeChannel<boolean>(1, false, "both")
+	let ready: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(ready, true)
 	await $.chanRecv(ready)
 	return $.arrayToSlice<number>([4])
 }
 
 export async function mapped(): globalThis.Promise<Map<number, number> | null> {
-	let ready = $.makeChannel<boolean>(1, false, "both")
+	let ready: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(ready, true)
 	await $.chanRecv(ready)
 	return new Map<number, number>([[2, 5]])

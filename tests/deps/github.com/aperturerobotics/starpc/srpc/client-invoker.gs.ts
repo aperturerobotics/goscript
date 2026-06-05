@@ -66,7 +66,7 @@ export class ClientInvoker {
 		__defer.defer(async () => { await $.pointerValue<Exclude<__goscript_stream.Stream, null>>(remoteStrm).Close() })
 
 		// Proxy data between the streams
-		let errCh = $.makeChannel<$.GoError>(2, null, "both")
+		let errCh: $.Channel<$.GoError> | null = $.makeChannel<$.GoError>(2, null, "both")
 		queueMicrotask(async () => { await proxyStreamTo(strm, remoteStrm, errCh) })
 		queueMicrotask(async () => { await proxyStreamTo(remoteStrm, strm, errCh) })
 

@@ -190,7 +190,7 @@ export async function loadGenericStore(store: GenericStore | null): globalThis.P
 
 export async function main(): globalThis.Promise<void> {
 	// Create a buffered channel
-	let ch = $.makeChannel<number>(1, 0, "both")
+	let ch: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
 
 	// Test with ChannelProcessor (naturally async)
 	let channelProc: ChannelProcessor | $.VarRef<ChannelProcessor> | null = new ChannelProcessor({ch: ch})

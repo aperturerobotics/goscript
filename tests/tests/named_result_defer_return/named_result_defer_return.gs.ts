@@ -51,7 +51,7 @@ export async function main(): globalThis.Promise<void> {
 	let [v, err] = syncReturn()
 	$.println("sync", v, err)
 
-	let ch = $.makeChannel<string>(1, "", "both")
+	let ch: $.Channel<string> | null = $.makeChannel<string>(1, "", "both")
 	let __goscriptTuple0: any = await asyncReturn(ch)
 	v = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]

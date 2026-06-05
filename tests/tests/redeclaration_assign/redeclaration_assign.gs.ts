@@ -16,7 +16,7 @@ export async function shadowCallbackInput(fn: ((_p0: number) => number | globalT
 }
 
 export async function selectResultRedeclare(): globalThis.Promise<void> {
-	let resultCh = $.makeChannel<string>(1, "", "both")
+	let resultCh: $.Channel<string> | null = $.makeChannel<string>(1, "", "both")
 	await $.chanSend(resultCh, "ready")
 	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{

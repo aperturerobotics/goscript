@@ -20,7 +20,7 @@ export function Current(): number {
 }
 
 export async function Wait(): globalThis.Promise<$.GoError> {
-	let ch = $.makeChannel<$.GoError>(1, null, "both")
+	let ch: $.Channel<$.GoError> | null = $.makeChannel<$.GoError>(1, null, "both")
 	await $.chanSend(ch, null)
 	return await $.chanRecv(ch)
 }

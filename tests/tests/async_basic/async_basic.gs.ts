@@ -16,7 +16,7 @@ export async function caller(ch: $.Channel<number> | null): globalThis.Promise<n
 
 export async function main(): globalThis.Promise<void> {
 	// Create a buffered channel
-	let myChan = $.makeChannel<number>(1, 0, "both")
+	let myChan: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(myChan, 10)
 
 	// Call the async caller function

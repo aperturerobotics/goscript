@@ -720,7 +720,7 @@ export class Resolver {
 			conf = await __goscript_dnsclient_unix.getSystemDNSConfig()
 		}
 
-		let lane = $.makeChannel<result>(1, $.markAsStructValue(new result()), "both")
+		let lane: $.Channel<result> | null = $.makeChannel<result>(1, $.markAsStructValue(new result()), "both")
 		let qtypes: $.Slice<dnsmessage.Type> = $.arrayToSlice<dnsmessage.Type>([$.uint(dnsmessage.TypeA, 16), $.uint(dnsmessage.TypeAAAA, 16)])
 		if ($.stringEqual(network, "CNAME")) {
 			qtypes = $.append(qtypes, $.uint(dnsmessage.TypeCNAME, 16))
@@ -1389,7 +1389,7 @@ export class Resolver {
 
 		let lookupKey = (network + "\x00") + host
 		dnsWaitGroup.value.Add(1)
-		let ch = await singleflight.Group.prototype.DoChan.call(Resolver.prototype.getLookupGroup.call(r), lookupKey, $.functionValue(async (): globalThis.Promise<[any, $.GoError]> => {
+		let ch: $.Channel<singleflight.Result> | null = await singleflight.Group.prototype.DoChan.call(Resolver.prototype.getLookupGroup.call(r), lookupKey, $.functionValue(async (): globalThis.Promise<[any, $.GoError]> => {
 			const __goscriptReturn13 = await __goscript_hook.__goscript_get_testHookLookupIP()!(lookupGroupCtx, resolverFunc, network, host)
 			return [$.interfaceValue<any>(__goscriptReturn13[0], "[]net.IPAddr"), __goscriptReturn13[1]]
 		}, ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [] }, "error"] } as $.FunctionTypeInfo)))

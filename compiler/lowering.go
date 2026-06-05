@@ -4554,6 +4554,8 @@ func shortDeclNeedsTypeAnnotation(typ types.Type) bool {
 		return true
 	case *types.Slice:
 		return true
+	case *types.Chan:
+		return true
 	default:
 		return false
 	}

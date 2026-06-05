@@ -529,12 +529,12 @@ export async function isClosedChan(c: $.Channel<{}> | null): globalThis.Promise<
 }
 
 export function Pipe(): [__goscript_net.Conn | null, __goscript_net.Conn | null] {
-	let cb1 = $.makeChannel<$.Slice<number>>(0, null, "both")
-	let cb2 = $.makeChannel<$.Slice<number>>(0, null, "both")
-	let cn1 = $.makeChannel<number>(0, 0, "both")
-	let cn2 = $.makeChannel<number>(0, 0, "both")
-	let done1 = $.makeChannel<{}>(0, {}, "both")
-	let done2 = $.makeChannel<{}>(0, {}, "both")
+	let cb1: $.Channel<$.Slice<number>> | null = $.makeChannel<$.Slice<number>>(0, null, "both")
+	let cb2: $.Channel<$.Slice<number>> | null = $.makeChannel<$.Slice<number>>(0, null, "both")
+	let cn1: $.Channel<number> | null = $.makeChannel<number>(0, 0, "both")
+	let cn2: $.Channel<number> | null = $.makeChannel<number>(0, 0, "both")
+	let done1: $.Channel<{}> | null = $.makeChannel<{}>(0, {}, "both")
+	let done2: $.Channel<{}> | null = $.makeChannel<{}>(0, {}, "both")
 
 	let p1: pipe | $.VarRef<pipe> | null = (() => { const __goscriptLiteralField0 = $.markAsStructValue($.cloneStructValue(makePipeDeadline())); const __goscriptLiteralField1 = $.markAsStructValue($.cloneStructValue(makePipeDeadline())); return new pipe({rdRx: cb1, rdTx: cn1, wrTx: cb2, wrRx: cn2, localDone: done1, remoteDone: done2, readDeadline: __goscriptLiteralField0, writeDeadline: __goscriptLiteralField1}) })()
 	let p2: pipe | $.VarRef<pipe> | null = (() => { const __goscriptLiteralField2 = $.markAsStructValue($.cloneStructValue(makePipeDeadline())); const __goscriptLiteralField3 = $.markAsStructValue($.cloneStructValue(makePipeDeadline())); return new pipe({rdRx: cb2, rdTx: cn2, wrTx: cb1, wrRx: cn1, localDone: done2, remoteDone: done1, readDeadline: __goscriptLiteralField2, writeDeadline: __goscriptLiteralField3}) })()

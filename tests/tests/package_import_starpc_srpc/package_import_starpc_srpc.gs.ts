@@ -573,13 +573,13 @@ export function newMemoryRpcStreamPair(): [memoryRpcStream | $.VarRef<memoryRpcS
 	let __goscriptTuple3: any = newMemoryRpcContext()
 	let bCtx: memoryRpcContext | $.VarRef<memoryRpcContext> | null = __goscriptTuple3[0]
 	let bCancel: (() => void) | null = __goscriptTuple3[1]
-	let aToB = $.makeChannel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null>(16, null, "both")
-	let bToA = $.makeChannel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null>(16, null, "both")
+	let aToB: $.Channel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null> | null = $.makeChannel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null>(16, null, "both")
+	let bToA: $.Channel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null> | null = $.makeChannel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null>(16, null, "both")
 	return [new memoryRpcStream({ctx: $.interfaceValue<context.Context | null>(aCtx, "*main.memoryRpcContext"), cancel: aCancel, recv: bToA, send: aToB}), new memoryRpcStream({ctx: $.interfaceValue<context.Context | null>(bCtx, "*main.memoryRpcContext"), cancel: bCancel, recv: aToB, send: bToA})]
 }
 
 export async function openHeldStreams(ctx: context.Context | null, client: srpc.Client | null, count: number): globalThis.Promise<[$.Slice<srpc.Stream | null>, boolean]> {
-	let resultCh = $.makeChannel<streamOpenResult>(count, $.markAsStructValue(new streamOpenResult()), "both")
+	let resultCh: $.Channel<streamOpenResult> | null = $.makeChannel<streamOpenResult>(count, $.markAsStructValue(new streamOpenResult()), "both")
 	for (let i = 0; i < count; i++) {
 		queueMicrotask(async () => { await ($.functionValue(async (idx: number): globalThis.Promise<void> => {
 			let [strm, err] = await $.pointerValue<Exclude<srpc.Client, null>>(client).NewStream(ctx, "svc", "hold", null)
@@ -651,7 +651,7 @@ export async function closeHeldStreams(streams: $.Slice<srpc.Stream | null>): gl
 }
 
 export async function probeConcurrentStreams(ctx: context.Context | null, client: srpc.Client | null, count: number): globalThis.Promise<boolean> {
-	let resultCh = $.makeChannel<streamProbeResult>(count, $.markAsStructValue(new streamProbeResult()), "both")
+	let resultCh: $.Channel<streamProbeResult> | null = $.makeChannel<streamProbeResult>(count, $.markAsStructValue(new streamProbeResult()), "both")
 	for (let i = 0; i < count; i++) {
 		queueMicrotask(async () => { await ($.functionValue(async (idx: number): globalThis.Promise<void> => {
 			let [total, err] = await probeStream(ctx, client, $.uint($.uint(idx + 1, 8), 8), $.uint($.uint(idx + 2, 8), 8))
@@ -804,7 +804,7 @@ export async function exerciseRpcStreamClientPressure(ctx: context.Context | nul
 		}
 	}
 
-	let results = $.makeChannel<rpcStreamServerResult>(8, $.markAsStructValue(new rpcStreamServerResult()), "both")
+	let results: $.Channel<rpcStreamServerResult> | null = $.makeChannel<rpcStreamServerResult>(8, $.markAsStructValue(new rpcStreamServerResult()), "both")
 	let getter: ((ctx: context.Context | null, componentID: string, released: (() => void) | null) => [srpc.Invoker | null, (() => void) | null, $.GoError] | globalThis.Promise<[srpc.Invoker | null, (() => void) | null, $.GoError]>) | null = $.functionValue((ctx: context.Context | null, componentID: string, released: (() => void) | null): [srpc.Invoker | null, (() => void) | null, $.GoError] => {
 		if ((!$.stringEqual(componentID, "component-root")) && (!$.stringEqual(componentID, "component-space"))) {
 			return [null, (null as (() => void) | null), null]
@@ -861,8 +861,8 @@ export async function exerciseRpcStreamHandle(): globalThis.Promise<boolean> {
 	__defer.defer(async () => { await memoryRpcStream.prototype.Close.call(client) })
 	__defer.defer(async () => { await memoryRpcStream.prototype.Close.call(server) })
 
-	let invoked = $.makeChannel<boolean>(1, false, "both")
-	let done = $.makeChannel<$.GoError>(1, null, "both")
+	let invoked: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
+	let done: $.Channel<$.GoError> | null = $.makeChannel<$.GoError>(1, null, "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanSend(done, await rpcstream.HandleRpcStream($.interfaceValue<rpcstream.RpcStream | null>(server, "*main.memoryRpcStream"), $.functionValue(async (ctx: context.Context | null, componentID: string, released: (() => void) | null): globalThis.Promise<[srpc.Invoker | null, (() => void) | null, $.GoError]> => {
 			if (!$.stringEqual(componentID, "component-a")) {

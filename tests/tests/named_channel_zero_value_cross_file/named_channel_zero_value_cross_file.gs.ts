@@ -9,7 +9,7 @@ import type * as __goscript_types from "./types.gs.ts"
 import "./create.gs.ts"
 
 export async function main(): globalThis.Promise<void> {
-	let jobs = __goscript_create.MakeJobs()
+	let jobs: __goscript_types.Jobs = __goscript_create.MakeJobs()
 	$.println(jobs != null)
 }
 

@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): globalThis.Promise<void> {
-	let ch = $.makeChannel<number>(1, 0, "both")
+	let ch: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
 
 	// Send a value to the channel
 	await $.chanSend(ch, 42)

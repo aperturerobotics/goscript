@@ -49,5 +49,25 @@ func main() {
 		println("ERROR: Should not hit default with valid channel ready")
 	}
 
+	// Test 4: Short-declared channel can later be disabled by assigning nil
+	println("\nTest 4: Short-declared channel can be nilled")
+	ch := make(chan int, 1)
+	ch <- 7
+
+	select {
+	case val := <-ch:
+		println("PASS: Received from short-declared channel:", val)
+	default:
+		println("ERROR: Short-declared channel should be ready")
+	}
+
+	ch = nil
+	select {
+	case <-ch:
+		println("ERROR: Should not receive from nilled short-declared channel")
+	default:
+		println("PASS: Nilled short-declared channel is disabled")
+	}
+
 	println("\nAll nil channel tests completed")
 }

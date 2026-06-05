@@ -1629,6 +1629,51 @@ func TestRenderRuntimeTypeScriptProjectDisablesEmit(t *testing.T) {
 	}
 }
 
+func TestMaterializeRuntimeModuleShimsReexportsGeneratedTypeScript(t *testing.T) {
+	workDir := t.TempDir()
+	outputRoot := filepath.Join(workDir, "output")
+	for _, name := range []string{
+		"errors/index.ts",
+		"github.com/s4wave/spacewave/core/plugin/space/config.gs.ts",
+	} {
+		path := filepath.Join(outputRoot, "@goscript", filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatalf("create output parent: %v", err)
+		}
+		if err := os.WriteFile(path, []byte("export const value = 1\n"), 0o644); err != nil {
+			t.Fatalf("write output file: %v", err)
+		}
+	}
+
+	req := &normalizedRequest{
+		WorkDir:        workDir,
+		RuntimeBackend: RuntimeBackendBun,
+	}
+	phase := materializeRuntimeModuleShims(req, []string{outputRoot})
+	if phase.Failed() {
+		t.Fatalf("materialize shims: %s", phase.Error)
+	}
+	for _, root := range []string{workDir, outputRoot} {
+		for _, name := range []string{
+			"errors/index.js",
+			"github.com/s4wave/spacewave/core/plugin/space/config.gs.js",
+		} {
+			path := filepath.Join(root, "node_modules", "@goscript", filepath.FromSlash(name))
+			data, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatalf("read shim %s: %v", name, err)
+			}
+			text := string(data)
+			if !strings.Contains(text, ".ts\"") {
+				t.Fatalf("shim should re-export generated TypeScript: %s", text)
+			}
+			if strings.Contains(text, workDir) {
+				t.Fatalf("shim should use a portable relative import, got: %s", text)
+			}
+		}
+	}
+}
+
 func TestRenderTypeScriptProjectsCanUseIncrementalBuildInfo(t *testing.T) {
 	req := &normalizedRequest{
 		WorkDir:              "/work",

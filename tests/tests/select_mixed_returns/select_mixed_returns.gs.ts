@@ -10,11 +10,11 @@ import "@goscript/context/index.js"
 import "@goscript/time/index.js"
 
 export async function testMixedReturns(ctx: context.Context | null): globalThis.Promise<string> {
-	let ch1 = $.makeChannel<string>(1, "", "both")
-	let ch2 = $.makeChannel<number>(1, 0, "both")
-	let ch3 = $.makeChannel<boolean>(1, false, "both")
-	let ch4 = $.makeChannel<number>(1, 0, "both")
-	let ch5 = $.makeChannel<$.Slice<number>>(1, null, "both")
+	let ch1: $.Channel<string> | null = $.makeChannel<string>(1, "", "both")
+	let ch2: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
+	let ch3: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
+	let ch4: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
+	let ch5: $.Channel<$.Slice<number>> | null = $.makeChannel<$.Slice<number>>(1, null, "both")
 
 	// Pre-populate only one channel to make the test deterministic
 	await $.chanSend(ch2, 42)
@@ -102,11 +102,11 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 }
 
 export async function testReturnCase(ctx: context.Context | null): globalThis.Promise<string> {
-	let ch1 = $.makeChannel<string>(1, "", "both")
-	let ch2 = $.makeChannel<number>(1, 0, "both")
-	let ch3 = $.makeChannel<boolean>(1, false, "both")
-	let ch4 = $.makeChannel<number>(1, 0, "both")
-	let ch5 = $.makeChannel<$.Slice<number>>(1, null, "both")
+	let ch1: $.Channel<string> | null = $.makeChannel<string>(1, "", "both")
+	let ch2: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
+	let ch3: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
+	let ch4: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
+	let ch5: $.Channel<$.Slice<number>> | null = $.makeChannel<$.Slice<number>>(1, null, "both")
 
 	// Pre-populate ch1 to trigger a returning case
 	await $.chanSend(ch1, "test_message")

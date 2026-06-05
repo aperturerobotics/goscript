@@ -344,9 +344,7 @@ function detectHostRuntime(): HostRuntime {
       )
     }
     if (fd === 1 || fd === 2) {
-      fallbackConsoleWriter(fd === 2 ? 'error' : 'log')(
-        decoder.decode(buffer),
-      )
+      fallbackConsoleWriter('log')(decoder.decode(buffer))
       return buffer.length
     }
     throw new HostUnsupportedError()
@@ -381,7 +379,7 @@ function detectHostRuntime(): HostRuntime {
       )
       return
     }
-    fallbackConsoleWriter('error')(data)
+    fallbackConsoleWriter('log')(data)
   }
 
   return {

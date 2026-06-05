@@ -381,7 +381,7 @@ export class fakeNetFD {
 
 		let incoming: $.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null> = null as $.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null>
 		let ok: boolean = false
-		let expired = $.pointerValue<deadlineTimer>($.pointerValue<fakeNetFD>(ffd).readDeadline.Load()).expired
+		let expired: $.Channel<{}> | null = $.pointerValue<deadlineTimer>($.pointerValue<fakeNetFD>(ffd).readDeadline.Load()).expired
 		const [__goscriptSelect1HasReturn, __goscriptSelect1Value] = await $.selectStatement<any, [__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, $.GoError]>([
 			{
 				id: 0,

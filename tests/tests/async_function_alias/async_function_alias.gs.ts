@@ -24,7 +24,7 @@ export async function use(op: ((_p0: Callback) => $.GoError | globalThis.Promise
 }
 
 export async function main(): globalThis.Promise<void> {
-	let ch = $.makeChannel<$.GoError>(1, null, "both")
+	let ch: $.Channel<$.GoError> | null = $.makeChannel<$.GoError>(1, null, "both")
 	await $.chanSend(ch, null)
 	let err = await use(newOpener(ch), $.functionValue((): $.GoError => {
 		return null

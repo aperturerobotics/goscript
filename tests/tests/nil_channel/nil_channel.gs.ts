@@ -89,7 +89,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test 3: Mix of nil and valid channels in select
 	$.println("\nTest 3: Select with mix of nil and valid channels")
 	let nilCh3: $.Channel<boolean> | null = null as $.Channel<boolean> | null
-	let validCh = $.makeChannel<boolean>(1, false, "both")
+	let validCh: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(validCh, true)
 
 	const [__goscriptSelect2HasReturn, __goscriptSelect2Value] = await $.selectStatement<any, void>([
@@ -130,6 +130,57 @@ export async function main(): globalThis.Promise<void> {
 	], true)
 	if (__goscriptSelect2HasReturn) {
 		return __goscriptSelect2Value
+	}
+
+	// Test 4: Short-declared channel can later be disabled by assigning nil
+	$.println("\nTest 4: Short-declared channel can be nilled")
+	let ch: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
+	await $.chanSend(ch, 7)
+
+	const [__goscriptSelect3HasReturn, __goscriptSelect3Value] = await $.selectStatement<any, void>([
+		{
+			id: 0,
+			isSend: false,
+			channel: ch,
+			onSelected: async (__goscriptSelect3Result) => {
+				let val = __goscriptSelect3Result.value
+				$.println("PASS: Received from short-declared channel:", val)
+			}
+		},
+		{
+			id: -1,
+			isSend: false,
+			channel: null,
+			onSelected: async (__goscriptSelect3Result) => {
+				$.println("ERROR: Short-declared channel should be ready")
+			}
+		}
+	], true)
+	if (__goscriptSelect3HasReturn) {
+		return __goscriptSelect3Value
+	}
+
+	ch = null
+	const [__goscriptSelect4HasReturn, __goscriptSelect4Value] = await $.selectStatement<any, void>([
+		{
+			id: 0,
+			isSend: false,
+			channel: ch,
+			onSelected: async (__goscriptSelect4Result) => {
+				$.println("ERROR: Should not receive from nilled short-declared channel")
+			}
+		},
+		{
+			id: -1,
+			isSend: false,
+			channel: null,
+			onSelected: async (__goscriptSelect4Result) => {
+				$.println("PASS: Nilled short-declared channel is disabled")
+			}
+		}
+	], true)
+	if (__goscriptSelect4HasReturn) {
+		return __goscriptSelect4Value
 	}
 
 	$.println("\nAll nil channel tests completed")

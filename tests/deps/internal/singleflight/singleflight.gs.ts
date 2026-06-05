@@ -153,7 +153,7 @@ export class Group {
 
 	public async DoChan(key: string, fn: (() => [any, $.GoError] | globalThis.Promise<[any, $.GoError]>) | null): globalThis.Promise<$.Channel<Result> | null> {
 		let g: Group | $.VarRef<Group> | null = this
-		let ch = $.makeChannel<Result>(1, $.markAsStructValue(new Result()), "both")
+		let ch: $.Channel<Result> | null = $.makeChannel<Result>(1, $.markAsStructValue(new Result()), "both")
 		await $.pointerValue<Group>(g).mu.Lock()
 		if ($.pointerValue<Group>(g).m == null) {
 			$.pointerValue<Group>(g).m = $.makeMap<string, call | $.VarRef<call> | null>()

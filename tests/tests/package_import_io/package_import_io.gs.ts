@@ -371,8 +371,8 @@ export async function main(): globalThis.Promise<void> {
 	let __goscriptTuple10: any = io.Pipe()
 	let reader: io.PipeReader | $.VarRef<io.PipeReader> | null = __goscriptTuple10[0]
 	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple10[1]
-	let done = $.makeChannel<boolean>(1, false, "both")
-	let pipeReads = $.makeChannel<pipeReadResult>(2, $.markAsStructValue(new pipeReadResult()), "both")
+	let done: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
+	let pipeReads: $.Channel<pipeReadResult> | null = $.makeChannel<pipeReadResult>(2, $.markAsStructValue(new pipeReadResult()), "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		let __goscriptShadow0: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
 		let [__goscriptShadow1, __goscriptShadow2] = await io.PipeReader.prototype.Read.call($.pointerValue<io.PipeReader>(reader), __goscriptShadow0)
@@ -402,8 +402,8 @@ export async function main(): globalThis.Promise<void> {
 	let __goscriptTuple14: any = io.Pipe()
 	reader = __goscriptTuple14[0]
 	writer = __goscriptTuple14[1]
-	let ready = $.makeChannel<boolean>(1, false, "both")
-	let readResult = $.makeChannel<pipeReadResult>(1, $.markAsStructValue(new pipeReadResult()), "both")
+	let ready: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
+	let readResult: $.Channel<pipeReadResult> | null = $.makeChannel<pipeReadResult>(1, $.markAsStructValue(new pipeReadResult()), "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		let __goscriptShadow3: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
 		await $.chanSend(ready, true)

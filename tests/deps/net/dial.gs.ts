@@ -477,7 +477,7 @@ export class Dialer {
 			}
 		}
 		{
-			let oldCancel = $.pointerValue<Dialer>(d).Cancel
+			let oldCancel: $.Channel<{}> | null = $.pointerValue<Dialer>(d).Cancel
 			if (oldCancel != null) {
 				let [subCtx, __goscriptShadow2] = context.WithCancel($.pointerValueOrNil(ctx)!)
 				queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
@@ -652,7 +652,7 @@ export class sysDialer {
 			return await sysDialer.prototype.dialSerial.call(sd, ctx, (primaries as __goscript_ipsock.addrList))
 		}
 
-		let returned = $.makeChannel<{}>(0, {}, "both")
+		let returned: $.Channel<{}> | null = $.makeChannel<{}>(0, {}, "both")
 		__defer.defer(() => { returned!.close() })
 
 		class dialResult {
@@ -755,7 +755,7 @@ export class sysDialer {
 				[{ name: "Conn", key: "Conn", type: "net.Conn", anonymous: true, index: [0], offset: 0, exported: true }, { name: "error", key: "error", type: "error", pkgPath: "net", anonymous: true, index: [1], offset: 16, exported: false }, { name: "primary", key: "primary", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [2], offset: 32, exported: false }, { name: "done", key: "done", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "net", index: [3], offset: 33, exported: false }]
 			)
 		}
-		let results = $.makeChannel<dialResult>(0, $.markAsStructValue(new dialResult()), "both")
+		let results: $.Channel<dialResult> | null = $.makeChannel<dialResult>(0, $.markAsStructValue(new dialResult()), "both")
 
 		let startRacer: ((ctx: context.Context | null, primary: boolean) => void) | null = $.functionValue(async (ctx: context.Context | null, primary: boolean): globalThis.Promise<void> => {
 			let ras: __goscript_ipsock.addrList = (primaries as __goscript_ipsock.addrList)

@@ -11,7 +11,7 @@ export async function wrap(fn: (() => void) | null): globalThis.Promise<(() => v
 }
 
 export async function main(): globalThis.Promise<void> {
-	let ch = $.makeChannel<{}>(0, {}, "both")
+	let ch: $.Channel<{}> | null = $.makeChannel<{}>(0, {}, "both")
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanSend(ch, {})
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })

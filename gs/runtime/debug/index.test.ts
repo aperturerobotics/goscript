@@ -1,6 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { BuildInfo, BuildSetting, Module, PrintStack, ReadBuildInfo, Stack } from './index.js'
+import { resetHostRuntimeForTests } from '@goscript/builtin/hostio.js'
+
+import {
+  BuildInfo,
+  BuildSetting,
+  Module,
+  PrintStack,
+  ReadBuildInfo,
+  Stack,
+} from './index.js'
 
 describe('runtime/debug override', () => {
   it('returns a stack trace as bytes', () => {
@@ -10,14 +19,33 @@ describe('runtime/debug override', () => {
     expect(new TextDecoder().decode(stack)).toContain('Error')
   })
 
-  it('prints the current stack trace', () => {
+  it('prints the current stack trace through the browser-like stderr console fallback', () => {
+    const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const originalDeno = (globalThis as any).Deno
+    const originalProcess = (globalThis as any).process
+    delete (globalThis as any).Deno
+    delete (globalThis as any).process
+    resetHostRuntimeForTests()
 
     try {
       PrintStack()
-      expect(consoleError).toHaveBeenCalledTimes(1)
-      expect(consoleError.mock.calls[0][0]).toContain('Error')
+      expect(consoleLog).toHaveBeenCalledTimes(1)
+      expect(consoleLog.mock.calls[0][0]).toContain('Error')
+      expect(consoleError).not.toHaveBeenCalled()
     } finally {
+      if (originalDeno === undefined) {
+        delete (globalThis as any).Deno
+      } else {
+        ;(globalThis as any).Deno = originalDeno
+      }
+      if (originalProcess === undefined) {
+        delete (globalThis as any).process
+      } else {
+        ;(globalThis as any).process = originalProcess
+      }
+      resetHostRuntimeForTests()
+      consoleLog.mockRestore()
       consoleError.mockRestore()
     }
   })

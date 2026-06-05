@@ -87,7 +87,7 @@ export async function HandleProxyRpcStream(__typeArgs: $.GenericTypeArgs | undef
 		return err
 	}
 
-	let errCh = $.makeChannel<$.GoError>(2, null, "both")
+	let errCh: $.Channel<$.GoError> | null = $.makeChannel<$.GoError>(2, null, "both")
 	queueMicrotask(async () => { await copyRpcStreamTo(remoteStrm, stream, errCh) })
 	queueMicrotask(async () => { await copyRpcStreamTo(stream, remoteStrm, errCh) })
 

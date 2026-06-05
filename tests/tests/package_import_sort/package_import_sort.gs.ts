@@ -137,7 +137,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Custom sorted slice:", testSlice![0], testSlice![1], testSlice![2], testSlice![3], testSlice![4])
 
 	let asyncSlice: $.Slice<number> = $.arrayToSlice<number>([2, 1])
-	let ready = $.makeChannel<boolean>(1, false, "both")
+	let ready: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(ready, true)
 	await sort2.Slice($.interfaceValue<any>(asyncSlice, "[]int"), $.functionValue(async (i: number, j: number): globalThis.Promise<boolean> => {
 		await $.chanRecv(ready)

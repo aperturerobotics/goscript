@@ -7,4 +7,8 @@ PASS: Default case executed with multiple nil channels
 Test 3: Select with mix of nil and valid channels
 PASS: Received from valid channel: true
 
+Test 4: Short-declared channel can be nilled
+PASS: Received from short-declared channel: 7
+PASS: Nilled short-declared channel is disabled
+
 All nil channel tests completed

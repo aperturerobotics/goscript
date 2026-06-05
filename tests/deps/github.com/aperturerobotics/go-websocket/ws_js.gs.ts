@@ -1112,7 +1112,7 @@ export async function dial(ctx: context.Context | null, url: string, opts: DialO
 	let c: Conn | $.VarRef<Conn> | null = new Conn({ws: $.markAsStructValue($.cloneStructValue(ws))})
 	await Conn.prototype.init.call(c)
 
-	let opench = $.makeChannel<{}>(0, {}, "both")
+	let opench: $.Channel<{}> | null = $.makeChannel<{}>(0, {}, "both")
 	let releaseOpen: (() => void) | null = await $.markAsStructValue($.cloneStructValue(ws)).OnOpen($.functionValue((e: js.Value): void => {
 		opench!.close()
 	}, ({ kind: $.TypeKind.Function, params: ["js.Value"], results: [] } as $.FunctionTypeInfo)))

@@ -10,7 +10,7 @@ export function __goscript_set_fn(__goscriptValue: ((_p0: number) => boolean | g
 }
 
 export async function main(): globalThis.Promise<void> {
-	let ch = $.makeChannel<boolean>(1, false, "both")
+	let ch: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(ch, true)
 	fn = $.functionValue(async (value: number): globalThis.Promise<boolean> => {
 		switch (value) {

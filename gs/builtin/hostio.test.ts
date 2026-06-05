@@ -196,7 +196,7 @@ describe('hostio text writes', () => {
     expect(consoleLog).toHaveBeenCalledWith('browser')
   })
 
-  it('writes stdout and stderr file descriptors to console in browser-like hosts', () => {
+  it('writes stdout and stderr file descriptors to console.log in browser-like hosts', () => {
     const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
@@ -209,7 +209,8 @@ describe('hostio text writes', () => {
     expect(runtime.writeFD(2, new Uint8Array([101, 114, 114, 10]))).toBe(4)
 
     expect(consoleLog).toHaveBeenCalledWith('ok')
-    expect(consoleError).toHaveBeenCalledWith('err')
+    expect(consoleLog).toHaveBeenCalledWith('err')
+    expect(consoleError).not.toHaveBeenCalled()
   })
 })
 

@@ -194,7 +194,7 @@ func protobufTypeScriptBindingExportedConsts(tsPath string) map[string]bool {
 		return nil
 	}
 	exports := make(map[string]bool)
-	for _, line := range strings.Split(string(data), "\n") {
+	for line := range strings.SplitSeq(string(data), "\n") {
 		line = strings.TrimSpace(line)
 		if !strings.HasPrefix(line, "export const ") {
 			continue

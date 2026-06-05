@@ -14,7 +14,7 @@ export async function run(ctx: context.Context | null): globalThis.Promise<void>
 	let [sctx, sctxCancel] = context.WithCancel($.pointerValueOrNil(ctx)!)
 	__defer.defer(async () => { await sctxCancel!() })
 
-	let myCh = $.makeChannel<{}>(0, {}, "both")
+	let myCh: $.Channel<{}> | null = $.makeChannel<{}>(0, {}, "both")
 
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 		await $.chanRecv($.pointerValue<Exclude<context.Context, null>>(sctx).Done())

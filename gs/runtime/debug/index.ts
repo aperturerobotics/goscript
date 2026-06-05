@@ -1,4 +1,5 @@
 import * as $ from '@goscript/builtin/index.js'
+import { writeHostStderrText } from '@goscript/builtin/hostio.js'
 
 export class BuildSetting {
   public Key: string
@@ -10,7 +11,9 @@ export class BuildSetting {
   }
 
   public clone(): BuildSetting {
-    return $.markAsStructValue(new BuildSetting({ Key: this.Key, Value: this.Value }))
+    return $.markAsStructValue(
+      new BuildSetting({ Key: this.Key, Value: this.Value }),
+    )
   }
 }
 
@@ -88,7 +91,7 @@ export function Stack(): Uint8Array {
 }
 
 export function PrintStack(): void {
-  console.error(new TextDecoder().decode(Stack()))
+  writeHostStderrText(new TextDecoder().decode(Stack()))
 }
 
 export function ReadBuildInfo(): [BuildInfo | null, boolean] {

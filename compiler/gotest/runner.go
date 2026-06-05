@@ -141,6 +141,10 @@ func (r *Runner) runPackageTools(
 	if len(indexes) == 0 {
 		return
 	}
+	if phase := materializeRuntimeModuleShims(req, outputRoots); phase.Failed() {
+		markRuntimeFailures(result, indexes, OwnerTestRunner, phase.Error)
+		return
+	}
 	if len(indexes) == 1 {
 		r.runPackageTypeCheckAndRuntime(ctx, req, workspace, result, outputRoots, indexes[0])
 		return
@@ -284,6 +288,100 @@ func (r *Runner) runPackageRuntimes(
 		return
 	}
 	r.runPackageRuntimesIndividually(ctx, req, workspace, result, outputRoots, indexes)
+}
+
+func materializeRuntimeModuleShims(req *normalizedRequest, outputRoots []string) tsworkspace.Result {
+	if req.RuntimeBackend != RuntimeBackendBun {
+		return tsworkspace.Result{Phase: tsworkspace.PhaseWorkspace}
+	}
+	seen := make(map[string]bool)
+	shimRoots := runtimeModuleShimRoots(req, outputRoots)
+	for _, outputRoot := range outputRoots {
+		if outputRoot == "" {
+			continue
+		}
+		root := filepath.Join(outputRoot, "@goscript")
+		if _, err := os.Stat(root); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return tsworkspace.Result{Phase: tsworkspace.PhaseWorkspace, Error: errors.Wrap(err, "stat GoScript runtime output root").Error()}
+		}
+		err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if entry.IsDir() || filepath.Ext(path) != ".ts" {
+				return nil
+			}
+			rel, err := filepath.Rel(root, path)
+			if err != nil {
+				return err
+			}
+			shimRel := filepath.Join("node_modules", "@goscript", strings.TrimSuffix(rel, ".ts")+".js")
+			for _, shimRoot := range shimRoots {
+				shimPath := filepath.Join(shimRoot, shimRel)
+				seenKey := shimPath
+				if seen[seenKey] {
+					continue
+				}
+				seen[seenKey] = true
+				shimDir := filepath.Dir(shimPath)
+				importPath, err := filepath.Rel(shimDir, path)
+				if err != nil {
+					return err
+				}
+				importPath = filepath.ToSlash(importPath)
+				if !strings.HasPrefix(importPath, ".") {
+					importPath = "./" + importPath
+				}
+				if err := writeRuntimeModuleShim(shimPath, "export * from "+strconv.Quote(importPath)+"\n"); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return tsworkspace.Result{Phase: tsworkspace.PhaseWorkspace, Error: errors.Wrap(err, "materialize GoScript runtime module shims").Error()}
+		}
+	}
+	return tsworkspace.Result{Phase: tsworkspace.PhaseWorkspace}
+}
+
+func runtimeModuleShimRoots(req *normalizedRequest, outputRoots []string) []string {
+	seen := make(map[string]bool)
+	var roots []string
+	for _, root := range append([]string{req.WorkDir}, outputRoots...) {
+		if root == "" {
+			continue
+		}
+		clean := filepath.Clean(root)
+		if seen[clean] {
+			continue
+		}
+		seen[clean] = true
+		roots = append(roots, clean)
+	}
+	return roots
+}
+
+func writeRuntimeModuleShim(path string, data string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(path, []byte(data), 0o644)
+}
+
+func markRuntimeFailures(result *Result, indexes []int, owner Owner, message string) {
+	for _, idx := range indexes {
+		if idx < 0 || idx >= len(result.Packages) {
+			continue
+		}
+		result.Packages[idx].Action = ActionFail
+		result.Packages[idx].Owner = owner
+		result.Packages[idx].Phases.Runtime = PhaseStatusFail
+		result.Packages[idx].Error = message
+	}
 }
 
 func (r *Runner) runPackageRuntimesIndividually(

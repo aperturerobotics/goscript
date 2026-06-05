@@ -11,8 +11,8 @@ import "@goscript/time/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let wg: $.VarRef<sync.WaitGroup> = $.varRef($.markAsStructValue(new sync.WaitGroup()))
-	let done = $.makeChannel<boolean>(0, false, "both")
-	let result = $.makeChannel<number>(2, 0, "both")
+	let done: $.Channel<boolean> | null = $.makeChannel<boolean>(0, false, "both")
+	let result: $.Channel<number> | null = $.makeChannel<number>(2, 0, "both")
 
 	// Worker 1: Does a tight loop (CPU-bound work)
 	// In Go: Will be preempted, allowing other goroutines to run
@@ -42,7 +42,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Collect results
 	let results: $.Slice<number> = $.arrayToSlice<number>([])
-	let timeout = time.After($.int64Mul(5, time.Second))
+	let timeout: $.Channel<time.Time> | null = time.After($.int64Mul(5, time.Second))
 
 	for (let __rangeIndex = 0; __rangeIndex < 2; __rangeIndex++) {
 		const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([

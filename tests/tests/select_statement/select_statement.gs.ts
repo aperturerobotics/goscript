@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 export async function main(): globalThis.Promise<void> {
 	// Test 1: Simple deterministic select with default
 	// Create a buffered channel so sends don't block
-	let ch1 = $.makeChannel<string>(1, "", "both")
+	let ch1: $.Channel<string> | null = $.makeChannel<string>(1, "", "both")
 
 	// First test: empty channel, should hit default
 	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
@@ -60,7 +60,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test 3: Select with channel closing and ok value
-	let ch2 = $.makeChannel<number>(1, 0, "both")
+	let ch2: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
 	await $.chanSend(ch2, 42)
 	ch2!.close()
 
@@ -123,7 +123,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test 5: Send operations
-	let ch3 = $.makeChannel<number>(1, 0, "both")
+	let ch3: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")
 
 	// First send should succeed (buffer not full)
 	const [__goscriptSelect4HasReturn, __goscriptSelect4Value] = await $.selectStatement<any, void>([
@@ -174,8 +174,8 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test 7: Multiple channel select (with known values)
-	let ch4 = $.makeChannel<string>(1, "", "both")
-	let ch5 = $.makeChannel<string>(1, "", "both")
+	let ch4: $.Channel<string> | null = $.makeChannel<string>(1, "", "both")
+	let ch5: $.Channel<string> | null = $.makeChannel<string>(1, "", "both")
 
 	await $.chanSend(ch4, "from ch4")
 
@@ -233,7 +233,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Test 9: Channel closing test case for a separate test
-	let chClose = $.makeChannel<boolean>(0, false, "both")
+	let chClose: $.Channel<boolean> | null = $.makeChannel<boolean>(0, false, "both")
 	chClose!.close()
 	let __goscriptRecv0 = await $.chanRecvWithOk(chClose)
 	let val = __goscriptRecv0.value
