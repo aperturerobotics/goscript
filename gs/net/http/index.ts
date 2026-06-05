@@ -1340,10 +1340,19 @@ async function fetchRoundTrip(
 type maybePromise<T> = T | Promise<T>
 
 export interface FileSystem {
-  Open(name: string): maybePromise<[File | null, $.GoError]>
+  Open(name: string): [File | null, $.GoError]
 }
 
-export interface File {
+export interface File extends io.Closer, io.Reader, io.Seeker {
+  Readdir(count: number): [$.Slice<fs.FileInfo> | null, $.GoError]
+  Stat(): [fs.FileInfo | null, $.GoError]
+}
+
+interface fileServerFileSystem {
+  Open(name: string): maybePromise<[fileServerFile | null, $.GoError]>
+}
+
+interface fileServerFile {
   Close(): maybePromise<$.GoError>
   Read(p: $.Bytes): maybePromise<[number, $.GoError]>
   Seek(offset: number, whence: number): maybePromise<[number, $.GoError]>
@@ -1382,7 +1391,7 @@ function httpFileFromFSFile(file: Exclude<fs.File, null>): File {
   }
 }
 
-export function FileServer(root: FileSystem | null): Handler {
+export function FileServer(root: fileServerFileSystem | null): Handler {
   return {
     async ServeHTTP(w, r): Promise<void> {
       const req = $.pointerValue<Request | null>(r)

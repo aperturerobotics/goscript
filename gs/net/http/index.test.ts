@@ -1202,7 +1202,7 @@ describe('net/http override', () => {
 
   it('serves files from async file systems and file methods', async () => {
     const closeCalls: string[] = []
-    const root: FileSystem = {
+    const root = {
       async Open(name: string) {
         if (name !== 'async.txt') {
           return [null, new Error('missing')]
