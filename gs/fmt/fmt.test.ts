@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { resetHostRuntimeForTests } from '@goscript/builtin/hostio.js'
 import * as $ from '@goscript/builtin/index.js'
+import * as os from '@goscript/os/index.js'
 import * as fmt from './fmt.js'
 
 const originalDeno = (globalThis as any).Deno
@@ -190,6 +191,25 @@ describe('fmt spacing rules', () => {
     ;[, err] = await fmt.Fprintln(writer, 'hi', 'there', 1, 2)
     expect(err).toBeNull()
     expect(new TextDecoder().decode(chunks[1])).toBe('hi there 1 2\n')
+  })
+
+  it('Fprintln writes Stderr through console.log in browser-like hosts', async () => {
+    const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    delete (globalThis as any).Deno
+    delete (globalThis as any).process
+    resetHostRuntimeForTests()
+
+    try {
+      const [n, err] = await fmt.Fprintln(os.Stderr!, 'err')
+      expect(err).toBeNull()
+      expect(n).toBe(4)
+      expect(consoleLog).toHaveBeenCalledWith('err')
+      expect(consoleError).not.toHaveBeenCalled()
+    } finally {
+      consoleLog.mockRestore()
+      consoleError.mockRestore()
+    }
   })
 
   it('Fprintf awaits async writers', async () => {

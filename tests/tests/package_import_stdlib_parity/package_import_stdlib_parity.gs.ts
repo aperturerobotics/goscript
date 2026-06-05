@@ -5,6 +5,10 @@ import * as $ from "@goscript/builtin/index.js"
 
 import * as bytes from "@goscript/bytes/index.js"
 
+import * as zlib from "@goscript/compress/zlib/index.js"
+
+import * as json from "@goscript/encoding/json/index.js"
+
 import * as errors from "@goscript/errors/index.js"
 
 import * as scanner from "@goscript/go/scanner/index.js"
@@ -25,12 +29,10 @@ import * as time from "@goscript/time/index.js"
 
 import * as unicode from "@goscript/unicode/index.js"
 
-import * as zlib from "@goscript/compress/zlib/index.js"
-
-import * as json from "@goscript/encoding/json/index.js"
-
 import type * as io from "@goscript/io/index.js"
 import "@goscript/bytes/index.js"
+import "@goscript/compress/zlib/index.js"
+import "@goscript/encoding/json/index.js"
 import "@goscript/errors/index.js"
 import "@goscript/go/scanner/index.js"
 import "@goscript/hash/index.js"
@@ -41,8 +43,6 @@ import "@goscript/strconv/index.js"
 import "@goscript/strings/index.js"
 import "@goscript/time/index.js"
 import "@goscript/unicode/index.js"
-import "@goscript/compress/zlib/index.js"
-import "@goscript/encoding/json/index.js"
 
 export class xof {
 	public _fields: {

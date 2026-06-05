@@ -7975,6 +7975,13 @@ func (o *LoweringOwner) lowerPointerReceiverMethodCall(
 			methodMemberName(selector.Sel.Name) + "(" + strings.Join(args, ", ") + ")"
 		return call, diagnostics, true
 	}
+	if receiver != nil && receiver.Obj() != nil && receiver.Obj().Pkg() != nil {
+		pkgPath := receiver.Obj().Pkg().Path()
+		if ctx.importPaths[pkgPath] == "" && !o.hasGeneratedImportPackage(ctx.model, pkgPath) {
+			call := receiverExpr + "." + methodMemberName(selector.Sel.Name) + "(" + strings.Join(args, ", ") + ")"
+			return call, diagnostics, true
+		}
+	}
 	if crossPackageUnexportedNamedType(ctx, receiver) {
 		call := o.runtimeOwner.QualifiedHelper(RuntimeHelperPointerValue) +
 			"<any>(" + receiverExpr + ")." + methodMemberName(selector.Sel.Name) +

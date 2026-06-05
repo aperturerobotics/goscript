@@ -4595,6 +4595,41 @@ func TestCompilePackagesUnwrapsOverridePointerMethodReceiver(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesUsesRuntimeValueForAbsentSelectedReceiverType(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/selected-receiver-import\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"net/http\"",
+			"func URLString(req *http.Request) string {",
+			"  return req.URL.String()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "selected-receiver-import", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "URL.prototype.String.call") {
+		t.Fatalf("selected receiver method call used unqualified type:\n%s", text)
+	}
+	if !strings.Contains(text, "$.pointerValue<http.Request>(req).URL.String()") {
+		t.Fatalf("selected receiver method call did not use runtime value method:\n%s", text)
+	}
+}
+
 func TestCompilePackagesUnwrapsImportedArrayPackageVarReads(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/imported-array-var\n\ngo 1.25.3\n",
