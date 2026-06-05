@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -14,6 +15,13 @@ type protobufTypeScriptBinding struct {
 	importSource string
 	messageNames map[string]string
 	hasOneof     bool
+}
+
+type protobufTypeScriptBindingOneofCase struct {
+	groupLocalName string
+	caseLocalName  string
+	branchCtor     string
+	valueCtor      string
 }
 
 func protobufTypeScriptBindings(semPkg *semanticPackage, options LoweringOptions) (map[string]protobufTypeScriptBinding, []Diagnostic) {
@@ -291,6 +299,7 @@ func rewriteProtobufTypeScriptBindingFile(file *loweredFile, binding protobufTyp
 		source:     binding.importSource,
 		sideEffect: true,
 	})
+	oneofCases := protobufTypeScriptBindingOneofCases(file)
 	var setupDecls []loweredDecl
 	for _, decl := range file.decls {
 		if decl.structType == nil {
@@ -306,12 +315,108 @@ func rewriteProtobufTypeScriptBindingFile(file *loweredFile, binding protobufTyp
 		if !ok {
 			continue
 		}
-		setup := protobufTypeScriptBindingStructSetupDecl(decl.structType, importAlias, messageName)
+		setup := protobufTypeScriptBindingStructSetupDecl(decl.structType, importAlias, messageName, oneofCases[decl.structType.name])
 		if setup.code != "" {
 			setupDecls = append(setupDecls, setup)
 		}
 	}
 	file.decls = append(file.decls, setupDecls...)
+}
+
+func protobufTypeScriptBindingOneofCases(file *loweredFile) map[string][]protobufTypeScriptBindingOneofCase {
+	parentByName := make(map[string]*loweredStruct)
+	for _, decl := range file.decls {
+		if decl.structType != nil {
+			parentByName[decl.structType.name] = decl.structType
+		}
+	}
+	out := make(map[string][]protobufTypeScriptBindingOneofCase)
+	for _, decl := range file.decls {
+		branch := decl.structType
+		if branch == nil || !strings.Contains(branch.name, "_") {
+			continue
+		}
+		parent := protobufTypeScriptBindingOneofParent(branch.name, parentByName)
+		if parent == nil {
+			continue
+		}
+		groups := protobufTypeScriptBindingOneofGroups(parent)
+		if len(groups) == 0 {
+			continue
+		}
+		groupLocalName := protobufTypeScriptBindingOneofCaseGroup(branch, parent, groups)
+		if groupLocalName == "" {
+			continue
+		}
+		for _, field := range branch.fields {
+			if !strings.Contains(field.tag, "oneof") {
+				continue
+			}
+			out[parent.name] = append(out[parent.name], protobufTypeScriptBindingOneofCase{
+				groupLocalName: groupLocalName,
+				caseLocalName:  protobufTypeScriptBindingFieldLocalName(field),
+				branchCtor:     branch.name,
+				valueCtor:      protobufTypeScriptBindingFieldCtor(field),
+			})
+		}
+	}
+	for parentName := range out {
+		slices.SortFunc(out[parentName], func(left, right protobufTypeScriptBindingOneofCase) int {
+			if left.groupLocalName != right.groupLocalName {
+				return strings.Compare(left.groupLocalName, right.groupLocalName)
+			}
+			return strings.Compare(left.caseLocalName, right.caseLocalName)
+		})
+	}
+	return out
+}
+
+func protobufTypeScriptBindingOneofParent(branchName string, parents map[string]*loweredStruct) *loweredStruct {
+	var parent *loweredStruct
+	for name, candidate := range parents {
+		if name == branchName || !strings.HasPrefix(branchName, name+"_") {
+			continue
+		}
+		if parent == nil || len(name) > len(parent.name) {
+			parent = candidate
+		}
+	}
+	return parent
+}
+
+func protobufTypeScriptBindingOneofGroups(parent *loweredStruct) map[string]string {
+	groups := make(map[string]string)
+	for _, field := range parent.fields {
+		if !strings.Contains(field.tag, "protobuf_oneof") {
+			continue
+		}
+		localName := protobufTypeScriptBindingTagValue(field.tag, "protobuf_oneof:\"")
+		if localName == "" {
+			groups[field.name] = protobufTypeScriptBindingFieldLocalName(field)
+			continue
+		}
+		groups[field.name] = protobufTypeScriptBindingProtoCamel(localName)
+	}
+	return groups
+}
+
+func protobufTypeScriptBindingOneofCaseGroup(branch, parent *loweredStruct, groups map[string]string) string {
+	if len(groups) == 1 {
+		for _, localName := range groups {
+			return localName
+		}
+	}
+	prefix := "is" + parent.name + "_"
+	for _, method := range branch.methods {
+		groupName, ok := strings.CutPrefix(method.name, prefix)
+		if !ok {
+			continue
+		}
+		if localName := groups[groupName]; localName != "" {
+			return localName
+		}
+	}
+	return ""
 }
 
 func protobufTypeScriptBindingSyntheticMapEntry(name string) bool {
@@ -466,23 +571,66 @@ func protobufBindingParam(method *loweredFunction, idx int, fallback string) str
 	return method.params[idx].name
 }
 
-func protobufTypeScriptBindingStructSetupDecl(structType *loweredStruct, importAlias, messageName string) loweredDecl {
+func protobufTypeScriptBindingStructSetupDecl(structType *loweredStruct, importAlias, messageName string, oneofCases []protobufTypeScriptBindingOneofCase) loweredDecl {
 	if structType == nil {
 		return loweredDecl{}
 	}
 	if messageName == "" {
 		messageName = structType.name
 	}
-	entries := make([]string, 0, len(structType.fields))
+	fieldEntries := make(map[string]string)
 	for _, field := range structType.fields {
 		ctor := protobufTypeScriptBindingFieldCtor(field)
 		if ctor == "" {
 			continue
 		}
-		entries = append(entries, strconvQuote(protobufTypeScriptBindingFieldLocalName(field))+": "+ctor)
+		fieldEntries[protobufTypeScriptBindingFieldLocalName(field)] = ctor
 	}
-	return loweredDecl{code: "(" + structType.name + " as any).__protobufTypeScriptMessage = " + importAlias + "." + messageName + ";\n" +
-		"(" + structType.name + " as any).__protobufTypeScriptFields = {" + strings.Join(entries, ", ") + "};"}
+	for _, oneofCase := range oneofCases {
+		if oneofCase.valueCtor != "" {
+			fieldEntries[oneofCase.caseLocalName] = oneofCase.valueCtor
+		}
+	}
+	fieldNames := make([]string, 0, len(fieldEntries))
+	for name := range fieldEntries {
+		fieldNames = append(fieldNames, name)
+	}
+	slices.Sort(fieldNames)
+	entries := make([]string, 0, len(fieldNames))
+	for _, name := range fieldNames {
+		entries = append(entries, strconvQuote(name)+": "+fieldEntries[name])
+	}
+	code := "(" + structType.name + " as any).__protobufTypeScriptMessage = " + importAlias + "." + messageName + ";\n" +
+		"(" + structType.name + " as any).__protobufTypeScriptFields = {" + strings.Join(entries, ", ") + "};"
+	if len(oneofCases) != 0 {
+		code += "\n(" + structType.name + " as any).__protobufTypeScriptOneofFields = " + protobufTypeScriptBindingOneofFieldsLiteral(oneofCases) + ";"
+	}
+	return loweredDecl{code: code}
+}
+
+func protobufTypeScriptBindingOneofFieldsLiteral(oneofCases []protobufTypeScriptBindingOneofCase) string {
+	groups := make(map[string][]protobufTypeScriptBindingOneofCase)
+	for _, oneofCase := range oneofCases {
+		groups[oneofCase.groupLocalName] = append(groups[oneofCase.groupLocalName], oneofCase)
+	}
+	groupNames := make([]string, 0, len(groups))
+	for name := range groups {
+		groupNames = append(groupNames, name)
+	}
+	slices.Sort(groupNames)
+	entries := make([]string, 0, len(groupNames))
+	for _, groupName := range groupNames {
+		cases := groups[groupName]
+		slices.SortFunc(cases, func(left, right protobufTypeScriptBindingOneofCase) int {
+			return strings.Compare(left.caseLocalName, right.caseLocalName)
+		})
+		caseEntries := make([]string, 0, len(cases))
+		for _, oneofCase := range cases {
+			caseEntries = append(caseEntries, strconvQuote(oneofCase.caseLocalName)+": "+oneofCase.branchCtor)
+		}
+		entries = append(entries, strconvQuote(groupName)+": {"+strings.Join(caseEntries, ", ")+"}")
+	}
+	return "{" + strings.Join(entries, ", ") + "}"
 }
 
 func protobufTypeScriptBindingFieldLocalName(field loweredStructField) string {

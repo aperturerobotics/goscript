@@ -258,6 +258,104 @@ class TimestampParentBoundMessage {
   timestamp: TimestampBoundMessage,
 }
 
+const oneofLeafMessageType = {
+  typeName: 'test.OneofLeafBoundMessage',
+  fields: {
+    list: () => [{ localName: 'label', kind: 'scalar' }],
+  },
+}
+
+class OneofLeafBoundMessage {
+  public get Label(): string {
+    return this._fields.Label.value
+  }
+  public set Label(value: string) {
+    this._fields.Label.value = value
+  }
+
+  public _fields: {
+    Label: $.VarRef<string>
+  }
+
+  constructor(init?: Partial<{ Label?: string }>) {
+    this._fields = {
+      Label: $.varRef(init?.Label ?? ''),
+    }
+  }
+}
+
+;(OneofLeafBoundMessage as any).__protobufTypeScriptMessage =
+  oneofLeafMessageType
+;(OneofLeafBoundMessage as any).__protobufTypeScriptFields = {}
+
+class OneofBoundMessage_TabSet {
+  public get TabSet(): OneofLeafBoundMessage | null {
+    return this._fields.TabSet.value
+  }
+  public set TabSet(value: OneofLeafBoundMessage | null) {
+    this._fields.TabSet.value = value
+  }
+
+  public _fields: {
+    TabSet: $.VarRef<OneofLeafBoundMessage | null>
+  }
+
+  constructor(init?: Partial<{ TabSet?: OneofLeafBoundMessage | null }>) {
+    this._fields = {
+      TabSet: $.varRef(init?.TabSet ?? null),
+    }
+  }
+}
+
+class OneofBoundMessage {
+  public get Node(): OneofBoundMessage_TabSet | null {
+    return this._fields.Node.value
+  }
+  public set Node(value: OneofBoundMessage_TabSet | null) {
+    this._fields.Node.value = value
+  }
+
+  public _fields: {
+    Node: $.VarRef<OneofBoundMessage_TabSet | null>
+  }
+
+  constructor(init?: Partial<{ Node?: OneofBoundMessage_TabSet | null }>) {
+    this._fields = {
+      Node: $.varRef(init?.Node ?? null),
+    }
+  }
+}
+
+;(OneofBoundMessage as any).__protobufTypeScriptMessage = {
+  typeName: 'test.OneofBoundMessage',
+  fields: {
+    list: () => [
+      {
+        localName: 'tabSet',
+        kind: 'message',
+        T: oneofLeafMessageType,
+        oneof: { localName: 'node' },
+      },
+    ],
+  },
+  fromBinary: () => ({
+    node: { case: 'tabSet', value: { label: 'files' } },
+  }),
+  toBinary: (value: {
+    node?: { case: string; value?: { label?: string } }
+  }) => {
+    expect(value.node?.case).toBe('tabSet')
+    expect(value.node?.value?.label).toBe('files')
+    return new Uint8Array([7])
+  },
+}
+;(OneofBoundMessage as any).__protobufTypeScriptFields = {
+  tabSet: OneofLeafBoundMessage,
+}
+;(OneofBoundMessage as any).__protobufTypeScriptOneofFields = {
+  node: { tabSet: OneofBoundMessage_TabSet },
+}
+
 describe('protobuf-go-lite EqualVT helpers', () => {
   it('accepts compiler-emitted runtime type arguments', () => {
     const equal = CompareEqualVT<TestValue>({
@@ -404,6 +502,34 @@ describe('protobuf-go-lite TypeScript binding helpers', () => {
     expect(err).toBeNull()
     expect(target.Timestamp?.Seconds).toBe(1780230896)
     expect(target.Timestamp?.Nanos).toBe(789000000)
+  })
+
+  it('preserves protobuf oneof branches in bound binary helpers', () => {
+    const source = new OneofBoundMessage({
+      Node: new OneofBoundMessage_TabSet({
+        TabSet: new OneofLeafBoundMessage({ Label: 'files' }),
+      }),
+    })
+
+    const [bytes, marshalErr] = MarshalBoundMessageVT(
+      OneofBoundMessage as any,
+      source,
+    )
+
+    expect(marshalErr).toBeNull()
+    expect(Array.from(bytes ?? [])).toEqual([7])
+
+    const target = new OneofBoundMessage()
+    const unmarshalErr = UnmarshalBoundMessageVT(
+      OneofBoundMessage as any,
+      target,
+      new Uint8Array([7]),
+    )
+
+    expect(unmarshalErr).toBeNull()
+    expect(target.Node).toBeInstanceOf(OneofBoundMessage_TabSet)
+    expect(target.Node?.TabSet).toBeInstanceOf(OneofLeafBoundMessage)
+    expect(target.Node?.TabSet?.Label).toBe('files')
   })
 })
 

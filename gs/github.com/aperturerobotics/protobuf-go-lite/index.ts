@@ -369,6 +369,10 @@ type BoundFieldInfo = {
 type BoundMessageCtor<T = any> = {
   new (init?: any): T
   __protobufTypeScriptFields?: Record<string, BoundMessageCtor>
+  __protobufTypeScriptOneofFields?: Record<
+    string,
+    Record<string, BoundMessageCtor>
+  >
   __protobufTypeScriptMessage?: BoundMessageType
 }
 
@@ -402,6 +406,10 @@ function boundFieldValue(source: any, field: BoundFieldInfo): any {
     return local
   }
   return source[boundFieldGoName(field)]
+}
+
+function boundOneofGroupGoName(field: BoundFieldInfo): string {
+  return boundFieldGoName({ ...field, localName: field.oneof?.localName ?? '' })
 }
 
 function toTypeScriptScalarValue(value: any, field?: BoundFieldInfo): any {
@@ -471,6 +479,27 @@ function toTypeScriptMessage(
   const out: Record<string, unknown> = {}
   for (const field of fields) {
     if (field.oneof != null) {
+      const groupName = field.oneof.localName
+      const group = boundFieldValue(value, {
+        ...field,
+        localName: groupName,
+        oneof: undefined,
+      })
+      if (group == null || out[groupName] !== undefined) {
+        continue
+      }
+      const raw = boundFieldValue(group, field)
+      if (raw === undefined || raw === null) {
+        continue
+      }
+      out[groupName] = {
+        case: field.localName,
+        value: toTypeScriptFieldValue(
+          field,
+          raw,
+          fieldCtors[field.localName] ?? raw?.constructor,
+        ),
+      }
       continue
     }
     const raw = boundFieldValue(value, field)
@@ -566,8 +595,25 @@ function fromTypeScriptMessage(
     return Object.assign(out, value)
   }
   const fieldCtors = ctor.__protobufTypeScriptFields ?? {}
+  const oneofCtors = ctor.__protobufTypeScriptOneofFields ?? {}
   for (const field of fields) {
     if (field.oneof != null) {
+      const groupName = field.oneof.localName
+      const raw = value[groupName]
+      if (raw?.case !== field.localName) {
+        continue
+      }
+      const branchCtor = oneofCtors[groupName]?.[field.localName]
+      const branchValue = fromTypeScriptFieldValue(
+        field,
+        raw.value,
+        fieldCtors[field.localName],
+      )
+      const branchFieldName = boundFieldGoName(field)
+      out[boundOneofGroupGoName(field)] =
+        branchCtor == null ?
+          { [branchFieldName]: branchValue }
+        : new branchCtor({ [branchFieldName]: branchValue })
       continue
     }
     const raw = value[field.localName]

@@ -204,7 +204,11 @@ func TestProtobufTypeScriptBindingEmitsMetadataForPreservedOneofFiles(t *testing
 		"type Wrapper_StringValue struct {\n"+
 		"\tStringValue string `protobuf:\"bytes,2,opt,name=string_value,json=stringValue,proto3,oneof\"`\n"+
 		"}\n\n"+
-		"func (*Wrapper_StringValue) isWrapper_Choice() {}\n")
+		"func (*Wrapper_StringValue) isWrapper_Choice() {}\n\n"+
+		"type Wrapper_InnerValue struct {\n"+
+		"\tInnerValue *Inner `protobuf:\"bytes,3,opt,name=inner_value,json=innerValue,proto3,oneof\"`\n"+
+		"}\n\n"+
+		"func (*Wrapper_InnerValue) isWrapper_Choice() {}\n")
 	writeTestFile(t, dir, "foo.pb.ts", `export interface Inner {
   name?: string
 }
@@ -231,7 +235,8 @@ export const Wrapper = {} as any
 	binding := readTestFile(t, filepath.Join(out, "@goscript", "example.test", "oneofpb", "foo.pb.ts"))
 	if !strings.Contains(binding, `import * as __protobuf_ts`) ||
 		!strings.Contains(binding, `(Wrapper as any).__protobufTypeScriptMessage = __protobuf_ts.Wrapper;`) ||
-		!strings.Contains(binding, `(Wrapper as any).__protobufTypeScriptFields = {"inner": Inner};`) {
+		!strings.Contains(binding, `(Wrapper as any).__protobufTypeScriptFields = {"inner": Inner, "innerValue": Inner};`) ||
+		!strings.Contains(binding, `(Wrapper as any).__protobufTypeScriptOneofFields = {"choice": {"innerValue": Wrapper_InnerValue, "stringValue": Wrapper_StringValue}};`) {
 		t.Fatalf("oneof-preserved protobuf file should still expose TypeScript metadata, got:\n%s", binding)
 	}
 	if strings.Contains(binding, `__protobuf_ts.Wrapper_StringValue`) {
