@@ -182,18 +182,22 @@ describe('hostio text writes', () => {
     expect(getHostRuntime().platform).toBe('darwin')
   })
 
-  it('uses console fallback in browser-like hosts', () => {
+  it('uses console.log fallback for stdout and stderr text in browser-like hosts', () => {
     const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     delete (globalThis as any).Deno
     delete (globalThis as any).process
     resetHostRuntimeForTests()
 
     writeHostStdoutText('browser\n')
+    writeHostStderrText('stderr\n')
 
     expect(getHostRuntime().platform).toBe('unknown')
     expect(getHostRuntime().nodeFS).toBeNull()
     expect(consoleLog).toHaveBeenCalledWith('browser')
+    expect(consoleLog).toHaveBeenCalledWith('stderr')
+    expect(consoleError).not.toHaveBeenCalled()
   })
 
   it('writes stdout and stderr file descriptors to console.log in browser-like hosts', () => {
