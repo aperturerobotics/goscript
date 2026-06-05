@@ -115,6 +115,28 @@ describe('os stdio', () => {
     expect(writeSync).toHaveBeenCalledTimes(1)
   })
 
+  it('writes stderr to console.log in browser-like hosts', () => {
+    const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    delete (globalThis as any).Deno
+    delete (globalThis as any).process
+    resetHostRuntimeForTests()
+
+    try {
+      const stderr = NewFile(2, 'stderr')!
+      const [writeN, writeErr] = stderr.Write(new TextEncoder().encode('err\n'))
+
+      expect(writeN).toBe(4)
+      expect(writeErr).toBeNull()
+      expect(consoleLog).toHaveBeenCalledWith('err')
+      expect(consoleError).not.toHaveBeenCalled()
+    } finally {
+      consoleLog.mockRestore()
+      consoleError.mockRestore()
+    }
+  })
+
   it('falls back to process builtin fs when Deno lacks sync stdio', () => {
     const readSync = vi.fn(
       (
