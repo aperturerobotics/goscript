@@ -565,6 +565,27 @@ export class Value {
     return cloned
   }
 
+  private currentValue(): ReflectValue {
+    if (this._parentVarRef) {
+      return this._parentVarRef.value
+    }
+    if (this._parentStruct && this._fieldName !== undefined) {
+      const value = this._parentStruct[this._fieldName]
+      return value === undefined ? null : (value as ReflectValue)
+    }
+    return this._value
+  }
+
+  private storeValue(value: ReflectValue): void {
+    this._value = value
+    if (this._parentVarRef) {
+      this._parentVarRef.value = value
+    }
+    if (this._parentStruct && this._fieldName !== undefined) {
+      this._parentStruct[this._fieldName] = value
+    }
+  }
+
   // Methods required by godoc.txt and used throughout the codebase
   public Int(): number {
     const value = this.numericValue()
@@ -645,6 +666,16 @@ export class Value {
     if (this.Kind() === Slice || this.Kind() === Array) {
       return $.len(this._value as any)
     }
+    if (this.Kind() === Map) {
+      const value = this.currentValue()
+      if (value instanceof globalThis.Map) {
+        return value.size
+      }
+      if (value !== null && value !== undefined) {
+        throw new ValueError({ Kind: this.Kind(), Method: 'Len' })
+      }
+      return 0
+    }
 
     // Check for slice objects created by $.arrayToSlice
     if (
@@ -705,7 +736,8 @@ export class Value {
   }
 
   public IsNil(): boolean {
-    return this._value === null || this._value === undefined
+    const value = this.currentValue()
+    return value === null || value === undefined
   }
 
   public Index(i: number): Value {
@@ -945,15 +977,7 @@ export class Value {
     if (!xType.AssignableTo(thisType)) {
       throw new Error('reflect: assign to wrong type')
     }
-    this._value = x.value
-    // Also update the parent VarRef if we were dereferenced from one
-    if (this._parentVarRef) {
-      this._parentVarRef.value = x.value
-    }
-    // Also update the parent struct field if this is a struct field
-    if (this._parentStruct && this._fieldName) {
-      this._parentStruct[this._fieldName] = x.value
-    }
+    this.storeValue(x.value)
   }
 
   // Additional methods from deleted reflect.gs.ts
@@ -1026,28 +1050,30 @@ export class Value {
     if (this.Kind() !== Map) {
       throw new ValueError({ Kind: this.Kind(), Method: 'MapRange' })
     }
-    if (this._value === null || this._value === undefined) {
+    const value = this.currentValue()
+    if (value === null || value === undefined) {
       return new MapIter(new globalThis.Map())
     }
-    if (!(this._value instanceof globalThis.Map)) {
+    if (!(value instanceof globalThis.Map)) {
       throw new ValueError({ Kind: this.Kind(), Method: 'MapRange' })
     }
-    return new MapIter(this._value)
+    return new MapIter(value)
   }
 
   public MapIndex(key: Value): Value {
     if (this.Kind() !== Map) {
       throw new ValueError({ Kind: this.Kind(), Method: 'MapIndex' })
     }
-    if (!(this._value instanceof globalThis.Map)) {
+    const value = this.currentValue()
+    if (!(value instanceof globalThis.Map)) {
       return new Value(null, new BasicType(Invalid, 'invalid'))
     }
     const rawKey = key.Interface()
-    if (!this._value.has(rawKey)) {
+    if (!value.has(rawKey)) {
       return new Value(null, new BasicType(Invalid, 'invalid'))
     }
     return new Value(
-      this._value.get(rawKey) as ReflectValue,
+      value.get(rawKey) as ReflectValue,
       this.Type().Elem(),
     )
   }
@@ -1056,15 +1082,16 @@ export class Value {
     if (this.Kind() !== Map) {
       throw new ValueError({ Kind: this.Kind(), Method: 'MapKeys' })
     }
-    if (this._value === null || this._value === undefined) {
+    const value = this.currentValue()
+    if (value === null || value === undefined) {
       return $.makeSlice<Value>(0)
     }
-    if (!(this._value instanceof globalThis.Map)) {
+    if (!(value instanceof globalThis.Map)) {
       throw new ValueError({ Kind: this.Kind(), Method: 'MapKeys' })
     }
     const keyType = this.Type().Key()
     const keys: Value[] = []
-    for (const key of this._value.keys()) {
+    for (const key of value.keys()) {
       keys.push(new Value(key as ReflectValue, keyType))
     }
     return $.arrayToSlice(keys)
@@ -1278,7 +1305,7 @@ export class Value {
       )
     }
     const zeroVal = Zero(this.Type())
-    this._value = (zeroVal as unknown as { value: ReflectValue }).value
+    this.storeValue((zeroVal as unknown as { value: ReflectValue }).value)
   }
 
   // SetLen sets v's length to n
@@ -1312,9 +1339,16 @@ export class Value {
           ' Value',
       )
     }
-    const mapObj = this._value as globalThis.Map<unknown, unknown>
+    const mapObj = this.currentValue()
+    if (!(mapObj instanceof globalThis.Map)) {
+      throw new Error('reflect: assignment to entry in nil map')
+    }
     const keyVal = (key as unknown as { value: ReflectValue }).value
     const elemVal = (elem as unknown as { value: ReflectValue }).value
+    if (!elem.IsValid()) {
+      mapObj.delete(keyVal)
+      return
+    }
     mapObj.set(keyVal, elemVal)
   }
 

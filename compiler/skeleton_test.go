@@ -2740,11 +2740,17 @@ func TestCompilePackagesInfersGenericTypeArgsFromNamedArgument(t *testing.T) {
 			"  f := entries[key.name].factory",
 			"  return f.(func() T)()",
 			"}",
+			"type typedLoader[T any] struct { value T }",
+			"func (t *typedLoader[T]) Load() T { return t.value }",
+			"func GetTyped[T any](v any) T {",
+			"  src := v.(interface { Load() T })",
+			"  return src.Load()",
+			"}",
 			"var loader = NewKey[Source](\"source\")",
 			"func Use() int {",
 			"  Register(loader, func() Source { return &auto{} })",
 			"  src := Get(loader)",
-			"  return src.Load()",
+			"  return src.Load() + GetTyped[int](&typedLoader[int]{value: 5})",
 			"}",
 			"",
 		}, "\n"),
@@ -2766,7 +2772,8 @@ func TestCompilePackagesInfersGenericTypeArgsFromNamedArgument(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"await Get({T: { type: \"genericnamedarg.Source\", zero: () => null, methods: {Load: (receiver: any, ...args: any[]) => receiver.Load(...args)} }}, $.markAsStructValue($.cloneStructValue(loader)))",
-		"return await $.mustTypeAssert<(() => any | globalThis.Promise<any>) | null>(f, ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo))!()",
+		"return await $.mustTypeAssert<(() => any | globalThis.Promise<any>) | null>(f, ({ kind: $.TypeKind.Function, params: [], results: [__typeArgs?.[\"T\"]?.type ?? { kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo))!()",
+		"$.mustTypeAssert<any>(v, { kind: $.TypeKind.Interface, methods: [{ name: \"Load\", args: [], returns: [{ name: \"_r0\", type: __typeArgs?.[\"T\"]?.type ?? { kind: $.TypeKind.Interface, methods: [] } }] }] })",
 		"return $.pointerValue<Exclude<Source, null>>(src).Load()",
 	} {
 		if !strings.Contains(text, want) {

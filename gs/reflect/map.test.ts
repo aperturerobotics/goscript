@@ -5,6 +5,7 @@ import {
   MapIter,
   MapOf,
   TypeOf,
+  Value,
   ValueOf,
 } from './index.js'
 
@@ -38,6 +39,53 @@ describe('MapIter', () => {
 })
 
 describe('Value.MapKeys', () => {
+  it('reports map length', () => {
+    const map = new Map<string, number>()
+    map.set('alpha', 1)
+    map.set('beta', 2)
+
+    expect(ValueOf(map).Len()).toBe(2)
+  })
+
+  it('sets and mutates map fields through the same addressable value', () => {
+    const typ = MapOf(TypeOf(''), TypeOf(0))
+    const holder: { Items: Map<string, number> | null } = { Items: null }
+    const field = new Value(holder.Items, typ, undefined, holder, 'Items')
+
+    field.Set(MakeMapWithSize(typ, 0))
+    field.SetMapIndex(ValueOf('alpha'), ValueOf(1))
+
+    expect(holder.Items?.get('alpha')).toBe(1)
+    expect(field.Len()).toBe(1)
+    expect(field.MapIndex(ValueOf('alpha')).Interface()).toBe(1)
+  })
+
+  it('deletes map entries when SetMapIndex receives a zero value', () => {
+    const typ = MapOf(TypeOf(''), TypeOf(0))
+    const mapValue = MakeMapWithSize(typ, 0)
+
+    mapValue.SetMapIndex(ValueOf('alpha'), ValueOf(1))
+    mapValue.SetMapIndex(ValueOf('alpha'), new Value())
+
+    const raw = mapValue.Interface()
+    expect(raw).toBeInstanceOf(Map)
+    expect(mapValue.Len()).toBe(0)
+    expect(raw.has('alpha')).toBe(false)
+  })
+
+  it('rejects nil map insertion and invalid map backing values', () => {
+    const typ = MapOf(TypeOf(''), TypeOf(0))
+    const nilMap = new Value(null, typ)
+    const badMap = new Value({ bad: true }, typ)
+
+    expect(() => nilMap.SetMapIndex(ValueOf('alpha'), ValueOf(1))).toThrow(
+      'reflect: assignment to entry in nil map',
+    )
+    expect(() => badMap.Len()).toThrow(
+      'reflect: call of reflect.Value.Len on map Value',
+    )
+  })
+
   it('returns map keys as reflect values', () => {
     const map = new Map<string, number>()
     map.set('alpha', 1)

@@ -2506,6 +2506,14 @@ func (o *LoweringOwner) runtimeMethodSignaturesWithSeen(iface *types.Interface, 
 	return "[" + strings.Join(methods, ", ") + "]"
 }
 
+func (o *LoweringOwner) runtimeMethodAssertSignaturesWithSeen(ctx lowerFileContext, iface *types.Interface, seen map[types.Type]bool) string {
+	methods := make([]string, 0, iface.NumMethods())
+	for method := range iface.Methods() {
+		methods = append(methods, o.runtimeMethodAssertSignature(ctx, method, seen))
+	}
+	return "[" + strings.Join(methods, ", ") + "]"
+}
+
 func (o *LoweringOwner) runtimeMethodSignature(method *types.Func, seen map[types.Type]bool) string {
 	signature, _ := method.Type().(*types.Signature)
 	if signature == nil {
@@ -2514,6 +2522,16 @@ func (o *LoweringOwner) runtimeMethodSignature(method *types.Func, seen map[type
 	return "{ name: " + strconv.Quote(method.Name()) +
 		", args: " + o.runtimeMethodArgs(signature.Params(), seen) +
 		", returns: " + o.runtimeMethodReturns(signature.Results(), seen) + " }"
+}
+
+func (o *LoweringOwner) runtimeMethodAssertSignature(ctx lowerFileContext, method *types.Func, seen map[types.Type]bool) string {
+	signature, _ := method.Type().(*types.Signature)
+	if signature == nil {
+		return "{ name: " + strconv.Quote(method.Name()) + ", args: [], returns: [] }"
+	}
+	return "{ name: " + strconv.Quote(method.Name()) +
+		", args: " + o.runtimeMethodAssertArgs(ctx, signature.Params(), seen) +
+		", returns: " + o.runtimeMethodAssertReturns(ctx, signature.Results(), seen) + " }"
 }
 
 func (o *LoweringOwner) runtimeMethodArgs(tuple *types.Tuple, seen map[types.Type]bool) string {
@@ -2532,6 +2550,22 @@ func (o *LoweringOwner) runtimeMethodArgs(tuple *types.Tuple, seen map[types.Typ
 	return "[" + strings.Join(args, ", ") + "]"
 }
 
+func (o *LoweringOwner) runtimeMethodAssertArgs(ctx lowerFileContext, tuple *types.Tuple, seen map[types.Type]bool) string {
+	if tuple == nil || tuple.Len() == 0 {
+		return "[]"
+	}
+	args := make([]string, 0, tuple.Len())
+	for idx := range tuple.Len() {
+		param := tuple.At(idx)
+		name := param.Name()
+		if name == "" {
+			name = "_p" + strconv.Itoa(idx)
+		}
+		args = append(args, "{ name: "+strconv.Quote(name)+", type: "+o.runtimeTypeAssertInfoExprWithSeen(ctx, param.Type(), seen)+" }")
+	}
+	return "[" + strings.Join(args, ", ") + "]"
+}
+
 func (o *LoweringOwner) runtimeMethodReturns(tuple *types.Tuple, seen map[types.Type]bool) string {
 	if tuple == nil || tuple.Len() == 0 {
 		return "[]"
@@ -2544,6 +2578,22 @@ func (o *LoweringOwner) runtimeMethodReturns(tuple *types.Tuple, seen map[types.
 			name = "_r" + strconv.Itoa(idx)
 		}
 		results = append(results, "{ name: "+strconv.Quote(name)+", type: "+o.runtimeTypeInfoExprWithSeen(result.Type(), seen)+" }")
+	}
+	return "[" + strings.Join(results, ", ") + "]"
+}
+
+func (o *LoweringOwner) runtimeMethodAssertReturns(ctx lowerFileContext, tuple *types.Tuple, seen map[types.Type]bool) string {
+	if tuple == nil || tuple.Len() == 0 {
+		return "[]"
+	}
+	results := make([]string, 0, tuple.Len())
+	for idx := range tuple.Len() {
+		result := tuple.At(idx)
+		name := result.Name()
+		if name == "" {
+			name = "_r" + strconv.Itoa(idx)
+		}
+		results = append(results, "{ name: "+strconv.Quote(name)+", type: "+o.runtimeTypeAssertInfoExprWithSeen(ctx, result.Type(), seen)+" }")
 	}
 	return "[" + strings.Join(results, ", ") + "]"
 }
@@ -9793,12 +9843,61 @@ func (o *LoweringOwner) runtimeTypeInfoExpr(typ types.Type) string {
 }
 
 func (o *LoweringOwner) runtimeTypeAssertInfoExpr(ctx lowerFileContext, typ types.Type) string {
+	return o.runtimeTypeAssertInfoExprWithSeen(ctx, typ, make(map[types.Type]bool))
+}
+
+func (o *LoweringOwner) runtimeTypeAssertInfoExprWithSeen(ctx lowerFileContext, typ types.Type, seen map[types.Type]bool) string {
 	typeParam, ok := types.Unalias(typ).(*types.TypeParam)
-	if !ok || !typeParamInScope(ctx, typeParam) {
+	if ok && typeParamInScope(ctx, typeParam) {
+		return "__typeArgs?.[" + strconv.Quote(typeParam.Obj().Name()) + "]?.type ?? " +
+			o.runtimeTypeInfoExpr(typ)
+	}
+
+	typeKind := o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeKind)
+	if typ == nil {
+		return "{ kind: " + typeKind + ".Basic, name: \"unknown\" }"
+	}
+	typeKey := types.Unalias(typ)
+	if typeKey != nil {
+		if seen[typeKey] {
+			return o.shallowRuntimeTypeInfoExpr(typ)
+		}
+		seen[typeKey] = true
+		defer delete(seen, typeKey)
+	}
+	if named := namedFunctionType(typ); named != nil {
+		return o.runtimeFunctionTypeAssertInfoWithSeen(ctx, named.Underlying().(*types.Signature), runtimeNamedTypeName(named), seen)
+	}
+	if named := namedStructType(typ); named != nil {
+		return strconv.Quote(runtimeNamedTypeName(named))
+	}
+	if named := namedNonStructType(typ); named != nil {
+		if basic, ok := types.Unalias(named.Underlying()).(*types.Basic); ok {
+			return runtimeBasicTypeInfoExpr(typeKind, basic, runtimeNamedTypeName(named))
+		}
+		return strconv.Quote(runtimeNamedTypeName(named))
+	}
+	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Pointer:
+		return "{ kind: " + typeKind + ".Pointer, elemType: " + o.runtimeTypeAssertInfoExprWithSeen(ctx, typed.Elem(), seen) + " }"
+	case *types.Struct:
+		return "{ kind: " + typeKind + ".Struct, methods: [], fields: " + o.runtimeStructAssertFieldsExpr(ctx, typed, seen) + " }"
+	case *types.Slice:
+		return "{ kind: " + typeKind + ".Slice, elemType: " + o.runtimeTypeAssertInfoExprWithSeen(ctx, typed.Elem(), seen) + " }"
+	case *types.Array:
+		return "{ kind: " + typeKind + ".Array, elemType: " + o.runtimeTypeAssertInfoExprWithSeen(ctx, typed.Elem(), seen) + ", length: " + strconv.FormatInt(typed.Len(), 10) + " }"
+	case *types.Map:
+		return "{ kind: " + typeKind + ".Map, keyType: " + o.runtimeTypeAssertInfoExprWithSeen(ctx, typed.Key(), seen) + ", elemType: " + o.runtimeTypeAssertInfoExprWithSeen(ctx, typed.Elem(), seen) + " }"
+	case *types.Chan:
+		return "{ kind: " + typeKind + ".Channel, direction: " + strconv.Quote(channelDirectionString(typed.Dir())) + ", elemType: " + o.runtimeTypeAssertInfoExprWithSeen(ctx, typed.Elem(), seen) + " }"
+	case *types.Interface:
+		typed.Complete()
+		return "{ kind: " + typeKind + ".Interface, methods: " + o.runtimeMethodAssertSignaturesWithSeen(ctx, typed, seen) + " }"
+	case *types.Signature:
+		return o.runtimeFunctionTypeAssertInfoWithSeen(ctx, typed, "", seen)
+	default:
 		return o.runtimeTypeInfoExpr(typ)
 	}
-	return "__typeArgs?.[" + strconv.Quote(typeParam.Obj().Name()) + "]?.type ?? " +
-		o.runtimeTypeInfoExpr(typ)
 }
 
 func (o *LoweringOwner) runtimeTypeInfoExprWithSeen(typ types.Type, seen map[types.Type]bool) string {
@@ -9926,6 +10025,40 @@ func (o *LoweringOwner) runtimeStructFieldsExpr(structType *types.Struct, seen m
 	return "[" + strings.Join(fields, ", ") + "]"
 }
 
+func (o *LoweringOwner) runtimeStructAssertFieldsExpr(ctx lowerFileContext, structType *types.Struct, seen map[types.Type]bool) string {
+	fields := make([]string, 0, structType.NumFields())
+	var vars []*types.Var
+	for field := range structType.Fields() {
+		vars = append(vars, field)
+	}
+	offsets := structFieldOffsets(goScriptTypeSizes(), vars)
+	for idx := range structType.NumFields() {
+		field := structType.Field(idx)
+		fieldName := tsStructFieldName(field.Name(), idx)
+		runtimeName := ""
+		if fieldName != field.Name() {
+			runtimeName = field.Name()
+		}
+		pkgPath := ""
+		if !field.Exported() && field.Pkg() != nil {
+			pkgPath = field.Pkg().Path()
+		}
+		fieldInfo := runtimeStructFieldInfoExpr(
+			o.runtimeTypeAssertInfoExprWithSeen(ctx, field.Type(), seen),
+			fieldName,
+			runtimeName,
+			structType.Tag(idx),
+			pkgPath,
+			field.Embedded(),
+			[]int{idx},
+			offsets[idx],
+			field.Exported(),
+		)
+		fields = append(fields, fieldInfo)
+	}
+	return "[" + strings.Join(fields, ", ") + "]"
+}
+
 func runtimeStructFieldInfoExpr(
 	runtimeType string,
 	storageKey string,
@@ -9990,6 +10123,26 @@ func (o *LoweringOwner) runtimeFunctionTypeInfoWithSeen(signature *types.Signatu
 	return "({ " + strings.Join(parts, ", ") + " } as " + runtimePackage + ".FunctionTypeInfo)"
 }
 
+func (o *LoweringOwner) runtimeFunctionTypeAssertInfoWithSeen(
+	ctx lowerFileContext,
+	signature *types.Signature,
+	name string,
+	seen map[types.Type]bool,
+) string {
+	typeKind := o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeKind)
+	parts := []string{"kind: " + typeKind + ".Function"}
+	if name != "" {
+		parts = append(parts, "name: "+strconv.Quote(name))
+	}
+	parts = append(parts, "params: "+o.runtimeTypeAssertSignatureTypes(ctx, signature.Params(), seen))
+	parts = append(parts, "results: "+o.runtimeTypeAssertSignatureTypes(ctx, signature.Results(), seen))
+	if signature.Variadic() {
+		parts = append(parts, "isVariadic: true")
+	}
+	runtimePackage := strings.TrimSuffix(typeKind, ".TypeKind")
+	return "({ " + strings.Join(parts, ", ") + " } as " + runtimePackage + ".FunctionTypeInfo)"
+}
+
 func (o *LoweringOwner) runtimeSignatureTypes(tuple *types.Tuple, seen map[types.Type]bool) string {
 	if tuple == nil || tuple.Len() == 0 {
 		return "[]"
@@ -9997,6 +10150,17 @@ func (o *LoweringOwner) runtimeSignatureTypes(tuple *types.Tuple, seen map[types
 	types := make([]string, 0, tuple.Len())
 	for v := range tuple.Variables() {
 		types = append(types, o.runtimeTypeInfoExprWithSeen(v.Type(), seen))
+	}
+	return "[" + strings.Join(types, ", ") + "]"
+}
+
+func (o *LoweringOwner) runtimeTypeAssertSignatureTypes(ctx lowerFileContext, tuple *types.Tuple, seen map[types.Type]bool) string {
+	if tuple == nil || tuple.Len() == 0 {
+		return "[]"
+	}
+	types := make([]string, 0, tuple.Len())
+	for v := range tuple.Variables() {
+		types = append(types, o.runtimeTypeAssertInfoExprWithSeen(ctx, v.Type(), seen))
 	}
 	return "[" + strings.Join(types, ", ") + "]"
 }
