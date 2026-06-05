@@ -456,7 +456,11 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 			b.WriteString("init?.")
 			b.WriteString(field.name)
 			b.WriteString(" ?? ")
+			b.WriteString("(")
 			b.WriteString(field.zero)
+			b.WriteString(" as unknown as ")
+			b.WriteString(field.typ)
+			b.WriteString(")")
 		}
 		b.WriteString(")")
 		if idx != len(structType.fields)-1 {

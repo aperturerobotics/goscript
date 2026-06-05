@@ -903,6 +903,17 @@ describe('net/http override', () => {
     expect(writes).toEqual(['status:404', '404 page not found\n'])
   })
 
+  it('accepts nullable handler function receivers for generated method calls', () => {
+    const writer: ResponseWriter = {
+      Header: () => new Header(),
+      Write: (p) => [p?.length ?? 0, null],
+      WriteHeader: () => undefined,
+    }
+
+    expect(typeof HandlerFunc_ServeHTTP).toBe('function')
+    expect(writer.Header()).toBeInstanceOf(Header)
+  })
+
   it('routes through default mux and handler helper exports', () => {
     const writes: string[] = []
     const writer: ResponseWriter = {

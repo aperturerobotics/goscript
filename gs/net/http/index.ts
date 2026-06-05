@@ -1481,10 +1481,13 @@ export type HandlerFunc = (
 ) => void | Promise<void>
 
 export function HandlerFunc_ServeHTTP(
-  h: HandlerFunc,
+  h: HandlerFunc | null,
   w: ResponseWriter | null,
   r: Request | $.VarRef<Request> | null,
 ): void | Promise<void> {
+  if (!h) {
+    throw new globalThis.Error('http: nil HandlerFunc')
+  }
   return h(w, r)
 }
 

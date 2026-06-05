@@ -4351,6 +4351,7 @@ func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testi
 			"type Box struct {",
 			"  Value int",
 			"}",
+			"type Header map[string][]string",
 			"",
 		}, "\n"),
 		"main.go": strings.Join([]string{
@@ -4362,6 +4363,7 @@ func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testi
 			"type Holder struct {",
 			"  Box lib.Box",
 			"  Boxes []lib.Box",
+			"  Header lib.Header",
 			"  Fn func(lib.Box) (lib.Box, error)",
 			"  Ptr atomic.Pointer[func()]",
 			"}",
@@ -4392,8 +4394,10 @@ func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testi
 	for _, want := range []string{
 		"Box: $.VarRef<lib.Box>",
 		"Boxes: $.VarRef<$.Slice<lib.Box>>",
+		"Header: $.VarRef<lib.Header>",
 		"Fn: $.VarRef<((_p0: lib.Box) => [lib.Box, $.GoError] | globalThis.Promise<[lib.Box, $.GoError]>) | null>",
 		"Ptr: $.VarRef<atomic.Pointer<(() => void) | null>>",
+		"Header: $.varRef(init?.Header ?? (null as unknown as lib.Header))",
 		"$.markAsStructValue(new lib.Box())",
 		"$.markAsStructValue(new atomic.Pointer<(() => void) | null>())",
 		"export async function Use(fn: ((_p0: lib.Box) => [lib.Box, $.GoError] | globalThis.Promise<[lib.Box, $.GoError]>) | null, box: lib.Box): globalThis.Promise<[lib.Box, $.GoError]>",
