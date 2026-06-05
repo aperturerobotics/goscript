@@ -265,9 +265,9 @@ function fileURLFromScriptPath(path: string): string | null {
   }
 }
 
-function fallbackConsoleWriter(method: 'error' | 'log'): HostTextWrite {
+function fallbackConsoleLogWriter(): HostTextWrite {
   return (data: string) => {
-    const consoleMethod = (globalThis as any).console?.[method]
+    const consoleMethod = (globalThis as any).console?.log
     if (!consoleMethod) {
       return
     }
@@ -344,7 +344,7 @@ function detectHostRuntime(): HostRuntime {
       )
     }
     if (fd === 1 || fd === 2) {
-      fallbackConsoleWriter('log')(decoder.decode(buffer))
+      fallbackConsoleLogWriter()(decoder.decode(buffer))
       return buffer.length
     }
     throw new HostUnsupportedError()
@@ -363,7 +363,7 @@ function detectHostRuntime(): HostRuntime {
       )
       return
     }
-    fallbackConsoleWriter('log')(data)
+    fallbackConsoleLogWriter()(data)
   }
   const writeStderrText: HostTextWrite = (data: string) => {
     const handle = getStdioHandle(2)
@@ -379,7 +379,7 @@ function detectHostRuntime(): HostRuntime {
       )
       return
     }
-    fallbackConsoleWriter('log')(data)
+    fallbackConsoleLogWriter()(data)
   }
 
   return {
