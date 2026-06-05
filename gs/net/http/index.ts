@@ -1337,13 +1337,18 @@ async function fetchRoundTrip(
   }
 }
 
+type maybePromise<T> = T | Promise<T>
+
 export interface FileSystem {
-  Open(name: string): [File | null, $.GoError]
+  Open(name: string): maybePromise<[File | null, $.GoError]>
 }
 
-export interface File extends io.Closer, io.Reader, io.Seeker {
-  Readdir(count: number): [$.Slice<fs.FileInfo>, $.GoError]
-  Stat(): [fs.FileInfo, $.GoError]
+export interface File {
+  Close(): maybePromise<$.GoError>
+  Read(p: $.Bytes): maybePromise<[number, $.GoError]>
+  Seek(offset: number, whence: number): maybePromise<[number, $.GoError]>
+  Readdir(count: number): maybePromise<[$.Slice<fs.FileInfo> | null, $.GoError]>
+  Stat(): maybePromise<[fs.FileInfo | null, $.GoError]>
 }
 
 export function FS(fsys: fs.FS): FileSystem {
@@ -1388,15 +1393,15 @@ export function FileServer(root: FileSystem | null): Handler {
         Error(w, 'method not allowed', StatusMethodNotAllowed)
         return
       }
-      const [file, err] = root?.Open(
+      const [file, err] = (await root?.Open(
         cleanFileServerPath(req.URL?.Path ?? ''),
-      ) ?? [null, fs.ErrInvalid]
+      )) ?? [null, fs.ErrInvalid]
       if (err != null || file == null) {
         NotFound(w, req)
         return
       }
       try {
-        const [info, statErr] = file.Stat()
+        const [info, statErr] = await file.Stat()
         if (statErr != null) {
           Error(w, statErr.Error(), StatusInternalServerError)
           return
@@ -1405,7 +1410,7 @@ export function FileServer(root: FileSystem | null): Handler {
           NotFound(w, req)
           return
         }
-        const [data, readErr] = await io.ReadAll(file)
+        const [data, readErr] = await io.ReadAll(file as io.Reader)
         if (readErr != null) {
           Error(w, readErr.Error(), StatusInternalServerError)
           return
@@ -1418,7 +1423,7 @@ export function FileServer(root: FileSystem | null): Handler {
           w.Write(data)
         }
       } finally {
-        file.Close()
+        await file.Close()
       }
     },
   }
@@ -1474,6 +1479,20 @@ export interface Handler {
     r: Request | $.VarRef<Request> | null,
   ): void | Promise<void>
 }
+
+$.registerInterfaceType('http.Handler', null, [
+  {
+    name: 'ServeHTTP',
+    args: [
+      { name: 'w', type: 'http.ResponseWriter' },
+      {
+        name: 'r',
+        type: { kind: $.TypeKind.Pointer, elemType: 'http.Request' },
+      },
+    ],
+    returns: [],
+  },
+])
 
 export type HandlerFunc = (
   w: ResponseWriter | null,

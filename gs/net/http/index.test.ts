@@ -914,6 +914,105 @@ describe('net/http override', () => {
     expect(writer.Header()).toBeInstanceOf(Header)
   })
 
+  it('registers Handler for generic runtime assertions', () => {
+    const handlerFunc = (_w: ResponseWriter | null, _r: Request | null) =>
+      undefined
+    const handler = $.namedValueInterfaceValue(
+      $.namedFunction(
+        $.functionValue(handlerFunc, {
+          kind: $.TypeKind.Function,
+          params: [
+            'http.ResponseWriter',
+            {
+              kind: $.TypeKind.Pointer,
+              elemType: 'http.Request',
+            },
+          ],
+          results: [],
+        }),
+        'http.HandlerFunc',
+        {
+          kind: $.TypeKind.Function,
+          name: 'http.HandlerFunc',
+          params: [
+            'http.ResponseWriter',
+            {
+              kind: $.TypeKind.Pointer,
+              elemType: 'http.Request',
+            },
+          ],
+          results: [],
+        },
+      ),
+      'http.HandlerFunc',
+      {
+        ServeHTTP: (receiver, ...args) =>
+          HandlerFunc_ServeHTTP(
+            $.isVarRef(receiver) ? receiver.value : receiver,
+            ...(args as [ResponseWriter | null, Request | null]),
+          ),
+      },
+      {
+        kind: $.TypeKind.Function,
+        name: 'http.HandlerFunc',
+        params: [
+          'http.ResponseWriter',
+          {
+            kind: $.TypeKind.Pointer,
+            elemType: 'http.Request',
+          },
+        ],
+        results: [],
+      },
+    )
+
+    const [asserted, ok] = $.typeAssertTuple<{
+      ServeHTTP(w: ResponseWriter | null, r: Request | null): void
+    }>(handler, 'http.Handler')
+
+    expect(ok).toBe(true)
+    expect(asserted).toBe(handler)
+  })
+
+  it('rejects named method wrappers with incompatible interface arity', () => {
+    const handler = $.namedValueInterfaceValue(
+      $.namedFunction(
+        $.functionValue(() => undefined, {
+          kind: $.TypeKind.Function,
+          params: [],
+          results: [],
+        }),
+        'http.HandlerFunc',
+        {
+          kind: $.TypeKind.Function,
+          name: 'http.HandlerFunc',
+          params: [],
+          results: [],
+        },
+      ),
+      'http.HandlerFunc',
+      {
+        ServeHTTP: (receiver, ...args) =>
+          HandlerFunc_ServeHTTP(
+            $.isVarRef(receiver) ? receiver.value : receiver,
+            ...(args as [ResponseWriter | null, Request | null]),
+          ),
+      },
+      {
+        kind: $.TypeKind.Function,
+        name: 'http.HandlerFunc',
+        params: [],
+        results: [],
+      },
+    )
+
+    const [, ok] = $.typeAssertTuple<{
+      ServeHTTP(w: ResponseWriter | null, r: Request | null): void
+    }>(handler, 'http.Handler')
+
+    expect(ok).toBe(false)
+  })
+
   it('routes through default mux and handler helper exports', () => {
     const writes: string[] = []
     const writer: ResponseWriter = {
@@ -1013,7 +1112,7 @@ describe('net/http override', () => {
     )
   })
 
-  it('exports file server interface shapes', () => {
+  it('exports file server interface shapes', async () => {
     const file: File = {
       Close: () => null,
       Read: (p) => [p?.length ?? 0, null],
@@ -1026,8 +1125,11 @@ describe('net/http override', () => {
         name === 'ok' ? [file, null] : [null, new Error('missing')],
     }
 
-    expect(fsys.Open('ok')[0]).toBe(file)
-    expect(fsys.Open('missing')[1]?.message).toBe('missing')
+    const [okFile] = await fsys.Open('ok')
+    const [, missingErr] = await fsys.Open('missing')
+
+    expect(okFile).toBe(file)
+    expect(missingErr?.message).toBe('missing')
   })
 
   it('serves files and omits HEAD response bodies', async () => {
@@ -1096,6 +1198,76 @@ describe('net/http override', () => {
 
     expect(opened).toEqual(['file.txt'])
     expect(writes).toEqual(['status:200'])
+  })
+
+  it('serves files from async file systems and file methods', async () => {
+    const closeCalls: string[] = []
+    const root: FileSystem = {
+      async Open(name: string) {
+        if (name !== 'async.txt') {
+          return [null, new Error('missing')]
+        }
+        let offset = 0
+        const file = {
+          async Close() {
+            closeCalls.push(name)
+            return null
+          },
+          async Read(p) {
+            const data = $.stringToBytes('async-body')
+            if (offset >= data.length) {
+              return [0, io.EOF]
+            }
+            const n = Math.min(p.length, data.length - offset)
+            p.set(data.subarray(offset, offset + n), 0)
+            offset += n
+            return [n, null]
+          },
+          async Seek(seekOffset) {
+            offset = Number(seekOffset)
+            return [offset, null]
+          },
+          async Readdir() {
+            return [null, null]
+          },
+          async Stat() {
+            return [
+              {
+                IsDir: () => false,
+                ModTime: () => null as never,
+                Mode: () => 0,
+                Name: () => name,
+                Size: () => 10,
+                Sys: () => null,
+              },
+              null,
+            ]
+          },
+        }
+        return [file, null]
+      },
+    }
+    const writes: string[] = []
+    const header = new Header()
+    const writer: ResponseWriter = {
+      Header: () => header,
+      Write: (p) => {
+        writes.push(Buffer.from(p ?? []).toString('utf8'))
+        return [p?.length ?? 0, null]
+      },
+      WriteHeader: (code) => writes.push(`status:${code}`),
+    }
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/async.txt',
+      null,
+    )
+
+    await FileServer(root).ServeHTTP(writer, req)
+
+    expect(writes).toEqual(['status:200', 'async-body'])
+    expect(Header_Get(header, 'Content-Length')).toBe('10')
+    expect(closeCalls).toEqual(['async.txt'])
   })
 
   it('awaits ServeContent writes before returning', async () => {

@@ -753,6 +753,16 @@ function matchesInterfaceType(value: any, info: TypeInfo): boolean {
     // Strict arity checking can be problematic in JS, so we'll be lenient
     // A method with fewer params than required is definitely incompatible
     if (declaredParamCount < requiredParamCount) {
+      if (!methodWrapperMatchesSignature(actualMethod, requiredMethodSig)) {
+        return false
+      }
+    }
+
+    const wrappedMethodSignature = methodWrapperSignature(actualMethod)
+    if (
+      wrappedMethodSignature &&
+      !methodSignaturesMatch(wrappedMethodSignature, requiredMethodSig)
+    ) {
       return false
     }
 
@@ -814,6 +824,40 @@ function matchesInterfaceType(value: any, info: TypeInfo): boolean {
     // as long as it exists with a compatible arity
     return true
   })
+}
+
+function methodWrapperMatchesSignature(
+  method: unknown,
+  requiredMethodSig: MethodSignature,
+): boolean {
+  const signature = methodWrapperSignature(method)
+  return (
+    signature != null && methodSignaturesMatch(signature, requiredMethodSig)
+  )
+}
+
+function methodWrapperSignature(method: unknown): MethodSignature | null {
+  if (typeof method !== 'function') {
+    return null
+  }
+  const wrapper = method as {
+    __goscriptMethodWrapper?: boolean
+    __goscriptMethodSignature?: MethodSignature
+  }
+  if (wrapper.__goscriptMethodWrapper !== true) {
+    return null
+  }
+  return wrapper.__goscriptMethodSignature ?? null
+}
+
+function methodSignaturesMatch(
+  actual: MethodSignature,
+  required: MethodSignature,
+): boolean {
+  return (
+    actual.args.length === required.args.length &&
+    actual.returns.length === required.returns.length
+  )
 }
 
 /**
@@ -1611,8 +1655,36 @@ export function namedValueInterfaceValue<T>(
   }
   for (const [name, method] of Object.entries(methods)) {
     boxed[name] = (...args: any[]) => method(value, ...args)
+    boxed[name].__goscriptMethodWrapper = true
+    const signature = wrapperMethodSignatureFromTypeInfo(name, typeInfo)
+    if (signature) {
+      boxed[name].__goscriptMethodSignature = signature
+    }
   }
   return boxed as T
+}
+
+function wrapperMethodSignatureFromTypeInfo(
+  name: string,
+  typeInfo?: TypeInfo | string,
+): MethodSignature | null {
+  if (typeof typeInfo === 'string') {
+    typeInfo = typeRegistry.get(typeInfo)
+  }
+  if (!typeInfo) {
+    return null
+  }
+  if (isFunctionTypeInfo(typeInfo)) {
+    return {
+      name,
+      args: (typeInfo.params ?? []).map((type) => ({ type })),
+      returns: (typeInfo.results ?? []).map((type) => ({ type })),
+    }
+  }
+  if (isStructTypeInfo(typeInfo) || isInterfaceTypeInfo(typeInfo)) {
+    return typeInfo.methods.find((method) => method.name === name) ?? null
+  }
+  return null
 }
 
 export function namedFunction<T>(
