@@ -72,9 +72,9 @@ export class MockFileInfo {
 
 	constructor(init?: Partial<{name?: string, size?: number, isDir?: boolean}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ""),
-			size: $.varRef(init?.size ?? 0),
-			isDir: $.varRef(init?.isDir ?? false)
+			name: $.varRef(init?.name ?? ("" as unknown as string)),
+			size: $.varRef(init?.size ?? (0 as unknown as number)),
+			isDir: $.varRef(init?.isDir ?? (false as unknown as boolean))
 		}
 	}
 
@@ -156,7 +156,7 @@ export class shapeNode {
 
 	constructor(init?: Partial<{value?: number}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? 0)
+			value: $.varRef(init?.value ?? (0 as unknown as number))
 		}
 	}
 
@@ -196,7 +196,7 @@ export class MorphismHolder {
 
 	constructor(init?: Partial<{morphism?: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null}>) {
 		this._fields = {
-			morphism: $.varRef(init?.morphism ?? null)
+			morphism: $.varRef(init?.morphism ?? (null as unknown as ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null))
 		}
 	}
 
@@ -210,12 +210,12 @@ export class MorphismHolder {
 
 	public async apply(s: Shape | null): globalThis.Promise<number> {
 		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
-		return $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(h).morphism!(s))).Stats()
+		return await $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(h).morphism!(s))).Stats()
 	}
 
 	public async cloneApply(s: Shape | null): globalThis.Promise<number> {
 		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
-		return $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(cloneMorphism($.pointerValue<MorphismHolder>(h).morphism)).morphism!(s))).Stats()
+		return await $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(cloneMorphism($.pointerValue<MorphismHolder>(h).morphism)).morphism!(s))).Stats()
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -241,7 +241,7 @@ export class morphismWorker {
 
 	constructor(init?: Partial<{ready?: $.Channel<boolean> | null}>) {
 		this._fields = {
-			ready: $.varRef(init?.ready ?? null)
+			ready: $.varRef(init?.ready ?? (null as unknown as $.Channel<boolean> | null))
 		}
 	}
 
@@ -335,7 +335,7 @@ export async function indexedCallback(cbs: $.Slice<((_p0: string) => boolean | g
 }
 
 export async function useMorphism(m: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null, s: Shape | null): globalThis.Promise<number> {
-	return $.pointerValue<Exclude<Shape, null>>((await m!(s))).Stats()
+	return await $.pointerValue<Exclude<Shape, null>>((await m!(s))).Stats()
 }
 
 export async function newMorphismHolder(m: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null): globalThis.Promise<MorphismHolder | $.VarRef<MorphismHolder> | null> {
@@ -351,9 +351,9 @@ export async function main(): globalThis.Promise<void> {
 	let fileInfo: MockFileInfo | $.VarRef<MockFileInfo> | null = new MockFileInfo({name: "test.txt", size: $.int(50), isDir: false})
 
 	// Test the walk function with custom WalkFunc
-	let walkFunc: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {
+	let walkFunc: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null = $.functionValue(async (path: string, info: FileInfo | null, err: $.GoError): globalThis.Promise<$.GoError> => {
 		if (info != null) {
-			$.println("Walking:", path, "size:", $.int($.pointerValue<Exclude<FileInfo, null>>(info).Size()))
+			$.println("Walking:", path, "size:", $.int(await $.pointerValue<Exclude<FileInfo, null>>(info).Size()))
 		}
 		if (err != null) {
 			$.println("Error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())

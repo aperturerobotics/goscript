@@ -27,7 +27,7 @@ export class blockImpl {
 
 	constructor(init?: Partial<{size?: number}>) {
 		this._fields = {
-			size: $.varRef(init?.size ?? 0)
+			size: $.varRef(init?.size ?? (0 as unknown as number))
 		}
 	}
 
@@ -69,7 +69,7 @@ export function newInterface(size: number): [Block | null, $.GoError] {
 export async function main(): globalThis.Promise<void> {
 	let [block, err] = newInterface(16)
 	$.println("err nil:", err == null)
-	$.println("size:", $.pointerValue<Exclude<Block, null>>(block).Size())
+	$.println("size:", await $.pointerValue<Exclude<Block, null>>(block).Size())
 }
 
 if ($.isMainScript(import.meta)) {

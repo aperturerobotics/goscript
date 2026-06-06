@@ -35,7 +35,7 @@ export class ClientSet {
 
 	constructor(init?: Partial<{clients?: $.Slice<__goscript_client.Client | null>}>) {
 		this._fields = {
-			clients: $.varRef(init?.clients ?? null)
+			clients: $.varRef(init?.clients ?? (null as unknown as $.Slice<__goscript_client.Client | null>))
 		}
 	}
 
@@ -85,7 +85,7 @@ export class ClientSet {
 					{
 						id: 0,
 						isSend: false,
-						channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+						channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 						onSelected: async (__goscriptSelect0Result) => {
 							return __goscriptSelect0Result
 						}
@@ -114,7 +114,7 @@ export class ClientSet {
 						}
 				}
 			}
-			if ($.stringEqual(await $.pointerValue<Exclude<$.GoError, null>>(err).Error(), await $.pointerValue<Exclude<$.GoError, null>>(__goscript_errors.ErrUnimplemented).Error())) {
+			if ($.stringEqual($.pointerValue<Exclude<$.GoError, null>>(err).Error(), $.pointerValue<Exclude<$.GoError, null>>(__goscript_errors.ErrUnimplemented).Error())) {
 				continue
 			}
 			return err

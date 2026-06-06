@@ -29,7 +29,7 @@ export class oneByteReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? null)
+			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null))
 		}
 	}
 
@@ -72,7 +72,7 @@ export class halfReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? null)
+			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null))
 		}
 	}
 
@@ -128,9 +128,9 @@ export class dataErrReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null, unread?: $.Slice<number>, data?: $.Slice<number>}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? null),
-			unread: $.varRef(init?.unread ?? null),
-			data: $.varRef(init?.data ?? null)
+			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null)),
+			unread: $.varRef(init?.unread ?? (null as unknown as $.Slice<number>)),
+			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
 		}
 	}
 
@@ -196,8 +196,8 @@ export class timeoutReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null, count?: number}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? null),
-			count: $.varRef(init?.count ?? 0)
+			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null)),
+			count: $.varRef(init?.count ?? (0 as unknown as number))
 		}
 	}
 
@@ -242,7 +242,7 @@ export class errReader {
 
 	constructor(init?: Partial<{err?: $.GoError}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? null)
+			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
 		}
 	}
 
@@ -298,9 +298,9 @@ export class smallByteReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null, off?: number, n?: number}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? null),
-			off: $.varRef(init?.off ?? 0),
-			n: $.varRef(init?.n ?? 0)
+			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null)),
+			off: $.varRef(init?.off ?? (0 as unknown as number)),
+			n: $.varRef(init?.n ?? (0 as unknown as number))
 		}
 	}
 
@@ -401,7 +401,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 		if (ok) {
 			// Seek(0, 1) should report the current file position (EOF).
 			{
-				let __goscriptTuple4: any = $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(0), 1)
+				let __goscriptTuple4: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(0), 1)
 				let off = $.int(__goscriptTuple4[0])
 				let __goscriptShadow2 = __goscriptTuple4[1]
 				if (($.int(off) != $.int($.int($.len(content)))) || (__goscriptShadow2 != null)) {
@@ -414,7 +414,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 			let middle = $.len(content) - (Math.trunc($.len(content) / 3))
 			if (middle > 0) {
 				{
-					let __goscriptTuple5: any = $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(-1), 1)
+					let __goscriptTuple5: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(-1), 1)
 					let off = $.int(__goscriptTuple5[0])
 					let __goscriptShadow3 = __goscriptTuple5[1]
 					if (($.int(off) != $.int($.int($.len(content) - 1))) || (__goscriptShadow3 != null)) {
@@ -422,7 +422,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 					}
 				}
 				{
-					let __goscriptTuple6: any = $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(-$.len(content) / 3))), 1)
+					let __goscriptTuple6: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(-$.len(content) / 3))), 1)
 					let off = $.int(__goscriptTuple6[0])
 					let __goscriptShadow4 = __goscriptTuple6[1]
 					if (($.int(off) != $.int($.int(middle - 1))) || (__goscriptShadow4 != null)) {
@@ -430,7 +430,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 					}
 				}
 				{
-					let __goscriptTuple7: any = $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(+1), 1)
+					let __goscriptTuple7: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(+1), 1)
 					let off = $.int(__goscriptTuple7[0])
 					let __goscriptShadow5 = __goscriptTuple7[1]
 					if (($.int(off) != $.int($.int(middle))) || (__goscriptShadow5 != null)) {
@@ -441,7 +441,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 
 			// Seek(0, 1) should report the current file position (middle).
 			{
-				let __goscriptTuple8: any = $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(0), 1)
+				let __goscriptTuple8: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(0), 1)
 				let off = $.int(__goscriptTuple8[0])
 				let __goscriptShadow6 = __goscriptTuple8[1]
 				if (($.int(off) != $.int($.int(middle))) || (__goscriptShadow6 != null)) {
@@ -462,7 +462,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 
 			// Seek relative to end of file, but start elsewhere.
 			{
-				let __goscriptTuple10: any = $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(middle / 2))), 0)
+				let __goscriptTuple10: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(middle / 2))), 0)
 				let off = $.int(__goscriptTuple10[0])
 				let __goscriptShadow9 = __goscriptTuple10[1]
 				if (($.int(off) != $.int($.int(Math.trunc(middle / 2)))) || (__goscriptShadow9 != null)) {
@@ -470,7 +470,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				}
 			}
 			{
-				let __goscriptTuple11: any = $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(-$.len(content) / 3))), 2)
+				let __goscriptTuple11: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(-$.len(content) / 3))), 2)
 				let off = $.int(__goscriptTuple11[0])
 				let __goscriptShadow10 = __goscriptTuple11[1]
 				if (($.int(off) != $.int($.int(middle))) || (__goscriptShadow10 != null)) {
@@ -491,7 +491,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 
 			// Absolute seek & read forward.
 			{
-				let __goscriptTuple13: any = $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(middle / 2))), 0)
+				let __goscriptTuple13: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(middle / 2))), 0)
 				let off = $.int(__goscriptTuple13[0])
 				let __goscriptShadow11 = __goscriptTuple13[1]
 				if (($.int(off) != $.int($.int(Math.trunc(middle / 2)))) || (__goscriptShadow11 != null)) {
@@ -520,7 +520,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 			for (let __goscriptRangeTarget0 = __goscriptShadow14, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 				__goscriptShadow14![i] = $.uint(0xfe, 8)
 			}
-			let [__goscriptShadow15, __goscriptShadow16] = $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt(__goscriptShadow14, $.int(0))
+			let [__goscriptShadow15, __goscriptShadow16] = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt(__goscriptShadow14, $.int(0))
 			if ((__goscriptShadow15 != $.len(__goscriptShadow14)) || ((__goscriptShadow16 != null) && (!$.comparableEqual(__goscriptShadow16, io.EOF)))) {
 				return fmt.Errorf("ReadAt(%d, 0) = %v, %v, want %d, nil or EOF", $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(__goscriptShadow15, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow16 as any), $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 			}
@@ -528,7 +528,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				return fmt.Errorf("ReadAt(%d, 0) = %q\n\twant %q", $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.interfaceValue<any>(__goscriptShadow14, "[]byte"), $.interfaceValue<any>(content, "[]byte"))
 			}
 
-			let __goscriptTuple16: any = $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, undefined, 1), $.int($.int($.len(__goscriptShadow14))))
+			let __goscriptTuple16: any = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, undefined, 1), $.int($.int($.len(__goscriptShadow14))))
 			__goscriptShadow15 = __goscriptTuple16[0]
 			__goscriptShadow16 = __goscriptTuple16[1]
 			if ((__goscriptShadow15 != 0) || (!$.comparableEqual(__goscriptShadow16, io.EOF))) {
@@ -538,7 +538,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 			for (let __goscriptRangeTarget1 = __goscriptShadow14, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
 				__goscriptShadow14![i] = $.uint(0xfe, 8)
 			}
-			let __goscriptTuple17: any = $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, undefined, $.cap(__goscriptShadow14)), $.int(0))
+			let __goscriptTuple17: any = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, undefined, $.cap(__goscriptShadow14)), $.int(0))
 			__goscriptShadow15 = __goscriptTuple17[0]
 			__goscriptShadow16 = __goscriptTuple17[1]
 			if ((__goscriptShadow15 != $.len(__goscriptShadow14)) || (!$.comparableEqual(__goscriptShadow16, io.EOF))) {
@@ -552,7 +552,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				__goscriptShadow14![i] = $.uint(0xfe, 8)
 			}
 			for (let __goscriptRangeTarget3 = __goscriptShadow14, i = 0; i < $.len(__goscriptRangeTarget3); i++) {
-				let __goscriptTuple18: any = $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, i, i + 1), $.int($.int(i)))
+				let __goscriptTuple18: any = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, i, i + 1), $.int($.int(i)))
 				__goscriptShadow15 = __goscriptTuple18[0]
 				__goscriptShadow16 = __goscriptTuple18[1]
 				if ((__goscriptShadow15 != 1) || ((__goscriptShadow16 != null) && ((i != ($.len(__goscriptShadow14) - 1)) || (!$.comparableEqual(__goscriptShadow16, io.EOF))))) {

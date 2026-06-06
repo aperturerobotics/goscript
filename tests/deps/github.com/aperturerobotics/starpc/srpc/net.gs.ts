@@ -67,7 +67,7 @@ export async function Listen(ctx: context.Context | null, addr: string, srv: __g
 		{
 			id: 0,
 			isSend: false,
-			channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+			channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 			onSelected: async (__goscriptSelect0Result) => {
 				return context.Canceled
 			}

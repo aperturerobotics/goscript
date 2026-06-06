@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { makeMap, mapGet, mapSet } from './map.js'
 import {
+  appendSlice,
   bytesToString,
   copy,
   indexString,
@@ -13,6 +14,19 @@ import {
 } from './slice.js'
 
 describe('builtin string byte representation', () => {
+  it('appends large byte slices without JavaScript argument spreading', () => {
+    const dst = new Uint8Array(0)
+    const src = new Uint8Array(200_000)
+    src[0] = 7
+    src[src.length - 1] = 9
+
+    const out = appendSlice(dst, src)
+
+    expect(out.length).toBe(src.length)
+    expect(out[0]).toBe(7)
+    expect(out[out.length - 1]).toBe(9)
+  })
+
   it('round-trips non-UTF-8 byte strings without external provenance', () => {
     const original = new Uint8Array([0, 255, 128, 65, 66])
     const str = bytesToString(original)

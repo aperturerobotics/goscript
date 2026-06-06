@@ -24,6 +24,7 @@ func TestRuntimeContractOwnsBuiltinImportAndHelpers(t *testing.T) {
 		RuntimeHelperPointerValue:             RuntimeHelperCategoryValue,
 		RuntimeHelperMakeSlice:                RuntimeHelperCategorySlice,
 		RuntimeHelperAppend:                   RuntimeHelperCategorySlice,
+		RuntimeHelperAppendSlice:              RuntimeHelperCategorySlice,
 		RuntimeHelperIndexAddress:             RuntimeHelperCategorySlice,
 		RuntimeHelperIndexByteAddress:         RuntimeHelperCategorySlice,
 		RuntimeHelperUnsafePointerRef:         RuntimeHelperCategorySlice,

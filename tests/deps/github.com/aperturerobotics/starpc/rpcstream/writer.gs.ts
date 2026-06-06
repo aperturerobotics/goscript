@@ -32,7 +32,7 @@ export class RpcStreamWriter {
 
 	constructor(init?: Partial<{RpcStream?: __goscript_rpcstream.RpcStream | null}>) {
 		this._fields = {
-			RpcStream: $.varRef(init?.RpcStream ?? null)
+			RpcStream: $.varRef(init?.RpcStream ?? (null as unknown as __goscript_rpcstream.RpcStream | null))
 		}
 	}
 
@@ -65,7 +65,7 @@ export class RpcStreamWriter {
 
 	public async WritePacket(p: srpc.Packet | $.VarRef<srpc.Packet> | null): globalThis.Promise<$.GoError> {
 		const r: RpcStreamWriter | $.VarRef<RpcStreamWriter> | null = this
-		let __goscriptTuple0: any = srpc.Packet.prototype.MarshalVT.call(p)
+		let __goscriptTuple0: any = await srpc.Packet.prototype.MarshalVT.call(p)
 		let pktData: $.Slice<number> = __goscriptTuple0[0]
 		let err = __goscriptTuple0[1]
 		if (err != null) {

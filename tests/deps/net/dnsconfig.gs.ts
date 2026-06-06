@@ -175,21 +175,21 @@ export class dnsConfig {
 
 	constructor(init?: Partial<{servers?: $.Slice<string>, search?: $.Slice<string>, ndots?: number, timeout?: time.Duration, attempts?: number, rotate?: boolean, unknownOpt?: boolean, lookup?: $.Slice<string>, err?: $.GoError, mtime?: time.Time, soffset?: number, singleRequest?: boolean, useTCP?: boolean, trustAD?: boolean, noReload?: boolean}>) {
 		this._fields = {
-			servers: $.varRef(init?.servers ?? null),
-			search: $.varRef(init?.search ?? null),
-			ndots: $.varRef(init?.ndots ?? 0),
-			timeout: $.varRef(init?.timeout ?? 0),
-			attempts: $.varRef(init?.attempts ?? 0),
-			rotate: $.varRef(init?.rotate ?? false),
-			unknownOpt: $.varRef(init?.unknownOpt ?? false),
-			lookup: $.varRef(init?.lookup ?? null),
-			err: $.varRef(init?.err ?? null),
+			servers: $.varRef(init?.servers ?? (null as unknown as $.Slice<string>)),
+			search: $.varRef(init?.search ?? (null as unknown as $.Slice<string>)),
+			ndots: $.varRef(init?.ndots ?? (0 as unknown as number)),
+			timeout: $.varRef(init?.timeout ?? (0 as unknown as time.Duration)),
+			attempts: $.varRef(init?.attempts ?? (0 as unknown as number)),
+			rotate: $.varRef(init?.rotate ?? (false as unknown as boolean)),
+			unknownOpt: $.varRef(init?.unknownOpt ?? (false as unknown as boolean)),
+			lookup: $.varRef(init?.lookup ?? (null as unknown as $.Slice<string>)),
+			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
 			mtime: $.varRef(init?.mtime ? $.markAsStructValue($.cloneStructValue(init.mtime)) : $.markAsStructValue(new time.Time())),
-			soffset: $.varRef(init?.soffset ?? 0),
-			singleRequest: $.varRef(init?.singleRequest ?? false),
-			useTCP: $.varRef(init?.useTCP ?? false),
-			trustAD: $.varRef(init?.trustAD ?? false),
-			noReload: $.varRef(init?.noReload ?? false)
+			soffset: $.varRef(init?.soffset ?? (0 as unknown as number)),
+			singleRequest: $.varRef(init?.singleRequest ?? (false as unknown as boolean)),
+			useTCP: $.varRef(init?.useTCP ?? (false as unknown as boolean)),
+			trustAD: $.varRef(init?.trustAD ?? (false as unknown as boolean)),
+			noReload: $.varRef(init?.noReload ?? (false as unknown as boolean))
 		}
 	}
 

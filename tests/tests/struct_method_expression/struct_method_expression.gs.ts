@@ -17,7 +17,7 @@ export class worker {
 
 	constructor(init?: Partial<{base?: number}>) {
 		this._fields = {
-			base: $.varRef(init?.base ?? 0)
+			base: $.varRef(init?.base ?? (0 as unknown as number))
 		}
 	}
 

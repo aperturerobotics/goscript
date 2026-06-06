@@ -39,8 +39,8 @@ export function ZeroArrayLiteral(__typeArgs: $.GenericTypeArgs | undefined): any
 	return $.genericZero(__typeArgs, "T", null)
 }
 
-export function CallString(__typeArgs: $.GenericTypeArgs | undefined, v: any): string {
-	return $.callGenericMethod(__typeArgs, "T", "String", v)
+export async function CallString(__typeArgs: $.GenericTypeArgs | undefined, v: any): globalThis.Promise<string> {
+	return await $.callGenericMethod(__typeArgs, "T", "String", v)
 }
 
 export function Sum<T>(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<T>): any {
@@ -60,8 +60,8 @@ export async function main(): globalThis.Promise<void> {
 	$.println("ZeroValue[StringVal] len:", $.len(StringVal_String(zeroStr)))
 
 	// Test 3: CallString on zero value
-	$.println("CallString on zero IntVal:", CallString({T: { type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.IntVal" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (IntVal_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] }}, zeroInt))
-	$.println("CallString on zero StringVal len:", $.len(CallString({T: { type: { kind: $.TypeKind.Basic, name: "string", typeName: "main.StringVal" }, zero: () => "", methods: {String: (receiver: any, ...args: any[]) => (StringVal_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] }}, zeroStr)))
+	$.println("CallString on zero IntVal:", await CallString({T: { type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.IntVal" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (IntVal_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] }}, zeroInt))
+	$.println("CallString on zero StringVal len:", $.len(await CallString({T: { type: { kind: $.TypeKind.Basic, name: "string", typeName: "main.StringVal" }, zero: () => "", methods: {String: (receiver: any, ...args: any[]) => (StringVal_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] }}, zeroStr)))
 
 	// Test 4: Sum returns zero value
 	let sumInt = (Sum({T: { type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.IntVal" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (IntVal_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }] }}, null) as IntVal)

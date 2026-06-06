@@ -17,7 +17,7 @@ export class Result {
 
 	constructor(init?: Partial<{ok?: boolean}>) {
 		this._fields = {
-			ok: $.varRef(init?.ok ?? false)
+			ok: $.varRef(init?.ok ?? (false as unknown as boolean))
 		}
 	}
 

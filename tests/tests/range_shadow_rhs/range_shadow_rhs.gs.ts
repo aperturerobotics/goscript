@@ -17,7 +17,7 @@ export class holder {
 
 	constructor(init?: Partial<{values?: Map<string, number> | null}>) {
 		this._fields = {
-			values: $.varRef(init?.values ?? null)
+			values: $.varRef(init?.values ?? (null as unknown as Map<string, number> | null))
 		}
 	}
 

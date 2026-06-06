@@ -78,17 +78,17 @@ export async function favoriteAddrFamily(network: string, laddr: __goscript_sock
 		}
 	}
 
-	if (($.stringEqual(mode, "listen")) && ((laddr == null) || $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(laddr).isWildcard())) {
+	if (($.stringEqual(mode, "listen")) && ((laddr == null) || await $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(laddr).isWildcard())) {
 		if (await __goscript_ipsock.supportsIPv4map() || !await __goscript_ipsock.supportsIPv4()) {
 			return [syscall.AF_INET6, false]
 		}
 		if (laddr == null) {
 			return [syscall.AF_INET, false]
 		}
-		return [$.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(laddr).family(), false]
+		return [await $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(laddr).family(), false]
 	}
 
-	if (((laddr == null) || ($.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(laddr).family() == syscall.AF_INET)) && ((raddr == null) || ($.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(raddr).family() == syscall.AF_INET))) {
+	if (((laddr == null) || (await $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(laddr).family() == syscall.AF_INET)) && ((raddr == null) || (await $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(raddr).family() == syscall.AF_INET))) {
 		return [syscall.AF_INET, false]
 	}
 	return [syscall.AF_INET6, false]
@@ -104,8 +104,8 @@ export async function internetSocket(ctx: context.Context | null, net: string, l
 		case "js":
 		case "wasip1":
 		{
-			if (($.stringEqual(mode, "dial")) && $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(raddr).isWildcard()) {
-				raddr = $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(raddr).toLocal(net)
+			if (($.stringEqual(mode, "dial")) && await $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(raddr).isWildcard()) {
+				raddr = await $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(raddr).toLocal(net)
 			}
 			break
 		}

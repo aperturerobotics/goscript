@@ -254,9 +254,9 @@ export class coder {
 
 	constructor(init?: Partial<{order?: ByteOrder | null, buf?: $.Slice<number>, offset?: number}>) {
 		this._fields = {
-			order: $.varRef(init?.order ?? null),
-			buf: $.varRef(init?.buf ?? null),
-			offset: $.varRef(init?.offset ?? 0)
+			order: $.varRef(init?.order ?? (null as unknown as ByteOrder | null)),
+			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
+			offset: $.varRef(init?.offset ?? (0 as unknown as number))
 		}
 	}
 
@@ -309,9 +309,9 @@ export class decoder {
 
 	constructor(init?: Partial<{order?: ByteOrder | null, buf?: $.Slice<number>, offset?: number}>) {
 		this._fields = {
-			order: $.varRef(init?.order ?? null),
-			buf: $.varRef(init?.buf ?? null),
-			offset: $.varRef(init?.offset ?? 0)
+			order: $.varRef(init?.order ?? (null as unknown as ByteOrder | null)),
+			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
+			offset: $.varRef(init?.offset ?? (0 as unknown as number))
 		}
 	}
 
@@ -332,19 +332,19 @@ export class decoder {
 		return $.uint(x, 8) != $.uint(0, 8)
 	}
 
-	public int16(): number {
+	public async int16(): globalThis.Promise<number> {
 		const d: decoder | $.VarRef<decoder> | null = this
-		return $.int($.int(decoder.prototype.uint16.call(d), 16), 16)
+		return $.int($.int(await decoder.prototype.uint16.call(d), 16), 16)
 	}
 
-	public int32(): number {
+	public async int32(): globalThis.Promise<number> {
 		const d: decoder | $.VarRef<decoder> | null = this
-		return $.int($.int(decoder.prototype.uint32.call(d), 32), 32)
+		return $.int($.int(await decoder.prototype.uint32.call(d), 32), 32)
 	}
 
-	public int64(): number {
+	public async int64(): globalThis.Promise<number> {
 		const d: decoder | $.VarRef<decoder> | null = this
-		return $.int($.int(decoder.prototype.uint64.call(d)))
+		return $.int($.int(await decoder.prototype.uint64.call(d)))
 	}
 
 	public int8(): number {
@@ -357,23 +357,23 @@ export class decoder {
 		$.pointerValue<decoder>(d).offset = $.pointerValue<decoder>(d).offset + (await dataSize($.markAsStructValue($.cloneStructValue(v))))
 	}
 
-	public uint16(): number {
+	public async uint16(): globalThis.Promise<number> {
 		let d: decoder | $.VarRef<decoder> | null = this
-		let x = $.uint($.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<decoder>(d).order).Uint16($.goSlice($.pointerValue<decoder>(d).buf, $.pointerValue<decoder>(d).offset, $.pointerValue<decoder>(d).offset + 2)), 16)
+		let x = $.uint(await $.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<decoder>(d).order).Uint16($.goSlice($.pointerValue<decoder>(d).buf, $.pointerValue<decoder>(d).offset, $.pointerValue<decoder>(d).offset + 2)), 16)
 		$.pointerValue<decoder>(d).offset = $.pointerValue<decoder>(d).offset + (2)
 		return $.uint(x, 16)
 	}
 
-	public uint32(): number {
+	public async uint32(): globalThis.Promise<number> {
 		let d: decoder | $.VarRef<decoder> | null = this
-		let x = $.uint($.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<decoder>(d).order).Uint32($.goSlice($.pointerValue<decoder>(d).buf, $.pointerValue<decoder>(d).offset, $.pointerValue<decoder>(d).offset + 4)), 32)
+		let x = $.uint(await $.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<decoder>(d).order).Uint32($.goSlice($.pointerValue<decoder>(d).buf, $.pointerValue<decoder>(d).offset, $.pointerValue<decoder>(d).offset + 4)), 32)
 		$.pointerValue<decoder>(d).offset = $.pointerValue<decoder>(d).offset + (4)
 		return $.uint(x, 32)
 	}
 
-	public uint64(): number {
+	public async uint64(): globalThis.Promise<number> {
 		let d: decoder | $.VarRef<decoder> | null = this
-		let x = $.uint($.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<decoder>(d).order).Uint64($.goSlice($.pointerValue<decoder>(d).buf, $.pointerValue<decoder>(d).offset, $.pointerValue<decoder>(d).offset + 8)), 64)
+		let x = $.uint(await $.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<decoder>(d).order).Uint64($.goSlice($.pointerValue<decoder>(d).buf, $.pointerValue<decoder>(d).offset, $.pointerValue<decoder>(d).offset + 8)), 64)
 		$.pointerValue<decoder>(d).offset = $.pointerValue<decoder>(d).offset + (8)
 		return $.uint(x, 64)
 	}
@@ -409,7 +409,7 @@ export class decoder {
 					let __goscriptShadow2 = v
 					{
 						let __goscriptShadow3 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(__goscriptShadow2)).Field(i)))
-						if ($.markAsStructValue($.cloneStructValue(__goscriptShadow3)).CanSet() || (!$.stringEqual($.pointerValue<Exclude<reflect.Type, null>>(t).Field(i).Name, "_"))) {
+						if ($.markAsStructValue($.cloneStructValue(__goscriptShadow3)).CanSet() || (!$.stringEqual((await $.pointerValue<Exclude<reflect.Type, null>>(t).Field(i)).Name, "_"))) {
 							await decoder.prototype.value.call(d, $.markAsStructValue($.cloneStructValue(__goscriptShadow3)))
 						} else {
 							await decoder.prototype.skip.call(d, $.markAsStructValue($.cloneStructValue(__goscriptShadow3)))
@@ -438,17 +438,17 @@ export class decoder {
 			}
 			case reflect.Int16:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetInt($.int($.int(decoder.prototype.int16.call(d))))
+				$.markAsStructValue($.cloneStructValue(v)).SetInt($.int($.int(await decoder.prototype.int16.call(d))))
 				break
 			}
 			case reflect.Int32:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetInt($.int($.int(decoder.prototype.int32.call(d))))
+				$.markAsStructValue($.cloneStructValue(v)).SetInt($.int($.int(await decoder.prototype.int32.call(d))))
 				break
 			}
 			case reflect.Int64:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetInt($.int(decoder.prototype.int64.call(d)))
+				$.markAsStructValue($.cloneStructValue(v)).SetInt($.int(await decoder.prototype.int64.call(d)))
 				break
 			}
 			case reflect.Uint8:
@@ -458,37 +458,37 @@ export class decoder {
 			}
 			case reflect.Uint16:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetUint($.uint($.uint(decoder.prototype.uint16.call(d), 64), 64))
+				$.markAsStructValue($.cloneStructValue(v)).SetUint($.uint($.uint(await decoder.prototype.uint16.call(d), 64), 64))
 				break
 			}
 			case reflect.Uint32:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetUint($.uint($.uint(decoder.prototype.uint32.call(d), 64), 64))
+				$.markAsStructValue($.cloneStructValue(v)).SetUint($.uint($.uint(await decoder.prototype.uint32.call(d), 64), 64))
 				break
 			}
 			case reflect.Uint64:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetUint($.uint(decoder.prototype.uint64.call(d), 64))
+				$.markAsStructValue($.cloneStructValue(v)).SetUint($.uint(await decoder.prototype.uint64.call(d), 64))
 				break
 			}
 			case reflect.Float32:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetFloat(math.Float32frombits($.uint(decoder.prototype.uint32.call(d), 32)))
+				$.markAsStructValue($.cloneStructValue(v)).SetFloat(math.Float32frombits($.uint(await decoder.prototype.uint32.call(d), 32)))
 				break
 			}
 			case reflect.Float64:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetFloat(math.Float64frombits($.uint(decoder.prototype.uint64.call(d), 64)))
+				$.markAsStructValue($.cloneStructValue(v)).SetFloat(math.Float64frombits($.uint(await decoder.prototype.uint64.call(d), 64)))
 				break
 			}
 			case reflect.Complex64:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetComplex($.complex(math.Float32frombits($.uint(decoder.prototype.uint32.call(d), 32)), math.Float32frombits($.uint(decoder.prototype.uint32.call(d), 32))))
+				$.markAsStructValue($.cloneStructValue(v)).SetComplex($.complex(math.Float32frombits($.uint(await decoder.prototype.uint32.call(d), 32)), math.Float32frombits($.uint(await decoder.prototype.uint32.call(d), 32))))
 				break
 			}
 			case reflect.Complex128:
 			{
-				$.markAsStructValue($.cloneStructValue(v)).SetComplex($.complex(math.Float64frombits($.uint(decoder.prototype.uint64.call(d), 64)), math.Float64frombits($.uint(decoder.prototype.uint64.call(d), 64))))
+				$.markAsStructValue($.cloneStructValue(v)).SetComplex($.complex(math.Float64frombits($.uint(await decoder.prototype.uint64.call(d), 64)), math.Float64frombits($.uint(await decoder.prototype.uint64.call(d), 64))))
 				break
 			}
 		}
@@ -533,9 +533,9 @@ export class encoder {
 
 	constructor(init?: Partial<{order?: ByteOrder | null, buf?: $.Slice<number>, offset?: number}>) {
 		this._fields = {
-			order: $.varRef(init?.order ?? null),
-			buf: $.varRef(init?.buf ?? null),
-			offset: $.varRef(init?.offset ?? 0)
+			order: $.varRef(init?.order ?? (null as unknown as ByteOrder | null)),
+			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
+			offset: $.varRef(init?.offset ?? (0 as unknown as number))
 		}
 	}
 
@@ -559,19 +559,19 @@ export class encoder {
 		$.pointerValue<encoder>(e).offset++
 	}
 
-	public int16(x: number): void {
+	public async int16(x: number): globalThis.Promise<void> {
 		const e: encoder | $.VarRef<encoder> | null = this
-		encoder.prototype.uint16.call(e, $.uint($.uint(x, 16), 16))
+		await encoder.prototype.uint16.call(e, $.uint($.uint(x, 16), 16))
 	}
 
-	public int32(x: number): void {
+	public async int32(x: number): globalThis.Promise<void> {
 		const e: encoder | $.VarRef<encoder> | null = this
-		encoder.prototype.uint32.call(e, $.uint($.uint(x, 32), 32))
+		await encoder.prototype.uint32.call(e, $.uint($.uint(x, 32), 32))
 	}
 
-	public int64(x: number): void {
+	public async int64(x: number): globalThis.Promise<void> {
 		const e: encoder | $.VarRef<encoder> | null = this
-		encoder.prototype.uint64.call(e, $.uint($.uint(x, 64), 64))
+		await encoder.prototype.uint64.call(e, $.uint($.uint(x, 64), 64))
 	}
 
 	public int8(x: number): void {
@@ -586,21 +586,21 @@ export class encoder {
 		$.pointerValue<encoder>(e).offset = $.pointerValue<encoder>(e).offset + (n)
 	}
 
-	public uint16(x: number): void {
+	public async uint16(x: number): globalThis.Promise<void> {
 		let e: encoder | $.VarRef<encoder> | null = this
-		$.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<encoder>(e).order).PutUint16($.goSlice($.pointerValue<encoder>(e).buf, $.pointerValue<encoder>(e).offset, $.pointerValue<encoder>(e).offset + 2), $.uint(x, 16))
+		await $.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<encoder>(e).order).PutUint16($.goSlice($.pointerValue<encoder>(e).buf, $.pointerValue<encoder>(e).offset, $.pointerValue<encoder>(e).offset + 2), $.uint(x, 16))
 		$.pointerValue<encoder>(e).offset = $.pointerValue<encoder>(e).offset + (2)
 	}
 
-	public uint32(x: number): void {
+	public async uint32(x: number): globalThis.Promise<void> {
 		let e: encoder | $.VarRef<encoder> | null = this
-		$.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<encoder>(e).order).PutUint32($.goSlice($.pointerValue<encoder>(e).buf, $.pointerValue<encoder>(e).offset, $.pointerValue<encoder>(e).offset + 4), $.uint(x, 32))
+		await $.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<encoder>(e).order).PutUint32($.goSlice($.pointerValue<encoder>(e).buf, $.pointerValue<encoder>(e).offset, $.pointerValue<encoder>(e).offset + 4), $.uint(x, 32))
 		$.pointerValue<encoder>(e).offset = $.pointerValue<encoder>(e).offset + (4)
 	}
 
-	public uint64(x: number): void {
+	public async uint64(x: number): globalThis.Promise<void> {
 		let e: encoder | $.VarRef<encoder> | null = this
-		$.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<encoder>(e).order).PutUint64($.goSlice($.pointerValue<encoder>(e).buf, $.pointerValue<encoder>(e).offset, $.pointerValue<encoder>(e).offset + 8), $.uint(x, 64))
+		await $.pointerValue<Exclude<ByteOrder, null>>($.pointerValue<encoder>(e).order).PutUint64($.goSlice($.pointerValue<encoder>(e).buf, $.pointerValue<encoder>(e).offset, $.pointerValue<encoder>(e).offset + 8), $.uint(x, 64))
 		$.pointerValue<encoder>(e).offset = $.pointerValue<encoder>(e).offset + (8)
 	}
 
@@ -630,7 +630,7 @@ export class encoder {
 					let __goscriptShadow4 = v
 					{
 						let __goscriptShadow5 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(__goscriptShadow4)).Field(i)))
-						if ($.markAsStructValue($.cloneStructValue(__goscriptShadow5)).CanSet() || (!$.stringEqual($.pointerValue<Exclude<reflect.Type, null>>(t).Field(i).Name, "_"))) {
+						if ($.markAsStructValue($.cloneStructValue(__goscriptShadow5)).CanSet() || (!$.stringEqual((await $.pointerValue<Exclude<reflect.Type, null>>(t).Field(i)).Name, "_"))) {
 							await encoder.prototype.value.call(e, $.markAsStructValue($.cloneStructValue(__goscriptShadow5)))
 						} else {
 							await encoder.prototype.skip.call(e, $.markAsStructValue($.cloneStructValue(__goscriptShadow5)))
@@ -659,17 +659,17 @@ export class encoder {
 			}
 			case reflect.Int16:
 			{
-				encoder.prototype.int16.call(e, $.int($.int($.markAsStructValue($.cloneStructValue(v)).Int(), 16), 16))
+				await encoder.prototype.int16.call(e, $.int($.int($.markAsStructValue($.cloneStructValue(v)).Int(), 16), 16))
 				break
 			}
 			case reflect.Int32:
 			{
-				encoder.prototype.int32.call(e, $.int($.int($.markAsStructValue($.cloneStructValue(v)).Int(), 32), 32))
+				await encoder.prototype.int32.call(e, $.int($.int($.markAsStructValue($.cloneStructValue(v)).Int(), 32), 32))
 				break
 			}
 			case reflect.Int64:
 			{
-				encoder.prototype.int64.call(e, $.int($.markAsStructValue($.cloneStructValue(v)).Int()))
+				await encoder.prototype.int64.call(e, $.int($.markAsStructValue($.cloneStructValue(v)).Int()))
 				break
 			}
 			case reflect.Uint8:
@@ -679,41 +679,41 @@ export class encoder {
 			}
 			case reflect.Uint16:
 			{
-				encoder.prototype.uint16.call(e, $.uint($.uint($.markAsStructValue($.cloneStructValue(v)).Uint(), 16), 16))
+				await encoder.prototype.uint16.call(e, $.uint($.uint($.markAsStructValue($.cloneStructValue(v)).Uint(), 16), 16))
 				break
 			}
 			case reflect.Uint32:
 			{
-				encoder.prototype.uint32.call(e, $.uint($.uint($.markAsStructValue($.cloneStructValue(v)).Uint(), 32), 32))
+				await encoder.prototype.uint32.call(e, $.uint($.uint($.markAsStructValue($.cloneStructValue(v)).Uint(), 32), 32))
 				break
 			}
 			case reflect.Uint64:
 			{
-				encoder.prototype.uint64.call(e, $.uint($.markAsStructValue($.cloneStructValue(v)).Uint(), 64))
+				await encoder.prototype.uint64.call(e, $.uint($.markAsStructValue($.cloneStructValue(v)).Uint(), 64))
 				break
 			}
 			case reflect.Float32:
 			{
-				encoder.prototype.uint32.call(e, $.uint(math.Float32bits($.markAsStructValue($.cloneStructValue(v)).Float()), 32))
+				await encoder.prototype.uint32.call(e, $.uint(math.Float32bits($.markAsStructValue($.cloneStructValue(v)).Float()), 32))
 				break
 			}
 			case reflect.Float64:
 			{
-				encoder.prototype.uint64.call(e, $.uint(math.Float64bits($.markAsStructValue($.cloneStructValue(v)).Float()), 64))
+				await encoder.prototype.uint64.call(e, $.uint(math.Float64bits($.markAsStructValue($.cloneStructValue(v)).Float()), 64))
 				break
 			}
 			case reflect.Complex64:
 			{
 				let x = $.markAsStructValue($.cloneStructValue(v)).Complex()
-				encoder.prototype.uint32.call(e, $.uint(math.Float32bits($.real(x)), 32))
-				encoder.prototype.uint32.call(e, $.uint(math.Float32bits($.imag(x)), 32))
+				await encoder.prototype.uint32.call(e, $.uint(math.Float32bits($.real(x)), 32))
+				await encoder.prototype.uint32.call(e, $.uint(math.Float32bits($.imag(x)), 32))
 				break
 			}
 			case reflect.Complex128:
 			{
 				let x = $.markAsStructValue($.cloneStructValue(v)).Complex()
-				encoder.prototype.uint64.call(e, $.uint(math.Float64bits($.real(x)), 64))
-				encoder.prototype.uint64.call(e, $.uint(math.Float64bits($.imag(x)), 64))
+				await encoder.prototype.uint64.call(e, $.uint(math.Float64bits($.real(x)), 64))
+				await encoder.prototype.uint64.call(e, $.uint(math.Float64bits($.imag(x)), 64))
 				break
 			}
 		}
@@ -759,7 +759,7 @@ export async function Read(r: io.Reader | null, order: ByteOrder | null, data: a
 				}
 			}
 
-			if (decodeFast(bs, order, data)) {
+			if (await decodeFast(bs, order, data)) {
 				return null
 			}
 		}
@@ -782,7 +782,7 @@ export async function Read(r: io.Reader | null, order: ByteOrder | null, data: a
 		}
 	}
 	if (size < 0) {
-		return errors.New("binary.Read: invalid type " + $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())
+		return errors.New("binary.Read: invalid type " + await $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())
 	}
 
 	let d: decoder | $.VarRef<decoder> | null = new decoder({order: order, buf: $.makeSlice<number>(size, undefined, "byte")})
@@ -804,7 +804,7 @@ export async function Decode(buf: $.Slice<number>, order: ByteOrder | null, data
 				return [0, errBufferTooSmall]
 			}
 
-			if (decodeFast(buf, order, data)) {
+			if (await decodeFast(buf, order, data)) {
 				return [n, null]
 			}
 		}
@@ -827,7 +827,7 @@ export async function Decode(buf: $.Slice<number>, order: ByteOrder | null, data
 		}
 	}
 	if (size < 0) {
-		return [0, errors.New("binary.Decode: invalid type " + $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())]
+		return [0, errors.New("binary.Decode: invalid type " + await $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())]
 	}
 
 	if ($.len(buf) < size) {
@@ -838,7 +838,7 @@ export async function Decode(buf: $.Slice<number>, order: ByteOrder | null, data
 	return [size, null]
 }
 
-export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: any): boolean {
+export async function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: any): globalThis.Promise<boolean> {
 	{
 		const __goscriptTypeSwitchValue = data
 		switch (true) {
@@ -863,49 +863,49 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
 				{
 					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
-					data!.value = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint16(bs), 16), 16)
+					data!.value = $.int($.int(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint16(bs), 16), 16)
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
 				{
 					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
-					data!.value = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint16(bs), 16)
+					data!.value = $.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint16(bs), 16)
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
 				{
 					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
-					data!.value = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32(bs), 32), 32)
+					data!.value = $.int($.int(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint32(bs), 32), 32)
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
 				{
 					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
-					data!.value = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32(bs), 32)
+					data!.value = $.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint32(bs), 32)
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
 				{
 					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
-					data!.value = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64(bs)))
+					data!.value = $.int($.int(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint64(bs)))
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
 				{
 					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
-					data!.value = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64(bs), 64)
+					data!.value = $.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint64(bs), 64)
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
 				{
 					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
-					data!.value = math.Float32frombits($.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32(bs), 32))
+					data!.value = math.Float32frombits($.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint32(bs), 32))
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
 				{
 					let data: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
-					data!.value = math.Float64frombits($.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64(bs), 64))
+					data!.value = math.Float64frombits($.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint64(bs), 64))
 				}
 				break
 			case $.typeAssert<$.Slice<boolean>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "bool" } }).ok:
@@ -936,7 +936,7 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 				{
 					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
 					for (let __goscriptRangeTarget2 = data, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
-						data![i] = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint16($.goSlice(bs, 2 * i, undefined)), 16), 16)
+						data![i] = $.int($.int(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint16($.goSlice(bs, 2 * i, undefined)), 16), 16)
 					}
 				}
 				break
@@ -944,7 +944,7 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 				{
 					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
 					for (let __goscriptRangeTarget3 = data, i = 0; i < $.len(__goscriptRangeTarget3); i++) {
-						data![i] = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint16($.goSlice(bs, 2 * i, undefined)), 16)
+						data![i] = $.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint16($.goSlice(bs, 2 * i, undefined)), 16)
 					}
 				}
 				break
@@ -952,7 +952,7 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 				{
 					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
 					for (let __goscriptRangeTarget4 = data, i = 0; i < $.len(__goscriptRangeTarget4); i++) {
-						data![i] = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32($.goSlice(bs, 4 * i, undefined)), 32), 32)
+						data![i] = $.int($.int(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint32($.goSlice(bs, 4 * i, undefined)), 32), 32)
 					}
 				}
 				break
@@ -960,7 +960,7 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 				{
 					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
 					for (let __goscriptRangeTarget5 = data, i = 0; i < $.len(__goscriptRangeTarget5); i++) {
-						data![i] = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32($.goSlice(bs, 4 * i, undefined)), 32)
+						data![i] = $.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint32($.goSlice(bs, 4 * i, undefined)), 32)
 					}
 				}
 				break
@@ -968,7 +968,7 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 				{
 					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
 					for (let __goscriptRangeTarget6 = data, i = 0; i < $.len(__goscriptRangeTarget6); i++) {
-						data![i] = $.int($.int($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64($.goSlice(bs, 8 * i, undefined))))
+						data![i] = $.int($.int(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint64($.goSlice(bs, 8 * i, undefined))))
 					}
 				}
 				break
@@ -976,7 +976,7 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 				{
 					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
 					for (let __goscriptRangeTarget7 = data, i = 0; i < $.len(__goscriptRangeTarget7); i++) {
-						data![i] = $.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64($.goSlice(bs, 8 * i, undefined)), 64)
+						data![i] = $.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint64($.goSlice(bs, 8 * i, undefined)), 64)
 					}
 				}
 				break
@@ -984,7 +984,7 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 				{
 					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
 					for (let __goscriptRangeTarget8 = data, i = 0; i < $.len(__goscriptRangeTarget8); i++) {
-						data![i] = math.Float32frombits($.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint32($.goSlice(bs, 4 * i, undefined)), 32))
+						data![i] = math.Float32frombits($.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint32($.goSlice(bs, 4 * i, undefined)), 32))
 					}
 				}
 				break
@@ -992,7 +992,7 @@ export function decodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 				{
 					let data: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
 					for (let __goscriptRangeTarget9 = data, i = 0; i < $.len(__goscriptRangeTarget9); i++) {
-						data![i] = math.Float64frombits($.uint($.pointerValue<Exclude<ByteOrder, null>>(order).Uint64($.goSlice(bs, 8 * i, undefined)), 64))
+						data![i] = math.Float64frombits($.uint(await $.pointerValue<Exclude<ByteOrder, null>>(order).Uint64($.goSlice(bs, 8 * i, undefined)), 64))
 					}
 				}
 				break
@@ -1016,7 +1016,7 @@ export async function Write(w: io.Writer | null, order: ByteOrder | null, data: 
 		if (n != 0) {
 			if (bs == null) {
 				bs = $.makeSlice<number>(n, undefined, "byte")
-				encodeFast(bs, order, data)
+				await encodeFast(bs, order, data)
 			}
 
 			let [, err] = await $.pointerValue<Exclude<io.Writer, null>>(w).Write(bs)
@@ -1028,7 +1028,7 @@ export async function Write(w: io.Writer | null, order: ByteOrder | null, data: 
 	let v = $.markAsStructValue($.cloneStructValue(reflect.Indirect($.markAsStructValue($.cloneStructValue(reflect.ValueOf(data))))))
 	let size = await dataSize($.markAsStructValue($.cloneStructValue(v)))
 	if (size < 0) {
-		return errors.New("binary.Write: some values are not fixed-sized in type " + $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())
+		return errors.New("binary.Write: some values are not fixed-sized in type " + await $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())
 	}
 
 	let buf: $.Slice<number> = $.makeSlice<number>(size, undefined, "byte")
@@ -1047,7 +1047,7 @@ export async function Encode(buf: $.Slice<number>, order: ByteOrder | null, data
 				return [0, errBufferTooSmall]
 			}
 
-			encodeFast(buf, order, data)
+			await encodeFast(buf, order, data)
 			return [n, null]
 		}
 	}
@@ -1056,7 +1056,7 @@ export async function Encode(buf: $.Slice<number>, order: ByteOrder | null, data
 	let v = $.markAsStructValue($.cloneStructValue(reflect.Indirect($.markAsStructValue($.cloneStructValue(reflect.ValueOf(data))))))
 	let size = await dataSize($.markAsStructValue($.cloneStructValue(v)))
 	if (size < 0) {
-		return [0, errors.New("binary.Encode: some values are not fixed-sized in type " + $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())]
+		return [0, errors.New("binary.Encode: some values are not fixed-sized in type " + await $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())]
 	}
 
 	if ($.len(buf) < size) {
@@ -1076,7 +1076,7 @@ export async function Append(buf: $.Slice<number>, order: ByteOrder | null, data
 			let __goscriptTuple1: any = ensure(__goscriptShadow0, n)
 			let __goscriptShadow1: $.Slice<number> = __goscriptTuple1[0]
 			let pos: $.Slice<number> = __goscriptTuple1[1]
-			encodeFast(pos, order, data)
+			await encodeFast(pos, order, data)
 			return [__goscriptShadow1, null]
 		}
 	}
@@ -1085,7 +1085,7 @@ export async function Append(buf: $.Slice<number>, order: ByteOrder | null, data
 	let v = $.markAsStructValue($.cloneStructValue(reflect.Indirect($.markAsStructValue($.cloneStructValue(reflect.ValueOf(data))))))
 	let size = await dataSize($.markAsStructValue($.cloneStructValue(v)))
 	if (size < 0) {
-		return [null, errors.New("binary.Append: some values are not fixed-sized in type " + $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())]
+		return [null, errors.New("binary.Append: some values are not fixed-sized in type " + await $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(data)).String())]
 	}
 
 	let __goscriptTuple2: any = ensure(buf, size)
@@ -1096,7 +1096,7 @@ export async function Append(buf: $.Slice<number>, order: ByteOrder | null, data
 	return [buf, null]
 }
 
-export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: any): void {
+export async function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: any): globalThis.Promise<void> {
 	{
 		const __goscriptTypeSwitchValue = data
 		switch (true) {
@@ -1175,13 +1175,13 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
 				{
 					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint($.uint($.pointerValue<number>(v), 16), 16))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint($.uint($.pointerValue<number>(v), 16), 16))
 				}
 				break
 			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int16" }).ok:
 				{
 					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int16" }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint($.uint(v, 16), 16))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint($.uint(v, 16), 16))
 				}
 				break
 			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).ok:
@@ -1189,20 +1189,20 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int16" } }).value
 					for (let __goscriptRangeTarget12 = v, i = 0; i < $.len(__goscriptRangeTarget12); i++) {
 						let x = __goscriptRangeTarget12![i]
-						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16($.goSlice(bs, 2 * i, undefined), $.uint($.uint(x, 16), 16))
+						await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16($.goSlice(bs, 2 * i, undefined), $.uint($.uint(x, 16), 16))
 					}
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
 				{
 					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint($.pointerValue<number>(v), 16))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint($.pointerValue<number>(v), 16))
 				}
 				break
 			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint16" }).ok:
 				{
 					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint16" }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint(v, 16))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16(bs, $.uint(v, 16))
 				}
 				break
 			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).ok:
@@ -1210,20 +1210,20 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint16" } }).value
 					for (let __goscriptRangeTarget13 = v, i = 0; i < $.len(__goscriptRangeTarget13); i++) {
 						let x = __goscriptRangeTarget13![i]
-						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16($.goSlice(bs, 2 * i, undefined), $.uint(x, 16))
+						await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint16($.goSlice(bs, 2 * i, undefined), $.uint(x, 16))
 					}
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
 				{
 					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint($.uint($.pointerValue<number>(v), 32), 32))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint($.uint($.pointerValue<number>(v), 32), 32))
 				}
 				break
 			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int32" }).ok:
 				{
 					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int32" }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint($.uint(v, 32), 32))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint($.uint(v, 32), 32))
 				}
 				break
 			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).ok:
@@ -1231,20 +1231,20 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } }).value
 					for (let __goscriptRangeTarget14 = v, i = 0; i < $.len(__goscriptRangeTarget14); i++) {
 						let x = __goscriptRangeTarget14![i]
-						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32($.goSlice(bs, 4 * i, undefined), $.uint($.uint(x, 32), 32))
+						await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32($.goSlice(bs, 4 * i, undefined), $.uint($.uint(x, 32), 32))
 					}
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
 				{
 					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint($.pointerValue<number>(v), 32))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint($.pointerValue<number>(v), 32))
 				}
 				break
 			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint32" }).ok:
 				{
 					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint32" }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint(v, 32))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint(v, 32))
 				}
 				break
 			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).ok:
@@ -1252,20 +1252,20 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }).value
 					for (let __goscriptRangeTarget15 = v, i = 0; i < $.len(__goscriptRangeTarget15); i++) {
 						let x = __goscriptRangeTarget15![i]
-						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32($.goSlice(bs, 4 * i, undefined), $.uint(x, 32))
+						await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32($.goSlice(bs, 4 * i, undefined), $.uint(x, 32))
 					}
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
 				{
 					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint($.uint($.pointerValue<number>(v), 64), 64))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint($.uint($.pointerValue<number>(v), 64), 64))
 				}
 				break
 			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }).ok:
 				{
 					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint($.uint(v, 64), 64))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint($.uint(v, 64), 64))
 				}
 				break
 			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).ok:
@@ -1273,20 +1273,20 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int64" } }).value
 					for (let __goscriptRangeTarget16 = v, i = 0; i < $.len(__goscriptRangeTarget16); i++) {
 						let x = __goscriptRangeTarget16![i]
-						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64($.goSlice(bs, 8 * i, undefined), $.uint($.uint(x, 64), 64))
+						await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64($.goSlice(bs, 8 * i, undefined), $.uint($.uint(x, 64), 64))
 					}
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
 				{
 					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint($.pointerValue<number>(v), 64))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint($.pointerValue<number>(v), 64))
 				}
 				break
 			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }).ok:
 				{
 					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint(v, 64))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint(v, 64))
 				}
 				break
 			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).ok:
@@ -1294,20 +1294,20 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint64" } }).value
 					for (let __goscriptRangeTarget17 = v, i = 0; i < $.len(__goscriptRangeTarget17); i++) {
 						let x = __goscriptRangeTarget17![i]
-						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64($.goSlice(bs, 8 * i, undefined), $.uint(x, 64))
+						await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64($.goSlice(bs, 8 * i, undefined), $.uint(x, 64))
 					}
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
 				{
 					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint(math.Float32bits($.pointerValue<number>(v)), 32))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint(math.Float32bits($.pointerValue<number>(v)), 32))
 				}
 				break
 			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float32" }).ok:
 				{
 					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float32" }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint(math.Float32bits(v), 32))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32(bs, $.uint(math.Float32bits(v), 32))
 				}
 				break
 			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).ok:
@@ -1315,20 +1315,20 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float32" } }).value
 					for (let __goscriptRangeTarget18 = v, i = 0; i < $.len(__goscriptRangeTarget18); i++) {
 						let x = __goscriptRangeTarget18![i]
-						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32($.goSlice(bs, 4 * i, undefined), $.uint(math.Float32bits(x), 32))
+						await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint32($.goSlice(bs, 4 * i, undefined), $.uint(math.Float32bits(x), 32))
 					}
 				}
 				break
 			case $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
 				{
 					let v: $.VarRef<number> | null = $.typeAssert<$.VarRef<number> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint(math.Float64bits($.pointerValue<number>(v)), 64))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint(math.Float64bits($.pointerValue<number>(v)), 64))
 				}
 				break
 			case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float64" }).ok:
 				{
 					let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float64" }).value
-					$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint(math.Float64bits(v), 64))
+					await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64(bs, $.uint(math.Float64bits(v), 64))
 				}
 				break
 			case $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).ok:
@@ -1336,7 +1336,7 @@ export function encodeFast(bs: $.Slice<number>, order: ByteOrder | null, data: a
 					let v: $.Slice<number> = $.typeAssert<$.Slice<number>>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "float64" } }).value
 					for (let __goscriptRangeTarget19 = v, i = 0; i < $.len(__goscriptRangeTarget19); i++) {
 						let x = __goscriptRangeTarget19![i]
-						$.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64($.goSlice(bs, 8 * i, undefined), $.uint(math.Float64bits(x), 64))
+						await $.pointerValue<Exclude<ByteOrder, null>>(order).PutUint64($.goSlice(bs, 8 * i, undefined), $.uint(math.Float64bits(x), 64))
 					}
 				}
 				break
@@ -1565,7 +1565,7 @@ export async function dataSize(v: reflect.Value): globalThis.Promise<number> {
 		case reflect.Slice:
 		case reflect.Array:
 		{
-			let t = $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(v)).Type()).Elem()
+			let t = await $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(v)).Type()).Elem()
 			{
 				let [size, ok] = await structSize.value.Load((t as any))
 				if (ok) {
@@ -1573,9 +1573,9 @@ export async function dataSize(v: reflect.Value): globalThis.Promise<number> {
 				}
 			}
 
-			let size = sizeof(t)
+			let size = await sizeof(t)
 			if (size >= 0) {
-				if ($.pointerValue<Exclude<reflect.Type, null>>(t).Kind() == reflect.Struct) {
+				if (await $.pointerValue<Exclude<reflect.Type, null>>(t).Kind() == reflect.Struct) {
 					await structSize.value.Store((t as any), $.namedValueInterfaceValue<any>(size, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 				return size * $.markAsStructValue($.cloneStructValue(v)).Len()
@@ -1591,7 +1591,7 @@ export async function dataSize(v: reflect.Value): globalThis.Promise<number> {
 					return $.mustTypeAssert<number>(size, { kind: $.TypeKind.Basic, name: "int" })
 				}
 			}
-			let size = sizeof(t)
+			let size = await sizeof(t)
 			await structSize.value.Store((t as any), $.namedValueInterfaceValue<any>(size, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 			return size
 			break
@@ -1599,7 +1599,7 @@ export async function dataSize(v: reflect.Value): globalThis.Promise<number> {
 		default:
 		{
 			if ($.markAsStructValue($.cloneStructValue(v)).IsValid()) {
-				return sizeof($.markAsStructValue($.cloneStructValue(v)).Type())
+				return await sizeof($.markAsStructValue($.cloneStructValue(v)).Type())
 			}
 			break
 		}
@@ -1608,14 +1608,14 @@ export async function dataSize(v: reflect.Value): globalThis.Promise<number> {
 	return -1
 }
 
-export function sizeof(t: reflect.Type | null): number {
-	switch ($.pointerValue<Exclude<reflect.Type, null>>(t).Kind()) {
+export async function sizeof(t: reflect.Type | null): globalThis.Promise<number> {
+	switch (await $.pointerValue<Exclude<reflect.Type, null>>(t).Kind()) {
 		case reflect.Array:
 		{
 			{
-				let s = sizeof($.pointerValue<Exclude<reflect.Type, null>>(t).Elem())
+				let s = await sizeof(await $.pointerValue<Exclude<reflect.Type, null>>(t).Elem())
 				if (s >= 0) {
-					return s * $.pointerValue<Exclude<reflect.Type, null>>(t).Len()
+					return s * await $.pointerValue<Exclude<reflect.Type, null>>(t).Len()
 				}
 			}
 			break
@@ -1623,8 +1623,8 @@ export function sizeof(t: reflect.Type | null): number {
 		case reflect.Struct:
 		{
 			let sum = 0
-			for (let i = 0, n = $.pointerValue<Exclude<reflect.Type, null>>(t).NumField(); i < n; i++) {
-				let s = sizeof($.pointerValue<Exclude<reflect.Type, null>>(t).Field(i).Type)
+			for (let i = 0, n = await $.pointerValue<Exclude<reflect.Type, null>>(t).NumField(); i < n; i++) {
+				let s = await sizeof((await $.pointerValue<Exclude<reflect.Type, null>>(t).Field(i)).Type)
 				if (s < 0) {
 					return -1
 				}
@@ -1647,7 +1647,7 @@ export function sizeof(t: reflect.Type | null): number {
 		case reflect.Complex64:
 		case reflect.Complex128:
 		{
-			return $.int($.pointerValue<Exclude<reflect.Type, null>>(t).Size())
+			return $.int(await $.pointerValue<Exclude<reflect.Type, null>>(t).Size())
 			break
 		}
 	}

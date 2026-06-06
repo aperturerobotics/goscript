@@ -19,7 +19,7 @@ export class RawValue {
 
 	constructor(init?: Partial<{Tag?: number}>) {
 		this._fields = {
-			Tag: $.varRef(init?.Tag ?? 0)
+			Tag: $.varRef(init?.Tag ?? (0 as unknown as number))
 		}
 	}
 

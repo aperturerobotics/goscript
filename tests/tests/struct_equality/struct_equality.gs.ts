@@ -28,7 +28,7 @@ export class ObjectID {
 	constructor(init?: Partial<{hash?: Uint8Array, format?: number}>) {
 		this._fields = {
 			hash: $.varRef(init?.hash !== undefined ? $.cloneArrayValue(init.hash) : new Uint8Array(4)),
-			format: $.varRef(init?.format ?? 0)
+			format: $.varRef(init?.format ?? (0 as unknown as number))
 		}
 	}
 

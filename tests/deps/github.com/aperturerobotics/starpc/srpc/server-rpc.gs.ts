@@ -68,7 +68,7 @@ export class ServerRPC {
 	constructor(init?: Partial<{commonRPC?: __goscript_common_rpc.commonRPC, invoker?: __goscript_invoker.Invoker | null}>) {
 		this._fields = {
 			commonRPC: $.varRef(init?.commonRPC ? $.markAsStructValue($.cloneStructValue(init.commonRPC)) : $.markAsStructValue(new __goscript_common_rpc.commonRPC())),
-			invoker: $.varRef(init?.invoker ?? null)
+			invoker: $.varRef(init?.invoker ?? (null as unknown as __goscript_invoker.Invoker | null))
 		}
 	}
 
@@ -189,7 +189,7 @@ export class ServerRPC {
 			err = __goscript_errors.ErrUnimplemented
 		}
 		await $.pointerValue<ServerRPC>(r).commonRPC.beginLocalCompletion()
-		let outPkt: __goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null = await __goscript_packet.NewCallDataPacket(null, false, true, err)
+		let outPkt: __goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null = __goscript_packet.NewCallDataPacket(null, false, true, err)
 		await $.pointerValue<Exclude<__goscript_writer.PacketWriter, null>>($.pointerValue<ServerRPC>(r).commonRPC.writer).WritePacket(outPkt)
 		await $.pointerValue<ServerRPC>(r).commonRPC.finishLocalCompletion()
 	}

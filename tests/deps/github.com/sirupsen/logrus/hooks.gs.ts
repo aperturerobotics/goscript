@@ -51,18 +51,18 @@ $.registerInterfaceType(
 
 export type LevelHooks = Map<__goscript_logrus.Level, $.Slice<Hook | null>> | null
 
-export function LevelHooks_Add(hooks: LevelHooks, hook: Hook | null): void {
-	for (let __goscriptRangeTarget0 = $.pointerValue<Exclude<Hook, null>>(hook).Levels(), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
+export async function LevelHooks_Add(hooks: LevelHooks, hook: Hook | null): globalThis.Promise<void> {
+	for (let __goscriptRangeTarget0 = await $.pointerValue<Exclude<Hook, null>>(hook).Levels(), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let level = __goscriptRangeTarget0![__rangeIndex]
 		$.mapSet(hooks, level, $.append($.mapGet(hooks, level, null)[0], hook))
 	}
 }
 
-export function LevelHooks_Fire(hooks: LevelHooks, level: __goscript_logrus.Level, entry: __goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null): $.GoError {
+export async function LevelHooks_Fire(hooks: LevelHooks, level: __goscript_logrus.Level, entry: __goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null): globalThis.Promise<$.GoError> {
 	for (let __goscriptRangeTarget1 = $.mapGet(hooks, level, null)[0], __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 		let hook = __goscriptRangeTarget1![__rangeIndex]
 		{
-			let err = $.pointerValue<Exclude<Hook, null>>(hook).Fire(entry)
+			let err = await $.pointerValue<Exclude<Hook, null>>(hook).Fire(entry)
 			if (err != null) {
 				return err
 			}

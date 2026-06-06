@@ -27,7 +27,7 @@ export class Worker {
 
 	constructor(init?: Partial<{ch?: $.Channel<number> | null}>) {
 		this._fields = {
-			ch: $.varRef(init?.ch ?? null)
+			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<number> | null))
 		}
 	}
 

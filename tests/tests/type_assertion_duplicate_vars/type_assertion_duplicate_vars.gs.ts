@@ -95,8 +95,8 @@ export class Container {
 
 	constructor(init?: Partial<{hasA?: boolean, hasB?: boolean}>) {
 		this._fields = {
-			hasA: $.varRef(init?.hasA ?? false),
-			hasB: $.varRef(init?.hasB ?? false)
+			hasA: $.varRef(init?.hasA ?? (false as unknown as boolean)),
+			hasB: $.varRef(init?.hasB ?? (false as unknown as boolean))
 		}
 	}
 

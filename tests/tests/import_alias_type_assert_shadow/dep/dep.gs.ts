@@ -17,7 +17,7 @@ export class Thing {
 
 	constructor(init?: Partial<{Value?: number}>) {
 		this._fields = {
-			Value: $.varRef(init?.Value ?? 0)
+			Value: $.varRef(init?.Value ?? (0 as unknown as number))
 		}
 	}
 

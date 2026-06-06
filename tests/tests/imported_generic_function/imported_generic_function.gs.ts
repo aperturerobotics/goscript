@@ -32,7 +32,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println($.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	$.println("collected:", $.pointerValue<Exclude<helper.Value, null>>(values![0]).GetValue())
+	$.println("collected:", await $.pointerValue<Exclude<helper.Value, null>>(values![0]).GetValue())
 	let __goscriptTuple2: any = collectAssigned($.interfaceValue<helper.Value | null>($.markAsStructValue(new helper.IntValue({N: 35})), "helper.IntValue"))
 	let assigned: $.Slice<helper.Value | null> = __goscriptTuple2[0]
 	err = __goscriptTuple2[1]
@@ -40,7 +40,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println($.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	$.println("assigned:", $.pointerValue<Exclude<helper.Value, null>>(assigned![0]).GetValue())
+	$.println("assigned:", await $.pointerValue<Exclude<helper.Value, null>>(assigned![0]).GetValue())
 }
 
 if ($.isMainScript(import.meta)) {

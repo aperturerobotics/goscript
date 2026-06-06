@@ -28,8 +28,8 @@ export class Wrapped {
 
 	constructor(init?: Partial<{Value?: string, Hidden?: any}>) {
 		this._fields = {
-			Value: $.varRef(init?.Value ?? ""),
-			Hidden: $.varRef(init?.Hidden ?? undefined as any)
+			Value: $.varRef(init?.Value ?? ("" as unknown as string)),
+			Hidden: $.varRef(init?.Hidden ?? (undefined as any as unknown as any))
 		}
 	}
 

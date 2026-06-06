@@ -52,7 +52,7 @@ export async function main(): globalThis.Promise<void> {
 	let __goscriptTuple0: any = makeReader()
 	r = $.interfaceValue<reader | null>(__goscriptTuple0[0], "*main.concrete")
 	err = __goscriptTuple0[1]
-	$.println("ok", ($.pointerValue<Exclude<reader, null>>(r).Read() == 7) && (err == null))
+	$.println("ok", (await $.pointerValue<Exclude<reader, null>>(r).Read() == 7) && (err == null))
 }
 
 if ($.isMainScript(import.meta)) {

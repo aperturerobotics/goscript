@@ -54,14 +54,14 @@ $.registerInterfaceType(
 	[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );
 
-export function describe(value: any): void {
+export async function describe(value: any): globalThis.Promise<void> {
 	let __goscriptShadow0 = value
 	{
 		let __goscriptTuple0: any = $.typeAssertTuple<named | null>(__goscriptShadow0, "main.named")
 		let __goscriptShadow1 = __goscriptTuple0[0]
 		let ok = __goscriptTuple0[1]
 		if (ok) {
-			$.println("Shadowed name:", $.pointerValue<Exclude<named, null>>(__goscriptShadow1).Name())
+			$.println("Shadowed name:", await $.pointerValue<Exclude<named, null>>(__goscriptShadow1).Name())
 			return
 		}
 	}
@@ -80,8 +80,8 @@ export async function main(): globalThis.Promise<void> {
 		}
 	}
 	$.println("Completed successfully")
-	describe($.interfaceValue<any>($.markAsStructValue(new item()), "main.item"))
-	describe("nope")
+	await describe($.interfaceValue<any>($.markAsStructValue(new item()), "main.item"))
+	await describe("nope")
 }
 
 if ($.isMainScript(import.meta)) {

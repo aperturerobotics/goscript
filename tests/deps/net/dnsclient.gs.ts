@@ -65,10 +65,10 @@ export class SRV {
 
 	constructor(init?: Partial<{Target?: string, Port?: number, Priority?: number, Weight?: number}>) {
 		this._fields = {
-			Target: $.varRef(init?.Target ?? ""),
-			Port: $.varRef(init?.Port ?? 0),
-			Priority: $.varRef(init?.Priority ?? 0),
-			Weight: $.varRef(init?.Weight ?? 0)
+			Target: $.varRef(init?.Target ?? ("" as unknown as string)),
+			Port: $.varRef(init?.Port ?? (0 as unknown as number)),
+			Priority: $.varRef(init?.Priority ?? (0 as unknown as number)),
+			Weight: $.varRef(init?.Weight ?? (0 as unknown as number))
 		}
 	}
 
@@ -114,8 +114,8 @@ export class MX {
 
 	constructor(init?: Partial<{Host?: string, Pref?: number}>) {
 		this._fields = {
-			Host: $.varRef(init?.Host ?? ""),
-			Pref: $.varRef(init?.Pref ?? 0)
+			Host: $.varRef(init?.Host ?? ("" as unknown as string)),
+			Pref: $.varRef(init?.Pref ?? (0 as unknown as number))
 		}
 	}
 
@@ -151,7 +151,7 @@ export class NS {
 
 	constructor(init?: Partial<{Host?: string}>) {
 		this._fields = {
-			Host: $.varRef(init?.Host ?? "")
+			Host: $.varRef(init?.Host ?? ("" as unknown as string))
 		}
 	}
 
@@ -202,7 +202,7 @@ export function reverseaddr(addr: string): [string, $.GoError] {
 		buf = $.append(buf, $.uint($.indexStringOrBytes("0123456789abcdef", v & 0xF), 8), $.uint(46, 8), $.uint($.indexStringOrBytes("0123456789abcdef", $.uintShr(v, 4, 8)), 8), $.uint(46, 8))
 	}
 	// Append "ip6.arpa." and return (buf already has the final .)
-	buf = $.append(buf, ...($.stringToBytes("ip6.arpa.") ?? []))
+	buf = $.appendSlice(buf, $.stringToBytes("ip6.arpa."))
 	return [$.bytesToString(buf), null]
 }
 
@@ -332,8 +332,8 @@ export function byPriorityWeight_shuffleByWeight(addrs: byPriorityWeight): void 
 	}
 }
 
-export function byPriorityWeight_sort(addrs: byPriorityWeight): void {
-	slices.SortFunc((addrs as byPriorityWeight), $.functionValue((a: SRV | $.VarRef<SRV> | null, b: SRV | $.VarRef<SRV> | null): number => {
+export async function byPriorityWeight_sort(addrs: byPriorityWeight): globalThis.Promise<void> {
+	await slices.SortFunc((addrs as byPriorityWeight), $.functionValue((a: SRV | $.VarRef<SRV> | null, b: SRV | $.VarRef<SRV> | null): number => {
 		{
 			let r = cmp.Compare($.uint($.pointerValue<SRV>(a).Priority, 16), $.uint($.pointerValue<SRV>(b).Priority, 16))
 			if (r != 0) {
@@ -354,7 +354,7 @@ export function byPriorityWeight_sort(addrs: byPriorityWeight): void {
 
 export type byPref = $.Slice<MX | $.VarRef<MX> | null>
 
-export function byPref_sort(s: byPref): void {
+export async function byPref_sort(s: byPref): globalThis.Promise<void> {
 	for (let __goscriptRangeTarget2 = s, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 		let j = randIntn(i + 1)
 		let __goscriptAssign1_0: MX | $.VarRef<MX> | null = s![j]
@@ -362,7 +362,7 @@ export function byPref_sort(s: byPref): void {
 		s![i] = __goscriptAssign1_0
 		s![j] = __goscriptAssign1_1
 	}
-	slices.SortFunc((s as byPref), $.functionValue((a: MX | $.VarRef<MX> | null, b: MX | $.VarRef<MX> | null): number => {
+	await slices.SortFunc((s as byPref), $.functionValue((a: MX | $.VarRef<MX> | null, b: MX | $.VarRef<MX> | null): number => {
 		return cmp.Compare($.uint($.pointerValue<MX>(a).Pref, 16), $.uint($.pointerValue<MX>(b).Pref, 16))
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "net.MX" }, { kind: $.TypeKind.Pointer, elemType: "net.MX" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 }

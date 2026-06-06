@@ -130,10 +130,10 @@ export async function unixSocket(ctx: context.Context | null, net: string, laddr
 	switch (mode) {
 		case "dial":
 		{
-			if ((laddr != null) && $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(laddr).isWildcard()) {
+			if ((laddr != null) && await $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(laddr).isWildcard()) {
 				laddr = null
 			}
-			if ((raddr != null) && $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(raddr).isWildcard()) {
+			if ((raddr != null) && await $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(raddr).isWildcard()) {
 				raddr = null
 			}
 			if ((raddr == null) && ((sotype != syscall.SOCK_DGRAM) || (laddr == null))) {

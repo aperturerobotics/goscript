@@ -67,13 +67,13 @@ export class PushablePacketWriter {
 		return null
 	}
 
-	public WritePacket(pkt: __goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null): $.GoError {
+	public async WritePacket(pkt: __goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null): globalThis.Promise<$.GoError> {
 		const w: PushablePacketWriter | $.VarRef<PushablePacketWriter> | null = this
 		if ($.pointerValue<PushablePacketWriter>(w).closed.Load()) {
 			return io.ErrClosedPipe
 		}
 
-		let __goscriptTuple0: any = __goscript_rpcproto_pb.Packet.prototype.MarshalVT.call(pkt)
+		let __goscriptTuple0: any = await __goscript_rpcproto_pb.Packet.prototype.MarshalVT.call(pkt)
 		let data: $.Slice<number> = __goscriptTuple0[0]
 		let err = __goscriptTuple0[1]
 		if (err != null) {

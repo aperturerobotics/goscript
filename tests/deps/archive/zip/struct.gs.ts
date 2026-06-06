@@ -198,23 +198,23 @@ export class FileHeader {
 
 	constructor(init?: Partial<{Name?: string, Comment?: string, NonUTF8?: boolean, CreatorVersion?: number, ReaderVersion?: number, Flags?: number, Method?: number, Modified?: time.Time, ModifiedTime?: number, ModifiedDate?: number, CRC32?: number, CompressedSize?: number, UncompressedSize?: number, CompressedSize64?: number, UncompressedSize64?: number, Extra?: $.Slice<number>, ExternalAttrs?: number}>) {
 		this._fields = {
-			Name: $.varRef(init?.Name ?? ""),
-			Comment: $.varRef(init?.Comment ?? ""),
-			NonUTF8: $.varRef(init?.NonUTF8 ?? false),
-			CreatorVersion: $.varRef(init?.CreatorVersion ?? 0),
-			ReaderVersion: $.varRef(init?.ReaderVersion ?? 0),
-			Flags: $.varRef(init?.Flags ?? 0),
-			Method: $.varRef(init?.Method ?? 0),
+			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
+			Comment: $.varRef(init?.Comment ?? ("" as unknown as string)),
+			NonUTF8: $.varRef(init?.NonUTF8 ?? (false as unknown as boolean)),
+			CreatorVersion: $.varRef(init?.CreatorVersion ?? (0 as unknown as number)),
+			ReaderVersion: $.varRef(init?.ReaderVersion ?? (0 as unknown as number)),
+			Flags: $.varRef(init?.Flags ?? (0 as unknown as number)),
+			Method: $.varRef(init?.Method ?? (0 as unknown as number)),
 			Modified: $.varRef(init?.Modified ? $.markAsStructValue($.cloneStructValue(init.Modified)) : $.markAsStructValue(new time.Time())),
-			ModifiedTime: $.varRef(init?.ModifiedTime ?? 0),
-			ModifiedDate: $.varRef(init?.ModifiedDate ?? 0),
-			CRC32: $.varRef(init?.CRC32 ?? 0),
-			CompressedSize: $.varRef(init?.CompressedSize ?? 0),
-			UncompressedSize: $.varRef(init?.UncompressedSize ?? 0),
-			CompressedSize64: $.varRef(init?.CompressedSize64 ?? 0),
-			UncompressedSize64: $.varRef(init?.UncompressedSize64 ?? 0),
-			Extra: $.varRef(init?.Extra ?? null),
-			ExternalAttrs: $.varRef(init?.ExternalAttrs ?? 0)
+			ModifiedTime: $.varRef(init?.ModifiedTime ?? (0 as unknown as number)),
+			ModifiedDate: $.varRef(init?.ModifiedDate ?? (0 as unknown as number)),
+			CRC32: $.varRef(init?.CRC32 ?? (0 as unknown as number)),
+			CompressedSize: $.varRef(init?.CompressedSize ?? (0 as unknown as number)),
+			UncompressedSize: $.varRef(init?.UncompressedSize ?? (0 as unknown as number)),
+			CompressedSize64: $.varRef(init?.CompressedSize64 ?? (0 as unknown as number)),
+			UncompressedSize64: $.varRef(init?.UncompressedSize64 ?? (0 as unknown as number)),
+			Extra: $.varRef(init?.Extra ?? (null as unknown as $.Slice<number>)),
+			ExternalAttrs: $.varRef(init?.ExternalAttrs ?? (0 as unknown as number))
 		}
 	}
 
@@ -332,7 +332,7 @@ export class headerFileInfo {
 
 	constructor(init?: Partial<{fh?: FileHeader | $.VarRef<FileHeader> | null}>) {
 		this._fields = {
-			fh: $.varRef(init?.fh ?? null)
+			fh: $.varRef(init?.fh ?? (null as unknown as FileHeader | $.VarRef<FileHeader> | null))
 		}
 	}
 
@@ -474,14 +474,14 @@ export class directoryEnd {
 
 	constructor(init?: Partial<{diskNbr?: number, dirDiskNbr?: number, dirRecordsThisDisk?: number, directoryRecords?: number, directorySize?: number, directoryOffset?: number, commentLen?: number, comment?: string}>) {
 		this._fields = {
-			diskNbr: $.varRef(init?.diskNbr ?? 0),
-			dirDiskNbr: $.varRef(init?.dirDiskNbr ?? 0),
-			dirRecordsThisDisk: $.varRef(init?.dirRecordsThisDisk ?? 0),
-			directoryRecords: $.varRef(init?.directoryRecords ?? 0),
-			directorySize: $.varRef(init?.directorySize ?? 0),
-			directoryOffset: $.varRef(init?.directoryOffset ?? 0),
-			commentLen: $.varRef(init?.commentLen ?? 0),
-			comment: $.varRef(init?.comment ?? "")
+			diskNbr: $.varRef(init?.diskNbr ?? (0 as unknown as number)),
+			dirDiskNbr: $.varRef(init?.dirDiskNbr ?? (0 as unknown as number)),
+			dirRecordsThisDisk: $.varRef(init?.dirRecordsThisDisk ?? (0 as unknown as number)),
+			directoryRecords: $.varRef(init?.directoryRecords ?? (0 as unknown as number)),
+			directorySize: $.varRef(init?.directorySize ?? (0 as unknown as number)),
+			directoryOffset: $.varRef(init?.directoryOffset ?? (0 as unknown as number)),
+			commentLen: $.varRef(init?.commentLen ?? (0 as unknown as number)),
+			comment: $.varRef(init?.comment ?? ("" as unknown as string))
 		}
 	}
 
@@ -593,11 +593,11 @@ export const msdosDir: number = 16
 
 export const msdosReadOnly: number = 1
 
-export function FileInfoHeader(fi: fs.FileInfo | null): [FileHeader | $.VarRef<FileHeader> | null, $.GoError] {
-	let size = $.int($.pointerValue<Exclude<fs.FileInfo, null>>(fi).Size())
-	let fh: FileHeader | $.VarRef<FileHeader> | null = (() => { const __goscriptLiteralField0 = $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Name(); return new FileHeader({Name: __goscriptLiteralField0, UncompressedSize64: $.uint($.uint(size, 64), 64)}) })()
-	FileHeader.prototype.SetModTime.call(fh, $.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime())))
-	FileHeader.prototype.SetMode.call(fh, $.uint($.pointerValue<Exclude<fs.FileInfo, null>>(fi).Mode(), 32))
+export async function FileInfoHeader(fi: fs.FileInfo | null): globalThis.Promise<[FileHeader | $.VarRef<FileHeader> | null, $.GoError]> {
+	let size = $.int(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Size())
+	let fh: FileHeader | $.VarRef<FileHeader> | null = (await (async () => { const __goscriptLiteralField0 = await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Name(); return new FileHeader({Name: __goscriptLiteralField0, UncompressedSize64: $.uint($.uint(size, 64), 64)}) })())
+	FileHeader.prototype.SetModTime.call(fh, $.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime())))
+	FileHeader.prototype.SetMode.call(fh, $.uint(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Mode(), 32))
 	if ($.pointerValue<FileHeader>(fh).UncompressedSize64 > 4294967295) {
 		$.pointerValue<FileHeader>(fh).UncompressedSize = $.uint(4294967295, 32)
 	} else {

@@ -2491,7 +2491,7 @@ func TestCompilePackagesAssertsInterfaceMethodReceivers(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export type FileInfo = {",
-		"$.println($.pointerValue<Exclude<FileInfo, null>>(info).Name())",
+		"$.println(await $.pointerValue<Exclude<FileInfo, null>>(info).Name())",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -2593,7 +2593,7 @@ func TestCompilePackagesBoxesTypedNilInterfaceValues(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"return $.interfaceValue<Animal | null>(FindDog(), \"*main.Dog\")",
-		"$.println($.pointerValue<Exclude<Animal, null>>(animal).Name())",
+		"$.println(await $.pointerValue<Exclude<Animal, null>>(animal).Name())",
 		"let a: Animal | null = $.interfaceValue<Animal | null>(dog, \"*main.Dog\")",
 	} {
 		if !strings.Contains(text, want) {
@@ -2700,16 +2700,16 @@ func TestCompilePackagesEmitsGenericMethodsAliasesAndDictionaries(t *testing.T) 
 		"public Get(): any",
 		"export function NewBox(__typeArgs: $.GenericTypeArgs | undefined, value: any): Box",
 		"export function ZeroValue(__typeArgs: $.GenericTypeArgs | undefined): any",
-		"export function CallString(__typeArgs: $.GenericTypeArgs | undefined, v: any): string",
+		"export async function CallString(__typeArgs: $.GenericTypeArgs | undefined, v: any): globalThis.Promise<string>",
 		"export function Sum<T>(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<T>): any",
 		"export function Copy<T>(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<T>): $.Slice<T>",
-		"return $.append($.arrayToSlice<T>([]), ...(vals ?? []))",
+		"return $.appendSlice($.arrayToSlice<T>([]), vals)",
 		"let seen: Set = $.makeMap<number, {}>()",
 		"$.mapSet(seen, 1, {})",
 		"$.genericZero(__typeArgs, \"T\", null)",
-		"$.callGenericMethod(__typeArgs, \"T\", \"String\", v)",
+		"await $.callGenericMethod(__typeArgs, \"T\", \"String\", v)",
 		"ZeroValue({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: \"String\", args: [], returns: [{ name: \"_r0\", type: { kind: $.TypeKind.Basic, name: \"string\" } }] }] }})",
-		"CallString({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: \"String\", args: [], returns: [{ name: \"_r0\", type: { kind: $.TypeKind.Basic, name: \"string\" } }] }] }}, zero)",
+		"await CallString({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: \"String\", args: [], returns: [{ name: \"_r0\", type: { kind: $.TypeKind.Basic, name: \"string\" } }] }] }}, zero)",
 		"Sum({T: { type: { kind: $.TypeKind.Basic, name: \"int\", typeName: \"main.MyInt\" }, zero: () => 0, methods: {String: (receiver: any, ...args: any[]) => (MyInt_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, methodSignatures: [{ name: \"String\", args: [], returns: [{ name: \"_r0\", type: { kind: $.TypeKind.Basic, name: \"string\" } }] }] }}, null)",
 	} {
 		if !strings.Contains(text, want) {
@@ -2774,7 +2774,7 @@ func TestCompilePackagesInfersGenericTypeArgsFromNamedArgument(t *testing.T) {
 		"await Get({T: { type: \"genericnamedarg.Source\", zero: () => null, methods: {Load: (receiver: any, ...args: any[]) => receiver.Load(...args)} }}, $.markAsStructValue($.cloneStructValue(loader)))",
 		"return await $.mustTypeAssert<(() => any | globalThis.Promise<any>) | null>(f, ({ kind: $.TypeKind.Function, params: [], results: [__typeArgs?.[\"T\"]?.type ?? { kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo))!()",
 		"$.mustTypeAssert<any>(v, { kind: $.TypeKind.Interface, methods: [{ name: \"Load\", args: [], returns: [{ name: \"_r0\", type: __typeArgs?.[\"T\"]?.type ?? { kind: $.TypeKind.Interface, methods: [] } }] }] })",
-		"return $.pointerValue<Exclude<Source, null>>(src).Load()",
+		"return await $.pointerValue<Exclude<Source, null>>(src).Load()",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -3061,11 +3061,15 @@ func TestCompilePackagesAwaitsFmtWriterOverrides(t *testing.T) {
 	for _, want := range []string{
 		"export async function Use",
 		"await fmt.Fprintf(",
+		"$.pointerValue<writer>(w).buf = $.appendSlice($.pointerValue<writer>(w).buf, p)",
 		"return err",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
 		}
+	}
+	if strings.Contains(text, "...(p ?? [])") {
+		t.Fatalf("append with slice expansion used JavaScript argument spreading:\n%s", text)
 	}
 }
 
@@ -3620,7 +3624,7 @@ func TestCompilePackagesPropagatesAsyncThroughInstantiatedNamedInterface(t *test
 	}
 }
 
-func TestCompilePackagesDoesNotAwaitUnmarkedAnonymousInterfaceMethod(t *testing.T) {
+func TestCompilePackagesAwaitsUnmarkedAnonymousInterfaceMethodInsideAsyncCaller(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/anonymousifaceawait\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
@@ -3654,8 +3658,8 @@ func TestCompilePackagesDoesNotAwaitUnmarkedAnonymousInterfaceMethod(t *testing.
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if strings.Contains(text, "return await $.pointerValue<any>(w).WaitValueChange(ctx, old, null)") {
-		t.Fatalf("anonymous interface method call without an async implementation was awaited:\n%s", text)
+	if !strings.Contains(text, "return await $.pointerValue<any>(w).WaitValueChange(ctx, old, null)") {
+		t.Fatalf("anonymous interface method call inside async caller was not awaited:\n%s", text)
 	}
 }
 
@@ -3664,7 +3668,8 @@ func TestCompilePackagesDoesNotInheritAsyncIntoSyncFunctionLiteral(t *testing.T)
 		"go.mod": "module example.test/syncfunclit\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
 			"package syncfunclit",
-			"type Directive interface{ GetDirective() any }",
+			"type Directive struct{}",
+			"func (Directive) GetDirective() any { return nil }",
 			"type Bridge struct{ keep func(Directive) (bool, error) }",
 			"func NewBridge(keep func(Directive) (bool, error)) *Bridge { return &Bridge{keep: keep} }",
 			"func Execute(ch <-chan struct{}) error {",
@@ -3698,8 +3703,100 @@ func TestCompilePackagesDoesNotInheritAsyncIntoSyncFunctionLiteral(t *testing.T)
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if strings.Contains(text, "await $.pointerValue<Exclude<Directive, null>>(di).GetDirective()") {
+	if strings.Contains(text, "await Directive.prototype.GetDirective.call(di)") {
 		t.Fatalf("sync function literal inherited async await:\n%s", text)
+	}
+}
+
+func TestCompilePackagesMarksFunctionLiteralAsyncForInterfaceMethodCall(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/funclitifaceawait\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package funclitifaceawait",
+			"type Ref struct{}",
+			"type BlockWithRefs interface {",
+			"  ApplyBlockRef(uint32, *Ref) error",
+			"}",
+			"func Each(cb func(BlockWithRefs) error) error { return nil }",
+			"func Copy(ref *Ref) error {",
+			"  return Each(func(block BlockWithRefs) error {",
+			"    if err := block.ApplyBlockRef(7, ref); err != nil {",
+			"      return err",
+			"    }",
+			"    return nil",
+			"  })",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "funclitifaceawait", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"$.functionValue(async (block: BlockWithRefs | null): globalThis.Promise<$.GoError> => {",
+		"let err = await $.pointerValue<Exclude<BlockWithRefs, null>>(block).ApplyBlockRef($.uint(7, 32), ref)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
+func TestCompilePackagesMarksFunctionLiteralAsyncForInterfaceMethodTypeSwitch(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/funclittypeswitchawait\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package funclittypeswitchawait",
+			"type GetPeer struct{}",
+			"type Directive interface{ GetDirective() any }",
+			"type Bridge struct{ keep func(Directive) (bool, error) }",
+			"func NewBridge(keep func(Directive) (bool, error)) *Bridge { return &Bridge{keep: keep} }",
+			"func Build() *Bridge {",
+			"  return NewBridge(func(di Directive) (bool, error) {",
+			"    switch di.GetDirective().(type) {",
+			"    case GetPeer:",
+			"      return false, nil",
+			"    }",
+			"    return true, nil",
+			"  })",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "funclittypeswitchawait", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"$.functionValue(async (di: Directive | null): globalThis.Promise<[boolean, $.GoError]> => {",
+		"const __goscriptTypeSwitchValue = await $.pointerValue<Exclude<Directive, null>>(di).GetDirective()",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
 	}
 }
 
@@ -3921,6 +4018,179 @@ func TestCompilePackagesPropagatesAsyncInterfaceMethodsFromTestImports(t *testin
 	testText := string(testContent)
 	if want := "let [got, err] = await $.pointerValue<Exclude<iface.Provider, null>>(p).Create(context.Background())"; !strings.Contains(testText, want) {
 		t.Fatalf("test package call was not awaited:\n%s", testText)
+	}
+}
+
+func TestCompilePackagesAwaitsAsyncInterfaceMethodSingleResultAssignment(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/asyncifaceassign\n\ngo 1.25.3\n",
+		"iface/controller.go": strings.Join([]string{
+			"package iface",
+			"import \"context\"",
+			"type Controller interface {",
+			"  Execute(context.Context) error",
+			"}",
+			"",
+		}, "\n"),
+		"impl/controller.go": strings.Join([]string{
+			"package impl",
+			"import (",
+			"  \"context\"",
+			"  \"example.test/asyncifaceassign/iface\"",
+			")",
+			"type Controller struct { ch chan struct{} }",
+			"func NewController() iface.Controller {",
+			"  return &Controller{ch: make(chan struct{}, 1)}",
+			"}",
+			"func (c *Controller) Execute(ctx context.Context) error {",
+			"  select {",
+			"  case <-c.ch:",
+			"    return nil",
+			"  case <-ctx.Done():",
+			"    return ctx.Err()",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+		"use.go": strings.Join([]string{
+			"package asyncifaceassign",
+			"import (",
+			"  \"context\"",
+			"  \"example.test/asyncifaceassign/iface\"",
+			")",
+			"func Run(ctx context.Context, c iface.Controller) error {",
+			"  err := c.Execute(ctx)",
+			"  return err",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	service := NewCompileService()
+	_, err := service.Compile(context.Background(), &CompileRequest{
+		Patterns:            []string{".", "./iface", "./impl"},
+		Dir:                 moduleDir,
+		OutputPath:          outputDir,
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "asyncifaceassign", "use.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if want := "let err = await $.pointerValue<Exclude<iface.Controller, null>>(c).Execute(ctx)"; !strings.Contains(text, want) {
+		t.Fatalf("single-result async interface assignment was not awaited:\n%s", text)
+	}
+}
+
+func TestCompilePackagesAwaitsInterfaceMethodCallInsideAsyncCallerWithoutKnownImplementation(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/asyncifaceunknownimpl\n\ngo 1.25.3\n",
+		"iface/controller.go": strings.Join([]string{
+			"package iface",
+			"import \"context\"",
+			"type Controller interface {",
+			"  Execute(context.Context) error",
+			"}",
+			"",
+		}, "\n"),
+		"use.go": strings.Join([]string{
+			"package asyncifaceunknownimpl",
+			"import (",
+			"  \"context\"",
+			"  \"example.test/asyncifaceunknownimpl/iface\"",
+			")",
+			"func Run(ctx context.Context, c iface.Controller, ready <-chan struct{}) error {",
+			"  select {",
+			"  case <-ready:",
+			"  default:",
+			"  }",
+			"  err := c.Execute(ctx)",
+			"  return err",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	service := NewCompileService()
+	_, err := service.Compile(context.Background(), &CompileRequest{
+		Patterns:            []string{".", "./iface"},
+		Dir:                 moduleDir,
+		OutputPath:          outputDir,
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "asyncifaceunknownimpl", "use.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if want := "let err = await $.pointerValue<Exclude<iface.Controller, null>>(c).Execute(ctx)"; !strings.Contains(text, want) {
+		t.Fatalf("async caller did not await interface method with unknown implementation:\n%s", text)
+	}
+}
+
+func TestCompilePackagesMarksNamedFunctionAsyncForInterfaceMethodCallWithoutKnownImplementation(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/syncifaceunknownimpl\n\ngo 1.25.3\n",
+		"iface/controller.go": strings.Join([]string{
+			"package iface",
+			"import \"context\"",
+			"type Controller interface {",
+			"  Execute(context.Context) error",
+			"}",
+			"",
+		}, "\n"),
+		"use.go": strings.Join([]string{
+			"package syncifaceunknownimpl",
+			"import (",
+			"  \"context\"",
+			"  \"example.test/syncifaceunknownimpl/iface\"",
+			")",
+			"func Run(ctx context.Context, c iface.Controller) error {",
+			"  err := c.Execute(ctx)",
+			"  return err",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	service := NewCompileService()
+	_, err := service.Compile(context.Background(), &CompileRequest{
+		Patterns:            []string{".", "./iface"},
+		Dir:                 moduleDir,
+		OutputPath:          outputDir,
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "syncifaceunknownimpl", "use.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"export async function Run(ctx: context.Context | null, c: iface.Controller | null): globalThis.Promise<$.GoError>",
+		"let err = await $.pointerValue<Exclude<iface.Controller, null>>(c).Execute(ctx)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
 	}
 }
 
@@ -4155,6 +4425,148 @@ func TestCompilePackagesParenthesizesAsyncFieldReceivers(t *testing.T) {
 	}
 	if strings.Contains(text, "return await Box.prototype.next.call(b).ok") {
 		t.Fatalf("async field receiver selected the promise before await:\n%s", text)
+	}
+}
+
+func TestCompilePackagesAwaitsAsyncMethodValuesInAssignmentsAndReceivers(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/asyncmethodvalues\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package asyncmethodvalues",
+			"import \"reflect\"",
+			"type Entry struct { value any }",
+			"type Holder struct { entry *Entry }",
+			"func (e *Entry) WithField(key string, value any) *Entry {",
+			"  return e.WithFields(map[string]any{key: value})",
+			"}",
+			"func (e *Entry) WithFields(fields map[string]any) *Entry {",
+			"  for _, value := range fields {",
+			"    if t := reflect.TypeOf(value); t != nil {",
+			"      switch {",
+			"      case t.Kind() == reflect.Func:",
+			"        e.value = value",
+			"      }",
+			"    }",
+			"  }",
+			"  return e",
+			"}",
+			"func (e *Entry) Warn(msg string) {}",
+			"func Use(entry *Entry) {",
+			"  le := entry.WithField(\"first\", func(){})",
+			"  h := Holder{entry: entry.WithField(\"holder\", func(){})}",
+			"  _ = h",
+			"  le.WithField(\"second\", func(){}).Warn(\"done\")",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "asyncmethodvalues", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"public async WithField(key: string, value: any): globalThis.Promise<Entry | $.VarRef<Entry> | null>",
+		"let le: Entry | $.VarRef<Entry> | null = await Entry.prototype.WithField.call(entry, \"first\",",
+		"const __goscriptLiteralField0 = await Entry.prototype.WithField.call(entry, \"holder\",",
+		"Entry.prototype.Warn.call(await Entry.prototype.WithField.call(le, \"second\",",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	for _, bad := range []string{
+		"let le: Entry | $.VarRef<Entry> | null = Entry.prototype.WithField.call",
+		"const __goscriptLiteralField0 = Entry.prototype.WithField.call",
+		"Entry.prototype.Warn.call(Entry.prototype.WithField.call",
+	} {
+		if strings.Contains(text, bad) {
+			t.Fatalf("async method value was consumed without await at %q:\n%s", bad, text)
+		}
+	}
+}
+
+func TestCompilePackagesKeepsErrorInterfaceErrorSynchronous(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/syncerrorstring\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package syncerrorstring",
+			"type wrappedError struct {",
+			"  cause error",
+			"  msg string",
+			"}",
+			"func (w *wrappedError) Error() string {",
+			"  return w.msg + \": \" + w.cause.Error()",
+			"}",
+			"type healthError struct {",
+			"  cause error",
+			"  health string",
+			"}",
+			"type HealthError interface {",
+			"  error",
+			"  GetHealth() string",
+			"}",
+			"func (h *healthError) Error() string {",
+			"  if h.cause != nil {",
+			"    return h.cause.Error()",
+			"  }",
+			"  return h.health",
+			"}",
+			"func (h *healthError) GetHealth() string { return h.health }",
+			"type baseError string",
+			"func (b baseError) Error() string { return string(b) }",
+			"func NewWrapped() error {",
+			"  return &wrappedError{msg: \"load\", cause: &healthError{cause: baseError(\"missing\")}}",
+			"}",
+			"func ReadHealthError(h HealthError) string {",
+			"  return h.Error()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "syncerrorstring", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"public Error(): string {",
+		"return ($.pointerValue<wrappedError>(w).msg + \": \") + $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<wrappedError>(w).cause).Error()",
+		"return $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<healthError>(h).cause).Error()",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	for _, bad := range []string{
+		"public async Error(): globalThis.Promise<string>",
+		"await $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<wrappedError>(w).cause).Error()",
+		"await $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<healthError>(h).cause).Error()",
+		"await $.pointerValue<HealthError>(h).Error()",
+	} {
+		if strings.Contains(text, bad) {
+			t.Fatalf("error stringification became async at %q:\n%s", bad, text)
+		}
 	}
 }
 
@@ -4522,7 +4934,7 @@ func TestCompilePackagesNormalizesWideIntegerReturnTargets(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if !strings.Contains(text, "return $.uint($.pointerValue<Exclude<hash.Hash64, null>>(h).Sum64(), 64)") {
+	if !strings.Contains(text, "return $.uint(await $.pointerValue<Exclude<hash.Hash64, null>>(h).Sum64(), 64)") {
 		t.Fatalf("missing uint64 return normalization:\n%s", text)
 	}
 }

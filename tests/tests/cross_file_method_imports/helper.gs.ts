@@ -17,7 +17,7 @@ export class helperState {
 
 	constructor(init?: Partial<{text?: string}>) {
 		this._fields = {
-			text: $.varRef(init?.text ?? "")
+			text: $.varRef(init?.text ?? ("" as unknown as string))
 		}
 	}
 

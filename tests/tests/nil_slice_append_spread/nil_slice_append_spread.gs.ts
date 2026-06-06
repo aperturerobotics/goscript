@@ -17,7 +17,7 @@ export class item {
 
 	constructor(init?: Partial<{value?: string}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? "")
+			value: $.varRef(init?.value ?? ("" as unknown as string))
 		}
 	}
 
@@ -39,7 +39,7 @@ export class item {
 }
 
 export function clone(items: $.Slice<item | $.VarRef<item> | null>): $.Slice<item | $.VarRef<item> | null> {
-	return $.append<item | $.VarRef<item> | null>(null, ...(items ?? []))
+	return $.appendSlice<item | $.VarRef<item> | null>(null, items)
 }
 
 export async function main(): globalThis.Promise<void> {

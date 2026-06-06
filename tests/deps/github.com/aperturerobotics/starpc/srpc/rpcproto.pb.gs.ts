@@ -62,8 +62,8 @@ export class Packet {
 
 	constructor(init?: Partial<{unknownFields?: $.Slice<number>, Body?: isPacket_Body | null}>) {
 		this._fields = {
-			unknownFields: $.varRef(init?.unknownFields ?? null),
-			Body: $.varRef(init?.Body ?? null)
+			unknownFields: $.varRef(init?.unknownFields ?? (null as unknown as $.Slice<number>)),
+			Body: $.varRef(init?.Body ?? (null as unknown as isPacket_Body | null))
 		}
 	}
 
@@ -76,19 +76,19 @@ export class Packet {
 		return $.markAsStructValue(cloned)
 	}
 
-	public CloneMessageVT(): protobuf_go_lite.CloneMessage | null {
+	public async CloneMessageVT(): globalThis.Promise<protobuf_go_lite.CloneMessage | null> {
 		const m: Packet | $.VarRef<Packet> | null = this
-		return $.interfaceValue<protobuf_go_lite.CloneMessage | null>(Packet.prototype.CloneVT.call(m), "*srpc.Packet")
+		return $.interfaceValue<protobuf_go_lite.CloneMessage | null>(await Packet.prototype.CloneVT.call(m), "*srpc.Packet")
 	}
 
-	public CloneVT(): Packet | $.VarRef<Packet> | null {
+	public async CloneVT(): globalThis.Promise<Packet | $.VarRef<Packet> | null> {
 		const m: Packet | $.VarRef<Packet> | null = this
 		if (m == null) {
 			return null
 		}
 		let r: Packet | $.VarRef<Packet> | null = new Packet()
 		if ($.pointerValue<Packet>(m).Body != null) {
-			$.pointerValue<Packet>(r).Body = $.pointerValue<any>($.mustTypeAssert<any>($.pointerValue<Packet>(m).Body, { kind: $.TypeKind.Interface, methods: [{ name: "CloneOneofVT", args: [], returns: [{ name: "_r0", type: "srpc.isPacket_Body" }] }] })).CloneOneofVT()
+			$.pointerValue<Packet>(r).Body = await $.pointerValue<any>($.mustTypeAssert<any>($.pointerValue<Packet>(m).Body, { kind: $.TypeKind.Interface, methods: [{ name: "CloneOneofVT", args: [], returns: [{ name: "_r0", type: "srpc.isPacket_Body" }] }] })).CloneOneofVT()
 		}
 		if ($.len($.pointerValue<Packet>(m).unknownFields) > 0) {
 			$.pointerValue<Packet>(r).unknownFields = (slices.Clone($.pointerValue<Packet>(m).unknownFields) as $.Slice<number>)
@@ -96,7 +96,7 @@ export class Packet {
 		return r
 	}
 
-	public EqualMessageVT(thatMsg: any): boolean {
+	public async EqualMessageVT(thatMsg: any): globalThis.Promise<boolean> {
 		const _this: Packet | $.VarRef<Packet> | null = this
 		let __goscriptTuple0: any = $.typeAssertTuple<Packet | $.VarRef<Packet> | null>(thatMsg, { kind: $.TypeKind.Pointer, elemType: "srpc.Packet" })
 		let that: Packet | $.VarRef<Packet> | null = __goscriptTuple0[0]
@@ -104,10 +104,10 @@ export class Packet {
 		if (!ok) {
 			return false
 		}
-		return Packet.prototype.EqualVT.call(_this, that)
+		return await Packet.prototype.EqualVT.call(_this, that)
 	}
 
-	public EqualVT(that: Packet | $.VarRef<Packet> | null): boolean {
+	public async EqualVT(that: Packet | $.VarRef<Packet> | null): globalThis.Promise<boolean> {
 		const _this: Packet | $.VarRef<Packet> | null = this
 		if (_this == that) {
 			return true
@@ -123,7 +123,7 @@ export class Packet {
 				if ($.pointerValue<Packet>(that).Body == null) {
 					return false
 				}
-				if (!$.pointerValue<any>($.mustTypeAssert<any>($.pointerValue<Packet>(_this).Body, { kind: $.TypeKind.Interface, methods: [{ name: "EqualVT", args: [{ name: "_p0", type: "srpc.isPacket_Body" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }] })).EqualVT($.pointerValue<Packet>(that).Body)) {
+				if (!await $.pointerValue<any>($.mustTypeAssert<any>($.pointerValue<Packet>(_this).Body, { kind: $.TypeKind.Interface, methods: [{ name: "EqualVT", args: [{ name: "_p0", type: "srpc.isPacket_Body" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }] })).EqualVT($.pointerValue<Packet>(that).Body)) {
 					return false
 				}
 			}
@@ -277,7 +277,7 @@ export class Packet {
 		return sb.value.String()
 	}
 
-	public MarshalToSizedBufferVT(dAtA: $.Slice<number>): [number, $.GoError] {
+	public async MarshalToSizedBufferVT(dAtA: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		const m: Packet | $.VarRef<Packet> | null = this
 		if (m == null) {
 			return [0, null]
@@ -293,7 +293,7 @@ export class Packet {
 		{
 			let [vtmsg, ok] = $.typeAssertTuple<any>($.pointerValue<Packet>(m).Body, { kind: $.TypeKind.Interface, methods: [{ name: "MarshalToSizedBufferVT", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }] })
 			if (ok) {
-				let [size, err] = $.pointerValue<any>(vtmsg).MarshalToSizedBufferVT($.goSlice(dAtA, undefined, i))
+				let [size, err] = await $.pointerValue<any>(vtmsg).MarshalToSizedBufferVT($.goSlice(dAtA, undefined, i))
 				if (err != null) {
 					return [0, err]
 				}
@@ -303,22 +303,22 @@ export class Packet {
 		return [$.len(dAtA) - i, null]
 	}
 
-	public MarshalToVT(dAtA: $.Slice<number>): [number, $.GoError] {
+	public async MarshalToVT(dAtA: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		const m: Packet | $.VarRef<Packet> | null = this
-		let size = Packet.prototype.SizeVT.call(m)
-		return Packet.prototype.MarshalToSizedBufferVT.call(m, $.goSlice(dAtA, undefined, size))
+		let size = await Packet.prototype.SizeVT.call(m)
+		return await Packet.prototype.MarshalToSizedBufferVT.call(m, $.goSlice(dAtA, undefined, size))
 	}
 
-	public MarshalVT(): [$.Slice<number>, $.GoError] {
+	public async MarshalVT(): globalThis.Promise<[$.Slice<number>, $.GoError]> {
 		const m: Packet | $.VarRef<Packet> | null = this
 		let dAtA: $.Slice<number> = null as $.Slice<number>
 		let err: $.GoError = null as $.GoError
 		if (m == null) {
 			return [null, null]
 		}
-		let size = Packet.prototype.SizeVT.call(m)
+		let size = await Packet.prototype.SizeVT.call(m)
 		dAtA = $.makeSlice<number>(size, undefined, "byte")
-		let __goscriptTuple4: any = Packet.prototype.MarshalToSizedBufferVT.call(m, $.goSlice(dAtA, undefined, size))
+		let __goscriptTuple4: any = await Packet.prototype.MarshalToSizedBufferVT.call(m, $.goSlice(dAtA, undefined, size))
 		let n = __goscriptTuple4[0]
 		err = __goscriptTuple4[1]
 		if (err != null) {
@@ -335,7 +335,7 @@ export class Packet {
 		$.assignStruct($.pointerValue<Packet>(x), $.markAsStructValue(new Packet()))
 	}
 
-	public SizeVT(): number {
+	public async SizeVT(): globalThis.Promise<number> {
 		const m: Packet | $.VarRef<Packet> | null = this
 		let n: number = 0
 		if (m == null) {
@@ -346,7 +346,7 @@ export class Packet {
 		{
 			let [vtmsg, ok] = $.typeAssertTuple<any>($.pointerValue<Packet>(m).Body, { kind: $.TypeKind.Interface, methods: [{ name: "SizeVT", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }] })
 			if (ok) {
-				n = n + ($.pointerValue<any>(vtmsg).SizeVT())
+				n = n + (await $.pointerValue<any>(vtmsg).SizeVT())
 			}
 		}
 		n = n + ($.len($.pointerValue<Packet>(m).unknownFields))
@@ -570,7 +570,7 @@ export class Packet {
 					if ((iNdEx + skippy) > l) {
 						return io.ErrUnexpectedEOF
 					}
-					$.pointerValue<Packet>(m).unknownFields = $.append($.pointerValue<Packet>(m).unknownFields, ...($.goSlice(dAtA, iNdEx, iNdEx + skippy) ?? []))
+					$.pointerValue<Packet>(m).unknownFields = $.appendSlice($.pointerValue<Packet>(m).unknownFields, $.goSlice(dAtA, iNdEx, iNdEx + skippy))
 					iNdEx = iNdEx + (skippy)
 					break
 				}
@@ -641,7 +641,7 @@ export class Packet_CallStart {
 
 	constructor(init?: Partial<{CallStart?: CallStart | $.VarRef<CallStart> | null}>) {
 		this._fields = {
-			CallStart: $.varRef(init?.CallStart ?? null)
+			CallStart: $.varRef(init?.CallStart ?? (null as unknown as CallStart | $.VarRef<CallStart> | null))
 		}
 	}
 
@@ -770,7 +770,7 @@ export class Packet_CallData {
 
 	constructor(init?: Partial<{CallData?: CallData | $.VarRef<CallData> | null}>) {
 		this._fields = {
-			CallData: $.varRef(init?.CallData ?? null)
+			CallData: $.varRef(init?.CallData ?? (null as unknown as CallData | $.VarRef<CallData> | null))
 		}
 	}
 
@@ -899,7 +899,7 @@ export class Packet_CallCancel {
 
 	constructor(init?: Partial<{CallCancel?: boolean}>) {
 		this._fields = {
-			CallCancel: $.varRef(init?.CallCancel ?? false)
+			CallCancel: $.varRef(init?.CallCancel ?? (false as unknown as boolean))
 		}
 	}
 
@@ -1043,11 +1043,11 @@ export class CallStart {
 
 	constructor(init?: Partial<{unknownFields?: $.Slice<number>, RpcService?: string, RpcMethod?: string, Data?: $.Slice<number>, DataIsZero?: boolean}>) {
 		this._fields = {
-			unknownFields: $.varRef(init?.unknownFields ?? null),
-			RpcService: $.varRef(init?.RpcService ?? ""),
-			RpcMethod: $.varRef(init?.RpcMethod ?? ""),
-			Data: $.varRef(init?.Data ?? null),
-			DataIsZero: $.varRef(init?.DataIsZero ?? false)
+			unknownFields: $.varRef(init?.unknownFields ?? (null as unknown as $.Slice<number>)),
+			RpcService: $.varRef(init?.RpcService ?? ("" as unknown as string)),
+			RpcMethod: $.varRef(init?.RpcMethod ?? ("" as unknown as string)),
+			Data: $.varRef(init?.Data ?? (null as unknown as $.Slice<number>)),
+			DataIsZero: $.varRef(init?.DataIsZero ?? (false as unknown as boolean))
 		}
 	}
 
@@ -1494,7 +1494,7 @@ export class CallStart {
 					if (postIndex > l) {
 						return io.ErrUnexpectedEOF
 					}
-					$.pointerValue<CallStart>(m).Data = $.append($.goSlice($.pointerValue<CallStart>(m).Data, undefined, 0), ...($.goSlice(dAtA, iNdEx, postIndex) ?? []))
+					$.pointerValue<CallStart>(m).Data = $.appendSlice($.goSlice($.pointerValue<CallStart>(m).Data, undefined, 0), $.goSlice(dAtA, iNdEx, postIndex))
 					if ($.pointerValue<CallStart>(m).Data == null) {
 						$.pointerValue<CallStart>(m).Data = $.arrayToSlice<number>([])
 					}
@@ -1532,7 +1532,7 @@ export class CallStart {
 					if ((iNdEx + skippy) > l) {
 						return io.ErrUnexpectedEOF
 					}
-					$.pointerValue<CallStart>(m).unknownFields = $.append($.pointerValue<CallStart>(m).unknownFields, ...($.goSlice(dAtA, iNdEx, iNdEx + skippy) ?? []))
+					$.pointerValue<CallStart>(m).unknownFields = $.appendSlice($.pointerValue<CallStart>(m).unknownFields, $.goSlice(dAtA, iNdEx, iNdEx + skippy))
 					iNdEx = iNdEx + (skippy)
 					break
 				}
@@ -1618,11 +1618,11 @@ export class CallData {
 
 	constructor(init?: Partial<{unknownFields?: $.Slice<number>, Data?: $.Slice<number>, DataIsZero?: boolean, Complete?: boolean, Error?: string}>) {
 		this._fields = {
-			unknownFields: $.varRef(init?.unknownFields ?? null),
-			Data: $.varRef(init?.Data ?? null),
-			DataIsZero: $.varRef(init?.DataIsZero ?? false),
-			Complete: $.varRef(init?.Complete ?? false),
-			Error: $.varRef(init?.Error ?? "")
+			unknownFields: $.varRef(init?.unknownFields ?? (null as unknown as $.Slice<number>)),
+			Data: $.varRef(init?.Data ?? (null as unknown as $.Slice<number>)),
+			DataIsZero: $.varRef(init?.DataIsZero ?? (false as unknown as boolean)),
+			Complete: $.varRef(init?.Complete ?? (false as unknown as boolean)),
+			Error: $.varRef(init?.Error ?? ("" as unknown as string))
 		}
 	}
 
@@ -2013,7 +2013,7 @@ export class CallData {
 					if (postIndex > l) {
 						return io.ErrUnexpectedEOF
 					}
-					$.pointerValue<CallData>(m).Data = $.append($.goSlice($.pointerValue<CallData>(m).Data, undefined, 0), ...($.goSlice(dAtA, iNdEx, postIndex) ?? []))
+					$.pointerValue<CallData>(m).Data = $.appendSlice($.goSlice($.pointerValue<CallData>(m).Data, undefined, 0), $.goSlice(dAtA, iNdEx, postIndex))
 					if ($.pointerValue<CallData>(m).Data == null) {
 						$.pointerValue<CallData>(m).Data = $.arrayToSlice<number>([])
 					}
@@ -2097,7 +2097,7 @@ export class CallData {
 					if ((iNdEx + skippy) > l) {
 						return io.ErrUnexpectedEOF
 					}
-					$.pointerValue<CallData>(m).unknownFields = $.append($.pointerValue<CallData>(m).unknownFields, ...($.goSlice(dAtA, iNdEx, iNdEx + skippy) ?? []))
+					$.pointerValue<CallData>(m).unknownFields = $.appendSlice($.pointerValue<CallData>(m).unknownFields, $.goSlice(dAtA, iNdEx, iNdEx + skippy))
 					iNdEx = iNdEx + (skippy)
 					break
 				}

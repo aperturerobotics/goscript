@@ -72,7 +72,7 @@ export class Server {
 
 	constructor(init?: Partial<{invoker?: __goscript_invoker.Invoker | null}>) {
 		this._fields = {
-			invoker: $.varRef(init?.invoker ?? null)
+			invoker: $.varRef(init?.invoker ?? (null as unknown as __goscript_invoker.Invoker | null))
 		}
 	}
 

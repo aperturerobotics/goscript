@@ -28,7 +28,7 @@ export class Locked {
 
 	constructor(init?: Partial<{b?: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null}>) {
 		this._fields = {
-			b: $.varRef(init?.b ?? null)
+			b: $.varRef(init?.b ?? (null as unknown as __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null))
 		}
 	}
 

@@ -17,7 +17,7 @@ export class item {
 
 	constructor(init?: Partial<{value?: string}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? "")
+			value: $.varRef(init?.value ?? ("" as unknown as string))
 		}
 	}
 
@@ -56,18 +56,18 @@ $.registerInterfaceType(
 	[{ name: "CloneVT", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
 );
 
-export function cloneSlice<T>(__typeArgs: $.GenericTypeArgs | undefined, items: $.Slice<T>): $.Slice<T> {
+export async function cloneSlice<T>(__typeArgs: $.GenericTypeArgs | undefined, items: $.Slice<T>): globalThis.Promise<$.Slice<T>> {
 	let cloned: $.Slice<T> = $.makeSlice<T>(0, $.len(items))
 	for (let __goscriptRangeTarget0 = items, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let item = __goscriptRangeTarget0![__rangeIndex]
-		cloned = $.append(cloned, $.callGenericMethod(__typeArgs, "T", "CloneVT", item))
+		cloned = $.append(cloned, await $.callGenericMethod(__typeArgs, "T", "CloneVT", item))
 	}
 	return cloned
 }
 
 export async function main(): globalThis.Promise<void> {
 	let items: $.Slice<item | $.VarRef<item> | null> = $.arrayToSlice<item | $.VarRef<item> | null>([new item({value: "first"}), new item({value: "second"})])
-	let cloned: $.Slice<item | $.VarRef<item> | null> = (cloneSlice({T: { type: { kind: $.TypeKind.Pointer, elemType: "main.item" }, zero: () => null }}, items) as $.Slice<item | $.VarRef<item> | null>)
+	let cloned: $.Slice<item | $.VarRef<item> | null> = (await cloneSlice({T: { type: { kind: $.TypeKind.Pointer, elemType: "main.item" }, zero: () => null }}, items) as $.Slice<item | $.VarRef<item> | null>)
 	$.println($.len(cloned), $.pointerValue<item>(cloned![0]).value, $.pointerValue<item>(cloned![1]).value, cloned![0] == items![0])
 }
 

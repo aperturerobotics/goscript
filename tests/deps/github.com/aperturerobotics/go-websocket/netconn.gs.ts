@@ -157,20 +157,20 @@ export class netConn {
 
 	constructor(init?: Partial<{c?: __goscript_ws_js.Conn | $.VarRef<__goscript_ws_js.Conn> | null, msgType?: __goscript_ws_js.MessageType, writeTimer?: time.Timer | $.VarRef<time.Timer> | null, writeMu?: __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null, writeExpired?: atomic.Int64, writeCtx?: context.Context | null, writeCancel?: (() => void) | null, readTimer?: time.Timer | $.VarRef<time.Timer> | null, readMu?: __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null, readExpired?: atomic.Int64, readCtx?: context.Context | null, readCancel?: (() => void) | null, readEOFed?: boolean, reader?: io.Reader | null}>) {
 		this._fields = {
-			c: $.varRef(init?.c ?? null),
-			msgType: $.varRef(init?.msgType ?? 0),
-			writeTimer: $.varRef(init?.writeTimer ?? null),
-			writeMu: $.varRef(init?.writeMu ?? null),
+			c: $.varRef(init?.c ?? (null as unknown as __goscript_ws_js.Conn | $.VarRef<__goscript_ws_js.Conn> | null)),
+			msgType: $.varRef(init?.msgType ?? (0 as unknown as __goscript_ws_js.MessageType)),
+			writeTimer: $.varRef(init?.writeTimer ?? (null as unknown as time.Timer | $.VarRef<time.Timer> | null)),
+			writeMu: $.varRef(init?.writeMu ?? (null as unknown as __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null)),
 			writeExpired: $.varRef(init?.writeExpired ? $.markAsStructValue($.cloneStructValue(init.writeExpired)) : $.markAsStructValue(new atomic.Int64())),
-			writeCtx: $.varRef(init?.writeCtx ?? null),
-			writeCancel: $.varRef(init?.writeCancel ?? null),
-			readTimer: $.varRef(init?.readTimer ?? null),
-			readMu: $.varRef(init?.readMu ?? null),
+			writeCtx: $.varRef(init?.writeCtx ?? (null as unknown as context.Context | null)),
+			writeCancel: $.varRef(init?.writeCancel ?? (null as unknown as (() => void) | null)),
+			readTimer: $.varRef(init?.readTimer ?? (null as unknown as time.Timer | $.VarRef<time.Timer> | null)),
+			readMu: $.varRef(init?.readMu ?? (null as unknown as __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null)),
 			readExpired: $.varRef(init?.readExpired ? $.markAsStructValue($.cloneStructValue(init.readExpired)) : $.markAsStructValue(new atomic.Int64())),
-			readCtx: $.varRef(init?.readCtx ?? null),
-			readCancel: $.varRef(init?.readCancel ?? null),
-			readEOFed: $.varRef(init?.readEOFed ?? false),
-			reader: $.varRef(init?.reader ?? null)
+			readCtx: $.varRef(init?.readCtx ?? (null as unknown as context.Context | null)),
+			readCancel: $.varRef(init?.readCancel ?? (null as unknown as (() => void) | null)),
+			readEOFed: $.varRef(init?.readEOFed ?? (false as unknown as boolean)),
+			reader: $.varRef(init?.reader ?? (null as unknown as io.Reader | null))
 		}
 	}
 
@@ -313,7 +313,7 @@ export class netConn {
 			}
 			if (typ != $.pointerValue<netConn>(nc).msgType) {
 				let __goscriptShadow0 = fmt.Errorf("unexpected frame type read (expected %v): %v", $.namedValueInterfaceValue<any>($.pointerValue<netConn>(nc).msgType, "websocket.MessageType", {String: (receiver: any, ...args: any[]) => (__goscript_stringer.MessageType_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.MessageType" }), $.namedValueInterfaceValue<any>(typ, "websocket.MessageType", {String: (receiver: any, ...args: any[]) => (__goscript_stringer.MessageType_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.MessageType" }))
-				await __goscript_ws_js.Conn.prototype.Close.call($.pointerValue<netConn>(nc).c, 1003, await $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow0).Error())
+				await __goscript_ws_js.Conn.prototype.Close.call($.pointerValue<netConn>(nc).c, 1003, $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow0).Error())
 				return [0, __goscriptShadow0]
 			}
 			$.pointerValue<netConn>(nc).reader = r

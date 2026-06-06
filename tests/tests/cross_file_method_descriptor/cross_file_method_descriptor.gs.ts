@@ -23,7 +23,7 @@ export function asRunner(m: mode): runner | null {
 }
 
 export async function main(): globalThis.Promise<void> {
-	$.println($.pointerValue<Exclude<runner, null>>(asRunner(1)).Run())
+	$.println(await $.pointerValue<Exclude<runner, null>>(asRunner(1)).Run())
 }
 
 if ($.isMainScript(import.meta)) {

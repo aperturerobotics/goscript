@@ -42,10 +42,10 @@ export class dictDecoder {
 
 	constructor(init?: Partial<{hist?: $.Slice<number>, wrPos?: number, rdPos?: number, full?: boolean}>) {
 		this._fields = {
-			hist: $.varRef(init?.hist ?? null),
-			wrPos: $.varRef(init?.wrPos ?? 0),
-			rdPos: $.varRef(init?.rdPos ?? 0),
-			full: $.varRef(init?.full ?? false)
+			hist: $.varRef(init?.hist ?? (null as unknown as $.Slice<number>)),
+			wrPos: $.varRef(init?.wrPos ?? (0 as unknown as number)),
+			rdPos: $.varRef(init?.rdPos ?? (0 as unknown as number)),
+			full: $.varRef(init?.full ?? (false as unknown as boolean))
 		}
 	}
 

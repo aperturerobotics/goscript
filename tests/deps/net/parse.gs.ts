@@ -48,9 +48,9 @@ export class file {
 
 	constructor(init?: Partial<{file?: os.File | $.VarRef<os.File> | null, data?: $.Slice<number>, atEOF?: boolean}>) {
 		this._fields = {
-			file: $.varRef(init?.file ?? null),
-			data: $.varRef(init?.data ?? null),
-			atEOF: $.varRef(init?.atEOF ?? false)
+			file: $.varRef(init?.file ?? (null as unknown as os.File | $.VarRef<os.File> | null)),
+			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>)),
+			atEOF: $.varRef(init?.atEOF ?? (false as unknown as boolean))
 		}
 	}
 
@@ -124,7 +124,7 @@ export class file {
 		return [s, ok]
 	}
 
-	public stat(): [time.Time, number, $.GoError] {
+	public async stat(): globalThis.Promise<[time.Time, number, $.GoError]> {
 		const f: file | $.VarRef<file> | null = this
 		let mtime: time.Time = $.markAsStructValue(new time.Time())
 		let size: number = 0
@@ -135,7 +135,7 @@ export class file {
 		if (err != null) {
 			return [$.markAsStructValue(new time.Time()), $.int(0), err]
 		}
-		return [$.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<fs.FileInfo, null>>(st).ModTime())), $.int($.pointerValue<Exclude<fs.FileInfo, null>>(st).Size()), null]
+		return [$.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<fs.FileInfo, null>>(st).ModTime())), $.int(await $.pointerValue<Exclude<fs.FileInfo, null>>(st).Size()), null]
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -159,7 +159,7 @@ export function open(name: string): [file | $.VarRef<file> | null, $.GoError] {
 	return [new file({file: fd, data: $.makeSlice<number>(0, 64 * 1024, "byte"), atEOF: false}), null]
 }
 
-export function stat(name: string): [time.Time, number, $.GoError] {
+export async function stat(name: string): globalThis.Promise<[time.Time, number, $.GoError]> {
 	let mtime: time.Time = $.markAsStructValue(new time.Time())
 	let size: number = 0
 	let err: $.GoError = null as $.GoError
@@ -169,7 +169,7 @@ export function stat(name: string): [time.Time, number, $.GoError] {
 	if (err != null) {
 		return [$.markAsStructValue(new time.Time()), $.int(0), err]
 	}
-	return [$.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<fs.FileInfo, null>>(st).ModTime())), $.int($.pointerValue<Exclude<fs.FileInfo, null>>(st).Size()), null]
+	return [$.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<fs.FileInfo, null>>(st).ModTime())), $.int(await $.pointerValue<Exclude<fs.FileInfo, null>>(st).Size()), null]
 }
 
 export function countAnyByte(s: string, t: string): number {

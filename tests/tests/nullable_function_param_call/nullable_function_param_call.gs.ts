@@ -64,9 +64,9 @@ export class MockFileInfo {
 
 	constructor(init?: Partial<{name?: string, size?: number, isDir?: boolean}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ""),
-			size: $.varRef(init?.size ?? 0),
-			isDir: $.varRef(init?.isDir ?? false)
+			name: $.varRef(init?.name ?? ("" as unknown as string)),
+			size: $.varRef(init?.size ?? (0 as unknown as number)),
+			isDir: $.varRef(init?.isDir ?? (false as unknown as boolean))
 		}
 	}
 
@@ -179,8 +179,8 @@ export async function main(): globalThis.Promise<void> {
 	let fileInfo: MockFileInfo | $.VarRef<MockFileInfo> | null = new MockFileInfo({name: "test.txt", size: $.int(50), isDir: false})
 
 	// Test the walk function with a callback
-	let walkFunc: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null = $.functionValue((path: string, info: FileInfo | null, err: $.GoError): $.GoError => {
-		$.println("Walking:", path, "size:", $.int($.pointerValue<Exclude<FileInfo, null>>(info).Size()))
+	let walkFunc: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null = $.functionValue(async (path: string, info: FileInfo | null, err: $.GoError): globalThis.Promise<$.GoError> => {
+		$.println("Walking:", path, "size:", $.int(await $.pointerValue<Exclude<FileInfo, null>>(info).Size()))
 		if (err != null) {
 			$.println("Error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		}

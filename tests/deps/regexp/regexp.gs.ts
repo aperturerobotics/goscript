@@ -172,22 +172,22 @@ export class Regexp {
 
 	constructor(init?: Partial<{expr?: string, prog?: syntax.Prog | $.VarRef<syntax.Prog> | null, onepass?: __goscript_onepass.onePassProg | $.VarRef<__goscript_onepass.onePassProg> | null, numSubexp?: number, maxBitStateLen?: number, subexpNames?: $.Slice<string>, prefix?: string, prefixBytes?: $.Slice<number>, prefixRune?: number, prefixEnd?: number, mpool?: number, matchcap?: number, prefixComplete?: boolean, cond?: syntax.EmptyOp, minInputLen?: number, longest?: boolean}>) {
 		this._fields = {
-			expr: $.varRef(init?.expr ?? ""),
-			prog: $.varRef(init?.prog ?? null),
-			onepass: $.varRef(init?.onepass ?? null),
-			numSubexp: $.varRef(init?.numSubexp ?? 0),
-			maxBitStateLen: $.varRef(init?.maxBitStateLen ?? 0),
-			subexpNames: $.varRef(init?.subexpNames ?? null),
-			prefix: $.varRef(init?.prefix ?? ""),
-			prefixBytes: $.varRef(init?.prefixBytes ?? null),
-			prefixRune: $.varRef(init?.prefixRune ?? 0),
-			prefixEnd: $.varRef(init?.prefixEnd ?? 0),
-			mpool: $.varRef(init?.mpool ?? 0),
-			matchcap: $.varRef(init?.matchcap ?? 0),
-			prefixComplete: $.varRef(init?.prefixComplete ?? false),
-			cond: $.varRef(init?.cond ?? 0),
-			minInputLen: $.varRef(init?.minInputLen ?? 0),
-			longest: $.varRef(init?.longest ?? false)
+			expr: $.varRef(init?.expr ?? ("" as unknown as string)),
+			prog: $.varRef(init?.prog ?? (null as unknown as syntax.Prog | $.VarRef<syntax.Prog> | null)),
+			onepass: $.varRef(init?.onepass ?? (null as unknown as __goscript_onepass.onePassProg | $.VarRef<__goscript_onepass.onePassProg> | null)),
+			numSubexp: $.varRef(init?.numSubexp ?? (0 as unknown as number)),
+			maxBitStateLen: $.varRef(init?.maxBitStateLen ?? (0 as unknown as number)),
+			subexpNames: $.varRef(init?.subexpNames ?? (null as unknown as $.Slice<string>)),
+			prefix: $.varRef(init?.prefix ?? ("" as unknown as string)),
+			prefixBytes: $.varRef(init?.prefixBytes ?? (null as unknown as $.Slice<number>)),
+			prefixRune: $.varRef(init?.prefixRune ?? (0 as unknown as number)),
+			prefixEnd: $.varRef(init?.prefixEnd ?? (0 as unknown as number)),
+			mpool: $.varRef(init?.mpool ?? (0 as unknown as number)),
+			matchcap: $.varRef(init?.matchcap ?? (0 as unknown as number)),
+			prefixComplete: $.varRef(init?.prefixComplete ?? (false as unknown as boolean)),
+			cond: $.varRef(init?.cond ?? (0 as unknown as syntax.EmptyOp)),
+			minInputLen: $.varRef(init?.minInputLen ?? (0 as unknown as number)),
+			longest: $.varRef(init?.longest ?? (false as unknown as boolean))
 		}
 	}
 
@@ -216,7 +216,7 @@ export class Regexp {
 
 	public AppendText(b: $.Slice<number>): [$.Slice<number>, $.GoError] {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return [$.append(b, ...($.stringToBytes(Regexp.prototype.String.call(re)) ?? [])), null]
+		return [$.appendSlice(b, $.stringToBytes(Regexp.prototype.String.call(re))), null]
 	}
 
 	public Copy(): Regexp | $.VarRef<Regexp> | null {
@@ -520,21 +520,21 @@ export class Regexp {
 	public async ReplaceAllFunc(src: $.Slice<number>, repl: ((_p0: $.Slice<number>) => $.Slice<number> | globalThis.Promise<$.Slice<number>>) | null): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
-			return $.append(dst, ...(await repl!($.goSlice(src, match![0], match![1])) ?? []))
+			return $.appendSlice(dst, await repl!($.goSlice(src, match![0], match![1])))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 	}
 
 	public async ReplaceAllLiteral(src: $.Slice<number>, repl: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
-			return $.append(dst, ...(repl ?? []))
+			return $.appendSlice(dst, repl)
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 	}
 
 	public async ReplaceAllLiteralString(src: string, repl: string): globalThis.Promise<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		return $.bytesToString(await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
-			return $.append(dst, ...($.stringToBytes(repl) ?? []))
+			return $.appendSlice(dst, $.stringToBytes(repl))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo))))
 	}
 
@@ -553,7 +553,7 @@ export class Regexp {
 	public async ReplaceAllStringFunc(src: string, repl: ((_p0: string) => string | globalThis.Promise<string>) | null): globalThis.Promise<string> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let b: $.Slice<number> = await Regexp.prototype.replaceAll.call(re, null, src, 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
-			return $.append(dst, ...($.stringToBytes(await repl!($.sliceStringOrBytes(src, match![0], match![1]))) ?? []))
+			return $.appendSlice(dst, $.stringToBytes(await repl!($.sliceStringOrBytes(src, match![0], match![1]))))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 		return $.bytesToString(b)
 	}
@@ -700,7 +700,7 @@ export class Regexp {
 				if ($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap) > 0) {
 					$.pointerValue<__goscript_backtrack.bitState>(b).cap![0] = pos
 				}
-				if (!Regexp.prototype.tryBacktrack.call(re, b, i, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Start, 32), 32), pos)) {
+				if (!await Regexp.prototype.tryBacktrack.call(re, b, i, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Start, 32), 32), pos)) {
 					__goscript_backtrack.freeBitState(b)
 					return null
 				}
@@ -710,7 +710,7 @@ export class Regexp {
 				for (; (pos <= end) && (width != 0); pos = pos + (width)) {
 					if ($.len($.pointerValue<Regexp>(re).prefix) > 0) {
 
-						let advance = $.pointerValue<Exclude<input, null>>(i).index(re, pos)
+						let advance = await $.pointerValue<Exclude<input, null>>(i).index(re, pos)
 						if (advance < 0) {
 							__goscript_backtrack.freeBitState(b)
 							return null
@@ -721,18 +721,18 @@ export class Regexp {
 					if ($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap) > 0) {
 						$.pointerValue<__goscript_backtrack.bitState>(b).cap![0] = pos
 					}
-					if (Regexp.prototype.tryBacktrack.call(re, b, i, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Start, 32), 32), pos)) {
+					if (await Regexp.prototype.tryBacktrack.call(re, b, i, $.uint($.uint($.pointerValue<syntax.Prog>($.pointerValue<Regexp>(re).prog).Start, 32), 32), pos)) {
 
 						break Match
 					}
-					let __goscriptTuple3: any = $.pointerValue<Exclude<input, null>>(i).step(pos)
+					let __goscriptTuple3: any = await $.pointerValue<Exclude<input, null>>(i).step(pos)
 					width = __goscriptTuple3[1]
 				}
 				__goscript_backtrack.freeBitState(b)
 				return null
 			}
 		}
-		dstCap = $.append(dstCap, ...($.pointerValue<__goscript_backtrack.bitState>(b).matchcap ?? []))
+		dstCap = $.appendSlice(dstCap, $.pointerValue<__goscript_backtrack.bitState>(b).matchcap)
 		__goscript_backtrack.freeBitState(b)
 		return dstCap
 	}
@@ -759,12 +759,12 @@ export class Regexp {
 		let [i, ] = $.pointerValue<__goscript_exec.machine>(m).inputs.init(r, b, s)
 
 		__goscript_exec.machine.prototype.init.call(m, ncap)
-		if (!__goscript_exec.machine.prototype.match.call(m, i, pos)) {
+		if (!await __goscript_exec.machine.prototype.match.call(m, i, pos)) {
 			Regexp.prototype.put.call(re, m)
 			return null
 		}
 
-		dstCap = $.append(dstCap, ...($.pointerValue<__goscript_exec.machine>(m).matchcap ?? []))
+		dstCap = $.appendSlice(dstCap, $.pointerValue<__goscript_exec.machine>(m).matchcap)
 		Regexp.prototype.put.call(re, m)
 		return dstCap
 	}
@@ -799,11 +799,11 @@ export class Regexp {
 		let r1 = $.int(-1, 32)
 		let width = 0
 		let width1 = 0
-		let __goscriptTuple4: any = $.pointerValue<Exclude<input, null>>(i).step(pos)
+		let __goscriptTuple4: any = await $.pointerValue<Exclude<input, null>>(i).step(pos)
 		r = $.int(__goscriptTuple4[0], 32)
 		width = __goscriptTuple4[1]
 		if ($.int(r, 32) != $.int(-1, 32)) {
-			let __goscriptTuple5: any = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
+			let __goscriptTuple5: any = await $.pointerValue<Exclude<input, null>>(i).step(pos + width)
 			r1 = $.int(__goscriptTuple5[0], 32)
 			width1 = __goscriptTuple5[1]
 		}
@@ -811,26 +811,26 @@ export class Regexp {
 		if (pos == 0) {
 			flag = __goscript_exec.newLazyFlag($.int(-1, 32), $.int(r, 32))
 		} else {
-			flag = $.pointerValue<Exclude<input, null>>(i).context(pos)
+			flag = await $.pointerValue<Exclude<input, null>>(i).context(pos)
 		}
 		let pc = $.pointerValue<__goscript_onepass.onePassProg>($.pointerValue<Regexp>(re).onepass).Start
 		let inst: __goscript_onepass.onePassInst | $.VarRef<__goscript_onepass.onePassInst> | null = $.indexRef($.pointerValue<__goscript_onepass.onePassProg>($.pointerValue<Regexp>(re).onepass).Inst!, pc)
 
 		Return: {
 
-			if ((((pos == 0) && __goscript_exec.lazyFlag_match(flag, $.uint($.pointerValue<__goscript_onepass.onePassInst>(inst).Inst.Arg, 8))) && ($.len($.pointerValue<Regexp>(re).prefix) > 0)) && $.pointerValue<Exclude<input, null>>(i).canCheckPrefix()) {
+			if ((((pos == 0) && __goscript_exec.lazyFlag_match(flag, $.uint($.pointerValue<__goscript_onepass.onePassInst>(inst).Inst.Arg, 8))) && ($.len($.pointerValue<Regexp>(re).prefix) > 0)) && await $.pointerValue<Exclude<input, null>>(i).canCheckPrefix()) {
 
-				if (!$.pointerValue<Exclude<input, null>>(i).hasPrefix(re)) {
+				if (!await $.pointerValue<Exclude<input, null>>(i).hasPrefix(re)) {
 					break Return
 				}
 				pos = pos + ($.len($.pointerValue<Regexp>(re).prefix))
-				let __goscriptTuple6: any = $.pointerValue<Exclude<input, null>>(i).step(pos)
+				let __goscriptTuple6: any = await $.pointerValue<Exclude<input, null>>(i).step(pos)
 				r = $.int(__goscriptTuple6[0], 32)
 				width = __goscriptTuple6[1]
-				let __goscriptTuple7: any = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
+				let __goscriptTuple7: any = await $.pointerValue<Exclude<input, null>>(i).step(pos + width)
 				r1 = $.int(__goscriptTuple7[0], 32)
 				width1 = __goscriptTuple7[1]
-				flag = $.pointerValue<Exclude<input, null>>(i).context(pos)
+				flag = await $.pointerValue<Exclude<input, null>>(i).context(pos)
 				pc = $.int($.pointerValue<Regexp>(re).prefixEnd)
 			}
 			while (true) {
@@ -921,7 +921,7 @@ export class Regexp {
 				r = __goscriptAssign0_0
 				width = __goscriptAssign0_1
 				if ($.int(r, 32) != $.int(-1, 32)) {
-					let __goscriptTuple8: any = $.pointerValue<Exclude<input, null>>(i).step(pos + width)
+					let __goscriptTuple8: any = await $.pointerValue<Exclude<input, null>>(i).step(pos + width)
 					r1 = $.int(__goscriptTuple8[0], 32)
 					width1 = __goscriptTuple8[1]
 				}
@@ -932,7 +932,7 @@ export class Regexp {
 			return null
 		}
 
-		dstCap = $.append(dstCap, ...($.pointerValue<__goscript_exec.onePassMachine>(m).matchcap ?? []))
+		dstCap = $.appendSlice(dstCap, $.pointerValue<__goscript_exec.onePassMachine>(m).matchcap)
 		__goscript_exec.freeOnePassMachine(m)
 		return dstCap
 	}
@@ -944,7 +944,7 @@ export class Regexp {
 			if (!ok) {
 				break
 			}
-			dst = $.append(dst, ...($.stringToBytes(before) ?? []))
+			dst = $.appendSlice(dst, $.stringToBytes(before))
 			template = after
 			if ((!$.stringEqual(template, "")) && ($.uint($.indexStringOrBytes(template, 0), 8) == $.uint(36, 8))) {
 				// Treat $$ as $.
@@ -966,9 +966,9 @@ export class Regexp {
 			if (num >= 0) {
 				if ((((2 * num) + 1) < $.len(match)) && (match![2 * num] >= 0)) {
 					if (bsrc != null) {
-						dst = $.append(dst, ...($.goSlice(bsrc, match![2 * num], match![(2 * num) + 1]) ?? []))
+						dst = $.appendSlice(dst, $.goSlice(bsrc, match![2 * num], match![(2 * num) + 1]))
 					} else {
-						dst = $.append(dst, ...($.stringToBytes($.sliceStringOrBytes(src, match![2 * num], match![(2 * num) + 1])) ?? []))
+						dst = $.appendSlice(dst, $.stringToBytes($.sliceStringOrBytes(src, match![2 * num], match![(2 * num) + 1])))
 					}
 				}
 			} else {
@@ -976,16 +976,16 @@ export class Regexp {
 					let namei = __goscriptRangeTarget7![i]
 					if ((($.stringEqual(name, namei)) && (((2 * i) + 1) < $.len(match))) && (match![2 * i] >= 0)) {
 						if (bsrc != null) {
-							dst = $.append(dst, ...($.goSlice(bsrc, match![2 * i], match![(2 * i) + 1]) ?? []))
+							dst = $.appendSlice(dst, $.goSlice(bsrc, match![2 * i], match![(2 * i) + 1]))
 						} else {
-							dst = $.append(dst, ...($.stringToBytes($.sliceStringOrBytes(src, match![2 * i], match![(2 * i) + 1])) ?? []))
+							dst = $.appendSlice(dst, $.stringToBytes($.sliceStringOrBytes(src, match![2 * i], match![(2 * i) + 1])))
 						}
 						break
 					}
 				}
 			}
 		}
-		dst = $.append(dst, ...($.stringToBytes(template) ?? []))
+		dst = $.appendSlice(dst, $.stringToBytes(template))
 		return dst
 	}
 
@@ -1065,9 +1065,9 @@ export class Regexp {
 
 			// Copy the unmatched characters before this match.
 			if (bsrc != null) {
-				buf = $.append(buf, ...($.goSlice(bsrc, lastMatchEnd, a![0]) ?? []))
+				buf = $.appendSlice(buf, $.goSlice(bsrc, lastMatchEnd, a![0]))
 			} else {
-				buf = $.append(buf, ...($.stringToBytes($.sliceStringOrBytes(src, lastMatchEnd, a![0])) ?? []))
+				buf = $.appendSlice(buf, $.stringToBytes($.sliceStringOrBytes(src, lastMatchEnd, a![0])))
 			}
 
 			// Now insert a copy of the replacement string, but not for a
@@ -1103,15 +1103,15 @@ export class Regexp {
 
 		// Copy the unmatched characters after the last match.
 		if (bsrc != null) {
-			buf = $.append(buf, ...($.goSlice(bsrc, lastMatchEnd, undefined) ?? []))
+			buf = $.appendSlice(buf, $.goSlice(bsrc, lastMatchEnd, undefined))
 		} else {
-			buf = $.append(buf, ...($.stringToBytes($.sliceStringOrBytes(src, lastMatchEnd, undefined)) ?? []))
+			buf = $.appendSlice(buf, $.stringToBytes($.sliceStringOrBytes(src, lastMatchEnd, undefined)))
 		}
 
 		return buf
 	}
 
-	public tryBacktrack(b: __goscript_backtrack.bitState | $.VarRef<__goscript_backtrack.bitState> | null, i: input | null, pc: number, pos: number): boolean {
+	public async tryBacktrack(b: __goscript_backtrack.bitState | $.VarRef<__goscript_backtrack.bitState> | null, i: input | null, pc: number, pos: number): globalThis.Promise<boolean> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let longest = $.pointerValue<Regexp>(re).longest
 
@@ -1201,7 +1201,7 @@ export class Regexp {
 							}
 							case syntax.InstRune:
 							{
-								let __goscriptTuple13: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
+								let __goscriptTuple13: any = await $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple13[0], 32)
 								let width = __goscriptTuple13[1]
 								if (!syntax.Inst.prototype.MatchRune.call(inst, $.int(r, 32))) {
@@ -1215,7 +1215,7 @@ export class Regexp {
 							}
 							case syntax.InstRune1:
 							{
-								let __goscriptTuple14: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
+								let __goscriptTuple14: any = await $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple14[0], 32)
 								let width = __goscriptTuple14[1]
 								if ($.int(r, 32) != $.int($.pointerValue<syntax.Inst>(inst).Rune![0], 32)) {
@@ -1229,7 +1229,7 @@ export class Regexp {
 							}
 							case syntax.InstRuneAnyNotNL:
 							{
-								let __goscriptTuple15: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
+								let __goscriptTuple15: any = await $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple15[0], 32)
 								let width = __goscriptTuple15[1]
 								if (($.int(r, 32) == $.int(10, 32)) || ($.int(r, 32) == $.int(-1, 32))) {
@@ -1243,7 +1243,7 @@ export class Regexp {
 							}
 							case syntax.InstRuneAny:
 							{
-								let __goscriptTuple16: any = $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
+								let __goscriptTuple16: any = await $.pointerValue<Exclude<input, null>>(i).step(__goscriptShadow2)
 								let r = $.int(__goscriptTuple16[0], 32)
 								let width = __goscriptTuple16[1]
 								if ($.int(r, 32) == $.int(-1, 32)) {
@@ -1275,7 +1275,7 @@ export class Regexp {
 							}
 							case syntax.InstEmptyWidth:
 							{
-								let flag = $.pointerValue<Exclude<input, null>>(i).context(__goscriptShadow2)
+								let flag = await $.pointerValue<Exclude<input, null>>(i).context(__goscriptShadow2)
 								if (!__goscript_exec.lazyFlag_match(flag, $.uint($.pointerValue<syntax.Inst>(inst).Arg, 8))) {
 									continue __goscriptLoop0
 								}
@@ -1353,7 +1353,7 @@ export class inputString {
 
 	constructor(init?: Partial<{str?: string}>) {
 		this._fields = {
-			str: $.varRef(init?.str ?? "")
+			str: $.varRef(init?.str ?? ("" as unknown as string))
 		}
 	}
 
@@ -1429,7 +1429,7 @@ export class inputBytes {
 
 	constructor(init?: Partial<{str?: $.Slice<number>}>) {
 		this._fields = {
-			str: $.varRef(init?.str ?? null)
+			str: $.varRef(init?.str ?? (null as unknown as $.Slice<number>))
 		}
 	}
 
@@ -1521,9 +1521,9 @@ export class inputReader {
 
 	constructor(init?: Partial<{r?: io.RuneReader | null, atEOT?: boolean, pos?: number}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? null),
-			atEOT: $.varRef(init?.atEOT ?? false),
-			pos: $.varRef(init?.pos ?? 0)
+			r: $.varRef(init?.r ?? (null as unknown as io.RuneReader | null)),
+			atEOT: $.varRef(init?.atEOT ?? (false as unknown as boolean)),
+			pos: $.varRef(init?.pos ?? (0 as unknown as number))
 		}
 	}
 
@@ -1557,12 +1557,12 @@ export class inputReader {
 		return -1
 	}
 
-	public step(pos: number): [number, number] {
+	public async step(pos: number): globalThis.Promise<[number, number]> {
 		let i: inputReader | $.VarRef<inputReader> | null = this
 		if (!$.pointerValue<inputReader>(i).atEOT && (pos != $.pointerValue<inputReader>(i).pos)) {
 			return [$.int(-1, 32), 0]
 		}
-		let __goscriptTuple28: any = $.pointerValue<Exclude<io.RuneReader, null>>($.pointerValue<inputReader>(i).r).ReadRune()
+		let __goscriptTuple28: any = await $.pointerValue<Exclude<io.RuneReader, null>>($.pointerValue<inputReader>(i).r).ReadRune()
 		let r = $.int(__goscriptTuple28[0], 32)
 		let w = __goscriptTuple28[1]
 		let err = __goscriptTuple28[2]
@@ -1757,7 +1757,7 @@ export type input = {
 	context(pos: number): __goscript_exec.lazyFlag
 	hasPrefix(re: Regexp | $.VarRef<Regexp> | null): boolean
 	index(re: Regexp | $.VarRef<Regexp> | null, pos: number): number
-	step(pos: number): [number, number]
+	step(pos: number): [number, number] | globalThis.Promise<[number, number]>
 }
 
 $.registerInterfaceType(

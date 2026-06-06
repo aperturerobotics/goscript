@@ -20,7 +20,7 @@ export class holder {
 
 	constructor(init?: Partial<{w?: io.Writer | null}>) {
 		this._fields = {
-			w: $.varRef(init?.w ?? null)
+			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null))
 		}
 	}
 

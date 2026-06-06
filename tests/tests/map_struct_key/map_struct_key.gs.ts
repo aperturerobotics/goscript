@@ -33,9 +33,9 @@ export class requestKey {
 
 	constructor(init?: Partial<{soID?: string, inviteID?: string, peerID?: string}>) {
 		this._fields = {
-			soID: $.varRef(init?.soID ?? ""),
-			inviteID: $.varRef(init?.inviteID ?? ""),
-			peerID: $.varRef(init?.peerID ?? "")
+			soID: $.varRef(init?.soID ?? ("" as unknown as string)),
+			inviteID: $.varRef(init?.inviteID ?? ("" as unknown as string)),
+			peerID: $.varRef(init?.peerID ?? ("" as unknown as string))
 		}
 	}
 

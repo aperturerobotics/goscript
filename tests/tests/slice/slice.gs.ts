@@ -164,7 +164,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Append to nil slice cap:", $.cap(nilSlice))
 	$.println("Append to nil slice[0]:", nilSlice![0])
 	let spreadSource: $.Slice<number> = $.arrayToSlice<number>([7, 8])
-	nilSlice = $.append(nilSlice, ...(spreadSource ?? []))
+	nilSlice = $.appendSlice(nilSlice, spreadSource)
 	$.println("Append spread slice len:", $.len(nilSlice))
 	$.println("Append spread slice[1]:", nilSlice![1])
 	$.println("Append spread slice[2]:", nilSlice![2])

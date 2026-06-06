@@ -23,7 +23,7 @@ export class sink {
 
 	constructor(init?: Partial<{size?: number}>) {
 		this._fields = {
-			size: $.varRef(init?.size ?? 0)
+			size: $.varRef(init?.size ?? (0 as unknown as number))
 		}
 	}
 
@@ -49,13 +49,13 @@ export class sink {
 	)
 }
 
-export function write(tx: __goscript_types.Tx | null, v: dep.Value): void {
-	$.pointerValue<Exclude<__goscript_types.Tx, null>>(tx).Put((v as __goscript_types.Value))
+export async function write(tx: __goscript_types.Tx | null, v: dep.Value): globalThis.Promise<void> {
+	await $.pointerValue<Exclude<__goscript_types.Tx, null>>(tx).Put((v as __goscript_types.Value))
 }
 
 export async function main(): globalThis.Promise<void> {
 	let s: sink | $.VarRef<sink> | null = new sink()
-	write($.interfaceValue<__goscript_types.Tx | null>(s, "*main.sink"), ($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]) as dep.Value))
+	await write($.interfaceValue<__goscript_types.Tx | null>(s, "*main.sink"), ($.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8), $.uint(3, 8)]) as dep.Value))
 	$.println("size:", $.pointerValue<sink>(s).size)
 }
 

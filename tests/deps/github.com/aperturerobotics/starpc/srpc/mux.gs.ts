@@ -74,9 +74,9 @@ export class mux {
 
 	constructor(init?: Partial<{fallback?: $.Slice<__goscript_invoker.Invoker | null>, rmtx?: sync.RWMutex, services?: Map<string, muxMethods> | null}>) {
 		this._fields = {
-			fallback: $.varRef(init?.fallback ?? null),
+			fallback: $.varRef(init?.fallback ?? (null as unknown as $.Slice<__goscript_invoker.Invoker | null>)),
 			rmtx: $.varRef(init?.rmtx ? $.markAsStructValue($.cloneStructValue(init.rmtx)) : $.markAsStructValue(new sync.RWMutex())),
-			services: $.varRef(init?.services ?? null)
+			services: $.varRef(init?.services ?? (null as unknown as Map<string, muxMethods> | null))
 		}
 	}
 
@@ -115,7 +115,7 @@ export class mux {
 
 		let handlers: muxMethods = $.mapGet($.pointerValue<mux>(m).services, serviceID, null)[0]
 		for (const [__rangeKey, mh] of handlers?.entries() ?? []) {
-			if (slices.Contains($.pointerValue<Exclude<__goscript_handler.Handler, null>>(mh).GetMethodIDs(), methodID)) {
+			if (slices.Contains(await $.pointerValue<Exclude<__goscript_handler.Handler, null>>(mh).GetMethodIDs(), methodID)) {
 				return true
 			}
 		}
@@ -164,8 +164,8 @@ export class mux {
 	public async Register(handler: __goscript_handler.Handler | null): globalThis.Promise<$.GoError> {
 		let m: mux | $.VarRef<mux> | null = this
 		using __defer = new $.DisposableStack()
-		let serviceID = $.pointerValue<Exclude<__goscript_handler.Handler, null>>(handler).GetServiceID()
-		let methodIDs: $.Slice<string> = $.pointerValue<Exclude<__goscript_handler.Handler, null>>(handler).GetMethodIDs()
+		let serviceID = await $.pointerValue<Exclude<__goscript_handler.Handler, null>>(handler).GetServiceID()
+		let methodIDs: $.Slice<string> = await $.pointerValue<Exclude<__goscript_handler.Handler, null>>(handler).GetMethodIDs()
 		if ($.stringEqual(serviceID, "")) {
 			return __goscript_errors.ErrEmptyServiceID
 		}

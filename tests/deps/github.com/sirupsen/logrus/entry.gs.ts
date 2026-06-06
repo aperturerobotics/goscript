@@ -153,15 +153,15 @@ export class Entry {
 
 	constructor(init?: Partial<{Logger?: __goscript_logger.Logger | $.VarRef<__goscript_logger.Logger> | null, Data?: __goscript_logrus.Fields, Time?: time.Time, Level?: __goscript_logrus.Level, Caller?: runtime.Frame | $.VarRef<runtime.Frame> | null, Message?: string, Buffer?: bytes.Buffer | $.VarRef<bytes.Buffer> | null, Context?: context.Context | null, err?: string}>) {
 		this._fields = {
-			Logger: $.varRef(init?.Logger ?? null),
-			Data: $.varRef(init?.Data ?? null),
+			Logger: $.varRef(init?.Logger ?? (null as unknown as __goscript_logger.Logger | $.VarRef<__goscript_logger.Logger> | null)),
+			Data: $.varRef(init?.Data ?? (null as unknown as __goscript_logrus.Fields)),
 			Time: $.varRef(init?.Time ? $.markAsStructValue($.cloneStructValue(init.Time)) : $.markAsStructValue(new time.Time())),
-			Level: $.varRef(init?.Level ?? 0),
-			Caller: $.varRef(init?.Caller ?? null),
-			Message: $.varRef(init?.Message ?? ""),
-			Buffer: $.varRef(init?.Buffer ?? null),
-			Context: $.varRef(init?.Context ?? null),
-			err: $.varRef(init?.err ?? "")
+			Level: $.varRef(init?.Level ?? (0 as unknown as __goscript_logrus.Level)),
+			Caller: $.varRef(init?.Caller ?? (null as unknown as runtime.Frame | $.VarRef<runtime.Frame> | null)),
+			Message: $.varRef(init?.Message ?? ("" as unknown as string)),
+			Buffer: $.varRef(init?.Buffer ?? (null as unknown as bytes.Buffer | $.VarRef<bytes.Buffer> | null)),
+			Context: $.varRef(init?.Context ?? (null as unknown as context.Context | null)),
+			err: $.varRef(init?.err ?? ("" as unknown as string))
 		}
 	}
 
@@ -396,12 +396,12 @@ export class Entry {
 		return new Entry({Logger: $.pointerValue<Entry>(entry).Logger, Data: data, Time: $.markAsStructValue($.cloneStructValue($.pointerValue<Entry>(entry).Time)), Context: $.pointerValue<Entry>(entry).Context, err: $.pointerValue<Entry>(entry).err})
 	}
 
-	public WithField(key: string, value: any): Entry | $.VarRef<Entry> | null {
+	public async WithField(key: string, value: any): globalThis.Promise<Entry | $.VarRef<Entry> | null> {
 		const entry: Entry | $.VarRef<Entry> | null = this
-		return Entry.prototype.WithFields.call(entry, new Map<string, any>([[key, value]]))
+		return await Entry.prototype.WithFields.call(entry, new Map<string, any>([[key, value]]))
 	}
 
-	public WithFields(fields: __goscript_logrus.Fields): Entry | $.VarRef<Entry> | null {
+	public async WithFields(fields: __goscript_logrus.Fields): globalThis.Promise<Entry | $.VarRef<Entry> | null> {
 		const entry: Entry | $.VarRef<Entry> | null = this
 		let data: __goscript_logrus.Fields = $.makeMap<string, any>()
 		maps.Copy(data, $.pointerValue<Entry>(entry).Data)
@@ -412,8 +412,8 @@ export class Entry {
 				let t = reflect.TypeOf(v)
 				if (t != null) {
 					switch (true) {
-						case $.pointerValue<Exclude<reflect.Type, null>>(t).Kind() == reflect.Func:
-						case ($.pointerValue<Exclude<reflect.Type, null>>(t).Kind() == reflect.Pointer) && ($.pointerValue<Exclude<reflect.Type, null>>($.pointerValue<Exclude<reflect.Type, null>>(t).Elem()).Kind() == reflect.Func):
+						case await $.pointerValue<Exclude<reflect.Type, null>>(t).Kind() == reflect.Func:
+						case (await $.pointerValue<Exclude<reflect.Type, null>>(t).Kind() == reflect.Pointer) && (await $.pointerValue<Exclude<reflect.Type, null>>((await $.pointerValue<Exclude<reflect.Type, null>>(t).Elem())).Kind() == reflect.Func):
 						{
 							isErrField = true
 							break
@@ -504,7 +504,7 @@ export class Entry {
 		for (let __goscriptRangeTarget0 = hooks, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 			let hook = __goscriptRangeTarget0![__rangeIndex]
 			{
-				let err = $.pointerValue<Exclude<__goscript_hooks.Hook, null>>(hook).Fire(entry)
+				let err = await $.pointerValue<Exclude<__goscript_hooks.Hook, null>>(hook).Fire(entry)
 				if (err != null) {
 					await fmt.Fprintln($.pointerValueOrNil($.interfaceValue<io.Writer | null>(os.Stderr, "*os.File"))!, "Failed to fire hook:", (err as any))
 					return
@@ -524,7 +524,7 @@ export class Entry {
 
 	public async log(level: __goscript_logrus.Level, msg: string): globalThis.Promise<void> {
 		const entry: Entry | $.VarRef<Entry> | null = this
-		using __defer = new $.DisposableStack()
+		await using __defer = new $.AsyncDisposableStack()
 		let newEntry: Entry | $.VarRef<Entry> | null = Entry.prototype.Dup.call(entry)
 		let logger: __goscript_logger.Logger | $.VarRef<__goscript_logger.Logger> | null = $.pointerValue<Entry>(newEntry).Logger
 
@@ -551,10 +551,10 @@ export class Entry {
 		await Entry.prototype.fireHooks.call(newEntry, hooks)
 
 		let buffer: bytes.Buffer | $.VarRef<bytes.Buffer> | null = await $.pointerValue<Exclude<__goscript_buffer_pool.BufferPool, null>>(bufPool).Get()
-		__defer.defer(() => { ($.functionValue((): void => {
+		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
 			$.pointerValue<Entry>(newEntry).Buffer = null
 			bytes.Buffer.prototype.Reset.call($.pointerValue<bytes.Buffer>(buffer))
-			$.pointerValue<Exclude<__goscript_buffer_pool.BufferPool, null>>(bufPool).Put(buffer)
+			await $.pointerValue<Exclude<__goscript_buffer_pool.BufferPool, null>>(bufPool).Put(buffer)
 		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 		bytes.Buffer.prototype.Reset.call($.pointerValue<bytes.Buffer>(buffer))
 		$.pointerValue<Entry>(newEntry).Buffer = buffer

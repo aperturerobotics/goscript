@@ -488,6 +488,56 @@ func TestCompilePackagesAwaitsOverrideAsyncFunctions(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAwaitsAsyncSlicesSortFuncComparator(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/slicesasyncsort\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"slices\"",
+			"type Comparator interface { Less(a, b int) bool }",
+			"func Use(c Comparator, values []int) {",
+			"  slices.SortFunc(values, func(a, b int) int {",
+			"    if c.Less(a, b) {",
+			"      return -1",
+			"    }",
+			"    if c.Less(b, a) {",
+			"      return 1",
+			"    }",
+			"    return 0",
+			"  })",
+			"}",
+			"",
+		}, "\n"),
+	})
+	out := filepath.Join(t.TempDir(), "out")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      out,
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(out, "@goscript", "example.test", "slicesasyncsort", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "export async function Use") {
+		t.Fatalf("caller was not marked async for slices.SortFunc:\n%s", text)
+	}
+	if !strings.Contains(text, "await slices.SortFunc") {
+		t.Fatalf("slices.SortFunc call was not awaited:\n%s", text)
+	}
+	if !strings.Contains(text, "$.functionValue(async") {
+		t.Fatalf("SortFunc comparator was not lowered as async:\n%s", text)
+	}
+}
+
 func TestCompilePackagesAwaitsReflectValueCall(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/reflectcallasync\n\ngo 1.25.3\n",

@@ -37,7 +37,7 @@ export class ClientInvoker {
 
 	constructor(init?: Partial<{client?: __goscript_client.Client | null}>) {
 		this._fields = {
-			client: $.varRef(init?.client ?? null)
+			client: $.varRef(init?.client ?? (null as unknown as __goscript_client.Client | null))
 		}
 	}
 
@@ -56,7 +56,7 @@ export class ClientInvoker {
 			return [false, null]
 		}
 
-		let ctx = $.pointerValue<Exclude<__goscript_stream.Stream, null>>(strm).Context()
+		let ctx = await $.pointerValue<Exclude<__goscript_stream.Stream, null>>(strm).Context()
 
 		// Open a stream to the remote
 		let [remoteStrm, err] = await $.pointerValue<Exclude<__goscript_client.Client, null>>($.pointerValue<ClientInvoker>(c).client).NewStream(ctx, serviceID, methodID, null)

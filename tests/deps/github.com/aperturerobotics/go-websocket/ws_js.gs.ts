@@ -235,19 +235,19 @@ export class Conn {
 			ws: $.varRef(init?.ws ? $.markAsStructValue($.cloneStructValue(init.ws)) : $.markAsStructValue(new wsjs.WebSocket())),
 			msgReadLimit: $.varRef(init?.msgReadLimit ? $.markAsStructValue($.cloneStructValue(init.msgReadLimit)) : $.markAsStructValue(new atomic.Int64())),
 			closeReadMu: $.varRef(init?.closeReadMu ? $.markAsStructValue($.cloneStructValue(init.closeReadMu)) : $.markAsStructValue(new sync.Mutex())),
-			closeReadCtx: $.varRef(init?.closeReadCtx ?? null),
+			closeReadCtx: $.varRef(init?.closeReadCtx ?? (null as unknown as context.Context | null)),
 			closingMu: $.varRef(init?.closingMu ? $.markAsStructValue($.cloneStructValue(init.closingMu)) : $.markAsStructValue(new sync.Mutex())),
 			closeOnce: $.varRef(init?.closeOnce ? $.markAsStructValue($.cloneStructValue(init.closeOnce)) : $.markAsStructValue(new sync.Once())),
-			closed: $.varRef(init?.closed ?? null),
+			closed: $.varRef(init?.closed ?? (null as unknown as $.Channel<{}> | null)),
 			closeErrOnce: $.varRef(init?.closeErrOnce ? $.markAsStructValue($.cloneStructValue(init.closeErrOnce)) : $.markAsStructValue(new sync.Once())),
-			closeErr: $.varRef(init?.closeErr ?? null),
-			closeWasClean: $.varRef(init?.closeWasClean ?? false),
-			releaseOnClose: $.varRef(init?.releaseOnClose ?? null),
-			releaseOnError: $.varRef(init?.releaseOnError ?? null),
-			releaseOnMessage: $.varRef(init?.releaseOnMessage ?? null),
-			readSignal: $.varRef(init?.readSignal ?? null),
+			closeErr: $.varRef(init?.closeErr ?? (null as unknown as $.GoError)),
+			closeWasClean: $.varRef(init?.closeWasClean ?? (false as unknown as boolean)),
+			releaseOnClose: $.varRef(init?.releaseOnClose ?? (null as unknown as (() => void) | null)),
+			releaseOnError: $.varRef(init?.releaseOnError ?? (null as unknown as (() => void) | null)),
+			releaseOnMessage: $.varRef(init?.releaseOnMessage ?? (null as unknown as (() => void) | null)),
+			readSignal: $.varRef(init?.readSignal ?? (null as unknown as $.Channel<{}> | null)),
 			readBufMu: $.varRef(init?.readBufMu ? $.markAsStructValue($.cloneStructValue(init.readBufMu)) : $.markAsStructValue(new sync.Mutex())),
-			readBuf: $.varRef(init?.readBuf ?? null)
+			readBuf: $.varRef(init?.readBuf ?? (null as unknown as $.Slice<wsjs.MessageEvent>))
 		}
 	}
 
@@ -339,7 +339,7 @@ export class Conn {
 		let readLimit = $.int($.pointerValue<Conn>(c).msgReadLimit.Load())
 		if ((readLimit >= 0) && ($.int($.len(p)) > readLimit)) {
 			let reason = fmt.Errorf("read limited at %d bytes", $.namedValueInterfaceValue<any>($.pointerValue<Conn>(c).msgReadLimit.Load(), "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }))
-			await Conn.prototype.Close.call(c, 1009, await $.pointerValue<Exclude<$.GoError, null>>(reason).Error())
+			await Conn.prototype.Close.call(c, 1009, $.pointerValue<Exclude<$.GoError, null>>(reason).Error())
 			return [0, null, fmt.Errorf("%w: %v", (__goscript_errors.ErrMessageTooBig as any), (reason as any))]
 		}
 		return [typ, p, null]
@@ -527,7 +527,7 @@ export class Conn {
 			{
 				id: 0,
 				isSend: false,
-				channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+				channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 				onSelected: async (__goscriptSelect2Result) => {
 					await Conn.prototype.Close.call(c, 1008, "read timed out")
 					return [0, null, await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()]
@@ -604,7 +604,7 @@ export class Conn {
 				default:
 					{
 						let p: any = __goscriptTypeSwitchValue
-						$.panic("websocket: unexpected data type from wsjs OnMessage: " + $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(me.Data)).String())
+						$.panic("websocket: unexpected data type from wsjs OnMessage: " + await $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeOf(me.Data)).String())
 					}
 					break
 			}
@@ -668,7 +668,7 @@ export class DialOptions {
 
 	constructor(init?: Partial<{Subprotocols?: $.Slice<string>}>) {
 		this._fields = {
-			Subprotocols: $.varRef(init?.Subprotocols ?? null)
+			Subprotocols: $.varRef(init?.Subprotocols ?? (null as unknown as $.Slice<string>))
 		}
 	}
 
@@ -735,11 +735,11 @@ export class writer {
 
 	constructor(init?: Partial<{closed?: boolean, c?: Conn | $.VarRef<Conn> | null, ctx?: context.Context | null, typ?: MessageType, b?: bytes.Buffer | $.VarRef<bytes.Buffer> | null}>) {
 		this._fields = {
-			closed: $.varRef(init?.closed ?? false),
-			c: $.varRef(init?.c ?? null),
-			ctx: $.varRef(init?.ctx ?? null),
-			typ: $.varRef(init?.typ ?? 0),
-			b: $.varRef(init?.b ?? null)
+			closed: $.varRef(init?.closed ?? (false as unknown as boolean)),
+			c: $.varRef(init?.c ?? (null as unknown as Conn | $.VarRef<Conn> | null)),
+			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
+			typ: $.varRef(init?.typ ?? (0 as unknown as MessageType)),
+			b: $.varRef(init?.b ?? (null as unknown as bytes.Buffer | $.VarRef<bytes.Buffer> | null))
 		}
 	}
 
@@ -838,11 +838,11 @@ export class AcceptOptions {
 
 	constructor(init?: Partial<{Subprotocols?: $.Slice<string>, InsecureSkipVerify?: boolean, OriginPatterns?: $.Slice<string>, CompressionMode?: CompressionMode, CompressionThreshold?: number}>) {
 		this._fields = {
-			Subprotocols: $.varRef(init?.Subprotocols ?? null),
-			InsecureSkipVerify: $.varRef(init?.InsecureSkipVerify ?? false),
-			OriginPatterns: $.varRef(init?.OriginPatterns ?? null),
-			CompressionMode: $.varRef(init?.CompressionMode ?? 0),
-			CompressionThreshold: $.varRef(init?.CompressionThreshold ?? 0)
+			Subprotocols: $.varRef(init?.Subprotocols ?? (null as unknown as $.Slice<string>)),
+			InsecureSkipVerify: $.varRef(init?.InsecureSkipVerify ?? (false as unknown as boolean)),
+			OriginPatterns: $.varRef(init?.OriginPatterns ?? (null as unknown as $.Slice<string>)),
+			CompressionMode: $.varRef(init?.CompressionMode ?? (0 as unknown as CompressionMode)),
+			CompressionThreshold: $.varRef(init?.CompressionThreshold ?? (0 as unknown as number))
 		}
 	}
 
@@ -889,8 +889,8 @@ export class CloseError {
 
 	constructor(init?: Partial<{Code?: StatusCode, Reason?: string}>) {
 		this._fields = {
-			Code: $.varRef(init?.Code ?? 0),
-			Reason: $.varRef(init?.Reason ?? "")
+			Code: $.varRef(init?.Code ?? (0 as unknown as StatusCode)),
+			Reason: $.varRef(init?.Reason ?? ("" as unknown as string))
 		}
 	}
 
@@ -939,8 +939,8 @@ export class mu {
 
 	constructor(init?: Partial<{c?: Conn | $.VarRef<Conn> | null, ch?: $.Channel<{}> | null}>) {
 		this._fields = {
-			c: $.varRef(init?.c ?? null),
-			ch: $.varRef(init?.ch ?? null)
+			c: $.varRef(init?.c ?? (null as unknown as Conn | $.VarRef<Conn> | null)),
+			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<{}> | null))
 		}
 	}
 
@@ -1122,7 +1122,7 @@ export async function dial(ctx: context.Context | null, url: string, opts: DialO
 		{
 			id: 0,
 			isSend: false,
-			channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+			channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 			onSelected: async (__goscriptSelect4Result) => {
 				await Conn.prototype.Close.call(c, 1008, "dial timed out")
 				return [null, null, await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()]

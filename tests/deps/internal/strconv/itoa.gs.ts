@@ -64,11 +64,11 @@ export function AppendInt(dst: $.Slice<number>, i: number, base: number): $.Slic
 export function AppendUint(dst: $.Slice<number>, i: number, base: number): $.Slice<number> {
 	if (base == 10) {
 		if (i < 100) {
-			return $.append(dst, ...($.stringToBytes(small($.int(i))) ?? []))
+			return $.appendSlice(dst, $.stringToBytes(small($.int(i))))
 		}
 		let a: Uint8Array = new Uint8Array(24)
 		let j = formatBase10($.goSlice(a, undefined, undefined), $.uint(i, 64))
-		return $.append(dst, ...($.goSlice(a, j, undefined) ?? []))
+		return $.appendSlice(dst, $.goSlice(a, j, undefined))
 	}
 	let __goscriptTuple0: any = formatBits(dst, $.uint(i, 64), base, false, true)
 	dst = __goscriptTuple0[0]
@@ -129,7 +129,7 @@ export function formatBits(dst: $.Slice<number>, u: number, base: number, neg: b
 	}
 
 	if (append_) {
-		d = $.append(dst, ...($.goSlice(a, i, undefined) ?? []))
+		d = $.appendSlice(dst, $.goSlice(a, i, undefined))
 		return [d, s]
 	}
 	s = $.bytesToString($.goSlice(a, i, undefined))

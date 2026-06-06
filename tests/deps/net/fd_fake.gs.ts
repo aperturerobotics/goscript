@@ -131,13 +131,13 @@ export class netFD {
 	constructor(init?: Partial<{pfd?: poll.FD, family?: number, sotype?: number, isConnected?: boolean, net?: string, laddr?: __goscript_net.Addr | null, raddr?: __goscript_net.Addr | null, fakeNetFD?: __goscript_net_fake.fakeNetFD | $.VarRef<__goscript_net_fake.fakeNetFD> | null}>) {
 		this._fields = {
 			pfd: $.varRef(init?.pfd ? $.markAsStructValue($.cloneStructValue(init.pfd)) : $.markAsStructValue(new poll.FD())),
-			family: $.varRef(init?.family ?? 0),
-			sotype: $.varRef(init?.sotype ?? 0),
-			isConnected: $.varRef(init?.isConnected ?? false),
-			net: $.varRef(init?.net ?? ""),
-			laddr: $.varRef(init?.laddr ?? null),
-			raddr: $.varRef(init?.raddr ?? null),
-			fakeNetFD: $.varRef(init?.fakeNetFD ?? null)
+			family: $.varRef(init?.family ?? (0 as unknown as number)),
+			sotype: $.varRef(init?.sotype ?? (0 as unknown as number)),
+			isConnected: $.varRef(init?.isConnected ?? (false as unknown as boolean)),
+			net: $.varRef(init?.net ?? ("" as unknown as string)),
+			laddr: $.varRef(init?.laddr ?? (null as unknown as __goscript_net.Addr | null)),
+			raddr: $.varRef(init?.raddr ?? (null as unknown as __goscript_net.Addr | null)),
+			fakeNetFD: $.varRef(init?.fakeNetFD ?? (null as unknown as __goscript_net_fake.fakeNetFD | $.VarRef<__goscript_net_fake.fakeNetFD> | null))
 		}
 	}
 

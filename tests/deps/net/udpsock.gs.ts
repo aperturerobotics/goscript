@@ -139,9 +139,9 @@ export class UDPAddr {
 
 	constructor(init?: Partial<{IP?: __goscript_ip.IP, Port?: number, Zone?: string}>) {
 		this._fields = {
-			IP: $.varRef(init?.IP ?? null),
-			Port: $.varRef(init?.Port ?? 0),
-			Zone: $.varRef(init?.Zone ?? "")
+			IP: $.varRef(init?.IP ?? (null as unknown as __goscript_ip.IP)),
+			Port: $.varRef(init?.Port ?? (0 as unknown as number)),
+			Zone: $.varRef(init?.Zone ?? ("" as unknown as string))
 		}
 	}
 

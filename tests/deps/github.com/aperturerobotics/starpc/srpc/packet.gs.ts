@@ -36,10 +36,10 @@ export function NewCallStartPacket(service: string, method: string, data: $.Slic
 	return new __goscript_rpcproto_pb.Packet({Body: $.interfaceValue<__goscript_rpcproto_pb.isPacket_Body | null>(new __goscript_rpcproto_pb.Packet_CallStart({CallStart: new __goscript_rpcproto_pb.CallStart({RpcService: service, RpcMethod: method, Data: data, DataIsZero: dataIsZero})}), "*srpc.Packet_CallStart")})
 }
 
-export async function NewCallDataPacket(data: $.Slice<number>, dataIsZero: boolean, complete: boolean, err: $.GoError): globalThis.Promise<__goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null> {
+export function NewCallDataPacket(data: $.Slice<number>, dataIsZero: boolean, complete: boolean, err: $.GoError): __goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null {
 	let errStr: string = ""
 	if (err != null) {
-		errStr = await $.pointerValue<Exclude<$.GoError, null>>(err).Error()
+		errStr = $.pointerValue<Exclude<$.GoError, null>>(err).Error()
 	}
 	return new __goscript_rpcproto_pb.Packet({Body: $.interfaceValue<__goscript_rpcproto_pb.isPacket_Body | null>(new __goscript_rpcproto_pb.Packet_CallData({CallData: new __goscript_rpcproto_pb.CallData({Data: data, DataIsZero: dataIsZero, Complete: (err != null) || complete, Error: errStr})}), "*srpc.Packet_CallData")})
 }

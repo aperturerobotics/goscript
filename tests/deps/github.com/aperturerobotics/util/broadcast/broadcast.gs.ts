@@ -41,7 +41,7 @@ export class Broadcast {
 	constructor(init?: Partial<{mtx?: sync.Mutex, ch?: broadcastWaitCh | $.VarRef<broadcastWaitCh> | null}>) {
 		this._fields = {
 			mtx: $.varRef(init?.mtx ? $.markAsStructValue($.cloneStructValue(init.mtx)) : $.markAsStructValue(new sync.Mutex())),
-			ch: $.varRef(init?.ch ?? null)
+			ch: $.varRef(init?.ch ?? (null as unknown as broadcastWaitCh | $.VarRef<broadcastWaitCh> | null))
 		}
 	}
 
@@ -140,7 +140,7 @@ export class Broadcast {
 				{
 					id: 0,
 					isSend: false,
-					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+					channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 					onSelected: async (__goscriptSelect0Result) => {
 						return context.Canceled
 					}
@@ -192,7 +192,7 @@ export class broadcastWaitCh {
 	constructor(init?: Partial<{once?: sync.Once, ch?: $.Channel<{}> | null}>) {
 		this._fields = {
 			once: $.varRef(init?.once ? $.markAsStructValue($.cloneStructValue(init.once)) : $.markAsStructValue(new sync.Once())),
-			ch: $.varRef(init?.ch ?? null)
+			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<{}> | null))
 		}
 	}
 

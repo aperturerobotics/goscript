@@ -73,10 +73,10 @@ export class fsTester {
 
 	constructor(init?: Partial<{fsys?: fs.FS | null, errors?: $.Slice<$.GoError>, dirs?: $.Slice<string>, files?: $.Slice<string>}>) {
 		this._fields = {
-			fsys: $.varRef(init?.fsys ?? null),
-			errors: $.varRef(init?.errors ?? null),
-			dirs: $.varRef(init?.dirs ?? null),
-			files: $.varRef(init?.files ?? null)
+			fsys: $.varRef(init?.fsys ?? (null as unknown as fs.FS | null)),
+			errors: $.varRef(init?.errors ?? (null as unknown as $.Slice<$.GoError>)),
+			dirs: $.varRef(init?.dirs ?? (null as unknown as $.Slice<string>)),
+			files: $.varRef(init?.files ?? (null as unknown as $.Slice<string>))
 		}
 	}
 
@@ -123,18 +123,18 @@ export class fsTester {
 
 	public async checkDir(dir: string): globalThis.Promise<void> {
 		let t: fsTester | $.VarRef<fsTester> | null = this
-		using __defer = new $.DisposableStack()
+		await using __defer = new $.AsyncDisposableStack()
 		// Read entire directory.
 		$.pointerValue<fsTester>(t).dirs = $.append($.pointerValue<fsTester>(t).dirs, dir)
-		let d = fsTester.prototype.openDir.call(t, dir)
+		let d = await fsTester.prototype.openDir.call(t, dir)
 		if (d == null) {
 			return
 		}
-		let __goscriptTuple0: any = $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(-1)
+		let __goscriptTuple0: any = await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(-1)
 		let list: $.Slice<fs.DirEntry | null> = __goscriptTuple0[0]
 		let err = __goscriptTuple0[1]
 		if (err != null) {
-			$.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
+			await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
 			fsTester.prototype.errorf.call(t, "%s: ReadDir(-1): %w", $.arrayToSlice<any>([dir, (err as any)]))
 			return
 		}
@@ -148,7 +148,7 @@ export class fsTester {
 		}
 		for (let __goscriptRangeTarget6 = list, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget6); __rangeIndex++) {
 			let info = __goscriptRangeTarget6![__rangeIndex]
-			let name = $.pointerValue<Exclude<fs.DirEntry, null>>(info).Name()
+			let name = await $.pointerValue<Exclude<fs.DirEntry, null>>(info).Name()
 			switch (true) {
 				case $.stringEqual(name, "."):
 				case $.stringEqual(name, ".."):
@@ -172,9 +172,9 @@ export class fsTester {
 				}
 			}
 			let __goscriptShadow1 = prefix + name
-			fsTester.prototype.checkStat.call(t, __goscriptShadow1, info)
+			await fsTester.prototype.checkStat.call(t, __goscriptShadow1, info)
 			await fsTester.prototype.checkOpen.call(t, __goscriptShadow1)
-			switch ($.pointerValue<Exclude<fs.DirEntry, null>>(info).Type()) {
+			switch (await $.pointerValue<Exclude<fs.DirEntry, null>>(info).Type()) {
 				case fs.ModeDir:
 				{
 					await fsTester.prototype.checkDir.call(t, __goscriptShadow1)
@@ -194,28 +194,28 @@ export class fsTester {
 		}
 
 		// Check ReadDir(-1) at EOF.
-		let __goscriptTuple1: any = $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(-1)
+		let __goscriptTuple1: any = await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(-1)
 		let list2: $.Slice<fs.DirEntry | null> = __goscriptTuple1[0]
 		err = __goscriptTuple1[1]
 		if (($.len(list2) > 0) || (err != null)) {
-			$.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
+			await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
 			fsTester.prototype.errorf.call(t, "%s: ReadDir(-1) at EOF = %d entries, %w, wanted 0 entries, nil", $.arrayToSlice<any>([dir, $.namedValueInterfaceValue<any>($.len(list2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (err as any)]))
 			return
 		}
 
 		// Check ReadDir(1) at EOF (different results).
-		let __goscriptTuple2: any = $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(1)
+		let __goscriptTuple2: any = await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(1)
 		list2 = __goscriptTuple2[0]
 		err = __goscriptTuple2[1]
 		if (($.len(list2) > 0) || (!$.comparableEqual(err, io.EOF))) {
-			$.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
+			await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
 			fsTester.prototype.errorf.call(t, "%s: ReadDir(1) at EOF = %d entries, %w, wanted 0 entries, EOF", $.arrayToSlice<any>([dir, $.namedValueInterfaceValue<any>($.len(list2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (err as any)]))
 			return
 		}
 
 		// Check that close does not report an error.
 		{
-			let __goscriptShadow2 = $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
+			let __goscriptShadow2 = await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
 			if (__goscriptShadow2 != null) {
 				fsTester.prototype.errorf.call(t, "%s: Close: %w", $.arrayToSlice<any>([dir, (__goscriptShadow2 as any)]))
 			}
@@ -223,17 +223,17 @@ export class fsTester {
 
 		// Check that closing twice doesn't crash.
 		// The return value doesn't matter.
-		$.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
+		await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close()
 
 		// Reopen directory, read a second time, make sure contents match.
 		{
-			d = fsTester.prototype.openDir.call(t, dir)
+			d = await fsTester.prototype.openDir.call(t, dir)
 			if (d == null) {
 				return
 			}
 		}
-		__defer.defer(() => { $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close() })
-		let __goscriptTuple3: any = $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(-1)
+		__defer.defer(async () => { await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close() })
+		let __goscriptTuple3: any = await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(-1)
 		list2 = __goscriptTuple3[0]
 		err = __goscriptTuple3[1]
 		if (err != null) {
@@ -244,26 +244,26 @@ export class fsTester {
 
 		// Reopen directory, read a third time in pieces, make sure contents match.
 		{
-			d = fsTester.prototype.openDir.call(t, dir)
+			d = await fsTester.prototype.openDir.call(t, dir)
 			if (d == null) {
 				return
 			}
 		}
-		__defer.defer(() => { $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close() })
+		__defer.defer(async () => { await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).Close() })
 		list2 = null
 		while (true) {
 			let n = 1
 			if ($.len(list2) > 0) {
 				n = 2
 			}
-			let __goscriptTuple4: any = $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(n)
+			let __goscriptTuple4: any = await $.pointerValue<Exclude<fs.ReadDirFile, null>>(d).ReadDir(n)
 			let frag: $.Slice<fs.DirEntry | null> = __goscriptTuple4[0]
 			let __goscriptShadow3 = __goscriptTuple4[1]
 			if ($.len(frag) > n) {
 				fsTester.prototype.errorf.call(t, "%s: third Open: ReadDir(%d) after %d: %d entries (too many)", $.arrayToSlice<any>([dir, $.namedValueInterfaceValue<any>(n, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>($.len(list2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>($.len(frag), "int", {}, { kind: $.TypeKind.Basic, name: "int" })]))
 				return
 			}
-			list2 = $.append(list2, ...(frag ?? []))
+			list2 = $.appendSlice(list2, frag)
 			if ($.comparableEqual(__goscriptShadow3, io.EOF)) {
 				break
 			}
@@ -284,7 +284,7 @@ export class fsTester {
 			let fsys = __goscriptTuple5[0]
 			let ok = __goscriptTuple5[1]
 			if (ok) {
-				let __goscriptTuple6: any = $.pointerValue<Exclude<fs.ReadDirFS, null>>(fsys).ReadDir(dir)
+				let __goscriptTuple6: any = await $.pointerValue<Exclude<fs.ReadDirFS, null>>(fsys).ReadDir(dir)
 				let __goscriptShadow4: $.Slice<fs.DirEntry | null> = __goscriptTuple6[0]
 				let __goscriptShadow5 = __goscriptTuple6[1]
 				if (__goscriptShadow5 != null) {
@@ -294,8 +294,8 @@ export class fsTester {
 				await fsTester.prototype.checkDirList.call(t, dir, "first Open+ReadDir(-1) vs fsys.ReadDir", list, __goscriptShadow4)
 
 				for (let i = 0; (i + 1) < $.len(__goscriptShadow4); i++) {
-					if ($.stringCompare($.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i]).Name(), $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i + 1]).Name()) >= 0) {
-						fsTester.prototype.errorf.call(t, "%s: fsys.ReadDir: list not sorted: %s before %s", $.arrayToSlice<any>([dir, $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i]).Name(), $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i + 1]).Name()]))
+					if ($.stringCompare(await $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i]).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i + 1]).Name()) >= 0) {
+						fsTester.prototype.errorf.call(t, "%s: fsys.ReadDir: list not sorted: %s before %s", $.arrayToSlice<any>([dir, await $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i]).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i + 1]).Name()]))
 					}
 				}
 			}
@@ -312,56 +312,56 @@ export class fsTester {
 		await fsTester.prototype.checkDirList.call(t, dir, "first Open+ReadDir(-1) vs fs.ReadDir", list, list2)
 
 		for (let i = 0; (i + 1) < $.len(list2); i++) {
-			if ($.stringCompare($.pointerValue<Exclude<fs.DirEntry, null>>(list2![i]).Name(), $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i + 1]).Name()) >= 0) {
-				fsTester.prototype.errorf.call(t, "%s: fs.ReadDir: list not sorted: %s before %s", $.arrayToSlice<any>([dir, $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i]).Name(), $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i + 1]).Name()]))
+			if ($.stringCompare(await $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i]).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i + 1]).Name()) >= 0) {
+				fsTester.prototype.errorf.call(t, "%s: fs.ReadDir: list not sorted: %s before %s", $.arrayToSlice<any>([dir, await $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i]).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i + 1]).Name()]))
 			}
 		}
 
-		fsTester.prototype.checkGlob.call(t, dir, list2)
+		await fsTester.prototype.checkGlob.call(t, dir, list2)
 	}
 
 	public async checkDirList(dir: string, desc: string, list1: $.Slice<fs.DirEntry | null>, list2: $.Slice<fs.DirEntry | null>): globalThis.Promise<void> {
 		const t: fsTester | $.VarRef<fsTester> | null = this
 		let old: Map<string, fs.DirEntry | null> | null = $.makeMap<string, fs.DirEntry | null>()
-		let checkMode: ((entry: fs.DirEntry | null) => void) | null = $.functionValue((entry: fs.DirEntry | null): void => {
-			if ($.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir() != ($.uint(($.pointerValue<Exclude<fs.DirEntry, null>>(entry).Type() & fs.ModeDir), 32) != $.uint(0, 32))) {
-				if ($.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir()) {
-					fsTester.prototype.errorf.call(t, "%s: ReadDir returned %s with IsDir() = true, Type() & ModeDir = 0", $.arrayToSlice<any>([dir, $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Name()]))
+		let checkMode: ((entry: fs.DirEntry | null) => void) | null = $.functionValue(async (entry: fs.DirEntry | null): globalThis.Promise<void> => {
+			if (await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir() != ($.uint((await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Type() & fs.ModeDir), 32) != $.uint(0, 32))) {
+				if (await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir()) {
+					fsTester.prototype.errorf.call(t, "%s: ReadDir returned %s with IsDir() = true, Type() & ModeDir = 0", $.arrayToSlice<any>([dir, await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Name()]))
 				} else {
-					fsTester.prototype.errorf.call(t, "%s: ReadDir returned %s with IsDir() = false, Type() & ModeDir = ModeDir", $.arrayToSlice<any>([dir, $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Name()]))
+					fsTester.prototype.errorf.call(t, "%s: ReadDir returned %s with IsDir() = false, Type() & ModeDir = ModeDir", $.arrayToSlice<any>([dir, await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Name()]))
 				}
 			}
 		}, ({ kind: $.TypeKind.Function, params: ["fs.DirEntry"], results: [] } as $.FunctionTypeInfo))
 
 		for (let __goscriptRangeTarget7 = list1, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget7); __rangeIndex++) {
 			let entry1 = __goscriptRangeTarget7![__rangeIndex]
-			$.mapSet(old, $.pointerValue<Exclude<fs.DirEntry, null>>(entry1).Name(), entry1)
+			$.mapSet(old, await $.pointerValue<Exclude<fs.DirEntry, null>>(entry1).Name(), entry1)
 			await checkMode!(entry1)
 		}
 
 		let diffs: $.Slice<string> = null as $.Slice<string>
 		for (let __goscriptRangeTarget8 = list2, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget8); __rangeIndex++) {
 			let entry2 = __goscriptRangeTarget8![__rangeIndex]
-			let entry1 = $.mapGet(old, $.pointerValue<Exclude<fs.DirEntry, null>>(entry2).Name(), null)[0]
+			let entry1 = $.mapGet(old, await $.pointerValue<Exclude<fs.DirEntry, null>>(entry2).Name(), null)[0]
 			if (entry1 == null) {
 				await checkMode!(entry2)
-				diffs = $.append(diffs, "+ " + formatEntry(entry2))
+				diffs = $.append(diffs, "+ " + await formatEntry(entry2))
 				continue
 			}
-			if (!$.stringEqual(formatEntry(entry1), formatEntry(entry2))) {
-				diffs = $.append(diffs, "- " + formatEntry(entry1), "+ " + formatEntry(entry2))
+			if (!$.stringEqual(await formatEntry(entry1), await formatEntry(entry2))) {
+				diffs = $.append(diffs, "- " + await formatEntry(entry1), "+ " + await formatEntry(entry2))
 			}
-			$.deleteMapEntry(old, $.pointerValue<Exclude<fs.DirEntry, null>>(entry2).Name())
+			$.deleteMapEntry(old, await $.pointerValue<Exclude<fs.DirEntry, null>>(entry2).Name())
 		}
 		for (const [__rangeKey, entry1] of old?.entries() ?? []) {
-			diffs = $.append(diffs, "- " + formatEntry(entry1))
+			diffs = $.append(diffs, "- " + await formatEntry(entry1))
 		}
 
 		if ($.len(diffs) == 0) {
 			return
 		}
 
-		slices.SortFunc(diffs, $.functionValue((a: string, b: string): number => {
+		await slices.SortFunc(diffs, $.functionValue((a: string, b: string): number => {
 			let fa: $.Slice<string> = strings.Fields(a)
 			let fb: $.Slice<string> = strings.Fields(b)
 			// sort by name (i < j) and then +/- (j < i, because + < -)
@@ -373,11 +373,11 @@ export class fsTester {
 
 	public async checkFile(file: string): globalThis.Promise<void> {
 		let t: fsTester | $.VarRef<fsTester> | null = this
-		using __defer = new $.DisposableStack()
+		await using __defer = new $.AsyncDisposableStack()
 		$.pointerValue<fsTester>(t).files = $.append($.pointerValue<fsTester>(t).files, file)
 
 		// Read entire file.
-		let [f, err] = $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(file)
+		let [f, err] = await $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(file)
 		if (err != null) {
 			fsTester.prototype.errorf.call(t, "%s: Open: %w", $.arrayToSlice<any>([file, (err as any)]))
 			return
@@ -387,13 +387,13 @@ export class fsTester {
 		let data: $.Slice<number> = __goscriptTuple8[0]
 		err = __goscriptTuple8[1]
 		if (err != null) {
-			$.pointerValue<Exclude<fs.File, null>>(f).Close()
+			await $.pointerValue<Exclude<fs.File, null>>(f).Close()
 			fsTester.prototype.errorf.call(t, "%s: Open+ReadAll: %w", $.arrayToSlice<any>([file, (err as any)]))
 			return
 		}
 
 		{
-			let __goscriptShadow6 = $.pointerValue<Exclude<fs.File, null>>(f).Close()
+			let __goscriptShadow6 = await $.pointerValue<Exclude<fs.File, null>>(f).Close()
 			if (__goscriptShadow6 != null) {
 				fsTester.prototype.errorf.call(t, "%s: Close: %w", $.arrayToSlice<any>([file, (__goscriptShadow6 as any)]))
 			}
@@ -401,7 +401,7 @@ export class fsTester {
 
 		// Check that closing twice doesn't crash.
 		// The return value doesn't matter.
-		$.pointerValue<Exclude<fs.File, null>>(f).Close()
+		await $.pointerValue<Exclude<fs.File, null>>(f).Close()
 
 		// Check that ReadFile works if present.
 		{
@@ -409,7 +409,7 @@ export class fsTester {
 			let fsys = __goscriptTuple9[0]
 			let ok = __goscriptTuple9[1]
 			if (ok) {
-				let __goscriptTuple10: any = $.pointerValue<Exclude<fs.ReadFileFS, null>>(fsys).ReadFile(file)
+				let __goscriptTuple10: any = await $.pointerValue<Exclude<fs.ReadFileFS, null>>(fsys).ReadFile(file)
 				let data2: $.Slice<number> = __goscriptTuple10[0]
 				let __goscriptShadow7 = __goscriptTuple10[1]
 				if (__goscriptShadow7 != null) {
@@ -423,7 +423,7 @@ export class fsTester {
 				for (let __goscriptRangeTarget9 = data2, i = 0; i < $.len(__goscriptRangeTarget9); i++) {
 					data2![i]++
 				}
-				let __goscriptTuple11: any = $.pointerValue<Exclude<fs.ReadFileFS, null>>(fsys).ReadFile(file)
+				let __goscriptTuple11: any = await $.pointerValue<Exclude<fs.ReadFileFS, null>>(fsys).ReadFile(file)
 				data2 = __goscriptTuple11[0]
 				__goscriptShadow7 = __goscriptTuple11[1]
 				if (__goscriptShadow7 != null) {
@@ -432,8 +432,8 @@ export class fsTester {
 				}
 				fsTester.prototype.checkFileRead.call(t, file, "Readall vs second fsys.ReadFile", data, data2)
 
-				await fsTester.prototype.checkBadPath.call(t, file, "ReadFile", $.functionValue((name: string): $.GoError => {
-					let [, __goscriptShadow8] = $.pointerValue<Exclude<fs.ReadFileFS, null>>(fsys).ReadFile(name)
+				await fsTester.prototype.checkBadPath.call(t, file, "ReadFile", $.functionValue(async (name: string): globalThis.Promise<$.GoError> => {
+					let [, __goscriptShadow8] = await $.pointerValue<Exclude<fs.ReadFileFS, null>>(fsys).ReadFile(name)
 					return __goscriptShadow8
 				}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: ["error"] } as $.FunctionTypeInfo)))
 			}
@@ -450,14 +450,14 @@ export class fsTester {
 		fsTester.prototype.checkFileRead.call(t, file, "ReadAll vs fs.ReadFile", data, data2)
 
 		// Use iotest.TestReader to check small reads, Seek, ReadAt.
-		let __goscriptTuple13: any = $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(file)
+		let __goscriptTuple13: any = await $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(file)
 		f = __goscriptTuple13[0]
 		err = __goscriptTuple13[1]
 		if (err != null) {
 			fsTester.prototype.errorf.call(t, "%s: second Open: %w", $.arrayToSlice<any>([file, (err as any)]))
 			return
 		}
-		__defer.defer(() => { $.pointerValue<Exclude<fs.File, null>>(f).Close() })
+		__defer.defer(async () => { await $.pointerValue<Exclude<fs.File, null>>(f).Close() })
 		{
 			let __goscriptShadow9 = await iotest.TestReader((f as io.Reader | null), data)
 			if (__goscriptShadow9 != null) {
@@ -474,7 +474,7 @@ export class fsTester {
 		}
 	}
 
-	public checkGlob(dir: string, list: $.Slice<fs.DirEntry | null>): void {
+	public async checkGlob(dir: string, list: $.Slice<fs.DirEntry | null>): globalThis.Promise<void> {
 		const t: fsTester | $.VarRef<fsTester> | null = this
 		{
 			let [, ok] = $.typeAssertTuple<fs.GlobFS | null>($.pointerValue<fsTester>(t).fsys, "fs.GlobFS")
@@ -531,7 +531,7 @@ export class fsTester {
 		// Test that malformed patterns are detected.
 		// The error is likely path.ErrBadPattern but need not be.
 		{
-			let [, err] = $.pointerValue<Exclude<fs.GlobFS, null>>($.mustTypeAssert<fs.GlobFS | null>($.pointerValue<fsTester>(t).fsys, "fs.GlobFS")).Glob(glob + "nonexist/[]")
+			let [, err] = await $.pointerValue<Exclude<fs.GlobFS, null>>($.mustTypeAssert<fs.GlobFS | null>($.pointerValue<fsTester>(t).fsys, "fs.GlobFS")).Glob(glob + "nonexist/[]")
 			if (err == null) {
 				fsTester.prototype.errorf.call(t, "%s: Glob(%#q): bad pattern not detected", $.arrayToSlice<any>([dir, glob + "nonexist/[]"]))
 			}
@@ -544,7 +544,7 @@ export class fsTester {
 			let haveNot = false
 			for (let __goscriptRangeTarget11 = list, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget11); __rangeIndex++) {
 				let d = __goscriptRangeTarget11![__rangeIndex]
-				if (strings.ContainsRune($.pointerValue<Exclude<fs.DirEntry, null>>(d).Name(), $.int(c, 32))) {
+				if (strings.ContainsRune(await $.pointerValue<Exclude<fs.DirEntry, null>>(d).Name(), $.int(c, 32))) {
 					have = true
 				} else {
 					haveNot = true
@@ -562,12 +562,12 @@ export class fsTester {
 		let want: $.Slice<string> = null as $.Slice<string>
 		for (let __goscriptRangeTarget12 = list, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget12); __rangeIndex++) {
 			let d = __goscriptRangeTarget12![__rangeIndex]
-			if (strings.ContainsRune($.pointerValue<Exclude<fs.DirEntry, null>>(d).Name(), $.int(c, 32))) {
-				want = $.append(want, path2.Join(dir, $.pointerValue<Exclude<fs.DirEntry, null>>(d).Name()))
+			if (strings.ContainsRune(await $.pointerValue<Exclude<fs.DirEntry, null>>(d).Name(), $.int(c, 32))) {
+				want = $.append(want, path2.Join(dir, await $.pointerValue<Exclude<fs.DirEntry, null>>(d).Name()))
 			}
 		}
 
-		let __goscriptTuple14: any = $.pointerValue<Exclude<fs.GlobFS, null>>($.mustTypeAssert<fs.GlobFS | null>($.pointerValue<fsTester>(t).fsys, "fs.GlobFS")).Glob(glob)
+		let __goscriptTuple14: any = await $.pointerValue<Exclude<fs.GlobFS, null>>($.mustTypeAssert<fs.GlobFS | null>($.pointerValue<fsTester>(t).fsys, "fs.GlobFS")).Glob(glob)
 		let names: $.Slice<string> = __goscriptTuple14[0]
 		let err = __goscriptTuple14[1]
 		if (err != null) {
@@ -613,54 +613,54 @@ export class fsTester {
 
 	public async checkOpen(file: string): globalThis.Promise<void> {
 		const t: fsTester | $.VarRef<fsTester> | null = this
-		await fsTester.prototype.checkBadPath.call(t, file, "Open", $.functionValue((file: string): $.GoError => {
-			let [f, err] = $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(file)
+		await fsTester.prototype.checkBadPath.call(t, file, "Open", $.functionValue(async (file: string): globalThis.Promise<$.GoError> => {
+			let [f, err] = await $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(file)
 			if (err == null) {
-				$.pointerValue<Exclude<fs.File, null>>(f).Close()
+				await $.pointerValue<Exclude<fs.File, null>>(f).Close()
 			}
 			return err
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: ["error"] } as $.FunctionTypeInfo)))
 	}
 
-	public checkStat(path: string, entry: fs.DirEntry | null): void {
+	public async checkStat(path: string, entry: fs.DirEntry | null): globalThis.Promise<void> {
 		const t: fsTester | $.VarRef<fsTester> | null = this
-		let [file, err] = $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(path)
+		let [file, err] = await $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(path)
 		if (err != null) {
 			fsTester.prototype.errorf.call(t, "%s: Open: %w", $.arrayToSlice<any>([path, (err as any)]))
 			return
 		}
-		let __goscriptTuple15: any = $.pointerValue<Exclude<fs.File, null>>(file).Stat()
+		let __goscriptTuple15: any = await $.pointerValue<Exclude<fs.File, null>>(file).Stat()
 		let info = __goscriptTuple15[0]
 		err = __goscriptTuple15[1]
-		$.pointerValue<Exclude<fs.File, null>>(file).Close()
+		await $.pointerValue<Exclude<fs.File, null>>(file).Close()
 		if (err != null) {
 			fsTester.prototype.errorf.call(t, "%s: Stat: %w", $.arrayToSlice<any>([path, (err as any)]))
 			return
 		}
-		let fentry = formatEntry(entry)
-		let fientry = formatInfoEntry(info)
+		let fentry = await formatEntry(entry)
+		let fientry = await formatInfoEntry(info)
 		// Note: mismatch here is OK for symlink, because Open dereferences symlink.
-		if ((!$.stringEqual(fentry, fientry)) && ($.uint(($.pointerValue<Exclude<fs.DirEntry, null>>(entry).Type() & fs.ModeSymlink), 32) == $.uint(0, 32))) {
+		if ((!$.stringEqual(fentry, fientry)) && ($.uint((await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Type() & fs.ModeSymlink), 32) == $.uint(0, 32))) {
 			fsTester.prototype.errorf.call(t, "%s: mismatch:\n\tentry = %s\n\tfile.Stat() = %s", $.arrayToSlice<any>([path, fentry, fientry]))
 		}
 
-		let __goscriptTuple16: any = $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Info()
+		let __goscriptTuple16: any = await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Info()
 		let einfo = __goscriptTuple16[0]
 		err = __goscriptTuple16[1]
 		if (err != null) {
 			fsTester.prototype.errorf.call(t, "%s: entry.Info: %w", $.arrayToSlice<any>([path, (err as any)]))
 			return
 		}
-		let finfo = formatInfo(info)
-		if ($.uint(($.pointerValue<Exclude<fs.DirEntry, null>>(entry).Type() & fs.ModeSymlink), 32) != $.uint(0, 32)) {
+		let finfo = await formatInfo(info)
+		if ($.uint((await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Type() & fs.ModeSymlink), 32) != $.uint(0, 32)) {
 			// For symlink, just check that entry.Info matches entry on common fields.
 			// Open deferences symlink, so info itself may differ.
-			let feentry = formatInfoEntry(einfo)
+			let feentry = await formatInfoEntry(einfo)
 			if (!$.stringEqual(fentry, feentry)) {
 				fsTester.prototype.errorf.call(t, "%s: mismatch\n\tentry = %s\n\tentry.Info() = %s\n", $.arrayToSlice<any>([path, fentry, feentry]))
 			}
 		} else {
-			let feinfo = formatInfo(einfo)
+			let feinfo = await formatInfo(einfo)
 			if (!$.stringEqual(feinfo, finfo)) {
 				fsTester.prototype.errorf.call(t, "%s: mismatch:\n\tentry.Info() = %s\n\tfile.Stat() = %s\n", $.arrayToSlice<any>([path, feinfo, finfo]))
 			}
@@ -674,7 +674,7 @@ export class fsTester {
 			fsTester.prototype.errorf.call(t, "%s: fs.Stat: %w", $.arrayToSlice<any>([path, (err as any)]))
 			return
 		}
-		let finfo2 = formatInfo(info2)
+		let finfo2 = await formatInfo(info2)
 		if (!$.stringEqual(finfo2, finfo)) {
 			fsTester.prototype.errorf.call(t, "%s: fs.Stat(...) = %s\n\twant %s", $.arrayToSlice<any>([path, finfo2, finfo]))
 		}
@@ -684,12 +684,12 @@ export class fsTester {
 			let fsys = __goscriptTuple18[0]
 			let ok = __goscriptTuple18[1]
 			if (ok) {
-				let [__goscriptShadow10, __goscriptShadow11] = $.pointerValue<Exclude<fs.StatFS, null>>(fsys).Stat(path)
+				let [__goscriptShadow10, __goscriptShadow11] = await $.pointerValue<Exclude<fs.StatFS, null>>(fsys).Stat(path)
 				if (__goscriptShadow11 != null) {
 					fsTester.prototype.errorf.call(t, "%s: fsys.Stat: %w", $.arrayToSlice<any>([path, (__goscriptShadow11 as any)]))
 					return
 				}
-				let __goscriptShadow12 = formatInfo(__goscriptShadow10)
+				let __goscriptShadow12 = await formatInfo(__goscriptShadow10)
 				if (!$.stringEqual(__goscriptShadow12, finfo)) {
 					fsTester.prototype.errorf.call(t, "%s: fsys.Stat(...) = %s\n\twant %s", $.arrayToSlice<any>([path, __goscriptShadow12, finfo]))
 				}
@@ -701,17 +701,17 @@ export class fsTester {
 			let fsys = __goscriptTuple19[0]
 			let ok = __goscriptTuple19[1]
 			if (ok) {
-				let [__goscriptShadow13, __goscriptShadow14] = $.pointerValue<Exclude<fs.ReadLinkFS, null>>(fsys).Lstat(path)
+				let [__goscriptShadow13, __goscriptShadow14] = await $.pointerValue<Exclude<fs.ReadLinkFS, null>>(fsys).Lstat(path)
 				if (__goscriptShadow14 != null) {
 					fsTester.prototype.errorf.call(t, "%s: fsys.Lstat: %v", $.arrayToSlice<any>([path, (__goscriptShadow14 as any)]))
 					return
 				}
-				let fientry2 = formatInfoEntry(__goscriptShadow13)
+				let fientry2 = await formatInfoEntry(__goscriptShadow13)
 				if (!$.stringEqual(fentry, fientry2)) {
 					fsTester.prototype.errorf.call(t, "%s: mismatch:\n\tentry = %s\n\tfsys.Lstat(...) = %s", $.arrayToSlice<any>([path, fentry, fientry2]))
 				}
-				let feinfo = formatInfo(einfo)
-				let __goscriptShadow15 = formatInfo(__goscriptShadow13)
+				let feinfo = await formatInfo(einfo)
+				let __goscriptShadow15 = await formatInfo(__goscriptShadow13)
 				if (!$.stringEqual(feinfo, __goscriptShadow15)) {
 					fsTester.prototype.errorf.call(t, "%s: mismatch:\n\tentry.Info() = %s\n\tfsys.Lstat(...) = %s\n", $.arrayToSlice<any>([path, feinfo, __goscriptShadow15]))
 				}
@@ -724,16 +724,16 @@ export class fsTester {
 		$.pointerValue<fsTester>(t).errors = $.append($.pointerValue<fsTester>(t).errors, fmt.Errorf(format, ...(args ?? [])))
 	}
 
-	public openDir(dir: string): fs.ReadDirFile | null {
+	public async openDir(dir: string): globalThis.Promise<fs.ReadDirFile | null> {
 		const t: fsTester | $.VarRef<fsTester> | null = this
-		let [f, err] = $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(dir)
+		let [f, err] = await $.pointerValue<Exclude<fs.FS, null>>($.pointerValue<fsTester>(t).fsys).Open(dir)
 		if (err != null) {
 			fsTester.prototype.errorf.call(t, "%s: Open: %w", $.arrayToSlice<any>([dir, (err as any)]))
 			return null
 		}
 		let [d, ok] = $.typeAssertTuple<fs.ReadDirFile | null>(f, "fs.ReadDirFile")
 		if (!ok) {
-			$.pointerValue<Exclude<fs.File, null>>(f).Close()
+			await $.pointerValue<Exclude<fs.File, null>>(f).Close()
 			fsTester.prototype.errorf.call(t, "%s: Open returned File type %T, not a fs.ReadDirFile", $.arrayToSlice<any>([dir, (f as any)]))
 			return null
 		}
@@ -820,14 +820,14 @@ export async function testFS(fsys: fs.FS | null, expected: $.Slice<string>): glo
 	return fmt.Errorf("TestFS found errors:\n%w", (errors2.Join(...(t.value.errors ?? [])) as any))
 }
 
-export function formatEntry(entry: fs.DirEntry | null): string {
-	return fmt.Sprintf("%s IsDir=%v Type=%v", $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Name(), $.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir(), $.namedValueInterfaceValue<any>($.pointerValue<Exclude<fs.DirEntry, null>>(entry).Type(), "fs.FileMode", {IsDir: (receiver: any, ...args: any[]) => (fs.FileMode_IsDir as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), IsRegular: (receiver: any, ...args: any[]) => (fs.FileMode_IsRegular as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Perm: (receiver: any, ...args: any[]) => (fs.FileMode_Perm as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), String: (receiver: any, ...args: any[]) => (fs.FileMode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Type: (receiver: any, ...args: any[]) => (fs.FileMode_Type as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" }))
+export async function formatEntry(entry: fs.DirEntry | null): globalThis.Promise<string> {
+	return fmt.Sprintf("%s IsDir=%v Type=%v", await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir(), $.namedValueInterfaceValue<any>(await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Type(), "fs.FileMode", {IsDir: (receiver: any, ...args: any[]) => (fs.FileMode_IsDir as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), IsRegular: (receiver: any, ...args: any[]) => (fs.FileMode_IsRegular as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Perm: (receiver: any, ...args: any[]) => (fs.FileMode_Perm as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), String: (receiver: any, ...args: any[]) => (fs.FileMode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Type: (receiver: any, ...args: any[]) => (fs.FileMode_Type as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" }))
 }
 
-export function formatInfoEntry(info: fs.FileInfo | null): string {
-	return fmt.Sprintf("%s IsDir=%v Type=%v", $.pointerValue<Exclude<fs.FileInfo, null>>(info).Name(), $.pointerValue<Exclude<fs.FileInfo, null>>(info).IsDir(), $.namedValueInterfaceValue<any>(fs.FileMode_Type($.pointerValue<Exclude<fs.FileInfo, null>>(info).Mode()), "fs.FileMode", {IsDir: (receiver: any, ...args: any[]) => (fs.FileMode_IsDir as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), IsRegular: (receiver: any, ...args: any[]) => (fs.FileMode_IsRegular as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Perm: (receiver: any, ...args: any[]) => (fs.FileMode_Perm as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), String: (receiver: any, ...args: any[]) => (fs.FileMode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Type: (receiver: any, ...args: any[]) => (fs.FileMode_Type as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" }))
+export async function formatInfoEntry(info: fs.FileInfo | null): globalThis.Promise<string> {
+	return fmt.Sprintf("%s IsDir=%v Type=%v", await $.pointerValue<Exclude<fs.FileInfo, null>>(info).Name(), await $.pointerValue<Exclude<fs.FileInfo, null>>(info).IsDir(), $.namedValueInterfaceValue<any>(fs.FileMode_Type((await $.pointerValue<Exclude<fs.FileInfo, null>>(info).Mode())), "fs.FileMode", {IsDir: (receiver: any, ...args: any[]) => (fs.FileMode_IsDir as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), IsRegular: (receiver: any, ...args: any[]) => (fs.FileMode_IsRegular as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Perm: (receiver: any, ...args: any[]) => (fs.FileMode_Perm as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), String: (receiver: any, ...args: any[]) => (fs.FileMode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Type: (receiver: any, ...args: any[]) => (fs.FileMode_Type as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" }))
 }
 
-export function formatInfo(info: fs.FileInfo | null): string {
-	return fmt.Sprintf("%s IsDir=%v Mode=%v Size=%d ModTime=%v", $.pointerValue<Exclude<fs.FileInfo, null>>(info).Name(), $.pointerValue<Exclude<fs.FileInfo, null>>(info).IsDir(), $.namedValueInterfaceValue<any>($.pointerValue<Exclude<fs.FileInfo, null>>(info).Mode(), "fs.FileMode", {IsDir: (receiver: any, ...args: any[]) => (fs.FileMode_IsDir as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), IsRegular: (receiver: any, ...args: any[]) => (fs.FileMode_IsRegular as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Perm: (receiver: any, ...args: any[]) => (fs.FileMode_Perm as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), String: (receiver: any, ...args: any[]) => (fs.FileMode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Type: (receiver: any, ...args: any[]) => (fs.FileMode_Type as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" }), $.namedValueInterfaceValue<any>($.pointerValue<Exclude<fs.FileInfo, null>>(info).Size(), "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), $.interfaceValue<any>($.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<fs.FileInfo, null>>(info).ModTime())), "time.Time"))
+export async function formatInfo(info: fs.FileInfo | null): globalThis.Promise<string> {
+	return fmt.Sprintf("%s IsDir=%v Mode=%v Size=%d ModTime=%v", await $.pointerValue<Exclude<fs.FileInfo, null>>(info).Name(), await $.pointerValue<Exclude<fs.FileInfo, null>>(info).IsDir(), $.namedValueInterfaceValue<any>(await $.pointerValue<Exclude<fs.FileInfo, null>>(info).Mode(), "fs.FileMode", {IsDir: (receiver: any, ...args: any[]) => (fs.FileMode_IsDir as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), IsRegular: (receiver: any, ...args: any[]) => (fs.FileMode_IsRegular as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Perm: (receiver: any, ...args: any[]) => (fs.FileMode_Perm as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), String: (receiver: any, ...args: any[]) => (fs.FileMode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args), Type: (receiver: any, ...args: any[]) => (fs.FileMode_Type as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" }), $.namedValueInterfaceValue<any>(await $.pointerValue<Exclude<fs.FileInfo, null>>(info).Size(), "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<fs.FileInfo, null>>(info).ModTime())), "time.Time"))
 }

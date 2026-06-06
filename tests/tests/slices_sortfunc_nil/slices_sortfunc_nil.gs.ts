@@ -20,7 +20,7 @@ export class field {
 
 	constructor(init?: Partial<{name?: string}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? "")
+			name: $.varRef(init?.name ?? ("" as unknown as string))
 		}
 	}
 
@@ -45,7 +45,7 @@ export async function main(): globalThis.Promise<void> {
 	let fields: $.Slice<field> = null as $.Slice<field>
 	$.println("fields before:", fields)
 
-	slices.SortFunc(fields, $.functionValue((a: field, b: field): number => {
+	await slices.SortFunc(fields, $.functionValue((a: field, b: field): number => {
 		if ($.stringCompare(a.name, b.name) < 0) {
 			return -1
 		}

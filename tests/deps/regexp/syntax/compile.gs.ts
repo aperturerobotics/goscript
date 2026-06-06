@@ -43,8 +43,8 @@ export class patchList {
 
 	constructor(init?: Partial<{head?: number, tail?: number}>) {
 		this._fields = {
-			head: $.varRef(init?.head ?? 0),
-			tail: $.varRef(init?.tail ?? 0)
+			head: $.varRef(init?.head ?? (0 as unknown as number)),
+			tail: $.varRef(init?.tail ?? (0 as unknown as number))
 		}
 	}
 
@@ -129,9 +129,9 @@ export class frag {
 
 	constructor(init?: Partial<{i?: number, out?: patchList, nullable?: boolean}>) {
 		this._fields = {
-			i: $.varRef(init?.i ?? 0),
+			i: $.varRef(init?.i ?? (0 as unknown as number)),
 			out: $.varRef(init?.out ? $.markAsStructValue($.cloneStructValue(init.out)) : $.markAsStructValue(new patchList())),
-			nullable: $.varRef(init?.nullable ?? false)
+			nullable: $.varRef(init?.nullable ?? (false as unknown as boolean))
 		}
 	}
 
@@ -168,7 +168,7 @@ export class compiler {
 
 	constructor(init?: Partial<{p?: __goscript_prog.Prog | $.VarRef<__goscript_prog.Prog> | null}>) {
 		this._fields = {
-			p: $.varRef(init?.p ?? null)
+			p: $.varRef(init?.p ?? (null as unknown as __goscript_prog.Prog | $.VarRef<__goscript_prog.Prog> | null))
 		}
 	}
 

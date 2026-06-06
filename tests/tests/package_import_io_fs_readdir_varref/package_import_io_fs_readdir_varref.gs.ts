@@ -23,7 +23,7 @@ export class openOnlyFS {
 
 	constructor(init?: Partial<{fsys?: fstest.MapFS}>) {
 		this._fields = {
-			fsys: $.varRef(init?.fsys ?? null)
+			fsys: $.varRef(init?.fsys ?? (null as unknown as fstest.MapFS))
 		}
 	}
 
@@ -35,9 +35,9 @@ export class openOnlyFS {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Open(name: string): [fs.File | null, $.GoError] {
+	public async Open(name: string): globalThis.Promise<[fs.File | null, $.GoError]> {
 		const o = this
-		return fstest.MapFS_Open(o.fsys, name)
+		return await fstest.MapFS_Open(o.fsys, name)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -61,7 +61,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 	for (let __goscriptRangeTarget0 = entries, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let entry = __goscriptRangeTarget0![__rangeIndex]
-		$.println($.pointerValue<Exclude<fs.DirEntry, null>>(entry).Name(), $.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir())
+		$.println(await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir())
 	}
 }
 

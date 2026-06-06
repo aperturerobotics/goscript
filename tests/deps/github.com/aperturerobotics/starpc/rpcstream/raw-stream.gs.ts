@@ -50,7 +50,7 @@ export async function HandleRawRpcStream(stream: __goscript_rpcstream.RpcStream 
 	}
 
 	// lookup the server for this component id
-	let ctx = $.pointerValue<Exclude<__goscript_rpcstream.RpcStream, null>>(stream).Context()
+	let ctx = await $.pointerValue<Exclude<__goscript_rpcstream.RpcStream, null>>(stream).Context()
 	let componentID = __goscript_rpcstream_pb.RpcStreamInit.prototype.GetComponentId.call($.pointerValue<__goscript_rpcstream_pb.RpcStreamPacket_Init>(initInner).Init)
 	let __goscriptTuple2: any = await getter!(ctx, componentID)
 	let remoteRwc = __goscriptTuple2[0]
@@ -69,7 +69,7 @@ export async function HandleRawRpcStream(stream: __goscript_rpcstream.RpcStream 
 	// send ack
 	let errStr: string = ""
 	if (err != null) {
-		errStr = await $.pointerValue<Exclude<$.GoError, null>>(err).Error()
+		errStr = $.pointerValue<Exclude<$.GoError, null>>(err).Error()
 	}
 	let sendErr = await $.pointerValue<Exclude<__goscript_rpcstream.RpcStream, null>>(stream).Send(new __goscript_rpcstream_pb.RpcStreamPacket({Body: $.interfaceValue<__goscript_rpcstream_pb.isRpcStreamPacket_Body | null>(new __goscript_rpcstream_pb.RpcStreamPacket_Ack({Ack: new __goscript_rpcstream_pb.RpcAck({Error: errStr})}), "*rpcstream.RpcStreamPacket_Ack")}))
 	if (err != null) {

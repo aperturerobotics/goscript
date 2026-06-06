@@ -9,3 +9,4 @@ Callers empty: 0
 Frames empty: 0 false
 FuncForPC nil: true
 Cleanup stopped
+Finalizer ignored

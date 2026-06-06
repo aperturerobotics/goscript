@@ -85,7 +85,7 @@ export class MutexWrap {
 	constructor(init?: Partial<{lock?: sync.Mutex, disabled?: boolean}>) {
 		this._fields = {
 			lock: $.varRef(init?.lock ? $.markAsStructValue($.cloneStructValue(init.lock)) : $.markAsStructValue(new sync.Mutex())),
-			disabled: $.varRef(init?.disabled ?? false)
+			disabled: $.varRef(init?.disabled ?? (false as unknown as boolean))
 		}
 	}
 
@@ -225,15 +225,15 @@ export class Logger {
 
 	constructor(init?: Partial<{Out?: io.Writer | null, Hooks?: __goscript_hooks.LevelHooks, Formatter?: __goscript_formatter.Formatter | null, ReportCaller?: boolean, Level?: __goscript_logrus.Level, mu?: MutexWrap, entryPool?: sync.Pool, ExitFunc?: ((_p0: number) => void) | null, BufferPool?: __goscript_buffer_pool.BufferPool | null}>) {
 		this._fields = {
-			Out: $.varRef(init?.Out ?? null),
-			Hooks: $.varRef(init?.Hooks ?? null),
-			Formatter: $.varRef(init?.Formatter ?? null),
-			ReportCaller: $.varRef(init?.ReportCaller ?? false),
-			Level: $.varRef(init?.Level ?? 0),
+			Out: $.varRef(init?.Out ?? (null as unknown as io.Writer | null)),
+			Hooks: $.varRef(init?.Hooks ?? (null as unknown as __goscript_hooks.LevelHooks)),
+			Formatter: $.varRef(init?.Formatter ?? (null as unknown as __goscript_formatter.Formatter | null)),
+			ReportCaller: $.varRef(init?.ReportCaller ?? (false as unknown as boolean)),
+			Level: $.varRef(init?.Level ?? (0 as unknown as __goscript_logrus.Level)),
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new MutexWrap())),
 			entryPool: $.varRef(init?.entryPool ? $.markAsStructValue($.cloneStructValue(init.entryPool)) : $.markAsStructValue(new sync.Pool())),
-			ExitFunc: $.varRef(init?.ExitFunc ?? null),
-			BufferPool: $.varRef(init?.BufferPool ?? null)
+			ExitFunc: $.varRef(init?.ExitFunc ?? (null as unknown as ((_p0: number) => void) | null)),
+			BufferPool: $.varRef(init?.BufferPool ?? (null as unknown as __goscript_buffer_pool.BufferPool | null))
 		}
 	}
 
@@ -258,7 +258,7 @@ export class Logger {
 		using __defer = new $.DisposableStack()
 		await $.pointerValue<Logger>(logger).mu.Lock()
 		__defer.defer(() => { $.pointerValue<Logger>(logger).mu.Unlock() })
-		__goscript_hooks.LevelHooks_Add($.pointerValue<Logger>(logger).Hooks, hook)
+		await __goscript_hooks.LevelHooks_Add($.pointerValue<Logger>(logger).Hooks, hook)
 	}
 
 	public async Debug(args: $.Slice<any>): globalThis.Promise<void> {
@@ -581,7 +581,7 @@ export class Logger {
 		using __defer = new $.DisposableStack()
 		let entry: __goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null = await Logger.prototype.newEntry.call(logger)
 		__defer.defer(() => { Logger.prototype.releaseEntry.call(logger, entry) })
-		return __goscript_entry.Entry.prototype.WithField.call(entry, key, value)
+		return await __goscript_entry.Entry.prototype.WithField.call(entry, key, value)
 	}
 
 	public async WithFields(fields: __goscript_logrus.Fields): globalThis.Promise<__goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null> {
@@ -589,7 +589,7 @@ export class Logger {
 		using __defer = new $.DisposableStack()
 		let entry: __goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null = await Logger.prototype.newEntry.call(logger)
 		__defer.defer(() => { Logger.prototype.releaseEntry.call(logger, entry) })
-		return __goscript_entry.Entry.prototype.WithFields.call(entry, fields)
+		return await __goscript_entry.Entry.prototype.WithFields.call(entry, fields)
 	}
 
 	public async WithTime(t: time.Time): globalThis.Promise<__goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null> {

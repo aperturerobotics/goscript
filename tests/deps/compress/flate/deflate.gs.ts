@@ -81,12 +81,12 @@ export class compressionLevel {
 
 	constructor(init?: Partial<{level?: number, good?: number, lazy?: number, nice?: number, chain?: number, fastSkipHashing?: number}>) {
 		this._fields = {
-			level: $.varRef(init?.level ?? 0),
-			good: $.varRef(init?.good ?? 0),
-			lazy: $.varRef(init?.lazy ?? 0),
-			nice: $.varRef(init?.nice ?? 0),
-			chain: $.varRef(init?.chain ?? 0),
-			fastSkipHashing: $.varRef(init?.fastSkipHashing ?? 0)
+			level: $.varRef(init?.level ?? (0 as unknown as number)),
+			good: $.varRef(init?.good ?? (0 as unknown as number)),
+			lazy: $.varRef(init?.lazy ?? (0 as unknown as number)),
+			nice: $.varRef(init?.nice ?? (0 as unknown as number)),
+			chain: $.varRef(init?.chain ?? (0 as unknown as number)),
+			fastSkipHashing: $.varRef(init?.fastSkipHashing ?? (0 as unknown as number))
 		}
 	}
 
@@ -307,26 +307,26 @@ export class compressor {
 	constructor(init?: Partial<{compressionLevel?: compressionLevel, w?: __goscript_huffman_bit_writer.huffmanBitWriter | $.VarRef<__goscript_huffman_bit_writer.huffmanBitWriter> | null, bulkHasher?: ((_p0: $.Slice<number>, _p1: $.Slice<number>) => void) | null, fill?: ((_p0: compressor | $.VarRef<compressor> | null, _p1: $.Slice<number>) => number | globalThis.Promise<number>) | null, step?: ((_p0: compressor | $.VarRef<compressor> | null) => void) | null, bestSpeed?: __goscript_deflatefast.deflateFast | $.VarRef<__goscript_deflatefast.deflateFast> | null, index?: number, window?: $.Slice<number>, windowEnd?: number, blockStart?: number, byteAvailable?: boolean, sync?: boolean, tokens?: $.Slice<__goscript_token.token>, length?: number, offset?: number, maxInsertIndex?: number, err?: $.GoError, chainHead?: number, hashHead?: number[], hashPrev?: number[], hashOffset?: number, hashMatch?: number[]}>) {
 		this._fields = {
 			compressionLevel: $.varRef(init?.compressionLevel ? $.markAsStructValue($.cloneStructValue(init.compressionLevel)) : $.markAsStructValue(new compressionLevel())),
-			w: $.varRef(init?.w ?? null),
-			bulkHasher: $.varRef(init?.bulkHasher ?? null),
-			fill: $.varRef(init?.fill ?? null),
-			step: $.varRef(init?.step ?? null),
-			bestSpeed: $.varRef(init?.bestSpeed ?? null),
-			index: $.varRef(init?.index ?? 0),
-			window: $.varRef(init?.window ?? null),
-			windowEnd: $.varRef(init?.windowEnd ?? 0),
-			blockStart: $.varRef(init?.blockStart ?? 0),
-			byteAvailable: $.varRef(init?.byteAvailable ?? false),
-			sync: $.varRef(init?.sync ?? false),
-			tokens: $.varRef(init?.tokens ?? null),
-			length: $.varRef(init?.length ?? 0),
-			offset: $.varRef(init?.offset ?? 0),
-			maxInsertIndex: $.varRef(init?.maxInsertIndex ?? 0),
-			err: $.varRef(init?.err ?? null),
-			chainHead: $.varRef(init?.chainHead ?? 0),
+			w: $.varRef(init?.w ?? (null as unknown as __goscript_huffman_bit_writer.huffmanBitWriter | $.VarRef<__goscript_huffman_bit_writer.huffmanBitWriter> | null)),
+			bulkHasher: $.varRef(init?.bulkHasher ?? (null as unknown as ((_p0: $.Slice<number>, _p1: $.Slice<number>) => void) | null)),
+			fill: $.varRef(init?.fill ?? (null as unknown as ((_p0: compressor | $.VarRef<compressor> | null, _p1: $.Slice<number>) => number | globalThis.Promise<number>) | null)),
+			step: $.varRef(init?.step ?? (null as unknown as ((_p0: compressor | $.VarRef<compressor> | null) => void) | null)),
+			bestSpeed: $.varRef(init?.bestSpeed ?? (null as unknown as __goscript_deflatefast.deflateFast | $.VarRef<__goscript_deflatefast.deflateFast> | null)),
+			index: $.varRef(init?.index ?? (0 as unknown as number)),
+			window: $.varRef(init?.window ?? (null as unknown as $.Slice<number>)),
+			windowEnd: $.varRef(init?.windowEnd ?? (0 as unknown as number)),
+			blockStart: $.varRef(init?.blockStart ?? (0 as unknown as number)),
+			byteAvailable: $.varRef(init?.byteAvailable ?? (false as unknown as boolean)),
+			sync: $.varRef(init?.sync ?? (false as unknown as boolean)),
+			tokens: $.varRef(init?.tokens ?? (null as unknown as $.Slice<__goscript_token.token>)),
+			length: $.varRef(init?.length ?? (0 as unknown as number)),
+			offset: $.varRef(init?.offset ?? (0 as unknown as number)),
+			maxInsertIndex: $.varRef(init?.maxInsertIndex ?? (0 as unknown as number)),
+			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
+			chainHead: $.varRef(init?.chainHead ?? (0 as unknown as number)),
 			hashHead: $.varRef(init?.hashHead !== undefined ? $.cloneArrayValue(init.hashHead) : Array.from({ length: 131072 }, () => 0)),
 			hashPrev: $.varRef(init?.hashPrev !== undefined ? $.cloneArrayValue(init.hashPrev) : Array.from({ length: 32768 }, () => 0)),
-			hashOffset: $.varRef(init?.hashOffset ?? 0),
+			hashOffset: $.varRef(init?.hashOffset ?? (0 as unknown as number)),
 			hashMatch: $.varRef(init?.hashMatch !== undefined ? $.cloneArrayValue(init.hashMatch) : Array.from({ length: 257 }, () => 0))
 		}
 	}
@@ -937,7 +937,7 @@ export class dictWriter {
 
 	constructor(init?: Partial<{w?: io.Writer | null}>) {
 		this._fields = {
-			w: $.varRef(init?.w ?? null)
+			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null))
 		}
 	}
 
@@ -988,7 +988,7 @@ export class Writer {
 	constructor(init?: Partial<{d?: compressor, dict?: $.Slice<number>}>) {
 		this._fields = {
 			d: $.varRef(init?.d ? $.markAsStructValue($.cloneStructValue(init.d)) : $.markAsStructValue(new compressor())),
-			dict: $.varRef(init?.dict ?? null)
+			dict: $.varRef(init?.dict ?? (null as unknown as $.Slice<number>))
 		}
 	}
 
@@ -1144,7 +1144,7 @@ export async function NewWriterDict(w: io.Writer | null, level: number, dict: $.
 		return [null, err]
 	}
 	await $.pointerValue<Writer>(zw).d.fillWindow(dict)
-	$.pointerValue<Writer>(zw).dict = $.append($.pointerValue<Writer>(zw).dict, ...(dict ?? []))
+	$.pointerValue<Writer>(zw).dict = $.appendSlice($.pointerValue<Writer>(zw).dict, dict)
 	return [zw, null]
 }
 

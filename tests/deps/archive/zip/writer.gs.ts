@@ -109,13 +109,13 @@ export class Writer {
 
 	constructor(init?: Partial<{cw?: countWriter | $.VarRef<countWriter> | null, dir?: $.Slice<header | $.VarRef<header> | null>, last?: fileWriter | $.VarRef<fileWriter> | null, closed?: boolean, compressors?: Map<number, __goscript_register.Compressor | null> | null, comment?: string, testHookCloseSizeOffset?: ((size: number, offset: number) => void) | null}>) {
 		this._fields = {
-			cw: $.varRef(init?.cw ?? null),
-			dir: $.varRef(init?.dir ?? null),
-			last: $.varRef(init?.last ?? null),
-			closed: $.varRef(init?.closed ?? false),
-			compressors: $.varRef(init?.compressors ?? null),
-			comment: $.varRef(init?.comment ?? ""),
-			testHookCloseSizeOffset: $.varRef(init?.testHookCloseSizeOffset ?? null)
+			cw: $.varRef(init?.cw ?? (null as unknown as countWriter | $.VarRef<countWriter> | null)),
+			dir: $.varRef(init?.dir ?? (null as unknown as $.Slice<header | $.VarRef<header> | null>)),
+			last: $.varRef(init?.last ?? (null as unknown as fileWriter | $.VarRef<fileWriter> | null)),
+			closed: $.varRef(init?.closed ?? (false as unknown as boolean)),
+			compressors: $.varRef(init?.compressors ?? (null as unknown as Map<number, __goscript_register.Compressor | null> | null)),
+			comment: $.varRef(init?.comment ?? ("" as unknown as string)),
+			testHookCloseSizeOffset: $.varRef(init?.testHookCloseSizeOffset ?? (null as unknown as ((size: number, offset: number) => void) | null))
 		}
 	}
 
@@ -143,23 +143,23 @@ export class Writer {
 			if ($.stringEqual(name, ".")) {
 				return null
 			}
-			let __goscriptTuple0: any = $.pointerValue<Exclude<fs.DirEntry, null>>(d).Info()
+			let __goscriptTuple0: any = await $.pointerValue<Exclude<fs.DirEntry, null>>(d).Info()
 			let info = __goscriptTuple0[0]
 			err = __goscriptTuple0[1]
 			if (err != null) {
 				return err
 			}
-			if (!$.pointerValue<Exclude<fs.DirEntry, null>>(d).IsDir() && !fs.FileMode_IsRegular($.pointerValue<Exclude<fs.FileInfo, null>>(info).Mode())) {
+			if (!await $.pointerValue<Exclude<fs.DirEntry, null>>(d).IsDir() && !fs.FileMode_IsRegular((await $.pointerValue<Exclude<fs.FileInfo, null>>(info).Mode()))) {
 				return errors.New("zip: cannot add non-regular file")
 			}
-			let __goscriptTuple1: any = __goscript_struct.FileInfoHeader(info)
+			let __goscriptTuple1: any = await __goscript_struct.FileInfoHeader(info)
 			let h: __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null = __goscriptTuple1[0]
 			err = __goscriptTuple1[1]
 			if (err != null) {
 				return err
 			}
 			$.pointerValue<__goscript_struct.FileHeader>(h).Name = name
-			if ($.pointerValue<Exclude<fs.DirEntry, null>>(d).IsDir()) {
+			if (await $.pointerValue<Exclude<fs.DirEntry, null>>(d).IsDir()) {
 				$.pointerValue<__goscript_struct.FileHeader>(h).Name = $.pointerValue<__goscript_struct.FileHeader>(h).Name + ("/")
 			}
 			$.pointerValue<__goscript_struct.FileHeader>(h).Method = $.uint(8, 16)
@@ -169,7 +169,7 @@ export class Writer {
 			if (err != null) {
 				return err
 			}
-			if ($.pointerValue<Exclude<fs.DirEntry, null>>(d).IsDir()) {
+			if (await $.pointerValue<Exclude<fs.DirEntry, null>>(d).IsDir()) {
 				return null
 			}
 			let __goscriptTuple3: any = await $.pointerValue<Exclude<fs.FS, null>>(fsys).Open(name)
@@ -230,7 +230,7 @@ export class Writer {
 				writeBuf_uint64(eb, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).UncompressedSize64, 64))
 				writeBuf_uint64(eb, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).CompressedSize64, 64))
 				writeBuf_uint64(eb, $.uint($.pointerValue<header>(h).offset, 64))
-				$.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Extra = $.append($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Extra, ...($.goSlice(__goscriptShadow0, undefined, undefined) ?? []))
+				$.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Extra = $.appendSlice($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Extra, $.goSlice(__goscriptShadow0, undefined, undefined))
 			} else {
 				writeBuf_uint32(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).CompressedSize, 32))
 				writeBuf_uint32(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).UncompressedSize, 32))
@@ -348,7 +348,7 @@ export class Writer {
 
 	public async Copy(f: __goscript_reader.File | $.VarRef<__goscript_reader.File> | null): globalThis.Promise<$.GoError> {
 		const w: Writer | $.VarRef<Writer> | null = this
-		let [r, err] = __goscript_reader.File.prototype.OpenRaw.call(f)
+		let [r, err] = await __goscript_reader.File.prototype.OpenRaw.call(f)
 		if (err != null) {
 			return err
 		}
@@ -442,7 +442,7 @@ export class Writer {
 			writeBuf_uint16(eb, $.uint(5, 16))
 			writeBuf_uint8(eb, $.uint(1, 8))
 			writeBuf_uint32(eb, $.uint(mt, 32))
-			$.pointerValue<__goscript_struct.FileHeader>(fh).Extra = $.append($.pointerValue<__goscript_struct.FileHeader>(fh).Extra, ...($.goSlice(mbuf, undefined, undefined) ?? []))
+			$.pointerValue<__goscript_struct.FileHeader>(fh).Extra = $.appendSlice($.pointerValue<__goscript_struct.FileHeader>(fh).Extra, $.goSlice(mbuf, undefined, undefined))
 		}
 
 		let ow: io.Writer | null = null as io.Writer | null
@@ -621,9 +621,9 @@ export class header {
 
 	constructor(init?: Partial<{FileHeader?: __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null, offset?: number, raw?: boolean}>) {
 		this._fields = {
-			FileHeader: $.varRef(init?.FileHeader ?? null),
-			offset: $.varRef(init?.offset ?? 0),
-			raw: $.varRef(init?.raw ?? false)
+			FileHeader: $.varRef(init?.FileHeader ?? (null as unknown as __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null)),
+			offset: $.varRef(init?.offset ?? (0 as unknown as number)),
+			raw: $.varRef(init?.raw ?? (false as unknown as boolean))
 		}
 	}
 
@@ -768,13 +768,13 @@ export class fileWriter {
 
 	constructor(init?: Partial<{header?: header | $.VarRef<header> | null, zipw?: io.Writer | null, rawCount?: countWriter | $.VarRef<countWriter> | null, comp?: io.WriteCloser | null, compCount?: countWriter | $.VarRef<countWriter> | null, crc32?: hash.Hash32 | null, closed?: boolean}>) {
 		this._fields = {
-			header: $.varRef(init?.header ?? null),
-			zipw: $.varRef(init?.zipw ?? null),
-			rawCount: $.varRef(init?.rawCount ?? null),
-			comp: $.varRef(init?.comp ?? null),
-			compCount: $.varRef(init?.compCount ?? null),
-			crc32: $.varRef(init?.crc32 ?? null),
-			closed: $.varRef(init?.closed ?? false)
+			header: $.varRef(init?.header ?? (null as unknown as header | $.VarRef<header> | null)),
+			zipw: $.varRef(init?.zipw ?? (null as unknown as io.Writer | null)),
+			rawCount: $.varRef(init?.rawCount ?? (null as unknown as countWriter | $.VarRef<countWriter> | null)),
+			comp: $.varRef(init?.comp ?? (null as unknown as io.WriteCloser | null)),
+			compCount: $.varRef(init?.compCount ?? (null as unknown as countWriter | $.VarRef<countWriter> | null)),
+			crc32: $.varRef(init?.crc32 ?? (null as unknown as hash.Hash32 | null)),
+			closed: $.varRef(init?.closed ?? (false as unknown as boolean))
 		}
 	}
 
@@ -822,7 +822,7 @@ export class fileWriter {
 
 		// update FileHeader
 		let fh: __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null = $.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader
-		$.pointerValue<__goscript_struct.FileHeader>(fh).CRC32 = $.uint($.pointerValue<Exclude<hash.Hash32, null>>($.pointerValue<fileWriter>(w).crc32).Sum32(), 32)
+		$.pointerValue<__goscript_struct.FileHeader>(fh).CRC32 = $.uint(await $.pointerValue<Exclude<hash.Hash32, null>>($.pointerValue<fileWriter>(w).crc32).Sum32(), 32)
 		$.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize64 = $.uint($.uint($.pointerValue<countWriter>($.pointerValue<fileWriter>(w).compCount).count, 64), 64)
 		$.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize64 = $.uint($.uint($.pointerValue<countWriter>($.pointerValue<fileWriter>(w).rawCount).count, 64), 64)
 
@@ -927,8 +927,8 @@ export class countWriter {
 
 	constructor(init?: Partial<{w?: io.Writer | null, count?: number}>) {
 		this._fields = {
-			w: $.varRef(init?.w ?? null),
-			count: $.varRef(init?.count ?? 0)
+			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null)),
+			count: $.varRef(init?.count ?? (0 as unknown as number))
 		}
 	}
 
@@ -971,7 +971,7 @@ export class nopCloser {
 
 	constructor(init?: Partial<{Writer?: io.Writer | null}>) {
 		this._fields = {
-			Writer: $.varRef(init?.Writer ?? null)
+			Writer: $.varRef(init?.Writer ?? (null as unknown as io.Writer | null))
 		}
 	}
 

@@ -36,4 +36,10 @@ func main() {
 	cleanup.Stop()
 	runtime.KeepAlive(box)
 	println("Cleanup stopped")
+
+	runtime.SetFinalizer(box, func(*struct{ value int }) {
+		println("finalizer should not run during test")
+	})
+	runtime.SetFinalizer(box, nil)
+	println("Finalizer ignored")
 }

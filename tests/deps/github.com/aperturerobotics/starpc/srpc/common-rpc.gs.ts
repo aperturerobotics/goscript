@@ -173,20 +173,20 @@ export class commonRPC {
 
 	constructor(init?: Partial<{ctx?: context.Context | null, ctxCancel?: (() => void) | null, ctxCanceled?: atomic.Bool, service?: string, method?: string, localCompleted?: atomic.Bool, bcast?: broadcast.Broadcast, writer?: __goscript_writer.PacketWriter | null, writerClosed?: boolean, localCompleting?: boolean, localDone?: boolean, dataQueue?: $.Slice<$.Slice<number>>, dataClosed?: boolean, remoteErr?: $.GoError}>) {
 		this._fields = {
-			ctx: $.varRef(init?.ctx ?? null),
-			ctxCancel: $.varRef(init?.ctxCancel ?? null),
+			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
+			ctxCancel: $.varRef(init?.ctxCancel ?? (null as unknown as (() => void) | null)),
 			ctxCanceled: $.varRef(init?.ctxCanceled ? $.markAsStructValue($.cloneStructValue(init.ctxCanceled)) : $.markAsStructValue(new atomic.Bool())),
-			service: $.varRef(init?.service ?? ""),
-			method: $.varRef(init?.method ?? ""),
+			service: $.varRef(init?.service ?? ("" as unknown as string)),
+			method: $.varRef(init?.method ?? ("" as unknown as string)),
 			localCompleted: $.varRef(init?.localCompleted ? $.markAsStructValue($.cloneStructValue(init.localCompleted)) : $.markAsStructValue(new atomic.Bool())),
 			bcast: $.varRef(init?.bcast ? $.markAsStructValue($.cloneStructValue(init.bcast)) : $.markAsStructValue(new broadcast.Broadcast())),
-			writer: $.varRef(init?.writer ?? null),
-			writerClosed: $.varRef(init?.writerClosed ?? false),
-			localCompleting: $.varRef(init?.localCompleting ?? false),
-			localDone: $.varRef(init?.localDone ?? false),
-			dataQueue: $.varRef(init?.dataQueue ?? null),
-			dataClosed: $.varRef(init?.dataClosed ?? false),
-			remoteErr: $.varRef(init?.remoteErr ?? null)
+			writer: $.varRef(init?.writer ?? (null as unknown as __goscript_writer.PacketWriter | null)),
+			writerClosed: $.varRef(init?.writerClosed ?? (false as unknown as boolean)),
+			localCompleting: $.varRef(init?.localCompleting ?? (false as unknown as boolean)),
+			localDone: $.varRef(init?.localDone ?? (false as unknown as boolean)),
+			dataQueue: $.varRef(init?.dataQueue ?? (null as unknown as $.Slice<$.Slice<number>>)),
+			dataClosed: $.varRef(init?.dataClosed ?? (false as unknown as boolean)),
+			remoteErr: $.varRef(init?.remoteErr ?? (null as unknown as $.GoError))
 		}
 	}
 
@@ -326,7 +326,7 @@ export class commonRPC {
 				{
 					id: 0,
 					isSend: false,
-					channel: $.pointerValue<Exclude<context.Context, null>>($.pointerValue<commonRPC>(c).ctx).Done(),
+					channel: await $.pointerValue<Exclude<context.Context, null>>($.pointerValue<commonRPC>(c).ctx).Done(),
 					onSelected: async (__goscriptSelect0Result) => {
 						ctxDone = true
 					}
@@ -376,7 +376,7 @@ export class commonRPC {
 				{
 					id: 0,
 					isSend: false,
-					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+					channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 					onSelected: async (__goscriptSelect1Result) => {
 						return context.Canceled
 					}
@@ -423,7 +423,7 @@ export class commonRPC {
 			$.pointerValue<commonRPC>(c).localCompleted.Store(true)
 		}
 
-		let outPkt: __goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null = await __goscript_packet.NewCallDataPacket(data, ($.len(data) == 0) && dataIsZero, complete, err)
+		let outPkt: __goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null = __goscript_packet.NewCallDataPacket(data, ($.len(data) == 0) && dataIsZero, complete, err)
 		return await $.pointerValue<Exclude<__goscript_writer.PacketWriter, null>>($.pointerValue<commonRPC>(c).writer).WritePacket(outPkt)
 	}
 

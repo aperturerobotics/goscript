@@ -131,14 +131,14 @@ export class FD {
 	constructor(init?: Partial<{fdmu?: __goscript_fd_mutex.fdMutex, Sysfd?: number, SysFile?: __goscript_fd_unixjs.SysFile, pd?: __goscript_fd_poll_js.pollDesc, csema?: number, isBlocking?: number, IsStream?: boolean, ZeroReadIsEOF?: boolean, isFile?: boolean}>) {
 		this._fields = {
 			fdmu: $.varRef(init?.fdmu ? $.markAsStructValue($.cloneStructValue(init.fdmu)) : $.markAsStructValue(new __goscript_fd_mutex.fdMutex())),
-			Sysfd: $.varRef(init?.Sysfd ?? 0),
+			Sysfd: $.varRef(init?.Sysfd ?? (0 as unknown as number)),
 			SysFile: $.varRef(init?.SysFile ? $.markAsStructValue($.cloneStructValue(init.SysFile)) : $.markAsStructValue(new __goscript_fd_unixjs.SysFile())),
 			pd: $.varRef(init?.pd ? $.markAsStructValue($.cloneStructValue(init.pd)) : $.markAsStructValue(new __goscript_fd_poll_js.pollDesc())),
-			csema: $.varRef(init?.csema ?? 0),
-			isBlocking: $.varRef(init?.isBlocking ?? 0),
-			IsStream: $.varRef(init?.IsStream ?? false),
-			ZeroReadIsEOF: $.varRef(init?.ZeroReadIsEOF ?? false),
-			isFile: $.varRef(init?.isFile ?? false)
+			csema: $.varRef(init?.csema ?? (0 as unknown as number)),
+			isBlocking: $.varRef(init?.isBlocking ?? (0 as unknown as number)),
+			IsStream: $.varRef(init?.IsStream ?? (false as unknown as boolean)),
+			ZeroReadIsEOF: $.varRef(init?.ZeroReadIsEOF ?? (false as unknown as boolean)),
+			isFile: $.varRef(init?.isFile ?? (false as unknown as boolean))
 		}
 	}
 

@@ -43,8 +43,8 @@ export class queue {
 
 	constructor(init?: Partial<{sparse?: $.Slice<number>, dense?: $.Slice<entry>}>) {
 		this._fields = {
-			sparse: $.varRef(init?.sparse ?? null),
-			dense: $.varRef(init?.dense ?? null)
+			sparse: $.varRef(init?.sparse ?? (null as unknown as $.Slice<number>)),
+			dense: $.varRef(init?.dense ?? (null as unknown as $.Slice<entry>))
 		}
 	}
 
@@ -88,8 +88,8 @@ export class entry {
 
 	constructor(init?: Partial<{pc?: number, t?: thread | $.VarRef<thread> | null}>) {
 		this._fields = {
-			pc: $.varRef(init?.pc ?? 0),
-			t: $.varRef(init?.t ?? null)
+			pc: $.varRef(init?.pc ?? (0 as unknown as number)),
+			t: $.varRef(init?.t ?? (null as unknown as thread | $.VarRef<thread> | null))
 		}
 	}
 
@@ -133,8 +133,8 @@ export class thread {
 
 	constructor(init?: Partial<{inst?: syntax.Inst | $.VarRef<syntax.Inst> | null, cap?: $.Slice<number>}>) {
 		this._fields = {
-			inst: $.varRef(init?.inst ?? null),
-			cap: $.varRef(init?.cap ?? null)
+			inst: $.varRef(init?.inst ?? (null as unknown as syntax.Inst | $.VarRef<syntax.Inst> | null)),
+			cap: $.varRef(init?.cap ?? (null as unknown as $.Slice<number>))
 		}
 	}
 
@@ -328,13 +328,13 @@ export class machine {
 
 	constructor(init?: Partial<{re?: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, p?: syntax.Prog | $.VarRef<syntax.Prog> | null, q0?: queue, q1?: queue, pool?: $.Slice<thread | $.VarRef<thread> | null>, matched?: boolean, matchcap?: $.Slice<number>, inputs?: inputs}>) {
 		this._fields = {
-			re: $.varRef(init?.re ?? null),
-			p: $.varRef(init?.p ?? null),
+			re: $.varRef(init?.re ?? (null as unknown as __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null)),
+			p: $.varRef(init?.p ?? (null as unknown as syntax.Prog | $.VarRef<syntax.Prog> | null)),
 			q0: $.varRef(init?.q0 ? $.markAsStructValue($.cloneStructValue(init.q0)) : $.markAsStructValue(new queue())),
 			q1: $.varRef(init?.q1 ? $.markAsStructValue($.cloneStructValue(init.q1)) : $.markAsStructValue(new queue())),
-			pool: $.varRef(init?.pool ?? null),
-			matched: $.varRef(init?.matched ?? false),
-			matchcap: $.varRef(init?.matchcap ?? null),
+			pool: $.varRef(init?.pool ?? (null as unknown as $.Slice<thread | $.VarRef<thread> | null>)),
+			matched: $.varRef(init?.matched ?? (false as unknown as boolean)),
+			matchcap: $.varRef(init?.matchcap ?? (null as unknown as $.Slice<number>)),
 			inputs: $.varRef(init?.inputs ? $.markAsStructValue($.cloneStructValue(init.inputs)) : $.markAsStructValue(new inputs()))
 		}
 	}
@@ -483,7 +483,7 @@ export class machine {
 		$.pointerValue<machine>(m).matchcap = $.goSlice($.pointerValue<machine>(m).matchcap, undefined, ncap)
 	}
 
-	public match(i: __goscript_regexp.input | null, pos: number): boolean {
+	public async match(i: __goscript_regexp.input | null, pos: number): globalThis.Promise<boolean> {
 		let m: machine | $.VarRef<machine> | null = this
 		let startCond = $.uint($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).cond, 8)
 		if ($.uint(startCond, 8) == $.uint($.uint(~0, 8), 8)) {
@@ -499,11 +499,11 @@ export class machine {
 		let r1 = $.int(-1, 32)
 		let width = 0
 		let width1 = 0
-		let __goscriptTuple0: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
+		let __goscriptTuple0: any = await $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
 		r = $.int(__goscriptTuple0[0], 32)
 		width = __goscriptTuple0[1]
 		if ($.int(r, 32) != $.int(-1, 32)) {
-			let __goscriptTuple1: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
+			let __goscriptTuple1: any = await $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
 			r1 = $.int(__goscriptTuple1[0], 32)
 			width1 = __goscriptTuple1[1]
 		}
@@ -511,7 +511,7 @@ export class machine {
 		if (pos == 0) {
 			flag.value = newLazyFlag($.int(-1, 32), $.int(r, 32))
 		} else {
-			flag.value = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).context(pos)
+			flag.value = await $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).context(pos)
 		}
 		while (true) {
 			if ($.len($.pointerValue<queue>(runq).dense) == 0) {
@@ -523,17 +523,17 @@ export class machine {
 					// Have match; finished exploring alternatives.
 					break
 				}
-				if ((($.len($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).prefix) > 0) && ($.int(r1, 32) != $.int($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).prefixRune, 32))) && $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).canCheckPrefix()) {
+				if ((($.len($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).prefix) > 0) && ($.int(r1, 32) != $.int($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<machine>(m).re).prefixRune, 32))) && await $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).canCheckPrefix()) {
 					// Match requires literal prefix; fast search for it.
-					let advance = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).index($.pointerValue<machine>(m).re, pos)
+					let advance = await $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).index($.pointerValue<machine>(m).re, pos)
 					if (advance < 0) {
 						break
 					}
 					pos = pos + (advance)
-					let __goscriptTuple2: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
+					let __goscriptTuple2: any = await $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos)
 					r = $.int(__goscriptTuple2[0], 32)
 					width = __goscriptTuple2[1]
-					let __goscriptTuple3: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
+					let __goscriptTuple3: any = await $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
 					r1 = $.int(__goscriptTuple3[0], 32)
 					width1 = __goscriptTuple3[1]
 				}
@@ -560,7 +560,7 @@ export class machine {
 			r = __goscriptAssign0_0
 			width = __goscriptAssign0_1
 			if ($.int(r, 32) != $.int(-1, 32)) {
-				let __goscriptTuple4: any = $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
+				let __goscriptTuple4: any = await $.pointerValue<Exclude<__goscript_regexp.input, null>>(i).step(pos + width)
 				r1 = $.int(__goscriptTuple4[0], 32)
 				width1 = __goscriptTuple4[1]
 			}
@@ -676,7 +676,7 @@ export class onePassMachine {
 	constructor(init?: Partial<{inputs?: inputs, matchcap?: $.Slice<number>}>) {
 		this._fields = {
 			inputs: $.varRef(init?.inputs ? $.markAsStructValue($.cloneStructValue(init.inputs)) : $.markAsStructValue(new inputs())),
-			matchcap: $.varRef(init?.matchcap ?? null)
+			matchcap: $.varRef(init?.matchcap ?? (null as unknown as $.Slice<number>))
 		}
 	}
 

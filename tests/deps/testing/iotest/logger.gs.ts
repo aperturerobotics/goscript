@@ -31,8 +31,8 @@ export class writeLogger {
 
 	constructor(init?: Partial<{prefix?: string, w?: io.Writer | null}>) {
 		this._fields = {
-			prefix: $.varRef(init?.prefix ?? ""),
-			w: $.varRef(init?.w ?? null)
+			prefix: $.varRef(init?.prefix ?? ("" as unknown as string)),
+			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null))
 		}
 	}
 
@@ -91,8 +91,8 @@ export class readLogger {
 
 	constructor(init?: Partial<{prefix?: string, r?: io.Reader | null}>) {
 		this._fields = {
-			prefix: $.varRef(init?.prefix ?? ""),
-			r: $.varRef(init?.r ?? null)
+			prefix: $.varRef(init?.prefix ?? ("" as unknown as string)),
+			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null))
 		}
 	}
 

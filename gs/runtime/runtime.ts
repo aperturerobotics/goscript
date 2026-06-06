@@ -234,14 +234,12 @@ export class PanicError implements Error {
 }
 
 // SetFinalizer sets the finalizer associated with obj to the provided finalizer function.
-// In goscript/TypeScript environment, finalizers are not supported, so this throws an error.
 export function SetFinalizer(
   _obj: object,
   _finalizer: ((obj: object) => void) | null,
 ): void {
-  throw new Error(
-    'runtime.SetFinalizer is not supported in goscript TypeScript environment',
-  )
+  // JavaScript runtimes do not expose Go's finalizer scheduling contract. Treat
+  // registration and clearing as no-ops so cleanup backstops don't become fatal.
 }
 
 // Cleanup is a handle to a cleanup call for a specific object.

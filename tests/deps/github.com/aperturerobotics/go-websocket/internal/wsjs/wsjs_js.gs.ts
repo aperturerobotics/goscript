@@ -173,9 +173,9 @@ export class CloseEvent {
 
 	constructor(init?: Partial<{Code?: number, Reason?: string, WasClean?: boolean}>) {
 		this._fields = {
-			Code: $.varRef(init?.Code ?? 0),
-			Reason: $.varRef(init?.Reason ?? ""),
-			WasClean: $.varRef(init?.WasClean ?? false)
+			Code: $.varRef(init?.Code ?? (0 as unknown as number)),
+			Reason: $.varRef(init?.Reason ?? ("" as unknown as string)),
+			WasClean: $.varRef(init?.WasClean ?? (false as unknown as boolean))
 		}
 	}
 
@@ -213,7 +213,7 @@ export class MessageEvent {
 
 	constructor(init?: Partial<{Data?: any}>) {
 		this._fields = {
-			Data: $.varRef(init?.Data ?? null)
+			Data: $.varRef(init?.Data ?? (null as unknown as any))
 		}
 	}
 

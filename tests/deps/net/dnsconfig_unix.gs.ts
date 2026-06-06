@@ -49,7 +49,7 @@ export async function dnsReadConfig(filename: string): globalThis.Promise<__gosc
 	{
 		let [fi, __goscriptShadow2] = os.File.prototype.Stat.call($.pointerValue<os.File>($.pointerValue<__goscript_parse.file>(__goscriptShadow1).file))
 		if (__goscriptShadow2 == null) {
-			$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).mtime = $.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime()))
+			$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).mtime = $.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime()))
 		} else {
 			$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).servers = __goscript_dnsconfig.__goscript_get_defaultNS()
 			$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).search = await dnsDefaultSearch()

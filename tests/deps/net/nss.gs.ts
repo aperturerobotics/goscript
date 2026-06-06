@@ -73,10 +73,10 @@ export class nsswitchConfig {
 	constructor(init?: Partial<{initOnce?: sync.Once, ch?: $.Channel<{}> | null, lastChecked?: time.Time, mu?: sync.Mutex, nssConf?: nssConf | $.VarRef<nssConf> | null}>) {
 		this._fields = {
 			initOnce: $.varRef(init?.initOnce ? $.markAsStructValue($.cloneStructValue(init.initOnce)) : $.markAsStructValue(new sync.Once())),
-			ch: $.varRef(init?.ch ?? null),
+			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<{}> | null)),
 			lastChecked: $.varRef(init?.lastChecked ? $.markAsStructValue($.cloneStructValue(init.lastChecked)) : $.markAsStructValue(new time.Time())),
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			nssConf: $.varRef(init?.nssConf ?? null)
+			nssConf: $.varRef(init?.nssConf ?? (null as unknown as nssConf | $.VarRef<nssConf> | null))
 		}
 	}
 
@@ -158,7 +158,7 @@ export class nsswitchConfig {
 		{
 			let [fi, err] = os.Stat("/etc/nsswitch.conf")
 			if (err == null) {
-				mtime = $.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime()))
+				mtime = $.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime()))
 			}
 		}
 		if ($.markAsStructValue($.cloneStructValue(mtime)).Equal($.markAsStructValue($.cloneStructValue($.pointerValue<nssConf>($.pointerValue<nsswitchConfig>(conf).nssConf).mtime)))) {
@@ -211,8 +211,8 @@ export class nssConf {
 	constructor(init?: Partial<{mtime?: time.Time, err?: $.GoError, sources?: Map<string, $.Slice<nssSource>> | null}>) {
 		this._fields = {
 			mtime: $.varRef(init?.mtime ? $.markAsStructValue($.cloneStructValue(init.mtime)) : $.markAsStructValue(new time.Time())),
-			err: $.varRef(init?.err ?? null),
-			sources: $.varRef(init?.sources ?? null)
+			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
+			sources: $.varRef(init?.sources ?? (null as unknown as Map<string, $.Slice<nssSource>> | null))
 		}
 	}
 
@@ -257,8 +257,8 @@ export class nssSource {
 
 	constructor(init?: Partial<{source?: string, criteria?: $.Slice<nssCriterion>}>) {
 		this._fields = {
-			source: $.varRef(init?.source ?? ""),
-			criteria: $.varRef(init?.criteria ?? null)
+			source: $.varRef(init?.source ?? ("" as unknown as string)),
+			criteria: $.varRef(init?.criteria ?? (null as unknown as $.Slice<nssCriterion>))
 		}
 	}
 
@@ -321,9 +321,9 @@ export class nssCriterion {
 
 	constructor(init?: Partial<{negate?: boolean, status?: string, action?: string}>) {
 		this._fields = {
-			negate: $.varRef(init?.negate ?? false),
-			status: $.varRef(init?.status ?? ""),
-			action: $.varRef(init?.action ?? "")
+			negate: $.varRef(init?.negate ?? (false as unknown as boolean)),
+			status: $.varRef(init?.status ?? ("" as unknown as string)),
+			action: $.varRef(init?.action ?? ("" as unknown as string))
 		}
 	}
 
@@ -402,7 +402,7 @@ export async function parseNSSConfFile(file: string): globalThis.Promise<nssConf
 		return new nssConf({err: err})
 	}
 	__defer.defer(() => { __goscript_parse.file.prototype.close.call(f) })
-	let __goscriptTuple1: any = __goscript_parse.file.prototype.stat.call(f)
+	let __goscriptTuple1: any = await __goscript_parse.file.prototype.stat.call(f)
 	let mtime = __goscriptTuple1[0]
 	err = __goscriptTuple1[2]
 	if (err != null) {

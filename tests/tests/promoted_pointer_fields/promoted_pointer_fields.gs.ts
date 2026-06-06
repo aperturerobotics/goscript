@@ -17,7 +17,7 @@ export class counter {
 
 	constructor(init?: Partial<{value?: number}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? 0)
+			value: $.varRef(init?.value ?? (0 as unknown as number))
 		}
 	}
 
@@ -65,7 +65,7 @@ export class inner {
 
 	constructor(init?: Partial<{name?: string, count?: counter}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ""),
+			name: $.varRef(init?.name ?? ("" as unknown as string)),
 			count: $.varRef(init?.count ? $.markAsStructValue($.cloneStructValue(init.count)) : $.markAsStructValue(new counter()))
 		}
 	}
@@ -102,7 +102,7 @@ export class outer {
 
 	constructor(init?: Partial<{inner?: inner | $.VarRef<inner> | null}>) {
 		this._fields = {
-			inner: $.varRef(init?.inner ?? null)
+			inner: $.varRef(init?.inner ?? (null as unknown as inner | $.VarRef<inner> | null))
 		}
 	}
 

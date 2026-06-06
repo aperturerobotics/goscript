@@ -17,7 +17,7 @@ export class child {
 
 	constructor(init?: Partial<{value?: string}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? "")
+			value: $.varRef(init?.value ?? ("" as unknown as string))
 		}
 	}
 
@@ -60,7 +60,7 @@ export class parent {
 
 	constructor(init?: Partial<{child?: child | $.VarRef<child> | null}>) {
 		this._fields = {
-			child: $.varRef(init?.child ?? null)
+			child: $.varRef(init?.child ?? (null as unknown as child | $.VarRef<child> | null))
 		}
 	}
 

@@ -208,9 +208,9 @@ export class Resolver {
 
 	constructor(init?: Partial<{PreferGo?: boolean, StrictErrors?: boolean, Dial?: ((ctx: context.Context | null, network: string, address: string) => [__goscript_net.Conn | null, $.GoError] | globalThis.Promise<[__goscript_net.Conn | null, $.GoError]>) | null, lookupGroup?: singleflight.Group}>) {
 		this._fields = {
-			PreferGo: $.varRef(init?.PreferGo ?? false),
-			StrictErrors: $.varRef(init?.StrictErrors ?? false),
-			Dial: $.varRef(init?.Dial ?? null),
+			PreferGo: $.varRef(init?.PreferGo ?? (false as unknown as boolean)),
+			StrictErrors: $.varRef(init?.StrictErrors ?? (false as unknown as boolean)),
+			Dial: $.varRef(init?.Dial ?? (null as unknown as ((ctx: context.Context | null, network: string, address: string) => [__goscript_net.Conn | null, $.GoError] | globalThis.Promise<[__goscript_net.Conn | null, $.GoError]>) | null)),
 			lookupGroup: $.varRef(init?.lookupGroup ? $.markAsStructValue($.cloneStructValue(init.lookupGroup)) : $.markAsStructValue(new singleflight.Group()))
 		}
 	}
@@ -532,7 +532,7 @@ export class Resolver {
 				return [$.markAsStructValue(new dnsmessage.Parser()), $.markAsStructValue(new dnsmessage.Header()), __goscriptShadow6]
 			}
 			{
-				let [d, ok] = $.pointerValue<Exclude<context.Context, null>>(__goscriptShadow5).Deadline()
+				let [d, ok] = await $.pointerValue<Exclude<context.Context, null>>(__goscriptShadow5).Deadline()
 				if (ok && !$.markAsStructValue($.cloneStructValue(d)).IsZero()) {
 					await $.pointerValue<Exclude<__goscript_net.Conn, null>>(c).SetDeadline($.markAsStructValue($.cloneStructValue(d)))
 				}
@@ -688,8 +688,8 @@ export class Resolver {
 			constructor(init?: Partial<{p?: dnsmessage.Parser, server?: string, error?: $.GoError}>) {
 				this._fields = {
 					p: $.varRef(init?.p ? $.markAsStructValue($.cloneStructValue(init.p)) : $.markAsStructValue(new dnsmessage.Parser())),
-					server: $.varRef(init?.server ?? ""),
-					error: $.varRef(init?.error ?? null)
+					server: $.varRef(init?.server ?? ("" as unknown as string)),
+					error: $.varRef(init?.error ?? (null as unknown as $.GoError))
 				}
 			}
 
@@ -703,8 +703,8 @@ export class Resolver {
 				return $.markAsStructValue(cloned)
 			}
 
-			public async Error(): globalThis.Promise<any> {
-				return await $.pointerValue<Exclude<$.GoError, null>>(this.error).Error()
+			public Error(): any {
+				return $.pointerValue<Exclude<$.GoError, null>>(this.error).Error()
 			}
 
 			static __typeInfo = $.registerStructType(
@@ -776,7 +776,7 @@ export class Resolver {
 				if (__goscriptShadow11.error != null) {
 					{
 						let [nerr, ok] = $.typeAssertTuple<__goscript_net.Error | null>(__goscriptShadow11.error, "net.Error")
-						if ((ok && $.pointerValue<Exclude<__goscript_net.Error, null>>(nerr).Temporary()) && Resolver.prototype.strictErrors.call(r)) {
+						if ((ok && await $.pointerValue<Exclude<__goscript_net.Error, null>>(nerr).Temporary()) && Resolver.prototype.strictErrors.call(r)) {
 
 							hitStrictError = true
 							lastErr = __goscriptShadow11.error
@@ -793,7 +793,7 @@ export class Resolver {
 				loop: while (true) {
 					let [h, __goscriptShadow12] = __goscriptShadow11.p.AnswerHeader()
 					if ((__goscriptShadow12 != null) && (!$.comparableEqual(__goscriptShadow12, dnsmessage.ErrSectionDone))) {
-						lastErr = $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField0 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField0, Name: name, Server: __goscriptShadow11.server}) })()), "*net.DNSError")
+						lastErr = $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField0 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField0, Name: name, Server: __goscriptShadow11.server}) })(), "*net.DNSError")
 					}
 					if (__goscriptShadow12 != null) {
 						break
@@ -803,7 +803,7 @@ export class Resolver {
 						{
 							let [a, __goscriptShadow13] = __goscriptShadow11.p.AResource()
 							if (__goscriptShadow13 != null) {
-								lastErr = $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField1 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField1, Name: name, Server: __goscriptShadow11.server}) })()), "*net.DNSError")
+								lastErr = $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField1 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField1, Name: name, Server: __goscriptShadow11.server}) })(), "*net.DNSError")
 								break loop
 							}
 							addrs = $.append(addrs, $.markAsStructValue(new __goscript_iprawsock.IPAddr({IP: (($.goSlice(a.A, undefined, undefined) as __goscript_ip.IP) as __goscript_ip.IP)})))
@@ -816,7 +816,7 @@ export class Resolver {
 						{
 							let [aaaa, __goscriptShadow14] = __goscriptShadow11.p.AAAAResource()
 							if (__goscriptShadow14 != null) {
-								lastErr = $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField2 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField2, Name: name, Server: __goscriptShadow11.server}) })()), "*net.DNSError")
+								lastErr = $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField2 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField2, Name: name, Server: __goscriptShadow11.server}) })(), "*net.DNSError")
 								break loop
 							}
 							addrs = $.append(addrs, $.markAsStructValue(new __goscript_iprawsock.IPAddr({IP: (($.goSlice(aaaa.AAAA, undefined, undefined) as __goscript_ip.IP) as __goscript_ip.IP)})))
@@ -829,7 +829,7 @@ export class Resolver {
 						{
 							let [c, __goscriptShadow15] = __goscriptShadow11.p.CNAMEResource()
 							if (__goscriptShadow15 != null) {
-								lastErr = $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField3 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField3, Name: name, Server: __goscriptShadow11.server}) })()), "*net.DNSError")
+								lastErr = $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField3 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField3, Name: name, Server: __goscriptShadow11.server}) })(), "*net.DNSError")
 								break loop
 							}
 							if (($.uint(cname.Length, 8) == $.uint(0, 8)) && (c.CNAME.Length > 0)) {
@@ -842,7 +842,7 @@ export class Resolver {
 							{
 								let __goscriptShadow16 = __goscriptShadow11.p.SkipAnswer()
 								if (__goscriptShadow16 != null) {
-									lastErr = $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField4 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField4, Name: name, Server: __goscriptShadow11.server}) })()), "*net.DNSError")
+									lastErr = $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField4 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField4, Name: name, Server: __goscriptShadow11.server}) })(), "*net.DNSError")
 									break loop
 								}
 							}
@@ -931,7 +931,7 @@ export class Resolver {
 			}
 			mxs = $.append(mxs, (() => { const __goscriptLiteralField5 = $.markAsStructValue($.cloneStructValue(mx.MX)).String(); return new __goscript_dnsclient.MX({Host: __goscriptLiteralField5, Pref: $.uint(mx.Pref, 16)}) })())
 		}
-		__goscript_dnsclient.byPref_sort((mxs as __goscript_dnsclient.byPref))
+		await __goscript_dnsclient.byPref_sort((mxs as __goscript_dnsclient.byPref))
 		return [mxs, null]
 	}
 
@@ -1017,12 +1017,12 @@ export class Resolver {
 				break
 			}
 			if (__goscriptShadow24 != null) {
-				return [null, $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField7 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField7, Name: addr, Server: server}) })()), "*net.DNSError")]
+				return [null, $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField7 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField7, Name: addr, Server: server}) })(), "*net.DNSError")]
 			}
 			if ($.uint(h.Type, 16) != $.uint(dnsmessage.TypePTR, 16)) {
 				let __goscriptShadow25 = p.value.SkipAnswer()
 				if (__goscriptShadow25 != null) {
-					return [null, $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField8 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField8, Name: addr, Server: server}) })()), "*net.DNSError")]
+					return [null, $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField8 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField8, Name: addr, Server: server}) })(), "*net.DNSError")]
 				}
 				continue
 			}
@@ -1030,7 +1030,7 @@ export class Resolver {
 			let ptr = __goscriptTuple29[0]
 			__goscriptShadow24 = __goscriptTuple29[1]
 			if (__goscriptShadow24 != null) {
-				return [null, $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField9 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField9, Name: addr, Server: server}) })()), "*net.DNSError")]
+				return [null, $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField9 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField9, Name: addr, Server: server}) })(), "*net.DNSError")]
 			}
 			ptrs = $.append(ptrs, $.markAsStructValue($.cloneStructValue(ptr.PTR)).String())
 		}
@@ -1084,7 +1084,7 @@ export class Resolver {
 			}
 			srvs = $.append(srvs, (() => { const __goscriptLiteralField10 = $.markAsStructValue($.cloneStructValue(srv.Target)).String(); return new __goscript_dnsclient.SRV({Target: __goscriptLiteralField10, Port: $.uint(srv.Port, 16), Priority: $.uint(srv.Priority, 16), Weight: $.uint(srv.Weight, 16)}) })())
 		}
-		__goscript_dnsclient.byPriorityWeight_sort((srvs as __goscript_dnsclient.byPriorityWeight))
+		await __goscript_dnsclient.byPriorityWeight_sort((srvs as __goscript_dnsclient.byPriorityWeight))
 		return [$.markAsStructValue($.cloneStructValue(cname)).String(), srvs, null]
 	}
 
@@ -1132,7 +1132,7 @@ export class Resolver {
 			let txtJoin: $.Slice<number> = $.makeSlice<number>(0, n, "byte")
 			for (let __goscriptRangeTarget12 = txt.TXT, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget12); __rangeIndex++) {
 				let s = __goscriptRangeTarget12![__rangeIndex]
-				txtJoin = $.append(txtJoin, ...($.stringToBytes(s) ?? []))
+				txtJoin = $.appendSlice(txtJoin, $.stringToBytes(s))
 			}
 			if ($.len(txts) == 0) {
 				txts = $.makeSlice<string>(0, 1, "string")
@@ -1274,7 +1274,7 @@ export class Resolver {
 			}
 			{
 				let [nerr, ok] = $.typeAssertTuple<__goscript_net.Error | null>(err, "net.Error")
-				if ((ok && $.pointerValue<Exclude<__goscript_net.Error, null>>(nerr).Temporary()) && Resolver.prototype.strictErrors.call(r)) {
+				if ((ok && await $.pointerValue<Exclude<__goscript_net.Error, null>>(nerr).Temporary()) && Resolver.prototype.strictErrors.call(r)) {
 
 					break
 				}
@@ -1403,7 +1403,7 @@ export class Resolver {
 			{
 				id: 0,
 				isSend: false,
-				channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+				channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 				onSelected: async (__goscriptSelect0Result) => {
 					if (await singleflight.Group.prototype.ForgetUnshared.call(Resolver.prototype.getLookupGroup.call(r), lookupKey)) {
 						await lookupGroupCancel!()
@@ -1517,8 +1517,8 @@ export class Resolver {
 				if (__goscriptShadow40 != null) {
 					return [(null as __goscript_ipsock.addrList), __goscriptShadow40]
 				}
-				if ((($.stringEqual(op, "dial")) && (hint != null)) && (!$.stringEqual(__goscript_unixsock.UnixAddr.prototype.Network.call(__goscriptShadow39), $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).Network()))) {
-					return [(null as __goscript_ipsock.addrList), $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField13 = $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).String(); return new __goscript_net.AddrError({Err: "mismatched local address type", Addr: __goscriptLiteralField13}) })(), "*net.AddrError")]
+				if ((($.stringEqual(op, "dial")) && (hint != null)) && (!$.stringEqual(__goscript_unixsock.UnixAddr.prototype.Network.call(__goscriptShadow39), await $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).Network()))) {
+					return [(null as __goscript_ipsock.addrList), $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField13 = await $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).String(); return new __goscript_net.AddrError({Err: "mismatched local address type", Addr: __goscriptLiteralField13}) })()), "*net.AddrError")]
 				}
 				return [($.arrayToSlice<__goscript_net.Addr | null>([$.interfaceValue<__goscript_net.Addr | null>(__goscriptShadow39, "*net.UnixAddr")]) as __goscript_ipsock.addrList), null]
 				break
@@ -1563,8 +1563,8 @@ export class Resolver {
 		let naddrs: __goscript_ipsock.addrList = ($.goSlice(addrs, undefined, 0) as __goscript_ipsock.addrList)
 		for (let __goscriptRangeTarget14 = addrs, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget14); __rangeIndex++) {
 			let addr = __goscriptRangeTarget14![__rangeIndex]
-			if (!$.stringEqual($.pointerValue<Exclude<__goscript_net.Addr, null>>(addr).Network(), $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).Network())) {
-				return [(null as __goscript_ipsock.addrList), $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField14 = $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).String(); return new __goscript_net.AddrError({Err: "mismatched local address type", Addr: __goscriptLiteralField14}) })(), "*net.AddrError")]
+			if (!$.stringEqual(await $.pointerValue<Exclude<__goscript_net.Addr, null>>(addr).Network(), await $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).Network())) {
+				return [(null as __goscript_ipsock.addrList), $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField14 = await $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).String(); return new __goscript_net.AddrError({Err: "mismatched local address type", Addr: __goscriptLiteralField14}) })()), "*net.AddrError")]
 			}
 			{
 				const __goscriptTypeSwitchValue = addr
@@ -1600,7 +1600,7 @@ export class Resolver {
 			}
 		}
 		if ($.len((naddrs as __goscript_ipsock.addrList)) == 0) {
-			return [(null as __goscript_ipsock.addrList), $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField15 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_net.errNoSuitableAddress).Error(); const __goscriptLiteralField16 = $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).String(); return new __goscript_net.AddrError({Err: __goscriptLiteralField15, Addr: __goscriptLiteralField16}) })()), "*net.AddrError")]
+			return [(null as __goscript_ipsock.addrList), $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField15 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_net.errNoSuitableAddress).Error(); const __goscriptLiteralField16 = await $.pointerValue<Exclude<__goscript_net.Addr, null>>(hint).String(); return new __goscript_net.AddrError({Err: __goscriptLiteralField15, Addr: __goscriptLiteralField16}) })()), "*net.AddrError")]
 		}
 		return [(naddrs as __goscript_ipsock.addrList), null]
 	}
@@ -1618,7 +1618,7 @@ export class Resolver {
 
 		let [n, err] = dnsmessage.NewName(name)
 		if (err != null) {
-			return [$.markAsStructValue(new dnsmessage.Parser()), "", $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField17 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotMarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField17, Name: name}) })()), "*net.DNSError")]
+			return [$.markAsStructValue(new dnsmessage.Parser()), "", $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField17 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotMarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField17, Name: name}) })(), "*net.DNSError")]
 		}
 		let q = $.markAsStructValue(new dnsmessage.Question({Name: $.markAsStructValue($.cloneStructValue(n)), Type: $.uint(qtype, 16), Class: $.uint(dnsmessage.ClassINET, 16)}))
 
@@ -1704,8 +1704,8 @@ export class onlyValuesCtx {
 
 	constructor(init?: Partial<{Context?: context.Context | null, lookupValues?: context.Context | null}>) {
 		this._fields = {
-			Context: $.varRef(init?.Context ?? null),
-			lookupValues: $.varRef(init?.lookupValues ?? null)
+			Context: $.varRef(init?.Context ?? (null as unknown as context.Context | null)),
+			lookupValues: $.varRef(init?.lookupValues ?? (null as unknown as context.Context | null))
 		}
 	}
 
@@ -1724,7 +1724,7 @@ export class onlyValuesCtx {
 			{
 				id: 0,
 				isSend: false,
-				channel: $.pointerValue<Exclude<context.Context, null>>($.pointerValue<onlyValuesCtx>(ovc).lookupValues).Done(),
+				channel: await $.pointerValue<Exclude<context.Context, null>>($.pointerValue<onlyValuesCtx>(ovc).lookupValues).Done(),
 				onSelected: async (__goscriptSelect1Result) => {
 					return null
 				}

@@ -75,11 +75,11 @@ export class Interface {
 
 	constructor(init?: Partial<{Index?: number, MTU?: number, Name?: string, HardwareAddr?: __goscript_mac.HardwareAddr, Flags?: Flags}>) {
 		this._fields = {
-			Index: $.varRef(init?.Index ?? 0),
-			MTU: $.varRef(init?.MTU ?? 0),
-			Name: $.varRef(init?.Name ?? ""),
-			HardwareAddr: $.varRef(init?.HardwareAddr ?? null),
-			Flags: $.varRef(init?.Flags ?? 0)
+			Index: $.varRef(init?.Index ?? (0 as unknown as number)),
+			MTU: $.varRef(init?.MTU ?? (0 as unknown as number)),
+			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
+			HardwareAddr: $.varRef(init?.HardwareAddr ?? (null as unknown as __goscript_mac.HardwareAddr)),
+			Flags: $.varRef(init?.Flags ?? (0 as unknown as Flags))
 		}
 	}
 
@@ -172,8 +172,8 @@ export class ipv6ZoneCache {
 		this._fields = {
 			RWMutex: $.varRef(init?.RWMutex ? $.markAsStructValue($.cloneStructValue(init.RWMutex)) : $.markAsStructValue(new sync.RWMutex())),
 			lastFetched: $.varRef(init?.lastFetched ? $.markAsStructValue($.cloneStructValue(init.lastFetched)) : $.markAsStructValue(new time.Time())),
-			toIndex: $.varRef(init?.toIndex ?? null),
-			toName: $.varRef(init?.toName ?? null)
+			toIndex: $.varRef(init?.toIndex ?? (null as unknown as Map<string, number> | null)),
+			toName: $.varRef(init?.toName ?? (null as unknown as Map<number, string> | null))
 		}
 	}
 

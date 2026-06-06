@@ -36,9 +36,9 @@ export class Person {
 
 	constructor(init?: Partial<{Name?: string, Age?: number, Active?: boolean}>) {
 		this._fields = {
-			Name: $.varRef(init?.Name ?? ""),
-			Age: $.varRef(init?.Age ?? 0),
-			Active: $.varRef(init?.Active ?? false)
+			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
+			Age: $.varRef(init?.Age ?? (0 as unknown as number)),
+			Active: $.varRef(init?.Active ?? (false as unknown as boolean))
 		}
 	}
 
@@ -66,12 +66,12 @@ export async function main(): globalThis.Promise<void> {
 	let v = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(p)), "main.Person"))))
 	let t = $.markAsStructValue($.cloneStructValue(v)).Type()
 
-	$.println("Type:", $.pointerValue<Exclude<reflect.Type, null>>(t).Name())
-	$.println("Kind:", reflect.Kind_String($.pointerValue<Exclude<reflect.Type, null>>(t).Kind()))
-	$.println("NumField:", $.pointerValue<Exclude<reflect.Type, null>>(t).NumField())
+	$.println("Type:", await $.pointerValue<Exclude<reflect.Type, null>>(t).Name())
+	$.println("Kind:", reflect.Kind_String((await $.pointerValue<Exclude<reflect.Type, null>>(t).Kind())))
+	$.println("NumField:", await $.pointerValue<Exclude<reflect.Type, null>>(t).NumField())
 
-	for (let i = 0; i < $.pointerValue<Exclude<reflect.Type, null>>(t).NumField(); i++) {
-		let sf = $.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<reflect.Type, null>>(t).Field(i)))
+	for (let i = 0; i < await $.pointerValue<Exclude<reflect.Type, null>>(t).NumField(); i++) {
+		let sf = $.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<reflect.Type, null>>(t).Field(i)))
 		let fv = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(v)).Field(i)))
 
 		$.println("Field", i, ":", sf.Name)

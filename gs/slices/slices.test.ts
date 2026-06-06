@@ -22,8 +22,19 @@ import {
   MinFunc,
   Replace,
   Sorted,
+  SortFunc,
   SortStableFunc,
 } from './slices.js'
+
+describe('slices.SortFunc', () => {
+  it('awaits async comparison callbacks', async () => {
+    const values = $.arrayToSlice([3, 1, 2])
+
+    await SortFunc(values, async (a, b) => a - b)
+
+    expect(Array.from(values ?? [])).toEqual([1, 2, 3])
+  })
+})
 
 describe('slices.SortStableFunc', () => {
   it('preserves original order for equal elements', () => {

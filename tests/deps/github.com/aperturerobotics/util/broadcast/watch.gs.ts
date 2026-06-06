@@ -44,7 +44,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 			{
 				id: 0,
 				isSend: false,
-				channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+				channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 				onSelected: async (__goscriptSelect0Result) => {
 					return await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
 				}

@@ -126,13 +126,13 @@ export class Reader {
 
 	constructor(init?: Partial<{r?: io.ReaderAt | null, File?: $.Slice<File | $.VarRef<File> | null>, Comment?: string, decompressors?: Map<number, __goscript_register.Decompressor | null> | null, baseOffset?: number, fileListOnce?: sync.Once, fileList?: $.Slice<fileListEntry>}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? null),
-			File: $.varRef(init?.File ?? null),
-			Comment: $.varRef(init?.Comment ?? ""),
-			decompressors: $.varRef(init?.decompressors ?? null),
-			baseOffset: $.varRef(init?.baseOffset ?? 0),
+			r: $.varRef(init?.r ?? (null as unknown as io.ReaderAt | null)),
+			File: $.varRef(init?.File ?? (null as unknown as $.Slice<File | $.VarRef<File> | null>)),
+			Comment: $.varRef(init?.Comment ?? ("" as unknown as string)),
+			decompressors: $.varRef(init?.decompressors ?? (null as unknown as Map<number, __goscript_register.Decompressor | null> | null)),
+			baseOffset: $.varRef(init?.baseOffset ?? (0 as unknown as number)),
 			fileListOnce: $.varRef(init?.fileListOnce ? $.markAsStructValue($.cloneStructValue(init.fileListOnce)) : $.markAsStructValue(new sync.Once())),
-			fileList: $.varRef(init?.fileList ?? null)
+			fileList: $.varRef(init?.fileList ?? (null as unknown as $.Slice<fileListEntry>))
 		}
 	}
 
@@ -260,7 +260,7 @@ export class Reader {
 
 	public async initFileList(): globalThis.Promise<void> {
 		const r: Reader | $.VarRef<Reader> | null = this
-		await $.pointerValue<Reader>(r).fileListOnce.Do($.functionValue((): void => {
+		await $.pointerValue<Reader>(r).fileListOnce.Do($.functionValue(async (): globalThis.Promise<void> => {
 			// Preallocate the minimum size of the index.
 			// We may also synthesize additional directory entries.
 			$.pointerValue<Reader>(r).fileList = $.makeSlice<fileListEntry>(0, $.len($.pointerValue<Reader>(r).File), undefined, () => $.markAsStructValue(new fileListEntry()))
@@ -339,7 +339,7 @@ export class Reader {
 				}
 			}
 
-			slices.SortFunc($.pointerValue<Reader>(r).fileList, $.functionValue((a: fileListEntry, b: fileListEntry): number => {
+			await slices.SortFunc($.pointerValue<Reader>(r).fileList, $.functionValue((a: fileListEntry, b: fileListEntry): number => {
 				return fileEntryCompare(a.name, b.name)
 			}, ({ kind: $.TypeKind.Function, params: ["zip.fileListEntry", "zip.fileListEntry"], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
@@ -423,7 +423,7 @@ export class ReadCloser {
 
 	constructor(init?: Partial<{f?: os.File | $.VarRef<os.File> | null, Reader?: Reader}>) {
 		this._fields = {
-			f: $.varRef(init?.f ?? null),
+			f: $.varRef(init?.f ?? (null as unknown as os.File | $.VarRef<os.File> | null)),
 			Reader: $.varRef(init?.Reader ? $.markAsStructValue($.cloneStructValue(init.Reader)) : $.markAsStructValue(new Reader()))
 		}
 	}
@@ -526,10 +526,10 @@ export class File {
 	constructor(init?: Partial<{FileHeader?: __goscript_struct.FileHeader, zip?: Reader | $.VarRef<Reader> | null, zipr?: io.ReaderAt | null, headerOffset?: number, zip64?: boolean}>) {
 		this._fields = {
 			FileHeader: $.varRef(init?.FileHeader ? $.markAsStructValue($.cloneStructValue(init.FileHeader)) : $.markAsStructValue(new __goscript_struct.FileHeader())),
-			zip: $.varRef(init?.zip ?? null),
-			zipr: $.varRef(init?.zipr ?? null),
-			headerOffset: $.varRef(init?.headerOffset ?? 0),
-			zip64: $.varRef(init?.zip64 ?? false)
+			zip: $.varRef(init?.zip ?? (null as unknown as Reader | $.VarRef<Reader> | null)),
+			zipr: $.varRef(init?.zipr ?? (null as unknown as io.ReaderAt | null)),
+			headerOffset: $.varRef(init?.headerOffset ?? (0 as unknown as number)),
+			zip64: $.varRef(init?.zip64 ?? (false as unknown as boolean))
 		}
 	}
 
@@ -545,11 +545,11 @@ export class File {
 		return $.markAsStructValue(cloned)
 	}
 
-	public DataOffset(): [number, $.GoError] {
+	public async DataOffset(): globalThis.Promise<[number, $.GoError]> {
 		const f: File | $.VarRef<File> | null = this
 		let offset: number = 0
 		let err: $.GoError = null as $.GoError
-		let __goscriptTuple2: any = File.prototype.findBodyOffset.call(f)
+		let __goscriptTuple2: any = await File.prototype.findBodyOffset.call(f)
 		let bodyOffset = $.int(__goscriptTuple2[0])
 		err = __goscriptTuple2[1]
 		if (err != null) {
@@ -560,7 +560,7 @@ export class File {
 
 	public async Open(): globalThis.Promise<[io.ReadCloser | null, $.GoError]> {
 		const f: File | $.VarRef<File> | null = this
-		let __goscriptTuple3: any = File.prototype.findBodyOffset.call(f)
+		let __goscriptTuple3: any = await File.prototype.findBodyOffset.call(f)
 		let bodyOffset = $.int(__goscriptTuple3[0])
 		let err = __goscriptTuple3[1]
 		if (err != null) {
@@ -597,9 +597,9 @@ export class File {
 		return [rc, null]
 	}
 
-	public OpenRaw(): [io.Reader | null, $.GoError] {
+	public async OpenRaw(): globalThis.Promise<[io.Reader | null, $.GoError]> {
 		const f: File | $.VarRef<File> | null = this
-		let __goscriptTuple4: any = File.prototype.findBodyOffset.call(f)
+		let __goscriptTuple4: any = await File.prototype.findBodyOffset.call(f)
 		let bodyOffset = $.int(__goscriptTuple4[0])
 		let err = __goscriptTuple4[1]
 		if (err != null) {
@@ -609,11 +609,11 @@ export class File {
 		return [$.interfaceValue<io.Reader | null>(r, "*io.SectionReader"), null]
 	}
 
-	public findBodyOffset(): [number, $.GoError] {
+	public async findBodyOffset(): globalThis.Promise<[number, $.GoError]> {
 		const f: File | $.VarRef<File> | null = this
 		let buf: Uint8Array = new Uint8Array(30)
 		{
-			let [, err] = $.pointerValue<Exclude<io.ReaderAt, null>>($.pointerValue<File>(f).zipr).ReadAt($.goSlice(buf, undefined, undefined), $.int($.pointerValue<File>(f).headerOffset))
+			let [, err] = await $.pointerValue<Exclude<io.ReaderAt, null>>($.pointerValue<File>(f).zipr).ReadAt($.goSlice(buf, undefined, undefined), $.int($.pointerValue<File>(f).headerOffset))
 			if (err != null) {
 				return [$.int(0), err]
 			}
@@ -682,7 +682,7 @@ export class dirReader {
 
 	constructor(init?: Partial<{err?: $.GoError}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? null)
+			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
 		}
 	}
 
@@ -767,12 +767,12 @@ export class checksumReader {
 
 	constructor(init?: Partial<{rc?: io.ReadCloser | null, hash?: hash2.Hash32 | null, nread?: number, f?: File | $.VarRef<File> | null, desr?: io.Reader | null, err?: $.GoError}>) {
 		this._fields = {
-			rc: $.varRef(init?.rc ?? null),
-			hash: $.varRef(init?.hash ?? null),
-			nread: $.varRef(init?.nread ?? 0),
-			f: $.varRef(init?.f ?? null),
-			desr: $.varRef(init?.desr ?? null),
-			err: $.varRef(init?.err ?? null)
+			rc: $.varRef(init?.rc ?? (null as unknown as io.ReadCloser | null)),
+			hash: $.varRef(init?.hash ?? (null as unknown as hash2.Hash32 | null)),
+			nread: $.varRef(init?.nread ?? (0 as unknown as number)),
+			f: $.varRef(init?.f ?? (null as unknown as File | $.VarRef<File> | null)),
+			desr: $.varRef(init?.desr ?? (null as unknown as io.Reader | null)),
+			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
 		}
 	}
 
@@ -826,7 +826,7 @@ export class checksumReader {
 							err = err1
 						}
 					} else {
-						if ($.uint($.pointerValue<Exclude<hash2.Hash32, null>>($.pointerValue<checksumReader>(r).hash).Sum32(), 32) != $.uint($.pointerValue<File>($.pointerValue<checksumReader>(r).f).FileHeader.CRC32, 32)) {
+						if ($.uint(await $.pointerValue<Exclude<hash2.Hash32, null>>($.pointerValue<checksumReader>(r).hash).Sum32(), 32) != $.uint($.pointerValue<File>($.pointerValue<checksumReader>(r).f).FileHeader.CRC32, 32)) {
 							err = ErrChecksum
 						}
 					}
@@ -835,7 +835,7 @@ export class checksumReader {
 				// If there's not a data descriptor, we still compare
 				// the CRC32 of what we've read against the file header
 				// or TOC's CRC32, if it seems like it was set.
-				if (($.uint($.pointerValue<File>($.pointerValue<checksumReader>(r).f).FileHeader.CRC32, 32) != $.uint(0, 32)) && ($.uint($.pointerValue<Exclude<hash2.Hash32, null>>($.pointerValue<checksumReader>(r).hash).Sum32(), 32) != $.uint($.pointerValue<File>($.pointerValue<checksumReader>(r).f).FileHeader.CRC32, 32))) {
+				if (($.uint($.pointerValue<File>($.pointerValue<checksumReader>(r).f).FileHeader.CRC32, 32) != $.uint(0, 32)) && ($.uint(await $.pointerValue<Exclude<hash2.Hash32, null>>($.pointerValue<checksumReader>(r).hash).Sum32(), 32) != $.uint($.pointerValue<File>($.pointerValue<checksumReader>(r).f).FileHeader.CRC32, 32))) {
 					err = ErrChecksum
 				}
 			}
@@ -896,10 +896,10 @@ export class fileListEntry {
 
 	constructor(init?: Partial<{name?: string, file?: File | $.VarRef<File> | null, isDir?: boolean, isDup?: boolean}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ""),
-			file: $.varRef(init?.file ?? null),
-			isDir: $.varRef(init?.isDir ?? false),
-			isDup: $.varRef(init?.isDup ?? false)
+			name: $.varRef(init?.name ?? ("" as unknown as string)),
+			file: $.varRef(init?.file ?? (null as unknown as File | $.VarRef<File> | null)),
+			isDir: $.varRef(init?.isDir ?? (false as unknown as boolean)),
+			isDup: $.varRef(init?.isDup ?? (false as unknown as boolean))
 		}
 	}
 
@@ -1013,9 +1013,9 @@ export class openDir {
 
 	constructor(init?: Partial<{e?: fileListEntry | $.VarRef<fileListEntry> | null, files?: $.Slice<fileListEntry>, offset?: number}>) {
 		this._fields = {
-			e: $.varRef(init?.e ?? null),
-			files: $.varRef(init?.files ?? null),
-			offset: $.varRef(init?.offset ?? 0)
+			e: $.varRef(init?.e ?? (null as unknown as fileListEntry | $.VarRef<fileListEntry> | null)),
+			files: $.varRef(init?.files ?? (null as unknown as $.Slice<fileListEntry>)),
+			offset: $.varRef(init?.offset ?? (0 as unknown as number))
 		}
 	}
 
@@ -1039,7 +1039,7 @@ export class openDir {
 		return [0, $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField9 = errors.New("is a directory"); return new fs.PathError({Op: "read", Path: $.pointerValue<fileListEntry>($.pointerValue<openDir>(d).e).name, Err: __goscriptLiteralField9}) })(), "*fs.PathError")]
 	}
 
-	public ReadDir(count: number): [$.Slice<fs.DirEntry | null>, $.GoError] {
+	public async ReadDir(count: number): globalThis.Promise<[$.Slice<fs.DirEntry | null>, $.GoError]> {
 		let d: openDir | $.VarRef<openDir> | null = this
 		let n = $.len($.pointerValue<openDir>(d).files) - $.pointerValue<openDir>(d).offset
 		if ((count > 0) && (n > count)) {
@@ -1057,7 +1057,7 @@ export class openDir {
 			if (err != null) {
 				return [null, err]
 			} else {
-				if (($.stringEqual($.pointerValue<Exclude<fileInfoDirEntry, null>>(s).Name(), ".")) || !fs.ValidPath($.pointerValue<Exclude<fileInfoDirEntry, null>>(s).Name())) {
+				if (($.stringEqual(await $.pointerValue<Exclude<fileInfoDirEntry, null>>(s).Name(), ".")) || !fs.ValidPath(await $.pointerValue<Exclude<fileInfoDirEntry, null>>(s).Name())) {
 					return [null, $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField10 = fmt.Errorf("invalid file name: %v", $.pointerValue<openDir>(d).files![$.pointerValue<openDir>(d).offset + i].name); return new fs.PathError({Op: "readdir", Path: $.pointerValue<fileListEntry>($.pointerValue<openDir>(d).e).name, Err: __goscriptLiteralField10}) })(), "*fs.PathError")]
 				}
 			}
@@ -1129,7 +1129,7 @@ export async function OpenReader(name: string): globalThis.Promise<[ReadCloser |
 	}
 	let r: ReadCloser | $.VarRef<ReadCloser> | null = new ReadCloser()
 	{
-		err = await $.pointerValue<ReadCloser>(r).Reader.init($.interfaceValue<io.ReaderAt | null>(f, "*os.File"), $.int($.pointerValue<Exclude<fs.FileInfo, null>>(fi).Size()))
+		err = await $.pointerValue<ReadCloser>(r).Reader.init($.interfaceValue<io.ReaderAt | null>(f, "*os.File"), $.int(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Size()))
 		if ((err != null) && (!$.comparableEqual(err, ErrInsecurePath))) {
 			os.File.prototype.Close.call($.pointerValue<os.File>(f))
 			return [null, err]
@@ -1409,7 +1409,7 @@ export async function readDirectoryEnd(r: io.ReaderAt | null, size: number): glo
 		}
 		buf = $.makeSlice<number>($.int(bLen), undefined, "byte")
 		{
-			let [, __goscriptShadow1] = $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int($.int64Sub(size, bLen)))
+			let [, __goscriptShadow1] = await $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int($.int64Sub(size, bLen)))
 			if ((__goscriptShadow1 != null) && (!$.comparableEqual(__goscriptShadow1, io.EOF))) {
 				return [null, $.int(0), __goscriptShadow1]
 			}
@@ -1438,12 +1438,12 @@ export async function readDirectoryEnd(r: io.ReaderAt | null, size: number): glo
 
 	// These values mean that the file can be a zip64 file
 	if ((($.uint($.pointerValue<__goscript_struct.directoryEnd>(d).directoryRecords, 64) == $.uint(0xffff, 64)) || ($.uint($.pointerValue<__goscript_struct.directoryEnd>(d).directorySize, 64) == $.uint(0xffff, 64))) || ($.uint($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset, 64) == $.uint(0xffffffff, 64))) {
-		let __goscriptTuple8: any = findDirectory64End(r, $.int(directoryEndOffset))
+		let __goscriptTuple8: any = await findDirectory64End(r, $.int(directoryEndOffset))
 		let p = $.int(__goscriptTuple8[0])
 		let __goscriptShadow2 = __goscriptTuple8[1]
 		if ((__goscriptShadow2 == null) && (p >= 0)) {
 			directoryEndOffset = $.int(p)
-			__goscriptShadow2 = readDirectory64End(r, $.int(p), d)
+			__goscriptShadow2 = await readDirectory64End(r, $.int(p), d)
 		}
 		if (__goscriptShadow2 != null) {
 			return [null, $.int(0), __goscriptShadow2]
@@ -1481,14 +1481,14 @@ export async function readDirectoryEnd(r: io.ReaderAt | null, size: number): glo
 	return [d, $.int(baseOffset), null]
 }
 
-export function findDirectory64End(r: io.ReaderAt | null, directoryEndOffset: number): [number, $.GoError] {
+export async function findDirectory64End(r: io.ReaderAt | null, directoryEndOffset: number): globalThis.Promise<[number, $.GoError]> {
 	let locOffset = $.int($.int64Sub(directoryEndOffset, 20))
 	if (locOffset < 0) {
 		return [$.int(-1), null]
 	}
 	let buf: $.Slice<number> = $.makeSlice<number>(20, undefined, "byte")
 	{
-		let [, err] = $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int(locOffset))
+		let [, err] = await $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int(locOffset))
 		if (err != null) {
 			return [$.int(-1), err]
 		}
@@ -1510,11 +1510,11 @@ export function findDirectory64End(r: io.ReaderAt | null, directoryEndOffset: nu
 	return [$.int($.int(p)), null]
 }
 
-export function readDirectory64End(r: io.ReaderAt | null, offset: number, d: __goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null): $.GoError {
+export async function readDirectory64End(r: io.ReaderAt | null, offset: number, d: __goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null): globalThis.Promise<$.GoError> {
 	let err: $.GoError = null as $.GoError
 	let buf: $.Slice<number> = $.makeSlice<number>(56, undefined, "byte")
 	{
-		let [, __goscriptShadow3] = $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int(offset))
+		let [, __goscriptShadow3] = await $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int(offset))
 		if (__goscriptShadow3 != null) {
 			return __goscriptShadow3
 		}

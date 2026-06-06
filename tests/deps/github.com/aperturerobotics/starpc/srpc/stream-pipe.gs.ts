@@ -72,11 +72,11 @@ export class pipeStream {
 
 	constructor(init?: Partial<{ctx?: context.Context | null, ctxCancel?: (() => void) | null, other?: pipeStream | $.VarRef<pipeStream> | null, closeOnce?: sync.Once, dataCh?: $.Channel<$.Slice<number>> | null}>) {
 		this._fields = {
-			ctx: $.varRef(init?.ctx ?? null),
-			ctxCancel: $.varRef(init?.ctxCancel ?? null),
-			other: $.varRef(init?.other ?? null),
+			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
+			ctxCancel: $.varRef(init?.ctxCancel ?? (null as unknown as (() => void) | null)),
+			other: $.varRef(init?.other ?? (null as unknown as pipeStream | $.VarRef<pipeStream> | null)),
 			closeOnce: $.varRef(init?.closeOnce ? $.markAsStructValue($.cloneStructValue(init.closeOnce)) : $.markAsStructValue(new sync.Once())),
-			dataCh: $.varRef(init?.dataCh ?? null)
+			dataCh: $.varRef(init?.dataCh ?? (null as unknown as $.Channel<$.Slice<number>> | null))
 		}
 	}
 
@@ -116,7 +116,7 @@ export class pipeStream {
 			{
 				id: 0,
 				isSend: false,
-				channel: $.pointerValue<Exclude<context.Context, null>>($.pointerValue<pipeStream>(p).ctx).Done(),
+				channel: await $.pointerValue<Exclude<context.Context, null>>($.pointerValue<pipeStream>(p).ctx).Done(),
 				onSelected: async (__goscriptSelect0Result) => {
 					return context.Canceled
 				}
@@ -131,7 +131,7 @@ export class pipeStream {
 					if (!ok) {
 						return io.EOF
 					}
-					return $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
+					return await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
 				}
 			}
 		], false)
@@ -144,7 +144,7 @@ export class pipeStream {
 
 	public async MsgSend(msg: __goscript_message.Message): globalThis.Promise<$.GoError> {
 		const p: pipeStream | $.VarRef<pipeStream> | null = this
-		let __goscriptTuple0: any = $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).MarshalVT()
+		let __goscriptTuple0: any = await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).MarshalVT()
 		let data: $.Slice<number> = __goscriptTuple0[0]
 		let err = __goscriptTuple0[1]
 		if (err != null) {
@@ -154,7 +154,7 @@ export class pipeStream {
 			{
 				id: 0,
 				isSend: false,
-				channel: $.pointerValue<Exclude<context.Context, null>>($.pointerValue<pipeStream>(p).ctx).Done(),
+				channel: await $.pointerValue<Exclude<context.Context, null>>($.pointerValue<pipeStream>(p).ctx).Done(),
 				onSelected: async (__goscriptSelect1Result) => {
 					return context.Canceled
 				}

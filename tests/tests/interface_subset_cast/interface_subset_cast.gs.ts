@@ -46,8 +46,8 @@ export class MyStruct {
 
 	constructor(init?: Partial<{Value1?: string, Value2?: string}>) {
 		this._fields = {
-			Value1: $.varRef(init?.Value1 ?? ""),
-			Value2: $.varRef(init?.Value2 ?? "")
+			Value1: $.varRef(init?.Value1 ?? ("" as unknown as string)),
+			Value2: $.varRef(init?.Value2 ?? ("" as unknown as string))
 		}
 	}
 
@@ -86,15 +86,15 @@ export async function main(): globalThis.Promise<void> {
 	// Cast from larger interface to smaller interface (subset)
 	let i2: MyInterface2 | null = (i1 as MyInterface2 | null)
 
-	$.println("i1.MyString1():", $.pointerValue<Exclude<MyInterface1, null>>(i1).MyString1())
-	$.println("i1.MyString2():", $.pointerValue<Exclude<MyInterface1, null>>(i1).MyString2())
-	$.println("i2.MyString1():", $.pointerValue<Exclude<MyInterface2, null>>(i2).MyString1())
+	$.println("i1.MyString1():", await $.pointerValue<Exclude<MyInterface1, null>>(i1).MyString1())
+	$.println("i1.MyString2():", await $.pointerValue<Exclude<MyInterface1, null>>(i1).MyString2())
+	$.println("i2.MyString1():", await $.pointerValue<Exclude<MyInterface2, null>>(i2).MyString1())
 
 	// Type assertion from larger to smaller interface
 	let [i3, ok] = $.typeAssertTuple<MyInterface2 | null>(i1, "main.MyInterface2")
 	if (ok) {
 		$.println("Type assertion successful")
-		$.println("i3.MyString1():", $.pointerValue<Exclude<MyInterface2, null>>(i3).MyString1())
+		$.println("i3.MyString1():", await $.pointerValue<Exclude<MyInterface2, null>>(i3).MyString1())
 	} else {
 		$.println("Type assertion failed")
 	}

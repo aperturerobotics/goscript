@@ -95,7 +95,7 @@ export class Addr {
 			{
 				b = byteorder.BEAppendUint64(b, $.uint(ip.addr.hi, 64))
 				b = byteorder.BEAppendUint64(b, $.uint(ip.addr.lo, 64))
-				b = $.append(b, ...($.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()) ?? []))
+				b = $.appendSlice(b, $.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()))
 				break
 			}
 		}
@@ -543,7 +543,7 @@ export class Addr {
 			// The addition of a zone will cause a second allocation, but when there
 			// is no zone the ret slice will be stack allocated.
 			ret = $.append(ret, $.uint(37, 8))
-			ret = $.append(ret, ...($.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()) ?? []))
+			ret = $.appendSlice(ret, $.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()))
 		}
 		return $.bytesToString(ret)
 	}
@@ -636,11 +636,11 @@ export class Addr {
 
 	public appendTo4In6(ret: $.Slice<number>): $.Slice<number> {
 		const ip = this
-		ret = $.append(ret, ...($.stringToBytes("::ffff:") ?? []))
+		ret = $.appendSlice(ret, $.stringToBytes("::ffff:"))
 		ret = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(ip)).Unmap())).appendTo4(ret)
 		if (!$.comparableEqual(ip.z, z6noz)) {
 			ret = $.append(ret, $.uint(37, 8))
-			ret = $.append(ret, ...($.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()) ?? []))
+			ret = $.appendSlice(ret, $.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()))
 		}
 		return ret
 	}
@@ -683,7 +683,7 @@ export class Addr {
 
 		if (!$.comparableEqual(ip.z, z6noz)) {
 			ret = $.append(ret, $.uint(37, 8))
-			ret = $.append(ret, ...($.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()) ?? []))
+			ret = $.appendSlice(ret, $.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()))
 		}
 		return ret
 	}
@@ -808,8 +808,8 @@ export class addrDetail {
 
 	constructor(init?: Partial<{isV6?: boolean, zoneV6?: string}>) {
 		this._fields = {
-			isV6: $.varRef(init?.isV6 ?? false),
-			zoneV6: $.varRef(init?.zoneV6 ?? "")
+			isV6: $.varRef(init?.isV6 ?? (false as unknown as boolean)),
+			zoneV6: $.varRef(init?.zoneV6 ?? ("" as unknown as string))
 		}
 	}
 
@@ -861,9 +861,9 @@ export class parseAddrError {
 
 	constructor(init?: Partial<{_in?: string, msg?: string, at?: string}>) {
 		this._fields = {
-			_in: $.varRef(init?._in ?? ""),
-			msg: $.varRef(init?.msg ?? ""),
-			at: $.varRef(init?.at ?? "")
+			_in: $.varRef(init?._in ?? ("" as unknown as string)),
+			msg: $.varRef(init?.msg ?? ("" as unknown as string)),
+			at: $.varRef(init?.at ?? ("" as unknown as string))
 		}
 	}
 
@@ -918,7 +918,7 @@ export class AddrPort {
 	constructor(init?: Partial<{ip?: Addr, port?: number}>) {
 		this._fields = {
 			ip: $.varRef(init?.ip ? $.markAsStructValue($.cloneStructValue(init.ip)) : $.markAsStructValue(new Addr())),
-			port: $.varRef(init?.port ?? 0)
+			port: $.varRef(init?.port ?? (0 as unknown as number))
 		}
 	}
 
@@ -1131,7 +1131,7 @@ export class Prefix {
 	constructor(init?: Partial<{ip?: Addr, bitsPlusOne?: number}>) {
 		this._fields = {
 			ip: $.varRef(init?.ip ? $.markAsStructValue($.cloneStructValue(init.ip)) : $.markAsStructValue(new Addr())),
-			bitsPlusOne: $.varRef(init?.bitsPlusOne ?? 0)
+			bitsPlusOne: $.varRef(init?.bitsPlusOne ?? (0 as unknown as number))
 		}
 	}
 
@@ -1171,7 +1171,7 @@ export class Prefix {
 			return b
 		}
 		if (!$.markAsStructValue($.cloneStructValue(p)).IsValid()) {
-			return $.append(b, ...($.stringToBytes("invalid Prefix") ?? []))
+			return $.appendSlice(b, $.stringToBytes("invalid Prefix"))
 		}
 
 		// p.ip is non-nil, because p is valid.
@@ -1179,7 +1179,7 @@ export class Prefix {
 			b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo4(b)
 		} else {
 			if ($.markAsStructValue($.cloneStructValue(p.ip)).Is4In6()) {
-				b = $.append(b, ...($.stringToBytes("::ffff:") ?? []))
+				b = $.appendSlice(b, $.stringToBytes("::ffff:"))
 				b = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(p.ip)).Unmap())).appendTo4(b)
 			} else {
 				b = $.markAsStructValue($.cloneStructValue(p.ip)).appendTo6(b)
@@ -1365,14 +1365,14 @@ export class Prefix {
 		return null
 	}
 
-	public async UnmarshalText(text: $.Slice<number>): globalThis.Promise<$.GoError> {
+	public UnmarshalText(text: $.Slice<number>): $.GoError {
 		let p: Prefix | $.VarRef<Prefix> | null = this
 		if ($.len(text) == 0) {
 			$.assignStruct($.pointerValue<Prefix>(p), $.markAsStructValue(new Prefix()))
 			return null
 		}
 		let err: $.GoError = null as $.GoError
-		let __goscriptTuple8: any = await ParsePrefix($.bytesToString(text))
+		let __goscriptTuple8: any = ParsePrefix($.bytesToString(text))
 		$.assignStruct($.pointerValue<Prefix>(p), __goscriptTuple8[0])
 		err = __goscriptTuple8[1]
 		return err
@@ -1414,8 +1414,8 @@ export class parsePrefixError {
 
 	constructor(init?: Partial<{_in?: string, msg?: string}>) {
 		this._fields = {
-			_in: $.varRef(init?._in ?? ""),
-			msg: $.varRef(init?.msg ?? "")
+			_in: $.varRef(init?._in ?? ("" as unknown as string)),
+			msg: $.varRef(init?.msg ?? ("" as unknown as string))
 		}
 	}
 
@@ -1857,14 +1857,14 @@ export function PrefixFrom(ip: Addr, bits: number): Prefix {
 	return (() => { const __goscriptLiteralField2 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(ip)).withoutZone())); return $.markAsStructValue(new Prefix({ip: __goscriptLiteralField2, bitsPlusOne: $.uint(bitsPlusOne, 8)})) })()
 }
 
-export async function ParsePrefix(s: string): globalThis.Promise<[Prefix, $.GoError]> {
+export function ParsePrefix(s: string): [Prefix, $.GoError] {
 	let i = bytealg.LastIndexByteString(s, $.uint(47, 8))
 	if (i < 0) {
 		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>($.markAsStructValue(new parsePrefixError({_in: s, msg: "no '/'"})), "netip.parsePrefixError")]
 	}
 	let [ip, err] = ParseAddr($.sliceStringOrBytes(s, undefined, i))
 	if (err != null) {
-		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField3 = await $.pointerValue<Exclude<$.GoError, null>>(err).Error(); return $.markAsStructValue(new parsePrefixError({_in: s, msg: __goscriptLiteralField3})) })()), "netip.parsePrefixError")]
+		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField3 = $.pointerValue<Exclude<$.GoError, null>>(err).Error(); return $.markAsStructValue(new parsePrefixError({_in: s, msg: __goscriptLiteralField3})) })(), "netip.parsePrefixError")]
 	}
 	// IPv6 zones are not allowed: https://go.dev/issue/51899
 	if ($.markAsStructValue($.cloneStructValue(ip)).Is6() && (!$.comparableEqual(ip.z, z6noz))) {
@@ -1894,8 +1894,8 @@ export async function ParsePrefix(s: string): globalThis.Promise<[Prefix, $.GoEr
 	return [$.markAsStructValue($.cloneStructValue(PrefixFrom($.markAsStructValue($.cloneStructValue(ip)), bits))), null]
 }
 
-export async function MustParsePrefix(s: string): globalThis.Promise<Prefix> {
-	let [ip, err] = await ParsePrefix(s)
+export function MustParsePrefix(s: string): Prefix {
+	let [ip, err] = ParsePrefix(s)
 	if (err != null) {
 		$.panic((err as any))
 	}

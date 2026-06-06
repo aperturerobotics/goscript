@@ -139,7 +139,7 @@ export async function HandleRpcStream(stream: RpcStream | null, getter: ((ctx: c
 		return __goscript_errors.ErrUnexpectedPacket
 	}
 
-	let [ctx, ctxCancel] = contextutil.WithCancel($.pointerValue<Exclude<RpcStream, null>>(stream).Context())
+	let [ctx, ctxCancel] = contextutil.WithCancel(await $.pointerValue<Exclude<RpcStream, null>>(stream).Context())
 	__defer.defer(async () => { await ctxCancel!() })
 
 	// lookup the server for this component id
@@ -161,7 +161,7 @@ export async function HandleRpcStream(stream: RpcStream | null, getter: ((ctx: c
 	// send ack
 	let errStr: string = ""
 	if (err != null) {
-		errStr = await $.pointerValue<Exclude<$.GoError, null>>(err).Error()
+		errStr = $.pointerValue<Exclude<$.GoError, null>>(err).Error()
 	}
 	let sendErr = await $.pointerValue<Exclude<RpcStream, null>>(stream).Send(new __goscript_rpcstream_pb.RpcStreamPacket({Body: $.interfaceValue<__goscript_rpcstream_pb.isRpcStreamPacket_Body | null>(new __goscript_rpcstream_pb.RpcStreamPacket_Ack({Ack: new __goscript_rpcstream_pb.RpcAck({Error: errStr})}), "*rpcstream.RpcStreamPacket_Ack")}))
 	if (err != null) {

@@ -16,7 +16,7 @@ import "@goscript/net/http/httptest/index.js"
 import "@goscript/strings/index.js"
 
 export async function main(): globalThis.Promise<void> {
-	using __defer = new $.DisposableStack()
+	await using __defer = new $.AsyncDisposableStack()
 	let server: httptest.Server | $.VarRef<httptest.Server> | null = httptest.NewServer($.pointerValueOrNil($.namedValueInterfaceValue<http.Handler | null>($.namedFunction($.functionValue(async (w: http.ResponseWriter | null, r: http.Request | $.VarRef<http.Request> | null): globalThis.Promise<void> => {
 		let data: $.Slice<number> = null as $.Slice<number>
 		if ($.pointerValue<http.Request>(r).Body != null) {
@@ -25,9 +25,9 @@ export async function main(): globalThis.Promise<void> {
 			data = __goscriptTuple0[0]
 			readErr = __goscriptTuple0[1]
 			if (readErr != null) {
-				$.pointerValue<Exclude<http.ResponseWriter, null>>(w).WriteHeader(http.StatusInternalServerError)
+				await $.pointerValue<Exclude<http.ResponseWriter, null>>(w).WriteHeader(http.StatusInternalServerError)
 				{
-					let [, writeErr] = $.pointerValue<Exclude<http.ResponseWriter, null>>(w).Write($.stringToBytes("read error: " + $.pointerValue<Exclude<$.GoError, null>>(readErr).Error()))
+					let [, writeErr] = await $.pointerValue<Exclude<http.ResponseWriter, null>>(w).Write($.stringToBytes("read error: " + $.pointerValue<Exclude<$.GoError, null>>(readErr).Error()))
 					if (writeErr != null) {
 						return
 					}
@@ -37,7 +37,7 @@ export async function main(): globalThis.Promise<void> {
 		}
 		if ($.len(data) != 0) {
 			{
-				let [, writeErr] = $.pointerValue<Exclude<http.ResponseWriter, null>>(w).Write($.stringToBytes(($.pointerValue<http.Request>(r).Method + ":") + $.bytesToString(data)))
+				let [, writeErr] = await $.pointerValue<Exclude<http.ResponseWriter, null>>(w).Write($.stringToBytes(($.pointerValue<http.Request>(r).Method + ":") + $.bytesToString(data)))
 				if (writeErr != null) {
 					return
 				}
@@ -45,7 +45,7 @@ export async function main(): globalThis.Promise<void> {
 			return
 		}
 		{
-			let [, writeErr] = $.pointerValue<Exclude<http.ResponseWriter, null>>(w).Write($.stringToBytes($.pointerValue<http.Request>(r).Method))
+			let [, writeErr] = await $.pointerValue<Exclude<http.ResponseWriter, null>>(w).Write($.stringToBytes($.pointerValue<http.Request>(r).Method))
 			if (writeErr != null) {
 				return
 			}
@@ -60,7 +60,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("get error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	__defer.defer(() => { $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(resp).Body).Close() })
+	__defer.defer(async () => { await $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(resp).Body).Close() })
 
 	let __goscriptTuple2: any = await io.ReadAll($.pointerValueOrNil(($.pointerValue<http.Response>(resp).Body as io.Reader | null))!)
 	let data: $.Slice<number> = __goscriptTuple2[0]
@@ -80,7 +80,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("client get error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	__defer.defer(() => { $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(clientResp).Body).Close() })
+	__defer.defer(async () => { await $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(clientResp).Body).Close() })
 
 	let __goscriptTuple4: any = await io.ReadAll($.pointerValueOrNil(($.pointerValue<http.Response>(clientResp).Body as io.Reader | null))!)
 	data = __goscriptTuple4[0]
@@ -99,7 +99,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("head error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	__defer.defer(() => { $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(headResp).Body).Close() })
+	__defer.defer(async () => { await $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(headResp).Body).Close() })
 	$.println("head status:", $.pointerValue<http.Response>(headResp).StatusCode)
 
 	let __goscriptTuple6: any = await http.Client.prototype.Post.call($.pointerValue<http.Client>(httptest.Server.prototype.Client.call($.pointerValue<httptest.Server>(server))), $.pointerValue<httptest.Server>(server).URL, "text/plain", $.pointerValueOrNil($.interfaceValue<io.Reader | null>(strings.NewReader("payload"), "*strings.Reader"))!)
@@ -109,7 +109,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("post error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	__defer.defer(() => { $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(postResp).Body).Close() })
+	__defer.defer(async () => { await $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(postResp).Body).Close() })
 
 	let __goscriptTuple7: any = await io.ReadAll($.pointerValueOrNil(($.pointerValue<http.Response>(postResp).Body as io.Reader | null))!)
 	data = __goscriptTuple7[0]
@@ -135,7 +135,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("transport error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 		return
 	}
-	__defer.defer(() => { $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(transportResp).Body).Close() })
+	__defer.defer(async () => { await $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<http.Response>(transportResp).Body).Close() })
 	let __goscriptTuple10: any = await io.ReadAll($.pointerValueOrNil(($.pointerValue<http.Response>(transportResp).Body as io.Reader | null))!)
 	data = __goscriptTuple10[0]
 	err = __goscriptTuple10[1]

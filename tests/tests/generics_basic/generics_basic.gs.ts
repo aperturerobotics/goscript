@@ -39,7 +39,7 @@ export class Stack {
 
 	constructor(init?: Partial<{items?: $.Slice<any>}>) {
 		this._fields = {
-			items: $.varRef(init?.items ?? null)
+			items: $.varRef(init?.items ?? (null as unknown as $.Slice<any>))
 		}
 	}
 
@@ -95,7 +95,7 @@ export class Item {
 
 	constructor(init?: Partial<{Name?: string}>) {
 		this._fields = {
-			Name: $.varRef(init?.Name ?? "")
+			Name: $.varRef(init?.Name ?? ("" as unknown as string))
 		}
 	}
 
@@ -138,7 +138,7 @@ export class Mapper {
 
 	constructor(init?: Partial<{values?: Map<any, any> | null}>) {
 		this._fields = {
-			values: $.varRef(init?.values ?? null)
+			values: $.varRef(init?.values ?? (null as unknown as Map<any, any> | null))
 		}
 	}
 
@@ -192,8 +192,8 @@ export class Pair {
 
 	constructor(init?: Partial<{First?: any, Second?: any}>) {
 		this._fields = {
-			First: $.varRef(init?.First ?? null),
-			Second: $.varRef(init?.Second ?? null)
+			First: $.varRef(init?.First ?? (null as unknown as any)),
+			Second: $.varRef(init?.Second ?? (null as unknown as any))
 		}
 	}
 
@@ -245,11 +245,11 @@ export function Set_Has(s: Set, value: any): boolean {
 	return ok
 }
 
-export function CloneAll<T>(__typeArgs: $.GenericTypeArgs | undefined, items: $.Slice<T>): $.Slice<T> {
+export async function CloneAll<T>(__typeArgs: $.GenericTypeArgs | undefined, items: $.Slice<T>): globalThis.Promise<$.Slice<T>> {
 	let clones: $.Slice<T> = $.makeSlice<T>(0, $.len(items))
 	for (let __goscriptRangeTarget1 = items, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 		let item = __goscriptRangeTarget1![__rangeIndex]
-		clones = $.append(clones, $.callGenericMethod(__typeArgs, "T", "Clone", item))
+		clones = $.append(clones, await $.callGenericMethod(__typeArgs, "T", "Clone", item))
 	}
 	return clones
 }
@@ -286,7 +286,7 @@ export async function main(): globalThis.Promise<void> {
 
 	$.println("=== Interface constraint ===")
 	let items: $.Slice<Item | $.VarRef<Item> | null> = $.arrayToSlice<Item | $.VarRef<Item> | null>([new Item({Name: "alpha"}), new Item({Name: "beta"})])
-	let clones: $.Slice<Item | $.VarRef<Item> | null> = (CloneAll({T: { type: { kind: $.TypeKind.Pointer, elemType: "main.Item" }, zero: () => null }}, items) as $.Slice<Item | $.VarRef<Item> | null>)
+	let clones: $.Slice<Item | $.VarRef<Item> | null> = (await CloneAll({T: { type: { kind: $.TypeKind.Pointer, elemType: "main.Item" }, zero: () => null }}, items) as $.Slice<Item | $.VarRef<Item> | null>)
 	$.println("clone:", $.pointerValue<Item>(clones![0]).Name, $.pointerValue<Item>(clones![1]).Name, clones![0] == items![0])
 
 	$.println("=== Generic struct with map field ===")

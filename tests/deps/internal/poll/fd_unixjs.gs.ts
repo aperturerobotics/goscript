@@ -44,7 +44,7 @@ export class SysFile {
 
 	constructor(init?: Partial<{iovecs?: $.VarRef<$.Slice<syscall.Iovec>> | null}>) {
 		this._fields = {
-			iovecs: $.varRef(init?.iovecs ?? null)
+			iovecs: $.varRef(init?.iovecs ?? (null as unknown as $.VarRef<$.Slice<syscall.Iovec>> | null))
 		}
 	}
 

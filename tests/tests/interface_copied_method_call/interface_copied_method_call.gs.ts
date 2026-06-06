@@ -42,16 +42,16 @@ $.registerInterfaceType(
 	[{ name: "Run", args: [], returns: [] }]
 );
 
-export function callCopied(r: runner | null): void {
+export async function callCopied(r: runner | null): globalThis.Promise<void> {
 	let curr: runner | null = null as runner | null
 	void ($.functionValue((): void => {
 		curr = r
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))()
-	$.pointerValue<Exclude<runner, null>>(curr).Run()
+	await $.pointerValue<Exclude<runner, null>>(curr).Run()
 }
 
 export async function main(): globalThis.Promise<void> {
-	callCopied($.interfaceValue<runner | null>($.markAsStructValue(new task()), "main.task"))
+	await callCopied($.interfaceValue<runner | null>($.markAsStructValue(new task()), "main.task"))
 }
 
 if ($.isMainScript(import.meta)) {

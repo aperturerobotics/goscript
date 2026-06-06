@@ -18,7 +18,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let r: io.Reader | null = rand.Reader
 	let small: $.Slice<number> = $.makeSlice<number>(4, undefined, "byte")
-	let __goscriptTuple0: any = $.pointerValue<Exclude<io.Reader, null>>(r).Read(small)
+	let __goscriptTuple0: any = await $.pointerValue<Exclude<io.Reader, null>>(r).Read(small)
 	n = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	$.println("reader len", n)

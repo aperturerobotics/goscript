@@ -27,7 +27,7 @@ export class Box {
 
 	constructor(init?: Partial<{Adder?: Adder | null}>) {
 		this._fields = {
-			Adder: $.varRef(init?.Adder ?? null)
+			Adder: $.varRef(init?.Adder ?? (null as unknown as Adder | null))
 		}
 	}
 
@@ -66,7 +66,7 @@ export class Counter {
 
 	constructor(init?: Partial<{base?: number}>) {
 		this._fields = {
-			base: $.varRef(init?.base ?? 0)
+			base: $.varRef(init?.base ?? (0 as unknown as number))
 		}
 	}
 
@@ -92,14 +92,14 @@ export class Counter {
 	)
 }
 
-export function call(adder: Adder | null): number {
-	return $.pointerValue<Exclude<Adder, null>>(adder).Add(4)
+export async function call(adder: Adder | null): globalThis.Promise<number> {
+	return await $.pointerValue<Exclude<Adder, null>>(adder).Add(4)
 }
 
 export async function main(): globalThis.Promise<void> {
 	let box: Box | $.VarRef<Box> | null = new Box({Adder: $.interfaceValue<Adder | null>(new Counter({base: 3}), "*main.Counter")})
 	$.println($.pointerValue<Exclude<Adder, null>>($.pointerValue<Box>(box).Adder).Add(5))
-	$.println(call($.interfaceValue<Adder | null>(box, "*main.Box")))
+	$.println(await call($.interfaceValue<Adder | null>(box, "*main.Box")))
 }
 
 if ($.isMainScript(import.meta)) {

@@ -17,7 +17,7 @@ export class hidden {
 
 	constructor(init?: Partial<{label?: string}>) {
 		this._fields = {
-			label: $.varRef(init?.label ?? "")
+			label: $.varRef(init?.label ?? ("" as unknown as string))
 		}
 	}
 
@@ -60,7 +60,7 @@ export class Public {
 
 	constructor(init?: Partial<{Value?: string, Hidden?: hidden}>) {
 		this._fields = {
-			Value: $.varRef(init?.Value ?? ""),
+			Value: $.varRef(init?.Value ?? ("" as unknown as string)),
 			Hidden: $.varRef(init?.Hidden ? $.markAsStructValue($.cloneStructValue(init.Hidden)) : $.markAsStructValue(new hidden()))
 		}
 	}

@@ -56,8 +56,8 @@ export class VClient {
 
 	constructor(init?: Partial<{le?: logrus.Entry | $.VarRef<logrus.Entry> | null, client?: __goscript_client.Client | null, execID?: atomic.Int32}>) {
 		this._fields = {
-			le: $.varRef(init?.le ?? null),
-			client: $.varRef(init?.client ?? null),
+			le: $.varRef(init?.le ?? (null as unknown as logrus.Entry | $.VarRef<logrus.Entry> | null)),
+			client: $.varRef(init?.client ?? (null as unknown as __goscript_client.Client | null)),
 			execID: $.varRef(init?.execID ? $.markAsStructValue($.cloneStructValue(init.execID)) : $.markAsStructValue(new atomic.Int32()))
 		}
 	}

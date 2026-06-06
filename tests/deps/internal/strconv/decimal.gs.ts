@@ -58,10 +58,10 @@ export class decimal {
 	constructor(init?: Partial<{d?: Uint8Array, nd?: number, dp?: number, neg?: boolean, trunc?: boolean}>) {
 		this._fields = {
 			d: $.varRef(init?.d !== undefined ? $.cloneArrayValue(init.d) : new Uint8Array(800)),
-			nd: $.varRef(init?.nd ?? 0),
-			dp: $.varRef(init?.dp ?? 0),
-			neg: $.varRef(init?.neg ?? false),
-			trunc: $.varRef(init?.trunc ?? false)
+			nd: $.varRef(init?.nd ?? (0 as unknown as number)),
+			dp: $.varRef(init?.dp ?? (0 as unknown as number)),
+			neg: $.varRef(init?.neg ?? (false as unknown as boolean)),
+			trunc: $.varRef(init?.trunc ?? (false as unknown as boolean))
 		}
 	}
 
@@ -476,8 +476,8 @@ export class leftCheat {
 
 	constructor(init?: Partial<{delta?: number, cutoff?: string}>) {
 		this._fields = {
-			delta: $.varRef(init?.delta ?? 0),
-			cutoff: $.varRef(init?.cutoff ?? "")
+			delta: $.varRef(init?.delta ?? (0 as unknown as number)),
+			cutoff: $.varRef(init?.cutoff ?? ("" as unknown as string))
 		}
 	}
 

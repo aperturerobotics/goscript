@@ -57,7 +57,7 @@ export class yamuxAddr {
 
 	constructor(init?: Partial<{Addr?: string}>) {
 		this._fields = {
-			Addr: $.varRef(init?.Addr ?? "")
+			Addr: $.varRef(init?.Addr ?? ("" as unknown as string))
 		}
 	}
 
@@ -88,8 +88,8 @@ export class yamuxAddr {
 }
 
 export type hasAddr = {
-	LocalAddr(): net.Addr | null
-	RemoteAddr(): net.Addr | null
+	LocalAddr(): net.Addr | null | globalThis.Promise<net.Addr | null>
+	RemoteAddr(): net.Addr | null | globalThis.Promise<net.Addr | null>
 }
 
 $.registerInterfaceType(

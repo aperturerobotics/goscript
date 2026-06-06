@@ -28,8 +28,8 @@ export class truncateWriter {
 
 	constructor(init?: Partial<{w?: io.Writer | null, n?: number}>) {
 		this._fields = {
-			w: $.varRef(init?.w ?? null),
-			n: $.varRef(init?.n ?? 0)
+			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null)),
+			n: $.varRef(init?.n ?? (0 as unknown as number))
 		}
 	}
 

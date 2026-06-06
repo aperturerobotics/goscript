@@ -34,8 +34,8 @@ export class Writer {
 
 	constructor(init?: Partial<{W?: io.Writer | null, bufw?: bufio.Writer | $.VarRef<bufio.Writer> | null}>) {
 		this._fields = {
-			W: $.varRef(init?.W ?? null),
-			bufw: $.varRef(init?.bufw ?? null)
+			W: $.varRef(init?.W ?? (null as unknown as io.Writer | null)),
+			bufw: $.varRef(init?.bufw ?? (null as unknown as bufio.Writer | $.VarRef<bufio.Writer> | null))
 		}
 	}
 

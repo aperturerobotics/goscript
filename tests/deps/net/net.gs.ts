@@ -76,9 +76,9 @@ $.registerInterfaceType(
 
 export type Conn = {
 	Close(): $.GoError | globalThis.Promise<$.GoError>
-	LocalAddr(): Addr | null
+	LocalAddr(): Addr | null | globalThis.Promise<Addr | null>
 	Read(b: $.Slice<number>): [number, $.GoError] | globalThis.Promise<[number, $.GoError]>
-	RemoteAddr(): Addr | null
+	RemoteAddr(): Addr | null | globalThis.Promise<Addr | null>
 	SetDeadline(t: time.Time): $.GoError | globalThis.Promise<$.GoError>
 	SetReadDeadline(t: time.Time): $.GoError | globalThis.Promise<$.GoError>
 	SetWriteDeadline(t: time.Time): $.GoError | globalThis.Promise<$.GoError>
@@ -109,7 +109,7 @@ $.registerInterfaceType(
 
 export type Listener = {
 	Accept(): [Conn | null, $.GoError] | globalThis.Promise<[Conn | null, $.GoError]>
-	Addr(): Addr | null
+	Addr(): Addr | null | globalThis.Promise<Addr | null>
 	Close(): $.GoError | globalThis.Promise<$.GoError>
 }
 
@@ -120,9 +120,9 @@ $.registerInterfaceType(
 );
 
 export type Error = {
-	Error(): string | globalThis.Promise<string>
-	Temporary(): boolean
-	Timeout(): boolean
+	Error(): string
+	Temporary(): boolean | globalThis.Promise<boolean>
+	Timeout(): boolean | globalThis.Promise<boolean>
 }
 
 $.registerInterfaceType(
@@ -151,7 +151,7 @@ export class conn {
 
 	constructor(init?: Partial<{fd?: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null}>) {
 		this._fields = {
-			fd: $.varRef(init?.fd ?? null)
+			fd: $.varRef(init?.fd ?? (null as unknown as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null))
 		}
 	}
 
@@ -406,11 +406,11 @@ export class OpError {
 
 	constructor(init?: Partial<{Op?: string, Net?: string, Source?: Addr | null, Addr?: Addr | null, Err?: $.GoError}>) {
 		this._fields = {
-			Op: $.varRef(init?.Op ?? ""),
-			Net: $.varRef(init?.Net ?? ""),
-			Source: $.varRef(init?.Source ?? null),
-			Addr: $.varRef(init?.Addr ?? null),
-			Err: $.varRef(init?.Err ?? null)
+			Op: $.varRef(init?.Op ?? ("" as unknown as string)),
+			Net: $.varRef(init?.Net ?? ("" as unknown as string)),
+			Source: $.varRef(init?.Source ?? (null as unknown as Addr | null)),
+			Addr: $.varRef(init?.Addr ?? (null as unknown as Addr | null)),
+			Err: $.varRef(init?.Err ?? (null as unknown as $.GoError))
 		}
 	}
 
@@ -436,7 +436,7 @@ export class OpError {
 			s = s + (" " + $.pointerValue<OpError>(e).Net)
 		}
 		if ($.pointerValue<OpError>(e).Source != null) {
-			s = s + (" " + $.pointerValue<Exclude<Addr, null>>($.pointerValue<OpError>(e).Source).String())
+			s = s + (" " + await $.pointerValue<Exclude<Addr, null>>($.pointerValue<OpError>(e).Source).String())
 		}
 		if ($.pointerValue<OpError>(e).Addr != null) {
 			if ($.pointerValue<OpError>(e).Source != null) {
@@ -444,13 +444,13 @@ export class OpError {
 			} else {
 				s = s + (" ")
 			}
-			s = s + ($.pointerValue<Exclude<Addr, null>>($.pointerValue<OpError>(e).Addr).String())
+			s = s + (await $.pointerValue<Exclude<Addr, null>>($.pointerValue<OpError>(e).Addr).String())
 		}
-		s = s + (": " + await $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<OpError>(e).Err).Error())
+		s = s + (": " + $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<OpError>(e).Err).Error())
 		return s
 	}
 
-	public Temporary(): boolean {
+	public async Temporary(): globalThis.Promise<boolean> {
 		const e: OpError | $.VarRef<OpError> | null = this
 		// Treat ECONNRESET and ECONNABORTED as temporary errors when
 		// they come from calling accept. See issue 6163.
@@ -464,14 +464,14 @@ export class OpError {
 			let ok = __goscriptTuple1[1]
 			if (ok) {
 				let [t, __goscriptShadow0] = $.typeAssertTuple<temporary | null>($.pointerValue<os.SyscallError>(ne).Err, "net.temporary")
-				return __goscriptShadow0 && $.pointerValue<Exclude<temporary, null>>(t).Temporary()
+				return __goscriptShadow0 && await $.pointerValue<Exclude<temporary, null>>(t).Temporary()
 			}
 		}
 		let [t, ok] = $.typeAssertTuple<temporary | null>($.pointerValue<OpError>(e).Err, "net.temporary")
-		return ok && $.pointerValue<Exclude<temporary, null>>(t).Temporary()
+		return ok && await $.pointerValue<Exclude<temporary, null>>(t).Temporary()
 	}
 
-	public Timeout(): boolean {
+	public async Timeout(): globalThis.Promise<boolean> {
 		const e: OpError | $.VarRef<OpError> | null = this
 		{
 			let __goscriptTuple2: any = $.typeAssertTuple<os.SyscallError | $.VarRef<os.SyscallError> | null>($.pointerValue<OpError>(e).Err, { kind: $.TypeKind.Pointer, elemType: "os.SyscallError" })
@@ -479,11 +479,11 @@ export class OpError {
 			let ok = __goscriptTuple2[1]
 			if (ok) {
 				let [t, __goscriptShadow1] = $.typeAssertTuple<timeout | null>($.pointerValue<os.SyscallError>(ne).Err, "net.timeout")
-				return __goscriptShadow1 && $.pointerValue<Exclude<timeout, null>>(t).Timeout()
+				return __goscriptShadow1 && await $.pointerValue<Exclude<timeout, null>>(t).Timeout()
 			}
 		}
 		let [t, ok] = $.typeAssertTuple<timeout | null>($.pointerValue<OpError>(e).Err, "net.timeout")
-		return ok && $.pointerValue<Exclude<timeout, null>>(t).Timeout()
+		return ok && await $.pointerValue<Exclude<timeout, null>>(t).Timeout()
 	}
 
 	public Unwrap(): $.GoError {
@@ -525,8 +525,8 @@ export class ParseError {
 
 	constructor(init?: Partial<{Type?: string, Text?: string}>) {
 		this._fields = {
-			Type: $.varRef(init?.Type ?? ""),
-			Text: $.varRef(init?.Text ?? "")
+			Type: $.varRef(init?.Type ?? ("" as unknown as string)),
+			Text: $.varRef(init?.Text ?? ("" as unknown as string))
 		}
 	}
 
@@ -585,8 +585,8 @@ export class AddrError {
 
 	constructor(init?: Partial<{Err?: string, Addr?: string}>) {
 		this._fields = {
-			Err: $.varRef(init?.Err ?? ""),
-			Addr: $.varRef(init?.Addr ?? "")
+			Err: $.varRef(init?.Err ?? ("" as unknown as string)),
+			Addr: $.varRef(init?.Addr ?? ("" as unknown as string))
 		}
 	}
 
@@ -689,7 +689,7 @@ export class DNSConfigError {
 
 	constructor(init?: Partial<{Err?: $.GoError}>) {
 		this._fields = {
-			Err: $.varRef(init?.Err ?? null)
+			Err: $.varRef(init?.Err ?? (null as unknown as $.GoError))
 		}
 	}
 
@@ -701,9 +701,9 @@ export class DNSConfigError {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async Error(): globalThis.Promise<string> {
+	public Error(): string {
 		const e: DNSConfigError | $.VarRef<DNSConfigError> | null = this
-		return "error reading DNS config: " + await $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<DNSConfigError>(e).Err).Error()
+		return "error reading DNS config: " + $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<DNSConfigError>(e).Err).Error()
 	}
 
 	public Temporary(): boolean {
@@ -744,7 +744,7 @@ export class notFoundError {
 
 	constructor(init?: Partial<{s?: string}>) {
 		this._fields = {
-			s: $.varRef(init?.s ?? "")
+			s: $.varRef(init?.s ?? ("" as unknown as string))
 		}
 	}
 
@@ -784,7 +784,7 @@ export class temporaryError {
 
 	constructor(init?: Partial<{s?: string}>) {
 		this._fields = {
-			s: $.varRef(init?.s ?? "")
+			s: $.varRef(init?.s ?? ("" as unknown as string))
 		}
 	}
 
@@ -885,13 +885,13 @@ export class DNSError {
 
 	constructor(init?: Partial<{UnwrapErr?: $.GoError, Err?: string, Name?: string, Server?: string, IsTimeout?: boolean, IsTemporary?: boolean, IsNotFound?: boolean}>) {
 		this._fields = {
-			UnwrapErr: $.varRef(init?.UnwrapErr ?? null),
-			Err: $.varRef(init?.Err ?? ""),
-			Name: $.varRef(init?.Name ?? ""),
-			Server: $.varRef(init?.Server ?? ""),
-			IsTimeout: $.varRef(init?.IsTimeout ?? false),
-			IsTemporary: $.varRef(init?.IsTemporary ?? false),
-			IsNotFound: $.varRef(init?.IsNotFound ?? false)
+			UnwrapErr: $.varRef(init?.UnwrapErr ?? (null as unknown as $.GoError)),
+			Err: $.varRef(init?.Err ?? ("" as unknown as string)),
+			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
+			Server: $.varRef(init?.Server ?? ("" as unknown as string)),
+			IsTimeout: $.varRef(init?.IsTimeout ?? (false as unknown as boolean)),
+			IsTemporary: $.varRef(init?.IsTemporary ?? (false as unknown as boolean)),
+			IsNotFound: $.varRef(init?.IsNotFound ?? (false as unknown as boolean))
 		}
 	}
 
@@ -999,7 +999,7 @@ export class tcpConnWithoutReadFrom {
 	constructor(init?: Partial<{noReadFrom?: noReadFrom, TCPConn?: __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null}>) {
 		this._fields = {
 			noReadFrom: $.varRef(init?.noReadFrom ? $.markAsStructValue($.cloneStructValue(init.noReadFrom)) : $.markAsStructValue(new noReadFrom())),
-			TCPConn: $.varRef(init?.TCPConn ?? null)
+			TCPConn: $.varRef(init?.TCPConn ?? (null as unknown as __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null))
 		}
 	}
 
@@ -1174,7 +1174,7 @@ export class tcpConnWithoutWriteTo {
 	constructor(init?: Partial<{noWriteTo?: noWriteTo, TCPConn?: __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null}>) {
 		this._fields = {
 			noWriteTo: $.varRef(init?.noWriteTo ? $.markAsStructValue($.cloneStructValue(init.noWriteTo)) : $.markAsStructValue(new noWriteTo())),
-			TCPConn: $.varRef(init?.TCPConn ?? null)
+			TCPConn: $.varRef(init?.TCPConn ?? (null as unknown as __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null))
 		}
 	}
 
@@ -1376,7 +1376,7 @@ export function __goscript_set_noCancel(__goscriptValue: $.Channel<{}> | null): 
 }
 
 export type timeout = {
-	Timeout(): boolean
+	Timeout(): boolean | globalThis.Promise<boolean>
 }
 
 $.registerInterfaceType(
@@ -1386,7 +1386,7 @@ $.registerInterfaceType(
 );
 
 export type temporary = {
-	Temporary(): boolean
+	Temporary(): boolean | globalThis.Promise<boolean>
 }
 
 $.registerInterfaceType(
@@ -1448,8 +1448,8 @@ export async function newDNSError(err: $.GoError, name: string, server: string):
 		let __goscriptShadow3 = __goscriptTuple3[0]
 		let ok = __goscriptTuple3[1]
 		if (ok) {
-			isTimeout = $.pointerValue<Exclude<Error, null>>(__goscriptShadow3).Timeout()
-			isTemporary = $.pointerValue<Exclude<Error, null>>(__goscriptShadow3).Temporary()
+			isTimeout = await $.pointerValue<Exclude<Error, null>>(__goscriptShadow3).Timeout()
+			isTemporary = await $.pointerValue<Exclude<Error, null>>(__goscriptShadow3).Temporary()
 		}
 	}
 
@@ -1460,7 +1460,7 @@ export async function newDNSError(err: $.GoError, name: string, server: string):
 	}
 
 	let [, isNotFound] = $.typeAssertTuple<notFoundError | $.VarRef<notFoundError> | null>(err, { kind: $.TypeKind.Pointer, elemType: "net.notFoundError" })
-	return (await (async () => { const __goscriptLiteralField0 = await $.pointerValue<Exclude<$.GoError, null>>(err).Error(); return new DNSError({UnwrapErr: unwrapErr, Err: __goscriptLiteralField0, Name: name, Server: server, IsTimeout: isTimeout, IsTemporary: isTemporary, IsNotFound: isNotFound}) })())
+	return (() => { const __goscriptLiteralField0 = $.pointerValue<Exclude<$.GoError, null>>(err).Error(); return new DNSError({UnwrapErr: unwrapErr, Err: __goscriptLiteralField0, Name: name, Server: server, IsTimeout: isTimeout, IsTemporary: isTemporary, IsNotFound: isNotFound}) })()
 }
 
 export let errClosed: any = $.markAsStructValue($.cloneStructValue($.pointerValue<any>(poll.ErrNetClosing)))
@@ -1522,7 +1522,7 @@ export async function acquireThread(ctx: context.Context | null): globalThis.Pro
 		{
 			id: 1,
 			isSend: false,
-			channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+			channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 			onSelected: async (__goscriptSelect0Result) => {
 				return await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
 			}
@@ -1555,7 +1555,7 @@ export async function Buffers_WriteTo(v: $.VarRef<Buffers> | null, w: io.Writer 
 	{
 		let [wv, ok] = $.typeAssertTuple<buffersWriter | null>(w, "net.buffersWriter")
 		if (ok) {
-			const __goscriptReturn2 = $.pointerValue<Exclude<buffersWriter, null>>(wv).writeBuffers(v)
+			const __goscriptReturn2 = await $.pointerValue<Exclude<buffersWriter, null>>(wv).writeBuffers(v)
 			return [$.int(__goscriptReturn2[0]), __goscriptReturn2[1]]
 		}
 	}

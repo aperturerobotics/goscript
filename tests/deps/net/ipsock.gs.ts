@@ -118,9 +118,9 @@ export class ipStackCapabilities {
 	constructor(init?: Partial<{Once?: sync.Once, ipv4Enabled?: boolean, ipv6Enabled?: boolean, ipv4MappedIPv6Enabled?: boolean}>) {
 		this._fields = {
 			Once: $.varRef(init?.Once ? $.markAsStructValue($.cloneStructValue(init.Once)) : $.markAsStructValue(new sync.Once())),
-			ipv4Enabled: $.varRef(init?.ipv4Enabled ?? false),
-			ipv6Enabled: $.varRef(init?.ipv6Enabled ?? false),
-			ipv4MappedIPv6Enabled: $.varRef(init?.ipv4MappedIPv6Enabled ?? false)
+			ipv4Enabled: $.varRef(init?.ipv4Enabled ?? (false as unknown as boolean)),
+			ipv6Enabled: $.varRef(init?.ipv6Enabled ?? (false as unknown as boolean)),
+			ipv4MappedIPv6Enabled: $.varRef(init?.ipv4MappedIPv6Enabled ?? (false as unknown as boolean))
 		}
 	}
 
@@ -338,7 +338,7 @@ export async function filterAddrList(filter: ((_p0: __goscript_iprawsock.IPAddr)
 		}
 	}
 	if ($.len((addrs as addrList)) == 0) {
-		return [(null as addrList), $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField2 = await $.pointerValue<Exclude<$.GoError, null>>(__goscript_net.errNoSuitableAddress).Error(); return new __goscript_net.AddrError({Err: __goscriptLiteralField2, Addr: originalAddr}) })()), "*net.AddrError")]
+		return [(null as addrList), $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField2 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_net.errNoSuitableAddress).Error(); return new __goscript_net.AddrError({Err: __goscriptLiteralField2, Addr: originalAddr}) })(), "*net.AddrError")]
 	}
 	return [(addrs as addrList), null]
 }

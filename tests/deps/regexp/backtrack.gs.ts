@@ -51,9 +51,9 @@ export class job {
 
 	constructor(init?: Partial<{pc?: number, arg?: boolean, pos?: number}>) {
 		this._fields = {
-			pc: $.varRef(init?.pc ?? 0),
-			arg: $.varRef(init?.arg ?? false),
-			pos: $.varRef(init?.pos ?? 0)
+			pc: $.varRef(init?.pc ?? (0 as unknown as number)),
+			arg: $.varRef(init?.arg ?? (false as unknown as boolean)),
+			pos: $.varRef(init?.pos ?? (0 as unknown as number))
 		}
 	}
 
@@ -130,11 +130,11 @@ export class bitState {
 
 	constructor(init?: Partial<{end?: number, cap?: $.Slice<number>, matchcap?: $.Slice<number>, jobs?: $.Slice<job>, visited?: $.Slice<number>, inputs?: __goscript_exec.inputs}>) {
 		this._fields = {
-			end: $.varRef(init?.end ?? 0),
-			cap: $.varRef(init?.cap ?? null),
-			matchcap: $.varRef(init?.matchcap ?? null),
-			jobs: $.varRef(init?.jobs ?? null),
-			visited: $.varRef(init?.visited ?? null),
+			end: $.varRef(init?.end ?? (0 as unknown as number)),
+			cap: $.varRef(init?.cap ?? (null as unknown as $.Slice<number>)),
+			matchcap: $.varRef(init?.matchcap ?? (null as unknown as $.Slice<number>)),
+			jobs: $.varRef(init?.jobs ?? (null as unknown as $.Slice<job>)),
+			visited: $.varRef(init?.visited ?? (null as unknown as $.Slice<number>)),
 			inputs: $.varRef(init?.inputs ? $.markAsStructValue($.cloneStructValue(init.inputs)) : $.markAsStructValue(new __goscript_exec.inputs()))
 		}
 	}

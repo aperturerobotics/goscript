@@ -48,8 +48,8 @@ export class digest {
 
 	constructor(init?: Partial<{crc?: number, tab?: $.VarRef<Table> | null}>) {
 		this._fields = {
-			crc: $.varRef(init?.crc ?? 0),
-			tab: $.varRef(init?.tab ?? null)
+			crc: $.varRef(init?.crc ?? (0 as unknown as number)),
+			tab: $.varRef(init?.tab ?? (null as unknown as $.VarRef<Table> | null))
 		}
 	}
 
@@ -64,7 +64,7 @@ export class digest {
 
 	public async AppendBinary(b: $.Slice<number>): globalThis.Promise<[$.Slice<number>, $.GoError]> {
 		const d: digest | $.VarRef<digest> | null = this
-		b = $.append(b, ...($.stringToBytes("crc\x01") ?? []))
+		b = $.appendSlice(b, $.stringToBytes("crc\x01"))
 		b = byteorder.BEAppendUint32(b, $.uint(await tableSum($.pointerValue<digest>(d).tab), 32))
 		b = byteorder.BEAppendUint32(b, $.uint($.pointerValue<digest>(d).crc, 32))
 		return [b, null]

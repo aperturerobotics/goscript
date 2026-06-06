@@ -40,8 +40,8 @@ export class Action {
 
 	constructor(init?: Partial<{Result?: number, Filter?: Map<number, dep.Ref | null> | null}>) {
 		this._fields = {
-			Result: $.varRef(init?.Result ?? 0),
-			Filter: $.varRef(init?.Filter ?? null)
+			Result: $.varRef(init?.Result ?? (0 as unknown as number)),
+			Filter: $.varRef(init?.Filter ?? (null as unknown as Map<number, dep.Ref | null> | null))
 		}
 	}
 
@@ -109,8 +109,8 @@ export async function main(): globalThis.Promise<void> {
 						{
 							let v = $.mapGet(shape.value.Filter, shape.value.Result, null)[0]
 							if (v != null) {
-								dep.ToKey(v)
-								dep.ToKey(fv)
+								await dep.ToKey(v)
+								await dep.ToKey(fv)
 							}
 						}
 						shape.value.SetFilter(2, fv)
@@ -121,7 +121,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 	let fix: Fixed = (fixed![0] as Fixed)
 	let fv = fix![0]
-	if (dep.ToKey(fv) != null) {
+	if (await dep.ToKey(fv) != null) {
 		$.println("ok")
 	}
 }

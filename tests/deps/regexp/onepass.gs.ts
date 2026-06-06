@@ -48,9 +48,9 @@ export class onePassProg {
 
 	constructor(init?: Partial<{Inst?: $.Slice<onePassInst>, Start?: number, NumCap?: number}>) {
 		this._fields = {
-			Inst: $.varRef(init?.Inst ?? null),
-			Start: $.varRef(init?.Start ?? 0),
-			NumCap: $.varRef(init?.NumCap ?? 0)
+			Inst: $.varRef(init?.Inst ?? (null as unknown as $.Slice<onePassInst>)),
+			Start: $.varRef(init?.Start ?? (0 as unknown as number)),
+			NumCap: $.varRef(init?.NumCap ?? (0 as unknown as number))
 		}
 	}
 
@@ -96,7 +96,7 @@ export class onePassInst {
 	constructor(init?: Partial<{Inst?: syntax.Inst, Next?: $.Slice<number>}>) {
 		this._fields = {
 			Inst: $.varRef(init?.Inst ? $.markAsStructValue($.cloneStructValue(init.Inst)) : $.markAsStructValue(new syntax.Inst())),
-			Next: $.varRef(init?.Next ?? null)
+			Next: $.varRef(init?.Next ?? (null as unknown as $.Slice<number>))
 		}
 	}
 
@@ -172,10 +172,10 @@ export class queueOnePass {
 
 	constructor(init?: Partial<{sparse?: $.Slice<number>, dense?: $.Slice<number>, size?: number, nextIndex?: number}>) {
 		this._fields = {
-			sparse: $.varRef(init?.sparse ?? null),
-			dense: $.varRef(init?.dense ?? null),
-			size: $.varRef(init?.size ?? 0),
-			nextIndex: $.varRef(init?.nextIndex ?? 0)
+			sparse: $.varRef(init?.sparse ?? (null as unknown as $.Slice<number>)),
+			dense: $.varRef(init?.dense ?? (null as unknown as $.Slice<number>)),
+			size: $.varRef(init?.size ?? (0 as unknown as number)),
+			nextIndex: $.varRef(init?.nextIndex ?? (0 as unknown as number))
 		}
 	}
 
@@ -564,7 +564,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 				ok = await check!($.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32), m)
 				m![pc] = m![$.pointerValue<onePassInst>(inst).Inst.Out]
 				// pass matching runes back through these no-ops.
-				onePassRunes![pc] = $.append($.arrayToSlice<number>([]), ...(onePassRunes![$.pointerValue<onePassInst>(inst).Inst.Out] ?? []))
+				onePassRunes![pc] = $.appendSlice($.arrayToSlice<number>([]), onePassRunes![$.pointerValue<onePassInst>(inst).Inst.Out])
 				$.pointerValue<onePassInst>(inst).Next = $.makeSlice<number>((Math.trunc($.len(onePassRunes![pc]) / 2)) + 1, undefined, "number")
 				for (let __goscriptRangeTarget3 = $.pointerValue<onePassInst>(inst).Next, i = 0; i < $.len(__goscriptRangeTarget3); i++) {
 					$.pointerValue<onePassInst>(inst).Next![i] = $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32)
@@ -575,7 +575,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 			{
 				ok = await check!($.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32), m)
 				m![pc] = m![$.pointerValue<onePassInst>(inst).Inst.Out]
-				onePassRunes![pc] = $.append($.arrayToSlice<number>([]), ...(onePassRunes![$.pointerValue<onePassInst>(inst).Inst.Out] ?? []))
+				onePassRunes![pc] = $.appendSlice($.arrayToSlice<number>([]), onePassRunes![$.pointerValue<onePassInst>(inst).Inst.Out])
 				$.pointerValue<onePassInst>(inst).Next = $.makeSlice<number>((Math.trunc($.len(onePassRunes![pc]) / 2)) + 1, undefined, "number")
 				for (let __goscriptRangeTarget4 = $.pointerValue<onePassInst>(inst).Next, i = 0; i < $.len(__goscriptRangeTarget4); i++) {
 					$.pointerValue<onePassInst>(inst).Next![i] = $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32)
@@ -609,7 +609,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 					}
 					slices.Sort(runes)
 				} else {
-					runes = $.append(runes, ...($.pointerValue<onePassInst>(inst).Inst.Rune ?? []))
+					runes = $.appendSlice(runes, $.pointerValue<onePassInst>(inst).Inst.Rune)
 				}
 				onePassRunes![pc] = runes
 				$.pointerValue<onePassInst>(inst).Next = $.makeSlice<number>((Math.trunc($.len(onePassRunes![pc]) / 2)) + 1, undefined, "number")
@@ -653,7 +653,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 					break
 				}
 				queueOnePass.prototype.insert.call(instQueue, $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32))
-				onePassRunes![pc] = $.append($.arrayToSlice<number>([]), ...(anyRune ?? []))
+				onePassRunes![pc] = $.appendSlice($.arrayToSlice<number>([]), anyRune)
 				$.pointerValue<onePassInst>(inst).Next = $.arrayToSlice<number>([$.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32)])
 				break
 			}
@@ -664,7 +664,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 					break
 				}
 				queueOnePass.prototype.insert.call(instQueue, $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32))
-				onePassRunes![pc] = $.append($.arrayToSlice<number>([]), ...(anyRuneNotNL ?? []))
+				onePassRunes![pc] = $.appendSlice($.arrayToSlice<number>([]), anyRuneNotNL)
 				$.pointerValue<onePassInst>(inst).Next = $.makeSlice<number>((Math.trunc($.len(onePassRunes![pc]) / 2)) + 1, undefined, "number")
 				for (let __goscriptRangeTarget7 = $.pointerValue<onePassInst>(inst).Next, i = 0; i < $.len(__goscriptRangeTarget7); i++) {
 					$.pointerValue<onePassInst>(inst).Next![i] = $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32)

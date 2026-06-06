@@ -22,8 +22,8 @@ export class Server {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Handle(rwc: io.ReadWriteCloser | null): void {
-		$.pointerValue<Exclude<io.ReadWriteCloser, null>>(rwc).Close()
+	public async Handle(rwc: io.ReadWriteCloser | null): globalThis.Promise<void> {
+		await $.pointerValue<Exclude<io.ReadWriteCloser, null>>(rwc).Close()
 	}
 
 	static __typeInfo = $.registerStructType(

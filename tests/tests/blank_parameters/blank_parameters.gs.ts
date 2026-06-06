@@ -17,7 +17,7 @@ export class blankImpl {
 
 	constructor(init?: Partial<{value?: number}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? 0)
+			value: $.varRef(init?.value ?? (0 as unknown as number))
 		}
 	}
 

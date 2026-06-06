@@ -49,7 +49,7 @@ export class rawConn {
 
 	constructor(init?: Partial<{fd?: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null}>) {
 		this._fields = {
-			fd: $.varRef(init?.fd ?? null)
+			fd: $.varRef(init?.fd ?? (null as unknown as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null))
 		}
 	}
 

@@ -1008,6 +1008,70 @@ export function append<T>(
   return sliceProxyFromBacking(newBacking, 0, newLength, newCapacity) as any
 }
 
+export function appendSlice(
+  slice: Uint8Array,
+  elements: Uint8Array | Slice<number> | string | null | undefined,
+): Uint8Array
+export function appendSlice<T>(
+  slice: null,
+  elements: Slice<T> | null | undefined,
+): Slice<T>
+export function appendSlice<T>(
+  slice: Slice<T>,
+  elements: Slice<T> | null | undefined,
+): Slice<T>
+export function appendSlice<T>(
+  slice: Slice<T> | Uint8Array | null,
+  elements: Slice<T> | Uint8Array | string | null | undefined,
+): Slice<T> | Uint8Array {
+  if (elements == null) {
+    return slice as any
+  }
+  if (slice instanceof Uint8Array) {
+    const source =
+      typeof elements === 'string' ? stringToBytes(elements) : elements
+    return appendByteSlice(slice, [source]) as any
+  }
+  const count = len(elements as Slice<T>)
+  if (count === 0) {
+    return slice as any
+  }
+
+  let result = append(slice as Slice<T> | null)
+  if (isComplexSlice(result)) {
+    const meta = result.__meta__
+    const oldLength = meta.length
+    const newLength = oldLength + count
+    if (newLength <= meta.capacity) {
+      for (let i = 0; i < count; i++) {
+        meta.backing[meta.offset + oldLength + i] = (elements as any)[i]
+      }
+      if (meta.target !== undefined) {
+        for (let i = 0; i < count; i++) {
+          meta.target[oldLength + i] = (elements as any)[i]
+        }
+      }
+      return sliceProxyFromBacking(
+        meta.backing,
+        meta.offset,
+        newLength,
+        meta.capacity,
+        meta.target,
+      )
+    }
+  }
+
+  const baseLen = len(result as Slice<T>)
+  const next = new Array<T>(baseLen + count)
+  for (let i = 0; i < baseLen; i++) {
+    next[i] = (result as any)[i]
+  }
+  for (let i = 0; i < count; i++) {
+    next[baseLen + i] = (elements as any)[i]
+  }
+  return sliceProxyFromBacking(next, 0, next.length, next.length)
+}
+
 function appendByteSlice(slice: Uint8Array, elements: any[]): Uint8Array {
   const meta = byteSliceMeta(slice)
   const metaBacking = meta?.backing as unknown

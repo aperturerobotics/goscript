@@ -28,8 +28,8 @@ export class storage {
 
 	constructor(init?: Partial<{files?: Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null, children?: Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null}>) {
 		this._fields = {
-			files: $.varRef(init?.files ?? null),
-			children: $.varRef(init?.children ?? null)
+			files: $.varRef(init?.files ?? (null as unknown as Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null)),
+			children: $.varRef(init?.children ?? (null as unknown as Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null))
 		}
 	}
 

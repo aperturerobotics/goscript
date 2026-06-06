@@ -108,7 +108,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("scanner:", strings.TrimSpace(scan.value.String()))
 
 	let h: hash.XOF | null = $.interfaceValue<hash.XOF | null>($.markAsStructValue(new xof()), "main.xof")
-	$.println("hash:", $.pointerValue<Exclude<hash.XOF, null>>(h).BlockSize())
+	$.println("hash:", await $.pointerValue<Exclude<hash.XOF, null>>(h).BlockSize())
 }
 
 if ($.isMainScript(import.meta)) {

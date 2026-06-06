@@ -27,7 +27,7 @@ export class Buffer {
 
 	constructor(init?: Partial<{data?: $.Slice<number>}>) {
 		this._fields = {
-			data: $.varRef(init?.data ?? null)
+			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
 		}
 	}
 
@@ -41,7 +41,7 @@ export class Buffer {
 
 	public Write(p: $.Slice<number>): [number, $.GoError] {
 		let b: Buffer | $.VarRef<Buffer> | null = this
-		$.pointerValue<Buffer>(b).data = $.append($.pointerValue<Buffer>(b).data, ...(p ?? []))
+		$.pointerValue<Buffer>(b).data = $.appendSlice($.pointerValue<Buffer>(b).data, p)
 		return [$.len(p), null]
 	}
 
@@ -54,13 +54,13 @@ export class Buffer {
 	)
 }
 
-export function use(w: Writer | null): void {
-	$.pointerValue<Exclude<Writer, null>>(w).Write(new Uint8Array([120]))
+export async function use(w: Writer | null): globalThis.Promise<void> {
+	await $.pointerValue<Exclude<Writer, null>>(w).Write(new Uint8Array([120]))
 }
 
 export async function main(): globalThis.Promise<void> {
 	let b: $.VarRef<Buffer> = $.varRef($.markAsStructValue(new Buffer()))
-	use($.interfaceValue<Writer | null>(b, "*main.Buffer"))
+	await use($.interfaceValue<Writer | null>(b, "*main.Buffer"))
 	$.println($.bytesToString(b.value.data))
 }
 

@@ -36,9 +36,9 @@ export class LocalTime {
 
 	constructor(init?: Partial<{wall?: number, ext?: number, loc?: time.Location | $.VarRef<time.Location> | null}>) {
 		this._fields = {
-			wall: $.varRef(init?.wall ?? 0),
-			ext: $.varRef(init?.ext ?? 0),
-			loc: $.varRef(init?.loc ?? null)
+			wall: $.varRef(init?.wall ?? (0 as unknown as number)),
+			ext: $.varRef(init?.ext ?? (0 as unknown as number)),
+			loc: $.varRef(init?.loc ?? (null as unknown as time.Location | $.VarRef<time.Location> | null))
 		}
 	}
 

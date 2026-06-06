@@ -59,9 +59,9 @@ export class MsgStream {
 
 	constructor(init?: Partial<{ctx?: context.Context | null, rw?: MsgStreamRw | null, closeCb?: (() => void) | null}>) {
 		this._fields = {
-			ctx: $.varRef(init?.ctx ?? null),
-			rw: $.varRef(init?.rw ?? null),
-			closeCb: $.varRef(init?.closeCb ?? null)
+			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
+			rw: $.varRef(init?.rw ?? (null as unknown as MsgStreamRw | null)),
+			closeCb: $.varRef(init?.closeCb ?? (null as unknown as (() => void) | null))
 		}
 	}
 
@@ -103,7 +103,7 @@ export class MsgStream {
 		if (err != null) {
 			return err
 		}
-		return $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
+		return await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
 	}
 
 	public async MsgSend(msg: __goscript_message.Message): globalThis.Promise<$.GoError> {
@@ -115,7 +115,7 @@ export class MsgStream {
 			}
 		}
 
-		let __goscriptTuple1: any = $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).MarshalVT()
+		let __goscriptTuple1: any = await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).MarshalVT()
 		let msgData: $.Slice<number> = __goscriptTuple1[0]
 		let err = __goscriptTuple1[1]
 		if (err != null) {

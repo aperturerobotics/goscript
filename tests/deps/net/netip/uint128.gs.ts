@@ -28,8 +28,8 @@ export class uint128 {
 
 	constructor(init?: Partial<{hi?: number, lo?: number}>) {
 		this._fields = {
-			hi: $.varRef(init?.hi ?? 0),
-			lo: $.varRef(init?.lo ?? 0)
+			hi: $.varRef(init?.hi ?? (0 as unknown as number)),
+			lo: $.varRef(init?.lo ?? (0 as unknown as number))
 		}
 	}
 

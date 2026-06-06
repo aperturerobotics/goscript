@@ -48,7 +48,7 @@ export class pooledFlateWriter {
 	constructor(init?: Partial<{mu?: sync.Mutex, fw?: flate.Writer | $.VarRef<flate.Writer> | null}>) {
 		this._fields = {
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			fw: $.varRef(init?.fw ?? null)
+			fw: $.varRef(init?.fw ?? (null as unknown as flate.Writer | $.VarRef<flate.Writer> | null))
 		}
 	}
 
@@ -129,7 +129,7 @@ export class pooledFlateReader {
 	constructor(init?: Partial<{mu?: sync.Mutex, fr?: io.ReadCloser | null}>) {
 		this._fields = {
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			fr: $.varRef(init?.fr ?? null)
+			fr: $.varRef(init?.fr ?? (null as unknown as io.ReadCloser | null))
 		}
 	}
 
@@ -215,7 +215,7 @@ export function __goscript_set_flateReaderPool(__goscriptValue: sync.Pool): void
 export async function newFlateReader(r: io.Reader | null): globalThis.Promise<io.ReadCloser | null> {
 	let [fr, ok] = $.typeAssertTuple<io.ReadCloser | null>(await flateReaderPool.value.Get(), "io.ReadCloser")
 	if (ok) {
-		$.pointerValue<Exclude<flate.Resetter, null>>($.mustTypeAssert<flate.Resetter | null>(fr, "flate.Resetter")).Reset(r, null)
+		await $.pointerValue<Exclude<flate.Resetter, null>>($.mustTypeAssert<flate.Resetter | null>(fr, "flate.Resetter")).Reset(r, null)
 	} else {
 		fr = await flate.NewReader(r)
 	}

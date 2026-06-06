@@ -23,7 +23,7 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 		{
 			id: 0,
 			isSend: false,
-			channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+			channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 			onSelected: async (__goscriptSelect0Result) => {
 				$.println("Context done, returning")
 				return "context_done"

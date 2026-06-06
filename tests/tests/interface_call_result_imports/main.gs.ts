@@ -11,7 +11,7 @@ import "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_cal
 
 export async function main(): globalThis.Promise<void> {
 	let v = dep1.Make()
-	$.println($.pointerValue<Exclude<dep2.Value, null>>(v).Value())
+	$.println(await $.pointerValue<Exclude<dep2.Value, null>>(v).Value())
 }
 
 if ($.isMainScript(import.meta)) {

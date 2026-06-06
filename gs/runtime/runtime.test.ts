@@ -4,6 +4,7 @@ import {
   Compiler,
   FuncForPC,
   ReadTrace,
+  SetFinalizer,
   StartTrace,
   StopTrace,
 } from './runtime.js'
@@ -17,5 +18,11 @@ describe('runtime override', () => {
     )
     expect(ReadTrace()).toBeNull()
     expect(() => StopTrace()).not.toThrow()
+  })
+
+  it('ignores finalizer registration and clearing', () => {
+    const obj = {}
+    expect(() => SetFinalizer(obj, () => {})).not.toThrow()
+    expect(() => SetFinalizer(obj, null)).not.toThrow()
   })
 })

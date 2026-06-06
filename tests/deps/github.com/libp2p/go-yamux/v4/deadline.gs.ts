@@ -40,8 +40,8 @@ export class pipeDeadline {
 	constructor(init?: Partial<{mu?: sync.Mutex, timer?: time.Timer | $.VarRef<time.Timer> | null, cancel?: $.Channel<{}> | null}>) {
 		this._fields = {
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			timer: $.varRef(init?.timer ?? null),
-			cancel: $.varRef(init?.cancel ?? null)
+			timer: $.varRef(init?.timer ?? (null as unknown as time.Timer | $.VarRef<time.Timer> | null)),
+			cancel: $.varRef(init?.cancel ?? (null as unknown as $.Channel<{}> | null))
 		}
 	}
 

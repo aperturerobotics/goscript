@@ -556,15 +556,58 @@ export function Grow<T>(s: $.Slice<T>, n: number): $.Slice<T> {
  * @param s The slice to sort in place
  * @param cmp Comparison function
  */
-export function SortFunc<T>(s: $.Slice<T>, cmp: CompareCallback<T>): void {
+export async function SortFunc<T>(
+  s: $.Slice<T>,
+  cmp: CompareCallback<T>,
+): globalThis.Promise<void> {
   if (cmp == null) {
     throw new Error('slices.SortFunc: nil comparison function')
   }
-  if (s === null || s === undefined) {
+  if (s === null || s === undefined || $.len(s) < 2) {
     return
   }
-  const arr = s as any as T[]
-  arr.sort((a, b) => syncNumber(cmp(a, b)))
+  const sorted = await asyncMergeSort(Array.from(s as any as T[]), cmp)
+  for (let i = 0; i < sorted.length; i++) {
+    ;(s as any)[i] = sorted[i]
+  }
+}
+
+async function asyncMergeSort<T>(
+  values: T[],
+  cmp: CompareCallback<T>,
+): globalThis.Promise<T[]> {
+  if (values.length < 2) {
+    return values
+  }
+  const mid = Math.floor(values.length / 2)
+  const left = await asyncMergeSort(values.slice(0, mid), cmp)
+  const right = await asyncMergeSort(values.slice(mid), cmp)
+  return asyncMerge(left, right, cmp)
+}
+
+async function asyncMerge<T>(
+  left: T[],
+  right: T[],
+  cmp: CompareCallback<T>,
+): globalThis.Promise<T[]> {
+  const out: T[] = []
+  let li = 0
+  let ri = 0
+  while (li < left.length && ri < right.length) {
+    const order = await cmp!(left[li], right[ri])
+    if (order <= 0) {
+      out.push(left[li++])
+    } else {
+      out.push(right[ri++])
+    }
+  }
+  while (li < left.length) {
+    out.push(left[li++])
+  }
+  while (ri < right.length) {
+    out.push(right[ri++])
+  }
+  return out
 }
 
 export function IsSortedFunc<T>(

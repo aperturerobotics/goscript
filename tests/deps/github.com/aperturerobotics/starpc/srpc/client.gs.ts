@@ -73,7 +73,7 @@ export class client {
 
 	constructor(init?: Partial<{openStream?: ((ctx: context.Context | null, msgHandler: ((data: $.Slice<number>) => $.GoError | globalThis.Promise<$.GoError>) | null, closeHandler: ((closeErr: $.GoError) => void) | null) => [__goscript_writer.PacketWriter | null, $.GoError] | globalThis.Promise<[__goscript_writer.PacketWriter | null, $.GoError]>) | null}>) {
 		this._fields = {
-			openStream: $.varRef(init?.openStream ?? null)
+			openStream: $.varRef(init?.openStream ?? (null as unknown as ((ctx: context.Context | null, msgHandler: ((data: $.Slice<number>) => $.GoError | globalThis.Promise<$.GoError>) | null, closeHandler: ((closeErr: $.GoError) => void) | null) => [__goscript_writer.PacketWriter | null, $.GoError] | globalThis.Promise<[__goscript_writer.PacketWriter | null, $.GoError]>) | null))
 		}
 	}
 
@@ -88,7 +88,7 @@ export class client {
 	public async ExecCall(ctx: context.Context | null, service: string, method: string, _in: __goscript_message.Message, out: __goscript_message.Message): globalThis.Promise<$.GoError> {
 		const c: client | $.VarRef<client> | null = this
 		await using __defer = new $.AsyncDisposableStack()
-		let __goscriptTuple0: any = $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(_in).MarshalVT()
+		let __goscriptTuple0: any = await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(_in).MarshalVT()
 		let firstMsg: $.Slice<number> = __goscriptTuple0[0]
 		let err = __goscriptTuple0[1]
 		if (err != null) {
@@ -120,9 +120,9 @@ export class client {
 			return err
 		}
 		{
-			let __goscriptShadow1 = $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(out).UnmarshalVT(msg)
+			let __goscriptShadow1 = await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(out).UnmarshalVT(msg)
 			if (__goscriptShadow1 != null) {
-				return errors.Wrap($.pointerValueOrNil(__goscript_errors.ErrInvalidMessage)!, await $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow1).Error())
+				return errors.Wrap($.pointerValueOrNil(__goscript_errors.ErrInvalidMessage)!, $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow1).Error())
 			}
 		}
 
@@ -134,7 +134,7 @@ export class client {
 		let firstMsgData: $.Slice<number> = null as $.Slice<number>
 		if (firstMsg != null) {
 			let err: $.GoError = null as $.GoError
-			let __goscriptTuple3: any = $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(firstMsg).MarshalVT()
+			let __goscriptTuple3: any = await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(firstMsg).MarshalVT()
 			firstMsgData = __goscriptTuple3[0]
 			err = __goscriptTuple3[1]
 			if (err != null) {

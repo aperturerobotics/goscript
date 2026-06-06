@@ -17,7 +17,7 @@ export class holder {
 
 	constructor(init?: Partial<{values?: $.VarRef<$.Slice<number>> | null}>) {
 		this._fields = {
-			values: $.varRef(init?.values ?? null)
+			values: $.varRef(init?.values ?? (null as unknown as $.VarRef<$.Slice<number>> | null))
 		}
 	}
 

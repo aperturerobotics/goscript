@@ -17,7 +17,7 @@ export class content {
 
 	constructor(init?: Partial<{bytes?: $.Slice<number>}>) {
 		this._fields = {
-			bytes: $.varRef(init?.bytes ?? null)
+			bytes: $.varRef(init?.bytes ?? (null as unknown as $.Slice<number>))
 		}
 	}
 

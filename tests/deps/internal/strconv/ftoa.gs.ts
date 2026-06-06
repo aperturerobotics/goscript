@@ -57,9 +57,9 @@ export class floatInfo {
 
 	constructor(init?: Partial<{mantbits?: number, expbits?: number, bias?: number}>) {
 		this._fields = {
-			mantbits: $.varRef(init?.mantbits ?? 0),
-			expbits: $.varRef(init?.expbits ?? 0),
-			bias: $.varRef(init?.bias ?? 0)
+			mantbits: $.varRef(init?.mantbits ?? (0 as unknown as number)),
+			expbits: $.varRef(init?.expbits ?? (0 as unknown as number)),
+			bias: $.varRef(init?.bias ?? (0 as unknown as number))
 		}
 	}
 
@@ -112,9 +112,9 @@ export class decimalSlice {
 
 	constructor(init?: Partial<{d?: $.Slice<number>, nd?: number, dp?: number}>) {
 		this._fields = {
-			d: $.varRef(init?.d ?? null),
-			nd: $.varRef(init?.nd ?? 0),
-			dp: $.varRef(init?.dp ?? 0)
+			d: $.varRef(init?.d ?? (null as unknown as $.Slice<number>)),
+			nd: $.varRef(init?.nd ?? (0 as unknown as number)),
+			dp: $.varRef(init?.dp ?? (0 as unknown as number))
 		}
 	}
 
@@ -222,7 +222,7 @@ export function genericFtoa(dst: $.Slice<number>, val: number, fmt: number, prec
 					break
 				}
 			}
-			return $.append(dst, ...($.stringToBytes(s) ?? []))
+			return $.appendSlice(dst, $.stringToBytes(s))
 			break
 		}
 		case 0:
@@ -600,7 +600,7 @@ export function fmtE(dst: $.Slice<number>, neg: boolean, d: decimalSlice, prec: 
 		let i = 1
 		let m = $.min(d.nd, prec + 1)
 		if (i < m) {
-			dst = $.append(dst, ...($.goSlice(d.d, i, m) ?? []))
+			dst = $.appendSlice(dst, $.goSlice(d.d, i, m))
 			i = m
 		}
 		for (; i <= prec; i++) {
@@ -653,7 +653,7 @@ export function fmtF(dst: $.Slice<number>, neg: boolean, d: decimalSlice, prec: 
 	// integer, padded with zeros as needed.
 	if (d.dp > 0) {
 		let m = $.min(d.nd, d.dp)
-		dst = $.append(dst, ...($.goSlice(d.d, undefined, m) ?? []))
+		dst = $.appendSlice(dst, $.goSlice(d.d, undefined, m))
 		for (; m < d.dp; m++) {
 			dst = $.append(dst, $.uint(48, 8))
 		}

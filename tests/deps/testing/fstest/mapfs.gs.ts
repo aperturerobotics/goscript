@@ -61,10 +61,10 @@ export class MapFile {
 
 	constructor(init?: Partial<{Data?: $.Slice<number>, Mode?: fs.FileMode, ModTime?: time.Time, Sys?: any}>) {
 		this._fields = {
-			Data: $.varRef(init?.Data ?? null),
-			Mode: $.varRef(init?.Mode ?? 0),
+			Data: $.varRef(init?.Data ?? (null as unknown as $.Slice<number>)),
+			Mode: $.varRef(init?.Mode ?? (0 as unknown as fs.FileMode)),
 			ModTime: $.varRef(init?.ModTime ? $.markAsStructValue($.cloneStructValue(init.ModTime)) : $.markAsStructValue(new time.Time())),
-			Sys: $.varRef(init?.Sys ?? null)
+			Sys: $.varRef(init?.Sys ?? (null as unknown as any))
 		}
 	}
 
@@ -102,7 +102,7 @@ export class fsOnly {
 
 	constructor(init?: Partial<{FS?: fs.FS | null}>) {
 		this._fields = {
-			FS: $.varRef(init?.FS ?? null)
+			FS: $.varRef(init?.FS ?? (null as unknown as fs.FS | null))
 		}
 	}
 
@@ -114,8 +114,8 @@ export class fsOnly {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Open(name: any): any {
-		return $.pointerValue<Exclude<fs.FS | null, null>>(this.FS).Open(name)
+	public async Open(name: any): globalThis.Promise<any> {
+		return await $.pointerValue<Exclude<fs.FS | null, null>>(this.FS).Open(name)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -141,7 +141,7 @@ export class noSub {
 
 	constructor(init?: Partial<{MapFS?: MapFS}>) {
 		this._fields = {
-			MapFS: $.varRef(init?.MapFS ?? null)
+			MapFS: $.varRef(init?.MapFS ?? (null as unknown as MapFS))
 		}
 	}
 
@@ -187,8 +187,8 @@ export class mapFileInfo {
 
 	constructor(init?: Partial<{name?: string, f?: MapFile | $.VarRef<MapFile> | null}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ""),
-			f: $.varRef(init?.f ?? null)
+			name: $.varRef(init?.name ?? ("" as unknown as string)),
+			f: $.varRef(init?.f ?? (null as unknown as MapFile | $.VarRef<MapFile> | null))
 		}
 	}
 
@@ -285,9 +285,9 @@ export class openMapFile {
 
 	constructor(init?: Partial<{path?: string, mapFileInfo?: mapFileInfo, offset?: number}>) {
 		this._fields = {
-			path: $.varRef(init?.path ?? ""),
+			path: $.varRef(init?.path ?? ("" as unknown as string)),
 			mapFileInfo: $.varRef(init?.mapFileInfo ? $.markAsStructValue($.cloneStructValue(init.mapFileInfo)) : $.markAsStructValue(new mapFileInfo())),
-			offset: $.varRef(init?.offset ?? 0)
+			offset: $.varRef(init?.offset ?? (0 as unknown as number))
 		}
 	}
 
@@ -444,10 +444,10 @@ export class mapDir {
 
 	constructor(init?: Partial<{path?: string, mapFileInfo?: mapFileInfo, entry?: $.Slice<mapFileInfo>, offset?: number}>) {
 		this._fields = {
-			path: $.varRef(init?.path ?? ""),
+			path: $.varRef(init?.path ?? ("" as unknown as string)),
 			mapFileInfo: $.varRef(init?.mapFileInfo ? $.markAsStructValue($.cloneStructValue(init.mapFileInfo)) : $.markAsStructValue(new mapFileInfo())),
-			entry: $.varRef(init?.entry ?? null),
-			offset: $.varRef(init?.offset ?? 0)
+			entry: $.varRef(init?.entry ?? (null as unknown as $.Slice<mapFileInfo>)),
+			offset: $.varRef(init?.offset ?? (0 as unknown as number))
 		}
 	}
 
@@ -539,7 +539,7 @@ export class mapDir {
 	)
 }
 
-export function MapFS_Open(fsys: MapFS, name: string): [fs.File | null, $.GoError] {
+export async function MapFS_Open(fsys: MapFS, name: string): globalThis.Promise<[fs.File | null, $.GoError]> {
 	if (!fs.ValidPath(name)) {
 		return [null, $.interfaceValue<$.GoError>(new fs.PathError({Op: "open", Path: name, Err: fs.ErrNotExist}), "*fs.PathError")]
 	}
@@ -598,7 +598,7 @@ export function MapFS_Open(fsys: MapFS, name: string): [fs.File | null, $.GoErro
 	for (const [name, __rangeValue] of need?.entries() ?? []) {
 		list = $.append(list, $.markAsStructValue(new mapFileInfo({name: name, f: new MapFile({Mode: $.uint(fs.ModeDir | 0o555, 32)})})))
 	}
-	slices.SortFunc(list, $.functionValue((a: mapFileInfo, b: mapFileInfo): number => {
+	await slices.SortFunc(list, $.functionValue((a: mapFileInfo, b: mapFileInfo): number => {
 		return strings.Compare(a.name, b.name)
 	}, ({ kind: $.TypeKind.Function, params: ["fstest.mapFileInfo", "fstest.mapFileInfo"], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 

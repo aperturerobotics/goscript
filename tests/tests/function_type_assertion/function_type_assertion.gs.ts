@@ -21,7 +21,7 @@ export class FuncContainer {
 
 	constructor(init?: Partial<{myFunc?: any}>) {
 		this._fields = {
-			myFunc: $.varRef(init?.myFunc ?? null)
+			myFunc: $.varRef(init?.myFunc ?? (null as unknown as any))
 		}
 	}
 

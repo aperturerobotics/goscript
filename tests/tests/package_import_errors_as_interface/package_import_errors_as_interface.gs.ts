@@ -20,7 +20,7 @@ export class wrappedHealthError {
 
 	constructor(init?: Partial<{err?: $.GoError}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? null)
+			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
 		}
 	}
 
@@ -74,7 +74,7 @@ export async function main(): globalThis.Promise<void> {
 	let ok = errors.As($.pointerValueOrNil($.interfaceValue<$.GoError>(err, "*main.wrappedHealthError"))!, $.interfaceValue<any>(target, "*main.healthError"))
 	$.println("matched:", ok)
 	if (ok) {
-		$.println("health:", $.pointerValue<Exclude<healthError, null>>(target.value).Health())
+		$.println("health:", await $.pointerValue<Exclude<healthError, null>>(target.value).Health())
 	}
 }
 

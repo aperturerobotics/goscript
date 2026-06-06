@@ -17,7 +17,7 @@ export class MyStruct {
 
 	constructor(init?: Partial<{MyInt?: number}>) {
 		this._fields = {
-			MyInt: $.varRef(init?.MyInt ?? 0)
+			MyInt: $.varRef(init?.MyInt ?? (0 as unknown as number))
 		}
 	}
 

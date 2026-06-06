@@ -55,8 +55,8 @@ export class byName {
 
 	constructor(init?: Partial<{addrs?: $.Slice<string>, canonicalName?: string}>) {
 		this._fields = {
-			addrs: $.varRef(init?.addrs ?? null),
-			canonicalName: $.varRef(init?.canonicalName ?? "")
+			addrs: $.varRef(init?.addrs ?? (null as unknown as $.Slice<string>)),
+			canonicalName: $.varRef(init?.canonicalName ?? ("" as unknown as string))
 		}
 	}
 
@@ -102,7 +102,7 @@ export async function readHosts(): globalThis.Promise<void> {
 	if (($.markAsStructValue($.cloneStructValue(now)).Before($.markAsStructValue($.cloneStructValue(hosts.value.expire))) && ($.stringEqual(hosts.value.path, hp))) && ($.len(hosts.value.byName) > 0)) {
 		return
 	}
-	let __goscriptTuple0: any = __goscript_parse.stat(hp)
+	let __goscriptTuple0: any = await __goscript_parse.stat(hp)
 	let mtime = __goscriptTuple0[0]
 	let size = $.int(__goscriptTuple0[1])
 	let err = __goscriptTuple0[2]

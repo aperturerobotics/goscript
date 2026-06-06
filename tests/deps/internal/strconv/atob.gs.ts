@@ -41,7 +41,7 @@ export function FormatBool(b: boolean): string {
 
 export function AppendBool(dst: $.Slice<number>, b: boolean): $.Slice<number> {
 	if (b) {
-		return $.append(dst, ...($.stringToBytes("true") ?? []))
+		return $.appendSlice(dst, $.stringToBytes("true"))
 	}
-	return $.append(dst, ...($.stringToBytes("false") ?? []))
+	return $.appendSlice(dst, $.stringToBytes("false"))
 }

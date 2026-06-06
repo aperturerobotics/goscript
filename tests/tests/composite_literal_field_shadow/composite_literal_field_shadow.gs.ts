@@ -17,7 +17,7 @@ export class buffer {
 
 	constructor(init?: Partial<{buf?: $.Slice<number>}>) {
 		this._fields = {
-			buf: $.varRef(init?.buf ?? null)
+			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>))
 		}
 	}
 

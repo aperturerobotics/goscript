@@ -27,6 +27,6 @@ export function AppendComplex(dst: $.Slice<number>, c: $.Complex, fmt: number, p
 		$.copy($.goSlice(dst, i + 1, undefined), $.goSlice(dst, i, undefined))
 		dst![i] = $.uint(43, 8)
 	}
-	dst = $.append(dst, ...($.stringToBytes("i)") ?? []))
+	dst = $.appendSlice(dst, $.stringToBytes("i)"))
 	return dst
 }

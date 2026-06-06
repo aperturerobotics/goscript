@@ -176,19 +176,19 @@ export class Stream {
 
 	constructor(init?: Partial<{sendWindow?: number, memorySpan?: __goscript_session.MemoryManager | null, id?: number, session?: __goscript_session.Session | $.VarRef<__goscript_session.Session> | null, recvWindow?: number, epochStart?: time.Time, state?: streamState, writeState?: halfStreamState, readState?: halfStreamState, stateLock?: sync.Mutex, recvBuf?: __goscript_util.segmentedBuffer, recvNotifyCh?: $.Channel<{}> | null, sendNotifyCh?: $.Channel<{}> | null, readDeadline?: __goscript_deadline.pipeDeadline, writeDeadline?: __goscript_deadline.pipeDeadline}>) {
 		this._fields = {
-			sendWindow: $.varRef(init?.sendWindow ?? 0),
-			memorySpan: $.varRef(init?.memorySpan ?? null),
-			id: $.varRef(init?.id ?? 0),
-			session: $.varRef(init?.session ?? null),
-			recvWindow: $.varRef(init?.recvWindow ?? 0),
+			sendWindow: $.varRef(init?.sendWindow ?? (0 as unknown as number)),
+			memorySpan: $.varRef(init?.memorySpan ?? (null as unknown as __goscript_session.MemoryManager | null)),
+			id: $.varRef(init?.id ?? (0 as unknown as number)),
+			session: $.varRef(init?.session ?? (null as unknown as __goscript_session.Session | $.VarRef<__goscript_session.Session> | null)),
+			recvWindow: $.varRef(init?.recvWindow ?? (0 as unknown as number)),
 			epochStart: $.varRef(init?.epochStart ? $.markAsStructValue($.cloneStructValue(init.epochStart)) : $.markAsStructValue(new time.Time())),
-			state: $.varRef(init?.state ?? 0),
-			writeState: $.varRef(init?.writeState ?? 0),
-			readState: $.varRef(init?.readState ?? 0),
+			state: $.varRef(init?.state ?? (0 as unknown as streamState)),
+			writeState: $.varRef(init?.writeState ?? (0 as unknown as halfStreamState)),
+			readState: $.varRef(init?.readState ?? (0 as unknown as halfStreamState)),
 			stateLock: $.varRef(init?.stateLock ? $.markAsStructValue($.cloneStructValue(init.stateLock)) : $.markAsStructValue(new sync.Mutex())),
 			recvBuf: $.varRef(init?.recvBuf ? $.markAsStructValue($.cloneStructValue(init.recvBuf)) : $.markAsStructValue(new __goscript_util.segmentedBuffer())),
-			recvNotifyCh: $.varRef(init?.recvNotifyCh ?? null),
-			sendNotifyCh: $.varRef(init?.sendNotifyCh ?? null),
+			recvNotifyCh: $.varRef(init?.recvNotifyCh ?? (null as unknown as $.Channel<{}> | null)),
+			sendNotifyCh: $.varRef(init?.sendNotifyCh ?? (null as unknown as $.Channel<{}> | null)),
 			readDeadline: $.varRef(init?.readDeadline ? $.markAsStructValue($.cloneStructValue(init.readDeadline)) : $.markAsStructValue(new __goscript_deadline.pipeDeadline())),
 			writeDeadline: $.varRef(init?.writeDeadline ? $.markAsStructValue($.cloneStructValue(init.writeDeadline)) : $.markAsStructValue(new __goscript_deadline.pipeDeadline()))
 		}
@@ -302,9 +302,9 @@ export class Stream {
 		return err
 	}
 
-	public LocalAddr(): net.Addr | null {
+	public async LocalAddr(): globalThis.Promise<net.Addr | null> {
 		const s: Stream | $.VarRef<Stream> | null = this
-		return __goscript_session.Session.prototype.LocalAddr.call($.pointerValue<Stream>(s).session)
+		return await __goscript_session.Session.prototype.LocalAddr.call($.pointerValue<Stream>(s).session)
 	}
 
 	public async Read(b: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
@@ -389,9 +389,9 @@ export class Stream {
 		return [n, err]
 	}
 
-	public RemoteAddr(): net.Addr | null {
+	public async RemoteAddr(): globalThis.Promise<net.Addr | null> {
 		const s: Stream | $.VarRef<Stream> | null = this
-		return __goscript_session.Session.prototype.RemoteAddr.call($.pointerValue<Stream>(s).session)
+		return await __goscript_session.Session.prototype.RemoteAddr.call($.pointerValue<Stream>(s).session)
 	}
 
 	public async Reset(): globalThis.Promise<$.GoError> {
@@ -679,7 +679,7 @@ export class Stream {
 				if (recvWindow > $.pointerValue<Stream>(s).recvWindow) {
 					let grow = $.uint(recvWindow - $.pointerValue<Stream>(s).recvWindow, 32)
 					{
-						let err = $.pointerValue<Exclude<__goscript_session.MemoryManager, null>>($.pointerValue<Stream>(s).memorySpan).ReserveMemory($.int(grow), $.uint(128, 8))
+						let err = await $.pointerValue<Exclude<__goscript_session.MemoryManager, null>>($.pointerValue<Stream>(s).memorySpan).ReserveMemory($.int(grow), $.uint(128, 8))
 						if (err == null) {
 							$.pointerValue<Stream>(s).recvWindow = $.uint(recvWindow, 32)
 							let __goscriptTuple2: any = await $.pointerValue<Stream>(s).recvBuf.GrowTo($.uint($.pointerValue<Stream>(s).recvWindow, 32), true)

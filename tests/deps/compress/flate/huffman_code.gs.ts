@@ -37,8 +37,8 @@ export class hcode {
 
 	constructor(init?: Partial<{code?: number, len?: number}>) {
 		this._fields = {
-			code: $.varRef(init?.code ?? 0),
-			len: $.varRef(init?.len ?? 0)
+			code: $.varRef(init?.code ?? (0 as unknown as number)),
+			len: $.varRef(init?.len ?? (0 as unknown as number))
 		}
 	}
 
@@ -112,11 +112,11 @@ export class huffmanEncoder {
 
 	constructor(init?: Partial<{codes?: $.Slice<hcode>, freqcache?: $.Slice<literalNode>, bitCount?: number[], lns?: byLiteral, lfs?: byFreq}>) {
 		this._fields = {
-			codes: $.varRef(init?.codes ?? null),
-			freqcache: $.varRef(init?.freqcache ?? null),
+			codes: $.varRef(init?.codes ?? (null as unknown as $.Slice<hcode>)),
+			freqcache: $.varRef(init?.freqcache ?? (null as unknown as $.Slice<literalNode>)),
 			bitCount: $.varRef(init?.bitCount !== undefined ? $.cloneArrayValue(init.bitCount) : Array.from({ length: 17 }, () => 0)),
-			lns: $.varRef(init?.lns ?? null),
-			lfs: $.varRef(init?.lfs ?? null)
+			lns: $.varRef(init?.lns ?? (null as unknown as byLiteral)),
+			lfs: $.varRef(init?.lfs ?? (null as unknown as byFreq))
 		}
 	}
 
@@ -352,8 +352,8 @@ export class literalNode {
 
 	constructor(init?: Partial<{literal?: number, freq?: number}>) {
 		this._fields = {
-			literal: $.varRef(init?.literal ?? 0),
-			freq: $.varRef(init?.freq ?? 0)
+			literal: $.varRef(init?.literal ?? (0 as unknown as number)),
+			freq: $.varRef(init?.freq ?? (0 as unknown as number))
 		}
 	}
 
@@ -428,11 +428,11 @@ export class levelInfo {
 
 	constructor(init?: Partial<{level?: number, lastFreq?: number, nextCharFreq?: number, nextPairFreq?: number, needed?: number}>) {
 		this._fields = {
-			level: $.varRef(init?.level ?? 0),
-			lastFreq: $.varRef(init?.lastFreq ?? 0),
-			nextCharFreq: $.varRef(init?.nextCharFreq ?? 0),
-			nextPairFreq: $.varRef(init?.nextPairFreq ?? 0),
-			needed: $.varRef(init?.needed ?? 0)
+			level: $.varRef(init?.level ?? (0 as unknown as number)),
+			lastFreq: $.varRef(init?.lastFreq ?? (0 as unknown as number)),
+			nextCharFreq: $.varRef(init?.nextCharFreq ?? (0 as unknown as number)),
+			nextPairFreq: $.varRef(init?.nextPairFreq ?? (0 as unknown as number)),
+			needed: $.varRef(init?.needed ?? (0 as unknown as number))
 		}
 	}
 

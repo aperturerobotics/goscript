@@ -769,6 +769,9 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				if callUsesFunctionIdentifier(pkg, typed.Fun) {
 					markFunctionAsync(semFn, "function-identifier-call")
 				}
+				if callUsesInterfaceMethod(pkg, typed.Fun) {
+					markFunctionAsync(semFn, "interface-method-call")
+				}
 				if overrideFacts.IsMethodAsync(overrideCallPackage(pkg, typed.Fun), overrideCallMethod(pkg, typed.Fun)) {
 					markFunctionAsync(semFn, "override")
 				}
@@ -813,6 +816,9 @@ func recordImmediateFuncLitAsyncFacts(
 				markFunctionAsync(semFn, "async-function-literal-call")
 			}
 			if callUsesFunctionIdentifier(pkg, typed.Fun) {
+				markFunctionAsync(semFn, "async-function-literal-call")
+			}
+			if callUsesInterfaceMethod(pkg, typed.Fun) {
 				markFunctionAsync(semFn, "async-function-literal-call")
 			}
 			if called != nil {
@@ -1153,6 +1159,10 @@ func exprMayNeedAwait(model *SemanticModel, pkg *packages.Package, expr ast.Expr
 				return false
 			}
 			if callUsesFunctionIdentifier(pkg, typed.Fun) {
+				needsAwait = true
+				return false
+			}
+			if callUsesInterfaceMethod(pkg, typed.Fun) {
 				needsAwait = true
 				return false
 			}
@@ -1672,6 +1682,9 @@ func (o *SemanticModelOwner) applyInterfaceAsyncMethods(
 		}
 		for methodName, ifaceMethod := range graphEntry.ifaceMethods {
 			implMethod := graphEntry.implMethods[methodName]
+			if isSyncErrorMethodFunc(ifaceMethod) || isSyncErrorMethodFunc(implMethod) {
+				continue
+			}
 			implFn := semanticFunctionFor(model, implMethod)
 			if implFn != nil && implFn.async {
 				model.markInterfaceMethodAsync(ifaceMethod)
@@ -1697,6 +1710,9 @@ func (o *SemanticModelOwner) applyAnonymousInterfaceAsyncMethods(
 		}
 		for methodName, ifaceMethod := range graphEntry.ifaceMethods {
 			implMethod := graphEntry.implMethods[methodName]
+			if isSyncErrorMethodFunc(ifaceMethod) || isSyncErrorMethodFunc(implMethod) {
+				continue
+			}
 			if model.functionAsync(implMethod) {
 				model.markInterfaceMethodAsync(ifaceMethod)
 			}

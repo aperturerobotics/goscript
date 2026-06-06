@@ -35,7 +35,7 @@ export class BaseStore {
 
 	constructor(init?: Partial<{CoreStore?: inner.CoreStore | $.VarRef<inner.CoreStore> | null}>) {
 		this._fields = {
-			CoreStore: $.varRef(init?.CoreStore ?? null)
+			CoreStore: $.varRef(init?.CoreStore ?? (null as unknown as inner.CoreStore | $.VarRef<inner.CoreStore> | null))
 		}
 	}
 

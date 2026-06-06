@@ -138,12 +138,12 @@ export class conf {
 
 	constructor(init?: Partial<{netGo?: boolean, netCgo?: boolean, dnsDebugLevel?: number, preferCgo?: boolean, goos?: string, mdnsTest?: mdnsTest}>) {
 		this._fields = {
-			netGo: $.varRef(init?.netGo ?? false),
-			netCgo: $.varRef(init?.netCgo ?? false),
-			dnsDebugLevel: $.varRef(init?.dnsDebugLevel ?? 0),
-			preferCgo: $.varRef(init?.preferCgo ?? false),
-			goos: $.varRef(init?.goos ?? ""),
-			mdnsTest: $.varRef(init?.mdnsTest ?? 0)
+			netGo: $.varRef(init?.netGo ?? (false as unknown as boolean)),
+			netCgo: $.varRef(init?.netCgo ?? (false as unknown as boolean)),
+			dnsDebugLevel: $.varRef(init?.dnsDebugLevel ?? (0 as unknown as number)),
+			preferCgo: $.varRef(init?.preferCgo ?? (false as unknown as boolean)),
+			goos: $.varRef(init?.goos ?? ("" as unknown as string)),
+			mdnsTest: $.varRef(init?.mdnsTest ?? (0 as unknown as mdnsTest))
 		}
 	}
 

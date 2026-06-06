@@ -27,7 +27,7 @@ export class Dog {
 
 	constructor(init?: Partial<{name?: string}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? "")
+			name: $.varRef(init?.name ?? ("" as unknown as string))
 		}
 	}
 
@@ -70,7 +70,7 @@ export class Cat {
 
 	constructor(init?: Partial<{name?: string}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? "")
+			name: $.varRef(init?.name ?? ("" as unknown as string))
 		}
 	}
 
@@ -136,7 +136,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test 2: Calling method on nil receiver should work
 	// The method dispatch uses the type (*Dog) to find Name()
 	// Then passes nil as the receiver
-	$.println($.pointerValue<Exclude<Animal, null>>(animal).Name())
+	$.println(await $.pointerValue<Exclude<Animal, null>>(animal).Name())
 	let directNilDog: Dog | $.VarRef<Dog> | null = null as Dog | $.VarRef<Dog> | null
 	$.println(Dog.prototype.Name.call(directNilDog))
 

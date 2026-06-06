@@ -49,7 +49,7 @@ export function __goscript_set_defaultNamed(__goscriptValue: named | null): void
 }
 
 export async function main(): globalThis.Promise<void> {
-	$.println($.pointerValue<Exclude<named, null>>(defaultNamed).Name())
+	$.println(await $.pointerValue<Exclude<named, null>>(defaultNamed).Name())
 }
 
 if ($.isMainScript(import.meta)) {

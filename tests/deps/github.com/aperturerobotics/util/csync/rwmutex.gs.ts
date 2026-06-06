@@ -61,9 +61,9 @@ export class RWMutex {
 	constructor(init?: Partial<{bcast?: broadcast2.Broadcast, nreaders?: number, writing?: boolean, writeWaiting?: number}>) {
 		this._fields = {
 			bcast: $.varRef(init?.bcast ? $.markAsStructValue($.cloneStructValue(init.bcast)) : $.markAsStructValue(new broadcast2.Broadcast())),
-			nreaders: $.varRef(init?.nreaders ?? 0),
-			writing: $.varRef(init?.writing ?? false),
-			writeWaiting: $.varRef(init?.writeWaiting ?? 0)
+			nreaders: $.varRef(init?.nreaders ?? (0 as unknown as number)),
+			writing: $.varRef(init?.writing ?? (false as unknown as boolean)),
+			writeWaiting: $.varRef(init?.writeWaiting ?? (0 as unknown as number))
 		}
 	}
 
@@ -140,7 +140,7 @@ export class RWMutex {
 				{
 					id: 0,
 					isSend: false,
-					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+					channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 					onSelected: async (__goscriptSelect0Result) => {
 						await release!()
 						return [(null as (() => void) | null), context.Canceled]
@@ -281,10 +281,10 @@ export class RWMutexLocker {
 
 	constructor(init?: Partial<{m?: RWMutex | $.VarRef<RWMutex> | null, write?: boolean, mtx?: sync.Mutex, rels?: $.Slice<(() => void) | null>}>) {
 		this._fields = {
-			m: $.varRef(init?.m ?? null),
-			write: $.varRef(init?.write ?? false),
+			m: $.varRef(init?.m ?? (null as unknown as RWMutex | $.VarRef<RWMutex> | null)),
+			write: $.varRef(init?.write ?? (false as unknown as boolean)),
 			mtx: $.varRef(init?.mtx ? $.markAsStructValue($.cloneStructValue(init.mtx)) : $.markAsStructValue(new sync.Mutex())),
-			rels: $.varRef(init?.rels ?? null)
+			rels: $.varRef(init?.rels ?? (null as unknown as $.Slice<(() => void) | null>))
 		}
 	}
 

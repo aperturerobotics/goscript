@@ -31,8 +31,8 @@ export class localSliceHeader {
 
 	constructor(init?: Partial<{s?: string, cap?: number}>) {
 		this._fields = {
-			s: $.varRef(init?.s ?? ""),
-			cap: $.varRef(init?.cap ?? 0)
+			s: $.varRef(init?.s ?? ("" as unknown as string)),
+			cap: $.varRef(init?.cap ?? (0 as unknown as number))
 		}
 	}
 

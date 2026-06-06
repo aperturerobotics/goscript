@@ -45,8 +45,8 @@ export class VerboseStore {
 
 	constructor(init?: Partial<{BaseStore?: dep.BaseStore | $.VarRef<dep.BaseStore> | null, name?: string}>) {
 		this._fields = {
-			BaseStore: $.varRef(init?.BaseStore ?? null),
-			name: $.varRef(init?.name ?? "")
+			BaseStore: $.varRef(init?.BaseStore ?? (null as unknown as dep.BaseStore | $.VarRef<dep.BaseStore> | null)),
+			name: $.varRef(init?.name ?? ("" as unknown as string))
 		}
 	}
 
@@ -81,16 +81,16 @@ export function NewVerboseStore(name: string): VerboseStore | $.VarRef<VerboseSt
 	return (() => { const __goscriptLiteralField0 = dep.NewBaseStore(name); return new VerboseStore({BaseStore: __goscriptLiteralField0, name: name}) })()
 }
 
-export function useStore(store: Store | null): void {
-	let read: tx.Tx | $.VarRef<tx.Tx> | null = $.pointerValue<Exclude<Store, null>>(store).NewTransaction(false)
-	let write: tx.Tx | $.VarRef<tx.Tx> | null = $.pointerValue<Exclude<Store, null>>(store).NewTransaction(true)
-	$.println($.pointerValue<Exclude<Store, null>>(store).Execute())
+export async function useStore(store: Store | null): globalThis.Promise<void> {
+	let read: tx.Tx | $.VarRef<tx.Tx> | null = await $.pointerValue<Exclude<Store, null>>(store).NewTransaction(false)
+	let write: tx.Tx | $.VarRef<tx.Tx> | null = await $.pointerValue<Exclude<Store, null>>(store).NewTransaction(true)
+	$.println(await $.pointerValue<Exclude<Store, null>>(store).Execute())
 	$.println($.pointerValue<dep.Tx>(read).Name)
 	$.println($.pointerValue<dep.Tx>(write).Name)
 }
 
 export async function main(): globalThis.Promise<void> {
-	useStore($.interfaceValue<Store | null>(NewVerboseStore("outer"), "*main.VerboseStore"))
+	await useStore($.interfaceValue<Store | null>(NewVerboseStore("outer"), "*main.VerboseStore"))
 }
 
 if ($.isMainScript(import.meta)) {

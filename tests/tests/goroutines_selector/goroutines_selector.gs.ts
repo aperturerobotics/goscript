@@ -17,7 +17,7 @@ export class Foo {
 
 	constructor(init?: Partial<{done?: $.Channel<boolean> | null}>) {
 		this._fields = {
-			done: $.varRef(init?.done ?? null)
+			done: $.varRef(init?.done ?? (null as unknown as $.Channel<boolean> | null))
 		}
 	}
 

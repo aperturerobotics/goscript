@@ -56,8 +56,8 @@ export class Error {
 
 	constructor(init?: Partial<{Code?: ErrorCode, Expr?: string}>) {
 		this._fields = {
-			Code: $.varRef(init?.Code ?? ""),
-			Expr: $.varRef(init?.Expr ?? "")
+			Code: $.varRef(init?.Code ?? ("" as unknown as ErrorCode)),
+			Expr: $.varRef(init?.Expr ?? ("" as unknown as string))
 		}
 	}
 
@@ -178,17 +178,17 @@ export class parser {
 
 	constructor(init?: Partial<{flags?: Flags, stack?: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>, free?: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, numCap?: number, wholeRegexp?: string, tmpClass?: $.Slice<number>, numRegexp?: number, numRunes?: number, repeats?: number, height?: Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null, size?: Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null}>) {
 		this._fields = {
-			flags: $.varRef(init?.flags ?? 0),
-			stack: $.varRef(init?.stack ?? null),
-			free: $.varRef(init?.free ?? null),
-			numCap: $.varRef(init?.numCap ?? 0),
-			wholeRegexp: $.varRef(init?.wholeRegexp ?? ""),
-			tmpClass: $.varRef(init?.tmpClass ?? null),
-			numRegexp: $.varRef(init?.numRegexp ?? 0),
-			numRunes: $.varRef(init?.numRunes ?? 0),
-			repeats: $.varRef(init?.repeats ?? 0),
-			height: $.varRef(init?.height ?? null),
-			size: $.varRef(init?.size ?? null)
+			flags: $.varRef(init?.flags ?? (0 as unknown as Flags)),
+			stack: $.varRef(init?.stack ?? (null as unknown as $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>)),
+			free: $.varRef(init?.free ?? (null as unknown as __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null)),
+			numCap: $.varRef(init?.numCap ?? (0 as unknown as number)),
+			wholeRegexp: $.varRef(init?.wholeRegexp ?? ("" as unknown as string)),
+			tmpClass: $.varRef(init?.tmpClass ?? (null as unknown as $.Slice<number>)),
+			numRegexp: $.varRef(init?.numRegexp ?? (0 as unknown as number)),
+			numRunes: $.varRef(init?.numRunes ?? (0 as unknown as number)),
+			repeats: $.varRef(init?.repeats ?? (0 as unknown as number)),
+			height: $.varRef(init?.height ?? (null as unknown as Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null)),
+			size: $.varRef(init?.size ?? (null as unknown as Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null))
 		}
 	}
 
@@ -433,7 +433,7 @@ export class parser {
 		for (let __goscriptRangeTarget5 = subs, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget5); __rangeIndex++) {
 			let sub = __goscriptRangeTarget5![__rangeIndex]
 			if ($.uint($.pointerValue<__goscript_regexp.Regexp>(sub).Op, 8) == $.uint(op, 8)) {
-				$.pointerValue<__goscript_regexp.Regexp>(re).Sub = $.append($.pointerValue<__goscript_regexp.Regexp>(re).Sub, ...($.pointerValue<__goscript_regexp.Regexp>(sub).Sub ?? []))
+				$.pointerValue<__goscript_regexp.Regexp>(re).Sub = $.appendSlice($.pointerValue<__goscript_regexp.Regexp>(re).Sub, $.pointerValue<__goscript_regexp.Regexp>(sub).Sub)
 				parser.prototype.reuse.call(p, sub)
 			} else {
 				$.pointerValue<__goscript_regexp.Regexp>(re).Sub = $.append($.pointerValue<__goscript_regexp.Regexp>(re).Sub, sub)
@@ -522,7 +522,7 @@ export class parser {
 					// Construct factored form: prefix(suffix1|suffix2|...)
 					let prefix: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = parser.prototype.newRegexp.call(p, $.uint(3, 8))
 					$.pointerValue<__goscript_regexp.Regexp>(prefix).Flags = $.uint(strflags, 16)
-					$.pointerValue<__goscript_regexp.Regexp>(prefix).Rune = $.append($.goSlice($.pointerValue<__goscript_regexp.Regexp>(prefix).Rune, undefined, 0), ...(str ?? []))
+					$.pointerValue<__goscript_regexp.Regexp>(prefix).Rune = $.appendSlice($.goSlice($.pointerValue<__goscript_regexp.Regexp>(prefix).Rune, undefined, 0), str)
 
 					for (let j = start; j < i; j++) {
 						sub![j] = parser.prototype.removeLeadingString.call(p, sub![j], $.len(str))
@@ -716,7 +716,7 @@ export class parser {
 		}
 
 		// Push re1 into re2.
-		$.pointerValue<__goscript_regexp.Regexp>(re2).Rune = $.append($.pointerValue<__goscript_regexp.Regexp>(re2).Rune, ...($.pointerValue<__goscript_regexp.Regexp>(re1).Rune ?? []))
+		$.pointerValue<__goscript_regexp.Regexp>(re2).Rune = $.appendSlice($.pointerValue<__goscript_regexp.Regexp>(re2).Rune, $.pointerValue<__goscript_regexp.Regexp>(re1).Rune)
 
 		// Reuse re1 if possible.
 		if (r >= 0) {
@@ -1700,8 +1700,8 @@ export class charGroup {
 
 	constructor(init?: Partial<{sign?: number, _class?: $.Slice<number>}>) {
 		this._fields = {
-			sign: $.varRef(init?.sign ?? 0),
-			_class: $.varRef(init?._class ?? null)
+			sign: $.varRef(init?.sign ?? (0 as unknown as number)),
+			_class: $.varRef(init?._class ?? (null as unknown as $.Slice<number>))
 		}
 	}
 
@@ -1737,7 +1737,7 @@ export class ranges {
 
 	constructor(init?: Partial<{p?: $.VarRef<$.Slice<number>> | null}>) {
 		this._fields = {
-			p: $.varRef(init?.p ?? null)
+			p: $.varRef(init?.p ?? (null as unknown as $.VarRef<$.Slice<number>> | null))
 		}
 	}
 
@@ -1921,7 +1921,7 @@ export function cleanAlt(re: __goscript_regexp.Regexp | $.VarRef<__goscript_rege
 			if (($.cap($.pointerValue<__goscript_regexp.Regexp>(re).Rune) - $.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune)) > 100) {
 				// re.Rune will not grow any more.
 				// Make a copy or inline to reclaim storage.
-				$.pointerValue<__goscript_regexp.Regexp>(re).Rune = $.append($.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0), ...($.pointerValue<__goscript_regexp.Regexp>(re).Rune ?? []))
+				$.pointerValue<__goscript_regexp.Regexp>(re).Rune = $.appendSlice($.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0), $.pointerValue<__goscript_regexp.Regexp>(re).Rune)
 			}
 			break
 		}

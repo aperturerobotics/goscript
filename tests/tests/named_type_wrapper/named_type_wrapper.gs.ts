@@ -27,8 +27,8 @@ export class FileStatus {
 
 	constructor(init?: Partial<{mode?: MyFileMode, size?: number}>) {
 		this._fields = {
-			mode: $.varRef(init?.mode ?? 0),
-			size: $.varRef(init?.size ?? 0)
+			mode: $.varRef(init?.mode ?? (0 as unknown as MyFileMode)),
+			size: $.varRef(init?.size ?? (0 as unknown as number))
 		}
 	}
 

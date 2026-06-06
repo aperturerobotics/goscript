@@ -251,22 +251,22 @@ export class TextFormatter {
 
 	constructor(init?: Partial<{ForceColors?: boolean, DisableColors?: boolean, ForceQuote?: boolean, DisableQuote?: boolean, EnvironmentOverrideColors?: boolean, DisableTimestamp?: boolean, FullTimestamp?: boolean, TimestampFormat?: string, DisableSorting?: boolean, SortingFunc?: ((_p0: $.Slice<string>) => void) | null, DisableLevelTruncation?: boolean, PadLevelText?: boolean, QuoteEmptyFields?: boolean, terminal?: boolean, FieldMap?: __goscript_json_formatter.FieldMap, CallerPrettyfier?: ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null, terminalInitOnce?: sync.Once}>) {
 		this._fields = {
-			ForceColors: $.varRef(init?.ForceColors ?? false),
-			DisableColors: $.varRef(init?.DisableColors ?? false),
-			ForceQuote: $.varRef(init?.ForceQuote ?? false),
-			DisableQuote: $.varRef(init?.DisableQuote ?? false),
-			EnvironmentOverrideColors: $.varRef(init?.EnvironmentOverrideColors ?? false),
-			DisableTimestamp: $.varRef(init?.DisableTimestamp ?? false),
-			FullTimestamp: $.varRef(init?.FullTimestamp ?? false),
-			TimestampFormat: $.varRef(init?.TimestampFormat ?? ""),
-			DisableSorting: $.varRef(init?.DisableSorting ?? false),
-			SortingFunc: $.varRef(init?.SortingFunc ?? null),
-			DisableLevelTruncation: $.varRef(init?.DisableLevelTruncation ?? false),
-			PadLevelText: $.varRef(init?.PadLevelText ?? false),
-			QuoteEmptyFields: $.varRef(init?.QuoteEmptyFields ?? false),
-			terminal: $.varRef(init?.terminal ?? false),
-			FieldMap: $.varRef(init?.FieldMap ?? null),
-			CallerPrettyfier: $.varRef(init?.CallerPrettyfier ?? null),
+			ForceColors: $.varRef(init?.ForceColors ?? (false as unknown as boolean)),
+			DisableColors: $.varRef(init?.DisableColors ?? (false as unknown as boolean)),
+			ForceQuote: $.varRef(init?.ForceQuote ?? (false as unknown as boolean)),
+			DisableQuote: $.varRef(init?.DisableQuote ?? (false as unknown as boolean)),
+			EnvironmentOverrideColors: $.varRef(init?.EnvironmentOverrideColors ?? (false as unknown as boolean)),
+			DisableTimestamp: $.varRef(init?.DisableTimestamp ?? (false as unknown as boolean)),
+			FullTimestamp: $.varRef(init?.FullTimestamp ?? (false as unknown as boolean)),
+			TimestampFormat: $.varRef(init?.TimestampFormat ?? ("" as unknown as string)),
+			DisableSorting: $.varRef(init?.DisableSorting ?? (false as unknown as boolean)),
+			SortingFunc: $.varRef(init?.SortingFunc ?? (null as unknown as ((_p0: $.Slice<string>) => void) | null)),
+			DisableLevelTruncation: $.varRef(init?.DisableLevelTruncation ?? (false as unknown as boolean)),
+			PadLevelText: $.varRef(init?.PadLevelText ?? (false as unknown as boolean)),
+			QuoteEmptyFields: $.varRef(init?.QuoteEmptyFields ?? (false as unknown as boolean)),
+			terminal: $.varRef(init?.terminal ?? (false as unknown as boolean)),
+			FieldMap: $.varRef(init?.FieldMap ?? (null as unknown as __goscript_json_formatter.FieldMap)),
+			CallerPrettyfier: $.varRef(init?.CallerPrettyfier ?? (null as unknown as ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null)),
 			terminalInitOnce: $.varRef(init?.terminalInitOnce ? $.markAsStructValue($.cloneStructValue(init.terminalInitOnce)) : $.markAsStructValue(new sync.Once()))
 		}
 	}
@@ -406,14 +406,14 @@ export class TextFormatter {
 				case $.typeAssert<Exclude<$.GoError, null>>(__goscriptTypeSwitchValue, "error").ok:
 					{
 						let v: Exclude<$.GoError, null> = $.typeAssert<Exclude<$.GoError, null>>(__goscriptTypeSwitchValue, "error").value
-						TextFormatter.prototype.appendString.call(f, b, await $.pointerValue<Exclude<$.GoError, null>>(v).Error())
+						TextFormatter.prototype.appendString.call(f, b, $.pointerValue<Exclude<$.GoError, null>>(v).Error())
 						return
 					}
 					break
 				case $.typeAssert<Exclude<fmt.Stringer, null>>(__goscriptTypeSwitchValue, "fmt.Stringer").ok:
 					{
 						let v: Exclude<fmt.Stringer, null> = $.typeAssert<Exclude<fmt.Stringer, null>>(__goscriptTypeSwitchValue, "fmt.Stringer").value
-						TextFormatter.prototype.appendString.call(f, b, $.pointerValue<Exclude<fmt.Stringer, null>>(v).String())
+						TextFormatter.prototype.appendString.call(f, b, await $.pointerValue<Exclude<fmt.Stringer, null>>(v).String())
 						return
 					}
 					break
@@ -680,13 +680,13 @@ export class TextFormatter {
 				// Default sorting does not sort the "fixed keys";
 				// see https://github.com/sirupsen/logrus/commit/73bc94e60c753099e8bae902f81fbd6e7dd95f26
 				slices.Sort(keys)
-				fixedKeys = $.append(fixedKeys, ...(keys ?? []))
+				fixedKeys = $.appendSlice(fixedKeys, keys)
 			} else {
-				fixedKeys = $.append(fixedKeys, ...(keys ?? []))
+				fixedKeys = $.appendSlice(fixedKeys, keys)
 				await $.pointerValue<TextFormatter>(f).SortingFunc!(fixedKeys)
 			}
 		} else {
-			fixedKeys = $.append(fixedKeys, ...(keys ?? []))
+			fixedKeys = $.appendSlice(fixedKeys, keys)
 		}
 
 		for (let __goscriptRangeTarget1 = fixedKeys, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {

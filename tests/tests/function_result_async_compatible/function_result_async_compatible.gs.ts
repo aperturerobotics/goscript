@@ -27,7 +27,7 @@ export class box {
 
 	constructor(init?: Partial<{value?: number}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? 0)
+			value: $.varRef(init?.value ?? (0 as unknown as number))
 		}
 	}
 
@@ -71,7 +71,7 @@ export async function wrapNew(__typeArgs: $.GenericTypeArgs | undefined, newValu
 
 export async function main(): globalThis.Promise<void> {
 	let fn: (() => Value | null | globalThis.Promise<Value | null>) | null = await wrapNew(undefined, asyncBox)
-	$.println($.pointerValue<Exclude<Value, null>>((await fn!())).Value())
+	$.println(await $.pointerValue<Exclude<Value, null>>((await fn!())).Value())
 }
 
 if ($.isMainScript(import.meta)) {

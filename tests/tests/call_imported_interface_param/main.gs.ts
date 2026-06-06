@@ -22,7 +22,7 @@ export class Buffer {
 
 	constructor(init?: Partial<{data?: $.Slice<number>}>) {
 		this._fields = {
-			data: $.varRef(init?.data ?? null)
+			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
 		}
 	}
 
@@ -36,7 +36,7 @@ export class Buffer {
 
 	public Write(p: $.Slice<number>): [number, $.GoError] {
 		let b: Buffer | $.VarRef<Buffer> | null = this
-		$.pointerValue<Buffer>(b).data = $.append($.pointerValue<Buffer>(b).data, ...(p ?? []))
+		$.pointerValue<Buffer>(b).data = $.appendSlice($.pointerValue<Buffer>(b).data, p)
 		return [$.len(p), null]
 	}
 
@@ -51,7 +51,7 @@ export class Buffer {
 
 export async function main(): globalThis.Promise<void> {
 	let b: $.VarRef<Buffer> = $.varRef($.markAsStructValue(new Buffer()))
-	__goscript_sink.Use($.interfaceValue<subpkg.Writer | null>(b, "*main.Buffer"))
+	await __goscript_sink.Use($.interfaceValue<subpkg.Writer | null>(b, "*main.Buffer"))
 	$.println($.bytesToString(b.value.data))
 }
 

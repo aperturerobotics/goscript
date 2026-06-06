@@ -43,7 +43,7 @@ export class Mutex {
 	constructor(init?: Partial<{bcast?: broadcast2.Broadcast, locked?: boolean}>) {
 		this._fields = {
 			bcast: $.varRef(init?.bcast ? $.markAsStructValue($.cloneStructValue(init.bcast)) : $.markAsStructValue(new broadcast2.Broadcast())),
-			locked: $.varRef(init?.locked ?? false)
+			locked: $.varRef(init?.locked ?? (false as unknown as boolean))
 		}
 	}
 
@@ -103,7 +103,7 @@ export class Mutex {
 				{
 					id: 0,
 					isSend: false,
-					channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+					channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 					onSelected: async (__goscriptSelect0Result) => {
 						await release!()
 						return [(null as (() => void) | null), context.Canceled]
@@ -217,7 +217,7 @@ export class MutexLocker {
 
 	constructor(init?: Partial<{m?: Mutex | $.VarRef<Mutex> | null, rel?: atomic.Pointer<(() => void) | null>}>) {
 		this._fields = {
-			m: $.varRef(init?.m ?? null),
+			m: $.varRef(init?.m ?? (null as unknown as Mutex | $.VarRef<Mutex> | null)),
 			rel: $.varRef(init?.rel ? $.markAsStructValue($.cloneStructValue(init.rel)) : $.markAsStructValue(new atomic.Pointer<(() => void) | null>()))
 		}
 	}

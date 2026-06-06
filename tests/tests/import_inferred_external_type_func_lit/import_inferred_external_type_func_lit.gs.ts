@@ -10,7 +10,7 @@ import "@goscript/os/index.js"
 import "@goscript/io/fs/index.js"
 
 export async function main(): globalThis.Promise<void> {
-	using __defer = new $.DisposableStack()
+	await using __defer = new $.AsyncDisposableStack()
 	let fileName = "external-type-func-lit.txt"
 	{
 		let err = os.WriteFile(fileName, new Uint8Array([99, 111, 110, 116, 101, 110, 116, 115]), $.uint(0o644, 32))
@@ -21,14 +21,14 @@ export async function main(): globalThis.Promise<void> {
 	}
 	__defer.defer(() => { os.Remove(fileName) })
 
-	void ($.functionValue((): void => {
+	await ($.functionValue(async (): globalThis.Promise<void> => {
 		let [info, err] = os.Stat(fileName)
 		if (err != null) {
 			$.println("stat error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 			return
 		}
 		if (false) {
-			$.println("size:", $.int($.pointerValue<Exclude<fs.FileInfo, null>>(info).Size()))
+			$.println("size:", $.int(await $.pointerValue<Exclude<fs.FileInfo, null>>(info).Size()))
 		} else {
 			$.println("stat closure ok")
 		}

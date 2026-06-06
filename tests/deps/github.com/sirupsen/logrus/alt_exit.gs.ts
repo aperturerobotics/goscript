@@ -48,5 +48,5 @@ export function RegisterExitHandler(handler: (() => void) | null): void {
 }
 
 export function DeferExitHandler(handler: (() => void) | null): void {
-	handlers = $.append($.arrayToSlice<(() => void) | null>([handler]), ...(handlers ?? []))
+	handlers = $.appendSlice($.arrayToSlice<(() => void) | null>([handler]), handlers)
 }

@@ -25,8 +25,8 @@ export class namedItem {
 
 	constructor(init?: Partial<{key?: string, data?: $.Slice<number>}>) {
 		this._fields = {
-			key: $.varRef(init?.key ?? ""),
-			data: $.varRef(init?.data ?? null)
+			key: $.varRef(init?.key ?? ("" as unknown as string)),
+			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
 		}
 	}
 

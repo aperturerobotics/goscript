@@ -17,7 +17,7 @@ export class A {
 
 	constructor(init?: Partial<{BB?: $.Slice<B>}>) {
 		this._fields = {
-			BB: $.varRef(init?.BB ?? null)
+			BB: $.varRef(init?.BB ?? (null as unknown as $.Slice<B>))
 		}
 	}
 
@@ -52,7 +52,7 @@ export class B {
 
 	constructor(init?: Partial<{AA?: $.Slice<A>}>) {
 		this._fields = {
-			AA: $.varRef(init?.AA ?? null)
+			AA: $.varRef(init?.AA ?? (null as unknown as $.Slice<A>))
 		}
 	}
 

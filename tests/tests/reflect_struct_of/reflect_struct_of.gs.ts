@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let fields: $.Slice<reflect.StructField> = $.arrayToSlice<reflect.StructField>([$.markAsStructValue(new reflect.StructField({Name: "Name", Type: stringType, Tag: "json:\"name\""})), $.markAsStructValue(new reflect.StructField({Name: "Count", Type: intType, Tag: "json:\"count\""}))])
 	let typ = reflect.StructOf(fields)
-	$.println("type:", $.pointerValue<Exclude<reflect.Type, null>>(typ).String(), $.pointerValue<Exclude<reflect.Type, null>>(typ).Name(), $.pointerValue<Exclude<reflect.Type, null>>(typ).PkgPath(), $.pointerValue<Exclude<reflect.Type, null>>(typ).NumField(), $.pointerValue<Exclude<reflect.Type, null>>(typ).Field(1).Offset > 0, $.pointerValue<Exclude<reflect.Type, null>>(typ).Comparable())
+	$.println("type:", await $.pointerValue<Exclude<reflect.Type, null>>(typ).String(), await $.pointerValue<Exclude<reflect.Type, null>>(typ).Name(), await $.pointerValue<Exclude<reflect.Type, null>>(typ).PkgPath(), await $.pointerValue<Exclude<reflect.Type, null>>(typ).NumField(), (await $.pointerValue<Exclude<reflect.Type, null>>(typ).Field(1)).Offset > 0, await $.pointerValue<Exclude<reflect.Type, null>>(typ).Comparable())
 
 	let value = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(reflect.New($.pointerValueOrNil(typ)!))).Elem()))
 	$.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(value)).FieldByName("Name"))).SetString("Ada")
@@ -31,7 +31,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("json:", $.bytesToString(data))
 
 	let layout = reflect.StructOf($.arrayToSlice<reflect.StructField>([$.markAsStructValue(new reflect.StructField({Name: "A", Type: byteType})), $.markAsStructValue(new reflect.StructField({Name: "B", Type: intType}))]))
-	$.println("layout:", $.uint($.pointerValue<Exclude<reflect.Type, null>>(layout).Field(0).Offset, 64), $.uint($.pointerValue<Exclude<reflect.Type, null>>(layout).Field(1).Offset, 64), $.uint($.pointerValue<Exclude<reflect.Type, null>>(layout).Size(), 64), $.pointerValue<Exclude<reflect.Type, null>>(layout).Field(0).Index![0])
+	$.println("layout:", $.uint((await $.pointerValue<Exclude<reflect.Type, null>>(layout).Field(0)).Offset, 64), $.uint((await $.pointerValue<Exclude<reflect.Type, null>>(layout).Field(1)).Offset, 64), $.uint(await $.pointerValue<Exclude<reflect.Type, null>>(layout).Size(), 64), (await $.pointerValue<Exclude<reflect.Type, null>>(layout).Field(0)).Index![0])
 
 	let inner = reflect.StructOf($.arrayToSlice<reflect.StructField>([$.markAsStructValue(new reflect.StructField({Name: "ID", Type: intType})), $.markAsStructValue(new reflect.StructField({Name: "Label", Type: stringType}))]))
 	let outer = reflect.StructOf($.arrayToSlice<reflect.StructField>([$.markAsStructValue(new reflect.StructField({Name: "Inner", Type: inner, Anonymous: true})), $.markAsStructValue(new reflect.StructField({Name: "Count", Type: intType}))]))

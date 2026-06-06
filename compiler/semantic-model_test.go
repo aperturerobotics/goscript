@@ -604,6 +604,44 @@ func TestSemanticModelMarksFunctionIdentifierCallAsync(t *testing.T) {
 	}
 }
 
+func TestSemanticModelMarksInterfaceMethodCallAsync(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/interfacecall\n\ngo 1.25.3\n",
+		"iface/controller.go": strings.Join([]string{
+			"package iface",
+			"import \"context\"",
+			"type Controller interface {",
+			"  Execute(context.Context) error",
+			"}",
+			"",
+		}, "\n"),
+		"controller.go": strings.Join([]string{
+			"package interfacecall",
+			"import (",
+			"  \"context\"",
+			"  \"example.test/interfacecall/iface\"",
+			")",
+			"func Run(ctx context.Context, c iface.Controller) error {",
+			"  return c.Execute(ctx)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	graph := loadPackageGraph(t, &CompileRequest{
+		Patterns:            []string{".", "./iface"},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+	})
+	model := buildSemanticModel(t, graph)
+	run := requireDefinedFunc(t, graph, "example.test/interfacecall", "Run")
+	semFn := model.functions[run]
+	if semFn == nil || !semFn.async {
+		t.Fatalf("expected Run to be async after calling interface method, got %#v", semFn)
+	}
+}
+
 func buildSemanticModel(t *testing.T, graph *PackageGraph) *SemanticModel {
 	t.Helper()
 

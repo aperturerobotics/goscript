@@ -136,13 +136,13 @@ export class JSONFormatter {
 
 	constructor(init?: Partial<{TimestampFormat?: string, DisableTimestamp?: boolean, DisableHTMLEscape?: boolean, DataKey?: string, FieldMap?: FieldMap, CallerPrettyfier?: ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null, PrettyPrint?: boolean}>) {
 		this._fields = {
-			TimestampFormat: $.varRef(init?.TimestampFormat ?? ""),
-			DisableTimestamp: $.varRef(init?.DisableTimestamp ?? false),
-			DisableHTMLEscape: $.varRef(init?.DisableHTMLEscape ?? false),
-			DataKey: $.varRef(init?.DataKey ?? ""),
-			FieldMap: $.varRef(init?.FieldMap ?? null),
-			CallerPrettyfier: $.varRef(init?.CallerPrettyfier ?? null),
-			PrettyPrint: $.varRef(init?.PrettyPrint ?? false)
+			TimestampFormat: $.varRef(init?.TimestampFormat ?? ("" as unknown as string)),
+			DisableTimestamp: $.varRef(init?.DisableTimestamp ?? (false as unknown as boolean)),
+			DisableHTMLEscape: $.varRef(init?.DisableHTMLEscape ?? (false as unknown as boolean)),
+			DataKey: $.varRef(init?.DataKey ?? ("" as unknown as string)),
+			FieldMap: $.varRef(init?.FieldMap ?? (null as unknown as FieldMap)),
+			CallerPrettyfier: $.varRef(init?.CallerPrettyfier ?? (null as unknown as ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null)),
+			PrettyPrint: $.varRef(init?.PrettyPrint ?? (false as unknown as boolean))
 		}
 	}
 
@@ -171,7 +171,7 @@ export class JSONFormatter {
 					case $.typeAssert<Exclude<$.GoError, null>>(__goscriptTypeSwitchValue, "error").ok:
 						{
 							let v: Exclude<$.GoError, null> = $.typeAssert<Exclude<$.GoError, null>>(__goscriptTypeSwitchValue, "error").value
-							$.mapSet(data, k, await $.pointerValue<Exclude<$.GoError, null>>(v).Error())
+							$.mapSet(data, k, $.pointerValue<Exclude<$.GoError, null>>(v).Error())
 						}
 						break
 					default:

@@ -97,17 +97,17 @@ export class formatter {
 
 	constructor(init?: Partial<{wid?: number, prec?: number, widPresent?: boolean, precPresent?: boolean, minus?: boolean, plus?: boolean, sharp?: boolean, space?: boolean, zero?: boolean, plusV?: boolean, sharpV?: boolean}>) {
 		this._fields = {
-			wid: $.varRef(init?.wid ?? 0),
-			prec: $.varRef(init?.prec ?? 0),
-			widPresent: $.varRef(init?.widPresent ?? false),
-			precPresent: $.varRef(init?.precPresent ?? false),
-			minus: $.varRef(init?.minus ?? false),
-			plus: $.varRef(init?.plus ?? false),
-			sharp: $.varRef(init?.sharp ?? false),
-			space: $.varRef(init?.space ?? false),
-			zero: $.varRef(init?.zero ?? false),
-			plusV: $.varRef(init?.plusV ?? false),
-			sharpV: $.varRef(init?.sharpV ?? false)
+			wid: $.varRef(init?.wid ?? (0 as unknown as number)),
+			prec: $.varRef(init?.prec ?? (0 as unknown as number)),
+			widPresent: $.varRef(init?.widPresent ?? (false as unknown as boolean)),
+			precPresent: $.varRef(init?.precPresent ?? (false as unknown as boolean)),
+			minus: $.varRef(init?.minus ?? (false as unknown as boolean)),
+			plus: $.varRef(init?.plus ?? (false as unknown as boolean)),
+			sharp: $.varRef(init?.sharp ?? (false as unknown as boolean)),
+			space: $.varRef(init?.space ?? (false as unknown as boolean)),
+			zero: $.varRef(init?.zero ?? (false as unknown as boolean)),
+			plusV: $.varRef(init?.plusV ?? (false as unknown as boolean)),
+			sharpV: $.varRef(init?.sharpV ?? (false as unknown as boolean))
 		}
 	}
 
@@ -170,8 +170,8 @@ export class printer {
 
 	constructor(init?: Partial<{buf?: $.Slice<number>, arg?: any, fmt?: formatter}>) {
 		this._fields = {
-			buf: $.varRef(init?.buf ?? null),
-			arg: $.varRef(init?.arg ?? null),
+			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
+			arg: $.varRef(init?.arg ?? (null as unknown as any)),
 			fmt: $.varRef(init?.fmt ? $.markAsStructValue($.cloneStructValue(init.fmt)) : $.markAsStructValue(new formatter()))
 		}
 	}

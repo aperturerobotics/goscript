@@ -16,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"golang.org/x/tools/go/packages"
 )
 
 // LoweringOwner owns conversion from the semantic model to compiler IR.
@@ -6849,7 +6851,7 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	deferState := &loweredDeferState{}
 	bodyCtx := ctx.withSignature(signature).withAsyncFunction(false).withDeferState(deferState).withoutRangeBranch()
 	asyncCompatibleParams := funcLiteralNeedsAsyncFunctionParamCalls(signature)
-	if asyncCompatibleParams || funcLiteralUsesFunctionIdentifierCall(ctx, lit) {
+	if asyncCompatibleParams || funcLiteralUsesAwaitableCall(ctx, lit) {
 		bodyCtx = bodyCtx.withAsyncFunction(true)
 	}
 	var params []loweredParam
@@ -6866,7 +6868,7 @@ func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (st
 	renderNamedResults(&rendered, o.lowerNamedResults(ctx, signature), 1)
 	renderDeferStack(&rendered, deferState, 1)
 	renderStmts(&rendered, body, 1)
-	async := stmtsContainAwait(body) || deferState.async
+	async := bodyCtx.asyncFunction || stmtsContainAwait(body) || deferState.async
 	prefix := ""
 	if async {
 		prefix = "async "
@@ -6889,7 +6891,7 @@ func renderLoweredParams(params []loweredParam) string {
 	return strings.Join(rendered, ", ")
 }
 
-func funcLiteralUsesFunctionIdentifierCall(ctx lowerFileContext, lit *ast.FuncLit) bool {
+func funcLiteralUsesAwaitableCall(ctx lowerFileContext, lit *ast.FuncLit) bool {
 	if lit == nil || lit.Body == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
 		return false
 	}
@@ -6905,7 +6907,8 @@ func funcLiteralUsesFunctionIdentifierCall(ctx lowerFileContext, lit *ast.FuncLi
 		if !ok {
 			return true
 		}
-		uses = callUsesFunctionIdentifier(ctx.semPkg.source, call.Fun)
+		uses = callUsesFunctionIdentifier(ctx.semPkg.source, call.Fun) ||
+			callUsesInterfaceMethod(ctx.semPkg.source, call.Fun)
 		return !uses
 	})
 	return uses
@@ -7107,15 +7110,16 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 						}
 					}
 				}
+				appendHelper := o.runtimeOwner.QualifiedHelper(RuntimeHelperAppend)
 				if expr.Ellipsis != token.NoPos && len(args) > 1 {
 					last := len(args) - 1
 					spread := args[last]
 					if isStringType(ctx.semPkg.source.TypesInfo.TypeOf(expr.Args[len(expr.Args)-1])) {
 						spread = o.runtimeOwner.QualifiedHelper(RuntimeHelperStringToBytes) + "(" + spread + ")"
 					}
-					args[last] = "...(" + spread + " ?? [])"
+					args[last] = spread
+					appendHelper = o.runtimeOwner.QualifiedHelper(RuntimeHelperAppendSlice)
 				}
-				appendHelper := o.runtimeOwner.QualifiedHelper(RuntimeHelperAppend)
 				if len(args) > 0 && args[0] == "null" {
 					if slice, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(expr)).Underlying().(*types.Slice); ok {
 						appendHelper += "<" + o.tsTypeFor(ctx, slice.Elem()) + ">"
@@ -11116,6 +11120,7 @@ func (o *LoweringOwner) callNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool 
 			return o.functionAsync(ctx, calledFunction(ctx.semPkg.source, fun)) ||
 				o.overrideCallNeedsAwait(ctx, fun) ||
 				callUsesFunctionValue(ctx.semPkg.source, fun) ||
+				(ctx.asyncFunction && callUsesInterfaceMethod(ctx.semPkg.source, fun)) ||
 				(ctx.asyncFunction && callUsesFunctionIdentifier(ctx.semPkg.source, fun))
 		}
 		if ctx.semPkg == nil || ctx.semPkg.source == nil {
@@ -11124,8 +11129,46 @@ func (o *LoweringOwner) callNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool 
 		return o.functionAsync(ctx, calledFunction(ctx.semPkg.source, fun)) ||
 			o.overrideCallNeedsAwait(ctx, fun) ||
 			callUsesFunctionValue(ctx.semPkg.source, fun) ||
+			(ctx.asyncFunction && callUsesInterfaceMethod(ctx.semPkg.source, fun)) ||
 			(ctx.asyncFunction && callUsesFunctionIdentifier(ctx.semPkg.source, fun))
 	}
+}
+
+func callUsesInterfaceMethod(pkg *packages.Package, fun ast.Expr) bool {
+	if pkg == nil {
+		return false
+	}
+	selector, ok := fun.(*ast.SelectorExpr)
+	if !ok {
+		return false
+	}
+	selection := pkg.TypesInfo.Selections[selector]
+	if selection == nil || selection.Kind() != types.MethodVal {
+		return false
+	}
+	if selectionUsesSyncErrorMethod(selection) {
+		return false
+	}
+	return isInterfaceType(selection.Recv())
+}
+
+func selectionUsesSyncErrorMethod(selection *types.Selection) bool {
+	if selection == nil || selection.Kind() != types.MethodVal {
+		return false
+	}
+	method, _ := selection.Obj().(*types.Func)
+	return isSyncErrorMethodFunc(method)
+}
+
+func isSyncErrorMethodFunc(fn *types.Func) bool {
+	if fn == nil || fn.Name() != "Error" {
+		return false
+	}
+	signature, _ := fn.Type().(*types.Signature)
+	if signature == nil || signature.Params().Len() != 0 || signature.Results().Len() != 1 {
+		return false
+	}
+	return types.Identical(signature.Results().At(0).Type(), types.Typ[types.String])
 }
 
 func (o *LoweringOwner) overrideCallNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool {

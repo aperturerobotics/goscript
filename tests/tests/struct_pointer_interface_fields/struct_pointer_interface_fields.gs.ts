@@ -35,8 +35,8 @@ export class MyStruct {
 
 	constructor(init?: Partial<{PointerField?: $.VarRef<number> | null, interfaceField?: MyInterface | null}>) {
 		this._fields = {
-			PointerField: $.varRef(init?.PointerField ?? null),
-			interfaceField: $.varRef(init?.interfaceField ?? null)
+			PointerField: $.varRef(init?.PointerField ?? (null as unknown as $.VarRef<number> | null)),
+			interfaceField: $.varRef(init?.interfaceField ?? (null as unknown as MyInterface | null))
 		}
 	}
 

@@ -19,9 +19,9 @@ export class nistCurve {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Add(p1: any, p2: any): any {
+	public async Add(p1: any, p2: any): globalThis.Promise<any> {
 		const curve: nistCurve | $.VarRef<nistCurve> | null = this
-		return (p1.Add(p1, p2) as any)
+		return (await p1.Add(p1, p2) as any)
 	}
 
 	public Zero(): any {
@@ -53,7 +53,7 @@ export class point {
 
 	constructor(init?: Partial<{N?: number}>) {
 		this._fields = {
-			N: $.varRef(init?.N ?? 0)
+			N: $.varRef(init?.N ?? (0 as unknown as number))
 		}
 	}
 
@@ -80,7 +80,7 @@ export class point {
 }
 
 export type nistPoint = {
-	Add(_p0: any, _p1: any): any
+	Add(_p0: any, _p1: any): any | globalThis.Promise<any>
 }
 
 $.registerInterfaceType(
@@ -96,7 +96,7 @@ export function __goscript_set_curve(__goscriptValue: nistCurve | $.VarRef<nistC
 }
 
 export async function main(): globalThis.Promise<void> {
-	let p: point | $.VarRef<point> | null = (nistCurve.prototype.Add.call(curve, new point({N: 2}), new point({N: 3})) as point | $.VarRef<point> | null)
+	let p: point | $.VarRef<point> | null = (await nistCurve.prototype.Add.call(curve, new point({N: 2}), new point({N: 3})) as point | $.VarRef<point> | null)
 	$.println("sum:", $.pointerValue<point>(p).N)
 	if (nistCurve.prototype.Zero.call(curve) == null) {
 		$.println("zero")

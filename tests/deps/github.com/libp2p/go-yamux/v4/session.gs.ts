@@ -400,37 +400,37 @@ export class Session {
 
 	constructor(init?: Partial<{rtt?: number, remoteGoAway?: number, localGoAway?: number, nextStreamID?: number, config?: __goscript_mux.Config | $.VarRef<__goscript_mux.Config> | null, logger?: log.Logger | $.VarRef<log.Logger> | null, conn?: net.Conn | null, reader?: io.Reader | null, newMemoryManager?: (() => [MemoryManager | null, $.GoError] | globalThis.Promise<[MemoryManager | null, $.GoError]>) | null, pingLock?: sync.Mutex, pingID?: number, activePing?: __goscript_ping.ping | $.VarRef<__goscript_ping.ping> | null, numIncomingStreams?: number, streams?: Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, inflight?: Map<number, {}> | null, streamLock?: sync.Mutex, synCh?: $.Channel<{}> | null, acceptCh?: $.Channel<__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, sendCh?: $.Channel<$.Slice<number>> | null, pongCh?: $.Channel<number> | null, pingCh?: $.Channel<number> | null, recvDoneCh?: $.Channel<{}> | null, sendDoneCh?: $.Channel<{}> | null, client?: boolean, shutdown?: boolean, shutdownErr?: $.GoError, shutdownCh?: $.Channel<{}> | null, shutdownLock?: sync.Mutex, keepaliveLock?: sync.Mutex, keepaliveTimer?: time.Timer | $.VarRef<time.Timer> | null, keepaliveActive?: boolean}>) {
 		this._fields = {
-			rtt: $.varRef(init?.rtt ?? 0),
-			remoteGoAway: $.varRef(init?.remoteGoAway ?? 0),
-			localGoAway: $.varRef(init?.localGoAway ?? 0),
-			nextStreamID: $.varRef(init?.nextStreamID ?? 0),
-			config: $.varRef(init?.config ?? null),
-			logger: $.varRef(init?.logger ?? null),
-			conn: $.varRef(init?.conn ?? null),
-			reader: $.varRef(init?.reader ?? null),
-			newMemoryManager: $.varRef(init?.newMemoryManager ?? null),
+			rtt: $.varRef(init?.rtt ?? (0 as unknown as number)),
+			remoteGoAway: $.varRef(init?.remoteGoAway ?? (0 as unknown as number)),
+			localGoAway: $.varRef(init?.localGoAway ?? (0 as unknown as number)),
+			nextStreamID: $.varRef(init?.nextStreamID ?? (0 as unknown as number)),
+			config: $.varRef(init?.config ?? (null as unknown as __goscript_mux.Config | $.VarRef<__goscript_mux.Config> | null)),
+			logger: $.varRef(init?.logger ?? (null as unknown as log.Logger | $.VarRef<log.Logger> | null)),
+			conn: $.varRef(init?.conn ?? (null as unknown as net.Conn | null)),
+			reader: $.varRef(init?.reader ?? (null as unknown as io.Reader | null)),
+			newMemoryManager: $.varRef(init?.newMemoryManager ?? (null as unknown as (() => [MemoryManager | null, $.GoError] | globalThis.Promise<[MemoryManager | null, $.GoError]>) | null)),
 			pingLock: $.varRef(init?.pingLock ? $.markAsStructValue($.cloneStructValue(init.pingLock)) : $.markAsStructValue(new sync.Mutex())),
-			pingID: $.varRef(init?.pingID ?? 0),
-			activePing: $.varRef(init?.activePing ?? null),
-			numIncomingStreams: $.varRef(init?.numIncomingStreams ?? 0),
-			streams: $.varRef(init?.streams ?? null),
-			inflight: $.varRef(init?.inflight ?? null),
+			pingID: $.varRef(init?.pingID ?? (0 as unknown as number)),
+			activePing: $.varRef(init?.activePing ?? (null as unknown as __goscript_ping.ping | $.VarRef<__goscript_ping.ping> | null)),
+			numIncomingStreams: $.varRef(init?.numIncomingStreams ?? (0 as unknown as number)),
+			streams: $.varRef(init?.streams ?? (null as unknown as Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null)),
+			inflight: $.varRef(init?.inflight ?? (null as unknown as Map<number, {}> | null)),
 			streamLock: $.varRef(init?.streamLock ? $.markAsStructValue($.cloneStructValue(init.streamLock)) : $.markAsStructValue(new sync.Mutex())),
-			synCh: $.varRef(init?.synCh ?? null),
-			acceptCh: $.varRef(init?.acceptCh ?? null),
-			sendCh: $.varRef(init?.sendCh ?? null),
-			pongCh: $.varRef(init?.pongCh ?? null),
-			pingCh: $.varRef(init?.pingCh ?? null),
-			recvDoneCh: $.varRef(init?.recvDoneCh ?? null),
-			sendDoneCh: $.varRef(init?.sendDoneCh ?? null),
-			client: $.varRef(init?.client ?? false),
-			shutdown: $.varRef(init?.shutdown ?? false),
-			shutdownErr: $.varRef(init?.shutdownErr ?? null),
-			shutdownCh: $.varRef(init?.shutdownCh ?? null),
+			synCh: $.varRef(init?.synCh ?? (null as unknown as $.Channel<{}> | null)),
+			acceptCh: $.varRef(init?.acceptCh ?? (null as unknown as $.Channel<__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null)),
+			sendCh: $.varRef(init?.sendCh ?? (null as unknown as $.Channel<$.Slice<number>> | null)),
+			pongCh: $.varRef(init?.pongCh ?? (null as unknown as $.Channel<number> | null)),
+			pingCh: $.varRef(init?.pingCh ?? (null as unknown as $.Channel<number> | null)),
+			recvDoneCh: $.varRef(init?.recvDoneCh ?? (null as unknown as $.Channel<{}> | null)),
+			sendDoneCh: $.varRef(init?.sendDoneCh ?? (null as unknown as $.Channel<{}> | null)),
+			client: $.varRef(init?.client ?? (false as unknown as boolean)),
+			shutdown: $.varRef(init?.shutdown ?? (false as unknown as boolean)),
+			shutdownErr: $.varRef(init?.shutdownErr ?? (null as unknown as $.GoError)),
+			shutdownCh: $.varRef(init?.shutdownCh ?? (null as unknown as $.Channel<{}> | null)),
 			shutdownLock: $.varRef(init?.shutdownLock ? $.markAsStructValue($.cloneStructValue(init.shutdownLock)) : $.markAsStructValue(new sync.Mutex())),
 			keepaliveLock: $.varRef(init?.keepaliveLock ? $.markAsStructValue($.cloneStructValue(init.keepaliveLock)) : $.markAsStructValue(new sync.Mutex())),
-			keepaliveTimer: $.varRef(init?.keepaliveTimer ?? null),
-			keepaliveActive: $.varRef(init?.keepaliveActive ?? false)
+			keepaliveTimer: $.varRef(init?.keepaliveTimer ?? (null as unknown as time.Timer | $.VarRef<time.Timer> | null)),
+			keepaliveActive: $.varRef(init?.keepaliveActive ?? (false as unknown as boolean))
 		}
 	}
 
@@ -532,9 +532,9 @@ export class Session {
 		throw new globalThis.Error("goscript: unreachable return")
 	}
 
-	public Addr(): net.Addr | null {
+	public async Addr(): globalThis.Promise<net.Addr | null> {
 		const s: Session | $.VarRef<Session> | null = this
-		return Session.prototype.LocalAddr.call(s)
+		return await Session.prototype.LocalAddr.call(s)
 	}
 
 	public async Close(): globalThis.Promise<$.GoError> {
@@ -561,7 +561,7 @@ export class Session {
 		for (const [id, stream] of $.pointerValue<Session>(s).streams?.entries() ?? []) {
 			await __goscript_stream.Stream.prototype.forceClose.call(stream)
 			$.deleteMapEntry($.pointerValue<Session>(s).streams, $.uint(id, 32))
-			$.pointerValue<Exclude<MemoryManager, null>>($.pointerValue<__goscript_stream.Stream>(stream).memorySpan).Done()
+			await $.pointerValue<Exclude<MemoryManager, null>>($.pointerValue<__goscript_stream.Stream>(stream).memorySpan).Done()
 		}
 		return null
 	}
@@ -603,13 +603,13 @@ export class Session {
 		throw new globalThis.Error("goscript: unreachable return")
 	}
 
-	public LocalAddr(): net.Addr | null {
+	public async LocalAddr(): globalThis.Promise<net.Addr | null> {
 		const s: Session | $.VarRef<Session> | null = this
 		let [addr, ok] = $.typeAssertTuple<__goscript_addr.hasAddr | null>($.pointerValue<Session>(s).conn, "yamux.hasAddr")
 		if (!ok) {
 			return $.interfaceValue<net.Addr | null>(new __goscript_addr.yamuxAddr({Addr: "local"}), "*yamux.yamuxAddr")
 		}
-		return $.pointerValue<Exclude<__goscript_addr.hasAddr, null>>(addr).LocalAddr()
+		return await $.pointerValue<Exclude<__goscript_addr.hasAddr, null>>(addr).LocalAddr()
 	}
 
 	public async NumStreams(): globalThis.Promise<number> {
@@ -633,7 +633,7 @@ export class Session {
 
 	public async OpenStream(ctx: context.Context | null): globalThis.Promise<[__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null, $.GoError]> {
 		let s: Session | $.VarRef<Session> | null = this
-		using __defer = new $.DisposableStack()
+		await using __defer = new $.AsyncDisposableStack()
 		if (await Session.prototype.IsClosed.call(s)) {
 			return [null, $.pointerValue<Session>(s).shutdownErr]
 		}
@@ -654,7 +654,7 @@ export class Session {
 			{
 				id: 1,
 				isSend: false,
-				channel: $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
+				channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 				onSelected: async (__goscriptSelect2Result) => {
 					return [null, await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()]
 				}
@@ -677,7 +677,7 @@ export class Session {
 			return [null, fmt.Errorf("failed to create resource scope span: %w", (err as any))]
 		}
 		{
-			let __goscriptShadow0 = $.pointerValue<Exclude<MemoryManager, null>>(span).ReserveMemory(262144, $.uint(255, 8))
+			let __goscriptShadow0 = await $.pointerValue<Exclude<MemoryManager, null>>(span).ReserveMemory(262144, $.uint(255, 8))
 			if (__goscriptShadow0 != null) {
 				return [null, __goscriptShadow0]
 			}
@@ -688,7 +688,7 @@ export class Session {
 			// Get an ID, and check for stream exhaustion
 
 			if (id >= (math.MaxUint32 - 1)) {
-				$.pointerValue<Exclude<MemoryManager, null>>(span).Done()
+				await $.pointerValue<Exclude<MemoryManager, null>>(span).Done()
 				return [null, $.interfaceValue<$.GoError>(__goscript__const.ErrStreamsExhausted, "*yamux.Error")]
 			}
 			if (!atomic.CompareAndSwapUint32($.pointerValue<Session>(s)._fields.nextStreamID, $.uint(id, 32), $.uint(id + 2, 32))) {
@@ -706,9 +706,9 @@ export class Session {
 
 		// Send the window update to create
 		{
-			let __goscriptShadow1 = await __goscript_stream.Stream.prototype.sendWindowUpdate.call(stream, $.pointerValue<Exclude<context.Context, null>>(ctx).Done())
+			let __goscriptShadow1 = await __goscript_stream.Stream.prototype.sendWindowUpdate.call(stream, await $.pointerValue<Exclude<context.Context, null>>(ctx).Done())
 			if (__goscriptShadow1 != null) {
-				__defer.defer(() => { $.pointerValue<Exclude<MemoryManager, null>>(span).Done() })
+				__defer.defer(async () => { await $.pointerValue<Exclude<MemoryManager, null>>(span).Done() })
 				const [__goscriptSelect3HasReturn, __goscriptSelect3Value] = await $.selectStatement<any, [__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null, $.GoError]>([
 					{
 						id: 0,
@@ -864,13 +864,13 @@ export class Session {
 		throw new globalThis.Error("goscript: unreachable return")
 	}
 
-	public RemoteAddr(): net.Addr | null {
+	public async RemoteAddr(): globalThis.Promise<net.Addr | null> {
 		const s: Session | $.VarRef<Session> | null = this
 		let [addr, ok] = $.typeAssertTuple<__goscript_addr.hasAddr | null>($.pointerValue<Session>(s).conn, "yamux.hasAddr")
 		if (!ok) {
 			return $.interfaceValue<net.Addr | null>(new __goscript_addr.yamuxAddr({Addr: "remote"}), "*yamux.yamuxAddr")
 		}
-		return $.pointerValue<Exclude<__goscript_addr.hasAddr, null>>(addr).RemoteAddr()
+		return await $.pointerValue<Exclude<__goscript_addr.hasAddr, null>>(addr).RemoteAddr()
 	}
 
 	public async closeStream(id: number): globalThis.Promise<void> {
@@ -925,7 +925,7 @@ export class Session {
 			}
 		}
 		$.deleteMapEntry($.pointerValue<Session>(s).streams, $.uint(id, 32))
-		$.pointerValue<Exclude<MemoryManager, null>>($.pointerValue<__goscript_stream.Stream>(str).memorySpan).Done()
+		await $.pointerValue<Exclude<MemoryManager, null>>($.pointerValue<__goscript_stream.Stream>(str).memorySpan).Done()
 	}
 
 	public async establishStream(id: number): globalThis.Promise<void> {
@@ -1153,7 +1153,7 @@ export class Session {
 
 	public async incomingStream(id: number): globalThis.Promise<$.GoError> {
 		let s: Session | $.VarRef<Session> | null = this
-		using __defer = new $.DisposableStack()
+		await using __defer = new $.AsyncDisposableStack()
 		if ($.pointerValue<Session>(s).client != ($.uint((id % 2), 32) == $.uint(0, 32))) {
 			await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[ERR] yamux: both endpoints are clients", null)
 			return fmt.Errorf("both yamux endpoints are clients")
@@ -1170,7 +1170,7 @@ export class Session {
 			return fmt.Errorf("failed to create resource span: %w", (err as any))
 		}
 		{
-			let __goscriptShadow2 = $.pointerValue<Exclude<MemoryManager, null>>(span).ReserveMemory(262144, $.uint(255, 8))
+			let __goscriptShadow2 = await $.pointerValue<Exclude<MemoryManager, null>>(span).ReserveMemory(262144, $.uint(255, 8))
 			if (__goscriptShadow2 != null) {
 				return __goscriptShadow2
 			}
@@ -1191,7 +1191,7 @@ export class Session {
 						await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[WARN] yamux: failed to send go away: %v", $.arrayToSlice<any>([(sendErr as any)]))
 					}
 				}
-				$.pointerValue<Exclude<MemoryManager, null>>(span).Done()
+				await $.pointerValue<Exclude<MemoryManager, null>>(span).Done()
 				return $.interfaceValue<$.GoError>(__goscript__const.ErrDuplicateStream, "*yamux.Error")
 			}
 		}
@@ -1199,7 +1199,7 @@ export class Session {
 		if ($.pointerValue<Session>(s).numIncomingStreams >= $.pointerValue<__goscript_mux.Config>($.pointerValue<Session>(s).config).MaxIncomingStreams) {
 			// too many active streams at the same time
 			await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[WARN] yamux: MaxIncomingStreams exceeded, forcing stream reset", null)
-			__defer.defer(() => { $.pointerValue<Exclude<MemoryManager, null>>(span).Done() })
+			__defer.defer(async () => { await $.pointerValue<Exclude<MemoryManager, null>>(span).Done() })
 			let hdr = __goscript__const.encode($.uint(1, 8), $.uint(8, 16), $.uint(id, 32), $.uint(0, 32))
 			return await Session.prototype.sendMsg.call(s, hdr, null, null)
 		}
@@ -1224,7 +1224,7 @@ export class Session {
 				isSend: false,
 				channel: null,
 				onSelected: async (__goscriptSelect10Result) => {
-					__defer.defer(() => { $.pointerValue<Exclude<MemoryManager, null>>(span).Done() })
+					__defer.defer(async () => { await $.pointerValue<Exclude<MemoryManager, null>>(span).Done() })
 					await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[WARN] yamux: backlog exceeded, forcing stream reset", null)
 					await Session.prototype.deleteStream.call(s, $.uint(id, 32))
 					let hdr = __goscript__const.encode($.uint(1, 8), $.uint(8, 16), $.uint(id, 32), $.uint(0, 32))
@@ -1283,7 +1283,7 @@ export class Session {
 			{
 				let [, __goscriptShadow3] = await io.ReadFull($.pointerValueOrNil($.pointerValue<Session>(s).reader)!, $.goSlice(hdr, undefined, undefined))
 				if (__goscriptShadow3 != null) {
-					if (((!$.comparableEqual(__goscriptShadow3, io.EOF)) && !strings.Contains(await $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow3).Error(), "closed")) && !strings.Contains(await $.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow3).Error(), "reset by peer")) {
+					if (((!$.comparableEqual(__goscriptShadow3, io.EOF)) && !strings.Contains($.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow3).Error(), "closed")) && !strings.Contains($.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow3).Error(), "reset by peer")) {
 						await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[ERR] yamux: Failed to read header: %v", $.arrayToSlice<any>([(__goscriptShadow3 as any)]))
 					}
 					const __goscriptReturn6: $.GoError = __goscriptShadow3

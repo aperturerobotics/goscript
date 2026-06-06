@@ -135,7 +135,7 @@ export class resolverConfig {
 	constructor(init?: Partial<{initOnce?: sync.Once, ch?: $.Channel<{}> | null, lastChecked?: time.Time, dnsConfig?: atomic.Pointer<__goscript_dnsconfig.dnsConfig>}>) {
 		this._fields = {
 			initOnce: $.varRef(init?.initOnce ? $.markAsStructValue($.cloneStructValue(init.initOnce)) : $.markAsStructValue(new sync.Once())),
-			ch: $.varRef(init?.ch ?? null),
+			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<{}> | null)),
 			lastChecked: $.varRef(init?.lastChecked ? $.markAsStructValue($.cloneStructValue(init.lastChecked)) : $.markAsStructValue(new time.Time())),
 			dnsConfig: $.varRef(init?.dnsConfig ? $.markAsStructValue($.cloneStructValue(init.dnsConfig)) : $.markAsStructValue(new atomic.Pointer<__goscript_dnsconfig.dnsConfig>()))
 		}
@@ -229,7 +229,7 @@ export class resolverConfig {
 				{
 					let [fi, err] = os.Stat(name)
 					if (err == null) {
-						mtime = $.markAsStructValue($.cloneStructValue($.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime()))
+						mtime = $.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime()))
 					}
 				}
 				if ($.markAsStructValue($.cloneStructValue(mtime)).Equal($.markAsStructValue($.cloneStructValue($.pointerValue<__goscript_dnsconfig.dnsConfig>($.pointerValue<resolverConfig>(conf).dnsConfig.Load()).mtime)))) {

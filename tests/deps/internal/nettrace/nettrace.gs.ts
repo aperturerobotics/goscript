@@ -104,10 +104,10 @@ export class Trace {
 
 	constructor(init?: Partial<{DNSStart?: ((name: string) => void) | null, DNSDone?: ((netIPs: $.Slice<any>, coalesced: boolean, err: $.GoError) => void) | null, ConnectStart?: ((network: string, addr: string) => void) | null, ConnectDone?: ((network: string, addr: string, err: $.GoError) => void) | null}>) {
 		this._fields = {
-			DNSStart: $.varRef(init?.DNSStart ?? null),
-			DNSDone: $.varRef(init?.DNSDone ?? null),
-			ConnectStart: $.varRef(init?.ConnectStart ?? null),
-			ConnectDone: $.varRef(init?.ConnectDone ?? null)
+			DNSStart: $.varRef(init?.DNSStart ?? (null as unknown as ((name: string) => void) | null)),
+			DNSDone: $.varRef(init?.DNSDone ?? (null as unknown as ((netIPs: $.Slice<any>, coalesced: boolean, err: $.GoError) => void) | null)),
+			ConnectStart: $.varRef(init?.ConnectStart ?? (null as unknown as ((network: string, addr: string) => void) | null)),
+			ConnectDone: $.varRef(init?.ConnectDone ?? (null as unknown as ((network: string, addr: string, err: $.GoError) => void) | null))
 		}
 	}
 

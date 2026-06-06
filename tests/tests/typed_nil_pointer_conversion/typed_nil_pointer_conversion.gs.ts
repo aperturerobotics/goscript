@@ -17,7 +17,7 @@ export class node {
 
 	constructor(init?: Partial<{next?: node | $.VarRef<node> | null}>) {
 		this._fields = {
-			next: $.varRef(init?.next ?? null)
+			next: $.varRef(init?.next ?? (null as unknown as node | $.VarRef<node> | null))
 		}
 	}
 

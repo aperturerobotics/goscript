@@ -42,8 +42,8 @@ export class source {
 }
 
 export async function main(): globalThis.Promise<void> {
-	$.println($.bytesToString(__goscript_iterator.Read($.interfaceValue<__goscript_iterator.Reader | null>($.markAsStructValue(new source()), "main.source"))))
-	$.println($.bytesToString(subpkg.Value_Clone(__goscript_iterator.Read($.interfaceValue<__goscript_iterator.Reader | null>($.markAsStructValue(new source()), "main.source")))))
+	$.println($.bytesToString(await __goscript_iterator.Read($.interfaceValue<__goscript_iterator.Reader | null>($.markAsStructValue(new source()), "main.source"))))
+	$.println($.bytesToString(subpkg.Value_Clone((await __goscript_iterator.Read($.interfaceValue<__goscript_iterator.Reader | null>($.markAsStructValue(new source()), "main.source"))))))
 }
 
 if ($.isMainScript(import.meta)) {

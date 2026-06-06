@@ -38,7 +38,7 @@ export class ChannelProcessor {
 
 	constructor(init?: Partial<{ch?: $.Channel<number> | null}>) {
 		this._fields = {
-			ch: $.varRef(init?.ch ?? null)
+			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<number> | null))
 		}
 	}
 
@@ -87,7 +87,7 @@ export class SimpleProcessor {
 
 	constructor(init?: Partial<{value?: number}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? 0)
+			value: $.varRef(init?.value ?? (0 as unknown as number))
 		}
 	}
 
@@ -141,8 +141,8 @@ export class GenericChannelStore {
 
 	constructor(init?: Partial<{ch?: $.Channel<any> | null, value?: any}>) {
 		this._fields = {
-			ch: $.varRef(init?.ch ?? null),
-			value: $.varRef(init?.value ?? null)
+			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<any> | null)),
+			value: $.varRef(init?.value ?? (null as unknown as any))
 		}
 	}
 
@@ -175,7 +175,7 @@ export async function processViaInterface(processor: AsyncProcessor | null, inpu
 	let result = await $.pointerValue<Exclude<AsyncProcessor, null>>(processor).Process(input)
 
 	// This call should NOT be awaited since GetResult is sync
-	let baseResult = $.pointerValue<Exclude<AsyncProcessor, null>>(processor).GetResult()
+	let baseResult = await $.pointerValue<Exclude<AsyncProcessor, null>>(processor).GetResult()
 
 	return result + baseResult
 }

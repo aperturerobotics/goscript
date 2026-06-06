@@ -1,4 +1,7 @@
 {
+  "asyncFunctions": {
+    "SortFunc": true
+  },
   "dependencies": [
     "cmp",
     "iter"

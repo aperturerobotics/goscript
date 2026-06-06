@@ -17,7 +17,7 @@ export async function run(ctx: context.Context | null): globalThis.Promise<void>
 	let myCh: $.Channel<{}> | null = $.makeChannel<{}>(0, {}, "both")
 
 	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
-		await $.chanRecv($.pointerValue<Exclude<context.Context, null>>(sctx).Done())
+		await $.chanRecv(await $.pointerValue<Exclude<context.Context, null>>(sctx).Done())
 		await $.chanSend(myCh, {})
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
 
@@ -60,7 +60,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let [deadlineCtx, cancel] = context.WithDeadline($.pointerValueOrNil(ctx)!, $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Now())).Add(time.Hour))))
 	__defer.defer(async () => { await cancel!() })
-	let [deadline, ok] = $.pointerValue<Exclude<context.Context, null>>(deadlineCtx).Deadline()
+	let [deadline, ok] = await $.pointerValue<Exclude<context.Context, null>>(deadlineCtx).Deadline()
 	$.println("deadline ok:", ok)
 	$.println("deadline zero:", $.markAsStructValue($.cloneStructValue(deadline)).IsZero())
 

@@ -25,8 +25,8 @@ export class MyStruct {
 
 	constructor(init?: Partial<{publicField?: string, privateField?: number}>) {
 		this._fields = {
-			publicField: $.varRef(init?.publicField ?? ""),
-			privateField: $.varRef(init?.privateField ?? 0)
+			publicField: $.varRef(init?.publicField ?? ("" as unknown as string)),
+			privateField: $.varRef(init?.privateField ?? (0 as unknown as number))
 		}
 	}
 

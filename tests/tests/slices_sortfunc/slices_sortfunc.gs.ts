@@ -28,8 +28,8 @@ export class Person {
 
 	constructor(init?: Partial<{Name?: string, Age?: number}>) {
 		this._fields = {
-			Name: $.varRef(init?.Name ?? ""),
-			Age: $.varRef(init?.Age ?? 0)
+			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
+			Age: $.varRef(init?.Age ?? (0 as unknown as number))
 		}
 	}
 
@@ -54,7 +54,7 @@ export class Person {
 export async function main(): globalThis.Promise<void> {
 	let people: $.Slice<Person> = $.arrayToSlice<Person>([$.markAsStructValue(new Person({Name: "Charlie", Age: 30})), $.markAsStructValue(new Person({Name: "Alice", Age: 25})), $.markAsStructValue(new Person({Name: "Bob", Age: 35}))])
 
-	slices.SortFunc(people, $.functionValue((a: Person, b: Person): number => {
+	await slices.SortFunc(people, $.functionValue((a: Person, b: Person): number => {
 		if (a.Age < b.Age) {
 			return -1
 		}

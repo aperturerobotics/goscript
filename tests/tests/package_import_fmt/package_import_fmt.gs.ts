@@ -25,7 +25,7 @@ export class byteFormatter {
 
 	constructor(init?: Partial<{prefix?: $.Slice<number>}>) {
 		this._fields = {
-			prefix: $.varRef(init?.prefix ?? null)
+			prefix: $.varRef(init?.prefix ?? (null as unknown as $.Slice<number>))
 		}
 	}
 
@@ -37,11 +37,11 @@ export class byteFormatter {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Format(state: fmt.State | null, verb: number): void {
+	public async Format(state: fmt.State | null, verb: number): globalThis.Promise<void> {
 		const b = this
-		let buf: $.Slice<number> = $.append($.arrayToSlice<number>([]), ...(b.prefix ?? []))
+		let buf: $.Slice<number> = $.appendSlice($.arrayToSlice<number>([]), b.prefix)
 		buf = $.append(buf, $.uint($.uint(verb, 8), 8))
-		$.pointerValue<Exclude<fmt.State, null>>(state).Write(buf)
+		await $.pointerValue<Exclude<fmt.State, null>>(state).Write(buf)
 	}
 
 	static __typeInfo = $.registerStructType(
