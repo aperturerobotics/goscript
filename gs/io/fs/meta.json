@@ -1,5 +1,7 @@
 {
   "asyncFunctions": {
+    "Glob": true,
+    "ReadDir": true,
     "WalkDir": true
   }
 }

@@ -39,7 +39,7 @@ export async function walkDir(
     }
   }
 
-  let [dirs, err] = ReadDir(fsys, name)
+  let [dirs, err] = await ReadDir(fsys, name)
 
   // Second call, to report ReadDir error.
   if (err != null) {

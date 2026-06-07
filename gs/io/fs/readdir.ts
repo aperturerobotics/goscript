@@ -17,7 +17,11 @@ export type ReadDirFS =
   | ({
       // ReadDir reads the named directory
       // and returns a list of directory entries sorted by filename.
-      ReadDir(name: string): [$.Slice<DirEntry>, $.GoError]
+      ReadDir(
+        name: string,
+      ):
+        | [$.Slice<DirEntry>, $.GoError]
+        | Promise<[$.Slice<DirEntry>, $.GoError]>
     } & FS)
 
 $.registerInterfaceType(
@@ -55,51 +59,50 @@ $.registerInterfaceType(
 // If fs implements [ReadDirFS], ReadDir calls fs.ReadDir.
 // Otherwise ReadDir calls fs.Open and uses ReadDir and Close
 // on the returned file.
-export function ReadDir(
+export async function ReadDir(
   fsys: FS,
   name: string,
-): [$.Slice<DirEntry>, $.GoError] {
-  using __defer = new $.DisposableStack()
+): Promise<[$.Slice<DirEntry>, $.GoError]> {
   {
     let { value: fsysTyped, ok: ok } = $.typeAssert<ReadDirFS>(
       fsys,
       'ReadDirFS',
     )
     if (ok) {
-      return fsysTyped!.ReadDir(name)
+      return await fsysTyped!.ReadDir(name)
     }
   }
 
-  let [file, err] = fsys!.Open(name)
+  let [file, err] = await fsys!.Open(name)
   if (err != null) {
     return [null, err]
   }
-  __defer.defer(() => {
-    file!.Close()
-  })
+  try {
+    let { value: dir, ok: ok } = $.typeAssert<ReadDirFile>(file, 'ReadDirFile')
+    if (!ok) {
+      return [
+        null,
+        new PathError({
+          Err: errors.New('not implemented'),
+          Op: 'readdir',
+          Path: name,
+        }),
+      ]
+    }
 
-  let { value: dir, ok: ok } = $.typeAssert<ReadDirFile>(file, 'ReadDirFile')
-  if (!ok) {
-    return [
-      null,
-      new PathError({
-        Err: errors.New('not implemented'),
-        Op: 'readdir',
-        Path: name,
-      }),
-    ]
+    let list: $.Slice<DirEntry>
+    ;[list, err] = await dir!.ReadDir(-1)
+    if (list) {
+      list.sort((a: DirEntry, b: DirEntry): number => {
+        return $.pointerValue<Exclude<DirEntry, null>>(a)
+          .Name()
+          .localeCompare($.pointerValue<Exclude<DirEntry, null>>(b).Name())
+      })
+    }
+    return [list, err]
+  } finally {
+    await file!.Close()
   }
-
-  let list: $.Slice<DirEntry>
-  ;[list, err] = dir!.ReadDir(-1)
-  if (list) {
-    list.sort((a: DirEntry, b: DirEntry): number => {
-      return $.pointerValue<Exclude<DirEntry, null>>(a)
-        .Name()
-        .localeCompare($.pointerValue<Exclude<DirEntry, null>>(b).Name())
-    })
-  }
-  return [list, err]
 }
 
 class dirInfo {

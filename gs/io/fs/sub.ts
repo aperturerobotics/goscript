@@ -164,14 +164,14 @@ class subFS {
     return [file, f!.fixErr(err)]
   }
 
-  public ReadDir(name: string): [$.Slice<DirEntry>, $.GoError] {
+  public async ReadDir(name: string): Promise<[$.Slice<DirEntry>, $.GoError]> {
     const f = this
     let [full, err] = f!.fullName('read', name)
     if (err != null) {
       return [null, err]
     }
     let dir: $.Slice<DirEntry>
-    ;[dir, err] = ReadDir(f!.fsys, full)
+    ;[dir, err] = await ReadDir(f!.fsys, full)
     return [dir, f!.fixErr(err)]
   }
 
@@ -186,7 +186,7 @@ class subFS {
     return [data, f!.fixErr(err)]
   }
 
-  public Glob(pattern: string): [$.Slice<string>, $.GoError] {
+  public async Glob(pattern: string): Promise<[$.Slice<string>, $.GoError]> {
     const f = this
     {
       let [, err] = path.Match(pattern, '')
@@ -198,7 +198,7 @@ class subFS {
       return [$.arrayToSlice<string>(['.']), null]
     }
     let full = f!.dir + '/' + pattern
-    let [list, err] = Glob(f!.fsys, full)
+    let [list, err] = await Glob(f!.fsys, full)
     for (let i = 0; i < $.len(list); i++) {
       const name = list![i]
       {

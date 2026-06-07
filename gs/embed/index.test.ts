@@ -19,7 +19,7 @@ describe('embed.FS', () => {
     expect(Array.from(data)).toEqual([1, 2, 3])
   })
 
-  it('supports io/fs read, stat, and directory APIs', () => {
+  it('supports io/fs read, stat, and directory APIs', async () => {
     const fsys = markAsStructValue(
       new FS(
         new Map([
@@ -37,7 +37,7 @@ describe('embed.FS', () => {
     expect(readAgainErr).toBeNull()
     expect(Array.from(dataAgain)).toEqual([1, 2, 3])
 
-    const [rootEntries, rootErr] = ReadDir(fsys, '.')
+    const [rootEntries, rootErr] = await ReadDir(fsys, '.')
     expect(rootErr).toBeNull()
     expect(rootEntries!.map((entry) => entry!.Name())).toEqual([
       'assets',
@@ -48,7 +48,7 @@ describe('embed.FS', () => {
     expect(statErr).toBeNull()
     expect(assetInfo!.IsDir()).toBe(true)
 
-    const [assetEntries, assetErr] = ReadDir(fsys, 'assets')
+    const [assetEntries, assetErr] = await ReadDir(fsys, 'assets')
     expect(assetErr).toBeNull()
     expect(assetEntries!.map((entry) => entry!.Name())).toEqual(['config.json'])
   })

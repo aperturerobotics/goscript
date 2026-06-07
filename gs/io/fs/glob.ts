@@ -60,15 +60,18 @@ $.registerInterfaceType(
 // If fs implements [GlobFS], Glob calls fs.Glob.
 // Otherwise, Glob uses [ReadDir] to traverse the directory tree
 // and look for matches for the pattern.
-export function Glob(fsys: FS, pattern: string): [$.Slice<string>, $.GoError] {
-  return globWithLimit(fsys, pattern, 0)
+export async function Glob(
+  fsys: FS,
+  pattern: string,
+): Promise<[$.Slice<string>, $.GoError]> {
+  return await globWithLimit(fsys, pattern, 0)
 }
 
-export function globWithLimit(
+export async function globWithLimit(
   fsys: FS,
   pattern: string,
   depth: number,
-): [$.Slice<string>, $.GoError] {
+): Promise<[$.Slice<string>, $.GoError]> {
   let matches: $.Slice<string> = null
   {
     // This limit is added to prevent stack exhaustion issues. See
@@ -105,7 +108,7 @@ export function globWithLimit(
     dir = cleanGlobPath(dir)
 
     if (!hasMeta(dir)) {
-      return glob(fsys, dir, file, null)
+      return await glob(fsys, dir, file, null)
     }
 
     // Prevent infinite recursion. See issue 15879.
@@ -113,14 +116,14 @@ export function globWithLimit(
       return [null, path.ErrBadPattern]
     }
 
-    const [dirs, dirErr] = globWithLimit(fsys, dir, depth + 1)
+    const [dirs, dirErr] = await globWithLimit(fsys, dir, depth + 1)
     if (dirErr != null) {
       return [null, dirErr]
     }
     for (let _i = 0; _i < $.len(dirs); _i++) {
       const d = dirs![_i]
       {
-        const [nextMatches, globErr] = glob(fsys, d, file, matches)
+        const [nextMatches, globErr] = await glob(fsys, d, file, matches)
         matches = nextMatches
         if (globErr != null) {
           return [matches, globErr]
@@ -148,15 +151,15 @@ export function cleanGlobPath(path: string): string {
 // and appends them to matches, returning the updated slice.
 // If the directory cannot be opened, glob returns the existing matches.
 // New matches are added in lexicographical order.
-export function glob(
+export async function glob(
   fs: FS,
   dir: string,
   pattern: string,
   matches: $.Slice<string>,
-): [$.Slice<string>, $.GoError] {
+): Promise<[$.Slice<string>, $.GoError]> {
   let m = matches
   {
-    let [infos, err] = ReadDir(fs, dir)
+    let [infos, err] = await ReadDir(fs, dir)
 
     // ignore I/O error
     if (err != null) {

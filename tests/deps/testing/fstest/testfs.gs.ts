@@ -302,7 +302,7 @@ export class fsTester {
 		}
 
 		// Check fs.ReadDir as well.
-		let __goscriptTuple7: any = fs.ReadDir($.pointerValueOrNil($.pointerValue<fsTester>(t).fsys)!, dir)
+		let __goscriptTuple7: any = await fs.ReadDir($.pointerValueOrNil($.pointerValue<fsTester>(t).fsys)!, dir)
 		list2 = __goscriptTuple7[0]
 		err = __goscriptTuple7[1]
 		if (err != null) {
