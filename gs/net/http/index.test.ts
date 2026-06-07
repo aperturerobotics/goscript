@@ -622,6 +622,135 @@ describe('net/http override', () => {
     expect(requestBodyClosed).toBe(true)
   })
 
+  it('returns from fetch-backed RoundTrip after response headers', async () => {
+    let arrayBufferCalled = false
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async () => {
+        const response = new globalThis.Response(null, {
+          status: StatusOK,
+          statusText: 'OK',
+          headers: { 'Content-Length': '5' },
+        })
+        Object.defineProperty(response, 'arrayBuffer', {
+          configurable: true,
+          value: () => {
+            arrayBufferCalled = true
+            return new Promise<ArrayBuffer>(() => {})
+          },
+        })
+        return response
+      },
+    })
+    const [req] = NewRequest(MethodPost, 'https://example.invalid/upload', null)
+
+    const [resp, err] = await Promise.race([
+      DefaultTransport.RoundTrip(req),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('RoundTrip did not return')), 25),
+      ),
+    ])
+
+    expect(err).toBeNull()
+    expect(resp?.StatusCode).toBe(StatusOK)
+    expect(resp?.ContentLength).toBe(5)
+    expect(arrayBufferCalled).toBe(false)
+    expect(resp?.Body?.Close()).toBeNull()
+  })
+
+  it('reads fetch-backed response bodies after RoundTrip returns', async () => {
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async () =>
+        new globalThis.Response('accepted', {
+          status: StatusCreated,
+          statusText: 'Created',
+          headers: { 'Content-Length': '8' },
+        }),
+    })
+    const [req] = NewRequest(MethodPost, 'https://example.invalid/upload', null)
+
+    const [resp, err] = await DefaultTransport.RoundTrip(req)
+    const buf = new Uint8Array(16)
+    const [n, readErr] = await (resp!.Body!.Read(buf) as any)
+
+    expect(err).toBeNull()
+    expect(readErr).toBeNull()
+    expect(n).toBe(8)
+    expect(Buffer.from(buf.subarray(0, n)).toString('utf8')).toBe('accepted')
+    expect(resp?.Body?.Close()).toBeNull()
+  })
+
+  it('aborts pending fetches when the request context is canceled', async () => {
+    let fetchSignal: AbortSignal | undefined
+    let fetchStarted: (() => void) | null = null
+    const fetchStartedPromise = new Promise<void>((resolve) => {
+      fetchStarted = resolve
+    })
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async (_input: RequestInfo | URL, init?: RequestInit) => {
+        fetchSignal = init?.signal ?? undefined
+        fetchStarted?.()
+        return new Promise<globalThis.Response>((_resolve, reject) => {
+          fetchSignal?.addEventListener('abort', () => {
+            reject(new Error('aborted'))
+          })
+        })
+      },
+    })
+    const [ctx, cancel] = context.WithCancel(context.Background())
+    const [req] = NewRequest(MethodPost, 'https://example.invalid/upload', null)
+
+    const roundTrip = DefaultTransport.RoundTrip(req!.WithContext(ctx))
+    await fetchStartedPromise
+    cancel?.()
+    const [resp, err] = await roundTrip
+
+    expect(resp).toBeNull()
+    expect(err).toBe(context.Canceled)
+    expect(fetchSignal?.aborted).toBe(true)
+  })
+
+  it('aborts pending fetch body reads when the request context is canceled', async () => {
+    let fetchSignal: AbortSignal | undefined
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: async (_input: RequestInfo | URL, init?: RequestInit) => {
+        fetchSignal = init?.signal ?? undefined
+        const response = new globalThis.Response(null, { status: StatusOK })
+        Object.defineProperty(response, 'arrayBuffer', {
+          configurable: true,
+          value: () =>
+            new Promise<ArrayBuffer>((_resolve, reject) => {
+              fetchSignal?.addEventListener('abort', () => {
+                reject(new Error('body aborted'))
+              })
+            }),
+        })
+        return response
+      },
+    })
+    const [ctx, cancel] = context.WithCancel(context.Background())
+    const [req] = NewRequest(MethodPost, 'https://example.invalid/upload', null)
+
+    const [resp, roundTripErr] = await DefaultTransport.RoundTrip(
+      req!.WithContext(ctx),
+    )
+    const read = resp!.Body!.Read(new Uint8Array(8)) as any
+    cancel?.()
+    const [n, readErr] = await read
+
+    expect(roundTripErr).toBeNull()
+    expect(n).toBe(0)
+    expect(readErr).toBe(context.Canceled)
+    expect(fetchSignal?.aborted).toBe(true)
+  })
+
   it('closes request bodies when fetch body reads fail', async () => {
     let requestBodyClosed = false
     Object.defineProperty(globalThis, 'fetch', {

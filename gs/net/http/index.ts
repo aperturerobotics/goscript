@@ -433,6 +433,50 @@ class responseBody implements io.ReadCloser {
   }
 }
 
+class fetchResponseBody {
+  private reader: bytes.Reader | null = null
+  private closed = false
+
+  constructor(
+    private fetched: globalThis.Response,
+    private requestContext: context.Context,
+    private abortFetch: () => void,
+    private stopContextWatch: () => void,
+  ) {}
+
+  public async Read(p: $.Bytes): Promise<[number, $.GoError]> {
+    if (this.closed) {
+      return [0, ErrBodyReadAfterClose]
+    }
+    if (this.reader == null) {
+      const [data, err] = await readFetchBody(
+        this.fetched,
+        this.requestContext,
+        this.abortFetch,
+      )
+      if (err != null) {
+        this.stopContextWatch()
+        return [0, err]
+      }
+      this.stopContextWatch()
+      this.reader = bytes.NewReader(data)
+    }
+    return this.reader.Read(p)
+  }
+
+  public Close(): $.GoError {
+    if (this.closed) {
+      return null
+    }
+    this.closed = true
+    this.stopContextWatch()
+    if (this.reader == null) {
+      this.abortFetch()
+    }
+    return null
+  }
+}
+
 class noBody implements io.ReadCloser {
   public Read(_p: $.Bytes): [number, $.GoError] {
     return [0, io.EOF]
@@ -1307,21 +1351,40 @@ async function fetchRoundTrip(
       return [null, closeErr]
     }
   }
+  const fetchContext = newFetchContext(request.Context())
   try {
     const bodyInit = body == null ? undefined : Uint8Array.from(body).buffer
-    const fetched = await globalThis.fetch(request.URL?.String?.() ?? '', {
-      method: request.Method || MethodGet,
-      headers,
-      body: bodyInit,
-    })
-    const data = new Uint8Array(await fetched.arrayBuffer())
+    const [fetched, fetchErr] = await fetchContext.wait(
+      globalThis.fetch(request.URL?.String?.() ?? '', {
+        method: request.Method || MethodGet,
+        headers,
+        body: bodyInit,
+        signal: fetchContext.signal,
+      }),
+    )
+    if (fetchErr != null || fetched == null) {
+      fetchContext.stop()
+      return [null, fetchErr]
+    }
     const respHeader = new Header()
     fetched.headers.forEach((value, key) => Header_Add(respHeader, key, value))
+    const responseBody: io.ReadCloser =
+      request.Method === MethodHead ?
+        NoBody
+      : (new fetchResponseBody(
+          fetched,
+          request.Context(),
+          fetchContext.abort,
+          fetchContext.stop,
+        ) as unknown as io.ReadCloser)
+    if (request.Method === MethodHead) {
+      fetchContext.stop()
+    }
     return [
       new Response({
         Status: `${fetched.status} ${fetched.statusText}`,
         StatusCode: fetched.status,
-        Body: new responseBody(data),
+        Body: responseBody,
         Header: respHeader,
         ContentLength: Number(fetched.headers.get('content-length') ?? -1),
         Request: request,
@@ -1329,12 +1392,100 @@ async function fetchRoundTrip(
       null,
     ]
   } catch (err) {
-    const message =
-      typeof err === 'object' && err != null && 'message' in err ?
-        String((err as { message: unknown }).message)
-      : String(err)
-    return [null, errors.New(message)]
+    fetchContext.stop()
+    return [null, errorFromUnknown(err)]
   }
+}
+
+function newFetchContext(requestContext: context.Context): {
+  signal: AbortSignal | undefined
+  abort: () => void
+  stop: () => void
+  wait: <T>(promise: Promise<T>) => Promise<[T | null, $.GoError]>
+} {
+  let stopped = false
+  const watchController =
+    typeof AbortController === 'undefined' ? null : new AbortController()
+  const controller =
+    typeof AbortController === 'undefined' ? null : new AbortController()
+  const abort = () => {
+    if (controller != null && !controller.signal.aborted) {
+      controller.abort(requestContext?.Err?.() ?? context.Canceled)
+    }
+  }
+  const donePromise =
+    requestContext == null ? null : (
+      (async (): Promise<$.GoError> => {
+        try {
+          await requestContext.Done().selectReceive(0, watchController?.signal)
+        } catch {
+          // Closed channels and receive wakeups both mean the context is done.
+        }
+        const err = requestContext.Err() ?? context.Canceled
+        if (!stopped) {
+          abort()
+        }
+        return err
+      })()
+    )
+  return {
+    signal: controller?.signal,
+    abort,
+    stop: () => {
+      stopped = true
+      watchController?.abort()
+    },
+    wait: async <T>(promise: Promise<T>): Promise<[T | null, $.GoError]> => {
+      const settle = promise.then(
+        (value) => ({ value }),
+        (thrown) => ({ thrown }),
+      )
+      if (donePromise == null) {
+        const result = await settle
+        if ('thrown' in result) {
+          return [null, errorFromUnknown(result.thrown)]
+        }
+        return [result.value, null]
+      }
+      const result = await Promise.race<
+        { value: T } | { err: $.GoError } | { thrown: unknown }
+      >([settle, donePromise.then((err) => ({ err }))])
+      if ('err' in result) {
+        abort()
+        return [null, result.err]
+      }
+      if ('thrown' in result) {
+        return [
+          null,
+          requestContext?.Err?.() ?? errorFromUnknown(result.thrown),
+        ]
+      }
+      return [result.value, null]
+    },
+  }
+}
+
+function errorFromUnknown(err: unknown): $.GoError {
+  const message =
+    typeof err === 'object' && err != null && 'message' in err ?
+      String((err as { message: unknown }).message)
+    : String(err)
+  return errors.New(message)
+}
+
+async function readFetchBody(
+  fetched: globalThis.Response,
+  requestContext: context.Context,
+  abortFetch: () => void,
+): Promise<[Uint8Array, $.GoError]> {
+  const fetchContext = newFetchContext(requestContext)
+  const [buffer, err] = await fetchContext.wait(fetched.arrayBuffer())
+  fetchContext.stop()
+  if (err != null) {
+    abortFetch()
+    return [new Uint8Array(), err]
+  }
+  return [new Uint8Array(buffer ?? new ArrayBuffer(0)), null]
 }
 
 type maybePromise<T> = T | Promise<T>
