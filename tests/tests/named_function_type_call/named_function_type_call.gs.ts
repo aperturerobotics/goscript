@@ -390,8 +390,8 @@ export async function main(): globalThis.Promise<void> {
 
 	let worker: morphismWorker | $.VarRef<morphismWorker> | null = new morphismWorker({ready: $.makeChannel<boolean>(1, false, "both")})
 	let shape: shapeNode | $.VarRef<shapeNode> | null = new shapeNode({value: 7})
-	$.println("Named morphism:", await useMorphism(((__receiver) => (s: Shape | null) => __receiver.lookup(s))($.pointerValue<morphismWorker>(worker)), $.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
-	let holder: MorphismHolder | $.VarRef<MorphismHolder> | null = await newMorphismHolder(((__receiver) => (s: Shape | null) => __receiver.lookup(s))($.pointerValue<morphismWorker>(worker)))
+	$.println("Named morphism:", await useMorphism($.functionValue(((__receiver) => (s: Shape | null) => __receiver.lookup(s))($.pointerValue<morphismWorker>(worker)), ({ kind: $.TypeKind.Function, params: ["main.Shape"], results: ["main.Shape"] } as $.FunctionTypeInfo)), $.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
+	let holder: MorphismHolder | $.VarRef<MorphismHolder> | null = await newMorphismHolder($.functionValue(((__receiver) => (s: Shape | null) => __receiver.lookup(s))($.pointerValue<morphismWorker>(worker)), ({ kind: $.TypeKind.Function, params: ["main.Shape"], results: ["main.Shape"] } as $.FunctionTypeInfo)))
 	$.println("Field morphism:", await MorphismHolder.prototype.apply.call(holder, $.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
 	$.println("Cloned field morphism:", await MorphismHolder.prototype.cloneApply.call(holder, $.interfaceValue<Shape | null>(shape, "*main.shapeNode")))
 	$.pointerValue<morphismWorker>(worker).ready!.close()

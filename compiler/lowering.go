@@ -6847,11 +6847,32 @@ func isLegacyOctalLiteral(value string) bool {
 }
 
 func (o *LoweringOwner) lowerFuncLit(ctx lowerFileContext, lit *ast.FuncLit) (string, bool, []Diagnostic) {
+	return o.lowerFuncLitWithAsyncCalls(ctx, lit, true)
+}
+
+func (o *LoweringOwner) lowerFuncLitForTarget(
+	ctx lowerFileContext,
+	lit *ast.FuncLit,
+	targetType types.Type,
+	allowAsyncOverrideCallback bool,
+) (string, bool, []Diagnostic) {
+	allowAsyncCalls := true
+	if !allowAsyncOverrideCallback && signatureForType(targetType) != nil {
+		allowAsyncCalls = false
+	}
+	return o.lowerFuncLitWithAsyncCalls(ctx, lit, allowAsyncCalls)
+}
+
+func (o *LoweringOwner) lowerFuncLitWithAsyncCalls(
+	ctx lowerFileContext,
+	lit *ast.FuncLit,
+	allowAsyncCalls bool,
+) (string, bool, []Diagnostic) {
 	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
 	deferState := &loweredDeferState{}
 	bodyCtx := ctx.withSignature(signature).withAsyncFunction(false).withDeferState(deferState).withoutRangeBranch()
 	asyncCompatibleParams := funcLiteralNeedsAsyncFunctionParamCalls(signature)
-	if asyncCompatibleParams || funcLiteralUsesAwaitableCall(ctx, lit) {
+	if allowAsyncCalls && (asyncCompatibleParams || funcLiteralUsesAwaitableCall(ctx, lit)) {
 		bodyCtx = bodyCtx.withAsyncFunction(true)
 	}
 	var params []loweredParam
@@ -7276,13 +7297,14 @@ func (o *LoweringOwner) lowerCallArgs(
 	signature *types.Signature,
 ) ([]string, []Diagnostic) {
 	overrideCall := o.callUsesOverridePackage(ctx, expr.Fun)
+	allowAsyncOverrideCallback := !overrideCall || o.overrideCallNeedsAwait(ctx, expr.Fun)
 	if args, diagnostics, ok := o.lowerTupleCallArgs(ctx, expr, signature, overrideCall); ok {
 		return args, diagnostics
 	}
 	if signature != nil && signature.Variadic() && overrideCall && !isBuiltinCallTarget(ctx, expr.Fun) {
 		params := signature.Params()
 		if params == nil || params.Len() == 0 {
-			return o.lowerFixedCallArgs(ctx, expr.Args, signature, overrideCall)
+			return o.lowerFixedCallArgs(ctx, expr.Args, signature, overrideCall, allowAsyncOverrideCallback)
 		}
 		fixedCount := params.Len() - 1
 		targetType := params.At(fixedCount).Type()
@@ -7292,7 +7314,7 @@ func (o *LoweringOwner) lowerCallArgs(
 		args := make([]string, 0, len(expr.Args))
 		var diagnostics []Diagnostic
 		for idx, arg := range expr.Args {
-			lowered, argDiagnostics := o.lowerExpr(ctx, arg)
+			lowered, argDiagnostics := o.lowerCallArgExpr(ctx, arg, params.At(min(idx, fixedCount)).Type(), allowAsyncOverrideCallback)
 			diagnostics = append(diagnostics, argDiagnostics...)
 			if idx < fixedCount {
 				lowered = o.lowerCallArgForTarget(ctx, arg, params.At(idx).Type(), lowered, overrideCall)
@@ -7309,11 +7331,11 @@ func (o *LoweringOwner) lowerCallArgs(
 	if signature == nil || !signature.Variadic() ||
 		isBuiltinCallTarget(ctx, expr.Fun) ||
 		overrideCall {
-		return o.lowerFixedCallArgs(ctx, expr.Args, signature, overrideCall)
+		return o.lowerFixedCallArgs(ctx, expr.Args, signature, overrideCall, allowAsyncOverrideCallback)
 	}
 	params := signature.Params()
 	if params == nil || params.Len() == 0 {
-		return o.lowerFixedCallArgs(ctx, expr.Args, signature, overrideCall)
+		return o.lowerFixedCallArgs(ctx, expr.Args, signature, overrideCall, allowAsyncOverrideCallback)
 	}
 
 	fixedCount := params.Len() - 1
@@ -7321,7 +7343,11 @@ func (o *LoweringOwner) lowerCallArgs(
 	var variadicArgs []string
 	var diagnostics []Diagnostic
 	for idx, arg := range expr.Args {
-		lowered, argDiagnostics := o.lowerExpr(ctx, arg)
+		targetType := params.At(fixedCount).Type()
+		if idx < fixedCount {
+			targetType = params.At(idx).Type()
+		}
+		lowered, argDiagnostics := o.lowerCallArgExpr(ctx, arg, targetType, allowAsyncOverrideCallback)
 		diagnostics = append(diagnostics, argDiagnostics...)
 		if idx < fixedCount {
 			lowered = o.lowerCallArgForTarget(ctx, arg, params.At(idx).Type(), lowered, overrideCall)
@@ -7422,6 +7448,7 @@ func (o *LoweringOwner) lowerFixedCallArgs(
 	exprs []ast.Expr,
 	signature *types.Signature,
 	overrideCall bool,
+	allowAsyncOverrideCallback bool,
 ) ([]string, []Diagnostic) {
 	var params *types.Tuple
 	if signature != nil {
@@ -7430,7 +7457,11 @@ func (o *LoweringOwner) lowerFixedCallArgs(
 	args := make([]string, 0, len(exprs))
 	var diagnostics []Diagnostic
 	for idx, expr := range exprs {
-		lowered, exprDiagnostics := o.lowerExpr(ctx, expr)
+		var targetType types.Type
+		if params != nil && idx < params.Len() {
+			targetType = params.At(idx).Type()
+		}
+		lowered, exprDiagnostics := o.lowerCallArgExpr(ctx, expr, targetType, allowAsyncOverrideCallback)
 		diagnostics = append(diagnostics, exprDiagnostics...)
 		if params != nil && idx < params.Len() {
 			lowered = o.lowerCallArgForTarget(ctx, expr, params.At(idx).Type(), lowered, overrideCall)
@@ -7438,6 +7469,19 @@ func (o *LoweringOwner) lowerFixedCallArgs(
 		args = append(args, lowered)
 	}
 	return args, diagnostics
+}
+
+func (o *LoweringOwner) lowerCallArgExpr(
+	ctx lowerFileContext,
+	expr ast.Expr,
+	targetType types.Type,
+	overrideCall bool,
+) (string, []Diagnostic) {
+	if lit, ok := ast.Unparen(expr).(*ast.FuncLit); ok && targetType != nil {
+		value, _, diagnostics := o.lowerFuncLitForTarget(ctx, lit, targetType, overrideCall)
+		return value, diagnostics
+	}
+	return o.lowerExpr(ctx, expr)
 }
 
 func (o *LoweringOwner) lowerCallArgForTarget(
@@ -8390,7 +8434,12 @@ func (o *LoweringOwner) lowerMethodValueClosure(
 	if includeReceiver {
 		args = append([]string{"__receiver"}, args...)
 	}
-	return "((__receiver) => (" + strings.Join(params, ", ") + ") => " + callee + "(" + strings.Join(args, ", ") + "))(" + receiver + ")"
+	closure := "((__receiver) => (" + strings.Join(params, ", ") + ") => " + callee + "(" + strings.Join(args, ", ") + "))(" + receiver + ")"
+	if signature == nil {
+		return closure
+	}
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
+		"(" + closure + ", " + o.runtimeFunctionTypeInfo(signature, "") + ")"
 }
 
 func (o *LoweringOwner) lowerMethodExpressionClosure(ctx lowerFileContext, selection *types.Selection) string {

@@ -67,7 +67,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Direct call:", result)
 
 	// Test storing method reference (this is the failing case)
-	let fn: (() => number | globalThis.Promise<number>) | null = ((__receiver) => () => MyInt_Double(__receiver))(10)
+	let fn: (() => number | globalThis.Promise<number>) | null = $.functionValue(((__receiver) => () => MyInt_Double(__receiver))(10), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 	$.println("Method ref call:", await fn!())
 
 	let d: Doubler | null = $.namedValueInterfaceValue<Doubler | null>(12, "main.MyInt", {Double: (receiver: any, ...args: any[]) => (MyInt_Double as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyInt" })

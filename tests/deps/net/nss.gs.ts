@@ -140,7 +140,7 @@ export class nsswitchConfig {
 	public async tryUpdate(): globalThis.Promise<void> {
 		let conf: nsswitchConfig | $.VarRef<nsswitchConfig> | null = this
 		await using __defer = new $.AsyncDisposableStack()
-		await $.pointerValue<nsswitchConfig>(conf).initOnce.Do(((__receiver) => () => __receiver.init())($.pointerValue<nsswitchConfig>(conf)))
+		await $.pointerValue<nsswitchConfig>(conf).initOnce.Do($.functionValue(((__receiver) => () => __receiver.init())($.pointerValue<nsswitchConfig>(conf)), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 
 		// Ensure only one update at a time checks nsswitch.conf
 		if (!await nsswitchConfig.prototype.tryAcquireSema.call(conf)) {

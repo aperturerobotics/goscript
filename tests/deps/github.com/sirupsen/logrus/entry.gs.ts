@@ -451,43 +451,43 @@ export class Entry {
 		let reader: io.PipeReader | $.VarRef<io.PipeReader> | null = __goscriptTuple1[0]
 		let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple1[1]
 
-		let printFunc: ((args: $.Slice<any>) => void) | null = ((__receiver) => (args: $.Slice<any>) => __receiver.Print(args))($.pointerValue<Entry>(entry))
+		let printFunc: ((args: $.Slice<any>) => void) | null = $.functionValue(((__receiver) => (args: $.Slice<any>) => __receiver.Print(args))($.pointerValue<Entry>(entry)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }], results: [], isVariadic: true } as $.FunctionTypeInfo))
 
 		// ErrorKey defines the key when adding errors using [WithError], [Logger.WithError].
 		switch (level) {
 			case 6:
 			{
-				printFunc = ((__receiver) => (args: $.Slice<any>) => __receiver.Trace(args))($.pointerValue<Entry>(entry))
+				printFunc = $.functionValue(((__receiver) => (args: $.Slice<any>) => __receiver.Trace(args))($.pointerValue<Entry>(entry)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }], results: [], isVariadic: true } as $.FunctionTypeInfo))
 				break
 			}
 			case 5:
 			{
-				printFunc = ((__receiver) => (args: $.Slice<any>) => __receiver.Debug(args))($.pointerValue<Entry>(entry))
+				printFunc = $.functionValue(((__receiver) => (args: $.Slice<any>) => __receiver.Debug(args))($.pointerValue<Entry>(entry)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }], results: [], isVariadic: true } as $.FunctionTypeInfo))
 				break
 			}
 			case 4:
 			{
-				printFunc = ((__receiver) => (args: $.Slice<any>) => __receiver.Info(args))($.pointerValue<Entry>(entry))
+				printFunc = $.functionValue(((__receiver) => (args: $.Slice<any>) => __receiver.Info(args))($.pointerValue<Entry>(entry)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }], results: [], isVariadic: true } as $.FunctionTypeInfo))
 				break
 			}
 			case 3:
 			{
-				printFunc = ((__receiver) => (args: $.Slice<any>) => __receiver.Warn(args))($.pointerValue<Entry>(entry))
+				printFunc = $.functionValue(((__receiver) => (args: $.Slice<any>) => __receiver.Warn(args))($.pointerValue<Entry>(entry)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }], results: [], isVariadic: true } as $.FunctionTypeInfo))
 				break
 			}
 			case 2:
 			{
-				printFunc = ((__receiver) => (args: $.Slice<any>) => __receiver.Error(args))($.pointerValue<Entry>(entry))
+				printFunc = $.functionValue(((__receiver) => (args: $.Slice<any>) => __receiver.Error(args))($.pointerValue<Entry>(entry)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }], results: [], isVariadic: true } as $.FunctionTypeInfo))
 				break
 			}
 			case 1:
 			{
-				printFunc = ((__receiver) => (args: $.Slice<any>) => __receiver.Fatal(args))($.pointerValue<Entry>(entry))
+				printFunc = $.functionValue(((__receiver) => (args: $.Slice<any>) => __receiver.Fatal(args))($.pointerValue<Entry>(entry)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }], results: [], isVariadic: true } as $.FunctionTypeInfo))
 				break
 			}
 			case 0:
 			{
-				printFunc = ((__receiver) => (args: $.Slice<any>) => __receiver.Panic(args))($.pointerValue<Entry>(entry))
+				printFunc = $.functionValue(((__receiver) => (args: $.Slice<any>) => __receiver.Panic(args))($.pointerValue<Entry>(entry)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }], results: [], isVariadic: true } as $.FunctionTypeInfo))
 				break
 			}
 		}

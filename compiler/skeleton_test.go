@@ -4743,8 +4743,8 @@ func TestCompilePackagesLowersMethodValuesWithFixedParameters(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"((__receiver) => (n: number) => Counter_Add(__receiver, n))(c)",
-		"((__receiver) => () => __receiver.Run())(",
+		"$.functionValue(((__receiver) => (n: number) => Counter_Add(__receiver, n))(c), ({ kind: $.TypeKind.Function",
+		"$.functionValue(((__receiver) => () => __receiver.Run())(",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -4752,6 +4752,53 @@ func TestCompilePackagesLowersMethodValuesWithFixedParameters(t *testing.T) {
 	}
 	if strings.Contains(text, "...args: any[]") {
 		t.Fatalf("method value lowering still uses spread args:\n%s", text)
+	}
+}
+
+func TestCompilePackagesLowersSyncOverrideCallbackWithoutAsyncWrapper(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/sync-callback\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"sort\"",
+			"type Item interface {",
+			"  Name() string",
+			"}",
+			"type Items interface {",
+			"  Len() int",
+			"  Get(i int) Item",
+			"}",
+			"func Lookup(items Items, name string) int {",
+			"  return sort.Search(items.Len(), func(i int) bool {",
+			"    item := items.Get(i)",
+			"    if item == nil {",
+			"      return true",
+			"    }",
+			"    return item.Name() >= name",
+			"  })",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "sync-callback", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if strings.Contains(text, "$.functionValue(async (i: number)") {
+		t.Fatalf("sync override callback lowered as async:\n%s", text)
+	}
+	if !strings.Contains(text, "$.functionValue((i: number): boolean => {") {
+		t.Fatalf("sync override callback was not lowered as a synchronous function value:\n%s", text)
 	}
 }
 

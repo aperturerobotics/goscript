@@ -59,7 +59,7 @@ export class Broadcast {
 		using __defer = new $.DisposableStack()
 		let locked = $.varRef($.markAsStructValue($.cloneStructValue(await Broadcast.prototype.Lock.call(c))))
 		__defer.defer(() => { locked.value.Unlock() })
-		await cb!(((__receiver) => () => __receiver.Broadcast())(locked.value), ((__receiver) => () => __receiver.WaitCh())(locked.value))
+		await cb!($.functionValue(((__receiver) => () => __receiver.Broadcast())(locked.value), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)), $.functionValue(((__receiver) => () => __receiver.WaitCh())(locked.value), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)))
 	}
 
 	public async HoldLockMaybeAsync(cb: ((broadcast: (() => void) | null, getWaitCh: (() => $.Channel<{}> | null | globalThis.Promise<$.Channel<{}> | null>) | null) => void) | null): globalThis.Promise<void> {
@@ -71,7 +71,7 @@ export class Broadcast {
 			}
 			__defer.defer(() => { $.pointerValue<Broadcast>(c).mtx.Unlock() })
 			let locked = $.varRef($.markAsStructValue(new __goscript_locked.Locked({b: c})))
-			await cb!(((__receiver) => () => __receiver.Broadcast())(locked.value), ((__receiver) => () => __receiver.WaitCh())(locked.value))
+			await cb!($.functionValue(((__receiver) => () => __receiver.Broadcast())(locked.value), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)), $.functionValue(((__receiver) => () => __receiver.WaitCh())(locked.value), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "bool" }], results: [] } as $.FunctionTypeInfo))
 
 		if ($.pointerValue<Broadcast>(c).mtx.TryLock()) {
@@ -97,7 +97,7 @@ export class Broadcast {
 			return false
 		}
 		__defer.defer(() => { locked.value.Unlock() })
-		await cb!(((__receiver) => () => __receiver.Broadcast())(locked.value), ((__receiver) => () => __receiver.WaitCh())(locked.value))
+		await cb!($.functionValue(((__receiver) => () => __receiver.Broadcast())(locked.value), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)), $.functionValue(((__receiver) => () => __receiver.WaitCh())(locked.value), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)))
 		return true
 	}
 
@@ -124,7 +124,7 @@ export class Broadcast {
 			let done: boolean = false
 			let err: $.GoError = null as $.GoError
 			let locked = $.varRef($.markAsStructValue($.cloneStructValue(await Broadcast.prototype.Lock.call(c))))
-			let __goscriptTuple1: any = await cb!(((__receiver) => () => __receiver.Broadcast())(locked.value), ((__receiver) => () => __receiver.WaitCh())(locked.value))
+			let __goscriptTuple1: any = await cb!($.functionValue(((__receiver) => () => __receiver.Broadcast())(locked.value), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)), $.functionValue(((__receiver) => () => __receiver.WaitCh())(locked.value), ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }] } as $.FunctionTypeInfo)))
 			done = __goscriptTuple1[0]
 			err = __goscriptTuple1[1]
 			if (!done && (err == null)) {

@@ -223,12 +223,12 @@ export function __goscript_set_ipStackCaps(__goscriptValue: ipStackCapabilities)
 }
 
 export async function supportsIPv4(): globalThis.Promise<boolean> {
-	await ipStackCaps.value.Once.Do(((__receiver) => () => __receiver.probe())(ipStackCaps.value))
+	await ipStackCaps.value.Once.Do($.functionValue(((__receiver) => () => __receiver.probe())(ipStackCaps.value), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	return ipStackCaps.value.ipv4Enabled
 }
 
 export async function supportsIPv6(): globalThis.Promise<boolean> {
-	await ipStackCaps.value.Once.Do(((__receiver) => () => __receiver.probe())(ipStackCaps.value))
+	await ipStackCaps.value.Once.Do($.functionValue(((__receiver) => () => __receiver.probe())(ipStackCaps.value), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	return ipStackCaps.value.ipv6Enabled
 }
 
@@ -244,7 +244,7 @@ export async function supportsIPv4map(): globalThis.Promise<boolean> {
 		}
 	}
 
-	await ipStackCaps.value.Once.Do(((__receiver) => () => __receiver.probe())(ipStackCaps.value))
+	await ipStackCaps.value.Once.Do($.functionValue(((__receiver) => () => __receiver.probe())(ipStackCaps.value), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	return ipStackCaps.value.ipv4MappedIPv6Enabled
 }
 

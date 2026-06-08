@@ -200,7 +200,7 @@ export class resolverConfig {
 	public async tryUpdate(name: string): globalThis.Promise<void> {
 		let conf: resolverConfig | $.VarRef<resolverConfig> | null = this
 		await using __defer = new $.AsyncDisposableStack()
-		await $.pointerValue<resolverConfig>(conf).initOnce.Do(((__receiver) => () => __receiver.init())($.pointerValue<resolverConfig>(conf)))
+		await $.pointerValue<resolverConfig>(conf).initOnce.Do($.functionValue(((__receiver) => () => __receiver.init())($.pointerValue<resolverConfig>(conf)), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 
 		if ($.pointerValue<__goscript_dnsconfig.dnsConfig>($.pointerValue<resolverConfig>(conf).dnsConfig.Load()).noReload) {
 			return

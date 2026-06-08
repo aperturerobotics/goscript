@@ -832,6 +832,31 @@ describe('builtin runtime contract helpers', () => {
     ).toBe(false)
   })
 
+  it('asserts raw function values after interface storage', () => {
+    const accessType = {
+      kind: TypeKind.Function,
+      params: [
+        'context.Context',
+        { kind: TypeKind.Function, params: [], results: [] },
+      ],
+      results: [
+        { kind: TypeKind.Pointer, elemType: 'unixfs.FSHandle' },
+        { kind: TypeKind.Function, params: [], results: [] },
+        'error',
+      ],
+    } as const
+    const accessFunc = functionValue(() => [null, null, null], accessType)
+    const storedAsAny: any = accessFunc
+
+    const [asserted, ok] = typeAssertTuple<typeof accessFunc>(
+      storedAsAny,
+      accessType,
+    )
+
+    expect(ok).toBe(true)
+    expect(asserted).toBe(accessFunc)
+  })
+
   it('exposes channel helpers used by future lowering', async () => {
     const channel = makeChannel<number>(1, 0, 'both')
     expect(cap(channel)).toBe(1)

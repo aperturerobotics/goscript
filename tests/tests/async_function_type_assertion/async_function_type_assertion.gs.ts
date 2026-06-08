@@ -53,7 +53,7 @@ export function syncLookup(network: string): number {
 }
 
 export function chooseLookup(value: any, worker: Worker | $.VarRef<Worker> | null): number {
-	let resolver: ((network: string) => number | globalThis.Promise<number>) | null = ((__receiver) => (network: string) => __receiver.lookup(network))($.pointerValue<Worker>(worker))
+	let resolver: ((network: string) => number | globalThis.Promise<number>) | null = $.functionValue(((__receiver) => (network: string) => __receiver.lookup(network))($.pointerValue<Worker>(worker)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 	{
 		let [alt, ] = $.typeAssertTuple<((_p0: string) => number | globalThis.Promise<number>) | null>(value, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 		if (alt != null) {
@@ -70,7 +70,7 @@ export async function main(): globalThis.Promise<void> {
 
 	await $.chanSend($.pointerValue<Worker>(worker).ch, 1)
 	await $.chanRecv($.pointerValue<Worker>(worker).ch)
-	$.println("call:", await callLookup(((__receiver) => (network: string) => __receiver.lookup(network))($.pointerValue<Worker>(worker)), "tcp"))
+	$.println("call:", await callLookup($.functionValue(((__receiver) => (network: string) => __receiver.lookup(network))($.pointerValue<Worker>(worker)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)), "tcp"))
 
 	let hook: ((fn: ((_p0: string) => number | globalThis.Promise<number>) | null, network: string) => number | globalThis.Promise<number>) | null = $.functionValue(async (fn: ((_p0: string) => number | globalThis.Promise<number>) | null, network: string): globalThis.Promise<number> => {
 		return await fn!(network)

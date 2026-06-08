@@ -183,7 +183,7 @@ export class ServerRPC {
 	public async invokeRPC(serviceID: string, methodID: string): globalThis.Promise<void> {
 		const r: ServerRPC | $.VarRef<ServerRPC> | null = this
 		// on the server side, the writer is closed by invokeRPC.
-		let strm: __goscript_msg_stream.MsgStream | $.VarRef<__goscript_msg_stream.MsgStream> | null = await __goscript_msg_stream.NewMsgStream($.pointerValue<ServerRPC>(r).commonRPC.ctx, $.interfaceValue<__goscript_msg_stream.MsgStreamRw | null>(r, "*srpc.ServerRPC"), ((__receiver) => () => __receiver.cancelContext())($.pointerValue<ServerRPC>(r).commonRPC))
+		let strm: __goscript_msg_stream.MsgStream | $.VarRef<__goscript_msg_stream.MsgStream> | null = await __goscript_msg_stream.NewMsgStream($.pointerValue<ServerRPC>(r).commonRPC.ctx, $.interfaceValue<__goscript_msg_stream.MsgStreamRw | null>(r, "*srpc.ServerRPC"), $.functionValue(((__receiver) => () => __receiver.cancelContext())($.pointerValue<ServerRPC>(r).commonRPC), ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 		let [ok, err] = await $.pointerValue<Exclude<__goscript_invoker.Invoker, null>>($.pointerValue<ServerRPC>(r).invoker).InvokeMethod(serviceID, methodID, $.interfaceValue<__goscript_stream.Stream | null>(strm, "*srpc.MsgStream"))
 		if ((err == null) && !ok) {
 			err = __goscript_errors.ErrUnimplemented

@@ -98,7 +98,7 @@ export class client {
 		let clientRPC: __goscript_client_rpc.ClientRPC | $.VarRef<__goscript_client_rpc.ClientRPC> | null = __goscript_client_rpc.NewClientRPC(ctx, service, method)
 		__defer.defer(async () => { await __goscript_client_rpc.ClientRPC.prototype.Close.call(clientRPC) })
 
-		let __goscriptTuple1: any = await $.pointerValue<client>(c).openStream!(ctx, ((__receiver) => (data: $.Slice<number>) => __receiver.HandlePacketData(data))($.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC)), ((__receiver) => (closeErr: $.GoError) => __receiver.HandleStreamClose(closeErr))($.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC)))
+		let __goscriptTuple1: any = await $.pointerValue<client>(c).openStream!(ctx, $.functionValue(((__receiver) => (data: $.Slice<number>) => __receiver.HandlePacketData(data))($.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: ["error"] } as $.FunctionTypeInfo)), $.functionValue(((__receiver) => (closeErr: $.GoError) => __receiver.HandleStreamClose(closeErr))($.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC)), ({ kind: $.TypeKind.Function, params: ["error"], results: [] } as $.FunctionTypeInfo)))
 		let writer = __goscriptTuple1[0]
 		err = __goscriptTuple1[1]
 		if (err != null) {
@@ -143,7 +143,7 @@ export class client {
 		}
 
 		let clientRPC: __goscript_client_rpc.ClientRPC | $.VarRef<__goscript_client_rpc.ClientRPC> | null = __goscript_client_rpc.NewClientRPC(ctx, service, method)
-		let [writer, err] = await $.pointerValue<client>(c).openStream!(ctx, ((__receiver) => (data: $.Slice<number>) => __receiver.HandlePacketData(data))($.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC)), ((__receiver) => (closeErr: $.GoError) => __receiver.HandleStreamClose(closeErr))($.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC)))
+		let [writer, err] = await $.pointerValue<client>(c).openStream!(ctx, $.functionValue(((__receiver) => (data: $.Slice<number>) => __receiver.HandlePacketData(data))($.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: ["error"] } as $.FunctionTypeInfo)), $.functionValue(((__receiver) => (closeErr: $.GoError) => __receiver.HandleStreamClose(closeErr))($.pointerValue<__goscript_client_rpc.ClientRPC>(clientRPC)), ({ kind: $.TypeKind.Function, params: ["error"], results: [] } as $.FunctionTypeInfo)))
 		if (err != null) {
 			return [null, err]
 		}
