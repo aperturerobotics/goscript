@@ -12,7 +12,7 @@ export type SubFS =
   | null
   | ({
       // Sub returns an FS corresponding to the subtree rooted at dir.
-      Sub(dir: string): [FS, $.GoError]
+      Sub(dir: string): [FS, $.GoError] | Promise<[FS, $.GoError]>
     } & FS)
 
 $.registerInterfaceType(
@@ -56,7 +56,7 @@ $.registerInterfaceType(
 // does not check for symbolic links inside "/prefix" that point to
 // other directories. That is, [os.DirFS] is not a general substitute for a
 // chroot-style security mechanism, and Sub does not change that fact.
-export function Sub(fsys: FS, dir: string): [FS, $.GoError] {
+export async function Sub(fsys: FS, dir: string): Promise<[FS, $.GoError]> {
   if (!ValidPath(dir)) {
     return [null, new PathError({ Err: ErrInvalid, Op: 'sub', Path: dir })]
   }
@@ -66,10 +66,10 @@ export function Sub(fsys: FS, dir: string): [FS, $.GoError] {
   {
     let { value: fsysTyped, ok: ok } = $.typeAssert<SubFS>(fsys, 'SubFS')
     if (ok) {
-      return fsysTyped!.Sub(dir)
+      return await fsysTyped!.Sub(dir)
     }
   }
-  return [new subFS({}), null]
+  return [new subFS({ fsys, dir }) as unknown as FS, null]
 }
 
 class subFS {
@@ -153,14 +153,14 @@ class subFS {
     return err
   }
 
-  public Open(name: string): [File, $.GoError] {
+  public async Open(name: string): Promise<[File, $.GoError]> {
     const f = this
     let [full, err] = f!.fullName('open', name)
     if (err != null) {
       return [null, err]
     }
     let file: File
-    ;[file, err] = f!.fsys!.Open(full)
+    ;[file, err] = await (f!.fsys as any)!.Open(full)
     return [file, f!.fixErr(err)]
   }
 
@@ -225,13 +225,13 @@ class subFS {
   public Sub(dir: string): [FS, $.GoError] {
     const f = this
     if (dir == '.') {
-      return [f, null]
+      return [f as unknown as FS, null]
     }
-    let [_full, err] = f!.fullName('sub', dir)
+    let [full, err] = f!.fullName('sub', dir)
     if (err != null) {
       return [null, err]
     }
-    return [new subFS({}), null]
+    return [new subFS({ fsys: f.fsys, dir: full }) as unknown as FS, null]
   }
 
   // Register this type with the runtime type system

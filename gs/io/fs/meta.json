@@ -3,6 +3,7 @@
     "Glob": true,
     "ReadDir": true,
     "Stat": true,
+    "Sub": true,
     "WalkDir": true
   }
 }
