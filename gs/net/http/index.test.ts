@@ -1344,6 +1344,7 @@ describe('net/http override', () => {
     expect(opened).toEqual(['file.txt'])
     expect(writes).toEqual(['status:200', 'hello'])
     expect(Header_Get(header, 'Content-Length')).toBe('5')
+    expect(Header_Get(header, 'Content-Type')).toBe('text/plain; charset=utf-8')
 
     writes.length = 0
     opened.length = 0
@@ -1519,8 +1520,9 @@ describe('net/http override', () => {
       },
     }
     const writes: string[] = []
+    const header = new Header()
     const writer: ResponseWriter = {
-      Header: () => new Header(),
+      Header: () => header,
       Write: (p) => {
         writes.push(Buffer.from(p ?? []).toString('utf8'))
         return [p?.length ?? 0, null]
@@ -1540,6 +1542,7 @@ describe('net/http override', () => {
 
     expect(readSawHeader).toBe(true)
     expect(writes).toEqual(['status:200', 'streamed-body'])
+    expect(Header_Get(header, 'Content-Type')).toBe('text/javascript; charset=utf-8')
   })
 
   it('awaits ServeContent writes before returning', async () => {

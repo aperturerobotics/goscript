@@ -4,6 +4,8 @@ import * as context from '@goscript/context/index.js'
 import * as errors from '@goscript/errors/index.js'
 import * as fs from '@goscript/io/fs/fs.js'
 import * as io from '@goscript/io/index.js'
+import * as mime from '@goscript/mime/index.js'
+import * as path from '@goscript/path/index.js'
 import * as strings from '@goscript/strings/index.js'
 import * as time from '@goscript/time/index.js'
 
@@ -1586,8 +1588,17 @@ export function FileServer(root: fileServerFileSystem | null): Handler {
           NotFound(w, req)
           return
         }
+        const header = await w.Header()
+        if (Header_Get(header, 'Content-Type') === '') {
+          const contentType = mime.TypeByExtension(
+            path.Ext(info?.Name?.() || req.URL?.Path || ''),
+          )
+          if (contentType !== '') {
+            Header_Set(header, 'Content-Type', contentType)
+          }
+        }
         if (info?.Size != null) {
-          Header_Set(await w.Header(), 'Content-Length', String(info.Size()))
+          Header_Set(header, 'Content-Length', String(info.Size()))
         }
         await w.WriteHeader(StatusOK)
         if (req.Method !== MethodHead) {
