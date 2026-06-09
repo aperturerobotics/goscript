@@ -248,7 +248,8 @@ export function StatusText(code: number): string {
 }
 
 export type Header = Map<string, $.Slice<string>>
-type HeaderValue = Header | $.VarRef<Header>
+type HeaderBox = { __goValue: HeaderValue }
+type HeaderValue = Header | $.VarRef<Header> | HeaderBox
 
 export const Header = Map as {
   new (entries?: Iterable<readonly [string, $.Slice<string>]> | null): Header
@@ -259,7 +260,16 @@ export function CanonicalHeaderKey(s: string): string {
 }
 
 function headerMap(h: HeaderValue): Header {
-  return $.pointerValue(h)
+  let value: unknown = $.pointerValue(h as Header | $.VarRef<Header>)
+  while (
+    value !== null &&
+    value !== undefined &&
+    typeof value === 'object' &&
+    '__goValue' in value
+  ) {
+    value = $.pointerValue((value as HeaderBox).__goValue)
+  }
+  return value as Header
 }
 
 export function Header_Add(h: HeaderValue, key: string, value: string): void {

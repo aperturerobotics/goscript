@@ -210,6 +210,18 @@ describe('net/http override', () => {
     expect(Header_Get(cloned, 'Content-Type')).toBe('text/plain')
   })
 
+  it('accepts interface-boxed named headers from generated interface calls', () => {
+    const header = $.namedValueInterfaceValue(new Header(), 'http.Header', {})
+
+    Header_Set(header, 'content-length', '12')
+    Header_Add(header, 'content-type', 'text/plain')
+
+    expect(Header_Get(header, 'Content-Length')).toBe('12')
+    expect(Array.from(Header_Values(header, 'Content-Type') ?? [])).toEqual([
+      'text/plain',
+    ])
+  })
+
   it('validates outgoing request construction', () => {
     const [req, reqErr] = NewRequestWithContext(
       context.Background(),
