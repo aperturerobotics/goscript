@@ -633,15 +633,15 @@ function asciiLower(value: string): [string, boolean] {
   return [value.toLowerCase(), true]
 }
 
-export function SetCookie(
+export async function SetCookie(
   w: ResponseWriter | null,
   cookie: Cookie | $.VarRef<Cookie> | null,
-): void {
+): Promise<void> {
   const c = $.pointerValue<Cookie | null>(cookie)
   if (w == null || c == null) {
     return
   }
-  Header_Add(w.Header(), 'Set-Cookie', c.String())
+  Header_Add(await w.Header(), 'Set-Cookie', c.String())
 }
 
 class memoryResponseWriter implements ResponseWriter {
@@ -1602,7 +1602,10 @@ export function FileServer(root: fileServerFileSystem | null): Handler {
         }
         await w.WriteHeader(StatusOK)
         if (req.Method !== MethodHead) {
-          const [, copyErr] = await io.Copy(w, file as io.Reader)
+          const [, copyErr] = await io.Copy(
+            w as unknown as io.Writer,
+            file as io.Reader,
+          )
           if (copyErr != null) {
             return
           }
@@ -2156,7 +2159,7 @@ export function NotFoundHandler(): Handler {
 export function RedirectHandler(url: string, code: number): Handler {
   return {
     ServeHTTP(w, r) {
-      Redirect(w, r, url, code)
+      return Redirect(w, r, url, code)
     },
   }
 }
@@ -2193,17 +2196,20 @@ export function NotFound(
   Error(w, '404 page not found', StatusNotFound)
 }
 
-export function Redirect(
+export async function Redirect(
   w: ResponseWriter | null,
   _r: Request | $.VarRef<Request> | null,
   url: string,
   code: number,
-): void {
-  const header = w?.Header()
+): Promise<void> {
+  if (w == null) {
+    return
+  }
+  const header = await w.Header()
   if (header != null) {
     Header_Set(header, 'Location', url)
   }
-  w?.WriteHeader(code)
+  await w.WriteHeader(code)
 }
 
 export function ParseTime(text: string): [time.Time, $.GoError] {

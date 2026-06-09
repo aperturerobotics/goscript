@@ -488,6 +488,48 @@ func TestCompilePackagesAwaitsOverrideAsyncFunctions(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesAwaitsIOFSStatOverride(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/iofsstat\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import \"io/fs\"",
+			"type memFS struct{}",
+			"func (memFS) Open(name string) (fs.File, error) { return nil, fs.ErrNotExist }",
+			"func Use(fsys fs.FS) error {",
+			"  _, err := fs.Stat(fsys, \"pkg\")",
+			"  return err",
+			"}",
+			"func main() { _ = Use(memFS{}) }",
+			"",
+		}, "\n"),
+	})
+	out := filepath.Join(t.TempDir(), "out")
+	comp, err := NewCompiler(&Config{
+		Dir:             moduleDir,
+		OutputPath:      out,
+		AllDependencies: true,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(out, "@goscript", "example.test", "iofsstat", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "export async function Use(") {
+		t.Fatalf("fs.Stat caller was not marked async:\n%s", text)
+	}
+	if !strings.Contains(text, "await fs.Stat(") {
+		t.Fatalf("io/fs Stat override call was not awaited:\n%s", text)
+	}
+}
+
 func TestCompilePackagesAwaitsAsyncSlicesSortFuncComparator(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/slicesasyncsort\n\ngo 1.25.3\n",

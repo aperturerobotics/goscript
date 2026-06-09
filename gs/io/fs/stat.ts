@@ -1,13 +1,24 @@
 import * as $ from '@goscript/builtin/index.js'
-import { FS, FileInfo } from './fs.js'
+import { FS, File, FileInfo } from './fs.js'
+
+type maybePromise<T> = T | Promise<T>
 
 export type StatFS =
   | null
   | ({
       // Stat returns a FileInfo describing the file.
       // If there is an error, it should be of type *PathError.
-      Stat(name: string): [FileInfo, $.GoError]
+      Stat(name: string): maybePromise<[FileInfo, $.GoError]>
     } & FS)
+
+type asyncFS = null | {
+  Open(name: string): maybePromise<[File, $.GoError]>
+}
+
+type asyncFile = null | {
+  Close(): maybePromise<$.GoError>
+  Stat(): maybePromise<[FileInfo, $.GoError]>
+}
 
 $.registerInterfaceType(
   'StatFS',
@@ -42,21 +53,24 @@ $.registerInterfaceType(
 //
 // If fs implements [StatFS], Stat calls fs.Stat.
 // Otherwise, Stat opens the [File] to stat it.
-export function Stat(fsys: FS, name: string): [FileInfo, $.GoError] {
-  using __defer = new $.DisposableStack()
+export async function Stat(
+  fsys: FS,
+  name: string,
+): Promise<[FileInfo, $.GoError]> {
   {
     let { value: fsysTyped, ok: ok } = $.typeAssert<StatFS>(fsys, 'StatFS')
     if (ok) {
-      return fsysTyped!.Stat(name)
+      return await fsysTyped!.Stat(name)
     }
   }
 
-  let [file, err] = fsys!.Open(name)
+  let [file, err] = await (fsys as asyncFS)!.Open(name)
   if (err != null) {
     return [null, err]
   }
-  __defer.defer(() => {
-    file!.Close()
-  })
-  return file!.Stat()
+  try {
+    return await (file as asyncFile)!.Stat()
+  } finally {
+    await (file as asyncFile)!.Close()
+  }
 }

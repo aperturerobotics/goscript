@@ -44,7 +44,7 @@ describe('embed.FS', () => {
       'config-set.bin',
     ])
 
-    const [assetInfo, statErr] = Stat(fsys, 'assets')
+    const [assetInfo, statErr] = await Stat(fsys, 'assets')
     expect(statErr).toBeNull()
     expect(assetInfo!.IsDir()).toBe(true)
 

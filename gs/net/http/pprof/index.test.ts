@@ -27,19 +27,19 @@ class writer implements ResponseWriter {
 }
 
 describe('net/http/pprof override', () => {
-  it('serves the index text expected by debug handlers', () => {
+  it('serves the index text expected by debug handlers', async () => {
     const w = new writer()
 
-    Index(w, null)
+    await Index(w, null)
 
     expect(Header_Get(w.Header(), 'Content-Type')).toContain('text/html')
     expect(w.String()).toContain('full goroutine stack dump')
   })
 
-  it('serves named runtime profiles', () => {
+  it('serves named runtime profiles', async () => {
     const w = new writer()
 
-    Handler('goroutine').ServeHTTP(w, null)
+    await Handler('goroutine').ServeHTTP(w, null)
 
     expect(Header_Get(w.Header(), 'Content-Type')).toContain('text/plain')
     expect(w.String()).toContain('goroutine profile')

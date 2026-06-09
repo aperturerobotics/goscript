@@ -60,10 +60,13 @@ export function ReadLink(fsys: FS, name: string): [string, $.GoError] {
   return sym!.ReadLink(name)
 }
 
-export function Lstat(fsys: FS, name: string): [FileInfo, $.GoError] {
+export async function Lstat(
+  fsys: FS,
+  name: string,
+): Promise<[FileInfo, $.GoError]> {
   const { value: sym, ok } = $.typeAssert<ReadLinkFS>(fsys, 'ReadLinkFS')
   if (!ok) {
-    return Stat(fsys, name)
+    return await Stat(fsys, name)
   }
   return sym!.Lstat(name)
 }

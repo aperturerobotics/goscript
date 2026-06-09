@@ -2,6 +2,7 @@
   "asyncFunctions": {
     "Glob": true,
     "ReadDir": true,
+    "Stat": true,
     "WalkDir": true
   }
 }

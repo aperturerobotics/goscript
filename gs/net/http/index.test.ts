@@ -1201,7 +1201,7 @@ describe('net/http override', () => {
     ])
   })
 
-  it('formats Set-Cookie headers for browser bootstrap routes', () => {
+  it('formats Set-Cookie headers for browser bootstrap routes', async () => {
     const header = new Header()
     const writer: ResponseWriter = {
       Header: () => header,
@@ -1209,7 +1209,7 @@ describe('net/http override', () => {
       WriteHeader: () => undefined,
     }
 
-    SetCookie(
+    await SetCookie(
       writer,
       new Cookie({
         Name: 'spacewave_local_capability',

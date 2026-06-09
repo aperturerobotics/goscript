@@ -88,7 +88,7 @@ export async function WalkDir(
   root: string,
   fn: WalkDirFunc,
 ): Promise<$.GoError> {
-  let [info, err] = Stat(fsys, root)
+  let [info, err] = await Stat(fsys, root)
   if (err != null) {
     err = await fn!(root, null, err)
   } else {

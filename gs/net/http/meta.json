@@ -4,7 +4,9 @@
     "Head": true,
     "Post": true,
     "PostForm": true,
-    "ServeContent": true
+    "Redirect": true,
+    "ServeContent": true,
+    "SetCookie": true
   },
   "asyncMethods": {
     "Client.Do": true,

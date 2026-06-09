@@ -96,7 +96,7 @@ export async function globWithLimit(
     }
     if (!hasMeta(pattern)) {
       {
-        const [, statErr] = Stat(fsys, pattern)
+        const [, statErr] = await Stat(fsys, pattern)
         if (statErr != null) {
           return [null, null]
         }
