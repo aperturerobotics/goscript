@@ -1509,7 +1509,7 @@ async function readFetchBody(
 type maybePromise<T> = T | Promise<T>
 
 export interface FileSystem {
-  Open(name: string): [File | null, $.GoError]
+  Open(name: string): maybePromise<[File | null, $.GoError]>
 }
 
 export interface File extends io.Closer, io.Reader, io.Seeker {
@@ -1531,9 +1531,9 @@ interface fileServerFile {
 
 export function FS(fsys: fs.FS): FileSystem {
   return {
-    Open(name: string): [File | null, $.GoError] {
+    async Open(name: string): Promise<[File | null, $.GoError]> {
       const cleaned = cleanFileServerPath(name)
-      const [file, err] = fsys?.Open(cleaned) ?? [null, fs.ErrInvalid]
+      const [file, err] = (await fsys?.Open(cleaned)) ?? [null, fs.ErrInvalid]
       if (err != null || file == null) {
         return [null, err]
       }

@@ -20,6 +20,7 @@ import {
   ErrServerClosed,
   File,
   FileServer,
+  FileServerFS,
   FileSystem,
   FS,
   Get,
@@ -1428,6 +1429,64 @@ describe('net/http override', () => {
     expect(writes).toEqual(['status:200', 'async-body'])
     expect(Header_Get(header, 'Content-Length')).toBe('10')
     expect(closeCalls).toEqual(['async.txt'])
+  })
+
+  it('serves files through FS adapters backed by async io/fs Open', async () => {
+    const opened: string[] = []
+    const root = {
+      async Open(name: string) {
+        opened.push(name)
+        const data = $.stringToBytes('fs-adapter')
+        let offset = 0
+        return [
+          {
+            Close: async () => null,
+            Read: async (p: $.Slice<number>) => {
+              if (offset >= data.length) {
+                return [0, io.EOF] as [number, $.GoError]
+              }
+              const n = Math.min(p?.length ?? 0, data.length - offset)
+              p?.set(data.subarray(offset, offset + n), 0)
+              offset += n
+              return [n, null] as [number, $.GoError]
+            },
+            Stat: async () => [
+              {
+                Name: () => name,
+                Size: () => data.length,
+                Mode: () => 0,
+                ModTime: () => new time.Time(),
+                IsDir: () => false,
+                Sys: () => null,
+              },
+              null,
+            ],
+          },
+          null,
+        ]
+      },
+    }
+    const writes: string[] = []
+    const header = new Header()
+    const writer: ResponseWriter = {
+      Header: () => header,
+      Write: (p) => {
+        writes.push(Buffer.from(p ?? []).toString('utf8'))
+        return [p?.length ?? 0, null]
+      },
+      WriteHeader: (code) => writes.push(`status:${code}`),
+    }
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/dir/fs-adapter.txt',
+      null,
+    )
+
+    await FileServerFS(root).ServeHTTP(writer, req)
+
+    expect(opened).toEqual(['dir/fs-adapter.txt'])
+    expect(writes).toEqual(['status:200', 'fs-adapter'])
+    expect(Header_Get(header, 'Content-Length')).toBe('10')
   })
 
   it('serves files through async response writer adapters', async () => {
