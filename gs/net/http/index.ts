@@ -1586,17 +1586,15 @@ export function FileServer(root: fileServerFileSystem | null): Handler {
           NotFound(w, req)
           return
         }
-        const [data, readErr] = await io.ReadAll(file as io.Reader)
-        if (readErr != null) {
-          Error(w, readErr.Error(), StatusInternalServerError)
-          return
-        }
         if (info?.Size != null) {
           Header_Set(await w.Header(), 'Content-Length', String(info.Size()))
         }
         await w.WriteHeader(StatusOK)
         if (req.Method !== MethodHead) {
-          await w.Write(data)
+          const [, copyErr] = await io.Copy(w, file as io.Reader)
+          if (copyErr != null) {
+            return
+          }
         }
       } finally {
         await file.Close()

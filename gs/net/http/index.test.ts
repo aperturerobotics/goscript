@@ -1480,6 +1480,68 @@ describe('net/http override', () => {
     expect(Header_Get(header, 'Content-Length')).toBe('13')
   })
 
+  it('writes file server headers before reading response bodies', async () => {
+    let headerWritten = false
+    let readSawHeader = false
+    let offset = 0
+    const data = $.stringToBytes('streamed-body')
+    const root = {
+      async Open(name: string) {
+        return [
+          {
+            Close: async () => null,
+            Read: async (p: $.Slice<number>) => {
+              readSawHeader = headerWritten
+              if (offset >= data.length) {
+                return [0, io.EOF] as [number, $.GoError]
+              }
+              const n = Math.min(p?.length ?? 0, data.length - offset)
+              p?.set(data.subarray(offset, offset + n), 0)
+              offset += n
+              return [n, null] as [number, $.GoError]
+            },
+            Seek: async () => [0, null] as [number, $.GoError],
+            Readdir: async () => [null, null] as [null, $.GoError],
+            Stat: async () => [
+              {
+                Name: () => name,
+                Size: () => data.length,
+                Mode: () => 0,
+                ModTime: () => null as never,
+                IsDir: () => false,
+                Sys: () => null,
+              },
+              null,
+            ],
+          },
+          null,
+        ] as [File, $.GoError]
+      },
+    }
+    const writes: string[] = []
+    const writer: ResponseWriter = {
+      Header: () => new Header(),
+      Write: (p) => {
+        writes.push(Buffer.from(p ?? []).toString('utf8'))
+        return [p?.length ?? 0, null]
+      },
+      WriteHeader: (code) => {
+        headerWritten = true
+        writes.push(`status:${code}`)
+      },
+    }
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/streamed.mjs',
+      null,
+    )
+
+    await FileServer(root).ServeHTTP(writer, req)
+
+    expect(readSawHeader).toBe(true)
+    expect(writes).toEqual(['status:200', 'streamed-body'])
+  })
+
   it('awaits ServeContent writes before returning', async () => {
     const writes: string[] = []
     const writer: ResponseWriter = {
