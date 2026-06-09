@@ -248,6 +248,7 @@ export function StatusText(code: number): string {
 }
 
 export type Header = Map<string, $.Slice<string>>
+type HeaderValue = Header | $.VarRef<Header>
 
 export const Header = Map as {
   new (entries?: Iterable<readonly [string, $.Slice<string>]> | null): Header
@@ -257,48 +258,53 @@ export function CanonicalHeaderKey(s: string): string {
   return canonicalMIMEHeaderKey(s)
 }
 
-export function Header_Add(h: Header, key: string, value: string): void {
+function headerMap(h: HeaderValue): Header {
+  return $.pointerValue(h)
+}
+
+export function Header_Add(h: HeaderValue, key: string, value: string): void {
+  const headers = headerMap(h)
   key = canonicalMIMEHeaderKey(key)
-  const values = Array.from(h.get(key) ?? [])
+  const values = Array.from(headers.get(key) ?? [])
   values.push(value)
-  h.set(key, $.arrayToSlice(values))
+  headers.set(key, $.arrayToSlice(values))
 }
 
-export function Header_Del(h: Header, key: string): void {
-  h.delete(canonicalMIMEHeaderKey(key))
+export function Header_Del(h: HeaderValue, key: string): void {
+  headerMap(h).delete(canonicalMIMEHeaderKey(key))
 }
 
-export function Header_Get(h: Header, key: string): string {
-  const values = h.get(canonicalMIMEHeaderKey(key))
+export function Header_Get(h: HeaderValue, key: string): string {
+  const values = headerMap(h).get(canonicalMIMEHeaderKey(key))
   return values == null || values.length === 0 ? '' : String(values[0])
 }
 
-export function Header_Set(h: Header, key: string, value: string): void {
-  h.set(canonicalMIMEHeaderKey(key), $.arrayToSlice([value]))
+export function Header_Set(h: HeaderValue, key: string, value: string): void {
+  headerMap(h).set(canonicalMIMEHeaderKey(key), $.arrayToSlice([value]))
 }
 
-export function Header_Values(h: Header, key: string): $.Slice<string> {
-  return h.get(canonicalMIMEHeaderKey(key)) ?? null
+export function Header_Values(h: HeaderValue, key: string): $.Slice<string> {
+  return headerMap(h).get(canonicalMIMEHeaderKey(key)) ?? null
 }
 
-export function Header_Clone(h: Header): Header {
+export function Header_Clone(h: HeaderValue): Header {
   const cloned = new Header()
-  for (const [key, values] of h.entries()) {
+  for (const [key, values] of headerMap(h).entries()) {
     cloned.set(key, $.arrayToSlice(Array.from(values ?? [])))
   }
   return cloned
 }
 
-export function Header_Write(h: Header, w: io.Writer): $.GoError {
+export function Header_Write(h: HeaderValue, w: io.Writer): $.GoError {
   return Header_WriteSubset(h, w, null)
 }
 
 export function Header_WriteSubset(
-  h: Header,
+  h: HeaderValue,
   w: io.Writer,
   exclude: Map<string, boolean> | null,
 ): $.GoError {
-  for (const [key, values] of h.entries()) {
+  for (const [key, values] of headerMap(h).entries()) {
     if (exclude?.get(key) === true) {
       continue
     }

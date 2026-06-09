@@ -192,6 +192,24 @@ describe('net/http override', () => {
     expect(protocols.String()).toBe('{HTTP1,UnencryptedHTTP2}')
   })
 
+  it('accepts pointer-wrapped headers from generated ResponseWriter methods', () => {
+    const header = varRef(new Header())
+
+    Header_Set(header, 'content-length', '12')
+    Header_Add(header, 'content-type', 'text/plain')
+
+    expect(Header_Get(header, 'Content-Length')).toBe('12')
+    expect(Array.from(Header_Values(header, 'Content-Type') ?? [])).toEqual([
+      'text/plain',
+    ])
+
+    const cloned = Header_Clone(header)
+    Header_Del(header, 'Content-Type')
+
+    expect(Header_Get(header, 'Content-Type')).toBe('')
+    expect(Header_Get(cloned, 'Content-Type')).toBe('text/plain')
+  })
+
   it('validates outgoing request construction', () => {
     const [req, reqErr] = NewRequestWithContext(
       context.Background(),
