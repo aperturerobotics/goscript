@@ -710,9 +710,9 @@ function inProcessServerRequest(request: Request): Request {
 }
 
 export interface ResponseWriter {
-  Header(): Header
-  Write(p: $.Slice<number>): [number, $.GoError]
-  WriteHeader(statusCode: number): void
+  Header(): Header | Promise<Header>
+  Write(p: $.Slice<number>): [number, $.GoError] | Promise<[number, $.GoError]>
+  WriteHeader(statusCode: number): void | Promise<void>
 }
 
 export class Request {
@@ -1592,11 +1592,11 @@ export function FileServer(root: fileServerFileSystem | null): Handler {
           return
         }
         if (info?.Size != null) {
-          Header_Set(w.Header(), 'Content-Length', String(info.Size()))
+          Header_Set(await w.Header(), 'Content-Length', String(info.Size()))
         }
-        w.WriteHeader(StatusOK)
+        await w.WriteHeader(StatusOK)
         if (req.Method !== MethodHead) {
-          w.Write(data)
+          await w.Write(data)
         }
       } finally {
         await file.Close()

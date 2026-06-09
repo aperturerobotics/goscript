@@ -1429,6 +1429,57 @@ describe('net/http override', () => {
     expect(closeCalls).toEqual(['async.txt'])
   })
 
+  it('serves files through async response writer adapters', async () => {
+    const root = {
+      async Open(name: string) {
+        const data = $.stringToBytes('async-adapter')
+        return [
+          {
+            Read: (p: $.Slice<number>) => {
+              p?.set(data.subarray(0, p.length))
+              return [data.length, io.EOF] as [number, $.GoError]
+            },
+            Close: async () => null,
+            Stat: async () => [
+              {
+                Name: () => name,
+                Size: () => data.length,
+                Mode: () => 0,
+                ModTime: () => new time.Time(),
+                IsDir: () => false,
+                Sys: () => null,
+              },
+              null,
+            ],
+          },
+          null,
+        ] as [File, $.GoError]
+      },
+    }
+    const writes: string[] = []
+    const header = new Header()
+    const writer: ResponseWriter = {
+      Header: async () => header,
+      Write: async (p) => {
+        writes.push(Buffer.from(p ?? []).toString('utf8'))
+        return [p?.length ?? 0, null]
+      },
+      WriteHeader: async (code) => {
+        writes.push(`status:${code}`)
+      },
+    }
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/async-adapter.txt',
+      null,
+    )
+
+    await FileServer(root).ServeHTTP(writer, req)
+
+    expect(writes).toEqual(['status:200', 'async-adapter'])
+    expect(Header_Get(header, 'Content-Length')).toBe('13')
+  })
+
   it('awaits ServeContent writes before returning', async () => {
     const writes: string[] = []
     const writer: ResponseWriter = {
