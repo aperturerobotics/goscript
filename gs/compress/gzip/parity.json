@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "BestCompression": {
+      "status": "real"
+    },
+    "BestSpeed": {
+      "status": "real"
+    },
+    "DefaultCompression": {
+      "status": "real"
+    },
+    "ErrChecksum": {
+      "status": "real"
+    },
+    "ErrHeader": {
+      "status": "real"
+    },
+    "Header": {
+      "status": "real"
+    },
+    "HuffmanOnly": {
+      "status": "real"
+    },
+    "NewReader": {
+      "status": "real"
+    },
+    "NewWriter": {
+      "status": "real"
+    },
+    "NewWriterLevel": {
+      "status": "real"
+    },
+    "NoCompression": {
+      "status": "real"
+    },
+    "Reader": {
+      "status": "real"
+    },
+    "Writer": {
+      "status": "real"
+    }
+  }
+}
