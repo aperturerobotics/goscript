@@ -35,8 +35,8 @@ describe('io/fs ReadLink', () => {
     expect(err?.Error()).toBe('readlink link: invalid argument')
   })
 
-  it('uses Lstat from ReadLinkFS implementations', () => {
-    const [, err] = Lstat(new linkFS(), 'link')
+  it('uses Lstat from ReadLinkFS implementations', async () => {
+    const [, err] = await Lstat(new linkFS(), 'link')
 
     expect(err).toBe(ErrInvalid)
   })

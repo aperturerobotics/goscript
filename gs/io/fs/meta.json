@@ -1,6 +1,7 @@
 {
   "asyncFunctions": {
     "Glob": true,
+    "Lstat": true,
     "ReadDir": true,
     "Stat": true,
     "Sub": true,
