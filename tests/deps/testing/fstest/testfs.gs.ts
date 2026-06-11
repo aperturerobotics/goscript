@@ -667,7 +667,7 @@ export class fsTester {
 		}
 
 		// Stat should be the same as Open+Stat, even for symlinks.
-		let __goscriptTuple17: any = fs.Stat($.pointerValueOrNil($.pointerValue<fsTester>(t).fsys)!, path)
+		let __goscriptTuple17: any = await fs.Stat($.pointerValueOrNil($.pointerValue<fsTester>(t).fsys)!, path)
 		let info2 = __goscriptTuple17[0]
 		err = __goscriptTuple17[1]
 		if (err != null) {
@@ -770,7 +770,7 @@ export async function TestFS(fsys: fs.FS | null, expected: $.Slice<string>): glo
 						subExpected = $.append(subExpected, $.sliceStringOrBytes(name, $.len(dirSlash), undefined))
 					}
 				}
-				let [sub, err] = fs.Sub($.pointerValueOrNil(fsys)!, dir)
+				let [sub, err] = await fs.Sub($.pointerValueOrNil(fsys)!, dir)
 				if (err != null) {
 					return err
 				}
