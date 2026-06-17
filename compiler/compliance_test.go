@@ -125,11 +125,13 @@ func complianceCategory(name string) string {
 
 // complianceHarnessExcluded lists fixture directories that the shared stdout
 // comparison harness must skip because a dedicated test validates them another
-// way. runtime_trace_proof emits Go execution-trace bytes whose GoScript subset
-// is intentionally not byte-identical to the native runtime trace, so
-// TestRuntimeTraceProof validates it through the upstream Go trace reader.
+// way. runtime_trace_proof and runtime_trace_empty emit Go execution-trace
+// bytes whose GoScript subset is intentionally not byte-identical to the native
+// runtime trace, so TestRuntimeTraceProof and TestRuntimeTraceEmptyCapture
+// validate them through the upstream Go trace reader.
 var complianceHarnessExcluded = map[string]bool{
 	"runtime_trace_proof": true,
+	"runtime_trace_empty": true,
 }
 
 var expectedV2ComplianceGaps = map[string]bool{

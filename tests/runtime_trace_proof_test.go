@@ -24,11 +24,88 @@ import (
 // the previous no-op override (whose Start returned an error and emitted no
 // bytes) this test fails; the encoder makes it pass.
 func TestRuntimeTraceProof(t *testing.T) {
+	traceBytes := compileRunTraceFixture(t, "runtime_trace_proof")
+
+	reader, err := exptrace.NewReader(bytes.NewReader(traceBytes))
+	if err != nil {
+		t.Fatalf("upstream trace reader rejected the stream header: %v", err)
+	}
+
+	var (
+		sawTask   bool
+		sawRegion bool
+		sawLog    bool
+	)
+	for {
+		ev, err := reader.ReadEvent()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			t.Fatalf("upstream trace reader failed mid-stream: %v", err)
+		}
+		switch ev.Kind() {
+		case exptrace.EventTaskBegin:
+			if ev.Task().Type == "proof-task" {
+				sawTask = true
+			}
+		case exptrace.EventRegionBegin:
+			if ev.Region().Type == "proof-region" {
+				sawRegion = true
+			}
+		case exptrace.EventLog:
+			lg := ev.Log()
+			if lg.Category == "proof-key" && lg.Message == "proof-value" {
+				sawLog = true
+			}
+		}
+	}
+
+	if !sawTask {
+		t.Error("upstream reader did not surface the proof-task user task")
+	}
+	if !sawRegion {
+		t.Error("upstream reader did not surface the proof-region user region")
+	}
+	if !sawLog {
+		t.Error("upstream reader did not surface the proof-key/proof-value user log")
+	}
+}
+
+// TestRuntimeTraceEmptyCapture proves that a Start/Stop with no user task,
+// region, or log still emits a complete single-generation trace v2 stream the
+// upstream reader walks to EOF without error. This is the GoScript browser
+// capture scenario, where the absent goroutine scheduler records no events; the
+// encoder must still bind a running P and G so tracetool accepts the bytes.
+func TestRuntimeTraceEmptyCapture(t *testing.T) {
+	traceBytes := compileRunTraceFixture(t, "runtime_trace_empty")
+
+	reader, err := exptrace.NewReader(bytes.NewReader(traceBytes))
+	if err != nil {
+		t.Fatalf("upstream trace reader rejected the empty-capture header: %v", err)
+	}
+	for {
+		_, err := reader.ReadEvent()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			t.Fatalf("upstream trace reader failed on the empty capture: %v", err)
+		}
+	}
+}
+
+// compileRunTraceFixture compiles the named tests/tests fixture through
+// GoScript, runs it with bun, and returns its decoded trace bytes. The fixture
+// hex-encodes the trace stream to stdout so it survives the bun runner.
+func compileRunTraceFixture(t *testing.T, fixtureName string) []byte {
+	t.Helper()
+
 	workspaceDir, err := filepath.Abs("..")
 	if err != nil {
 		t.Fatalf("failed to resolve workspace dir: %v", err)
 	}
-	testDir := filepath.Join(workspaceDir, "tests", "tests", "runtime_trace_proof")
+	testDir := filepath.Join(workspaceDir, "tests", "tests", fixtureName)
 
 	parentModPath, err := getParentGoModulePath()
 	if err != nil {
@@ -85,49 +162,5 @@ func TestRuntimeTraceProof(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to hex-decode fixture output (%d chars): %v", len(output), err)
 	}
-
-	reader, err := exptrace.NewReader(bytes.NewReader(traceBytes))
-	if err != nil {
-		t.Fatalf("upstream trace reader rejected the stream header: %v", err)
-	}
-
-	var (
-		sawTask   bool
-		sawRegion bool
-		sawLog    bool
-	)
-	for {
-		ev, err := reader.ReadEvent()
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			t.Fatalf("upstream trace reader failed mid-stream: %v", err)
-		}
-		switch ev.Kind() {
-		case exptrace.EventTaskBegin:
-			if ev.Task().Type == "proof-task" {
-				sawTask = true
-			}
-		case exptrace.EventRegionBegin:
-			if ev.Region().Type == "proof-region" {
-				sawRegion = true
-			}
-		case exptrace.EventLog:
-			lg := ev.Log()
-			if lg.Category == "proof-key" && lg.Message == "proof-value" {
-				sawLog = true
-			}
-		}
-	}
-
-	if !sawTask {
-		t.Error("upstream reader did not surface the proof-task user task")
-	}
-	if !sawRegion {
-		t.Error("upstream reader did not surface the proof-region user region")
-	}
-	if !sawLog {
-		t.Error("upstream reader did not surface the proof-key/proof-value user log")
-	}
+	return traceBytes
 }

@@ -307,7 +307,11 @@ function encodeTrace(r: recorder): Uint8Array {
     return id
   }
   for (const ev of r.events) {
-    if (ev.kind === kindTaskBegin || ev.kind === kindRegionBegin || ev.kind === kindRegionEnd) {
+    if (
+      ev.kind === kindTaskBegin ||
+      ev.kind === kindRegionBegin ||
+      ev.kind === kindRegionEnd
+    ) {
       intern(ev.s0)
     } else if (ev.kind === kindLog) {
       intern(ev.s0)
@@ -330,72 +334,73 @@ function encodeTrace(r: recorder): Uint8Array {
     appendBatch(out, strings)
   }
 
-  // Event batch: synthetic running P and G, then the user events in order.
-  if (r.events.length > 0) {
-    const data: number[] = []
-    let lastTs = 0
-    const emitDelta = (ts: number): void => {
-      const offset = Math.max(0, Math.floor(ts - r.startTs))
-      const dt = Math.max(0, offset - lastTs)
-      lastTs = offset
-      putUvarint(data, dt)
-    }
-
-    // EvProcStatus(dt, p, status): bind the running P to the context.
-    data.push(evProcStatus)
-    putUvarint(data, 0)
-    putUvarint(data, traceProc)
-    putUvarint(data, procRunning)
-
-    // EvGoStatus(dt, g, m, status): bind the running G to the context.
-    data.push(evGoStatus)
-    putUvarint(data, 0)
-    putUvarint(data, traceGoroutine)
-    putUvarint(data, traceMID)
-    putUvarint(data, goRunning)
-
-    for (const ev of r.events) {
-      switch (ev.kind) {
-        case kindTaskBegin:
-          data.push(evUserTaskBegin)
-          emitDelta(ev.ts)
-          putUvarint(data, ev.task)
-          putUvarint(data, ev.parent)
-          putUvarint(data, intern(ev.s0))
-          putUvarint(data, 0)
-          break
-        case kindTaskEnd:
-          data.push(evUserTaskEnd)
-          emitDelta(ev.ts)
-          putUvarint(data, ev.task)
-          putUvarint(data, 0)
-          break
-        case kindRegionBegin:
-          data.push(evUserRegionBegin)
-          emitDelta(ev.ts)
-          putUvarint(data, ev.task)
-          putUvarint(data, intern(ev.s0))
-          putUvarint(data, 0)
-          break
-        case kindRegionEnd:
-          data.push(evUserRegionEnd)
-          emitDelta(ev.ts)
-          putUvarint(data, ev.task)
-          putUvarint(data, intern(ev.s0))
-          putUvarint(data, 0)
-          break
-        case kindLog:
-          data.push(evUserLog)
-          emitDelta(ev.ts)
-          putUvarint(data, ev.task)
-          putUvarint(data, intern(ev.s0))
-          putUvarint(data, intern(ev.s1))
-          putUvarint(data, 0)
-          break
-      }
-    }
-    appendBatch(out, data)
+  // Event batch: synthetic running P and G, then any user events in order. The
+  // running context is emitted even with no user events, so every capture is a
+  // complete single-generation trace the reader accepts rather than a bare
+  // header plus frequency batch.
+  const data: number[] = []
+  let lastTs = 0
+  const emitDelta = (ts: number): void => {
+    const offset = Math.max(0, Math.floor(ts - r.startTs))
+    const dt = Math.max(0, offset - lastTs)
+    lastTs = offset
+    putUvarint(data, dt)
   }
+
+  // EvProcStatus(dt, p, status): bind the running P to the context.
+  data.push(evProcStatus)
+  putUvarint(data, 0)
+  putUvarint(data, traceProc)
+  putUvarint(data, procRunning)
+
+  // EvGoStatus(dt, g, m, status): bind the running G to the context.
+  data.push(evGoStatus)
+  putUvarint(data, 0)
+  putUvarint(data, traceGoroutine)
+  putUvarint(data, traceMID)
+  putUvarint(data, goRunning)
+
+  for (const ev of r.events) {
+    switch (ev.kind) {
+      case kindTaskBegin:
+        data.push(evUserTaskBegin)
+        emitDelta(ev.ts)
+        putUvarint(data, ev.task)
+        putUvarint(data, ev.parent)
+        putUvarint(data, intern(ev.s0))
+        putUvarint(data, 0)
+        break
+      case kindTaskEnd:
+        data.push(evUserTaskEnd)
+        emitDelta(ev.ts)
+        putUvarint(data, ev.task)
+        putUvarint(data, 0)
+        break
+      case kindRegionBegin:
+        data.push(evUserRegionBegin)
+        emitDelta(ev.ts)
+        putUvarint(data, ev.task)
+        putUvarint(data, intern(ev.s0))
+        putUvarint(data, 0)
+        break
+      case kindRegionEnd:
+        data.push(evUserRegionEnd)
+        emitDelta(ev.ts)
+        putUvarint(data, ev.task)
+        putUvarint(data, intern(ev.s0))
+        putUvarint(data, 0)
+        break
+      case kindLog:
+        data.push(evUserLog)
+        emitDelta(ev.ts)
+        putUvarint(data, ev.task)
+        putUvarint(data, intern(ev.s0))
+        putUvarint(data, intern(ev.s1))
+        putUvarint(data, 0)
+        break
+    }
+  }
+  appendBatch(out, data)
 
   return new Uint8Array(out)
 }
