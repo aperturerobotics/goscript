@@ -2,6 +2,7 @@
   "dependencies": [
     "context",
     "errors",
+    "fmt",
     "io"
   ]
 }

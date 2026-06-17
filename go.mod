@@ -11,6 +11,7 @@ require (
 	github.com/aperturerobotics/util v1.34.9
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.5-0.20260508084601-d4a50659cfd6
+	golang.org/x/exp v0.0.0-20260611194520-c48552f49976
 	golang.org/x/tools v0.46.0
 )
 

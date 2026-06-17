@@ -12,8 +12,32 @@ import {
   WithRegion,
 } from './index.js'
 
+function captureWriter(): { chunks: Uint8Array[]; bytes(): Uint8Array } {
+  const chunks: Uint8Array[] = []
+  return {
+    chunks,
+    bytes(): Uint8Array {
+      const total = chunks.reduce((n, c) => n + c.length, 0)
+      const out = new Uint8Array(total)
+      let off = 0
+      for (const c of chunks) {
+        out.set(c, off)
+        off += c.length
+      }
+      return out
+    },
+  }
+}
+
+const writerOf = (chunks: Uint8Array[]) => ({
+  Write(p: Uint8Array): [number, null] {
+    chunks.push(new Uint8Array(p))
+    return [p.length, null]
+  },
+})
+
 describe('runtime/trace override', () => {
-  it('creates no-op tasks from nil context', () => {
+  it('creates no-op tasks when tracing is disabled', () => {
     const [ctx, task] = NewTask(null, 'task')
 
     expect(ctx).not.toBeNull()
@@ -23,7 +47,7 @@ describe('runtime/trace override', () => {
     expect(IsEnabled()).toBe(false)
   })
 
-  it('runs no-op regions', () => {
+  it('runs regions', () => {
     const [ctx] = NewTask(context.Background(), 'task')
     const called = { value: false }
 
@@ -35,21 +59,35 @@ describe('runtime/trace override', () => {
     expect(called.value).toBe(true)
   })
 
-  it('reports execution tracing as unsupported', () => {
-    const chunks: Uint8Array[] = []
-    const writer = {
-      Write(p: Uint8Array): [number, null] {
-        chunks.push(new Uint8Array(p))
-        return [p.length, null]
-      },
-    }
+  it('rejects a nil trace writer', () => {
+    expect(Start(null)?.Error()).toBe('runtime/trace: nil trace writer')
+  })
 
-    expect(Start(writer)?.Error()).toBe(
-      'runtime/trace: execution tracing is unsupported in GoScript',
-    )
-    Log(context.Background(), 'category', 'message')
+  it('emits a trace v2 stream for user tasks', () => {
+    const capture = captureWriter()
+
+    expect(Start(writerOf(capture.chunks))).toBeNull()
+    expect(IsEnabled()).toBe(true)
+
+    const [ctx, task] = NewTask(context.Background(), 'proof-task')
+    WithRegion(ctx, 'proof-region', () => {
+      Log(ctx, 'proof-key', 'proof-value')
+    })
+    task.End()
+
     Stop()
+    expect(IsEnabled()).toBe(false)
 
-    expect(chunks).toHaveLength(0)
+    const bytes = capture.bytes()
+    expect(bytes.length).toBeGreaterThan(0)
+
+    const header = new TextDecoder().decode(bytes.slice(0, 13))
+    expect(header).toBe('go 1.22 trace')
+
+    // The interned task and region names appear in the string batch.
+    const text = new TextDecoder('latin1').decode(bytes)
+    expect(text).toContain('proof-task')
+    expect(text).toContain('proof-region')
+    expect(text).toContain('proof-value')
   })
 })
