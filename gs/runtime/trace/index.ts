@@ -39,6 +39,20 @@ const traceGoroutine = 1
 // and the reader's tick->nanosecond conversion is the identity.
 const traceFreqHz = 1_000_000_000
 
+// maxBatchData bounds the post-header data block of every per-M batch. The
+// trace v2 reader rejects any batch whose declared size exceeds 64 KiB
+// (tracev2.MaxBatchSize = 64<<10), so a realistic capture must split its string
+// and event records across multiple batches. The cap sits below the hard limit
+// to leave margin for the next record, which is written in full before the size
+// is rechecked.
+const maxBatchData = 60 * 1024
+
+// maxEventBytes is a safe upper bound on the encoded size of one user event
+// (kind byte plus a handful of base-128 varints; strings are interned, so no
+// inline payload). The event loop flushes the current batch before its data
+// block can grow within this margin of maxBatchData.
+const maxEventBytes = 128
+
 // recEvent kinds.
 const kindTaskBegin = 0
 const kindTaskEnd = 1
@@ -319,11 +333,19 @@ function encodeTrace(r: recorder): Uint8Array {
     }
   }
 
-  // Strings batch.
+  // Strings batches. The reader concatenates the string dictionary across every
+  // EvStrings batch in the generation, so a large table splits into multiple
+  // batches whose data blocks each stay under maxBatchData. Each EvString record
+  // (tag, id, length, bytes) stays whole within one batch.
   if (internedStrings.length > 0) {
-    const strings: number[] = [evStrings]
+    let strings: number[] = [evStrings]
     for (let i = 0; i < internedStrings.length; i++) {
       const bytes = utf8Bytes(internedStrings[i])
+      const recordSize = 1 + 10 + 10 + bytes.length
+      if (strings.length > 1 && strings.length + recordSize > maxBatchData) {
+        appendBatch(out, strings)
+        strings = [evStrings]
+      }
       strings.push(evString)
       putUvarint(strings, i + 1)
       putUvarint(strings, bytes.length)
@@ -334,17 +356,25 @@ function encodeTrace(r: recorder): Uint8Array {
     appendBatch(out, strings)
   }
 
-  // Event batch: synthetic running P and G, then any user events in order. The
+  // Event batches: synthetic running P and G, then any user events in order. The
   // running context is emitted even with no user events, so every capture is a
   // complete single-generation trace the reader accepts rather than a bare
-  // header plus frequency batch.
-  const data: number[] = []
+  // header plus frequency batch. User events split across multiple per-M batches
+  // so no data block exceeds maxBatchData. The reader resets its delta clock to
+  // each batch's base timestamp (0 here), so flushing resets lastTs to 0 and the
+  // first event of every batch re-emits its absolute offset as the delta.
+  let data: number[] = []
   let lastTs = 0
   const emitDelta = (ts: number): void => {
     const offset = Math.max(0, Math.floor(ts - r.startTs))
     const dt = Math.max(0, offset - lastTs)
     lastTs = offset
     putUvarint(data, dt)
+  }
+  const flushEventBatch = (): void => {
+    appendBatch(out, data)
+    data = []
+    lastTs = 0
   }
 
   // EvProcStatus(dt, p, status): bind the running P to the context.
@@ -361,6 +391,9 @@ function encodeTrace(r: recorder): Uint8Array {
   putUvarint(data, goRunning)
 
   for (const ev of r.events) {
+    if (data.length + maxEventBytes > maxBatchData) {
+      flushEventBatch()
+    }
     switch (ev.kind) {
       case kindTaskBegin:
         data.push(evUserTaskBegin)
@@ -400,7 +433,7 @@ function encodeTrace(r: recorder): Uint8Array {
         break
     }
   }
-  appendBatch(out, data)
+  flushEventBatch()
 
   return new Uint8Array(out)
 }

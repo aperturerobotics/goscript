@@ -95,6 +95,54 @@ func TestRuntimeTraceEmptyCapture(t *testing.T) {
 	}
 }
 
+// TestRuntimeTraceMultiBatch proves that a capture large enough to overflow the
+// trace v2 64 KiB per-batch ceiling splits across multiple string and event
+// batches the upstream reader still walks to EOF. The fixture records thousands
+// of distinct user tasks and logs, so a single-batch encoder would emit a batch
+// the reader rejects with "invalid batch size". The proof asserts the reader
+// surfaces every task and log across the multi-batch stream.
+func TestRuntimeTraceMultiBatch(t *testing.T) {
+	const eventCount = 4000
+
+	traceBytes := compileRunTraceFixture(t, "runtime_trace_multibatch")
+
+	reader, err := exptrace.NewReader(bytes.NewReader(traceBytes))
+	if err != nil {
+		t.Fatalf("upstream trace reader rejected the multi-batch header: %v", err)
+	}
+
+	var (
+		tasks int
+		logs  int
+	)
+	for {
+		ev, err := reader.ReadEvent()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			t.Fatalf("upstream trace reader failed mid multi-batch stream: %v", err)
+		}
+		switch ev.Kind() {
+		case exptrace.EventTaskBegin:
+			if strings.HasPrefix(ev.Task().Type, "multibatch-task-") {
+				tasks++
+			}
+		case exptrace.EventLog:
+			if ev.Log().Category == "multibatch-key" {
+				logs++
+			}
+		}
+	}
+
+	if tasks != eventCount {
+		t.Errorf("expected %d multibatch tasks, reader surfaced %d", eventCount, tasks)
+	}
+	if logs != eventCount {
+		t.Errorf("expected %d multibatch logs, reader surfaced %d", eventCount, logs)
+	}
+}
+
 // compileRunTraceFixture compiles the named tests/tests fixture through
 // GoScript, runs it with bun, and returns its decoded trace bytes. The fixture
 // hex-encodes the trace stream to stdout so it survives the bun runner.
