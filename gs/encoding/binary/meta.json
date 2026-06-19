@@ -1,0 +1,9 @@
+{
+  "dependencies": ["io"],
+  "asyncFunctions": {
+    "Read": true,
+    "ReadUvarint": true,
+    "ReadVarint": true,
+    "Write": true
+  }
+}

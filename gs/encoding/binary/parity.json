@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "Append": {
+      "status": "real"
+    },
+    "AppendByteOrder": {
+      "status": "real"
+    },
+    "AppendUvarint": {
+      "status": "real"
+    },
+    "AppendVarint": {
+      "status": "real"
+    },
+    "BigEndian": {
+      "status": "real"
+    },
+    "ByteOrder": {
+      "status": "real"
+    },
+    "Decode": {
+      "status": "real"
+    },
+    "Encode": {
+      "status": "real"
+    },
+    "LittleEndian": {
+      "status": "real"
+    },
+    "MaxVarintLen16": {
+      "status": "real"
+    },
+    "MaxVarintLen32": {
+      "status": "real"
+    },
+    "MaxVarintLen64": {
+      "status": "real"
+    },
+    "NativeEndian": {
+      "status": "real"
+    },
+    "PutUvarint": {
+      "status": "real"
+    },
+    "PutVarint": {
+      "status": "real"
+    },
+    "Read": {
+      "status": "real"
+    },
+    "ReadUvarint": {
+      "status": "real"
+    },
+    "ReadVarint": {
+      "status": "real"
+    },
+    "Size": {
+      "status": "real"
+    },
+    "Uvarint": {
+      "status": "real"
+    },
+    "Varint": {
+      "status": "real"
+    },
+    "Write": {
+      "status": "real"
+    }
+  }
+}
