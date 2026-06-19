@@ -96,7 +96,7 @@
   "devDependencies": {
     "@aptre/protobuf-es-lite": "1.1.0",
     "@eslint/js": "^10.0.0",
-    "@types/node": "^25.5.2",
+    "@types/node": "^26.0.0",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.58.0",
     "@typescript/native-preview": "^7.0.0-dev.20260404.1",
