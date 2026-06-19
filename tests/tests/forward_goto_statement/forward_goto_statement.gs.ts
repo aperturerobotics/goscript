@@ -92,6 +92,28 @@ export function labelBeforeShortDecl(v: number): number {
 	return x
 }
 
+export function overlappingSequentialForward(v: number): number {
+	let total = 1
+	exit: {
+		exponent: {
+			if (v == 1) {
+				break exponent
+			}
+			if (v == 2) {
+				total = total + (10)
+				break exit
+			}
+			total = total + (100)
+		}
+		total = total * (2)
+		if (v == 3) {
+			break exit
+		}
+		total = total + (3)
+	}
+	return total + 5
+}
+
 export function mixedForwardBackwardDecl(limit: number): number {
 	let total = 0
 	__goscriptLoop1: while (total < limit) {
@@ -255,6 +277,9 @@ export async function main(): globalThis.Promise<void> {
 	$.println("mixed small:", mixedForwardBackward(1))
 	$.println("mixed large:", mixedForwardBackward(5))
 	$.println("label decl:", labelBeforeShortDecl(2))
+	$.println("overlap fallthrough:", overlappingSequentialForward(0))
+	$.println("overlap exponent:", overlappingSequentialForward(1))
+	$.println("overlap exit:", overlappingSequentialForward(2))
 	$.println("mixed decl:", mixedForwardBackwardDecl(2))
 	$.println("state zero:", stateMachineGoto(0))
 	$.println("state one:", stateMachineGoto(1))

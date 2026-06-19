@@ -57,6 +57,28 @@ skip:
 	return x
 }
 
+func overlappingSequentialForward(v int) int {
+	total := 1
+	if v == 1 {
+		goto exponent
+	}
+	if v == 2 {
+		total += 10
+		goto exit
+	}
+	total += 100
+
+exponent:
+	total *= 2
+	if v == 3 {
+		goto exit
+	}
+	total += 3
+
+exit:
+	return total + 5
+}
+
 func mixedForwardBackwardDecl(limit int) int {
 	total := 0
 	for total < limit {
@@ -159,6 +181,9 @@ func main() {
 	println("mixed small:", mixedForwardBackward(1))
 	println("mixed large:", mixedForwardBackward(5))
 	println("label decl:", labelBeforeShortDecl(2))
+	println("overlap fallthrough:", overlappingSequentialForward(0))
+	println("overlap exponent:", overlappingSequentialForward(1))
+	println("overlap exit:", overlappingSequentialForward(2))
 	println("mixed decl:", mixedForwardBackwardDecl(2))
 	println("state zero:", stateMachineGoto(0))
 	println("state one:", stateMachineGoto(1))

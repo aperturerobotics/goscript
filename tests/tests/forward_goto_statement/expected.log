@@ -5,6 +5,9 @@ loop included: 4
 mixed small: 4
 mixed large: 7
 label decl: 3
+overlap fallthrough: 210
+overlap exponent: 10
+overlap exit: 16
 mixed decl: 2
 state zero: 23
 state one: 22
