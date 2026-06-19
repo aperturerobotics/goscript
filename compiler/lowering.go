@@ -8733,6 +8733,10 @@ func (o *LoweringOwner) lowerAddressExpr(ctx lowerFileContext, expr ast.Expr) (s
 		return receiver + "._fields." + typed.Sel.Name, diagnostics
 	case *ast.IndexExpr:
 		return o.lowerIndexAddressExpr(ctx, typed)
+	case *ast.StarExpr:
+		// &*p is the identity address-of-dereference: it yields the original
+		// pointer, not a copy, so emit the pointer expression directly.
+		return o.lowerExpr(ctx, typed.X)
 	default:
 		return "undefined", []Diagnostic{loweringUnsupportedAt(ctx, typed, "expression", ctx.semPkg.pkgPath, "unsupported address expression")}
 	}

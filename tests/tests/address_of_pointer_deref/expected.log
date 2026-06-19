@@ -1,0 +1,3 @@
+alias write through &*p: 20
+field alias same pointee: true
+field alias write: 30
