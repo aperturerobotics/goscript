@@ -789,6 +789,61 @@ func TestCompilePackagesReadsShadowedVarRefStructFieldsOnce(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesUnwrapsAnonymousStructPointerFieldReceivers(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/anonstructptr\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package anonstructptr",
+			"func mergeCore(dst, src *struct {",
+			"  IsBare bool",
+			"  Worktree string",
+			"}) {",
+			"  if src.IsBare {",
+			"    dst.IsBare = true",
+			"  }",
+			"  if src.Worktree != \"\" {",
+			"    dst.Worktree = src.Worktree",
+			"  }",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "anonstructptr", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		`$.pointerValue<{"IsBare": boolean, "Worktree": string}>(src).IsBare`,
+		`$.pointerValue<{"IsBare": boolean, "Worktree": string}>(dst).IsBare = true`,
+		`$.pointerValue<{"IsBare": boolean, "Worktree": string}>(dst).Worktree = $.pointerValue<{"IsBare": boolean, "Worktree": string}>(src).Worktree`,
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	for _, bad := range []string{
+		"src.IsBare",
+		"dst.IsBare",
+		"src.Worktree",
+		"dst.Worktree",
+	} {
+		if strings.Contains(text, bad) {
+			t.Fatalf("anonymous struct pointer field receiver stayed wrapped at %q:\n%s", bad, text)
+		}
+	}
+}
+
 func TestCompilePackagesWrapsChannelSendInterfaceValues(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/chansendiface\n\ngo 1.25.3\n",

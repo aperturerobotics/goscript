@@ -10920,7 +10920,7 @@ func isPointerToStructType(typ types.Type) bool {
 	if !ok {
 		return false
 	}
-	return namedStructType(pointer.Elem()) != nil
+	return structUnderlyingType(pointer.Elem()) != nil
 }
 
 func derefPointerType(typ types.Type) types.Type {
