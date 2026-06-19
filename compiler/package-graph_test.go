@@ -266,6 +266,61 @@ func TestPackageGraphLoadsLocalReplacement(t *testing.T) {
 	}
 }
 
+func TestPackageBlocklistAllowsCleanFixture(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod":       "module example.test/blockclean\n\ngo 1.25.3\n",
+		"main.go":      "package blockclean\nimport \"example.test/blockclean/dep\"\nfunc Value() int { return dep.Value() }\n",
+		"dep/dep.go":   "package dep\nfunc Value() int { return 1 }\n",
+		"other/doc.go": "package other\n",
+	})
+	comp, err := NewCompiler(&Config{
+		Dir:              moduleDir,
+		OutputPath:       filepath.Join(t.TempDir(), "out"),
+		AllDependencies:  true,
+		PackageBlocklist: []string{"example.test/blockclean/other"},
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatalf("compile with clean blocklist failed: %v", err)
+	}
+}
+
+func TestPackageBlocklistReportsShortestImportChain(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod":                 "module example.test/blockchain\n\ngo 1.25.3\n",
+		"main.go":                "package blockchain\nimport \"example.test/blockchain/dep\"\nfunc Value() int { return dep.Value() }\n",
+		"dep/dep.go":             "package dep\nimport \"example.test/blockchain/mid/blocked\"\nfunc Value() int { return blocked.Value() }\n",
+		"mid/leaf.go":            "package mid\nimport \"example.test/blockchain/mid/blocked\"\nfunc Leaf() int { return blocked.Value() }\n",
+		"mid/blocked/blocked.go": "package blocked\nfunc Value() int { return 1 }\n",
+	})
+	comp, err := NewCompiler(&Config{
+		Dir:              moduleDir,
+		OutputPath:       filepath.Join(t.TempDir(), "out"),
+		AllDependencies:  true,
+		PackageBlocklist: []string{"example.test/blockchain/mid/blocked"},
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	_, err = comp.CompilePackages(context.Background(), ".")
+	if err == nil {
+		t.Fatal("expected blocklisted package diagnostic")
+	}
+	text := err.Error()
+	if !strings.Contains(text, "goscript/package-graph:blocklisted-package") {
+		t.Fatalf("expected blocklist diagnostic, got %q", text)
+	}
+	if !strings.Contains(text, `package graph contains blocklisted package "example.test/blockchain/mid/blocked"`) {
+		t.Fatalf("expected blocklisted package name, got %q", text)
+	}
+	expected := "example.test/blockchain -> example.test/blockchain/dep -> example.test/blockchain/mid/blocked"
+	if !strings.Contains(text, expected) {
+		t.Fatalf("expected shortest import chain %q, got %q", expected, text)
+	}
+}
+
 func TestPackageGraphDetectsOverrideCandidates(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod":  "module example.test/override\n\ngo 1.25.3\n",

@@ -19,6 +19,10 @@ export interface CompileConfig {
   output?: string
   /** The working directory for the compiler. Defaults to the current working directory. */
   dir?: string
+  /** Compile all transitive dependencies of the requested package. */
+  allDependencies?: boolean
+  /** Go import paths to reject from the compiled package graph. */
+  packageBlocklist?: string[] | string
   /** The path to the goscript executable. Defaults to `go run ./cmd/goscript`. */
   goscriptPath?: string
 }
@@ -33,23 +37,7 @@ export async function compile(config: CompileConfig): Promise<void> {
 
   const cwd = config.dir ? path.resolve(config.dir) : process.cwd()
   const output = config.output ? path.resolve(config.output) : './output'
-
-  if (config.goscriptPath) {
-    await execFileAsync(config.goscriptPath, [
-      'compile',
-      '--package',
-      config.pkg,
-      '--output',
-      output,
-      '--dir',
-      cwd,
-    ])
-    return
-  }
-
-  await execFileAsync('go', [
-    'run',
-    path.join(projectRoot, 'cmd/goscript'),
+  const args = [
     'compile',
     '--package',
     config.pkg,
@@ -57,7 +45,35 @@ export async function compile(config: CompileConfig): Promise<void> {
     output,
     '--dir',
     cwd,
+  ]
+  if (config.allDependencies) {
+    args.push('--all-dependencies')
+  }
+  const packageBlocklist = normalizePackageBlocklist(config.packageBlocklist)
+  if (packageBlocklist) {
+    args.push('--package-blocklist', packageBlocklist)
+  }
+
+  if (config.goscriptPath) {
+    await execFileAsync(config.goscriptPath, args)
+    return
+  }
+
+  await execFileAsync('go', [
+    'run',
+    path.join(projectRoot, 'cmd/goscript'),
+    ...args,
   ])
+}
+
+function normalizePackageBlocklist(value: string[] | string | undefined): string {
+  if (!value) {
+    return ''
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => item.trim()).filter(Boolean).join(',')
+  }
+  return value.trim()
 }
 
 /**

@@ -18,6 +18,8 @@ type Config struct {
 	BuildFlags []string
 	// OverrideDirs are additional GoScript override roots.
 	OverrideDirs []string
+	// PackageBlocklist rejects package paths in the loaded dependency closure.
+	PackageBlocklist []string
 	// AllDependencies controls whether dependencies are included in the graph.
 	AllDependencies bool
 	// DisableEmitBuiltin controls whether runtime packages are emitted.

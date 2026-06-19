@@ -170,8 +170,52 @@ func TestCompileCommandPreservesCommaSeparatedBuildFlagEnvValue(t *testing.T) {
 	}
 }
 
+func TestCompileCommandForwardsPackageBlocklist(t *testing.T) {
+	dir := t.TempDir()
+	outputDir := filepath.Join(dir, "output")
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/cli\n\ngo 1.25.3\n")
+	writeFile(t, filepath.Join(dir, "main.go"), strings.Join([]string{
+		"package cli",
+		`import "example.test/cli/dep"`,
+		"func Selected() int { return dep.Value() }",
+		"",
+	}, "\n"))
+	writeFile(t, filepath.Join(dir, "dep", "dep.go"), strings.Join([]string{
+		"package dep",
+		"func Value() int { return 1 }",
+		"",
+	}, "\n"))
+
+	app := newApp()
+	err := app.Run([]string{
+		"goscript",
+		"compile",
+		"--package",
+		".",
+		"--output",
+		outputDir,
+		"--dir",
+		dir,
+		"--all-dependencies",
+		"--package-blocklist=example.test/cli/dep,example.test/unused",
+	})
+	if err == nil {
+		t.Fatal("expected package blocklist error")
+	}
+	text := err.Error()
+	if !strings.Contains(text, "goscript/package-graph:blocklisted-package") {
+		t.Fatalf("expected blocklist diagnostic, got %q", text)
+	}
+	if !strings.Contains(text, "example.test/cli -> example.test/cli/dep") {
+		t.Fatalf("expected CLI diagnostic to include import chain, got %q", text)
+	}
+}
+
 func writeFile(t *testing.T, path string, content string) {
 	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatalf("create parent for %s: %v", path, err)
+	}
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatalf("write %s: %v", path, err)
 	}

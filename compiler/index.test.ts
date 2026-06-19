@@ -51,4 +51,32 @@ describe('GoScript Compiler API', () => {
       stderr: expect.stringContaining('main.go:4:'),
     })
   }, 30000)
+
+  it('forwards the package blocklist to closure compiles', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'goscript-api-blocklist-'))
+    const output = join(dir, 'output')
+    await mkdir(join(dir, 'dep'), { recursive: true })
+    await writeFile(join(dir, 'go.mod'), 'module example.test/apiblock\n\ngo 1.25.3\n')
+    await writeFile(join(dir, 'main.go'), [
+      'package apiblock',
+      'import "example.test/apiblock/dep"',
+      'func Value() int { return dep.Value() }',
+      '',
+    ].join('\n'))
+    await writeFile(join(dir, 'dep', 'dep.go'), [
+      'package dep',
+      'func Value() int { return 1 }',
+      '',
+    ].join('\n'))
+
+    await expect(compile({
+      pkg: '.',
+      output,
+      dir,
+      allDependencies: true,
+      packageBlocklist: ['example.test/apiblock/dep'],
+    })).rejects.toMatchObject({
+      stderr: expect.stringContaining('example.test/apiblock -> example.test/apiblock/dep'),
+    })
+  }, 30000)
 })

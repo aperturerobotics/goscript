@@ -19,6 +19,7 @@ func newCompileCommand() *cli.Command {
 	var packages cli.StringSlice
 	var buildFlags rawStringSlice
 	var overrideDirs cli.StringSlice
+	var packageBlocklist cli.StringSlice
 
 	return &cli.Command{
 		Name:     "compile",
@@ -27,6 +28,7 @@ func newCompileCommand() *cli.Command {
 		Action: func(c *cli.Context) error {
 			config.BuildFlags = buildFlags.Value()
 			config.OverrideDirs = slices.Clone(overrideDirs.Value())
+			config.PackageBlocklist = slices.Clone(packageBlocklist.Value())
 			return compilePackage(c.Context, &config, packages.Value())
 		},
 		Flags: []cli.Flag{
@@ -64,6 +66,12 @@ func newCompileCommand() *cli.Command {
 				Usage:       "additional GoScript override root containing package-path directories",
 				Destination: &overrideDirs,
 				EnvVars:     []string{"GOSCRIPT_GS_PATH"},
+			},
+			&cli.StringSliceFlag{
+				Name:        "package-blocklist",
+				Usage:       "comma-separated Go import paths to reject from the compiled package graph",
+				Destination: &packageBlocklist,
+				EnvVars:     []string{"GOSCRIPT_PACKAGE_BLOCKLIST"},
 			},
 			&cli.BoolFlag{
 				Name:        "disable-emit-builtin",

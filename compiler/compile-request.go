@@ -38,6 +38,8 @@ type CompileRequest struct {
 	BuildFlags []string
 	// OverrideDirs are additional GoScript override roots.
 	OverrideDirs []string
+	// PackageBlocklist rejects package paths in the loaded dependency closure.
+	PackageBlocklist []string
 	// DependencyMode controls whether dependencies are included in the graph.
 	DependencyMode DependencyMode
 	// RuntimeEmissionMode controls runtime package emission policy.
@@ -82,6 +84,7 @@ func (o *CompileRequestOwner) NewRequest(conf Config, patterns []string) *Compil
 		OutputPath:                strings.TrimSpace(conf.OutputPath),
 		BuildFlags:                append([]string(nil), conf.BuildFlags...),
 		OverrideDirs:              append([]string(nil), conf.OverrideDirs...),
+		PackageBlocklist:          normalizePackageBlocklist(conf.PackageBlocklist),
 		DependencyMode:            dependencyMode,
 		RuntimeEmissionMode:       runtimeEmissionMode,
 		ProtobufTypeScriptBinding: conf.ProtobufTypeScriptBinding,
@@ -231,6 +234,22 @@ func normalizePatterns(patterns []string) []string {
 	normalized := make([]string, 0, len(patterns))
 	for _, pattern := range patterns {
 		normalized = append(normalized, strings.TrimSpace(pattern))
+	}
+	return normalized
+}
+
+func normalizePackageBlocklist(paths []string) []string {
+	var normalized []string
+	seen := make(map[string]bool)
+	for _, path := range paths {
+		for part := range strings.SplitSeq(path, ",") {
+			part = strings.TrimSpace(part)
+			if part == "" || seen[part] {
+				continue
+			}
+			seen[part] = true
+			normalized = append(normalized, part)
+		}
 	}
 	return normalized
 }

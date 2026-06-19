@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 
 	"golang.org/x/tools/go/packages"
@@ -163,6 +164,9 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 			Message:  "package graph did not contain any package nodes",
 		})
 	}
+	if len(req.PackageBlocklist) != 0 {
+		diagnostics = append(diagnostics, packageBlocklistDiagnostics(graph, req.PackageBlocklist)...)
+	}
 	return graph, diagnostics
 }
 
@@ -243,6 +247,85 @@ func newPackageGraphNode(pkg *packages.Package, requested bool, overrideFacts *O
 		Requested:         requested,
 		OverrideCandidate: overrideFacts.HasPackage(packagePath(pkg)),
 	}
+}
+
+func packageBlocklistDiagnostics(graph *PackageGraph, blocklist []string) []Diagnostic {
+	chain := packageBlocklistChain(graph, blocklist)
+	if len(chain) == 0 {
+		return nil
+	}
+	blocked := chain[len(chain)-1]
+	return []Diagnostic{{
+		Severity: DiagnosticSeverityError,
+		Code:     "goscript/package-graph:blocklisted-package",
+		Message:  "package graph contains blocklisted package " + strconv.Quote(blocked),
+		Detail:   "import chain: " + strings.Join(chain, " -> "),
+	}}
+}
+
+func packageBlocklistChain(graph *PackageGraph, blocklist []string) []string {
+	if graph == nil || len(graph.RequestedPackagePaths) == 0 {
+		return nil
+	}
+
+	roots := slices.Clone(graph.RequestedPackagePaths)
+	slices.Sort(roots)
+
+	type queueEntry struct {
+		path  string
+		chain []string
+	}
+	queue := make([]queueEntry, 0, len(roots))
+	seen := make(map[string]bool)
+	for _, root := range roots {
+		if graph.NodesByPackagePath[root] == nil || seen[root] {
+			continue
+		}
+		seen[root] = true
+		queue = append(queue, queueEntry{
+			path:  root,
+			chain: []string{root},
+		})
+	}
+
+	for len(queue) != 0 {
+		entry := queue[0]
+		queue = queue[1:]
+		if packagePathBlocklisted(entry.path, blocklist) {
+			return entry.chain
+		}
+
+		node := graph.NodesByPackagePath[entry.path]
+		if node == nil {
+			continue
+		}
+		imports := slices.Clone(node.Imports)
+		slices.Sort(imports)
+		for _, importPath := range imports {
+			if graph.NodesByPackagePath[importPath] == nil || seen[importPath] {
+				continue
+			}
+			seen[importPath] = true
+			nextChain := slices.Clone(entry.chain)
+			nextChain = append(nextChain, importPath)
+			queue = append(queue, queueEntry{
+				path:  importPath,
+				chain: nextChain,
+			})
+		}
+	}
+	return nil
+}
+
+func packagePathBlocklisted(path string, blocklist []string) bool {
+	for _, blocked := range blocklist {
+		// Match the package exactly or any subpackage, on a path-segment
+		// boundary so "crypto" blocks "crypto/ecdsa" but not "cryptobyte".
+		if path == blocked || strings.HasPrefix(path, blocked+"/") {
+			return true
+		}
+	}
+	return false
 }
 
 func normalizePackageFileOrder(pkg *packages.Package) {
