@@ -299,6 +299,15 @@ func packageBlocklistChain(graph *PackageGraph, blocklist []string) []string {
 		if node == nil {
 			continue
 		}
+		// Override candidates are compiled from their GoScript override, whose
+		// TypeScript imports replace the native Go imports. collect prunes their
+		// native dependencies from the graph, so the blocklist walk must treat
+		// them as leaves; otherwise an overridden package (for example a
+		// reflect-free encoding/json override) would falsely chain to a
+		// blocklisted package it no longer imports in the compiled output.
+		if node.OverrideCandidate {
+			continue
+		}
 		imports := slices.Clone(node.Imports)
 		slices.Sort(imports)
 		for _, importPath := range imports {

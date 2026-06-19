@@ -321,6 +321,64 @@ func TestPackageBlocklistReportsShortestImportChain(t *testing.T) {
 	}
 }
 
+func TestPackageBlocklistIgnoresOverrideCandidateImports(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": strings.Join([]string{
+			"module example.test/blockoverride",
+			"",
+			"go 1.25.3",
+			"",
+			"require example.test/over v0.0.0",
+			"replace example.test/over => ./over",
+			"",
+		}, "\n"),
+		"main.go":                "package blockoverride\nimport (\n\t\"example.test/over\"\n\t\"example.test/blockoverride/dep\"\n)\nfunc Value() int { return over.Value() + dep.Value() }\n",
+		"dep/dep.go":             "package dep\nimport \"example.test/blockoverride/mid\"\nfunc Value() int { return mid.Value() }\n",
+		"mid/mid.go":             "package mid\nimport \"example.test/blockoverride/mid/blocked\"\nfunc Value() int { return blocked.Value() }\n",
+		"mid/blocked/blocked.go": "package blocked\nfunc Value() int { return 1 }\n",
+		"over/go.mod": strings.Join([]string{
+			"module example.test/over",
+			"",
+			"go 1.25.3",
+			"",
+			"require example.test/blockoverride v0.0.0",
+			"replace example.test/blockoverride => ../",
+			"",
+		}, "\n"),
+		"over/over.go": "package over\nimport \"example.test/blockoverride/mid/blocked\"\nfunc Value() int { return blocked.Value() }\n",
+	})
+	overrideDir := filepath.Join(t.TempDir(), "gs")
+	writeFixtureFile(t, overrideDir, "example.test/over/index.ts", "export function Value(): number { return 0 }\n")
+
+	overrideOwner := NewOverrideRegistryOwner(overrideDir)
+	req := &CompileRequest{
+		Patterns:            []string{"."},
+		Dir:                 moduleDir,
+		OutputPath:          filepath.Join(t.TempDir(), "out"),
+		DependencyMode:      DependencyModeAll,
+		RuntimeEmissionMode: RuntimeEmissionModeEmit,
+		PackageBlocklist:    []string{"example.test/blockoverride/mid/blocked"},
+	}
+	graph, diagnostics := NewPackageGraphOwner(overrideOwner).Load(context.Background(), req)
+	if diagnosticsHaveErrors(diagnostics) {
+		chain := packageBlocklistChain(graph, req.PackageBlocklist)
+		if slices.Contains(chain, "example.test/over") {
+			t.Fatalf("blocklist chain routed through override candidate: %v", chain)
+		}
+		expected := []string{
+			"example.test/blockoverride",
+			"example.test/blockoverride/dep",
+			"example.test/blockoverride/mid",
+			"example.test/blockoverride/mid/blocked",
+		}
+		if !slices.Equal(chain, expected) {
+			t.Fatalf("expected real import chain %v, got %v", expected, chain)
+		}
+	} else {
+		t.Fatal("expected blocklisted package diagnostic via the real import path")
+	}
+}
+
 func TestPackageGraphDetectsOverrideCandidates(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod":  "module example.test/override\n\ngo 1.25.3\n",
