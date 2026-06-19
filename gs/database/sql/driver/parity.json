@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "strict": true,
+  "symbols": {
+    "Bool": {
+      "status": "real"
+    },
+    "ColumnConverter": {
+      "status": "real"
+    },
+    "Conn": {
+      "status": "real"
+    },
+    "ConnBeginTx": {
+      "status": "real"
+    },
+    "ConnPrepareContext": {
+      "status": "real"
+    },
+    "Connector": {
+      "status": "real"
+    },
+    "DefaultParameterConverter": {
+      "status": "real"
+    },
+    "Driver": {
+      "status": "real"
+    },
+    "DriverContext": {
+      "status": "real"
+    },
+    "ErrBadConn": {
+      "status": "real"
+    },
+    "ErrRemoveArgument": {
+      "status": "real"
+    },
+    "ErrSkip": {
+      "status": "real"
+    },
+    "Execer": {
+      "status": "real"
+    },
+    "ExecerContext": {
+      "status": "real"
+    },
+    "Int32": {
+      "status": "real"
+    },
+    "IsScanValue": {
+      "status": "real"
+    },
+    "IsValue": {
+      "status": "real"
+    },
+    "IsolationLevel": {
+      "status": "real"
+    },
+    "NamedValue": {
+      "status": "real"
+    },
+    "NamedValueChecker": {
+      "status": "real"
+    },
+    "NotNull": {
+      "status": "real"
+    },
+    "Null": {
+      "status": "real"
+    },
+    "Pinger": {
+      "status": "real"
+    },
+    "Queryer": {
+      "status": "real"
+    },
+    "QueryerContext": {
+      "status": "real"
+    },
+    "Result": {
+      "status": "real"
+    },
+    "ResultNoRows": {
+      "status": "real"
+    },
+    "Rows": {
+      "status": "real"
+    },
+    "RowsAffected": {
+      "status": "real"
+    },
+    "RowsColumnTypeDatabaseTypeName": {
+      "status": "real"
+    },
+    "RowsColumnTypeLength": {
+      "status": "real"
+    },
+    "RowsColumnTypeNullable": {
+      "status": "real"
+    },
+    "RowsColumnTypePrecisionScale": {
+      "status": "real"
+    },
+    "RowsColumnTypeScanType": {
+      "status": "real"
+    },
+    "RowsNextResultSet": {
+      "status": "real"
+    },
+    "SessionResetter": {
+      "status": "real"
+    },
+    "Stmt": {
+      "status": "real"
+    },
+    "StmtExecContext": {
+      "status": "real"
+    },
+    "StmtQueryContext": {
+      "status": "real"
+    },
+    "String": {
+      "status": "real"
+    },
+    "Tx": {
+      "status": "real"
+    },
+    "TxOptions": {
+      "status": "real"
+    },
+    "Value": {
+      "status": "real"
+    },
+    "ValueConverter": {
+      "status": "real"
+    },
+    "Valuer": {
+      "status": "real"
+    },
+    "Validator": {
+      "status": "real"
+    }
+  }
+}
