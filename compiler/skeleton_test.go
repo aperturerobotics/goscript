@@ -1601,6 +1601,56 @@ func TestCompilePackagesLowersUnsafeBytePointerArithmetic(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesLowersGMSUnsafeArrayPointerConversions(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/gmsunsafe\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"import (",
+			"  \"reflect\"",
+			"  \"unsafe\"",
+			")",
+			"func IntBytes(n int64) byte {",
+			"  mem := (*[8]byte)(unsafe.Pointer(&n))",
+			"  bytes := *mem",
+			"  return bytes[0]",
+			"}",
+			"func StringToBytes(str string) []byte {",
+			"  if len(str) == 0 {",
+			"    return []byte{}",
+			"  }",
+			"  return (*[0x7fff0000]byte)(unsafe.Pointer((*reflect.StringHeader)(unsafe.Pointer(&str)).Data))[:len(str):len(str)]",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	_, err = comp.CompilePackages(context.Background(), ".")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "gmsunsafe", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	if !strings.Contains(text, "$.arrayPointerFromIndexRef<number>($.indexRef([n.value], 0), 8, 8, 1)") {
+		t.Fatalf("missing scalar unsafe array pointer conversion:\n%s", text)
+	}
+	if !strings.Contains(text, "$.arrayPointerFromIndexRef<number>($.indexRef($.stringToBytes(str.value), 0), 2147418112, 1, 1)") {
+		t.Fatalf("missing string data unsafe array pointer conversion:\n%s", text)
+	}
+	if strings.Contains(text, "unsafe.Pointer(&n) as any") || strings.Contains(text, "StringHeader)(unsafe.Pointer(&str)).Data) as any") {
+		t.Fatalf("unsafe array pointer conversion fell back to any cast:\n%s", text)
+	}
+}
+
 func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/structs\n\ngo 1.25.3\n",

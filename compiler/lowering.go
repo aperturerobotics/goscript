@@ -8998,6 +8998,9 @@ func (o *LoweringOwner) lowerUnsafeArrayPointerConversion(
 	targetType types.Type,
 	expr ast.Expr,
 ) (string, []Diagnostic, bool) {
+	if targetType == nil {
+		return "", nil, false
+	}
 	targetPointer, _ := types.Unalias(targetType).Underlying().(*types.Pointer)
 	if targetPointer == nil {
 		return "", nil, false
@@ -9010,16 +9013,11 @@ func (o *LoweringOwner) lowerUnsafeArrayPointerConversion(
 	if !ok || len(unsafeCall.Args) != 1 || !isUnsafePointerType(typeFromExpr(ctx, unsafeCall.Fun)) {
 		return "", nil, false
 	}
-	address, ok := unwrapParenExpr(unsafeCall.Args[0]).(*ast.UnaryExpr)
-	if !ok || address.Op != token.AND {
-		return "", nil, false
-	}
-	index, ok := unwrapParenExpr(address.X).(*ast.IndexExpr)
+	ref, sourceType, diagnostics, ok := o.lowerUnsafeArrayPointerSourceRef(ctx, unsafeCall.Args[0])
 	if !ok {
 		return "", nil, false
 	}
-	ref, diagnostics := o.lowerAddressExpr(ctx, index)
-	sourceElementSize := goScriptElementByteSize(ctx, indexElementType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)))
+	sourceElementSize := goScriptElementByteSize(ctx, sourceType)
 	targetElementSize := goScriptElementByteSize(ctx, array.Elem())
 	helper := o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayPointerFromIndexRef) +
 		"<" + o.tsTypeFor(ctx, array.Elem()) + ">(" + ref + ", " +
@@ -9027,6 +9025,68 @@ func (o *LoweringOwner) lowerUnsafeArrayPointerConversion(
 		strconv.FormatInt(sourceElementSize, 10) + ", " +
 		strconv.FormatInt(targetElementSize, 10) + ")"
 	return "(" + helper + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics, true
+}
+
+func (o *LoweringOwner) lowerUnsafeArrayPointerSourceRef(
+	ctx lowerFileContext,
+	expr ast.Expr,
+) (string, types.Type, []Diagnostic, bool) {
+	if source, ok := stringHeaderDataSource(ctx, expr); ok {
+		value, diagnostics := o.lowerExpr(ctx, source)
+		bytes := o.runtimeOwner.QualifiedHelper(RuntimeHelperStringToBytes) + "(" + value + ")"
+		ref := o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexRef) + "(" + bytes + ", 0)"
+		return ref, types.Typ[types.Uint8], diagnostics, true
+	}
+
+	address, ok := unwrapParenExpr(expr).(*ast.UnaryExpr)
+	if !ok || address.Op != token.AND {
+		return "", nil, nil, false
+	}
+	if index, ok := unwrapParenExpr(address.X).(*ast.IndexExpr); ok {
+		ref, diagnostics := o.lowerAddressExpr(ctx, index)
+		return ref, indexElementType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)), diagnostics, true
+	}
+	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(address.X)
+	if isNumericType(sourceType) || isStringType(sourceType) || isComplexType(sourceType) {
+		value, diagnostics := o.lowerExpr(ctx, address.X)
+		ref := o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexRef) + "([" + value + "], 0)"
+		return ref, sourceType, diagnostics, true
+	}
+	ref, diagnostics := o.lowerAddressExpr(ctx, address.X)
+	return ref, sourceType, diagnostics, true
+}
+
+func stringHeaderDataSource(ctx lowerFileContext, expr ast.Expr) (ast.Expr, bool) {
+	selector, ok := unwrapParenExpr(expr).(*ast.SelectorExpr)
+	if !ok || selector.Sel.Name != "Data" {
+		return nil, false
+	}
+	call, ok := unwrapParenExpr(selector.X).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return nil, false
+	}
+	targetType := typeFromExpr(ctx, call.Fun)
+	if targetType == nil {
+		return nil, false
+	}
+	targetPointer, _ := types.Unalias(targetType).Underlying().(*types.Pointer)
+	if targetPointer == nil {
+		return nil, false
+	}
+	header, _ := types.Unalias(targetPointer.Elem()).(*types.Named)
+	if header == nil || header.Obj() == nil || header.Obj().Pkg() == nil ||
+		header.Obj().Pkg().Path() != "reflect" || header.Obj().Name() != "StringHeader" {
+		return nil, false
+	}
+	unsafeCall, ok := unwrapParenExpr(call.Args[0]).(*ast.CallExpr)
+	if !ok || len(unsafeCall.Args) != 1 || !isUnsafePointerType(typeFromExpr(ctx, unsafeCall.Fun)) {
+		return nil, false
+	}
+	address, ok := unwrapParenExpr(unsafeCall.Args[0]).(*ast.UnaryExpr)
+	if !ok || address.Op != token.AND || !isStringType(ctx.semPkg.source.TypesInfo.TypeOf(address.X)) {
+		return nil, false
+	}
+	return address.X, true
 }
 
 func (o *LoweringOwner) lowerAddressedValueRef(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
@@ -10997,6 +11057,9 @@ func isChannelType(typ types.Type) bool {
 }
 
 func isComplexType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Info()&types.IsComplex != 0
 }
@@ -11010,6 +11073,9 @@ func isPointerType(typ types.Type) bool {
 }
 
 func isUnsafePointerType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Kind() == types.UnsafePointer
 }
@@ -11041,21 +11107,33 @@ func unwrapParenExpr(expr ast.Expr) ast.Expr {
 }
 
 func isStringType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Info()&types.IsString != 0
 }
 
 func isNumericType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Info()&types.IsNumeric != 0
 }
 
 func isIntegerType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Info()&types.IsInteger != 0
 }
 
 func isFloatType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
 	return ok && basic.Info()&types.IsFloat != 0
 }
