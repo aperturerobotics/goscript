@@ -43,10 +43,6 @@ function bytesToAscii(bytes: $.Bytes): string {
   return globalThis.String.fromCharCode(...bytesArray(bytes))
 }
 
-function cloneBytes(bytes: $.Bytes | null | undefined): $.Bytes {
-  return bytesFromArray(bytesArray(bytes))
-}
-
 function stringValue(s: $.VarRef<String> | null): String {
   if (s == null) {
     throw new Error(
@@ -961,21 +957,6 @@ function readASN1SignedInteger(
     return null
   }
   return signedBigInt(bytes)
-}
-
-function readASN1UnsignedInteger(
-  s: $.VarRef<String> | null,
-  tag: asn1.Tag,
-): bigint | null {
-  const bytes = readASN1Bytes(s, tag)
-  if (
-    bytes == null ||
-    !checkASN1Integer(bytes) ||
-    ($.len(bytes) > 0 && (bytesArray(bytes)[0] & 0x80) !== 0)
-  ) {
-    return null
-  }
-  return unsignedBigInt(bytes)
 }
 
 export function String_ReadASN1Boolean(
