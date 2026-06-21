@@ -16,8 +16,8 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	$.println("keys:", $.len(keys))
-	$.println("alpha:", $.mapGet(seen, "alpha", false)[0])
-	$.println("beta:", $.mapGet(seen, "beta", false)[0])
+	$.println("alpha:", $.mapGet<string, boolean, boolean>(seen, "alpha", false)[0])
+	$.println("beta:", $.mapGet<string, boolean, boolean>(seen, "beta", false)[0])
 }
 
 if ($.isMainScript(import.meta)) {

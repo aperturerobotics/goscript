@@ -373,7 +373,7 @@ export async function main(): globalThis.Promise<void> {
 	let writer: io.PipeWriter | $.VarRef<io.PipeWriter> | null = __goscriptTuple10[1]
 	let done: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 	let pipeReads: $.Channel<pipeReadResult> | null = $.makeChannel<pipeReadResult>(2, $.markAsStructValue(new pipeReadResult()), "both")
-	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 		let __goscriptShadow0: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
 		let [__goscriptShadow1, __goscriptShadow2] = await io.PipeReader.prototype.Read.call($.pointerValue<io.PipeReader>(reader), __goscriptShadow0)
 		await $.chanSend(pipeReads, $.markAsStructValue(new pipeReadResult({n: __goscriptShadow1, data: $.bytesToString($.goSlice(__goscriptShadow0, undefined, __goscriptShadow1)), errNil: __goscriptShadow2 == null, errEOF: $.comparableEqual(__goscriptShadow2, io.EOF)})))
@@ -382,7 +382,7 @@ export async function main(): globalThis.Promise<void> {
 		__goscriptShadow2 = __goscriptTuple11[1]
 		await $.chanSend(pipeReads, $.markAsStructValue(new pipeReadResult({n: __goscriptShadow1, errNil: __goscriptShadow2 == null, errEOF: $.comparableEqual(__goscriptShadow2, io.EOF)})))
 		await $.chanSend(done, true)
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 	let __goscriptTuple12: any = await io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([104, 101, 108, 108, 111]))
 	n = __goscriptTuple12[0]
 	err = __goscriptTuple12[1]
@@ -404,12 +404,12 @@ export async function main(): globalThis.Promise<void> {
 	writer = __goscriptTuple14[1]
 	let ready: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 	let readResult: $.Channel<pipeReadResult> | null = $.makeChannel<pipeReadResult>(1, $.markAsStructValue(new pipeReadResult()), "both")
-	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 		let __goscriptShadow3: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
 		await $.chanSend(ready, true)
 		let [__goscriptShadow4, __goscriptShadow5] = await io.PipeReader.prototype.Read.call($.pointerValue<io.PipeReader>(reader), __goscriptShadow3)
 		await $.chanSend(readResult, $.markAsStructValue(new pipeReadResult({n: __goscriptShadow4, data: $.bytesToString($.goSlice(__goscriptShadow3, undefined, __goscriptShadow4)), errNil: __goscriptShadow5 == null, errEOF: $.comparableEqual(__goscriptShadow5, io.EOF)})))
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 	await $.chanRecv(ready)
 	let __goscriptTuple15: any = await io.PipeWriter.prototype.Write.call($.pointerValue<io.PipeWriter>(writer), new Uint8Array([108, 97, 116, 101, 114]))
 	n = __goscriptTuple15[0]

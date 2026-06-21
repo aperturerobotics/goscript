@@ -21,7 +21,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 	__defer.defer(() => { os.Remove(fileName) })
 
-	await ($.functionValue(async (): globalThis.Promise<void> => {
+	await (async (): globalThis.Promise<void> => {
 		let [info, err] = os.Stat(fileName)
 		if (err != null) {
 			$.println("stat error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
@@ -32,7 +32,7 @@ export async function main(): globalThis.Promise<void> {
 		} else {
 			$.println("stat closure ok")
 		}
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))()
+	})()
 }
 
 if ($.isMainScript(import.meta)) {

@@ -168,9 +168,9 @@ export class JSONFormatter {
 			{
 				const __goscriptTypeSwitchValue = v
 				switch (true) {
-					case $.typeAssert<Exclude<$.GoError, null>>(__goscriptTypeSwitchValue, "error").ok:
+					case $.typeAssert<$.GoError>(__goscriptTypeSwitchValue, "error").ok:
 						{
-							let v: Exclude<$.GoError, null> = $.typeAssert<Exclude<$.GoError, null>>(__goscriptTypeSwitchValue, "error").value
+							let v: $.GoError = $.typeAssert<$.GoError>(__goscriptTypeSwitchValue, "error").value
 							$.mapSet(data, k, $.pointerValue<Exclude<$.GoError, null>>(v).Error())
 						}
 						break
@@ -258,7 +258,7 @@ export type fieldKey = string
 
 export function FieldMap_resolve(f: FieldMap, key: fieldKey): string {
 	{
-		let [k, ok] = $.mapGet(f, key, "")
+		let [k, ok] = $.mapGet<fieldKey, string, string>(f, key, "")
 		if (ok) {
 			return k
 		}

@@ -76,10 +76,10 @@ export async function main(): globalThis.Promise<void> {
 	fmt.Println("Sprint spread result:", spreadResult)
 
 	// Test Sprintf
-	let formatted = fmt.Sprintf("Number: %d, String: %s", $.namedValueInterfaceValue<any>(42, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), "test")
+	let formatted = await fmt.Sprintf("Number: %d, String: %s", $.namedValueInterfaceValue<any>(42, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), "test")
 	fmt.Println("Sprintf result:", formatted)
 	let formatArgs: $.Slice<any> = $.arrayToSlice<any>([$.namedValueInterfaceValue<any>(7, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), "spread"])
-	let formattedSpread = fmt.Sprintf("Spread Number: %d, String: %s", ...(formatArgs ?? []))
+	let formattedSpread = await fmt.Sprintf("Spread Number: %d, String: %s", ...(formatArgs ?? []))
 	fmt.Println("Sprintf spread result:", formattedSpread)
 
 	// Test Sprintln

@@ -423,10 +423,10 @@ export class RwcConn {
 		const p: RwcConn | $.VarRef<RwcConn> | null = this
 		await using __defer = new $.AsyncDisposableStack()
 		let rerr: $.GoError = null as $.GoError
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			await RwcConn.prototype.setCloseErr.call(p, rerr)
 			$.pointerValue<RwcConn>(p).packetCh!.close()
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 
 		while (true) {
 			let buf: $.Slice<number> = await bufPool.prototype.get.call($.pointerValue<RwcConn>(p).pool)

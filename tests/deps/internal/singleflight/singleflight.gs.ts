@@ -132,7 +132,7 @@ export class Group {
 			$.pointerValue<Group>(g).m = $.makeMap<string, call | $.VarRef<call> | null>()
 		}
 		{
-			let __goscriptTuple0: any = $.mapGet($.pointerValue<Group>(g).m, key, null)
+			let __goscriptTuple0: any = $.mapGet<string, call | $.VarRef<call> | null, call | $.VarRef<call> | null>($.pointerValue<Group>(g).m, key, null)
 			let c: call | $.VarRef<call> | null = __goscriptTuple0[0]
 			let ok = __goscriptTuple0[1]
 			if (ok) {
@@ -159,7 +159,7 @@ export class Group {
 			$.pointerValue<Group>(g).m = $.makeMap<string, call | $.VarRef<call> | null>()
 		}
 		{
-			let __goscriptTuple1: any = $.mapGet($.pointerValue<Group>(g).m, key, null)
+			let __goscriptTuple1: any = $.mapGet<string, call | $.VarRef<call> | null, call | $.VarRef<call> | null>($.pointerValue<Group>(g).m, key, null)
 			let c: call | $.VarRef<call> | null = __goscriptTuple1[0]
 			let ok = __goscriptTuple1[1]
 			if (ok) {
@@ -184,7 +184,7 @@ export class Group {
 		using __defer = new $.DisposableStack()
 		await $.pointerValue<Group>(g).mu.Lock()
 		__defer.defer(() => { $.pointerValue<Group>(g).mu.Unlock() })
-		let __goscriptTuple2: any = $.mapGet($.pointerValue<Group>(g).m, key, null)
+		let __goscriptTuple2: any = $.mapGet<string, call | $.VarRef<call> | null, call | $.VarRef<call> | null>($.pointerValue<Group>(g).m, key, null)
 		let c: call | $.VarRef<call> | null = __goscriptTuple2[0]
 		let ok = __goscriptTuple2[1]
 		if (!ok) {
@@ -205,7 +205,7 @@ export class Group {
 
 		await $.pointerValue<Group>(g).mu.Lock()
 		$.pointerValue<call>(c).wg.Done()
-		if ($.mapGet($.pointerValue<Group>(g).m, key, null)[0] == c) {
+		if ($.mapGet<string, call | $.VarRef<call> | null, call | $.VarRef<call> | null>($.pointerValue<Group>(g).m, key, null)[0] == c) {
 			$.deleteMapEntry($.pointerValue<Group>(g).m, key)
 		}
 		for (let __goscriptRangeTarget0 = $.pointerValue<call>(c).chans, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {

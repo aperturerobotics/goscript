@@ -61,7 +61,7 @@ export async function main(): globalThis.Promise<void> {
 		let table: Table | $.VarRef<Table> | null = __goscriptTuple0[0]
 		let ok = __goscriptTuple0[1]
 		if (ok) {
-			let [value, found] = $.mapGet(seen, $.interfaceValue<Node | null>(table, "*main.Table"), false)
+			let [value, found] = $.mapGet<Node | null, boolean, boolean>(seen, $.interfaceValue<Node | null>(table, "*main.Table"), false)
 			$.println(value, found)
 		}
 	}

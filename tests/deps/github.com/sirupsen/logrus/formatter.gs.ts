@@ -70,7 +70,7 @@ export const FieldKeyFile: string = "file"
 export function prefixFieldClashes(data: __goscript_logrus.Fields, fieldMap: __goscript_json_formatter.FieldMap, reportCaller: boolean): void {
 	let timeKey = __goscript_json_formatter.FieldMap_resolve(fieldMap, "time")
 	{
-		let [t, ok] = $.mapGet(data, timeKey, null)
+		let [t, ok] = $.mapGet<string, any, any>(data, timeKey, null)
 		if (ok) {
 			$.mapSet(data, "fields." + timeKey, t)
 			$.deleteMapEntry(data, timeKey)
@@ -79,7 +79,7 @@ export function prefixFieldClashes(data: __goscript_logrus.Fields, fieldMap: __g
 
 	let msgKey = __goscript_json_formatter.FieldMap_resolve(fieldMap, "msg")
 	{
-		let [m, ok] = $.mapGet(data, msgKey, null)
+		let [m, ok] = $.mapGet<string, any, any>(data, msgKey, null)
 		if (ok) {
 			$.mapSet(data, "fields." + msgKey, m)
 			$.deleteMapEntry(data, msgKey)
@@ -88,7 +88,7 @@ export function prefixFieldClashes(data: __goscript_logrus.Fields, fieldMap: __g
 
 	let levelKey = __goscript_json_formatter.FieldMap_resolve(fieldMap, "level")
 	{
-		let [l, ok] = $.mapGet(data, levelKey, null)
+		let [l, ok] = $.mapGet<string, any, any>(data, levelKey, null)
 		if (ok) {
 			$.mapSet(data, "fields." + levelKey, l)
 			$.deleteMapEntry(data, levelKey)
@@ -97,7 +97,7 @@ export function prefixFieldClashes(data: __goscript_logrus.Fields, fieldMap: __g
 
 	let logrusErrKey = __goscript_json_formatter.FieldMap_resolve(fieldMap, "logrus_error")
 	{
-		let [l, ok] = $.mapGet(data, logrusErrKey, null)
+		let [l, ok] = $.mapGet<string, any, any>(data, logrusErrKey, null)
 		if (ok) {
 			$.mapSet(data, "fields." + logrusErrKey, l)
 			$.deleteMapEntry(data, logrusErrKey)
@@ -108,14 +108,14 @@ export function prefixFieldClashes(data: __goscript_logrus.Fields, fieldMap: __g
 	if (reportCaller) {
 		let funcKey = __goscript_json_formatter.FieldMap_resolve(fieldMap, "func")
 		{
-			let [l, ok] = $.mapGet(data, funcKey, null)
+			let [l, ok] = $.mapGet<string, any, any>(data, funcKey, null)
 			if (ok) {
 				$.mapSet(data, "fields." + funcKey, l)
 			}
 		}
 		let fileKey = __goscript_json_formatter.FieldMap_resolve(fieldMap, "file")
 		{
-			let [l, ok] = $.mapGet(data, fileKey, null)
+			let [l, ok] = $.mapGet<string, any, any>(data, fileKey, null)
 			if (ok) {
 				$.mapSet(data, "fields." + fileKey, l)
 			}

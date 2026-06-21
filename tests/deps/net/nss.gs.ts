@@ -463,7 +463,7 @@ export async function parseNSSConf(f: __goscript_parse.file | $.VarRef<__goscrip
 			if ($.pointerValue<nssConf>(__goscriptShadow3).sources == null) {
 				$.pointerValue<nssConf>(__goscriptShadow3).sources = $.makeMap<string, $.Slice<nssSource>>()
 			}
-			$.mapSet($.pointerValue<nssConf>(__goscriptShadow3).sources, db, $.append($.mapGet($.pointerValue<nssConf>(__goscriptShadow3).sources, db, null)[0], $.markAsStructValue(new nssSource({source: src, criteria: criteria}))))
+			$.mapSet($.pointerValue<nssConf>(__goscriptShadow3).sources, db, $.append($.mapGet<string, $.Slice<nssSource>, $.Slice<nssSource>>($.pointerValue<nssConf>(__goscriptShadow3).sources, db, null)[0], $.markAsStructValue(new nssSource({source: src, criteria: criteria}))))
 		}
 	}
 	return __goscriptShadow3

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/s4wave/goscript/compiler/gotest"
 	"github.com/pkg/errors"
+	"github.com/s4wave/goscript/compiler/gotest"
 )
 
 func main() {

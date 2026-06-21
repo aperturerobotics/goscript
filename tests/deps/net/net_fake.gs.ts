@@ -1284,9 +1284,9 @@ export class packetQueue {
 		if (__goscriptSelect5HasReturn) {
 			return __goscriptSelect5Value
 		}
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			await packetQueue.prototype.put.call(pq, $.markAsStructValue($.cloneStructValue(q)))
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 
 		if (q.readClosed) {
 			const __goscriptReturn6: [number, __goscript_sockaddr_posix.sockaddr | null, $.GoError] = [0, null, __goscript_net.ErrClosed]
@@ -1453,9 +1453,9 @@ export class packetQueue {
 		if (__goscriptSelect7HasReturn) {
 			return __goscriptSelect7Value
 		}
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			await packetQueue.prototype.put.call(pq, $.markAsStructValue($.cloneStructValue(q)))
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 
 		// Don't allow a packet to be sent if the deadline has expired,
 		// even if the select above chose a different branch.
@@ -1523,9 +1523,9 @@ export class packetQueue {
 		const pq: packetQueue | $.VarRef<packetQueue> | null = this
 		await using __defer = new $.AsyncDisposableStack()
 		let q = $.markAsStructValue($.cloneStructValue(await packetQueue.prototype.get.call(pq)))
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			await packetQueue.prototype.put.call(pq, $.markAsStructValue($.cloneStructValue(q)))
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 
 		if (q.writeClosed) {
 			return __goscript_net.ErrClosed
@@ -1620,9 +1620,9 @@ export class deadlineTimer {
 		const dt: deadlineTimer | $.VarRef<deadlineTimer> | null = this
 		await using __defer = new $.AsyncDisposableStack()
 		let timer: time.Timer | $.VarRef<time.Timer> | null = await $.chanRecv($.pointerValue<deadlineTimer>(dt).timer)
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			await $.chanSend($.pointerValue<deadlineTimer>(dt).timer, timer)
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 
 		if ($.markAsStructValue($.cloneStructValue(deadline)).Equal($.markAsStructValue($.cloneStructValue(__goscript_net.noDeadline)))) {
 			if ((timer != null) && time.Timer.prototype.Stop.call($.pointerValue<time.Timer>(timer))) {
@@ -1634,9 +1634,9 @@ export class deadlineTimer {
 		let d = time.Until($.markAsStructValue($.cloneStructValue(deadline)))
 		if (d < 0) {
 			// Ensure that a deadline in the past takes effect immediately.
-			__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+			__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 				await $.chanRecv($.pointerValue<deadlineTimer>(dt).expired)
-			}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+			})() })
 		}
 
 		if (timer == null) {
@@ -1955,12 +1955,12 @@ export async function fakeListen(fd: __goscript_fd_fake.netFD | $.VarRef<__goscr
 	}, ({ kind: $.TypeKind.Function, params: ["error"], results: ["error"] } as $.FunctionTypeInfo))
 
 	let ffd: fakeNetFD | $.VarRef<fakeNetFD> | null = await newFakeNetFD(fd)
-	__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 		if ($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD != ffd) {
 			// Failed to register listener; clean up.
 			await fakeNetFD.prototype.Close.call(ffd)
 		}
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 
 	{
 		let __goscriptShadow10 = await fakeNetFD.prototype.assignFakeAddr.call(ffd, await matchIPFamily($.pointerValue<__goscript_fd_fake.netFD>(fd).family, laddr))
@@ -2120,12 +2120,12 @@ export async function fakeConnect(ctx: context.Context | null, fd: __goscript_fd
 	let peer: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null = new __goscript_fd_fake.netFD({family: $.pointerValue<__goscript_fd_fake.netFD>(ln).family, sotype: $.pointerValue<__goscript_fd_fake.netFD>(ln).sotype, net: $.pointerValue<__goscript_fd_fake.netFD>(ln).net, laddr: $.pointerValue<__goscript_fd_fake.netFD>(ln).laddr, raddr: $.pointerValue<__goscript_fd_fake.netFD>(fd).laddr, isConnected: true})
 	$.pointerValue<__goscript_fd_fake.netFD>(peer).fakeNetFD = await newFakeNetFD(fd)
 	$.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>(peer).fakeNetFD).queue = await newPacketQueue(65535)
-	__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 		if ($.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD).peer != peer) {
 			// Failed to connect; clean up.
 			await __goscript_fd_fake.netFD.prototype.Close.call(peer)
 		}
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 
 	let incoming: $.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null> = null as $.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null>
 	const [__goscriptSelect9HasReturn, __goscriptSelect9Value] = await $.selectStatement<any, $.GoError>([

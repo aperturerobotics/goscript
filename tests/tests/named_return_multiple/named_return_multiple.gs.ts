@@ -29,7 +29,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println(o2)
 
 	// Test with an anonymous function and potentially unassigned named returns
-	let [n3, t3, o3] = ($.functionValue((val: number): [number, string, boolean] => {
+	let [n3, t3, o3] = ((val: number): [number, string, boolean] => {
 		let resInt: number = 0
 		let resStr: string = ""
 		let resBool: boolean = false
@@ -42,13 +42,13 @@ export async function main(): globalThis.Promise<void> {
 			}
 		}
 		return [resInt, resStr, resBool]
-	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))(1)
+	})(1)
 
 	$.println(n3)
 	$.println(t3)
 	$.println(o3)
 
-	let [n4, t4, o4] = ($.functionValue((val: number): [number, string, boolean] => {
+	let [n4, t4, o4] = ((val: number): [number, string, boolean] => {
 		let resInt: number = 0
 		let resStr: string = ""
 		let resBool: boolean = false
@@ -61,13 +61,13 @@ export async function main(): globalThis.Promise<void> {
 			}
 		}
 		return [resInt, resStr, resBool]
-	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))(2)
+	})(2)
 
 	$.println(n4)
 	$.println(t4)
 	$.println(o4)
 
-	let [n5, t5, o5] = ($.functionValue((val: number): [number, string, boolean] => {
+	let [n5, t5, o5] = ((val: number): [number, string, boolean] => {
 		let resInt: number = 0
 		let resStr: string = ""
 		let resBool: boolean = false
@@ -80,7 +80,7 @@ export async function main(): globalThis.Promise<void> {
 			}
 		}
 		return [resInt, resStr, resBool]
-	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))(3)
+	})(3)
 
 	$.println(n5)
 	$.println(t5)

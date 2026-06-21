@@ -13,8 +13,8 @@ import (
 	"slices"
 	"strings"
 
-	gs "github.com/s4wave/goscript"
 	jsoniter "github.com/aperturerobotics/json-iterator-lite"
+	gs "github.com/s4wave/goscript"
 )
 
 // OverrideFacts is the immutable compiler-visible view of GoScript overrides.

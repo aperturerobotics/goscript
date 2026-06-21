@@ -3677,7 +3677,7 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 		"await $.chanSend($.pointerValue<Worker>(w).ch, v)",
 		"return await $.chanRecv($.pointerValue<Worker>(w).ch)",
 		"await using __defer = new $.AsyncDisposableStack()",
-		"queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {",
+		"queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {",
 		"$.selectStatement<any, void>([",
 		"let v = __goscriptSelect1Result.value",
 		"return $.selectVoidReturn()",
@@ -5605,7 +5605,7 @@ func TestCompilePackagesLowersNamedStructConversionWithTypedAsyncFact(t *testing
 	if !strings.Contains(text, "$.markAsStructValue(new Target({Value: __goscriptConvert") {
 		t.Fatalf("missing typed named struct conversion target:\n%s", text)
 	}
-	if !strings.Contains(text, "const __goscriptConvert1 = await ($.functionValue(async ") {
+	if !strings.Contains(text, "const __goscriptConvert1 = await (async ") {
 		t.Fatalf("missing async fact from function literal conversion source:\n%s", text)
 	}
 }

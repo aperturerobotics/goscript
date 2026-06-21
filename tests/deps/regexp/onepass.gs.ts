@@ -333,12 +333,12 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 	let merged: $.Slice<number> = $.makeSlice<number>(0, undefined, "number")
 	let next: $.Slice<number> = $.makeSlice<number>(0, undefined, "number")
 	let ok = true
-	__defer.defer(() => { ($.functionValue((): void => {
+	__defer.defer(() => { ((): void => {
 		if (!ok) {
 			merged = null
 			next = null
 		}
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 
 	let ix = -1
 	let extend: ((newLow: $.VarRef<number> | null, newArray: $.VarRef<$.Slice<number>> | null, pc: number) => boolean | globalThis.Promise<boolean>) | null = $.functionValue((newLow: $.VarRef<number> | null, newArray: $.VarRef<$.Slice<number>> | null, pc: number): boolean => {

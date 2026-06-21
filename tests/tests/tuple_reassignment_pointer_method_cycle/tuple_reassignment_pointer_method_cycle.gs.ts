@@ -68,14 +68,13 @@ export class cursor {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let __goscriptShadow0 = cursor
-	let __goscriptShadow1: cursor | $.VarRef<cursor> | null = new cursor()
+	let __goscriptShadow0: cursor | $.VarRef<cursor> | null = new cursor()
 	let x: box | $.VarRef<box> | null = new box({value: 1})
 	let y: box | $.VarRef<box> | null = new box({value: 2})
 	let z: box | $.VarRef<box> | null = new box({value: 3})
 
 	for (let __rangeIndex = 0; __rangeIndex < 1; __rangeIndex++) {
-		let __goscriptTuple0: any = cursor.prototype.rotate.call(__goscriptShadow1, x, y, z)
+		let __goscriptTuple0: any = cursor.prototype.rotate.call(__goscriptShadow0, x, y, z)
 		x = __goscriptTuple0[0]
 		y = __goscriptTuple0[1]
 		z = __goscriptTuple0[2]

@@ -20,11 +20,11 @@ export function sumArray(src: $.VarRef<Uint8Array> | null): number {
 
 export function closureArrayAddress(): number {
 	let result = 0
-	void ($.functionValue((): void => {
+	void ((): void => {
 		let table = $.varRef(new Uint8Array([$.uint(6, 8), $.uint(7, 8), $.uint(8, 8), $.uint(9, 8)]))
 		let ptr: $.VarRef<Uint8Array> | null = table
 		result = $.int($.pointerValue<Uint8Array>(ptr)[2])
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))()
+	})()
 	return result
 }
 

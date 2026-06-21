@@ -12,13 +12,13 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test basic operations
 	$.mapSet(seen, $.int(42), {})
-	let [, exists] = $.mapGet(seen, $.int(42), {})
+	let [, exists] = $.mapGet<number, {}, {}>(seen, $.int(42), {})
 	$.println("Value exists:", exists)
 
 	// Test with string type parameter
 	let stringSet: Ints = $.makeMap<string, {}>()
 	$.mapSet(stringSet, "hello", {})
-	let [, exists2] = $.mapGet(stringSet, "hello", {})
+	let [, exists2] = $.mapGet<string, {}, {}>(stringSet, "hello", {})
 	$.println("String exists:", exists2)
 }
 

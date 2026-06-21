@@ -63,14 +63,14 @@ export async function main(): globalThis.Promise<void> {
 	$.mapSet(status, $.markAsStructValue(new requestKey({soID: "so-1", inviteID: "inv-1", peerID: "peer-1"})), "pending")
 	$.mapSet(status, $.markAsStructValue(new requestKey({soID: "so-1", inviteID: "inv-1", peerID: "peer-1"})), "accepted")
 
-	let [got, ok] = $.mapGet(status, $.markAsStructValue(new requestKey({soID: "so-1", inviteID: "inv-1", peerID: "peer-1"})), "")
+	let [got, ok] = $.mapGet<requestKey, string, string>(status, $.markAsStructValue(new requestKey({soID: "so-1", inviteID: "inv-1", peerID: "peer-1"})), "")
 	$.println("same struct key:", got, ok, $.len(status))
 
-	let [, missing] = $.mapGet(status, $.markAsStructValue(new requestKey({soID: "so-2", inviteID: "inv-1", peerID: "peer-1"})), "")
+	let [, missing] = $.mapGet<requestKey, string, string>(status, $.markAsStructValue(new requestKey({soID: "so-2", inviteID: "inv-1", peerID: "peer-1"})), "")
 	$.println("different struct key:", missing)
 
 	$.deleteMapEntry(status, $.markAsStructValue(new requestKey({soID: "so-1", inviteID: "inv-1", peerID: "peer-1"})))
-	let [, deleted] = $.mapGet(status, $.markAsStructValue(new requestKey({soID: "so-1", inviteID: "inv-1", peerID: "peer-1"})), "")
+	let [, deleted] = $.mapGet<requestKey, string, string>(status, $.markAsStructValue(new requestKey({soID: "so-1", inviteID: "inv-1", peerID: "peer-1"})), "")
 	$.println("deleted struct key:", deleted, $.len(status))
 }
 

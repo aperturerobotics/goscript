@@ -403,16 +403,16 @@ export class TextFormatter {
 						return
 					}
 					break
-				case $.typeAssert<Exclude<$.GoError, null>>(__goscriptTypeSwitchValue, "error").ok:
+				case $.typeAssert<$.GoError>(__goscriptTypeSwitchValue, "error").ok:
 					{
-						let v: Exclude<$.GoError, null> = $.typeAssert<Exclude<$.GoError, null>>(__goscriptTypeSwitchValue, "error").value
+						let v: $.GoError = $.typeAssert<$.GoError>(__goscriptTypeSwitchValue, "error").value
 						TextFormatter.prototype.appendString.call(f, b, $.pointerValue<Exclude<$.GoError, null>>(v).Error())
 						return
 					}
 					break
-				case $.typeAssert<Exclude<fmt.Stringer, null>>(__goscriptTypeSwitchValue, "fmt.Stringer").ok:
+				case $.typeAssert<fmt.Stringer | null>(__goscriptTypeSwitchValue, "fmt.Stringer").ok:
 					{
-						let v: Exclude<fmt.Stringer, null> = $.typeAssert<Exclude<fmt.Stringer, null>>(__goscriptTypeSwitchValue, "fmt.Stringer").value
+						let v: fmt.Stringer | null = $.typeAssert<fmt.Stringer | null>(__goscriptTypeSwitchValue, "fmt.Stringer").value
 						TextFormatter.prototype.appendString.call(f, b, await $.pointerValue<Exclude<fmt.Stringer, null>>(v).String())
 						return
 					}
@@ -632,7 +632,7 @@ export class TextFormatter {
 			bytes.Buffer.prototype.WriteByte.call($.pointerValue<bytes.Buffer>(b), $.uint(32, 8))
 			bytes.Buffer.prototype.WriteString.call($.pointerValue<bytes.Buffer>(b), __goscript_level.colorize($.uint($.pointerValue<__goscript_entry.Entry>(entry).Level, 32), k))
 			bytes.Buffer.prototype.WriteByte.call($.pointerValue<bytes.Buffer>(b), $.uint(61, 8))
-			await TextFormatter.prototype.appendValue.call(f, b, $.mapGet(data, k, null)[0])
+			await TextFormatter.prototype.appendValue.call(f, b, $.mapGet<string, any, any>(data, k, null)[0])
 		}
 
 		bytes.Buffer.prototype.WriteByte.call($.pointerValue<bytes.Buffer>(b), $.uint(10, 8))
@@ -729,7 +729,7 @@ export class TextFormatter {
 				}
 				default:
 				{
-					value = $.mapGet(data, key, null)[0]
+					value = $.mapGet<string, any, any>(data, key, null)[0]
 					break
 				}
 			}

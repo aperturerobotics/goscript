@@ -581,13 +581,13 @@ export function newMemoryRpcStreamPair(): [memoryRpcStream | $.VarRef<memoryRpcS
 export async function openHeldStreams(ctx: context.Context | null, client: srpc.Client | null, count: number): globalThis.Promise<[$.Slice<srpc.Stream | null>, boolean]> {
 	let resultCh: $.Channel<streamOpenResult> | null = $.makeChannel<streamOpenResult>(count, $.markAsStructValue(new streamOpenResult()), "both")
 	for (let i = 0; i < count; i++) {
-		queueMicrotask(async () => { await ($.functionValue(async (idx: number): globalThis.Promise<void> => {
+		queueMicrotask(async () => { await (async (idx: number): globalThis.Promise<void> => {
 			let [strm, err] = await $.pointerValue<Exclude<srpc.Client, null>>(client).NewStream(ctx, "svc", "hold", null)
 			if (err == null) {
 				err = await $.pointerValue<Exclude<srpc.Stream, null>>(strm).MsgSend($.interfaceValue<srpc.Message>(srpc.NewRawMessage($.arrayToSlice<number>([$.uint($.uint(idx, 8), 8)]), false), "*srpc.RawMessage"))
 			}
 			await $.chanSend(resultCh, $.markAsStructValue(new streamOpenResult({stream: strm, err: err})))
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] } as $.FunctionTypeInfo)))(i) })
+		})(i) })
 	}
 
 	let streams: $.Slice<srpc.Stream | null> = $.makeSlice<srpc.Stream | null>(0, count)
@@ -653,14 +653,14 @@ export async function closeHeldStreams(streams: $.Slice<srpc.Stream | null>): gl
 export async function probeConcurrentStreams(ctx: context.Context | null, client: srpc.Client | null, count: number): globalThis.Promise<boolean> {
 	let resultCh: $.Channel<streamProbeResult> | null = $.makeChannel<streamProbeResult>(count, $.markAsStructValue(new streamProbeResult()), "both")
 	for (let i = 0; i < count; i++) {
-		queueMicrotask(async () => { await ($.functionValue(async (idx: number): globalThis.Promise<void> => {
+		queueMicrotask(async () => { await (async (idx: number): globalThis.Promise<void> => {
 			let [total, err] = await probeStream(ctx, client, $.uint($.uint(idx + 1, 8), 8), $.uint($.uint(idx + 2, 8), 8))
 			if (err != null) {
 				await $.chanSend(resultCh, (() => { const __goscriptLiteralField0 = $.pointerValue<Exclude<$.GoError, null>>(err).Error(); return $.markAsStructValue(new streamProbeResult({err: __goscriptLiteralField0})) })())
 				return
 			}
 			await $.chanSend(resultCh, $.markAsStructValue(new streamProbeResult({total: total})))
-		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] } as $.FunctionTypeInfo)))(i) })
+		})(i) })
 	}
 
 	for (let i = 0; i < count; i++) {
@@ -740,7 +740,7 @@ export function newRoutedRpcStreamClient(ctx: context.Context | null, componentI
 		let __goscriptTuple4: any = newMemoryRpcStreamPair()
 		let client: memoryRpcStream | $.VarRef<memoryRpcStream> | null = __goscriptTuple4[0]
 		let server: memoryRpcStream | $.VarRef<memoryRpcStream> | null = __goscriptTuple4[1]
-		queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 			let err = await rpcstream.HandleRpcStream($.interfaceValue<rpcstream.RpcStream | null>(server, "*main.memoryRpcStream"), getter)
 			if (((err != null) && (!$.comparableEqual(err, context.Canceled))) && (!$.comparableEqual(err, io.EOF))) {
 				const [__goscriptSelect5HasReturn, __goscriptSelect5Value] = await $.selectStatement<any, void>([
@@ -764,8 +764,8 @@ export function newRoutedRpcStreamClient(ctx: context.Context | null, componentI
 					return __goscriptSelect5Value
 				}
 			}
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
-		queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		})() })
+		queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 			const [__goscriptSelect6HasReturn, __goscriptSelect6Value] = await $.selectStatement<any, void>([
 				{
 					id: 0,
@@ -789,7 +789,7 @@ export function newRoutedRpcStreamClient(ctx: context.Context | null, componentI
 			if (__goscriptSelect6HasReturn) {
 				return __goscriptSelect6Value
 			}
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 		return [client, null]
 	}, ({ kind: $.TypeKind.Function, params: ["context.Context"], results: [{ kind: $.TypeKind.Pointer, elemType: "main.memoryRpcStream" }, "error"] } as $.FunctionTypeInfo)), componentID, waitAck)
 }
@@ -863,7 +863,7 @@ export async function exerciseRpcStreamHandle(): globalThis.Promise<boolean> {
 
 	let invoked: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 	let done: $.Channel<$.GoError> | null = $.makeChannel<$.GoError>(1, null, "both")
-	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 		await $.chanSend(done, await rpcstream.HandleRpcStream($.interfaceValue<rpcstream.RpcStream | null>(server, "*main.memoryRpcStream"), $.functionValue(async (ctx: context.Context | null, componentID: string, released: (() => void) | null): globalThis.Promise<[srpc.Invoker | null, (() => void) | null, $.GoError]> => {
 			if (!$.stringEqual(componentID, "component-a")) {
 				await $.chanSend(invoked, false)
@@ -874,7 +874,7 @@ export async function exerciseRpcStreamHandle(): globalThis.Promise<boolean> {
 				return [true, null]
 			}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }, "srpc.Stream"], results: [{ kind: $.TypeKind.Basic, name: "bool" }, "error"] } as $.FunctionTypeInfo)), "srpc.InvokerFunc", ({ kind: $.TypeKind.Function, name: "srpc.InvokerFunc", params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }, "srpc.Stream"], results: [{ kind: $.TypeKind.Basic, name: "bool" }, "error"] } as $.FunctionTypeInfo)), "srpc.InvokerFunc", {InvokeMethod: (receiver: any, ...args: any[]) => (srpc.InvokerFunc_InvokeMethod as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, ({ kind: $.TypeKind.Function, name: "srpc.InvokerFunc", params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }, "srpc.Stream"], results: [{ kind: $.TypeKind.Basic, name: "bool" }, "error"] } as $.FunctionTypeInfo)), (null as (() => void) | null), null]
 		}, ({ kind: $.TypeKind.Function, params: ["context.Context", { kind: $.TypeKind.Basic, name: "string" }, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)], results: ["srpc.Invoker", ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), "error"] } as $.FunctionTypeInfo))))
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 
 	{
 		let err = await memoryRpcStream.prototype.Send.call(client, new rpcstream.RpcStreamPacket({Body: $.interfaceValue<any>(new rpcstream.RpcStreamPacket_Init({Init: new rpcstream.RpcStreamInit({ComponentId: "component-a"})}), "*rpcstream.RpcStreamPacket_Init")}))

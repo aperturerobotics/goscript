@@ -94,7 +94,7 @@ export async function __goscript_init_readProtocolsOnce(): globalThis.Promise<vo
 			let [proto, , __goscriptShadow1] = __goscript_parse.dtoi(f![1])
 			if (__goscriptShadow1) {
 				{
-					let [, __goscriptShadow2] = $.mapGet(__goscript_lookup.__goscript_get_protocols(), f![0], 0)
+					let [, __goscriptShadow2] = $.mapGet<string, number, number>(__goscript_lookup.__goscript_get_protocols(), f![0], 0)
 					if (!__goscriptShadow2) {
 						$.mapSet(__goscript_lookup.__goscript_get_protocols(), f![0], proto)
 					}
@@ -102,7 +102,7 @@ export async function __goscript_init_readProtocolsOnce(): globalThis.Promise<vo
 				for (let __goscriptRangeTarget0 = $.goSlice(f, 2, undefined), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 					let alias = __goscriptRangeTarget0![__rangeIndex]
 					{
-						let [, __goscriptShadow3] = $.mapGet(__goscript_lookup.__goscript_get_protocols(), alias, 0)
+						let [, __goscriptShadow3] = $.mapGet<string, number, number>(__goscript_lookup.__goscript_get_protocols(), alias, 0)
 						if (!__goscriptShadow3) {
 							$.mapSet(__goscript_lookup.__goscript_get_protocols(), alias, proto)
 						}

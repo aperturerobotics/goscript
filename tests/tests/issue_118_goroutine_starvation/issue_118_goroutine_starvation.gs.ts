@@ -35,10 +35,10 @@ export async function main(): globalThis.Promise<void> {
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 
 	// Wait for both workers with a timeout
-	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 		await wg.value.Wait()
 		done!.close()
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 
 	// Collect results
 	let results: $.Slice<number> = $.arrayToSlice<number>([])

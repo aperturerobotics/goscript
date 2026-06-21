@@ -153,10 +153,10 @@ export async function readHosts(): globalThis.Promise<void> {
 					canonical = key
 				}
 
-				$.mapSet(_is, addr, $.append($.mapGet(_is, addr, null)[0], name))
+				$.mapSet(_is, addr, $.append($.mapGet<string, $.Slice<string>, $.Slice<string>>(_is, addr, null)[0], name))
 
 				{
-					let [v, __goscriptShadow1] = $.mapGet(hs, key, $.markAsStructValue(new byName()))
+					let [v, __goscriptShadow1] = $.mapGet<string, byName, byName>(hs, key, $.markAsStructValue(new byName()))
 					if (__goscriptShadow1) {
 						$.mapSet(hs, key, $.markAsStructValue(new byName({addrs: $.append(v.addrs, addr), canonicalName: v.canonicalName})))
 						continue
@@ -188,7 +188,7 @@ export async function lookupStaticHost(host: string): globalThis.Promise<[$.Slic
 			host = $.bytesToString(lowerHost)
 		}
 		{
-			let __goscriptTuple2: any = $.mapGet(hosts.value.byName, __goscript_dnsclient.absDomainName(host), $.markAsStructValue(new byName()))
+			let __goscriptTuple2: any = $.mapGet<string, byName, byName>(hosts.value.byName, __goscript_dnsclient.absDomainName(host), $.markAsStructValue(new byName()))
 			let __goscriptShadow2 = __goscriptTuple2[0]
 			let ok = __goscriptTuple2[1]
 			if (ok) {
@@ -213,7 +213,7 @@ export async function lookupStaticAddr(addr: string): globalThis.Promise<$.Slice
 	if ($.len(hosts.value.byAddr) != 0) {
 		let __goscriptShadow3 = hosts.value
 		{
-			let __goscriptTuple3: any = $.mapGet(__goscriptShadow3.byAddr, addr, null)
+			let __goscriptTuple3: any = $.mapGet<string, $.Slice<string>, $.Slice<string>>(__goscriptShadow3.byAddr, addr, null)
 			let __goscriptShadow4: $.Slice<string> = __goscriptTuple3[0]
 			let ok = __goscriptTuple3[1]
 			if (ok) {

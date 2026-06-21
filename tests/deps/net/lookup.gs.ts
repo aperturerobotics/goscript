@@ -752,11 +752,11 @@ export class Resolver {
 		} else {
 			queryFn = $.functionValue(async (fqdn: string, qtype: dnsmessage.Type): globalThis.Promise<void> => {
 				dnsWaitGroup.value.Add(1)
-				queueMicrotask(async () => { await ($.functionValue(async (qtype: dnsmessage.Type): globalThis.Promise<void> => {
+				queueMicrotask(async () => { await (async (qtype: dnsmessage.Type): globalThis.Promise<void> => {
 					let [p, server, __goscriptShadow10] = await Resolver.prototype.tryOneName.call(r, ctx, conf, fqdn, $.uint(qtype, 16))
 					await $.chanSend(lane, $.markAsStructValue(new result({p: $.markAsStructValue($.cloneStructValue(p)), server: server, error: __goscriptShadow10})))
 					dnsWaitGroup.value.Done()
-				}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "uint16", typeName: "dnsmessage.Type" }], results: [] } as $.FunctionTypeInfo)))($.uint(qtype, 16)) })
+				})($.uint(qtype, 16)) })
 			}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "uint16", typeName: "dnsmessage.Type" }], results: [] } as $.FunctionTypeInfo))
 			responseFn = $.functionValue(async (fqdn: string, qtype: dnsmessage.Type): globalThis.Promise<result> => {
 				return $.markAsStructValue($.cloneStructValue(await $.chanRecv(lane)))
@@ -1805,7 +1805,7 @@ export function lookupProtocolMap(name: string): [number, $.GoError] {
 	let lowerProtocol: Uint8Array = new Uint8Array(25)
 	let n = $.copy($.goSlice(lowerProtocol, undefined, undefined), name)
 	__goscript_parse.lowerASCIIBytes($.goSlice(lowerProtocol, undefined, n))
-	let [proto, found] = $.mapGet(__goscript_get_protocols(), $.bytesToString($.goSlice(lowerProtocol, undefined, n)), 0)
+	let [proto, found] = $.mapGet<string, number, number>(__goscript_get_protocols(), $.bytesToString($.goSlice(lowerProtocol, undefined, n)), 0)
 	if (!found || (n != $.len(name))) {
 		return [0, $.interfaceValue<$.GoError>(new __goscript_net.AddrError({Err: "unknown IP protocol specified", Addr: name}), "*net.AddrError")]
 	}
@@ -1849,7 +1849,7 @@ export async function lookupPortMapWithNetwork(network: string, errNetwork: stri
 	let port: number = 0
 	let error: $.GoError = null as $.GoError
 	{
-		let __goscriptTuple0: any = $.mapGet(services, network, null)
+		let __goscriptTuple0: any = $.mapGet<string, globalThis.Map<string, number> | null, globalThis.Map<string, number> | null>(services, network, null)
 		let m: globalThis.Map<string, number> | null = __goscriptTuple0[0]
 		let ok = __goscriptTuple0[1]
 		if (ok) {
@@ -1857,7 +1857,7 @@ export async function lookupPortMapWithNetwork(network: string, errNetwork: stri
 			let n = $.copy($.goSlice(lowerService, undefined, undefined), service)
 			__goscript_parse.lowerASCIIBytes($.goSlice(lowerService, undefined, n))
 			{
-				let [__goscriptShadow0, __goscriptShadow1] = $.mapGet(m, $.bytesToString($.goSlice(lowerService, undefined, n)), 0)
+				let [__goscriptShadow0, __goscriptShadow1] = $.mapGet<string, number, number>(m, $.bytesToString($.goSlice(lowerService, undefined, n)), 0)
 				if (__goscriptShadow1 && (n == $.len(service))) {
 					return [__goscriptShadow0, null]
 				}

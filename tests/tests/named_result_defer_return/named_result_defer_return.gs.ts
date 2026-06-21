@@ -7,9 +7,9 @@ export function syncReturn(): [number, string] {
 	let value: number = 0
 	let err: string = ""
 	using __defer = new $.DisposableStack()
-	__defer.defer(() => { ($.functionValue((): void => {
+	__defer.defer(() => { ((): void => {
 		err = "deferred"
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 	const __goscriptReturn0: [number, string] = [7, ""]
 	value = __goscriptReturn0[0]
 	err = __goscriptReturn0[1]
@@ -22,9 +22,9 @@ export async function asyncReturn(ch: $.Channel<string> | null): globalThis.Prom
 	let value: number = 0
 	let err: string = ""
 	await using __defer = new $.AsyncDisposableStack()
-	__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 		err = await $.chanRecv(ch)
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 	await $.chanSend(ch, "async deferred")
 	const __goscriptReturn1: [number, string] = [11, ""]
 	value = __goscriptReturn1[0]
@@ -37,9 +37,9 @@ export async function asyncReturn(ch: $.Channel<string> | null): globalThis.Prom
 export function blankReturn(): [number, string] {
 	let err: string = ""
 	using __defer = new $.DisposableStack()
-	__defer.defer(() => { ($.functionValue((): void => {
+	__defer.defer(() => { ((): void => {
 		err = "blank deferred"
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 	const __goscriptReturn2: [number, string] = [13, ""]
 	err = __goscriptReturn2[1]
 	__defer[Symbol.dispose]()

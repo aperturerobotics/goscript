@@ -514,7 +514,20 @@ export function generateFixedOffsetEncoding(): huffmanEncoder | $.VarRef<huffman
 	return h
 }
 
-export let fixedLiteralEncoding: huffmanEncoder | $.VarRef<huffmanEncoder> | null = generateFixedLiteralEncoding()
+export var fixedLiteralEncoding: huffmanEncoder | $.VarRef<huffmanEncoder> | null
+
+export function __goscript_init_fixedLiteralEncoding(): void {
+	if (((fixedLiteralEncoding) as any) === undefined) {
+		fixedLiteralEncoding = generateFixedLiteralEncoding()
+	}
+}
+
+export function __goscript_get_fixedLiteralEncoding(): huffmanEncoder | $.VarRef<huffmanEncoder> | null {
+	if (((fixedLiteralEncoding) as any) === undefined) {
+		__goscript_init_fixedLiteralEncoding()
+	}
+	return fixedLiteralEncoding
+}
 
 export function __goscript_set_fixedLiteralEncoding(__goscriptValue: huffmanEncoder | $.VarRef<huffmanEncoder> | null): void {
 	fixedLiteralEncoding = __goscriptValue

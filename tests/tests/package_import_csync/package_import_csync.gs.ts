@@ -55,10 +55,10 @@ export async function main(): globalThis.Promise<void> {
 
 	// Wait for all workers to complete or context timeout
 	let done: $.Channel<{}> | null = $.makeChannel<{}>(0, {}, "both")
-	queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 		await wg.value.Wait()
 		done!.close()
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 
 	const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 		{

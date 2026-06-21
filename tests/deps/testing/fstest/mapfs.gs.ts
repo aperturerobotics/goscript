@@ -548,7 +548,7 @@ export async function MapFS_Open(fsys: MapFS, name: string): globalThis.Promise<
 		return [null, $.interfaceValue<$.GoError>(new fs.PathError({Op: "open", Path: name, Err: fs.ErrNotExist}), "*fs.PathError")]
 	}
 
-	let file: MapFile | $.VarRef<MapFile> | null = $.mapGet(fsys, realName, null)[0]
+	let file: MapFile | $.VarRef<MapFile> | null = $.mapGet<string, MapFile | $.VarRef<MapFile> | null, MapFile | $.VarRef<MapFile> | null>(fsys, realName, null)[0]
 	if ((file != null) && ($.uint(($.pointerValue<MapFile>(file).Mode & fs.ModeDir), 32) == $.uint(0, 32))) {
 		// Ordinary file
 		return [$.interfaceValue<fs.File | null>(new openMapFile({path: name, mapFileInfo: (() => { const __goscriptLiteralField0 = path2.Base(name); return $.markAsStructValue(new mapFileInfo({name: __goscriptLiteralField0, f: file})) })(), offset: $.int(0)}), "*fstest.openMapFile"), null]
@@ -618,7 +618,7 @@ export function MapFS_resolveSymlinks(fsys: MapFS, name: string): [string, boole
 	let ok: boolean = false
 	// Fast path: if a symlink is in the map, resolve it.
 	{
-		let file: MapFile | $.VarRef<MapFile> | null = $.mapGet(fsys, name, null)[0]
+		let file: MapFile | $.VarRef<MapFile> | null = $.mapGet<string, MapFile | $.VarRef<MapFile> | null, MapFile | $.VarRef<MapFile> | null>(fsys, name, null)[0]
 		if ((file != null) && ($.uint(fs.FileMode_Type($.pointerValue<MapFile>(file).Mode), 32) == $.uint(fs.ModeSymlink, 32))) {
 			let target = $.bytesToString($.pointerValue<MapFile>(file).Data)
 			if (path2.IsAbs(target)) {
@@ -640,7 +640,7 @@ export function MapFS_resolveSymlinks(fsys: MapFS, name: string): [string, boole
 			i = i + (j)
 		}
 		{
-			let file: MapFile | $.VarRef<MapFile> | null = $.mapGet(fsys, dir, null)[0]
+			let file: MapFile | $.VarRef<MapFile> | null = $.mapGet<string, MapFile | $.VarRef<MapFile> | null, MapFile | $.VarRef<MapFile> | null>(fsys, dir, null)[0]
 			if ((file != null) && ($.uint(fs.FileMode_Type($.pointerValue<MapFile>(file).Mode), 32) == $.uint(fs.ModeSymlink, 32))) {
 				let target = $.bytesToString($.pointerValue<MapFile>(file).Data)
 				if (path2.IsAbs(target)) {
@@ -688,7 +688,7 @@ export function MapFS_lstat(fsys: MapFS, name: string): [mapFileInfo | $.VarRef<
 	let elem = path2.Base(name)
 	let realName = path2.Join(realDir, elem)
 
-	let file: MapFile | $.VarRef<MapFile> | null = $.mapGet(fsys, realName, null)[0]
+	let file: MapFile | $.VarRef<MapFile> | null = $.mapGet<string, MapFile | $.VarRef<MapFile> | null, MapFile | $.VarRef<MapFile> | null>(fsys, realName, null)[0]
 	if (file != null) {
 		return [new mapFileInfo({name: elem, f: file}), null]
 	}

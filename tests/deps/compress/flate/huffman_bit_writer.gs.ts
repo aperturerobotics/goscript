@@ -186,7 +186,7 @@ export class huffmanBitWriter {
 
 	public fixedSize(extraBits: number): number {
 		const w: huffmanBitWriter | $.VarRef<huffmanBitWriter> | null = this
-		return ((3 + __goscript_huffman_code.huffmanEncoder.prototype.bitLength.call(__goscript_huffman_code.fixedLiteralEncoding, $.pointerValue<huffmanBitWriter>(w).literalFreq)) + __goscript_huffman_code.huffmanEncoder.prototype.bitLength.call(__goscript_huffman_code.fixedOffsetEncoding, $.pointerValue<huffmanBitWriter>(w).offsetFreq)) + extraBits
+		return ((3 + __goscript_huffman_code.huffmanEncoder.prototype.bitLength.call(__goscript_huffman_code.__goscript_get_fixedLiteralEncoding(), $.pointerValue<huffmanBitWriter>(w).literalFreq)) + __goscript_huffman_code.huffmanEncoder.prototype.bitLength.call(__goscript_huffman_code.fixedOffsetEncoding, $.pointerValue<huffmanBitWriter>(w).offsetFreq)) + extraBits
 	}
 
 	public async flush(): globalThis.Promise<void> {
@@ -428,7 +428,7 @@ export class huffmanBitWriter {
 
 		// Figure out smallest code.
 		// Fixed Huffman baseline.
-		let literalEncoding: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null = __goscript_huffman_code.fixedLiteralEncoding
+		let literalEncoding: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null = __goscript_huffman_code.__goscript_get_fixedLiteralEncoding()
 		let offsetEncoding: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null = __goscript_huffman_code.fixedOffsetEncoding
 		let size: number = huffmanBitWriter.prototype.fixedSize.call(w, extraBits)
 
@@ -457,7 +457,7 @@ export class huffmanBitWriter {
 		}
 
 		// Huffman.
-		if (literalEncoding == __goscript_huffman_code.fixedLiteralEncoding) {
+		if (literalEncoding == __goscript_huffman_code.__goscript_get_fixedLiteralEncoding()) {
 			await huffmanBitWriter.prototype.writeFixedHeader.call(w, eof)
 		} else {
 			await huffmanBitWriter.prototype.writeDynamicHeader.call(w, numLiterals, numOffsets, numCodegens, eof)

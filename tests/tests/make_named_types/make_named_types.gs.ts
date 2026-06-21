@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 	type MyMap = globalThis.Map<string, number> | null
 	let m: MyMap = $.makeMap<string, number>()
 	$.mapSet(m, "test", 42)
-	$.println("Value:", $.mapGet(m, "test", 0)[0])
+	$.println("Value:", $.mapGet<string, number, number>(m, "test", 0)[0])
 }
 
 if ($.isMainScript(import.meta)) {

@@ -24,9 +24,9 @@ export function open(path: string): [string, $.GoError] {
 }
 
 export async function run(update: (() => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
-	let err = await ($.functionValue(async (): globalThis.Promise<$.GoError> => {
+	let err = await (async (): globalThis.Promise<$.GoError> => {
 		return await update!()
-	}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)))()
+	})()
 	if (err != null) {
 		return err
 	}

@@ -100,7 +100,7 @@ export class mux {
 		await $.pointerValue<mux>(m).rmtx.Lock()
 		__defer.defer(() => { $.pointerValue<mux>(m).rmtx.Unlock() })
 
-		return $.len($.mapGet($.pointerValue<mux>(m).services, serviceID, null)[0]) != 0
+		return $.len($.mapGet<string, muxMethods, muxMethods>($.pointerValue<mux>(m).services, serviceID, null)[0]) != 0
 	}
 
 	public async HasServiceMethod(serviceID: string, methodID: string): globalThis.Promise<boolean> {
@@ -113,7 +113,7 @@ export class mux {
 		await $.pointerValue<mux>(m).rmtx.Lock()
 		__defer.defer(() => { $.pointerValue<mux>(m).rmtx.Unlock() })
 
-		let handlers: muxMethods = $.mapGet($.pointerValue<mux>(m).services, serviceID, null)[0]
+		let handlers: muxMethods = $.mapGet<string, muxMethods, muxMethods>($.pointerValue<mux>(m).services, serviceID, null)[0]
 		for (const [__rangeKey, mh] of handlers?.entries() ?? []) {
 			if (slices.Contains(await $.pointerValue<Exclude<__goscript_handler.Handler, null>>(mh).GetMethodIDs(), methodID)) {
 				return true
@@ -130,16 +130,16 @@ export class mux {
 		if ($.stringEqual(serviceID, "")) {
 			for (const [__rangeKey, svc] of $.pointerValue<mux>(m).services?.entries() ?? []) {
 				{
-					handler = $.mapGet(svc, methodID, null)[0]
+					handler = $.mapGet<string, __goscript_handler.Handler | null, __goscript_handler.Handler | null>(svc, methodID, null)[0]
 					if (handler != null) {
 						break
 					}
 				}
 			}
 		} else {
-			let svcMethods: muxMethods = $.mapGet($.pointerValue<mux>(m).services, serviceID, null)[0]
+			let svcMethods: muxMethods = $.mapGet<string, muxMethods, muxMethods>($.pointerValue<mux>(m).services, serviceID, null)[0]
 			if (svcMethods != null) {
-				handler = $.mapGet(svcMethods, methodID, null)[0]
+				handler = $.mapGet<string, __goscript_handler.Handler | null, __goscript_handler.Handler | null>(svcMethods, methodID, null)[0]
 			}
 		}
 		$.pointerValue<mux>(m).rmtx.RUnlock()
@@ -173,7 +173,7 @@ export class mux {
 		await $.pointerValue<mux>(m).rmtx.Lock()
 		__defer.defer(() => { $.pointerValue<mux>(m).rmtx.Unlock() })
 
-		let serviceMethods: muxMethods = $.mapGet($.pointerValue<mux>(m).services, serviceID, null)[0]
+		let serviceMethods: muxMethods = $.mapGet<string, muxMethods, muxMethods>($.pointerValue<mux>(m).services, serviceID, null)[0]
 		if (serviceMethods == null) {
 			serviceMethods = $.makeMap<string, __goscript_handler.Handler | null>()
 			$.mapSet($.pointerValue<mux>(m).services, serviceID, serviceMethods)

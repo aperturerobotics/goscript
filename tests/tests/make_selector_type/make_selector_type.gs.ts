@@ -11,7 +11,7 @@ export async function main(): globalThis.Promise<void> {
 	let mfs: globalThis.Map<string, $.Slice<number>> | null = $.makeMap<string, $.Slice<number>>()
 	$.mapSet(mfs, "test.txt", new Uint8Array([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]))
 	$.println("Created map:", $.len(mfs))
-	$.println("Content:", $.bytesToString($.mapGet(mfs, "test.txt", null)[0]))
+	$.println("Content:", $.bytesToString($.mapGet<string, $.Slice<number>, $.Slice<number>>(mfs, "test.txt", null)[0]))
 }
 
 if ($.isMainScript(import.meta)) {

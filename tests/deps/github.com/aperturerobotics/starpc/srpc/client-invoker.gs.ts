@@ -97,7 +97,7 @@ export function NewClientInvoker(client: __goscript_client.Client | null): Clien
 }
 
 export async function proxyStreamTo(src: __goscript_stream.Stream | null, dst: __goscript_stream.Stream | null, errCh: $.Channel<$.GoError> | null): globalThis.Promise<void> {
-	let rerr = await ($.functionValue(async (): globalThis.Promise<$.GoError> => {
+	let rerr = await (async (): globalThis.Promise<$.GoError> => {
 		let pkt: __goscript_message.RawMessage | $.VarRef<__goscript_message.RawMessage> | null = __goscript_message.NewRawMessage(null, true)
 		while (true) {
 			let err = await $.pointerValue<Exclude<__goscript_stream.Stream, null>>(src).MsgRecv($.interfaceValue<__goscript_message.Message>(pkt, "*srpc.RawMessage"))
@@ -111,7 +111,7 @@ export async function proxyStreamTo(src: __goscript_stream.Stream | null, dst: _
 				return err
 			}
 		}
-	}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)))()
+	})()
 
 	if ((rerr != null) && (!$.comparableEqual(rerr, io.EOF))) {
 		if (errCh != null) {

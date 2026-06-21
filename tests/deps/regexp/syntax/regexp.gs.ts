@@ -428,7 +428,7 @@ export function addSpan(start: Regexp | $.VarRef<Regexp> | null, last: Regexp | 
 	$.mapSet(($.pointerValue<globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags)), start, $.uint(f, 8))
 	const __goscriptMap0 = ($.pointerValue<globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags))
 	const __goscriptMapKey0 = last
-	$.mapSet(__goscriptMap0, __goscriptMapKey0, $.mapGet(__goscriptMap0, __goscriptMapKey0, 0)[0] | ($.uint(8, 8)))
+	$.mapSet(__goscriptMap0, __goscriptMapKey0, $.mapGet<Regexp | $.VarRef<Regexp> | null, printFlags, printFlags>(__goscriptMap0, __goscriptMapKey0, 0)[0] | ($.uint(8, 8)))
 }
 
 export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> | null): [printFlags, printFlags] {
@@ -555,7 +555,7 @@ export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<
 
 export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | null, re: Regexp | $.VarRef<Regexp> | null, f: printFlags, flags: globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null): void {
 	using __defer = new $.DisposableStack()
-	f = f | ($.uint($.mapGet(flags, re, 0)[0], 8))
+	f = f | ($.uint($.mapGet<Regexp | $.VarRef<Regexp> | null, printFlags, printFlags>(flags, re, 0)[0], 8))
 	if ((($.uint((f & 16), 8) != $.uint(0, 8)) && ($.uint((f & ~((8 | 16))), 8) != $.uint(0, 8))) && ($.uint((f & 8), 8) != $.uint(0, 8))) {
 		// flagPrec is redundant with other flags being added and terminated
 		f = f & ~(($.uint(16, 8)))
@@ -706,7 +706,7 @@ export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | nul
 				strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(40, 32))
 			}
 			if ($.uint($.pointerValue<Regexp>($.pointerValue<Regexp>(re).Sub![0]).Op, 8) != $.uint(2, 8)) {
-				writeRegexp(b, $.pointerValue<Regexp>(re).Sub![0], $.uint($.mapGet(flags, $.pointerValue<Regexp>(re).Sub![0], 0)[0], 8), flags)
+				writeRegexp(b, $.pointerValue<Regexp>(re).Sub![0], $.uint($.mapGet<Regexp | $.VarRef<Regexp> | null, printFlags, printFlags>(flags, $.pointerValue<Regexp>(re).Sub![0], 0)[0], 8), flags)
 			}
 			strings.Builder.prototype.WriteRune.call($.pointerValue<strings.Builder>(b), $.int(41, 32))
 			break

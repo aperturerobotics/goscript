@@ -195,12 +195,12 @@ export class ipv6ZoneCache {
 		}
 		let updated = await zoneCache.value.update(null, false)
 		await zoneCache.value.RWMutex.RLock()
-		let [index, ok] = $.mapGet(zoneCache.value.toIndex, name, 0)
+		let [index, ok] = $.mapGet<string, number, number>(zoneCache.value.toIndex, name, 0)
 		zoneCache.value.RWMutex.RUnlock()
 		if (!ok && !updated) {
 			await zoneCache.value.update(null, true)
 			await zoneCache.value.RWMutex.RLock()
-			let __goscriptTuple7: any = $.mapGet(zoneCache.value.toIndex, name, 0)
+			let __goscriptTuple7: any = $.mapGet<string, number, number>(zoneCache.value.toIndex, name, 0)
 			index = __goscriptTuple7[0]
 			ok = __goscriptTuple7[1]
 			zoneCache.value.RWMutex.RUnlock()
@@ -219,12 +219,12 @@ export class ipv6ZoneCache {
 		}
 		let updated = await zoneCache.value.update(null, false)
 		await zoneCache.value.RWMutex.RLock()
-		let [name, ok] = $.mapGet(zoneCache.value.toName, index, "")
+		let [name, ok] = $.mapGet<number, string, string>(zoneCache.value.toName, index, "")
 		zoneCache.value.RWMutex.RUnlock()
 		if (!ok && !updated) {
 			await zoneCache.value.update(null, true)
 			await zoneCache.value.RWMutex.RLock()
-			let __goscriptTuple9: any = $.mapGet(zoneCache.value.toName, index, "")
+			let __goscriptTuple9: any = $.mapGet<number, string, string>(zoneCache.value.toName, index, "")
 			name = __goscriptTuple9[0]
 			ok = __goscriptTuple9[1]
 			zoneCache.value.RWMutex.RUnlock()
@@ -270,7 +270,7 @@ export class ipv6ZoneCache {
 			if (!$.stringEqual(ifi.Name, "")) {
 				$.mapSet($.pointerValue<ipv6ZoneCache>(zc).toIndex, ifi.Name, ifi.Index)
 				{
-					let [, ok] = $.mapGet($.pointerValue<ipv6ZoneCache>(zc).toName, ifi.Index, "")
+					let [, ok] = $.mapGet<number, string, string>($.pointerValue<ipv6ZoneCache>(zc).toName, ifi.Index, "")
 					if (!ok) {
 						$.mapSet($.pointerValue<ipv6ZoneCache>(zc).toName, ifi.Index, ifi.Name)
 					}

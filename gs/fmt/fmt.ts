@@ -98,13 +98,52 @@ function hasGoTypeName(value: unknown): value is { __goType: string } {
   )
 }
 
+type MaybeString = string | PromiseLike<string>
+
+function isPromiseLike<T = unknown>(value: unknown): value is PromiseLike<T> {
+  return (
+    value !== null &&
+    (typeof value === 'object' || typeof value === 'function') &&
+    typeof (value as { then?: unknown }).then === 'function'
+  )
+}
+
+function toMaybeString(value: unknown): MaybeString {
+  if (isPromiseLike(value)) {
+    return value.then((resolved) => String(resolved))
+  }
+  return String(value)
+}
+
+function joinMaybe(
+  parts: MaybeString[],
+  separator: string,
+  prefix = '',
+  suffix = '',
+): MaybeString {
+  if (parts.some(isPromiseLike)) {
+    return Promise.all(parts.map((part) => Promise.resolve(part))).then(
+      (resolved) => `${prefix}${resolved.join(separator)}${suffix}`,
+    )
+  }
+  return `${prefix}${(parts as string[]).join(separator)}${suffix}`
+}
+
 function defaultFormat(value: any): string {
+  const formatted = defaultFormatMaybe(value)
+  if (isPromiseLike(formatted)) {
+    return String(formatted)
+  }
+  return formatted
+}
+
+function defaultFormatMaybe(value: any): MaybeString {
   if (value === null || value === undefined) return '<nil>'
   if (typeof value === 'boolean') return value ? 'true' : 'false'
   if (typeof value === 'number') return value.toString()
   if (typeof value === 'string') return value
   if (Array.isArray(value))
-    return '[' + value.map(defaultFormat).join(' ') + ']'
+    return joinMaybe(value.map(defaultFormatMaybe), ' ', '[', ']')
   if (typeof value === 'object') {
     // Prefer GoStringer if present
     if (
@@ -112,7 +151,7 @@ function defaultFormat(value: any): string {
       typeof (value as any).GoString === 'function'
     ) {
       try {
-        return (value as any).GoString()
+        return toMaybeString((value as any).GoString())
       } catch {
         // Ignore error by continuing to next case.
       }
@@ -120,7 +159,7 @@ function defaultFormat(value: any): string {
     // Prefer error interface if present
     if ((value as any).Error && typeof (value as any).Error === 'function') {
       try {
-        return (value as any).Error()
+        return toMaybeString((value as any).Error())
       } catch {
         // Ignore error by continuing to next case.
       }
@@ -128,37 +167,54 @@ function defaultFormat(value: any): string {
     // Check for Stringer interface
     if ((value as any).String && typeof (value as any).String === 'function') {
       try {
-        return (value as any).String()
+        return toMaybeString((value as any).String())
       } catch {
         // Ignore error by continuing to next case.
       }
     }
     if ('__goValue' in value) {
-      return defaultFormat((value as { __goValue: unknown }).__goValue)
+      return defaultFormatMaybe((value as { __goValue: unknown }).__goValue)
     }
     // Basic Map/Set rendering
     if (value instanceof Map) {
-      const parts: string[] = []
+      const parts: MaybeString[] = []
       for (const [k, v] of (value as Map<any, any>).entries()) {
-        parts.push(`${defaultFormat(k)}:${defaultFormat(v)}`)
+        const key = defaultFormatMaybe(k)
+        const elem = defaultFormatMaybe(v)
+        if (isPromiseLike(key) || isPromiseLike(elem)) {
+          parts.push(
+            Promise.all([Promise.resolve(key), Promise.resolve(elem)]).then(
+              ([resolvedKey, resolvedElem]) => `${resolvedKey}:${resolvedElem}`,
+            ),
+          )
+        } else {
+          parts.push(`${key}:${elem}`)
+        }
       }
-      return `{${parts.join(' ')}}`
+      return joinMaybe(parts, ' ', '{', '}')
     }
     if (value instanceof Set) {
-      const parts: string[] = []
+      const parts: MaybeString[] = []
       for (const v of (value as Set<any>).values()) {
-        parts.push(defaultFormat(v))
+        parts.push(defaultFormatMaybe(v))
       }
-      return '[' + parts.join(' ') + ']'
+      return joinMaybe(parts, ' ', '[', ']')
     }
     // Default object representation
     if (
       (value as any).constructor?.name &&
       (value as any).constructor.name !== 'Object'
     ) {
-      return `{${Object.entries(value as Record<string, any>)
-        .map(([k, v]) => `${k}:${defaultFormat(v)}`)
-        .join(' ')}}`
+      const parts = Object.entries(value as Record<string, any>).map(
+        ([k, v]) => {
+          const formatted = defaultFormatMaybe(v)
+          if (isPromiseLike(formatted)) {
+            return formatted.then((resolved) => `${k}:${resolved}`)
+          }
+          return `${k}:${formatted}`
+        },
+      )
+      return joinMaybe(parts, ' ', '{', '}')
     }
     try {
       return JSON.stringify(value)
@@ -170,7 +226,79 @@ function defaultFormat(value: any): string {
 }
 
 function parseFormat(format: string, args: any[]): string {
-  let result = ''
+  const formatted = parseFormatMaybe(format, args, false)
+  if (isPromiseLike(formatted)) {
+    return String(formatted)
+  }
+  return formatted
+}
+
+function formatValueMaybe(value: any, verb: string): MaybeString {
+  switch (verb) {
+    case 'v':
+    case 'w':
+    case 's':
+      if (verb === 's') {
+        if (typeof value === 'string') return value
+        if (value instanceof Uint8Array) return $.bytesToString(value)
+      }
+      return defaultFormatMaybe(value)
+    default:
+      return formatValue(value, verb)
+  }
+}
+
+function applyFormatOptions(
+  formatted: MaybeString,
+  arg: any,
+  verb: string,
+  flags: string,
+  width: string,
+  precision: string,
+): MaybeString {
+  const apply = (text: string): string => {
+    let result = text
+    if (width && !precision) {
+      const w = parseInt(width)
+      if (flags.includes('-')) {
+        result = result.padEnd(w)
+      } else {
+        result = result.padStart(w, flags.includes('0') ? '0' : ' ')
+      }
+    } else if (precision && (verb === 'f' || verb === 'e' || verb === 'g')) {
+      const p = parseInt(precision)
+      const num = Number(arg)
+      if (verb === 'f') {
+        result = num.toFixed(p)
+      } else if (verb === 'e') {
+        result = num.toExponential(p)
+      } else if (verb === 'g') {
+        result = num.toPrecision(p)
+      }
+
+      if (width) {
+        const w = parseInt(width)
+        if (flags.includes('-')) {
+          result = result.padEnd(w)
+        } else {
+          result = result.padStart(w)
+        }
+      }
+    }
+    return result
+  }
+  if (isPromiseLike(formatted)) {
+    return formatted.then(apply)
+  }
+  return apply(formatted)
+}
+
+function parseFormatMaybe(
+  format: string,
+  args: any[],
+  allowAsync = true,
+): MaybeString {
+  const parts: MaybeString[] = []
   let argIndex = 0
 
   for (let i = 0; i < format.length; i++) {
@@ -178,7 +306,7 @@ function parseFormat(format: string, args: any[]): string {
       if (i + 1 < format.length) {
         const nextChar = format[i + 1]
         if (nextChar === '%') {
-          result += '%'
+          parts.push('%')
           i++ // skip the next %
           continue
         }
@@ -216,65 +344,38 @@ function parseFormat(format: string, args: any[]): string {
 
           if (argIndex < args.length) {
             const arg = args[argIndex]
-            let formatted = formatWithState(arg, verb, flags, width, precision)
+            let formatted: MaybeString | null =
+              allowAsync ?
+                formatWithStateMaybe(arg, verb, flags, width, precision)
+              : formatWithState(arg, verb, flags, width, precision)
             if (formatted === null) {
-              formatted = formatValue(arg, verb)
+              formatted =
+                allowAsync ?
+                  formatValueMaybe(arg, verb)
+                : formatValue(arg, verb)
             }
 
-            // Apply width and precision formatting
-            if (width && !precision) {
-              const w = parseInt(width)
-              if (flags.includes('-')) {
-                formatted = formatted.padEnd(w)
-              } else {
-                formatted = formatted.padStart(
-                  w,
-                  flags.includes('0') ? '0' : ' ',
-                )
-              }
-            } else if (
-              precision &&
-              (verb === 'f' || verb === 'e' || verb === 'g')
-            ) {
-              const p = parseInt(precision)
-              const num = Number(arg)
-              if (verb === 'f') {
-                formatted = num.toFixed(p)
-              } else if (verb === 'e') {
-                formatted = num.toExponential(p)
-              } else if (verb === 'g') {
-                formatted = num.toPrecision(p)
-              }
-
-              if (width) {
-                const w = parseInt(width)
-                if (flags.includes('-')) {
-                  formatted = formatted.padEnd(w)
-                } else {
-                  formatted = formatted.padStart(w)
-                }
-              }
-            }
-
-            result += formatted
+            parts.push(
+              applyFormatOptions(formatted, arg, verb, flags, width, precision),
+            )
             argIndex++
           } else {
-            result += `%!${verb}(MISSING)`
+            parts.push(`%!${verb}(MISSING)`)
           }
 
           i = j
         } else {
-          result += format[i]
+          parts.push(format[i])
         }
       } else {
-        result += format[i]
+        parts.push(format[i])
       }
     } else {
-      result += format[i]
+      parts.push(format[i])
     }
   }
 
-  return result
+  return joinMaybe(parts, '')
 }
 
 function formatWithState(
@@ -284,7 +385,7 @@ function formatWithState(
   width: string,
   precision: string,
 ): string | null {
-  if (!value || typeof value.Format !== 'function') {
+  if (!value || typeof value.Format !== 'function' || value.Format.length < 2) {
     return null
   }
 
@@ -307,6 +408,42 @@ function formatWithState(
   }
 
   value.Format(state, verb.codePointAt(0) ?? 0)
+  return out
+}
+
+function formatWithStateMaybe(
+  value: any,
+  verb: string,
+  flags: string,
+  width: string,
+  precision: string,
+): MaybeString | null {
+  if (!value || typeof value.Format !== 'function' || value.Format.length < 2) {
+    return null
+  }
+
+  let out = ''
+  const state: State = {
+    Flag(c: number): boolean {
+      return flags.includes(String.fromCharCode(c))
+    },
+    Precision(): [number, boolean] {
+      return precision === '' ? [0, false] : [parseInt(precision), true]
+    },
+    Width(): [number, boolean] {
+      return width === '' ? [0, false] : [parseInt(width), true]
+    },
+    Write(b: $.Bytes): [number, $.GoError | null] {
+      const text = $.bytesToString(b)
+      out += text
+      return [text.length, null]
+    },
+  }
+
+  const result = value.Format(state, verb.codePointAt(0) ?? 0)
+  if (isPromiseLike(result)) {
+    return result.then(() => out)
+  }
   return out
 }
 
@@ -366,7 +503,7 @@ export function Sprint(...a: any[]): string {
 }
 
 export function Sprintf(format: string, ...a: any[]): string {
-  return parseFormat(format, a)
+  return parseFormatMaybe(format, a) as string
 }
 
 export function Sprintln(...a: any[]): string {

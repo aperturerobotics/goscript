@@ -7,9 +7,9 @@ export async function main(): globalThis.Promise<void> {
 	let m: globalThis.Map<string, number> | null = $.makeMap<string, number>()
 	$.mapSet(m, "one", 1)
 	$.println("Assigning m[\"one\"] to _, _ (key exists)")
-	$.mapGet(m, "one", 0)
+	$.mapGet<string, number, number>(m, "one", 0)
 	$.println("Assigning m[\"two\"] to _, _ (key does not exist)")
-	$.mapGet(m, "two", 0)
+	$.mapGet<string, number, number>(m, "two", 0)
 	$.println("done")
 }
 

@@ -140,7 +140,7 @@ export class Logger {
 
 	public async Panicf(format: string, v: $.Slice<any>): globalThis.Promise<void> {
 		const l: Logger | $.VarRef<Logger> | null = this
-		let s = fmt.Sprintf(format, ...(v ?? []))
+		let s = await fmt.Sprintf(format, ...(v ?? []))
 		await Logger.prototype.output.call(l, $.uint(0, 64), 2, $.functionValue((b: $.Slice<number>): $.Slice<number> => {
 			return $.appendSlice(b, $.stringToBytes(s))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
@@ -486,7 +486,7 @@ export async function Panic(v: $.Slice<any>): globalThis.Promise<void> {
 }
 
 export async function Panicf(format: string, v: $.Slice<any>): globalThis.Promise<void> {
-	let s = fmt.Sprintf(format, ...(v ?? []))
+	let s = await fmt.Sprintf(format, ...(v ?? []))
 	await Logger.prototype.output.call(std, $.uint(0, 64), 2, $.functionValue((b: $.Slice<number>): $.Slice<number> => {
 		return $.appendSlice(b, $.stringToBytes(s))
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))

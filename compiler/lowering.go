@@ -76,6 +76,8 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel, opts ..
 
 	program := &LoweredProgram{}
 	lazyPackageVars := make(map[string]map[types.Object]bool, len(model.packages))
+	asyncLazyFunctionCache := make(map[*types.Func]bool)
+	asyncLazyFunctionVisiting := make(map[*types.Func]bool)
 	runtimeMethodSets := make(runtimeMethodSetCache)
 	semPkgs := make([]*semanticPackage, 0, len(model.packages))
 	for _, semPkg := range model.packages {
@@ -91,7 +93,15 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel, opts ..
 			diagnostics = append(diagnostics, loweringUnsupported("package", semPkg.pkgPath, "missing semantic source package"))
 			continue
 		}
-		loweredPkg, pkgDiagnostics := o.lowerPackage(model, semPkg, lazyPackageVars, runtimeMethodSets, options)
+		loweredPkg, pkgDiagnostics := o.lowerPackage(
+			model,
+			semPkg,
+			lazyPackageVars,
+			asyncLazyFunctionCache,
+			asyncLazyFunctionVisiting,
+			runtimeMethodSets,
+			options,
+		)
 		diagnostics = append(diagnostics, pkgDiagnostics...)
 		if loweredPkg != nil {
 			program.packages = append(program.packages, loweredPkg)
@@ -107,6 +117,8 @@ func (o *LoweringOwner) lowerPackage(
 	model *SemanticModel,
 	semPkg *semanticPackage,
 	lazyPackageVarsByPkg map[string]map[types.Object]bool,
+	asyncLazyFunctionCache map[*types.Func]bool,
+	asyncLazyFunctionVisiting map[*types.Func]bool,
 	runtimeMethodSets runtimeMethodSetCache,
 	options LoweringOptions,
 ) (*loweredPackage, []Diagnostic) {
@@ -143,6 +155,8 @@ func (o *LoweringOwner) lowerPackage(
 				outputNames,
 				lazyPackageVars,
 				lazyPackageVarsByPkg,
+				asyncLazyFunctionCache,
+				asyncLazyFunctionVisiting,
 				runtimeMethodSets,
 				protobufAdapter,
 				options.DisplayRoot,
@@ -163,6 +177,8 @@ func (o *LoweringOwner) lowerPackage(
 			outputNames,
 			lazyPackageVars,
 			lazyPackageVarsByPkg,
+			asyncLazyFunctionCache,
+			asyncLazyFunctionVisiting,
 			runtimeMethodSets,
 			false,
 			options.DisplayRoot,
@@ -199,6 +215,8 @@ func (o *LoweringOwner) lowerFile(
 	outputNames map[string]string,
 	lazyPackageVars map[types.Object]bool,
 	lazyPackageVarsByPkg map[string]map[types.Object]bool,
+	asyncLazyFunctionCache map[*types.Func]bool,
+	asyncLazyFunctionVisiting map[*types.Func]bool,
 	runtimeMethodSets runtimeMethodSetCache,
 	protobufTypeScriptAdapter bool,
 	displayRoot string,
@@ -308,21 +326,23 @@ func (o *LoweringOwner) lowerFile(
 	loweredFile.imports = append(loweredFile.imports, localImports...)
 
 	ctx := lowerFileContext{
-		model:                model,
-		semPkg:               semPkg,
-		file:                 file,
-		importAliases:        importAliases,
-		importPaths:          importPaths,
-		importNames:          importNames,
-		importObjects:        importObjects,
-		sourcePath:           sourcePath,
-		localAliases:         localRefs.aliases,
-		lazyPackageVars:      lazyPackageVars,
-		lazyPackageVarsByPkg: lazyPackageVarsByPkg,
-		tempNames:            newTempNameOwner(),
-		topLevel:             true,
-		protobufTSAdapter:    protobufTypeScriptAdapter,
-		displayRoot:          displayRoot,
+		model:                     model,
+		semPkg:                    semPkg,
+		file:                      file,
+		importAliases:             importAliases,
+		importPaths:               importPaths,
+		importNames:               importNames,
+		importObjects:             importObjects,
+		sourcePath:                sourcePath,
+		localAliases:              localRefs.aliases,
+		lazyPackageVars:           lazyPackageVars,
+		lazyPackageVarsByPkg:      lazyPackageVarsByPkg,
+		asyncLazyFunctionCache:    asyncLazyFunctionCache,
+		asyncLazyFunctionVisiting: asyncLazyFunctionVisiting,
+		tempNames:                 newTempNameOwner(),
+		topLevel:                  true,
+		protobufTSAdapter:         protobufTypeScriptAdapter,
+		displayRoot:               displayRoot,
 	}
 	var diagnostics []Diagnostic
 	var packageInitCalls []string
@@ -1095,40 +1115,42 @@ func safeParamName(param *types.Var, idx int) string {
 }
 
 type lowerFileContext struct {
-	model                *SemanticModel
-	semPkg               *semanticPackage
-	file                 *ast.File
-	importAliases        map[string]string
-	importPaths          map[string]string
-	importNames          map[string]string
-	importObjects        map[*types.PkgName]string
-	sourcePath           string
-	localAliases         map[types.Object]string
-	lazyPackageVars      map[types.Object]bool
-	lazyPackageVarsByPkg map[string]map[types.Object]bool
-	identAliases         map[types.Object]string
-	identAliasRefs       map[types.Object]bool
-	tempNames            *tempNameOwner
-	signature            *types.Signature
-	typeParams           map[string]bool
-	staticTypeParams     map[string]bool
-	asyncFunction        bool
-	functionTypeDepth    int
-	deferState           *loweredDeferState
-	rangeBranch          *loweredRangeBranch
-	rangeBreak           bool
-	rangeContinue        bool
-	gotoLabels           map[string]bool
-	forwardGotos         map[string]bool
-	gotoStateLabels      map[string]bool
-	gotoStateVar         string
-	gotoStateLoop        string
-	functionScopedDecls  bool
-	loopLabel            string
-	switchBreak          bool
-	topLevel             bool
-	protobufTSAdapter    bool
-	displayRoot          string
+	model                     *SemanticModel
+	semPkg                    *semanticPackage
+	file                      *ast.File
+	importAliases             map[string]string
+	importPaths               map[string]string
+	importNames               map[string]string
+	importObjects             map[*types.PkgName]string
+	sourcePath                string
+	localAliases              map[types.Object]string
+	lazyPackageVars           map[types.Object]bool
+	lazyPackageVarsByPkg      map[string]map[types.Object]bool
+	asyncLazyFunctionCache    map[*types.Func]bool
+	asyncLazyFunctionVisiting map[*types.Func]bool
+	identAliases              map[types.Object]string
+	identAliasRefs            map[types.Object]bool
+	tempNames                 *tempNameOwner
+	signature                 *types.Signature
+	typeParams                map[string]bool
+	staticTypeParams          map[string]bool
+	asyncFunction             bool
+	functionTypeDepth         int
+	deferState                *loweredDeferState
+	rangeBranch               *loweredRangeBranch
+	rangeBreak                bool
+	rangeContinue             bool
+	gotoLabels                map[string]bool
+	forwardGotos              map[string]bool
+	gotoStateLabels           map[string]bool
+	gotoStateVar              string
+	gotoStateLoop             string
+	functionScopedDecls       bool
+	loopLabel                 string
+	switchBreak               bool
+	topLevel                  bool
+	protobufTSAdapter         bool
+	displayRoot               string
 }
 
 func (ctx lowerFileContext) diagnosticPosition(pos token.Pos) *DiagnosticPosition {
@@ -1349,7 +1371,12 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 							"if (((" + declName + ") as any) === undefined) {\n\t\t" +
 							declName + " = " + value + "\n\t}\n}"
 						decls = append(decls, loweredDecl{code: initCode, indexExport: initIndexExport})
-						decls = append(decls, loweredDecl{packageInitCall: initName + "()"})
+						readDrivenInit := idx < len(typed.Values) &&
+							asyncLazyInitializerReferencesCyclicOtherFile(ctx, typed.Values[idx]) &&
+							!packageInitFunctionReferencesObject(ctx, obj)
+						if !readDrivenInit {
+							decls = append(decls, loweredDecl{packageInitCall: initName + "()"})
+						}
 						getterCode += "if (((" + declName + ") as any) === undefined) {\n\t\t" +
 							"throw new Error(" + strconv.Quote("goscript package variable "+name.Name+" read before initialization") + ")\n\t}\n"
 					} else {
@@ -1409,21 +1436,33 @@ func (o *LoweringOwner) topLevelInitializerNeedsAwait(ctx lowerFileContext, expr
 	if ctx.semPkg == nil || ctx.semPkg.source == nil {
 		return false
 	}
-	call, ok := unwrapParenExpr(expr).(*ast.CallExpr)
-	if !ok {
-		return false
-	}
-	if o.callNeedsAwait(ctx, call.Fun) {
+	needsAwait := false
+	ast.Inspect(expr, func(node ast.Node) bool {
+		if needsAwait {
+			return false
+		}
+		if _, ok := node.(*ast.FuncLit); ok {
+			return false
+		}
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		if o.callNeedsAwait(ctx, call.Fun) {
+			needsAwait = true
+			return false
+		}
+		if o.callUsesOverridePackage(ctx, call.Fun) {
+			return true
+		}
+		fn := calledFunction(ctx.semPkg.source, call.Fun)
+		if fn != nil && fn.Pkg() != nil && fn.Pkg().Path() != ctx.semPkg.pkgPath {
+			needsAwait = true
+			return false
+		}
 		return true
-	}
-	if o.callUsesOverridePackage(ctx, call.Fun) {
-		return false
-	}
-	fn := calledFunction(ctx.semPkg.source, call.Fun)
-	if fn == nil || fn.Pkg() == nil || fn.Pkg().Path() == ctx.semPkg.pkgPath {
-		return false
-	}
-	return true
+	})
+	return needsAwait
 }
 
 func initializerMayHaveRuntimeEffects(ctx lowerFileContext, expr ast.Expr) bool {
@@ -1658,6 +1697,11 @@ func (o *LoweringOwner) lazyPackageVars(semPkg *semanticPackage, declFiles map[t
 						continue
 					}
 					if valueIdx < len(valueSpec.Values) &&
+						initializerCallsFunctionReferencingOtherFileObject(semPkg, declFiles, sourcePath, valueSpec.Values[valueIdx]) {
+						lazy[obj] = true
+						continue
+					}
+					if valueIdx < len(valueSpec.Values) &&
 						initializerCallsFunctionReferencingLaterPackageVar(semPkg, varOrder, obj, valueSpec.Values[valueIdx]) {
 						lazy[obj] = true
 						continue
@@ -1827,7 +1871,14 @@ func (o *LoweringOwner) packageVarNameHasAsyncLazyInit(ctx lowerFileContext, pkg
 	if semPkg == nil || semPkg.source == nil {
 		return false
 	}
-	initCtx := lowerFileContext{model: ctx.model, semPkg: semPkg, topLevel: true}
+	initCtx := lowerFileContext{
+		model:                     ctx.model,
+		semPkg:                    semPkg,
+		lazyPackageVarsByPkg:      ctx.lazyPackageVarsByPkg,
+		asyncLazyFunctionCache:    ctx.asyncLazyFunctionCache,
+		asyncLazyFunctionVisiting: ctx.asyncLazyFunctionVisiting,
+		topLevel:                  true,
+	}
 	for _, file := range semPkg.source.Syntax {
 		for _, decl := range file.Decls {
 			genDecl, ok := decl.(*ast.GenDecl)
@@ -1918,6 +1969,83 @@ func initializerCallsFunctionReferencingLaterPackageVar(
 	return references
 }
 
+func asyncLazyInitializerReferencesCyclicOtherFile(ctx lowerFileContext, expr ast.Expr) bool {
+	if ctx.semPkg == nil || ctx.semPkg.source == nil || expr == nil {
+		return false
+	}
+	declFiles := packageDeclFiles(ctx.semPkg)
+	for otherFile := range initializerReferencedOtherFiles(ctx.semPkg, declFiles, ctx.sourcePath, expr) {
+		if fileRuntimeReferencesSourceFile(ctx.semPkg, declFiles, otherFile, ctx.sourcePath) {
+			return true
+		}
+	}
+	return false
+}
+
+func packageInitFunctionReferencesObject(ctx lowerFileContext, obj types.Object) bool {
+	if obj == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	references := false
+	for _, file := range ctx.semPkg.source.Syntax {
+		for _, decl := range file.Decls {
+			fnDecl, ok := decl.(*ast.FuncDecl)
+			if !ok || fnDecl.Recv != nil || fnDecl.Name == nil || fnDecl.Name.Name != "init" || fnDecl.Body == nil {
+				continue
+			}
+			ast.Inspect(fnDecl.Body, func(node ast.Node) bool {
+				if references {
+					return false
+				}
+				if _, ok := node.(*ast.FuncLit); ok {
+					return false
+				}
+				ident, ok := node.(*ast.Ident)
+				if !ok {
+					return true
+				}
+				if ctx.semPkg.source.TypesInfo.Uses[ident] == obj {
+					references = true
+					return false
+				}
+				return true
+			})
+			if references {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func initializerCallsFunctionReferencingOtherFileObject(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	sourcePath string,
+	expr ast.Expr,
+) bool {
+	references := false
+	ast.Inspect(expr, func(node ast.Node) bool {
+		if references {
+			return false
+		}
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		fn := calledFunction(semPkg.source, call.Fun)
+		if fn == nil || fn.Pkg() == nil || fn.Pkg().Path() != semPkg.pkgPath {
+			return true
+		}
+		if functionReferencesOtherFileObject(semPkg, declFiles, sourcePath, fn, nil) {
+			references = true
+			return false
+		}
+		return true
+	})
+	return references
+}
+
 func functionReferencesLaterPackageVar(
 	semPkg *semanticPackage,
 	varOrder map[types.Object]int,
@@ -1960,6 +2088,288 @@ func functionReferencesLaterPackageVar(
 			called := calledFunction(semPkg.source, call.Fun)
 			if called != nil && called.Pkg() != nil && called.Pkg().Path() == semPkg.pkgPath &&
 				functionReferencesLaterPackageVar(semPkg, varOrder, currentIdx, called, seen) {
+				references = true
+				return false
+			}
+		}
+		return true
+	})
+	return references
+}
+
+func initializerReferencedOtherFiles(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	sourcePath string,
+	expr ast.Expr,
+) map[string]bool {
+	refs := make(map[string]bool)
+	ast.Inspect(expr, func(node ast.Node) bool {
+		if _, ok := node.(*ast.FuncLit); ok {
+			return false
+		}
+		collectOtherFileReferences(semPkg, declFiles, sourcePath, node, refs)
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		fn := calledFunction(semPkg.source, call.Fun)
+		if fn == nil || fn.Pkg() == nil || fn.Pkg().Path() != semPkg.pkgPath {
+			return true
+		}
+		collectFunctionOtherFileReferences(semPkg, declFiles, sourcePath, fn, nil, refs)
+		return true
+	})
+	return refs
+}
+
+func collectFunctionOtherFileReferences(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	sourcePath string,
+	fn *types.Func,
+	seen map[*types.Func]bool,
+	refs map[string]bool,
+) {
+	if fn == nil {
+		return
+	}
+	if seen == nil {
+		seen = make(map[*types.Func]bool)
+	}
+	if seen[fn] {
+		return
+	}
+	seen[fn] = true
+	fnDecl := functionDeclForObject(semPkg, fn)
+	if fnDecl == nil || fnDecl.Body == nil {
+		return
+	}
+	ast.Inspect(fnDecl.Body, func(node ast.Node) bool {
+		if _, ok := node.(*ast.FuncLit); ok {
+			return false
+		}
+		collectOtherFileReferences(semPkg, declFiles, sourcePath, node, refs)
+		if call, ok := node.(*ast.CallExpr); ok {
+			called := calledFunction(semPkg.source, call.Fun)
+			if called != nil && called.Pkg() != nil && called.Pkg().Path() == semPkg.pkgPath {
+				collectFunctionOtherFileReferences(semPkg, declFiles, sourcePath, called, seen, refs)
+			}
+		}
+		return true
+	})
+}
+
+func collectOtherFileReferences(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	sourcePath string,
+	node ast.Node,
+	refs map[string]bool,
+) {
+	if node == nil {
+		return
+	}
+	if lit, ok := node.(*ast.CompositeLit); ok {
+		collectOtherFileTypeReferences(semPkg, declFiles, sourcePath, semPkg.source.TypesInfo.TypeOf(lit), refs, make(map[types.Type]bool))
+	}
+	switch typed := node.(type) {
+	case *ast.Ident:
+		collectOtherFileObjectReference(declFiles, sourcePath, semPkg.source.TypesInfo.Uses[typed], refs)
+	case *ast.SelectorExpr:
+		collectOtherFileObjectReference(declFiles, sourcePath, semPkg.source.TypesInfo.Uses[typed.Sel], refs)
+		if selection := semPkg.source.TypesInfo.Selections[typed]; selection != nil {
+			collectOtherFileObjectReference(declFiles, sourcePath, selection.Obj(), refs)
+		}
+	}
+}
+
+func collectOtherFileObjectReference(
+	declFiles map[types.Object]string,
+	sourcePath string,
+	obj types.Object,
+	refs map[string]bool,
+) {
+	if obj == nil || obj.Pkg() == nil {
+		return
+	}
+	if declFile := declFiles[obj]; declFile != "" && declFile != sourcePath {
+		refs[declFile] = true
+	}
+}
+
+func collectOtherFileTypeReferences(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	sourcePath string,
+	typ types.Type,
+	refs map[string]bool,
+	seen map[types.Type]bool,
+) {
+	if typ == nil || seen[typ] {
+		return
+	}
+	seen[typ] = true
+	if named := namedStructType(typ); named != nil {
+		collectOtherFileObjectReference(declFiles, sourcePath, named.Obj(), refs)
+	}
+	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Array:
+		collectOtherFileTypeReferences(semPkg, declFiles, sourcePath, typed.Elem(), refs, seen)
+	case *types.Slice:
+		collectOtherFileTypeReferences(semPkg, declFiles, sourcePath, typed.Elem(), refs, seen)
+	case *types.Pointer:
+		collectOtherFileTypeReferences(semPkg, declFiles, sourcePath, typed.Elem(), refs, seen)
+	case *types.Map:
+		collectOtherFileTypeReferences(semPkg, declFiles, sourcePath, typed.Key(), refs, seen)
+		collectOtherFileTypeReferences(semPkg, declFiles, sourcePath, typed.Elem(), refs, seen)
+	case *types.Struct:
+		for field := range typed.Fields() {
+			collectOtherFileTypeReferences(semPkg, declFiles, sourcePath, field.Type(), refs, seen)
+		}
+	}
+}
+
+func fileRuntimeReferencesSourceFile(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	filePath string,
+	sourcePath string,
+) bool {
+	if semPkg == nil || semPkg.source == nil || filePath == "" || sourcePath == "" {
+		return false
+	}
+	for idx, file := range semPkg.source.Syntax {
+		if sourceFilePath(semPkg, idx, file) != filePath {
+			continue
+		}
+		references := false
+		ast.Inspect(file, func(node ast.Node) bool {
+			if references {
+				return false
+			}
+			if _, ok := node.(*ast.FuncLit); ok {
+				return false
+			}
+			if lit, ok := node.(*ast.CompositeLit); ok &&
+				typeReferencesSourceFile(semPkg, declFiles, lit, sourcePath) {
+				references = true
+				return false
+			}
+			if ident, ok := node.(*ast.Ident); ok &&
+				valueIdentReferencesSourceFile(semPkg, declFiles, ident, sourcePath) {
+				references = true
+				return false
+			}
+			if selector, ok := node.(*ast.SelectorExpr); ok {
+				if valueSelectorReferencesSourceFile(semPkg, declFiles, selector, sourcePath) {
+					references = true
+					return false
+				}
+			}
+			if call, ok := node.(*ast.CallExpr); ok {
+				called := calledFunction(semPkg.source, call.Fun)
+				if called != nil && declFiles[called] == sourcePath {
+					references = true
+					return false
+				}
+			}
+			return true
+		})
+		return references
+	}
+	return false
+}
+
+func valueIdentReferencesSourceFile(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	ident *ast.Ident,
+	sourcePath string,
+) bool {
+	if tv, ok := semPkg.source.TypesInfo.Types[ident]; ok && !tv.IsValue() {
+		return false
+	}
+	return declFiles[semPkg.source.TypesInfo.Uses[ident]] == sourcePath
+}
+
+func valueSelectorReferencesSourceFile(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	selector *ast.SelectorExpr,
+	sourcePath string,
+) bool {
+	if tv, ok := semPkg.source.TypesInfo.Types[selector]; ok && !tv.IsValue() {
+		return false
+	}
+	if declFiles[semPkg.source.TypesInfo.Uses[selector.Sel]] == sourcePath {
+		return true
+	}
+	if selection := semPkg.source.TypesInfo.Selections[selector]; selection != nil {
+		return declFiles[selection.Obj()] == sourcePath
+	}
+	return false
+}
+
+func typeReferencesSourceFile(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	expr ast.Expr,
+	sourcePath string,
+) bool {
+	refs := make(map[string]bool)
+	collectOtherFileTypeReferences(semPkg, declFiles, "", semPkg.source.TypesInfo.TypeOf(expr), refs, make(map[types.Type]bool))
+	return refs[sourcePath]
+}
+
+func functionReferencesOtherFileObject(
+	semPkg *semanticPackage,
+	declFiles map[types.Object]string,
+	sourcePath string,
+	fn *types.Func,
+	seen map[*types.Func]bool,
+) bool {
+	if fn == nil {
+		return false
+	}
+	if seen == nil {
+		seen = make(map[*types.Func]bool)
+	}
+	if seen[fn] {
+		return false
+	}
+	seen[fn] = true
+	fnDecl := functionDeclForObject(semPkg, fn)
+	if fnDecl == nil || fnDecl.Body == nil {
+		return false
+	}
+	references := false
+	ast.Inspect(fnDecl.Body, func(node ast.Node) bool {
+		if references {
+			return false
+		}
+		if _, ok := node.(*ast.FuncLit); ok {
+			return false
+		}
+		if lit, ok := node.(*ast.CompositeLit); ok {
+			if zeroValueReferencesOtherFileObject(semPkg, declFiles, sourcePath, semPkg.source.TypesInfo.TypeOf(lit)) {
+				references = true
+				return false
+			}
+		}
+		if ident, ok := node.(*ast.Ident); ok {
+			obj := semPkg.source.TypesInfo.Uses[ident]
+			if obj != nil && obj.Pkg() != nil && obj.Pkg().Path() == semPkg.pkgPath {
+				if declFile := declFiles[obj]; declFile != "" && declFile != sourcePath {
+					references = true
+					return false
+				}
+			}
+		}
+		if call, ok := node.(*ast.CallExpr); ok {
+			called := calledFunction(semPkg.source, call.Fun)
+			if called != nil && called.Pkg() != nil && called.Pkg().Path() == semPkg.pkgPath &&
+				functionReferencesOtherFileObject(semPkg, declFiles, sourcePath, called, seen) {
 				references = true
 				return false
 			}
@@ -7029,6 +7439,21 @@ func (o *LoweringOwner) lowerFuncLitWithAsyncCalls(
 	lit *ast.FuncLit,
 	allowAsyncCalls bool,
 ) (string, bool, []Diagnostic) {
+	function, async, signature, diagnostics := o.lowerFuncLitArrowWithAsyncCalls(ctx, lit, allowAsyncCalls)
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
+		"(" + function + ", " + o.runtimeFunctionTypeInfo(signature, "") + ")", async, diagnostics
+}
+
+func (o *LoweringOwner) lowerFuncLitCallCallee(ctx lowerFileContext, lit *ast.FuncLit) (string, bool, []Diagnostic) {
+	function, async, _, diagnostics := o.lowerFuncLitArrowWithAsyncCalls(ctx, lit, true)
+	return function, async, diagnostics
+}
+
+func (o *LoweringOwner) lowerFuncLitArrowWithAsyncCalls(
+	ctx lowerFileContext,
+	lit *ast.FuncLit,
+	allowAsyncCalls bool,
+) (string, bool, *types.Signature, []Diagnostic) {
 	signature, _ := ctx.semPkg.source.TypesInfo.TypeOf(lit).(*types.Signature)
 	deferState := &loweredDeferState{}
 	bodyCtx := ctx.withSignature(signature).withAsyncFunction(false).withDeferState(deferState).withoutRangeBranch()
@@ -7058,8 +7483,7 @@ func (o *LoweringOwner) lowerFuncLitWithAsyncCalls(
 	function := prefix + "(" + renderLoweredParams(params) + "): " +
 		asyncResultType(o.tsSignatureResultFor(ctx, signature), async) + " => {\n" +
 		rendered.String() + "}"
-	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFunctionValue) +
-		"(" + function + ", " + o.runtimeFunctionTypeInfo(signature, "") + ")", async, diagnostics
+	return function, async, signature, diagnostics
 }
 
 func renderLoweredParams(params []loweredParam) string {
@@ -7290,6 +7714,17 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 	}
 
 	args, diagnostics := o.lowerCallArgs(ctx, expr, callTargetSignature(ctx, expr.Fun))
+	if fun, ok := unwrapParenExpr(expr.Fun).(*ast.FuncLit); ok {
+		callee, async, calleeDiagnostics := o.lowerFuncLitCallCallee(ctx, fun)
+		call := "(" + callee + ")(" + strings.Join(args, ", ") + ")"
+		if async {
+			call = "await " + call
+			if ctx.deferState != nil {
+				ctx.deferState.async = true
+			}
+		}
+		return call, append(diagnostics, calleeDiagnostics...)
+	}
 
 	switch fun := expr.Fun.(type) {
 	case *ast.Ident:
@@ -7447,16 +7882,6 @@ func (o *LoweringOwner) lowerCallExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 			ctx.deferState.async = true
 		}
 		return o.awaitCallIfNeeded(ctx, fun, call), append(diagnostics, calleeDiagnostics...)
-	case *ast.FuncLit:
-		callee, async, calleeDiagnostics := o.lowerFuncLit(ctx, fun)
-		call := "(" + callee + ")(" + strings.Join(args, ", ") + ")"
-		if async {
-			call = "await " + call
-			if ctx.deferState != nil {
-				ctx.deferState.async = true
-			}
-		}
-		return call, append(diagnostics, calleeDiagnostics...)
 	default:
 		if callTargetSignature(ctx, expr.Fun) != nil {
 			callee, calleeDiagnostics := o.lowerExpr(ctx, expr.Fun)
@@ -7867,6 +8292,11 @@ func (o *LoweringOwner) lowerConversionExpr(
 		if value, addressDiagnostics, ok := o.lowerUnsafePointerIntegerExpr(ctx, expr.Args[0]); ok {
 			return value, append(diagnostics, addressDiagnostics...)
 		}
+		if isUintptrType(targetType) {
+			// Opaque unsafe pointers have no JS integer address; keep identity-only
+			// uintptr round trips, such as the standard noescape xor-zero pattern, as pointer tokens.
+			return "(" + value + " as any)", diagnostics
+		}
 	}
 	if helper, addressDiagnostics, ok := o.lowerReflectHeaderPointerConversion(ctx, targetType, expr.Args[0]); ok {
 		return helper, append(diagnostics, addressDiagnostics...)
@@ -7875,6 +8305,9 @@ func (o *LoweringOwner) lowerConversionExpr(
 		return helper, append(diagnostics, addressDiagnostics...)
 	}
 	if isUnsafePointerType(targetType) {
+		if value, identityDiagnostics, ok := o.lowerUnsafePointerIdentityExpr(ctx, expr.Args[0]); ok {
+			return "(" + value + " as any)", append(diagnostics, identityDiagnostics...)
+		}
 		return "(" + value + " as any)", diagnostics
 	}
 	if isNilExpr(expr.Args[0]) && isPointerType(targetType) {
@@ -8025,6 +8458,12 @@ func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *a
 	case token.AND:
 		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64And, RuntimeHelperInt64And)) + "(" + left + ", " + right + ")", true
 	case token.XOR:
+		if isZeroIntegerExpr(ctx, expr.Y) {
+			return left, true
+		}
+		if isZeroIntegerExpr(ctx, expr.X) {
+			return right, true
+		}
 		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Xor, RuntimeHelperInt64Xor)) + "(" + left + ", " + right + ")", true
 	case token.OR:
 		shift, ok := wideLeftShiftExpr(ctx, expr.X)
@@ -8094,6 +8533,11 @@ func lowIntegerBits(ctx lowerFileContext, expr ast.Expr) (int, bool) {
 		}
 	}
 	return integerBits(ctx.semPkg.source.TypesInfo.TypeOf(expr))
+}
+
+func isZeroIntegerExpr(ctx lowerFileContext, expr ast.Expr) bool {
+	value := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)].Value
+	return value != nil && value.Kind() == constant.Int && constant.Sign(value) == 0
 }
 
 func shiftMultiplier(amount int) string {
@@ -8546,6 +8990,9 @@ func (o *LoweringOwner) lowerFieldSelectionExpr(
 	selection *types.Selection,
 	address bool,
 ) (string, []Diagnostic) {
+	if value, diagnostics, ok := o.lowerUnsafeStructFieldSelectionExpr(ctx, expr, selection, address); ok {
+		return value, diagnostics
+	}
 	receiver, diagnostics := o.lowerFieldReceiverExpr(ctx, expr.X)
 	receiver = parenthesizeAwaitedExpr(receiver)
 	index := selection.Index()
@@ -8596,6 +9043,77 @@ func (o *LoweringOwner) lowerFieldAddressExpr(ctx lowerFileContext, receiver str
 		return receiver + "._fields." + fieldName
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperFieldRef) + "(" + receiver + ", " + strconv.Quote(fieldName) + ")"
+}
+
+func (o *LoweringOwner) lowerUnsafeStructFieldSelectionExpr(
+	ctx lowerFileContext,
+	expr *ast.SelectorExpr,
+	selection *types.Selection,
+	address bool,
+) (string, []Diagnostic, bool) {
+	index := selection.Index()
+	if len(index) != 1 {
+		return "", nil, false
+	}
+	targetCall, ok := unwrapParenExpr(expr.X).(*ast.CallExpr)
+	if !ok || len(targetCall.Args) != 1 {
+		return "", nil, false
+	}
+	targetType := typeFromExpr(ctx, targetCall.Fun)
+	if targetType == nil {
+		return "", nil, false
+	}
+	targetPointer, _ := types.Unalias(targetType).Underlying().(*types.Pointer)
+	if targetPointer == nil {
+		return "", nil, false
+	}
+	targetStruct := structUnderlyingType(targetPointer.Elem())
+	if targetStruct == nil || index[0] < 0 || index[0] >= targetStruct.NumFields() {
+		return "", nil, false
+	}
+	unsafeCall, ok := unwrapParenExpr(targetCall.Args[0]).(*ast.CallExpr)
+	if !ok || len(unsafeCall.Args) != 1 || !isUnsafePointerType(typeFromExpr(ctx, unsafeCall.Fun)) {
+		return "", nil, false
+	}
+	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(unsafeCall.Args[0])
+	if sourceType == nil {
+		return "", nil, false
+	}
+	sourcePointer, _ := types.Unalias(sourceType).Underlying().(*types.Pointer)
+	if sourcePointer == nil {
+		return "", nil, false
+	}
+	sourceStruct := structUnderlyingType(sourcePointer.Elem())
+	if sourceStruct == nil || index[0] >= sourceStruct.NumFields() {
+		return "", nil, false
+	}
+	targetField := targetStruct.Field(index[0])
+	sourceField := sourceStruct.Field(index[0])
+	if !unsafeStructFieldLayoutCompatible(targetField, sourceField) {
+		return "", nil, false
+	}
+	receiver, diagnostics := o.lowerFieldReceiverExpr(ctx, unsafeCall.Args[0])
+	fieldName := tsStructFieldName(sourceField.Name(), index[0])
+	if address {
+		return o.lowerFieldAddressExpr(ctx, receiver, sourcePointer.Elem(), fieldName), diagnostics, true
+	}
+	return receiver + "." + fieldName, diagnostics, true
+}
+
+func unsafeStructFieldLayoutCompatible(target *types.Var, source *types.Var) bool {
+	if target == nil || source == nil || target.Name() != source.Name() {
+		return false
+	}
+	return unsafeFieldTypeLayoutCompatible(target.Type(), source.Type())
+}
+
+func unsafeFieldTypeLayoutCompatible(left types.Type, right types.Type) bool {
+	if types.Identical(left, right) {
+		return true
+	}
+	leftUnderlying := types.Unalias(left).Underlying()
+	rightUnderlying := types.Unalias(right).Underlying()
+	return types.Identical(leftUnderlying, rightUnderlying)
 }
 
 func (o *LoweringOwner) lowerMethodValueClosure(
@@ -8939,6 +9457,35 @@ func (o *LoweringOwner) lowerUnsafePointerIntegerExpr(
 	return o.lowerIndexByteAddressIntegerExpr(ctx, call.Args[0])
 }
 
+func (o *LoweringOwner) lowerUnsafePointerIdentityExpr(
+	ctx lowerFileContext,
+	expr ast.Expr,
+) (string, []Diagnostic, bool) {
+	expr = unwrapParenExpr(expr)
+	if binary, ok := expr.(*ast.BinaryExpr); ok && binary.Op == token.XOR {
+		switch {
+		case isZeroIntegerExpr(ctx, binary.Y):
+			return o.lowerUnsafePointerIdentityExpr(ctx, binary.X)
+		case isZeroIntegerExpr(ctx, binary.X):
+			return o.lowerUnsafePointerIdentityExpr(ctx, binary.Y)
+		}
+	}
+	call, ok := expr.(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return "", nil, false
+	}
+	targetType := typeFromExpr(ctx, call.Fun)
+	sourceType := ctx.semPkg.source.TypesInfo.TypeOf(call.Args[0])
+	if !isUintptrType(targetType) || !isUnsafePointerType(sourceType) {
+		return "", nil, false
+	}
+	if _, _, ok := o.lowerUnsafePointerIntegerExpr(ctx, call.Args[0]); ok {
+		return "", nil, false
+	}
+	value, diagnostics := o.lowerExpr(ctx, call.Args[0])
+	return value, diagnostics, true
+}
+
 func (o *LoweringOwner) lowerIndexAddressIntegerExpr(
 	ctx lowerFileContext,
 	expr ast.Expr,
@@ -9120,18 +9667,18 @@ func (o *LoweringOwner) lowerUnsafeArrayPointerConversion(
 	if array == nil {
 		return "", nil, false
 	}
-	unsafeCall, ok := unwrapParenExpr(expr).(*ast.CallExpr)
-	if !ok || len(unsafeCall.Args) != 1 || !isUnsafePointerType(typeFromExpr(ctx, unsafeCall.Fun)) {
-		return "", nil, false
-	}
-	ref, sourceType, diagnostics, ok := o.lowerUnsafeArrayPointerSourceRef(ctx, unsafeCall.Args[0])
+	ref, sourceType, diagnostics, ok := o.lowerUnsafeArrayPointerSourceRef(ctx, expr)
 	if !ok {
 		return "", nil, false
 	}
 	sourceElementSize := goScriptElementByteSize(ctx, sourceType)
 	targetElementSize := goScriptElementByteSize(ctx, array.Elem())
+	sourceTypeArg := o.tsTypeFor(ctx, array.Elem())
+	if sourceType != nil {
+		sourceTypeArg = o.tsTypeFor(ctx, sourceType)
+	}
 	helper := o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayPointerFromIndexRef) +
-		"<" + o.tsTypeFor(ctx, array.Elem()) + ">(" + ref + ", " +
+		"<" + sourceTypeArg + ">(" + ref + ", " +
 		strconv.FormatInt(array.Len(), 10) + ", " +
 		strconv.FormatInt(sourceElementSize, 10) + ", " +
 		strconv.FormatInt(targetElementSize, 10) + ")"
@@ -9139,6 +9686,21 @@ func (o *LoweringOwner) lowerUnsafeArrayPointerConversion(
 }
 
 func (o *LoweringOwner) lowerUnsafeArrayPointerSourceRef(
+	ctx lowerFileContext,
+	expr ast.Expr,
+) (string, types.Type, []Diagnostic, bool) {
+	if unsafeCall, ok := unwrapParenExpr(expr).(*ast.CallExpr); ok && len(unsafeCall.Args) == 1 {
+		if isUnsafePointerType(typeFromExpr(ctx, unsafeCall.Fun)) {
+			return o.lowerUnsafeArrayPointerAddressSourceRef(ctx, unsafeCall.Args[0])
+		}
+		if arg, ok := unsafePointerIdentityCallArg(ctx, unsafeCall); ok {
+			return o.lowerUnsafeArrayPointerSourceRef(ctx, arg)
+		}
+	}
+	return o.lowerUnsafeArrayPointerAddressSourceRef(ctx, expr)
+}
+
+func (o *LoweringOwner) lowerUnsafeArrayPointerAddressSourceRef(
 	ctx lowerFileContext,
 	expr ast.Expr,
 ) (string, types.Type, []Diagnostic, bool) {
@@ -9165,6 +9727,96 @@ func (o *LoweringOwner) lowerUnsafeArrayPointerSourceRef(
 	}
 	ref, diagnostics := o.lowerAddressExpr(ctx, address.X)
 	return ref, sourceType, diagnostics, true
+}
+
+func unsafePointerIdentityCallArg(ctx lowerFileContext, call *ast.CallExpr) (ast.Expr, bool) {
+	if call == nil || len(call.Args) != 1 ||
+		!isUnsafePointerType(ctx.semPkg.source.TypesInfo.TypeOf(call)) ||
+		!isUnsafePointerType(ctx.semPkg.source.TypesInfo.TypeOf(call.Args[0])) {
+		return nil, false
+	}
+	fn := calledFunction(ctx.semPkg.source, call.Fun)
+	decl := functionDeclForObject(ctx.semPkg, fn)
+	if decl == nil || decl.Type == nil || decl.Type.Params == nil ||
+		len(decl.Type.Params.List) != 1 || len(decl.Type.Params.List[0].Names) != 1 ||
+		decl.Body == nil {
+		return nil, false
+	}
+	param := objectForIdent(ctx, decl.Type.Params.List[0].Names[0])
+	if param == nil {
+		return nil, false
+	}
+	aliases := make(map[types.Object]bool)
+	for _, stmt := range decl.Body.List {
+		switch typed := stmt.(type) {
+		case *ast.AssignStmt:
+			if !recordUnsafePointerUintptrAlias(ctx, typed, param, aliases) {
+				return nil, false
+			}
+		case *ast.ReturnStmt:
+			if len(typed.Results) == 1 && unsafePointerIdentityReturnExpr(ctx, typed.Results[0], param, aliases) {
+				return call.Args[0], true
+			}
+			return nil, false
+		default:
+			return nil, false
+		}
+	}
+	return nil, false
+}
+
+func recordUnsafePointerUintptrAlias(ctx lowerFileContext, stmt *ast.AssignStmt, param types.Object, aliases map[types.Object]bool) bool {
+	if stmt == nil || len(stmt.Lhs) != 1 || len(stmt.Rhs) != 1 {
+		return false
+	}
+	ident, ok := unwrapParenExpr(stmt.Lhs[0]).(*ast.Ident)
+	if !ok || ident.Name == "_" {
+		return false
+	}
+	if !unsafePointerUintptrIdentityExpr(ctx, stmt.Rhs[0], param, aliases) {
+		return false
+	}
+	obj := objectForIdent(ctx, ident)
+	if obj == nil {
+		return false
+	}
+	aliases[obj] = true
+	return true
+}
+
+func unsafePointerIdentityReturnExpr(ctx lowerFileContext, expr ast.Expr, param types.Object, aliases map[types.Object]bool) bool {
+	expr = unwrapParenExpr(expr)
+	if ident, ok := expr.(*ast.Ident); ok {
+		return objectForIdent(ctx, ident) == param
+	}
+	call, ok := expr.(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 || !isUnsafePointerType(typeFromExpr(ctx, call.Fun)) {
+		return false
+	}
+	return unsafePointerUintptrIdentityExpr(ctx, call.Args[0], param, aliases)
+}
+
+func unsafePointerUintptrIdentityExpr(ctx lowerFileContext, expr ast.Expr, param types.Object, aliases map[types.Object]bool) bool {
+	expr = unwrapParenExpr(expr)
+	if binary, ok := expr.(*ast.BinaryExpr); ok && binary.Op == token.XOR {
+		switch {
+		case isZeroIntegerExpr(ctx, binary.Y):
+			return unsafePointerUintptrIdentityExpr(ctx, binary.X, param, aliases)
+		case isZeroIntegerExpr(ctx, binary.X):
+			return unsafePointerUintptrIdentityExpr(ctx, binary.Y, param, aliases)
+		}
+		return false
+	}
+	if ident, ok := expr.(*ast.Ident); ok {
+		obj := objectForIdent(ctx, ident)
+		return obj == param || aliases[obj]
+	}
+	call, ok := expr.(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 || !isUintptrType(typeFromExpr(ctx, call.Fun)) {
+		return false
+	}
+	ident, ok := unwrapParenExpr(call.Args[0]).(*ast.Ident)
+	return ok && objectForIdent(ctx, ident) == param
 }
 
 func stringHeaderDataSource(ctx lowerFileContext, expr ast.Expr) (ast.Expr, bool) {
@@ -11208,6 +11860,14 @@ func isUnsafePointerType(typ types.Type) bool {
 	return ok && basic.Kind() == types.UnsafePointer
 }
 
+func isUintptrType(typ types.Type) bool {
+	if typ == nil {
+		return false
+	}
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	return ok && basic.Kind() == types.Uintptr
+}
+
 func channelDirectionString(dir types.ChanDir) string {
 	switch dir {
 	case types.SendOnly:
@@ -11435,7 +12095,102 @@ func (o *LoweringOwner) functionAsync(ctx lowerFileContext, fn *types.Func) bool
 	if fn == nil || ctx.model == nil {
 		return false
 	}
-	return ctx.model.functionAsync(fn)
+	if ctx.model.functionAsync(fn) {
+		return true
+	}
+	return o.functionReferencesAsyncLazyPackageVar(ctx, fn, make(map[*types.Func]bool))
+}
+
+func (o *LoweringOwner) functionReferencesAsyncLazyPackageVar(
+	ctx lowerFileContext,
+	fn *types.Func,
+	seen map[*types.Func]bool,
+) bool {
+	fn = functionOriginOrSelf(fn)
+	if fn == nil || ctx.model == nil {
+		return false
+	}
+	if cached, ok := ctx.asyncLazyFunctionCache[fn]; ok {
+		return cached
+	}
+	if ctx.asyncLazyFunctionVisiting != nil {
+		if ctx.asyncLazyFunctionVisiting[fn] {
+			return false
+		}
+		ctx.asyncLazyFunctionVisiting[fn] = true
+		defer delete(ctx.asyncLazyFunctionVisiting, fn)
+	} else {
+		if seen[fn] {
+			return false
+		}
+		seen[fn] = true
+	}
+	references := false
+	defer func() {
+		if ctx.asyncLazyFunctionCache != nil {
+			ctx.asyncLazyFunctionCache[fn] = references
+		}
+	}()
+	if fn.Pkg() == nil {
+		return false
+	}
+	semPkg := ctx.model.packages[fn.Pkg().Path()]
+	if semPkg == nil || semPkg.source == nil {
+		return false
+	}
+	decl := functionDeclForObject(semPkg, fn)
+	if decl == nil || decl.Body == nil {
+		return false
+	}
+	analysisCtx := lowerFileContext{
+		model:                     ctx.model,
+		semPkg:                    semPkg,
+		lazyPackageVarsByPkg:      ctx.lazyPackageVarsByPkg,
+		asyncLazyFunctionCache:    ctx.asyncLazyFunctionCache,
+		asyncLazyFunctionVisiting: ctx.asyncLazyFunctionVisiting,
+		topLevel:                  true,
+	}
+	ast.Inspect(decl.Body, func(node ast.Node) bool {
+		if references {
+			return false
+		}
+		if _, ok := node.(*ast.FuncLit); ok {
+			return false
+		}
+		if ident, ok := node.(*ast.Ident); ok {
+			if o.objectIsAsyncLazyPackageVar(analysisCtx, semPkg.source.TypesInfo.Uses[ident]) {
+				references = true
+				return false
+			}
+		}
+		if selector, ok := node.(*ast.SelectorExpr); ok {
+			if o.objectIsAsyncLazyPackageVar(analysisCtx, semPkg.source.TypesInfo.Uses[selector.Sel]) {
+				references = true
+				return false
+			}
+		}
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		if o.functionReferencesAsyncLazyPackageVar(ctx, calledFunction(semPkg.source, call.Fun), seen) {
+			references = true
+			return false
+		}
+		return true
+	})
+	return references
+}
+
+func (o *LoweringOwner) objectIsAsyncLazyPackageVar(ctx lowerFileContext, obj types.Object) bool {
+	varObj, _ := obj.(*types.Var)
+	if varObj == nil || varObj.Pkg() == nil {
+		return false
+	}
+	if !o.packageVarIsLazy(ctx, varObj) && !o.packageVarNameIsLazy(ctx, varObj.Pkg().Path(), varObj.Name()) {
+		return false
+	}
+	return o.packageVarHasAsyncLazyInit(ctx, varObj)
 }
 
 func (o *LoweringOwner) callNeedsAwait(ctx lowerFileContext, fun ast.Expr) bool {

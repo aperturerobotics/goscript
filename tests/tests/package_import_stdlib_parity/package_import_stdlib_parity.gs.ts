@@ -97,7 +97,7 @@ export async function main(): globalThis.Promise<void> {
 	let __goscriptTuple2: any = mime.ParseMediaType("text/plain; charset=utf-8")
 	let mediaType = __goscriptTuple2[0]
 	let params: globalThis.Map<string, string> | null = __goscriptTuple2[1]
-	$.println("mime:", mediaType, $.mapGet(params, "charset", "")[0], mime.TypeByExtension(".json"), mime.WordEncoder_Encode(mime.BEncoding, "utf-8", "hi"))
+	$.println("mime:", mediaType, $.mapGet<string, string, string>(params, "charset", "")[0], mime.TypeByExtension(".json"), mime.WordEncoder_Encode(mime.BEncoding, "utf-8", "hi"))
 
 	let [parsed, ] = strconv.ParseComplex("(1-2i)", 128)
 	$.println("time:", time.RFC1123, time.Month_String(time.May))

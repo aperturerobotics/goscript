@@ -105,7 +105,7 @@ export async function HandleProxyRpcStream(__typeArgs: $.GenericTypeArgs | undef
 }
 
 export async function copyRpcStreamTo(s1: __goscript_rpcstream.RpcStream | null, s2: __goscript_rpcstream.RpcStream | null, errCh: $.Channel<$.GoError> | null): globalThis.Promise<void> {
-	let rerr = await ($.functionValue(async (): globalThis.Promise<$.GoError> => {
+	let rerr = await (async (): globalThis.Promise<$.GoError> => {
 		let pkt: srpc.RawMessage | $.VarRef<srpc.RawMessage> | null = srpc.NewRawMessage(null, true)
 		while (true) {
 			let err = await $.pointerValue<Exclude<__goscript_rpcstream.RpcStream, null>>(s1).MsgRecv($.interfaceValue<srpc.Message>(pkt, "*srpc.RawMessage"))
@@ -121,7 +121,7 @@ export async function copyRpcStreamTo(s1: __goscript_rpcstream.RpcStream | null,
 				return err
 			}
 		}
-	}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)))()
+	})()
 
 	let s1Err = await $.pointerValue<Exclude<__goscript_rpcstream.RpcStream, null>>(s1).Close()
 	if ((rerr == null) && (s1Err != null)) {

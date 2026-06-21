@@ -589,7 +589,7 @@ export function __goscript_set_lookupOrderName(__goscriptValue: globalThis.Map<h
 
 export function hostLookupOrder_String(o: hostLookupOrder): string {
 	{
-		let [s, ok] = $.mapGet(lookupOrderName, o, "")
+		let [s, ok] = $.mapGet<hostLookupOrder, string, string>(lookupOrderName, o, "")
 		if (ok) {
 			return s
 		}

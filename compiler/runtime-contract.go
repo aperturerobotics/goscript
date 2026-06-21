@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	gs "github.com/s4wave/goscript"
 	"github.com/pkg/errors"
+	gs "github.com/s4wave/goscript"
 )
 
 // RuntimeHelperCategory names a runtime helper family owned by the contract.

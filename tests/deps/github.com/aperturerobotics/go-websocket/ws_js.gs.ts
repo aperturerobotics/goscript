@@ -303,7 +303,7 @@ export class Conn {
 		$.pointerValue<Conn>(c).closeReadCtx = ctx
 		$.pointerValue<Conn>(c).closeReadMu.Unlock()
 
-		queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 			await using __defer = new $.AsyncDisposableStack()
 			__defer.defer(async () => { await cancel!() })
 			__defer.defer(async () => { await Conn.prototype.CloseNow.call(c) })
@@ -311,7 +311,7 @@ export class Conn {
 			if (err != null) {
 				await Conn.prototype.Close.call(c, 1008, "unexpected data message")
 			}
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 		return ctx
 	}
 
@@ -903,9 +903,9 @@ export class CloseError {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Error(): string {
+	public async Error(): globalThis.Promise<string> {
 		const ce = this
-		return fmt.Sprintf("status = %v and reason = %q", $.namedValueInterfaceValue<any>(ce.Code, "websocket.StatusCode", {String: (receiver: any, ...args: any[]) => (__goscript_stringer.StatusCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.StatusCode" }), ce.Reason)
+		return await fmt.Sprintf("status = %v and reason = %q", $.namedValueInterfaceValue<any>(ce.Code, "websocket.StatusCode", {String: (receiver: any, ...args: any[]) => (__goscript_stringer.StatusCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.StatusCode" }), ce.Reason)
 	}
 
 	static __typeInfo = $.registerStructType(

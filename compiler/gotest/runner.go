@@ -12,9 +12,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/s4wave/goscript/compiler"
 	"github.com/s4wave/goscript/compiler/tsworkspace"
-	"github.com/pkg/errors"
 )
 
 const combinedRuntimeResultPrefix = "__GOSCRIPT_PACKAGE_RESULT__"

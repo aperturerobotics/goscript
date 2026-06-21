@@ -2,7 +2,8 @@
   "asyncFunctions": {
     "Fprint": true,
     "Fprintf": true,
-    "Fprintln": true
+    "Fprintln": true,
+    "Sprintf": true
   },
   "dependencies": [
     "errors"

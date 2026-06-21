@@ -44,9 +44,9 @@ $.registerInterfaceType(
 
 export async function callCopied(r: runner | null): globalThis.Promise<void> {
 	let curr: runner | null = null as runner | null
-	void ($.functionValue((): void => {
+	void ((): void => {
 		curr = r
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))()
+	})()
 	await $.pointerValue<Exclude<runner, null>>(curr).Run()
 }
 

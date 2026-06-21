@@ -41,9 +41,9 @@ export class Worker {
 
 	public async Spawn(): globalThis.Promise<$.GoError> {
 		const w: Worker | $.VarRef<Worker> | null = this
-		queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 			await $.chanRecv($.pointerValue<Worker>(w).ch)
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 		return null
 	}
 

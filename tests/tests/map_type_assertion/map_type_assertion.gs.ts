@@ -11,7 +11,7 @@ export async function main(): globalThis.Promise<void> {
 	let m: globalThis.Map<string, number> | null = __goscriptTuple0[0]
 	let ok = __goscriptTuple0[1]
 	if (ok) {
-		$.println("Age:", $.mapGet(m, "age", 0)[0])
+		$.println("Age:", $.mapGet<string, number, number>(m, "age", 0)[0])
 	} else {
 		$.println("Type assertion failed")
 	}

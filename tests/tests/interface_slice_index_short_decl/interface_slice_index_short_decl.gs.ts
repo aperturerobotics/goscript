@@ -107,7 +107,7 @@ export async function main(): globalThis.Promise<void> {
 						let fix: Fixed = (fixed![0] as Fixed)
 						let fv = fix![0]
 						{
-							let v = $.mapGet(shape.value.Filter, shape.value.Result, null)[0]
+							let v = $.mapGet<number, dep.Ref | null, dep.Ref | null>(shape.value.Filter, shape.value.Result, null)[0]
 							if (v != null) {
 								await dep.ToKey(v)
 								await dep.ToKey(fv)

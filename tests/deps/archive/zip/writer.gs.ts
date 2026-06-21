@@ -558,7 +558,7 @@ export class Writer {
 
 	public async compressor(method: number): globalThis.Promise<__goscript_register.Compressor | null> {
 		const w: Writer | $.VarRef<Writer> | null = this
-		let comp = $.mapGet($.pointerValue<Writer>(w).compressors, $.uint(method, 16), null)[0]
+		let comp = $.mapGet<number, __goscript_register.Compressor | null, __goscript_register.Compressor | null>($.pointerValue<Writer>(w).compressors, $.uint(method, 16), null)[0]
 		if (comp == null) {
 			comp = await __goscript_register.compressor($.uint(method, 16))
 		}

@@ -144,6 +144,34 @@ describe('fmt basic value formatting', () => {
     }
     expect(fmt.Sprintf('value=%s', stringer)).toBe('value=string-value')
   })
+
+  it('uses only fmt.Formatter-shaped Format methods', () => {
+    const formatter = {
+      Format(state: fmt.State, verb: number) {
+        state.Write($.stringToBytes(`${String.fromCharCode(verb)}:ok`))
+      },
+    }
+    expect(fmt.Sprintf('%s', formatter)).toBe('s:ok')
+
+    const nodeLike = {
+      Format(_buf: unknown) {
+        throw new Error('domain Format should not be called by fmt')
+      },
+      String() {
+        return 'node-string'
+      },
+    }
+    expect(fmt.Sprintf('%s', nodeLike)).toBe('node-string')
+  })
+
+  it('allows Sprintf callers to await async stringers', async () => {
+    const stringer = {
+      async String() {
+        return 'async-string'
+      },
+    }
+    expect(await fmt.Sprintf('value=%s', stringer)).toBe('value=async-string')
+  })
 })
 
 describe('fmt spacing rules', () => {

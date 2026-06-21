@@ -5,8 +5,8 @@ import (
 	"slices"
 
 	"github.com/aperturerobotics/cli"
-	"github.com/s4wave/goscript/compiler"
 	"github.com/pkg/errors"
+	"github.com/s4wave/goscript/compiler"
 	"github.com/sirupsen/logrus"
 )
 

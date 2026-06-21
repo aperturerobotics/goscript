@@ -17,40 +17,40 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Map size after adding 3 items: Expected: 3, Actual:", $.len(scores))
 
 	// Access values
-	$.println("Alice's score: Expected: 90, Actual:", $.mapGet(scores, "Alice", 0)[0])
-	$.println("Bob's score: Expected: 85, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	$.println("Alice's score: Expected: 90, Actual:", $.mapGet<string, number, number>(scores, "Alice", 0)[0])
+	$.println("Bob's score: Expected: 85, Actual:", $.mapGet<string, number, number>(scores, "Bob", 0)[0])
 
 	// Modify a value
 	$.mapSet(scores, "Bob", 88)
-	$.println("Bob's updated score: Expected: 88, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	$.println("Bob's updated score: Expected: 88, Actual:", $.mapGet<string, number, number>(scores, "Bob", 0)[0])
 	const __goscriptMap0 = scores
 	const __goscriptMapKey0 = "Bob"
-	$.mapSet(__goscriptMap0, __goscriptMapKey0, $.mapGet(__goscriptMap0, __goscriptMapKey0, 0)[0] + (1))
-	$.println("Bob's incremented score: Expected: 89, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	$.mapSet(__goscriptMap0, __goscriptMapKey0, $.mapGet<string, number, number>(__goscriptMap0, __goscriptMapKey0, 0)[0] + (1))
+	$.println("Bob's incremented score: Expected: 89, Actual:", $.mapGet<string, number, number>(scores, "Bob", 0)[0])
 	const __goscriptMap1 = scores
 	const __goscriptMapKey1 = "Bob"
-	$.mapSet(__goscriptMap1, __goscriptMapKey1, $.mapGet(__goscriptMap1, __goscriptMapKey1, 0)[0] + (3))
-	$.println("Bob's compound score: Expected: 92, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	$.mapSet(__goscriptMap1, __goscriptMapKey1, $.mapGet<string, number, number>(__goscriptMap1, __goscriptMapKey1, 0)[0] + (3))
+	$.println("Bob's compound score: Expected: 92, Actual:", $.mapGet<string, number, number>(scores, "Bob", 0)[0])
 	const __goscriptMap2 = scores
 	const __goscriptMapKey2 = "Bob"
-	$.mapSet(__goscriptMap2, __goscriptMapKey2, $.mapGet(__goscriptMap2, __goscriptMapKey2, 0)[0] - (1))
-	$.println("Bob's decremented score: Expected: 91, Actual:", $.mapGet(scores, "Bob", 0)[0])
+	$.mapSet(__goscriptMap2, __goscriptMapKey2, $.mapGet<string, number, number>(__goscriptMap2, __goscriptMapKey2, 0)[0] - (1))
+	$.println("Bob's decremented score: Expected: 91, Actual:", $.mapGet<string, number, number>(scores, "Bob", 0)[0])
 
 	// Check if key exists (comma-ok idiom)
-	let [value, exists] = $.mapGet(scores, "David", 0)
+	let [value, exists] = $.mapGet<string, number, number>(scores, "David", 0)
 	$.println("Does David exist in map? Expected: false, Actual:", exists)
 	$.println("Value for non-existent key: Expected: 0, Actual:", value)
 
 	// Delete a key
 	$.deleteMapEntry(scores, "Charlie")
-	let __goscriptTuple0: any = $.mapGet(scores, "Charlie", 0)
+	let __goscriptTuple0: any = $.mapGet<string, number, number>(scores, "Charlie", 0)
 	exists = __goscriptTuple0[1]
 	$.println("After delete, does Charlie exist? Expected: false, Actual:", exists)
 
 	// Create map with literal syntax
 	let colors: globalThis.Map<string, string> | null = new globalThis.Map<string, string>([["red", "#ff0000"], ["green", "#00ff00"], ["blue", "#0000ff"]])
 	$.println("Map literal size: Expected: 3, Actual:", $.len(colors))
-	$.println("Color code for red: Expected: #ff0000, Actual:", $.mapGet(colors, "red", "")[0])
+	$.println("Color code for red: Expected: #ff0000, Actual:", $.mapGet<string, string, string>(colors, "red", "")[0])
 
 	// Iterate over a map with range
 	$.println("Iterating over scores map:")

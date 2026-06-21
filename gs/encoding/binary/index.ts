@@ -44,6 +44,7 @@ type fixedKind =
 
 type boxedValue = {
   __goType?: string
+  __goTypeInfo?: $.TypeInfo | string
   __goValue?: unknown
 }
 
@@ -475,7 +476,9 @@ export function Size(v: unknown): number {
 
 function requireByteOrder(order: ByteOrder | null): ByteOrder {
   if (order === null) {
-    throw new Error('runtime error: invalid memory address or nil pointer dereference')
+    throw new Error(
+      'runtime error: invalid memory address or nil pointer dereference',
+    )
   }
   return order
 }
@@ -622,7 +625,8 @@ function decodeTarget(data: unknown): decodedTarget | null {
   const typeName = goTypeName(data)
   const value = goValue(data)
   if (typeName !== '') {
-    const kind = fixedKindFromType(typeName)
+    const kind =
+      fixedKindFromType(typeName) ?? fixedKindFromTypeInfo(goTypeInfo(data))
     if (kind !== null) {
       return {
         kind,
@@ -688,6 +692,16 @@ function goTypeName(value: unknown): string {
   return ''
 }
 
+function goTypeInfo(value: unknown): $.TypeInfo | string | undefined {
+  if (isBoxedValue(value)) {
+    return value.__goTypeInfo
+  }
+  if (value !== null && typeof value === 'object') {
+    return (value as { __goTypeInfo?: $.TypeInfo | string }).__goTypeInfo
+  }
+  return undefined
+}
+
 function goValue(value: unknown): unknown {
   if (isBoxedValue(value) && '__goValue' in value) {
     return value.__goValue
@@ -714,6 +728,52 @@ function fixedKindFromType(typeName: string): fixedKind | null {
     return name as fixedKind
   }
   return null
+}
+
+function fixedKindFromTypeInfo(
+  info: $.TypeInfo | string | undefined,
+): fixedKind | null {
+  if (info === undefined) {
+    return null
+  }
+  if (typeof info === 'string') {
+    return fixedKindFromType(info)
+  }
+  switch (info.kind) {
+    case $.TypeKind.Pointer:
+      return fixedKindFromTypeInfo(info.elemType)
+    case $.TypeKind.Basic:
+      return fixedKindFromBasicName(info.name)
+    case $.TypeKind.Slice: {
+      const elemKind = fixedKindFromTypeInfo(info.elemType)
+      return elemKind === null ? null : fixedSliceKind(elemKind)
+    }
+    case $.TypeKind.Array: {
+      const elemKind = fixedKindFromTypeInfo(info.elemType)
+      return elemKind === null ? null : fixedSliceKind(elemKind)
+    }
+    default:
+      return null
+  }
+}
+
+function fixedKindFromBasicName(name: string | undefined): fixedKind | null {
+  if (name === undefined) {
+    return null
+  }
+  if (name === 'byte') {
+    return 'uint8'
+  }
+  if (name === 'rune') {
+    return 'int32'
+  }
+  return fixedKinds.has(name) && !name.startsWith('[]') ?
+      (name as fixedKind)
+    : null
+}
+
+function fixedSliceKind(elemKind: fixedKind): fixedKind | null {
+  return elemKind.startsWith('[]') ? null : (`[]${elemKind}` as fixedKind)
 }
 
 function fixedSize(kind: fixedKind, value: unknown): number {

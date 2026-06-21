@@ -282,7 +282,7 @@ export class Entry {
 	public async Logf(level: __goscript_logrus.Level, format: string, args: $.Slice<any>): globalThis.Promise<void> {
 		const entry: Entry | $.VarRef<Entry> | null = this
 		if (__goscript_logger.Logger.prototype.IsLevelEnabled.call($.pointerValue<Entry>(entry).Logger, $.uint(level, 32))) {
-			await Entry.prototype.Log.call(entry, $.uint(level, 32), $.arrayToSlice<any>([fmt.Sprintf(format, ...(args ?? []))]))
+			await Entry.prototype.Log.call(entry, $.uint(level, 32), $.arrayToSlice<any>([await fmt.Sprintf(format, ...(args ?? []))]))
 		}
 	}
 
@@ -422,7 +422,7 @@ export class Entry {
 				}
 			}
 			if (isErrField) {
-				let tmp = fmt.Sprintf("can not add field %q", k)
+				let tmp = await fmt.Sprintf("can not add field %q", k)
 				if (!$.stringEqual(fieldErr, "")) {
 					fieldErr = fieldErr + (", " + tmp)
 				} else {
@@ -551,11 +551,11 @@ export class Entry {
 		await Entry.prototype.fireHooks.call(newEntry, hooks)
 
 		let buffer: bytes.Buffer | $.VarRef<bytes.Buffer> | null = await $.pointerValue<Exclude<__goscript_buffer_pool.BufferPool, null>>(bufPool).Get()
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			$.pointerValue<Entry>(newEntry).Buffer = null
 			bytes.Buffer.prototype.Reset.call($.pointerValue<bytes.Buffer>(buffer))
 			await $.pointerValue<Exclude<__goscript_buffer_pool.BufferPool, null>>(bufPool).Put(buffer)
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 		bytes.Buffer.prototype.Reset.call($.pointerValue<bytes.Buffer>(buffer))
 		$.pointerValue<Entry>(newEntry).Buffer = buffer
 		await Entry.prototype.write.call(newEntry)

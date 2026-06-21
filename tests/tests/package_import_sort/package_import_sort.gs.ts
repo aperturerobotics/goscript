@@ -126,7 +126,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Index of 2.71 in sorted floats:", floatIndex)
 
 	// Test generic Search function
-	let searchResult = sort2.Search($.len(ints), $.functionValue((i: number): boolean => {
+	let searchResult = await sort2.Search($.len(ints), $.functionValue((i: number): boolean => {
 		return ints![i] >= 5
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo)))
 	$.println("First index where value >= 5:", searchResult)

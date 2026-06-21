@@ -757,7 +757,7 @@ export class Session {
 		$.pointerValue<Session>(s).activePing = activePing
 		$.pointerValue<Session>(s).pingLock.Unlock()
 
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			// complete ping promise
 			__goscript_ping.ping.prototype.finish.call(activePing, dur, err)
 
@@ -765,7 +765,7 @@ export class Session {
 			await $.pointerValue<Session>(s).pingLock.Lock()
 			$.pointerValue<Session>(s).activePing = null
 			$.pointerValue<Session>(s).pingLock.Unlock()
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 
 		// Send the ping request, waiting at most one connection write timeout
 		// to flush it.
@@ -879,7 +879,7 @@ export class Session {
 		await $.pointerValue<Session>(s).streamLock.Lock()
 		__defer.defer(() => { $.pointerValue<Session>(s).streamLock.Unlock() })
 		{
-			let [, ok] = $.mapGet($.pointerValue<Session>(s).inflight, $.uint(id, 32), {})
+			let [, ok] = $.mapGet<number, {}, {}>($.pointerValue<Session>(s).inflight, $.uint(id, 32), {})
 			if (ok) {
 				const [__goscriptSelect6HasReturn, __goscriptSelect6Value] = await $.selectStatement<any, void>([
 					{
@@ -909,7 +909,7 @@ export class Session {
 
 	public async deleteStream(id: number): globalThis.Promise<void> {
 		let s: Session | $.VarRef<Session> | null = this
-		let __goscriptTuple2: any = $.mapGet($.pointerValue<Session>(s).streams, $.uint(id, 32), null)
+		let __goscriptTuple2: any = $.mapGet<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null>($.pointerValue<Session>(s).streams, $.uint(id, 32), null)
 		let str: __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null = __goscriptTuple2[0]
 		let ok = __goscriptTuple2[1]
 		if (!ok) {
@@ -932,7 +932,7 @@ export class Session {
 		const s: Session | $.VarRef<Session> | null = this
 		await $.pointerValue<Session>(s).streamLock.Lock()
 		{
-			let [, ok] = $.mapGet($.pointerValue<Session>(s).inflight, $.uint(id, 32), {})
+			let [, ok] = $.mapGet<number, {}, {}>($.pointerValue<Session>(s).inflight, $.uint(id, 32), {})
 			if (ok) {
 				$.deleteMapEntry($.pointerValue<Session>(s).inflight, $.uint(id, 32))
 			} else {
@@ -1112,7 +1112,7 @@ export class Session {
 
 		// Get the stream
 		await $.pointerValue<Session>(s).streamLock.Lock()
-		let stream: __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null = $.mapGet($.pointerValue<Session>(s).streams, $.uint(id, 32), null)[0]
+		let stream: __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null = $.mapGet<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null>($.pointerValue<Session>(s).streams, $.uint(id, 32), null)[0]
 		$.pointerValue<Session>(s).streamLock.Unlock()
 
 		// If we do not have a stream, likely we sent a RST and/or closed the stream for reading.
@@ -1182,7 +1182,7 @@ export class Session {
 
 		// Check if stream already exists
 		{
-			let [, ok] = $.mapGet($.pointerValue<Session>(s).streams, $.uint(id, 32), null)
+			let [, ok] = $.mapGet<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null>($.pointerValue<Session>(s).streams, $.uint(id, 32), null)
 			if (ok) {
 				await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[ERR] yamux: duplicate stream declared", null)
 				{
@@ -1266,7 +1266,7 @@ export class Session {
 		const s: Session | $.VarRef<Session> | null = this
 		let err: $.GoError = null as $.GoError
 		await using __defer = new $.AsyncDisposableStack()
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			{
 				let rerr = $.recover()
 				if (rerr != null) {
@@ -1274,7 +1274,7 @@ export class Session {
 					err = fmt.Errorf("panic in yamux receive loop: %s", rerr)
 				}
 			}
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 		__defer.defer(() => { $.pointerValue<Session>(s).recvDoneCh!.close() })
 		let hdr: __goscript__const.header = new Uint8Array(12)
 		while (true) {
@@ -1343,7 +1343,7 @@ export class Session {
 		const s: Session | $.VarRef<Session> | null = this
 		let err: $.GoError = null as $.GoError
 		await using __defer = new $.AsyncDisposableStack()
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			{
 				let rerr = $.recover()
 				if (rerr != null) {
@@ -1351,7 +1351,7 @@ export class Session {
 					err = fmt.Errorf("panic in yamux send loop: %s", rerr)
 				}
 			}
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 
 		__defer.defer(() => { $.pointerValue<Session>(s).sendDoneCh!.close() })
 

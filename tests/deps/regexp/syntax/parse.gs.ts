@@ -262,7 +262,7 @@ export class parser {
 		let p: parser | $.VarRef<parser> | null = this
 		if (!force) {
 			{
-				let [h, ok] = $.mapGet($.pointerValue<parser>(p).height, re, 0)
+				let [h, ok] = $.mapGet<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number, number>($.pointerValue<parser>(p).height, re, 0)
 				if (ok) {
 					return h
 				}
@@ -284,7 +284,7 @@ export class parser {
 		let p: parser | $.VarRef<parser> | null = this
 		if (!force) {
 			{
-				let __goscriptTuple0: any = $.mapGet($.pointerValue<parser>(p).size, re, 0)
+				let __goscriptTuple0: any = $.mapGet<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number, number>($.pointerValue<parser>(p).size, re, 0)
 				let size = $.int(__goscriptTuple0[0])
 				let ok = __goscriptTuple0[1]
 				if (ok) {
@@ -1111,7 +1111,7 @@ export class parser {
 		i = i + (2)
 		let name = $.sliceStringOrBytes(s, 0, i + 2)
 		s = $.sliceStringOrBytes(s, i + 2, undefined)
-		let g = $.markAsStructValue($.cloneStructValue($.mapGet(__goscript_perl_groups.__goscript_get_posixGroup(), name, $.markAsStructValue(new charGroup()))[0]))
+		let g = $.markAsStructValue($.cloneStructValue($.mapGet<string, charGroup, charGroup>(__goscript_perl_groups.__goscript_get_posixGroup(), name, $.markAsStructValue(new charGroup()))[0]))
 		if (g.sign == 0) {
 			return [null, "", $.interfaceValue<$.GoError>(new Error({Code: "invalid character class range", Expr: name}), "*syntax.Error")]
 		}
@@ -1125,7 +1125,7 @@ export class parser {
 		if ((($.uint(($.pointerValue<parser>(p).flags & 64), 16) == $.uint(0, 16)) || ($.len(s) < 2)) || ($.uint($.indexStringOrBytes(s, 0), 8) != $.uint(92, 8))) {
 			return [out, rest]
 		}
-		let g = $.markAsStructValue($.cloneStructValue($.mapGet(__goscript_perl_groups.__goscript_get_perlGroup(), $.sliceStringOrBytes(s, 0, 2), $.markAsStructValue(new charGroup()))[0]))
+		let g = $.markAsStructValue($.cloneStructValue($.mapGet<string, charGroup, charGroup>(__goscript_perl_groups.__goscript_get_perlGroup(), $.sliceStringOrBytes(s, 0, 2), $.markAsStructValue(new charGroup()))[0]))
 		if (g.sign == 0) {
 			return [out, rest]
 		}
@@ -1950,7 +1950,7 @@ export async function Parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 export async function parse(s: string, flags: Flags): globalThis.Promise<[__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError]> {
 	let err: $.GoError = null as $.GoError
 	using __defer = new $.DisposableStack()
-	__defer.defer(() => { ($.functionValue((): void => {
+	__defer.defer(() => { ((): void => {
 		{
 			let r = $.recover()
 			let __goscriptSwitch0 = r
@@ -1976,7 +1976,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 				}
 			}
 		}
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 
 	if ($.uint((flags & 2), 16) != $.uint(0, 16)) {
 		// Trivial parser for literal string.
@@ -2512,20 +2512,20 @@ export async function unicodeTable(name: string): globalThis.Promise<[unicode.Ra
 		}
 		case "Lc":
 		{
-			return [$.mapGet(unicode.Categories, "LC", null)[0], $.mapGet(unicode.FoldCategory, "LC", null)[0], +1]
+			return [$.mapGet<string, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null>(unicode.Categories, "LC", null)[0], $.mapGet<string, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null>(unicode.FoldCategory, "LC", null)[0], +1]
 			break
 		}
 	}
 	{
-		let t: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = $.mapGet(unicode.Categories, name, null)[0]
+		let t: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = $.mapGet<string, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null>(unicode.Categories, name, null)[0]
 		if (t != null) {
-			return [t, $.mapGet(unicode.FoldCategory, name, null)[0], +1]
+			return [t, $.mapGet<string, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null>(unicode.FoldCategory, name, null)[0], +1]
 		}
 	}
 	{
-		let t: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = $.mapGet(unicode.Scripts, name, null)[0]
+		let t: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = $.mapGet<string, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null>(unicode.Scripts, name, null)[0]
 		if (t != null) {
-			return [t, $.mapGet(unicode.FoldScript, name, null)[0], +1]
+			return [t, $.mapGet<string, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null>(unicode.FoldScript, name, null)[0], +1]
 		}
 	}
 
@@ -2534,10 +2534,10 @@ export async function unicodeTable(name: string): globalThis.Promise<[unicode.Ra
 	// the underscores, so make our own map with canonical names.
 	await categoryAliases.once.Do(initCategoryAliases)
 	{
-		let actual = $.mapGet(categoryAliases.m, name, "")[0]
+		let actual = $.mapGet<string, string, string>(categoryAliases.m, name, "")[0]
 		if (!$.stringEqual(actual, "")) {
-			let t: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = $.mapGet(unicode.Categories, actual, null)[0]
-			return [t, $.mapGet(unicode.FoldCategory, actual, null)[0], +1]
+			let t: unicode.RangeTable | $.VarRef<unicode.RangeTable> | null = $.mapGet<string, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null>(unicode.Categories, actual, null)[0]
+			return [t, $.mapGet<string, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null, unicode.RangeTable | $.VarRef<unicode.RangeTable> | null>(unicode.FoldCategory, actual, null)[0], +1]
 		}
 	}
 	return [null, null, 0]

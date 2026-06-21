@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 
 	$.mapSet(s.files, "test", f)
 
-	$.println("Created storage with file:", $.pointerValue<__goscript_memory.file>($.mapGet(s.files, "test", null)[0]).name)
+	$.println("Created storage with file:", $.pointerValue<__goscript_memory.file>($.mapGet<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null>(s.files, "test", null)[0]).name)
 }
 
 if ($.isMainScript(import.meta)) {

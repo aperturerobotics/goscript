@@ -78,9 +78,9 @@ export class VMux {
 		await using __defer = new $.AsyncDisposableStack()
 		if ($.pointerValue<VMux>(v).veryVerbose) {
 			let t1 = $.markAsStructValue($.cloneStructValue(time.Now()))
-			__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+			__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 				await logrus.Entry.prototype.Debugf.call($.pointerValue<VMux>(v).le, "HasService(serviceID(%s)) => dur(%v) has(%v)", $.arrayToSlice<any>([serviceID, time.Duration_String(time.Since($.markAsStructValue($.cloneStructValue(t1)))), has]))
-			}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+			})() })
 		}
 		const __goscriptReturn0: boolean = await $.pointerValue<Exclude<__goscript_mux.Mux, null>>($.pointerValue<VMux>(v).mx).HasService(serviceID)
 		has = __goscriptReturn0
@@ -95,9 +95,9 @@ export class VMux {
 		await using __defer = new $.AsyncDisposableStack()
 		if ($.pointerValue<VMux>(v).veryVerbose) {
 			let t1 = $.markAsStructValue($.cloneStructValue(time.Now()))
-			__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+			__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 				await logrus.Entry.prototype.Debugf.call($.pointerValue<VMux>(v).le, "HasServiceMethod(serviceID(%s), methodID(%s)) => dur(%v) has(%v)", $.arrayToSlice<any>([serviceID, methodID, time.Duration_String(time.Since($.markAsStructValue($.cloneStructValue(t1)))), has]))
-			}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+			})() })
 		}
 		const __goscriptReturn1: boolean = await $.pointerValue<Exclude<__goscript_mux.Mux, null>>($.pointerValue<VMux>(v).mx).HasServiceMethod(serviceID, methodID)
 		has = __goscriptReturn1
@@ -113,9 +113,9 @@ export class VMux {
 		await using __defer = new $.AsyncDisposableStack()
 		let t1 = $.markAsStructValue($.cloneStructValue(time.Now()))
 		await logrus.Entry.prototype.Debugf.call($.pointerValue<VMux>(v).le, "InvokeMethod(serviceID(%s), methodID(%s)) => started", $.arrayToSlice<any>([serviceID, methodID]))
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			await logrus.Entry.prototype.Debugf.call($.pointerValue<VMux>(v).le, "InvokeMethod(serviceID(%s), methodID(%s)) => dur(%v) done(%v) err(%v)", $.arrayToSlice<any>([serviceID, methodID, time.Duration_String(time.Since($.markAsStructValue($.cloneStructValue(t1)))), done, (err as any)]))
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 		const __goscriptReturn3: [boolean, $.GoError] = await $.pointerValue<Exclude<__goscript_mux.Mux, null>>($.pointerValue<VMux>(v).mx).InvokeMethod(serviceID, methodID, strm)
 		done = __goscriptReturn3[0]
 		err = __goscriptReturn3[1]
@@ -130,9 +130,9 @@ export class VMux {
 		await using __defer = new $.AsyncDisposableStack()
 		if ($.pointerValue<VMux>(v).veryVerbose) {
 			let t1 = $.markAsStructValue($.cloneStructValue(time.Now()))
-			__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+			__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 				await logrus.Entry.prototype.Debugf.call($.pointerValue<VMux>(v).le, "Register(handler(%v)) => dur(%v) err(%v)", $.arrayToSlice<any>([(handler as any), time.Duration_String(time.Since($.markAsStructValue($.cloneStructValue(t1)))), (err as any)]))
-			}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+			})() })
 		}
 		const __goscriptReturn4: $.GoError = await $.pointerValue<Exclude<__goscript_mux.Mux, null>>($.pointerValue<VMux>(v).mx).Register(handler)
 		err = __goscriptReturn4

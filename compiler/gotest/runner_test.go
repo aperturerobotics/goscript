@@ -604,7 +604,7 @@ func TestRunnerScopesPackageLoadErrors(t *testing.T) {
 	}
 }
 
-func TestRunnerScopesPackageCompileErrors(t *testing.T) {
+func TestRunnerCompilesAddressOfDereferencePackage(t *testing.T) {
 	moduleDir := writeFixture(t, map[string]string{
 		"go.mod": "module example.test/mixedcompile\n\ngo 1.25.3\n",
 		"clean/value.go": strings.Join([]string{
@@ -664,11 +664,8 @@ func TestRunnerScopesPackageCompileErrors(t *testing.T) {
 		t.Fatalf("clean package should pass independently: %#v", clean)
 	}
 	broken := requirePackageResult(t, result, "example.test/mixedcompile/broken")
-	if broken.Action != ActionFail || broken.Owner != OwnerLowering {
-		t.Fatalf("broken package should carry lowering failure: %#v", broken)
-	}
-	if !strings.Contains(broken.Error, "unsupported address expression") {
-		t.Fatalf("broken package error should preserve compile diagnostic: %#v", broken)
+	if broken.Action != ActionPass {
+		t.Fatalf("address-of-dereference package should pass: %#v", broken)
 	}
 }
 

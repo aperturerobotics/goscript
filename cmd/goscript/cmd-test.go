@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/aperturerobotics/cli"
-	"github.com/s4wave/goscript/compiler/gotest"
 	"github.com/pkg/errors"
+	"github.com/s4wave/goscript/compiler/gotest"
 )
 
 func testCommands() []*cli.Command {

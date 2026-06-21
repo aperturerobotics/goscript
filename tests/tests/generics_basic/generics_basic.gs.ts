@@ -152,7 +152,7 @@ export class Mapper {
 
 	public Get(key: any): [any, boolean] {
 		const m: Mapper | $.VarRef<Mapper> | null = this
-		let [value, ok] = $.mapGet($.pointerValue<Mapper>(m).values, key, null)
+		let [value, ok] = $.mapGet<any, any, any>($.pointerValue<Mapper>(m).values, key, null)
 		return [value, ok]
 	}
 
@@ -241,7 +241,7 @@ export function Set_Add(s: Set, value: any): void {
 }
 
 export function Set_Has(s: Set, value: any): boolean {
-	let [, ok] = $.mapGet(s, value, {})
+	let [, ok] = $.mapGet<any, {}, {}>(s, value, {})
 	return ok
 }
 

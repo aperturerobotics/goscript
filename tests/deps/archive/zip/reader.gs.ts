@@ -181,7 +181,7 @@ export class Reader {
 
 	public async decompressor(method: number): globalThis.Promise<__goscript_register.Decompressor | null> {
 		const r: Reader | $.VarRef<Reader> | null = this
-		let dcomp = $.mapGet($.pointerValue<Reader>(r).decompressors, $.uint(method, 16), null)[0]
+		let dcomp = $.mapGet<number, __goscript_register.Decompressor | null, __goscript_register.Decompressor | null>($.pointerValue<Reader>(r).decompressors, $.uint(method, 16), null)[0]
 		if (dcomp == null) {
 			dcomp = await __goscript_register.decompressor($.uint(method, 16))
 		}
@@ -283,14 +283,14 @@ export class Reader {
 				}
 
 				{
-					let [idx, ok] = $.mapGet(files, name, 0)
+					let [idx, ok] = $.mapGet<string, number, number>(files, name, 0)
 					if (ok) {
 						$.pointerValue<Reader>(r).fileList![idx].isDup = true
 						continue
 					}
 				}
 				{
-					let [idx, ok] = $.mapGet(knownDirs, name, 0)
+					let [idx, ok] = $.mapGet<string, number, number>(knownDirs, name, 0)
 					if (ok) {
 						$.pointerValue<Reader>(r).fileList![idx].isDup = true
 						continue
@@ -307,7 +307,7 @@ export class Reader {
 							dir = $.sliceStringOrBytes(dir, undefined, idx)
 						}
 					}
-					if ($.mapGet(dirs, dir, false)[0]) {
+					if ($.mapGet<string, boolean, boolean>(dirs, dir, false)[0]) {
 						break
 					}
 					$.mapSet(dirs, dir, true)
@@ -324,10 +324,10 @@ export class Reader {
 			}
 			for (const [dir, __rangeValue] of dirs?.entries() ?? []) {
 				{
-					let [, ok] = $.mapGet(knownDirs, dir, 0)
+					let [, ok] = $.mapGet<string, number, number>(knownDirs, dir, 0)
 					if (!ok) {
 						{
-							let [idx, __goscriptShadow0] = $.mapGet(files, dir, 0)
+							let [idx, __goscriptShadow0] = $.mapGet<string, number, number>(files, dir, 0)
 							if (__goscriptShadow0) {
 								$.pointerValue<Reader>(r).fileList![idx].isDup = true
 							} else {

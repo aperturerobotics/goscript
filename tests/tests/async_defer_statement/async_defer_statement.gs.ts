@@ -7,11 +7,11 @@ export async function main(): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
 	let ch: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 
-	__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 		$.println("deferred start")
 		await $.chanRecv(ch)
 		$.println("deferred end")
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 
 	$.println("main start")
 	$.println("main signaling defer")

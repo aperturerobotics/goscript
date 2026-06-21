@@ -547,11 +547,11 @@ export class Stream {
 		await using __defer = new $.AsyncDisposableStack()
 		// Close the stream without holding the state lock
 		let closeStream: boolean = false
-		__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			if (closeStream) {
 				await Stream.prototype.cleanup.call(s)
 			}
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 
 		if ($.uint((flags & 2), 16) == $.uint(2, 16)) {
 			await $.pointerValue<Stream>(s).stateLock.Lock()

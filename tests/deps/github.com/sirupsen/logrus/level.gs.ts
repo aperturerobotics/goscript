@@ -171,7 +171,7 @@ export async function levelPrefix(level: __goscript_logrus.Level, disableTrunc: 
 	let prefix: globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null = __goscriptTuple0[0]
 	let _unknown = __goscriptTuple0[1]
 
-	let [p, ok] = $.mapGet(prefix, $.uint(level, 32), $.markAsStructValue(new lvlPrefix()))
+	let [p, ok] = $.mapGet<__goscript_logrus.Level, lvlPrefix, lvlPrefix>(prefix, $.uint(level, 32), $.markAsStructValue(new lvlPrefix()))
 	if (!ok) {
 		p = $.markAsStructValue($.cloneStructValue(_unknown))
 	}

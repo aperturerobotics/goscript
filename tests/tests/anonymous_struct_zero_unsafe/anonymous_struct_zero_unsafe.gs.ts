@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("magic len:", $.len(linkinfo.Magic))
 	$.println("magic zero:", $.uint(linkinfo.Magic[0], 8))
 	$.println("sects len:", $.len(linkinfo.Sects))
-	$.println("pointer diff:", $.uint($.uint64Sub($.uint(linkinfo.Sects[0].End, 64), $.uint(linkinfo.Sects[0].Start, 64)), 64))
+	$.println("pointer diff:", $.uint($.uint64Sub((linkinfo.Sects[0].End as any), (linkinfo.Sects[0].Start as any)), 64))
 	$.println("start nil:", linkinfo.Sects[0].Start == null)
 }
 

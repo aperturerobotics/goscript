@@ -19,14 +19,14 @@ export function __goscript_set_handlers(__goscriptValue: $.Slice<(() => void) | 
 
 export async function runHandler(handler: (() => void) | null): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
-	__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+	__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 		{
 			let err = $.recover()
 			if (err != null) {
 				await fmt.Fprintln($.pointerValueOrNil($.interfaceValue<io.Writer | null>(os.Stderr, "*os.File"))!, "Error: Logrus exit handler error:", err)
 			}
 		}
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+	})() })
 
 	await handler!()
 }

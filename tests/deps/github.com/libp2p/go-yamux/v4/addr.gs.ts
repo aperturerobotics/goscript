@@ -73,9 +73,9 @@ export class yamuxAddr {
 		return "yamux"
 	}
 
-	public String(): string {
+	public async String(): globalThis.Promise<string> {
 		const y: yamuxAddr | $.VarRef<yamuxAddr> | null = this
-		return fmt.Sprintf("yamux:%s", $.pointerValue<yamuxAddr>(y).Addr)
+		return await fmt.Sprintf("yamux:%s", $.pointerValue<yamuxAddr>(y).Addr)
 	}
 
 	static __typeInfo = $.registerStructType(

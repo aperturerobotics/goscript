@@ -100,7 +100,7 @@ export async function main(): globalThis.Promise<void> {
 
 	$.mapSet(s.files, "test", f)
 
-	$.println("Created storage with file:", $.pointerValue<file>($.mapGet(s.files, "test", null)[0]).name)
+	$.println("Created storage with file:", $.pointerValue<file>($.mapGet<string, file | $.VarRef<file> | null, file | $.VarRef<file> | null>(s.files, "test", null)[0]).name)
 }
 
 if ($.isMainScript(import.meta)) {

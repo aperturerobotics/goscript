@@ -65,7 +65,7 @@ import "./tcpsock_unix.gs.ts"
 
 export type Addr = {
 	Network(): string
-	String(): string
+	String(): string | globalThis.Promise<string>
 }
 
 $.registerInterfaceType(

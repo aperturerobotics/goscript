@@ -150,7 +150,7 @@ describe('encoding/binary override', () => {
     expect($.bytesToString(written[0])).toBe('out')
   })
 
-  it('handles boxed fixed-width primitive fast paths', () => {
+  it('handles boxed fixed-width primitive fast paths', async () => {
     const value = $.namedValueInterfaceValue<unknown>(0x1234, 'uint16', {})
     const [encoded, encErr] = Append(null, BigEndian, value)
     expect(encErr).toBeNull()
@@ -164,6 +164,52 @@ describe('encoding/binary override', () => {
     expect(Decode(encoded, BigEndian, target)).toEqual([2, null])
     expect($.pointerValue(target as any)).toBe(0x1234)
     expect(Size(value)).toBe(2)
+
+    const polType: $.TypeInfo = {
+      kind: $.TypeKind.Basic,
+      name: 'uint64',
+      typeName: 'chunker.Pol',
+    }
+    const polValue = $.namedValueInterfaceValue<unknown>(
+      0x010203040506,
+      'chunker.Pol',
+      {},
+      polType,
+    )
+    const [polEncoded, polEncErr] = Append(null, LittleEndian, polValue)
+    expect(polEncErr).toBeNull()
+    expect(Array.from($.bytesToUint8Array(polEncoded))).toEqual([
+      0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00, 0x00,
+    ])
+    expect(Size(polValue)).toBe(8)
+
+    const polRef = $.varRef(0)
+    const polTarget = $.namedValueInterfaceValue<unknown>(
+      polRef,
+      '*chunker.Pol',
+      {},
+      { kind: $.TypeKind.Pointer, elemType: polType },
+    )
+    expect(Decode(polEncoded, LittleEndian, polTarget)).toEqual([8, null])
+    expect(polRef.value).toBe(0x010203040506)
+
+    polRef.value = 0
+    expect(
+      await Read(bytes.NewReader(polEncoded)!, LittleEndian, polTarget),
+    ).toBeNull()
+    expect(polRef.value).toBe(0x010203040506)
+
+    const written: $.Bytes[] = []
+    const writer = {
+      Write(p: $.Bytes): [number, $.GoError] {
+        written.push($.bytesToUint8Array(p).slice())
+        return [$.len(p), null]
+      },
+    }
+    expect(await Write(writer, LittleEndian, polValue)).toBeNull()
+    expect(Array.from(written[0])).toEqual([
+      0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00, 0x00,
+    ])
   })
 
   it('fails unsupported reflect-shaped cases closed', () => {

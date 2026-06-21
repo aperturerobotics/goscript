@@ -613,7 +613,7 @@ export class Logger {
 	public async hooksForLevel(level: __goscript_logrus.Level): globalThis.Promise<$.Slice<__goscript_hooks.Hook | null>> {
 		const logger: Logger | $.VarRef<Logger> | null = this
 		await $.pointerValue<Logger>(logger).mu.Lock()
-		let hooks: $.Slice<__goscript_hooks.Hook | null> = $.mapGet($.pointerValue<Logger>(logger).Hooks, $.uint(level, 32), null)[0]
+		let hooks: $.Slice<__goscript_hooks.Hook | null> = $.mapGet<__goscript_logrus.Level, $.Slice<__goscript_hooks.Hook | null>, $.Slice<__goscript_hooks.Hook | null>>($.pointerValue<Logger>(logger).Hooks, $.uint(level, 32), null)[0]
 		if ($.len(hooks) == 0) {
 			$.pointerValue<Logger>(logger).mu.Unlock()
 			return null

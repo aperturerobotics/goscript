@@ -480,7 +480,7 @@ export class Dialer {
 			let oldCancel: $.Channel<{}> | null = $.pointerValue<Dialer>(d).Cancel
 			if (oldCancel != null) {
 				let [subCtx, __goscriptShadow2] = context.WithCancel($.pointerValueOrNil(ctx)!)
-				queueMicrotask(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+				queueMicrotask(async () => { await (async (): globalThis.Promise<void> => {
 					const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([
 						{
 							id: 0,
@@ -501,7 +501,7 @@ export class Dialer {
 					if (__goscriptSelect0HasReturn) {
 						return __goscriptSelect0Value
 					}
-				}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+				})() })
 				ctx = subCtx
 			}
 		}
@@ -927,9 +927,9 @@ export class sysDialer {
 				await $.pointerValue<nettrace.Trace>(trace).ConnectStart!($.pointerValue<sysDialer>(sd).network, raStr)
 			}
 			if ($.pointerValue<nettrace.Trace>(trace).ConnectDone != null) {
-				__defer.defer(async () => { await ($.functionValue(async (): globalThis.Promise<void> => {
+				__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 					await $.pointerValue<nettrace.Trace>(trace).ConnectDone!($.pointerValue<sysDialer>(sd).network, raStr, err)
-				}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+				})() })
 			}
 		}
 		let la = $.pointerValue<sysDialer>(sd).Dialer.LocalAddr

@@ -166,9 +166,9 @@ export class conf {
 		let dnsConf: __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null = null as __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null
 		using __defer = new $.DisposableStack()
 		if ($.pointerValue<conf>(c).dnsDebugLevel > 1) {
-			__defer.defer(() => { ($.functionValue((): void => {
+			__defer.defer(() => { ((): void => {
 				$.print("go package net: addrLookupOrder(", addr, ") = ", __goscript_dnsclient_unix.hostLookupOrder_String(ret), "\n")
-			}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+			})() })
 		}
 		const __goscriptReturn1: [__goscript_dnsclient_unix.hostLookupOrder, __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null] = await conf.prototype.lookupOrder.call(c, r, "")
 		ret = __goscriptReturn1[0]
@@ -184,9 +184,9 @@ export class conf {
 		let dnsConf: __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null = null as __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null
 		using __defer = new $.DisposableStack()
 		if ($.pointerValue<conf>(c).dnsDebugLevel > 1) {
-			__defer.defer(() => { ($.functionValue((): void => {
+			__defer.defer(() => { ((): void => {
 				$.print("go package net: hostLookupOrder(", hostname, ") = ", __goscript_dnsclient_unix.hostLookupOrder_String(ret), "\n")
-			}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+			})() })
 		}
 		const __goscriptReturn3: [__goscript_dnsclient_unix.hostLookupOrder, __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null] = await conf.prototype.lookupOrder.call(c, r, hostname)
 		ret = __goscriptReturn3[0]
@@ -325,7 +325,7 @@ export class conf {
 		hostname = stringslite.TrimSuffix(hostname, ".")
 
 		let nss: __goscript_nss.nssConf | $.VarRef<__goscript_nss.nssConf> | null = await __goscript_nss.getSystemNSS()
-		let srcs: $.Slice<__goscript_nss.nssSource> = $.mapGet($.pointerValue<__goscript_nss.nssConf>(nss).sources, "hosts", null)[0]
+		let srcs: $.Slice<__goscript_nss.nssSource> = $.mapGet<string, $.Slice<__goscript_nss.nssSource>, $.Slice<__goscript_nss.nssSource>>($.pointerValue<__goscript_nss.nssConf>(nss).sources, "hosts", null)[0]
 		// If /etc/nsswitch.conf doesn't exist or doesn't specify any
 		// sources for "hosts", assume Go's DNS will work fine.
 		if (errors.Is($.pointerValueOrNil($.pointerValue<__goscript_nss.nssConf>(nss).err)!, $.pointerValueOrNil(fs.ErrNotExist)!) || (($.pointerValue<__goscript_nss.nssConf>(nss).err == null) && ($.len(srcs) == 0))) {
@@ -548,7 +548,7 @@ export async function initConfVal(): globalThis.Promise<void> {
 	$.pointerValue<conf>(confVal).dnsDebugLevel = debugLevel
 
 	if ($.pointerValue<conf>(confVal).dnsDebugLevel > 0) {
-		__defer.defer(() => { ($.functionValue((): void => {
+		__defer.defer(() => { ((): void => {
 			if ($.pointerValue<conf>(confVal).dnsDebugLevel > 1) {
 				$.println("go package net: confVal.netCgo =", $.pointerValue<conf>(confVal).netCgo, " netGo =", $.pointerValue<conf>(confVal).netGo)
 			}
@@ -588,7 +588,7 @@ export async function initConfVal(): globalThis.Promise<void> {
 					break
 				}
 			}
-		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))() })
+		})() })
 	}
 
 	// The remainder of this function sets preferCgo based on
