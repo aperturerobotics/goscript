@@ -49,7 +49,23 @@ import * as $ from "@goscript/builtin/index.js";
 //		})
 //		fmt.Printf("Your number is %d.\n", answer)
 //	}
-export function Search(n: number, f: (i: number) => boolean): number {
+type SearchPredicate = (i: number) => boolean | Promise<boolean>
+
+export async function Search(n: number, f: SearchPredicate): Promise<number> {
+	let left = 0
+	let right = n
+	while (left < right) {
+		const mid = Math.floor((left + right) / 2)
+		if (await f(mid)) {
+			right = mid
+		} else {
+			left = mid + 1
+		}
+	}
+	return left
+}
+
+function searchSync(n: number, f: (i: number) => boolean): number {
 	let left = 0
 	let right = n
 	while (left < right) {
@@ -107,7 +123,7 @@ export function Find(n: number, cmp: (i: number) => number): [number, boolean] {
 // not present (it could be len(a)).
 // The slice must be sorted in ascending order.
 export function SearchInts(a: $.Slice<number>, x: number): number {
-	return Search($.len(a), (i: number) => ($.index(a, i) as number) >= x)
+	return searchSync($.len(a), (i: number) => ($.index(a, i) as number) >= x)
 }
 
 // SearchFloat64s searches for x in a sorted slice of float64s and returns the index
@@ -115,7 +131,7 @@ export function SearchInts(a: $.Slice<number>, x: number): number {
 // present (it could be len(a)).
 // The slice must be sorted in ascending order.
 export function SearchFloat64s(a: $.Slice<number>, x: number): number {
-	return Search($.len(a), (i: number) => ($.index(a, i) as number) >= x)
+	return searchSync($.len(a), (i: number) => ($.index(a, i) as number) >= x)
 }
 
 // SearchStrings searches for x in a sorted slice of strings and returns the index
@@ -123,6 +139,5 @@ export function SearchFloat64s(a: $.Slice<number>, x: number): number {
 // present (it could be len(a)).
 // The slice must be sorted in ascending order.
 export function SearchStrings(a: $.Slice<string>, x: string): number {
-	return Search($.len(a), (i: number) => ($.index(a, i) as string) >= x)
+	return searchSync($.len(a), (i: number) => ($.index(a, i) as string) >= x)
 }
-

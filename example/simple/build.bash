@@ -2,7 +2,7 @@
 set -eo pipefail
 set -x
 
-go run -v github.com/aperturerobotics/goscript/cmd/goscript \
+go run -v github.com/s4wave/goscript/cmd/goscript \
      compile \
      --package .
 

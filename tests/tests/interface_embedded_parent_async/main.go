@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/interface_embedded_parent_async/dep"
+import "github.com/s4wave/goscript/tests/tests/interface_embedded_parent_async/dep"
 
 type Specific interface {
 	dep.Directive

@@ -13,7 +13,7 @@ import (
 	"slices"
 	"strings"
 
-	gs "github.com/aperturerobotics/goscript"
+	gs "github.com/s4wave/goscript"
 	jsoniter "github.com/aperturerobotics/json-iterator-lite"
 )
 

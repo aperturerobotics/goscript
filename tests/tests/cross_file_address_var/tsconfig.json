@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/cross_file_address_var/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/cross_file_address_var/*": [
         "./*"
       ]
     }

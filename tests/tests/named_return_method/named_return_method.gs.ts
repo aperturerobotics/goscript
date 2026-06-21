@@ -74,7 +74,7 @@ export class content {
 		() => new content(),
 		[{ name: "ProcessData", args: [{ name: "input", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "result", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "status", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "valid", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ReadAt", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "off", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }],
 		content,
-		[{ name: "bytes", key: "bytes", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/named_return_method", index: [0], offset: 0, exported: false }]
+		[{ name: "bytes", key: "bytes", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/named_return_method", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/init_cross_file_zero_var_reader/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/init_cross_file_zero_var_reader/*": [
         "./*"
       ]
     }

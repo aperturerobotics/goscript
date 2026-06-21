@@ -40,7 +40,7 @@ export class Foo {
 		() => new Foo(),
 		[{ name: "Bar", args: [], returns: [] }],
 		Foo,
-		[{ name: "done", key: "done", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/goroutines_selector", index: [0], offset: 0, exported: false }]
+		[{ name: "done", key: "done", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/goroutines_selector", index: [0], offset: 0, exported: false }]
 	)
 }
 

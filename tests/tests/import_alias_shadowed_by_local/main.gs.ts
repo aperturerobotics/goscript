@@ -3,8 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as drbg2 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_alias_shadowed_by_local/drbg/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_alias_shadowed_by_local/drbg/index.js"
+import * as drbg2 from "@goscript/github.com/s4wave/goscript/tests/tests/import_alias_shadowed_by_local/drbg/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/import_alias_shadowed_by_local/drbg/index.js"
 
 export class local {
 	public get value(): number {
@@ -37,7 +37,7 @@ export class local {
 		() => new local(),
 		[],
 		local,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/import_alias_shadowed_by_local", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/import_alias_shadowed_by_local", index: [0], offset: 0, exported: false }]
 	)
 }
 

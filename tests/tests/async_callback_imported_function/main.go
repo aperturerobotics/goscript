@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/async_callback_imported_function/subpkg"
+import "github.com/s4wave/goscript/tests/tests/async_callback_imported_function/subpkg"
 
 func main() {
 	ch := make(chan int, 1)

@@ -39,7 +39,7 @@ export class branch {
 		() => new branch(),
 		[{ name: "value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		branch,
-		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/type_switch_varref_suffix", index: [0], offset: 0, exported: false }]
+		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/type_switch_varref_suffix", index: [0], offset: 0, exported: false }]
 	)
 }
 

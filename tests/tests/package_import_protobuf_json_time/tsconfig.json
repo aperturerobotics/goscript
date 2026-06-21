@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_protobuf_json_time/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/package_import_protobuf_json_time/*": [
         "./*"
       ]
     }

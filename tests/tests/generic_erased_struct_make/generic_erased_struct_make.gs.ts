@@ -34,7 +34,7 @@ export class queue {
 		() => new queue(),
 		[],
 		queue,
-		[{ name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/generic_erased_struct_make", index: [0], offset: 0, exported: false }]
+		[{ name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/s4wave/goscript/tests/tests/generic_erased_struct_make", index: [0], offset: 0, exported: false }]
 	)
 }
 

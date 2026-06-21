@@ -2,10 +2,10 @@ module example
 
 go 1.25.3
 
-replace github.com/aperturerobotics/goscript => ../../
+replace github.com/s4wave/goscript => ../../
 
 require (
-	github.com/aperturerobotics/goscript v0.0.62-0.20260111070024-969f9456831b
+	github.com/s4wave/goscript v0.0.62-0.20260111070024-969f9456831b
 	github.com/sirupsen/logrus v1.9.5-0.20260508084601-d4a50659cfd6
 )
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/aperturerobotics/goscript/tests/tests/import_type_methods/errlist"
+	"github.com/s4wave/goscript/tests/tests/import_type_methods/errlist"
 )
 
 type parser struct {

@@ -3,7 +3,7 @@ package main
 import (
 	"io"
 
-	"github.com/aperturerobotics/goscript/tests/tests/interface_embedding/subpkg"
+	"github.com/s4wave/goscript/tests/tests/interface_embedding/subpkg"
 )
 
 // File represents a file interface similar to billy.File

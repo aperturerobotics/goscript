@@ -44,7 +44,7 @@ export class locked {
 		() => new locked(),
 		[{ name: "Inc", args: [], returns: [] }, { name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		locked,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/shadowed_varref_pointer_receiver", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/shadowed_varref_pointer_receiver", index: [0], offset: 0, exported: false }]
 	)
 }
 

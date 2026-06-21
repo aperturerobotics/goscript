@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	gs "github.com/aperturerobotics/goscript"
+	gs "github.com/s4wave/goscript"
 	"github.com/pkg/errors"
 )
 

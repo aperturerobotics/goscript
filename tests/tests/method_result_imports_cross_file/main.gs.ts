@@ -3,13 +3,13 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as dep1 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/method_result_imports_cross_file/dep1/index.js"
+import * as dep1 from "@goscript/github.com/s4wave/goscript/tests/tests/method_result_imports_cross_file/dep1/index.js"
 
-import * as dep2 from "@goscript/github.com/aperturerobotics/goscript/tests/tests/method_result_imports_cross_file/dep2/index.js"
+import * as dep2 from "@goscript/github.com/s4wave/goscript/tests/tests/method_result_imports_cross_file/dep2/index.js"
 
 import * as __goscript_method from "./method.gs.ts"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/method_result_imports_cross_file/dep1/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/method_result_imports_cross_file/dep2/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/method_result_imports_cross_file/dep1/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/method_result_imports_cross_file/dep2/index.js"
 import "./method.gs.ts"
 
 export class Holder {

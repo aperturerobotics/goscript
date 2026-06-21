@@ -166,7 +166,7 @@ export default function App() {
 
       <div className="powered-by">
         Built with{' '}
-        <a href="https://github.com/aperturerobotics/goscript">GoScript</a> - Go
+        <a href="https://github.com/s4wave/goscript">GoScript</a> - Go
         business logic compiled to TypeScript
       </div>
     </div>

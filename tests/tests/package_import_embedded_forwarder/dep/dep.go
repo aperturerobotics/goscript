@@ -1,8 +1,8 @@
 package dep
 
 import (
-	"github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/inner"
-	"github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/tx"
+	"github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/inner"
+	"github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/tx"
 )
 
 type Tx = tx.Tx

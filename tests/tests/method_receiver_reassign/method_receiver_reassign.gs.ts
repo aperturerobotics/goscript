@@ -42,7 +42,7 @@ export class item {
 		() => new item(),
 		[{ name: "dec", args: [], returns: [{ name: "_r0", type: "main.item" }] }],
 		item,
-		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_receiver_reassign", index: [0], offset: 0, exported: false }]
+		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/method_receiver_reassign", index: [0], offset: 0, exported: false }]
 	)
 }
 

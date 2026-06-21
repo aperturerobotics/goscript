@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
+import * as $ from '@goscript/builtin/index.js'
+
 import {
   Compiler,
   FuncForPC,
+  MemStats,
+  ReadMemStats,
   ReadTrace,
   SetFinalizer,
   StartTrace,
@@ -24,5 +28,17 @@ describe('runtime override', () => {
     const obj = {}
     expect(() => SetFinalizer(obj, () => {})).not.toThrow()
     expect(() => SetFinalizer(obj, null)).not.toThrow()
+  })
+
+  it('exposes heap and stack MemStats fields', () => {
+    const stats = new MemStats()
+
+    ReadMemStats($.varRef(stats))
+
+    expect(stats.HeapAlloc).toBe(stats.Alloc)
+    expect(stats.HeapSys).toBe(stats.Sys)
+    expect(stats.HeapInuse).toBe(stats.Alloc)
+    expect(stats.StackInuse).toBe(0)
+    expect(stats.StackSys).toBe(0)
   })
 })

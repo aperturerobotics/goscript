@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/aperturerobotics/cli"
-	"github.com/aperturerobotics/goscript/compiler/gotest"
+	"github.com/s4wave/goscript/compiler/gotest"
 	"github.com/pkg/errors"
 )
 

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aperturerobotics/goscript/compiler/tsworkspace"
+	"github.com/s4wave/goscript/compiler/tsworkspace"
 	"github.com/sirupsen/logrus"
 
 	exptrace "golang.org/x/exp/trace"

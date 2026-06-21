@@ -167,6 +167,10 @@ export class Time {
     return Time.create(this._date, this._nsec, undefined, $.pointerValue(loc))
   }
 
+  public AppendFormat(b: $.Bytes | null, layout: string): $.Bytes {
+    return $.appendSlice(b, $.stringToBytes(this.Format(layout))) as $.Bytes
+  }
+
   // Format returns a textual representation of the time value formatted according to the layout
   public Format(layout: string): string {
     // Implementation of Go's time formatting based on reference time:
@@ -510,6 +514,66 @@ export class Time {
     return result
   }
 
+  public YearDay(): number {
+    const [year, month0, day] = this.wallDateParts()
+    const start = globalThis.Date.UTC(year, 0, 1)
+    const current = globalThis.Date.UTC(year, month0, day)
+    return Math.floor((current - start) / millisecondsPerDay) + 1
+  }
+
+  public ISOWeek(): [number, number] {
+    const [year, month0, day] = this.wallDateParts()
+    const date = new globalThis.Date(globalThis.Date.UTC(year, month0, day))
+    const weekday = date.getUTCDay() || 7
+    date.setUTCDate(date.getUTCDate() + 4 - weekday)
+
+    const isoYear = date.getUTCFullYear()
+    const yearStart = new globalThis.Date(globalThis.Date.UTC(isoYear, 0, 1))
+    const week = Math.ceil(
+      ((date.getTime() - yearStart.getTime()) / millisecondsPerDay + 1) / 7,
+    )
+    return [isoYear, week]
+  }
+
+  public AppendBinary(b: $.Bytes | null): [$.Bytes, $.GoError] {
+    const [zoneName, zoneOffsetSeconds] = this.Zone()
+    let offsetMinutes = -1
+    let offsetSeconds = 0
+    let version = timeBinaryVersionV1
+
+    if (zoneName !== 'UTC' || zoneOffsetSeconds !== 0) {
+      offsetSeconds = zoneOffsetSeconds % 60
+      if (offsetSeconds !== 0) {
+        version = timeBinaryVersionV2
+      }
+
+      offsetMinutes = Math.trunc(zoneOffsetSeconds / 60)
+      if (offsetMinutes < -32768 || offsetMinutes === -1 || offsetMinutes > 32767) {
+        return [b, $.newError('Time.MarshalBinary: unexpected zone offset')]
+      }
+    }
+
+    const seconds = BigInt(this.Unix()) + unixToInternalSeconds
+    const nanos = this.Nanosecond()
+    const bytes = new Uint8Array(version === timeBinaryVersionV2 ? 16 : 15)
+    bytes[0] = version
+    writeInt64BE(bytes, 1, seconds)
+    writeInt32BE(bytes, 9, nanos)
+    writeInt16BE(bytes, 13, offsetMinutes)
+    if (version === timeBinaryVersionV2) {
+      bytes[15] = offsetSeconds & 0xff
+    }
+
+    if (b == null) {
+      return [bytes, null]
+    }
+    return [$.appendSlice(b, bytes) as $.Bytes, null]
+  }
+
+  public MarshalBinary(): [$.Bytes, $.GoError] {
+    return this.AppendBinary(null)
+  }
+
   // Sub returns the duration t-u
   // If both times have monotonic readings, use them for accurate duration calculation
   public Sub(u: Time): Duration {
@@ -635,6 +699,24 @@ export class Time {
 
     return result
   }
+
+  private wallDateParts(): [number, number, number] {
+    if (this._location.offsetSeconds !== undefined) {
+      const adjustedTime = new globalThis.Date(
+        this._date.getTime() + this._location.offsetSeconds * 1000,
+      )
+      return [
+        adjustedTime.getUTCFullYear(),
+        adjustedTime.getUTCMonth(),
+        adjustedTime.getUTCDate(),
+      ]
+    }
+    return [
+      this._date.getFullYear(),
+      this._date.getMonth(),
+      this._date.getDate(),
+    ]
+  }
 }
 
 // Duration represents a span of time (nanoseconds)
@@ -643,6 +725,32 @@ export type Duration = number
 const maxDuration = Number(9223372036854775807n)
 const minDuration = Number(-9223372036854775808n)
 const maxTimerDelayMilliseconds = 0x7fffffff
+const millisecondsPerDay = 24 * 60 * 60 * 1000
+const unixToInternalSeconds = 62135596800n
+const timeBinaryVersionV1 = 1
+const timeBinaryVersionV2 = 2
+
+function writeInt64BE(bytes: Uint8Array, offset: number, value: bigint): void {
+  let encoded = BigInt.asUintN(64, value)
+  for (let idx = 7; idx >= 0; idx--) {
+    bytes[offset + idx] = Number(encoded & 0xffn)
+    encoded >>= 8n
+  }
+}
+
+function writeInt32BE(bytes: Uint8Array, offset: number, value: number): void {
+  const encoded = value >>> 0
+  bytes[offset] = (encoded >>> 24) & 0xff
+  bytes[offset + 1] = (encoded >>> 16) & 0xff
+  bytes[offset + 2] = (encoded >>> 8) & 0xff
+  bytes[offset + 3] = encoded & 0xff
+}
+
+function writeInt16BE(bytes: Uint8Array, offset: number, value: number): void {
+  const encoded = value & 0xffff
+  bytes[offset] = (encoded >>> 8) & 0xff
+  bytes[offset + 1] = encoded & 0xff
+}
 
 function durationNumber(d: Duration): number {
   return Number(d)
@@ -837,20 +945,7 @@ export class Location {
 }
 
 // Month represents a month of the year
-export enum Month {
-  January = 1,
-  February = 2,
-  March = 3,
-  April = 4,
-  May = 5,
-  June = 6,
-  July = 7,
-  August = 8,
-  September = 9,
-  October = 10,
-  November = 11,
-  December = 12,
-}
+export type Month = number
 
 // Weekday represents a day of the week
 export enum Weekday {
@@ -1042,8 +1137,12 @@ export function Date(
   min: number,
   sec: number,
   nsec: number,
-  loc: Location,
+  loc: Location | $.VarRef<Location> | null,
 ): Time {
+  if (loc === null) {
+    throw new Error('time: missing Location in call to Date')
+  }
+  loc = $.pointerValue(loc)
   let date: globalThis.Date
 
   if (loc.offsetSeconds !== undefined) {
@@ -1111,18 +1210,18 @@ export async function Sleep(d: Duration): Promise<void> {
 }
 
 // Export month constants
-export const January = Month.January
-export const February = Month.February
-export const March = Month.March
-export const April = Month.April
-export const May = Month.May
-export const June = Month.June
-export const July = Month.July
-export const August = Month.August
-export const September = Month.September
-export const October = Month.October
-export const November = Month.November
-export const December = Month.December
+export const January: Month = 1
+export const February: Month = 2
+export const March: Month = 3
+export const April: Month = 4
+export const May: Month = 5
+export const June: Month = 6
+export const July: Month = 7
+export const August: Month = 8
+export const September: Month = 9
+export const October: Month = 10
+export const November: Month = 11
+export const December: Month = 12
 
 // Export weekday constants
 export const Sunday = Weekday.Sunday
@@ -1336,14 +1435,15 @@ export function Tick(d: Duration): ChannelRef<Time> {
 
 // LoadLocation returns the Location with the given name
 // This is a simplified implementation that only supports UTC and Local
-export function LoadLocation(name: string): Location {
+export function LoadLocation(name: string): [Location | null, $.GoError] {
   switch (name) {
+    case '':
     case 'UTC':
-      return UTC
+      return [UTC, null]
     case 'Local':
-      return Local
+      return [Local, null]
     default:
-      throw new Error(`time: unknown time zone ${name}`)
+      return [null, $.newError(`time: unknown time zone ${name}`)]
   }
 }
 
@@ -1352,7 +1452,7 @@ export function LoadLocation(name: string): Location {
 export function LoadLocationFromTZData(
   name: string,
   _data: Uint8Array,
-): Location {
+): [Location | null, $.GoError] {
   // TODO: parse the timezone data
-  return new Location(name)
+  return [new Location(name), null]
 }

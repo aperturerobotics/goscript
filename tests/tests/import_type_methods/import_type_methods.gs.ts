@@ -3,8 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as errlist from "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_type_methods/errlist/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_type_methods/errlist/index.js"
+import * as errlist from "@goscript/github.com/s4wave/goscript/tests/tests/import_type_methods/errlist/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/import_type_methods/errlist/index.js"
 
 export class parser {
 	public get errors(): errlist.ErrorList {
@@ -37,7 +37,7 @@ export class parser {
 		() => new parser(),
 		[],
 		parser,
-		[{ name: "errors", key: "errors", type: "errlist.ErrorList", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/import_type_methods", index: [0], offset: 0, exported: false }]
+		[{ name: "errors", key: "errors", type: "errlist.ErrorList", pkgPath: "github.com/s4wave/goscript/tests/tests/import_type_methods", index: [0], offset: 0, exported: false }]
 	)
 }
 

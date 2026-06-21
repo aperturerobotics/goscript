@@ -44,7 +44,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[],
 		MyStruct,
-		[{ name: "publicField", key: "publicField", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/private_field_access", index: [0], offset: 0, exported: false }, { name: "privateField", key: "privateField", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/private_field_access", index: [1], offset: 16, exported: false }]
+		[{ name: "publicField", key: "publicField", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/private_field_access", index: [0], offset: 0, exported: false }, { name: "privateField", key: "privateField", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/private_field_access", index: [1], offset: 16, exported: false }]
 	)
 }
 

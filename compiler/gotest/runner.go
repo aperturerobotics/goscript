@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aperturerobotics/goscript/compiler"
-	"github.com/aperturerobotics/goscript/compiler/tsworkspace"
+	"github.com/s4wave/goscript/compiler"
+	"github.com/s4wave/goscript/compiler/tsworkspace"
 	"github.com/pkg/errors"
 )
 

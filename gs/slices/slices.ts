@@ -266,13 +266,23 @@ export function MinFunc<T>(x: $.Slice<T>, compare: CompareCallback<T>): T {
   return min
 }
 
-export function Collect<T>(seq: iter.Seq<T>): $.Slice<T> {
-  const out: T[] = []
+export function Collect<T>(seq: iter.Seq<T> | null): $.Slice<T> {
+  return AppendSeq(null, seq)
+}
+
+export function AppendSeq<T>(
+  s: $.Slice<T>,
+  seq: iter.Seq<T> | null,
+): $.Slice<T> {
+  if (seq == null) {
+    throw new Error('slices: nil iterator')
+  }
+  let out = s
   seq((value: T) => {
-    out.push(value)
+    out = $.append(out, value)
     return true
   })
-  return out.length === 0 ? null : out
+  return out
 }
 
 export function Sorted<T extends string | number>(

@@ -3,8 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as tx from "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/tx/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/tx/index.js"
+import * as tx from "@goscript/github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/tx/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/tx/index.js"
 
 export class CoreStore {
 	public get Prefix(): string {

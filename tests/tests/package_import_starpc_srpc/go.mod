@@ -1,4 +1,4 @@
-module github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc
+module github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc
 
 go 1.25.0
 

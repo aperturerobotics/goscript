@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/interface_slice_index_short_decl/dep"
+import "github.com/s4wave/goscript/tests/tests/interface_slice_index_short_decl/dep"
 
 type value [2]byte
 

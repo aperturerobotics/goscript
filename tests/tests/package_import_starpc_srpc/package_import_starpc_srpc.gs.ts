@@ -181,7 +181,7 @@ export class streamOpenResult {
 		() => new streamOpenResult(),
 		[],
 		streamOpenResult,
-		[{ name: "stream", key: "stream", type: "srpc.Stream", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }, { name: "err", key: "err", type: "error", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [1], offset: 16, exported: false }]
+		[{ name: "stream", key: "stream", type: "srpc.Stream", pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }, { name: "err", key: "err", type: "error", pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [1], offset: 16, exported: false }]
 	)
 }
 
@@ -226,7 +226,7 @@ export class streamProbeResult {
 		() => new streamProbeResult(),
 		[],
 		streamProbeResult,
-		[{ name: "total", key: "total", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }, { name: "err", key: "err", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [1], offset: 8, exported: false }]
+		[{ name: "total", key: "total", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }, { name: "err", key: "err", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [1], offset: 8, exported: false }]
 	)
 }
 
@@ -261,7 +261,7 @@ export class rpcStreamServerResult {
 		() => new rpcStreamServerResult(),
 		[],
 		rpcStreamServerResult,
-		[{ name: "err", key: "err", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }]
+		[{ name: "err", key: "err", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -457,7 +457,7 @@ export class memoryRpcStream {
 		() => new memoryRpcStream(),
 		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "CloseSend", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Context", args: [], returns: [{ name: "_r0", type: "context.Context" }] }, { name: "MsgRecv", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "MsgSend", args: [{ name: "msg", type: "protobuf_go_lite.Message" }], returns: [{ name: "_r0", type: "error" }] }, { name: "Recv", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "rpcstream.RpcStreamPacket" } }, { name: "_r1", type: "error" }] }, { name: "Send", args: [{ name: "pkt", type: { kind: $.TypeKind.Pointer, elemType: "rpcstream.RpcStreamPacket" } }], returns: [{ name: "_r0", type: "error" }] }],
 		memoryRpcStream,
-		[{ name: "ctx", key: "ctx", type: "context.Context", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }, { name: "cancel", key: "cancel", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [1], offset: 16, exported: false }, { name: "recv", key: "recv", type: { kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Pointer, elemType: "rpcstream.RpcStreamPacket" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [2], offset: 24, exported: false }, { name: "send", key: "send", type: { kind: $.TypeKind.Channel, direction: "send", elemType: { kind: $.TypeKind.Pointer, elemType: "rpcstream.RpcStreamPacket" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [3], offset: 32, exported: false }, { name: "closeSend", key: "closeSend", type: "sync.Once", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [4], offset: 40, exported: false }, { name: "cancelLocal", key: "cancelLocal", type: "sync.Once", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [5], offset: 52, exported: false }]
+		[{ name: "ctx", key: "ctx", type: "context.Context", pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }, { name: "cancel", key: "cancel", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo), pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [1], offset: 16, exported: false }, { name: "recv", key: "recv", type: { kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Pointer, elemType: "rpcstream.RpcStreamPacket" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [2], offset: 24, exported: false }, { name: "send", key: "send", type: { kind: $.TypeKind.Channel, direction: "send", elemType: { kind: $.TypeKind.Pointer, elemType: "rpcstream.RpcStreamPacket" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [3], offset: 32, exported: false }, { name: "closeSend", key: "closeSend", type: "sync.Once", pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [4], offset: 40, exported: false }, { name: "cancelLocal", key: "cancelLocal", type: "sync.Once", pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [5], offset: 52, exported: false }]
 	)
 }
 
@@ -544,7 +544,7 @@ export class memoryRpcContext {
 		() => new memoryRpcContext(),
 		[{ name: "Deadline", args: [], returns: [{ name: "_r0", type: "time.Time" }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Done", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Channel, direction: "receive", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } } }] }, { name: "Err", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Value", args: [{ name: "key", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }],
 		memoryRpcContext,
-		[{ name: "done", key: "done", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }, { name: "once", key: "once", type: "sync.Once", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_starpc_srpc", index: [1], offset: 8, exported: false }]
+		[{ name: "done", key: "done", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Struct, methods: [], fields: [] } }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [0], offset: 0, exported: false }, { name: "once", key: "once", type: "sync.Once", pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_starpc_srpc", index: [1], offset: 8, exported: false }]
 	)
 }
 

@@ -15,7 +15,7 @@
       "enabled": false
     },
     {
-      "matchPackageNames": ["github.com/aperturerobotics/goscript"],
+      "matchPackageNames": ["github.com/s4wave/goscript"],
       "enabled": false
     },
     {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/aperturerobotics/goscript/tests/tests/named_types_valueof/subpkg"
+	"github.com/s4wave/goscript/tests/tests/named_types_valueof/subpkg"
 )
 
 // Local named types for testing

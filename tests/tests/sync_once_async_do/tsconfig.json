@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/sync_once_async_do/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/sync_once_async_do/*": [
         "./*"
       ]
     }

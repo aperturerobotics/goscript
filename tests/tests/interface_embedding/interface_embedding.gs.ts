@@ -5,7 +5,7 @@ import * as $ from "@goscript/builtin/index.ts"
 
 import * as io from "@goscript/io/index.ts"
 
-import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedding/subpkg/index.ts"
+import * as subpkg from "@goscript/github.com/s4wave/goscript/tests/tests/interface_embedding/subpkg/index.ts"
 
 export type File = null | {
 	// Lock locks the file like e.g. flock. It protects against access from
@@ -205,7 +205,7 @@ export class qualifiedFile {
 	  new qualifiedFile(),
 	  [],
 	  qualifiedFile,
-	  {"File": "github.com/aperturerobotics/goscript/tests/tests/interface_embedding/subpkg.File", "metadata": { kind: $.TypeKind.Basic, name: "string" }}
+	  {"File": "github.com/s4wave/goscript/tests/tests/interface_embedding/subpkg.File", "metadata": { kind: $.TypeKind.Basic, name: "string" }}
 	);
 }
 

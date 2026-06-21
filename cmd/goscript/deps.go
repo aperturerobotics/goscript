@@ -4,5 +4,5 @@ package main
 
 import (
 	// _ ensure we include the root package
-	_ "github.com/aperturerobotics/goscript"
+	_ "github.com/s4wave/goscript"
 )

@@ -94,7 +94,7 @@ export class setterStruct {
 		() => new setterStruct(),
 		[{ name: "get", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "set", args: [{ name: "value", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
 		setterStruct,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -134,7 +134,7 @@ export class digest {
 		() => new digest(),
 		[{ name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [] }],
 		digest,
-		[{ name: "writes", key: "writes", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
+		[{ name: "writes", key: "writes", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
 	)
 }
 

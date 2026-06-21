@@ -3,8 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as dep from "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_parent_async/dep/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/interface_embedded_parent_async/dep/index.js"
+import * as dep from "@goscript/github.com/s4wave/goscript/tests/tests/interface_embedded_parent_async/dep/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/interface_embedded_parent_async/dep/index.js"
 
 export type Specific = {
 	Name(): string | globalThis.Promise<string>

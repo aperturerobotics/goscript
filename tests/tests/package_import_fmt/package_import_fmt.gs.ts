@@ -49,7 +49,7 @@ export class byteFormatter {
 		() => new byteFormatter(),
 		[{ name: "Format", args: [{ name: "state", type: "fmt.State" }, { name: "verb", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [] }],
 		byteFormatter,
-		[{ name: "prefix", key: "prefix", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_fmt", index: [0], offset: 0, exported: false }]
+		[{ name: "prefix", key: "prefix", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_fmt", index: [0], offset: 0, exported: false }]
 	)
 }
 

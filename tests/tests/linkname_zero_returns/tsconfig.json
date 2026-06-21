@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/linkname_zero_returns/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/linkname_zero_returns/*": [
         "./*"
       ]
     }

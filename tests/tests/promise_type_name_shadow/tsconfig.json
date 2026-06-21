@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/promise_type_name_shadow/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/promise_type_name_shadow/*": [
         "./*"
       ]
     }

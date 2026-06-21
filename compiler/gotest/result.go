@@ -1,6 +1,6 @@
 package gotest
 
-import "github.com/aperturerobotics/goscript/compiler"
+import "github.com/s4wave/goscript/compiler"
 
 // Result describes one GoScript package-test run.
 type Result struct {

@@ -96,7 +96,7 @@ export class outer {
 		() => new outer(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
 		outer,
-		[{ name: "raw", key: "raw", type: "main.raw", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
+		[{ name: "raw", key: "raw", type: "main.raw", pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -222,7 +222,7 @@ export class outerRW {
 		() => new outerRW(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [{ name: "_r0", type: "sync.Locker" }] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "TryRLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
 		outerRW,
-		[{ name: "rawRW", key: "rawRW", type: "main.rawRW", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
+		[{ name: "rawRW", key: "rawRW", type: "main.rawRW", pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -261,7 +261,7 @@ export class rawRunner {
 		() => new rawRunner(),
 		[{ name: "Run", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		rawRunner,
-		[{ name: "runner", key: "runner", type: "main.runner", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
+		[{ name: "runner", key: "runner", type: "main.runner", pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -300,7 +300,7 @@ export class outerRunner {
 		() => new outerRunner(),
 		[{ name: "Run", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		outerRunner,
-		[{ name: "rawRunner", key: "rawRunner", type: "main.rawRunner", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
+		[{ name: "rawRunner", key: "rawRunner", type: "main.rawRunner", pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 

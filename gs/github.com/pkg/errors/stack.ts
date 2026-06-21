@@ -2,72 +2,44 @@ import * as $ from '@goscript/builtin/index.js'
 
 // Type definitions
 export type uintptr = number
+export type Frame = uintptr
+export type StackTrace = $.Slice<Frame>
 
-export class Frame {
-  constructor(private _value: uintptr) {}
-
-  valueOf(): uintptr {
-    return this._value
-  }
-
-  toString(): string {
-    return String(this._value)
-  }
-
-  static from(value: uintptr): Frame {
-    return new Frame(value)
-  }
-
-  // pc returns the program counter for this frame;
-  // multiple frames may have the same PC value.
-  public pc(): uintptr {
-    return this._value - 1
-  }
-
-  // file returns the full path to the file that contains the
-  // function for this Frame's pc.
-  public file(): string {
-    return 'unknown'
-  }
-
-  // line returns the line number of source code of the
-  // function for this Frame's pc.
-  public line(): number {
-    return 0
-  }
-
-  // name returns the name of this function, if known.
-  public name(): string {
-    return 'unknown'
-  }
-
-  // MarshalText formats a stacktrace Frame as a text string.
-  public MarshalText(): [$.Bytes, $.GoError] {
-    const name = this.name()
-    if (name == 'unknown') {
-      return [new TextEncoder().encode(name), null]
-    }
-    return [
-      new TextEncoder().encode(`${name} ${this.file()}:${this.line()}`),
-      null,
-    ]
-  }
+export function Frame_pc(receiver: Frame): uintptr {
+  return receiver - 1
 }
 
-export class StackTrace {
-  constructor(private _value: Frame[] | null) {}
+export function Frame_file(_receiver: Frame): string {
+  return 'unknown'
+}
 
-  valueOf(): Frame[] | null {
-    return this._value
-  }
+export function Frame_line(_receiver: Frame): number {
+  return 0
+}
 
-  toString(): string {
-    return String(this._value)
-  }
+export function Frame_name(_receiver: Frame): string {
+  return 'unknown'
+}
 
-  static from(value: Frame[] | null): StackTrace {
-    return new StackTrace(value)
+export function Frame_MarshalText(receiver: Frame): [$.Bytes, $.GoError] {
+  const name = Frame_name(receiver)
+  if (name == 'unknown') {
+    return [new TextEncoder().encode(name), null]
   }
+  return [
+    new TextEncoder().encode(
+      `${name} ${Frame_file(receiver)}:${Frame_line(receiver)}`,
+    ),
+    null,
+  ]
+}
+
+export function StackTrace_Format(
+  _receiver: StackTrace,
+  _state: any,
+  _verb: number,
+): void {
+  // Stack frame formatting is informational in the JavaScript target.
 }
 
 class stack {
@@ -88,14 +60,14 @@ class stack {
   public StackTrace(): StackTrace {
     const s = this._value
     if (!s || s.length === 0) {
-      return new StackTrace(null)
+      return null
     }
 
     const frames: Frame[] = []
     for (let i = 0; i < s.length; i++) {
-      frames.push(new Frame(s[i]))
+      frames.push(s[i])
     }
-    return new StackTrace(frames)
+    return $.arrayToSlice(frames)
   }
 }
 

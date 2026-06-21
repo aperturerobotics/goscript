@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/type_switch_varref_suffix/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/type_switch_varref_suffix/*": [
         "./*"
       ]
     }

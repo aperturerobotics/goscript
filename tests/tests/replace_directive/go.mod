@@ -1,4 +1,4 @@
-module github.com/aperturerobotics/goscript/tests/tests/replace_directive
+module github.com/s4wave/goscript/tests/tests/replace_directive
 
 go 1.21
 

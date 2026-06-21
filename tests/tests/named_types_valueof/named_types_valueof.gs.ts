@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/tests/named_types_valueof/subpkg/index.ts"
+import * as subpkg from "@goscript/github.com/s4wave/goscript/tests/tests/named_types_valueof/subpkg/index.ts"
 
 export type LocalInt = number
 

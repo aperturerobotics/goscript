@@ -77,7 +77,7 @@ export class Stack {
 		() => new Stack(),
 		[{ name: "Len", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Pop", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Push", args: [{ name: "value", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }],
 		Stack,
-		[{ name: "items", key: "items", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/generics_basic", index: [0], offset: 0, exported: false }]
+		[{ name: "items", key: "items", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/s4wave/goscript/tests/tests/generics_basic", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -166,7 +166,7 @@ export class Mapper {
 		() => new Mapper(),
 		[{ name: "Get", args: [{ name: "key", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Put", args: [{ name: "key", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "value", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }],
 		Mapper,
-		[{ name: "values", key: "values", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/generics_basic", index: [0], offset: 0, exported: false }]
+		[{ name: "values", key: "values", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/s4wave/goscript/tests/tests/generics_basic", index: [0], offset: 0, exported: false }]
 	)
 }
 

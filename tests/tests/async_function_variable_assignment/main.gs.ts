@@ -35,7 +35,7 @@ export async function main(): globalThis.Promise<void> {
 			() => new result(),
 			[],
 			result,
-			[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/async_function_variable_assignment", index: [0], offset: 0, exported: false }]
+			[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/async_function_variable_assignment", index: [0], offset: 0, exported: false }]
 		)
 	}
 

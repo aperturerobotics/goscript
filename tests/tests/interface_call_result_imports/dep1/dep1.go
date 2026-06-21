@@ -1,6 +1,6 @@
 package dep1
 
-import "github.com/aperturerobotics/goscript/tests/tests/interface_call_result_imports/dep2"
+import "github.com/s4wave/goscript/tests/tests/interface_call_result_imports/dep2"
 
 type maker struct{}
 

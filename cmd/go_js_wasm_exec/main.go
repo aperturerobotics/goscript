@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aperturerobotics/goscript/compiler/gotest"
+	"github.com/s4wave/goscript/compiler/gotest"
 	"github.com/pkg/errors"
 )
 

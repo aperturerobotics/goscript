@@ -44,7 +44,7 @@ export class namedItem {
 		() => new namedItem(),
 		[],
 		namedItem,
-		[{ name: "key", key: "key", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/anonymous_struct_slice", index: [0], offset: 0, exported: false }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/anonymous_struct_slice", index: [1], offset: 16, exported: false }]
+		[{ name: "key", key: "key", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/anonymous_struct_slice", index: [0], offset: 0, exported: false }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/anonymous_struct_slice", index: [1], offset: 16, exported: false }]
 	)
 }
 

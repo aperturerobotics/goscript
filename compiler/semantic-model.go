@@ -756,6 +756,15 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 				if typed.Op == token.ARROW {
 					markFunctionAsync(semFn, "channel-receive")
 				}
+			case *ast.RangeStmt:
+				if signatureForType(pkg.TypesInfo.TypeOf(typed.X)) != nil {
+					if called := calledFunction(pkg, typed.X); called != nil {
+						semFn.calls[functionOriginOrSelf(called)] = true
+					}
+					if rangeFunctionExprNeedsAwait(model, pkg, overrideFacts, typed.X) {
+						markFunctionAsync(semFn, "range-function")
+					}
+				}
 			case *ast.CallExpr:
 				if called := calledFunction(pkg, typed.Fun); called != nil {
 					semFn.calls[functionOriginOrSelf(called)] = true
@@ -783,6 +792,29 @@ func (o *SemanticModelOwner) collectFunctionFacts(
 		})
 	}
 	return diagnostics
+}
+
+func rangeFunctionExprNeedsAwait(
+	model *SemanticModel,
+	pkg *packages.Package,
+	overrideFacts *OverrideFacts,
+	expr ast.Expr,
+) bool {
+	if model == nil || pkg == nil || signatureForType(pkg.TypesInfo.TypeOf(expr)) == nil {
+		return false
+	}
+	if called := calledFunction(pkg, expr); called != nil {
+		if semFn := semanticFunctionFor(model, called); semFn != nil && semFn.async {
+			return true
+		}
+		if called.Pkg() != nil && overrideFacts.IsFunctionAsync(called.Pkg().Path(), called.Name()) {
+			return true
+		}
+	}
+	if overrideFacts.IsMethodAsync(overrideCallPackage(pkg, expr), overrideCallMethod(pkg, expr)) {
+		return true
+	}
+	return callUsesFunctionValue(pkg, expr)
 }
 
 func recordImmediateFuncLitAsyncFacts(

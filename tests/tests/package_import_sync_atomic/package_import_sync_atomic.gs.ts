@@ -37,7 +37,7 @@ export class pointerNode {
 		() => new pointerNode(),
 		[],
 		pointerNode,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_sync_atomic", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_sync_atomic", index: [0], offset: 0, exported: false }]
 	)
 }
 

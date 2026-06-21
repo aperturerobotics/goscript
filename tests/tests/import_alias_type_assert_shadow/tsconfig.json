@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_alias_type_assert_shadow/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/import_alias_type_assert_shadow/*": [
         "./*"
       ]
     }

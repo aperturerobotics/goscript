@@ -9,7 +9,7 @@ import {
   ValidateDescription,
   PriorityString,
   type Priority,
-} from '@goscript/github.com/aperturerobotics/goscript/example/app/todo/index.js'
+} from '@goscript/github.com/s4wave/goscript/example/app/todo/index.js'
 
 // Priority constants (matching Go's iota values)
 // Note: GoScript iota support is being improved - for now we define these manually

@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/bodyless_async_callback/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/bodyless_async_callback/*": [
         "./*"
       ]
     }

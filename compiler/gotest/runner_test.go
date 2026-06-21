@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aperturerobotics/goscript/compiler"
+	"github.com/s4wave/goscript/compiler"
 )
 
 func TestDiagnosticsSummaryUsesCompilerFormatter(t *testing.T) {

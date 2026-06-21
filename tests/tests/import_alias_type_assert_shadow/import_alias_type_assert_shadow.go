@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/import_alias_type_assert_shadow/dep"
+import "github.com/s4wave/goscript/tests/tests/import_alias_type_assert_shadow/dep"
 
 func unwrap(v any) int {
 	if dep, ok := v.(*dep.Thing); ok {

@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/constant_shift_64/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/constant_shift_64/*": [
         "./*"
       ]
     }

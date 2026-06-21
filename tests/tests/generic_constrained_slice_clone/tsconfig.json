@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/generic_constrained_slice_clone/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/generic_constrained_slice_clone/*": [
         "./*"
       ]
     }

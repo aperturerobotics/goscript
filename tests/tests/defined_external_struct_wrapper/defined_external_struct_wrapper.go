@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/defined_external_struct_wrapper/dep"
+import "github.com/s4wave/goscript/tests/tests/defined_external_struct_wrapper/dep"
 
 type Wrapped dep.Public
 

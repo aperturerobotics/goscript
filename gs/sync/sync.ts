@@ -243,7 +243,10 @@ export class Once {
   }
 
   // Do calls the function f if and only if Do is being called for the first time for this instance of Once
-  public async Do(f: () => void | Promise<void>): Promise<void> {
+  public async Do(f: (() => void | Promise<void>) | null): Promise<void> {
+    if (f == null) {
+      throw new Error('sync: nil function in Once.Do')
+    }
     if (this._done) {
       return
     }

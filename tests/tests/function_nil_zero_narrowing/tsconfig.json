@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/function_nil_zero_narrowing/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/function_nil_zero_narrowing/*": [
         "./*"
       ]
     }

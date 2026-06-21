@@ -100,7 +100,7 @@ export class MockFileInfo {
 		() => new MockFileInfo(),
 		[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }],
 		MockFileInfo,
-		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/nullable_function_param_call", index: [0], offset: 0, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/nullable_function_param_call", index: [1], offset: 16, exported: false }, { name: "isDir", key: "isDir", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/nullable_function_param_call", index: [2], offset: 24, exported: false }]
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/nullable_function_param_call", index: [0], offset: 0, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "github.com/s4wave/goscript/tests/tests/nullable_function_param_call", index: [1], offset: 16, exported: false }, { name: "isDir", key: "isDir", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/s4wave/goscript/tests/tests/nullable_function_param_call", index: [2], offset: 24, exported: false }]
 	)
 }
 

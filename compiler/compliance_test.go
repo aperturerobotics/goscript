@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aperturerobotics/goscript/tests"
+	"github.com/s4wave/goscript/tests"
 )
 
 // TestCompliance runs the inherited GoScript compliance fixtures through the

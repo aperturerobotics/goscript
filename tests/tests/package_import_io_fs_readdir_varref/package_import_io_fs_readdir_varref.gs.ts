@@ -45,7 +45,7 @@ export class openOnlyFS {
 		() => new openOnlyFS(),
 		[{ name: "Open", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "fs.File" }, { name: "_r1", type: "error" }] }],
 		openOnlyFS,
-		[{ name: "fsys", key: "fsys", type: "fstest.MapFS", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_io_fs_readdir_varref", index: [0], offset: 0, exported: false }]
+		[{ name: "fsys", key: "fsys", type: "fstest.MapFS", pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_io_fs_readdir_varref", index: [0], offset: 0, exported: false }]
 	)
 }
 

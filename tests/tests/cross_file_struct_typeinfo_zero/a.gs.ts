@@ -37,7 +37,7 @@ export class aValue {
 		() => new aValue(),
 		[],
 		aValue,
-		[{ name: "next", key: "next", type: { kind: $.TypeKind.Pointer, elemType: "main.bValue" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/cross_file_struct_typeinfo_zero", index: [0], offset: 0, exported: false }]
+		[{ name: "next", key: "next", type: { kind: $.TypeKind.Pointer, elemType: "main.bValue" }, pkgPath: "github.com/s4wave/goscript/tests/tests/cross_file_struct_typeinfo_zero", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/embedded_interface_null_assertion/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/embedded_interface_null_assertion/*": [
         "./*"
       ]
     }

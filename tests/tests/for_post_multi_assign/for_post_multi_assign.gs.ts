@@ -34,7 +34,7 @@ export class frame {
 		() => new frame(),
 		[],
 		frame,
-		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/for_post_multi_assign", index: [0], offset: 0, exported: false }]
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/for_post_multi_assign", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -92,7 +92,7 @@ export class iterator {
 		() => new iterator(),
 		[{ name: "Next", args: [], returns: [{ name: "_r0", type: "main.frame" }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		iterator,
-		[{ name: "idx", key: "idx", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/for_post_multi_assign", index: [0], offset: 0, exported: false }]
+		[{ name: "idx", key: "idx", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/for_post_multi_assign", index: [0], offset: 0, exported: false }]
 	)
 }
 

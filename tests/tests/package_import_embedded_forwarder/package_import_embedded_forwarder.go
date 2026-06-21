@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep"
+import "github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep"
 
 type Store interface {
 	dep.Store

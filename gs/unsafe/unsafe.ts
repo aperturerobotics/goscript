@@ -2,6 +2,8 @@
 // that violate the type system. Most operations are not supported in JavaScript/TypeScript
 // and will throw errors when used.
 
+import type * as $ from '../builtin/index.js'
+
 // ArbitraryType is a shorthand for an arbitrary Go type; it is not a real type
 export type ArbitraryType = any
 
@@ -46,7 +48,7 @@ export function Add(_ptr: Pointer, _len: IntegerType): Pointer {
 
 // Slice returns a slice whose underlying array starts at ptr
 // This operation is not meaningful in JavaScript/TypeScript
-export function Slice(_ptr: Pointer, _len: IntegerType): any[] {
+export function Slice<T = any>(_ptr: Pointer, _len: IntegerType): $.Slice<T> {
   throw new Error(
     'unsafe.Slice is not supported in JavaScript/TypeScript: direct memory access is not available in JavaScript',
   )
@@ -54,7 +56,7 @@ export function Slice(_ptr: Pointer, _len: IntegerType): any[] {
 
 // SliceData returns a pointer to the underlying array of the slice
 // This operation is not meaningful in JavaScript/TypeScript
-export function SliceData(_slice: any[]): Pointer {
+export function SliceData(_slice: $.Slice<any> | Uint8Array | any[]): Pointer {
   throw new Error(
     'unsafe.SliceData is not supported in JavaScript/TypeScript: direct memory access is not available in JavaScript',
   )

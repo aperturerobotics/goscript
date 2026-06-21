@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aperturerobotics/goscript/compiler"
+	"github.com/s4wave/goscript/compiler"
 	"github.com/sirupsen/logrus"
 )
 

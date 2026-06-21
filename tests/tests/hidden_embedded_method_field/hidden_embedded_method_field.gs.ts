@@ -73,7 +73,7 @@ export class holder {
 		() => new holder(),
 		[],
 		holder,
-		[{ name: "Database", key: "Database", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "embedded", key: "embedded", type: "main.embedded", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/hidden_embedded_method_field", anonymous: true, index: [1], offset: 16, exported: false }]
+		[{ name: "Database", key: "Database", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "embedded", key: "embedded", type: "main.embedded", pkgPath: "github.com/s4wave/goscript/tests/tests/hidden_embedded_method_field", anonymous: true, index: [1], offset: 16, exported: false }]
 	)
 }
 

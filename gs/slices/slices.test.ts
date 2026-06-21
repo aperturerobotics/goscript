@@ -4,6 +4,7 @@ import * as $ from '@goscript/builtin/index.js'
 
 import {
   All,
+  AppendSeq,
   Backward,
   BinarySearch,
   Clip,
@@ -143,7 +144,29 @@ describe('slices.Sorted', () => {
       yieldValue('b')
     })
 
-    expect(values).toEqual(['a', 'b', 'c'])
+    expect(Array.from(values ?? [])).toEqual(['a', 'b', 'c'])
+  })
+})
+
+describe('slices.AppendSeq', () => {
+  it('appends iterator values to an existing slice', () => {
+    const values = AppendSeq($.arrayToSlice([1]), (yieldValue) => {
+      yieldValue(2)
+      yieldValue(3)
+    })
+
+    expect(Array.from(values ?? [])).toEqual([1, 2, 3])
+  })
+
+  it('collects into a nil slice and preserves nilness for empty sequences', () => {
+    const values = AppendSeq<number>(null, (yieldValue) => {
+      yieldValue(4)
+      yieldValue(5)
+    })
+    const empty = AppendSeq<number>(null, () => {})
+
+    expect(Array.from(values ?? [])).toEqual([4, 5])
+    expect(empty).toBeNull()
   })
 })
 

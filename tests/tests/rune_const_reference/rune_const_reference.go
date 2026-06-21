@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/rune_const_reference/subpkg"
+import "github.com/s4wave/goscript/tests/tests/rune_const_reference/subpkg"
 
 func main() {
 	// Test importing rune constants from another package

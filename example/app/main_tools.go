@@ -2,4 +2,4 @@
 
 package main
 
-import _ "github.com/aperturerobotics/goscript/cmd/goscript"
+import _ "github.com/s4wave/goscript/cmd/goscript"

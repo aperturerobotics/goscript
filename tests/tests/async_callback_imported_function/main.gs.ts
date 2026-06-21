@@ -3,8 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as subpkg from "@goscript/github.com/aperturerobotics/goscript/tests/tests/async_callback_imported_function/subpkg/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/async_callback_imported_function/subpkg/index.js"
+import * as subpkg from "@goscript/github.com/s4wave/goscript/tests/tests/async_callback_imported_function/subpkg/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/async_callback_imported_function/subpkg/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let ch: $.Channel<number> | null = $.makeChannel<number>(1, 0, "both")

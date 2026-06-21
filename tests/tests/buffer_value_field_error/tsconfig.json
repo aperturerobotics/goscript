@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/buffer_value_field_error/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/buffer_value_field_error/*": [
         "./*"
       ]
     }

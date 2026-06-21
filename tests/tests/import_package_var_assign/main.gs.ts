@@ -3,8 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as dep from "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_package_var_assign/dep/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/import_package_var_assign/dep/index.js"
+import * as dep from "@goscript/github.com/s4wave/goscript/tests/tests/import_package_var_assign/dep/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/import_package_var_assign/dep/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	dep.__goscript_set_Count(7)

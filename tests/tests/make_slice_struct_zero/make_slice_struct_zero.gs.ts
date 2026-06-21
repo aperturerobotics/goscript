@@ -34,7 +34,7 @@ export class code {
 		() => new code(),
 		[],
 		code,
-		[{ name: "len", key: "len", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/make_slice_struct_zero", index: [0], offset: 0, exported: false }]
+		[{ name: "len", key: "len", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/make_slice_struct_zero", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -1995,6 +1995,12 @@ func initializerReferencesOtherFileObject(
 		if references {
 			return false
 		}
+		if lit, ok := node.(*ast.CompositeLit); ok {
+			if zeroValueReferencesOtherFileObject(semPkg, declFiles, sourcePath, semPkg.source.TypesInfo.TypeOf(lit)) {
+				references = true
+				return false
+			}
+		}
 		ident, ok := node.(*ast.Ident)
 		if !ok {
 			return true
@@ -4920,6 +4926,11 @@ func (o *LoweringOwner) lowerShortDeclNewShadowAliases(
 func shortDeclShadowNonValueIdents(ctx lowerFileContext, expr ast.Expr) map[*ast.Ident]bool {
 	idents := make(map[*ast.Ident]bool)
 	ast.Inspect(expr, func(node ast.Node) bool {
+		if ident, ok := node.(*ast.Ident); ok {
+			if _, ok := ctx.semPkg.source.TypesInfo.Uses[ident].(*types.TypeName); ok {
+				idents[ident] = true
+			}
+		}
 		switch typed := node.(type) {
 		case *ast.CallExpr:
 			if ident, ok := typed.Fun.(*ast.Ident); ok {
@@ -6472,7 +6483,7 @@ func (o *LoweringOwner) lowerTypeSwitchStmt(ctx lowerFileContext, stmt *ast.Type
 func (o *LoweringOwner) tsTypeSwitchCaseTypeFor(ctx lowerFileContext, typ types.Type) string {
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
 		if _, ok := named.Underlying().(*types.Interface); ok {
-			return o.tsNonNilTypeFor(ctx, named)
+			return o.tsTypeFor(ctx, named)
 		}
 	}
 	return o.tsTypeFor(ctx, typ)
@@ -8670,6 +8681,9 @@ func fieldReceiverNeedsVarRefValue(ctx lowerFileContext, expr ast.Expr, obj type
 		return true
 	}
 	if ctx.identAliases[obj] != "" {
+		if obj == nil || ctx.model == nil || !ctx.model.needsVarRef[obj] {
+			return false
+		}
 		return !ctx.identAliasRefs[obj]
 	}
 	if ctx.localAliases[obj] != "" {
@@ -9806,6 +9820,9 @@ func (o *LoweringOwner) lowerMapGetTuple(ctx lowerFileContext, expr *ast.IndexEx
 	if mapType != nil {
 		index = o.lowerValueForTarget(ctx, expr.Index, mapType.Key(), index)
 		defaultValue = o.lowerZeroValueExprFor(ctx, mapType.Elem())
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMapGet) +
+			"<" + o.tsTypeFor(ctx, mapType.Key()) + ", " + o.tsTypeFor(ctx, mapType.Elem()) + ", " + o.tsTypeFor(ctx, mapType.Elem()) + ">(" +
+			target + ", " + index + ", " + defaultValue + ")"
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMapGet) + "(" + target + ", " + index + ", " + defaultValue + ")"
 }

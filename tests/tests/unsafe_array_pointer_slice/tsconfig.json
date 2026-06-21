@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/unsafe_array_pointer_slice/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/unsafe_array_pointer_slice/*": [
         "./*"
       ]
     }

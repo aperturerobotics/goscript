@@ -2,7 +2,7 @@
 package wasm
 
 import (
-	"github.com/aperturerobotics/goscript/compiler"
+	"github.com/s4wave/goscript/compiler"
 )
 
 // CompileSource compiles import-free browser source strings to TypeScript.

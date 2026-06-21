@@ -39,7 +39,7 @@ export class worker {
 		() => new worker(),
 		[{ name: "add", args: [{ name: "v", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		worker,
-		[{ name: "base", key: "base", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/struct_method_expression", index: [0], offset: 0, exported: false }]
+		[{ name: "base", key: "base", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/struct_method_expression", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.ts"
 
-import * as target from "@goscript/github.com/aperturerobotics/goscript/tests/tests/linkname_alias/target/index.ts"
+import * as target from "@goscript/github.com/s4wave/goscript/tests/tests/linkname_alias/target/index.ts"
 
 export function greet(name: string): string {
 }

@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/redeclaration_assign_multi_rhs/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/redeclaration_assign_multi_rhs/*": [
         "./*"
       ]
     }

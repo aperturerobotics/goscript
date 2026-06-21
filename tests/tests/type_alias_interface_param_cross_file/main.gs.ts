@@ -3,10 +3,10 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as dep from "@goscript/github.com/aperturerobotics/goscript/tests/tests/type_alias_interface_param_cross_file/dep/index.js"
+import * as dep from "@goscript/github.com/s4wave/goscript/tests/tests/type_alias_interface_param_cross_file/dep/index.js"
 
 import * as __goscript_types from "./types.gs.ts"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/type_alias_interface_param_cross_file/dep/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/type_alias_interface_param_cross_file/dep/index.js"
 import "./types.gs.ts"
 
 export class sink {
@@ -45,7 +45,7 @@ export class sink {
 		() => new sink(),
 		[{ name: "Put", args: [{ name: "v", type: "dep.Value" }], returns: [] }],
 		sink,
-		[{ name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/type_alias_interface_param_cross_file", index: [0], offset: 0, exported: false }]
+		[{ name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/type_alias_interface_param_cross_file", index: [0], offset: 0, exported: false }]
 	)
 }
 

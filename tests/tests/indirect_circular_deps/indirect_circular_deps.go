@@ -2,7 +2,7 @@ package main
 
 // Test for indirect circular dependencies via slices
 // This is valid Go code that should compile with goscript
-// See: https://github.com/aperturerobotics/goscript/issues/125
+// See: https://github.com/s4wave/goscript/issues/125
 
 type A struct {
 	BB []B

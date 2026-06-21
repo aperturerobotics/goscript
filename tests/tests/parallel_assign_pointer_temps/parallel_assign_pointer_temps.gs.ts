@@ -34,7 +34,7 @@ export class node {
 		() => new node(),
 		[],
 		node,
-		[{ name: "next", key: "next", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/parallel_assign_pointer_temps", index: [0], offset: 0, exported: false }]
+		[{ name: "next", key: "next", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/parallel_assign_pointer_temps", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -69,7 +69,7 @@ export class queue {
 		() => new queue(),
 		[],
 		queue,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/parallel_assign_pointer_temps", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/parallel_assign_pointer_temps", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -47,6 +47,6 @@ export class storage {
 		() => new storage(),
 		[],
 		storage,
-		[{ name: "files", key: "files", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/type_separate_files", index: [0], offset: 0, exported: false }, { name: "children", key: "children", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/type_separate_files", index: [1], offset: 8, exported: false }]
+		[{ name: "files", key: "files", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/type_separate_files", index: [0], offset: 0, exported: false }, { name: "children", key: "children", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Pointer, elemType: "main.file" } } }, pkgPath: "github.com/s4wave/goscript/tests/tests/type_separate_files", index: [1], offset: 8, exported: false }]
 	)
 }

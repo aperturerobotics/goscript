@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/cross_package_unexported_interface_field/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/cross_package_unexported_interface_field/*": [
         "./*"
       ]
     }

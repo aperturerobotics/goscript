@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/line_directive_same_package_alias/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/line_directive_same_package_alias/*": [
         "./*"
       ]
     }

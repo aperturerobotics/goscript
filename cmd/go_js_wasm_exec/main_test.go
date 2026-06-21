@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aperturerobotics/goscript/compiler/gotest"
+	"github.com/s4wave/goscript/compiler/gotest"
 )
 
 func TestRequestFromGoToolArgsMapsSupportedFlags(t *testing.T) {

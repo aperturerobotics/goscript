@@ -34,7 +34,7 @@ export class hidden {
 		() => new hidden(),
 		[],
 		hidden,
-		[{ name: "label", key: "label", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/defined_external_struct_wrapper/dep", index: [0], offset: 0, exported: false }]
+		[{ name: "label", key: "label", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/defined_external_struct_wrapper/dep", index: [0], offset: 0, exported: false }]
 	)
 }
 

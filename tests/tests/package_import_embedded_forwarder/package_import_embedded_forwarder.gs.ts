@@ -3,14 +3,14 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as dep from "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/index.js"
+import * as dep from "@goscript/github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/index.js"
 
-import * as inner from "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/inner/index.js"
+import * as inner from "@goscript/github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/inner/index.js"
 
-import * as tx from "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/tx/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/inner/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/tx/index.js"
+import * as tx from "@goscript/github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/tx/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/inner/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/tx/index.js"
 
 export type Store = {
 	Execute(): string
@@ -73,7 +73,7 @@ export class VerboseStore {
 		() => new VerboseStore(),
 		[{ name: "Execute", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "NewTransaction", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }],
 		VerboseStore,
-		[{ name: "BaseStore", key: "BaseStore", type: { kind: $.TypeKind.Pointer, elemType: "dep.BaseStore" }, anonymous: true, index: [0], offset: 0, exported: true }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder", index: [1], offset: 8, exported: false }]
+		[{ name: "BaseStore", key: "BaseStore", type: { kind: $.TypeKind.Pointer, elemType: "dep.BaseStore" }, anonymous: true, index: [0], offset: 0, exported: true }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder", index: [1], offset: 8, exported: false }]
 	)
 }
 

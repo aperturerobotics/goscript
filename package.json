@@ -15,7 +15,7 @@
     }
   ],
   "repository": {
-    "url": "git+ssh://git@github.com/aperturerobotics/goscript.git"
+    "url": "git+ssh://git@github.com/s4wave/goscript.git"
   },
   "type": "module",
   "bin": {

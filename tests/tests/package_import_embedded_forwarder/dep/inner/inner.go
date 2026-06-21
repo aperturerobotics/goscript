@@ -1,6 +1,6 @@
 package inner
 
-import "github.com/aperturerobotics/goscript/tests/tests/package_import_embedded_forwarder/dep/tx"
+import "github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder/dep/tx"
 
 type CoreStore struct {
 	Prefix string

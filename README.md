@@ -9,13 +9,13 @@
   </p>
 
   <p>
-    <a href="https://godoc.org/github.com/aperturerobotics/goscript">
-      <img src="https://godoc.org/github.com/aperturerobotics/goscript?status.svg" alt="GoDoc" />
+    <a href="https://godoc.org/github.com/s4wave/goscript">
+      <img src="https://godoc.org/github.com/s4wave/goscript?status.svg" alt="GoDoc" />
     </a>
-    <a href="https://goreportcard.com/report/github.com/aperturerobotics/goscript">
-      <img src="https://goreportcard.com/badge/github.com/aperturerobotics/goscript" alt="Go Report Card" />
+    <a href="https://goreportcard.com/report/github.com/s4wave/goscript">
+      <img src="https://goreportcard.com/badge/github.com/s4wave/goscript" alt="Go Report Card" />
     </a>
-    <a href="https://deepwiki.com/aperturerobotics/goscript">
+    <a href="https://deepwiki.com/s4wave/goscript">
       <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" />
     </a>
   </p>
@@ -120,7 +120,7 @@ curl -fsSL https://bun.sh/install | bash
 Install the CLI:
 
 ```bash
-go install github.com/aperturerobotics/goscript/cmd/goscript@latest
+go install github.com/s4wave/goscript/cmd/goscript@latest
 ```
 
 Compile a Go package from a module directory:
@@ -231,7 +231,7 @@ package main
 import (
 	"context"
 
-	"github.com/aperturerobotics/goscript/compiler"
+	"github.com/s4wave/goscript/compiler"
 )
 
 func main() {
@@ -265,7 +265,7 @@ WASM adapter package:
 ```go
 package main
 
-import "github.com/aperturerobotics/goscript/compiler/wasm"
+import "github.com/s4wave/goscript/compiler/wasm"
 
 func main() {
 	ts, err := wasm.CompileSource(`

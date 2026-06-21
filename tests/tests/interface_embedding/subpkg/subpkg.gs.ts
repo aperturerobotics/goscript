@@ -13,7 +13,7 @@ export type File = null | {
 }
 
 $.registerInterfaceType(
-  'github.com/aperturerobotics/goscript/tests/tests/interface_embedding/subpkg.File',
+  'github.com/s4wave/goscript/tests/tests/interface_embedding/subpkg.File',
   null, // Zero value for interface is null
   [{ name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Write", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }]
 );
@@ -71,7 +71,7 @@ export class MockFile {
 
 	// Register this type with the runtime type system
 	static __typeInfo = $.registerStructType(
-	  'github.com/aperturerobotics/goscript/tests/tests/interface_embedding/subpkg.MockFile',
+	  'github.com/s4wave/goscript/tests/tests/interface_embedding/subpkg.MockFile',
 	  new MockFile(),
 	  [{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Close", args: [], returns: [{ type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }, { name: "Write", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "byte" } } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: { kind: $.TypeKind.Interface, name: 'GoError', methods: [{ name: 'Error', args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }] }] } }] }],
 	  MockFile,

@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/var_init_method_call/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/var_init_method_call/*": [
         "./*"
       ]
     }

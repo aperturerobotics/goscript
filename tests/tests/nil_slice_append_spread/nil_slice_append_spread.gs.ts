@@ -34,7 +34,7 @@ export class item {
 		() => new item(),
 		[],
 		item,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/nil_slice_append_spread", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/nil_slice_append_spread", index: [0], offset: 0, exported: false }]
 	)
 }
 

@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/async_func_lit_switch_await/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/async_func_lit_switch_await/*": [
         "./*"
       ]
     }

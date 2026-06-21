@@ -6,8 +6,8 @@ import (
 	"errors"
 	"syscall/js"
 
-	"github.com/aperturerobotics/goscript/compiler"
-	"github.com/aperturerobotics/goscript/compiler/wasm"
+	"github.com/s4wave/goscript/compiler"
+	"github.com/s4wave/goscript/compiler/wasm"
 )
 
 func main() {

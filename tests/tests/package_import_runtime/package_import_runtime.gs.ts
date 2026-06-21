@@ -43,7 +43,7 @@ export async function main(): globalThis.Promise<void> {
 
 	runtime.SetFinalizer($.interfaceValue<any>(box, "*struct{value int}"), $.interfaceValue<any>($.functionValue((_p0: $.VarRef<{"value": number}> | null): void => {
 		$.println("finalizer should not run during test")
-	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Struct, methods: [], fields: [{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_runtime", index: [0], offset: 0, exported: false }] } }], results: [] } as $.FunctionTypeInfo)), "func(*struct{value int})"))
+	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Struct, methods: [], fields: [{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_runtime", index: [0], offset: 0, exported: false }] } }], results: [] } as $.FunctionTypeInfo)), "func(*struct{value int})"))
 	runtime.SetFinalizer($.interfaceValue<any>(box, "*struct{value int}"), null)
 	$.println("Finalizer ignored")
 }

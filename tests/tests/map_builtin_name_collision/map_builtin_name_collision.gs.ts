@@ -34,7 +34,7 @@ export class Map {
 		() => new Map(),
 		[],
 		Map,
-		[{ name: "values", key: "values", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/map_builtin_name_collision", index: [0], offset: 0, exported: false }]
+		[{ name: "values", key: "values", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/map_builtin_name_collision", index: [0], offset: 0, exported: false }]
 	)
 }
 

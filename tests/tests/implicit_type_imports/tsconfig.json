@@ -8,7 +8,7 @@
         "../../../gs/*",
         "../../../tests/deps/*"
       ],
-      "@goscript/github.com/aperturerobotics/goscript/tests/tests/implicit_type_imports/*": [
+      "@goscript/github.com/s4wave/goscript/tests/tests/implicit_type_imports/*": [
         "./*"
       ]
     }

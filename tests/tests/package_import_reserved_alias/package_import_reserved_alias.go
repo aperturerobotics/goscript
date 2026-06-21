@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/package_import_reserved_alias/unique"
+import "github.com/s4wave/goscript/tests/tests/package_import_reserved_alias/unique"
 
 type Holder struct {
 	Box *unique.Box

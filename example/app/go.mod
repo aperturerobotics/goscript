@@ -1,10 +1,10 @@
-module github.com/aperturerobotics/goscript/example/app
+module github.com/s4wave/goscript/example/app
 
 go 1.25.3
 
-replace github.com/aperturerobotics/goscript => ../../
+replace github.com/s4wave/goscript => ../../
 
-require github.com/aperturerobotics/goscript v0.0.0-00010101000000-000000000000
+require github.com/s4wave/goscript v0.0.0-00010101000000-000000000000
 
 require (
 	github.com/aperturerobotics/cli v1.1.0 // indirect

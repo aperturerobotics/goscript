@@ -1491,7 +1491,7 @@ func TestCompilePackagesEmitsSideEffectImportsForInterfaceRegistry(t *testing.T)
 		"import * as dep from \"@goscript/example.test/interface-registry/dep/index.js\"",
 		"import \"@goscript/example.test/interface-registry/dep/index.js\"",
 		"import type * as __goscript_local from \"./local.gs.ts\"",
-		"case $.typeAssert<Exclude<__goscript_local.Local, null>>(__goscriptTypeSwitchValue, \"main.Local\").ok",
+		"case $.typeAssert<__goscript_local.Local | null>(__goscriptTypeSwitchValue, \"main.Local\").ok",
 		"$.typeAssertTuple<dep.Remote | null>(v, \"dep.Remote\")",
 	} {
 		if !strings.Contains(mainText, want) {
@@ -2132,7 +2132,7 @@ func TestCompilePackagesEmitsArraySliceMapStringAndNamedMethods(t *testing.T) {
 		"slice![0] = arr[1]",
 		"let m: globalThis.Map<string, number> | null = $.makeMap<string, number>()",
 		"$.mapSet(m, \"one\", 1)",
-		"let [value, ok] = $.mapGet(m, \"missing\", 0)",
+		"let [value, ok] = $.mapGet<string, number, number>(m, \"missing\", 0)",
 		"slice![0]",
 		"literal![2]",
 		"let list: $.VarRef<MySlice> = $.varRef(null as MySlice)",
@@ -2670,8 +2670,8 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 		"elemType: { kind: $.TypeKind.Struct, methods: [], fields: [{ name: \"Name\", key: \"Name\", type: { kind: $.TypeKind.Basic, name: \"string\" }",
 		"let fn = __goscriptTuple",
 		"switch (true)",
-		"case $.typeAssert<Exclude<ReadCloser, null>>(__goscriptTypeSwitchValue, \"main.ReadCloser\").ok",
-		"let v: Exclude<ReadCloser, null> = $.typeAssert<Exclude<ReadCloser, null>>(__goscriptTypeSwitchValue, \"main.ReadCloser\").value",
+		"case $.typeAssert<ReadCloser | null>(__goscriptTypeSwitchValue, \"main.ReadCloser\").ok",
+		"let v: ReadCloser | null = $.typeAssert<ReadCloser | null>(__goscriptTypeSwitchValue, \"main.ReadCloser\").value",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -2764,8 +2764,8 @@ func TestCompilePackagesUsesNonNilInterfaceTypeSwitchCaseVarRefs(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export type tcpConn = {",
-		"case $.typeAssert<Exclude<tcpConn, null>>(__goscriptTypeSwitchValue, \"main.tcpConn\").ok",
-		"let c: $.VarRef<Exclude<tcpConn, null>> = $.varRef($.typeAssert<Exclude<tcpConn, null>>(__goscriptTypeSwitchValue, \"main.tcpConn\").value)",
+		"case $.typeAssert<tcpConn | null>(__goscriptTypeSwitchValue, \"main.tcpConn\").ok",
+		"let c: $.VarRef<tcpConn | null> = $.varRef($.typeAssert<tcpConn | null>(__goscriptTypeSwitchValue, \"main.tcpConn\").value)",
 		"$.pointerValue<Exclude<tcpConn, null>>(c.value).SyscallConn()",
 	} {
 		if !strings.Contains(text, want) {
@@ -4978,7 +4978,7 @@ func TestCompilePackagesLowersMethodValuesWithFixedParameters(t *testing.T) {
 	}
 }
 
-func TestCompilePackagesLowersSyncOverrideCallbackWithoutAsyncWrapper(t *testing.T) {
+func TestCompilePackagesLowersSortSearchCallbackAsAsyncCompatible(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/sync-callback\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
@@ -5017,11 +5017,14 @@ func TestCompilePackagesLowersSyncOverrideCallbackWithoutAsyncWrapper(t *testing
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if strings.Contains(text, "$.functionValue(async (i: number)") {
-		t.Fatalf("sync override callback lowered as async:\n%s", text)
-	}
-	if !strings.Contains(text, "$.functionValue((i: number): boolean => {") {
-		t.Fatalf("sync override callback was not lowered as a synchronous function value:\n%s", text)
+	for _, want := range []string{
+		"return await sort.Search(",
+		"$.functionValue(async (i: number): globalThis.Promise<boolean> => {",
+		"let item = await $.pointerValue<Exclude<Items, null>>(items).Get(i)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
 	}
 }
 

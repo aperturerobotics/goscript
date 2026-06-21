@@ -1,9 +1,8 @@
 import * as $ from '@goscript/builtin/index.js'
 import { callers } from './stack.js'
+import type { StackTrace } from './stack.js'
 
 // Type definitions
-export type Frame = any // Simplified frame type
-export type StackTrace = Frame[] | null
 export type stack = any // Simplified stack type
 export type uintptr = number
 

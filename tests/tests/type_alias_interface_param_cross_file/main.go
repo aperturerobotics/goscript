@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/type_alias_interface_param_cross_file/dep"
+import "github.com/s4wave/goscript/tests/tests/type_alias_interface_param_cross_file/dep"
 
 type sink struct {
 	size int

@@ -3,8 +3,8 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-import * as _unique from "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_reserved_alias/unique/index.js"
-import "@goscript/github.com/aperturerobotics/goscript/tests/tests/package_import_reserved_alias/unique/index.js"
+import * as _unique from "@goscript/github.com/s4wave/goscript/tests/tests/package_import_reserved_alias/unique/index.js"
+import "@goscript/github.com/s4wave/goscript/tests/tests/package_import_reserved_alias/unique/index.js"
 
 export class Holder {
 	public get Box(): _unique.Box | $.VarRef<_unique.Box> | null {

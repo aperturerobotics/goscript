@@ -1,5 +1,6 @@
 {
   "asyncFunctions": {
+    "Search": true,
     "Slice": true,
     "SliceIsSorted": true,
     "SliceStable": true

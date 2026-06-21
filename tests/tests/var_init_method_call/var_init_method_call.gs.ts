@@ -39,7 +39,7 @@ export class T {
 		() => new T(),
 		[{ name: "WithDelta", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "main.T" } }] }],
 		T,
-		[{ name: "val", key: "val", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/var_init_method_call", index: [0], offset: 0, exported: false }]
+		[{ name: "val", key: "val", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/var_init_method_call", index: [0], offset: 0, exported: false }]
 	)
 }
 

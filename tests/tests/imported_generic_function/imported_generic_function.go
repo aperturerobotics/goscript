@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/imported_generic_function/helper"
+import "github.com/s4wave/goscript/tests/tests/imported_generic_function/helper"
 
 func collectValues(value helper.Value) ([]helper.Value, error) {
 	return helper.Collect(value)

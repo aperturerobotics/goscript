@@ -1,4 +1,4 @@
-module github.com/aperturerobotics/goscript
+module github.com/s4wave/goscript
 
 go 1.25.3
 

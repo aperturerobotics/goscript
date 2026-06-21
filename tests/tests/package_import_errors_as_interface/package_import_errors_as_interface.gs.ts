@@ -52,7 +52,7 @@ export class wrappedHealthError {
 		() => new wrappedHealthError(),
 		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Health", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Unwrap", args: [], returns: [{ name: "_r0", type: "error" }] }],
 		wrappedHealthError,
-		[{ name: "err", key: "err", type: "error", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/package_import_errors_as_interface", index: [0], offset: 0, exported: false }]
+		[{ name: "err", key: "err", type: "error", pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_errors_as_interface", index: [0], offset: 0, exported: false }]
 	)
 }
 

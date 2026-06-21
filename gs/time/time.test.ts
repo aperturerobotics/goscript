@@ -4,6 +4,7 @@ import * as $ from '@goscript/builtin/index.js'
 
 import {
   ANSIC,
+  Date,
   Duration_Abs,
   Duration_Hours,
   Duration_Microseconds,
@@ -18,6 +19,8 @@ import {
   Friday,
   January,
   Kitchen,
+  LoadLocation,
+  LoadLocationFromTZData,
   Local,
   Microsecond,
   Millisecond,
@@ -26,17 +29,17 @@ import {
   NewTicker,
   NewTimer,
   RFC1123,
+  RFC3339,
   RFC3339Nano,
   Saturday,
   Second,
   StampMicro,
   Sunday,
-  Date,
   May,
-  RFC3339,
   Time,
   UTC,
 } from './time.js'
+import type { Month } from './time.js'
 
 describe('time.Duration_String', () => {
   it('formats common durations', () => {
@@ -86,6 +89,9 @@ describe('time constants and timers', () => {
   })
 
   it('exports month and weekday constants directly', () => {
+    const zeroMonth: Month = 0
+
+    expect(zeroMonth).toBe(0)
     expect(January).toBe(1)
     expect(Month_String(May)).toBe('May')
     expect(Sunday).toBe(0)
@@ -124,5 +130,76 @@ describe('time.Time.In', () => {
     expect(() => new Time().In(null)).toThrow(
       'time: missing Location in call to Time.In',
     )
+  })
+})
+
+describe('time.Time calendar and binary helpers', () => {
+  it('appends formatted text to byte slices', () => {
+    const t = Date(2025, May, 15, 1, 10, 42, 0, UTC)
+    const out = t.AppendFormat($.stringToBytes('ts='), RFC3339)
+
+    expect(new TextDecoder().decode(out as Uint8Array)).toBe(
+      'ts=2025-05-15T01:10:42Z',
+    )
+  })
+
+  it('computes yearday in the receiver location', () => {
+    const utc = Date(2025, January, 1, 1, 0, 0, 0, UTC)
+    const pst = FixedZone('PST', -8 * 60 * 60)
+
+    expect(utc.YearDay()).toBe(1)
+    expect(utc.In(pst).YearDay()).toBe(366)
+  })
+
+  it('computes ISO weeks across year boundaries', () => {
+    expect(Date(2020, 12, 31, 12, 0, 0, 0, UTC).ISOWeek()).toEqual([2020, 53])
+    expect(Date(2021, January, 1, 12, 0, 0, 0, UTC).ISOWeek()).toEqual([
+      2020, 53,
+    ])
+    expect(Date(2021, January, 4, 12, 0, 0, 0, UTC).ISOWeek()).toEqual([
+      2021, 1,
+    ])
+  })
+
+  it('marshals Go binary time encodings', () => {
+    const utc = Date(2025, May, 15, 1, 10, 42, 123456789, UTC)
+    const pdt = Date(
+      2025,
+      May,
+      14,
+      18,
+      10,
+      42,
+      123456789,
+      FixedZone('PDT', -7 * 60 * 60),
+    )
+
+    expect(utc.MarshalBinary()).toEqual([
+      new Uint8Array([1, 0, 0, 0, 14, 223, 183, 54, 18, 7, 91, 205, 21, 255, 255]),
+      null,
+    ])
+    expect(pdt.MarshalBinary()).toEqual([
+      new Uint8Array([1, 0, 0, 0, 14, 223, 183, 54, 18, 7, 91, 205, 21, 254, 92]),
+      null,
+    ])
+  })
+})
+
+describe('time location loading', () => {
+  it('returns Go-style location tuples', () => {
+    expect(LoadLocation('UTC')).toEqual([UTC, null])
+    expect(LoadLocation('')).toEqual([UTC, null])
+    expect(LoadLocation('Local')).toEqual([Local, null])
+
+    const [missing, err] = LoadLocation('America/NotReal')
+    expect(missing).toBeNull()
+    expect(err?.Error()).toBe('time: unknown time zone America/NotReal')
+  })
+
+  it('returns tuple shape for timezone data loaders', () => {
+    const [loc, err] = LoadLocationFromTZData('Custom/Zone', new Uint8Array())
+
+    expect(err).toBeNull()
+    expect(loc?.String()).toBe('Custom/Zone')
   })
 })

@@ -170,6 +170,11 @@ export class MemStats {
   public Alloc: number = 0 // bytes allocated and not yet freed
   public TotalAlloc: number = 0 // bytes allocated (even if freed)
   public Sys: number = 0 // bytes obtained from system
+  public HeapAlloc: number = 0 // bytes allocated and not yet freed on the heap
+  public HeapSys: number = 0 // bytes obtained from system for the heap
+  public HeapInuse: number = 0 // bytes in in-use heap spans
+  public StackInuse: number = 0 // bytes in stack spans
+  public StackSys: number = 0 // bytes obtained from system for stacks
   public Lookups: number = 0 // number of pointer lookups
   public Mallocs: number = 0 // number of mallocs
   public Frees: number = 0 // number of frees
@@ -181,26 +186,28 @@ export class MemStats {
   }
 
   private updateMemoryStats(): void {
-    // Use performance.memory if available (Chrome/Edge)
-    if (typeof performance !== 'undefined' && (performance as any).memory) {
-      const mem = (performance as any).memory
-      this.Alloc = mem.usedJSHeapSize || 0
-      this.Sys = mem.totalJSHeapSize || 0
-      this.TotalAlloc = this.Alloc // Simplified
-    }
+    updateMemoryStats(this)
   }
 }
 
 // ReadMemStats populates m with memory allocator statistics
 export function ReadMemStats(m: MemStats | $.VarRef<MemStats> | null): void {
   m = $.pointerValue<MemStats>(m)
-  // Update the provided MemStats object with current values
+  updateMemoryStats(m)
+}
+
+function updateMemoryStats(m: MemStats): void {
   if (typeof performance !== 'undefined' && (performance as any).memory) {
     const mem = (performance as any).memory
     m.Alloc = mem.usedJSHeapSize || 0
     m.Sys = mem.totalJSHeapSize || 0
     m.TotalAlloc = m.Alloc // Simplified
   }
+  m.HeapAlloc = m.Alloc
+  m.HeapSys = m.Sys
+  m.HeapInuse = m.Alloc
+  m.StackInuse = 0
+  m.StackSys = 0
 }
 
 // Error interface for runtime errors

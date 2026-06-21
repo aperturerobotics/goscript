@@ -78,7 +78,7 @@ release:
 
     Go to TypeScript transpiler release.
   footer: |
-    **Full Changelog**: https://github.com/aperturerobotics/goscript/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/s4wave/goscript/compare/{{ .PreviousTag }}...{{ .Tag }}
 
     ---
 

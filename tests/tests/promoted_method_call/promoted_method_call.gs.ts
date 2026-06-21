@@ -39,7 +39,7 @@ export class base {
 		() => new base(),
 		[{ name: "Add", args: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		base,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_method_call", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_method_call", index: [0], offset: 0, exported: false }]
 	)
 }
 
@@ -78,7 +78,7 @@ export class wrapper {
 		() => new wrapper(),
 		[{ name: "Add", args: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		wrapper,
-		[{ name: "base", key: "base", type: "main.base", pkgPath: "github.com/aperturerobotics/goscript/tests/tests/promoted_method_call", anonymous: true, index: [0], offset: 0, exported: false }]
+		[{ name: "base", key: "base", type: "main.base", pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_method_call", anonymous: true, index: [0], offset: 0, exported: false }]
 	)
 }
 

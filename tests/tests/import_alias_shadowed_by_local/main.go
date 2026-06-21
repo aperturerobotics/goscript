@@ -1,6 +1,6 @@
 package main
 
-import "github.com/aperturerobotics/goscript/tests/tests/import_alias_shadowed_by_local/drbg"
+import "github.com/s4wave/goscript/tests/tests/import_alias_shadowed_by_local/drbg"
 
 type local struct {
 	value int
