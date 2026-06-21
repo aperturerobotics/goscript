@@ -121,11 +121,11 @@ export function formatLevel(level: __goscript_logrus.Level, disableTrunc: boolea
 	return colorize($.uint(level, 32), upper)
 }
 
-export var levelPrefixOnce: (() => [Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix] | globalThis.Promise<[Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix]>) | null
+export var levelPrefixOnce: (() => [globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix] | globalThis.Promise<[globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix]>) | null
 
 export function __goscript_init_levelPrefixOnce(): void {
 	if (((levelPrefixOnce) as any) === undefined) {
-		levelPrefixOnce = sync.OnceValues($.functionValue((): [Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix] => {
+		levelPrefixOnce = sync.OnceValues($.functionValue((): [globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix] => {
 	let maxLevel: __goscript_logrus.Level = 0
 	let maxLen = 0
 	for (let __goscriptRangeTarget0 = __goscript_logrus.__goscript_get_AllLevels(), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
@@ -141,10 +141,10 @@ export function __goscript_init_levelPrefixOnce(): void {
 		}
 	}
 
-	let prefix: Map<__goscript_logrus.Level, lvlPrefix> | null = $.makeMap<__goscript_logrus.Level, lvlPrefix>()
+	let prefix: globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null = $.makeMap<__goscript_logrus.Level, lvlPrefix>()
 	for (let __goscriptRangeTarget1 = __goscript_logrus.__goscript_get_AllLevels(), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 		let lvl = __goscriptRangeTarget1![__rangeIndex]
-		$.mapSet(prefix, lvl, (() => { const __goscriptLiteralField0 = formatLevel($.uint(lvl, 32), true, false, maxLen); const __goscriptLiteralField1 = formatLevel($.uint(lvl, 32), false, false, maxLen); const __goscriptLiteralField2 = formatLevel($.uint(lvl, 32), true, true, maxLen); return $.markAsStructValue(new lvlPrefix({full: __goscriptLiteralField0, truncated: __goscriptLiteralField1, padded: __goscriptLiteralField2})) })())
+		$.mapSet(prefix, $.uint(lvl, 32), (() => { const __goscriptLiteralField0 = formatLevel($.uint(lvl, 32), true, false, maxLen); const __goscriptLiteralField1 = formatLevel($.uint(lvl, 32), false, false, maxLen); const __goscriptLiteralField2 = formatLevel($.uint(lvl, 32), true, true, maxLen); return $.markAsStructValue(new lvlPrefix({full: __goscriptLiteralField0, truncated: __goscriptLiteralField1, padded: __goscriptLiteralField2})) })())
 	}
 
 	let unknownLevel = $.uint(maxLevel + 1, 32)
@@ -155,23 +155,23 @@ export function __goscript_init_levelPrefixOnce(): void {
 	}
 }
 
-export function __goscript_get_levelPrefixOnce(): (() => [Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix] | globalThis.Promise<[Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix]>) | null {
+export function __goscript_get_levelPrefixOnce(): (() => [globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix] | globalThis.Promise<[globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix]>) | null {
 	if (((levelPrefixOnce) as any) === undefined) {
 		__goscript_init_levelPrefixOnce()
 	}
 	return levelPrefixOnce
 }
 
-export function __goscript_set_levelPrefixOnce(__goscriptValue: (() => [Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix] | globalThis.Promise<[Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix]>) | null): void {
+export function __goscript_set_levelPrefixOnce(__goscriptValue: (() => [globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix] | globalThis.Promise<[globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null, lvlPrefix]>) | null): void {
 	levelPrefixOnce = __goscriptValue
 }
 
 export async function levelPrefix(level: __goscript_logrus.Level, disableTrunc: boolean, pad: boolean): globalThis.Promise<string> {
 	let __goscriptTuple0: any = await __goscript_get_levelPrefixOnce()!()
-	let prefix: Map<__goscript_logrus.Level, lvlPrefix> | null = __goscriptTuple0[0]
+	let prefix: globalThis.Map<__goscript_logrus.Level, lvlPrefix> | null = __goscriptTuple0[0]
 	let _unknown = __goscriptTuple0[1]
 
-	let [p, ok] = $.mapGet(prefix, level, $.markAsStructValue(new lvlPrefix()))
+	let [p, ok] = $.mapGet(prefix, $.uint(level, 32), $.markAsStructValue(new lvlPrefix()))
 	if (!ok) {
 		p = $.markAsStructValue($.cloneStructValue(_unknown))
 	}

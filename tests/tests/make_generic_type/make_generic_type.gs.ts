@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export type Ints = Map<any, {}> | null
+export type Ints = globalThis.Map<any, {}> | null
 
 export async function main(): globalThis.Promise<void> {
 	// This should trigger the unhandled make call error
@@ -11,8 +11,8 @@ export async function main(): globalThis.Promise<void> {
 	let seen: Ints = $.makeMap<number, {}>()
 
 	// Test basic operations
-	$.mapSet(seen, 42, {})
-	let [, exists] = $.mapGet(seen, 42, {})
+	$.mapSet(seen, $.int(42), {})
+	let [, exists] = $.mapGet(seen, $.int(42), {})
 	$.println("Value exists:", exists)
 
 	// Test with string type parameter

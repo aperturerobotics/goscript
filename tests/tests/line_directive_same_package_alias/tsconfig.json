@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/line_directive_same_package_alias/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "generated.gs.ts",
+    "index.ts",
+    "line_directive_same_package_alias.gs.ts"
+  ]
+}

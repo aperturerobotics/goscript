@@ -1770,28 +1770,28 @@ export const maxProtoLength: number = 25
 
 export const maxPortBufSize: number = 25
 
-export var protocols: Map<string, number> | null
+export var protocols: globalThis.Map<string, number> | null
 
 export function __goscript_init_protocols(): void {
 	if (((protocols) as any) === undefined) {
-		protocols = new Map<string, number>([["icmp", 1], ["igmp", 2], ["tcp", 6], ["udp", 17], ["ipv6-icmp", 58]])
+		protocols = new globalThis.Map<string, number>([["icmp", 1], ["igmp", 2], ["tcp", 6], ["udp", 17], ["ipv6-icmp", 58]])
 	}
 }
 
-export function __goscript_get_protocols(): Map<string, number> | null {
+export function __goscript_get_protocols(): globalThis.Map<string, number> | null {
 	if (((protocols) as any) === undefined) {
 		__goscript_init_protocols()
 	}
 	return protocols
 }
 
-export function __goscript_set_protocols(__goscriptValue: Map<string, number> | null): void {
+export function __goscript_set_protocols(__goscriptValue: globalThis.Map<string, number> | null): void {
 	protocols = __goscriptValue
 }
 
-export let services: Map<string, Map<string, number> | null> | null = new Map<string, Map<string, number> | null>([["udp", new Map<string, number>([["domain", 53]])], ["tcp", new Map<string, number>([["ftp", 21], ["ftps", 990], ["gopher", 70], ["http", 80], ["https", 443], ["imap2", 143], ["imap3", 220], ["imaps", 993], ["pop3", 110], ["pop3s", 995], ["smtp", 25], ["submissions", 465], ["ssh", 22], ["telnet", 23]])]])
+export let services: globalThis.Map<string, globalThis.Map<string, number> | null> | null = new globalThis.Map<string, globalThis.Map<string, number> | null>([["udp", new globalThis.Map<string, number>([["domain", 53]])], ["tcp", new globalThis.Map<string, number>([["ftp", 21], ["ftps", 990], ["gopher", 70], ["http", 80], ["https", 443], ["imap2", 143], ["imap3", 220], ["imaps", 993], ["pop3", 110], ["pop3s", 995], ["smtp", 25], ["submissions", 465], ["ssh", 22], ["telnet", 23]])]])
 
-export function __goscript_set_services(__goscriptValue: Map<string, Map<string, number> | null> | null): void {
+export function __goscript_set_services(__goscriptValue: globalThis.Map<string, globalThis.Map<string, number> | null> | null): void {
 	services = __goscriptValue
 }
 
@@ -1850,7 +1850,7 @@ export async function lookupPortMapWithNetwork(network: string, errNetwork: stri
 	let error: $.GoError = null as $.GoError
 	{
 		let __goscriptTuple0: any = $.mapGet(services, network, null)
-		let m: Map<string, number> | null = __goscriptTuple0[0]
+		let m: globalThis.Map<string, number> | null = __goscriptTuple0[0]
 		let ok = __goscriptTuple0[1]
 		if (ok) {
 			let lowerService: Uint8Array = new Uint8Array(25)

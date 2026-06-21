@@ -9,7 +9,7 @@ import type * as iter from "@goscript/iter/index.js"
 import "@goscript/maps/index.js"
 
 export async function main(): globalThis.Promise<void> {
-	let m: Map<string, number> | null = null as Map<string, number> | null
+	let m: globalThis.Map<string, number> | null = null as globalThis.Map<string, number> | null
 	let count = 0
 	let __goscriptRangeReturn0 = false
 	;await (async () => {

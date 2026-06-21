@@ -94,22 +94,22 @@ export class Group {
 		this._fields.mu.value = value
 	}
 
-	public get m(): Map<string, call | $.VarRef<call> | null> | null {
+	public get m(): globalThis.Map<string, call | $.VarRef<call> | null> | null {
 		return this._fields.m.value
 	}
-	public set m(value: Map<string, call | $.VarRef<call> | null> | null) {
+	public set m(value: globalThis.Map<string, call | $.VarRef<call> | null> | null) {
 		this._fields.m.value = value
 	}
 
 	public _fields: {
 		mu: $.VarRef<sync.Mutex>
-		m: $.VarRef<Map<string, call | $.VarRef<call> | null> | null>
+		m: $.VarRef<globalThis.Map<string, call | $.VarRef<call> | null> | null>
 	}
 
-	constructor(init?: Partial<{mu?: sync.Mutex, m?: Map<string, call | $.VarRef<call> | null> | null}>) {
+	constructor(init?: Partial<{mu?: sync.Mutex, m?: globalThis.Map<string, call | $.VarRef<call> | null> | null}>) {
 		this._fields = {
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			m: $.varRef(init?.m ?? (null as unknown as Map<string, call | $.VarRef<call> | null> | null))
+			m: $.varRef(init?.m ?? (null as unknown as globalThis.Map<string, call | $.VarRef<call> | null> | null))
 		}
 	}
 

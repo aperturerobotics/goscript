@@ -13,7 +13,7 @@ $.registerInterfaceType(
 
 export type Score = number
 
-export type Set = Map<any, {}> | null
+export type Set = globalThis.Map<any, {}> | null
 
 export type Cloner = {
 	Clone(): any
@@ -125,20 +125,20 @@ export class Item {
 }
 
 export class Mapper {
-	public get values(): Map<any, any> | null {
+	public get values(): globalThis.Map<any, any> | null {
 		return this._fields.values.value
 	}
-	public set values(value: Map<any, any> | null) {
+	public set values(value: globalThis.Map<any, any> | null) {
 		this._fields.values.value = value
 	}
 
 	public _fields: {
-		values: $.VarRef<Map<any, any> | null>
+		values: $.VarRef<globalThis.Map<any, any> | null>
 	}
 
-	constructor(init?: Partial<{values?: Map<any, any> | null}>) {
+	constructor(init?: Partial<{values?: globalThis.Map<any, any> | null}>) {
 		this._fields = {
-			values: $.varRef(init?.values ?? (null as unknown as Map<any, any> | null))
+			values: $.varRef(init?.values ?? (null as unknown as globalThis.Map<any, any> | null))
 		}
 	}
 

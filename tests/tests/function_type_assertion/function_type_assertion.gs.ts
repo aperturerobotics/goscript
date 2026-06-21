@@ -121,7 +121,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// 4. Type assertion of a function in a map
-	let funcMap: Map<string, any> | null = $.makeMap<string, any>()
+	let funcMap: globalThis.Map<string, any> | null = $.makeMap<string, any>()
 	$.mapSet(funcMap, "greeter", $.interfaceValue<any>($.namedFunction(greet, "main.Greeter", ({ kind: $.TypeKind.Function, name: "main.Greeter", params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "string" }] } as $.FunctionTypeInfo)), "main.Greeter"))
 	$.mapSet(funcMap, "adder", $.interfaceValue<any>($.namedFunction(add, "main.Adder", ({ kind: $.TypeKind.Function, name: "main.Adder", params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)), "main.Adder"))
 

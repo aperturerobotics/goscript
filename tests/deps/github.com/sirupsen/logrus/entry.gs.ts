@@ -398,7 +398,7 @@ export class Entry {
 
 	public async WithField(key: string, value: any): globalThis.Promise<Entry | $.VarRef<Entry> | null> {
 		const entry: Entry | $.VarRef<Entry> | null = this
-		return await Entry.prototype.WithFields.call(entry, new Map<string, any>([[key, value]]))
+		return await Entry.prototype.WithFields.call(entry, new globalThis.Map<string, any>([[key, value]]))
 	}
 
 	public async WithFields(fields: __goscript_logrus.Fields): globalThis.Promise<Entry | $.VarRef<Entry> | null> {

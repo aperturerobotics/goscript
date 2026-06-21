@@ -7,29 +7,29 @@ import * as __goscript_memory from "./memory.gs.ts"
 import "./memory.gs.ts"
 
 export class storage {
-	public get files(): Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null {
+	public get files(): globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null {
 		return this._fields.files.value
 	}
-	public set files(value: Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null) {
+	public set files(value: globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null) {
 		this._fields.files.value = value
 	}
 
-	public get children(): Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null {
+	public get children(): globalThis.Map<string, globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null {
 		return this._fields.children.value
 	}
-	public set children(value: Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null) {
+	public set children(value: globalThis.Map<string, globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null) {
 		this._fields.children.value = value
 	}
 
 	public _fields: {
-		files: $.VarRef<Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null>
-		children: $.VarRef<Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null>
+		files: $.VarRef<globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null>
+		children: $.VarRef<globalThis.Map<string, globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null>
 	}
 
-	constructor(init?: Partial<{files?: Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null, children?: Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null}>) {
+	constructor(init?: Partial<{files?: globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null, children?: globalThis.Map<string, globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null}>) {
 		this._fields = {
-			files: $.varRef(init?.files ?? (null as unknown as Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null)),
-			children: $.varRef(init?.children ?? (null as unknown as Map<string, Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null))
+			files: $.varRef(init?.files ?? (null as unknown as globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null)),
+			children: $.varRef(init?.children ?? (null as unknown as globalThis.Map<string, globalThis.Map<string, __goscript_memory.file | $.VarRef<__goscript_memory.file> | null> | null> | null))
 		}
 	}
 

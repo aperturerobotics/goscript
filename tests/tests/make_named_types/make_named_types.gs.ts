@@ -13,7 +13,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Length:", $.len((s as MySlice)))
 
 	// Test make() with named map type
-	type MyMap = Map<string, number> | null
+	type MyMap = globalThis.Map<string, number> | null
 	let m: MyMap = $.makeMap<string, number>()
 	$.mapSet(m, "test", 42)
 	$.println("Value:", $.mapGet(m, "test", 0)[0])

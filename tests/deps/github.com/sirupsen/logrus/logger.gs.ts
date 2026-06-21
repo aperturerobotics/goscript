@@ -613,7 +613,7 @@ export class Logger {
 	public async hooksForLevel(level: __goscript_logrus.Level): globalThis.Promise<$.Slice<__goscript_hooks.Hook | null>> {
 		const logger: Logger | $.VarRef<Logger> | null = this
 		await $.pointerValue<Logger>(logger).mu.Lock()
-		let hooks: $.Slice<__goscript_hooks.Hook | null> = $.mapGet($.pointerValue<Logger>(logger).Hooks, level, null)[0]
+		let hooks: $.Slice<__goscript_hooks.Hook | null> = $.mapGet($.pointerValue<Logger>(logger).Hooks, $.uint(level, 32), null)[0]
 		if ($.len(hooks) == 0) {
 			$.pointerValue<Logger>(logger).mu.Unlock()
 			return null
@@ -642,7 +642,7 @@ export class Logger {
 
 	public releaseEntry(entry: __goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null): void {
 		const logger: Logger | $.VarRef<Logger> | null = this
-		$.pointerValue<__goscript_entry.Entry>(entry).Data = new Map<string, any>([])
+		$.pointerValue<__goscript_entry.Entry>(entry).Data = new globalThis.Map<string, any>([])
 		$.pointerValue<Logger>(logger).entryPool.Put($.interfaceValue<any>(entry, "*logrus.Entry"))
 	}
 

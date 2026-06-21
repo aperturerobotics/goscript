@@ -192,7 +192,8 @@ export class MemStats {
 }
 
 // ReadMemStats populates m with memory allocator statistics
-export function ReadMemStats(m: MemStats): void {
+export function ReadMemStats(m: MemStats | $.VarRef<MemStats> | null): void {
+  m = $.pointerValue<MemStats>(m)
   // Update the provided MemStats object with current values
   if (typeof performance !== 'undefined' && (performance as any).memory) {
     const mem = (performance as any).memory

@@ -10,11 +10,11 @@ export async function values(): globalThis.Promise<$.Slice<number>> {
 	return $.arrayToSlice<number>([4])
 }
 
-export async function mapped(): globalThis.Promise<Map<number, number> | null> {
+export async function mapped(): globalThis.Promise<globalThis.Map<number, number> | null> {
 	let ready: $.Channel<boolean> | null = $.makeChannel<boolean>(1, false, "both")
 	await $.chanSend(ready, true)
 	await $.chanRecv(ready)
-	return new Map<number, number>([[2, 5]])
+	return new globalThis.Map<number, number>([[2, 5]])
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/type_switch_varref_suffix/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "index.ts",
+    "type_switch_varref_suffix.gs.ts"
+  ]
+}

@@ -222,17 +222,17 @@ export class Session {
 		this._fields.numIncomingStreams.value = value
 	}
 
-	public get streams(): Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null {
+	public get streams(): globalThis.Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null {
 		return this._fields.streams.value
 	}
-	public set streams(value: Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null) {
+	public set streams(value: globalThis.Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null) {
 		this._fields.streams.value = value
 	}
 
-	public get inflight(): Map<number, {}> | null {
+	public get inflight(): globalThis.Map<number, {}> | null {
 		return this._fields.inflight.value
 	}
-	public set inflight(value: Map<number, {}> | null) {
+	public set inflight(value: globalThis.Map<number, {}> | null) {
 		this._fields.inflight.value = value
 	}
 
@@ -378,8 +378,8 @@ export class Session {
 		pingID: $.VarRef<number>
 		activePing: $.VarRef<__goscript_ping.ping | $.VarRef<__goscript_ping.ping> | null>
 		numIncomingStreams: $.VarRef<number>
-		streams: $.VarRef<Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null>
-		inflight: $.VarRef<Map<number, {}> | null>
+		streams: $.VarRef<globalThis.Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null>
+		inflight: $.VarRef<globalThis.Map<number, {}> | null>
 		streamLock: $.VarRef<sync.Mutex>
 		synCh: $.VarRef<$.Channel<{}> | null>
 		acceptCh: $.VarRef<$.Channel<__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null>
@@ -398,7 +398,7 @@ export class Session {
 		keepaliveActive: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{rtt?: number, remoteGoAway?: number, localGoAway?: number, nextStreamID?: number, config?: __goscript_mux.Config | $.VarRef<__goscript_mux.Config> | null, logger?: log.Logger | $.VarRef<log.Logger> | null, conn?: net.Conn | null, reader?: io.Reader | null, newMemoryManager?: (() => [MemoryManager | null, $.GoError] | globalThis.Promise<[MemoryManager | null, $.GoError]>) | null, pingLock?: sync.Mutex, pingID?: number, activePing?: __goscript_ping.ping | $.VarRef<__goscript_ping.ping> | null, numIncomingStreams?: number, streams?: Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, inflight?: Map<number, {}> | null, streamLock?: sync.Mutex, synCh?: $.Channel<{}> | null, acceptCh?: $.Channel<__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, sendCh?: $.Channel<$.Slice<number>> | null, pongCh?: $.Channel<number> | null, pingCh?: $.Channel<number> | null, recvDoneCh?: $.Channel<{}> | null, sendDoneCh?: $.Channel<{}> | null, client?: boolean, shutdown?: boolean, shutdownErr?: $.GoError, shutdownCh?: $.Channel<{}> | null, shutdownLock?: sync.Mutex, keepaliveLock?: sync.Mutex, keepaliveTimer?: time.Timer | $.VarRef<time.Timer> | null, keepaliveActive?: boolean}>) {
+	constructor(init?: Partial<{rtt?: number, remoteGoAway?: number, localGoAway?: number, nextStreamID?: number, config?: __goscript_mux.Config | $.VarRef<__goscript_mux.Config> | null, logger?: log.Logger | $.VarRef<log.Logger> | null, conn?: net.Conn | null, reader?: io.Reader | null, newMemoryManager?: (() => [MemoryManager | null, $.GoError] | globalThis.Promise<[MemoryManager | null, $.GoError]>) | null, pingLock?: sync.Mutex, pingID?: number, activePing?: __goscript_ping.ping | $.VarRef<__goscript_ping.ping> | null, numIncomingStreams?: number, streams?: globalThis.Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, inflight?: globalThis.Map<number, {}> | null, streamLock?: sync.Mutex, synCh?: $.Channel<{}> | null, acceptCh?: $.Channel<__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, sendCh?: $.Channel<$.Slice<number>> | null, pongCh?: $.Channel<number> | null, pingCh?: $.Channel<number> | null, recvDoneCh?: $.Channel<{}> | null, sendDoneCh?: $.Channel<{}> | null, client?: boolean, shutdown?: boolean, shutdownErr?: $.GoError, shutdownCh?: $.Channel<{}> | null, shutdownLock?: sync.Mutex, keepaliveLock?: sync.Mutex, keepaliveTimer?: time.Timer | $.VarRef<time.Timer> | null, keepaliveActive?: boolean}>) {
 		this._fields = {
 			rtt: $.varRef(init?.rtt ?? (0 as unknown as number)),
 			remoteGoAway: $.varRef(init?.remoteGoAway ?? (0 as unknown as number)),
@@ -413,8 +413,8 @@ export class Session {
 			pingID: $.varRef(init?.pingID ?? (0 as unknown as number)),
 			activePing: $.varRef(init?.activePing ?? (null as unknown as __goscript_ping.ping | $.VarRef<__goscript_ping.ping> | null)),
 			numIncomingStreams: $.varRef(init?.numIncomingStreams ?? (0 as unknown as number)),
-			streams: $.varRef(init?.streams ?? (null as unknown as Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null)),
-			inflight: $.varRef(init?.inflight ?? (null as unknown as Map<number, {}> | null)),
+			streams: $.varRef(init?.streams ?? (null as unknown as globalThis.Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null)),
+			inflight: $.varRef(init?.inflight ?? (null as unknown as globalThis.Map<number, {}> | null)),
 			streamLock: $.varRef(init?.streamLock ? $.markAsStructValue($.cloneStructValue(init.streamLock)) : $.markAsStructValue(new sync.Mutex())),
 			synCh: $.varRef(init?.synCh ?? (null as unknown as $.Channel<{}> | null)),
 			acceptCh: $.varRef(init?.acceptCh ?? (null as unknown as $.Channel<__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null)),
@@ -700,8 +700,8 @@ export class Session {
 		// Register the stream
 		let stream: __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null = __goscript_stream.newStream(s, $.uint(id, 32), 0, $.uint(262144, 32), span)
 		await $.pointerValue<Session>(s).streamLock.Lock()
-		$.mapSet($.pointerValue<Session>(s).streams, id, stream)
-		$.mapSet($.pointerValue<Session>(s).inflight, id, {})
+		$.mapSet($.pointerValue<Session>(s).streams, $.uint(id, 32), stream)
+		$.mapSet($.pointerValue<Session>(s).inflight, $.uint(id, 32), {})
 		$.pointerValue<Session>(s).streamLock.Unlock()
 
 		// Send the window update to create
@@ -879,7 +879,7 @@ export class Session {
 		await $.pointerValue<Session>(s).streamLock.Lock()
 		__defer.defer(() => { $.pointerValue<Session>(s).streamLock.Unlock() })
 		{
-			let [, ok] = $.mapGet($.pointerValue<Session>(s).inflight, id, {})
+			let [, ok] = $.mapGet($.pointerValue<Session>(s).inflight, $.uint(id, 32), {})
 			if (ok) {
 				const [__goscriptSelect6HasReturn, __goscriptSelect6Value] = await $.selectStatement<any, void>([
 					{
@@ -909,7 +909,7 @@ export class Session {
 
 	public async deleteStream(id: number): globalThis.Promise<void> {
 		let s: Session | $.VarRef<Session> | null = this
-		let __goscriptTuple2: any = $.mapGet($.pointerValue<Session>(s).streams, id, null)
+		let __goscriptTuple2: any = $.mapGet($.pointerValue<Session>(s).streams, $.uint(id, 32), null)
 		let str: __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null = __goscriptTuple2[0]
 		let ok = __goscriptTuple2[1]
 		if (!ok) {
@@ -932,7 +932,7 @@ export class Session {
 		const s: Session | $.VarRef<Session> | null = this
 		await $.pointerValue<Session>(s).streamLock.Lock()
 		{
-			let [, ok] = $.mapGet($.pointerValue<Session>(s).inflight, id, {})
+			let [, ok] = $.mapGet($.pointerValue<Session>(s).inflight, $.uint(id, 32), {})
 			if (ok) {
 				$.deleteMapEntry($.pointerValue<Session>(s).inflight, $.uint(id, 32))
 			} else {
@@ -1112,7 +1112,7 @@ export class Session {
 
 		// Get the stream
 		await $.pointerValue<Session>(s).streamLock.Lock()
-		let stream: __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null = $.mapGet($.pointerValue<Session>(s).streams, id, null)[0]
+		let stream: __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null = $.mapGet($.pointerValue<Session>(s).streams, $.uint(id, 32), null)[0]
 		$.pointerValue<Session>(s).streamLock.Unlock()
 
 		// If we do not have a stream, likely we sent a RST and/or closed the stream for reading.
@@ -1182,7 +1182,7 @@ export class Session {
 
 		// Check if stream already exists
 		{
-			let [, ok] = $.mapGet($.pointerValue<Session>(s).streams, id, null)
+			let [, ok] = $.mapGet($.pointerValue<Session>(s).streams, $.uint(id, 32), null)
 			if (ok) {
 				await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[ERR] yamux: duplicate stream declared", null)
 				{
@@ -1206,7 +1206,7 @@ export class Session {
 
 		$.pointerValue<Session>(s).numIncomingStreams++
 		// Register the stream
-		$.mapSet($.pointerValue<Session>(s).streams, id, stream)
+		$.mapSet($.pointerValue<Session>(s).streams, $.uint(id, 32), stream)
 
 		// Check if we've exceeded the backlog
 		const [__goscriptSelect10HasReturn, __goscriptSelect10Value] = await $.selectStatement<any, $.GoError>([

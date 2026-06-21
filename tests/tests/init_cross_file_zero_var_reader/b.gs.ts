@@ -8,7 +8,7 @@ import type * as reflect from "@goscript/reflect/index.js"
 import * as __goscript_a from "./a.gs.ts"
 import "./a.gs.ts"
 
-export var registry: Map<number, number> | null
+export var registry: globalThis.Map<number, number> | null
 
 export function __goscript_init_registry(): void {
 	if (((registry) as any) === undefined) {
@@ -16,14 +16,14 @@ export function __goscript_init_registry(): void {
 	}
 }
 
-export function __goscript_get_registry(): Map<number, number> | null {
+export function __goscript_get_registry(): globalThis.Map<number, number> | null {
 	if (((registry) as any) === undefined) {
 		__goscript_init_registry()
 	}
 	return registry
 }
 
-export function __goscript_set_registry(__goscriptValue: Map<number, number> | null): void {
+export function __goscript_set_registry(__goscriptValue: globalThis.Map<number, number> | null): void {
 	registry = __goscriptValue
 }
 

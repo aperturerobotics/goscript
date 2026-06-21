@@ -142,6 +142,10 @@ class littleEndian implements ByteOrder, AppendByteOrder {
   public GoString(): string {
     return 'binary.LittleEndian'
   }
+
+  public clone(): littleEndian {
+    return $.markAsStructValue(new littleEndian())
+  }
 }
 
 class bigEndian implements ByteOrder, AppendByteOrder {
@@ -221,6 +225,10 @@ class bigEndian implements ByteOrder, AppendByteOrder {
 
   public GoString(): string {
     return 'binary.BigEndian'
+  }
+
+  public clone(): bigEndian {
+    return $.markAsStructValue(new bigEndian())
   }
 }
 
@@ -374,9 +382,10 @@ export async function ReadVarint(r: byteReader): Promise<[number, $.GoError]> {
 
 export async function Read(
   r: io.Reader,
-  order: ByteOrder,
+  order: ByteOrder | null,
   data: unknown,
 ): Promise<$.GoError> {
+  const byteOrder = requireByteOrder(order)
   const target = decodeTarget(data)
   if (target === null) {
     return unsupportedError('Read', data)
@@ -390,15 +399,16 @@ export async function Read(
   if (err !== null) {
     return err
   }
-  decodeFixed(buf, order, target)
+  decodeFixed(buf, byteOrder, target)
   return null
 }
 
 export function Decode(
   buf: $.Slice<number>,
-  order: ByteOrder,
+  order: ByteOrder | null,
   data: unknown,
 ): [number, $.GoError] {
+  const byteOrder = requireByteOrder(order)
   const target = decodeTarget(data)
   if (target === null) {
     return [0, unsupportedError('Decode', data)]
@@ -410,16 +420,16 @@ export function Decode(
   if ($.len(buf) < size) {
     return [0, errBufferTooSmall]
   }
-  decodeFixed($.goSlice(buf, 0, size), order, target)
+  decodeFixed($.goSlice(buf, 0, size), byteOrder, target)
   return [size, null]
 }
 
 export async function Write(
   w: io.Writer,
-  order: ByteOrder,
+  order: ByteOrder | null,
   data: unknown,
 ): Promise<$.GoError> {
-  const encoded = encodeData(order, data)
+  const encoded = encodeData(requireByteOrder(order), data)
   if (encoded === null) {
     return unsupportedError('Write', data)
   }
@@ -429,10 +439,10 @@ export async function Write(
 
 export function Encode(
   buf: $.Slice<number>,
-  order: ByteOrder,
+  order: ByteOrder | null,
   data: unknown,
 ): [number, $.GoError] {
-  const encoded = encodeData(order, data)
+  const encoded = encodeData(requireByteOrder(order), data)
   if (encoded === null) {
     return [0, unsupportedError('Encode', data)]
   }
@@ -445,10 +455,10 @@ export function Encode(
 
 export function Append(
   buf: $.Slice<number>,
-  order: ByteOrder,
+  order: ByteOrder | null,
   data: unknown,
 ): [$.Slice<number>, $.GoError] {
-  const encoded = encodeData(order, data)
+  const encoded = encodeData(requireByteOrder(order), data)
   if (encoded === null) {
     return [null, unsupportedError('Append', data)]
   }
@@ -461,6 +471,13 @@ export function Size(v: unknown): number {
     return -1
   }
   return fixedSize(target.kind, target.value)
+}
+
+function requireByteOrder(order: ByteOrder | null): ByteOrder {
+  if (order === null) {
+    throw new Error('runtime error: invalid memory address or nil pointer dereference')
+  }
+  return order
 }
 
 function decodeFixed(

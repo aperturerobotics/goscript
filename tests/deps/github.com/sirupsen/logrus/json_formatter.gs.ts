@@ -50,7 +50,7 @@ import "./logger.gs.ts"
 import "./logrus.gs.ts"
 import "./writer.gs.ts"
 
-export type FieldMap = Map<fieldKey, string> | null
+export type FieldMap = globalThis.Map<fieldKey, string> | null
 
 export class JSONFormatter {
 	// TimestampFormat sets the format used for marshaling timestamps.

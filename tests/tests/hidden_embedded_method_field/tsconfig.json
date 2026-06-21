@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/hidden_embedded_method_field/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "hidden_embedded_method_field.gs.ts",
+    "index.ts"
+  ]
+}

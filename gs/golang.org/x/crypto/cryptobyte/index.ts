@@ -1,7 +1,6 @@
 import * as $ from '@goscript/builtin/index.js'
+import * as asn1 from '@goscript/golang.org/x/crypto/cryptobyte/asn1/index.js'
 import * as time from '@goscript/time/index.js'
-
-import * as asn1 from './asn1/index.js'
 
 export type String = $.Bytes
 

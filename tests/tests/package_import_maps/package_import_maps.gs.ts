@@ -15,7 +15,7 @@ export function getValue(): [string, number] {
 	return ["test", 42]
 }
 
-export function simpleIterator(m: Map<string, number> | null): ((_p0: ((_p0: string, _p1: number) => boolean | globalThis.Promise<boolean>) | null) => void) | null {
+export function simpleIterator(m: globalThis.Map<string, number> | null): ((_p0: ((_p0: string, _p1: number) => boolean | globalThis.Promise<boolean>) | null) => void) | null {
 	return $.functionValue(async (_yield: ((_p0: string, _p1: number) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<void> => {
 		for (const [k, v] of m?.entries() ?? []) {
 			if (!await _yield!(k, v)) {
@@ -27,7 +27,7 @@ export function simpleIterator(m: Map<string, number> | null): ((_p0: ((_p0: str
 
 export async function main(): globalThis.Promise<void> {
 	// Create a map to test with
-	let m: Map<string, number> | null = new Map<string, number>([["a", 1], ["b", 2], ["c", 3]])
+	let m: globalThis.Map<string, number> | null = new globalThis.Map<string, number>([["a", 1], ["b", 2], ["c", 3]])
 
 	// Collect results in a slice to ensure deterministic output
 	let results: $.Slice<string> = null as $.Slice<string>
@@ -70,14 +70,14 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Result:", result)
 	}
 
-	let dst: Map<string, number> | null = new Map<string, number>([["base", 1]])
-	let src: Map<string, number> | null = new Map<string, number>([["copied", 2]])
+	let dst: globalThis.Map<string, number> | null = new globalThis.Map<string, number>([["base", 1]])
+	let src: globalThis.Map<string, number> | null = new globalThis.Map<string, number>([["copied", 2]])
 	maps.Copy(dst, src)
-	let nilSrc: Map<string, number> | null = null as Map<string, number> | null
+	let nilSrc: globalThis.Map<string, number> | null = null as globalThis.Map<string, number> | null
 	maps.Copy(dst, nilSrc)
 	$.println("Copy result:", $.mapGet(dst, "base", 0)[0], $.mapGet(dst, "copied", 0)[0], $.len(dst))
-	let cloned: Map<string, number> | null = (maps.Clone(dst) as Map<string, number> | null)
-	let nilMap: Map<string, number> | null = null as Map<string, number> | null
+	let cloned: globalThis.Map<string, number> | null = (maps.Clone(dst) as globalThis.Map<string, number> | null)
+	let nilMap: globalThis.Map<string, number> | null = null as globalThis.Map<string, number> | null
 	$.println("Clone result:", $.mapGet(cloned, "base", 0)[0], $.mapGet(cloned, "copied", 0)[0], maps.Clone(nilMap) == null)
 
 	$.println("test finished")

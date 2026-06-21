@@ -5,10 +5,10 @@ import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	let i: any = null as any
-	i = $.interfaceValue<any>(new Map<string, number>([["age", 30]]), "map[string]int")
+	i = $.interfaceValue<any>(new globalThis.Map<string, number>([["age", 30]]), "map[string]int")
 
-	let __goscriptTuple0: any = $.typeAssertTuple<Map<string, number> | null>(i, { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } })
-	let m: Map<string, number> | null = __goscriptTuple0[0]
+	let __goscriptTuple0: any = $.typeAssertTuple<globalThis.Map<string, number> | null>(i, { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } })
+	let m: globalThis.Map<string, number> | null = __goscriptTuple0[0]
 	let ok = __goscriptTuple0[1]
 	if (ok) {
 		$.println("Age:", $.mapGet(m, "age", 0)[0])
@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Type assertion failed")
 	}
 
-	let [, ok2] = $.typeAssertTuple<Map<string, string> | null>(i, { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "string" } })
+	let [, ok2] = $.typeAssertTuple<globalThis.Map<string, string> | null>(i, { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "string" } })
 	if (ok2) {
 		// This block should not be reached if the assertion fails as expected.
 		// Depending on how Go handles failed assertions with incorrect types,
@@ -27,7 +27,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Second type assertion (map[string]string) failed as expected")
 	}
 
-	let [, ok3] = $.typeAssertTuple<Map<number, number> | null>(i, { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: { kind: $.TypeKind.Basic, name: "int" } })
+	let [, ok3] = $.typeAssertTuple<globalThis.Map<number, number> | null>(i, { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: { kind: $.TypeKind.Basic, name: "int" } })
 	if (ok3) {
 		// Similar to the above, this block should not be reached.
 		$.println("Unexpected success for map[int]int assertion")

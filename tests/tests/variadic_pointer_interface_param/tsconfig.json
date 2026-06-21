@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/variadic_pointer_interface_param/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "index.ts",
+    "variadic_pointer_interface_param.gs.ts"
+  ]
+}

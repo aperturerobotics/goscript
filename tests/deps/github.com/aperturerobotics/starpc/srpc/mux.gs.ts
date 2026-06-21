@@ -59,24 +59,24 @@ export class mux {
 	}
 
 	// services contains a mapping from services to handlers.
-	public get services(): Map<string, muxMethods> | null {
+	public get services(): globalThis.Map<string, muxMethods> | null {
 		return this._fields.services.value
 	}
-	public set services(value: Map<string, muxMethods> | null) {
+	public set services(value: globalThis.Map<string, muxMethods> | null) {
 		this._fields.services.value = value
 	}
 
 	public _fields: {
 		fallback: $.VarRef<$.Slice<__goscript_invoker.Invoker | null>>
 		rmtx: $.VarRef<sync.RWMutex>
-		services: $.VarRef<Map<string, muxMethods> | null>
+		services: $.VarRef<globalThis.Map<string, muxMethods> | null>
 	}
 
-	constructor(init?: Partial<{fallback?: $.Slice<__goscript_invoker.Invoker | null>, rmtx?: sync.RWMutex, services?: Map<string, muxMethods> | null}>) {
+	constructor(init?: Partial<{fallback?: $.Slice<__goscript_invoker.Invoker | null>, rmtx?: sync.RWMutex, services?: globalThis.Map<string, muxMethods> | null}>) {
 		this._fields = {
 			fallback: $.varRef(init?.fallback ?? (null as unknown as $.Slice<__goscript_invoker.Invoker | null>)),
 			rmtx: $.varRef(init?.rmtx ? $.markAsStructValue($.cloneStructValue(init.rmtx)) : $.markAsStructValue(new sync.RWMutex())),
-			services: $.varRef(init?.services ?? (null as unknown as Map<string, muxMethods> | null))
+			services: $.varRef(init?.services ?? (null as unknown as globalThis.Map<string, muxMethods> | null))
 		}
 	}
 
@@ -197,7 +197,7 @@ export class mux {
 	)
 }
 
-export type muxMethods = Map<string, __goscript_handler.Handler | null> | null
+export type muxMethods = globalThis.Map<string, __goscript_handler.Handler | null> | null
 
 export function NewMux(fallbackInvokers: $.Slice<__goscript_invoker.Invoker | null>): Mux | null {
 	return $.interfaceValue<Mux | null>(new mux({fallback: fallbackInvokers, services: $.makeMap<string, muxMethods>()}), "*srpc.mux")

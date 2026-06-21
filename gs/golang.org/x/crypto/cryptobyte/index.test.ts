@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
+import * as asn1 from '@goscript/golang.org/x/crypto/cryptobyte/asn1/index.js'
 
-import * as asn1 from './asn1/index.js'
 import {
   BuildError,
   NewBuilder,

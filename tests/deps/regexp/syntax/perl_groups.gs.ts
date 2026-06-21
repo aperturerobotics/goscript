@@ -24,22 +24,22 @@ export function __goscript_set_code3(__goscriptValue: $.Slice<number>): void {
 	code3 = __goscriptValue
 }
 
-export var perlGroup: Map<string, __goscript_parse.charGroup> | null
+export var perlGroup: globalThis.Map<string, __goscript_parse.charGroup> | null
 
 export function __goscript_init_perlGroup(): void {
 	if (((perlGroup) as any) === undefined) {
-		perlGroup = new Map<string, __goscript_parse.charGroup>([["\\d", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code1}))], ["\\D", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code1}))], ["\\s", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code2}))], ["\\S", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code2}))], ["\\w", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code3}))], ["\\W", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code3}))]])
+		perlGroup = new globalThis.Map<string, __goscript_parse.charGroup>([["\\d", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code1}))], ["\\D", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code1}))], ["\\s", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code2}))], ["\\S", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code2}))], ["\\w", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code3}))], ["\\W", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code3}))]])
 	}
 }
 
-export function __goscript_get_perlGroup(): Map<string, __goscript_parse.charGroup> | null {
+export function __goscript_get_perlGroup(): globalThis.Map<string, __goscript_parse.charGroup> | null {
 	if (((perlGroup) as any) === undefined) {
 		__goscript_init_perlGroup()
 	}
 	return perlGroup
 }
 
-export function __goscript_set_perlGroup(__goscriptValue: Map<string, __goscript_parse.charGroup> | null): void {
+export function __goscript_set_perlGroup(__goscriptValue: globalThis.Map<string, __goscript_parse.charGroup> | null): void {
 	perlGroup = __goscriptValue
 }
 
@@ -127,21 +127,21 @@ export function __goscript_set_code17(__goscriptValue: $.Slice<number>): void {
 	code17 = __goscriptValue
 }
 
-export var posixGroup: Map<string, __goscript_parse.charGroup> | null
+export var posixGroup: globalThis.Map<string, __goscript_parse.charGroup> | null
 
 export function __goscript_init_posixGroup(): void {
 	if (((posixGroup) as any) === undefined) {
-		posixGroup = new Map<string, __goscript_parse.charGroup>([["[:alnum:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code4}))], ["[:^alnum:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code4}))], ["[:alpha:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code5}))], ["[:^alpha:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code5}))], ["[:ascii:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code6}))], ["[:^ascii:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code6}))], ["[:blank:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code7}))], ["[:^blank:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code7}))], ["[:cntrl:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code8}))], ["[:^cntrl:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code8}))], ["[:digit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code9}))], ["[:^digit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code9}))], ["[:graph:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code10}))], ["[:^graph:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code10}))], ["[:lower:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code11}))], ["[:^lower:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code11}))], ["[:print:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code12}))], ["[:^print:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code12}))], ["[:punct:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code13}))], ["[:^punct:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code13}))], ["[:space:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code14}))], ["[:^space:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code14}))], ["[:upper:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code15}))], ["[:^upper:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code15}))], ["[:word:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code16}))], ["[:^word:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code16}))], ["[:xdigit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code17}))], ["[:^xdigit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code17}))]])
+		posixGroup = new globalThis.Map<string, __goscript_parse.charGroup>([["[:alnum:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code4}))], ["[:^alnum:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code4}))], ["[:alpha:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code5}))], ["[:^alpha:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code5}))], ["[:ascii:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code6}))], ["[:^ascii:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code6}))], ["[:blank:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code7}))], ["[:^blank:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code7}))], ["[:cntrl:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code8}))], ["[:^cntrl:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code8}))], ["[:digit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code9}))], ["[:^digit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code9}))], ["[:graph:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code10}))], ["[:^graph:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code10}))], ["[:lower:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code11}))], ["[:^lower:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code11}))], ["[:print:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code12}))], ["[:^print:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code12}))], ["[:punct:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code13}))], ["[:^punct:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code13}))], ["[:space:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code14}))], ["[:^space:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code14}))], ["[:upper:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code15}))], ["[:^upper:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code15}))], ["[:word:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code16}))], ["[:^word:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code16}))], ["[:xdigit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: +1, _class: code17}))], ["[:^xdigit:]", $.markAsStructValue(new __goscript_parse.charGroup({sign: -1, _class: code17}))]])
 	}
 }
 
-export function __goscript_get_posixGroup(): Map<string, __goscript_parse.charGroup> | null {
+export function __goscript_get_posixGroup(): globalThis.Map<string, __goscript_parse.charGroup> | null {
 	if (((posixGroup) as any) === undefined) {
 		__goscript_init_posixGroup()
 	}
 	return posixGroup
 }
 
-export function __goscript_set_posixGroup(__goscriptValue: Map<string, __goscript_parse.charGroup> | null): void {
+export function __goscript_set_posixGroup(__goscriptValue: globalThis.Map<string, __goscript_parse.charGroup> | null): void {
 	posixGroup = __goscriptValue
 }

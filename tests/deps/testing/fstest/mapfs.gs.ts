@@ -21,7 +21,7 @@ import "@goscript/slices/index.js"
 import "@goscript/strings/index.js"
 import "@goscript/time/index.js"
 
-export type MapFS = Map<string, MapFile | $.VarRef<MapFile> | null> | null
+export type MapFS = globalThis.Map<string, MapFile | $.VarRef<MapFile> | null> | null
 
 export class MapFile {
 	public get Data(): $.Slice<number> {
@@ -559,7 +559,7 @@ export async function MapFS_Open(fsys: MapFS, name: string): globalThis.Promise<
 	// But file can also be non-nil, in case the user wants to set metadata for the directory explicitly.
 	// Either way, we need to construct the list of children of this directory.
 	let list: $.Slice<mapFileInfo> = null as $.Slice<mapFileInfo>
-	let need: Map<string, boolean> | null = $.makeMap<string, boolean>()
+	let need: globalThis.Map<string, boolean> | null = $.makeMap<string, boolean>()
 	if ($.stringEqual(realName, ".")) {
 		for (let [fname, f] of fsys?.entries() ?? []) {
 			let i = strings.Index(fname, "/")

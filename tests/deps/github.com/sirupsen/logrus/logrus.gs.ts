@@ -45,7 +45,7 @@ import "./hooks.gs.ts"
 import "./logger.gs.ts"
 import "./writer.gs.ts"
 
-export type Fields = Map<string, any> | null
+export type Fields = globalThis.Map<string, any> | null
 
 export type Level = number
 

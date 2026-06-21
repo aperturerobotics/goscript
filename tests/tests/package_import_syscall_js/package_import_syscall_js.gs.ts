@@ -9,7 +9,7 @@ import "@goscript/syscall/js/index.js"
 export async function main(): globalThis.Promise<void> {
 	using __defer = new $.DisposableStack()
 	let global = $.markAsStructValue($.cloneStructValue(js.Global()))
-	$.markAsStructValue($.cloneStructValue(global)).Set("__GOSCRIPT_JS_TEST__", $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(js.ValueOf($.interfaceValue<any>(new Map<string, any>([["name", "goscript"], ["nums", $.interfaceValue<any>($.arrayToSlice<any>([$.namedValueInterfaceValue<any>(1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(2, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(3, "int", {}, { kind: $.TypeKind.Basic, name: "int" })]), "[]any")]]), "map[string]any")))), "js.Value"))
+	$.markAsStructValue($.cloneStructValue(global)).Set("__GOSCRIPT_JS_TEST__", $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(js.ValueOf($.interfaceValue<any>(new globalThis.Map<string, any>([["name", "goscript"], ["nums", $.interfaceValue<any>($.arrayToSlice<any>([$.namedValueInterfaceValue<any>(1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(2, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(3, "int", {}, { kind: $.TypeKind.Basic, name: "int" })]), "[]any")]]), "map[string]any")))), "js.Value"))
 	let obj = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(global)).Get("__GOSCRIPT_JS_TEST__")))
 	$.println("type:", js.Type_String($.markAsStructValue($.cloneStructValue(obj)).Type()))
 	$.println("name:", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(obj)).Get("name"))).String())

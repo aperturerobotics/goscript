@@ -49,29 +49,29 @@ export class file {
 }
 
 export class storage {
-	public get files(): Map<string, file | $.VarRef<file> | null> | null {
+	public get files(): globalThis.Map<string, file | $.VarRef<file> | null> | null {
 		return this._fields.files.value
 	}
-	public set files(value: Map<string, file | $.VarRef<file> | null> | null) {
+	public set files(value: globalThis.Map<string, file | $.VarRef<file> | null> | null) {
 		this._fields.files.value = value
 	}
 
-	public get children(): Map<string, Map<string, file | $.VarRef<file> | null> | null> | null {
+	public get children(): globalThis.Map<string, globalThis.Map<string, file | $.VarRef<file> | null> | null> | null {
 		return this._fields.children.value
 	}
-	public set children(value: Map<string, Map<string, file | $.VarRef<file> | null> | null> | null) {
+	public set children(value: globalThis.Map<string, globalThis.Map<string, file | $.VarRef<file> | null> | null> | null) {
 		this._fields.children.value = value
 	}
 
 	public _fields: {
-		files: $.VarRef<Map<string, file | $.VarRef<file> | null> | null>
-		children: $.VarRef<Map<string, Map<string, file | $.VarRef<file> | null> | null> | null>
+		files: $.VarRef<globalThis.Map<string, file | $.VarRef<file> | null> | null>
+		children: $.VarRef<globalThis.Map<string, globalThis.Map<string, file | $.VarRef<file> | null> | null> | null>
 	}
 
-	constructor(init?: Partial<{files?: Map<string, file | $.VarRef<file> | null> | null, children?: Map<string, Map<string, file | $.VarRef<file> | null> | null> | null}>) {
+	constructor(init?: Partial<{files?: globalThis.Map<string, file | $.VarRef<file> | null> | null, children?: globalThis.Map<string, globalThis.Map<string, file | $.VarRef<file> | null> | null> | null}>) {
 		this._fields = {
-			files: $.varRef(init?.files ?? (null as unknown as Map<string, file | $.VarRef<file> | null> | null)),
-			children: $.varRef(init?.children ?? (null as unknown as Map<string, Map<string, file | $.VarRef<file> | null> | null> | null))
+			files: $.varRef(init?.files ?? (null as unknown as globalThis.Map<string, file | $.VarRef<file> | null> | null)),
+			children: $.varRef(init?.children ?? (null as unknown as globalThis.Map<string, globalThis.Map<string, file | $.VarRef<file> | null> | null> | null))
 		}
 	}
 
@@ -94,7 +94,7 @@ export class storage {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let s = $.markAsStructValue(new storage({files: $.makeMap<string, file | $.VarRef<file> | null>(), children: $.makeMap<string, Map<string, file | $.VarRef<file> | null> | null>()}))
+	let s = $.markAsStructValue(new storage({files: $.makeMap<string, file | $.VarRef<file> | null>(), children: $.makeMap<string, globalThis.Map<string, file | $.VarRef<file> | null> | null>()}))
 
 	let f: file | $.VarRef<file> | null = new file({name: "test.txt", data: new Uint8Array([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100])})
 

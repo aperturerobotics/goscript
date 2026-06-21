@@ -26,22 +26,22 @@ export class Action {
 		this._fields.Result.value = value
 	}
 
-	public get Filter(): Map<number, dep.Ref | null> | null {
+	public get Filter(): globalThis.Map<number, dep.Ref | null> | null {
 		return this._fields.Filter.value
 	}
-	public set Filter(value: Map<number, dep.Ref | null> | null) {
+	public set Filter(value: globalThis.Map<number, dep.Ref | null> | null) {
 		this._fields.Filter.value = value
 	}
 
 	public _fields: {
 		Result: $.VarRef<number>
-		Filter: $.VarRef<Map<number, dep.Ref | null> | null>
+		Filter: $.VarRef<globalThis.Map<number, dep.Ref | null> | null>
 	}
 
-	constructor(init?: Partial<{Result?: number, Filter?: Map<number, dep.Ref | null> | null}>) {
+	constructor(init?: Partial<{Result?: number, Filter?: globalThis.Map<number, dep.Ref | null> | null}>) {
 		this._fields = {
 			Result: $.varRef(init?.Result ?? (0 as unknown as number)),
-			Filter: $.varRef(init?.Filter ?? (null as unknown as Map<number, dep.Ref | null> | null))
+			Filter: $.varRef(init?.Filter ?? (null as unknown as globalThis.Map<number, dep.Ref | null> | null))
 		}
 	}
 
@@ -87,7 +87,7 @@ export function Fixed_Mark(f: Fixed): boolean {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let shapes: $.Slice<Shape | null> = $.arrayToSlice<Shape | null>([$.namedValueInterfaceValue<Shape | null>($.arrayToSlice<dep.Ref | null>([$.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.value")]), "main.Fixed", {Mark: (receiver: any, ...args: any[]) => (Fixed_Mark as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.Fixed"), $.interfaceValue<Shape | null>($.markAsStructValue(new Action({Result: 1, Filter: new Map<number, dep.Ref | null>([[1, $.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.value")]])})), "main.Action")])
+	let shapes: $.Slice<Shape | null> = $.arrayToSlice<Shape | null>([$.namedValueInterfaceValue<Shape | null>($.arrayToSlice<dep.Ref | null>([$.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.value")]), "main.Fixed", {Mark: (receiver: any, ...args: any[]) => (Fixed_Mark as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.Fixed"), $.interfaceValue<Shape | null>($.markAsStructValue(new Action({Result: 1, Filter: new globalThis.Map<number, dep.Ref | null>([[1, $.namedValueInterfaceValue<dep.Ref | null>(new Uint8Array([$.uint(1, 8), $.uint(2, 8)]), "main.value", {Key: (receiver: any, ...args: any[]) => (value_Key as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, "main.value")]])})), "main.Action")])
 	let fixed: $.Slice<Fixed> = null as $.Slice<Fixed>
 	for (let __goscriptRangeTarget0 = shapes, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let shape = __goscriptRangeTarget0![__rangeIndex]

@@ -22,7 +22,7 @@ import "@goscript/bytes/index.js"
 
 export async function main(): globalThis.Promise<void> {
 	using __defer = new $.DisposableStack()
-	let h: http.Header = new Map<string, $.Slice<string>>([])
+	let h: http.Header = new globalThis.Map<string, $.Slice<string>>([])
 	http.Header_Set(h, "content-type", "text/plain")
 	http.Header_Add(h, "content-type", "charset=utf-8")
 	$.println("header:", http.CanonicalHeaderKey("x-test"), await http.Header_Get(h, "CONTENT-TYPE"), $.len(http.Header_Values(h, "content-type")))

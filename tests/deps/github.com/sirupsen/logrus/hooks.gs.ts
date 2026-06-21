@@ -49,17 +49,17 @@ $.registerInterfaceType(
 	[{ name: "Fire", args: [{ name: "_p0", type: { kind: $.TypeKind.Pointer, elemType: "logrus.Entry" } }], returns: [{ name: "_r0", type: "error" }] }, { name: "Levels", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32", typeName: "logrus.Level" } } }] }]
 );
 
-export type LevelHooks = Map<__goscript_logrus.Level, $.Slice<Hook | null>> | null
+export type LevelHooks = globalThis.Map<__goscript_logrus.Level, $.Slice<Hook | null>> | null
 
 export async function LevelHooks_Add(hooks: LevelHooks, hook: Hook | null): globalThis.Promise<void> {
 	for (let __goscriptRangeTarget0 = await $.pointerValue<Exclude<Hook, null>>(hook).Levels(), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let level = __goscriptRangeTarget0![__rangeIndex]
-		$.mapSet(hooks, level, $.append($.mapGet(hooks, level, null)[0], hook))
+		$.mapSet(hooks, $.uint(level, 32), $.append($.mapGet(hooks, $.uint(level, 32), null)[0], hook))
 	}
 }
 
 export async function LevelHooks_Fire(hooks: LevelHooks, level: __goscript_logrus.Level, entry: __goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null): globalThis.Promise<$.GoError> {
-	for (let __goscriptRangeTarget1 = $.mapGet(hooks, level, null)[0], __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
+	for (let __goscriptRangeTarget1 = $.mapGet(hooks, $.uint(level, 32), null)[0], __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 		let hook = __goscriptRangeTarget1![__rangeIndex]
 		{
 			let err = await $.pointerValue<Exclude<Hook, null>>(hook).Fire(entry)

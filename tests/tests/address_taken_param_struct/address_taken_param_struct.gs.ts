@@ -48,15 +48,15 @@ export class Format {
 	)
 }
 
-export let byName: Map<string, Format | $.VarRef<Format> | null> | null = $.makeMap<string, Format | $.VarRef<Format> | null>()
+export let byName: globalThis.Map<string, Format | $.VarRef<Format> | null> | null = $.makeMap<string, Format | $.VarRef<Format> | null>()
 
-export function __goscript_set_byName(__goscriptValue: Map<string, Format | $.VarRef<Format> | null> | null): void {
+export function __goscript_set_byName(__goscriptValue: globalThis.Map<string, Format | $.VarRef<Format> | null> | null): void {
 	byName = __goscriptValue
 }
 
-export let byExt: Map<string, Format | $.VarRef<Format> | null> | null = $.makeMap<string, Format | $.VarRef<Format> | null>()
+export let byExt: globalThis.Map<string, Format | $.VarRef<Format> | null> | null = $.makeMap<string, Format | $.VarRef<Format> | null>()
 
-export function __goscript_set_byExt(__goscriptValue: Map<string, Format | $.VarRef<Format> | null> | null): void {
+export function __goscript_set_byExt(__goscriptValue: globalThis.Map<string, Format | $.VarRef<Format> | null> | null): void {
 	byExt = __goscriptValue
 }
 

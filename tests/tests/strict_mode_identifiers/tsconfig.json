@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "./*"
+      ],
+      "@goscript/*": [
+        "../../../gs/*",
+        "../../../tests/deps/*"
+      ],
+      "@goscript/github.com/aperturerobotics/goscript/tests/tests/strict_mode_identifiers/*": [
+        "./*"
+      ]
+    }
+  },
+  "extends": "../../../tests/tsconfig.base.json",
+  "include": [
+    "index.ts",
+    "strict_mode_identifiers.gs.ts"
+  ]
+}

@@ -322,7 +322,7 @@ export class fsTester {
 
 	public async checkDirList(dir: string, desc: string, list1: $.Slice<fs.DirEntry | null>, list2: $.Slice<fs.DirEntry | null>): globalThis.Promise<void> {
 		const t: fsTester | $.VarRef<fsTester> | null = this
-		let old: Map<string, fs.DirEntry | null> | null = $.makeMap<string, fs.DirEntry | null>()
+		let old: globalThis.Map<string, fs.DirEntry | null> | null = $.makeMap<string, fs.DirEntry | null>()
 		let checkMode: ((entry: fs.DirEntry | null) => void) | null = $.functionValue(async (entry: fs.DirEntry | null): globalThis.Promise<void> => {
 			if (await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir() != ($.uint((await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).Type() & fs.ModeDir), 32) != $.uint(0, 32))) {
 				if (await $.pointerValue<Exclude<fs.DirEntry, null>>(entry).IsDir()) {
@@ -791,7 +791,7 @@ export async function testFS(fsys: fs.FS | null, expected: $.Slice<string>): glo
 	let t = $.varRef($.markAsStructValue(new fsTester({fsys: fsys})))
 	await t.value.checkDir(".")
 	await t.value.checkOpen(".")
-	let found: Map<string, boolean> | null = $.makeMap<string, boolean>()
+	let found: globalThis.Map<string, boolean> | null = $.makeMap<string, boolean>()
 	for (let __goscriptRangeTarget2 = t.value.dirs, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
 		let dir = __goscriptRangeTarget2![__rangeIndex]
 		$.mapSet(found, dir, true)

@@ -55,7 +55,7 @@ export async function readServices(): globalThis.Promise<void> {
 		}
 		let netw = $.sliceStringOrBytes(portnet, j + 1, undefined)
 		let __goscriptTuple1: any = $.mapGet(__goscript_lookup.services, netw, null)
-		let m: Map<string, number> | null = __goscriptTuple1[0]
+		let m: globalThis.Map<string, number> | null = __goscriptTuple1[0]
 		let ok1 = __goscriptTuple1[1]
 		if (!ok1) {
 			m = $.makeMap<string, number>()

@@ -104,7 +104,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	// Unmarshal into a map[string]any
-	let m: $.VarRef<Map<string, any> | null> = $.varRef(null as Map<string, any> | null)
+	let m: $.VarRef<globalThis.Map<string, any> | null> = $.varRef(null as globalThis.Map<string, any> | null)
 	{
 		let __goscriptShadow1 = json.Unmarshal(new Uint8Array([123, 34, 110, 97, 109, 101, 34, 58, 34, 67, 97, 114, 111, 108, 34, 44, 34, 97, 103, 101, 34, 58, 50, 50, 44, 34, 97, 99, 116, 105, 118, 101, 34, 58, 116, 114, 117, 101, 125]), $.interfaceValue<any>(m, "*map[string]any"))
 		if (__goscriptShadow1 != null) {

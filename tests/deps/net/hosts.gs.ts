@@ -88,9 +88,9 @@ export function parseLiteralIP(addr: string): string {
 	return $.markAsStructValue($.cloneStructValue(ip)).String()
 }
 
-export let hosts: $.VarRef<{"Mutex": sync.Mutex, "byName": Map<string, byName> | null, "byAddr": Map<string, $.Slice<string>> | null, "expire": time.Time, "path": string, "mtime": time.Time, "size": number}> = $.varRef({"Mutex": $.markAsStructValue(new sync.Mutex()), "byName": null, "byAddr": null, "expire": $.markAsStructValue(new time.Time()), "path": "", "mtime": $.markAsStructValue(new time.Time()), "size": 0})
+export let hosts: $.VarRef<{"Mutex": sync.Mutex, "byName": globalThis.Map<string, byName> | null, "byAddr": globalThis.Map<string, $.Slice<string>> | null, "expire": time.Time, "path": string, "mtime": time.Time, "size": number}> = $.varRef({"Mutex": $.markAsStructValue(new sync.Mutex()), "byName": null, "byAddr": null, "expire": $.markAsStructValue(new time.Time()), "path": "", "mtime": $.markAsStructValue(new time.Time()), "size": 0})
 
-export function __goscript_set_hosts(__goscriptValue: {"Mutex": sync.Mutex, "byName": Map<string, byName> | null, "byAddr": Map<string, $.Slice<string>> | null, "expire": time.Time, "path": string, "mtime": time.Time, "size": number}): void {
+export function __goscript_set_hosts(__goscriptValue: {"Mutex": sync.Mutex, "byName": globalThis.Map<string, byName> | null, "byAddr": globalThis.Map<string, $.Slice<string>> | null, "expire": time.Time, "path": string, "mtime": time.Time, "size": number}): void {
 	hosts.value = __goscriptValue
 }
 
@@ -111,8 +111,8 @@ export async function readHosts(): globalThis.Promise<void> {
 		return
 	}
 
-	let hs: Map<string, byName> | null = $.makeMap<string, byName>()
-	let _is: Map<string, $.Slice<string>> | null = $.makeMap<string, $.Slice<string>>()
+	let hs: globalThis.Map<string, byName> | null = $.makeMap<string, byName>()
+	let _is: globalThis.Map<string, $.Slice<string>> | null = $.makeMap<string, $.Slice<string>>()
 
 	let __goscriptTuple1: any = __goscript_parse.open(hp)
 	let __goscriptShadow0: __goscript_parse.file | $.VarRef<__goscript_parse.file> | null = __goscriptTuple1[0]

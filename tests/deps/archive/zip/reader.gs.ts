@@ -82,10 +82,10 @@ export class Reader {
 		this._fields.Comment.value = value
 	}
 
-	public get decompressors(): Map<number, __goscript_register.Decompressor | null> | null {
+	public get decompressors(): globalThis.Map<number, __goscript_register.Decompressor | null> | null {
 		return this._fields.decompressors.value
 	}
-	public set decompressors(value: Map<number, __goscript_register.Decompressor | null> | null) {
+	public set decompressors(value: globalThis.Map<number, __goscript_register.Decompressor | null> | null) {
 		this._fields.decompressors.value = value
 	}
 
@@ -118,18 +118,18 @@ export class Reader {
 		r: $.VarRef<io.ReaderAt | null>
 		File: $.VarRef<$.Slice<File | $.VarRef<File> | null>>
 		Comment: $.VarRef<string>
-		decompressors: $.VarRef<Map<number, __goscript_register.Decompressor | null> | null>
+		decompressors: $.VarRef<globalThis.Map<number, __goscript_register.Decompressor | null> | null>
 		baseOffset: $.VarRef<number>
 		fileListOnce: $.VarRef<sync.Once>
 		fileList: $.VarRef<$.Slice<fileListEntry>>
 	}
 
-	constructor(init?: Partial<{r?: io.ReaderAt | null, File?: $.Slice<File | $.VarRef<File> | null>, Comment?: string, decompressors?: Map<number, __goscript_register.Decompressor | null> | null, baseOffset?: number, fileListOnce?: sync.Once, fileList?: $.Slice<fileListEntry>}>) {
+	constructor(init?: Partial<{r?: io.ReaderAt | null, File?: $.Slice<File | $.VarRef<File> | null>, Comment?: string, decompressors?: globalThis.Map<number, __goscript_register.Decompressor | null> | null, baseOffset?: number, fileListOnce?: sync.Once, fileList?: $.Slice<fileListEntry>}>) {
 		this._fields = {
 			r: $.varRef(init?.r ?? (null as unknown as io.ReaderAt | null)),
 			File: $.varRef(init?.File ?? (null as unknown as $.Slice<File | $.VarRef<File> | null>)),
 			Comment: $.varRef(init?.Comment ?? ("" as unknown as string)),
-			decompressors: $.varRef(init?.decompressors ?? (null as unknown as Map<number, __goscript_register.Decompressor | null> | null)),
+			decompressors: $.varRef(init?.decompressors ?? (null as unknown as globalThis.Map<number, __goscript_register.Decompressor | null> | null)),
 			baseOffset: $.varRef(init?.baseOffset ?? (0 as unknown as number)),
 			fileListOnce: $.varRef(init?.fileListOnce ? $.markAsStructValue($.cloneStructValue(init.fileListOnce)) : $.markAsStructValue(new sync.Once())),
 			fileList: $.varRef(init?.fileList ?? (null as unknown as $.Slice<fileListEntry>))
@@ -176,12 +176,12 @@ export class Reader {
 		if ($.pointerValue<Reader>(r).decompressors == null) {
 			$.pointerValue<Reader>(r).decompressors = $.makeMap<number, __goscript_register.Decompressor | null>()
 		}
-		$.mapSet($.pointerValue<Reader>(r).decompressors, method, dcomp)
+		$.mapSet($.pointerValue<Reader>(r).decompressors, $.uint(method, 16), dcomp)
 	}
 
 	public async decompressor(method: number): globalThis.Promise<__goscript_register.Decompressor | null> {
 		const r: Reader | $.VarRef<Reader> | null = this
-		let dcomp = $.mapGet($.pointerValue<Reader>(r).decompressors, method, null)[0]
+		let dcomp = $.mapGet($.pointerValue<Reader>(r).decompressors, $.uint(method, 16), null)[0]
 		if (dcomp == null) {
 			dcomp = await __goscript_register.decompressor($.uint(method, 16))
 		}
@@ -267,12 +267,12 @@ export class Reader {
 			// files and knownDirs map from a file/directory name
 			// to an index into the r.fileList entry that we are
 			// building. They are used to mark duplicate entries.
-			let files: Map<string, number> | null = $.makeMap<string, number>()
-			let knownDirs: Map<string, number> | null = $.makeMap<string, number>()
+			let files: globalThis.Map<string, number> | null = $.makeMap<string, number>()
+			let knownDirs: globalThis.Map<string, number> | null = $.makeMap<string, number>()
 
 			// dirs[name] is true if name is known to be a directory,
 			// because it appears as a prefix in a path.
-			let dirs: Map<string, boolean> | null = $.makeMap<string, boolean>()
+			let dirs: globalThis.Map<string, boolean> | null = $.makeMap<string, boolean>()
 
 			for (let __goscriptRangeTarget1 = $.pointerValue<Reader>(r).File, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 				let file = __goscriptRangeTarget1![__rangeIndex]

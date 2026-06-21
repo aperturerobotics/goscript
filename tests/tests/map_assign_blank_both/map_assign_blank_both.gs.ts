@@ -4,7 +4,7 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export async function main(): globalThis.Promise<void> {
-	let m: Map<string, number> | null = $.makeMap<string, number>()
+	let m: globalThis.Map<string, number> | null = $.makeMap<string, number>()
 	$.mapSet(m, "one", 1)
 	$.println("Assigning m[\"one\"] to _, _ (key exists)")
 	$.mapGet(m, "one", 0)

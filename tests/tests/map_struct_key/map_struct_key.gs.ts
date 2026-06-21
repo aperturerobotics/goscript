@@ -59,7 +59,7 @@ export class requestKey {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let status: Map<requestKey, string> | null = $.makeMap<requestKey, string>()
+	let status: globalThis.Map<requestKey, string> | null = $.makeMap<requestKey, string>()
 	$.mapSet(status, $.markAsStructValue(new requestKey({soID: "so-1", inviteID: "inv-1", peerID: "peer-1"})), "pending")
 	$.mapSet(status, $.markAsStructValue(new requestKey({soID: "so-1", inviteID: "inv-1", peerID: "peer-1"})), "accepted")
 

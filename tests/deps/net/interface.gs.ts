@@ -147,33 +147,33 @@ export class ipv6ZoneCache {
 		this._fields.lastFetched.value = value
 	}
 
-	public get toIndex(): Map<string, number> | null {
+	public get toIndex(): globalThis.Map<string, number> | null {
 		return this._fields.toIndex.value
 	}
-	public set toIndex(value: Map<string, number> | null) {
+	public set toIndex(value: globalThis.Map<string, number> | null) {
 		this._fields.toIndex.value = value
 	}
 
-	public get toName(): Map<number, string> | null {
+	public get toName(): globalThis.Map<number, string> | null {
 		return this._fields.toName.value
 	}
-	public set toName(value: Map<number, string> | null) {
+	public set toName(value: globalThis.Map<number, string> | null) {
 		this._fields.toName.value = value
 	}
 
 	public _fields: {
 		RWMutex: $.VarRef<sync.RWMutex>
 		lastFetched: $.VarRef<time.Time>
-		toIndex: $.VarRef<Map<string, number> | null>
-		toName: $.VarRef<Map<number, string> | null>
+		toIndex: $.VarRef<globalThis.Map<string, number> | null>
+		toName: $.VarRef<globalThis.Map<number, string> | null>
 	}
 
-	constructor(init?: Partial<{RWMutex?: sync.RWMutex, lastFetched?: time.Time, toIndex?: Map<string, number> | null, toName?: Map<number, string> | null}>) {
+	constructor(init?: Partial<{RWMutex?: sync.RWMutex, lastFetched?: time.Time, toIndex?: globalThis.Map<string, number> | null, toName?: globalThis.Map<number, string> | null}>) {
 		this._fields = {
 			RWMutex: $.varRef(init?.RWMutex ? $.markAsStructValue($.cloneStructValue(init.RWMutex)) : $.markAsStructValue(new sync.RWMutex())),
 			lastFetched: $.varRef(init?.lastFetched ? $.markAsStructValue($.cloneStructValue(init.lastFetched)) : $.markAsStructValue(new time.Time())),
-			toIndex: $.varRef(init?.toIndex ?? (null as unknown as Map<string, number> | null)),
-			toName: $.varRef(init?.toName ?? (null as unknown as Map<number, string> | null))
+			toIndex: $.varRef(init?.toIndex ?? (null as unknown as globalThis.Map<string, number> | null)),
+			toName: $.varRef(init?.toName ?? (null as unknown as globalThis.Map<number, string> | null))
 		}
 	}
 

@@ -581,9 +581,9 @@ export function avoidDNS(name: string): boolean {
 
 export type hostLookupOrder = number
 
-export let lookupOrderName: Map<hostLookupOrder, string> | null = new Map<hostLookupOrder, string>([[0, "cgo"], [1, "files,dns"], [2, "dns,files"], [3, "files"], [4, "dns"]])
+export let lookupOrderName: globalThis.Map<hostLookupOrder, string> | null = new globalThis.Map<hostLookupOrder, string>([[0, "cgo"], [1, "files,dns"], [2, "dns,files"], [3, "files"], [4, "dns"]])
 
-export function __goscript_set_lookupOrderName(__goscriptValue: Map<hostLookupOrder, string> | null): void {
+export function __goscript_set_lookupOrderName(__goscriptValue: globalThis.Map<hostLookupOrder, string> | null): void {
 	lookupOrderName = __goscriptValue
 }
 

@@ -1001,7 +1001,7 @@ export async function exercisePushablePacketWriter(): globalThis.Promise<boolean
 	}, ({ kind: $.TypeKind.Function, params: ["js.Value", { kind: $.TypeKind.Slice, elemType: "js.Value" }], results: [{ kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo)))))
 	__defer.defer(() => { $.markAsStructValue($.cloneStructValue(endFn)).Release() })
 
-	let writer: srpc.PushablePacketWriter | $.VarRef<srpc.PushablePacketWriter> | null = srpc.NewPushablePacketWriter($.markAsStructValue($.cloneStructValue(js.ValueOf($.interfaceValue<any>(new Map<string, any>([["push", $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(pushFn)), "js.Func")], ["end", $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(endFn)), "js.Func")]]), "map[string]any")))))
+	let writer: srpc.PushablePacketWriter | $.VarRef<srpc.PushablePacketWriter> | null = srpc.NewPushablePacketWriter($.markAsStructValue($.cloneStructValue(js.ValueOf($.interfaceValue<any>(new globalThis.Map<string, any>([["push", $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(pushFn)), "js.Func")], ["end", $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(endFn)), "js.Func")]]), "map[string]any")))))
 	{
 		let err = await srpc.PushablePacketWriter.prototype.WritePacket.call(writer, srpc.NewCallStartPacket("svc", "push", $.arrayToSlice<number>([$.uint(7, 8), $.uint(8, 8), $.uint(9, 8)]), false))
 		if (err != null) {

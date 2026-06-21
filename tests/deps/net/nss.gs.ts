@@ -195,24 +195,24 @@ export class nssConf {
 		this._fields.err.value = value
 	}
 
-	public get sources(): Map<string, $.Slice<nssSource>> | null {
+	public get sources(): globalThis.Map<string, $.Slice<nssSource>> | null {
 		return this._fields.sources.value
 	}
-	public set sources(value: Map<string, $.Slice<nssSource>> | null) {
+	public set sources(value: globalThis.Map<string, $.Slice<nssSource>> | null) {
 		this._fields.sources.value = value
 	}
 
 	public _fields: {
 		mtime: $.VarRef<time.Time>
 		err: $.VarRef<$.GoError>
-		sources: $.VarRef<Map<string, $.Slice<nssSource>> | null>
+		sources: $.VarRef<globalThis.Map<string, $.Slice<nssSource>> | null>
 	}
 
-	constructor(init?: Partial<{mtime?: time.Time, err?: $.GoError, sources?: Map<string, $.Slice<nssSource>> | null}>) {
+	constructor(init?: Partial<{mtime?: time.Time, err?: $.GoError, sources?: globalThis.Map<string, $.Slice<nssSource>> | null}>) {
 		this._fields = {
 			mtime: $.varRef(init?.mtime ? $.markAsStructValue($.cloneStructValue(init.mtime)) : $.markAsStructValue(new time.Time())),
 			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			sources: $.varRef(init?.sources ?? (null as unknown as Map<string, $.Slice<nssSource>> | null))
+			sources: $.varRef(init?.sources ?? (null as unknown as globalThis.Map<string, $.Slice<nssSource>> | null))
 		}
 	}
 

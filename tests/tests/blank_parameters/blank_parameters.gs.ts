@@ -59,7 +59,7 @@ export class Packer {
 		return $.markAsStructValue(cloned)
 	}
 
-	public pack(msg: $.Slice<number>, _p1: Map<string, number> | null, _p2: number): $.Slice<number> {
+	public pack(msg: $.Slice<number>, _p1: globalThis.Map<string, number> | null, _p2: number): $.Slice<number> {
 		return $.append(msg, $.uint(1, 8))
 	}
 

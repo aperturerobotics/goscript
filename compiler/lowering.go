@@ -1067,7 +1067,7 @@ func safeIdentifier(value string) string {
 	switch identifier {
 	case "abstract", "any", "arguments", "as", "asserts", "async", "await", "boolean",
 		"break", "case", "catch", "class", "const", "constructor", "continue", "debugger",
-		"declare", "default", "delete", "do", "else", "enum", "export", "extends", "false",
+		"declare", "default", "delete", "do", "else", "enum", "eval", "export", "extends", "false",
 		"finally", "for", "from", "function", "get", "if", "implements", "import", "in",
 		"infer", "instanceof", "interface", "is", "keyof", "let", "module", "namespace",
 		"never", "new", "null", "number", "object", "of", "package", "private", "protected",
@@ -1542,12 +1542,45 @@ func packageDeclFiles(semPkg *semanticPackage) map[types.Object]string {
 		return nil
 	}
 	declFiles := make(map[types.Object]string, len(semPkg.declarations))
+	for idx, file := range semPkg.source.Syntax {
+		sourcePath := sourceFilePath(semPkg, idx, file)
+		for _, decl := range file.Decls {
+			recordDeclFileObjects(semPkg.source.TypesInfo, declFiles, sourcePath, decl)
+		}
+	}
 	for _, decl := range semPkg.declarations {
-		if decl.object != nil && decl.position.file != "" {
+		if decl.object != nil && decl.position.file != "" && declFiles[decl.object] == "" {
 			declFiles[decl.object] = decl.position.file
 		}
 	}
 	return declFiles
+}
+
+func recordDeclFileObjects(info *types.Info, declFiles map[types.Object]string, sourcePath string, decl ast.Decl) {
+	if info == nil || sourcePath == "" {
+		return
+	}
+	switch typed := decl.(type) {
+	case *ast.FuncDecl:
+		if obj := info.Defs[typed.Name]; obj != nil {
+			declFiles[obj] = sourcePath
+		}
+	case *ast.GenDecl:
+		for _, spec := range typed.Specs {
+			switch typedSpec := spec.(type) {
+			case *ast.TypeSpec:
+				if obj := info.Defs[typedSpec.Name]; obj != nil {
+					declFiles[obj] = sourcePath
+				}
+			case *ast.ValueSpec:
+				for _, name := range typedSpec.Names {
+					if obj := info.Defs[name]; obj != nil {
+						declFiles[obj] = sourcePath
+					}
+				}
+			}
+		}
+	}
 }
 
 func packageOutputNames(semPkg *semanticPackage) map[string]string {
@@ -2237,7 +2270,7 @@ func (o *LoweringOwner) lowerGoEmbedFSValue(ctx lowerFileContext, diagPos token.
 		entries = append(entries, "["+strconv.Quote(path)+", "+byteSliceLiteral(filesByPath[path])+"]")
 	}
 	builtinAlias := o.runtimeOwner.BuiltinImport().Alias
-	return builtinAlias + ".markAsStructValue(new " + embedAlias + ".FS(new Map<string, Uint8Array>([" + strings.Join(entries, ", ") + "])))", nil
+	return builtinAlias + ".markAsStructValue(new " + embedAlias + ".FS(new globalThis.Map<string, Uint8Array>([" + strings.Join(entries, ", ") + "])))", nil
 }
 
 type goEmbedFile struct {
@@ -2639,7 +2672,10 @@ func (o *LoweringOwner) lowerStructType(ctx lowerFileContext, semType *semanticT
 	}
 
 	methodDecls := o.methodDeclsForType(ctx, semType.named)
-	explicitMethods := make(map[string]bool, len(methodDecls))
+	explicitMethods := make(map[string]bool, len(methodDecls)+len(semType.fields))
+	for _, field := range semType.fields {
+		explicitMethods[field.name] = true
+	}
 	if len(methodDecls) != 0 {
 		lowered.methods = make([]loweredFunction, 0, len(methodDecls))
 		for _, methodDecl := range methodDecls {
@@ -4474,6 +4510,9 @@ func (o *LoweringOwner) lowerMapIndexUpdateStmts(
 	mapExpr, mapDiagnostics := o.lowerExpr(ctx, index.X)
 	keyExpr, keyDiagnostics := o.lowerExpr(ctx, index.Index)
 	diagnostics := append(mapDiagnostics, keyDiagnostics...)
+	if mapType, ok := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(index.X)).Underlying().(*types.Map); ok {
+		keyExpr = o.lowerValueForTarget(ctx, index.Index, mapType.Key(), keyExpr)
+	}
 	if tok == token.ASSIGN {
 		return []loweredStmt{{text: o.runtimeOwner.QualifiedHelper(RuntimeHelperMapSet) + "(" + mapExpr + ", " + keyExpr + ", " + right + ")"}}, diagnostics
 	}
@@ -6445,7 +6484,7 @@ func loweredStmtsUseVarRefName(stmts []loweredStmt, name string) bool {
 	}
 	needle := name + ".value"
 	for _, stmt := range stmts {
-		if strings.Contains(stmt.text, needle) {
+		if loweredStmtTextUsesVarRefName(stmt.text, needle) {
 			return true
 		}
 		if loweredStmtsUseVarRefName(stmt.children, name) {
@@ -6470,6 +6509,38 @@ func loweredStmtsUseVarRefName(stmts []loweredStmt, name string) bool {
 		}
 	}
 	return false
+}
+
+func loweredStmtTextUsesVarRefName(text, needle string) bool {
+	offset := 0
+	for {
+		idx := strings.Index(text[offset:], needle)
+		if idx < 0 {
+			return false
+		}
+		start := offset + idx
+		end := start + len(needle)
+		if tsIdentifierBoundaryBefore(text, start) && tsIdentifierBoundaryAfter(text, end) {
+			return true
+		}
+		offset = start + 1
+	}
+}
+
+func tsIdentifierBoundaryBefore(text string, idx int) bool {
+	if idx == 0 {
+		return true
+	}
+	prev := text[idx-1]
+	return prev != '.' && !isTSIdentifierByte(prev)
+}
+
+func tsIdentifierBoundaryAfter(text string, idx int) bool {
+	return idx >= len(text) || !isTSIdentifierByte(text[idx])
+}
+
+func isTSIdentifierByte(b byte) bool {
+	return b == '$' || b == '_' || ('0' <= b && b <= '9') || ('A' <= b && b <= 'Z') || ('a' <= b && b <= 'z')
 }
 
 func (o *LoweringOwner) lowerTypeSwitchAssign(ctx lowerFileContext, stmt ast.Stmt) (string, string, bool, []Diagnostic) {
@@ -7076,6 +7147,9 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 			return constValue
 		}
 	}
+	if imported, ok := o.lowerImportedIdent(ctx, obj, value, raw); ok {
+		return imported
+	}
 	if alias := ctx.localAliases[obj]; alias != "" {
 		if ctx.lazyPackageVars[obj] {
 			lazyValue := alias + "." + packageVarGetterName(value) + "()"
@@ -7106,6 +7180,29 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 		return value + ".value"
 	}
 	return value
+}
+
+func (o *LoweringOwner) lowerImportedIdent(ctx lowerFileContext, obj types.Object, value string, raw bool) (string, bool) {
+	if obj == nil || obj.Pkg() == nil || ctx.semPkg == nil || obj.Pkg().Path() == ctx.semPkg.pkgPath {
+		return "", false
+	}
+	alias := ctx.importPaths[obj.Pkg().Path()]
+	if alias == "" {
+		return "", false
+	}
+	qualified := alias + "." + value
+	if varObj, ok := obj.(*types.Var); ok &&
+		(o.packageVarIsLazy(ctx, varObj) || o.packageVarNameIsLazy(ctx, obj.Pkg().Path(), obj.Name())) {
+		qualified = alias + "." + packageVarGetterName(value) + "()"
+		if (ctx.asyncFunction || ctx.topLevel) &&
+			o.packageVarNameHasAsyncLazyInit(ctx, obj.Pkg().Path(), obj.Name()) {
+			qualified = "(await " + alias + "." + packageVarInitName(value) + "(), " + qualified + ")"
+		}
+	}
+	if raw {
+		return qualified, true
+	}
+	return o.lowerPackageVarReadValue(ctx, obj, qualified), true
 }
 
 func (o *LoweringOwner) lowerPackageVarReadValue(ctx lowerFileContext, obj types.Object, value string) string {
@@ -9666,7 +9763,11 @@ func (o *LoweringOwner) lowerMapCompositeLit(
 		value = o.lowerValueForTarget(ctx, keyed.Value, mapType.Elem(), value)
 		entries = append(entries, "["+key+", "+value+"]")
 	}
-	return "new Map<" + o.tsTypeFor(ctx, mapType.Key()) + ", " + o.tsTypeFor(ctx, mapType.Elem()) + ">([" + strings.Join(entries, ", ") + "])", diagnostics
+	return "new " + tsNativeMapType(o.tsTypeFor(ctx, mapType.Key()), o.tsTypeFor(ctx, mapType.Elem())) + "([" + strings.Join(entries, ", ") + "])", diagnostics
+}
+
+func tsNativeMapType(keyType, elemType string) string {
+	return "globalThis.Map<" + keyType + ", " + elemType + ">"
 }
 
 func (o *LoweringOwner) lowerTypeAssertExpr(ctx lowerFileContext, expr *ast.TypeAssertExpr) (string, []Diagnostic) {
@@ -9703,6 +9804,7 @@ func (o *LoweringOwner) lowerMapGetTuple(ctx lowerFileContext, expr *ast.IndexEx
 	mapType, _ := types.Unalias(ctx.semPkg.source.TypesInfo.TypeOf(expr.X)).Underlying().(*types.Map)
 	defaultValue := "undefined"
 	if mapType != nil {
+		index = o.lowerValueForTarget(ctx, expr.Index, mapType.Key(), index)
 		defaultValue = o.lowerZeroValueExprFor(ctx, mapType.Elem())
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperMapGet) + "(" + target + ", " + index + ", " + defaultValue + ")"
@@ -10593,7 +10695,7 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 	case *types.Slice:
 		return "$.Slice<" + o.tsSliceElemTypeFor(ctx, typed.Elem()) + ">"
 	case *types.Map:
-		return "Map<" + o.tsTypeFor(ctx, typed.Key()) + ", " + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
+		return tsNativeMapType(o.tsTypeFor(ctx, typed.Key()), o.tsTypeFor(ctx, typed.Elem())) + " | null"
 	case *types.Chan:
 		return "$.Channel<" + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
 	case *types.Struct:
@@ -10611,6 +10713,12 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 			}
 			if !ctx.canReferenceNamedType(named) {
 				return "any"
+			}
+			if _, ok := named.Underlying().(*types.Interface); ok {
+				return "$.VarRef<" + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
+			}
+			if _, ok := types.Unalias(named.Underlying()).(*types.Signature); ok {
+				return "$.VarRef<" + o.tsTypeFor(ctx, typed.Elem()) + "> | null"
 			}
 			return "$.VarRef<" + o.namedTypeExpr(ctx, named) + "> | null"
 		}
@@ -10654,6 +10762,9 @@ func (o *LoweringOwner) tsNonNilTypeFor(ctx lowerFileContext, typ types.Type) st
 		return "Exclude<$.GoError, null>"
 	}
 	if named, ok := types.Unalias(typ).(*types.Named); ok {
+		if crossPackageUnexportedNamedType(ctx, named) {
+			return "any"
+		}
 		if _, ok := named.Underlying().(*types.Interface); ok {
 			if !ctx.canReferenceNamedType(named) {
 				return "any"

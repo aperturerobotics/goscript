@@ -333,7 +333,7 @@ export class Regexp {
 	public String(): string {
 		const re: Regexp | $.VarRef<Regexp> | null = this
 		let b: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
-		let flags: $.VarRef<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> = $.varRef(null as Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null)
+		let flags: $.VarRef<globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> = $.varRef(null as globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null)
 		let __goscriptTuple0: any = calcFlags(re, flags)
 		let must = $.uint(__goscriptTuple0[0], 8)
 		let cant = $.uint(__goscriptTuple0[1], 8)
@@ -421,17 +421,17 @@ export const meta: string = "\\.+*?()|[]{}^$"
 
 export type printFlags = number
 
-export function addSpan(start: Regexp | $.VarRef<Regexp> | null, last: Regexp | $.VarRef<Regexp> | null, f: printFlags, flags: $.VarRef<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> | null): void {
-	if ($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags) == null) {
+export function addSpan(start: Regexp | $.VarRef<Regexp> | null, last: Regexp | $.VarRef<Regexp> | null, f: printFlags, flags: $.VarRef<globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> | null): void {
+	if ($.pointerValue<globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags) == null) {
 		flags!.value = $.makeMap<Regexp | $.VarRef<Regexp> | null, printFlags>()
 	}
-	$.mapSet(($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags)), start, $.uint(f, 8))
-	const __goscriptMap0 = ($.pointerValue<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags))
+	$.mapSet(($.pointerValue<globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags)), start, $.uint(f, 8))
+	const __goscriptMap0 = ($.pointerValue<globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null>(flags))
 	const __goscriptMapKey0 = last
 	$.mapSet(__goscriptMap0, __goscriptMapKey0, $.mapGet(__goscriptMap0, __goscriptMapKey0, 0)[0] | ($.uint(8, 8)))
 }
 
-export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> | null): [printFlags, printFlags] {
+export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null> | null): [printFlags, printFlags] {
 	let must: printFlags = 0
 	let cant: printFlags = 0
 	switch ($.pointerValue<Regexp>(re).Op) {
@@ -553,7 +553,7 @@ export function calcFlags(re: Regexp | $.VarRef<Regexp> | null, flags: $.VarRef<
 	throw new globalThis.Error("goscript: unreachable return")
 }
 
-export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | null, re: Regexp | $.VarRef<Regexp> | null, f: printFlags, flags: Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null): void {
+export function writeRegexp(b: strings.Builder | $.VarRef<strings.Builder> | null, re: Regexp | $.VarRef<Regexp> | null, f: printFlags, flags: globalThis.Map<Regexp | $.VarRef<Regexp> | null, printFlags> | null): void {
 	using __defer = new $.DisposableStack()
 	f = f | ($.uint($.mapGet(flags, re, 0)[0], 8))
 	if ((($.uint((f & 16), 8) != $.uint(0, 8)) && ($.uint((f & ~((8 | 16))), 8) != $.uint(0, 8))) && ($.uint((f & 8), 8) != $.uint(0, 8))) {

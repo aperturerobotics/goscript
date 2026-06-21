@@ -148,17 +148,17 @@ export class parser {
 		this._fields.repeats.value = value
 	}
 
-	public get height(): Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null {
+	public get height(): globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null {
 		return this._fields.height.value
 	}
-	public set height(value: Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null) {
+	public set height(value: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null) {
 		this._fields.height.value = value
 	}
 
-	public get size(): Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null {
+	public get size(): globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null {
 		return this._fields.size.value
 	}
-	public set size(value: Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null) {
+	public set size(value: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null) {
 		this._fields.size.value = value
 	}
 
@@ -172,11 +172,11 @@ export class parser {
 		numRegexp: $.VarRef<number>
 		numRunes: $.VarRef<number>
 		repeats: $.VarRef<number>
-		height: $.VarRef<Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null>
-		size: $.VarRef<Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null>
+		height: $.VarRef<globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null>
+		size: $.VarRef<globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null>
 	}
 
-	constructor(init?: Partial<{flags?: Flags, stack?: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>, free?: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, numCap?: number, wholeRegexp?: string, tmpClass?: $.Slice<number>, numRegexp?: number, numRunes?: number, repeats?: number, height?: Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null, size?: Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null}>) {
+	constructor(init?: Partial<{flags?: Flags, stack?: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>, free?: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, numCap?: number, wholeRegexp?: string, tmpClass?: $.Slice<number>, numRegexp?: number, numRunes?: number, repeats?: number, height?: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null, size?: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null}>) {
 		this._fields = {
 			flags: $.varRef(init?.flags ?? (0 as unknown as Flags)),
 			stack: $.varRef(init?.stack ?? (null as unknown as $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>)),
@@ -187,8 +187,8 @@ export class parser {
 			numRegexp: $.varRef(init?.numRegexp ?? (0 as unknown as number)),
 			numRunes: $.varRef(init?.numRunes ?? (0 as unknown as number)),
 			repeats: $.varRef(init?.repeats ?? (0 as unknown as number)),
-			height: $.varRef(init?.height ?? (null as unknown as Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null)),
-			size: $.varRef(init?.size ?? (null as unknown as Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null))
+			height: $.varRef(init?.height ?? (null as unknown as globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null)),
+			size: $.varRef(init?.size ?? (null as unknown as globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null))
 		}
 	}
 
@@ -2427,9 +2427,9 @@ export function __goscript_set_asciiFoldTable(__goscriptValue: unicode.RangeTabl
 	asciiFoldTable = __goscriptValue
 }
 
-export let categoryAliases: {"once": sync.Once, "m": Map<string, string> | null} = {"once": $.markAsStructValue(new sync.Once()), "m": null}
+export let categoryAliases: {"once": sync.Once, "m": globalThis.Map<string, string> | null} = {"once": $.markAsStructValue(new sync.Once()), "m": null}
 
-export function __goscript_set_categoryAliases(__goscriptValue: {"once": sync.Once, "m": Map<string, string> | null}): void {
+export function __goscript_set_categoryAliases(__goscriptValue: {"once": sync.Once, "m": globalThis.Map<string, string> | null}): void {
 	categoryAliases = __goscriptValue
 }
 

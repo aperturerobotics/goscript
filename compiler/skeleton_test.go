@@ -1774,6 +1774,124 @@ func TestCompilePackagesEscapesReservedTypeNames(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesEscapesStrictModeRestrictedIdentifiers(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/strictidents\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"func choose(arguments int) (eval int) {",
+			"  eval = arguments + 1",
+			"  arguments = eval + arguments",
+			"  return",
+			"}",
+			"func main() {",
+			"  eval := choose(1)",
+			"  arguments := eval + 1",
+			"  println(eval, arguments)",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "strictidents", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"function choose(_arguments: number): number",
+		"let _eval: number = 0",
+		"_eval = _arguments + 1",
+		"_arguments = _eval + _arguments",
+		"let _eval = choose(1)",
+		"let _arguments = _eval + 1",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	for _, bad := range []string{
+		"let eval",
+		" eval =",
+		"function choose(arguments",
+		"let arguments",
+		" arguments =",
+	} {
+		if strings.Contains(text, bad) {
+			t.Fatalf("strict-mode restricted identifier was not escaped, found %q:\n%s", bad, text)
+		}
+	}
+}
+
+func TestCompilePackagesDoesNotEmitHiddenEmbeddedMethodOverField(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/hiddenembeddedmethod\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type embedded struct{}",
+			"func (embedded) Database() string {",
+			"  return \"method\"",
+			"}",
+			"type holder struct {",
+			"  Database string",
+			"  embedded",
+			"}",
+			"func value(h holder) string {",
+			"  return h.Database",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "hiddenembeddedmethod", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"public get Database(): string",
+		"public set Database(value: string)",
+		"return h.Database",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+	if got := strings.Count(text, "public Database("); got != 1 {
+		t.Fatalf("expected only embedded.Database method, got %d declarations:\n%s", got, text)
+	}
+	holderStart := strings.Index(text, "export class holder")
+	embeddedStart := strings.Index(text, "export class embedded")
+	if holderStart < 0 || embeddedStart < 0 {
+		t.Fatalf("missing holder or embedded class:\n%s", text)
+	}
+	holderText := text[holderStart:]
+	if embeddedStart > holderStart {
+		holderText = text[holderStart:embeddedStart]
+	}
+	if strings.Contains(holderText, "public Database(") {
+		t.Fatalf("hidden embedded method was emitted on holder:\n%s", holderText)
+	}
+}
+
 func TestCompilePackagesAvoidsPointerMethodTypeNameShadow(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/methodshadow\n\ngo 1.25.3\n",
@@ -2012,7 +2130,7 @@ func TestCompilePackagesEmitsArraySliceMapStringAndNamedMethods(t *testing.T) {
 		"let literal: $.Slice<number> = $.arrayToSlice<number>([1, 2])",
 		"literal = $.append(literal, 3)",
 		"slice![0] = arr[1]",
-		"let m: Map<string, number> | null = $.makeMap<string, number>()",
+		"let m: globalThis.Map<string, number> | null = $.makeMap<string, number>()",
 		"$.mapSet(m, \"one\", 1)",
 		"let [value, ok] = $.mapGet(m, \"missing\", 0)",
 		"slice![0]",

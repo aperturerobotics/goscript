@@ -74,10 +74,10 @@ export class Writer {
 		this._fields.closed.value = value
 	}
 
-	public get compressors(): Map<number, __goscript_register.Compressor | null> | null {
+	public get compressors(): globalThis.Map<number, __goscript_register.Compressor | null> | null {
 		return this._fields.compressors.value
 	}
-	public set compressors(value: Map<number, __goscript_register.Compressor | null> | null) {
+	public set compressors(value: globalThis.Map<number, __goscript_register.Compressor | null> | null) {
 		this._fields.compressors.value = value
 	}
 
@@ -102,18 +102,18 @@ export class Writer {
 		dir: $.VarRef<$.Slice<header | $.VarRef<header> | null>>
 		last: $.VarRef<fileWriter | $.VarRef<fileWriter> | null>
 		closed: $.VarRef<boolean>
-		compressors: $.VarRef<Map<number, __goscript_register.Compressor | null> | null>
+		compressors: $.VarRef<globalThis.Map<number, __goscript_register.Compressor | null> | null>
 		comment: $.VarRef<string>
 		testHookCloseSizeOffset: $.VarRef<((size: number, offset: number) => void) | null>
 	}
 
-	constructor(init?: Partial<{cw?: countWriter | $.VarRef<countWriter> | null, dir?: $.Slice<header | $.VarRef<header> | null>, last?: fileWriter | $.VarRef<fileWriter> | null, closed?: boolean, compressors?: Map<number, __goscript_register.Compressor | null> | null, comment?: string, testHookCloseSizeOffset?: ((size: number, offset: number) => void) | null}>) {
+	constructor(init?: Partial<{cw?: countWriter | $.VarRef<countWriter> | null, dir?: $.Slice<header | $.VarRef<header> | null>, last?: fileWriter | $.VarRef<fileWriter> | null, closed?: boolean, compressors?: globalThis.Map<number, __goscript_register.Compressor | null> | null, comment?: string, testHookCloseSizeOffset?: ((size: number, offset: number) => void) | null}>) {
 		this._fields = {
 			cw: $.varRef(init?.cw ?? (null as unknown as countWriter | $.VarRef<countWriter> | null)),
 			dir: $.varRef(init?.dir ?? (null as unknown as $.Slice<header | $.VarRef<header> | null>)),
 			last: $.varRef(init?.last ?? (null as unknown as fileWriter | $.VarRef<fileWriter> | null)),
 			closed: $.varRef(init?.closed ?? (false as unknown as boolean)),
-			compressors: $.varRef(init?.compressors ?? (null as unknown as Map<number, __goscript_register.Compressor | null> | null)),
+			compressors: $.varRef(init?.compressors ?? (null as unknown as globalThis.Map<number, __goscript_register.Compressor | null> | null)),
 			comment: $.varRef(init?.comment ?? ("" as unknown as string)),
 			testHookCloseSizeOffset: $.varRef(init?.testHookCloseSizeOffset ?? (null as unknown as ((size: number, offset: number) => void) | null))
 		}
@@ -536,7 +536,7 @@ export class Writer {
 		if ($.pointerValue<Writer>(w).compressors == null) {
 			$.pointerValue<Writer>(w).compressors = $.makeMap<number, __goscript_register.Compressor | null>()
 		}
-		$.mapSet($.pointerValue<Writer>(w).compressors, method, comp)
+		$.mapSet($.pointerValue<Writer>(w).compressors, $.uint(method, 16), comp)
 	}
 
 	public SetComment(comment: string): $.GoError {
@@ -558,7 +558,7 @@ export class Writer {
 
 	public async compressor(method: number): globalThis.Promise<__goscript_register.Compressor | null> {
 		const w: Writer | $.VarRef<Writer> | null = this
-		let comp = $.mapGet($.pointerValue<Writer>(w).compressors, method, null)[0]
+		let comp = $.mapGet($.pointerValue<Writer>(w).compressors, $.uint(method, 16), null)[0]
 		if (comp == null) {
 			comp = await __goscript_register.compressor($.uint(method, 16))
 		}

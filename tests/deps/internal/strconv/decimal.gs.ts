@@ -247,15 +247,14 @@ export class decimal {
 		// Binary shift left (k > 0) or right (k < 0).
 
 		out: {
-			// Binary shift left (k > 0) or right (k < 0).
-
-			if ($.pointerValue<decimal>(d).nd == 0) {
-				mant = $.uint(0, 64)
-				exp = $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias
-				break out
-			}
-
 			overflow: {
+				// Binary shift left (k > 0) or right (k < 0).
+
+				if ($.pointerValue<decimal>(d).nd == 0) {
+					mant = $.uint(0, 64)
+					exp = $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias
+					break out
+				}
 
 				if ($.pointerValue<decimal>(d).dp > 310) {
 					break overflow
@@ -319,6 +318,7 @@ export class decimal {
 				}
 				break out
 			}
+
 			mant = $.uint(0, 64)
 			exp = ((1 << $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits) - 1) + $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias
 			overflow = true
