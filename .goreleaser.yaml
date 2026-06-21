@@ -68,7 +68,7 @@ changelog:
 
 release:
   github:
-    owner: aperturerobotics
+    owner: s4wave
     name: goscript
   draft: false
   prerelease: auto
