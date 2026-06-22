@@ -19,6 +19,8 @@ export interface CompileConfig {
   output?: string
   /** The working directory for the compiler. Defaults to the current working directory. */
   dir?: string
+  /** Explicit compiler package artifact cache root. Defaults to disabled. */
+  compilerCacheRoot?: string
   /** Compile all transitive dependencies of the requested package. */
   allDependencies?: boolean
   /** Go import paths to reject from the compiled package graph. */
@@ -48,6 +50,9 @@ export async function compile(config: CompileConfig): Promise<void> {
   ]
   if (config.allDependencies) {
     args.push('--all-dependencies')
+  }
+  if (config.compilerCacheRoot) {
+    args.push('--compiler-cache-root', path.resolve(config.compilerCacheRoot))
   }
   const packageBlocklist = normalizePackageBlocklist(config.packageBlocklist)
   if (packageBlocklist) {

@@ -34,6 +34,8 @@ type CompileRequest struct {
 	Dir string
 	// OutputPath is the root where TypeScript output would be written.
 	OutputPath string
+	// CacheRoot is the explicit compiler cache root. Empty disables caching.
+	CacheRoot string
 	// BuildFlags are forwarded to the Go package loader.
 	BuildFlags []string
 	// OverrideDirs are additional GoScript override roots.
@@ -82,6 +84,7 @@ func (o *CompileRequestOwner) NewRequest(conf Config, patterns []string) *Compil
 		Patterns:                  normalizePatterns(patterns),
 		Dir:                       strings.TrimSpace(dir),
 		OutputPath:                strings.TrimSpace(conf.OutputPath),
+		CacheRoot:                 strings.TrimSpace(conf.CacheRoot),
 		BuildFlags:                append([]string(nil), conf.BuildFlags...),
 		OverrideDirs:              append([]string(nil), conf.OverrideDirs...),
 		PackageBlocklist:          normalizePackageBlocklist(conf.PackageBlocklist),

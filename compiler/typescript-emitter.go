@@ -56,7 +56,36 @@ func (o *TypeScriptEmitOwner) Emit(
 	if diagnosticsHaveErrors(diagnostics) {
 		return nil, diagnostics
 	}
+	return o.WriteFiles(ctx, req, program, files)
+}
+
+// WriteFiles writes an in-memory emitted file tree to the request output root.
+func (o *TypeScriptEmitOwner) WriteFiles(
+	ctx context.Context,
+	req *CompileRequest,
+	program *LoweredProgram,
+	files map[string]string,
+) ([]string, []Diagnostic) {
+	if err := ctx.Err(); err != nil {
+		return nil, []Diagnostic{contextCanceledDiagnostic(err)}
+	}
+	if req == nil {
+		return nil, []Diagnostic{{
+			Severity: DiagnosticSeverityError,
+			Code:     "goscript/emitter:no-request",
+			Message:  "TypeScript emission requires a compile request",
+		}}
+	}
+	if program == nil {
+		return nil, []Diagnostic{{
+			Severity: DiagnosticSeverityError,
+			Code:     "goscript/emitter:no-program",
+			Message:  "TypeScript emission requires a lowered program",
+		}}
+	}
+
 	var compiled []string
+	var diagnostics []Diagnostic
 	for _, pkg := range program.packages {
 		if err := ctx.Err(); err != nil {
 			diagnostics = append(diagnostics, Diagnostic{

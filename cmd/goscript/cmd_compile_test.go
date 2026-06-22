@@ -211,6 +211,71 @@ func TestCompileCommandForwardsPackageBlocklist(t *testing.T) {
 	}
 }
 
+func TestCompileCommandForwardsCompilerCacheRoot(t *testing.T) {
+	dir := t.TempDir()
+	outputDir := filepath.Join(dir, "output")
+	cacheRoot := filepath.Join(dir, "cache")
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/clicache\n\ngo 1.25.3\n")
+	writeFile(t, filepath.Join(dir, "main.go"), strings.Join([]string{
+		"package clicache",
+		"const Value = 1",
+		"",
+	}, "\n"))
+
+	app := newApp()
+	err := app.Run([]string{
+		"goscript",
+		"compile",
+		"--package",
+		".",
+		"--output",
+		outputDir,
+		"--dir",
+		dir,
+		"--compiler-cache-root",
+		cacheRoot,
+	})
+	if err != nil {
+		t.Fatalf("compile command failed: %v", err)
+	}
+
+	if got := countCompilerCacheManifests(t, cacheRoot); got == 0 {
+		t.Fatal("compiler cache root did not receive cache manifests")
+	}
+}
+
+func TestCompileCommandForwardsCompilerCacheRootEnv(t *testing.T) {
+	dir := t.TempDir()
+	outputDir := filepath.Join(dir, "output")
+	cacheRoot := filepath.Join(dir, "cache")
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/clicacheenv\n\ngo 1.25.3\n")
+	writeFile(t, filepath.Join(dir, "main.go"), strings.Join([]string{
+		"package clicacheenv",
+		"const Value = 1",
+		"",
+	}, "\n"))
+	t.Setenv("GOSCRIPT_COMPILER_CACHE_ROOT", cacheRoot)
+
+	app := newApp()
+	err := app.Run([]string{
+		"goscript",
+		"compile",
+		"--package",
+		".",
+		"--output",
+		outputDir,
+		"--dir",
+		dir,
+	})
+	if err != nil {
+		t.Fatalf("compile command failed: %v", err)
+	}
+
+	if got := countCompilerCacheManifests(t, cacheRoot); got == 0 {
+		t.Fatal("compiler cache env root did not receive cache manifests")
+	}
+}
+
 func writeFile(t *testing.T, path string, content string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -219,4 +284,22 @@ func writeFile(t *testing.T, path string, content string) {
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatalf("write %s: %v", path, err)
 	}
+}
+
+func countCompilerCacheManifests(t *testing.T, cacheRoot string) int {
+	t.Helper()
+	count := 0
+	err := filepath.WalkDir(cacheRoot, func(_ string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !entry.IsDir() && entry.Name() == "manifest.json" {
+			count++
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return count
 }

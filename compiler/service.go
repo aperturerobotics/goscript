@@ -12,6 +12,7 @@ type CompileService struct {
 	semanticOwner *SemanticModelOwner
 	loweringOwner *LoweringOwner
 	emitterOwner  *TypeScriptEmitOwner
+	cacheOwner    *CompilerCacheOwner
 	runtimeOwner  *RuntimeContractOwner
 	overrideOwner *OverrideRegistryOwner
 	parityOwner   *OverrideParityVerifier
@@ -27,6 +28,7 @@ func NewCompileService(overrideDirs ...string) *CompileService {
 		semanticOwner: NewSemanticModelOwner(overrideOwner),
 		loweringOwner: NewLoweringOwner(runtimeOwner, overrideOwner),
 		emitterOwner:  NewTypeScriptEmitOwner(runtimeOwner),
+		cacheOwner:    NewCompilerCacheOwner(),
 		runtimeOwner:  runtimeOwner,
 		overrideOwner: overrideOwner,
 		parityOwner:   NewOverrideParityVerifier(),
@@ -56,6 +58,11 @@ func (s *CompileService) LoweringOwner() *LoweringOwner {
 // TypeScriptEmitOwner returns the TypeScript emit owner.
 func (s *CompileService) TypeScriptEmitOwner() *TypeScriptEmitOwner {
 	return s.emitterOwner
+}
+
+// CompilerCacheOwner returns the compiler cache owner.
+func (s *CompileService) CompilerCacheOwner() *CompilerCacheOwner {
+	return s.cacheOwner
 }
 
 // RuntimeContractOwner returns the runtime contract owner.
@@ -111,6 +118,24 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 		return result, NewCompileError(diagnostics)
 	}
 
+	var cacheEntries []compilerCacheEntry
+	var overridePlan *overrideCopyPlan
+	if s.cacheOwner.Enabled(req) {
+		var overrideDiagnostics []Diagnostic
+		overridePlan, overrideDiagnostics = s.overrideOwner.CopyPlan(ctx, req, graph)
+		diagnostics = append(diagnostics, overrideDiagnostics...)
+		if diagnosticsHaveErrors(diagnostics) {
+			result.Diagnostics = diagnostics
+			return result, NewCompileError(diagnostics)
+		}
+		cacheEntries = s.cacheOwner.Entries(req, graph, overridePlan)
+		if cached, ok := s.cacheOwner.Replay(ctx, req, cacheEntries); ok {
+			cached.OriginalPackages = append([]string(nil), result.OriginalPackages...)
+			cached.Diagnostics = diagnostics
+			return cached, nil
+		}
+	}
+
 	semanticModel, semanticDiagnostics := s.semanticOwner.Build(ctx, graph)
 	diagnostics = append(diagnostics, semanticDiagnostics...)
 	if diagnosticsHaveErrors(diagnostics) {
@@ -118,11 +143,14 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 		return result, NewCompileError(diagnostics)
 	}
 
-	overridePlan, overrideDiagnostics := s.overrideOwner.CopyPlan(ctx, req, graph)
-	diagnostics = append(diagnostics, overrideDiagnostics...)
-	if diagnosticsHaveErrors(diagnostics) {
-		result.Diagnostics = diagnostics
-		return result, NewCompileError(diagnostics)
+	if overridePlan == nil {
+		var overrideDiagnostics []Diagnostic
+		overridePlan, overrideDiagnostics = s.overrideOwner.CopyPlan(ctx, req, graph)
+		diagnostics = append(diagnostics, overrideDiagnostics...)
+		if diagnosticsHaveErrors(diagnostics) {
+			result.Diagnostics = diagnostics
+			return result, NewCompileError(diagnostics)
+		}
 	}
 
 	loweredProgram, loweringDiagnostics := s.loweringOwner.Build(ctx, semanticModel, LoweringOptions{
@@ -138,13 +166,20 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 		return result, NewCompileError(diagnostics)
 	}
 
-	compiledPackages, emitDiagnostics := s.emitterOwner.Emit(ctx, req, loweredProgram)
+	files, emitDiagnostics := s.emitterOwner.EmitToMemory(ctx, loweredProgram)
 	diagnostics = append(diagnostics, emitDiagnostics...)
 	if diagnosticsHaveErrors(diagnostics) {
 		result.Diagnostics = diagnostics
 		return result, NewCompileError(diagnostics)
 	}
+	compiledPackages, writeDiagnostics := s.emitterOwner.WriteFiles(ctx, req, loweredProgram, files)
+	diagnostics = append(diagnostics, writeDiagnostics...)
+	if diagnosticsHaveErrors(diagnostics) {
+		result.Diagnostics = diagnostics
+		return result, NewCompileError(diagnostics)
+	}
 	result.CompiledPackages = append(result.CompiledPackages, compiledPackages...)
+	s.cacheOwner.StoreGenerated(req, cacheEntries, loweredProgram, files)
 
 	copiedPackages, copyDiagnostics := s.overrideOwner.CopyPackages(ctx, req, overridePlan)
 	diagnostics = append(diagnostics, copyDiagnostics...)
@@ -154,6 +189,7 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 		return result, NewCompileError(diagnostics)
 	}
 	result.CopiedPackages = append(result.CopiedPackages, copiedPackages...)
+	s.cacheOwner.StoreCopied(req, cacheEntries, overridePlan)
 
 	result.Diagnostics = diagnostics
 	return result, nil

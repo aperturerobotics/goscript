@@ -14,6 +14,8 @@ type Config struct {
 	Dir string
 	// OutputPath is the output path root.
 	OutputPath string
+	// CacheRoot is the explicit compiler cache root. Empty disables caching.
+	CacheRoot string
 	// BuildFlags are the Go build flags to use during package loading.
 	BuildFlags []string
 	// OverrideDirs are additional GoScript override roots.

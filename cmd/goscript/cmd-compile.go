@@ -53,6 +53,13 @@ func newCompileCommand() *cli.Command {
 				Value:       "",
 				EnvVars:     []string{"GOSCRIPT_DIR"},
 			},
+			&cli.StringFlag{
+				Name:        "compiler-cache-root",
+				Usage:       "explicit compiler package artifact cache root",
+				Destination: &config.CacheRoot,
+				Value:       "",
+				EnvVars:     []string{"GOSCRIPT_COMPILER_CACHE_ROOT"},
+			},
 			&cli.GenericFlag{
 				Name:    "build-flags",
 				Aliases: []string{"b", "buildflags", "build-flag", "buildflag"},
