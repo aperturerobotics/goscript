@@ -95,6 +95,44 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 		return NewCompileService(req.OverrideDirs...).Compile(ctx, req)
 	}
 
+	var overrideFacts *OverrideFacts
+	var cacheReplayTried bool
+	if s.cacheOwner.Enabled(req) {
+		graph, graphDiagnostics := s.graphOwner.LoadIdentity(ctx, req)
+		diagnostics = append(diagnostics, graphDiagnostics...)
+		if graph != nil {
+			result.OriginalPackages = append([]string(nil), graph.RequestedPackagePaths...)
+		}
+		if diagnosticsHaveErrors(diagnostics) {
+			result.Diagnostics = diagnostics
+			return result, NewCompileError(diagnostics)
+		}
+
+		var factsDiagnostics []Diagnostic
+		overrideFacts, factsDiagnostics = s.overrideOwner.Facts(ctx)
+		diagnostics = append(diagnostics, factsDiagnostics...)
+		if diagnosticsHaveErrors(diagnostics) {
+			result.Diagnostics = diagnostics
+			return result, NewCompileError(diagnostics)
+		}
+
+		if compilerCacheFastReplayAllowed(req, graph, overrideFacts) {
+			overridePlan, overrideDiagnostics := s.overrideOwner.CopyPlan(ctx, req, graph)
+			diagnostics = append(diagnostics, overrideDiagnostics...)
+			if diagnosticsHaveErrors(diagnostics) {
+				result.Diagnostics = diagnostics
+				return result, NewCompileError(diagnostics)
+			}
+			cacheEntries := s.cacheOwner.Entries(req, graph, overridePlan)
+			if cached, ok := s.cacheOwner.Replay(ctx, req, cacheEntries); ok {
+				cached.OriginalPackages = append([]string(nil), result.OriginalPackages...)
+				cached.Diagnostics = diagnostics
+				return cached, nil
+			}
+			cacheReplayTried = true
+		}
+	}
+
 	graph, graphDiagnostics := s.graphOwner.Load(ctx, req)
 	diagnostics = append(diagnostics, graphDiagnostics...)
 	if graph != nil {
@@ -105,11 +143,14 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 		return result, NewCompileError(diagnostics)
 	}
 
-	overrideFacts, factsDiagnostics := s.overrideOwner.Facts(ctx)
-	diagnostics = append(diagnostics, factsDiagnostics...)
-	if diagnosticsHaveErrors(diagnostics) {
-		result.Diagnostics = diagnostics
-		return result, NewCompileError(diagnostics)
+	if overrideFacts == nil {
+		var factsDiagnostics []Diagnostic
+		overrideFacts, factsDiagnostics = s.overrideOwner.Facts(ctx)
+		diagnostics = append(diagnostics, factsDiagnostics...)
+		if diagnosticsHaveErrors(diagnostics) {
+			result.Diagnostics = diagnostics
+			return result, NewCompileError(diagnostics)
+		}
 	}
 	parityDiagnostics := s.parityOwner.Verify(ctx, graph, overrideFacts)
 	diagnostics = append(diagnostics, parityDiagnostics...)
@@ -129,10 +170,12 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 			return result, NewCompileError(diagnostics)
 		}
 		cacheEntries = s.cacheOwner.Entries(req, graph, overridePlan)
-		if cached, ok := s.cacheOwner.Replay(ctx, req, cacheEntries); ok {
-			cached.OriginalPackages = append([]string(nil), result.OriginalPackages...)
-			cached.Diagnostics = diagnostics
-			return cached, nil
+		if !cacheReplayTried {
+			if cached, ok := s.cacheOwner.Replay(ctx, req, cacheEntries); ok {
+				cached.OriginalPackages = append([]string(nil), result.OriginalPackages...)
+				cached.Diagnostics = diagnostics
+				return cached, nil
+			}
 		}
 	}
 
@@ -193,4 +236,11 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 
 	result.Diagnostics = diagnostics
 	return result, nil
+}
+
+func compilerCacheFastReplayAllowed(req *CompileRequest, graph *PackageGraph, facts *OverrideFacts) bool {
+	if req == nil || req.DependencyMode != DependencyModeAll {
+		return false
+	}
+	return !overrideParityRequiresTypedGraph(graph, facts)
 }

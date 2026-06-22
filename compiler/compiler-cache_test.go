@@ -153,6 +153,44 @@ func TestCompilePackagesCacheInvalidatesSourceChange(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesCacheRequestedModeValidatesImportsBeforeReplay(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/cacherequestedimports\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package cacherequestedimports",
+			"import \"example.test/cacherequestedimports/dep\"",
+			"const Value = dep.Value",
+			"",
+		}, "\n"),
+		"dep/dep.go": strings.Join([]string{
+			"package dep",
+			"const Value = 1",
+			"",
+		}, "\n"),
+	})
+	cacheRoot := filepath.Join(t.TempDir(), "cache")
+	compileCacheFixture(t, moduleDir, filepath.Join(t.TempDir(), "first"), cacheRoot)
+	firstManifestCount := countCacheManifests(t, cacheRoot)
+
+	if err := os.WriteFile(filepath.Join(moduleDir, "dep", "dep.go"), []byte("package dep\nconst Other = 1\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	comp, err := NewCompiler(&Config{
+		Dir:        moduleDir,
+		OutputPath: filepath.Join(t.TempDir(), "second"),
+		CacheRoot:  cacheRoot,
+	}, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := comp.CompilePackages(context.Background(), "."); err == nil {
+		t.Fatal("requested-mode cache replay skipped imported package type validation")
+	}
+	if got := countCacheManifests(t, cacheRoot); got != firstManifestCount {
+		t.Fatalf("invalid imported package wrote cache manifests: got %d want %d", got, firstManifestCount)
+	}
+}
+
 func TestCompilePackagesCacheInvalidatesEmbedFileChange(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod":      "module example.test/cacheembed\n\ngo 1.25.3\n",
@@ -295,6 +333,40 @@ func TestCompilerCacheKeyTracksOverridesAndProtobufOutputRelation(t *testing.T) 
 	baseOverrideKey := copiedCacheKey(t, req, graph, plan)
 	if key := copiedCacheKey(t, req, graph, changedPlan); key == baseOverrideKey {
 		t.Fatal("override file content did not change copied package key")
+	}
+}
+
+func TestCompilerCacheFastReplayRequiresTypedGraphForStrictParity(t *testing.T) {
+	graph := &PackageGraph{
+		Nodes: []*PackageGraphNode{{
+			PkgPath:           "example.test/override",
+			OverrideCandidate: true,
+		}},
+	}
+	if overrideParityRequiresTypedGraph(graph, &OverrideFacts{packages: map[string]overridePackageFacts{
+		"example.test/override": {
+			parity: overrideParityLedger{
+				Strict:  true,
+				Symbols: map[string]overrideParityEntry{"Value": {Status: overrideParityStatusReal}},
+			},
+		},
+	}}) {
+		return
+	}
+	t.Fatal("strict override parity did not require a typed graph")
+}
+
+func TestCompilerCacheFastReplayAllowsUntypedOverrideMetadata(t *testing.T) {
+	graph := &PackageGraph{
+		Nodes: []*PackageGraphNode{{
+			PkgPath:           "context",
+			OverrideCandidate: true,
+		}},
+	}
+	if overrideParityRequiresTypedGraph(graph, &OverrideFacts{packages: map[string]overridePackageFacts{
+		"context": {metadata: newOverrideMetadata()},
+	}}) {
+		t.Fatal("metadata-only override required a typed graph")
 	}
 }
 

@@ -56,6 +56,13 @@ type PackageGraphOwner struct {
 	overrideOwner *OverrideRegistryOwner
 }
 
+type packageGraphLoadShape int
+
+const (
+	packageGraphLoadFull packageGraphLoadShape = iota
+	packageGraphLoadIdentity
+)
+
 // NewPackageGraphOwner creates the package graph owner.
 func NewPackageGraphOwner(overrideOwners ...*OverrideRegistryOwner) *PackageGraphOwner {
 	overrideOwner := NewOverrideRegistryOwner()
@@ -67,6 +74,15 @@ func NewPackageGraphOwner(overrideOwners ...*OverrideRegistryOwner) *PackageGrap
 
 // Load builds the package graph for a validated request.
 func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*PackageGraph, []Diagnostic) {
+	return o.load(ctx, req, packageGraphLoadFull)
+}
+
+// LoadIdentity builds the package identity graph needed for cache lookup.
+func (o *PackageGraphOwner) LoadIdentity(ctx context.Context, req *CompileRequest) (*PackageGraph, []Diagnostic) {
+	return o.load(ctx, req, packageGraphLoadIdentity)
+}
+
+func (o *PackageGraphOwner) load(ctx context.Context, req *CompileRequest, shape packageGraphLoadShape) (*PackageGraph, []Diagnostic) {
 	if err := ctx.Err(); err != nil {
 		return nil, []Diagnostic{{
 			Severity: DiagnosticSeverityError,
@@ -81,18 +97,7 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 		Env:        append(os.Environ(), "GOOS=js", "GOARCH=wasm"),
 		BuildFlags: goScriptBuildFlags(req.BuildFlags),
 		Tests:      req.Tests,
-		Mode: packages.NeedName |
-			packages.NeedFiles |
-			packages.NeedCompiledGoFiles |
-			packages.NeedImports |
-			packages.NeedDeps |
-			packages.NeedExportFile |
-			packages.NeedTypes |
-			packages.NeedSyntax |
-			packages.NeedTypesInfo |
-			packages.NeedTypesSizes |
-			packages.NeedForTest |
-			packages.NeedModule,
+		Mode:       packageGraphLoadMode(shape),
 	}
 	pkgs, err := packages.Load(cfg, req.Patterns...)
 	if err != nil {
@@ -168,6 +173,25 @@ func (o *PackageGraphOwner) Load(ctx context.Context, req *CompileRequest) (*Pac
 		diagnostics = append(diagnostics, packageBlocklistDiagnostics(graph, req.PackageBlocklist)...)
 	}
 	return graph, diagnostics
+}
+
+func packageGraphLoadMode(shape packageGraphLoadShape) packages.LoadMode {
+	mode := packages.NeedName |
+		packages.NeedFiles |
+		packages.NeedCompiledGoFiles |
+		packages.NeedImports |
+		packages.NeedDeps |
+		packages.NeedForTest |
+		packages.NeedModule
+	if shape == packageGraphLoadIdentity {
+		return mode
+	}
+	return mode |
+		packages.NeedExportFile |
+		packages.NeedTypes |
+		packages.NeedSyntax |
+		packages.NeedTypesInfo |
+		packages.NeedTypesSizes
 }
 
 func (o *PackageGraphOwner) collect(

@@ -466,6 +466,35 @@ func TestPackageGraphOverrideCandidatesRequirePackageIndex(t *testing.T) {
 	}
 }
 
+func TestPackageGraphLoadIdentityOmitsTypedFacts(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod":  "module example.test/identitygraph\n\ngo 1.25.3\n",
+		"main.go": "package identitygraph\nconst Value = 1\n",
+	})
+	graph, diagnostics := NewPackageGraphOwner().LoadIdentity(context.Background(), &CompileRequest{
+		Dir:        moduleDir,
+		OutputPath: filepath.Join(t.TempDir(), "out"),
+		Patterns:   []string{"."},
+	})
+	if diagnosticsHaveErrors(diagnostics) {
+		t.Fatalf("identity graph load failed: %#v", diagnostics)
+	}
+	node := graph.NodesByPackagePath["example.test/identitygraph"]
+	if node == nil {
+		t.Fatalf("missing identity graph node: %#v", graph.NodesByPackagePath)
+	}
+	if len(node.CompiledGoFiles) != 1 || filepath.Base(node.CompiledGoFiles[0]) != "main.go" {
+		t.Fatalf("compiled files = %#v, want main.go", node.CompiledGoFiles)
+	}
+	pkg := graph.packagesByPath["example.test/identitygraph"]
+	if pkg == nil {
+		t.Fatal("missing loaded package")
+	}
+	if pkg.Types != nil || pkg.TypesInfo != nil || len(pkg.Syntax) != 0 {
+		t.Fatalf("identity graph loaded typed facts: Types=%v TypesInfo=%v Syntax=%d", pkg.Types, pkg.TypesInfo, len(pkg.Syntax))
+	}
+}
+
 func loadPackageGraph(t *testing.T, req *CompileRequest) *PackageGraph {
 	t.Helper()
 

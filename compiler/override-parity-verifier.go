@@ -96,6 +96,29 @@ func (v *OverrideParityVerifier) Verify(
 	return diagnostics
 }
 
+func overrideParityRequiresTypedGraph(graph *PackageGraph, facts *OverrideFacts) bool {
+	if graph == nil || facts == nil {
+		return false
+	}
+	for _, node := range graph.Nodes {
+		if node == nil || !node.OverrideCandidate {
+			continue
+		}
+		ledger := facts.parityLedger(node.PkgPath)
+		if ledger.Strict || len(ledger.Symbols) != 0 {
+			return true
+		}
+	}
+	for _, pkg := range facts.packages {
+		for _, entry := range pkg.parity.Symbols {
+			if entry.Status == overrideParityStatusBlocked {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // VerifyNoDeferred reports transient parity entries that remain in packages
 // whose parity surface is expected to be closed.
 func (v *OverrideParityVerifier) VerifyNoDeferred(facts *OverrideFacts, pkgPaths ...string) []Diagnostic {
