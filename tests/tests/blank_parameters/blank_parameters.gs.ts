@@ -37,9 +37,9 @@ export class blankImpl {
 	static __typeInfo = $.registerStructType(
 		"main.blankImpl",
 		() => new blankImpl(),
-		[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "Value", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		blankImpl,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/blank_parameters", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 
@@ -66,7 +66,7 @@ export class Packer {
 	static __typeInfo = $.registerStructType(
 		"main.Packer",
 		() => new Packer(),
-		[{ name: "pack", args: [{ name: "msg", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "_", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }] }],
+		[{ name: "pack", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }] }],
 		Packer,
 		[]
 	)
@@ -79,7 +79,7 @@ export type blankInterface = {
 $.registerInterfaceType(
 	"main.blankInterface",
 	null,
-	[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+	[{ name: "Value", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export function blanks(_p0: number, _p1: string): number {

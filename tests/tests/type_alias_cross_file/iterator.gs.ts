@@ -14,7 +14,7 @@ export type Reader = {
 $.registerInterfaceType(
 	"main.Reader",
 	null,
-	[{ name: "Val", args: [], returns: [{ name: "_r0", type: "subpkg.Value" }] }]
+	[{ name: "Val", args: [], returns: [{ type: "subpkg.Value" }] }]
 );
 
 export async function Read(r: Reader | null): globalThis.Promise<__goscript_alias.Value> {

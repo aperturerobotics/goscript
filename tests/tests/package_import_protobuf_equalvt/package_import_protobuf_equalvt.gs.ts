@@ -40,9 +40,9 @@ export class msg {
 	static __typeInfo = $.registerStructType(
 		"main.msg",
 		() => new msg(),
-		[{ name: "EqualVT", args: [{ name: "other", type: { kind: $.TypeKind.Pointer, elemType: "main.msg" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
+		[{ name: "EqualVT", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		msg,
-		[{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_protobuf_equalvt", index: [0], offset: 0, exported: false }]
+		[{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

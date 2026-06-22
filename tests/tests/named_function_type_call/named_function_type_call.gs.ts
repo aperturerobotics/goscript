@@ -15,7 +15,7 @@ export type FileInfo = {
 $.registerInterfaceType(
 	"main.FileInfo",
 	null,
-	[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }]
+	[{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }]
 );
 
 export type Filesystem = {
@@ -25,7 +25,7 @@ export type Filesystem = {
 $.registerInterfaceType(
 	"main.Filesystem",
 	null,
-	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }]
+	[{ name: "ReadDir", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { type: "error" }] }]
 );
 
 export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null
@@ -37,7 +37,7 @@ export type Shape = {
 $.registerInterfaceType(
 	"main.Shape",
 	null,
-	[{ name: "Stats", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+	[{ name: "Stats", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export type Morphism = ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null
@@ -106,9 +106,9 @@ export class MockFileInfo {
 	static __typeInfo = $.registerStructType(
 		"main.MockFileInfo",
 		() => new MockFileInfo(),
-		[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }],
+		[{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }],
 		MockFileInfo,
-		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/named_function_type_call", index: [0], offset: 0, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "github.com/s4wave/goscript/tests/tests/named_function_type_call", index: [1], offset: 16, exported: false }, { name: "isDir", key: "isDir", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/s4wave/goscript/tests/tests/named_function_type_call", index: [2], offset: 24, exported: false }]
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "isDir", key: "isDir", type: { kind: $.TypeKind.Basic, name: "bool" } }]
 	)
 }
 
@@ -136,7 +136,7 @@ export class MockFilesystem {
 	static __typeInfo = $.registerStructType(
 		"main.MockFilesystem",
 		() => new MockFilesystem(),
-		[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }],
+		[{ name: "ReadDir", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { type: "error" }] }],
 		MockFilesystem,
 		[]
 	)
@@ -176,9 +176,9 @@ export class shapeNode {
 	static __typeInfo = $.registerStructType(
 		"main.shapeNode",
 		() => new shapeNode(),
-		[{ name: "Stats", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "Stats", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		shapeNode,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/named_function_type_call", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 
@@ -221,9 +221,9 @@ export class MorphismHolder {
 	static __typeInfo = $.registerStructType(
 		"main.MorphismHolder",
 		() => new MorphismHolder(),
-		[{ name: "apply", args: [{ name: "s", type: "main.Shape" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "cloneApply", args: [{ name: "s", type: "main.Shape" }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "apply", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "cloneApply", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		MorphismHolder,
-		[{ name: "morphism", key: "morphism", type: ({ kind: $.TypeKind.Function, name: "main.Morphism", params: ["main.Shape"], results: ["main.Shape"] } as $.FunctionTypeInfo), pkgPath: "github.com/s4wave/goscript/tests/tests/named_function_type_call", index: [0], offset: 0, exported: false }]
+		[{ name: "morphism", key: "morphism", type: ({ kind: $.TypeKind.Function, name: "main.Morphism", params: ["main.Shape"], results: ["main.Shape"] } as $.FunctionTypeInfo) }]
 	)
 }
 
@@ -263,9 +263,9 @@ export class morphismWorker {
 	static __typeInfo = $.registerStructType(
 		"main.morphismWorker",
 		() => new morphismWorker(),
-		[{ name: "lookup", args: [{ name: "s", type: "main.Shape" }], returns: [{ name: "_r0", type: "main.Shape" }] }],
+		[{ name: "lookup", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "main.Shape" }] }],
 		morphismWorker,
-		[{ name: "ready", key: "ready", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/named_function_type_call", index: [0], offset: 0, exported: false }]
+		[{ name: "ready", key: "ready", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "bool" } } }]
 	)
 }
 

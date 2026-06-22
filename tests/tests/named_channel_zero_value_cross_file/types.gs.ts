@@ -36,6 +36,6 @@ export class Job {
 		() => new Job(),
 		[],
 		Job,
-		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
+		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }

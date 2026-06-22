@@ -47,9 +47,9 @@ export class MyStruct {
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
 		() => new MyStruct(),
-		[{ name: "GetMyString", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "GetMyString", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		MyStruct,
-		[{ name: "MyInt", key: "MyInt", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "MyString", key: "MyString", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 8, exported: true }]
+		[{ name: "MyInt", key: "MyInt", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "MyString", key: "MyString", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 
@@ -92,9 +92,9 @@ export class setterStruct {
 	static __typeInfo = $.registerStructType(
 		"main.setterStruct",
 		() => new setterStruct(),
-		[{ name: "get", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "set", args: [{ name: "value", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
+		[{ name: "get", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "set", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		setterStruct,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 
@@ -132,9 +132,9 @@ export class digest {
 	static __typeInfo = $.registerStructType(
 		"main.digest",
 		() => new digest(),
-		[{ name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [] }],
+		[{ name: "Write", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		digest,
-		[{ name: "writes", key: "writes", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/method_call_on_pointer_receiver", index: [0], offset: 0, exported: false }]
+		[{ name: "writes", key: "writes", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

@@ -189,9 +189,9 @@ export class Mutex {
 	static __typeInfo = $.registerStructType(
 		"csync.Mutex",
 		() => new Mutex(),
-		[{ name: "Lock", args: [{ name: "ctx", type: "context.Context" }], returns: [{ name: "_r0", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { name: "_r1", type: "error" }] }, { name: "Locker", args: [], returns: [{ name: "_r0", type: "sync.Locker" }] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
+		[{ name: "Lock", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { type: "error" }] }, { name: "Locker", args: [], returns: [{ type: "sync.Locker" }] }, { name: "TryLock", args: [], returns: [{ type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		Mutex,
-		[{ name: "bcast", key: "bcast", type: "broadcast.Broadcast", pkgPath: "github.com/aperturerobotics/util/csync", index: [0], offset: 0, exported: false }, { name: "locked", key: "locked", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/util/csync", index: [1], offset: 16, exported: false }]
+		[{ name: "bcast", key: "bcast", type: "broadcast.Broadcast" }, { name: "locked", key: "locked", type: { kind: $.TypeKind.Basic, name: "bool" } }]
 	)
 }
 
@@ -256,6 +256,6 @@ export class MutexLocker {
 		() => new MutexLocker(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		MutexLocker,
-		[{ name: "m", key: "m", type: { kind: $.TypeKind.Pointer, elemType: "csync.Mutex" }, pkgPath: "github.com/aperturerobotics/util/csync", index: [0], offset: 0, exported: false }, { name: "rel", key: "rel", type: "atomic.Pointer", pkgPath: "github.com/aperturerobotics/util/csync", index: [1], offset: 8, exported: false }]
+		[{ name: "m", key: "m", type: { kind: $.TypeKind.Pointer, elemType: "csync.Mutex" } }, { name: "rel", key: "rel", type: "atomic.Pointer" }]
 	)
 }

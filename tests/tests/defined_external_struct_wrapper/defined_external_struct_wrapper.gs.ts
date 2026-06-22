@@ -50,9 +50,9 @@ export class Wrapped {
 	static __typeInfo = $.registerStructType(
 		"main.Wrapped",
 		() => new Wrapped(),
-		[{ name: "public", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "dep.Public" } }] }],
+		[{ name: "public", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "dep.Public" } }] }],
 		Wrapped,
-		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Hidden", key: "Hidden", type: "dep.hidden", index: [1], offset: 16, exported: true }]
+		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "Hidden", key: "Hidden", type: "dep.hidden" }]
 	)
 }
 

@@ -34,7 +34,7 @@ export class inner {
 		() => new inner(),
 		[],
 		inner,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/struct_field_declaration_order", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 
@@ -69,7 +69,7 @@ export class outer {
 		() => new outer(),
 		[],
 		outer,
-		[{ name: "inner", key: "inner", type: "main.inner", pkgPath: "github.com/s4wave/goscript/tests/tests/struct_field_declaration_order", index: [0], offset: 0, exported: false }]
+		[{ name: "inner", key: "inner", type: "main.inner" }]
 	)
 }
 

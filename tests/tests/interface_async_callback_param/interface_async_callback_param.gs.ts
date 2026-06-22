@@ -32,7 +32,7 @@ export class listScanner {
 	static __typeInfo = $.registerStructType(
 		"main.listScanner",
 		() => new listScanner(),
-		[{ name: "Scan", args: [{ name: "fn", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }],
+		[{ name: "Scan", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "error" }] }],
 		listScanner,
 		[]
 	)
@@ -45,7 +45,7 @@ export type scanner = {
 $.registerInterfaceType(
 	"main.scanner",
 	null,
-	[{ name: "Scan", args: [{ name: "_p0", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } as $.FunctionTypeInfo) }], returns: [{ name: "_r0", type: "error" }] }]
+	[{ name: "Scan", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "error" }] }]
 );
 
 export async function run(s: scanner | null): globalThis.Promise<$.GoError> {

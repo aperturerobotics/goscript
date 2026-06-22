@@ -34,7 +34,7 @@ export class Match {
 		() => new Match(),
 		[],
 		Match,
-		[{ name: "Size", key: "Size", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
+		[{ name: "Size", key: "Size", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 
@@ -82,9 +82,9 @@ export class Matcher {
 	static __typeInfo = $.registerStructType(
 		"main.Matcher",
 		() => new Matcher(),
-		[{ name: "Blocks", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.Match" } }] }, { name: "Total", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "Blocks", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "main.Match" } }] }, { name: "Total", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		Matcher,
-		[{ name: "matches", key: "matches", type: { kind: $.TypeKind.Slice, elemType: "main.Match" }, pkgPath: "github.com/s4wave/goscript/tests/tests/range_shadow_struct_field", index: [0], offset: 0, exported: false }]
+		[{ name: "matches", key: "matches", type: { kind: $.TypeKind.Slice, elemType: "main.Match" } }]
 	)
 }
 

@@ -10,7 +10,7 @@ export type MultiParamReturner = {
 $.registerInterfaceType(
 	"main.MultiParamReturner",
 	null,
-	[{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "_r1", type: "error" }] }]
+	[{ name: "Process", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }, { type: "error" }] }]
 );
 
 export class MyProcessor {
@@ -43,7 +43,7 @@ export class MyProcessor {
 	static __typeInfo = $.registerStructType(
 		"main.MyProcessor",
 		() => new MyProcessor(),
-		[{ name: "Process", args: [{ name: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "count", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "_r1", type: "error" }] }],
+		[{ name: "Process", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }, { type: "error" }] }],
 		MyProcessor,
 		[]
 	)

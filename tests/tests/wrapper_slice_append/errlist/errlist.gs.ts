@@ -39,9 +39,9 @@ export class AStruct {
 	static __typeInfo = $.registerStructType(
 		"errlist.AStruct",
 		() => new AStruct(),
-		[{ name: "Set", args: [{ name: "msg", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [] }],
+		[{ name: "Set", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		AStruct,
-		[{ name: "Msg", key: "Msg", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
+		[{ name: "Msg", key: "Msg", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 

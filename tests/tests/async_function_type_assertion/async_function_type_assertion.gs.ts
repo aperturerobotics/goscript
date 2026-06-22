@@ -38,9 +38,9 @@ export class Worker {
 	static __typeInfo = $.registerStructType(
 		"main.Worker",
 		() => new Worker(),
-		[{ name: "lookup", args: [{ name: "network", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "lookup", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		Worker,
-		[{ name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/async_function_type_assertion", index: [0], offset: 0, exported: false }]
+		[{ name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } } }]
 	)
 }
 

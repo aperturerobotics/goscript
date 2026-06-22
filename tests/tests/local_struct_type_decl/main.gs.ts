@@ -35,7 +35,7 @@ export async function main(): globalThis.Promise<void> {
 			() => new result(),
 			[],
 			result,
-			[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/local_struct_type_decl", index: [0], offset: 0, exported: false }]
+			[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" } }]
 		)
 	}
 

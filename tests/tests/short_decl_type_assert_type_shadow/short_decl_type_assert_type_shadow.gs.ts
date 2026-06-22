@@ -26,7 +26,7 @@ export class item {
 	static __typeInfo = $.registerStructType(
 		"main.item",
 		() => new item(),
-		[{ name: "Dump", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Dump", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		item,
 		[]
 	)
@@ -39,7 +39,7 @@ export type dumper = {
 $.registerInterfaceType(
 	"main.dumper",
 	null,
-	[{ name: "Dump", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+	[{ name: "Dump", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );
 
 export async function use(v: any): globalThis.Promise<string> {

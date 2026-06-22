@@ -10,7 +10,7 @@ export type Reader = {
 $.registerInterfaceType(
 	"main.Reader",
 	null,
-	[{ name: "Read", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
+	[{ name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }]
 );
 
 export type Closer = {
@@ -20,7 +20,7 @@ export type Closer = {
 $.registerInterfaceType(
 	"main.Closer",
 	null,
-	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }]
+	[{ name: "Close", args: [], returns: [{ type: "error" }] }]
 );
 
 export type ReadCloser = {
@@ -31,7 +31,7 @@ export type ReadCloser = {
 $.registerInterfaceType(
 	"main.ReadCloser",
 	null,
-	[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "_p0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
+	[{ name: "Close", args: [], returns: [{ type: "error" }] }, { name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }]
 );
 
 export class MyStruct {
@@ -65,7 +65,7 @@ export class MyStruct {
 	static __typeInfo = $.registerStructType(
 		"main.MyStruct",
 		() => new MyStruct(),
-		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
+		[{ name: "Close", args: [], returns: [{ type: "error" }] }, { name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }],
 		MyStruct,
 		[]
 	)

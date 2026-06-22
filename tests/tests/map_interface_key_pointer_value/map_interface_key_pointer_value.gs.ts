@@ -10,7 +10,7 @@ export type Node = {
 $.registerInterfaceType(
 	"main.Node",
 	null,
-	[{ name: "Key", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+	[{ name: "Key", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );
 
 export class Table {
@@ -47,9 +47,9 @@ export class Table {
 	static __typeInfo = $.registerStructType(
 		"main.Table",
 		() => new Table(),
-		[{ name: "Key", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Key", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		Table,
-		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/map_interface_key_pointer_value", index: [0], offset: 0, exported: false }]
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 

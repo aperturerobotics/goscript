@@ -130,6 +130,7 @@ func (s *CompileService) Compile(ctx context.Context, req *CompileRequest) (*Com
 		DisplayRoot:               req.Dir,
 		OutputPath:                req.OutputPath,
 		ProtobufTypeScriptBinding: req.ProtobufTypeScriptBinding,
+		TrimTypeInfo:              !packageGraphContainsPackage(graph, "reflect"),
 	})
 	diagnostics = append(diagnostics, loweringDiagnostics...)
 	if diagnosticsHaveErrors(diagnostics) {

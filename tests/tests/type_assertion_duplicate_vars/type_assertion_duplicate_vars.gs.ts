@@ -10,7 +10,7 @@ export type Interface = {
 $.registerInterfaceType(
 	"main.Interface",
 	null,
-	[{ name: "Method", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+	[{ name: "Method", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );
 
 export class ConcreteA {
@@ -37,7 +37,7 @@ export class ConcreteA {
 	static __typeInfo = $.registerStructType(
 		"main.ConcreteA",
 		() => new ConcreteA(),
-		[{ name: "Method", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Method", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		ConcreteA,
 		[]
 	)
@@ -67,7 +67,7 @@ export class ConcreteB {
 	static __typeInfo = $.registerStructType(
 		"main.ConcreteB",
 		() => new ConcreteB(),
-		[{ name: "Method", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Method", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		ConcreteB,
 		[]
 	)
@@ -114,7 +114,7 @@ export class Container {
 		() => new Container(),
 		[],
 		Container,
-		[{ name: "hasA", key: "hasA", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/s4wave/goscript/tests/tests/type_assertion_duplicate_vars", index: [0], offset: 0, exported: false }, { name: "hasB", key: "hasB", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/s4wave/goscript/tests/tests/type_assertion_duplicate_vars", index: [1], offset: 1, exported: false }]
+		[{ name: "hasA", key: "hasA", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "hasB", key: "hasB", type: { kind: $.TypeKind.Basic, name: "bool" } }]
 	)
 }
 

@@ -16,7 +16,7 @@ export type Combined = {
 $.registerInterfaceType(
 	"main.Combined",
 	null,
-	[{ name: "Extra", args: [], returns: [] }, { name: "Use", args: [{ name: "_p0", type: "dep2.Value" }], returns: [{ name: "_r0", type: "dep2.Result" }] }]
+	[{ name: "Extra", args: [], returns: [] }, { name: "Use", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "dep2.Result" }] }]
 );
 
 export async function main(): globalThis.Promise<void> {

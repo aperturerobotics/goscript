@@ -46,7 +46,7 @@ export class FileStatus {
 		() => new FileStatus(),
 		[],
 		FileStatus,
-		[{ name: "mode", key: "mode", type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyFileMode" }, pkgPath: "github.com/s4wave/goscript/tests/tests/named_type_wrapper", index: [0], offset: 0, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "github.com/s4wave/goscript/tests/tests/named_type_wrapper", index: [1], offset: 8, exported: false }]
+		[{ name: "mode", key: "mode", type: { kind: $.TypeKind.Basic, name: "int", typeName: "main.MyFileMode" } }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" } }]
 	)
 }
 

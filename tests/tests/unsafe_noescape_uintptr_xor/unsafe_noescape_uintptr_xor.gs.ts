@@ -47,7 +47,7 @@ export class sourceStruct {
 		() => new sourceStruct(),
 		[],
 		sourceStruct,
-		[{ name: "flag", key: "flag", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/s4wave/goscript/tests/tests/unsafe_noescape_uintptr_xor", index: [0], offset: 0, exported: false }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/unsafe_noescape_uintptr_xor", index: [1], offset: 8, exported: false }]
+		[{ name: "flag", key: "flag", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint" } } }]
 	)
 }
 
@@ -92,7 +92,7 @@ export class viewStruct {
 		() => new viewStruct(),
 		[],
 		viewStruct,
-		[{ name: "flag", key: "flag", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/s4wave/goscript/tests/tests/unsafe_noescape_uintptr_xor", index: [0], offset: 0, exported: false }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/unsafe_noescape_uintptr_xor", index: [1], offset: 8, exported: false }]
+		[{ name: "flag", key: "flag", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "data", key: "data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint" } } }]
 	)
 }
 

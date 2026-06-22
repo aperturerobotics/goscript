@@ -10,7 +10,7 @@ export type Expr = {
 $.registerInterfaceType(
 	"main.Expr",
 	null,
-	[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+	[{ name: "Value", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export class lit {
@@ -47,9 +47,9 @@ export class lit {
 	static __typeInfo = $.registerStructType(
 		"main.lit",
 		() => new lit(),
-		[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "Value", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		lit,
-		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/variadic_pointer_interface_param", index: [0], offset: 0, exported: false }]
+		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

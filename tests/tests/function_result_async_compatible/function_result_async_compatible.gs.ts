@@ -10,7 +10,7 @@ export type Value = {
 $.registerInterfaceType(
 	"main.Value",
 	null,
-	[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+	[{ name: "Value", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export class box {
@@ -47,9 +47,9 @@ export class box {
 	static __typeInfo = $.registerStructType(
 		"main.box",
 		() => new box(),
-		[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "Value", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		box,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/function_result_async_compatible", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

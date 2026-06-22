@@ -57,7 +57,7 @@ export class LocalTime {
 		() => new LocalTime(),
 		[],
 		LocalTime,
-		[{ name: "wall", key: "wall", type: { kind: $.TypeKind.Basic, name: "uint64" }, pkgPath: "time", index: [0], offset: 0, exported: false }, { name: "ext", key: "ext", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "time", index: [1], offset: 8, exported: false }, { name: "loc", key: "loc", type: { kind: $.TypeKind.Pointer, elemType: "time.Location" }, pkgPath: "time", index: [2], offset: 16, exported: false }]
+		[{ name: "wall", key: "wall", type: { kind: $.TypeKind.Basic, name: "uint64" } }, { name: "ext", key: "ext", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "loc", key: "loc", type: { kind: $.TypeKind.Pointer, elemType: "time.Location" } }]
 	)
 }
 

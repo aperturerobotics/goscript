@@ -37,9 +37,9 @@ export class entry {
 	static __typeInfo = $.registerStructType(
 		"main.entry",
 		() => new entry(),
-		[{ name: "add", args: [{ name: "value", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
+		[{ name: "add", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		entry,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/anonymous_struct_field_address", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

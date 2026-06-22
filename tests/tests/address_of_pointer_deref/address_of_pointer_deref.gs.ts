@@ -44,7 +44,7 @@ export class Col {
 		() => new Col(),
 		[],
 		Col,
-		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Default", key: "Default", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } }, index: [1], offset: 16, exported: true }]
+		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "Default", key: "Default", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "int" } } }]
 	)
 }
 

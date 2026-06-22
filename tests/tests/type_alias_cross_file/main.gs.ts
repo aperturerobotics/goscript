@@ -35,7 +35,7 @@ export class source {
 	static __typeInfo = $.registerStructType(
 		"main.source",
 		() => new source(),
-		[{ name: "Val", args: [], returns: [{ name: "_r0", type: "subpkg.Value" }] }],
+		[{ name: "Val", args: [], returns: [{ type: "subpkg.Value" }] }],
 		source,
 		[]
 	)

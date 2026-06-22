@@ -56,9 +56,9 @@ export class descending {
 	static __typeInfo = $.registerStructType(
 		"main.descending",
 		() => new descending(),
-		[{ name: "Len", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Less", args: [{ name: "i", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "j", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Swap", args: [{ name: "i", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "j", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }],
+		[{ name: "Len", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Less", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Swap", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		descending,
-		[{ name: "values", key: "values", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_sort", index: [0], offset: 0, exported: false }]
+		[{ name: "values", key: "values", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }]
 	)
 }
 

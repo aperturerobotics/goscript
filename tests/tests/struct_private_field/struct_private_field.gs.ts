@@ -34,7 +34,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[],
 		MyStruct,
-		[{ name: "myPrivate", key: "myPrivate", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/struct_private_field", index: [0], offset: 0, exported: false }]
+		[{ name: "myPrivate", key: "myPrivate", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

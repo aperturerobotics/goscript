@@ -34,6 +34,6 @@ export class Tx {
 		() => new Tx(),
 		[],
 		Tx,
-		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
+		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }

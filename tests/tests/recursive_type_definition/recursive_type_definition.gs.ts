@@ -10,7 +10,7 @@ export type A = {
 $.registerInterfaceType(
 	"main.A",
 	null,
-	[{ name: "MethodA", args: [{ name: "a", type: "main.A" }], returns: [] }]
+	[{ name: "MethodA", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }]
 );
 
 export type C = {
@@ -20,7 +20,7 @@ export type C = {
 $.registerInterfaceType(
 	"main.C",
 	null,
-	[{ name: "MethodC", args: [{ name: "d", type: "main.D" }], returns: [] }]
+	[{ name: "MethodC", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }]
 );
 
 export type D = {
@@ -30,7 +30,7 @@ export type D = {
 $.registerInterfaceType(
 	"main.D",
 	null,
-	[{ name: "MethodD", args: [{ name: "c", type: "main.C" }], returns: [] }]
+	[{ name: "MethodD", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }]
 );
 
 export class B {
@@ -56,7 +56,7 @@ export class B {
 	static __typeInfo = $.registerStructType(
 		"main.B",
 		() => new B(),
-		[{ name: "MethodB", args: [{ name: "valB", type: { kind: $.TypeKind.Pointer, elemType: "main.B" } }], returns: [] }],
+		[{ name: "MethodB", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		B,
 		[]
 	)

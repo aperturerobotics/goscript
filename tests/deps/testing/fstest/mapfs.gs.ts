@@ -84,7 +84,7 @@ export class MapFile {
 		() => new MapFile(),
 		[],
 		MapFile,
-		[{ name: "Data", key: "Data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, index: [0], offset: 0, exported: true }, { name: "Mode", key: "Mode", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" }, index: [1], offset: 24, exported: true }, { name: "ModTime", key: "ModTime", type: "time.Time", index: [2], offset: 32, exported: true }, { name: "Sys", key: "Sys", type: { kind: $.TypeKind.Interface, methods: [] }, index: [3], offset: 56, exported: true }]
+		[{ name: "Data", key: "Data", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "Mode", key: "Mode", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }, { name: "ModTime", key: "ModTime", type: "time.Time" }, { name: "Sys", key: "Sys", type: { kind: $.TypeKind.Interface, methods: [] } }]
 	)
 }
 
@@ -121,9 +121,9 @@ export class fsOnly {
 	static __typeInfo = $.registerStructType(
 		"fstest.fsOnly",
 		() => new fsOnly(),
-		[{ name: "Open", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "fs.File" }, { name: "_r1", type: "error" }] }],
+		[{ name: "Open", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "fs.File" }, { type: "error" }] }],
 		fsOnly,
-		[{ name: "FS", key: "FS", type: "fs.FS", anonymous: true, index: [0], offset: 0, exported: true }]
+		[{ name: "FS", key: "FS", type: "fs.FS", anonymous: true }]
 	)
 }
 
@@ -161,7 +161,7 @@ export class noSub {
 		() => new noSub(),
 		[{ name: "Sub", args: [], returns: [] }],
 		noSub,
-		[{ name: "MapFS", key: "MapFS", type: "fstest.MapFS", anonymous: true, index: [0], offset: 0, exported: true }]
+		[{ name: "MapFS", key: "MapFS", type: "fstest.MapFS", anonymous: true }]
 	)
 }
 
@@ -249,9 +249,9 @@ export class mapFileInfo {
 	static __typeInfo = $.registerStructType(
 		"fstest.mapFileInfo",
 		() => new mapFileInfo(),
-		[{ name: "Info", args: [], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }, { name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ name: "_r0", type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Sys", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Type", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }],
+		[{ name: "Info", args: [], returns: [{ type: "fs.FileInfo" }, { type: "error" }] }, { name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Type", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }],
 		mapFileInfo,
-		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/fstest", index: [0], offset: 0, exported: false }, { name: "f", key: "f", type: { kind: $.TypeKind.Pointer, elemType: "fstest.MapFile" }, pkgPath: "testing/fstest", index: [1], offset: 16, exported: false }]
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "f", key: "f", type: { kind: $.TypeKind.Pointer, elemType: "fstest.MapFile" } }]
 	)
 }
 
@@ -400,9 +400,9 @@ export class openMapFile {
 	static __typeInfo = $.registerStructType(
 		"fstest.openMapFile",
 		() => new openMapFile(),
-		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "ReadAt", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "offset", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "Seek", args: [{ name: "offset", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "whence", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }, { name: "Stat", args: [], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }, { name: "Info", args: [], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }, { name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ name: "_r0", type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Sys", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Type", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }],
+		[{ name: "Close", args: [], returns: [{ type: "error" }] }, { name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }, { name: "ReadAt", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }, { name: "Seek", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }, { type: "error" }] }, { name: "Stat", args: [], returns: [{ type: "fs.FileInfo" }, { type: "error" }] }, { name: "Info", args: [], returns: [{ type: "fs.FileInfo" }, { type: "error" }] }, { name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Type", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }],
 		openMapFile,
-		[{ name: "path", key: "path", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/fstest", index: [0], offset: 0, exported: false }, { name: "mapFileInfo", key: "mapFileInfo", type: "fstest.mapFileInfo", pkgPath: "testing/fstest", anonymous: true, index: [1], offset: 16, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "testing/fstest", index: [2], offset: 40, exported: false }]
+		[{ name: "path", key: "path", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "mapFileInfo", key: "mapFileInfo", type: "fstest.mapFileInfo", anonymous: true }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int64" } }]
 	)
 }
 
@@ -533,9 +533,9 @@ export class mapDir {
 	static __typeInfo = $.registerStructType(
 		"fstest.mapDir",
 		() => new mapDir(),
-		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "ReadDir", args: [{ name: "count", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "fs.DirEntry" } }, { name: "_r1", type: "error" }] }, { name: "Stat", args: [], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }, { name: "Info", args: [], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }, { name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ name: "_r0", type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "String", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Sys", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Type", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }],
+		[{ name: "Close", args: [], returns: [{ type: "error" }] }, { name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }, { name: "ReadDir", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "fs.DirEntry" } }, { type: "error" }] }, { name: "Stat", args: [], returns: [{ type: "fs.FileInfo" }, { type: "error" }] }, { name: "Info", args: [], returns: [{ type: "fs.FileInfo" }, { type: "error" }] }, { name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "ModTime", args: [], returns: [{ type: "time.Time" }] }, { name: "Mode", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "String", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Sys", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }, { name: "Type", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint32", typeName: "fs.FileMode" } }] }],
 		mapDir,
-		[{ name: "path", key: "path", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/fstest", index: [0], offset: 0, exported: false }, { name: "mapFileInfo", key: "mapFileInfo", type: "fstest.mapFileInfo", pkgPath: "testing/fstest", anonymous: true, index: [1], offset: 16, exported: false }, { name: "entry", key: "entry", type: { kind: $.TypeKind.Slice, elemType: "fstest.mapFileInfo" }, pkgPath: "testing/fstest", index: [2], offset: 40, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "testing/fstest", index: [3], offset: 64, exported: false }]
+		[{ name: "path", key: "path", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "mapFileInfo", key: "mapFileInfo", type: "fstest.mapFileInfo", anonymous: true }, { name: "entry", key: "entry", type: { kind: $.TypeKind.Slice, elemType: "fstest.mapFileInfo" } }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

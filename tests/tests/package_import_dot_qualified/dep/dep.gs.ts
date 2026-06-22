@@ -34,7 +34,7 @@ export class Box {
 		() => new Box(),
 		[],
 		Box,
-		[{ name: "N", key: "N", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
+		[{ name: "N", key: "N", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

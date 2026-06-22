@@ -15,7 +15,7 @@ export type FileInfo = {
 $.registerInterfaceType(
 	"main.FileInfo",
 	null,
-	[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }]
+	[{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }]
 );
 
 export type WalkFunc = ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null
@@ -27,7 +27,7 @@ export type Filesystem = {
 $.registerInterfaceType(
 	"main.Filesystem",
 	null,
-	[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }]
+	[{ name: "ReadDir", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { type: "error" }] }]
 );
 
 export type ProcessFunc = ((data: string) => [string, $.GoError] | globalThis.Promise<[string, $.GoError]>) | null
@@ -98,9 +98,9 @@ export class MockFileInfo {
 	static __typeInfo = $.registerStructType(
 		"main.MockFileInfo",
 		() => new MockFileInfo(),
-		[{ name: "IsDir", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }] }],
+		[{ name: "IsDir", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "Size", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }],
 		MockFileInfo,
-		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/nullable_function_param_call", index: [0], offset: 0, exported: false }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "github.com/s4wave/goscript/tests/tests/nullable_function_param_call", index: [1], offset: 16, exported: false }, { name: "isDir", key: "isDir", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/s4wave/goscript/tests/tests/nullable_function_param_call", index: [2], offset: 24, exported: false }]
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "isDir", key: "isDir", type: { kind: $.TypeKind.Basic, name: "bool" } }]
 	)
 }
 
@@ -128,7 +128,7 @@ export class MockFilesystem {
 	static __typeInfo = $.registerStructType(
 		"main.MockFilesystem",
 		() => new MockFilesystem(),
-		[{ name: "ReadDir", args: [{ name: "path", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { name: "_r1", type: "error" }] }],
+		[{ name: "ReadDir", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: "main.FileInfo" } }, { type: "error" }] }],
 		MockFilesystem,
 		[]
 	)

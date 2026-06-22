@@ -34,7 +34,7 @@ export class Result {
 		() => new Result(),
 		[],
 		Result,
-		[{ name: "ok", key: "ok", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/s4wave/goscript/tests/tests/selector_expr_ok_variable", index: [0], offset: 0, exported: false }]
+		[{ name: "ok", key: "ok", type: { kind: $.TypeKind.Basic, name: "bool" } }]
 	)
 }
 

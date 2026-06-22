@@ -10,7 +10,7 @@ export type Ref = {
 $.registerInterfaceType(
 	"dep.Ref",
 	null,
-	[{ name: "Key", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
+	[{ name: "Key", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }]
 );
 
 export async function ToKey(v: Ref | null): globalThis.Promise<any> {

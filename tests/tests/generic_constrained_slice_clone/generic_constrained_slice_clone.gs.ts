@@ -40,9 +40,9 @@ export class item {
 	static __typeInfo = $.registerStructType(
 		"main.item",
 		() => new item(),
-		[{ name: "CloneVT", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "main.item" } }] }],
+		[{ name: "CloneVT", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "main.item" } }] }],
 		item,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/generic_constrained_slice_clone", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 
@@ -53,7 +53,7 @@ export type clonable = {
 $.registerInterfaceType(
 	"main.clonable",
 	null,
-	[{ name: "CloneVT", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
+	[{ name: "CloneVT", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }]
 );
 
 export async function cloneSlice<T>(__typeArgs: $.GenericTypeArgs | undefined, items: $.Slice<T>): globalThis.Promise<$.Slice<T>> {

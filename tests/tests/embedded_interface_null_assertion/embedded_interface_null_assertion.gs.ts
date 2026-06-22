@@ -10,7 +10,7 @@ export type Reader = {
 $.registerInterfaceType(
 	"main.Reader",
 	null,
-	[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }]
+	[{ name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }]
 );
 
 export class MyReader {
@@ -56,9 +56,9 @@ export class MyReader {
 	static __typeInfo = $.registerStructType(
 		"main.MyReader",
 		() => new MyReader(),
-		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
+		[{ name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }],
 		MyReader,
-		[{ name: "Reader", key: "Reader", type: "main.Reader", anonymous: true, index: [0], offset: 0, exported: true }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/embedded_interface_null_assertion", index: [1], offset: 16, exported: false }]
+		[{ name: "Reader", key: "Reader", type: "main.Reader", anonymous: true }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 
@@ -111,9 +111,9 @@ export class StringReader {
 	static __typeInfo = $.registerStructType(
 		"main.StringReader",
 		() => new StringReader(),
-		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }],
+		[{ name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }],
 		StringReader,
-		[{ name: "data", key: "data", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/embedded_interface_null_assertion", index: [0], offset: 0, exported: false }, { name: "pos", key: "pos", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/embedded_interface_null_assertion", index: [1], offset: 16, exported: false }]
+		[{ name: "data", key: "data", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "pos", key: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

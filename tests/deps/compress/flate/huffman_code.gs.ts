@@ -60,9 +60,9 @@ export class hcode {
 	static __typeInfo = $.registerStructType(
 		"flate.hcode",
 		() => new hcode(),
-		[{ name: "set", args: [{ name: "code", type: { kind: $.TypeKind.Basic, name: "uint16" } }, { name: "length", type: { kind: $.TypeKind.Basic, name: "uint16" } }], returns: [] }],
+		[{ name: "set", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		hcode,
-		[{ name: "code", key: "code", type: { kind: $.TypeKind.Basic, name: "uint16" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "len", key: "len", type: { kind: $.TypeKind.Basic, name: "uint16" }, pkgPath: "compress/flate", index: [1], offset: 2, exported: false }]
+		[{ name: "code", key: "code", type: { kind: $.TypeKind.Basic, name: "uint16" } }, { name: "len", key: "len", type: { kind: $.TypeKind.Basic, name: "uint16" } }]
 	)
 }
 
@@ -324,9 +324,9 @@ export class huffmanEncoder {
 	static __typeInfo = $.registerStructType(
 		"flate.huffmanEncoder",
 		() => new huffmanEncoder(),
-		[{ name: "assignEncodingAndSize", args: [{ name: "bitCount", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } } }, { name: "list", type: { kind: $.TypeKind.Slice, elemType: "flate.literalNode" } }], returns: [] }, { name: "bitCounts", args: [{ name: "list", type: { kind: $.TypeKind.Slice, elemType: "flate.literalNode" } }, { name: "maxBits", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } } }] }, { name: "bitLength", args: [{ name: "freq", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "generate", args: [{ name: "freq", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } } }, { name: "maxBits", type: { kind: $.TypeKind.Basic, name: "int32" } }], returns: [] }],
+		[{ name: "assignEncodingAndSize", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }, { name: "bitCounts", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } } }] }, { name: "bitLength", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "generate", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		huffmanEncoder,
-		[{ name: "codes", key: "codes", type: { kind: $.TypeKind.Slice, elemType: "flate.hcode" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "freqcache", key: "freqcache", type: { kind: $.TypeKind.Slice, elemType: "flate.literalNode" }, pkgPath: "compress/flate", index: [1], offset: 24, exported: false }, { name: "bitCount", key: "bitCount", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int32" }, length: 17 }, pkgPath: "compress/flate", index: [2], offset: 48, exported: false }, { name: "lns", key: "lns", type: "flate.byLiteral", pkgPath: "compress/flate", index: [3], offset: 120, exported: false }, { name: "lfs", key: "lfs", type: "flate.byFreq", pkgPath: "compress/flate", index: [4], offset: 144, exported: false }]
+		[{ name: "codes", key: "codes", type: { kind: $.TypeKind.Slice, elemType: "flate.hcode" } }, { name: "freqcache", key: "freqcache", type: { kind: $.TypeKind.Slice, elemType: "flate.literalNode" } }, { name: "bitCount", key: "bitCount", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int32" }, length: 17 } }, { name: "lns", key: "lns", type: "flate.byLiteral" }, { name: "lfs", key: "lfs", type: "flate.byFreq" }]
 	)
 }
 
@@ -371,7 +371,7 @@ export class literalNode {
 		() => new literalNode(),
 		[],
 		literalNode,
-		[{ name: "literal", key: "literal", type: { kind: $.TypeKind.Basic, name: "uint16" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "freq", key: "freq", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [1], offset: 4, exported: false }]
+		[{ name: "literal", key: "literal", type: { kind: $.TypeKind.Basic, name: "uint16" } }, { name: "freq", key: "freq", type: { kind: $.TypeKind.Basic, name: "int32" } }]
 	)
 }
 
@@ -453,7 +453,7 @@ export class levelInfo {
 		() => new levelInfo(),
 		[],
 		levelInfo,
-		[{ name: "level", key: "level", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "lastFreq", key: "lastFreq", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [1], offset: 4, exported: false }, { name: "nextCharFreq", key: "nextCharFreq", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [2], offset: 8, exported: false }, { name: "nextPairFreq", key: "nextPairFreq", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [3], offset: 12, exported: false }, { name: "needed", key: "needed", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [4], offset: 16, exported: false }]
+		[{ name: "level", key: "level", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "lastFreq", key: "lastFreq", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "nextCharFreq", key: "nextCharFreq", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "nextPairFreq", key: "nextPairFreq", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "needed", key: "needed", type: { kind: $.TypeKind.Basic, name: "int32" } }]
 	)
 }
 

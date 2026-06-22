@@ -34,7 +34,7 @@ export class buffer {
 		() => new buffer(),
 		[],
 		buffer,
-		[{ name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/composite_literal_field_shadow", index: [0], offset: 0, exported: false }]
+		[{ name: "buf", key: "buf", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }]
 	)
 }
 

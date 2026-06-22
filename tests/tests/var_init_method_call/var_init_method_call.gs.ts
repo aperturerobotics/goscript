@@ -37,9 +37,9 @@ export class T {
 	static __typeInfo = $.registerStructType(
 		"main.T",
 		() => new T(),
-		[{ name: "WithDelta", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "main.T" } }] }],
+		[{ name: "WithDelta", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "main.T" } }] }],
 		T,
-		[{ name: "val", key: "val", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/var_init_method_call", index: [0], offset: 0, exported: false }]
+		[{ name: "val", key: "val", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

@@ -37,9 +37,9 @@ export class MockInode {
 	static __typeInfo = $.registerStructType(
 		"main.MockInode",
 		() => new MockInode(),
-		[{ name: "getValue", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "getValue", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		MockInode,
-		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
+		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

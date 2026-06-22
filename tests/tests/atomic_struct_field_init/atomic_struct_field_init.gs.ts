@@ -57,7 +57,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[],
 		MyStruct,
-		[{ name: "closed", key: "closed", type: "atomic.Bool", pkgPath: "github.com/s4wave/goscript/tests/tests/atomic_struct_field_init", index: [0], offset: 0, exported: false }, { name: "count", key: "count", type: "atomic.Int32", pkgPath: "github.com/s4wave/goscript/tests/tests/atomic_struct_field_init", index: [1], offset: 4, exported: false }, { name: "flag", key: "flag", type: "atomic.Uint32", pkgPath: "github.com/s4wave/goscript/tests/tests/atomic_struct_field_init", index: [2], offset: 8, exported: false }]
+		[{ name: "closed", key: "closed", type: "atomic.Bool" }, { name: "count", key: "count", type: "atomic.Int32" }, { name: "flag", key: "flag", type: "atomic.Uint32" }]
 	)
 }
 

@@ -63,9 +63,9 @@ export class writeLogger {
 	static __typeInfo = $.registerStructType(
 		"iotest.writeLogger",
 		() => new writeLogger(),
-		[{ name: "Write", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }],
+		[{ name: "Write", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }],
 		writeLogger,
-		[{ name: "prefix", key: "prefix", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "w", key: "w", type: "io.Writer", pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }]
+		[{ name: "prefix", key: "prefix", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "w", key: "w", type: "io.Writer" }]
 	)
 }
 
@@ -123,9 +123,9 @@ export class readLogger {
 	static __typeInfo = $.registerStructType(
 		"iotest.readLogger",
 		() => new readLogger(),
-		[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }],
+		[{ name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }],
 		readLogger,
-		[{ name: "prefix", key: "prefix", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "testing/iotest", index: [0], offset: 0, exported: false }, { name: "r", key: "r", type: "io.Reader", pkgPath: "testing/iotest", index: [1], offset: 16, exported: false }]
+		[{ name: "prefix", key: "prefix", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "r", key: "r", type: "io.Reader" }]
 	)
 }
 

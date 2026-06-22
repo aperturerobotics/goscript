@@ -29,7 +29,7 @@ export class Server {
 	static __typeInfo = $.registerStructType(
 		"main.Server",
 		() => new Server(),
-		[{ name: "Handle", args: [{ name: "rwc", type: "io.ReadWriteCloser" }], returns: [] }],
+		[{ name: "Handle", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		Server,
 		[]
 	)

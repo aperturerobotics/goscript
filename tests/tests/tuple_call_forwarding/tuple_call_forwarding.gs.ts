@@ -44,7 +44,7 @@ export class point {
 		() => new point(),
 		[],
 		point,
-		[{ name: "x", key: "x", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/tuple_call_forwarding", index: [0], offset: 0, exported: false }, { name: "y", key: "y", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/tuple_call_forwarding", index: [1], offset: 8, exported: false }]
+		[{ name: "x", key: "x", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "y", key: "y", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

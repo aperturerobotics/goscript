@@ -15,7 +15,7 @@ export type Shape = {
 $.registerInterfaceType(
 	"main.Shape",
 	null,
-	[{ name: "Mark", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }]
+	[{ name: "Mark", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }]
 );
 
 export class Action {
@@ -70,9 +70,9 @@ export class Action {
 	static __typeInfo = $.registerStructType(
 		"main.Action",
 		() => new Action(),
-		[{ name: "Mark", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "SetFilter", args: [{ name: "k", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "v", type: "dep.Ref" }], returns: [] }],
+		[{ name: "Mark", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "SetFilter", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		Action,
-		[{ name: "Result", key: "Result", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "Filter", key: "Filter", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: "dep.Ref" }, index: [1], offset: 8, exported: true }]
+		[{ name: "Result", key: "Result", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "Filter", key: "Filter", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "int" }, elemType: "dep.Ref" } }]
 	)
 }
 

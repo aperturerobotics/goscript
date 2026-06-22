@@ -18,7 +18,7 @@ export type Store = {
 $.registerInterfaceType(
 	"dep.Store",
 	null,
-	[{ name: "NewTransaction", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }]
+	[{ name: "NewTransaction", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }]
 );
 
 export class BaseStore {
@@ -54,9 +54,9 @@ export class BaseStore {
 	static __typeInfo = $.registerStructType(
 		"dep.BaseStore",
 		() => new BaseStore(),
-		[{ name: "NewTransaction", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }],
+		[{ name: "NewTransaction", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }],
 		BaseStore,
-		[{ name: "CoreStore", key: "CoreStore", type: { kind: $.TypeKind.Pointer, elemType: "inner.CoreStore" }, anonymous: true, index: [0], offset: 0, exported: true }]
+		[{ name: "CoreStore", key: "CoreStore", type: { kind: $.TypeKind.Pointer, elemType: "inner.CoreStore" }, anonymous: true }]
 	)
 }
 

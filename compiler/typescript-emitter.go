@@ -125,14 +125,14 @@ func (o *TypeScriptEmitOwner) EmitToMemory(
 			return files, []Diagnostic{contextCanceledDiagnostic(err)}
 		}
 		for _, file := range pkg.files {
-			files["@goscript/"+pkg.pkgPath+"/"+file.outputName] = o.renderLoweredFile(pkg, file)
+			files["@goscript/"+pkg.pkgPath+"/"+file.outputName] = o.renderLoweredFile(pkg, file, program.trimTypeInfo)
 		}
 		files["@goscript/"+pkg.pkgPath+"/index.ts"] = renderIndex(pkg)
 	}
 	return files, nil
 }
 
-func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *loweredFile) string {
+func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *loweredFile, trimTypeInfo bool) string {
 	var b strings.Builder
 	b.Grow(estimateLoweredFileSize(file))
 	if file.sourcePath != "" {
@@ -178,7 +178,7 @@ func (o *TypeScriptEmitOwner) renderLoweredFile(pkg *loweredPackage, file *lower
 	writeDecl := func(decl loweredDecl) {
 		if decl.structType != nil {
 			writeSeparator()
-			renderStruct(&b, decl.structType, o.runtimeOwner)
+			renderStruct(&b, decl.structType, o.runtimeOwner, trimTypeInfo)
 			return
 		}
 		if decl.function != nil {
@@ -378,7 +378,7 @@ func structZeroValueDeps(structType *loweredStruct, names map[string]bool) []str
 	return deps
 }
 
-func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *RuntimeContractOwner) {
+func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *RuntimeContractOwner, trimTypeInfo bool) {
 	varRef := runtimeOwner.QualifiedHelper(RuntimeHelperVarRef)
 	markStructValue := runtimeOwner.QualifiedHelper(RuntimeHelperMarkAsStructValue)
 	cloneStructValue := runtimeOwner.QualifiedHelper(RuntimeHelperCloneStructValue)
@@ -524,7 +524,7 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 		if idx != 0 {
 			b.WriteString(", ")
 		}
-		b.WriteString(runtimeMethodSignatureExpr(method))
+		b.WriteString(runtimeMethodSignatureExpr(method, trimTypeInfo))
 	}
 	b.WriteString("],\n\t\t")
 	b.WriteString(structType.name)
@@ -533,23 +533,30 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 		if idx != 0 {
 			b.WriteString(", ")
 		}
-		b.WriteString(runtimeStructFieldInfoExpr(
-			field.runtimeType,
-			field.name,
-			field.runtimeName,
-			field.tag,
-			field.pkgPath,
-			field.anonymous,
-			field.index,
-			field.offset,
-			field.exported,
-		))
+		if trimTypeInfo {
+			b.WriteString(trimmedRuntimeStructFieldInfoExpr(field.runtimeType, field.name, field.runtimeName, field.tag, field.anonymous))
+		} else {
+			b.WriteString(runtimeStructFieldInfoExpr(
+				field.runtimeType,
+				field.name,
+				field.runtimeName,
+				field.tag,
+				field.pkgPath,
+				field.anonymous,
+				field.index,
+				field.offset,
+				field.exported,
+			))
+		}
 	}
 	b.WriteString("]\n\t)\n")
 	b.WriteString("}\n")
 }
 
-func runtimeMethodSignatureExpr(method loweredFunction) string {
+func runtimeMethodSignatureExpr(method loweredFunction, trimTypeInfo bool) string {
+	if trimTypeInfo && method.runtimeTrimmedSignature != "" {
+		return method.runtimeTrimmedSignature
+	}
 	if method.runtimeSignature != "" {
 		return method.runtimeSignature
 	}
@@ -558,6 +565,31 @@ func runtimeMethodSignatureExpr(method loweredFunction) string {
 		methodName = method.runtimeName
 	}
 	return "{ name: " + strconvQuote(methodName) + ", args: [], returns: [] }"
+}
+
+func trimmedRuntimeStructFieldInfoExpr(
+	runtimeType string,
+	storageKey string,
+	runtimeName string,
+	tag string,
+	anonymous bool,
+) string {
+	name := runtimeName
+	if name == "" {
+		name = storageKey
+	}
+	fields := []string{
+		"name: " + strconvQuote(name),
+		"key: " + strconvQuote(storageKey),
+		"type: " + runtimeType,
+	}
+	if tag != "" {
+		fields = append(fields, "tag: "+strconvQuote(tag))
+	}
+	if anonymous {
+		fields = append(fields, "anonymous: true")
+	}
+	return "{ " + strings.Join(fields, ", ") + " }"
 }
 
 func writeLineComment(b *strings.Builder, indent string, comment string) {

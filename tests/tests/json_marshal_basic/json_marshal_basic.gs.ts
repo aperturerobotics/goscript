@@ -57,7 +57,7 @@ export class Person {
 		() => new Person(),
 		[],
 		Person,
-		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"", index: [0], offset: 0, exported: true }, { name: "Age", key: "Age", type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"", index: [1], offset: 16, exported: true }, { name: "Active", key: "Active", type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"", index: [2], offset: 24, exported: true }]
+		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }, { name: "Age", key: "Age", type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"age\"" }, { name: "Active", key: "Active", type: { kind: $.TypeKind.Basic, name: "bool" }, tag: "json:\"active\"" }]
 	)
 }
 

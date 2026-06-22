@@ -40,9 +40,9 @@ export class child {
 	static __typeInfo = $.registerStructType(
 		"main.child",
 		() => new child(),
-		[{ name: "Clone", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "main.child" } }] }],
+		[{ name: "Clone", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "main.child" } }] }],
 		child,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/nil_pointer_receiver_field_method", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 
@@ -77,7 +77,7 @@ export class parent {
 		() => new parent(),
 		[],
 		parent,
-		[{ name: "child", key: "child", type: { kind: $.TypeKind.Pointer, elemType: "main.child" }, pkgPath: "github.com/s4wave/goscript/tests/tests/nil_pointer_receiver_field_method", index: [0], offset: 0, exported: false }]
+		[{ name: "child", key: "child", type: { kind: $.TypeKind.Pointer, elemType: "main.child" } }]
 	)
 }
 

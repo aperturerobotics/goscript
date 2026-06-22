@@ -47,9 +47,9 @@ export class label {
 	static __typeInfo = $.registerStructType(
 		"main.label",
 		() => new label(),
-		[{ name: "Format", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Format", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		label,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/cross_file_method_imports", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 

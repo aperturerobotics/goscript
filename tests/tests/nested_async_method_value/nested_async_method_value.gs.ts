@@ -10,7 +10,7 @@ export type Spawner = {
 $.registerInterfaceType(
 	"main.Spawner",
 	null,
-	[{ name: "Spawn", args: [], returns: [{ name: "_r0", type: "error" }] }]
+	[{ name: "Spawn", args: [], returns: [{ type: "error" }] }]
 );
 
 export class Worker {
@@ -50,9 +50,9 @@ export class Worker {
 	static __typeInfo = $.registerStructType(
 		"main.Worker",
 		() => new Worker(),
-		[{ name: "Spawn", args: [], returns: [{ name: "_r0", type: "error" }] }],
+		[{ name: "Spawn", args: [], returns: [{ type: "error" }] }],
 		Worker,
-		[{ name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/nested_async_method_value", index: [0], offset: 0, exported: false }]
+		[{ name: "ch", key: "ch", type: { kind: $.TypeKind.Channel, direction: "both", elemType: { kind: $.TypeKind.Basic, name: "int" } } }]
 	)
 }
 

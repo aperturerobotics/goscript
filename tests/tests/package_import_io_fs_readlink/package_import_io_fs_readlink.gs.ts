@@ -29,7 +29,7 @@ export class emptyFS {
 	static __typeInfo = $.registerStructType(
 		"main.emptyFS",
 		() => new emptyFS(),
-		[{ name: "Open", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "fs.File" }, { name: "_r1", type: "error" }] }],
+		[{ name: "Open", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "fs.File" }, { type: "error" }] }],
 		emptyFS,
 		[]
 	)
@@ -66,7 +66,7 @@ export class linkFS {
 	static __typeInfo = $.registerStructType(
 		"main.linkFS",
 		() => new linkFS(),
-		[{ name: "Lstat", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "fs.FileInfo" }, { name: "_r1", type: "error" }] }, { name: "Open", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "fs.File" }, { name: "_r1", type: "error" }] }, { name: "ReadLink", args: [{ name: "name", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "_r1", type: "error" }] }],
+		[{ name: "Lstat", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "fs.FileInfo" }, { type: "error" }] }, { name: "Open", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "fs.File" }, { type: "error" }] }, { name: "ReadLink", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }, { type: "error" }] }],
 		linkFS,
 		[]
 	)

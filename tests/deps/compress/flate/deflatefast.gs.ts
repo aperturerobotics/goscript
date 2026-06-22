@@ -53,7 +53,7 @@ export class tableEntry {
 		() => new tableEntry(),
 		[],
 		tableEntry,
-		[{ name: "val", key: "val", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [1], offset: 4, exported: false }]
+		[{ name: "val", key: "val", type: { kind: $.TypeKind.Basic, name: "uint32" } }, { name: "offset", key: "offset", type: { kind: $.TypeKind.Basic, name: "int32" } }]
 	)
 }
 
@@ -335,9 +335,9 @@ export class deflateFast {
 	static __typeInfo = $.registerStructType(
 		"flate.deflateFast",
 		() => new deflateFast(),
-		[{ name: "encode", args: [{ name: "dst", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32", typeName: "flate.token" } } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32", typeName: "flate.token" } } }] }, { name: "matchLen", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "t", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "src", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int32" } }] }, { name: "reset", args: [], returns: [] }, { name: "shiftOffsets", args: [], returns: [] }],
+		[{ name: "encode", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32", typeName: "flate.token" } } }] }, { name: "matchLen", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int32" } }] }, { name: "reset", args: [], returns: [] }, { name: "shiftOffsets", args: [], returns: [] }],
 		deflateFast,
-		[{ name: "table", key: "table", type: { kind: $.TypeKind.Array, elemType: "flate.tableEntry", length: 16384 }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "prev", key: "prev", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "compress/flate", index: [1], offset: 131072, exported: false }, { name: "cur", key: "cur", type: { kind: $.TypeKind.Basic, name: "int32" }, pkgPath: "compress/flate", index: [2], offset: 131096, exported: false }]
+		[{ name: "table", key: "table", type: { kind: $.TypeKind.Array, elemType: "flate.tableEntry", length: 16384 } }, { name: "prev", key: "prev", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "cur", key: "cur", type: { kind: $.TypeKind.Basic, name: "int32" } }]
 	)
 }
 

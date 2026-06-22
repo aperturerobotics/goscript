@@ -36,6 +36,8 @@ type LoweringOptions struct {
 	OutputPath string
 	// ProtobufTypeScriptBinding binds .pb.go files to sibling .pb.ts files.
 	ProtobufTypeScriptBinding bool
+	// TrimTypeInfo drops metadata used only by reflect from named type registration payloads.
+	TrimTypeInfo bool
 }
 
 // NewLoweringOwner creates the lowering owner.
@@ -74,7 +76,7 @@ func (o *LoweringOwner) Build(ctx context.Context, model *SemanticModel, opts ..
 		options = opts[0]
 	}
 
-	program := &LoweredProgram{}
+	program := &LoweredProgram{trimTypeInfo: options.TrimTypeInfo}
 	lazyPackageVars := make(map[string]map[types.Object]bool, len(model.packages))
 	asyncLazyFunctionCache := make(map[*types.Func]bool)
 	asyncLazyFunctionVisiting := make(map[*types.Func]bool)
@@ -159,6 +161,7 @@ func (o *LoweringOwner) lowerPackage(
 				asyncLazyFunctionVisiting,
 				runtimeMethodSets,
 				protobufAdapter,
+				options.TrimTypeInfo,
 				options.DisplayRoot,
 			)
 			diagnostics = append(diagnostics, fileDiagnostics...)
@@ -181,6 +184,7 @@ func (o *LoweringOwner) lowerPackage(
 			asyncLazyFunctionVisiting,
 			runtimeMethodSets,
 			false,
+			options.TrimTypeInfo,
 			options.DisplayRoot,
 		)
 		diagnostics = append(diagnostics, fileDiagnostics...)
@@ -219,6 +223,7 @@ func (o *LoweringOwner) lowerFile(
 	asyncLazyFunctionVisiting map[*types.Func]bool,
 	runtimeMethodSets runtimeMethodSetCache,
 	protobufTypeScriptAdapter bool,
+	trimTypeInfo bool,
 	displayRoot string,
 ) (*loweredFile, []Diagnostic) {
 	associatedMethods := o.methodDeclsForFileTypes(semPkg, file)
@@ -342,6 +347,7 @@ func (o *LoweringOwner) lowerFile(
 		tempNames:                 newTempNameOwner(),
 		topLevel:                  true,
 		protobufTSAdapter:         protobufTypeScriptAdapter,
+		trimTypeInfo:              trimTypeInfo,
 		displayRoot:               displayRoot,
 	}
 	var diagnostics []Diagnostic
@@ -1150,6 +1156,7 @@ type lowerFileContext struct {
 	switchBreak               bool
 	topLevel                  bool
 	protobufTSAdapter         bool
+	trimTypeInfo              bool
 	displayRoot               string
 }
 
@@ -2918,9 +2925,13 @@ func (o *LoweringOwner) lowerInterfaceType(ctx lowerFileContext, semType *semant
 			typeIndexExport = typeName
 		}
 	}
+	methodSignatures := o.runtimeMethodSignatures(iface)
+	if ctx.trimTypeInfo {
+		methodSignatures = o.runtimeTrimmedMethodSignatures(iface)
+	}
 	code = code + "\n\n" + o.runtimeOwner.QualifiedHelper(RuntimeHelperRegisterInterfaceType) +
 		"(\n\t" + strconv.Quote(runtimeNamedTypeName(semType.named)) +
-		",\n\tnull,\n\t" + o.runtimeMethodSignatures(iface) + "\n);"
+		",\n\tnull,\n\t" + methodSignatures + "\n);"
 	return loweredDecl{code: code, typeIndexExport: typeIndexExport, sideEffect: true}
 }
 
@@ -2957,6 +2968,18 @@ func (o *LoweringOwner) runtimeMethodSignaturesWithSeen(iface *types.Interface, 
 	return "[" + strings.Join(methods, ", ") + "]"
 }
 
+func (o *LoweringOwner) runtimeTrimmedMethodSignatures(iface *types.Interface) string {
+	return o.runtimeTrimmedMethodSignaturesWithSeen(iface, make(map[types.Type]bool))
+}
+
+func (o *LoweringOwner) runtimeTrimmedMethodSignaturesWithSeen(iface *types.Interface, seen map[types.Type]bool) string {
+	methods := make([]string, 0, iface.NumMethods())
+	for method := range iface.Methods() {
+		methods = append(methods, o.runtimeTrimmedMethodSignature(method, seen))
+	}
+	return "[" + strings.Join(methods, ", ") + "]"
+}
+
 func (o *LoweringOwner) runtimeMethodAssertSignaturesWithSeen(ctx lowerFileContext, iface *types.Interface, seen map[types.Type]bool) string {
 	methods := make([]string, 0, iface.NumMethods())
 	for method := range iface.Methods() {
@@ -2973,6 +2996,16 @@ func (o *LoweringOwner) runtimeMethodSignature(method *types.Func, seen map[type
 	return "{ name: " + strconv.Quote(method.Name()) +
 		", args: " + o.runtimeMethodArgs(signature.Params(), seen) +
 		", returns: " + o.runtimeMethodReturns(signature.Results(), seen) + " }"
+}
+
+func (o *LoweringOwner) runtimeTrimmedMethodSignature(method *types.Func, seen map[types.Type]bool) string {
+	signature, _ := method.Type().(*types.Signature)
+	if signature == nil {
+		return "{ name: " + strconv.Quote(method.Name()) + ", args: [], returns: [] }"
+	}
+	return "{ name: " + strconv.Quote(method.Name()) +
+		", args: " + o.runtimeTrimmedMethodArgs(signature.Params()) +
+		", returns: " + o.runtimeTrimmedMethodReturns(signature.Results(), seen) + " }"
 }
 
 func (o *LoweringOwner) runtimeMethodAssertSignature(ctx lowerFileContext, method *types.Func, seen map[types.Type]bool) string {
@@ -2997,6 +3030,19 @@ func (o *LoweringOwner) runtimeMethodArgs(tuple *types.Tuple, seen map[types.Typ
 			name = "_p" + strconv.Itoa(idx)
 		}
 		args = append(args, "{ name: "+strconv.Quote(name)+", type: "+o.runtimeTypeInfoExprWithSeen(param.Type(), seen)+" }")
+	}
+	return "[" + strings.Join(args, ", ") + "]"
+}
+
+func (o *LoweringOwner) runtimeTrimmedMethodArgs(tuple *types.Tuple) string {
+	if tuple == nil || tuple.Len() == 0 {
+		return "[]"
+	}
+	typeKind := o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeKind)
+	arg := "{ type: { kind: " + typeKind + ".Basic, name: \"unknown\" } }"
+	args := make([]string, 0, tuple.Len())
+	for range tuple.Len() {
+		args = append(args, arg)
 	}
 	return "[" + strings.Join(args, ", ") + "]"
 }
@@ -3029,6 +3075,17 @@ func (o *LoweringOwner) runtimeMethodReturns(tuple *types.Tuple, seen map[types.
 			name = "_r" + strconv.Itoa(idx)
 		}
 		results = append(results, "{ name: "+strconv.Quote(name)+", type: "+o.runtimeTypeInfoExprWithSeen(result.Type(), seen)+" }")
+	}
+	return "[" + strings.Join(results, ", ") + "]"
+}
+
+func (o *LoweringOwner) runtimeTrimmedMethodReturns(tuple *types.Tuple, seen map[types.Type]bool) string {
+	if tuple == nil || tuple.Len() == 0 {
+		return "[]"
+	}
+	results := make([]string, 0, tuple.Len())
+	for result := range tuple.Variables() {
+		results = append(results, "{ type: "+o.runtimeTypeInfoExprWithSeen(result.Type(), seen)+" }")
 	}
 	return "[" + strings.Join(results, ", ") + "]"
 }
@@ -3291,13 +3348,14 @@ func (o *LoweringOwner) lowerEmbeddedMethodForwarders(
 		async := o.functionAsync(ctx, method)
 		targetType := o.tsEmbeddedForwarderTargetType(ctx, field.typ)
 		lowered := loweredFunction{
-			async:            async,
-			sourcePath:       ctx.sourcePath,
-			name:             methodMemberName(method.Name()),
-			runtimeName:      method.Name(),
-			runtimeSignature: o.runtimeMethodSignature(method, make(map[types.Type]bool)),
-			result:           asyncResultType("any", async),
-			deferState:       &loweredDeferState{},
+			async:                   async,
+			sourcePath:              ctx.sourcePath,
+			name:                    methodMemberName(method.Name()),
+			runtimeName:             method.Name(),
+			runtimeSignature:        o.runtimeMethodSignature(method, make(map[types.Type]bool)),
+			runtimeTrimmedSignature: o.runtimeTrimmedMethodSignature(method, make(map[types.Type]bool)),
+			result:                  asyncResultType("any", async),
+			deferState:              &loweredDeferState{},
 		}
 		args := make([]string, 0, signature.Params().Len())
 		for idx := range signature.Params().Len() {
@@ -3520,6 +3578,7 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 	}
 	if decl.Recv != nil {
 		lowered.runtimeSignature = o.runtimeMethodSignature(fnObj, make(map[types.Type]bool))
+		lowered.runtimeTrimmedSignature = o.runtimeTrimmedMethodSignature(fnObj, make(map[types.Type]bool))
 	}
 	if signature.TypeParams() != nil && signature.TypeParams().Len() != 0 {
 		lowered.typeParams = signatureTypeParamNames(signature)
@@ -3863,7 +3922,7 @@ func (o *LoweringOwner) lowerStmtInto(ctx lowerFileContext, stmt ast.Stmt, out [
 			}
 			if decl.structType != nil {
 				var b strings.Builder
-				renderStruct(&b, decl.structType, o.runtimeOwner)
+				renderStruct(&b, decl.structType, o.runtimeOwner, ctx.trimTypeInfo)
 				stmts = append(stmts, loweredStmt{text: strings.TrimRight(b.String(), "\n")})
 			}
 		}

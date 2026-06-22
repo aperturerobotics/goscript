@@ -46,7 +46,7 @@ export class TestStruct {
 		() => new TestStruct(),
 		[],
 		TestStruct,
-		[{ name: "IntField", key: "IntField", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "StringField", key: "StringField", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 8, exported: true }]
+		[{ name: "IntField", key: "IntField", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "StringField", key: "StringField", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 

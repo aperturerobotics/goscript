@@ -15,5 +15,5 @@ export type Tx = {
 $.registerInterfaceType(
 	"main.Tx",
 	null,
-	[{ name: "Put", args: [{ name: "v", type: "dep.Value" }], returns: [] }]
+	[{ name: "Put", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }]
 );

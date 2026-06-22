@@ -37,7 +37,7 @@ export class zone {
 		() => new zone(),
 		[],
 		zone,
-		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_unique", index: [0], offset: 0, exported: false }]
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 

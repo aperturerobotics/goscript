@@ -10,7 +10,7 @@ export type Adder = {
 $.registerInterfaceType(
 	"main.Adder",
 	null,
-	[{ name: "Add", args: [{ name: "value", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+	[{ name: "Add", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export class Box {
@@ -46,9 +46,9 @@ export class Box {
 	static __typeInfo = $.registerStructType(
 		"main.Box",
 		() => new Box(),
-		[{ name: "Add", args: [{ name: "value", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "Add", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		Box,
-		[{ name: "Adder", key: "Adder", type: "main.Adder", anonymous: true, index: [0], offset: 0, exported: true }]
+		[{ name: "Adder", key: "Adder", type: "main.Adder", anonymous: true }]
 	)
 }
 
@@ -86,9 +86,9 @@ export class Counter {
 	static __typeInfo = $.registerStructType(
 		"main.Counter",
 		() => new Counter(),
-		[{ name: "Add", args: [{ name: "value", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "Add", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		Counter,
-		[{ name: "base", key: "base", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/embedded_interface_forwarding", index: [0], offset: 0, exported: false }]
+		[{ name: "base", key: "base", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

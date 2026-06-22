@@ -72,7 +72,7 @@ export class job {
 		() => new job(),
 		[],
 		job,
-		[{ name: "pc", key: "pc", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "arg", key: "arg", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "regexp", index: [1], offset: 4, exported: false }, { name: "pos", key: "pos", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "regexp", index: [2], offset: 8, exported: false }]
+		[{ name: "pc", key: "pc", type: { kind: $.TypeKind.Basic, name: "uint32" } }, { name: "arg", key: "arg", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "pos", key: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 
@@ -211,9 +211,9 @@ export class bitState {
 	static __typeInfo = $.registerStructType(
 		"regexp.bitState",
 		() => new bitState(),
-		[{ name: "push", args: [{ name: "re", type: { kind: $.TypeKind.Pointer, elemType: "regexp.Regexp" } }, { name: "pc", type: { kind: $.TypeKind.Basic, name: "uint32" } }, { name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "arg", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [] }, { name: "reset", args: [{ name: "prog", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" } }, { name: "end", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "ncap", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "shouldVisit", args: [{ name: "pc", type: { kind: $.TypeKind.Basic, name: "uint32" } }, { name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
+		[{ name: "push", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }, { name: "reset", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }, { name: "shouldVisit", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		bitState,
-		[{ name: "end", key: "end", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "cap", key: "cap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "regexp", index: [1], offset: 8, exported: false }, { name: "matchcap", key: "matchcap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "regexp", index: [2], offset: 32, exported: false }, { name: "jobs", key: "jobs", type: { kind: $.TypeKind.Slice, elemType: "regexp.job" }, pkgPath: "regexp", index: [3], offset: 56, exported: false }, { name: "visited", key: "visited", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, pkgPath: "regexp", index: [4], offset: 80, exported: false }, { name: "inputs", key: "inputs", type: "regexp.inputs", pkgPath: "regexp", index: [5], offset: 104, exported: false }]
+		[{ name: "end", key: "end", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "cap", key: "cap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "matchcap", key: "matchcap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "jobs", key: "jobs", type: { kind: $.TypeKind.Slice, elemType: "regexp.job" } }, { name: "visited", key: "visited", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } } }, { name: "inputs", key: "inputs", type: "regexp.inputs" }]
 	)
 }
 

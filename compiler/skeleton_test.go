@@ -1714,13 +1714,109 @@ func TestCompilePackagesEmitsStructMethodsAndPointerAssertions(t *testing.T) {
 		"Counter.prototype.Set.call(pointer, 2)",
 		"Counter.prototype.Set.call(NewCounter(), 5)",
 		"let [, ok] = $.typeAssertTuple<Counter | $.VarRef<Counter> | null>(iface, { kind: $.TypeKind.Pointer, elemType: \"main.Counter\" })",
-		"{ name: \"Value\", key: \"Value\", type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\", index: [0], offset: 0, exported: true }",
-		"{ name: \"ID\", key: \"ID\", type: { kind: $.TypeKind.Basic, name: \"int32\", typeName: \"main.ObjectID\" }, index: [1], offset: 8, exported: true }",
+		"{ name: \"Value\", key: \"Value\", type: { kind: $.TypeKind.Basic, name: \"int\" }, tag: \"json:\\\"value\\\"\" }",
+		"{ name: \"ID\", key: \"ID\", type: { kind: $.TypeKind.Basic, name: \"int32\", typeName: \"main.ObjectID\" } }",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
 		}
 	}
+}
+
+func TestCompilePackagesTypeInfoTrimFollowsReflectReachability(t *testing.T) {
+	source := func(importReflect bool) string {
+		lines := []string{
+			"package main",
+		}
+		if importReflect {
+			lines = append(lines,
+				"import \"reflect\"",
+				"var _ = reflect.TypeOf(Sample{})",
+			)
+		}
+		lines = append(lines,
+			"type Reader interface { Read(v int) string }",
+			"type Sample struct { Name string `json:\"name\"` }",
+			"func (Sample) Read(v int) string { return \"\" }",
+			"func main() {}",
+			"",
+		)
+		return strings.Join(lines, "\n")
+	}
+
+	t.Run("reflect absent trims registration payload", func(t *testing.T) {
+		moduleDir := writePackageGraphFixture(t, map[string]string{
+			"go.mod":  "module example.test/typeinfotrim\n\ngo 1.25.3\n",
+			"main.go": source(false),
+		})
+		outputDir := filepath.Join(t.TempDir(), "output")
+		comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+			t.Fatal(err.Error())
+		}
+		content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "typeinfotrim", "main.gs.ts"))
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		text := string(content)
+		for _, want := range []string{
+			`args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }]`,
+			`returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }]`,
+			`{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"" }`,
+		} {
+			if !strings.Contains(text, want) {
+				t.Fatalf("missing trimmed type-info payload %q:\n%s", want, text)
+			}
+		}
+		for _, dropped := range []string{
+			`args: [{ name: "v", type: { kind: $.TypeKind.Basic, name: "int" } }]`,
+			`returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }]`,
+			`index: [0]`,
+			`offset: 0`,
+			`exported: true`,
+		} {
+			if strings.Contains(text, dropped) {
+				t.Fatalf("trimmed type-info payload kept %q:\n%s", dropped, text)
+			}
+		}
+	})
+
+	t.Run("reflect reachable keeps full registration payload", func(t *testing.T) {
+		moduleDir := writePackageGraphFixture(t, map[string]string{
+			"go.mod":  "module example.test/typeinfofull\n\ngo 1.25.3\n",
+			"main.go": source(true),
+		})
+		outputDir := filepath.Join(t.TempDir(), "output")
+		comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir, AllDependencies: true}, nil, nil)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+			t.Fatal(err.Error())
+		}
+		content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "typeinfofull", "main.gs.ts"))
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		text := string(content)
+		for _, want := range []string{
+			`args: [{ name: "v", type: { kind: $.TypeKind.Basic, name: "int" } }]`,
+			`returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }]`,
+			`{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, tag: "json:\"name\"", index: [0], offset: 0, exported: true }`,
+		} {
+			if !strings.Contains(text, want) {
+				t.Fatalf("missing full type-info payload %q:\n%s", want, text)
+			}
+		}
+		if strings.Contains(text, `args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }]`) {
+			t.Fatalf("reflect-reachable type-info payload was trimmed:\n%s", text)
+		}
+	})
 }
 
 func TestCompilePackagesEscapesReservedTypeNames(t *testing.T) {
@@ -2661,7 +2757,7 @@ func TestCompilePackagesEmitsInterfacesMethodValuesTypeSwitchesAndFunctionAssert
 		"Read(): string",
 		"Close(): string",
 		"$.registerInterfaceType(\n\t\"main.ReadCloser\"",
-		"{ name: \"Close\", args: [], returns: [{ name: \"_r0\", type: { kind: $.TypeKind.Basic, name: \"string\" } }] }]\n);",
+		"{ name: \"Close\", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: \"string\" } }] }",
 		"((__receiver) => () => __receiver.Inc())($.pointerValue<Counter>(counter))",
 		"$.namedFunction(greet, \"main.Greeter\", ({ kind: $.TypeKind.Function, name: \"main.Greeter\"",
 		"params: [{ kind: $.TypeKind.Basic, name: \"string\" }]",

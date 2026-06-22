@@ -47,9 +47,9 @@ export class raw {
 	static __typeInfo = $.registerStructType(
 		"main.raw",
 		() => new raw(),
-		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
+		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
 		raw,
-		[{ name: "Mutex", key: "Mutex", type: "sync.Mutex", anonymous: true, index: [0], offset: 0, exported: true }]
+		[{ name: "Mutex", key: "Mutex", type: "sync.Mutex", anonymous: true }]
 	)
 }
 
@@ -94,9 +94,9 @@ export class outer {
 	static __typeInfo = $.registerStructType(
 		"main.outer",
 		() => new outer(),
-		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
+		[{ name: "Lock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
 		outer,
-		[{ name: "raw", key: "raw", type: "main.raw", pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
+		[{ name: "raw", key: "raw", type: "main.raw", anonymous: true }]
 	)
 }
 
@@ -157,9 +157,9 @@ export class rawRW {
 	static __typeInfo = $.registerStructType(
 		"main.rawRW",
 		() => new rawRW(),
-		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [{ name: "_r0", type: "sync.Locker" }] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "TryRLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
+		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [{ type: "sync.Locker" }] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "TryRLock", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
 		rawRW,
-		[{ name: "RWMutex", key: "RWMutex", type: "sync.RWMutex", anonymous: true, index: [0], offset: 0, exported: true }]
+		[{ name: "RWMutex", key: "RWMutex", type: "sync.RWMutex", anonymous: true }]
 	)
 }
 
@@ -220,9 +220,9 @@ export class outerRW {
 	static __typeInfo = $.registerStructType(
 		"main.outerRW",
 		() => new outerRW(),
-		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [{ name: "_r0", type: "sync.Locker" }] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "TryRLock", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
+		[{ name: "Lock", args: [], returns: [] }, { name: "RLock", args: [], returns: [] }, { name: "RLocker", args: [], returns: [{ type: "sync.Locker" }] }, { name: "RUnlock", args: [], returns: [] }, { name: "TryLock", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "TryRLock", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Unlock", args: [], returns: [] }],
 		outerRW,
-		[{ name: "rawRW", key: "rawRW", type: "main.rawRW", pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
+		[{ name: "rawRW", key: "rawRW", type: "main.rawRW", anonymous: true }]
 	)
 }
 
@@ -259,9 +259,9 @@ export class rawRunner {
 	static __typeInfo = $.registerStructType(
 		"main.rawRunner",
 		() => new rawRunner(),
-		[{ name: "Run", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Run", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		rawRunner,
-		[{ name: "runner", key: "runner", type: "main.runner", pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
+		[{ name: "runner", key: "runner", type: "main.runner", anonymous: true }]
 	)
 }
 
@@ -298,9 +298,9 @@ export class outerRunner {
 	static __typeInfo = $.registerStructType(
 		"main.outerRunner",
 		() => new outerRunner(),
-		[{ name: "Run", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Run", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		outerRunner,
-		[{ name: "rawRunner", key: "rawRunner", type: "main.rawRunner", pkgPath: "github.com/s4wave/goscript/tests/tests/promoted_external_embedded_method", anonymous: true, index: [0], offset: 0, exported: false }]
+		[{ name: "rawRunner", key: "rawRunner", type: "main.rawRunner", anonymous: true }]
 	)
 }
 
@@ -327,7 +327,7 @@ export class runnable {
 	static __typeInfo = $.registerStructType(
 		"main.runnable",
 		() => new runnable(),
-		[{ name: "Run", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Run", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		runnable,
 		[]
 	)
@@ -340,7 +340,7 @@ export type runner = {
 $.registerInterfaceType(
 	"main.runner",
 	null,
-	[{ name: "Run", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+	[{ name: "Run", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );
 
 export async function main(): globalThis.Promise<void> {

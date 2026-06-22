@@ -54,7 +54,7 @@ export class padded {
 		() => new padded(),
 		[],
 		padded,
-		[{ name: "_", key: "_blank0", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 2 }, pkgPath: "github.com/s4wave/goscript/tests/tests/blank_struct_fields", index: [0], offset: 0, exported: false }, { name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "int" }, index: [1], offset: 8, exported: true }, { name: "_", key: "_blank2", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 3 }, pkgPath: "github.com/s4wave/goscript/tests/tests/blank_struct_fields", index: [2], offset: 16, exported: false }]
+		[{ name: "_", key: "_blank0", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 2 } }, { name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_", key: "_blank2", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 3 } }]
 	)
 }
 

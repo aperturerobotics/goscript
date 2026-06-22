@@ -26,7 +26,7 @@ export class concrete {
 	static __typeInfo = $.registerStructType(
 		"main.concrete",
 		() => new concrete(),
-		[{ name: "Read", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "Read", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		concrete,
 		[]
 	)
@@ -39,7 +39,7 @@ export type reader = {
 $.registerInterfaceType(
 	"main.reader",
 	null,
-	[{ name: "Read", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+	[{ name: "Read", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export function makeReader(): [concrete | $.VarRef<concrete> | null, $.GoError] {

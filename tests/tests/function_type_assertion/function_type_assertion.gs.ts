@@ -38,7 +38,7 @@ export class FuncContainer {
 		() => new FuncContainer(),
 		[],
 		FuncContainer,
-		[{ name: "myFunc", key: "myFunc", type: { kind: $.TypeKind.Interface, methods: [] }, pkgPath: "github.com/s4wave/goscript/tests/tests/function_type_assertion", index: [0], offset: 0, exported: false }]
+		[{ name: "myFunc", key: "myFunc", type: { kind: $.TypeKind.Interface, methods: [] } }]
 	)
 }
 

@@ -100,7 +100,7 @@ export async function main(): globalThis.Promise<void> {
 			() => new item(),
 			[],
 			item,
-			[{ name: "group", key: "group", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_slices", index: [0], offset: 0, exported: false }, { name: "label", key: "label", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_slices", index: [1], offset: 8, exported: false }]
+			[{ name: "group", key: "group", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "label", key: "label", type: { kind: $.TypeKind.Basic, name: "string" } }]
 		)
 	}
 	let stable: $.Slice<item> = $.arrayToSlice<item>([$.markAsStructValue(new item({group: 2, label: "a"})), $.markAsStructValue(new item({group: 1, label: "b"})), $.markAsStructValue(new item({group: 2, label: "c"})), $.markAsStructValue(new item({group: 1, label: "d"}))])

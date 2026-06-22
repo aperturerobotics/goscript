@@ -92,6 +92,7 @@ func BenchmarkLoweringFile(b *testing.B) {
 			make(map[*types.Func]bool),
 			make(runtimeMethodSetCache),
 			false,
+			false,
 			"",
 		); diagnosticsHaveErrors(diagnostics) {
 			b.Fatal(diagnostics)

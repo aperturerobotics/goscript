@@ -44,7 +44,7 @@ export class MyStruct {
 		() => new MyStruct(),
 		[],
 		MyStruct,
-		[{ name: "MyInt", key: "MyInt", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "MyString", key: "MyString", type: { kind: $.TypeKind.Basic, name: "string" }, index: [1], offset: 8, exported: true }]
+		[{ name: "MyInt", key: "MyInt", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "MyString", key: "MyString", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 

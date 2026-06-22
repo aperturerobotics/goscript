@@ -38,7 +38,7 @@ export type Resetter = {
 $.registerInterfaceType(
 	"flate.Resetter",
 	null,
-	[{ name: "Reset", args: [{ name: "r", type: "io.Reader" }, { name: "dict", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "error" }] }]
+	[{ name: "Reset", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "error" }] }]
 );
 
 export type Reader = {
@@ -49,7 +49,7 @@ export type Reader = {
 $.registerInterfaceType(
 	"flate.Reader",
 	null,
-	[{ name: "Read", args: [{ name: "p", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "n", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "err", type: "error" }] }, { name: "ReadByte", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "uint8" } }, { name: "_r1", type: "error" }] }]
+	[{ name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }, { name: "ReadByte", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint8" } }, { type: "error" }] }]
 );
 
 export class ReadError {
@@ -96,9 +96,9 @@ export class ReadError {
 	static __typeInfo = $.registerStructType(
 		"flate.ReadError",
 		() => new ReadError(),
-		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		ReadError,
-		[{ name: "Offset", key: "Offset", type: { kind: $.TypeKind.Basic, name: "int64" }, index: [0], offset: 0, exported: true }, { name: "Err", key: "Err", type: "error", index: [1], offset: 8, exported: true }]
+		[{ name: "Offset", key: "Offset", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "Err", key: "Err", type: "error" }]
 	)
 }
 
@@ -146,9 +146,9 @@ export class WriteError {
 	static __typeInfo = $.registerStructType(
 		"flate.WriteError",
 		() => new WriteError(),
-		[{ name: "Error", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Error", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		WriteError,
-		[{ name: "Offset", key: "Offset", type: { kind: $.TypeKind.Basic, name: "int64" }, index: [0], offset: 0, exported: true }, { name: "Err", key: "Err", type: "error", index: [1], offset: 8, exported: true }]
+		[{ name: "Offset", key: "Offset", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "Err", key: "Err", type: "error" }]
 	)
 }
 
@@ -360,9 +360,9 @@ export class huffmanDecoder {
 	static __typeInfo = $.registerStructType(
 		"flate.huffmanDecoder",
 		() => new huffmanDecoder(),
-		[{ name: "init", args: [{ name: "lengths", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
+		[{ name: "init", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		huffmanDecoder,
-		[{ name: "min", key: "min", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "chunks", key: "chunks", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint32" }, length: 512 }, pkgPath: "compress/flate", index: [1], offset: 8, exported: false }, { name: "links", key: "links", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } } }, pkgPath: "compress/flate", index: [2], offset: 2056, exported: false }, { name: "linkMask", key: "linkMask", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "compress/flate", index: [3], offset: 2080, exported: false }]
+		[{ name: "min", key: "min", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "chunks", key: "chunks", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint32" }, length: 512 } }, { name: "links", key: "links", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } } } }, { name: "linkMask", key: "linkMask", type: { kind: $.TypeKind.Basic, name: "uint32" } }]
 	)
 }
 
@@ -1185,9 +1185,9 @@ export class decompressor {
 	static __typeInfo = $.registerStructType(
 		"flate.decompressor",
 		() => new decompressor(),
-		[{ name: "Close", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "Read", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "Reset", args: [{ name: "r", type: "io.Reader" }, { name: "dict", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "error" }] }, { name: "copyData", args: [], returns: [] }, { name: "dataBlock", args: [], returns: [] }, { name: "finishBlock", args: [], returns: [] }, { name: "huffSym", args: [{ name: "h", type: { kind: $.TypeKind.Pointer, elemType: "flate.huffmanDecoder" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "_r1", type: "error" }] }, { name: "huffmanBlock", args: [], returns: [] }, { name: "makeReader", args: [{ name: "r", type: "io.Reader" }], returns: [] }, { name: "moreBits", args: [], returns: [{ name: "_r0", type: "error" }] }, { name: "nextBlock", args: [], returns: [] }, { name: "readHuffman", args: [], returns: [{ name: "_r0", type: "error" }] }],
+		[{ name: "Close", args: [], returns: [{ type: "error" }] }, { name: "Read", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }, { name: "Reset", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "error" }] }, { name: "copyData", args: [], returns: [] }, { name: "dataBlock", args: [], returns: [] }, { name: "finishBlock", args: [], returns: [] }, { name: "huffSym", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }, { type: "error" }] }, { name: "huffmanBlock", args: [], returns: [] }, { name: "makeReader", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }, { name: "moreBits", args: [], returns: [{ type: "error" }] }, { name: "nextBlock", args: [], returns: [] }, { name: "readHuffman", args: [], returns: [{ type: "error" }] }],
 		decompressor,
-		[{ name: "r", key: "r", type: "flate.Reader", pkgPath: "compress/flate", index: [0], offset: 0, exported: false }, { name: "rBuf", key: "rBuf", type: { kind: $.TypeKind.Pointer, elemType: "bufio.Reader" }, pkgPath: "compress/flate", index: [1], offset: 16, exported: false }, { name: "roffset", key: "roffset", type: { kind: $.TypeKind.Basic, name: "int64" }, pkgPath: "compress/flate", index: [2], offset: 24, exported: false }, { name: "b", key: "b", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "compress/flate", index: [3], offset: 32, exported: false }, { name: "nb", key: "nb", type: { kind: $.TypeKind.Basic, name: "uint" }, pkgPath: "compress/flate", index: [4], offset: 40, exported: false }, { name: "h1", key: "h1", type: "flate.huffmanDecoder", pkgPath: "compress/flate", index: [5], offset: 48, exported: false }, { name: "h2", key: "h2", type: "flate.huffmanDecoder", pkgPath: "compress/flate", index: [6], offset: 2136, exported: false }, { name: "bits", key: "bits", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 316 } }, pkgPath: "compress/flate", index: [7], offset: 4224, exported: false }, { name: "codebits", key: "codebits", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 19 } }, pkgPath: "compress/flate", index: [8], offset: 4232, exported: false }, { name: "dict", key: "dict", type: "flate.dictDecoder", pkgPath: "compress/flate", index: [9], offset: 4240, exported: false }, { name: "buf", key: "buf", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 4 }, pkgPath: "compress/flate", index: [10], offset: 4288, exported: false }, { name: "step", key: "step", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.decompressor" }], results: [] } as $.FunctionTypeInfo), pkgPath: "compress/flate", index: [11], offset: 4296, exported: false }, { name: "stepState", key: "stepState", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "compress/flate", index: [12], offset: 4304, exported: false }, { name: "final", key: "final", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "compress/flate", index: [13], offset: 4312, exported: false }, { name: "err", key: "err", type: "error", pkgPath: "compress/flate", index: [14], offset: 4320, exported: false }, { name: "toRead", key: "toRead", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, pkgPath: "compress/flate", index: [15], offset: 4336, exported: false }, { name: "hl", key: "hl", type: { kind: $.TypeKind.Pointer, elemType: "flate.huffmanDecoder" }, pkgPath: "compress/flate", index: [16], offset: 4360, exported: false }, { name: "hd", key: "hd", type: { kind: $.TypeKind.Pointer, elemType: "flate.huffmanDecoder" }, pkgPath: "compress/flate", index: [17], offset: 4368, exported: false }, { name: "copyLen", key: "copyLen", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "compress/flate", index: [18], offset: 4376, exported: false }, { name: "copyDist", key: "copyDist", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "compress/flate", index: [19], offset: 4384, exported: false }]
+		[{ name: "r", key: "r", type: "flate.Reader" }, { name: "rBuf", key: "rBuf", type: { kind: $.TypeKind.Pointer, elemType: "bufio.Reader" } }, { name: "roffset", key: "roffset", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "b", key: "b", type: { kind: $.TypeKind.Basic, name: "uint32" } }, { name: "nb", key: "nb", type: { kind: $.TypeKind.Basic, name: "uint" } }, { name: "h1", key: "h1", type: "flate.huffmanDecoder" }, { name: "h2", key: "h2", type: "flate.huffmanDecoder" }, { name: "bits", key: "bits", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 316 } } }, { name: "codebits", key: "codebits", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "int" }, length: 19 } } }, { name: "dict", key: "dict", type: "flate.dictDecoder" }, { name: "buf", key: "buf", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 4 } }, { name: "step", key: "step", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.decompressor" }], results: [] } as $.FunctionTypeInfo) }, { name: "stepState", key: "stepState", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "final", key: "final", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "err", key: "err", type: "error" }, { name: "toRead", key: "toRead", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "hl", key: "hl", type: { kind: $.TypeKind.Pointer, elemType: "flate.huffmanDecoder" } }, { name: "hd", key: "hd", type: { kind: $.TypeKind.Pointer, elemType: "flate.huffmanDecoder" } }, { name: "copyLen", key: "copyLen", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "copyDist", key: "copyDist", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

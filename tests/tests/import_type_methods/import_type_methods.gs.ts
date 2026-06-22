@@ -37,7 +37,7 @@ export class parser {
 		() => new parser(),
 		[],
 		parser,
-		[{ name: "errors", key: "errors", type: "errlist.ErrorList", pkgPath: "github.com/s4wave/goscript/tests/tests/import_type_methods", index: [0], offset: 0, exported: false }]
+		[{ name: "errors", key: "errors", type: "errlist.ErrorList" }]
 	)
 }
 

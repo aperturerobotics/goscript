@@ -237,9 +237,9 @@ export class RWMutex {
 	static __typeInfo = $.registerStructType(
 		"csync.RWMutex",
 		() => new RWMutex(),
-		[{ name: "Lock", args: [{ name: "ctx", type: "context.Context" }, { name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { name: "_r1", type: "error" }] }, { name: "Locker", args: [], returns: [{ name: "_r0", type: "sync.Locker" }] }, { name: "RLocker", args: [], returns: [{ name: "_r0", type: "sync.Locker" }] }, { name: "TryLock", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
+		[{ name: "Lock", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { type: "error" }] }, { name: "Locker", args: [], returns: [{ type: "sync.Locker" }] }, { name: "RLocker", args: [], returns: [{ type: "sync.Locker" }] }, { name: "TryLock", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, { type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		RWMutex,
-		[{ name: "bcast", key: "bcast", type: "broadcast.Broadcast", pkgPath: "github.com/aperturerobotics/util/csync", index: [0], offset: 0, exported: false }, { name: "nreaders", key: "nreaders", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/util/csync", index: [1], offset: 16, exported: false }, { name: "writing", key: "writing", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/util/csync", index: [2], offset: 24, exported: false }, { name: "writeWaiting", key: "writeWaiting", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/aperturerobotics/util/csync", index: [3], offset: 32, exported: false }]
+		[{ name: "bcast", key: "bcast", type: "broadcast.Broadcast" }, { name: "nreaders", key: "nreaders", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "writing", key: "writing", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "writeWaiting", key: "writeWaiting", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 
@@ -333,6 +333,6 @@ export class RWMutexLocker {
 		() => new RWMutexLocker(),
 		[{ name: "Lock", args: [], returns: [] }, { name: "Unlock", args: [], returns: [] }],
 		RWMutexLocker,
-		[{ name: "m", key: "m", type: { kind: $.TypeKind.Pointer, elemType: "csync.RWMutex" }, pkgPath: "github.com/aperturerobotics/util/csync", index: [0], offset: 0, exported: false }, { name: "write", key: "write", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/aperturerobotics/util/csync", index: [1], offset: 8, exported: false }, { name: "mtx", key: "mtx", type: "sync.Mutex", pkgPath: "github.com/aperturerobotics/util/csync", index: [2], offset: 12, exported: false }, { name: "rels", key: "rels", type: { kind: $.TypeKind.Slice, elemType: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) }, pkgPath: "github.com/aperturerobotics/util/csync", index: [3], offset: 24, exported: false }]
+		[{ name: "m", key: "m", type: { kind: $.TypeKind.Pointer, elemType: "csync.RWMutex" } }, { name: "write", key: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "mtx", key: "mtx", type: "sync.Mutex" }, { name: "rels", key: "rels", type: { kind: $.TypeKind.Slice, elemType: ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo) } }]
 	)
 }

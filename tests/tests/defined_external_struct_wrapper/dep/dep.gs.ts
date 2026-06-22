@@ -34,7 +34,7 @@ export class hidden {
 		() => new hidden(),
 		[],
 		hidden,
-		[{ name: "label", key: "label", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/defined_external_struct_wrapper/dep", index: [0], offset: 0, exported: false }]
+		[{ name: "label", key: "label", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 
@@ -82,8 +82,8 @@ export class Public {
 	static __typeInfo = $.registerStructType(
 		"dep.Public",
 		() => new Public(),
-		[{ name: "Label", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Label", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		Public,
-		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }, { name: "Hidden", key: "Hidden", type: "dep.hidden", index: [1], offset: 16, exported: true }]
+		[{ name: "Value", key: "Value", type: { kind: $.TypeKind.Basic, name: "string" } }, { name: "Hidden", key: "Hidden", type: "dep.hidden" }]
 	)
 }

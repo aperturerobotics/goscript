@@ -37,7 +37,7 @@ export class bValue {
 		() => new bValue(),
 		[],
 		bValue,
-		[{ name: "inner", key: "inner", type: "main.aValue", pkgPath: "github.com/s4wave/goscript/tests/tests/cross_file_struct_typeinfo_zero", index: [0], offset: 0, exported: false }]
+		[{ name: "inner", key: "inner", type: "main.aValue" }]
 	)
 }
 

@@ -37,9 +37,9 @@ export class listProvider {
 	static __typeInfo = $.registerStructType(
 		"main.listProvider",
 		() => new listProvider(),
-		[{ name: "Items", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "main.Group" } } }] }],
+		[{ name: "Items", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "main.Group" } } }] }],
 		listProvider,
-		[{ name: "items", key: "items", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "main.Group" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/range_func_async_method_value", index: [0], offset: 0, exported: false }]
+		[{ name: "items", key: "items", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "main.Group" } } }]
 	)
 }
 
@@ -106,9 +106,9 @@ export class Group {
 	static __typeInfo = $.registerStructType(
 		"main.Group",
 		() => new Group(),
-		[{ name: "Build", args: [], returns: [] }, { name: "Each", args: [{ name: "yield", type: ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "main.Group" }], results: [{ kind: $.TypeKind.Basic, name: "bool" }] } as $.FunctionTypeInfo) }], returns: [] }],
+		[{ name: "Build", args: [], returns: [] }, { name: "Each", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		Group,
-		[{ name: "provider", key: "provider", type: "main.provider", pkgPath: "github.com/s4wave/goscript/tests/tests/range_func_async_method_value", index: [0], offset: 0, exported: false }, { name: "seen", key: "seen", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "github.com/s4wave/goscript/tests/tests/range_func_async_method_value", index: [1], offset: 16, exported: false }]
+		[{ name: "provider", key: "provider", type: "main.provider" }, { name: "seen", key: "seen", type: { kind: $.TypeKind.Basic, name: "bool" } }]
 	)
 }
 
@@ -119,7 +119,7 @@ export type provider = {
 $.registerInterfaceType(
 	"main.provider",
 	null,
-	[{ name: "Items", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "main.Group" } } }] }]
+	[{ name: "Items", args: [], returns: [{ type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "main.Group" } } }] }]
 );
 
 export async function main(): globalThis.Promise<void> {

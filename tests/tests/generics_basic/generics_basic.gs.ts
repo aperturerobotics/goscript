@@ -22,7 +22,7 @@ export type Cloner = {
 $.registerInterfaceType(
 	"main.Cloner",
 	null,
-	[{ name: "Clone", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }] }]
+	[{ name: "Clone", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }] }]
 );
 
 export class Stack {
@@ -75,9 +75,9 @@ export class Stack {
 	static __typeInfo = $.registerStructType(
 		"main.Stack",
 		() => new Stack(),
-		[{ name: "Len", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Pop", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Push", args: [{ name: "value", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }],
+		[{ name: "Len", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "Pop", args: [], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }, { type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Push", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		Stack,
-		[{ name: "items", key: "items", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/s4wave/goscript/tests/tests/generics_basic", index: [0], offset: 0, exported: false }]
+		[{ name: "items", key: "items", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Interface, methods: [] } } }]
 	)
 }
 
@@ -118,9 +118,9 @@ export class Item {
 	static __typeInfo = $.registerStructType(
 		"main.Item",
 		() => new Item(),
-		[{ name: "Clone", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "main.Item" } }] }],
+		[{ name: "Clone", args: [], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "main.Item" } }] }],
 		Item,
-		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" }, index: [0], offset: 0, exported: true }]
+		[{ name: "Name", key: "Name", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 
@@ -164,9 +164,9 @@ export class Mapper {
 	static __typeInfo = $.registerStructType(
 		"main.Mapper",
 		() => new Mapper(),
-		[{ name: "Get", args: [{ name: "key", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Put", args: [{ name: "key", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "value", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [] }],
+		[{ name: "Get", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Interface, methods: [] } }, { type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Put", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		Mapper,
-		[{ name: "values", key: "values", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Interface, methods: [] } }, pkgPath: "github.com/s4wave/goscript/tests/tests/generics_basic", index: [0], offset: 0, exported: false }]
+		[{ name: "values", key: "values", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Interface, methods: [] }, elemType: { kind: $.TypeKind.Interface, methods: [] } } }]
 	)
 }
 
@@ -214,9 +214,9 @@ export class Pair {
 	static __typeInfo = $.registerStructType(
 		"main.Pair",
 		() => new Pair(),
-		[{ name: "Swap", args: [], returns: [{ name: "_r0", type: "main.Pair" }] }],
+		[{ name: "Swap", args: [], returns: [{ type: "main.Pair" }] }],
 		Pair,
-		[{ name: "First", key: "First", type: { kind: $.TypeKind.Interface, methods: [] }, index: [0], offset: 0, exported: true }, { name: "Second", key: "Second", type: { kind: $.TypeKind.Interface, methods: [] }, index: [1], offset: 0, exported: true }]
+		[{ name: "First", key: "First", type: { kind: $.TypeKind.Interface, methods: [] } }, { name: "Second", key: "Second", type: { kind: $.TypeKind.Interface, methods: [] } }]
 	)
 }
 

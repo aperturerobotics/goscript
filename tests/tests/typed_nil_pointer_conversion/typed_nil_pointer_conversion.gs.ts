@@ -34,7 +34,7 @@ export class node {
 		() => new node(),
 		[],
 		node,
-		[{ name: "next", key: "next", type: { kind: $.TypeKind.Pointer, elemType: "main.node" }, pkgPath: "github.com/s4wave/goscript/tests/tests/typed_nil_pointer_conversion", index: [0], offset: 0, exported: false }]
+		[{ name: "next", key: "next", type: { kind: $.TypeKind.Pointer, elemType: "main.node" } }]
 	)
 }
 

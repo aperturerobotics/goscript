@@ -37,7 +37,7 @@ export class holder {
 		() => new holder(),
 		[],
 		holder,
-		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_init_async_lazy_cycle", index: [0], offset: 0, exported: false }]
+		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

@@ -10,5 +10,5 @@ export type Stream = {
 $.registerInterfaceType(
 	"main.Stream",
 	null,
-	[{ name: "Send", args: [], returns: [{ name: "_r0", type: "error" }] }]
+	[{ name: "Send", args: [], returns: [{ type: "error" }] }]
 );

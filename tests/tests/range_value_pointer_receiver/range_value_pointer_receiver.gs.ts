@@ -40,9 +40,9 @@ export class item {
 	static __typeInfo = $.registerStructType(
 		"main.item",
 		() => new item(),
-		[{ name: "Name", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }],
+		[{ name: "Name", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }],
 		item,
-		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/range_value_pointer_receiver", index: [0], offset: 0, exported: false }]
+		[{ name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 

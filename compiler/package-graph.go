@@ -326,6 +326,10 @@ func packageBlocklistChain(graph *PackageGraph, blocklist []string) []string {
 	return nil
 }
 
+func packageGraphContainsPackage(graph *PackageGraph, packagePath string) bool {
+	return len(packageBlocklistChain(graph, []string{packagePath})) != 0
+}
+
 func packagePathBlocklisted(path string, blocklist []string) bool {
 	for _, blocked := range blocklist {
 		// Match the package exactly or any subpackage, on a path-segment

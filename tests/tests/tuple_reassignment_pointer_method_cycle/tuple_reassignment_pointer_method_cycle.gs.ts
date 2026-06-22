@@ -34,7 +34,7 @@ export class box {
 		() => new box(),
 		[],
 		box,
-		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/tuple_reassignment_pointer_method_cycle", index: [0], offset: 0, exported: false }]
+		[{ name: "value", key: "value", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 
@@ -61,7 +61,7 @@ export class cursor {
 	static __typeInfo = $.registerStructType(
 		"main.cursor",
 		() => new cursor(),
-		[{ name: "rotate", args: [{ name: "a", type: { kind: $.TypeKind.Pointer, elemType: "main.box" } }, { name: "b", type: { kind: $.TypeKind.Pointer, elemType: "main.box" } }, { name: "c", type: { kind: $.TypeKind.Pointer, elemType: "main.box" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "main.box" } }, { name: "_r1", type: { kind: $.TypeKind.Pointer, elemType: "main.box" } }, { name: "_r2", type: { kind: $.TypeKind.Pointer, elemType: "main.box" } }] }],
+		[{ name: "rotate", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "main.box" } }, { type: { kind: $.TypeKind.Pointer, elemType: "main.box" } }, { type: { kind: $.TypeKind.Pointer, elemType: "main.box" } }] }],
 		cursor,
 		[]
 	)

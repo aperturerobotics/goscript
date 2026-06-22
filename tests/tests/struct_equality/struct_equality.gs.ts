@@ -54,9 +54,9 @@ export class ObjectID {
 	static __typeInfo = $.registerStructType(
 		"main.ObjectID",
 		() => new ObjectID(),
-		[{ name: "IsZero", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Valid", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
+		[{ name: "IsZero", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "Valid", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }],
 		ObjectID,
-		[{ name: "hash", key: "hash", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 4 }, pkgPath: "github.com/s4wave/goscript/tests/tests/struct_equality", index: [0], offset: 0, exported: false }, { name: "format", key: "format", type: { kind: $.TypeKind.Basic, name: "uint8" }, pkgPath: "github.com/s4wave/goscript/tests/tests/struct_equality", index: [1], offset: 4, exported: false }]
+		[{ name: "hash", key: "hash", type: { kind: $.TypeKind.Array, elemType: { kind: $.TypeKind.Basic, name: "uint8" }, length: 4 } }, { name: "format", key: "format", type: { kind: $.TypeKind.Basic, name: "uint8" } }]
 	)
 }
 

@@ -43,9 +43,9 @@ export class sink {
 	static __typeInfo = $.registerStructType(
 		"main.sink",
 		() => new sink(),
-		[{ name: "Put", args: [{ name: "v", type: "dep.Value" }], returns: [] }],
+		[{ name: "Put", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		sink,
-		[{ name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/type_alias_interface_param_cross_file", index: [0], offset: 0, exported: false }]
+		[{ name: "size", key: "size", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

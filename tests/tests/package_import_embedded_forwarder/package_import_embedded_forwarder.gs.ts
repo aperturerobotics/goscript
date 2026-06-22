@@ -20,7 +20,7 @@ export type Store = {
 $.registerInterfaceType(
 	"main.Store",
 	null,
-	[{ name: "Execute", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "NewTransaction", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }]
+	[{ name: "Execute", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "NewTransaction", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }]
 );
 
 export class VerboseStore {
@@ -71,9 +71,9 @@ export class VerboseStore {
 	static __typeInfo = $.registerStructType(
 		"main.VerboseStore",
 		() => new VerboseStore(),
-		[{ name: "Execute", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "NewTransaction", args: [{ name: "write", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }],
+		[{ name: "Execute", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }, { name: "NewTransaction", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "tx.Tx" } }] }],
 		VerboseStore,
-		[{ name: "BaseStore", key: "BaseStore", type: { kind: $.TypeKind.Pointer, elemType: "dep.BaseStore" }, anonymous: true, index: [0], offset: 0, exported: true }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" }, pkgPath: "github.com/s4wave/goscript/tests/tests/package_import_embedded_forwarder", index: [1], offset: 8, exported: false }]
+		[{ name: "BaseStore", key: "BaseStore", type: { kind: $.TypeKind.Pointer, elemType: "dep.BaseStore" }, anonymous: true }, { name: "name", key: "name", type: { kind: $.TypeKind.Basic, name: "string" } }]
 	)
 }
 

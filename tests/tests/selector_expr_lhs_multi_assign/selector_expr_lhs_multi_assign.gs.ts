@@ -44,7 +44,7 @@ export class Point {
 		() => new Point(),
 		[],
 		Point,
-		[{ name: "X", key: "X", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }, { name: "Y", key: "Y", type: { kind: $.TypeKind.Basic, name: "int" }, index: [1], offset: 8, exported: true }]
+		[{ name: "X", key: "X", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "Y", key: "Y", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

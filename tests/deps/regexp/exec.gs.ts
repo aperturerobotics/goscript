@@ -62,7 +62,7 @@ export class queue {
 		() => new queue(),
 		[],
 		queue,
-		[{ name: "sparse", key: "sparse", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "dense", key: "dense", type: { kind: $.TypeKind.Slice, elemType: "regexp.entry" }, pkgPath: "regexp", index: [1], offset: 24, exported: false }]
+		[{ name: "sparse", key: "sparse", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint32" } } }, { name: "dense", key: "dense", type: { kind: $.TypeKind.Slice, elemType: "regexp.entry" } }]
 	)
 }
 
@@ -107,7 +107,7 @@ export class entry {
 		() => new entry(),
 		[],
 		entry,
-		[{ name: "pc", key: "pc", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "t", key: "t", type: { kind: $.TypeKind.Pointer, elemType: "regexp.thread" }, pkgPath: "regexp", index: [1], offset: 8, exported: false }]
+		[{ name: "pc", key: "pc", type: { kind: $.TypeKind.Basic, name: "uint32" } }, { name: "t", key: "t", type: { kind: $.TypeKind.Pointer, elemType: "regexp.thread" } }]
 	)
 }
 
@@ -152,7 +152,7 @@ export class thread {
 		() => new thread(),
 		[],
 		thread,
-		[{ name: "inst", key: "inst", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Inst" }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "cap", key: "cap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "regexp", index: [1], offset: 8, exported: false }]
+		[{ name: "inst", key: "inst", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Inst" } }, { name: "cap", key: "cap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }]
 	)
 }
 
@@ -252,9 +252,9 @@ export class inputs {
 	static __typeInfo = $.registerStructType(
 		"regexp.inputs",
 		() => new inputs(),
-		[{ name: "clear", args: [], returns: [] }, { name: "init", args: [{ name: "r", type: "io.RuneReader" }, { name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }, { name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "regexp.input" }, { name: "_r1", type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "newBytes", args: [{ name: "b", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } } }], returns: [{ name: "_r0", type: "regexp.input" }] }, { name: "newReader", args: [{ name: "r", type: "io.RuneReader" }], returns: [{ name: "_r0", type: "regexp.input" }] }, { name: "newString", args: [{ name: "s", type: { kind: $.TypeKind.Basic, name: "string" } }], returns: [{ name: "_r0", type: "regexp.input" }] }],
+		[{ name: "clear", args: [], returns: [] }, { name: "init", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "regexp.input" }, { type: { kind: $.TypeKind.Basic, name: "int" } }] }, { name: "newBytes", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "regexp.input" }] }, { name: "newReader", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "regexp.input" }] }, { name: "newString", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "regexp.input" }] }],
 		inputs,
-		[{ name: "bytes", key: "bytes", type: "regexp.inputBytes", pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "string", key: "_string", type: "regexp.inputString", pkgPath: "regexp", index: [1], offset: 24, exported: false }, { name: "reader", key: "reader", type: "regexp.inputReader", pkgPath: "regexp", index: [2], offset: 40, exported: false }]
+		[{ name: "bytes", key: "bytes", type: "regexp.inputBytes" }, { name: "string", key: "_string", type: "regexp.inputString" }, { name: "reader", key: "reader", type: "regexp.inputReader" }]
 	)
 }
 
@@ -647,9 +647,9 @@ export class machine {
 	static __typeInfo = $.registerStructType(
 		"regexp.machine",
 		() => new machine(),
-		[{ name: "add", args: [{ name: "q", type: { kind: $.TypeKind.Pointer, elemType: "regexp.queue" } }, { name: "pc", type: { kind: $.TypeKind.Basic, name: "uint32" } }, { name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "cap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "cond", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64", typeName: "regexp.lazyFlag" } } }, { name: "t", type: { kind: $.TypeKind.Pointer, elemType: "regexp.thread" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "regexp.thread" } }] }, { name: "alloc", args: [{ name: "i", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Inst" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Pointer, elemType: "regexp.thread" } }] }, { name: "clear", args: [{ name: "q", type: { kind: $.TypeKind.Pointer, elemType: "regexp.queue" } }], returns: [] }, { name: "init", args: [{ name: "ncap", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [] }, { name: "match", args: [{ name: "i", type: "regexp.input" }, { name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "step", args: [{ name: "runq", type: { kind: $.TypeKind.Pointer, elemType: "regexp.queue" } }, { name: "nextq", type: { kind: $.TypeKind.Pointer, elemType: "regexp.queue" } }, { name: "pos", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "nextPos", type: { kind: $.TypeKind.Basic, name: "int" } }, { name: "c", type: { kind: $.TypeKind.Basic, name: "int32" } }, { name: "nextCond", type: { kind: $.TypeKind.Pointer, elemType: { kind: $.TypeKind.Basic, name: "uint64", typeName: "regexp.lazyFlag" } } }], returns: [] }],
+		[{ name: "add", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "regexp.thread" } }] }, { name: "alloc", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Pointer, elemType: "regexp.thread" } }] }, { name: "clear", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }, { name: "init", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }, { name: "match", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "bool" } }] }, { name: "step", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		machine,
-		[{ name: "re", key: "re", type: { kind: $.TypeKind.Pointer, elemType: "regexp.Regexp" }, pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "p", key: "p", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" }, pkgPath: "regexp", index: [1], offset: 8, exported: false }, { name: "q0", key: "q0", type: "regexp.queue", pkgPath: "regexp", index: [2], offset: 16, exported: false }, { name: "q1", key: "q1", type: "regexp.queue", pkgPath: "regexp", index: [3], offset: 64, exported: false }, { name: "pool", key: "pool", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "regexp.thread" } }, pkgPath: "regexp", index: [4], offset: 112, exported: false }, { name: "matched", key: "matched", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "regexp", index: [5], offset: 136, exported: false }, { name: "matchcap", key: "matchcap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "regexp", index: [6], offset: 144, exported: false }, { name: "inputs", key: "inputs", type: "regexp.inputs", pkgPath: "regexp", index: [7], offset: 168, exported: false }]
+		[{ name: "re", key: "re", type: { kind: $.TypeKind.Pointer, elemType: "regexp.Regexp" } }, { name: "p", key: "p", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" } }, { name: "q0", key: "q0", type: "regexp.queue" }, { name: "q1", key: "q1", type: "regexp.queue" }, { name: "pool", key: "pool", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Pointer, elemType: "regexp.thread" } } }, { name: "matched", key: "matched", type: { kind: $.TypeKind.Basic, name: "bool" } }, { name: "matchcap", key: "matchcap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }, { name: "inputs", key: "inputs", type: "regexp.inputs" }]
 	)
 }
 
@@ -694,7 +694,7 @@ export class onePassMachine {
 		() => new onePassMachine(),
 		[],
 		onePassMachine,
-		[{ name: "inputs", key: "inputs", type: "regexp.inputs", pkgPath: "regexp", index: [0], offset: 0, exported: false }, { name: "matchcap", key: "matchcap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "regexp", index: [1], offset: 72, exported: false }]
+		[{ name: "inputs", key: "inputs", type: "regexp.inputs" }, { name: "matchcap", key: "matchcap", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } } }]
 	)
 }
 

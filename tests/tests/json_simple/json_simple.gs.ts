@@ -37,7 +37,7 @@ export class Simple {
 		() => new Simple(),
 		[],
 		Simple,
-		[{ name: "X", key: "X", type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"x\"", index: [0], offset: 0, exported: true }]
+		[{ name: "X", key: "X", type: { kind: $.TypeKind.Basic, name: "int" }, tag: "json:\"x\"" }]
 	)
 }
 

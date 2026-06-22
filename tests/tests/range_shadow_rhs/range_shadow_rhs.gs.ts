@@ -34,7 +34,7 @@ export class holder {
 		() => new holder(),
 		[],
 		holder,
-		[{ name: "values", key: "values", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } }, pkgPath: "github.com/s4wave/goscript/tests/tests/range_shadow_rhs", index: [0], offset: 0, exported: false }]
+		[{ name: "values", key: "values", type: { kind: $.TypeKind.Map, keyType: { kind: $.TypeKind.Basic, name: "string" }, elemType: { kind: $.TypeKind.Basic, name: "int" } } }]
 	)
 }
 

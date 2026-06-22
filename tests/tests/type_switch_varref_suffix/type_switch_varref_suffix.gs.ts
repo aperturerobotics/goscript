@@ -37,9 +37,9 @@ export class branch {
 	static __typeInfo = $.registerStructType(
 		"main.branch",
 		() => new branch(),
-		[{ name: "value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }],
+		[{ name: "value", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }],
 		branch,
-		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" }, pkgPath: "github.com/s4wave/goscript/tests/tests/type_switch_varref_suffix", index: [0], offset: 0, exported: false }]
+		[{ name: "n", key: "n", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 
@@ -50,7 +50,7 @@ export type node = {
 $.registerInterfaceType(
 	"main.node",
 	null,
-	[{ name: "value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int" } }] }]
+	[{ name: "value", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int" } }] }]
 );
 
 export function accept(b: branch | $.VarRef<branch> | null): number {

@@ -93,9 +93,9 @@ export class patchList {
 	static __typeInfo = $.registerStructType(
 		"syntax.patchList",
 		() => new patchList(),
-		[{ name: "append", args: [{ name: "p", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" } }, { name: "l2", type: "syntax.patchList" }], returns: [{ name: "_r0", type: "syntax.patchList" }] }, { name: "patch", args: [{ name: "p", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" } }, { name: "val", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [] }],
+		[{ name: "append", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.patchList" }] }, { name: "patch", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [] }],
 		patchList,
-		[{ name: "head", key: "head", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp/syntax", index: [0], offset: 0, exported: false }, { name: "tail", key: "tail", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp/syntax", index: [1], offset: 4, exported: false }]
+		[{ name: "head", key: "head", type: { kind: $.TypeKind.Basic, name: "uint32" } }, { name: "tail", key: "tail", type: { kind: $.TypeKind.Basic, name: "uint32" } }]
 	)
 }
 
@@ -150,7 +150,7 @@ export class frag {
 		() => new frag(),
 		[],
 		frag,
-		[{ name: "i", key: "i", type: { kind: $.TypeKind.Basic, name: "uint32" }, pkgPath: "regexp/syntax", index: [0], offset: 0, exported: false }, { name: "out", key: "out", type: "syntax.patchList", pkgPath: "regexp/syntax", index: [1], offset: 4, exported: false }, { name: "nullable", key: "nullable", type: { kind: $.TypeKind.Basic, name: "bool" }, pkgPath: "regexp/syntax", index: [2], offset: 12, exported: false }]
+		[{ name: "i", key: "i", type: { kind: $.TypeKind.Basic, name: "uint32" } }, { name: "out", key: "out", type: "syntax.patchList" }, { name: "nullable", key: "nullable", type: { kind: $.TypeKind.Basic, name: "bool" } }]
 	)
 }
 
@@ -473,9 +473,9 @@ export class compiler {
 	static __typeInfo = $.registerStructType(
 		"syntax.compiler",
 		() => new compiler(),
-		[{ name: "alt", args: [{ name: "f1", type: "syntax.frag" }, { name: "f2", type: "syntax.frag" }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "cap", args: [{ name: "arg", type: { kind: $.TypeKind.Basic, name: "uint32" } }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "cat", args: [{ name: "f1", type: "syntax.frag" }, { name: "f2", type: "syntax.frag" }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "compile", args: [{ name: "re", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Regexp" } }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "empty", args: [{ name: "op", type: { kind: $.TypeKind.Basic, name: "uint8", typeName: "syntax.EmptyOp" } }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "fail", args: [], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "init", args: [], returns: [] }, { name: "inst", args: [{ name: "op", type: { kind: $.TypeKind.Basic, name: "uint8", typeName: "syntax.InstOp" } }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "loop", args: [{ name: "f1", type: "syntax.frag" }, { name: "nongreedy", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "nop", args: [], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "plus", args: [{ name: "f1", type: "syntax.frag" }, { name: "nongreedy", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "quest", args: [{ name: "f1", type: "syntax.frag" }, { name: "nongreedy", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "rune", args: [{ name: "r", type: { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int32" } } }, { name: "flags", type: { kind: $.TypeKind.Basic, name: "uint16", typeName: "syntax.Flags" } }], returns: [{ name: "_r0", type: "syntax.frag" }] }, { name: "star", args: [{ name: "f1", type: "syntax.frag" }, { name: "nongreedy", type: { kind: $.TypeKind.Basic, name: "bool" } }], returns: [{ name: "_r0", type: "syntax.frag" }] }],
+		[{ name: "alt", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "cap", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "cat", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "compile", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "empty", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "fail", args: [], returns: [{ type: "syntax.frag" }] }, { name: "init", args: [], returns: [] }, { name: "inst", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "loop", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "nop", args: [], returns: [{ type: "syntax.frag" }] }, { name: "plus", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "quest", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "rune", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }, { name: "star", args: [{ type: { kind: $.TypeKind.Basic, name: "unknown" } }, { type: { kind: $.TypeKind.Basic, name: "unknown" } }], returns: [{ type: "syntax.frag" }] }],
 		compiler,
-		[{ name: "p", key: "p", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" }, pkgPath: "regexp/syntax", index: [0], offset: 0, exported: false }]
+		[{ name: "p", key: "p", type: { kind: $.TypeKind.Pointer, elemType: "syntax.Prog" } }]
 	)
 }
 

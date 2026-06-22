@@ -36,7 +36,7 @@ export class RawValue {
 		() => new RawValue(),
 		[],
 		RawValue,
-		[{ name: "Tag", key: "Tag", type: { kind: $.TypeKind.Basic, name: "int" }, index: [0], offset: 0, exported: true }]
+		[{ name: "Tag", key: "Tag", type: { kind: $.TypeKind.Basic, name: "int" } }]
 	)
 }
 

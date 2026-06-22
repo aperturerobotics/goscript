@@ -10,5 +10,5 @@ export type Value = {
 $.registerInterfaceType(
 	"dep2.Value",
 	null,
-	[{ name: "Value", args: [], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "string" } }] }]
+	[{ name: "Value", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "string" } }] }]
 );

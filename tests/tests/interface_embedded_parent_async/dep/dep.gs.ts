@@ -10,7 +10,7 @@ export type Directive = {
 $.registerInterfaceType(
 	"dep.Directive",
 	null,
-	[{ name: "Validate", args: [], returns: [{ name: "_r0", type: "error" }] }]
+	[{ name: "Validate", args: [], returns: [{ type: "error" }] }]
 );
 
 export async function Use(d: Directive | null): globalThis.Promise<boolean> {
