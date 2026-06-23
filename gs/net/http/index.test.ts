@@ -74,6 +74,8 @@ import {
   StatusMethodNotAllowed,
   StatusNotFound,
   StatusOK,
+  StatusPartialContent,
+  StatusRequestedRangeNotSatisfiable,
   StatusServiceUnavailable,
   StatusTeapot,
   StatusText,
@@ -1427,6 +1429,208 @@ describe('net/http override', () => {
     expect(writes).toEqual(['status:200', 'video'])
   })
 
+  it('serves byte ranges from files like native net/http', async () => {
+    const data = $.stringToBytes('0123456789')
+    let offset = 0
+    const root = {
+      Open: () =>
+        [
+          {
+            Close: () => null,
+            Read: (p: $.Slice<number>) => {
+              if (offset >= data.length) {
+                return [0, io.EOF] as [number, $.GoError]
+              }
+              const n = Math.min(p?.length ?? 0, data.length - offset)
+              p?.set(data.subarray(offset, offset + n), 0)
+              offset += n
+              return [n, null] as [number, $.GoError]
+            },
+            Seek: (seekOffset: number, whence: number) => {
+              switch (whence) {
+                case io.SeekStart:
+                  offset = seekOffset
+                  break
+                case io.SeekCurrent:
+                  offset += seekOffset
+                  break
+                case io.SeekEnd:
+                  offset = data.length + seekOffset
+                  break
+              }
+              return [offset, null] as [number, $.GoError]
+            },
+            Readdir: () => [null, null] as [null, $.GoError],
+            Stat: () =>
+              [
+                {
+                  IsDir: () => false,
+                  ModTime: () => null as never,
+                  Mode: () => 0,
+                  Name: () => 'media.mp4',
+                  Size: () => data.length,
+                  Sys: () => null,
+                },
+                null,
+              ] as const,
+          },
+          null,
+        ] as [File, $.GoError],
+    }
+    const header = new Header()
+    const writes: string[] = []
+    const writer: ResponseWriter = {
+      Header: () => header,
+      Write: (p) => {
+        writes.push(Buffer.from(p ?? []).toString('utf8'))
+        return [p?.length ?? 0, null]
+      },
+      WriteHeader: (code) => writes.push(`status:${code}`),
+    }
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/media.mp4',
+      null,
+    )
+    Header_Set(req!.Header, 'Range', 'bytes=2-5')
+
+    await FileServer(root).ServeHTTP(writer, req)
+
+    expect(writes).toEqual([`status:${StatusPartialContent}`, '2345'])
+    expect(Header_Get(header, 'Accept-Ranges')).toBe('bytes')
+    expect(Header_Get(header, 'Content-Length')).toBe('4')
+    expect(Header_Get(header, 'Content-Range')).toBe('bytes 2-5/10')
+    expect(Header_Get(header, 'Content-Type')).toBe('video/mp4')
+  })
+
+  it('serves open-ended and suffix byte ranges from FileServer', async () => {
+    const serveRange = async (
+      range: string,
+    ): Promise<{
+      body: string
+      code: number
+      contentRange: string
+      length: string
+    }> => {
+      const reader = bytes.NewReader($.stringToBytes('0123456789'))
+      const root = {
+        Open: () =>
+          [
+            {
+              Close: () => null,
+              Read: (p: $.Slice<number>) => reader.Read(p),
+              Seek: (offset: number, whence: number) =>
+                reader.Seek(offset, whence),
+              Readdir: () => [null, null] as [null, $.GoError],
+              Stat: () =>
+                [
+                  {
+                    IsDir: () => false,
+                    ModTime: () => null as never,
+                    Mode: () => 0,
+                    Name: () => 'range.txt',
+                    Size: () => 10,
+                    Sys: () => null,
+                  },
+                  null,
+                ] as const,
+            },
+            null,
+          ] as [File, $.GoError],
+      }
+      let code = 0
+      const header = new Header()
+      const body: string[] = []
+      const writer: ResponseWriter = {
+        Header: () => header,
+        Write: (p) => {
+          body.push(Buffer.from(p ?? []).toString('utf8'))
+          return [p?.length ?? 0, null]
+        },
+        WriteHeader: (statusCode) => {
+          code = statusCode
+        },
+      }
+      const [req] = NewRequest(
+        MethodGet,
+        'http://example.invalid/range.txt',
+        null,
+      )
+      Header_Set(req!.Header, 'Range', range)
+
+      await FileServer(root).ServeHTTP(writer, req)
+
+      return {
+        body: body.join(''),
+        code,
+        contentRange: Header_Get(header, 'Content-Range'),
+        length: Header_Get(header, 'Content-Length'),
+      }
+    }
+
+    await expect(serveRange('bytes=6-')).resolves.toEqual({
+      body: '6789',
+      code: StatusPartialContent,
+      contentRange: 'bytes 6-9/10',
+      length: '4',
+    })
+    await expect(serveRange('bytes=-4')).resolves.toEqual({
+      body: '6789',
+      code: StatusPartialContent,
+      contentRange: 'bytes 6-9/10',
+      length: '4',
+    })
+  })
+
+  it('rejects unsatisfiable file ranges like native net/http', async () => {
+    const root = {
+      Open: () =>
+        [
+          {
+            Close: () => null,
+            Read: () => [0, io.EOF] as [number, $.GoError],
+            Seek: () => [0, null] as [number, $.GoError],
+            Readdir: () => [null, null] as [null, $.GoError],
+            Stat: () =>
+              [
+                {
+                  IsDir: () => false,
+                  ModTime: () => null as never,
+                  Mode: () => 0,
+                  Name: () => 'range.txt',
+                  Size: () => 10,
+                  Sys: () => null,
+                },
+                null,
+              ] as const,
+          },
+          null,
+        ] as [File, $.GoError],
+    }
+    const header = new Header()
+    const writes: string[] = []
+    const writer: ResponseWriter = {
+      Header: () => header,
+      Write: (p) => {
+        writes.push(Buffer.from(p ?? []).toString('utf8'))
+        return [p?.length ?? 0, null]
+      },
+      WriteHeader: (code) => writes.push(`status:${code}`),
+    }
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/range.txt',
+      null,
+    )
+    Header_Set(req!.Header, 'Range', 'bytes=99-100')
+
+    await FileServer(root).ServeHTTP(writer, req)
+
+    expect(writes[0]).toBe(`status:${StatusRequestedRangeNotSatisfiable}`)
+    expect(Header_Get(header, 'Content-Range')).toBe('bytes */10')
+    expect(Header_Get(header, 'Content-Length')).toBe('0')
+  })
+
   it('serves files from async file systems and file methods', async () => {
     const closeCalls: string[] = []
     const root = {
@@ -1713,6 +1917,38 @@ describe('net/http override', () => {
     )
 
     expect(writes).toEqual(['status:200'])
+  })
+
+  it('serves byte ranges from ServeContent like native net/http', async () => {
+    const writes: string[] = []
+    const header = new Header()
+    const writer: ResponseWriter = {
+      Header: () => header,
+      Write: (p) => {
+        writes.push(Buffer.from(p ?? []).toString('utf8'))
+        return [p?.length ?? 0, null]
+      },
+      WriteHeader: (code) => writes.push(`status:${code}`),
+    }
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/content.txt',
+      null,
+    )
+    Header_Set(req!.Header, 'Range', 'bytes=1-3')
+
+    await ServeContent(
+      writer,
+      req,
+      'content.txt',
+      null as never,
+      bytes.NewReader($.stringToBytes('served')),
+    )
+
+    expect(writes).toEqual([`status:${StatusPartialContent}`, 'erv'])
+    expect(Header_Get(header, 'Accept-Ranges')).toBe('bytes')
+    expect(Header_Get(header, 'Content-Length')).toBe('3')
+    expect(Header_Get(header, 'Content-Range')).toBe('bytes 1-3/6')
   })
 
   it('closes request bodies after file transport requests', async () => {

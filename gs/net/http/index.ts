@@ -1509,6 +1509,11 @@ async function readFetchBody(
 
 type maybePromise<T> = T | Promise<T>
 
+type httpRange = {
+  start: number
+  length: number
+}
+
 export interface FileSystem {
   Open(name: string): maybePromise<[File | null, $.GoError]>
 }
@@ -1589,28 +1594,13 @@ export function FileServer(root: fileServerFileSystem | null): Handler {
           NotFound(w, req)
           return
         }
-        const header = await w.Header()
-        if (Header_Get(header, 'Content-Type') === '') {
-          const contentType = mime.TypeByExtension(
-            path.Ext(info?.Name?.() || req.URL?.Path || ''),
-          )
-          if (contentType !== '') {
-            Header_Set(header, 'Content-Type', contentType)
-          }
-        }
-        if (info?.Size != null) {
-          Header_Set(header, 'Content-Length', String(info.Size()))
-        }
-        await w.WriteHeader(StatusOK)
-        if (req.Method !== MethodHead) {
-          const [, copyErr] = await io.Copy(
-            w as unknown as io.Writer,
-            file as io.Reader,
-          )
-          if (copyErr != null) {
-            return
-          }
-        }
+        await serveContent(
+          w,
+          req,
+          info?.Name?.() || req.URL?.Path || '',
+          file as io.Reader,
+          typeof info?.Size === 'function' ? info.Size() : null,
+        )
       } finally {
         await file.Close()
       }
@@ -2733,20 +2723,168 @@ export async function ServeContent(
   _modtime: time.Time,
   content: io.Reader | null,
 ): Promise<void> {
+  await serveContent(w, $.pointerValueOrNil(req), _name, content, null)
+}
+
+async function serveContent(
+  w: ResponseWriter | null,
+  req: Request | null,
+  name: string,
+  content: io.Reader | null,
+  knownSize: number | null,
+): Promise<void> {
+  // Browser media seeks depend on FileServer and ServeContent sharing byte-range semantics.
   if (content == null) {
-    NotFound(w, req)
+    NotFound(w, req as Request | null)
     return
   }
-  const [data, err] = await io.ReadAll(content)
-  if (err != null) {
-    Error(w, err.Error(), StatusInternalServerError)
+  if (w == null) {
     return
   }
-  w?.WriteHeader(StatusOK)
-  const request = $.pointerValueOrNil(req)
-  if (request?.Method !== MethodHead) {
-    w?.Write(data)
+  const header = await w.Header()
+  if (Header_Get(header, 'Content-Type') === '') {
+    const contentType = mime.TypeByExtension(path.Ext(name))
+    if (contentType !== '') {
+      Header_Set(header, 'Content-Type', contentType)
+    }
   }
+  const rangeHeader = req?.Header == null ? '' : Header_Get(req.Header, 'Range')
+  if (rangeHeader === '' && knownSize != null) {
+    Header_Set(header, 'Content-Length', String(knownSize))
+    await w.WriteHeader(StatusOK)
+    if (req?.Method !== MethodHead) {
+      await io.Copy(w as unknown as io.Writer, content)
+    }
+    return
+  }
+
+  const seeker = content as io.Reader & Partial<io.Seeker>
+  if (typeof seeker.Seek !== 'function') {
+    const [data, err] = await io.ReadAll(content)
+    if (err != null) {
+      Error(w, err.Error(), StatusInternalServerError)
+      return
+    }
+    const body = data ?? new Uint8Array(0)
+    Header_Set(header, 'Content-Length', String(body.length))
+    await w.WriteHeader(StatusOK)
+    if (req?.Method !== MethodHead) {
+      await w.Write(body)
+    }
+    return
+  }
+
+  let size = knownSize
+  if (size == null) {
+    const [end, err] = await seeker.Seek(0, io.SeekEnd)
+    if (err != null) {
+      Error(w, err.Error(), StatusInternalServerError)
+      return
+    }
+    size = end
+  }
+  const [, seekErr] = await seeker.Seek(0, io.SeekStart)
+  if (seekErr != null) {
+    Error(w, seekErr.Error(), StatusInternalServerError)
+    return
+  }
+
+  Header_Set(header, 'Accept-Ranges', 'bytes')
+  const parsedRange =
+    rangeHeader === '' ? null : parseHTTPRange(rangeHeader, size)
+  if (parsedRange?.error === true) {
+    Header_Set(header, 'Content-Range', `bytes */${size}`)
+    Header_Set(header, 'Content-Length', '0')
+    await w.WriteHeader(StatusRequestedRangeNotSatisfiable)
+    return
+  }
+
+  let status = StatusOK
+  let start = 0
+  let length = size
+  if (parsedRange?.range != null) {
+    status = StatusPartialContent
+    start = parsedRange.range.start
+    length = parsedRange.range.length
+    Header_Set(
+      header,
+      'Content-Range',
+      `bytes ${start}-${start + length - 1}/${size}`,
+    )
+  }
+  Header_Set(header, 'Content-Length', String(length))
+
+  const [, rangeSeekErr] = await seeker.Seek(start, io.SeekStart)
+  if (rangeSeekErr != null) {
+    Error(w, rangeSeekErr.Error(), StatusInternalServerError)
+    return
+  }
+  await w.WriteHeader(status)
+  if (req?.Method === MethodHead) {
+    return
+  }
+  if (length === 0) {
+    return
+  }
+  await io.CopyN(w as unknown as io.Writer, seeker, length)
+}
+
+function parseHTTPRange(
+  header: string,
+  size: number,
+): { range: httpRange | null; error: boolean } {
+  if (!header.startsWith('bytes=') || header.includes(',')) {
+    return { range: null, error: true }
+  }
+  const spec = header.slice('bytes='.length).trim()
+  const dash = spec.indexOf('-')
+  if (dash < 0) {
+    return { range: null, error: true }
+  }
+  const startText = spec.slice(0, dash).trim()
+  const endText = spec.slice(dash + 1).trim()
+  if (startText === '' && endText === '') {
+    return { range: null, error: true }
+  }
+  if (size < 0) {
+    return { range: null, error: true }
+  }
+  if (startText === '') {
+    const suffixLength = parseHTTPRangeNumber(endText)
+    if (suffixLength == null || suffixLength <= 0) {
+      return { range: null, error: true }
+    }
+    if (size === 0) {
+      return { range: null, error: true }
+    }
+    const length = Math.min(suffixLength, size)
+    return { range: { start: size - length, length }, error: false }
+  }
+
+  const start = parseHTTPRangeNumber(startText)
+  if (start == null || start >= size) {
+    return { range: null, error: true }
+  }
+  let end = size - 1
+  if (endText !== '') {
+    const parsedEnd = parseHTTPRangeNumber(endText)
+    if (parsedEnd == null || parsedEnd < start) {
+      return { range: null, error: true }
+    }
+    end = Math.min(parsedEnd, size - 1)
+  }
+  return { range: { start, length: end - start + 1 }, error: false }
+}
+
+function parseHTTPRangeNumber(value: string): number | null {
+  if (!/^[0-9]+$/.test(value)) {
+    return null
+  }
+  const parsed = Number(value)
+  if (!Number.isSafeInteger(parsed)) {
+    return null
+  }
+  return parsed
 }
 
 function readCloserForBody(body: io.Reader | null): io.ReadCloser | null {
