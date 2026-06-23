@@ -102,19 +102,23 @@ function matchPattern(pattern: string, name: string): boolean {
 
     switch (p) {
       case '*':
-        // Handle star - match any sequence of characters
+        // Handle star - match any sequence of non-Separator characters.
         patternIndex++
         if (patternIndex >= pattern.length) {
-          // Pattern ends with *, matches rest of name
-          return true
+          // Trailing * matches the rest of name unless it crosses a separator.
+          return name.substring(nameIndex).indexOf('/') < 0
         }
 
-        // Try to match the rest of the pattern with remaining name
+        // Try to match the rest of the pattern with remaining name, but the
+        // star cannot consume a separator (Go matches non-Separator runs only).
         for (let i = nameIndex; i <= name.length; i++) {
           if (
             matchPattern(pattern.substring(patternIndex), name.substring(i))
           ) {
             return true
+          }
+          if (i < name.length && name[i] === '/') {
+            break
           }
         }
         return false

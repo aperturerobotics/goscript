@@ -3,6 +3,7 @@
 import * as $ from '@goscript/builtin/index.js'
 import { getHostRuntime } from '@goscript/builtin/hostio.js'
 import type { DirEntry } from '@goscript/io/fs/fs.js'
+import { ValidPath } from '@goscript/io/fs/fs.js'
 import { FileInfoToDirEntry } from '@goscript/io/fs/readdir.js'
 
 type JoinElement = string | $.Slice<string>
@@ -142,32 +143,15 @@ export function Clean(path: string): string {
 // an empty string.
 export function Join(...elem: JoinElement[]): string {
   const partsArg = normalizeJoinElements(elem)
-  if (partsArg.length === 0) {
-    return ''
-  }
-
-  // Filter out empty elements but handle absolute paths
-  const parts: string[] = []
-
-  for (const e of partsArg) {
-    if (e === '') {
-      continue
-    }
-
-    // If this element is absolute, start over from here
-    if (IsAbs(e)) {
-      parts.length = 0 // Clear previous parts
-      parts.push(e)
-    } else {
-      parts.push(e)
+  // Join all elements from the first non-empty one onward, then Clean. A later
+  // absolute element does not discard earlier elements (Go joins the suffix and
+  // lets Clean collapse the resulting double separators).
+  for (let i = 0; i < partsArg.length; i++) {
+    if (partsArg[i] !== '') {
+      return Clean(partsArg.slice(i).join('/'))
     }
   }
-
-  if (parts.length === 0) {
-    return ''
-  }
-
-  return Clean(parts.join('/'))
+  return ''
 }
 
 // Split splits path immediately following the final Separator,
@@ -291,20 +275,75 @@ export function Abs(path: string): [string, $.GoError] {
 }
 
 export function Rel(basepath: string, targpath: string): [string, $.GoError] {
-  // Simplified implementation - in reality this is much more complex
   const base = Clean(basepath)
   const targ = Clean(targpath)
-
-  if (base === targ) {
+  if (targ === base) {
     return ['.', null]
   }
 
-  // Very basic relative path calculation
-  if (targ.startsWith(base + '/')) {
-    return [targ.substring(base.length + 1), null]
+  const b = base === '.' ? '' : base
+  const t = targ === '.' ? '' : targ
+  const baseSlashed = b.length > 0 && b[0] === '/'
+  const targSlashed = t.length > 0 && t[0] === '/'
+  if (baseSlashed !== targSlashed) {
+    return [
+      '',
+      $.newError(`Rel: can't make ${targpath} relative to ${basepath}`),
+    ]
   }
 
-  return [targ, null]
+  // Walk both paths element by element until they first differ.
+  const bl = b.length
+  const tl = t.length
+  let b0 = 0
+  let bi = 0
+  let t0 = 0
+  let ti = 0
+  for (;;) {
+    while (bi < bl && b[bi] !== '/') {
+      bi++
+    }
+    while (ti < tl && t[ti] !== '/') {
+      ti++
+    }
+    if (t.slice(t0, ti) !== b.slice(b0, bi)) {
+      break
+    }
+    if (bi < bl) {
+      bi++
+    }
+    if (ti < tl) {
+      ti++
+    }
+    b0 = bi
+    t0 = ti
+  }
+  if (b.slice(b0, bi) === '..') {
+    return [
+      '',
+      $.newError(`Rel: can't make ${targpath} relative to ${basepath}`),
+    ]
+  }
+
+  if (b0 !== bl) {
+    // Base elements remain; emit one ".." per leftover base element, then the
+    // remaining target tail.
+    let seps = 0
+    for (let i = b0; i < bl; i++) {
+      if (b[i] === '/') {
+        seps++
+      }
+    }
+    let out = '..'
+    for (let i = 0; i < seps; i++) {
+      out += '/..'
+    }
+    if (t0 !== tl) {
+      out += '/' + t.slice(t0)
+    }
+    return [out, null]
+  }
+  return [t.slice(t0), null]
 }
 
 export function EvalSymlinks(path: string): [string, $.GoError] {
@@ -345,8 +384,13 @@ export async function WalkDir(
   return await walkDirHost(root, walkFn)
 }
 
-// Localize is a stub - in Go it's used for Windows path localization
+// Localize converts a slash-separated path into an operating system path.
+// The input must be a valid path as reported by io/fs.ValidPath. On a
+// Unix-like target the only further restriction is the absence of a NUL byte.
 export function Localize(path: string): [string, $.GoError] {
+  if (!ValidPath(path) || path.indexOf('\x00') >= 0) {
+    return ['', $.newError('invalid path')]
+  }
   return [path, null]
 }
 

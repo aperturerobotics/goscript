@@ -173,6 +173,22 @@ describe('path/filepath - Pattern matching functions', () => {
         expect(err1).toBeNull()
         expect(match1).toBe(false)
       })
+
+      it('should not let a star cross a path separator', () => {
+        // Go: '*' matches a non-Separator run only.
+        const [m1, e1] = Match('*c', 'a/c')
+        expect(e1).toBeNull()
+        expect(m1).toBe(false)
+
+        const [m2, e2] = Match('*', 'a/b')
+        expect(e2).toBeNull()
+        expect(m2).toBe(false)
+
+        // A star can still consume the run right up to a separator.
+        const [m3, e3] = Match('*/c', 'a/c')
+        expect(e3).toBeNull()
+        expect(m3).toBe(true)
+      })
     })
 
     describe('Error cases', () => {

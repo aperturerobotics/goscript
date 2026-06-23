@@ -18,6 +18,7 @@ import {
   HasPrefix,
   Abs,
   Rel,
+  Localize,
   EvalSymlinks,
   Walk,
   WalkDir,
@@ -193,9 +194,40 @@ describe('path/filepath - Path manipulation functions', () => {
       expect(err2).toBeNull()
       expect(result2).toBe('bin')
 
+      // Go emits ".." components to climb out of base before descending into
+      // the divergent target tail.
       const [result3, err3] = Rel('/usr/local', '/other/path')
       expect(err3).toBeNull()
-      expect(result3).toBe('/other/path')
+      expect(result3).toBe('../../other/path')
+
+      const [result4, err4] = Rel('/a/b', '/a/c')
+      expect(err4).toBeNull()
+      expect(result4).toBe('../c')
+
+      const [result5, err5] = Rel('a/b', 'a/c')
+      expect(err5).toBeNull()
+      expect(result5).toBe('../c')
+
+      // A relative base cannot be made relative to an absolute target.
+      const [, err6] = Rel('a/b', '/a/c')
+      expect(err6).not.toBeNull()
+    })
+  })
+
+  describe('Localize', () => {
+    it('should accept io/fs.ValidPath inputs and reject the rest', () => {
+      const [ok, okErr] = Localize('a/b')
+      expect(okErr).toBeNull()
+      expect(ok).toBe('a/b')
+
+      const [dot, dotErr] = Localize('.')
+      expect(dotErr).toBeNull()
+      expect(dot).toBe('.')
+
+      for (const bad of ['', '/a', '../a', 'a/../b', 'a/']) {
+        const [, err] = Localize(bad)
+        expect(err).not.toBeNull()
+      }
     })
   })
 
@@ -296,9 +328,10 @@ describe('Complex path operations', () => {
     expect(Clean('a/b/../../c')).toBe('c')
     expect(Clean('../../a/b')).toBe('../../a/b')
 
-    // Test Join with various inputs
+    // Test Join with various inputs. A later absolute element does not discard
+    // earlier elements; Go joins the suffix and Clean collapses double slashes.
     expect(Join('/a', '../b', 'c')).toBe('/b/c')
-    expect(Join('a', '/b', 'c')).toBe('/b/c')
+    expect(Join('a', '/b', 'c')).toBe('a/b/c')
 
     // Test Split edge cases
     expect(Split('/a/')).toEqual(['/a/', ''])
